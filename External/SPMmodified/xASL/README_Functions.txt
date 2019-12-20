@@ -24,7 +24,8 @@ xASL_SysCopy - part of xASL_Copy, without .nii.gz support (use when dealing with
 xASL_SysMove - same as previous but moving instead of copying
 xASL_TrackProgress - print a percentage tracker on the screen, to follow progress without GUI
 xASL_adm_ConvertSeconds2TimeString - as in the name
-
+xASL_adm_DeleteFileList - delete a list of files
+xASL_adm_csv2tsv - read csv or tsv file, convert to tsv if csv, per BIDS
 
 IMAGE PROCESSING:
 xASL_im_ConvertMap2Mask - in the name
