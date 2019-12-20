@@ -142,7 +142,15 @@ spm_jobman('run',matlabbatch);
 
 % Test deformations after CAT12
 xASL_Copy(fullfile(TestDirDest,'mri','y_T1.nii'), fullfile(TestDirDest,'y_T1.nii'));
-xASL_spm_deformations(x, fullfile(TestDirDest,'rT1.nii'), fullfile(TestDirDest,'rsT1.nii'), 0);
+matlabbatch = [];
+matlabbatch{1}.spm.util.defs.comp{1}.def = {fullfile(TestDirDest,'y_T1.nii')};
+matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(TestDirDest,'rT1.nii')};
+matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.savesrc = 1;
+matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
+matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
+spm_jobman('run',matlabbatch);
 
 % Remove temporary derivatives
 xASL_adm_DeleteFileList(TestDirDest, '.*', false, [0 Inf]);
