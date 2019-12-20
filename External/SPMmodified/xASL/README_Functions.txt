@@ -18,13 +18,11 @@ xASL_io_Nifti2im - Same as previous but immediately convert to image matrix
 xASL_io_SaveNifti - store image matrix to NIfTI file
 xASL_round - wrapper around Matlabs round, to allow determining nr floating points
 xASL_spm_admin - manage SPM input
-xASL_spm_deformations - wrapper around SPM deformations, specific combinations for ExploreASL 							toolbox
 xASL_spm_reslice - wrapper around SPM reslice, manage affine, allowing different quality, etc
 xASL_spm_smooth - wrapper around SPM smooth
 xASL_SysCopy - part of xASL_Copy, without .nii.gz support (use when dealing with only .nii OR 					.nii.gz)
 xASL_SysMove - same as previous but moving instead of copying
 xASL_TrackProgress - print a percentage tracker on the screen, to follow progress without GUI
-xASL_wrp_CreateASLDeformationField - downsample/smooth T1w flowfield to ASL resolution
 xASL_adm_ConvertSeconds2TimeString - as in the name
 
 
@@ -34,7 +32,7 @@ xASL_im_ExtrapolateOverNaNs - fill all NaNs within image by smoothing with extra
 xASL_FixEdgesFlowField - registration/interpolating can give artifacts at flowfield edges, fix 							these
 xASL_im_ndnanfilter - handle NaNs when smoothing
 xASL_im_ResampleIM - resample images using Matlabs interp function
-xASL_init_DefaultEffectiveResolution - manage ASL effective resolution
+
 
 
 
