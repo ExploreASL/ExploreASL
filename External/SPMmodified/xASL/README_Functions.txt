@@ -25,7 +25,7 @@ xASL_SysCopy - part of xASL_Copy, without .nii.gz support (use when dealing with
 xASL_SysMove - same as previous but moving instead of copying
 xASL_TrackProgress - print a percentage tracker on the screen, to follow progress without GUI
 xASL_wrp_CreateASLDeformationField - downsample/smooth T1w flowfield to ASL resolution
-
+xASL_adm_ConvertSeconds2TimeString - as in the name
 
 
 IMAGE PROCESSING:
