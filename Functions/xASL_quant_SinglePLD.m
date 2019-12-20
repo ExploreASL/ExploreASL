@@ -225,7 +225,7 @@ else
 end
 
 
-%% 5    Apply scale factors & divide PWI/M0
+%% 5    Divide PWI/M0
 % Match sizes
 MatchSizeM0 = round([size(PWI,1)./size(M0_im,1) size(PWI,2)./size(M0_im,2) size(PWI,3)./size(M0_im,3) size(PWI,4)./size(M0_im,4) size(PWI,5)./size(M0_im,5) size(PWI,6)./size(M0_im,6) size(PWI,7)./size(M0_im,7)]);
 MatchSizeSI = round([size(PWI,1)./size(ScaleImage,1) size(PWI,2)./size(ScaleImage,2) size(PWI,3)./size(ScaleImage,3) size(PWI,4)./size(ScaleImage,4) size(PWI,5)./size(ScaleImage,5) size(PWI,6)./size(ScaleImage,6) size(PWI,7)./size(ScaleImage,7)]);
@@ -243,6 +243,7 @@ else
     ScaleImage = ScaleImage./M0_im;
 end
      
+%% 6    Apply quantification
 CBF = PWI.*ScaleImage;
 
 
