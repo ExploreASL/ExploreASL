@@ -1,2 +1,2 @@
 # ExploreASL
-Developmental version of ExploreASL
+Developmental version of ExploreASL.
