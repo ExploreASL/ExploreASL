@@ -1,1 +1,0 @@
-This script is from John's Gems/Thom Nichols. Most likely GNU GPL (part of SPM, so then we can move it to the SPMmodified/xASL folder) but I've asked Thom Nichols to verify this.
