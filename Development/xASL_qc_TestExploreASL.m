@@ -54,7 +54,11 @@ spm_get_defaults('cmdline',true);
 %% Copy all data for testing
 if exist(TestDirDest,'dir')
     fprintf('Deleting previous results...\n');
-    system(['rm -rf ' TestDirDest]);
+    if ispc
+        system(['rmdir /s /q ' TestDirDest]);
+    else
+        system(['rm -rf ' TestDirDest]);
+    end
 end
 xASL_Copy(TestDirOrig, TestDirDest);
 
