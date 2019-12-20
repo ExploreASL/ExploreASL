@@ -1,0 +1,1169 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass paper
+\begin_preamble
+\usepackage{tocloft}
+\usepackage{hyperref}
+\hypersetup{colorlinks, citecolor=black, linkcolor=black}
+\usepackage{ graphicx}
+
+\usepackage{eso-pic}
+\newcommand\BackgroundPic{%
+\put(0,0){%
+\parbox[b][\paperheight]{\paperwidth}{%
+\vfill
+\centering
+\includegraphics[width=\paperwidth,height=\paperheight,%
+keepaspectratio]{background.jpg}%
+\vfill
+}}}
+\end_preamble
+\options round
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family sfdefault
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command bibtex
+\index_command default
+\paperfontsize default
+\spacing onehalf
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine natbib
+\cite_engine_type authoryear
+\biblio_style plainnat
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+%
+\backslash
+AddToShipoutPicture*{
+\backslash
+BackgroundPic}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+thispagestyle{empty} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+topskip0pt 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+vspace*{4cm} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+huge
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+noindent LST: A lesion segmentation tool for SPM
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+textcolor{white}{  }
+\backslash
+normalsize
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+Manual/Documentation for version 2.0.15
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+April 2016
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+vspace{8cm} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+textcolor{white}{  }
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+noindent Paul Schmidt
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+noindent Lucie Wink
+\backslash
+
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+vspace*{
+\backslash
+fill}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Introduction
+\end_layout
+
+\begin_layout Standard
+The toolbox "LST: Lesion Segmentation Tool" is an open source toolbox for
+ SPM that is able to segment T2 hyperintense lesions in FLAIR images.
+ Originally developed for the segmentation of MS lesions it has has also
+ been proven to be useful for the segmentation of brain lesions in the context
+ of other diseases, such as diabetes mellitus or Alzheimer's disease.
+\end_layout
+
+\begin_layout Standard
+Currently, there are two algorithms implemented for lesion segmentation.
+ The first, a lesion growth algorithm (LGA), requires a T1 image in addition
+ to the FLAIR image.
+ The second algorithm, a lesion prediction algorithm (LPA), requires a FLAIR
+ image only but is currently still in beta mode.
+ As a third highlight a pipeline allowing the longitudinal segmentation
+ is implemented.
+ In addition, the toolbox can be used to fill lesions in any image modility.
+ We hope that these algorithms will be able to contribute to current research
+ in MS and other disciplines.
+\end_layout
+
+\begin_layout Standard
+The toolbox was developed by a cooperation of the following organizations:
+ Morphometry Group, Department of Neurology, Technische Universität München
+ (TUM), Munich, Germany; Department of Statistics, Ludwig-Maximilians-University
+, Munich, Germany; and Structural Brain Mapping Group, Departments of Neurology
+ and Psychiatry, Friedrich-Schiller-University, Jena, Germany.
+\end_layout
+
+\begin_layout Section
+Getting started
+\end_layout
+
+\begin_layout Subsection
+License
+\end_layout
+
+\begin_layout Standard
+The LST toolbox is available to the scientific community under the terms
+ of the GNU General Public License.
+ A copy of the GNU General Public License is received along with this toolbox.
+ 
+\end_layout
+
+\begin_layout Subsection
+Installation
+\end_layout
+
+\begin_layout Standard
+To install the LST toolbox, visit the toolbox-website and download the zipped
+ folder LST_x.x.x.zip, where x.x.x may be replaced by the newest version of the
+ toolbox.
+ Unzip the folder into the SPM12 toolbox folder.
+ 
+\end_layout
+
+\begin_layout Subsection
+Starting the toolbox
+\end_layout
+
+\begin_layout Standard
+To start the toolbox, run MATLAB and SPM12.
+ Select LST from the drop-down menu of the toolbox-button.
+ The toolbox will open in SPM’s second window.
+ By clicking on 
+\begin_inset Quotes eld
+\end_inset
+
+LST
+\begin_inset Quotes erd
+\end_inset
+
+, access to different parts of the toolbox is given.
+\end_layout
+
+\begin_layout Subsection
+Preparation
+\end_layout
+
+\begin_layout Standard
+Before segmenting lesions for several subjects it is advisable to put some
+ thought in the organization of your data and the structure of folders on
+ your disk.
+ In our experience it is best to create one folder for each subject (e.g.
+ 
+\family typewriter
+subj01
+\family default
+, 
+\family typewriter
+subj02
+\family default
+, ...).
+ Keep the names of the images simple (e.g.
+ 
+\family typewriter
+t1.nii
+\family default
+ and 
+\family typewriter
+flair.nii
+\family default
+) and free from any personal information of the patient.
+ If images for multiple time points are available they may be all in the
+ same folder but clearly distinguishable (e.g.
+
+\family typewriter
+ t1_01.nii
+\family default
+, 
+\family typewriter
+t1_02.nii
+\family default
+, ...) or in seperate folders.
+\end_layout
+
+\begin_layout Subsection
+Referencing LST
+\end_layout
+
+\begin_layout Standard
+We put a lot of effort in the creation of this toolbox, so please cite it
+ accordingly.
+\end_layout
+
+\begin_layout Paragraph
+Minimal version
+\end_layout
+
+\begin_layout Standard
+If you used the LGA, please use something similar to the following paragraph:
+\end_layout
+
+\begin_layout Quote
+Lesions were segmented by the lesion growth algorithm 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "schmidt2012automated"
+
+\end_inset
+
+ as implemented in the LST toolbox version x.x.x (www.statistical-modelling.de/lst.ht
+ml) for SPM.
+\end_layout
+
+\begin_layout Standard
+In addition, mentioning how the optimal initial threshold was determined
+ is advised.
+ If this was done by visual inspection, then just add this information.
+ If you compared the segmentations to reference images, then please provide
+ some details about how these images were obtained and what metric you used
+ for comparison.
+ 
+\end_layout
+
+\begin_layout Standard
+If lesions have been segmented by the LPA instead, please use something
+ like the following paragraph:
+\end_layout
+
+\begin_layout Quote
+Lesions were segmented by the lesion prediction algorithm as implemented
+ in the LST toolbox version x.x.x (www.statistical-modelling.de/lst.html) for
+ SPM.
+ 
+\end_layout
+
+\begin_layout Standard
+Here, please add information about the images you used, i.e.
+ did you use the FLAIR images only or did you also use reference images?
+\end_layout
+
+\begin_layout Standard
+If you used the longitudinal pipeline then it is best to first explain the
+ independent lesion segmentation by one of the suggestions given above.
+ You can then add something like the following:
+\end_layout
+
+\begin_layout Quote
+Segmented lesion maps of different time points were compared using the longitudi
+nal pipeline implemented in the LST toolbox.
+\end_layout
+
+\begin_layout Paragraph
+More detailed version
+\end_layout
+
+\begin_layout Standard
+Feel free to use the following paragraphs if you want or need to explain
+ the algorithms in more detail.
+\end_layout
+
+\begin_layout Standard
+For the LGA use a paragraph such as
+\end_layout
+
+\begin_layout Quote
+Lesions were segmented by the lesion growth algorithm 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "schmidt2012automated"
+
+\end_inset
+
+ as implemented in the LST toolbox version x.x.x (www.statistical-modelling.de/lst.ht
+ml) for SPM.
+ The algorithm first segments the T1 images into the three main tissue classes
+ (CSF, GM and WM).
+ This information is then combined with the coregistered FLAIR intensities
+ in order to calculate lesion belief maps.
+ By thresholding these maps with a pre-chosen initial threshold (
+\begin_inset Formula $\kappa$
+\end_inset
+
+) an initial binary lesion map is obtained which is subsequently grown along
+ voxels that appear hyperintense in the FLAIR image.
+ The result is a lesion probability map.
+ 
+\end_layout
+
+\begin_layout Standard
+In addition, please mention how the optimal initial threshold was determined.
+ If this was done by visual inspection, then just add this information.
+ If you compared the segmentations to reference images, then please provide
+ some details about how these images were obtained and what metric you used
+ for comparison.
+ 
+\end_layout
+
+\begin_layout Standard
+For the LPA use a paragraph such as
+\end_layout
+
+\begin_layout Quote
+Lesions were segmented by the lesion prediction algorithm as implemented
+ in the LST toolbox version x.x.x (www.statistical-modelling.de/
+\begin_inset Newline linebreak
+\end_inset
+
+lst.html) for SPM.
+ This algorithm consists of a binary classifier in the form of a logistic
+ regression model trained on the data of 53 MS patients with severe lesion
+ patterns.
+ Data were obtained at the Department of Neurology, Technische Universität
+ München, Munich, Germany.
+ As covariates for this model a similar lesion belief map as for the lesion
+ growth algorithm 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "schmidt2012automated"
+
+\end_inset
+
+ was used as well as a spatial covariate that takes into account voxel specific
+ changes in lesion probability.
+ Parameters of this model fit are used to segment lesions in new images
+ by providing an estimate for the lesion probability for each voxel.
+\end_layout
+
+\begin_layout Standard
+Here, please add information about the images you used, i.e.
+ did you use the FLAIR images only or did you also use reference images?
+\end_layout
+
+\begin_layout Standard
+A more detailed version for the longitudinal pipeline is given next:
+\end_layout
+
+\begin_layout Quote
+Segmented lesion maps of different time points were compared using the longitudi
+nal pipeline implemented in the LST toolbox.
+ This pipeline consists of the following steps: First, lesion maps and FLAIR
+ images are coregistered to the images of the first time point.
+ In the next step, relative differences of FLAIR intensities are calculated
+ along all voxels that were segmented as lesions in at least one time point.
+ Finally, significant increase and decrease of lesion voxels are identified
+ if their differences exceed or fall below a certain threshold that is obtained
+ by analyzing healthy white matter.
+ As a final result, lesion change labels are produced for all consecutive
+ time points.
+ In these images the three possible cases decrease, no change and increase
+ are labeled by the numbers 1, 2, and 3, respectively.
+\end_layout
+
+\begin_layout Section
+Lesion segmentation
+\end_layout
+
+\begin_layout Standard
+Currently, there are two algorithms implemented for the segmentation of
+ lesions, the LGA and the LPA.
+ In addition, a longitudinal pipeline is available.
+ The usage of these methods is explained in the following subsections.
+\end_layout
+
+\begin_layout Subsection
+Lesion growth algorithm (LGA)
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:LGA"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This section deals with the lesion growth algorithm (LGA) as presented in
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "schmidt2012automated"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Segmentation
+\end_layout
+
+\begin_layout Standard
+Lesion segmentation by the LGA requires a T1 and a FLAIR image.
+ Furthermore, the user has to specify an initial threshold, 
+\begin_inset Formula $\kappa$
+\end_inset
+
+.
+ If the algorithm is applied for the first time to new data we recommend
+ to choose different values for 
+\begin_inset Formula $\kappa$
+\end_inset
+
+ (e.g.
+ in the range of 0.05 to 1.0 with an increment of 0.05) and to obtain the best
+ value by either visual inspection of the results or by the comparison with
+ reference segmentations, if available.
+ For the latter strategy we implemented a special routine, see section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Determination-of-the"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Paragraph
+Input
+\end_layout
+
+\begin_layout Standard
+The user needs to select the original T1 and FLAIR images for each subject.
+ The FLAIR images must be in the same order as the T1 images.
+\end_layout
+
+\begin_layout Paragraph
+Options
+\end_layout
+
+\begin_layout Standard
+The main parameter that needs to be set by the user is 
+\begin_inset Formula $\kappa$
+\end_inset
+
+ (Initial threshold).
+ In addition, the user can specify the strength of the Markov random field
+ (MRF parameter) as well as the maximum number of iterations (Maximum iterations
+) for the LGA.
+ While we do not recommend to change the former parameter the maximum number
+ of iterations should be increased if it reaches its limit during the segmentati
+on process.
+ Finally, the user can choose if the results of the segmentation should
+ be summarized in a HTML report.
+ Although it needs a while to produce this report we recommend its usage
+ as it makes it easier to check the results.
+ See section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Merge-HTML-reports"
+
+\end_inset
+
+ on how to merge multiple HTML reports.
+\end_layout
+
+\begin_layout Paragraph
+Output
+\end_layout
+
+\begin_layout Standard
+The LGA returns a bias corrected version of the FLAIR image (
+\family typewriter
+rm[FLAIR]
+\begin_inset Newline linebreak
+\end_inset
+
+.nii
+\family default
+) that is coregistered to the T1 image as well as a lesion probability map
+ (
+\family typewriter
+ples_lga_[
+\begin_inset Formula $\kappa$
+\end_inset
+
+]_rm[FLAIR].nii
+\family default
+).
+ In addition, a .mat-file (
+\family typewriter
+LST_lga_[
+\begin_inset Formula $\kappa$
+\end_inset
+
+]_rm[FLAIR] .mat
+\family default
+) is produced which contains all necessary components that are needed for
+ a re-run of the algorithm, the longitudinal pipeline, or for lesion filling.
+ If the user decided to do so a HTML report (
+\family typewriter
+report_LST_lga_[
+\begin_inset Formula $\kappa$
+\end_inset
+
+]_rm[FLAIR].html
+\family default
+) is saved as well as a folder that contains images that are displayed in
+ the report.
+\end_layout
+
+\begin_layout Subsubsection
+Determination of the optimal initial threshold
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Determination-of-the"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+With this module we offer the opportunity to determine the optimal 
+\begin_inset Formula $\kappa$
+\end_inset
+
+ based on the Dice coefficient, see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "schmidt2012automated"
+
+\end_inset
+
+ for details.
+ This requires the existence of reference segmentations to be compared with
+ the lesion maps.
+ These reference images are a binary images in the space of the T1 images
+ where a 1 indicates a lesion.
+ 
+\end_layout
+
+\begin_layout Paragraph
+Input
+\end_layout
+
+\begin_layout Standard
+As input the user needs to choose the binary reference images.
+ The algorithm automatically searches the folder of each reference image
+ for lesion probability maps obtained by LGA, thus for each patient the
+ reference images need to be in the same folder as the lesion probability
+ maps.
+\end_layout
+
+\begin_layout Paragraph
+Options
+\end_layout
+
+\begin_layout Standard
+The threshold for the computation of binary lesion maps must be specified.
+ This must be a value between 0 and 1.
+ 
+\end_layout
+
+\begin_layout Paragraph
+Output
+\end_layout
+
+\begin_layout Standard
+This routine saves a CSV file (
+\family typewriter
+LST_doit_[date]_[time].csv
+\family default
+) in MATLAB's current directory.
+ The CSV file contains columns for the folder of the reference images, the
+ name of the FLAIR images, the value of 
+\begin_inset Formula $\kappa$
+\end_inset
+
+, the coresponding Dice coefficients as well as values for sensitivity and
+ specifity.
+\end_layout
+
+\begin_layout Subsection
+Lesion prediction algorithm (LPA)
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:LPA"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Lesion segmentation by the LPA requires a FLAIR image only.
+ However, the user is free to choose an additional image that serves as
+ a reference image during a coregistration step before the main lesion segmentat
+ion.
+ This may be helpful if the dimension of the FLAIR image is low or if the
+ goal of the lesion segmentation is to fill lesions in T1 images.
+ Beside that no additional parameters need to be set.
+\end_layout
+
+\begin_layout Paragraph
+Input
+\end_layout
+
+\begin_layout Standard
+As input the user needs to choose the original FLAIR images.
+ Additional reference images can be chosen but must be in the same order
+ as the FLAIR images.
+\end_layout
+
+\begin_layout Paragraph
+Options
+\end_layout
+
+\begin_layout Standard
+The user can choose if the results of the segmentation should be summarized
+ in a HTML report.
+ Although it needs a while to produce this report we recommend its usage
+ as it makes it easier to check the results.
+ See section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Merge-HTML-reports"
+
+\end_inset
+
+ on how to merge multiple HTML reports.
+\end_layout
+
+\begin_layout Paragraph
+Output
+\end_layout
+
+\begin_layout Standard
+If no reference image has been specified this algorithm saves a bias corrected
+ version of the FLAIR image (
+\family typewriter
+m[FLAIR].nii
+\family default
+).
+ If a reference image has been chosen the bias corrected coregistered FLAIR
+ image (
+\family typewriter
+mr[FLAIR].nii
+\family default
+) is saved.
+ Besides the lesion probability map (
+\family typewriter
+ples_lpa_m[r][FLAIR].nii
+\family default
+) an additional .mat-file (
+\family typewriter
+LST_lpa_m[r][FLAIR].mat
+\family default
+) is produced which contains all necessary components that are needed for
+ the longitudinal pipeline or for lesion filling.
+ If the user decided to do so a HTML report (
+\family typewriter
+report_LST_lpa_m[r][FLAIR].html
+\family default
+) is saved as well as a folder that contains images that are displayed in
+ the report.
+\end_layout
+
+\begin_layout Subsection
+Longitudinal pipeline
+\end_layout
+
+\begin_layout Standard
+The longitudinal pipeline is able to compare segmented lesion maps for different
+ time points.
+ The segmentations can be derived either by the LGA or the LPA, but not
+ both.
+ Furthermore, it is required that the FLAIR images and .mat-files that are
+ saved during the lesion segmentation process are available in the same
+ folders as the lesions probability maps.
+\end_layout
+
+\begin_layout Standard
+The pipeline proceeds by comparing all consecutive time points in an iterative
+ manner.
+ It decides if changes in lesion structure are significant or due to natural
+ variations of the FLAIR signal.
+ Non-significant changes are labeled as lesions in both probability maps,
+ thus, probability lesion maps are corrected within this procedure and may
+ differ from the ones that served as input.
+ As a final result, lesion change labels are produced for all consecutive
+ time points.
+ In these images the three possible cases decrease, no change and increase
+ are labeled by the numbers 1, 2, and 3, respectively.
+\end_layout
+
+\begin_layout Standard
+In addition, a lesion change plot is constructed.
+ This plot shows the lesion volumes for both time points of all segmented
+ lesions.
+ This way it is easy to recognize how the lesion structure has been changed,
+ i.e.
+ if the change occurred by the appearance of new lesions, the disappearance
+ of old lesions, by the change of already existing lesions, or a combination
+ of these possibilities.
+ 
+\end_layout
+
+\begin_layout Paragraph
+Input
+\end_layout
+
+\begin_layout Standard
+First, the user needs to create one item for each time point.
+ Then, lesion probability maps for each time point need to be selected.
+ For all time points the images must be in the same order.
+\end_layout
+
+\begin_layout Paragraph
+Options
+\end_layout
+
+\begin_layout Standard
+The user can choose if the results of the segmentation should be summarized
+ in a HTML report.
+ Although it needs a while to produce this report we recommend it as it
+ makes it easier to check the results.
+ See section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Merge-HTML-reports"
+
+\end_inset
+
+ on how to merge multiple HTML reports.
+\end_layout
+
+\begin_layout Paragraph
+Output
+\end_layout
+
+\begin_layout Standard
+The longitudinal pipeline produces corrected lesion maps for each time point
+ (
+\family typewriter
+lples...
+\family default
+) and lesion change labels (
+\family typewriter
+LCL_[nam_ples_t]_[nam_ples_t+1]
+\begin_inset Newline linebreak
+\end_inset
+
+.nii
+\family default
+) for consecutive time points.
+ If the user decided to do so HTML reports (
+\family typewriter
+report_LST_long_[#time_points]_....html
+\family default
+) are saved for the comparisons as well as a folder that contains images
+ that are displayed in the report.
+\end_layout
+
+\begin_layout Section
+Utilities
+\end_layout
+
+\begin_layout Subsection
+Lesion filling
+\end_layout
+
+\begin_layout Standard
+Lesion filling can be applied to any image that is in alignment with the
+ lesion probability map.
+ However, it is required that the .mat-files that are saved during the lesion
+ segmentation process are available in the same folders as the lesions probabili
+ty maps.
+\end_layout
+
+\begin_layout Paragraph
+Input
+\end_layout
+
+\begin_layout Standard
+The user needs to specify the images that need to be filled (Images in native
+ space) and the probability lesion maps (obtained either by the LGA, LPA
+ or longitudinal pipeline).
+ The images must be selected in the same order.
+\end_layout
+
+\begin_layout Paragraph
+Options
+\end_layout
+
+\begin_layout Standard
+The user can choose if the results of the filling process should be summarized
+ in a HTML report.
+ Although it needs a while to produce this report we recommend its usage
+ as it makes it easier to check the results.
+ See section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Merge-HTML-reports"
+
+\end_inset
+
+ on how to merge multiple HTML reports.
+\end_layout
+
+\begin_layout Paragraph
+Output
+\end_layout
+
+\begin_layout Standard
+This procedure saves the filled image in native space (
+\family typewriter
+[image]_filled_lga _[
+\begin_inset Formula $\kappa$
+\end_inset
+
+]_rm[FLAIR].nii
+\family default
+ for LGA or 
+\family typewriter
+[image]_filled_lpa_m[r][FLAIR].nii
+\family default
+ for LPA).
+ If the user decided to do so a HTML report (
+\family typewriter
+report_LST_filled_m[r][FLAIR].html
+\family default
+) is saved as well as a folder that contains images that are displayed in
+ the report.
+\end_layout
+
+\begin_layout Subsection
+Extract values of interest
+\end_layout
+
+\begin_layout Standard
+This routine offers the possibility to extract some values that may be of
+ interest.
+ At this point in time this includes the total lesion volume (in ml) and
+ the number of lesions.
+ 
+\end_layout
+
+\begin_layout Paragraph
+Input
+\end_layout
+
+\begin_layout Standard
+As input images this function requires the lesion probability maps obtained
+ either by LGA, LPA, or the longitudinal pipeline.
+\end_layout
+
+\begin_layout Paragraph
+Options
+\end_layout
+
+\begin_layout Standard
+The threshold for the computation of binary lesion maps must be specified.
+ This must be a value between 0 and 1.
+ 
+\end_layout
+
+\begin_layout Paragraph
+Output
+\end_layout
+
+\begin_layout Standard
+Extracted values are saved in a CSV file (
+\family typewriter
+LST_tlv_[binthresh]_[date]_
+\begin_inset Newline linebreak
+\end_inset
+
+[time].csv
+\family default
+) in MATLAB's current directory.
+ 
+\end_layout
+
+\begin_layout Subsection
+Create binary lesion maps
+\end_layout
+
+\begin_layout Standard
+Binary lesion maps can be created using this utility.
+\end_layout
+
+\begin_layout Paragraph
+Input
+\end_layout
+
+\begin_layout Standard
+Lesion probability maps need to be specified by the user.
+\end_layout
+
+\begin_layout Paragraph
+Options
+\end_layout
+
+\begin_layout Standard
+The threshold for the computation of binary lesion maps must be specified.
+ This must be a value between 0 and 1.
+ 
+\end_layout
+
+\begin_layout Paragraph
+Output
+\end_layout
+
+\begin_layout Standard
+This function saves the binary lesion map (
+\family typewriter
+bles_[binthresh]_...
+
+\family default
+ for LGA and LPA, and or 
+\family typewriter
+lbles_[binthresh]_...
+
+\family default
+ for the longitudinal pipeline).
+\end_layout
+
+\begin_layout Subsection
+Merge HTML reports
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Merge-HTML-reports"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This function allows to merge multiple HTML reports that have been obtained
+ by different functions of this toolbox.
+ The resulting report can be moved anywhere on your disk as long as it is
+ provided that the folders for the original reports can be found in their
+ original directory.
+ A report that is readable on different platforms can be obtained by exporting/p
+rinting the HTML report as a PDF document, a function that is included in
+ all modern browsers.
+\end_layout
+
+\begin_layout Paragraph
+Input
+\end_layout
+
+\begin_layout Standard
+The HTML reports must be selected.
+\end_layout
+
+\begin_layout Paragraph
+Options
+\end_layout
+
+\begin_layout Standard
+No options need to be specified.
+\end_layout
+
+\begin_layout Paragraph
+Output
+\end_layout
+
+\begin_layout Standard
+This function writes a HTML report (
+\family typewriter
+report_LST_[number of reports]
+\begin_inset Newline linebreak
+\end_inset
+
+_[date]_[time].html
+\family default
+) into MATLAB's current directory.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "LST_literature"
+options "bibtotoc,plainnat"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

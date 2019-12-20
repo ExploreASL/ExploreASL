@@ -1,0 +1,202 @@
+function xASL_wrp_ProcessM0(x)
+%xASL_wrp_ProcessM0 Submodule of ExploreASL ASL Module, for M0 image processing
+%
+% FORMAT: xASL_wrp_ProcessM0(x)
+%
+% INPUT:
+%   x       - structure containing fields with all information required to run this submodule (REQUIRED)
+%
+% OUTPUT: n/a
+% OUTPUT FILES: NIfTI containing image processed M0 map in native & standard space, with and without smoothing
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This submodule performs the image processing and
+%           quantification of M0 maps (if they exist), with the following steps:
+%
+%           1) Register M0 to mean control if it exists
+%              Before registration, contrast is equalized between the
+%              images & biasfields are removed
+%           2) Quantify M0 (correction scale slope & incomplete T1 recovery)
+%           3) Masking & smoothing of M0 image, either using:
+%              A) traditional technique (very sharp masking & little smoothing)
+%              B) new ExploreASL-specific technique:
+%                 * extrapolating outside mask (avoiding artifacts from too
+%                   much or too little masking)
+%                 * smooth very extensively, to create a biasfield
+%                   (increases robustness & comparison of M0 between
+%                   sequences/patients)
+%
+%     Any M0 will be processed here. Even if part of the subjects does not
+%     have an M0, since this can be later imputed, or an average population
+%     M0 image could be used. Also, without background suppression and
+%     without an M0, the MeanControl image is before saved as M0, and will
+%     be processed here as well.
+%
+% EXAMPLE: xASL_wrp_ProcessM0(x);
+% __________________________________
+% Copyright (C) 2015-2019 ExploreASL
+
+
+
+%% -----------------------------------------------------------------------------------------------
+%% 0)   Administration
+if ~xASL_exist(x.P.Path_M0,'file')
+    % skip this part. This should be only the case when using a single value for M0,
+    % if the mean_control is used as M0, it should be copied to be used as M0 previously
+    return;
+end
+
+% Use either original or motion estimated ASL4D
+% Use despiked ASL only if spikes were detected and new file has been created
+% Otherwise, despiked_raw_asl = same as original file
+if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
+    x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
+end
+tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
+nVolumes = double(tempnii.hdr.dim(5));
+
+if strcmp(x.M0,'no_background_suppression')
+    x.M0 = 'UseControlAsM0'; % backward compatibility
+end
+if ~isfield(x,'M0_conventionalProcessing')
+       x.M0_conventionalProcessing   = 0;
+       % by default, conventional processing is off, since our new method outperforms in most cases
+elseif x.M0_conventionalProcessing == 1 && strcmp(x.readout_dim,'3D')
+       x.M0_conventionalProcessing = 0;
+       warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
+end
+
+%% Acquire voxel sizes to scale PD between ASL & M0
+if x.ApplyQuantification(2)
+    M0nii       = xASL_io_ReadNifti(x.P.Path_M0);
+    M0size      = prod(M0nii.hdr.pixdim(2:4));
+    ASLnii      = xASL_io_ReadNifti(x.P.Path_ASL4D);
+    ASLsize     = prod(ASLnii.hdr.pixdim(2:4));
+    M0ScaleF    = ASLsize/M0size;
+else
+    M0ScaleF = 1;
+end
+
+% copy existing M0 for processing, in single precision
+% averaging if multiple frames, as we will blur later anyway,
+% we can skip the motion correction here
+xASL_io_SaveNifti(x.P.Path_M0, x.P.Path_rM0, mean(xASL_io_Nifti2Im(x.P.Path_M0).*M0ScaleF,4), 32, 0);
+
+% Note that here we created rM0, which is averaged across 4th dimension, and adapted along this function
+
+xASL_wrp_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
+
+
+%% -----------------------------------------------------------------------------------------------
+%% 1)   Register M0 to mean control if it exists
+% Registering x.P.Path_M0 to ASL, changing x.P.Path_M0 header only
+% If there is only a single ASL PWI (e.g. GE 3D FSE), this is not performed because of
+% inequality of image contrast for ASL & M0, and because they usually
+% are already in decent registration.
+
+if ~strcmp(x.M0,'UseControlAsM0')
+    % only register if the M0 and mean control are not identical
+    % Which they are when there is no separate M0, but ASL was
+    % acquired without background suppression & the mean control image
+    % is used as M0 image
+
+    if  xASL_exist(x.P.Path_mean_control,'file')
+        refPath       = x.P.Path_mean_control;
+    else % register M0 to T1w
+        PathMNIMask   = fullfile(x.D.MapsSPMmodifiedDir, 'brainmask.nii'); % MNI brainmask
+        xASL_im_SkullStrip(x.P.Path_T1, PathMNIMask, x);
+
+        refPath       = x.P.Path_mask_T1;
+        xASL_spm_smooth(refPath, [5 5 5],refPath);
+    end
+
+
+
+    %% 1A) Clip, mask & equalize contrast & intensity range
+    %     xASL_im_EqualizeContrastImages( x.P.Path_rrM0, refIM );
+
+    % First do the center of mass alignment
+    if x.bAutoACPC
+        xASL_im_CenterOfMass(x.P.Path_rM0, {x.P.Path_M0} );
+    end
+
+    %% 2B) remove biasfields
+    xASL_spm_BiasfieldCorrection(x.P.Path_rM0, x.SPMDIR, x.Quality, [], x.P.Path_rrM0);
+    xASL_spm_BiasfieldCorrection(refPath, x.SPMDIR, x.Quality, [], refPath);
+
+
+    %% 3C) Rigid-body registration
+    xASL_spm_coreg(refPath, x.P.Path_rrM0, {x.P.Path_M0;x.P.Path_rM0}, x);
+    xASL_delete(x.P.Path_mask_T1);
+    xASL_delete(x.P.Path_rrM0);
+end
+
+
+%% -----------------------------------------------------------------------------------------------
+%% 2) Quantify M0 (correction scale slope & incomplete T1 recovery)
+M0_im = xASL_quant_M0(xASL_io_Nifti2Im(x.P.Path_rM0), x);
+
+
+
+%% -----------------------------------------------------------------------------------------------
+%% 3A) Conventional M0 masking & minor smoothing (doesnt work with smooth ASL images)
+if x.M0_conventionalProcessing
+    % Conventional M0 processing, should be performed in native space
+    % We
+    % 1) perform the processing & masking in native space
+    % 2) interpolate to standard space & mask again in standard space
+    % Since this conventional method works with voxel-wise contrast differences, it needs to be
+    % performed in native space. The transformation to standard space may play with the masking,
+    % hence why we do the masking in both spaces
+
+    fprintf('%s\n','Running conventional M0 processing method');
+
+    xASL_spm_reslice( x.P.Path_ASL4D, x.P.Path_rM0, [], [], x.Quality, x.P.Path_rM0, 1 ); % make sure M0 is in ASL space
+    M0_nii          = xASL_io_ReadNifti( x.P.Path_rM0);
+    x.VoxelSize     = M0_nii.hdr.pixdim(2:4);
+    M0_im           = xASL_im_ProcessM0Conventional(M0_im, x); % also masks in native space
+    % save image & mask
+    xASL_io_SaveNifti(x.P.Path_rM0, x.P.Path_rM0, M0_im,[],0);
+    xASL_io_SaveNifti(x.P.Path_rM0, x.P.Path_mask_M0, M0_im>0,8,0);
+
+    % also transform to standard space
+    InList          = {x.P.Path_rM0;x.P.Path_mask_M0};
+    OutList         = {x.P.Pop_Path_M0;x.P.Pop_Path_mask_M0};
+    xASL_spm_deformations(x,InList,OutList,1,[],x.P.Path_mean_PWI_Clipped_sn_mat,x.P.Path_y_ASL);
+
+    % mask in standard space (native space masking already done)
+    maskIM          = xASL_io_Nifti2Im(x.P.Pop_Path_M0) .* (xASL_io_Nifti2Im(x.P.Pop_Path_mask_M0)==1);
+    xASL_io_SaveNifti(x.P.Pop_Path_M0,x.P.Pop_Path_M0,maskIM,8,0);
+
+    % delete temporary files
+    xASL_delete(x.P.Path_mask_M0);
+    xASL_delete(x.P.Pop_Path_mask_M0);
+
+    % Copy for visualization
+    xASL_Copy(x.P.Pop_Path_M0,x.P.Pop_Path_noSmooth_M0,1);
+
+%% -----------------------------------------------------------------------------------------------
+%% 3B) New ExploreASL strategy for M0 masking & smoothing
+%   Currently, this is performed in standard space, but this can be
+%   optimized by running this in native space
+else
+    % Save image
+    xASL_io_SaveNifti(x.P.Path_rM0,x.P.Path_rM0,M0_im,[],0);
+    % Transform to standard space
+    xASL_spm_deformations(x,x.P.Path_rM0,x.P.Pop_Path_M0,1,[],x.P.Path_mean_PWI_Clipped_sn_mat,x.P.Path_y_ASL);
+    % Copy for visualization (before smoothing/masking)
+    xASL_Copy(x.P.Pop_Path_M0,x.P.Pop_Path_noSmooth_M0,1);
+
+    fprintf('%s\n','Running new M0 processing method');
+    % run the new M0 image processing
+    xASL_io_SaveNifti( x.P.Pop_Path_M0, x.P.Pop_Path_M0, xASL_im_M0ErodeSmoothExtrapolate( xASL_io_Nifti2Im(x.P.Pop_Path_M0), x ));
+    % Copy M0 biasfield to native space for native space quantification
+    xASL_spm_deformations(x,x.P.Pop_Path_M0,x.P.Path_rM0,1,x.P.Path_PWI,x.P.Path_mean_PWI_Clipped_sn_mat,x.P.Path_y_ASL);
+    % this last step also ensures that x.P.Path_rM0 is resliced to x.P.Path_PWI
+end
+
+%%
+xASL_adm_CheckFileCount(x.D.PopDir, [x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID '.nii'], 1);
+
+
+end

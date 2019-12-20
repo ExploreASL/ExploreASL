@@ -1,0 +1,1 @@
+Maps/templates in this folder are created specifically by and for ExploreASL, mentioned in the ExploreASL paper, and distributed under the ExploreASL license, meaning they can be freely used for non-commercial purposes only.

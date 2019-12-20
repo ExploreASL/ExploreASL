@@ -1,0 +1,5 @@
+# ignore macOS files:
+.DS_Store
+# ignore temporary Matlab files:
+*.asv
+# ignore WADQC/QCDC files (EPAD):

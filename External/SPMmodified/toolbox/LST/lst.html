@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Statistische Beratung, Analysen &amp; Modellierung | Paul Schmidt – freiberuflicher Statistiker</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->		
+		<noscript>
+			<link rel="stylesheet" href="css/skel.css" />
+			<link rel="stylesheet" href="css/style.css" />
+			<link rel="stylesheet" href="css/style-wide.css" />
+			<link rel="stylesheet" href="css/style-normal.css" />
+		</noscript>
+		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->                
+        
+	</head>
+	<body>
+		  <section id="intro_lst" class="main style1 light fullscreen">
+				<div class="content container 75%">
+					<header>
+						<h2>LST</h2>
+                        <h3>A lesion segmentation<br>tool for SPM</h3>
+					</header>                    
+				</div>
+			</section>
+           
+            <!-- About Content -->
+			<section id="LST_about" class="main style2 light">            
+				<div id="LST_about_anchor" class="content container 75%">
+                <!--<div class="content box left">-->
+					<header>
+						<h4>About</h4>
+					</header>
+                    <p>The toolbox "LST: Lesion Segmentation Tool" is an open source toolbox for SPM that is able to segment T2 hyperintense lesions in FLAIR images. Originally developed for the segmentation of MS lesions it has has also been proven to be usefull for the segmentation of lesions in other diseases, like diabetes or Alzheimer's.</p>
+                    <p>There are currently two algorithms for lesion segmentation implemented. The first, a <a href="#LST_LGA_anchor">lesion growth algorithm (LGA)</a>, requires a T1 image besides the FLAIR image. The second algorithm, a <a href="#LST_PMBC_anchor">lesion prediction algorithm (LPA)</a>, requires a FLAIR image only but is still in beta mode. As a third highlight a pipeline for the <a href="#LST_long_anchor">longitudinal segmentation</a> is implemented. In addition, the toolbox is able to <a href="#LST_filling_anchor">fill lesions</a> in any image modility. We hope that these algorithms will be able to contribute to current research in MS and other disciplines.</p>
+                    <p>The toolbox was developed by a coorperation of the following organizations: Morphometry Group, Department of Neurology, Technische Universität München (TUM), Munich, Department of Statistics, Ludwig-Maximilians-University, Munich, Germany, and Structural Brain Mapping Group, Departments of Neurology and Psychiatry, Friedrich-Schiller-University, Jena, Germany. Maintainer of the toolbox is Paul Schmidt.</p>
+				</div>				
+			</section>
+        
+            <section id="LST_LGA" class="main style2 light">            			
+                <div id="LST_LGA_anchor" class="content box left" style="color: #444; background-color: #fff; background: transparent;">
+					<header>
+						<h4>Lesion growth algorithm (LGA)</h4>
+					</header>
+                    <p>Heart of the toolbox is the lesion growth algorithm (LGA, Schmidt et al, 2012). This algorithm is able to segment T2-hyperintense lesions from a combination of T1 and FLAIR images. It first segments the T1 image into the three main tissue classes (CSF, GM and WM). This information is then combined with the FLAIR intensities in order to calculate lesion belief maps. By thresholding these maps by a pre-chosen initial threshold (kappa) an initial binary lesion map is obtained which is subsequently grown along voxels that appear hyperintense in the FLAIR image. The result is a lesion probability map.</p>
+                    <p>Since the release of version 2.0.1 the segmentation of the T1 image is obtained by standard SPM routines, thus the VBM toolbox is no longer required.</p>
+                    <p>A disadvantage of this unsupervised algorithm is the choice of the initial threshold. Different kappa-values yield different segmentation results. However, in order to make the process of finding the optimal threshold as easy as possible we implemented a routine that can be used if reference segmentations for a few images are available. Otherwise, visual inspection of the segmentations for a set of kappa-values should be sufficent as well.</p>
+				</div>				
+			</section>
+        
+            <section id="LST_PMBC" class="main style2 right light">            			
+                <div id="LST_PMBC_anchor" class="content box right" style="color: #444; background-color: #fff; background: rgba(255, 255, 255, 0.9);">
+					<header>
+						<h4>Lesion prediction algorithm (LPA)</h4>
+					</header>
+                    <p>As an alternative to the LGA the toolbox provides a further lesion segmentation algorithm, the lesion prediction algorithm (LPA). Its advantages over the LGA is that (a) it only requires a FLAIR image and (b) no parameters need to be set by the user. The method behind this algorithm is currently unpublished so we still treat it as a beta version. However, it is faster and in some regions more sensitive than the LGA, so at least give it a try!</p>
+                    <p>The LPA was trained by a logistic regression model with the data of ?? MS patients with severe lesion patterns. Binary lesion maps of these patients were used as response values. As covariates a similar lesion belief map as for the LGA was used as well as a spatial covariate that takes into account voxel specific changes in lesion probability. Such a high dimensional model cannot be estimated by standard procedures, so we used <a href="">a novel approach</a> for fitting large-scale regression models. The parameters of this model fit are then used to segment lesions in new images by providing an estimate for the lesion probability for each voxel.</p>
+                    <p>We believe that this algorithm will be useful for images obtained on different scanners. However, since this algorithm is quite new we would appreciate any feedback on the quality of the segmentation.</p>
+				</div>
+			</section>
+        
+            <section id="LST_long" class="main style2 light">            			
+                <div id="LST_long_anchor" class="content box left" style="color: #444; background-color: #fff; background: transparent;">
+                    <header>
+						<h4>Longitudinal pipeline</h4>
+					</header>
+                    <p>We implemented a longituidinal pipeline that is able to compare lesion probability maps of multiple time points. This tool labels significant changes that may have been occured between two time points. </p>
+                    <p>The pipeline proceeds by comparing all consecutive time points in an iterative manner. It decides if changes in lesion structure are significant or due to natural variations of the FLAIR signal. Non-significant changes are labeled as lesions in both probability maps, thus, probability lesion maps are corrected within this procedure and may differ from the ones that served as input. As a final result, lesion change labels are produced for all consecutive time points. In these images the three possible cases decrease, no change and increase are labeled by the numbers 1, 2, and 3, repsectively.</p>
+                    <p>In addition, a lesion change plot is constructed. This plot shows the lesion volumes for both time points of all segmented lesions. In this way it is easy to recognize how the lesion structure has been changed, i.e. if the change occured by the appearence of new lesions, the disappearence of old lesions, by the change of already existing lesions, or a combination of these possibilities. </p>
+				</div>
+			</section>
+        
+            <section id="LST_filling" class="main style2 right light">            			
+                <div id="LST_filling_anchor" class="content box right" style="color: #444; background-color: #fff; background: rgba(255, 255, 255, 0.9);">
+				<header>
+						<h4>Lesion filling</h4>
+					</header>
+                    <p>Once lesion probability maps have been calculated they can be used to fill lesions in MR images. The current filling algorithm uses local information instead of global intensity distributions. This allows accurate filling of lesions even in images that are currupted by Bias field.</p>
+                    <header>
+						<h4>HTML reports</h4>
+					</header>
+                    <p>All main functions in LST are able to automatically produce HTML reports. Although it needs a while to produce these reports we recommend it as it makes it easier to check the results. Reports of different subjects or analyzes can easily be merged.</p>
+				</div>
+			</section>        
+                        
+
+	</body>
+</html>

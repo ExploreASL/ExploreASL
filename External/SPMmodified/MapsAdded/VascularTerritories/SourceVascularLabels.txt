@@ -1,0 +1,12 @@
+All these labels are based on Tatu et al., Neurology 1998 & re-released under CC4.0 (free to use for all purposes)
+
+CortVascTerritoriesTatu.nii: original labels from Tatu et al
+
+ATTbasedFlowTerritories.nii: 
+Flow territories adapted by PreDIVA manuscript, as deposited online at figshare.com (doi:http://dx.doi.org/10.6084/m9.figshare.1488674)
+https://figshare.com/articles/ATT_based_flow_territories/1488674
+https://creativecommons.org/licenses/by/4.0/ (CC BY 4.0 license)
+
+LabelTerritories.nii: created by HJMM Mutsaerts based on Tatu et al.
+
+TatuICA_PCA.nii: anterior & posterior regions based on Tatu et al.
