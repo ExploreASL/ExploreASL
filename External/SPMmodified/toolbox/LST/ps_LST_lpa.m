@@ -511,33 +511,35 @@ for i = 1:numel(Vf2)
     WMH_SEGMpath    = fullfile(Fpath,'rWMH_SEGM.nii');
     PriorPath       = fullfile(Fpath,'atlas_wm.nii');
 
-    if  xASL_exist(WMH_SEGMpath,'file')
-        prob        = xASL_io_Nifti2Im(WMH_SEGMpath);
-        % Convert NaNs to zeros & positive & cutoff extremely low probabilities
-        prob(~isfinite(prob))   = 0;
-        prob(prob<0.001)        = 0;
-        prob(prob>1)            = 1;
-
-        % Multiply with MNI WM prior probability
-        PriorWM     = fullfile(spm('dir'),'toolbox','LST','atlas_wm.nii');
-        if ~exist(PriorPath,'file')
-            ExistPrior  = 0;
-            xASL_spm_deformations([],PriorWM,PriorPath,1,[],[],fullfile(Fpath,tmpFolder,'iy_rFLAIR.nii'));
-        else
-            ExistPrior  = 1;
-        end
-
-        PriorIM                 = xASL_io_Nifti2Im(PriorPath);
-        PriorIM(PriorIM>0.5)    = 1;
-        PriorIM(PriorIM<0.5)    = PriorIM(PriorIM<0.5).^0.33;
-
-        prob                    = PriorIM.*prob;
-
-        if ~ExistPrior
-            xASL_delete(PriorPath);
-        end
-    end
-
+	bFunction = exist('xASL_spm_deformations');
+	if isdeployed || (bFunction == 2) || (bFunction == 5)
+		if  xASL_exist(WMH_SEGMpath,'file')
+			prob        = xASL_io_Nifti2Im(WMH_SEGMpath);
+			% Convert NaNs to zeros & positive & cutoff extremely low probabilities
+			prob(~isfinite(prob))   = 0;
+			prob(prob<0.001)        = 0;
+			prob(prob>1)            = 1;
+			
+			% Multiply with MNI WM prior probability
+			PriorWM     = fullfile(spm('dir'),'toolbox','LST','atlas_wm.nii');
+			if ~exist(PriorPath,'file')
+				ExistPrior  = 0;
+				xASL_spm_deformations([],PriorWM,PriorPath,1,[],[],fullfile(Fpath,tmpFolder,'iy_rFLAIR.nii'));
+			else
+				ExistPrior  = 1;
+			end
+			
+			PriorIM                 = xASL_io_Nifti2Im(PriorPath);
+			PriorIM(PriorIM>0.5)    = 1;
+			PriorIM(PriorIM<0.5)    = PriorIM(PriorIM<0.5).^0.33;
+			
+			prob                    = PriorIM.*prob;
+			
+			if ~ExistPrior
+				xASL_delete(PriorPath);
+			end
+		end
+	end
 
     %% Clean up
     %% --------
