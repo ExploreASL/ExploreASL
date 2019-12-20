@@ -130,13 +130,14 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel      = 0;   % don't save
 matlabbatch{1}.spm.tools.cat.estwrite.output.jacobian.warped= 0;   % don't save Jacobians
 matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
-matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.native      = 1;   % save c3T1 in native space
+matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.native      = 0;   % save c3T1 in native space
 matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.mod         = 0;   % don't save modulation
 matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel      = 0;
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
 spm_jobman('run',matlabbatch);
 
 % Test deformations after CAT12
+xASL_Copy(fullfile(TestDirDest,'mri','y_T1.nii'), fullfile(TestDirDest,'y_T1.nii'));
 xASL_spm_deformations(x, fullfile(TestDirDest,'rT1.nii'), fullfile(TestDirDest,'rsT1.nii'), 0);
 
 % Remove temporary derivatives
