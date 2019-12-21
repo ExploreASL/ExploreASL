@@ -1,44 +1,41 @@
-function [EddyQC] = xASL_qc_dwi_EddyMotion (subj_directory)
-% xASL_qc_dwi_Eddy compute QC parameters derived by Eddy Correction in Diffusion weighted images 
+function [EddyQC] = xQC_dwi_EddyMotion (subj_directory)
+% xQC_dwi_Eddy compute QC parameters derived by Eddy Correction in Diffusion weighted images 
 %
 % FORMAT: [EddyQC] = xASL_qc_dwi_EddyMotion (dwi_directory)
 %
 % INPUT:
-%   subjdir  	     - Path to the subject directory 
-%                          
-%  
+%   subj_directory                            - Path to the subject directory 
 %
 % OUTPUT:
-% EddyQC.motion.Average_x_translation_mm      - Average Volume to Volume motion on the X asxis (in mm)                                                   
-% EddyQC.motion.Average_y_translation_mm      - Average Volume to Volume motion on the Y asxis (in mm)
-% EddyQC.motion.Average_z_translation_mm      - Average Volume to Volume motion on the Z asxis (in mm)
-% EddyQC.motion.Average_x_rotation_deg        - Average Volume to Volume % rotation on the X axis (in degree)
-% EddyQC.motion.Average_y_rotation_deg        - Average Volume to Volume % rotation on the Y axis (in degree)
-% EddyQC.motion.Average_z_rotation_deg        - Average Volume to Volume % rotation on the X axis (in degree)
+% EddyQC.motion.Average_x_translation_mm      - Average Volume to Volume motion on the X axis (in mm)                                                   
+% EddyQC.motion.Average_y_translation_mm      - Average Volume to Volume motion on the Y axis (in mm)
+% EddyQC.motion.Average_z_translation_mm      - Average Volume to Volume motion on the Z axis (in mm)
+% EddyQC.motion.Average_x_rotation_deg        - Average Volume to Volume % rotation on the X axis (in degrees)
+% EddyQC.motion.Average_y_rotation_deg        - Average Volume to Volume % rotation on the Y axis (in degrees)
+% EddyQC.motion.Average_z_rotation_deg        - Average Volume to Volume % rotation on the X axis (in degrees)
 % EddyQC.motion.Average_abs_motion_mm         - Average motion of each volume compared to the first 
 % EddyQC.motion.Average_rel_motion_mm         - Average motion of each volume compared to the previous
-% EddyQC.Outlier_Perc                         - Percentage of outliers slices as computed by FSL Eddy Current
+% EddyQC.Outlier_Perc                         - Percentage of outlier slices as computed by FSL Eddy Current
 % EddyQC.Induced_Distortion                   - Standard deviation of EddyCurrent induced distortion 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Description : This function computes  the QC parameters derived from the
-% FSL Eddy Current correction
-%
-% 
+% Description : This function computes QC parameters from the FSL Eddy
+%               Current correction parameters
+%               
 % EXAMPLE: EddyQC = xASL_qc_dwi_Eddy ('/examplepath/DWIfolder/');
 
-%set DWI directory
+% Set DWI directory
 dwi_directory = fullfile(subj_directory, 'dwi');
 
-%%Set Paths to NIfTIs and load images
+%% Set Paths to NIfTIs and load images
 C1Path= fullfile (subj_directory, 'c1T1.nii');
 C2Path= fullfile (subj_directory, 'c2T1.nii');
 C3Path= fullfile (subj_directory, 'c3T1.nii');
 TopUp_Path = fullfile(dwi_directory, 'TopUp_fieldcoef.nii');
 
 
-GMim = (xASL_io_Nifti2Im(C1Path)>0.5);
-WMim = (xASL_io_Nifti2Im(C2Path)>0.5);
-CSFim = (xASL_io_Nifti2Im(C3Path)>0.5);
+GMim = xASL_io_Nifti2Im(C1Path)>0.5;
+WMim = xASL_io_Nifti2Im(C2Path)>0.5;
+CSFim = xASL_io_Nifti2Im(C3Path)>0.5;
 TopUp = xASL_io_Nifti2Im(TopUp_Path);
 
 % Create Brain Mask
@@ -54,9 +51,9 @@ Outlier_file = fullfile(dwi_directory, 'Eddy.eddy_outlier_map');
 %because of the computation intensivity of this scheme.
 %Motion_over_time = fullfile(dwi_directory,'Eddy.eddy_movement_over_time' )
 
-% Reslice Brain Mask into dwi space and extract brain from topup for Eddy
-% Current Susceptibility induced distortion computation 
-xASL_spm_reslice(TopUp_Path, fullfile(dwi_directory, 'tmp_brainmask.nii'),[], [], [], fullfile(dwi_directory, 'tmp_brainmask_resliced'), 0)
+% Reslice Brain Mask into dwi space and extract topup for Eddy
+% Current Susceptibility induced distortion parameters for the whole brain
+xASL_spm_reslice(TopUp_Path, fullfile(dwi_directory, 'tmp_brainmask.nii'),[], [], [], fullfile(dwi_directory, 'tmp_brainmask_resliced'), 0);
 BrainMask = xASL_io_Nifti2Im(fullfile(dwi_directory, 'tmp_brainmask_resliced.nii'));
 BrainMask = BrainMask>0.5; 
 
@@ -91,9 +88,5 @@ EddyQC.Outlier_Perc = (xASL_stat_SumNan(Outlier_count(:))/numel(Outlier_count))*
 EddyQC.Induced_Distortion = xASL_stat_MeanNan(xASL_stat_StdNan(Induced_distortion_coeff));
 EddyQC.Susc_Induced_Distortion = xASL_stat_StdNan(TopUpBrain);
 
+
 end
-
-
-
-
-
