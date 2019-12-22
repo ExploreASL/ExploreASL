@@ -32,6 +32,16 @@ function xASL_wrp_ProcessM0(x)
 %     without an M0, the MeanControl image is before saved as M0, and will
 %     be processed here as well.
 %
+%     Note that any voxel-size differences between M0 and ASL are allowed
+%     here: step 0B below rescales the PD inside an M0 voxel to the same as
+%     the ASL resolution (assuming a voxel with half volume contains half
+%     the amount of protons). The M0 is further processed in standard
+%     space, and reduced to a biasfield. For the quantification in standard
+%     space, the PWI and M0 are now by definition in the same space.
+%     Also, the standard space M0 biasfield is resampled to the native PWI
+%     space (at the end of step 3B), ensuring that both are also in the
+%     same native space.
+%
 % EXAMPLE: xASL_wrp_ProcessM0(x);
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
@@ -66,7 +76,7 @@ elseif x.M0_conventionalProcessing == 1 && strcmp(x.readout_dim,'3D')
        warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end
 
-%% Acquire voxel sizes to scale PD between ASL & M0
+%% 0B) Acquire voxel sizes to scale PD between ASL & M0
 if x.ApplyQuantification(2)
     M0nii       = xASL_io_ReadNifti(x.P.Path_M0);
     M0size      = prod(M0nii.hdr.pixdim(2:4));
