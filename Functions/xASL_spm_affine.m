@@ -1,4 +1,4 @@
-function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef)
+function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, OtherList)
 % ExploreASL wrapper for SPM affine registration function (a.k.a. 'old normalize' but without DCT)
 %
 % FORMAT: xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef)
@@ -28,10 +28,14 @@ function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef)
 % 2015-2019 HJ
    
 % Check parameters
+if nargin<5
+    OtherList = '';
+else
+    OtherList = xASL_adm_OtherListSPM(OtherList);
+end
 if nargin < 4
 	error('xASL_spm_affine: Requires 4 input parameters.');
 end
-
 if ~xASL_exist(srcPath) || ~xASL_exist(refPath)
 	error('xASL_spm_affine: Cannot find input images.');
 end
@@ -59,5 +63,27 @@ fprintf('\n%s\n','--------------------------------------------------------------
 fprintf('%s\n',['Affine registering ' srcPath ' to ' refPath]);   
 
 spm_jobman('run',matlabbatch);
+
+%% Apply to NIfTIs
+% If we apply this to NIfTIs, we remove the transformation,
+% to keep this transparant. This is done by providing OtherList,
+% even if we want to apply it to the srcPath
+% If we don't provide an otherlist, this estimated affine transformation
+% is only saved as _sn.mat, not applied
+
+if ~isempty(OtherList)
+    [Fpath, Ffile] = xASL_fileparts(srcPath);
+    PathMat = fullfile(Fpath, [Ffile '_sn.mat']);
+    SnMat = load(PathMat);
+    Affine = (SnMat.VG.mat/SnMat.Affine)/SnMat.VF.mat;
+
+    for iList=1:length(OtherList)
+        nii = [];
+        nii = xASL_io_ReadNifti(OtherList{iList});
+        nii.mat = Affine*nii.mat;
+        create(nii);
+    end
+    xASL_delete(PathMat);
+end
 
 end
