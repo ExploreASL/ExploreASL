@@ -1,9 +1,19 @@
-function xASL_im_CenterOfMass(niiPath,OtherList)
+function xASL_im_CenterOfMass(PathNIfTI,OtherList)
 %xASL_im_CenterOfMass Determines center of mass and applies it to the NIfTI header orientation matrix
 
 %% Admin
 
-nii = xASL_io_ReadNifti(niiPath);
+if nargin<2 || isempty(OtherList)
+    OtherList{1} = PathNIfTI;
+else
+    OtherList = xASL_adm_OtherListSPM(OtherList);
+    OtherList{end+1} = PathNIfTI;
+    % We only apply the transformation to the OtherList,
+    % So the last of OtherList is PathNIfTI
+end
+
+
+nii = xASL_io_ReadNifti(PathNIfTI);
 IM = single(nii.dat(:,:,:,1)).^0.5; % restore contrast
 % & use first image!
 % nii.mat = nii.mat0; % restore original orientation
@@ -25,11 +35,6 @@ if sum(isfinite(nii.mat(:)))<numel(nii.mat(:))
 end
 
 
-if ~exist('OtherList','var')
-    OtherList{1} = niiPath;
-else
-    OtherList{end+1} = niiPath;
-end
 
 fprintf('%s','Automatic alignment with center of mass to XYZ:');
 

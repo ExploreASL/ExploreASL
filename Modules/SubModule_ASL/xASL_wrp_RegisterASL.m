@@ -153,11 +153,12 @@ xASL_io_SaveNifti(x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped, tIM, [],
 % PWI-based registration can be preferable over EPI-based registration if
 % background suppression and/or other 3D readout techniques are used.
 
-
+% Here we first create a mask
 % First check the initial alignment, otherwise first register with template
 xASL_spm_reslice(Mask_Native, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_rmean_PWI_Clipped, 1 );
 MaskASL     = xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(x.P.Path_rmean_PWI_Clipped));
 MaskTemplate= logical(xASL_io_Nifti2Im(Mask_Native));
+xASL_delete(x.P.Path_rmean_PWI_Clipped);
 
 % compute dice coefficient
 imA         = MaskASL;
@@ -165,7 +166,6 @@ imB         = MaskTemplate;
 DiceCoeff   = xASL_im_ComputeDice(imA,imB);
 
 
-xASL_delete(x.P.Path_rmean_PWI_Clipped);
 % DiceCoeff should be around 0.5-0.6 after all registration, depending on
 % correct mask/image comparison
 
@@ -207,13 +207,15 @@ else
     nIT                             = 2; % perform 2 PWI registrations
 end
 
-if nIT>0 && x.Quality
+if ~x.Quality && nIT>1
+    nIT = 1; % speed up for low quality
+end
 
+if nIT>0
     xASL_im_CreatePseudoCBF(x,spatCoVit(1));
     % keep this same for all sequences, 3D spiral will simply have a lower spatial CoV because of smoothness
 
     for iT=1:nIT
-
         OtherList{4,1}                  = x.P.Path_mean_control; % rest of otherlist has been defined above
         xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
 
@@ -223,10 +225,9 @@ if nIT>0 && x.Quality
     end
 
     % If quality is sufficiently high, we will perform an additional uniform non-linear registration
-    if  spatCoVit(end)<0.4
-
+    if spatCoVit(end)<0.4 && x.Quality
         % perform affine registration
-        xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5);
+        xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5, OtherList);
     end
 end
 
