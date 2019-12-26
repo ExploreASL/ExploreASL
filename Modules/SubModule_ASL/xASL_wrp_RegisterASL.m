@@ -34,7 +34,14 @@ function xASL_wrp_RegisterASL(x)
 % 1)    Create template images in native space
 % 2)    Optimizes ASL image contrast for registration
 % 3)    Registration ASL -> anat
-
+%         x.bAffineRegistration - boolean to specify if the ASL-T1w rigid-body
+%                                 registration is followed up by an affine
+%                                 registration (OPTIONAL, DEFAULT = 2)
+%                          - 0 = affine registration disabled
+%                          - 1 = affine registration enabled
+%                          - 2 = affine registration automatically chosen based on
+%                                spatial CoV of PWI
+%
 % EXAMPLE: xASL_wrp_RegisterASL(x);
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
@@ -175,7 +182,6 @@ OtherList{end+1,1} = x.P.Path_PWI;
 OtherList{end+1,1} = x.P.Path_M0;
 OtherList{end+1,1} = x.P.Path_ASL4D_RevPE;
 
-
 if DiceCoeff(1)<0.4 && x.Quality && xASL_exist(raw_Native,'file')
     fprintf('%s\n','Poor initial registration, first registering with template');
 
@@ -224,15 +230,17 @@ if nIT>0
         spatCoVit(iT+1)                 = spatCoV;
     end
 
-    % If quality is sufficiently high, we will perform an additional uniform non-linear registration
-    if spatCoVit(end)<0.4 && x.Quality
-        % perform affine registration
+    %% Affine registration
+    if isfield(x,'bAffineRegistration') && x.bAffineRegistration<2
+        bAffineRegistration = x.bAffineRegistration;
+    else % if not set, default here is to only do affine regitration for high quality processing & low spatial CoV
+        bAffineRegistration = x.Quality && spatCoVit(end)<0.4;
+    end
+
+    if bAffineRegistration % perform affine registration
         xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5, OtherList);
     end
 end
-
-
-
 
 
 %% ----------------------------------------------------------------------------------------

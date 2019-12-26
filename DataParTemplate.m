@@ -177,6 +177,13 @@ function x = DataParTemplate(x)
 %                  - 1 = run SPM12
 %                  - 0 = run CAT12
 % x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
+% x.bAffineRegistration - boolean to specify if the ASL-T1w rigid-body
+%                         registration is followed up by an affine
+%                         registration (OPTIONAL, DEFAULT = 2)
+%                  - 0 = affine registration disabled
+%                  - 1 = affine registration enabled
+%                  - 2 = affine registration automatically chosen based on
+%                        spatial CoV of PWI
 
 x.name = ExampleDataSet;
 x.subject_regexp = '^Sub-\d{3}$';
