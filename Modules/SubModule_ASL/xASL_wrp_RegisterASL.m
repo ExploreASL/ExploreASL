@@ -94,13 +94,7 @@ raw_Native          = fullfile(x.SESSIONDIR,'RawTemplate.nii');
 if      strcmp(x.Sequence,'2D_EPI') && ~isempty(regexp(x.Vendor,'Philips'))
         Mean_MNI            = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_CBF.nii');
         Mask_MNI            = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
-
-        if  x.Q.BackGrSupprPulses==0
-            % No background suppression
-            raw_MNI             = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii');
-        else % background suppression
-            raw_MNI             = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_CBF.nii');
-        end
+        raw_MNI             = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii');
 
 elseif  strcmp(x.Sequence,'2D_EPI') && ~isempty(regexp(x.Vendor,'Siemens'))
         Mean_MNI            = fullfile(x.D.TemplateDir,'Siemens_2DEPI_PCASL_noBsup_CBF.nii');
