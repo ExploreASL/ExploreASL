@@ -160,7 +160,7 @@ if ~x.mutex.HasState(StateName{4}) && ~x.mutex.HasState(StateName{3})
     for iD=1:length(DelList)
         xASL_delete(DelList{iD});
     end
-    xASL_adm_DeleteFileList(x.SESSIONDIR, '^(rp_ASL4D|y_ASL|ATT_Bias|xASL_qc|Mask_Template|RawTemplate|TopUp|B0|Field|Unwarped|VascularArtifact|...Mean_CBF_Template|despiked_ASL4D).*$',0,[0 Inf]);
+    xASL_adm_DeleteFileList(x.SESSIONDIR, '^(rM0|PWI4D|qCBF4D|MaskVascular|CBF|rp_ASL4D|y_ASL|ATT_Bias|xASL_qc|Mask_Template|RawTemplate|TopUp|B0|Field|Unwarped|VascularArtifact|...Mean_CBF_Template|despiked_ASL4D).*$',0,[0 Inf]);
     [Fpath1, Ffile1] = xASL_fileparts(x.P.Path_ASL4D_ORI);
     [Fpath2, Ffile2] = xASL_fileparts(x.P.Path_ASL4D);
     ExtOri = {'.nii' '.json' '.mat' '_sn.mat' '_parms.mat'};
