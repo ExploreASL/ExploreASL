@@ -161,45 +161,45 @@ MaskASL     = xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(x.P.Path_rmean_PWI_Clippe
 MaskTemplate= logical(xASL_io_Nifti2Im(Mask_Native));
 xASL_delete(x.P.Path_rmean_PWI_Clipped);
 
-% compute dice coefficient
+% compute dice coefficient:
+% DiceCoeff should be around 0.5-0.6 after all registration, depending on
+% correct mask/image comparison
 imA         = MaskASL;
 imB         = MaskTemplate;
 DiceCoeff   = xASL_im_ComputeDice(imA,imB);
 
-
-% DiceCoeff should be around 0.5-0.6 after all registration, depending on
-% correct mask/image comparison
-
+% Define OtherList for registration
 OtherList = '';
 OtherList{1,1} = x.P.Path_despiked_ASL4D;
 OtherList{end+1,1} = x.P.Path_PWI;
 OtherList{end+1,1} = x.P.Path_M0;
 OtherList{end+1,1} = x.P.Path_ASL4D_RevPE;
 
-if DiceCoeff(1)<0.4 && x.Quality && xASL_exist(raw_Native,'file')
+% 0) If poor initial realignment, do a first fast registration
+if DiceCoeff(1)<0.4 && x.Quality
     fprintf('%s\n','Poor initial registration, first registering with template');
 
     OtherList{end+1,1} = x.P.Path_mean_control;
 
-    xASL_spm_coreg(raw_Native, x.P.Path_mean_PWI_Clipped, OtherList, x, [6 3]);
+    xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x, [6 3]);
 end
 
+% 1) Initial mean control registrations, if available
 if xASL_exist(x.P.Path_mean_control,'file')
-
     OtherList{4,1} = x.P.Path_mean_PWI_Clipped;
 
     if x.Quality
         xASL_spm_coreg(raw_Native, x.P.Path_mean_control, OtherList, x);
     else
-        xASL_spm_coreg(raw_Native, x.P.Path_mean_control, OtherList, x,2);  % low quality registration
+        xASL_spm_coreg(raw_Native, x.P.Path_mean_control, OtherList, x, 2);  % low quality registration
     end
 
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
-    if  spatCoVit>0.6 && x.bPWIRegistration
-        nIT                         = 0;
+    if spatCoVit>0.6 && x.bPWIRegistration
+        nIT = 0;
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
     else
-        nIT                         = 1; % perform 1 PWI registration, first was with raw image
+        nIT = 1; % perform 1 PWI registration, first was with raw image
     end
 
 else
@@ -211,6 +211,8 @@ if ~x.Quality && nIT>1
     nIT = 1; % speed up for low quality
 end
 
+% 2) Repeat CBF registrations, with iteratively better estimate of the
+% vascular/tissue perfusion ratio of the template
 if nIT>0
     xASL_im_CreatePseudoCBF(x,spatCoVit(1));
     % keep this same for all sequences, 3D spiral will simply have a lower spatial CoV because of smoothness
