@@ -79,11 +79,34 @@ if ~isempty(OtherList)
 
     for iList=1:length(OtherList)
         nii = [];
-        nii = xASL_io_ReadNifti(OtherList{iList});
-        nii.mat = Affine*nii.mat;
-        create(nii);
+        
+        % find comma
+        StartComma = regexp(OtherList{iList},',');
+        if ~isempty(StartComma)
+            Index4D = xASL_str2num(OtherList{iList}(StartComma+1:end));
+            OtherList{iList} = OtherList{iList}(1:StartComma-1);
+            if Index4D==1
+                % apply affine transformation to NIfTI file
+                nii = xASL_io_ReadNifti(OtherList{iList});
+                nii.mat = Affine*nii.mat;
+                create(nii);
+            else
+                % apply affine transformation to motion orientation sidecar
+                [Fpath, Ffile] = xASL_fileparts(OtherList{iList});
+                PathMotion = fullfile(Fpath, [Ffile '.mat']);
+                Mat = load(PathMotion,'-mat');
+                mat = Mat.mat;
+                mat(:,:,Index4D) = Affine*mat(:,:,Index4D);
+                save(PathMotion,'mat');
+            end
+        else % apply affine transformation to NIfTI file
+            nii = xASL_io_ReadNifti(OtherList{iList});
+            nii.mat = Affine*nii.mat;
+            create(nii);
+        end
     end
     xASL_delete(PathMat);
 end
+
 
 end

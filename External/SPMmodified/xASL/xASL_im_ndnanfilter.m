@@ -119,7 +119,8 @@ for k=1:3
 					error(['xASL_im_ndnanfilter: Unknown filter type : ' filterType]);
 			end
 		end
-	end
+    end
+    fil{k} = double(fil{k});
 end
 
 % If no input data but two outputs then generates the window only:

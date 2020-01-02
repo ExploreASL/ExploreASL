@@ -33,7 +33,7 @@ if x.ResolutionEstimation
 
 else
     %% 3 Determine sequence smoothness, using predefined calculations
-    x.S.optimFWHM_Res_mm = xASL_init_DefaultEffectiveResolution(x.P.Path_PWI, x);
+    x.S.optimFWHM_Res_mm = xASL_init_DefaultEffectiveResolution(x.P.Path_ASL4D, x);
 
 end
 
