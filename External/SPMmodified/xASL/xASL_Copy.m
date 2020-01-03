@@ -64,13 +64,13 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
     %% Start copying
     
     % Checks if the destination file exists (as .nii or .nii.gz)
-    if  xASL_exist(DstPath,'file') 
-        if  bOverwrite && exist(DstPath,'dir')
+    if xASL_exist(DstPath,'file') 
+        if bOverwrite && exist(DstPath,'dir')
 			% Destination is a folder
             xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose); 
-        elseif bOverwrite
+        elseif bOverwrite % destination is a file
             if bVerbose; fprintf('xASL_Copy: Overwriting %s\n', DstPath); end
-            if exist(fileparts(DstPath),'dir')
+            if exist(fileparts(DstPath),'dir') || isempty(fileparts(DstPath))
                 xASL_delete(DstPath); % this will also delete .gz
             end
             xASL_adm_CreateDir(fileparts(DstPath)); % Create folder if doesnt exist
