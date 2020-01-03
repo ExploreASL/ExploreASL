@@ -63,28 +63,61 @@ end
 
 if FastReg
     [Fpath, Ffile] = xASL_fileparts(refPath);
-    tempResliced = fullfile(Fpath, [Ffile 'tempResliced.nii']);
-    xASL_spm_reslice(srcPath, refPath, [], [], [], tempResliced, 1);
-    tIM = xASL_io_ReadNifti(tempResliced);
-    sep = double(max([4 prod(tIM.hdr.pixdim(2:4))/2])+0.5);
-    clear tIM;
-    matlabbatch{1}.spm.spatial.coreg.estimate.ref = xASL_spm_admin(tempResliced);
+    tempResliced = fullfile(Fpath, [Ffile '_tempResliced.nii']);
+    niiRef = xASL_io_ReadNifti(refPath);
+    niiSrc = xASL_io_ReadNifti(srcPath);
+    VoxelSizeRef = niiRef.hdr.pixdim(2:4);
+    VoxelSizeSrc = niiSrc.hdr.pixdim(2:4);
+    VoxelSizeRefMin = min(VoxelSizeRef);
+    VoxelSizeSrcMin = min(VoxelSizeSrc);
+    
+    if VoxelSizeRef>2*VoxelSizeSrc
+        ResliceIs = 2;
+    elseif VoxelSizeSrc>2*VoxelSizeRef
+        % this is the case e.g. when registering fMRI/ASL image to T1w
+        ResliceIs = 1;
+    else
+        ResliceIs = 0;
+    end
+    
+    if ResliceIs==1
+        % reslice ref
+        xASL_Copy(refPath, tempResliced, true);
+        NewVoxelSize = repmat(VoxelSizeSrcMin,[1,3]);
+        xASL_spm_smooth(tempResliced, NewVoxelSize, tempResliced);
+        xASL_im_Upsample(tempResliced, tempResliced, NewVoxelSize);
+
+        matlabbatch{1}.spm.spatial.coreg.estimate.ref = xASL_spm_admin(tempResliced);
+        matlabbatch{1}.spm.spatial.coreg.estimate.source = xASL_spm_admin(srcPath);
+    elseif ResliceIs==2
+        % reslice source
+        xASL_Copy(srcPath, tempResliced, true);
+        NewVoxelSize = repmat(VoxelSizeRefMin,[1,3]);
+        xASL_spm_smooth(tempResliced, NewVoxelSize, tempResliced);
+        xASL_im_Upsample(tempResliced, tempResliced, NewVoxelSize);
+
+        matlabbatch{1}.spm.spatial.coreg.estimate.ref = xASL_spm_admin(refPath);
+        matlabbatch{1}.spm.spatial.coreg.estimate.source = xASL_spm_admin(tempResliced);
+    else
+        % reslice none
+        matlabbatch{1}.spm.spatial.coreg.estimate.ref = xASL_spm_admin(refPath);
+        matlabbatch{1}.spm.spatial.coreg.estimate.source = xASL_spm_admin(srcPath);
+    end
 else
     matlabbatch{1}.spm.spatial.coreg.estimate.ref = xASL_spm_admin(refPath);
+    matlabbatch{1}.spm.spatial.coreg.estimate.source = xASL_spm_admin(srcPath);    
 end
 
 
 %%  ------------------------------------------------------------------------------------------
 %%  Default SPM settings
-matlabbatch{1}.spm.spatial.coreg.estimate.source = xASL_spm_admin(srcPath);
+
 matlabbatch{1}.spm.spatial.coreg.estimate.other = xASL_adm_OtherListSPM(OtherList);
 
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = sep;
-
-
 
 
 %%  ------------------------------------------------------------------------------------------
