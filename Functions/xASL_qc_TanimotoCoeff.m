@@ -18,7 +18,7 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
 %            scaled as well.
 %            So for e.g. bClip==1, there will be clipped below 0 but not at
 %            the peak values.
-%   bSmooth - specifies how to smooth images with an isotropic kernel. 
+%   bSmooth - specifies how to smooth images with an isotropic kernel.
 %             A single FWHM kernel value needs to be specified for each image, e.g. [4 4] would smooth both images with [4 4 4]
 %             but [3 0] would only smooth the first image with a [3 3 3] kernel. (OPTIONAL, DEFAULT = [0 0],
 %             which is no smoothing
@@ -43,11 +43,13 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
 % ExploreQC EXAMPLE: TC = xASL_qc_TanimotoCoeff(CBFpath, TemplatePath, x.WBmask, 3, 0.975, [4 0]);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:
-%    Tanimoto, Taffee T. (17 Nov 1958). "An Elementary Mathematical theory of Classification and Prediction". 
+%    Tanimoto, Taffee T. (17 Nov 1958). "An Elementary Mathematical theory of Classification and Prediction".
 %        Internal IBM Technical Report. 1957
 %
-%    W. R. Crum, O. Camara and D. L. G. Hill, "Generalized Overlap Measures for Evaluation and Validation in 
+%    W. R. Crum, O. Camara and D. L. G. Hill, "Generalized Overlap Measures for Evaluation and Validation in
 %        Medical Image Analysis," in IEEE Transactions on Medical Imaging, vol. 25, no. 11, pp. 1451-1461, Nov. 2006.
+%    David C. Anastasiu, George Karypis, "Efficient identification of Tanimoto nearest neighbors",
+%        International Journal of Data Science and Analytics, 2017.
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
@@ -62,18 +64,18 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
 	if nargin < 2 || isempty(im1) || isempty(im2)
 		error('Need to have at least two inputs');
     end
-	
+
     im1 = xASL_io_Nifti2Im(im1); % this allows for image matrix or NIfTI path input
     im2 = xASL_io_Nifti2Im(im2); % this allows for image matrix or NIfTI path input
-    
+
 	if ~isequal(size(im1),size(im2))
 		error('The two input images need to have the same size');
 	end
-	
+
 	if nargin < 3 || isempty(imMask)
 		imMask = ones(size(im1));
 	end
-	
+
 	if nargin < 4 || isempty(type)
 		if islogical(im1) && islogical(im2)
 			% Binary input
@@ -88,7 +90,7 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
 			end
 		end
     end
-    
+
     %% Deal with clipping
     if bClip~=0
         % Clip below zero
@@ -103,22 +105,22 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
         ScaleFactor = Threshold2/Threshold1;
         im1(im1>Threshold1) = Threshold1; % remove the peaks
         im1 = im1.*ScaleFactor; % scale equally
-    end    
-    
+    end
+
     %% Apply smoothing
     if bSmooth(1)~=0
         im1 = xASL_im_ndnanfilter(im1,'gauss',[bSmooth(1) bSmooth(1) bSmooth(1)]);
     end
     if bSmooth(2)~=0
         im2 = xASL_im_ndnanfilter(im2,'gauss',[bSmooth(2) bSmooth(2) bSmooth(2)]);
-    end    
-    
+    end
+
     %% Deal with mask
 	imMask = imMask.*(1-isnan(im1)).*(1-isnan(im2));
 	imMask = imMask > 0;
 	im1 = im1(imMask);
 	im2 = im2(imMask);
-	
+
     %% Compute the TC
 	switch (type)
 		case 1
@@ -126,12 +128,12 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
 			if ~islogical(im1)
 				im1 = im1>0;
 			end
-			
+
 			if ~islogical(im2)
 				im2 = im2>0;
 			end
 			TC = sum(im1&im2)/sum(im1|im2);
-			
+
 		case 2
 			TC = sum(min([im1,im2],[],2))/sum(max([im1,im2],[],2));
 		case 3
@@ -139,6 +141,6 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
 		otherwise
 			error('Unknown type');
     end
-    
-    
+
+
 end
