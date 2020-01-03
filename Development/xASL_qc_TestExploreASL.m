@@ -205,11 +205,12 @@ end
 fprintf('\n');
 
 %% Read results
-ResultsTable = {'Data', 'mean_qCBF_TotalGM' 'median_qCBF_TotalGM' 'median_qCBF_DeepWM' 'CoV_qCBF_TotalGM' 'GMvol' 'WMvol' 'CSFvol' 'PipelineCompleted'};
+ResultsTable = {'Data', 'mean_qCBF_TotalGM' 'median_qCBF_TotalGM' 'median_qCBF_DeepWM' 'CoV_qCBF_TotalGM' 'GMvol' 'WMvol' 'CSFvol' 'PipelineCompleted' 'TC_Registration'};
 for iList=1:length(Dlist)
     ResultsTable{1+iList,1} = Dlist{iList};
-    AnalysisDir = fullfile(TestDirDest,Dlist{iList});
-    StatsDir = fullfile(AnalysisDir, 'Population','Stats');
+    AnalysisDir = fullfile(TestDirDest, Dlist{iList});
+    PopulationDir = fullfile(AnalysisDir, 'Population');
+    StatsDir = fullfile(AnalysisDir, 'Stats');
     clear ResultsFile
     ResultFile{1} = xASL_adm_GetFileList(StatsDir,'^mean_qCBF_TotalGM.*PVC2\.tsv','FPList');
     ResultFile{2} = xASL_adm_GetFileList(StatsDir,'^median_qCBF_TotalGM.*PVC0\.tsv','FPList');
@@ -240,4 +241,8 @@ for iList=1:length(Dlist)
             ResultsTable{1+iList,4+iFile} = 1; % pipeline completed
         end
     end
+    % Get registration performance
+    PathTemplate = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
+    PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(masked|Visual2DICOM)).*\.nii$','FPList');
+    ResultsTable{1+iList,5+iFile} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplate, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
 end

@@ -2,15 +2,15 @@ function [spatCoV] = xASL_im_GetSpatialCovNativePWI(x)
 %xASL_im_GetSpatialCovNativePWI Acquires spatial CoV from the native space ASL
 %image, using registered mask
 
-PathMask = fullfile(x.SESSIONDIR,'Mask_Template.nii');
-PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
-MaskIM = xASL_io_Nifti2Im(PathMask);
-
-if min(size(PWIim)~=size(MaskIM))
-    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, Mask_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, Mask_Native,0);
-    MaskIM = xASL_io_Nifti2Im(PathMask);
+PathMaskTemplate = fullfile(x.SESSIONDIR,'Mask_Template.nii');
+if ~xASL_exist(x.PathMask,'file')
+    xASL_Copy(PathMaskTemplate, x.PathMask);
 end
-    
+PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
+
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathMask,0);
+MaskIM = xASL_io_Nifti2Im(x.PathMask);
+   
 % Ensure that the mask is binary
 MaskIM = MaskIM > 0.5;
 

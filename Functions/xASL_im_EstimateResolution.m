@@ -88,14 +88,12 @@ imGauss{2} = imGauss{2}(:);
 imGauss{3} = imGauss{3}(:);
 for tp = 1:length(PSFtype)
     switch(PSFtype{tp})
-        case 'gaussian'
+        case {'gaussian','flat'}
             resFWHM(tp) = sqrt((1./2.355).^2+(optimSigma(tp).^2))*2.355;
         case 'lorentzian'
             resFWHM(tp) = sum(imGauss{tp}>(0.5*max(imGauss{tp})));
         case 'sinc'
             resFWHM(tp) = sum(imGauss{tp}>(0.5*max(imGauss{tp})));
-        case 'flat'
-            resFWHM(tp) = sqrt((1./2.355).^2+(optimSigma(tp).^2))*2.355;
     end;
 end;
 resSigma = sqrt((1./2.355).^2+(optimSigma.^2));

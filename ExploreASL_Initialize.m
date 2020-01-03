@@ -416,7 +416,7 @@ else
 end
 
 %% Manage input parameters ExploreASL course
-Fields   = {'bLesionFilling' 'bAutoACPC' 'Segment_SPM12' 'bPWIRegistration' 'M0_conventionalProcessing' 'bGetControlLabelOrder'};
+Fields   = {'bLesionFilling' 'bAutoACPC' 'Segment_SPM12' 'bRegistrationContrast' 'M0_conventionalProcessing' 'bGetControlLabelOrder'};
 Defaults = [true true false true false true];
 
 for iL=1:length(Fields)
