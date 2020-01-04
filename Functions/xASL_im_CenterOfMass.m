@@ -3,14 +3,18 @@ function xASL_im_CenterOfMass(PathNIfTI,OtherList)
 
 %% Admin
 
-if nargin<2 || isempty(OtherList)
+if nargin<2 || isempty(OtherList) || isempty(OtherList{1})
     OtherList{1} = PathNIfTI;
 else
     OtherList = xASL_adm_OtherListSPM(OtherList);
     for iList=1:length(OtherList)
         OtherList{iList} = OtherList{iList}(1:end-2);
     end
-    OtherList{end+1} = PathNIfTI;
+    if isempty(OtherList) || isempty(OtherList{1})
+        OtherList{1} = PathNIfTI;
+    else
+        OtherList{end+1} = PathNIfTI;
+    end
     % We only apply the transformation to the OtherList,
     % So the last of OtherList is PathNIfTI
 end
