@@ -302,6 +302,17 @@ x.Q.LabelingEfficiency = x.Q.LabEff_Orig*x.Q.LabEff_Bsup;
 %% 8    Perform Quantification
 [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x);
 
+if x.ApplyQuantification(5)==0
+    MeanCBF = xASL_stat_MeanNan(CBF(:));
+    if MeanCBF>666 % this is the average including air
+        CBF = CBF .* (20./MeanCBF);
+        warning('M0 division was disabled & CBF image had too high values');
+        fprintf('%s\n',['mean whole image CBF normalized from ' xASL_num2str(MeanCBF) ' to 20 mL/100g/min']);
+    end
+end
+    
+
+
 
 %% ------------------------------------------------------------------------------------------------
 %% 9	Save files
