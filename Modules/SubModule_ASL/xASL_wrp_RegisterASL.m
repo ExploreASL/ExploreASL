@@ -278,15 +278,22 @@ if bRegistrationCBF
         %% Affine registration
         if isfield(x,'bAffineRegistration') && x.bAffineRegistration<2
             bAffineRegistration = x.bAffineRegistration;
-        else % if not set, default here is to only do affine regitration for high quality processing & low spatial CoV
+        elseif x.bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
             bAffineRegistration = x.Quality && spatCoVit(end)<0.4;
+        else
+            bAffineRegistration = false;
+            % default is no affine registration, as the SPM affine COST
+            % function is tricky without proper rescaling & testing this
         end
 
         if bAffineRegistration % perform affine registration
+            fprintf('%s\n','Performing affine registration');
             xASL_im_CreatePseudoCBF(x, spatCoVit(end));
             % apply also to mean_PWI_clipped and other files
             xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5, BaseOtherList);
             spatCoVit(iT+2) = xASL_im_GetSpatialCovNativePWI(x);
+        else
+            fprintf('%s\n','Skipping affine registration');
         end
     end
     
