@@ -64,18 +64,15 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV)
 %% ----------------------------------------------------------------------------------------
 %% 1) Create the pseudoTissue CBF reference image, if it doesnt exist already
 if ~xASL_exist(x.Path_PseudoTissue,'file')
-    % Obtain the ASL VoxelSize (although the effective spatial resolution can
-    % be lower). For isotropy and simplicity we take the highest resolution of
-    % the 3 dimensions (smallest VoxelSize)
-    nii = xASL_io_ReadNifti(x.P.Path_ASL4D);
-    NewVoxelSize = repmat(min(nii.hdr.pixdim(2:4)),[1,3]);
-    % Smooth the high resolution pGM & pWM images with the ASL voxelsize, and
+	% Pre-smooth the high resolution pGM & pWM images to match the ASL voxelsize, and
     % save them as temporary resampled copy prefixed with "r"
-    xASL_spm_smooth(x.P.Path_c1T1, NewVoxelSize, x.P.Path_rc1T1);
-    xASL_spm_smooth(x.P.Path_c2T1, NewVoxelSize, x.P.Path_rc2T1);
-    % Downsample these temporary images to the ASL VoxelSize
-    xASL_im_Upsample(x.P.Path_rc1T1, x.P.Path_rc1T1, NewVoxelSize);
-    xASL_im_Upsample(x.P.Path_rc2T1, x.P.Path_rc2T1, NewVoxelSize);
+	% Downsample these temporary images to the ASL VoxelSize
+	xASL_im_PreSmooth(x.P.Path_ASL4D,x.P.Path_c1T1,x.P.Path_rc1T1);
+	xASL_spm_reslice(x.P.Path_ASL4D,x.P.Path_rc1T1,[],[],x.Quality,x.P.Path_rc1T1);
+		
+	xASL_im_PreSmooth(x.P.Path_ASL4D,x.P.Path_c2T1,x.P.Path_rc2T1);
+	xASL_spm_reslice(x.P.Path_ASL4D,x.P.Path_rc2T1,[],[],x.Quality,x.P.Path_rc2T1);
+	
     % Calculate the pseudoCBF image from the downsampled tissue posteriors,
     % called PseudoTissue
     PseudoTissue = xASL_io_Nifti2Im(x.P.Path_rc1T1).*80 + xASL_io_Nifti2Im(x.P.Path_rc2T1).*26.7;
