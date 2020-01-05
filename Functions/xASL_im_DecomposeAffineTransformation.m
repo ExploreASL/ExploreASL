@@ -53,6 +53,49 @@ function [M, P] = xASL_im_DecomposeAffineTransformation(Mtransformation)
 %               5) Check the rounding errors of the decomposition
 %
 % EXAMPLE: [M, P] = xASL_im_DecomposeAffineTransformation(Mtransformation);
+% See also: https://nipy.org/nibabel/coordinate_systems.html
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: T1w MPRAGE (acquired sagitally) has niiSrc.mat:
+% (note the 1x1x0.56 mm resolution, & dim order shift)
+%   -0.0079    0.0175    0.5599  -92.1031
+%   -0.9444    0.2544   -0.0070   82.4730
+%    0.2545    0.9443   -0.0085 -146.3968
+%         0         0         0    1.0000
+%   ASL CBF.nii has niiRef.mat:
+% (note the 3x3x7 mm resolution)
+%    0.0861   -0.7175    6.7090  -28.7328
+%   -0.0179    2.8620    1.6206 -148.1755
+%    3.0277    0.0375   -0.1895 -120.8767
+%         0         0         0    1.0000
+% Transformation matrix to go from T1w to ASL:
+% MTransformation = niiRef.mat/niiSrc.mat = 
+%    11.9642   -0.4249   -0.8667  981.3742
+%     2.9457    0.7426    2.7763  468.3356
+%    -0.3627   -2.9745    0.8477  215.1320
+%          0         0         0    1.0000
+% Where M.Zoom:
+% (7/0.56=12.3mm, 3/1 = 3mm)
+%    12.3269         0         0         0
+%          0    3.0916         0         0
+%          0         0    3.0224         0
+%          0         0         0    1.0000
+% and M.rotations90:
+% (this is a single negative rotation in the first plane,
+%  which moves the sagittal plane into transversal plane:
+%     1.0000         0         0         0
+%          0    cos(1)    sin(1)         0
+%          0   -sin(1)    cos(1)         0
+%          0         0         0    1.0000
+%
+%     1.0000         0         0         0
+%          0    0.5403    0.8415         0
+%          0   -0.8415    0.5403         0
+%          0         0         0    1.0000
+% and M.rotationsMinor:
+%     0.9706   -0.3155   -0.0393         0
+%     0.2390    0.9027    0.2942         0
+%    -0.0294   -0.2838    0.9611         0
+%          0         0         0    1.0000
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
 
@@ -68,13 +111,13 @@ P.Translation = M.Translation(1:3,4);
 
 %% 2) Obtain zoom
 PZoom = zeros(1,12);
-PZoom(7:9) = Full(7:9);
+PZoom(7:9) = P.Full(7:9);
 M.Zoom = spm_matrix(PZoom);
 P.Zoom = diag(M.Zoom(1:3,1:3));
 
 %% 3) Obtain 90degree rotations
 Rad90 = 90/(180/pi); % this is a ninety degree rotation in radians
-Rotations90 = round(Full(4:6)./Rad90); % These are the round 90 degrees rotations
+Rotations90 = round(P.Full(4:6)./Rad90); % These are the round 90 degrees rotations
 Protations90 = zeros(1,12);
 Protations90(7:9) = 1;
 Protations90(4:6) = Rotations90; % This contains the 90 degree rotations only
