@@ -54,7 +54,7 @@ end
 %% -----------------------------------------------------------------------------------
 %% 2) Make ASL NIfTIs ready for visualization & conversion to DICOM
 xASL_io_MakeNifti4DICOM(x.P.Path_CBF, x,'UINT16'); % Create uint16 NIfTI in 12 bit scale
-xASL_io_MakeNifti4DICOM(x.P.Pop_Path_qCBF, x);
+% xASL_io_MakeNifti4DICOM(x.P.Pop_Path_qCBF, x);
 
 
 %% -----------------------------------------------------------------------------------
