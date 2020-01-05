@@ -1,6 +1,11 @@
 %% xASL_qc_TestExploreASL
 
 % Run ExploreASL to get directories
+if isempty(which('ExploreASL_Master'))
+    cd ..;
+else
+    cd(fileparts(which('ExploreASL_Master')));
+end
 x = ExploreASL_Master('',0);
 
 % Get username so we can locate the paths
@@ -245,7 +250,7 @@ for iList=1:length(Dlist)
     end
     % Get registration performance
     PathTemplate = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
-    PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(masked|Visual2DICOM)).*\.nii$','FPList');
+    PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$','FPList');
     if ~isempty(PathCBF)
         ResultsTable{1+iList,5+iFile} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplate, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
     end
