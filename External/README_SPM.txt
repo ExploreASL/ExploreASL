@@ -23,7 +23,7 @@ Line 117,137,158,181,571: added extra routines for the Zigzag
 
 
 
-****************
+*********************************************************************************************************
 ENABLING LOW QUALITY MODE (FOR QUICK TESTING, RUN EVERYTHING BUT WITH LOWER ITERATIONS)
 
 DATE+NAME:2018_12_29, HM
@@ -58,11 +58,6 @@ External/SPMmodified/toolbox/LST/ps_LST_lga.m:
 External/SPMmodified/toolbox/LST/ps_LST_lpa.m
 115: First loads the xasl_quality parameter from the job, or set to default == 1
 218: if xasl_quality is set to 0, load ps_LST_lpa_preproc_default_LowQ.m instead of ps_LST_lpa_preproc_default.m
-
-
-
-
-
 
 *********************************************************************************************************
 REDUCE CODE SIZE
@@ -103,9 +98,6 @@ ADDED:
 Line 41 - removed 'spm_cfg_dcm_meeg'
 Line 132 - removed 'EEG'
 Line 135 - removed 'spm_cfg_eeg'
-
-
-
 
 
 *********************************************************************************************************
@@ -235,11 +227,17 @@ toolbox/cat12/cat_vol_correct_slice_scaling line 425
 
 
 
-
-
-
 *********************************************************************************************************
 OTHER CODE HACKS
+
+DATE+NAME:2020-01-06 JP
+DESCRIPTION:
+Fixing the cat_vol_qa QA so that it works with FLAIR images as well.
+replaced "diff(T1th(2:3))" with "abs(diff(T1th(2:3)))" because this is positive in T1,
+but it was negative in FLAIR and for FLAIR this ruined the ROIs
+FILE:
+cat_vol_qa - Line 678
+
 
 DATE+NAME:2019_10_25, JP
 DESCRIPTION:
@@ -361,7 +359,7 @@ NEW:
 
 
 *********************************************************************************************************
-MATLAB BACKWARD COMPATIBILITY
+MATLAB BACKWARDS COMPATIBILITY
 
 DATE+NAME:2019_05_06, HM
 DESCRIPTION:

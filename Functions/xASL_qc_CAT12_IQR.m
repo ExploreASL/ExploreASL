@@ -39,9 +39,8 @@ niiMain = xASL_io_ReadNifti(InputImage); % Obtain orientation matrix for main im
 
 for iSegm=1:length(PathSegm)
     niiC{iSegm} = xASL_io_ReadNifti(PathSegm{iSegm});
-    if ~min(min(niiC{iSegm}.mat==niiMain.mat))
-        % if segmentations don't have an equal size
-        % resample them
+    if ~isequal(niiC{iSegm}.mat,niiMain.mat)
+        % if segmentations don't have an equal size resample them
         refPath = InputImage;
         srcPath = PathSegm{iSegm};
         [Fpath, Ffile, Fext] = xASL_fileparts(srcPath);
@@ -51,8 +50,7 @@ for iSegm=1:length(PathSegm)
         VoxelSizeOriginal = abs(prod([niiMain.mat(1,1) niiMain.mat(2,2) niiMain.mat(3,3)]));
         
         if (VoxelSizeSegment*4)<VoxelSizeOriginal
-            % make sure to correctly downsample, if the resolutions differ
-            % significantly
+            % make sure to correctly downsample, if the resolutions differ significantly
             resRef = niiMain.hdr.pixdim(2:4);
             resSrc = niiC{iSegm}.hdr.pixdim(2:4);
             xASL_im_PreSmooth(refPath, srcPath, PathSegm{iSegm}, resRef, resSrc, [], []);
@@ -65,8 +63,12 @@ for iSegm=1:length(PathSegm)
     IM_C{iSegm} = xASL_io_Nifti2Im(PathSegm{iSegm});
     IM_C{iSegm}(IM_C{iSegm}<0) = 0;
     IM_C{iSegm}(IM_C{iSegm}>1) = 1;
-    % Get vol
-    VolumeSegm{iSegm} = sum(IM_C{iSegm}(:))./1000;
+	IM_C{iSegm}(isnan(IM_C{iSegm})) = 0;
+    
+	% Get voxel size and calculate the volume
+	niiVol = xASL_io_ReadNifti(PathSegm{iSegm});
+	resVol = sqrt(sum((niiVol.mat(1:3,1:3)).^2,1));
+    VolumeSegm{iSegm} = prod(resVol).*nansum(IM_C{iSegm}(:))./1000;
 end
 vol_TIV = VolumeSegm{1}+VolumeSegm{2}+VolumeSegm{3};
 vol_rel_CGW = [VolumeSegm{3} VolumeSegm{1} VolumeSegm{2} eps eps]./vol_TIV;
@@ -112,7 +114,7 @@ Yp0(Yp0>3.00001) = nan;
 %% Run the CAT12 QC function
 fprintf('Running CAT12 QC function\n');
 qa = cat_vol_qa('cat12',Yp0,InputImage,Ym,res,cat_warnings,job.extopts.species, ...
-          struct('write_csv',0,'write_xml',1,'method','cat12','job',job,'qa',qa));
+          struct('write_csv',0,'write_xml',1,'method','cat12','job',job,'qa',qa,'seqtype','flair'));
       
 QA_Output = qa.qualityratings;
 
