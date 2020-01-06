@@ -68,7 +68,7 @@ for iSegm=1:length(PathSegm)
 	% Get voxel size and calculate the volume
 	niiVol = xASL_io_ReadNifti(PathSegm{iSegm});
 	resVol = sqrt(sum((niiVol.mat(1:3,1:3)).^2,1));
-    VolumeSegm{iSegm} = prod(resVol).*nansum(IM_C{iSegm}(:))./1000;
+    VolumeSegm{iSegm} = prod(resVol).*xASL_stat_SumNan(IM_C{iSegm}(:))./1000;
 end
 vol_TIV = VolumeSegm{1}+VolumeSegm{2}+VolumeSegm{3};
 vol_rel_CGW = [VolumeSegm{3} VolumeSegm{1} VolumeSegm{2} eps eps]./vol_TIV;
