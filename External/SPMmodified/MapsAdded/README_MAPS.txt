@@ -29,3 +29,10 @@ Mazziotta et al. A probabilistic atlas and reference system for the human brain:
 Several of these maps stem from the ICBM_152_linear & the ICBM_152_nonlinear atlas, which is free for all use (see license below):
 
 Copyright (C) 1993–2009 Louis Collins, McConnell Brain Imaging Centre, Montreal Neurological Institute, McGill University. Permission to use, copy, modify, and distribute this software and its documentation for any purpose and without fee is hereby granted, provided that the above copyright notice appear in all copies. The authors and McGill University make no representations about the suitability of this software for any purpose. It is provided “as is” without express or implied warranty. The authors are not responsible for any data loss, equipment damage, property loss, or injury to subjects or patients resulting from the use or misuse of this software package. 
+
+GhostSignalRatio.nii: template ROIs for the Ghost-To-Signal Ratio,
+created from the ICBM152 brainmask.nii as above, per
+REF: https://mriqc.readthedocs.io/en/stable/iqms/bold.html
+1 = Signal
+2 = Non-ghost
+3 = Ghost
