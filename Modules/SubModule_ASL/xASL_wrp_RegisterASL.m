@@ -276,12 +276,14 @@ if bRegistrationCBF
         end
 
         %% Affine registration
-        if isfield(x,'bAffineRegistration') && x.bAffineRegistration<2
-            bAffineRegistration = x.bAffineRegistration;
-        elseif x.bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
-            bAffineRegistration = x.Quality && spatCoVit(end)<0.4;
+        if isfield(x,'bAffineRegistration') && ~isempty(x.bAffineRegistration)
+            if x.bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
+                bAffineRegistration = x.Quality && spatCoVit(end)<0.4;
+            else
+                bAffineRegistration = x.bAffineRegistration;
+            end
         else
-            bAffineRegistration = false;
+            bAffineRegistration = false; % default
             % default is no affine registration, as the SPM affine COST
             % function is tricky without proper rescaling & testing this
         end
@@ -310,7 +312,7 @@ end
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
 if x.DELETETEMP
-    File2Del = {x.Mean_Native x.Bias_Native x.Vasc_Native x.Mask_Native x.raw_Native x.P.Path_mean_PWI_Clipped x.P.Path_mean_control x.P.Path_PseudoCBF x.PathMask};
+    File2Del = {x.Mean_Native x.Bias_Native x.Vasc_Native x.Mask_Native x.raw_Native x.P.Path_mean_PWI_Clipped x.P.Path_mean_control x.P.Path_PseudoCBF x.PathMask x.Path_PseudoTissue};
     for iL=1:length(File2Del)
         xASL_delete(File2Del{iL});
     end
