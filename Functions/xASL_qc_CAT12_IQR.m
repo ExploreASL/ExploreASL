@@ -1,4 +1,4 @@
-function [QA_Output] = xASL_qc_CAT12_IQR(InputImage, InputC1, InputC2, InputC3)
+function [QA_Output] = xASL_qc_CAT12_IQR(InputImage, InputC1, InputC2, InputC3, bFLAIR)
 %xASL_qc_CAT12_IQR Prepare and run CAT12s QC parameters (also for other
 %images)
 %
@@ -13,6 +13,11 @@ function [QA_Output] = xASL_qc_CAT12_IQR(InputImage, InputC1, InputC2, InputC3)
 % InputC2 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p2T1.nii';
 % InputC3 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p3T1.nii';
 
+
+if nargin<5 || isempty(bFLAIR)
+    bFLAIR = false;
+end
+    
 if isempty(which('cat_vol_qa'))
     error('Please install/initialize CAT12 for this QC function');
 end 
@@ -113,8 +118,13 @@ Yp0(Yp0>3.00001) = nan;
 
 %% Run the CAT12 QC function
 fprintf('Running CAT12 QC function\n');
-qa = cat_vol_qa('cat12',Yp0,InputImage,Ym,res,cat_warnings,job.extopts.species, ...
-          struct('write_csv',0,'write_xml',1,'method','cat12','job',job,'qa',qa,'seqtype','flair'));
+if bFLAIR
+    qa = cat_vol_qa('cat12',Yp0,InputImage,Ym,res,cat_warnings,job.extopts.species, ...
+              struct('write_csv',0,'write_xml',1,'method','cat12','job',job,'qa',qa,'seqtype','flair'));
+else
+    qa = cat_vol_qa('cat12',Yp0,InputImage,Ym,res,cat_warnings,job.extopts.species, ...
+              struct('write_csv',0,'write_xml',1,'method','cat12','job',job,'qa',qa));
+end
       
 QA_Output = qa.qualityratings;
 
