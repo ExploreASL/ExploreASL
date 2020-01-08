@@ -18,18 +18,22 @@ function [ Func_GSR ] = xQC_GhostToSignal(Im4DPath, PathToTemplate)
 %
 %
 
+
+SubjFold = fileparts(Im4DPath);
 % Resampled Rois Mask into 4D image space
-xASL_spm_reslice(Im4D, PathToTemplate, [], [], [], 'Tmp_ghost_resampled', [])
+xASL_spm_deformation(Im4DPath, PathToTemplate, [], [], [], 'Tmp_ghost_resampled', [])
+xASL_spm_deformations([], PathToTemplate, fullfile(SubjFold, 'Tmp_ghost_resampled.nii'), [], Im4DPath, [], fullfile(SubjFold, 'y_ASL.nii'), [])
+
 
 %Load Images
-GhostTemplate = xASL_io_Nifti2Im('Tmp_ghost_resampled.nii' );
+GhostTemplate = xASL_io_Nifti2Im('Tmp_ghost_resampled.nii');
 Im4D = xASL_io_Nifti2Im(Im4DPath);
 xASL_delete('Tmp_ghost_resampled.nii' );
 
 %Create Rois Mask
-SignalMask = (GhostTemplate == 1);
-NonGhostMask = (GhostTemplate == 2); 
-GhostMask = (GhostTemplate == 3); 
+SignalMask = GhostTemplate == 1;
+NonGhostMask = GhostTemplate == 2; 
+GhostMask = GhostTemplate == 3; 
 
 %Extract Signal from Masks
 Signal = bsxfun(@times,Im4D,SignalMask); 
