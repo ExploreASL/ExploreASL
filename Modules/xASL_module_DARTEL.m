@@ -238,6 +238,31 @@ if  ~isempty(FList_FlowField) && ~bFirstRun
     end
 end
 
+%% -------------------------------------------------------------------------------------------------------
+%% Normalize the DARTEL templates to MNI (those used by CAT12)
+% CAT12 uses both DARTEL & Geodesic shooting, both templates are registered
+% in the same space.
+% Since we ran the DARTEL here, we will register to the DARTEL template
+
+PathDARTEL = fullfile(x.D.PopDir, 'Template_6.nii');
+PathDARTEL_snMat = fullfile(x.D.PopDir, 'Template_6_sn.mat');
+PathMNI = fullfile(x.SPMDIR,'toolbox','cat12','templates_1.50mm','Template_6_IXI555_MNI152.nii');
+
+clear matlabbatch
+matlabbatch{1}.spm.tools.oldnorm.est.subj.source = {[PathDARTEL ',1']};
+matlabbatch{1}.spm.tools.oldnorm.est.subj.wtsrc = '';
+matlabbatch{1}.spm.tools.oldnorm.est.eoptions.template = {[PathMNI ',1']};
+matlabbatch{1}.spm.tools.oldnorm.est.eoptions.weight = '';
+matlabbatch{1}.spm.tools.oldnorm.est.eoptions.smosrc = 8;
+matlabbatch{1}.spm.tools.oldnorm.est.eoptions.smoref = 8;
+matlabbatch{1}.spm.tools.oldnorm.est.eoptions.regtype = 'mni';
+matlabbatch{1}.spm.tools.oldnorm.est.eoptions.cutoff = 25;
+matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits = 16;
+matlabbatch{1}.spm.tools.oldnorm.est.eoptions.reg = 1;
+
+spm_jobman('run',matlabbatch);
+
+
 
 
 
@@ -260,6 +285,10 @@ for iS=1:x.nSubjects
         matlabbatch{1}.spm.util.defs.comp{2}.dartel.times           = [1 0];
         matlabbatch{1}.spm.util.defs.comp{2}.dartel.K               = 6;
         matlabbatch{1}.spm.util.defs.comp{2}.dartel.template        = {''};
+        matlabbatch{1}.spm.util.defs.comp{3}.sn2def.matname         = {PathDARTEL_snMat};
+        matlabbatch{1}.spm.util.defs.comp{3}.sn2def.vox             = [NaN NaN NaN];
+        matlabbatch{1}.spm.util.defs.comp{3}.sn2def.bb              = [NaN NaN NaN
+                                                                       NaN NaN NaN];
         matlabbatch{1}.spm.util.defs.out{1}.savedef.ofname          = 'y_T1.nii';
         matlabbatch{1}.spm.util.defs.out{1}.savedef.savedir.saveusr = {fullfile(x.D.ROOT, x.SUBJECTS{iS})};
 
