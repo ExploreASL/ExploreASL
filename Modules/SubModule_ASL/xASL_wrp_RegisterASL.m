@@ -183,7 +183,7 @@ end
 
 %% G) Here we create a temporary dummy ASL image of which the image contrast is curated,
 % for registration only
-xASL_io_PairwiseSubtraction(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, 0, 0, x); % create PWI & mean_control
+xASL_io_PairwiseSubtraction(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
 if bRegistrationCBF
     % Clip & compress the image, deal with contrast used for registration
     tIM = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped, 0.95, 0.6); % careful, this cannot be rerun, once
@@ -251,7 +251,7 @@ if bRegistrationCBF
 
 
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
-    if spatCoVit>0.6
+    if spatCoVit>0.62
         nIT = 0;
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
     elseif ~x.Quality
@@ -273,7 +273,7 @@ if bRegistrationCBF
             xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
 
             spatCoVit(iT+1) = xASL_im_GetSpatialCovNativePWI(x);
-        end
+		end
 
         %% Affine registration
         if isfield(x,'bAffineRegistration') && ~isempty(x.bAffineRegistration)

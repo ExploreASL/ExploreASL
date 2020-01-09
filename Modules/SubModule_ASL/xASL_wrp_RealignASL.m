@@ -169,7 +169,7 @@ if bSubtraction && nFrames>10 % == more than 5 pairs
 
 
     % Create a mask from the mean PWI
-    xASL_io_PairwiseSubtraction(rInputPath, x.P.Path_mean_PWI_Clipped, 0, 0, x); % create PWI & mean_control
+    xASL_io_PairwiseSubtraction(rInputPath, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
     MaskIm              = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped,0.95,0.7);
     MaskIm              = MaskIm>min(MaskIm(:));
     xASL_delete(x.P.Path_mean_PWI_Clipped);

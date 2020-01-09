@@ -1,4 +1,4 @@
-function xASL_io_PairwiseSubtraction(InputFile,outputPath,do_mask,switch_sign,x)
+function xASL_io_PairwiseSubtraction(InputFile,outputPath,do_mask,switch_sign)
 % xASL_io_PairwiseSubtraction Subtracts controls from labels and takes mean
 % Creates new perfusion-weighted delta_M file, prefaced with 's'
 % Converts into single precision floating point values (32 bit), removes scale slope.
@@ -36,7 +36,9 @@ else
     tIM             = xASL_io_Nifti2Im(InputFile);
 
     if  length(size(tIM))<4 % if it concerns a single frame, simply copy it
-        xASL_Copy(InputFile, outputPath,1);
+        %xASL_Copy(InputFile, outputPath,1);
+		tIM(isnan(tIM)) = 0;
+		xASL_io_SaveNifti(InputFile,outputPath,tIM,16,0);
         fprintf('%s\n','mean_control.nii not created because of single frame, no timeseries');
     else
         maskvalue       = 0.2.*max(tIM(:));
