@@ -17,6 +17,11 @@ function x = DataParTemplate(x)
 % which will be converted to the DataPar*.json per BIDS.
 % The compiled version of ExploreASL only allows for JSON input.
 %
+% For the DataPar.json:
+% Make sure that booleans are inputted as numbers (e.g. 0 or 1) and not as words (e.g. true or false)
+% Scalars can be inputted as scalars, but vectors need to be inputted as string, e.g. '[1 2]'
+% This is to allow for valid JSONs. The conversion is carried out internally.
+%
 % EXAMPLE: ExploreASL_Master('//StudyFolder/analysis/DataPar_HiQ.json');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2019 ExploreASL
@@ -69,7 +74,7 @@ function x = DataParTemplate(x)
 %                      patients and controls. 
 % x.M0PositionInASL4D - indicates the position of M0 in TimeSeries, if it is integrated by the vendor in the 
 %                       DICOM export. Will move this from ASL4D.nii to M0.nii(OPTIONAL, DEFAULT = no M0 in timeseries) 
-%                     - example for Philips 3D GRASE = [1 2] % (first control-label pair)
+%                     - example for Philips 3D GRASE = '[1 2]' % (first control-label pair)
 %                     - example for Siemens 3D GRASE = 1 % first image
 %                     - example for GE 3D spiral = 2 % where first image is PWI & last = M0
 
@@ -128,7 +133,7 @@ function x = DataParTemplate(x)
 %                     - 1 = a single-compartment quantification model (default by concensus paper)
 %                     - 2 = a dual-compartment quantification model 
 % x.ApplyQuantification - a vector of 1x5 logical values specifying which types on quantified images should be
-%                         calculated and saved (OPTIONAL, DEFAULT = [1 1 1 1 1] = all enabled)
+%                         calculated and saved (OPTIONAL, DEFAULT = '[1 1 1 1 1]' = all enabled)
 %                       - fields:
 %                         - 1) Apply ScaleSlopes ASL4D (xASL_wrp_Quantify, future at dcm2niiX stage)
 %                         - 2) Apply ScaleSlopes M0 (xASL_quant_M0, future at dcm2niiX stage)
@@ -136,8 +141,8 @@ function x = DataParTemplate(x)
 %                         - 4) Quantify M0 a.u. (xASL_quant_M0)
 %                         - 5) Perform division by M0
 %                       - examples: 
-%                         - ASL4D is an already quantified CBF image, disable all quantification [0 0 0 0 0]
-%                         - To compare label but not CBF (e.g. label in vessels or sinus vs tissue): [1 1 1 1 0]
+%                         - ASL4D is an already quantified CBF image, disable all quantification '[0 0 0 0 0]'
+%                         - To compare label but not CBF (e.g. label in vessels or sinus vs tissue): '[1 1 1 1 0]''
 %                       - Note that the output always goes to CBF.nii
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -193,6 +198,7 @@ function x = DataParTemplate(x)
 x.name = ExampleDataSet;
 x.subject_regexp = '^Sub-\d{3}$';
 x.M0 = 'separate_scan';
+x.M0PositionInASL4D = '[1 2]';
 x.readout_dim = '2D';
 x.Quality = 0;
 x.DELETETEMP = 1;

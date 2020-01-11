@@ -83,7 +83,11 @@ for n=1:size(sFields,1)
         end
     end
 end
-  
+
+%% Convert strings containing numbers to number
+x = ConvertNumericalFields(x);
+x.Q = ConvertNumericalFields(x.Q);
+
 %% NEW BIDS VERSION, FUTURE USE
 %% elseif isfield(jsonData,'BIDSVersion')
 %     %% dataset_description file identified
@@ -194,3 +198,18 @@ end
 
 
 end
+
+function [StructIn] = ConvertNumericalFields(StructIn)
+    
+FieldsAre = fields(StructIn);
+for iField=1:length(FieldsAre)
+    TempField = xASL_str2num(StructIn.(FieldsAre{iField}));
+    if isnumeric(TempField)
+        if min(isfinite(TempField))
+            StructIn.(FieldsAre{iField}) = TempField;
+        end
+    end
+end
+
+end
+
