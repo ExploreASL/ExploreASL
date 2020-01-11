@@ -32,6 +32,7 @@ function [result, x] = xASL_module_DARTEL(x)
 % __________________________________
 % Copyright ? 2015-2019 ExploreASL
 
+% PM: Replace this by Geodesic Shooting
 
 
 
@@ -276,7 +277,7 @@ for iS=1:x.nSubjects
     u_file  = fullfile(x.D.PopDir, ['u_rc1' x.P.STRUCT '_' x.SUBJECTS{iS} '_' x.DARTEL_TEMPLATE '.nii']);
     y_y_file= fullfile(x.D.ROOT, x.SUBJECTS{iS},['y_y_' x.P.STRUCT '.nii']);
 
-    if  xASL_exist(y_file, 'file') && xASL_exist(u_file, 'file')
+    if xASL_exist(y_file, 'file') && xASL_exist(u_file, 'file')
 
 		xASL_adm_UnzipNifti(y_file,1);
         clear matlabbatch
