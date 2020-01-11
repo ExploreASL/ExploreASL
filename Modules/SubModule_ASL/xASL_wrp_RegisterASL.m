@@ -251,7 +251,7 @@ if bRegistrationCBF
 
 
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
-    if spatCoVit>0.62
+    if spatCoVit>0.667
         nIT = 0;
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
     elseif ~x.Quality
