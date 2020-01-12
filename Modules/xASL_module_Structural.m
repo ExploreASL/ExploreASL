@@ -61,7 +61,7 @@ if ~xASL_exist(x.P.Path_T1,'file') && ~xASL_exist(x.P.Path_T1_ORI,'file')
     if ~isempty(Flist)
         xASL_Move(Flist{1}, x.P.Path_T1);
     else
-        warning('This subject didnt have a T1w structural image, skipping...');
+        warning([x.SUBJECTDIR ' didnt contain a T1w structural image, skipping...']);
         result = true;
         return;
     end

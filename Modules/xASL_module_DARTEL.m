@@ -249,6 +249,8 @@ PathDARTEL = fullfile(x.D.PopDir, 'Template_6.nii');
 PathDARTEL_snMat = fullfile(x.D.PopDir, 'Template_6_sn.mat');
 PathMNI = fullfile(x.SPMDIR,'toolbox','cat12','templates_1.50mm','Template_6_IXI555_MNI152.nii');
 
+xASL_delete(PathDARTEL_snMat); % make sure that this is always repeated for new DARTEL flow fields
+
 clear matlabbatch
 matlabbatch{1}.spm.tools.oldnorm.est.subj.source = {[PathDARTEL ',1']};
 matlabbatch{1}.spm.tools.oldnorm.est.subj.wtsrc = '';
