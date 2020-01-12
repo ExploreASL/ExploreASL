@@ -25,8 +25,8 @@ if isunix && strcmp(CurrentUser,'hjmutsaerts')
     TestDirDest = '/scratch/hjmutsaerts/TestDataSet/TempTestResults';
     RunMethod = 2;
 elseif ismac && strcmp(CurrentUser,'henk')
-    TestDirOrig = '/Users/henk/ExploreASL/TestDataOrig';
-    TestDirDest = '/Users/henk/ExploreASL/TestDataDest';
+    TestDirOrig = '/Users/henk/ExploreASL/ExploreASL_TestCases';
+    TestDirDest = '/Users/henk/ExploreASL/ExploreASL_TestCasesProcessed';
     RunMethod = 1;
 elseif ispc && strcmp(CurrentUser,'henk')
     TestDirOrig = 'C:\Users\kyrav\Desktop\SurfDrive\HolidayPics\ExploreASL_TestCases';
@@ -176,20 +176,22 @@ for iList=1:length(Dlist)
     AnalysisDir = fullfile(TestDirDest,Dlist{iList});
     DataParFile{iList} = xASL_adm_GetFileList(AnalysisDir,'(DAT|dat|Dat).*\.(m|json)');
     xASL_delete(LogFiles{iList}); % useful for rerun when debugging
-    
-    % Run ExploreASL
-    cd(x.MyPath);
-    switch RunMethod
-        case 1 % run ExploreASL serially
-            ExploreASL_Master(DataParFile{iList}{1}, true, true); % can we run screen from here? or run matlab in background, linux easy
-        case 2 % run ExploreASl parallel (start new MATLAB instances)
-            MatlabRunString = 'matlab -nodesktop -nosplash -r ';
-            RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',true,true);exit"'];
-            system([MatlabRunString RunExploreASLString ' &']);
-        case 3 % run ExploreASL compilation serially
-        case 4 % run ExploreASL compilation parallel
-        otherwise
-    end
+
+    if ~isempty(DataParFile{iList})
+	    % Run ExploreASL
+	    cd(x.MyPath);
+	    switch RunMethod
+	        case 1 % run ExploreASL serially
+	            ExploreASL_Master(DataParFile{iList}{1}, true, true); % can we run screen from here? or run matlab in background, linux easy
+	        case 2 % run ExploreASl parallel (start new MATLAB instances)
+	            MatlabRunString = 'matlab -nodesktop -nosplash -r ';
+	            RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',true,true);exit"'];
+	            system([MatlabRunString RunExploreASLString ' &']);
+	        case 3 % run ExploreASL compilation serially
+	        case 4 % run ExploreASL compilation parallel
+	        otherwise
+	    end
+	end
 end
 
 % Wait until all *.log files exist (which will surely be created, even with a crash)
