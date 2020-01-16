@@ -86,7 +86,9 @@ end
 
 %% Convert strings containing numbers to number
 x = ConvertNumericalFields(x);
-x.Q = ConvertNumericalFields(x.Q);
+if isfield(x,'Q')
+	x.Q = ConvertNumericalFields(x.Q);
+end
 
 %% NEW BIDS VERSION, FUTURE USE
 %% elseif isfield(jsonData,'BIDSVersion')

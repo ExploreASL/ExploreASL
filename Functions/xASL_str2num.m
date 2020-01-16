@@ -3,13 +3,25 @@ function [DataOut] = xASL_str2num(DataIn)
 % and converting only strings to numbers. Also allows inputting cells
 
 if isempty(DataIn)
-    DataOut = NaN;
-elseif iscell(DataIn) && length(DataIn)>1
-    error('Too long input');
-elseif iscell(DataIn)
-    DataIn = DataIn{1};
+	DataOut = NaN;
+elseif ~iscell(DataIn)
+	DataOut = doConversion(DataIn);
+else
+	% For cells - do it one by one
+	DataOut = zeros(size(DataIn));
+	for ii = 1:length(DataIn)
+		TempOut = doConversion(DataIn{ii});
+		if isnumeric(TempOut)
+			DataOut(ii) = TempOut;
+		else
+			DataOut(ii) = NaN;
+		end
+	end
 end
 
+return
+
+function DataOut = doConversion(DataIn)
 if isempty(DataIn)
     DataOut = NaN;
 elseif ~isnumeric(DataIn)
@@ -31,4 +43,4 @@ if isempty(DataOut)
     DataOut = NaN;
 end
 
-end
+return
