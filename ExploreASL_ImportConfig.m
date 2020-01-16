@@ -10,9 +10,10 @@ function imPar = ExploreASL_ImportConfig(StudyRoot)
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
-if nargin<1 || ~exist(StudyRoot,'dir')
-    error('Please provide path to StudyRoot folder as input argument');
-end
+% Just configuring, no need to check if the directory exists yet
+%if nargin<1 || ~exist(StudyRoot,'dir')
+%    error('Please provide path to StudyRoot folder as input argument');
+%end
 
 if strcmp(StudyRoot(end),'\') || strcmp(StudyRoot(end),'/')
     StudyRoot = StudyRoot(1:end-1); % bugfix
@@ -23,15 +24,18 @@ end
 imPar.studyID = [fname fext];
 imPar.AnalysisRoot = fpath;
 imPar.RawRoot = fpath;
-RawDir = fullfile(StudyRoot,'raw');
 
-if ~exist(RawDir,'dir')
-    error(['Couldnt find raw DICOM data in ' RawDir]);
-end
+% Does not need to check for the RAW dir at this moment
+%RawDir = fullfile(StudyRoot,'raw');
 
-ExploreASL_Master('',0);
+%if ~exist(RawDir,'dir')
+%    error(['Couldnt find raw DICOM data in ' RawDir]);
+%end
 
-fprintf('\n%s\n\n',['Found ' RawDir ' folder...']);
+% ExploreASL does not need to be initialized here
+% ExploreASL_Master('',0);
+
+% fprintf('\n%s\n\n',['Found ' RawDir ' folder...']);
 
 %% -----------------------------------------------------------------------------
 %% Initialize the study-specific parameters

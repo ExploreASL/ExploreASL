@@ -1,12 +1,12 @@
 function filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, bGetDirNames)
 % List the list of files (or directories) in a directory, using regular expressions
 %
-% FORMAT: filepaths = xASL_adm_GetFileList(strDirectory, strRegEx[, mode, nRequired, bGetDirNames])
+% FORMAT: filepaths = xASL_adm_GetFileList(strDirectory[, strRegEx, mode, nRequired, bGetDirNames])
 %
 % INPUT:
-%   strDirectory   Directory to search
+%   strDirectory   Directory to search (REQUIRED)
 %                  Optionally use wildcards to be more specific (i.e. 'C:\data\*.img')
-%   strRegEx       Regular expression that will be used to filter the returned list.
+%   strRegEx       Regular expression that will be used to filter the returned list (OPTIONAL)
 %                  Examples: 
 %                            '^.+$'       - matches all files (DEFAULT)
 %                            '^\d+$'      - matches names that contains only digits
@@ -14,14 +14,14 @@ function filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequire
 %                            '^\d{3}$'    - matches names that exist of exactly 3 digits
 %                            '^\d{3}_.+$' - matches names that start with 3 digits, followed by an underscore and other characters
 %                            '^PP\d+$'    - matches names that start with PP, followed by a number
-%   mode           true to return full paths with path+name (DEFAULT = 'FPList')
+%   mode           true to return full paths with path+name (OPTIONAL, DEFAULT = 'FPList')
 %                  false to return only the name (= 'List')
 %                  Or directly assign the spm_select compatible mode 'List' (only filenames), 'FPList' (fullpath),
 %                  or 'FPListRec' (full path and recursively).
-%   nRequired      Set to a value or range [a b] to define a minimum/maximum number of required files. 
+%   nRequired      Set to a value or range [a b] to define a minimum/maximum number of required files. (OPTIONAL)
 %                  An exception will be thrown if this requirement is not met. Use [n Inf] to accept at least n.
 %                  Default is to accept any count. You can also provide a scalar [a] requiring to accept exactly 'a' matches
-%   bGetDirNames   Set to true to get directory names.
+%   bGetDirNames   Set to true to get directory names. (OPTIONAL)
 %                  Set to false to get filenames (DEFAULT).
 %
 % OUTPUT:
@@ -42,6 +42,10 @@ function filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequire
 % Copyright 2015-2019 ExploreASL
 
     % Checks the input arguments
+	if nargin<2 || isempty(strRegEx)
+		strRegEx = '^.+$'; % list all files by default
+	end
+	
     if nargin>=3 && islogical(mode)
 		% If mode is true, the return the path+name
 		if mode

@@ -125,7 +125,8 @@ function writeSingleElement(fid, currentField,currentElementValue,tabs)
         elseif isnumeric(currentElementValue)
             fprintf(fid,'"%s" : %g' , currentField,currentElementValue);
         elseif isempty(currentElementValue)
-            fprintf(fid,'"%s" : null' , currentField,currentElementValue);
+            %fprintf(fid,'"%s" : null' , currentField,currentElementValue);
+			fprintf(fid,'"%s" : ""', currentField);
         else %ischar or something else ...
             fprintf(fid,'"%s" : "%s"' , currentField,currentElementValue);
         end
