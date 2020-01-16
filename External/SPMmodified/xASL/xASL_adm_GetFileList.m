@@ -6,9 +6,9 @@ function filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequire
 % INPUT:
 %   strDirectory   Directory to search (REQUIRED)
 %                  Optionally use wildcards to be more specific (i.e. 'C:\data\*.img')
-%   strRegEx       Regular expression that will be used to filter the returned list (OPTIONAL)
+%   strRegEx       Regular expression that will be used to filter the returned list (OPTIONAL, DEFAULT = '^.+$')
 %                  Examples: 
-%                            '^.+$'       - matches all files (DEFAULT)
+%                            '^.+$'       - matches all files
 %                            '^\d+$'      - matches names that contains only digits
 %                            '^.+\.nii$'  - matches names that ends with .nii
 %                            '^\d{3}$'    - matches names that exist of exactly 3 digits
