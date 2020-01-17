@@ -25,7 +25,14 @@ if ~xASL_exist(x.P.Path_y_ASL,'file') || bOverwrite
     xASL_im_FixEdgesFlowfield(x.P.Path_y_T1); % First fill NaNs, to prevent smoothing artifacts
 
     % Perform the smoothing
-    xASL_spm_smooth(x.P.Path_y_T1, sKernel,x.P.Path_y_ASL);
+    % xASL_spm_smooth(x.P.Path_y_T1, sKernel,x.P.Path_y_ASL);
+    xASL_im_PreSmooth(x.P.Path_ASL4D, x.P.Path_y_T1, x.P.Path_y_ASL); % we need to add the effective resolution here still!
+    % sKernel, as calculated above, can be used for this. But the major
+    % rotations need to be taken into account, between the effective
+    % resolution as specified, and the one in the different NIfTIs
+    % (e.g. the ASL & T1w are usually acquired transversal & sagittally,
+    % respectively
+
     % Solve edges
     FieldT1 = xASL_io_Nifti2Im(x.P.Path_y_T1);
     FieldASL = xASL_io_Nifti2Im(x.P.Path_y_ASL);
