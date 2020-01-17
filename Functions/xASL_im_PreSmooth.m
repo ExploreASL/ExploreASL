@@ -59,13 +59,16 @@ end
 imRef = xASL_io_ReadNifti(pathRef);
 imSrc = xASL_io_ReadNifti(pathSrc);
 
+% Obtain the voxel size
+voxRef = [norm(imRef.mat(:,1)), norm(imRef.mat(:,2)), norm(imRef.mat(:,3))];
+voxSrc = [norm(imSrc.mat(:,1)), norm(imSrc.mat(:,2)), norm(imSrc.mat(:,3))];
+
 % Define the reference and source resolution as FWHM in voxels
 if nargin < 4 || isempty(resRef)
 	% By default equal to the voxel size
 	resVoxRef = [1 1 1];
 else
-	% Obtain the voxel size and divide the resolution by the voxel size
-	voxRef = [norm(imRef.mat(:,1)), norm(imRef.mat(:,2)), norm(imRef.mat(:,3))];
+	% Divide the resolution by the voxel size
 	resVoxRef = resRef./voxRef;
 end
 
@@ -73,12 +76,14 @@ if nargin < 5 || isempty(resSrc)
 	% By default equal to the voxel size
 	resVoxSrc = [1 1 1];
 else
-	% Obtain the voxel size and divide the resolution by the voxel size
-	voxSrc = [norm(imSrc.mat(:,1)), norm(imSrc.mat(:,2)), norm(imSrc.mat(:,3))];
+	% Divide the resolution by the voxel size
 	resVoxSrc = resSrc./voxSrc;
 end
 
-if min(resVoxSrc==resVoxRef)
+ResultantResolutionRef = voxRef.*resVoxRef;
+ResultantResolutionSrc = voxSrc.*resVoxSrc;
+
+if isequal(ResultantResolutionSrc,ResultantResolutionRef)
     xASL_Copy(pathSrc, pathOut, 1);
     return; % skip pre-smoothing
 end
