@@ -7,7 +7,7 @@ function pathOut = xASL_im_PreSmooth(pathRef,pathSrc,pathSmo,resRef,resSrc,srcAf
 % INPUT:
 %   pathRef        The path to the reference image with the final resolution/voxels. (REQUIRED)
 %   pathSrc        The path to the source image to be smoothed to fit the reference image. (REQUIRED)
-%   pathSmo        The path for saving the result. (OPTIONAL. DEFAULT adds a prefix 'r' to the source image)
+%   pathSmo        The path for saving the result. (OPTIONAL. DEFAULT adds a prefix 's' to the source image)
 %   resRef         Reference image resolution in mm. 3x1 vector. (OPTIONAL. DEFAULT matches the voxel size)
 %   resSrc         Source image resolution in mm. 3x1 vector. (OPTIONAL. DEFAULT matches the voxel size)
 %   srcAffinePath  The path to the '*_sn.mat' that describes the Affine transformation matrix related
@@ -39,19 +39,18 @@ function pathOut = xASL_im_PreSmooth(pathRef,pathSrc,pathSmo,resRef,resSrc,srcAf
 % Computing and Computer-Assisted Intervention -- MICCAI 2015. MICCAI 2015. Lecture Notes in Computer Science,
 % vol 9350. Springer, Cham
 % __________________________________
-% Copyright © 2015-2019 ExploreASL
-%
-% 2019-06-14 JP
+% Copyright 2015-2019 ExploreASL
+
 
 % Admin
 if nargin < 2 || isempty(pathRef) || isempty(pathSrc)
 	error('xASL_im_PreSmooth: Need to specify the reference and source images.');
 end
 
-% Create the output by adding a prefix 'r'
+% Create the output by adding a prefix 's'
 if nargin < 3 || isempty(pathSmo)
 	[Fpath, Ffile, Fext] = xASL_fileparts(pathSrc);
-	pathOut = fullfile(Fpath,['r' Ffile Fext]);
+	pathOut = fullfile(Fpath,['s' Ffile Fext]);
 else
 	pathOut = pathSmo;
 end
