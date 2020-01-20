@@ -154,7 +154,7 @@ if numel(json) == 1
         if isstruct(json), val = json.(fn{i}); else val = json(fn{i}); end
         S = [S fmt(tab) jsonwrite_char(key) ':' fmt(' ',tab) ...
             jsonwrite_var(val,tab+1)];
-        if i ~= numel(fn), S = [S ',']; end
+        if i ~= numel(fn), S = [S ',' sprintf('\n')]; end
         S = [S fmt('\n',tab)];
     end
     S = [S fmt(tab-1) '}'];

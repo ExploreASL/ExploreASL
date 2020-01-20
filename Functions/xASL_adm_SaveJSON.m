@@ -6,6 +6,7 @@ function xASL_adm_SaveJSON(data, jsonFileName)
 %     data.color = 'pink';
 %     data.metrics.height = 0.3;
 %     data.metrics.width = 1.3;
+%     data.array = [1 2];
 %     xASL_adm_SaveJSON(data, 'out.json');
 %
 % Output 'out.json':
@@ -15,7 +16,8 @@ function xASL_adm_SaveJSON(data, jsonFileName)
 % 	"metrics" : {
 % 		"height" : 0.3,
 % 		"width" : 1.3
-% 		}
+% 		},
+%   "array" : [1, 2]
 % 	}
 %
 %% WITH HACK HERE BY HM, for ExploreASL
@@ -51,7 +53,7 @@ function xASL_adm_SaveJSON(data, jsonFileName)
                     for iZ=1:size(CurrentField,3)
                         NewStruct.([DataFields{iField} num2str(NN)]) = CurrentField(iX,iY,iZ);
                         NN=NN+1;
-                    end
+					end
                 end
             end
             data.(DataFields{iField}) = NewStruct;

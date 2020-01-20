@@ -238,6 +238,11 @@ but it was negative in FLAIR and for FLAIR this ruined the ROIs
 FILE:
 cat_vol_qa - Line 678
 
+DATE+NAME:2020_01_17, JP
+DESCRIPTION:
+Edited the spm_jsonwrite so that it makes a newline after each field
+FILE:
+spm_jsonwrite.m at line 157
 
 DATE+NAME:2019_10_25, JP
 DESCRIPTION:
