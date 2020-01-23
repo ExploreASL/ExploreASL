@@ -197,7 +197,7 @@ if ~isfield(x,'Sequence') && ~isfield(x,'readout_dim')
 elseif ~isfield(x,'Sequence') && isfield(x,'readout_dim')
     if strcmp(x.readout_dim,'2D')
        x.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of vendor
-    elseif strcmp(x.readout_dim,'3D') && ( ~isempty(regexp(x.Vendor,'Philips')) || ~isempty(regexp(x.Vendor,'Siemens')) )
+    elseif strcmp(x.readout_dim,'3D') && ( ~isempty(regexp(lower(x.Vendor),'philips')) || ~isempty(regexp(lower(x.Vendor),'siemens')) )
            x.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
     elseif strcmp(x.readout_dim,'3D') && ~isempty(regexp(x.Vendor,'GE'))
            x.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
