@@ -66,50 +66,50 @@ else
     % Using GM value here, assuming that we are interested in GM. If not, can be corrected later with WM mask
     if ~isfield(x.Q,'TissueT1')
         fprintf('%s\n','x.Q.TissueT1 did not exist, default=1240 used');
-        x.Q.TissueT1    = 800; % 800 ms for WM, average of frontal & occipital WM from Lu et al., JMRI 2005 & 3 studies they refer to
+        x.Q.TissueT1 = 800; % 800 ms for WM, average of frontal & occipital WM from Lu et al., JMRI 2005 & 3 studies they refer to
         % for GM, this would be 1300 ms
         % Here we use the WM T1w, since we smooth a lot
     end
 
     if ~isempty(regexp(x.Vendor,'^GE$'))
-        TR              = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
+        TR = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
     else
-        M0_parms        = xASL_adm_LoadParms(M0ParmsMat, x);
-        TR              = M0_parms.RepetitionTime; % This will be either the separate M0-scan value or the ASL scan value (if UseControlAsM0)
+        M0_parms = xASL_adm_LoadParms(M0ParmsMat, x);
+        TR = M0_parms.RepetitionTime; % This will be either the separate M0-scan value or the ASL scan value (if UseControlAsM0)
     end
 
-    if  TR<1000
+    if TR<1000
         error(['Unusually small TR for ASL M0: ' num2str(TR)]);
     end
 
-    if  length(TR)>1
+    if length(TR)>1
         warning(['Multiple M0 TRs found: ' num2str(TR) ', ' num2str(min(TR)) ' used']);
         TR  = min(TR);
     end
 
 
-    if      strcmp(x.readout_dim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
+    if strcmp(x.readout_dim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
             NetTR = TR;
             fprintf('%s\n','Single 3D M0 readout assumed');
     elseif  strcmp(x.readout_dim,'2D') % for 2D readouts, there are slice timing differences
 
-            if  strcmp(x.Q.SliceReadoutTime,'shortestTR')
+            if strcmp(x.Q.SliceReadoutTime,'shortestTR')
                 % Load ASL parms
                 ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
-                    if  isfield(ASL_parms,'RepetitionTime')
-                        %  Load original file to get nSlices
-                        tORI        = xASL_io_ReadNifti(x.P.Path_ASL4D);
-                        nSlices     = size(tORI.dat,3);
+                if isfield(ASL_parms,'RepetitionTime')
+                    %  Load original file to get nSlices
+                    tORI        = xASL_io_ReadNifti(x.P.Path_ASL4D);
+                    nSlices     = size(tORI.dat,3);
 
-                        x.Q.SliceReadoutTime     = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
-                    else
-                        warning('ASL_parms.RepetitionTime expected but did not exist!');
-                    end
+                    x.Q.SliceReadoutTime     = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
+                else
+                    warning('ASL_parms.RepetitionTime expected but did not exist!');
+                end
             end
 
-            if  isnan(x.Q.SliceReadoutTime)
+            if isnan(x.Q.SliceReadoutTime)
                 error('qnt_PLDslicereadout expected but was NaN');
             elseif  x.Q.SliceReadoutTime<10 || x.Q.SliceReadoutTime>100
                 error(['qnt_PLDslicereadout=' x.Q.SliceReadoutTime ' is outside of its valid range 10-100 ms']);
