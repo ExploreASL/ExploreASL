@@ -7,12 +7,14 @@ switch(3)
 		LABDUR = 1650;
 		PLD = 1525;
 		IMAG = 600;
+		% 1495 345 before
 	case 2
 		BS1 = 1700;
 		BS2 = 2926;
 		LABDUR = 1650;
 		PLD = 1800;
 		IMAG = 600;
+		% 1750 524
 	case 3
 		BS1 = 1820;
 		BS2 = 3146;
