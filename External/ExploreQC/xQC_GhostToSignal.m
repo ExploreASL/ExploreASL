@@ -21,7 +21,6 @@ function [ Func_GSR ] = xQC_GhostToSignal(Im4DPath, PathToTemplate)
 
 SubjFold = fileparts(Im4DPath);
 % Resampled Rois Mask into 4D image space
-xASL_spm_deformation(Im4DPath, PathToTemplate, [], [], [], 'Tmp_ghost_resampled', [])
 xASL_spm_deformations([], PathToTemplate, fullfile(SubjFold, 'Tmp_ghost_resampled.nii'), [], Im4DPath, [], fullfile(SubjFold, 'y_ASL.nii'), [])
 
 
