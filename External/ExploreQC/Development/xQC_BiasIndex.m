@@ -18,9 +18,6 @@ function BiasIndex = xQC_BiasIndex(SubjDir, SPMdir, ScanType)
 %  This function computes the Bias Index (BI) as the mean signal
 %  inhomogeneity, i.e. the mean difference between the bias field corrected
 %  image and the original one. (Peltonen, J. et al., 2018) 
-% 
-% 
-
 
 
 
