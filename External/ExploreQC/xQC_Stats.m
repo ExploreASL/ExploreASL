@@ -1,3 +1,4 @@
+
 function [Stats] = xQC_Stats(InputPath, bWM2MAX, C1Path, C2Path, C3Path)
 % xASL_qc_Stats computes several summary statistics 
 %
@@ -73,10 +74,6 @@ WholeBrainMask = WholeBrainMask>0.5;
 Masks{end+1} = WholeBrainMask;
 MaskNames{end+1} = 'WholeBrain';
 
-% Here it should make the 4d image into a 3D image but IT DOESNT WORK
-if ndims(InputImage)>4
-    InputImage = xASL_im_IM2Column(InputImage, WholeBrainMask);
-end 
     
 % Extract summary statistics 
 Stats = struct();
@@ -84,20 +81,27 @@ Stats = struct();
 % Loop across Segmentations
 for iMask = 1:length(Masks)
     
-    % Extract value from input and sort it
-    SegmentedImage = InputImage(Masks{iMask});
-    SortedIm = sort(SegmentedImage(:));
     
+    if ndims(InputImage)==4
+        SegmentedImage = bsxfun(@times,InputImage,Masks{iMask}); 
+        SortedIm = nonzeros(sort(SegmentedImage(:)));
+    else 
+        SegmentedImage = InputImage(Masks{iMask});
+        SortedIm = sort(SegmentedImage(:)); 
+        
+        % Skewness and kurtosis just on 3D Images
+        Stats.(MaskNames{iMask}).Skewness = (xASL_stat_SumNan((SegmentedImage-xASL_stat_MeanNan(SortedIm)).^3)./length(SortedIm)) ./ (xASL_stat_VarNan(SortedIm).^1.5);
+        Stats.(MaskNames{iMask}).Kurtosis = (xASL_stat_SumNan((SegmentedImage-xASL_stat_MeanNan(SortedIm)).^4)./length(SortedIm)) ./ (xASL_stat_VarNan(SortedIm).^2);
+   
+    end 
     % Stats
     Stats.(MaskNames{iMask}).Mean = xASL_stat_MeanNan(SortedIm);
     Stats.(MaskNames{iMask}).Median = xASL_stat_MedianNan(SortedIm); 
     Stats.(MaskNames{iMask}).SD = xASL_stat_StdNan(SortedIm);
     Stats.(MaskNames{iMask}).Value5 = SortedIm(round(0.05*length(SortedIm)));
     Stats.(MaskNames{iMask}).Value95 = SortedIm(round(0.95*length(SortedIm)));
-    Stats.(MaskNames{iMask}).Skewness = (xASL_stat_SumNan((SegmentedImage-xASL_stat_MeanNan(SortedIm)).^3)./length(SortedIm)) ./ (xASL_stat_VarNan(SortedIm).^1.5);
-    Stats.(MaskNames{iMask}).Kurtosis = (xASL_stat_SumNan((SegmentedImage-xASL_stat_MeanNan(SortedIm)).^4)./length(SortedIm)) ./ (xASL_stat_VarNan(SortedIm).^2);
-end
-
+    
+end 
 % if bWM2MAX is true, compute 
 if bWM2MAX
     Stats.WM2MAX = Stats.WM.Median/Stats.WholeBrain.Value95;
