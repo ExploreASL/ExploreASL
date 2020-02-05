@@ -61,7 +61,7 @@ PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin'};
 PathDirect = {'/usr/lib/fsl/5.0'};
 if ispc
     CurrDir = pwd;
-    [~, result] = system('cd %LOCALAPPDATA%&&cd');
+    [~, result] = system('echo %LOCALAPPDATA%');
     SearchDir = fullfile(result(1:end-1), 'Packages');
     % Check distros to save time
     Distros = {'CanonicalGroupLimited.Ubuntu' 'WhitewaterFoundryLtd' 'Ubuntu' 'SUSE' 'Kali' 'Debian'};
