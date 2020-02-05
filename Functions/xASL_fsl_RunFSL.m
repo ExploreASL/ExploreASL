@@ -92,7 +92,7 @@ else
 end
 
 %% Prepend the correct FSL directory if missing
-if strcmp(FSLCommand(1:5),'/bin/')
+if length(FSLCommand)>5 && strcmp(FSLCommand(1:5),'/bin/')
 	if exist(fullfile(RootFSLdir, 'bin'),'dir')
 		FSLCommand = [FSLdir FSLCommand];
 	elseif exist(RootFSLdir,'dir')
