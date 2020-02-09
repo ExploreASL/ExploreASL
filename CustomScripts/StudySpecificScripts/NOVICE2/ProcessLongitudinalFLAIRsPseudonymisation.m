@@ -12,7 +12,8 @@
 % end
 % 
 % KeyPath = 'C:\BackupWork\ASL\Novice\Copy\FLAIR_intekening_okt2019\KeyBlindFLAIR.mat';
-KeyPath = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/FLAIR_intekening_okt2019/KeyBlindFLAIR.mat';
+KeyPath = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/proc/novice2/FLAIR/Pseudomyzed/KeyBlindFLAIR.mat';
+% KeyPath = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/FLAIR_intekening_okt2019/KeyBlindFLAIR.mat';
 
 % save(KeyPath,'Key');
 
@@ -54,84 +55,203 @@ for iSubject=1:length(SubjList)
     end
 end
 
-%% Move FLAIR & segmentations back (while backing up automatic WMH_SEGM)
+
+%% Deblind FLAIR & segmentations
 load(KeyPath,'-mat');
 
-oDir{2} = 'C:\BackupWork\ASL\Novice\Copy\FLAIR_intekening_okt2019\Pseudomyzed'; % follow up manual segmentations
-oDir{1} = 'C:\BackupWork\ASL\Novice\NoviceFLAIRbaseline'; % baseline manual segmentations
-dDir = 'C:\BackupWork\ASL\Novice\analysis';
-NDir = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis';
-xASL_adm_CreateDir(NDir);
-
-SubjectList = xASL_adm_GetFileList(oDir{2},'^BlindFLAIR\d{3}_1$','List',[0 Inf], true);
+Rdir = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/proc/novice2/FLAIR/Pseudomyzed';
+SubjectList = xASL_adm_GetFileList(Rdir,'^BlindFLAIR\d{3}_(1|2)$','List',[0 Inf], true);
 
 for iSubject=1:length(SubjectList)
     xASL_TrackProgress(iSubject, length(SubjectList));
     % reconciliate name
-    PseudoName = SubjectList{iSubject};
-    IndexIs = find(cellfun(@(y) strcmp(y, PseudoName(1:end-2)), Key(:,2)));
-    RealName{1} = [Key{IndexIs, 1} '_1'];
-    RealName{2} = [Key{IndexIs, 1} '_2'];
-    for TimePoint=1:2
-        % move original files to longitudinal separate dir
-        OldDir = fullfile(dDir, RealName{TimePoint});
-        NewDir = fullfile(NDir, RealName{TimePoint});
-        
-        PathFLAIR = fullfile(NewDir, 'FLAIR.nii');
-        PathWMH = fullfile(NewDir, 'WMH_SEGM.nii');
-        PathFLAIRBackup = fullfile(NewDir, 'FLAIR_LST.nii');
-        PathWMHBackup = fullfile(NewDir, 'WMH_LST.nii');
-        
-        if exist(OldDir,'dir')
-            xASL_Move(OldDir, NewDir);
-            % backup LST files
-            xASL_Move(PathFLAIR,PathFLAIRBackup);
-            xASL_Move(PathWMH,PathWMHBackup);
-        end
+    IndexIs = find(cellfun(@(y) strcmp(y, SubjectList{iSubject}(1:end-2)), Key(:,2)));
+    RealName = [Key{IndexIs, 1} SubjectList{iSubject}(end-1:end)];
+    
+    DirOld = fullfile(Rdir, SubjectList{iSubject});
+    DirNew = fullfile(Rdir, RealName);
+    xASL_Move(DirOld, DirNew);
+end
 
-        % move manual segmentations
-        HadNoFLAIRorWMH = '';
-        HadTooManyFLAIRorWMH = '';
-        if TimePoint==1
-            DirFLAIR = fullfile(oDir{1}, RealName{1}(1:end-2));
-            DirWMH = DirFLAIR;
-            PathFLAIRmanual = xASL_adm_GetFileList(DirFLAIR, '^NOV\d{3}_FLAIR.*biascorrected\.nii$');
-            PathWMHmanual = xASL_adm_GetFileList(DirWMH, '^NOV\d{3}_FLAIR.*combined.*\.nii$');
-        else
-            DirFLAIR = fullfile(oDir{2}, [PseudoName(1:end-2) '_2']);
-            DirWMH = fullfile(oDir{2}, PseudoName);
-            PathFLAIRmanual = xASL_adm_GetFileList(DirFLAIR, ['^' PseudoName(1:end-2) '.*rFLAIR\.nii$']);
-            PathWMHmanual = xASL_adm_GetFileList(DirWMH, ['^' PseudoName(1:end-2) '.*FU_segm\.nii$']);
+xASL_adm_DeleteFileList(Rdir, '.*\.(itksnap|png|txt)$', true, [0 Inf]);
+
+%% Delete _2 dirs (we assume that all scans are in alignment with the first timepoint, these scans were only there for reference)
+Rdir = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/proc/novice2/FLAIR';
+SubjectList = xASL_adm_GetFileList(Rdir,'^NOV\d{3}_2$','FPList',[0 Inf], true);
+
+for iSubject=1:length(SubjectList)
+    xASL_TrackProgress(iSubject, length(SubjectList));
+    xASL_adm_DeleteFileList(SubjectList{iSubject}, '.*', true, [0 Inf]);
+    system(['rmdir ' SubjectList{iSubject}]);
+end
+
+%% Rename dirs to remove _1 suffix
+Rdir = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/proc/novice2/FLAIR';
+SubjectList = xASL_adm_GetFileList(Rdir,'^NOV\d{3}_1$','FPList',[0 Inf], true);
+
+for iSubject=1:length(SubjectList)
+    xASL_TrackProgress(iSubject, length(SubjectList));
+    xASL_Move(SubjectList{iSubject}, SubjectList{iSubject}(1:end-2));
+end
+
+%% Remove existing manual WMH & FLAIR, and manage to have 1 FLAIR at least
+Ddir = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/ExploreASLoutput/LongitudinalAnalysis';
+DirList = xASL_adm_GetFileList(Ddir,'^NOV\d{3}_(1|2)$','FPList',[0 Inf], true);
+
+for iDir=1:length(DirList)
+    xASL_TrackProgress(iDir, length(DirList));
+    
+    % remove WMH_SEGM.nii (this keeps WMH_SEGM_LST.nii)
+    WMHpath = fullfile(DirList{iDir}, 'WMH_SEGM.nii');
+    xASL_delete(WMHpath);
+
+    % if exist FLAIR_LST.nii & FLAIR.nii, move FLAIR_LST to FLAIR.nii
+    FLAIRpath = fullfile(DirList{iDir}, 'FLAIR.nii');
+    FLAIR_LSTpath = fullfile(DirList{iDir}, 'FLAIR_LST.nii');
+    if xASL_exist(FLAIR_LSTpath, 'file')
+        xASL_Move(FLAIR_LSTpath, FLAIRpath, true);
+    end
+    
+    % if no FLAIR, give warning
+    if ~xASL_exist(FLAIRpath,'file')
+        warning(FLAIRpath);
+        fprintf('\n\n\n');
+    end
+    % if WMH, give warning
+    if xASL_exist(WMHpath,'file')
+        warning(WMHpath);
+        fprintf('\n\n\n');
+    end    
+end
+
+%% Do the same for the non-longitudinal data
+Ddir = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/ExploreASLoutput/NonLongitudinal';
+DirList = xASL_adm_GetFileList(Ddir,'^NOV\d{3}_(1|2)$','FPList',[0 Inf], true);
+
+for iDir=1:length(DirList)
+    xASL_TrackProgress(iDir, length(DirList));
+    
+    WMHpath = fullfile(DirList{iDir}, 'WMH_SEGM.nii');
+    WMH_LSTpath = fullfile(DirList{iDir}, 'WMH_SEGM_LST.nii');
+    FLAIRpath = fullfile(DirList{iDir}, 'FLAIR.nii');
+    FLAIR_LSTpath = fullfile(DirList{iDir}, 'FLAIR_LST.nii');    
+    
+    % manage WMH
+    if xASL_exist(WMH_LSTpath,'file') && xASL_exist(WMHpath,'file')
+        % if both manual & LST segmentations exist, remove the manual (old
+        % wrong one)
+        xASL_delete(WMHpath);
+    elseif xASL_exist(WMHpath,'file')
+        % if only the LST one exist, back this up as such
+        xASL_Move(WMHpath, WMH_LSTpath);
+    end
+        
+    % if FLAIR_LST exists, move to FLAIR.nii
+    if xASL_exist(FLAIR_LSTpath, 'file')
+        xASL_Move(FLAIR_LSTpath, FLAIRpath, true);
+    end
+    
+    % if no FLAIR, give warning
+    if ~xASL_exist(FLAIRpath,'file')
+        warning(FLAIRpath);
+        fprintf('\n\n\n');
+    end
+end
+
+
+%% Register FLAIRs & move WMHs if exist. if not existing, create empty WMH_segm
+Ddir = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/ExploreASLoutput/LongitudinalAnalysis';
+Odir = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/proc/novice2/FLAIR';
+
+DirList = xASL_adm_GetFileList(Odir,'^NOV\d{3}$','List',[0 Inf], true);
+
+for iDir=1:length(DirList)
+    xASL_TrackProgress(iDir, length(DirList));
+    
+    % Define paths
+    DdirCurrent1 = fullfile(Ddir, [DirList{iDir} '_1']);
+    DdirCurrent2 = fullfile(Ddir, [DirList{iDir} '_2']);
+    Path_FLAIR_Dest1 = fullfile(DdirCurrent1, 'FLAIR.nii');
+    Path_WMH_Dest1 = fullfile(DdirCurrent1, 'WMH_SEGM.nii');
+    Path_FLAIR_Dest2 = fullfile(DdirCurrent2, 'FLAIR.nii');
+    Path_WMH_Dest2 = fullfile(DdirCurrent2, 'WMH_SEGM.nii');    
+    
+    if ~xASL_exist(Path_WMH_Dest1,'file') || ~xASL_exist(Path_WMH_Dest2,'file')
+        % skip this iteration if already done
+        OdirCurrent = fullfile(Odir, DirList{iDir});
+        Path_CombiSegm = xASL_adm_GetFileList(OdirCurrent, '.*FU_segm.*\.nii$', 'FPList', [0 Inf]);
+        Path_WrongSegm = xASL_adm_GetFileList(OdirCurrent, '.*combined_label\.nii$', 'FPList', [0 Inf]);
+        Path_FLAIR = xASL_adm_GetFileList(OdirCurrent, '.*rFLAIR.*\.nii$', 'FPList', [0 Inf]);
+
+        if length(Path_CombiSegm)==1 && length(Path_WrongSegm)==1 
+            xASL_delete(Path_WrongSegm{1});
         end
-            
-        if isempty(PathFLAIRmanual) || isempty(PathWMHmanual)
-            HadNoFLAIRorWMH{end+1} = RealName{1};
-        elseif length(PathFLAIRmanual)>1 || length(PathWMHmanual)>1
-            HadTooManyFLAIRorWMH{end+1} = RealName{1};
+        
+        if ~(length(Path_CombiSegm)==1 && length(Path_FLAIR)==1)
+            warning(['Couldnt find FLAIR & WMH for n=' DirList{iDir}]);
+            fprintf('\n\n\n');
+        elseif length(xASL_adm_GetFileList(OdirCurrent, '^.*$'))~=2
+            warning(['Length wasnt 2 for n=' DirList{iDir}]);
+            fprintf('\n\n\n');
         else
-            xASL_Move(PathFLAIRmanual{1}, PathFLAIR);
-            xASL_Move(PathWMHmanual{1}, PathWMH);
-            % delete old folder
-            if exist(DirFLAIR,'dir')
-                xASL_adm_DeleteFileList(DirFLAIR, '.*', true, [0 Inf]);
-                try
-                    rmdir(DirFLAIR);
-                end
+            % Define temporary paths
+            [Fpath, Ffile] = xASL_fileparts(Path_FLAIR);
+            Path_FLAIRtemp = fullfile(Fpath, [Ffile '_temp.nii']);
+            [Fpath, Ffile] = xASL_fileparts(Path_CombiSegm{1});
+            Path_CombiSegmTemp = fullfile(Fpath, [Ffile '_temp.nii']);    
+            % Delete temporary paths
+            xASL_delete(Path_FLAIRtemp);
+            xASL_delete(Path_CombiSegmTemp);              
+            
+            % register FLAIR for timepoint 1 (should it already be)
+            xASL_spm_coreg(Path_FLAIR_Dest1, Path_FLAIR{1}, {Path_CombiSegm{1}});
+            % if CombiSegm==1 || 3, this is a baseline lesion
+            tIM = xASL_io_Nifti2Im(Path_CombiSegm{1});
+            if sum(tIM(:)<0)~=0 || sum(tIM(:)>3)~=0
+                warning(['incorrect labels present in ' Path_CombiSegm{1}]);
+            else
+                tIM = tIM==1 | tIM==3;
+                xASL_io_SaveNifti(Path_CombiSegm{1}, Path_WMH_Dest1, tIM);
             end
-            if exist(DirWMH,'dir')
-                xASL_adm_DeleteFileList(DirWMH, '.*', true, [0 Inf]);
-                try
-                    rmdir(DirWMH);
-                end
+            
+            % do the same for timepoint 2, but with temporary copy
+            xASL_Copy(Path_FLAIR{1}, Path_FLAIRtemp, true);
+            xASL_Copy(Path_CombiSegm{1}, Path_CombiSegmTemp, true);
+            
+            % register FLAIR for timepoint 2
+            xASL_spm_coreg(Path_FLAIR_Dest2, Path_FLAIRtemp, {Path_CombiSegmTemp});
+            % if CombiSegm==1 || 3, this is a baseline lesion
+            tIM = xASL_io_Nifti2Im(Path_CombiSegmTemp);
+            if sum(tIM(:)<0)~=0 || sum(tIM(:)>3)~=0
+                warning(['incorrect labels present in ' Path_CombiSegmTemp]);
+            else
+                tIM = tIM>0;
+                xASL_io_SaveNifti(Path_CombiSegmTemp, Path_WMH_Dest2, tIM);
             end
+            xASL_delete(Path_FLAIRtemp);
+            xASL_delete(Path_CombiSegmTemp);
         end
     end
 end
-    
-    
-%% ExploreASL todo -> rerunning structural module by commenting everything else
-% 1) Rerun 020_LinearReg_FLAIR2T1w only
 
-% 2) add to provenance    
+%% Check for missing WMHs in the longitudinal dataset
+Ddir = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/ExploreASLoutput/LongitudinalAnalysis';
+DirList = xASL_adm_GetFileList(Ddir,'^NOV\d{3}_(1|2)$','List',[0 Inf], true);
+
+for iDir=1:length(DirList)
+    xASL_TrackProgress(iDir, length(DirList));
     
+    Path_WMH = fullfile(Ddir, DirList{iDir}, 'WMH_SEGM.nii');
     
+    if ~xASL_exist(Path_WMH,'file')
+        warning([Path_WMH ' didnt exist']);
+        fprintf('\n\n\n');
+    end
+end
+        
+        
+%% ExploreASL -> rerunning resampling, get tissue volume & visual QC
+
+ExploreASL_Master('/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/ExploreASLoutput/LongitudinalAnalysis/DATA_PAR.json',1,1,1,1,1);
+    
+% then move all other files from non-longitudinal into longitudinal folder

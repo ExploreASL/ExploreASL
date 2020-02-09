@@ -27,17 +27,21 @@ figure(1);imshow([ImOut{1};ImOut{2};ImOut{3};ImOut{4}])
 
 %% Same as above, but with different FLAIR for each cohort
 %% Figure 2
-Path_FLAIR{1} = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis\Population\Templates\FLAIR_HC1.nii';
-Path_FLAIR{2} = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis\Population\Templates\FLAIR_HC2.nii';
-Path_FLAIR{3} = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis\Population\Templates\FLAIR_HIV1.nii';
-Path_FLAIR{4} = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis\Population\Templates\FLAIR_HIV2.nii';
-Path_WMH{1} = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis\Population\Templates\WMH_HC1.nii';
-Path_WMH{2} = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis\Population\Templates\WMH_HC2.nii';
-Path_WMH{3} = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis\Population\Templates\WMH_HIV1.nii';
-Path_WMH{4} = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis\Population\Templates\WMH_HIV2.nii';
+
+TemplateRoot = '/home/hjmutsaerts/lood_storage/divi/Projects/novice/MRI/ExploreASLoutput/LongitudinalAnalysis/Population/Templates/';
+% TemplateRoot = 'C:\BackupWork\ASL\Novice\LongitudinalAnalysis\Population\Templates';
+
+Path_FLAIR{1} = fullfile(TemplateRoot, 'FLAIR_HC1.nii');
+Path_FLAIR{2} = fullfile(TemplateRoot, 'FLAIR_HC2.nii');
+Path_FLAIR{3} = fullfile(TemplateRoot, 'FLAIR_HIV1.nii');
+Path_FLAIR{4} = fullfile(TemplateRoot, 'FLAIR_HIV2.nii');
+Path_WMH{1} = fullfile(TemplateRoot, 'WMH_HC1.nii');
+Path_WMH{2} = fullfile(TemplateRoot, 'WMH_HC2.nii');
+Path_WMH{3} = fullfile(TemplateRoot, 'WMH_HIV1.nii');
+Path_WMH{4} = fullfile(TemplateRoot, 'WMH_HIV2.nii');
 
 % FLAIRim = xASL_io_Nifti2Im(FLAIRpath);
-MaskIM = xASL_io_Nifti2Im('C:\ExploreASL\Maps\SPM_xASLModified\rbrainmask.nii')>0.9;
+MaskIM = xASL_io_Nifti2Im(fullfile(x.MyPath,'External','SPMmodified','MapsAdded','rbrainmask.nii'))>0.9;
 % dip_image(FLAIRim)
 
 for iPath=1:4
