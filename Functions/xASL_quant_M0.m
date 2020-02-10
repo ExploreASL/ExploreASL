@@ -57,7 +57,12 @@ else
 end
 
 if ~x.ApplyQuantification(4)
-    fprintf('%s\n','M0 quantification skipped');
+    fprintf('%s\n','M0 quantification for incomplete inversion recovery skipped');
+    % M0 quantification here is only for the incomplete T1 recovery
+    % One potential reason of skipping this, is when a pseudo-M0 is used
+    % that has background suppression. In this case, there is no incomplete
+    % inversion recovery, the background suppression pulses have saturated
+    % the signal instead.
 else
 
     % Correction for incomplete T1 recovery of M0 because of short TR.
