@@ -116,8 +116,8 @@ else
 
             if isnan(x.Q.SliceReadoutTime)
                 error('qnt_PLDslicereadout expected but was NaN');
-            elseif  x.Q.SliceReadoutTime<10 || x.Q.SliceReadoutTime>100
-                error(['qnt_PLDslicereadout=' x.Q.SliceReadoutTime ' is outside of its valid range 10-100 ms']);
+            elseif  x.Q.SliceReadoutTime<10 || x.Q.SliceReadoutTime>200
+                warning(['qnt_PLDslicereadout=' x.Q.SliceReadoutTime ' is outside of its valid range 10-200 ms']);
             end
 
             SliceIM     = zeros(size(M0IM));
