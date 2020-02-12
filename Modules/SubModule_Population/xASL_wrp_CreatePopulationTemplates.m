@@ -262,9 +262,9 @@ for iScanType=1:length(PreFixList)
 
         if bRemoveOutliers
             % Exclude outliers
-            NotOutliers = xASL_stat_RobustMean(IM);
+            NotOutliers = find(xASL_stat_RobustMean(IM))';
         else
-            NotOutliers = ones(size(IM,2),1);
+            NotOutliers = [1:1:size(IM,2)];
         end
 
         % create the maps
