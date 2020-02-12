@@ -76,199 +76,6 @@ StateName{11} = '110_DoWADQCDC';
 
 
 %% -----------------------------------------------------------------------------
-%% Check if we need to reset the original T1w/FLAIR,
-%  This is the case if any of the .status before 007 is missing
-
-
-
-%% -----------------------------------------------------------------------------
-%% 1    Register T1w -> MNI
-% iState = 1;
-% if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status files, & locks current run
-% 
-%     xASL_wrp_LinearReg_T1w2MNI(x, x.bAutoACPC);
-% 
-%     x.mutex.AddState(StateName{iState});
-%     xASL_adm_CompareDataSets([], [], x); % unit testing
-%     x.mutex.DelState(StateName{iState+1});
-% else
-% 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-% 	if  bO
-% 		fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);
-% 	end
-% end
-
-
-
-%% -----------------------------------------------------------------------------
-%% 2    Register FLAIR -> T1w (if FLAIR.nii exists)
-iState = 2;
-if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status files, & locks current run
-    if xASL_exist(x.P.Path_FLAIR, 'file')
-
-        xASL_wrp_LinearReg_FLAIR2T1w(x, x.bAutoACPC)
-
-        x.mutex.AddState(StateName{iState});
-        xASL_adm_CompareDataSets([], [], x); % unit testing
-        x.mutex.DelState(StateName{iState+1});
-	else
-		if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);end
-    end
-
-else
-	if xASL_exist(x.P.Path_FLAIR, 'file')
-		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-	end
-	if bO
-		fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);
-	end
-end
-
-
-
-%% -----------------------------------------------------------------------------
-%% 3  T1w-based FLAIR biasfield correction (temporary disabled, deprecated?)
-% iState = 3;
-% % Here we acquire a biasfield from the T1 and apply it to the FLAIR, as with large lesions, the biasfield
-% % cannot be reliably estimated on the FLAIR. By default = disabled, enable this in case of large lesions.
-% 
-% if xASL_exist(x.P.Path_WMH_SEGM,'file') || ~xASL_exist(x.P.Path_FLAIR,'file')
-%     if bO; fprintf('%s\n','WMH segmentation already existing, or FLAIR.nii missing, skipping FLAIR biasfield correction'); end % We skip now
-% else
-%     if ~x.mutex.HasState(StateName{iState})
-% 		if xASL_exist(x.P.Path_FLAIR,'file')
-% 			if  isfield(x,'T1wBasedFLAIRBiasfieldCorrection') && x.T1wBasedFLAIRBiasfieldCorrection==1
-% 				xASL_wrp_FLAIR_BiasfieldCorrection(x);
-% 			else
-% 				fprintf('%s\n',[StateName{iState} ' not requested, skipping...']); % this is off by default
-% 			end
-% 
-% 			x.mutex.AddState(StateName{iState}); % tracks progress through lock/*.status files, & locks current run
-% 			xASL_adm_CompareDataSets([], [], x); % unit testing
-% 			x.mutex.DelState(StateName{iState+1});
-% 		else
-% 			if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);end
-% 		end
-% 	else
-% 		if xASL_exist(x.P.Path_FLAIR,'file')
-% 			xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-% 		end
-% 		if  bO; fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);end
-%     end
-% end
-
-
-
-
-
-%% -----------------------------------------------------------------------------
-%% 4    Lesion Segmentation Toolbox: segment FLAIR.nii if available
-% iState = 4;
-% if ~x.mutex.HasState(StateName{iState})  % tracks progress through lock/*.status files, & locks current run
-%     if xASL_exist(x.P.Path_FLAIR,'file')
-% 
-%         xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, x.WMHsegmAlg);
-% 
-%         x.mutex.AddState(StateName{iState});
-%         xASL_adm_CompareDataSets([], [], x); % unit testing
-%         x.mutex.DelState(StateName{iState+1});
-% 
-%     elseif bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);
-%     end
-% else
-% 	if xASL_exist(x.P.Path_FLAIR,'file')
-% 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-% 	end
-% 	if  bO; fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);end
-% end
-
-
-
-
-
-%% -----------------------------------------------------------------------------
-%% 5    Lesion filling
-% iState = 5;
-% if ~x.mutex.HasState(StateName{iState}) && x.bLesionFilling  % tracks progress through lock/*.status files, & locks current run
-% 
-%     if xASL_exist(rWMHPath,'file')
-%         % check if the FLAIR segmentation exists from LST
-%         xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath);
-% 
-%         x.mutex.AddState(StateName{iState});
-%         xASL_adm_CompareDataSets([], [], x); % unit testing
-%         x.mutex.DelState(StateName{iState+1});
-% 	else
-% 		if bO; fprintf('%s\n','050_LesionFilling: No FLAIR data found, skipping...'); end
-%     end
-% 
-% else
-% 	if xASL_exist(rWMHPath,'file')
-% 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-% 	end
-% 	if  bO; fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);end
-% end
-
-
-
-
-
-
-
-%% -----------------------------------------------------------------------------
-%% 6    CAT12 segmentation
-% iState = 6;
-% % CAT12 outperforms SPM12. Therefore, always run CAT12, unless this crashes, then we try SPM12
-% 
-% if ~isfield(x,'Segment_SPM12')
-%     x.Segment_SPM12 = false; % by default, use CAT12, not SPM12 for segmentation
-% end
-% if ~isfield(x,'bFixResolution');
-%     x.bFixResolution = false; % by default, keep the original resolution
-% end
-% 
-% % Now check if the segmentation results exist
-% catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
-% MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
-% VolumetricResultsMissing = ~xASL_exist(catVolFile, 'file') && ~xASL_exist(MatFile, 'file');
-% Reprocessing = ~xASL_exist(x.P.Path_c1T1, 'file') || ~xASL_exist(x.P.Path_c2T1, 'file') || VolumetricResultsMissing;
-% 
-% if x.mutex.HasState(StateName{iState}) && Reprocessing
-%     warning('Segmentation results were missing, repeating');
-% end
-% if ~x.mutex.HasState(StateName{iState}) || Reprocessing
-% 
-%     x = xASL_wrp_SegmentT1w(x, x.Segment_SPM12);
-% 
-%     x.mutex.AddState(StateName{iState});  % tracks progress through lock/*.status files, & locks current run
-%     xASL_adm_CompareDataSets([], [], x); % unit testing
-%     x.mutex.DelState(StateName{iState+1});
-% else
-% 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-% 	if bO; fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);end
-% end
-% 
-% 
-% 
-% %% -----------------------------------------------------------------------------
-% %% 7    CleanUp WMH segmentation
-% iState = 7;
-% if ~x.mutex.HasState(StateName{iState})
-%     if xASL_exist(x.P.Path_WMH_SEGM, 'file')
-% 
-%         xASL_wrp_CleanUpWMH_SEGM(x);
-% 
-%         x.mutex.AddState(StateName{iState});
-%         xASL_adm_CompareDataSets([], [], x); % unit testing
-%         x.mutex.DelState(StateName{iState+1});
-%     end
-% else
-% 	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
-% 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-% 	end
-% end
-
-%% -----------------------------------------------------------------------------
 %% 8    Resample to standard space
 iState = 8;
 
@@ -281,70 +88,60 @@ iState = 8;
 
 
 
-% %% -----------------------------------------------------------------------------
-% %% 9    Get WMH & tissue volumes
-% iState = 9;
-% Reprocessing = false;
-% WMHvolFileMissing = isempty(xASL_adm_GetFileList(x.D.TissueVolumeDir,['^WMH_LST_(LGA|LPA)_' x.P.SubjectID '\.tsv$'],'FPList',[0 Inf]));
-% if xASL_exist(x.P.Path_FLAIR,'file') && WMHvolFileMissing && x.mutex.HasState(StateName{iState})
-%     Reprocessing = true;
-%     warning(['WMH/LST volumetric results were missing, rerunning ' StateName{iState}]);
-% end
-% T1volFileMissing = ~exist(fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.tsv']), 'file');
-% if xASL_exist(x.P.Path_T1,'file') && T1volFileMissing && x.mutex.HasState(StateName{iState})
-%     Reprocessing = true;
-%     warning(['T1/CAT12 volumetric results were missing, rerunning ' StateName{iState}]);
-% end
-% if ~x.mutex.HasState(StateName{iState}) || Reprocessing % tracks progress through lock/*.status files, & locks current run
-% 
-%     % PM: this should be corrected for any
-%     % Lesion_(T1|FLAIR)_(1|2|3|..)\.nii files
-% 
-%     if ~x.mutex.HasState(StateName{6})
-%         fprintf('%s\n', [StateName{6} ' not performed, ' StateName{iState} ' skipped']);
-%     else % run only if segmentation has been run
-% 
-%         xASL_wrp_GetVolumetrics(x);
-%         x.mutex.AddState(StateName{iState});
-%     end
-% else
-% 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-% 	if  bO; fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);end
-% end
+%% -----------------------------------------------------------------------------
+%% 9    Get WMH & tissue volumes
+iState = 9;
+Reprocessing = false;
+WMHvolFileMissing = isempty(xASL_adm_GetFileList(x.D.TissueVolumeDir,['^WMH_LST_(LGA|LPA)_' x.P.SubjectID '\.tsv$'],'FPList',[0 Inf]));
+if xASL_exist(x.P.Path_FLAIR,'file') && WMHvolFileMissing && x.mutex.HasState(StateName{iState})
+    Reprocessing = true;
+    warning(['WMH/LST volumetric results were missing, rerunning ' StateName{iState}]);
+end
+T1volFileMissing = ~exist(fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.tsv']), 'file');
+if xASL_exist(x.P.Path_T1,'file') && T1volFileMissing && x.mutex.HasState(StateName{iState})
+    Reprocessing = true;
+    warning(['T1/CAT12 volumetric results were missing, rerunning ' StateName{iState}]);
+end
+if ~x.mutex.HasState(StateName{iState}) || Reprocessing % tracks progress through lock/*.status files, & locks current run
+
+    % PM: this should be corrected for any
+    % Lesion_(T1|FLAIR)_(1|2|3|..)\.nii files
+
+    if ~x.mutex.HasState(StateName{6})
+        fprintf('%s\n', [StateName{6} ' not performed, ' StateName{iState} ' skipped']);
+    else % run only if segmentation has been run
+
+        xASL_wrp_GetVolumetrics(x);
+        x.mutex.AddState(StateName{iState});
+    end
+else
+	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
+	if  bO; fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);end
+end
 
 
 
 
 
-% %% -----------------------------------------------------------------------------
-% %% 10    Visual QC
-% iState = 10;
-% if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status files, & locks current run
-%     if ~x.mutex.HasState(StateName{6}) || ~x.mutex.HasState(StateName{8})
-%         fprintf('%s\n', [StateName{6} ' or ' StateName{8} ' not performed, skipping ' StateName{iState}]);
-%     else
-% 
-%         xASL_wrp_VisualQC_Structural(x);
-% 
-%         x.mutex.AddState(StateName{iState});
-%         x.mutex.DelState(StateName{iState+1});
-%     end
-% 
-% else
-% 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-% 	if  bO; fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);end
-% end
-% 
-% %% -----------------------------------------------------------------------------
-% %% 11    WAD-QC
-% iState = 11;
-% 
-% if ~x.mutex.HasState(StateName{iState}) && x.DoWADQCDC
-%     xASL_qc_WADQCDC(x, x.iSubject, 'Structural');
-%     x.mutex.AddState(StateName{iState});
-% elseif x.mutex.HasState(StateName{iState}) && bO
-%     fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);
-% end
+%% -----------------------------------------------------------------------------
+%% 10    Visual QC
+iState = 10;
+if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status files, & locks current run
+    if ~x.mutex.HasState(StateName{6}) || ~x.mutex.HasState(StateName{8})
+        fprintf('%s\n', [StateName{6} ' or ' StateName{8} ' not performed, skipping ' StateName{iState}]);
+    else
+
+        xASL_wrp_VisualQC_Structural(x);
+
+        x.mutex.AddState(StateName{iState});
+        x.mutex.DelState(StateName{iState+1});
+    end
+
+else
+	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
+	if  bO; fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);end
+end
+
 
 
 
