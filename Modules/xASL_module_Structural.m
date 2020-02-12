@@ -376,7 +376,13 @@ iState = 7;
 if ~x.mutex.HasState(StateName{iState})
     if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 
-        xASL_wrp_CleanUpWMH_SEGM(x);
+        UniqueN = unique(xASL_io_Nifti2Im(x.P.Path_WMH_SEGM));
+        
+        if length(UniqueN)==2 && UniqueN(1)==0 && UniqueN(2)==1
+            warning('Skipping WMH cleanup, because WMH_SEGM seems imported as binary mask');
+        else
+            xASL_wrp_CleanUpWMH_SEGM(x);
+        end
 
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
