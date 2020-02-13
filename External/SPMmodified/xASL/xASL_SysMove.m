@@ -19,7 +19,7 @@ function xASL_SysMove(SrcPath, DstPath, bForce)
     if nargin<2
         error('Please provide both SrcPath & DstPath');
     elseif strcmp(SrcPath,DstPath)
-        warning('SrcPath & DstPath were equal, no xASL_Move action required');
+        warning('SrcPath & DstPath were equal, no action required');
         fprintf('%s\n', SrcPath);
         return;
     end
@@ -27,18 +27,21 @@ function xASL_SysMove(SrcPath, DstPath, bForce)
         bForce = false;
     end
 	if ~xASL_exist(SrcPath,'file') % Check if source exists
-		error(['xASL_Move: Source doesn''t exist: ' SrcPath])
+		error(['xASL_Move: Source doesn''t exist: ' SrcPath]);
     end
 
     %% Start moving
     if isunix
+        SrcPath = xASL_adm_UnixPath(SrcPath);
+        DstPath = xASL_adm_UnixPath(DstPath);
+        
         if bForce
-            strforce = '-f';
+            strforce = '-f ';
         else
             strforce = [];
         end
-        [status,result] = system(['mv ' strforce ' ''' SrcPath ''' ''' DstPath '''']);
-        if status
+        [status,result] = system(['mv ' strforce SrcPath ' ' DstPath]);
+        if status~=0
             error('xASL_Move: Error moving %s to %s: %s', SrcPath, DstPath, result);
         end
     elseif ispc
@@ -48,7 +51,7 @@ function xASL_SysMove(SrcPath, DstPath, bForce)
             strforce = [];
         end
         [status,result] = system(['move ' strforce ' "' SrcPath '" "' DstPath '"']);
-        if status
+        if status~=0
             error('xASL_Move: Error moving %s to %s: %s', SrcPath, DstPath, result);
         end
     else
