@@ -373,6 +373,14 @@ else
     %% Define subjects/parameters
     x = xASL_init_DefineSets(x);
 
+    
+    
+    
+    
+    
+    
+    
+    
     if ~isfield(x,'name'); x.name = ''; end
 
 
