@@ -1,32 +1,34 @@
-function ConvertDicomFolderStructure_CarefulSlow(ROOT, bUseDCMTK)
+function ConvertDicomFolderStructure_CarefulSlow(ROOT, bUseDCMTK, bVerbose)
 %ConvertDicomFolderStructure_CarefulSlow Script to put dicom names in directories according to their ProtocolName/SeriesDescrption
 
 if nargin<2 || isempty(bUseDCMTK)
     bUseDCMTK = true; % faster
 end
+if nargin<3 || isempty(bVerbose)
+    bVerbose = true;
+end
 
     Flist   = xASL_adm_GetFileList(ROOT,'^.*.(?!(xlsx|ini))$','FPListRec',[0 Inf]);
 
     for iL=1:length(Flist)
-        xASL_TrackProgress(iL,length(Flist));
+        if bVerbose; xASL_TrackProgress(iL,length(Flist)); end
         clear tDcm Fname NewDir NewFile Ppath Pfile Pext
         
         try
-            tDcm    = ReadTheDicom(bUseDCMTK, Flist{iL});
+            tDcm = ReadTheDicom(bUseDCMTK, Flist{iL});
 
             try
-                if  ~strcmp(tDcm.ProtocolName,tDcm.SeriesDescription)
-                    Fname   = [tDcm.ProtocolName '_' tDcm.SeriesDescription];
+                if ~strcmp(tDcm.ProtocolName,tDcm.SeriesDescription)
+                    Fname = [tDcm.ProtocolName '_' tDcm.SeriesDescription];
                 else
-                    Fname   = tDcm.ProtocolName;
+                    Fname = tDcm.ProtocolName;
                 end
             catch
-                Fname   = tDcm.ProtocolName;
+                Fname = tDcm.ProtocolName;
             end
             
-%             Fname       = CorrectFileName( Fname );
-
-            NewDir  = fullfile(ROOT,Fname);
+            Fname = xASL_adm_CorrectName(Fname);
+            NewDir = fullfile(ROOT,Fname);
             xASL_adm_CreateDir(NewDir);
 
             [Ppath Pname Pext]  = fileparts(Flist{iL});
