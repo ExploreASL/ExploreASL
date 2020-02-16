@@ -129,6 +129,83 @@ if ~isfield(x,'ProcessData')
     end
 end
 
+%% -----------------------------------------------------------------------------
+%% Get ExploreASL path
+
+% Check if the current directory is the ExploreASL directory
+CurrCD = pwd;
+if exist(fullfile(CurrCD, 'ExploreASL_Master.m'), 'file')
+    MyPath2  = CurrCD;
+end
+
+% Check whether MyPath is correct, otherwise obtain correct folder
+if ~isfield(x, 'MyPath')
+    x.MyPath  = '/DummyPath';
+end
+
+if exist('MyPath2','var')
+    x.MyPath = MyPath2;
+end
+
+MasterScriptPath = fullfile(x.MyPath, 'ExploreASL_Master.m');
+
+if ~isdeployed
+    if ~exist(MasterScriptPath,'file')
+        if UseGUI
+            pathstr = uigetdir(CurrCD, 'Select folder where ExploreASL is installed');
+        else
+            pathstr = input('Provide foldername where ExploreASL is installed, including ": ');
+        end
+        if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL_Master.m'),'file')
+            return
+        end
+        x.MyPath = pathstr;
+    end
+else
+    % In deployed mode set the ExploreASL directory in the ctf archive
+    [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL_Master*'); % Find the path of the master files within the ctf archive
+    curPathCTF = fileparts(files(1,:)); % Get the path
+    x.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
+    disp('------------ ctfroot -------------');
+    disp(ctfroot);
+    disp('------------ x.MyPath ------------');
+    disp(x.MyPath);
+    disp('----------------------------------');
+    % pause;
+end
+
+% Go to ExploreASL folder
+cd(x.MyPath);
+
+
+%% Add paths
+if ~isdeployed
+% Define paths (should be equal when loading data or only initializing
+% ExploreASL
+    addpath(x.MyPath);
+
+	%fullfile('Development','dicomtools'), ...
+    subfolders_to_add = {   'Functions', ...
+                            'mex', ...
+                            'Modules', ...
+                            fullfile('Modules', 'SubModule_Structural'),...
+                            fullfile('Modules', 'SubModule_ASL'),...
+                            fullfile('Modules', 'SubModule_Population'),...
+                            'Development' ...
+                            'External' ...
+                            fullfile('External','DCMTK'), ...
+                            fullfile('External','ExploreQC'), ...
+							fullfile('External','SPMmodified'), ...
+                            fullfile('External','SPMmodified','xASL'),...                            
+                            fullfile('External','SPMmodified','toolbox','cat12'), ...
+							fullfile('External','SPMmodified','toolbox','LST'), ...
+							fullfile('External','SPMmodified','toolbox','OldNorm')};
+
+    for ii=1:length(subfolders_to_add)
+        addpath(fullfile(x.MyPath,subfolders_to_add{ii}));
+    end
+end
+
 if x.ProcessData
     %% Load dataset parameter file
 
@@ -147,14 +224,6 @@ if x.ProcessData
 
     [pathstr, ~, Dext] = fileparts(DataParPath);
     xBackup = x;
-
-    if ~isdeployed
-        addpath('Functions');
-        addpath(fullfile('External','SPMmodified','xASL'));
-        addpath(fullfile('External','SPMmodified'));
-        addpath(fullfile('External','DCMTK'));
-        addpath(fullfile('External','ExploreQC'));
-    end
 
     if strcmp(Dext,'.mat') % Now reading a mat-file, soon to be .json table complying with BIDS
         %% Mat file can only contain single variable, that should contain the x/parameters
@@ -216,53 +285,7 @@ end
 
 
 
-%% -----------------------------------------------------------------------------
-%% Get ExploreASL path
 
-% Check if the current directory is the ExploreASL directory
-CurrCD = pwd;
-if exist(fullfile(CurrCD, 'ExploreASL_Master.m'), 'file')
-    MyPath2  = CurrCD;
-end
-
-% Check whether MyPath is correct, otherwise obtain correct folder
-if ~isfield(x, 'MyPath')
-    x.MyPath  = '/DummyPath';
-end
-
-if exist('MyPath2','var')
-    x.MyPath = MyPath2;
-end
-
-MasterScriptPath = fullfile(x.MyPath, 'ExploreASL_Master.m');
-
-if ~isdeployed
-    if ~exist(MasterScriptPath,'file')
-        if UseGUI
-            pathstr = uigetdir(CurrCD, 'Select folder where ExploreASL is installed');
-        else
-            pathstr = input('Provide foldername where ExploreASL is installed, including ": ');
-        end
-        if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL_Master.m'),'file')
-            return
-        end
-        x.MyPath = pathstr;
-    end
-else
-    % In deployed mode set the ExploreASL directory in the ctf archive
-    [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL_Master*'); % Find the path of the master files within the ctf archive
-    curPathCTF = fileparts(files(1,:)); % Get the path
-    x.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
-    disp('------------ ctfroot -------------');
-    disp(ctfroot);
-    disp('------------ x.MyPath ------------');
-    disp(x.MyPath);
-    disp('----------------------------------');
-    % pause;
-end
-
-% Go to ExploreASL folder
-cd(x.MyPath);
 
 %% -----------------------------------------------------------------------------
 %% Initialization
@@ -278,31 +301,8 @@ else
     set(groot,'DefaultTextInterpreter','none')
 end
 
-% -------------------------------------
-% Define paths
-% -------------------------------------
+% Get version
 if ~isdeployed
-
-    addpath(x.MyPath);
-
-	%fullfile('Development','dicomtools'), ...
-    subfolders_to_add = {   'Functions', ...
-                            fullfile('External','SPMmodified','xASL'),...
-                            'mex', ...
-                            'Modules', ...
-                            fullfile('Modules', 'SubModule_Structural'),...
-                            fullfile('Modules', 'SubModule_ASL'),...
-                            fullfile('Modules', 'SubModule_Population'),...
-                            'External' ...
-							fullfile('External','SPMmodified'), ...
-                            fullfile('External','SPMmodified','toolbox','cat12'), ...
-							fullfile('External','SPMmodified','toolbox','LST'), ...
-							fullfile('External','SPMmodified','toolbox','OldNorm')};
-
-    for ii=1:length(subfolders_to_add)
-        addpath(fullfile(x.MyPath,subfolders_to_add{ii}));
-    end
-
     VersionPath = xASL_adm_GetFileList(x.MyPath, '^VERSION.*$', 'FPList', [0 Inf]);
     if isempty(VersionPath)
         warning('Could not obtain ExploreASL version, version file missing');
