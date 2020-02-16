@@ -31,16 +31,16 @@ end
             NewDir = fullfile(ROOT,Fname);
             xASL_adm_CreateDir(NewDir);
 
-            [Ppath Pname Pext]  = fileparts(Flist{iL});
-            NewFile             = fullfile(NewDir,[Pname '.dcm']);
+            [~, Pname] = fileparts(Flist{iL});
+            NewFile = fullfile(NewDir,[Pname '.dcm']);
 
-            if  exist(Flist{iL},'file') && ~exist(NewFile,'file')
-                xASL_Move(Flist{iL},NewFile);
+            if ~strcmp(Flist{iL},NewFile) && exist(Flist{iL},'file') && ~exist(NewFile,'file')
+                xASL_Move(Flist{iL}, NewFile);
             end
         end
     end
 
-    Dlist   = xASL_adm_GetFsList(ROOT,'^.*$',1,0,0,[0 Inf]);
+    Dlist = xASL_adm_GetFsList(ROOT,'^.*$',1,0,0,[0 Inf]);
     for iD=3:length(Dlist)
         if  isempty(xASL_adm_GetFileList(fullfile(ROOT,Dlist{iD}),'^.*','FPListRec',[0 Inf]))
             try
@@ -57,25 +57,36 @@ end
 function [Info] = ReadTheDicom(bUseDCMTK, DicomPath)
 %ReadTheDicom Wrapper around DICOMTK & dicominfo for reading the dicom fields
 
+% If bUseDCMTK, then we first try using the DCMTK compilation by Jan Petr,
+% if this fails, we try dicominfo
+
 warning('off','images:dicominfo:fileVRDoesNotMatchDictionary');
 
-try
-    if bUseDCMTK
+if bUseDCMTK
+    TryDICOMinfo = false;
+    try
         Info = xASL_io_DcmtkRead(DicomPath);
 
         if isempty(Info.EchoTime) || isempty(Info.RepetitionTime) || isempty(Info.ImageType)
-            Info = dicominfo(DicomPath);
-            if ~isfield(Info,'EchoTime') || ~isfield(Info,'RepetitionTime') || ~isfield(Info,'ImageType')
-                error('Both DCMTK output & dicominfo were incomplete');
-            else
-                error('DCMTK output was incomplete, but dicominfo was complete');
-            end
+            warning(['Incomplete DCMTK output: ' DicomPath]);
+            TryDICOMinfo = true;
         end
-    else
-        Info = dicominfo(DicomPath);
+    catch ME
+        fprintf('%s\n','Warning, xASL_io_DcmtkRead failed with following warning:');
+        warning(ME.message);
+        TryDICOMinfo = true;
     end
-catch ME
-    warning(ME.message);
+end
+if ~bUseDCMTK || TryDICOMinfo
+    try
+        Info = dicominfo(DicomPath);
+        if ~isfield(Info,'EchoTime') || ~isfield(Info,'RepetitionTime') || ~isfield(Info,'ImageType')
+            warning(['Incomplete dicominfo output: ' DicomPath]);
+        end
+    catch ME
+        fprintf('%s\n','Warning, dicominfo failed with following warning:');
+        warning(ME.message);            
+    end
 end
 
 end
