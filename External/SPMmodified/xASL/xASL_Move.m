@@ -31,8 +31,10 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
     if nargin<2
         error('Please provide both SrcPath & DstPath');
     elseif strcmp(SrcPath,DstPath)
-        warning('SrcPath & DstPath were equal, no xASL_Move action required');
-        fprintf('%s\n', SrcPath);
+        if bVerbose
+            warning('SrcPath & DstPath were equal, no xASL_Move action required');
+            fprintf('%s\n', SrcPath);
+        end
         return;
     end
     if nargin<3 || isempty(bOverwrite)
@@ -43,7 +45,7 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 	end
 	% Check if source exists
 	if ~xASL_exist(SrcPath,'file')
-		error(['xASL_Move: Source doesn''t exist: ' SrcPath])
+		error(['Source doesn''t exist: ' SrcPath])
     end
 	
     %% Manage .nii|.nii.gz
