@@ -48,7 +48,7 @@ elseif ismac
     warning('This Matlab-FSL implementation not yet tested for Mac, skipping');
     return;
 elseif ispc
-    [status, status2] = system('wsl ls;'); % leave status2 here, otherwise system will produce output
+    [status, ~] = system('wsl ls;'); % leave status2 here, otherwise system will produce output
     if status~=0
         warning('Detected windows PC without WSL, needs to be installed first, skipping');
         fprintf('This warning can be ignored if you dont need to run FSL-specific processing, e.g. TopUp\n');
@@ -60,15 +60,15 @@ end
 PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin'};
 PathDirect = {'/usr/lib/fsl/5.0'};
 if ispc
-    CurrDir = pwd;
     [~, result] = system('echo %LOCALAPPDATA%');
-    SearchDir = fullfile(result(1:end-1), 'Packages');
+    SearchDir = fullfile(strtrim(result), 'Packages');
     % Check distros to save time
     Distros = {'CanonicalGroupLimited.Ubuntu' 'WhitewaterFoundryLtd' 'Ubuntu' 'SUSE' 'Kali' 'Debian'};
     DistroDir = {};
     for iD=1:length(Distros)
         if isempty(DistroDir)
             DistroDir = xASL_adm_GetFileList(SearchDir , ['.*' Distros{iD} '.*'], 'FPList', [0 Inf], true);
+            break
         end
     end
     if ~isempty(DistroDir)
@@ -84,7 +84,6 @@ if ispc
     RootFSLDir = RootFSLDir{1};
 
     PathApps{end+1} = fullfile(RootFSLDir,'usr','local');
-    cd(CurrDir);
 end
 
 %% Try searching some more
