@@ -253,17 +253,21 @@ end
 ImOut = IM{1};
 if length(IM)>1 % if we have more images, we overlay them on the first
     TransparancyMask = sum((IM{1} ./ IntScale(1))>0.75,3)==3;
-    % TransparancyMasks are very bright voxels, where we may need transparancy
+    TransparancyMask = repmat(TransparancyMask,[1 1 3]);
+    % TransparancyMask contains very bright voxels, where we may need transparancy
 
     Mask2 = zeros(size(TransparancyMask));
     for iImage=2:length(IM)
         NonGrayMask = ~(IM{iImage}(:,:,1)==IM{iImage}(:,:,2) & IM{iImage}(:,:,2)==IM{iImage}(:,:,3));
+        NonGrayMask = repmat(NonGrayMask,[1 1 3]);
         % Create mask where overlaid image has non-zero non-gray values
-        Mask2 = Mask2 | (sum(IM{iImage},3)>0 & NonGrayMask);
+        NonGrayMask = IM{iImage}>0 & NonGrayMask;
+        % Take all voxels within this mask that contain any RGB color
+        Mask2 = Mask2 | NonGrayMask;
+        % Combine this mask for all image layers
     end
 
-    TransparancyMask = TransparancyMask & Mask2;
-    TransparancyMask = repmat(TransparancyMask,[1 1 3]);
+    TransparancyMask = TransparancyMask & Mask2; % combine masks
 
     IsBinaryMask = true;
     if ~length(unique(IM{iImage}(:)))==2 % if it is a binary mask

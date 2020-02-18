@@ -162,13 +162,21 @@ kFil = exp(-kFil/2);
 % Normalize the PDF
 kFil = kFil/sum(kFil(:));
 
-% Apply the smoothing filter on the source image
+% Apply the smoothing filter on the source image(s)
+% Do this within the first 3 dimensions only
 imSmo = zeros(size(imSrc.dat));
-for ii = 1:size(imSrc.dat,4)
-	imSmo(:,:,:,ii) = convn(imSrc.dat(:,:,:,ii),kFil,'same');
+for i7=1:size(imSrc.dat,7)
+    for i6=1:size(imSrc.dat,6)
+        for i5=1:size(imSrc.dat,5)
+            for i4=1:size(imSrc.dat,4)
+                imSmo(:,:,:,i4,i5,i6,i7) = convn(imSrc.dat(:,:,:,i4,i5,i6,i7),kFil,'same');
+            end
+        end
+    end
 end
 
 % Save the smoothed image
 xASL_io_SaveNifti(pathSrc, pathOut, imSmo, [], 0);
+
 
 end

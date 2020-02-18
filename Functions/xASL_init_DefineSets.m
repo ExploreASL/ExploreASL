@@ -22,6 +22,12 @@ if ~isfield(x,'exclusion') % default no exclusions
     x.exclusion = {''};
 end
 
+if isfield(x,'SESSIONS') && isstruct(x.SESSIONS)
+    warning('Invalid x.SESSIONS structure, replacing this now');
+    fprintf('%s\n', 'Check that the correct number of sessions were processed');
+    x = rmfield(x,'SESSIONS');
+end
+
 if ~isfield(x,'SESSIONS') % can also be defined in DataPar.mat
     x.SESSIONS = '';
     SessionPathList = xASL_adm_GetFileList(x.D.ROOT, '^(ASL|func)_\d*$', 'FPListRec', [0 Inf],1);

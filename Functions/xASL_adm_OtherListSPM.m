@@ -7,6 +7,10 @@ function [OtherListSPM, OtherListOut] = xASL_adm_OtherListSPM(OtherList)
     OtherListSPM = '';
     OtherListOut = '';
 
+    if ~iscell(OtherList)
+        OtherList = {OtherList};
+    end
+    
     for iL=1:numel(OtherList)
         if ~isempty(OtherList{iL})
             if ~exist(OtherList{iL},'file')

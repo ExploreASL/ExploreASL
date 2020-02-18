@@ -180,6 +180,7 @@ if ~x.mutex.HasState(StateName{1}) || (~x.mutex.HasState(StateName{6}) && ~x.mut
     DelList = {x.P.Path_c1T1 x.P.Path_c2T1 x.P.Path_c3T1 x.P.Path_c1T1_ORI x.P.Path_c2T1_ORI x.P.Path_c3T1_ORI x.P.Path_y_T1 x.P.Path_PseudoCBF};
     DelList{end+1} = fullfile(fileparts(x.P.Path_T1), 'CentralWM_QC.nii');
     DelList{end+1} = fullfile(fileparts(x.P.Path_T1), 'LeftRight.nii');
+    DelList{end+1} = fullfile(fileparts(x.P.Path_T1), 'catreport_T1.pdf');
     for iD=1:length(DelList)
         xASL_delete(DelList{iD});
     end
@@ -343,7 +344,7 @@ iState = 6;
 if ~isfield(x,'Segment_SPM12')
     x.Segment_SPM12 = false; % by default, use CAT12, not SPM12 for segmentation
 end
-if ~isfield(x,'bFixResolution');
+if ~isfield(x,'bFixResolution')
     x.bFixResolution = false; % by default, keep the original resolution
 end
 
@@ -376,7 +377,13 @@ iState = 7;
 if ~x.mutex.HasState(StateName{iState})
     if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 
-        xASL_wrp_CleanUpWMH_SEGM(x);
+        UniqueN = unique(xASL_io_Nifti2Im(x.P.Path_WMH_SEGM));
+        
+        if length(UniqueN)==2 && UniqueN(1)==0 && UniqueN(2)==1
+            warning('Skipping WMH cleanup, because WMH_SEGM seems imported as binary mask');
+        else
+            xASL_wrp_CleanUpWMH_SEGM(x);
+        end
 
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing

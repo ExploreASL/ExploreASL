@@ -160,8 +160,8 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 			end
 			
 			%% -----------------------------------------------------------------------------
-			% Identify normal/enhanced DICOM
-			% -----------------------------------------------------------------------------
+            % Take information from enhanced DICOM, if exists
+            %% -----------------------------------------------------------------------------
 			if isfield(temp, 'MediaStorageSOPClassUID')
 				if strcmp(temp.MediaStorageSOPClassUID,'1.2.840.10008.5.1.4.1.1.4.1')==1 % Enhanced MR Image Storage
 					bEnhancedMR = true;
@@ -180,36 +180,34 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 			end
 			
 			% Deal with enhanced DICOM format imported through DICOMINFO and not DCMTK
-            if bEnhancedMR && TryDicominfo
+            if bEnhancedMR && ~TryDicominfo
+                warning('Enhanced DICOM detected, but no dicominfo selected, skipping obtaining parameters');
+            elseif bEnhancedMR && TryDicominfo
                 % for simplicity, take the first value from the enhanced
                 % sequences and store them in the temp-struct as if it is a
                 % classic structure.
 
-                itemNames = fieldnames(temp.PerFrameFunctionalGroupsSequence);
-                iFrame=1;
-                x.S = temp.SharedFunctionalGroupsSequence(1).(itemNames{iFrame});
+                if ~isfield(temp, 'PerFrameFunctionalGroupsSequence')
+                    warning('Enhanced DICOM but PerFrameFunctionalGroupsSequence not found');
+                else
+                    itemNames = fieldnames(temp.PerFrameFunctionalGroupsSequence);
+                    SequenceFields = temp.PerFrameFunctionalGroupsSequence.(itemNames{1}); % here we assume the same ScaleSlope for all images in the sequence
 
-                MRTimingAndRelatedParametersSequence = x.S.MRTimingAndRelatedParametersSequence.Item_1;
-                temp.RepetitionTime = GetDicomValue(MRTimingAndRelatedParametersSequence,'RepetitionTime');
-%               temp.FlipAngle = GetDicomValue(MRTimingAndRelatedParametersSequence,'FlipAngle');
+                    % Fill temp dicominfo with these fields
+                    Fields1Are = fields(SequenceFields);
+                    for iField1=1:length(Fields1Are)
+                        if ischar(SequenceFields.(Fields1Are{iField1}))
+                            temp.(Fields1Are{iField1}) = SequenceFields.(Fields1Are{iField1});
+                        elseif isstruct(SequenceFields.(Fields1Are{iField1}))
+                            Fields2Are = fields(SequenceFields.(Fields1Are{iField1}));
+                            SequenceFields2 = SequenceFields.(Fields1Are{iField1}).(Fields2Are{1});
 
-                %temp.NumberOfAverages = x.S.MRAveragesSequence.Item_1.NumberOfAverages;
-
-                F = temp.PerFrameFunctionalGroupsSequence(1).(itemNames{iFrame});
-                MREchoSequence = F.MREchoSequence.Item_1;
-                temp.EchoTime = GetDicomValue(MREchoSequence,'EffectiveEchoTime');
-
-                PixelValueTransformationSequence = F.PixelValueTransformationSequence.Item_1;
-                temp.RescaleIntercept = PixelValueTransformationSequence.RescaleIntercept;
-                temp.RescaleSlope = PixelValueTransformationSequence.RescaleSlope; % NB RescaleSlopeOriginal doesn't exist in MRe
-                temp.RescaleType = PixelValueTransformationSequence.RescaleType;
-
-                if strcmp(bVendor,'Philips') % private stuff!!!
-                    defaultValue = DcmParDefaults{strcmp(dcmfields,'NumberOfTemporalPositions')};
-                    temp.NumberOfTemporalPositions = GetDicomValue(F.Private_2005_140f.Item_1, 'NumberOfTemporalPositions', defaultValue);
-
-                    defaultValue = DcmParDefaults{strcmp(dcmfields,'MRScaleSlope')};
-                    temp.MRScaleSlope = GetDicomValue(F.Private_2005_140f.Item_1, 'MRScaleSlope', defaultValue);
+                            Fields3Are = fields(SequenceFields2);
+                            for iField3=1:length(Fields3Are)
+                                temp.(Fields3Are{iField3}) = SequenceFields2.(Fields3Are{iField3});
+                            end
+                        end
+                    end
                 end
             end
 			
@@ -420,9 +418,9 @@ end
 
 if ~isempty(parmsfile)
 	X = load(parmsfile,'-mat');
-% 	parms = X.parms % show me the values >>>>>>>>>> TOO MUCH VERBOSE
+% 	parms = X.parms % show me the values >>>>>>>>>> TOO VERBOSE
 else
-% 	parms % show me the values >>>>>>>>>> TOO MUCH VERBOSE
+% 	parms % show me the values >>>>>>>>>> TOO VERBOSE
 end
 
 return

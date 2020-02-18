@@ -87,8 +87,12 @@ if ~x.mutex.HasState(StateName{1})
         x.S.SetsID = SetsIDBackup(CohortIs{iCohort},:);
         xASL_wrp_CreatePopulationTemplates(x, false, false, {{['r' x.P.FLAIR]} {'FLAIR'} 0}, false, false, {{@xASL_stat_MeanNan} {'mean'}});
         xASL_wrp_CreatePopulationTemplates(x, false, false, {{['r' x.P.WMH_SEGM]} {'WMH_SEGM'} 0}, false, false, {{@xASL_stat_SumNan} {'sum'}});
-        xASL_Move(PathFLAIR,fullfile(x.D.TemplatesStudyDir,['FLAIR_' NameIs{iCohort} '.nii']));
-        xASL_Move(PathWMH,fullfile(x.D.TemplatesStudyDir,['WMH_' NameIs{iCohort} '.nii']));
+        Path_TemplateFLAIR = fullfile(x.D.TemplatesStudyDir,['FLAIR_' NameIs{iCohort} '.nii']);
+        Path_TemplateWMH = fullfile(x.D.TemplatesStudyDir,['WMH_' NameIs{iCohort} '.nii']);
+        xASL_delete(Path_TemplateFLAIR);
+        xASL_delete(Path_TemplateWMH);
+        xASL_Move(PathFLAIR, Path_TemplateFLAIR);
+        xASL_Move(PathWMH, Path_TemplateWMH);
     end
         
 

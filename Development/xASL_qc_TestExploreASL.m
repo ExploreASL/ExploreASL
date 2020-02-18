@@ -25,7 +25,7 @@ if isunix && strcmp(CurrentUser,'hjmutsaerts')
     TestDirDest = '/scratch/hjmutsaerts/TestDataSet/TempTestResults';
     RunMethod = 2;
 elseif ismac && strcmp(CurrentUser,'henk')
-    TestDirOrig = '/Users/henk/ExploreASL/ExploreASL_TestCases';
+    TestDirOrig = '/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases';
     TestDirDest = '/Users/henk/ExploreASL/ExploreASL_TestCasesProcessed';
     RunMethod = 1;
 elseif ispc && strcmp(CurrentUser,'henk')
