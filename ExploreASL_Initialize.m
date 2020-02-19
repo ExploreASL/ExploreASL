@@ -260,9 +260,13 @@ if x.ProcessData
             end
         end
     end
-    x.ProcessData = xBackup.ProcessData;
-    x.iWorker = xBackup.iWorker;
-    x.nWorkers = xBackup.nWorkers;
+    % Put x fields back from backup
+    FieldsAre = fields(xBackup);
+    for iField=1:length(FieldsAre)
+        if ~isfield(x,(FieldsAre{iField}))
+            x.(FieldsAre{iField}) = xBackup.(FieldsAre{iField});
+        end
+    end
 
     if ~isfield(x,'D')
         x.D = struct;
