@@ -18,7 +18,7 @@ function [PathIs] = xASL_adm_UnixPath(PathIs)
     % 4) Selectively escape whitespace (ignore already escaped whitespace)
     % 5) If WSL: add mounting prefix
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % EXAMPLE xASL_adm_UnixPath('   \Users/User/Google Drive\ ');
+    % EXAMPLE xASL_adm_UnixPath('   \Users/User/Google Drive\My      Photos ');
     % This should output '/Users/User/Google\ Drive/'
     % __________________________________
     % Copyright 2020 ExploreASL
@@ -34,7 +34,7 @@ function [PathIs] = xASL_adm_UnixPath(PathIs)
     end
     
     %% ===================================================================================
-    %% 2) Trim whitespace
+    %% 2) Trim leading or trailing whitespace
     PathIs = strtrim(PathIs);
     
     %% ===================================================================================
@@ -42,8 +42,8 @@ function [PathIs] = xASL_adm_UnixPath(PathIs)
     PathIs =regexprep(PathIs, '(\\)(?! )', '/');
     
     %% ===================================================================================
-    %% 4) Replace all spaces which are not preceded by a \ or another space
-    PathIs = regexprep(PathIs, '(?<![\\ ])( +)', '\\$1');
+    %% 4) Replace all spaces which are not preceded by a \ (for each space separately)
+    PathIs = regexprep(PathIs, '(?<!\\)( )', '\\$1');
     
     %% ===================================================================================
     %% 5) If WSL: add mounting prefix
