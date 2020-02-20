@@ -49,8 +49,8 @@ for iDir=1:length(Dlist)
     PathM0 = fullfile(Dlist{iDir},'ASL_1','M0.nii');
     PathM0Backup = fullfile(Dlist{iDir},'ASL_1','M0_Backup.nii');
     
-    if ~xASL_exist(PathM0,'file') && exist(PathM0Backup,'file')
-        xASL_Copy(PathM0Backup, PathM0);
+    if xASL_exist(PathM0Backup,'file')
+        xASL_Copy(PathM0Backup, PathM0, true);
     elseif ~xASL_exist(PathM0,'file')
         continue;
     else
@@ -73,7 +73,7 @@ for iDir=1:length(Dlist)
 end
 
 %% Fix the ASL scan
-AnalysisDir = '/Users/henk/ExploreASL/ASL/SABRE/analysis';
+AnalysisDir = '/Users/henk/surfdrive/SABRE/analysis';
 Dlist = xASL_adm_GetFileList(AnalysisDir,'\d*','FPList', [0 Inf], true);
 
 for iDir=1:length(Dlist)
@@ -81,8 +81,8 @@ for iDir=1:length(Dlist)
     PathASL = fullfile(Dlist{iDir},'ASL_1','ASL4D.nii');
     PathASLBackup = fullfile(Dlist{iDir},'ASL_1','ASL4D_Backup.nii');
     
-    if exist(PathASLBackup,'file')
-        xASL_Copy(PathASLBackup, PathASL);
+    if xASL_exist(PathASLBackup,'file')
+        xASL_Copy(PathASLBackup, PathASL, true);
     elseif ~xASL_exist(PathASL,'file')
         continue;
     else
@@ -90,19 +90,43 @@ for iDir=1:length(Dlist)
     end
     
     IM = xASL_io_Nifti2Im(PathASL);
-    if max(size(IM)~=[80 80 40 35])
-        warning(['Size ASL differed: ' PathASL]);
+    if length(size(IM))<4
+        warning(['Dim issue:' PathASL]);
+        fprintf('\n\n\n');
     else
+        if max(size(IM)~=[80 80 40 35])
+            warning(['Size ASL differed: ' PathASL]);
+            fprintf('\n\n\n');
+        end
         FullIM = reshape(IM,[size(IM,1) size(IM,2) size(IM,3)*size(IM,4)]);
+        nVol = size(IM,3)*size(IM,4)/20;
         clear IM;
-        nVol = 35;
         for ii=1:nVol
             IM(:,:,:,ii) = FullIM(:,:,[ii:nVol:end-(nVol-ii)]);
         end
         IM = reshape(IM,[size(IM,1) size(IM,2) size(IM,3)/2 size(IM,4)*2]);
 
-        xASL_io_SaveNifti(PathASL, PathASL, IM);
+        xASL_io_SaveNifti(PathASL, PathASL, IM, [], 0);
     end
 end
 
 %% Move all subjects without ASL to exclusion folder
+AnalysisDir = '/Users/henk/ExploreASL/ASL/SABRE/analysis';
+ExclusionDir = '/Users/henk/ExploreASL/ASL/SABRE/ExcludedNoASL';
+xASL_adm_CreateDir(ExclusionDir);
+Dlist = xASL_adm_GetFileList(AnalysisDir,'\d*','FPList', [0 Inf], true);
+
+for iDir=1:length(Dlist)
+    xASL_TrackProgress(iDir,length(Dlist));
+    PathASL = fullfile(Dlist{iDir},'ASL_1','ASL4D.nii');
+    [~, Ffile] = xASL_fileparts(Dlist{iDir});
+    List{iDir,1} = Ffile;
+    if ~xASL_exist(PathASL,'file')
+        xASL_Move(Dlist{iDir}, fullfile(ExclusionDir, Ffile));
+        List{iDir,2} = 0;
+    else
+        List{iDir,2} = 1;
+    end
+end
+        
+        

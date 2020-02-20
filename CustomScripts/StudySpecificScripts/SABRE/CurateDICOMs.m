@@ -3,8 +3,8 @@
 
 ExploreASL_Master('',0);
 
-AnalysisDir = '/Users/henk/Downloads/SABRE/analysis';
-BaMoSDir = '/Users/henk/Downloads/SABRE/Carole/SABRE';
+AnalysisDir = '/Users/henk/surfdrive/SABRE/analysis';
+BaMoSDir = '/Users/henk/surfdrive/SABRE/Carole/SABRE';
 
 RegExp = '\d{5}\d*';
 

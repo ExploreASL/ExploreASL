@@ -1,13 +1,15 @@
-function xASL_adm_ImportBaMoS(AnalysisDir, CaroleDir)
+function xASL_adm_ImportBaMoS(AnalysisDir, BaMoSDir, bPullPush, RegExp)
 %xASL_adm_Import_BaMoS Prepare ASL parameter files for different EPAD vendors/sites
 %
-% FORMAT: EPAD_CopyFLAIR_WMH_Carole(ROOT, CaroleDir)
+% FORMAT: xASL_adm_ImportBaMoS(AnalysisDir, BaMoSDir, 0, RegExp)
 % 
 % INPUT:
 %   ROOT        - path to root folder containing the /analysis folder with NIfTI/BIDS data (REQUIRED)
 %   CaroleDir   - path to root folder of Carole' segmentations & FLAIRs
 %                 (OPTIONAL, trying a previous location if not provided)
-%   
+%   b           - whether to create the subject list from the AnalysisDir
+%                 or from the BaMoSdir, respectively pulling or pushing the
+%                 data
 %
 % OUTPUT: n/a
 % OUTPUT FILE:
@@ -24,75 +26,79 @@ function xASL_adm_ImportBaMoS(AnalysisDir, CaroleDir)
 %              /ROOT/analysis/SubjectName/FLAIR.nii[.gz]
 %              /ROOT/analysis/SubjectName/WMH_SEGM.nii[.gz]
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: EPAD_CopyFLAIR_WMH_Carole('data/RAD/share/EPAD500/analysis','data/RAD/share/epad-carole/clean');
+% EXAMPLE: xASL_adm_ImportBaMoS('/Users/henk/Downloads/SABRE/analysis', '/Users/henk/Downloads/SABRE/Carole/SABRE', false, '\d{5}\d*');
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
 
-SubjList = xASL_adm_GetFileList(AnalysisDir, '^\d{3}EPAD\d*$', 'FPList', [0 Inf], true);
+if nargin<3 || isempty(bPullPush)
+    bPullPush = 0;
+end
 
-NotCopiedList = struct;
+FLAIRdir = fullfile(BaMoSDir,'FLAIR_T1Space');
+LesionDir = fullfile(BaMoSDir,'Lesions');
+
+if bPullPush==0 % pull
+    % use list from AnalysisDir, assuming that this contains the correct
+    % subject names described by RegExp
+    SubjList = xASL_adm_GetFileList(AnalysisDir, RegExp, 'List', [0 Inf], true);
+else % push
+    % use list from BaMosDir, doesn't have to have correct names
+    SubjList = xASL_adm_GetFileList(FLAIRdir, ['.*' RegExp '.*\.nii'], 'List');
+    for iSubj=1:length(SubjList)
+        [StartInd, EndInd] = regexp(SubjList{iSubj}, RegExp);
+        SubjList{iSubj} = SubjList{iSubj}(StartInd:EndInd);
+    end
+end
+    
+NoFLAIRList = struct;
+TooManyFLAIRList = struct;
+NoWMHList = struct;
+TooManyWMHList = struct;
 
 fprintf('Importing FLAIR & WMH segmentations BaMoS:   ');
-for iS=1:length(SubjList)
-    xASL_TrackProgress(iS, length(SubjList));
-    [~, NameNew] = fileparts(SubjList{iS});
-    % here we check if the scanner prefix is a site prefix (e.g. 010 instead of 110)
-    % & also if there is a '-' instead of 'EPAD'
-    Name1 = ['0' NameNew(2:3) '-' NameNew(8:end)];
-    Name2 = NameNew(8:end);
+for iSubj=1:length(SubjList)
+    xASL_TrackProgress(iSubj, length(SubjList));
     
-    FLAIRnew = fullfile(SubjList{iS}, 'FLAIR.nii');
-    WMHnew = fullfile(SubjList{iS}, 'WMH_SEGM.nii');
+    FLAIRnew = fullfile(AnalysisDir, SubjList{iSubj}, 'FLAIR.nii');
+    WMHnew = fullfile(AnalysisDir, SubjList{iSubj}, 'WMH_SEGM.nii');
     
-    FLAIRdir1 = fullfile(CaroleDir, Name1, 'FLAIR2T1');
-    FLAIRdir2 = fullfile(CaroleDir, Name2, 'FLAIR2T1');
-    WMHdir1 = fullfile(CaroleDir, Name1, 'WMH', 'Lesion');
-    WMHdir2 = fullfile(CaroleDir, Name2, 'WMH', 'Lesion');
+    FLAIRold = xASL_adm_GetFileList(FLAIRdir, ['.*(?<!\d)' SubjList{iSubj} '(?!\d).*\.nii'],'FPList', [0 Inf]);
+    WMHold = xASL_adm_GetFileList(LesionDir, ['.*(?<!\d)' SubjList{iSubj} '(?!\d).*\.nii'],'FPList', [0 Inf]);
     
-    if exist(FLAIRdir1,'dir') || exist(FLAIRdir2, 'dir')
-        
-        FLAIR1 = xASL_adm_GetFileList(FLAIRdir1, '^FLAIR.*\.nii$', 'FPList', [0 Inf]);
-        FLAIR2 = xASL_adm_GetFileList(FLAIRdir2, '^FLAIR.*\.nii$', 'FPList', [0 Inf]);
-        WMH1 = xASL_adm_GetFileList(WMHdir1, '^.*Lesion.*\.nii$', 'FPList', [0 Inf]);
-        WMH2 = xASL_adm_GetFileList(WMHdir2, '^.*Lesion.*\.nii$', 'FPList', [0 Inf]);
-
-        % check if complete, to proceed copying
-        bCopy = false;
-        if ~isempty(FLAIR1) && ~isempty(WMH1)
-            FLAIRold = FLAIR1{1};
-            WMHold = WMH1{1};
-            bCopy = true;
-        elseif ~isempty(FLAIR2) && ~isempty(WMH2)
-            FLAIRold = FLAIR2{1};
-            WMHold = WMH2{1};
-            bCopy = true;
-        end
-
-        % let's copy. we need to overwrite here, as we trust Carole' FLAIR
-        % more than ours (we assume that her WMH segmentation is aligned
-        % with her FLAIR, not necessarily with ours)
-        if bCopy
-            % first we remove all pre-existing FLAIRs/WMHs to make sure we wont have doubles
-            xASL_adm_DeleteFileList(SubjList{iS}, '^.*(FLAIR|WMH).*$', false, [0 Inf]); % non-recursively
-            
-            xASL_Copy(FLAIRold, FLAIRnew, true); % need to overwrite here
-            xASL_Copy(WMHold, WMHnew, true); % need to overwrite here
-        else
-            NotCopiedList.(['n' num2str(length(fields(NotCopiedList)))]) = NameNew;
-        end
+    ExistFLAIR = false;
+    ExistWMH = false;
+    if length(FLAIRold)==0
+        NoFLAIRList.(['n' num2str(length(fields(NoFLAIRList)))]) = SubjList{iSubj};
+    elseif length(FLAIRold)>1
+        TooManyFLAIRList.(['n' num2str(length(fields(TooManyFLAIRList)))]) = SubjList{iSubj};
     else
-        NotCopiedList.(['n' num2str(length(fields(NotCopiedList)))]) = NameNew;
+        ExistFLAIR = true;
+    end
+    
+    ExistWMH = false;
+    if length(WMHold)==0
+        NoWMHList.(['n' num2str(length(fields(NoWMHList)))]) = SubjList{iSubj};
+    elseif length(FLAIRold)>1
+        TooManyWMHList.(['n' num2str(length(fields(TooManyWMHList)))]) = SubjList{iSubj};
+    else
+        ExistWMH = true;
+    end    
+    
+    if ExistFLAIR && ExistWMH
+        xASL_Copy(FLAIRold{1}, FLAIRnew, true);
+        xASL_Copy(WMHold{1}, WMHnew, true);
     end
 end
 
 %% SAVE THE MISSING LIST HERE IN JSON FILES
 
-if length(fields(NotCopiedList))>0
-    warning('We couldnt find WMH segmentations for all subjects, please check //analysis/NotCopiedWMH_List.json');
-    SavePath = fullfile(AnalysisDir, 'NotCopiedWMH_List.json');
-    xASL_delete(SavePath);
-    xASL_adm_SaveJSON(NotCopiedList, SavePath);
-end
+ListsAre = {'NoFLAIRList' 'TooManyFLAIRList' 'NoWMHList' 'TooManyWMHList'};
+for iList=1:length(ListsAre)
+    if ~isempty(ListsAre{iList})
+        SavePath = fullfile(AnalysisDir, ListsAre{iList});
+        xASL_delete(SavePath);
+        xASL_adm_SaveJSON(eval(ListsAre{iList}), SavePath);
+    end
 
 end
