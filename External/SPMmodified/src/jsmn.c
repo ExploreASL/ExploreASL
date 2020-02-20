@@ -266,8 +266,8 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 				if (tokens != NULL && parser->toksuper != -1 &&
 						tokens[parser->toksuper].type != JSMN_ARRAY &&
 						tokens[parser->toksuper].type != JSMN_OBJECT) {
-					// Jumping to next line without finding really any token
-					// ExploreASL fix JP 2019-25-10 to work with empty values
+					/* Jumping to next line without finding really any token
+					 ExploreASL fix JP 2019-25-10 to work with empty values*/
 					if (parser->toksuper == (parser->toknext - 1))
 					{
 						mexPrintf("jsmn.c:: Warning. Empty value found: %.*s, assigning NaN.\n",tokens[parser->toksuper].end-tokens[parser->toksuper].start,js+tokens[parser->toksuper].start);
