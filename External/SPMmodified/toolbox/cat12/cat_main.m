@@ -116,11 +116,11 @@ end
 if do_dartel<2, job.extopts.templates = job.extopts.darteltpms; else job.extopts.templates = job.extopts.shootingtpms; end % for LAS
 
 %%% ExploreASL fix
-if  job.extopts.xasl_disabledartel % DARTEL disabling request
-	do_dartel       = 0;
+if job.extopts.xasl_disabledartel % DARTEL disabling request
+	do_dartel = 0;
 	fprintf('%s\n','DARTEL disabled');
 else
-	do_dartel       = 1;
+	do_dartel = 1;
 	fprintf('%s\n','DARTEL enabled');
 end
 
@@ -1454,7 +1454,9 @@ end
   % trans.warped.y(LesionImOut)     = Yy(LesionImOut); % within the lesion mask, replace DARTEL flow field by SPM affine+DCT flow field
   %%%
   %%% ANOTHER EXPLOREASL HACK: remove NaNs from transformations before DARTEL
-  Yy = single(xASL_im_ExtrapolateOverNaNs(Yy)); % SPM doesn't like double format Yy
+  if exist('Yy','var')
+    Yy = single(xASL_im_ExtrapolateOverNaNs(Yy)); % SPM doesn't like double format Yy
+  end
 
   %% call Dartel/Shooting registration
 
@@ -1474,7 +1476,9 @@ end
   end
 
   % EXPLOREASL HACK
-  trans.warped.y = single(xASL_im_ExtrapolateOverNaNs(trans.warped.y));
+  if isfield(trans,'warped')
+    trans.warped.y = single(xASL_im_ExtrapolateOverNaNs(trans.warped.y));
+  end
 
 
   %% update WMHs?

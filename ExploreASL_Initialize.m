@@ -129,93 +129,6 @@ if ~isfield(x,'ProcessData')
     end
 end
 
-if x.ProcessData
-    %% Load dataset parameter file
-
-    if SelectParFile
-        if UseGUI
-            [name, pathstr] = uigetfile('*.m;*.mat;*.json', 'Select the study-specific PARAMETER file --->>> DATA_PAR.m');
-            if sum(pathstr==0) || ~(strcmp(name(end-1:end),'.m') || strcmp(name(end-3:end),'.mat') || strcmp(name(end-4:end),'.json'))
-                return
-            end
-            DataParPath = fullfile(pathstr,name);
-        else
-            fprintf('ExploreASL requires a data parameter file, which can be either a .m, .mat or .json file\n');
-            DataParPath = input('Please provide the full path of the DataParameter file, including ": ');
-        end
-    end
-
-    [pathstr, ~, Dext] = fileparts(DataParPath);
-    xBackup = x;
-
-    if ~isdeployed
-        addpath('Functions');
-        addpath(fullfile('External','SPMmodified','xASL'));
-        addpath(fullfile('External','SPMmodified'));
-        addpath(fullfile('External','DCMTK'));
-        addpath(fullfile('External','ExploreQC'));
-    end
-
-    if strcmp(Dext,'.mat') % Now reading a mat-file, soon to be .json table complying with BIDS
-        %% Mat file can only contain single variable, that should contain the x/parameters
-        TempVar = load(DataParPath);
-        FieldN = fields(TempVar);
-        x = TempVar.(FieldN{1});
-    elseif strcmp(Dext,'.json')
-        % JSON import
-        x = xASL_import_json(DataParPath);
-    elseif strcmp(Dext,'.m')
-        try
-            %% Backward compatibility
-            PathJSON = xASL_init_ConvertM2JSON(DataParPath); % convert .m to .json
-            x = xASL_import_json(PathJSON);
-        catch ME1
-            try
-                % Bypass eval error stuff with long names, spaces etc
-                %% BACKWARD COMPATIBILITY FOR NOW, REPLACE WITH THE xASL_init_ConvertM2JSON ABOVE
-                TempDataParPath = fullfile(pathstr,'TempDataPar.m');
-                copyfile(DataParPath, TempDataParPath,'f' ); % overwrite ,if exist
-
-                pathstr = fileparts(TempDataParPath);
-                BackupCD = pwd;
-                cd(pathstr);
-                x = TempDataPar;
-                cd(BackupCD);
-                if exist(TempDataParPath,'file')
-                    delete(TempDataParPath);
-                end
-            catch ME2
-                fprintf('%s',ME1.message);
-                fprintf('%s',ME2.message);
-                error('Something went wrong loading the DataParFile');
-            end
-        end
-    end
-    x.ProcessData = xBackup.ProcessData;
-    x.iWorker = xBackup.iWorker;
-    x.nWorkers = xBackup.nWorkers;
-
-    if ~isfield(x,'D')
-        x.D = struct;
-	end
-
-    if ~isfield(x.D,'ROOT')
-		if isfield(x,'ROOT')
-			x.D.ROOT = x.ROOT;
-		else
-			x.D.ROOT = pathstr; % default
-		end
-    end
-
-    if ~exist(x.D.ROOT, 'dir')
-        warning([x.D.ROOT ' didnt exist as folder, trying path of DataPar file']);
-        x.D.ROOT = pathstr;
-        x.ROOT = pathstr;
-    end
-end
-
-
-
 %% -----------------------------------------------------------------------------
 %% Get ExploreASL path
 
@@ -264,6 +177,120 @@ end
 % Go to ExploreASL folder
 cd(x.MyPath);
 
+
+%% Add paths
+if ~isdeployed
+% Define paths (should be equal when loading data or only initializing
+% ExploreASL
+    addpath(x.MyPath);
+
+	%fullfile('Development','dicomtools'), ...
+    subfolders_to_add = {   'Functions', ...
+                            'mex', ...
+                            'Modules', ...
+                            fullfile('Modules', 'SubModule_Structural'),...
+                            fullfile('Modules', 'SubModule_ASL'),...
+                            fullfile('Modules', 'SubModule_Population'),...
+                            'Development' ...
+                            'External' ...
+                            fullfile('External','DCMTK'), ...
+                            fullfile('External','ExploreQC'), ...
+							fullfile('External','SPMmodified'), ...
+                            fullfile('External','SPMmodified','xASL'),...                            
+                            fullfile('External','SPMmodified','toolbox','cat12'), ...
+							fullfile('External','SPMmodified','toolbox','LST'), ...
+							fullfile('External','SPMmodified','toolbox','OldNorm')};
+
+    for ii=1:length(subfolders_to_add)
+        addpath(fullfile(x.MyPath,subfolders_to_add{ii}));
+    end
+end
+
+if x.ProcessData
+    %% Load dataset parameter file
+
+    if SelectParFile
+        if UseGUI
+            [name, pathstr] = uigetfile('*.m;*.mat;*.json', 'Select the study-specific PARAMETER file --->>> DATA_PAR.m');
+            if sum(pathstr==0) || ~(strcmp(name(end-1:end),'.m') || strcmp(name(end-3:end),'.mat') || strcmp(name(end-4:end),'.json'))
+                return
+            end
+            DataParPath = fullfile(pathstr,name);
+        else
+            fprintf('ExploreASL requires a data parameter file, which can be either a .m, .mat or .json file\n');
+            DataParPath = input('Please provide the full path of the DataParameter file, including ": ');
+        end
+    end
+
+    [pathstr, ~, Dext] = fileparts(DataParPath);
+    xBackup = x;
+
+    if strcmp(Dext,'.mat') % Now reading a mat-file, soon to be .json table complying with BIDS
+        %% Mat file can only contain single variable, that should contain the x/parameters
+        TempVar = load(DataParPath);
+        FieldN = fields(TempVar);
+        x = TempVar.(FieldN{1});
+    elseif strcmp(Dext,'.json')
+        % JSON import
+        x = xASL_import_json(DataParPath);
+    elseif strcmp(Dext,'.m')
+        try
+            %% Backward compatibility
+            PathJSON = xASL_init_ConvertM2JSON(DataParPath); % convert .m to .json
+            x = xASL_import_json(PathJSON);
+        catch ME1
+            try
+                % Bypass eval error stuff with long names, spaces etc
+                %% BACKWARD COMPATIBILITY FOR NOW, REPLACE WITH THE xASL_init_ConvertM2JSON ABOVE
+                TempDataParPath = fullfile(pathstr,'TempDataPar.m');
+                copyfile(DataParPath, TempDataParPath,'f' ); % overwrite ,if exist
+
+                pathstr = fileparts(TempDataParPath);
+                BackupCD = pwd;
+                cd(pathstr);
+                x = TempDataPar;
+                cd(BackupCD);
+                if exist(TempDataParPath,'file')
+                    delete(TempDataParPath);
+                end
+            catch ME2
+                fprintf('%s',ME1.message);
+                fprintf('%s',ME2.message);
+                error('Something went wrong loading the DataParFile');
+            end
+        end
+    end
+    % Put x fields back from backup
+    FieldsAre = fields(xBackup);
+    for iField=1:length(FieldsAre)
+        if ~isfield(x,(FieldsAre{iField}))
+            x.(FieldsAre{iField}) = xBackup.(FieldsAre{iField});
+        end
+    end
+
+    if ~isfield(x,'D')
+        x.D = struct;
+	end
+
+    if ~isfield(x.D,'ROOT')
+		if isfield(x,'ROOT')
+			x.D.ROOT = x.ROOT;
+		else
+			x.D.ROOT = pathstr; % default
+		end
+    end
+
+    if ~exist(x.D.ROOT, 'dir')
+        warning([x.D.ROOT ' didnt exist as folder, trying path of DataPar file']);
+        x.D.ROOT = pathstr;
+        x.ROOT = pathstr;
+    end
+end
+
+
+
+
+
 %% -----------------------------------------------------------------------------
 %% Initialization
 
@@ -278,31 +305,8 @@ else
     set(groot,'DefaultTextInterpreter','none')
 end
 
-% -------------------------------------
-% Define paths
-% -------------------------------------
+% Get version
 if ~isdeployed
-
-    addpath(x.MyPath);
-
-	%fullfile('Development','dicomtools'), ...
-    subfolders_to_add = {   'Functions', ...
-                            fullfile('External','SPMmodified','xASL'),...
-                            'mex', ...
-                            'Modules', ...
-                            fullfile('Modules', 'SubModule_Structural'),...
-                            fullfile('Modules', 'SubModule_ASL'),...
-                            fullfile('Modules', 'SubModule_Population'),...
-                            'External' ...
-							fullfile('External','SPMmodified'), ...
-                            fullfile('External','SPMmodified','toolbox','cat12'), ...
-							fullfile('External','SPMmodified','toolbox','LST'), ...
-							fullfile('External','SPMmodified','toolbox','OldNorm')};
-
-    for ii=1:length(subfolders_to_add)
-        addpath(fullfile(x.MyPath,subfolders_to_add{ii}));
-    end
-
     VersionPath = xASL_adm_GetFileList(x.MyPath, '^VERSION.*$', 'FPList', [0 Inf]);
     if isempty(VersionPath)
         warning('Could not obtain ExploreASL version, version file missing');
@@ -373,6 +377,14 @@ else
     %% Define subjects/parameters
     x = xASL_init_DefineSets(x);
 
+    
+    
+    
+    
+    
+    
+    
+    
     if ~isfield(x,'name'); x.name = ''; end
 
 

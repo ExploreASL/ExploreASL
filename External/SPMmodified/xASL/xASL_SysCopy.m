@@ -24,9 +24,12 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
 		bVerbose = false;
     end
     if strcmp(SrcPath,DstPath)
+        warning('SrcPath & DstPath were equal, no action required');
+        fprintf('%s\n', SrcPath);
         return; % skip copying
     end
-
+    
+    
     %% Do the copying
 
     if exist(SrcPath, 'dir') && exist(DstPath, 'dir') && bOverwrite
@@ -36,10 +39,12 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
     end
 
     if isunix()
+        SrcPath = xASL_adm_UnixPath(SrcPath);
+        DstPath = xASL_adm_UnixPath(DstPath);
         if bOverwrite
-            unix(['cp -r -f ' SrcPath ' ' DstPath]); % -n is short for --noclober
+            system(['cp -r -f ' SrcPath ' ' DstPath]); % -n is short for --noclober
         else
-            unix(['cp -r ' SrcPath ' ' DstPath]);
+            system(['cp -r ' SrcPath ' ' DstPath]);
         end
     else
         if bOverwrite

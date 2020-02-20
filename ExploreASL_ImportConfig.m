@@ -50,7 +50,28 @@ imPar.bMatchDirectories  = false;
 % Study specific parameters
 % -----------------------------------------------------------------------------
 switch imPar.studyID
-        
+
+	case 'SABRE'
+		imPar.folderHierarchy = {'^(\d.*)$', '.*', '.*', 'DICOM', '(T1_3D|pCASL_main|calibration)'};
+		imPar.tokenOrdering = [1 0 2];
+		imPar.tokenSessionAliases = {};
+		imPar.tokenScanAliases = {'^pCASL_main$', 'ASL4D'; '^T1_3D$', 'T1'; '^calibration$', 'M0'};
+		imPar.bMatchDirectories = true;    
+    
+	case 'SydneyMS_Controls'
+		imPar.folderHierarchy = {'^(\d{3}.*\d{1})$' '^ASL$' '^(ASL4D)$'};
+		imPar.tokenOrdering = [1 0 2];
+		imPar.tokenSessionAliases = {};
+		imPar.tokenScanAliases = {'^ASL4D$', 'ASL4D'; '^T1$', 'T1'};
+		imPar.bMatchDirectories = true;      
+    
+	case 'SydneyMS_Controls'
+		imPar.folderHierarchy = {'^(\d{3}.*\d{1})$' '^(T1)\.nii$'};
+		imPar.tokenOrdering = [1 0 2];
+		imPar.tokenSessionAliases = {};
+		imPar.tokenScanAliases = {'^asl$', 'ASL4D'; '^T1$', 'T1'};
+		imPar.bMatchDirectories = false;     
+    
 	case 'MS_Sidney'
 		imPar.folderHierarchy = {'^(\d{3}.*\d{1})$' '^(T1)\.nii\.gz$'};
 		imPar.tokenOrdering = [1 0 2];

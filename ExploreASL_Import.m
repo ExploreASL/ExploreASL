@@ -545,18 +545,23 @@ for iSubject=1:nSubjects
                 end
 
                 % extract relevant parameters from dicom header
+                SaveParmsPath = fullfile(destdir, [scan_name '_parms.mat']);
+                if exist(SaveParmsPath,'file')
+                    CreateParmsMat = false;
+                end
+                
                 if CreateParmsMat && ~isempty(first_match)
                     [~, ~, fext] = fileparts(first_match);
                     if  strcmpi(fext,'.PAR')
-                        parms = xASL_adm_Par2Parms(first_match, fullfile(destdir, [scan_name '_parms.mat']), imPar.bOverwrite);
+                        parms = xASL_adm_Par2Parms(first_match, SaveParmsPath, imPar.bOverwrite);
                     elseif strcmpi(fext,'.nii')
                         parms = [];
                     elseif imPar.bMatchDirectories
                         Fpath  = fileparts(first_match);
-                        [parms, pathDcmDict] = xASL_adm_Dicom2Parms(imPar, Fpath, fullfile(destdir, [scan_name '_parms.mat']), imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+                        [parms, pathDcmDict] = xASL_adm_Dicom2Parms(imPar, Fpath, SaveParmsPath, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
                         clear Fpath Ffile Fext
                     else
-                        [parms, pathDcmDict] = xASL_adm_Dicom2Parms(imPar, first_match, fullfile(destdir, [scan_name '_parms.mat']), imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+                        [parms, pathDcmDict] = xASL_adm_Dicom2Parms(imPar, first_match, SaveParmsPath, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
                     end
                 end
 
