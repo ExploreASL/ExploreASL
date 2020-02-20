@@ -623,7 +623,7 @@ for iScan=1:nScans
         for iVisit=1:nVisits
             for iSession=1:nSessions
                 if converted_scans(iSubject, iVisit, iSession, iScan) || skipped_scans(iSubject, iVisit, iSession, iScan) || missing_scans(iSubject, iVisit, iSession, iScan)
-                    fprintf(fid_summary,'"%s","%s","%s"%s\n', subjectIDs{iSubject}, visitIDs{iVisit}, imPar.sessionNames{iSession}, scanNames{iScan}, summary_lines{iSubject, iVisit, iSession, iScan});
+                    fprintf(fid_summary,'"%s","%s","%s","%s","%s",\n', subjectIDs{iSubject}, visitIDs{iVisit}, imPar.sessionNames{iSession}, scanNames{iScan}, summary_lines{iSubject, iVisit, iSession, iScan});
                 end
             end
         end
