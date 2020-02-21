@@ -41,7 +41,7 @@ SavePath = '/Users/henk/Downloads/SABRE/analysis/Character.mat';
 save(SavePath,'Character');
 
 %% Fix the M0 scan
-AnalysisDir = '/Users/henk/ExploreASL/ASL/SABRE/analysis';
+AnalysisDir = '/Users/henk/surfdrive/SABRE/analysis';
 Dlist = xASL_adm_GetFileList(AnalysisDir,'\d*','FPList', [0 Inf], true);
 
 for iDir=1:length(Dlist)
@@ -68,7 +68,7 @@ for iDir=1:length(Dlist)
             IM(:,:,:,ii) = FullIM(:,:,[ii:nVol:end-(nVol-ii)]);
         end
         IM = xASL_stat_MeanNan(IM,4);
-        xASL_io_SaveNifti(PathM0, PathM0, IM);
+        xASL_io_SaveNifti(PathM0, PathM0, IM, [], 0);
     end
 end
 
@@ -100,11 +100,15 @@ for iDir=1:length(Dlist)
         end
         FullIM = reshape(IM,[size(IM,1) size(IM,2) size(IM,3)*size(IM,4)]);
         nVol = size(IM,3)*size(IM,4)/20;
+
         clear IM;
         for ii=1:nVol
             IM(:,:,:,ii) = FullIM(:,:,[ii:nVol:end-(nVol-ii)]);
         end
-        IM = reshape(IM,[size(IM,1) size(IM,2) size(IM,3)/2 size(IM,4)*2]);
+        FullIM = reshape(IM,[size(IM,1) size(IM,2) size(IM,3)/2 size(IM,4)*2]);
+        IM = zeros([size(IM,1) size(IM,2) size(IM,3) size(IM,4)]);
+        IM(:,:,[1:2:end-1],:) = FullIM(:,:,:,1:end/2);
+        IM(:,:,[2:2:end-0],:) = FullIM(:,:,:,end/2+1:end);
 
         xASL_io_SaveNifti(PathASL, PathASL, IM, [], 0);
     end
