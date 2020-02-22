@@ -53,6 +53,11 @@ fprintf('%s\n','-------------------------------------------');
 fprintf('%s\n\n','ExploreASL will run with following settings:');
 fprintf('%s\n\n',['Root folder = ' x.D.ROOT]);
 
+if x.nWorkers>1
+    fprintf(['I am worker ' num2str(x.iWorker) '/' num2str(x.nWorkers) '\n']);
+    fprintf('Note that the resulting number of scans mentioned below applies only to this worker\n');
+end
+
 fprintf('%s\n',[num2str(x.nTotalSubjects) ' scans - ' num2str(x.nExcluded) ' exclusions, resulting in ' num2str(x.nSubjects) ' scans of: ']);
 
 for iT=1:x.nTimePointsTotal

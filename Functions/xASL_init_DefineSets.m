@@ -188,26 +188,32 @@ end
 %% PARALLELIZATION: If running parallel, select cases for this worker
 if x.nWorkers>1
     nSubjPerWorker = ceil(x.nSubjects/x.nWorkers); % ceil to make sure all subjects are processed
-    iStart = (x.iWorker-1)*nSubjPerWorker+1;
-    iEnd = min(x.iWorker*nSubjPerWorker, x.nSubjects);
+    nSubjSessPerWorker = nSubjPerWorker*x.nSessions;
+    iStartSubject = (x.iWorker-1)*nSubjPerWorker+1;
+    iEndSubject = min(x.iWorker*nSubjPerWorker, x.nSubjects);
+    iStartSubjectSession = (x.iWorker-1)*nSubjSessPerWorker+1;
+    iEndSubjectSession = min(x.iWorker*nSubjSessPerWorker, x.nSubjectsSessions);
     
-    if iStart>x.nSubjects
+    if iStartSubject>x.nSubjects
         fprintf('Closing down this worker, had too many workers');
         exit;
     end
     
     % Adapt SUBJECTS
-    x.SUBJECTS = x.SUBJECTS(iStart:iEnd);
+    x.SUBJECTS = x.SUBJECTS(iStartSubject:iEndSubject);
     x.nSubjects = length(x.SUBJECTS);
     x.nSubjectsSessions = x.nSubjects*x.nSessions;
     
+    
+    
+    
     % Adapt SETSID (covariants)
     if isfield(x.S,'SetsID') && ~isempty(x.S.SetsID)
-        x.S.SetsID = x.S.SetsID(iStart:iEnd, :);
+        x.S.SetsID = x.S.SetsID(iStartSubjectSession:iEndSubjectSession, :);
     end
     
     fprintf(['I am worker ' num2str(x.iWorker) '/' num2str(x.nWorkers) '\n']);
-    fprintf(['I will process subjects ' num2str(iStart) '-' num2str(iEnd) '\n']);
+    fprintf(['I will process subjects ' num2str(iStartSubject) '-' num2str(iEndSubject) '\n']);
 end
 
 
@@ -218,7 +224,7 @@ end
 % TimePoints should be indicated as different subjects, with a _1 _2 _3 _n
 % suffix
 
-[SubjectNList, ~, TimePoint] = xASL_init_LongitudinalRegistration( x );
+[SubjectNList, ~, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
 
 
@@ -286,7 +292,9 @@ if isfield(x.S, 'SetsName')
 end
 
 %% Create list of baseline & follow-up subjects (i.e. after exclusion)
-x.TimePointSubjects{1} = '';
+for iCell=1:length(x.TimePointTotalSubjects)
+    x.TimePointSubjects{iCell} = '';
+end
     
 for iS=1:x.nSubjects
     iSession = 1; % append to accommodate sessions in SetsID
@@ -322,7 +330,7 @@ for iE=1:x.nExcluded
     while ~FoundE % excluded subject not found in previous TimePoint
         iT=iT+1;  % go to next TimePoint
         
-        iS  = find(strcmp( x.TimePointTotalSubjects{iT}, x.ExcludedSubjects{iE} ));
+        iS  = find(strcmp(x.TimePointTotalSubjects{iT}, x.ExcludedSubjects{iE}));
         if ~isempty(iS)
             x.TimePointExcluded{iT}{end+1} = x.TimePointTotalSubjects{iT}{iS};
             FoundE = 1;
