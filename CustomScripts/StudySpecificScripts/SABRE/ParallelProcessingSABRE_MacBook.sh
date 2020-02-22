@@ -4,18 +4,12 @@ let nParallel=$nParallel+7; # The + 7 let's truncating arithmetic round up
 let nParallel=$nParallel/8;
 let nParallel=3;
 
-MatlabPath=/usr/local/MATLAB/R2014a/bin/matlab; # find Matlab path
-DataParPath=~/ownCloud/SABRE/analysis/DataParameters_HiQ.json; # CHANGE DIR
-xASLdir=~/ExploreASL/ExploreASL;
+MatlabPath=/Applications/MATLAB_R2016b.app/bin/matlab; # find Matlab path
+DataParPath=/Users/henk/surfdrive/SABRE/analysis/DataParameters_HiQ.json; # CHANGE DIR
+xASLdir=/Users/henk/ExploreASL/ExploreASL;
 cd $xASLdir
 
 for (( i=1; i<=$nParallel; i++ ));
 #do echo Running instance $i";
-do 
-
-i=3;
-
-screen -dmSL SABRE$i $MatlabPath -nodesktop -nosplash -r "addpath(pwd);ExploreASL_Master('$DataParPath', true, true, $i, $nParallel);" &
-
-
+do screen -dmSL SABRE$i $MatlabPath -nodesktop -nosplash -r "ExploreASL_Master('$DataParPath', true, true, $i, $nParallel);" &
 done
