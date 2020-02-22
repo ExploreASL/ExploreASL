@@ -279,20 +279,25 @@ for iS=1:x.nSubjects
     u_file  = fullfile(x.D.PopDir, ['u_rc1' x.P.STRUCT '_' x.SUBJECTS{iS} '_' x.DARTEL_TEMPLATE '.nii']);
     y_y_file= fullfile(x.D.ROOT, x.SUBJECTS{iS},['y_y_' x.P.STRUCT '.nii']);
 
-    if xASL_exist(y_file, 'file') && xASL_exist(u_file, 'file')
+    if xASL_exist(y_file, 'file')
 
 		xASL_adm_UnzipNifti(y_file,1);
         clear matlabbatch
         matlabbatch{1}.spm.util.defs.comp{1}.def                    = {y_file};
-        matlabbatch{1}.spm.util.defs.comp{2}.dartel.flowfield       = {u_file};
-        matlabbatch{1}.spm.util.defs.comp{2}.dartel.times           = [1 0];
-        matlabbatch{1}.spm.util.defs.comp{2}.dartel.K               = 6;
-        matlabbatch{1}.spm.util.defs.comp{2}.dartel.template        = {''};
-        matlabbatch{1}.spm.util.defs.comp{3}.sn2def.matname         = {PathDARTEL_snMat};
-        matlabbatch{1}.spm.util.defs.comp{3}.sn2def.vox             = [NaN NaN NaN];
-        matlabbatch{1}.spm.util.defs.comp{3}.sn2def.bb              = [NaN NaN NaN
-                                                                       NaN NaN NaN];
-        matlabbatch{1}.spm.util.defs.out{1}.savedef.ofname          = 'y_T1.nii';
+        
+        if xASL_exist(u_file, 'file')
+            matlabbatch{1}.spm.util.defs.comp{end+1}.dartel.flowfield = {u_file};
+            matlabbatch{1}.spm.util.defs.comp{end}.dartel.times = [1 0];
+            matlabbatch{1}.spm.util.defs.comp{end}.dartel.K = 6;
+            matlabbatch{1}.spm.util.defs.comp{end}.dartel.template = {''};
+        end
+        if exist(PathDARTEL_snMat,'file')
+            matlabbatch{1}.spm.util.defs.comp{end+1}.sn2def.matname = {PathDARTEL_snMat};
+            matlabbatch{1}.spm.util.defs.comp{end}.sn2def.vox = [NaN NaN NaN];
+            matlabbatch{1}.spm.util.defs.comp{end}.sn2def.bb = [NaN NaN NaN; NaN NaN NaN];
+        end
+        
+        matlabbatch{1}.spm.util.defs.out{1}.savedef.ofname = 'y_T1.nii';
         matlabbatch{1}.spm.util.defs.out{1}.savedef.savedir.saveusr = {fullfile(x.D.ROOT, x.SUBJECTS{iS})};
 
         spm_jobman('run',matlabbatch);
