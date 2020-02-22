@@ -97,16 +97,17 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     if max(iModules==1)
         [~, x] = xASL_Iteration(x,'xASL_module_Structural');
         xASL_adm_CreateFileReport(x);
-    end
-    if isfield(x,'Segment_SPM12') && x.Segment_SPM12 && x.nSubjects>1
-        % in case we used SPM12 instead of CAT12 for segmentation,
-        % we have to run DARTEL separately
-        [~, x] = xASL_Iteration(x,'xASL_module_DARTEL');
+        % The following DARTEL module is an optional extension of the structural module
+        % to create population-specific templates
+        if isfield(x,'Segment_SPM12') && x.Segment_SPM12 && x.nSubjects>1
+            % in case we used SPM12 instead of CAT12 for segmentation,
+            % we have to run DARTEL separately
+            [~, x] = xASL_Iteration(x,'xASL_module_DARTEL');
+        end
     end
 
     % Optional modules
     % The following are optional extensions of the structural module and not required to run, normally they can be ignored:
-    % [~, x] = xASL_Iteration(x,'xASL_module_DARTEL'); % use this module to create population-specific templates
     % [~, x] = xASL_Iteration(x,'xASL_module_LongReg'); % use this module for longitudinal registration
     
     % -----------------------------------------------------------------------------
