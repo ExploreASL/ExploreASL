@@ -62,6 +62,11 @@ function [NegativeMask, TreatedCBF] = xASL_im_MaskNegativeVascularSignal(x, IsSp
         CBFim = xASL_stat_MeanNan(CBFim,4);
     end
     GMmask = xASL_io_Nifti2Im(GMpath)>0.5;
+    
+    if ~isequal(size(CBFim),size(GMmask))
+        warning('Sizes of CBF and GM images differed');
+    end
+    
     NegativeMask = CBFim<0 & GMmask;
 
     if IsSpace==2

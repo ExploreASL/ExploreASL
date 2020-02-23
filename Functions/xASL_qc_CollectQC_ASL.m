@@ -91,6 +91,16 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
     pWM = xASL_io_Nifti2Im(Path_pWM);
     imCBF = xASL_io_Nifti2Im(x.P.Path_CBF);
 
+    if xASL_stat_SumNan(pGM(:))==0
+        warning(['Empty image, invalid ' Path_pGM]);
+    end
+    if xASL_stat_SumNan(pWM(:))==0
+        warning(['Empty image, invalid ' Path_pWM]);
+    end
+    if xASL_stat_SumNan(imCBF(:))==0
+        warning(['Empty image, invalid ' x.P.Path_CBF]);
+    end    
+    
     imMask = (pGM+pWM)>0.5;
     CBFmasked = imCBF(imMask);
     GMmasked = pGM(imMask);
