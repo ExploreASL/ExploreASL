@@ -17,8 +17,7 @@ function pathOut = xASL_im_PreSmooth(pathRef,pathSrc,pathSmo,resRef,resSrc,srcAf
 %
 % OUTPUT:
 %   pathOut        The path to the output file.
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It assumes that the FWHM is equal to voxel size, unless the real resolution is given.
 %              Then takes into account the voxel sizes and orientation difference between the volumes, but
 %              performs the smoothing according to the given real resolution (it is possible to supply the
@@ -26,12 +25,20 @@ function pathOut = xASL_im_PreSmooth(pathRef,pathSrc,pathSmo,resRef,resSrc,srcAf
 %              It creates a Gaussian covariance matrix for the reference, transforms it according to
 %              the difference between the two images a produces the Gaussian covariance matrix
 %              of the pre-smoothing in the source space. Then it performs the smoothing.
+%
+%              The following steps are performed:
+%               1) Obtain the voxel size
+%               2) Skip this function if reference resolution is equal to, or lower than source resolution
+%               3) Deal with affine transformation
+%               4) Obtain the transformation matrix from the Reference to the Source space
+%               5) Apply the smoothing filter on the source image(s)
+%               6) Save the smoothed image
+%
 % EXAMPLE:
 %     pathOut = xASL_im_PreSmooth('/home/tmp/CBF.nii','/home/tmp/T1.nii')
 %     pathOut = xASL_im_PreSmooth('/home/tmp/CBF.nii','/home/tmp/T1.nii',[],[3 3 12],[])
 %     pathOut = xASL_im_PreSmooth('/home/tmp/CBF.nii','/home/tmp/T1.nii',[],[3 3 12],[],'/home/tmp/CBF_sn.mat',1)
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
+% ---------------------------------------------------------------------------------------------------------------------
 % REFERENCES:
 % Pre-smoothing of the source image before interpolation according to:
 % Cardoso M.J., Modat M., Vercauteren T., Ourselin S. (2015) Scale Factor Point Spread Function Matching:
@@ -42,7 +49,7 @@ function pathOut = xASL_im_PreSmooth(pathRef,pathSrc,pathSmo,resRef,resSrc,srcAf
 % Copyright 2015-2019 ExploreASL
 
 
-% Admin
+%% 0) Admin
 if nargin < 2 || isempty(pathRef) || isempty(pathSrc)
 	error('xASL_im_PreSmooth: Need to specify the reference and source images.');
 end
@@ -59,7 +66,8 @@ end
 imRef = xASL_io_ReadNifti(pathRef);
 imSrc = xASL_io_ReadNifti(pathSrc);
 
-% Obtain the voxel size
+% ===============================================================================
+%% 1) Obtain the voxel size
 voxRef = [norm(imRef.mat(:,1)), norm(imRef.mat(:,2)), norm(imRef.mat(:,3))];
 voxSrc = [norm(imSrc.mat(:,1)), norm(imSrc.mat(:,2)), norm(imSrc.mat(:,3))];
 
@@ -83,12 +91,24 @@ end
 ResultantResolutionRef = voxRef.*resVoxRef;
 ResultantResolutionSrc = voxSrc.*resVoxSrc;
 
-if isequal(ResultantResolutionSrc,ResultantResolutionRef)
+% ===============================================================================
+%% 2) Skip this function if reference resolution is equal to, or lower than source resolution
+% The smoothing is only required when the reference resolution is in any dimension lower
+% than the source resolution. The minimal resolution difference is 0.5 mm (in any dimension).
+RefSmallerThanSrc = max(ResultantResolutionRef>(ResultantResolutionSrc+0.5));
+
+fprintf(['Effective spatial resolution source image: [' xASL_num2str(ResultantResolutionSrc) '] mm\n']);
+fprintf(['Effective spatial resolution reference image: [' xASL_num2str(ResultantResolutionSrc) '] mm\n']);
+
+if ~RefSmallerThanSrc
     xASL_Copy(pathSrc, pathOut, 1);
+    fprintf('Pre-smoothing skipped, resolutions werent significantly differed\n');
     return; % skip pre-smoothing
 end
+fprintf('Pre-smoothing...\n');
 
-
+% ===============================================================================
+%% 3) Deal with affine transformation
 if nargin < 6 || isempty(srcAffinePath)
 	srcAffinePath = [];
 elseif iscell(srcAffinePath)
@@ -124,7 +144,9 @@ else
 	end
 end
 
-% Obtain the transformation matrix from the Reference to the Source space
+
+% ===============================================================================
+%% 4) Obtain the transformation matrix from the Reference to the Source space
 %transMat = inv(imSrc.mat)*imRef.mat;
 transMat = srcMat\imRef.mat;
 transMat = transMat(1:3,1:3);
@@ -162,7 +184,8 @@ kFil = exp(-kFil/2);
 % Normalize the PDF
 kFil = kFil/sum(kFil(:));
 
-% Apply the smoothing filter on the source image(s)
+% ===============================================================================
+%% 5) Apply the smoothing filter on the source image(s)
 % Do this within the first 3 dimensions only
 imSmo = zeros(size(imSrc.dat));
 for i7=1:size(imSrc.dat,7)
@@ -175,7 +198,8 @@ for i7=1:size(imSrc.dat,7)
     end
 end
 
-% Save the smoothed image
+% ===============================================================================
+%% 6) Save the smoothed image
 xASL_io_SaveNifti(pathSrc, pathOut, imSmo, [], 0);
 
 
