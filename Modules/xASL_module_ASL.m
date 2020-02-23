@@ -323,11 +323,14 @@ end
 iState = 5;
 % We currently only do this once per subject, as we do not anticipate resolution differences between ASL sessions
 % We skip this in case there are no structural segmentations
-if  xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
+if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
     % Or if this is the first session, redo this (if ExploreASL is rerun)
     if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-1})
 
-        x = xASL_wrp_PreparePV(x,strcmp(x.P.SessionID,x.SESSIONS{1}));
+        bStandardSpace = strcmp(x.P.SessionID,x.SESSIONS{1});
+        % in standard space we only have 1 set of PV maps in ASL resolution
+        % per T1w, therefore only create these for the first ASL session
+        x = xASL_wrp_PreparePV(x, bStandardSpace);
 
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
@@ -336,7 +339,7 @@ if  xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
 		if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
     end
-elseif  bO; fprintf('%s\n',['there were no pGM/pWM, or low quality requested, skipping ' StateName{iState} '...']);
+elseif  bO; fprintf('%s\n',['there were no pGM/pWM, skipping ' StateName{iState} '...']);
     x = xASL_wrp_ResolutionEstimation(x);
 end
 
