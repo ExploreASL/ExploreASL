@@ -53,6 +53,29 @@ if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 
+% If the resolution of T1 partial volume maps & CBF are already the same,
+% copy the PVs
+if ~xASL_im_CompareNIfTIResolutionXYZ(x.P.Path_c1T1, x.P.Path_c2T1)
+    warning('pGM & pWM dont have same resolution!');
+else
+    if xASL_im_CompareNIfTIResolutionXYZ(x.P.Path_c1T1, x.P.Path_despiked_ASL4D) && xASL_im_CompareNIfTIResolutionXYZ(x.P.Path_c2T1, x.P.Path_despiked_ASL4D)
+        % copy the PV maps rather than smooth/downsample them to the ASL
+        % resolution, if the resolutions are identical
+        xASL_Copy(x.P.Path_c1T1, x.P.Path_PVgm, true);
+        xASL_Copy(x.P.Path_c2T1, x.P.Path_PVwm, true);
+        if xASL_exist(x.P.Path_c3T1)
+            xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
+        end
+        % also do this in standard space
+        xASL_Copy(x.P.Pop_Path_rc1T1, x.P.Pop_Path_PV_pGM, true);
+        xASL_Copy(x.P.Pop_Path_rc2T1, x.P.Pop_Path_PV_pWM, true);
+        % then skip the rest of the function
+        fprintf('Indentical T1 & ASL resolutions, copying PV maps\n');
+        return;
+    end
+end
+fprintf('Different T1 & ASL resolutions, adapting T1 PV maps to ASL resolution\n');
+
 if bStandardSpace
     %% ------------------------------------------------------------------------------------------
     %% 1)   Create dummy upsampled ASL scan, for registration
@@ -61,8 +84,8 @@ if bStandardSpace
 	
 	%% ------------------------------------------------------------------------------------------
 	%% 2) Reslice pGM & pWM to hi-res ASL
-	xASL_spm_reslice( [x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
-	xASL_spm_reslice( [x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
+	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
+	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
 
     %% ------------------------------------------------------------------------------------------
     % 3)    Estimate effective spatial resolution of ASL
@@ -70,8 +93,8 @@ if bStandardSpace
 
     %% ------------------------------------------------------------------------------------------
     % 4)    Smooth pGM & pWM to this spatial resolution
-	xASL_spm_smooth( x.P.Path_rc1T1, x.S.optimFWHM_mm, x.P.Path_rc1T1);
-	xASL_spm_smooth( x.P.Path_rc2T1, x.S.optimFWHM_mm, x.P.Path_rc2T1);
+	xASL_spm_smooth(x.P.Path_rc1T1, x.S.optimFWHM_mm, x.P.Path_rc1T1);
+	xASL_spm_smooth(x.P.Path_rc2T1, x.S.optimFWHM_mm, x.P.Path_rc2T1);
 	
 	%% ------------------------------------------------------------------------------------------
 	% 5)    Move smoothed tissue posteriors to MNI space

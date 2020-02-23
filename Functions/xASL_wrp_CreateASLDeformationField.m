@@ -2,6 +2,8 @@ function xASL_wrp_CreateASLDeformationField(x, bOverwrite, EstimatedResolution)
 %xASL_wrp_CreateASLDeformationField When we can use a T1w deformation field, smooth it to the ASL resolution
 % Smooth T1w deformation fields to the ASL resolution
 % First estimate ASL resolution
+% Note that if the resolution of ASL is not significantly (i.e. >0.5 mm in
+% any dimension) lower than T1w, the y_T1.nii is copied to y_ASL.nii
 
 if nargin<2 || isempty(bOverwrite)
     bOverwrite = false; % By default, this function will be skipped if the ASL deformation field already exists
@@ -17,7 +19,7 @@ if ~xASL_exist(x.P.Path_y_ASL,'file') || bOverwrite
         warning([x.P.Path_y_T1 ' didnt exist, skipping...']);
         return;
     end
-
+    
     TemplateResolution = [1.5 1.5 1.5];
     sKernel = (EstimatedResolution.^2 - TemplateResolution.^2).^0.5; % assuming the flow fields are in 1.5x1.5x1.5 mm
     sKernel(EstimatedResolution<TemplateResolution) = 0;
@@ -26,7 +28,13 @@ if ~xASL_exist(x.P.Path_y_ASL,'file') || bOverwrite
 
     % Perform the smoothing
     % xASL_spm_smooth(x.P.Path_y_T1, sKernel,x.P.Path_y_ASL);
-    xASL_im_PreSmooth(x.P.Path_ASL4D, x.P.Path_y_T1, x.P.Path_y_ASL); % we need to add the effective resolution here still!
+    
+    % Note that we provide the T1w resolution, not the resolution of y_T1,
+    % which is the standard space resolution (as it pulls not pushes).
+    niiT1w = xASL_io_ReadNifti(x.P.Path_T1);
+    resSrc = niiT1w.hdr.pixdim(2:4);
+    
+    xASL_im_PreSmooth(x.P.Path_ASL4D, x.P.Path_y_T1, x.P.Path_y_ASL, [], resSrc); % we need to add the effective resolution here still!
     % sKernel, as calculated above, can be used for this. But the major
     % rotations need to be taken into account, between the effective
     % resolution as specified, and the one in the different NIfTIs
