@@ -199,7 +199,8 @@ else
 
     fprintf('%s\n','Running new M0 processing method');
     % run the new M0 image processing
-    xASL_io_SaveNifti( x.P.Pop_Path_M0, x.P.Pop_Path_M0, xASL_im_M0ErodeSmoothExtrapolate( xASL_io_Nifti2Im(x.P.Pop_Path_M0), x ));
+    IM = xASL_im_M0ErodeSmoothExtrapolate(xASL_io_Nifti2Im(x.P.Pop_Path_M0), x);
+    xASL_io_SaveNifti(x.P.Pop_Path_M0, x.P.Pop_Path_M0, IM);
     % Copy M0 biasfield to native space for native space quantification
     xASL_spm_deformations(x,x.P.Pop_Path_M0,x.P.Path_rM0,1,x.P.Path_PWI,x.P.Path_mean_PWI_Clipped_sn_mat,x.P.Path_y_ASL);
     % this last step also ensures that x.P.Path_rM0 is resliced to x.P.Path_PWI
