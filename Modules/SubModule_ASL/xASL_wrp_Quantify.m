@@ -74,8 +74,8 @@ fprintf('%s\n','Loading PWI & M0 images');
 PWI = xASL_io_Nifti2Im(PWI_Path); % Load CBF nifti
 ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
-if  xASL_stat_SumNan(PWI(:))==0
-    error('Empty PWI image, something went wrong in M0 processing');
+if xASL_stat_SumNan(PWI(:))==0
+    warning(['Empty PWI image:' PWI_Path]);
 end
 
 % % % Philips dcm2niiX scaling fix:
@@ -119,6 +119,11 @@ else
 
     fprintf('%s\n','M0 scan used');
     M0_im = xASL_io_Nifti2Im(M0Path);
+    
+    if xASL_stat_SumNan(M0_im(:))==0
+        warning(['Empty M0:' M0Path]);
+    end
+    
     M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
 
 % %     % Philips dcm2niiX scaling fix:
