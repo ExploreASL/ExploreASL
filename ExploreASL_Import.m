@@ -4,7 +4,7 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 % FORMAT: ExploreASL_Import(imPar[, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bRunDCM2NII, bClone2Source])
 %
 % INPUT:
-%   imPar               - structure with import parameters, output of ExploreASL_Import_Config.m
+%   imPar               - structure with import parameters, output of ExploreASL_ImportConfig.m
 %                         All other input parameters are configured within this function.
 %   bCopySingleDicoms   - if true, copies a single DICOM with each NIfTI
 %                         dataset/ScanType, that can be used to retrieve missing parameters from

@@ -400,7 +400,7 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 			parms.RescaleIntercept      = parms.RescaleIntercept(isfinite(parms.RescaleIntercept));
 		end
 		
-		if  length(parms.MRScaleSlope)>1 || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleIntercept)>1
+		if  (length(parms.MRScaleSlope)>1 && parms.MRScaleSlope(2)~=1) || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleIntercept)>1
 			if  isASL % quickfix, see above
 				warning('xASL_adm_Dicom2Parms: Multiple scale slopes exist for a single scan!');
                 warning(['Could not perform dicom2nii conversion for ' parmsfile]);

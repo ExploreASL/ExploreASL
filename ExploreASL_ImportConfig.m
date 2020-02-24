@@ -256,10 +256,11 @@ switch imPar.studyID
 		imPar.tokenScanAliases = {'^ASL$', 'ASL4D'};
 		imPar.bMatchDirectories = true;
 	case 'FRONTIER'
-		imPar.folderHierarchy = {'^(P\d{2})$' '^(ASL|DSC)$' '^1.*$' '^1.*$' '^1.*$'};
+		%imPar.folderHierarchy = {'^(P\d{2})$' '^(ASL|DSC)$' '^1.*$' '^1.*$' '^1.*$'};
+		imPar.folderHierarchy = {'^(P\d{2})$' '^(ASL|DSC|M0)$'};
 		imPar.tokenOrdering = [ 1 0 2];
 		imPar.tokenSessionAliases = {};
-		imPar.tokenScanAliases = {'^ASL$', 'ASL4D';'^DSC$','DSC4D'};
+		imPar.tokenScanAliases = {'^ASL$', 'ASL4D';'^DSC$','DSC4D';'^M0$','M0'};
 		imPar.bMatchDirectories = true;
 	case 'BrnoEpilepsy'
 		imPar.folderHierarchy = {'^(\d{4}A)$' '.*(?:PCASL|Anat).*' '.*(FLAIR|mprage|f.nii).*'};
