@@ -4,15 +4,16 @@ let nParallel=$nParallel+7; # The + 7 let's truncating arithmetic round up
 let nParallel=$nParallel/8;
 let nParallel=3;
 
-MatlabPath=/data/usr/local/bin/matlab; # find Matlab path
-DataParPath=/mnt/s4e_data/RAD/share/EPAD/scripts/ExploreASL; # CHANGE DIR
-xASLdir=~/ExploreASL/ExploreASL;
+MatlabPath=/usr/local/apps/matlab/R2018b/bin/matlab; # find Matlab path
+DataParPath=/radshare/SABRE/analysis/DataParameters_HiQ.json; # CHANGE DIR
+xASLdir=/radshare/EPAD/scripts/ExploreASL;
 cd $xASLdir
+let iModule=1; #run first only structural module
 
 for (( i=1; i<=$nParallel; i++ ));
 
 
-screen -dmSL SABRE$i $MatlabPath -nodesktop -nosplash -r "addpath('pwd');ExploreASL_Master('$DataParPath', true, true, $i, $nParallel);" &
+screen -dmSL SABRE$i $MatlabPath -nodesktop -nosplash -r "cd('$xASLdir');ExploreASL_Master('$DataParPath', true, true, $i, $nParallel, $iModule);" &
 
 
 done
