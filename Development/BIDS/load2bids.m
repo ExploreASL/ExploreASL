@@ -1,9 +1,12 @@
 %% Load the zeroed-out DICOMs the BIDS format and fill in all the missing info to the JSON
 ExploreASL_Initialize([],false);
-basePath = '/home/janpetr/tmp/BIDS';
-parPath  = '/home/janpetr/tmp/BIDSpar';
-outputPath = '/home/janpetr/tmp/BIDSout';
-finalPath = '/home/janpetr/tmp/BIDSfinal';
+
+% FILLIN
+basePath = '/home/janpetr/tmp/BIDS'; % The raw dicoms should be here in /StudyName/raw/...
+parPath  = '/home/janpetr/tmp/BIDSpar'; % Put it your data_par.m file to load your parameters with name StudyName.m or StudyName.json (it converts all to JSON on the first run)
+outputPath = '/home/janpetr/tmp/BIDSout'; % The directory to save the DICOM2NII import
+finalPath = '/home/janpetr/tmp/BIDSfinal'; % Takes files in NIFTI+JSON from outputPath and saves the complete BIDS format to finalPath
+
 lRMFields = {'InstitutionName' 'InstitutionalDepartmentName' 'InstitutionAddress' 'DeviceSerialNumber' 'StationName' 'ProcedureStepDescription' 'SeriesDescription' 'ProtocolName'}; % Fields to exclude
 lAnat = {'T1' 'T2' 'FLAIR'}; % A list of anatomical scans to include
 %% Load the list of the directories
@@ -24,11 +27,12 @@ for ii = 1:length(fList)
 	end
 end	
 
-%% Specific handling
+%% Specific handling - you can manually copy/move some files if needed to get them to the correct structure
 mkdir([basePath '/Philips_PCASL_3DGRASE_Divers/raw/Patient1/ASL_Session1/dat/dat/']);
 system(['mv ' basePath '/Philips_PCASL_3DGRASE_Divers/raw/* ' basePath '/Philips_PCASL_3DGRASE_Divers/raw/Patient1/ASL_Session1/dat/dat/'])
 
 %% Specify study-parameters for import
+% It either loads this information from the ExploreASL_ImportConfig.m based on the name of your study, but it is much easier to fill in your information directly here
 importStr = [];
 for ii = 1:length(fList)
 	importStr{ii}.dirName = fList{ii};
@@ -58,14 +62,21 @@ for ii = 1:length(fList)
 			importStr{ii}.imPar.tokenScanAliases = { '^ASL$', 'ASL4D';'^T1w$', 'T1';'^M0$', 'M0';'^T2$', 'T2';'^FLAIR$' , 'FLAIR'};
 			importStr{ii}.imPar.bMatchDirectories = true;
 			importStr{ii}.bLoadConfig = false;
-			
-			%case
-			%importStr{ii}.configName = '';
-			%importStr{ii}.bLoadConfig = false;
+		case {'StudyName'}
+			% FILLIN
+			% The standard information from the ImportConfig
+			importStr{ii}.imPar.folderHierarchy = { '^(.)+$' '^(ASL|T1w|M0|T2|FLAIR)$' };
+			importStr{ii}.imPar.tokenOrdering = [ 1 0 2];
+			importStr{ii}.imPar.tokenSessionAliases = { '', ''};
+			importStr{ii}.imPar.tokenScanAliases = { '^ASL$', 'ASL4D';'^T1w$', 'T1';'^M0$', 'M0';'^T2$', 'T2';'^FLAIR$' , 'FLAIR'};
+			importStr{ii}.imPar.bMatchDirectories = true;
+			% Specify to false that this info should be used instead of loading it from the ExploreASL_ImportConfig.m
+			importStr{ii}.bLoadConfig = false;
 	end
 end	
 
 %% Go through all studies and import them
+% This simply runs the ExploreASL_Import
 for ii = 1:length(fList)
 	% Load the study parameters
 	if ~isfield(importStr{ii},'bLoadConfig') || importStr{ii}.bLoadConfig
@@ -110,6 +121,8 @@ system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1_2.json ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0PERev.json']);
 
 %% Specify the missing study parameters
+% This is the most important part - it takes the imported JSONs and fills in all the study specific information that is currently still missing.
+% Several parameters are automatically retrieved from the DICOMs, some are retrieved from Data_Par.m just below. And the rest needs to be filled in.
 for ii = 1:length(fList)
 	% Load the data-par
 	
@@ -139,9 +152,16 @@ for ii = 1:length(fList)
 	importStr{ii}.par.LabelingOrientation = 'Random description';
 	importStr{ii}.par.LabelingDistance = 40;
 	
-	% Units  mL/100g/min
-	% ASLContext
 	switch (fList{ii})
+		% FILLIN
+		% - the basic information (ASLContext, LabelingType) needs to be filled for all
+		%   - See 'Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans' and 'Siemens_PCASL_3DGRASE_failed_APGEM2' for different types of Control/label order.
+		%   - For PASL examples, see 'Siemens_PASL_3DGRASE_APGEM_1' or 'Siemens_PASL_2DEPI_noBsup2_EPAD'
+		%   - Complete info for pCASL is in 'GE_PCASL_2DEPI_stripped_3CV'
+		case 'StudyName'
+			importStr{ii}.par.ASLContext = '(Label+Control)*23';
+			importStr{ii}.par.LabelingType = 'PCASL';
+			
 		case 'Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans'
 			importStr{ii}.par.ASLContext = '(Label+Control)*23';
 			importStr{ii}.par.LabelingType = 'PCASL';
@@ -263,18 +283,13 @@ for ii = 1:length(fList)
 			importStr{ii}.par.AcquisitionDuration = 672;
 			importStr{ii}.par.InterPulseSpacing = 0.00124;
 			importStr{ii}.par.PCASLType = 'balanced';
-			
-			%case
-			%importStr{ii}.ASLContext
-			%importStr{ii}.bLoadConfig = false;
+
 	end
 	switch (fList{ii})
 		case {'Philips_PCASL_2DEPI_stripped_3CV2','Siemens_PCASL_2DEPI_stripped_3CV'}
 			importStr{ii}.par.AcquisitionDuration = 658;
 			importStr{ii}.par.InterPulseSpacing = 0.00115;
 	end
-	
-		
 	
 	% Process all the data and automatically fill in the missing parameters
 	if strcmp(importStr{ii}.x.readout_dim,'2D')
@@ -330,7 +345,11 @@ for ii = 1:length(fList)
 		
 	end
 	
-	% Last round of edits
+	% Last round of edits - most parameters are filled in above, or (Background suppresion timing) prefilled with default values
+	% But after this automatic prefilling, you might want to change a few parameters - this is done here
+	
+	% FILLIN
+	% Either to change the automatically filled things above, or to supply further info about multi-PLD, vascular crushing, QUASAR etc.
 	switch (fList{ii})
 		case 'Siemens_PCASL_3DGRASE_failed_APGEM2'
 			%importStr{ii}.par.ASLContext = 'M0+((Label+Control)*12)';
@@ -360,6 +379,8 @@ for ii = 1:length(fList)
 end
 
 %% Go through all studies and check all the M0 and ASLs and modify the JSONs
+% This step should be completely automatic, just taking the info filled above and using it to convert to full BIDS.
+% No edits should be necessary unless there's something wrong that needs to be fixed.
 for ii = 1:length(fList)
 	% Make a copy of the par to the Flavors
 	importStr{ii}.flavors = importStr{ii}.par;
@@ -601,6 +622,7 @@ end
 	
 
 %% Export for ASL JSON flavours
+% This do not need to be run for BIDS conversion - it only save the info for all processed datasets.
 fCSVOut = fopen(fullfile(finalPath,'flavours.csv'),'w');
 
 fieldsCSV = {'PulseSequenceType' 'PulseSequenceDetails' 'SliceTiming' 'ASLContext' 'LabelingType' 'LabelingDuration' 'InitialPostLabelDelay' 'BackgroundSuppression' 'M0' 'AcquisitionResolution'...
