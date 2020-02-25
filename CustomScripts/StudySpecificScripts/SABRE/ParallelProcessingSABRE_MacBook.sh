@@ -5,7 +5,7 @@ let nParallel=$nParallel/8;
 let nParallel=3;
 
 MatlabPath=/Applications/MATLAB_R2016b.app/bin/matlab; # find Matlab path
-DataParPath=/Users/henk/surfdrive/HolidayPics/CICERO_Nolan/analysis/DataParameters_HiQ.json; # CHANGE DIR
+DataParPath=/Users/henk/surfdrive/SABRE/analysis/DataParameters_HiQ.json; # CHANGE DIR
 xASLdir=/Users/henk/ExploreASL/ExploreASL;
 cd $xASLdir
 

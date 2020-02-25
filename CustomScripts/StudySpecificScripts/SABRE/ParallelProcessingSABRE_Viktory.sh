@@ -9,16 +9,8 @@ DataParPath=/mnt/s4e_data/RAD/share/EPAD/scripts/ExploreASL; # CHANGE DIR
 xASLdir=~/ExploreASL/ExploreASL;
 cd $xASLdir
 
-for i in {1..$nParallel}
-do
-   echo "Welcome $i times"
-done
-
 for (( i=1; i<=$nParallel; i++ ));
-#do echo Running instance $i";
-do 
 
-i=3;
 
 screen -dmSL SABRE$i $MatlabPath -nodesktop -nosplash -r "addpath('pwd');ExploreASL_Master('$DataParPath', true, true, $i, $nParallel);" &
 
