@@ -24,7 +24,9 @@ function xASL_wrp_CreatePopulationTemplates(x, SaveUnmasked, bCompute4Sets, Spec
 %                       outliers (OPTIONAL, DEFAULT=false)
 %   FunctionsAre      - two cells, with functions, and with names
 %                       (OPTIONAL, DEFAULT is mean and SD). Same setup as
-%                       "SpecificScantype" above)
+%                       "SpecificScantype" above). First should be a
+%                       functionhandle, e.g. @xASL_stat_MeanNan (not a
+%                       string)
 %
 % OUTPUT: n/a
 %
@@ -42,6 +44,8 @@ function xASL_wrp_CreatePopulationTemplates(x, SaveUnmasked, bCompute4Sets, Spec
 % EXAMPLE: xASL_wrp_CreatePopulationTemplates(x);
 % EXAMPLE for specific scantypes:
 %          xASL_wrp_CreatePopulationTemplates(x, [], [], {{'qCBF'} {'CBF'} 1});
+% EXAMPLE for specific scantypes and specific function:
+%          xASL_wrp_CreatePopulationTemplates(x, 0, 1, {'qCBF' 'CBF' 1}, 1, 0, {{@xASL_stat_MeanNan} {'mean'}});
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright 2015-2019 ExploreASL
@@ -166,6 +170,12 @@ if UsePredefined
     PreFixList{end+1}   = 'SNR';                                TemplateNameList{end+1}  = 'SNR';              SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'TT';                                 TemplateNameList{end+1}  = 'TT';               SessionsExist(end+1)    = 0;
     PreFixList{end+1}   = 'FoV';                                TemplateNameList{end+1}  = 'FoV';              SessionsExist(end+1)    = 1;
+    
+    PreFixList{end+1}   = '4V_MAP';                             TemplateNameList{end+1}  = '4V_MAP';           SessionsExist(end+1)    = 0;
+    PreFixList{end+1}   = '4V';                                 TemplateNameList{end+1}  = '4V';               SessionsExist(end+1)    = 0;
+    PreFixList{end+1}   = 'CoW_MAP';                            TemplateNameList{end+1}  = 'CoW_MAP';          SessionsExist(end+1)    = 0;
+    PreFixList{end+1}   = 'HEMI';                               TemplateNameList{end+1}  = 'HEMI';             SessionsExist(end+1)    = 0;    
+    PreFixList{end+1}   = 'TASL';                               TemplateNameList{end+1}  = 'TASL';             SessionsExist(end+1)    = 0;        
     % % PM: Let this search for different scantypes in /PopDir NIfTIs, & run within those
 end
 
@@ -196,7 +206,7 @@ for iScanType=1:length(PreFixList)
 
         % ----------------------------------------------------------------------------------------------------
         % Predefine memory
-        clear IM LoadFiles NoIm
+        clear IM IM2 LoadFiles
         UnAvailable = 0;
         NextN = 1;
         NoImageN = 1;
@@ -208,12 +218,13 @@ for iScanType=1:length(PreFixList)
                 PathNII = fullfile(x.D.PopDir,[PreFixList{iScanType} '_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
 
                 if xASL_exist(PathNII,'file')
+                    % If exist, add this subject/image to the list
                     LoadFiles{NextN,1} = PathNII;
                     NextN = NextN+1;
                     xASL_io_ReadNifti(PathNII);
                 else
+                    % if doesnt exist, dont add to the list
                     UnAvailable = UnAvailable+1;
-                    NoIm(NoImageN) = SubjSess;
                     NoImageN = NoImageN+1;
                 end
             end
@@ -248,14 +259,17 @@ for iScanType=1:length(PreFixList)
         IM = zeros(Size1,nSize,'single'); % pre-allocating for speed
         if SaveUnmasked; IM2 = zeros(121,145,121,nSize, 'single'); end
 
-        if exist('NoIm','var')
-            IM(:,NoIm) = NaN; % fill the non-existing scans
-        end
         for iSubject=1:nLoad % add images
             xASL_TrackProgress(iSubject,nLoad);
             tempIM = xASL_io_Nifti2Im(LoadFiles{iSubject,1});
             tempIM(tempIM<0) = 0; % clipping below zero for visualization
-            IM(:,iSubject) = xASL_im_IM2Column(tempIM, x.WBmask);
+            tempIM1 = xASL_im_IM2Column(tempIM, x.WBmask);
+            
+            if iSubject>1 && ~(size(tempIM1,1)==size(IM,1))
+                warning(['Wrong size:' LoadFiles{iSubject,1}]);
+                continue; % proceed with next ScanType
+            end
+            IM(:,iSubject) = tempIM1;
             if SaveUnmasked; IM2(:,:,:,iSubject) = tempIM; end
         end
         fprintf('\n');
@@ -305,14 +319,22 @@ for iScanType=1:length(PreFixList)
                             NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Sets2Check(iSet)} '_' x.S.SetsOptions{Sets2Check(iSet)}{UniqueSet(iU)}];
                             tempIM = IM(:,WithinGroup);
 
-                            % compute outliers
-                            NotOutliers = xASL_stat_RobustMean(tempIM);
+                            if bRemoveOutliers
+                                % Exclude outliers
+                                NotOutliers = find(xASL_stat_RobustMean(tempIM))';
+                            else
+                                NotOutliers = [1:1:size(tempIM,2)];
+                            end
+                            
                             % compute maps
                             ComputeParametricImages(tempIM(:,NotOutliers), NameIM, x, FunctionsAre, true);
                             if SaveUnmasked
                                 tempIM2 = IM2(:,:,:,WithinGroup);
                                 ComputeParametricImages(tempIM2(:,:,:,NotOutliers),NameIM, x, false);
                             end
+                        catch ME
+                            warning('Getting set didnt work');
+                            fprintf('%s\n',ME.message);
                         end
                     end
                 end
@@ -370,7 +392,7 @@ function ComputeParametricImages(IM, NameIM, x, FunctionsAre, bMask)
     for iFunction=1:length(FunctionsAre{1})
         FunctionHandle = FunctionsAre{1}{iFunction};
         if bMask
-            ImageIs = xASL_im_Column2IM(FunctionHandle(IM, 2),x.WBmask).* x.GradualSkull;
+            ImageIs = xASL_im_Column2IM(FunctionHandle(IM, 2), x.WBmask).* x.GradualSkull;
             PathSave = fullfile(x.D.TemplatesStudyDir, [NameIM '_bs-' FunctionsAre{2}{iFunction} '.nii']);
         else
             ImageIs = FunctionHandle(IM, 4);
