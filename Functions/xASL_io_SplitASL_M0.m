@@ -10,8 +10,8 @@ function xASL_io_SplitASL_M0(InPath,iM0)
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function splits ASL4D & M0 if they were in the same sequence.
-%              If dcm2niiX has already splitted the ASL4D NIfTI, it is
-%              reconstructed first.
+%              If dcm2niiX has already splitted the ASL4D NIfTI, this is reconstructed first.
+%              If no M0 exists, or only ASL splitting is desired, leave iM0 empty ([])
 %
 %              Vendor product sequence examples:
 %              GE 3D spiral sometimes puts the M0 at the last volume of the series -> iM0 = [2];
@@ -20,6 +20,8 @@ function xASL_io_SplitASL_M0(InPath,iM0)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
 % xASL_io_SplitASL_M0('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [1 2]);
+% EXAMPLE for concatenating files only:
+% xASL_io_SplitASL_M0('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', []);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
@@ -102,7 +104,7 @@ function xASL_io_SplitASL_M0(InPath,iM0)
 
         %% Save M0 NIfTI
         Path_M0 = fullfile(Fpath,'M0.nii');
-        if ~xASL_exist(Path_M0,'file') % don't overwrite
+        if ~xASL_exist(Path_M0,'file') && ~isempty(iM0) % don't overwrite, and skip if no M0
             tIM = xASL_io_Nifti2Im(BackupName);
             xASL_io_SaveNifti(BackupName,Path_M0 ,tIM(:,:,:,iM0),[],0);
             bCreateM0 = true;
@@ -113,7 +115,9 @@ function xASL_io_SplitASL_M0(InPath,iM0)
         %% Determine ASL indices
         ASLindices          = 1:1:size(tIM,4);
         IndexASL            = ones(1,size(tIM,4));
-        IndexASL(iM0)       = 0;
+        if ~isempty(iM0)
+            IndexASL(iM0)       = 0;
+        end
         ASLindices          = ASLindices(logical(IndexASL));
         % Check for even number of volumes
         nASL                = numel(ASLindices);
