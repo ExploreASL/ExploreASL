@@ -153,7 +153,7 @@ if ~isfield(imPar,'nMaxSessions') || isempty(imPar.nMaxSessions)
 	imPar.nMaxSessions = 0;
 end
 if ~isfield(imPar,'dcm2nii_version') || isempty(imPar.dcm2nii_version)
-	imPar.dcm2nii_version = '20181125'; % OR for PARREC imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
+	imPar.dcm2nii_version = '20190902'; % OR for PARREC imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
 end
 if ~isfield(imPar,'dcmExtFilter') || isempty(imPar.dcmExtFilter)
 	imPar.dcmExtFilter = '^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
