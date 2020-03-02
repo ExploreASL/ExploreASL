@@ -210,7 +210,7 @@ for iMod = 1:nMod
 		case 3
 			strMod = 'DSC-ASL';
 	end
-
+	
 	% Compare whole brain normal, contralateral normal, T1-ROI, FLAIR-ROI
 	for iRoi = 1:4
 		switch(iRoi)
@@ -224,7 +224,7 @@ for iMod = 1:nMod
 				strRoi = 'FLAIR-ROI';
 		end
 		% Scatter plots of the comparisons for mean, meanGM, and max
-
+		
 		figure(1);subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
 		%groupMean = mean(resMean(iMod,1,iRoi,ind,1))/mean(resMean(iMod,2,iRoi,ind,1));
 		%plot(squeeze(resMean(iMod,1,iRoi,ind,1))/groupMean,squeeze(resMean(iMod,1,iRoi,ind,2))/groupMean,'r+');hold on
@@ -357,7 +357,7 @@ for iMod = 1:nMod
 		%plot(squeeze(resMax(iMod,3,iRoi,ind,1)),squeeze(resMax(iMod,3,iRoi,ind,2)),'bx');
 		plot([0.4,3.2],[0.4,3.2],'k--');
 		title(['max CBF ' strMod ' ' strRoi]);
-
+		
 		figure(4);sp=subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
 		imagesc((squeeze(sum(resHist(iMod,1,iRoi,ind,:,:),4))).^0.4);hold on
 		set(sp,'Layer','top','XTickLabel',{'25','50','75','100','125','150'});
@@ -365,7 +365,7 @@ for iMod = 1:nMod
 		plot([1,60],[1,60],'r-');
 		axis(sp,'xy');
 		title(['hist CBF ' strMod ' ' strRoi]);
-
+		
 		figure(5);sp=subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
 		imagesc((squeeze(sum(resHist(iMod,2,iRoi,ind,:,:),4))).^0.4);hold on
 		set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
@@ -373,7 +373,7 @@ for iMod = 1:nMod
 		plot([1,60],[1,60],'r-');
 		axis(sp,'xy');
 		title(['hist CBF ' strMod ' ' strRoi]);
-
+		
 		figure(6);sp=subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
 		imagesc((squeeze(sum(resHist(iMod,3,iRoi,ind,:,:),4))).^0.4);hold on
 		set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
@@ -381,7 +381,7 @@ for iMod = 1:nMod
 		plot([1,60],[1,60],'r-');
 		axis(sp,'xy');
 		title(['hist CBF ' strMod ' ' strRoi]);
-
+		
 		if (iMod == 1) && (iRoi == 2)
 			for iL = 1:8
 				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_PET.nii'))
@@ -392,7 +392,7 @@ for iMod = 1:nMod
 					plot([1,60],[1,60],'r-');
 					axis(sp,'xy');
 					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
-
+					
 					figure(8);sp=subplot(2,4,iL);
 					imagesc((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4);hold on
 					set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
@@ -403,7 +403,7 @@ for iMod = 1:nMod
 				end
 			end
 		end
-
+		
 		if (iMod == 1) && (iRoi == 3)
 			for iL = 1:8
 				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_PET.nii'))
@@ -414,7 +414,7 @@ for iMod = 1:nMod
 					plot([1,60],[1,60],'r-');
 					axis(sp,'xy');
 					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
-
+					
 					figure(12);sp=subplot(2,4,iL);
 					imagesc((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4);hold on
 					%set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
@@ -426,7 +426,7 @@ for iMod = 1:nMod
 				end
 			end
 		end
-
+		
 		if (iMod == 2) && (iRoi == 3)
 			for iL = 1:8
 				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_DSC.nii'))
@@ -437,7 +437,7 @@ for iMod = 1:nMod
 					plot([1,60],[1,60],'r-');
 					axis(sp,'xy');
 					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
-
+					
 					figure(14);sp=subplot(2,4,iL);
 					imagesc((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4);hold on
 					%set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
@@ -449,8 +449,8 @@ for iMod = 1:nMod
 				end
 			end
 		end
-
-
+		
+		
 		figure(9);subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
 		plot(squeeze(resMean(iMod,1,iRoi,ind,1)),squeeze(resMean(iMod,1,iRoi,ind,2)),'r+');hold on
 		plot([1,80],[1,80],'k--');

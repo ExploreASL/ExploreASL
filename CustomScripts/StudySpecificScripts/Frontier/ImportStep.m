@@ -188,4 +188,4 @@ T1(LT>0.5) = 740;
 xASL_io_SaveNifti('T1.nii','T1new.nii',T1,[],1,[]);
 xASL_delete('LF.nii');
 xASL_Move('T1.nii','T1old.nii');
-xASL_Move('T1new.nii','T1.nii');
+xASL_Move('/pet/projekte/asl/data/FRONTIER/analysis/P08/T1new.nii','/pet/projekte/asl/data/FRONTIER/analysis/P08/T1.nii');
