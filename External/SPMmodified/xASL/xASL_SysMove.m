@@ -40,7 +40,7 @@ function xASL_SysMove(SrcPath, DstPath, bForce)
         else
             strforce = [];
         end
-        [status,result] = system(['mv ' strforce SrcPath ' ' DstPath]);
+        [status,result] = system(['mv ' strforce ' "' SrcPath '" "' DstPath '"']);
         if status~=0
             error('xASL_Move: Error moving %s to %s: %s', SrcPath, DstPath, result);
         end

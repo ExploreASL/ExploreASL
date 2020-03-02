@@ -51,6 +51,13 @@ imPar.bMatchDirectories  = false;
 % -----------------------------------------------------------------------------
 switch imPar.studyID
 
+	case 'Craniosynostosis'
+		imPar.folderHierarchy = {'^(.*\d{4})$', '(T1|ASL|FLAIR)' 'DICOM'};
+		imPar.tokenOrdering = [1 0 2];
+		imPar.tokenSessionAliases = {};
+		imPar.tokenScanAliases = {'^ASL$', 'ASL4D'; '^T1$', 'T1'; '^FLAIR$', 'FLAIR'};
+		imPar.bMatchDirectories = true;    
+		
 	case 'SABRE'
 		imPar.folderHierarchy = {'^(\d.*)$', '.*', '.*', 'DICOM', '(T1_3D|pCASL_main|calibration)'};
 		imPar.tokenOrdering = [1 0 2];
