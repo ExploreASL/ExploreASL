@@ -15,11 +15,11 @@ function [PathIs] = xASL_adm_UnixPath(PathIs)
     % 1) Skip this function without Unix-filesystem
     % 2) Trim whitespace
     % 3) Selectively convert forward to backward slashes (ignore already escaped whitespace)
-    % 4) Selectively escape whitespace (ignore already escaped whitespace)
+    % 4) Escape characters and residual whitespaces (ignore already escaped whitespaces)
     % 5) If WSL: add mounting prefix
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % EXAMPLE xASL_adm_UnixPath('   \Users/User/Google Drive\My      Photos ');
-    % This should output '/Users/User/Google\ Drive/'
+    % EXAMPLE xASL_adm_UnixPath('   \Users/User/Google Drive\My      Photos\Name(With)Brackets)  ');
+    % This should output '/Users/User/Google\ Drive/My\ \ \ \ \ \ Photos/Name\(With\)Brackets\)'
     % __________________________________
     % Copyright 2020 ExploreASL
         
@@ -42,8 +42,8 @@ function [PathIs] = xASL_adm_UnixPath(PathIs)
     PathIs =regexprep(PathIs, '(\\)(?! )', '/');
     
     %% ===================================================================================
-    %% 4) Replace all spaces which are not preceded by a \ (for each space separately)
-    PathIs = regexprep(PathIs, '(?<!\\)( )', '\\$1');
+    %% 4) Escape characters in file name
+    PathIs = regexprep(PathIs, '(?<!\\)( |\(|\)|[|]|{|}|*|:|;|+|=|,|<|>|?|~|@|#|%|^|&|*)', '\\$1');
     
     %% ===================================================================================
     %% 5) If WSL: add mounting prefix
