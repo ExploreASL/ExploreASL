@@ -151,15 +151,15 @@ StateName{11} = '110_DoWADQCDC';
 
 %% -----------------------------------------------------------------------------
 %% Check if we need to reset the original T1w/FLAIR,
-%  This is the case if any of the .status before 007 is missing
+%  This is the case if any of the T1w .status before 007 is missing
 
-if ~x.mutex.HasState(StateName{1}) || (~x.mutex.HasState(StateName{6}) && ~x.mutex.HasState(StateName{7}))
-    if xASL_exist(x.P.Path_T1_ORI, 'file')
-        xASL_Move(x.P.Path_T1_ORI, x.P.Path_T1, true);
-    end
-    if xASL_exist(x.P.Path_FLAIR_ORI, 'file')
-        xASL_Move(x.P.Path_FLAIR_ORI, x.P.Path_FLAIR, true);
-    end
+if ~x.mutex.HasState(StateName{1}) || ~x.mutex.HasState(StateName{6})
+
+    % if we rerun the structural module, then clean all modules (as they
+    % are dependent of the structural module for segmentation/registration)
+    % don't remove any previous WMH_SEGM
+    xASL_adm_CleanUpBeforeRerun(x.D.ROOT, [1 2], false, false, x.P.SubjectID);
+    
     if xASL_exist(x.P.Path_T1, 'file') % Fix multiple T1w iterations
         IM = xASL_io_Nifti2Im(x.P.Path_T1);
         if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
@@ -176,28 +176,6 @@ if ~x.mutex.HasState(StateName{1}) || (~x.mutex.HasState(StateName{6}) && ~x.mut
             xASL_io_SaveNifti(x.P.Path_FLAIR, x.P.Path_FLAIR, IM(:,:,:,1,1,1,1), [], false);
         end
     end
-    % Delete previous derivatives
-    DelList = {x.P.Path_c1T1 x.P.Path_c2T1 x.P.Path_c3T1 x.P.Path_c1T1_ORI x.P.Path_c2T1_ORI x.P.Path_c3T1_ORI x.P.Path_y_T1 x.P.Path_PseudoCBF};
-    DelList{end+1} = fullfile(fileparts(x.P.Path_T1), 'CentralWM_QC.nii');
-    DelList{end+1} = fullfile(fileparts(x.P.Path_T1), 'LeftRight.nii');
-    DelList{end+1} = fullfile(fileparts(x.P.Path_T1), 'catreport_T1.pdf');
-    for iD=1:length(DelList)
-        xASL_delete(DelList{iD});
-    end
-
-    % We also delete lock files for MRI data that depend on the structural
-    % data:
-    CurrDir = pwd;
-    cd(x.LOCKDIR);
-    cd ../..;
-    ModulesAre = {'xASL_module_ASL' 'xASL_module_dwi' 'xASL_module_func'};
-    for iModule=1:length(ModulesAre)
-        if exist(ModulesAre{iModule},'dir')
-            xASL_adm_DeleteFileList(fullfile(ModulesAre{iModule},x.P.SubjectID), '.*', true);
-            xASL_delete(ModulesAre{iModule});
-        end
-    end
-    cd(CurrDir);
 end
 
 
