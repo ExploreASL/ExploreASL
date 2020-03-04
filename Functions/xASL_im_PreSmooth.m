@@ -94,15 +94,15 @@ ResultantResolutionSrc = voxSrc.*resVoxSrc;
 % ===============================================================================
 %% 2) Skip this function if reference resolution is equal to, or lower than source resolution
 % The smoothing is only required when the reference resolution is in any dimension lower
-% than the source resolution. The minimal resolution difference is 0.5 mm (in any dimension).
-RefSmallerThanSrc = max(ResultantResolutionRef>(ResultantResolutionSrc+0.5));
+% than the source resolution. The minimal resolution difference is 0.2 mm (in any dimension).
+RefSmallerThanSrc = max(ResultantResolutionRef>(ResultantResolutionSrc+0.2));
 
 fprintf(['Effective spatial resolution source image: [' xASL_num2str(ResultantResolutionSrc) '] mm\n']);
-fprintf(['Effective spatial resolution reference image: [' xASL_num2str(ResultantResolutionSrc) '] mm\n']);
+fprintf(['Effective spatial resolution reference image: [' xASL_num2str(ResultantResolutionRef) '] mm\n']);
 
 if ~RefSmallerThanSrc
     xASL_Copy(pathSrc, pathOut, 1);
-    fprintf('Pre-smoothing skipped, resolutions werent significantly differed\n');
+    fprintf('Pre-smoothing skipped, resolutions were not significantly different\n');
     return; % skip pre-smoothing
 end
 fprintf('Pre-smoothing...\n');
