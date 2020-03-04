@@ -27,7 +27,7 @@ function xASL_SysMove(SrcPath, DstPath, bForce)
         bForce = false;
     end
 	if ~xASL_exist(SrcPath,'file') % Check if source exists
-		error(['xASL_Move: Source doesn''t exist: ' SrcPath]);
+		error(['Source doesn''t exist: ' SrcPath]);
     end
 
     %% Start moving
@@ -40,9 +40,9 @@ function xASL_SysMove(SrcPath, DstPath, bForce)
         else
             strforce = [];
         end
-        [status,result] = system(['mv ' strforce ' "' SrcPath '" "' DstPath '"']);
+        [status,result] = system(['mv ' strforce ' ' SrcPath ' ' DstPath]);
         if status~=0
-            error('xASL_Move: Error moving %s to %s: %s', SrcPath, DstPath, result);
+            error('Error moving %s to %s: %s', SrcPath, DstPath, result);
         end
     elseif ispc
         if bForce
@@ -50,9 +50,9 @@ function xASL_SysMove(SrcPath, DstPath, bForce)
         else
             strforce = [];
         end
-        [status,result] = system(['move ' strforce ' "' SrcPath '" "' DstPath '"']);
+        [status,result] = system(['move ' strforce ' ' SrcPath ' ' DstPath]);
         if status~=0
-            error('xASL_Move: Error moving %s to %s: %s', SrcPath, DstPath, result);
+            error('Error moving %s to %s: %s', SrcPath, DstPath, result);
         end
     else
         if bForce
