@@ -1,45 +1,73 @@
-%% xASL_qc_TestExploreASL
+function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod)
+%xASL_qc_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
+%
+% FORMAT: [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, RunMethod)
+% 
+% INPUT:
+%   TestDirOrig - path to root folder containing all datasets to test processing on (REQUIRED)
+%   TestDirDest - path to folder where the results are stored (this is temporarily, automatically deleted upon restart, REQUIRED)
+%   RunMethod   - Choose a value for how to test ExploreASL (REQUIRED)
+%                 Option 1 = run ExploreASL serially
+%                 Option 2 = run ExploreASl parallel (start new MATLAB instances)
+%                 FUTURE Option 3 = run ExploreASL compilation serially
+%                 FUTURE Option 4 = run ExploreASL compilation parallel
+% OUTPUT:
+%   ResultsTable - Table containing all results from the test runs
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function will run ExploreASL on several different
+%              datasets, do perform a full and thorough test of ExploreASL.
+%              Different environment variables include:
+%              x.Quality 0 and 1
+%              
+%              Different data setups include:
+%              ASL readouts (3D spiral, 3D GRASE, 2D EPI)
+%              ASL vendors (GE, Philips, Siemens)
+%              With/without background suppression
+%              With/without FLAIR processing (LST LGA or LPA)
+%              With/without lesion masking from tumor
+%              Performed as first or second run of ExploreASL, fully or partly done before
+%              Longitudinal or cross-sectional data
+%              FEAST
+%              With/without disabling quantification
+%              With/without saving 4D PWI/CBF maps
+%              With/without M0
+%              With single or multiple ASL sessions (i.e. runs)
+%
+%              This function performs the following steps:
+%              1) Pull latest GitHub version
+%              2) Initialize SPM
+%              3) Copy all data for testing
+%              4) Test standalone SPM on low quality
+%              5) Test ExploreASL itself
+%              6) Pause until all results exist (if running parallel in background)
+%              7) Compile results table
+%              8) Compare table with reference table
+%              9) E-mail results
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE for Jan: [ResultsTable] = xASL_qc_TestExploreASL('/pet/projekte/asl/data/ExploreASL_TestCases', '/pet/projekte/asl/data/ExploreASL_TempRes', 1);
+% EXAMPLE for Henk on MacOS: [ResultsTable] = xASL_qc_TestExploreASL('/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases', '/Users/henk/ExploreASL/ExploreASL_TestCasesProcessed', 1);
+% __________________________________
+% Copyright 2015-2019 ExploreASL
 
+% ============================================================
+%% Admin
 % Run ExploreASL to get directories
 if isempty(which('ExploreASL_Master'))
     cd ..;
 else
     cd(fileparts(which('ExploreASL_Master')));
 end
+
+% ============================================================
+%% 1) Pull latest GitHub version
+% assuming we are in ExploreASL folder
+Answer = system('git fetch','-echo');
+Answer = system('git pull','-echo');
+
 x = ExploreASL_Master('',0);
 
-% Get username so we can locate the paths
-if isunix()
-	CurrentUser = getenv('USER');
-else
-	CurrentUser = getenv('username');
-end
-
-% Option 1 = run ExploreASL serially
-% Option 2 = run ExploreASl parallel (start new MATLAB instances)
-% Option 3 = run ExploreASL compilation serially
-% Option 4 = run ExploreASL compilation parallel
-
-if isunix && strcmp(CurrentUser,'hjmutsaerts')
-    TestDirOrig = '/scratch/hjmutsaerts/TestDataSet/ExploreASL_TestCases';
-    TestDirDest = '/scratch/hjmutsaerts/TestDataSet/TempTestResults';
-    RunMethod = 2;
-elseif ismac && strcmp(CurrentUser,'henk')
-    TestDirOrig = '/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases';
-    TestDirDest = '/Users/henk/ExploreASL/ExploreASL_TestCasesProcessed';
-    RunMethod = 1;
-elseif ispc && strcmp(CurrentUser,'henk')
-    TestDirOrig = 'C:\Users\kyrav\Desktop\SurfDrive\HolidayPics\ExploreASL_TestCases';
-    TestDirDest = 'c:\TempTestDir';
-    RunMethod = 1;
-elseif isunix && strcmp(CurrentUser,'janpetr')
-	TestDirOrig = '/pet/projekte/asl/data/ExploreASL_TestCases';
-	TestDirDest = '/pet/projekte/asl/data/ExploreASL_TempRes';
-	RunMethod = 1;
-end
-
-%% Initialize SPM
-
+% ============================================================
+%% 2) Initialize SPM
 % Reset path
 path(pathdef);
 % Remove ExploreASL paths
@@ -56,7 +84,8 @@ spm('asciiwelcome');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-%% Copy all data for testing
+% ============================================================
+%% 3) Copy all data for testing
 if exist(TestDirDest,'dir')
     fprintf('Deleting previous results...\n');
     if ispc
@@ -67,7 +96,8 @@ if exist(TestDirDest,'dir')
 end
 xASL_Copy(TestDirOrig, TestDirDest);
 
-%% Test standalone SPM on low quality
+% ============================================================
+%% 4) Test standalone SPM on low quality
 x.Quality = false;
 % Find the first directory and copy out the first T1 and ASL just for SPM testing
 
@@ -166,7 +196,8 @@ for iDir=1:length(DirsAre)
     xASL_delete(DirIs);
 end
 
-%% Test ExploreASL itself
+% ============================================================
+%% 5) Test ExploreASL itself
 
 % Get list of data to test
 Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
@@ -196,24 +227,28 @@ end
 
 % Wait until all *.log files exist (which will surely be created, even with a crash)
 
-%% Pause until all results exist
-LogsDontExist = max(cellfun(@(y) ~exist(y,'file'), LogFiles));
+% ============================================================
+%% 6) Pause until all results exist (if running parallel in background)
+if RunMethod==2
+    LogsDontExist = max(cellfun(@(y) ~exist(y,'file'), LogFiles));
 
-CountTime = 0;
-TimeStepSeconds = 30;
-fprintf(xASL_adm_ConvertSeconds2TimeString(CountTime));
+    CountTime = 0;
+    TimeStepSeconds = 30;
+    fprintf(xASL_adm_ConvertSeconds2TimeString(CountTime));
 
-while max(cellfun(@(y) ~exist(y,'file'), LogFiles)) % logs don't exist
-    pause(TimeStepSeconds);
-    CountTime = CountTime+TimeStepSeconds;
-    TimeString = xASL_adm_ConvertSeconds2TimeString(CountTime);
-    fprintf(['\b\b\b\b\b\b' TimeString]);
+    while max(cellfun(@(y) ~exist(y,'file'), LogFiles)) % logs don't exist
+        pause(TimeStepSeconds);
+        CountTime = CountTime+TimeStepSeconds;
+        TimeString = xASL_adm_ConvertSeconds2TimeString(CountTime);
+        fprintf(['\b\b\b\b\b\b' TimeString]);
+    end
+    fprintf('\n');
+
+    x = ExploreASL_Master('',0);
 end
-fprintf('\n');
 
-x = ExploreASL_Master('',0);
-
-%% Read results
+% ============================================================
+%% 7) Compile results table
 ResultsTable = {'Data', 'mean_qCBF_TotalGM' 'median_qCBF_TotalGM' 'median_qCBF_DeepWM' 'CoV_qCBF_TotalGM' 'GMvol' 'WMvol' 'CSFvol' 'PipelineCompleted' 'TC_Registration'};
 for iList=1:length(Dlist)
     ResultsTable{1+iList,1} = Dlist{iList};
@@ -239,9 +274,9 @@ for iList=1:length(Dlist)
             IndexGM = find(cellfun(@(y) strcmp(y,'GM_vol'), TempTable(1,:)));
             IndexWM = find(cellfun(@(y) strcmp(y,'WM_vol'), TempTable(1,:)));
             IndexCSF = find(cellfun(@(y) strcmp(y,'CSF_vol'), TempTable(1,:)));
-            ResultsTable{1+iList,1+iFile} = TempTable{3,IndexGM};
-            ResultsTable{1+iList,2+iFile} = TempTable{3,IndexWM};
-            ResultsTable{1+iList,3+iFile} = TempTable{3,IndexCSF};
+            ResultsTable{1+iList,1+iFile} = TempTable{3, IndexGM};
+            ResultsTable{1+iList,2+iFile} = TempTable{3, IndexWM};
+            ResultsTable{1+iList,3+iFile} = TempTable{3, IndexCSF};
         end
         % check if there are missing lock files
         if exist(fullfile(AnalysisDir,'Missing_Lock_files.csv'),'file')
@@ -257,3 +292,10 @@ for iList=1:length(Dlist)
         ResultsTable{1+iList,5+iFile} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplate, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
     end
 end
+
+% ============================================================
+%% 8) Compare table with reference table
+
+% ============================================================
+%% 9) E-mail results
+
