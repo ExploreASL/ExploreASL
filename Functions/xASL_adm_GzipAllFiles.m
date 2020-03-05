@@ -1,6 +1,6 @@
-function xASL_adm_GzipAllFiles(ROOT, bFolder)
-%xASL_adm_GzipAllFiles This function zips all temporary
-% files.
+function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux)
+%xASL_adm_GzipAllFiles This function zips all .nii
+% files into nii.gz.
 %
 % By default, the low priority files are zipped,
 % also, the high priority files can be zipped (to be made default later?)
@@ -9,12 +9,22 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder)
 % visually
 %
 % High priority files are those that can be used for re-processing
-% bFolder - set to true for zipping separate folders in the ROOT folder
-% only (not recursive) (OPTIONAL, DEFAULT = false, zip files)
 
     if nargin<2 || isempty(bFolder)
         bFolder = false;
     end
+    if nargin<3 || isempty(bUseLinux) && isunix
+        bUseLinux = true;
+    elseif nargin<3 || isempty(bUseLinux)
+        bUseLinux = false;
+    end
+
+    if bUseLinux
+        PathToSearch = xASL_adm_UnixPath(ROOT);
+        system(['for i in `find ' PathToSearch '/* | grep -E \.nii$`; do gzip -1 -f -q -v "$i"; done'], '-echo');
+        return;
+    end
+            
     
     if bFolder
         PathList = xASL_adm_GetFileList(ROOT, '^.*$', 'FPList', [0 Inf], true);
