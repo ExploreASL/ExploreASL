@@ -1,4 +1,4 @@
-function [x, Result1, Result2] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessValue, bVerbose)
+function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessValue, bVerbose)
 %xASL_fsl_RunFSL Run FSL from Matlab (ExploreASL)
 %
 % FORMAT: [x] = xASL_adm_RunFSL(FSLCommand, x[, OutputZipping])
@@ -14,8 +14,6 @@ function [x, Result1, Result2] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, N
 %                     still use many resources.
 %                     Provide a number between [-20 +19], (OPTIONAL,
 %                     DEFAULT=10)
-%  
-%
 % OUTPUT:
 %   x               - as input, outputting FSL dir (OPTIONAL)
 %
