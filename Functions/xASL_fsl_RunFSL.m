@@ -113,9 +113,10 @@ if ispc
 else
     wslString = '';
 end
-[Result1, Result2] = system([wslString FSLinit FSLoutput NiceString FSLCommand]);
-if bVerbose && ~isempty(Result2) % normal output (default)
-    Result2
+if bVerbose
+    Result1 = system([wslString FSLinit FSLoutput NiceString FSLCommand], '-echo');
+else
+    Result1 = system([wslString FSLinit FSLoutput NiceString FSLCommand]);
 end
 if Result1~=0
     warning('FSL command didnt work nicely:');
