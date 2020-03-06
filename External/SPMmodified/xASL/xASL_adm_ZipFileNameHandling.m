@@ -120,9 +120,21 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn)
 				else
 					delete(srcFileGZ);
 				end
-			else
-				% Otherwise, throw an error
-				error(['Two files with same name, but different ' DifferIn ': \n %s \n %s'], srcFileNII, srcFileGZ);
+            else % if unequal
+                FileInfoNII = dir(srcFileNII);
+                FileInfoGZ = dir(srcFileGZ);
+                warning('Found two unequal valid NIfTI(.gz) files with same name, deleting oldest one');
+                % Delete the oldest one
+                if FileInfoNII.datenum>FileInfoGZ.datenum
+                    delete(srcFileGZ);
+                    fprintf('Deleted .GZ counterpart\n');
+                else
+                    delete(srcFileNII);
+                    fprintf('Deleted .NII counterpart\n');
+                end
+                
+% 				% Otherwise, throw an error
+% 				error(['Two files with same name, but different ' DifferIn ': \n %s \n %s'], srcFileNII, srcFileGZ);
 			end
 		end
 
