@@ -129,7 +129,7 @@ else
 
         if ~isempty(CurrentDir)
             for iCurrent=1:length(CurrentDir)
-                xASL_TrackProgress(iList, length(DirList));
+                xASL_TrackProgress(iCurrent, length(CurrentDir));
                 xASL_adm_DeleteFileList(CurrentDir{iCurrent}, '.*', true, [0 Inf]);
                 LockedDir = xASL_adm_GetFileList(CurrentDir{iCurrent}, 'locked', 'FPListRec', [0 Inf], true);
                 if isempty(LockedDir) % keep locked dir for mutex
