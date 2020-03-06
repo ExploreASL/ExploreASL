@@ -90,13 +90,18 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn)
 					if ~isempty(DifferIn); DifferIn = [DifferIn '_']; end
 					DifferIn = [DifferIn '.hdr.' FieldList{iL}];
 				end
-			end
-
+            end
+            if ~isempty(DifferIn)
+                fprintf('.nii & .nii.gz counterparts differed in:\n');
+                DifferIn
+            end
+            
             % Second, we compare the image matrices
 			if ~isequal(srcImOrig,srcImZipd)
 				AreEqual = false;
 				if ~isempty(DifferIn); DifferIn = [DifferIn '_']; end
 				DifferIn = [DifferIn 'image'];
+                fprintf('.nii & .nii.gz counterparts differed in their image matrix\n');
 			end
 
            % Third, we compare the orientation matrices (header outside the hdr subfield)
