@@ -74,22 +74,7 @@ end
 
 PopulationDir = fullfile(AnalysisDir, 'Population');
 
-% To save computation/harddisk burden/time, combine as many regexps here as
-% possible. But need to take care not to delete e.g. _ORI or _Backup
-NativeSpaceFiles{1} = {'.*\.(ps|log)$' 'xASL_Report.*' '(r|)c(1|2|3)T1(\.mat|\.nii|\.nii\.gz)$'...
-    '(ples.*|WMH_SEGM_CleanUp|j_T1|rT1|y_T1|CentralWM_QC|LeftRight)(\.mat|\.nii|\.nii\.gz)$' 'catreport_T1\.pdf$'...
-    'T1_seg8\.mat$'};
-
-NativeSpaceFiles{2} = {'.*\.(topup_|)log' '(VascularArtifact|xASL_qc|qcdc).*' 'rp_(despiked_|)ASL4D\.txt' '.*_sn\.mat'...
-    '(PVgm|PVwm|PVcsf|FoV|M0_biasfield|(m|)mean_control|(mean|)PWI|SD|SNR|TopUp.*|RawTemplate|ATT_bias|B0|qCBF)(\.mat|\.nii|\.nii\.gz)$'...
-    '(SliceGradient(_extrapolated|)|slice_gradient|rgrey|rASL4D|y_ASL|Pseudo(CBF|Tissue)|rM0|Field|Unwarped|rp_ASL4D)(\.mat|\.nii|\.nii\.gz)$'...
-    '(CBF(|_Visual2DICOM)|rtemp|temp|Mask(|Vascular)|mask|r|despiked_ASL4D)(\.mat|\.nii|\.nii\.gz)$'};
-
-if bRemoveWMH
-    NativeSpaceFiles{1}{end+1} = 'WMH_SEGM(\.mat|\.nii|\.nii\.gz)$';
-end
-
-
+% ===========================================================================================
 %% 1) If a Population folder doesn't exist yet but dartel does, rename it
 DARTELdir = fullfile(AnalysisDir,'dartel');
 if exist(DARTELdir,'dir') && ~exist(PopulationDir, 'dir')
@@ -202,6 +187,21 @@ fprintf('\n');
 
 % ===========================================================================================
 %% 6) Remove native space files for iModule
+% To save computation/harddisk burden/time, combine as many regexps here as
+% possible. But need to take care not to delete e.g. _ORI or _Backup
+NativeSpaceFiles{1} = {'.*\.(ps|log)$' 'xASL_Report.*' '(r|)c(1|2|3)T1(\.mat|\.nii|\.nii\.gz)$'...
+    '(ples.*|WMH_SEGM_CleanUp|j_T1|rT1|y_T1|CentralWM_QC|LeftRight)(\.mat|\.nii|\.nii\.gz)$' 'catreport_T1\.pdf$'...
+    'T1_seg8\.mat$'};
+
+NativeSpaceFiles{2} = {'.*\.(topup_|)log' '(VascularArtifact|xASL_qc|qcdc).*' 'rp_(despiked_|)ASL4D\.txt' '.*_sn\.mat'...
+    '(PVgm|PVwm|PVcsf|FoV|M0_biasfield|(m|)mean_control|(mean|)PWI|SD|SNR|TopUp.*|(Mask_|Raw)Template|ATT_bias|B0|(Mean_|)(q|)CBF)(\.mat|\.nii|\.nii\.gz)$'...
+    '(SliceGradient(_extrapolated|)|slice_gradient|rgrey|rASL4D|y_ASL|Pseudo(CBF|Tissue)|rM0|Field|Unwarped|(rp_|)ASL4D)(\.mat|\.nii|\.nii\.gz)$'...
+    '(.*beforeMoCo|CBF(|_Visual2DICOM)|(r|)temp.*|Mask(|Vascular)|mask|r|despiked_ASL4D)(\.mat|\.nii|\.nii\.gz)$'};
+
+if bRemoveWMH
+    NativeSpaceFiles{1}{end+1} = 'WMH_SEGM(\.mat|\.nii|\.nii\.gz)$';
+end
+
 fprintf('Deleting native space files for module :   ');
 
 for iList=iModule
@@ -334,5 +334,10 @@ else
     end
 end
 
+% ===========================================================================================
+%% 10) Done
+fprintf('Done cleaning up!\n');
+fprintf('Remember to remove the derivative .mat & .csv files in the AnalysisDir\n');
+fprintf('But keep those that were manually created!\n');
 
 end
