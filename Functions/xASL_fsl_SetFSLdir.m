@@ -44,9 +44,6 @@ end
 %% Detect OS
 if isunix % check for linux
     fprintf('Running FSL from Matlab on Linux');
-elseif ismac
-    warning('This Matlab-FSL implementation not yet tested for Mac, skipping');
-    return;
 elseif ispc
     [status, ~] = system('wsl ls;'); % leave status2 here, otherwise system will produce output
     if status~=0
@@ -57,7 +54,7 @@ elseif ispc
 end
 
 %% Try searching at different ROOT paths
-PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin'};
+PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps'};
 PathDirect = {'/usr/lib/fsl/5.0'};
 if ispc
     [~, result] = system('echo %LOCALAPPDATA%');
@@ -116,6 +113,29 @@ if ispc
     FSLdir = FSLdirWin(length(RootFSLDir)+1:end);
 end
 FSLdir = strrep(FSLdir,'\','/');
+
+%% If FSL is installed in a subfolder, find it
+if ~exist(fullfile(FSLdir,'bin'),'dir') || ~exist(fullfile(FSLdir,'bin','fsl'),'file') || ~exist(fullfile(FSLdir,'bin','bet'),'file')
+    FSLsubdir = xASL_adm_GetFileList(FSLdir, '^fsl.*', 'FPListRec', [0 Inf], true); % now we do this recursively
+    % now select the latest folder that has a bin folder in them (assuming
+    % that there can be multiple fsl installations)
+    if ~isempty(FSLsubdir)
+        BinDir = cellfun(@(x) fullfile(x,'bin'), FSLsubdir, 'UniformOutput',false);
+        BetPath = cellfun(@(x) fullfile(x,'bet'), BinDir, 'UniformOutput',false);
+        fslFile = cellfun(@(x) fullfile(x,'fsl'), BinDir, 'UniformOutput',false);
+        ExistBin = cellfun(@(x) logical(exist(x,'dir')), BinDir);
+        ExistBet = cellfun(@(x) logical(exist(x,'file')), BetPath);
+        ExistfslFile = cellfun(@(x) logical(exist(x,'file')), fslFile);
+        
+        DirIndex = max(find(ExistBin & ExistBet & ExistfslFile)); % find the latest dir that has the folders and functions we anticipate it should have
+        FSLdir = FSLsubdir{DirIndex};
+    else
+        warning('Cannot find valid FSL installation dir');
+        FSLdir = NaN;
+        return;        
+    end
+end        
+
 
 %% Manage RootFSLDir
 if isnumeric(RootFSLDir) && isnan(RootFSLDir)
