@@ -26,31 +26,46 @@ function xASL_io_SplitASL_M0(InPath,iM0)
 % Copyright 2015-2019 ExploreASL
 
 
-    [Fpath, Ffile]  = xASL_fileparts(InPath);
+    [Fpath, Ffile] = xASL_fileparts(InPath);
 
     % Split_ASL_M0
     ASLname = fullfile(Fpath, 'ASL4D.nii');
     BackupName = fullfile(Fpath,'ASL4D_Source.nii.gz');
 
+    OriMATPath = fullfile(Fpath,[Ffile '_parms.mat']);
+    OriJSONPath = fullfile(Fpath,[Ffile '.json']);
+
+    ASLMATPath = fullfile(Fpath, 'ASL4D_parms.mat');
+    ASLJSONPath = fullfile(Fpath, 'ASL4D.json');
+    M0MATPath = fullfile(Fpath, 'M0_parms.mat');
+    M0JSONPath = fullfile(Fpath, 'M0.json');
+    BackupMATPath = fullfile(Fpath, 'ASL4D_Source_parms.mat');
+    BackupJSONPath = fullfile(Fpath, 'ASL4D_Source.json');    
+    Path_M0 = fullfile(Fpath,'M0.nii');
+    
     ASLlist = xASL_adm_GetFileList(Fpath, ['^' Ffile '(|_.)'  '(|_\d)' '\.nii$'], 'FPList', [0 Inf]);
   
-    if isempty(ASLlist)
+    if isempty(ASLlist) && xASL_exist(BackupName)
+        fprintf('ASL4D.nii didnt exist but can restore from ASL4D_Source.nii\n');
+        ASLlist{1} = ASLname;
+        xASL_Move(BackupName, ASLlist{1}, true);
+        % Restore json as well
+        if exist(ASLJSONPath,'file') && exist(BackupJSONPath,'file')
+            xASL_Move(BackupJSONPath, ASLJSONPath, true);
+        end
+        % Delete M0, allowing to restore this from the backup
+        if xASL_exist(Path_M0,'file')
+            warning('Deleting M0 to restore it from ASL4D');
+            xASL_delete(Path_M0);
+            xASL_delete(M0JSONPath);
+        end
+    elseif isempty(ASLlist)
         error([ASLname ' didnt exist, skipping']);
     end
     
     if ~xASL_exist(BackupName) % otherwise was already split
 
         [Fpath, Ffile] = xASL_fileparts(ASLlist{1});
-
-        OriMATPath = fullfile(Fpath,[Ffile '_parms.mat']);
-        OriJSONPath = fullfile(Fpath,[Ffile '.json']);
-
-        ASLMATPath = fullfile(Fpath, 'ASL4D_parms.mat');
-        ASLJSONPath = fullfile(Fpath, 'ASL4D.json');
-        M0MATPath = fullfile(Fpath, 'M0_parms.mat');
-        M0JSONPath = fullfile(Fpath, 'M0.json');
-        BackupMATPath = fullfile(Fpath, 'ASL4D_Source_parms.mat');
-        BackupJSONPath = fullfile(Fpath, 'ASL4D_Source.json');
 
         %% First concatenate NIfTIs
         if length(ASLlist)>1
@@ -103,7 +118,6 @@ function xASL_io_SplitASL_M0(InPath,iM0)
         end
 
         %% Save M0 NIfTI
-        Path_M0 = fullfile(Fpath,'M0.nii');
         if ~xASL_exist(Path_M0,'file') && ~isempty(iM0) % don't overwrite, and skip if no M0
             tIM = xASL_io_Nifti2Im(BackupName);
             xASL_io_SaveNifti(BackupName,Path_M0 ,tIM(:,:,:,iM0),[],0);
