@@ -35,7 +35,7 @@ function [x] = xASL_import_json(DataParFile)
 % 		}]
 % }
 %
-% Don't forget to escape the backslashs!
+% Don't forget to escape the backslashes!
 %
 % OR:
 %

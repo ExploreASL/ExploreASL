@@ -11,6 +11,9 @@ if  isfield(x,'ForceInclusionList')
     % This is an option if you want to select subjects
     x.TotalSubjects = x.ForceInclusionList';
 else
+    % First escape double escaping
+    x.subject_regexp = strrep(x.subject_regexp,'\\','\');
+    % Then load subjects
     x.TotalSubjects = sort(xASL_adm_GetFileList(x.D.ROOT, x.subject_regexp, 'List', [0 Inf], true)); % find dirs
 end
 
@@ -45,7 +48,7 @@ x.nSessions = length(x.SESSIONS);
 x.SUBJECTS = x.TotalSubjects; % temporarily for xASL_init_LongitudinalRegistration
 x.nSubjects = length(x.SUBJECTS);
 
-if  isempty(x.SUBJECTS)
+if isempty(x.SUBJECTS)
     error('No subjects defined, x.SUBJECTS was empty');
 end
 
@@ -226,8 +229,6 @@ end
 
 [SubjectNList, ~, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
-
-
 if isfield(x.S,'SetsID')
     iSetLong_TP = size(x.S.SetsID,2)+1;
 else
@@ -239,7 +240,9 @@ x.S.SetsName{iSetLong_TP+1} = 'SubjectNList';
 x.S.SetsID(:,iSetLong_TP) = TimePoint;
 x.S.SetsID(:,iSetLong_TP+1) = SubjectNList;
 
-for iT=1:max(TimePoint); x.S.SetsOptions{iSetLong_TP}{iT} = ['TimePoint_' num2str(iT)]; end
+for iT=1:max(TimePoint)
+    x.S.SetsOptions{iSetLong_TP}{iT} = ['TimePoint_' num2str(iT)];
+end
 
 x.S.SetsOptions{iSetLong_TP+1} = {'SubjectNList'};
 x.S.Sets1_2Sample(iSetLong_TP:iSetLong_TP+1) = 1; % Longitudinal TimePoints are always paired observations (e.g. belonging to same individual, looking at intra-individual changes)    
@@ -251,7 +254,7 @@ x.S.iSetLong_TP = iSetLong_TP;
 
 
 
-
+% ================================================================================================
 %% LOAD STATS: Add statistical variables
 x = xASL_init_LoadStatsData(x);
 
@@ -259,6 +262,17 @@ x = xASL_init_LoadStatsData(x);
 
 
 
+% ================================================================================================
+%% Make x.S.SetsOptions horizontal if vertical by transposing
+if isfield(x.S,'SetsOptions')
+    for iCell=1:length(x.S.SetsOptions)
+        if size(x.S.SetsOptions{iCell},1)>size(x.S.SetsOptions{iCell},2)
+            x.S.SetsOptions{iCell} = x.S.SetsOptions{iCell}';
+        end
+    end
+else
+    x.S.SetsOptions = {};
+end
 
 
 

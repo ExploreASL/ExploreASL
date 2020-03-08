@@ -233,7 +233,26 @@ if x.ProcessData
         x = TempVar.(FieldN{1});
     elseif strcmp(Dext,'.json')
         % JSON import
-        x = xASL_import_json(DataParPath);
+        try
+            x = xASL_import_json(DataParPath);
+        catch ME1
+            % if this fails, try to recreate the json file from an .m file,
+            % if it exists
+            [Fpath, Ffile] = fileparts(DataParPath);
+            DataParPath = fullfile(Fpath, [Ffile '.m']);
+            if exist(DataParPath,'file')
+                warning('Invalid DataPar JSON file, trying to repair from detected .m file');
+                try
+                    PathJSON = xASL_init_ConvertM2JSON(DataParPath);
+                    DataParPath = PathJSON;
+                    x = xASL_import_json(DataParPath);
+                catch ME2
+                    fprintf('%s',ME1.message);
+                    fprintf('%s',ME2.message);
+                    error('Something went wrong loading the DataParFile');
+                end
+            end
+        end
     elseif strcmp(Dext,'.m')
         try
             %% Backward compatibility

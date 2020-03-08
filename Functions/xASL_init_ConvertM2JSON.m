@@ -63,8 +63,9 @@ for iField=1:length(FieldsX)
         x.(FieldsX{iField}) = tString;
     end
 end
-    
-xASL_adm_SaveJSON(x,PathJSON);
+
+xASL_delete(PathJSON);
+spm_jsonwrite(PathJSON, x);
 
 end
 
