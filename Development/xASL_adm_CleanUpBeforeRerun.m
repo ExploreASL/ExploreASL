@@ -62,7 +62,7 @@ elseif nargin<5 || isempty(SubjectID)
     fprintf('No subjectID specified, skipping...\n');
     return;
 else
-    warning(['Cleaning data to rerun subject ' SubjectID]);
+    fprintf(['Cleaning data to rerun subject ' SubjectID '\n']);
     SubjectDir = fullfile(AnalysisDir, SubjectID);
     % Obtain ASL session dirs as well
     SessionDirs = xASL_adm_GetFileList(SubjectDir, '^ASL_\d+$', 'FPList', [0 Inf], true);
@@ -102,7 +102,7 @@ fprintf('n');
 % ===========================================================================================
 %% 3) Remove lock files/folders for reprocessing
 LockDir = fullfile(AnalysisDir, 'lock');
-fprintf('Removing lock folders\n');
+fprintf('Removing lock folders:   ');
 
 if bFullRerun % remove all lock dirs/files
     xASL_adm_DeleteFileList(LockDir, '.*', true, [0 Inf]);
@@ -195,8 +195,8 @@ NativeSpaceFiles{1} = {'.*\.(ps|log)$' 'xASL_Report.*' '(r|)c(1|2|3)T1(\.mat|\.n
 
 NativeSpaceFiles{2} = {'.*\.(topup_|)log' '(VascularArtifact|xASL_qc|qcdc).*' 'rp_(despiked_|)ASL4D\.txt' '.*_sn\.mat'...
     '(PVgm|PVwm|PVcsf|FoV|M0_biasfield|(m|)mean_control|(mean|)PWI|SD|SNR|TopUp.*|(Mask_|Raw)Template|ATT_bias|B0|(Mean_|)(q|)CBF)(\.mat|\.nii|\.nii\.gz)$'...
-    '(SliceGradient(_extrapolated|)|slice_gradient|rgrey|rASL4D|y_ASL|Pseudo(CBF|Tissue)|rM0|Field|Unwarped|(rp_|)ASL4D)(\.mat|\.nii|\.nii\.gz)$'...
-    '(.*beforeMoCo|CBF(|_Visual2DICOM)|(r|)temp.*|Mask(|Vascular)|mask|r|despiked_ASL4D)(\.mat|\.nii|\.nii\.gz)$'};
+    '(SliceGradient(_extrapolated|)|slice_gradient|rgrey|y_ASL|Pseudo(CBF|Tissue)|rM0|Field|Unwarped|(r|rp_)(despiked_|)ASL4D)(\.mat|\.nii|\.nii\.gz)$'...
+    '(.*beforeMoCo|CBF(|_Visual2DICOM)|(r|)temp.*|Mask(|Vascular)|mask)(\.mat|\.nii|\.nii\.gz)$'};
 
 if bRemoveWMH
     NativeSpaceFiles{1}{end+1} = 'WMH_SEGM(\.mat|\.nii|\.nii\.gz)$';
@@ -280,8 +280,8 @@ else
         xStruct = load(PathX,'-mat','x');
         % delete any mutex folder that was accidentally created
         if isfield(xStruct.x,'mutex')
-            NewMutexFolder = xStruct.x.mutex.Root;
-            while exist(NewMutexFolder,'dir')
+            NewMutexFolder = fullfile(pwd,xStruct.x.mutex.Root);
+            while exist(NewMutexFolder,'dir') && length(NewMutexFolder)>length(pwd) && isempty(xASL_adm_GetFileList(NewMutexFolder,'.*'))
                 xASL_delete(NewMutexFolder);
                 NewMutexFolder = fileparts(NewMutexFolder);
             end
@@ -336,8 +336,10 @@ end
 
 % ===========================================================================================
 %% 10) Done
-fprintf('Done cleaning up!\n');
-fprintf('Remember to remove the derivative .mat & .csv files in the AnalysisDir\n');
-fprintf('But keep those that were manually created!\n');
+if bFullRerun
+    fprintf('Done cleaning up!\n');
+    fprintf('Remember to remove the derivative .mat & .csv files in the AnalysisDir\n');
+    fprintf('But keep those that were manually created!\n');
+end
 
 end
