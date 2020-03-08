@@ -287,7 +287,7 @@ else
             end
             xStruct.x = rmfield(xStruct.x,'mutex'); % remove the mutex field
         end
-        x = xStruct; 
+        x = xStruct.x;
 
         for iMod=iModule
             if iMod~=3 % if not a Population module
@@ -320,7 +320,7 @@ else
         clear x
     end
     % Do the same for the QC_Collection json
-    if exist(PathQC, 'file')    
+    if exist(PathQC, 'file')
         QCmat = xASL_import_json(PathQC);
         for iMod=iModule % SAME CODE AS ABOVE
             if iMod~=3 % if not a Population module
@@ -328,9 +328,9 @@ else
                     QCmat = rmfield(QCmat, RemoveFields{iMod});
                 end
             end
-        end    
+        end
         xASL_delete(PathQC);
-        xASL_adm_SaveJSON(QCmat, PathQC);
+        spm_jsonwrite(PathQC, QCmat);
     end
 end
 
