@@ -54,7 +54,7 @@ elseif ispc
 end
 
 %% Try searching at different ROOT paths
-PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps'};
+PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps/fsl'};
 PathDirect = {'/usr/lib/fsl/5.0'};
 if ispc
     [~, result] = system('echo %LOCALAPPDATA%');
@@ -116,6 +116,7 @@ FSLdir = strrep(FSLdir,'\','/');
 
 %% If FSL is installed in a subfolder, find it
 if ~exist(fullfile(FSLdir,'bin'),'dir') || ~exist(fullfile(FSLdir,'bin','fsl'),'file') || ~exist(fullfile(FSLdir,'bin','bet'),'file')
+    fprintf('Found potential FSL folder but not the installation, trying subfolders, this might take a while...\n');
     FSLsubdir = xASL_adm_GetFileList(FSLdir, '^fsl.*', 'FPListRec', [0 Inf], true); % now we do this recursively
     % now select the latest folder that has a bin folder in them (assuming
     % that there can be multiple fsl installations)
