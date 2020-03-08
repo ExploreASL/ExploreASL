@@ -11,7 +11,7 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %                 Option 2 = run ExploreASl parallel (start new MATLAB instances)
 %                 FUTURE Option 3 = run ExploreASL compilation serially
 %                 FUTURE Option 4 = run ExploreASL compilation parallel
-$   bTestSPM    - boolean for testing if SPM standalone with xASL modifications works (DEFAULT=true)
+%   bTestSPM    - boolean for testing if SPM standalone with xASL modifications works (DEFAULT=true)
 % OUTPUT:
 %   ResultsTable - Table containing all results from the test runs
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
