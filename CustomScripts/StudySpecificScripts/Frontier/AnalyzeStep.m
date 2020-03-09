@@ -268,15 +268,17 @@ for iMod = 1:nMod
 					xx = [xx;squeeze(listValRef{iMod,iVal,iRoi,iL})];
 					yy = [yy;squeeze(listValSrc{iMod,iVal,iRoi,iL})];
 				end
-				[bAll,CIAll,pvalAll,statsAll] = xASL_stat_MultipleLinReg(xx,yy,true);
-				[bAllnoint,CIAllnoint,pvalAllnoint,statsAllnoint] = xASL_stat_MultipleLinReg(xx,yy,false);
 				if iVal == 1
-					indxx = (xx>3).*(yy>3);
+					indxx = (xx>20).*(yy>20);
 				else
-					indxx = (xx>0.06).*(yy>0.06);
+					indxx = (xx>0.375).*(yy>0.375);
 				end
 				xxnonlow = xx(indxx>0);
 				yynonlow = yy(indxx>0);
+				
+				[bAll,CIAll,pvalAll,statsAll] = xASL_stat_MultipleLinReg(xxnonlow,yynonlow,true);
+				[bAllnoint,CIAllnoint,pvalAllnoint,statsAllnoint] = xASL_stat_MultipleLinReg(xxnonlow,yynonlow,false);
+
 				
 				mrdvoxel = mean(2*abs(xxnonlow-yynonlow)./(xxnonlow+yynonlow))*100;
 				
@@ -359,7 +361,7 @@ for iMod = 1:nMod
 		title(['max CBF ' strMod ' ' strRoi]);
 		
 		figure(4);sp=subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
-		imagesc((squeeze(sum(resHist(iMod,1,iRoi,ind,:,:),4))).^0.4);hold on
+		imagesc(((squeeze(sum(resHist(iMod,1,iRoi,ind,:,:),4))).^0.4)');hold on
 		set(sp,'Layer','top','XTickLabel',{'25','50','75','100','125','150'});
 		set(sp,'Layer','top','YTickLabel',{'25','50','75','100','125','150'});
 		plot([1,60],[1,60],'r-');
@@ -367,7 +369,7 @@ for iMod = 1:nMod
 		title(['hist CBF ' strMod ' ' strRoi]);
 		
 		figure(5);sp=subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
-		imagesc((squeeze(sum(resHist(iMod,2,iRoi,ind,:,:),4))).^0.4);hold on
+		imagesc(((squeeze(sum(resHist(iMod,2,iRoi,ind,:,:),4))).^0.4)');hold on
 		set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
 		set(sp,'Layer','top','YTickLabel',{'0.5','1','1.5','2','2.5','3'});
 		plot([1,60],[1,60],'r-');
@@ -375,7 +377,7 @@ for iMod = 1:nMod
 		title(['hist CBF ' strMod ' ' strRoi]);
 		
 		figure(6);sp=subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
-		imagesc((squeeze(sum(resHist(iMod,3,iRoi,ind,:,:),4))).^0.4);hold on
+		imagesc(((squeeze(sum(resHist(iMod,3,iRoi,ind,:,:),4))).^0.4)');hold on
 		set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
 		set(sp,'Layer','top','YTickLabel',{'0.5','1','1.5','2','2.5','3'});
 		plot([1,60],[1,60],'r-');
@@ -386,7 +388,7 @@ for iMod = 1:nMod
 			for iL = 1:8
 				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_PET.nii'))
 					figure(7);sp=subplot(2,4,iL);
-					imagesc((squeeze((resHist(iMod,1,iRoi,iL,:,:)))).^0.4);hold on
+					imagesc(((squeeze((resHist(iMod,1,iRoi,iL,:,:)))).^0.4)');hold on
 					set(sp,'Layer','top','XTickLabel',{'25','50','75','100','125','150'});
 					set(sp,'Layer','top','YTickLabel',{'25','50','75','100','125','150'});
 					plot([1,60],[1,60],'r-');
@@ -394,7 +396,7 @@ for iMod = 1:nMod
 					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
 					
 					figure(8);sp=subplot(2,4,iL);
-					imagesc((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4);hold on
+					imagesc(((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4)');hold on
 					set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
 					set(sp,'Layer','top','YTickLabel',{'0.5','1','1.5','2','2.5','3'});
 					plot([1,60],[1,60],'r-');
@@ -408,7 +410,7 @@ for iMod = 1:nMod
 			for iL = 1:8
 				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_PET.nii'))
 					figure(11);sp=subplot(2,4,iL);
-					imagesc((squeeze((resHist(iMod,1,iRoi,iL,:,:)))).^0.4);hold on
+					imagesc(((squeeze((resHist(iMod,1,iRoi,iL,:,:)))).^0.4)');hold on
 					set(sp,'Layer','top','XTickLabel',{'25','50','75','100','125','150'});
 					set(sp,'Layer','top','YTickLabel',{'25','50','75','100','125','150'});
 					plot([1,60],[1,60],'r-');
@@ -416,7 +418,7 @@ for iMod = 1:nMod
 					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
 					
 					figure(12);sp=subplot(2,4,iL);
-					imagesc((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4);hold on
+					imagesc(((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4)');hold on
 					%set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
 					set(sp,'Layer','top','XTickLabel',{'1','2','3'});
 					set(sp,'Layer','top','YTickLabel',{'0.5','1','1.5','2','2.5','3'});
@@ -431,7 +433,7 @@ for iMod = 1:nMod
 			for iL = 1:8
 				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_DSC.nii'))
 					figure(13);sp=subplot(2,4,iL);
-					imagesc((squeeze((resHist(iMod,1,iRoi,iL,:,:)))).^0.4);hold on
+					imagesc(((squeeze((resHist(iMod,1,iRoi,iL,:,:)))).^0.4)');hold on
 					set(sp,'Layer','top','XTickLabel',{'25','50','75','100','125','150'});
 					set(sp,'Layer','top','YTickLabel',{'25','50','75','100','125','150'});
 					plot([1,60],[1,60],'r-');
@@ -439,7 +441,7 @@ for iMod = 1:nMod
 					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
 					
 					figure(14);sp=subplot(2,4,iL);
-					imagesc((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4);hold on
+					imagesc(((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4)');hold on
 					%set(sp,'Layer','top','XTickLabel',{'0.5','1','1.5','2','2.5','3'});
 					set(sp,'Layer','top','XTickLabel',{'1','2','3'});
 					set(sp,'Layer','top','YTickLabel',{'0.5','1','1.5','2','2.5','3'});
