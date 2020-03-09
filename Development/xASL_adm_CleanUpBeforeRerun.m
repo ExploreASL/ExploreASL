@@ -24,7 +24,15 @@ function xASL_adm_CleanUpBeforeRerun(AnalysisDir, iModule, bRemoveWMH, bFullReru
 %              derivatives will be removed. This function performs the
 %              following steps:
 %   
-
+%              1) If a Population folder doesn't exist yet but dartel does, rename it
+%              2) Remove whole-study data files in AnalysisDir if bFullRerun
+%              3) Remove lock files/folders for reprocessing
+%              4) Restore backupped _ORI (original) files
+%              5) Delete native space CAT12 temporary folders (always, independent of iModule)
+%              6) Remove native space files for iModule
+%              7) Remove standard space files for iModule
+%              8) Remove population module files
+%              9) Remove or clean up stored x-struct & QC file
 %
 % NB: still need to add xASL_module_func & xASL_module_dwi for EPAD
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -189,17 +197,22 @@ fprintf('\n');
 %% 6) Remove native space files for iModule
 % To save computation/harddisk burden/time, combine as many regexps here as
 % possible. But need to take care not to delete e.g. _ORI or _Backup
-NativeSpaceFiles{1} = {'.*\.(ps|log)$' 'xASL_Report.*' '(r|)c(1|2|3)T1(\.mat|\.nii|\.nii\.gz)$'...
+NativeSpaceFiles{1} = {'.*\.ps$' 'xASL_Report.*' '(r|)c(1|2|3)T1(\.mat|\.nii|\.nii\.gz)$'...
     '(ples.*|WMH_SEGM_CleanUp|j_T1|rT1|y_T1|CentralWM_QC|LeftRight)(\.mat|\.nii|\.nii\.gz)$' 'catreport_T1\.pdf$'...
     'T1_seg8\.mat$'};
 
-NativeSpaceFiles{2} = {'.*\.(topup_|)log' '(VascularArtifact|xASL_qc|qcdc).*' 'rp_(despiked_|)ASL4D\.txt' '.*_sn\.mat'...
+NativeSpaceFiles{2} = {'.*\.topup.*log' '(VascularArtifact|xASL_qc|qcdc).*' 'rp_(despiked_|)ASL4D\.txt' '.*_sn\.mat'...
     '(PVgm|PVwm|PVcsf|FoV|M0_biasfield|(m|)mean_control|(mean|)PWI|SD|SNR|TopUp.*|(Mask_|Raw)Template|ATT_bias|B0|(Mean_|)(q|)CBF)(\.mat|\.nii|\.nii\.gz)$'...
     '(SliceGradient(_extrapolated|)|slice_gradient|rgrey|y_ASL|Pseudo(CBF|Tissue)|rM0|Field|Unwarped|(r|rp_)(despiked_|)ASL4D)(\.mat|\.nii|\.nii\.gz)$'...
     '(.*beforeMoCo|CBF(|_Visual2DICOM)|(r|)temp.*|Mask(|Vascular)|mask)(\.mat|\.nii|\.nii\.gz)$'};
 
 if bRemoveWMH
     NativeSpaceFiles{1}{end+1} = 'WMH_SEGM(\.mat|\.nii|\.nii\.gz)$';
+end
+
+if strcmp(SubjectID, '.*') % only remove log files when running this for the full population at once
+    NativeSpaceFiles{1}{end+1} = '.*\.log$';
+    NativeSpaceFiles{2}{end+1} = '.*\.log$';
 end
 
 fprintf('Deleting native space files for module :   ');
