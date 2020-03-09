@@ -1,4 +1,4 @@
-function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM)
+function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath)
 %xASL_qc_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
 %
 % FORMAT: [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, RunMethod)
@@ -61,6 +61,9 @@ else
 end
 if nargin<4 || isempty(bTestSPM)
     bTestSPM = true;
+end
+if nargin<5 || isempty(MatlabPath)
+    MatlabPath = 'matlab';
 end
 
 
@@ -225,8 +228,8 @@ for iList=1:length(Dlist)
 	            ExploreASL_Master(DataParFile{iList}{1}, true, true); % can we run screen from here? or run matlab in background, linux easy
 	        case 2 % run ExploreASl parallel (start new MATLAB instances)
                 ScreenName = ['TestxASL_' num2str(iList)];
-	            MatlabRunString = ['screen -dmS ' ScreenName ' nice -n 10 matlab -nodesktop -nosplash -r '];
-	            RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',1,1);system(screen -SX ' ScreenName ' kill);"'];
+	            MatlabRunString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
+	            RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',1,1);"']; % system(screen -SX ' ScreenName ' kill);"'];
 	            system([MatlabRunString RunExploreASLString ' &']);
 	        case 3 % run ExploreASL compilation serially
 	        case 4 % run ExploreASL compilation parallel

@@ -8,4 +8,4 @@ cd $xASLdir;
 git fetch --all;
 git reset --hard origin/master;
 # run matlab
-$MatlabPath -nodesktop -nosplash -r "cd('$xASLdir/Development');xASL_qc_TestExploreASL('$TestDataPath','$ProcessedDataPath',2,0);"
+$MatlabPath -nodesktop -nosplash -r "cd('$xASLdir/Development');xASL_qc_TestExploreASL('$TestDataPath','$ProcessedDataPath',2,0,'$MatlabPath');"
