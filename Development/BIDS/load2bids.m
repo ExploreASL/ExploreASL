@@ -8,7 +8,7 @@ outputPath = '/home/janpetr/tmp/BIDSout'; % The directory to save the DICOM2NII 
 finalPath = '/home/janpetr/tmp/BIDSfinal'; % Takes files in NIFTI+JSON from outputPath and saves the complete BIDS format to finalPath
 
 lRMFields = {'InstitutionName' 'InstitutionalDepartmentName' 'InstitutionAddress' 'DeviceSerialNumber' 'StationName' 'ProcedureStepDescription' 'SeriesDescription' 'ProtocolName'}; % Fields to exclude
-lAnat = {'T1' 'T2' 'FLAIR'}; % A list of anatomical scans to include
+lAnat = {'T1w' 'T2w' 'FLAIR'}; % A list of anatomical scans to include
 %% Load the list of the directories
 fList = xASL_adm_GetFileList(basePath,[],false,[],true);
 
@@ -38,15 +38,28 @@ for ii = 1:length(fList)
 	importStr{ii}.dirName = fList{ii};
 	switch (fList{ii})
 		case 'Philips_PCASL_3DGRASE_Divers' 
-			importStr{ii}.configName = 'Divers_Bonn';
+			%importStr{ii}.configName = 'Divers_Bonn';
+			importStr{ii}.bLoadConfig = false;
+			importStr{ii}.imPar.folderHierarchy = { '^(Patient\d{1})$' '^(ASL)_(Session1|Session2|Session3|Session4|Session5|Session6|Session7)$' '^.*$' '^.*$'};
+			importStr{ii}.imPar.tokenOrdering = [ 1 3 2];
+			importStr{ii}.imPar.tokenSessionAliases = {'Session1', 'ASL_1' ; 'Session2', 'ASL_2' ; 'Session3', 'ASL_3' ; 'Session4', 'ASL_4' ; 'Session5', 'ASL_5' ; 'Session6', 'ASL_6' ; 'Session7', 'ASL_7'};
+			importStr{ii}.imPar.tokenScanAliases = {'^ASL$', 'ASL4D';'^t1$', 'T1w'};
+			importStr{ii}.imPar.bMatchDirectories = true;
+			importStr{ii}.imPar.dcmwildcard = '*.';
 		case 'Philips_PCASL_2DEPI_Frontier'
-			importStr{ii}.configName = 'FRONTIER';
+			%importStr{ii}.configName = 'FRONTIER';
+			importStr{ii}.bLoadConfig = false;
+			importStr{ii}.imPar.folderHierarchy = {'^(P\d{2})$' '^(ASL|DSC|M0)$'};
+			importStr{ii}.imPar.tokenOrdering = [ 1 0 2];
+			importStr{ii}.imPar.tokenSessionAliases = {};
+			importStr{ii}.imPar.tokenScanAliases = {'^ASL$', 'ASL4D';'^DSC$','DSC4D';'^M0$','M0'};
+			importStr{ii}.imPar.bMatchDirectories = true;
 		case 'Philips_PCASL_2DEPI_Chili'
 			importStr{ii}.bLoadConfig = false;
 			importStr{ii}.imPar.folderHierarchy = { '^(Sub-\d{4})$' '^(ASL|T1)$' '^DICOM'};
 			importStr{ii}.imPar.tokenOrdering = [ 1 0 2];
 			importStr{ii}.imPar.tokenSessionAliases = { '' };
-			importStr{ii}.imPar.tokenScanAliases = { '^ASL$', 'ASL4D';'^T1$', 'T1'};
+			importStr{ii}.imPar.tokenScanAliases = { '^ASL$', 'ASL4D';'^T1$', 'T1w'};
 			importStr{ii}.imPar.bMatchDirectories = true;
 		case {'GE_PCASL_3Dspiral_Product_22q11', 'GE_PCASL_3Dspiral_WIP_Oslo_AntiPsychotics_Old','GE_PCASL_2DEPI_stripped_3CV','Philips_PCASL_2DEPI_stripped_3CV1','Philips_PCASL_2DEPI_stripped_3CV2',...
 			  'Siemens_PCASL_2DEPI_stripped_3CV','GE_PCASL_3Dspiral_Product_GE', 'GE_PCASL_3Dspiral_WIP_KCL_INOX','Philips_PCASL_2DEPI_Bsup_EPAD1','Philips_PCASL_2DEPI_Bsup_EPAD2',...
@@ -59,7 +72,7 @@ for ii = 1:length(fList)
 			importStr{ii}.imPar.folderHierarchy = { '^(.)+$' '^(ASL|T1w|M0|T2|FLAIR)$' };
 			importStr{ii}.imPar.tokenOrdering = [ 1 0 2];
 			importStr{ii}.imPar.tokenSessionAliases = { '', ''};
-			importStr{ii}.imPar.tokenScanAliases = { '^ASL$', 'ASL4D';'^T1w$', 'T1';'^M0$', 'M0';'^T2$', 'T2';'^FLAIR$' , 'FLAIR'};
+			importStr{ii}.imPar.tokenScanAliases = { '^ASL$', 'ASL4D';'^T1w$', 'T1w';'^M0$', 'M0';'^T2$', 'T2w';'^FLAIR$' , 'FLAIR'};
 			importStr{ii}.imPar.bMatchDirectories = true;
 			importStr{ii}.bLoadConfig = false;
 		case {'StudyName'}
@@ -68,7 +81,7 @@ for ii = 1:length(fList)
 			importStr{ii}.imPar.folderHierarchy = { '^(.)+$' '^(ASL|T1w|M0|T2|FLAIR)$' };
 			importStr{ii}.imPar.tokenOrdering = [ 1 0 2];
 			importStr{ii}.imPar.tokenSessionAliases = { '', ''};
-			importStr{ii}.imPar.tokenScanAliases = { '^ASL$', 'ASL4D';'^T1w$', 'T1';'^M0$', 'M0';'^T2$', 'T2';'^FLAIR$' , 'FLAIR'};
+			importStr{ii}.imPar.tokenScanAliases = { '^ASL$', 'ASL4D';'^T1w$', 'T1w';'^M0$', 'M0';'^T2$', 'T2w';'^FLAIR$' , 'FLAIR'};
 			importStr{ii}.imPar.bMatchDirectories = true;
 			% Specify to false that this info should be used instead of loading it from the ExploreASL_ImportConfig.m
 			importStr{ii}.bLoadConfig = false;
@@ -147,7 +160,7 @@ for ii = 1:length(fList)
 
 	% Defaults to be overwritten
 	importStr{ii}.par = [];
-	importStr{ii}.par.VascularCrushing = 'false';
+	importStr{ii}.par.VascularCrushing = false;
 	importStr{ii}.par.LabelingSlabLocation = 'Random description';
 	importStr{ii}.par.LabelingOrientation = 'Random description';
 	importStr{ii}.par.LabelingDistance = 40;
@@ -315,9 +328,9 @@ for ii = 1:length(fList)
 	end
 		
 	if importStr{ii}.x.Q.BackGrSupprPulses == 0
-		importStr{ii}.par.BackgroundSuppression = 'false';
+		importStr{ii}.par.BackgroundSuppression = false;
 	else
-		importStr{ii}.par.BackgroundSuppression = 'true';
+		importStr{ii}.par.BackgroundSuppression = true;
 		switch (importStr{ii}.x.Q.BackGrSupprPulses)
 			case 2
 				if importStr{ii}.par.InitialPostLabelDelay > 1.750
@@ -335,7 +348,7 @@ for ii = 1:length(fList)
 				end
 			case 5
 				if importStr{ii}.par.InitialPostLabelDelay > 1.510
-					importStr{ii}.par.BackgroundSuppressionPulseTime = [importStr{ii}.par.InitialPostLabelDelay+importStr{ii}.par.LabelingDuration+1 1.510 0.875 0.375 0.095];
+					importStr{ii}.par.BackgroundSuppressionPulseTime = [(importStr{ii}.par.InitialPostLabelDelay+importStr{ii}.par.LabelingDuration+1)/1000 1.510 0.875 0.375 0.095];
 				else
 					error('Pulses not fitting');
 				end
@@ -482,12 +495,12 @@ for ii = 1:length(fList)
 			for mm = 1:(max(nSes,1))
 				if nSes
 					aslLabel = ['ASL4D_' num2str(mm)];
-					aslOutLabel = fullfile(outSesPath,'asl',...
-					['sub-' subLabel sesLabelUnd '_run-' num2str(mm)]);
+					aslOutLabel = fullfile(outSesPath,'asl',['sub-' subLabel sesLabelUnd '_run-' num2str(mm)]);
+					aslOutLabelRelative = fullfile('asl',['sub-' subLabel sesLabelUnd '_run-' num2str(mm)]);
 				else
 					aslLabel = 'ASL4D';
-					aslOutLabel = fullfile(outSesPath,'asl',...
-					['sub-' subLabel sesLabelUnd]);
+					aslOutLabel = fullfile(outSesPath,'asl',['sub-' subLabel sesLabelUnd]);
+					aslOutLabelRelative = fullfile('asl',['sub-' subLabel sesLabelUnd]);
 				end
 				
 				% Copy the ASL
@@ -537,29 +550,31 @@ for ii = 1:length(fList)
 				
 				% Fill in extra parameters based on the JSON from the data
 				if importStr{ii}.par.PulseSequenceType(1) == '2'
-					jsonLocal.SliceTiming = ((0:(size(imNii,3)-1))')*importStr{ii}.x.Q.SliceReadoutTime;
+					jsonLocal.SliceTiming = ((0:(size(imNii,3)-1))')*importStr{ii}.x.Q.SliceReadoutTime/1000;
 				end
 				
 				% Type of an M0 image
 				if strcmp(importStr{ii}.x.M0,'separate_scan')
 					if isfield(importStr{ii}.x,'M0PositionInASL4D') && (max(importStr{ii}.x.M0PositionInASL4D(:))>0)
-						jsonLocal.M0 = 'true';
+						jsonLocal.M0 = true;
 					elseif exist(fullfile(inSesPath,'M0.nii'),'file')
 						if length(fSes)>1
-							jsonLocal.M0 = fullfile(importStr{ii}.dirName,['sub-' subLabel],['ses-' sesLabel],'asl',['sub-' subLabel sesLabelUnd '_M0Scan.nii.gz']);
+							%jsonLocal.M0 = fullfile(importStr{ii}.dirName,['sub-' subLabel],['ses-' sesLabel],'asl',['sub-' subLabel sesLabelUnd '_M0Scan.nii.gz']);
+							jsonLocal.M0 = fullfile('asl',['sub-' subLabel sesLabelUnd '_M0Scan.nii.gz']);
 						else
-							jsonLocal.M0 = fullfile(importStr{ii}.dirName,['sub-' subLabel],'asl',['sub-' subLabel sesLabelUnd '_M0Scan.nii.gz']);
+							%jsonLocal.M0 = fullfile(importStr{ii}.dirName,['sub-' subLabel],'asl',['sub-' subLabel sesLabelUnd '_M0Scan.nii.gz']);
+							jsonLocal.M0 = fullfile('asl',['sub-' subLabel sesLabelUnd '_M0Scan.nii.gz']);
 						end
 					else
 						if ~isempty(strfind(importStr{ii}.par.ASLContext,'M0'))
-							jsonLocal.M0 = 'true';
+							jsonLocal.M0 = true;
 						else
-							jsonLocal.M0 = 'false';
+							jsonLocal.M0 = false;
 						end
 					end
 				else
 					if strcmp(importStr{ii}.x.M0,'UseControlAsM0')
-						jsonLocal.M0 = 'false';
+						jsonLocal.M0 = false;
 					else
 						if strcmp(importStr{ii}.x.M0,'no_background_suppression')
 						else
@@ -605,7 +620,7 @@ for ii = 1:length(fList)
 								end
 							end
 							jsonM0Write.RepetitionTime = jsonM0.RepetitionTime;
-							jsonM0Write.IntendedFor = [aslOutLabel '_asl.nii.gz'];
+							jsonM0Write.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
 							% Copy the M0
 							xASL_Copy(fullfile(inSesPath,['M0' nnStr '.nii']),...
 								fullfile(outSesPath,'asl',['sub-' subLabel sesLabelUnd '_M0Scan' nnStr '.nii.gz']));
