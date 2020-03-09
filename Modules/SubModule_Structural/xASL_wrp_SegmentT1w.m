@@ -410,9 +410,16 @@ function xASL_wrp_SPM12Segmentation(x)
     end
 
     %% Fill the templates used for segmentation
-    for iDim=1:6
-        matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.SPMDIR, 'tpm', ['TPM.nii,' num2str(iDim)])};
-    end
+	if x.Pediatric_Template
+		for iDim=1:6
+			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_pediatric', ['infant-2yr-TPM.nii,' num2str(iDim)])};
+		end
+	else
+		for iDim=1:6
+			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.SPMDIR, 'tpm', ['TPM.nii,' num2str(iDim)])};
+		end
+	end
+	
 
     %% Tissue-class specific options
     matlabbatch{1}.spm.spatial.preproc.tissue(1).ngaus      = 1;
@@ -474,6 +481,13 @@ SegmentSPM12 = true; % by default, run SPM12 when CAT12 crashes
 SPMTemplateNII    = fullfile(x.SPMDIR, 'tpm', 'TPM.nii');
 DartelTemplateNII = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_1.50mm', 'Template_1_IXI555_MNI152.nii');
 GSTemplateNII     = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_1.50mm', 'Template_0_IXI555_MNI152_GS.nii');
+
+if x.Pediatric_Template
+	DartelTemplateNII = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_pediatric', 'Template_1_infant-2yr_DARTEL.nii');
+	GSTemplateNII     = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_pediatric', 'Template_0_infant-2yr_CAT.nii');
+	x.Seg.Method = 'DARTEL';
+end
+
 if ~xASL_exist(SPMTemplateNII, 'file')
     error('SPM tissue priors missing, is SPM12 installed in the correct folder?');
 elseif ~xASL_exist(DartelTemplateNII,'file') || ~xASL_exist(GSTemplateNII,'file')
@@ -504,6 +518,7 @@ end
 
 %% --------------------------------------------------------------------
 %% CAT12 segmentation quality settings
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.SLC = 0;
 if x.Quality
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % light cleanup
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % strength local adaptive segmentation
