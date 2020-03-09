@@ -1,11 +1,15 @@
-function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn)
+function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOldest)
 % xASL_adm_ZipFileNameHandling Works only for NIFTI files - changes the source and dest filenames according to what are the available inputs
 %
 % FORMAT: [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn)
 %
 % INPUT:
-%   srcIn    - Source file on input
-%   dstIn    - Destination file on input
+%   srcIn         - Source file on input (REQUIRED)
+%   dstIn         - Destination file on input (REQUIRED)
+%   bDeleteOldest - boolean to specify whether oldest file should be
+%                   deleted if both .nii & .nii.gz counterparts exist, but
+%                   are unequal (OPTIONAL, DEFAULT=false). WARNING PUT THIS
+%                   ON TRUE AT OWN RISK
 % OUTPUT:
 %   srcOut   - Source file on output
 %   dstOut   - Destination file on output
@@ -25,6 +29,9 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn)
     % Admin
     if nargin<2 || isempty(dstIn)
         dstIn = srcIn;
+    end
+    if nargin<3 || isempty(bDeleteOldest)
+        bDeleteOldest = false;
     end
 
     % Break to path/file/extension
@@ -125,7 +132,7 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn)
 				else
 					delete(srcFileGZ);
 				end
-            else % if unequal
+            elseif bDeleteOldest % if unequal
                 FileInfoNII = dir(srcFileNII);
                 FileInfoGZ = dir(srcFileGZ);
                 warning('Found two unequal valid NIfTI(.gz) files with same name, deleting oldest one');
@@ -137,9 +144,9 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn)
                     delete(srcFileNII);
                     fprintf('Deleted .NII counterpart\n');
                 end
-                
-% 				% Otherwise, throw an error
-% 				error(['Two files with same name, but different ' DifferIn ': \n %s \n %s'], srcFileNII, srcFileGZ);
+            else
+				% Otherwise, throw an error
+				error(['Two files with same name, but different ' DifferIn ': \n %s \n %s'], srcFileNII, srcFileGZ);
 			end
 		end
 
