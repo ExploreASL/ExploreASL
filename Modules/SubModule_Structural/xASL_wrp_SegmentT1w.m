@@ -8,6 +8,8 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 %   x.P     - paths with NIfTIs for which this function should be applied to (REQUIRED)
 %   SegmentSPM12 - Whether to run SPM12 (true) or CAT12 (false) (OPTIONAL, DEFAULT = false)
 %   x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
+%   x.Pediatric_Template - boolean specifying if we use a pediatric
+%             template instead of adult one (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT: n/a
 %
@@ -50,6 +52,9 @@ if nargin<2 || isempty(SegmentSPM12)
 end
 if ~isfield(x,'bFixResolution') || isempty(x.bFixResolution)
     x.bFixResolution = false;
+end
+if ~isfield(x,'Pediatric_Template') || isempty(x,'Pediatric_Template')
+    x.Pediatric_Template = false;
 end
 
 %% --------------------------------------------------------------------------------
