@@ -49,10 +49,14 @@ x.SUBJECTS = x.TotalSubjects; % temporarily for xASL_init_LongitudinalRegistrati
 x.nSubjects = length(x.SUBJECTS);
 
 if isempty(x.SUBJECTS)
+    fprintf('No subjects found\n');
+    fprintf('Please check the sub_regexp in your Data Parameter File\n');
+    fprintf('This should match with the subject folders inside the ROOT folder\n');
+    fprintf(['This was ' x.D.ROOT '\n']);
     error('No subjects defined, x.SUBJECTS was empty');
 end
 
-[~, ~, TimePoint] = xASL_init_LongitudinalRegistration( x );
+[~, ~, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
 
 %% Create TimePoint data-lists
