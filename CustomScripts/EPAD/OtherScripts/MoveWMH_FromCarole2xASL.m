@@ -12,7 +12,7 @@ for iL=1:length(Flist)
     iPath   = Flist{iL};
     [Fpath, Ffile, Fext]    = xASL_fileparts(Flist{iL});
     oPath                   = fullfile(Fpath, ['WMH_SEGM' Ffile(42:51) Fext]);
-    if  exist(oPath,'file')
+    if  xASL_exist(oPath,'file')
         oPath               = fullfile(Fpath, ['WMH_SEGM' Ffile(42:51) '_2' Fext]);
     end
     xASL_Move(iPath,oPath);
@@ -36,12 +36,12 @@ for iL=2:length(Dlist)
         FileI   = Flist{IndexN};
         xASL_Move( FileI, FileO,1);
     end
-    
-    if ~exist(FileO,'file')
+
+    if ~xASL_exist(FileO,'file')
         NoSegmList{end+1,1}   = Dlist{iL};
     end
 end
-        
+
 Flist   = xASL_adm_GetFileList(iDir,'^WMH_SEGM_.*\.(nii|nii\.gz)$');
 for iL=1:length(Flist)
     [~, Ffile, ~]       = xASL_fileparts(Flist{iL});

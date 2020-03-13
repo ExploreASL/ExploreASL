@@ -325,7 +325,7 @@ for iMod = 1:nMod
 				
 				if iRoi == 3
 					fprintf('Max CBF. %.5f*X+%.5f, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n',bmax(1),bmax(2),CImax(1,1),CImax(1,2),pvalmax(1),statsmax.rSQadj);
-					fprintf('Max CBF. %.5f*X, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n',bmaxnoInt(1),CImaxnoInt(1,1),CImaxnoInt(1,2),pvalmaxnoInt(1),statsmaxnoInt.rSQadj);
+					fprintf('Max CBF. %.5f*X, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n',bmax(1),bmax(2),CImax(1,1),CImax(1,2),pvalmax(1),statsmax.rSQadj);
 					fprintf('Mean relative difference in max CBF: %.2f%%\n',mrdmax);
 				end
 				fprintf('Voxel-wise CBF. %.5f*X+%.5f, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n',bAll(1),bAll(2),CIAll(1,1),CIAll(1,2),pvalAll(1),statsAll.rSQadj);

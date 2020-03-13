@@ -41,7 +41,7 @@ end
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
-if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
+if ~xASL_exist(x.P.Path_despiked_ASL4D)
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
@@ -101,7 +101,7 @@ if  nVolumes>1 % this is when a mean control image can be created
 
     spm_jobman('run',matlabbatch); % this applies the motion correction in native space
 
-    if ~exist(x.P.Path_rdespiked_ASL4D,'file')
+    if ~xASL_exist(x.P.Path_rdespiked_ASL4D,'file')
         [Fpath, Ffile, Fext]        = xASL_fileparts(x.P.Path_despiked_ASL4D);
         x.P.Path_rdespiked_ASL4D    = fullfile(Fpath,['r' Ffile Fext]);
     end
@@ -147,7 +147,7 @@ if  nVolumes>1 % this is when a mean control image can be created
         % if there is no background suppression, we use the mean control
         % image as M0 image, which has perfect registration
 
-        if  exist(x.P.Path_M0,'file') && ~exist(x.P.Path_M0_backup,'file')
+        if  xASL_exist(x.P.Path_M0,'file') && ~xASL_exist(x.P.Path_M0_backup,'file')
             % Backup M0, if not already performed in previous run
             xASL_Copy(x.P.Path_M0,x.P.Path_M0_backup);
         end

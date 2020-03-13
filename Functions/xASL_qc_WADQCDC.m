@@ -76,7 +76,7 @@ for iScanType=1:length(ScanTypes)
 
 %         %% Check if the AcquisitionDate parameter exists
 %         Info = xASL_io_ReadTheDicom(false, DummyPath); % try to use DCM_TK
-% 
+%
 %         if isfield(Info,'AcquisitionDate') && ~isempty(Info.AcquisitionDate)
 %             ExistDCMAcqDateField = true;
 %         else
@@ -86,7 +86,7 @@ for iScanType=1:length(ScanTypes)
 %             ExistDCMStudyDateField = true;
 %         else
 %             ExistDCMStudyDateField = false;
-%         end            
+%         end
 
     %% a) Define Gaspare's script (QCDC)
     QCDC_Path = fullfile(x.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'qc_data_collector.py');
@@ -132,7 +132,7 @@ for iScanType=1:length(ScanTypes)
         %% e) Clean up QCDC output results
         TempPath = fullfile(QCDCDir, DummyFile);
         NewPath = fullfile(x.D.ROOT, SubPath{iScanType}, ['qcdc_' DummyFile]);
-        if exist(TempPath, 'file')
+        if xASL_exist(TempPath, 'file')
             xASL_Move(TempPath, NewPath, true);
             fprintf('QCDC has succesfully incorporated QC into dummy dicom\n');
             IsSuccess = true;
@@ -156,6 +156,6 @@ for iScanType=1:length(ScanTypes)
         end
     end
 end
-        
-    
+
+
 end

@@ -25,7 +25,7 @@ for ii = 1:length(fList)
 			xASL_Move(fullfile(basePath,fList{ii},fDirs{jj}),fullfile(basePath,fList{ii},'raw',fDirs{jj}));
 		end
 	end
-end	
+end
 
 %% Specific handling - you can manually copy/move some files if needed to get them to the correct structure
 mkdir([basePath '/Philips_PCASL_3DGRASE_Divers/raw/Patient1/ASL_Session1/dat/dat/']);
@@ -37,7 +37,7 @@ importStr = [];
 for ii = 1:length(fList)
 	importStr{ii}.dirName = fList{ii};
 	switch (fList{ii})
-		case 'Philips_PCASL_3DGRASE_Divers' 
+		case 'Philips_PCASL_3DGRASE_Divers'
 			%importStr{ii}.configName = 'Divers_Bonn';
 			importStr{ii}.bLoadConfig = false;
 			importStr{ii}.imPar.folderHierarchy = { '^(Patient\d{1})$' '^(ASL)_(Session1|Session2|Session3|Session4|Session5|Session6|Session7)$' '^.*$' '^.*$'};
@@ -86,7 +86,7 @@ for ii = 1:length(fList)
 			% Specify to false that this info should be used instead of loading it from the ExploreASL_ImportConfig.m
 			importStr{ii}.bLoadConfig = false;
 	end
-end	
+end
 
 %% Go through all studies and import them
 % This simply runs the ExploreASL_Import
@@ -97,16 +97,16 @@ for ii = 1:length(fList)
 	else
 		importStr{ii}.imPar.AnalysisRoot = basePath;
 		importStr{ii}.imPar.RawRoot = basePath;
-		
+
 		imPar = importStr{ii}.imPar;
 	end
-	
+
 	% Change the studyID to the new one
 	imPar.studyID = importStr{ii}.dirName;
-	
+
 	% Define the output directory
 	imPar.AnalysisRoot = outputPath;
-	
+
 	% Import the whole session to JSON and NIFTI
 	ExploreASL_Import(imPar,false, true, false, true, false);
 end
@@ -138,10 +138,10 @@ system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_
 % Several parameters are automatically retrieved from the DICOMs, some are retrieved from Data_Par.m just below. And the rest needs to be filled in.
 for ii = 1:length(fList)
 	% Load the data-par
-	
+
 	clear x;
 	dataParPath = fullfile(parPath,importStr{ii}.dirName);
-	
+
 	if exist([dataParPath,'.mat'],'file')
         TempVar = load([dataParPath,'.mat']);
         FieldN = fields(TempVar);
@@ -154,7 +154,7 @@ for ii = 1:length(fList)
 		x = xASL_import_json(PathJSON);
 		xASL_delete([dataParPath,'.m']);
 	end
-	
+
 	% Save the x-structure for the study
 	importStr{ii}.x = x;
 
@@ -164,7 +164,7 @@ for ii = 1:length(fList)
 	importStr{ii}.par.LabelingSlabLocation = 'Random description';
 	importStr{ii}.par.LabelingOrientation = 'Random description';
 	importStr{ii}.par.LabelingDistance = 40;
-	
+
 	switch (fList{ii})
 		% FILLIN
 		% - the basic information (ASLContext, LabelingType) needs to be filled for all
@@ -174,24 +174,24 @@ for ii = 1:length(fList)
 		case 'StudyName'
 			importStr{ii}.par.ASLContext = '(Label+Control)*23';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case 'Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans'
 			importStr{ii}.par.ASLContext = '(Label+Control)*23';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case 'Siemens_PCASL_3DGRASE_failed_APGEM2'
 			importStr{ii}.par.ASLContext = 'M0+((Label+Control)*12)';
 			importStr{ii}.par.LabelingType = 'PCASL';
-		  
+
 		case 'Siemens_PASL_3DGRASE_GENFI'
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.ASLContext = 'DeltaM';
 			importStr{ii}.par.BolusCutOffFlag = false;
-		  
+
 		case 'Siemens_PCASL_2DEPI_BioCog'
 			importStr{ii}.par.ASLContext = '(Label+Control)*44';
 			importStr{ii}.par.LabelingType = 'PCASL';
-		  
+
 		case 'Siemens_PASL_3DGRASE_APGEM_1'
 			importStr{ii}.par.ASLContext = 'Label+Control';
 			importStr{ii}.par.LabelingType = 'PASL';
@@ -199,44 +199,44 @@ for ii = 1:length(fList)
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 700;
 			importStr{ii}.par.BolusCutOffTechnique = 'QUIPSSII';
-		  
+
 		case 'Philips_PCASL_3DGRASE_Dent_example'
 			importStr{ii}.par.ASLContext = '(M0*2)+((Label+Control)*7)';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case 'Siemens_PCASL_3DGRASE_Sleep_Oslo_trial'
 			importStr{ii}.par.ASLContext = 'M0+((Label+Control)*15)';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case 'Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38'
 			importStr{ii}.par.ASLContext = 'DeltaM*15';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case 'Philips_PCASL_2DEPI_BioCog_Old'
 			importStr{ii}.par.ASLContext = '(Label+Control)*38';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
-		case 'Philips_PCASL_2DEPI_CP_Tavi_HC'		
+
+		case 'Philips_PCASL_2DEPI_CP_Tavi_HC'
 			importStr{ii}.par.ASLContext = '(Label+Control)*32';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case {'Philips_PCASL_2DEPI_intera_FIND','Philips_PCASL_2DEPI_Ingenia_FIND','Philips_PCASL_2DEPI_intera_FIND_LL','Philips_PCASL_2DEPI_intera_FIND_multiPLD','Philips_PCASL_2DEPI_intera_FIND_QUASAR'}
 			importStr{ii}.par.ASLContext = '(Label+Control)*75';
 			importStr{ii}.par.LabelingType = 'PCASL';
-						
+
 		case {'Philips_PCASL_2DEPI_Achieva_Bsup_GENFI','Philips_PCASL_2DEPI_Achieva_noBsup_GENFI'}
 			importStr{ii}.par.ASLContext = '(Label+Control)*40';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case {'Philips_PCASL_2DEPI_Bsup_EPAD1','Philips_PCASL_2DEPI_Bsup_EPAD2'}
 			importStr{ii}.par.ASLContext = '(Label+Control)*30';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case 'Philips_PCASL_2DEPI_Bsup_EPAD3'
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.ASLContext = 'DeltaM';
 			importStr{ii}.par.LabelingEfficiency = 0.83;
-			
+
 		case {'Siemens_PASL_2DEPI_noBsup2_EPAD','Siemens_PASL_2DEPI_noBsup_EPAD'}
 			importStr{ii}.par.ASLContext = '(Label+Control)*31';
 			importStr{ii}.par.LabelingType = 'PASL';
@@ -244,14 +244,14 @@ for ii = 1:length(fList)
 			importStr{ii}.par.BolusCutOffDelayTime = 600;
 			importStr{ii}.par.BolusCutOffTechnique = 'Q2TIPS';
 			importStr{ii}.par.LabelingSlabThickness = 80;
-			
+
 		case {'Siemens_PASL_3DGRASE_Prisma_Bsup_EPAD','Siemens_PASL_3DGRASE_Prisma_Bsup_EPAD2'}
 			importStr{ii}.par.ASLContext = '(Label+Control)*10';
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 0;
 			importStr{ii}.par.BolusCutOffTechnique = 'QUIPSSII';
-			
+
 		case 'Siemens_PASL_3DGRASE_Prisma_Bsup_EPAD3'
 			importStr{ii}.par.ASLContext = '(Label+Control)*2';
 			importStr{ii}.par.LabelingType = 'PASL';
@@ -259,13 +259,13 @@ for ii = 1:length(fList)
 			importStr{ii}.par.BolusCutOffDelayTime = [0 200 400];
 			importStr{ii}.par.BolusCutOffTechnique = 'QUIPSS';
 			importStr{ii}.par.LabelingSlabThickness = 60;
-			
+
 		case {'Philips_PCASL_3DGRASE_Divers','GE_PCASL_3Dspiral_Product_22q11', 'GE_PCASL_3Dspiral_WIP_Oslo_AntiPsychotics_Old','GE_PCASL_3Dspiral_Product_GE',...
 			  'Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar'}
 			importStr{ii}.par.Units = 'mL/100g/min';
 			importStr{ii}.par.ASLContext = 'CBF';
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case 'GE_PCASL_3Dspiral_WIP_KCL_INOX'
 			importStr{ii}.par.Units = 'mL/100g/min';
 			importStr{ii}.par.ASLContext = 'CBF+M0';
@@ -276,7 +276,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.FlipAngleOfB1LabelingPulses = 18;
 			importStr{ii}.par.PulseDuration = 0.0005;
 			importStr{ii}.par.PCASLType = 'balanced';
-			
+
 		case {'Philips_PCASL_2DEPI_Frontier','Philips_PCASL_2DEPI_Chili'}
 			importStr{ii}.par.ASLContext = '(Control+Label)*30';
 			importStr{ii}.par.LabelingType = 'PCASL';
@@ -285,7 +285,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.FlipAngleOfB1LabelingPulses = 23;
 			importStr{ii}.par.PulseDuration = 0.0005;
 			importStr{ii}.par.PCASLType = 'balanced';
-							
+
 		case {'GE_PCASL_2DEPI_stripped_3CV','Philips_PCASL_2DEPI_stripped_3CV1','Philips_PCASL_2DEPI_stripped_3CV2','Siemens_PCASL_2DEPI_stripped_3CV'}
 			importStr{ii}.par.ASLContext = '(Control+Label)*70';
 			importStr{ii}.par.LabelingType = 'PCASL';
@@ -303,7 +303,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.AcquisitionDuration = 658;
 			importStr{ii}.par.InterPulseSpacing = 0.00115;
 	end
-	
+
 	% Process all the data and automatically fill in the missing parameters
 	if strcmp(importStr{ii}.x.readout_dim,'2D')
 		importStr{ii}.par.PulseSequenceType = '2D_EPI';
@@ -314,19 +314,19 @@ for ii = 1:length(fList)
 			importStr{ii}.par.PulseSequenceType = '3D_GRASE';
 		end
 	end
-	
+
 	% Labeling delays and durations
 	if strcmp(importStr{ii}.par.LabelingType,'PASL')
 		importStr{ii}.par.LabelingDuration = 0;% x.Q.LabelingDuration           = 1800;  % for PASL this is TI1
 		importStr{ii}.par.InitialPostLabelDelay = importStr{ii}.x.Q.Initial_PLD;
-		if importStr{ii}.par.BolusCutOffFlag 
+		if importStr{ii}.par.BolusCutOffFlag
 			importStr{ii}.par.BolusCutOffTimingSequence = x.Q.LabelingDuration;
-		end		
+		end
 	else
 		importStr{ii}.par.LabelingDuration = importStr{ii}.x.Q.LabelingDuration;
 		importStr{ii}.par.InitialPostLabelDelay = importStr{ii}.x.Q.Initial_PLD;
 	end
-		
+
 	if importStr{ii}.x.Q.BackGrSupprPulses == 0
 		importStr{ii}.par.BackgroundSuppression = false;
 	else
@@ -355,12 +355,12 @@ for ii = 1:length(fList)
 			otherwise
 				error('Unknown number of pulses');
 		end
-		
+
 	end
-	
+
 	% Last round of edits - most parameters are filled in above, or (Background suppresion timing) prefilled with default values
 	% But after this automatic prefilling, you might want to change a few parameters - this is done here
-	
+
 	% FILLIN
 	% Either to change the automatically filled things above, or to supply further info about multi-PLD, vascular crushing, QUASAR etc.
 	switch (fList{ii})
@@ -369,17 +369,17 @@ for ii = 1:length(fList)
 			importStr{ii}.par.LabelingDuration = [0 repmat(1800,[1,24])];
 			importStr{ii}.par.VascularCrushing = true;
 			importStr{ii}.par.VascularCrushingVenc = 10;
-		
+
 		case 'Philips_PCASL_2DEPI_intera_FIND_LL'
 			importStr{ii}.par.ASLContext = '(Label*15+Control*15)*5';
 			importStr{ii}.par.FlipAngle = 25;
 			importStr{ii}.par.LookLocker = true;
 			importStr{ii}.par.InitialPostLabelDelay = repmat(250:250:3750,[1 10]);
-		
+
 		case 'Philips_PCASL_2DEPI_intera_FIND_multiPLD'
 			importStr{ii}.par.ASLContext = '(Label+Control)*75';
 			InitialPostLabelDelay = repmat([500 500 1000 1000 1500 1500 1800 1800 2200 2200],[1 15]);
-			
+
 		case 'Philips_PCASL_2DEPI_intera_FIND_QUASAR'
 			importStr{ii}.par.ASLContext = '(Label*15+Control*15)*5';
 			importStr{ii}.par.FlipAngle = [25*ones(1,120),12*ones(1,30)];
@@ -387,7 +387,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.VascularCrushing = true;
 			importStr{ii}.par.VascularCrushingVenc = [zeros(1,60),10*ones(1,60),zeros(1,3)];
 			importStr{ii}.par.InitialPostLabelDelay = repmat(250:250:3750,[1 10]);
-			
+
 	end
 end
 
@@ -397,23 +397,23 @@ end
 for ii = 1:length(fList)
 	% Make a copy of the par to the Flavors
 	importStr{ii}.flavors = importStr{ii}.par;
-	
+
 	% Make an output directory
 	if ~exist(fullfile(finalPath,importStr{ii}.dirName),'dir')
 		mkdir(fullfile(finalPath,importStr{ii}.dirName));
 	end
-	
+
 	% Go through all subjects
 	fSubs = xASL_adm_GetFileList(fullfile(outputPath,importStr{ii}.dirName,'analysis'),[],false,[],true);
 	for jj = 1:length(fSubs)
-		
+
 		subLabel = xASL_adm_CorrectName(fSubs{jj},2);
-		
+
 		% Make a subject directory
 		if ~exist(fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel]),'dir')
 			mkdir(fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel]));
 		end
-			
+
 		% Go throught the list of anat files
 		for iiAnat = lAnat
 			% Check if it exists
@@ -421,21 +421,21 @@ for ii = 1:length(fList)
 			if xASL_exist(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},[iiAnat{1},'.nii']),'file')
 				anatPath = fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},iiAnat{1});
 			end
-			
+
 			if xASL_exist(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},[iiAnat{1} '_1'],[iiAnat{1},'.nii']),'file')
 				anatPath = fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},[iiAnat{1} '_1'],iiAnat{1});
 			end
-			
+
 			if ~isempty(anatPath)
-				
+
 				if ~exist(fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel],'anat'),'dir')
 					mkdir(fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel],'anat'));
 				end
-				
+
 				% If yes, then copy the file
 				xASL_Copy([anatPath '.nii'],fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel],'anat',...
 					['sub-' subLabel '_' iiAnat{1} '.nii.gz']));
-				
+
 				% Load the JSON
 				jsonAnat = spm_jsonread([anatPath,'.json']);
 				jsonLocal = [];
@@ -453,18 +453,18 @@ for ii = 1:length(fList)
 						jsonLocal.(fn{1}) = jsonAnat.(fn{1});
 					end
 				end
-				
+
 				% Save the JSON
 				spm_jsonwrite(fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel],'anat',['sub-' subLabel '_' iiAnat{1} '.json']),jsonLocal);
 			end
 		end
-		
+
 		fSes = xASL_adm_GetFileList(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj}),'^ASL.+$',false,[],true);
-			
+
 		% Go through all sessions
 		for kk = 1:length(fSes)
-			
-			
+
+
 			% Make a subject directory
 			if length(fSes)>1
 				sesLabel = ['ses-' fSes{kk}(5:end)];
@@ -478,7 +478,7 @@ for ii = 1:length(fList)
 			else
 				sesLabel = '';
 				sesLabelUnd = '';
-				
+
 				% Only one session - no session labeling
 				if ~exist(fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel]),'dir')
 					mkdir(fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel]));
@@ -487,11 +487,11 @@ for ii = 1:length(fList)
 				inSesPath = fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},fSes{kk});
 				outSesPath = fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel]);
 			end
-			
+
 			% Check if there are multiple runs per session
 			fRuns = xASL_adm_GetFileList(inSesPath,'^ASL4D_\d.nii+$',false,[],false);
 			nSes = length(fRuns);
-				
+
 			for mm = 1:(max(nSes,1))
 				if nSes
 					aslLabel = ['ASL4D_' num2str(mm)];
@@ -502,18 +502,18 @@ for ii = 1:length(fList)
 					aslOutLabel = fullfile(outSesPath,'asl',['sub-' subLabel sesLabelUnd]);
 					aslOutLabelRelative = fullfile('asl',['sub-' subLabel sesLabelUnd]);
 				end
-				
+
 				% Copy the ASL
 				xASL_Copy(fullfile(inSesPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz']);
-			
+
 				% Load the JSON
 				%jsonLocal = xASL_import_json(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},fSes{kk},'ASL4D.json'));
 				jsonDicom = spm_jsonread(fullfile(inSesPath,[aslLabel '.json']));
 				imNii = xASL_io_Nifti2Im(fullfile(inSesPath,[aslLabel '.nii']));
-				
+
 				% Copy the basic ones
 				jsonLocal = importStr{ii}.par;
-				
+
 				% Copy all dicom ones
 				for fn = fieldnames(jsonDicom)'
 					% Fields to skip
@@ -527,13 +527,13 @@ for ii = 1:length(fList)
 						jsonLocal.(fn{1}) = jsonDicom.(fn{1});
 					end
 				end
-				
+
 				%jsonLocal.EchoTime = jsonDicom.EchoTime;
 				%jsonLocal.MagneticFieldStrength = jsonDicom.MagneticFieldStrength;
 				%jsonLocal.RepetitionTime = jsonDicom.RepetitionTime;
 				%jsonLocal.Manufacturer = jsonDicom.Manufacturer;
 				%jsonLocal.FlipAngle = jsonDicom.FlipAngle;
-				
+
 				% Free info about the sequence, now just the scanner type+software
 				if isfield(jsonDicom,'ManufacturersModelName')
 					jsonLocal.PulseSequenceDetails = jsonDicom.ManufacturersModelName;
@@ -547,17 +547,17 @@ for ii = 1:length(fList)
 					jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails jsonDicom.SoftwareVersions];
 					jsonLocal.MRSoftwareVersion = jsonDicom.SoftwareVersions;
 				end
-				
+
 				% Fill in extra parameters based on the JSON from the data
 				if importStr{ii}.par.PulseSequenceType(1) == '2'
 					jsonLocal.SliceTiming = ((0:(size(imNii,3)-1))')*importStr{ii}.x.Q.SliceReadoutTime/1000;
 				end
-				
+
 				% Type of an M0 image
 				if strcmp(importStr{ii}.x.M0,'separate_scan')
 					if isfield(importStr{ii}.x,'M0PositionInASL4D') && (max(importStr{ii}.x.M0PositionInASL4D(:))>0)
 						jsonLocal.M0 = true;
-					elseif exist(fullfile(inSesPath,'M0.nii'),'file')
+					elseif xASL_exist(fullfile(inSesPath,'M0.nii'))
 						if length(fSes)>1
 							%jsonLocal.M0 = fullfile(importStr{ii}.dirName,['sub-' subLabel],['ses-' sesLabel],'asl',['sub-' subLabel sesLabelUnd '_M0Scan.nii.gz']);
 							jsonLocal.M0 = fullfile('asl',['sub-' subLabel sesLabelUnd '_M0Scan.nii.gz']);
@@ -582,7 +582,7 @@ for ii = 1:length(fList)
 						end
 					end
 				end
-				
+
 				% Copy some things from the local JSON to the flavors
 				jsonToFlavors = {'PulseSequenceType' 'PulseSequenceDetails' 'SliceTiming' 'ASLContext' 'LabelingType' 'LabelingDuration' 'InitialPostLabelDelay' 'BackgroundSuppression' 'M0' 'AcquisitionResolution'...
 					'LookLocker' 'LabelingEfficiency' 'BolusCutOffFlag' 'BolusCutOffTimingSequence' 'BolusCutOffDelayTime' 'BolusCutOffTechnique'};
@@ -591,10 +591,10 @@ for ii = 1:length(fList)
 						importStr{ii}.flavors.(jsonToFlavors{ll}) = jsonLocal.(jsonToFlavors{ll});
 					end
 				end
-				
+
 				% Save JSON to new dir
 				spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
-						
+
 				if mm == 1
 					for nn = 1:2
 						if nn == 1
@@ -603,9 +603,9 @@ for ii = 1:length(fList)
 							nnStr = 'PERev';
 						end
 						% If M0, then copy M0 and add ASL path to the IntendedFor
-						if exist(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},fSes{kk},['M0' nnStr '.nii']),'file')
+						if xASL_exist(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},fSes{kk},['M0' nnStr '.nii']))
 							jsonM0 = spm_jsonread(fullfile(inSesPath,['M0' nnStr '.json']));
-							
+
 							% Copy all dicom ones
 							for fn = fieldnames(jsonM0)'
 								% Fields to skip
@@ -634,7 +634,7 @@ for ii = 1:length(fList)
 	end
 end
 
-	
+
 
 %% Export for ASL JSON flavours
 % This do not need to be run for BIDS conversion - it only save the info for all processed datasets.
@@ -650,7 +650,7 @@ for ii = 1:length(fList)
 	end
 	% Write the name of the study
 	fwrite(fCSVOut,importStr{ii}.dirName);
-	
+
 	% For all possible fields
 	for jj = 1:length(fieldsCSV)
 		fwrite(fCSVOut,'; ');
@@ -672,4 +672,3 @@ for ii = 1:length(fList)
 end
 % Close file
 fclose(fCSVOut);
-

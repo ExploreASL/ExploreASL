@@ -463,11 +463,8 @@ end
 %% Transform the everything and realign in the T1 space
 
 % Standard to T1w space
-for iL = 3:length(patientNameList)
+for iL = 1:length(patientNameList)
 	fnm = 'Lesion_T1';
-	if ~xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},[fnm '_1.nii']))
-		fnm = 'Lesion_FLAIR';
-	end
 	%if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},[fnm '_1.nii']))
 	% Unzip all the needed files
 	xASL_adm_UnzipNifti(fullfile(rawDir,'analysis',patientNameList{iL},'y_T1.nii'));
@@ -489,10 +486,16 @@ for iL = 3:length(patientNameList)
 
 	xASL_Move(fullfile(rawDir,'analysis',patientNameList{iL},['wr' fnm '_1_' patientNameList{iL} '.nii']),fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),1);
 	
-	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_CBF.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_CBF.nii'),[]);
-	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_DSC.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_DSC.nii'),[]);
-	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_PET.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_PET.nii'),[]);
-	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'T1.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_T1.nii'),[]);
-	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'T1_ORI.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_T1_ORI.nii'),[]);
-		
+	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_CBF.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},['Final_CBF.nii']),[]);
+	
+			xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},['wr' fnm '_1_' patientNameList{iL} '.nii']),[],PETresol,[]);
+			xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'), fullfile(rawDir,'analysis',patientNameList{iL},['swr' fnm '_1_' patientNameList{iL} '.nii']),...
+				[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1',['Final_' fnm '.nii']), 1);
+			if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'))
+				xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},['wr' fnm '_1_' patientNameList{iL} '.nii']),[],PETresol,[]);
+				xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'), fullfile(rawDir,'analysis',patientNameList{iL},['swr' fnm '_1_' patientNameList{iL} '.nii']),...
+					[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'PET_1',['Final_' fnm '.nii']), 1);
+			end
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},['wr' fnm '_1_' patientNameList{iL} '.nii']));
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},['swr' fnm '_1_' patientNameList{iL} '.nii']));
 end

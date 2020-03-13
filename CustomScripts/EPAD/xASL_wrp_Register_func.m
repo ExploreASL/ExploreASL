@@ -51,7 +51,7 @@ end
 %% 0    Clip image, optimizes image contrast for registration
 xASL_delete(x.P.Path_mean_control);
 xASL_io_PairwiseSubtraction(x.P.Path_func_bold, x.P.Path_mean_PWI_Clipped,0,0); % create PWI & mean_control
-if ~exist(x.P.Path_mean_control, 'file')
+if ~xASL_exist(x.P.Path_mean_control, 'file')
     xASL_Move(x.P.Path_mean_PWI_Clipped, x.P.Path_mean_control);
 else
     xASL_delete(x.P.Path_mean_PWI_Clipped);

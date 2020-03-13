@@ -83,7 +83,7 @@ ii=1
             u_file2     = ['u_rc1T1_' ToWarpList{iS} '_T1_template.nii'];
             u_Path2     = fullfile(x.D.PopDir, u_file2);
 
-            if  exist(IMpath1,'file') && exist(IMpath2,'file') && ~exist(LockFile,'file')
+            if  xASL_exist(IMpath1,'file') && xASL_exist(IMpath2,'file') && ~exist(LockFile,'file')
                 DARTELjobWrap(IMpath1,IMpath2,TemplateFile,rparam1(ii),rparam2(ii),K(ii));
 
                 xASL_Rename(u_file1,u_file2,1);

@@ -3,7 +3,7 @@
 for iS=1:x.nSubjects
     xASL_TrackProgress(iS,x.nSubjects);
     Path    = fullfile(x.D.PopDir,['SD_' x.SUBJECTS{iS} '_ASL_1.nii']);
-    if  exist(Path, 'file')
+    if  xASL_exist(Path, 'file')
         tIM             = xASL_io_Nifti2Im(Path);
         tIM(40:80,40:80,25:100)     = tIM(40:80,40:80,25:100).*2;
         sumSD(iS,1)     = xASL_stat_SumNan(tIM(:));
@@ -24,7 +24,7 @@ for iSite=1:nSites
 
         if  SiteN(iS)
             Path    = fullfile(x.D.PopDir,['SD_' x.SUBJECTS{iS} '_ASL_1.nii']);
-            if  exist(Path, 'file')
+            if  xASL_exist(Path, 'file')
                 tIM                         = xASL_io_Nifti2Im(Path);
                 tIM(40:80,40:80,25:100)     = tIM(40:80,40:80,25:100).*2;
                 sumSD{iSite}(iS,1)          = xASL_stat_SumNan(tIM(:));

@@ -558,7 +558,7 @@ for iSubject=1:nSubjects
                 if exist(SaveParmsPath,'file')
                     CreateParmsMat = false;
                 end
-                
+
                 if CreateParmsMat && ~isempty(first_match)
                     [~, ~, fext] = fileparts(first_match);
                     if  strcmpi(fext,'.PAR')
@@ -598,7 +598,7 @@ for iSubject=1:nSubjects
                                 CopyPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
                                 [Fpath, Ffile] = xASL_fileparts(DestPath);
                                 DestPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
-                                if exist(CopyPath,'file')
+                                if xASL_exist(CopyPath)
                                     xASL_Copy(CopyPath, DestPath, true);
                                 end
                             end
@@ -748,7 +748,7 @@ if length(nii_files)==2
 	[outpath, ~, ext] = fileparts(name_x1);
 	newfilepath = fullfile(outpath, [basename ext]);
 
-	if  exist(name_x1, 'file') && exist(name_x2, 'file')
+	if  xASL_exist(name_x1) && xASL_exist(name_x2)
 
 		%load data
 		temp_x1                         = xASL_io_ReadNifti(name_x1);

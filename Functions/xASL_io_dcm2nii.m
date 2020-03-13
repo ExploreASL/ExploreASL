@@ -154,8 +154,8 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 
 
     %% check for existing targets
-    bSingleExists = exist(fullfile(destdir, [series_name '.nii']),'file');
-    bMultiExists = exist(fullfile(destdir, [series_name '_1.nii']),'file');
+    bSingleExists = xASL_exist(fullfile(destdir, [series_name '.nii']),'file');
+    bMultiExists = xASL_exist(fullfile(destdir, [series_name '_1.nii']),'file');
     if ~parms.Overwrite && (bSingleExists || bMultiExists)
         if bSingleExists
             niifiles{1} = fullfile(destdir, [series_name '.nii']);
@@ -291,7 +291,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     temp_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
                     [Gpath, Gfile] = xASL_fileparts(dest_file);
                     dest_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
-                    if exist(temp_BIDS, 'file')
+                    if xASL_exist(temp_BIDS, 'file')
                         xASL_Move(temp_BIDS, dest_BIDS, parms.Overwrite, parms.Verbose);
                     end
                 end

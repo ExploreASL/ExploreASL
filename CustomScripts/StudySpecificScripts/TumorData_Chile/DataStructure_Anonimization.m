@@ -16,7 +16,7 @@ for iD=1:length(Dlist)
         NewDir      = fullfile(ROOT,NewName);
         xASL_Rename(OldDir,NewName);
         ID_key{iD,1}    = NewName;
-        ID_key{iD,2}    = OldName;          
+        ID_key{iD,2}    = OldName;
     end
 end
 
@@ -92,7 +92,7 @@ for iL=1:length(Flist)
             xASL_TrackProgress(iL,length(Flist));
             [Fpath Ffile Fext]  = fileparts(Flist{iL}(1:end-7));
             NewFile             = fullfile(AnalysisDir, Ffile, 'T1.nii');
-            if  ~exist(NewFile,'file')
+            if  ~xASL_exist(NewFile,'file')
                 xASL_Copy(Flist{iL},NewFile,1);
             end
         end
@@ -107,7 +107,7 @@ for iL=1:length(Flist)
         FileName            = [Ffile Fext];
         [Fpath Ffile Fext]  = xASL_fileparts(Fpath);
         NewFile             = fullfile(AnalysisDir, Ffile, FileName);
-        if  ~exist(NewFile,'file')
+        if  ~xASL_exist(NewFile,'file')
             xASL_Copy(Flist{iL},NewFile,1);
         end
     end
