@@ -1,4 +1,4 @@
-function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath)
+function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite)
 %xASL_qc_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
 %
 % FORMAT: [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, RunMethod)
@@ -12,6 +12,9 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %                 FUTURE Option 3 = run ExploreASL compilation serially
 %                 FUTURE Option 4 = run ExploreASL compilation parallel
 %   bTestSPM    - boolean for testing if SPM standalone with xASL modifications works (DEFAULT=true)
+%   EmailAddress- string with e-mail address for gmail account to use (OPTIONAL, DEFAULT = skip e-mailing results)
+%   Password    - string with password for this gmail account (REQUIRED when EmailAddress provided)
+%   bOverwrite  - Overwrite existing test results (OPTIONAL, DEFAULT=true);
 % OUTPUT:
 %   ResultsTable - Table containing all results from the test runs
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -46,7 +49,7 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %              9) E-mail results
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE for Jan: [ResultsTable] = xASL_qc_TestExploreASL('/pet/projekte/asl/data/ExploreASL_TestCases', '/pet/projekte/asl/data/ExploreASL_TempRes', 1);
-% EXAMPLE for Henk on MacOS: [ResultsTable] = xASL_qc_TestExploreASL('/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases', '/Users/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed', 1, 0);
+% EXAMPLE for Henk on MacOS: [ResultsTable] = xASL_qc_TestExploreASL('/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases', '/Users/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed', 1, 0,[],'henkjanmutsaerts@gmail.com');
 % EXAMPLE for VUmc server: [ResultsTable] = xASL_qc_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
@@ -65,7 +68,15 @@ end
 if nargin<5 || isempty(MatlabPath)
     MatlabPath = 'matlab';
 end
-
+if nargin<6
+    EmailAddress = [];
+    Password = [];
+elseif nargin<7 || isempty(Password)
+    warning('Please provide password for g-mail account!');
+end
+if nargin<8 || isempty(bOverwrite)
+    bOverwrite = true;
+end
 
 % ============================================================
 %% 1) Pull latest GitHub version
@@ -95,7 +106,7 @@ spm_get_defaults('cmdline',true);
 
 % ============================================================
 %% 3) Copy all data for testing
-if exist(TestDirDest,'dir')
+if bOverwrite && exist(TestDirDest,'dir')
     fprintf('Deleting previous results...\n');
     if ispc
         system(['rmdir /s /q ' TestDirDest]);
@@ -271,7 +282,7 @@ for iList=1:length(Dlist)
     clear ResultsFile
     ResultFile{1} = xASL_adm_GetFileList(StatsDir,'^mean_qCBF_TotalGM.*PVC2\.tsv','FPList');
     ResultFile{2} = xASL_adm_GetFileList(StatsDir,'^median_qCBF_TotalGM.*PVC0\.tsv','FPList');
-    ResultFile{3} = xASL_adm_GetFileList(StatsDir,'^median_qCBF_DeepWM.*PVC0\.tsv','FPList');    
+    ResultFile{3} = xASL_adm_GetFileList(StatsDir,'^median_qCBF_DeepWM.*PVC0\.tsv','FPList');
     ResultFile{4} = xASL_adm_GetFileList(StatsDir,'^CoV_qCBF_TotalGM.*PVC0\.tsv','FPList');
     ResultFile{5} = xASL_adm_GetFileList(StatsDir,'^CoV_qCBF_TotalGM.*PVC0\.tsv','FPList');
 
@@ -281,7 +292,7 @@ for iList=1:length(Dlist)
             ResultsTable{1+iList,2+iFile} = 'empty';
             ResultsTable{1+iList,3+iFile} = 'empty';
         elseif iFile<5 % check the ASL parameters
-            [~, TempTable] = xASL_adm_csv2tsv(ResultFile{iFile}{1});
+            [~, TempTable] = xASL_adm_csv2tsv(ResultFile{iFile}{end});
             ResultsTable{1+iList,1+iFile} = TempTable{3,end-2};
         else % check the volumetric parameters
             IndexGM = find(cellfun(@(y) strcmp(y,'GM_vol'), TempTable(1,:)));
@@ -304,11 +315,73 @@ for iList=1:length(Dlist)
     if ~isempty(PathCBF)
         ResultsTable{1+iList,5+iFile} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplate, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
     end
+    
+    % Save results
+    SaveFile = fullfile(TestDirOrig, [datestr(now,'yyyy-mm-dd_HH:MM') '_ResultsTable.mat']);
+    save(SaveFile, 'ResultsTable');
 end
 
 % ============================================================
 %% 8) Compare table with reference table
+try
+    % Save ResultsTable
+    PreviousSaveFile = fullfile(TestDirOrig, 'ResultsTable_2020-03-12.mat');
+    PreviousTable = load(PreviousSaveFile,'-mat');
+    PreviousTable.ResultsTable
+
+    clear DifferenceTable
+    DifferenceTable(1:size(ResultsTable,1),1:size(ResultsTable,2)) = {''};
+    DifferenceTable(1,:) = ResultsTable(1,:);
+    DifferenceTable(:,1) = ResultsTable(:,1);
+    for iX=2:size(ResultsTable,1)
+        for iY=2:size(ResultsTable,2)
+            A = xASL_str2num(ResultsTable{iX,iY});
+            B = xASL_str2num(PreviousTable.ResultsTable{iX,iY});
+            AsymmIndex = (A-B)/(A+B);
+            DifferenceTable{iX,iY} = [xASL_num2str(AsymmIndex) '%'];
+        end
+    end
 
 % ============================================================
 %% 9) E-mail results
+    if ~isempty(EmailAddress)
+        % First convert table to string to send by e-mail
+        NewTable{1,1} = 'mean_qCBF_TotalGM     median_qCBF_TotalGM     median_qCBF_DeepWM     CoV_qCBF_TotalGM             GMvol                 WMvol                 CSFvol             PipelineCompleted     TC_Registration';
+        SingleEmptyString1 = repmat(' ',[1 44]);  
+        SingleEmptyString2 = repmat(' ',[1 27]);
+        for iX=2:size(DifferenceTable,1)
+            NewTable{iX,1} = '';
+            for iY=2:size(DifferenceTable,2)
+                if iY<5
+                    NewCell = SingleEmptyString1;
+                else
+                    NewCell = SingleEmptyString2;
+                end
 
+                NewCell(1:length(DifferenceTable{iX,iY})) = DifferenceTable{iX,iY};
+                NewTable{iX,1} = [NewTable{iX,1} NewCell];
+            end
+            NewTable{iX,1} = [NewTable{iX,1} DifferenceTable{iX,1}];
+        end
+
+
+        % See here: https://nl.mathworks.com/help/matlab/import_export/sending-email.html
+        fprintf('Sending e-mail with results\n');
+        setpref('Internet','SMTP_Server','smtp.gmail.com');
+        setpref('Internet', 'E_mail', EmailAddress);
+        setpref('Internet', 'SMTP_Username', EmailAddress);
+        setpref('Internet', 'SMTP_Password', Password);
+        props = java.lang.System.getProperties;
+        props.setProperty('mail.smtp.auth','true');
+        props.setProperty('mail.smtp.socketFactory.class', 'javax.net.ssl.SSLSocketFactory');
+        props.setProperty('mail.smtp.socketFactory.port','465');
+        EmailAddresses = {'Patricia.Clement@ugent.be','Pieter.Vandemaele@UZGENT.be', 'j.petr@hzdr.de', 'henkjanmutsaerts@gmail.com'};
+        sendmail(EmailAddresses, 'ExploreASL TestRun: %AsymmetryIndexWithTemplateResults (should be <0.01%)', NewTable);
+    end
+catch ME
+    warning('Something went wrong in trying to create difference table & mailing it to receivers');
+    fprintf('%s\n', ME);
+end
+    
+
+end

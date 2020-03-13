@@ -45,6 +45,7 @@ function xASL_adm_CleanUpBeforeRerun(AnalysisDir, iModule, bRemoveWMH, bFullReru
 % Copyright 2015-2019 ExploreASL
 
 
+try
 
 % ===========================================================================================
 %% 0) Admin
@@ -68,7 +69,7 @@ end
 if bFullRerun
     warning('Cleaning data from all subjects!');
     SubjectID = '.*';
-    SessionID = '.*';
+    SessionID = {'.*'};
     SubjectDir = AnalysisDir;
 elseif nargin<5 || isempty(SubjectID)
     fprintf('No subjectID specified, skipping...\n');
@@ -80,299 +81,318 @@ end
 if nargin<6 || isempty(SessionID)
     % Obtain ASL session dirs as well
     fprintf('No SessionID provided, finding session dirs automatically:\n');
-    SessionDirs = xASL_adm_GetFileList(SubjectDir, '^ASL_\d+$', 'FPList', [0 Inf], true);
-    nSessions = length(SessionDirs);    
+    SessionID = xASL_adm_GetFileList(SubjectDir, '^ASL_\d+$', 'List', [0 Inf], true);
 else
-    SessionDir = fullfile(SubjectDir, SessionID);
-    nSessions = 1;
+    if ~iscell(SessionID)
+        SessionID = {SessionID};
+    end
 end
+SessionDir = cellfun(@(y) fullfile(SubjectDir, y), SessionID, 'UniformOutput', 0);
+nSessions = length(SessionDir); 
+
 if any(iModule>3)
     error('Invalid iModule input argument');
 end
 
 PopulationDir = fullfile(AnalysisDir, 'Population');
 
-% ===========================================================================================
-%% 1) If a Population folder doesn't exist yet but dartel does, rename it
-DARTELdir = fullfile(AnalysisDir,'dartel');
-if exist(DARTELdir,'dir') && ~exist(PopulationDir, 'dir')
-    fprintf('Renaming folders: dartel to Population\n');
-    xASL_Move(DARTELdir, PopulationDir);
-elseif exist(DARTELdir,'dir') && exist(PopulationDir, 'dir')
-    error('Please first merge or delete old DARTEL dir with PopulationDir, before continuing');
-elseif ~exist(PopulationDir,'dir')
-    xASL_adm_CreateDir(PopulationDir);
-end
-
-
-% ===========================================================================================
-%% 2) Remove whole-study data files in AnalysisDir if bFullRerun
-if bFullRerun
-        fprintf('Removing root data files:   ');
-    RootFiles = {'AcquisitionTime' 'CheckOrientation_RigidRegASL' 'FileReportSummary' '.*Motion' 'GM_ICV' 'GMWM' '.*_vol' 'import_log' 'QC_collection\.json' '.*_count' 'xASL\.mat'};
-    for iFile=1:length(RootFiles)
-        xASL_TrackProgress(iFile, length(RootFiles));
-        xASL_adm_DeleteFileList(AnalysisDir, [RootFiles{iFile} '.*'], false, [0 Inf]);
+    % ===========================================================================================
+    %% 1) If a Population folder doesn't exist yet but dartel does, rename it
+    DARTELdir = fullfile(AnalysisDir,'dartel');
+    if exist(DARTELdir,'dir') && ~exist(PopulationDir, 'dir')
+        fprintf('Renaming folders: dartel to Population\n');
+        xASL_Move(DARTELdir, PopulationDir);
+    elseif exist(DARTELdir,'dir') && exist(PopulationDir, 'dir')
+        error('Please first merge or delete old DARTEL dir with PopulationDir, before continuing');
+    elseif ~exist(PopulationDir,'dir')
+        xASL_adm_CreateDir(PopulationDir);
     end
-end
-fprintf('n');
 
 
-% ===========================================================================================
-%% 3) Remove lock files/folders for reprocessing
-LockDir = fullfile(AnalysisDir, 'lock');
-fprintf('Removing lock folders:   ');
+    % ===========================================================================================
+    %% 2) Remove whole-study data files in AnalysisDir if bFullRerun
+    if bFullRerun
+            fprintf('Removing root data files:   ');
+        RootFiles = {'AcquisitionTime' 'CheckOrientation_RigidRegASL' 'FileReportSummary' '.*Motion' 'GM_ICV' 'GMWM' '.*_vol' 'import_log' 'QC_collection\.json' '.*_count' 'xASL\.mat'};
+        for iFile=1:length(RootFiles)
+            xASL_TrackProgress(iFile, length(RootFiles));
+            xASL_adm_DeleteFileList(AnalysisDir, [RootFiles{iFile} '.*'], false, [0 Inf]);
+        end
+    end
+    fprintf('n');
 
-if bFullRerun % remove all lock dirs/files
-    xASL_adm_DeleteFileList(LockDir, '.*', true, [0 Inf]);
-    if isempty(xASL_adm_GetFileList(LockDir, '.*', 'FPListRec', [0 Inf]))
-        % then remove subfolders
-        DirList = xASL_adm_GetFileList(LockDir, '.*', 'FPList', [0 Inf], true);
-        for iList=1:length(DirList)
-            xASL_TrackProgress(iList, length(DirList));
-            xASL_delete(DirList{iList});
+
+    % ===========================================================================================
+    %% 3) Remove lock files/folders for reprocessing
+    LockDir = fullfile(AnalysisDir, 'lock');
+    fprintf('Removing lock folders:   ');
+
+    if bFullRerun % remove all lock dirs/files
+        xASL_adm_DeleteFileList(LockDir, '.*', true, [0 Inf]);
+        if isempty(xASL_adm_GetFileList(LockDir, '.*', 'FPListRec', [0 Inf]))
+            % then remove subfolders
+            DirList = xASL_adm_GetFileList(LockDir, '.*', 'FPList', [0 Inf], true);
+            for iList=1:length(DirList)
+                xASL_TrackProgress(iList, length(DirList));
+                xASL_delete(DirList{iList});
+            end
+        else
+            warning(['Couldnt delete contents of ' LockDir']);
         end
     else
-        warning(['Couldnt delete contents of ' LockDir']);
-    end
-else
-    LockDirs = {'xASL_module_Structural' 'xASL_module_ASL' 'xASL_module_Population'};
-    LockDirs2 = fullfile(LockDir, LockDirs);
+        LockDirs = {'xASL_module_Structural' 'xASL_module_ASL' 'xASL_module_Population'};
+        LockDirs2 = fullfile(LockDir, LockDirs);
 
-    for iDir=iModule
-        if ~isempty(regexp(LockDirs2{iDir},'xASL_module_Structural'))
-            % specify subject ID
-            CurrentDir = xASL_adm_GetFileList(LockDirs2{iDir}, SubjectID, 'FPList', [0 Inf], true);         
-        elseif ~isempty(regexp(LockDirs2{iDir},'xASL_module_ASL'))
-            % specify session ID
-            CurrentDir = xASL_adm_GetFileList(fullfile(LockDirs2{iDir}, SubjectID), ['xASL_module_ASL_' SessionID], 'FPList', [0 Inf], true);
-        elseif ~isempty(regexp(LockDirs2{iDir},'xASL_module_Population'))
-            CurrentDir = {LockDirs2{iDir}}; % specify for population module, no subject ID
-        end
+        for iDir=iModule
+            if ~isempty(regexp(LockDirs2{iDir},'xASL_module_Structural'))
+                % specify subject ID
+                CurrentDir = xASL_adm_GetFileList(LockDirs2{iDir}, SubjectID, 'FPList', [0 Inf], true);         
+            elseif ~isempty(regexp(LockDirs2{iDir},'xASL_module_ASL'))
+                % specify session ID
+                CurrentDir = '';
+                if exist(LockDirs2{iDir}, 'dir')
+                    for iSession=1:nSessions
+                        CurrentDir{end+1} = xASL_adm_GetFileList(fullfile(LockDirs2{iDir}, SubjectID), ['^xASL_module_ASL_' SessionID{iSession} '$'], 'FPList', [0 Inf], true);
+                    end
+                end
+            elseif ~isempty(regexp(LockDirs2{iDir},'xASL_module_Population'))
+                CurrentDir = {LockDirs2{iDir}}; % specify for population module, no subject ID
+            end
 
-        if ~isempty(CurrentDir)
-            for iCurrent=1:length(CurrentDir)
-                xASL_TrackProgress(iCurrent, length(CurrentDir));
-                xASL_adm_DeleteFileList(CurrentDir{iCurrent}, '.*', true, [0 Inf]);
-                LockedDir = xASL_adm_GetFileList(CurrentDir{iCurrent}, 'locked', 'FPListRec', [0 Inf], true);
-                if isempty(LockedDir) % keep locked dir for mutex
-                    xASL_delete(CurrentDir{iCurrent});
+            if ~isempty(CurrentDir)
+                for iCurrent=1:length(CurrentDir)
+                    xASL_TrackProgress(iCurrent, length(CurrentDir));
+                    xASL_adm_DeleteFileList(CurrentDir{iCurrent}, '.*', true, [0 Inf]);
+                    LockedDir = xASL_adm_GetFileList(CurrentDir{iCurrent}, 'locked', 'FPListRec', [0 Inf], true);
+                    if isempty(LockedDir) % keep locked dir for mutex
+                        xASL_delete(CurrentDir{iCurrent});
+                    end
                 end
             end
         end
-    end
-end
-fprintf('\n');
-
-
-% ===========================================================================================
-%% 4) Restore backupped _ORI (original) files
-% Here we search recursively for ORI files, if any found, and the original as well, replace original by ORI
-OriList = ''; % initiate list
-fprintf('Restoring backupped _ORI (original) files:   ');
-
-if ~isempty(find(iModule==1)) % if we remove the structural data
-    OriList{end+1} = xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SubjectDir
-    OriList{end+1} = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '(?!_ASL_\d+)\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
-elseif ~isempty(find(iModule==2)) % if we remove the ASL data
-    OriList{end+1} = xASL_adm_GetFileList(SessionDir, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SessionDir
-    OriList{end+1} = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '_' SessionID '\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
-end
-% Merge lists
-OriListTotal = '';
-for iList=1:length(OriList)
-    OriListTotal = [OriListTotal OriList{iList}]; % combine the lists
-end
-    
-for iList=1:length(OriListTotal)
-    xASL_TrackProgress(iList, length(OriListTotal));
-    NonOriPath = strrep(OriListTotal{iList},'_ORI','');
-    xASL_delete(NonOriPath); % if the non-ori file existed, overwrite it
-    xASL_Move(OriListTotal{iList}, NonOriPath);
-end
-fprintf('\n');
-
-
-% ===========================================================================================
-%% 5) Delete native space CAT12 temporary folders (always, independent of iModule)
-fprintf('Deleting native space CAT12 temporary folders:   ');
-
-CAT12Folders = {'label' 'mri' 'report'};
-for iFolder=1:length(CAT12Folders)
-    FolderList = xASL_adm_GetFileList(SubjectDir, CAT12Folders{iFolder}, 'FPListRec', [0 Inf], true);
-    for iDir=1:length(FolderList)
-        xASL_TrackProgress(iDir, length(FolderList));
-        xASL_adm_DeleteFileList(FolderList{iDir}, '.*', true, [0 Inf]);
-        xASL_delete(FolderList{iDir});
-    end
-end
-fprintf('\n');
-
-% ===========================================================================================
-%% 6) Remove native space files for iModule
-% To save computation/harddisk burden/time, combine as many regexps here as
-% possible. But need to take care not to delete e.g. _ORI or _Backup
-NativeSpaceFiles{1} = {'.*\.ps$' 'xASL_Report.*' '(r|)c(1|2|3)T1(\.mat|\.nii|\.nii\.gz)$'...
-    '(ples.*|WMH_SEGM_CleanUp|j_T1|rT1|y_T1|CentralWM_QC|LeftRight)(\.mat|\.nii|\.nii\.gz)$' 'catreport_T1\.pdf$'...
-    'T1_seg8\.mat$'};
-
-NativeSpaceFiles{2} = {'.*\.topup.*log' '(VascularArtifact|xASL_qc|qcdc).*' 'rp_(despiked_|)ASL4D\.txt' '.*_sn\.mat'...
-    '(PVgm|PVwm|PVcsf|FoV|M0_biasfield|(m|)mean_control|(mean|)PWI|SD|SNR|TopUp.*|(Mask_|Raw)Template|ATT_bias|B0|(Mean_|)(q|)CBF)(\.mat|\.nii|\.nii\.gz)$'...
-    '(SliceGradient(_extrapolated|)|slice_gradient|rgrey|y_ASL|Pseudo(CBF|Tissue)|rM0|Field|Unwarped|(r|rp_)(despiked_|)ASL4D)(\.mat|\.nii|\.nii\.gz)$'...
-    '(.*beforeMoCo|CBF(|_Visual2DICOM)|(r|)temp.*|Mask(|Vascular)|mask)(\.mat|\.nii|\.nii\.gz)$'};
-
-if bRemoveWMH
-    NativeSpaceFiles{1}{end+1} = 'WMH_SEGM(\.mat|\.nii|\.nii\.gz)$';
-end
-
-if strcmp(SubjectID, '.*') % only remove log files when running this for the full population at once
-    NativeSpaceFiles{1}{end+1} = '.*\.log$';
-    NativeSpaceFiles{2}{end+1} = '.*\.log$';
-end
-
-fprintf('Deleting native space files for module :   ');
-
-for iList=iModule
-    fprintf(['Deleting native space files for module ' num2str(iList) ':']);
-    % We do Structural & ASL modules only, population module doesnt have native space files
-    if iList==1 % structural module
-        Dir2Check = SubjectDir;
-    elseif iList==2
-        Dir2Check = SessionDir;
-    end
-    
-    for iFile=1:length(NativeSpaceFiles{iList})
-        xASL_TrackProgress(iFile, length(NativeSpaceFiles{iList}));
-        xASL_adm_DeleteFileList(Dir2Check, NativeSpaceFiles{iList}{iFile}, false, [0 Inf]);
     end
     fprintf('\n');
-end
 
-% ===========================================================================================
-%% 7) Remove standard space files for iModule
-if bFullRerun
-    fprintf('Deleting all standard space files\n');
-    % Remove the full population folder contents
-    xASL_adm_DeleteFileList(PopulationDir, '.*', true, [0 Inf]);
-    % Remove all empty folders within the population folder, for overview
-    FolderList = xASL_adm_GetFileList(PopulationDir, '.*', 'FPListRec', [0 Inf], true);
-    for iFolder=1:length(FolderList)
-        if isempty(xASL_adm_GetFileList(FolderList{iFolder}, '.*', 'FPListRec', [0 Inf]))
-            xASL_delete(FolderList{iFolder});
-        else
-            warning(['Couldnt delete contents of ' FolderList{iFolder}]);
+
+    % ===========================================================================================
+    %% 4) Restore backupped _ORI (original) files
+    % Here we search recursively for ORI files, if any found, and the original as well, replace original by ORI
+    OriList = ''; % initiate list
+    fprintf('Restoring backupped _ORI (original) files:   ');
+
+    if ~isempty(find(iModule==1)) % if we remove the structural data
+        OriList{end+1} = xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SubjectDir
+        OriList{end+1} = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '(?!_ASL_\d+)\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
+    elseif ~isempty(find(iModule==2)) % if we remove the ASL data
+        for iSession=1:nSessions
+            OriList{end+1} = xASL_adm_GetFileList(SessionDir{iSession}, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SessionDir
+            OriList{end+1} = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '_' SessionID{iSession} '\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
         end
     end
-end
-if ~isempty(find(iModule==1)) % if we remove the structural data
-    fprintf('Deleting all standard space files for module 1\n');
-    xASL_adm_DeleteFileList(PopulationDir, ['.*' SubjectID '(?!_ASL_\d+)'], true, [0 Inf]);
-end
-if ~isempty(find(iModule==2)) % if we remove the ASL data
-    fprintf('Deleting all standard space files for module 2\n');
-    xASL_adm_DeleteFileList(PopulationDir, ['.*' SubjectID '_' SessionID], true, [0 Inf]);
-end
-
-% ===========================================================================================
-%% 8) Remove population module files
-if ~isempty(find(iModule==3))
-    PopulationFiles = {'(xASL_module|)Population(_module|)\.log' '.*quantification_parameters\.csv' 'Overview.*\.jpg'};
-    fprintf('Deleting all standard space files for module 3:   ');
-    
-    for iFile=1:length(PopulationFiles)
-        xASL_TrackProgress(iFile, length(PopulationFiles));
-        xASL_adm_DeleteFileList(PopulationDir, PopulationFiles{iFile}, true, [0 Inf]);
+    % Merge lists
+    OriListTotal = '';
+    for iList=1:length(OriList)
+        OriListTotal = [OriListTotal OriList{iList}]; % combine the lists
     end
-end
-fprintf('\n');
 
-% ===========================================================================================
-%% 9) Remove or clean up stored x-struct & QC file
-% THIS HAS NO SESSION SUPPORT YET
-PathX = fullfile(SubjectDir, 'x.mat');
-PathQC = fullfile(SubjectDir, ['QC_collection_' SubjectID '.json']);
-if ~isempty(find(iModule==1)) && ~isempty(find(iModule==2))
-    % if we remove both modules Structural & ASL, remove x.mat & QC_collection.*.json completely
-    fprintf('Removing x-struct and QC-file\n');
-    xASL_delete(PathX);
-    xASL_delete(PathQC);
-else
-    fprintf('Cleaning up x-struct and QC-file\n');
-    
-    RemoveFields = {'Structural' 'ASL'};
-    if ~isempty(find(iModule==1)) % if we remove the structural provenance
-        RemoveFields{end+1} = 'Structural';
+    for iList=1:length(OriListTotal)
+        xASL_TrackProgress(iList, length(OriListTotal));
+        NonOriPath = strrep(OriListTotal{iList},'_ORI','');
+        xASL_delete(NonOriPath); % if the non-ori file existed, overwrite it
+        xASL_Move(OriListTotal{iList}, NonOriPath);
     end
-    if ~isempty(find(iModule==2)) % if we remove the ASL provenance
-        RemoveFields{end+1} = 'ASL';
-    end    
-    
-    % keep the x.mat file but remove parts of it
-    if exist(PathX, 'file')
-        % Load the x structure
-        xStruct = load(PathX,'-mat','x');
-        % delete any mutex folder that was accidentally created
-        if isfield(xStruct.x,'mutex')
-            NewMutexFolder = fullfile(pwd,xStruct.x.mutex.Root);
-            while exist(NewMutexFolder,'dir') && length(NewMutexFolder)>length(pwd) && isempty(xASL_adm_GetFileList(NewMutexFolder,'.*'))
-                xASL_delete(NewMutexFolder);
-                NewMutexFolder = fileparts(NewMutexFolder);
-            end
-            xStruct.x = rmfield(xStruct.x,'mutex'); % remove the mutex field
-        end
-        x = xStruct.x;
+    fprintf('\n');
 
-        for iMod=iModule
-            if iMod~=3 % if not a Population module
-                if isfield(x,'Output')
-                    if isfield(x.Output, RemoveFields{iMod})
-                        x.Output = rmfield(x.Output, RemoveFields{iMod});
-                    end
-                end
-                if isfield(x,'Output_im')
-                    if isfield(x.Output_im, RemoveFields{iMod})
-                        x.Output_im = rmfield(x.Output_im, RemoveFields{iMod});
-                    end
-                end
-            end
+
+    % ===========================================================================================
+    %% 5) Delete native space CAT12 temporary folders (always, independent of iModule)
+    fprintf('Deleting native space CAT12 temporary folders:   ');
+
+    CAT12Folders = {'label' 'mri' 'report'};
+    for iFolder=1:length(CAT12Folders)
+        FolderList = xASL_adm_GetFileList(SubjectDir, CAT12Folders{iFolder}, 'FPListRec', [0 Inf], true);
+        for iDir=1:length(FolderList)
+            xASL_TrackProgress(iDir, length(FolderList));
+            xASL_adm_DeleteFileList(FolderList{iDir}, '.*', true, [0 Inf]);
+            xASL_delete(FolderList{iDir});
+        end
+    end
+    fprintf('\n');
+
+    % ===========================================================================================
+    %% 6) Remove native space files for iModule
+    % To save computation/harddisk burden/time, combine as many regexps here as
+    % possible. But need to take care not to delete e.g. _ORI or _Backup
+    NativeSpaceFiles{1} = {'.*\.ps$' 'xASL_Report.*' '(r|)c(1|2|3)T1(\.mat|\.nii|\.nii\.gz)$'...
+        '(ples.*|WMH_SEGM_CleanUp|j_T1|rT1|y_T1|CentralWM_QC|LeftRight)(\.mat|\.nii|\.nii\.gz)$' 'catreport_T1\.pdf$'...
+        'T1_seg8\.mat$'};
+
+    NativeSpaceFiles{2} = {'.*\.topup.*log' '(VascularArtifact|xASL_qc|qcdc).*' 'rp_(despiked_|)ASL4D\.txt' '.*_sn\.mat'...
+        '(PVgm|PVwm|PVcsf|FoV|M0_biasfield|(m|)mean_control|(mean|)PWI|SD|SNR|TopUp.*|(Mask_|Raw)Template|ATT_bias|B0|(Mean_|)(q|)CBF)(\.mat|\.nii|\.nii\.gz)$'...
+        '(SliceGradient(_extrapolated|)|slice_gradient|rgrey|y_ASL|Pseudo(CBF|Tissue)|rM0|Field|Unwarped|(r|rp_)(despiked_|)ASL4D)(\.mat|\.nii|\.nii\.gz)$'...
+        '(.*beforeMoCo|CBF(|_Visual2DICOM)|(r|)temp.*|Mask(|Vascular)|mask)(\.mat|\.nii|\.nii\.gz)$'};
+
+    if bRemoveWMH
+        NativeSpaceFiles{1}{end+1} = 'WMH_SEGM(\.mat|\.nii|\.nii\.gz)$';
+    end
+
+    if strcmp(SubjectID, '.*') % only remove log files when running this for the full population at once
+        NativeSpaceFiles{1}{end+1} = '.*\.log$';
+        NativeSpaceFiles{2}{end+1} = '.*\.log$';
+    end
+
+    fprintf('Deleting native space files for module :   ');
+
+    for iList=iModule
+        fprintf(['Deleting native space files for module ' num2str(iList) ':']);
+        % We do Structural & ASL modules only, population module doesnt have native space files
+        if iList==1 % structural module
+            Dir2Check = {SubjectDir};
+        elseif iList==2
+            Dir2Check = SessionDir;
         end
 
-        % Always remove previous paths, irrespective of iModule
-        PathFields = {'MyPath' 'SpaghettiDir', 'HistogramDir', 'P', 'D', 'StatsMaps',...
-            'SPMDIR', 'SPMpath', 'STRUCT_TEMPLATE_IM', 'LOCKDIR', 'SUBJECTDIR',...
-            'SESSIONDIR', 'PathPop_MaskSusceptibility' 'StudyAtlasDir'};
-
-        for iField=1:length(PathFields)
-            if isfield(x, PathFields{iField})
-                x = rmfield(x, PathFields{iField});
+        for iFile=1:length(NativeSpaceFiles{iList})
+            xASL_TrackProgress(iFile, length(NativeSpaceFiles{iList}));
+            for iDir=1:length(Dir2Check)
+                xASL_adm_DeleteFileList(Dir2Check{iDir}, NativeSpaceFiles{iList}{iFile}, false, [0 Inf]);
             end
         end
-        % Store the new x.mat
+        fprintf('\n');
+    end
+
+    % ===========================================================================================
+    %% 7) Remove standard space files for iModule
+    if bFullRerun
+        fprintf('Deleting all standard space files\n');
+        % Remove the full population folder contents
+        xASL_adm_DeleteFileList(PopulationDir, '.*', true, [0 Inf]);
+        % Remove all empty folders within the population folder, for overview
+        FolderList = xASL_adm_GetFileList(PopulationDir, '.*', 'FPListRec', [0 Inf], true);
+        for iFolder=1:length(FolderList)
+            if isempty(xASL_adm_GetFileList(FolderList{iFolder}, '.*', 'FPListRec', [0 Inf]))
+                xASL_delete(FolderList{iFolder});
+            else
+                warning(['Couldnt delete contents of ' FolderList{iFolder}]);
+            end
+        end
+    end
+    if ~isempty(find(iModule==1)) % if we remove the structural data
+        fprintf('Deleting all standard space files for module 1\n');
+        xASL_adm_DeleteFileList(PopulationDir, ['.*' SubjectID '(?!_ASL_\d+)'], true, [0 Inf]);
+    end
+    if ~isempty(find(iModule==2)) % if we remove the ASL data
+        fprintf('Deleting all standard space files for module 2\n');
+        for iSession=1:nSessions
+            xASL_adm_DeleteFileList(PopulationDir, ['.*' SubjectID '_' SessionID{iSession}], true, [0 Inf]);
+        end
+    end
+
+    % ===========================================================================================
+    %% 8) Remove population module files
+    if ~isempty(find(iModule==3))
+        PopulationFiles = {'(xASL_module|)Population(_module|)\.log' '.*quantification_parameters\.csv' 'Overview.*\.jpg'};
+        fprintf('Deleting all standard space files for module 3:   ');
+
+        for iFile=1:length(PopulationFiles)
+            xASL_TrackProgress(iFile, length(PopulationFiles));
+            xASL_adm_DeleteFileList(PopulationDir, PopulationFiles{iFile}, true, [0 Inf]);
+        end
+    end
+    fprintf('\n');
+
+    % ===========================================================================================
+    %% 9) Remove or clean up stored x-struct & QC file
+    % THIS HAS NO SESSION SUPPORT YET
+    PathX = fullfile(SubjectDir, 'x.mat');
+    PathQC = fullfile(SubjectDir, ['QC_collection_' SubjectID '.json']);
+    if ~isempty(find(iModule==1)) && ~isempty(find(iModule==2))
+        % if we remove both modules Structural & ASL, remove x.mat & QC_collection.*.json completely
+        fprintf('Removing x-struct and QC-file\n');
         xASL_delete(PathX);
-        save(PathX, 'x');
-        clear x
-    end
-    % Do the same for the QC_Collection json
-    if exist(PathQC, 'file')
-        QCmat = xASL_import_json(PathQC);
-        for iMod=iModule % SAME CODE AS ABOVE
-            if iMod~=3 % if not a Population module
-                if isfield(QCmat, RemoveFields{iMod})
-                    QCmat = rmfield(QCmat, RemoveFields{iMod});
+        xASL_delete(PathQC);
+    else
+        fprintf('Cleaning up x-struct and QC-file\n');
+
+        RemoveFields = {'Structural' 'ASL'};
+        if ~isempty(find(iModule==1)) % if we remove the structural provenance
+            RemoveFields{end+1} = 'Structural';
+        end
+        if ~isempty(find(iModule==2)) % if we remove the ASL provenance
+            RemoveFields{end+1} = 'ASL';
+        end    
+
+        % keep the x.mat file but remove parts of it
+        if exist(PathX, 'file')
+            % Load the x structure
+            xStruct = load(PathX,'-mat','x');
+            % delete any mutex folder that was accidentally created
+            if isfield(xStruct.x,'mutex')
+                NewMutexFolder = fullfile(pwd,xStruct.x.mutex.Root);
+                while exist(NewMutexFolder,'dir') && length(NewMutexFolder)>length(pwd) && isempty(xASL_adm_GetFileList(NewMutexFolder,'.*'))
+                    xASL_delete(NewMutexFolder);
+                    NewMutexFolder = fileparts(NewMutexFolder);
+                end
+                xStruct.x = rmfield(xStruct.x,'mutex'); % remove the mutex field
+            end
+            x = xStruct.x;
+
+            for iMod=iModule
+                if iMod~=3 % if not a Population module
+                    if isfield(x,'Output')
+                        if isfield(x.Output, RemoveFields{iMod})
+                            x.Output = rmfield(x.Output, RemoveFields{iMod});
+                        end
+                    end
+                    if isfield(x,'Output_im')
+                        if isfield(x.Output_im, RemoveFields{iMod})
+                            x.Output_im = rmfield(x.Output_im, RemoveFields{iMod});
+                        end
+                    end
                 end
             end
-        end
-        xASL_delete(PathQC);
-        spm_jsonwrite(PathQC, QCmat);
-    end
-end
 
-% ===========================================================================================
-%% 10) Done
-if bFullRerun
-    fprintf('Done cleaning up!\n');
-    fprintf('Remember to remove the derivative .mat & .csv files in the AnalysisDir\n');
-    fprintf('But keep those that were manually created!\n');
+            % Always remove previous paths, irrespective of iModule
+            PathFields = {'MyPath' 'SpaghettiDir', 'HistogramDir', 'P', 'D', 'StatsMaps',...
+                'SPMDIR', 'SPMpath', 'STRUCT_TEMPLATE_IM', 'LOCKDIR', 'SUBJECTDIR',...
+                'SESSIONDIR', 'PathPop_MaskSusceptibility' 'StudyAtlasDir'};
+
+            for iField=1:length(PathFields)
+                if isfield(x, PathFields{iField})
+                    x = rmfield(x, PathFields{iField});
+                end
+            end
+            % Store the new x.mat
+            xASL_delete(PathX);
+            save(PathX, 'x');
+            clear x
+        end
+        % Do the same for the QC_Collection json
+        if exist(PathQC, 'file')
+            QCmat = xASL_import_json(PathQC);
+            for iMod=iModule % SAME CODE AS ABOVE
+                if iMod~=3 % if not a Population module
+                    if isfield(QCmat, RemoveFields{iMod})
+                        QCmat = rmfield(QCmat, RemoveFields{iMod});
+                    end
+                end
+            end
+            xASL_delete(PathQC);
+            spm_jsonwrite(PathQC, QCmat);
+        end
+    end
+
+    % ===========================================================================================
+    %% 10) Done
+    if bFullRerun
+        fprintf('Done cleaning up!\n');
+        fprintf('Remember to remove the derivative .mat & .csv files in the AnalysisDir\n');
+        fprintf('But keep those that were manually created!\n');
+    end
+    
+catch ME
+   warning(ME.message);
+    
 end
 
 end
