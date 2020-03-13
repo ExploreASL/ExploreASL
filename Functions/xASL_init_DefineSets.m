@@ -7,6 +7,11 @@ function x = xASL_init_DefineSets(x)
 %% Manage included & excluded subjects
 % Get a list of subject ID's by querying the folder names, excluding exclusions
 
+if ~isfield(x,'subject_regexp')
+    warning('No subject regular expression detected');
+    fprintf('Check if the correct DataPar file was loaded\n');
+end
+
 if  isfield(x,'ForceInclusionList')
     % This is an option if you want to select subjects
     x.TotalSubjects = x.ForceInclusionList';
