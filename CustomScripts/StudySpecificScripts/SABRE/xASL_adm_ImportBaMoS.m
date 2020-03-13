@@ -7,9 +7,9 @@ function xASL_adm_ImportBaMoS(AnalysisDir, BaMoSDir, bPullPush, RegExp)
 %   ROOT        - path to root folder containing the /analysis folder with NIfTI/BIDS data (REQUIRED)
 %   CaroleDir   - path to root folder of Carole' segmentations & FLAIRs
 %                 (OPTIONAL, trying a previous location if not provided)
-%   b           - whether to create the subject list from the AnalysisDir
-%                 or from the BaMoSdir, respectively pulling or pushing the
-%                 data
+%   bPullPush   - whether to create the subject list from the AnalysisDir
+%                 (false, pull) or from the BaMoSdir (true, push) (OPTIONAL,
+%                 DEFAULT=false)
 %
 % OUTPUT: n/a
 % OUTPUT FILE:
@@ -26,7 +26,8 @@ function xASL_adm_ImportBaMoS(AnalysisDir, BaMoSDir, bPullPush, RegExp)
 %              /ROOT/analysis/SubjectName/FLAIR.nii[.gz]
 %              /ROOT/analysis/SubjectName/WMH_SEGM.nii[.gz]
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_adm_ImportBaMoS('/Users/henk/Downloads/SABRE/analysis', '/Users/henk/Downloads/SABRE/Carole/SABRE', false, '\d{5}\d*');
+% EXAMPLE for MacOS: xASL_adm_ImportBaMoS('/Users/henk/ExploreASL/ASL/SABRE/analysis', '/Users/henk/ExploreASL/ASL/SABRE/Carole', false, '\d{5}\d*');
+% EXAMPLE for server: xASL_adm_ImportBaMoS('/radshare/SABRE/analysis', '/radshare/SABRE/Carole', false, '\d{5}\d*');
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
@@ -72,6 +73,7 @@ for iSubj=1:length(SubjList)
         NoFLAIRList.(['n' num2str(length(fields(NoFLAIRList)))]) = SubjList{iSubj};
     elseif length(FLAIRold)>1
         TooManyFLAIRList.(['n' num2str(length(fields(TooManyFLAIRList)))]) = SubjList{iSubj};
+        ExistFLAIR = true;
     else
         ExistFLAIR = true;
     end
@@ -81,18 +83,19 @@ for iSubj=1:length(SubjList)
         NoWMHList.(['n' num2str(length(fields(NoWMHList)))]) = SubjList{iSubj};
     elseif length(FLAIRold)>1
         TooManyWMHList.(['n' num2str(length(fields(TooManyWMHList)))]) = SubjList{iSubj};
+        ExistWMH = true;
     else
         ExistWMH = true;
     end    
     
+    % The latest segmentation/FLAIR is usually the best
     if ExistFLAIR && ExistWMH
-        xASL_Copy(FLAIRold{1}, FLAIRnew, true);
-        xASL_Copy(WMHold{1}, WMHnew, true);
+        xASL_Copy(FLAIRold{end}, FLAIRnew, true);
+        xASL_Copy(WMHold{end}, WMHnew, true);
     end
 end
 
 %% SAVE THE MISSING LIST HERE IN JSON FILES
-
 ListsAre = {'NoFLAIRList' 'TooManyFLAIRList' 'NoWMHList' 'TooManyWMHList'};
 for iList=1:length(ListsAre)
     if ~isempty(ListsAre{iList})
