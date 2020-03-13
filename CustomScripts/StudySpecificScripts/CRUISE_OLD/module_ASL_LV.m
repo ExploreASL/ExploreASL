@@ -52,7 +52,7 @@ pGM         = fullfile(x.SUBJECTDIR,['c1' x.P.STRUCT '.nii']);
 pWM         = fullfile(x.SUBJECTDIR,['c2' x.P.STRUCT '.nii']);
 FlowField   = fullfile(x.SUBJECTDIR,['y_' x.P.STRUCT '.nii']);
 
-if  ~exist(pGM,'file') || ~exist(pWM,'file') || ~exist(FlowField,'file')
+if  ~xASL_exist(pGM,'file') || ~xASL_exist(pWM,'file') || ~xASL_exist(FlowField,'file')
     error('Module skipped because structural files missing, please rerun structural module');
 end
 
@@ -106,14 +106,14 @@ else
                 DARTELpath{ii,1}  = fullfile(x.D.PopDir, [Fname{ii} '_' x.P.SubjectID '_' x.P.SessionID '.nii']);
                 NativeMat{ii,1}   = fullfile(x.SESSIONDIR,[Fname{ii} '.mat']);
                 xASL_io_SaveNifti(x.P.ASL4D,NativePath{ii},IM{ii},16,0);
-                if  exist(NativeMat{ii},'file');delete(NativeMat{ii});end
+                if  xASL_exist(NativeMat{ii},'file');xASL_delete(NativeMat{ii});end
             end
 
             xASL_spm_deformations(x,x.P.SubjectID,NativePath,DARTELpath);
 
             for ii=1:length(NativePath)
-                if  exist(NativePath{ii},'file')
-                    delete(NativePath{ii});
+                if  xASL_exist(NativePath{ii},'file')
+                    xASL_delete(NativePath{ii});
                 end
             end
 
@@ -139,7 +139,7 @@ end
 [path file ext]             = fileparts(x.P.ASL4D);
 x.despiked_raw_asl    = fullfile(path,['despiked_' file '.nii']);
 despiked_raw_asl2           = fullfile(path,['rtemp_despiked_' file '.nii']);
-if ~exist( x.despiked_raw_asl ,'file') && ~exist( despiked_raw_asl2 ,'file')
+if ~xASL_exist( x.despiked_raw_asl ,'file') && ~xASL_exist( despiked_raw_asl2 ,'file')
     x.despiked_raw_asl = x.P.ASL4D;
 end
 
@@ -183,7 +183,7 @@ pGM_PV      = fullfile(x.D.PopDir,['PV_pGM_' x.P.SubjectID '.nii']);
 pWM_PV      = fullfile(x.D.PopDir,['PV_pWM_' x.P.SubjectID '.nii']);
 
 %% We only have to do this once per subject, we do not anticipate resolution differences between ASL sessions
-if  ~(exist(pGM_PV,'file') && exist(pWM_PV,'file')) || strcmp(x.P.SessionID,x.SESSIONS{1})
+if  ~(xASL_exist(pGM_PV,'file') && xASL_exist(pWM_PV,'file')) || strcmp(x.P.SessionID,x.SESSIONS{1})
     % Or if this is the first session, redo this (if ExploreASL is rerun)
     if ~x.mutex.HasState('0035_PreparePV') && x.mutex.HasState('003_reslice_ASL')
 

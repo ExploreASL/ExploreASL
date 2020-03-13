@@ -16,7 +16,7 @@ for iS=1:length(scanner)
     clear FileName tnii meanGM
     FileName    = fullfile(ROOT, 'dartel', ['qCBF_' scanner{iS,1} '_ASL_1.nii']);
 
-    if exist(FileName,'file')
+    if xASL_exist(FileName,'file')
 
         tnii        = xASL_io_ReadNifti(FileName);
         tnii        = tnii.dat(:,:,:);
@@ -43,7 +43,7 @@ for iS=1:length(scanner)
     clear FileName tnii meanGM
     FileName    = fullfile(ROOT, 'dartel', ['qCBF_' scanner{iS,1} '_ASL_1.nii']);
 
-    if  exist(FileName,'file')
+    if  xASL_exist(FileName,'file')
 
         tnii        = xASL_io_ReadNifti(FileName);
         tnii        = tnii.dat(:,:,:);

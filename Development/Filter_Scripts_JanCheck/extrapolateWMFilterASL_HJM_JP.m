@@ -31,7 +31,7 @@ doPlot=1; % do not plot images
 
 if ischar(varargin{1})
   niifile=varargin{1};
-  if ~exist(niifile,'file')
+  if ~xASL_exist(niifile)
     error('Does not exist.')
   end
   disp(niifile)

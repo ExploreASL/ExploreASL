@@ -71,7 +71,7 @@ x.S.ROInamesPath = fullfile(Fpath,[Ffile '.tsv']);
      UseGUI = true;
  end
 
-if ~exist(x.S.ROInamesPath,'file')
+if ~xASL_exist(x.S.ROInamesPath,'file')
     if UseGUI
         YesNo = questdlg(['Would you like to specify a tsv-file containing the ROI names for ' x.S.InputAtlasPath '?']);
     else

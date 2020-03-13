@@ -651,11 +651,11 @@ end
 if  x.DELETETEMP
     if ~isempty(strfind(x.despiked_raw_asl,'despiked'))
         delete(x.despiked_raw_asl);
-        if  exist( fullfile( x.SESSIONDIR, 'wmask_ICV.nii'),'file')
-            delete( fullfile(x.SESSIONDIR, 'wmask_ICV.nii') );
+        if  xASL_exist( fullfile( x.SESSIONDIR, 'wmask_ICV.nii'))
+            xASL_delete( fullfile(x.SESSIONDIR, 'wmask_ICV.nii') );
         end
-        if  exist( fullfile( x.SESSIONDIR, 'rwmask_ICV.nii'),'file')
-            delete( fullfile(x.SESSIONDIR, 'rwmask_ICV.nii') );
+        if  xASL_exist( fullfile( x.SESSIONDIR, 'rwmask_ICV.nii'))
+            xASL_delete( fullfile(x.SESSIONDIR, 'rwmask_ICV.nii') );
         end
     end
 end

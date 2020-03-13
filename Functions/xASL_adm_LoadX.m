@@ -16,13 +16,13 @@ function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite)
 % DESCRIPTION: This function loads x.Output & x.Output_im struct fields
 %              from the x.mat on the hard drive & adds them to the current x struct
 %              located in memory. If it didnt exist in the x.mat, it will
-%              set IsLoaded to false, which can be catched externally & a warning issued if managed so 
+%              set IsLoaded to false, which can be catched externally & a warning issued if managed so
 %              in the calling function. If it didnt exist in the memory x
 %              struct, or bOverwrite was requested, the contents of x.mat
 %              will be loaded to the memory x struct
-% 
+%
 % EXAMPLE: [x, IsLoaded] = xASL_adm_LoadX(x, fullfile(x.D.ROOT,'x.mat'), true);
-% 
+%
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
 
@@ -38,7 +38,7 @@ FieldNames = {'Output', 'Output_im'};
 
 %% -------------------------------------
 %  Load OldX
-if ~exist(Path_xASL, 'file')
+if ~xASL_exist(Path_xASL, 'file')
     fprintf('%s\n',['Couldnt load ' Path_xASL]);
     return;
 else

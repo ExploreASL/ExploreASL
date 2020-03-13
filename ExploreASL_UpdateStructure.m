@@ -2,7 +2,7 @@ function ExploreASL_UpdateStructure(DataParPath, x)
 %ExploreASL_UpdateStructure Updates the structure of the analysis & lock folder from old formats to the current format
 %
 % FORMAT: ExploreASL_UpdateStructure(DataParPath, x)
-% 
+%
 % INPUT: (either DataParPath or x is REQUIRED, the other OPTIONAL)
 %   DataParPath - path to data parameter file
 %   x           - struct containing pipeline environment parameters, useful
@@ -46,7 +46,7 @@ pathStruct = fullfile(x.D.ROOT, 'lock', 'xASL_module_Structural');
 % List all the patients
 fList = xASL_adm_GetFileList(pathStruct,'^.+$',[],[],1);
 for iL=1:length(fList)
-    xASL_TrackProgress(iL,length(fList));    
+    xASL_TrackProgress(iL,length(fList));
     % Rename the module directory
     OldDir = fullfile(fList{iL},'T1_module');
     pathLoc = fullfile(fList{iL},'xASL_module_Structural');
@@ -62,7 +62,7 @@ for iL=1:length(fList)
         '020_LinearReg_FLAIR2T1w' '030_FLAIR_BiasfieldCorrection'   '040_LST_Segment_FLAIR_WMH'  '050_LST_T1w_LesionFilling_WMH' '070_CleanUpWMH_SEGM'};
 
 	DeleteNames = {'100_visualize' '100_VisualQC' '999_ready'};
-    
+
 	for iGen=1:length(OldNames)
 		if length(OldNames{iGen})>length(NewNames)
 			error('Something wrong with the lock-file updating');
@@ -75,7 +75,7 @@ for iL=1:length(fList)
 			end
 		end
 	end
-	
+
 	for iLock = 1:length(DeleteNames)
 		NewPath = fullfile(pathLoc, [DeleteNames{iLock} '.status']);
 		xASL_delete(NewPath);
@@ -88,7 +88,7 @@ if exist(fullfile(x.D.ROOT, 'lock', 'ASL'),'dir')
 	xASL_Move(fullfile(x.D.ROOT, 'lock', 'ASL'),fullfile(x.D.ROOT, 'lock', 'xASL_module_ASL'));
 end
 pathASL = fullfile(x.D.ROOT, 'lock', 'xASL_module_ASL');
-	
+
 % List all the patients
 fList = xASL_adm_GetFileList(pathASL,'^.+$',[],[],1);
 for iL=1:length(fList)
@@ -110,7 +110,7 @@ for iL=1:length(fList)
         NewNames    = {'020_MoCoASL'     '030_RegisterASL'   '040_ResliceASL'  '050_PreparePV'  '060_ProcessM0'          '070_Quantification' '090_VisualQC'};
 
 		DeleteNames = {'090_VisualQC'};
-		
+
 		for iGen=1:length(OldNames) % different generations
 			if length(OldNames{iGen})~=length(NewNames)
 				error('Something wrong with the lock-file updating');
@@ -118,12 +118,12 @@ for iL=1:length(fList)
 			for iLock=1:length(OldNames{iGen})
 				OldPath = fullfile(pathLoc,[OldNames{iGen}{iLock} '.status']);
 				NewPath = fullfile(pathLoc,[NewNames{iLock} '.status']);
-				if exist(OldPath, 'file')
+				if xASL_exist(OldPath, 'file')
 					xASL_Move(OldPath, NewPath, true);
 				end
 			end
 		end
-		
+
 		for iLock = 1:length(DeleteNames)
 			NewPath = fullfile(pathLoc, [DeleteNames{iLock} '.status']);
 			xASL_delete(NewPath);
@@ -135,25 +135,25 @@ end
 if exist(fullfile(x.D.ROOT, 'lock', 'QC'),'dir')
 	xASL_Move(fullfile(x.D.ROOT, 'lock', 'QC'),fullfile(x.D.ROOT, 'lock', 'xASL_module_Population'));
 	xASL_Move(fullfile(x.D.ROOT, 'lock', 'xASL_module_Population','QC_module'),fullfile(x.D.ROOT, 'lock', 'xASL_module_Population', 'xASL_module_Population'));
-	
+
 	pathLoc = fullfile(x.D.ROOT, 'lock', 'xASL_module_Population', 'xASL_module_Population');
-	
+
 	if exist(fullfile(pathLoc,'999_ready.status'),'file'), xASL_delete(fullfile(pathLoc,'999_ready.status'));end
 	if exist(fullfile(pathLoc,'001_QA_checkImreg.status'),'file'), xASL_delete(fullfile(pathLoc,'001_QA_checkImreg.status'));end
-	
+
 	if exist(fullfile(x.D.ROOT,'lock','NORMALIZE','NORMALIZE_module','002_mean_warp_templates.status'),'file')
 		xASL_Move(fullfile(x.D.ROOT,'lock','NORMALIZE','NORMALIZE_module','002_mean_warp_templates.status'),fullfile(pathLoc,'010_mean_warp_templates.status'))
-		
+
 		xASL_delete(fullfile(x.D.ROOT,'lock','NORMALIZE','NORMALIZE_module','999_ready.status'));
 		xASL_delete(fullfile(x.D.ROOT,'lock','NORMALIZE'));
 	end
-	
+
     % Rename the lock-files
     OldNames = {'002_QA_checkDICOMvalues' '003_QA_volume_stats' '004_QA_motion_stats' '005_ROI_analysis'};
     NewNames = {'050_QA_checkDICOMvalues' '060_QA_volume_stats' '070_QA_motion_stats' '080_ROI_analysis'};
 
     if length(OldNames)~=length(NewNames)
-        error('Something wrong with the lock-file updating'); 
+        error('Something wrong with the lock-file updating');
     end
     for iLock=1:length(OldNames)
         OldPath = fullfile(pathLoc,OldNames{iLock});
@@ -161,8 +161,8 @@ if exist(fullfile(x.D.ROOT, 'lock', 'QC'),'dir')
         if exist(OldPath, 'file')
             xASL_Move(OldPath, NewPath, true);
         end
-    end    
-    
+    end
+
 end
 
 %% Delete the population lock files
