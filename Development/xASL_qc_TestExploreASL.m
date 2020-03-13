@@ -380,7 +380,7 @@ try
     end
 catch ME
     warning('Something went wrong in trying to create difference table & mailing it to receivers');
-    fprintf('%s\n', ME);
+    fprintf('%s\n', ME.message);
 end
     
 
