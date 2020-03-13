@@ -41,7 +41,7 @@ end
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
-if ~xASL_exist(x.P.Path_despiked_ASL4D)
+if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);

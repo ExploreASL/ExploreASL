@@ -132,7 +132,7 @@ for iScanType=1:length(ScanTypes)
         %% e) Clean up QCDC output results
         TempPath = fullfile(QCDCDir, DummyFile);
         NewPath = fullfile(x.D.ROOT, SubPath{iScanType}, ['qcdc_' DummyFile]);
-        if xASL_exist(TempPath, 'file')
+        if exist(TempPath, 'file')
             xASL_Move(TempPath, NewPath, true);
             fprintf('QCDC has succesfully incorporated QC into dummy dicom\n');
             IsSuccess = true;

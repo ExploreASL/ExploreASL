@@ -170,10 +170,10 @@ if type > 0
 
 	%% Save RMS
 	if bSaveRMS
-		if  xASL_exist(RMSPath,'file')
-			RMSload                 = load(RMSPath, 'RMS');
-			RMSload.RMS(end+1,:)    = RMS;
-			RMS                     = RMSload.RMS;
+		if exist(RMSPath,'file')
+			RMSload = load(RMSPath, 'RMS');
+			RMSload.RMS(end+1,:) = RMS;
+			RMS = RMSload.RMS;
 		end
 
 		save(RMSPath,'RMS');

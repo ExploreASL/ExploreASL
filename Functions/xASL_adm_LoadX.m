@@ -38,7 +38,7 @@ FieldNames = {'Output', 'Output_im'};
 
 %% -------------------------------------
 %  Load OldX
-if ~xASL_exist(Path_xASL, 'file')
+if ~exist(Path_xASL, 'file')
     fprintf('%s\n',['Couldnt load ' Path_xASL]);
     return;
 else
