@@ -13,14 +13,14 @@ function [OtherListSPM, OtherListOut] = xASL_adm_OtherListSPM(OtherList)
     
     for iL=1:numel(OtherList)
         if ~isempty(OtherList{iL})
-            if ~exist(OtherList{iL},'file')
+            if ~xASL_exist(OtherList{iL},'file')
 %                 fprintf('%s\n',[OtherList{iL} ' not existing, not coregistered']);
             else
                 % xASL_spm_admin
                 OtherList(iL) = xASL_spm_admin(OtherList{iL}, true);
                 OtherList{iL} = OtherList{iL}(1:end-2);
                 tIM = xASL_io_ReadNifti(OtherList{iL});
-                if  length(size(tIM.dat))>4
+                if length(size(tIM.dat))>4
                     warning([OtherList{iL} ' had more than 4 dimensions']);
                 else % add to list
                     OtherListOut{end+1,1} = [OtherList{iL}];
