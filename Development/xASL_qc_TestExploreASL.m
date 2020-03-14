@@ -324,9 +324,8 @@ end
 %% 8) Compare table with reference table
 try
     % Save ResultsTable
-    PreviousSaveFile = fullfile(TestDirOrig, 'ResultsTable_2020-03-12.mat');
+    PreviousSaveFile = fullfile(TestDirOrig, '2020-03-13_22:22_ResultsTable.mat');
     PreviousTable = load(PreviousSaveFile,'-mat');
-    PreviousTable.ResultsTable
 
     clear DifferenceTable
     DifferenceTable(1:size(ResultsTable,1),1:size(ResultsTable,2)) = {''};
