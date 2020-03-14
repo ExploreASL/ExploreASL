@@ -325,7 +325,7 @@ function [bAborted, x] = runIteration(db)
         % Some feedback about this iteration (after opening diary log)
         if ~AlreadyProcessed
             fprintf('\n%s\n',repmat('+',1,72)); % just draw a separator line
-            fprintf(['Starting ' db.x.MUTEXID ' iteration %d at %s\n',iIter,datestr(now)]);
+            fprintf('%s\n',['Starting ' x.MUTEXID ' at ' datestr(now)]);
             fprintf('\n');
         end
         if ischar(job)
