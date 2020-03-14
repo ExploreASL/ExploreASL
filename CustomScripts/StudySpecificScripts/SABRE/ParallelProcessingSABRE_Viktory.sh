@@ -1,3 +1,4 @@
+# note to first remove any existing locked folders
 let nParallel=10;
 MatlabPath=/usr/local/apps/matlab/R2018b/bin/matlab;
 DataParPath=/radshare/SABRE/analysis/DataParameters_HiQ.json;

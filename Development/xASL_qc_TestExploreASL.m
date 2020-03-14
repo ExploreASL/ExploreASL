@@ -371,8 +371,9 @@ try
         setpref('Internet', 'SMTP_Password', Password);
         props = java.lang.System.getProperties;
         props.setProperty('mail.smtp.auth','true');
+        props.setProperty('mail.smtp.starttls.enable', 'true');
         props.setProperty('mail.smtp.socketFactory.class', 'javax.net.ssl.SSLSocketFactory');
-        props.setProperty('mail.smtp.socketFactory.port','465');
+        props.setProperty('mail.smtp.socketFactory.port','465'); % or port 587
         EmailAddresses = {'Patricia.Clement@ugent.be','Pieter.Vandemaele@UZGENT.be', 'j.petr@hzdr.de', 'henkjanmutsaerts@gmail.com'};
         sendmail(EmailAddresses, 'ExploreASL TestRun: %AsymmetryIndexWithTemplateResults (should be <0.01%)', NewTable);
     end
