@@ -221,6 +221,7 @@ end
 
 % ============================================================
 %% 5) Test ExploreASL itself
+x = ExploreASL_Master('',0); % here we return the ExploreASL paths, which we removed above for testing SPM
 
 % Get list of data to test
 Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
@@ -267,8 +268,6 @@ if RunMethod==2
         fprintf(['\b\b\b\b\b\b' TimeString]);
     end
     fprintf('\n');
-
-    x = ExploreASL_Master('',0);
 end
 
 % ============================================================
