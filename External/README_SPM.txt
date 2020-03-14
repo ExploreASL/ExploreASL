@@ -110,6 +110,12 @@ TPM.nii needed to be in single precision for SPM though.
 FILE:
 //ExploreASL/External/SPMmodified/tpm/TPM.nii
 
+DATE+NAME:2020_03_14, HM
+DESCRIPTION:
+Hack to output TLV filename as output argument
+FILE:
+ps_LST_tlv @ 1, end
+
 DATE+NAME:2019_09_02, HM
 DESCRIPTION:
 Hack to allow setting MinimalLesionSize

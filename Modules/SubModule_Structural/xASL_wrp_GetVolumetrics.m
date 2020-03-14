@@ -70,7 +70,7 @@ end
 
 
 %% 2) File management & store volumes for WMH segmentation (if exists)
-if  xASL_exist(x.P.Path_WMH_SEGM, 'file')
+if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 
     xASL_io_ReadNifti(x.P.Path_WMH_SEGM); % make sure it is unzipped
 
@@ -87,17 +87,20 @@ if  xASL_exist(x.P.Path_WMH_SEGM, 'file')
     % run the LST lesion volume calculator
     CurrDir = pwd;
     cd(x.D.TissueVolumeDir);
-    ps_LST_tlv(x.P.Path_WMH_SEGM, ~bVerbose, BinThresh, MinimalLesionVolume);
+    [~, FileName] = ps_LST_tlv(x.P.Path_WMH_SEGM, ~bVerbose, BinThresh, MinimalLesionVolume);
     cd(CurrDir);
     % get current filename:
-    Fname = xASL_adm_GetFileList(x.D.TissueVolumeDir, ['^LST_tlv_' num2str(BinThresh) '.*\.csv$']);
+    FileName = fullfile(x.D.TissueVolumeDir, FileName);
     % define new filename:
     oPath = fullfile(x.D.TissueVolumeDir, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
     % Then move our file
-    xASL_Move(Fname{1}, oPath, true);
-    xASL_adm_csv2tsv(oPath, true); % convert to tsv per BIDS
+    if ~exist(FileName,'file')
+         warning(['Missing:' FileName]);
+    else
+        xASL_Move(FileName, oPath, true);
+        xASL_adm_csv2tsv(oPath, true); % convert to tsv per BIDS
+    end
 end
-
 
 
 end

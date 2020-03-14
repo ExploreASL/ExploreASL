@@ -1,4 +1,4 @@
-function varargout = ps_LST_tlv(varargin)
+function [les_size, nameTLV] = ps_LST_tlv(varargin)
 %ps_LST_tlv   Compute total lesion volume.
 %   Part of the LST toolbox, www.statistical-modeling.de/lst.html
 %
@@ -212,7 +212,6 @@ if ~void
     fprintf(repmat('-', 1, 72));
     fprintf('\n')
 end
-varargout{:} = les_size;
 
 return
 
