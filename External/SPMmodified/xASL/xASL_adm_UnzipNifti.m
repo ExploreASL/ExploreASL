@@ -29,7 +29,7 @@ else
 end
 
 if nargin > 2
-	error('xASL_adm_UnzipNifti: Maximum number of parameters is 2.');
+	error('Maximum number of parameters is 2.');
 end
 
 % Check if the extension pathIn extension is .nii, .gz - otherwise gives an error
@@ -41,7 +41,7 @@ switch (ext0)
 	case '.gz'
 		isGZ = 1;
 	otherwise
-		error(['xASL_adm_UnzipNifti: Handles only .nii and .nii.gz files: ' pathIn]);
+		error(['Handles only .nii and .nii.gz files: ' pathIn]);
 end
 
 % Gets the correct paths for the NII and NII.GZ files
@@ -57,11 +57,11 @@ end
 
 % Checks that none of those is a directory
 if exist(pathNII,'dir')
-	error(['xASL_adm_UnzipNifti: Nifti file is a directory: ' pathNII]);
+	error(['Nifti file is a directory: ' pathNII]);
 end
 
 if exist(pathGZ,'dir')
-	error(['xASL_adm_UnzipNifti: GZ file is a directory: ' pathGZ]);
+	error(['GZ file is a directory: ' pathGZ]);
 end
 
 % Checks for the existence of the .nii and .nii.gz files
@@ -96,7 +96,7 @@ if existNII && existGZ
 			existNII = 0;			
 		else
 			% If both files still exist, then they were different and we report an error
-			error(['xASL_adm_UnzipNifti: Both .nii and .nii.gz exist and bOverwrite is set to 0: ' pathIn]);
+			error(['Both .nii and .nii.gz exist and bOverwrite is set to 0: ' pathIn]);
 		end
 	end
 	% Otherwise if the files were the same and either NII or NII.GZ was removed - to be addressed later
@@ -128,7 +128,7 @@ catch ME % if unzipping didnt work, try reading it without unzipping
         bDelete = false;
     catch
         warning('Couldnt unzip file, illegal file?');
-        error('%s\n', ME);
+        error('%s\n', ME.message);
     end
 end
 
@@ -141,7 +141,7 @@ if length(extracted)==1 && bDelete
 	% If not then delete it and throw an error
 	if ~strcmp([name1 ext1],nameNII)
 		delete(extracted{1});
-		error(['xASL_adm_UnzipNifti: Name after extraction does not match: ' pathIn]);
+		error(['Name after extraction does not match: ' pathIn]);
 	end
 	
 	% If everything was successful, then delete the unpacked .nii.gz file
@@ -151,7 +151,7 @@ elseif bDelete
 	for ii = 1:length(extracted)
 		delete(extracted{ii});
 	end
-	error(['xASL_adm_UnzipNifti: Archive contained more than 1 file: ' pathIn]);
+	error(['Archive contained more than 1 file: ' pathIn]);
 end
 
 end
