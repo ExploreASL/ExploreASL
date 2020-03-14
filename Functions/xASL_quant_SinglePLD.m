@@ -198,8 +198,8 @@ else
                 warning('Philips rescaleslopes differed >5% between DICOM & NIfTI!');
                 fprintf('%s\n', ['DICOM RescaleSlope is ' xASL_num2str(Rescale_DICOM)]);
                 fprintf('%s\n', ['NIfTI RescaleSlope is ' xASL_num2str(Rescale_NIfTI)]);
-                fprintf('%s\n', 'We prioritize the NIfTI header, if it is 0.5<RescaleSlope<20');
-                if Rescale_NIfTI>0.5 && Rescale_NIfTI<20
+                fprintf('%s\n', 'If NIfTI rescaleslope is 0.5<RescaleSlope<20 & non-one, we use this');
+                if Rescale_NIfTI>0.5 && Rescale_NIfTI<20 && Rescale_NIfTI~=1
                     ASL_parms.RescaleSlopeOriginal = HeaderTemp.dat.scl_slope;
                     fprintf('%s\n', 'Using the NIfTI RescaleSlope');
                 else
