@@ -51,7 +51,7 @@ function pathOut = xASL_im_PreSmooth(pathRef,pathSrc,pathSmo,resRef,resSrc,srcAf
 
 %% 0) Admin
 if nargin < 2 || isempty(pathRef) || isempty(pathSrc)
-	error('xASL_im_PreSmooth: Need to specify the reference and source images.');
+	error('Need to specify the reference and source images');
 end
 
 % Create the output by adding a prefix 's'
@@ -187,16 +187,21 @@ kFil = kFil/sum(kFil(:));
 % ===============================================================================
 %% 5) Apply the smoothing filter on the source image(s)
 % Do this within the first 3 dimensions only
+TotalDim = size(imSrc.dat,4)*size(imSrc.dat,5)*size(imSrc.dat,6)*size(imSrc.dat,7);
 imSmo = zeros(size(imSrc.dat));
+It = 1;
 for i7=1:size(imSrc.dat,7)
     for i6=1:size(imSrc.dat,6)
         for i5=1:size(imSrc.dat,5)
             for i4=1:size(imSrc.dat,4)
+                xASL_TrackProgress(It, TotalDim);
                 imSmo(:,:,:,i4,i5,i6,i7) = convn(imSrc.dat(:,:,:,i4,i5,i6,i7),kFil,'same');
+                It = It+1;
             end
         end
     end
 end
+fprintf('\n');
 
 % ===============================================================================
 %% 6) Save the smoothed image
