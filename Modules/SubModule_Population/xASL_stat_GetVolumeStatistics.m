@@ -54,74 +54,58 @@ for iSubject=1:x.nSubjects
     WMH_vol{iSubject,2}         = NaN;
     WMH_count{iSubject,2}       = NaN;          
 
-    if  exist(csv_load,'file')
-        
-       [TSVfile TempCell]          = xASL_adm_csv2tsv(csv_load);
-        
-        
-        
-%         file_read   = fopen(csv_load,'r');
-%         data        = textscan(file_read,'%s');
-% 
-%         all_nrs             = data{1}{end}; % 2 ' 1 , and 1 to the right
-%         ind                 = find(all_nrs==',');
-%         ind                 = [0 ind];
-%         ind(length(ind)+1)  = length(all_nrs);
-% 
-%         for iMeas=1:length(ind)-2
-%             vol(iSubject,iMeas)     = str2num(all_nrs(ind(iMeas+1)+1         : ind(iMeas+2)-1) );
-%         end
+    DidExist = 0;
+    if exist(csv_load,'file')
+        DidExist = 1;
+        try
+            [~, TempCell] = xASL_adm_csv2tsv(csv_load);
+            for iMeas=1:size(TempCell,2)-1
+                vol(iSubject,iMeas) = str2num(TempCell{2,iMeas+1});
+            end
 
-        for iMeas=1:size(TempCell,2)-1
-            vol(iSubject,iMeas)     = str2num(TempCell{2,iMeas+1});
+            GM_vol{iSubject,2} = vol(iSubject,1);
+            WM_vol{iSubject,2} = vol(iSubject,2);
+            CSF_vol{iSubject,2} = vol(iSubject,3);
+            GM_ICVRatio{iSubject,2} = vol(iSubject,1)/sum(vol(iSubject,1:3));
+            GMWM_ICVRatio{iSubject,2} = sum(vol(iSubject,1:2))/sum(vol(iSubject,1:3));
+            DidExist = 2;
+        catch ME
+            fprintf('%s\n',ME.message);
         end
-
-        GM_vol{iSubject,2}          = vol(iSubject,1);
-        WM_vol{iSubject,2}          = vol(iSubject,2);
-        CSF_vol{iSubject,2}         = vol(iSubject,3);
-        GM_ICVRatio{iSubject,2}     = vol(iSubject,1)/sum(vol(iSubject,1:3));
-        GMWM_ICVRatio{iSubject,2}   = sum(vol(iSubject,1:2))/sum(vol(iSubject,1:3));
-
-%         clear csvread data
-%         fclose(file_read);
-%         clear file_read
-    else fprintf('%s\n',['Tissue volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
-
-        vol(iSubject,1:3)           = NaN;
+    end
+    if DidExist==0
+        fprintf('%s\n',['Tissue volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
+        vol(iSubject,1:3) = NaN;
+    elseif DidExist==1
+        fprintf('%s\n',['Tissue volume for subject ' x.SUBJECTS{iSubject} ' could not be read']);
+        vol(iSubject,1:3) = NaN;
     end
 
     %% WMH
-    csv_load                        = xASL_adm_GetFileList( x.D.TissueVolumeDir, ['^WMH_LST_(LGA|LPA)_' x.SUBJECTS{iSubject} '(\.csv|\.tsv)$'], 'FPList', [0 Inf]);
+    csv_load = xASL_adm_GetFileList( x.D.TissueVolumeDir, ['^WMH_LST_(LGA|LPA)_' x.SUBJECTS{iSubject} '(\.csv|\.tsv)$'], 'FPList', [0 Inf]);
+    
+    DidExist = 0;
     if ~isempty(csv_load)
-        
-        [TSVfile TempCell]          = xASL_adm_csv2tsv(csv_load{1});
-        
-%         file_read   = fopen(csv_load{1},'r');
-%         data        = textscan(file_read,'%s');
-% 
-%         all_nrs             = data{1}{end}; % 2 ' 1 , and 1 to the right
-%         ind                 = find(all_nrs==',');
-%         if  isempty(ind)
-%             vol(iSubject,4:5)     = NaN;
-%             fprintf('%s\n',['Invalid WMH volume for subject ' x.SUBJECTS{iSubject}]);
-%         else
-% 
-%             ind                 = [0 ind];
-%             ind(length(ind)+1)  = length(all_nrs)+1;
-% 
-%             for iMeas=1:2; vol(iSubject,iMeas+3) = str2num(all_nrs(ind(end-3+iMeas)+1:ind(end-2+iMeas)-1) );end
-%         end
+        DidExist = 1;
+        try
+            [~, TempCell] = xASL_adm_csv2tsv(csv_load{1});
 
-        WMH_vol{iSubject,2}     = TempCell{2,4};
-        vol(iSubject,4)         = str2num(WMH_vol{iSubject,2});
-        WMH_count{iSubject,2}   = TempCell{2,5};
-        vol(iSubject,5)         = str2num(WMH_count{iSubject,2});
-        
-
-%         fclose(file_read);
-    else fprintf('%s\n',['WMH volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
-         vol(iSubject,4:5)           = NaN;
+            WMH_vol{iSubject,2} = TempCell{2,4};
+            vol(iSubject,4) = str2num(WMH_vol{iSubject,2});
+            WMH_count{iSubject,2} = TempCell{2,5};
+            vol(iSubject,5) = str2num(WMH_count{iSubject,2});
+            DidExist = 2;
+        catch ME
+            fprintf('%s\n',ME.message);
+        end
     end
+    if DidExist==0
+        fprintf('%s\n',['WMH volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
+        vol(iSubject,4:5) = NaN;
+    elseif DidExist==1
+        fprintf('%s\n',['WMH volume for subject ' x.SUBJECTS{iSubject} ' could not be read']);
+        vol(iSubject,4:5) = NaN;
+    end    
 end
 
 fprintf('\n');
