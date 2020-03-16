@@ -1,6 +1,9 @@
 let nParallel=10;
 MatlabPath=/usr/local/apps/matlab/R2018b/bin/matlab;
-DataParPath=/radshare/Twins/Twins_ExploreASL/DATA_PAR_TwinStudy.json;
+DataFolder=/radshare/Twins/Twins_ExploreASL; 
+DataParPath=$DataFolder/DATA_PAR_TwinStudy.json;
+rm $DataFolder/lock/*/*/*/locked -d; # remove locked folders
+rm -rf $DataFolder/lock/xASL_module_Population; # Population lock folder
 xASLdir=/radshare/EPAD/scripts/ExploreASL;
 cd $xASLdir
 for (( i=1; i<=$nParallel; i++ ));

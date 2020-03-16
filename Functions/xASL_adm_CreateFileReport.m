@@ -146,7 +146,9 @@ lockPrefix{2} = {'030_RegisterASL', '040_ResampleASL', '050_PreparePV', '070_Qua
 if bHasFLAIR
     NativeRegExp_SubjectLevel(end+1:end+2) = {[x.P.FLAIR '.nii'],[x.P.WMH_SEGM '.nii']};
     MNI_subject_prefix(end+1:end+2) = {['r' x.P.FLAIR],['r' x.P.WMH_SEGM]};
-    lockPrefix{1}(end+1:end+5) = {'020_LinearReg_FLAIR2T1w', '030_FLAIR_BiasfieldCorrection', '040_LST_Segment_FLAIR_WMH', '050_LST_T1w_LesionFilling_WMH','070_CleanUpWMH_SEGM'};
+    lockPrefix{1}(end+1:end+5) = {'020_LinearReg_FLAIR2T1w', '040_LST_Segment_FLAIR_WMH', '050_LST_T1w_LesionFilling_WMH','070_CleanUpWMH_SEGM'};
+    % '030_FLAIR_BiasfieldCorrection' was taken out, for when external
+    % WMH_SEGM.nii were used
 end
 if bHasMoCo
     lockPrefix{2}{end+1} = '020_RealignASL';

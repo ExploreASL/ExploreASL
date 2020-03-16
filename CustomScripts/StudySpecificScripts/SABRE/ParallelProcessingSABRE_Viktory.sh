@@ -1,7 +1,10 @@
 # note to first remove any existing locked folders
 let nParallel=10;
 MatlabPath=/usr/local/apps/matlab/R2018b/bin/matlab;
-DataParPath=/radshare/SABRE/analysis/DataParameters_HiQ.json;
+DataFolder=/radshare/SABRE/analysis; 
+DataParPath=$DataFolder/DataParameters_HiQ.json;
+rm $DataFolder/lock/*/*/*/locked -d; # remove locked folders
+rm -rf $DataFolder/lock/xASL_module_Population; # Population lock folder
 xASLdir=/radshare/EPAD/scripts/ExploreASL;
 cd $xASLdir;
 for (( i=1; i<=$nParallel; i++ ));
