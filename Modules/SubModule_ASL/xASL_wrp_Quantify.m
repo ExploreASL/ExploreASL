@@ -278,30 +278,31 @@ end
 
 
 %% 7    Labeling efficiency
-if ~isfield(x.Q,'LabEff_Orig')
-    switch x.Q.LabelingType
-        case 'PASL'
-            x.Q.LabEff_Orig = 0.98; % (concensus paper, Wong, MRM 1998)
-        case 'CASL'
-            x.Q.LabEff_Orig = 0.85; % (concensus paper, Dai, MRM 2008)
+if ~isfield(x.Q,'LabelingEfficiency') || isempty(x.Q.LabelingEfficiency)
+    if ~isfield(x.Q,'LabEff_Orig')
+        switch x.Q.LabelingType
+            case 'PASL'
+                x.Q.LabEff_Orig = 0.98; % (concensus paper, Wong, MRM 1998)
+            case 'CASL'
+                x.Q.LabEff_Orig = 0.85; % (concensus paper, Dai, MRM 2008)
+        end
     end
+
+    x.Q.LabEff_Bsup = 1; % default for no background suppression
+    % Apply the effect of background suppression pulses on labeling efficiency
+    switch x.Q.BackGrSupprPulses
+        case 0 % when you have an M0, but no background suppression used for ASL
+            % Then the labeling efficiency doesn't change by background suppression
+        case 2 % e.g. Philips 2D EPI or Siemens 3D GRASE
+            x.Q.LabEff_Bsup = 0.83; % 0.83 = 2 background suppression pulses (Garcia et al., MRM 2005)
+        case 4 % e.g. Philips 3D GRASE
+            x.Q.LabEff_Bsup = 0.81; % 0.81 = as implemented by Philips
+        case 5 % e.g. GE 3D spiral
+            x.Q.LabEff_Bsup = 0.75; % 0.75 = 5 background suppression pulses (GE FSE) (Garcia et al., MRM 2005)
+    end
+
+    x.Q.LabelingEfficiency = x.Q.LabEff_Orig*x.Q.LabEff_Bsup;
 end
-
-x.Q.LabEff_Bsup = 1; % default for no background suppression
-% Apply the effect of background suppression pulses on labeling efficiency
-switch x.Q.BackGrSupprPulses
-    case 0 % when you have an M0, but no background suppression used for ASL
-        % Then the labeling efficiency doesn't change by background suppression
-    case 2 % e.g. Philips 2D EPI or Siemens 3D GRASE
-        x.Q.LabEff_Bsup = 0.83; % 0.83 = 2 background suppression pulses (Garcia et al., MRM 2005)
-    case 4 % e.g. Philips 3D GRASE
-        x.Q.LabEff_Bsup = 0.81; % 0.81 = as implemented by Philips
-    case 5 % e.g. GE 3D spiral
-        x.Q.LabEff_Bsup = 0.75; % 0.75 = 5 background suppression pulses (GE FSE) (Garcia et al., MRM 2005)
-end
-
-x.Q.LabelingEfficiency = x.Q.LabEff_Orig*x.Q.LabEff_Bsup;
-
 
 %% ------------------------------------------------------------------------------------------------
 %% 8    Perform Quantification
