@@ -409,42 +409,48 @@ else
 
 
     %% Remove 'lock-dir' if present from aborted previous run, for current subjects only
-    % LockDir within 2 directories (e.g. T1, FLAIR or ASL)
-    LOCKDIR = fullfile(x.D.ROOT,'lock');
-    % COMMENTED THIS OUT FOR PARALLELIZATION
-%     if  isdir(LOCKDIR)
-%         fprintf('%s\n','Searching for locked previous ExploreASL image processing');
-%         LockDirFound    = 0;
-%         [ LockDir, ~] = xASL_adm_FindByRegExp( fullfile(x.D.ROOT,'lock'), {'(ASL|Struct|LongReg_T1)',x.subject_regexp,'.*module.*','^(locked)$'}, 'Match','Directories');
-%         if  ~isempty(LockDir)
-%             for iL=1:length(LockDir)
-%                 if isdir(LockDir{1})
+    % Skip this when running ExploreASL parallel
+    if nWorkers==1
+    
+        % LockDir within 2 directories (e.g. T1, FLAIR or ASL)
+        LOCKDIR = fullfile(x.D.ROOT,'lock');
+
+        if exist(LOCKDIR, 'dir')
+            fprintf('%s\n','Searching for locked previous ExploreASL image processing');
+            LockDirFound = 0;
+            LockDir = xASL_adm_FindByRegExp(fullfile(x.D.ROOT,'lock'), {'(ASL|Structural|LongReg_T1)',x.subject_regexp,'.*module.*','^(locked)$'}, 'Match','Directories');
+            if ~isempty(LockDir)
+                warning('Locked folders were found, consider removing them before proceeding');
+%                 for iL=1:length(LockDir)
+%                     if isdir(LockDir{1})
+%                         fprintf('%s\n',[LockDir{1} ' detected, removing']);
+%                         rmdir(LockDir{1},'s');
+%                     end
+%                 end
+%                 LockDirFound = 1;
+            end
+
+            % LockDir within 2 directories (e.g. DARTEL)
+            [ LockDir, ~] = xASL_adm_FindByRegExp( fullfile(x.D.ROOT,'lock'), {'(Population|DARTEL_T1)','.*module.*','^(locked)$'}, 'Match','Directories');
+            if  ~isempty(LockDir)
+                warning('Locked folders were found, consider removing them before proceeding');
+%                 for iL=1:length(LockDir)
 %                     fprintf('%s\n',[LockDir{1} ' detected, removing']);
 %                     rmdir(LockDir{1},'s');
 %                 end
-%             end
-%             LockDirFound    = 1;
-%         end
-%
-%         % LockDir within 2 directories (e.g. DARTEL)
-%         [ LockDir, ~] = xASL_adm_FindByRegExp( fullfile(x.D.ROOT,'lock'), {'(Population|DARTEL_T1)','.*module.*','^(locked)$'}, 'Match','Directories');
-%         if  ~isempty(LockDir)
-%             for iL=1:length(LockDir)
-%                 fprintf('%s\n',[LockDir{1} ' detected, removing']);
-%                 rmdir(LockDir{1},'s');
-%             end
-%             LockDirFound    = 1;
-%         end
-%
-%         if  LockDirFound==0
-%             fprintf('%s\n','No locked dirs found from previous ExploreASL image processing');
-%         end
-%     end
+%                 LockDirFound = 1;
+            end
+
+            if LockDirFound==0
+                fprintf('%s\n', 'No locked folders found from previous ExploreASL image processing');
+            end
+        end
+    end
 
     %% Print settings to check
-    x = xASL_init_PrintCheckSettings( x );
+    x = xASL_init_PrintCheckSettings(x);
     x = xASL_init_FileSystem(x);
-    x = xASL_init_PopulationSettings( x);
+    x = xASL_init_PopulationSettings(x);
 end
 
 %% Manage input parameters ExploreASL course
