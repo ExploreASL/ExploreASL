@@ -27,24 +27,67 @@ end
 % By default, we assume the minimal amount of image processing,
 % to avoid confusion when all data are nicely processed but
 % "missing_files.csv" are still showing up
-% PM: include these booleans when calling this script in ExploreAS
+
+fprintf('\n\n');
+fprintf('%s\n','====================================================================================');
+fprintf('%s\n','Printing file reports');
+fprintf('%s\n','Check this for a summary of present & missing ExploreASL files');
+
 if nargin<2 || isempty(bHasFLAIR)
     bHasFLAIR = false;
+    iSubject = 1;
+    while iSubject<=x.nSubjects && ~bHasFLAIR
+        if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'FLAIR.nii'))
+            bHasFLAIR = true;
+        else
+            iSubject = iSubject+1;
+        end
+    end
+    if bHasFLAIR
+        fprintf('Detected FLAIR image(s)\n');
+    else
+        fprintf('No FLAIR images detected\n');
+    end
 end
 if nargin<3 || isempty(bHasMoCo)
     bHasMoCo = false;
+    iSubject = 1;
+    while iSubject<=x.nSubjects && ~bHasMoCo % speeds up instead of for-loop
+        for iSession=1:x.nSessions
+            if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D.mat'))
+                bHasMoCo = true;
+            else
+                iSubject = iSubject+1;
+            end
+        end
+    end
+    if bHasMoCo
+        fprintf('Detected MoCo results\n');
+    else
+        fprintf('No MoCo results detected\n');
+    end
 end
 if nargin<4 || isempty(bHasM0)
     bHasM0 = false;
+    iSubject = 1;
+    while iSubject<=x.nSubjects && ~bHasM0 % speeds up instead of for-loop
+        for iSession=1:x.nSessions
+            if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'M0.nii'))
+                bHasM0 = true;
+            else
+                iSubject = iSubject+1;
+            end
+        end
+    end
+    if bHasM0
+        fprintf('Detected M0 image(s)\n');
+    else
+        fprintf('No M0 images detected\n');
+    end
 end
 if nargin<5 || isempty(bHasLongitudinal)
-    bHasLongitudinal = false;
+    bHasLongitudinal = false; %% THIS LONGITUDINAL PART HASNT BEEN AUTOMATED YET
 end
-
-% NB: this code ran fully with the xASL_adm_GetFileList.m wrapper, but removed the
-% use of this wrapper recently, replaced by exist.m, which runs much faster
-% in looped iterations. Former used regular expressions, new version
-% doesn"t in most cases
 
 %% Create list of longitudinal registration subjects
 LongRegSubj = '';
@@ -78,12 +121,7 @@ for iM=1:length(FileTypes)
     SummaryFid_{iM} = fopen(FileMissing{iM},'wt');
 end
 
-fprintf('\n\n');
-fprintf('%s\n','====================================================================================');
-fprintf('%s\n','Printing file reports');
-fprintf('%s\n','Check this for a summary of present & missing ExploreASL files');
-
-CountMissing    = [0 0 0 0 0 0 0];
+CountMissing = [0 0 0 0 0 0 0];
 
 %% -----------------------------------------------------------------------------
 %% Define where to search for
@@ -111,10 +149,10 @@ if bHasFLAIR
     lockPrefix{1}(end+1:end+5) = {'020_LinearReg_FLAIR2T1w', '030_FLAIR_BiasfieldCorrection', '040_LST_Segment_FLAIR_WMH', '050_LST_T1w_LesionFilling_WMH','070_CleanUpWMH_SEGM'};
 end
 if bHasMoCo
-    lockPrefix{2}(end+1) = '020_RealignASL';
+    lockPrefix{2}{end+1} = '020_RealignASL';
 end
 if bHasM0
-    lockPrefix{2}(end+1) = '060_ProcessM0';
+    lockPrefix{2}{end+1} = '060_ProcessM0';
 end
 if bHasLongitudinal
     lockDIRS{end+1} = ['xASL_module_LongReg_' x.P.STRUCT];
@@ -251,10 +289,10 @@ for iPrefix=1:length(MNI_subject_prefix)
         if NativeSubjectExists(iSubject,1)
             FilePathNii    = fullfile(x.D.PopDir, [MNI_subject_prefix{iPrefix} '_' x.SUBJECTS{iSubject} '.nii']);
 
-                if ~xASL_exist(FilePathNii,'file')
-                    fprintf(SummaryFid_{3},'%s\n', FilePathNii );
-                    CountMissing(3)     = CountMissing(3)+1;
-                end
+            if ~xASL_exist(FilePathNii,'file')
+                fprintf(SummaryFid_{3},'%s\n', FilePathNii );
+                CountMissing(3) = CountMissing(3)+1;
+            end
         end
     end
     fprintf(SummaryFid,'%s\n', [num2str(CountMissing(3)) ' ' MNI_subject_prefix{iExp} ' missing in MNI']);
@@ -327,7 +365,7 @@ for iDIR=1:length(lockDIRS)
         end
     end
 end
-fprintf(SummaryFid,'%s\n', [num2str(CountMissing) ' status/lock files missing'] );
+fprintf(SummaryFid,'%s\n', [num2str(CountMissing) ' status/lock files missing']);
 
 fprintf('\n');
 

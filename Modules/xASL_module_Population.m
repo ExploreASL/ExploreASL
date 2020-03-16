@@ -84,6 +84,7 @@ end
 
 %% General settings
 x = xASL_init_PopulationSettings(x);
+x = xASL_adm_CreateFileReport(x);
 % xASL_wrp_PVC_HiRes( x ); % PVEc correction in standard space high resolution, using B-splines
 
 %% ------------------------------------------------------------------------------------------------------------
