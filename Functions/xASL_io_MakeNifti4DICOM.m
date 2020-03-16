@@ -75,7 +75,7 @@ newNifti = xASL_io_ReadNifti(PathNew);
 %% 6) Manage scale slope/datatype
 if strcmp(DataType,'UINT16')
     newNifti.dat(:,:,:) = uint16(CBFim);
-    newNifti.dat.scl_slope = 2/RescaleSlope;
+    newNifti.dat.scl_slope = 1/RescaleSlope;
     newNifti.dat.dtype = 'UINT16-LE';
 else
     newNifti.dat(:,:,:) = int16(CBFim);
