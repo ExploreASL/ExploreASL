@@ -76,7 +76,7 @@ else
         % Here we use the WM T1w, since we smooth a lot
     end
 
-    if ~isempty(regexp(x.Vendor,'^GE$'))
+    if ~isempty(regexp(x.Vendor,'GE')) && isempty(regexp(x.Vendor,'Siemens')) &&  isempty(regexp(x.Vendor,'Philips'))
         TR = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
     else
