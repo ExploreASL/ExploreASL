@@ -1,5 +1,29 @@
-function xASL_im_CenterOfMass(PathNIfTI,OtherList)
-%xASL_im_CenterOfMass Determines center of mass and applies it to the NIfTI header orientation matrix
+function xASL_im_CenterOfMass(PathNIfTI, OtherList, AllowedDistance)
+%xASL_im_CenterOfMass Determine and apply center of mass
+% FORMAT: xASL_im_CenterOfMass(PathNIfTI, OtherList, AllowedDistance)
+%
+% INPUT:
+%   PathNIfTI       - path to NIfTI file on which to estimate center of mass (REQUIRED)
+%   OtherList       - Cell structure with paths to other NIfTI images that
+%                     should remain in alignment (OPTIONAL)
+%   AllowedDistance - scalar of distance (mm) above which realignment is
+%                     applied (OPTIONAL, DEFAULT=50mm)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function estimates the center of mass of the image
+%              matrix, and if this is too far off the current orientation
+%              matrix center, the center will be reset.
+%              This fixes any incorrect orientation outputted by the
+%              scanner.
+%              The realignment is only applied when any of the X/Y/Z
+%              dimensions have a higher offset than AllowedDistance
+%
+% EXAMPLE for T1w: xASL_im_CenterOfMass('Path2Study/sub-001/T1.nii', {'Path2Study/sub-001/FLAIR.nii'}, 0);
+% EXAMPLE for ASL: xASL_im_CenterOfMass('Path2Study/sub-001/ASL_1/ASL4D.nii', {'Path2Study/sub-001/ASL_1/M0.nii'}, 50);
+% __________________________________
+% Copyright (C) 2015-2019 ExploreASL
+
+
 
 %% Admin
 
@@ -17,6 +41,13 @@ else
     end
     % We only apply the transformation to the OtherList,
     % So the last of OtherList is PathNIfTI
+end
+
+if nargin<3 || isempty(AllowedDistance)
+    % 50 mm is default minimal offset we need to apply the new center of mass
+    % per reviewer comment to avoid unnecessary loosing initial alignment
+    % between scans from the same subject/visit
+    AllowedDistance = 50;
 end
 
 nii = xASL_io_ReadNifti(PathNIfTI);
@@ -42,7 +73,7 @@ end
 
 
 
-fprintf('%s','Automatic alignment with center of mass to XYZ:');
+fprintf('%s','Automatic alignment with center of mass:');
 
 %% ---------------------------------------------------------------------------------
 %% Compute 3D Center of Mass (in pixel coordinates)
@@ -67,6 +98,15 @@ CoM2 = CoM2 + [0.8462;-17.5297;15.3505];
 
 %% Calculate shift (in world coordinate)
 CoMshift = CoM2 - nii.mat(1:3,4);
+
+%% Check if alignment to Center of Mass is needed
+% if not, then skip
+if ~any(abs(CoMshift)>AllowedDistance)
+    fprintf(' skipping, was too close\n');
+    return;
+end
+    
+%% Apply alignment
 
 for iO=1:length(OtherList)
     if xASL_exist(OtherList{iO},'file')
@@ -99,7 +139,7 @@ for iO=1:length(OtherList)
 end
 
 
-fprintf('%s\n',[num2str(CoM(1),3) ' ' num2str(CoM(2),3) ' ' num2str(CoM(3),3)]);
+fprintf('%s\n',[' to XYZ:' num2str(CoM(1),3) ' ' num2str(CoM(2),3) ' ' num2str(CoM(3),3)]);
 
 
 

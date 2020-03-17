@@ -98,7 +98,7 @@ end
 xASL_im_ClipExtremes(x.P.Path_T1, 0.999, 0); % First we clip high vascular intensities, for more stable image contrast
 
 if bAutoACPC % Then start with center of mass detection & realign with this
-    xASL_im_CenterOfMass(x.P.Path_T1, OtherList);
+    xASL_im_CenterOfMass(x.P.Path_T1, OtherList, 0); % 0mm minimal offset == always apply realignment
 end
 % Finally, run the SPM coregistration
 xASL_spm_coreg(refPath, x.P.Path_T1, OtherList, x);
