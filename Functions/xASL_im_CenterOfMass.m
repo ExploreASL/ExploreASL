@@ -101,7 +101,7 @@ CoMshift = CoM2 - nii.mat(1:3,4);
 
 %% Check if alignment to Center of Mass is needed
 % if not, then skip
-if ~any(abs(CoMshift)>AllowedDistance)
+if norm(CoMshift)<AllowedDistance
     fprintf(' skipping, was too close\n');
     return;
 end
