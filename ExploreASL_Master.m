@@ -96,7 +96,6 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
 
     if max(iModules==1)
         [~, x] = xASL_Iteration(x,'xASL_module_Structural');
-        xASL_adm_CreateFileReport(x);
         % The following DARTEL module is an optional extension of the structural module
         % to create population-specific templates
         if isfield(x,'Segment_SPM12') && x.Segment_SPM12 && x.nSubjects>1
@@ -104,6 +103,8 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
             % we have to run DARTEL separately
             [~, x] = xASL_Iteration(x,'xASL_module_DARTEL');
         end
+        % Now only check the availability of files when not running parallel
+        if nWorkers==1; xASL_adm_CreateFileReport(x); end        
     end
 
     % Optional modules
@@ -125,7 +126,8 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     
     if max(iModules==2)
         [~, x] = xASL_Iteration(x,'xASL_module_ASL');
-        xASL_adm_CreateFileReport(x);
+        % Now only check the availability of files when not running parallel
+        if nWorkers==1; xASL_adm_CreateFileReport(x); end    
     end
 
 
