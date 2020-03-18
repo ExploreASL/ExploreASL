@@ -301,6 +301,7 @@ switch x.Q.BackGrSupprPulses
         x.Q.LabEff_Bsup = 0.75; % 0.75 = 5 background suppression pulses (GE FSE) (Garcia et al., MRM 2005)
 end
 
+x.Q.LabEff_Orig = x.Q.LabelingEfficiency;
 x.Q.LabelingEfficiency = x.Q.LabelingEfficiency*x.Q.LabEff_Bsup;
 
 %% ------------------------------------------------------------------------------------------------
