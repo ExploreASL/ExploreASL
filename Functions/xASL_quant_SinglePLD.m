@@ -193,17 +193,17 @@ else
             % here we check whether these rescale slopes differ
             % significantly (i.e. more than 5%)
             Rescale_NIfTI = HeaderTemp.dat.scl_slope;
-            Rescale_DICOM = ASL_parms.RescaleSlopeOriginal;
-            if Rescale_DICOM<0.95*Rescale_NIfTI || Rescale_DICOM>1.05*Rescale_NIfTI
-                warning('Philips rescaleslopes differed >5% between DICOM & NIfTI!');
-                fprintf('%s\n', ['DICOM RescaleSlope is ' xASL_num2str(Rescale_DICOM)]);
+            Rescale_JSON = ASL_parms.RescaleSlopeOriginal;
+            if Rescale_JSON<0.95*Rescale_NIfTI || Rescale_JSON>1.05*Rescale_NIfTI
+                warning('Philips rescaleslopes differed >5% between JSON & NIfTI!');
+                fprintf('%s\n', ['JSON RescaleSlope is ' xASL_num2str(Rescale_JSON)]);
                 fprintf('%s\n', ['NIfTI RescaleSlope is ' xASL_num2str(Rescale_NIfTI)]);
                 fprintf('%s\n', 'If NIfTI rescaleslope is 0.5<RescaleSlope<20 & non-one, we use this');
                 if Rescale_NIfTI>0.5 && Rescale_NIfTI<20 && Rescale_NIfTI~=1
                     ASL_parms.RescaleSlopeOriginal = HeaderTemp.dat.scl_slope;
                     fprintf('%s\n', 'Using the NIfTI RescaleSlope');
                 else
-                    fprintf('%s\n', 'Using the DICOM RescaleSlope');
+                    fprintf('%s\n', 'Using the JSON RescaleSlope');
                 end
             end
         end
