@@ -1796,6 +1796,7 @@
 (2000,0510)	SQ	ReferencedStoredPrintSequence	1
 (2005,100D)	FL	MRScaleIntercept	1
 (2005,100E)	FL	MRScaleSlope	1
+(2005,120E)	FL	MRScaleSlope	1
 (2005,1409)	DS	RescaleInterceptOriginal	1
 (2005,140A)	DS	RescaleSlopeOriginal	1
 (2005,140B)	LO	RescaleTypeOriginal	1
