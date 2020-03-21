@@ -38,8 +38,8 @@ OldPath = 'RunExploreASL.bat';
 
 if ~exist(OldPath, 'file')
     try
-        cd CustomScripts
-        cd ExploreASL_make_standalone
+        cd('Development');
+        cd('ExploreASL_make_standalone');
     end
     if ~exist(OldPath, 'file')
         error('Please start this script in its own folder');
@@ -82,7 +82,7 @@ Version = xASL_adm_CorrectName(['xASL' xASLVersion '_' MVersion '_' date '_' Tim
 
 %% Create the output folder if it does not exist yet
 outputPath = fullfile(outputPath,Version);
-if ~(exist(outputPath)==7)
+if ~exist(outputPath, 'dir')
     mkdir(outputPath);
 else
     warning(['Compilation output folder ' outputPath ' already existed, will now delete all files in this folder recursively']);
