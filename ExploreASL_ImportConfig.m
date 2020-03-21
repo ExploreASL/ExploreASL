@@ -194,7 +194,7 @@ switch imPar.studyID
         imPar.bMatchDirectories = true;        
         
     case 'Dent'
-        imPar.folderHierarchy = {'^.*(MCI-\d{4}).*$' '.*(FLAIR|T1W|SOURCE.*pCASL).*'};
+        imPar.folderHierarchy = {'^.*(MCI-\d{4}).*$' 'DICOM' '.*(FLAIR|T1W|SOURCE.*pCASL).*'};
         imPar.tokenOrdering = [1 0 2];
         imPar.tokenSessionAliases = {};
         imPar.tokenScanAliases = {'^FLAIR$', 'FLAIR'; '^T1W$', 'T1'; '^SOURCE.*pCASL$', 'ASL4D'};

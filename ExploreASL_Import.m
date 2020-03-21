@@ -553,7 +553,8 @@ for iSubject=1:nSubjects
                     converted_scans(iSubject,iSession,iScan) = 1;
                 end
 
-                % extract relevant parameters from dicom header
+                % extract relevant parameters from dicom header, if not
+                % already exists
                 SaveParmsPath = fullfile(destdir, [scan_name '_parms.mat']);
                 if exist(SaveParmsPath,'file')
                     CreateParmsMat = false;
@@ -581,7 +582,8 @@ for iSubject=1:nSubjects
                 % dcm2nii
 
                 if CreateParmsMat && ~isempty(nii_files) && exist('parms','var')
-                   summary_line = [summary_line AppendParmsParameters(parms)]; %#ok<AGROW>
+                    [TempLine, PrintDICOMFields] = AppendParmsParameters(parms);
+                    summary_line = [summary_line TempLine];
                 end
 
                 if bClone2Source % make a copy of analysisdir in sourcedir
@@ -626,7 +628,16 @@ end % subjectIDs
 % -----------------------------------------------------------------------------
 summary_filepath = fullfile(imPar.AnalysisRoot, 'import_summary.csv');
 fid_summary = fopen(summary_filepath,'wt');
-fprintf(fid_summary,'subject,session,scan,filename,dx,dy,dz,dt,nx,ny,nz,nt,TR,TE,nt,RescaleSlope,RescaleSlopeOriginal,MRScaleSlope,RescaleIntercept,ScanTime\n');
+% Print headers for parameters obtained from NIfTI file
+fprintf(fid_summary,'subject,visit,session,scan,filename,dx,dy,dz,dt,nx,ny,nz,nt');
+% Print headers for parameters obtained from DICOM file
+if exist('PrintDICOMFields','var')
+    for iField=1:length(PrintDICOMFields)
+        fprintf(fid_summary,[',' PrintDICOMFields{iField}]);
+    end
+end
+fprintf(fid_summary,'\n');
+
 for iScan=1:nScans
     for iSubject=1:nSubjects
         for iVisit=1:nVisits
@@ -704,6 +715,7 @@ end
 %
 % -----------------------------------------------------------------------------
 function s = AppendNiftiParameters(nii_files)
+% This function outputs s=[FileName voxel size XYZ matrix size XYZ]
 s = [];
 
 if ischar(nii_files)
@@ -711,27 +723,36 @@ if ischar(nii_files)
 end
 
 for iNii=1:length(nii_files)
-	[~, f, x] = fileparts(nii_files{iNii});
-	s = sprintf(',"%s"', [f x]);
+	[~, Ffile, Fext] = fileparts(nii_files{iNii});
+	s = sprintf(',"%s"', [Ffile Fext]); % filename
 
 	tempnii = xASL_io_ReadNifti(nii_files{iNii});
-	s = [s sprintf(',%g', tempnii.hdr.pixdim(2:5) )];
-	s = [s sprintf(',%g', tempnii.hdr.dim(2:5) )];
+	s = [s sprintf(',%g', tempnii.hdr.pixdim(2:5) )]; % voxel size XYZ
+	s = [s sprintf(',%g', tempnii.hdr.dim(2:5) )]; % matrix size XYZ
 end
 end
 
 % -----------------------------------------------------------------------------
 %
 % -----------------------------------------------------------------------------
-function s = AppendParmsParameters(parms)
+function [s, FieldNames] = AppendParmsParameters(parms)
+% This function outputs s=fields of _parms.mat
 s = [];
+
+FieldNames = {'RepetitionTime' 'EchoTime' 'NumberOfAverages' 'RescaleSlope' 'RescaleSlopeOriginal'...
+    'MRScaleSlope' 'RescaleIntercept' 'AcquisitionTime' 'AcquisitionMatrix' 'TotalReadoutTime'...
+    'EffectiveEchoSpacing'};
+
 if ~isempty(parms)
-	fnames = fieldnames(parms);
-	for ii=1:length(fnames)
-		fname = fnames{ii};
-		s = [s sprintf(',%g', parms.(fname))];
-	end
+    for iField=1:length(FieldNames)
+        if isfield(parms,FieldNames{iField})
+            s = [s ',' xASL_num2str(parms.(FieldNames{iField}))];
+        else
+            s = [s ',n/a'];
+        end
+    end
 end
+    
 end
 
 % -----------------------------------------------------------------------------
