@@ -40,9 +40,9 @@ else
             end
         end
 
-        if ~exist('CurrentTimePoint','var')
-            CurrentTimePoint    = 1;
-            CurrentSubjName     = x.SUBJECTS{iS};
+        if ~exist('CurrentTimePoint','var') || isempty(CurrentTimePoint) || ~isnumeric(CurrentTimePoint)
+            CurrentTimePoint = 1;
+            CurrentSubjName = x.SUBJECTS{iS};
             % if no index suffix, then assume first TimePoint (default)
         end
 

@@ -103,8 +103,8 @@ fprintf('%s\n',['x.Quality    = ' num2str(x.Quality) ' (0 = fast try-out; 1 = no
 % Warnings
 fprintf('\n%s\n\n','---------------------------------------------');
 
-if  strcmp( x.subject_regexp, '^.*$')
-    warning('subject regexp not specific!');
+if ~isempty(regexp(x.subject_regexp, '^(\^|)\.\*(\$|)$'))
+    warning('Subject regexp not specific! Check that no wrong folders are included as subjects');
 end
 
 fprintf('\n');
