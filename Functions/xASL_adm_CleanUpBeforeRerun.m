@@ -88,7 +88,7 @@ try
             SessionID = {SessionID};
         end
     end
-    if ~bFullRerun
+    if ~bFullRerun && ~isempty(SessionID)
         SessionDir = cellfun(@(y) fullfile(SubjectDir, y), SessionID, 'UniformOutput', 0);
         nSessions = length(SessionDir);
     end
@@ -252,8 +252,10 @@ try
             % We do Structural & ASL modules only, population module doesnt have native space files
             if iList==1 % structural module
                 Dir2Check = SubjectDir;
-            elseif iList==2
+            elseif iList==2 && ~isempty(SessionID)
                 Dir2Check = SessionDir;
+            else
+                Dir2Check = '';
             end
             if ~iscell(Dir2Check)
                 Dir2Check = {Dir2Check};
@@ -296,7 +298,7 @@ try
             fprintf('Deleting all standard space files for module 1\n');
             xASL_adm_DeleteFileList(PopulationDir, ['.*' SubjectID '(?!_ASL_\d+)'], true, [0 Inf]);
         end
-        if ~isempty(find(iModule==2)) % if we remove the ASL data
+        if ~isempty(find(iModule==2)) && ~isempty(SessionID) % if we remove the ASL data
             fprintf('Deleting all standard space files for module 2\n');
             for iSession=1:nSessions
                 xASL_adm_DeleteFileList(PopulationDir, ['.*' SubjectID '_' SessionID{iSession}], true, [0 Inf]);
