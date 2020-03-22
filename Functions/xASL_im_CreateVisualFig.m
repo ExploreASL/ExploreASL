@@ -115,7 +115,7 @@ end
 % First check file existence (only for input images provided as FilePath)
 for iC=1:length(ImIn)
     if  numel(ImIn{iC})<512 % assume this is a FilePath
-        if ~xASL_exist(ImIn{iC})
+        if ~xASL_exist(ImIn{iC}, 'file')
             fprintf('%s\n','xASL_im_CreateVisualFig: No image data, skipping image creation');
             FigureOut{1} = NaN;
             return;
