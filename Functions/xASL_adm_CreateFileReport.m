@@ -20,9 +20,6 @@ fclose all;
 if nargin<1
     error('x missing from input, please input x table');
 end
-if ~isfield(x,'SetsName')
-    x.S.SetsName  = cell(1);
-end
 % Following booleans are to determine which files/locks need to be checked
 % By default, we assume the minimal amount of image processing,
 % to avoid confusion when all data are nicely processed but
@@ -91,12 +88,17 @@ end
 
 %% Create list of longitudinal registration subjects
 LongRegSubj = '';
-for iSet=1:length(x.S.SetsName)
-    if strcmp(x.S.SetsName{iSet},'LongitudinalTimePoint')  % This is the longitudinal registration set
-        for iS=1:x.nSubjects-1
-            if x.S.SetsID(iS,iSet)==1 && x.S.SetsID(iS+1,iSet)==2
-                % This volume/TimePoint is the first out of multiple volumes/TimePoints
-                LongRegSubj{end+1} = x.SUBJECTS{iS};
+if ~isfield(x.S, 'SetsName')
+    warning('x.S.SetsName missing, cannot define LongitudinalTimepoints');
+    LongRegSubj = x.SUBJECTS;
+else
+    for iSet=1:length(x.S.SetsName)
+        if strcmp(x.S.SetsName{iSet},'LongitudinalTimePoint')  % This is the longitudinal registration set
+            for iS=1:x.nSubjects-1
+                if x.S.SetsID(iS,iSet)==1 && x.S.SetsID(iS+1,iSet)==2
+                    % This volume/TimePoint is the first out of multiple volumes/TimePoints
+                    LongRegSubj{end+1} = x.SUBJECTS{iS};
+                end
             end
         end
     end
