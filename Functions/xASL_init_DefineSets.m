@@ -109,39 +109,25 @@ for iSubject=1:x.nTotalSubjects
         end
     end
     
-    if      strcmp(x.TotalSubjects{iSubject},'dartel') || strcmp(x.TotalSubjects{iSubject},'lock')
-            % Remove this pseudo-subject from the list
-            ListNoPipelineDir(iSubject) = 0;
-            
+    if ~isempty(regexp(x.TotalSubjects{iSubject},'^(dartel|lock|Population)$'))
+         % This is not a subject but a pipeline folder
+         ListNoPipelineDir(iSubject) = 0;
     elseif ~excl
-            % include subject if not to be excluded, and if it doesn't have
-            % same name as pipeline directories
-            x.SUBJECTS{end+1}  = x.TotalSubjects{iSubject};
-            x.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1)=1;
-            ListNoPipelineDir(iSubject) = 1;
+         % include subject if not to be excluded, and if it doesn't have
+         % same name as pipeline directories     
+         x.SUBJECTS{end+1}  = x.TotalSubjects{iSubject};
+         x.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1) = 1;
+         ListNoPipelineDir(iSubject) = 1;
     else
-            x.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1)=0;
-            ListNoPipelineDir(iSubject) = 1;
+        x.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1) = 0;
+        ListNoPipelineDir(iSubject) = 1;
     end
 end
 
 % Remove pipeline dirs from list
-NextN = 1;
-if  sum(ListNoPipelineDir)>0
-    TotalSubjectsTemp = x.TotalSubjects;
-    x = rmfield(x,'TotalSubjects');
-    for iS=1:length(TotalSubjectsTemp)
-        if  ListNoPipelineDir(iS)
-            x.TotalSubjects{NextN} = TotalSubjectsTemp{iS};
-            NextN = NextN+1;
-        end
-    end
+if sum(ListNoPipelineDir)>0 % if there are any subjects
+    x.TotalSubjects = x.TotalSubjects(logical(ListNoPipelineDir));
 end
-           
-
-x.SUBJECTS = sort(x.SUBJECTS);
-
-clear iSubject j
 
 if ~isfield(x,'SUBJECTS')
     fprintf('%s\n','No subjects found');
@@ -160,7 +146,7 @@ for iT=1:x.nTimePointsTotal
 end
 
 %% Add sessions as statistical variable, if they exist
-if  x.nSessions>1  % if there are sessions (more than 1 session), then sessions=1st set
+if x.nSessions>1  % if there are sessions (more than 1 session), then sessions=1st set
 
     % Predefine SETS to avoid empty SETS & import predefined session settings as set settings
     x.S.SetsName{1} = 'session';
