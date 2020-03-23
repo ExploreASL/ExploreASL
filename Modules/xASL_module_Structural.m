@@ -153,7 +153,7 @@ StateName{11} = '110_DoWADQCDC';
 %% Check if we need to reset the original T1w/FLAIR,
 %  This is the case if any of the T1w .status before segmentation is missing
 
-if ~x.mutex.HasState(StateName{1}) || ~x.mutex.HasState(StateName{5})
+if ~x.mutex.HasState(StateName{1})
 
     % if we rerun the structural module, then clean all modules (as they
     % are dependent of the structural module for segmentation/registration)
