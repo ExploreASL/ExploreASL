@@ -18,7 +18,9 @@ for ii = 1:(length(patientNameList)/2)
 	spm_jobman('run',matlabbatch);
 end
 
-%% Rename the second ASL to M0
+%% Calculate the coefficients
+
+
 patientNameList = xASL_adm_GetFileList(fullfile(rawDir), '^P.*$', 'List', [], false);
 
 for ii = 1:(length(patientNameList)/2)
@@ -28,6 +30,10 @@ for ii = 1:(length(patientNameList)/2)
 	imB = xASL_io_Nifti2Im(fullfile(rawDir,['w' fileB]));
 	resDice(ii) = xASL_im_ComputeDice(imA,imB);
 	[resHaus(ii),resHausMod(ii)] = xASL_im_HausdorffDist(imA,imB);
-	fprintf('%30s : %30s : %6.3f : %6.3f : %6.3f\n',fileA,fileB,resDice(ii),resHaus(ii),resHausMod(ii));
+	imABcross = (imA.*imB)>0;
+	imABunit  = (imA+imB)>0;
+	resGCI(ii) = sum(imABcross(:))./sum(imABunit(:));
+	% Dice, Haussdorf, modified Haussdorf, GCI.
+	fprintf('%30s : %30s : %6.3f : %6.3f : %6.3f: %6.3f\n',fileA,fileB,resDice(ii),resHaus(ii),resHausMod(ii),resGCI(ii));
 	
 end
