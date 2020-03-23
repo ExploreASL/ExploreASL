@@ -1,30 +1,35 @@
-function ExploreASL_make_standalone(outputPath)
+function ExploreASL_make_standalone(outputPath, bCompileSPM)
 %% ExploreASL_make_standalone
 % This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
 %
 % INPUT:
-%   outputPath      - folder where the compiled version should be saved
+%   outputPath      - folder where the compiled version should be saved (REQUIRED)
+%   bCompileSPM     - boolean specifying whether SPM is compiled first
+%                     (OPTIONAL, DEFAULT=true)
 %
-% OUTPUT:
-%   none            - there are currently no output arguments
-%
+% OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function creates an output folder including a
-% standalone version of ExploreASL, which can be used with the Matlab
-% Runtime outside of Matlab itself.
+%              standalone version of ExploreASL, which can be used with the Matlab
+%              Runtime outside of Matlab itself.
+%              
+%              A quick fix to solve path dependencies etc. is to first
+%              compile SPM.
 %
-% EXAMPLE: ExploreASL_make_standalone('C:\Users\UserName\Desktop')
+% EXAMPLE: ExploreASL_make_standalone('/Path2/Compilation')
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% __________________________________
-% Copyright ? 2015-2019 ExploreASL
-%
-% 2019-01-29 Michael Stritt
+% Copyright 2015-2019 ExploreASL
 
-%% Get the main ExploreASL directory, which should be 3 folders above
-if or(nargin<1,nargin>1)
-    disp('Wrong number of input arguments...');
-    return
+
+
+
+%% 1) Manage ExploreASL and compiler code folders
+if nargin<1 || isempty(outputPath)
+    error('OutputPath input missing\n');
+end
+if nargin<2 || isempty(bCompileSPM)
+    bCompileSPM = true;
 end
 
 try
@@ -40,6 +45,9 @@ if ~exist(OldPath, 'file')
     try
         cd('Development');
         cd('ExploreASL_make_standalone');
+    catch ME
+        warning('Couldnt access standalone compiler folder');
+        fprintf('%s\n', ME.message);
     end
     if ~exist(OldPath, 'file')
         error('Please start this script in its own folder');
@@ -59,7 +67,9 @@ ExploreASLPath = fileparts(fileparts(CurrDir)); % assuming to folder layers
 % end
 % clear n id currentPath
 
-%% Define Version/date/time
+
+
+%% 2) Capture version/date/time
 Time = clock;
 Time = [num2str(round(Time(4))) 'h' num2str(round(Time(5))) 'm'];
 VersionPath = xASL_adm_GetFileList(ExploreASLPath, '^VERSION_.*', 'List', [0 Inf]);
@@ -80,7 +90,9 @@ end
 
 Version = xASL_adm_CorrectName(['xASL' xASLVersion '_' MVersion '_' date '_' Time]);
 
-%% Create the output folder if it does not exist yet
+
+
+%% 3) File management output folder & starting diary
 outputPath = fullfile(outputPath,Version);
 if ~exist(outputPath, 'dir')
     mkdir(outputPath);
@@ -94,7 +106,9 @@ end
 diary(fullfile(outputPath,'compilationLog.txt'));
 diary on
 
-%% Handle SPM Specific Options
+
+
+%% 4) Handle SPM Specific Options
 
 % % First back up the cfg file
 % CfgPath = fullfile(spm('Dir'), 'matlabbatch', 'private', 'cfg_mlbatch_appcfg_master.m');
@@ -138,15 +152,15 @@ diary on
 cfg_util('dumpcfg');
 
 % Duplicate Contents.m in Contents.txt for use in spm('Ver')
-sts = copyfile(fullfile(spm('Dir'),'Contents.m'),...
-               fullfile(spm('Dir'),'Contents.txt'));
+sts = copyfile(fullfile(spm('Dir'),'Contents.m'), fullfile(spm('Dir'),'Contents.txt'));
+               
 if ~sts
     warning('Copy of Contents.m failed.');
 end
 
 
-%% Execute the compilation
 
+%% 5) Manage compilation paths
 % It is important that there aren't any syntax errors in the scripts of the
 % folders below (Development, Functions, etc.). To include all files of the
 % described folders is necessary, so that no important scripts are missing
@@ -167,12 +181,17 @@ end
 warning('on','MATLAB:rmpath:DirNotFound');
 
 opts = {'-p',fullfile(matlabroot,'toolbox','signal')};
-if ~exist(opts{2},'dir'), opts = {}; end
+if ~exist(opts{2},'dir'); opts = {}; end
 
-%% First run SPM compilation, see if this helps remove our error...
-DummyDir = 'c:\Compilation\DummySPM';
-xASL_adm_CreateDir(DummyDir);
-spm_make_standalone(DummyDir);
+
+
+%% 6) timeFirst run SPM compilation, see if this helps remove any errors (e.g. path dependency-issues)...
+if bCompileSPM
+    fprintf('First compiling SPM as test\n');
+    DummyDir = fullfile(fileparts(outputPath), 'DummySPM_CompilationTest');
+    xASL_adm_CreateDir(DummyDir);
+    spm_make_standalone(DummyDir);
+end
 
 if ~isempty(VersionPath)
     AddExploreASLversion = fullfile(ExploreASLPath,VersionPath{1});
@@ -180,7 +199,10 @@ else
     AddExploreASLversion = '';
 end
 
-mcc('-m', '-C', '-v',... % '-R -nodisplay',...
+
+%% Run ExploreASL compilation
+fprintf('Compiling ExploreASL\n');
+mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
     fullfile(ExploreASLPath,'ExploreASL_Master.m'),...
     '-d', fullfile(outputPath),...
     '-o', strcat('ExploreASL_',Version),...
@@ -193,10 +215,13 @@ mcc('-m', '-C', '-v',... % '-R -nodisplay',...
     '-a', fullfile(ExploreASLPath,'mex'),...
     '-a', fullfile(ExploreASLPath,'Modules'));
 
+% put opengl('software') in code?
 
 %% Copy .bat file for Windows compilation
-NewPath = fullfile(outputPath, 'RunExploreASL.bat');
-xASL_Copy(OldPath, NewPath, true);
+if ispc
+    NewPath = fullfile(outputPath, 'RunExploreASL.bat');
+    xASL_Copy(OldPath, NewPath, true);
+end
 
 %% Restore cfg file
 % if exist(BackupCfgPath, 'file')
@@ -206,8 +231,10 @@ xASL_Copy(OldPath, NewPath, true);
 %     xASL_Move(BackupCfgPath2, CfgPath2, true);
 % end
 
+
+
 %% Compilation successful, save Log-file
-disp('Done...');
+fprintf('Done\n');
 diary(fullfile(outputPath,'compilationLog.txt'));
 diary off
 
