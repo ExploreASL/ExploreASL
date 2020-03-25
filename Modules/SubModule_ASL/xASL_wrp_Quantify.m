@@ -215,8 +215,8 @@ iSubj = find(strcmp(x.SUBJECTS,x.P.SubjectID));
 iSess = find(strcmp(x.SESSIONS,x.P.SessionID));
 iSubjSess = (iSubj-1)*x.nSessions + iSess;
 
-Sets2Find = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'};
-FieldNames = {'ATT' 'BloodT1' 'LabelingEfficiency'};
+Sets2Find = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff' 'LabelingEfficiency'};
+FieldNames = {'ATT' 'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency'};
 
 for iSet=1:length(Sets2Find)
     TempIndex       = find(cellfun(@(x) strcmp(x, Sets2Find{iSet}), x.S.SetsName));
@@ -230,8 +230,8 @@ for iSet=1:length(Sets2Find)
         % Use the data out SetsID
         x.Q.(FieldNames{iSet}) = x.S.SetsID(iSubjSess, SetIndex(iSet));
         % But check if this is the true data content, or if this is an index (e.g. 1, 2, 3, 4)
-        % If nValues <10, then ExploreASL believes that this is an ordinal data set (groups)
-        if x.Q.(FieldNames{iSet})<10 && x.S.Sets1_2Sample(SetIndex(iSet))~=3
+        % If its not continuous (x.S.Sets_1_2Sample~=3), then ExploreASL believes that this is an ordinal data set (groups)
+        if x.S.Sets1_2Sample(SetIndex(iSet))~=3
             if x.Q.(FieldNames{iSet})<=length(x.S.SetsOptions{SetIndex(iSet)})
                 x.Q.(FieldNames{iSet}) = x.S.SetsOptions{SetIndex(iSet)}{x.Q.(FieldNames{iSet})};
             end

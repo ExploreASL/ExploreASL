@@ -329,6 +329,7 @@ if IfProcess % if variable is valid to process
         DataIsQ = find(strcmp(lower(ListContinuousData),lower(VarName)));
         if ~isempty(DataIsQ)
             DataIsContinuous = 1;
+            VarSample = 3; % continuous
         end
 
 
