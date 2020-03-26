@@ -80,9 +80,9 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %                              structure (should be _1 _2 _3 etc).
 %                              Example:
 %                              imPar.tokenVisitAliases = {'Screening','_1'; 'Month_12','_2'; 'Month_24','_3'; 'Month_36','_4'; 'Month_48','_5'};
-%                              Note that if you specify more than 1 tokenVisitAliases, the folders will receive
+%                              Note that if you specify tokenVisitAliases, the folders will receive
 %                              the indices (e.g. _1 _2 _3), or even _1 only with a single Visit). If you don't specify
-%                              them, or only a single visit, they will not get this postfix.
+%                              them, they will not get this postfix.
 %    imPar.tokenScanAliases  - cell array that defines the aliases for the ScanTypes, i.e. it tells the script which scans are which ScanType.
 %                              First column should contain regular expression corresponding with the matching criteria in imPar.folderHierarchy
 %                              whereas the second column contains the
@@ -361,10 +361,10 @@ for iSubject=1:nSubjects
             end
         end
 
-        if size(imPar.tokenVisitAliases,1)>1 % only pad VisitID _1 _2 _3 etc if there are multiple visits specified
+        if size(imPar.tokenVisitAliases,1)>0 % only pad VisitID _1 _2 _3 etc if there are visits specified
             % Multiple visits is defined by the tokenVisitAliases.
-            % If this is non-existing, it is set to 1, and if it is more
-            % than 1, it will put the _1 _2 _3 etc in the folder
+            % If this is non-existing, it is set to 1, and if it does exist,
+            % it will put the _1 _2 _3 etc in the folder
             % this fix allows to import a single visit from a range of
             % specified visits
             SubjDir = fullfile(imPar.AnalysisRoot, [subjectID imPar.visitNames{iVisit}]);
