@@ -34,8 +34,8 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     parms = p.Results;
 
     %% locate dcm2nii executable
-    if ismac()
-        parms.Version = '20181125'; % mac is incompatible with older versions
+    if ismac && str2num(parms.Version(1:4))<2014
+        parms.Version = '20190902'; % mac is incompatible with older versions
     end
 
     if ~isfield(parms,'x')
@@ -115,12 +115,11 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 %   -x : crop (y/n, default n)
 %   -z : gz compress images (y/i/n/3, default n) [y=pigz, i=internal:miniz, n=no, 3=no,3D]
 
-    %% Set dcm2niiX stuff
-    if strcmp(parms.Version, '20181125')
-        bBIDS = true;
-        dcm2nii_args = ''; % -z y
+    %% Set dcm2niiX initialization loading
+    if str2num(parms.Version(1:4))<2014
+        dcm2nii_args = sprintf('-b "%s"', parms.IniPath);
     else
-        bBIDS = false;
+        dcm2nii_args = ''; % -z y
     end
 
     %% Check if we are reading a DICOM folder
@@ -147,11 +146,6 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
             parms.IniPath = fullfile(mricron_path,'dcm2nii-parrec.ini');
         end
     end
-
-    if ~bBIDS
-        dcm2nii_args = sprintf('-b "%s"', parms.IniPath);
-    end
-
 
     %% check for existing targets
     bSingleExists = xASL_exist(fullfile(destdir, [series_name '.nii']),'file');
@@ -205,11 +199,11 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 
         if parms.Verbose
             fprintf('executing: [%s]\n',cmdline);
-        end
-        [status, msg] = system(cmdline);
-        if parms.Verbose
+            [status, msg] = system(cmdline, '-echo');
             separatorline = repmat(char('-'),1,80);
             fprintf('%s\n%s%s\nstatus: %d\n',separatorline,msg,separatorline,status);
+        else
+            [status, msg] = system(cmdline);
         end
 
         %% move/rename nifties to final destination

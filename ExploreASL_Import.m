@@ -11,7 +11,7 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %                         the DICOM header, or as dummy DICOM to dump embed data into (e.g. WAD-QC) (DEFAULT=false)
 %   bUseDCMTK           - if true, then use DCMTK, otherwise use DICOMINFO from Matlab (DEFAULT=false)
 %   bCheckPermissions   - if true, check whether data permissions are set correctly, before trying to read/copy the files (DEFAULT=false)
-%   RunDCM2NII          - if true, run dcm2niiX. Setting this to false allows to skip dcm2niiX and only .mat files (DEFAULT=true)
+%   bRunDCM2NII         - if true, run dcm2niiX. Setting this to false allows to skip dcm2niiX and only create .mat files (DEFAULT=true)
 %   Clone2Source        - if true, then makes a copy of everything it converted to NIfTI.
 %                         Can be useful to have a separate source BIDS structure to store
 %                         all source NIfTIs, and to keep the derivatives in the
