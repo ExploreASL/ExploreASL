@@ -139,6 +139,11 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
         [~, x] = xASL_Iteration(x,'xASL_module_Population');
     end
 
-
+    % -----------------------------------------------------------------------------    
+    %% Finishing touch
+    fprintf('Many thanks for using ExploreASL, please don''t forget to cite Mutsaerts, 2019 BioRxiv\n');
+    fprintf('Note that ExploreASL is a collaborative effort.\n');
+    fprintf('Therefore, please don''t hesitate to contribute by feedback, adding code snippets, or clinical experience!\n');
+    
 
 end
