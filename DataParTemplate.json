@@ -17,12 +17,12 @@
 				"LabelingType": "CASL",
 				"Initial_PLD": 1800,
 				"LabelingDuration": 1800,
-				"SliceReadoutTime": 30,
+				"SliceReadoutTime": 30
 			},
 			"readout_dim": "2D",
 			"Quality": 1,
 			"DELETETEMP": 1,
-			"Vendor": "Philips",
+			"Vendor": "Philips"
 		}]
 }
 
