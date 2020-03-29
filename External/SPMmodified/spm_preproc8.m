@@ -167,7 +167,7 @@ else
     chan = struct(args{:},'hist',cl,'lik',cl,'alph',cl,'grad',cl,'lam',cl,'interscal',cl);
 end
 
-fprintf('Gaussian regularization for bias correction');%%% ExploreASL fix
+fprintf('Gaussian regularization for bias correction:   ');%%% ExploreASL fix
 for n=1:N
 	xASL_TrackProgress(n,N);
     % Gaussian regularization for bias correction
@@ -311,7 +311,7 @@ end
 
 fprintf('Uniform segmentation:   ');%%% ExploreASL fix
 for iter=1:30
-	xASL_TrackProgress(iter,10);
+	xASL_TrackProgress(iter,30);
     % Load the warped prior probability images into the buffer
     %------------------------------------------------------------
     for z=1:length(z0)
