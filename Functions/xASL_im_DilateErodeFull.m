@@ -53,7 +53,8 @@ if nonzero
     new_mask(vecOrigX,vecOrigY,vecOrigZ) = mask_cropped(vecBackX,vecBackY,vecBackZ);
     
 end
-return;
+
+end
 
 % Calculate for the given mask the cropped or enlarged image
 % The advantage is that we enlarge the image so that we run the kernel in
@@ -111,5 +112,5 @@ else
     nonzero = 0;
 end
 
-return
 
+end
