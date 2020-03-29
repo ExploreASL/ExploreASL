@@ -56,7 +56,7 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     
     % if an externally provided WMH_SEGM exists, resample it to the T1w space
     % use linear resampling, to avoid B-spline edge effects
-    xASL_spm_reslice(x.P.Path_T1, x.P.Path_WMH_SEGM, [], [], x.Quality, x.P.Path_rWMH_SEGM, 1);
+    xASL_spm_reslice(x.P.Path_T1, x.P.Path_WMH_SEGM, [], [], x.Quality, x.P.Path_WMH_SEGM, 1);
 end
 
 
