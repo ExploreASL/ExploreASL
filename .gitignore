@@ -2,5 +2,4 @@
 .DS_Store
 # ignore temporary Matlab files:
 *.asv
-# ignore used Matlab m-files:
 *.m~
