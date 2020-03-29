@@ -49,9 +49,14 @@ xASL_io_SaveNifti(x.P.Path_FLAIR, x.P.Path_FLAIR, xASL_io_Nifti2Im(x.P.Path_FLAI
 xASL_spm_reslice(x.P.Path_T1, x.P.Path_FLAIR, [], [], x.Quality);
 
 if xASL_exist(x.P.Path_WMH_SEGM, 'file')
+    % first backup externally provided WMH_SEGM
+    if ~xASL_exist(x.P.Path_WMH_SEGM_ORI, 'file')
+        xASL_Copy(x.P.Path_WMH_SEGM, x.P.Path_WMH_SEGM_ORI);
+    end
+    
     % if an externally provided WMH_SEGM exists, resample it to the T1w space
     % use linear resampling, to avoid B-spline edge effects
-    xASL_spm_reslice(x.P.Path_T1, x.P.Path_WMH_SEGM, [], [], x.Quality, x.P.Path_WMH_SEGM, 1);
+    xASL_spm_reslice(x.P.Path_T1, x.P.Path_WMH_SEGM, [], [], x.Quality, x.P.Path_rWMH_SEGM, 1);
 end
 
 
@@ -69,7 +74,12 @@ switch WMHsegmAlg
         matlabbatch{1}.spm.tools.LST.lpa.data_F2        = {x.P.Path_rFLAIR}; % FLAIR resampled to T1 native space
         matlabbatch{1}.spm.tools.LST.lpa.data_coreg     = {''};
         matlabbatch{1}.spm.tools.LST.lpa.html_report    = 0; % no HTML report output (takes a long time)
-        matlabbatch{1}.spm.tools.LST.lpa.xasl_quality   = x.Quality;
+        
+        if xASL_exist(x.P.Path_WMH_SEGM, 'file')
+            matlabbatch{1}.spm.tools.LST.lpa.xasl_quality   = 2; % ultralow quality
+        else
+            matlabbatch{1}.spm.tools.LST.lpa.xasl_quality   = x.Quality;
+        end
 
     case 'LGA'
         fprintf('%s\n','WMH segmentation performed using LST LGA');
@@ -89,7 +99,7 @@ switch WMHsegmAlg
             matlabbatch{1}.spm.tools.LST.lga.opts_lga.maxiter = 3;
 		end
 	otherwise
-		error('xASL_wrp_LST_Segment_FLAIR_WMH: Unknown or undefined segmentation algorithm.');
+		error('Unknown or undefined segmentation algorithm.');
 end
 
 
@@ -102,7 +112,6 @@ spm_jobman('run',matlabbatch); close all
 
 %% ----------------------------------------------------------
 %% 4) File management
-
 xASL_io_SaveNifti(rWMHPath, rWMHPath, xASL_io_Nifti2Im(rWMHPath), 16, false); % convert to 16 bit
 
 % Create a copy of the WMH segmentation, if no externally provided WMH_SEGM

@@ -57,7 +57,8 @@ External/SPMmodified/toolbox/LST/ps_LST_lga.m:
 312: if xasl_quality is set to 0, load ps_LST_lga_preproc_default_LowQ.m instead of ps_LST_lga_preproc_default.m
 External/SPMmodified/toolbox/LST/ps_LST_lpa.m
 115: First loads the xasl_quality parameter from the job, or set to default == 1
-218: if xasl_quality is set to 0, load ps_LST_lpa_preproc_default_LowQ.m instead of ps_LST_lpa_preproc_default.m
+218: if xasl_quality is set to 0, load ps_LST_lpa_preproc_default_LowQ.m instead of ps_LST_lpa_preproc_default.m,
+likewise if xasl_quality is set to 2 (when WMH_SEGM pre-exists), load ps_LST_lpa_preproc_default_UltraLowQ.m
 
 *********************************************************************************************************
 REDUCE CODE SIZE
@@ -236,6 +237,14 @@ toolbox/cat12/cat_vol_correct_slice_scaling line 425
 *********************************************************************************************************
 OTHER CODE HACKS
 
+
+DATE+NAME:2020-03-29 HM
+DESCRIPTION:
+288 cosmetic hack, for xASL_TrackProgress
+210 improvement xASL_adm_CreateDir instead of mkdir
+FILE:
+ps_LST_lpa.m at 210 & 288
+
 DATE+NAME:2020-01-06 JP
 DESCRIPTION:
 Fixing the cat_vol_qa QA so that it works with FLAIR images as well.
@@ -312,7 +321,7 @@ Changes to LST
 FILE:
 ps_LST_lpa.m
 498: if WMH_SEGM.nii already exist (e.g. from third-party/manual), load this,
-     and perform CleanUp
+     and perform the CleanUp on this pre-existing WMH_SEGM.nii
 
 DATE+Name: 2019-01-24 Michael Stritt
 DESCRIPTION:
@@ -348,23 +357,14 @@ cd_tmp = xASL_adm_ConvertSlash( cd_tmp, 1);
 
 DATE+NAME:
 2018_spring HM
+FILE:
 ps_LST_lpa.m
 DESCRIPTION:
 184: flipping bugfix
 698: comments added, which were here in removed/unused function ps_LST_lpa_2.m. otherwise, these functions were identical
 754: bugfix slashes (per ConvertSlash.m)
-FILE:
-ps_LST_lpa.m
-NEW:
-    %%% ExploreASL hack: flipping bugfix
-    if  length(unique(or))<3
-        % fix this, by assuming that the repeated value is incorrect
-        if  sum(or(1:2) - or(2:3))>0
-            or = [3 2 1]; % flip
-        else
-            or = [1 2 3]; % don't flip
-        end
-    end
+
+
 
 
 

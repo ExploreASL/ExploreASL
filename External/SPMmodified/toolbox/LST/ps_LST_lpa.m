@@ -207,13 +207,14 @@ for i = 1:numel(Vf2)
     % ID
     id = [num2str(round(rand(1, 1) * 1e4)), '_', num2str(round(rand(1, 1) * 1e4)), '_', num2str(round(rand(1, 1) * 1e4))];
     tmpFolder = ['LST_tmp_', id];
-    mkdir(tmpFolder)
+    xASL_adm_CreateDir(tmpFolder); % EXPLOREASL hack: bugfix
 
-    % get job defaults, ExploreASL hack to speed up for reproducibility tests
-    %if  exist(fullfile(cd_tmp,'LowQ.status'),'file')
-	if xasl_quality
+    % get job defaults, ExploreASL hack to speed up
+	if xasl_quality==1
 		[job1, job2] = ps_LST_lpa_preproc_default;
-	else
+	elseif xasl_quality==2 % ultralow quality for essentialy skipping preprocessing
+        [job1, job2] = ps_LST_lpa_preproc_default_UltraLowQ;
+    else
 		[job1, job2] = ps_LST_lpa_preproc_default_LowQ;
 	end
 
@@ -284,7 +285,7 @@ for i = 1:numel(Vf2)
     % Warp TPMs and spatial effect to native space
     % --------------------------------------------
 
-    strout = 'Rough segmentation of FLAIR ';
+    strout = 'Rough segmentation of FLAIR:   \n'; % EXPLOREASL HACK, cosmetic
     fprintf(strout)
     tic
 
@@ -507,39 +508,41 @@ for i = 1:numel(Vf2)
     % Allows to follow the same Clean Up procedure as below
     % And also add some extra cleaning here
 
-    [Fpath, ~, ~]   = xASL_fileparts(Vf2{1}.fname);
-    WMH_SEGMpath    = fullfile(Fpath,'rWMH_SEGM.nii');
-    PriorPath       = fullfile(Fpath,'atlas_wm.nii');
+    [Fpath, ~, ~] = xASL_fileparts(Vf2{1}.fname);
+    WMH_SEGMpath = fullfile(Fpath,'WMH_SEGM.nii');
+    if xASL_exist(WMH_SEGMpath, 'file')
+        prob = xASL_io_Nifti2Im(WMH_SEGMpath);
+        % Convert NaNs to zeros & positive & cutoff extremely low probabilities
+        prob(~isfinite(prob)) = 0;
+        prob(prob<0.001) = 0;
+        prob(prob>1) = 1;
+        fprintf('\n-> -> LST segmentation replaced by pre-existing WMH_SEGM <- <-\n\n');
 
-	bFunction = exist('xASL_spm_deformations');
-	if isdeployed || (bFunction == 2) || (bFunction == 5)
-		if  xASL_exist(WMH_SEGMpath,'file')
-			prob        = xASL_io_Nifti2Im(WMH_SEGMpath);
-			% Convert NaNs to zeros & positive & cutoff extremely low probabilities
-			prob(~isfinite(prob))   = 0;
-			prob(prob<0.001)        = 0;
-			prob(prob>1)            = 1;
-			
-			% Multiply with MNI WM prior probability
-			PriorWM     = fullfile(spm('dir'),'toolbox','LST','atlas_wm.nii');
-			if ~exist(PriorPath,'file')
-				ExistPrior  = 0;
-				xASL_spm_deformations([],PriorWM,PriorPath,1,[],[],fullfile(Fpath,tmpFolder,'iy_rFLAIR.nii'));
-			else
-				ExistPrior  = 1;
-			end
-			
-			PriorIM                 = xASL_io_Nifti2Im(PriorPath);
-			PriorIM(PriorIM>0.5)    = 1;
-			PriorIM(PriorIM<0.5)    = PriorIM(PriorIM<0.5).^0.33;
-			
-			prob                    = PriorIM.*prob;
-			
-			if ~ExistPrior
-				xASL_delete(PriorPath);
-			end
-		end
-	end
+%         PriorPath = fullfile(Fpath,'atlas_wm.nii');
+%         bFunction = exist('xASL_spm_deformations');
+%         if isdeployed || (bFunction == 2) || (bFunction == 5)
+%         
+%         
+%             % Multiply with MNI WM prior probability
+%             PriorWM = fullfile(spm('dir'),'toolbox','LST','atlas_wm.nii');
+%             if ~exist(PriorPath,'file')
+%                 ExistPrior = 0;
+%                 xASL_spm_deformations([],PriorWM,PriorPath,1,[],[],fullfile(Fpath,tmpFolder,'iy_rFLAIR.nii'));
+%             else
+%                 ExistPrior  = 1;
+%             end
+% 
+%             PriorIM = xASL_io_Nifti2Im(PriorPath);
+%             PriorIM(PriorIM>0.5) = 1;
+%             PriorIM(PriorIM<0.5) = PriorIM(PriorIM<0.5).^0.33;
+% 
+%             prob = PriorIM.*prob;
+% 
+%             if ~ExistPrior
+%                 xASL_delete(PriorPath);
+%             end
+%         end
+    end
 
     %% Clean up
     %% --------
@@ -585,7 +588,7 @@ for i = 1:numel(Vf2)
     vs(1) = sqrt(sum((point2 - point1).^2));
     fprintf(fileID, 'ok.\n');
 
-	%%% ExploreASL hack - we use our own implementation of bwdist
+    %%% ExploreASL hack - we use our own implementation of bwdist
     %%% if ~exist('bwdist', 'builtin')
     %%%     fprintf(fileID, 'Calculate distance ... ');
     %%%     indx_les = find(prob > 0);
@@ -653,9 +656,9 @@ for i = 1:numel(Vf2)
         outerCSF_rs(indx_rs) = outerCSF(indx_brain);
         % Calculate distance of all voxels to non-zero voxels
 
-		%%% ExploreASL hack - use our own function to calculate Euclidean distance
+        %%% ExploreASL hack - use our own function to calculate Euclidean distance
         %%% outerCSF_rs_dist = bwdist(outerCSF_rs);
-		[outerCSF_rs_dist,~,~,~] = xASL_im_DistanceTransform( outerCSF_rs );
+        [outerCSF_rs_dist,~,~,~] = xASL_im_DistanceTransform( outerCSF_rs );
 
         clear outerCSF_rs;
         % Put calculated distances back to original image
