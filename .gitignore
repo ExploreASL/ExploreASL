@@ -2,4 +2,5 @@
 .DS_Store
 # ignore temporary Matlab files:
 *.asv
-# ignore WADQC/QCDC files (EPAD):
+# ignore used Matlab m-files:
+*.m~
