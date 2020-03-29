@@ -1,6 +1,6 @@
 function [job1, job2] = ps_LST_lpa_preproc_default
 
-job1.channel.biasreg = 0.1;
+job1.channel.biasreg = 0.001;
 job1.channel.biasfwhm = 60;
 job1.channel.write = [0 1];
 job1.tissue(1).tpm = {fullfile(spm('dir'), 'tpm', 'TPM.nii,1')};
