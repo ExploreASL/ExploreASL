@@ -213,6 +213,7 @@ InFile{4} = fullfile(x.SUBJECTDIR,'mri',['y_' x.P.STRUCT '.nii']);
 InFile{5} = fullfile(x.SUBJECTDIR,'label',['catROI_' x.P.STRUCT '.mat']);
 InFile{6} = fullfile(x.SUBJECTDIR,'report',['catreport_' x.P.STRUCT '.pdf']);
 InFile{7} = fullfile(x.SUBJECTDIR,'report',['cat_' x.P.STRUCT '.mat']);
+InFile{8} = fullfile(x.SUBJECTDIR,'mri',['n' x.P.STRUCT '.nii']);
 
 OutFile{1} = x.P.Path_c1T1; % GM segmentation
 OutFile{2} = x.P.Path_c2T1; % WM segmentation
@@ -221,6 +222,7 @@ OutFile{4} = x.P.Path_y_T1; % deformation field to common space
 OutFile{5} = fullfile(x.D.TissueVolumeDir,['catROI_' x.P.STRUCT '_' x.P.SubjectID '.mat']); % contains ROI volume values from several atlases
 OutFile{6} = fullfile(x.SUBJECTDIR,['catreport_' x.P.STRUCT '.pdf']);
 OutFile{7} = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
+OutFile{8} = fullfile(x.SUBJECTDIR,[x.P.STRUCT '_BiasFieldCorrected.nii.gz']); % GM segmentation
 
 % If saving separate files - copy the intermediate steps
 if x.Seg.SaveIntermedFlowField
@@ -230,17 +232,17 @@ if x.Seg.SaveIntermedFlowField
         case 'GS'
             nSteps = 6;
     end
-    for iii = 1:nSteps
-        if xASL_exist(fullfile(x.SUBJECTDIR, 'mri', ['y_' x.P.STRUCT '_' num2str(iii) '.nii']), 'file')
-            xASL_Move(fullfile(x.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_' num2str(iii) '.nii']),...
-            fullfile(x.SUBJECTDIR, ['y_' x.P.STRUCT '_' num2str(iii) '.nii']), true, false);
+    for iStep = 1:nSteps
+        if xASL_exist(fullfile(x.SUBJECTDIR, 'mri', ['y_' x.P.STRUCT '_' num2str(iStep) '.nii']), 'file')
+            xASL_Move(fullfile(x.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_' num2str(iStep) '.nii']),...
+            fullfile(x.SUBJECTDIR, ['y_' x.P.STRUCT '_' num2str(iStep) '.nii']), true, false);
         end
     end
 end
 
-for ii=1:length(InFile)
-    if xASL_exist(InFile{ii},'file')
-        xASL_Move(InFile{ii}, OutFile{ii}, true, false); % move file, overwrite old file, no verbose
+for iFile=1:length(InFile)
+    if xASL_exist(InFile{iFile},'file')
+        xASL_Move(InFile{iFile}, OutFile{iFile}, true, false); % move file, overwrite old file, no verbose
     end
 end
 
@@ -386,7 +388,8 @@ if bForce
         if exist(DirList{iL}, 'dir')
            try
               rmdir(DirList{iL}, 's');
-           catch % do nothing
+           catch ME 
+               warning(ME.message);
            end
         end
     end

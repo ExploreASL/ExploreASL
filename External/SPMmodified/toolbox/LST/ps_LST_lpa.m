@@ -508,15 +508,15 @@ for i = 1:numel(Vf2)
     % Allows to follow the same Clean Up procedure as below
     % And also add some extra cleaning here
 
-    [Fpath, ~, ~] = xASL_fileparts(Vf2{1}.fname);
-    WMH_SEGMpath = fullfile(Fpath,'WMH_SEGM.nii');
-    if xASL_exist(WMH_SEGMpath, 'file')
-        prob = xASL_io_Nifti2Im(WMH_SEGMpath);
-        % Convert NaNs to zeros & positive & cutoff extremely low probabilities
-        prob(~isfinite(prob)) = 0;
-        prob(prob<0.001) = 0;
-        prob(prob>1) = 1;
-        fprintf('\n-> -> LST segmentation replaced by pre-existing WMH_SEGM <- <-\n\n');
+%     [Fpath, ~, ~] = xASL_fileparts(Vf2{1}.fname);
+%     WMH_SEGMpath = fullfile(Fpath,'WMH_SEGM.nii');
+%     if xASL_exist(WMH_SEGMpath, 'file')
+%         prob = xASL_io_Nifti2Im(WMH_SEGMpath);
+%         % Convert NaNs to zeros & positive & cutoff extremely low probabilities
+%         prob(~isfinite(prob)) = 0;
+%         prob(prob<0.001) = 0;
+%         prob(prob>1) = 1;
+%         fprintf('\n-> -> LST segmentation replaced by pre-existing WMH_SEGM <- <-\n\n');
 
 %         PriorPath = fullfile(Fpath,'atlas_wm.nii');
 %         bFunction = exist('xASL_spm_deformations');
@@ -542,7 +542,7 @@ for i = 1:numel(Vf2)
 %                 xASL_delete(PriorPath);
 %             end
 %         end
-    end
+%     end
 
     %% Clean up
     %% --------
