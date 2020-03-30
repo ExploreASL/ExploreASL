@@ -41,7 +41,7 @@ end
 [Fpath, Ffile] = fileparts(rWMHPath);
 T1_filledName = fullfile(Fpath, ['T1_filled_' Ffile(6:end) '.nii']);
 
-if  xASL_exist(x.P.Path_WMH_SEGM,'file')
+if xASL_exist(x.P.Path_WMH_SEGM,'file')
     % replace the LST segmentation by the WMH_SEGM.nii. This is either
     % the identical segmentation (because copied before), or an externally provided segmentation
 
@@ -60,7 +60,9 @@ fprintf('%s\n','Removing segmented WMH from T1w, and fill lesions with values in
 
 %% ----------------------------------------------------------------------------------
 %% 2) Clean up the WMH segmentation used for lesion filling
-xASL_im_CleanupWMHnoise(rWMHPath, rWMHPath, 200, 0.5); % cutoff of 200 mm^3 lesion volume & pWMH>50%
+xASL_im_CleanupWMHnoise(rWMHPath, rWMHPath, 200, 0.5); 
+% cutoff of 200 mm^3 lesion volume & pWMH>50%
+% This makes sure that we only fill significant lesions
 
 
 %% ----------------------------------------------------------------------------------
