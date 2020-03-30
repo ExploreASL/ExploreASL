@@ -69,7 +69,7 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %                              where the names between brackets are used to define what is what.
 %                              ^ means that the foldername has to start with the following, $ means that the previous has to be the end of the foldername
 %                              .* means anything, anylength, \d{3} means three digits
-%    imPar.tokenOrdering     - defines which tokens are captured by the brackets () in imPar.folderHierarchy: position 1==subject, 2==session, 3==ScanType
+%    imPar.tokenOrdering     - defines which tokens are captured by the brackets () in imPar.folderHierarchy: position 1==subject, 2==visit, 3==session, 4==ScanType
 %                              Example:
 %                              imPar.tokenOrdering = [2 3 0 1]; stating that subject is the 2nd token, visit is the 3rd token, session has no token (i.e. no session) and ScanType is the 1st token
 %    imPar.tokenVisitAliases - cell array that defines the aliases for the Visits, i.e. it tells the script which scans are which timepoint/visit.
@@ -361,7 +361,7 @@ for iSubject=1:nSubjects
             end
         end
 
-        if size(imPar.tokenVisitAliases,1)>0 % only pad VisitID _1 _2 _3 etc if there are visits specified
+        if bUseVisits % only pad VisitID _1 _2 _3 etc if there are visits specified
             % Multiple visits is defined by the tokenVisitAliases.
             % If this is non-existing, it is set to 1, and if it does exist,
             % it will put the _1 _2 _3 etc in the folder
