@@ -201,14 +201,21 @@ end
 
 end
 
-function [StructIn] = ConvertNumericalFields(StructIn)
-    
+function [StructOut] = ConvertNumericalFields(StructIn)
+% Also remove invalid fields    
+
 FieldsAre = fields(StructIn);
 for iField=1:length(FieldsAre)
-    TempField = xASL_str2num(StructIn.(FieldsAre{iField}));
-    if isnumeric(TempField)
-        if min(isfinite(TempField))
-            StructIn.(FieldsAre{iField}) = TempField;
+    if length(FieldsAre{iField})>63
+        warning('Invalid field name, removing from struct');
+    else
+        TempField = xASL_str2num(StructIn.(FieldsAre{iField}));
+        if isnumeric(TempField)
+            if min(isfinite(TempField))
+                StructOut.(FieldsAre{iField}) = TempField;
+            end
+        else
+            StructOut.(FieldsAre{iField}) = StructIn.(FieldsAre{iField});
         end
     end
 end
