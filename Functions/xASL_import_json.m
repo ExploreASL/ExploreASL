@@ -210,7 +210,7 @@ for iField=1:length(FieldsAre)
         warning('Invalid field name, removing from struct');
     else
         TempField = xASL_str2num(StructIn.(FieldsAre{iField}));
-        if isnumeric(TempField)
+        if isnumeric(TempField) && ~isnan(TempField)
             if min(isfinite(TempField))
                 StructOut.(FieldsAre{iField}) = TempField;
             end
