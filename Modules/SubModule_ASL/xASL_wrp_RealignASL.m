@@ -299,7 +299,7 @@ if bSubtraction && nFrames>10 % if we performed outlier exclusion
     %% ----------------------------------------------------------------------------------------
     %% 4 Remove spike frames from nifti
 
-    fprintf('Remove spike frames from nifti');
+    fprintf('Remove spike frames from nifti\n');
 
     if sum(exclusion)>0 % only if spikes have been detected
 

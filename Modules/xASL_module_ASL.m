@@ -214,7 +214,7 @@ elseif bO; fprintf('%s\n','No TopUp scans available, skipping...');
 end
 
 %% -----------------------------------------------------------------------------
-%% 2    Motion correction ASL
+%% 2    Motion correction ASL (& center of mass registration)
 iState = 2;
 if ~x.motion_correction
     if bO; fprintf('%s\n','Motion correction was disabled, skipping'); end
@@ -237,8 +237,6 @@ elseif ~x.mutex.HasState(StateName{iState})
         end
 
         % Before motion correction, we align the images with ACPC
-        xASL_im_RestoreOrientation(x.P.Path_ASL4D);
-        xASL_im_RestoreOrientation(x.P.Path_M0);
         OtherList = {x.P.Path_M0}; % all other files will be created
         if x.bAutoACPC
             xASL_im_CenterOfMass(x.P.Path_ASL4D, OtherList);

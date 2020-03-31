@@ -38,20 +38,6 @@ end
 Lesion_T1_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^Lesion_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
 Lesion_FLAIR_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
 
-if length(Lesion_T1_list)<1  && ~xASL_exist(x.P.Path_WMH_SEGM,'file') && length(Lesion_FLAIR_list)<1
-    % only if there are no lesion maps that should remain registered to
-    % T1, restore orientation of the T1w image
-    xASL_im_RestoreOrientation(x.P.Path_T1);
-    xASL_im_RestoreOrientation(x.P.Path_FLAIR);
-
-    % then also restore other functional images that should remain in
-    % registration with T1w
-    for iSess = 1:x.nSessions
-        xASL_im_RestoreOrientation(x.P.Path_ASL4D); % this needs to be redone with multiple sessions
-        xASL_im_RestoreOrientation(x.P.Path_M0);      
-    end
-end
-
 
 
 %% ---------------------------------------------------------------------------------------------------
