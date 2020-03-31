@@ -44,9 +44,11 @@ function xASL_wrp_RegisterASL(x)
 %     - F) Registration contrasts are dealth with:
 %       x.bRegistrationContrast - specifies the image contrast used for
 %                                 registration (OPTIONAL, DEFAULT = 2):
-%                           - 0 = Control-T1w
-%                           - 1 = CBF - pseudoCBF from template/pGM+pWM
+%                           - 0 = Control->T1w
+%                           - 1 = CBF->pseudoCBF from template/pGM+pWM
+%                                 (skip if sCoV>0.667)
 %                           - 2 = automatic (mix of both)
+%                           - 3 = 1 & force CBF->pseudoCBF irrespective of sCoV
 %     - G) Dummy src NIfTIs are created:
 %       mean_control.nii to register with T1w
 %       mean_PWI_Clipped.nii to register with pseudoCBF
@@ -54,8 +56,7 @@ function xASL_wrp_RegisterASL(x)
 % 1)    Registration Center of Mass
 % 2)    Registration ASL -> anat (Control->T1w)
 % 3)    Registration CBF->pseudoCBF
-
-
+%
 %       x.bAffineRegistration - specifies the ASL-T1w rigid-body
 %                                 registration is followed up by an affine
 %                                 registration (OPTIONAL, DEFAULT = 2)
@@ -77,6 +78,10 @@ function xASL_wrp_RegisterASL(x)
 % Otherwise, despiked_raw_asl = same as original file
 if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
+end
+
+if ~isfield(x,'bRegistrationContrast')
+    x.bRegistrationContrast = 2; % register M0-T1w first, then CBF-pGM if sCoV<0.667
 end
 
 %% B) Manage OtherList
@@ -170,10 +175,10 @@ if ~xASL_exist(x.P.Path_y_ASL,'file') || strcmp(x.P.SessionID,'ASL_1') || x.nSes
 end
 
 %% F) Manage registration contrasts that we will use
-if isfield(x,'bRegistrationContrast') && x.bRegistrationContrast==0
+if x.bRegistrationContrast==0
     bRegistrationControl = true;
     bRegistrationCBF = false;
-elseif isfield(x,'bRegistrationContrast') && x.bRegistrationContrast==1
+elseif x.bRegistrationContrast==1
     bRegistrationControl = false;
     bRegistrationCBF = true;
 else
@@ -249,9 +254,11 @@ if bRegistrationCBF
     % ATT biasfield and vascular peaks
     xASL_im_CreatePseudoCBF(x, 0);
 
-
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
-    if spatCoVit>0.667
+    if x.bRegistrationContrast==3
+        nIT = 2; % force CBF-pGM
+        fprintf('%s\n','x.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
+    elseif spatCoVit>0.667
         nIT = 0;
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
     elseif ~x.Quality

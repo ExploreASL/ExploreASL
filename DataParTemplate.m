@@ -183,10 +183,12 @@ function x = DataParTemplate(x)
 %                  - 0 = run CAT12
 % x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
 % x.bRegistrationContrast - specifies the image contrast used for
-%                           registration (OPTIONAL, DEFAULT = 2):
-%                           - 0 = Control-T1w
-%                           - 1 = CBF - pseudoCBF from template/pGM+pWM
+%                                 registration (OPTIONAL, DEFAULT = 2):
+%                           - 0 = Control->T1w
+%                           - 1 = CBF->pseudoCBF from template/pGM+pWM
+%                                 (skip if sCoV>0.667)
 %                           - 2 = automatic (mix of both)
+%                           - 3 = 1 & force CBF->pseudoCBF irrespective of sCoV
 % x.bAffineRegistration - specifies if the ASL-T1w rigid-body
 %                         registration is followed up by an affine
 %                         registration (OPTIONAL, DEFAULT = 2)
