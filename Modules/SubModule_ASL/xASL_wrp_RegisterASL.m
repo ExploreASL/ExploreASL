@@ -256,8 +256,6 @@ if bRegistrationCBF
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
     elseif ~x.Quality
         nIT = 1; % speed up for low quality
-    elseif bRegistrationControl
-        nIT = 1; % if control-T1w registration is already performed, 1 iteration is OK here
     else
         nIT = 2;
     end
