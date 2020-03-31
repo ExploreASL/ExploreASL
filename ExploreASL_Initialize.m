@@ -152,6 +152,7 @@ MasterScriptPath = fullfile(x.MyPath, 'ExploreASL_Master.m');
 if ~isdeployed
     if ~exist(MasterScriptPath,'file')
         if UseGUI
+            if ismac; fprintf('Select folder where ExploreASL is installed\n'); end
             pathstr = uigetdir(CurrCD, 'Select folder where ExploreASL is installed');
         else
             pathstr = input('Provide foldername where ExploreASL is installed, including ": ');
@@ -212,7 +213,8 @@ if x.ProcessData
 
     if SelectParFile
         if UseGUI
-            [name, pathstr] = uigetfile('*.m;*.mat;*.json', 'Select the study-specific PARAMETER file --->>> DATA_PAR.m');
+            if ismac; fprintf('Select the study-specific parameter file --->>> DataParameters.(m|json)'); end
+            [name, pathstr] = uigetfile('*.m;*.mat;*.json', 'Select the study-specific parameter file --->>> DataParameters.(m|json)');
             if sum(pathstr==0) || ~(strcmp(name(end-1:end),'.m') || strcmp(name(end-3:end),'.mat') || strcmp(name(end-4:end),'.json'))
                 return
             end
