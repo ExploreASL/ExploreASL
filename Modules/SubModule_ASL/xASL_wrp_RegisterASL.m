@@ -48,7 +48,7 @@ function xASL_wrp_RegisterASL(x)
 %                           - 1 = CBF->pseudoCBF from template/pGM+pWM
 %                                 (skip if sCoV>0.667)
 %                           - 2 = automatic (mix of both)
-%                           - 3 = 1 & force CBF->pseudoCBF irrespective of sCoV
+%                           - 3 = option 2 & force CBF->pseudoCBF irrespective of sCoV
 %     - G) Dummy src NIfTIs are created:
 %       mean_control.nii to register with T1w
 %       mean_PWI_Clipped.nii to register with pseudoCBF
@@ -257,7 +257,7 @@ if bRegistrationCBF
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
     if x.bRegistrationContrast==3
         nIT = 2; % force CBF-pGM
-        fprintf('%s\n','x.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
+        fprintf('\n%s\n\n','x.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
     elseif spatCoVit>0.667
         nIT = 0;
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
