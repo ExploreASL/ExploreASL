@@ -164,6 +164,11 @@ PathOut = tOUT;
 
 fprintf('%s',' ');
 
+%% Remove .gz extensions
+if strcmp(DeformationPath(end-2:end),'.gz')
+    DeformationPath = DeformationPath(1:end-3);
+end
+
 
 %% ------------------------------------------------------------------------------------------------------------
 %% If input & output directory are not the same, first copy the files to the output directory. & unzip
