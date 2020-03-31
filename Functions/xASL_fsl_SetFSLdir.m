@@ -47,7 +47,7 @@ if isunix % check for linux
 elseif ispc
     [status, ~] = system('wsl ls;'); % leave status2 here, otherwise system will produce output
     if status~=0
-        warning('Detected windows PC without WSL, needs to be installed first, skipping');
+        fprintf('Detected windows PC without WSL, needs to be installed first if you want to use FSL');
         fprintf('This warning can be ignored if you dont need to run FSL-specific processing, e.g. TopUp\n');
         return;
     end
