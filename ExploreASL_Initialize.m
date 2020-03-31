@@ -454,8 +454,8 @@ else
 end
 
 %% Manage input parameters ExploreASL course
-Fields   = {'bLesionFilling' 'bAutoACPC' 'Segment_SPM12' 'bRegistrationContrast' 'M0_conventionalProcessing' 'bGetControlLabelOrder'};
-Defaults = [true true false true false true];
+Fields   = {'bLesionFilling' 'bAutoACPC' 'Segment_SPM12' 'M0_conventionalProcessing' 'bGetControlLabelOrder'};
+Defaults = [true true false false true];
 
 for iL=1:length(Fields)
     if ~isfield(x,Fields{iL})
