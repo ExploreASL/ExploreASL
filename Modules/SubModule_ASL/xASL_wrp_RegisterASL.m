@@ -200,7 +200,7 @@ end
 if x.bAutoACPC
     OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_despiked_ASL4D});
     % x.P.Path_despiked_ASL4D is padded to the end of the list
-    xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 25); % accept lower distance for when rerunning wrong registration
+    xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 10); % accept lower distance for when rerunning wrong registration
 end
 
     
