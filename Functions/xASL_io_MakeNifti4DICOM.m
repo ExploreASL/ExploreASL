@@ -105,7 +105,7 @@ if bApplyOriginalOrientation
     if xASL_exist(x.P.Path_T1_ORI,'file')
         niiT1_ORI = xASL_io_ReadNifti(x.P.Path_T1_ORI);
     else
-        warning('T1_ORI.nii didnt exist, not sure if we can go back to the original orientation');
+        fprintf('Warning xASL_io_MakeNifti4DICOM: T1_ORI.nii didnt exist, not sure if we can go back to the original orientation');
         niiT1_ORI = xASL_io_ReadNifti(x.P.Path_T1);
     end
 
