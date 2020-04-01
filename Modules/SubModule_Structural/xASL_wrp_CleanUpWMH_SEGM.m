@@ -140,9 +140,11 @@ WMHim = min(1, WMHim + WMHnew);
 
 %% -------------------------------------------------------------------------------
 %% 3) Correct oversegmentation of WMH inside the pGM or inside the pCSF
-%  We assume that CAT12 does a very good job segmenting, so we trust pGM (CAT12) & pCSF (CAT12) more than pWMH (LST)
-WMHim(WMHim>0 & pGMim>WMHim & pGMim>pWMim) = 0;
-WMHim(WMHim>0 & pCSFim>WMHim & pCSFim>pWMim) = 0;
+% We assume that CAT12 does a very good job segmenting, so we trust pGM (CAT12) & pCSF (CAT12) more than pWMH (LST)
+% But only when we are really certain that this is GM, and WMH will usually
+% have very low probabilities in these regions
+WMHim(WMHim>0 & (pGMim.*0.8)>(WMHim+pWMim)) = 0;
+WMHim(WMHim>0 & (pCSFim.*0.8)>(WMHim+pWMim)) = 0;
 % we don't have to change the pGM & pCSF here, they were segmented by a different program (CAT12) to total 1.
 
 % dip_image([pGMim+3.*(WMHim>0 & pGMim<WMHim) pGMim+3.*(WMHim>0 & pGMim>WMHim)])
