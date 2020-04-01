@@ -110,8 +110,6 @@ end
 
 for iO=1:length(OtherList)
     if xASL_exist(OtherList{iO},'file')
-        % First restore orientation, e.g. for 90 degree rotations
-        xASL_im_RestoreOrientation(OtherList{iO});
         
         nii = xASL_io_ReadNifti(OtherList{iO});
 

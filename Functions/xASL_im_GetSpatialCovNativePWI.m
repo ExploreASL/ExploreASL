@@ -23,7 +23,7 @@ maskGM = maskGM & MaskIM;
 JointMasks = sum(maskGM(:))/sum(maskBig(:));
 fprintf('%s\n',['Joint brainmask for automatic spatial CoV detection was ' num2str(100*JointMasks,3) '%']);
 
-if  JointMasks<0.25
+if JointMasks<0.25
     warning('Registration off, spatial CoV detection unreliable');
 end
 
@@ -33,7 +33,9 @@ spatCoV = xASL_stat_ComputeSpatialCoV(PWIim, MaskIM, 0);
 spatCoV = spatCoV/1.5; % correction native space including WM to MNI spatial CoV, excluding WM
 
 if spatCoV<0
-    error('Native space whole-brain spatial CoV was negative! (i.e. <0)');
+    warning('Native space whole-brain spatial CoV was negative! (i.e. <0)');
+    fprintf('Defaulting to spatial CoV of 40%\n');
+    spatCoV = 0.4;
 end
 
 fprintf('%s\n',['Standard space whole-brain spatial CoV estimated as = ' num2str(100*spatCoV,3) '%']);
