@@ -528,7 +528,7 @@ end
 %% CAT12 segmentation quality settings
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.SLC = 0;
 if x.Quality
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 2; % full cleanup. 1070 light cleanup
+    matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % full cleanup. 1070 light cleanup
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.05; % 0.5; % strength local adaptive segmentation
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
