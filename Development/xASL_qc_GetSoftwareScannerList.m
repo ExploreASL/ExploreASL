@@ -1,9 +1,11 @@
-function [Sequence] = xASL_adm_ObtainASLSequenceList(RootIn)
+function [Sequence] = xASL_adm_ObtainASLSequenceList(RootIn, subject_regexp)
 %xASL_ObtainASLSequenceList Read JSON files for each ASL NIfTI
 % & compose a "sequence identifier" by concatenating
 %[Manufacturer ?_? ManufacturersModelName DeviceSerialNumber ?_? SoftwareVersion]
+% example: subject_regexp = '^OAS\d*_\d*$';
 
-DirList = xASL_adm_GetFileList(RootIn, '^OAS\d*_\d*$', 'List', [0 Inf], true);
+
+DirList = xASL_adm_GetFileList(RootIn, subject_regexp, 'List', [0 Inf], true);
 
 Sequence = '';
 
