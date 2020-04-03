@@ -64,6 +64,9 @@ try
     if isempty(AnalysisDir)
         warning('Incomplete input arguments');
         return;
+    elseif ~exist(AnalysisDir, 'dir')
+        warning('Invalid folder input argument');
+        return;
     end
 
     if bAllSubjects
@@ -237,9 +240,9 @@ try
         '(ples.*|WMH_SEGM_CleanUp|j_T1|rT1|y_T1|CentralWM_QC|LeftRight)(\.mat|\.nii|\.nii\.gz)$' 'catreport_T1\.pdf$'...
         'T1_seg8\.mat$'};
 
-    NativeSpaceFiles{2} = {'.*\.topup.*log' 'WADQC.*\.json' '.*(rep_|BeforeSpikeExclusion|despiked).*' '(VascularArtifact|xASL_qc|qcdc).*' 'rp_ASL4D\.txt' '(ASL4D|.*_sn)\.mat'...
+    NativeSpaceFiles{2} = {'.*\.topup.*log' 'WADQC.*\.json' '.*(rep_|BeforeSpikeExclusion|despiked).*' '(VascularArtifact|xASL_qc|qcdc).*' 'rp_ASL4D\.txt' '(ASL4D|M0|.*_sn)\.mat'...
         '(MaskASL|Mean_CBF_Template|mean_PWI_Clipped|PVgm|PVwm|PVcsf|FoV|M0_biasfield|(m|)mean_control|(mean|)PWI|SD|SNR|TopUp.*|(Mask_|Raw)Template|ATT_bias|B0|(Mean_|)(q|)CBF)(\.mat|\.nii|\.nii\.gz)$'...
-        '(SliceGradient(_extrapolated|)|slice_gradient|rgrey|y_ASL|Pseudo(CBF|Tissue)|rM0|Field|Unwarped|rASL4D)(\.mat|\.nii|\.nii\.gz)$'...
+        '(SliceGradient(_extrapolated|)|slice_gradient|rgrey|PWI4D|y_ASL|Pseudo(CBF|Tissue)|rM0|Field|Unwarped|rASL4D)(\.mat|\.nii|\.nii\.gz)$'...
         '(.*beforeMoCo|CBF(|_Visual2DICOM)|(r|)temp.*|Mask(|Vascular)|mask)(\.mat|\.nii|\.nii\.gz)$'};
 
     if bRemoveWMH
