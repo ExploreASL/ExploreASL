@@ -48,7 +48,7 @@ function xASL_wrp_RegisterASL(x)
 %                           - 1 = CBF->pseudoCBF from template/pGM+pWM
 %                                 (skip if sCoV>0.667)
 %                           - 2 = automatic (mix of both)
-%                           - 3 = option 2 & force CBF->pseudoCBF irrespective of sCoV
+%                           - 3 = option 2 & force CBF->pseudoCBF irrespective of sCoV or Dice coefficient
 %     - G) Dummy src NIfTIs are created:
 %       mean_control.nii to register with T1w
 %       mean_PWI_Clipped.nii to register with pseudoCBF
@@ -196,6 +196,12 @@ if bRegistrationCBF
     xASL_io_SaveNifti(x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped, tIM, [], 0);
 end
 
+%% H) Here we create the reference images, the downsampled pseudoTissue
+% (pGM+pWM) as well as the native space copies of templates for CBF,
+% ATT biasfield and vascular peaks
+xASL_im_CreatePseudoCBF(x, 0);
+
+DicePerc{1} = xASL_im_GetSpatialOverlapASL(x);
 
 
 %% ----------------------------------------------------------------------------------------
@@ -203,19 +209,21 @@ end
 % We now assume the structural module hasn't run, and we simply want to run the ASL module to quickly check how the images look like
 % So we only run the automatic Center of Mass ACPC alignment
 if x.bAutoACPC
-    OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_despiked_ASL4D});
-    % x.P.Path_despiked_ASL4D is padded to the end of the list
-    xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 10); % accept lower distance for when rerunning wrong registration
+    OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_despiked_ASL4D}); % x.P.Path_despiked_ASL4D is padded to the end of the list
+    
+    xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
+    xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 0); % Then register
+    DicePerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+    if DicePerc{end}>=0.99*DicePerc{end-1} % if alignment improved or remained same
+        xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+    else % if alignment got worse
+        xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+    end
 end
 
     
 %% ----------------------------------------------------------------------------------------
 %% 2)    Registration Control->T1w
-% Here a temporary CBF image is created, which will be used for
-% registration to T1 GM prob map & can be used for registration to previous ASL sessions.
-% PWI-based registration can be preferable over EPI-based registration if
-% background suppression and/or other 3D readout techniques are used.
-
 % Here we first create a mask
 % First check the initial alignment, otherwise first register with template
 % xASL_spm_reslice(Mask_Native, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_rmean_PWI_Clipped, 1);
@@ -236,10 +244,26 @@ if bRegistrationControl
         warning('Requested control-T1w registration but Mean_control.nii didnt exist');
     else
         OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_mean_control});
+
+        if isempty(regexp(x.readout_dim,'2D')) % for 2D (EPI) we don't care (assuming this works better than center of mass)
+            xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
+        end
+        
+        % then register
         if ~x.Quality
             xASL_spm_coreg(x.P.Path_T1, x.P.Path_mean_control, OtherList, x,[9 6]);
         else
             xASL_spm_coreg(x.P.Path_T1, x.P.Path_mean_control, OtherList, x);
+        end
+        DicePerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+        
+        if isempty(regexp(x.readout_dim,'2D')) % for 2D (EPI) we don't care (assuming this works better than center of mass)
+            if DicePerc{end}>=0.99*DicePerc{end-1}
+                % if alignment improved or remained more or less the same
+                xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+            else % if alignment got significantly (>5% Dice) worse
+                xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+            end
         end
     end
 end
@@ -249,10 +273,6 @@ end
 %% ----------------------------------------------------------------------------------------
 %% 3)   Registration CBF->pseudoCBF
 if bRegistrationCBF
-    % This creates the reference images, the downsampled pseudoTissue
-    % (pGM+pWM) as well as the native space copies of templates for CBF,
-    % ATT biasfield and vascular peaks
-    xASL_im_CreatePseudoCBF(x, 0);
 
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
     if x.bRegistrationContrast==3
@@ -271,13 +291,38 @@ if bRegistrationCBF
     % 2) Repeat CBF registrations, with iteratively better estimate of the
     % vascular/tissue perfusion ratio of the template
     if nIT>0
-        % keep this same for all sequences, 3D spiral will simply have a lower spatial CoV because of smoothness
+        % keep this same for all sequences, 3D sequences will simply have a lower spatial CoV because of smoothness
+        bSkipThis = false;
         for iT=1:nIT
-            xASL_im_CreatePseudoCBF(x, spatCoVit(1));
-            OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_mean_PWI_Clipped});
-            xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
+            if ~bSkipThis
+                xASL_im_CreatePseudoCBF(x, spatCoVit(1));
+                OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_mean_PWI_Clipped});
 
-            spatCoVit(iT+1) = xASL_im_GetSpatialCovNativePWI(x);
+                if isempty(regexp(x.readout_dim,'3D')) % if we don't have a 3D sequence
+                    xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
+                end
+                
+                % then register
+                xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
+                % and check for improvement
+                DicePerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+                
+                if isempty(regexp(x.readout_dim,'3D')) && x.bRegistrationContrast~=3
+                    % if we don't have a 3D sequence & don't force CBF-pGM registration
+                    if DicePerc{end}>=0.99*DicePerc{end-1}
+                        % if alignment improved or remained more or less the same
+                        xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+                    else
+                        % if alignment got significantly (>1% Dice) worse
+                        % we don't force CBF-pGM registration
+                        xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+                        bSkipThis = true; % skip next iteration
+                        x.bAffineRegistration = 0; % skip affine registration
+                    end
+                end
+
+                spatCoVit(iT+1) = xASL_im_GetSpatialCovNativePWI(x);
+            end
 		end
 
         %% Affine registration
@@ -294,6 +339,8 @@ if bRegistrationCBF
         end
 
         if bAffineRegistration % perform affine registration
+            % NB: here the Dice coefficient check may not work, when e.g.
+            % one image is enlarged, it has more overlap
             fprintf('%s\n','Performing affine registration');
             xASL_im_CreatePseudoCBF(x, spatCoVit(end));
             % apply also to mean_PWI_clipped and other files
@@ -321,6 +368,7 @@ if x.DELETETEMP
     for iL=1:length(File2Del)
         xASL_delete(File2Del{iL});
     end
+    xASL_delete(x.PathMask);
 end
 
 
@@ -347,6 +395,114 @@ for iList=1:length(List2Remove)
         IndexList = [1:IndexIs-1 IndexIs+1:length(OtherList)];
     end
     OtherList = OtherList(IndexList);
+end
+
+end
+
+
+function [DiceCoeff] = xASL_im_GetSpatialOverlapASL(x)
+
+PathMaskTemplate = fullfile(x.SESSIONDIR,'Mask_Template.nii');
+[Fpath, Ffile] = xASL_fileparts(x.PathMask);
+x.PathMask2 = fullfile(Fpath, [Ffile '2.nii']);
+if ~xASL_exist(x.PathMask,'file')
+    xASL_Copy(PathMaskTemplate, x.PathMask);
+end
+PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
+
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathMask,0);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathMask2,0);
+
+MaskFromTemplate = xASL_io_Nifti2Im(x.PathMask);
+GMIM = xASL_io_Nifti2Im(x.PathMask2);
+
+xASL_delete(x.PathMask2);
+
+% Mask the GMIM
+sortInt = sort(GMIM(:));
+ThrInt = sortInt(round(0.7*length(sortInt)));
+GMIM = GMIM>ThrInt;
+
+% Ensure that the mask is binary
+MaskFromTemplate = MaskFromTemplate > 0.5;
+MaskFromTemplate = MaskFromTemplate & GMIM;
+
+%% Simple intersection check
+sortInt = sort(PWIim(isfinite(PWIim)));
+ThrInt = sortInt(round(0.75*length(sortInt)));
+maskPWI = PWIim>ThrInt;
+
+DiceCoeff = xASL_im_ComputeDice(maskPWI,MaskFromTemplate);
+
+fprintf('%s\n',['Joint brainmask was ' num2str(100*DiceCoeff,3) '%']);
+
+
+end
+
+
+function [spatCoV] = xASL_im_GetSpatialCovNativePWI(x)
+%xASL_im_GetSpatialCovNativePWI Acquires spatial CoV from the native space ASL
+%image, using registered mask
+
+JointMasks = xASL_im_GetSpatialOverlapASL(x);
+
+PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
+MaskIM = xASL_io_Nifti2Im(x.PathMask)>0.5;
+
+if JointMasks<0.25
+    warning('Registration off, spatial CoV detection unreliable');
+end
+
+%% Determine spatial CoV
+spatCoV = xASL_stat_ComputeSpatialCoV(PWIim, MaskIM, 0);
+
+spatCoV = spatCoV/1.5; % correction native space including WM to MNI spatial CoV, excluding WM
+
+if spatCoV<0
+    warning('Native space whole-brain spatial CoV was negative! (i.e. <0)');
+    fprintf('%s\n', 'Defaulting to spatial CoV of 40%');
+    spatCoV = 0.4;
+end
+
+fprintf('%s\n', ['Standard space whole-brain spatial CoV estimated as = ' num2str(100*spatCoV,3) '%']);
+
+end
+
+
+function xASL_im_BackupAndRestoreAll(BaseOtherList, Option)
+
+% Option 1 = backup
+% Option 2 = restore from backup
+% Option 3 = remove backup
+
+for iNii=1:length(BaseOtherList)
+    [Fpath, Ffile, Fext] = xASL_fileparts(BaseOtherList{iNii});
+    OriNiiName = BaseOtherList{iNii};
+    BackupNiiName = fullfile(Fpath, [Ffile '_Backup' Fext]);
+    OriMatName = fullfile(Fpath, [Ffile '.mat']);
+    BackupMatName = fullfile(Fpath, [Ffile '_Backup.mat']);
+    
+    if Option==1
+        % backup
+        if xASL_exist(OriNiiName, 'file')
+            xASL_Copy(OriNiiName, BackupNiiName, 1, 0);
+        end
+        if xASL_exist(OriMatName, 'file')
+            xASL_Copy(OriMatName, BackupMatName, 1, 0);
+        end
+    elseif Option==2
+        % restore from backup
+        if xASL_exist(BackupNiiName, 'file')
+            xASL_Move(BackupNiiName, OriNiiName, 1, 0);
+        end
+        if xASL_exist(BackupMatName, 'file')
+            xASL_Move(BackupMatName, OriMatName, 1, 0);
+        end
+    elseif Option==3
+        % remove backup
+        xASL_delete(BackupNiiName);
+        xASL_delete(BackupMatName);
+    end
 end
 
 end
