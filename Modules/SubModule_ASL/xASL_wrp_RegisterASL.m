@@ -57,7 +57,10 @@ function xASL_wrp_RegisterASL(x)
 % 2)    Registration ASL -> anat (Control->T1w)
 %       (in case of a 3D sequence, this step is only applied if it improves the Dice coefficient by more than 1%)
 % 3)    Registration CBF->pseudoCBF
-%       (in case of a 2D sequence, this step is only applied if it improves the Dice coefficient by more than 1%). Also, this step is only applied if the spatial CoV<0.67.
+%       (in case of a 2D sequence, this step is only applied if it improves
+%       the Dice coefficient by more than 1%). Also, this step is only
+%       applied if the spatial CoV<0.67. Note that this is usually the case
+%       for 3D scans because of their lower effective spatial resolution.
 %
 %       x.bAffineRegistration - specifies the ASL-T1w rigid-body
 %                                 registration is followed up by an affine
