@@ -7,9 +7,7 @@ function xASL_wrp_RegisterASL(x)
 % INPUT:
 %   x  - structure containing fields with all information required to run this submodule (REQUIRED)
 %
-% OUTPUT: n/a (registration changes the NIfTI orientation header only,
-%              with the exception of the affine transformation, which is
-%              saved separately as x.P.Path_mean_PWI_Clipped_sn_mat
+% OUTPUT: n/a (registration changes the NIfTI orientation header only
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule registers ASL images to T1w space, by using a
@@ -45,17 +43,21 @@ function xASL_wrp_RegisterASL(x)
 %       x.bRegistrationContrast - specifies the image contrast used for
 %                                 registration (OPTIONAL, DEFAULT = 2):
 %                           - 0 = Control->T1w
+
 %                           - 1 = CBF->pseudoCBF from template/pGM+pWM
 %                                 (skip if sCoV>0.667)
 %                           - 2 = automatic (mix of both)
 %                           - 3 = option 2 & force CBF->pseudoCBF irrespective of sCoV or Dice coefficient
 %     - G) Dummy src NIfTIs are created:
-%       mean_control.nii to register with T1w
-%       mean_PWI_Clipped.nii to register with pseudoCBF
+%          mean_control.nii to register with T1w
+%          mean_PWI_Clipped.nii to register with pseudoCBF
+%     - H) Create reference images, downsampled pseudoTissue
 %
 % 1)    Registration Center of Mass
 % 2)    Registration ASL -> anat (Control->T1w)
+%       (in case of a 3D sequence, this step is only applied if it improves the Dice coefficient by more than 1%)
 % 3)    Registration CBF->pseudoCBF
+%       (in case of a 2D sequence, this step is only applied if it improves the Dice coefficient by more than 1%). Also, this step is only applied if the spatial CoV<0.67.
 %
 %       x.bAffineRegistration - specifies the ASL-T1w rigid-body
 %                                 registration is followed up by an affine
