@@ -12,7 +12,7 @@ function xASL_spm_deformations(x, PathIn, PathOut, Interpolation, InverseSpace, 
 %   Interpolation       - interpolation setting used by warping, options:
 %                         0) Nearest Neighbor, 1) Trilinear, 2-7) 2nd-7th degree B-spline (OPTIONAL, DEFAULT=2)
 %   InverseSpace        - path to space that you want to warp to, inversily applying the transformation field (e.g. when warping an MNI map to
-%                         subject space) (OPTIONAL, DEFAULT=empty)
+%                         subject space) (OPTIONAL, DEFAULT=empty, no inverse transformation)
 %   AffineTrans         - ASL affine transformation to add , e.g. if geometric distortion was corrected by a fieldmap or affine
 %                         registration, here the distortion correction between ASL and T1w can be added (OPTIONAL, DEFAULT=empty)
 %   DeformationPath     - if other deformation field needs to be applied (OPTIONAL, DEFAULT=empty)
