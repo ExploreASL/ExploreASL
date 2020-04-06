@@ -42,7 +42,7 @@ if isfield(x,'FSLdir') && isfield(x,'RootFSLDir') && ~isempty(x.FSLdir) && ~isem
 end
 
 %% Detect OS
-if isunix % check for linux
+if isunix % check for linux (also used for macOS)
     fprintf('Running FSL from Matlab on Linux');
 elseif ispc
     [status, ~] = system('wsl ls;'); % leave status2 here, otherwise system will produce output
@@ -53,10 +53,19 @@ elseif ispc
     end
 end
 
+% %% Initialize RootFSLDir
+% RootFSLDir = ''; NEW
+% 
+% %% Check if FSL is initialized by system
+% [~, result2] = system('which fsl'); NEW
+% RootFSLDir{end+1} = fileparts(result2); NEW
+
 %% Try searching at different ROOT paths
+% PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps' '/usr/lib'}; NEW
 PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps/fsl'};
 PathDirect = {'/usr/lib/fsl/5.0'};
-if ispc
+
+if ispc % for Windows Subsystem of Linux
     [~, result] = system('echo %LOCALAPPDATA%');
     SearchDir = fullfile(strtrim(result), 'Packages');
     % Check distros to save time
@@ -83,13 +92,16 @@ if ispc
     PathApps{end+1} = fullfile(RootFSLDir,'usr','local');
 end
 
-%% Try searching some more
+%% Search for first subfolder
 FSLdir = {};
 for iP=1:length(PathApps)
     if isempty(FSLdir)
         FSLdir = xASL_adm_GetFileList(lower(PathApps{iP}), '^fsl.*', 'FPList', [0 Inf], true); % we can set this to recursive to be sure, but this will take a long time
     end
 end
+
+%% Search for second subfolder
+
 
 %% Try searching some more - for directories 
 for iP=1:length(PathDirect)
