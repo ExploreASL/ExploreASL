@@ -449,17 +449,17 @@ if IfProcess % if variable is valid to process
         %% If data is complete, include it in x.S.SETS
         %  Incomplete data is fine, when it is continuous data, to be
         %  filled by NaNs
-        NewVariableUnique   = unique(NewVariable(~isnan(NewVariable))); % get unique values, excluding NaNs
+        NewVariableUnique = unique(NewVariable(~isnan(NewVariable))); % get unique values, excluding NaNs
         ManyAbsent = CountAbsent>0.05*x.nSubjects || HasEmpty;
         CheckLength = length(NewVariableUnique)<0.25*x.nSubjects;
         CheckLength2 = size(NewVariable, 1)~=size(x.S.SetsID, 1);
 
-        if  (ManyAbsent && CheckLength) || CheckLength2 % don't include this variable because of missing data 
+        if (ManyAbsent && CheckLength) || CheckLength2 % don't include this variable because of missing data 
             % Allow for 5% missing data, if data is continuous
             % (assuming continuous data has at least 25% of sample size
             % as unique values
             if exist('AbsentSubjects', 'var')
-                fprintf('%s\n',['Variable ' VarName ' not included because the following subjects were missing in this variable:']);
+                warning('%s\n',['Variable ' VarName ': following subjects were missing:']);
                 for iAb=1:size(AbsentSubjects,1)
                     fprintf('%s',[AbsentSubjects{iAb,1} ', ']);
                     if  (iAb/12)==ceil(iAb/12) % 12 subjects per line
@@ -467,10 +467,11 @@ if IfProcess % if variable is valid to process
                     end
                 end
             else
-                fprintf('%s\n',['Variable ' VarName ' not included because some data was missing, strangely. Please check']);
+                warning('%s\n',['Variable ' VarName ': something wrong with this variable, data missing']);
             end
             fprintf('\n');
-        elseif  size(NewVariable, 1)==size(x.S.SetsID, 1)
+        end
+        if size(NewVariable, 1)==size(x.S.SetsID, 1)
             % include variable
             x.S.SetsID(:,INDEX)     = NewVariable;
 
@@ -507,8 +508,8 @@ if IfProcess % if variable is valid to process
                     x.S.SetsOptions{INDEX}{iOp}      = num2str(UniqueData(iOp));
                 end
             end
-        end % if  (CountAbsent>0.05*x.nSubjects || HasEmpty) && NewVariableUnique<0.25*x.nSubjects % don't include this variable because of missing data 
-    end % if  ~exist('TempDataList','var')
+        end % if size(NewVariable, 1)==size(x.S.SetsID, 1)
+    end % if ~exist('TempDataList','var')
 end % if IfProcess % if variable doesn't already exist
    
 
