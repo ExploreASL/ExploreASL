@@ -210,15 +210,22 @@ for iField=1:length(FieldsAre)
         warning('Invalid field name, removing from struct');
     else
         TempField = xASL_str2num(StructIn.(FieldsAre{iField}));
-        if isnumeric(TempField) && ~isnan(TempField)
-            if min(isfinite(TempField))
+        if isnumeric(TempField) && size(TempField,1)>size(TempField,2)
+            % enforce a horizontal vector if numerical
+            TempField = TempField';
+        end
+        
+        if min(isnumeric(TempField)) && min(~isnan(TempField))
+            % if there is a numerical vector inside the string
+%                 if min(isfinite(TempField))
                 StructOut.(FieldsAre{iField}) = TempField;
-            end
+%                 end
         else
+            % keep the string
             StructOut.(FieldsAre{iField}) = StructIn.(FieldsAre{iField});
         end
     end
 end
 
-end
 
+end
