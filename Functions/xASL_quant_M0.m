@@ -151,8 +151,10 @@ else
     minCorr_T1      = min(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
     maxCorr_T1      = max(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
 
-    if ~isfield(x,'M0_GMScaleFactor')
+    if ~isfield(x,'M0_GMScaleFactor') || isempty(x.M0_GMScaleFactor)
         x.M0_GMScaleFactor = 1; % no scaling
+    else
+    	fprintf('%s\n',['M0 scaling corrected by GMScaleFactor ' xASL_num2str(x.M0_GMScaleFactor)]);
     end
 
     M0IM = M0IM.*x.M0_GMScaleFactor;
