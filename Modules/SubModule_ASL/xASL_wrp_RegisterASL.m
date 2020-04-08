@@ -164,20 +164,33 @@ if strcmp(x.P.SessionID,'ASL_1') || x.nSessions==1
 end
  
     
+
+%% E) Allow registration without structural data
+StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
+if xASL_exist(x.P.Path_T1, 'file') && ~StructuralDerivativesExist
+    error('Please run structural module first');
+elseif ~xASL_exist(x.P.Path_T1, 'file') && ~StructuralDerivativesExist
+    warning('Missing structural scans, using ASL registration only instead!');
+    IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
+    % Copy dummy transformation field
+    xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
+    % Create dummy native space structural derivatives
+    % In standard space
+    xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
+    xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
+    xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
+    % In native space
+    xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_T1});
+end
     
 %% E) % Smooth T1 deformation field into ASL resolution
 % If no T1 flow field exists, create an identity flowfield
 % So we can still process ASL images without the
 % structural module
 if ~xASL_exist(x.P.Path_y_ASL,'file') || strcmp(x.P.SessionID,'ASL_1') || x.nSessions==1
-    if ~xASL_exist(x.P.Path_y_T1,'file')
-        warning('Didnt find a structural scan, using MNI registration instead!!!!!!!!!!!');
-        IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir,'Identity_Deformation_y_T1.nii');
-        xASL_Copy(IDmatrixPath, x.P.Path_y_ASL, true);
-    else
-        xASL_wrp_CreateASLDeformationField(x, true);
-    end
+    xASL_wrp_CreateASLDeformationField(x, true);
 end
+
 
 %% F) Manage registration contrasts that we will use
 if x.bRegistrationContrast==0
