@@ -50,8 +50,9 @@ if nargin<3 || isempty(bHasMoCo)
     bHasMoCo = false;
     iSubject = 1;
     while iSubject<=x.nSubjects && ~bHasMoCo % speeds up instead of for-loop
+        CurrentSubject = iSubject;
         for iSession=1:x.nSessions
-            if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D.mat'))
+            if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'ASL4D.mat'))
                 bHasMoCo = true;
             else
                 iSubject = iSubject+1;

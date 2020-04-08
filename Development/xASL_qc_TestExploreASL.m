@@ -237,7 +237,11 @@ for iList=1:length(Dlist)
 	    cd(x.MyPath);
 	    switch RunMethod
 	        case 1 % run ExploreASL serially
-	            ExploreASL_Master(DataParFile{iList}{1}, true, true); % can we run screen from here? or run matlab in background, linux easy
+                try
+                    ExploreASL_Master(DataParFile{iList}{1}, true, true); % can we run screen from here? or run matlab in background, linux easy
+                catch ME
+                    warning(ME);
+                end
 	        case 2 % run ExploreASl parallel (start new MATLAB instances)
                 ScreenName = ['TestxASL_' num2str(iList)];
 	            MatlabRunString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
