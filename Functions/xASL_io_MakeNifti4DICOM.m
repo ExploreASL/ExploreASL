@@ -1,4 +1,4 @@
-function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, bApplyOriginalOrientation)
+function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, bApplyOriginalOrientation, ResamplePath)
 %xASL_io_MakeNifti4DICOM Create NIfTI that is ready for conversion to uint16 DICOM
 %
 % FORMAT: xASL_io_MakeNifti4DICOM(PathIn, x)
@@ -7,10 +7,12 @@ function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, bApplyOriginalOrientation)
 %   PathIn - path to NIfTI file to convert (REQUIRED)
 %   x      - struct containing pipeline environment parameters (REQUIRED)
 %   Datatype = 'INT16' or 'UINT16' (OPTIONAL, DEFAULT = 'INT16')
+%   bApplyOriginalOrientation = 
+%   ResamplePath = Path of NIfTI to resample to (OPTIONAL, DEFAULT = empty, no resampling)
 %
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function converts a NIfTI file to a DICOM file for
+% DESCRIPTION: This function converts a NIfTI file to one that is ready to convert to DICOM for
 %              PACS visualization purposes:
 %              For scaling/visualization:
 %              1) Remove peak signal
@@ -37,12 +39,23 @@ if nargin<4 || isempty(bApplyOriginalOrientation)
     bApplyOriginalOrientation = true;
     % by default put the CBF image back in the original T1w space
 end
+if nargin<5
+    ResamplePath = []; % by default don't resample
+end
 
 CBFim = xASL_io_Nifti2Im(PathIn);
 [Fpath, Ffile] = xASL_fileparts(PathIn);
 
-FileNew = [Ffile '_Visual2DICOM.nii'];
-RegExpNew = [Ffile '_Visual2DICOM\.nii'];
+if ~isempty(ResamplePath)
+    [~, FfileRef] = xASL_fileparts(ResamplePath);
+    
+    FileNew = [Ffile '_Visual2DICOM_space-' FfileRef '.nii'];
+    RegExpNew = [Ffile '_Visual2DICOM_space-' FfileRef '\.nii'];
+else
+    FileNew = [Ffile '_Visual2DICOM.nii'];
+    RegExpNew = [Ffile '_Visual2DICOM\.nii'];    
+end
+
 PathNew = fullfile(Fpath, FileNew);
 
 
@@ -69,7 +82,6 @@ CBFim = round(CBFim.*RescaleSlope);
 
 %% 5) Save NIfTI
 xASL_io_SaveNifti(PathIn, PathNew, CBFim, [], false);
-
 newNifti = xASL_io_ReadNifti(PathNew);
 
 %% 6) Manage scale slope/datatype
@@ -104,9 +116,11 @@ if bApplyOriginalOrientation
 
     if xASL_exist(x.P.Path_T1_ORI,'file')
         niiT1_ORI = xASL_io_ReadNifti(x.P.Path_T1_ORI);
-    else
-        fprintf('Warning xASL_io_MakeNifti4DICOM: T1_ORI.nii didnt exist, not sure if we can go back to the original orientation');
+    else % use T1 as T1_ORI. if there was no lesion filling, this is the most original NIfTI
         niiT1_ORI = xASL_io_ReadNifti(x.P.Path_T1);
+        if xASL_exist(x.P.Path_WMH_SEGM, 'file') % as the ORI file is usually only created when the T1 is lesion filled by WMH_SEGM from FLAIR
+            fprintf('Warning xASL_io_MakeNifti4DICOM: T1_ORI.nii didnt exist, not sure if we can go back to the original orientation');
+        end
     end
 
     matT1_ORI = niiT1_ORI.mat0;
@@ -116,10 +130,29 @@ if bApplyOriginalOrientation
     newNifti.mat = Transformation*newNifti.mat;
 end
 
-
-
-%% 8) Zip NIfTI
 create(newNifti);
+
+%% 8) Resample
+if ~isempty(ResamplePath)
+    if ~xASL_exist(ResamplePath, 'file') || isempty(regexp(ResamplePath,'\.nii(|\.gz)$'))
+        fprintf('Warning xASL_io_MakeNifti4DICOM: Tried to resample but this NIfTI file was missing or invalid:\n');
+        fprintf('%s\n', ResamplePath);
+    else
+        % First create a temporary copy with the original orientation
+        [Fpath3, Ffile3] = xASL_fileparts(ResamplePath);
+        TempPath = fullfile(Fpath3, [Ffile3 '_temp.nii']);
+        xASL_Copy(ResamplePath, TempPath, 1);
+        nii = xASL_io_ReadNifti(TempPath);
+        nii.mat = nii.mat0;
+        create(nii);
+        
+        xASL_spm_reslice(TempPath, PathNew, [], [], x.Quality, PathNew);
+        xASL_delete(TempPath);
+    end
+end        
+
+
+%% 9) Zip NIfTI
 xASL_adm_ZipFileList(Fpath, RegExpNew, false, true, [0 Inf], true);
 
 
