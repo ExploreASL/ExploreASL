@@ -2,16 +2,51 @@ function x  = xASL_init_ExploreASL_directories( x )
 %xASL_init_ExploreASL_directories Part of master script ExploreASL, loading definitions & pathnames
 % ExploreASL, HJMM Mutsaerts, 2016
 
+%% Setting the option for pediatric template (this is normally set only for specific dataset and general xASL initialization does not have it)
+% Set if the pediatric template field is set correctly
+if ~isfield(x,'Pediatric_Template') || isempty(x.Pediatric_Template)
+    x.Pediatric_Template = false;
+end
+
+% We need to define which of the pediatric templates to use
+if x.Pediatric_Template
+	% Set the default
+	if ~isfield(x,'Pediatric_Type') || isempty(x.Pediatric_Type)
+		x.Pediatric_Type = 'infant-1yr';
+	end
+	
+	switch (x.Pediatric_Type)
+		case {'1yr','infant_1yr','Infant_1yr'}
+			x.Pediatric_Type = 'infant-1yr';
+		case {'2yr','infant_2yr','Infant_2yr'}
+			x.Pediatric_Type = 'infant-2yr';
+		case {'neo','infant_neo','Infant_neo','neonate'}
+			x.Pediatric_Type = 'infant-neo';
+	end
+end
+
 %% ExploreASL
 % General
 x.D.FunctionsDir        = fullfile(x.MyPath,'Functions');
 x.D.FunctionsExternDir  = fullfile(x.MyPath,'External','SPMmodified','xASL');
-x.D.MapsDir             = fullfile(x.MyPath,'Maps');
-x.D.MapsSPMmodifiedDir  = fullfile(x.MyPath,'External','SPMmodified','MapsAdded');
-x.D.ResliceRef          = fullfile(x.MyPath,'External','SPMmodified','MapsAdded','rgrey.nii');
-x.D.IdentityTransfRef   = fullfile(x.MyPath,'External','SPMmodified','MapsAdded','Identity_Deformation_y_T1.nii');
-x.D.TemplateDir         = fullfile(x.MyPath,'Maps','Templates');
-x.D.AtlasDir            = fullfile(x.MyPath,'External','AtlasesNonCommercial');
+
+% Atlases and templates in pediatric version
+if x.Pediatric_Template
+	x.D.MapsDir             = fullfile(x.MyPath,'Maps',x.Pediatric_Type);
+	x.D.MapsSPMmodifiedDir  = fullfile(x.MyPath,'External','SPMmodified','MapsAdded',x.Pediatric_Type);
+	x.D.ResliceRef          = fullfile(x.MyPath,'External','SPMmodified','MapsAdded',x.Pediatric_Type,'rgrey.nii');
+	x.D.IdentityTransfRef   = fullfile(x.MyPath,'External','SPMmodified','MapsAdded',x.Pediatric_Type,'Identity_Deformation_y_T1.nii');
+	x.D.TemplateDir         = fullfile(x.MyPath,'Maps','Templates',x.Pediatric_Type);
+	x.D.AtlasDir            = fullfile(x.MyPath,'External','AtlasesNonCommercial',x.Pediatric_Type);
+else
+	% Atlases and templates
+	x.D.MapsDir             = fullfile(x.MyPath,'Maps');
+	x.D.MapsSPMmodifiedDir  = fullfile(x.MyPath,'External','SPMmodified','MapsAdded');
+	x.D.ResliceRef          = fullfile(x.MyPath,'External','SPMmodified','MapsAdded','rgrey.nii');
+	x.D.IdentityTransfRef   = fullfile(x.MyPath,'External','SPMmodified','MapsAdded','Identity_Deformation_y_T1.nii');
+	x.D.TemplateDir         = fullfile(x.MyPath,'Maps','Templates');
+	x.D.AtlasDir            = fullfile(x.MyPath,'External','AtlasesNonCommercial');
+end
 
 % Prefixes standard space
 x.D.CBFPreFix_Resliced  = 'qCBF';

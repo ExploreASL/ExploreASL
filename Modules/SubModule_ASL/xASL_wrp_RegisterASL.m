@@ -176,11 +176,50 @@ elseif ~xASL_exist(x.P.Path_T1, 'file') && ~StructuralDerivativesExist
     xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
     % Create dummy native space structural derivatives
     % In standard space
-    xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
-    xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
-    xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
+	xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
+	xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
+	xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
+
     % In native space
     xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_T1});
+	
+	% Dummy files
+	catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
+	MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
+	dummyVar = [];
+	save(catVolFile,'dummyVar');
+	save(MatFile,'dummyVar');
+	
+	SaveFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']);
+    FileID = fopen(SaveFile,'wt');
+	fclose(FileID);
+	
+	% To lock in the structural part	
+    % Save the ASL lock and unlock
+	jj = strfind(x.LOCKDIR,'xASL_module_ASL');
+	jj = jj(1);
+	oldRoot = x.mutex.Root;
+	oldID = x.mutex.ID;
+	newRoot = fullfile(x.LOCKDIR(1:(jj-1)),'xASL_module_Structural',x.LOCKDIR((jj+16):end));
+	x.mutex.Unlock();
+	
+	% Look the structural part
+	x.mutex.Root = newRoot;
+	x.mutex.Lock('xASL_module_Structural');
+
+	% Add the correct lock-files
+	x.mutex.AddState('010_LinearReg_T1w2MNI');
+	x.mutex.AddState('060_Segment_T1w');
+	x.mutex.AddState('080_Resample2StandardSpace');
+	x.mutex.AddState('090_GetVolumetrics');
+	x.mutex.AddState('100_VisualQC_Structural');
+	x.mutex.AddState('110_DoWADQCDC');
+	
+	% Unlock the structural and lock again the ASL part
+	x.mutex.Unlock();
+	x.mutex.Root = oldRoot;
+	x.mutex.Lock(oldID);
+
 end
     
 %% E) % Smooth T1 deformation field into ASL resolution

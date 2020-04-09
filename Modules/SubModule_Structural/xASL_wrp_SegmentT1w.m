@@ -42,20 +42,13 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
-
-
-
-
-
 if nargin<2 || isempty(SegmentSPM12)
     SegmentSPM12 = false; % by default use CAT12, not SPM12 to segment
 end
 if ~isfield(x,'bFixResolution') || isempty(x.bFixResolution)
     x.bFixResolution = false;
 end
-if ~isfield(x,'Pediatric_Template') || isempty(x.Pediatric_Template)
-    x.Pediatric_Template = false;
-end
+
 
 %% --------------------------------------------------------------------------------
 %% 1) Administration
@@ -420,7 +413,7 @@ function xASL_wrp_SPM12Segmentation(x)
     %% Fill the templates used for segmentation
 	if x.Pediatric_Template
 		for iDim=1:6
-			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_pediatric', ['infant-1yr-TPM.nii,' num2str(iDim)])};
+			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.SPMDIR, 'MapsAdded', 'templates_pediatric', [x.Pediatric_Type '-TPM.nii,' num2str(iDim)])};
 		end
 	else
 		for iDim=1:6
@@ -491,8 +484,8 @@ DartelTemplateNII = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_1.50mm', '
 GSTemplateNII     = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_1.50mm', 'Template_0_IXI555_MNI152_GS.nii');
 
 if x.Pediatric_Template
-	DartelTemplateNII = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_pediatric', 'Template_1_infant-1yr_DARTEL.nii');
-	GSTemplateNII     = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_pediatric', 'Template_0_infant-1yr_CAT.nii');
+	DartelTemplateNII = fullfile(x.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_1_' x.Pediatric_Type '_DARTEL.nii']);
+	GSTemplateNII     = fullfile(x.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_0_' x.Pediatric_Type '_CAT.nii']);
 	x.Seg.Method = 'DARTEL';
 end
 
