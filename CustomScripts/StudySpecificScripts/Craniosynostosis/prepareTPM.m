@@ -4,6 +4,10 @@ nameTPM{1} = 'infant-1yr';
 nameTPM{2} = 'infant-2yr';
 nameTPM{3} = 'infant-neo';
 
+pathMaps = '/home/janpetr/code/ExploreASL/External/SPMmodified/MapsAdded';
+pathSPM = '/home/janpetr/code/ExploreASL/External/SPMmodified';
+pathTemplates = '/home/janpetr/code/ExploreASL/Maps/Templates';
+
 %% Prepare a 6-component template that can be used for SPM12 segmentation
 % TPM 1GM,2WM,3CSF,4cavity,5skull,6air
 for ii=1:length(nameTPM)
@@ -115,3 +119,162 @@ for ii=1:length(nameTPM)
 	end
 	
 end
+
+%% Adapt the whole xASL templates including vascular territories/masks/etc to be transformed to pediatric sizes
+
+for ii=1:length(nameTPM)
+	mkdir(fullfile(pathMaps,nameTPM{ii}));
+	mkdir(fullfile(pathMaps,nameTPM{ii},'VascularTerritories'));
+	mkdir(fullfile(pathTemplates,nameTPM{ii}));
+	
+	% First copy from the source to xASL directory
+	xASL_Copy(fullfile(pathTPM,[nameTPM{ii} '.nii']),fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii']));
+	
+	% Then align the pediatric map to the MNI of an adult
+	matlabbatch = [];
+	matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii,1'])};
+	matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = {fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii,1'])};
+	matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasreg = 0.0001;
+	matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasfwhm = 60;
+	matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.tpm = {fullfile(pathSPM,'tpm','TPM.nii')};
+	matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.affreg = 'mni';
+	matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.reg = [0 0.001 0.5 0.05 0.2];
+	matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.fwhm = 0;
+	matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.samp = 3;
+	matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.bb = [-78 -112 -70
+		78 76 85];
+	matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.vox = [2 2 2];
+	matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.interp = 4;
+	matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.prefix = 'w';
+	spm_jobman('run',matlabbatch);
+	
+	% Cleanup
+	xASL_delete(fullfile(pathMaps,nameTPM{ii},['w' nameTPM{ii} '.nii']));
+	
+	% Copy all the adult maps and transform to pediatric size
+	listMap = {'rc1T1' 'rc2T1' 'rT1' 'rc1T1_ASL_res' 'rc2T1_ASL_res' 'rgrey' 'rbrainmask'};
+	matlabbatch = [];
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def = {fullfile(pathMaps,nameTPM{ii},['y_' nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{2}.id.space = {fullfile(pathMaps,'rc1T1.nii')};
+	for jj=1:length(listMap)
+		%xASL_Copy(fullfile(pathMaps,[listMap{jj} '.nii']), fullfile(pathMaps,nameTPM{ii},[listMap{jj} '.nii']),true);
+		xASL_adm_UnzipOrCopy(pathMaps,[listMap{jj} '.nii'], fullfile(pathMaps,nameTPM{ii}),true);
+		matlabbatch{1}.spm.util.defs.out{1}.pull.fnames{jj,1} = fullfile(pathMaps,nameTPM{ii},[listMap{jj} '.nii']);
+	end
+    matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathMaps,nameTPM{ii})};
+	matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 4;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+	matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
+	spm_jobman('run',matlabbatch);
+	
+	% Cleanup
+	for jj=1:length(listMap)
+		xASL_Move(fullfile(pathMaps,nameTPM{ii},['w' listMap{jj} '.nii']),fullfile(pathMaps,nameTPM{ii},[listMap{jj} '.nii']),true);
+	end
+
+	% Copy all the adult masks and transform to pediatric size
+	listMask = {'brainmask' 'TotalGM' 'TotalWM' 'WholeBrain'  'brainmask_supratentorial' 'ParenchymNarrow' 'LeftRight' 'DeepWM' 'CentralWM_QC' 'GhostSignalRatio' 'MNI_structural'};
+	matlabbatch = [];
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def = {fullfile(pathMaps,nameTPM{ii},['y_' nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{2}.id.space = {fullfile(pathMaps,'rc1T1.nii')};
+	for jj=1:length(listMask)
+		if jj == 1
+			xASL_Copy(fullfile(pathMaps,[listMask{jj} '.nii']), fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']),true);
+		else
+			xASL_adm_UnzipOrCopy(pathMaps,[listMask{jj} '.nii.gz'], fullfile(pathMaps,nameTPM{ii}),true);
+		end
+		matlabbatch{1}.spm.util.defs.out{1}.pull.fnames{jj,1} = fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']);
+	end
+    matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathMaps,nameTPM{ii})};
+	matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+	matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
+	spm_jobman('run',matlabbatch);
+	
+	% Cleanup
+	for jj=1:length(listMask)
+		xASL_Move(fullfile(pathMaps,nameTPM{ii},['w' listMask{jj} '.nii']),fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']),true);
+	end
+
+	% Copy normal files
+	listFile = {'TotalGM.tsv' 'TotalWM.tsv' 'WholeBrain.tsv' 'MNI_structural.tsv' 'LeftRight.tsv' 'LabelColors.mat' 'GhostSignalRatio.tsv' 'DeepWM.tsv' 'Identity_sn.mat' 'Identity_Deformation_y_T1.nii.gz'...
+		        fullfile('VascularTerritories','TatuICA_PCA.tsv'),fullfile('VascularTerritories','LabelingTerritories.tsv'),fullfile('VascularTerritories','CortVascTerritoriesTatu.tsv'),fullfile('VascularTerritories','ATTbasedFlowTerritories.tsv')};
+	for jj=1:length(listFile)
+		xASL_Copy(fullfile(pathMaps,listFile{jj}), fullfile(pathMaps,nameTPM{ii},listFile{jj}),true);
+	end
+	
+	% Copy all the vascular masks and transform to pediatric size
+	listMask = {'ATTbasedFlowTerritories' 'CortVascTerritoriesTatu' 'LabelingTerritories' 'TatuICA_PCA'};
+	matlabbatch = [];
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def = {fullfile(pathMaps,nameTPM{ii},['y_' nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{2}.id.space = {fullfile(pathMaps,'rc1T1.nii')};
+	for jj=1:length(listMask)
+		% xASL_Copy(fullfile(pathMaps,'VascularTerritories',[listMask{jj} '.nii']), fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']),true);
+		xASL_adm_UnzipOrCopy(fullfile(pathMaps,'VascularTerritories'),[listMask{jj} '.nii.gz'], fullfile(pathMaps,nameTPM{ii},'VascularTerritories'),true);
+		matlabbatch{1}.spm.util.defs.out{1}.pull.fnames{jj,1} = fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']);
+	end
+    matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathMaps,nameTPM{ii},'VascularTerritories')};
+	matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+	matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
+	spm_jobman('run',matlabbatch);
+	
+	% Cleanup
+	for jj=1:length(listMask)
+		xASL_Move(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',['w' listMask{jj} '.nii']),fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']),true);
+	end
+
+	% Copy all the templates and transform to pediatric size
+	listTemp = {'ATT_BiasField' 'GE_3Dspiral_Product_CBF' 'MaxVesselTemplate' 'Philips_2DEPI_Bsup_CBF' 'Philips_2DEPI_noBsup_CBF' 'Philips_2DEPI_noBsup_Control'...
+		        'Siemens_2DEPI_PCASL_noBsup_CBF' 'Siemens_2DEPI_PCASL_noBsup_Control' 'Siemens_3DGRASE_PASL_CBF' 'Siemens_3DGRASE_PCASL_Control_BiasfieldCorr_MoodStudy'...
+				'Susceptibility_pSignal_2D_EPI' 'Susceptibility_pSignal_3D_GRASE'};
+	matlabbatch = [];
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def = {fullfile(pathMaps,nameTPM{ii},['y_' nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{2}.id.space = {fullfile(pathMaps,'rc1T1.nii')};
+	for jj=1:length(listTemp)
+		xASL_adm_UnzipOrCopy(fullfile(pathTemplates),[listTemp{jj} '.nii.gz'], fullfile(pathTemplates,nameTPM{ii}),true);
+		matlabbatch{1}.spm.util.defs.out{1}.pull.fnames{jj,1} = fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']);
+	end
+    matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathTemplates,nameTPM{ii})};
+	matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 4;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+	matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
+	spm_jobman('run',matlabbatch);
+	
+	% Cleanup
+	for jj=1:length(listTemp)
+		xASL_Move(fullfile(pathTemplates,nameTPM{ii},['w' listTemp{jj} '.nii']),fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']),true);
+	end
+	
+	% Copy all the template masks and transform to pediatric size
+	listTemp = {'Philips_2DEPI_Bsup_QC_mask' 'Siemens_3DGRASE_PASL_QC_mask'};
+	matlabbatch = [];
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def = {fullfile(pathMaps,nameTPM{ii},['y_' nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{2}.id.space = {fullfile(pathMaps,'rc1T1.nii')};
+	for jj=1:length(listTemp)
+		xASL_adm_UnzipOrCopy(fullfile(pathTemplates),[listTemp{jj} '.nii.gz'], fullfile(pathTemplates,nameTPM{ii}),true);
+		matlabbatch{1}.spm.util.defs.out{1}.pull.fnames{jj,1} = fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']);
+	end
+    matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathTemplates,nameTPM{ii})};
+	matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+	matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
+	spm_jobman('run',matlabbatch);
+	
+	% Cleanup
+	for jj=1:length(listTemp)
+		xASL_Move(fullfile(pathTemplates,nameTPM{ii},['w' listTemp{jj} '.nii']),fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']),true);
+	end
+	
+end
+	
