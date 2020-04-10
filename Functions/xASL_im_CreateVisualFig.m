@@ -21,6 +21,18 @@ function [ImOut, FileName] = xASL_im_CreateVisualFig(x, ImIn, DirOut, IntScale, 
 %   bWhite       - true for switching background to white (OPTIONAL, DEFAULT=black background)
 %   bTransparancy - true for transparant results when overlaying a mask (OPTIONAL, DEFAULT=false)
 %
+% INPUT FIELDS IN X, USED BY xASL_im_TransformData2View:
+%              ORIENTATION SETTINGS:
+%               x.S.TraSlices - which transversal slices to show (n, orientation omitted if empty, DEFAULT = 20:7:97)
+%               x.S.CorSlices - which coronal slices to show (n, orientation omitted if empty, DEFAULT = empty)
+%               x.S.SagSlices - which sagittal slices to show (n, orientation omitted if empty, DEFAULT = empty)
+%              CROP SETTINGS:
+%               x.S.bCrop - number of voxels you want to crop from the default size, single value,
+%                           ranging from 50 (pieces of brain cut out) to -Inf (creating space between images) (DEFAULT=0)
+%              CONCATENATION SETTINGS:
+%              x.S.ConcatSliceDims % whether orientations should be concatenated horizontally (1, DEFAULT) or vertically (0)
+%              x.S.Square % whether we prefer to tile square (DEFAULT = true)
+%
 % OUTPUT:
 %   ImOut        - output image matrix, in Matlab colorscale (3 images for RGB) (OPTIONAL)
 % OUTPUT FILE    - saved figure (e.g. as jpg), same as ImOut
