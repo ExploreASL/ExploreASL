@@ -193,6 +193,7 @@ elseif ~xASL_exist(x.P.Path_T1, 'file') && ~StructuralDerivativesExist
 	SaveFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']);
     FileID = fopen(SaveFile,'wt');
 	fclose(FileID);
+	xASL_adm_csv2tsv(SaveFile, true);
 	
 	% To lock in the structural part	
     % Save the ASL lock and unlock

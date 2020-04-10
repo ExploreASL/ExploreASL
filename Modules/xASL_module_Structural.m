@@ -412,7 +412,7 @@ if xASL_exist(x.P.Path_FLAIR,'file') && WMHvolFileMissing && x.mutex.HasState(St
     Reprocessing = true;
     warning(['WMH/LST volumetric results were missing, rerunning ' StateName{iState}]);
 end
-T1volFileMissing = ~exist(fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']), 'file');
+T1volFileMissing = ~exist(fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.tsv']), 'file');
 if xASL_exist(x.P.Path_T1,'file') && T1volFileMissing && x.mutex.HasState(StateName{iState})
     Reprocessing = true;
     warning(['T1/CAT12 volumetric results were missing, rerunning ' StateName{iState}]);
