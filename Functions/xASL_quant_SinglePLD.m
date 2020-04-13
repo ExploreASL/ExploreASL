@@ -163,20 +163,24 @@ else
             % has a different scale factor than the current GE product sequence
 
             case 'GE_product' % GE new version
-                qnt_R1gain = 1/32; % R1 analogue gain/ simple multiplier
-                qnt_C1 = 6000; % GE constant multiplier
+%                 qnt_R1gain = 1/32; % R1 analogue gain/ simple multiplier -> Alsop: M0 image is scaled down by 32, correction receiver gain in PDref?
+%                 qnt_C1 = 6000; % GE constant multiplier
 
-                qnt_GEscaleFactor = (qnt_C1*qnt_R1gain)/(x.Q.NumberOfAverages);
+%                 qnt_GEscaleFactor = (qnt_C1*qnt_R1gain)/(x.Q.NumberOfAverages); % OLD incorrect
+                qnt_R1gain = 32; %  M0 image is scaled down by 32, correction receiver gain in PDref?
+                qnt_GEscaleFactor = qnt_R1gain*x.Q.NumberOfAverages;
+                % division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
 
             case 'GE_WIP' % GE old version
                 qnt_RGcorr = 45.24; % Correction for receiver gain in PDref (but not used apparently?)
+                % or should this be 6000/45.24?
                 qnt_GEscaleFactor = qnt_RGcorr*x.Q.NumberOfAverages;
             otherwise
                 error('Please set x.Vendor to GE_product or GE_WIP');
         end
 
         ScaleImage = ScaleImage./qnt_GEscaleFactor;
-        fprintf('%s\n',['Quantification corrected for GE scale factor ' num2str(qnt_GEscaleFactor)]);
+        fprintf('%s\n',['Quantification corrected for GE scale factor ' num2str(qnt_GEscaleFactor) ' for NSA=' num2str(x.Q.NumberOfAverages)]);
 
     elseif ~isempty(regexp(x.Vendor,'Philips'))
         % Philips has specific scale & rescale slopes
