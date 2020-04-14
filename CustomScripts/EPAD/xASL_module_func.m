@@ -53,7 +53,7 @@ PathX = fullfile(x.SUBJECTDIR,'x.mat'); % later optimize this, do this in each x
 
 %% Delete old files
 if ~x.mutex.HasState('030_register_func') && ~x.mutex.HasState('020_realign_func')
-    DelList = {x.P.Path_FoV x.P.Path_mean_control x.P.Path_mean_PWI_Clipped x.P.Path_PWI x.P.Path_mean_PWI_Clipped_sn_mat x.P.Path_SliceGradient x.P.Path_rrM0 x.P.Path_temp_func_bold x.P.Path_temp_func_bold_mat};
+    DelList = {x.P.Path_FoV x.P.Path_mean_control x.P.Path_mean_PWI_Clipped x.P.Path_PWI x.P.Path_mean_PWI_Clipped_sn_mat x.P.Path_SliceGradient x.P.Path_rrM0};
     for iD=1:length(DelList)
         xASL_delete(DelList{iD});
     end

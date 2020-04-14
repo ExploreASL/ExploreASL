@@ -38,6 +38,7 @@ if nargin<2 || isempty(bAutomaticallyDetectFSL)
 end
 
 FSLdir = NaN;
+RootWSLdir = NaN;
 RootFSLDir = {};
 
 if isfield(x,'FSLdir') && isfield(x,'RootFSLDir') && ~isempty(x.FSLdir) && ~isempty(x.RootFSLDir)
@@ -145,6 +146,7 @@ FSLdir = sort(unique(FSLdir));
 if length(FSLdir)<1
     warning('Cannot find valid FSL installation dir');
     FSLdir = NaN;
+    RootWSLdir = NaN;
     return;
 elseif length(FSLdir)>1
     fprintf('%s\n','Found more than 1 FSL version, choosing latest');
