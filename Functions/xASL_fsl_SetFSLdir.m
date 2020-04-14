@@ -1,11 +1,14 @@
-function [FSLdir, x, RootWSLdir] = xASL_fsl_SetFSLdir(x)
+function [FSLdir, x, RootWSLdir] = xASL_fsl_SetFSLdir(x, bAutomaticallyDetectFSL)
 %xASL_fsl_SetFSLdir Find the FSLdir from Matlab (ExploreASL)
 %
-% FORMAT: [FSLdir[, x, RootWSLdir]] = xASL_adm_SetFSLdir(x)
+% FORMAT: [FSLdir[, x, RootWSLdir]] = xASL_adm_SetFSLdir(x, bUseLatestVersion)
 %
 % INPUT:
-%   x       - structure containing fields with all information required to run this submodule (OPTIONAL)
-%
+%   x                       - structure containing fields with all information required to run this submodule (OPTIONAL)
+%   bAutomaticallyDetectFSL - Boolean to automatically detect the FSL version
+%                             if disabled, this function will try to use the system-initialized FSL 
+%                             and throw an error if FSL is not initialized
+%                             (OPTIONAL, DEFAULT = disabled)
 % OUTPUT:
 %   FSLdir    - path to FSL (REQUIRED)
 %   x         - as input, outputting FSL dir (OPTIONAL)
@@ -29,6 +32,9 @@ function [FSLdir, x, RootWSLdir] = xASL_fsl_SetFSLdir(x)
 %% Admin
 if nargin<1
     x = struct;
+end
+if nargin<2 || isempty(bAutomaticallyDetectFSL)
+    bAutomaticallyDetectFSL = false;
 end
 
 FSLdir = NaN;
@@ -65,46 +71,47 @@ end
     
 RootFSLDir{end+1} = fileparts(result2);
 
+if bAutomaticallyDetectFSL
+    %% 2) Try searching at different ROOT paths, first layer subfolder
+    PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps' '/usr/lib'};
 
-%% 2) Try searching at different ROOT paths, first layer subfolder
-PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps' '/usr/lib'};
-
-if ispc % for Windows Subsystem of Linux
-    [~, result] = system('echo %LOCALAPPDATA%');
-    SearchDir = fullfile(strtrim(result), 'Packages');
-    % Check distros to save time
-    Distros = {'CanonicalGroupLimited.Ubuntu' 'WhitewaterFoundryLtd' 'Ubuntu' 'SUSE' 'Kali' 'Debian'};
-    DistroDir = {};
-    for iD=1:length(Distros)
-        if isempty(DistroDir)
-            DistroDir = xASL_adm_GetFileList(SearchDir , ['.*' Distros{iD} '.*'], 'FPList', [0 Inf], true);
-            break
+    if ispc % for Windows Subsystem of Linux
+        [~, result] = system('echo %LOCALAPPDATA%');
+        SearchDir = fullfile(strtrim(result), 'Packages');
+        % Check distros to save time
+        Distros = {'CanonicalGroupLimited.Ubuntu' 'WhitewaterFoundryLtd' 'Ubuntu' 'SUSE' 'Kali' 'Debian'};
+        DistroDir = {};
+        for iD=1:length(Distros)
+            if isempty(DistroDir)
+                DistroDir = xASL_adm_GetFileList(SearchDir , ['.*' Distros{iD} '.*'], 'FPList', [0 Inf], true);
+                break
+            end
         end
-    end
-    if ~isempty(DistroDir)
-        RootWSLdir = xASL_adm_GetFileList(fullfile(DistroDir{1},'LocalState'), '^rootfs$', 'FPList', [0 Inf], true);
+        if ~isempty(DistroDir)
+            RootWSLdir = xASL_adm_GetFileList(fullfile(DistroDir{1},'LocalState'), '^rootfs$', 'FPList', [0 Inf], true);
+            if isempty(RootWSLdir)
+                RootWSLdir = xASL_adm_GetFileList(DistroDir{1}, '^rootfs$', 'FPListRec', [0 Inf], true);
+            end
+        end
         if isempty(RootWSLdir)
-            RootWSLdir = xASL_adm_GetFileList(DistroDir{1}, '^rootfs$', 'FPListRec', [0 Inf], true);
+            warning('Couldnt find rootfs (filesystem) of WSL, skipping');
+            return;
         end
+        PathApps{end+1} = fullfile(RootWSLdir,'usr','local');
     end
-    if isempty(RootWSLdir)
-        warning('Couldnt find rootfs (filesystem) of WSL, skipping');
-        return;
-    end
-    PathApps{end+1} = fullfile(RootWSLdir,'usr','local');
-end
 
-%% Search for first & second-layer subfolder
-for iP=1:length(PathApps)
-    TempDir = xASL_adm_GetFileList(lower(PathApps{iP}), '^(fsl|FSL).*', 'FPList', [0 Inf], true); % we can set this to recursive to be sure, but this will take a long time
-    if ~isempty(TempDir)
-        for iDir=1:length(TempDir)
-            RootFSLDir{end+1} = TempDir{iDir};
-            % Also search for second subfolder
-            TempDir2 = xASL_adm_GetFileList(RootFSLDir, '^(fsl|FSL).*', 'FPList', [0 Inf], true);
-            if ~isempty(TempDir2)
-                for iDir2=1:length(TempDir2)
-                    RootFSLDir{end+1} = TempDir2{iDir2};
+    %% Search for first & second-layer subfolder
+    for iP=1:length(PathApps)
+        TempDir = xASL_adm_GetFileList(lower(PathApps{iP}), '^(fsl|FSL).*', 'FPList', [0 Inf], true); % we can set this to recursive to be sure, but this will take a long time
+        if ~isempty(TempDir)
+            for iDir=1:length(TempDir)
+                RootFSLDir{end+1} = TempDir{iDir};
+                % Also search for second subfolder
+                TempDir2 = xASL_adm_GetFileList(RootFSLDir, '^(fsl|FSL).*', 'FPList', [0 Inf], true);
+                if ~isempty(TempDir2)
+                    for iDir2=1:length(TempDir2)
+                        RootFSLDir{end+1} = TempDir2{iDir2};
+                    end
                 end
             end
         end
