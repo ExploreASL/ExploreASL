@@ -163,11 +163,11 @@ else
             % has a different scale factor than the current GE product sequence
 
             case 'GE_product' % GE new version
-%                 qnt_R1gain = 1/32; % R1 analogue gain/ simple multiplier -> Alsop: M0 image is scaled down by 32, correction receiver gain in PDref?
+%                 qnt_R1gain = 1/32;
 %                 qnt_C1 = 6000; % GE constant multiplier
 
 %                 qnt_GEscaleFactor = (qnt_C1*qnt_R1gain)/(x.Q.NumberOfAverages); % OLD incorrect
-                qnt_R1gain = 32; %  M0 image is scaled down by 32, correction receiver gain in PDref?
+                qnt_R1gain = 32; %  PWI is scaled up by 32 (default GE scalefactor)
                 qnt_GEscaleFactor = qnt_R1gain*x.Q.NumberOfAverages;
                 % division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
 
