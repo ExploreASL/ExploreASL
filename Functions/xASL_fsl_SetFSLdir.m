@@ -132,7 +132,7 @@ for iDir=1:length(RootFSLDir)
 end
 
 % Remove doubles
-FSLdir = unique(FSLdir);
+FSLdir = sort(unique(FSLdir));
 
 %% Pick FSLdir
 if length(FSLdir)<1
