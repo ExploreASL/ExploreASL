@@ -47,7 +47,7 @@ if nargin<5 || isempty(bVerbose)
 end
 
 %% Find FSL directory
-[FSLdir, x, RootFSLdir] = xASL_fsl_SetFSLdir(x);
+[FSLdir, x, RootFSLdir] = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL);
 
 if min(isnan(FSLdir))
     warning('No FSL installation found, skipping FSL function');

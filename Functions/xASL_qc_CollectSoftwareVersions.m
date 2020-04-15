@@ -51,7 +51,7 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
     end
 
     %% Find FSL directory
-    FSLdir = xASL_fsl_SetFSLdir;
+    FSLdir = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL);
 
     if ~min(isnan(FSLdir))
         [Result1, Result2] = system([wslString ' cat ' xASL_adm_UnixPath(fullfile(FSLdir,'etc','fslversion'))]);

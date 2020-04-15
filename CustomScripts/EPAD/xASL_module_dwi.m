@@ -154,7 +154,7 @@ if ~x.mutex.HasState('020_EddyCurrent') || ~xASL_exist(PathEddyNii,'file')
 
     % Determine CUDA or openMP (CUDA = multi-core GP, openMP = multi-core CPU)
     fprintf('Readying for eddy current-correction...\n');
-    [FSLdir, x] = xASL_fsl_SetFSLdir(x);
+    [FSLdir, x] = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL);
 
     % Compute brain mask
     fprintf('Computing mean DWI image...\n');

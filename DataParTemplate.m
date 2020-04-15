@@ -27,6 +27,13 @@ function x = DataParTemplate(x)
 % Copyright 2015-2019 ExploreASL
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+% ENVIRONMENT PARAMETERS
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% x.bAutomaticallyDetectFSL - Boolean to automatically detect the FSL version
+%                             if disabled, this function will try to use the system-initialized FSL 
+%                             and throw an error if FSL is not initialized
+%                             (OPTIONAL, DEFAULT = disabled)
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % STUDY PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % x.name   - string for the name of the study (OPTIONAL)

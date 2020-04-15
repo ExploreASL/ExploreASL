@@ -65,12 +65,15 @@ RootFSLDir = '';
 % 
 %% 1) Check if FSL is initialized by system
 if ispc 
-    [~, result2] = system('wsl which fsl');
+    [bSuccess, result2] = system('wsl which fsl');
 else
-    [~, result2] = system('which fsl');
+    [bSuccess, result2] = system('which fsl');
 end 
-    
-RootFSLDir{end+1} = fileparts(result2);
+bSuccess = bSuccess==0;
+
+if bSuccess
+    RootFSLDir{end+1} = fileparts(result2);
+end
 
 if bAutomaticallyDetectFSL
     %% 2) Try searching at different ROOT paths, first layer subfolder
@@ -121,6 +124,14 @@ end
 
 %% Create new list with valid FSL folders
 FSLdir = '';
+if isempty(RootFSLDir) || isempty(RootFSLDir{end})
+    RootFSLDir = NaN;
+    FSLdir = NaN;
+    RootWSLdir = NaN;
+    fprintf('Warning, FSL folder not found!\n');
+    return;
+end
+    
 for iDir=1:length(RootFSLDir)
     % First remove 'bin'
     if strcmp(RootFSLDir{iDir}(end-2:end), 'bin')
