@@ -28,6 +28,12 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 % Copyright (C) 2015-2019 ExploreASL
 
     %% Manage input arguments
+	if nargin<4 || isempty(bVerbose)
+		bVerbose = true;
+    end
+    if nargin<3 || isempty(bOverwrite)
+        bOverwrite = false;
+    end    
     if nargin<2
         error('Please provide both SrcPath & DstPath');
     elseif strcmp(SrcPath,DstPath)
@@ -37,15 +43,9 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
         end
         return;
     end
-    if nargin<3 || isempty(bOverwrite)
-        bOverwrite = false;
-    end
-	if nargin<4 || isempty(bVerbose)
-		bVerbose = true;
-	end
 	% Check if source exists
 	if ~xASL_exist(SrcPath,'file')
-		error(['Source doesn''t exist: ' SrcPath])
+		error(['Source doesnt exist: ' SrcPath]);
     end
 	
     %% Manage .nii|.nii.gz

@@ -224,7 +224,7 @@ else
     elseif strcmp(x.Vendor,'Siemens') && ~strcmp(x.Vendor,'Siemens_JJ_Wang') && strcmp(x.M0,'separate_scan')
           % Some Siemens readouts divide M0 by 10, others don't
           ScaleImage = ScaleImage./10;
-          fprintf('%s\n','M0 corrected for Siemens 3D scale factor 10')
+          fprintf('%s\n','M0 corrected for Siemens scale factor 10')
     end
 end
 
