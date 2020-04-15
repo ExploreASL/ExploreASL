@@ -102,8 +102,8 @@ if length(FSLCommand)>5 && strcmp(FSLCommand(1:5),'/bin/')
 end
 
 %% Be nice
-NiceString = ['nice --adjustment=' num2str(NicenessValue) ' '];
-fprintf(['FSL: NiceNess=' num2str(NicenessValue) ', output=' OutputString]);
+NiceString = ['nice -' num2str(NicenessValue) ' '];
+fprintf('%s\n', ['FSL: NiceNess=' num2str(NicenessValue) ', output=' OutputString]);
 
 %% Run FSL
 if ispc

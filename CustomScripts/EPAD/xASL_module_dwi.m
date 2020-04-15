@@ -32,6 +32,9 @@ else
     bO = false; % skip output, as all processing has been performed
 end
 
+x.Sequence      = '2D_EPI';
+x.readout_dim   = '2D';
+
 
 %% Skip if existing
 if x.mutex.HasState('010_TopUp_dwi') && x.mutex.HasState('030_RegistrationDWI2T1w')
@@ -154,7 +157,7 @@ if ~x.mutex.HasState('020_EddyCurrent') || ~xASL_exist(PathEddyNii,'file')
 
     % Determine CUDA or openMP (CUDA = multi-core GP, openMP = multi-core CPU)
     fprintf('Readying for eddy current-correction...\n');
-    [FSLdir, x] = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL);
+    [FSLdir, x, RootWSLdir] = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL);
 
     % Compute brain mask
     fprintf('Computing mean DWI image...\n');
@@ -199,10 +202,17 @@ if ~x.mutex.HasState('020_EddyCurrent') || ~xASL_exist(PathEddyNii,'file')
 %         fprintf('No CUDA found, running CPU only\n');
 %     end
 
-    EddyCommand = '/bin/eddy_openmp';
+    if exist(fullfile(RootWSLdir,'bin','eddy_openmp'), 'file')
+        EddyCommand = '/bin/eddy_openmp';
+    elseif exist(fullfile(RootWSLdir,'bin','eddy'), 'file')
+        EddyCommand = '/bin/eddy';
+    else
+        error('Cannot find correct eddy function!');
+    end
+        
 
     % Run eddy current
-    fprintf('Computing eddy current correction...');
+    fprintf('%s\n', ['Computing eddy current correction using ' EddyCommand]);
 
     EddyCommand = [EddyCommand ' --imain=' xASL_adm_UnixPath(x.P.Path_dwi) ' --mask='...
         xASL_adm_UnixPath(x.P.Path_dwi_mask) ' --acqp=' xASL_adm_UnixPath(PathAcqp)...
@@ -308,12 +318,12 @@ if ~x.mutex.HasState('050_resliceDWI')
     %       So we only run the automatic Center of Mass ACPC alignment
     if ~xASL_exist(x.P.Path_y_T1,'file') && ~x.Quality
         IDmatrixPath = fullfile(x.D.MapsDir,'Identity_Deformation_y_T1.nii');
-        xASL_Copy( IDmatrixPath, x.P.Path_y_ASL, true);
+        xASL_Copy(IDmatrixPath, x.P.Path_y_ASL, true);
 
     elseif ~xASL_exist(x.P.Path_y_T1,'file')
         error('Structural module did not run correctly yet');
     else
-        xASL_wrp_CreateASLDeformationField(x, true, [2.5 2.5 2.5]); % assume bit lower resolution than the 2 mm that is usually used
+        xASL_wrp_CreateASLDeformationField(x, true, [2.5 2.5 2.5], x.P.Path_dwi_mean); % assume bit lower resolution than the 2 mm that is usually used
     end
 
     % output QC parameters: average SSE? over mask?

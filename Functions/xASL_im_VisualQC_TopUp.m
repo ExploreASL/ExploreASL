@@ -30,6 +30,13 @@ function [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_im_VisualQC_TopUp(
 Image{1} = xASL_io_Nifti2Im(PathPopB0);
 Image{2} = xASL_io_Nifti2Im(PathPopUnwarped);
 
+if sum(sum(sum(sum(isfinite(Image{1})))))==0 || sum(sum(sum(sum(isfinite(Image{2})))))==0
+    warning('Something wrong with TopUp images in standard space, they are empty, please check');
+    MeanAI_PreTopUp_Perc = NaN;
+    MeanAI_PostTopUp_Perc = NaN;
+    return;
+end
+
 %% Reinforce transversal slices
 if isfield(x.S, 'CorSlices')
     x.S = rmfield(x.S, 'CorSlices');

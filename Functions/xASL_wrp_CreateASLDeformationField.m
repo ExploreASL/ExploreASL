@@ -1,4 +1,4 @@
-function xASL_wrp_CreateASLDeformationField(x, bOverwrite, EstimatedResolution)
+function xASL_wrp_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, PathLowResNIfTI)
 %xASL_wrp_CreateASLDeformationField Adapt deformation field for lower resolution
 % FORMAT: xASL_wrp_CreateASLDeformationField(x, bOverwrite, EstimatedResolution)
 %
@@ -8,6 +8,8 @@ function xASL_wrp_CreateASLDeformationField(x, bOverwrite, EstimatedResolution)
 %   EstimatedResolution - X Y Z scalar with estimated effective spatial
 %                         resolution of images that flowfield will be applied to (OPTIONAL,
 %                         DEFAULT = obtain this automaticall)
+%   PathLowResNIfTI     - path to the NIfTI file that deformations will be
+%                         applied to (OPTIONAL, default=ASL4D)
 % OUTPUT: n/a %
 % --------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function smooths a transformation flow field to a lower
@@ -34,6 +36,9 @@ function xASL_wrp_CreateASLDeformationField(x, bOverwrite, EstimatedResolution)
 
 
 %% Admin
+if nargin<4 || isempty(PathLowResNIfTI)
+    PathLowResNIfTI = x.P.Path_ASL4D;
+end
 if nargin<2 || isempty(bOverwrite)
     bOverwrite = false; % By default, this function will be skipped if the ASL deformation field already exists
 end
@@ -47,7 +52,7 @@ end
 
 %% 1) Obtain resolutions
 if nargin<3 || isempty(EstimatedResolution)
-	EstimatedResolution = xASL_init_DefaultEffectiveResolution(x.P.Path_ASL4D, x);
+	EstimatedResolution = xASL_init_DefaultEffectiveResolution(PathLowResNIfTI, x);
 end
 
 TemplateResolution = [1.5 1.5 1.5];
@@ -63,7 +68,7 @@ xASL_im_FixEdgesFlowfield(x.P.Path_y_T1); % First fill NaNs, to prevent interpol
 niiT1w = xASL_io_ReadNifti(x.P.Path_T1);
 resSrc = niiT1w.hdr.pixdim(2:4);
 
-xASL_im_PreSmooth(x.P.Path_ASL4D, x.P.Path_y_T1, x.P.Path_y_ASL, [], resSrc); % we need to add the effective resolution here still!
+xASL_im_PreSmooth(PathLowResNIfTI, x.P.Path_y_T1, x.P.Path_y_ASL, [], resSrc); % we need to add the effective resolution here still!
 % sKernel, as calculated above, can be used for this. But the major
 % rotations need to be taken into account, between the effective
 % resolution as specified, and the one in the different NIfTIs

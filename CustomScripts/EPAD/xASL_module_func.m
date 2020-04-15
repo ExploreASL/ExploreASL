@@ -23,6 +23,9 @@ oldFolder = cd(x.SESSIONDIR);
 iSess = find(strcmp(x.SESSIONS,Ffile));
 [~, Ffile] = fileparts(Fpath);
 
+x.Sequence      = '2D_EPI';
+x.readout_dim   = '2D';
+
 %% Only continue if fMRI exists
 x.P.Path_func_bold = fullfile(x.SESSIONDIR, 'func_run-1_bold.nii');
 x.P.Path_func_bold_ORI = fullfile(x.SESSIONDIR, 'func_run-1_bold_ORI.nii');
