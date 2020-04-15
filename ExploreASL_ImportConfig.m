@@ -51,6 +51,13 @@ imPar.bMatchDirectories  = false;
 % -----------------------------------------------------------------------------
 switch imPar.studyID
 
+	case 'Insight46'
+		imPar.folderHierarchy = {'^dthomas-(\d*_\d*)' '(t1_mprage|t2.*fl.*|pgrs.*4000|pgrs.*1s)'};
+		imPar.tokenOrdering = [1 0 0 2];
+		imPar.tokenSessionAliases = {};
+		imPar.tokenScanAliases = {'^pgrs.*4000$', 'ASL4D'; '^pgrs.*1s$', 'M0'; '^t1_mprage$', 'T1'; '^t2.*fl.*$', 'FLAIR'};
+		imPar.bMatchDirectories = true;       
+    
 	case 'Craniosynostosis'
 		imPar.folderHierarchy = {'^(.*\d{4})$', '(T1|ASL|FLAIR)' 'DICOM'};
 		imPar.tokenOrdering = [1 0 2];

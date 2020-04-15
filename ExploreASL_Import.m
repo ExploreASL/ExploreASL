@@ -528,25 +528,11 @@ for iSubject=1:nSubjects
                         end
                     end
 
-%                    TWEAK THIS LATER
-%                     % check the number of created nifiti files in case of ASL: label and control should be merged as one 4D
-%                     if length(nii_files)==2 && ~isempty(strfind(scan_name,'ASL4D'))
-%                         nii_files = merge_2_ASL_nii_files(nii_files, scan_name);
-%                     elseif isempty(nii_files)
-%                         WarningMessage = 'ExploreASL_Import: dcm2nii failed, didnot create a NIfTI file';
-%                         [dcm2niiCatchedErrors] = CatchErrors('isempty(nii_files)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
-%
-%                     elseif length(nii_files)>2 % let's allow 2 NIfTI files, this occurs for some DTI scans
-%                         WarningMessage = ['ExploreASL_Import: Incorrect number of nifti files for ' scan_name ': ' num2str(length(nii_files))];
-%                         [dcm2niiCatchedErrors] = CatchErrors('length(nii_files)~=1', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
-%
-%                         % Changed this error in a warning to continue the import script
-%                         tNII            = nii_files{1};
-%                         nii_files{1}    = tNII;
-%                     else
-%                         tNII            = nii_files{1};
-%                         nii_files{1}    = tNII;
-%                     end
+                    %% Merge NIfTIs if there are multiple for ASL only
+                    % check the number of created nifiti files in case of ASL: control and label should be merged as one 4D
+                    if length(nii_files)>1 && ~isempty(strfind(scan_name,'ASL4D'))
+                        nii_files = merge_2_ASL_nii_files(nii_files, scan_name);
+                    end
 
                     % Extract relevant parameters from nifti header and append to summary file
                     summary_line = AppendNiftiParameters(nii_files);
@@ -762,44 +748,56 @@ function nii_files = merge_2_ASL_nii_files(nii_files, basename)
 % merge_2_ASL_nii_files
 % CAVE: deletes original files
 
-if length(nii_files)==2
-	% get the names of the two potential output files
-	name_x1 = nii_files{1};
-	name_x2 = nii_files{2};
-	[outpath, ~, ext] = fileparts(name_x1);
-	newfilepath = fullfile(outpath, [basename ext]);
-
-	if  xASL_exist(name_x1) && xASL_exist(name_x2)
-
-		%load data
-		temp_x1                         = xASL_io_ReadNifti(name_x1);
-		temp_x2                         = xASL_io_ReadNifti(name_x2);
-
-		if  max(size(temp_x1.dat(:,:,:))~=size(temp_x2.dat(:,:,:)))
-            warning('ExploreASL_Import: Files differ in dimensions, importing skipped');
-
-		else
-			if  size(temp_x1.dat(:,:,:,:),4)~=size(temp_x2.dat(:,:,:,:),4)
-				fprintf('%s\n','Files had different size 4th dimension, check this!!!');
-			end
-
-			dim     = size(temp_x1.dat);
-			dim(4)  = dim(4)*2;
-			D = zeros(dim);
-
-			for ii=1:size(temp_x1.dat,4)
-				D(:,:,:,(ii*2)-1) = temp_x1.dat(:,:,:,ii);
-				if  ii<=size(temp_x2.dat,4)
-					D(:,:,:,(ii*2)-0) = temp_x2.dat(:,:,:,ii);
-				end
-			end
-
-			xASL_io_SaveNifti( name_x1, newfilepath, D);
-
-			delete(name_x1, name_x2);
-			nii_files = {newfilepath};
-		end
-	end
+if length(nii_files)>1
+    fprintf('Warning EXPLOREASL_IMPORT: concatenating multiple NIfTIs & jsons as output from dcm2niiX\n');
+    % First curate the JSONs
+    Fpath = fileparts(nii_files{1});
+    JSONlist = xASL_adm_GetFileList(Fpath,'^ASL4D.*\.json$','FPList',[0 Inf]);
+    if length(JSONlist)>1
+        xASL_Move(JSONlist{1}, fullfile(Fpath, 'ASL4D.json'));
+        for iFile=2:length(JSONlist)
+            xASL_delete(JSONlist{iFile});
+        end
+    end
+    
+    % First rename the NIfTI files to 4 digit format & sort them
+    % this avoids 1 10 2 issues
+    for iFile=1:length(nii_files)
+        [Fpath, Ffile, Fext] = xASL_fileparts(nii_files{iFile});
+        [iStart, iEnd] = regexp(Ffile,'\d*$');
+        FfileNew = [Ffile(1:iStart-1) sprintf('%04d', str2num(Ffile(iStart:iEnd)))];
+        PathNew = fullfile(Fpath, [FfileNew Fext]);
+        xASL_Move(nii_files{iFile}, PathNew);
+        nii_files{iFile} = PathNew;
+    end
+    
+    nii_files = sort(nii_files);
+    
+    % Then create image
+    % Here we issue a warning for dimensionality>4
+    for iFile=1:length(nii_files)
+        tempIM = xASL_io_Nifti2Im(nii_files{iFile});
+        if length(size(tempIM))>4
+            error('Dimensionality incorrect for this ASL NIfTI file');
+        end
+        if iFile==1
+            IM = tempIM;
+        else
+            IM(:,:,:,end+1:end+size(tempIM,4)) = tempIM;
+        end
+    end
+    
+    NewNIfTI = fullfile(fileparts(nii_files{1}), 'ASL4D.nii');
+    xASL_io_SaveNifti(nii_files{1}, NewNIfTI, IM, [], 0);
+    
+    for iFile=1:length(nii_files)
+        xASL_delete(nii_files{iFile});
+    end
+    
+    fprintf('Corrected dcm2niiX output for\n');
+    fprintf('%s\n', NewNIfTI);
+    
+    nii_files = {NewNIfTI};
 end
 
 end
