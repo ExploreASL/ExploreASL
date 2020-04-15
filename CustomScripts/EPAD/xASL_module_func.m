@@ -37,10 +37,12 @@ end
 x = xASL_init_FileSystem(x); % this reinitiates x.P
 
 x.P.Path_func_bold = fullfile(x.SESSIONDIR, 'func_run-1_bold.nii'); % needs to be here for re-initiation
+x.P.Path_func_bold_mat = fullfile(x.SESSIONDIR, 'func_run-1_bold.mat');
 x.P.Path_func_bold_ORI = fullfile(x.SESSIONDIR, 'func_run-1_bold_ORI.nii'); % needs to be here for re-initiation
 x.P.Path_func_NormPE = fullfile(x.SESSIONDIR, 'func_run-1_NormPE.nii');
 x.P.Path_func_RevPE = fullfile(x.SESSIONDIR, 'func_run-1_RevPE.nii');
 x.P.Path_despiked_func_bold = fullfile(x.SESSIONDIR, 'despiked_func_run-1_bold.nii');
+x.P.Path_despiked_func_bold_mat = fullfile(x.SESSIONDIR, 'despiked_func_run-1_bold.mat');
 x.P.Path_func_bold_parms_mat = fullfile(x.SESSIONDIR, 'func_run-1_bold_parms.mat');
 
 PathB0 = fullfile(x.SESSIONDIR ,'B0.nii');
@@ -123,9 +125,9 @@ else
     if ~x.mutex.HasState('020_realign_func')
 
         % Remove previous files
-        DelList = {x.P.File_func_bold_mat x.P.File_despiked_func_bold x.P.File_despiked_func_bold_mat 'rp_func_bold.txt'};
+        DelList = {x.P.Path_func_bold_mat x.P.Path_despiked_func_bold x.P.Path_despiked_func_bold_mat 'rp_func_bold.txt'};
         for iD=1:length(DelList)
-            xASL_delete(fullfile( x.SESSIONDIR, DelList{iD}));
+            xASL_delete(fullfile(x.SESSIONDIR, DelList{iD}));
         end
 
 %         % First, solve dimensionality (in case there are empty dims, that need restructuring)
