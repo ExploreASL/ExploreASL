@@ -44,7 +44,7 @@ RootFSLDir = {};
 if isfield(x,'FSLdir') && isfield(x,'RootFSLDir') && ~isempty(x.FSLdir) && ~isempty(x.RootFSLDir)
     % if we already have an FSL dir, skip this function
     FSLdir = x.FSLdir;
-    RootFSLDir = x.RootFSLDir;
+    RootWSLdir = x.RootFSLDir;
     return;
 end
 
@@ -186,7 +186,7 @@ FSLdir = strrep(FSLdir,'\','/');
 
 
 %% Manage RootFSLDir
-if ~exist('RootWSLdir','var')
+if ~exist('RootWSLdir','var') || isnan(RootWSLdir)
     RootWSLdir = FSLdir; % default
 else
     RootWSLdir = fullfile(RootWSLdir, FSLdir); % for e.g. WSL

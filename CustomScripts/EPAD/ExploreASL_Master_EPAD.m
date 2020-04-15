@@ -39,7 +39,7 @@ function [x] = ExploreASL_Master_EPAD(DataParPath, ProcessData, SkipPause, iWork
     end
         
     x = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, nWorkers, [1 2]); % [1 2] stands for structural & ASL modules
-    addpath(genpath(fullfile(pwd,'CustomScripts', 'EPAD'))); % add paths recursively, to be sure it detects the EPAD-specific functions
+    addpath(genpath(fullfile(x.MyPath,'CustomScripts', 'EPAD'))); % add paths recursively, to be sure it detects the EPAD-specific functions
     
     %% 2    xASL_module_func (==fMRI)
     % 1     Motion correction func
