@@ -429,10 +429,10 @@ if ~x.mutex.HasState('060_visualize')
     
     %% Calculate DWI stats within the WM
 	% Presmooth the image
-	xASL_im_PreSmooth(PathB0, x.P.Path_c2T1, x.P.Path_rc2T1, [], [], [], 1);
+	xASL_im_PreSmooth(PathEddyNii, x.P.Path_c2T1, x.P.Path_rc2T1, [], [], [], 1);
 	
 	% Run the transformation
-    xASL_spm_reslice(PathB0, x.P.Path_rc2T1, [], 1, x.Quality, x.P.Path_rc2T1, 1);
+    xASL_spm_reslice(PathEddyNii, x.P.Path_rc2T1, [], 1, x.Quality, x.P.Path_rc2T1, 1);
 	
     MaskIM = xASL_io_Nifti2Im(x.P.Path_rc2T1)>0.9;
 
@@ -440,19 +440,31 @@ if ~x.mutex.HasState('060_visualize')
     DWIParms = {'SSE' 'FA' 'B0'};
 
     for iDWI=1:length(DWIdataPaths)
+        % Define defaults
+        x.Output.dwi.([DWIParms{iDWI} '_WM_Mean']) = NaN;
+        x.Output.dwi.([DWIParms{iDWI} '_WM_SD']) = NaN;
+        x.Output.dwi.([DWIParms{iDWI} '_WM_Min']) = NaN;
+        x.Output.dwi.([DWIParms{iDWI} '_WM_Max']) = NaN;        
+        
         DataIM = xASL_io_Nifti2Im(DWIdataPaths{iDWI});
         DataIM = DataIM(:,:,:,1);
         DataIM = DataIM(MaskIM);
 
-        MeanParm(iDWI) = xASL_stat_MeanNan(DataIM);
-        SDevParm(iDWI) = xASL_stat_StdNan(DataIM);
-        MinParm(iDWI) = min(DataIM);
-        MaxParm(iDWI) = max(DataIM);
+        if sum(MaskIM(:))==0
+            warning(['Empty maskIM, check ' x.P.Path_rc2T1]);
+        elseif numel(DataIM(:))==0
+            warning(['Empty image, check ' DWIdataPaths{iDWI}]);
+        else
+            MeanParm(iDWI) = xASL_stat_MeanNan(DataIM);
+            SDevParm(iDWI) = xASL_stat_StdNan(DataIM);
+            MinParm(iDWI) = min(DataIM);
+            MaxParm(iDWI) = max(DataIM);
 
-        x.Output.dwi.([DWIParms{iDWI} '_WM_Mean']) = MeanParm(iDWI);
-        x.Output.dwi.([DWIParms{iDWI} '_WM_SD']) = SDevParm(iDWI);
-        x.Output.dwi.([DWIParms{iDWI} '_WM_Min']) = MinParm(iDWI);
-        x.Output.dwi.([DWIParms{iDWI} '_WM_Max']) = MaxParm(iDWI);
+            x.Output.dwi.([DWIParms{iDWI} '_WM_Mean']) = MeanParm(iDWI);
+            x.Output.dwi.([DWIParms{iDWI} '_WM_SD']) = SDevParm(iDWI);
+            x.Output.dwi.([DWIParms{iDWI} '_WM_Min']) = MinParm(iDWI);
+            x.Output.dwi.([DWIParms{iDWI} '_WM_Max']) = MaxParm(iDWI);
+        end
     end
 
     xASL_delete(x.P.Path_rc2T1);
@@ -463,7 +475,7 @@ if ~x.mutex.HasState('060_visualize')
     PathOrientationResults = fullfile(x.SESSIONDIR,'xASL_qc_PrintOrientation_RigidRegdwi.tsv');
     x.Output.dwi = xASL_im_DetermineFlip(x, iSubject, PathOrientationResults, x.Output.dwi);    
     
-    save(PathX, 'x'); % future: do this in each xWrapper    
+    save(PathX, 'x'); % future: do this in each xWrapper
 
     x.mutex.AddState('060_visualize');
 elseif  bO; fprintf('%s\n','060_visualize has already been performed, skipping...');
