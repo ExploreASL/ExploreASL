@@ -22,14 +22,20 @@ end
 
 %% 0.3 create a 'lock' folder to keep track of which analysis step ran (or still runs)
 % Create a mutex folder to assure that everything will run only once
+
+if ~exist(x.LOCKDIR,'dir')
+    fprintf(['ERROR in module_' x.ModuleName ': wrong LOCKDIR assigned\n']);
+end
+
 x.mutex = xASL_GoNoGo(x.LOCKDIR);
 if ~x.mutex.Lock(x.MUTEXID)
-    fprintf(2,['ERROR in module_' x.ModuleName ': mutex is locked: %s in %s\n'], x.MUTEXID, x.LOCKDIR);
-    fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');
-    fprintf('If this is not the case, the locked folder needs to be removed before proceeding\n');
     fprintf('Also, check that there is no filesystem permission issue\n');
+	fprintf(2,['ERROR in module_' x.ModuleName ': mutex is locked: %s in %s\n'], x.MUTEXID, x.LOCKDIR);
+	fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');
+	fprintf('If this is not the case, the locked folder needs to be removed before proceeding\n');
+	fprintf('Also, check that there is no filesystem permission issue\n');
     fprintf('Otherwise this error can be ignored\n');
-    return;
+	return;
 end
 
 
