@@ -35,6 +35,9 @@ end
 x.Sequence      = '2D_EPI';
 x.readout_dim   = '2D';
 
+if ~isfield(x,'bAutomaticallyDetectFSL')
+    x.bAutomaticallyDetectFSL = 0;
+end
 
 %% Skip if existing
 if x.mutex.HasState('010_TopUp_dwi') && x.mutex.HasState('030_RegistrationDWI2T1w')

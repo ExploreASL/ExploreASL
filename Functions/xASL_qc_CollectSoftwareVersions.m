@@ -51,6 +51,10 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
     end
 
     %% Find FSL directory
+    if ~isfield(x,'bAutomaticallyDetectFSL')
+        x.bAutomaticallyDetectFSL = 0;
+    end
+    
     FSLdir = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL);
 
     if ~min(isnan(FSLdir))

@@ -47,6 +47,10 @@ if nargin<5 || isempty(bVerbose)
 end
 
 %% Find FSL directory
+if ~isfield(x,'bAutomaticallyDetectFSL')
+    x.bAutomaticallyDetectFSL = 0;
+end
+
 [FSLdir, x, RootFSLdir] = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL);
 
 if min(isnan(FSLdir))
