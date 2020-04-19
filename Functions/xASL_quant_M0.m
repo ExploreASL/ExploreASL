@@ -151,15 +151,14 @@ else
     minCorr_T1      = min(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
     maxCorr_T1      = max(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
 
-    if ~isfield(x,'M0_GMScaleFactor') || isempty(x.M0_GMScaleFactor)
-        x.M0_GMScaleFactor = 1; % no scaling
-    else
-    	fprintf('%s\n',['M0 scaling corrected by GMScaleFactor ' xASL_num2str(x.M0_GMScaleFactor)]);
-    end
-
-    M0IM = M0IM.*x.M0_GMScaleFactor;
-
     fprintf('%s\n',['Incomplete inversion recovery M0 correction: TR range ' num2str(min_TR) '-' num2str(max_TR) ' ms, T1 WM tissue ' num2str(x.Q.TissueT1) ' ms, gives factor ' num2str(minCorr_T1) '-' num2str(maxCorr_T1)]);
+end
+
+if ~isfield(x,'M0_GMScaleFactor') || isempty(x.M0_GMScaleFactor)
+    x.M0_GMScaleFactor = 1; % no scaling
+else
+    fprintf('%s\n',['M0 scaling corrected by GMScaleFactor ' xASL_num2str(x.M0_GMScaleFactor)]);
+    M0IM = M0IM.*x.M0_GMScaleFactor;
 end
 
 % x.M0_GMScaleFactor - add additional scale factor to multiply the M0 image by (OPTIONAL, default = 1)
