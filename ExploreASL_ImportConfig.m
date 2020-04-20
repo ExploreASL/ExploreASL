@@ -66,10 +66,10 @@ switch imPar.studyID
 		imPar.bMatchDirectories = true;    
 		
 	case 'SABRE'
-		imPar.folderHierarchy = {'^(\d.*)$', '.*', '.*', 'DICOM', '(T1_3D|pCASL_main|calibration)'};
+		imPar.folderHierarchy = {'^(\d.*)$', '.*', '.*', 'DICOM', '(3D_FLAIR|T1_3D|pCASL_main|calibration)'};
 		imPar.tokenOrdering = [1 0 2];
 		imPar.tokenSessionAliases = {};
-		imPar.tokenScanAliases = {'^pCASL_main$', 'ASL4D'; '^T1_3D$', 'T1'; '^calibration$', 'M0'};
+		imPar.tokenScanAliases = {'^pCASL_main$', 'ASL4D'; '^3D_FLAIR$', 'FLAIR'; '^T1_3D$', 'T1'; '^calibration$', 'M0'};
 		imPar.bMatchDirectories = true;    
     
 	case 'SydneyMS_Controls'

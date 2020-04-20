@@ -145,7 +145,7 @@ function x = DataParTemplate(x)
 %                         - 1) Apply ScaleSlopes ASL4D (xASL_wrp_Quantify, future at dcm2niiX stage)
 %                         - 2) Apply ScaleSlopes M0 (xASL_quant_M0, future at dcm2niiX stage)
 %                         - 3) Convert PWI a.u. to label (xASL_wrp_Quantify, future at xASL_wrp_Reslice?)
-%                         - 4) Quantify M0 a.u. (xASL_quant_M0, corrects for incomplete T1 inversion recovery)
+%                         - 4) Quantify M0 a.u. (xASL_quant_M0, corrects for incomplete T1 relaxation)
 %                         - 5) Perform division by M0
 %                       - examples: 
 %                         - ASL4D is an already quantified CBF image, disable all quantification '[0 0 0 0 0]'
