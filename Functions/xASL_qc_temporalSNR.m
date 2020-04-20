@@ -163,7 +163,7 @@ tSNR.tSNR_Physio2Thermal_Ratio = abs(sqrt(((tSNR.tSNR_GMWM_Ratio/tSNR.tSNR_GMWM_
 
 %% Calculate SNR slope
 IndexI = 1;
-fprintf('%s','Calculating SNR slope over voxels included for increasing brain probabilities.\n');
+fprintf('Calculating SNR slope over voxels included for increasing brain probabilities:   ');
 MaxP = 0.95;
 MinP = 0.1;
 StepP = 0.05;
@@ -189,11 +189,12 @@ end
 
 B = pinv([sqrt(ROIsize)' ones(18,1)])*ROIvalue';
 tSNR.tSNR_Slope_Corr = B(1);
-return
+fprintf('\n');
+end
 
 %xASL_Index2Data Obtain data from coordinates as indicated by the imMask
 function [DataN] = xASL_Index2Data(volIn,imMask)
     SizeIM = size(imMask);
     [x,y,z] = ind2sub(SizeIM,find(imMask));
     DataN = spm_get_data(volIn,[x y z]');
-return
+end

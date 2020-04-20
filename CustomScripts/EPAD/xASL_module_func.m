@@ -292,10 +292,10 @@ if ~x.mutex.HasState('060_QC')
         end
     end
 
-    x = xASL_qc_CollectParameters(x, x.iSubject, 'func');
-
     xASL_qc_PrintOrientation(x.SESSIONDIR, x.P.Path_func_bold, x.SESSIONDIR, 'RigidRegfunc');
     % This function summarizes the func orientation. Especially check the determinant, for left-right flips    
+
+    x = xASL_qc_CollectParameters(x, x.iSubject, 'func');
     
     xASL_delete(PathX);
     save(PathX,'x');

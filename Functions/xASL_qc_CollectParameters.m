@@ -23,7 +23,7 @@ function x = xASL_qc_CollectParameters(x, iSubject, ScanType)
 %% Admin
 fclose all;
 
-fprintf('Collecting QC parameters...   ');
+fprintf('Collecting QC parameters...\n');
 
 if nargin<3 || isempty(ScanType)
     % Run collecting and saving for all
