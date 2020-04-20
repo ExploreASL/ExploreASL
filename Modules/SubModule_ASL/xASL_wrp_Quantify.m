@@ -143,7 +143,7 @@ else
 
     % NB: M0 quantification has largely been done in previous script,
     % load M0-parms only to check that ASL & M0-parms are identical
-    % Scale slopes & incomplete T1 recovery were already corrected in M0 module
+    % Scale slopes & incomplete T1 relaxation were already corrected in M0 module
 end
 
 

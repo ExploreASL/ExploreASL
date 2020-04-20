@@ -171,7 +171,7 @@ else
     fprintf('%s\n',['M0 image corrected for Labda: ' num2str(x.Q.Lambda)]);
     % qnt_labda (0.9) = brain-blood partition coefficient.
     % Used for M0 image
-    % Scale slopes & incomplete T1 recovery were already corrected in M0 module
+    % Scale slopes & incomplete T1 relaxation were already corrected in M0 module
 end
 
 if  xASL_stat_SumNan(M0_im(:))==0

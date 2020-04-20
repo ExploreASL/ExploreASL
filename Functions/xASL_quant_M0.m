@@ -57,7 +57,7 @@ else
 end
 
 if ~x.ApplyQuantification(4)
-    fprintf('%s\n','M0 quantification for incomplete inversion recovery skipped');
+    fprintf('%s\n','M0 quantification for incomplete T1 relaxation skipped');
     % M0 quantification here is only for the incomplete T1 recovery
     % One potential reason of skipping this, is when a pseudo-M0 is used
     % that has background suppression. In this case, there is no incomplete
@@ -65,7 +65,7 @@ if ~x.ApplyQuantification(4)
     % the signal instead.
 else
 
-    % Correction for incomplete T1 recovery of M0 because of short TR.
+    % Correction for incomplete T1 relaxation of M0 because of short TR.
     % Control image is smaller than should be, paired subtraction is not.
     % Therefore, correct this (2% decrease)
     % Using GM value here, assuming that we are interested in GM. If not, can be corrected later with WM mask
@@ -73,7 +73,7 @@ else
         fprintf('%s\n','x.Q.TissueT1 did not exist, default=1240 used');
         x.Q.TissueT1 = 800; % 800 ms for WM, average of frontal & occipital WM from Lu et al., JMRI 2005 & 3 studies they refer to
         % for GM, this would be 1300 ms
-        % Here we use the WM T1w, since we smooth a lot
+        % Here we use the WM T1, since we smooth a lot
     end
 
     if ~isempty(regexp(x.Vendor,'GE')) && isempty(regexp(x.Vendor,'Siemens')) &&  isempty(regexp(x.Vendor,'Philips'))
@@ -151,7 +151,7 @@ else
     minCorr_T1      = min(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
     maxCorr_T1      = max(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
 
-    fprintf('%s\n',['Incomplete inversion recovery M0 correction: TR range ' num2str(min_TR) '-' num2str(max_TR) ' ms, T1 WM tissue ' num2str(x.Q.TissueT1) ' ms, gives factor ' num2str(minCorr_T1) '-' num2str(maxCorr_T1)]);
+    fprintf('%s\n',['M0 correction of incomplete T1 relaxation: TR range ' num2str(min_TR) '-' num2str(max_TR) ' ms, T1 WM tissue ' num2str(x.Q.TissueT1) ' ms, gives factor ' num2str(minCorr_T1) '-' num2str(maxCorr_T1)]);
 end
 
 if ~isfield(x,'M0_GMScaleFactor') || isempty(x.M0_GMScaleFactor)
