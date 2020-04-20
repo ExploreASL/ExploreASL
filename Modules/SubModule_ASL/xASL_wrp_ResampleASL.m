@@ -77,7 +77,13 @@ xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_temp_despiked_ASL4D, tempnii
 % digitization artifacts in the spatial processing
 % Plus this creates a temporary copy to not touch the original ASL file
 
-xASL_spm_deformations(x, x.P.Path_temp_despiked_ASL4D,x.P.Path_rtemp_despiked_ASL4D,4,[],x.P.Path_mean_PWI_Clipped_sn_mat,x.P.Path_y_ASL);
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+    AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
+else
+    AffineTransfPath = [];
+end
+
+xASL_spm_deformations(x, x.P.Path_temp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, 4, [], AffineTransfPath, x.P.Path_y_ASL);
 
 
 %% ------------------------------------------------------------------------------------------
@@ -130,7 +136,14 @@ if  nVolumes>1 % this is when a mean control image can be created
 
     InputFiles  = {x.P.Path_mean_control};
     OutputFiles = {x.P.Pop_Path_mean_control};
-    xASL_spm_deformations(x, InputFiles, OutputFiles, [], [], x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+
+    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+        AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
+    else
+        AffineTransfPath = [];
+    end
+
+    xASL_spm_deformations(x, InputFiles, OutputFiles, [], [], AffineTransfPath, x.P.Path_y_ASL);
 
     xASL_adm_DeleteFilePair(x.P.Path_SD_control, 'mat');
     xASL_adm_DeleteFilePair(x.P.Path_SNR_control, 'mat');

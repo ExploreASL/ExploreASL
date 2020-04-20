@@ -58,8 +58,22 @@ xASL_io_SaveNifti(x.P.Path_SliceGradient_extrapolated,x.P.Path_SliceGradient_ext
 
 %% ------------------------------------------------------------------------------------
 %%     Reslice slice gradient to MNI (using existing ASL matrix changes from e.g. registration to MNI, motion correction, registration to GM)
-xASL_spm_deformations(x, x.P.Path_SliceGradient, x.P.Pop_Path_SliceGradient,0,[], x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL); % nearest neighbor
-xASL_spm_deformations(x, x.P.Path_SliceGradient_extrapolated, x.P.Pop_Path_SliceGradient_extrapolated,1,[], x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+	AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
+else
+	AffineTransfPath = [];
+end
+
+xASL_spm_deformations(x, x.P.Path_SliceGradient, x.P.Pop_Path_SliceGradient, 0, [], AffineTransfPath, x.P.Path_y_ASL); % nearest neighbor
+
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+	AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
+else
+	AffineTransfPath = [];
+end
+
+xASL_spm_deformations(x, x.P.Path_SliceGradient_extrapolated, x.P.Pop_Path_SliceGradient_extrapolated,1,[], AffineTransfPath, x.P.Path_y_ASL);
 % Since smoothing is desirable for this slice gradient, and spline edge artifacts are not, we use trilinear here as interpolation method
 
 %% Add some more extrapolation to be sure

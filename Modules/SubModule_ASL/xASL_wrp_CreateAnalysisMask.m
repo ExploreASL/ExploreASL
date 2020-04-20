@@ -43,7 +43,14 @@ end
 FoVim = xASL_io_Nifti2Im(x.P.Path_CBF);
 FoVim(:) = 1;
 xASL_io_SaveNifti(x.P.Path_CBF, x.P.Path_FoV, FoVim, 8, false);
-xASL_spm_deformations(x, x.P.Path_FoV, x.P.Pop_Path_FoV, 0, [], x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+    AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
+else
+    AffineTransfPath = [];
+end
+
+xASL_spm_deformations(x, x.P.Path_FoV, x.P.Pop_Path_FoV, 0, [], AffineTransfPath, x.P.Path_y_ASL);
 
 %% Deal with different readouts
 DoSusceptibility = true;

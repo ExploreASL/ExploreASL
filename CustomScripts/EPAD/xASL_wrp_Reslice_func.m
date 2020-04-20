@@ -64,7 +64,13 @@ xASL_io_SaveNifti(x.P.Path_func_bold, x.P.Path_mean_control, PWI, 32, false);
 InputPaths = {x.P.Path_mean_control x.P.Path_SD x.P.Path_SNR};
 OutputPaths = {x.P.Pop_Path_mean_control x.P.Pop_Path_SD x.P.Pop_Path_SNR};
 
-xASL_spm_deformations(x, InputPaths, OutputPaths, 2, [], x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+	AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
+else
+	AffineTransfPath = [];
+end
+
+xASL_spm_deformations(x, InputPaths, OutputPaths, 2, [], AffineTransfPath, x.P.Path_y_ASL);
 
 fprintf('%s\n','Standard space func maps saved');
 
