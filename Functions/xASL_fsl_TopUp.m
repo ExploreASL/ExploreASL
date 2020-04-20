@@ -248,14 +248,14 @@ else
     %     end
     % 	TopUpCommand = [TopUpCommand ' --subsamp=' SampleMM ' --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
     %   Above part was disabled, as it didnt work always
-
-    ActualCommand = [TopUpCommand ' --subsamp=4 --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
-    [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
+    % HERE WE DISABLE SUBSAMPLING, IT 
+    % ActualCommand = [TopUpCommand ' --subsamp=4 --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
+    % [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
     
-    if result1~=0 % try again without subsampling
-        ActualCommand = [TopUpCommand ' --subsamp=1 --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
+    % if result1~=0 % try again without subsampling
+        ActualCommand = [TopUpCommand ' --subsamp=1 --fwhm=0 --miter=1 --splineorder=2 --interp=linear'];
         [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
-    end
+    % end
 end
 
 if result1==0 % successfull run
