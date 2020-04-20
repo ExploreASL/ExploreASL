@@ -226,7 +226,6 @@ TopUpCommand = ['/bin/topup --imain=' xASL_adm_UnixPath(PathB0)...
 
 if x.Quality
     ActualCommand = TopUpCommand;
-    [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
 	% keep default settings (which are pretty extensive, many iterations)
 else
     %   to speed up while testing:
@@ -253,10 +252,14 @@ else
     % [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
     
     % if result1~=0 % try again without subsampling
-        ActualCommand = [TopUpCommand ' --subsamp=1 --fwhm=0 --miter=1 --splineorder=2 --interp=linear'];
-        [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
+        ActualCommand = [TopUpCommand ' --miter=1 --splineorder=3 --interp=linear']; 
+        % splineorder needs to be cubical (3), if set to square (2) this
+        % will create weird results
+        % default on normal quality is '--miter=5 --splineorder=3 --interp=spline
     % end
 end
+
+[~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
 
 if result1==0 % successfull run
     bSuccess = true;
