@@ -6,6 +6,13 @@ function xASL_wrp_Register_func(x)
 %% ----------------------------------------------------------------------------------------
 %% Administration: manage sequences
 
+PathField = fullfile(x.SESSIONDIR ,'Field.nii');
+PathFieldCoef = fullfile(x.SESSIONDIR ,'TopUp_fieldcoef.nii');
+PathB0 = fullfile(x.SESSIONDIR ,'B0.nii');
+PathUnwarped = fullfile(x.SESSIONDIR ,'Unwarped.nii');
+PathPopB0 = fullfile(x.D.PopDir, ['rFunc_B0_' x.SUBJECTS{x.iSubject} '.nii']);
+PathPopUnwarped = fullfile(x.D.PopDir, ['rFunc_Unwarped_' x.SUBJECTS{x.iSubject} '.nii']);
+
 
 %% 1    First create ASL-standard space flow field
 %       If no T1 flow field exists, create an identity flowfield.
@@ -14,7 +21,6 @@ function xASL_wrp_Register_func(x)
 if ~xASL_exist(x.P.Path_y_T1,'file') && ~x.Quality
     IDmatrixPath = fullfile(x.D.MapsDir,'Identity_Deformation_y_T1.nii');
     xASL_Copy(IDmatrixPath, x.P.Path_y_ASL,1);
-    xASL_im_CenterOfMass(x.P.Path_func_bold);
 
 elseif ~xASL_exist(x.P.Path_y_T1,'file')
     error('Structural module did not run correctly yet');
@@ -51,11 +57,7 @@ end
 %% 0    Clip image, optimizes image contrast for registration
 xASL_delete(x.P.Path_mean_control);
 xASL_io_PairwiseSubtraction(x.P.Path_func_bold, x.P.Path_mean_PWI_Clipped,0,0); % create PWI & mean_control
-if ~xASL_exist(x.P.Path_mean_control, 'file')
-    xASL_Move(x.P.Path_mean_PWI_Clipped, x.P.Path_mean_control);
-else
-    xASL_delete(x.P.Path_mean_PWI_Clipped);
-end
+xASL_delete(x.P.Path_mean_PWI_Clipped);
 
 
 %% ----------------------------------------------------------------------------------------
@@ -65,12 +67,25 @@ end
 % PWI-based registration can be preferable over EPI-based registration if
 % background suppression and/or other 3D readout techniques are used.
 
-OtherList = '';
-OtherList{1,1} = x.P.Path_func_bold;
-OtherList{end+1,1} = x.P.Path_func_NormPE;
-OtherList{end+1,1} = x.P.Path_func_RevPE;
+OtherList = {x.P.Path_func_bold, x.P.Path_func_bold_ORI, PathB0, x.P.Path_func_NormPE, x.P.Path_func_RevPE, PathField, PathFieldCoef};
 
-xASL_spm_coreg(x.P.Path_c1T1, x.P.Path_mean_control, OtherList, x );
+if xASL_exist(PathUnwarped, 'file')
+    fprintf('Using TopUp-corrected raw image for registration\n');
+    PathRegContrast = PathUnwarped;
+    OtherList{end+1} = x.P.Path_mean_control;
+else
+    fprintf('No TopUp-corrected raw image found, using non-corrected average image instead for registration\n');
+    PathRegContrast = x.P.Path_mean_control;
+    OtherList{end+1} = PathUnwarped;
+end
+
+% Create dummy
+DummyIM = xASL_io_Nifti2Im(x.P.Path_c1T1).*1.25+xASL_io_Nifti2Im(x.P.Path_c2T1)+xASL_io_Nifti2Im(x.P.Path_c3T1).*2;
+DummyPath = fullfile(x.SESSIONDIR, 'Tempc1c2c3.nii');
+xASL_io_SaveNifti(x.P.Path_c1T1, DummyPath, DummyIM, [], 0);
+
+xASL_spm_coreg(DummyPath, PathRegContrast, OtherList, x);
+xASL_delete(DummyPath);
 
 %% ----------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% if this doesn't work, we can use a 2D EPI template instead of the T1w

@@ -48,6 +48,8 @@ x.P.Path_despiked_func_bold = fullfile(x.SESSIONDIR, 'despiked_func_run-1_bold.n
 x.P.Path_despiked_func_bold_mat = fullfile(x.SESSIONDIR, 'despiked_func_run-1_bold.mat');
 x.P.Path_func_bold_parms_mat = fullfile(x.SESSIONDIR, 'func_run-1_bold_parms.mat');
 
+PathField = fullfile(x.SESSIONDIR ,'Field.nii');
+PathFieldCoef = fullfile(x.SESSIONDIR ,'TopUp_fieldcoef.nii');
 PathB0 = fullfile(x.SESSIONDIR ,'B0.nii');
 PathUnwarped = fullfile(x.SESSIONDIR ,'Unwarped.nii');
 PathPopB0 = fullfile(x.D.PopDir, ['rFunc_B0_' x.SUBJECTS{x.iSubject} '.nii']);
@@ -103,7 +105,7 @@ end
 
 %% -----------------------------------------------------------------------------
 %% 1    TopUp
-if ~x.mutex.HasState('010_TopUp_func') || ~xASL_exist(fullfile(x.SESSIONDIR,'TopUp_fieldcoef.nii'),'file')
+if ~x.mutex.HasState('010_TopUp_func') || ~xASL_exist(PathFieldCoef, 'file')
     
     bSuccess = xASL_fsl_TopUp(x.SESSIONDIR, 'func', x, x.P.Path_func_bold);
 
