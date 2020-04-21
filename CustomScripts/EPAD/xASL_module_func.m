@@ -143,7 +143,8 @@ else
 
         if  nVol>1
             % Before motion correction, we align the images with ACPC
-            xASL_im_CenterOfMass(x.P.Path_func_bold);
+            OtherList = {x.P.Path_func_bold_ORI, PathB0, PathUnwarped, x.P.Path_func_NormPE, x.P.Path_func_RevPE, PathField, PathFieldCoef};
+            xASL_im_CenterOfMass(x.P.Path_func_bold, OtherList, 10);
 
             % Run motion Correction
             xASL_wrp_RealignASL(x, false); % same as ASL, but no subtraction/pairwise data
