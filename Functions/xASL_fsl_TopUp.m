@@ -190,14 +190,11 @@ end
 % =========================================================================
 %% Run TopUp Estimate
 
-%% 1) Do registration before TopUp, if we found a similar enough image
-% if SameParmsInd~=0
-%     RegisterTopUptoOutput(PathNII, InDir, TopUpNIIPath, SameParmsInd, x);
-% end
-% Disabled for now, as it can be questionable whether this helps or not;
-% The two TopUp scans are differently deformed, assuming they lie
-% relatively on the same position, rigid-body registration can actually
-% decrease the TopUp accuracy a lot...
+%% 1) Register blip up/down images to TopUp output image, if we find a TopUp image which similar
+%  acquisition parameters as the output image
+if SameParmsInd~=0
+    RegisterTopUptoOutput(PathNII, InDir, TopUpNIIPath, SameParmsInd, x);
+end
 
 
 %% 2) Run TopUp Estimate
@@ -236,7 +233,7 @@ else
     % possibility for subsampling)
     %
     %     % find number that we can divide matrix by
-         tIM = xASL_io_ReadNifti(PathB0);
+    %     tIM = xASL_io_ReadNifti(PathB0);
     %     SampleMM = 1;
     %     for iMM=4:-1:1
     %         if SampleMM==1
@@ -352,7 +349,9 @@ function RegisterTopUptoOutput(PathNII, InDir, TopUpNIIPath, SameParmsInd, x)
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function ensures that the NormPE & RevPE images are
-%              registered & resampled to the image we apply topup to:
+%              registered & resampled to the image we apply topup to.
+%              Note that the NormPE & RevPE are copied to separate
+%              TopUp.nii, so the original images are kept unchanged.
 %              A) Create average image (if the goal NIfTI has multiple
 %                 images, they are averaged (e.g. time-series) into a
 %                 temporary NIfTI TempRegIm.nii
@@ -368,15 +367,15 @@ function RegisterTopUptoOutput(PathNII, InDir, TopUpNIIPath, SameParmsInd, x)
 [~, PrintFile2, PrintExt2] = xASL_fileparts(PathNII{end});
 
 fprintf('\n\n=========================================================================\n')
-fprintf([PrintFile PrintExt ' had similar acquisition parms as the output image\n']);
+fprintf([PrintFile PrintExt ' has similar acquisition parms as the output image\n']);
 fprintf([PrintFile2 PrintExt2 ', so we register them now & resample them to the output image space\n']);
 fprintf('=========================================================================\n')
 
-%% A) Create average image
+%% A) Create temporary average image of the output image
 tIM = xASL_io_Nifti2Im(PathNII{end});
+TempRegPath = fullfile(InDir, 'TempRegIm.nii');
 if size(tIM,4)>1
     tIM = xASL_stat_MeanNan(tIM,4);
-    TempRegPath = fullfile(InDir, 'TempRegIm.nii');
     xASL_io_SaveNifti(PathNII{end}, TempRegPath, tIM, [], 0);
     refPath = TempRegPath;
 else
