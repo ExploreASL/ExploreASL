@@ -206,57 +206,65 @@ end
 tIM(:,:,:,1) = xASL_io_Nifti2Im(TopUpNIIPath{1});
 tIM(:,:,:,2) = xASL_io_Nifti2Im(TopUpNIIPath{2});
 tIM(isnan(tIM)) = 0; % Remove NaNs, TopUp cannot deal with NaNs
-xASL_io_SaveNifti(TopUpNIIPath{1}, PathB0, tIM, 32, false); % we also put the images in single precision
+
 % NB we use the orientation of the first image (avoiding image registration
 % between NormPE & RevPE
 
-fprintf('\n\n=========================================================================\n')
-fprintf('Running FSL TopUp\n');
-fprintf('=========================================================================\n')
-
-% Run TopUp (i.e. estimate the geometric distortion field from B0 NIfTI &
-% parameters file), this takes quite long:
-TopUpCommand = ['/bin/topup --imain=' xASL_adm_UnixPath(PathB0)...
-    ' --datain=' xASL_adm_UnixPath(PathParms) ' --out=' xASL_adm_UnixPath(PathResults)...
-    ' --fout=' xASL_adm_UnixPath(PathField) ' --iout=' xASL_adm_UnixPath(PathUnwarped)...
-    ' --config=' xASL_adm_UnixPath(Pathb0cfg) ' --verbose=true'];
-
-if x.Quality
-    ActualCommand = TopUpCommand;
-	% keep default settings (which are pretty extensive, many iterations)
+if xASL_stat_SumNan(tIM(:))==0
+    warning('Empty TopUp images, skipping TopUp');
+    result1 = -1;
+    bSuccess = false;
 else
-    %   to speed up while testing:
-    %      % --subsamp -> first subsample for estimation, to avoid local
-    % minima, and to speed up, but can only be used for matrices that are
-    % dividible by the number of subsamples (so 4 or would work for 16
-    % slices, 3 or 5 for 15 slices, but with 17 slices there is no
-    % possibility for subsampling)
-    %
-    %     % find number that we can divide matrix by
-    %     tIM = xASL_io_ReadNifti(PathB0);
-    %     SampleMM = 1;
-    %     for iMM=4:-1:1
-    %         if SampleMM==1
-    %             if min(round(tIM.hdr.dim(2:4)./iMM)==tIM.hdr.dim(2:4)./iMM)
-    %                 SampleMM = iMM;
-    %             end
-    %         end
-    %     end
-    % 	TopUpCommand = [TopUpCommand ' --subsamp=' SampleMM ' --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
-    %   Above part was disabled, as it didnt work always
-    % HERE WE DISABLE SUBSAMPLING, IT 
-    % ActualCommand = [TopUpCommand ' --subsamp=4 --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
-    % [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
-    
-    % if result1~=0 % try again without subsampling
-        ActualCommand = [TopUpCommand ' --miter=1 --splineorder=3 --interp=linear']; 
-        % splineorder needs to be cubical (3), if set to square (2) this
-        % will create weird results
-        % default on normal quality is '--miter=5 --splineorder=3 --interp=spline
-    % end
-end
+    xASL_io_SaveNifti(TopUpNIIPath{1}, PathB0, tIM, 32, false); % we also put the images in single precision    
 
-[~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
+    fprintf('\n\n=========================================================================\n')
+    fprintf('Running FSL TopUp\n');
+    fprintf('=========================================================================\n')
+
+    % Run TopUp (i.e. estimate the geometric distortion field from B0 NIfTI &
+    % parameters file), this takes quite long:
+    TopUpCommand = ['/bin/topup --imain=' xASL_adm_UnixPath(PathB0)...
+        ' --datain=' xASL_adm_UnixPath(PathParms) ' --out=' xASL_adm_UnixPath(PathResults)...
+        ' --fout=' xASL_adm_UnixPath(PathField) ' --iout=' xASL_adm_UnixPath(PathUnwarped)...
+        ' --config=' xASL_adm_UnixPath(Pathb0cfg) ' --verbose=true'];
+
+    if x.Quality
+        ActualCommand = TopUpCommand;
+        % keep default settings (which are pretty extensive, many iterations)
+    else
+        %   to speed up while testing:
+        %      % --subsamp -> first subsample for estimation, to avoid local
+        % minima, and to speed up, but can only be used for matrices that are
+        % dividible by the number of subsamples (so 4 or would work for 16
+        % slices, 3 or 5 for 15 slices, but with 17 slices there is no
+        % possibility for subsampling)
+        %
+        %     % find number that we can divide matrix by
+        %     tIM = xASL_io_ReadNifti(PathB0);
+        %     SampleMM = 1;
+        %     for iMM=4:-1:1
+        %         if SampleMM==1
+        %             if min(round(tIM.hdr.dim(2:4)./iMM)==tIM.hdr.dim(2:4)./iMM)
+        %                 SampleMM = iMM;
+        %             end
+        %         end
+        %     end
+        % 	TopUpCommand = [TopUpCommand ' --subsamp=' SampleMM ' --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
+        %   Above part was disabled, as it didnt work always
+        % HERE WE DISABLE SUBSAMPLING, IT 
+        % ActualCommand = [TopUpCommand ' --subsamp=4 --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
+        % [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
+
+        % if result1~=0 % try again without subsampling
+            ActualCommand = [TopUpCommand ' --miter=1 --splineorder=3 --interp=linear'];
+            % splineorder needs to be cubical (3), if set to square (2) this
+            % will create weird results
+            % default on normal quality is '--miter=5 --splineorder=3 --interp=spline
+        % end
+    end
+
+    [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
+end
 
 if result1==0 % successfull run
     bSuccess = true;
@@ -270,14 +278,18 @@ fprintf('\n');
 % =========================================================================
 %% 3) Apply TopUp
 
-if exist('OutputPath','var') && ~isempty(OutputPath)
+if ~exist('OutputPath','var') || isempty(OutputPath)
+    % Skipping TopUp application, wasn't required
+elseif result1~=0
+        fprintf('TopUp application skipped as TopUp failed to run\n');
+else
     [Fpath, Ffile] = xASL_fileparts(PathNII{end});
     PathOrig = fullfile(Fpath, [Ffile '_ORI.nii']);
     [Fpath2, Ffile2] = xASL_fileparts(OutputPath);
     if strcmp(fullfile(Fpath, Ffile), fullfile(Fpath2, Ffile2))
         % backup input file when output file has same name
         % but don't overwrite previous backup
-        
+
         xASL_Move(PathNII{end}, PathOrig);
         PathNII{end} = PathOrig; % avoid .nii/.nii.gz issues
         % NB: HERE WE APPLY TOPUP TO THE RENAMED _ORI FILE, but THIS IS THE
@@ -286,7 +298,7 @@ if exist('OutputPath','var') && ~isempty(OutputPath)
 
     % Now we convert the images in single precision before running TopUp
     xASL_io_SaveNifti(PathNII{end}, PathNII{end}, single(xASL_io_Nifti2Im(PathNII{end})), 32, false);
-    
+
     fprintf('\n\n=========================================================================\n')
     fprintf('%s\n',['Applying FSL TopUp to ' PathNII{end}]);
     fprintf('=========================================================================\n')
@@ -295,23 +307,23 @@ if exist('OutputPath','var') && ~isempty(OutputPath)
     [~, result1] = xASL_fsl_RunFSL(['/bin/applytopup --imain=' xASL_adm_UnixPath(PathNII{end}) ' --inindex=1'...
              ' --datain=' xASL_adm_UnixPath(PathParms2) ' --topup=' xASL_adm_UnixPath(PathResults)...
              ' --out=' xASL_adm_UnixPath(OutputPath) ' --method=jac'], x); %  --verbose=true
-         
+
     if result1~=0
         warning('Apply TopUp failed, skipping negative signal detection');
         bSuccess = false;
     else
         % Check if TopUp provided significant negative results
         IM = xASL_io_Nifti2Im(OutputPath);
+        PercNonfinite = sum(~isfinite(IM(:))) / numel(IM);
         IM = IM(isfinite(IM(:)));
         PercNegative = sum(IM<0)/numel(IM);
-        if PercNegative>0.01
-            warning([xASL_num2str(PercNegative) '% negative signal detected in TopUp result, could be a bug']);
+        if PercNegative>0.25 || PercNonfinite>0.25
+            warning([xASL_num2str(PercNegative) '% negative signal and/or ' xASL_num2str(PercNonfinite) '% detected in TopUp result, could be a bug']);
         end
     %     IM = xASL_io_Nifti2Im(OutputPath);
     %     IM(IM<0) = -IM(IM<0);
     %     xASL_io_SaveNifti(OutputPath, OutputPath, IM, [], false);
     end
-    
 end
 
 %% Householding
@@ -351,7 +363,7 @@ function RegisterTopUptoOutput(PathNII, InDir, TopUpNIIPath, SameParmsInd, x)
 % DESCRIPTION: This function ensures that the NormPE & RevPE images are
 %              registered & resampled to the image we apply topup to.
 %              Note that the NormPE & RevPE are copied to separate
-%              TopUp.nii, so the original images are kept unchanged.
+%              TopUp.nii, both the copies and the NormPE/RevPE are registered.
 %              A) Create average image (if the goal NIfTI has multiple
 %                 images, they are averaged (e.g. time-series) into a
 %                 temporary NIfTI TempRegIm.nii
@@ -389,6 +401,10 @@ for iC=1:length(TopUpNIIPath)
     if iC~=SameParmsInd
         OtherList{end+1} = TopUpNIIPath{iC};
     end
+end
+% Also add the original images to the OtherList
+for iAdd=1:length(PathNII)-1
+    OtherList{end+1} = PathNII{iAdd};
 end
 
 xASL_spm_coreg(refPath, srcPath, OtherList, x);
