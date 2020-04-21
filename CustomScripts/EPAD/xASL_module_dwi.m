@@ -73,6 +73,7 @@ x.P.Path_dwi_mean = fullfile(x.SESSIONDIR, [FileDWI '_mean.nii']);
 x.P.Path_dwi_mask = fullfile(x.SESSIONDIR, [FileDWI '_mean_mask.nii']);
 % x.P.Path_wdwi = fullfile(x.SESSIONDIR, ['w' FileDWI '.nii']);
 % x.P.Path_wdwiMat = fullfile(x.SESSIONDIR, ['w' FileDWI '.mat']);
+Path_ADC = fullfile(x.SESSIONDIR, [FileDWI(1:end-3) 'ADC.nii']);
 
 % Derivatives
 PathTopUp = 'TopUp'; % base name of TopUp output files (spline coefficient & movparms)
@@ -246,14 +247,16 @@ end
 if ~x.mutex.HasState('030_RegistrationDWI2T1w')
 
     % Registration to T1w
-    OtherList = xASL_adm_GetFileList(x.SESSIONDIR, '^(B0|dwi|Field|TopUp|Unwarped).*\.nii', 'FPList', [0 Inf]);
+    OtherList = xASL_adm_GetFileList(x.SESSIONDIR, '^(ADC|B0|dwi|Field|TopUp|Unwarped).*\.nii', 'FPList', [0 Inf]);
 
-    xASL_im_CenterOfMass(PathEddyNii, OtherList);
+    xASL_im_CenterOfMass(PathEddyNii, OtherList, 10);
     % Create mutual information reference image for best registration reference
-    % Disabled for now, simply using T1w as everyone
-%     NewIM = xASL_io_Nifti2Im(x.P.Path_c1T1)+xASL_io_Nifti2Im(x.P.Path_c2T1).*2+xASL_io_Nifti2Im(x.P.Path_c3T1).*3;
-%     xASL_io_SaveNifti(x.P.Path_c1T1, PathMIref, NewIM, [], 0);
-    xASL_spm_coreg(x.P.Path_T1, PathEddyNii, OtherList, x, [], true);
+    DummyIM = xASL_io_Nifti2Im(x.P.Path_c1T1).*1.25+xASL_io_Nifti2Im(x.P.Path_c2T1)+xASL_io_Nifti2Im(x.P.Path_c3T1).*2;
+    DummyPath = fullfile(x.SESSIONDIR, 'Tempc1c2c3.nii');
+    xASL_io_SaveNifti(x.P.Path_c1T1, DummyPath, DummyIM, [], 0);    
+    
+    xASL_spm_coreg(DummyPath, PathEddyNii, OtherList, x);
+    xASL_delete(DummyPath);
 
     % Remove the mat-files (that have equal parameters and won't be used by
     % FSL, only by SPM), so this would incorrectly not apply the FSL
