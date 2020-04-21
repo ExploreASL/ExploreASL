@@ -221,7 +221,7 @@ if ~x.motion_correction
 elseif ~x.mutex.HasState(StateName{iState})
 
         % Remove previous files
-        DelList = {x.P.Path_mean_PWI_Clipped_sn_mat x.P.File_ASL4D_mat x.P.File_despiked_ASL4D x.P.File_despiked_ASL4D_mat 'rp_ASL4D.txt'};
+        DelList = {x.P.Path_mean_PWI_Clipped_sn_mat, x.P.File_ASL4D_mat, x.P.File_despiked_ASL4D, x.P.File_despiked_ASL4D_mat, 'rp_ASL4D.txt'};
         for iD=1:length(DelList)
             FileName = fullfile(x.SESSIONDIR, DelList{iD});
             xASL_delete(FileName);
@@ -237,7 +237,13 @@ elseif ~x.mutex.HasState(StateName{iState})
         end
 
         % Before motion correction, we align the images with ACPC
-        OtherList = {x.P.Path_M0}; % all other files will be created
+        PathB0 = fullfile(x.SESSIONDIR, 'B0.nii');
+        PathRevPE = fullfile(x.SESSIONDIR, 'ASL4D_RevPE.nii');
+        PathField = fullfile(x.SESSIONDIR, 'Field.nii');
+        PathFieldCoeff = fullfile(x.SESSIONDIR, 'TopUp_fieldcoef.nii');
+        PathUnwarped = fullfile(x.SESSIONDIR, 'Unwarped.nii');
+        
+        OtherList = {x.P.Path_M0, PathB0, PathRevPE, PathField, PathFieldCoeff, PathUnwarped, x.P.Path_ASL4D_ORI}; % all other files will be created
         if x.bAutoACPC
             xASL_im_CenterOfMass(x.P.Path_ASL4D, OtherList, 10); % set CenterOfMass to lower accepted distance for when rerunning wrong registration
         end

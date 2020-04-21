@@ -94,7 +94,8 @@ end
 % Here we mention all possible files that need to be in registration
 % All functions below will remove those that are unexisting, or used in the
 % registration estimation.
-BaseOtherList = {x.P.Path_despiked_ASL4D x.P.Path_mean_control x.P.Path_M0 x.P.Path_PWI x.P.Path_mean_PWI_Clipped x.P.Path_ASL4D_RevPE};
+BaseOtherList = {x.P.Path_despiked_ASL4D, x.P.Path_mean_control, x.P.Path_M0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped, x.P.Path_ASL4D_RevPE,...
+    x.P.Path_ASL4D_ORI, fullfile(x.SESSIONDIR, 'B0.nii'), fullfile(x.SESSIONDIR, 'Unwarped.nii'), fullfile(x.SESSIONDIR, 'Field.nii'), fullfile(x.SESSIONDIR, 'TopUp_fieldcoef.nii')};
 
 if ~strcmp(x.P.Path_despiked_ASL4D, x.P.Path_ASL4D)
     BaseOtherList{end+1} = x.P.Path_ASL4D; % keep original ASL4D aligned as well

@@ -64,7 +64,7 @@ for iSubject=1:x.nSubjects
 
             % print all fields for subject_session & load them into x.S.par variabele for later calculations
             for iField=1:nFields
-                if isfield(parms,matFields{iField})
+                if isfield(parms,matFields{iField}) && ~isempty(parms.(matFields{iField}))
                     
                     fprintf(SummaryFID,'%s,', num2str( parms.(matFields{iField}) ) );
                     if isnumeric( parms.(matFields{iField}) )
