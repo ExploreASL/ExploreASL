@@ -30,7 +30,9 @@ function xASL_im_CenterOfMass(PathNIfTI, OtherList, AllowedDistance)
 if nargin<2 || isempty(OtherList) || isempty(OtherList{1})
     OtherList{1} = PathNIfTI;
 else
-    OtherList = xASL_adm_OtherListSPM(OtherList);
+    OtherList = xASL_adm_OtherListSPM(OtherList, false); 
+    % here we want a NIfTI with multiple volumes mentioned only once in the
+    % list, as below we deal with the "other/n>1" volumes
     for iList=1:length(OtherList)
         OtherList{iList} = OtherList{iList}(1:end-2);
     end
