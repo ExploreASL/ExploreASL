@@ -7,6 +7,7 @@ nameTPM{3} = 'infant-neo';
 pathMaps = '/home/janpetr/code/ExploreASL/External/SPMmodified/MapsAdded';
 pathSPM = '/home/janpetr/code/ExploreASL/External/SPMmodified';
 pathTemplates = '/home/janpetr/code/ExploreASL/Maps/Templates';
+pathAtlases = '/home/janpetr/code/ExploreASL/External/AtlasesNonCommercial';
 
 %% Prepare a 6-component template that can be used for SPM12 segmentation
 % TPM 1GM,2WM,3CSF,4cavity,5skull,6air
@@ -126,6 +127,7 @@ for ii=1:length(nameTPM)
 	mkdir(fullfile(pathMaps,nameTPM{ii}));
 	mkdir(fullfile(pathMaps,nameTPM{ii},'VascularTerritories'));
 	mkdir(fullfile(pathTemplates,nameTPM{ii}));
+	mkdir(fullfile(pathAtlases,nameTPM{ii}));
 	
 	% First copy from the source to xASL directory
 	xASL_Copy(fullfile(pathTPM,[nameTPM{ii} '.nii']),fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii']));
@@ -200,6 +202,14 @@ for ii=1:length(nameTPM)
 		xASL_Move(fullfile(pathMaps,nameTPM{ii},['w' listMask{jj} '.nii']),fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']),true);
 	end
 
+	% Save as .mat and zip
+	for jj=1:length(listMask)
+		IM = xASL_io_Nifti2Im(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']));
+		save(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii.mat']),'IM');
+		gzip(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']));
+		delete(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']));
+	end	
+	
 	% Copy normal files
 	listFile = {'TotalGM.tsv' 'TotalWM.tsv' 'WholeBrain.tsv' 'MNI_structural.tsv' 'LeftRight.tsv' 'LabelColors.mat' 'GhostSignalRatio.tsv' 'DeepWM.tsv' 'Identity_sn.mat' 'Identity_Deformation_y_T1.nii.gz'...
 		        fullfile('VascularTerritories','TatuICA_PCA.tsv'),fullfile('VascularTerritories','LabelingTerritories.tsv'),fullfile('VascularTerritories','CortVascTerritoriesTatu.tsv'),fullfile('VascularTerritories','ATTbasedFlowTerritories.tsv')};
@@ -229,6 +239,14 @@ for ii=1:length(nameTPM)
 	for jj=1:length(listMask)
 		xASL_Move(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',['w' listMask{jj} '.nii']),fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']),true);
 	end
+	
+	% Save as .mat and zip
+	for jj=1:length(listMask)
+		IM = xASL_io_Nifti2Im(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']));
+		save(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii.mat']),'IM');
+		gzip(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']));
+		delete(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']));
+	end
 
 	% Copy all the templates and transform to pediatric size
 	listTemp = {'ATT_BiasField' 'GE_3Dspiral_Product_CBF' 'MaxVesselTemplate' 'Philips_2DEPI_Bsup_CBF' 'Philips_2DEPI_noBsup_CBF' 'Philips_2DEPI_noBsup_Control'...
@@ -254,6 +272,15 @@ for ii=1:length(nameTPM)
 		xASL_Move(fullfile(pathTemplates,nameTPM{ii},['w' listTemp{jj} '.nii']),fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']),true);
 	end
 	
+	for jj=1:length(listTemp)
+		if sum(jj==[4,6,11,12])
+			IM = xASL_io_Nifti2Im(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
+			save(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii.mat']),'IM');
+		end
+		gzip(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
+		delete(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
+	end
+	
 	% Copy all the template masks and transform to pediatric size
 	listTemp = {'Philips_2DEPI_Bsup_QC_mask' 'Siemens_3DGRASE_PASL_QC_mask'};
 	matlabbatch = [];
@@ -275,6 +302,49 @@ for ii=1:length(nameTPM)
 	for jj=1:length(listTemp)
 		xASL_Move(fullfile(pathTemplates,nameTPM{ii},['w' listTemp{jj} '.nii']),fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']),true);
 	end
+	
+	% Save as .mat and zip
+	for jj=1:length(listTemp)
+		gzip(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
+		delete(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
+	end	
+		
+	% Copy all the Atlases and transform to pediatric size
+	listMask = {'Hammers' 'HOcort_CONN' 'HOsub_CONN' 'Thalamus'};
+	matlabbatch = [];
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def = {fullfile(pathMaps,nameTPM{ii},['y_' nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii'])};
+	matlabbatch{1}.spm.util.defs.comp{2}.id.space = {fullfile(pathMaps,'rc1T1.nii')};
+	for jj=1:length(listMask)
+		xASL_adm_UnzipOrCopy(pathAtlases,[listMask{jj} '.nii.gz'], fullfile(pathAtlases,nameTPM{ii}),true);
+		matlabbatch{1}.spm.util.defs.out{1}.pull.fnames{jj,1} = fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii']);
+	end
+    matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathAtlases,nameTPM{ii})};
+	matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+	matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+	matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
+	spm_jobman('run',matlabbatch);
+	
+	% Cleanup
+	for jj=1:length(listMask)
+		xASL_Move(fullfile(pathAtlases,nameTPM{ii},['w' listMask{jj} '.nii']),fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii']),true);
+	end
+	
+	% Save as .mat and zip
+	for jj=1:length(listMask)
+		IM = xASL_io_Nifti2Im(fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii']));
+		save(fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii.mat']),'IM');
+		gzip(fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii']));
+		delete(fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii']));
+	end
+		
+	% Copy normal files
+	listFile = {'Hammers.tsv' 'Hammers.txt' 'HOcort_CONN.tsv' 'Thalamus.tsv	'};
+	for jj=1:length(listFile)
+		xASL_Copy(fullfile(pathAtlases,listFile{jj}), fullfile(pathAtlases,nameTPM{ii},listFile{jj}),true);
+	end
+
 	
 end
 	
