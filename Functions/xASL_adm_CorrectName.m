@@ -23,7 +23,7 @@ function strOut = xASL_adm_CorrectName(strIn, bOption, strExclude)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright © 2015-2019 ExploreASL
+% Copyright ?? 2015-2019 ExploreASL
 %
 % 2019-04-05 JP
 
@@ -41,8 +41,14 @@ function strOut = xASL_adm_CorrectName(strIn, bOption, strExclude)
 	% Don't take more than three input arguments
 	if nargin > 3
 		error('xASL_adm_CorrectName: Too many input parameters.');
-	end
+    end
 	
+    if ~ischar(strIn)
+        warning('Input string wasnt a string, check input format');
+        strOut = strIn;        
+        return;
+    end
+    
 	% Making own list is deprecated - we use the regexp function now
 	IllegalList = {' ' '*' '.' '"' '/' '\' '[' ']' '{' '}' ':' ';' '+' '=' ',' '<' '>' '?' '~' '@' '#' '$' '%' '^' '&' '*' '(' ')' '-' '|'};
 	%for iI=1:length(IllegalList)
