@@ -198,11 +198,20 @@ for iP=1:length(ParmsFieldNames)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-if isfield(x,'Q') % Legacy/backward compatibility
-    if ~isfield(x.Q,'Initial_PLD') && isfield(x.Q,'qnt_init_PLD')
-        x.Q.Initial_PLD = x.Q.qnt_init_PLD;
+% Move quantification parameters to the Q (quantification) subfield, for
+% backward compatibility
+Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'Lambda' 'T2art' 'BloodT1' 'TissueT1' 'nCompartments'};
+for iField=1:length(Qfields)
+    if isfield(x,Qfields{iField})
+        if isfield(x.Q,(Qfields{iField})) && ~strcmp(x.Q.(Qfields{iField}), x.(Qfields{iField}))
+            warning(['Overwriting x.Q.' Qfields{iField} '=' x.Q.(Qfields{iField}) ', with x.' Qfields{iField} '=' x.(Qfields{iField})]);
+        end
+        
+        x.Q.(Qfields{iField}) = x.(Qfields{iField});
+        x = rmfield(x, Qfields{iField});
     end
 end
+
 
 
 end
