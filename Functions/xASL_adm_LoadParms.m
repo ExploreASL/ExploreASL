@@ -98,32 +98,42 @@ if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSO
         'AcquisitionTime' 'PhilipsRescaleIntercept' 'MRAcquisitionType' 'Manufacturer'  'readout_dim'...
         'Vendor' 'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'M0'};
     
-    for iP=1:length(JSONFields)
-        if isfield(JSONParms,JSONFields{iP})
-            Parms.(ParmsFields{iP}) = JSONParms.(JSONFields{iP});
-            if ~isempty(regexp(JSONFields{iP}, 'EchoTime'))  % JSON is in seconds, DICOM in ms
-                if Parms.(ParmsFields{iP})>0.001 && Parms.(ParmsFields{iP})<1
+    % Deal with fields in Q
+    if isfield(JSONParms,'Q')
+        FieldsQ = fields(JSONParms.Q);
+        for iQ=1:length(FieldsQ)
+            JSONParms.(FieldsQ{iQ}) = JSONParms.Q.(FieldsQ{iQ});
+        end
+    end
+    
+    for iPar=1:length(JSONFields)
+        if isfield(JSONParms,JSONFields{iPar})
+            Parms.(ParmsFields{iPar}) = JSONParms.(JSONFields{iPar});
+            if ~isempty(regexp(JSONFields{iPar}, 'EchoTime'))  % JSON is in seconds, DICOM in ms
+                if Parms.(ParmsFields{iPar})>0.001 && Parms.(ParmsFields{iPar})<1
                     % we expect 1 < TE(ms) < 1000
-                    Parms.(ParmsFields{iP}) = Parms.(ParmsFields{iP})*1000;
+                    Parms.(ParmsFields{iPar}) = Parms.(ParmsFields{iPar})*1000;
                 else
                     warning('JSON EchoTime was not according to BIDS (seconds), check quantification');
                     fprintf('DICOM uses TE & TR in ms, BIDS JSON in s');
                 end
-            elseif ~isempty(regexp(JSONFields{iP}, 'RepetitionTime'))  % JSON is in seconds, DICOM in ms
-                if Parms.(ParmsFields{iP})>0.1 && Parms.(ParmsFields{iP})<100
+            elseif ~isempty(regexp(JSONFields{iPar}, 'RepetitionTime'))  % JSON is in seconds, DICOM in ms
+                if Parms.(ParmsFields{iPar})>0.1 && Parms.(ParmsFields{iPar})<100
                     % we expect 100 < TR(ms) < 100,000
-                    Parms.(ParmsFields{iP}) = Parms.(ParmsFields{iP})*1000;
+                    Parms.(ParmsFields{iPar}) = Parms.(ParmsFields{iPar})*1000;
                 else
                     warning('JSON EchoTime was not according to BIDS (seconds), check quantification');
                     fprintf('DICOM uses TE & TR in ms, BIDS JSON in s');
                 end                    
-            elseif strcmp(ParmsFields{iP},'AcquisitionTime')
+            elseif strcmp(ParmsFields{iPar},'AcquisitionTime') && ischar(Parms.AcquisitionTime)
                 tP = xASL_adm_CorrectName(Parms.AcquisitionTime, 2);
                 tP = xASL_adm_ConvertNr2Time(xASL_adm_ConvertTime2Nr(tP));
                 Parms.AcquisitionTime = [tP(1:6) '.' tP(7:8)];
             end
         end
     end
+    % If we got here, remove the parms error
+    strMatError = [];
 else
     strMatError = [strMatError ', JSON file missing'];
 end
@@ -145,28 +155,10 @@ if VendorRestore
     Parms.Vendor = VendorBackup;
 end
 
-%% ------------------------------------------------------------------------
-%% 4) Fix M0 parameter if not set
-if ~isfield(x,'M0')
-    if xASL_exist(fullfile(Fpath, 'M0.nii'),'file') && (exist(fullfile(Fpath, 'M0.json'),'file') || exist(fullfile(Fpath, 'M0_parms.mat'),'file') )
-        x.M0 = 'separate_scan';
-        if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.M0]); end
-    elseif isfield(Parms,'BackGrSupprPulses') && Parms.BackGrSupprPulses==0
-        x.M0 = 'UseControlAsM0';
-        if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.M0]); end
-    else
-        if bVerbose; fprintf('%s\n','M0 parameter was missing, OR didnt find M0 scan, AND BackGrSupprPulses wasnt set to 0...'); end
-    
-    end
-end
 
-if ~exist('Parms','var')
-    Parms = struct; 
-    warning('parms seem missing, something wrong with parmsfile?');
-end
 
 %% ------------------------------------------------------------------------
-%% 5) Check erroneous scale slope 
+%% 4) Check erroneous scale slope 
 if  isfield(Parms,'RescaleSlope') && isfield(Parms,'RescaleSlopeOriginal')
     RelDiff = abs(100* (Parms.RescaleSlopeOriginal-Parms.RescaleSlope) / ((Parms.RescaleSlopeOriginal+Parms.RescaleSlope)*0.5));
     if  RelDiff>0.05
@@ -178,24 +170,20 @@ end
 
 
 %% ------------------------------------------------------------------------
-%% 6) Backwards compatibility section
+%% 5) Backwards compatibility section
 % Input all fields from the Parms into the x structure, backup those that were already existing (inheritance principle)
 Oldx            = struct;
 ParmsFieldNames = fieldnames(Parms);
 xFieldNames     = fieldnames(x);
 
-for iP=1:length(ParmsFieldNames)
+for iPar=1:length(ParmsFieldNames)
     % Check first if already exists, to backup
     for iS=1:length(xFieldNames)
-        if  strcmp(ParmsFieldNames{iP},xFieldNames{iS})
+        if  strcmp(ParmsFieldNames{iPar},xFieldNames{iS})
             Oldx.(xFieldNames{iS}) = x.(xFieldNames{iS}); % backup
         end
     end
-    x.(ParmsFieldNames{iP}) = Parms.(ParmsFieldNames{iP});
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % QUICK & DIRTY FIX
-    x.Q.(ParmsFieldNames{iP}) = Parms.(ParmsFieldNames{iP});
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    x.(ParmsFieldNames{iPar}) = Parms.(ParmsFieldNames{iPar});
 end
 
 % Move quantification parameters to the Q (quantification) subfield, for
@@ -203,13 +191,33 @@ end
 Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'Lambda' 'T2art' 'BloodT1' 'TissueT1' 'nCompartments'};
 for iField=1:length(Qfields)
     if isfield(x,Qfields{iField})
-        if isfield(x.Q,(Qfields{iField})) && ~strcmp(x.Q.(Qfields{iField}), x.(Qfields{iField}))
-            warning(['Overwriting x.Q.' Qfields{iField} '=' x.Q.(Qfields{iField}) ', with x.' Qfields{iField} '=' x.(Qfields{iField})]);
+        if isfield(x.Q,(Qfields{iField})) && ~min((x.Q.(Qfields{iField})==x.(Qfields{iField})))
+            warning(['Overwriting x.Q.' Qfields{iField} '=' xASL_num2str(x.Q.(Qfields{iField})) ', with x.' Qfields{iField} '=' xASL_num2str(x.(Qfields{iField}))]);
         end
         
         x.Q.(Qfields{iField}) = x.(Qfields{iField});
         x = rmfield(x, Qfields{iField});
     end
+end
+
+
+%% ------------------------------------------------------------------------
+%% 6) Fix M0 parameter if not set
+if ~isfield(x,'M0')
+    if xASL_exist(fullfile(Fpath, 'M0.nii'),'file') && (exist(fullfile(Fpath, 'M0.json'),'file') || exist(fullfile(Fpath, 'M0_parms.mat'),'file') )
+        x.M0 = 'separate_scan';
+        if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.M0]); end
+    elseif isfield(Parms,'BackGrSupprPulses') && Parms.BackGrSupprPulses==0
+        x.M0 = 'UseControlAsM0';
+        if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.M0]); end
+    else
+        if bVerbose; fprintf('%s\n','M0 parameter was missing, OR didnt find M0 scan, AND BackGrSupprPulses wasnt set to 0...'); end
+    end
+end
+
+if ~exist('Parms','var')
+    Parms = struct; 
+    warning('parms seem missing, something wrong with parmsfile?');
 end
 
 
