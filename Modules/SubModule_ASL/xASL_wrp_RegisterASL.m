@@ -193,6 +193,7 @@ elseif ~xASL_exist(x.P.Path_T1, 'file') && ~StructuralDerivativesExist
 	
 	SaveFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']);
     FileID = fopen(SaveFile,'wt');
+	fprintf(FileID,'%s', '0, 0, 0');
 	fclose(FileID);
 	xASL_adm_csv2tsv(SaveFile, true);
 	
@@ -409,7 +410,7 @@ if bRegistrationCBF
             fprintf('%s\n','Skipping affine registration');
         end
     end
-    
+    %%%% Another step with SPM_NORMALISE deformations
     fprintf('\n%s\n','--------------------------------------------------------------------');
 
     fprintf('%s\n',[num2str(length(spatCoVit)) ' registration iterations:']);
