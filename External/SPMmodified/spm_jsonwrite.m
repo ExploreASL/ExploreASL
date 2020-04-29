@@ -195,7 +195,9 @@ S = ['"' json '"'];
 %==========================================================================
 function S = jsonwrite_numeric(json)
 if any(imag(json(:)))
-    error('Complex numbers not supported.');
+    warning('Complex numbers not supported');
+    S = num2str(json(:));
+    return;
 end
 if numel(json) == 0
     S = jsonwrite_cell({});

@@ -253,6 +253,13 @@ but it was negative in FLAIR and for FLAIR this ruined the ROIs
 FILE:
 cat_vol_qa - Line 678
 
+DATE+NAME:2020_04_29, HM
+DESCRIPTION:
+Instead of error for an imaginary number, put it in a string
+FILE:
+spm_jsonwrite.m at line 198
+
+
 DATE+NAME:2020_01_17, JP
 DESCRIPTION:
 Edited the spm_jsonwrite so that it makes a newline after each field
