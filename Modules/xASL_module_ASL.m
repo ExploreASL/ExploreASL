@@ -178,6 +178,11 @@ end
 
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
 
+if ~isfield(x,'Q')
+    x.Q = struct;
+    warning('x.Q didnt exist, are quantification parameters lacking?');
+end
+
 %% Define sequence (educated guess)
 if ~isfield(x,'Sequence') && ~isfield(x,'readout_dim')
     warning('x.Sequence and x.readout_dim missing, might go wrong...');

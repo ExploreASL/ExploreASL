@@ -3,24 +3,12 @@ function x = xASL_init_PrintCheckSettings( x )
 % Prints these on the screen
 
 %% Check obligated x
-field_symbol    = {'subject_regexp'};
+field_symbol = {'subject_regexp'};
 
 for iField=1:length(field_symbol)
     if ~isfield(x,field_symbol{iField})
         warning(['x.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
     end
-end
-
-if ~isfield(x,'Q')
-    x.Q     = struct;
-    warning('x.Q didn''nt exist');
-% else
-%     field_symbol    = {'Initial_PLD','LabelingDuration','LabelingType','BackGrSupprPulses'};
-%     for iField=1:length(field_symbol)
-%         if ~isfield(x.Q,field_symbol{iField})
-%             warning(['x.Q.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
-%         end
-%     end
 end
 
 if ~isfield(x,'D')
