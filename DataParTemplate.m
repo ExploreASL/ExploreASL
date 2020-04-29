@@ -33,6 +33,8 @@ function x = DataParTemplate(x)
 %                             if disabled, this function will try to use the system-initialized FSL 
 %                             and throw an error if FSL is not initialized
 %                             (OPTIONAL, DEFAULT = disabled)
+% x.MakeNIfTI4DICOM - Boolean to output CBF native space maps resampled and/or registered to the original T1w/ASL, and contrast adapted and in 12 bit
+% 					  range allowing to convert the NIfTI to a DICOM file, e.g. for implementation in PACS or other DICOM archives
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % STUDY PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------

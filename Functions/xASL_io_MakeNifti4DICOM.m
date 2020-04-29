@@ -1,4 +1,4 @@
-function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, bApplyOriginalOrientation, ResamplePath)
+function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, OrientationPath, ResamplePath)
 %xASL_io_MakeNifti4DICOM Create NIfTI that is ready for conversion to uint16 DICOM
 %
 % FORMAT: xASL_io_MakeNifti4DICOM(PathIn, x)
@@ -7,7 +7,7 @@ function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, bApplyOriginalOrientation,
 %   PathIn - path to NIfTI file to convert (REQUIRED)
 %   x      - struct containing pipeline environment parameters (REQUIRED)
 %   Datatype = 'INT16' or 'UINT16' (OPTIONAL, DEFAULT = 'INT16')
-%   bApplyOriginalOrientation = 
+%   OrientationPath = Path of NIfTI to align with (OPTIONAL, DEFAULT = empty, no registration)
 %   ResamplePath = Path of NIfTI to resample to (OPTIONAL, DEFAULT = empty, no resampling)
 %
 % OUTPUT: n/a
@@ -35,8 +35,8 @@ if nargin<3 || isempty(DataType)
 elseif isempty(regexp(DataType,'^(U|)INT16$'))
     error('Wrong DataType input parameter');
 end
-if nargin<4 || isempty(bApplyOriginalOrientation)
-    bApplyOriginalOrientation = true;
+if nargin<4 || isempty(OrientationPath)
+    OrientationPath = [];
     % by default put the CBF image back in the original T1w space
 end
 if nargin<5
@@ -46,15 +46,23 @@ end
 CBFim = xASL_io_Nifti2Im(PathIn);
 [Fpath, Ffile] = xASL_fileparts(PathIn);
 
+FileNew = [Ffile '_Visual2DICOM'];
+RegExpNew = [Ffile '_Visual2DICOM'];    
+
+if ~isempty(OrientationPath)
+    [~, FfileRef] = xASL_fileparts(OrientationPath);
+    FileNew = [FileNew '_align-' FfileRef];
+    RegExpNew = [RegExpNew '_align-' FfileRef];
+end
+
 if ~isempty(ResamplePath)
     [~, FfileRef] = xASL_fileparts(ResamplePath);
-    
-    FileNew = [Ffile '_Visual2DICOM_space-' FfileRef '.nii'];
-    RegExpNew = [Ffile '_Visual2DICOM_space-' FfileRef '\.nii'];
-else
-    FileNew = [Ffile '_Visual2DICOM.nii'];
-    RegExpNew = [Ffile '_Visual2DICOM\.nii'];    
+    FileNew = [FileNew '_space-' FfileRef];
+    RegExpNew = [RegExpNew '_space-' FfileRef];
 end
+
+FileNew = [FileNew '.nii'];
+RegExpNew = [RegExpNew '\.nii'];
 
 PathNew = fullfile(Fpath, FileNew);
 
@@ -110,21 +118,21 @@ end
 % 3) ASL (& derivatives) registered to T1
 % -> Hence, we only revert step 1-2 here
 
-if bApplyOriginalOrientation
-    niiT1 = xASL_io_ReadNifti(x.P.Path_T1);
-    matT1 = niiT1.mat;
-
-    if xASL_exist(x.P.Path_T1_ORI,'file')
-        niiT1_ORI = xASL_io_ReadNifti(x.P.Path_T1_ORI);
-    else % use T1 as T1_ORI. if there was no lesion filling, this is the most original NIfTI
-        niiT1_ORI = xASL_io_ReadNifti(x.P.Path_T1);
-        if xASL_exist(x.P.Path_WMH_SEGM, 'file') % as the ORI file is usually only created when the T1 is lesion filled by WMH_SEGM from FLAIR
-            fprintf('Warning xASL_io_MakeNifti4DICOM: T1_ORI.nii didnt exist, not sure if we can go back to the original orientation');
-        end
+if ~isempty(OrientationPath)
+    % define path to backup NIfTI
+    [Fpath, Ffile, Fext] = xASL_fileparts(OrientationPath);
+    OrientationPathOri = fullfile(Fpath, [Ffile '_ORI.nii']);
+    if ~xASL_exist(OrientationPathOri,'file')
+        OrientationPathOri = OrientationPath;
     end
+    
+    
+    niiReg = xASL_io_ReadNifti(OrientationPath);
+    niiReg_ORI = xASL_io_ReadNifti(OrientationPathOri);
+    matReg = niiReg.mat;
+    matReg_ORI = niiReg_ORI.mat0;
 
-    matT1_ORI = niiT1_ORI.mat0;
-    Transformation = matT1_ORI/matT1;
+    Transformation = matReg_ORI/matReg;
 
     % Apply this transformation (which should be translations & rotations only)
     newNifti.mat = Transformation*newNifti.mat;

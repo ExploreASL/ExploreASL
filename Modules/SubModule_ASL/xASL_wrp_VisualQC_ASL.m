@@ -4,15 +4,19 @@ function xASL_wrp_VisualQC_ASL(x)
 % FORMAT: xASL_wrp_VisualQC_ASL(x)
 %
 % INPUT:
-%   x 	    - structure containing fields with all information required to run this submodule (REQUIRED)
-%   x.P     - paths with NIfTIs for which this function should be applied to (REQUIRED)
+%   x                 - structure containing fields with all information required to run this submodule (REQUIRED)
+%   x.P               - paths with NIfTIs for which this function should be applied to (REQUIRED)
+%   x.MakeNIfTI4DICOM - Boolean, true for resampling CBF native space to
+%                       original T1w & ASL spaces, and other processing for use in
+%                       DICOM image/server (OPTIONAL, DEFAULT=false);
 %
 % OUTPUT: n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule performs several visualizations for visual & quantitative QC.
 %              1) After initial admin
-%              2) It starts with making ASL NIfTIs ready for visualization & conversion to DICOM
+%              2) It starts with making ASL NIfTIs ready for visualization
+%                 & conversion to DICOM (though skipped by default)
 %              3) Then it performs a collection of visualizations
 %              4) Visualizes results of the TopUp geometric distortion correction
 %              5) Visualization of slice gradient
@@ -53,15 +57,22 @@ end
 
 %% -----------------------------------------------------------------------------------
 %% 2) Make ASL NIfTIs ready for visualization & conversion to DICOM
-if xASL_exist(x.P.Path_T1_ORI, 'file')
-    InputT1Oripath = x.P.Path_T1_ORI;
-else
-    InputT1Oripath = x.P.Path_T1;
-end
-   
-xASL_io_MakeNifti4DICOM(x.P.Path_CBF, x, 'UINT16', 1, x.P.Path_T1); % Create uint16 NIfTI in 12 bit scale
-% xASL_io_MakeNifti4DICOM(x.P.Pop_Path_qCBF, x);
+if isfield(x,'MakeNIfTI4DICOM') && x.MakeNIfTI4DICOM
+    if xASL_exist(x.P.Path_T1_ORI, 'file')
+        InputT1Oripath = x.P.Path_T1_ORI;
+    else
+        InputT1Oripath = x.P.Path_T1;
+    end
 
+    if xASL_exist(x.P.Path_ASL4D_ORI, 'file')
+        InputASLOripath = x.P.Path_ASL4D_ORI;
+    else
+        InputASLOripath = x.P.Path_ASL4D;
+    end
+
+    xASL_io_MakeNifti4DICOM(x.P.Path_CBF, x, 'UINT16', x.P.Path_T1, InputT1Oripath);
+    xASL_io_MakeNifti4DICOM(x.P.Path_CBF, x, 'UINT16', x.P.Path_ASL4D, InputASLOripath); 
+end
 
 %% -----------------------------------------------------------------------------------
 %% 3) Perform several visualizations
