@@ -1,8 +1,29 @@
-function xASL_adm_FromDataPar2JSON(DataParPath)
-%xASL_adm_FromDataPar2JSON This function takes all parameters from the
-%DataPar & moves them into all lower-level JSONs, per BIDS inheritance
-%Note that this function assumes that the DataPar file is in the ROOT
-%folder of the study, that contains all the JSON sidecars
+function xASL_bids_FromDataPar2JSON(DataParPath)
+%xASL_bids_FromDataPar2JSON Take DataPar ASL parameters and move them to JSON sidecars per BIDS
+%
+% FORMAT: [x] = xASL_bids_FromDataPar2JSON(DataParPath)
+% 
+% INPUT:
+%   DataParPath - path to data parameter JSON file (REQUIRED)
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function takes all parameters from the DataPar & moves them into all lower-level JSONs, per BIDS inheritance
+% Note that this function assumes that the DataPar file is in the ROOT folder of the study, that contains all the JSON sidecars.
+% Also note that this function will recursively create JSON files (if non-existing) for all NIfTI files, so is supposed to run on raw data only.
+%
+% This function runs the following steps:
+% 1) Load parent DataPar JSON file
+% 2) Get list of NIfTIs (i.e. "children" that will get the parameters)
+% 3) Load & add JSON child (if exist) to memory
+% 4) Load & add parms.mat child (if exist (legacy)) to memory
+% 5) Add parent fields to memory
+% 6) Save (& overwrite if existed) new JSON from memory
+% 7) Delete parms.mat if existed
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: xASL_bids_FromDataPar2JSON('/MyStudy/DataParameterFile.json');
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 %% 1) Load DataPar file
 if nargin<1 || isempty(DataParPath) || ~exist(DataParPath, 'file')
@@ -16,8 +37,6 @@ AnalysisDir = fileparts(DataParPath);
 
 fprintf('Obtaining list of NIfTIs\n');
 FileList = xASL_adm_GetFileList(AnalysisDir, '^.*\.nii$','FPListRec',[0 Inf]);
-
-fprintf('Processing JSON files:   ');
 
 for iList=1:length(FileList)
     xASL_TrackProgress(iList, length(FileList));
@@ -57,14 +76,15 @@ function [JSON] = InsertFields(DataPar, JSON)
 
     FieldsAre = fields(DataPar);
 
-    Fields2Skip = {'Quality' 'DELETETEMP' 'subject_regexp' 'name' 'exclusion' 'exclusionReason' 'SESSIONS' 'ROOT' 'session'};
+    Fields2Skip = {'Quality' 'DELETETEMP' 'subject_regexp' 'name' 'exclusion' 'exclusionReason' 'SESSIONS' 'ROOT'};
     % These fields are environment parameters, not ASL-specific parameters
 
     for iField=1:length(FieldsAre)
         SkipField = max(cellfun(@(y) strcmp(FieldsAre{iField},y), Fields2Skip));
         if ~SkipField
             FieldValue = DataPar.(FieldsAre{iField});
-            if ischar(FieldValue) || isnumeric(FieldValue) || islogical(FieldValue) || iscell(FieldValue)
+            if ischar(FieldValue) || isnumeric(FieldValue) || islogical(FieldValue)
+
 
                 if isfield(JSON,FieldsAre{iField})
                     % Skip this field: per inheritance principle, daughters
