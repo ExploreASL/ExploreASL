@@ -7,7 +7,7 @@ moco,Other,MoCo,,,,,,,,,,,,,,,,,,,,,,,,
 (examcard|Phoenix.*report),Other,ExamCard,,,,,,,,,,,,,,,,,,,,,,,,
 (defaultpresentationstate|default_ps|ref|ref.*head),Other,ReferenceScan,,,,,,,,,,,,,,,,,,,,,,,,
 (b1|b1.*cal|cal),Other,B1Calibration,,,,,,,,,,,,,,,,,,,,,,,,
-T2.*(star|ffe|gre|hemo),anat,T2star,anat_T2star,46,47,47,47,47,47,47,47,47,47,47,,47,47,47,47,48,47,47,47,47,47,47
+T2.*(\*|star|ffe|gre|hemo),anat,T2star,anat_T2star,46,47,47,47,47,47,47,47,47,47,47,,47,47,47,47,48,47,47,47,47,47,47
 (flair|t2.*spc.*fl|t2.*dark-fluid),anat,FLAIR,FLAIR,[192 176 256],192,192,188,192,192,192,192,192,[192 384 256],192,192,128,192,[193 176 180],192,192,[63 321 190 321 512],192,192,,,192
 (t2|t2w).*(|tse),anat,T2w,anat_T2w,36,47,47,47,47,47,47,47,47,47,47,,47,47,47,47,48,47,47,47,[47 49],[88 96],47
 (swi|swan),swi,part_mag,swi_part_mag,0,60,[60 120],[60 120],0,60,0,0,0,0,[60 120],0,[60 120],0,0,0,0,[60 120],[60 120],[80 160 144 120],[60 120],,0
