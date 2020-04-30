@@ -2,19 +2,6 @@
 	"x": [{
 			"name": "ExampleDataSet",
 			"subject_regexp": "^Sub-\\d{3}$",
-			"M0": "separate_scan",
-			"readout_dim": "2D",
 			"Quality": 0,
-			"DELETETEMP": 1,
-			"Vendor": "Philips",
-			"bReproTesting": 0,
-			"Q":
-			{
-				"BackGrSupprPulses": 2,
-				"LabelingType": "CASL",
-				"Initial_PLD": 1525,
-				"LabelingDuration": 1650,
-				"SliceReadoutTime": 43.7647
-			}
 		}]
 }
