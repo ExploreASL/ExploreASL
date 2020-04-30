@@ -18,6 +18,8 @@ AnalysisDir = fileparts(DataParPath);
 fprintf('Obtaining list of JSON files\n');
 FileList = xASL_adm_GetFileList(AnalysisDir, '^.*\.json$','FPListRec',[0 Inf]);
 
+fprintf('Processing JSON files:   \n');
+
 %% 3) Process the JSONs
 for iFile=1:length(FileList)
     xASL_TrackProgress(iFile, length(FileList));
@@ -33,18 +35,26 @@ for iFile=1:length(FileList)
     end
 end
 
+fprintf('\n');
+
 end
 
 
 function JSON = InsertFields(DataPar, FieldsAre, JSON)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+%InsertFields
+
+Fields2Skip = {'Quality' 'DELETETEMP' 'subject_regexp' 'name'};
+% These fields are environment parameters, not ASL-specific parameters
 
     for iField=1:length(FieldsAre)
-        if ischar(DataPar.(FieldsAre{iField})) || isnumeric(DataPar.(FieldsAre{iField}))
-            if isfield(JSON,FieldsAre{iField})
-                % skip this field: per inheritance principle, daughters
+        FieldValue = DataPar.(FieldsAre{iField});
+        if ischar(FieldValue) || isnumeric(FieldValue) || islogical(FieldValue)
+            SkipField = max(cellfun(@(y) strcmp(FieldsAre{iField},y), Fields2Skip));
+            
+            if isfield(JSON,FieldsAre{iField}) || SkipField
+                % Skip this field: per inheritance principle, daughters
                 % fields have preference
+                % Also skip this field if it is an environment parameter
             else
                 JSON.(FieldsAre{iField}) = DataPar.(FieldsAre{iField});
             end
