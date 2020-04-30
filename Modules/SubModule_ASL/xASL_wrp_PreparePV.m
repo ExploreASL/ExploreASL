@@ -65,10 +65,19 @@ else
         xASL_Copy(x.P.Path_c2T1, x.P.Path_PVwm, true);
         if xASL_exist(x.P.Path_c3T1)
             xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
-        end
+		end
+		
+		if xASL_exist(x.P.Path_WMH_SEGM)
+            xASL_Copy(x.P.Path_WMH_SEGM, x.P.Path_PVwmh, true);
+		end
+		
         % also do this in standard space
         xASL_Copy(x.P.Pop_Path_rc1T1, x.P.Pop_Path_PV_pGM, true);
         xASL_Copy(x.P.Pop_Path_rc2T1, x.P.Pop_Path_PV_pWM, true);
+		
+		if xASL_exist(x.P.Path_rWMH_SEGM)
+            xASL_Copy(x.P.Path_rWMH_SEGM, x.P.Pop_Path_PV_WMH_SEGM, true);
+		end
         % then skip the rest of the function
         fprintf('Indentical T1 & ASL resolutions, copying PV maps\n');
         return;
@@ -86,7 +95,10 @@ if bStandardSpace
 	%% 2) Reslice pGM & pWM to hi-res ASL
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
-
+	if xASL_exist(x.P.Path_WMH_SEGM)
+		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_WMH_SEGM ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
+	end
+	
     %% ------------------------------------------------------------------------------------------
     % 3)    Estimate effective spatial resolution of ASL
     x = xASL_wrp_ResolutionEstimation(x);
@@ -95,15 +107,27 @@ if bStandardSpace
     % 4)    Smooth pGM & pWM to this spatial resolution
 	xASL_spm_smooth(x.P.Path_rc1T1, x.S.optimFWHM_mm, x.P.Path_rc1T1);
 	xASL_spm_smooth(x.P.Path_rc2T1, x.S.optimFWHM_mm, x.P.Path_rc2T1);
+	if xASL_exist(x.P.Path_WMH_SEGM)
+		xASL_spm_smooth(x.P.Path_rWMH_SEGM, x.S.optimFWHM_mm, x.P.Path_rWMH_SEGM);
+	end
 	
 	%% ------------------------------------------------------------------------------------------
 	% 5)    Move smoothed tissue posteriors to MNI space
-	InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1};
-	OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM};
+	if xASL_exist(x.P.Path_WMH_SEGM)
+		InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1,x.P.Path_rWMH_SEGM};
+		OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM,x.P.Pop_Path_PV_WMH_SEGM};
+	else
+		InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1};
+		OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM};
+	end
 	
 	xASL_spm_deformations(x,InputList,OutputList,4, [], [], x.P.Path_y_ASL );
 	% Housekeeping
-	List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI};
+	if xASL_exist(x.P.Path_WMH_SEGM)
+		List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI x.P.Path_rWMH_SEGM};
+	else
+		List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI};
+	end
 	
 	if x.DELETETEMP
 		for iL=1:length(List2Del)
@@ -126,6 +150,12 @@ if xASL_exist(x.P.Path_c3T1) % for backward compatibility, where c3T1 wasnt alwa
 	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c3T1,x.P.Path_sPVcsf,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_sPVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVcsf);
 	xASL_delete(x.P.Path_sPVcsf);
+end
+
+if xASL_exist(x.P.Path_WMH_SEGM) 
+	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_WMH_SEGM,x.P.Path_sPVwmh,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_sPVwmh, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVwmh);
+	xASL_delete(x.P.Path_sPVwmh);
 end
 
 xASL_delete(x.P.Path_sPVgm);

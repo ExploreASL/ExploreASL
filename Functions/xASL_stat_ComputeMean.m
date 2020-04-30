@@ -9,7 +9,7 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,nMinSize,bPVC,imG
 %   nMinSize - minimal size of the ROI in voxels, if not big enough, then return NaN
 %            - ignore when 0 (OPTIONAL, default = 0)
 %   bPVC   - perform PV-correction (OPTIONAL, default = 0)
-%            0 - don't do partial volume correction, just calculate on imMask (+imGM and imWM)
+%            0 - don't do partial volume correction, just calculate a median on imMask (+imGM and imWM)
 %            1 - simple partial volume correction by dividing by the GM mask
 %            2 - partial volume correction using linear regression and imGM, imWM masks
 %   imGM   - GM partial volume map with the same size as imCBF
@@ -94,7 +94,18 @@ if sum(imMask(:))<nMinSize
     return;
 end
 
-if bPVC==0
+switch (bPVC)
+    case -1
+    % No PVC and mean
+	if isempty(imGM)
+		CBF_GM = xASL_stat_MeanNan(imCBF); 
+	else
+		CBF_GM = xASL_stat_MeanNan(imCBF(imGM>0.7)); 
+	end
+	if ~isempty(imWM)
+		CBF_WM = xASL_stat_MeanNan(imCBF(imWM>0.7));
+	end
+    case 0
     % No PVC
 	if isempty(imGM)
 		CBF_GM = xASL_stat_MedianNan(imCBF); % this is non-parametric
@@ -104,7 +115,7 @@ if bPVC==0
 	if ~isempty(imWM)
 		CBF_WM = xASL_stat_MedianNan(imCBF(imWM>0.7)); % this is non-parametric
 	end
-elseif bPVC==1
+ case 1
     % Simple PVC
 	if isempty(imGM)
 		error('imGM needs to be provided for bPVC == 1');
@@ -114,7 +125,7 @@ elseif bPVC==1
 	if nargout > 1
 		error('Only CBF_GM can be provided for bPVC == 1');
 	end
-elseif bPVC==2
+case 2
     % although assuming that CBF in CSF = 0, that maps are optimally resampled (cave
     % smoothing of c1T1 & c2T1 to ASL smoothness!) and that TotalVolume-GM-WM = CSF
     % The current absence of modulation here will not change a lot according to Jan Petr

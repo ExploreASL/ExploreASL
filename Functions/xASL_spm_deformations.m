@@ -25,8 +25,9 @@ function xASL_spm_deformations(x, PathIn, PathOut, Interpolation, InverseSpace, 
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This ExploreASL wrapper manages the SPM deformation tool.
-% It takes multiple (ExploreASL pipeline) transformations and combines/concatenates them mathematically 
-% into a single transformation. This allows to apply multiple transformations with a single interpolation, avoiding
+% It takes multiple (ExploreASL pipeline) transformations and combines/concatenates them  
+% into a single transformation prior to applying it to the input images. 
+% This allows to apply multiple transformations with a single interpolation, avoiding
 % propagation of undesired interpolation effects. Mainly used to get native
 % space images into standard space, or vice versa.
 % Best to combine as many files as possible within this function, since the

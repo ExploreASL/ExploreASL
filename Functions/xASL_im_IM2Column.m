@@ -52,7 +52,7 @@ if size(ImageIn,3)>1 && min(SizeIM(1:3)==[121 145 121]) % here we apply iteratio
         end
     end
 else
-    ColumnOut = ImageIn;
+    ColumnOut = ImageIn(logical(BrainMask));
 end
 
 if ApplyShiftDim

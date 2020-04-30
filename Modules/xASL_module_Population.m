@@ -34,6 +34,10 @@ function [result, x] = xASL_module_Population(x)
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin
 
+if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.bNativeSpaceAnalysis)
+	x.bNativeSpaceAnalysis = 0;
+end
+
 x = xASL_init_GenericMutexModules(x, 'QC'); % starts mutex locking process to ensure that everything will run only once
 x = xASL_init_FileSystem(x);
 xASL_adm_CreateDir(x.S.StatsDir);
@@ -186,13 +190,41 @@ if ~x.mutex.HasState(StateName{7})
 %     xASL_wrp_GetROIstatistics( x);
 
     x.S.InputDataStr = 'qCBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
-    x.S.InputAtlasPath = fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii');
-    xASL_wrp_GetROIstatistics(x);
+	x.S.InputDataStrNative = 'CBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+    x.S.InputNativeSpace = 0;
+	x.S.InputAtlasPath = fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii');
+	xASL_wrp_GetROIstatistics(x);
+	if x.bNativeSpaceAnalysis
+		x.S.InputNativeSpace = 1;
+		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_TotalGMPop);
+		xASL_wrp_GetROIstatistics(x);
+	end
+		
+	x.S.InputNativeSpace = 0;
     x.S.InputAtlasPath = fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii');
-    xASL_wrp_GetROIstatistics(x);
+	xASL_wrp_GetROIstatistics(x);
+	if x.bNativeSpaceAnalysis
+		x.S.InputNativeSpace = 1;
+		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_DeepWMPop);
+		xASL_wrp_GetROIstatistics(x);
+	end
+	
+	x.S.InputNativeSpace = 0;
     x.S.InputAtlasPath = fullfile(x.D.MapsSPMmodifiedDir,'MNI_structural.nii');
-    xASL_wrp_GetROIstatistics(x);
-
+	xASL_wrp_GetROIstatistics(x);
+	if x.bNativeSpaceAnalysis
+		x.S.InputNativeSpace = 1;
+		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_MNIStructuralPop);
+		xASL_wrp_GetROIstatistics(x);
+	end
+	x.S.InputNativeSpace = 0;
+    x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'Hammers.nii');
+	xASL_wrp_GetROIstatistics(x);
+	if x.bNativeSpaceAnalysis
+		x.S.InputNativeSpace = 1;
+		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_HammersPop);
+		xASL_wrp_GetROIstatistics(x);
+	end
 %     % Do the same for volumetrics
 %     x.S.IsASL = false;
 %     x.S.IsVolume = true;

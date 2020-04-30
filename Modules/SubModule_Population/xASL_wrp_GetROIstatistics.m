@@ -61,6 +61,10 @@ if isfield(x.D,'PopDir') || ~isempty(x.D.PopDir)
     x.S.InputDataDir = x.D.PopDir; 
 end
 
+if ~isfield(x.S,'InputNativeSpace') || isempty(x.S.InputNativeSpace)
+	x.S.InputNativeSpace = 0;
+end
+
 x.S.CheckMasksDir = fullfile(x.S.StatsDir,'CheckMasksVisually');
 
 x.S.Input2Check = {'InputDataStr'           'InputAtlasPath'              }; % 'InputDataDir'
@@ -100,7 +104,13 @@ else
     x.S.output_ID = [x.S.output_ID '_']; % add underscore if not empty
 end
 
-x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' Ffile '_n=' num2str(x.nSubjects) '_' date];
+x.S.output_ID = [x.S.output_ID x.S.InputDataStr];
+if x.S.InputNativeSpace
+	x.S.output_ID = [x.S.output_ID '_NativeSpace'];
+else
+	x.S.output_ID = [x.S.output_ID '_StandardSpace'];
+end
+x.S.output_ID = [x.S.output_ID '_' Ffile '_n=' num2str(x.nSubjects) '_' date];
 
 
 %% ------------------------------------------------------------------------------------------------------------

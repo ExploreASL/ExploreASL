@@ -56,13 +56,13 @@ x.P.STRUCT      = 'T1';
 
 
 % FileTypes in SUBJECTDIR
-FileDef{1}  = {'FLAIR' 'T1' 'T1_filled' 'c1T1' 'c2T1' 'c3T1' 'j_T1' 'y_T1' 'WMH_SEGM' 'R1' 'PV_pGM' 'PV_pWM'};
+FileDef{1}  = {'FLAIR' 'T1' 'T1_filled' 'c1T1' 'c2T1' 'c3T1' 'j_T1' 'y_T1' 'WMH_SEGM' 'R1' 'PV_pGM' 'PV_pWM' 'PV_WMH_SEGM'};
 
 % FileTypes in SESSIONDIR
 FileDef{2}  = {'y_ASL' 'ASL4D' 'ASL4D_RevPE'...
 	           'CBF' 'qCBF' 'qCBF4D' 'qCBF_untreated' 'despiked_ASL4D' ...
 			   'PseudoCBF' 'PWI' 'PWI4D' 'mean_PWI_Clipped' 'M0' 'mean_control' 'SD' 'SNR' 'SD_control'...
-			   'SNR_control' 'SliceGradient' 'SliceGradient_extrapolated' 'FoV' 'TT' 'PVgm' 'PVwm' 'PVcsf' 'CBFgm' 'CBFwm'}; 
+			   'SNR_control' 'SliceGradient' 'SliceGradient_extrapolated' 'FoV' 'TT' 'PVgm' 'PVwm' 'PVcsf' 'PVwmh' 'CBFgm' 'CBFwm' 'MaskSusceptibilityPop' 'TotalGMPop' 'DeepWMPop' 'HammersPop' 'MNIStructuralPop' 'LeftRightPop'}; 
 
 Prefix      = {'r' 'm' 's' 'mr' 'rmr' 'rr' 'temp_' 'rtemp_' 'mask_' 'BiasField_' 'noSmooth_'}; % r=resample m=modulate s=smooth w=warp q=quantified p=probability % USE t for TEMP? replace w by r
 Suffix      = {'_backup' '_ORI'};

@@ -3,5 +3,6 @@
 			"name": "ExampleDataSet",
 			"subject_regexp": "^Sub-\\d{3}$",
 			"Quality": 1,
+			"bNativeSpaceAnalysis":1,
 		}]
 }
