@@ -210,6 +210,9 @@ end
 % THIS IS FOR BACKWARD COMPATIBILITY NOW, WILL CHANGE (also per BIDS)
 % Check if there are quantification data in the sets:
 
+% This works by adding e.g. a qnt_T1a.mat in the analysis folder, for the
+% whole population. LEGACY
+
 % Find current index
 iSubj = find(strcmp(x.SUBJECTS,x.P.SubjectID));
 iSess = find(strcmp(x.SESSIONS,x.P.SessionID));
@@ -219,7 +222,7 @@ Sets2Find = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff' 'LabelingEfficiency'};
 FieldNames = {'ATT' 'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency'};
 
 for iSet=1:length(Sets2Find)
-    TempIndex       = find(cellfun(@(x) strcmp(x, Sets2Find{iSet}), x.S.SetsName));
+    TempIndex = find(cellfun(@(x) strcmp(x, Sets2Find{iSet}), x.S.SetsName));
 	if ~isempty(TempIndex)
 		SetIndex(iSet) = TempIndex;
 	else
