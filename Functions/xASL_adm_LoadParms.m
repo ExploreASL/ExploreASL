@@ -93,10 +93,14 @@ if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSO
     
     ParmsFields = {'EchoTime' 'RepetitionTime' 'RescaleSlopeOriginal' 'RescaleSlope'    'MRScaleSlope'...
         'AcquisitionTime' 'RescaleIntercept'        'readout_dim'       'Vendor'        'readout_dim'...
-        'Vendor' 'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'M0'};
+        'Vendor' 'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'M0'...
+        'NumberOfAverages' 'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'NumberOfTemporalPositions'};
     JSONFields  = {'EchoTime' 'RepetitionTime' 'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope'...
         'AcquisitionTime' 'PhilipsRescaleIntercept' 'MRAcquisitionType' 'Manufacturer'  'readout_dim'...
-        'Vendor' 'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'M0'};
+        'Vendor' 'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'M0'...
+        'NumberOfAverages' 'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'NumberOfTemporalPositions'};
+    % Note that we allow here both the name of dcm2niiX & the original
+    % DICOM name, for compatibility
     
     % Deal with fields in Q
     if isfield(JSONParms,'Q')
@@ -110,7 +114,10 @@ if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSO
         if isfield(JSONParms,JSONFields{iPar})
             Parms.(ParmsFields{iPar}) = JSONParms.(JSONFields{iPar});
             if ~isempty(regexp(JSONFields{iPar}, 'EchoTime'))  % JSON is in seconds, DICOM in ms
-                if Parms.(ParmsFields{iPar})>0.001 && Parms.(ParmsFields{iPar})<1
+                if length(Parms.(ParmsFields{iPar}))>1
+                    warning('Multiple EchoTime values');
+                end
+                if Parms.(ParmsFields{iPar})(1)>0.001 && Parms.(ParmsFields{iPar})(1)<1
                     % we expect 1 < TE(ms) < 1000
                     Parms.(ParmsFields{iPar}) = Parms.(ParmsFields{iPar})*1000;
                 else
@@ -118,7 +125,10 @@ if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSO
                     fprintf('DICOM uses TE & TR in ms, BIDS JSON in s');
                 end
             elseif ~isempty(regexp(JSONFields{iPar}, 'RepetitionTime'))  % JSON is in seconds, DICOM in ms
-                if Parms.(ParmsFields{iPar})>0.1 && Parms.(ParmsFields{iPar})<100
+                if length(Parms.(ParmsFields{iPar}))>1
+                    warning('Multiple RepetitionTime values');
+                end
+                if Parms.(ParmsFields{iPar})(1)>0.1 && Parms.(ParmsFields{iPar})(1)<100
                     % we expect 100 < TR(ms) < 100,000
                     Parms.(ParmsFields{iPar}) = Parms.(ParmsFields{iPar})*1000;
                 else
@@ -188,7 +198,8 @@ end
 
 % Move quantification parameters to the Q (quantification) subfield, for
 % backward compatibility
-Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'Lambda' 'T2art' 'BloodT1' 'TissueT1' 'nCompartments'};
+Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'Lambda'...
+    'T2art' 'BloodT1' 'TissueT1' 'nCompartments' 'NumberOfAverages'};
 for iField=1:length(Qfields)
     if isfield(x,Qfields{iField})
         if isfield(x.Q,(Qfields{iField})) && ~min((x.Q.(Qfields{iField})==x.(Qfields{iField})))

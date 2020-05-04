@@ -37,6 +37,8 @@ if nargin<1 || isempty(ParentJSON)
     error('ParentJSON input argument missing');
 end    
 
+PathChild = [];
+
 %% 1) Load JSON or parms.mat
 if ~isstruct(ParentJSON) && ~ischar(ParentJSON)
     error('Invalid format of ParentJSON');
