@@ -53,6 +53,13 @@ elseif ~isstruct(ParentJSON) && ischar(ParentJSON)
         % Assume this is a parms.mat (legacy)
         mat = load(PathParent, '-mat');
         ParentJSON = mat.parms;
+        % BIDS timing corrections to SI units
+        if isfield(ParentJSON,'RepetitionTime')
+            ParentJSON.RepetitionTime = ParentJSON.RepetitionTime/1000;
+        end
+        if isfield(ParentJSON,'EchoTime')
+            ParentJSON.EchoTime = ParentJSON.EchoTime/1000;
+        end
     else
         error('Invalid format of ParentJSON path');
     end

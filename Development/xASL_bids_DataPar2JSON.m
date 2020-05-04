@@ -1,5 +1,5 @@
-function xASL_bids_FromDataPar2JSON(DataParPath)
-%xASL_bids_FromDataPar2JSON Take DataPar ASL parameters and move them to JSON sidecars per BIDS
+function xASL_bids_DataPar2JSON(DataParPath)
+%xASL_bids_DataPar2JSON Take DataPar ASL parameters and move them to JSON sidecars per BIDS
 %
 % FORMAT: [x] = xASL_bids_FromDataPar2JSON(DataParPath)
 % 
@@ -57,6 +57,15 @@ for iList=1:length(FileList)
     %% 4) Load & add parms.mat child if exist (legacy)
     if exist(PathMAT, 'file')
         mat = load(PathMAT,'-mat');
+
+        % BIDS timing corrections to SI units
+        if isfield(mat.parms,'RepetitionTime')
+            mat.parms.RepetitionTime = mat.parms.RepetitionTime/1000;
+        end
+        if isfield(mat.parms,'EchoTime')
+            mat.parms.EchoTime = mat.parms.EchoTime/1000;
+        end        
+        
         JSON = xASL_bids_InsertJSONFields(mat.parms, JSON, Fields2Skip);
     end
     
