@@ -14,9 +14,9 @@ function x    = xASL_wrp_VisualCheckCollective_ASL(x)
 
 x               = xASL_adm_ResetVisualizationSlices(x);
 
-T.ImIn          = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF x.P.Pop_Path_rc2T1} x.P.Pop_Path_SNR};
-T.ImIn(5:8)     = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Path_noSmooth_M0 x.P.Pop_Path_rc1T1} x.P.Pop_Path_M0};
-T.ImIn(9:10)    = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT x.P.Pop_Path_rc2T1}};
+T.ImIn          = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF x.P.Pop_Path_PV_pWM} x.P.Pop_Path_SNR};
+T.ImIn(5:8)     = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Path_noSmooth_M0 x.P.Pop_Path_PV_pGM} x.P.Pop_Path_M0};
+T.ImIn(9:10)    = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT x.P.Pop_Path_PV_pWM}};
 
 T.DirOut        = {x.D.ASLCheckDir x.D.SNRdir      x.D.ASLCheckDir       x.D.SNRdir};
 T.DirOut(5:8)   = {x.D.RawDir      x.D.M0CheckDir  x.D.M0regASLdir       x.D.M0CheckDir};
