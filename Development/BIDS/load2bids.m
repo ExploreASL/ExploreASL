@@ -455,7 +455,7 @@ for ii = 1:length(fList)
 		end
 	end
 	
-	if ~isfield(importStr{ii}.par,'TotalNumberControlLabelPairs') && isfield(importStr{ii}.x.Q,'NumberOfAverages')
+	if ~isfield(importStr{ii}.par,'TotalNumberControlLabelPairs') && isfield(importStr{ii}.x.Q,'NumberOfAverages') && (importStr{ii}.x.Q.NumberOfAverages > 1)
 		importStr{ii}.par.TotalNumberControlLabelPairs = importStr{ii}.x.Q.NumberOfAverages;
 	end
 
@@ -677,6 +677,11 @@ for ii = 1:length(fList)
 				% Load the JSON
 				%jsonLocal = xASL_import_json(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},fSes{kk},'ASL4D.json'));
 				jsonDicom = spm_jsonread(fullfile(inSesPath,[aslLabel '.json']));
+				if exist(fullfile(inSesPath,[aslLabel '_parms.mat']),'file')
+					imParms = load(fullfile(inSesPath,[aslLabel '_parms.mat']));
+				else
+					imParms = [];
+				end
 				imNii = xASL_io_Nifti2Im(fullfile(inSesPath,[aslLabel '.nii']));
 				
 				bimNiiSave = 0;
@@ -744,7 +749,39 @@ for ii = 1:length(fList)
 						jsonLocal = rmfield(jsonLocal,'SliceTiming');
 					end
 				end
-
+				
+				% Fill in the number of averages
+				%ppStr = importStr{ii}.dirName;
+				%if isfield(importStr{ii}.par,'TotalNumberControlLabelPairs')
+				%	ppStr = [ppStr ' -' num2str(max(importStr{ii}.par.TotalNumberControlLabelPairs(:))) '-'];
+				%else
+				%	ppStr = [ppStr ' -.-'];
+				%end
+				
+				%if isfield(imParms,'parms') && isfield(imParms.parms, 'NumberOfAverages')  && (max(imParms.parms.NumberOfAverages) > 1)
+				%	ppStr = [ppStr ' -' num2str(max(imParms.parms.NumberOfAverages)) '-'];
+				%else
+				%	ppStr = [ppStr ' -.-'];
+				%end
+				
+				% Import the number of averages
+				if isfield(imParms,'parms') && isfield(imParms.parms,'NumberOfAverages') && (max(imParms.parms.NumberOfAverages) > 1)
+					if isfield(importStr{ii}.par,'TotalNumberControlLabelPairs')
+						if max(imParms.parms.NumberOfAverages) ~= importStr{ii}.par.TotalNumberControlLabelPairs;
+							warning('Discrepancy in the number of averages');
+						end
+					else
+						importStr{ii}.par.TotalNumberControlLabelPairs = max(imParms.parms.NumberOfAverages);
+					end
+				end
+						
+				%if isfield(importStr{ii}.par,'TotalNumberControlLabelPairs')
+				%	ppStr = [ppStr ' -' num2str(max(importStr{ii}.par.TotalNumberControlLabelPairs(:))) '-'];
+				%else
+				%	ppStr = [ppStr ' -.-'];
+				%end
+				%fprintf('%s\n',ppStr);
+				
 				% Type of an M0 image
 				bJsonLocalM0isFile = 0;
 				if strcmp(importStr{ii}.x.M0,'separate_scan')
