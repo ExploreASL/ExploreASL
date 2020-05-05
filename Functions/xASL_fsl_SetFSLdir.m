@@ -154,6 +154,7 @@ end
 
 % Remove doubles
 FSLdir = sort(unique(FSLdir));
+RootFSLDir = sort(unique(RootFSLDir));
 
 %% Pick FSLdir
 if length(FSLdir)<1
@@ -166,13 +167,16 @@ elseif length(FSLdir)>1
 else
     % dont say anything
 end
-FSLdir = FSLdir{end};
+FSLdir = FSLdir{1};
+RootFSLDir = RootFSLDir{1};
+RootWSLdir = RootWSLdir{1};
 
 if ispc
     FSLdirWin = FSLdir;
-    FSLdir = FSLdirWin(length(RootFSLDir)+1:end);
+    FSLdir = FSLdirWin(length(RootWSLdir)+1:end);
 end
 FSLdir = strrep(FSLdir,'\','/');
+
 
 % %% If FSL is installed in a subfolder, find it
 % if ~exist(fullfile(FSLdir,'bin'),'dir') || ~exist(fullfile(FSLdir,'bin','fsl'),'file') || ~exist(fullfile(FSLdir,'bin','bet'),'file')
@@ -199,7 +203,7 @@ FSLdir = strrep(FSLdir,'\','/');
 
 
 %% Manage RootFSLDir
-if ~exist('RootWSLdir','var') || isnan(RootWSLdir)
+if ~exist('RootWSLdir','var')
     RootWSLdir = FSLdir; % default
 else
     RootWSLdir = fullfile(RootWSLdir, FSLdir); % for e.g. WSL
