@@ -1,14 +1,6 @@
 function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux)
 %xASL_adm_GzipAllFiles This function zips all .nii
-% files into nii.gz.
-%
-% By default, the low priority files are zipped,
-% also, the high priority files can be zipped (to be made default later?)
-%
-% Low priority files are those that are never used for re-processing, only sometimes checked
-% visually
-%
-% High priority files are those that can be used for re-processing
+% files recursively into nii.gz.
 
     if nargin<2 || isempty(bFolder)
         bFolder = false;
