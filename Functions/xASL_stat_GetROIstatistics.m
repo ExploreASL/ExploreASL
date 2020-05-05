@@ -24,7 +24,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 % DESCRIPTION: This function computes mean and spatial CoV for each ROI,
 %              in a [1.5 1.5 1.5] mm MNI space,
 %              with several ASL-specific adaptions:
-%              1) Skip ROI masks that are smaller than 1 mL (i.e. 296 voxels)
+%              1) Skip ROI masks that are smaller than 1 mL 
 %                 as this would be too noisy for ASL (skipped when x.S.IsASL==false)
 %              2) Expand each ROI mask such that it has sufficient WM
 %                 content (skipped when IsASL==false)
@@ -80,6 +80,13 @@ if ~isfield(x,'LabEffNorm')
     x.LabEffNorm = false; % default
 end
 
+if ~isfield(x.S,'NamesROI')
+	warning('No ROIs found');
+	return;
+end
+
+namesROIlocal = x.S.NamesROI;
+
 if x.S.InputNativeSpace
 	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},[x.S.InputAtlasNativeName '.nii']));
 	atlasN = max(inputAtlasTmp(:));
@@ -87,6 +94,22 @@ if x.S.InputNativeSpace
 	for kk = 1:atlasN
 		x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.WBmask);
 	end
+	
+	if ~isempty(strfind(x.S.InputAtlasNativeName,'Hammers'))
+		namesROIs2Merge{1} = {'middle_frontal_gyrus','superior_frontal_gyrus','inferior_frontal_gyrus'};
+		namesROIs2Merge{2} = {'lateral_orbital_gyrus','medial_orbital_gyrus','posterior_orbital_gyrus','anterior_orbital_gyrus'};
+		namesROIsJoint = {'middle+superior+inferior_frontal_gyrus','lateral+medial+posterior+anterior_orbital_gyrus'};
+	else
+		namesROIs2Merge = [];
+		namesROIsJoint = [];
+	end
+	
+	% Amend the new atlas names, change the actual atlas for each subject alone
+	for rr = 1:length(namesROIs2Merge)
+		atlasN = atlasN + 1;
+		namesROIlocal{atlasN} = namesROIsJoint{rr};
+	end
+	
 else
 	x.S.InputMasks = logical(x.S.InputMasks);
 end
@@ -141,10 +164,12 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 		VoxelSize = [1.5 1.5 1.5];
 	end
 	MinVoxels = 1000/prod(VoxelSize);
-	SumList = squeeze(sum(x.S.InputMasks,1));
-	SumList = SumList>MinVoxels;
-	if size(SumList,1)==1
-		SumList = SumList';
+	if ~x.S.InputNativeSpace
+		SumList = squeeze(sum(x.S.InputMasks,1));
+		SumList = SumList>MinVoxels;
+		if size(SumList,1)==1
+			SumList = SumList';
+		end
 	end
 %end
 
@@ -184,12 +209,31 @@ for iSubject=1:x.nSubjects
 				for kk = 1:atlasN
 					x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.WBmask);
 				end
+		
+				for rr = 1:length(namesROIs2Merge)
+					atlasN = atlasN + 1;
+					x.S.InputMasks(:,atlasN) = zeros(size(x.S.InputMasks,1),1);
+					for qq = 1:length(namesROIs2Merge{rr})
+						for pp = 1:(atlasN-1)
+							if ~isempty(strfind(namesROIlocal{pp},namesROIs2Merge{rr}{qq}))
+								x.S.InputMasks(:,atlasN) = (x.S.InputMasks(:,atlasN) + x.S.InputMasks(:,pp))>0;
+							end
+						end
+					end
+				end
 				
 				x.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 				x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess});
 				x = xASL_init_FileSystem(x);
 				pGM_MNI = xASL_io_Nifti2Im(x.P.Path_PVgm);
 				pWM_MNI = xASL_io_Nifti2Im(x.P.Path_PVwm);
+			
+				% Calculate ROI size for each atlas
+				SumList = squeeze(sum(x.S.InputMasks,1));
+				SumList = SumList>MinVoxels;
+				if size(SumList,1)==1
+					SumList = SumList';
+				end
 				
 				for iROI=1:size(x.S.InputMasks,2)
 					for iMask=1:size(x.S.InputMasks,3)
@@ -222,16 +266,11 @@ for iSubject=1:x.nSubjects
 		% It assumes atlas symmetry though, which is true for most atlases
 		% For individual atlases (e.g. Lesion/ROI) this part may be skipped
 		if bDoOnceROILR
-			if ~isfield(x.S,'NamesROI')
-				warning('No ROIs found');
-				return;
-			end
-			NamesROIold = x.S.NamesROI;
-			x.S.NamesROI = {''};
-			for iR=1:length(NamesROIold)
-				x.S.NamesROI{iR*3-2} = [NamesROIold{iR} '_B'];
-				x.S.NamesROI{iR*3-1} = [NamesROIold{iR} '_L'];
-				x.S.NamesROI{iR*3-0} = [NamesROIold{iR} '_R'];
+			namesROIuse = {''};
+			for iR=1:length(namesROIlocal)
+				namesROIuse{iR*3-2} = [namesROIlocal{iR} '_B'];
+				namesROIuse{iR*3-1} = [namesROIlocal{iR} '_L'];
+				namesROIuse{iR*3-0} = [namesROIlocal{iR} '_R'];
 			end
 		end
 		if x.S.InputNativeSpace || bDoOnceROILR
@@ -446,10 +485,10 @@ for iSubject=1:x.nSubjects
 			
 			if ~x.S.IsASL
 				pGM_here = ones(size(DataIm)); % no masking
-			elseif ~isempty(findstr(lower(x.S.NamesROI{iROI}),'whole brain')) || ~isempty(findstr(lower(x.S.NamesROI{iROI}),'wb')) || ~isempty(findstr(lower(x.S.NamesROI{iROI}),'wholebrain'))
+			elseif ~isempty(findstr(lower(namesROIuse{iROI}),'whole brain')) || ~isempty(findstr(lower(namesROIuse{iROI}),'wb')) || ~isempty(findstr(lower(namesROIuse{iROI}),'wholebrain'))
 				pGM_here = pGM+pWM;
 				pWM_here = ones(size(pGM)) - pGM - pWM; % CSF
-			elseif  ~isempty(findstr(lower(x.S.NamesROI{iROI}),'white matter')) || ~isempty(findstr(lower(x.S.NamesROI{iROI}),'wm'))  || ~isempty(findstr(lower(x.S.NamesROI{iROI}),'whitematter'))
+			elseif  ~isempty(findstr(lower(namesROIuse{iROI}),'white matter')) || ~isempty(findstr(lower(namesROIuse{iROI}),'wm'))  || ~isempty(findstr(lower(namesROIuse{iROI}),'whitematter'))
 				% flip the ROIs:
 				% we are interested in WM instead of pGM
 				pGM_here = pWM;
@@ -471,16 +510,16 @@ for iSubject=1:x.nSubjects
 			else
 				CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
 				%% CoV
-				x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, 296, 0);
-				% x.S.DAT_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, 296, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
-				x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, 296, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+				x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
+				% x.S.DAT_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
+				x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 				
 				%% CBF (now remove vascular artifacts)
 				CurrentMask = CurrentMask & VascularMask;
-				x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, 296, -1);
-				x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, 296, 0);
-				% x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, 296, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
-				x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, 296, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+				x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, -1);
+				x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0);
+				% x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
+				x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 				
 				%% Diff_CoV, new parameter by Jan Petr
 				% x.S.DAT_Diff_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMask, 0);
@@ -492,7 +531,7 @@ for iSubject=1:x.nSubjects
 	end % for iSess=1:nSessions
 end % for iSub=1:x.nSubjects
 
-
+x.S.NamesROI = namesROIuse;
 fprintf('\n');
 
 end
@@ -571,11 +610,6 @@ function [ROI] = xASL_im_CreatePVEcROI(x, ROI, pGM, pWM)
 % Copyright 2017-2019 ExploreASL
 
 ROI = ROI>0;
-
-if sum(ROI(:))<296
-    % if the ROI is too small, we don't use it for ASL stats, so we can skip this
-    return;
-end
 
 ROI = xASL_im_Column2IM(ROI, x.WBmask); % convert to image, decompress
 
