@@ -41,8 +41,11 @@ SavePath = '/Users/henk/Downloads/SABRE/analysis/Character.mat';
 save(SavePath,'Character');
 
 %% Fix the M0 scan
-AnalysisDir = '/Users/henk/surfdrive/SABRE/analysis';
+AnalysisDir = '/s4ever/radG/RAD/share/SABRE/analysis';
+fprintf('Generating folder list\n');
 Dlist = xASL_adm_GetFileList(AnalysisDir,'\d*','FPList', [0 Inf], true);
+
+fprintf('Fixing the M0 scans:   ')
 
 for iDir=1:length(Dlist)
     xASL_TrackProgress(iDir,length(Dlist));
@@ -71,10 +74,13 @@ for iDir=1:length(Dlist)
         xASL_io_SaveNifti(PathM0, PathM0, IM, [], 0);
     end
 end
+fprintf('\n');
 
 %% Fix the ASL scan
-AnalysisDir = '/Users/henk/surfdrive/SABRE/analysis';
-Dlist = xASL_adm_GetFileList(AnalysisDir,'\d*','FPList', [0 Inf], true);
+% AnalysisDir = '/s4ever/radG/RAD/share/SABRE/analysis';
+% Dlist = xASL_adm_GetFileList(AnalysisDir,'\d*','FPList', [0 Inf], true);
+
+fprintf('Fixing the ASL scans:   ')
 
 for iDir=1:length(Dlist)
     xASL_TrackProgress(iDir,length(Dlist));
@@ -113,6 +119,7 @@ for iDir=1:length(Dlist)
         xASL_io_SaveNifti(PathASL, PathASL, IM, [], 0);
     end
 end
+fprintf('\n');
 
 %% Move all subjects without ASL to exclusion folder
 AnalysisDir = '/Users/henk/ExploreASL/ASL/SABRE/analysis';
