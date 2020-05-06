@@ -556,8 +556,8 @@ for iScanType=1:length(ScanTypeList)
             gunzip(fullfile(ScanDir, '*.gz'));
             xASL_adm_DeleteFileList(ScanDir, '^.*\.dcm\.gz$',0,[0 Inf]);
         end
-        % Fixing dcm suffixes with non-.dcm extension (e.g. empty extension, IMA (Siemens) or IMG (GE))
-        SuffList = xASL_adm_GetFileList(ScanDir, '(.*[^.]dcm|.*\.img|.*\.IMA|.*\.)$', 'FPList', [0 Inf]);
+        % Fixing dcm suffixes with non-.dcm extension (e.g. IMG (GE), IMA (Siemens), empty extension)
+        SuffList = xASL_adm_GetFileList(ScanDir, '(.*\.img|.*\.IMA|^([^.]*))$', 'FPList', [0 Inf]);
         for iSuff=1:length(SuffList)
             [Fpath, Ffile] = fileparts(SuffList{iSuff});
             xASL_Move(SuffList{iSuff}, fullfile(Fpath, [Ffile '.dcm']));
