@@ -591,7 +591,7 @@ for iScanType=1:length(ScanTypeList)
                 
                 % b) add "ExamCard" to folder name
                 [Dpath, Dfile] = fileparts(Dpath);
-                Dfile = xASL_adm_CorrectName(Dfile);
+                Dfile = xASL_adm_CorrectName(Dfile, [], '*');
                 if strcmp(Dfile(end-2:end),'MR_') || strcmp(Dfile(end-2:end),'MR-')
                     Dfile = [Dfile(1:end-3) 'MR-ExamCard'];
                 elseif strcmp(Dfile(end-2:end),'_MR') || strcmp(Dfile(end-2:end),'-MR')
@@ -813,8 +813,8 @@ else
 end
 
 
-CorrAcqName = xASL_adm_CorrectName(lower(ScanListSeriesName), 2);
-CorrDcmName = xASL_adm_CorrectName(lower(SeriesDescription), 2);
+CorrAcqName = xASL_adm_CorrectName(lower(ScanListSeriesName), 2, '*'); % The asterisk '*' is left in for T2*
+CorrDcmName = xASL_adm_CorrectName(lower(SeriesDescription), 2, '*');
 if isempty(strfind(CorrAcqName, CorrDcmName))
     % if there is a name discrepancy between dicom field & folder
     % (the SeriesDescription should be inside the FolderName)
@@ -831,7 +831,7 @@ if isempty(strfind(CorrAcqName, CorrDcmName))
         % & if this differed from what it currently is
         
         % Then rename folder
-        ScanList = xASL_adm_CorrectName(SeriesDescription, 1);
+        ScanList = xASL_adm_CorrectName(SeriesDescription, 1, '*');
 
         if ~isempty(PreFix)
             ScanList = [PreFix ScanList];
@@ -904,7 +904,7 @@ ScanTypeMatch = find(cellfun(@(x) ~isempty(regexp(lower(AcqName),['.*' x '.*']))
 if ~isempty(ScanTypeMatch)
     % always take the first ScanType match (note the hierarchy specified above)
     ScanTypeMatch = ScanTypeName{ScanTypeMatch(1)};
-    ScanTypeMatch = xASL_adm_CorrectName(ScanTypeMatch);
+    ScanTypeMatch = xASL_adm_CorrectName(ScanTypeMatch, [], '*');
     ScanDir = fullfile(ScanTypeDir, ScanList);
     NewDir = fullfile(VisitDir, ScanTypeMatch);
     NewScanDir = fullfile(NewDir, ScanList);
@@ -1576,7 +1576,7 @@ if isfield(Info,'ProtocolName') && ~isempty(Info.ProtocolName)
 end
 
 if isempty(SeriesDescription) && isfield(Info,'ImageType') && ~isempty(Info.ImageType)
-    SeriesDescription = xASL_adm_CorrectName(Info.ImageType); % only add ImageType if nothing else works
+    SeriesDescription = xASL_adm_CorrectName(Info.ImageType, [], '*'); % only add ImageType if nothing else works
 end    
 
 if strcmp(lower(SeriesDescription), 'examcard')
