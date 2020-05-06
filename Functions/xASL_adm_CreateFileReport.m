@@ -69,8 +69,9 @@ if nargin<4 || isempty(bHasM0)
     bHasM0 = false;
     iSubject = 1;
     while iSubject<=x.nSubjects && ~bHasM0 % speeds up instead of for-loop
+        CurrentSubject = iSubject;        
         for iSession=1:x.nSessions
-            if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'M0.nii'))
+            if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'M0.nii'))
                 bHasM0 = true;
             else
                 iSubject = iSubject+1;
