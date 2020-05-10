@@ -277,11 +277,14 @@ end
 % ============================================================
 %% 7) Compile results table
 ResultsTable = {'Data', 'mean_qCBF_TotalGM' 'median_qCBF_TotalGM' 'median_qCBF_DeepWM' 'CoV_qCBF_TotalGM' 'GMvol' 'WMvol' 'CSFvol' 'PipelineCompleted' 'TC_Registration'};
-for iList=1:length(Dlist)
+fprintf('Reading & parsing results:   ');
+for iList=1:length(Dlist) % iterate over example datasets
+    xASL_TrackProgress(iList, length(Dlist));
     ResultsTable{1+iList,1} = Dlist{iList};
     AnalysisDir = fullfile(TestDirDest, Dlist{iList});
     PopulationDir = fullfile(AnalysisDir, 'Population');
     StatsDir = fullfile(PopulationDir, 'Stats');
+    
     clear ResultsFile
     ResultFile{1} = xASL_adm_GetFileList(StatsDir,'^mean_qCBF.*TotalGM.*PVC2\.tsv','FPList');
     ResultFile{2} = xASL_adm_GetFileList(StatsDir,'^median_qCBF.*TotalGM.*PVC0\.tsv','FPList');
@@ -289,7 +292,7 @@ for iList=1:length(Dlist)
     ResultFile{4} = xASL_adm_GetFileList(StatsDir,'^CoV_qCBF.*TotalGM.*PVC0\.tsv','FPList');
     ResultFile{5} = xASL_adm_GetFileList(StatsDir,'^CoV_qCBF.*TotalGM.*PVC0\.tsv','FPList');
 
-    for iFile=1:length(ResultFile) % iterate over example datasets
+    for iFile=1:length(ResultFile) % iterate over ROI results
         if length(ResultFile{iFile})<1
             ResultsTable{1+iList,1+iFile} = 'empty';
             ResultsTable{1+iList,2+iFile} = 'empty';
@@ -318,17 +321,18 @@ for iList=1:length(Dlist)
     if ~isempty(PathCBF)
         ResultsTable{1+iList,5+iFile} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplate, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
     end
-    
-    % Save results
-    SaveFile = fullfile(TestDirOrig, [datestr(now,'yyyy-mm-dd_HH:MM') '_ResultsTable.mat']);
-    save(SaveFile, 'ResultsTable');
 end
+fprintf('\n');
+
+% Save results
+SaveFile = fullfile(TestDirOrig, [datestr(now,'yyyy-mm-dd_HH:MM') '_ResultsTable.mat']);
+save(SaveFile, 'ResultsTable');
 
 % ============================================================
 %% 8) Compare table with reference table
 try
     % Save ResultsTable
-    PreviousSaveFile = fullfile(TestDirOrig, '2020-03-13_22:22_ResultsTable.mat');
+    PreviousSaveFile = fullfile(TestDirOrig, '2020-05-07_06:25_ResultsTable.mat');
     PreviousTable = load(PreviousSaveFile,'-mat');
 
     clear DifferenceTable
