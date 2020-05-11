@@ -328,12 +328,24 @@ end
 
 % Now check if the segmentation results exist
 catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
+TissueVolFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.tsv']);
 MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
-VolumetricResultsMissing = ~xASL_exist(catVolFile, 'file') && ~xASL_exist(MatFile, 'file');
-Reprocessing = ~xASL_exist(x.P.Path_c1T1, 'file') || ~xASL_exist(x.P.Path_c2T1, 'file') || VolumetricResultsMissing;
+VolumetricResultsMissing = ~xASL_exist(catVolFile, 'file') && ~xASL_exist(MatFile, 'file') && ~xASL_exist(TissueVolFile, 'file');
+SegmentationsMissing = ~xASL_exist(x.P.Path_c1T1, 'file') || ~xASL_exist(x.P.Path_c2T1, 'file');
+Reprocessing = VolumetricResultsMissing || SegmentationsMissing;
 
 if x.mutex.HasState(StateName{iState}) && Reprocessing
-    warning('Segmentation results were missing, repeating');
+    % Only give these warnings if this part is supposed to be finished
+    if VolumetricResultsMissing
+        warning('Volume output from segmentation was missing, one of the following:');
+        fprintf('%s\n', catVolFile);
+        fprintf('%s\n', TissueVolFile);
+        fprintf('%s\n', MatFile);
+    end
+    if SegmentationsMissing
+        warning('c1T1/c2T1 segmentations missing');
+    end
+    fprintf('Repeating segmentation\n');
 end
 if ~x.mutex.HasState(StateName{iState}) || Reprocessing
 
