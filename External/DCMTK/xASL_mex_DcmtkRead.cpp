@@ -433,6 +433,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	DcmMetaInfo * metaInfo = NULL;
 	DcmDataset * dataset = NULL;
 	
+	DcmItem * 	rwItem     = NULL;
 	DcmItem * 	sharedItem = NULL;
 	DcmItem *   perFrmItem = NULL;
 	DcmItem * 	timingItem = NULL;
@@ -475,6 +476,9 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 		perFrmItem->findAndGetSequenceItem(	DcmTagKey(0x2005, 0x140f), privatItem, 0 );
 	}
 	
+	//RealWorldValueMappingSequence.Item_1
+	dataset->findAndGetSequenceItem( DCM_RealWorldValueMappingSequence , rwItem, 0);
+		
     //mxSetField( pmxOutput, 0, "PatientID",       MXAGetString         ( DCM_PatientID      ) );  
 	
 	// Obtain these parameters always from normal DICOM
@@ -503,6 +507,10 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "BandwidthPerPixelPhaseEncode", MXAGetStringArray(dataset, DcmTagKey(0x0019, 0x1028)));
 	mxSetField( pmxOutput, 0, "InPlanePhaseEncodingDirection", MXAGetStringArray(dataset, DCM_InPlanePhaseEncodingDirection));
 	 
+	if ((rwItem) && (rwItem->tagExistsWithValue(DCM_RealWorldValueIntercept) == OFTrue))
+		mxSetField( pmxOutput, 0, "RWVIntercept"         , MXAGetFloat64AsDouble( rwItem,    DCM_RealWorldValueIntercept       ) );
+	if ((rwItem) && (rwItem->tagExistsWithValue(DCM_RealWorldValueSlope) == OFTrue))
+		mxSetField( pmxOutput, 0, "RWVSlope"             , MXAGetFloat64AsDouble( rwItem,    DCM_RealWorldValueSlope       ) );
 	
 	// Read the Repetition time from either the enhanced or normal DICOM
 	if ( ( timingItem ) && ( timingItem->tagExistsWithValue( DCM_RepetitionTime ) == OFTrue ) )
@@ -619,10 +627,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	    "SeriesDescription", "ProtocolName", "SeriesTime", "AcquisitionDate", "SeriesDate", \
 		"AssetRFactor", "EffectiveEchoSpacing", "AcquisitionMatrix", "MRSeriesWaterFatShift", \
 	    "MRSeriesEPIFactor", "BandwidthPerPixelPhaseEncode", "InPlanePhaseEncodingDirection", \
-	    "Rows", "Columns", "RescaleSlopeOriginal"
+	    "Rows", "Columns", "RescaleSlopeOriginal", "RWVIntercept", "RWVSlope"
     };
 
-    const int inFields = 30;
+    const int inFields = 32;
 	int readPixel;
 	double *tmp;
 
