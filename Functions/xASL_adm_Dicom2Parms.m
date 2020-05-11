@@ -181,7 +181,7 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 			
 			% Deal with enhanced DICOM format imported through DICOMINFO and not DCMTK
             if bEnhancedMR && ~TryDicominfo
-                warning('Enhanced DICOM detected, but no dicominfo selected, skipping obtaining parameters');
+                %warning('Enhanced DICOM detected, but no dicominfo selected, skipping obtaining parameters');
             elseif bEnhancedMR && TryDicominfo
                 % for simplicity, take the first value from the enhanced
                 % sequences and store them in the temp-struct as if it is a

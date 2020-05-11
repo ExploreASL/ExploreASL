@@ -31,26 +31,86 @@ if ~x.ApplyQuantification(2)
     fprintf('%s\n','M0 ScaleSlopes skipped');
 else
     if ~isempty(strfind(x.Vendor,'Philips'))
-        M0_parms = xASL_adm_LoadParms(M0ParmsMat, x); % load M0 scale slopes
-    %     if  isfield(M0_parms,'RescaleSlope') && isfield(M0_parms,'RescaleSlopeOriginal')
-    %         if  M0_parms.RescaleSlopeOriginal~=M0_parms.RescaleSlope
-    %             warning('Potential scale slope issue, RescaleSlope & RescaleSlopeOriginal weren"t identical');
-    %         end
-    %     end
-    %
-    %     if  isfield(M0_parms,'RescaleSlopeOriginal') && isfield(M0_parms,'MRScaleSlope')
-    %         if  M0_parms.RescaleSlopeOriginal~=1 && M0_parms.MRScaleSlope==1
-    %             warning('1 Philips scale slope could be missing!');
-    %         end
-    %     end
+		M0_parms = xASL_adm_LoadParms(M0ParmsMat, x);
 
-        HeaderTemp = xASL_io_ReadNifti(x.P.Path_M0);
-        M0_parms.RescaleSlopeOriginal = HeaderTemp.dat.scl_slope;
+		% Read the NIFTI header to check the scaling there
+		HeaderTemp = xASL_io_ReadNifti(x.P.Path_M0);
+		Rescale_NIfTI = HeaderTemp.dat.scl_slope;
+		
+		if isfield(M0_parms,'RWVSlope')
+			% If the RealWorldValue is present, then dcm2nii scales to them and ignores everything else
+			if ~isnear(M0_parms.RWVSlope,Rescale_NIfTI,M0_parms.RWVSlope/100) && (Rescale_NIfTI ~= 1)
+				fprintf('%s\n', ['RWVSlope (' xASL_num2str(M0_parms.RWVSlope) ') and NIfTI slope (' xASL_num2str(Rescale_NIfTI) ') differ, using RWVSlope']);
+			end
+			if isfield(M0_parms,'RescaleSlopeOriginal') && ~isnear(M0_parms.RWVSlope,M0_parms.RescaleSlopeOriginal,M0_parms.RWVSlope/100) && (Rescale_NIfTI ~= 1)
+				fprintf('%s\n', ['RWVSlope (' xASL_num2str(M0_parms.RWVSlope) ') and RescaleSlopeOriginal (' xASL_num2str(M0_parms.RescaleSlopeOriginal) ') differ, using RWVSlope']);
+			end
+			if isfield(M0_parms,'RescaleSlope') && ~isnear(M0_parms.RWVSlope,M0_parms.RescaleSlope,M0_parms.RWVSlope/100) && (Rescale_NIfTI ~= 1)
+				fprintf('%s\n', ['RWVSlope (' xASL_num2str(M0_parms.RWVSlope) ') and RescaleSlope (' xASL_num2str(M0_parms.RescaleSlope) ') differ, using RWVSlope']);
+			end
+			
+			if M0_parms.RWVSlope == 1
+				warning('RWVSlope was 1, could be a scale slope issue');
+			end
+			
+			% Set the scaling to remove
+			bDoPhilipsScaling = 1;
+			sPhilipsScaleSlope = M0_parms.RWVSlope;
+		elseif isfield(M0_parms,'UsePhilipsFloatNotDisplayScaling') && (M0_parms.UsePhilipsFloatNotDisplayScaling == 1)
+			% Without the RWVSlope set and with the UsePhilipsFloatNotDisplayScaling set to 1, we know that dcm2nii did the scaling correctly and we don't have to further scale anything
+			bDoPhilipsScaling = 0;
+			sPhilipsScaleSlope = 0;
+		elseif (~isfield(M0_parms,'RescaleSlope')) && (~isfield(M0_parms,'MRScaleSlope')) && (~isfield(M0_parms,'RescaleSlopeOriginal')) && (~isfield(M0_parms,'UsePhilipsFloatNotDisplayScaling'))
+			% All fields are missing - we can ignore the quantification as all the fields have been removed and scaling done properly (we assume)
+			% Note that RWVSlope was ruled out previously, and if UsePhilipsFloatNotDisplayScaling exists, it must be 0
+			bDoPhilipsScaling = 0;
+			sPhilipsScaleSlope = 0;
+		else 
+			% Standard scaling using RescaleSlope/RescaleSlopeOriginal or the Nifti slope - which should all be either non-existing or 1 or all equal
+			% Set the scaling to remove
+			bDoPhilipsScaling = 1;
+			sPhilipsScaleSlope = 1;
+			
+			if isfield(M0_parms,'RescaleSlopeOriginal') && (M0_parms.RescaleSlopeOriginal ~= 1)
+				if (sPhilipsScaleSlope ~= 1) && ~isnear(sPhilipsScaleSlope,M0_parms.RescaleSlopeOriginal,sPhilipsScaleSlope/100)
+					warning('%s\n', ['Discrepancy in RescaleSlopeOriginal (' xASL_num2str(M0_parms.RescaleSlopeOriginal) ')']);
+				end
+				sPhilipsScaleSlope = M0_parms.RescaleSlopeOriginal;
+			end
+			
+			if isfield(M0_parms,'RescaleSlope') && (M0_parms.RescaleSlope ~= 1)
+				if (sPhilipsScaleSlope ~= 1) && ~isnear(sPhilipsScaleSlope,M0_parms.RescaleSlope,sPhilipsScaleSlope/100)
+					warning('%s\n', ['Discrepancy in RescaleSlope (' xASL_num2str(M0_parms.RescaleSlope) ')']);
+				end
+				sPhilipsScaleSlope = M0_parms.RescaleSlope;
+			end
 
-        M0IM    = M0IM./(M0_parms.RescaleSlopeOriginal.*M0_parms.MRScaleSlope); % Correct scale slopes
-        fprintf('%s\n',['M0 image corrected for dicom scale slopes ' num2str(M0_parms.RescaleSlopeOriginal) ' and ' num2str(M0_parms.MRScaleSlope)]);
-
-        % nifti scale slope has already been corrected for by SPM nifti
+			if (Rescale_NIfTI ~= 1)
+				if (sPhilipsScaleSlope ~= 1) && ~isnear(sPhilipsScaleSlope,Rescale_NIfTI,sPhilipsScaleSlope/100)
+					warning('%s\n', ['Discrepancy in NIFTI Slopes (' xASL_num2str(Rescale_NIfTI) ')']);
+				end
+				sPhilipsScaleSlope = Rescale_NIfTI;
+			end
+			
+			if sPhilipsScaleSlope == 1
+				warning('Scale slope was 1, could be a scale slope issue');
+			end
+		end
+		
+		% Apply the correct scaling
+		if bDoPhilipsScaling
+			if M0_parms.MRScaleSlope == 1
+				warning('Philips MR ScaleSlope was 1, could be a scale slope issue.');
+			end
+			M0IM = M0IM./(sPhilipsScaleSlope.*M0_parms.MRScaleSlope);
+			fprintf('%s\n',['Using DICOM (re)scale slopes ' num2str(sPhilipsScaleSlope) ' * ' num2str(M0_parms.MRScaleSlope)]);
+		end
+		
+		% M0_parms = xASL_adm_LoadParms(M0ParmsMat, x); % load M0 scale slopes
+        % HeaderTemp = xASL_io_ReadNifti(x.P.Path_M0);
+        % M0_parms.RescaleSlopeOriginal = HeaderTemp.dat.scl_slope;
+        % M0IM    = M0IM./(M0_parms.RescaleSlopeOriginal.*M0_parms.MRScaleSlope); % Correct scale slopes
+        % fprintf('%s\n',['M0 image corrected for dicom scale slopes ' num2str(M0_parms.RescaleSlopeOriginal) ' and ' num2str(M0_parms.MRScaleSlope)]);
     else
         fprintf('%s\n',[x.Vendor ' M0 scan (not Philips), so no M0 scale slope assumed']);
     end

@@ -137,95 +137,142 @@ end
 if ~x.ApplyQuantification(1)
     fprintf('%s\n','We skip the vendor-specific scalefactors');
 else
-    % Throw warning if no Philips scans, but scale slopes are not 1:
-    ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
-    if isempty(regexp(x.Vendor,'Philips')) && isfield(ASL_parms,'RescaleSlopeOriginal')
-        if ASL_parms.RescaleSlopeOriginal~=1
-            warning('We detected a RescaleSlope~=1, verify that this is not a Philips scan!!!');
-        end
-    elseif isempty(regexp(x.Vendor,'Philips')) && isfield(ASL_parms,'MRScaleSlope')
-        if ASL_parms.MRScaleSlope~=1
-            warning('We detected a ScaleSlope~=1, verify that this is not a Philips scan!!!');
-        end
-    end
+    % Load the stored parameters
+	ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
+	
+	% Throw warning if no Philips scans, but some of the scale slopes are not 1:
+	if isempty(regexp(x.Vendor,'Philips'))
+		if isfield(ASL_parms,'RescaleSlopeOriginal') && ASL_parms.RescaleSlopeOriginal~=1
+			warning('We detected a RescaleSlopeOriginal~=1, verify that this is not a Philips scan!!!');
+		end
+		if isfield(ASL_parms,'MRScaleSlope') && ASL_parms.MRScaleSlope~=1
+			warning('We detected a ScaleSlope~=1, verify that this is not a Philips scan!!!');
+		end
+		if isfield(ASL_parms,'RWVSlope') && ASL_parms.RWVSlope~=1
+			warning('We detected a RWVSlope~=1, verify that this is not a Philips scan!!!');
+		end
+	end
 
+	% Set GE specific scalings
+	if ~isempty(regexp(x.Vendor,'GE'))
+		if ~isfield(x.Q,'NumberOfAverages')
+			% GE accumulates signal instead of averaging by NEX, therefore division by NEX is required
+			error('GE-data expected, "NumberOfAverages" should be a dicom-field, but was not found!!!')
+		else
+			x.Q.NumberOfAverages = max(x.Q.NumberOfAverages); % fix for combination of M0 & PWI in same nifti, for GE quantification
+		end
+		
+		switch x.Vendor
+			% For some reason the older GE Alsop Work in Progress (WIP) version
+			% has a different scale factor than the current GE product sequence
+			
+			case 'GE_product' % GE new version
+				%                 qnt_R1gain = 1/32;
+				%                 qnt_C1 = 6000; % GE constant multiplier
+				
+				%                 qnt_GEscaleFactor = (qnt_C1*qnt_R1gain)/(x.Q.NumberOfAverages); % OLD incorrect
+				qnt_R1gain = 32; %  PWI is scaled up by 32 (default GE scalefactor)
+				qnt_GEscaleFactor = qnt_R1gain*x.Q.NumberOfAverages;
+				% division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
+				
+			case 'GE_WIP' % GE old version
+				qnt_RGcorr = 45.24; % Correction for receiver gain in PDref (but not used apparently?)
+				% or should this be 6000/45.24?
+				qnt_GEscaleFactor = qnt_RGcorr*x.Q.NumberOfAverages;
+			otherwise
+				error('Please set x.Vendor to GE_product or GE_WIP');
+		end
+		
+		ScaleImage = ScaleImage./qnt_GEscaleFactor;
+		fprintf('%s\n',['Quantification corrected for GE scale factor ' num2str(qnt_GEscaleFactor) ' for NSA=' num2str(x.Q.NumberOfAverages)]);
+		
+		% Set Philips specific scaling
+	elseif ~isempty(regexp(x.Vendor,'Philips'))
+		% Philips has specific scale & rescale slopes
+		% If these are not corrected for, only relative CBF quantification can be performed,
+		% i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
+		
+		% Read the NIFTI header to check the scaling there
+		HeaderTemp = xASL_io_ReadNifti(x.P.Path_ASL4D); % original NIfTI
+		Rescale_NIfTI = HeaderTemp.dat.scl_slope;
+		
+		if isfield(ASL_parms,'RWVSlope')
+			% If the RealWorldValue is present, then dcm2nii scales to them and ignores everything else
+			if ~isnear(ASL_parms.RWVSlope,Rescale_NIfTI,ASL_parms.RWVSlope/100) && (Rescale_NIfTI ~= 1)
+				fprintf('%s\n', ['RWVSlope (' xASL_num2str(ASL_parms.RWVSlope) ') and NIfTI slope (' xASL_num2str(Rescale_NIfTI) ') differ, using RWVSlope']);
+			end
+			if isfield(ASL_parms,'RescaleSlopeOriginal') && ~isnear(ASL_parms.RWVSlope,ASL_parms.RescaleSlopeOriginal,ASL_parms.RWVSlope/100) && (Rescale_NIfTI ~= 1)
+				fprintf('%s\n', ['RWVSlope (' xASL_num2str(ASL_parms.RWVSlope) ') and RescaleSlopeOriginal (' xASL_num2str(ASL_parms.RescaleSlopeOriginal) ') differ, using RWVSlope']);
+			end
+			if isfield(ASL_parms,'RescaleSlope') && ~isnear(ASL_parms.RWVSlope,ASL_parms.RescaleSlope,ASL_parms.RWVSlope/100) && (Rescale_NIfTI ~= 1)
+				fprintf('%s\n', ['RWVSlope (' xASL_num2str(ASL_parms.RWVSlope) ') and RescaleSlope (' xASL_num2str(ASL_parms.RescaleSlope) ') differ, using RWVSlope']);
+			end
+			
+			if ASL_parms.RWVSlope == 1
+				warning('RWVSlope was 1, could be a scale slope issue');
+			end
+			
+			% Set the scaling to remove
+			bDoPhilipsScaling = 1;
+			sPhilipsScaleSlope = ASL_parms.RWVSlope;
+		elseif isfield(ASL_parms,'UsePhilipsFloatNotDisplayScaling') && (ASL_parms.UsePhilipsFloatNotDisplayScaling == 1)
+			% Without the RWVSlope set and with the UsePhilipsFloatNotDisplayScaling set to 1, we know that dcm2nii did the scaling correctly and we don't have to further scale anything
+			bDoPhilipsScaling = 0;
+			sPhilipsScaleSlope = 0;
+		elseif (~isfield(ASL_parms,'RescaleSlope')) && (~isfield(ASL_parms,'MRScaleSlope')) && (~isfield(ASL_parms,'RescaleSlopeOriginal')) && (~isfield(ASL_parms,'UsePhilipsFloatNotDisplayScaling'))
+			% All fields are missing - we can ignore the quantification as all the fields have been removed and scaling done properly (we assume)
+			% Note that RWVSlope was ruled out previously, and if UsePhilipsFloatNotDisplayScaling exists, it must be 0
+			bDoPhilipsScaling = 0;
+			sPhilipsScaleSlope = 0;
+		else 
+			% Standard scaling using RescaleSlope/RescaleSlopeOriginal or the Nifti slope - which should all be either non-existing or 1 or all equal
+			% Set the scaling to remove
+			bDoPhilipsScaling = 1;
+			sPhilipsScaleSlope = 1;
+			
+			if isfield(ASL_parms,'RescaleSlopeOriginal') && (ASL_parms.RescaleSlopeOriginal ~= 1)
+				if (sPhilipsScaleSlope ~= 1) && ~isnear(sPhilipsScaleSlope,ASL_parms.RescaleSlopeOriginal,sPhilipsScaleSlope/100)
+					warning('%s\n', ['Discrepancy in RescaleSlopeOriginal (' xASL_num2str(ASL_parms.RescaleSlopeOriginal) ')']);
+				end
+				sPhilipsScaleSlope = ASL_parms.RescaleSlopeOriginal;
+			end
+			
+			if isfield(ASL_parms,'RescaleSlope') && (ASL_parms.RescaleSlope ~= 1)
+				if (sPhilipsScaleSlope ~= 1) && ~isnear(sPhilipsScaleSlope,ASL_parms.RescaleSlope,sPhilipsScaleSlope/100)
+					warning('%s\n', ['Discrepancy in RescaleSlope (' xASL_num2str(ASL_parms.RescaleSlope) ')']);
+				end
+				sPhilipsScaleSlope = ASL_parms.RescaleSlope;
+			end
+			
+			if (Rescale_NIfTI ~= 1)
+				if (sPhilipsScaleSlope ~= 1) && ~isnear(sPhilipsScaleSlope,Rescale_NIfTI,sPhilipsScaleSlope/100)
+					warning('%s\n', ['Discrepancy in NIFTI Slopes (' xASL_num2str(Rescale_NIfTI) ')']);
+				end
+				sPhilipsScaleSlope = Rescale_NIfTI;
+			end
 
-    if ~isempty(regexp(x.Vendor,'GE'))
-        if ~isfield(x.Q,'NumberOfAverages')
-            % GE accumulates signal instead of averaging by NEX, therefore division by NEX is required
-            error('GE-data expected, "NumberOfAverages" should be a dicom-field, but was not found!!!')
-        else
-            x.Q.NumberOfAverages = max(x.Q.NumberOfAverages); % fix for combination of M0 & PWI in same nifti, for GE quantification
-        end
+			if sPhilipsScaleSlope == 1
+				warning('Scale slope was 1, could be a scale slope issue');
+			end
+		end
+		
+		% Apply the correct scaling
+		if bDoPhilipsScaling
+			if ASL_parms.MRScaleSlope == 1
+				warning('Philips MR ScaleSlope was 1, could be a scale slope issue.');
+			end
+			ScaleImage = ScaleImage./(sPhilipsScaleSlope.*ASL_parms.MRScaleSlope);
+			fprintf('%s',['Using DICOM (re)scale slopes ' num2str(sPhilipsScaleSlope) ' * ' num2str(ASL_parms.MRScaleSlope)]);
+		end
 
-        switch x.Vendor
-            % For some reason the older GE Alsop Work in Progress (WIP) version
-            % has a different scale factor than the current GE product sequence
-
-            case 'GE_product' % GE new version
-%                 qnt_R1gain = 1/32;
-%                 qnt_C1 = 6000; % GE constant multiplier
-
-%                 qnt_GEscaleFactor = (qnt_C1*qnt_R1gain)/(x.Q.NumberOfAverages); % OLD incorrect
-                qnt_R1gain = 32; %  PWI is scaled up by 32 (default GE scalefactor)
-                qnt_GEscaleFactor = qnt_R1gain*x.Q.NumberOfAverages;
-                % division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
-
-            case 'GE_WIP' % GE old version
-                qnt_RGcorr = 45.24; % Correction for receiver gain in PDref (but not used apparently?)
-                % or should this be 6000/45.24?
-                qnt_GEscaleFactor = qnt_RGcorr*x.Q.NumberOfAverages;
-            otherwise
-                error('Please set x.Vendor to GE_product or GE_WIP');
-        end
-
-        ScaleImage = ScaleImage./qnt_GEscaleFactor;
-        fprintf('%s\n',['Quantification corrected for GE scale factor ' num2str(qnt_GEscaleFactor) ' for NSA=' num2str(x.Q.NumberOfAverages)]);
-
-    elseif ~isempty(regexp(x.Vendor,'Philips'))
-        % Philips has specific scale & rescale slopes
-        % If these are not corrected for, only relative CBF quantification can be performed,
-        % i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
-
-        % QUICK & DIRTY FIX, NEEDS TO BE CHECKED
-        % We assume that the original NIfTI rescale slope is correct
-        % since the newer dcm2niiX version sometimes scales extra to use
-        % the full 16 bit width.
-
-        HeaderTemp = xASL_io_ReadNifti(x.P.Path_ASL4D); % original NIfTI
-        if isfield(ASL_parms,'RescaleSlopeOriginal')
-            % here we check whether these rescale slopes differ
-            % significantly (i.e. more than 5%)
-            Rescale_NIfTI = HeaderTemp.dat.scl_slope;
-            Rescale_JSON = ASL_parms.RescaleSlopeOriginal;
-            if Rescale_JSON<0.95*Rescale_NIfTI || Rescale_JSON>1.05*Rescale_NIfTI
-                warning('Philips rescaleslopes differed >5% between JSON & NIfTI!');
-                fprintf('%s\n', ['JSON RescaleSlope is ' xASL_num2str(Rescale_JSON)]);
-                fprintf('%s\n', ['NIfTI RescaleSlope is ' xASL_num2str(Rescale_NIfTI)]);
-                fprintf('%s\n', 'If NIfTI rescaleslope is 0.5<RescaleSlope<20 & non-one, we use this');
-                if Rescale_NIfTI>0.5 && Rescale_NIfTI<20 && Rescale_NIfTI~=1
-                    ASL_parms.RescaleSlopeOriginal = HeaderTemp.dat.scl_slope;
-                    fprintf('%s\n', 'Using the NIfTI RescaleSlope');
-                else
-                    fprintf('%s\n', 'Using the JSON RescaleSlope');
-                end
-            end
-        end
-
-        if ASL_parms.RescaleSlopeOriginal==1
-            warning('ASL_parms.RescaleSlopeOriginal was 1, could be a scale slope issue');
-        end
-
-        % Correct scale slopes
-        ScaleImage = ScaleImage./(ASL_parms.RescaleSlopeOriginal.*ASL_parms.MRScaleSlope);
-        % NifTI scale slope has already been corrected for by SPM's nifti function
-        fprintf('%s',['Using DICOM (re)scale slopes ' num2str(ASL_parms.RescaleSlopeOriginal) ' * ' num2str(ASL_parms.MRScaleSlope)]);
-
-    elseif strcmp(x.Vendor,'Siemens') && ~strcmp(x.Vendor,'Siemens_JJ_Wang') && strcmp(x.M0,'separate_scan')
-          % Some Siemens readouts divide M0 by 10, others don't
-          ScaleImage = ScaleImage./10;
-          fprintf('%s\n','M0 corrected for Siemens scale factor 10')
-    end
+		% Siemens specific scalings
+	elseif strcmp(x.Vendor,'Siemens')
+		if ~strcmp(x.Vendor,'Siemens_JJ_Wang') && strcmp(x.M0,'separate_scan')
+			% Some Siemens readouts divide M0 by 10, others don't
+			ScaleImage = ScaleImage./10;
+			fprintf('%s\n','M0 corrected for Siemens scale factor 10')
+		end
+	end
 end
 
 
