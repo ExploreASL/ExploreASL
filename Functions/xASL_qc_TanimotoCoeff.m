@@ -1,10 +1,10 @@
-function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
+function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth)
 %xASL_qc_TanimotoCoeff Calculates the Tanimoto similarity coefficient for a binary/fuzzy set/continuous images.
-% FORMAT: TC = xASL_qc_TanimotoCoeff(im1, im2[, imMask, type])
+% FORMAT: TC = xASL_qc_TanimotoCoeff(Image1, Image2[, imMask, type])
 %
 % INPUT:
-%   im1    - First input image, can also be a path
-%   im2    - Second input image, can also be a path
+%   Image1 - First input image, can also be a path
+%   Image2 - Second input image, can also be a path
 %   imMask - Mask over which the similarity is calculated (DEFAULT all)
 %   type   - 1 binary input image
 %            2 fuzzy set input (values in [0,1])
@@ -19,14 +19,15 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
 %            So for e.g. bClip==1, there will be clipped below 0 but not at
 %            the peak values.
 %   bSmooth - specifies how to smooth images with an isotropic kernel.
-%             A single FWHM kernel value needs to be specified for each image, e.g. [4 4] would smooth both images with [4 4 4]
+%             A single FWHM kernel value needs to be specified for each image in voxels, e.g. [4 4] would smooth both images with [4 4 4]
 %             but [3 0] would only smooth the first image with a [3 3 3] kernel. (OPTIONAL, DEFAULT = [0 0],
 %             which is no smoothing
+%             Note that these are FWHM in voxels, not in mm!
 %
 % OUTPUT:
 %   TC - Tanimoto similarity coefficient
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Compares images IM1 and IM2 over the mask IMMASK. TYPE specifies the input data type.
+% DESCRIPTION: Compares images Image1 and Image2 within the mask imMask. TYPE specifies the input data type.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % RATIONALE:   Note that the Tanimoto Coefficient is a measure of image
 %              overlap/intersection, similar to the Dice coefficient. With
@@ -51,7 +52,7 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
 %    David C. Anastasiu, George Karypis, "Efficient identification of Tanimoto nearest neighbors",
 %        International Journal of Data Science and Analytics, 2017.
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
     %% Administration
@@ -61,27 +62,28 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
     if nargin<5 || isempty(bClip)
         bClip = 0;
     end
-	if nargin < 2 || isempty(im1) || isempty(im2)
+	if nargin < 2 || isempty(Image1) || isempty(Image2)
 		error('Need to have at least two inputs');
     end
 
-    im1 = xASL_io_Nifti2Im(im1); % this allows for image matrix or NIfTI path input
-    im2 = xASL_io_Nifti2Im(im2); % this allows for image matrix or NIfTI path input
+    Image1 = xASL_io_Nifti2Im(Image1); % this allows for image matrix or NIfTI path input
+    Image2 = xASL_io_Nifti2Im(Image2); % this allows for image matrix or NIfTI path input
 
-	if ~isequal(size(im1),size(im2))
+	if ~isequal(size(Image1),size(Image2))
 		error('The two input images need to have the same size');
 	end
 
 	if nargin < 3 || isempty(imMask)
-		imMask = ones(size(im1));
+		imMask = ones(size(Image1));
 	end
 
 	if nargin < 4 || isempty(type)
-		if islogical(im1) && islogical(im2)
+        fprintf('Warning, didnt know image type, automatically selecting one\n');
+		if islogical(Image1) && islogical(Image2)
 			% Binary input
 			type = 1;
 		else
-			if max(im1(:))<=1 && max(im2(:))<=1 && min(im1(:))>=0 && min(im2(:))>=0
+			if max(Image1(:))<=1 && max(Image2(:))<=1 && min(Image1(:))>=0 && min(Image2(:))>=0
 				% Fuzzy set input
 				type = 2;
 			else
@@ -94,52 +96,53 @@ function TC = xASL_qc_TanimotoCoeff(im1, im2, imMask, type, bClip, bSmooth)
     %% Deal with clipping
     if bClip~=0
         % Clip below zero
-        im1(im1<0) = 0;
-        im2(im2<0) = 0;
+        Image1(Image1<0) = 0;
+        Image2(Image2<0) = 0;
     end
     if bClip>0 && bClip<1
-        SortedIntensity1 = sort(im1(isfinite(im1)));
-        SortedIntensity2 = sort(im2(isfinite(im2)));
+        SortedIntensity1 = sort(Image1(isfinite(Image1)));
+        SortedIntensity2 = sort(Image2(isfinite(Image2)));
         Threshold1 = SortedIntensity1(round(bClip*length(SortedIntensity1)));
         Threshold2 = SortedIntensity2(round(bClip*length(SortedIntensity2)));
-        ScaleFactor = Threshold2/Threshold1;
-        im1(im1>Threshold1) = Threshold1; % remove the peaks
-        im1 = im1.*ScaleFactor; % scale equally
+        Image1(Image1>Threshold1) = Threshold1;
+        Image2(Image2>Threshold2) = Threshold2;
+        Image1 = Image1./Threshold1;
+        Image2 = Image2./Threshold2;
     end
 
     %% Apply smoothing
     if bSmooth(1)~=0
-        im1 = xASL_im_ndnanfilter(im1,'gauss',[bSmooth(1) bSmooth(1) bSmooth(1)]);
+        Image1 = xASL_im_ndnanfilter(Image1,'gauss',[bSmooth(1) bSmooth(1) bSmooth(1)]);
     end
     if bSmooth(2)~=0
-        im2 = xASL_im_ndnanfilter(im2,'gauss',[bSmooth(2) bSmooth(2) bSmooth(2)]);
+        Image2 = xASL_im_ndnanfilter(Image2,'gauss',[bSmooth(2) bSmooth(2) bSmooth(2)]);
     end
 
     %% Deal with mask
-	imMask = imMask.*(1-isnan(im1)).*(1-isnan(im2));
+	imMask = imMask.*(1-isnan(Image1)).*(1-isnan(Image2));
 	imMask = imMask > 0;
-	im1 = im1(imMask);
-	im2 = im2(imMask);
+	Image1 = Image1(imMask);
+	Image2 = Image2(imMask);
 
     %% Compute the TC
 	switch (type)
 		case 1
 			% Needs to have a logical input
-			if ~islogical(im1)
-				im1 = im1>0;
+			if ~islogical(Image1)
+				Image1 = Image1>0;
 			end
 
-			if ~islogical(im2)
-				im2 = im2>0;
+			if ~islogical(Image2)
+				Image2 = Image2>0;
 			end
-			TC = sum(im1&im2)/sum(im1|im2);
+			TC = sum(Image1&Image2)/sum(Image1|Image2);
 
 		case 2
-			TC = sum(min([im1,im2],[],2))/sum(max([im1,im2],[],2));
+			TC = sum(min([Image1,Image2],[],2))/sum(max([Image1,Image2],[],2));
 		case 3
-			TC = sum(im1.*im2) / (sum(im1.^2) + sum(im2.^2) - sum(im1.*im2));
+			TC = sum(Image1.*Image2) / (sum(Image1.^2) + sum(Image2.^2) - sum(Image1.*Image2));
 		otherwise
-			error('Unknown type');
+			error('Unknown Tanimoto Coefficient type to compute');
     end
 
 

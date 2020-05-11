@@ -47,7 +47,7 @@ function xASL_wrp_RegisterASL(x)
 %                           - 1 = CBF->pseudoCBF from template/pGM+pWM
 %                                 (skip if sCoV>0.667)
 %                           - 2 = automatic (mix of both)
-%                           - 3 = option 2 & force CBF->pseudoCBF irrespective of sCoV or Dice coefficient
+%                           - 3 = option 2 & force CBF->pseudoCBF irrespective of sCoV or Tanimoto coefficient
 %     - G) Dummy src NIfTIs are created:
 %          mean_control.nii to register with T1w
 %          mean_PWI_Clipped.nii to register with pseudoCBF
@@ -55,10 +55,10 @@ function xASL_wrp_RegisterASL(x)
 %
 % 1)    Registration Center of Mass
 % 2)    Registration ASL -> anat (Control->T1w)
-%       (in case of a 3D sequence, this step is only applied if it improves the Dice coefficient by more than 1%)
+%       (in case of a 3D sequence, this step is only applied if it improves the Tanimoto coefficient by more than 1%)
 % 3)    Registration CBF->pseudoCBF
 %       (in case of a 2D sequence, this step is only applied if it improves
-%       the Dice coefficient by more than 1%). Also, this step is only
+%       the Tanimoto coefficient by more than 1%). Also, this step is only
 %       applied if the spatial CoV<0.67. Note that this is usually the case
 %       for 3D scans because of their lower effective spatial resolution.
 %
@@ -261,7 +261,7 @@ end
 % ATT biasfield and vascular peaks
 xASL_im_CreatePseudoCBF(x, 0);
 
-DicePerc{1} = xASL_im_GetSpatialOverlapASL(x);
+TanimotoPerc{1} = xASL_im_GetSpatialOverlapASL(x);
 
 
 %% ----------------------------------------------------------------------------------------
@@ -273,8 +273,8 @@ if x.bAutoACPC
     
     xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
     xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 0); % Then register
-    DicePerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
-    if DicePerc{end}>=0.99*DicePerc{end-1} % if alignment improved or remained same
+    TanimotoPerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+    if TanimotoPerc{end}>=0.99*TanimotoPerc{end-1} % if alignment improved or remained same
         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
     else % if alignment got worse
         xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
@@ -291,17 +291,17 @@ end
 % MaskTemplate= logical(xASL_io_Nifti2Im(Mask_Native));
 % xASL_delete(x.P.Path_rmean_PWI_Clipped);
 
-% % compute dice coefficient:
-% % DiceCoeff should be around 0.5-0.6 after all registration, depending on
-% % correct mask/image comparison
+% compute Tanimoto coefficient:
+% Tanimoto Coeff should be around 0.8 after all registration, depending on
+% correct mask/image comparison
 % imA = MaskASL;
 % imB = MaskTemplate;
-% DiceCoeff = xASL_im_ComputeDice(imA,imB);
+% TanimotoCoeff = xASL_im_ComputeTanimoto(imA,imB);
 
 if bRegistrationControl
 % 1) Initial mean control registrations, if available
     if ~xASL_exist(x.P.Path_mean_control,'file')
-        warning('Requested control-T1w registration but Mean_control.nii didnt exist');
+        warning('Trying control-T1w registration but Mean_control.nii didnt exist');
     else
         OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_mean_control});
 
@@ -315,14 +315,16 @@ if bRegistrationControl
         else
             xASL_spm_coreg(x.P.Path_T1, x.P.Path_mean_control, OtherList, x);
         end
-        DicePerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+        TanimotoPerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
         
         if isempty(regexp(x.readout_dim,'2D')) % for 2D (EPI) we don't care (assuming this works better than center of mass)
-            if DicePerc{end}>=0.99*DicePerc{end-1}
+            if TanimotoPerc{end}>=0.99*TanimotoPerc{end-1}
                 % if alignment improved or remained more or less the same
                 xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
-            else % if alignment got significantly (>5% Dice) worse
+                FinalTanimoto = TanimotoPerc{end};
+            else % if alignment got significantly (>5% Tanimoto) worse
                 xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+                FinalTanimoto = TanimotoPerc{end-1};
             end
         end
     end
@@ -365,19 +367,21 @@ if bRegistrationCBF
                 % then register
                 xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
                 % and check for improvement
-                DicePerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+                TanimotoPerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
                 
                 if isempty(regexp(x.readout_dim,'3D')) && x.bRegistrationContrast~=3
                     % if we don't have a 3D sequence & don't force CBF-pGM registration
-                    if DicePerc{end}>=0.99*DicePerc{end-1}
+                    if TanimotoPerc{end}>=0.99*TanimotoPerc{end-1}
                         % if alignment improved or remained more or less the same
                         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+                        FinalTanimoto = TanimotoPerc{end};
                     else
-                        % if alignment got significantly (>1% Dice) worse
+                        % if alignment got significantly (>1% Tanimoto) worse
                         % we don't force CBF-pGM registration
                         xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
                         bSkipThis = true; % skip next iteration
                         x.bAffineRegistration = 0; % skip affine registration
+                        FinalTanimoto = TanimotoPerc{end-1};
                     end
                 end
 
@@ -399,7 +403,7 @@ if bRegistrationCBF
         end
 
         if bAffineRegistration % perform affine registration
-            % NB: here the Dice coefficient check may not work, when e.g.
+            % NB: here the Tanimoto coefficient check may not work, when e.g.
             % one image is enlarged, it has more overlap
             fprintf('%s\n','Performing affine registration');
             xASL_im_CreatePseudoCBF(x, spatCoVit(end));
@@ -460,41 +464,60 @@ end
 end
 
 
-function [DiceCoeff] = xASL_im_GetSpatialOverlapASL(x)
-
-PathMaskTemplate = fullfile(x.SESSIONDIR,'Mask_Template.nii');
+function [TanimotoCoeff, DiceCoeff] = xASL_im_GetSpatialOverlapASL(x)
+ 
+ 
+if ~isfield(x,'ComputeDiceCoeff')
+    x.ComputeDiceCoeff = 0; % the PWI masking doesnt really work
+    DiceCoeff = NaN;
+end
+ 
+%% Admin
+PathMaskTemplate = fullfile(x.SESSIONDIR, 'Mask_Template.nii');
+PathTemplate = fullfile(x.SESSIONDIR, 'Mean_CBF_Template.nii');
 [Fpath, Ffile] = xASL_fileparts(x.PathMask);
 x.PathMask2 = fullfile(Fpath, [Ffile '2.nii']);
+x.PathCBF = fullfile(x.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii');
 if ~xASL_exist(x.PathMask,'file')
     xASL_Copy(PathMaskTemplate, x.PathMask);
 end
 PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
+ 
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathMask, 0);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathCBF, 1);
+ 
+MaskFromTemplate = xASL_io_Nifti2Im(x.PathMask)>0.5;
+TemplateIm = xASL_io_Nifti2Im(x.PathCBF);
+ 
+ 
+%% Compute wholebrain Tanimoto coefficient
+TanimotoCoeff = xASL_qc_TanimotoCoeff(PWIim, TemplateIm, MaskFromTemplate, 3, 0.975);
+fprintf('%s\n',['Tanimoto Coeff=' num2str(100*TanimotoCoeff,3)]);
+ 
+if x.ComputeDiceCoeff
+    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathMask2 ,0);
+    
+    GMIM = xASL_io_Nifti2Im(x.PathMask2);
+    xASL_delete(x.PathMask2);
+    
+    %% Compute Dice coefficient
+    % Mask the GMIM
+    sortInt = sort(GMIM(:));
+    ThrInt = sortInt(round(0.7*length(sortInt)));
+    GMIM = GMIM>ThrInt;
+ 
+    % Ensure that the mask is binary
+    MaskFromTemplate = MaskFromTemplate & GMIM;
+ 
+    %% Simple intersection check
+    sortInt = sort(PWIim(isfinite(PWIim)));
+    ThrInt = sortInt(round(0.75*length(sortInt)));
+    maskPWI = PWIim>ThrInt;
+ 
+    DiceCoeff = xASL_im_ComputeDice(maskPWI,MaskFromTemplate);
+    fprintf('%s\n',['Joint brainmask Dice= ' num2str(100*DiceCoeff,3) '%']);
+end
 
-xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathMask,0);
-xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathMask2,0);
-
-MaskFromTemplate = xASL_io_Nifti2Im(x.PathMask);
-GMIM = xASL_io_Nifti2Im(x.PathMask2);
-
-xASL_delete(x.PathMask2);
-
-% Mask the GMIM
-sortInt = sort(GMIM(:));
-ThrInt = sortInt(round(0.7*length(sortInt)));
-GMIM = GMIM>ThrInt;
-
-% Ensure that the mask is binary
-MaskFromTemplate = MaskFromTemplate > 0.5;
-MaskFromTemplate = MaskFromTemplate & GMIM;
-
-%% Simple intersection check
-sortInt = sort(PWIim(isfinite(PWIim)));
-ThrInt = sortInt(round(0.75*length(sortInt)));
-maskPWI = PWIim>ThrInt;
-
-DiceCoeff = xASL_im_ComputeDice(maskPWI,MaskFromTemplate);
-
-fprintf('%s\n',['Joint brainmask was ' num2str(100*DiceCoeff,3) '%']);
 
 
 end
