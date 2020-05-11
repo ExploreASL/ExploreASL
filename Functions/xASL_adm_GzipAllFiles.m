@@ -1,6 +1,8 @@
 function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux)
 %xASL_adm_GzipAllFiles This function zips all .nii
 % files recursively into nii.gz.
+% Note that the linux option cannot deal with spaces in filenames or
+% directories
 
     if nargin<2 || isempty(bFolder)
         bFolder = false;

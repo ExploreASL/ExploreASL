@@ -184,7 +184,7 @@ if strcmp(x.M0,'separate_scan')
             fprintf('%s\n', ['Delta TE between ASL ' num2str(ASL_parms.EchoTime) 'ms & M0 ' num2str(M0_parms.EchoTime) 'ms, for ' x.Sequence ', assuming ' CorrName ' decay of arterial blood, factor applied to M0: ' num2str(ScalingM0/ScalingASL)]);
         end
     else
-        warning('Could not compare TEs from ASL & M0, parms files missing!');
+        warning('Could not compare TEs from ASL & M0, JSON fields missing!');
     end
 end
 
