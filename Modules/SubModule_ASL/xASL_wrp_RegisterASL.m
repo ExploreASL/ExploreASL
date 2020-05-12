@@ -274,14 +274,14 @@ if x.bAutoACPC
     xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
     xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 0); % Then register
     TanimotoPerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
-    if TanimotoPerc{end}>=0.99*TanimotoPerc{end-1} % if alignment improved or remained same
+    if TanimotoPerc{end}>=TanimotoPerc{end-1} % if alignment improved or remained same
         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
     else % if alignment got worse
         xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
     end
 end
 
-    
+
 %% ----------------------------------------------------------------------------------------
 %% 2)    Registration Control->T1w
 % Here we first create a mask
@@ -318,7 +318,7 @@ if bRegistrationControl
         TanimotoPerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
         
         if isempty(regexp(x.readout_dim,'2D')) % for 2D (EPI) we don't care (assuming this works better than center of mass)
-            if TanimotoPerc{end}>=0.99*TanimotoPerc{end-1}
+            if TanimotoPerc{end}>=TanimotoPerc{end-1}
                 % if alignment improved or remained more or less the same
                 xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
                 FinalTanimoto = TanimotoPerc{end};
@@ -360,7 +360,7 @@ if bRegistrationCBF
                 xASL_im_CreatePseudoCBF(x, spatCoVit(1));
                 OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_mean_PWI_Clipped});
 
-                if isempty(regexp(x.readout_dim,'3D')) % if we don't have a 3D sequence
+                if isempty(regexp(x.Sequence,'spiral')) % if we don't have a 3D spiral sequence
                     xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
                 end
                 
@@ -369,9 +369,9 @@ if bRegistrationCBF
                 % and check for improvement
                 TanimotoPerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
                 
-                if isempty(regexp(x.readout_dim,'3D')) && x.bRegistrationContrast~=3
-                    % if we don't have a 3D sequence & don't force CBF-pGM registration
-                    if TanimotoPerc{end}>=0.99*TanimotoPerc{end-1}
+                if isempty(regexp(x.Sequence,'spiral')) && x.bRegistrationContrast~=3
+                    % if we don't have a 3D spiral sequence & don't force CBF-pGM registration
+                    if TanimotoPerc{end}>=TanimotoPerc{end-1}
                         % if alignment improved or remained more or less the same
                         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
                         FinalTanimoto = TanimotoPerc{end};
