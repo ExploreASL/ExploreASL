@@ -182,7 +182,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 			
 			% Deal with enhanced DICOM format imported through DICOMINFO and not DCMTK
             if bEnhancedMR && ~TryDicominfo
-                warning('Enhanced DICOM detected, but no dicominfo selected, skipping obtaining parameters');
+                fprintf('Enhanced DICOM detected, but no dicominfo selected, skipping obtaining parameters\n');
             elseif bEnhancedMR && TryDicominfo
                 % for simplicity, take the first value from the enhanced
                 % sequences and store them in the temp-struct as if it is a
