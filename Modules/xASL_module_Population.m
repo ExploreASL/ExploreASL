@@ -42,7 +42,7 @@ x = xASL_init_GenericMutexModules(x, 'QC'); % starts mutex locking process to en
 x = xASL_init_FileSystem(x);
 xASL_adm_CreateDir(x.S.StatsDir);
 
-% Define ASL sequence (quick&dirty, if ASL information exists)
+% Obtain ASL sequence
 if ~isfield(x,'Sequence') && isfield(x,'readout_dim')
     if strcmp(x.readout_dim,'2D')
        x.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of vendor
@@ -51,6 +51,8 @@ if ~isfield(x,'Sequence') && isfield(x,'readout_dim')
     elseif strcmp(x.readout_dim,'3D') && ~isempty(regexp(x.Vendor,'GE'))
            x.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
     end
+elseif ~isfield(x,'Sequence') && ~isfield(x,'readout_dim')
+    warning('No general x.Sequence defined, perhaps multiple sequences, needs to be implemented still in Population module');
 end
 
 StateName{1} = '010_CreatePopulationTemplates';
