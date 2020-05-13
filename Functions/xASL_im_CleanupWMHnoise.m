@@ -4,6 +4,8 @@ function xASL_im_CleanupWMHnoise(InputPath, OutputPath, MinLesionVolume, pThresh
 % through a dilation. This part is executed conservatively, as FLAIR hyperintensities
 % inside the GM can be erroneously segmented as WMH, and should not be lesion-filled
 % (otherwise these cannot be fixed later in the Structural module)
+%
+% Note that LST lesion filling expects a probability map, doesnt work nicely with binary mask
 
 %% ---------------------------------------------------------------------
 %% Admin
@@ -39,6 +41,7 @@ fprintf('%s','Cleaning up WMH_SEGM:  0%');
 
 % Threshold at low value not to miss any connections
 imWMHthresholded        = imWMH > pThresh;
+OutputImage = imWMH;
 
 % First dilate
 imThreshDilated         = xASL_im_DilateErodeFull( imWMHthresholded, 'dilate', xASL_im_DilateErodeSphere(2));
@@ -55,11 +58,13 @@ for ii = 1:numLabel
     % Remove volumes that are too small
     if  LesionVolume < MinVolumeDilated
         imWMHthresholded(imLabel == ii) = 0;
+        OutputImage(imLabel == ii) = 0; 
+        % LST lesion filling expects a probability map, doesnt work nicely with binary mask
     end
 end
 
 fprintf('\n');
 
-xASL_io_SaveNifti(InputPath, OutputPath, imWMHthresholded, [], false);
+xASL_io_SaveNifti(InputPath, OutputPath, OutputImage, [], false);
 
 end

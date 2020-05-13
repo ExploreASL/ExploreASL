@@ -20,6 +20,14 @@ function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
 % A more thorough WMH clean up (for e.g. WMH volumetrics) is performed later in the Structural module, using also the results from the
 % T1w segmentation.
 %
+% Note when changing the lesion filling here, LST lesion filling expects a probability map, doesnt work nicely with binary mask
+% This function runs the following steps:
+% 1) File management
+% 2) Clean up the WMH segmentation used for lesion filling
+% 3) Run lesion filling
+% 4) Correction of too much/erronous lesion filling
+% 5) File management
+%
 % EXAMPLE: xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath);
 %
 % REFERENCE:
@@ -27,9 +35,7 @@ function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
 % Battaglini M, Jenkinson M, De Stefano N. Evaluating and reducing the impact of white matter lesions on brain volume measurements. Hum Brain Mapp. 2012;33(9):2062?2071.
 % Pareto D, Sastre-Garriga J, Aymerich FX, et al. Lesion filling effect in regional brain volume estimations: a study in multiple sclerosis patients with low lesion load. Neuroradiology. Neuroradiology; 2016;58(5):467?474http://dx.doi.org/10.1007/s00234-016-1654-5.
 % __________________________________
-% Copyright 2015-2019 ExploreASL
-%
-% 2019-05-02 HJM
+% Copyright 2015-2020 ExploreASL
 
 if nargin < 2 || isempty(rWMHPath)
 	error('xASL_wrp_LST_T1w_LesionFilling_WMH: Requires at least 2 input arguments.');
@@ -63,8 +69,20 @@ if xASL_stat_SumNan(xASL_stat_SumNan(xASL_stat_SumNan(xASL_io_Nifti2Im(rWMHPath)
 end
 
 
+%% 4) Correction of too much/erronous lesion filling
+% LST lesion filling can create artifacts, which we try to remove here
+% Note that this part assumes a T1w contrast!
+T1w = xASL_io_Nifti2Im(x.P.Path_T1);
+T1wFilled = xASL_io_Nifti2Im(T1_filledName);
+
+% we assume that lesion filling should increase the intensity, i.e.
+% correcting the WM lesion hypointensity in the T1w to the higher WM
+% intensity. Everywhere the intensity is reduced, this is erroneous.
+T1wFilled(T1wFilled<T1w) = T1w(T1wFilled<T1w);
+xASL_io_SaveNifti(T1_filledName, T1_filledName, T1wFilled, [], 0);
+
 %% ----------------------------------------------------------------------------------
-%% 4) File management
+%% 5) File management
 if x.DELETETEMP
     xASL_delete(rWMHPath);
     xASL_adm_DeleteFileList(Fpath, '^LST_.*FLAIR\.mat$', false, [0 Inf]); % LST mat-file
