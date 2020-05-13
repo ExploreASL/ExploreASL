@@ -20,6 +20,7 @@ function [x] = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers
 % xASL_init_Toolboxes              - initialization third-party toolboxes, e.g. SPM, dip_image (soon to be removed)
 % xASL_init_VisualizationSettings  - defines visualization settings for
 %                                    visual QC figure printing (type help xASL_init_VisualizationSettings for more information)
+% xASL_init_DefineSets             - Define study subjects/parameters for this pipeline run
 % xASL_init_PrintCheckSettings     - prints summarized data parameters and warnings
 % xASL_init_FileSystem             - dirty initialization of common filenames used throughout the pipeline
 % xASL_init_PopulationSettings     - defines additional visualization settings (to be merged with xASL_init_VisualizationSettings)
@@ -377,11 +378,11 @@ fprintf('\n\n');
 
 %% -----------------------------------------------------------------------------
 %% Common settings and definitions
-x                     = xASL_init_ExploreASL_directories(x);
-x.OVERWRITE           = true;
+x = xASL_init_ExploreASL_directories(x);
+x.OVERWRITE = true;
 
-x                     = xASL_init_Toolboxes(x);
-[x]                   = xASL_init_VisualizationSettings(x); % visual settings
+x = xASL_init_Toolboxes(x);
+[x] = xASL_init_VisualizationSettings(x); % visual settings
 
 
 %% Reproducibility testing
@@ -403,7 +404,7 @@ else
         x.D.ROOT = pwd;
     end
 
-    %% Define subjects/parameters
+    %% Define study subjects/parameters for this pipeline run
     x = xASL_init_DefineSets(x);
 
     

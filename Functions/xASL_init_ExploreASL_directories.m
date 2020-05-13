@@ -1,6 +1,5 @@
 function x  = xASL_init_ExploreASL_directories( x )
 %xASL_init_ExploreASL_directories Part of master script ExploreASL, loading definitions & pathnames
-% ExploreASL, HJMM Mutsaerts, 2016
 
 %% Setting the option for pediatric template (this is normally set only for specific dataset and general xASL initialization does not have it)
 % Set if the pediatric template field is set correctly

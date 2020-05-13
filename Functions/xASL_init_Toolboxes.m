@@ -1,5 +1,6 @@
 function x  = xASL_init_Toolboxes(x)
-%xASL_init_Toolboxes Check ancillary toolboxes, versions and paths
+%xASL_init_Toolboxes Check & load ancillary toolboxes, versions and paths.
+% Part of ExploreASL_Initialize.m
 
 x.SPMDIR      = fullfile(x.MyPath, 'External', 'SPMmodified');
 x.SPMpath     = x.SPMDIR;

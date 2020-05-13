@@ -1,10 +1,60 @@
 function x = xASL_init_DefineSets(x)
-%xASL_init_DefineSets Part of master script ExploreASL, defining sets
-% from sessions and pre-defined groups
-% TotalSubjects == subjects before processing defined exclusions
-% ExploreASL, HJMM Mutsaerts, 2016
-    
-%% Manage included & excluded subjects
+%xASL_init_DefineSets % Define study subjects/parameters for this pipeline run
+%
+% FORMAT: [x] = xASL_init_DefineSets(x)
+%
+% INPUT:
+%   x   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%
+% OUTPUT:
+%   x   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This initialization wrapper initializes the parameters for
+% this pipeline run, i.e. subjects, sessions (runs), timepoints (visits),
+% exclusions, sites, cohorts etc.
+%
+% Note that ASL sessions are defined here as what BIDS calls "runs"
+%
+% The "longitudinal_Registration functions here manage different
+% TimePoints, which is what BIDS calls "visits".
+% With different structural scans, from the same participant. This is
+% managed by subject name suffixes _1 _2 _n, and can be used for comparing
+% visits in the population module, or running SPM's longitudinal within-subject
+% registration
+%
+% Parallelization is allowed here by calling ExploreASL different times,
+% where it divides the subjects/images for processing across the nWorkers,
+% using iWorker as the reference for the part that the current ExploreASL
+% call will process. This requires having a Matlab license that can be
+% started multiple times on a server, or alternatively running the
+% ExploreASL compilation, and doesn't require the Matlab parallel toolbox.
+
+% This function exists from the following parts:
+
+% 1) Manage included & excluded subjects
+% 2) Create dummy defaults (exclusion list, ASL sessions)
+% 3) Create list of total baseline & follow-up subjects, before exclusions
+% 4) Create TimePoint data-lists
+% 5) Manage exclusions
+% 6) Add sessions as statistical variable, if they exist
+% 7) Parallelization: If running parallel, select cases for this worker
+% 8) Add Longitudinal TimePoints (different T1 volumes) as covariate/set, after excluding
+% 9) Load & add statistical variables
+% 10) Make x.S.SetsOptions horizontal if vertical by transposing
+% 11) Create single site dummy, if there were no sites specified
+% 12) Check for time points sets
+% 13) Create list of baseline & follow-up subjects (i.e. after exclusion)
+% 14) Check what excluded from which TimePoints
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: x = xASL_init_DefineSets(x);
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
+
+% ------------------------------------------------------------------------------------------------
+%% 1) Manage included & excluded subjects
 % Get a list of subject ID's by querying the folder names, excluding exclusions
 
 if ~isfield(x,'subject_regexp')
@@ -13,7 +63,8 @@ if ~isfield(x,'subject_regexp')
 end
 
 if isfield(x,'ForceInclusionList')
-    % This is an option if you want to select subjects
+    % This is an option if you want to select subjects yourself,
+    % instead of using all the subjects that comply with the regular expression
     x.TotalSubjects = x.ForceInclusionList';
 else
     % First escape double escaping
@@ -27,7 +78,8 @@ end
 
 x.nTotalSubjects = length(x.TotalSubjects);
 
-%% Create dummy defaults
+% ------------------------------------------------------------------------------------------------
+%% 2) Create dummy defaults (exclusion list, ASL sessions)
 if ~isfield(x,'exclusion') % default no exclusions
     x.exclusion = {''};
 end
@@ -50,7 +102,8 @@ if ~isfield(x,'SESSIONS') % can also be defined in DataPar.mat
     end
 end
 
-%% Create list of total baseline & follow-up subjects, before exclusions
+% ------------------------------------------------------------------------------------------------
+%% 3) Create list of total baseline & follow-up subjects, before exclusions
 x.nSessions = length(x.SESSIONS);
 x.SUBJECTS = x.TotalSubjects; % temporarily for xASL_init_LongitudinalRegistration
 x.nSubjects = length(x.SUBJECTS);
@@ -65,8 +118,8 @@ end
 
 [~, ~, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
-
-%% Create TimePoint data-lists
+% ------------------------------------------------------------------------------------------------
+%% 4) Create TimePoint data-lists
 for iT=unique(TimePoint)'
     x.TimePointTotalSubjects{iT} = '';
 end
@@ -80,8 +133,8 @@ end
 x = rmfield(x,'SUBJECTS');
 x = rmfield(x,'nSubjects');
 
-%% Manage exclusions
-
+% ------------------------------------------------------------------------------------------------
+%% 5) Manage exclusions
 if     ~isfield(x,'exclusion')
         x.exclusion = {''};
         nExclusion = 0;
@@ -147,7 +200,8 @@ for iT=1:x.nTimePointsTotal
     x.nTimePointTotalSubjects(iT) = length(x.TimePointTotalSubjects{iT});
 end
 
-%% Add sessions as statistical variable, if they exist
+% ------------------------------------------------------------------------------------------------
+%% 6) Add sessions as statistical variable, if they exist
 if x.nSessions>1  % if there are sessions (more than 1 session), then sessions=1st set
 
     % Predefine SETS to avoid empty SETS & import predefined session settings as set settings
@@ -169,9 +223,7 @@ if x.nSessions>1  % if there are sessions (more than 1 session), then sessions=1
         end
     end        
     
-
-    
-    %% Create ID/data for session numbers
+    % Create ID/data for session numbers
     for iSubj=1:x.nSubjects
         for iSess=1:x.nSessions
             iSubjSess = (iSubj-1)*x.nSessions+iSess;
@@ -181,11 +233,8 @@ if x.nSessions>1  % if there are sessions (more than 1 session), then sessions=1
     end
 end
 
-
-
-
-
-%% PARALLELIZATION: If running parallel, select cases for this worker
+% ------------------------------------------------------------------------------------------------
+%% 7) Parallelization: If running parallel, select cases for this worker
 if x.nWorkers>1
     nSubjPerWorker = ceil(x.nSubjects/x.nWorkers); % ceil to make sure all subjects are processed
     nSubjSessPerWorker = nSubjPerWorker*x.nSessions;
@@ -203,10 +252,7 @@ if x.nWorkers>1
     x.SUBJECTS = x.SUBJECTS(iStartSubject:iEndSubject);
     x.nSubjects = length(x.SUBJECTS);
     x.nSubjectsSessions = x.nSubjects*x.nSessions;
-    
-    
-    
-    
+
     % Adapt SETSID (covariants)
     if isfield(x.S,'SetsID') && ~isempty(x.S.SetsID)
         x.S.SetsID = x.S.SetsID(iStartSubjectSession:iEndSubjectSession, :);
@@ -216,13 +262,9 @@ if x.nWorkers>1
     fprintf(['I will process subjects ' num2str(iStartSubject) '-' num2str(iEndSubject) '\n']);
 end
 
-
-
-
-
-%% 1) Add Longitudinal TimePoints (different T1 volumes) as covariate/set, AFTER EXCLUSION
-% TimePoints should be indicated as different subjects, with a _1 _2 _3 _n
-% suffix
+% ------------------------------------------------------------------------------------------------
+%% 8) Add Longitudinal TimePoints (different T1 volumes) as covariate/set, after excluding
+% TimePoints should be indicated as different subjects, with a _1 _2 _3 _n suffix
 
 [SubjectNList, ~, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
@@ -248,19 +290,23 @@ x.S.iSetLong_TP = iSetLong_TP;
 
 
 
-
-
-
 % ================================================================================================
-%% LOAD STATS: Add statistical variables
+%% 9) Load & add statistical variables
+% Keep some space here, to easily find this for debugging
 x = xASL_init_LoadStatsData(x);
 
 
 
 
 
+
+
+
+
+
+
 % ================================================================================================
-%% Make x.S.SetsOptions horizontal if vertical by transposing
+%% 10) Make x.S.SetsOptions horizontal if vertical by transposing
 if isfield(x.S,'SetsOptions')
     for iCell=1:length(x.S.SetsOptions)
         if size(x.S.SetsOptions{iCell},1)>size(x.S.SetsOptions{iCell},2)
@@ -272,8 +318,8 @@ else
 end
 
 
-
-%% 2) Create single site dummy, if there were no sites specified
+% ------------------------------------------------------------------------------------------------
+%% 11) Create single site dummy, if there were no sites specified
 if isfield(x.S, 'SetsName')
     % Search for a Site variable
     for iS=1:length(x.S.SetsName)
@@ -291,8 +337,8 @@ if ~isfield(x.S,'iSetSite')
 end   
 
 
-
-%% Check for time points sets
+% ------------------------------------------------------------------------------------------------
+%% 12) Check for time points sets
 % Search for a variable specifying longitudinal time points
 if isfield(x.S, 'SetsName')
     % Search for a variable specifying age at scanning
@@ -302,7 +348,8 @@ if isfield(x.S, 'SetsName')
     end
 end
 
-%% Create list of baseline & follow-up subjects (i.e. after exclusion)
+% ------------------------------------------------------------------------------------------------
+%% 13) Create list of baseline & follow-up subjects (i.e. after exclusion)
 for iCell=1:length(x.TimePointTotalSubjects)
     x.TimePointSubjects{iCell} = '';
 end
@@ -329,8 +376,8 @@ for iT=1:x.nTimePoints
     end
 end
 
-
-%% Check what excluded from which TimePoints
+% ------------------------------------------------------------------------------------------------
+%% 14) Check what excluded from which TimePoints
 for iT=1:x.nTimePoints
     x.TimePointExcluded{iT} = '';
 end
