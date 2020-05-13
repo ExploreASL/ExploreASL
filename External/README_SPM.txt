@@ -24,7 +24,7 @@ Line 117,137,158,181,571: added extra routines for the Zigzag
 
 
 *********************************************************************************************************
-ENABLING LOW QUALITY MODE (FOR QUICK TESTING, RUN EVERYTHING BUT WITH LOWER ITERATIONS)
+ENABLING LOW QUALITY MODE (FOR QUICK TESTING, RUN EVERYTHING BUT WITH LOWER ITERATIONS AND/OR SPATIAL RESOLUTION)
 
 DATE+NAME:2018_12_29, HM
 DESCRIPTION:
@@ -133,13 +133,6 @@ set NaNs to zeroes:
 1456: for edges of Yy transformation fields
 1476: for edges of trans.warped.y transformation fields
 
-DATE+NAME:2019_03_28, Jan Petr
-DESCRIPTION:
-Added rounding to inversions in CAT12 to avoid having reproducibility issues between OS and Matlab versions
-FILE:
-cat_main_registration.m
-Added round(~,12) to lines 323, 333, 340, 554, 558, 686, 860 -> replaced by HM by xASL_round for backward compatibility
-
 DATE+NAME:2019_03_27, Jan Petr
 DESCRIPTION:
 Enabled save of CSF as c3T1.nii from CAT12
@@ -151,10 +144,7 @@ External/SPMmodified/toolbox/cat12/cat_conf_opts.m
 
 DATE+NAME:2019_02_08, Jan Petr
 DESCRIPTION:
-Fixed the option for using and removing lesions from the CAT12 segmentation. Now the lesions are merged and prepared beforehand and the filename
-is passed to CAT, where this is loaded and all transformation steps are applied to it directly in CAT.
-Plus, CAT has some extra routines for working with the lesions, some of them were bypassed, because they were not working efficiently, when
-the lesion was set to NaN in the T1w image.
+Fixed the option for using and removing lesions from the CAT12 segmentation. Now the lesions are merged and prepared beforehand and the filename is passed to CAT, where this is loaded and all transformation steps are applied to it directly in CAT. Plus, CAT has some extra routines for working with the lesions, some of them were bypassed, because they were not working efficiently, when the lesion was set to NaN in the T1w image.
 FILE:
 External/SPMmodified/toolbox/cat12/cat_conf_extopts.m
 537     : Added xasl_lesion as a valid input for CAT12 containing the name of the merged lesion file
@@ -184,6 +174,18 @@ External/SPMmodified/toolbox/cat12/cat_conf_extopts.m
 External/SPMmodified/toolbox/cat12/cat_main_registration.m
 459: Added a call to function xASL_wrp_DARTELSaveReg that saves the current DARTEL registration flow field to a file - this function is ripped out of this CAT file
 794: Added a call to function xASL_wrp_GSSaveReg that saves the current GS registration flow field to a file (only for the full resolution one) - this function is ripped out of this CAT file
+
+
+
+*********************************************************************************************************
+IMAGE PROCESSING REPRODUCIBILITY
+
+DATE+NAME:2019_03_28, Jan Petr
+DESCRIPTION:
+Added rounding to inversions in CAT12 to avoid having reproducibility issues between OS and Matlab versions
+FILE:
+cat_main_registration.m
+Added round(~,12) to lines 323, 333, 340, 554, 558, 686, 860 -> replaced by HM by xASL_round for backward compatibility
 
 DATE+Name: 2018-12-11 JP
 DESCRIPTION:
@@ -232,6 +234,27 @@ spm_smoothto8bit.m 57
 External/SPMmodified/toolbox/OldSeg/spm_maff.m line 106
 toolbox/cat12/cat_vol_correct_slice_scaling line 425
 
+*********************************************************************************************************
+BIDS/JSON
+
+DATE+NAME:2020_04_29, HM
+DESCRIPTION:
+Instead of error for an imaginary number, put it in a string
+FILE:
+spm_jsonwrite.m at line 198
+
+
+DATE+NAME:2020_01_17, JP
+DESCRIPTION:
+Edited the spm_jsonwrite so that it makes a newline after each field
+FILE:
+spm_jsonwrite.m at line 157
+
+DATE+NAME:2019_10_25, JP
+DESCRIPTION:
+Edited the jsmn.c so that spm_jsonread.c can read JSONs that have empty string as value
+FILE:
+jsmn.c at line 269
 
 
 *********************************************************************************************************
@@ -253,24 +276,6 @@ but it was negative in FLAIR and for FLAIR this ruined the ROIs
 FILE:
 cat_vol_qa - Line 678
 
-DATE+NAME:2020_04_29, HM
-DESCRIPTION:
-Instead of error for an imaginary number, put it in a string
-FILE:
-spm_jsonwrite.m at line 198
-
-
-DATE+NAME:2020_01_17, JP
-DESCRIPTION:
-Edited the spm_jsonwrite so that it makes a newline after each field
-FILE:
-spm_jsonwrite.m at line 157
-
-DATE+NAME:2019_10_25, JP
-DESCRIPTION:
-Edited the jsmn.c so that spm_jsonread.c can read JSONs that have empty string as value
-FILE:
-jsmn.c at line 269
 
 DATE+NAME:2019_10_20, HM
 DESCRIPTION:
@@ -373,9 +378,6 @@ DESCRIPTION:
 
 
 
-
-
-
 *********************************************************************************************************
 MATLAB BACKWARDS COMPATIBILITY
 
@@ -392,7 +394,7 @@ cat_main_register.m, lines 341, 554, 560, 687, 861, 865, 1168
 
 
 *********************************************************************************************************
-REDUCE GRAPHICAL OUTPUT & NON-SPECIFIC WARNINGS. ADD TRACKING PROGRESS xASL_TrackProgress
+REDUCE GRAPHICAL OUTPUT & NON-SPECIFIC WARNINGS. ADD TRACKING PROGRESS AT COMMAND LINE: xASL_TrackProgress
 
 DATE+NAME:2019_10_13, HM
 DESCRIPTION:
