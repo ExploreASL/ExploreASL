@@ -157,7 +157,7 @@ elseif ~exist('Parms','var') && ~isempty(strMatError)
     warning([strMatError ', skipping...']);
     return;
 elseif ~isempty(strMatError)
-    if bVerbose; fprintf('%s\n',[strMatError ', but we try using the other source (*_parms.mat/*.json)']); end
+    fprintf('%s\n',[strMatError ', but we try using the other source (*_parms.mat/*.json)']);
 end
 
 if VendorRestore
@@ -171,7 +171,7 @@ end
 %% 4) Check erroneous scale slope 
 if  isfield(Parms,'RescaleSlope') && isfield(Parms,'RescaleSlopeOriginal')
     RelDiff = abs(100* (Parms.RescaleSlopeOriginal-Parms.RescaleSlope) / ((Parms.RescaleSlopeOriginal+Parms.RescaleSlope)*0.5));
-    if  RelDiff>0.05
+    if RelDiff>0.05 && bVerbose
         warning(['RescaleSlope & RescaleSlopeOriginal were not identical in ' ParmsPath]);
         fprintf('%s\n', ', check if scaling was applied (especially on Philips scanner enhanced DICOMs');
         fprintf('%s\n',['Difference was ' xASL_num2str(RelDiff) '%']);
@@ -203,7 +203,7 @@ Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' '
 for iField=1:length(Qfields)
     if isfield(x,Qfields{iField})
         if isfield(x.Q,(Qfields{iField})) && ~min((x.Q.(Qfields{iField})==x.(Qfields{iField})))
-            warning(['Overwriting x.Q.' Qfields{iField} '=' xASL_num2str(x.Q.(Qfields{iField})) ', with x.' Qfields{iField} '=' xASL_num2str(x.(Qfields{iField}))]);
+            if bVerbose; warning(['Overwriting x.Q.' Qfields{iField} '=' xASL_num2str(x.Q.(Qfields{iField})) ', with x.' Qfields{iField} '=' xASL_num2str(x.(Qfields{iField}))]); end
         end
         
         x.Q.(Qfields{iField}) = x.(Qfields{iField});
@@ -228,7 +228,7 @@ end
 
 if ~exist('Parms','var')
     Parms = struct; 
-    warning('parms seem missing, something wrong with parmsfile?');
+    if bVerbose; warning('parms seem missing, something wrong with parmsfile?'); end
 end
 
 

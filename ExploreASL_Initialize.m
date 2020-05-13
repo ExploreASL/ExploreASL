@@ -35,6 +35,13 @@ function [x] = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers
 % Construct a questdlg with three options
 
 % Defaults
+if nargin<4 || isempty(nWorkers)
+    nWorkers = 1;
+end
+if nargin<3 || isempty(iWorker)
+    iWorker = 1;
+end
+
 x.nWorkers = 1;
 x.iWorker = 1;
 
