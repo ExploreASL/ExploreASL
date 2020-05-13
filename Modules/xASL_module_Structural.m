@@ -293,6 +293,9 @@ if ~x.mutex.HasState(StateName{iState}) && x.bLesionFilling  % tracks progress t
     if xASL_exist(rWMHPath,'file')
         % check if the FLAIR segmentation exists from LST
         xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath);
+        % Note that this part assumes a T1w-contrast, where the lesion
+        % correction increases the intensity of the WM lesion
+        % hypointensity!
 
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
