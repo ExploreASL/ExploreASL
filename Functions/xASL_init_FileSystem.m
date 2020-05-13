@@ -39,11 +39,11 @@ xASL_adm_CreateDir(x.D.M0regASLdir);
 %% ------------------------------------------------------------------------------------
 %% General definitions
 if isfield(x,'SUBJECTDIR')
-    [~, x.P.SubjectID] = fileparts(x.SUBJECTDIR);
+    [~, x.P.SubjectID] = xASL_fileparts(x.SUBJECTDIR);
     x.iSubject = find(cellfun(@(y) strcmp(y, x.P.SubjectID), x.SUBJECTS));
 end
 if isfield(x,'SESSIONDIR')
-    [~, x.P.SessionID] = fileparts(x.SESSIONDIR);
+    [~, x.P.SessionID] = xASL_fileparts(x.SESSIONDIR);
     x.iSession = find(cellfun(@(y) strcmp(y, x.P.SessionID), x.SESSIONS));
 end
 if isfield(x,'iSubject') && isfield(x,'iSession')

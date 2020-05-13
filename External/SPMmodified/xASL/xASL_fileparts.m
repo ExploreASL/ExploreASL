@@ -51,7 +51,13 @@ function [Fpath, Ffile, Fext] = xASL_fileparts(InputPath)
     
     % Put the SuffixSPM back
     Fext = [Fext SuffixSPM];
-    
+
+    if exist(InputPath, 'dir')
+        % when running this for a folder, there is no extension, and any
+        % dot in the name should be ignored and put in the Ffile
+        Ffile = [Ffile Fext];
+        Fext = '';
+    end
 
 end
 
