@@ -16,7 +16,16 @@ function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
 % DESCRIPTION: This submodule runs the LST WMH segmentation, either with LGA or LPA.
 % LPA is the default choice, it outperforms LGA a bit, depending on the image quality. These algorithms
 % perform optimally with 3T images, with good contrast. Generally, LPA oversegments whereas LGA undersegments.
-% The LPA oversegmentation is corrected in a later submodule.
+% The LPA oversegmentation is corrected in a later submodule. If a WMH_SEGM
+% already existed, the LST is run quickly as dummy only, to be replaced by
+% the original WMH_SEGM image. This function has the following parts:
+% 
+% 1) Reslice FLAIR (& WMH_SEGM, if exists) to T1w
+% 2) Define parameters for segmentation
+% 3) Run the segmentation
+% 4) Replace by already existing WMH_SEGM
+% 5) File management
+% 6) Remove NaNs from segmentations & fix image edges
 %
 % EXAMPLE: xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath);
 %
@@ -25,16 +34,12 @@ function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
 % Schmidt P, Gaser C, Arsic M, et al. An automated tool for detection of FLAIR-hyperintense white-matter lesions in Multiple Sclerosis. Neuroimage. 2012;59(4):3774?3783.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% __________________________________
-% Copyright 2015-2019 ExploreASL
-%
-% 2019-05-02 HJM
+% Copyright 2015-2020 ExploreASL
 
 
-%% ADMIN
-
+%% 0) Admin
 if nargin < 2 || isempty(rWMHPath)
-	error('xASL_wrp_LST_Segment_FLAIR_WMH: Requires at least 2 input arguments.');
+	error('Requires at least 2 input arguments.');
 end
 
 if nargin < 3 || isempty(WMHsegmAlg)
@@ -63,7 +68,6 @@ end
 
 %% ----------------------------------------------------------
 %% 2) Define parameters for segmentation
-
 fprintf('\n%s\n','----------------------------------------');
 
 switch WMHsegmAlg
@@ -111,14 +115,25 @@ spm_jobman('run',matlabbatch); close all
 
 
 %% ----------------------------------------------------------
-%% 4) File management
-xASL_io_SaveNifti(rWMHPath, rWMHPath, xASL_io_Nifti2Im(rWMHPath), 16, false); % convert to 16 bit
+%% 4) Replace by already existing WMH_SEGM
+if xASL_exist(x.P.Path_WMH_SEGM,'file')
+    % replace the LST segmentation by the WMH_SEGM.nii. This is either
+    % the identical segmentation (because copied before), or an externally provided segmentation
 
-% Create a copy of the WMH segmentation, if no externally provided WMH_SEGM
-if ~xASL_exist(x.P.Path_WMH_SEGM, 'file')
-    xASL_Copy(rWMHPath, x.P.Path_WMH_SEGM);
+    FaultyIM = xASL_io_ReadNifti(rWMHPath);
+    CorrectIM = xASL_io_Nifti2Im(x.P.Path_WMH_SEGM);
+
+    if  min(size(FaultyIM.dat)==size(CorrectIM)) % first verify whether image sizes are identical
+        xASL_io_SaveNifti(rWMHPath, rWMHPath, CorrectIM, [], false);
+    end
+else % if no externally provided WMH_SEGM
+    xASL_io_SaveNifti(rWMHPath, rWMHPath, xASL_io_Nifti2Im(rWMHPath), 16, false); % convert to 16 bit
+    xASL_Copy(rWMHPath, x.P.Path_WMH_SEGM); % Create a copy of the WMH segmentation
 end
 
+
+%% ----------------------------------------------------------
+%% 5) File management
 % Delete the LST folder & its contents
 CleanUpDir = xASL_adm_GetFileList(x.SUBJECTDIR,'^LST_tmp_.*$','List',[0 Inf], true);
 nList = length(CleanUpDir);
@@ -137,7 +152,9 @@ if x.DELETETEMP
     end
 end
 
-%% Remove NaNs from segmentations & fix image edges
+
+%% ----------------------------------------------------------
+%% 6) Remove NaNs from segmentations & fix image edges
 if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     tIM = xASL_io_Nifti2Im(x.P.Path_WMH_SEGM);
     tIM(isnan(tIM)) = 0; % set NaNs to zeros
@@ -152,8 +169,6 @@ if xASL_exist(rWMHPath, 'file')
     tIM = xASL_im_ZeroEdges(tIM); % set edges to zero
     xASL_io_SaveNifti(rWMHPath, rWMHPath, tIM, [], false);
 end
-
-
 
 
 end

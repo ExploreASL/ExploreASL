@@ -41,19 +41,6 @@ end
 [Fpath, Ffile] = fileparts(rWMHPath);
 T1_filledName = fullfile(Fpath, ['T1_filled_' Ffile(6:end) '.nii']);
 
-if xASL_exist(x.P.Path_WMH_SEGM,'file')
-    % replace the LST segmentation by the WMH_SEGM.nii. This is either
-    % the identical segmentation (because copied before), or an externally provided segmentation
-
-    FaultyIM = xASL_io_ReadNifti(rWMHPath);
-    CorrectIM = xASL_io_Nifti2Im(x.P.Path_WMH_SEGM);
-
-    if  min(size(FaultyIM.dat)==size(CorrectIM)) % first verify whether image sizes are identical
-        xASL_io_SaveNifti(rWMHPath, rWMHPath, CorrectIM, [], false);
-    end
-end
-
-
 fprintf('\n%s\n','----------------------------------------');
 fprintf('%s\n','Removing segmented WMH from T1w, and fill lesions with values interpolated from neighborhood');
 
