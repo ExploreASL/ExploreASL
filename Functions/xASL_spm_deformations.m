@@ -56,7 +56,7 @@ if ~isfield(x,'D')
     x.D = struct;
 end
 if ~isfield(x.P,'SubjectID')
-    x.P.SubjectID = '';
+    x.P.SubjectID = 'Unknown subject';
 end
 if ~isfield(x.P,'STRUCT')
     x.P.STRUCT = 'T1';
@@ -100,7 +100,11 @@ else
     AddAffine = true;
 end
 if nargin<7 || isempty(DeformationPath)
-    DeformationPath = fullfile( x.D.ROOT, x.P.SubjectID, ['y_' x.P.STRUCT '.nii']); % defaults at this
+    if ~strcmp(x.P.SubjectID, 'Unknown subject')
+        DeformationPath = fullfile(x.D.ROOT, x.P.SubjectID, ['y_' x.P.STRUCT '.nii']); % defaults at this
+    else
+        warning('DeformationPath input parameter missing');
+    end
 end
 if nargin<8 || isempty(VoxelSize)
     VoxelSize = [1.5 1.5 1.5];
