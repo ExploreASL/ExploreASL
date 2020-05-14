@@ -54,7 +54,7 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
                 copyfile(SrcPath, DstPath);
             end
         else
-            warning('Source file does not exits...');
+            warning('Source file does not exist...');
         end
     end
 end
