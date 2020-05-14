@@ -47,10 +47,14 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
             system(['cp -r ' SrcPath ' ' DstPath]);
         end
     else
-        if bOverwrite
-            copyfile(SrcPath, DstPath, 'f');
+        if isfile(SrcPath) % Check if source file exists
+            if bOverwrite
+                copyfile(SrcPath, DstPath, 'f');
+            else
+                copyfile(SrcPath, DstPath);
+            end
         else
-            copyfile(SrcPath, DstPath);
+            warning('Source file does not exits...');
         end
     end
 end
