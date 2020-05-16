@@ -95,7 +95,7 @@ function []                 = xASL_stat_PrintCluster_ROI_Stats(MaskMap,x,printTi
 
         for iA=1:length(Atlases)
             AtlasPath                   = fullfile(x.D.AtlasDir,[Atlases{iA} '.tsv']);
-            [TSVfile AtlasROIs]         = xASL_adm_csv2tsv(AtlasPath);
+            [TSVfile AtlasROIs]         = xASL_bids_csv2tsvReadWrite(AtlasPath);
 
             x.S.iA                        = iA;
             for iR=1:length(AtlasROIs)
