@@ -80,6 +80,10 @@ end
 % 1) for existing WMH_SEGM we force a dummy LPA run, which is
 %    faster, and will be overwritten later by the pre-existing WMH_SEGM
 % 2) default is 'LPA' unless LGA was chosen
+
+rWMHPathLPA = fullfile(x.SUBJECTDIR, ['ples_lpa_mr' x.P.FLAIR '.nii']);
+rWMHPathLGA = fullfile(x.SUBJECTDIR, ['ples_lga_0.3_rmr' x.P.FLAIR '.nii']);
+
 if xASL_exist(x.P.Path_WMH_SEGM, 'file') && bO
     x.WMHsegmAlg = 'LPA';
 	% force fast WMH segmentation, because already WMH_SEGM.nii existing, which we assume to be high quality
@@ -96,11 +100,20 @@ elseif xASL_exist(x.P.Path_FLAIR, 'file')
     warning('Unknown WMH segmentation option, selecting LPA');
     x.WMHsegmAlg = 'LPA';
 end
+
+if xASL_exist(rWMHPathLPA, 'file') && strcmp(x.WMHsegmAlg, 'LGA')
+    warning('LST LPA output detected from previous run, forcing LST LPA segmentation');
+    x.WMHsegmAlg = 'LPA';
+elseif xASL_exist(rWMHPathLGA, 'file') && strcmp(x.WMHsegmAlg, 'LPA')
+    warning('LST LGA output detected from previous run, forcing LST LGA segmentation');
+    x.WMHsegmAlg = 'LGA';
+end
+
 switch x.WMHsegmAlg
     case 'LPA'
-        rWMHPath = fullfile(x.SUBJECTDIR, ['ples_lpa_mr' x.P.FLAIR '.nii']);
+        rWMHPath = rWMHPathLPA;
     case 'LGA'
-        rWMHPath = fullfile(x.SUBJECTDIR, ['ples_lga_0.3_rmr' x.P.FLAIR '.nii']);
+        rWMHPath = rWMHPathLGA;
 end
 
 
