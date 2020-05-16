@@ -80,7 +80,7 @@ fclose all;
 % a) load it
 DirQC = fullfile(x.S.StatsDir, 'QC_stats');
 PathCSV = fullfile(x.S.StatsDir, 'QC_Table.csv');
-[~, QC] = xASL_adm_csv2tsv(PathCSV, false, false);
+[~, QC] = xASL_bids_csv2tsvReadWrite(PathCSV, false, false);
 
 iSetSite = find(strcmp(x.S.SetsName,'Site'));
 SiteIDs = unique(x.S.SetsID(:,iSetSite));

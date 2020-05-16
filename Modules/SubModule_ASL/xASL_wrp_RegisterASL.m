@@ -193,7 +193,7 @@ elseif ~xASL_exist(x.P.Path_T1, 'file') && ~StructuralDerivativesExist
     FileID = fopen(SaveFile,'wt');
 	fprintf(FileID,'%s', '0, 0, 0');
 	fclose(FileID);
-	xASL_adm_csv2tsv(SaveFile, true);
+	xASL_bids_csv2tsvReadWrite(SaveFile, true);
 	
 	% To lock in the structural part	
     % Save the ASL lock and unlock

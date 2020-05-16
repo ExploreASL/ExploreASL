@@ -171,7 +171,7 @@ if ~isfield(imPar,'SkipSubjectIfExists') || isempty(imPar.SkipSubjectIfExists)
     % avoiding partly re-importing/converting dcm2niiX when processing has been partly done
 	imPar.SkipSubjectIfExists = false;
 else
-    warning('Skipping existing subjects in analysis folder');
+    fprintf('Warning: skipping subjects if they already exist in analysis folder\n');
     fprintf('If you want to overwrite, first remove the full subject folder');
 end
 
@@ -237,6 +237,9 @@ elseif imPar.bVerbose
     fprintf('\nMatching files:\n');
     disp(matches);
     fprintf('#=%g\n',length(matches));
+elseif size(tokens, 2)<sum(imPar.tokenOrdering~=0)
+    warning('Input argument folderHierarchy might be missing () around Subject/Visit/Run/Scan, skipping');
+    return;
 end
 
 % Copy the columns into named vectors. This construction allows for arbitrary directory hierarchies.

@@ -40,9 +40,9 @@ for iStudy=1:3
             if length(PathPWI{iPart})~=1
                 error('Wrong length PathPWI{iPart}');
             end
-            [~, tempCell] = xASL_adm_csv2tsv(PathPWI{iPart}{1});
+            [~, CellArray] = xASL_bids_csv2tsvReadWrite(PathPWI{iPart}{1});
             nVols = size(VolROI{iRegions},1);
-            ReproValues{iPart} = tempCell(3:end,end-nVols*3+1:end);
+            ReproValues{iPart} = CellArray(3:end,end-nVols*3+1:end);
             % take left & right separately here
             WhichColumns = repmat([0 1 1],1,nVols);
             ReproValues{iPart} = ReproValues{iPart}(:,logical(WhichColumns));

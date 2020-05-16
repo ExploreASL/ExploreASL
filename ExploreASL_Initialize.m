@@ -426,7 +426,7 @@ else
         LOCKDIR = fullfile(x.D.ROOT,'lock');
 
         if exist(LOCKDIR, 'dir')
-            fprintf('%s\n','Searching for locked previous ExploreASL image processing');
+%             fprintf('%s\n','Searching for locked previous ExploreASL image processing');
             LockDirFound = 0;
             LockDir = xASL_adm_FindByRegExp(fullfile(x.D.ROOT,'lock'), {'(ASL|Structural|LongReg_T1)',x.subject_regexp,'.*module.*','^(locked)$'}, 'Match','Directories');
             if ~isempty(LockDir)
@@ -452,7 +452,7 @@ else
             end
 
             if LockDirFound==0
-                fprintf('%s\n', 'No locked folders found from previous ExploreASL image processing');
+%                 fprintf('%s\n', 'No locked folders found from previous ExploreASL image processing');
             end
         end
     end

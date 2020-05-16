@@ -35,8 +35,8 @@ DataPar = xASL_import_json(DataParPath);
 %% 2) Get list of NIfTIs
 AnalysisDir = fileparts(DataParPath);
 
-fprintf('Obtaining list of NIfTIs\n');
-FileList = xASL_adm_GetFileList(AnalysisDir, '^.*\.nii$','FPListRec',[0 Inf]);
+fprintf('Converting *_parms.mat to *.json & implementing BIDS inheritance:   ');
+FileList = xASL_adm_GetFileList(AnalysisDir, '^(T1|FLAIR|ASL4D|M0)\.nii$','FPListRec',[0 Inf]);
 
 Fields2Skip = {'Quality' 'DELETETEMP' 'subject_regexp' 'name' 'exclusion' 'exclusionReason' 'SESSIONS' 'ROOT'};
 % These fields are environment parameters, not ASL-specific parameters

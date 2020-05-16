@@ -199,7 +199,7 @@ xASL_adm_CreateDir(RawDir);
 % SiteName     = {'010GEHDxT'   '010SIPrisma' '011SiPrisma' '012SiVerio' '015SiPrisma'  '020PhAchieva' '021Si' '022PhIngenia' '024SiArea'  '030PhIngenia' '031SiTrio' '032SiVida'  '040PhIngenuity' '050PhIngenia' '060Skyra'};
 
 %% Load the ScanType Labels Configuration
-[~, ScanTypeConfig] = xASL_adm_csv2tsv(fullfile(RawDir, 'ScanType_LabelsConfig.csv'), false, false);
+[~, ScanTypeConfig] = xASL_bids_csvRead(fullfile(RawDir, 'ScanType_LabelsConfig.csv'));
 
 SiteNrString = ScanTypeConfig(1,5:end); % NB: THIS ASSUMES THAT VENDORS START AT THE 5TH COLUMN
 SiteNrString = cellfun(@(x) x(5:end), SiteNrString, 'UniformOutput',false);

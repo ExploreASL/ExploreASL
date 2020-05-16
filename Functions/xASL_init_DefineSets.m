@@ -1,4 +1,4 @@
-function x = xASL_init_DefineSets(x)
+function [x] = xASL_init_DefineSets(x)
 %xASL_init_DefineSets % Define study subjects/parameters for this pipeline run
 %
 % FORMAT: [x] = xASL_init_DefineSets(x)
@@ -293,7 +293,7 @@ x.S.iSetLong_TP = iSetLong_TP;
 % ================================================================================================
 %% 9) Load & add statistical variables
 % Keep some space here, to easily find this for debugging
-x = xASL_init_LoadStatsData(x);
+x = xASL_init_LoadMetadata(x);
 
 
 

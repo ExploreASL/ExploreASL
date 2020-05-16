@@ -57,7 +57,7 @@ end
 % Now we take the most recent version
 PathTSV = fullfile(x.S.StatsDir, FileList{end});
 
-[~, CellTSV] = xASL_adm_csv2tsv(PathTSV);
+[~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathTSV);
 SubjectList = CellTSV(3:end,1);
 sCoVList = CellTSV(3:end,end-2);
 

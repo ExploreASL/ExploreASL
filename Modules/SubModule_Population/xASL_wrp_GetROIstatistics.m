@@ -36,11 +36,6 @@ function xASL_wrp_GetROIstatistics(x)
 %              2) Organize TSV output name: using x.S.output_ID
 %              3) Obtain the ROI statistics: xASL_stat_GetROIstatistics
 %              4) Print statistics in TSV files: xASL_stat_PrintStats
-%              5) Runs statistics permutation (if requested):
-%                using xASL_wrp_PermuteOverSets to permute over
-%                sets/covariates & xASL_stat_PrintBasicStats to print
-%                several statistics. This last part is historical and not
-%                used much anymore.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_GetROIstatistics(x);
 % __________________________________
@@ -141,40 +136,5 @@ for iStat=1:length(Statistics)
     end
 end
 
-
-
-%% -----------------------------------------------------------------------------------------------
-%% 5) Runs statistics permutation (if requested)
-if ~isfield(x.S,'GetStats') || isempty(x.S.GetStats)
-    x.S.GetStats = 0; 
-end % This parameter determines whether we run stats
-
-if ~isfield(x,'KISS') || isempty(x.KISS) % keep it short & simply
-    x.KISS  = 1;
-end
-x.S.function2call = @xASL_stat_PrintBasicStats; % if we do statistics, then create a CSV overview with all ...
-% types of statistical tests (requires that groups are defined in x.S.SetsID, x.S.SetsNames, x.S.SetsOptions etc)
-
-
-% if  x.S.GetStats
-%     xASL_wrp_PermuteOverSets(x);
-% end
-
     
 end
-    
-%% ------------------------------------------------------------------------------------------------------------
-%% ------------------------------------------------------------------------------------------------------------
-%% ------------------------------------------------------------------------------------------------------------
-%     x.S.HistogramDir      = fullfile( x.HistogramDir,S.output_ID);
-%     xASL_adm_CreateDir(x.S.HistogramDir);
-%     x.S.oriDIR            = x.S.HistogramDir;
-%     x.S.function2call     = @xASL_stat_CreateHistograms;
-%     fprintf('%s\n',['Creating ' x.S.output_ID ' histograms']);
-%     xASL_wrp_PermuteOverSets(x.S, xASL);
-% 
-%     if isfield(x.S,'SetsID')
-%         x.S.function2call     = @xASL_stat_SpaghettiPlot;
-%         fprintf('%s\n',['Creating ' x.S.output_ID ' spaghetti plots']);
-%         xASL_wrp_PermuteSetsPer1_2SampleTests( x );
-%     end

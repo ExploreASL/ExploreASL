@@ -6,7 +6,7 @@ function [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct
     QCstruct.LR_flip_YesNo = NaN; % default
 
     if exist(PathOrientationResults,'file')
-        [~, CellTSV] = xASL_adm_csv2tsv(PathOrientationResults);
+        [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathOrientationResults);
 
         % Determine correct row, differs between Matlab versions
         

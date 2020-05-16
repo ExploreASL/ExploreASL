@@ -73,5 +73,5 @@ function [CoveragePerc] = xASL_qc_ComputeFoVCoverage(InputPath, x)
     xASL_delete(InputPathMask);
     xASL_delete(PathBrainmask);
 
-    fprintf(['Coverage of ' xASL_num2str(CoveragePerc) ' was computed\n']);
+    fprintf(['Coverage of ' xASL_num2str(CoveragePerc) '% was computed\n']);
 end

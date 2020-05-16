@@ -10,7 +10,7 @@ RawDir = fullfile(ROOT,'raw');
 SavePath = fullfile(AnalysisDir, 'ReportMissingRawNIfTI.csv');
 
 %% Load the ScanType Labels Configuration
-[~, ScanTypeConfig] = xASL_adm_csv2tsv(fullfile(RawDir, 'ScanType_LabelsConfig.csv'), false, false);
+[~, ScanTypeConfig] = xASL_bids_csvRead(fullfile(RawDir, 'ScanType_LabelsConfig.csv'));
 TypeList = ScanTypeConfig(2:end,4); % ExploreASL names of the scantypes
 WhichRows = cellfun(@(x) ~isempty(x), TypeList); % which of the TypeLists is not empty
 ScanTypeConfig = ScanTypeConfig(logical([1; WhichRows]),:);

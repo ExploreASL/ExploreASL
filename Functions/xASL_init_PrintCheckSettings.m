@@ -28,7 +28,7 @@ if ~isfield(x,'Quality') || (x.Quality~=0 && x.Quality~=1)
 end
 if ~isfield(x,'DELETETEMP') || (x.DELETETEMP~=0 && x.DELETETEMP~=1)
     x.DELETETEMP = 1;
-    fprintf('%s\n','Default x.DELETETEMP=1 used (delete files temporarily used for processing)');
+%     fprintf('%s\n','Default x.DELETETEMP=1 used (delete files temporarily used for processing)');
 end
 if isfield(x,'readout_dim')
     if  strcmp(x.readout_dim,'2D') && ~isfield(x.Q,'SliceReadoutTime')

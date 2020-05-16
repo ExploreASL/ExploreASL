@@ -329,7 +329,7 @@ end
 %--------------------------------------------------------------------------
 
 spm_progress_bar('Init',numel(P)-1,'Registering Images');
-fprintf('Estimating motion   ');%%% ExploreASL fix
+fprintf('Estimating motion:   ');%%% ExploreASL fix
 for i=2:numel(P)
 	xASL_TrackProgress(i,numel(P));%%% ExploreASL fix
     V  = smooth_vol(P(i),flags.interp,flags.wrap,flags.fwhm);

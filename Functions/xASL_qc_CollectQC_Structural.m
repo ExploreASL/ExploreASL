@@ -62,7 +62,7 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
         
     if bProcess
         % Find WMH results in TSV
-        [~, CellTSV] = xASL_adm_csv2tsv(PathLST{1});
+        [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathLST{1});
         for iC=1:size(CellTSV,1)
             if ~isempty(findstr(CellTSV{iC,1}, Struct.ID))
                 Struct.FLAIR_WMH_vol_mL = CellTSV{iC,4};
@@ -89,7 +89,7 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
     %% CAT12 volumetric output
     PathCAT12Results = fullfile(x.D.TissueVolumeDir,['TissueVolume_' Struct.ID '.tsv']);
     if exist(PathCAT12Results,'file')
-        [~, CellTSV] = xASL_adm_csv2tsv(PathCAT12Results);
+        [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathCAT12Results);
 
         for iC=1:size(CellTSV,1)
             if ~isempty(findstr(CellTSV{iC,1}, Struct.ID))

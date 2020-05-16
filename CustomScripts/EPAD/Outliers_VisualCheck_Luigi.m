@@ -8,7 +8,7 @@ function Outliers_VisualCheck(x, Parameter, Site)
 
 DirQC = fullfile(x.S.StatsDir, 'QC_stats');
 PathCSV = fullfile(x.S.StatsDir, 'QC_Table.csv');
-[~, QC] = xASL_adm_csv2tsv(PathCSV, false, false);
+[~, QC] = xASL_bids_csvRead(PathCSV);
 iSetSite = find(strcmp(x.S.SetsName,'Site'));
 SiteIDs = unique(x.S.SetsID(:,iSetSite));
 Analysisdir = '/data/RAD/share/EPAD500_new/analysis';

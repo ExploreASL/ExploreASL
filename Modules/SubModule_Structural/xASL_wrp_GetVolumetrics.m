@@ -65,7 +65,7 @@ else
 end
 
 if exist(SaveFile, 'file')
-    xASL_adm_csv2tsv(SaveFile, true);
+    xASL_bids_csv2tsvReadWrite(SaveFile);
 end
 
 
@@ -92,13 +92,13 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     % get current filename:
     FileName = fullfile(x.D.TissueVolumeDir, FileName);
     % define new filename:
-    oPath = fullfile(x.D.TissueVolumeDir, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
+    OutputPath = fullfile(x.D.TissueVolumeDir, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
     % Then move our file
     if ~exist(FileName,'file')
          warning(['Missing:' FileName]);
     else
-        xASL_Move(FileName, oPath, true);
-        xASL_adm_csv2tsv(oPath, true); % convert to tsv per BIDS
+        xASL_Move(FileName, OutputPath, true);
+        xASL_bids_csv2tsvReadWrite(OutputPath, true); % convert to tsv per BIDS
     end
 end
 

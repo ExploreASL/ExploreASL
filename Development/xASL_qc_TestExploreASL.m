@@ -298,7 +298,7 @@ for iList=1:length(Dlist) % iterate over example datasets
             ResultsTable{1+iList,2+iFile} = 'empty';
             ResultsTable{1+iList,3+iFile} = 'empty';
         elseif iFile<5 % check the ASL parameters
-            [~, TempTable] = xASL_adm_csv2tsv(ResultFile{iFile}{end});
+            [~, TempTable] = xASL_bids_csv2tsvReadWrite(ResultFile{iFile}{end});
             ResultsTable{1+iList,1+iFile} = TempTable{3,end-2};
         else % check the volumetric parameters
             IndexGM = find(cellfun(@(y) strcmp(y,'GM_vol'), TempTable(1,:)));

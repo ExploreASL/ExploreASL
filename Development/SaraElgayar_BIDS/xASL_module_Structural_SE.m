@@ -480,7 +480,7 @@ if ~x.mutex.HasState('060_Get_WMH_vol')  % tracks progress through lock/ *.statu
         %folder
         oPath       = fullfile(SUBJECTDIR, BIDS_FileName(x.P.SubjectID,SessionID,'','WMH',x.WMHsegmAlg ,'','','cvs'));
         MoveFileIf(Fname{1},oPath,1 );
-        xASL_adm_csv2tsv(oPath,1); % convert to tsv per BIDS
+        xASL_bids_csv2tsvReadWrite(oPath,1); % convert to tsv per BIDS
 
         x.mutex.AddState('060_Get_WMH_vol');
         xASL_adm_CompareDataSets([], [], x); % unit testing
@@ -626,7 +626,7 @@ if ~x.mutex.HasState('080_TissueVolume')   % tracks progress through lock/ *.sta
         end
 
         if  exist('SaveFile','var')
-            xASL_adm_csv2tsv(SaveFile,1);
+            xASL_bids_csv2tsvReadWrite(SaveFile,1);
         end
 
         x.mutex.AddState('080_TissueVolume');

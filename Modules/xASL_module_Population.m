@@ -34,6 +34,11 @@ function [result, x] = xASL_module_Population(x)
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin
 
+if x.iWorker>1 % run population module only once when ExploreASL is called multiple times in parallel
+    warning(['I am worker ' xASL_num2str(x.iWorker) ', population module shouldnt run parallel, skipping']);
+    return;
+end
+
 if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.bNativeSpaceAnalysis)
 	x.bNativeSpaceAnalysis = 0;
 end
@@ -140,7 +145,9 @@ end
 %% -----------------------------------------------------------------------------
 %% 5    Summarize volume statistics (uses native space)
 if ~x.mutex.HasState(StateName{5})
-    xASL_stat_GetVolumeStatistics( x, 1);
+    
+    xASL_stat_GetVolumeStatistics(x);
+    
     x.mutex.AddState(StateName{5});
     fprintf('%s\n',[StateName{5} ' was performed']);
 else
@@ -153,7 +160,7 @@ end
 %% 6    Summarize motion statistics (using generated net displacement vector (NDV) motion results from ASL-realign module)
 if ~x.mutex.HasState(StateName{6})
     try
-        xASL_stat_GetMotionStatistics(x, 1);
+        xASL_stat_GetMotionStatistics(x);
         x.mutex.AddState(StateName{6});
         fprintf('%s\n',[StateName{6} ' was performed']);
     catch ME
@@ -169,16 +176,13 @@ end
 %% 7    ROI statistics
 if ~x.mutex.HasState(StateName{7})
 
-    x = xASL_init_LoadStatsData(x); % Add statistical variables, if there are new ones
+    x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
 %     if exist('ASL','var')
 %         xASL_im_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
 %     end
     x = xASL_wrp_Load4DMemMapping_LesionsROIs(x); % Create study-specific atlases for ROIs/Lesions
-    xASL_stat_SummarizeEstimatedResolution(x); % Create an overview of estimated effective resolution of ASL native space images
 
     xASL_stat_ComputeWsCV(x); % This computes wsCV & bsCV to compute power
-
-    % xASL_stat_CreateDescriptTable(x);
 
     % ROI statistics
     % x.S.SubjectWiseVisualization =1; % set this on to visualize the subject-wise masks

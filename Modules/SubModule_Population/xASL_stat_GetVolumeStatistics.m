@@ -1,41 +1,42 @@
-function xASL_stat_GetVolumeStatistics( x, GetStats)
+function xASL_stat_GetVolumeStatistics(x)
 %xASL_stat_GetVolumeStatistics Summarize volume values
-% INPUT
-% x = from ExploreASL
-% masks   = physically loaded masks for each subject
-% ASL     = the data to be analyzed. Could be ASL, or e.g. SD or SNR masks
 %
+% FORMAT: xASL_stat_GetVolumeStatistics(x)
+% 
+% INPUT:
+%   x - struct containing pipeline environment parameters (REQUIRED)
 %
-% By HJMM Mutsaerts, ExploreASL 2019
-%
-
+% OUTPUT: n/a
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This functions collects motion stats, with the following
+% steps:
+% 1) Collect structural volume data
+% 2) Collect WMH data
+% 3) Add stats in participants.tsv
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: xASL_stat_GetVolumeStatistics(x);
+% __________________________________
+% Copyright 2016-2020 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------------------
-%% Load volume files
-
-if ~exist('GetStats','var')
-    GetStats    = 0;
-end
-
-x.S.NamesROI                              = {'GM_vol' 'WM_vol' 'CSF_vol' 'WMH_vol' 'WMH_count'}; % 'Bone (L)' 'Soft tissue (L)' 'Air (L)'
-x.S.output_ID                             = 'volume';
-x.S.unit                                  = 'L';
+%% 1) Collect structural volume data
+x.S.NamesROI = {'GM_vol' 'WM_vol' 'CSF_vol' 'WMH_vol' 'WMH_count'}; % 'Bone (L)' 'Soft tissue (L)' 'Air (L)'
+x.S.output_ID = 'volume';
+x.S.unit = 'L';
 
 fprintf('%s\n',['Printing csv-files with ' x.S.output_ID ' statistics...  ']);
 
 
-
-
-%% -----------------------------------------------------------------------------------------------
 for iSubject=1:x.nSubjects
     xASL_TrackProgress(iSubject,x.nSubjects);
 
-    x.S.SUBJECTID{iSubject,1}   = x.SUBJECTS{iSubject};
+    x.S.SUBJECTID{iSubject,1} = x.SUBJECTS{iSubject};
 
-    csv_load                    = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.csv']);
-    if ~exist(csv_load,'file')
-        csv_load                = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.tsv']);
+    PathCSV = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.csv']);
+    if ~exist(PathCSV,'file')
+        PathCSV = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.tsv']);
     end
     
     GM_vol{iSubject,1}          = x.SUBJECTS{iSubject};
@@ -55,12 +56,12 @@ for iSubject=1:x.nSubjects
     WMH_count{iSubject,2}       = NaN;          
 
     DidExist = 0;
-    if exist(csv_load,'file')
+    if exist(PathCSV,'file')
         DidExist = 1;
         try
-            [~, TempCell] = xASL_adm_csv2tsv(csv_load);
-            for iMeas=1:size(TempCell,2)-1
-                vol(iSubject,iMeas) = str2num(TempCell{2,iMeas+1});
+            [~, CellArray] = xASL_bids_csv2tsvReadWrite(PathCSV);
+            for iMeas=1:size(CellArray,2)-1
+                vol(iSubject,iMeas) = str2num(CellArray{2,iMeas+1});
             end
 
             GM_vol{iSubject,2} = vol(iSubject,1);
@@ -81,18 +82,19 @@ for iSubject=1:x.nSubjects
         vol(iSubject,1:3) = NaN;
     end
 
-    %% WMH
-    csv_load = xASL_adm_GetFileList( x.D.TissueVolumeDir, ['^WMH_LST_(LGA|LPA)_' x.SUBJECTS{iSubject} '(\.csv|\.tsv)$'], 'FPList', [0 Inf]);
+    %% -----------------------------------------------------------------------------------------------
+    %% 2) Collect WMH data
+    PathCSV = xASL_adm_GetFileList( x.D.TissueVolumeDir, ['^WMH_LST_(LGA|LPA)_' x.SUBJECTS{iSubject} '(\.csv|\.tsv)$'], 'FPList', [0 Inf]);
     
     DidExist = 0;
-    if ~isempty(csv_load)
+    if ~isempty(PathCSV)
         DidExist = 1;
         try
-            [~, TempCell] = xASL_adm_csv2tsv(csv_load{1});
+            [~, CellArray] = xASL_bids_csv2tsvReadWrite(PathCSV{1});
 
-            WMH_vol{iSubject,2} = TempCell{2,4};
+            WMH_vol{iSubject,2} = CellArray{2,4};
             vol(iSubject,4) = str2num(WMH_vol{iSubject,2});
-            WMH_count{iSubject,2} = TempCell{2,5};
+            WMH_count{iSubject,2} = CellArray{2,5};
             vol(iSubject,5) = str2num(WMH_count{iSubject,2});
             DidExist = 2;
         catch ME
@@ -113,50 +115,16 @@ fprintf('\n');
 
 
 %% -----------------------------------------------------------------------------------------------
-% Save mat-file for stats
-Var2Save                            = {'GM_vol' 'WM_vol' 'CSF_vol' 'GM_ICVRatio' 'GMWM_ICVRatio'};
+%% 3) Add stats in participants.tsv
+VarName = {'GM_vol' 'WM_vol' 'CSF_vol' 'GM_ICVRatio' 'GMWM_ICVRatio' 'WMH_vol' 'WMH_count'};
+VarData = {GM_vol WM_vol CSF_vol GM_ICVRatio GMWM_ICVRatio WMH_vol WMH_count};
 
-if  exist('WMH_vol','var') && exist('WMH_count','var')
-    Var2Save{end+1}     = 'WMH_vol';
-    Var2Save{end+1}     = 'WMH_count';
-end
-
-for iV=1:length(Var2Save)
-    MatFile{iV}                     = fullfile( x.D.ROOT, [Var2Save{iV} '.mat']);
-    save(MatFile{iV},Var2Save{iV});
-end
-
-
-
-
-
-
-%% -----------------------------------------------------------------------------------------------
-if  GetStats
-    % Restructure DATA per ROI/measurement
-    x.S.DAT       = vol;
-
-    % Restructure x.S.SetsID into single session only
-    if  isfield(x.S,'SetsID')
-        if  numel(x.S.SetsID)>0
-            TempID  = x.S.SetsID;
-            x.S       = rmfield(x.S,'SetsID');
-            for iSubject=1:x.nSubjects
-                x.S.SetsID(iSubject,:)    = TempID( ((iSubject-1)*x.nSessions)+1,:);
-            end
-        end
+for iData=1:length(VarData)
+    if exist(VarName{iData}, 'var')
+        xASL_bids_Add2ParticipantsTSV(VarData{iData}, VarName{iData}, x);
     end
-
-    % Initiation parameters for xASL_wrp_PermuteSets1
-
-    x.nSessions   = 1;
-    x.S.KISS              = 1; % keeps it simple
-    x.S.StatsDir          = x.S.StatsDir;
-    x.S.function2call     = @xASL_stat_PrintBasicStats;
-
-    xASL_wrp_PermuteSets1( x );
 end
-    
-    
+
+
     
 end

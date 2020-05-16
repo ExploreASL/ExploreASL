@@ -1,174 +1,117 @@
-function xASL_stat_GetMotionStatistics(x, GetStats)
+function xASL_stat_GetMotionStatistics(x)
 %xASL_stat_GetMotionStatistics Summarize motion values
-% INPUT
-% x = from ExploreASL
-% masks   = physically loaded masks for each subject
-% ASL     = the data to be analyzed. Could be ASL, or e.g. SD or SNR masks
 %
+% FORMAT: xASL_stat_GetMotionStatistics(x)
+% 
+% INPUT:
+%   x - struct containing pipeline environment parameters (REQUIRED)
+% INPUT FILES:
+% All files in the format:
+%   '/MyStudy/Population/MotionASL/motion_correction_NDV_Sub-001_ASL_1.mat'
+% Containing the following rigid-body motion estimation parameters:
+%   -   median, mean, mean absolute deviation (MAD) of position and motion,
+%       where position is the actual position of the head and motion the
+%       between-volume difference of position. Units are the net displacement vector
+%       (NDV), which is the RMS of XYZ translations and XYZ rotations.
+%   -   Percent exclusion - percentage of the control-label volumes that
+%       was excluded because its motion was too high (spikes)
+%   -   Pvalue Threshold Free Spike Exclusion - threshold used for
+%       exclusion of motion spikes
 %
-% By HJMM Mutsaerts, ExploreASL 2016
-%
+% OUTPUT: n/a
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This functions collects motion stats, with the following
+% steps:
+% 1) Collect motion data
+% 2) If no data, skip this function
+% 3) Print motion vs exclusion overview
+% 4) Add motion data to participants.tsv
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: xASL_stat_GetMotionStatistics(x);
+% __________________________________
+% Copyright 2016-2020 ExploreASL
 
 
-% NB: if you have registration mean control - label only,
-% position will be [0 DIFF]
-% so position==motion
-% and mean(motion)==median(motion)==MAD(motion)
-% So all numbers will be equal
+%% -----------------------------------------------------------------------------------------------
+%% 1) Collect motion data
+x.S.NamesROI = {'median position' 'mean position' 'MAD position' 'median motion' 'mean motion' 'MAD motion' 'Percent Exclusion' 'tValue Threshold Free Spike Exclusion'};    
+x.S.output_ID = 'motion';
+x.S.unit = 'mm';
 
-if ~exist('GetStats','var')
-    GetStats    = 0;
-end
+fprintf('%s\n',['Collecting motion metadata with ' x.S.output_ID ' statistics:  ']);
 
+for iSubject=1:x.nSubjects
+    for iSession=1:x.nSessions
+        % Keeping track
+        iSubjSess = ((iSubject-1)*x.nSessions)+iSession;
+        xASL_TrackProgress(iSubjSess, x.nSubjectsSessions);
 
-    
-%% -----------------------------------------------------------------------------------------------    
-%% Print motion & exclusion overview
+        PathMAT = fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession} '.mat'] );
 
-FList   = {};
-fprintf('Searching for motion files...   ');
-for iL=1:x.nSubjects
-    xASL_TrackProgress(iL,x.nSubjects);
-    TempList   = xASL_adm_GetFileList(x.D.MotionDir, ['^motion_correction_NDV_' x.SUBJECTS{iL} '_ASL_\d*\.mat$'],'FPList',[0 Inf]);
-
-    if ~isempty(TempList)
-        FList(end+1:end+length(TempList),1)     = TempList;
-    end
-end
-fprintf('\n');
-    
-if  length(FList)<=0
-
-    fprintf('%s\n','No motion stats available');
-else
-    
-    
-    for iL  = 1:length(FList)
-        tempMot                 = load(FList{iL});
-        mean_motion(iL,1)       = tempMot.mean_NDV{2};
-        PercExclusion(iL,1)     = tempMot.PercExcl;
-    end
-
-    fig = figure('Visible','off');
-    plot(mean_motion,PercExclusion,'b.')
-    % axis([0 0.8 0 30])
-    xlabel('Mean motion (Diff Net Displacement Vector, mm)');
-    ylabel('Percentage excluded pairs (%)');
-    title('Threshold-free motion spike exclusion to optimize statistical power');
-
-    jpgfile                     = fullfile( x.D.MotionDir,'Overview_motion_pair-exclusion.jpg');
-    fprintf('Saving motion plot to %s\n',jpgfile);
-    saveas(fig,jpgfile,'jpg');
-    close all;
-
-    
-    
-    
-    %% -----------------------------------------------------------------------------------------------
-    %% Load motion files
-
-    x.S.NamesROI                              = {'median position' 'mean position' 'MAD position' 'median motion' 'mean motion' 'MAD motion' 'Percent Exclusion' 'Pvalue Threshold Free Spike Exclusion'};    
-    x.S.output_ID                             = 'motion';
-    x.S.unit                                  = 'mm';
-
-    fprintf('%s\n',['Printing csv-files with ' x.S.output_ID ' statistics...  ']);
-
-    for iSubject=1:x.nSubjects
-        xASL_TrackProgress(iSubject,x.nSubjects);
-        x.P.SubjectID      = x.SUBJECTS{iSubject};
-        for iSession=1:x.nSessions
-            x.P.SessionID  = x.SESSIONS{iSession};
-
-            iSubjSess   = ((iSubject-1)*x.nSessions)+iSession;
-
-            loadMot                         = fullfile( x.D.MotionDir, ['motion_correction_NDV_' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession} '.mat'] );
-            
-            % Save for stats
-            MeanMotion{iSubjSess,1}      = x.P.SubjectID;
-            MeanMotion{iSubjSess,2}      = x.P.SessionID;            
-            
-            
-            if ~exist(loadMot,'file')
-                fprintf('%s\n',['No motion data for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}]);
-                MeanMotion{iSubjSess,3}          = NaN;  % missing value
-                
-                
-                
-            else
-                tempMot                         = load( loadMot );
-
-                % position
-                motionMat(1,iSession,iSubject)   = tempMot.median_NDV{1};      % median position
-                motionMat(2,iSession,iSubject)   = tempMot.mean_NDV{1};        % mean position
-                motionMat(3,iSession,iSubject)   = tempMot.MAD_NDV{1};         % MAD position
-
-                % motion
-                motionMat(4,iSession,iSubject)   = tempMot.median_NDV{2};      % median motion
-                motionMat(5,iSession,iSubject)   = tempMot.mean_NDV{2};        % mean motion
-                motionMat(6,iSession,iSubject)   = tempMot.MAD_NDV{2};         % MAD motion
-
-    %             % motion spikes exclusion
-                motionMat(7,iSession,iSubject)   = tempMot.PercExcl;           % MAD
-                motionMat(8,iSession,iSubject)   = tempMot.MinimumtValue;      % MAD
-
-                % Save for stats
-
-                MeanMotion{iSubjSess,3}          = tempMot.mean_NDV{2};  % mean motion
-                % Mean motion is used for stats, since this includes high
-                % motion spikes rather than excluding them (median)
-            end
-        end
-    end
-    
-    fprintf('\n');
-
-    
-    
-    
-    
-    %% -----------------------------------------------------------------------------------------------
-    %% Save mat-file for statistics later in pipeline
-    matName         = fullfile( x.D.ROOT, 'MeanMotion.mat');
-    save( matName , 'MeanMotion');
-
-    if  GetStats
-
-        % Restructure DATA per ROI/measurement
-        fprintf('%s\n','Restructure DATA per ROI/measurement');
-        for iSubject=1:x.nSubjects
-            xASL_TrackProgress(iSubject,x.nSubjects);
-            for iSession=1:x.nSessions
-                % ID (which name, group etc), all for identification
-                SUBJECT_SESSION                 = (iSubject-1)* x.nSessions +iSession;
-                x.S.SUBJECTID{SUBJECT_SESSION,1}  = x.SUBJECTS{iSubject};
-
-                % MOTION
-                for iMeas = 1:length(x.S.NamesROI)
-                    if size(motionMat,1)<iMeas || size(motionMat,2)<iSession || size(motionMat,3)<iSubject
-                        x.S.DAT(SUBJECT_SESSION,iMeas) = NaN;
-                    else
-                        x.S.DAT(SUBJECT_SESSION,iMeas) = motionMat(iMeas,iSession,iSubject);
-                    end
-                end
-            end
-        end
+        % Define defaults
+        MeanMotion{iSubjSess,1} = x.SUBJECTS{iSubject};
+        MeanMotion{iSubjSess,2} = x.SESSIONS{iSession};            
+        MeanMotion{iSubjSess,3} = NaN;
         
-        fprintf('\n');
+        motionMat(1:8,iSession,iSubject) = repmat(NaN, [1 8]);
+        PercExclusion(iSubjSess,1) = NaN;
+        MeanMotionNum(iSubjSess,1) = NaN;
+        
+        if exist(PathMAT,'file')
+            tempMot = load(PathMAT, '-mat');
 
-        % Initiation parameters for xASL_wrp_PermuteSets1
+            % position
+            motionMat(1,iSession,iSubject) = tempMot.median_NDV{1};      % median position
+            motionMat(2,iSession,iSubject) = tempMot.mean_NDV{1};        % mean position
+            motionMat(3,iSession,iSubject) = tempMot.MAD_NDV{1};         % MAD position
 
-        x.S.StatsDir          = x.S.StatsDir;
-        x.S.function2call     = @xASL_stat_PrintBasicStats;
-        x.S.KISS              = 1; % keeps it simple    
+            % motion
+            motionMat(4,iSession,iSubject) = tempMot.median_NDV{2};      % median motion
+            motionMat(5,iSession,iSubject) = tempMot.mean_NDV{2};        % mean motion
+            motionMat(6,iSession,iSubject) = tempMot.MAD_NDV{2};         % MAD motion
 
-        xASL_wrp_PermuteSets1( x );
+            % motion spikes exclusion
+            motionMat(7,iSession,iSubject) = tempMot.PercExcl;           % MAD
+            motionMat(8,iSession,iSubject) = tempMot.MinimumtValue;      % MAD
 
-    %     x.S.HistogramDir      = fullfile( x.HistogramDir,S.output_ID);
-    %     xASL_adm_CreateDir(x.S.HistogramDir);
-    %     x.S.oriDIR            = x.S.HistogramDir;
-    %     x.S.function2call     = @xASL_stat_CreateHistograms;
-    %     fprintf('%s\n',['Creating ' x.S.output_ID ' histograms']);
+            % Save for stats
+            MeanMotion{iSubjSess,3} = tempMot.mean_NDV{2};
+            MeanMotionNum(iSubjSess,1) = tempMot.mean_NDV{2};
+            PercExclusion(iSubjSess,1) = tempMot.PercExcl;
+            % Mean motion is used for stats, since this includes high
+            % motion spikes rather than excluding them (median)
+        end
     end
+end
+
+fprintf('\n');
+
+%% 2) If no data, skip this function
+HasData = sum(isfinite(MeanMotionNum))>0;
+if ~HasData
+    fprintf('%s\n','No motion stats available, skipping');
+    return;
+end
+
+
+%% 3) Print motion vs exclusion overview
+fig = figure('Visible','off');
+plot(MeanMotionNum, PercExclusion, 'b.')
+% axis([0 0.8 0 30])
+xlabel('Mean motion (Diff Net Displacement Vector, mm)');
+ylabel('Percentage excluded pairs (%)');
+title('Threshold-free motion spike exclusion to optimize statistical power');
+
+PathJPG = fullfile( x.D.MotionDir,'Overview_motion_pair-exclusion.jpg');
+fprintf('Saving motion plot to %s\n',PathJPG);
+saveas(fig,PathJPG,'jpg');
+close all;
+
+
+%% -----------------------------------------------------------------------------------------------
+%% 4) Add motion data to participants.tsv
+xASL_bids_Add2ParticipantsTSV(MeanMotion, 'MeanMotion', x);
 
 
 
