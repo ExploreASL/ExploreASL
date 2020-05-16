@@ -1,5 +1,6 @@
 function ConvertDicomFolderStructure_CarefulSlow(ROOT, bUseDCMTK, bVerbose)
 %ConvertDicomFolderStructure_CarefulSlow Script to put dicom names in directories according to their ProtocolName/SeriesDescrption
+% Also add .dcm extensions
 
 if nargin<2 || isempty(bUseDCMTK)
     bUseDCMTK = true; % faster
@@ -11,7 +12,7 @@ end
     Flist   = xASL_adm_GetFileList(ROOT,'^.*.(?!(xlsx|ini))$','FPListRec',[0 Inf]);
 
     for iL=1:length(Flist)
-        if bVerbose; xASL_TrackProgress(iL,length(Flist)); end
+        if bVerbose; xASL_TrackProgress(iL, length(Flist)); end
         clear tDcm Fname NewDir NewFile Ppath Pfile Pext
         
         try
