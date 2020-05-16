@@ -38,7 +38,10 @@ function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
 % Copyright 2015-2020 ExploreASL
 
 if nargin < 2 || isempty(rWMHPath)
-	error('xASL_wrp_LST_T1w_LesionFilling_WMH: Requires at least 2 input arguments.');
+	error('Requires at least 2 input arguments');
+elseif ~xASL_exist(rWMHPath, 'file')
+    warning([rWMHPath ' missing, skipping']);
+    return;
 end
 
 
@@ -53,33 +56,41 @@ fprintf('%s\n','Removing segmented WMH from T1w, and fill lesions with values in
 
 %% ----------------------------------------------------------------------------------
 %% 2) Clean up the WMH segmentation used for lesion filling
-xASL_im_CleanupWMHnoise(rWMHPath, rWMHPath, 200, 0.5); 
+xASL_im_CleanupWMHnoise(rWMHPath, rWMHPath, 200, 0.5);
 % cutoff of 200 mm^3 lesion volume & pWMH>50%
 % This makes sure that we only fill significant lesions
 
 
 %% ----------------------------------------------------------------------------------
 %% 3) Run lesion filling
-if xASL_stat_SumNan(xASL_stat_SumNan(xASL_stat_SumNan(xASL_io_Nifti2Im(rWMHPath))))>0
+if ~(xASL_stat_SumNan(xASL_stat_SumNan(xASL_stat_SumNan(xASL_io_Nifti2Im(rWMHPath))))>0)
+    fprintf('No WMH lesions found, skipping T1 lesion filling\n');
+    xASL_Copy(x.P.Path_T1, T1_filledName, 1);
+else
     matlabbatch{1}.spm.tools.LST.filling.data = {x.P.Path_T1};
     matlabbatch{1}.spm.tools.LST.filling.data_plm = {rWMHPath};
     matlabbatch{1}.spm.tools.LST.filling.html_report = 0; % saves time
     spm_jobman('run',matlabbatch);
     close all
+
+    %% ----------------------------------------------------------------------------------
+    %% 4) Correction of too much/erronous lesion filling
+    % LST lesion filling can create artifacts, which we try to remove here
+    % Note that this part assumes a T1w contrast!
+    T1w = xASL_io_Nifti2Im(x.P.Path_T1);
+    T1wFilled = xASL_io_Nifti2Im(T1_filledName);
+
+    % we assume that lesion filling should increase the intensity, i.e.
+    % correcting the WM lesion hypointensity in the T1w to the higher WM
+    % intensity. Everywhere the intensity is reduced, this is erroneous.
+    if length(size(T1wFilled))~=length(size(T1w)) || ~min(size(T1wFilled)==size(T1w))
+        warning('Original & filled T1 differ in size, something going wrong');
+    end
+
+    T1wFilled(T1wFilled<T1w) = T1w(T1wFilled<T1w);
+    xASL_io_SaveNifti(T1_filledName, T1_filledName, T1wFilled, [], 0);
 end
 
-
-%% 4) Correction of too much/erronous lesion filling
-% LST lesion filling can create artifacts, which we try to remove here
-% Note that this part assumes a T1w contrast!
-T1w = xASL_io_Nifti2Im(x.P.Path_T1);
-T1wFilled = xASL_io_Nifti2Im(T1_filledName);
-
-% we assume that lesion filling should increase the intensity, i.e.
-% correcting the WM lesion hypointensity in the T1w to the higher WM
-% intensity. Everywhere the intensity is reduced, this is erroneous.
-T1wFilled(T1wFilled<T1w) = T1w(T1wFilled<T1w);
-xASL_io_SaveNifti(T1_filledName, T1_filledName, T1wFilled, [], 0);
 
 %% ----------------------------------------------------------------------------------
 %% 5) File management
