@@ -36,18 +36,18 @@ function xASL_wrp_RealignASL(x,bSubtraction)
 %% Administration
 
 if ~exist('bSubtraction','var')
-    bSubtraction    = 1; % this tells script that timeseries contain subtractive/pair-wise data
+    bSubtraction = 1; % this tells script that timeseries contain subtractive/pair-wise data
 end
 
 if  bSubtraction
-    InputPath   = x.P.Path_ASL4D;
+    InputPath = x.P.Path_ASL4D;
 else
-    InputPath   = x.P.Path_func_bold; % or DTI?
+    InputPath = x.P.Path_func_bold; % or DTI?
 end
 
-[Fpath, Ffile, Fext]        = fileparts(InputPath);
-rpfile                      = fullfile( Fpath, ['rp_' Ffile '.txt']);
-rInputPath                  = fullfile( Fpath, ['r'   Ffile Fext]);
+[Fpath, Ffile, Fext] = fileparts(InputPath);
+rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
+rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
 
 if ~isfield(x,'SpikeRemovalThreshold')
     fprintf('%s\n','x.SpikeRemovalThreshold was not defined yet, default setting = 0.01 used');
@@ -55,36 +55,42 @@ if ~isfield(x,'SpikeRemovalThreshold')
     % since we want to remove Spikes, perhaps except very small spikes
 end
 
+%% Set defaults
+exclusion = NaN;
+PercExcl = NaN;
+MinimumtValue = NaN;
+
+
 %% ----------------------------------------------------------------------------------------
 %% 1 Estimate motion
 fprintf('SPM motion estimation');
 
 % Define realignment settings
-tempnii                     = xASL_io_ReadNifti(InputPath);
-nFrames                     = double(tempnii.hdr.dim(5));
-min_voxelsize               = double(min(tempnii.hdr.pixdim(2:4)));
+tempnii = xASL_io_ReadNifti(InputPath);
+nFrames = double(tempnii.hdr.dim(5));
+minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 
 switch x.Quality
 	case 1 % normal quality
-    flags.quality   = 1;
-    flags.sep       = min_voxelsize;
+    flags.quality = 1;
+    flags.sep = minVoxelSize;
     case 0 % low quality for fast try-out
-    flags.quality   = 0.01;
-    flags.sep       = min_voxelsize*2;
+    flags.quality = 0.01;
+    flags.sep = minVoxelSize*2;
 end
 
-flags.rtm       = 1; % realign to mean
-flags.interp    = 1;
-flags.graphics  = 0;
+flags.rtm = 1; % realign to mean
+flags.interp = 1;
+flags.graphics = 0;
 
 % If previous realign parameters exist, delete them
 xASL_delete(rpfile);
 
 % Run SPM
-if      nFrames>2 && bSubtraction
-        spm_realign(spm_vol( InputPath ),flags,true);
-elseif  nFrames>1
-        spm_realign(spm_vol( InputPath ),flags,false);
+if nFrames>2 && bSubtraction
+    spm_realign(spm_vol(InputPath),flags,true);
+elseif nFrames>1
+    spm_realign(spm_vol(InputPath),flags,false);
 end
 
 %% ----------------------------------------------------------------------------------------
@@ -92,13 +98,13 @@ end
 fprintf('%s\n','Calculate & plot position & motion parameters');
 
 % Summarize real-world realign parameters into net displacement vector (NDV)
-rp                              = load(rpfile, '-ascii'); % load the 3 translation and 3 rotation values
-mean_radius                     = 50; % typical distance center head to cerebral cortex (Power et al., NeuroImage 2012)
+rp = load(rpfile, '-ascii'); % load the 3 translation and 3 rotation values
+MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al., NeuroImage 2012)
 % PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
 
 % FD = frame displacement
-FD{1}                           = rp;       % position (absolute displacement)
-FD{2}                           = diff(rp); % motion (relative displacement)
+FD{1} = rp;       % position (absolute displacement)
+FD{2} = diff(rp); % motion (relative displacement)
 
 close all;
 fig = figure('Visible','off');
@@ -107,20 +113,24 @@ for ii=1:2
     tx{ii} = FD{ii}(:,1); ty{ii} = FD{ii}(:,2); tz{ii}  = FD{ii}(:,3); % translations
     rx{ii} = FD{ii}(:,4); ry{ii} = FD{ii}(:,5); rz{ii}  = FD{ii}(:,6); % rotations (pitch, roll, yaw)
 
-    PartTranslation{ii}         = tx{ii}.^2 + ty{ii}.^2 + tz{ii}.^2;
-    PartRotation{ii}            = 0.2*mean_radius^2* ((cos(rx{ii})-1).^2 + (sin(rx{ii})).^2 + (cos(ry{ii})-1).^2 + (sin(ry{ii})).^2 + (cos(rz{ii})-1).^2 + (sin(rz{ii})).^2);
-    NDV{ii}                     = sqrt(PartTranslation{ii} + PartRotation{ii});
+    PartTranslation{ii} = tx{ii}.^2 + ty{ii}.^2 + tz{ii}.^2;
+    PartRotation{ii} = 0.2*MeanRadius^2* ((cos(rx{ii})-1).^2 + (sin(rx{ii})).^2 + (cos(ry{ii})-1).^2 + (sin(ry{ii})).^2 + (cos(rz{ii})-1).^2 + (sin(rz{ii})).^2);
+    try
+        NDV{ii} = sqrt(PartTranslation{ii} + PartRotation{ii});
+    catch
+        
+    end
 
     if ii==2
-        NDV{2}                  = [0; NDV{2}]; % add leading zero difference
+        NDV{2} = [0; NDV{2}]; % add leading zero difference
     end
 
     % Descriptives
-    median_NDV{ii}              = median(NDV{ii});
-    mean_NDV{ii}                = mean(NDV{ii});
-    max_NDV{ii}                 = max(NDV{ii});
-    SD_NDV{ii}                  = std(NDV{ii});
-    MAD_NDV{ii}                 = xASL_stat_MadNan(NDV{ii},0); % median absolute deviation from median
+    median_NDV{ii} = median(NDV{ii});
+    mean_NDV{ii} = mean(NDV{ii});
+    max_NDV{ii} = max(NDV{ii});
+    SD_NDV{ii} = std(NDV{ii});
+    MAD_NDV{ii} = xASL_stat_MadNan(NDV{ii},0); % median absolute deviation from median
 
     subplot(3,1,ii); % plot position (subplot 1) & motion (subplot 2)
     plot(NDV{ii},'Color',[0.4,0.4,0.4]); % lines between frames
@@ -138,7 +148,7 @@ for ii=1:2
 
     elseif ii==2
 
-        axis([0 nFrames 0 min_voxelsize]);
+        axis([0 nFrames 0 minVoxelSize]);
         title(['Motion plot of ' x.P.SubjectID '-' x.P.SessionID]);
         ylabel('NDV/frame (mm//frame)');
     end
@@ -149,41 +159,43 @@ end
 
 %% ----------------------------------------------------------------------------------------
 %% 3) Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
-if bSubtraction && nFrames>10 % == more than 5 pairs
+if bSubtraction && nFrames<=10
+    fprintf('Too few control-label pairs for ENABLE, skipping\n');
+elseif bSubtraction && nFrames>10 % == more than 5 pairs
 
     % Sort motion of control-label pairs
-    MotionTime          = NDV{2}; % motion
-    MotionTime          = MotionTime(1:2:end-1)+MotionTime(2:2:end); % additive motion for each control-label pair
-    MotionTime(:,2)     = [1:1:length(MotionTime)];
-    MotionTimeSort      = sortrows(MotionTime,1);
+    MotionTime = NDV{2}; % motion
+    MotionTime = MotionTime(1:2:end-1)+MotionTime(2:2:end); % additive motion for each control-label pair
+    MotionTime(:,2) = [1:1:length(MotionTime)];
+    MotionTimeSort = sortrows(MotionTime,1);
 
     % Resample ASL image (apply motion estimation)
     xASL_delete(rInputPath);
-    matlabbatch{1}.spm.spatial.realign.write.data               = {InputPath};
-    matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
-    matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 1;
-    matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
-    matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
-    matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
+    matlabbatch{1}.spm.spatial.realign.write.data = {InputPath};
+    matlabbatch{1}.spm.spatial.realign.write.roptions.which = [2 0];
+    matlabbatch{1}.spm.spatial.realign.write.roptions.interp = 1;
+    matlabbatch{1}.spm.spatial.realign.write.roptions.wrap = [0 0 0];
+    matlabbatch{1}.spm.spatial.realign.write.roptions.mask = 1;
+    matlabbatch{1}.spm.spatial.realign.write.roptions.prefix = 'r';
     spm_jobman('run',matlabbatch);
 
 
     % Create a mask from the mean PWI
     xASL_io_PairwiseSubtraction(rInputPath, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
-    MaskIm              = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped,0.95,0.7);
-    MaskIm              = MaskIm>min(MaskIm(:));
+    MaskIm = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped,0.95,0.7);
+    MaskIm = MaskIm>min(MaskIm(:));
     xASL_delete(x.P.Path_mean_PWI_Clipped);
 
     % Load ASL-image
-    IM                  = xASL_io_Nifti2Im(rInputPath);
+    IM = xASL_io_Nifti2Im(rInputPath);
 
     if  bSubtraction % if subtractive/pairwise data
-        [~, ~, OrderContLabl]       = xASL_quant_GetControlLabelOrder(IM);
+        [~, ~, OrderContLabl] = xASL_quant_GetControlLabelOrder(IM);
 
-        if      OrderContLabl~=1
-                IM                  = IM(:,:,:,1:2:end-1)-IM(:,:,:,2:2:end); % control-label order doesn't matter for one-sample ttest p-values
+        if OrderContLabl~=1
+             IM = IM(:,:,:,1:2:end-1)-IM(:,:,:,2:2:end); % control-label order doesn't matter for one-sample ttest p-values
         else
-                IM                  = IM(:,:,:,2:2:end)-IM(:,:,:,1:2:end-1); % control-label order doesn't matter for one-sample ttest p-values
+             IM = IM(:,:,:,2:2:end)-IM(:,:,:,1:2:end-1); % control-label order doesn't matter for one-sample ttest p-values
         end
     end
 
@@ -204,40 +216,39 @@ if bSubtraction && nFrames>10 % == more than 5 pairs
     end
     fprintf('\n');
 
-    INDEXn                  = round(0.5*length(tValue));
-    OptimumV                = max(tValue(INDEXn:end));
-    mintValue               = max(find(tValue(INDEXn:end)==OptimumV)+INDEXn-1);
+    INDEXn = round(0.5*length(tValue));
+    OptimumV = max(tValue(INDEXn:end));
+    mintValue = max(find(tValue(INDEXn:end)==OptimumV)+INDEXn-1);
     % max() is added here in coincidental case where there are 2 identical t-values, max() errs on the conservative side
-    MinimumtValue           = max(tValue(INDEXn:end));
+    MinimumtValue = max(tValue(INDEXn:end));
 
-    if  tValue(end)>(1-x.SpikeRemovalThreshold)*MinimumtValue
+    if tValue(end)>(1-x.SpikeRemovalThreshold)*MinimumtValue
         % only exclude frames if the optimal t-value
         % is more than x% higher than including all frames (default
         % x.SpikeRemovalThreshold= 0.01;
-        mintValue           = length(tValue);
+        mintValue = length(tValue);
     end
 
-    mintValuePlot           = zeros(1,length(tValue));
+    mintValuePlot = zeros(1,length(tValue));
     mintValuePlot(mintValue+1:end)=min(tValue);
 
     % Detect frames for exclusion
-    if  bSubtraction % if ASL
-        exclusion               = zeros(1, length(MotionTimeSort)*2);
+    if bSubtraction % if ASL
+        exclusion = zeros(1, length(MotionTimeSort)*2);
     else  % if no ASL (e.g. fMRI)
-        exclusion               = zeros(1, length(MotionTimeSort));
+        exclusion = zeros(1, length(MotionTimeSort));
     end
 
     if  mintValue<length(tValue)
-
         for iFrame=mintValue+1:length(MotionTimeSort)
             % Exclude pair
-            ExcludePair                     = MotionTimeSort(iFrame, 2);
+            ExcludePair = MotionTimeSort(iFrame, 2);
             if  bSubtraction % if ASL
-                ExcludeFrames               = [ExcludePair*2-1 ExcludePair*2];
+                ExcludeFrames = [ExcludePair*2-1 ExcludePair*2];
             else % if no ASL (e.g. fMRI)
-                ExcludeFrames               = ExcludePair;
+                ExcludeFrames = ExcludePair;
             end
-            exclusion(ExcludeFrames)        = 1;
+            exclusion(ExcludeFrames) = 1;
         end
     end
 
@@ -256,10 +267,10 @@ jpgfile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID '_' x.P.SessionID '_motio
 fprintf('Saving motion plot to %s\n', jpgfile);
 saveas(fig, jpgfile, 'jpg');
 close all;
-clear fig
+clear fig;
 
 if bSubtraction && nFrames>10 % if we performed outlier exclusion
-    tValue(1:3)         = tValue(4); % for nicer plotting
+    tValue(1:3) = tValue(4); % for nicer plotting
 
     fig = figure('Visible','off');
     plot([1:length(tValue)],tValue,'b',[1:length(tValue)],mintValuePlot,'r');
@@ -267,32 +278,32 @@ if bSubtraction && nFrames>10 % if we performed outlier exclusion
     ylabel('mean voxel-wise 1-sample t-test p-value');
     PercExcl    = round((sum(exclusion)/length(exclusion)*100)*10)/10;
     title(['Threshold free motion spike exclusion (red, ' num2str(PercExcl) '%) for ' x.P.SubjectID '_' x.P.SessionID]);
-    jpgfile                     = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_threshold_free_spike_detection.jpg']);
+    jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_threshold_free_spike_detection.jpg']);
     fprintf('Saving motion plot to %s\n',jpgfile);
     saveas(fig,jpgfile,'jpg');
     close all;
-    clear fig
+    clear fig;
 
     % Save 7 images, 3 before & 3 after exclusion
-    INDEX = [1 round(mintValue/3)  round(mintValue/2) mintValue];
-    diffIND = (length(tValue)-mintValue)/3;
-    INDEX(5:7) = [mintValue+diffIND mintValue+2*diffIND length(tValue)];
-    INDEX = round(INDEX);
+    IndexIs = [1 round(mintValue/3)  round(mintValue/2) mintValue];
+    diffIndex = (length(tValue)-mintValue)/3;
+    IndexIs(5:7) = [mintValue+diffIndex mintValue+2*diffIndex length(tValue)];
+    IndexIs = round(IndexIs);
     Slice2Show = floor(size(IM,3)*0.67); % e.g. slice 11/17
-    for iVolume=1:length(INDEX)
-        ExampleIM(:,:,iVolume) = xASL_stat_MeanNan(SortIM(:,:,Slice2Show,1:INDEX(iVolume)),4);
+    for iVolume=1:length(IndexIs)
+        ExampleIM(:,:,iVolume) = xASL_stat_MeanNan(SortIM(:,:,Slice2Show,1:IndexIs(iVolume)), 4);
     end
     TotalCheck = xASL_im_TileImages(xASL_im_rotate(ExampleIM,90), 4);
 
     % Find intensities
-    SortValues                  = sort(TotalCheck(isfinite(TotalCheck)));
-    MINVALUE                    = SortValues(max(1,round(0.001*length(SortValues))));
-    MAXVALUE                    = SortValues(round(0.999*length(SortValues)));
+    SortValues = sort(TotalCheck(isfinite(TotalCheck)));
+    MinValue = SortValues(max(1,round(0.001*length(SortValues))));
+    MaxValue = SortValues(round(0.999*length(SortValues)));
 
-    TotalCheck(TotalCheck<MINVALUE)     = MINVALUE;
-    TotalCheck(TotalCheck>MAXVALUE)     = MAXVALUE;
+    TotalCheck(TotalCheck<MinValue) = MinValue;
+    TotalCheck(TotalCheck>MaxValue) = MaxValue;
 
-    jpgfile                     = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_PWI_motion_sorted.jpg']);
+    jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_PWI_motion_sorted.jpg']);
     fprintf('Saving motion plot to %s\n',jpgfile);
     xASL_imwrite(TotalCheck, jpgfile);
 
@@ -304,14 +315,14 @@ if bSubtraction && nFrames>10 % if we performed outlier exclusion
     if sum(exclusion)>0 % only if spikes have been detected
 
         % Load nifti
-        tempim              = xASL_io_Nifti2Im(InputPath);
+        TempIm = xASL_io_Nifti2Im(InputPath);
 
         % Remove spikes
-        nextFrame           = 1;
+        nextFrame = 1;
         for iFrame=1:nFrames
             if ~(exclusion(iFrame))
-                newim(:,:,:,nextFrame)  = tempim(:,:,:,iFrame);
-                nextFrame               = nextFrame+1;
+                NewIm(:,:,:,nextFrame)  = TempIm(:,:,:,iFrame);
+                nextFrame = nextFrame+1;
             end
         end
 
@@ -320,25 +331,21 @@ if bSubtraction && nFrames>10 % if we performed outlier exclusion
         % Save in single precision, since conversion back to INT16 would
         % otherwise loose precious precision
         % PM: can this be simplified to same format as original??
-        xASL_io_SaveNifti(x.P.Path_ASL4D,x.P.Path_despiked_ASL4D,newim,32,0);
+        xASL_io_SaveNifti(x.P.Path_ASL4D,x.P.Path_despiked_ASL4D,NewIm,32,0);
 
         % Do same for *.mat
-        clear mat
-        load(x.P.Path_ASL4D_mat);
+        LoadParms = load(x.P.Path_ASL4D_mat, '-mat');
+        mat = LoadParms.mat;
 
-        next    = 1;
+        Incl = [];
         for iExcl=1:length(exclusion)
-            if  ~exclusion(iExcl)
-                INCL(next)  = iExcl;
-                next        = next+1;
+            if ~exclusion(iExcl)
+                Incl(end+1) = iExcl;
             end
         end
-        mat     = mat(:,:,INCL);
-        save( x.P.Path_despiked_ASL4D_mat, 'mat');
-
+        mat = mat(:,:,Incl);
+        save(x.P.Path_despiked_ASL4D_mat, 'mat');
     end
-        % Housekeeping: rename text file to be sure, & delete temporary file
-%         xASL_Move( fullfile(path, ['rp_' file '.txt']) , fullfile(path, ['rp_' file '_BeforeSpikeExclusion.txt'] ),1 );
 
 else
     exclusion = 0;
@@ -348,7 +355,7 @@ end
 
 xASL_delete(rInputPath); % delete temporary image
 
-if nFrames>10 % if we performed MoCo
+if nFrames>1 % if we performed MoCo
     % Save results for later summarization in analysis module
     save(fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']),'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
 end
