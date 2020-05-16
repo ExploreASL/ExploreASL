@@ -131,7 +131,7 @@ if ~bSkipStandard
 end
 %% B2) Save FOV mask for each subject
 if x.bNativeSpaceAnalysis
-	x = xASL_wrp_ResolutionEstimation(x);
+	x = xASL_adm_DefineASLResolution(x);
 	for iSession=1:x.nSessions
 		%x.SESSIONS{iSession}
 		

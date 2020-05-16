@@ -75,7 +75,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
 		Path_pGM = x.P.Path_PVgm;
 		Path_pWM = x.P.Path_PVwm;
     else
-        x = xASL_wrp_ResolutionEstimation(x);
+        x = xASL_adm_DefineASLResolution(x);
 		warning('T1w-related files missing, computing ASL data using MNI templates!!!');
         xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc1T1_ASL_res.nii'),x.P.Path_rc1T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
         xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc2T1_ASL_res.nii'),x.P.Path_rc2T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);

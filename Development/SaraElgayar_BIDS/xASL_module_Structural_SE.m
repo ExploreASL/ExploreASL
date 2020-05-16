@@ -658,7 +658,7 @@ if ~x.mutex.HasState('090_reslice2DARTEL')  % tracks progress through lock/ *.st
         % Lesion probability maps (do linear interpolation to avoid negative edge effects)
         xASL_spm_deformations(x,x.P.Path_WMH_PreSEGM,x.P.Pop_Path_rWMH_SEGM,1);
 
-        [INname,OUTname]     = xASL_wrp_LesionResliceList(x, Lesion_T1_list, Lesion_FLAIR_list,ROI_T1_list,ROI_FLAIR_list);
+        [INname,OUTname]     = xASL_adm_LesionResliceList(x, Lesion_T1_list, Lesion_FLAIR_list,ROI_T1_list,ROI_FLAIR_list);
 
         if  ~isempty(INname) && ~isempty(OUTname)
 

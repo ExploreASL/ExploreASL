@@ -336,7 +336,7 @@ if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
 		if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
     end
 elseif  bO; fprintf('%s\n',['there were no pGM/pWM, skipping ' StateName{iState} '...']);
-    x = xASL_wrp_ResolutionEstimation(x);
+    x = xASL_adm_DefineASLResolution(x);
 end
 
 

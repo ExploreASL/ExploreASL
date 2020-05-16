@@ -112,7 +112,7 @@ end
     
 if ~xASL_exist(DeformationPath, 'file')
     if isfield(x.P,'Path_y_ASL') && strcmp(DeformationPath, x.P.Path_y_ASL)
-        xASL_wrp_CreateASLDeformationField(x); % backwards compatibility
+        xASL_im_CreateASLDeformationField(x); % backwards compatibility
     else
         warning([DeformationPath ' didnt exist, skipping...']);
         return;

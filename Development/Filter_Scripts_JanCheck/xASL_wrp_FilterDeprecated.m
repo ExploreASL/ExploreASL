@@ -83,14 +83,14 @@ function xASL_wrp_FilterDeprecated(InputFile, OutputFile, x, MaskingOption )
             % independent of a structural prior. however, this should first
             % be tested
 
-            mask                        = xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(OutputFile));
+            mask = xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(OutputFile));
         end
         %%
 		%%
 		%% HERE WE NEED TO RUN THE FILTER
 
 
-        ovol                            = xASL_wrp_Filter(volIM, mask, VoxelSize, x); % run filter
+        ovol = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x); % run filter
 		%%
 		%%
 

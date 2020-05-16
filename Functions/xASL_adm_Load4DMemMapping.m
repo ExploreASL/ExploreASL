@@ -1,5 +1,5 @@
-function LoadFile = xASL_wrp_Load4DMemMapping( x, WhichModality )
-%xASL_wrp_Load4DMemMapping Part of ExploreASL analysis module
+function LoadFile = xASL_adm_Load4DMemMapping( x, WhichModality )
+%xASL_adm_Load4DMemMapping Part of ExploreASL analysis module
 % Loads data & maps it to memory mapping file on disc, if not done before
 
 %% Admin, specify for each modality how to treat it

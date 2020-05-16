@@ -1,5 +1,5 @@
-function xASL_wrp_CreateSliceGradient(x)
-% xASL_wrp_CreateSliceGradient
+function xASL_im_CreateSliceGradient(x)
+% xASL_im_CreateSliceGradient
 %
 %
 % 1    Create slice gradient in same space as input file

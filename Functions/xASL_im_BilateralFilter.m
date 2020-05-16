@@ -1,5 +1,5 @@
-function [ovol] = xASL_wrp_Filter(volIM, mask, VoxelSize, x)
-%xASL_wrp_Filter This function runs a spatial lowpass temporally
+function [ovol] = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x)
+%xASL_im_BilateralFilter This function runs a spatial lowpass temporally
 %highpass filter, and removes outliers within this signal, and adapts the
 %time-series accordingly
 

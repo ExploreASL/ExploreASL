@@ -51,7 +51,7 @@ if ~isfield(x,'SavePWI4D')
     x.SavePWI4D   = 0;
 end
 
-xASL_wrp_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
+xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
 
 %% TopUp files
 PathB0 = fullfile(x.SESSIONDIR ,'B0.nii');
@@ -65,7 +65,7 @@ xASL_spm_deformations(x, InputPaths, OutputPaths, [], [], [], x.P.Path_y_ASL);
 
 %% ------------------------------------------------------------------------------------------
 %% 1    Create slice gradient image for quantification reference, in case of 2D ASL
-xASL_wrp_CreateSliceGradient(x);
+xASL_im_CreateSliceGradient(x);
 
 
 %% ------------------------------------------------------------------------------------------
@@ -117,14 +117,13 @@ if  nVolumes>1 % this is when a mean control image can be created
     %% Bilateral filter to remove smooth artifacts
     if ~isdeployed % skip this part for compilation, to avoid DIP image issues
         if  x.BILAT_FILTER>0 && nVolumes>9
-            volIM                       = xASL_io_ReadNifti(x.P.Path_rtemp_despiked_ASL4D); % load resliced time-series
-            VoxelSize                   = double(volIM.hdr.pixdim(2:4));
-            volIM                       = single(volIM.dat(:,:,:,:,:,:,:,:));
+            volIM = xASL_io_ReadNifti(x.P.Path_rtemp_despiked_ASL4D); % load resliced time-series
+            VoxelSize = double(volIM.hdr.pixdim(2:4));
+            volIM = single(volIM.dat(:,:,:,:,:,:,:,:));
 
-            mask                        = x.skull; % get standard space mask
-            mask(isnan(mean(volIM,4)))  = 0; % remove outside FoV voxels
-
-            ovol                        = xASL_wrp_Filter(volIM, mask, VoxelSize, x); % run filter
+            mask = x.skull; % get standard space mask
+            mask(isnan(mean(volIM,4))) = 0; % remove outside FoV voxels
+            ovol = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x); % run filter
 
             xASL_io_SaveNifti( x.P.Path_rtemp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, ovol,32,0 ); % store in file
         end

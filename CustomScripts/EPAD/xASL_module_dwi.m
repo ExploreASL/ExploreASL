@@ -329,7 +329,7 @@ if ~x.mutex.HasState('050_resliceDWI')
     elseif ~xASL_exist(x.P.Path_y_T1,'file')
         error('Structural module did not run correctly yet');
     else
-        xASL_wrp_CreateASLDeformationField(x, true, [2.5 2.5 2.5], x.P.Path_dwi_mean); % assume bit lower resolution than the 2 mm that is usually used
+        xASL_im_CreateASLDeformationField(x, true, [2.5 2.5 2.5], x.P.Path_dwi_mean); % assume bit lower resolution than the 2 mm that is usually used
     end
 
     % output QC parameters: average SSE? over mask?

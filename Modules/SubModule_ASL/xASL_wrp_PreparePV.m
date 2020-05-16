@@ -100,8 +100,8 @@ if bStandardSpace
 	end
 	
     %% ------------------------------------------------------------------------------------------
-    % 3)    Estimate effective spatial resolution of ASL
-    x = xASL_wrp_ResolutionEstimation(x);
+    % 3)    Define effective spatial resolution of ASL
+    x = xASL_adm_DefineASLResolution(x);
 
     %% ------------------------------------------------------------------------------------------
     % 4)    Smooth pGM & pWM to this spatial resolution
@@ -135,7 +135,7 @@ if bStandardSpace
 		end
     end
 else
-    x = xASL_wrp_ResolutionEstimation(x); % use default effective spatial resolution
+    x = xASL_adm_DefineASLResolution(x); % use default effective spatial resolution
 end
 
 %% ------------------------------------------------------------------------------------------

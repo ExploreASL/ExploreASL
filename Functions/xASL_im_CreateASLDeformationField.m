@@ -1,6 +1,6 @@
-function xASL_wrp_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, PathLowResNIfTI)
-%xASL_wrp_CreateASLDeformationField Adapt deformation field for lower resolution
-% FORMAT: xASL_wrp_CreateASLDeformationField(x, bOverwrite, EstimatedResolution)
+function xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, PathLowResNIfTI)
+%xASL_im_CreateASLDeformationField Adapt deformation field for lower resolution
+% FORMAT: xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution)
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
@@ -29,8 +29,8 @@ function xASL_wrp_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, 
 %              Note that if the resolution of ASL is not significantly (i.e. >0.5 mm in
 %              any dimension) lower than T1w, the y_T1.nii is copied to y_ASL.nii
 % --------------------------------------------------------------------------------------------------------------------
-% EXAMPLES: xASL_wrp_CreateASLDeformationField(x);
-%           xASL_wrp_CreateASLDeformationField(x, 1, [3 3 7]);
+% EXAMPLES: xASL_im_CreateASLDeformationField(x);
+%           xASL_im_CreateASLDeformationField(x, 1, [3 3 7]);
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
 

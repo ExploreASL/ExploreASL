@@ -228,7 +228,7 @@ end
 % So we can still process ASL images without the
 % structural module
 if ~xASL_exist(x.P.Path_y_ASL,'file') || strcmp(x.P.SessionID,'ASL_1') || x.nSessions==1
-    xASL_wrp_CreateASLDeformationField(x, true);
+    xASL_im_CreateASLDeformationField(x, true);
 end
 
 

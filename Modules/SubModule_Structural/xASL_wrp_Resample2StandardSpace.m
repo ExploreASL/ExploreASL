@@ -55,7 +55,7 @@ xASL_spm_deformations(x, INname, OUTname);
 % Lesion probability maps (do linear interpolation to avoid negative edge effects)
 xASL_spm_deformations(x, x.P.Path_WMH_SEGM, x.P.Pop_Path_rWMH_SEGM, 1);
 
-[INname, OUTname] = xASL_wrp_LesionResliceList(x);
+[INname, OUTname] = xASL_adm_LesionResliceList(x);
 
 if ~isempty(INname) && ~isempty(OUTname)
     % First dilate ROIs, if they were e.g. used for annotation (single voxel only)

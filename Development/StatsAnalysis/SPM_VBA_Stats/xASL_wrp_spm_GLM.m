@@ -57,7 +57,7 @@ if  exist(SmoothASL_LoadFile,'file') % load the already smoothed data
 
 
 else % do memory mapping first
-    LoadFile        = xASL_wrp_Load4DMemMapping( x, InputDataStr, 'Image');
+    LoadFile        = xASL_adm_Load4DMemMapping( x, InputDataStr, 'Image');
     % Smoothing is performed spatially, so we need images instead of columns here
     InputData       = memmapfile(LoadFile,'Format',{'single' [x.nSubjectsSessions 121 145 121] 'data'});
 
