@@ -32,7 +32,7 @@ if ~x.ApplyQuantification(2)
 else
     if ~isempty(strfind(x.Vendor,'Philips'))
 		
-		scaleFactor = xASL_adm_GetPhilipsScaling(M0ParmsMat,x.P.Path_M0,x);
+		scaleFactor = xASL_adm_GetPhilipsScaling(xASL_adm_LoadParms(M0ParmsMat, x),xASL_io_ReadNifti(x.P.Path_M0));
 		
 		if scaleFactor
 			M0IM = M0IM .* scaleFactor;

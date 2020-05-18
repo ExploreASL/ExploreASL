@@ -253,7 +253,7 @@ for ii = 1:length(fList)
 			for cc = 1:10,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Label','Control')];end
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.ReadoutSegments = 2;
-			importStr{ii}.par.TotalNumberControlLabelPairs = 4;
+			importStr{ii}.par.TotalNumberControlLabelPairs = 10;
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 0;
 			importStr{ii}.par.BackgroundSuppressionPulseTime = [0.85 0.1];
@@ -684,19 +684,27 @@ for ii = 1:length(fList)
 				end
 				imNii = xASL_io_Nifti2Im(fullfile(inSesPath,[aslLabel '.nii']));
 				
-				bimNiiSave = 0;
-							
-				if isfield(jsonDicom,'RescaleSlopeOriginal')
-					imNii = imNii./(jsonDicom.RescaleSlopeOriginal.*jsonDicom.MRScaleSlope);
-					bimNiiSave = 1;
-				else
-					if isfield(jsonDicom,'PhilipsRescaleSlope') && (jsonDicom.UsePhilipsFloatNotDisplayScaling == 0)
-						imNii = imNii./(jsonDicom.PhilipsRescaleSlope.*jsonDicom.PhilipsScaleSlope);
-						bimNiiSave = 1;
+				rescaleParms = [];
+				ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'...        
+					'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
+				JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'...
+					'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
+				
+				for pp = 1:length(ParmsFields)
+					if isfield(jsonDicom,JSONFields{pp})
+						rescaleParms.(ParmsFields{pp}) = jsonDicom.(JSONFields{pp});
+					end
+					if ~isempty(imParms)
+						if isfield(imParms.parms,ParmsFields{pp})
+							rescaleParms.(ParmsFields{pp}) = imParms.parms.(ParmsFields{pp});
+						end
 					end
 				end
-						
-				if bimNiiSave
+				
+				scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,[aslLabel '.nii'])));
+				
+				if scaleFactor
+					imNii = imNii .* scaleFactor;
 					xASL_io_SaveNifti(fullfile(inSesPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],imNii,[],1,[]);
 				else
 					% Copy the ASL
@@ -767,7 +775,7 @@ for ii = 1:length(fList)
 				% Import the number of averages
 				if isfield(imParms,'parms') && isfield(imParms.parms,'NumberOfAverages') && (max(imParms.parms.NumberOfAverages) > 1)
 					if isfield(importStr{ii}.par,'TotalNumberControlLabelPairs')
-						if max(imParms.parms.NumberOfAverages) ~= importStr{ii}.par.TotalNumberControlLabelPairs;
+						if max(imParms.parms.NumberOfAverages) ~= importStr{ii}.par.TotalNumberControlLabelPairs
 							warning('Discrepancy in the number of averages');
 						end
 					else
@@ -871,18 +879,33 @@ for ii = 1:length(fList)
 						if xASL_exist(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},fSes{kk},['M0' nnStrIn '.nii']))
 							jsonM0 = spm_jsonread(fullfile(inSesPath,['M0' nnStrIn '.json']));
 							imM0   = xASL_io_Nifti2Im(fullfile(inSesPath,['M0' nnStrIn '.json']));
-							bimM0Save = 0;
-							
-							if isfield(jsonM0,'RescaleSlopeOriginal')
-								imM0 = imM0./(jsonM0.RescaleSlopeOriginal.*jsonM0.MRScaleSlope);
-								bimM0Save = 1;
+							if exist(fullfile(inSesPath,['M0' nnStrIn '_parms.mat']),'file')
+								imParmsM0 = load(fullfile(inSesPath,['M0' nnStrIn '_parms.mat']));
 							else
-								if isfield(jsonM0,'PhilipsRescaleSlope') && (jsonM0.UsePhilipsFloatNotDisplayScaling == 0)
-									imM0 = imM0./(jsonM0.PhilipsRescaleSlope.*jsonM0.PhilipsScaleSlope);
-									bimM0Save = 1;
+								imParmsM0 = [];
+							end
+							
+							rescaleParms = [];
+							ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'...
+								'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
+							JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'...
+								'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
+							for pp = 1:length(ParmsFields)
+								if isfield(jsonM0,JSONFields{pp})
+									rescaleParms.(ParmsFields{pp}) = jsonM0.(JSONFields{pp});
+								end
+								if ~isempty(imParmsM0)
+									if isfield(imParmsM0.parms,ParmsFields{pp})
+										rescaleParms.(ParmsFields{pp}) = imParmsM0.parms.(ParmsFields{pp});
+									end
 								end
 							end
 							
+							scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,['M0' nnStrIn '.nii'])));
+							if scaleFactor
+								imM0 = imM0 .* scaleFactor;
+							end							
+														
 							jsonM0Write = [];
 							% Copy all dicom ones
 							for fn = fieldnames(jsonM0)'
@@ -922,7 +945,7 @@ for ii = 1:length(fList)
 							end
 							
 							% if scaling modified then save instead of copy
-							if bimM0Save
+							if scaleFactor
 								xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_M0Scan' nnStrOut '.nii.gz']),imM0,[],1,[]);
 							else
 								% Copy the M0

@@ -1,12 +1,11 @@
-function scaleFactor = xASL_adm_GetPhilipsScaling(pathParmsMat,pathNifti,x)
+function scaleFactor = xASL_adm_GetPhilipsScaling(parms,header)
 % Checks the nifti header and the additional parameters in a side-car for a nifti file and extract correction
 % scaling factors for Philips.
 % FORMAT: scaleFactor = xASL_adm_GetPhilipsScaling(pathParmsMat,pathNifti)
 % 
 % INPUT:
-%   pathParmsMat    - a path to the the sidecar (REQUIRED)
-%   pathNifti       - a path to the nifti file (REQUIRED)
-%   x               - xASL x-structure (REQUIRED)
+%   parms    - parms read from parms.mat and JSON (REQUIRED)
+%   header   - the nifti file header(REQUIRED)
 %
 % OUTPUT:
 % scaleFactor       - a multiplicate factor - multiply the NiFTI image with this number to get the correct scaling
@@ -20,16 +19,12 @@ function scaleFactor = xASL_adm_GetPhilipsScaling(pathParmsMat,pathNifti,x)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
-if nargin < 3 || isempty(pathParmsMat) || isempty(pathNifti) || isempty(x)
-	error('Need 3 input parameters');
+if nargin < 2 || isempty(parms) || isempty(header)
+	error('Need 2 input parameters');
 	
 end
 
-% Load the parameters from the sidecar
-parms = xASL_adm_LoadParms(pathParmsMat, x);
-
 % Read the NIFTI header to check the scaling there
-header = xASL_io_ReadNifti(pathNifti); % original NIfTI
 rescaleSlopeNifti = header.dat.scl_slope;
 
 if isfield(parms,'RWVSlope')
@@ -90,6 +85,17 @@ end
 		
 % Apply the correct scaling
 if scaleFactor
+	if length(parms.MRScaleSlope) > 1
+		ssInd = find(parms.MRScaleSlope ~= 1);
+		if isempty(ssInd)
+			parms.MRScaleSlope = 1;
+		else
+			if length(ssInd) > 1
+				warning('Philips MR ScaleSlope has more than a single value, could be a scale slope issue');
+			end
+			parms.MRScaleSlope = parms.MRScaleSlope(ssInd);
+		end
+	end
 	if parms.MRScaleSlope == 1
 		warning('Philips MR ScaleSlope was 1, could be a scale slope issue.');
 	end

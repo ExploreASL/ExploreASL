@@ -192,7 +192,7 @@ else
 		% If these are not corrected for, only relative CBF quantification can be performed,
 		% i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
 		
-		scaleFactor = xASL_adm_GetPhilipsScaling(x.P.Path_ASL4D_parms_mat,x.P.Path_ASL4D,x);
+		scaleFactor = xASL_adm_GetPhilipsScaling(xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat,x),xASL_io_ReadNifti(x.P.Path_ASL4D));
 		
 		if scaleFactor
 			ScaleImage = ScaleImage .* scaleFactor;
