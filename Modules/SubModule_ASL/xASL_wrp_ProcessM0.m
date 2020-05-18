@@ -94,7 +94,7 @@ xASL_io_SaveNifti(x.P.Path_M0, x.P.Path_rM0, mean(xASL_io_Nifti2Im(x.P.Path_M0).
 
 % Note that here we created rM0, which is averaged across 4th dimension, and adapted along this function
 
-xASL_wrp_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
+xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
 
 
 %% -----------------------------------------------------------------------------------------------
