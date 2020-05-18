@@ -192,77 +192,10 @@ else
 		% If these are not corrected for, only relative CBF quantification can be performed,
 		% i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
 		
-		% Read the NIFTI header to check the scaling there
-		HeaderTemp = xASL_io_ReadNifti(x.P.Path_ASL4D); % original NIfTI
-		Rescale_NIfTI = HeaderTemp.dat.scl_slope;
+		scaleFactor = xASL_adm_GetPhilipsScaling(x.P.Path_ASL4D_parms_mat,x.P.Path_ASL4D,x);
 		
-		if isfield(ASL_parms,'RWVSlope')
-			% If the RealWorldValue is present, then dcm2nii scales to them and ignores everything else
-			if ~isnear(ASL_parms.RWVSlope,Rescale_NIfTI,ASL_parms.RWVSlope/100) && (Rescale_NIfTI ~= 1)
-				fprintf('%s\n', ['RWVSlope (' xASL_num2str(ASL_parms.RWVSlope) ') and NIfTI slope (' xASL_num2str(Rescale_NIfTI) ') differ, using RWVSlope']);
-			end
-			if isfield(ASL_parms,'RescaleSlopeOriginal') && ~isnear(ASL_parms.RWVSlope,ASL_parms.RescaleSlopeOriginal,ASL_parms.RWVSlope/100) && (Rescale_NIfTI ~= 1)
-				fprintf('%s\n', ['RWVSlope (' xASL_num2str(ASL_parms.RWVSlope) ') and RescaleSlopeOriginal (' xASL_num2str(ASL_parms.RescaleSlopeOriginal) ') differ, using RWVSlope']);
-			end
-			if isfield(ASL_parms,'RescaleSlope') && ~isnear(ASL_parms.RWVSlope,ASL_parms.RescaleSlope,ASL_parms.RWVSlope/100) && (Rescale_NIfTI ~= 1)
-				fprintf('%s\n', ['RWVSlope (' xASL_num2str(ASL_parms.RWVSlope) ') and RescaleSlope (' xASL_num2str(ASL_parms.RescaleSlope) ') differ, using RWVSlope']);
-			end
-			
-			if ASL_parms.RWVSlope == 1
-				warning('RWVSlope was 1, could be a scale slope issue');
-			end
-			
-			% Set the scaling to remove
-			bDoPhilipsScaling = 1;
-			sPhilipsScaleSlope = ASL_parms.RWVSlope;
-		elseif isfield(ASL_parms,'UsePhilipsFloatNotDisplayScaling') && (ASL_parms.UsePhilipsFloatNotDisplayScaling == 1)
-			% Without the RWVSlope set and with the UsePhilipsFloatNotDisplayScaling set to 1, we know that dcm2nii did the scaling correctly and we don't have to further scale anything
-			bDoPhilipsScaling = 0;
-			sPhilipsScaleSlope = 0;
-		elseif (~isfield(ASL_parms,'RescaleSlope')) && (~isfield(ASL_parms,'MRScaleSlope')) && (~isfield(ASL_parms,'RescaleSlopeOriginal')) && (~isfield(ASL_parms,'UsePhilipsFloatNotDisplayScaling'))
-			% All fields are missing - we can ignore the quantification as all the fields have been removed and scaling done properly (we assume)
-			% Note that RWVSlope was ruled out previously, and if UsePhilipsFloatNotDisplayScaling exists, it must be 0
-			bDoPhilipsScaling = 0;
-			sPhilipsScaleSlope = 0;
-		else 
-			% Standard scaling using RescaleSlope/RescaleSlopeOriginal or the Nifti slope - which should all be either non-existing or 1 or all equal
-			% Set the scaling to remove
-			bDoPhilipsScaling = 1;
-			sPhilipsScaleSlope = 1;
-			
-			if isfield(ASL_parms,'RescaleSlopeOriginal') && (ASL_parms.RescaleSlopeOriginal ~= 1)
-				if (sPhilipsScaleSlope ~= 1) && ~isnear(sPhilipsScaleSlope,ASL_parms.RescaleSlopeOriginal,sPhilipsScaleSlope/100)
-					warning('%s\n', ['Discrepancy in RescaleSlopeOriginal (' xASL_num2str(ASL_parms.RescaleSlopeOriginal) ')']);
-				end
-				sPhilipsScaleSlope = ASL_parms.RescaleSlopeOriginal;
-			end
-			
-			if isfield(ASL_parms,'RescaleSlope') && (ASL_parms.RescaleSlope ~= 1)
-				if (sPhilipsScaleSlope ~= 1) && ~isnear(sPhilipsScaleSlope,ASL_parms.RescaleSlope,sPhilipsScaleSlope/100)
-					warning('%s\n', ['Discrepancy in RescaleSlope (' xASL_num2str(ASL_parms.RescaleSlope) ')']);
-				end
-				sPhilipsScaleSlope = ASL_parms.RescaleSlope;
-			end
-			
-			if (Rescale_NIfTI ~= 1)
-				if (sPhilipsScaleSlope ~= 1) && ~isnear(sPhilipsScaleSlope,Rescale_NIfTI,sPhilipsScaleSlope/100)
-					warning('%s\n', ['Discrepancy in NIFTI Slopes (' xASL_num2str(Rescale_NIfTI) ')']);
-				end
-				sPhilipsScaleSlope = Rescale_NIfTI;
-			end
-
-			if sPhilipsScaleSlope == 1
-				warning('Scale slope was 1, could be a scale slope issue');
-			end
-		end
-		
-		% Apply the correct scaling
-		if bDoPhilipsScaling
-			if ASL_parms.MRScaleSlope == 1
-				warning('Philips MR ScaleSlope was 1, could be a scale slope issue.');
-			end
-			ScaleImage = ScaleImage./(sPhilipsScaleSlope.*ASL_parms.MRScaleSlope);
-			fprintf('%s',['Using DICOM (re)scale slopes ' num2str(sPhilipsScaleSlope) ' * ' num2str(ASL_parms.MRScaleSlope)]);
+		if scaleFactor
+			ScaleImage = ScaleImage .* scaleFactor;
 		end
 
 		% Siemens specific scalings
