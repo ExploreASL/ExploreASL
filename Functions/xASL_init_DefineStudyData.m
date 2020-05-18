@@ -1,7 +1,7 @@
-function [x] = xASL_init_DefineSets(x)
-%xASL_init_DefineSets % Define study subjects/parameters for this pipeline run
+function [x] = xASL_init_DefineStudyData(x)
+%xASL_init_DefineStudyData % Define study subjects/parameters for this pipeline run
 %
-% FORMAT: [x] = xASL_init_DefineSets(x)
+% FORMAT: [x] = xASL_init_DefineStudyData(x)
 %
 % INPUT:
 %   x   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -48,9 +48,16 @@ function [x] = xASL_init_DefineSets(x)
 % 14) Check what excluded from which TimePoints
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: x = xASL_init_DefineSets(x);
+% EXAMPLE: x = xASL_init_DefineStudyData(x);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+
+
+% ------------------------------------------------------------------------------------------------
+%% Admin
+if ~isfield(x,'name')
+    x.name = ''; 
+end
 
 
 % ------------------------------------------------------------------------------------------------
@@ -116,7 +123,7 @@ if isempty(x.SUBJECTS)
     error('No subjects defined, x.SUBJECTS was empty');
 end
 
-[~, ~, TimePoint] = xASL_init_LongitudinalRegistration(x);
+[~, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
 % ------------------------------------------------------------------------------------------------
 %% 4) Create TimePoint data-lists
@@ -266,7 +273,7 @@ end
 %% 8) Add Longitudinal TimePoints (different T1 volumes) as covariate/set, after excluding
 % TimePoints should be indicated as different subjects, with a _1 _2 _3 _n suffix
 
-[SubjectNList, ~, TimePoint] = xASL_init_LongitudinalRegistration(x);
+[SubjectNList, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
 if isfield(x.S,'SetsID')
     iSetLong_TP = size(x.S.SetsID,2)+1;

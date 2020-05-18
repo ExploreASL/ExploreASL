@@ -114,7 +114,7 @@ if bHasLongitudinal
     FileTypes{end+1} = 'LongReg';
 end
 
-LOCKDIR = fullfile(x.D.ROOT, 'lock');
+LockDir = fullfile(x.D.ROOT, 'lock');
 ReportName = fullfile(x.D.ROOT, 'FileReportSummary.csv');
 xASL_delete(ReportName);
 SummaryFid = fopen(ReportName,'wt');
@@ -335,7 +335,7 @@ for iDIR=1:length(lockDIRS)
     for iP=1:length(lockPrefix{iDIR})
         if strcmp(lockDIRS{iDIR},['xASL_module_DARTEL_' x.P.STRUCT]) || strcmp(lockDIRS{iDIR},'Population')
             % only 1 status file
-                FilePath    = fullfile(LOCKDIR, lockDIRS{iDIR}, [lockDIRS{iDIR}],[lockPrefix{iDIR}{iP} '.status']);
+                FilePath    = fullfile(LockDir, lockDIRS{iDIR}, [lockDIRS{iDIR}],[lockPrefix{iDIR}{iP} '.status']);
                 if ~exist(FilePath,'file')
                     fprintf(SummaryFid_{5},'%s\n', FilePath);
                     CountMissing(5)     = CountMissing(5)+1;
@@ -343,7 +343,7 @@ for iDIR=1:length(lockDIRS)
             
         elseif strcmp(lockDIRS{iDIR},['xASL_module_LongReg_' x.P.STRUCT]) % status files for Longitudinal Registration
                 for iSubj=1:length(LongRegSubj)
-                    FilePath = fullfile(LOCKDIR, lockDIRS{iDIR}, LongRegSubj{iSubj}, 'xASL_module_LongReg',[lockPrefix{iDIR}{iP} '.status']);
+                    FilePath = fullfile(LockDir, lockDIRS{iDIR}, LongRegSubj{iSubj}, 'xASL_module_LongReg',[lockPrefix{iDIR}{iP} '.status']);
                     if ~exist(FilePath,'file') % check subjects
                         fprintf(SummaryFid_{5},'%s\n', FilePath);
                         CountMissing(5) = CountMissing(5)+1;
@@ -353,7 +353,7 @@ for iDIR=1:length(lockDIRS)
             for iSubject=1:x.nSubjects
                 if  strcmp(lockDIRS{iDIR},'xASL_module_ASL')
                     for iSession=1:x.nSessions % check sessions
-                        FilePath = fullfile(LOCKDIR, lockDIRS{iDIR}, x.SUBJECTS{iSubject}, [lockDIRS{iDIR} '_' x.SESSIONS{iSession}],[lockPrefix{iDIR}{iP} '.status']);
+                        FilePath = fullfile(LockDir, lockDIRS{iDIR}, x.SUBJECTS{iSubject}, [lockDIRS{iDIR} '_' x.SESSIONS{iSession}],[lockPrefix{iDIR}{iP} '.status']);
                         if ~exist(FilePath,'file')
                             fprintf(SummaryFid_{5},'%s\n', FilePath);
                             CountMissing(5) = CountMissing(5)+1;
@@ -361,7 +361,7 @@ for iDIR=1:length(lockDIRS)
                     end
 
                 else
-                    FilePath = fullfile(LOCKDIR, lockDIRS{iDIR}, x.SUBJECTS{iSubject}, [lockDIRS{iDIR}],[lockPrefix{iDIR}{iP} '.status']);
+                    FilePath = fullfile(LockDir, lockDIRS{iDIR}, x.SUBJECTS{iSubject}, [lockDIRS{iDIR}],[lockPrefix{iDIR}{iP} '.status']);
                     if ~exist(FilePath,'file') % check subjects
                         fprintf(SummaryFid_{5},'%s\n', FilePath);
                         CountMissing(5) = CountMissing(5)+1;

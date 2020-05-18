@@ -15,7 +15,7 @@ function [result x] = xASL_module_Structural(job, x)
 
 %% Administration
 
-x        = xASL_init_GenericMutexModules( x, 'T1' ); % starts mutex locking process to ensure that everything will run only once
+x        = xASL_init_InitializeMutex( x, 'T1' ); % starts mutex locking process to ensure that everything will run only once
 x        = xASL_init_FileSystem(x);
 
 
@@ -618,7 +618,7 @@ if ~x.mutex.HasState('080_TissueVolume')   % tracks progress through lock/ *.sta
             save(mat_file,'image','tpm','Affine','lkp','MT','Twarp','Tbias','mg','mn','vr','wp','ll');
             clear image tpm Affine lkp MT Twarp Tbias mg mn vr wp ll volumes
 
-            job         = fullfile( x.D.FunctionsDir, 'xASL_spm_job_TissueVolume.m');
+            job         = fullfile(x.MyPath, 'Functions', 'xASL_spm_job_TissueVolume.m');
             mask_ICV    = GetImageList3D( fullfile(x.SPMDIR, 'tpm'), '^mask_ICV\.(nii|nii\.gz)$');
             SaveFile    = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.csv']);
 

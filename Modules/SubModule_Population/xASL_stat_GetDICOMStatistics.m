@@ -35,6 +35,8 @@ if nargin<3 || isempty(HasSessions)
     HasSessions = false;
 end
 
+xASL_adm_CreateDir(x.D.DICOMparameterDir);
+
 matFields = {'RepetitionTime' 'EchoTime' 'NumberOfTemporalPositions' 'MRScaleSlope' 'RescaleSlopeOriginal' 'RescaleIntercept' 'Scanner' 'SliceReadoutTime'};
 nFields = length(matFields);
 PathTSV = fullfile(x.D.DICOMparameterDir, ['QuantificationParameters_' ScanType '.tsv']);

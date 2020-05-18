@@ -1,37 +1,54 @@
-function [PathJSON] = xASL_init_ConvertM2JSON(DataParFile)
+function [PathJSON] = xASL_init_ConvertM2JSON(PathM, bOverwrite)
 %xASL_init_ConvertM2JSON Convert the old DataPar m-file to JSON format
-% DataPar is the settings/parameter file, specific to a dataset to be
-% processed by ExploreASL
+%
+% FORMAT: [PathJSON] = xASL_init_ConvertM2JSON(PathM)
+%
+% INPUT:
+%   PathM       - path to legacy data parameterfile of ExploreASL (REQUIRED)
+%   bOverwrite  - boolean specifying if existing PathJSON will be
+%                 overwritten or not (OPTIONAL, DEFAULT=true)
+%
+% OUTPUT:       - path to JSON file containing parameters for running
+%                 ExploreASL
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function converts and replaces the legacy data parameter m-format
+%              by a JSON file. A DataPar.m was the settings/parameter file, specific to a dataset to be
+%              processed by ExploreASL, now replaced to JSON by BIDS.
+%              Note that the deployed/compiled version of ExploreASL
+%              requires the JSON file, this function should not be compiled
+%              along. This function performs the following steps:
+%
+%              1) Run the m-file to load parameters
+%              2) Escape characters that are illegal in JSON
+%              3) Write the JSON
+%
+% EXAMPLE: PathJSON = xASL_init_ConvertM2JSON('/MyStudy/DataParameterFile.m');
+% __________________________________
+% Copyright (C) 2015-20120 ExploreASL
 
-[Fpath, Ffile] = fileparts(DataParFile);
-CurD = pwd;
+
+%% -----------------------------------------------
+%% Admin
+if nargin<2 || isempty(bOverwrite)
+    bOverwrite = true;
+end
+
+[Fpath, Ffile] = fileparts(PathM);
+CurrentFolder = pwd;
 if ~isempty(Fpath)
     cd(Fpath);
 end
 PathJSON = fullfile(Fpath, [Ffile '.json']);
+
+%% -----------------------------------------------
+%% 1) Run the m-file to load parameters
 FunctionHandle = str2func(Ffile);
-try % first try normal running of the m-file
-    x = FunctionHandle();
-% catch ME1
-%     try % then try copying the m-file into a separate temporary file
-%         % Bypass eval error stuff with long names, spaces etc
-%         TempDataParFile = 'TempDataPar';
-%         TempDataParPath = fullfile(pathstr,[TempDataParFile '.m']);
-%         while exist(TempDataParPath,'file') % find unexisting file
-%             TempDataParFile = [TempDataParFile '_2'];
-%             TempDataParPath = fullfile(pathstr,[TempDataParFile '.m']);
-%         end
-%         copyfile(DataParPath, TempDataParPath, 'f' ); % overwrite ,if exist    
-    catch ME2
-%         fprintf('%s\n',ME1.message);
-        fprintf('%s\n',ME2.message);
-        error('Couldnt load the data par file');
-%     end
-end
+x = FunctionHandle();
 
-cd(CurD);
+cd(CurrentFolder);
 
-% Escape '\' for subject_regexp field
+%% -----------------------------------------------
+%% 2) Escape characters that are illegal in JSON
 FieldsX = fields(x);
 for iField=1:length(FieldsX)
     tString = x.(FieldsX{iField});
@@ -64,7 +81,15 @@ for iField=1:length(FieldsX)
     end
 end
 
-xASL_delete(PathJSON);
+%% -----------------------------------------------
+%% 3) Write the JSON
+if bOverwrite
+    xASL_delete(PathJSON); % remove any previous version
+elseif ~bOverwrite && exist(PathJSON, 'file')
+    warning([PathJSON ' already existed, skipping']);
+    return;
+end
+
 spm_jsonwrite(PathJSON, x);
 
 end

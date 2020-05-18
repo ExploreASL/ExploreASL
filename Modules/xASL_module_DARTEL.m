@@ -38,7 +38,7 @@ function [result, x] = xASL_module_DARTEL(x)
 
 %% -------------------------------------------------------------------------------------------------------
 %% Administration
-x = xASL_init_GenericMutexModules(x, 'DARTEL'); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex(x, 'DARTEL'); % starts mutex locking process to ensure that everything will run only once
 x.IMAGES_CREATE     = {['rc1' x.P.STRUCT] ['rc2' x.P.STRUCT]};
 x.ESTIMATE          = true; % 1 = estimate DARTEL flowfields, if not already processed. 0 = skip estimating
 x.WARP              = true; % 1 = apply DARTEL, creating warped maps; 0 = skip warping
@@ -126,7 +126,7 @@ for iS=1:x.nSubjects
     % Here, check longitudinal registration.
     % If we run longitudinal registration, only use first volumes
     x.P.SubjectID = x.SUBJECTS{iS};
-    [~, ~, ~, IsSubject, ~, ~, SubjectID_FirstVolume] = xASL_init_LongitudinalRegistration(x);
+    [~, ~, IsSubject, SubjectID_FirstVolume] = xASL_init_LongitudinalRegistration(x);
 
     % To check whether or not we will run longitudinal registration
 	

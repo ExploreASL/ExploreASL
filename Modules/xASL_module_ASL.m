@@ -35,7 +35,7 @@ function [result, x] = xASL_module_ASL(x)
 
 
 %% Admin
-x = xASL_init_GenericMutexModules(x, 'ASL'); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex(x, 'ASL'); % starts mutex locking process to ensure that everything will run only once
 result = false;
 
 if ~isfield(x,'ApplyQuantification') || isempty(x.ApplyQuantification)

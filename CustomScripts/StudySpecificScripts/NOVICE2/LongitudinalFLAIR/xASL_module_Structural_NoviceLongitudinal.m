@@ -40,7 +40,7 @@ function [result, x] = xASL_module_Structural(x)
 %% -------------------------------------------------------------------------------------------
 %% Administration
 
-x = xASL_init_GenericMutexModules(x, 'T1' ); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex(x, 'T1' ); % starts mutex locking process to ensure that everything will run only once
 x = xASL_init_FileSystem(x); % initialize FileSystem, quick & dirty
 oldFolder = cd(x.SUBJECTDIR); % make sure that unspecified output will go here
 

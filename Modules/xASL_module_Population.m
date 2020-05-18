@@ -43,7 +43,7 @@ if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.bNativeSpaceAnalysis)
 	x.bNativeSpaceAnalysis = 0;
 end
 
-x = xASL_init_GenericMutexModules(x, 'QC'); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex(x, 'QC'); % starts mutex locking process to ensure that everything will run only once
 x = xASL_init_FileSystem(x);
 xASL_adm_CreateDir(x.S.StatsDir);
 
@@ -94,7 +94,6 @@ end
 
 
 %% General settings
-x = xASL_init_PopulationSettings(x);
 x = xASL_adm_CreateFileReport(x);
 % xASL_wrp_PVC_HiRes( x ); % PVEc correction in standard space high resolution, using B-splines
 

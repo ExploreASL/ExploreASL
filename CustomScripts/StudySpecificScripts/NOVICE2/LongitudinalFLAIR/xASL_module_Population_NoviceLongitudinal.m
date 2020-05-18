@@ -34,7 +34,7 @@ function [result, x] = xASL_module_Population(x)
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin
 
-x = xASL_init_GenericMutexModules(x, 'QC'); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex(x, 'QC'); % starts mutex locking process to ensure that everything will run only once
 x = xASL_init_FileSystem(x);
 xASL_adm_CreateDir(x.S.StatsDir);
 

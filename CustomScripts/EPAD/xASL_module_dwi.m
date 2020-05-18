@@ -11,7 +11,7 @@ function [result, x] = xASL_module_dwi(x)
 
 %% 0. INPUT
 
-x = xASL_init_GenericMutexModules( x, 'dwi' ); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex( x, 'dwi' ); % starts mutex locking process to ensure that everything will run only once
 result = false;
 
 %% 0.9 change working directory to make sure that unspecified output will go there...

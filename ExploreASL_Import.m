@@ -107,10 +107,10 @@ if nargin<2 || isempty(bCopySingleDicoms)
     bCopySingleDicoms = false; % by default don't copy dicoms for anonymization reasons
 end
 if nargin<5 || isempty(bRunDCM2NII)
-	bRunDCM2NII = true;
+    bRunDCM2NII = true;
 end
 if nargin<3 || isempty(bUseDCMTK)
-	bUseDCMTK = true; % default set to using DCM-TK
+    bUseDCMTK = true; % default set to using DCM-TK
 elseif bUseDCMTK && isempty(which('dicomdict'))
     error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
 end
@@ -138,28 +138,28 @@ xASL_adm_CheckPermissions(dcm2niiDir, true); % dcm2nii needs to be executable
 % Initialize defaults
 %%%%%%%%%%%%%%%%%%%%%%
 if ~isfield(imPar,'bVerbose') || isempty(imPar.bVerbose)
-	imPar.bVerbose = true;
+    imPar.bVerbose = true;
 end
 if ~isfield(imPar,'bOverwrite') || isempty(imPar.bOverwrite)
-	imPar.bOverwrite  = false; % NB, the summary file will be recreated anyway and dicom conversion in temp is always done, even if dest. exists
+    imPar.bOverwrite  = false; % NB, the summary file will be recreated anyway and dicom conversion in temp is always done, even if dest. exists
 end
 if ~isfield(imPar,'visitNames') || isempty(imPar.visitNames)
-	imPar.visitNames = {};
+    imPar.visitNames = {};
 end
 if ~isfield(imPar,'nMaxVisits') || isempty(imPar.nMaxVisits)
-	imPar.nMaxVisits = 0;
+    imPar.nMaxVisits = 0;
 end
 if ~isfield(imPar,'sessionNames') || isempty(imPar.sessionNames)
-	imPar.sessionNames = {};
+    imPar.sessionNames = {};
 end
 if ~isfield(imPar,'nMaxSessions') || isempty(imPar.nMaxSessions)
-	imPar.nMaxSessions = 0;
+    imPar.nMaxSessions = 0;
 end
 if ~isfield(imPar,'dcm2nii_version') || isempty(imPar.dcm2nii_version)
-	imPar.dcm2nii_version = '20190902'; % OR for PARREC imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
+    imPar.dcm2nii_version = '20190902'; % OR for PARREC imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
 end
 if ~isfield(imPar,'dcmExtFilter') || isempty(imPar.dcmExtFilter)
-	imPar.dcmExtFilter = '^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
+    imPar.dcmExtFilter = '^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
 end
 if isempty(imPar.RawRoot)
     error('imPar.RawRoot was empty');
@@ -169,9 +169,9 @@ end
 if ~isfield(imPar,'SkipSubjectIfExists') || isempty(imPar.SkipSubjectIfExists)
     % allows to skip existing subject folders in the analysis folder, when this is set to true,
     % avoiding partly re-importing/converting dcm2niiX when processing has been partly done
-	imPar.SkipSubjectIfExists = false;
+    imPar.SkipSubjectIfExists = false;
 else
-    fprintf('Warning: skipping subjects if they already exist in analysis folder\n');
+    warning('Skipping existing subjects in analysis folder');
     fprintf('If you want to overwrite, first remove the full subject folder');
 end
 
@@ -237,9 +237,6 @@ elseif imPar.bVerbose
     fprintf('\nMatching files:\n');
     disp(matches);
     fprintf('#=%g\n',length(matches));
-elseif size(tokens, 2)<sum(imPar.tokenOrdering~=0)
-    warning('Input argument folderHierarchy might be missing () around Subject/Visit/Run/Scan, skipping');
-    return;
 end
 
 % Copy the columns into named vectors. This construction allows for arbitrary directory hierarchies.
@@ -425,7 +422,7 @@ for iSubject=1:nSubjects
                 if imPar.bVerbose; fprintf('>>> Subject=%s, visit=%s, session=%s, scan=%s\n',subjectID, visitID, num2str(iSession), scan_name); end
 
                 bOneScanIsEnough = false; % default
-                CreateParmsMat = true; % ParmsMat are only required for ASL, later we can phase this out to BIDS as well
+                CreateJSON = true;
                 bPutInSessionFolder = true; % by default put in session folder
                 switch scan_name
                     case {'ASL4D', 'M0', 'ASL4D_RevPE', 'func_bold'}
@@ -544,33 +541,33 @@ for iSubject=1:nSubjects
 
                 % extract relevant parameters from dicom header, if not
                 % already exists
-                SaveParmsPath = fullfile(destdir, [scan_name '_parms.mat']);
-                if exist(SaveParmsPath,'file')
-                    CreateParmsMat = false;
+                SavePathJSON = fullfile(destdir, [scan_name '.json']);
+                if exist(SavePathJSON,'file')
+                    CreateJSON = false;
                 end
 
-                if CreateParmsMat && ~isempty(first_match)
+                if CreateJSON && ~isempty(first_match)
                     [~, ~, fext] = fileparts(first_match);
                     if  strcmpi(fext,'.PAR')
-                        parms = xASL_adm_Par2Parms(first_match, SaveParmsPath, imPar.bOverwrite);
+                        parms = xASL_adm_Par2Parms(first_match, SavePathJSON);
                     elseif strcmpi(fext,'.nii')
                         parms = [];
                     elseif imPar.bMatchDirectories
                         Fpath  = fileparts(first_match);
-                        [parms, pathDcmDict] = xASL_adm_Dicom2Parms(imPar, Fpath, SaveParmsPath, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+                        [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
                         clear Fpath Ffile Fext
                     else
-                        [parms, pathDcmDict] = xASL_adm_Dicom2Parms(imPar, first_match, SaveParmsPath, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+                        [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
                     end
                 end
 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of
                 % hidden scale slopes in private Philips header,
-                % that is delt with by dicom2parms but not by
-                % dcm2nii
+                % that is dealt with by xASL_bids_Dicom2JSON but not by
+                % dcm2niiX
 
-                if CreateParmsMat && ~isempty(nii_files) && exist('parms','var')
+                if CreateJSON && ~isempty(nii_files) && exist('parms','var')
                     [TempLine, PrintDICOMFields] = AppendParmsParameters(parms);
                     summary_line = [summary_line TempLine];
                 end
@@ -682,7 +679,7 @@ fclose(fid_summary);
 
 % cleanup
 if ~bUseDCMTK || isempty(pathDcmDict)
-	dicomdict('factory');
+    dicomdict('factory');
 end
 diary('off');
 
@@ -708,16 +705,16 @@ function s = AppendNiftiParameters(nii_files)
 s = [];
 
 if ischar(nii_files)
-	nii_files = {nii_files};
+    nii_files = {nii_files};
 end
 
 for iNii=1:length(nii_files)
-	[~, Ffile, Fext] = fileparts(nii_files{iNii});
-	s = sprintf(',"%s"', [Ffile Fext]); % filename
+    [~, Ffile, Fext] = fileparts(nii_files{iNii});
+    s = sprintf(',"%s"', [Ffile Fext]); % filename
 
-	tempnii = xASL_io_ReadNifti(nii_files{iNii});
-	s = [s sprintf(',%g', tempnii.hdr.pixdim(2:5) )]; % voxel size XYZ
-	s = [s sprintf(',%g', tempnii.hdr.dim(2:5) )]; % matrix size XYZ
+    tempnii = xASL_io_ReadNifti(nii_files{iNii});
+    s = [s sprintf(',%g', tempnii.hdr.pixdim(2:5) )]; % voxel size XYZ
+    s = [s sprintf(',%g', tempnii.hdr.dim(2:5) )]; % matrix size XYZ
 end
 end
 

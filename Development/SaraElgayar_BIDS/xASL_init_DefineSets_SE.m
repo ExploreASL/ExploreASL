@@ -50,7 +50,7 @@ if  isempty(x.SUBJECTS)
     error('No subjects defined, x.SUBJECTS was empty');
 end
 
-[~, ~, TimePoint] = xASL_init_LongitudinalRegistration( x );
+[~, TimePoint] = xASL_init_LongitudinalRegistration( x );
 
 
 %% Create TimePoint data-lists
@@ -187,7 +187,7 @@ end
 % TimePoints should be indicated as different subjects, with a _1 _2 _3 _n
 % suffix
 
-[SubjectNList, ~, TimePoint] = xASL_init_LongitudinalRegistration( x );
+[SubjectNList, TimePoint] = xASL_init_LongitudinalRegistration( x );
 
 
 

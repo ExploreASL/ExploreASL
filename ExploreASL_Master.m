@@ -35,7 +35,7 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
 % EXAMPLE for calling externally to run the ASL & Population modules: ExploreASL_Master('//MyDisk/MyStudy/DataPar.m', true, true, [], [], [2 3]);
 % EXAMPLE for debugging/initialization only: [x] = ExploreASL_Master('',0);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
     % -----------------------------------------------------------------------------
     %% 1 Initialization when calling this function

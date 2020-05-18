@@ -9,7 +9,7 @@ function [result x] = xASL_module_func(x)
 %% 0. INPUT
 
 
-x = xASL_init_GenericMutexModules(x, 'func'); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex(x, 'func'); % starts mutex locking process to ensure that everything will run only once
 result = false;
 
 if ~isfield(x,'SavefMRI')

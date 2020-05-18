@@ -8,7 +8,7 @@ if ~isfield(x,'Quality')
 end
 
 % xASL_adm_CreateDir( x.D.T1_ASLREGDIR);
-xASL_adm_CreateDir( x.D.DICOMparameterDir);
+% xASL_adm_CreateDir(x.D.DICOMparameterDir);
 
 x.STRUCT_TEMPLATE_IM = fullfile(x.D.PopDir, 'Templates', 'pGM_bs-mean.nii');
 pGM_exist   = true;
@@ -23,7 +23,8 @@ else
     x.STRUCT_TEMPLATE_IM = fullfile(x.D.TemplateDir,'rc1T1.nii');
 end
 
-x.GradualSkull = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'));
+% x.GradualSkull = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,
+% 'rbrainmask.nii')); % not useed
 
 % Load T1 background image
 load_T1         = fullfile(x.D.PopDir, 'Templates', [x.P.STRUCT '_bs-mean.nii']);
@@ -89,7 +90,7 @@ background_mask                     = background_mask ./ max( background_mask(:)
 DATA_OUT                            = xASL_im_TransformData2View( background_mask, x );
 x.background_view_clr               = double(DATA_OUT ./ (max(DATA_OUT(:)) ));
 x.background_view_clr               = repmat(x.background_view_clr,[1 1 3]);
-
+% not used
 
 
 

@@ -78,6 +78,10 @@ else
     end    
 end 
 
+if ~isfield(x,'GradualSkull')
+    x.GradualSkull = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'));
+end
+
 if x.nSubjectsSessions<6
     % With too small datasets, created templated won't be reliable
     fprintf('%s\n',['Too few images (' num2str(x.nSubjectsSessions) ') for creating templates/parametric images, skipping...']);

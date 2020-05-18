@@ -24,7 +24,7 @@ nextN   = 1;
 
 for iS=1:x.nSubjects
     x.P.SubjectID = x.SUBJECTS{iS};
-    [~, ~, ~, IsSubject] = xASL_init_LongitudinalRegistration( x );
+    [~, ~, IsSubject] = xASL_init_LongitudinalRegistration( x );
     % To check whether or not we will run longitudinal registration
 
     if  IsSubject==1 % only run for first volumes
