@@ -1,4 +1,4 @@
-function [Parms,x,Oldx] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
+function [Parms,x,Oldx] = xASL_adm_LoadParmsNew(ParmsPath, x, bVerbose)
 %xASL_adm_LoadParmsMat Loads parameters from .mat parameter file
 % NB: future version should include JSON
 % If x are provided, this function will compare x with ParmsPath
@@ -88,61 +88,12 @@ if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSO
     if isfield(x,'Vendor') && (strcmp(x.Vendor,'GE_product') || strcmp(x.Vendor,'GE_WIP'))
         VendorBackup = x.Vendor;
         VendorRestore = true;
-    end
-    
+	end
+   
 	JSONParms = spm_jsonread(JSONPath);
-    
-    ParmsFields = {'EchoTime' 'RepetitionTime' 'RescaleSlope' 'RWVSlope'    'MRScaleSlope'...
-        'AcquisitionTime' 'RescaleIntercept'        'readout_dim'       'Vendor'        'readout_dim'...
-        'Vendor' 'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'M0'...
-        'NumberOfAverages' 'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'NumberOfTemporalPositions' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
-    JSONFields  = {'EchoTime' 'RepetitionTime' 'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope'...
-        'AcquisitionTime' 'PhilipsRescaleIntercept' 'MRAcquisitionType' 'Manufacturer'  'readout_dim'...
-        'Vendor' 'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'M0'...
-        'NumberOfAverages' 'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'NumberOfTemporalPositions' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
-    % Note that we allow here both the name of dcm2niiX & the original
-    % DICOM name, for compatibility
-    
-    % Deal with fields in Q
-    if isfield(JSONParms,'Q')
-        FieldsQ = fields(JSONParms.Q);
-        for iQ=1:length(FieldsQ)
-            JSONParms.(FieldsQ{iQ}) = JSONParms.Q.(FieldsQ{iQ});
-        end
-    end
-    
-    for iPar=1:length(JSONFields)
-        if isfield(JSONParms,JSONFields{iPar})
-            Parms.(ParmsFields{iPar}) = JSONParms.(JSONFields{iPar});
-            if ~isempty(regexp(JSONFields{iPar}, 'EchoTime'))  % JSON is in seconds, DICOM in ms
-                if length(Parms.(ParmsFields{iPar}))>1
-                    warning('Multiple EchoTime values');
-                end
-                if Parms.(ParmsFields{iPar})(1)>0.001 && Parms.(ParmsFields{iPar})(1)<1
-                    % we expect 1 < TE(ms) < 1000
-                    Parms.(ParmsFields{iPar}) = Parms.(ParmsFields{iPar})*1000;
-                else
-                    warning('JSON EchoTime was not according to BIDS (seconds), check quantification');
-                    fprintf('DICOM uses TE & TR in ms, BIDS JSON in s');
-                end
-            elseif ~isempty(regexp(JSONFields{iPar}, 'RepetitionTime'))  % JSON is in seconds, DICOM in ms
-                if length(Parms.(ParmsFields{iPar}))>1
-                    warning('Multiple RepetitionTime values');
-                end
-                if Parms.(ParmsFields{iPar})(1)>0.1 && Parms.(ParmsFields{iPar})(1)<100
-                    % we expect 100 < TR(ms) < 100,000
-                    Parms.(ParmsFields{iPar}) = Parms.(ParmsFields{iPar})*1000;
-                else
-                    warning('JSON EchoTime was not according to BIDS (seconds), check quantification');
-                    fprintf('DICOM uses TE & TR in ms, BIDS JSON in s');
-                end                    
-            elseif strcmp(ParmsFields{iPar},'AcquisitionTime') && ischar(Parms.AcquisitionTime)
-                tP = xASL_adm_CorrectName(Parms.AcquisitionTime, 2);
-                tP = xASL_adm_ConvertNr2Time(xASL_adm_ConvertTime2Nr(tP));
-                Parms.AcquisitionTime = [tP(1:6) '.' tP(7:8)];
-            end
-        end
-    end
+	
+	Parms = xASL_bids_parms2BIDS(Parms, JSONParms, 0, 1);
+	
     % If we got here, remove the parms error
     strMatError = [];
 else
@@ -166,18 +117,6 @@ if VendorRestore
     Parms.Vendor = VendorBackup;
 end
 
-
-
-%% ------------------------------------------------------------------------
-%% 4) Check erroneous scale slope 
-if  isfield(Parms,'RescaleSlope') && isfield(Parms,'RescaleSlopeOriginal')
-    RelDiff = abs(100* (Parms.RescaleSlopeOriginal-Parms.RescaleSlope) / ((Parms.RescaleSlopeOriginal+Parms.RescaleSlope)*0.5));
-    if RelDiff>0.05 && bVerbose
-        warning(['RescaleSlope & RescaleSlopeOriginal were not identical in ' ParmsPath]);
-        fprintf('%s\n', ', check if scaling was applied (especially on Philips scanner enhanced DICOMs');
-        fprintf('%s\n',['Difference was ' xASL_num2str(RelDiff) '%']);
-    end
-end
 
 
 %% ------------------------------------------------------------------------

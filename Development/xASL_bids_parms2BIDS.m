@@ -1,0 +1,168 @@
+function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids)
+% Takes the input parameters from xASL format (parms) and BIDS format, merges them and converts to either xASL or BIDS.
+% FORMAT: outBids = xASL_bids_parms2BIDS(inParms[, inBids, bOutBids, priorityBids])
+% 
+% INPUT:
+%   inXasl       - a structure with input parameters in the xASL format (REQUIRED)
+%   inBids       - a structure with input parameters in the BIDS format (OPTIONAL, DEFAULT = [])
+%   bOutBids     - the output structures is in BIDS format (==1, default) or xASL format (==0) (OPTIONAL, DEFAULT = 1)
+%   bPriorityBids - in case of conflicts, the BIDS input is preferred (==1, default), otherwise (==0), xASL is prefered (OPTIONAL, DEFAULT = 1)
+%
+% OUTPUT:
+% outParms       - the merged output structure in the correct format
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This functions takes two parameter structures and merges them. At the same time, renames all fields
+%              according to the output type (note that only some fields have two standardised names different between the two formats.
+%              In case of duplicities, takes the field value from the preferred format. 
+%              Also takes into account that the units in BIDS are s, but in xASL ms.
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: outParms = xASL_bids_parms2BIDS(inXasl, inBids);
+%          outParms = xASL_bids_parms2BIDS(inXasl, [], 1, 0);
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
+
+%% Admin and setting default values
+if nargin < 1
+	error('Need at least 1 input parameters.');
+end
+
+if nargin < 2
+	inBids = [];
+end
+
+if isempty(inXasl) && isempty(inBids)
+	error('At least one of the structures (XASL or BIDS) need to be assigned.');
+end
+
+if nargin < 3 || isempty(bOutBids)
+	bOutBids = 1;
+end
+
+if nargin < 4 || isempty(bPriorityBids)
+	bPriorityBids = 1;
+end
+
+%% Definitions of field names
+% Fields with these names need to have the time converted
+convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime'};
+
+% Fields that should be entered under the subfield 'Q' for xASL
+xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'};
+
+% These fields have old name in BIDS and should be converted even for storing in BIDS
+updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'};
+updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'};
+
+% These fields have different names in xASL and in BIDS
+changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'};
+changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'InitialPostLabelDelay'};
+
+%% Goes through all XASL fields
+if ~isempty(inXasl)
+	% Move all fields from Q to the main structure
+	if isfield(inXasl,'Q')
+		FieldsQ = fields(inXasl.Q);
+		for iQ=1:length(FieldsQ)
+			inXasl.(FieldsQ{iQ}) = inXasl.Q.(FieldsQ{iQ});
+		end
+	end
+	
+	% If output is in BIDS:
+	if bOutBids
+		FieldsA = fields(inXasl);
+		for iA = 1:length(FieldsA)
+			% Convert the units for all time fields from ms to s
+			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
+				inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
+			end
+			
+			% Rename all listed fields to BIDS
+			for iL = find(strcmp(FieldsA{iA},changeNamesXASL))
+				inXasl.(changeNamesBIDS{iL}) = inXasl.(changeNamesXASL{iL});
+				inXasl = rmfield(inXasl,changeNamesXASL{iL});
+			end
+		end
+	end
+end
+
+%% Goes through all BIDS fields
+if ~isempty(inBids)
+	% Move all fields from Q to the main structure
+	if isfield(inBids,'Q')
+		FieldsQ = fields(inBids.Q);
+		for iQ=1:length(FieldsQ)
+			inBids.(FieldsQ{iQ}) = inBids.Q.(FieldsQ{iQ});
+		end
+	end
+	
+	% For old BIDS names, update to new ones
+	FieldsA = fields(inXasl);
+	for iA = 1:length(FieldsA)
+		for iL = find(strcmp(FieldsA{iA},updateNamesBIDSold))
+			inBids.(updateNamesBIDSnew{iL}) = inBids.(updateNamesBIDSold{iL});
+			inBids = rmfield(inBids,updateNamesBIDSold{iL});
+		end
+	end
+	
+	% When the output is in Xasl we need to convert
+	if bOutBids ~= 1
+		FieldsA = fields(inXasl);
+		for iA = 1:length(FieldsA)
+			% Rename all listed fields to XASL
+			for iL = find(strcmp(FieldsA{iA},changeNamesBIDS))
+				inBids.(changeNamesXASL{iL}) = inBids.(changeNamesBIDS{iL});
+				inBids = rmfield(inBids,changeNamesBIDS{iL});
+			end
+			
+			% Convert the units for all time fields from s to ms
+			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
+				inBids.(FieldsA{iA}) = inBids.(FieldsA{iA})*1000;
+			end
+		end
+	end
+end
+
+%% Merging, checking and finalizing
+% Performs merging, prioritizing either BIDS or XASL
+if bPriorityBids
+	outParms = inXasl;
+	FieldsA = fields(inBids);
+	for iA = 1:length(FieldsA)
+		outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+	end
+else
+	outParms = inBids;
+	FieldsA = fields(inXasl);
+	for iA = 1:length(FieldsA)
+		outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
+	end
+end
+
+% Last conversions
+FieldsA = fields(outParms);
+for iA = 1:length(FieldsA)
+	if strcmp(FieldsA{iA},'AcquisitionTime') && ischar(outParms.AcquisitionTime)
+		tP = xASL_adm_CorrectName(outParms.AcquisitionTime, 2);
+		tP = xASL_adm_ConvertNr2Time(xASL_adm_ConvertTime2Nr(tP));
+		if length(tP) > 7
+			outParms.AcquisitionTime = [tP(1:6) '.' tP(7:8)];
+		else
+			outParms.AcquisitionTIme = tP;
+		end
+	end
+end
+
+% If output is in XASL, the reintroduce the Q subfield
+if bOutBids ~= 1
+	FieldsA = fields(outParms);
+	for iA = 1:length(FieldsA)
+		for iL = find(strcmp(FieldsA{iA},xASLqFields))
+			outParms.Q.(FieldsA{iA}) = outParms.(FieldsA{iA});
+			outParms = rmfield(outParms,FieldsA{iA});
+		end
+	end
+end
+
+return
+	
