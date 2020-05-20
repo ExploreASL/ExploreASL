@@ -410,7 +410,23 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
         end
 		
         %% Save the info in JSON file
-        xASL_bids_InsertJSONFields(parms, PathJSON);
+		
+		% Loads the JSON parms
+		if exist(PathJSON,'file')
+			JSONParms = spm_jsonread(PathJSON);
+		else
+			JSONParms = [];
+		end
+		
+		% Merges them with parms
+		parms = xASL_bids_parms2BIDS(parms, JSONParms, 1, 0);
+		
+		% Saves the JSON file
+		spm_jsonwrite(PathJSON, parms);
+		
+		% Old version that does not do the conversion and merging
+		%xASL_bids_InsertJSONFields(parms, PathJSON);
+		
     end
 
 

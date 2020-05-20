@@ -546,20 +546,21 @@ for iSubject=1:nSubjects
                     CreateJSON = false;
                 end
 
-                if CreateJSON && ~isempty(first_match)
-                    [~, ~, fext] = fileparts(first_match);
-                    if  strcmpi(fext,'.PAR')
-                        parms = xASL_adm_Par2Parms(first_match, SavePathJSON);
-                    elseif strcmpi(fext,'.nii')
-                        parms = [];
-                    elseif imPar.bMatchDirectories
-                        Fpath  = fileparts(first_match);
-                        [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-                        clear Fpath Ffile Fext
-                    else
-                        [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-                    end
-                end
+                %if CreateJSON && ~isempty(first_match)
+				if ~isempty(first_match)
+					[~, ~, fext] = fileparts(first_match);
+					if  strcmpi(fext,'.PAR')
+						parms = xASL_adm_Par2Parms(first_match, SavePathJSON);
+					elseif strcmpi(fext,'.nii')
+						parms = [];
+					elseif imPar.bMatchDirectories
+						Fpath  = fileparts(first_match);
+						[parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+						clear Fpath Ffile Fext
+					else
+						[parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+					end
+				end
 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of

@@ -131,26 +131,54 @@ end
 system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_a_2.json']);
 system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_a_2.nii']);
 system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.nii ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.nii']);
-system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']);
+parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
+parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
+spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
+system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
+
 
 system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_1.nii ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D.nii']);
-system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_1.json ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D.json']);
+parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D.json']), 0, 1);
+parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_1.json']),1,0);
+spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D.json'], parms);
+system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_1.json']);
 system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_a_2.nii ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/M0.nii']);
-system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_a_2.json ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/M0.json']);
+parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/M0.json']), 0, 1);
+parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_a_2.json']),1,0);
+spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
+system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/M0.json']);
+
 
 system(['mv ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_10.nii ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D.nii']);
+%parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
+parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
+spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
+system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
+
 system(['mv ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_10.json ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D.json']);
 system(['rm ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_*']);
 
+%parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
+parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
+spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
+system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
 system(['mv ' outputPath '/Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans/analysis/Sub1/ASL_1/ASL4D_3_1.json ' outputPath '/Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans/analysis/Sub1/ASL_1/ASL4D_1.json']);
 system(['mv ' outputPath '/Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans/analysis/Sub1/ASL_1/ASL4D_3_1.nii ' outputPath '/Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans/analysis/Sub1/ASL_1/ASL4D_1.nii']);
 
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1.nii ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0.nii']);
+%parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
+parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
+spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
+system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1.json ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0.json']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1_parms.mat ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_parms.mat']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1_2.nii ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0PERev.nii']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1_2.json ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0PERev.json']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1_2_parms.mat ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0PERev_parms.mat']);
+%parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
+parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
+spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
+system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
 
 if xASL_exist([outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS.nii'])
 	system(['rm ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS_parms.mat']);

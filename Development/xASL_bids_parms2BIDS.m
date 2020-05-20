@@ -43,22 +43,27 @@ if nargin < 4 || isempty(bPriorityBids)
 	bPriorityBids = 1;
 end
 
-%% Definitions of field names
-% Fields with these names need to have the time converted
+%% Definitions of field names that need to be convert/renamed/merged
+
+% Fields with these names need to have the time converted between XASL and BIDS
 convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime'};
 
-% Fields that should be entered under the subfield 'Q' for xASL
+% Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'};
 
-% These fields have old name in BIDS and should be converted even for storing in BIDS
+% Some JSON fields need to be updated to fit the BIDS definition
+% This is a one way process of changing the names from old to new
 updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'};
 updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'};
 
 % These fields have different names in xASL and in BIDS
+% They are therefore renamed depending on the type of output
 changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'};
 changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'InitialPostLabelDelay'};
 
-%% Goes through all XASL fields
+%% Does the conversion of all XASL fields to the output format (BIDS or XASL)
+
+% Goes through all XASL fields
 if ~isempty(inXasl)
 	% Move all fields from Q to the main structure
 	if isfield(inXasl,'Q')
@@ -66,18 +71,20 @@ if ~isempty(inXasl)
 		for iQ=1:length(FieldsQ)
 			inXasl.(FieldsQ{iQ}) = inXasl.Q.(FieldsQ{iQ});
 		end
+		inXasl = rmfield(inXasl,'Q');
 	end
 	
-	% If output is in BIDS:
+	% If output is in BIDS, then XASL fields need to be converted
 	if bOutBids
 		FieldsA = fields(inXasl);
 		for iA = 1:length(FieldsA)
+			
 			% Convert the units for all time fields from ms to s
 			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
 				inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
 			end
 			
-			% Rename all listed fields to BIDS
+			% Rename XASL fields to BIDS field according to the information in changeNamesXASL and changeNamesBIDS
 			for iL = find(strcmp(FieldsA{iA},changeNamesXASL))
 				inXasl.(changeNamesBIDS{iL}) = inXasl.(changeNamesXASL{iL});
 				inXasl = rmfield(inXasl,changeNamesXASL{iL});
@@ -86,7 +93,9 @@ if ~isempty(inXasl)
 	end
 end
 
-%% Goes through all BIDS fields
+%% Does the conversion of all BIDS fields to the output format (BIDS or XASL)
+
+% Goes through all BIDS fields
 if ~isempty(inBids)
 	% Move all fields from Q to the main structure
 	if isfield(inBids,'Q')
@@ -94,10 +103,11 @@ if ~isempty(inBids)
 		for iQ=1:length(FieldsQ)
 			inBids.(FieldsQ{iQ}) = inBids.Q.(FieldsQ{iQ});
 		end
+		inBids = rmfield(inBids,'Q');
 	end
 	
-	% For old BIDS names, update to new ones
-	FieldsA = fields(inXasl);
+	% Update all the old JSON fields to the respective BIDS field name
+	FieldsA = fields(inBids);
 	for iA = 1:length(FieldsA)
 		for iL = find(strcmp(FieldsA{iA},updateNamesBIDSold))
 			inBids.(updateNamesBIDSnew{iL}) = inBids.(updateNamesBIDSold{iL});
@@ -105,11 +115,11 @@ if ~isempty(inBids)
 		end
 	end
 	
-	% When the output is in Xasl we need to convert
+	% When the output is in XASL we need to convert from BIDS to XASL
 	if bOutBids ~= 1
-		FieldsA = fields(inXasl);
+		FieldsA = fields(inBids);
 		for iA = 1:length(FieldsA)
-			% Rename all listed fields to XASL
+			% Rename all listed fields to XASL variant
 			for iL = find(strcmp(FieldsA{iA},changeNamesBIDS))
 				inBids.(changeNamesXASL{iL}) = inBids.(changeNamesBIDS{iL});
 				inBids = rmfield(inBids,changeNamesBIDS{iL});
@@ -123,19 +133,27 @@ if ~isempty(inBids)
 	end
 end
 
-%% Merging, checking and finalizing
-% Performs merging, prioritizing either BIDS or XASL
+%% Merging the BIDS and XASL fields, does field value conversions
+
+% Performs merging of XASL and BIDS, prioritizing either BIDS or XASL
+% Don't overwrite existing field with a zero, empty, nan or inf value
 if bPriorityBids
 	outParms = inXasl;
 	FieldsA = fields(inBids);
 	for iA = 1:length(FieldsA)
-		outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+		if (~isfield(outParms,(FieldsA{iA}))) ||...
+				((sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) == 0)~=length(inBids.(FieldsA{iA}))) && (sum(isinf(inBids.(FieldsA{iA})))==0) && (~isempty(inBids.(FieldsA{iA}))))
+			outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+		end
 	end
 else
 	outParms = inBids;
 	FieldsA = fields(inXasl);
 	for iA = 1:length(FieldsA)
-		outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
+		if (~isfield(outParms,(FieldsA{iA}))) ||...
+				((sum(isnan(inXasl.(FieldsA{iA})))==0) && (sum(inXasl.(FieldsA{iA}) == 0)~=length(inXasl.(FieldsA{iA}))) && (sum(isinf(inXasl.(FieldsA{iA})))==0) && (~isempty(inXasl.(FieldsA{iA}))))
+			outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
+		end
 	end
 end
 
@@ -148,7 +166,7 @@ for iA = 1:length(FieldsA)
 		if length(tP) > 7
 			outParms.AcquisitionTime = [tP(1:6) '.' tP(7:8)];
 		else
-			outParms.AcquisitionTIme = tP;
+			outParms.AcquisitionTime = tP;
 		end
 	end
 end
@@ -158,11 +176,11 @@ if bOutBids ~= 1
 	FieldsA = fields(outParms);
 	for iA = 1:length(FieldsA)
 		for iL = find(strcmp(FieldsA{iA},xASLqFields))
-			outParms.Q.(FieldsA{iA}) = outParms.(FieldsA{iA});
-			outParms = rmfield(outParms,FieldsA{iA});
+			outParms.Q.(FieldsA{iL}) = outParms.(FieldsA{iL});
+			outParms = rmfield(outParms,FieldsA{iL});
 		end
 	end
 end
 
-return
+end
 	
