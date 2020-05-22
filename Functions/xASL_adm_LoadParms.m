@@ -1,9 +1,36 @@
-function [Parms,x,Oldx] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
-%xASL_adm_LoadParmsMat Loads parameters from .mat parameter file
-% NB: future version should include JSON
-% If x are provided, this function will compare x with ParmsPath
-
-% strMatError contains errors about non-existent mat. Only report this error when JSON is also missing
+function [Parms, x, Oldx] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
+%xASL_adm_LoadParmsMat Loads parameters from .mat or .json sidecar
+%
+% FORMAT: [Parms, x, Oldx] = xASL_adm_LoadParms(ParmsPath[, x, bVerbose])
+%
+% INPUT:
+%   ParmsPath   - path to sidecar (*.mat, *.json, OPTIONAL, DEFAULT=skip this)
+%   x           - structure containing pipeline settings (OPTIONAL)
+%   bVerbose    - boolean specifying whether verbose output on screen/log
+%                 is desired (OPTIONAL, DEFAULT=true)
+%
+%   OUTPUT:
+%   Parms       - Loaded parameters to be used in processing
+%   x           - structure containing pipeline settings (OPTIONAL)
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function loads the internal memory x struct, any
+% legacy *_parms.mat sidecar, any *.json BIDS sidecar, to use scan-specific
+% parameters for image processing/quantification. Also, per BIDS
+% inheritance, any x.S.SetsID parameters (from participants.tsv) are loaded
+% as well. This function performs the following steps:
+%
+% 1) Load .mat parameter file
+% 2) Load JSON file
+% 3) Deal with warnings
+% 4) Find fields with scan-specific data in x.S.Sets, and use this if possible (per BIDS inheritance)
+% 5) Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
+% 6) Fix M0 parameter if not set
+%
+% strMatError contains warnings about non-existent mat. Only report this error when JSON is also missing
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: [~, x] = xASL_adm_LoadParms('/MyStudy/sub-001/ASL_1/ASL4D.json', x, bO);
+% __________________________________
+% Copyright 2015-2019 ExploreASL
 
 
 %% ------------------------------------------------------------------------
@@ -11,7 +38,8 @@ function [Parms,x,Oldx] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
 Parms = struct; % default
 
 if nargin<1 || isempty(ParmsPath)
-    error('ParmsPath was not specified');
+    warning('ParmsPath was not specified');
+    ParmsPath = '';
 end
 if nargin<2 || isempty(x)
     warning('No x struct fields available, can be missing some information for quantification');
@@ -40,9 +68,9 @@ if ~exist(ParmsPath, 'file') && isfield(x.Q,'ASL')
     end
     
     FieldsGeneric = fields(x.Q.(ImType));
-    for iA=1:length(FieldsGeneric)
-        if ~isfield(x.Q,FieldsGeneric{iA})
-            x.Q.(FieldsGeneric{iA}) = x.Q.(ImType).(FieldsGeneric{iA});
+    for iField=1:length(FieldsGeneric)
+        if ~isfield(x.Q,FieldsGeneric{iField})
+            x.Q.(FieldsGeneric{iField}) = x.Q.(ImType).(FieldsGeneric{iField});
         end
     end
     
@@ -100,6 +128,7 @@ else
     strMatError = [strMatError ', JSON file missing'];
 end
     
+
 %% ------------------------------------------------------------------------
 %% 3) Deal with warnings
 if ~exist('Parms','var') && isempty(strMatError)
@@ -118,18 +147,63 @@ if VendorRestore
 end
 
 
+%% ------------------------------------------------------------------------
+%% 4) Find fields with scan-specific data in x.S.Sets, and use this if possible (per BIDS inheritance)
+% Note that x.S.Sets is filled with data from participants.tsv or e.g. qnt_T1a.mat in the analysis root folder
+
+% Find current index
+iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID));
+iSession = find(strcmp(x.SESSIONS, x.P.SessionID));
+iSubjSess = (iSubject-1)*x.nSessions + iSession;
+
+if size(x.S.SetsID,1)~=iSubjSess
+    warning('Inheritance x.S.SetsID data was not equal to numbers of Subjects/Sessions, skipping');
+    return;
+end
+
+Sets2Find  = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'         'LabelingEfficiency' 'Hematocrit'};
+FieldNames = {'ATT'     'BloodT1' 'LabelingEfficiency'  'LabelingEfficiency' 'Hematocrit'};
+
+for iSet=1:length(Sets2Find)
+    TempIndex = find(cellfun(@(x) strcmp(x, Sets2Find{iSet}), x.S.SetsName));
+	if ~isempty(TempIndex)
+		SetIndex(iSet) = TempIndex;
+	else
+		SetIndex(iSet) = NaN;
+    end
+
+    if ~isnan(SetIndex(iSet))
+        % Use the data out SetsID
+        Parms.(FieldNames{iSet}) = x.S.SetsID(iSubjSess, SetIndex(iSet));
+        if bVerbose; fprintf('%s\n', ['Loaded ' FieldNames{iSet} ': ' Parms.(FieldNames{iSet})]); end
+        % But check if this is the true data content, or if this is an index (e.g. 1, 2, 3, 4)
+        % If its not continuous (x.S.Sets_1_2Sample~=3), then ExploreASL believes that this is an ordinal data set (groups)
+        if x.S.Sets1_2Sample(SetIndex(iSet))~=3
+            % if data are saved as indices of x.S.SetsOptions, then use
+            % the SetsOption field/ID/name
+            if Parms.(FieldNames{iSet})<=length(x.S.SetsOptions{SetIndex(iSet)})
+                Parms.(FieldNames{iSet}) = x.S.SetsOptions{SetIndex(iSet)}{Parms.(FieldNames{iSet})};
+            end
+        end
+        if ischar(x.Q.(FieldNames{iSet})) % convert string to float
+            Parms.(FieldNames{iSet}) = str2num(Parms.(FieldNames{iSet}));
+        end
+    end
+end
+
 
 %% ------------------------------------------------------------------------
-%% 5) Backwards compatibility section
+%% 5) Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
 % Input all fields from the Parms into the x structure, backup those that were already existing (inheritance principle)
-Oldx            = struct;
+% & backward compatibility
+Oldx = struct;
 ParmsFieldNames = fieldnames(Parms);
-xFieldNames     = fieldnames(x);
+xFieldNames = fieldnames(x);
 
 for iPar=1:length(ParmsFieldNames)
     % Check first if already exists, to backup
     for iS=1:length(xFieldNames)
-        if  strcmp(ParmsFieldNames{iPar},xFieldNames{iS})
+        if strcmp(ParmsFieldNames{iPar},xFieldNames{iS})
             Oldx.(xFieldNames{iS}) = x.(xFieldNames{iS}); % backup
         end
     end

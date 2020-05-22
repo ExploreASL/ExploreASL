@@ -204,47 +204,8 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 6    Initialize quantification parameters
 if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments) || x.Q.nCompartments>2
-    x.Q.nCompartments   = 1; % by default, we use a single-compartment model, as proposed by the Alsop et al. MRM 2014 concensus paper
+    x.Q.nCompartments = 1; % by default, we use a single-compartment model, as proposed by the Alsop et al. MRM 2014 concensus paper
 end
-
-% THIS IS FOR BACKWARD COMPATIBILITY NOW, WILL CHANGE (also per BIDS)
-% Check if there are quantification data in the sets:
-
-% This works by adding e.g. a qnt_T1a.mat in the analysis folder, for the
-% whole population. LEGACY
-
-% Find current index
-iSubj = find(strcmp(x.SUBJECTS,x.P.SubjectID));
-iSess = find(strcmp(x.SESSIONS,x.P.SessionID));
-iSubjSess = (iSubj-1)*x.nSessions + iSess;
-
-Sets2Find = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff' 'LabelingEfficiency'};
-FieldNames = {'ATT' 'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency'};
-
-for iSet=1:length(Sets2Find)
-    TempIndex = find(cellfun(@(x) strcmp(x, Sets2Find{iSet}), x.S.SetsName));
-	if ~isempty(TempIndex)
-		SetIndex(iSet) = TempIndex;
-	else
-		SetIndex(iSet) = NaN;
-    end
-
-    if ~isnan(SetIndex(iSet))
-        % Use the data out SetsID
-        x.Q.(FieldNames{iSet}) = x.S.SetsID(iSubjSess, SetIndex(iSet));
-        % But check if this is the true data content, or if this is an index (e.g. 1, 2, 3, 4)
-        % If its not continuous (x.S.Sets_1_2Sample~=3), then ExploreASL believes that this is an ordinal data set (groups)
-        if x.S.Sets1_2Sample(SetIndex(iSet))~=3
-            if x.Q.(FieldNames{iSet})<=length(x.S.SetsOptions{SetIndex(iSet)})
-                x.Q.(FieldNames{iSet}) = x.S.SetsOptions{SetIndex(iSet)}{x.Q.(FieldNames{iSet})};
-            end
-        end
-        if ischar(x.Q.(FieldNames{iSet})) % convert string to float
-            x.Q.(FieldNames{iSet}) = str2num(x.Q.(FieldNames{iSet}));
-        end
-    end
-end
-
 
 if ~isfield(x.Q,'ATT')
     x.Q.ATT = 1800; % ms as default micro-vascular ATT
