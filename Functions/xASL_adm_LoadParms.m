@@ -26,7 +26,6 @@ function [Parms, x, Oldx] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
 % 5) Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
 % 6) Fix M0 parameter if not set
 %
-% strMatError contains warnings about non-existent mat. Only report this error when JSON is also missing
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [~, x] = xASL_adm_LoadParms('/MyStudy/sub-001/ASL_1/ASL4D.json', x, bO);
 % __________________________________
@@ -40,6 +39,7 @@ Parms = struct; % default
 if nargin<1 || isempty(ParmsPath)
     warning('ParmsPath was not specified');
     ParmsPath = '';
+    Parms = struct;
 end
 if nargin<2 || isempty(x)
     warning('No x struct fields available, can be missing some information for quantification');
@@ -50,61 +50,68 @@ if nargin<3 || isempty(bVerbose)
     bVerbose = true;
 end
 
-strMatError = ''; % initializing string containing errors/warning to combine & throw as warning at end
-
 [Fpath, Ffile, Fext] = fileparts(ParmsPath);
 
 %% ------------------------------------------------------------------------
 %% 1) Load .mat parameter file (if exists)
-if ~exist(ParmsPath, 'file') && isfield(x.Q,'ASL')
-    warning('No ParmsPath found, trying to use general parameters!');
+% if ~exist(ParmsPath, 'file') && isfield(x.Q,'ASL')
+%     warning('No ParmsPath found, trying to use general parameters!');
+%     
+%     if ~isempty(regexp(Ffile,'ASL4D'))
+%         if bVerbose; fprintf('Use generic ASL parameters\n'); end
+%         ImType = 'ASL';
+%     elseif ~isempty(regexp(Ffile,'M0'))
+%         if bVerbose; fprintf('Use generic M0 parameters\n'); end
+%         ImType = 'M0';
+%     end
+%     
+%     FieldsGeneric = fields(x.Q.(ImType));
+%     for iField=1:length(FieldsGeneric)
+%         if ~isfield(x.Q,FieldsGeneric{iField})
+%             x.Q.(FieldsGeneric{iField}) = x.Q.(ImType).(FieldsGeneric{iField});
+%         end
+%     end
     
-    if ~isempty(regexp(Ffile,'ASL4D'))
-        if bVerbose; fprintf('Use generic ASL parameters\n'); end
-        ImType = 'ASL';
-    elseif ~isempty(regexp(Ffile,'M0'))
-        if bVerbose; fprintf('Use generic M0 parameters\n'); end
-        ImType = 'M0';
-    end
-    
-    FieldsGeneric = fields(x.Q.(ImType));
-    for iField=1:length(FieldsGeneric)
-        if ~isfield(x.Q,FieldsGeneric{iField})
-            x.Q.(FieldsGeneric{iField}) = x.Q.(ImType).(FieldsGeneric{iField});
-        end
-    end
-    
-elseif ~exist(ParmsPath, 'file')
-	strMatError = '_parms.mat file missing';
+if ~exist(ParmsPath, 'file') && bVerbose
+	warning('_parms.mat file missing');
     
 elseif strcmp(Fext,'.mat')
     Parms = load(ParmsPath,'-mat');
     if  isfield(Parms,'parms')
         Parms = Parms.parms;
     else
-		strMatError = sprintf('ERROR in module_ASL: could not load M0 parameters from:\n%s\n',M0_parms_file);
+		warning(['Couldnt read parameter files from ' ParmsPath]);
     end
 end
 
 %% ------------------------------------------------------------------------
 %% 2) Load JSON file (if exists)
 % Define JSON path
-if ~isempty(regexp(Ffile,'ASL4D'))
-    JSONPath = fullfile(Fpath, 'ASL4D.json');
-elseif ~isempty(regexp(Ffile,'M0'))
-    JSONPath = fullfile(Fpath, 'M0.json');
-elseif ~isempty(regexp(Ffile,'func'))
-    JSONPath = xASL_adm_GetFileList(Fpath,'func.*bold\.json',  'FPList', [0 Inf]);
-    if ~isempty(JSONPath)
-        JSONPath = JSONPath{1};
+% First try defining from input (parms.mat)
+if ~isempty(ParmsPath)
+    [Fpath, Ffile] = xASL_fileparts(ParmsPath);
+    if strcmp(Ffile(3:end),'_parms')
+        Ffile = Ffile(1:end-6);
     end
-elseif ~isempty(regexp(Ffile,'dwi'))
-    JSONPath = xASL_adm_GetFileList(Fpath,'dwi.*dwi\.json',  'FPList', [0 Inf]);
-    if ~isempty(JSONPath)
-        JSONPath = JSONPath{1};
-    end    
+    JSONPath = fullfile(Fpath, [Ffile '.json']);
 else
-    warning('Could not define JSON path');
+    if ~isempty(regexp(Ffile,'ASL4D'))
+        JSONPath = fullfile(Fpath, 'ASL4D.json');
+    elseif ~isempty(regexp(Ffile,'M0'))
+        JSONPath = fullfile(Fpath, 'M0.json');
+    elseif ~isempty(regexp(Ffile,'func'))
+        JSONPath = xASL_adm_GetFileList(Fpath,'func.*bold\.json',  'FPList', [0 Inf]);
+        if ~isempty(JSONPath)
+            JSONPath = JSONPath{1};
+        end
+    elseif ~isempty(regexp(Ffile,'dwi'))
+        JSONPath = xASL_adm_GetFileList(Fpath,'dwi.*dwi\.json',  'FPList', [0 Inf]);
+        if ~isempty(JSONPath)
+            JSONPath = JSONPath{1};
+        end    
+    else
+        warning('Could not define JSON path');
+    end
 end
 
 % Load JSON file
@@ -122,23 +129,13 @@ if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSO
 	
 	Parms = xASL_bids_parms2BIDS(Parms, JSONParms, 0, 1);
 	
-    % If we got here, remove the parms error
-    strMatError = [];
-else
-    strMatError = [strMatError ', JSON file missing'];
 end
     
 
 %% ------------------------------------------------------------------------
 %% 3) Deal with warnings
-if ~exist('Parms','var') && isempty(strMatError)
-    Parms = struct; 
+if isempty(fields(Parms))
     warning('parms seem missing, something wrong with parmsfile?');
-elseif ~exist('Parms','var') && ~isempty(strMatError)
-    warning([strMatError ', skipping...']);
-    return;
-elseif ~isempty(strMatError)
-    fprintf('%s\n',[strMatError ', but we try using the other source (*_parms.mat/*.json)']);
 end
 
 if VendorRestore
@@ -175,7 +172,7 @@ for iSet=1:length(Sets2Find)
     if ~isnan(SetIndex(iSet))
         % Use the data out SetsID
         Parms.(FieldNames{iSet}) = x.S.SetsID(iSubjSess, SetIndex(iSet));
-        if bVerbose; fprintf('%s\n', ['Loaded ' FieldNames{iSet} ': ' Parms.(FieldNames{iSet})]); end
+        if bVerbose; fprintf('%s\n', ['Loaded ' FieldNames{iSet} ': ' xASL_num2str(Parms.(FieldNames{iSet}))]); end
         % But check if this is the true data content, or if this is an index (e.g. 1, 2, 3, 4)
         % If its not continuous (x.S.Sets_1_2Sample~=3), then ExploreASL believes that this is an ordinal data set (groups)
         if x.S.Sets1_2Sample(SetIndex(iSet))~=3
@@ -185,7 +182,7 @@ for iSet=1:length(Sets2Find)
                 Parms.(FieldNames{iSet}) = x.S.SetsOptions{SetIndex(iSet)}{Parms.(FieldNames{iSet})};
             end
         end
-        if ischar(x.Q.(FieldNames{iSet})) % convert string to float
+        if ischar(Parms.(FieldNames{iSet})) % convert string to float
             Parms.(FieldNames{iSet}) = str2num(Parms.(FieldNames{iSet}));
         end
     end

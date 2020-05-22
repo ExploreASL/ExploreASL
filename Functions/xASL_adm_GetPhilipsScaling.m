@@ -85,6 +85,11 @@ end
 		
 % Apply the correct scaling
 if scaleFactor
+    if ~isfield(parms,'MRScaleSlope')
+        warning('MRScaleSlope missing, potential quantification error, skipping');
+        return;
+    end
+    
 	if length(parms.MRScaleSlope) > 1
 		ssInd = find(parms.MRScaleSlope ~= 1);
 		if isempty(ssInd)
@@ -104,4 +109,5 @@ if scaleFactor
 	scaleFactor = 1./(scaleFactor .* parms.MRScaleSlope);
 end
 
-return
+
+end

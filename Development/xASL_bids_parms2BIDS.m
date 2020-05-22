@@ -15,6 +15,12 @@ function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids
 %              according to the output type (note that only some fields have two standardised names different between the two formats.
 %              In case of duplicities, takes the field value from the preferred format. 
 %              Also takes into account that the units in BIDS are s, but in xASL ms.
+%              This function performs the following steps:
+%
+%              1) Define field names that need to be convert/renamed/merged
+%              2) Convert XASL fields to the output format (BIDS or XASL)
+%              3) Convert BIDS fields to the output format (BIDS or XASL)
+%              4) Merge the BIDS and XASL fields, convert field values
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: outParms = xASL_bids_parms2BIDS(inXasl, inBids);
 %          outParms = xASL_bids_parms2BIDS(inXasl, [], 1, 0);
@@ -22,28 +28,26 @@ function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids
 % Copyright 2015-2020 ExploreASL
 
 
-%% Admin and setting default values
+%% Admin
 if nargin < 1
 	error('Need at least 1 input parameters.');
 end
-
 if nargin < 2
 	inBids = [];
 end
-
 if isempty(inXasl) && isempty(inBids)
 	error('At least one of the structures (XASL or BIDS) need to be assigned.');
 end
-
 if nargin < 3 || isempty(bOutBids)
 	bOutBids = 1;
 end
-
 if nargin < 4 || isempty(bPriorityBids)
 	bPriorityBids = 1;
 end
 
-%% Definitions of field names that need to be convert/renamed/merged
+
+%% ----------------------------------------------------------------------
+%% 1) Define field names that need to be convert/renamed/merged
 
 % Fields with these names need to have the time converted between XASL and BIDS
 convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime'};
@@ -61,7 +65,9 @@ updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'    
 changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'};
 changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'InitialPostLabelDelay'};
 
-%% Does the conversion of all XASL fields to the output format (BIDS or XASL)
+
+%% ----------------------------------------------------------------------
+%% 2) Convert XASL fields to the output format (BIDS or XASL)
 
 % Goes through all XASL fields
 if ~isempty(inXasl)
@@ -93,7 +99,8 @@ if ~isempty(inXasl)
 	end
 end
 
-%% Does the conversion of all BIDS fields to the output format (BIDS or XASL)
+%% ----------------------------------------------------------------------
+%% 3) Convert BIDS fields to the output format (BIDS or XASL)
 
 % Goes through all BIDS fields
 if ~isempty(inBids)
@@ -133,7 +140,8 @@ if ~isempty(inBids)
 	end
 end
 
-%% Merging the BIDS and XASL fields, does field value conversions
+%% ----------------------------------------------------------------------
+%% 4) Merge the BIDS and XASL fields, convert field values
 
 % Performs merging of XASL and BIDS, prioritizing either BIDS or XASL
 % Don't overwrite existing field with a zero, empty, nan or inf value
@@ -171,13 +179,13 @@ for iA = 1:length(FieldsA)
 	end
 end
 
-% If output is in XASL, the reintroduce the Q subfield
+% If output is in XASL, then copy into Q subfield
 if bOutBids ~= 1
 	FieldsA = fields(outParms);
 	for iA = 1:length(FieldsA)
 		for iL = find(strcmp(FieldsA{iA},xASLqFields))
 			outParms.Q.(FieldsA{iL}) = outParms.(FieldsA{iL});
-			outParms = rmfield(outParms,FieldsA{iL});
+			% outParms = rmfield(outParms,FieldsA{iL});
 		end
 	end
 end
