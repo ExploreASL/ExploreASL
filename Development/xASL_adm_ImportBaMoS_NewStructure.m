@@ -1,5 +1,5 @@
-function xASL_adm_ImportBaMoS(AnalysisDir, BaMoSDir, bPullPush, RegExp)
-%xASL_adm_Import_BaMoS Prepare ASL parameter files for different EPAD vendors/sites
+function xASL_adm_ImportBaMoS_NewStructure(AnalysisDir, BaMoSDir, bPullPush, RegExp)
+%xASL_adm_Import_BaMoS_NewStructure Prepare ASL parameter files for different EPAD vendors/sites
 %
 % FORMAT: xASL_adm_ImportBaMoS(AnalysisDir, BaMoSDir, 0, RegExp)
 % 
@@ -37,8 +37,10 @@ if nargin<3 || isempty(bPullPush)
     bPullPush = 0;
 end
 
-FLAIRdir = fullfile(BaMoSDir,'FLAIR_T1Space');
-LesionDir = fullfile(BaMoSDir,'Lesions');
+Dir2 = fullfile(BaMoSDir, 'ResultsProcessing');
+if exist(Dir2, 'dir')
+     BaMoSDir = Dir2;
+end
 
 % Adjust the regular expression
 if strcmp(RegExp(1),'^')
@@ -54,7 +56,7 @@ if bPullPush==0 % pull
     SubjList = xASL_adm_GetFileList(AnalysisDir, RegExp, 'List', [0 Inf], true);
 else % push
     % use list from BaMosDir, doesn't have to have correct names
-    SubjList = xASL_adm_GetFileList(FLAIRdir, ['.*' RegExp '.*\.nii'], 'List');
+    SubjList = xASL_adm_GetFileList(BaMoSDir, ['.*' RegExp '.*\.nii'], 'FPListRec');
     for iSubj=1:length(SubjList)
         [StartInd, EndInd] = regexp(SubjList{iSubj}, RegExp);
         SubjList{iSubj} = SubjList{iSubj}(StartInd:EndInd);
@@ -77,8 +79,8 @@ for iSubj=1:length(SubjList)
     FLAIRnew = fullfile(AnalysisDir, SubjList{iSubj}, 'FLAIR.nii');
     WMHnew = fullfile(AnalysisDir, SubjList{iSubj}, 'WMH_SEGM.nii');
     
-    FLAIRold = xASL_adm_GetFileList(FLAIRdir, ['.*(?<!\d)' SubjList{iSubj} '(?!\d).*\.nii'],'FPList', [0 Inf]);
-    WMHold = xASL_adm_GetFileList(LesionDir, ['.*(?<!\d)' SubjList{iSubj} '(?!\d).*\.nii'],'FPList', [0 Inf]);
+    FLAIRold = xASL_adm_GetFileList(BaMoSDir, ['FLAIR_' SubjList{iSubj} '\.nii'],'FPListRec', [0 Inf]);
+    WMHold = xASL_adm_GetFileList(BaMoSDir, ['Lesion_' SubjList{iSubj} '\.nii'],'FPListRec', [0 Inf]);
     
     ExistFLAIR = false;
     ExistWMH = false;

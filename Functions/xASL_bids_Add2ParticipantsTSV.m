@@ -18,7 +18,9 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 % OUTPUT FILE:  /MyStudy/participants.tsv
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function adds metadata/statistical variables to the
-% participants.tsv in the root/analysis folder, by the following steps:
+% participants.tsv in the root/analysis folder, by the following steps.
+% Note that this function will fail if the nSubjectsSessions is not the
+% same for ExploreASL/data export, and participants.tsv!
 %
 % 1) Admin - Validate that there are not too many columns
 % 2) Admin - Detect nSubjectsSessions

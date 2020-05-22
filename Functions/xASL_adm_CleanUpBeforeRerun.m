@@ -211,8 +211,7 @@ try
     for iList=1:length(OriListTotal)
         xASL_TrackProgress(iList, length(OriListTotal));
         NonOriPath = strrep(OriListTotal{iList},'_ORI','');
-        xASL_delete(NonOriPath); % if the non-ori file existed, overwrite it
-        xASL_Move(OriListTotal{iList}, NonOriPath);
+        xASL_Move(OriListTotal{iList}, NonOriPath, 1, 0); % if the non-ori file existed, overwrite it
     end
     fprintf('\n');
 
