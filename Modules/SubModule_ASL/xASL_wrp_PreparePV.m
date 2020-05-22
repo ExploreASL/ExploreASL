@@ -141,24 +141,20 @@ end
 %% ------------------------------------------------------------------------------------------
 % 6     Prepare pGM and pWM in the ASL native space
 % by presmoothing before downsampling to ASL space
-xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c1T1,x.P.Path_sPVgm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c2T1,x.P.Path_sPVwm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-xASL_spm_reslice(x.P.Path_PWI, x.P.Path_sPVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVgm);
-xASL_spm_reslice(x.P.Path_PWI, x.P.Path_sPVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVwm);
+xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c1T1, x.P.Path_PVgm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c2T1, x.P.Path_PVwm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVgm);
+xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVwm);
 
 if xASL_exist(x.P.Path_c3T1) % for backward compatibility, where c3T1 wasnt always available
-	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c3T1,x.P.Path_sPVcsf,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_sPVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVcsf);
-	xASL_delete(x.P.Path_sPVcsf);
+	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c3T1,x.P.Path_PVcsf,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVcsf);
 end
 
 if xASL_exist(x.P.Path_WMH_SEGM) 
-	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_WMH_SEGM,x.P.Path_sPVwmh,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_sPVwmh, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVwmh);
-	xASL_delete(x.P.Path_sPVwmh);
+	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_WMH_SEGM, x.P.Path_PVwmh,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwmh, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVwmh);
 end
 
-xASL_delete(x.P.Path_sPVgm);
-xASL_delete(x.P.Path_sPVwm);
 
 end
