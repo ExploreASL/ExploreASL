@@ -123,7 +123,7 @@ fclose all;
 PathParms2 = fullfile(InDir, ['TopUpAcqParms_' ScanType '.txt']);
 xASL_delete(PathParms2);
 FID = fopen(PathParms2, 'wt');
-ParmsOutput = ObtainTopUpParms(PathNII{end});
+ParmsOutput = ObtainTopUpParms(PathNII{end}, x);
 fprintf(FID, ParmsOutput); % obtain TopUp acquisition parms
 fclose(FID);
 
@@ -429,7 +429,7 @@ end
 
 %% ========================================================================
 % =========================================================================
-function [AcqParms] = ObtainTopUpParms(PathIn)
+function [AcqParms] = ObtainTopUpParms(PathIn, x)
 %ObtainTopUpParms Extract TopUp parameters from JSON sidecar
 %
 % FORMAT: [AcqParms] = ObtainTopUpParms(PathIn,AcqParms)
@@ -465,9 +465,11 @@ function [AcqParms] = ObtainTopUpParms(PathIn)
         warning('JSON file missing, skipping TopUp');
         return;
     end
-    json = spm_jsonread(JSONin);
+    json = xASL_adm_LoadParms(JSONin, x);
 
-    if ~isfield(json,'PhaseEncodingDirection')
+    if ~isfield(json,'PhaseEncodingDirection') && isfield(json,'PhaseEncodingAxis')
+        json.PhaseEncodingDirection = json.PhaseEncodingAxis;
+    elseif ~isfield(json,'PhaseEncodingDirection')
         warning('PhaseEncodingDirection JSON field missing, skipping TopUp');
         return;
     elseif ~isfield(json,'TotalReadoutTime')
