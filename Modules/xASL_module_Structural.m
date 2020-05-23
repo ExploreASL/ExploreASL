@@ -84,12 +84,13 @@ end
 rWMHPathLPA = fullfile(x.SUBJECTDIR, ['ples_lpa_mr' x.P.FLAIR '.nii']);
 rWMHPathLGA = fullfile(x.SUBJECTDIR, ['ples_lga_0.3_rmr' x.P.FLAIR '.nii']);
 
-if xASL_exist(x.P.Path_WMH_SEGM, 'file') && bO
+WMHexist = xASL_exist(x.P.Path_WMH_SEGM, 'file') || xASL_exist(x.P.Path_WMH_SEGM_ORI, 'file');
+if WMHexist && bO
     x.WMHsegmAlg = 'LPA';
 	% force fast WMH segmentation, because already WMH_SEGM.nii existing, which we assume to be high quality
-    fprintf('%s\n', 'Warning: existing WMH_SEGM.nii detected, so using this WMH_SEGM.nii instead of segmenting ourselves');
+    fprintf('%s\n', 'Existing WMH_SEGM.nii detected, so using this WMH_SEGM.nii instead of segmenting ourselves');
     fprintf('%s\n', 'However, if this WMH_SEGM.nii was created in a previous run, consider removing it first!');
-elseif xASL_exist(x.P.Path_WMH_SEGM, 'file') && ~bO
+elseif WMHexist && ~bO
     % suppress output when this subject is ready
     x.WMHsegmAlg = 'LPA';
 elseif ~isfield(x,'WMHsegmAlg') || isempty(x.WMHsegmAlg)
