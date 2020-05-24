@@ -49,8 +49,8 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
         srcFileGZ = fullfile(srcPath,[srcFile '.nii.gz']);
 
         % If the temporary file also exists, delete it first
-        if exist([srcFileGZ '.tmp'], 'file')
-            delete([srcFileGZ '.tmp']);
+        if exist([srcFileGZ '.tmp'], 'dir')
+            rmdir([srcFileGZ '.tmp']);
         end
         
 		% If both input files exist, then try to delete one of them
