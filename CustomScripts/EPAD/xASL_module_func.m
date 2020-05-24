@@ -277,11 +277,13 @@ if ~x.mutex.HasState('050_visualize')
             x   = xASL_im_AddIM2QC(x,Parms);
         end
     end
+    fprintf('\n');
 
+    %% Visualization TopUp results (quick & dirty)
     if xASL_exist(PathPopB0,'file') && xASL_exist(PathPopUnwarped,'file')% if we have TopUp results
         [Output1, Output2] = xASL_im_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, x.iSubject, x.D.FuncCheckDir);
-        x.Output.func(x.iSubjectSession).MeanAI_PreTopUp_Perc = Output1;
-        x.Output.func(x.iSubjectSession).MeanAI_PostTopUp_Perc = Output2;
+        x.Output.func.MeanAI_PreTopUp_Perc = Output1;
+        x.Output.func.MeanAI_PostTopUp_Perc = Output2;
         xASL_delete(PathPopB0);
         xASL_delete(PathPopUnwarped);
     end
