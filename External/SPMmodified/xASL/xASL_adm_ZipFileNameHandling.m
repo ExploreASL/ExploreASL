@@ -45,9 +45,14 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
 	% Checks if the source concerns a .nii or .nii.gz
     if ~isempty(findstr(srcExt,'.nii'))
 
-        srcFileNII     = fullfile(srcPath,[srcFile '.nii']);
-        srcFileGZ      = fullfile(srcPath,[srcFile '.nii.gz']);
+        srcFileNII = fullfile(srcPath,[srcFile '.nii']);
+        srcFileGZ = fullfile(srcPath,[srcFile '.nii.gz']);
 
+        % If the temporary file also exists, delete it first
+        if exist([srcFileGZ '.tmp'], 'file')
+            delete([srcFileGZ '.tmp']);
+        end
+        
 		% If both input files exist, then try to delete one of them
 		if exist(srcFileNII,'file') && exist(srcFileGZ,'file')
 			% Unzip the GZ file to a temporary directory
@@ -100,7 +105,7 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
             end
             if ~isempty(DifferIn)
                 fprintf('.nii & .nii.gz counterparts differed in:\n');
-                DifferIn
+                fprintf('%s\n', xASL_num2str(DifferIn));
             end
             
             % Second, we compare the image matrices
@@ -152,16 +157,16 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
 
         % Now only if .nii or .nii.gz doesnt exist, use the existing one
         if ~exist(srcFileNII,'file') && exist(srcFileGZ,'file')
-            srcOut        = srcFileGZ;
-            srcExt          = '.nii.gz';
+            srcOut = srcFileGZ;
+            srcExt = '.nii.gz';
         elseif ~exist(srcFileGZ,'file') && exist(srcFileNII,'file')
-            srcOut       = srcFileNII;
-            srcExt          = '.nii';
+            srcOut = srcFileNII;
+            srcExt = '.nii';
         end
 
         % Here, to keep it simple, we force DestExt to be the same as SrcExt
         % This avoids unzipping/zipping, which doesnt have to be dealth with when copying
-        dstOut       = fullfile(dstPath,[dstFile, srcExt]);
+        dstOut = fullfile(dstPath,[dstFile, srcExt]);
     end
 
 end
