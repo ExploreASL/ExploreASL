@@ -151,7 +151,7 @@ FID = fopen(PathParms, 'wt');
 
 for iRegExp=1:length(RegExpStr)-1 % assuming the last one is the output file
     % Here we print the acquisition parameters line by line
-    AcqParms = ObtainTopUpParms(PathNII{iRegExp}); % obtain TopUp acquisition parms
+    AcqParms = ObtainTopUpParms(PathNII{iRegExp}, x); % obtain TopUp acquisition parms
     CompareParms{iRegExp} = AcqParms;
 
     fprintf(FID, AcqParms);
@@ -432,12 +432,13 @@ end
 function [AcqParms] = ObtainTopUpParms(PathIn, x)
 %ObtainTopUpParms Extract TopUp parameters from JSON sidecar
 %
-% FORMAT: [AcqParms] = ObtainTopUpParms(PathIn,AcqParms)
+% FORMAT: [AcqParms] = ObtainTopUpParms(PathIn, x)
 %
 % INPUT:
 %   PathIn    - path to NIfTI from which we want to know the TopUp
 %               parameters (assuming that this file has a JSON sidecar with the same
 %               filename) (REQUIRED)
+%   x         - struct with parameters of the pipeline
 %
 % OUTPUT:
 %    AcqParms - string with acquisition parameters
