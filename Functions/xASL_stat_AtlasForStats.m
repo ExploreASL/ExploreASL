@@ -190,6 +190,7 @@ if ~AtlasIsColumns
         xASL_TrackProgress(iL,size(InputAtlasIM,4));
         x.S.InputMasks(:,iL,:) = xASL_im_IM2Column(InputAtlasIM(:,:,:,iL,[1:size(InputAtlasIM,5)]),x.WBmask);
     end
+    fprintf('\n');
 else
     x.S.InputMasks = InputAtlasIM;
 end

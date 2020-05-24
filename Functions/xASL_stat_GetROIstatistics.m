@@ -18,8 +18,12 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %   x.S.ASL                      - true for ASL data, which will take into account its limited resolution
 %                                  & regions of poor SNR: apply PVC, PVC expansion, avoid too
 %                                  small ROIs, add vascular & susceptibility artifacts masks (OPTIONAL, DEFAULT=true)
+%   x.S.bMasking                 - boolean specifying if we should mask.
+%                                  Useful if masked results are stored as a separate image and we dont
+%                                  want to mask it again by loading a subject-specific mask.
+%                                  (OPTIONAL, DEFAULT=true)
 % OUTPUT:
-%   x           - same as input
+%   x                            - same as input
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function computes mean and spatial CoV for each ROI,
 %              in a [1.5 1.5 1.5] mm MNI space,
@@ -47,6 +51,13 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %              level (i.e. >0.95 subjects need to have a valid signal in a
 %              certain voxel), vascular artifacts differ too much in their
 %              location between subjects, so we mask this on subject-level.
+%
+%               Note that the words "mask" and "ROI" are used
+%               interchangeably throughout this function, where they can
+%               have a different or the same meaning
+%               PM: WE COULD CHANGE THIS, INTO MASK BEING USED TO EXCLUDE
+%               VOXELS AND ROI FOR INCLUDING VOXELS
+
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_stat_GetROIstatistics(x);
 % __________________________________
@@ -85,6 +96,13 @@ if ~isfield(x.S,'NamesROI')
 	return;
 end
 
+if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
+    x.S.bMasking = true;
+elseif ~x.S.bMasking
+    fprintf('Masking disabled upon request, check results\n');
+end
+
+bWarnedPVWMH = false;
 namesROIlocal = x.S.NamesROI;
 
 if x.S.InputNativeSpace
@@ -135,7 +153,7 @@ if nSessions==0 % check if there are "subject-files"
 end
 
 % Determine whether group mask exists
-if x.S.InputNativeSpace
+if x.S.InputNativeSpace || ~x.S.bMasking
 	HasGroupSusceptMask = false;
 else
 	if isfield(x.S,'MaskSusceptibility') && ~min(x.S.MaskSusceptibility == xASL_im_IM2Column(ones(121,145,121),x.WBmask))
@@ -201,7 +219,7 @@ for iSubject=1:x.nSubjects
 				x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[tmpNameLeftRight '.nii']));
 				x.LeftMask = (x.WBmask .* (x.LeftMask == 1)) > 0;
 				
-				x.LeftMask = xASL_im_IM2Column(x.LeftMask,x.WBmask);
+				x.LeftMask = xASL_im_IM2Column(x.LeftMask, x.WBmask);
 				
 				inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[x.S.InputAtlasNativeName '.nii']));
 				atlasN = max(inputAtlasTmp(:));
@@ -361,7 +379,8 @@ for iSubject=1:x.nSubjects
 						% Keep it for backwards compatibility, but issue a warning
 						WMHfile = fullfile(x.D.PopDir, ['rWMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
 						if xASL_exist(WMHfile, 'file')
-							warning(['The PV file for WMH not calculated, please re-run the structural module, using the old non-PV version: ' WMHfile]);
+							if ~bWarnedPVWMH; warning(['pvWMH didnt exist, using the old non-PV version instead: ' WMHfile]); end
+                            bWarnedPVWMH = true; % we don't want to re-issue this warning for each iteration
 							pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(WMHfile), x.WBmask);
 							% we take sqrt(pWMH) to mimic the effective resolution of ASL (instead of smoothing)
 							pWMH(pWMH<0) = 0;
@@ -398,25 +417,33 @@ for iSubject=1:x.nSubjects
 			if xASL_exist(FilePath,'file')
 				Data3D = xASL_io_Nifti2Im(FilePath);
 				DataIm = xASL_im_IM2Column(Data3D,x.WBmask);
-			end
+            end
 			
-			% Load vascular mask (this is done subject-wise)
-			FilePath = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
-			if xASL_exist(FilePath,'file')
-				VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.WBmask);
-			end
+            if x.S.bMasking
+                % Load vascular mask (this is done subject-wise)
+                FilePath = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
+                if xASL_exist(FilePath,'file')
+                    VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.WBmask);
+                end
+            else
+                VascularMask = xASL_im_IM2Column(ones(size(x.WBmask)), x.WBmask);
+            end
 		else
 			FilePath = fullfile(x.D.PopDir, [x.S.InputDataStr '_' x.S.SUBJECTID{SubjSess,1} '.nii']);
 			if xASL_exist(FilePath,'file')
 				Data3D = xASL_io_Nifti2Im(FilePath,[121 145 121]);
 				DataIm = xASL_im_IM2Column(Data3D,x.WBmask);
-			end
+            end
 			
-			% Load vascular mask (this is done subject-wise)
-			FilePath = fullfile(x.D.PopDir, ['MaskVascular_' x.S.SUBJECTID{SubjSess,1} '.nii']);
-			if xASL_exist(FilePath,'file')
-				VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.WBmask);
-			end
+            if x.S.bMasking
+                % Load vascular mask (this is done subject-wise)
+                FilePath = fullfile(x.D.PopDir, ['MaskVascular_' x.S.SUBJECTID{SubjSess,1} '.nii']);
+                if xASL_exist(FilePath,'file')
+                    VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.WBmask);
+                end
+            else
+                VascularMask = xASL_im_IM2Column(ones(size(x.WBmask)), x.WBmask);
+            end
 		end
 		
 		if numel(DataIm)==1
