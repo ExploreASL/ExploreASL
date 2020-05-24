@@ -264,13 +264,15 @@ if ~x.mutex.HasState('020_EddyCurrent') || ~xASL_exist(PathEddyNii,'file')
         EddyCommand = [EddyCommand ' --niter=1 --flm=linear --interp=trilinear'];
     end
 
-    xASL_fsl_RunFSL(EddyCommand, x);
+    [~, Result1] = xASL_fsl_RunFSL(EddyCommand, x);
     xASL_delete(PathWithoutOutlierRemoval); % this is Eddy without outlier removal, don't need it
     xASL_delete(x.P.Path_dwi_mean);
     xASL_delete(x.P.Path_dwi_mask);
     
-    x.mutex.AddState('020_EddyCurrent');
-    x.mutex.DelState('030_RegistrationDWI2T1w');
+    if Result1==0
+        x.mutex.AddState('020_EddyCurrent');
+        x.mutex.DelState('030_RegistrationDWI2T1w');
+    end
 elseif   bO; fprintf('%s\n','020_EddyCurrent has already been performed, skipping...');
 end
 

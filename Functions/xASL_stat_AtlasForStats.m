@@ -50,8 +50,13 @@ if ~strcmp(Fext,'dat') && isempty(findstr(Fext,'nii'))
          x.S.InputAtlasPath = fullfile(Fpath,[Ffile '.nii']);
     else
          warning('incorrect atlas selected, please try again');
+         fprintf('%s\n', x.S.InputAtlasPath);
          return;
     end
+elseif ~xASL_exist(x.S.InputAtlasPath, 'file')
+     warning('incorrect atlas selected, please try again');
+     fprintf('%s\n', x.S.InputAtlasPath);
+     return;
 end
 
 SumMask = sum(x.WBmask(:));
@@ -59,7 +64,6 @@ SumMask = sum(x.WBmask(:));
 if strcmp(x.S.InputAtlasPath(end-2:end),'.gz')
     x.S.InputAtlasPath = x.S.InputAtlasPath(1:end-3); % allow .gz or .nii input
 end
-
 
 %% 1) Load atlas ROI names
 x.S.ROInamesPath = fullfile(Fpath,[Ffile '.tsv']);

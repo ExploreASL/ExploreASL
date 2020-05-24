@@ -46,6 +46,8 @@ if nargin<5 || isempty(bVerbose)
     bVerbose = true;
 end
 
+Result1 = NaN; % default
+
 %% Find FSL directory
 if ~isfield(x,'bAutomaticallyDetectFSL')
     x.bAutomaticallyDetectFSL = 0;
