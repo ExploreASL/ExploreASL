@@ -58,6 +58,11 @@ if ~isfield(x,'Sequence') && isfield(x,'readout_dim')
     end
 elseif ~isfield(x,'Sequence') && ~isfield(x,'readout_dim')
     warning('No general x.Sequence defined, perhaps multiple sequences, needs to be implemented still in Population module');
+    fprintf('Setting x.Sequence=3D spiral to fool the pipeline here\n');
+    fprintf('As this sequence doesnt have any susceptibility masks\n');
+    fprintf('Note that this disables any masking of susceptibility signal dropout areas\n');
+    x.Sequence = '3D_spiral';
+    x.readout_dim = '3D';
 end
 
 StateName{1} = '010_CreatePopulationTemplates';
