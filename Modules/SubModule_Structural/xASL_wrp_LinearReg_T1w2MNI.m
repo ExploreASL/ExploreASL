@@ -68,7 +68,7 @@ for iSess = 1:x.nSessions
     for iOther=1:length(OtherScanTypes)
         DirOther = fullfile(x.SUBJECTDIR, OtherScanTypes{iOther});
         if exist(DirOther,'dir')
-            Path_Other = xASL_adm_GetFileList(DirOther, '^.*\.nii$', 'FPList', [0 Inf]); % any DWI or func NIfTI (quick & dirty)
+            Path_Other = xASL_adm_GetFileList(DirOther, '^(?!y_).*\.nii$', 'FPList', [0 Inf]); % any DWI or func NIfTI (quick & dirty)
             for iScan=1:length(Path_Other)
                 OtherList{end+1,1} = Path_Other{iScan};
             end

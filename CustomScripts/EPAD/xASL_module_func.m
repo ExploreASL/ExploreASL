@@ -1,14 +1,42 @@
-function [result x] = xASL_module_func(x)
-% $Rev:: 475                   $:  Revision of last commit
-% $Author:: hjmutsaerts        $:  Author of last commit
-% $Date:: 2017-03-21 13:12:48 #$:  Date of last commit
+function [result, x] = xASL_module_func(x)
+%xASL_module_func ExploreASL module for fMRI/func pre-processing
+%
+% FORMAT: [result, x] = xASL_module_func(x)
+%
+% INPUT:
+%   x  - x structure containing all input parameters (REQUIRED)
+%   x.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
+%   x.SESSIONDIR  -  ASL directory, containing the derivatives of perfusion images (REQUIRED)
+%
+%
+% OUTPUT:
+%   result  - true for successful run of this module, false for insuccessful run
+%   x       - x structure containing all output parameters (REQUIRED)
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This ExploreASL module processes fMRI
+% images, this module is created 'quick and dirty' from the ExploreASL ASL
+% module. It works and has tested with EPAD data, after initial import, but
+% use for own risk in other circumstances.
+%
+% This module has the following submodules/wrappers:
+%
+% 1    TopUp
+% 2    Motion correction fMRI
+% 3    Registration fMRI sessions to T1w
+% 4    Reslice fMRI data
+% 5    Visual check
+% 6    QC
+% 7    WAD-QC
+%
+% EXAMPLE: [~, x] = xASL_module_func(x);
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% Copyright 2015-2020 ExploreASL
 
-%% fMRI module of ExploreASL Paul, Matthan, Henk-Jan
 
 
-%% 0. INPUT
 
-
+%% -----------------------------------------------------------------------------
+%% 0    Admin
 x = xASL_init_InitializeMutex(x, 'func'); % starts mutex locking process to ensure that everything will run only once
 result = false;
 
@@ -265,7 +293,8 @@ if ~x.mutex.HasState('050_visualize')
 elseif  bO; fprintf('%s\n','050_visualize has already been performed, skipping...');
 end
 
-%% QC SPM UP (Utility Plus)
+%% -----------------------------------------------------------------------------
+%% 6    QC
 
 if ~x.mutex.HasState('060_QC')
     x = xASL_adm_LoadX(x, PathX, true); % assume x.mat is newer than x

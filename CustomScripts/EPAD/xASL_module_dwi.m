@@ -1,16 +1,48 @@
 function [result, x] = xASL_module_dwi(x)
-% $Rev:: 475                   $:  Revision of last commit
-% $Author:: hjmutsaerts        $:  Author of last commit
-% $Date:: 2017-03-21 13:12:48 #$:  Date of last commit
-
-%% DWI module of ExploreASL Paul, Matthan, Henk-Jan
-% scripts taken from Chris Vriends script (run_topup_DWI.sh)
+%xASL_module_dwi ExploreASL module for DWI pre-processing
+%
+% FORMAT: [result, x] = xASL_module_dwi(x)
+%
+% INPUT:
+%   x  - x structure containing all input parameters (REQUIRED)
+%   x.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
+%   x.SESSIONDIR  -  ASL directory, containing the derivatives of perfusion images (REQUIRED)
+%
+% OUTPUT:
+%   result  - true for successful run of this module, false for insuccessful run
+%   x       - x structure containing all output parameters (REQUIRED)
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This ExploreASL module processes  DWI
+% images, this module is created 'quick and dirty' from the ExploreASL ASL
+% module. It works and has tested with EPAD data, after initial import, but
+% use for own risk in other circumstances.
+%
+% scripts taken from AUMC Chris Vriends script (run_topup_DWI.sh)
 % Some extra options for Eddy current correction:
 % --repol does some additional correction of motion-related artifacts
 % --verbose to see it running
+%
+% This module has the following submodules/wrappers:
+%
+% 1    TopUp
+% 2    Eddy current (distortion correct, motion correction etc)
+% 3    Registration to T1w
+% 4    DTI fit to create SSE parameter
+% 5    Reslice DTI data
+% 6    Visual check
+% 7    Store QC
+% 8    WAD-QC
+%
+% EXAMPLE: [~, x] = xASL_module_dwi(x);
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% Copyright 2015-2020 ExploreASL
 
-%% 0. INPUT
 
+
+
+
+%% -----------------------------------------------------------------------------
+%% 0    Admin
 x = xASL_init_InitializeMutex( x, 'dwi' ); % starts mutex locking process to ensure that everything will run only once
 result = false;
 
@@ -500,12 +532,12 @@ elseif  bO; fprintf('%s\n','070_QC has already been performed, skipping...');
 end    
 
 %% -----------------------------------------------------------------------------
-%% 7    WAD-QC
-if ~x.mutex.HasState('070_WADQC') && x.DoWADQCDC
+%% 8    WAD-QC
+if ~x.mutex.HasState('080_WADQC') && x.DoWADQCDC
     xASL_qc_WADQCDC(x, iSubject, 'dwi');
-    x.mutex.AddState('070_WADQC');
-elseif x.mutex.HasState('070_WADQC') && bO
-    fprintf('%s\n', '070_WADQC has already been performed, skipping...');
+    x.mutex.AddState('080_WADQC');
+elseif x.mutex.HasState('080_WADQC') && bO
+    fprintf('%s\n', '080_WADQC has already been performed, skipping...');
 end
 
 
