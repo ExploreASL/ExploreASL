@@ -51,8 +51,14 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
         
         % If the temporary file also exists, delete it first
         if exist(srcFileGZtmp, 'dir')
-			delete(fullfile(srcFileGZtmp, '*'));
-            rmdir(srcFileGZtmp);
+			try
+                delete(fullfile(srcFileGZtmp, '*'));
+                rmdir(srcFileGZtmp);
+            catch ME
+                warning('Something went wrong when trying to delete existing temporary unzipped folder');
+                fprintf('The unzipping may have crashed in a previous run, try deleting manually:\n');
+                warning(ME.message);
+            end
         end
         
 		% If both input files exist, then try to delete one of them
