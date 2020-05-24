@@ -79,8 +79,14 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
                 fprintf('%s\n', 'Trying to replace by GZ counterpart');
                 clear srcDatOrig srcImOrig
                 xASL_SysCopy(GZcounterpart, srcFileNII, true);
-                srcDatOrig = nifti(srcFileNII);
-                srcImOrig = xASL_io_Nifti2Im(srcDatOrig);
+                try
+                    srcDatOrig = nifti(srcFileNII);
+                    srcImOrig = xASL_io_Nifti2Im(srcDatOrig);
+                catch ME2
+                    warning(ME2.message);
+                    fprintf('%s\n', 'Both NIfTIs are corrupt, skipping');
+                    return;
+                end
             end
             try % secondly we check if the .nii.gz is corrupt
                 srcDatZipd = nifti(GZcounterpart);
@@ -91,8 +97,14 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
                 fprintf('%s\n', ['Corrupt NIfTI: ' GZcounterpart]);
                 clear srcDatZipd srcImZipd
                 xASL_SysCopy(srcFileNII, GZcounterpart, true);
-                srcDatZipd = nifti(GZcounterpart);
-                srcImZipd = xASL_io_Nifti2Im(srcDatZipd);
+                try
+                    srcDatZipd = nifti(GZcounterpart);
+                    srcImZipd = xASL_io_Nifti2Im(srcDatZipd);
+                catch ME2
+                    warning(ME2.message);
+                    fprintf('%s\n', 'Both NIfTIs are corrupt, skipping');
+                    return;
+                end                    
             end
 
 			% Delete the temporary file
