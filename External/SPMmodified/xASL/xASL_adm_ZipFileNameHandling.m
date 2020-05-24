@@ -47,20 +47,22 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
 
         srcFileNII = fullfile(srcPath,[srcFile '.nii']);
         srcFileGZ = fullfile(srcPath,[srcFile '.nii.gz']);
-
+        srcFileGZtmp = fullfile(srcPath,[srcFile '.nii.gz.tmp']);
+        
         % If the temporary file also exists, delete it first
-        if exist([srcFileGZ '.tmp'], 'dir')
-            rmdir([srcFileGZ '.tmp']);
+        if exist(srcFileGZtmp, 'dir')
+			delete(fullfile(srcFileGZtmp, '*'));
+            rmdir(srcFileGZtmp);
         end
         
 		% If both input files exist, then try to delete one of them
 		if exist(srcFileNII,'file') && exist(srcFileGZ,'file')
 			% Unzip the GZ file to a temporary directory
-			gunzip(srcFileGZ, [srcFileGZ '.tmp']);
+			gunzip(srcFileGZ, srcFileGZtmp);
 
             % Load both the original and new unzipped
             % If one is corrupt, replace it by the other
-            GZcounterpart = fullfile([srcFileGZ '.tmp'],[srcFile '.nii']);
+            GZcounterpart = fullfile(srcFileGZtmp, [srcFile '.nii']);
             try % first we check if the .nii is corrupt
                 srcDatOrig = nifti(srcFileNII);
                 srcImOrig = xASL_io_Nifti2Im(srcDatOrig);
@@ -88,8 +90,8 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
             end
 
 			% Delete the temporary file
-			delete(fullfile([srcFileGZ '.tmp'],'*'));
-			rmdir([srcFileGZ '.tmp']);
+			delete(fullfile(srcFileGZtmp, '*'));
+			rmdir(srcFileGZtmp);
 
 			% Compare files:
             % First we compare the NIfTI header inside the hrd subfield
