@@ -54,6 +54,15 @@ function [NegativeMask, TreatedCBF] = xASL_im_MaskNegativeVascularSignal(x, IsSp
         GMpath = x.P.Pop_Path_rc1T1;
         % no need to reslice
     end
+    
+    if ~xASL_exist(CBFpath, 'file')
+        warning([CBFpath ' missing, skipping']);
+        return;
+    elseif ~xASL_exist(GMpath, 'file')
+        warning([GMpath ' missing, skipping']);
+        return;
+    end
+        
 
     %% 1) Obtain mask of negative voxels within pGM>0.5 mask
     % Create GMmask in ASL space from SPM
