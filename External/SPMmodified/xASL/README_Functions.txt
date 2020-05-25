@@ -4,18 +4,23 @@ improved reproducibility, nii.gz file handling, cost function masking, and allow
 
 
 FILE HANDLING:
+xASL_adm_ConvertSeconds2TimeString - as in the name
 xASL_adm_ConvertSlash.m - manage different slash between linux/windows
 xASL_adm_CreateDir.m - create new folder, including parent folders, if not already existing
+xASL_adm_DeleteFileList - delete a list of files
 xASL_adm_GetFileList - wrapper around SPM_select
 xASL_adm_ManageMoCoMat - manage the external .mat file for timeseries
+xASL_adm_UnixPath - Converts path string to a Linux compatible version
+xASL_bids_csv2tsvReadWrite - read csv or tsv file, convert to tsv if csv, per BIDS
 xASL_Copy - wrapper around Matlabs copy
-xASL_Move - same as previous but moving instead of copying
+xASL_csvRead - reads a CSV file and ouputs to a cell array
 xASL_delete - wrapper around Matlabs delete (manage .nii.gz, delete only if exists)
 xASL_exist - wrapper around Matlabs exist, manage .nii.gz
 xASL_fileparts - wrapper around Matlabs fileparts, manage .nii.gz
 xASL_io_ReadNifti - wrapper around SPMs nifti, with .nii.gz support and extra checks
 xASL_io_Nifti2im - Same as previous but immediately convert to image matrix
 xASL_io_SaveNifti - store image matrix to NIfTI file
+xASL_Move - same as previous but moving instead of copying
 xASL_round - wrapper around Matlabs round, to allow determining nr floating points
 xASL_spm_admin - manage SPM input
 xASL_spm_reslice - wrapper around SPM reslice, manage affine, allowing different quality, etc
@@ -23,9 +28,8 @@ xASL_spm_smooth - wrapper around SPM smooth
 xASL_SysCopy - part of xASL_Copy, without .nii.gz support (use when dealing with only .nii OR 					.nii.gz)
 xASL_SysMove - same as previous but moving instead of copying
 xASL_TrackProgress - print a percentage tracker on the screen, to follow progress without GUI
-xASL_adm_ConvertSeconds2TimeString - as in the name
-xASL_adm_DeleteFileList - delete a list of files
-xASL_adm_csv2tsv - read csv or tsv file, convert to tsv if csv, per BIDS
+xASL_tsvRead - reads a TSV file
+xASL_tsvWrite - writes a TSV file
 
 IMAGE PROCESSING:
 xASL_im_ConvertMap2Mask - in the name
