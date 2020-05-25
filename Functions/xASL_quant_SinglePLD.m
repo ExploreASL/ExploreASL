@@ -166,7 +166,7 @@ else
 			% For some reason the older GE Alsop Work in Progress (WIP) version
 			% has a different scale factor than the current GE product sequence
 			
-			case 'GE_product' % GE new version
+			case {'GE_product','GE'} % GE new version
 				%                 qnt_R1gain = 1/32;
 				%                 qnt_C1 = 6000; % GE constant multiplier
 				

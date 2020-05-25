@@ -72,10 +72,7 @@ end
 %         end
 %     end
     
-if ~exist(ParmsPath, 'file') && bVerbose
-	warning('_parms.mat file missing');
-    
-elseif strcmp(Fext,'.mat')
+if exist(ParmsPath, 'file') && strcmp(Fext,'.mat')
     Parms = load(ParmsPath,'-mat');
     if  isfield(Parms,'parms')
         Parms = Parms.parms;
@@ -90,9 +87,9 @@ end
 % First try defining from input (parms.mat)
 if ~isempty(ParmsPath)
     [Fpath, Ffile] = xASL_fileparts(ParmsPath);
-    if strcmp(Ffile(3:end),'_parms')
-        Ffile = Ffile(1:end-6);
-    end
+	if ~isempty(strfind(Ffile(3:end),'_parms'))
+		Ffile = Ffile(1:end-6);
+	end
     JSONPath = fullfile(Fpath, [Ffile '.json']);
 else
     if ~isempty(regexp(Ffile,'ASL4D'))
