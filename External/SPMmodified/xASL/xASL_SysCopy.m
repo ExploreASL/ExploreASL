@@ -47,7 +47,7 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
             system(['cp -r ' SrcPath ' ' DstPath]);
         end
     else
-        if isfile(SrcPath) % Check if source file exists
+        if exist(SrcPath, 'file') % Check if source file exists
             if bOverwrite
                 copyfile(SrcPath, DstPath, 'f');
             else

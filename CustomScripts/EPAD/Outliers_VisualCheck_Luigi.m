@@ -78,14 +78,14 @@ x.S.CorSlices=[54 74];
 
 for iValue = 1:3
     for iS = 2:3
-        if startsWith(Parameter, 'Structural') && isfile(T1_files{iValue,iS})
+        if startsWith(Parameter, 'Structural') && exist(T1_files{iValue,iS}, 'file')
             T1im = xASL_im_CreateVisualFig(x, T1_files{iValue,iS}); Flairim = xASL_im_CreateVisualFig(x, Flair_files{iValue,iS});
             T1im = fliplr(T1im) ; Flairim = fliplr(Flairim);
             imwrite(T1im, fullfile (figurefolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_T1', '.jpg')));
             imwrite(Flairim, fullfile (figurefolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_Flair', '.jpg')));
             %copyfile(T1_files{iValue,iS}, fullfile (Parameterfolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_T1', '.nii')))
             %copyfile(Flair_files{iValue,iS}, fullfile (Parameterfolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_Flair', '.nii')))
-        elseif startsWith(Parameter, 'func') && isfile(Func_files{iValue,iS})
+        elseif startsWith(Parameter, 'func') && exist(Func_files{iValue,iS}, 'file')
             boldIm = xASL_im_CreateVisualFig(x, Func_files{iValue,iS}) ; %SDIm = xASL_im_CreateVisualFig(x, Func_SD_files{iValue,iS});
             boldIm = fliplr(boldIm) ;% SDIm = fliplr(SDIm);
             imwrite(boldIm, fullfile (figurefolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_BOLD', '.jpg')))
@@ -93,12 +93,12 @@ for iValue = 1:3
 
             %copyfile(Func_files{iValue,iS}, fullfile (Parameterfolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_BOLD', '.nii')))
             %copyfile(Func_SD_files{iValue,iS}, fullfile (Parameterfolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_SD', '.nii')))
-        elseif startsWith(Parameter, 'dwi') && isfile(DWI_files{iValue,iS})
+        elseif startsWith(Parameter, 'dwi') && exist(DWI_files{iValue,iS}, 'file')
             dwiIm = xASL_im_CreateVisualFig(x, DWI_files{iValue,iS}) ;
             dwiIm = fliplr(dwiIm);
             imwrite(dwiIm, fullfile (figurefolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_FA', '.jpg')));
             %copyfile(DWI_files{iValue,iS}, fullfile (Parameterfolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_FA', '.nii')))
-%        elseif startsWith(Parameter, 'ASL') && isfile(ASL_files{iValue,iS})
+%        elseif startsWith(Parameter, 'ASL') && exist(ASL_files{iValue,iS}, 'file')
            % aslIm = xASL_im_CreateVisualFig(x, ASL_files{iValue,iS});
             %aslIm = fliplr(aslIm);
            % imwrite(aslIm, fullfile (figurefolder, strcat(Subjects{iValue}, '_', Subjects{iValue,iS},'_CBF', '.jpg')));
