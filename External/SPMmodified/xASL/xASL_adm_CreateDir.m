@@ -58,7 +58,10 @@ function status = xASL_adm_CreateDir(varargin)
         error('Requires one or two input parameters');
     end
     
-    ROOTdir = fileparts(fileparts(fileparts(fileparts(fileparts(fileparts(fileparts(strPath)))))));
+    % Old: ROOTdir = fileparts(fileparts(fileparts(fileparts(fileparts(fileparts(fileparts(strPath)))))));
+    pathArr = regexp(strPath,filesep,'split');
+    ROOTdir = [pathArr{1},filesep];
+    
     if ~exist(ROOTdir,'dir') && ~isempty(ROOTdir)
         warning('This is an invalid directory path');
         status = 0;
