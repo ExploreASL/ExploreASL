@@ -163,67 +163,63 @@ end
 %% ========================================================================================
 function [IM] = xASL_im_ExtrapolateLinearlyOverNaNs(IM)
 %xASL_im_ExtrapolateLinearlyOverNaNs
+% The input of this function is 3D (iterations of other dimensions are done
+% in the main function above)
 
-nX = size(IM,1);
-nY = size(IM,2);
-nZ = size(IM,3);
-% Applies the same along the 4th dimension
-for tt = 1:size(IM,4)
-	% Applies twice along the remaining dimensions to make sure all the corners are filled
-	for ii = 1:2
-		if sum(isnan(IM))
-			% Does it along the remaining three dimensions
-			for dd = 1:min(3,ndims(IM))
-				% Extracts column wise values
-				switch(dd)
-					case 1
-						imCol = reshape(IM(:,:,:,tt),[nX,nY*nZ]);
-					case 2
-						imCol = reshape(shiftdim(IM(:,:,:,tt),1),[nY,nX*nZ]);
-					case 3
-						imCol = reshape(IM(:,:,:,tt),[nX*nY,nZ])';
-				end
-				
-				% Find those columns that incude NaNs, but there are more than 50% non-NaNs
-				indCol = (sum(isnan(imCol),1)>0 & (sum(~isnan(imCol),1)>(0.5*size(imCol,1))));
-				
-				nCol = size(imCol,1);
-				nColHalf = floor(nCol/2);
-				% Find columns starting and ending with nans
-				indColLow  = find(indCol & isnan(imCol(1,:)));
-				indColHigh = find(indCol & isnan(imCol(end,:)));
-				
-				% For each column starting with Nans
-				for cc = indColLow
-					minInd = find(~isnan(imCol(:,cc)),1,'first');
-					diff = sum(imCol(minInd:nColHalf,cc) - imCol((minInd+1):(nColHalf+1),cc))/(nColHalf-minInd+1);
-					imCol(1:(minInd-1),cc) = imCol(minInd,cc) + ((minInd-1):-1:1)*diff;
-				end
-				
-				% For each column ending with NaNs
-				for cc = indColHigh
-					maxInd = find(~isnan(imCol(:,cc)),1,'last');
-					diff = sum(imCol(nColHalf:maxInd,cc)-imCol((nColHalf-1):(maxInd-1),cc))/(maxInd-nColHalf+1);
-					imCol((maxInd+1):end,cc) = imCol(maxInd,cc) + (1:(nCol-maxInd))*diff;
-				end
-				
-				% Put back together to the original image
-				switch(dd)
-					case 1
-						IM(:,:,:,tt) = reshape(imCol,[nX,nY,nZ]);
-					case 2
-						if ndims(IM)<3
-							IM(:,:,:,tt) = shiftdim(reshape(imCol,[nY,nX,nZ]),1);
-						else
-							IM(:,:,:,tt) = shiftdim(reshape(imCol,[nY,nX,nZ]),2);
-						end
-					case 3
-						IM(:,:,:,tt) = reshape(imCol',[nX,nY,nZ]);
-				end
-			end
-		end
-	end
-end
+for Iteration = 1:2 % Applies twice along X Y Z dimensions to make sure all the corners are filled
+    if sum(isnan(IM(:)))>0 %% DID YOU MEAN THIS?
+        % Does it along the remaining three dimensions
+        for DimensionIs = 1:min(3,ndims(IM)) %% HOW DOES THIS WORK??? IT DOESNT ALLOW FEWER THAN 2 COLUMNS
+            % Extracts column wise values
+            switch(DimensionIs)
+                case 1
+                    imCol = reshape(IM(:,:,:), [nX,nY*nZ]);
+                case 2
+                    imCol = reshape(shiftdim(IM(:,:,:),1), [nY,nX*nZ]);
+                case 3
+                    imCol = reshape(IM(:,:,:), [nX*nY,nZ])';
+            end
+
+            % Find columns that incude NaNs, but there are more than 50% non-NaNs
+            indCol = sum(isnan(imCol),1)>0 & (sum(~isnan(imCol),1)>(0.5*size(imCol,1)));
+
+            nCol = size(imCol,1);
+            nColHalf = floor(nCol/2);
+            % Find columns starting and ending with nans
+            indColLow  = find(indCol & isnan(imCol(1,:)));
+            indColHigh = find(indCol & isnan(imCol(end,:)));
+
+            % For each column starting with Nans
+            for ColumnIs = indColLow
+                minInd = find(~isnan(imCol(:,ColumnIs)), 1, 'first');
+                diff = sum(imCol(minInd:nColHalf,ColumnIs) - imCol((minInd+1):(nColHalf+1),ColumnIs))/(nColHalf-minInd+1);
+                imCol(1:(minInd-1),ColumnIs) = imCol(minInd,ColumnIs) + ((minInd-1):-1:1)*diff;
+            end
+
+            % For each column ending with NaNs
+            for ColumnIs = indColHigh
+                maxInd = find(~isnan(imCol(:,ColumnIs)),1, 'last');
+                diff = sum(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs))/(maxInd-nColHalf+1);
+                imCol((maxInd+1):end,ColumnIs) = imCol(maxInd,ColumnIs) + (1:(nCol-maxInd))*diff;
+            end
+
+            % Put back together to the original image
+            switch(DimensionIs)
+                case 1
+                    IM(:,:,:) = reshape(imCol, [nX,nY,nZ]);
+                case 2
+                    if ndims(IM)<3 %% THIS NEEDS FEWER THAN 3 COLUMNS, BUT NOT ALLOWED ABOVE
+                        % PLUS THIS IS NOT DEFINED YET
+                        IM(:,:,:) = shiftdim(reshape(imCol, [nY,nX,nZ]), 1);
+                    else
+                        IM(:,:,:) = shiftdim(reshape(imCol, [nY,nX,nZ]), 2);
+                    end
+                case 3
+                    IM(:,:,:) = reshape(imCol', [nX,nY,nZ]);
+            end % switch
+        end % for DimensionIs
+    end % sum(isnan(IM))
+end % for Iteration
 
 
 end
