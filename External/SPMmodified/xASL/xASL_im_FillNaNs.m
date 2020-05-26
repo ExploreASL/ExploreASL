@@ -179,8 +179,8 @@ nZ = size(IM,3);
 
 for Iteration = 1:3 % Applies twice along X Y Z dimensions to make sure all the corners are filled
     if sum(isnan(IM(:)))>0 
-        % Does it along the remaining three dimensions
-        for DimensionIs = 1:min(3,ndims(IM)) %% HOW DOES THIS WORK??? IT DOESNT ALLOW FEWER THAN 2 COLUMNS
+        % Does it along the remaining three dimensions (or two dimensions in case a 2D image is on the input)
+        for DimensionIs = 1:min(3,ndims(IM))
             % Extracts column wise values
             switch(DimensionIs)
                 case 1
