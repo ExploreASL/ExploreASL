@@ -52,6 +52,11 @@ function [x] = xASL_import_json(DataParFile)
 %
 % 2019-01-29 Michael Stritt
 
+%% Input Check
+if ~isfile(DataParFile)
+    error('DataParFile does not exist...');
+end
+
 %% Decode JSON file
 jsonData = spm_jsonread(DataParFile);
 
