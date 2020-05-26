@@ -194,12 +194,11 @@ for Iteration = 1:3 % Applies twice along X Y Z dimensions to make sure all the 
             end
 
 			% Find those columns that incude NaNs, but there are more than 50% non-NaNs (only apply this condition on the first run)
-			if ii>1
+			if Iteration>1
 				indCol = sum(isnan(imCol),1)>0;
 			else
 				indCol = (sum(isnan(imCol),1)>0 & (sum(~isnan(imCol),1)>(0.5*size(imCol,1))));
-			end
-			
+			end			
 			
             nCol = size(imCol,1);
             nColHalf = floor(nCol/2);
