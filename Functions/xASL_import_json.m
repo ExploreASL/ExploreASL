@@ -53,7 +53,7 @@ function [x] = xASL_import_json(DataParFile)
 % 2019-01-29 Michael Stritt
 
 %% Input Check
-if ~isfile(DataParFile)
+if ~exist(DataParFile, 'file')
     error('DataParFile does not exist...');
 end
 
