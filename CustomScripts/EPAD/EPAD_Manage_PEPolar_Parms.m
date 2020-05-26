@@ -80,20 +80,18 @@ for iSubject=1:length(SubjectList)
                     jsonData.(PEPolarParms{iField}) = Parms.(PEPolarParms{iField});
                 end
                
-                if ~isfield(jsonData,'PhaseEncodingDirection')
-                    if strcmp(jsonData.Manufacturer,'Philips')
-                        if ~isempty(strfind(lower(JSONPath),'asl')) || ~isempty(strfind(lower(JSONPath),'func'))
-                            if ~isempty(strfind(lower(JSONPath),'revpe'))
-                                jsonData.PhaseEncodingDirection = 'j-'; % for EPAD ASL & func RevPE
-                            else
-                                jsonData.PhaseEncodingDirection = 'j'; % for EPAD ASL & func NormPE
-                            end
-                        elseif ~isempty(strfind(lower(JSONPath),'dwi'))
-                            if ~isempty(strfind(lower(JSONPath),'revpe'))
-                                jsonData.PhaseEncodingDirection = 'j'; % for EPAD DTI RevPE
-                            else
-                                jsonData.PhaseEncodingDirection = 'j-'; % for EPAD DTI NormPE
-                            end
+                if ~isfield(jsonData,'PhaseEncodingDirection') && strcmp(jsonData.Manufacturer,'Philips')
+                    if ~isempty(strfind(lower(JSONPath),'asl')) || ~isempty(strfind(lower(JSONPath),'func'))
+                        if ~isempty(strfind(lower(JSONPath),'revpe'))
+                            jsonData.PhaseEncodingDirection = 'j-'; % for EPAD ASL & func RevPE
+                        else
+                            jsonData.PhaseEncodingDirection = 'j'; % for EPAD ASL & func NormPE
+                        end
+                    elseif ~isempty(strfind(lower(JSONPath),'dwi'))
+                        if ~isempty(strfind(lower(JSONPath),'revpe'))
+                            jsonData.PhaseEncodingDirection = 'j'; % for EPAD DTI RevPE
+                        else
+                            jsonData.PhaseEncodingDirection = 'j-'; % for EPAD DTI NormPE
                         end
                     end
                 end
