@@ -179,9 +179,11 @@ nZ = size(IM,3);
 
 for Iteration = 1:3 % Applies twice along X Y Z dimensions to make sure all the corners are filled
     if sum(isnan(IM(:)))>0 
-        % Does it along the remaining three dimensions (or two dimensions in case a 2D image is on the input)
+        % Along the three dimensions (or two dimensions in case a 2D image is on the input)
+		% Check each line of the image along the dimension and checks NaNs at the start and end of each line
+		% And interpolates them using the values in the iddle
         for DimensionIs = 1:min(3,ndims(IM))
-            % Extracts column wise values
+            % Takes a 3D image and concatenates to a 2D so that we can fill in the NaNs in each column
             switch(DimensionIs)
                 case 1
                     imCol = reshape(IM, [nX,nY*nZ]);
@@ -205,24 +207,26 @@ for Iteration = 1:3 % Applies twice along X Y Z dimensions to make sure all the 
             indColLow  = indCol & isnan(imCol(1,:));
 			indColHigh = indCol & isnan(imCol(end,:));
 
-            % For each column starting with Nans
+            % For each column starting with Nans checks how the values are changing in the non-NaN voxels and linearly
+			% interpolate in the NaNs
             for ColumnIs = find(indColLow)
                 minInd = find(~isnan(imCol(:,ColumnIs)), 1, 'first');
-                diff = sum(imCol(minInd:nColHalf,ColumnIs) - imCol((minInd+1):(nColHalf+1),ColumnIs))/(nColHalf-minInd+1);
-				if isnan(diff)
-					diff = xASL_stat_MeanNan(imCol(minInd:nColHalf,ColumnIs) - imCol((minInd+1):(nColHalf+1),ColumnIs));
+                meanDiff = sum(imCol(minInd:nColHalf,ColumnIs) - imCol((minInd+1):(nColHalf+1),ColumnIs))/(nColHalf-minInd+1);
+				if isnan(meanDiff)
+					meanDiff = xASL_stat_MeanNan(imCol(minInd:nColHalf,ColumnIs) - imCol((minInd+1):(nColHalf+1),ColumnIs));
 				end
-                imCol(1:(minInd-1),ColumnIs) = imCol(minInd,ColumnIs) + ((minInd-1):-1:1)*diff;
+                imCol(1:(minInd-1),ColumnIs) = imCol(minInd,ColumnIs) + ((minInd-1):-1:1)*meanDiff;
             end
 
-            % For each column ending with NaNs
+            % For each column ending with NaNs checks how the values are changing in the non-NaN voxels and linearly
+			% interpolate in the NaNs
             for ColumnIs = indColHigh
                 maxInd = find(~isnan(imCol(:,ColumnIs)),1, 'last');
-                diff = sum(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs))/(maxInd-nColHalf+1);
-				if isnan(diff)
-					diff = xASL_stat_MeanNan(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs));
+                meanDiff = sum(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs))/(maxInd-nColHalf+1);
+				if isnan(meanDiff)
+					meanDiff = xASL_stat_MeanNan(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs));
 				end
-                imCol((maxInd+1):end,ColumnIs) = imCol(maxInd,ColumnIs) + (1:(nCol-maxInd))*diff;
+                imCol((maxInd+1):end,ColumnIs) = imCol(maxInd,ColumnIs) + (1:(nCol-maxInd))*meanDiff;
             end
 
             % Put back together to the original image
