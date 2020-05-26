@@ -418,7 +418,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
                     xASL_delete(LongRegFile2);
 
-                    xASL_im_FixEdgesFlowfield(y_File2);
+                    xASL_im_FillNaNs(y_File2, 3, x.Quality, [], x);
                 end
 
                 OUTPUT2name      = fullfile( x.D.ROOT, CurrentSub{iS}, ['r2' x.P.STRUCT '.nii']);

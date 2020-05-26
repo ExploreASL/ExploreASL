@@ -60,7 +60,7 @@ sKernel = (EstimatedResolution.^2 - TemplateResolution.^2).^0.5; % assuming the 
 sKernel(EstimatedResolution<TemplateResolution) = 0;
 
 %% 2) Fill NaNs at edges y_T1.nii flowfield to prevent interpolation artifact
-xASL_im_FixEdgesFlowfield(x.P.Path_y_T1); % First fill NaNs, to prevent interpolation artifacts
+xASL_im_FillNaNs(x.P.Path_y_T1, 3, x.Quality, [], x); % First fill NaNs, to prevent interpolation artifacts
 
 %% 3) Smooth flowfield
 % Note that we provide the T1w resolution, not the resolution of y_T1,
@@ -76,16 +76,7 @@ xASL_im_PreSmooth(PathLowResNIfTI, x.P.Path_y_T1, x.P.Path_y_ASL, [], resSrc); %
 % respectively
 
 %% 4) Fill NaNs at edges y_ASL.nii
-% Remove this part, not required when flowfield edge fixing below is
-% repaired by Jan
-% FieldT1 = xASL_io_Nifti2Im(x.P.Path_y_T1);
-% FieldASL = xASL_io_Nifti2Im(x.P.Path_y_ASL);
-% FieldASL([1:5 end-5:end],:,:,:,:) = FieldT1([1:5 end-5:end],:,:,:,:); % x
-% FieldASL(:,[1:5 end-5:end],:,:,:) = FieldT1(:,[1:5 end-5:end],:,:,:); % y
-% FieldASL(:,:,[1:5 end-5:end],:,:) = FieldT1(:,:,[1:5 end-5:end],:,:); % z
-% xASL_io_SaveNifti(x.P.Path_y_ASL, x.P.Path_y_ASL, FieldASL, [], 0);
-
-xASL_im_FixEdgesFlowfield(x.P.Path_y_ASL); % Again fill NaNs, if needed
+xASL_im_FillNaNs(x.P.Path_y_ASL, 3); % Again fill NaNs, if needed
 
 
 end

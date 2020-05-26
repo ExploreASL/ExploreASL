@@ -1454,15 +1454,14 @@ end
   % trans.warped.y(LesionImOut)     = Yy(LesionImOut); % within the lesion mask, replace DARTEL flow field by SPM affine+DCT flow field
   %%%
   %%% ANOTHER EXPLOREASL HACK: remove NaNs from transformations before DARTEL
-  if exist('Yy','var')
-    Yy = single(xASL_im_ExtrapolateOverNaNs(Yy)); % SPM doesn't like double format Yy
+  if exist('Yy', 'var')
+     Yy = single(xASL_im_FillNaNs(Yy, 1, job.extopts.xasl_quality, [1.5 1.5 1.5])); % SPM doesn't like double format Yy
   end
 
   %% call Dartel/Shooting registration
-
-  if ~job.extopts.xasl_quality  % ExploreASL hack fewer iterations/lower resolution to speed up
-      job.extopts.reg.nits = 4;      % less iterations
-      job.extopts.regstr   = 15;     % low resolution
+  if ~job.extopts.xasl_quality % ExploreASL hack fewer iterations/lower resolution to speed up
+      job.extopts.reg.nits = 4; % less iterations
+      job.extopts.regstr = 15; % low resolution
   end
 
   [trans,res.ppe.reg] = cat_main_registration(job,res,Yclsd,Yy,tpm.M,Ylesions);
@@ -1477,7 +1476,7 @@ end
 
   % EXPLOREASL HACK
   if isfield(trans,'warped')
-    trans.warped.y = single(xASL_im_ExtrapolateOverNaNs(trans.warped.y));
+      trans.warped.y = single(xASL_im_FillNaNs(trans.warped.y, 3, job.extopts.xasl_quality, [1.5 1.5 1.5])); % SPM doesn't like double format here
   end
 
 

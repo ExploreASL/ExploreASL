@@ -297,6 +297,7 @@ end
 if xASL_stat_SumNan(LesionIM(:))>0
     % Mix the DARTEL (non-linear) and SPM (uniform) flowfields based on Euclidian distance matrix
     Fields2Save = xASL_wrp_CombineFlowFields(x, Path_Transf_SPM, Path_Transf_DARTEL, LesionIM);
+    xASL_io_SaveNifti(x.P.Path_y_T1, x.P.Path_y_T1, Fields2Save, [], false);
     xASL_Move(Path_Transf_DARTEL, x.P.Path_y_T1, true);
 else % if no lesion existed, keep the non-linear flowfield (if it exists, otherwise take the SPM flowfield)
     if xASL_exist(Path_Transf_DARTEL, 'file')
@@ -304,17 +305,16 @@ else % if no lesion existed, keep the non-linear flowfield (if it exists, otherw
     elseif xASL_exist(Path_Transf_SPM, 'file')
            xASL_Move(Path_Transf_SPM, x.P.Path_y_T1, true);
     end
-
-    Fields2Save = xASL_io_Nifti2Im(x.P.Path_y_T1);
 end
 
-% Extrapolate over NaNs for smooth edges of flow fields
-for iE=1:size(Fields2Save, 5)
-    Fields2Save(:,:,:,1,iE) = xASL_im_ExtrapolateOverNaNs(squeeze(Fields2Save(:,:,:,1,iE)));
+if ~x.Quality % With low quality, registration was performed on lower resolution,
+              % & transformation needs to be upsampled to correct resolution
+    xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.Quality, x.P.Path_y_T1, 1);
 end
 
+% Fill NaNs with identity for smooth edges of flow fields
+xASL_im_FillNaNs(x.P.Path_y_T1, 3, x.Quality, [], x);
 
-xASL_io_SaveNifti(x.P.Path_y_T1, x.P.Path_y_T1, Fields2Save, [], false);
 
 
 
@@ -322,10 +322,9 @@ xASL_io_SaveNifti(x.P.Path_y_T1, x.P.Path_y_T1, Fields2Save, [], false);
 %% 9) File management
 xASL_adm_RemoveTempFilesCAT12(x);
 
-if ~x.Quality % With low quality, registration was performed on lower resolution,
-              % & transformation needs to be upsampled to correct resolution
-    xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.Quality, x.P.Path_y_T1, 1);
-end
+
+
+
 
 
 

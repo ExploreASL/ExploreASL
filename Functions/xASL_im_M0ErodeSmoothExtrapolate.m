@@ -145,18 +145,23 @@ ImOut(ImOut==0) = NaN;
 
 VoxelSize = [1.5 1.5 1.5];
 
+
 ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
 xASL_TrackProgress(1,MaxIt);
 Im5 = ImOut;
-ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
-xASL_TrackProgress(2,MaxIt);
 
+if x.Quality    
+    ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
+else % in case of low quality, we leave this to the xASL_im_FillNaNs below,
+     % where a smaller kernel will go much faster for low quality 
+end
+xASL_TrackProgress(2, MaxIt);
 
 %% ------------------------------------------------------------------------------------------
 %% 6) Extrapolating only
-ImOut = xASL_im_ExtrapolateOverNaNs(ImOut); % this should not be masked,
-                                                % the idea is to fill the whole FoV
-                                                % to prevent ASL/M0 division artifacts
+% Here we fill the residual NaNs (outside the mask) of the FoV
+% to prevent ASL/M0 division artifacts
+ImOut = xASL_im_FillNaNs(ImOut, 1, x.Quality);
 
 
 %% ------------------------------------------------------------------------------------------
