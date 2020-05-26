@@ -34,7 +34,7 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
 
     if exist(SrcPath, 'dir') && exist(DstPath, 'dir') && bOverwrite
         if bVerbose
-            warning('xASL_Copy:We merge folders now, be careful, this could go wrong when e.g. NIfTIs exist both unzipped & zipped');
+            warning('We merge folders now, be careful, this could go wrong when e.g. NIfTIs exist both unzipped & zipped');
         end
     end
 
@@ -47,7 +47,7 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
             system(['cp -r ' SrcPath ' ' DstPath]);
         end
     else
-        if exist(SrcPath, 'file') % Check if source file exists
+        if exist(SrcPath, 'file') || exist(SrcPath, 'dir') % Check if source file exists
             if bOverwrite
                 copyfile(SrcPath, DstPath, 'f');
             else
