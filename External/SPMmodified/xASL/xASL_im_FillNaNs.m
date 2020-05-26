@@ -219,7 +219,7 @@ for Iteration = 1:3 % Applies twice along X Y Z dimensions to make sure all the 
 
             % For each column ending with NaNs checks how the values are changing in the non-NaN voxels and linearly
 			% interpolate in the NaNs
-            for ColumnIs = indColHigh
+            for ColumnIs = find(indColHigh)
                 maxInd = find(~isnan(imCol(:,ColumnIs)),1, 'last');
                 meanDiff = sum(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs))/(maxInd-nColHalf+1);
 				if isnan(meanDiff)
