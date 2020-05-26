@@ -166,33 +166,52 @@ function [IM] = xASL_im_ExtrapolateLinearlyOverNaNs(IM)
 % The input of this function is 3D (iterations of other dimensions are done
 % in the main function above)
 
-for Iteration = 1:2 % Applies twice along X Y Z dimensions to make sure all the corners are filled
-    if sum(isnan(IM(:)))>0 %% DID YOU MEAN THIS?
+% Zeros are also converted to NaNs - because this is sometimes unclear in the flow fields.
+IM(IM==0) = NaN;
+
+% The first layer next to NaNs is sometimes intrapolated, so rather assigned to Nans as well
+[distMap,~] = xASL_im_DistanceTransform(isnan(IM));
+IM(distMap<2) = NaN;
+
+nX = size(IM,1);
+nY = size(IM,2);
+nZ = size(IM,3);
+
+for Iteration = 1:3 % Applies twice along X Y Z dimensions to make sure all the corners are filled
+    if sum(isnan(IM(:)))>0 
         % Does it along the remaining three dimensions
         for DimensionIs = 1:min(3,ndims(IM)) %% HOW DOES THIS WORK??? IT DOESNT ALLOW FEWER THAN 2 COLUMNS
             % Extracts column wise values
             switch(DimensionIs)
                 case 1
-                    imCol = reshape(IM(:,:,:), [nX,nY*nZ]);
+                    imCol = reshape(IM, [nX,nY*nZ]);
                 case 2
-                    imCol = reshape(shiftdim(IM(:,:,:),1), [nY,nX*nZ]);
+                    imCol = reshape(shiftdim(IM,1), [nY,nZ*nX]);
                 case 3
-                    imCol = reshape(IM(:,:,:), [nX*nY,nZ])';
+                    imCol = reshape(IM, [nX*nY,nZ])';
             end
 
-            % Find columns that incude NaNs, but there are more than 50% non-NaNs
-            indCol = sum(isnan(imCol),1)>0 & (sum(~isnan(imCol),1)>(0.5*size(imCol,1)));
-
+			% Find those columns that incude NaNs, but there are more than 50% non-NaNs (only apply this condition on the first run)
+			if ii>1
+				indCol = sum(isnan(imCol),1)>0;
+			else
+				indCol = (sum(isnan(imCol),1)>0 & (sum(~isnan(imCol),1)>(0.5*size(imCol,1))));
+			end
+			
+			
             nCol = size(imCol,1);
             nColHalf = floor(nCol/2);
             % Find columns starting and ending with nans
-            indColLow  = find(indCol & isnan(imCol(1,:)));
-            indColHigh = find(indCol & isnan(imCol(end,:)));
+            indColLow  = indCol & isnan(imCol(1,:));
+			indColHigh = indCol & isnan(imCol(end,:));
 
             % For each column starting with Nans
-            for ColumnIs = indColLow
+            for ColumnIs = find(indColLow)
                 minInd = find(~isnan(imCol(:,ColumnIs)), 1, 'first');
                 diff = sum(imCol(minInd:nColHalf,ColumnIs) - imCol((minInd+1):(nColHalf+1),ColumnIs))/(nColHalf-minInd+1);
+				if isnan(diff)
+					diff = xASL_stat_MeanNan(imCol(minInd:nColHalf,ColumnIs) - imCol((minInd+1):(nColHalf+1),ColumnIs));
+				end
                 imCol(1:(minInd-1),ColumnIs) = imCol(minInd,ColumnIs) + ((minInd-1):-1:1)*diff;
             end
 
@@ -200,26 +219,31 @@ for Iteration = 1:2 % Applies twice along X Y Z dimensions to make sure all the 
             for ColumnIs = indColHigh
                 maxInd = find(~isnan(imCol(:,ColumnIs)),1, 'last');
                 diff = sum(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs))/(maxInd-nColHalf+1);
+				if isnan(diff)
+					diff = xASL_stat_MeanNan(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs));
+				end
                 imCol((maxInd+1):end,ColumnIs) = imCol(maxInd,ColumnIs) + (1:(nCol-maxInd))*diff;
             end
 
             % Put back together to the original image
             switch(DimensionIs)
                 case 1
-                    IM(:,:,:) = reshape(imCol, [nX,nY,nZ]);
+                    IM = reshape(imCol, [nX,nY,nZ]);
                 case 2
-                    if ndims(IM)<3 %% THIS NEEDS FEWER THAN 3 COLUMNS, BUT NOT ALLOWED ABOVE
-                        % PLUS THIS IS NOT DEFINED YET
-                        IM(:,:,:) = shiftdim(reshape(imCol, [nY,nX,nZ]), 1);
-                    else
-                        IM(:,:,:) = shiftdim(reshape(imCol, [nY,nX,nZ]), 2);
-                    end
+					% For 2D matrix and 3D matrix, the reshaping back is done differently
+					if ndims(IM)<3
+						IM = shiftdim(reshape(imCol,[nY,nX]),1);
+					else
+						IM = shiftdim(reshape(imCol,[nY,nZ,nX]),2);
+					end
                 case 3
-                    IM(:,:,:) = reshape(imCol', [nX,nY,nZ]);
+                    IM = reshape(imCol', [nX,nY,nZ]);
             end % switch
         end % for DimensionIs
     end % sum(isnan(IM))
 end % for Iteration
 
+% Any remaining NaNs had to be inside, so we convert them back to 0
+IM(isnan(IM)) = 0;
 
 end
