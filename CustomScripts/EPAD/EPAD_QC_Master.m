@@ -147,7 +147,7 @@ StatusPath = fullfile(AnalysisDir, 'import_summary.csv'); % ->>>> DELETE THIS FI
 if ~exist(StatusPath, 'file')
     % now start reading the parameters from ScanType_LabelsConfig.csv
     % & putting them in import parameter struct imPar 
-    [~, ScanTypeConfig] = xASL_bids_csvRead(fullfile(RawDir, 'ScanType_LabelsConfig.csv'));
+    [~, ScanTypeConfig] = xASL_csvRead(fullfile(RawDir, 'ScanType_LabelsConfig.csv'));
     for iL=1:size(ScanTypeConfig,1)
         BIDSlist{iL,1} = [ScanTypeConfig{iL,2} '_' ScanTypeConfig{iL,3}];
     end
