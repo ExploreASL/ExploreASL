@@ -59,7 +59,10 @@ function status = xASL_adm_CreateDir(varargin)
     end
     
     pathArr = regexp(strPath,filesep,'split');
-    ROOTdir = [filesep pathArr{1}];
+    ROOTdir = [pathArr{1} filesep];
+    if ~ispc
+        ROOTdir = [filesep pathArr{1}];
+    end
     
     if ~exist(ROOTdir,'dir') && ~isempty(ROOTdir) && ~strcmp(ROOTdir, filesep)
         warning('This is an invalid directory path');
