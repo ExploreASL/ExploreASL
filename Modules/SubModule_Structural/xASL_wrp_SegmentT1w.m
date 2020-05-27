@@ -505,47 +505,77 @@ matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_savesteps           = x.Seg.S
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_quality             = x.Quality;
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_disabledartel       = x.Seg.DisableDARTEL;
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_lesion              = {xASL_im_Lesion2CAT(x.P.Path_T1)};
-matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.darteltpm   = {DartelTemplateNII}; % Runs DARTEL to this n=555 subjects template
-matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shootingtpm = {GSTemplateNII}; % Runs Geodesic Shooting to this n=555 subjects template
-switch x.Seg.Method
-    case 'default'
-        matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.regstr = 0.5; % chooses between 0 DARTEL & 4 Geodesic Shooting, this is the optimized 0.5 Geodesic Shooting
-    case 'GS'
-        matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.regstr = 4;
-    case 'DARTEL'
-        matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.regstr = 0;
+if str2double(catVer) > 1500
+	switch x.Seg.Method
+		case {'default' 'GS'}
+			matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shooting.shootingtpm = {GSTemplateNII}; % Runs Geodesic Shooting to this n=555 subjects template
+			matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shooting.regstr = 0.5;
+		case 'DARTEL'
+			matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.dartel.darteltpm = {DartelTemplateNII}; % Runs DARTEL to this n=555 subjects template
+	end
+else
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.darteltpm   = {DartelTemplateNII}; % Runs DARTEL to this n=555 subjects template
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shootingtpm = {GSTemplateNII}; % Runs Geodesic Shooting to this n=555 subjects template
+	switch x.Seg.Method
+		case 'default'
+			matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.regstr = 0.5; % chooses between 0 DARTEL & 4 Geodesic Shooting, this is the optimized 0.5 Geodesic Shooting
+		case 'GS'
+			matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.regstr = 4;
+		case 'DARTEL'
+			matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.regstr = 0;
+	end
 end
+
 
 
 % matlabbatch{1}.spm.tools.cat.estwrite.extopts.cleanupstr = 0.5; % default line in cat12 segmentation batch script
 % Here we don't define CleanUpStr, which gives an error. For some reason it doesn"t want to be loaded through
 % the SPM conf initialization script. Nevertheless, cleanupstr = 0.5 by default in cat_defaults.m
 % so we can remove it here and ignore it
-
 %% --------------------------------------------------------------------
 %% CAT12 segmentation quality settings
-matlabbatch{1}.spm.tools.cat.estwrite.extopts.SLC = 0;
-if x.Quality
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % full cleanup. 1070 light cleanup
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.05; % 0.5; % strength local adaptive segmentation
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
+if str2double(catVer) > 1500
+	%matlabbatch{1}.spm.tools.cat.estwrite.extopts.SLC = 0;
+	%matlabbatch{1}.spm.tools.cat.estwrite.extopts.WMHC = 0;
+
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % full cleanup. 1070 light cleanup
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % 0.5; % strength local adaptive segmentation
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 2; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
+	matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
+	matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
+	
+	if x.T1BiasFieldRegularization
+		matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.5; % CAT12
+	else
+		% disable biasfield regularization for large biasfields (e.g. GE wide bore scanner)
+		matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
+	end
 else
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 0; % light cleanup
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0; % strength local adaptive segmentation
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % default SPM approach
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 3; % voxelsize on which registration is run (1.5 == default)
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = eps;
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 9;   % spm sampling distance
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.SLC = 0;
+
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % full cleanup. 1070 light cleanup
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.05; % 0.5; % strength local adaptive segmentation
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
+	matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
+	matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
+	
+	if x.T1BiasFieldRegularization
+		matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.5; % CAT12
+	else
+		% disable biasfield regularization for large biasfields (e.g. GE wide bore scanner)
+		matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
+	end
 end
 
-if x.T1BiasFieldRegularization
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.5; % CAT12
-else
-    % disable biasfield regularization for large biasfields (e.g. GE wide bore scanner)
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
+if ~x.Quality
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 0; % light cleanup
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0; % strength local adaptive segmentation
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % default SPM approach
+	matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 3; % voxelsize on which registration is run (1.5 == default)
+	matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = eps;
+	matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 9;   % spm sampling distance
 end
 
 %% --------------------------------------------------------------------
@@ -556,7 +586,6 @@ matlabbatch{1}.spm.tools.cat.estwrite.nproc                 = 0; % don't split t
 
 matlabbatch{1}.spm.tools.cat.estwrite.opts.affreg           = 'mni'; % regularize affine registration for MNI European brains
 matlabbatch{1}.spm.tools.cat.estwrite.output.surface        = 0;   % don't do surface modeling
-matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
 matlabbatch{1}.spm.tools.cat.estwrite.output.GM.native      = 1;   % save c1T1 in native space
 matlabbatch{1}.spm.tools.cat.estwrite.output.GM.mod         = 0;   % don't save modulation
 matlabbatch{1}.spm.tools.cat.estwrite.output.GM.dartel      = 0;   % don't save DARTEL space c1T1, this happens below in the reslice part
@@ -566,12 +595,17 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel      = 0;   % don't save 
 matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.native      = 1;   % save c3T1 in native space
 matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.mod         = 0;   % don't save modulation
 matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel      = 0;   % don't save DARTEL space c2T1, this happens below in the reslice part
-matlabbatch{1}.spm.tools.cat.estwrite.output.jacobian.warped= 0;   % don't save Jacobians
 matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
-matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.native      = 1;   % save c3T1 in native space
-matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.mod         = 0;   % don't save modulation
-matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel      = 0;
+
+if str2double(catVer) > 1500
+	matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {''};
+	matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
+	%matlabbatch{1}.spm.tools.cat.estwrite.output.labelnative = 1;
+else
+	matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
+	matlabbatch{1}.spm.tools.cat.estwrite.output.jacobian.warped= 0;   % don't save Jacobians
+end
 
 if ~x.bFixResolution
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
