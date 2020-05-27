@@ -27,48 +27,6 @@
 		"LabelingDuration" : 800,
 		"SliceReadoutTime" : 35
 		},
-	"Site013" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
-		},
-	"Site014" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
-		},
-	"Site015" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
-		},
-	"Site016" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
-		},
-	"Site017" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
-		},
-	"Site018" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
-		},
 	"Site020" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "CASL",
@@ -76,40 +34,12 @@
 		"LabelingDuration" : 1650,
 		"SliceReadoutTime" : 36.5278
 		},
-	"Site021" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
-		},
 	"Site022" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
 		"SliceReadoutTime" : 36.5278
-		},
-	"Site023" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
-		},
-	"Site024" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
-		},
-	"Site025" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
 		},
 	"Site030" : {
 		"BackGrSupprPulses" : 2,
@@ -124,13 +54,6 @@
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
 		"SliceReadoutTime" : 35
-		},
-	"Site032" : {
-		"BackGrSupprPulses" : 
-		"LabelingType" : 
-		"Initial_PLD" : 
-		"LabelingDuration" : 
-		"SliceReadoutTime" : 
 		},
 	"Site040" : {
 		"BackGrSupprPulses" : 2,

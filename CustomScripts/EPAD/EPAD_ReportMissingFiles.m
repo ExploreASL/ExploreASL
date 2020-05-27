@@ -96,6 +96,7 @@ for iSite=1:length(SiteN)
 end
     
 fclose(FID);
+fprintf('\n');
 
 if DeleteNII
     warning('Deleting subjects that were incomplete');

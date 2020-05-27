@@ -220,10 +220,9 @@ EPAD_BIDS_Fix_DTI(AnalysisDir); % fix ADC conversion & create NormPE NIfTI
 EPAD_BIDS_Fix_PE(AnalysisDir); % Combine separate NormPE/RevPE dirs into single dir per contrast
 EPAD_Manage_PEPolar_Parms(AnalysisDir); % put the correct PEPolar parameters in the JSON files
 EPAD_BIDS_Fix_ASL(AnalysisDir); % Fix dcm2nii ASL conversion errors
-EPAD_ASL_parmsPrepare(AnalysisDir); % REPLACE THIS FUNCTION BY EPAD_CREATEASLJSONPARS.M
+% EPAD_ASL_parmsPrepare(AnalysisDir); % REPLACE THIS FUNCTION BY EPAD_CREATEASLJSONPARS.M
 EPAD_CreateASLJSONPars(AnalysisDir); % List ASL sequence parameters & populate the JSONs for quantification
 EPAD_CopyFLAIR_WMH_Carole(AnalysisDir, '/radshare/EPAD/Carole/EPAD_All_CaroleOutput'); % Copy WMHs segmented by Carole, making sure to also copy the FLAIRs that are in alignment with the WMH
-
 
 % Check availability files
 EPAD_ReportMissingFiles(ROOT, false); % set latter to true for removing incomplete subjects for re-import

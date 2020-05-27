@@ -55,12 +55,14 @@ for iSubject=1:length(SubjectList)
     PathASL         = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','ASL4D.nii');
     PathASLBackup   = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','ASL4D_Backup.nii');
     PathM0          = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','M0.nii');
-    PathM0parms     = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','M0_parms.mat');    
+    PathM0parms     = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','M0_parms.mat');
+    PathM0json      = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','M0.json');
 
     if xASL_exist(PathASL, 'file') && ~xASL_exist(PathASLBackup, 'file')
         xASL_Copy(PathASL, PathASLBackup);
         xASL_delete(PathM0);
         xASL_delete(PathM0parms);
+        xASL_delete(PathM0json);
 
         xASL_io_SplitASL_M0(PathASL, 1);
     end

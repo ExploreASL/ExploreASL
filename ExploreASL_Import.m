@@ -541,26 +541,29 @@ for iSubject=1:nSubjects
 
                 % extract relevant parameters from dicom header, if not
                 % already exists
-                SavePathJSON = fullfile(destdir, [scan_name '.json']);
-                if exist(SavePathJSON,'file')
-                    CreateJSON = false;
+                % Find JSONpath that is there already
+                SavePathJSON{1} = fullfile(destdir, [scan_name '.json']);
+                SavePathJSON{2} = fullfile(destdir, [session_name '.json']);
+                for iPath=1:length(nii_files)
+                    SavePathJSON{end+1} = [nii_files{iPath}(1:end-4) '.json'];
                 end
 
-                %if CreateJSON && ~isempty(first_match)
-				if ~isempty(first_match)
-					[~, ~, fext] = fileparts(first_match);
-					if  strcmpi(fext,'.PAR')
-						parms = xASL_adm_Par2Parms(first_match, SavePathJSON);
-					elseif strcmpi(fext,'.nii')
-						parms = [];
-					elseif imPar.bMatchDirectories
-						Fpath  = fileparts(first_match);
-						[parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-						clear Fpath Ffile Fext
-					else
-						[parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-					end
-				end
+                for iPath=1:length(SavePathJSON)
+                    if exist(SavePathJSON{iPath}, 'file') && ~isempty(first_match)
+                        [~, ~, fext] = fileparts(first_match);
+                        if  strcmpi(fext,'.PAR')
+                            parms = xASL_adm_Par2Parms(first_match, SavePathJSON{iPath});
+                        elseif strcmpi(fext,'.nii')
+                            parms = [];
+                        elseif imPar.bMatchDirectories
+                            Fpath  = fileparts(first_match);
+                            [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+                            clear Fpath Ffile Fext
+                        else
+                            [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+                        end
+                    end
+                end
 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of
@@ -568,7 +571,7 @@ for iSubject=1:nSubjects
                 % that is dealt with by xASL_bids_Dicom2JSON but not by
                 % dcm2niiX
 
-                if CreateJSON && ~isempty(nii_files) && exist('parms','var')
+                if ~isempty(nii_files) && exist('parms','var')
                     [TempLine, PrintDICOMFields] = AppendParmsParameters(parms);
                     summary_line = [summary_line TempLine];
                 end

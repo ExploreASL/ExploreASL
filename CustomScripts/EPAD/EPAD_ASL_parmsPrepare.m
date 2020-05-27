@@ -48,17 +48,16 @@ for iSubject=1:length(SubjectList)
         error(['Multiple sequence defined for ' SubjectList{iSubject} ', should be only 1']);
     end
     
-    % Find ASL&M0 parms files
-    ParmsFiles = xASL_adm_GetFileList(fullfile(AnalysisDir, SubjectList{iSubject}), '^(ASL4D|M0)_parms\.mat$', 'FPListRec', [0 Inf]);
-    for iParms=1:length(ParmsFiles)
-        NewParms = load(ParmsFiles{iParms}, '-mat');
-        parms = NewParms.parms;
-
+    % Find ASL&M0 JSON files
+    JsonFiles = xASL_adm_GetFileList(fullfile(AnalysisDir, SubjectList{iSubject}), '^(ASL4D|M0)\.json$', 'FPListRec', [0 Inf]);
+    for iJson=1:length(JsonFiles)    
+        parms = xASL_import_json(JsonFiles{iJson});
         for iG=1:length(FieldsG)
             parms.(FieldsG{iG}) = G.(FieldsG{iG}){SequenceN};
         end
-        save(ParmsFiles{iParms},'parms');
+        xASL_adm_SaveJSON(parms, JsonFiles{iJson});
     end
+    
 end
 
 xASL_TrackProgress(1, 1);

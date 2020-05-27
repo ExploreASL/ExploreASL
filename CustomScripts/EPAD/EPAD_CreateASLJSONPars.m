@@ -20,16 +20,27 @@ function EPAD_CreateASLJSONPars(AnalysisDir)
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
+
+
 if exist(fullfile(pwd,'ExploreASL_Master.m'), 'file') % we are in the ExploreASL root folder
     QParmsPath = fullfile('CustomScripts','EPAD','DataParsOther','ASLQParms.json');
 elseif exist(fullfile(pwd,'EPAD_CreateASLJSONPars.m'), 'file') % we are in the EPAD CustomScripts folder
     QParmsPath = fullfile('DataParsOther','ASLQParms.json');
 else
+    MyPath = which('ExploreASL_Master.m');
+    if ~isempty(MyPath) && exist(MyPath, 'file')
+        QParmsPath = fullfile(fileparts(MyPath), 'CustomScripts','EPAD','DataParsOther','ASLQParms.json');
+    else
+        QParmsPath = '';
+    end
+end
+
+if ~exist(QParmsPath, 'file')
     warning('Couldnt find the mother database ASLQParms.json, skipping...');
     return;
 end
 
-MotherData = spm_jsonread(QParmsPath);
+MotherData = xASL_import_json(QParmsPath); % spm_jsonread
 SubjectList = xASL_adm_GetFileList(AnalysisDir, '^\d{3}EPAD\d*(|_\d*)$', 'FPList', [0 Inf], true);
 
 if isempty(SubjectList)
@@ -39,22 +50,22 @@ end
 
 fprintf('Populating ASL JSON files with vendor/sequence-specific quantification parameters:   ');
 
-for iS=1:length(SubjectList)
-    xASL_TrackProgress(iS,length(SubjectList));
+for iSubject=1:length(SubjectList)
+    xASL_TrackProgress(iSubject,length(SubjectList));
     % Identify site
-    [~, CurrentID] = fileparts(SubjectList{iS});
+    [~, CurrentID] = fileparts(SubjectList{iSubject});
     CurrentSite = ['Site' CurrentID(1:3)];
     % Search for ASL JSON
-    JSONPath = xASL_adm_GetFileList(fullfile(SubjectList{iS}, 'ASL_1'), '^ASL(?!.*RevPE).*\.json$', 'FPList', [0 Inf]);
+    JSONPath = xASL_adm_GetFileList(fullfile(SubjectList{iSubject}, 'ASL_1'), '^ASL(?!.*RevPE).*\.json$', 'FPList', [0 Inf]);
 
     if ~isempty(JSONPath)
-        for iC=1:length(JSONPath)
-            jsonData = spm_jsonread(JSONPath{iC});
+        for iJSON=1:length(JSONPath)
+            jsonData = spm_jsonread(JSONPath{iJSON});
             FieldsAre = fields(MotherData.(CurrentSite));
             for iField=1:length(FieldsAre)
                 jsonData.(FieldsAre{iField}) = MotherData.(CurrentSite).(FieldsAre{iField});
             end
-            xASL_adm_SaveJSON(jsonData,JSONPath{iC});
+            xASL_adm_SaveJSON(jsonData,JSONPath{iJSON});
         end
     end
 end
