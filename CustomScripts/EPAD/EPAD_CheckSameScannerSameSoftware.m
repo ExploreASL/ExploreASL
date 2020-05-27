@@ -19,7 +19,7 @@ end
 fprintf(FID, '\n');
 
 %% Get list of scanners
-Dlist = xASL_adm_GetFileList(AnalysisDir, '^\d{3}EPAD\d*$', 'List', [], true);
+Dlist = xASL_adm_GetFileList(AnalysisDir, '^\d{3}EPAD\d*(|_\d*)$', 'List', [], true);
 for iDir=1:length(Dlist)
     ScannerID{iDir} = Dlist{iDir}(1:3);
 end
@@ -30,7 +30,7 @@ fprintf('Printing JSON fields to check same scanner same software:   ');
 for iScanner=1:length(ScannerID)
     xASL_TrackProgress(iScanner, length(ScannerID));
     fprintf(FID, ['Scanner' num2str(ScannerID{iScanner}) '\n']);
-    Dlist = xASL_adm_GetFileList(AnalysisDir, ['^' ScannerID{iScanner} 'EPAD\d*$'], 'FPList', [], true);
+    Dlist = xASL_adm_GetFileList(AnalysisDir, ['^' ScannerID{iScanner} 'EPAD\d*(|_\d*)$'], 'FPList', [], true);
 
     for iDir=1:length(Dlist)
         % Print subjectID

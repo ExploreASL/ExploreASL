@@ -28,7 +28,12 @@ function EPAD_BIDS_Fix_PE(AnalysisDir)
 % Copyright 2015-2019 ExploreASL
 
 
-SubjectList = xASL_adm_GetFsList(AnalysisDir,'^\d{3}EPAD\d*$', true, [], [], [0 Inf]);
+SubjectList = xASL_adm_GetFsList(AnalysisDir,'^\d{3}EPAD\d*(|_\d*)$', true, [], [], [0 Inf]);
+
+if isempty(SubjectList)
+    warning('Didnt find subjects for PE curation, skipping');
+    return;
+end
 
 fprintf('%s','Adjusting DTI BIDS:  0%');
 

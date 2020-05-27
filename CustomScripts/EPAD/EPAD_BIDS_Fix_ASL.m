@@ -20,34 +20,44 @@ function EPAD_BIDS_Fix_ASL(AnalysisDir)
 
 %% ASL site 10 has wrong slice ordering, fix this
 fprintf('%s','Fixing ASL slice ordering for site 010:   ');
-FileList = xASL_adm_GetFsList(AnalysisDir, '^(010|110)-\d*$', 1, [], [], [0 Inf]);
+SubjectList = xASL_adm_GetFsList(AnalysisDir, '^(010|110)EPAD\d*(|_\d*)$', 1, [], [], [0 Inf]);
 
-for iFile=1:length(FileList)
-    xASL_TrackProgress(iFile, length(FileList));
-    ASLfile     = fullfile(AnalysisDir, FileList{iFile}, 'ASL_1','ASL4D.nii');
-    ASLBackup   = fullfile(AnalysisDir, FileList{iFile}, 'ASL_1','ASL4D_Backup.nii');
+if isempty(SubjectList)
+    warning('No subjects found for curating ASL site 10');
+end
+
+for iSubject=1:length(SubjectList)
+    xASL_TrackProgress(iSubject, length(SubjectList));
+    ASLfile     = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','ASL4D.nii');
+    ASLBackup   = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','ASL4D_Backup.nii');
     % Check if Backup file already exists, that means this file has already been done
     if  xASL_exist(ASLfile, 'file') && ~ xASL_exist(ASLBackup, 'file')
         xASL_io_RepairSiemensASL_MOSAIC(ASLfile);
     end
 end
+
+xASL_TrackProgress(1, 1);
 fprintf('\n');
 
 %% First image of Siemens ASL site 12/31 should be removed
 %  Which we do here by splitting it into an M0 and deleting this M0 NIfTI
 %  afterwards
 fprintf('%s','Fixing ASL slice ordering for site 012/031:   ');
-FileList   = xASL_adm_GetFsList(AnalysisDir, '^(012|031)-\d{4}$', 1, [], [], [0 Inf]);
+SubjectList   = xASL_adm_GetFsList(AnalysisDir, '^(012|031)EPAD\d{4}(|_\d*)$', 1, [], [], [0 Inf]);
 
-for iFile=1:length(FileList)
-    xASL_TrackProgress(iFile, length(FileList));
+if isempty(SubjectList)
+    warning('No subjects found for curating ASL sites 12/31');
+end
+
+for iSubject=1:length(SubjectList)
+    xASL_TrackProgress(iSubject, length(SubjectList));
     
-    PathASL         = fullfile(AnalysisDir, FileList{iFile}, 'ASL_1','ASL4D.nii');
-    PathASLBackup   = fullfile(AnalysisDir, FileList{iFile}, 'ASL_1','ASL4D_Backup.nii');
-    PathM0          = fullfile(AnalysisDir, FileList{iFile}, 'ASL_1','M0.nii');
-    PathM0parms     = fullfile(AnalysisDir, FileList{iFile}, 'ASL_1','M0_parms.mat');    
+    PathASL         = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','ASL4D.nii');
+    PathASLBackup   = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','ASL4D_Backup.nii');
+    PathM0          = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','M0.nii');
+    PathM0parms     = fullfile(AnalysisDir, SubjectList{iSubject}, 'ASL_1','M0_parms.mat');    
 
-    if xASL_exist(PathASL, 'file') && ~ xASL_exist(PathASLBackup, 'file')
+    if xASL_exist(PathASL, 'file') && ~xASL_exist(PathASLBackup, 'file')
         xASL_Copy(PathASL, PathASLBackup);
         xASL_delete(PathM0);
         xASL_delete(PathM0parms);
@@ -55,6 +65,8 @@ for iFile=1:length(FileList)
         xASL_io_SplitASL_M0(PathASL, 1);
     end
 end
+
+xASL_TrackProgress(1, 1);
 fprintf('\n');
 
 

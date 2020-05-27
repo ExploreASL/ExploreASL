@@ -47,21 +47,26 @@ end
 
 AnalysisDir = fullfile(ROOT, 'analysis');
 
-SubjList = xASL_adm_GetFileList(AnalysisDir, '^\d{3}EPAD\d*$', 'FPList', [0 Inf], true);
+SubjectList = xASL_adm_GetFileList(AnalysisDir, '^\d{3}EPAD\d*(|_d\*)$', 'FPList', [0 Inf], true);
+
+if isempty(SubjectList)
+    warning('No subjects found for WMH curation, skipping');
+    return;
+end
 
 NotCopiedList = struct;
 
 fprintf('Copying FLAIR & WMH segmentations Carole:   ');
-for iS=1:length(SubjList)
-    xASL_TrackProgress(iS, length(SubjList));
-    [~, NameNew] = fileparts(SubjList{iS});
+for iS=1:length(SubjectList)
+    xASL_TrackProgress(iS, length(SubjectList));
+    [~, NameNew] = fileparts(SubjectList{iS});
     % here we check if the scanner prefix is a site prefix (e.g. 010 instead of 110)
     % & also if there is a '-' instead of 'EPAD'
     Name1 = ['0' NameNew(2:3) '-' NameNew(8:end)];
     Name2 = NameNew(8:end);
     
-    FLAIRnew = fullfile(SubjList{iS}, 'FLAIR.nii');
-    WMHnew = fullfile(SubjList{iS}, 'WMH_SEGM.nii');
+    FLAIRnew = fullfile(SubjectList{iS}, 'FLAIR.nii');
+    WMHnew = fullfile(SubjectList{iS}, 'WMH_SEGM.nii');
     
     FLAIRdir1 = fullfile(CaroleDir, Name1, 'FLAIR2T1');
     FLAIRdir2 = fullfile(CaroleDir, Name2, 'FLAIR2T1');
@@ -92,7 +97,7 @@ for iS=1:length(SubjList)
         % with her FLAIR, not necessarily with ours)
         if bCopy
             % first we remove all pre-existing FLAIRs/WMHs to make sure we wont have doubles
-            xASL_adm_DeleteFileList(SubjList{iS}, '^.*(FLAIR|WMH).*$', false, [0 Inf]); % non-recursively
+            xASL_adm_DeleteFileList(SubjectList{iS}, '^.*(FLAIR|WMH).*$', false, [0 Inf]); % non-recursively
             
             xASL_Copy(FLAIRold, FLAIRnew, true); % need to overwrite here
             xASL_Copy(WMHold, WMHnew, true); % need to overwrite here
@@ -103,6 +108,9 @@ for iS=1:length(SubjList)
         NotCopiedList.(['n' num2str(length(fields(NotCopiedList)))]) = NameNew;
     end
 end
+
+xASL_TrackProgress(1, 1);
+fprintf('\n');
 
 %% SAVE THE MISSING LIST HERE IN JSON FILES
 

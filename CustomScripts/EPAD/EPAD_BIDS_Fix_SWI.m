@@ -17,7 +17,12 @@ function EPAD_Fix_SWI_BIDS(AnalysisDir)
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
-SubjectList = xASL_adm_GetFsList(AnalysisDir,'^\d{3}EPAD\d*$', true, [], [], [0 Inf]);
+SubjectList = xASL_adm_GetFsList(AnalysisDir,'^\d{3}EPAD\d*(|_\d*)$', true, [], [], [0 Inf]);
+
+if isempty(SubjectList)
+    warning('Didnt find subjects for SWI curation, skipping');
+    return;
+end
 
 fprintf('%s','Adjusting SWI BIDS:  0%');
 
@@ -76,6 +81,7 @@ for iSubject=1:length(SubjectList)
     end
 end
 
+xASL_TrackProgress(1, 1);
 fprintf('\n');
 
 end

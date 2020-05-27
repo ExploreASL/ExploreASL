@@ -31,7 +31,13 @@ G.SliceReadoutTime    = {36.5278 36.5278 35 0};
 FieldsG = fields(G);
 
 fprintf('%s','Preparing ASL parameter files for different sites:   ');
-SubjectList = xASL_adm_GetFsList(AnalysisDir, '^\d{3}-\d*$', true, [], [], [0 Inf]);
+SubjectList = xASL_adm_GetFsList(AnalysisDir, '^\d{3}EPAD\d*(|_\d*)$', true, [], [], [0 Inf]);
+
+if isempty(SubjectList)
+    warning('No subjects found for ASL site-specific curation, skipping');
+    return;
+end
+
 for iSubject=1:length(SubjectList)
     xASL_TrackProgress(iSubject,length(SubjectList));
     % Find which sequence the site uses
@@ -54,6 +60,8 @@ for iSubject=1:length(SubjectList)
         save(ParmsFiles{iParms},'parms');
     end
 end
+
+xASL_TrackProgress(1, 1);
 fprintf('\n');
 
 

@@ -4,7 +4,7 @@ function x = DataParameters( x )
 
 % Define study
 x.name               = 'EPAD';
-x.subject_regexp     = '^\d{3}EPAD\d*$';
+x.subject_regexp     = '^\d{3}EPAD\d*(|_\d*)$';
 x.Quality  			 = false;
 x.DELETETEMP 		 = true;
 

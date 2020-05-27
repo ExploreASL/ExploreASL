@@ -28,7 +28,12 @@ function EPAD_BIDS_Fix_DTI(AnalysisDir)
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
-SubjectList = xASL_adm_GetFsList(AnalysisDir,'^\d{3}EPAD\d*$', true, [], [], [0 Inf]);
+SubjectList = xASL_adm_GetFsList(AnalysisDir,'^\d{3}EPAD\d*(|_\d*)$', true, [], [], [0 Inf]);
+
+if isempty(SubjectList)
+    warning('Didnt find subjects for DTI curation, skipping');
+    return;
+end
 
 fprintf('%s','Adjusting DTI NIfTIs:  0%');
 
@@ -76,9 +81,7 @@ for iSubject=1:length(SubjectList)
             tNii = xASL_io_Nifti2Im(PathNii);
             ImNormPE = tNii(:,:,:,IndexB0);
             SavePathNii = fullfile(Fpath, [Ffile '_NormPE' Fext]);
-            SavePathJSON = fullfile(Fpath, [Ffile '_NormPE.json']);
-            SavePathMAT = fullfile(Fpath, [Ffile '_NormPE_parms.mat']);
-
+            
             try
                 xASL_io_SaveNifti(PathNii, SavePathNii, ImNormPE, [], 0);
             catch
@@ -86,24 +89,33 @@ for iSubject=1:length(SubjectList)
                 continue;
             end
 
-            % Copy parms.mat & json
+            % Copy JSON, issue warning if not existing
             PathJSON = fullfile(Fpath, [Ffile '.json']);
+            SavePathJSON = fullfile(Fpath, [Ffile '_NormPE.json']);
+            if exist(PathJSON, 'file')
+                xASL_Copy(PathJSON, SavePathJSON, true);
+            else
+                warning(['Could not find ' PathJSON]);
+            end
+            
+            % Copy _parms.mat if exist (but this is phasing out, don't
+            % issue warning here)
+            
             PathMAT = fullfile(Fpath, [Ffile '_parms.mat']);
-            xASL_Copy(PathJSON, SavePathJSON, true);
+            SavePathMAT = fullfile(Fpath, [Ffile '_NormPE_parms.mat']);
             if exist(PathMAT,'file')
                 xASL_Copy(PathMAT, SavePathMAT, true);
             else
                 PathMAT = xASL_adm_GetFileList(Fpath, 'dwi.*_parms\.mat','FPList',[0 Inf]);
                 if ~isempty(PathMAT)
                     xASL_Copy(PathMAT{1}, SavePathMAT, true);
-                else
-                    warning(['Could not find ' fullfile(Fpath, [Ffile '_parms.mat'])]);
                 end
             end
         end
     end
 end
 
+xASL_TrackProgress(1, 1);
 fprintf('\n');
 
 end

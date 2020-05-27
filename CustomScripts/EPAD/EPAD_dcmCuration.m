@@ -274,6 +274,11 @@ for iSite=1:length(SiteNrString) % iSite loops over sites (i.e. scanners)
     fprintf('%s',['Processing scanner ' SiteNrString{iSite} ':   '])
     SubjectList = xASL_adm_GetFsList(SiteDir,'^\d{3}EPAD\d*$', true, [], [], [0 Inf]);
 
+    if isempty(SubjectList)
+        fprintf('%s\n',['No subjects found for scanner ' SiteNrString{iSite} ', skipping...']);
+        continue;
+    end
+    
     % Now we process it
     for iScanType=1:length(ScanTypeName) % Initialize the CurationTable
         CurationTable{iSite}{iScanType}(1,1:6) = {'SubjectName' 'VisitName' 'nFoundDuplicates' 'nDeletedDuplicates' 'nScansFound' 'nScansUnknownName'};

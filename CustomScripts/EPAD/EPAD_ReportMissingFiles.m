@@ -58,7 +58,7 @@ for iSite=1:length(SiteN)
     
     fprintf(FID, ['\n\n\n' SiteCurrent]);
     fprintf(['\nProcessing ' SiteCurrent ':   ']);
-    SubjDirs = xASL_adm_GetFileList(AnalysisDir, ['^' SiteCurrent 'EPAD\d*$'], 'FPList', [0 Inf], true);
+    SubjDirs = xASL_adm_GetFileList(AnalysisDir, ['^' SiteCurrent 'EPAD\d*(_|\d*)$'], 'FPList', [0 Inf], true);
     for iT=1:nFields % for ScanTypes
     	xASL_TrackProgress(iT,nFields);
         % first check if this ScanType should exist

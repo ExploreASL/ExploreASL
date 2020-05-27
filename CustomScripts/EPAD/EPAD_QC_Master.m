@@ -192,7 +192,7 @@ if ~exist(StatusPath, 'file')
     % Now throw error or warning depending on pre-existing TimePoints
     if ~isempty(xASL_adm_GetFileList(AnalysisDir, '^\d{3}EPAD\d*$','FPList',[0 Inf],true))
         error('Pre-existing analysis-subject folders without TimePoint suffix');
-    elseif ~isempty(xASL_adm_GetFileList(AnalysisDir, '^\d{3}EPAD\d*_\d$','FPList',[0 Inf],true))
+    elseif ~isempty(xASL_adm_GetFileList(AnalysisDir, '^\d{3}EPAD\d*_\d*$','FPList',[0 Inf],true))
         warning('Make sure that all existing analysis-subject folders have the correct suffix');
     end
     
@@ -222,7 +222,7 @@ EPAD_Manage_PEPolar_Parms(AnalysisDir); % put the correct PEPolar parameters in 
 EPAD_BIDS_Fix_ASL(AnalysisDir); % Fix dcm2nii ASL conversion errors
 EPAD_ASL_parmsPrepare(AnalysisDir); % REPLACE THIS FUNCTION BY EPAD_CREATEASLJSONPARS.M
 EPAD_CreateASLJSONPars(AnalysisDir); % List ASL sequence parameters & populate the JSONs for quantification
-EPAD_CopyFLAIR_WMH_Carole(ROOT); % Copy WMHs segmented by Carole, making sure to also copy the FLAIRs that are in alignment with the WMH
+EPAD_CopyFLAIR_WMH_Carole(AnalysisDir, '/radshare/EPAD/Carole/EPAD_All_CaroleOutput'); % Copy WMHs segmented by Carole, making sure to also copy the FLAIRs that are in alignment with the WMH
 
 
 % Check availability files
