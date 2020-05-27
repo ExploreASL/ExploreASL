@@ -363,7 +363,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
                     
                     EffectiveEchoSpacingPhilips = parms.MRSeriesWaterFatShift/(434.215 * (parms.MRSeriesEPIFactor+1));
                     parms.TotalReadoutTime = EffectiveEchoSpacingPhilips*(parms.MRSeriesEPIFactor-1);
-                    parms.EffectiveEchoSpacing = parms.TotalReadoutTime/(parms.AcquisitionMatrix-1);
+                    parms.EffectiveEchoSpacing = parms.TotalReadoutTime/(parms.AcquisitionMatrix(1)-1);
                     parms = rmfield(parms, {'MRSeriesWaterFatShift' 'MRSeriesEPIFactor'});
                 end
             case 'Siemens'

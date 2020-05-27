@@ -362,7 +362,7 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
                     
                     EffectiveEchoSpacingPhilips = parms.MRSeriesWaterFatShift/(434.215 * (parms.MRSeriesEPIFactor+1));
                     parms.TotalReadoutTime = EffectiveEchoSpacingPhilips*(parms.MRSeriesEPIFactor-1);
-                    parms.EffectiveEchoSpacing = parms.TotalReadoutTime/(parms.AcquisitionMatrix-1);
+                    parms.EffectiveEchoSpacing = parms.TotalReadoutTime/(parms.AcquisitionMatrix(1)-1);
                     parms = rmfield(parms, {'MRSeriesWaterFatShift' 'MRSeriesEPIFactor'});
                 end
             case 'Siemens'
