@@ -479,8 +479,14 @@ SegmentSPM12 = true; % by default, run SPM12 when CAT12 crashes
 %% --------------------------------------------------------------------
 %% CAT12 template & registration settings
 SPMTemplateNII    = fullfile(x.SPMDIR, 'tpm', 'TPM.nii');
-DartelTemplateNII = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_1.50mm', 'Template_1_IXI555_MNI152.nii');
-GSTemplateNII     = fullfile(x.SPMDIR, 'toolbox', 'cat12', 'templates_1.50mm', 'Template_0_IXI555_MNI152_GS.nii');
+[~,catVer] = cat_version();
+if str2double(catVer) > 1500
+	catTempDir = 'templates_volumes';
+else
+	catTempDir = 'templates_1.50mm';
+end
+DartelTemplateNII = fullfile(x.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_1_IXI555_MNI152.nii');
+GSTemplateNII     = fullfile(x.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_0_IXI555_MNI152_GS.nii');
 
 if x.Pediatric_Template
 	DartelTemplateNII = fullfile(x.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_1_' x.Pediatric_Type '_DARTEL.nii']);

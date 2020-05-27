@@ -162,8 +162,14 @@ if bTestSPM
     % Test CAT12
     matlabbatch = [];
     SPMTemplateNII    = fullfile(x.MyPath,'External','SPMmodified', 'tpm', 'TPM.nii');
-    DartelTemplateNII = fullfile(x.MyPath,'External','SPMmodified', 'toolbox', 'cat12', 'templates_1.50mm', 'Template_1_IXI555_MNI152.nii');
-    GSTemplateNII     = fullfile(x.MyPath,'External','SPMmodified', 'toolbox', 'cat12', 'templates_1.50mm', 'Template_0_IXI555_MNI152_GS.nii');
+	[~,catVer] = cat_version();
+	if str2double(catVer) > 1500
+		catTempDir = 'templates_volumes';
+	else
+		catTempDir = 'templates_1.50mm';
+	end
+    DartelTemplateNII = fullfile(x.MyPath,'External','SPMmodified', 'toolbox', 'cat12', catTempDir, 'Template_1_IXI555_MNI152.nii');
+    GSTemplateNII     = fullfile(x.MyPath,'External','SPMmodified', 'toolbox', 'cat12', catTempDir, 'Template_0_IXI555_MNI152_GS.nii');
     matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm                         = {SPMTemplateNII};
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.darteltpm   = {DartelTemplateNII}; % Runs DARTEL to this n=555 subjects template
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shootingtpm = {GSTemplateNII}; % Runs Geodesic Shooting to this n=555 subjects template

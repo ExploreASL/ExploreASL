@@ -247,7 +247,13 @@ end
 
 PathDARTEL = fullfile(x.D.PopDir, 'Template_6.nii');
 PathDARTEL_snMat = fullfile(x.D.PopDir, 'Template_6_sn.mat');
-PathMNI = fullfile(x.SPMDIR,'toolbox','cat12','templates_1.50mm','Template_6_IXI555_MNI152.nii');
+[~,catVer] = cat_version();
+if str2double(catVer) > 1500
+	catTempDir = 'templates_volumes';
+else
+	catTempDir = 'templates_1.50mm';
+end
+PathMNI = fullfile(x.SPMDIR,'toolbox','cat12',catTempDir,'Template_6_IXI555_MNI152.nii');
 
 xASL_delete(PathDARTEL_snMat); % make sure that this is always repeated for new DARTEL flow fields
 
