@@ -468,9 +468,7 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
     end
     json = xASL_adm_LoadParms(JSONin, x);
 
-    if ~isfield(json,'PhaseEncodingDirection') && isfield(json,'PhaseEncodingAxis')
-        json.PhaseEncodingDirection = json.PhaseEncodingAxis;
-    elseif ~isfield(json,'PhaseEncodingDirection')
+ 	if ~isfield(json,'PhaseEncodingDirection')
         warning('PhaseEncodingDirection JSON field missing, skipping TopUp');
         return;
     elseif ~isfield(json,'TotalReadoutTime')

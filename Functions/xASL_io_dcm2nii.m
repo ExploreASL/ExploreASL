@@ -272,7 +272,11 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                 if length(parms.Keep)>1 % add iVolume suffix (if there are multiple)
                     DestFileName = [DestFileName '_' int2str(iVolume)];
                 end
-                DestFileName = xASL_adm_CorrectName(DestFileName);
+%                 DestFileName = xASL_adm_CorrectName(DestFileName); %
+%                 TAKING THIS OUT HERE, IF WE WANT THIS THIS NEEDS TO BE
+%                 EQUAL FOR THE dcm2niiX OUTPUT AND THE JSON THAT WE CREATE
+%                 WITH DCMTK
+%                 ALSO BIDS REQUIRES TO KEEP '-' IN
 
                 dest_file = fullfile(destdir,[DestFileName '.nii']);
                 xASL_Move(temp_file, dest_file, parms.Overwrite, parms.Verbose);
