@@ -150,7 +150,7 @@ iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID));
 iSession = find(strcmp(x.SESSIONS, x.P.SessionID));
 iSubjSess = (iSubject-1)*x.nSessions + iSession;
 
-if size(x.S.SetsID,1)~=iSubjSess
+if size(x.S.SetsID,1)~=x.nSubjectsSessions
     warning('Inheritance x.S.SetsID data was not equal to numbers of Subjects/Sessions, skipping');
     return;
 end
