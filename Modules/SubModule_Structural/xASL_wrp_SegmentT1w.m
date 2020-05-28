@@ -296,8 +296,8 @@ end
 %% 8) Manage flowfields
 if xASL_stat_SumNan(LesionIM(:))>0
     % Mix the DARTEL (non-linear) and SPM (uniform) flowfields based on Euclidian distance matrix
-    Fields2Save = xASL_wrp_CombineFlowFields(x, Path_Transf_SPM, Path_Transf_DARTEL, LesionIM);
-    xASL_io_SaveNifti(x.P.Path_y_T1, x.P.Path_y_T1, Fields2Save, [], false);
+    FlowfieldImage = xASL_wrp_CombineFlowFields(x, Path_Transf_SPM, Path_Transf_DARTEL, LesionIM);
+    xASL_io_SaveNifti(Path_Transf_SPM, x.P.Path_y_T1, FlowfieldImage, [], false);
     xASL_Move(Path_Transf_DARTEL, x.P.Path_y_T1, true);
 else % if no lesion existed, keep the non-linear flowfield (if it exists, otherwise take the SPM flowfield)
     if xASL_exist(Path_Transf_DARTEL, 'file')
@@ -667,7 +667,7 @@ end
 
 %% ===================================================================================================================
 %% ===================================================================================================================
-function [Fields2Save] = xASL_wrp_CombineFlowFields(x, Path_Transf_SPM, Path_Transf_DARTEL, LesionIM)
+function [FlowfieldImage] = xASL_wrp_CombineFlowFields(x, Path_Transf_SPM, Path_Transf_DARTEL, LesionIM)
 %xASL_wrp_CombineFlowFields Create Euclidian distance matrix, to mix the DARTEL (non-linear) and SPM (uniform) flow
 
 
@@ -745,7 +745,7 @@ end
 %IM_dartel(repmat(logical(LesionIM),[1 1 1 1 3])) = NaN;
 
 %% Fix the edges of the flowfields, extrapolate over the NaNs
-Fields2Save = IM_dartel;
+FlowfieldImage = IM_dartel;
 
 
 end
