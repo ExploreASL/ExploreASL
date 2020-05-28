@@ -75,7 +75,7 @@ else
     end
 
     if length(TR)>1
-        warning(['Multiple M0 TRs found: ' num2str(TR) ', ' num2str(min(TR)) ' used']);
+        warning(['Multiple M0 TRs found: ' num2str(TR(:)') ', ' num2str(min(TR)) ' used']);
         TR  = min(TR);
     end
 
