@@ -25,4 +25,5 @@ end
 
 mex -setup C++
 
+mex xASL_mex_chamfers3D.c
 mex xASL_mex_conv3Dsep.c

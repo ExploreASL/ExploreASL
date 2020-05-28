@@ -1,8 +1,8 @@
-function [dist, x, y, z] = xASL_im_DistanceTransform( im )
+function [dist, x, y, z] = xASL_im_DistanceTransform(im)
 
 % Calculates the distance transform in a binary image
 % Uses Borgefors Chamfers computation of Euclidean distance in 3D using a 5x5x5 window
-% [dist, x, y, z] = xASL_im_DistanceTransform( im )
+% [dist, x, y, z] = xASL_im_DistanceTransform(im)
 % im - input image
 % dist - distance map, distance in voxels to the closest point on the mask
 % x,y,z - X, Y, and Z coordinate of the closest voxel on the mask
