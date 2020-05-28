@@ -61,10 +61,15 @@ function status = xASL_adm_CreateDir(varargin)
     pathArr = regexp(strPath,filesep,'split');
     ROOTdir = [pathArr{1} filesep];
     if ~ispc
-        ROOTdir = [filesep pathArr{1}];
+        % also put a file separator in front of the folder name, especially
+        % when it is empty
+        ROOTdir = [filesep ROOTdir];
     end
     
-    if ~exist(ROOTdir,'dir') && ~isempty(ROOTdir) && ~strcmp(ROOTdir, filesep)
+    IsRelativePath = isempty(ROOTdir) || strcmp(ROOTdir, filesep) || isempty(fileparts(strPath));
+    if ~exist(ROOTdir,'dir') && ~IsRelativePath
+        % We issue a warning when an absolute pathname is provided and the
+        % folder layer above this doesnt exist
         warning('This is an invalid directory path');
         status = 0;
         ret = 0;
