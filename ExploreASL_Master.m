@@ -75,6 +75,7 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
         return; % skip processing
     elseif ~isdeployed && ~SkipPause % if this exists, we skip the break here
         fprintf('%s\n','Press any key to start processing & analyzing');
+        fprintf('Please ensure you have a read-only copy of your original data as they may be overwritten\n');
         fprintf('%s\n','Or press CTRL/command-C to cancel...  ');
         pause;
     else % continue
