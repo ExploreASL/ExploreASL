@@ -145,7 +145,6 @@ ImOut(ImOut==0) = NaN;
 
 VoxelSize = [1.5 1.5 1.5];
 
-
 ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
 xASL_TrackProgress(1,MaxIt);
 Im5 = ImOut;
@@ -161,7 +160,7 @@ xASL_TrackProgress(2, MaxIt);
 %% 6) Extrapolating only
 % Here we fill the residual NaNs (outside the mask) of the FoV
 % to prevent ASL/M0 division artifacts
-ImOut = xASL_im_FillNaNs(ImOut, 1, x.Quality);
+ImOut = xASL_im_FillNaNs(ImOut, 1, x.Quality, VoxelSize, x);
 
 
 %% ------------------------------------------------------------------------------------------
