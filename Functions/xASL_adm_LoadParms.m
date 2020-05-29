@@ -215,7 +215,9 @@ for iField=1:length(Qfields)
         end
         
         x.Q.(Qfields{iField}) = x.(Qfields{iField});
-        x = rmfield(x, Qfields{iField});
+%         x = rmfield(x, Qfields{iField}); % For now lets keep the
+%         parameter both in x and x.Q for backwards compatibility, we fix
+%         this later
     end
 end
 
