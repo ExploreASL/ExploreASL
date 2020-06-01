@@ -62,6 +62,9 @@ if isempty(which('ExploreASL_Master'))
 else
     cd(fileparts(which('ExploreASL_Master')));
 end
+if nargin<3
+    RunMethod = 1; % Set 'serial' to be default
+end
 if nargin<4 || isempty(bTestSPM)
     bTestSPM = true;
 end
@@ -106,6 +109,12 @@ spm_get_defaults('cmdline',true);
 
 % ============================================================
 %% 3) Copy all data for testing
+
+% Ask for directories if they were not defined
+if ~exist('TestDirDest','var'), TestDirDest = uigetdir(pwd, 'Select testing directory...'); end
+if ~exist('TestDirOrig','var'), TestDirOrig = uigetdir(pwd, 'Select datasets for testing...'); end
+
+% Remove previous results
 if bOverwrite && exist(TestDirDest,'dir')
     fprintf('Deleting previous results...\n');
     if ispc
@@ -114,6 +123,8 @@ if bOverwrite && exist(TestDirDest,'dir')
         system(['rm -rf ' TestDirDest]);
     end
 end
+
+% Copy data sets into testing directory
 xASL_Copy(TestDirOrig, TestDirDest);
 
 % ============================================================
@@ -124,12 +135,26 @@ if bTestSPM
     % Find the first directory and copy out the first T1 and ASL just for SPM testing
 
     Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
-
-    xASL_Copy(fullfile(TestDirDest,Dlist{1},'001DM_1','T1.nii'),fullfile(TestDirDest,'T1.nii'));
-    xASL_Copy(fullfile(TestDirDest,Dlist{1},'001DM_1','ASL_1','ASL4D.nii'),fullfile(TestDirDest,'ASL4D.nii'));
-
-    xASL_io_ReadNifti(fullfile(TestDirDest,'ASL4D.nii'));
-    xASL_io_ReadNifti(fullfile(TestDirDest,'T1.nii'));
+    
+    if strcmp(Dlist{1},'Sub-001')
+        % TestDataSet detected
+        xASL_Copy(fullfile(TestDirDest,Dlist{1},'T1.nii'),fullfile(TestDirDest,'T1.nii'));
+        xASL_Copy(fullfile(TestDirDest,Dlist{1},'ASL_1','ASL4D.nii'),fullfile(TestDirDest,'ASL4D.nii'));
+    else
+        % Old version
+        xASL_Copy(fullfile(TestDirDest,Dlist{1},'001DM_1','T1.nii'),fullfile(TestDirDest,'T1.nii'));
+        xASL_Copy(fullfile(TestDirDest,Dlist{1},'001DM_1','ASL_1','ASL4D.nii'),fullfile(TestDirDest,'ASL4D.nii'));
+    end
+    
+    % Read Nifti files
+    try
+        xASL_io_ReadNifti(fullfile(TestDirDest,'ASL4D.nii'));
+        xASL_io_ReadNifti(fullfile(TestDirDest,'T1.nii'));
+    catch
+        error('ASL and T1 data set import failed...')
+    end
+    
+    
 
     % Test spm_realign on low quality
     matlabbatch = [];
