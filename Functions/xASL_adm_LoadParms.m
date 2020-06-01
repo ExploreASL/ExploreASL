@@ -190,19 +190,8 @@ end
 %% 5) Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
 % Input all fields from the Parms into the x structure, backup those that were already existing (inheritance principle)
 % & backward compatibility
-Oldx = struct;
-ParmsFieldNames = fieldnames(Parms);
-xFieldNames = fieldnames(x);
 
-for iPar=1:length(ParmsFieldNames)
-    % Check first if already exists, to backup
-    for iS=1:length(xFieldNames)
-        if strcmp(ParmsFieldNames{iPar},xFieldNames{iS})
-            Oldx.(xFieldNames{iS}) = x.(xFieldNames{iS}); % backup
-        end
-    end
-    x.(ParmsFieldNames{iPar}) = Parms.(ParmsFieldNames{iPar});
-end
+[x] = xasl_adm_SyncParmsX(Parms, x);
 
 % Move quantification parameters to the Q (quantification) subfield, for
 % backward compatibility
