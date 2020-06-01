@@ -1,13 +1,12 @@
-function xASL_module_Structural_test(xASLdir,testDir)
 % xASL_module_Structural_test Script to test the xASL_module_Structural function
 %
-% FORMAT:           xASL_module_Structural_test(xASLdir,testDir)
+% FORMAT:           RESULT = runtests('xASL_module_Structural_test');
 %
-% INPUT:            testDir (directory for the test data)
+% INPUT:            None
 %
 % OUTPUT:           Console window log
 %
-% OUTPUT FILES:     Log file of the unit tests of the xASL_module_Structural function
+% OUTPUT FILES:     None
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script is supposed to run various unit tests of xASL_module_Structural:
@@ -15,17 +14,17 @@ function xASL_module_Structural_test(xASLdir,testDir)
 %           1) Run a test using the default TestDataSet inputs with high quality setting
 %           2) Run a test with ...
 %
-% EXAMPLE: xASL_module_Structural_test('C:\Users\...\ExploreASL','C:\Users\...\Desktop');
+% EXAMPLE: RESULT = runtests('xASL_module_Structural_test');
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
 
 % DEFAULTS
 
 % Get ExploreASL directory
-if nargin<1, xASLdir = uigetdir(pwd,'Select ExploreASL directory...'); end
+xASLdir = uigetdir(pwd,'Select ExploreASL directory...');
 
 % Define test directory
-if nargin<2, testDir = uigetdir(pwd,'Select test directory...'); end
+testDir = uigetdir(pwd,'Select test directory...');
 fprintf('Creating test folder in %s...\n', testDir)
 mkdir(fullfile(testDir,'TestFolder'))
 
@@ -53,11 +52,11 @@ testInput.x.LockDir = fullfile(testDir,'TestFolder','TestDataSet','lock','xASL_m
 testInput.x.SUBJECTDIR = fullfile(testDir,'TestFolder','TestDataSet','Sub-001');
 
 % Run test
-[result, x] = xASL_module_Structural(testInput.x);
+% [result, x] = xASL_module_Structural(testInput.x);
 
 % Use assert for outputs
-assert(isfield(x,'ModuleName'))                 % Check if new ModuleName field was created
-assert(isfield(x,'result'))                     % ...
+% assert(isfield(x,'ModuleName'))                 % Check if new ModuleName field was created
+% assert(isfield(x,'result'))                     % ...
 
 % WORK IN PROGRESS
 % Which fields always have to be in the resulting x structure?
