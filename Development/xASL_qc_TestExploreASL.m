@@ -1,4 +1,4 @@
-function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite)
+function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed)
 %xASL_qc_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
 %
 % FORMAT: [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, RunMethod)
@@ -15,6 +15,8 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %   EmailAddress- string with e-mail address for gmail account to use (OPTIONAL, DEFAULT = skip e-mailing results)
 %   Password    - string with password for this gmail account (REQUIRED when EmailAddress provided)
 %   bOverwrite  - Overwrite existing test results (OPTIONAL, DEFAULT=true);
+%   testDataUsed- Option 1: TestDataSet as an input
+%                 Option 0: Other (DEFAULT)
 % OUTPUT:
 %   ResultsTable - Table containing all results from the test runs
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -80,6 +82,9 @@ end
 if nargin<8 || isempty(bOverwrite)
     bOverwrite = true;
 end
+if nargin<9
+    testDataUsed = 0;
+end
 
 % ============================================================
 %% 1) Pull latest GitHub version
@@ -136,12 +141,12 @@ if bTestSPM
 
     Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
     
-    if strcmp(Dlist{1},'Sub-001')
+    if testDataUsed
         % TestDataSet detected
         xASL_Copy(fullfile(TestDirDest,Dlist{1},'T1.nii'),fullfile(TestDirDest,'T1.nii'));
         xASL_Copy(fullfile(TestDirDest,Dlist{1},'ASL_1','ASL4D.nii'),fullfile(TestDirDest,'ASL4D.nii'));
     else
-        % Old version
+        % Default
         xASL_Copy(fullfile(TestDirDest,Dlist{1},'001DM_1','T1.nii'),fullfile(TestDirDest,'T1.nii'));
         xASL_Copy(fullfile(TestDirDest,Dlist{1},'001DM_1','ASL_1','ASL4D.nii'),fullfile(TestDirDest,'ASL4D.nii'));
     end
