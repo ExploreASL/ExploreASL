@@ -154,7 +154,7 @@ StateName{10} = '100_WADQC';
 
 
 %% Delete old files
-if (~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4}))
+if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
     % If we rerun the ASL module, then clean it fully for proper rerunning
     % This function cleans all ASL sessions, so only run this (once) for the first session
     xASL_adm_CleanUpBeforeRerun(x.D.ROOT, 2, false, false, x.P.SubjectID, x.P.SessionID);

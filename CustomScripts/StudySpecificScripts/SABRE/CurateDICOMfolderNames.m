@@ -41,7 +41,7 @@ SavePath = '/Users/henk/Downloads/SABRE/analysis/Character.mat';
 save(SavePath,'Character');
 
 %% Fix the M0 scan
-AnalysisDir = '/s4ever/radG/RAD/share/SABRE/analysis';
+AnalysisDir = '/s4ever/radG/RAD/share/SABRE/Analysis2';
 fprintf('Generating folder list\n');
 Dlist = xASL_adm_GetFileList(AnalysisDir,'\d*','FPList', [0 Inf], true);
 
@@ -61,17 +61,21 @@ for iDir=1:length(Dlist)
     end
     
     IM = xASL_io_Nifti2Im(PathM0);
-    if max(size(IM)~=[80 80 20 3])
+    if length(size(IM))~=4 || max(size(IM)~=[80 80 20 3])
         warning(['Size M0 differed: ' PathM0]);
     else
-        FullIM = reshape(IM,[size(IM,1) size(IM,2) size(IM,3)*size(IM,4)]);
-        clear IM;
-        nVol=3;
-        for ii=1:nVol
-            IM(:,:,:,ii) = FullIM(:,:,[ii:nVol:end-(nVol-ii)]);
+        try
+            FullIM = reshape(IM,[size(IM,1) size(IM,2) size(IM,3)*size(IM,4)]);
+            clear IM;
+            nVol=3;
+            for ii=1:nVol
+                IM(:,:,:,ii) = FullIM(:,:,[ii:nVol:end-(nVol-ii)]);
+            end
+            IM = xASL_stat_MeanNan(IM,4);
+            xASL_io_SaveNifti(PathM0, PathM0, IM, [], 0);
+        catch ME
+            warning(ME.message);
         end
-        IM = xASL_stat_MeanNan(IM,4);
-        xASL_io_SaveNifti(PathM0, PathM0, IM, [], 0);
     end
 end
 fprintf('\n');
