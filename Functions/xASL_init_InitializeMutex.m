@@ -27,7 +27,7 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 
 % Check inputs
 if ~isfield(x,'RERUN') || ~isfield(x,'MUTEXID') || ~isfield(x,'LockDir')
-    warning('It seems that you are using xASL_module_Structural without initialized dbSettings, consider running xASL_Iteration instead...');
+    warning(['Seemingly you are using xASL_module_' ModuleName ' without initialized dbSettings, consider running xASL_Iteration instead...']);
 end
 
 %% --------------------------------------------------------
