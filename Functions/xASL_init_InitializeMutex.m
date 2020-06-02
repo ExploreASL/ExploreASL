@@ -25,7 +25,10 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
-
+% Check inputs
+if ~isfield(x,'RERUN') || ~isfield(x,'MUTEXID') || ~isfield(x,'LockDir')
+    warning('It seems that you are using xASL_module_Structural without initialized dbSettings, consider running xASL_Iteration instead...');
+end
 
 %% --------------------------------------------------------
 %% 1) Lock folder management
