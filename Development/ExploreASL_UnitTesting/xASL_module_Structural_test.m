@@ -39,7 +39,7 @@ nWorkers = 1;
 xTest = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
 
 % Run test
-[result, x] = xASL_module_Structural(xTest);
+[~, x] = xASL_Iteration(xTest,'xASL_module_Structural');
 
 % Use assert for outputs
 assert(isfield(x,'out'))                 % Check if new ... field was created
