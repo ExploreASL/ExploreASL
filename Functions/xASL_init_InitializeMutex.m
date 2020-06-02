@@ -31,22 +31,30 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 %% 1) Lock folder management
 x.ModuleName  = ModuleName;
 x.result = false;
-if x.RERUN
-    [status, message] = rmdir(x.LockDir,'s');
-    if status~=1 && exist(x.LockDir,'dir') % backwards compatibility
-        fprintf(2,['ERROR in module_' x.ModuleName ': could not remove lock folder:\n%s\n'], message);
+if isfield(x,'RERUN')
+    if x.RERUN
+        [status, message] = rmdir(x.LockDir,'s');
+        if status~=1 && exist(x.LockDir,'dir') % backwards compatibility
+            fprintf(2,['ERROR in module_' x.ModuleName ': could not remove lock folder:\n%s\n'], message);
+            return; % exit with an error
+        end
+        x.bOverwrite = true; % re-running makes no sense if you're not overwriting existing files...
+    end
+else
+    error('RERUN field of x structure not defined...');
+end
+
+if isfield(x,'LockDir')
+    if xASL_adm_CreateDir(x.LockDir,3)<0
+        fprintf(2,['ERROR in module_' x.ModuleName ': could not create lock folder: \n%s\n'],x.LockDir);
         return; % exit with an error
     end
-    x.bOverwrite = true; % re-running makes no sense if you're not overwriting existing files...
-end
 
-if xASL_adm_CreateDir(x.LockDir,3)<0
-    fprintf(2,['ERROR in module_' x.ModuleName ': could not create lock folder: \n%s\n'],x.LockDir);
-    return; % exit with an error
-end
-
-if ~exist(x.LockDir,'dir')
-    fprintf(['ERROR in module_' x.ModuleName ': wrong LockDir assigned\n']);
+    if ~exist(x.LockDir,'dir')
+        fprintf(['ERROR in module_' x.ModuleName ': wrong LockDir assigned\n']);
+    end
+else
+    error('LockDir field of x structure not defined...');
 end
 
 %% --------------------------------------------------------
