@@ -31,21 +31,15 @@ fprintf('Copy test data to %s...\n', fullfile(testDir,'TestFolder','TestDataSet'
 % PRECONDITIONS
 
 %% Test 1: Default TestDataSet with low quality setting
-% Load test inputs
-fprintf('Loading test input...\n')
-testInput = load(fullfile(xASLdir,'Development', 'ExploreASL_UnitTesting',...
-                                  'TestData', 'xASL_module_Structural_testData_Input.mat'));
-
-% Modify path variables
-fprintf('Modifying test input...\n')
-testInput.x.MyPath = xASLdir;
-testInput.x.SPMDIR = fullfile(xASLdir,'External','SPMmodified');
-testInput.x.SPMpath = fullfile(xASLdir,'External','SPMmodified');
-testInput.x.LockDir = fullfile(testDir,'TestFolder','TestDataSet','lock','xASL_module_Structural','Sub-001');
-testInput.x.SUBJECTDIR = fullfile(testDir,'TestFolder','TestDataSet','Sub-001');
+fprintf('Initialize test input...\n')
+DataParPath = fullfile(testDir,'TestFolder','TestDataSet','DataParameters_LowQ.json');
+ProcessData = true;
+iWorker = 1;
+nWorkers = 1;
+xTest = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
 
 % Run test
-[result, x] = xASL_module_Structural(testInput.x);
+[result, x] = xASL_module_Structural(xTest);
 
 % Use assert for outputs
 assert(isfield(x,'out'))                 % Check if new ... field was created
@@ -58,7 +52,7 @@ assert(isfield(x,'out'))                 % Check if new ... field was created
 
 
 % Run again and also save 'result' variable to assert this too
-% assert(isfield(result,''))            %
+% assert(isfield(result,''))
 
 
 

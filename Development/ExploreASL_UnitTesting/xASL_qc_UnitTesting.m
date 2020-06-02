@@ -15,6 +15,9 @@ function RESULTS = xASL_qc_UnitTesting
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
+% Improve command window output
+BreakString = [repmat('=',1,100),'\n'];
+
 %% Update GIT
 try
     fprintf('GIT: ');
@@ -26,9 +29,9 @@ end
 
 
 %% RUN TESTS: MODULES
-fprintf([repmat('=',1,100),'\n']);
+fprintf(BreakString);
 RESULTS.MODULES.STRUCTURAL = runtests('xASL_module_Structural_test');
-fprintf([repmat('=',1,100),'\n']);
+fprintf(BreakString);
 
 % RESULTS.MODULES.ASL = runtests('xASL_module_ASL_test');
 % RESULTS.MODULES.POPULATION = runtests('xASL_module_Population_test');
@@ -36,7 +39,7 @@ fprintf([repmat('=',1,100),'\n']);
 
 %% RUN TESTS: SUBMODULES
 
-
+% RESULTS.SUBMODULES.
 
 
 
