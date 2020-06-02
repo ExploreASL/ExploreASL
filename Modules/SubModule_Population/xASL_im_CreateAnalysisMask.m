@@ -71,12 +71,12 @@ elseif ~xASL_exist(PathSusceptibilityMask, 'file')
 end
 
 if ~xASL_exist(PathpGM, 'file')
-    warning('Missing pGM image, using MNI version');
+    if ~bSkipStandard; warning('Missing pGM image, using MNI version'); end
     PathpGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii');
 end
 if ~xASL_exist(PathpWM, 'file')
+    if ~bSkipStandard; warning('Missing pWM image, using MNI version'); end
     PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');    
-    warning('Missing pWM image, using MNI version');
 end
 
 if ~bSkipStandard
