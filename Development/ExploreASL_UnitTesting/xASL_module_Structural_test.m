@@ -42,23 +42,70 @@ xTest = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
 [~, x] = xASL_Iteration(xTest,'xASL_module_Structural');
 
 % Use assert for outputs
-assert(isfield(x,'out'))                 % Check if new ... field was created
-% ...
+assert(isfield(x,'RERUN'))
+assert(isfield(x,'MUTEXID'))
+assert(isfield(x,'LockDir'))
+% assert(isfield(x,'SUBJECTDIR'))
+assert(isfield(x,'SUBJECT'))
+assert(isfield(x,'ModuleName'))
+assert(isfield(x,'result'))
+% assert(isfield(x,'mutex'))
+assert(isfield(x,'iSubject'))
+assert(isfield(x,'DoWADQCDC'))
+assert(isfield(x,'WMHsegmAlg'))
+assert(isfield(x,'SkipIfNoFlair'))
+assert(isfield(x,'SkipIfNoASL'))
+assert(isfield(x,'SkipIfNoM0'))
+assert(isfield(x,'bFixResolution'))
+assert(isfield(x,'Seg'))
+assert(isfield(x,'T1BiasFieldRegularization'))
 
+% Check Output field
+assert(isfield(x,'Output'))
+if isfield(x,'Output')
+    assert(isfield(x.Output,'Structural'))
+    if isfield(x.Output,'Structural')
+        assert(isfield(x.Output.Structural,'T1w_WMref_vol_mL'))
+        assert(isfield(x.Output.Structural,'T1w_SD_WMref'))
+        assert(isfield(x.Output.Structural,'T1w_SNR_GM_Ratio'))
+        assert(isfield(x.Output.Structural,'T1w_CNR_GM_WM_Ratio'))
+        assert(isfield(x.Output.Structural,'T1w_FBER_WMref_Ratio'))
+        assert(isfield(x.Output.Structural,'T1w_EFC_bits'))
+        assert(isfield(x.Output.Structural,'T1w_Mean_AI_Perc'))
+        assert(isfield(x.Output.Structural,'T1w_SD_AI_Perc'))
+        assert(isfield(x.Output.Structural,'FLAIR_WMref_vol_mL'))
+        assert(isfield(x.Output.Structural,'FLAIR_SD_WMref'))
+        assert(isfield(x.Output.Structural,'FLAIR_SNR_GM_Ratio'))
+        assert(isfield(x.Output.Structural,'FLAIR_CNR_GM_WM_Ratio'))
+        assert(isfield(x.Output.Structural,'FLAIR_FBER_WMref_Ratio'))
+        assert(isfield(x.Output.Structural,'FLAIR_EFC_bits'))
+        assert(isfield(x.Output.Structural,'FLAIR_Mean_AI_Perc'))
+        assert(isfield(x.Output.Structural,'FLAIR_SD_AI_Perc'))
+        assert(isfield(x.Output.Structural,'ID'))
+        assert(isfield(x.Output.Structural,'T1w_LR_flip_YesNo'))
+        assert(isfield(x.Output.Structural,'FLAIR_WMH_vol_mL'))
+        assert(isfield(x.Output.Structural,'FLAIR_WMH_n'))
+        assert(isfield(x.Output.Structural,'T1w_IQR_Perc'))
+        assert(isfield(x.Output.Structural,'T1w_GM_vol_mL'))
+        assert(isfield(x.Output.Structural,'T1w_WM_vol_mL'))
+        assert(isfield(x.Output.Structural,'T1w_CSF_vol_mL'))
+        assert(isfield(x.Output.Structural,'T1w_ICV_vol_mL'))
+        assert(isfield(x.Output.Structural,'T1w_GM_ICV_Ratio'))
+        assert(isfield(x.Output.Structural,'T1w_WM_ICV_Ratio'))
+        assert(isfield(x.Output.Structural,'T1w_CSF_ICV_Ratio'))
+        assert(isfield(x.Output.Structural,'Version_CAT12'))
+        assert(isfield(x.Output.Structural,'Version_LST'))
+        assert(isfield(x.Output.Structural,'Version_ExploreASL'))
+        assert(isfield(x.Output.Structural,'Version_Matlab'))
+        assert(isfield(x.Output.Structural,'Version_SPM12'))
+    end
+end
 
-% WORK IN PROGRESS
-% Which fields always have to be in the resulting x structure?
-
-
-
-% Run again and also save 'result' variable to assert this too
-% assert(isfield(result,''))
-
-
-
-
-
-
+% Check Output image field
+assert(isfield(x,'Output_im'))
+if isfield(x,'Output_im')
+    assert(isfield(x.Output_im,'Structural'))
+end
 
 
 
