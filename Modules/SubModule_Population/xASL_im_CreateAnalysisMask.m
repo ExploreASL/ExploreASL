@@ -50,7 +50,7 @@ MaskVascularPath = fullfile(x.S.StatsDir,'MaskVascular.nii');
 MaskSusceptibilityPath = fullfile(x.S.StatsDir,'MaskSusceptibility.nii');
 
 % Define pre-existing paths
-PathFoV = fullfile(x.D.TemplatesStudyDir, 'FoV_bs-mean_Unmasked.nii');
+PathFoV = fullfile(x.D.TemplatesStudyDir, 'FoV_bs-mean.nii');
 PathVascularMask = fullfile(x.D.TemplatesStudyDir, 'MaskVascular_bs-mean.nii');
 PathSusceptibilityMask = fullfile(x.D.TemplatesStudyDir, 'MaskSusceptibility_bs-mean.nii');
 PathpGM = fullfile(x.D.TemplatesStudyDir, 'pGM_bs-mean.nii');
@@ -65,9 +65,18 @@ if x.nSubjectsSessions<16
     x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.WBmask);
     x.S.VBAmask = x.S.MaskSusceptibility;
     bSkipStandard = 1;
-elseif ~xASL_exist(PathSusceptibilityMask, 'file') || ~xASL_exist(PathpGM, 'file')
+elseif ~xASL_exist(PathSusceptibilityMask, 'file')
     warning('Missing susceptibility maps, skipping...');
     bSkipStandard = 1;
+end
+
+if ~xASL_exist(PathpGM, 'file')
+    warning('Missing pGM image, using MNI version');
+    PathpGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii');
+end
+if ~xASL_exist(PathpWM, 'file')
+    PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');    
+    warning('Missing pWM image, using MNI version');
 end
 
 if ~bSkipStandard
