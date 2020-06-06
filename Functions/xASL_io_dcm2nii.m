@@ -279,6 +279,38 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 %                 ALSO BIDS REQUIRES TO KEEP '-' IN
 
                 dest_file = fullfile(destdir,[DestFileName '.nii']);
+				
+				% Check for suspicious illegal characters
+                indIchar = find((temp_file < 32) | (temp_file > 126));
+                if ~isempty(indIchar)
+                    % If these characters are present in the file name, we
+                    % will not be able to move it in the following step
+                   
+                    % We therefore replace the illegal characters by ? to
+                    % allow moving
+                    temp_file_subs = temp_file;
+                    temp_file_subs(indIchar) = '?';
+                    temp_file_fixed = temp_file;
+                    temp_file_fixed(indIchar) = '_';
+                    
+                    % And we then move to a file with a similar name, but
+                    % illegal characters replaced by a
+                    xASL_SysMove(temp_file_subs,temp_file_fixed,[],false);
+                    
+                    % From then on, work with the corrected file name
+                    temp_file = temp_file_fixed;
+                    
+                    % Apply the same to other BIDS files
+                    BIDSext = {'.json' '.bval' '.bvec'};
+                    for iB=1:length(BIDSext)
+                        [Gpath, Gfile] = xASL_fileparts(temp_file_subs);
+                        temp_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
+                        [Gpath, Gfile] = xASL_fileparts(temp_file_fixed);
+                        dest_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
+                        xASL_SysMove(temp_BIDS, dest_BIDS, [],false);
+                    end
+                end
+				
                 xASL_Move(temp_file, dest_file, parms.Overwrite, parms.Verbose);
                 niifiles{end+1} = dest_file; %#ok<AGROW>
 
