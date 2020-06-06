@@ -17,11 +17,32 @@
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
+% Check if parameter file exists
+test_parameter_file = fullfile(pwd,'Development','ExploreASL_UnitTesting','xASL_test_parameters.json');
+if xASL_exist(test_parameter_file)
+    val = jsondecode(fileread(test_parameter_file));
+    if isfield(val,'xASLdir'), xASLdir = val.xASLdir; end
+    if isfield(val,'testDir'), testDir = val.testDir; end
+    if strcmp(xASLdir,'pwd')
+        xASLdir = pwd;
+    end
+end
+
 % Get ExploreASL directory
-xASLdir = uigetdir(pwd, 'Select ExploreASL directory...');
+if ~exist('xASLdir','var')
+    xASLdir = uigetdir(pwd, 'Select ExploreASL directory...');
+end
 
 % Define test directory
-testDir = uigetdir(pwd, 'Select testing directory...');
+if ~exist('testDir','var')
+    testDir = uigetdir(pwd, 'Select testing directory...');
+end
+
+% Check if folder was already created
+if exist(fullfile(testDir,'TestFolder'),'dir')==7
+    fprintf('Remove existing folder %s...\n', testDir)
+    rmdir(fullfile(testDir,'TestFolder'));
+end
 fprintf('Creating test folder in %s...\n', testDir)
 mkdir(fullfile(testDir,'TestFolder'))
 

@@ -8,10 +8,11 @@ function RESULTS = xASL_qc_UnitTesting
 % OUTPUT:       RESULTS structure
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Script to run all module and submodule tests
+% DESCRIPTION:  Script to run all module and submodule tests. Please start
+%               this script from the ExploreASL directory.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLES:     RESULTS = xASL_qc_UnitTesting
+% EXAMPLES:     RESULTS = xASL_qc_UnitTesting;
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
@@ -38,9 +39,9 @@ fprintf(BreakString);
 
 
 %% RUN TESTS: SUBMODULES
-
-% RESULTS.SUBMODULES.
-
+% fprintf(BreakString);
+% RESULTS.SUBMODULES.xASL_wrp_CreateAnalysisMask = runtests('xASL_wrp_CreateAnalysisMask_test');
+% fprintf(BreakString);
 
 
 
