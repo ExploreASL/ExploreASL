@@ -28,6 +28,10 @@ if xASL_exist(test_parameter_file)
     end
 end
 
+% PRECONDITIONS
+
+%% Test 1: Default TestDataSet with low quality setting
+
 % Check if folder was already created
 if exist(fullfile(testDir,'TestFolder'),'dir')==7
     fprintf('Remove existing folder %s...\n', testDir)
@@ -39,9 +43,7 @@ mkdir(fullfile(testDir,'TestFolder'))
 xASL_Copy(fullfile(xASLdir,'External\TestDataSet'), fullfile(testDir,'TestFolder','TestDataSet'))
 fprintf('Copy test data to %s...\n', fullfile(testDir,'TestFolder','TestDataSet'))
 
-% PRECONDITIONS
-
-%% Test 1: Default TestDataSet with low quality setting
+% Initialize test
 fprintf('Initialize test input...\n')
 DataParPath = fullfile(testDir,'TestFolder','TestDataSet','DataParameters_LowQ.json');
 ProcessData = true;

@@ -9,7 +9,9 @@ function RESULTS = xASL_qc_UnitTesting
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Script to run all module and submodule tests. Please start
-%               this script from the ExploreASL directory.
+%               this script from the ExploreASL directory and select a test
+%               directory. A temporary TestFolder is created. If it already
+%               exists it will be removed.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLES:     RESULTS = xASL_qc_UnitTesting;

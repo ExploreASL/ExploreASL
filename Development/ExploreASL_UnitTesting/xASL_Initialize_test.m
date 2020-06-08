@@ -28,17 +28,6 @@ if xASL_exist(test_parameter_file)
     end
 end
 
-% Check if folder was already created
-if exist(fullfile(testDir,'TestFolder'),'dir')==7
-    fprintf('Remove existing folder %s...\n', testDir)
-    rmdir(fullfile(testDir,'TestFolder'),'s');
-end
-fprintf('Creating test folder in %s...\n', testDir)
-mkdir(fullfile(testDir,'TestFolder'))
-
-xASL_Copy(fullfile(xASLdir,'External\TestDataSet'), fullfile(testDir,'TestFolder','TestDataSet'))
-fprintf('Copy test data to %s...\n', fullfile(testDir,'TestFolder','TestDataSet'))
-
 % PRECONDITIONS
 
 % Field names
@@ -62,6 +51,19 @@ TYPE_LIST =   { 'char', 'char', 'double', 'double', 'double', 'double', 'struct'
 
 
 %% Test 1: Default TestDataSet with low quality setting
+
+% Check if folder was already created
+if exist(fullfile(testDir,'TestFolder'),'dir')==7
+    fprintf('Remove existing folder %s...\n', testDir)
+    rmdir(fullfile(testDir,'TestFolder'),'s');
+end
+fprintf('Creating test folder in %s...\n', testDir)
+mkdir(fullfile(testDir,'TestFolder'))
+
+xASL_Copy(fullfile(xASLdir,'External\TestDataSet'), fullfile(testDir,'TestFolder','TestDataSet'))
+fprintf('Copy test data to %s...\n', fullfile(testDir,'TestFolder','TestDataSet'))
+
+% Initialize test
 fprintf('Initialize test input...\n')
 DataParPath = fullfile(testDir,'TestFolder','TestDataSet','DataParameters_LowQ.json');
 ProcessData = true;
@@ -85,8 +87,25 @@ for i=1:length(LIST)
     assert(strcmp(class(x.(LIST{i})),TYPE_LIST{i}))
 end
 
+% Check dimensions
+assert(length(size(x.skull))==3)
+assert(length(size(x.WBmask))==3)
+
 
 %% Test 2: Default TestDataSet with high quality setting
+
+% Check if folder was already created
+if exist(fullfile(testDir,'TestFolder'),'dir')==7
+    fprintf('Remove existing folder %s...\n', testDir)
+    rmdir(fullfile(testDir,'TestFolder'),'s');
+end
+fprintf('Creating test folder in %s...\n', testDir)
+mkdir(fullfile(testDir,'TestFolder'))
+
+xASL_Copy(fullfile(xASLdir,'External\TestDataSet'), fullfile(testDir,'TestFolder','TestDataSet'))
+fprintf('Copy test data to %s...\n', fullfile(testDir,'TestFolder','TestDataSet'))
+
+% Initialize test
 fprintf('Initialize test input...\n')
 DataParPath = fullfile(testDir,'TestFolder','TestDataSet','DataParameters_HiQ.json');
 ProcessData = true;
@@ -110,8 +129,9 @@ for i=1:length(LIST)
     assert(strcmp(class(x.(LIST{i})),TYPE_LIST{i}))
 end
 
-
-
+% Check dimensions
+assert(length(size(x.skull))==3)
+assert(length(size(x.WBmask))==3)
 
 
 
