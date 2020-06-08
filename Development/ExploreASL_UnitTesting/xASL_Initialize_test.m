@@ -50,7 +50,7 @@ TYPE_LIST =   { 'char', 'char', 'double', 'double', 'double', 'double', 'struct'
                 'cell', 'double', 'double', 'cell', 'double', 'double', 'struct'};
 
 
-%% Test 1: Default TestDataSet with low quality setting
+%% Test 1: xASL_Initialize: TestDataSet (low quality)
 
 % Check if folder was already created
 if exist(fullfile(testDir,'TestFolder'),'dir')==7
@@ -92,7 +92,7 @@ assert(length(size(x.skull))==3)
 assert(length(size(x.WBmask))==3)
 
 
-%% Test 2: Default TestDataSet with high quality setting
+%% Test 2: xASL_Initialize: TestDataSet (high quality)
 
 % Check if folder was already created
 if exist(fullfile(testDir,'TestFolder'),'dir')==7
