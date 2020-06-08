@@ -57,7 +57,7 @@ fclose(fid);
 
 %% RUN TESTS: INITIALIZATION
 fprintf(BreakString);
-RESULTS.INIT.STRUCTURAL = runtests('xASL_Initialize_test');
+RESULTS.INIT = runtests('xASL_Initialize_test');
 fprintf(BreakString);
 
 

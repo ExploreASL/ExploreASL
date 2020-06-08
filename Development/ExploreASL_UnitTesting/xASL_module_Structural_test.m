@@ -31,7 +31,7 @@ end
 % Check if folder was already created
 if exist(fullfile(testDir,'TestFolder'),'dir')==7
     fprintf('Remove existing folder %s...\n', testDir)
-    rmdir(fullfile(testDir,'TestFolder'));
+    rmdir(fullfile(testDir,'TestFolder'),'s');
 end
 fprintf('Creating test folder in %s...\n', testDir)
 mkdir(fullfile(testDir,'TestFolder'))
