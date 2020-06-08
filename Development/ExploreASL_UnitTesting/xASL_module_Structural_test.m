@@ -28,16 +28,6 @@ if xASL_exist(test_parameter_file)
     end
 end
 
-% Get ExploreASL directory
-if ~exist('xASLdir','var')
-    xASLdir = uigetdir(pwd, 'Select ExploreASL directory...');
-end
-
-% Define test directory
-if ~exist('testDir','var')
-    testDir = uigetdir(pwd, 'Select testing directory...');
-end
-
 % Check if folder was already created
 if exist(fullfile(testDir,'TestFolder'),'dir')==7
     fprintf('Remove existing folder %s...\n', testDir)

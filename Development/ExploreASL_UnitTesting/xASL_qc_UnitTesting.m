@@ -29,6 +29,32 @@ catch
 end
 
 
+%% GET DIRECTORIES
+test_parameter_file = fullfile(pwd,'Development','ExploreASL_UnitTesting','xASL_test_parameters.json');
+if xASL_exist(test_parameter_file)
+    val = jsondecode(fileread(test_parameter_file));
+else
+    % If the file does not exist yet, it needs to be created
+    val = struct;
+end
+
+% Check if the current directory is the ASL directory
+if xASL_exist(fullfile(pwd,'ExploreASL_Master'))
+    val.xASLdir = 'pwd';
+else
+    val.xASLdir = uigetdir(pwd, 'Select ExploreASL directory...');
+end
+
+% Define test directory
+val.testDir = uigetdir(pwd, 'Select testing directory...');
+
+% Write the directories to the JSON file
+valNew = jsonencode(val);
+fid = fopen(test_parameter_file, 'w');
+fprintf(fid, '%s', valNew);
+fclose(fid);
+
+
 %% RUN TESTS: MODULES
 fprintf(BreakString);
 RESULTS.MODULES.STRUCTURAL = runtests('xASL_module_Structural_test');
