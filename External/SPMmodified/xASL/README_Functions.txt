@@ -33,12 +33,13 @@ xASL_tsvWrite - writes a TSV file
 
 IMAGE PROCESSING:
 xASL_im_ConvertMap2Mask - in the name
+xASL_im_DistanceTransform - calculates the distance transform in binary maps
 xASL_im_FillNaNs - fill all NaNs within image
  						This can be useful e.g. for extrapolating an image created by smoothing restricted by a mask (with NaNs outside)
  						Or for removing NaNs from resampling outside a Field of View/boundary box
 xASL_im_ndnanfilter - handle NaNs when smoothing
 xASL_im_ResampleIM - resample images using Matlabs interp function
-
+xASL_mex_chamfers3D(.c|mex|mexa64|mexmaci64|mexw32|mexw64) - the Chamfer's method to calculate the distance transform
 
 
 
