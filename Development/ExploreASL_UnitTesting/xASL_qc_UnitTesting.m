@@ -55,6 +55,12 @@ fprintf(fid, '%s', valNew);
 fclose(fid);
 
 
+%% RUN TESTS: INITIALIZATION
+fprintf(BreakString);
+RESULTS.INIT.STRUCTURAL = runtests('xASL_Initialize_test');
+fprintf(BreakString);
+
+
 %% RUN TESTS: MODULES
 fprintf(BreakString);
 RESULTS.MODULES.STRUCTURAL = runtests('xASL_module_Structural_test');
