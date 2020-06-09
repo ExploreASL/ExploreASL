@@ -542,11 +542,15 @@ for iSubject=1:nSubjects
                 % extract relevant parameters from dicom header, if not
                 % already exists
                 % Find JSONpath that is there already
-                SavePathJSON = '';
+                SavePathJSON = {};
                 SavePathJSON{1} = fullfile(destdir, [scan_name '.json']);
                 SavePathJSON{2} = fullfile(destdir, [session_name '.json']);
                 for iPath=1:length(nii_files)
-                    SavePathJSON{end+1} = [nii_files{iPath}(1:end-4) '.json'];
+                    % now we add the path only if it didnt exist already in
+                    % this list
+                    if ~max(cellfun(@(y) strcmp(y, NewFile), SavePathJSON))
+                        SavePathJSON{end+1} = [nii_files{iPath}(1:end-4) '.json'];
+                    end
                 end
 
                 for iPath=1:length(SavePathJSON)
