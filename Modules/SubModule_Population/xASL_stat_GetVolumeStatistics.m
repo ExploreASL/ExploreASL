@@ -32,8 +32,6 @@ fprintf('%s\n',['Printing csv-files with ' x.S.output_ID ' statistics...  ']);
 for iSubject=1:x.nSubjects
     xASL_TrackProgress(iSubject,x.nSubjects);
 
-    x.S.SUBJECTID{iSubject,1} = x.SUBJECTS{iSubject};
-
     PathCSV = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.csv']);
     if ~exist(PathCSV,'file')
         PathCSV = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.tsv']);

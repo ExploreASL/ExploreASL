@@ -55,7 +55,7 @@ if nargin<1 || isempty(PathCBF)
     return;
 else
     TreatedCBF = xASL_io_Nifti2Im(PathCBF);
-    if xASL_stat_SumNan(TreatedCBF(:))==0
+    if sum(isfinite(TreatedCBF(:)))==0
         warning('Empty CBF image, skipping...');
         return;
     end

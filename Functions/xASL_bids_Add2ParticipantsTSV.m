@@ -91,7 +91,7 @@ else
     for iSession=1:x.nSessions
         CellArray(1+iSession:x.nSessions:x.nSubjectsSessions+1, 1) = x.SUBJECTS;
     end
-    CellArray(2:x.nSubjectsSessions+1, 2) = repmat(x.SESSIONS,[1, x.nSubjects]);
+    CellArray(2:x.nSubjectsSessions+1, 2) = repmat(x.SESSIONS,[x.nSubjects, 1]);
 end
 
 % Force these names
