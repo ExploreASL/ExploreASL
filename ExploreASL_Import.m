@@ -542,6 +542,7 @@ for iSubject=1:nSubjects
                 % extract relevant parameters from dicom header, if not
                 % already exists
                 % Find JSONpath that is there already
+                SavePathJSON = '';
                 SavePathJSON{1} = fullfile(destdir, [scan_name '.json']);
                 SavePathJSON{2} = fullfile(destdir, [session_name '.json']);
                 for iPath=1:length(nii_files)
