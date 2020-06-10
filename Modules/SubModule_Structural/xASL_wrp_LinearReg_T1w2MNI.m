@@ -25,12 +25,17 @@ function xASL_wrp_LinearReg_T1w2MNI(x, bAutoACPC)
 %
 % 2019-05-02 HJM
 
-
+% Input check
 if nargin<2 || isempty(bAutoACPC)
     bAutoACPC = true;
 end
 
-
+% Check paths
+necessaryPaths = isfield(x,'SPMDIR') && isfield(x.P,'Path_FLAIR') && isfield(x.P,'Path_WMH_SEGM') && ...
+                 isfield(x.P,'Path_ASL4D') && isfield(x.P,'Path_M0') && isfield(x.P,'Path_ASL4D_RevPE');
+if ~necessaryPaths
+    warning('Seemingly you are using xASL_wrp_LinearReg_T1w2MNI without defining all necessary paths...');
+end
 
 %% ---------------------------------------------------------------------------------------------------
 %% 1) Restore the orientation matrix of all images, in case we perform a re-run: but only when we don't have lesion maps
