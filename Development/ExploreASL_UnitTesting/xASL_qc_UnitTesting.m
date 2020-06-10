@@ -56,26 +56,22 @@ fid = fopen(test_parameter_file, 'w');
 fprintf(fid, '%s', valNew);
 fclose(fid);
 
+%% START TESTING
+fprintf(BreakString);
+
 
 %% RUN TESTS: INITIALIZATION
-fprintf(BreakString);
-RESULTS.INIT = runtests('xASL_Initialize_test');
-fprintf(BreakString);
+RESULTS.INIT = runtests('xASL_Initialize_test'); fprintf(BreakString);
 
 
 %% RUN TESTS: MODULES
-% fprintf(BreakString);
-% RESULTS.MODULES.STRUCTURAL = runtests('xASL_module_Structural_test');
-% fprintf(BreakString);
-
-% RESULTS.MODULES.ASL = runtests('xASL_module_ASL_test');
-% RESULTS.MODULES.POPULATION = runtests('xASL_module_Population_test');
+% RESULTS.MODULES.STRUCTURAL = runtests('xASL_module_Structural_test'); fprintf(BreakString);
+% RESULTS.MODULES.ASL = runtests('xASL_module_ASL_test'); fprintf(BreakString);
+% RESULTS.MODULES.POPULATION = runtests('xASL_module_Population_test'); fprintf(BreakString);
 
 
 %% RUN TESTS: SUBMODULES
-fprintf(BreakString);
-RESULTS.SUBMODULES.xASL_wrp_LinearReg_T1w2MNI = runtests('xASL_wrp_LinearReg_T1w2MNI_test');
-fprintf(BreakString);
+RESULTS.SUBMODULES.xASL_wrp_LinearReg_T1w2MNI = runtests('xASL_wrp_LinearReg_T1w2MNI_test'); fprintf(BreakString);
 
 
 

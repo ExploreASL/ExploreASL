@@ -50,7 +50,7 @@ TYPE_LIST =   { 'char', 'char', 'double', 'double', 'double', 'double', 'struct'
                 'cell', 'double', 'double', 'cell', 'double', 'double', 'struct'};
 
 
-%% Test 1: xASL_Initialize: TestDataSet (low quality)
+%% Test 1: TestDataSet (low quality)
 
 % Check if folder was already created
 if exist(fullfile(testDir,'TestFolder'),'dir')==7
@@ -66,12 +66,9 @@ fprintf('Copy test data to %s...\n', fullfile(testDir,'TestFolder','TestDataSet'
 % Initialize test
 fprintf('Initialize test input...\n')
 DataParPath = fullfile(testDir,'TestFolder','TestDataSet','DataParameters_LowQ.json');
-ProcessData = true;
-iWorker = 1;
-nWorkers = 1;
 
 % Run test
-x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
+x = ExploreASL_Initialize(DataParPath, true, 1, 1);
 
 % Check quality setting
 assert(x.Quality==0)
@@ -92,7 +89,7 @@ assert(length(size(x.skull))==3)
 assert(length(size(x.WBmask))==3)
 
 
-%% Test 2: xASL_Initialize: TestDataSet (high quality)
+%% Test 2: TestDataSet (high quality)
 
 % Check if folder was already created
 if exist(fullfile(testDir,'TestFolder'),'dir')==7
@@ -108,12 +105,9 @@ fprintf('Copy test data to %s...\n', fullfile(testDir,'TestFolder','TestDataSet'
 % Initialize test
 fprintf('Initialize test input...\n')
 DataParPath = fullfile(testDir,'TestFolder','TestDataSet','DataParameters_HiQ.json');
-ProcessData = true;
-iWorker = 1;
-nWorkers = 1;
 
 % Run test
-x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
+x = ExploreASL_Initialize(DataParPath, true, 1, 1);
 
 % Check quality setting
 assert(x.Quality==1)

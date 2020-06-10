@@ -29,7 +29,7 @@ end
 
 % PRECONDITIONS
 
-%% Test 1: xASL_wrp_LinearReg_T1w2MNI: TestDataSet (low quality)
+%% Test 1: TestDataSet (low quality)
 
 % Check if folder was already created
 if exist(fullfile(testDir,'TestFolder'),'dir')==7
@@ -45,17 +45,12 @@ fprintf('Copy test data to %s...\n', fullfile(testDir,'TestFolder','TestDataSet'
 % Initialize test
 fprintf('Initialize test input...\n')
 DataParPath = fullfile(testDir,'TestFolder','TestDataSet','DataParameters_LowQ.json');
-ProcessData = true;
-iWorker = 1;
-nWorkers = 1;
 
 % Initialize the data set
-x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
+x = ExploreASL_Initialize(DataParPath, true, 1, 1);
+x = xASL_qc_Default_Test_Initialize(x);
 
-% Add necessary additional x structure fields
-x.SUBJECTDIR      = '<ROOT>/<SUBJECT>';
-x.LockDir         = ['<ROOT>/lock/xASL_module_Structural/<SUBJECT>'];
-
+% Add paths which should actually be defined in: x = xASL_init_FileSystem(x);
 curFolder = fullfile(testDir,'TestFolder','TestDataSet','Sub-001');
 x.P.Path_FLAIR = fullfile(curFolder,'FLAIR.nii');
 x.P.Path_WMH_SEGM = fullfile(curFolder,'WMH_SEGM.nii');
@@ -64,20 +59,8 @@ x.P.Path_ASL4D = fullfile(curFolder,'ASL_1\ASL4D.nii');
 x.P.Path_M0 = fullfile(curFolder,'ASL_1\M0.nii');
 x.P.Path_ASL4D_RevPE = fullfile(curFolder,'ASL_1\ASL4D_RevPE.nii');
 
-% Unzip Nifti files
-IM = xASL_io_Nifti2Im(x.P.Path_T1);
-if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
-    warning(['Too many dims, using first: ' x.P.Path_T1]);
-    xASL_Copy(x.P.Path_T1, x.P.Path_T1_ORI, true);
-    xASL_io_SaveNifti(x.P.Path_T1, x.P.Path_T1, IM(:,:,:,1,1,1,1), [], false);
-end
-
-IM = xASL_io_Nifti2Im(x.P.Path_FLAIR);
-if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
-    warning(['Too many dims, using first: ' x.P.Path_T1]);
-    xASL_Move(x.P.Path_FLAIR, x.P.Path_FLAIR_ORI, true);
-    xASL_io_SaveNifti(x.P.Path_FLAIR, x.P.Path_FLAIR, IM(:,:,:,1,1,1,1), [], false);
-end
+% Unzip T1 and FLAIR
+xASL_qc_Default_Test_Unzip(x);
 
 % Run test
 xASL_wrp_LinearReg_T1w2MNI(x);
