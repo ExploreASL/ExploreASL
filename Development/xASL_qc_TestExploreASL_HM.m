@@ -3,17 +3,15 @@ function [ResultsTable] = xASL_qc_TestExploreASL_HM
 
 
 if ismac
-    TestDirOrig='/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases';
-    TestDirDest='/Users/henk/ExploreASL/ASL/TestCasesProcessed';
+    TestDirOrig = '/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases';
+    TestDirDest = '/Users/henk/ExploreASL/ASL/TestCasesProcessed';
 elseif ispc
-    TestDirOrig='/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases';
-    TestDirDest='/Users/henk/ExploreASL/ASL/TestCasesProcessed';
+    TestDirOrig = 'S:\gifmi\Projects\ExploreASL\ExploreASL_TestCases\ExploreASL_TestCases';
+    TestDirDest = 'S:\gifmi\Projects\ExploreASL\ExploreASL_TestCases\ProcessedCases';
 else
     % linux
-    [StatusIs, UserName] = system('whoami','-echo');
-
-     TestDirOrig='/home/henk/ownCloud/HolidayPics/ExploreASL_TestCases';
-     TestDirDest='/home/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed';
+     TestDirOrig = '/home/henk/ownCloud/HolidayPics/ExploreASL_TestCases';
+     TestDirDest = '/home/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed';
 end
     
     
