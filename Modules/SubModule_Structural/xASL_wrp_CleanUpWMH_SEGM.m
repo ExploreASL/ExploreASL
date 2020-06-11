@@ -64,6 +64,12 @@ pGMim = xASL_io_Nifti2Im(x.P.Path_c1T1);
 pWMim = xASL_io_Nifti2Im(x.P.Path_c2T1);
 WMHim = xASL_io_Nifti2Im(WMH_File);
 
+if xASL_stat_SumNan(pGMim(:))==0
+    error('Invalid pGM image');
+elseif xASL_stat_SumNan(pWMim(:))==0
+    error('Invalid pWM image');
+end
+
 if xASL_exist(x.P.Path_c3T1, 'file')
     pCSFim = xASL_io_Nifti2Im(x.P.Path_c3T1);
 else
@@ -79,44 +85,48 @@ fprintf('%s', 'Cleaning up WMH_SEGM: 0%');
 % Create pGMrois
 WMHnew = zeros(size(WMHim)); % create dummy WMHmask
 GMroi = pGMim>0.05; % find any GM that is an island
-gmL = spm_bwlabel(double(GMroi)); % create labels for all connected GM regions
+GMLabels = spm_bwlabel(double(GMroi)); % create labels for all connected GM regions
 
 if max(size(WMHim)~=size(pGMim)) % if FLAIR & T1w werent same voxelsize
     error('FLAIR wasnt resampled to T1w space');
 end
 
-for iL=1:max(gmL(:)) % get volumes for all regions
-    gmN(iL,1) = iL;
-    gmN(iL,2) = sum(gmL(:)==iL);
-end
+if xASL_stat_SumNan(GMLabels(:))==0
+    warning('No GM islands found, something wrong with GM image?');
+else
+    for iVol=1:max(GMLabels(:)) % get volumes for all regions
+        GMvolume(iVol,1) = iVol;
+        GMvolume(iVol,2) = sum(GMLabels(:)==iVol);
+    end
 
-ROIs = find(gmN(:,2)<max(gmN(:,2))); % select GM regions that are smaller than largest GM region
+    ROIs = find(GMvolume(:,2)<max(GMvolume(:,2))); % select GM regions that are smaller than largest GM region
 
-for iROI=1:length(ROIs) % loop over all regions
-    xASL_TrackProgress(iROI, length(ROIs));
-    CurrROI = gmL==gmN(ROIs(iROI), 1); % current region (skipping the largest)
-    DilatedROI = xASL_im_DilateErodeFull(CurrROI, 'dilate', xASL_im_DilateErodeSphere(2)); % dilate region
-    % PM: here we could do multiple erosions, for multiple layers with different conditions
-    Rim = max(0,DilatedROI - CurrROI); % obtain the rim of the region (i.e. the dilation part)
-    if  sum(Rim(:))>0 % bugfix
-        if sum(sum(sum(pWMim(logical(Rim))))) > 0.95*sum(Rim(:))
-            % this checks whether the GMroi is truely an island
-            % (the 0.95 allowing for a little bit of GM near the edge, this number can go up)
-            % now we have any GM islands within the WM.
+    for iROI=1:length(ROIs) % loop over all regions
+        xASL_TrackProgress(iROI, length(ROIs));
+        CurrROI = GMLabels==GMvolume(ROIs(iROI), 1); % current region (skipping the largest)
+        DilatedROI = xASL_im_DilateErodeFull(CurrROI, 'dilate', xASL_im_DilateErodeSphere(2)); % dilate region
+        % PM: here we could do multiple erosions, for multiple layers with different conditions
+        Rim = max(0,DilatedROI - CurrROI); % obtain the rim of the region (i.e. the dilation part)
+        if  sum(Rim(:))>0 % bugfix
+            if sum(sum(sum(pWMim(logical(Rim))))) > 0.95*sum(Rim(:))
+                % this checks whether the GMroi is truely an island
+                % (the 0.95 allowing for a little bit of GM near the edge, this number can go up)
+                % now we have any GM islands within the WM.
 
-            % we could also try multiple layers with different conditions, e.g. assuming that the first layer
-            % should contain 100% WM, second layer >0.75, third layer >0.50. But for now keep it simple.
+                % we could also try multiple layers with different conditions, e.g. assuming that the first layer
+                % should contain 100% WM, second layer >0.75, third layer >0.50. But for now keep it simple.
 
-            % These non-WM islands are partly WMH, partly WM
-            % 1) in this ROI, divide the pGM & pCSF over WMHnew & pWM
-            pWMim(CurrROI) = min(1,pGMim(CurrROI) + pCSFim(CurrROI) + pWMim(CurrROI)); % give fully to pWM
-            WMHnew(CurrROI) = min(1,0.5.*(pGMim(CurrROI) + pCSFim(CurrROI)) + WMHnew(CurrROI)); % give half to pWMH
-            pGMim(CurrROI) = 0; % we have given all pGM to pWM
-            pCSFim(CurrROI) = 0; % we have given all pCSF to pWM
+                % These non-WM islands are partly WMH, partly WM
+                % 1) in this ROI, divide the pGM & pCSF over WMHnew & pWM
+                pWMim(CurrROI) = min(1,pGMim(CurrROI) + pCSFim(CurrROI) + pWMim(CurrROI)); % give fully to pWM
+                WMHnew(CurrROI) = min(1,0.5.*(pGMim(CurrROI) + pCSFim(CurrROI)) + WMHnew(CurrROI)); % give half to pWMH
+                pGMim(CurrROI) = 0; % we have given all pGM to pWM
+                pCSFim(CurrROI) = 0; % we have given all pCSF to pWM
+            end
         end
     end
+    fprintf('\n');
 end
-fprintf('\n');
 
 
 
