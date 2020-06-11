@@ -678,18 +678,22 @@ for i = 1:numel(Vf2)
     % Correct for big lesions that are too close at outer CSF
     fprintf(fileID, 'Correct for big lesions that are too close at outer CSF ... ');
     indx_les = find(prob > 0);
-    bw = ps_bwlabeln(1. * (prob > 0));
-    bw_tmp = bw(indx_les);
-    p_tmp = prob(indx_les);
-    p2_tmp = prob2(indx_les);
-    gs1 = arrayfun(@(x) mean(p_tmp(bw_tmp == x)), (1:max(bw_tmp))');
-    gs2 = arrayfun(@(x) mean(p2_tmp(bw_tmp == x)), (1:max(bw_tmp))');
-    %gs1 = grpstats(p_tmp, bw_tmp, 'mean');
-    %gs2 = grpstats(p2_tmp, bw_tmp, 'mean');
-    indx_correct = find(gs1 > .5 & gs2 < .5 & gs2 > 0);
-    if ~isempty(indx_correct)
-        for j = indx_correct'
-            prob2(bw == j) = prob(bw == j);
+    bw = ps_bwlabeln(prob > 0);
+    
+    if ~isempty(indx_les) && sum(bw(:))>0 % Skip this part when no lesions found close to outer CSF %% EXPLOREASL HACK
+
+        bw_tmp = bw(indx_les);
+        p_tmp = prob(indx_les);
+        p2_tmp = prob2(indx_les);
+        gs1 = arrayfun(@(x) mean(p_tmp(bw_tmp == x)), (1:max(bw_tmp))');
+        gs2 = arrayfun(@(x) mean(p2_tmp(bw_tmp == x)), (1:max(bw_tmp))');
+        %gs1 = grpstats(p_tmp, bw_tmp, 'mean');
+        %gs2 = grpstats(p2_tmp, bw_tmp, 'mean');
+        indx_correct = find(gs1 > .5 & gs2 < .5 & gs2 > 0);
+        if ~isempty(indx_correct)
+            for j = indx_correct'
+                prob2(bw == j) = prob(bw == j);
+            end
         end
     end
     prob = prob2; clear prob2;
@@ -697,12 +701,15 @@ for i = 1:numel(Vf2)
 
     % Delete small lesions with low probability
     fprintf(fileID, 'Delete small lesions with low probability ... ');
-    bw = ps_bwlabeln(1 .* (prob > 0));
+    bw = ps_bwlabeln(prob > 0);
     volfactor = abs(det(Vf2_tmp.mat(1:3,1:3))) /  1000;
-    for j = 1:max(bw(bw > 0))
-        indx_tmp = find(bw == j);
-        if (sum(prob(indx_tmp) > .1)*volfactor < 3*0.003)
-            prob(indx_tmp) = 0;
+    
+    if sum(bw(:))>0 % Skip this part when no small lesions found with low probability %% EXPLOREASL HACK
+        for j = 1:max(bw(bw > 0))
+            indx_tmp = find(bw == j);
+            if (sum(prob(indx_tmp) > .1)*volfactor < 3*0.003)
+                prob(indx_tmp) = 0;
+            end
         end
     end
     fprintf(fileID, 'ok.\n');

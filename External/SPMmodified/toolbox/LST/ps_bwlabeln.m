@@ -5,11 +5,25 @@ function b = ps_bwlabeln(img)
 %   Sorry, there is no further documentation at this moment.
 %
 
+if length(unique(img))>2
+    error('This script needs a binary input');
+elseif ~islogical(img)
+    img(~isfinite(img)) = 0;
+    img = logical(img);
+end
+
+if sum(img(:))==0
+    % skip this script, empty image
+    b = zeros(size(img));
+    b = logical(b);
+    return;
+end
+
 % Set borders of image to zero
 img(:,:,1) = 0 .* img(:,:,1); img(:,:,end) = 0 .* img(:,:,end);
 img(:,1,:) = 0 .* img(:,1,:); img(:,end,:) = 0 .* img(:,end,:);
 img(1,:,:) = 0 .* img(1,:,:); img(end,:,:) = 0 .* img(end,:,:);
-
+%
 img = 1 .* (img ~= 0);
 img2 = img;
 nx = size(img, 1); ny = size(img, 2);
