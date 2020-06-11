@@ -389,7 +389,11 @@ if ~x.mutex.HasState(StateName{iState})
         if length(UniqueN)==2 && UniqueN(1)==0 && UniqueN(2)==1
             warning('Skipping WMH cleanup, because WMH_SEGM seems imported as binary mask');
         else
-            xASL_wrp_CleanUpWMH_SEGM(x);
+            try
+                xASL_wrp_CleanUpWMH_SEGM(x);
+            catch
+                
+            end
         end
 
         x.mutex.AddState(StateName{iState});
