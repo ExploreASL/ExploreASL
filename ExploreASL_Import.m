@@ -433,8 +433,8 @@ for iSubject=1:nSubjects
 
                 if ~isempty(strfind(char(imPar.folderHierarchy(end)),'PAR'))
                     imPar.dcm2nii_version = '20101105';
-                elseif ~isempty(strfind(scan_name, 'ASL4D')) || ~isempty(strfind(scan_name, 'M0'))
-                    imPar.dcm2nii_version = '20181125';
+                %elseif ~isempty(strfind(scan_name, 'ASL4D')) || ~isempty(strfind(scan_name, 'M0'))
+                %    imPar.dcm2nii_version = '20181125';
                     % for everything other than ASL data, use the recent dcm2niiX to obtain BIDS-compliant data
                 end
 
