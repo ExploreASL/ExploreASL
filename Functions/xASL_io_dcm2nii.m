@@ -210,50 +210,57 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         niiEntries = xASL_adm_GetFileList(temp_dir, '.*\.nii$', 'FPListRec', [0 Inf]);
 		
 		% On Linux, there are sometimes problem to read special characters
-        if isempty(niiEntries) && ~ispc()
-            % Try to read files with LS command
-            pathEntriesAlt = ls(temp_dir);
-            
-            % Then break to separate files according to character 32
-            indNewLine = find(pathEntriesAlt == 32);
-            
-            indNewLine = [indNewLine(:);length(pathEntriesAlt)+1];
-            indStart = 1;
-            niiEntriesAlt = '';
-            for iEnt = 1:length(indNewLine)
-                % Skip the new line cr (10 32) at the end
-                niiEntriesAlt{iEnt} = pathEntriesAlt(indStart:(indNewLine(iEnt)-2));
-                indStart = indNewLine(iEnt)+1;
-            end
-            
-            % For each of the files
-            for iEnt = 1:length(niiEntriesAlt)
-                % Remove leading and trailing apostrophes and 10s for 
-                if niiEntriesAlt{iEnt}(1) == 39
-                    niiEntriesAlt{iEnt} = niiEntriesAlt{iEnt}(2:end);
-                end
-                if niiEntriesAlt{iEnt}(end) == 39
-                    niiEntriesAlt{iEnt} = niiEntriesAlt{iEnt}(1:(end-1));
-                end
-                
-                % Look for further '$' and '' as starting and ending patterns
-                indStart = strfind(niiEntriesAlt{iEnt},"'$'");
-                indEnd   = strfind(niiEntriesAlt{iEnt},"''");
-                
-                % If both patterns exist, then remove the insides
-                if ~isempty(indStart) && ~isempty(indEnd)
-                    % Within that count the number of special characters by backslashes
-                    numSlashes = sum(niiEntriesAlt{iEnt}((indStart+3):(indEnd-1)) == '\');
-                    
-                    % Replace by ? and move files to a normal name
-                    temp_file_subs = [niiEntriesAlt{iEnt}(1:(indStart-1)), repmat('?',[1 numSlashes]), niiEntriesAlt{iEnt}((indEnd+2):end)];
-                    temp_file_fixed = niiEntriesAlt{iEnt}([1:(indStart-1),(indEnd+2):end]);
-                    xASL_SysMove(temp_file_subs,temp_file_fixed,[],false);
-                end
-            end
-            % Read again the files
-            niiEntries = xASL_adm_GetFileList(temp_dir, '.*\.nii$', 'FPListRec', [0 Inf]);
-        end
+		if isempty(niiEntries) && ~ispc()
+			% Try to read files with LS command
+			pathEntriesAlt = ls(temp_dir);
+			
+			% Then break to separate files according to character 32
+			indNewLine = find(pathEntriesAlt == 10);
+			
+			%indNewLine = [indNewLine(:);length(pathEntriesAlt)+1];
+			indStart = 1;
+			niiEntriesAlt = '';
+			for iEnt = 1:length(indNewLine)
+				% Skip the new line cr (10 32) at the end
+				niiEntriesAlt{iEnt} = pathEntriesAlt(indStart:(indNewLine(iEnt)-1));
+				indStart = indNewLine(iEnt)+1;
+			end
+			
+			% For each of the files
+			for iEnt = 1:length(niiEntriesAlt)
+				% Remove leading and trailing apostrophes and 10s for
+				if niiEntriesAlt{iEnt}(1) == 32
+					niiEntriesAlt{iEnt} = niiEntriesAlt{iEnt}(2:end);
+				end
+				if niiEntriesAlt{iEnt}(end) == 32
+					niiEntriesAlt{iEnt} = niiEntriesAlt{iEnt}(1:(end-1));
+				end
+				
+				if niiEntriesAlt{iEnt}(1) == 39
+					niiEntriesAlt{iEnt} = niiEntriesAlt{iEnt}(2:end);
+				end
+				if niiEntriesAlt{iEnt}(end) == 39
+					niiEntriesAlt{iEnt} = niiEntriesAlt{iEnt}(1:(end-1));
+				end
+				
+				% Look for further '$' and '' as starting and ending patterns
+				indStart = strfind(niiEntriesAlt{iEnt},"'$'");
+				indEnd   = strfind(niiEntriesAlt{iEnt},"''");
+				
+				% If both patterns exist, then remove the insides
+				if ~isempty(indStart) && ~isempty(indEnd)
+					% Within that count the number of special characters by backslashes
+					numSlashes = sum(niiEntriesAlt{iEnt}((indStart+3):(indEnd-1)) == '\');
+					
+					% Replace by ? and move files to a normal name
+					temp_file_subs = [niiEntriesAlt{iEnt}(1:(indStart-1)), repmat('?',[1 numSlashes]), niiEntriesAlt{iEnt}((indEnd+2):end)];
+					temp_file_fixed = niiEntriesAlt{iEnt}([1:(indStart-1),(indEnd+2):end]);
+					xASL_SysMove(temp_file_subs,temp_file_fixed,[],false);
+				end
+			end
+			% Read again the files
+			niiEntries = xASL_adm_GetFileList(temp_dir, '.*\.nii$', 'FPListRec', [0 Inf]);
+		end
 		
         if isempty(niiEntries)
             error('Empty output dcm2nii');
