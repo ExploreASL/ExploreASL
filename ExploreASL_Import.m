@@ -546,10 +546,10 @@ for iSubject=1:nSubjects
                 SavePathJSON{1} = fullfile(destdir, [scan_name '.json']);
                 SavePathJSON{2} = fullfile(destdir, [session_name '.json']);
                 for iPath=1:length(nii_files)
-                    % now we add the path only if it didnt exist already in
-                    % this list
-                    if ~max(cellfun(@(y) strcmp(y, NewFile), SavePathJSON))
-                        SavePathJSON{end+1} = [nii_files{iPath}(1:end-4) '.json'];
+                    % now we add the path only if it didnt exist already in this list
+					tmpNewPath = [nii_files{iPath}(1:end-4) '.json'];
+                    if ~max(cellfun(@(y) strcmp(y, tmpNewPath), SavePathJSON))
+                        SavePathJSON{end+1} = tmpNewPath;
                     end
                 end
 
