@@ -168,10 +168,12 @@ function [IM] = xASL_im_ExtrapolateLinearlyOverNaNs(IM)
 
 % Zeros are also converted to NaNs - because this is sometimes unclear in the flow fields.
 IM(IM==0) = NaN;
+IM(~isfinite(IM)) = NaN;
 
-% The first layer next to NaNs is sometimes intrapolated, so rather assigned to Nans as well
-[distMap,~] = xASL_im_DistanceTransform(isnan(IM));
-IM(distMap<2) = NaN;
+% Get distance transform
+distMap = xASL_im_DistanceTransform(~isfinite(IM));
+
+IM(distMap<2) = NaN; % The first layer next to NaNs is sometimes intrapolated, so rather assigned to Nans as well
 
 nX = size(IM,1);
 nY = size(IM,2);
@@ -246,7 +248,8 @@ for Iteration = 1:3 % Applies twice along X Y Z dimensions to make sure all the 
     end % sum(isnan(IM))
 end % for Iteration
 
-% Any remaining NaNs had to be inside, so we convert them back to 0
-IM(isnan(IM)) = 0;
+% Any remaining NaNs had to be inside, so we interpolate them (setting them
+% to zeros creates artifacts!)
+IM = xASL_im_ExtrapolateSmoothOverNaNs(IM, 0);
 
 end
