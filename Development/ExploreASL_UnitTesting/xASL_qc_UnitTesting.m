@@ -73,7 +73,8 @@ RESULTS.INIT = runtests('xASL_Initialize_test'); fprintf(BreakString);
 %% RUN TESTS: SUBMODULES
 RESULTS.SUBMODULES.xASL_wrp_LinearReg_T1w2MNI = runtests('xASL_wrp_LinearReg_T1w2MNI_test'); fprintf(BreakString);
 RESULTS.SUBMODULES.xASL_wrp_LinearReg_FLAIR2T1w = runtests('xASL_wrp_LinearReg_FLAIR2T1w_test'); fprintf(BreakString);
-
+RESULTS.SUBMODULES.xASL_wrp_FLAIR_BiasfieldCorrection = runtests('xASL_wrp_FLAIR_BiasfieldCorrection_test'); fprintf(BreakString);
+RESULTS.SUBMODULES.xASL_wrp_LST_Segment_FLAIR_WMH= runtests('xASL_wrp_LST_Segment_FLAIR_WMH_test'); fprintf(BreakString);
 
 
 %% RESULTS PDF
@@ -87,48 +88,51 @@ axDoc = axes('Position',[0 0 1 1]);
 set(axDoc, 'visible', 'off')
 fontsize = 8;
 
-% Display results
-text(0,0.99, 'RESULTS: QC UNIT TESTING', 'FontSize', fontsize+4, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', axDoc);
-text(0,0.96, 'INITIALIZATION', 'FontSize', fontsize+2, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', axDoc);
-printTestResults(RESULTS.INIT,0.00,0.94,axDoc)      % Print individual test results
+try
+    % Display results
+    text(0,0.99, 'RESULTS: QC UNIT TESTING', 'FontSize', fontsize+4, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', axDoc);
 
-text(0,0.70, 'SUBMODULES', 'FontSize', fontsize+2, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', axDoc);
-printTestResults(RESULTS.SUBMODULES.xASL_wrp_LinearReg_T1w2MNI,0.00,0.68,axDoc)      % Print individual test results
+    text(0.00, 0.96, 'Module/Submodule', 'FontSize', fontsize, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', axDoc);
+    text(0.30, 0.96, 'Name', 'FontSize', fontsize, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', axDoc);
+    text(0.80, 0.96, 'Passed', 'FontSize', fontsize, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', axDoc);
+    text(0.90, 0.96, 'Duration', 'FontSize', fontsize, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', axDoc);
+
+    printTestResults(RESULTS.INIT,0.940,axDoc)
+    printTestResults(RESULTS.SUBMODULES.xASL_wrp_LinearReg_T1w2MNI,0.910,axDoc)
+    printTestResults(RESULTS.SUBMODULES.xASL_wrp_LinearReg_FLAIR2T1w,0.895,axDoc)
+    printTestResults(RESULTS.SUBMODULES.xASL_wrp_FLAIR_BiasfieldCorrection,0.880,axDoc)
+    printTestResults(RESULTS.SUBMODULES.xASL_wrp_LST_Segment_FLAIR_WMH,0.865,axDoc)
+
+catch
+    % If something goes wrong during printing
+    text(0,0.99, 'Error...', 'FontSize', fontsize+4, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', axDoc);
+end
 
 % Print PDF
 print(fg, '-dpdf', '-r600', resultPath);
 
-
 end
 
 % Function to print the results of a single test
-function printTestResults(testStruct,startX,startY,curAxes)
+function printTestResults(testStruct,startY,curAxes)
 
     % Configuration
-    diffX = 0.20;
-    diffY = 0.02;
     fontsize = 8;
     tmpDiff = 0;
     
     % Iterate over multiple tests
     for i=1:length(testStruct)
-        text(startX, startY-tmpDiff, 'Name', 'FontSize', fontsize,...
-             'Interpreter', 'none', 'Parent', curAxes);
-        text(startX+diffX, startY-tmpDiff, string(testStruct(1,i).Name), 'FontSize', fontsize,...
-             'Interpreter', 'none', 'Parent', curAxes);
-
-        text(startX, startY-diffY-tmpDiff, 'Passed', 'FontSize', fontsize,...
-             'Interpreter', 'none', 'Parent', curAxes);
-        text(startX+diffX, startY-diffY-tmpDiff, string(testStruct(1,i).Passed), 'FontSize', fontsize,...
-             'Interpreter', 'none', 'Parent', curAxes);
-
-        text(startX, startY-diffY*2-tmpDiff, 'Duration', 'FontSize', fontsize,...
-             'Interpreter', 'none', 'Parent', curAxes);
-        text(startX+diffX, startY-diffY*2-tmpDiff, strcat(string(testStruct(1,i).Duration),'s'), 'FontSize', fontsize,...
-             'Interpreter', 'none', 'Parent', curAxes);
-         
-        tmpDiff = tmpDiff+0.06;
+        newName = strrep(string(testStruct(1,i).Name),'_',' ');
+        newStr = split(newName,'/');
+        if length(newStr)>1
+            text(0.00, startY-tmpDiff, newStr(1), 'FontSize', fontsize, 'Interpreter', 'none', 'Parent', curAxes);
+            text(0.30, startY-tmpDiff, newStr(2), 'FontSize', fontsize, 'Interpreter', 'none', 'Parent', curAxes);
+        else
+            text(0.00, startY-tmpDiff, newStr, 'FontSize', fontsize, 'Interpreter', 'none', 'Parent', curAxes);
+        end
+        text(0.80, startY-tmpDiff, string(testStruct(1,i).Passed), 'FontSize', fontsize, 'Interpreter', 'none', 'Parent', curAxes);
+        text(0.90, startY-tmpDiff, strcat(string(round(testStruct(1,i).Duration)),'s'), 'FontSize', fontsize, 'Interpreter', 'none', 'Parent', curAxes);
+        tmpDiff = tmpDiff+0.015;
     end
-
 
 end
