@@ -104,7 +104,7 @@ xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field 
 % inequality of image contrast for ASL & M0, and because they usually
 % are already in decent registration.
 
-if ~strcmp(x.M0,'UseControlAsM0') && ~isempty(regexp(x.Sequence, 'spiral'))
+if ~strcmp(x.M0,'UseControlAsM0') && isempty(regexp(x.Sequence, 'spiral'))
     % only register if the M0 and mean control are not identical
     % Which they are when there is no separate M0, but ASL was
     % acquired without background suppression & the mean control image
