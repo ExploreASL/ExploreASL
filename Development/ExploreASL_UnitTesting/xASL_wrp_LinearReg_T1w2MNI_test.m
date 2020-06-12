@@ -28,6 +28,7 @@ if xASL_exist(test_parameter_file)
 end
 
 % PRECONDITIONS
+TestDataSetPath = fullfile(testDir,'TestFolder','TestDataSet');
 
 %% Test 1: TestDataSet (low quality)
 
@@ -44,20 +45,12 @@ fprintf('Copy test data to %s...\n', fullfile(testDir,'TestFolder','TestDataSet'
 
 % Initialize test
 fprintf('Initialize test input...\n')
-DataParPath = fullfile(testDir,'TestFolder','TestDataSet','DataParameters_LowQ.json');
+DataParPath = fullfile(TestDataSetPath,'DataParameters_LowQ.json');
 
 % Initialize the data set
 x = ExploreASL_Initialize(DataParPath, true, 1, 1);
-x = xASL_qc_Default_Test_Initialize(x);
-
-% Add paths which should actually be defined in: x = xASL_init_FileSystem(x);
-curFolder = fullfile(testDir,'TestFolder','TestDataSet','Sub-001');
-x.P.Path_FLAIR = fullfile(curFolder,'FLAIR.nii');
-x.P.Path_WMH_SEGM = fullfile(curFolder,'WMH_SEGM.nii');
-x.P.Path_T1 = fullfile(curFolder,'T1.nii');
-x.P.Path_ASL4D = fullfile(curFolder,'ASL_1\ASL4D.nii');
-x.P.Path_M0 = fullfile(curFolder,'ASL_1\M0.nii');
-x.P.Path_ASL4D_RevPE = fullfile(curFolder,'ASL_1\ASL4D_RevPE.nii');
+x = xASL_qc_Default_Test_Initialize(x,TestDataSetPath,x.SUBJECTS{1});
+x = xASL_init_FileSystem(x);
 
 % Unzip T1 and FLAIR
 xASL_qc_Default_Test_Unzip(x);
@@ -66,7 +59,7 @@ xASL_qc_Default_Test_Unzip(x);
 xASL_wrp_LinearReg_T1w2MNI(x);
 
 % Check quality setting
-assert(exist(fullfile(testDir,'TestFolder','TestDataSet','Sub-001','ASL_1','ASL4D.mat'),'file')==2)
+assert(exist(fullfile(TestDataSetPath,'Sub-001','ASL_1','ASL4D.mat'),'file')==2)
 
 % What could be tested here? (WORK IN PROGRESS)
 
