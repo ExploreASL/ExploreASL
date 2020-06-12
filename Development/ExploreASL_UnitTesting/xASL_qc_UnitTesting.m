@@ -72,6 +72,7 @@ RESULTS.INIT = runtests('xASL_Initialize_test'); fprintf(BreakString);
 
 %% RUN TESTS: SUBMODULES
 RESULTS.SUBMODULES.xASL_wrp_LinearReg_T1w2MNI = runtests('xASL_wrp_LinearReg_T1w2MNI_test'); fprintf(BreakString);
+RESULTS.SUBMODULES.xASL_wrp_LinearReg_FLAIR2T1w = runtests('xASL_wrp_LinearReg_FLAIR2T1w_test'); fprintf(BreakString);
 
 
 

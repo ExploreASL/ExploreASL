@@ -1,18 +1,18 @@
-%xASL_wrp_LinearReg_T1w2MNI_test Script to test the xASL_wrp_LinearReg_T1w2MNI function
+%xASL_wrp_LinearReg_FLAIR2T1w_test Script to test the xASL_wrp_LinearReg_T1w2MNI function
 %
-% FORMAT:       RESULT = runtests('xASL_wrp_LinearReg_T1w2MNI_test');
+% FORMAT:       RESULT = runtests('xASL_wrp_LinearReg_FLAIR2T1w_test');
 % 
 % INPUT:        None
 %
 % OUTPUT:       Console window
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This script is supposed to run various unit tests of xASL_wrp_LinearReg_T1w2MNI:
+% DESCRIPTION: This script is supposed to run various unit tests of xASL_wrp_LinearReg_FLAIR2T1w:
 %
 %           1) Run a test using the default TestDataSet inputs with low quality setting
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLES: RESULT = runtests('xASL_wrp_LinearReg_T1w2MNI_test');
+% EXAMPLES: RESULT = runtests('xASL_wrp_LinearReg_FLAIR2T1w_test');
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
@@ -59,7 +59,7 @@ xASL_qc_Default_Test_Unzip(x);
 xBackup = x;
 
 % Run test
-xASL_wrp_LinearReg_T1w2MNI(x);
+xASL_wrp_LinearReg_FLAIR2T1w(x);
 
 % What could be tested here? (WORK IN PROGRESS)
 
