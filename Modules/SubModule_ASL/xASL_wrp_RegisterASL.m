@@ -11,7 +11,9 @@ function xASL_wrp_RegisterASL(x)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule registers ASL images to T1w space, by using a
-% combination of the following registration techniques:
+% combination of the registration techniques below. Note that in the
+% absence of raw structural files (i.e. T1.nii[.gz] or T1_ORI.nii[.gz],
+% it will recreate dummy files from standard space to do this registration
 %
 % M0-T1w rigid-body  -> this works well in 2D EPI sequences
 % PWI-pGM rigid-body -> this is robust across sequences with different
@@ -166,9 +168,10 @@ end
 
 %% E) Allow registration without structural data
 StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
-if xASL_exist(x.P.Path_T1, 'file') && ~StructuralDerivativesExist
+StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
+if StructuralRawExist && ~StructuralDerivativesExist
     error('Please run structural module first');
-elseif ~xASL_exist(x.P.Path_T1, 'file') && ~StructuralDerivativesExist
+elseif ~StructuralRawExist && ~StructuralDerivativesExist
     warning('Missing structural scans, using ASL registration only instead!');
     IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
     % Copy dummy transformation field
