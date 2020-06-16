@@ -82,7 +82,7 @@ for iSubject=1:x.nSubjects
 
     %% -----------------------------------------------------------------------------------------------
     %% 2) Collect WMH data
-    PathCSV = xASL_adm_GetFileList( x.D.TissueVolumeDir, ['^WMH_LST_(LGA|LPA)_' x.SUBJECTS{iSubject} '(\.csv|\.tsv)$'], 'FPList', [0 Inf]);
+    PathCSV = xASL_adm_GetFileList(x.D.TissueVolumeDir, ['^WMH_LST_(LGA|LPA)_' x.SUBJECTS{iSubject} '(\.csv|\.tsv)$'], 'FPList', [0 Inf]);
     
     DidExist = 0;
     if ~isempty(PathCSV)

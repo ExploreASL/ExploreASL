@@ -143,8 +143,7 @@ while ~isempty(SessionList)
 end
 
 if nSessions==0 % check if there are "subject-files"
-    SubjectList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*\.nii'], 'FPList', [0 Inf]);
-    if isempty(SubjectList)
+    if isempty(xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*\.nii'], 'FPList', [0 Inf]))
         fprintf('%s\n','No session or subject files found');
         return;
     end

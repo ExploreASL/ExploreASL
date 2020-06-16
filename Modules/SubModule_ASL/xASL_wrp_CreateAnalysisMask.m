@@ -11,8 +11,8 @@ function xASL_wrp_CreateAnalysisMask(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function creates an analysis mask with the following steps:
 %              0) Create FoV mask (native & MNI spaces)
-%              1) Detect negative vascular signal (native & MNI spaces)
-%              2) Detect peak vascular signal (native & MNI spaces)
+%              1) Detect negative vascular signal (native & MNI spaces, within pGM>0.5)
+%              2) Detect peak vascular signal (native & MNI spaces, within pGM==80% percentile on ASL image)
 %              3) Brainmasking & FoV-masking (A) native & B) MNI spaces)
 %                 - Add WM vascular parts back to the mask (defined as pWM>0.8) & remove extracranial signal
 %                   In the WM, negative or peak signal is more expected from
