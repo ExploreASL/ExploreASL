@@ -10,25 +10,29 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 %   DataName    - Name of the added variable/parameter (REQUIRED)
 %   x           - struct containing the ExploreASL environment parameters
 %                 (REQUIRED)
-%   bOverwrite  - boolean specifying to overwrite pre-existing columns with
+%   bOverwrite  - boolean specifying to overwrite pre-existing data values for subject/session with
 %                 the same header (OPTIONAL, DEFAULT = true) 
 %                 (pre-existing participants.tsv is always overwritten)
 %
 % OUTPUT: n/a
 % OUTPUT FILE:  /MyStudy/participants.tsv
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function adds metadata/statistical variables to the
-% participants.tsv in the root/analysis folder, by the following steps.
-% Note that this function will fail if the nSubjectsSessions is not the
-% same for ExploreASL/data export, and participants.tsv!
+% DESCRIPTION:  This function adds metadata/statistical variables to the
+%               participants.tsv in the root/analysis folder, by the following steps.
+%               This function will iterate over Data provided at DataIn and fill them
+%               in the participants.tsv, overwriting if allowed.
+%               Empty data is filled in as 'n/a', and the first column "participants_id"
+%               is sorted for participants.
 %
+% This function runs the following steps:
 % 1) Admin - Validate that there are not too many columns
 % 2) Admin - Detect nSubjectsSessions
 % 3) Admin - Load pre-existing participants.tsv or create one
-% 4) Validate that subjects/session columns are equal with those in CellArray
-% 5) Remove any existing columns
-% 6) Add data to CellArray
-% 7) Write data to participants.tsv
+% 4) Admin - Get column number of data
+% 5) Add data to CellArray
+% 6) Sort rows on subjects
+% 7) Fill empty cells
+% 8) Write data to participants.tsv
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_Add2ParticipantsTSV(MeanMotion, 'MeanMotion', x);
 % __________________________________
@@ -48,42 +52,70 @@ if size(DataIn, 2)>3
 end
 
 %% 2) Admin - Detect nSubjectsSessions
+% This part checks if the DataIn has an invalid size.
+% After this part, the columns should be 1) subject, 2) session/run, 3)
+% data value
+HadSessions = false;
 if size(DataIn, 1)==x.nSubjectsSessions && size(DataIn, 1)~=x.nSubjects
-    HasSessions = true;
+    % A session column should exist
+    if size(DataIn,2)<3
+        warning('Session column missing, too few columns, skipping');
+        return;
+    else
+        TempSessionNames = unique(DataIn(:,2));
+        if ~max(strcmp(TempSessionNames, 'ASL_1'))
+            warning('First session missing, might go wrong');
+        end
+        HadSessions = true;
+    end
 elseif size(DataIn, 1)==x.nSubjects
-    HasSessions = false;
+    % Add session column
+    if size(DataIn, 2)==2
+        DataIn(:,3) = DataIn(:,2);
+        DataIn(:,2) = repmat({'ASL_1'}, [x.nSubjects 1]);
+    elseif size(DataIn, 2)~=3
+        warning('Too many or few columns, something went wrong, skipping');
+        return;
+    end
 else
     warning('Incorrect nDatapoints, needs to be either nSubjects or nSubjectsSessions, skipping');
     return;
 end
 
 %% 3) Admin - Load pre-existing participants.tsv or create one
+% This part ensures that a subject & session column exists.
+% If a session column doesn't exist, it will be created.
 if exist(PathTSV, 'file')
     % 3A) Load & sort columns from participants.tsv
     CellArrayOrig = xASL_tsvRead(PathTSV);
     SubjectIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(participant|subject).*id*$')), lower(CellArrayOrig(1,:))));
     SessionIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(session).*(id)*$')), lower(CellArrayOrig(1,:))));
     
-    % 3B) Check if participants.tsv has correct number of subjects/sessions
-    if size(CellArrayOrig, 1)-1~=x.nSubjectsSessions
-        warning([PathTSV ' doesnt have correct nSubjectsSessions, skipping']);
-        return;
-    end
-    
+    % 3B) Check participants.tsv columns
     if isempty(SubjectIndex)
         warning('Missing participant_id column in pre-existing participant.tsv');
         return;
     elseif isempty(SessionIndex)
-        warning('Missing session_id column in pre-existing participant.tsv');
-        return;
-    else % Sort columns to start with participant_id & session_id
-        CellArray = CellArrayOrig(:, [SubjectIndex SessionIndex]);
-        % Remove subjects & sessions from original CellArray
-        CellArrayOrig = CellArrayOrig(:, [1:SubjectIndex-1 SubjectIndex+1:end]);
-        SessionIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(session).*(id)*$')), lower(CellArrayOrig(1,:))));
-        CellArrayOrig = CellArrayOrig(:, [1:SessionIndex-1 SessionIndex+1:end]);
-        CellArray = [CellArray CellArrayOrig];
+        if HadSessions
+            warning('DataIn had sessions but participant.tsv had not, skipping');
+            return;
+        else
+            fprintf('Missing session_id column in pre-existing participant.tsv, creating\n');
+            CellArrayOrig(:,3:end+1) = CellArrayOrig(:,2:end);
+            CellArrayOrig{1, 2} = 'session';
+            CellArrayOrig(2:end, 2) = repmat({'ASL_1'}, [size(CellArrayOrig,1)-1 1]);
+        end
     end
+    % 3C) Sort columns to start with participant_id & session_id
+    SubjectIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(participant|subject).*id*$')), lower(CellArrayOrig(1,:))));
+    SessionIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(session).*(id)*$')), lower(CellArrayOrig(1,:))));
+    
+    CellArray = CellArrayOrig(:, [SubjectIndex SessionIndex]);
+    % Remove subjects & sessions from original CellArray
+    CellArrayOrig = CellArrayOrig(:, [1:SubjectIndex-1 SubjectIndex+1:end]);
+    SessionIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(session).*(id)*$')), lower(CellArrayOrig(1,:))));
+    CellArrayOrig = CellArrayOrig(:, [1:SessionIndex-1 SessionIndex+1:end]);
+    CellArray = [CellArray CellArrayOrig];
     
 else
     % 3C) Create required columns subjects & sessions from x.SUBJECTS & x.SESSIONS
@@ -94,75 +126,66 @@ else
     CellArray(2:x.nSubjectsSessions+1, 2) = repmat(x.SESSIONS,[x.nSubjects, 1]);
 end
 
-% Force these names
+% 3D) Force these names
 CellArray{1,1} = 'participant_id';
 CellArray{1,2} = 'session';
 
 SubjectIndex = 1;
 SessionIndex = 2;
 
-%% -------------------------------------------------------------------------------------------
-%% 4) Validate that subjects/session columns are equal with those in CellArray
-if size(DataIn, 2)>1  % If to be included data have no sessions
-
-    % Specify subjectIDs for metadata to be merged
-    SubjectsShouldBe = DataIn(:,1);
-    if size(DataIn, 1)==x.nSubjectsSessions
-        SubjectsAre = CellArray(2:end, SubjectIndex);
-    elseif size(DataIn, 1)==x.nSubjects
-        SubjectsAre = CellArray(2:x.nSessions:end, SubjectIndex);
-    end
-        
-    % Compare these for each subject
-    for iSubject=1:length(SubjectsAre)
-        if ~strcmp(SubjectsAre{iSubject}, SubjectsShouldBe{iSubject})
-            warning('Invalid subject column in DataIn, skipping');
-            return;
-        end
-    end
-    
-elseif size(DataIn, 2)>2 % If to be included data have sessions
-    % Specify sessionIDs for metadata to be merged
-    SessionsShouldBe = DataIn(:,2);
-    SessionsAre = CellArray(2:end, SessionIndex);
-    
-    % Compare these for each session
-    for iSession=1:length(SessionsAre)
-        if ~strcmp(SessionsAre{iSession}, SessionsShouldBe{iSession})
-            warning('Invalid session column in DataIn, skipping');
-            return;
-        end
-    end
-end
 
 %% -------------------------------------------------------------------------------------------
-%% 5) Remove any existing columns
+%% 4) Admin - Get column number of data
 % Find columns with the same header
-HeaderIndices = strcmp(CellArray(1,:), DataName);
-bAlreadyExisted = sum(HeaderIndices)>0;
-if bAlreadyExisted && ~bOverwrite
-    warning('Data column already existed, skipping');
+DataColumn = find(strcmp(CellArray(1,:), DataName));
+if isempty(DataColumn)
+    DataColumn = size(CellArray,2)+1;
+    CellArray{1,DataColumn} = DataName;
+    CellArray(2:end,DataColumn) = repmat({'n/a'}, [size(CellArray,1)-1 1]);
+elseif length(DataColumn)>1
+    warning('Too many columns, skipping');
     return;
-elseif bAlreadyExisted && bOverwrite
-    % Remove any pre-existing data with the same header
-    CellArray = CellArray(:, ~HeaderIndices);
 end
 
+
+
 %% -------------------------------------------------------------------------------------------
-%% 6) Add data to CellArray
-CellArray{1, end+1} = DataName;
-if size(DataIn, 1)==x.nSubjectsSessions % add session/run-specific data
-    CellArray(2:end,end) = DataIn(:,end);
-elseif size(DataIn, 1)==x.nSubjects % copy subject-specific data over multiple sessions/runs
-    for iSession=1:x.nSessions
-        CellArray(1+iSession:x.nSessions:x.nSubjectsSessions+1, end) = DataIn(:,end);
+%% 5) Add data to CellArray
+% Note that CellArray has headers (index +1) but DataIn has not
+for iIndex=1:size(DataIn,1)
+    iSubject = strcmp(CellArray(2:end,1), DataIn{iIndex,1});
+    iSession = strcmp(CellArray(iSubject+1,2), DataIn{iIndex,2});
+    iRow = find(iSubject & iSession);
+    
+    if isempty(iRow)
+        iRow = size(CellArray,1)+1;
+        CellArray{iRow,1} = DataIn{iIndex,1};
+        CellArray{iRow,2} = DataIn{iIndex,2};
+        % Fill non-subject/non-session/non-data columns with 'n/a'
+    elseif length(iRow)>1
+        warning('This SubjectSession combination exists multiple times, skipping');
+    end     
+    
+    IsEmpty = isempty(CellArray{iRow+1,DataColumn}) || strcmp(CellArray{iRow+1,DataColumn}, 'n/a');
+    if IsEmpty || bOverwrite
+        CellArray{iRow+1,DataColumn} = DataIn{iIndex,3};
+    else
+        fprintf('Data already existing, skipping\n');
     end
-else
-    warning('Incorrect nSubjects/nSessions size of DataIn');
 end
 
+
 %% -------------------------------------------------------------------------------------------
-%% 7) Write data to participants.tsv
+%% 6) Sort rows on subjects
+CellArray(2:end,:) = sortrows(CellArray(2:end,:), 1);
+
+%% 7) Fill empty cells
+IsEmpty = cellfun(@(y) isempty(y), CellArray);
+CellArray(IsEmpty) = {'n/a'};
+        
+
+%% -------------------------------------------------------------------------------------------
+%% 8) Write data to participants.tsv
 xASL_tsvWrite(CellArray, PathTSV, 1);
 
 
