@@ -312,7 +312,7 @@ end
 
 % ============================================================
 %% 7) Compile results table
-ResultsTable = {'Data', 'mean_qCBF_TotalGM' 'median_qCBF_TotalGM' 'median_qCBF_DeepWM' 'CoV_qCBF_TotalGM' 'GMvol' 'WMvol' 'CSFvol' 'PipelineCompleted' 'TC_Registration'};
+ResultsTable = {'Data', 'mean_qCBF_TotalGM' 'median_qCBF_TotalGM' 'median_qCBF_DeepWM' 'CoV_qCBF_TotalGM' 'GMvol' 'WMvol' 'CSFvol' 'PipelineCompleted' 'TC_ASL_Registration' 'TC_M0_Registration'};
 fprintf('Reading & parsing results:   ');
 for iList=1:length(Dlist) % iterate over example datasets
     xASL_TrackProgress(iList, length(Dlist));
@@ -352,10 +352,15 @@ for iList=1:length(Dlist) % iterate over example datasets
         end
     end
     % Get registration performance
-    PathTemplate = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
-    PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$','FPList');
+    PathTemplateASL = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
+    PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
+    PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
+    PathM0 = xASL_adm_GetFileList(PopulationDir,'^(noSmooth_M0|mean_control).*\.nii$', 'FPList');
     if ~isempty(PathCBF)
-        ResultsTable{1+iList,5+iFile} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplate, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+        ResultsTable{1+iList,5+iFile} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+    end
+    if ~isempty(PathM0)
+        ResultsTable{1+iList,6+iFile} = xASL_qc_TanimotoCoeff(PathM0{1}, PathTemplateM0, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
     end
 end
 fprintf('\n');
@@ -369,7 +374,7 @@ save(SaveFile, 'ResultsTable');
 try
     % Save ResultsTable
     PreviousSaveFile = fullfile(TestDirOrig, '2020-05-07_06:25_ResultsTable.mat');
-    PreviousTable = load(PreviousSaveFile,'-mat');
+    PreviousTable = load(PreviousSaveFile, '-mat');
 
     clear DifferenceTable
     DifferenceTable(1:size(ResultsTable,1),1:size(ResultsTable,2)) = {''};
@@ -388,7 +393,7 @@ try
 %% 9) E-mail results
     if ~isempty(EmailAddress)
         % First convert table to string to send by e-mail
-        NewTable{1,1} = 'mean_qCBF_TotalGM     median_qCBF_TotalGM     median_qCBF_DeepWM     CoV_qCBF_TotalGM             GMvol                 WMvol                 CSFvol             PipelineCompleted     TC_Registration';
+        NewTable{1,1} = 'mean_qCBF_TotalGM     median_qCBF_TotalGM     median_qCBF_DeepWM     CoV_qCBF_TotalGM             GMvol                 WMvol                 CSFvol             PipelineCompleted     TC_ASL_Registration    TC_M0_Registration';
         SingleEmptyString1 = repmat(' ',[1 44]);  
         SingleEmptyString2 = repmat(' ',[1 27]);
         for iX=2:size(DifferenceTable,1)
@@ -409,7 +414,7 @@ try
 
         % See here: https://nl.mathworks.com/help/matlab/import_export/sending-email.html
         fprintf('Sending e-mail with results\n');
-        setpref('Internet','SMTP_Server','smtp.gmail.com');
+        setpref('Internet', 'SMTP_Server', 'smtp.gmail.com');
         setpref('Internet', 'E_mail', EmailAddress);
         setpref('Internet', 'SMTP_Username', EmailAddress);
         setpref('Internet', 'SMTP_Password', Password);
@@ -418,7 +423,7 @@ try
         props.setProperty('mail.smtp.starttls.enable', 'true');
         props.setProperty('mail.smtp.socketFactory.class', 'javax.net.ssl.SSLSocketFactory');
         props.setProperty('mail.smtp.socketFactory.port','465'); % or port 587
-        EmailAddresses = {'Patricia.Clement@ugent.be','Pieter.Vandemaele@UZGENT.be', 'j.petr@hzdr.de', 'henkjanmutsaerts@gmail.com'};
+        EmailAddresses = {'Patricia.Clement@ugent.be', 'Pieter.Vandemaele@UZGENT.be', 'j.petr@hzdr.de', 'henkjanmutsaerts@gmail.com'};
         sendmail(EmailAddresses, 'ExploreASL TestRun: %AsymmetryIndexWithTemplateResults (should be <0.01%)', NewTable);
     end
 catch ME
