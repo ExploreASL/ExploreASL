@@ -1,21 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<config Name="Xcode Clang++" ShortName="Clang++" Manufacturer="Apple" Version="" Language="C++" Priority="A" Location="$XCODE_DIR">
-	<Details CompilerExecutable="$CXX" CompilerDefines="$DEFINES" CompilerFlags="$CXXFLAGS" OptimizationFlags="$CXXOPTIMFLAGS" DebugFlags="$CXXDEBUGFLAGS" IncludeFlags="$INCLUDE" LinkerExecutable="$LDXX" LinkerFlags="$LDFLAGS" LinkerLibraries="$LINKLIBS" LinkerOptimizationFlags="$LDOPTIMFLAGS" LinkerDebugFlags="$LDDEBUGFLAGS" CompilerDefineFormatter="-D%s" LinkerLibrarySwitchFormatter="-l%s" LinkerPathFormatter="-L%s"/>
-	<vars CMDLINE100="$CXX -c $DEFINES $INCLUDE $CXXFLAGS $OPTIM $SRC -o $OBJ" CMDLINE200="$LDXX $LDFLAGS $LINKOPTIM $LINKEXPORT $LINKEXPORTVER $LINKEXPORTCPP $OBJS $CXXLIBS $LINKLIBS -o $EXE" CC="$XCRUN_DIR/xcrun -sdk macosx$SDKVER clang" CXX="$XCRUN_DIR/xcrun -sdk macosx$SDKVER clang++" DEFINES="$MATLABMEX" MATLABMEX="-DMATLAB_MEX_FILE " MACOSX_DEPLOYMENT_TARGET="10.13" CFLAGS="-fno-common -arch x86_64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -fexceptions -v -isysroot $ISYSROOT" CXXFLAGS="$CFLAGS -fobjc-arc -std=c++11 -stdlib=libc++ " INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;/Users/janpetr/dcmtk/include/&quot; -I&quot;$MATLABROOT/simulink/include&quot;" CXXOPTIMFLAGS="-O2 -fwrapv -DNDEBUG" CXXDEBUGFLAGS="-g" LD="$CC" LDXX="$CXX" LDFLAGS="-Wl,-twolevel_namespace -undefined error -arch x86_64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -Wl,-syslibroot,$ISYSROOT -framework Cocoa $LDBUNDLE " LDBUNDLE="-bundle " LINKEXPORT="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maci64/mexFunction.map&quot;" LINKEXPORTVER="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maci64/c_exportsmexfileversion.map&quot;" LINKEXPORTCPP="-Wl,-U,_mexCreateMexFunction -Wl,-U,_mexDestroyMexFunction -Wl,-U,_mexFunctionAdapter -Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maci64/cppMexFunction.map&quot;" LINKLIBS="-L&quot;$MATLABROOT/bin/maci64&quot; -L&quot;/Users/janpetr/dcmtk/lib/&quot; -ldcmdata -lofstd -lm -lz  -lxml2 -lpthread -lmx -lmex -lmat -lstdc++ -loflog  -L&quot;$MATLABROOT/extern/bin/$ARCH&quot;  -lMatlabDataArray -lMatlabEngine" LDOPTIMFLAGS="-O" LDDEBUGFLAGS="-g" OBJEXT=".o" LDEXT=".mexmaci64" SETENV="CC=&quot;$CC&quot;
-                CXX=&quot;$CXX&quot;
-                CFLAGS=&quot;$CFLAGS $DEFINES&quot;
-                CXXFLAGS=&quot;$CXXFLAGS $DEFINES&quot;
-                COPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
-                CXXOPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
-                CDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
-                CXXDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
-                LD=&quot;$LD&quot;
-                LDXX=&quot;$LDXX&quot;
-                LDFLAGS=&quot;$LDFLAGS $LINKLIBS $LINKEXPORT&quot;
-                LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;" DEVELOPER_DIR_CHECK="" XCODE_DIR="/Applications/Xcode.app/Contents/Developer" XCRUN_DIR="/usr/bin" XCODE_AGREED_VERSION="9.4.1" ISYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk" SDKVER="10.13" CLANG_VERSION="9.1.0"/>
+<config 
+	Name="Xcode Clang++" 
+	ShortName="Clang++" 
+	Manufacturer="Apple" 
+	Version="" 
+	Language="C++" 
+	Priority="A" 
+	Location="$XCODE_DIR">
+	<Details 
+		CompilerExecutable="$CXX" 
+		CompilerDefines="$DEFINES" 
+		CompilerFlags="$CXXFLAGS" 
+		OptimizationFlags="$CXXOPTIMFLAGS" 
+		DebugFlags="$CXXDEBUGFLAGS" 
+		IncludeFlags="$INCLUDE" 
+		LinkerExecutable="$LDXX" 
+		LinkerFlags="$LDFLAGS $LDTYPE" 
+		LinkerLibraries="$LINKLIBS" 
+		LinkerOptimizationFlags="$LDOPTIMFLAGS" 
+		LinkerDebugFlags="$LDDEBUGFLAGS" 
+		CompilerDefineFormatter="-D%s" 
+		LinkerLibrarySwitchFormatter="-l%s" 
+		LinkerPathFormatter="-L%s"/>
+	<vars 
+		CMDLINE100="$CXX -c $DEFINES $INCLUDE $CXXFLAGS $OPTIM $SRC -o $OBJ" 
+		CMDLINE200="$LDXX $LDFLAGS $LDTYPE $LINKOPTIM $LINKEXPORT $LINKEXPORTVER $LINKEXPORTCPP $OBJS $CXXLIBS $LINKLIBS -o $EXE" 
+		CC="$XCRUN_DIR/xcrun -sdk macosx$SDKVER clang" 
+		CXX="$XCRUN_DIR/xcrun -sdk macosx$SDKVER clang++" 
+		DEFINES="$MATLABMEX" 
+		MATLABMEX="-DMATLAB_MEX_FILE " 
+		MACOSX_DEPLOYMENT_TARGET="10.13" 
+		CFLAGS="-fno-common -arch x86_64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -fexceptions -v -isysroot $ISYSROOT" 
+		CXXFLAGS="$CFLAGS -fobjc-arc -std=c++11 -stdlib=libc++ " 
+		INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;/Users/janpetr/dcmtk/include/&quot; -I&quot;$MATLABROOT/simulink/include&quot;" 
+		CXXOPTIMFLAGS="-O2 -fwrapv -DNDEBUG" 
+		CXXDEBUGFLAGS="-g" 
+		LD="$CC" 
+		LDXX="$CXX" 
+		LDFLAGS="-static -Wl,-twolevel_namespace -undefined error -arch x86_64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -Wl,-syslibroot,$ISYSROOT -framework Cocoa $LDBUNDLE " 
+		LDTYPE="-shared"
+        LDBUNDLE="" 
+		LINKEXPORT="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maci64/mexFunction.map&quot;" 
+		LINKEXPORTVER="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maci64/c_exportsmexfileversion.map&quot;" 
+		LINKEXPORTCPP="-Wl,-U,_mexCreateMexFunction -Wl,-U,_mexDestroyMexFunction -Wl,-U,_mexFunctionAdapter -Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maci64/cppMexFunction.map&quot;" 
+		LINKLIBS="-L&quot;$MATLABROOT/bin/maci64&quot; -L&quot;/Users/janpetr/dcmtk/lib/&quot; -ldcmdata -lofstd -lm -lz  -lxml2 -lpthread -lmx -lmex -Bstatic -lmat -lstdc++ -loflog  -L&quot;$MATLABROOT/extern/bin/$ARCH&quot;  -lMatlabDataArray -lMatlabEngine" 
+		LDOPTIMFLAGS="-O" 
+		LDDEBUGFLAGS="-g" 
+		OBJEXT=".o" 
+		LDEXT=".mexmaci64" 
+		SETENV="CC=&quot;$CC&quot;
+			    CXX=&quot;$CXX&quot;
+				CFLAGS=&quot;$CFLAGS $DEFINES&quot;
+				CXXFLAGS=&quot;$CXXFLAGS $DEFINES&quot;
+				COPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
+				CXXOPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
+				CDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
+				CXXDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
+				LD=&quot;$LD&quot;
+				LDXX=&quot;$LDXX&quot;
+				LDFLAGS=&quot;$LDFLAGS $LDTYPE $LINKLIBS $LINKEXPORT&quot;
+				LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;" 
+		DEVELOPER_DIR_CHECK="" 
+		XCODE_DIR="/Applications/Xcode.app/Contents/Developer" 
+		XCRUN_DIR="/usr/bin" 
+		XCODE_AGREED_VERSION="9.4.1" 
+		ISYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk" 
+		SDKVER="10.13" 
+		CLANG_VERSION="9.1.0"/>
 	<client>
-		<engine LINKLIBS="$LINKLIBS -leng -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -L&quot;/Users/janpetr/dcmtk/lib/&quot; -ldcmdata -lMatlabDataArray -lMatlabEngine" LDBUNDLE="" LINKEXPORT="" LINKEXPORTVER="" LINKEXPORTCPP="" LDEXT=""/>
-		<mbuild CMDLINE150="$MATLABROOT/bin/maci64/macbundle $EXENAME &quot;$EXEDIR&quot;" CMDLINE200="$LDXX $LDFLAGS $OBJS $LINKOPTIM $LINKEXPORT $CXXLIBS $LINKLIBS -o &quot;$EXEDIR$EXENAME.app/Contents/MacOS/$EXENAME&quot;" MACOSX_DEPLOYMENT_TARGET="10.13" CXXFLAGS="-fexceptions -fno-common -arch x86_64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -isysroot $ISYSROOT " DEFINES="-DUNIX -DX11 -DMACI64 -UMX_COMPAT_SC" LDFLAGS="-arch x86_64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -Wl,-syslibroot,$ISYSROOT $LDTYPE $LINKEXPORT -framework CoreFoundation -bind_at_load " LINKLIBS="-L&quot;$MATLABROOT/runtime/maci64&quot; -L&quot;$MATLABROOT/extern/bin/maci64&quot; -lMatlabDataArray -lMatlabCppSharedLib -lmwmclmcrrt" INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/extern/include/cpp&quot;" MATLABMEX="" LDEXT="" LINKEXPORT="" LINKEXPORTVER="" LINKEXPORTCPP="" LDTYPE=""/>
+		<engine 
+			LINKLIBS="$LINKLIBS -leng -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -L&quot;/Users/janpetr/dcmtk/lib/&quot; -ldcmdata -lMatlabDataArray -lMatlabEngine" 
+			LDBUNDLE="" 
+			LINKEXPORT="" 
+			LINKEXPORTVER="" 
+			LINKEXPORTCPP="" 
+			LDEXT=""
+            LDTYPE=""/>
+		<mbuild 
+			CMDLINE150="$MATLABROOT/bin/maci64/macbundle $EXENAME &quot;$EXEDIR&quot;" 
+			CMDLINE200="$LDXX $LDFLAGS $OBJS $LINKOPTIM $LINKEXPORT $CXXLIBS $LINKLIBS -o &quot;$EXEDIR$EXENAME.app/Contents/MacOS/$EXENAME&quot;" 
+			MACOSX_DEPLOYMENT_TARGET="10.13" 
+			CXXFLAGS="-fexceptions -fno-common -arch x86_64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -isysroot $ISYSROOT " 
+			DEFINES="-DUNIX -DX11 -DMACI64 -UMX_COMPAT_SC" 
+			LDFLAGS="-arch x86_64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -Wl,-syslibroot,$ISYSROOT $LDTYPE $LINKEXPORT -framework CoreFoundation -bind_at_load " 
+			LINKLIBS="-L&quot;$MATLABROOT/runtime/maci64&quot; -L&quot;$MATLABROOT/extern/bin/maci64&quot; -lMatlabDataArray -lMatlabCppSharedLib -lmwmclmcrrt" 
+			INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/extern/include/cpp&quot;" 
+			MATLABMEX="" 
+			LDEXT="" 
+			LINKEXPORT="" 
+			LINKEXPORTVER="" 
+			LINKEXPORTCPP="" 
+			LDTYPE=""/>
 	</client>
 	<locationFinder>
 		<!--Check for faulty DEVELOPER_DIR environment variable -->
