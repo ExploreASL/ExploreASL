@@ -4,76 +4,159 @@
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
-		"SliceReadoutTime" : 0
+		"SliceReadoutTime" : 0,
+		"readout_dim" : "3D"
 		},
 	"Site110" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
-		"SliceReadoutTime" : 0
+		"SliceReadoutTime" : 0,
+		"readout_dim" : "3D"
 		},
 	"Site011" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
-		"SliceReadoutTime" : 0
+		"SliceReadoutTime" : 0,
+		"readout_dim" : "3D"
 		},
 	"Site012" : {
 		"BackGrSupprPulses" : 0,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
-		"SliceReadoutTime" : 35
+		"SliceReadoutTime" : 35,
+		"readout_dim" : "2D"
+		},
+	"Site014" : {
+		"BackGrSupprPulses" : 2,
+		"LabelingType" : "PASL",
+		"Initial_PLD" : 2020,
+		"LabelingDuration" : 800,
+		"SliceReadoutTime" : 0,
+		"readout_dim" : "3D"
+		},
+	"Site015" : {
+		"BackGrSupprPulses" : 2,
+		"LabelingType" : "PASL",
+		"Initial_PLD" : 2000,
+		"LabelingDuration" : 800,
+		"SliceReadoutTime" : 0,
+		"readout_dim" : "3D"
+		},
+	"Site016" : {
+		"BackGrSupprPulses" : 2,
+		"LabelingType" : "PASL",
+		"Initial_PLD" : 2000,
+		"LabelingDuration" : 800,
+		"SliceReadoutTime" : 0,
+		"readout_dim" : "3D"
+		},
+	"Site019" : {
+		"BackGrSupprPulses" : 2,
+		"LabelingType" : "PCASL",
+		"Initial_PLD" : 2000,
+		"LabelingDuration" : 800,
+		"SliceReadoutTime" : 40,
+		"readout_dim" : "2D"
 		},
 	"Site020" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
-		"SliceReadoutTime" : 36.5278
+		"SliceReadoutTime" : 36.5278,
+		"readout_dim" : "2D"
 		},
 	"Site022" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
-		"SliceReadoutTime" : 36.5278
+		"SliceReadoutTime" : 36.5278,
+		"readout_dim" : "2D"
 		},
 	"Site030" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
-		"SliceReadoutTime" : 36.5278
+		"SliceReadoutTime" : 36.5278,
+		"readout_dim" : "2D"
 		},
 	"Site031" : {
 		"BackGrSupprPulses" : 0,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
-		"SliceReadoutTime" : 35
+		"SliceReadoutTime" : 35,
+		"readout_dim" : "2D"
+		},
+	"Site032" : {
+		"BackGrSupprPulses" : 2,
+		"LabelingType" : "PASL",
+		"Initial_PLD" : 2000,
+		"LabelingDuration" : 800,
+		"SliceReadoutTime" : 0,
+		"readout_dim" : "3D"
 		},
 	"Site040" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
-		"SliceReadoutTime" : 36.5278
+		"SliceReadoutTime" : 36.5278,
+		"readout_dim" : "2D"
+		},
+	"Site041" : {
+		"BackGrSupprPulses" : 2,
+		"LabelingType" : "CASL",
+		"Initial_PLD" : 2025,
+		"LabelingDuration" : 1650,
+		"SliceReadoutTime" : 36.5278,
+		"readout_dim" : "2D"
 		},
 	"Site050" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 1800,
 		"LabelingDuration" : 1650,
-		"SliceReadoutTime" : 36.5278
+		"SliceReadoutTime" : 36.5278,
+		"readout_dim" : "2D"
 		},
 	"Site060" : {
 		"BackGrSupprPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
-		"SliceReadoutTime" : 0
+		"SliceReadoutTime" : 0,
+		"readout_dim" : "3D"
+		}
+	"Site072" : {
+		"BackGrSupprPulses" : 2,
+		"LabelingType" : "CASL",
+		"Initial_PLD" : 2025,
+		"LabelingDuration" : 1650,
+		"SliceReadoutTime" : 36.5278,
+		"readout_dim" : "2D"
+		},
+	"Site074" : {
+		"BackGrSupprPulses" : 2,
+		"LabelingType" : "PASL",
+		"Initial_PLD" : 2000,
+		"LabelingDuration" : 800,
+		"SliceReadoutTime" : 35,
+		"readout_dim" : "2D"
+		}
+	"Site075" : {
+		"BackGrSupprPulses" : 2,
+		"LabelingType" : "PASL",
+		"Initial_PLD" : 2000,
+		"LabelingDuration" : 800,
+		"SliceReadoutTime" : 35,
+		"readout_dim" : "2D"
 		}
 	}

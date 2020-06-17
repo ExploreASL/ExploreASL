@@ -80,6 +80,7 @@ if nargin<4 || isempty(bRunExploreASL)
     bRunExploreASL = true;
 end
 
+% Ensure we start in the EPAD folder
 if exist(fullfile(pwd,'ExploreASL_Master.m')) % we are in the ExploreASL root folder
     cd(fullfile('CustomScripts','EPAD'));
 end
@@ -125,6 +126,10 @@ if bCopy % copy DICOMs from //ROOT to //ROOT/raw
 end
 
 
+% Add this folder to path & go to ExploreASL root
+addpath(genpath(pwd));
+cd ../..;
+
 %% ========================================================
 %% 1) Run the curation script, to sort the DICOMs
 fprintf('\n\n%s\n', '----------------------------------------------');
@@ -133,9 +138,6 @@ StatusPath = fullfile(RawDir, 'DCM_StructureList.mat'); % ->>>> DELETE THIS FILE
 if ~exist(StatusPath, 'file')
     EPAD_dcmCuration(RawDir, bUseDCMTK, bCheckPermissions);
 end
-
-CurrDir = pwd;
-cd ../..;
 
 
 %% ========================================================

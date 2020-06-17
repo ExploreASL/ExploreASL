@@ -71,7 +71,8 @@ for iSubject=1:length(SubjectList)
         end
 
         if ~isfield(jsonData, 'PhaseEncodingDirection')
-            warning('PhaseEncodingDirection field missing, skipping curating Philips Topup parameters');
+            warning('PhaseEncodingDirection field missing for:');
+            fprintf('%s\n', ParmsPath);
             continue;
         end
 

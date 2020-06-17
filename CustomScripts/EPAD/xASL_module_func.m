@@ -342,7 +342,7 @@ end
 %% -----------------------------------------------------------------------------
 %% 7    WAD-QC
 if ~x.mutex.HasState('070_WADQC') && x.DoWADQCDC
-    xASL_qc_WADQCDC(x, x.iSubj, 'func');
+    xASL_qc_WADQCDC(x, x.iSubject, 'func');
     x.mutex.AddState('070_WADQC');
 elseif x.mutex.HasState('070_WADQC') && bO
     fprintf('%s\n', '070_WADQC has already been performed, skipping...');

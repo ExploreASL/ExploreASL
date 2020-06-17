@@ -74,29 +74,37 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject)
 
     %% -----------------------------------------------------------------------------------------------
     %% func acquisition
-    if xASL_exist(x.P.Path_func_bold_parms_mat,'file')
-        parms = load(x.P.Path_func_bold_parms_mat);
-        if isfield(parms.parms,'EchoTime')
-            func.TE_ms = parms.parms.EchoTime; 
+    
+    KnownUnits = {'EchoTime' 'RepetitionTime' 'TotalReadoutTime' 'AcquisitionTime'};
+    HaveUnits = {'ms'       'ms'             's'                'hhmmss'};
+
+    for iField=1:length(KnownUnits)
+        if isfield(x, KnownUnits{iField}) && ~isfield(x.Q, KnownUnits{iField})
+            x.Q.(KnownUnits{iField}) = x.(KnownUnits{iField});
         end
-        if isfield(parms.parms,'RepetitionTime')
-            func.TR_ms = parms.parms.RepetitionTime;
-        end
-    else
-        warning(['Missing sidecar: ' x.P.Path_func_bold_parms_mat]);
-        func.TE_ms = NaN;
-        func.TR_ms = NaN;
     end
+    
+    if isfield(x,'Q')
+        QuantFields = fields(x.Q); % all quantification fields
+        for iField = 1:length(QuantFields) % iterate over fields
+            FieldName = QuantFields{iField};
+            IndexIs = find(cellfun(@(x) strcmp(x,FieldName), KnownUnits)); % check if we know the unit
+            if ~isempty(IndexIs) % do we know the unit?
+                FieldName = [FieldName '_' HaveUnits{IndexIs}]; % then add the unit to the fieldname
+            end
+            func.(FieldName) = x.Q.(QuantFields{iField}); % add the field to ASL struct
+        end
+    end    
 
     % Orientation check
     func = xASL_qc_ComputeNiftiOrientation(x, x.P.Path_func_bold, func);
     
     %% Set func fields to 4 decimals
-    FieldNames  = fields(func);
+    FieldNames = fields(func);
     for iN=1:length(FieldNames)
-        V                          = func.(FieldNames{iN});
-        if  isnumeric(V)
-            func.(FieldNames{iN})   = xASL_round(V, 4);
+        V = func.(FieldNames{iN});
+        if isnumeric(V)
+            func.(FieldNames{iN}) = xASL_round(V, 4);
         end
     end
 

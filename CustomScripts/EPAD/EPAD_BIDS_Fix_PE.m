@@ -81,7 +81,13 @@ for iSubject=1:length(SubjectList)
     for iFile=1:length(DICOMlist); xASL_delete(DICOMlist{iFile}); end
     
     if exist(InputDir,'dir') && isempty(xASL_adm_GetFileList(InputDir, '.*', 'FPListRec', [0 Inf]))
-        rmdir(InputDir);
+        try
+           rmdir(InputDir);
+        catch ME
+            warning('Something went wrong with this folder!');
+            fprintf('%s\n', InputDir);
+            fprintf('%s\n', ME.message);
+        end
     end
     clear PathOri FileOri ExtOri Ind1 Ind2 RunString ContrastString FileDest PathDest
     clear FileList

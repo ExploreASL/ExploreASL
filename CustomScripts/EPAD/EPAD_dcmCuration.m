@@ -312,8 +312,8 @@ for iSite=1:length(SiteNrString) % iSite loops over sites (i.e. scanners)
             %% 3) Second part of the sorting: manage ScanTypes
             %  Here we will delete them, check them, etc & add them to the list
             for iScanType=1:length(ScanTypeName) % iM loops over "modalities"
-                TotalCount = length(SubjectList)*length(VisitList)+length(ScanTypeName);
-                CurrentCount = (iSubject-1)*length(VisitList)*length(ScanTypeName)+iVisit*length(ScanTypeName)+iScanType;
+                TotalCount = length(SubjectList)*length(VisitList)*length(ScanTypeName);
+                CurrentCount = (iSubject-1)*length(VisitList)*length(ScanTypeName)+(iVisit-1)*length(ScanTypeName)+iScanType;
                 xASL_TrackProgress(CurrentCount, TotalCount);                    
 
                 ScanTypeDir = fullfile(VisitDir, ScanTypeName{iScanType});
@@ -386,9 +386,9 @@ for iSite=1:length(SiteNrString) % iSite loops over sites (i.e. scanners)
             [UIDWarningReported, DifferentStudyUIDList] = VerifyIdenticalStudyUID(UIDWarningReported, StudyInstanceUID, iSite, iSubject, SubjectList, iVisit, VisitList, DifferentStudyUIDList);
 
             fclose(fopen(PathStatus, 'wt')); % create processed file
+            fprintf('\n');
         end % loop over visits
     end % loop over subjects
-    fprintf('\n');
 end % loop over sites
 
 
