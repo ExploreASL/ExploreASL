@@ -205,6 +205,19 @@ function x = DataParTemplate(x)
 %                  - 1 = affine registration enabled
 %                  - 2 = affine registration automatically chosen based on
 %                        spatial CoV of PWI
+% x.bUseMNIasDummyStructural - When structural (e.g. T1w) data is missing, copy population-average
+%  							   MNI templates as dummy structural templates. With this option, the
+% 							   ASL module copies the structural templates to fool the pipeline,
+% 							   resulting in ASL registration to these templates. While the rigid-body
+% 							   parameters might still be found somewhat correctly, with this option
+% 							   it is advised to enable affine registration for ASL as well, since ASL
+% 							   and these dummy structural images will differ geometrically.
+% 							   When disabled, an error will be issued instead when the structural images
+% 							   are missing.
+% 							   (OPTIONAL, DEFAULT = 0).
+% 							   - 1 = enabled
+% 							   - 0 = disabled
+
 
 x.name = ExampleDataSet;
 x.subject_regexp = '^Sub-\d{3}$';

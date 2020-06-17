@@ -39,9 +39,10 @@ function xASL_wrp_RegisterASL(x)
 %         function the unexisting OtherList NIfTIs are skipped
 %     - C) Define paths to the ASL templates
 %     - D) Previous registration output files are removed
-%     - E) native->MNI transformation flow field y_T1.nii is smoothed to the 
+%     - E) Allow registration without structural data
+%     - F) native->MNI transformation flow field y_T1.nii is smoothed to the 
 %          effective ASL resolution y_ASL.nii
-%     - F) Registration contrasts are dealth with:
+%     - G) Registration contrasts are dealth with:
 %       x.bRegistrationContrast - specifies the image contrast used for
 %                                 registration (OPTIONAL, DEFAULT = 2):
 %                           - 0 = Control->T1w
@@ -49,10 +50,10 @@ function xASL_wrp_RegisterASL(x)
 %                                 (skip if sCoV>0.667)
 %                           - 2 = automatic (mix of both)
 %                           - 3 = option 2 & force CBF->pseudoCBF irrespective of sCoV or Tanimoto coefficient
-%     - G) Dummy src NIfTIs are created:
+%     - H) Dummy src NIfTIs are created:
 %          mean_control.nii to register with T1w
 %          mean_PWI_Clipped.nii to register with pseudoCBF
-%     - H) Create reference images, downsampled pseudoTissue
+%     - I) Create reference images, downsampled pseudoTissue
 %
 % 1)    Registration Center of Mass
 % 2)    Registration ASL -> anat (Control->T1w)
@@ -169,64 +170,69 @@ end
 %% E) Allow registration without structural data
 StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
 StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
+
 if StructuralRawExist && ~StructuralDerivativesExist
     error('Please run structural module first');
 elseif ~StructuralRawExist && ~StructuralDerivativesExist
-    warning('Missing structural scans, using ASL registration only instead!');
-    IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
-    % Copy dummy transformation field
-    xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
-    % Create dummy native space structural derivatives
-    % In standard space
-	xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
-	xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
-	xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
+    if isfield(x,'bUseMNIasDummyStructural') && x.bUseMNIasDummyStructural
+    
+        fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
+        IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
+        % Copy dummy transformation field
+        xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
+        % Create dummy native space structural derivatives
+        % In standard space
+        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
+        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
+        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
 
-    % In native space
-    xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_T1});
-	
-	% Dummy files
-	catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
-	MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
-	dummyVar = [];
-	save(catVolFile,'dummyVar');
-	save(MatFile,'dummyVar');
-	
-	SaveFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']);
-    FileID = fopen(SaveFile,'wt');
-	fprintf(FileID,'%s', '0, 0, 0');
-	fclose(FileID);
-	xASL_bids_csv2tsvReadWrite(SaveFile, true);
-	
-	% To lock in the structural part	
-    % Save the ASL lock and unlock
-	jj = strfind(x.LockDir,'xASL_module_ASL');
-	jj = jj(1);
-	oldRoot = x.mutex.Root;
-	oldID = x.mutex.ID;
-	newRoot = fullfile(x.LockDir(1:(jj-1)),'xASL_module_Structural',x.LockDir((jj+16):end));
-	x.mutex.Unlock();
-	
-	% Look the structural part
-	x.mutex.Root = newRoot;
-	x.mutex.Lock('xASL_module_Structural');
+        % In native space
+        xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_T1});
 
-	% Add the correct lock-files
-	x.mutex.AddState('010_LinearReg_T1w2MNI');
-	x.mutex.AddState('060_Segment_T1w');
-	x.mutex.AddState('080_Resample2StandardSpace');
-	x.mutex.AddState('090_GetVolumetrics');
-	x.mutex.AddState('100_VisualQC_Structural');
-	x.mutex.AddState('110_DoWADQCDC');
-	
-	% Unlock the structural and lock again the ASL part
-	x.mutex.Unlock();
-	x.mutex.Root = oldRoot;
-	x.mutex.Lock(oldID);
+        % Dummy files
+        catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
+        MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
+        dummyVar = [];
+        save(catVolFile,'dummyVar');
+        save(MatFile,'dummyVar');
 
+        SaveFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']);
+        FileID = fopen(SaveFile,'wt');
+        fprintf(FileID,'%s', '0, 0, 0');
+        fclose(FileID);
+        xASL_bids_csv2tsvReadWrite(SaveFile, true);
+
+        % To lock in the structural part	
+        % Save the ASL lock and unlock
+        jj = strfind(x.LockDir,'xASL_module_ASL');
+        jj = jj(1);
+        oldRoot = x.mutex.Root;
+        oldID = x.mutex.ID;
+        newRoot = fullfile(x.LockDir(1:(jj-1)),'xASL_module_Structural',x.LockDir((jj+16):end));
+        x.mutex.Unlock();
+
+        % Look the structural part
+        x.mutex.Root = newRoot;
+        x.mutex.Lock('xASL_module_Structural');
+
+        % Add the correct lock-files
+        x.mutex.AddState('010_LinearReg_T1w2MNI');
+        x.mutex.AddState('060_Segment_T1w');
+        x.mutex.AddState('080_Resample2StandardSpace');
+        x.mutex.AddState('090_GetVolumetrics');
+        x.mutex.AddState('100_VisualQC_Structural');
+        x.mutex.AddState('110_DoWADQCDC');
+
+        % Unlock the structural and lock again the ASL part
+        x.mutex.Unlock();
+        x.mutex.Root = oldRoot;
+        x.mutex.Lock(oldID);
+    else
+        error('Structural data missing, skipping ASL module; if this is undesired, set x.bUseMNIasDummyStructural=1');
+    end
 end
     
-%% E) % Smooth T1 deformation field into ASL resolution
+%% F) % Smooth T1 deformation field into ASL resolution
 % If no T1 flow field exists, create an identity flowfield
 % So we can still process ASL images without the
 % structural module
@@ -235,7 +241,7 @@ if ~xASL_exist(x.P.Path_y_ASL,'file') || strcmp(x.P.SessionID,'ASL_1') || x.nSes
 end
 
 
-%% F) Manage registration contrasts that we will use
+%% G) Manage registration contrasts that we will use
 if x.bRegistrationContrast==0
     bRegistrationControl = true;
     bRegistrationCBF = false;
@@ -247,7 +253,7 @@ else
     bRegistrationCBF = true;
 end
 
-%% G) Here we create a temporary dummy ASL image of which the image contrast is curated,
+%% H) Here we create a temporary dummy ASL image of which the image contrast is curated,
 % for registration only
 xASL_io_PairwiseSubtraction(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
 if bRegistrationCBF
@@ -257,7 +263,7 @@ if bRegistrationCBF
     xASL_io_SaveNifti(x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped, tIM, [], 0);
 end
 
-%% H) Here we create the reference images, the downsampled pseudoTissue
+%% I) Here we create the reference images, the downsampled pseudoTissue
 % (pGM+pWM) as well as the native space copies of templates for CBF,
 % ATT biasfield and vascular peaks
 xASL_im_CreatePseudoCBF(x, 0);
