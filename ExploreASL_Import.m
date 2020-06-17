@@ -422,7 +422,6 @@ for iSubject=1:nSubjects
                 if imPar.bVerbose; fprintf('>>> Subject=%s, visit=%s, session=%s, scan=%s\n',subjectID, visitID, num2str(iSession), scan_name); end
 
                 bOneScanIsEnough = false; % default
-                CreateJSON = true;
                 bPutInSessionFolder = true; % by default put in session folder
                 switch scan_name
                     case {'ASL4D', 'M0', 'ASL4D_RevPE', 'func_bold'}
@@ -433,9 +432,6 @@ for iSubject=1:nSubjects
 
                 if ~isempty(strfind(char(imPar.folderHierarchy(end)),'PAR'))
                     imPar.dcm2nii_version = '20101105';
-                %elseif ~isempty(strfind(scan_name, 'ASL4D')) || ~isempty(strfind(scan_name, 'M0'))
-                %    imPar.dcm2nii_version = '20181125';
-                    % for everything other than ASL data, use the recent dcm2niiX to obtain BIDS-compliant data
                 end
 
                 % now pick the matching one from the folder list
