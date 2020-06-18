@@ -121,7 +121,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
                     temp = xASL_io_DcmtkRead(filepath, 0);
                     TryDicominfo = false;
 				catch
-                    warning(['xASL_adm_Dicom2Parms: xASL_io_DcmtkRead failed for ' filepath ', trying dicominfo']);
+                    warning(['xASL_adm_Dicom2JSON: xASL_io_DcmtkRead failed for ' filepath ', trying dicominfo']);
                 end
             end
             
@@ -149,7 +149,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 								dicomdict('factory');
 								temp = dicominfo(filepath,'UseDictionaryVR', true);
 							catch
-								warning('xASL_adm_Dicom2Parms: dicominfo also did not work, check this!');
+								warning('xASL_adm_Dicom2JSON: dicominfo also did not work, check this!');
 								dicomdict('set',DictionaryDCM); % reset dictionary
 								continue;
 							end
@@ -189,7 +189,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
                 % classic structure.
 
                 if ~isfield(temp, 'PerFrameFunctionalGroupsSequence')
-                    warning('Enhanced DICOM but PerFrameFunctionalGroupsSequence not found');
+                    warning('xASL_adm_Dicom2JSON: Enhanced DICOM but PerFrameFunctionalGroupsSequence not found');
                 else
                     itemNames = fieldnames(temp.PerFrameFunctionalGroupsSequence);
                     SequenceFields = temp.PerFrameFunctionalGroupsSequence.(itemNames{1}); % here we assume the same ScaleSlope for all images in the sequence
@@ -227,10 +227,10 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 					elseif ~isempty(strfind(manufacturer,'siemens'))
 						bVendor = 'Siemens';
 					else
-						warning('Manufacturer unknown for %s', filepath);
+						warning('xASL_adm_Dicom2JSON: Manufacturer unknown for %s', filepath);
 					end
 				else
-					warning('Manufacturer unknown for %s', filepath);
+					warning('xASL_adm_Dicom2JSON: Manufacturer unknown for %s', filepath);
 				end
 				
 				dcmfields = {'RepetitionTime', 'EchoTime', 'NumberOfAverages', 'RescaleSlope', ...
@@ -401,13 +401,28 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 			parms.RescaleIntercept      = parms.RescaleIntercept(isfinite(parms.RescaleIntercept));
 		end
 		
-		if  (length(parms.MRScaleSlope)>1 && parms.MRScaleSlope(2)~=1) || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleIntercept)>1
-			if  isASL % quickfix, see above
-				warning('xASL_adm_Dicom2Parms: Multiple scale slopes exist for a single scan!');
-                warning(['Could not perform dicom2nii conversion for ' PathJSON]);
-                return;
+		% In case more than one value is given, then keep only the value that is not equal to 1. Or set to 1 if all are 1
+		parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope'};
+		for parmNameInd = 1:length(parmNameToCheck)
+			parmName = parmNameToCheck{parmNameInd};
+			if  (length(parms.(parmName))>1)
+				indNonOne = find(parms.(parmName)~=1);
+				if isempty(indNonOne)
+					parms.(parmName) = 1;
+				else
+					parms.(parmName) = parms.(parmName)(indNonOne);
+				end
 			end
-        end
+		end
+				
+		% In case multiple different scale slopes are given, report a warning
+		if length(parms.MRScaleSlope)>1  || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleIntercept)>1 || length(parms.RescaleSlope)>1
+			warning('xASL_adm_Dicom2JSON: Multiple scale slopes exist for a single scan!');
+			parms = rmfield(parms,'MRScaleSlope');
+			parms = rmfield(parms,'RescaleSlope');
+			parms = rmfield(parms,'RescaleSlopeOriginal');
+			parms = rmfield(parms,'RescaleIntercept');
+		end
 		
         %% Save the info in JSON file
 		
@@ -423,9 +438,6 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 		
 		% Saves the JSON file
 		spm_jsonwrite(PathJSON, parms);
-		
-		% Old version that does not do the conversion and merging
-		%xASL_bids_InsertJSONFields(parms, PathJSON);
 		
     end
 

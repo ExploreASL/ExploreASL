@@ -400,12 +400,28 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 			parms.RescaleIntercept      = parms.RescaleIntercept(isfinite(parms.RescaleIntercept));
 		end
 		
-		if  (length(parms.MRScaleSlope)>1 && parms.MRScaleSlope(2)~=1) || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleIntercept)>1
-			if  isASL % quickfix, see above
-				warning('xASL_adm_Dicom2Parms: Multiple scale slopes exist for a single scan!');
-                warning(['Could not perform dicom2nii conversion for ' parmsfile]);
-                return;
+		% In case more than one value is given, then keep only the value that is not equal to 1. Or set to 1 if all are 1
+		parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope'};
+		for parmNameInd = 1:length(parmNameToCheck)
+			parmName = parmNameToCheck{parmNameInd};
+			if  (length(parms.(parmName))>1)
+				indNonOne = find(parms.(parmName)~=1);
+				if isempty(indNonOne)
+					parms.(parmName) = 1;
+				else
+					parms.(parmName) = parms.(parmName)(indNonOne);
+				end
 			end
+		end
+				
+		% In case multiple different scale slopes are given, report a warning
+		if length(parms.MRScaleSlope)>1  || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleIntercept)>1 || length(parms.RescaleSlope)>1
+			% Do not save them and thus rely on the parameters from dcm2nii
+			warning('xASL_adm_Dicom2Parms: Multiple scale slopes exist for a single scan!');
+			parms = rmfield(parms,'MRScaleSlope');
+			parms = rmfield(parms,'RescaleSlope');
+			parms = rmfield(parms,'RescaleSlopeOriginal');
+			parms = rmfield(parms,'RescaleIntercept');
 		end
 		
 		if ~isempty(parmsfile)
