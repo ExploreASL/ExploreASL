@@ -211,12 +211,16 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 		
 		% Matlab sometimes has a problem to read special characters
         % This hasnt been fixed yet for windows
-		if isempty(niiEntries) && ~ispc()
+		if isempty(niiEntries) 
 			% Try to read files with LS command
 			pathEntriesAlt = ls(temp_dir);
 			
             if ~isempty(pathEntriesAlt)
             
+				% Not yet properly tested on Windows, as the error hasn't occured there with the same data as on Linux
+				if ispc()
+					warning('Illegal characters detected in filename. Will attempt to fix it, but this was not tested on Windows yet.');
+				end
                 % Then break to separate files according to character 32
                 indNewLine = find(pathEntriesAlt == 10);
 
