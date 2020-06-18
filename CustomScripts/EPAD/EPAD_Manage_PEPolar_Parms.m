@@ -64,15 +64,14 @@ for iSubject=1:length(SubjectList)
             warning('Couldnt find Manufacturer field, skipping curating TopUp parameters');
             continue;
         elseif ~strcmp(jsonData.Manufacturer, 'Philips')
+            if ~isfield(jsonData, 'PhaseEncodingDirection')
+                warning('PhaseEncodingDirection field missing for:');
+                fprintf('%s\n', ParmsPath);
+            end            
+            
             % Skip this, below is only for Philips
             % Siemens information is correctly found in the DICOMs by
             % dcm2niiX, GE we dont have in EPAD
-            continue;
-        end
-
-        if ~isfield(jsonData, 'PhaseEncodingDirection')
-            warning('PhaseEncodingDirection field missing for:');
-            fprintf('%s\n', ParmsPath);
             continue;
         end
 

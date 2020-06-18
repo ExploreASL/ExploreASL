@@ -151,7 +151,7 @@ for iIm=1:length(ImIn)
     DimIm = size(IM{iIm});
 
     if length(DimIm)>3
-        warning('Image had multiple 3D images, using first only');
+        fprintf('Minor warning, xASL_im_CreateVisualFig: image had multiple 3D images, using first only\n');
     end
     IM{iIm} = IM{iIm}(:,:,:,1,1,1,1,1,1,1,1,1);
 
