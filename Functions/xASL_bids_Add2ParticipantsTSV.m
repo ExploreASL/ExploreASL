@@ -154,7 +154,7 @@ end
 % Note that CellArray has headers (index +1) but DataIn has not
 for iIndex=1:size(DataIn,1)
     iSubject = strcmp(CellArray(2:end,1), DataIn{iIndex,1});
-    iSession = strcmp(CellArray(iSubject+1,2), DataIn{iIndex,2});
+    iSession = strcmp(CellArray(2:end,2), DataIn{iIndex,2});
     iRow = find(iSubject & iSession);
     
     if isempty(iRow)
@@ -163,7 +163,8 @@ for iIndex=1:size(DataIn,1)
         CellArray{iRow,2} = DataIn{iIndex,2};
         % Fill non-subject/non-session/non-data columns with 'n/a'
     elseif length(iRow)>1
-        warning('This SubjectSession combination exists multiple times, skipping');
+        warning('This SubjectSession combination exists multiple times, bug? Skipping');
+        continue;
     end     
     
     IsEmpty = isempty(CellArray{iRow+1,DataColumn}) || strcmp(CellArray{iRow+1,DataColumn}, 'n/a');
