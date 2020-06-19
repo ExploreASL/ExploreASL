@@ -1,13 +1,16 @@
-pathTPM = '/pet/projekte/asl/data/Craniosynostosis-test/UNCInfant012Atlas_20140325';
+%% Please add here the path to the atlas files and to ExploreASL
+pathTPM = '/home/janpetr/tmp/UNCInfant012Atlas_20140325';
+pathExploreASL = '/home/janpetr/code/ExploreASL';
 
+%% Set the names of the pediatric templates to include
 nameTPM{1} = 'infant-1yr';
 nameTPM{2} = 'infant-2yr';
 nameTPM{3} = 'infant-neo';
 
-pathMaps = '/home/janpetr/code/ExploreASL/External/SPMmodified/MapsAdded';
-pathSPM = '/home/janpetr/code/ExploreASL/External/SPMmodified';
-pathTemplates = '/home/janpetr/code/ExploreASL/Maps/Templates';
-pathAtlases = '/home/janpetr/code/ExploreASL/External/AtlasesNonCommercial';
+pathMaps = fullfile(pathExploreASL,'External','SPMmodified','MapsAdded');
+pathSPM = fullfile(pathExploreASL,'External','SPMmodified');
+pathTemplates = fullfile(pathExploreASL,'Maps','Templates');
+pathAtlases = fullfile(pathExploreASL,'External','AtlasesNonCommercial');
 
 %% Prepare a 6-component template that can be used for SPM12 segmentation
 % TPM 1GM,2WM,3CSF,4cavity,5skull,6air
