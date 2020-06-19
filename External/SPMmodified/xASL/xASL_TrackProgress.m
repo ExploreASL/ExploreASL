@@ -12,11 +12,18 @@ function xASL_TrackProgress(iCurrent, iMax)
 %          xASL_TrackProgress(0.5);
 %          xASL_TrackProgress(80,80);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
+% NOTE FOR DEBUGGING:
+% When this function is breaked manually/crashes,
+% the diary can be off and diary file lost, so the diary file needs to be
+% set manually on again. To fix this, first get the diary file:
+% PathDiary = get(0, 'DiaryFile');
+% And reset the diary back to this after the break/crash:
+% diary(PathDiary);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
     HasDiary = strcmp(get(0, 'Diary'), 'on');
+    ;
     
     if HasDiary
         % we don't want to print this to the diary, if there is any
