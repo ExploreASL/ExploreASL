@@ -128,61 +128,19 @@ for ii = 1:length(fList)
 	ExploreASL_Import(imPar,false, true, false, true, false);
 end
 
-system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_a_2.json']);
-system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_a_2.nii']);
-system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.nii ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.nii']);
-parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
-parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
-spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
 system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
+system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.nii']);
+system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_a_2.nii ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.nii']);
+xASL_Move([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_a_2.json'],[outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']);
 
-
-system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_1.nii ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D.nii']);
-parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D.json']), 0, 1);
-parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_1.json']),1,0);
-spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D.json'], parms);
-system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_1.json']);
-system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_a_2.nii ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/M0.nii']);
-parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/M0.json']), 0, 1);
-parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/ASL4D_a_2.json']),1,0);
-spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
-system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_GE/analysis/Sub1/ASL_1/M0.json']);
-
-
-system(['mv ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_10.nii ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D.nii']);
-%parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
-parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
-spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
-system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
-
-system(['mv ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_10.json ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D.json']);
-system(['rm ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_*']);
-
-%parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
-parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
-spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
-system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
-system(['mv ' outputPath '/Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans/analysis/Sub1/ASL_1/ASL4D_3_1.json ' outputPath '/Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans/analysis/Sub1/ASL_1/ASL4D_1.json']);
-system(['mv ' outputPath '/Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans/analysis/Sub1/ASL_1/ASL4D_3_1.nii ' outputPath '/Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans/analysis/Sub1/ASL_1/ASL4D_1.nii']);
+system(['rm ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub1/ASL_1/ASL4D_0170*']);
 
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1.nii ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0.nii']);
-%parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
-parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
-spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
-system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1.json ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0.json']);
-system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1_parms.mat ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_parms.mat']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1_2.nii ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0PERev.nii']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1_2.json ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0PERev.json']);
-system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1_2_parms.mat ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0PERev_parms.mat']);
-%parms = xASL_bids_parms2BIDS([], spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']), 0, 1);
-parms = xASL_bids_parms2BIDS(parms,spm_jsonread([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']),1,0);
-spm_jsonwrite([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json'], parms);
-system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
 
 if xASL_exist([outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS.nii'])
-	system(['rm ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS_parms.mat']);
-	system(['mv ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_SS_parms.mat ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_parms.mat']);
 	system(['rm ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS.json']);
 	system(['mv ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_SS.json ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D.json']);
 	imNS = xASL_io_Nifti2Im([outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS.nii']);
@@ -193,23 +151,18 @@ if xASL_exist([outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS.nii
 	system(['rm ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/ASL4D_SS.nii']);
 	system(['mv ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/M0_2.json ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/M0PERev.json']);
 	system(['mv ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/M0_2.nii ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/M0PERev.nii']);
-	system(['mv ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/M0_2_parms.mat ' outputPath '/Siemens_PCASL_GIFMI/analysis/Sub1/ASL_1/M0PERev_parms.mat']);
 end
 
 if xASL_exist([outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS_300.nii'])
 	mTIvec = [300,600,900,1200,1500,1800,2100,2400,2700,3000];
 	for ii = 1:length(mTIvec)
 		if ii>1
-			system(['rm ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(ii)) '_parms.mat']);
-			system(['rm ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(ii)) '_parms.mat']);
 			system(['rm ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(ii)) '.json']);
 			system(['rm ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(ii)) '.json']);
 			imNSSS(:,:,:,2*(ii-1)+1) = xASL_io_Nifti2Im([outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(ii)) '.nii']);
 			imNSSS(:,:,:,2*(ii-1)+2) = xASL_io_Nifti2Im([outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(ii)) '.nii']);
 		else
-			system(['mv ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(ii)) '_parms.mat ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_parms.mat']);
 			system(['mv ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(ii)) '.json ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D.json']);
-			system(['rm ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(ii)) '_parms.mat']);
 			system(['rm ' outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(ii)) '.json']);
 			imNSSS = xASL_io_Nifti2Im([outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(ii)) '.nii']);
 			imNSSS(:,:,:,2) = xASL_io_Nifti2Im([outputPath '/Siemens_PASL_multiTI_GIFMI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(ii)) '.nii']);
@@ -272,7 +225,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.LabelingPulseInterval = 0.4;
 			importStr{ii}.par.LabelingPulsesFlipAngle = 25;
 			importStr{ii}.par.ReadoutSegments = 2;
-			importStr{ii}.par.TotalNumberControlLabelPairs = 4;
+			importStr{ii}.par.TotalAcquiredVolumes = 2;
 			importStr{ii}.par.TotalReadoutTime = 0.0104;
 			importStr{ii}.par.BackgroundSuppressionPulseTime = [0.85 0.1];
 			importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
@@ -281,33 +234,29 @@ for ii = 1:length(fList)
 			for cc = 1:10,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Label','Control')];end
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.ReadoutSegments = 2;
-			importStr{ii}.par.TotalNumberControlLabelPairs = 10;
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 0;
 			importStr{ii}.par.BackgroundSuppressionPulseTime = [0.85 0.1];
 			importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
 				
 		case 'Siemens_PASL_singleTI_GIFMI'
-			importStr{ii}.par.ASLContext = sprintf('%s\n','M0');
+			importStr{ii}.par.ASLContext = sprintf('%s\n','M0Scan');
 			for cc = 1:45,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Label','Control')];end
 			importStr{ii}.par.LabelingType = 'PASL';
-			importStr{ii}.par.TotalNumberControlLabelPairs = 45;
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 900;
 			importStr{ii}.par.BolusCutOffTechnique = 'Q2TIPS';
 			
 		case 'Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans'
 			%importStr{ii}.par.ASLContext = '(Label+Control)*23';
-			for cc = 1:23, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Label','Control')];end
+			for cc = 1:46, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Label','Control')];end
 			importStr{ii}.par.LabelingType = 'PCASL';
-			importStr{ii}.par.TotalNumberControlLabelPairs = 23;
 
 		case 'Siemens_PCASL_3DGRASE_failed_APGEM2'
 			%importStr{ii}.par.ASLContext = 'M0+((Label+Control)*12)';
-			importStr{ii}.par.ASLContext = sprintf('%s\n','M0');
+			importStr{ii}.par.ASLContext = sprintf('%s\n','M0Scan');
 			for cc = 1:12, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Label','Control')];end
 			importStr{ii}.par.LabelingType = 'PCASL';
-			importStr{ii}.par.TotalNumberControlLabelPairs = 12;
 
 		case 'Siemens_PASL_3DGRASE_GENFI'
 			importStr{ii}.par.LabelingType = 'PASL';
@@ -319,7 +268,6 @@ for ii = 1:length(fList)
 			%importStr{ii}.par.ASLContext = '(Label+Control)*44';
 			for cc = 1:44, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Label','Control')];end
 			importStr{ii}.par.LabelingType = 'PCASL';
-			importStr{ii}.par.TotalNumberControlLabelPairs = 44;
 
 		case 'Siemens_PASL_3DGRASE_APGEM_1'
 			%importStr{ii}.par.ASLContext = 'Label+Control';
@@ -332,19 +280,19 @@ for ii = 1:length(fList)
 
 		case 'Philips_PCASL_3DGRASE_Dent_example'
 			%importStr{ii}.par.ASLContext = '(M0*2)+((Label+Control)*7)';
-			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n','M0','M0');
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n','M0Scan','M0Scan');
 			for cc = 1:7, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Label','Control')];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Siemens_PCASL_3DGRASE_Sleep_Oslo_trial'
 			%importStr{ii}.par.ASLContext = 'M0+((Label+Control)*15)';
-			importStr{ii}.par.ASLContext = sprintf('%s\n','M0');
+			importStr{ii}.par.ASLContext = sprintf('%s\n','M0Scan');
 			for cc = 1:15, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Label','Control')];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38'
 			%importStr{ii}.par.ASLContext = 'DeltaM*15';
-			for cc = 1:15, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n','DeltaM')];end
+			for cc = 1:92, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n','DeltaM')];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Philips_PCASL_2DEPI_BioCog_Old'
@@ -404,7 +352,17 @@ for ii = 1:length(fList)
 			importStr{ii}.par.BolusCutOffTechnique = 'QUIPSS';
 			importStr{ii}.par.LabelingSlabThickness = 60;
 
-		case {'Philips_PCASL_3DGRASE_Divers','GE_PCASL_3Dspiral_Product_22q11', 'GE_PCASL_3Dspiral_WIP_Oslo_AntiPsychotics_Old','GE_PCASL_3Dspiral_Product_GE',...
+		case 'GE_PCASL_3Dspiral_Product_22q11'
+			importStr{ii}.par.Units = 'mL/100g/min';
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n','CBF','M0Scan');
+			importStr{ii}.par.LabelingType = 'PCASL';
+			
+		case 'GE_PCASL_3Dspiral_Product_GE'
+			importStr{ii}.par.Units = 'mL/100g/min';
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n','M0Scan','CBF');
+			importStr{ii}.par.LabelingType = 'PCASL';
+		
+		case {'Philips_PCASL_3DGRASE_Divers', 'GE_PCASL_3Dspiral_WIP_Oslo_AntiPsychotics_Old',...
 			  'Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar'}
 			importStr{ii}.par.Units = 'mL/100g/min';
 			%importStr{ii}.par.ASLContext = 'CBF';
@@ -414,7 +372,7 @@ for ii = 1:length(fList)
 		case 'GE_PCASL_3Dspiral_WIP_KCL_INOX'
 			importStr{ii}.par.Units = 'mL/100g/min';
 			%importStr{ii}.par.ASLContext = 'CBF+M0';
-			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n','CBF','M0');
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n','CBF','M0Scan');
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [4 4 8];
 			importStr{ii}.par.LabelingPulseAverageGradient = 0.6;
@@ -424,21 +382,19 @@ for ii = 1:length(fList)
 			importStr{ii}.par.PCASLType = 'balanced';
 
 		case 'GE_PCASL_3Dspiral_UCL'
-			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n','M0','DeltaM');
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n','M0Scan','DeltaM');
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [4 4 8];
 			
 		case 'Philips_PCASL_2DEPI_UCL'
 			for cc = 1:35, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Control','Label')];end
 			importStr{ii}.par.LabelingType = 'PCASL';	
-			importStr{ii}.par.TotalNumberControlLabelPairs = 35;			
 			importStr{ii}.par.AcquisitionVoxelSize = [3.75 3.75 5];
 		
 		case 'Siemens_PCASL_3DGRASE_UCL'
-			importStr{ii}.par.ASLContext = sprintf('%s\n','M0');
+			importStr{ii}.par.ASLContext = sprintf('%s\n','M0Scan');
 			for cc = 1:8, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n','Control','Label')];end
 			importStr{ii}.par.LabelingType = 'PCASL';	
-			importStr{ii}.par.TotalNumberControlLabelPairs = 8;			
 			importStr{ii}.par.AcquisitionVoxelSize = [3.4 3.4 4];
 			
 		case {'Philips_PCASL_2DEPI_Frontier','Philips_PCASL_2DEPI_Chili'}
@@ -483,8 +439,8 @@ for ii = 1:length(fList)
 		end
 	end
 	
-	if ~isfield(importStr{ii}.par,'TotalNumberControlLabelPairs') && isfield(importStr{ii}.x.Q,'NumberOfAverages') && (importStr{ii}.x.Q.NumberOfAverages > 1)
-		importStr{ii}.par.TotalNumberControlLabelPairs = importStr{ii}.x.Q.NumberOfAverages;
+	if ~isfield(importStr{ii}.par,'TotalAcquiredVolumes') && isfield(importStr{ii}.x.Q,'NumberOfAverages') && (importStr{ii}.x.Q.NumberOfAverages > 1)
+		importStr{ii}.par.TotalAcquiredVolumes = importStr{ii}.x.Q.NumberOfAverages;
 	end
 
 	if ~isfield(importStr{ii}.par,'ReadoutSegments') && isfield(importStr{ii}.x.Q,'NumberSegments')
@@ -728,8 +684,11 @@ for ii = 1:length(fList)
 						end
 					end
 				end
-				
-				scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,[aslLabel '.nii'])));
+				if ~isempty(strfind(jsonDicom.Manufacturer,'Philips')) || ~isempty(strfind(jsonDicom.Manufacturer,'philips'))
+					scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,[aslLabel '.nii'])));
+				else
+					scaleFactor = 0;
+				end
 				
 				if scaleFactor
 					imNii = imNii .* scaleFactor;
@@ -788,8 +747,8 @@ for ii = 1:length(fList)
 				
 				% Fill in the number of averages
 				%ppStr = importStr{ii}.dirName;
-				%if isfield(importStr{ii}.par,'TotalNumberControlLabelPairs')
-				%	ppStr = [ppStr ' -' num2str(max(importStr{ii}.par.TotalNumberControlLabelPairs(:))) '-'];
+				%if isfield(importStr{ii}.par,'TotalAcquiredVolumes')
+				%	ppStr = [ppStr ' -' num2str(max(importStr{ii}.par.TotalAcquiredVolumes(:))) '-'];
 				%else
 				%	ppStr = [ppStr ' -.-'];
 				%end
@@ -802,17 +761,17 @@ for ii = 1:length(fList)
 				
 				% Import the number of averages
 				if isfield(imParms,'parms') && isfield(imParms.parms,'NumberOfAverages') && (max(imParms.parms.NumberOfAverages) > 1)
-					if isfield(importStr{ii}.par,'TotalNumberControlLabelPairs')
-						if max(imParms.parms.NumberOfAverages) ~= importStr{ii}.par.TotalNumberControlLabelPairs
+					if isfield(importStr{ii}.par,'TotalAcquiredVolumes')
+						if max(imParms.parms.NumberOfAverages) ~= importStr{ii}.par.TotalAcquiredVolumes
 							warning('Discrepancy in the number of averages');
 						end
 					else
-						importStr{ii}.par.TotalNumberControlLabelPairs = max(imParms.parms.NumberOfAverages);
+						importStr{ii}.par.TotalAcquiredVolumes = max(imParms.parms.NumberOfAverages);
 					end
 				end
 						
-				%if isfield(importStr{ii}.par,'TotalNumberControlLabelPairs')
-				%	ppStr = [ppStr ' -' num2str(max(importStr{ii}.par.TotalNumberControlLabelPairs(:))) '-'];
+				%if isfield(importStr{ii}.par,'TotalAcquiredVolumes')
+				%	ppStr = [ppStr ' -' num2str(max(importStr{ii}.par.TotalAcquiredVolumes(:))) '-'];
 				%else
 				%	ppStr = [ppStr ' -.-'];
 				%end
@@ -834,7 +793,7 @@ for ii = 1:length(fList)
 							bJsonLocalM0isFile = 1;
 						end
 					else
-						if ~isempty(strfind(importStr{ii}.par.ASLContext,'M0'))
+						if ~isempty(strfind(importStr{ii}.par.ASLContext,'M0Scan'))
 							jsonLocal.M0 = true;
 						else
 							jsonLocal.M0 = false;
@@ -854,7 +813,7 @@ for ii = 1:length(fList)
 
 				% Copy some things from the local JSON to the flavors
 				jsonToFlavors = {'PulseSequenceType' 'PulseSequenceDetails' 'SliceTiming' 'ASLContext' 'LabelingType' 'LabelingDuration' 'PostLabelingDelay' 'BackgroundSuppression'...
-					'BackgroundSuppressionNumberPulses' 'M0' 'AcquisitionVoxelSize'...
+					'BackgroundSuppressionNumberPulses' 'BackgroundSuppressionPulseTime' 'M0' 'AcquisitionVoxelSize'...
 					'LookLocker' 'LabelingEfficiency' 'BolusCutOffFlag' 'BolusCutOffTimingSequence' 'BolusCutOffDelayTime' 'BolusCutOffTechnique'};
 				for ll=1:length(jsonToFlavors)
 					if isfield(jsonLocal,jsonToFlavors{ll})
@@ -929,7 +888,13 @@ for ii = 1:length(fList)
 								end
 							end
 							
-							scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,['M0' nnStrIn '.nii'])));
+							
+							if ~isempty(strfind(jsonDicom.Manufacturer,'Philips')) || ~isempty(strfind(jsonDicom.Manufacturer,'philips'))
+								scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,['M0' nnStrIn '.nii'])));
+							else
+								scaleFactor = 0;
+							end
+							
 							if scaleFactor
 								imM0 = imM0 .* scaleFactor;
 							end							
@@ -1019,7 +984,7 @@ end
 fCSVOut = fopen(fullfile(finalPath,'flavours.csv'),'w');
 
 fieldsCSV = {'PulseSequenceType' 'PulseSequenceDetails' 'SliceTiming' 'ASLContext' 'LabelingType' 'LabelingDuration' 'PostLabelingDelay' 'BackgroundSuppression' 'M0' 'AcquisitionVoxelSize'...
-'BackgroundSuppressionNumberPulses' 'LookLocker' 'LabelingEfficiency' 'BolusCutOffFlag' 'BolusCutOffTimingSequence' 'BolusCutOffDelayTime' 'BolusCutOffTechnique'};
+'BackgroundSuppressionNumberPulses' 'BackgroundSuppressionPulseTime' 'LookLocker' 'LabelingEfficiency' 'BolusCutOffFlag' 'BolusCutOffTimingSequence' 'BolusCutOffDelayTime' 'BolusCutOffTechnique'};
 
 for ii = 1:length(fList)
 	% New line for a new study
