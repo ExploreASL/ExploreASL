@@ -1,4 +1,4 @@
-function ExploreASL_make_standalone(outputPath, bCompileSPM)
+function ExploreASL_make_standalone(outputPath, bCompileSPM, release)
 %% ExploreASL_make_standalone
 % This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
@@ -19,7 +19,7 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM)
 %
 % EXAMPLE: ExploreASL_make_standalone('/Path2/Compilation')
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 
@@ -30,6 +30,9 @@ if nargin<1 || isempty(outputPath)
 end
 if nargin<2 || isempty(bCompileSPM)
     bCompileSPM = true;
+end
+if nargin<3
+    release = false;
 end
 
 try
@@ -88,8 +91,12 @@ else
     MVersion = '';
 end
 
-Version = xASL_adm_CorrectName(['xASL' xASLVersion '_' MVersion '_' date '_' Time]);
-
+% Different notation for compiled release version
+if release
+    Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_Release']);
+else
+    Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_' MVersion '_' date '_' Time]);
+end
 
 
 %% 3) File management output folder & starting diary
