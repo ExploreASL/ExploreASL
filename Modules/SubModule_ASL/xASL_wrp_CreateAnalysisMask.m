@@ -113,13 +113,20 @@ xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_MaskVascular, MaskVascularMNI,
 
 %% 5) Create susceptibility mask in standard space
 if DoSusceptibility
-	if xASL_exist(x.P.Pop_Path_mean_control)
+	
+    if xASL_exist(x.P.Pop_Path_noSmooth_M0)
+        ControlIm = xASL_io_Nifti2Im(x.P.Pop_Path_noSmooth_M0); % load M0 image
+    elseif xASL_exist(x.P.Pop_Path_mean_control)
 		ControlIm = xASL_io_Nifti2Im(x.P.Pop_Path_mean_control); % load control image
-		ControlIm = xASL_im_ndnanfilter(ControlIm, 'gauss',[2 2 2]);
 	else
 		ControlIm = 1;
-        warning('Please check your susceptibility mask(s), we could only create it with the PWI, no control image available');
-	end
+        warning('Please check your susceptibility mask(s), we could only create it with the PWI, no M0 or control image available');
+    end
+    
+     if prod(size(ControlIm))~=1
+         ControlIm = xASL_im_ndnanfilter(ControlIm, 'gauss',[2 2 2]);
+     end
+    
      PWIIm = xASL_io_Nifti2Im(x.P.Pop_Path_PWI); % load PWI image
      PWIIm = xASL_im_ndnanfilter(PWIIm, 'gauss',[4 4 4]);
      pTemplate = xASL_io_Nifti2Im(Path_Template); % load probability map
