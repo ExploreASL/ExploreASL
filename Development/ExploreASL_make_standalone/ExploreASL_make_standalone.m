@@ -15,8 +15,19 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, release)
 %              Runtime outside of Matlab itself.
 %              
 %              A quick fix to solve path dependencies etc. is to first
-%              compile SPM.
+%              compile SPM (but this can be turned off for speed).
 %
+% This function performs the following steps:
+% 1) Manage ExploreASL and compiler code folders
+% 2) Capture version/date/time
+% 3) File management output folder & starting diary
+% 4) Handle SPM Specific Options
+% 5) Manage compilation paths
+% 6) Run SPM compilation
+% 7) Run ExploreASL compilation
+% 8) Copy .bat file for Windows compilation
+% 9) Save Log-file
+
 % EXAMPLE: ExploreASL_make_standalone('/Path2/Compilation')
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
@@ -192,7 +203,7 @@ if ~exist(opts{2},'dir'); opts = {}; end
 
 
 
-%% 6) timeFirst run SPM compilation, see if this helps remove any errors (e.g. path dependency-issues)...
+%% 6) Run SPM compilation
 if bCompileSPM
     fprintf('First compiling SPM as test\n');
     DummyDir = fullfile(fileparts(outputPath), 'DummySPM_CompilationTest');
@@ -207,24 +218,26 @@ else
 end
 
 
-%% Run ExploreASL compilation
+%% 7) Run ExploreASL compilation
 fprintf('Compiling ExploreASL\n');
 mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
     fullfile(ExploreASLPath,'ExploreASL_Master.m'),...
     '-d', fullfile(outputPath),...
     '-o', strcat('ExploreASL_',Version),...
-    '-N', opts{:},...                                   % Added for SPM support
-    '-a', spm('Dir'),...                                % Added for SPM support
+    '-N', opts{:},...
+    '-a', spm('Dir'),... % For SPM support
     '-a', AddExploreASLversion,...
     '-a', fullfile(ExploreASLPath,'Functions'),...
-    '-a', fullfile(ExploreASLPath,'External','SPMmodified','xASL'),...
-    '-a', fullfile(ExploreASLPath,'Maps'),...
     '-a', fullfile(ExploreASLPath,'mex'),...
-    '-a', fullfile(ExploreASLPath,'Modules'));
+    '-a', fullfile(ExploreASLPath,'Modules'),...
+    '-a', fullfile('Modules', 'SubModule_Structural'),...
+    '-a', fullfile('Modules', 'SubModule_ASL'),...
+    '-a', fullfile('Modules', 'SubModule_Population'),...
+    '-a', fullfile('External','isnear') );
 
 % put opengl('software') in code?
 
-%% Copy .bat file for Windows compilation
+%% 8) Copy .bat file for Windows compilation
 if ispc
     NewPath = fullfile(outputPath, 'RunExploreASL.bat');
     xASL_Copy(OldPath, NewPath, true);
@@ -240,7 +253,7 @@ end
 
 
 
-%% Compilation successful, save Log-file
+%% 9) Save Log-file
 fprintf('Done\n');
 diary(fullfile(outputPath,'compilationLog.txt'));
 diary off
