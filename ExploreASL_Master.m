@@ -142,7 +142,7 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
 
     % -----------------------------------------------------------------------------    
     %% Finishing touch
-    fprintf('Many thanks for using ExploreASL, please don''t forget to cite Mutsaerts, 2019 BioRxiv\n');
+    fprintf('Many thanks for using ExploreASL, please don''t forget to cite https://pubmed.ncbi.nlm.nih.gov/32526385/\n');
     fprintf('Note that ExploreASL is a collaborative effort.\n');
     fprintf('Therefore, please don''t hesitate to contribute by feedback, adding code snippets, or clinical experience!\n');
     
