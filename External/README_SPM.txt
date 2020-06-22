@@ -396,6 +396,12 @@ cat_main_register.m, lines 341, 554, 560, 687, 861, 865, 1168
 *********************************************************************************************************
 REDUCE GRAPHICAL OUTPUT & NON-SPECIFIC WARNINGS. ADD TRACKING PROGRESS AT COMMAND LINE: xASL_TrackProgress
 
+DATE+NAME:2020_06_22, HM
+DESCRIPTION:
+Print instead of warn when nojvm for storing XML
+FILE:
+cat_io_xml @ 51
+
 DATE+NAME:2019_10_13, HM
 DESCRIPTION:
 Hack to reinforce command line output when SPM warning/error messages occur

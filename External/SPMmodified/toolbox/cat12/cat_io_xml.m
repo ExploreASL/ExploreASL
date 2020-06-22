@@ -48,8 +48,7 @@ function varargout = cat_io_xml(file,varargin)
 
   verbose = 0;
   if usejava('jvm')==0 || isdeployed
-    warning('MATLAB:SPM:CAT:cat_io_xml:javaerror', ...
-      'CAT-ERROR: CAT XML-im/export requires JVM! Read/Write only MAT file.\n');
+    fprintf('Deployed or no java, skipping XML-import/export, read/write only MAT file\n'); % EXPLOREASL HACK, NO WARNING NEEDED HERE
     %varargout = {};
     %return;
   end
