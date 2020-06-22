@@ -23,7 +23,6 @@ function xASL_TrackProgress(iCurrent, iMax)
 % Copyright 2015-2020 ExploreASL
 
     HasDiary = strcmp(get(0, 'Diary'), 'on');
-    ;
     
     if HasDiary
         % we don't want to print this to the diary, if there is any
