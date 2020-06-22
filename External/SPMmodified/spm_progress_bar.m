@@ -23,6 +23,9 @@ function spm_progress_bar(action,varargin)
 % $Id: spm_progress_bar.m 7112 2017-06-16 11:30:37Z guillaume $
 
 
+return; % EXPLOREASL HACK, DON"T WANT ANNOYING FIGURE OUTPUT
+% INSTEAD, USE xASL_TrackProgress for printing progress to CLI
+
 persistent pbar;
 
 if ~nargin, action = 'Init'; end

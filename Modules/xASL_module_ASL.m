@@ -466,5 +466,6 @@ cd(oldFolder);
 x.mutex.Unlock();
 x.result = true;
 result = true;
+close all;
 
 end

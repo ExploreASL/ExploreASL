@@ -290,5 +290,6 @@ end
 x.mutex.AddState('999_ready');
 x.mutex.Unlock();
 result = true;
+close all;
 
 end

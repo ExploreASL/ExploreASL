@@ -54,7 +54,6 @@ cat_io_cmd('Initiate CAT12 main settings'); % ExploreASL fix
 %    LowQ = false;
 %end
 
-
 def.cati            = 0;
 def.color.error     = [0.8 0.0 0.0];
 def.color.warning   = [0.0 0.0 1.0];
@@ -2648,22 +2647,22 @@ if job.extopts.print
 
     %% command window output
     fprintf('\n%s',repmat('-',1,72));
-    fprintf(1,'\nCAT preprocessing takes %0.0f minute(s) and %0.0f second(s).\n', ...
+    fprintf(1,'\nCAT12 preprocessing took %0.0f minute(s) and %0.0f second(s).\n', ...
       floor(round(etime(clock,res.stime))/60),mod(round(etime(clock,res.stime)),60));
     cat_io_cprintf(color(QMC,qa.qualityratings.IQR), sprintf('Image Quality Rating (IQR):  %5.2f%%%% (%s)\n',...
       mark2rps(qa.qualityratings.IQR),mark2grad(qa.qualityratings.IQR)));
 
     % print subfolders
-    if job.extopts.subfolders
-      fprintf('Segmentations are saved in %s%s%s\n',pth,filesep,'mri');
-      fprintf('Reports are saved in %s%s%s\n',pth,filesep,'report');
-      if job.output.ROI
-        fprintf('Labels are saved in %s%s%s\n',pth,filesep,'label');
-      end
-      if job.output.surface && exist('S','var')
-        fprintf('Surface measurements are saved in %s%s%s\n',pth,filesep,'surf');
-      end
-    end
+%     if job.extopts.subfolders
+%       fprintf('Segmentations are saved in %s%s%s\n',pth,filesep,'mri');
+%       fprintf('Reports are saved in %s%s%s\n',pth,filesep,'report');
+%       if job.output.ROI
+%         fprintf('Labels are saved in %s%s%s\n',pth,filesep,'label');
+%       end
+%       if job.output.surface && exist('S','var')
+%         fprintf('Surface measurements are saved in %s%s%s\n',pth,filesep,'surf');
+%       end
+%     end
 
     fprintf('%s\n\n',repmat('-',1,72));
 
@@ -2683,6 +2682,8 @@ if job.extopts.print
     clear C c Ymi Ymf Ym
 
 end
+
+close all;
 %%
 return;
 %=======================================================================

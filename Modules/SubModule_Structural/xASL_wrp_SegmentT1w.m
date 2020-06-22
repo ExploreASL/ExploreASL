@@ -193,7 +193,7 @@ if SegmentSPM12
     return; % rest of the function is housekeeping for CAT12
 end
 
-
+close all;
 
 
 
@@ -459,6 +459,7 @@ function xASL_wrp_SPM12Segmentation(x)
 
     %% Run the segmentation
     spm_jobman('run', matlabbatch);
+    close all;
     warning('on', 'MATLAB:nearlySingularMatrix');
 
 end
@@ -624,6 +625,7 @@ end
 
 try % 1) First attempt CAT12
     spm_jobman('run',matlabbatch); % Run CAT12
+    close all;
     SegmentSPM12 = false;
 catch
     if ~x.Quality
@@ -646,6 +648,7 @@ catch
 
         xASL_adm_RemoveTempFilesCAT12(x); % Delete previous CAT12 derivatives
         spm_jobman('run', matlabbatch); % Run CAT12
+        close all;
         SegmentSPM12 = false;
     catch % 3) Return to run SPM12 segmentation
         xASL_adm_RemoveTempFilesCAT12(x); % Delete previous CAT12 derivatives

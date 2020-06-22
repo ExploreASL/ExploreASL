@@ -398,6 +398,24 @@ REDUCE GRAPHICAL OUTPUT & NON-SPECIFIC WARNINGS. ADD TRACKING PROGRESS AT COMMAN
 
 DATE+NAME:2020_06_22, HM
 DESCRIPTION:
+close all figure windows (e.g. those used for printing PDF)
+FILE:
+cat_main @ 2686
+
+DATE+NAME:2020_06_22, HM
+DESCRIPTION:
+No need to mention subfolders CAT12, xASL moves files from here
+FILE:
+cat_main @ 2657
+
+DATE+NAME:2020_06_22, HM
+DESCRIPTION:
+Skip SPM progress bar visualization (use xASL_TrackProgress for CLI progress instead)
+FILE:
+spm_progress_bar @ 26
+
+DATE+NAME:2020_06_22, HM
+DESCRIPTION:
 Print instead of warn when nojvm for storing XML
 FILE:
 cat_io_xml @ 51

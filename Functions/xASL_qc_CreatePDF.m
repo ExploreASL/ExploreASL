@@ -238,6 +238,7 @@ catch ME
 end
 
 fprintf('\n');
+close all; % close the Matlab figure
 
 
 end
