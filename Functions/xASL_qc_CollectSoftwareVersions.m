@@ -39,7 +39,6 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
     LSTversion          = textscan(FID,'%s');
     Software.LST = LSTversion{1}{1};
 
-    % FSL
     
     %% Obtain FSL version
     Software.FSL = 'Not used/found'; % default
@@ -50,15 +49,10 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
         wslString = '';
     end
 
-    %% Find FSL directory
-    if ~isfield(x,'bAutomaticallyDetectFSL')
-        x.bAutomaticallyDetectFSL = 0;
-    end
     
-    FSLdir = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL);
-
-    if ~min(isnan(FSLdir))
-        [Result1, Result2] = system([wslString ' cat ' xASL_adm_UnixPath(fullfile(FSLdir,'etc','fslversion'))]);
+    %% Print FSL directory, if used
+    if isfield(x,'FSLdir') && ~min(isnan(x.FSLdir)) && exist(x.FSLdir, 'dir')
+        [Result1, Result2] = system([wslString ' cat ' xASL_adm_UnixPath(fullfile(x.FSLdir,'etc','fslversion'))]);
         if Result1==0 && ischar(Result2)
             Software.FSL = Result2;
         end
