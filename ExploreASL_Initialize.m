@@ -177,12 +177,13 @@ else
     [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL_Master*'); % Find the path of the master files within the ctf archive
     curPathCTF = fileparts(files(1,:)); % Get the path
     x.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
+    
     BreakString = '==============================================================================================\n';
     fprintf(BreakString);
     fprintf('ctfroot:  %s\n', ctfroot);
     fprintf('x.MyPath: %s\n', x.MyPath);
     fprintf(BreakString);
-    % pause;
+
 end
 
 % Go to ExploreASL folder
