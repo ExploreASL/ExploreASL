@@ -1,4 +1,4 @@
-function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed)
+function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath)
 %xASL_qc_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
 %
 % FORMAT: [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, RunMethod)
@@ -12,11 +12,16 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %                 FUTURE Option 3 = run ExploreASL compilation serially
 %                 FUTURE Option 4 = run ExploreASL compilation parallel
 %   bTestSPM    - boolean for testing if SPM standalone with xASL modifications works (DEFAULT=true)
+%   MatlabPath  - path to matlab executable or compilation bash script (OPTIONAL, required in some 
+%                 cases)
 %   EmailAddress- string with e-mail address for gmail account to use (OPTIONAL, DEFAULT = skip e-mailing results)
 %   Password    - string with password for this gmail account (REQUIRED when EmailAddress provided)
 %   bOverwrite  - Overwrite existing test results (OPTIONAL, DEFAULT=true);
 %   testDataUsed- Option 1: TestDataSet as an input
 %                 Option 0: Other (DEFAULT)
+%   RunTimePath - When using a compiled version, the location of the
+%                 Matlab RunTime libraries (e.g. '/usr/local/MATLAB/MATLAB_Runtime/v96')
+%                 
 % OUTPUT:
 %   ResultsTable - Table containing all results from the test runs
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -84,6 +89,16 @@ if nargin<8 || isempty(bOverwrite)
 end
 if nargin<9
     testDataUsed = 0;
+end
+if RunMethod>2
+    % We will test the compiled version, but do some checks first
+    if isempty(MatlabPath) || ~exist(MatlabPath, 'file') || ~strcmp(MatlabPath(end-2:end),'.sh')
+        warning('Please provide the path to the bash script calling the compiled ExploreASL, skipping');
+        return;
+    elseif isempty(RunTimePath) || ~exist(RunTimePath, 'dir')
+        warning('Please provide the path to the Matlab Runtime installation, skipping');
+        return;        
+    end
 end
 
 % ============================================================
@@ -284,6 +299,10 @@ for iList=1:length(Dlist)
 	            RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',1,1);system([''screen -SX ' ScreenName ' kill'']);"'];
 	            system([MatlabRunString RunExploreASLString ' &']);
 	        case 3 % run ExploreASL compilation serially
+                [Fpath, Ffile, Fext] = fileparts(MatlabPath);
+                system(['cd ' Fpath ';bash ' Ffile Fext ' ' RunTimePath ' ' DataParFile{iList}{1}]);
+                
+                
 	        case 4 % run ExploreASL compilation parallel
 	        otherwise
 	    end
