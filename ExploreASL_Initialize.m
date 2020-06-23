@@ -177,11 +177,11 @@ else
     [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL_Master*'); % Find the path of the master files within the ctf archive
     curPathCTF = fileparts(files(1,:)); % Get the path
     x.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
-    disp('------------ ctfroot -------------');
-    disp(ctfroot);
-    disp('------------ x.MyPath ------------');
-    disp(x.MyPath);
-    disp('----------------------------------');
+    BreakString = '==============================================================================================\n';
+    fprintf(BreakString);
+    fprintf('ctfroot:  %s\n', ctfroot);
+    fprintf('x.MyPath: %s\n', x.MyPath);
+    fprintf(BreakString);
     % pause;
 end
 
@@ -562,7 +562,14 @@ if ~isdeployed
         x.Version = [Fname(9:end) Fext];
     end
 else
-    x.Version = ' compiled version, check in filename';
+    % Output of compiled ExploreASL version
+    try
+        versionFile = dir(fullfile(x.MyPath, 'VERSION*'));
+        versionFile = versionFile.name;
+        x.Version = versionFile(9:end);
+    catch
+        x.Version = '1.0.0 (TMP)';
+    end
 end
 
 if ~isfield(x,'Q')
