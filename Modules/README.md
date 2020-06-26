@@ -44,7 +44,7 @@ DataParPath = "ExamplePath";
 ProcessData = true;
 iWorker = 1;
 nWorkers = 1;
-x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers)
+x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
 % Run the structural module
 [~, x] = xASL_Iteration(x,'xASL_module_Structural');
 ```
@@ -52,4 +52,32 @@ x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers)
 ----
 ## 2. Module ASL
 
-...
+#### Function
+
+```matlab
+[result, x] = xASL_module_ASL(x)
+```
+
+#### Description
+This ExploreASL module processes the ASL images, i.e. ASL4D, M0, etc (if present), on an individual (i.e. session-to-session, where session indicates BIDS "run") basis. Both 2D and 3D options are automatially chosen, as well as processing of time-series (if available), such as motion correction and outlier exclusion.
+
+#### Workflow
+
+1. **TopUpASL**: FSL TopUp geometric distortion correction (if M0 images with reversed phase-encoding are present)
+2. **RealignASL**: If time-series are present, motion correction and outlier exclusion (ENABLE)
+3. **RegisterASL**: Registration of ASL to T1w anatomical images (if lacking, to MNI images)
+4. **ResliceASL**: Resample ASL images to standard space
+5. **PreparePV**: Create partial volume images in ASL space with ASL resolution
+6. **ProcessM0**: M0 image processing
+7. **Quantification**: CBF quantification
+8. **CreateAnalysisMask**: Create mask using FoV, vascular outliers & susceptibility atlas
+9. **VisualQC_ASL**: Generate QC parameters & images
+10. **WADQC**:  QC for WAD-QC DICOM server (OPTIONAL)
+
+#### Recommended usage
+
+```matlab
+[~, x] = xASL_Iteration(x,'xASL_module_ASL');
+```
+
+
