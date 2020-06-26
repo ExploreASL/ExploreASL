@@ -80,4 +80,33 @@ This ExploreASL module processes the ASL images, i.e. ASL4D, M0, etc (if present
 [~, x] = xASL_Iteration(x,'xASL_module_ASL');
 ```
 
+----
+## 3. Module Population
+
+#### Function
+
+```matlab
+[result, x] = xASL_module_Population(x)
+```
+
+#### Description
+This ExploreASL module processes all available images on the group level. It assumes that all images were adequately processed in the previous modules.
+
+#### Workflow
+
+1. **CreatePopulationTemplates**: Create population average images, to compare scanners, cohorts etc without physiological variance
+2. **CreateAnalysisMask**: Generate a group-level mask by combining individuals masks, for ROI-based analysis & VBA
+3. **CreateBiasfield**: When there are multiple scanners, create scanner-specific biasfields (uses Site.mat for this)
+4. **GetDICOMStatistics**: Create TSV file with overview of DICOM parameters
+5. **GetVolumeStatistics**: Create TSV file with overview of volumetric parameters
+6. **GetMotionStatistics**: Create TSV file with overview of motion parameters
+7. **GetROIstatistics**: Create TSV file with overview of regional values (e.g. qCBF, mean control, pGM etc)
+8. **SortBySpatialCoV**: Sort ASL_Check QC images by their spatial CoV in quality bins
+9. **DeleteAndZip**: Delete temporary files and gzip all NIfTIs
+
+#### Recommended usage
+
+```matlab
+[~, x] = xASL_Iteration(x,'xASL_module_Population');
+```
 
