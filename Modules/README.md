@@ -9,7 +9,7 @@
 function [result, x] = xASL_module_Structural(x)
 ```
 
-####Description
+#### Description
 This first ExploreASL module processes the structural images, i.e. high-resolution **T1w** and **FLAIR** (if present), on an individual (i.e. subject-to-subject) basis. If a **FLAIR** is present, this is processed first to obtain a **WMH** mask to fill the hypointense lesions on the **T1w**, before segmenting the **T1w**. For the **T1w** segmentation this module uses **CAT12** by default but if this fails it falls back to **SPM** after trying to optimize the image contrast.
 
 #### Workflow
