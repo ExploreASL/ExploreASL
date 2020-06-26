@@ -55,7 +55,7 @@ x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
 #### Function
 
 ```matlab
-[result, x] = xASL_module_ASL(x)
+function [result, x] = xASL_module_ASL(x)
 ```
 
 #### Description
@@ -86,7 +86,7 @@ This ExploreASL module processes the ASL images, i.e. ASL4D, M0, etc (if present
 #### Function
 
 ```matlab
-[result, x] = xASL_module_Population(x)
+function [result, x] = xASL_module_Population(x)
 ```
 
 #### Description
