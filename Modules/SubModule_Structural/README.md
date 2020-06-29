@@ -44,6 +44,8 @@ function xASL_wrp_FLAIR_BiasfieldCorrection(x)
 
 ### Description
 
+Submodule of ExploreASL Structural Module, that performs a biasfield correction on T1w & applies it on the FLAIR.
+
 ### Workflow
 
 ### Recommended usage
@@ -60,6 +62,8 @@ function xASL_wrp_GetVolumetrics(x)
 ```
 
 ### Description
+
+Submodule of ExploreASL Structural Module, that obtains volumes from the tissue segmentations (& FLAIR WMH segmentations if they exist).
 
 ### Workflow
 
@@ -78,6 +82,8 @@ function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
 ```
 
 ### Description
+
+Submodule of ExploreASL Structural Module, that performs a biasfield correction on T1w & applies it on the FLAIR.
 
 ### Workflow
 
@@ -98,6 +104,8 @@ function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
 
 ### Description
 
+Submodule of ExploreASL Structural Module, that performs lesion filling on T1w based on WMH segmented on the FLAIR.
+
 ### Workflow
 
 ### Recommended usage
@@ -116,6 +124,8 @@ function xASL_wrp_LinearReg_FLAIR2T1w(x, bAutoACPC)
 ```
 
 ### Description
+
+Submodule of ExploreASL Structural Module, that aligns FLAIR with T1w.
 
 ### Workflow
 
@@ -136,6 +146,8 @@ function xASL_wrp_LinearReg_T1w2MNI(x, bAutoACPC)
 
 ### Description
 
+Submodule of ExploreASL Structural Module, that aligns T1w with MNI.
+
 ### Workflow
 
 ### Recommended usage
@@ -154,6 +166,8 @@ function xASL_wrp_Resample2StandardSpace(x)
 ```
 
 ### Description
+
+Submodule of ExploreASL Structural Module, that resamples all structural images & derivatives.
 
 ### Workflow
 
@@ -174,6 +188,8 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 
 ### Description
 
+Submodule of ExploreASL Structural Module, that segments 3D T1 (or T2) scan.
+
 ### Workflow
 
 ### Recommended usage
@@ -192,6 +208,8 @@ function xASL_wrp_VisualQC_Structural(x)
 ```
 
 ### Description
+
+Submodule of ExploreASL Structural Module, that performs several visualizations for .
 
 ### Workflow
 
