@@ -197,18 +197,14 @@ As this would have an ever higher similarity with the **M0 & PWI**
 This submodule performs the following steps:
 
 0.    Administration: 
-* **ASL4D** is dealth with, if motion peaks were removed this is called
+    * **ASL4D** is dealth with, if motion peaks were removed this is called
       **despiked_ASL4D**
-* a default "OtherList" is specified. This is used every
-        registration instance, except for removing the ref and src NIfTIs
-        used in the registration instance. Also, inside the registration
-        function the unexisting OtherList NIfTIs are skipped
-* Define paths to the ASL templates
-* Previous registration output files are removed
-* Allow registration without structural data
-* native->**MNI** transformation flow field y_T1.nii is smoothed to the 
-         effective **ASL** resolution y_ASL.nii
-* Registration contrasts are dealth with:
+    * a default "OtherList" is specified. This is used every registration instance, except for removing the ref and src NIfTIs used in the registration instance. Also, inside the registration function the unexisting OtherList NIfTIs are skipped
+    * Define paths to the ASL templates
+    * Previous registration output files are removed
+    * Allow registration without structural data
+    * native->**MNI** transformation flow field y_T1.nii is smoothed to the effective **ASL** resolution y_ASL.nii
+    * Registration contrasts are dealth with:
       x.bRegistrationContrast - specifies the image contrast used for
                                 registration (OPTIONAL, DEFAULT = 2):
                           - 0 = Control->T1w
@@ -216,10 +212,10 @@ This submodule performs the following steps:
                                 (skip if sCoV>0.667)
                           - 2 = automatic (mix of both)
                           - 3 = option 2 & force **CBF**->**pseudoCBF** irrespective of sCoV or Tanimoto coefficient
-* Dummy src NIfTIs are created:
+    * Dummy src NIfTIs are created:
          mean_control.nii to register with T1w
          mean_PWI_Clipped.nii to register with pseudoCBF
-* Create reference images, downsampled pseudoTissue
+    * Create reference images, downsampled pseudoTissue
 
 1.    Registration Center of Mass
 2.    Registration **ASL** -> anat (Control->T1w)
