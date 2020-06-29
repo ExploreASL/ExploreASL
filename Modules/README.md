@@ -49,6 +49,24 @@ x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
 [~, x] = xASL_Iteration(x,'xASL_module_Structural');
 ```
 
+#### Interface definition
+
+##### Input: x structure
+
+Required input fields of the x structure:
+
+* ...
+
+##### Output
+
+Added output fields of the x structure:
+
+* ...
+
+Generated files:
+
+* ...
+
 ----
 ## 2. Module ASL
 
