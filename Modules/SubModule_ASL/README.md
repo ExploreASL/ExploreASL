@@ -11,6 +11,8 @@ function xASL_wrp_CreateAnalysisMask(x)
 
 ### Description
 
+Create analysis mask from a combination of FoV & removal of high and negative intravascular ASL voxels.
+
 ### Workflow
 
 ### Recommended usage
@@ -24,10 +26,12 @@ function xASL_wrp_CreateAnalysisMask(x)
 ### Function
 
 ```matlab
-...
+function x = xASL_wrp_PreparePV(x, bStandardSpace)
 ```
 
 ### Description
+
+Submodule of ExploreASL ASL Module, to prepare PV maps on ASL resolution.
 
 ### Workflow
 
@@ -42,10 +46,12 @@ function xASL_wrp_CreateAnalysisMask(x)
 ### Function
 
 ```matlab
-...
+function xASL_wrp_ProcessM0(x)
 ```
 
 ### Description
+
+Submodule of ExploreASL ASL Module, for M0 image processing.
 
 ### Workflow
 
@@ -60,10 +66,12 @@ function xASL_wrp_CreateAnalysisMask(x)
 ### Function
 
 ```matlab
-...
+function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 ```
 
 ### Description
+
+Submodule of ExploreASL ASL Module, that performs quantfication.
 
 ### Workflow
 
@@ -78,10 +86,12 @@ function xASL_wrp_CreateAnalysisMask(x)
 ### Function
 
 ```matlab
-...
+function xASL_wrp_RealignASL(x,bSubtraction)
 ```
 
 ### Description
+
+Submodule of ExploreASL ASL Module, that realigns.
 
 ### Workflow
 
@@ -96,10 +106,12 @@ function xASL_wrp_CreateAnalysisMask(x)
 ### Function
 
 ```matlab
-...
+function xASL_wrp_RegisterASL(x)
 ```
 
 ### Description
+
+Submodule of ExploreASL ASL Module, that registers ASL to T1w (or potentially other structural images).
 
 ### Workflow
 
@@ -114,10 +126,12 @@ function xASL_wrp_CreateAnalysisMask(x)
 ### Function
 
 ```matlab
-...
+function xASL_wrp_ResampleASL(x)
 ```
 
 ### Description
+
+Submodule of ExploreASL ASL Module, that reslices native space images to standard space.
 
 ### Workflow
 
@@ -132,10 +146,12 @@ function xASL_wrp_CreateAnalysisMask(x)
 ### Function
 
 ```matlab
-...
+function xASL_wrp_VisualQC_ASL(x)
 ```
 
 ### Description
+
+Submodule of ExploreASL ASL Module, that performs several visualizations for QC.
 
 ### Workflow
 
