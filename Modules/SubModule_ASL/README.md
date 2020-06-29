@@ -79,7 +79,7 @@ Submodule of ExploreASL ASL Module, for M0 image processing.
 
 ### Workflow
 
-This submodule performs the image processing and quantification of M0 maps (if they exist), with the following steps:
+This submodule performs the image processing and quantification of **M0** maps (if they exist), with the following steps:
 
 1. Register **M0** to mean control if it exists: Before registration, contrast is equalized between the images & biasfields are removed.
 2. Quantify **M0** (correction scale slope & incomplete T1 recovery)
@@ -115,10 +115,10 @@ Submodule of ExploreASL ASL Module, that performs quantfication.
 
 This submodule converts PWIs to quantified CBF maps (or related derivatives):
 
-1. Load PWI
-2. Prepare M0
-3. Hematocrit & blood T1 correction
-4. ASL & M0 parameters comparisons
+1. Load **PWI**
+2. Prepare **M0**
+3. Hematocrit & blood **T1** correction
+4. **ASL** & **M0** parameters comparisons
 5. Load SliceGradient
 6. Initialize & define quantification parameters
 7. Define labeling efficiency
@@ -145,6 +145,18 @@ function xASL_wrp_RealignASL(x,bSubtraction)
 Submodule of ExploreASL ASL Module, that realigns.
 
 ### Workflow
+
+This submodule estimates motion by spm_realign, which uses a rigid-body registration (3 translations, 3 rotations). It runs ENABLE to reject outliers and provides a visualization. ENABLE, QC and visualizations are based on the Net Displacement Vector (NDV) (in mm): according to Pythagorean/Euclydian RMS.
+
+[jiscmail](https://www.jiscmail.ac.uk/cgi-bin/webadmin?A2=ind1211&L=fsl&P=R34458&1=fsl&9=A&J=on&d=No+Match%3BMatch%3BMatches&z=4)
+
+view this link for image of rotation roll, pitch and yaw [grcnasa](https://www.google.nl/search?q=rotation+pitch+yaw+roll&espv=2&tbm=isch&imgil=LW3Nn1K-L6Oc7M%253A%253B-aSyykkRityJoM%253Bhttp%25253A%25252F%25252Fwww.grc.nasa.gov%25252FWWW%25252Fk-12%25252Fairplane%25252Frotations.html&source=iu&usg=__MlLQ5VuyRbm6kZP0vBJlPxmfbkw%3D&sa=X&ei=TWfjU4WcK4bqyQPqu4Fo&ved=0CD8Q9QEwBQ&biw=1680&bih=946#facrc=_&imgdii=_&imgrc=LW3Nn1K-L6Oc7M%253A%3B-aSyykkRityJoM%3Bhttp%253A%252F%252Fwww.grc.nasa.gov%252FWWW%252Fk-12%252Fairplane%252FImages%252Frotations.gif%3Bhttp%253A%252F%252Fwww.grc.nasa.gov%252FWWW%252Fk-12%252Fairplane%252Frotations.html%3B709%3B533)
+
+This submodule performs the following steps:
+1. Estimate motion
+2. Calculate and plot position and motion parameters
+3. Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
+4. Remove spike frames from nifti
 
 ### Recommended usage
 
