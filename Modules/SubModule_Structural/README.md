@@ -36,7 +36,169 @@ This submodule contains the following steps:
 ----
 ## FLAIR Biasfield Correction
 
-...
+### Function
+
+```matlab
+function xASL_wrp_FLAIR_BiasfieldCorrection(x)
+```
+
+### Description
+
+### Workflow
+
+### Recommended usage
+
+### Interface definition
+
+----
+## Get Volumetrics
+
+### Function
+
+```matlab
+function xASL_wrp_GetVolumetrics(x)
+```
+
+### Description
+
+### Workflow
+
+### Recommended usage
+
+### Interface definition
+
+
+----
+## LST Segment FLAIR WMH
+
+### Function
+
+```matlab
+function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
+```
+
+### Description
+
+### Workflow
+
+### Recommended usage
+
+### Interface definition
+
+
+
+----
+## LST T1w Lesion Filling WMH
+
+### Function
+
+```matlab
+function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
+```
+
+### Description
+
+### Workflow
+
+### Recommended usage
+
+### Interface definition
+
+
+
+----
+## Linear Reg FLAIR2T1w
+
+### Function
+
+```matlab
+function xASL_wrp_LinearReg_FLAIR2T1w(x, bAutoACPC)
+```
+
+### Description
+
+### Workflow
+
+### Recommended usage
+
+### Interface definition
+
+
+
+----
+## Linear Reg T1w2MNI
+
+### Function
+
+```matlab
+function xASL_wrp_LinearReg_T1w2MNI(x, bAutoACPC)
+```
+
+### Description
+
+### Workflow
+
+### Recommended usage
+
+### Interface definition
+
+
+
+----
+## Resample 2 Standard Space
+
+### Function
+
+```matlab
+function xASL_wrp_Resample2StandardSpace(x)
+```
+
+### Description
+
+### Workflow
+
+### Recommended usage
+
+### Interface definition
+
+
+
+----
+## Segment T1w
+
+### Function
+
+```matlab
+function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
+```
+
+### Description
+
+### Workflow
+
+### Recommended usage
+
+### Interface definition
+
+
+
+----
+## Visual QC Structural
+
+### Function
+
+```matlab
+function xASL_wrp_VisualQC_Structural(x)
+```
+
+### Description
+
+### Workflow
+
+### Recommended usage
+
+### Interface definition
+
 
 
 
