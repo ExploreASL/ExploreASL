@@ -127,7 +127,7 @@ function xASL_wrp_CreateAnalysisMask(x)
 
 
 ----
-## VisualQC ASL
+## Visual QC ASL
 
 ### Function
 
