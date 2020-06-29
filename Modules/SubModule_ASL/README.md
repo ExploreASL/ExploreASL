@@ -195,19 +195,19 @@ transformed from **MNI** to the **T1w** space (& resampled to the **ASL** space)
 As this would have an ever higher similarity with the **M0 & PWI**
 
 This submodule performs the following steps:
-0)    Administration: 
-    - A) **ASL4D** is dealth with, if motion peaks were removed this is called
+0.    Administration: 
+0.1. **ASL4D** is dealth with, if motion peaks were removed this is called
       **despiked_ASL4D**
-    - B) a default "OtherList" is specified. This is used every
+0.2. a default "OtherList" is specified. This is used every
         registration instance, except for removing the ref and src NIfTIs
         used in the registration instance. Also, inside the registration
         function the unexisting OtherList NIfTIs are skipped
-    - C) Define paths to the ASL templates
-    - D) Previous registration output files are removed
-    - E) Allow registration without structural data
-    - F) native->**MNI** transformation flow field y_T1.nii is smoothed to the 
+0.3 Define paths to the ASL templates
+0.4. Previous registration output files are removed
+0.5. Allow registration without structural data
+0.6. native->**MNI** transformation flow field y_T1.nii is smoothed to the 
          effective **ASL** resolution y_ASL.nii
-    - G) Registration contrasts are dealth with:
+0.7. Registration contrasts are dealth with:
       x.bRegistrationContrast - specifies the image contrast used for
                                 registration (OPTIONAL, DEFAULT = 2):
                           - 0 = Control->T1w
@@ -220,10 +220,10 @@ This submodule performs the following steps:
          mean_PWI_Clipped.nii to register with pseudoCBF
     - I) Create reference images, downsampled pseudoTissue
 
-1)    Registration Center of Mass
-2)    Registration **ASL** -> anat (Control->T1w)
+1.    Registration Center of Mass
+2.    Registration **ASL** -> anat (Control->T1w)
       (this step is only applied if it improves the Tanimoto coefficient)
-3)    Registration CBF->pseudoCBF
+3.    Registration CBF->pseudoCBF
       (this step is only applied if it improves the Tanimoto coefficient). Also, this step is only
       applied if the spatial CoV<0.67. Note that this is usually the case
       for 3D scans because of their lower effective spatial resolution.
