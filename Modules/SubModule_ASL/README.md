@@ -178,7 +178,7 @@ Submodule of ExploreASL ASL Module, that registers ASL to T1w (or potentially ot
 
 ### Workflow
 
-This submodule registers ASL images to **T1w** space, by using a combination of the registration techniques below. Note that in the absence of raw structural files (i.e. **T1**.nii\[.gz\] or **T1_ORI**.nii\[.gz\], it will recreate dummy files from standard space to do this registration
+This submodule registers ASL images to **T1w** space, by using a combination of the registration techniques below. Note that in the absence of raw structural files (i.e. **T1**.nii\[.gz\] or **T1_ORI**.nii\[.gz\], it will recreate dummy files from standard space to do this registration.
 
 **M0-T1w rigid-body**  -> this works well in **2D EPI** sequences
 **PWI-pGM rigid-body** -> this is robust across sequences with different
@@ -192,7 +192,7 @@ This submodule registers ASL images to **T1w** space, by using a combination of 
 
 These images are registered to **ASL** templates that were inversely
 transformed from **MNI** to the **T1w** space (& resampled to the **ASL** space)
-As this would have an ever higher similarity with the **M0 & PWI**
+As this would have an ever higher similarity with the **M0 & PWI**.
 
 This submodule performs the following steps:
 
@@ -207,30 +207,24 @@ This submodule performs the following steps:
     * native->**MNI** transformation flow field y_T1.nii is smoothed to the effective **ASL** resolution y_ASL.nii
     * Registration contrasts are dealth with:
     
-      x.bRegistrationContrast - specifies the image contrast used for
-                                registration (OPTIONAL, DEFAULT = 2):
-                          - 0 = Control->T1w
-                          - 1 = CBF->pseudoCBF from template/pGM+pWM
-                                (skip if sCoV>0.667)
-                          - 2 = automatic (mix of both)
-                          - 3 = option 2 & force **CBF**->**pseudoCBF** irrespective of sCoV or Tanimoto coefficient
+        * x.bRegistrationContrast - specifies the image contrast used for registration (OPTIONAL, DEFAULT = 2):
+            * 0 = Control->T1w
+            * 1 = CBF->pseudoCBF from template/pGM+pWM (skip if sCoV>0.667)
+            * 2 = automatic (mix of both)
+            * 3 = option 2 & force **CBF**->**pseudoCBF** irrespective of sCoV or Tanimoto coefficient
                           
     * Dummy src NIfTIs are created:
-         mean_control.nii to register with T1w
-         mean_PWI_Clipped.nii to register with pseudoCBF
+        * **mean_control.nii** to register with T1w
+        * **mean_PWI_Clipped.nii** to register with pseudoCBF
     * Create reference images, downsampled pseudoTissue
 
 1. Registration Center of Mass
 2. Registration **ASL** -> anat (Control->T1w)n(this step is only applied if it improves the Tanimoto coefficient)
-3. Registration CBF->pseudoCBF (this step is only applied if it improves the Tanimoto coefficient). Also, this step is only applied if the spatial CoV<0.67. Note that this is usually the case for 3D scans because of their lower effective spatial resolution.
-
-      x.bAffineRegistration - specifies the ASL-T1w rigid-body
-                                registration is followed up by an affine
-                                registration (OPTIONAL, DEFAULT = 2)
-                         - 0 = affine registration disabled
-                         - 1 = affine registration enabled
-                         - 2 = affine registration automatically chosen based on
-                               spatial CoV of PWI
+3. Registration CBF->pseudoCBF (this step is only applied if it improves the Tanimoto coefficient). Also, this step is only applied if the spatial CoV<0.67. Note that this is usually the case for **3D** scans because of their lower effective spatial resolution.
+    * x.bAffineRegistration - specifies the ASL-T1w rigid-body registration is followed up by an affine registration (OPTIONAL, DEFAULT = 2)
+        * 0 = affine registration disabled
+        * 1 = affine registration enabled
+        * 2 = affine registration automatically chosen based on spatial CoV of PWI
 
 ### Recommended usage
 
