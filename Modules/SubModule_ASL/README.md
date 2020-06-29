@@ -57,7 +57,7 @@ Run step 3 only, which will use the effective spatial resolution that is default
 * 2D EPI: \[1 1 1\] * VoxelSize
 * 3D GRASE: \[1.1 1.1 1.38\] * VoxelSize
 * 3D spiral: \[4.3 4.4 10.1\] * VoxelSize (assuming GE uses the upsampled 2x2x4 mm 
-& run steps 1&2, but in native space these entail presmoothing & downsampling.
+& run steps 1&2, but in native space these entail presmoothing & downsampling.)
 
 ### Recommended usage
 
@@ -78,6 +78,20 @@ function xASL_wrp_ProcessM0(x)
 Submodule of ExploreASL ASL Module, for M0 image processing.
 
 ### Workflow
+
+This submodule performs the image processing and quantification of M0 maps (if they exist), with the following steps:
+
+1. Register M0 to mean control if it exists: Before registration, contrast is equalized between the images & biasfields are removed.
+2. Quantify M0 (correction scale slope & incomplete T1 recovery)
+3. Masking & smoothing of M0 image, either using:
+A) traditional technique (very sharp masking & little smoothing)
+B) new ExploreASL-specific technique:
+* extrapolating outside mask (avoiding artifacts from too much or too little masking)
+* smooth very extensively, to create a biasfield (increases robustness & comparison of M0 between sequences/patients)
+
+Any M0 will be processed here. Even if part of the subjects does not have an M0, since this can be later imputed, or an average population M0 image could be used. Also, without background suppression and without an M0, the MeanControl image is before saved as M0, and will be processed here as well.
+
+Note that any voxel-size differences between M0 and ASL are allowed here: step 0B below rescales the PD inside an M0 voxel to the same as the ASL resolution (assuming a voxel with half volume contains half the amount of protons). The M0 is further processed in standard space, and reduced to a biasfield. For the quantification in standard space, the PWI and M0 are now by definition in the same space. Also, the standard space M0 biasfield is resampled to the native PWI space (at the end of step 3B), ensuring that both are also in the same native space.
 
 ### Recommended usage
 
