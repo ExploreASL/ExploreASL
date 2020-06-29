@@ -18,8 +18,8 @@ Additionally, this (semi-)automatic pipeline allows us to minimize manual interv
 
 Please contact the co-creators for more information:
 
-* Henk-Jan Mutsaerts [mailto](HenkJanMutsaerts@Gmail.com)
-* Jan Petr [mailto](j.petr@hzdr.de)
+* Henk-Jan Mutsaerts *HenkJanMutsaerts@Gmail.com*
+* Jan Petr *j.petr@hzdr.de*
 
 ## Other Contributors
 
