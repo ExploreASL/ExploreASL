@@ -48,7 +48,7 @@ Submodule of ExploreASL Structural Module, that performs a biasfield correction 
 
 ### Workflow
 
-This submodule performs a biasfield correction on **T1w** and applies it on **FLAIR**. This can be useful, when there are large lesions on the **FLAIR** that hamper capturing the biasfield nicely on the **FLAIR** itself. In such cases, the biasfield of the T1w might be easier to obtain and should be the same as the **FLAIR**, provided they are scanned in the same scan session (i.e.g same scanner, same coil).
+This submodule performs a biasfield correction on **T1w** and applies it on **FLAIR**. This can be useful, when there are large lesions on the **FLAIR** that hamper capturing the biasfield nicely on the **FLAIR** itself. In such cases, the biasfield of the **T1w** might be easier to obtain and should be the same as the **FLAIR**, provided they are scanned in the same scan session (i.e.g same scanner, same coil).
 
 **BE CAREFUL**: this submodule assumes that the biasfields of the **T1w** and **FLAIR** are comparable, which is not the case when one of the two (or both) are already biasfield corrected.
 
