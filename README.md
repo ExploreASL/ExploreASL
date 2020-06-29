@@ -14,6 +14,12 @@ Additionally, this (semi-)automatic pipeline allows us to minimize manual interv
 
 ## Installation
 
+To use **ExploreASL** within Matlab, you can download a stable release version from the GitHub releases section. Navigate within Matlab to the **ExporeASL** directory, to make **ExploreASL** the current working directory. It is recommended to use the Matlab **set paths** option to add the **ExploreASL** folder and all subfolders to the known paths. Execute the master script to start the interactive **ExploreASL** workflow:
+
+```matlab
+ExploreASL_Master
+```
+
 ## Developers
 
 Please contact the co-creators for more information:
