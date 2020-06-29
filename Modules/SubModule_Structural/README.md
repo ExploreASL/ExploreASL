@@ -11,7 +11,7 @@ function xASL_wrp_CleanUpWMH_SEGM(x)
 
 ### Description
 
-Submodule of ExploreASL Structural Module, that cleans up under- and over-segmentations of WMH SEGM.
+Submodule of ExploreASL Structural Module, that cleans up under- and over-segmentations of **WMH SEGM**.
 
 ### Workflow
 
