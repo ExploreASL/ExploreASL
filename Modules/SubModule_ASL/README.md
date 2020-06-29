@@ -146,17 +146,17 @@ Submodule of ExploreASL ASL Module, that realigns.
 
 ### Workflow
 
-This submodule estimates motion by spm_realign, which uses a rigid-body registration (3 translations, 3 rotations). It runs ENABLE to reject outliers and provides a visualization. ENABLE, QC and visualizations are based on the Net Displacement Vector (NDV) (in mm): according to Pythagorean/Euclydian RMS.
+This submodule estimates motion by spm_realign, which uses a rigid-body registration (3 translations, 3 rotations). It runs ENABLE to reject outliers and provides a visualization. **ENABLE**, **QC** and visualizations are based on the Net Displacement Vector (**NDV**) (in mm): according to Pythagorean/Euclydian **RMS**.
 
-[jiscmail](https://www.jiscmail.ac.uk/cgi-bin/webadmin?A2=ind1211&L=fsl&P=R34458&1=fsl&9=A&J=on&d=No+Match%3BMatch%3BMatches&z=4)
+Link: [jiscmail](https://www.jiscmail.ac.uk/cgi-bin/webadmin?A2=ind1211&L=fsl&P=R34458&1=fsl&9=A&J=on&d=No+Match%3BMatch%3BMatches&z=4)
 
-view this link for image of rotation roll, pitch and yaw [grcnasa](https://www.google.nl/search?q=rotation+pitch+yaw+roll&espv=2&tbm=isch&imgil=LW3Nn1K-L6Oc7M%253A%253B-aSyykkRityJoM%253Bhttp%25253A%25252F%25252Fwww.grc.nasa.gov%25252FWWW%25252Fk-12%25252Fairplane%25252Frotations.html&source=iu&usg=__MlLQ5VuyRbm6kZP0vBJlPxmfbkw%3D&sa=X&ei=TWfjU4WcK4bqyQPqu4Fo&ved=0CD8Q9QEwBQ&biw=1680&bih=946#facrc=_&imgdii=_&imgrc=LW3Nn1K-L6Oc7M%253A%3B-aSyykkRityJoM%3Bhttp%253A%252F%252Fwww.grc.nasa.gov%252FWWW%252Fk-12%252Fairplane%252FImages%252Frotations.gif%3Bhttp%253A%252F%252Fwww.grc.nasa.gov%252FWWW%252Fk-12%252Fairplane%252Frotations.html%3B709%3B533)
+View this link for image of rotation roll, pitch and yaw: [grcnasa](https://www.google.nl/search?q=rotation+pitch+yaw+roll&espv=2&tbm=isch&imgil=LW3Nn1K-L6Oc7M%253A%253B-aSyykkRityJoM%253Bhttp%25253A%25252F%25252Fwww.grc.nasa.gov%25252FWWW%25252Fk-12%25252Fairplane%25252Frotations.html&source=iu&usg=__MlLQ5VuyRbm6kZP0vBJlPxmfbkw%3D&sa=X&ei=TWfjU4WcK4bqyQPqu4Fo&ved=0CD8Q9QEwBQ&biw=1680&bih=946#facrc=_&imgdii=_&imgrc=LW3Nn1K-L6Oc7M%253A%3B-aSyykkRityJoM%3Bhttp%253A%252F%252Fwww.grc.nasa.gov%252FWWW%252Fk-12%252Fairplane%252FImages%252Frotations.gif%3Bhttp%253A%252F%252Fwww.grc.nasa.gov%252FWWW%252Fk-12%252Fairplane%252Frotations.html%3B709%3B533)
 
 This submodule performs the following steps:
 1. Estimate motion
 2. Calculate and plot position and motion parameters
-3. Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
-4. Remove spike frames from nifti
+3. Threshold-free spike definition (based on **ENABLE**, but with t-stats rather than the threshold p<0.05)
+4. Remove spike frames from Nifti
 
 ### Recommended usage
 
@@ -177,6 +177,64 @@ function xASL_wrp_RegisterASL(x)
 Submodule of ExploreASL ASL Module, that registers ASL to T1w (or potentially other structural images).
 
 ### Workflow
+
+This submodule registers ASL images to **T1w** space, by using a combination of the registration techniques below. Note that in the absence of raw structural files (i.e. **T1**.nii\[.gz\] or **T1_ORI**.nii\[.gz\], it will recreate dummy files from standard space to do this registration
+
+**M0-T1w rigid-body**  -> this works well in **2D EPI** sequences
+**PWI-pGM rigid-body** -> this is robust across sequences with different
+                      readouts and consequently different effective spatial resolutions. With
+                      low spatial resolution (e.g. **GE 3D** spiral product sequence), M0-T1w
+                      registration may not work, but **PWI-pGM** will work.
+                      **PWI-pGM** registration fails with large (vascular) artifacts, therefore
+                      this is performed only with relatively low spatial **CoV**.
+**PWI-pGM affine**     -> If the spatial **CoV** is sufficiently low, this can
+                      improve the registration
+
+These images are registered to **ASL** templates that were inversely
+transformed from **MNI** to the **T1w** space (& resampled to the **ASL** space)
+As this would have an ever higher similarity with the **M0 & PWI**
+
+This submodule performs the following steps:
+0)    Administration: 
+    - A) **ASL4D** is dealth with, if motion peaks were removed this is called
+      **despiked_ASL4D**
+    - B) a default "OtherList" is specified. This is used every
+        registration instance, except for removing the ref and src NIfTIs
+        used in the registration instance. Also, inside the registration
+        function the unexisting OtherList NIfTIs are skipped
+    - C) Define paths to the ASL templates
+    - D) Previous registration output files are removed
+    - E) Allow registration without structural data
+    - F) native->**MNI** transformation flow field y_T1.nii is smoothed to the 
+         effective **ASL** resolution y_ASL.nii
+    - G) Registration contrasts are dealth with:
+      x.bRegistrationContrast - specifies the image contrast used for
+                                registration (OPTIONAL, DEFAULT = 2):
+                          - 0 = Control->T1w
+                          - 1 = CBF->pseudoCBF from template/pGM+pWM
+                                (skip if sCoV>0.667)
+                          - 2 = automatic (mix of both)
+                          - 3 = option 2 & force **CBF**->**pseudoCBF** irrespective of sCoV or Tanimoto coefficient
+    - H) Dummy src NIfTIs are created:
+         mean_control.nii to register with T1w
+         mean_PWI_Clipped.nii to register with pseudoCBF
+    - I) Create reference images, downsampled pseudoTissue
+
+1)    Registration Center of Mass
+2)    Registration **ASL** -> anat (Control->T1w)
+      (this step is only applied if it improves the Tanimoto coefficient)
+3)    Registration CBF->pseudoCBF
+      (this step is only applied if it improves the Tanimoto coefficient). Also, this step is only
+      applied if the spatial CoV<0.67. Note that this is usually the case
+      for 3D scans because of their lower effective spatial resolution.
+
+      x.bAffineRegistration - specifies the ASL-T1w rigid-body
+                                registration is followed up by an affine
+                                registration (OPTIONAL, DEFAULT = 2)
+                         - 0 = affine registration disabled
+                         - 1 = affine registration enabled
+                         - 2 = affine registration automatically chosen based on
+                               spatial CoV of PWI
 
 ### Recommended usage
 
