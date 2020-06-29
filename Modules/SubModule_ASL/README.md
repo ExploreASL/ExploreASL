@@ -204,27 +204,27 @@ This submodule performs the following steps:
     * Define paths to the ASL templates
     * Previous registration output files are removed
     * Allow registration without structural data
-    * native->**MNI** transformation flow field y_T1.nii is smoothed to the effective **ASL** resolution y_ASL.nii
+    * native -> **MNI** transformation flow field **y_T1.nii** is smoothed to the effective **ASL** resolution **y_ASL.nii**
     * Registration contrasts are dealth with:
     
         * x.bRegistrationContrast - specifies the image contrast used for registration (OPTIONAL, DEFAULT = 2):
-            * 0 = Control->T1w
-            * 1 = CBF->pseudoCBF from template/pGM+pWM (skip if sCoV>0.667)
+            * 0 = Control -> **T1w**
+            * 1 = **CBF** -> **pseudoCBF** from template/**pGM**+**pWM** (skip if **sCoV**>0.667)
             * 2 = automatic (mix of both)
-            * 3 = option 2 & force **CBF**->**pseudoCBF** irrespective of sCoV or Tanimoto coefficient
+            * 3 = option 2 & force **CBF**->**pseudoCBF** irrespective of **sCoV** or Tanimoto coefficient
                           
     * Dummy src NIfTIs are created:
-        * **mean_control.nii** to register with T1w
-        * **mean_PWI_Clipped.nii** to register with pseudoCBF
+        * **mean_control.nii** to register with **T1w**
+        * **mean_PWI_Clipped.nii** to register with **pseudoCBF**
     * Create reference images, downsampled pseudoTissue
 
 1. Registration Center of Mass
-2. Registration **ASL** -> anat (Control->T1w)n(this step is only applied if it improves the Tanimoto coefficient)
-3. Registration CBF->pseudoCBF (this step is only applied if it improves the Tanimoto coefficient). Also, this step is only applied if the spatial CoV<0.67. Note that this is usually the case for **3D** scans because of their lower effective spatial resolution.
-    * x.bAffineRegistration - specifies the ASL-T1w rigid-body registration is followed up by an affine registration (OPTIONAL, DEFAULT = 2)
+2. Registration **ASL** -> anat (Control -> **T1w**) (this step is only applied if it improves the Tanimoto coefficient)
+3. Registration CBF->pseudoCBF (this step is only applied if it improves the Tanimoto coefficient). Also, this step is only applied if the spatial **CoV** < 0.67. Note that this is usually the case for **3D** scans because of their lower effective spatial resolution.
+    * x.bAffineRegistration - specifies the **ASL-T1w** rigid-body registration is followed up by an affine registration (OPTIONAL, DEFAULT = 2)
         * 0 = affine registration disabled
         * 1 = affine registration enabled
-        * 2 = affine registration automatically chosen based on spatial CoV of PWI
+        * 2 = affine registration automatically chosen based on spatial **CoV** of **PWI**
 
 ### Recommended usage
 
@@ -246,6 +246,15 @@ Submodule of ExploreASL ASL Module, that reslices native space images to standar
 
 ### Workflow
 
+This submodule resamples native space NIfTIs to standard space, using the deformation fields computed in the structural module after smoothing these transformation fields to the **ASL** resolution. The applied interpolation is a combination of all transformations (e.g. motion correction, registration to **T1w**, and transformation of T1w to standard space. This submodule performs the following steps:
+
+1. Create slice gradient image for quantification reference, in case of **2D ASL**
+2. Reslice **ASL** time series to **MNI** space (currently 1.5 mm^3)
+3. Create mean control image, if available: This also applies a bilateral filter, if requested. If x.M0 is set as UseControlAsM0, this mean control NIfTI will be copied to an **M0** NIfTI (and processed in the M0 submodule).
+4. Perform pair-wise subtraction (to create **PWI.nii**), in native space
+5. Same in standard space
+6. Save **PWI** NIfTI & time-series-related maps (**SD, SNR**)
+
 ### Recommended usage
 
 ### Interface definition
@@ -262,9 +271,20 @@ function xASL_wrp_VisualQC_ASL(x)
 
 ### Description
 
-Submodule of ExploreASL ASL Module, that performs several visualizations for QC.
+Submodule of ExploreASL ASL Module, that performs several visualizations for **QC**.
 
 ### Workflow
+
+This submodule performs several visualizations for visual & quantitative **QC**.
+1. After initial admin
+2. It starts with making **ASL** NIfTIs ready for visualization & conversion to DICOM (though skipped by default)
+3. Then it performs a collection of visualizations
+4. Visualizes results of the TopUp geometric distortion correction
+5. Visualization of slice gradient
+6. Visualization & calculation of temporal **QC** parameters
+7. Compute **DICE** overlap/intersection of **ASL** brain in **FoV & T1w**, to calculate coverage
+8. Summarize orientation & check left-right flips
+9. Collect several other parameters & store in PDF overview
 
 ### Recommended usage
 
