@@ -15,6 +15,14 @@ Create analysis mask from a combination of FoV & removal of high and negative in
 
 ### Workflow
 
+0. Create FoV mask (native & MNI spaces)
+1. Detect negative vascular signal (native & MNI spaces, within pGM>0.5)
+2. Detect peak vascular signal (native & MNI spaces, within pGM==80% percentile on ASL image)
+3. Brainmasking & FoV-masking (A) native & B) MNI spaces): Add WM vascular parts back to the mask (defined as pWM>0.8) & remove extracranial signal. In the WM, negative or peak signal is more expected from noise rather than from intra-vascular signal, not many big vessels exist in the WM.
+4. Save vascular masks
+5. Create susceptibility mask (standard space only). Here, we combine manually segmented susceptibility artifact regions in which a population-based susceptibility probability map is created. This map is combined (i.e. taking the product) with the mean control & PWI intensity distribution in these regions. This product is thresholded with the average of the 75th percentile & 15% of the intensity (for a bit more robustness against individual variability in sinus sizes).
+6. Create standard space CBF_masked image to visualize masking effect
+
 ### Recommended usage
 
 ### Interface definition
