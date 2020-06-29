@@ -23,9 +23,9 @@ This function is not tested a lot, so mainly conservatively set up to improve th
 This submodule contains the following steps:
 
 0. Administration
-1. Correct **pGM** islands inside **pWM**: **WMH** can have an intensity similar to **GM** on the **T1w**, which erroneously classifies them as **GM** instead of **WM(H)**. The rule used here, is to define **GM** islands within the WM as clusters of **pGM**>0.05 for which 3 layers (dilations) have at least 95% **pWM**. For these islands, **pGM** is given 100% to **pWM**. 50% of **pWM** is given to pWMH (the pWMH/pNAWM distinction is made later in the pipeline, here still **pWM=pWMH+pNAWM**). The reason is that not all low **T1w** intensities within the **WM** are **WMH**, we still expect some lacunes, perivascular (Virchow-Robin) spaces, which could be considered pNAWM rather than pWMH.
+1. Correct **pGM** islands inside **pWM**: **WMH** can have an intensity similar to **GM** on the **T1w**, which erroneously classifies them as **GM** instead of **WM(H)**. The rule used here, is to define **GM** islands within the **WM** as clusters of **pGM**>0.05 for which 3 layers (dilations) have at least 95% **pWM**. For these islands, **pGM** is given 100% to **pWM**. 50% of **pWM** is given to pWMH (the **pWMH/pNAWM** distinction is made later in the pipeline, here still **pWM=pWMH+pNAWM**). The reason is that not all low **T1w** intensities within the **WM** are **WMH**, we still expect some lacunes, perivascular (Virchow-Robin) spaces, which could be considered pNAWM rather than pWMH.
 2. Perform brainmasking & join masks
-3. Correct any **WMH** inside **GM** or **CSF** -> here we assume that **CAT12** did a good segmentation job. If **pGM** is larger than pWM & larger than pWMH, we consider a voxel to be **pGM** and remove the pWMH. This effectively removes pWMH segmentation noise in the **GM** or **CSF**, it doesn't correct any significant misclassification of **WMH** in the **GM** or **CSF**. If the **WMH** segmentation does a significant misclassification (e.g. setting the **pWMH** inside **GM** or **CSF** to a probability higher than **GM** or **CSF** is by tissue segmentation), this is lesion filled after the WMH segmentation, on the **T1w**, hence the tissue segmentation won't have a chance to correct this. Fortunately, most oversegmentations in the **GM/CSF** have low **pWMH**, as **WMH** segmentation algorithms already perform a light tissue prior-based clean up themselves.
+3. Correct any **WMH** inside **GM** or **CSF** -> here we assume that **CAT12** did a good segmentation job. If **pGM** is larger than pWM & larger than **pWMH**, we consider a voxel to be **pGM** and remove the pWMH. This effectively removes pWMH segmentation noise in the **GM** or **CSF**, it doesn't correct any significant misclassification of **WMH** in the **GM** or **CSF**. If the **WMH** segmentation does a significant misclassification (e.g. setting the **pWMH** inside **GM** or **CSF** to a probability higher than **GM** or **CSF** is by tissue segmentation), this is lesion filled after the WMH segmentation, on the **T1w**, hence the tissue segmentation won't have a chance to correct this. Fortunately, most oversegmentations in the **GM/CSF** have low **pWMH**, as **WMH** segmentation algorithms already perform a light tissue prior-based clean up themselves.
 4. Saving & file management
 5. Prepare visuals for visual **QC** & file management
 
@@ -48,7 +48,7 @@ Submodule of ExploreASL Structural Module, that performs a biasfield correction 
 
 ### Workflow
 
-This submodule performs a biasfield correction on T1w and applies it on **FLAIR**. This can be useful, when there are large lesions on the FLAIR that hamper capturing the biasfield nicely on the FLAIR itself. In such cases, the biasfield of the T1w might be easier to obtain and should be the same as the **FLAIR**, provided they are scanned in the same scan session (i.e.g same scanner, same coil).
+This submodule performs a biasfield correction on **T1w** and applies it on **FLAIR**. This can be useful, when there are large lesions on the **FLAIR** that hamper capturing the biasfield nicely on the **FLAIR** itself. In such cases, the biasfield of the T1w might be easier to obtain and should be the same as the **FLAIR**, provided they are scanned in the same scan session (i.e.g same scanner, same coil).
 
 **BE CAREFUL**: this submodule assumes that the biasfields of the **T1w** and **FLAIR** are comparable, which is not the case when one of the two (or both) are already biasfield corrected.
 
@@ -91,15 +91,15 @@ function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
 
 ### Description
 
-Submodule of ExploreASL Structural Module, that performs a biasfield correction on **T1w** & applies it on the FLAIR.
+Submodule of ExploreASL Structural Module, that performs a biasfield correction on **T1w** & applies it on the **FLAIR**.
 
 ### Workflow
 
-This submodule runs the LST WMH segmentation, either with **LGA** or **LPA**.
-LPA is the default choice, it outperforms LGA a bit, depending on the image quality. 
+This submodule runs the **LST WMH** segmentation, either with **LGA** or **LPA**.
+**LPA** is the default choice, it outperforms LGA a bit, depending on the image quality. 
 These algorithms perform optimally with **3T** images, with good contrast. Generally, **LPA** oversegments whereas **LGA** undersegments.
 The **LPA** oversegmentation is corrected in a later submodule.
-If a **WMH_SEGM** already existed, the **LST** is run quickly as dummy only, to be replaced by the original WMH_SEGM image. This function has the following parts:
+If a **WMH_SEGM** already existed, the **LST** is run quickly as dummy only, to be replaced by the original **WMH_SEGM** image. This function has the following parts:
 
 1. Reslice **FLAIR** (& **WMH_SEGM**, if exists) to T1w
 2. Define parameters for segmentation
@@ -133,9 +133,9 @@ This submodule runs the **LST** **WMH**-based **T1w** lesion filling, which shou
 Before lesion filling, we clean up the WMH segmentation, to make the lesion filling a bit more conservative. 
 Sometimes the **WMH** segmentation oversegments inside the GM (as there can be hyperintensities on the **FLAIR**) & we don't want to lesion-fill these on the **T1w** (which would turn their intensities in intensities similar to **WM**, leading to misclassifications by the **T1w** segmentation).
 Note that this is submodule only performs the lesion filling, and the clean up is also performed for the lesion filling only.
-A more thorough WMH clean up (for e.g. **WMH** volumetrics) is performed later in the Structural module, using also the results from the T1w segmentation.
+A more thorough **WMH** clean up (for e.g. **WMH** volumetrics) is performed later in the Structural module, using also the results from the T1w segmentation.
 
-Note when changing the lesion filling here, LST lesion filling expects a probability map, doesnt work nicely with binary mask
+Note when changing the lesion filling here, **LST** lesion filling expects a probability map, doesnt work nicely with binary mask
 This function runs the following steps:
 
 1. File management
@@ -167,7 +167,7 @@ Submodule of ExploreASL Structural Module, that aligns **FLAIR** with **T1w**.
 
 This submodule registers **FLAIR** linearly to the **T1w**.
 The same transformation is applied to all other related scans (**FLAIR**-segmented lesions, **WMH** specifically or other lesions).
-This is required to enable the application of T1w derivatives (e.g. transformations to standard space, tissue segmentation) for **FLAIR** and vice versa (e.g. WMH lesion-filling).
+This is required to enable the application of T1w derivatives (e.g. transformations to standard space, tissue segmentation) for **FLAIR** and vice versa (e.g. **WMH** lesion-filling).
 
 ### Recommended usage
 
@@ -240,7 +240,7 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 
 ### Description
 
-Submodule of ExploreASL Structural Module, that segments 3D T1 (or T2) scan.
+Submodule of ExploreASL Structural Module, that segments **3D T1** (or **T2**) scan.
 
 ### Workflow
 
