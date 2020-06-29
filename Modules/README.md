@@ -51,13 +51,13 @@ x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
 
 #### Interface definition
 
-##### Input: x structure
+**Input: x structure**
 
 Required input fields of the x structure:
 
 * ...
 
-##### Output
+**Output**
 
 Added output fields of the x structure:
 
@@ -98,6 +98,24 @@ This ExploreASL module processes the ASL images, i.e. ASL4D, M0, etc (if present
 [~, x] = xASL_Iteration(x,'xASL_module_ASL');
 ```
 
+#### Interface definition
+
+**Input: x structure**
+
+Required input fields of the x structure:
+
+* ...
+
+**Output**
+
+Added output fields of the x structure:
+
+* ...
+
+Generated files:
+
+* ...
+
 ----
 ## 3. Module Population
 
@@ -127,4 +145,22 @@ This ExploreASL module processes all available images on the group level. It ass
 ```matlab
 [~, x] = xASL_Iteration(x,'xASL_module_Population');
 ```
+
+#### Interface definition
+
+**Input: x structure**
+
+Required input fields of the x structure:
+
+* ...
+
+**Output**
+
+Added output fields of the x structure:
+
+* ...
+
+Generated files:
+
+* ...
 
