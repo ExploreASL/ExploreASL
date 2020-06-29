@@ -106,6 +106,7 @@ Note: these outputs need to be visually checked; but pre-sorting them by spatial
 The idea is then that only category 1 images are used for perfusion (CBF) analyses, both categories 1 & 2 for the vascular (sCoV) analyses, and the category 3 images excluded from analysis.
 
 **PM**: this code does not include multiple sessions per subject yet!
+
 **NB**: this code uses the **//analysis/Population/Stats/CoV_qCBF*TotalGM*.csv** file, make sure that this file isn't edited! 
 
 ### Recommended usage
@@ -269,8 +270,10 @@ First acquires average additive & multiplicative factors for total GM, then does
 This doesn't make an assumption whether site or sequence differences are additive or multiplicative, but rather fits them both. 
 Global scaling it performed to GM CBF == 60 mL/100g/min
 
-**NB**: make sure that sequence resolution differences have been taken in account before creating these biasfields
+**NB**: make sure that sequence resolution differences have been taken in account before creating these biasfields.
+
 **PM**: add normalization of between-subjects SD as well.
+
 **PM**: are there other things we can normalize?
 
 ### Recommended usage
