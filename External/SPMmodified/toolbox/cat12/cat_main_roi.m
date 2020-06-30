@@ -137,13 +137,14 @@ function cat_main_roi(job,trans,Ycls,Yp0)
     ROI.(atlas) = csv;
 
   end 
-
-  % write results
-  catROI = cat_roi_fun('csvtab2xmlroi',ROI);
-  cat_io_xml(fullfile(pth,labelfolder,['catROI_' nam '.xml']),catROI,'write'); 
-
-  cat_io_cmd(' ','g5','',job.extopts.verb,stime2);
-  cat_io_cmd('','n','',1,stime);
+  if exist('ROI','var')
+	  % write results
+	  catROI = cat_roi_fun('csvtab2xmlroi',ROI);
+	  cat_io_xml(fullfile(pth,labelfolder,['catROI_' nam '.xml']),catROI,'write');
+	  
+	  cat_io_cmd(' ','g5','',job.extopts.verb,stime2);
+	  cat_io_cmd('','n','',1,stime);
+  end
   
 return
 
