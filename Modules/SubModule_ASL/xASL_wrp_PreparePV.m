@@ -93,10 +93,12 @@ if bStandardSpace
 	
 	%% ------------------------------------------------------------------------------------------
 	%% 2) Reslice pGM & pWM to hi-res ASL
-	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
-	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
+	% We just put it to the ASL grid, but we don't apply the non-linear transformation to the ASL,
+	% because we then go directly to standard space and only apply the T1->MNI and not ASL->T1 nonlinear transformation
+	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], [],[], x.Quality);
+	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], [],[], x.Quality);
 	if xASL_exist(x.P.Path_WMH_SEGM)
-		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_WMH_SEGM ',1'], x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality);
+		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_WMH_SEGM ',1'], [],[], x.Quality);
 	end
 	
     %% ------------------------------------------------------------------------------------------
