@@ -33,7 +33,7 @@ function cat_io_report(job,qa,subj,createerr)
 %
 % ______________________________________________________________________
 % Robert Dahnke 
-% $Revision: 1582 $  $Date: 2020-03-11 17:55:11 +0100 (Mi, 11 Mär 2020) $
+% $Revision: 1582 $  $Date: 2020-03-11 17:55:11 +0100 (Mi, 11 M??r 2020) $
   
 %#ok<*AGROW>
 
@@ -581,53 +581,53 @@ function cat_io_report(job,qa,subj,createerr)
   global st;
   warning('off','MATLAB:subscripting:noSubscriptsSpecified')
   showTPMsurf = 1; % ... also in default mode 
-  if job.extopts.expertgui>0 - showTPMsurf
-    %Phull = {fullfile(spm('dir'),'toolbox','cat12','templates_surfaces','bh.hull.cat.gii')};
-    Phull = {cat_surf_create_TPM_hull_surface(job.opts.tpm)};
-    for id=1
-      spm_orthviews('AddContext',id); % need the context menu for mesh handling
-
-      try
-        spm_ov_mesh('display',id,Phull);
-      catch
-        fprintf('Please update to a newer version of spm12 for using this contour overlay\n');
-        try
-          spm_update
-        catch
-          fprintf('Update to the newest SPM12 version failed. Please update manually.\n');
-        end
-      end
-
-      % apply affine scaling for gifti objects
-      for ix=1:numel(Phull) 
-        % load mesh
-        try spm_ov_mesh('display',id,Phull(ix)); end 
-
-        %% apply affine scaling for gifti objects (inv(cat_err_res.res.Affine)
-        V = (inv(Affine) * ([st.vols{id}.mesh.meshes(ix).vertices,...
-             ones(size(st.vols{id}.mesh.meshes(ix).vertices,1),1)])' )';
-        V(:,4) = [];
-        M0 = st.vols{id}.mesh.meshes(1:ix-1);
-        M1 = st.vols{id}.mesh.meshes(ix);
-        M1 = subsasgn(M1,struct('subs','vertices','type','.'),single(V));
-        st.vols{id}.mesh.meshes = [M0,M1];
-      end
-
-      %% change line style
-      hM = findobj(st.vols{id}.ax{1}.cm,'Label','Mesh');
-      UD = get(hM,'UserData');
-      UD.width = 0.75; 
-      UD.style = repmat({'b--'},1,numel(Phull));
-      set(hM,'UserData',UD);
-      try spm_ov_mesh('redraw',id); end
-      spm_orthviews('redraw',id);
-
-      %% TPM legend
-      %ccl{1} = axes('Position',[pos(1,1:2) 0 0] + [0.33 -0.005 0.02 0.02],'Parent',fg);
-      %cclp = plot(ccl{1},([0 0.4;0.6 1])',[0 0; 0 0],'b-'); text(ccl{1},1.2,0,'TPM fit');
-      %set( cclp,'LineWidth',0.75); axis(ccl{1},'off')
-    end
-  end
+%   if job.extopts.expertgui>0 - showTPMsurf %% EXPLOREASL HACK TO DISABLE SURFACE MODELING
+%     %Phull = {fullfile(spm('dir'),'toolbox','cat12','templates_surfaces','bh.hull.cat.gii')};
+%     Phull = {cat_surf_create_TPM_hull_surface(job.opts.tpm)};
+%     for id=1
+%       spm_orthviews('AddContext',id); % need the context menu for mesh handling
+% 
+%       try
+%         spm_ov_mesh('display',id,Phull);
+%       catch
+%         fprintf('Please update to a newer version of spm12 for using this contour overlay\n');
+%         try
+%           spm_update
+%         catch
+%           fprintf('Update to the newest SPM12 version failed. Please update manually.\n');
+%         end
+%       end
+% 
+%       % apply affine scaling for gifti objects
+%       for ix=1:numel(Phull) 
+%         % load mesh
+%         try spm_ov_mesh('display',id,Phull(ix)); end 
+% 
+%         %% apply affine scaling for gifti objects (inv(cat_err_res.res.Affine)
+%         V = (inv(Affine) * ([st.vols{id}.mesh.meshes(ix).vertices,...
+%              ones(size(st.vols{id}.mesh.meshes(ix).vertices,1),1)])' )';
+%         V(:,4) = [];
+%         M0 = st.vols{id}.mesh.meshes(1:ix-1);
+%         M1 = st.vols{id}.mesh.meshes(ix);
+%         M1 = subsasgn(M1,struct('subs','vertices','type','.'),single(V));
+%         st.vols{id}.mesh.meshes = [M0,M1];
+%       end
+% 
+%       %% change line style
+%       hM = findobj(st.vols{id}.ax{1}.cm,'Label','Mesh');
+%       UD = get(hM,'UserData');
+%       UD.width = 0.75; 
+%       UD.style = repmat({'b--'},1,numel(Phull));
+%       set(hM,'UserData',UD);
+%       try spm_ov_mesh('redraw',id); end
+%       spm_orthviews('redraw',id);
+% 
+%       %% TPM legend
+%       %ccl{1} = axes('Position',[pos(1,1:2) 0 0] + [0.33 -0.005 0.02 0.02],'Parent',fg);
+%       %cclp = plot(ccl{1},([0 0.4;0.6 1])',[0 0; 0 0],'b-'); text(ccl{1},1.2,0,'TPM fit');
+%       %set( cclp,'LineWidth',0.75); axis(ccl{1},'off')
+%     end
+%   end
   
   
   %% report error
