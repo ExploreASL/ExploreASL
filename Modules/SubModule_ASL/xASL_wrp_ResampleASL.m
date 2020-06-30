@@ -77,7 +77,7 @@ xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_temp_despiked_ASL4D, tempnii
 % digitization artifacts in the spatial processing
 % Plus this creates a temporary copy to not touch the original ASL file
 
-if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, AND NOW NEEDED ALSO WHEN DCT APPLIED ON TOP OF AFFINE
     AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
 else
     AffineTransfPath = [];

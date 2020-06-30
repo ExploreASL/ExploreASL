@@ -79,8 +79,10 @@ xASL_spm_deformations(x, x.P.Path_SliceGradient_extrapolated, x.P.Pop_Path_Slice
 %% Add some more extrapolation to be sure
 SGim = xASL_io_Nifti2Im(x.P.Pop_Path_SliceGradient_extrapolated);
 SGim(SGim==0) = NaN;
-while sum(isnan(SGim(:)))>0
-      SGim = xASL_im_ndnanfilter(SGim,'rect',[8 8 8],2);
+countNanLast = numel(SGim)+1;
+while sum(isnan(SGim(:)))<countNanLast
+	countNanLast = sum(isnan(SGim(:)));
+	SGim = xASL_im_ndnanfilter(SGim,'rect',[8 8 8],2);
 end
 
 xASL_io_SaveNifti(x.P.Pop_Path_SliceGradient_extrapolated,x.P.Pop_Path_SliceGradient_extrapolated,SGim,[],0);
