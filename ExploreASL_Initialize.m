@@ -463,17 +463,24 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
             % if it exists
             [Fpath, Ffile] = fileparts(DataParPath);
             DataParPath = fullfile(Fpath, [Ffile '.m']);
-            if exist(DataParPath,'file')
+            if exist(DataParPath, 'file')
                 warning('Invalid DataPar JSON file, trying to repair from detected .m file');
+                fprintf('A common issue is needing escaping e.g. "\\d" instead of "\d"\n');
                 try
                     PathJSON = xASL_init_ConvertM2JSON(DataParPath);
                     DataParPath = PathJSON;
                     x = xASL_import_json(DataParPath);
                 catch ME2
-                    fprintf('%s',ME1.message);
-                    fprintf('%s',ME2.message);
+                    fprintf('%s\n', ME1.message);
+                    fprintf('%s\n', ME2.message);
+                    fprintf('A common issue is needing escaping e.g. "\\d" instead of "\d"\n');
                     error('Something went wrong loading the DataParFile');
                 end
+            else
+                warning('Invalid DataPar JSON file');
+                fprintf('A common issue is needing escaping e.g. "\\d" instead of "\d"\n');
+                fprintf('%s\n', ME1.message);
+                error('Something went wrong loading the DataParFile');
             end
         end
     elseif strcmp(Dext,'.m')
