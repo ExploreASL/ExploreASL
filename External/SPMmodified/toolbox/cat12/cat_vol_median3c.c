@@ -17,11 +17,10 @@
  * Center of Neuroimaging 
  * University Jena
  *
- * $Id: cat_vol_median3c.c 764 2015-11-17 13:11:53Z gaser $ 
+ * $Id: cat_vol_median3c.c 1523 2019-11-21 23:12:24Z gaser $ 
  */
 
 #include "mex.h"   
-#include "matrix.h"
 #include "math.h"
 #include "float.h"
 
@@ -66,7 +65,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (nlhs<1) mexErrMsgTxt("ERROR:median3: not enough output elements\n");
   if (nlhs>1) mexErrMsgTxt("ERROR:median3: too many output elements\n");
 
-  /* main informations about input data (size, dimensions, ...) */
+  /* main information about input data (size, dimensions, ...) */
   const mwSize *sL = mxGetDimensions(prhs[0]);
   const int     dL = mxGetNumberOfDimensions(prhs[0]);
   const int     nL = (int) mxGetNumberOfElements(prhs[0]);

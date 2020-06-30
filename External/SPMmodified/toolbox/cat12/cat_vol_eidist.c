@@ -53,7 +53,7 @@
  * Structural Brain Mapping Group
  * University Jena
  *
- * $Id: cat_vol_eidist.c 1294 2018-03-19 20:33:44Z gaser $ 
+ * $Id: cat_vol_eidist.c 1524 2019-11-28 17:00:31Z gaser $ 
  */
 
 
@@ -64,10 +64,11 @@
  
 
 #include "mex.h"   
-#include "matrix.h"
 #include "math.h"
 #include "float.h"
 #include "limits.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef _MSC_VER
   #define FINFINITY (FLT_MAX+FLT_MAX);
@@ -213,7 +214,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   float*L  = (float *)mxGetPr(prhs[1]);             
   
   /* 
-   * main informations about input data (size, dimensions, ...) 
+   * main information about input data (size, dimensions, ...) 
    */
   const mwSize *sL = mxGetDimensions(prhs[0]); 
   const int     dL = mxGetNumberOfDimensions(prhs[0]);
@@ -279,7 +280,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
    */
   if ( verb ) {
     printf("\ncat_vol_eidist.c debuging mode:\n  Initialize Parameter: \n");
-    printf("    size(B) = %d %d %d\n",sL[0],sL[1],sL[2]); 
+    printf("    size(B) = %d %d %d\n",(int)sL[0],(int)sL[1],(int)sL[2]); 
     printf("    vx_vol  = %0.0f %0.0f %0.0f\n",s1,s2,s3); 
     printf("    euclid  = %d\n",(int) euclid); 
     printf("    setnan  = %d\n",(int) setnan); 

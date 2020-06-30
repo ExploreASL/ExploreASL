@@ -89,9 +89,9 @@ function varargout = cat_vol_imcalc(Vi,Vo,f,flags,varargin)
 % John Ashburner & Andrew Holmes
 % Id: spm_imcalc.m 6043 2014-06-13 14:31:48Z volkmar 
 % ______________________________________________________________________
-% $Id: cat_vol_imcalc.m 1304 2018-04-11 08:11:38Z dahnke $ 
+% $Id: cat_vol_imcalc.m 1384 2018-10-31 19:55:27Z dahnke $ 
 
-SVNid = '$Rev: 1304 $';
+SVNid = '$Rev: 1384 $';
 
 %-Parameters & arguments
 %==========================================================================
@@ -210,7 +210,13 @@ for p = 1:Vo.dim(3)
     for i = 1 + isempty(strfind(f,'i1')):n % use i1 only to get the resolution properties
         M = inv(B * inv(Vo.mat) * Vi(i).mat);
         d = spm_slice_vol(Vi(i), M, Vo.dim(1:2), [interp,NaN]);
-        if (mask < 0), d(isnan(d)) = 0; end
+        if (mask < 0), 
+          if (mask <-1),
+            [D,I] = cat_vbdist(single(~(isnan(d))),true(size(d))); clear D;  %#ok<ASGLU>
+            d = d(I); clear I;
+          end
+          d(isnan(d)) = 0; 
+        end
         if (mask > 0) && ~spm_type(Vi(i).dt(1),'nanrep'), d(d==0)=NaN; end
         if dmtx, X(i,:) = d(:)'; else eval(['i',num2str(i),'=d;']); end
     end
@@ -234,18 +240,19 @@ end
 %-Write output image
 %--------------------------------------------------------------------------
 if nargout <= 1
+  if exist(Vo.fname,'file'); delete(Vo.fname); end
   varargout{1} = spm_write_vol(Vo,Y); 
 elseif nargout == 2
   if isfield(Vo,'dat');
     switch Vo.dt(1)
-      case 2,   Vo.dat = uint8(Y); 
-      case 4,   Vo.dat = int16(Y); 
-      case 8,   Vo.dat = int32(Y); 
+      case 2,   Vo.dat = cat_vol_ctype(Y,'uint8');  
+      case 4,   Vo.dat = cat_vol_ctype(Y,'int16'); 
+      case 8,   Vo.dat = cat_vol_ctype(Y,'int32'); 
       case 16,  Vo.dat = single(Y); 
       case 64,  Vo.dat = double(Y); 
-      case 256, Vo.dat = int8(Y); 
-      case 512, Vo.dat = uint16(Y); 
-      case 768, Vo.dat = uint32(Y); 
+      case 256, Vo.dat = cat_vol_ctype(Y,'int8'); 
+      case 512, Vo.dat = cat_vol_ctype(Y,'uint16'); 
+      case 768, Vo.dat = cat_vol_ctype(Y,'uint32'); 
     end
   end
   varargout{1} = Vo; 

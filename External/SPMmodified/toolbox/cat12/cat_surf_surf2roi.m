@@ -18,7 +18,7 @@ function varargout = cat_surf_surf2roi(job)
 % ______________________________________________________________________
 % Robert Dahnke
 % ______________________________________________________________________
-% $Id: cat_surf_surf2roi.m 1233 2017-12-03 23:26:25Z gaser $ 
+% $Id: cat_surf_surf2roi.m 1571 2020-02-27 14:51:11Z gaser $ 
 
 
 % ______________________________________________________________________
@@ -92,12 +92,12 @@ function varargout = cat_surf_surf2roi(job)
         [vertices, lrdata, colortable, lrcsv] = cat_io_FreeSurfer('read_annotation',job.rdata{ri});
         [vertices, rrdata, colortable, rrcsv] = cat_io_FreeSurfer('read_annotation',char(cat_surf_rename(job.rdata{ri},'side','rh')));
         clear vertices colortable;
-      case 'gii';
+      case 'gii'
         % gifti and csv-files
         rrdata = gifti(job.rdata{ri});
         lrdata = gifti(char(cat_surf_rename(rinfo,'side','rh'))); 
         
-        rdatacsv = cat_vol_findfiles(strrep(rinfo.pp,'atlases_surfaces','templates_1.50mm'),[rinfo.dataname '*.csv']);
+        rdatacsv = cat_vol_findfiles(strrep(rinfo.pp,'atlases_surfaces','templates_volumes'),[rinfo.dataname '*.csv']);
         if ~isempty(rdatacsv{1})
           rcsv=cat_io_csv(rdatacsv{1});
         end
@@ -106,7 +106,7 @@ function varargout = cat_surf_surf2roi(job)
         lrdata = cat_io_FreeSurfer('read_surf_data',job.rdata{ri});
         rrdata = cat_io_FreeSurfer('read_surf_data',char(cat_surf_rename(rinfo,'side','rh'))); 
         
-        rdatacsv = cat_vol_findfiles(strrep(rinfo.pp,'atlases_surfaces','templates_1.50mm'),[rinfo.dataname '*.csv']);
+        rdatacsv = cat_vol_findfiles(strrep(rinfo.pp,'atlases_surfaces','templates_volumes'),[rinfo.dataname '*.csv']);
         if ~isempty(rdatacsv{1})
           rcsv=cat_io_csv(rdatacsv{1});
         end
@@ -121,11 +121,17 @@ function varargout = cat_surf_surf2roi(job)
         sinfo = cat_surf_info(job.cdata{ti}{si},0);
         
         if all(~cell2mat(strfind({'central','hull','sphere','sphere.reg','resampledBySurf2roi'},sinfo.dataname)))
-
+          
+          if size(lrdata,1) > 150000
+            type = '160k';
+          else
+            type = '32k';
+          end
+          
           % load surface cdata 
           if job.resamp && sinfo.resampled==0 % do temporary resampling
-            lCS = get_resampled_values(job.cdata{ti}{si},job.debug);
-            rCS = get_resampled_values(cat_surf_rename(sinfo,'side','rh'),job.debug); 
+            lCS = get_resampled_values(job.cdata{ti}{si},job.debug,type);
+            rCS = get_resampled_values(cat_surf_rename(sinfo,'side','rh'),job.debug,type); 
           else
             switch sinfo.ee
               case '.gii'
@@ -146,8 +152,8 @@ function varargout = cat_surf_surf2roi(job)
               catROI{si}.(rinfo.dataname).names(1:2:size(rrcsv,1)*2-2,1) = rrcsv(2:end,2);
               catROI{si}.(rinfo.dataname).names(2:2:size(rrcsv,1)*2-2,1) = lrcsv(2:end,2);
               for roii=1:2:numel(catROI{si}.(rinfo.dataname).ids)-1
-                catROI{si}.(rinfo.dataname).names{roii}   = ['l' catROI{si}.(rinfo.dataname).names{roii}];
-                catROI{si}.(rinfo.dataname).names{roii+1} = ['r' catROI{si}.(rinfo.dataname).names{roii+1}];
+                catROI{si}.(rinfo.dataname).names{roii,1}   = ['l' catROI{si}.(rinfo.dataname).names{roii}];
+                catROI{si}.(rinfo.dataname).names{roii+1,1} = ['r' catROI{si}.(rinfo.dataname).names{roii+1}];
               end 
             otherwise
               catROI{si}.(rinfo.dataname).ids      = rcsv(1:end,1);
@@ -169,14 +175,14 @@ function varargout = cat_surf_surf2roi(job)
               end
               for roii=1:numel(catROI{si}.(rinfo.dataname).ids)
                 switch catROI{si}.(rinfo.dataname).names{roii}(1)
-                  case 'l', catROI{si}.(rinfo.dataname).data.(fieldname)(roii) = ...
+                  case 'l', catROI{si}.(rinfo.dataname).data.(fieldname)(roii,1) = ...
                       eval(sprintf('%s%s(lCS.cdata(lrdata==catROI{si}.(rinfo.dataname).ids(roii)))',nanfunc,FN{ai}));
-                  case 'r', catROI{si}.(rinfo.dataname).data.(fieldname)(roii) = ...
+                  case 'r', catROI{si}.(rinfo.dataname).data.(fieldname)(roii,1) = ...
                       eval(sprintf('%s%s(rCS.cdata(rrdata==catROI{si}.(rinfo.dataname).ids(roii)))',nanfunc,FN{ai})); 
-                  case 'b', catROI{si}.(rinfo.dataname).data.(fieldname)(roii) = ...
+                  case 'b', catROI{si}.(rinfo.dataname).data.(fieldname)(roii,1) = ...
                       eval(sprintf(['%s%s(lCS.cdata(lrdata==catROI{si}.(rinfo.dataname).ids(roii))) + ' ...
                                     '%s%s(rCS.cdata(rrdata==catROI{si}.(rinfo.dataname).ids(roii)))'],nanfunc,FN{ai},nanfunc,FN{ai}));
-                  otherwise, catROI{si}.(rinfo.dataname).data.(fieldname)(roii) = nan; 
+                  otherwise, catROI{si}.(rinfo.dataname).data.(fieldname)(roii,1) = nan; 
                 end
               end
               
@@ -206,10 +212,14 @@ function varargout = cat_surf_surf2roi(job)
   
 end
 
-function resamp = get_resampled_values(P,debug)
-  fsavgDir = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces');
+function resamp = get_resampled_values(P,debug,type)
+  if ~exist('type','var'), type = '160k'; end
+  switch type
+    case '160k', fsavgDir = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces');
+    case '32k',  fsavgDir = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces_32k');
+  end   
   P = deblank(char(P));
-
+ 
   [pp,ff,ex]   = spm_fileparts(P);
 
   name = [ff ex];
@@ -227,6 +237,7 @@ function resamp = get_resampled_values(P,debug)
   Pfsavg     = fullfile(fsavgDir,[hemi '.sphere.freesurfer.gii']);
   Pmask      = fullfile(fsavgDir,[hemi '.mask']);
 
+  
   % check whether temporary resampled file already exists
   if ~exist(Pvalue,'file')
         

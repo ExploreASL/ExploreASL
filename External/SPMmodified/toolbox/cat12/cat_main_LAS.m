@@ -62,7 +62,7 @@ function [Yml,Ymg,Ycls,Ycls2,T3th] = cat_main_LAS(Ysrc,Ycls,Ym,Yb0,Yy,T3th,res,v
 %   Department of Neurology
 %   University Jena
 % ______________________________________________________________________
-% $Id: cat_main_LAS.m 1338 2018-07-23 12:51:04Z dahnke $
+% $Id: cat_main_LAS.m 1561 2020-02-04 15:49:34Z gaser $
 
 
   def.uhrlim = 0.7; 
@@ -175,7 +175,7 @@ function [Yml,Ymg,Ycls,Ycls2,T3th] = cat_main_LAS(Ysrc,Ycls,Ym,Yb0,Yy,T3th,res,v
   %% adaption of the LASstr depending on average basal values 
   LASstr  = min(1,max(0.01,LASstr * LASmod));                           % adaption by local BG variation
   LASfs   = 1 / max(0.01,LASstr);                                       % smoothing filter strength 
-  LASi    = min(8,round(LASfs));                                        % smoothing interation (limited)
+  LASi    = min(8,round(LASfs));                                        % smoothing iteration (limited)
    
   
   %% helping segments
@@ -350,7 +350,7 @@ function [Yml,Ymg,Ycls,Ycls2,T3th] = cat_main_LAS(Ysrc,Ycls,Ym,Yb0,Yy,T3th,res,v
   stime = cat_io_cmd('  Estimate local tissue thresholds (WM)','g5','',verb,stime); dispc=dispc+1;
   Ysrcm = cat_vol_median3(Ysrc.*Ywm,Ywm,Ywm); 
   rf    = [10^5 10^4];
-  T3th3 = max(1,min(10^6,rf(2) / (round(T3th(3)*rf(1))/rf(1))));
+  T3th3 = max(1,min(10^6,rf(2) / max(eps,round(T3th(3)*rf(1))/rf(1))));
   Ysrcm = round(Ysrcm*T3th3)/T3th3;
   Ygw2 = Ycls{1}>128 & Ym>2/3-0.04 & Ym<2/3+0.04 & Ygm .*Ydiv>0.01;
   Ygw2 = Ygw2 | (Ycls{1}>128 & Yg<0.05 & abs(Ydiv)<0.05 & ~Ywm & Ym<3/4); % large stable GM areas - like the BWP cerebellum

@@ -62,7 +62,7 @@ function [Yml,Ymg,Ycls] = cat_main_LASs(Ysrc,Ycls,Ym,Yb,Yy,Tth,res,vx_vol,extopt
 %   Department of Neurology
 %   University Jena
 % ______________________________________________________________________
-% $Id: cat_main_LASs.m 1118 2017-03-17 15:57:00Z gaser $
+% $Id: cat_main_LASs.m 1522 2019-11-21 21:04:20Z gaser $
 
   % set this variable to 1 for simpler debuging without reduceBrain
   % function (that normally save half of processing time)
@@ -297,7 +297,7 @@ function [Yml,Ymg,Ycls] = cat_main_LASs(Ysrc,Ycls,Ym,Yb,Yy,Tth,res,vx_vol,extopt
     LASi    = min(8,round(LASfs));                                           % smoothing interation (limited)
 
 
-    %  GM thickness (Ygmt) and percentage possition map (Ypp) estimation
+    %  GM thickness (Ygmt) and percentage position map (Ypp) estimation
     %  The Ypp and Ygmt maps are used to refine the GM especially to correct
     %  highly myelinated GM regions. Using allow to avoid overcorrections.
     fastppi = 1; % 1 mm: 15 vs. 40 seconds ... it thing fast is ok here 20161014 

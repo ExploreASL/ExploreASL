@@ -1,9 +1,9 @@
 % Computational Anatomy Toolbox
-% Version 1363 (CAT12.5) 2018-09-02
+% Version 1615 (CAT12.7-Beta) 2020-05-09
 % __________________________________________________________________________
 % Copyright (C) Christian Gaser christian.gaser@uni-jena.de
 %
-% $Id: Contents_info.txt 1322 2018-05-26 16:39:41Z dahnke $
+% $Id: Contents_info.txt 1571 2020-02-27 14:51:11Z gaser $
 % ==========================================================================
 % Description
 % ==========================================================================
@@ -11,7 +11,12 @@
 % of SPM12 (Wellcome Department of Cognitive Neurology) to provide computational
 % morphometry. It is developed by Christian Gaser and Robert Dahnke (University
 % of Jena, Departments of Psychiatry and Neurology) and is available to the 
-% scientific community under the terms of the GNU General Public License.
+% scientific community under the terms of the GNU General Public Licence as 
+% published by the Free Software Foundation; either version 2 of the Licence, 
+% or (at your option) any later version.
+%
+% If you use any CAT12 code for commercial application, please email 
+% christian.gaser@uni-jena.de.
 %
 % General files
 %   INSTALL.txt                      - installation instructions
@@ -147,7 +152,7 @@
 %                                      in MNI152 space provided for 6 different iteration steps
 %   Template_T1_IXI555_MNI152_GS.nii - average of 555 T1 images of IXI database in MNI152 space after 
 %                                      Geodesic Shooting
-%   aal.*                            - AAL atlas
+%   aal3.*                           - AAL3 atlas
 %   anatomy.*                        - Anatomy atlas
 %   hammers.*                        - Hammers atlas
 %   ibsr.*                           - IBSR atlas

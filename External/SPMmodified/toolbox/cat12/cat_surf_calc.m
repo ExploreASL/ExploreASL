@@ -1,6 +1,6 @@
 function varargout = cat_surf_calc(job)
 % ______________________________________________________________________
-% Texture Calculation Tool - Only batch mode available. 
+% Surface Calculation Tool - Only batch mode available. 
 %
 % [Psdata] = cat_surf_smooth(job)
 %
@@ -14,7 +14,7 @@ function varargout = cat_surf_calc(job)
 % job.dmtx       .. use data matrix
 % ______________________________________________________________________
 % Robert Dahnke
-% $Id: cat_surf_calc.m 1219 2017-11-19 23:28:59Z gaser $
+% $Id: cat_surf_calc.m 1535 2019-12-13 15:40:18Z gaser $
 
   if strcmp(job,'selftest')
     cat_surf_calc_selftest;
@@ -24,6 +24,7 @@ function varargout = cat_surf_calc(job)
     def.nproc           = 0; % multiple threads
     def.verb            = 0; % dispaly something
     def.lazy            = 0; % do not process anything if output exist (expert)
+    def.datahandling    = 1; % 1-subjectwise, 2-datawise
     def.usefsaverage    = 1; % 
     def.assuregifti     = 0; % write gii output
     def.dataname        = 'output'; 
@@ -39,11 +40,19 @@ function varargout = cat_surf_calc(job)
   else
     sinfo = cat_surf_info(job.cdata{1}{1});
   end
-     
-  if ~isempty(strfind(fileparts(sinfo.Pmesh),'_32k'))
-    job.fsaverage = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces_32k','lh.central.freesurfer.gii');  
+  
+  if strfind(sinfo.side,'mesh')
+    if sinfo.resampled_32k
+      job.fsaverage = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces_32k','mesh.central.freesurfer.gii');  
+    else
+      job.fsaverage = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces','mesh.central.freesurfer.gii');  
+    end
   else
-    job.fsaverage = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces','lh.central.freesurfer.gii');  
+    if sinfo.resampled_32k
+      job.fsaverage = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces_32k','lh.central.freesurfer.gii');  
+    else
+      job.fsaverage = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces','lh.central.freesurfer.gii');  
+    end
   end
   
   if ~isempty(job.outdir{1}), outdir = job.outdir{1}; else outdir=sinfo.pp; end  
@@ -66,13 +75,12 @@ function varargout = cat_surf_calc(job)
     if strcmp(strrep(job.expression,' ',''),'s1') % this is just a copy
       copyfile(job.cdata{1},job.output);
     else
+      job.verb = 1; 
       surfcalc(job);
     end
     fprintf('Output %s\n',spm_file(job.output,'link','cat_surf_display(''%s'')'));
-    
-    
   
-  else  
+  elseif job.datahandling==1
   % multisubject  
     for si = 1:numel(job.cdata{1}) 
       if ~isempty(outdir)
@@ -95,7 +103,7 @@ function varargout = cat_surf_calc(job)
     
     if job.nproc==0 
       spm_progress_bar('Init',numel(job.cdata{1}),...
-        sprintf('Texture Calculator\n%d',numel(job.cdata{1})),'Subjects Completed'); 
+        sprintf('Surface Calculator\n%d',numel(job.cdata{1})),'Subjects Completed'); 
     end
     
     for si = 1:numel(job.cdata{1}) % for subjects
@@ -127,16 +135,81 @@ function varargout = cat_surf_calc(job)
     if job.nproc==0 
       spm_progress_bar('Clear');
     end
+  else
+    %%
+    for di = 1:numel(job.cdata) 
+      if ~isempty(outdir)
+        soutdir = outdir;
+      else
+        soutdir = fileparts(job.cdata{di}{1});
+      end
+      
+      sinfo = cat_surf_info(job.cdata{di});
+      names = 'isequaln('; for si=1:numel(sinfo), names = [names '''' sinfo(si).name ''',']; end; names(end) = ')';  %#ok<AGROW>
+      if numel(sinfo)>1 && eval(names)
+        job.output{di,1} = char(cat_surf_rename(job.cdata{di}{1},...
+          'preside','','pp',outdir,'name','','dataname',job.dataname,'ee',ee));  
+
+      else
+        job.output{di,1} = char(cat_surf_rename(job.cdata{di}{1},...
+          'preside','','pp',soutdir,'name',job.dataname,'ee',ee));
+      end
+    end
+    
+    
+    % split job and data into separate processes to save computation time
+    if job.nproc>0 && (~isfield(job,'process_index'))
+      cat_parallelize(job,mfilename,'cdata');
+      return
+    elseif isfield(job,'printPID') && job.printPID 
+      cat_display_matlab_PID
+    end 
+    
+    if job.nproc==0 
+      spm_progress_bar('Init',numel(job.cdata{1}),...
+        sprintf('Surface Calculator\n%d',numel(job.cdata{1})),'Subjects Completed'); 
+    end
+
+    for di = 1:numel(job.cdata) % for subjects
+      sjob = rmfield(job,'cdata');
+      sjob.verb = 0;
+      
+      % subject data 
+      sjob.cdata  = job.cdata{di};
+      sjob.output = job.output{di};
+      try
+        surfcalc(sjob);
+        fprintf('Output %s\n',spm_file(sjob.output,'link','cat_surf_display(''%s'')'));
+      catch
+        fprintf('Output %s failed\n',sjob.output);
+      end
+        
+      if job.nproc==0 
+        spm_progress_bar('Set',di);
+      end
+    end
+    
+    if job.nproc==0 
+      spm_progress_bar('Clear');
+    end
+    
   end
   
+  
+  
   if nargout
-    varargout{1} = job.output;
+    if iscellstr(job.cdata)
+      varargout{1}.output = {job.output};
+    else % is cell of cellstrings 
+      varargout{1}.output = job.output;
+    end
   end
 end
 function surfcalc(job)
     
   def.debug     = cat_get_defaults('extopts.verb')>2;
   def.fsavgDir  = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces'); 
+  def.pbar      = 0;
   job = cat_io_checkinopt(job,def);
 
   %% calculation 
@@ -154,7 +227,7 @@ function surfcalc(job)
   if job.verb
     spm_clf('Interactive'); 
     spm_progress_bar('Init',numel(job.cdata),...
-      sprintf('Texture Calculator\n%s',job.output),'Input Textures Completed'); 
+      sprintf('Surface Calculator\n%s',job.output),'Input Surfaces Completed'); 
   end
   sdata = struct('dsize',[],'fsize',[],'vsize',[]); 
   for si = 1:ceil(sinfo1(1).nvertices/subsetsize)
@@ -175,7 +248,15 @@ function surfcalc(job)
       if sinfo(i).ftype==1 
         GS = gifti(job.cdata{i});
         if isfield(GS,'cdata')
-          d  = reshape(GS.cdata,1,sinfo1(1).nvertices);
+          try
+            d  = reshape(GS.cdata,1,sinfo1(1).nvertices);
+          catch
+            if i>1 && numel(job.cdata{i-1})~=numel(job.cdata{i})
+              fprintf('cat_surf_calc:gificdata',...
+                'Number of elements must be equal:\n%12d entries in file %s\n%12d entries in file %s\n',...
+                numel(job.cdata{i-1}), job.cdata{i-1}, numel(job.cdata{i}), job.cdata{i});
+            end
+          end
         else
           error('cat_surf_calc:gifticdata',...
             'No texture found in ''s''!',job.cdata{i}); 
@@ -192,8 +273,13 @@ function surfcalc(job)
       end
       if i>1
         if any(sdata(i).dsize~=sdata(i-1).dsize)
-          error('cat_surf_calc:texturesize',...
-            'Textures ''s%d'' (%s) does not match previous texture!%s',i,job.cdata{i}); 
+          if sinfo(i).resampled==0
+            error('cat_surf_calc:texturesize',...
+              'Surface ''s%d'' (%s) does not match previous texture (non-resampled input)!%s',i,job.cdata{i}); 
+          else            
+            error('cat_surf_calc:texturesize',...
+              'Surface ''s%d'' (%s) does not match previous texture!%s',i,job.cdata{i}); 
+          end
         end
         if sinfo(i).datatype==3 && ...
           any(sdata(i).vsize~=sdata(i-1).vsize) || any(sdata(i).fsize~=sdata(i-1).fsize)
@@ -213,8 +299,7 @@ function surfcalc(job)
       %% evaluate mesh 
       if sinfo1.datatype==3
         if job.usefsaverage
-          [pp,ff,ee] = spm_fileparts(job.fsaverage); 
-          CS = gifti(fullfile(pp,sprintf('%s.%s%s',sinfo1.side,ff(4:end),ee))); 
+          CS = gifti(strrep(job.fsaverage,'lh.',sinfo1.side)); 
           vdata(1,range,:) = CS.vertices;  
         else
           vdata(1,range,:) = mean(V,1);
@@ -247,9 +332,9 @@ function surfcalc(job)
   if sinfo1.datatype==3 || strcmp(job.output(end-3:end),'.gii')
     if ~strcmp(job.output(end-3:end),'.gii'), job.output = [job.output '.gii']; end
     if sinfo1.datatype==3
-      save(gifti(struct('vertices',shiftdim(vdata),'faces',S1{1}.faces,'cdata',cdata')),job.output);
+      save(gifti(struct('vertices',shiftdim(vdata),'faces',S1{1}.faces,'cdata',cdata')),job.output,'Base64Binary');
     else
-      save(gifti(struct('cdata',cdata)),job.output);
+      save(gifti(struct('cdata',cdata)),job.output,'Base64Binary');
     end
   else
     cat_io_FreeSurfer('write_surf_data',job.output,cdata');

@@ -10,7 +10,7 @@ function cat_stat_diff(P,rel,glob)
 % glob  - normalize global mean of images
 %__________________________________________________________________________
 % Christian Gaser
-% $Id: cat_stat_diff.m 1129 2017-05-09 12:58:31Z gaser $
+% $Id: cat_stat_diff.m 1488 2019-07-01 20:58:14Z gaser $
 
 global SWD
 
@@ -23,7 +23,7 @@ if nargin == 0
     % select images for each subject
     don = 0;
     for i = 1:1000,
-        P = spm_select([0 Inf],'.*(img|nii|gii)',['Image(s), subj ' num2str(i)]);
+        P = spm_select([0 Inf],'.*(img|nii|gii)',['Image(s)/Surface(s), subj ' num2str(i)]);
         if size(P,1) < 2, don = 1; break; end;
         try
           V{i} = spm_data_hdr_read(P);
@@ -35,7 +35,7 @@ if nargin == 0
     glob = 0;
 else
   try
-    V{i} = spm_data_hdr_read(P);
+    V{1} = spm_data_hdr_read(P);
   catch
     error('Error reading file. Ensure that you either have an image file or a surface texture file with values.');
   end
@@ -51,7 +51,7 @@ for i = 1:length(V);
     n = length(Vi);
     % compute global means to normalize images to same value
     if glob & ~surf
-       gm=zeros(n,1);
+       gm = zeros(n,1);
        disp('Calculating globals...');
        for j=1:n, gm(j) = spm_global(Vi(j)); end
        gm_all = mean(gm);

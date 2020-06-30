@@ -4,7 +4,7 @@ function varargout = cat_stat_histth(src,percent,opt)
 % limits. E.g. some MRI images have some extremely high or low values 
 % that can trouble other functions that try to work on the full given 
 % input range of the data. Removing only 0.2% of the data often often
-% helps to avoid problems without removing important informations. 
+% helps to avoid problems without removing important information. 
 % 
 % The function can also print a histogram, box- or violin plot of 
 % the given data (using cat_plot_boxplot) and give some basic values.
@@ -37,7 +37,7 @@ function varargout = cat_stat_histth(src,percent,opt)
 %   s=10; b = randn(s,s,s); cat_stat_histth(b,0.9,4);
 %   s=10; b = rand(s,s,s);  cat_stat_histth(b,0.9,5);
 % ______________________________________________________________________
-% $Id: cat_stat_histth.m 1309 2018-04-23 14:19:28Z dahnke $
+% $Id: cat_stat_histth.m 1436 2019-03-06 16:46:15Z gaser $
 
 
   %% check input
@@ -73,8 +73,13 @@ function varargout = cat_stat_histth(src,percent,opt)
   
   
   % histogram
-  [hsrc,hval] = hist(src(~isinf(src(:)) & ~isnan(src(:)) & src(:)<3.4027e+38),opt.hbins);
-  hp          = cumsum(hsrc)./sum(hsrc); 
+  % use adaptive number of bins to 
+  hsrc = zeros(1,opt.hbins); hbins = opt.hbins;
+  while (hbins == opt.hbins) || (sum(hsrc>0)/numel(hsrc)<0.3 && hbins<intmax/10 && numel(src)/hbins>2^4)
+    [hsrc,hval] = hist(src(~isinf(src(:)) & ~isnan(src(:)) & src(:)<3.4027e+38 & src(:)>-3.4027e+38),hbins);
+    hbins = hbins*2; 
+  end
+  hp = cumsum(hsrc)./sum(hsrc); 
 
   
   % lower limit

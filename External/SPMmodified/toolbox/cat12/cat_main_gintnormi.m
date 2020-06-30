@@ -10,6 +10,14 @@ function Ysrc = cat_main_gintnormi(Ym,Tth)
 %   Ysrc .. image with original intensity levels
 %   Ym   .. intensity normalized image
 %   Tth  .. data structure with the intensiy transformation
+%
+% Example:
+%  % old values in the original image Ysrc
+%  Tth.T3thx = [BGth CSFth GMth WMth WMth+diff([GMth,WMth]) ]; 
+%  % new values of the output images of the tresholds Tth.T3thx
+%  Tth.T3th  = 0:1/3:4/3;                                      
+%  % div by 3 due to old definitions
+%  Ym = cat_main_gintnormi(Ysrc/3,Tth); 
 % ______________________________________________________________________
 %
 %   Robert Dahnke (robert.dahnke@uni-jena.de)
@@ -17,7 +25,7 @@ function Ysrc = cat_main_gintnormi(Ym,Tth)
 %   Department of Neurology
 %   University Jena
 % ______________________________________________________________________
-% $Id: cat_main_gintnormi.m 1101 2017-01-11 15:23:32Z dahnke $
+% $Id: cat_main_gintnormi.m 1399 2018-12-01 21:30:42Z dahnke $
 
   T3th  = Tth.T3thx; 
   T3thx = Tth.T3th; 

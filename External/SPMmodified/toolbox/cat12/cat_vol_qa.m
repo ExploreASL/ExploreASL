@@ -1,5 +1,5 @@
 function varargout = cat_vol_qa(action,varargin)
-% CAT Preprocessing T1 Quality Assurance
+% CAT Preprocessing T1 Quality Control
 % ______________________________________________________________________
 % 
 % Estimation of image quality measures like noise, inhomogeneity,
@@ -66,7 +66,7 @@ function varargout = cat_vol_qa(action,varargin)
 % Structural Brain Mapping Group
 % University Jena
 %
-% $Id: cat_vol_qa.m 1341 2018-07-27 13:14:51Z dahnke $
+% $Id: cat_vol_qa.m 1582 2020-03-11 16:55:11Z gaser $
 % ______________________________________________________________________
 
 %#ok<*ASGLU>
@@ -121,7 +121,7 @@ function varargout = cat_vol_qa(action,varargin)
           for fi=1:numel(Pp0)
             [pp,ff,ee] = spm_fileparts(Pp0{fi});
             [ppa,ppb] = spm_fileparts(pp); 
-            if strcmp(ppb,'mri'), ppo = ppa; else ppo = pp; end 
+            if strcmp(ppb,'mri'), ppo = ppa; else, ppo = pp; end 
 
             Po{fi} = fullfile(ppo,[ff(3:end) ee]); 
             Pm{fi} = fullfile(pp,[opt.mprefix  ff(3:end) ee]);
@@ -218,7 +218,8 @@ function varargout = cat_vol_qa(action,varargin)
         cat_warnings = varargin{5};
         species = varargin{6};
         if isfield(varargin{7},'qa')
-          if isfield(varargin{7}.qa,'qualitymeasures'), QAR.qualitymeasures = cat_io_updateStruct(QAR,varargin{7}.qa.qualitymeasures); end
+          if isfield(varargin{7}.qa,'software') && isfield(varargin{7}.qa.software,'version_segment'), QAS.software.version_segment = varargin{7}.qa.software.version_segment; end
+          if isfield(varargin{7}.qa,'qualitymeasures'), QAS.qualitymeasures = cat_io_updateStruct(QAS,varargin{7}.qa.qualitymeasures); end
           if isfield(varargin{7}.qa,'subjectmeasures'), QAS.subjectmeasures = cat_io_updateStruct(QAS,varargin{7}.qa.subjectmeasures); end
         end
         % opt = varargin{end} in line 96)
@@ -311,7 +312,7 @@ function varargout = cat_vol_qa(action,varargin)
       
       if opt.verb>1
         fprintf('\n%s\n\n%s\n%s\n', ...
-          sprintf('CAT Preprocessing T1 Quality Assurance (%s):',...
+          sprintf('CAT Preprocessing T1 Quality Control (%s):',...
           sprintf('Rev: %s',rev_cat)), Theader,repmat('-',size(Theader)));  
       end
 
@@ -504,24 +505,25 @@ function varargout = cat_vol_qa(action,varargin)
       QAS.software.version_spm = rev_spm;
       A = ver;
       for i=1:length(A)
-        if strcmp(A(i).Name,'MATLAB'),
+        if strcmp(A(i).Name,'MATLAB')
           QAS.software.version_matlab = A(i).Version; 
         end
       end
       clear A
+      % 1 line: Matlab, SPM12, CAT12 version number and GUI and experimental mode 
+      if ispc,      OSname = 'WIN';
+      elseif ismac, OSname = 'MAC';
+      else          OSname = 'LINUX';
+      end
+      
+      QAS.software.system       = OSname;
       QAS.software.version_cat  = ver_cat;
+      if ~isfield(QAS.software,'version_segment')
+        QAS.software.version_segment = rev_cat;
+      end
       QAS.software.revision_cat = rev_cat;
-      QAS.software.function     = which('cat_vol_qa');
-      QAS.software.markdefs     = which('cat_stat_marks');
-      QAS.software.qamethod     = action; 
-      QAS.software.date         = datestr(clock,'yyyymmdd-HHMMSS');
-      warning off
-      QAS.software.opengl       = opengl('INFO');
-      QAS.software.opengldata   = opengl('DATA');
-      warning on
-      QAS.hardware.computer     = mexext; 
       try
-        QAS.hardware.numcores = max(feature('numcores'),1);
+        QAS.hardware.numcores = max(cat_get_defaults('extopts.nproc'),1);
       catch
         QAS.hardware.numcores = 1;
       end
@@ -561,15 +563,24 @@ function varargout = cat_vol_qa(action,varargin)
       % software, parameter and job information
       % ----------------------------------------------------------------
       [nam,rev_spm] = spm('Ver');
-      QAS.software.version_spm = rev_spm;
+      if ispc,      OSname = 'WIN';
+      elseif ismac, OSname = 'MAC';
+      else          OSname = 'LINUX';
+      end
+      
+      QAS.software.system       = OSname;
+      QAS.software.version_spm  = rev_spm;
       A = ver;
       for i=1:length(A)
-        if strcmp(A(i).Name,'MATLAB'),
+        if strcmp(A(i).Name,'MATLAB')
           QAS.software.version_matlab = A(i).Version; 
         end
       end
       clear A
       QAS.software.version_cat  = ver_cat;
+      if ~isfield(QAS.software,'version_segment')
+        QAS.software.version_segment = rev_cat;
+      end
       QAS.software.revision_cat = rev_cat;
       QAS.software.function     = which('cat_vol_qa');
       QAS.software.markdefs     = which('cat_stat_marks');
@@ -586,7 +597,7 @@ function varargout = cat_vol_qa(action,varargin)
         QAS.parameter.opts        = opt.job.opts;
         QAS.parameter.extopts     = opt.job.extopts;
         %QAS.parameter.output      = opt.job.output;
-        if exist('res','var');
+        if exist('res','var')
           rf = {'Affine','lkp','mn','vr'}; % important SPM preprocessing variables
           for rfi=1:numel(rf)
             if isfield(res,rf{rfi}), QAS.parameter.spm.(rf{rfi}) = res.(rf{rfi}); end
@@ -613,12 +624,12 @@ function varargout = cat_vol_qa(action,varargin)
       %QAS.qualitymeasures.res_MVR       = mean(vx_vol);
       
       % boundary box - brain tissue next to image boundary
-      bbth = ceil(2/cat_stat_nanmean(vx_vol)); M = true(size(Yp0)); %% EXPLOREASL HACK ceil instead of round
+      bbth = round(2/cat_stat_nanmean(vx_vol)); M = true(size(Yp0));
       M(bbth:end-bbth,bbth:end-bbth,bbth:end-bbth) = 0;
       QAS.qualitymeasures.res_BB = sum(Yp0(:)>1.25 & M(:))*prod(abs(vx_vol)); 
 
       % check segmentation
-      spec = species; for ai=num2str(0:9); spec = strrep(spec,ai,''); end; 
+      spec = species; for ai=num2str(0:9); spec = strrep(spec,ai,''); end 
       bvol = species; for ai=char(65:122); bvol = strrep(bvol,ai,''); end; bvol = str2double(bvol);
       
       subvol = [sum(Yp0(:)>2.5 & Yp0(:)<3.1)*prod(vx_vol)/1000,... 
@@ -665,7 +676,7 @@ function varargout = cat_vol_qa(action,varargin)
       Ygm2 = cat_vol_morph(Yp0>1.1,'e') & cat_vol_morph(Yp0<2.9,'e');   % avoid PVE 2
       Ygm  = (Ygm1 | Ygm2) & Ysc<0.9;                                   % avoid PVE & no subcortex
       Ywm  = cat_vol_morph(Yp0>2.1,'e') & Yp0>2.9 & ...                 % avoid PVE & subcortex
-        Yms>min(cat_stat_nanmean(T1th(2:3)),(T1th(2) + 2*noise*diff(T1th(2:3))));   % avoid WMHs2
+        Yms>min(cat_stat_nanmean(T1th(2:3)),(T1th(2) + 2*noise*abs(diff(T1th(2:3)))));   % avoid WMHs2
       clear Ygm1 Ygm2; % Ysc; 
       
       %% further refinements of the tissue maps
@@ -674,10 +685,7 @@ function varargout = cat_vol_qa(action,varargin)
              Yms<(T2th(1)+0.1*noise*diff(T2th(1:2)));
       if sum(Ycm(:)>0)<10; Ycm=cat_vol_morph(Yp0>0.5 & Yp0<1.5 & Yms<cat_stat_nanmean(T1th(1:2)),'e') & Yp0<1.25; end
       if sum(Ycm(:)>0)<10; Ycm=Yp0>0.5 & Yms<cat_stat_nanmean(T1th(1:2)) & Yp0<1.25; end     
-	  % ExploreASL fix - replaced "diff(T1th(2:3))" with "abs(diff(T1th(2:3)))" because this is positive in T1,
-	  % but it was negative in FLAIR and for FLAIR this ruined the ROIs
       Ygm  = Ygm & Yms>(T2th(2)-2*noise*abs(diff(T1th(2:3)))) & Yms<(T2th(2)+2*noise*abs(diff(T1th(2:3))));
-	  %Ygm  = Ygm & Yms>(T2th(2)-2*noise*diff(T1th(2:3))) & Yms<(T2th(2)+2*noise*diff(T1th(2:3)));
       Ygm(smooth3(Ygm)<0.2) = 0;
       Ycm  = cat_vol_morph(Ycm,'lc'); % to avoid holes
       Ywm  = cat_vol_morph(Ywm,'lc'); % to avoid holes
@@ -839,6 +847,7 @@ function varargout = cat_vol_qa(action,varargin)
       if opt.write_xml
         QAS.qualityratings = QAR.qualityratings;
         QAS.subjectratings = QAR.subjectratings;
+        QAS.ratings_help   = QAR.help;
         
         cat_io_xml(fullfile(pp,reportfolder,[opt.prefix ff '.xml']),QAS,'write'); %struct('QAS',QAS,'QAM',QAM)
       end
@@ -878,10 +887,10 @@ function noise = estimateNoiseLevel(Ym,YM,r,rms,vx_vol)
 % ----------------------------------------------------------------------
 % noise estimation within Ym and YM.
 % ----------------------------------------------------------------------
-  if ~exist('vx_vol','var');
+  if ~exist('vx_vol','var')
     vx_vol=[1 1 1]; 
   end
-  if ~exist('r','var');
+  if ~exist('r','var')
     r = 1;
   else
     r = min(10,max(max(vx_vol),r));

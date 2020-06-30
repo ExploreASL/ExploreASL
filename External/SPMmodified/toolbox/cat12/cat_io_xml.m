@@ -34,7 +34,7 @@ function varargout = cat_io_xml(file,varargin)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 % POSSIBILITY OF SUCH DAMAGE.
 % ______________________________________________________________________
-% $Id: cat_io_xml.m 1212 2017-11-10 12:39:37Z dahnke $
+% $Id: cat_io_xml.m 1483 2019-06-17 15:29:33Z gaser $
 
 
 % Further comments:
@@ -47,8 +47,9 @@ function varargout = cat_io_xml(file,varargin)
 
 
   verbose = 0;
-  if usejava('jvm')==0 || isdeployed
-    fprintf('Deployed or no java, skipping XML-import/export, read/write only MAT file\n'); % EXPLOREASL HACK, NO WARNING NEEDED HERE
+  if usejava('jvm')==0
+    warning('MATLAB:SPM:CAT:cat_io_xml:javaerror', ...
+      'CAT-ERROR: CAT XML-im/export requires JVM! Read/Write only MAT file.\n');
     %varargout = {};
     %return;
   end
@@ -147,7 +148,7 @@ function varargout = cat_io_xml(file,varargin)
         error('MATLAB:cat_io_xml:writeErr','Can''t write MAT-file ''%s''!\n',mfile);
       end
       try
-        if usejava('jvm') && ~isdeployed
+        if usejava('jvm')
           xml_write(file,S);
         end
       catch %#ok<*NASGU> % can write xml file??
@@ -163,7 +164,7 @@ function varargout = cat_io_xml(file,varargin)
       
       if exist(mfile,'file')
         load(mfile,'S');
-      elseif exist(file,'file') && usejava('jvm') && ~isdeployed
+      elseif exist(file,'file') && usejava('jvm')
         try
           S = xml_read(file);
         catch 
@@ -201,7 +202,7 @@ function varargout = cat_io_xml(file,varargin)
         catch
           error('MATLAB:cat_io_xml:readErr','Can''t read MAT-file ''%s'' for update!\n',mfile);
         end
-      elseif exist(file,'file') && usejava('jvm') && ~isdeployed
+      elseif exist(file,'file') && usejava('jvm')
         try 
           warning off
           S = xml_read(file);
@@ -217,7 +218,7 @@ function varargout = cat_io_xml(file,varargin)
              error('MATLAB:cat_io_xml:writeErr','Can''t write MAT-file ''%s''!\n',mfile);
           end
         end
-      elseif exist(file,'file') && ~(usejava('jvm') && ~isdeployed)
+      elseif exist(file,'file') && ~(usejava('jvm'))
         S = struct(); 
       else
         error('MATLAB:cat_io_xml','"%s" does not exist!\n',file);
@@ -323,12 +324,12 @@ function [tree, RootName, DOMnode] = xml_read(xmlfile, Pref)
   tree            = [];
   RootName        = [];
 
-%   % Check Matlab Version %% THIS CRASHED ON SERVER RUN
-%   v = ver('MATLAB');
-%   version = str2double(regexp(v.Version, '\d.\d','match','once'));
-%   if (version<7.1)
-%     error('Your MATLAB version is too old. You need version 7.1 or newer.');
-%   end
+  % Check Matlab Version
+  v = ver('MATLAB');
+  version = str2double(regexp(v.Version, '\d.\d','match','once'));
+  if (version<7.1)
+    error('Your MATLAB version is too old. You need version 7.1 or newer.');
+  end
 
   % read user preferences
   if (nargin>1)
@@ -943,11 +944,11 @@ function DOMnode = xml_write(filename, tree, RootName, Pref)
 % Written by Jarek Tuszynski, SAIC, jaroslaw.w.tuszynski_at_saic.com
 
   % Check Matlab Version
-%   v = ver('MATLAB'); %% Disabled, as this crashes, QuickFix ExploreASL
-%   v = str2double(regexp(v.Version, '\d.\d','match','once'));
-%   if (v<7)
-%     error('Your MATLAB version is too old. You need version 7.0 or newer.');
-%   end
+  v = ver('MATLAB');
+  v = str2double(regexp(v.Version, '\d.\d','match','once'));
+  if (v<7)
+    error('Your MATLAB version is too old. You need version 7.0 or newer.');
+  end
 
   % default preferences
   DPref.TableName  = {'tr','td'}; % name of a special tags used to itemize 2D cell arrays

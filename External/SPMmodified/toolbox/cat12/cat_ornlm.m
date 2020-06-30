@@ -18,16 +18,16 @@ function out = cat_ornlm(in, v, f, h)
 % ***************************************************************************
 %
 % Christian Gaser
-% $Id: cat_ornlm.m 772 2015-11-18 11:02:01Z gaser $
+% $Id: cat_ornlm.m 1561 2020-02-04 15:49:34Z gaser $
 
-rev = '$Rev: 772 $';
+rev = '$Rev: 1561 $';
 
 disp('Compiling cat_ornlm.c')
 
 pth = fileparts(which(mfilename));
 p_path = pwd;
 cd(pth);
-mex -O cat_ornlm.c ornlm.c 
+mex -O cat_ornlm.c ornlm_float.c 
 cd(p_path);
 
 out = cat_ornlm(in, v, f, h);

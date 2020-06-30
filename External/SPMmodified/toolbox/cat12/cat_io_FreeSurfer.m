@@ -37,7 +37,7 @@ function varargout=cat_io_FreeSurfer(action,varargin)
 %   Department of Neurology
 %   University Jena
 % ______________________________________________________________________
-% $Id: cat_io_FreeSurfer.m 1286 2018-03-05 11:44:37Z gaser $ 
+% $Id: cat_io_FreeSurfer.m 1575 2020-03-03 11:49:34Z dahnke $ 
 
   if ~exist('action','var'), help cat_io_FreeSurfer; return; end
   if nargin==0, varargin{1} = struct(); end
@@ -265,6 +265,8 @@ function varargout = fs2gii(varargin)
     
     if isfield(job,'cdata') 
       S.cdata = read_curv(job.cdata{si});     
+    elseif ~exist('S','var')
+      S.cdata = read_curv(job.data{si});     
     end
     
     job.fname{si} = [job.fname{si} '.gii'];
@@ -273,6 +275,7 @@ function varargout = fs2gii(varargin)
     if job.delete
       delete(job.data{si});
     end
+    clear S;
   end
   
   if nargout>0
@@ -390,9 +393,9 @@ function [vertex_coords, faces] = read_surf(filename)
   %
   % Original Author: Bruce Fischl
   % CVS Revision Info:
-  %    $Author: gaser $
-  %    $Date: 2018-03-05 12:44:37 +0100 (Mo, 05 Mär 2018) $
-  %    $Revision: 1286 $
+  %    $Author: dahnke $
+  %    $Date: 2020-03-03 12:49:34 +0100 (Di, 03 Mär 2020) $
+  %    $Revision: 1575 $
   %
   % Copyright ?? 2011 The General Hospital Corporation (Boston, MA) "MGH"
   %
@@ -463,9 +466,9 @@ function fwrite3(fid, val)
 %
 % Original Author: Bruce Fischl
 % CVS Revision Info:
-%    $Author: gaser $
-%    $Date: 2018-03-05 12:44:37 +0100 (Mo, 05 Mär 2018) $
-%    $Revision: 1286 $
+%    $Author: dahnke $
+%    $Date: 2020-03-03 12:49:34 +0100 (Di, 03 Mär 2020) $
+%    $Revision: 1575 $
 %
 % Copyright ?? 2011 The General Hospital Corporation (Boston, MA) "MGH"
 %
@@ -499,9 +502,9 @@ function [retval] = fread3(fid)
   %
   % Original Author: Bruce Fischl
   % CVS Revision Info:
-  %    $Author: gaser $
-  %    $Date: 2018-03-05 12:44:37 +0100 (Mo, 05 Mär 2018) $
-  %    $Revision: 1286 $
+  %    $Author: dahnke $
+  %    $Date: 2020-03-03 12:49:34 +0100 (Di, 03 Mär 2020) $
+  %    $Revision: 1575 $
   %
   % Copyright ?? 2011 The General Hospital Corporation (Boston, MA) "MGH"
   %
@@ -539,9 +542,9 @@ function err = write_wfile(filename, w, v)
 %
 % Original Author: Doug Greve
 % CVS Revision Info:
-%    $Author: gaser $
-%    $Date: 2018-03-05 12:44:37 +0100 (Mo, 05 Mär 2018) $
-%    $Revision: 1286 $
+%    $Author: dahnke $
+%    $Date: 2020-03-03 12:49:34 +0100 (Di, 03 Mär 2020) $
+%    $Revision: 1575 $
 %
 % Copyright ?? 2011 The General Hospital Corporation (Boston, MA) "MGH"
 %
@@ -602,9 +605,9 @@ function [curv] = write_curv(filename, curv, fnum)
 %
 % Original Author: Bruce Fischl
 % CVS Revision Info:
-%    $Author: gaser $
-%    $Date: 2018-03-05 12:44:37 +0100 (Mo, 05 Mär 2018) $
-%    $Revision: 1286 $
+%    $Author: dahnke $
+%    $Date: 2020-03-03 12:49:34 +0100 (Di, 03 Mär 2020) $
+%    $Revision: 1575 $
 %
 % Copyright (C) 2002-2007,
 % The General Hospital Corporation (Boston, MA). 
@@ -647,9 +650,9 @@ function [curv, fnum] = read_curv(filename)
 %
 % Original Author: Bruce Fischl
 % CVS Revision Info:
-%    $Author: gaser $
-%    $Date: 2018-03-05 12:44:37 +0100 (Mo, 05 Mär 2018) $
-%    $Revision: 1286 $
+%    $Author: dahnke $
+%    $Date: 2020-03-03 12:49:34 +0100 (Di, 03 Mär 2020) $
+%    $Revision: 1575 $
 %
 % Copyright ?? 2011 The General Hospital Corporation (Boston, MA) "MGH"
 %
@@ -892,9 +895,9 @@ function [vertices, label, colortable] = Read_Brain_Annotation(filename, varargi
 % read_annotation.m
 % Original Author: Bruce Fischl
 % CVS Revision Info:
-%    $Author: gaser $
-%    $Date: 2018-03-05 12:44:37 +0100 (Mo, 05 Mär 2018) $
-%    $Revision: 1286 $
+%    $Author: dahnke $
+%    $Date: 2020-03-03 12:49:34 +0100 (Di, 03 Mär 2020) $
+%    $Revision: 1575 $
 %
 % Copyright ?? 2011 The General Hospital Corporation (Boston, MA) "MGH"
 %

@@ -1,9 +1,10 @@
 #! /bin/bash
 
+# $Id: cat_batch_cat.sh 1515 2019-11-09 23:01:28Z gaser $
+
 ########################################################
 # global parameters
 ########################################################
-# $Id: cat_batch_cat.sh 1361 2018-08-31 08:44:57Z gaser $
 
 matlab=matlab   # you can use other matlab versions by changing the matlab parameter
 defaults_file=""

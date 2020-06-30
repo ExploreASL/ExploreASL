@@ -26,20 +26,20 @@ function [Ycls,Yp0b] = cat_main_cleanup(Ycls,prob,Yl1b,Ymb,extopts,inv_weighting
   % This part removes menignes next to the skull and between large 
   % structes.
   % ------------------------------------------------------------------
-  Yvt  = cat_vol_morph(NS(Yl1b,LAB.VT) | NS(Yl1b,LAB.BG),'d',vxv*3);  % ventricle ... no cleanup here
+  Yvt  = cat_vol_morph(NS(Yl1b,LAB.VT) | NS(Yl1b,LAB.BG),'dd',vxv*3);  % ventricle ... no cleanup here
   Yp0  = single(prob(:,:,:,1))/255*2 + single(prob(:,:,:,2))/255*3 + single(prob(:,:,:,3))/255;
-  Ybd  = cat_vbdist(single(~cat_vol_morph(Yp0>0,'lc',vxv)),true(size(Yp0)),vx_vol);
-  Ybd  = cat_vbdist(single(~cat_vol_morph(Yp0>1.5 | Ybd>8,'lc',vxv)),true(size(Yp0)),vx_vol);
-  Ycbp = cat_vol_morph(NS(Yl1b,LAB.CB),'d',cleanupdist*vxv);          % next to the cerebellum
-  Ycbn = cat_vol_morph(NS(Yl1b,LAB.CB),'e',0.2*cleanupdist*vxv);      % not to deep in the cerebellum
-  Ylhp = cat_vol_morph(Yl1b==1 & Yp0<2.1,'d',cleanupdist*vxv*2);      % GM next to the left hemisphere 
-  Yrhp = cat_vol_morph(Yl1b==2 & Yp0<2.1,'d',cleanupdist*vxv*2);      % GM next to the righ hemishpere
+  Ybd  = cat_vbdist(single(~cat_vol_morph(Yp0>0,'ldc',vxv)),true(size(Yp0)),vx_vol);
+  Ybd  = cat_vbdist(single(~cat_vol_morph(Yp0>1.5 | Ybd>8,'ldc',vxv)),true(size(Yp0)),vx_vol);
+  Ycbp = cat_vol_morph(NS(Yl1b,LAB.CB),'dd',cleanupdist*vxv);          % next to the cerebellum
+  Ycbn = NS(Yl1b,LAB.CB); %cat_vol_morph(NS(Yl1b,LAB.CB),'de',min(1,0.2*cleanupdist*vxv));      % not to deep in the cerebellum
+  Ylhp = cat_vol_morph(Yl1b==1 & Yp0<2.1,'dd',cleanupdist*vxv*2);      % GM next to the left hemisphere 
+  Yrhp = cat_vol_morph(Yl1b==2 & Yp0<2.1,'dd',cleanupdist*vxv*2);      % GM next to the righ hemishpere
   Yroi = Ybd<cleanupdist*2 | ...                                      % next to the brain mask
          (~Ycbn & Ycbp & (Ylhp | Yrhp)) | ...                         % between the cortex and the cerebellum                       
          (Ylhp & Yrhp) | ...                                          % between left and right hemisphere
          NS(Yl1b,LAB.VT) | ...                                        % in the ventricle 
          (NS(Yl1b,LAB.BS) & Ycbp);                                    % between brainstem and crebellum
-  Yrbv = Yp0>0 & Ybd<6 & cat_vol_morph( (Ylhp & Yrhp) | (~Ycbn & Ycbp & (Ylhp | Yrhp)),'d',4);
+  Yrbv = Yp0>0 & Ybd<6 & cat_vol_morph( (Ylhp & Yrhp) | (~Ycbn & Ycbp & (Ylhp | Yrhp)),'dd',4);
   Yroi = (Yroi | Yrbv) & ~NS(Yl1b,LAB.BS) & ~Ycbn; 
   % bv
 %     Ycd  = cat_vbdist(single(Yp0>2.5 & Yl1b==LAB.CB),Ylhp & Yrhp,vx_vol);
@@ -57,17 +57,17 @@ function [Ycls,Yp0b] = cat_main_cleanup(Ycls,prob,Yl1b,Ymb,extopts,inv_weighting
   stime = cat_io_cmd('  Level 1 cleanup (brain masking)','g5','',extopts.verb,stime); %dispc=dispc+1;
   Yrw = Yp0>0 & Yroi & Ymb>1.1+Ybd/20 & ~NS(Yl1b,LAB.CB);             % basic region with cerebellum
   Yrw = Yrw | smooth3(Yrw)>0.4-0.3*cleanupstr;                        % dilate region
-  Ygw = cat_vol_morph(Yp0>=1.9 & ~Yrw,'lo',0); % even one is too much in adrophic brains :/ 
+  Ygw = cat_vol_morph(Yp0>=1.9 & ~Yrw,'ldo',0); % even one is too much in adrophic brains :/ 
   Yrw = Yrw | (Yp0>1 & Yroi & ~Ygw);                                  % further dilation
-  Yrw = Yrw & ~Yvt & ~cat_vol_morph(Ygw,'d',1); 
+  Yrw = Yrw & ~Yvt & ~cat_vol_morph(Ygw,'dd',1.5); 
   Yrw(smooth3(Yrw)<0.5+0.2*cleanupstr)=0; 
   Yrw(smooth3(Yrw)<0.5-0.2*cleanupstr)=0;                             % only larger objects
   if ~debug, clear Ygw Yroi; end
 
   %% update brain masks and class maps
-  Ybb = cat_vol_morph((Yp0>0 & ~Yrw) | Ybd>2,'lo',2/vxv);          
+  Ybb = cat_vol_morph((Yp0>0 & ~Yrw) | Ybd>2,'ldo',2/vxv);          
   Ybb(cat_vol_smooth3X(Ybb,2)>0.4 & ~Yrw)=1;
-  Ybb = cat_vol_morph(Ybb | Ybd>3,'lc',1/vxv); 
+  Ybb = cat_vol_morph(Ybb | Ybd>3,'ldc',1/vxv); 
   Ybb = single(Ybb); spm_smooth(Ybb,Ybb,0.6./vx_vol); Ybb = Ybb>1/3;
 
   %% correct to background
@@ -87,15 +87,15 @@ function [Ycls,Yp0b] = cat_main_cleanup(Ycls,prob,Yl1b,Ymb,extopts,inv_weighting
   stime = cat_io_cmd('  Level 2 cleanup (CSF correction)','g5','',extopts.verb,stime); %dispc=dispc+1;
   Yp0 = single(prob(:,:,:,1))/255*2 + single(prob(:,:,:,2))/255*3 + single(prob(:,:,:,3))/255;
   YM  = single(cat_vol_morph((prob(:,:,:,1) + prob(:,:,:,2))>(160 + 32*cleanupstr) & ...
-         ~cat_vol_morph(Yp0>1 & Yp0<1.5+cleanupstr/2,'o',vxv)  ,'l')); 
-  YM2 = cat_vol_morph(YM,'o',min(1,0.7/max(vx_vol)));
+         ~cat_vol_morph(Yp0>1 & Yp0<1.5+cleanupstr/2,'do',vxv)  ,'l')); 
+  YM2 = cat_vol_morph(YM,'do',min(1,0.7/max(vx_vol)));
   YM(NS(Yl1b,1) & YM2==0)=0;
   spm_smooth(YM,YM,0.6./vx_vol); % anisotropic smoothing!
   YM  = ( (YM<0.1*cleanupstr) ) & Ybb & ~Yvt & Ymb>0.25;
   prob(:,:,:,1)=min(prob(:,:,:,1),uint8(~YM*255));
   prob(:,:,:,2)=min(prob(:,:,:,2),uint8(~YM*255));
   prob(:,:,:,3)=max(prob(:,:,:,3),uint8( (YM | (Ybb & Yp0==0))*255));
-  Yp0  = single(prob(:,:,:,1))/255*2 + single(prob(:,:,:,2))/255*3 + single(prob(:,:,:,3))/255;
+  if debug, Yp0  = single(prob(:,:,:,1))/255*2 + single(prob(:,:,:,2))/255*3 + single(prob(:,:,:,3))/255; end %#ok<NASGU>
   
 
 
@@ -122,14 +122,14 @@ function [Ycls,Yp0b] = cat_main_cleanup(Ycls,prob,Yl1b,Ymb,extopts,inv_weighting
   stime = cat_io_cmd('  Level 3 cleanup (CSF/WM PVE)','g5','',extopts.verb,stime); %dispc=dispc+1;
   Yp0  = single(prob(:,:,:,1))/255*2 + single(prob(:,:,:,2))/255*3 + single(prob(:,:,:,3))/255;
   Ybs  = NS(Yl1b,LAB.BS) & Ymb>2/3;
-  YpveVB = cat_vol_morph(NS(Yl1b,LAB.VT) | Ybs,'d',2);                % ventricle and brainstem
-  YpveCC = cat_vol_morph(Yl1b==1,'d',3*vxv) & cat_vol_morph(Yl1b==2,'d',3*vxv) & ...
-           cat_vol_morph(NS(Yl1b,LAB.VT),'d',2);                      % corpus callosum
+  YpveVB = cat_vol_morph(NS(Yl1b,LAB.VT) | Ybs,'dd',2);                % ventricle and brainstem
+  YpveCC = cat_vol_morph(Yl1b==1,'dd',3*vxv) & cat_vol_morph(Yl1b==2,'dd',3*vxv) & ...
+           cat_vol_morph(NS(Yl1b,LAB.VT),'dd',2);                      % corpus callosum
   Ynpve  = smooth3(NS(Yl1b,LAB.BG) | NS(Yl1b,LAB.TH))>0.3;            % no subcortical structure 
   Yroi = (YpveVB | YpveCC) & ~Ynpve & ...
-         cat_vol_morph(Yp0==3,'d',2) & cat_vol_morph(Yp0==1,'d',2) & ...
+         cat_vol_morph(Yp0==3,'dd',2*vxv) & cat_vol_morph(Yp0==1,'dd',2*vxv) & ...
          Yp0<3 & Yp0>1 & ...
-         smooth3((Yp0<3 & Yp0>1) & ~cat_vol_morph(Yp0<3 & Yp0>1,'o',1))>0.1;
+         smooth3((Yp0<3 & Yp0>1) & ~cat_vol_morph(Yp0<3 & Yp0>1,'do',1.5*vxv))>0.1;
   clear YpveVB YpveCC Ybs Ynpve;         
   Yncm = (3-Yp0)/2.*Yroi; 
 

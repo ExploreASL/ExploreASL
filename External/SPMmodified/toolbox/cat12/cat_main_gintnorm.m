@@ -38,7 +38,7 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
 %   Department of Neurology
 %   University Jena
 % ______________________________________________________________________
-% $Id: cat_main_gintnorm.m 1342 2018-07-30 08:09:14Z gaser $
+% $Id: cat_main_gintnorm.m 1575 2020-03-03 11:49:34Z dahnke $
   dbs   = dbstatus; debug = 0; for dbsi=1:numel(dbs), if strcmp(dbs(dbsi).name,mfilename); debug = 1; break; end; end
 
  
@@ -59,9 +59,8 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     %T3thx = interp1(T3thx,1:1/isc:numel(T3th)*isc,'spline'); %pchip');
 
     for i=2:numel(T3th)
-		xASL_TrackProgress(i,numel(T3th)); %%% ExploreASL fix
-		M = Ysrc>T3th(i-1) & Ysrc<=T3th(i);
-		Ym(M(:)) = T3thx(i-1) + (Ysrc(M(:)) - T3th(i-1))/diff(T3th(i-1:i))*diff(T3thx(i-1:i));
+      M = Ysrc>T3th(i-1) & Ysrc<=T3th(i);
+      Ym(M(:)) = T3thx(i-1) + (Ysrc(M(:)) - T3th(i-1))/diff(T3th(i-1:i))*diff(T3thx(i-1:i));
     end
     M  = Ysrc>=T3th(end); 
     Ym(M(:)) = numel(T3th)/isc/6 + (Ysrc(M(:)) - T3th(i))/diff(T3th(end-1:end))*diff(T3thx(i-1:i));    
@@ -88,7 +87,7 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
   
   %% initial thresholds and intensity scaling
   T3th3 = [clsint(3) clsint(1) clsint(2)];
-  BGth  = min(mean(Ysrc(Ycls{6}(:)>192)),clsint(6));
+  BGth  = min(mean(Ysrc(Ycls{end}(:)>192)),clsint(end));
   
   %% -------------------------------------------------------------------
   %  intensity checks and noise contrast ratio (contrast part 1)
@@ -147,7 +146,6 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     
     Ym = Ysrc+0; 
     for i=2:numel(T3th)
-		xASL_TrackProgress(i,numel(T3th));%%% ExploreASL fix
       M = Ysrc>T3th(i-1) & Ysrc<=T3th(i);
       Ym(M(:)) = T3thx(i-1) + (Ysrc(M(:)) - T3th(i-1))/diff(T3th(i-1:i))*diff(T3thx(i-1:i));
     end
@@ -228,13 +226,13 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     %%
     BGmin = min(Ysrc(~isnan(Ysrc(:)) & ~isinf(Ysrc(:)))); 
     T3th3(1) = min( min(clsints(3,0)) , mean(Ysrc(Ycls{3}(:)>240))); 
-    BGcon = max([BGmin*1.1,T3th3(1) - cat_stat_nanmean(diff(T3th3)),median(Ysrc(Ycls{6}(:)>128))]);
+    BGcon = max([BGmin*1.1,T3th3(1) - cat_stat_nanmean(diff(T3th3)),median(Ysrc(Ycls{end}(:)>128))]);
     %T3th3 = [max( min(res.mn(res.lkp==3 & res.mg'>0.3/sum(res.lkp==3)))*.05 + .95*max(res.mn(res.lkp==2 & res.mg'>0.3/sum(res.lkp==2))) , ...
     %              min(res.mn(res.lkp==3 & res.mg'>0.3/sum(res.lkp==3)))) ...
     %         max(res.mn(res.lkp==1 & res.mg'>0.1)) ...
     %         max(res.mn(res.lkp==2 & res.mg'>0.1))];
     T3th  = [BGmin ... minimum
-             BGcon ... cat_stat_nanmean background (MT contrast with strong background noise)
+             min(BGcon,BGmin*0.1+0.9*T3th3(1)) ... cat_stat_nanmean background (MT contrast with strong background noise)
              T3th3 ... csf gm wm 
              max(T3th3) + abs(diff(T3th3([1,numel(T3th3)])/2)) ... higher
              max(T3th3(end) + abs(diff(T3th3([1,numel(T3th3)])/2)) , ... maximum
@@ -364,7 +362,6 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     if debug
         Ym = Ysrcr+0;
         for i=2:numel(T3th)
-			xASL_TrackProgress(i,numel(T3th));%%% ExploreASL fix
           M = Ysrc>T3th(i-1) & Ysrc<=T3th(i);
           Ym(M(:)) = T3thx(i-1) + (Ysrc(M(:)) - T3th(i-1))/diff(T3th(i-1:i))*diff(T3thx(i-1:i));
         end
@@ -375,10 +372,15 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     end
   
 
-  else    
-    error('CAT:cat_main:badTissueContrast',...
-      sprintf('Bad tissue contrast (C=%0.2f, G=%0.2f, W=%0.2f)\n',...
-        T3th3(1),T3th3(2),T3th3(3)),numel(cat_warnings)==0); %#ok<SPERR>
+  else 
+    error('cat_main:badTissueContrast',...
+      sprintf([...
+        'Bad tissue contrast (BG=%0.2f, CSF=%0.2f, GM=%0.2f, WM=%0.2f): \n' ...
+        '  This can be the result of (i) an improper SPM segmentation caused by \n' ...
+        '  failed affine registration, (ii) improper image properties with low \n' ...
+        '  contrast-to-noise ratio, or (iii) by preprocessing error. \n' ...
+        '  Please check image orientation and quality. '], ...
+        BGth,T3th3(1),T3th3(2),T3th3(3)),numel(cat_warnings)==0); %#ok<SPERR>
   end
 
   
@@ -389,9 +391,7 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
   Tth.T3thx = T3thx;
     
   Ym = Ysrcr+0; 
-  fprintf('intensity scaling for gradient estimation:   ');
   for i=2:numel(T3th)
-	  xASL_TrackProgress(i,numel(T3th));
     M = Ysrcr>T3th(i-1) & Ysrcr<=T3th(i);
     Ym(M(:)) = T3thx(i-1) + (Ysrcr(M(:)) - T3th(i-1))/diff(T3th(i-1:i))*diff(T3thx(i-1:i));
   end
@@ -461,33 +461,35 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     
     
     %% skull-stripping warning
-    skulltest = (median(Ysrc(Ycls{5}(:)>192 & Ysrc(:)>T3th(2))) < ... 
-       median(Ysrc(Ycls{3}(:)>192 & Ysrc(:)>0))); 
-    if exist('cat_warnings','var') &&  (isnan(skulltest) || skulltest)
-      
-      % Skull-Stripped images can of course lead to problems with to strong
-      % brain masks, but the bigger problem here is that the CSF intensity 
-      % threshold were maybe affected. 
-     
-      % If a skull-stripping was used, we will use this as initial mask 
-      % that we close and dilate a little bit. 
-      % Now, the original image can be corrected in the stripped area, 
-      % because some images have missing points (slicewise). Becuase of 
-      % the gaussian functions a hard boundary is better.
-      if Ymp0diff<0.05 && numel(Ysrc>0)/numel(Ysrc)<0.8
-        Yb    = smooth3(cat_vol_morph(cat_vol_morph(Ysrc>0,'lc',3),'d'))>0.5;
-        CSFth = min([nanmedian(Ysrc(Ycls{3}(:)>240 & Ysrc(:)>0)), ... 
-                     nanmedian(Ysrc(Ycls{3}(:)>192 & Ysrc(:)>0)), ... 
-                     nanmedian(Ysrc(Ycls{3}(:)>128 & Ysrc(:)>0)), ...
-                     cat_stat_nanmean(Ysrc(Ysrc>0))*0.5])*0.9; % 
-        Ysrc  = cat_vol_laplace3R(max(CSFth,Ysrc),Yb & Ysrc==0,0.2) .* Yb;
-         cat_warnings = cat_io_addwarning(cat_warnings,...
-           'CAT:cat_main:SkullStripped',...
-           'Skull-stripped input image detected! Try boundary cleanup.',numel(cat_warnings)==0);  
-      else
-         cat_warnings = cat_io_addwarning(cat_warnings,...
-           'CAT:cat_main:SkullStripped',...
-           'Skull-stripped input image?',numel(cat_warnings)==0); 
+    if numel(Ycls)>4
+      skulltest = (median(Ysrc(Ycls{5}(:)>192 & Ysrc(:)>T3th(2))) < ... 
+         median(Ysrc(Ycls{3}(:)>192 & Ysrc(:)>0))); 
+      if exist('cat_warnings','var') &&  (isnan(skulltest) || skulltest)
+
+        % Skull-Stripped images can of course lead to problems with to strong
+        % brain masks, but the bigger problem here is that the CSF intensity 
+        % threshold were maybe affected. 
+
+        % If a skull-stripping was used, we will use this as initial mask 
+        % that we close and dilate a little bit. 
+        % Now, the original image can be corrected in the stripped area, 
+        % because some images have missing points (slicewise). Becuase of 
+        % the gaussian functions a hard boundary is better.
+        if Ymp0diff<0.05 && numel(Ysrc>0)/numel(Ysrc)<0.8
+          Yb    = smooth3(cat_vol_morph(cat_vol_morph(Ysrc>0,'lc',3),'d'))>0.5;
+          CSFth = min([nanmedian(Ysrc(Ycls{3}(:)>240 & Ysrc(:)>0)), ... 
+                       nanmedian(Ysrc(Ycls{3}(:)>192 & Ysrc(:)>0)), ... 
+                       nanmedian(Ysrc(Ycls{3}(:)>128 & Ysrc(:)>0)), ...
+                       cat_stat_nanmean(Ysrc(Ysrc>0))*0.5])*0.9; % 
+          Ysrc  = cat_vol_laplace3R(max(CSFth,Ysrc),Yb & Ysrc==0,0.2) .* Yb;
+           cat_warnings = cat_io_addwarning(cat_warnings,...
+             'CAT:cat_main:SkullStripped',...
+             'Skull-stripped input image detected! Try boundary cleanup.',numel(cat_warnings)==0);  
+        else
+           cat_warnings = cat_io_addwarning(cat_warnings,...
+             'CAT:cat_main:SkullStripped',...
+             'Skull-stripped input image?',numel(cat_warnings)==0); 
+        end
       end
     end
     
@@ -502,10 +504,10 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     gth   = max(0.06,min(0.3,noise*6));
     %Ybm   = cat_vol_morph(Ycls{6}>240 & Ysrc<min(T3th),'lc'); 
     BGmin = min(Ysrc(~isnan(Ysrc(:)) & ~isinf(Ysrc(:)))); 
-    BGcon = max([BGmin*1.1,T3th3(1) - cat_stat_nanmean(diff(T3th3)),median(Ysrc(Ycls{6}(:)>128))]);
+    BGcon = max([BGmin*1.1,T3th3(1) - cat_stat_nanmean(diff(T3th3)),median(Ysrc(Ycls{end}(:)>128))]);
     BMth  = max(BGmin,min(BGcon,T3th(1) - diff(T3th(1:2)))); %max(0.01,cat_stat_nanmedian(Ysrc(Ybm(:))));
     Ywm   = (Ycls{2}>128  & Yg<gth) | ((Ym-Ydiv*2)>(1-0.05*cat_stat_nanmean(vx_vol)) & Yb2); % intensity | structure (neonate contast problem)
-    Ycm   = smooth3((Ycls{3}>240 | Ym<0.4) & Yg<gth*3 & Yb & ~Ywm & Ycls{1}<8 & Ysrc>BMth & Ym<0.5)>0.5; % important to avoid PVE!
+    Ycm   = smooth3((Ycls{3}>240 | Ym<0.4) & Yg<gth*3 & Yb & ~Ywm & Ycls{1}<8 & Ysrc>BMth & Ym<0.7)>0.5; % important to avoid PVE!
 
     % If SPM get totaly wrong maps due to bad image orientations our 
     % segment were incorrect too (or empty) and peak estimation fail.
@@ -528,8 +530,8 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
    %
     if any(isnan(T3th_cls)) 
       fprintf('\n');
-      error('CAT:cat_main:cat_pre_gintnorm:nobrain',...
-        'Bad SPM-Segmentation. Check image orientation!');
+      error('cat_main:cat_main_gintnorm:nobrain',...
+        'Bad SPM-Segmentation. Please check image orientation!\n');
     end
     % median tissue peaks
     

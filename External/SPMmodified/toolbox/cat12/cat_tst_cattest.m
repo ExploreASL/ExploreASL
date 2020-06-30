@@ -1,4 +1,4 @@
-function cat_tst_cattest(job)
+function [mainbatch,perror] = cat_tst_cattest(job)
 %  CAT test script. 
 %  _____________________________________________________________________
 %  
@@ -7,9 +7,30 @@ function cat_tst_cattest(job)
 %  functions with default (and modified) parameters for one (non)human 
 %  subject (or multiple) subjects.
 % 
-%   cat_tst_cattest(job)
-%   
+%   [mainbatch,perror] = cat_tst_cattest(job)
 %
+%   job
+%    .datalevel  .. test diffenent datasets
+%                     working - {'basic'}
+%                     planned - {'human','long','group','nonhuman'}
+%    .paralevel  .. test different parameter settings
+%                     1 - default, 2 - userlevel, 3 - full
+%    .userlevel  .. test specific userlevel
+%                     0 - default, 1 - expert, 2 - developer
+%    .debug      .. using debuging mode
+%
+%  Examples:
+%    cat_tst_cattest(struct('datalevel','basic','paralevel',1,'userlevel',0))
+%  _____________________________________________________________________
+%  Robert Dahnke
+%  $Id: cat_tst_cattest.m 1571 2020-02-27 14:51:11Z gaser $
+
+ 
+
+%  _____________________________________________________________________
+%
+%  Development framework / versions:
+%  ---------------------------------------------------------------------
 %  Data:
 %  1) Human:
 %   * Adult:            single_T1subj  (Collins brain)
@@ -27,18 +48,6 @@ function cat_tst_cattest(job)
 %   * Oldworld Monkey:  rhesus_caretF99 (atlas)
 %                       baboon_F3S12 / mangabey_fso
 %
-%  Examples:
-%    cat_tst_cattest(struct('datalevel','basic','paralevel',1,'userlevel',0))
-%  _____________________________________________________________________
-%  Robert Dahnke
-%  $Id: cat_tst_cattest.m 1118 2017-03-17 15:57:00Z gaser $
-
- 
-
-%  _____________________________________________________________________
-%
-%  Development framework / versions:
-%  ---------------------------------------------------------------------
 %  Further scripts:
 %    *) Volume mapping from template to surface space
 %       Volume mapping from surface to template space
@@ -83,6 +92,8 @@ function cat_tst_cattest(job)
 %    - motion artifacts
 %  * Adding of highres data? 
 %    - CG, RD, Tohoku, ... with resolution test?
+%  # delete data
+%  # evaluation concept? > GT? > BWP?
 %  _____________________________________________________________________
 
 
@@ -90,7 +101,8 @@ function cat_tst_cattest(job)
   clc
   %clear
   spm_clf('Interactive'); 
-  
+
+  if nargin==0, help cat_tst_cattest; return; end 
 
   if ~exist('job','var'), job=struct(); end
   [cv,rv] = cat_version;
@@ -136,39 +148,95 @@ function cat_tst_cattest(job)
   % test parameter (especially for CAT preprocessing)
   def.para = {
     ... 'scriptname', [batchnumber], [testlevel], 'variable', {further values};  % comments
-    ''                       1  0 ''                                             ''           {0};              % default
-    ''                       1  0 'spm.tools.cat.estwrite.extopts.expertimental' 'exp'        {1};              % default
+    ''                       1  0 ''                                             ''           {0};                       % default
+    ...
+    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.opts.tpm'                           'tpm' ...       
+      {{fullfile(spm('dir'),'TPM','TPM.nii')} ...  
+       {fullfile(spm('dir'),'toolbox','cat12','templates_volumes','TPM_Age11.5.nii')} ...                                     % children
+       {fullfile(spm('dir'),'TPM','TPM.nii'); ...                                                                            % multi-TPM
+        fullfile(spm('dir'),'toolbox','cat12','templates_volumes','TPM_ba0_ha0.nii'); ...
+        fullfile(spm('dir'),'toolbox','cat12','templates_volumes','TPM_ba0_ha0.nii')} };     
+    ... SPM bias
+    ... SPM acc
     ... == parameter in default GUI ==
-    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.vox'           'vox'        {2 1};            % def=1.5;
-    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.APP'           'APP'        {0 4};            % def=1;
-    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.LASstr'        'LASstr'     {0.0 0.01 1.0};   % def=0.5;
-    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.gcutstr'       'gcutstr'    {0.0 0.01 1.0};   % def=0.5;
-    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.cleanupstr'    'cleanupstr' {0.0 0.01 1.0};   % def=0.5;
+    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.vox'                        'vox'        {2 1};            % def=1.5;
+    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.segmentation.APP'           'APP'        {0 1 2 1144};     % def=1070;
+    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.segmentation.LASstr'        'LASstr'     {0 0.01 1.0};     % def=0.5;
+    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.segmentation.gcutstr'       'gcutstr'    {0 0.5 -1};       % def=2;
+    ...'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.registration.darteltpm'  'template'   { ... 
+    ...'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.registration.darteltpm'  'template'   { ... 
+    ...  {fullfile(spm('dir'),'toolbox','cat12','templates_volumes','Template_0_IXI555_MNI152_GS.nii')}};   % Shooting template
+    'cat12_101_MAIN_segment' 1  1 'spm.tools.cat.estwrite.extopts.registration.regstr'        'regstr'     {0.5 4};          % def=0;  
     ... == parameter in expert GUI ==
-    'cat12_101_MAIN_segment' 1  2 'spm.tools.cat.estwrite.extopts.APP'           'APP'        {2 3 5};          % def=1;
-    'cat12_101_MAIN_segment' 1  2 'spm.tools.cat.estwrite.extopts.sanlm'         'sanlm'      {0 2};            % def=1; 0=none, 2=ISAR
-    'cat12_101_MAIN_segment' 1  2 'spm.tools.cat.estwrite.extopts.NCstr'         'NCstr'      {0.0 eps 1.0};    % def=inf; 
-    'cat12_101_MAIN_segment' 1  2 'spm.tools.cat.estwrite.extopts.darteltpm'     'shooting'   { ... 
-      {fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm','Template_0_IXI555_MNI152_GS.nii')}};   % Shooting template
+    'cat12_101_MAIN_segment' 1  2 'spm.tools.cat.estwrite.extopts.segmentation.cleanupstr'    'cleanupstr' {0.0 0.01 1.0};   % def=0.5;
+    %{
+    'cat12_101_MAIN_segment' 1  2 'spm.tools.cat.estwrite.extopts.segmentation.NCstr'         'NCstr'      {0 1 2 4};        % def=inf; 
     ... the restype and resval variable were used in the GUI to create the restypes structure that does not exist in the cat_defaults file
-    'cat12_101_MAIN_segment' 1  2 'spm.tools.cat.estwrite.extopts.restypes'    'restypes'   { ...
+    'cat12_101_MAIN_segment' 1  2 'spm.tools.cat.estwrite.extopts.registration.restypes'      'restypes'   { ...
         struct('native',{})        ... native resolution - no changes
-        struct('fixed' ,[1.0 0.0]) ... interpolation to 1 mm
-        struct('best'  ,[0.8 0.1]) ... interpolation to at least to 0.8 mm 
+        struct('fixed' ,[1.0 0.1]) ... interpolation to 1 mm
+        struct('fixed' ,[0.8 0.1]) ... interpolation to 0.8 mm 
+        struct('best'  ,[0.5 0.1]) ... interpolation to best resolution but not more than 0.5 mm 
       };       
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.regstr'        'regstr'     {4};              % def=0.5;  
     ... == parameter in developer GUI ==
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.regstr'        'regstr'     {[eps 1 2 3]};    % def=0.5;  
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.pbtres'        'pbtres'     {1.00 0.25};      % def=0.5;  
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.mrf'           'mrf'        {0.00 0.30};      % def=1; auto  
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.BVCstr'        'BVCstr'     {0.5 0.01 1.0};   % def=0;
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.WMHCstr'       'WMHCstr'    {0.0 0.01 1.0};   % def=0.5;
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.WMHC'          'WMHC'       {0 2 3};          % def=1;
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.tca'           'tca'        {0 2};            % def=1;
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.subfolders'    'subfolders' {0};              % def=1;
-    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.verb'          'verb'       {0 1 3};          % def=2;
-    ... ignoreErrors
-    };
+    'cat12_101_MAIN_segment' 1  2 'spm.tools.cat.estwrite.extopts.surface.pbtres'             'pbtres'     {1.00 0.25};      % def=0.5;  
+    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.segmentation.mrf'           'mrf'        {0.00 0.30};      % def=1; auto  
+    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.segmentation.BVCstr'        'BVCstr'     {0.5 0.01 1.0};   % def=0;
+    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.segmentation.WMHCstr'       'WMHCstr'    {0.0 0.01 1.0};   % def=0.5;
+    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.segmentation.WMHC'          'WMHC'       {0 2 3};          % def=1;
+    ...'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.tca'           'tca'        {0 2};            % def=1;
+    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.admin.subfolders'           'subfolders' {0};              % def=1;
+    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.admin.verb'                 'verb'       {0 1 3};          % def=2;
+    ... admin options
+    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.admin.expertimental'        'expertimental'     {1};              % def=0;
+    'cat12_101_MAIN_segment' 1  3 'spm.tools.cat.estwrite.extopts.admin.ignoreErrors'         'ignoreErrors'      {1};              % def=0;
+    ...
+    %}
+    ... 
+    ... S1173
+    %{
+    'cat12_105_MAIN_segment_1173plus' 1  1 'spm.tools.cat.estwrite1173plus.opts.tpm'                           'tpm' ...       
+      {{fullfile(spm('dir'),'TPM','TPM.nii')} ...  
+       {fullfile(spm('dir'),'toolbox','cat12','templates_volumes','TPM_Age11.5.nii')} ...                                     % children
+       {fullfile(spm('dir'),'TPM','TPM.nii'); ...                                                                            % multi-TPM
+        fullfile(spm('dir'),'toolbox','cat12','templates_volumes','TPM_ba0_ha0.nii'); ...
+        fullfile(spm('dir'),'toolbox','cat12','templates_volumes','TPM_ba0_ha0.nii')} };     
+    ... SPM bias
+    ... SPM acc
+    ... == parameter in default GUI ==
+    'cat12_105_MAIN_segment_1173plus' 1  1 'spm.tools.cat.estwrite1173plus.extopts.vox'                        'vox'        {2 1};            % def=1.5;
+'cat12_105_MAIN_segment_1173plus' 1  1 'spm.tools.cat.estwrite1173plus.extopts.APP'                        'APP'        {4}; %0 1 2 3 4};     % def=1070; ERROR;
+    'cat12_105_MAIN_segment_1173plus' 1  1 'spm.tools.cat.estwrite1173plus.extopts.LASstr'                     'LASstr'     {0 0.01 1.0};     % def=0.5; OK;
+    'cat12_105_MAIN_segment_1173plus' 1  1 'spm.tools.cat.estwrite1173plus.extopts.gcutstr'                    'gcutstr'    {0 0.5 -1};       % def=2; OK;
+    ...'cat12_105_MAIN_segment_1173plus' 1  1 'spm.tools.cat.estwrite1173plus.extopts.registration.darteltpm'  'template'   { ... 
+    ...'cat12_105_MAIN_segment_1173plus' 1  1 'spm.tools.cat.estwrite1173plus.extopts.registration.darteltpm'  'template'   { ... 
+    ...  {fullfile(spm('dir'),'toolbox','cat12','templates_volumes','Template_0_IXI555_MNI152_GS.nii')}};   % Shooting template
+    'cat12_105_MAIN_segment_1173plus' 1  1 'spm.tools.cat.estwrite1173plus.extopts.registration.regstr'        'regstr'     {0.5 4};          % def=0; OK;  
+    ... == parameter in expert GUI ==
+    %}
+    %{
+    'cat12_105_MAIN_segment_1173plus' 1  2 'spm.tools.cat.estwrite1173plus.extopts.segmentation.cleanupstr'    'cleanupstr' {0.0 0.01 1.0};   % def=0.5;
+    'cat12_105_MAIN_segment_1173plus' 1  2 'spm.tools.cat.estwrite1173plus.extopts.segmentation.NCstr'         'NCstr'      {0 1 2 4};        % def=inf; 
+    ... the restype and resval variable were used in the GUI to create the restypes structure that does not exist in the cat_defaults file
+    'cat12_105_MAIN_segment_1173plus' 1  2 'spm.tools.cat.estwrite1173plus.extopts.registration.restypes'      'restypes'   { ...
+        struct('native',{})        ... native resolution - no changes
+        struct('fixed' ,[1.0 0.1]) ... interpolation to 1 mm
+        struct('fixed' ,[0.8 0.1]) ... interpolation to 0.8 mm 
+        struct('best'  ,[0.5 0.1]) ... interpolation to best resolution but not more than 0.5 mm 
+      };       
+    ... == parameter in developer GUI ==
+    'cat12_105_MAIN_segment_1173plus' 1  2 'spm.tools.cat.estwrite1173plus.extopts.surface.pbtres'             'pbtres'     {1.00 0.25};      % def=0.5;  
+    'cat12_105_MAIN_segment_1173plus' 1  3 'spm.tools.cat.estwrite1173plus.extopts.segmentation.mrf'           'mrf'        {0.00 0.30};      % def=1; auto  
+    'cat12_105_MAIN_segment_1173plus' 1  3 'spm.tools.cat.estwrite1173plus.extopts.segmentation.BVCstr'        'BVCstr'     {0.5 0.01 1.0};   % def=0;
+    'cat12_105_MAIN_segment_1173plus' 1  3 'spm.tools.cat.estwrite1173plus.extopts.segmentation.WMHCstr'       'WMHCstr'    {0.0 0.01 1.0};   % def=0.5;
+    'cat12_105_MAIN_segment_1173plus' 1  3 'spm.tools.cat.estwrite1173plus.extopts.segmentation.WMHC'          'WMHC'       {0 2 3};          % def=1;
+    ... admin options
+    'cat12_105_MAIN_segment_1173plus' 1  3 'spm.tools.cat.estwrite1173plus.extopts.admin.subfolders'           'subfolders' {0};              % def=1;
+    'cat12_105_MAIN_segment_1173plus' 1  3 'spm.tools.cat.estwrite1173plus.extopts.admin.verb'                 'verb'       {0 1 3};          % def=2;
+    'cat12_105_MAIN_segment_1173plus' 1  3 'spm.tools.cat.estwrite1173plus.extopts.admin.expertimental'        'expertimental'     {1};              % def=0;
+    'cat12_105_MAIN_segment_1173plus' 1  3 'spm.tools.cat.estwrite1173plus.extopts.admin.ignoreErrors'         'ignoreErrors'      {1};              % def=0;
+    %}
+    }; 
   def.userlevel   = ''; 
   def.datalevel   = ''; 
   def.paralevel   = ''; 
@@ -274,16 +342,18 @@ function cat_tst_cattest(job)
       end
     case 1 
       for pi = size(job.para,1):-1:1
-        if (job.para{pi,3}-1)~=job.userlevel, job.para(pi,:) = []; end
+        if (job.para{pi,3})==job.userlevel, job.para(pi,:) = []; end
       end
+      job.para(1,:) = []; 
     case 2 
       for pi = size(job.para,1):-1:1
         if (job.para{pi,3}-1)>job.userlevel, job.para(pi,:) = []; end
       end
+      job.para(1,:) = []; 
   end
   % 
   fprintf('Testparameter:\n'); 
-  for pi=1:numel(job.para(:,5)), fprintf('  %s\n',job.para{pi,5}); end
+  for pi=1:numel(job.para(:,5)), fprintf('  %s:%s\n',job.para{pi,1},job.para{pi,5}); end
   fprintf('\n');
   
   
@@ -318,7 +388,16 @@ function cat_tst_cattest(job)
       files = [files_human; files_greaterapes; files_oldworldmonkeys]; 
       if isempty(files), return; end
 
-
+      clearvars cat cat1173 cat1173plus
+      cat_get_defaults; cat_get_defaults1173; cat_get_defaults1173plus;
+      
+      files_human1173     = spm_file(files_human,'prefix','S1173_');
+      files_human1173plus = spm_file(files_human,'prefix','S1173plus_');
+      for fi = 1:numel(files_human1173)
+        copyfile(files_human{fi},files_human1173{fi}); 
+        copyfile(files_human{fi},files_human1173plus{fi}); 
+      end
+      
       % cat subdirs
       if cat_get_defaults('extopts.subfolders')
         mridir    = 'mri';
@@ -347,8 +426,12 @@ function cat_tst_cattest(job)
         [pp,ffbi]  = fileparts(batches{bi}); 
 
         % load batch
-        eval(ffbi);
-
+        try
+          eval(ffbi);
+        catch
+          fprintf('eval batch %d failed: %s\n',bi,ffbi);
+          continue
+        end
         if strcmp(job.para{pi,1},ffbi)
           if isnumeric(job.para{pi,6}{ppi})
             eval(sprintf('matlabbatch{%d}.%s = [%s];',job.para{pi,2},job.para{pi,4},sprintf('%f ',job.para{pi,6}{ppi})));
@@ -366,30 +449,38 @@ function cat_tst_cattest(job)
         % use only 2 mm processing with 
         if job.fixres 
           for mbi=numel(matlabbatch):-1:1; 
+            pp = getpp(matlabbatch,mbi);
+%%
              if iscell(matlabbatch{mbi})
                % SPM surf pipeline does not contrain further test 
                for smbi=1:numel(matlabbatch{mbi})
-                 if isfield(matlabbatch{mbi}{smbi},'spm') && ...
-                    isfield(matlabbatch{mbi}{smbi}.spm,'tools') && ...
-                    isfield(matlabbatch{mbi}{smbi}.spm.tools,'cat') && ...
-                    isfield(matlabbatch{mbi}{smbi}.spm.tools.cat,'estwrite_spm') && ...
-                    isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm,'extopts') && ...
-                    isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm.extopts,'vox') && ...
-                    ~matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm.output.surface
-                   matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm.extopts.vox      = job.fixres;
-                   matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm.extopts.restypes = struct('fixed',[job.fixres 0]); 
+                 if ~isempty(pp) && isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp),'extopts') && ...
+                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp),'output') %&& ...
+                   %isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).output,'surface') && ...
+                   %~matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).output.surface
+                   if isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).extopts,'segmentation') && ...
+                      isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).extopts.segmentation,'vox') 
+                     matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).extopts.segmentation.vox      = job.fixres;
+                     matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).extopts.segmentation.restypes = struct('fixed',[job.fixres 0]); 
+                   elseif isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).extopts,'vox') 
+                     matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).extopts.vox      = job.fixres;
+                    matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).extopts.restypes = struct('fixed',[job.fixres 0]); 
+                   end
                  end
                end
              else
-               if isfield(matlabbatch{mbi},'spm') && ...
-                  isfield(matlabbatch{mbi}.spm,'tools') && ...
-                  isfield(matlabbatch{mbi}.spm.tools,'cat') && ...
-                  isfield(matlabbatch{mbi}.spm.tools.cat,'estwrite') && ...
-                  isfield(matlabbatch{mbi}.spm.tools.cat.estwrite,'extopts') && ...
-                  isfield(matlabbatch{mbi}.spm.tools.cat.estwrite.extopts,'vox') && ...
-                  ~matlabbatch{mbi}.spm.tools.cat.estwrite.output.surface
-                 matlabbatch{mbi}.spm.tools.cat.estwrite.extopts.vox      = job.fixres;
-                 matlabbatch{mbi}.spm.tools.cat.estwrite.extopts.restypes = struct('fixed',[job.fixres 0]); 
+               if ~isempty(pp) && isfield(matlabbatch{mbi}.spm.tools.cat.(pp),'extopts') && ...
+                  isfield(matlabbatch{mbi}.spm.tools.cat.(pp),'output') %&& ...
+                  %isfield(matlabbatch{mbi}.spm.tools.cat.(pp).output,'surface') && ...
+                  %~matlabbatch{mbi}.spm.tools.cat.(pp).output.surface
+                 if isfield(matlabbatch{mbi}.spm.tools.cat.(pp).extopts,'segmentation') && ...
+                    isfield(matlabbatch{mbi}.spm.tools.cat.(pp).extopts.segmentation,'vox')
+                   matlabbatch{mbi}.spm.tools.cat.(pp).extopts.segmentation.vox      = job.fixres;
+                   matlabbatch{mbi}.spm.tools.cat.(pp).extopts.segmentation.restypes = struct('fixed',[job.fixres 0]); 
+                 elseif isfield(matlabbatch{mbi}.spm.tools.cat.(pp).extopts,'vox')
+                   matlabbatch{mbi}.spm.tools.cat.(pp).extopts.vox      = job.fixres;
+                   matlabbatch{mbi}.spm.tools.cat.(pp).extopts.restypes = struct('fixed',[job.fixres 0]); 
+                 end
                end
              end
           end
@@ -398,50 +489,47 @@ function cat_tst_cattest(job)
        
         % set/unset surface processing
         if strcmp(job.para{pi,5},'pbtres') || isempty(job.para{pi,5})
-          for mbi=numel(matlabbatch):-1:1; 
+          for mbi=numel(matlabbatch):-1:1
+            pp = getpp(matlabbatch,mbi);
+            
             % no surface-tools
             if iscell(matlabbatch{mbi})
               % SPM surf pipeline does not contrain further test 
               for smbi=1:numel(matlabbatch{mbi})
                 % deactivate surface processing
-                if isfield(matlabbatch{mbi}{smbi},'spm') && ...
-                   isfield(matlabbatch{mbi}{smbi}.spm,'tools') && ...
-                   isfield(matlabbatch{mbi}{smbi}.spm.tools,'cat') && ...
-                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat,'estwrite_spm') && ...
-                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm,'output') && ...
-                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm.output,'surface') 
+                if ~isempty(pp) && ...
+                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp),'output') && ...
+                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).output,'surface') 
                   if job.userlevel > 0
                     switch job.para{pi,5}
-                      case 'pbtres',  matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm.extopts.pbtres = job.para{pi,6}{ppi}; 
+                      case 'pbtres',  matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).extopts.pbtres = job.para{pi,6}{ppi}; 
                     end
                   end
-                  matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm.output.surface = 1; 
+                  matlabbatch{mbi}{smbi}.spm.tools.cat.(pp).output.surface = 1; 
                   SBM = 1; 
                 end
               end
            else
               % deactivate surface processing
-              if isfield(matlabbatch{mbi},'spm') && ...
-                 isfield(matlabbatch{mbi}.spm,'tools') && ...
-                 isfield(matlabbatch{mbi}.spm.tools,'cat') && ...
-                 isfield(matlabbatch{mbi}.spm.tools.cat,'estwrite') && ...
-                 isfield(matlabbatch{mbi}.spm.tools.cat.estwrite,'output') && ...
-                 isfield(matlabbatch{mbi}.spm.tools.cat.estwrite.output,'surface')
+              if ~isempty(pp) && ...
+                 isfield(matlabbatch{mbi}.spm.tools.cat.(pp),'output') && ...
+                 isfield(matlabbatch{mbi}.spm.tools.cat.(pp).output,'surface')
                 if job.userlevel > 0
                   switch job.para{pi,5}
-                    case 'pbtres',  matlabbatch{mbi}.spm.tools.cat.estwrite.extopts.pbtres = job.para{pi,6}{ppi};
+                    case 'pbtres',  matlabbatch{mbi}.spm.tools.cat.(pp).extopts.pbtres = job.para{pi,6}{ppi};
                   end
                 end
-                matlabbatch{mbi}.spm.tools.cat.estwrite.output.surface = 1; 
+                matlabbatch{mbi}.spm.tools.cat.(pp).output.surface = 1; 
                 SBM = 1; 
               end
             end
           end
         elseif job.segmentonly
         % to avoid time intensive surface processing ... 
-          %mainbatch{pi}{ppi}{1}.spm.tools.cat.estwrite.output.surface = 0; 
+          %mainbatch{pi}{ppi}{1}.spm.tools.cat.(pp).output.surface = 0; 
           for mbi=numel(matlabbatch):-1:1; 
             % no surface-tools
+            pp = getpp(matlabbatch,mbi);
             if iscell(matlabbatch{mbi})
               %{
               % SPM surf pipeline does not contrain further test ...
@@ -451,22 +539,19 @@ function cat_tst_cattest(job)
                    isfield(matlabbatch{mbi}{smbi}.spm,'tools') && ...
                    isfield(matlabbatch{mbi}{smbi}.spm.tools,'cat') && ...
                    isfield(matlabbatch{mbi}{smbi}.spm.tools.cat,'estwrite_spm') && ...
-                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm,'output') && ...
-                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm.output,'surface') 
-                  matlabbatch{mbi}{smbi}.spm.tools.cat.estwrite_spm.output.surface = 0; 
+                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp)_spm,'output') && ...
+                   isfield(matlabbatch{mbi}{smbi}.spm.tools.cat.(pp)_spm.output,'surface') 
+                  matlabbatch{mbi}{smbi}.spm.tools.cat.(pp)_spm.output.surface = 0; 
                   SBM = 0; 
                 end
               end
               %}
-           else
+            else
               % deactivate surface processing
-              if isfield(matlabbatch{mbi},'spm') && ...
-                 isfield(matlabbatch{mbi}.spm,'tools') && ...
-                 isfield(matlabbatch{mbi}.spm.tools,'cat') && ...
-                 isfield(matlabbatch{mbi}.spm.tools.cat,'estwrite') && ...
-                 isfield(matlabbatch{mbi}.spm.tools.cat.estwrite,'output') && ...
-                 isfield(matlabbatch{mbi}.spm.tools.cat.estwrite.output,'surface') 
-                matlabbatch{mbi}.spm.tools.cat.estwrite.output.surface = 0; 
+              if ~isempty(pp) && ...
+                 isfield(matlabbatch{mbi}.spm.tools.cat.(pp),'output') && ...
+                 isfield(matlabbatch{mbi}.spm.tools.cat.(pp).output,'surface') 
+                matlabbatch{mbi}.spm.tools.cat.(pp).output.surface = 0; 
                 SBM = 0; 
               end
             end
@@ -474,25 +559,12 @@ function cat_tst_cattest(job)
         end
         
         
-        % no RBM tools if not ROI processing or Shooting
-        for mbi=numel(matlabbatch):-1:1; 
-          if isfield(matlabbatch{mbi},'spm') && ...
-             isfield(matlabbatch{mbi}.spm,'tools') && ...
-             isfield(matlabbatch{mbi}.spm.tools,'cat') && ...
-             isfield(matlabbatch{mbi}.spm.tools.cat,'estwrite') && ...
-             isfield(matlabbatch{mbi}.spm.tools.cat.estwrite,'output') && ...
-             isfield(matlabbatch{mbi}.spm.tools.cat.estwrite.output,'ROI') && ...
-             matlabbatch{mbi}.spm.tools.cat.estwrite.output.ROI==0;
-            RBM = 0; 
-          end
-          if isfield(matlabbatch{mbi},'spm') && ...
-             isfield(matlabbatch{mbi}.spm,'tools') && ...
-             isfield(matlabbatch{mbi}.spm.tools,'cat') && ...
-             isfield(matlabbatch{mbi}.spm.tools.cat,'estwrite') && ...
-             isfield(matlabbatch{mbi}.spm.tools.cat.estwrite,'extopts') && ...
-             isfield(matlabbatch{mbi}.spm.tools.cat.estwrite.output,'darteltpm') && ...
-             strfind(matlabbatch{mbi}.spm.tools.cat.estwrite.extopts.darteltpm,'_GS.nii')
-            matlabbatch{mbi}.spm.tools.cat.estwrite.output.ROI=0; 
+        % no RBM tools if not ROI processing 
+        for mbi=numel(matlabbatch):-1:1
+          if ~isempty(pp) && ...
+             isfield(matlabbatch{mbi}.spm.tools.cat.(pp),'output') && ...
+             isfield(matlabbatch{mbi}.spm.tools.cat.(pp).output,'ROI') && ...
+             matlabbatch{mbi}.spm.tools.cat.(pp).output.ROI==0;
             RBM = 0; 
           end
         end
@@ -549,23 +621,23 @@ function cat_tst_cattest(job)
         cat_io_cprintf([0 0.5 0],sprintf('\n  %s %d ',...
           batchname{pi}{ppi}{mbi,1}(7:end),batchname{pi}{ppi}{mbi,2}));
         try 
-          if 0
+          if job.debug
             % -- debuging code 20161118--
             try
-              fprintf('\nOutput Surface: %d', mainbatch{pi}{ppi}{mbi}.spm.tools.cat.estwrite.output.surface); 
+              fprintf('\nOutput Surface: %d', mainbatch{pi}{ppi}{mbi}.spm.tools.cat.(pp).output.surface); 
             end
             try
-              fprintf('\nOutput ROI:     %d', mainbatch{pi}{ppi}{mbi}.spm.tools.cat.estwrite.output.ROI);
+              fprintf('\nOutput ROI:     %d', mainbatch{pi}{ppi}{mbi}.spm.tools.cat.(pp).output.ROI);
             end
             if iscell(mainbatch{pi}{ppi}{mbi})
               for ci=1:numel(mainbatch{pi}{ppi}{mbi})
                 try
-                  fprintf('\nOutput Surface: %d', mainbatch{pi}{ppi}{mbi}{ci}.spm.tools.cat.estwrite_spm.output.surface); 
+                  fprintf('\nOutput Surface: %d', mainbatch{pi}{ppi}{mbi}{ci}.spm.tools.cat.(pp).spm.output.surface); 
                 end
               end
               for ci=1:numel(mainbatch{pi}{ppi}{mbi})
                 try
-                  fprintf('\nOutput ROI:     %d', mainbatch{pi}{ppi}{mbi}{ci}.spm.tools.cat.estwrite_spm.output.ROI);
+                  fprintf('\nOutput ROI:     %d', mainbatch{pi}{ppi}{mbi}{ci}.spm.tools.cat.(pp).spm.output.ROI);
                 end
               end
             end           
@@ -602,12 +674,13 @@ function cat_tst_cattest(job)
     for ppi=1:numel(job.para{pi,6})
       if isnumeric(job.para{pi,6}{ppi}),  parastr = num2str(job.para{pi,6}{ppi});
       elseif ischar(job.para{pi,6}{ppi}), parastr = job.para{pi,6}{ppi};
+      else                                parastr = '';
       end
       if ppi==1, fprintf('\n%42s: %s\n','Parameter','Status'); end
       if ppi==1 || ppi==numel(job.para{pi,6})
         fprintf('--------------------------------------------------\n');
       end
-      fprintf('\n%42s: \n',sprintf('%s = %s',job.para{pi,5},parastr));
+      fprintf('%42s: ',sprintf('%s = %s',job.para{pi,5},parastr));
       for mbi = 1:numel(perror{pi}{ppi})
         %fprintf('%40s%02d: ',batchname{pi}{ppi}{mbi,1},batchname{pi}{ppi}{mbi,2}); 
         if perror{pi}{ppi}(mbi)==2
@@ -621,4 +694,22 @@ function cat_tst_cattest(job)
     end
   end
 end
-
+function pp = getpp(matlabbatch,mbi) 
+  if isfield(matlabbatch{mbi},'spm') && ...
+    isfield(matlabbatch{mbi}.spm,'tools') && ...
+    isfield(matlabbatch{mbi}.spm.tools,'cat')
+    if isfield(matlabbatch{mbi}.spm.tools.cat,'estwrite')
+      pp = 'estwrite'; 
+    elseif isfield(matlabbatch{mbi}.spm.tools.cat,'estwrite1173')
+      pp = 'estwrite1173';
+    elseif isfield(matlabbatch{mbi}.spm.tools.cat,'estwrite1173plus')
+      pp = 'estwrite1173plus';
+    elseif isfield(matlabbatch{mbi}.spm.tools.cat,'estwrite_spm')
+      pp = 'estwrite_spm';
+    else 
+      pp = ''; 
+    end
+  else 
+    pp = '';
+  end
+end

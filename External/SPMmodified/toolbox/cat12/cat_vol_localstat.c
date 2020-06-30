@@ -21,13 +21,14 @@
  * Center of Neuroimaging 
  * University Jena
  *
- * $Id: cat_vol_localstat.c 1185 2017-09-13 15:02:47Z gaser $ 
+ * $Id: cat_vol_localstat.c 1524 2019-11-28 17:00:31Z gaser $ 
  */
 
 #include "mex.h"   
-#include "matrix.h"
 #include "math.h"
 #include "float.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifndef ROUND
 #define ROUND( x ) ((long) ((x) + ( ((x) >= 0) ? 0.5 : (-0.5) ) ))
@@ -75,7 +76,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (nlhs<1) mexErrMsgTxt("ERROR:cat_vol_localstat: not enough output elements\n");
   if (nlhs>2) mexErrMsgTxt("ERROR:cat_vol_localstat: too many output elements\n");
 
-  /* main informations about input data (size, dimensions, ...) */
+  /* main information about input data (size, dimensions, ...) */
   const mwSize *sL = mxGetDimensions(prhs[0]);
   const int     dL = mxGetNumberOfDimensions(prhs[0]);
   const int     nL = (int) mxGetNumberOfElements(prhs[0]);
@@ -124,10 +125,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   /*
    * Display Initial Parameter
    */
-  if ( verb ) printf("\ncat_vol_localstat.c debuging mode:\n  Initialize Parameter: \n");
-  if ( verb ) printf("    size(B) = %d %d %d\n",sL[0],sL[1],sL[2]); 
-  if ( verb ) printf("    nb      = %d\n",nh); 
-  if ( verb ) printf("    stat    = %d\n",st); 
+  if ( verb ) {
+    printf("\ncat_vol_localstat.c debuging mode:\n  Initialize Parameter: \n");
+    printf("    size(B) = %d %d %d\n",(int)sL[0],(int)sL[1],(int)sL[2]); 
+    printf("    nb      = %d\n",nh); 
+    printf("    stat    = %d\n",st); 
+  }
   
   
   if (st==7) {

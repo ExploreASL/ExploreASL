@@ -33,9 +33,9 @@ function varargout = cat_surf_display(varargin)
 %   cat_surf_display(struct('caxis',[0 10]))
 % ______________________________________________________________________
 % Robert Dahnke
-% $Id: cat_surf_display.m 1301 2018-04-09 14:05:37Z gaser $
+% $Id: cat_surf_display.m 1571 2020-02-27 14:51:11Z gaser $
 
-  SVNid = '$Rev: 1301 $';
+  SVNid = '$Rev: 1571 $';
   if nargout>0, varargout{1}{1} = []; end   
 
   if nargin>0
@@ -43,7 +43,7 @@ function varargout = cat_surf_display(varargin)
       job = varargin{1};
       if ~isfield(job,'data') || isempty(job.data)
         if cat_get_defaults('extopts.expertgui')
-          job.data = spm_select([1 24],'any','Select surfaces or textures','','','(lh|rh|lc|rc|mesh).*');
+          job.data = spm_select([1 24],'any','Select surfaces or textures','','','(lh|rh|lc|rc|cb|mesh).*');
         else
           job.data = spm_select([1 24],'any','Select surfaces or textures','','','.*gii');
         end
@@ -55,7 +55,7 @@ function varargout = cat_surf_display(varargin)
     end
   else
     if cat_get_defaults('extopts.expertgui')
-        job.data = spm_select([1 24],'any','Select surfaces or textures','','','(lh|rh|lc|rc|mesh).*');
+        job.data = spm_select([1 24],'any','Select surfaces or textures','','','(lh|rh|lc|rc|cb|mesh).*');
     else
         job.data = spm_select([1 24],'any','Select surfaces or textures','','','.*gii');
     end
@@ -211,7 +211,7 @@ function varargout = cat_surf_display(varargin)
       
       
       % temporary colormap
-      if any(strcmpi({'neuromorphometrics','lpba40','ibsr','hammers','mori','aal'},sinfo(i).dataname))
+      if any(strcmpi({'neuromorphometrics','lpba40','ibsr','hammers','mori','aal3'},sinfo(i).dataname))
         %%
         switch lower(sinfo(i).dataname)
           case 'neuromorphometrics', rngid=3; 
@@ -219,7 +219,7 @@ function varargout = cat_surf_display(varargin)
           case 'ibsr',               rngid=1; 
           case 'hammers',            rngid=5;  
           case 'mori',               rngid=3; 
-          case 'aal',                rngid=11; 
+          case 'aal3',               rngid=11; 
           otherwise,                 rngid=1; 
         end
         

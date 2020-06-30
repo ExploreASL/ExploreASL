@@ -42,7 +42,7 @@ function [S,SH] = cat_surf_GI3D(S,D,R,opt)
   R = single(R);
   
   % for correct smoother border (else WM blows to strong
-  D = D - 0.5*(single(D==1) & imdilate(D==0,ones(3,3)));
+  D = D - 0.5*(single(D==1) & cat_vol_morph(D==0,'d'));
   
   % streamline calculation 
   % _______________________________________________________________________
@@ -68,7 +68,7 @@ function [S,SH] = cat_surf_GI3D(S,D,R,opt)
   % _______________________________________________________________________
   % Calculate the face areas of the surface and it's hull (see surfacearea)
   % and map them to the vertices (see verticemapping).
-  % The GI is the ration between the inner and outer area.
+  % The GI is the ratio between the inner and outer area.
   S = surfacearea(S,'');  S.farea  = S.area;  S = verticemapping(S,'area'); 
   S = surfacearea(S,'H'); S.Hfarea = S.Harea; S = verticemapping(S,'Harea');
   S.GI  = S.area ./ S.Harea; 
@@ -103,27 +103,13 @@ function S = verticemapping(S,fname)
 % mapping of facedata to vertices
 
   data  = zeros(size(S.vertices,1),1);
-  [v,f] = sort(S.faces(:)); [f,fj] = ind2sub(size(S.faces),f);  %#ok<NASGU>
+  [v,f] = sort(S.faces(:)); 
+  [f,fj] = ind2sub(size(S.faces),f); %#ok<ASGLU>
   far = S.(fname)(f);
-  for i=1:numel(S.faces), data(v(i)) = data(v(i)) + far(i); end
-
-%   for i=1:numel(S.faces), S.(va)(v(i)) = S.(va)(v(i)) + S.(fa)(f(i)); end
-  
-%   if ndim==2
-%     for i=1:size(S.vertices,1)
-%       p=S.faces(i,1); S.(va)(p) = S.(va)(p) + S.(fa)(i);
-%       p=S.faces(i,2); S.(va)(p) = S.(va)(p) + S.(fa)(i);
-%     end
-%   elseif ndim==3
-%     for i=1:size(S.faces,1)
-%       p=S.faces(i,1); S.(va)(p) = S.(va)(p) + S.(fa)(i);
-%       p=S.faces(i,2); S.(va)(p) = S.(va)(p) + S.(fa)(i);
-%       p=S.faces(i,3); S.(va)(p) = S.(va)(p) + S.(fa)(i);
-%     end
-%   end
-%S.(va) = arrayfun(@(p,i) S.(va)(p) + S.(fa)(i),S.faces,(1:size(S.faces,1))'*ones(1,ndim));
-
-  data = data / size(S.vertices,2); % Schwerpunkt... besser Voronoi, aber wie bei ner Oberfläche im Raum???
+  for i=1:numel(v)
+    data(v(i)) = data(v(i)) + far(i)/3; 
+  end
+  %data = data / size(S.vertices,2); % Schwerpunkt... besser Voronoi, aber wie bei ner Oberfl??che im Raum???
   S = rmfield(S,fname);
   S.(fname) = data;
 end

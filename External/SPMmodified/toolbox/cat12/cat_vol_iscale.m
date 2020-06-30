@@ -44,7 +44,7 @@ function [TI,varargout] = cat_vol_iscale(T,action,vx_vol,varargin)
   
   switch action
     case 'findhead'
-    % UPDATE durch findbrain nï¿½tig
+    % UPDATE durch findbrain nötig
     % __________________________________________________________________
     
       %if nargin>3, redres = varargin{1}; end
@@ -486,19 +486,14 @@ end
 
 function p=peak(T,ss)
   if ~exist('ss','var'), ss=0.01; end
-  H=hist(T(:),0:ss:2.00); 
-  
-  %H=smooth(H,20); %'rloess',20);
-  window = ones(span,1)/span; % ExploreASL fix
-  H = xASL_im_conv3Dsep(H,window,[],[]);
-  
+  H=hist(T(:),0:ss:2.00); H=smooth(H,20); %'rloess',20);
   [v,p]=max(H(:)); p=p*ss;
 end
 
-%function HS = smooth(H,span)
-%  
-%  HS = convn(H,window,'same');
-%end
+function HS = smooth(H,span)
+  window = ones(span,1)/span; 
+  HS = convn(H,window,'same');
+end
 
 %{ 
 % working version
@@ -510,9 +505,9 @@ function [TI,T3th,T3r] = cat_vol_CGWscale(T,G,B,Gth,vx_vol)
   T7{6}   = cat_vol_morph(B & G<Gth/2 & T>0.9 & T<=1.3,'l');        
   T7th(6) = min(1.3,max(0.95,cat_stat_nanstat1d(T(T7{6}),'median'))); 
 
-  % Nun kï¿½nnen wir uns die Kannte zum GM anschauen, die sich in D<2 zum 
+  % Nun können wir uns die Kannte zum GM anschauen, die sich in D<2 zum 
   % knapp unterhalb des WM. Da diese beide Seiten gleichartig betrifft, 
-  % sollte man so recht gut den GWM peak bestimmen kï¿½nnen. Das da teil-
+  % sollte man so recht gut den GWM peak bestimmen können. Das da teil-
   % weise bissel CSF mit dabei sollst schnuppe sein.
   T7{5}   = (G>Gth & G<0.5 & B & cat_vol_morph(T>T7th(6),'d',1) & T<T7th(6));
   T7th(5) = max(0.75*T7th(6),min(0.95*T7th(6),cat_stat_nanstat1d(T(T7{5}),'median'))); 
@@ -541,8 +536,8 @@ function [TI,T3th,T3r] = cat_vol_CGWscale(T,G,B,Gth,vx_vol)
   % Ist viel CSF da (Ventrikel), ist es meist eine brauchere Information
   % als das GM da dieses halt durch den PVE und Krankheiten in
   % Mitleidenschaft gezogen sein kann. Im gesunden fall haben wir aber
-  % meist zu wenig CSF als das man damit was machen kï¿½nne, weshalb die
-  % Abschï¿½tzung des CSFs ï¿½ber den GM Wert dann schon wieder besser ist.
+  % meist zu wenig CSF als das man damit was machen könne, weshalb die
+  % Abschätzung des CSFs über den GM Wert dann schon wieder besser ist.
   T3th(3) = T7th(6);
   T3th(2) = T7th(4);
   T3th(1) = max(0,min(T7th(2),T7th(4)-diff(T7th([4,6]))));

@@ -75,7 +75,7 @@ function [filesfound,numberfound] = cat_vol_findfiles(varargin)
 % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 % ______________________________________________________________________
-% $Id: cat_vol_findfiles.m 1117 2017-03-16 15:31:20Z dahnke $ 
+% $Id: cat_vol_findfiles.m 1598 2020-04-09 14:41:45Z gaser $ 
 
 %#ok<*EFIND>
 %#ok<*AGROW>
@@ -800,7 +800,9 @@ if sdepth == 0 || ...
 
         % and without ?
         else
-            ilist = dir([path patterns{pcount}]);
+            % prevent doubled wildcards that are not allowed
+            try, patterns{pcount} = regexprep(patterns{pcount}, '**', '*'); end
+            ilist = dir(fullfile(path,patterns{pcount}));
         end
         slist = numel(ilist);
 
@@ -1056,7 +1058,7 @@ function [linetocell,cellcount] = splittocell(varargin)
       if ldelim==1
           cpos=[(1-ldelim),find(line==delimiter)];
       else
-          cpos=[(1-ldelim),findstr(line,delimiter)];
+          cpos=[(1-ldelim),strfind(line,delimiter)];
       end
       lcpos =size(cpos,2);
 

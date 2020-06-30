@@ -1,13 +1,18 @@
-function Po = cat_vol_maskimage(job)
-%
-%
+function out = cat_vol_maskimage(job)
 % Po = cat_vol_maskimage(job)
 %
 % job
 %   .data    .. original images
 %   .mask    .. lesion/brain mask images
 %   .prefix  .. filename prefix 'masked_'
+% ______________________________________________________________________
 %
+% Robert Dahnke 
+% Structural Brain Mapping Group
+% University Jena
+% ______________________________________________________________________
+% $Id: cat_vol_maskimage.m 1581 2020-03-11 10:20:09Z dahnke $
+
 
   def.returnOnlyFilename = 0; 
   def.prefix = 'masked_';
@@ -108,4 +113,6 @@ function Po = cat_vol_maskimage(job)
   
   if isfield(job,'process_index') && job.verb, fprintf('Done\n'); end
   spm_progress_bar('Clear');
+  
+  out.files = Po; 
 end

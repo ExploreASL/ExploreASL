@@ -1,13 +1,12 @@
 /*
  * Christian Gaser
- * $Id: cat_sanlm.c 1172 2017-08-31 13:19:22Z gaser $ 
+ * $Id: cat_sanlm.c 1523 2019-11-21 23:12:24Z gaser $ 
  *
  */
 
 #include "math.h"
 #include "mex.h"
 #include <stdlib.h>
-#include "matrix.h"
 
 extern void anlm(float* ima, int v, int f, int rician, const int* dims);
 

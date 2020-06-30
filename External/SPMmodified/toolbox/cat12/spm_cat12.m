@@ -20,21 +20,31 @@ function spm_cat12(varargin)
 %
 % ______________________________________________________________________
 % Christian Gaser, Robert Dahnke
-% $Id: spm_cat12.m 1362 2018-08-31 08:47:29Z gaser $
+% $Id: spm_cat12.m 1596 2020-04-07 18:25:35Z gaser $
 
 
-rev = '$Rev: 1362 $';
+rev = '$Rev: 1596 $';
 global deffile;
 global cprintferror;  % temporary, because of JAVA errors in cat_io_cprintf ... 20160307
 %try clearvars -global deffile;  end %#ok<TRYNC>
 
+% check that CAT12 is installed in the correct folder
+pth = fileparts(which(mfilename));
+[pth2, nam]=fileparts(pth);
+if ~strcmp(nam,'cat12')
+  spm('alert!',sprintf('Please check that you do not have multiple CAT12 installations in your path!\nYour current CAT12 version is installed in %s but should be installed in %s',pth,fullfile(spm('dir'),'toolbox','cat12')),'WARNING');
+end
+
+% get expert level except for standalone installation
+expert   = cat_get_defaults('extopts.expertgui'); 
+
 % start cat with different default file
 catdir = fullfile(spm('dir'),'toolbox','cat12'); 
 catdef = fullfile(catdir,'cat_defaults.m');
+
 if nargin==0 && (isempty(deffile) || strcmp(deffile,catdef))
   deffile = catdef; 
-  if ~strcmp(cat_get_defaults('extopts.species'),'human') || ...
-      cat_get_defaults('extopts.expertgui')>0
+  if ~strcmp(cat_get_defaults('extopts.species'),'human') || expert>0 
     restartspm = 1;
   else
     restartspm = 0;
@@ -91,7 +101,9 @@ switch lower(deffile)
     restartspm = 1;
     deffile = catdef; 
   case {'greaterapes','lesserapes','oldworldmonkeys','newworldmonkeys','mammals','chimpanzees','dogs',...
-        'greaterape' ,'lesserape' ,'oldworldmonkey' ,'newworldmonkey', 'mammal', 'chimpanzee' ,'dog'}
+        'greaterape' ,'lesserape' ,'oldworldmonkey' ,'newworldmonkey', 'mammal', 'chimpanzee' ,'dog', ...
+        'baboons', ...
+        'baboon' ,'macaca'}
     switch lower(deffile)
       case {'greaterapes','greaterape'},          species = 'ape_greater';     speciesdisp = ' (greater apes)';
       %case {'lesserapes','lesserape'},            species = 'ape_lesser';      speciesdisp = ' (lesser apes)';
@@ -99,6 +111,8 @@ switch lower(deffile)
       %case {'newworldmonkeys','newworldmonkey'},  species = 'monkey_newworld'; speciesdisp = ' (newworld monkeys)';
       %case {'mammals','mammal'},                  species = 'mammal';          speciesdisp = ' (mammal)';
       case {'chimpanzees','chimpanzee'},          species = 'chimpanzee';      speciesdisp = ' (chimpanzee)';
+      case {'macaca'},                            species = 'macaca';          speciesdisp = ' (macaca)';
+      case {'baboons','baboon'},                  species = 'baboon';          speciesdisp = ' (baboon)';
       case {'dogs','dog'},                        species = 'dog';             speciesdisp = ' (dogs)';
       otherwise
         error('CAT:unreadySpecies','Templates of species "%s" are not ready yet.\n',deffile);
@@ -108,23 +122,24 @@ switch lower(deffile)
     % change TPM and user higher resolution and expect stronger bias
     mycat.opts.tpm             = {fullfile(spm('dir'),'toolbox','cat12','templates_animals',[species '_TPM.nii'])};
     mycat.opts.biasreg         = 0.001;                                  % less regularisation 
-    mycat.opts.biasfwhm        = 50;                                     % stronger fields 
-    mycat.opts.samp            = 2;                                      % smaller resampling
-    mycat.opts.affreg          = '';                                     % no affine regularisation
+    mycat.opts.biasfwhm        = 30;                                     % stronger fields 
+    mycat.opts.samp            = 1;                                      % smaller resampling
+    mycat.opts.affreg          = 'none';                                 % no affine regularisation
     % use species specific templates, higher resolution, stronger corrections and less affine registration (by SPM) 
     mycat.extopts.species      = species;  
-    mycat.extopts.brainscale   = 200; % non-human brain volume in cm3 (from literature) or scaling in mm (check your data)
+    %mycat.extopts.brainscale   = 200; % non-human brain volume in cm3 (from literature) or scaling in mm (check your data)
     mycat.extopts.darteltpm    = {fullfile(spm('dir'),'toolbox','cat12','templates_animals',[species '_Template_1.nii'])}; % Indicate first Dartel template
     mycat.extopts.shootingtpm  = {fullfile(spm('dir'),'toolbox','cat12','templates_animals',[species '_Template_0_GS.nii'])}; % Indicate first Shooting template
     mycat.extopts.cat12atlas   = {fullfile(spm('dir'),'toolbox','cat12','templates_animals',[species '_cat.nii'])};        % VBM atlas with major regions for VBM, SBM & ROIs
     mycat.extopts.brainmask    = {fullfile(spm('dir'),'toolbox','cat12','templates_animals',[species '_brainmask.nii'])};  % brainmask for affine registration
     mycat.extopts.T1           = {fullfile(spm('dir'),'toolbox','cat12','templates_animals',[species '_T1.nii'])};         % T1 for affine registration
-    mycat.extopts.sanlm        = 2;                                     % ISARNLM for stronger corrections
+    mycat.extopts.sanlm        = 3;                                     % ISARNLM for stronger corrections
     mycat.extopts.restype      = 'best';        
     mycat.extopts.resval       = [0.50 0.30];                           % higher interal resolution 
-    mycat.extopts.APP          = 5;                                     % less affine registration, but full corrections (by SPM)
-    mycat.extopts.vox          = 1.00;                                  % voxel size for normalized data 
+    %mycat.extopts.APP          = 1070;                                  % less affine registration, but full corrections (by SPM)
+    mycat.extopts.vox          = 0.50;                                  % voxel size for normalized data 
     mycat.extopts.bb           = [[-inf -inf -inf];[inf inf inf]];      % template default
+    mycat.extopts.WMHC         = 0;                                     % not in primates yet
     mycat.extopts.expertgui    = 2;                                     % set to expert later ...
     mycat.extopts.ignoreErrors = 1;  
     switch species
@@ -191,7 +206,6 @@ end
 clear cat;
 
 % initialize atlas variable 
-expert   = cat_get_defaults('extopts.expertgui'); 
 exatlas  = cat_get_defaults('extopts.atlas'); 
 for ai = 1:size(exatlas,1)
   if exatlas{ai,2}<=expert && exist(exatlas{ai,1},'file')
@@ -205,16 +219,16 @@ for ai = 1:size(exatlas,1)
 end
 
 % temporary, because of JAVA errors in cat_io_cprintf ... 20160307
-if cat_get_defaults('extopts.expertgui')<2
+if expert<2
   cprintferror=1;
 end
 
 spm('FnBanner',mfilename,cat_version);
-[Finter,Fgraph] = spm('FnUIsetup','CAT12.5');
+[Finter,Fgraph] = spm('FnUIsetup','CAT12.7');
 url = fullfile(spm('Dir'),'toolbox','cat12','html','cat.html');
 spm_help('!Disp',url,'',Fgraph,'Computational Anatomy Toolbox for SPM12');
 
-[ST, RS] = cat_system('CAT_DumpCurv -h');
+[ST, RS] = cat_system('CAT_3dVol2Surf');
 % because status will not give 0 for help output we have to check whether we can find the
 % keyword "Usage" in output
 if isempty(strfind(RS,'Usage'));
@@ -233,7 +247,7 @@ spm_select('PrevDirs',{fullfile(spm('dir'),'toolbox','cat12')});
 
 %% command line output
 cat_io_cprintf('silentreset');
-switch cat_get_defaults('extopts.expertgui')
+switch expert
   case 0, expertguitext = '';
   case 1, expertguitext = ['Expert Mode' speciesdisp];
   case 2, expertguitext = ['Developer Mode' speciesdisp];
@@ -243,7 +257,7 @@ cat_io_cprintf([0.0 0.0 0.5],sprintf([ ...
     '   _______  ___  _______    \n' ...
     '  |  ____/ / _ \\\\ \\\\_   _/   ' expertguitext '\n' ...
     '  | |___  / /_\\\\ \\\\  | |     Computational Anatomy Toolbox\n' ...
-    '  |____/ /_/   \\\\_\\\\ |_|     CAT12.5 - http://www.neuro.uni-jena.de\n\n']));
+    '  |____/ /_/   \\\\_\\\\ |_|     CAT12.7 - http://www.neuro.uni-jena.de\n\n']));
 cat_io_cprintf([0.0 0.0 0.5],' CAT default file:\n\t%s\n\n',deffile); 
 
 % call GUI

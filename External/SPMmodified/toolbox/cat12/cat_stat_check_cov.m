@@ -7,9 +7,9 @@ function varargout = cat_stat_check_cov(job)
 % Surfaces have to be same size (number of vertices).
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cat_stat_check_cov.m 1349 2018-08-06 16:59:14Z dahnke $
+% $Id: cat_stat_check_cov.m 1612 2020-05-03 12:18:52Z gaser $
 
-if cat_get_defaults('extopts.expertgui')>1
+if cat_get_defaults('extopts.expertgui')>2
   if nargout
     varargout = cat_stat_check_cov2(job);
   else
@@ -19,7 +19,7 @@ if cat_get_defaults('extopts.expertgui')>1
 end
 
 global alphaval filename H YpY YpYsorted  data_array data_array_diff pos ind_sorted ind_sorted_display mean_cov FS X mesh_detected ...
-mn_data mx_data V Vchanged sample isxml sorted isscatter MD show_name bplot names_changed img img_alpha
+mn_data mx_data V Vchanged sample isxml sorted isscatter MD show_name bplot names_changed img img_alpha show_violin
 
 % show data by fileorder
 sorted = 0;
@@ -41,6 +41,8 @@ if isfield(job,'gSF')
 else
   is_gSF = 0;
 end
+
+show_violin = 1;
 
 % read filenames for each sample and indicate sample parameter
 if isfield(job,'data_vol')
@@ -120,6 +122,10 @@ if ~isempty(xml_files)
     end
     
     xml = cat_io_xml(deblank(xml_files(i,:)));
+    if ~isfield(xml,'qualityratings') && ~isfield(xml,'QAM')
+      fprintf('Quality rating is not saved for %s. Report file %s is incomplete.\nPlease repeat preprocessing amd check for potential errors in the ''err'' folder.\n',V(i).fname,xml_files(i,:));    
+      return
+    end
     if mesh_detected
       if isfield(xml.qualityratings,'NCR')
       % check for newer available surface measures
@@ -187,22 +193,23 @@ end
 
 % positions & font size
 ws = spm('Winsize','Graphics');
-FS = spm('FontSizes');
+FS = cat_get_defaults('extopts.fontsize');
 
 pos = struct(...
     'fig',    [10  10  1.3*ws(3) 1.1*ws(3)],... % figure
-    'cbar',   [0.240 0.950 0.300 0.020],... % colorbar for correlation matrix
+    'cbar',   [0.045 0.950 0.700 0.020],... % colorbar for correlation matrix
     'corr',   [-0.02 0.050 0.825 0.825],... % correlation matrix
     'scat',   [0.050 0.050 0.700 0.825],... % scatter plot
     'close',  [0.775 0.925 0.200 0.050],... % close button
     'show',   [0.775 0.875 0.200 0.050],... % button to show worst cases
     'boxp',   [0.775 0.820 0.200 0.050],... % button to display boxplot
     'sort',   [0.775 0.775 0.200 0.050],... % button to enable ordered matrix
-    'chbox',  [0.775 0.750 0.200 0.050],... % show filenames?
+    'fnambox',[0.775 0.735 0.200 0.050],... % show filenames?
     'text',   [0.775 0.600 0.200 0.150],... % textbox
     'aslider',[0.775 0.555 0.200 0.040],... % slider for alpha overlay
     'slice',  [0.775 0.050 0.200 0.400],... % two single images according to position of mouse pointer
-    'sslider',[0.775 0.010 0.200 0.040]);   % slider for z-slice   
+    'sslider',[0.775 0.010 0.200 0.040],... % slider for z-slice   
+    'plotbox',[0.875 0.735 0.200 0.050]);   % switch between boxplot and violin plot 
 
 if mesh_detected
   % rescue unscaled data min/max
@@ -261,6 +268,11 @@ else
 
     % remove nuisance and add mean again (otherwise correlations are quite small and misleading)
     if ~isempty(G) 
+      [indinf,tmp] = find(isinf(G) | isnan(G));
+      if ~isempty(indinf)
+        fprintf('Nuisance parameter for %s is Inf or NaN.\n',V(indinf).fname);
+        return
+      end
       Ymean = repmat(mean(Y), [n_subjects 1]);
       Y = Y - G*(pinv(G)*Y) + Ymean;
     end
@@ -323,23 +335,45 @@ end
 
 filename = struct('s',{fname_s},'e',{fname_e},'m',{fname_m});
 
-% print suspecious files with cov>0.925
-YpY_tmp = YpY - tril(YpY);
-[indx, indy] = find(YpY_tmp>0.925);
+% print suspecious files with high cov
+% use slightly higher threshold for (smoothed) mesh data
+YpY_tmp = YpY - triu(YpY);
+if mesh_detected
+  [indx, indy] = find(YpY_tmp>0.950 & YpY_tmp < (1-eps));
+else
+  [indx, indy] = find(YpY_tmp>0.925);
+end
 
-% if more than 25% of the data this points to longitudinal data of one subject
+% if more than 25% of the data were found, this points to longitudinal data of one subject
 % and no warning will appear
-if ~isempty(indx) && (sqrt(length(indx)) < 0.25*n_subjects)
-  fprintf('\nUnusual large correlation (check that subjects are not identical):\n');
-  for i=1:length(indx)
-    % exclude diagonal
-    if indx(i) ~= indy(i)
-      % report file with lower mean correlation first
-      if mean_cov(indx(i)) < mean_cov(indy(i))
-        fprintf('%s and %s: %3.3f\n',filename.m{indx(i)},filename.m{indy(i)},YpY(indx(i),indy(i)));
-      else
-        fprintf('%s and %s: %3.3f\n',filename.m{indy(i)},filename.m{indx(i)},YpY(indy(i),indx(i)));
+if ~isempty(indx)
+ if (length(indx) < 0.25*n_subjects)
+    fprintf('\nWARNING: Unusual large correlation (check that subjects are not identical):\n');
+    for i = 1:length(indx)
+      % exclude diagonal
+      if indx(i) ~= indy(i)
+        if n_samples > 1
+          fprintf('%s (sample %d) and %s (sample %d): %g\n',filename.m{indx(i)},sample(indx(i)),filename.m{indy(i)},sample(indy(i)),YpY(indx(i),indy(i)));
+        else
+          fprintf('%s and %s: %g\n',filename.m{indx(i)},filename.m{indy(i)},YpY(indx(i),indy(i)));
+        end
       end
+    end
+  else
+    fprintf('\nMany unusual large correlations were found (e.g. common in longitudinal data).\n');
+  end
+end
+
+[indx, indy] = find(YpY_tmp==1);
+
+% give warning that data are identical
+if ~isempty(indx)
+  fprintf('\nWARNING: Data of these subjects are identical!\n');
+  for i = 1:length(indx)
+    if n_samples > 1
+      fprintf('%s (sample %d) and %s (sample %d)\n',filename.m{indx(i)},sample(indx(i)),filename.m{indy(i)},sample(indy(i)));
+    else
+      fprintf('%s and %s\n',filename.m{indx(i)},filename.m{indy(i)});
     end
   end
 end
@@ -374,7 +408,12 @@ end
 H.figure = figure(2);
 clf(H.figure);
 
-set(H.figure,'MenuBar','none','Position',pos.fig,'NumberTitle','off');
+set(H.figure,...
+   'MenuBar','none',...
+   'Position',pos.fig,...
+...   'DefaultTextFontSize',FS,...
+...   'DefaultUicontrolFontSize',FS,...
+   'NumberTitle','off');
     
 if mesh_detected
   set(H.figure,'Name','Click in image to display surfaces');
@@ -388,18 +427,20 @@ try set(cm,'NewDataCursorOnClick',false); end
 
 % add colorbar
 H.cbar = axes('Position',pos.cbar,'Parent',H.figure);
-image((1:64));
+image(H.cbar); 
+set(get(H.cbar,'children'),'HitTest','off','Interruptible','off');
+set(H.cbar,'Ytick',[],'YTickLabel',''); 
 
 isscatter = 0;
 show_matrix(YpY, sorted);
 
 % create two colormaps
-cmap = [hot(64); gray(64)];
+cmap = [jet(64); gray(64)];
 colormap(cmap)
 
 % display YTick with 5 values (limit accuracy for floating numbers)
 set(H.cbar,'YTickLabel','','XTickLabel','','XTick',linspace(1,64,5), 'XTickLabel',...
-  round(100*linspace(min(YpY(:)),max(YpY(:)),5))/100,'TickLength',[0 0]);
+  round(100*linspace(min(YpY(:)),max(YpY(YpY~=1)),5))/100,'TickLength',[0 0]);
 
 % add button for closing all windows
 H.close = uicontrol(H.figure,...
@@ -408,8 +449,7 @@ H.close = uicontrol(H.figure,...
         'Style','Pushbutton','HorizontalAlignment','center',...
         'callback','for i=2:26, try close(i); end; end;',...
         'ToolTipString','Close windows',...
-        'Interruptible','on','Enable','on',...
-        'FontSize',FS(7));
+        'Interruptible','on','Enable','on');
 
 % check button
 H.show = uicontrol(H.figure,...
@@ -418,8 +458,7 @@ H.show = uicontrol(H.figure,...
         'Style','Pushbutton','HorizontalAlignment','center',...
         'callback',@check_worst_data,...
         'ToolTipString','Display most deviating files',...
-        'Interruptible','on','Enable','on',...
-        'FontSize',FS(7));
+        'Interruptible','on','Enable','on');
 
 show_name = 0;
 
@@ -436,24 +475,24 @@ if isxml
   str  = { 'Boxplot...','Mean correlation',QM_names,'Mahalanobis distance'};
   
   if size(QM,2) == 5
-    tmp  = { {@show_mean_boxplot, mean_cov, 'Mean correlation  ', 1},...
-             {@show_mean_boxplot, QM(:,1), QM_names(1,:), -1},...
-             {@show_mean_boxplot, QM(:,2), QM_names(2,:), -1},...
-             {@show_mean_boxplot, QM(:,3), QM_names(3,:), -1},...
-             {@show_mean_boxplot, QM(:,4), QM_names(4,:), -1},...
-             {@show_mean_boxplot, QM(:,5), QM_names(5,:), -1},...
-             {@show_mean_boxplot, MD, 'Mahalanobis distance  ', -1} };
+    tmp  = { {@show_boxplot, mean_cov, 'Mean correlation  ', 1},...
+             {@show_boxplot, QM(:,1), QM_names(1,:), -1},...
+             {@show_boxplot, QM(:,2), QM_names(2,:), -1},...
+             {@show_boxplot, QM(:,3), QM_names(3,:), -1},...
+             {@show_boxplot, QM(:,4), QM_names(4,:), -1},...
+             {@show_boxplot, QM(:,5), QM_names(5,:), -1},...
+             {@show_boxplot, MD, 'Mahalanobis distance  ', -1} };
   else
-    tmp  = { {@show_mean_boxplot, mean_cov, 'Mean correlation  ', 1},...
-             {@show_mean_boxplot, QM(:,1), QM_names(1,:), -1},...
-             {@show_mean_boxplot, QM(:,2), QM_names(2,:), -1},...
-             {@show_mean_boxplot, QM(:,3), QM_names(3,:), -1},...
-             {@show_mean_boxplot, MD, 'Mahalanobis distance  ', -1} };
+    tmp  = { {@show_boxplot, mean_cov, 'Mean correlation  ', 1},...
+             {@show_boxplot, QM(:,1), QM_names(1,:), -1},...
+             {@show_boxplot, QM(:,2), QM_names(2,:), -1},...
+             {@show_boxplot, QM(:,3), QM_names(3,:), -1},...
+             {@show_boxplot, MD, 'Mahalanobis distance  ', -1} };
   end
 
 else
   str  = { 'Boxplot...','Mean correlation'};
-  tmp  = { {@show_mean_boxplot, mean_cov, 'Mean correlation  ', 1} };
+  tmp  = { {@show_boxplot, mean_cov, 'Mean correlation  ', 1} };
 end
 
 H.boxp = uicontrol(H.figure,...
@@ -462,8 +501,7 @@ H.boxp = uicontrol(H.figure,...
         'Style','PopUp','HorizontalAlignment','center',...
         'callback','spm(''PopUpCB'',gcbo)',...
         'ToolTipString','Display boxplot',...
-        'Interruptible','on','Visible','on',...
-        'FontSize',FS(7));
+        'Interruptible','on','Visible','on');
 
 if isxml
   str  = { 'Image...','Mean Correlation: Order by selected filenames','Mean Correlation: Sorted by mean correlation','Mahalanobis distance'};
@@ -482,24 +520,14 @@ H.sort = uicontrol(H.figure,...
         'Style','PopUp','HorizontalAlignment','center',...
         'callback','spm(''PopUpCB'',gcbo)',...
         'ToolTipString','Sort matrix',...
-        'Interruptible','on','Visible','on',...
-        'FontSize',FS(7));
-
-H.chbox = uicontrol(H.figure,...
-        'string','Show filenames in boxplot','Units','normalized',...
-        'position',pos.chbox,...
-        'Style','CheckBox','HorizontalAlignment','center',...
-        'callback',{@checkbox_names},...
-        'ToolTipString','Show filenames in boxplot',...
-        'Interruptible','on','Visible','on',...
-        'BackgroundColor',[0.8 0.8 0.8],'FontSize',FS(6));
+        'Interruptible','on','Visible','on');
 
 H.text = uicontrol(H.figure,...
         'Units','normalized','position',pos.text,...
         'String','Click in image to display slices',...
         'Style','text','HorizontalAlignment','center',...
         'ToolTipString','Select slice for display',...
-        'FontSize',FS(6));
+        'FontSize',FS-2);
 
 H.alpha = uicontrol(H.figure,...
         'Units','normalized','position',pos.aslider,...
@@ -514,7 +542,7 @@ H.alpha_txt = uicontrol(H.figure,...
         'Style','text','BackgroundColor',[0.8 0.8 0.8],...
         'Position',[pos.aslider(1) pos.aslider(2)-0.005 0.2 0.02],...
         'String','Overlay Opacity of Differences to Sample Mean',...
-        'FontSize',FS(6),'Visible','off');
+        'FontSize',FS-2,'Visible','off');
 
 % add slider only for volume data
 if ~mesh_detected
@@ -530,31 +558,39 @@ if ~mesh_detected
         'Units','normalized','HorizontalAlignment','center',...
         'Style','text','BackgroundColor',[0.8 0.8 0.8],...
         'Position',[pos.sslider(1) pos.sslider(2)-0.005 0.2 0.02],...
-        'String','Slice [mm]','Visible','off','FontSize',FS(6));
+        'String','Slice [mm]','Visible','off','FontSize',FS-2);
         
   update_slices_array;
 end
    
-show_mean_boxplot(mean_cov,'Mean correlation  ',1);
+show_boxplot(mean_cov,'Mean correlation  ',1);
 
-% check for replicates
-for i=1:n_subjects
-  for j=1:n_subjects
-    if (i>j) && (mean_cov(i) == mean_cov(j))
-      try
-        nami = deblank(V(i).fname);
-        namj = deblank(V(j).fname);
-        if strcmp(nami(end-1:end),',1')
-          nami = nami(1:end-2);
-        end 
-        if strcmp(namj(end-1:end),',1')
-          namj = namj(1:end-2);
-        end 
-        s = unix(['diff ' nami ' ' namj]);
-        if (s==0), fprintf(['\nWarning: ' nami ' and ' namj ' are same files?\n']); end
-      end
+if isfield(job,'save') && job.save
+  %% filenames
+  if ~isempty(job.fname)
+    dpi = cat_get_defaults('print.dpi'); 
+    if isempty(dpi), dpi = 150; end
+    
+    fignames   = {'matrix','boxplot'};
+    figuresids = {figure(2),spm_figure('FindWin','Graphics')};
+    if isempty(job.outdir{1}), job.outdir{1} = pwd; end
+    
+    % save
+    warning('OFF','MATLAB:print:UIControlsScaled');
+    for i=1:2
+      fname = fullfile(job.outdir{1},[job.fname fignames{i} '.png']);
+      print(figuresids{i}, '-dpng', '-opengl', sprintf('-r%d',dpi), fname);
     end
+    warning('ON','MATLAB:print:UIControlsScaled');
   end
+  
+  
+  %% close
+  if job.save>1
+    spm_figure('Clear','Graphics');
+    for i=2:26, try, close(i); end; end
+  end
+  
 end
 
 %-End
@@ -611,11 +647,20 @@ function checkbox_names(obj, event_obj)
 %-----------------------------------------------------------------------
 global H show_name data_boxp name_boxp quality_order
 
-  show_name = get(H.chbox,'Value');
-  show_mean_boxplot;
+  show_name = get(H.fnambox,'Value');
+  show_boxplot;
   
 return
         
+%-----------------------------------------------------------------------
+function checkbox_plot(obj, event_obj)
+%-----------------------------------------------------------------------
+  global H show_violin
+  
+  show_violin = get(H.plotbox,'Value');
+  show_boxplot;
+return
+
 %-----------------------------------------------------------------------
 function show_mahalanobis(X)
 %-----------------------------------------------------------------------
@@ -644,9 +689,9 @@ for i=1:length(MD)
 end
 scatter(X(:,1),X(:,2),30,C,'o','Linewidth',2);
 
-xlabel('<----- Worst ---      Mean correlation      --- Best ------>  ','FontSize',FS(8),'FontWeight','Bold');
-ylabel('<----- Best ---      Weighted overall image quality      --- Worst ------>  ','FontSize',FS(8),'FontWeight','Bold');
-title('<--- Best -- Mahalanobis distance -- Worst ---->  ','FontSize',FS(10),'FontWeight','Bold');
+xlabel('<----- Worst ---      Mean correlation      --- Best ------>  ','FontSize',FS-1,'FontWeight','Bold');
+ylabel('<----- Best ---      Weighted overall image quality      --- Worst ------>  ','FontSize',FS-1,'FontWeight','Bold');
+title('<--- Smallest -- Mahalanobis distance -- Largest ---->  ','FontSize',FS+1,'FontWeight','Bold');
 
 % add colorbar
 H.cbar = axes('Position',pos.cbar,'Parent',H.figure);
@@ -680,9 +725,9 @@ set(H.ax,'Color',[0.8 0.8 0.8]);
 
 H.ax = axes('Position',pos.corr,'Parent',H.figure);
 
-% scale data to 0..1
+% scale data to min..max
 mn = min(data(:));
-mx = max(data(:));
+mx = max(data(data~=1));
 data_scaled = (data - mn)/(mx - mn);
 
 % show only lower left triangle
@@ -694,13 +739,13 @@ set(gca,'XTickLabel','','YTickLabel','');
 axis image
 
 if sorted
-  xlabel('<----- Best ---      File Order      --- Worst ------>  ','FontSize',FS(8),'FontWeight','Bold');
-  ylabel('<----- Worst ---      File Order      --- Best ------>  ','FontSize',FS(8),'FontWeight','Bold');
-  title('Sorted Sample Correlation Matrix  ','FontSize',FS(10),'FontWeight','Bold');
+  xlabel('<----- Best ---      File Order      --- Worst ------>  ','FontSize',FS-1,'FontWeight','Bold');
+  ylabel('<----- Worst ---      File Order      --- Best ------>  ','FontSize',FS-1,'FontWeight','Bold');
+  title('Sorted Sample Correlation Matrix  ','FontSize',FS+1,'FontWeight','Bold');
 else
-  xlabel('<----- First ---      File Order      --- Last ------>  ','FontSize',FS(8),'FontWeight','Bold');
-  ylabel('<----- Last ---      File Order      --- First ------>  ','FontSize',FS(8),'FontWeight','Bold');
-  title('Sample Correlation Matrix  ','FontSize',FS(10),'FontWeight','Bold');
+  xlabel('<----- First ---      File Order      --- Last ------>  ','FontSize',FS-1,'FontWeight','Bold');
+  ylabel('<----- Last ---      File Order      --- First ------>  ','FontSize',FS-1,'FontWeight','Bold');
+  title('Sample Correlation Matrix  ','FontSize',FS+1,'FontWeight','Bold');
 end
 
 H.cbar = axes('Position',pos.cbar,'Parent',H.figure);
@@ -708,9 +753,9 @@ image((1:64));
 
 % display YTick with 5 values (limit accuracy for floating numbers)
 set(H.cbar,'YTickLabel','','XTickLabel','','XTick',linspace(1,64,5), 'XTickLabel',...
-  round(100*linspace(min(YpY(:)),max(YpY(:)),5))/100,'TickLength',[0 0]);
+  round(100*linspace(min(YpY(:)),max(YpY(YpY~=1)),5))/100,'TickLength',[0 0]);
 
-cmap = [hot(64); gray(64)];
+cmap = [jet(64); gray(64)];
 colormap(cmap)
 
 isscatter = 0;
@@ -728,9 +773,9 @@ end
 return
 
 %-----------------------------------------------------------------------
-function show_mean_boxplot(data_boxp, name_boxp, quality_order)
+function show_boxplot(data_boxp, name_boxp, quality_order)
 %-----------------------------------------------------------------------
-global filename FS sample ind_sorted_display show_name bp
+global H pos filename FS sample ind_sorted_display show_name bp show_violin
 
 if nargin == 0
   data_boxp = bp.data;
@@ -738,25 +783,24 @@ if nargin == 0
   quality_order = bp.order;
 end
 
-Fgraph = spm_figure('GetWin','Graphics');
-spm_figure('Clear',Fgraph);
-set(Fgraph,'Renderer','OpenGL');
+H.Fgraph = spm_figure('GetWin','Graphics');
+spm_figure('Clear',H.Fgraph);
+set(H.Fgraph,'Renderer','OpenGL');
 
 n_samples = max(sample);
 
 xpos = cell(1,n_samples);
 data = cell(1,n_samples);
 
-allow_violin = 2;
-
 hold on
+allow_violin = 1;
 for i=1:n_samples
   ind = find(sample == i);
-  data{i} = data_boxp(ind);
-  
-  if length(ind) < 8
-    allow_violin = 0;
+  if length(ind)<10
+    allow_violin = 0; 
+    show_violin = 0;
   end
+  data{i} = data_boxp(ind);
   
   if n_samples == 1
     xpos{i} = (i-1)+2*(0:length(ind)-1)/(length(ind)-1);
@@ -766,14 +810,33 @@ for i=1:n_samples
 
   for j=1:length(ind)
     if show_name
-      text(xpos{i}(j),data{i}(j),filename.m{ind(j)},'FontSize',FS(7),'HorizontalAlignment','center')
+      text(xpos{i}(j),data{i}(j),filename.m{ind(j)},'FontSize',FS-2,'HorizontalAlignment','center')
     else
       plot(xpos{i}(j),data{i}(j),'k.');
     end
   end
 end
 
-opt = struct('groupnum',0,'ygrid',0,'violin',allow_violin,'median',2,'groupcolor',jet(n_samples));
+H.fnambox = uicontrol(H.figure,...
+    'string','Show filenames','Units','normalized',...
+    'position',pos.fnambox,'callback',@checkbox_names,...
+    'Style','CheckBox','HorizontalAlignment','center',...
+    'ToolTipString','Show filenames in boxplot','value',show_name,...
+    'BackgroundColor',[0.8 0.8 0.8],...
+    'Interruptible','on','Visible','on','FontSize',FS-2);
+
+% allow violin plot onl if samples are all large enough
+if allow_violin
+  H.plotbox = uicontrol(H.figure,...
+    'string','Violinplot','Units','normalized',...
+    'position',pos.plotbox,'callback',@checkbox_plot,...
+    'Style','CheckBox','HorizontalAlignment','center',...
+    'ToolTipString','Switch to Violinplot','value',show_violin,...
+    'BackgroundColor',[0.8 0.8 0.8],...
+    'Interruptible','on','Visible','on','FontSize',FS-2);
+end
+
+opt = struct('groupnum',0,'ygrid',0,'violin',2*show_violin,'median',2,'groupcolor',jet(n_samples));
 ylim_add = 0.075;
 
 cat_plot_boxplot(data,opt);
@@ -794,26 +857,33 @@ if n_samples > 1
 else
   title_str = sprintf('Boxplot: %s  \nCommon filename: %s*',name_boxp,spm_file(char(filename.s),'short25'));
 end
-title(title_str,'FontSize',FS(8),'FontWeight','Bold');
-xlabel('<----- First ---      File Order      --- Last ------>  ','FontSize',FS(10),...
+title(title_str,'FontSize',FS-1,'FontWeight','Bold');
+xlabel('<----- First ---      File Order      --- Last ------>  ','FontSize',FS+1,...
     'FontWeight','Bold');
 
 xpos = -0.40 - n_samples*0.1;
 
 if (length(data_boxp) > 2)
   if quality_order > 0
-    text(xpos, ylim_min,'<----- Low rating (poor quality)  ','Color','red','Rotation',...
-        90,'HorizontalAlignment','left','FontSize',FS(9),'FontWeight','Bold')
-    text(xpos, ylim_max,'High rating (good quality) ------>  ','Color','green','Rotation',...
-        90,'HorizontalAlignment','right','FontSize',FS(9),'FontWeight','Bold')
+		text(xpos, ylim_min,'<----- Low rating (poor quality)  ','Color','red','Rotation',...
+				90,'HorizontalAlignment','left','FontSize',FS,'FontWeight','Bold')
+		text(xpos, ylim_max,'High rating (good quality) ------>  ','Color','green','Rotation',...
+				90,'HorizontalAlignment','right','FontSize',FS,'FontWeight','Bold')
   else
-    text(xpos, ylim_max,'Low rating (poor quality) ------>  ','Color','red','Rotation',...
-        90,'HorizontalAlignment','right','FontSize',FS(9),'FontWeight','Bold')
-    text(xpos, ylim_min,'<----- High rating (good quality)  ','Color','green','Rotation',...
-        90,'HorizontalAlignment','left','FontSize',FS(9),'FontWeight','Bold')
+    if strfind(name_boxp,'Mahalanobis')
+			text(xpos, ylim_max,'Largest distance to sample ------>  ','Color','red','Rotation',...
+					90,'HorizontalAlignment','right','FontSize',FS,'FontWeight','Bold')
+			text(xpos, ylim_min,'<----- Smallest distance to sample  ','Color','green','Rotation',...
+					90,'HorizontalAlignment','left','FontSize',FS,'FontWeight','Bold')
+		else
+			text(xpos, ylim_max,'Low rating (poor quality) ------>  ','Color','red','Rotation',...
+					90,'HorizontalAlignment','right','FontSize',FS,'FontWeight','Bold')
+			text(xpos, ylim_min,'<----- High rating (good quality)  ','Color','green','Rotation',...
+					90,'HorizontalAlignment','left','FontSize',FS,'FontWeight','Bold')
+		end
   end
   text(xpos, (ylim_max+ylim_min)/2,sprintf('%s',name_boxp),'Color','black','Rotation',...
-        90,'HorizontalAlignment','center','FontSize',FS(9),'FontWeight','Bold')
+        90,'HorizontalAlignment','center','FontSize',FS,'FontWeight','Bold')
 end
 
 hold off
@@ -970,9 +1040,9 @@ if isfield(pos,'x')
     txt = {sprintf('Correlation: %3.3f',YpY(x,y)),[],['Top: ',spm_file(filename.m{x},'short25')],...
       ['Bottom: ',spm_file(filename.m{y},'short25')],[],['Displayed slice: ',num2str(round(get(H.mm,'Value'))),' mm']};
   end
-  set(H.text,'String',txt,'FontSize',FS(6));
+  set(H.text,'String',txt,'FontSize',FS-2);
   set(H.mm_txt,'String',[num2str(round(get(H.mm,'Value'))),' mm'],...
-      'FontSize',FS(6));
+      'FontSize',FS-2);
 end
 
 return
@@ -999,7 +1069,7 @@ if isscatter
   % text info for textbox
   txt2 = {sprintf('%s',spm_file(filename.m{pos.x},'short25')),[],'Difference to Sample Mean (red: - green: +)'};
 
-  set(H.text,'String',txt2,'FontSize',FS(6));
+  set(H.text,'String',txt2,'FontSize',FS-2);
   axes('Position',pos.slice);
 
   x = pos.x;
@@ -1047,7 +1117,7 @@ else
       'Difference to Sample Mean (red: - green: +)'};
   end      
 
-  set(H.text,'String',txt2,'FontSize',FS(6));
+  set(H.text,'String',txt2,'FontSize',FS-2);
   axes('Position',pos.slice);
 end
   

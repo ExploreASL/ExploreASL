@@ -1,8 +1,7 @@
 #include "genus0.h"
-
-#ifdef MATLAB_MEX_FILE
+#include <stdio.h>
+#include <stdlib.h>
 #include <mex.h> 
-#endif
 
 static int verbose,invconnectivity, connectivity, autocrop[3][2];
 static int img_horiz,img_vert,img_depth,paddeddims[3];
@@ -710,9 +709,9 @@ static int set_up(genus0parameters * g0)
     if ((fzpic=(float *)Gcalloc(totlen,sizeof(float),0))==NULL)
       {error_msg("Memory error.\n",__LINE__);return(1);}
 
-    paddeddims[0]=img_horiz; paddeddims[1]=img_vert; paddeddims[2]=img_depth;
-
+    paddeddims[0] =img_horiz; paddeddims[1] =img_vert; paddeddims[2] =img_depth;
     paddeddims0[0]=img_horiz; paddeddims0[1]=img_vert; paddeddims0[2]=img_depth;
+
     /* calculate distance transform */
     /* sets fzpic to dist from {zpic=(1-cut_loops)} */
     if (dist_squared(3,paddeddims0,voxelsize,(char*)zpic,(char)(1-g0->cut_loops),fzpic))
@@ -1000,8 +999,13 @@ static void find_component(int level)
               {
               qqpni=qqp+nbrs0[i]; /* for each nbr */
               if (status[qqpni]>10) /* if part of a component */
+                {
                 if (truecmvx(qqpni)!=nc) /* if not the same component as qqp */
-                  cm[status[qqpni]]=status[qqpni]=nc;
+                  {
+                  cm[status[qqpni]]=nc;
+                  status[qqpni]=nc;
+                  }
+                }
               }
             }
           /* add nbrs to que, if level ok, etc. */
@@ -1375,7 +1379,7 @@ static int big_component(int * Tris, float * Verts, int * Vert_count, int * Tri_
 static int save_image(genus0parameters * g0)
   {
   int i,j,k,totlen,h,h1,sti;
-  int *pad,dims[3],origlen,vo[3],v2[3],pos[3];
+  int *pad,dims[3],origlen,vo[3],pos[3];
   char msg[200];
   unsigned short *output,zp;
   float *m,*verts,hv[3];
@@ -1439,7 +1443,6 @@ static int save_image(genus0parameters * g0)
       }
     }
   vo[0]=0; vo[1]=g0->vert_count; vo[2]=(g0->vert_count)*2;
-  v2[0]=1; v2[1]=dims[0]; v2[2]=dims[0]*dims[1];
   verts=g0->vertices;
 
   if (g0->return_adjusted_label_map) /* they want a new label map back */

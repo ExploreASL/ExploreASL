@@ -10,7 +10,7 @@ function varargout = cat_check_system_output(status,result,debugON,trerr)
 %                   error
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cat_check_system_output.m 1022 2016-09-29 21:10:38Z gaser $
+% $Id: cat_check_system_output.m 1508 2019-09-27 12:20:01Z dahnke $
 
   if ~exist('debugON','var'), debugON=0; end
   if ~exist('trerr','var'), trerr=1; end
@@ -30,7 +30,7 @@ function varargout = cat_check_system_output(status,result,debugON,trerr)
     end
   end
   if nargin > 2
-    if debugON && ~strcmp(result,'')
+    if debugON>0 && ~strcmp(result,'')
       fprintf('%s',sprintf(result)); 
     end
   end

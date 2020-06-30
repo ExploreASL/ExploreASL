@@ -3,6 +3,12 @@
 %  Use image without bias for better testing, as far as this correction
 %  will also reduce the main inhomogeneity and not only the slice artifact.
 
+
+% this function adds noise to the data to stabilize processing and we
+% have to define a specific random pattern to get the same results each time
+if exist('rng','file') == 2, rng('default'); rng(0); else, rand('state',0); randn('state',0); end
+
+
 %BWP image
 Pp0  = '/Volumes/MyBook/MRData/cat_tst/+RAW/BWP_Collins/SEG/p0BWPC_HC.nii';
 P    = {
@@ -42,7 +48,7 @@ for pi=1:numel(P)
       % add rand distortion
       [Yr,resTr] = cat_vol_resize(Y,'reduceV',1,45,1);
       Yas = 1 - art.intraSlAmp(iaa) + art.intraSlAmp(iaa) * ...
-            rand([art.intraSlFreq(iaf) art.intraSlFreq(iaf) size(Y,3)],'single');
+            randn([art.intraSlFreq(iaf) art.intraSlFreq(iaf) size(Y,3)],'single')/4; % RD20200115: replaced rand(size(YM))
       for z=1:size(Yas,3)
          Yas(:,:,z) = Yas(:,:,z) + (1-mean(mean(Yas(:,:,z))));
       end
@@ -52,7 +58,7 @@ for pi=1:numel(P)
 
       % interslicebias
       Za  = 1 - art.interSlAmp(iae) + art.interSlAmp(iae) * ...
-            rand([1 1 size(Y,3)],'single');
+            randn([1 1 size(Y,3)],'single')/4; % RD20200115: replaced rand(size(YM))
       Zas = Za - mean(Za(:)); 
       spm_smooth(Zas,Zas,art.interSlFreq(ief)); 
       Zas = Zas .* std(Za(:))./std(Zas(:));
@@ -80,7 +86,7 @@ for pi=1:numel(P)
       % add rand distortion
       [Yr,resTr] = cat_vol_resize(Y,'reduceV',1,45,1);
       Yas = 1 - art.intraSlAmp(iaa) + art.intraSlAmp(iaa) * ...
-            rand([art.intraSlFreq(iaf) size(Y,2) art.intraSlFreq(iaf)],'single');
+            randn([art.intraSlFreq(iaf) size(Y,2) art.intraSlFreq(iaf)],'single')/4; % RD20200115: replaced rand(size(YM))
       for y=1:size(Yas,2)
          Yas(:,y,:) = Yas(:,y,:) + (1-mean(mean(Yas(:,y,:))));
       end
@@ -90,7 +96,7 @@ for pi=1:numel(P)
 
       % interslicebias
       Za  = 1 - art.interSlAmp(iae) + art.interSlAmp(iae) * ...
-            rand([1 size(Y,2) 1],'single');
+            randn([1 size(Y,2) 1],'single')/4; % RD20200115: replaced rand(size(YM))
       Zas = Za - mean(Za(:)); 
       spm_smooth(Zas,Zas,art.interSlFreq(ief)); 
       Zas = Zas .* std(Za(:))./std(Zas(:));
@@ -118,7 +124,7 @@ for pi=1:numel(P)
       % add rand distortion
       [Yr,resTr] = cat_vol_resize(Y,'reduceV',1,45,1);
       Yas = 1 - art.intraSlAmp(iaa) + art.intraSlAmp(iaa) * ...
-            rand([size(Y,1) art.intraSlFreq(iaf) art.intraSlFreq(iaf)],'single');
+            randn([size(Y,1) art.intraSlFreq(iaf) art.intraSlFreq(iaf)],'single')/4; % RD20200115: replaced rand(size(YM))
       for x=1:size(Yas,1)
          Yas(x,:,:) = Yas(x,:,:) + (1-mean(mean(Yas(x,:,:))));
       end
@@ -128,7 +134,7 @@ for pi=1:numel(P)
 
       % interslicebias
       Za  = 1 - art.interSlAmp(iae) + art.interSlAmp(iae) * ...
-            rand([size(Y,1) 1 1],'single');
+            randn([size(Y,1) 1 1],'single')/4; % RD20200115: replaced rand(size(YM))
       Zas = Za - mean(Za(:)); 
       spm_smooth(Zas,Zas,art.interSlFreq(ief)); 
       Zas = Zas .* std(Za(:))./std(Zas(:));

@@ -187,9 +187,8 @@ if do_cls
 end
 
 Ym   = zeros(d(1:3),'single');
-fprintf('%s','Working on planes...   '); % ExploreASL hack
 for z=1:length(x3)
-    xASL_TrackProgress(z,length(x3)); % ExploreASL hack
+
     % Bias corrected image
     cr = cell(1,N);
     for n=1:N
@@ -288,9 +287,7 @@ if do_cls
     if mrf==0
         % Normalise to sum to 1
         sQ = (sum(Q,4)+eps)/255;
-        fprintf('%s','Normalise to sum to 1...   '); % ExploreASL hack
         for k1=1:size(Q,4)
-            xASL_TrackProgress(k1,size(Q,4)); % ExploreASL hack
             P(:,:,:,k1) = uint8(round(Q(:,:,:,k1)./sQ));
         end
         clear sQ
@@ -301,9 +298,7 @@ if do_cls
         G   = ones([Kb,1],'single')*mrf;
         vx2 = 1./single(sum(res.image(1).mat(1:3,1:3).^2));
         %save PQG P Q G tiss Kb x3 ind
-        fprintf('%s','Working on iterations...   '); % ExploreASL hack
         for iter=1:nmrf_its
-            xASL_TrackProgress(iter,nmrf_its); % ExploreASL hack
             spm_mrf(P,Q,G,vx2);
             spm_progress_bar('set',iter);
         end
@@ -606,9 +601,7 @@ if level==2, th1 = 0.2; end
 niter  = 32;
 niter2 = 32;
 spm_progress_bar('Init',niter+niter2,'Extracting Brain','Iterations completed');
-fprintf('%s','Extracting brain:   '); % ExploreASL hack
 for j=1:niter
-    xASL_TrackProgress(j,niter); % ExploreASL hack
     if j>2, th=th1; else th=0.6; end  % Dilate after two its of erosion
     for i=1:size(b,3)
         gp       = double(P(:,:,i,1));
@@ -624,9 +617,7 @@ end
 % Also clean up the CSF.
 if niter2 > 0
     c = b;
-    fprintf('%s','Also clean up the CSF:   '); % ExploreASL hack
     for j=1:niter2
-        xASL_TrackProgress(j,niter2); % ExploreASL hack
         for i=1:size(b,3)
             gp       = double(P(:,:,i,1));
             wp       = double(P(:,:,i,2));
@@ -664,5 +655,4 @@ for i=1:size(b,3)
         P(:,:,i,k1) = uint8(round(slices{k1}./tot*255));
     end 
 end
-fprintf('\n'); % ExploreASL hack
 spm_progress_bar('Clear');

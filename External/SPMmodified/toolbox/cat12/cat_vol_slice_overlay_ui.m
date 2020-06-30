@@ -1,10 +1,23 @@
 function cat_vol_slice_overlay_ui
+% Wrapper to cat_vol_slice_overlay
+% Call help for slice_overlay for any help
+% 
+% Additional fields to slice_overlay:
+% OV.xy    - define number of columns and rows
+%            comment this out for interactive selection
+% OV.atlas - define atlas for labeling
+%            comment this out for interactive selection
+%            or use 'none' for no atlas information
+% OV.save  - save result as png/jpg/pdf/tif
+%            comment this out for interactive selection or use '' for not 
+%            saving any file or use just file extension (png/jpg/pdf/tif) to 
+%            automatically estimate filename to save
 %__________________________________________________________________________
 % Christian Gaser
-% $Id: cat_vol_slice_overlay_ui.m 1234 2017-12-04 10:52:18Z gaser $
+% $Id: cat_vol_slice_overlay_ui.m 1607 2020-04-17 22:52:07Z gaser $
 
-OV.reference_image = fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm','Template_T1_IXI555_MNI152_GS.nii');
-OV.reference_range = [0.2 1.0];                         % intensity range for reference image
+OV.reference_image = fullfile(spm('dir'),'toolbox','cat12','templates_volumes','Template_T1_IXI555_MNI152_GS.nii');
+OV.reference_range = [0.2 1.0];                        % intensity range for reference image
 OV.opacity = Inf;                                      % transparence value for overlay (<1)
 OV.cmap    = jet;                                      % colormap for overlay
 
@@ -28,7 +41,7 @@ OV.name = char(fullfile(spm('dir'),'tpm','TPM.nii,1'),...
 
 % Number of fields in range should be the same as number of files (see above)
 % or give one field, which is valid for all.
-% Be carefule: intensities below the lower range are not shown!
+% Be careful: intensities below the lower range are not shown!
 OV.range   =[[0.5 1]; [0.5 1]];
 
 % OV.func can be used to set the image to defined values (e.g. NaN) for the given range
@@ -37,7 +50,7 @@ OV.range   =[[0.5 1]; [0.5 1]];
 % selection of slices and orientations
 % if OV.slices_str is an empty string then slices with local maxima are estimated automatically
 OV.slices_str = char('','-30:2:30','-20:5:45');
-OV.transform = char('axial','sagittal','coronal');
+OV.transform  = char('axial','sagittal','coronal');
 
 % define output format of slices
 OV.labels.format = '%3.1f';
@@ -46,15 +59,21 @@ OV.labels.format = '%3.1f';
 % comment this out for interactive selection
 OV.xy = [3 5];
 
-% save result as png/jpg/pdf
-% comment this out for interactive selection or use 'none' for not 
-% saving any file
-OV.save = 'result.png';
+% save result as png/jpg/pdf/tif
+% comment this out for interactive selection or use '' for not 
+% saving any file or use just file extension (png/jpg/pdf/tif) to automatically
+% estimate filename to save
+OV.save = 'png';
 
-% Comment this out if you don't wish slice labels
+% Remove comment if you don't wish slice labels
 %OV.labels = [];
 
-% Comment this out if you don't wish colorbar
+% Remove comment if you don't wish colorbar
 %OV.cbar = [];
+
+% define atlas for labeling
+% comment this out for interactive selection
+% or use 'none' for no atlas information
+OV.atlas = 'dartel_neuromorphometrics';
 
 cat_vol_slice_overlay(OV)

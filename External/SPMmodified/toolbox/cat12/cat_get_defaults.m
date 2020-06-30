@@ -25,7 +25,7 @@ function varargout = cat_get_defaults(defstr, varargin)
 
 % based on Volkmar Glauches version of
 % spm_get_defaults
-% $Id: cat_get_defaults.m 1309 2018-04-23 14:19:28Z dahnke $
+% $Id: cat_get_defaults.m 1562 2020-02-11 13:53:30Z dahnke $
 
 global cat;
 if isempty(cat)
@@ -50,6 +50,10 @@ if nargin == 1
     end
     return;
 elseif nargin == 2
+  if iscell( varargin{1} )
+    % add an new entry
+    cat = subsasgn(cat, subs, varargin{1});
+  else
     switch varargin{1}
         case 'rmfield'
           % remove the last field of the given defstr
@@ -68,6 +72,7 @@ elseif nargin == 2
           % add an new entry
             cat = subsasgn(cat, subs, varargin{1});
     end
+  end
 end
 if nargout == 1
   % output in case changes in cat

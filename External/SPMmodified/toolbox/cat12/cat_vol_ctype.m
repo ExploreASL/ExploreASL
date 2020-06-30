@@ -16,10 +16,10 @@ function Y=cat_vol_ctype(Y,type)
 % Structural Brain Mapping Group
 % University Jena
 %
-% $Id: cat_vol_ctype.m 1129 2017-05-09 12:58:31Z gaser $
+% $Id: cat_vol_ctype.m 1442 2019-03-21 07:48:36Z dahnke $
 % ______________________________________________________________________
   
-  types = {'int8','int16','int32','int64','single',...
+   types = {'int8','int16','int32','int64','single','float32','float64'...
            'uint8','uint16','uint32','uint64','double'};
 
   if ~exist('type','var');
@@ -37,6 +37,7 @@ function Y=cat_vol_ctype(Y,type)
              '(only [u]int[8|16], single, and double).'],type);
     end
   end
+  type = cat_io_strrep(type,{'float32','float64'},{'single','dobule'});
 
   
   if iscell(Y)

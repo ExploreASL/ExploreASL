@@ -1,5 +1,5 @@
 % Computational Anatomy Toolbox
-% Version  1363 CAT12.5 2018-09-02
+% Version  1615 CAT12.7-Beta 2020-05-09
 
 ======================================================================
 Installation

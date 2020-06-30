@@ -3,7 +3,7 @@ function cat_stat_IQR(p)
 %
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cat_stat_IQR.m 1026 2016-10-03 20:44:40Z gaser $
+% $Id: cat_stat_IQR.m 1467 2019-05-23 08:52:34Z dahnke $
 
 fid = fopen(p.iqr_name,'w');
 
@@ -17,7 +17,11 @@ for i=1:length(p.data_xml)
     try
       iqr = xml.qualityratings.IQR;
     catch % also try to use old versions
-      iqr = xml.QAM.QM.rms;
+      try
+        iqr = xml.QAM.QM.rms;
+      catch % give up
+        iqr = nan; 
+      end
     end
 
     [pth,nam]     = spm_fileparts(p.data_xml{i});

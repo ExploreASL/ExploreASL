@@ -1,4 +1,4 @@
-function varargout = cat_stat_spm2x(vargin)
+function out = cat_stat_spm2x(job)
 %cat_stat_spm2x transformation of
 % t-maps to P, -log(P), r or d-maps
 % F-maps to P, -log(P), R2 maps
@@ -10,18 +10,9 @@ function varargout = cat_stat_spm2x(vargin)
 % ---------------------------------------------
 % correlation coefficient:
 %
-%          sign(t)
+%          t
 % r = ------------------
-%            df
-%     sqrt(------ + 1)
-%           t*t
-%
-% ---------------------------------------------
-% effect-size
-%
-%            2t
-% d = ----------------
-%         sqrt(df)
+%       sqrt(t^2 + df)
 %
 % ---------------------------------------------
 % p-value
@@ -40,9 +31,9 @@ function varargout = cat_stat_spm2x(vargin)
 % ---------------------------------------------
 % coefficient of determination R2
 %
-%           F*(n-1)
-% R2 = ------------------
-%        n-p + F*(n-1)
+%                  1
+% R2 = 1 - ------------------
+%           1 + F*(p-1)/n-p)
 %
 % ---------------------------------------------
 % p-value
@@ -97,51 +88,51 @@ function varargout = cat_stat_spm2x(vargin)
 %              values) 
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cat_stat_spm2x.m 1233 2017-12-03 23:26:25Z gaser $
+% $Id: cat_stat_spm2x.m 1607 2020-04-17 22:52:07Z gaser $
 
-if nargin == 1
-    if isfield(vargin,'data_T2x')
+if nargin > 0
+    if isfield(job,'data_T2x')
       T2x = 1;
       stat = 'T';
-      P = char(vargin.data_T2x);
+      P = char(job.data_T2x);
     else
       T2x = 0;
       stat = 'F';
-      P = char(vargin.data_F2x);
+      P = char(job.data_F2x);
     end
     
-    sel = vargin.conversion.sel;
+    sel = job.conversion.sel;
 
-    if isfield(vargin.conversion.threshdesc,'fwe')
+    if isfield(job.conversion.threshdesc,'fwe')
         adjustment = 1;
-        u0  = vargin.conversion.threshdesc.fwe.thresh05;
-    elseif isfield(vargin.conversion.threshdesc,'fdr')
+        u0  = job.conversion.threshdesc.fwe.thresh05;
+    elseif isfield(job.conversion.threshdesc,'fdr')
         adjustment = 2;
-        u0  = vargin.conversion.threshdesc.fdr.thresh05;
-    elseif isfield(vargin.conversion.threshdesc,'uncorr')
+        u0  = job.conversion.threshdesc.fdr.thresh05;
+    elseif isfield(job.conversion.threshdesc,'uncorr')
         adjustment = 0;
-        u0  = vargin.conversion.threshdesc.uncorr.thresh001;
-    elseif isfield(vargin.conversion.threshdesc,'none')
+        u0  = job.conversion.threshdesc.uncorr.thresh001;
+    elseif isfield(job.conversion.threshdesc,'none')
         adjustment = -1;
         u0  = -Inf;
     end
     
-    if isfield(vargin.conversion.cluster,'fwe2')
+    if isfield(job.conversion.cluster,'fwe2')
         extent_FWE = 1;
-        pk  = vargin.conversion.cluster.fwe2.thresh05;
-        noniso = vargin.conversion.cluster.fwe2.noniso;
-    elseif isfield(vargin.conversion.cluster,'kuncorr')
+        pk  = job.conversion.cluster.fwe2.thresh05;
+        noniso = job.conversion.cluster.fwe2.noniso;
+    elseif isfield(job.conversion.cluster,'kuncorr')
         extent_FWE = 0;
-        pk  = vargin.conversion.cluster.kuncorr.thresh05;
-        noniso = vargin.conversion.cluster.kuncorr.noniso;
-    elseif isfield(vargin.conversion.cluster,'k')
+        pk  = job.conversion.cluster.kuncorr.thresh05;
+        noniso = job.conversion.cluster.kuncorr.noniso;
+    elseif isfield(job.conversion.cluster,'k')
         extent_FWE = 0;
-        pk  = vargin.conversion.cluster.k.kthresh;
-        noniso = vargin.conversion.cluster.k.noniso;
-    elseif isfield(vargin.conversion.cluster,'En')
+        pk  = job.conversion.cluster.k.kthresh;
+        noniso = job.conversion.cluster.k.noniso;
+    elseif isfield(job.conversion.cluster,'En')
         extent_FWE = 0;
         pk = -1;
-        noniso = vargin.conversion.cluster.En.noniso;
+        noniso = job.conversion.cluster.En.noniso;
     else
         extent_FWE = 0;
         pk = 0;
@@ -149,17 +140,23 @@ if nargin == 1
     end
 
     if T2x
-        neg_results = vargin.conversion.inverse;
+        neg_results = job.conversion.inverse;
     end
     
 end
 
 if nargin < 1
+    %-Get type of statistic
+    %-------------------------------------------------------------------
+    T2x = spm_input('Type of statistic',1,'b','T|F',[1 0],1);
+
     if T2x
+        stat = 'T';
         P = spm_select(Inf,'^spmT.*(img|nii|gii)','Select T-images');
         sel = spm_input('Convert t value to?',1,'m',...
           '1-p|-log(1-p)|correlation coefficient cc|effect size d|apply thresholds without conversion',1:5, 2);
     else
+        stat = 'F';
         P = spm_select(Inf,'^spmF.*(img|nii|gii)','Select F-images');
         sel = spm_input('Convert F value to?',1,'m',...
           '1-p|-log(1-p)|coefficient of determination R^2|apply thresholds without conversion',1:4, 2);
@@ -221,7 +218,7 @@ end
 Pname = cell(size(P,1),1);
 
 for i=1:size(P,1)
-    [pth,nm,ext] = spm_fileparts(deblank(P(i,:)));
+    [pth,nm] = spm_fileparts(deblank(P(i,:)));
 
     SPM_name = fullfile(pth, 'SPM.mat');
     
@@ -254,7 +251,7 @@ for i=1:size(P,1)
 
     % correct path for surface if analysis was made with different SPM installation
     if isfield(SPM.xVol,'G') 
-        if ischar(SPM.xVol.G) & ~exist(SPM.xVol.G,'file')
+        if ischar(SPM.xVol.G) && ~exist(SPM.xVol.G,'file')
             % check for 32k meshes
             if SPM.xY.VY(1).dim(1) == 32492 || SPM.xY.VY(1).dim(1) == 64984
                 fsavgDir = fullfile(spm('dir'),'toolbox','cat12','templates_surfaces_32k');
@@ -358,7 +355,7 @@ for i=1:size(P,1)
         end
         
         % atlas measures
-        if isfield(vargin,'atlas') && ~strcmp(vargin.atlas,'None')
+        if (nargin > 0) && isfield(job,'atlas') && ~strcmp(job.atlas,'None')
             labk   = cell(max(A)+2,1);
             Pl     = cell(max(A)+2,1);
             Zj     = cell(max(A)+2,1);
@@ -366,7 +363,7 @@ for i=1:size(P,1)
             XYZmmj = cell(max(A)+2,1);
 
             XYZmm = Vspm.mat(1:3,:)*[XYZ; ones(1,size(XYZ,2))]; %-voxel coordinates {mm}
-            atlas_name = vargin.atlas;
+            atlas_name = job.atlas;
             xA = spm_atlas('load',atlas_name);
         end
 
@@ -412,7 +409,7 @@ for i=1:size(P,1)
                                 Q = [Q j];
                                 
                                 % save atlas measures for 3D data
-                                if isfield(vargin,'atlas') && ~strcmp(vargin.atlas,'None')
+                                if (nargin > 0) && isfield(job,'atlas') && ~strcmp(job.atlas,'None')
                                     [labk{i2}, Pl{i2}]  = spm_atlas('query',xA,XYZmm(:,j));
                                     Zj{i2} = Z(:,j);
                                     XYZmmj{i2} = XYZmm(:,j);
@@ -432,7 +429,7 @@ for i=1:size(P,1)
                     Q = [Q j];
                     
                     % save atlas measures for 3D data
-                    if isfield(vargin,'atlas') && ~strcmp(vargin.atlas,'None')
+                    if (nargin > 0) && isfield(job,'atlas') && ~strcmp(job.atlas,'None')
                         [labk{i2}, Pl{i2}]  = spm_atlas('query',xA,XYZmm(:,j));
                         Zj{i2} = Z(:,j);
                         XYZmmj{i2} = XYZmm(:,j);
@@ -452,10 +449,28 @@ for i=1:size(P,1)
 
     else
         k = 0;
-
+        p_extent_str = 'NoVox'; 
     end % (if ~isempty(XYZ))
 
-    if ~isempty(Q)
+    if isempty(Q)
+        if T2x
+          t2x  = inf;    
+          switch sel
+            case 1,  t2x_name = 'P_';
+            case 2,  t2x_name = 'logP_';
+            case 3,  t2x_name = 'R_';
+            case 4,  t2x_name = 'D_';
+            case 5,  t2x_name = 'T_';
+          end
+        else
+          switch sel
+            case 1,  t2x_name = 'P_'; 
+            case 2,  t2x_name = 'logP_';
+            case 3,  t2x_name = 'R2_';
+            case 4,  t2x_name = 'F_';
+          end
+        end      
+    else
         if T2x
           switch sel
           case 1
@@ -470,7 +485,8 @@ for i=1:size(P,1)
             end
             t2x_name = 'logP_';
           case 3
-            t2x = sign(Z).*(1./((df(2)./((Z.*Z)+eps))+1)).^0.5;
+            t2x = Z./sqrt(Z.*Z + df(2));
+%            t2x = sign(Z).*(1./((df(2)./((Z.*Z)+eps))+1)).^0.5;
             t2x_name = 'R_';
           case 4
             t2x = 2*Z/sqrt(df(2));
@@ -488,13 +504,17 @@ for i=1:size(P,1)
             t2x = -log10(max(eps,1-spm_Fcdf(Z,df)));
             t2x_name = 'logP_';
           case 3
-    	  	  t2x = (df(2)-1)*Z./(df(2) - df(1)+Z*(df(2) -1));
+              % n = df(2)
+              % p = df(1)
+              t2x = 1 - 1./(1+(Z*(df(1)-1)/(df(2)-df(1))));
+%    	  	  t2x = (df(2)-1)*Z./(df(2) - df(1)+Z*(df(2) -1));
 		      t2x_name = 'R2_';
           case 4
             t2x = Z;
             t2x_name = 'F_';
           end
         end
+    end
         str_num = deblank(xCon(Ic).name);
 
         % replace spaces with "_" and characters like "<" or ">" with "gt" or "lt"
@@ -510,26 +530,30 @@ for i=1:size(P,1)
         str_num = spm_str_manip(str_num,'v');
     
         if T2x && neg_results
-        neg_str = '_bi'; 
+            neg_str = '_bi'; 
         else
             neg_str = '';
         end
        
         if isfield(SPM.xVol,'G')
             ext = '.gii';
-        else ext = '.nii'; end
+        else
+            ext = '.nii';
+        end
 
-        if u0 > -Inf
+        if ~isempty(Q) || u0 > -Inf
            name = [t2x_name str_num p_height_str num2str(u0*100) p_extent_str '_k' num2str(k) neg_str ext];
         else
            name = [t2x_name str_num ext];
         end
-        fprintf('Save %s\n', name);
     
         Pname{i} = deblank(fullfile(pth,name));
 
+        %fprintf('Save %s\n', name);
+        fprintf('  Display %s\n',spm_file(Pname{i},'link','cat_surf_display(''%s'')')); 
+
         % print table for 3D data
-        if isfield(vargin,'atlas') && ~strcmp(vargin.atlas,'None')
+        if (nargin > 0) && isfield(job,'atlas') && ~strcmp(job.atlas,'None') && ~isempty(XYZ)
             % sort T/F values and print from max to min values
             [tmp, maxsort] = sort(maxZ,'descend');
         
@@ -561,13 +585,19 @@ for i=1:size(P,1)
                             fprintf('\n______________________________________________________\n\n');
                             fprintf('%1s-%5s\t%7s\t%15s\t%s\n\n',STAT,'Value','   Size','    xyz [mm]   ','Overlap of atlas region');
                         end
+                        if ~found_pos && ~found_neg
+                            fprintf('\n______________________________________________________');
+                            fprintf('\n%s: No effects\n%s',name,atlas_name);
+                            fprintf('\n______________________________________________________\n\n');
+                        else
 
-                        fprintf('%7.2f\t%7d\t%4.0f %4.0f %4.0f',maxZ(j),length(Zj{j}),XYZmmj{j}(:,indZ));
-                        for m=1:numel(labk{j})
-                            if Pl{j}(m) >= 1,
-                                if m==1, fprintf('\t%3.0f%%\t%s\n',Pl{j}(m),labk{j}{m});
-                                else     fprintf('%7s\t%7s\t%15s\t%3.0f%%\t%s\n','       ','       ','               ',...
-                                    Pl{j}(m),labk{j}{m});
+                            fprintf('%7.2f\t%7d\t%4.0f %4.0f %4.0f',maxZ(j),length(Zj{j}),XYZmmj{j}(:,indZ));
+                            for m=1:numel(labk{j})
+                                if Pl{j}(m) >= 1
+                                    if m==1, fprintf('\t%3.0f%%\t%s\n',Pl{j}(m),labk{j}{m});
+                                    else     fprintf('%7s\t%7s\t%15s\t%3.0f%%\t%s\n','       ','       ','               ',...
+                                        Pl{j}(m),labk{j}{m});
+                                    end
                                 end
                             end
                         end
@@ -590,9 +620,9 @@ for i=1:size(P,1)
         VO = spm_data_hdr_write(VO);
         spm_data_write(VO,Y);
     
-    end
+    %end
 end
 
-if nargout==1, varargout{1}.Pname = Pname; end  
+out.Pname = Pname;  
 
 

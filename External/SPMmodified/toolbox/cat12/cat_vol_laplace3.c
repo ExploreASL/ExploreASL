@@ -3,24 +3,23 @@
  * Filter SEG within the intensity range of low and high until the changes
  * are below TH. 
  *
- * L = laplace3(SEG,low,high,TH)
+ * L = cat_vollaplace3(SEG,low,high,TH)
  *
  * SEG  = 3d sinlge input matrix
  * low  = low boundary threshold
  * high = high boundary threshold
- * TH   = threshold to controll the number of interations
- *        maximum change of an element after interation
+ * TH   = threshold to control the number of iterations
+ *        maximum change of an element after iteration
  *
  * ________________________________________________________________________
  * Robert Dahnke
  * Center of Neuroimaging 
  * University Jena
  *
- * $Id: cat_vol_laplace3.c 1294 2018-03-19 20:33:44Z gaser $ 
+ * $Id: cat_vol_laplace3.c 1561 2020-02-04 15:49:34Z gaser $ 
  */
 
 #include "mex.h"   
-#include "matrix.h"
 #include "math.h"
 
 
@@ -43,7 +42,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (nrhs==5 && mxIsDouble(prhs[4])==0)            mexErrMsgTxt("ERROR:laplace3: 5th input (voxelsize) must be a double matrix\n");
   if (nrhs==5 && mxGetNumberOfElements(prhs[4])!=3) mexErrMsgTxt("ERROR:laplace3: 5th input (voxelsize) must have 3 Elements");
   
-  /* main informations about input data (size, dimensions, ...) */
+  /* main information about input data (size, dimensions, ...) */
   const mwSize *sL = mxGetDimensions(prhs[0]);
   const int     dL = mxGetNumberOfDimensions(prhs[0]);
   const int     nL = mxGetNumberOfElements(prhs[0]);

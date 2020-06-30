@@ -1,5 +1,5 @@
 /* Christian Gaser
- * $Id: sanlm_float.c 854 2016-02-08 08:04:43Z gaser $ 
+ * $Id: sanlm_float.c 1466 2019-05-23 08:20:13Z gaser $ 
  *
  *
  * This code is a modified version of MABONLM3D.c 
@@ -39,12 +39,7 @@
 #endif
 
 /* Multithreading stuff */
-#if defined(_WIN32)
-#include <windows.h>
-#include <process.h>
-#else
 #include <pthread.h>
-#endif
 
 #define PI 3.1415926535
 
@@ -66,8 +61,9 @@ typedef struct{
 
 int rician;
 double max;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/*Returns the modified Bessel function I0(x) for any real x.*/
+/* Returns the modified Bessel function I0(x) for any real x. */
 double bessi0(double x)
 {
   double ax,ans,a;
@@ -88,7 +84,7 @@ double bessi0(double x)
   return ans;
 }
 
-/*Returns the modified Bessel function I1(x) for any real x.*/
+/* Returns the modified Bessel function I1(x) for any real x. */
 double bessi1(double x)
 {
   double ax,ans;
@@ -379,11 +375,7 @@ void Regularize(float *in,float *out,int r,int sx,int sy,int sz)
   return;
 }
 
-#if defined(_WIN32)
-unsigned __stdcall ThreadFunc( void* pArguments )
-#else
 void* ThreadFunc( void* pArguments )
-#endif
 {
   float *bias,*Estimate,*ima,*means,*variances,*average;
   double epsilon,mu1,var1,totalweight,wmax,t1,t1i,t2,d,w,distanciaminima;
@@ -531,22 +523,22 @@ void* ThreadFunc( void* pArguments )
         if (wmax == 0.0) wmax = 1.0;                        
         Average_block(ima,i,j,k,f,average,wmax,cols,rows,slices);                   
         totalweight = totalweight + wmax;                                        
+        pthread_mutex_lock(&mutex);
         Value_block(Estimate,Label,i,j,k,f,average,totalweight,cols,rows,slices);               
+        pthread_mutex_unlock(&mutex);
     }
     else 
     {           
       wmax = 1.0;  
       Average_block(ima,i,j,k,f,average,wmax,cols,rows,slices); 
       totalweight = totalweight + wmax;
+      pthread_mutex_lock(&mutex);
       Value_block(Estimate,Label,i,j,k,f,average,totalweight,cols,rows,slices);
+      pthread_mutex_unlock(&mutex);
     }
   }
 
-#if defined(_WIN32)
-  _endthreadex(0);    
-#else
-  pthread_exit(0);    
-#endif
+  pthread_exit((void*) 0);    
 
   free(average);
   return 0;
@@ -560,22 +552,15 @@ void anlm(float* ima, int v, int f, int use_rician, const int* dims)
   int ndim = 3;
   double SNR,mean,var,estimate,d;
   int vol,slice,label,Ndims,i,j,k,ii,jj,kk,ni,nj,nk,indice,Nthreads,ini,fin,r;
-
-  extern int rician;
-
   myargument *ThreadArgs;  
-
-#if defined(_WIN32)
-  HANDLE *ThreadList; /* Handles to the worker threads*/
-#else
-  pthread_t * ThreadList;
-#endif
+  pthread_t *ThreadList;
+  extern int rician;
 
   Ndims = (int)floor(pow((2.0*f+1.0),ndim));
   slice = dims[0]*dims[1];
   vol = dims[0]*dims[1]*dims[2];
 
-  /*Allocate memory */
+  /* Allocate memory */
   means = (float*)malloc(vol*sizeof(float));
   variances = (float*)malloc(vol*sizeof(float));
   Estimate = (float*)malloc(vol*sizeof(float));
@@ -669,48 +654,17 @@ void anlm(float* ima, int v, int f, int use_rician, const int* dims)
   }
 
   Nthreads = dims[2]<8?dims[2]:8;
-  if(Nthreads<1) Nthreads=1;
-
-/*  if(Nthreads>1) printf("Using %d processors\n",Nthreads);fflush(stdout); */
-
-
-#if defined(_WIN32)
-
-  /* Reserve room for handles of threads in ThreadList*/
-  ThreadList = (HANDLE*) malloc(Nthreads*sizeof( HANDLE ));
-  ThreadArgs = (myargument*) malloc( Nthreads*sizeof(myargument));
-
-  for (i=0; i<Nthreads; i++)
- {         
-	/* Make Thread Structure   */
-    ini = (i*dims[2])/Nthreads;
-    fin = ((i+1)*dims[2])/Nthreads;            
-    ThreadArgs[i].cols = dims[0];
-    ThreadArgs[i].rows = dims[1];
-    ThreadArgs[i].slices = dims[2];
-    ThreadArgs[i].in_image = ima;   
-    ThreadArgs[i].var_image = variances;
-    ThreadArgs[i].means_image = means;  
-    ThreadArgs[i].estimate = Estimate;
-    ThreadArgs[i].bias = bias;    
-    ThreadArgs[i].label = Label;    
-    ThreadArgs[i].ini = ini;
-    ThreadArgs[i].fin = fin;
-    ThreadArgs[i].radioB = v;
-    ThreadArgs[i].radioS = f;  
-    	
-    ThreadList[i] = (HANDLE)_beginthreadex( (void *)NULL, 0, &ThreadFunc, &ThreadArgs[i] , 0, (unsigned *)NULL );
-        
- }
-    
-  for (i=0; i<Nthreads; i++) { WaitForSingleObject(ThreadList[i], INFINITE); }
-  for (i=0; i<Nthreads; i++) { CloseHandle( ThreadList[i] ); }
-    
-#else
+  if (Nthreads<1) Nthreads=1;
 
   /* Reserve room for handles of threads in ThreadList*/
   ThreadList = (pthread_t *) calloc(Nthreads,sizeof(pthread_t));
   ThreadArgs = (myargument*) calloc( Nthreads,sizeof(myargument));
+
+  if (pthread_mutex_init(&mutex, NULL) != 0)
+	{
+			printf("\n mutex init failed\n");
+			exit(1);
+	}
 
   for (i=0; i<Nthreads; i++)
   {         
@@ -734,7 +688,7 @@ void anlm(float* ima, int v, int f, int use_rician, const int* dims)
 
   for (i=0; i<Nthreads; i++)
   {
-    if(pthread_create(&ThreadList[i], NULL, ThreadFunc,&ThreadArgs[i]))
+    if(pthread_create(&ThreadList[i], NULL, ThreadFunc, &ThreadArgs[i]))
     {
        printf("Threads cannot be created\n");
        exit(1);
@@ -744,7 +698,7 @@ void anlm(float* ima, int v, int f, int use_rician, const int* dims)
   for (i=0; i<Nthreads; i++)
     pthread_join(ThreadList[i],NULL);
 
-#endif
+  pthread_mutex_destroy(&mutex);
     
   if (rician)
   {
@@ -759,7 +713,7 @@ void anlm(float* ima, int v, int f, int use_rician, const int* dims)
 #if defined(_WIN32)
         if (_isnan(bias[i])) bias[i] = 0.0;     
 #else
-        if (isnan(bias[i])) bias[i] = 0.0;     
+        if ( isnan(bias[i])) bias[i] = 0.0;     
 #endif
       }
     }

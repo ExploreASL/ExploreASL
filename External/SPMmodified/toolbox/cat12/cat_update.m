@@ -3,9 +3,9 @@ function varargout = cat_update(update)
 %
 % FORMAT [sts, msg] = cat_update(update)
 % sts    - status code:
-%        NaN - SPM server not accessible
+%        NaN - CAT server not accessible
 %        Inf - no updates available
-%        0   - SPM installation up to date
+%        0   - CAT installation up-to-date
 %        n   - new revision <n> is available for download
 % msg    - string describing outcome, that would otherwise be displayed.
 % update - allow installation of update
@@ -15,9 +15,9 @@ function varargout = cat_update(update)
 % currently in the MATLAB path and will display the result.
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cat_update.m 1355 2018-08-13 13:53:48Z gaser $
+% $Id: cat_update.m 1613 2020-05-04 17:36:07Z gaser $
 
-rev = '$Rev: 1355 $';
+rev = '$Rev: 1613 $';
 
 if isdeployed
   sts= Inf;
@@ -42,7 +42,12 @@ r = 0;
 r = str2double(r);
 
 % get new release numbers
-[s,sts] = urlread(url);
+try
+  [s,sts] = urlread(url,'Timeout',2);
+catch
+  [s,sts] = urlread(url);
+end
+
 if ~sts
   sts = NaN;
   msg = sprintf('Cannot access %s. Please check your proxy and/or firewall to allow access.\nYou can download your update at %s\n',url,url); 
@@ -81,7 +86,7 @@ else
 end
 
 if update
-    overwrite = spm_input('Update',1,'yes|no',[1 0],1);
+    overwrite = spm_input(sprintf('Update to r%d',rnew),1,'yes|no',[1 0],1);
     d0 = spm('Dir');
     d = fullfile(spm('Dir'),'toolbox'); 
     
@@ -124,9 +129,9 @@ if update
         end
 
         % delete old volume template files 
-        templatefiles = dir(fullfile(d,'cat12','templates_1.50mm','*.*'));
+        templatefiles = dir(fullfile(d,'cat12','templates_volumes','*.*'));
         for i=1:length(templatefiles)
-          name = fullfile(d,'cat12','templates_1.50mm',templatefiles(i).name);
+          name = fullfile(d,'cat12','templates_volumes',templatefiles(i).name);
           spm_unlink(name);
         end
 

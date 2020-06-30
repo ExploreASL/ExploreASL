@@ -27,7 +27,7 @@ function [Ym,Yb,WMth,Affine] = cat_long_APP(PF,PG,PB,opt)
 %   ds('l2','',vx_vol,Ym,Yb,Yp0,Ym,160)
 % ______________________________________________________________________
 % Robert Dahnke
-% $Id: cat_long_APP.m 1327 2018-07-04 22:14:33Z gaser $
+% $Id: cat_long_APP.m 1430 2019-02-19 16:01:28Z gaser $
 
 %#ok<*WNOFF,*WNON>
 
@@ -94,7 +94,7 @@ function [Ym,Yb,WMth,Affine] = cat_long_APP(PF,PG,PB,opt)
   VFa = VF; VFa.mat = Affine * VF.mat; 
   if isfield(VFa,'dat'), VFa = rmfield(VFa,'dat'); end
   [pp,ff] = spm_fileparts(PF); Pbt = fullfile(pp,['brainmask_' ff '.nii']);
-  [Vmsk,Yb]   = cat_vol_imcalc([VFa,VB],Pbt,'i2',struct('interp',3,'verb',0));
+  [Vmsk,Yb]   = cat_vol_imcalc([VFa,VB],Pbt,'i2',struct('interp',1,'verb',0));
     
   if opt.verb
     fprintf('%4.0fs\n',etime(clock,stime)); 

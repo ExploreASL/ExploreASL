@@ -13,11 +13,10 @@
  * Center of Neuroimaging 
  * University Jena
  *
- * $Id: cat_vol_gradient3.c 1294 2018-03-19 20:33:44Z gaser $ 
+ * $Id: cat_vol_gradient3.c 1523 2019-11-21 23:12:24Z gaser $ 
  */
 
 #include "mex.h"   
-#include "matrix.h"
 #include "math.h"
 
 
@@ -40,7 +39,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (mxIsSingle(prhs[0])==0)  mexErrMsgTxt("ERROR:cat_vol_gradient3: input must be an 3d single matrix\n");
  
   
-  /* main informations about input data (size, dimensions, ...) */
+  /* main information about input data (size, dimensions, ...) */
   const mwSize *sL = mxGetDimensions(prhs[0]);
   const int     dL = mxGetNumberOfDimensions(prhs[0]);
   const int     nL = mxGetNumberOfElements(prhs[0]);

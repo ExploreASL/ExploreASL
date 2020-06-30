@@ -1,9 +1,12 @@
 function Yg = cat_vol_grad(Ym,vx_vol,noabs)
 % ----------------------------------------------------------------------
 % gradient map for edge description
+%
+% Yg = cat_vol_grad(Ym,vx_vol,noabs)
+%
 % ----------------------------------------------------------------------
 % Robert Dahnke
-% $Id: cat_vol_grad.m 1319 2018-05-23 12:11:55Z dahnke $
+% $Id: cat_vol_grad.m 1398 2018-11-29 17:13:22Z dahnke $
 
   if ~exist('vx_vol','var'), vx_vol=ones(1,3); end
   Ym = single(Ym); 

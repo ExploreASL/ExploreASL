@@ -14,9 +14,9 @@ function varargout = cat_stat_marks(action,uselevel,varargin)
 %   'init'      .. create a empty data structure QS
 %   'isfield'   .. check if varargin{1} is a field in QS
 %   'eval'      .. evaluates fields of a input structure QS
-%   'help'      .. output the help informations for QS
+%   'help'      .. output the help information for QS
 %
-% hier wird noch eine zusammenfassung/vereinfachung der maße gebraucht
+% hier wird noch eine zusammenfassung/vereinfachung der ma??e gebraucht
 % QM: res + noise + bias + contrast
 % QS: vol 
 % ______________________________________________________________________
@@ -24,11 +24,11 @@ function varargout = cat_stat_marks(action,uselevel,varargin)
 % Structural Brain Mapping Group
 % University Jena
 %  
-% $Id: cat_stat_marks.m 942 2016-05-30 12:49:42Z dahnke $
+% $Id: cat_stat_marks.m 1520 2019-11-19 21:52:09Z dahnke $
 
 %#ok<*NASGU,*STRNU>
 
-  rev = '$Rev: 942 $';
+  rev = '$Rev: 1520 $';
   
   
 % used measures and marks:
@@ -90,6 +90,12 @@ function varargout = cat_stat_marks(action,uselevel,varargin)
   %'qualitymeasures'  'MPC'                   'linear'    [  0.11   0.33]  'mean preprocessing change map - diff. betw. opt. T1 and p0'
   %'qualitymeasures'  'MJD'                   'linear'    [  0.05   0.15]  'mean jacobian determinant'
   %'qualitymeasures'  'STC'                   'linear'    [  0.05   0.15]   'difference between template and label'
+   'qualitymeasures'  'SurfaceEulerNumber'    'linear'    [     2    100]  'average number of Euler defects of created surfaces'
+   'qualitymeasures'  'SurfaceDefectArea'     'linear'    [     0     20]  'average area of topological defects in %'
+   'qualitymeasures'  'SurfaceDefectNumber'   'linear'    [     0    100]  'average number of defects.'
+   'qualitymeasures'  'SurfaceIntensityRMSE'  'linear'    [  0.05    0.3]  'RMSE of the expected boundary intensity Ym of the IS, OS, and CS.'
+   'qualitymeasures'  'SurfacePositionRMSE'   'linear'    [  0.05    0.3]  'RMSE of the expected boudnary position Ypp of the IS, OS, and CS.'
+   'qualitymeasures'  'SurfaceSelfIntersections' 'linear' [     0     20]   'Percental area of self-intersections of the IS and OS.'
 % -- subject-related data from the preprocessing -----------------------
   % - volumetric measures - 
    'subjectmeasures'  'vol_TIV'               'normal'    [  1400    400]  'total intracranial volume (GM+WM+VT)'
@@ -106,6 +112,7 @@ function varargout = cat_stat_marks(action,uselevel,varargin)
    'subjectmeasures'  'dist_abs_depth'        'normal'    [  5.00   2.00]  'absolut  sulcal depth'
    'subjectmeasures'  'dist_rel_depth'        'normal'    [  0.50   0.20]  'relative sulcal depth'
   % - area measures -
+   'subjectmeasures'  'surf_TSA'              'normal'    [  1400    400]*2/3  'total surface area'
   };
   if nargin>3 && isstruct(varargin{2}), def = cat_io_checkinopt(varargin{2},def); end
   
@@ -146,9 +153,11 @@ function varargout = cat_stat_marks(action,uselevel,varargin)
   rmsw        = @(a,fact,w) max(0,(cat_stat_nansum((a.*w).^fact)/cat_stat_nansum(w)).^(1/fact));
   
   switch action
-    case 'default',
+    case 'default'
       varargout{1} = def;  
-    case 'isfield', % active field?
+      
+      
+    case 'isfield' % active field?
       if nargin<1 || isempty(varargin{1})
         error('MATLAB:cat_stat_marks:input','Need fieldname!\n');
       end
@@ -160,7 +169,8 @@ function varargout = cat_stat_marks(action,uselevel,varargin)
                            strcmp(def.QS(:,2),varargin{1}(pii+1:end)));
       end        
       
-    case 'eval',    % evalutate input structure
+      
+    case 'eval'    % evalutate input structure
       if nargin<1 || isempty(varargin{1}) 
         error('MATLAB:cat_stat_marks:input','Need input structure with measurements!\n');
       end
@@ -174,7 +184,11 @@ function varargout = cat_stat_marks(action,uselevel,varargin)
       for QSi=1:size(def.QS,1)
         if ~isempty(def.QS{QSi,3}) && isfield(QA,def.QS{QSi,1}) && ...
             isfield(QA.(def.QS{QSi,1}),def.QS{QSi,2})
+          
+          QAM.help.(def.QS{QSi,1}).(def.QS{QSi,2}) = def.QS{QSi,5};
+            
           if ~iscell(QA.(def.QS{QSi,1}).(def.QS{QSi,2}))
+            
             if size(def.QS{QSi,4},1)>1 && ...
                size(def.QS{QSi,4},1) == numel(QA.(def.QS{QSi,1}).(def.QS{QSi,2}))
               for v=1:size(def.QS{QSi,4},1)
@@ -230,10 +244,14 @@ function varargout = cat_stat_marks(action,uselevel,varargin)
       QAM.subjectratings.SQR = rms([QAM.subjectratings.vol_rel_CGW],8);
       
       varargout{1} = QAM;
-    case 'init',    % ausgabe einer leeren struktur
+    
+    
+    case 'init'    % ausgabe einer leeren struktur
       varargout{1} = QS;
       varargout{2} = {'NCR','ICR','res_RMS','contrastr'}; 
-    case 'marks',    % ausgabe einer leeren struktur
+    
+      
+    case 'marks'    % ausgabe einer leeren struktur
       varargout{1} = def.QS;
   end
   

@@ -1,7 +1,7 @@
 function cat_io_report(job,qa,subj,createerr)
 % ______________________________________________________________________
 % CAT error report to write the main processing parameter, the error
-% message, some image parameter and add a pricture of the original 
+% message, some image parameter and add a picture of the original 
 % image centered by its AC.
 %
 % This function is called in cat_run_newcatch.
@@ -33,12 +33,12 @@ function cat_io_report(job,qa,subj,createerr)
 %
 % ______________________________________________________________________
 % Robert Dahnke 
-% $Revision: 1216 $  $Date: 2017-11-16 16:58:12 +0100 (Do, 16 Nov 2017) $
+% $Revision: 1582 $  $Date: 2020-03-11 17:55:11 +0100 (Mi, 11 Mär 2020) $
   
 %#ok<*AGROW>
 
   % close diagy 
-  % diary off; % ExploreASL fix - disable CAT12 outputs as we write everything to ExploreASL log file.
+  diary off;
 
   dbs = dbstatus; debug = 0; 
   for dbsi=1:numel(dbs), 
@@ -82,6 +82,7 @@ function cat_io_report(job,qa,subj,createerr)
     Pp0 = fullfile(pp,mrifolder,['p0' ff '.nii']); 
 
     VT0 = spm_vol(job.data{subj}); % original 
+    if exist(Pn,'file'), VT1 = spm_vol(Pn); end %else VT0.mat = nan(4,4); end % intern
     [pth,nam] = spm_fileparts(VT0.fname); 
 
     tc = [cat(1,job.tissue(:).native) cat(1,job.tissue(:).warped)]; 
@@ -114,8 +115,10 @@ function cat_io_report(job,qa,subj,createerr)
        'The given filename is "%s" \n' ...
        ],templatef);
     end
+
     job.extopts.templates = cat_vol_findfiles(templatep,[templatef(1:numpos) '*' templatef(numpos+2:end) templatee],struct('depth',1)); 
-    job.extopts.templates(cellfun('length',job.extopts.templates)~=numel(template)) = []; % furhter condition maybe necessary
+    %%
+ % 201812 -error in chimps   job.extopts.templates(cellfun('length',job.extopts.templates)~=numel(template)) = []; % furhter condition maybe necessary
     [template1p,template1f] = spm_fileparts(job.extopts.templates{1}); %#ok<ASGLU>
     if do_dartel 
       if (numel(job.extopts.templates)==6 || numel(job.extopts.templates)==7)
@@ -149,98 +152,69 @@ function cat_io_report(job,qa,subj,createerr)
 %% display and print result if possible
 %  ---------------------------------------------------------------------
  
-  
  
   % CAT GUI parameter:
   % --------------------------------------------------------------------  
-  try  
     
-    % 1 line: Matlab, SPM12, CAT12 version number and GUI and experimental mode 
-    str = [str struct('name', 'Version: Matlab / SPM12 / CAT12:','value',...
-      sprintf('%s / %s / %s',qa.software.version_matlab,qa.software.version_spm,qa.software.version_cat))];
-    if job.extopts.expertgui==1,     str(end).value = [str(end).value '\bf\color[rgb]{0 0.2 1}e']; 
-    elseif job.extopts.expertgui==2, str(end).value = [str(end).value '\bf\color[rgb]{0 0.2 1}d'];
-    end  
-    if job.extopts.experimental, str(end).value = [str(end).value '\bf\color[rgb]{0 0.2 1}x']; end  
-
-    % 3 lines: TPM, Template, Normalization method with voxel size
-    SpaNormMeth = {'None','Dartel','Shooting'}; 
-    str = [str struct('name', 'Tissue Probability Map:','value',strrep(spm_str_manip(job.opts.tpm,'k40d'),'_','\_'))];
-    str = [str struct('name', 'Spatial Normalization Template:','value',strrep(spm_str_manip(job.extopts.darteltpm{1},'k40d'),'_','\_'))];
-    str = [str struct('name', 'Spatial Normalization Method / vox:','value',sprintf('%s / %0.2f mm',SpaNormMeth{do_dartel+1},job.extopts.vox))];
-
-    % 1 line: Affine parameter
-    str = [str struct('name', 'Affine regularization:','value',sprintf('%s',job.opts.affreg))];
-    if job.extopts.APP
-      str(end).name = [str(end).name(1:end-1) ' / APP:'];  
-      APPstr = {'none','light','medium','strong','heavy','animal'};
-      if numel(job.extopts.APP)==1
-        str(end).value = [str(end).value sprintf(' / %s',APPstr{job.extopts.APP+1})];
-      else    
-        str(end).value = [str(end).value sprintf(' / %d',job.extopts.APP)];
+    if ~isfield(cat_err_res,'res') || ~isfield(cat_err_res.res,'do_dartel')
+      if exist('do_dartel','var'), cat_err_res.res.do_dartel = do_dartel; else cat_err_res.res.do_dartel = 1; end
+    end
+    if ~isfield(cat_err_res.res,'stime'),  cat_err_res.res.stime = clock; end
+    if ~isfield(cat_err_res.res,'tpm'),    cat_err_res.res.tpm(1).fname = job.opts.tpm{1}; end
+    if ~isfield(cat_err_res.res,'Affine'), cat_err_res.res.Affine = eye(4); end
+    if ~isfield(cat_err_res.res,'lkp'),    cat_err_res.res.lkp    = 1:6; end
+    if ~isfield(cat_err_res.res,'mg'),     cat_err_res.res.mg     = nan(6,1); end
+    if ~isfield(cat_err_res.res,'mn'),     cat_err_res.res.mn     = nan(1,6); end
+    if ~isfield(cat_err_res.res,'Affine'), cat_err_res.res.Affine = eye(4); end
+    if ~isfield(cat_err_res,'obj') || ~isfield(cat_err_res.obj,'Affine'), cat_err_res.obj.Affine = eye(4); end
+    
+    [ver_cat, rev_cat] = cat_version;
+    ver_cat = ver_cat(4:end); % remove leading CAT
+    [nam,rev_spm] = spm('Ver');
+    QAS.software.version_spm = rev_spm;
+    A = ver;
+    for i=1:length(A)
+      if strcmp(A(i).Name,'MATLAB')
+        QAS.software.version_matlab = A(i).Version; 
       end
-    end    
-
-    % 1 line: SPM Bias parameter
-    if job.extopts.experimental
-       str = [str struct('name', 'SPM parameter: bias / reg / fwhm / samp:','value',...
-         sprintf('~%0.2f / %0.0e / %0.2f / %0.2f',...
-          job.opts.bias,job.opts.biasreg,job.opts.biasfwhm,job.opts.samp))]; 
+    end
+    clear A
+    
+    if ispc,      OSname = 'WIN';
+    elseif ismac, OSname = 'MAC';
+    else          OSname = 'LINUX';
     end
     
-    if createerr==2, error(sprintf('error:cat_io_report:createerr_%d',createerr),'Test'); end
-
-
-    % 1 line: Noise 
-    if job.extopts.NCstr==0
-      str = [str struct('name', 'Noise reduction:','value',sprintf('MRF(%0.2f)',job.extopts.mrf))];
-    elseif job.extopts.NCstr==2 || job.extopts.NCstr==3
-      str = [str struct('name', 'Noise reduction:','value',...
-             sprintf('%s%sMRF(%0.2f)',spm_str_manip(sprintf('ISARNLM(%0.2f) +',job.extopts.NCstr),...
-             sprintf('f%d',15)),char(' '.*(job.extopts.sanlm>0)),job.extopts.mrf))];
-    else
-      str = [str struct('name', 'Noise reduction:','value',...
-             sprintf('%s%sMRF(%0.2f)',spm_str_manip(sprintf('SANLM(%0.2f) +',job.extopts.NCstr),....
-             sprintf('f%d',13)),char(' '.*(job.extopts.sanlm>0)),job.extopts.mrf))];
+    qa.software.system               = OSname;
+    qa.software.version_cat          = ver_cat;
+    if ~isfield(qa.software,'version_segment')
+      qa.software.version_segment    = rev_cat;
     end
-
-    % 1-2 line(s): further parameter
-    str = [str struct('name', 'LASstr / GCUTstr / CLEANUPstr:','value',...
-           sprintf('%0.2f / %0.2f / %0.2f',...
-           job.extopts.LASstr,job.extopts.gcutstr,job.extopts.cleanupstr))]; 
-    restype = char(fieldnames(job.extopts.restypes));
-    str = [str struct('name', 'WMHC / WMHCstr / BVCstr / restype:','value',...
-           sprintf('%d / %0.2f / %0.2f / %s',...
-          job.extopts.WMHC,job.extopts.WMHCstr,job.extopts.BVCstr,restype))];
-    if ~strcmp('native',restype)
-      str(end).value = [str(end).value sprintf(' (%0.2f %0.2f)',job.extopts.restypes.(restype))];
-    end; 
-    
-    % 1 line: surfae parameter
-    res_vx_vol  = sqrt(sum(VT0.mat(1:3,1:3).^2));
-    if job.output.surface
-      str = [str struct('name', 'Voxel resolution (original > PBT):',...
-             'value',sprintf('%4.2fx%4.2fx%4.2f mm%s > %4.2f mm%s ', ...
-             res_vx_vol,char(179),job.extopts.pbtres))];
-    else
-      str = [str struct('name', 'Voxel resolution (original > VBM analyse (vox) ):',...
-             'value',sprintf('%4.2fx%4.2fx%4.2f mm%s', ...
-             res_vx_vol,char(179)))];
-    end       
-    % str = [str struct('name', 'Norm. voxel size:','value',sprintf('%0.2f mm',job.extopts.vox))]; % does not work yet 
-  catch
-    createerrtxt = [createerrtxt; {'Warning:cat_io_report:CATgui','Incomplete report creation in cat_io_report because of incomplete CAT parameters.'}]; 
-    cat_io_cprintf('warn','%30s: %s\n',createerrtxt{end,1},createerrtxt{end,2});
-  end
-  
-  
+    qa.software.revision_cat         = rev_cat;
+    qa.qualitymeasures.res_vx_vol    = sqrt(sum(VT0.mat(1:3,1:3).^2));
+    try
+      qa.qualitymeasures.res_vx_voli = sqrt(sum(VT1.mat(1:3,1:3).^2));
+    catch
+      qa.qualitymeasures.res_vx_voli = nan(1,3);
+    end
+    qa.qualityratings.res_RMS      = mean(qa.qualitymeasures.res_vx_vol.^2).^0.5;
+    qa.qualityratings.NCR          = nan; 
+    qa.qualityratings.ICR          = nan; 
+    qa.qualityratings.IQR          = nan;
+    qa.subjectmeasures.EC_abs      = nan;
+    qa.subjectmeasures.vol_abs_CGW = nan(1,4);
+    qa.subjectmeasures.vol_rel_CGW = nan(1,4);
+    qa.subjectmeasures.vol_TIV     = nan;
+    str = cat_main_reportstr(job,cat_err_res.res,qa,{});
+    str = str{1}; 
   
 
-  % image parameter
+  %% image parameter
   % --------------------------------------------------------------------
   try
+    %%
     Ysrc = spm_read_vols(VT0); 
-    imat = spm_imatrix(VT0.mat); 
+    imat = spm_imatrix(VT0.mat);
     deg  = char(176); 
     str2 = [];
     str2 = [str2 struct('name','\bfImagedata','value','')];
@@ -252,6 +226,7 @@ function cat_io_report(job,qa,subj,createerr)
     
     if createerr==3, error(sprintf('error:cat_io_report:createerr_%d',createerr),'Test'); end
 
+    %%
     if isfield(cat_err_res,'res')
       %str2 = [str2 struct('name','  HDl | HDh | BG )','value',sprintf('% 10.2f  % 10.2f  % 10.2f', ...
       %  mean(cat_err_res.res.mn(cat_err_res.res.lkp==4 & cat_err_res.res.mg'>0.3)), ...
@@ -264,15 +239,17 @@ function cat_io_report(job,qa,subj,createerr)
         iaffine(4) ./ (pi/180), deg, iaffine(5) ./ (pi/180), deg, iaffine(6) ./ (pi/180), deg))];
       str2 = [str2 struct('name','  Scaling','value',sprintf('% 10.2f  % 10.2f  % 10.2f ',iaffine(7:9)))];
       str2 = [str2 struct('name','  Shear','value',sprintf('% 10.2f  % 10.2f  % 10.2f' ,iaffine(10:12)))];
-      str2 = [str2 struct('name','\bfSPM tissues peaks','value','')];
-      str2 = [str2 struct('name','  CSF | GM | WM ','value',sprintf('% 10.2f  % 10.2f  % 10.2f', ...
-        cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==3 & cat_err_res.res.mg'>0.3)), ...
-        cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==1 & cat_err_res.res.mg'>0.3)), ...
-        cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==2 & cat_err_res.res.mg'>0.3))) )];
-      str2 = [str2 struct('name','  HDl | HDh | BG ','value',sprintf('% 10.2f  % 10.2f  % 10.2f', ...
-        cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==4 & cat_err_res.res.mg'>0.3)), ...
-        cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==5 & cat_err_res.res.mg'>0.3)), ...
-        cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==6 & cat_err_res.res.mg'>0.4))) )];
+      if all(~isnan(cat_err_res.res.mn))
+        str2 = [str2 struct('name','\bfSPM tissues peaks','value','')];
+        str2 = [str2 struct('name','  CSF | GM | WM ','value',sprintf('% 10.2f  % 10.2f  % 10.2f', ...
+          cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==3 & cat_err_res.res.mg'>0.3)), ...
+          cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==1 & cat_err_res.res.mg'>0.3)), ...
+          cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==2 & cat_err_res.res.mg'>0.3))) )];
+        str2 = [str2 struct('name','  HDl | HDh | BG ','value',sprintf('% 10.2f  % 10.2f  % 10.2f', ...
+          cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==4 & cat_err_res.res.mg'>0.3)), ...
+          cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==5 & cat_err_res.res.mg'>0.3)), ...
+          cat_stat_nanmean(cat_err_res.res.mn(cat_err_res.res.lkp==6 & cat_err_res.res.mg'>0.4))) )];
+      end
     elseif isfield(cat_err_res,'obj')
       iaffine = spm_imatrix(cat_err_res.obj.Affine); 
       str2 = [str2 struct('name','\bfAffine','value','')];
@@ -311,20 +288,28 @@ function cat_io_report(job,qa,subj,createerr)
 %% Figure
 %  ---------------------------------------------------------------------
   try
-    fg = spm_figure('FindWin','Graphics'); 
-    set(0,'CurrentFigure',fg) 
+    nprog = ( isfield(job,'printPID') && job.printPID ) || ... PID field
+          ( isempty(findobj('type','Figure','Tag','CAT') ) && ... no menus
+            isempty(findobj('type','Figure','Tag','Menu') ) );
+    fg  = spm_figure('FindWin','Graphics'); 
+    set(0,'CurrentFigure',fg)
     if isempty(fg)
-      if job.nproc, fg = spm_figure('Create','Graphics','visible','off'); else fg = spm_figure('Create','Graphics'); end;
+      if nprog
+        fg = spm_figure('Create','Graphics','visible','off'); 
+      else
+        fg = spm_figure('Create','Graphics','visible','on'); 
+      end;
     else
-      if job.nproc, set(fg,'Visible','off'); end
+      if nprog, set(fg,'visible','off'); end
     end
+  
     set(fg,'windowstyle','normal');
     spm_figure('Clear','Graphics'); 
     switch computer
       case {'PCWIN','PCWIN64'}, fontsize = 8;
       case {'GLNXA','GLNXA64'}, fontsize = 8;
-      case {'MACI','MACI64'},   fontsize = 9.5;
-      otherwise,                fontsize = 9.5;
+      case {'MACI','MACI64'},   fontsize = 9;
+      otherwise,                fontsize = 9;
     end
     ax=axes('Position',[0.01 0.75 0.99 0.24],'Visible','off','Parent',fg);
 
@@ -372,7 +357,7 @@ function cat_io_report(job,qa,subj,createerr)
     htext(2,i,1) = text(0.01,0.52-(0.045*1), '\bfCAT preprocessing error:  ','FontSize',fontsize, 'Interpreter','tex','Parent',ax);
     for i=1:size(qa.error,1) % error message
       errtxt = strrep([qa.error{i} '  '],'_','\_');
-      htext(2,i,1) = text(0.01,0.52-(0.045*(i+1)), errtxt ,'FontSize',fontsize, 'Interpreter','tex','Parent',ax,'Color',[0.8 0 0]);
+      htext(2,i,1) = text(0.01,0.52-(0.045*(i+2)), errtxt ,'FontSize',fontsize, 'Interpreter','tex','Parent',ax,'Color',[0.8 0 0]);
     end
     for i=1:size(str2,2) % image-parameter
       htext(2,i,1) = text(0.51,0.52-(0.045*i), str2(i).name  ,'FontSize',fontsize, 'Interpreter','tex','Parent',ax);
@@ -396,10 +381,10 @@ function cat_io_report(job,qa,subj,createerr)
       warning off; hho = spm_orthviews('Image',VT0,pos(1,:)); warning on
       spm_orthviews('Caption',hho,{'*.nii (Original)'},'FontSize',fontsize,'FontWeight','Bold');
       Ysrcs    = single(Ysrc+0); spm_smooth(Ysrcs,Ysrcs,repmat(0.2,1,3));
-      haxis(1) = axes('Position',[pos(1,1:2) + [pos(1,3)*0.55 0],pos(1,3)*0.41,pos(1,4)*0.38] ); 
+      haxis(1) = axes('Position',[pos(1,1:2) + [pos(1,3)*0.58 0],pos(1,3)*0.38,pos(1,4)*0.35] ); 
       [y,x]    = hist(Ysrcs(:),hlevel); y = y ./ max(y)*100; %clear Ysrcs;
       if exist(Pp0,'file'), Pp0data = dir(Pp0); Pp0data = etime(clock,datevec(Pp0data.datenum))/3600 < lasthours; else Pp0data = 0; end
-
+%%
       if createerr==10, error(sprintf('error:cat_io_report:createerr_%d',createerr),'Test'); end
       ch  = cumsum(y)/sum(y); 
       if Pp0data, Vp0 = spm_vol(Pp0); end
@@ -409,8 +394,8 @@ function cat_io_report(job,qa,subj,createerr)
       else
         mth  = find(ch>0.95,1,'first');
       end
-      spm_orthviews('window',hho,[x(find(ch>0.02,1,'first')) x(mth) + (mlt-1)*diff(x([find(ch>0.02,1,'first'),mth]))]); hold on;
-      spm_orthviews('Zoom',100);
+      %spm_orthviews('window',hho,[x(find(ch>0.02,1,'first')) x(mth) + (mlt-1)*diff(x([find(ch>0.02,1,'first'),mth]))]); hold on;
+      spm_orthviews('Zoom',130);
       spm_orthviews('Reposition',[0 0 0]); 
       spm_orthviews('Redraw');
       % colorbar
@@ -448,7 +433,7 @@ function cat_io_report(job,qa,subj,createerr)
       try
         hhm = spm_orthviews('Image',spm_vol(Pm),pos(2,:));
         spm_orthviews('Caption',hhm,{mtxt},'FontSize',fontsize,'FontWeight','Bold');
-        haxis(2) = axes('Position',[pos(2,1:2) + [pos(2,3)*0.55 0],pos(1,3)*0.41,pos(1,4)*0.38] );
+        haxis(2) = axes('Position',[pos(2,1:2) + [pos(2,3)*0.58 0],pos(1,3)*0.38,pos(1,4)*0.35] );
         Yms = spm_read_vols(spm_vol(Pm)); spm_smooth(Yms,Yms,repmat(0.2,1,3));
         [y,x] = hist(Yms(:),hlevel);  y = y ./ max(y)*100;
         ch    = cumsum(y)/sum(y); 
@@ -461,6 +446,7 @@ function cat_io_report(job,qa,subj,createerr)
           mth = find(ch>0.95,1,'first');
         end
         spm_orthviews('window',hhm,[x(find(ch>0.02,1,'first')) x(mth) + (mlt-1)*diff(x([find(ch>0.02,1,'first'),mth]))]); hold on;
+        spm_orthviews('Zoom',130); % redraw Yo
         clear Yms;
         try
           % colorbar
@@ -491,33 +477,49 @@ function cat_io_report(job,qa,subj,createerr)
         cat_io_cprintf('err','%30s: %s\n',createerrtxt{end,1},createerrtxt{end,2});
       end
     end
-
+    
     
     
     %% Yp0 - segmentation in original space
-    if exist(Pp0,'file'), Pp0data = dir(Pp0); Pp0data = etime(clock,datevec(Pp0data.datenum))/3600 < lasthours; else Pp0data = 0; end
-    if Pp0data
+    if exist(Pp0,'file'), Pp0data = dir(Pp0); Pp0data = etime(datevec(Pp0data.datenum),cat_err_res.stime)/3600 > 0; else Pp0data = 0; end
+    if Pp0data || (isfield(cat_err_res,'init') && isfield(cat_err_res.init,'Yp0'))
       try
-        hhp0 = spm_orthviews('Image',spm_vol(Pp0),pos(3,:)); 
+        %%
+        if isfield(cat_err_res.init,'Yp0')
+          Yp0s           = single(cat_vol_resize(cat_err_res.init.Yp0,'dereduceBrain',cat_err_res.init.BB)) / 255 * 3; 
+          Vp0            = rmfield(spm_vol(Pn),'private');
+          Vp0.dt         = [16 0]; 
+          Vp0.dat        = Yp0s;
+          Vp0.dim        = size(Yp0s);
+          Vp0.pinfo      = repmat([1;0],1,size(Yp0s,3));
+        else
+          Vp0  = spm_vol(Pp0);  
+          Yp0s = spm_read_vols(spm_vol(Pp0)); spm_smooth(Yp0s,Yp0s,repmat(0.5,1,3));
+        end
+        hhp0 = spm_orthviews('Image',Vp0,pos(3,:));
         if createerr==30, error(sprintf('error:cat_io_report:createerr_%d',createerr),'Test'); end
         spm_orthviews('Caption',hhp0,'p0*.nii (Segmentation)','FontSize',fontsize,'FontWeight','Bold');
-        spm_orthviews('window',hhp0,[0,6]);
-        haxis(3) = axes('Position',[pos(3,1:2) + [pos(3,3)*0.55 0.01],pos(1,3)*0.41,pos(1,4)*0.38]  );
-        Yp0s = spm_read_vols(spm_vol(Pp0)); spm_smooth(Yp0s,Yp0s,repmat(0.5,1,3));
+        if 0 isfield(cat_err_res.init,'Yp0')
+          spm_orthviews('window',hhp0,[0,255/5*3]);
+        else
+          spm_orthviews('window',hhp0,[0,6]);
+        end
+        haxis(3) = axes('Position',[pos(3,1:2) + [pos(3,3)*0.58 0.01],pos(1,3)*0.38,pos(1,4)*0.35]  );
         [y,x] = hist(Yp0s(:),0:1/30:4); clear Yms; y = y ./ max(y)*100;
         y = min(y,max(y(2:end))); % ignore background
         ch = cumsum(y)/sum(y); 
-        spm_orthviews('window',hhp0,[x(find(ch>0.02,1,'first')),x(find(ch>0.90,1,'first'))*mlt]); hold on;
+        %spm_orthviews('window',hhp0,[x(find(ch>0.02,1,'first')),x(find(ch>0.90,1,'first'))*mlt]); hold on;
+        %%
         try
           % colorbar
           if createerr==31, error(sprintf('error:cat_io_report:createerr_%d',createerr),'Test'); end
           xlims{3} = [0 4]; 
-          ylims{3} = [ch(1) ch(end)] .* [1 4/3];  M = x <= xlims{3}(2);
+          ylims{3} = [ch(1) ch(end)] .* [0 4/3];  M = x <= xlims{3}(2);
           hdata{3} = [x(M) flip(x(M)); max(eps,min(ylims{3}(2),y(M))) zeros(1,sum(M)); [x(M) flip(x(M))]];
           hhist(3) = fill(hdata{3}(1,:),hdata{3}(2,:),hdata{3}(3,:),'EdgeColor',[0.0 0.0 1.0],'LineWidth',1);
           caxis(xlims{3} .* [1,1.5*(2*volcolors+surfcolors)/volcolors]) 
           ylim(ylims{3}); xlim(xlims{3}); box on; grid on; 
-          set(gca,'XTick',0:1:4,'XTickLabel',{'BG','CSF','GM','WM','WMH'});
+          set(gca,'XTick',0:1:4,'XTickLabel',{'BG','CSF','GM','WM','(WMH)'});
         catch
           createerrtxt = [createerrtxt; {'Error:cat_io_report:dispYp0Hist','Error in displaying the color histogram of the segmented image.'}]; 
           cat_io_cprintf('err','%30s: %s\n',createerrtxt{end,1},createerrtxt{end,2});
@@ -535,14 +537,30 @@ function cat_io_report(job,qa,subj,createerr)
     if createerr==8, error(sprintf('error:cat_io_report:createerr_%d',createerr),'Test'); end
 
 
+    
     %% surface or histogram
+    if isfield(cat_err_res,'obj') && isfield(cat_err_res.obj,'Affine')
+      Affine = cat_err_res.obj.Affine; 
+    elseif isfield(cat_err_res,'res') && isfield(cat_err_res.res,'Affine')
+      Affine = cat_err_res.res.Affine; 
+    else
+      Affine = eye(4);
+    end
+    imat = spm_imatrix(Affine); Rigid = spm_matrix([imat(1:6) 1 1 1 0 0 0]); clear imat;
+    
     Pthick = fullfile(pp,surffolder,sprintf('lh.thickness.%s',ff));
-    if exist(Pthick,'file'), Pthickdata = dir(Pthick); Pthickdata = etime(clock,datevec(Pthickdata.datenum))/3600 < lasthours; else Pthickdata = 0; end
+    if exist(Pthick,'file'), Pthickdata = dir(Pthick); Pthickdata = etime(datevec(Pthickdata.datenum),cat_err_res.stime)/3600 > 0; else Pthickdata = 0; end
     if Pthickdata
       hCS = subplot('Position',[0.5 0.05 0.55 0.25],'visible','off'); 
       try 
         hSD = cat_surf_display(struct('data',{Pthick},'readsurf',0,'expert',2,...
           'multisurf',1,'view','s','parent',hCS,'verb',0,'caxis',[0 6],'imgprint',struct('do',0)));
+        
+        for ppi = 1:numel(hSD{1}.patch)
+          V = (Rigid * ([hSD{1}.patch(ppi).Vertices, ones(size(hSD{1}.patch(ppi).Vertices,1),1)])' )'; 
+          V(:,4) = []; hSD{1}.patch(ppi).Vertices = V;
+        end
+        
         if createerr==40, error(sprintf('error:cat_io_report:createerr_%d',createerr),'Test'); end
         colormap(cmap);  set(hSD{1}.colourbar,'visible','off'); 
         cc{3} = axes('Position',[0.62 0.02 0.3 0.01],'Parent',fg); image((volcolors*2+1:1:volcolors*2+surfcolors));
@@ -553,10 +571,62 @@ function cat_io_report(job,qa,subj,createerr)
         cat_io_cprintf('err','%30s: %s\n',createerrtxt{end,1},createerrtxt{end,2});
       end
     end
-    
   catch
     createerrtxt = [createerrtxt; {'Error:cat_io_report:Fig','Error in CAT report figure creation!'}]; 
     cat_io_cprintf('err','%30s: %s\n',createerrtxt{end,1},createerrtxt{end,2});
+  end
+  
+  
+  %% TPM overlay with brain/head and head/background surfaces
+  global st;
+  warning('off','MATLAB:subscripting:noSubscriptsSpecified')
+  showTPMsurf = 1; % ... also in default mode 
+  if job.extopts.expertgui>0 - showTPMsurf
+    %Phull = {fullfile(spm('dir'),'toolbox','cat12','templates_surfaces','bh.hull.cat.gii')};
+    Phull = {cat_surf_create_TPM_hull_surface(job.opts.tpm)};
+    for id=1
+      spm_orthviews('AddContext',id); % need the context menu for mesh handling
+
+      try
+        spm_ov_mesh('display',id,Phull);
+      catch
+        fprintf('Please update to a newer version of spm12 for using this contour overlay\n');
+        try
+          spm_update
+        catch
+          fprintf('Update to the newest SPM12 version failed. Please update manually.\n');
+        end
+      end
+
+      % apply affine scaling for gifti objects
+      for ix=1:numel(Phull) 
+        % load mesh
+        try spm_ov_mesh('display',id,Phull(ix)); end 
+
+        %% apply affine scaling for gifti objects (inv(cat_err_res.res.Affine)
+        V = (inv(Affine) * ([st.vols{id}.mesh.meshes(ix).vertices,...
+             ones(size(st.vols{id}.mesh.meshes(ix).vertices,1),1)])' )';
+        V(:,4) = [];
+        M0 = st.vols{id}.mesh.meshes(1:ix-1);
+        M1 = st.vols{id}.mesh.meshes(ix);
+        M1 = subsasgn(M1,struct('subs','vertices','type','.'),single(V));
+        st.vols{id}.mesh.meshes = [M0,M1];
+      end
+
+      %% change line style
+      hM = findobj(st.vols{id}.ax{1}.cm,'Label','Mesh');
+      UD = get(hM,'UserData');
+      UD.width = 0.75; 
+      UD.style = repmat({'b--'},1,numel(Phull));
+      set(hM,'UserData',UD);
+      try spm_ov_mesh('redraw',id); end
+      spm_orthviews('redraw',id);
+
+      %% TPM legend
+      %ccl{1} = axes('Position',[pos(1,1:2) 0 0] + [0.33 -0.005 0.02 0.02],'Parent',fg);
+      %cclp = plot(ccl{1},([0 0.4;0.6 1])',[0 0; 0 0],'b-'); text(ccl{1},1.2,0,'TPM fit');
+      %set( cclp,'LineWidth',0.75); axis(ccl{1},'off')
+    end
   end
   
   
@@ -643,8 +713,18 @@ function cat_io_report(job,qa,subj,createerr)
     cat_io_cprintf('err','%30s: %s\n',createerrtxt{end,1},createerrtxt{end,2});
   end
 
-  warning on;  %#ok<WNON>
+  %warning on;  %#ok<WNON>
 
-
+  if job.extopts.expertgui>0 - showTPMsurf
+    id = 1; 
+    hM = findobj(st.vols{id}.ax{1}.cm,'Label','Mesh');
+    UD = get(hM,'UserData');
+    UD.width = 0.75; 
+    UD.style = repmat({'r--'},1,numel(Phull));
+    set(hM,'UserData',UD);
+    try spm_ov_mesh('redraw',id); end
+  end  
+  
+  warning('ON','MATLAB:subscripting:noSubscriptsSpecified')
   
 end

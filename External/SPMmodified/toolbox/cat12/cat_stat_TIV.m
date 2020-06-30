@@ -3,7 +3,7 @@ function varargout = cat_stat_TIV(p)
 %
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cat_stat_TIV.m 1234 2017-12-04 10:52:18Z gaser $
+% $Id: cat_stat_TIV.m 1467 2019-05-23 08:52:34Z dahnke $
 
 if ~p.calcvol_TIV
   fprintf('%60s\t%7s\t%7s\t%7s\t%7s\t%7s\n','Name','Total','GM','WM','CSF','WMH');
@@ -23,8 +23,16 @@ end
 spm_progress_bar('Init',length(p.data_xml),'Load xml-files','subjects completed')
 for i=1:length(p.data_xml)
     xml = cat_io_xml(deblank(p.data_xml{i})); 
-    tmp  = xml.subjectmeasures.vol_abs_CGW; 
-    
+    try
+      tmp  = xml.subjectmeasures.vol_abs_CGW; 
+    catch % use nan
+      if p.calcvol_TIV
+        tmp = nan; 
+      else
+        tmp  = nan(1,5);
+      end
+    end
+      
     name = spm_str_manip(xml.filedata.fname,'a50');
 
     % only save TIV

@@ -19,11 +19,11 @@ function varargout = cat_run(job)
 % spm_preproc8_run.m 2281 2008-10-01 12:52:50Z john $
 % ______________________________________________________________________
 % Christian Gaser
-% $Id: cat_run.m 1332 2018-07-17 14:44:14Z dahnke $
+% $Id: cat_run.m 1615 2020-05-09 10:19:40Z gaser $
 
-%#ok<*AGROW>
+%#ok<*AGROW,*STRIFCND,*STRCL1,*ASGLU,*STREMP>
 
-%rev = '$Rev: 1332 $';
+%rev = '$Rev: 1615 $';
 
 %  -----------------------------------------------------------------
 %  Lazy processing (expert feature)
@@ -33,20 +33,29 @@ function varargout = cat_run(job)
 %  The lazy processing will only process files, if one of the output
 %  is missed and if the same preprocessing options were used before.
 %  -----------------------------------------------------------------
+
+% disable parallel processing for only one subject
+n_subjects = numel(job.data);
+if n_subjects == 1, job.nproc = 0; end
+
+%{ send Matlab version to server
+if cat_get_defaults('extopts.send_info')
+  urlinfo = sprintf('%s%s%s%s%s%s%d',cat_version,'%2F',computer,'%2F','processed',...
+     '%2F',n_subjects);
+  cat_io_send_to_server(urlinfo);
+end
+%}
+
 if isfield(job.extopts,'admin') && isfield(job.extopts.admin,'lazy') && job.extopts.admin.lazy && ...
-  ~isfield(job,'process_index') && isfield(job,'nproc') && job.nproc>0 && (~isfield(job,'process_index'))  
+  ~isfield(job,'process_index') && isfield(job,'nproc') && job.nproc>.1 && (~isfield(job,'process_index'))  
+  jobo.vout = vout_job(job);    % expected output
   jobl      = update_job(job);
-  jobl.vout = vout_job(jobl);
+  jobl.vout = vout_job(jobl);   
   job.data  = remove_already_processed(jobl); 
 end
 
 % split job and data into separate processes to save computation time
 if isfield(job,'nproc') && job.nproc>0 && (~isfield(job,'process_index'))  
-  cat_io_cprintf('warn',...
-    ['\nWARNING: Please note that no additional modules in the batch can be run \n' ...
-     '         except CAT12 segmentation. Any dependencies will be broken for \n' ...
-     '         subsequent modules if you split the job into separate processes.\n\n']);
-    
   % rescue original subjects
   job_data = job.data;
   n_subjects = numel(job.data);
@@ -65,11 +74,15 @@ if isfield(job,'nproc') && job.nproc>0 && (~isfield(job,'process_index'))
     job.process_index{i} = [job.process_index{i} n_subjects-i+1];
   end
 
-  tmp_array = cell(job.nproc,1); job.printPID = 1; 
+  tmp_array = cell(job.nproc,1); job.printPID = 1; job.getPID = 2; 
     
   logdate   = datestr(now,'YYYYmmdd_HHMMSS');
+  PID       = zeros(1,job.nproc);
+  catSID    = zeros(1,job.nproc);
   for i=1:job.nproc
-    fprintf('Running job %d:\n',i);
+    jobo = job; 
+    
+    fprintf('\nRunning job %d:\n',i);
     for fi=1:numel(job_data(job.process_index{i}))
       fprintf('  %s\n',spm_str_manip(char(job_data(job.process_index{i}(fi))),'a78')); 
     end
@@ -79,8 +92,8 @@ if isfield(job,'nproc') && job.nproc>0 && (~isfield(job,'process_index'))
     tmp_name = [tempname '.mat'];
     tmp_array{i} = tmp_name; 
     %def = cat_get_defaults; job = cat_io_checkinopt(job,def); % further job update required here to get the latest cat defaults
-    spm12def = spm_get_defaults;    
-    cat12def = cat_get_defaults; 
+    spm12def = spm_get_defaults;  %#ok<NASGU>
+    cat12def = cat_get_defaults;  %#ok<NASGU>
     save(tmp_name,'job','spm12def','cat12def');
     clear spm12def cat12;
     
@@ -93,12 +106,12 @@ if isfield(job,'nproc') && job.nproc>0 && (~isfield(job,'process_index'))
         fullfile(spm('dir'),'toolbox','OldNorm'),fullfile(spm('dir'),'toolbox','DARTEL'), tmp_name);
 
     % log-file for output
-    log_name = ['catlog_main_' logdate '_log' sprintf('%02d',i) '.txt'];
+    log_name{i} = ['catlog_main_' logdate '_log' sprintf('%02d',i) '.txt'];
 
     % call matlab with command in the background
     if ispc
       % check for spaces in filenames that will not work with windows systems and background jobs
-      if strfind(spm('dir'),' ')
+      if strfind(spm('dir'),' ') 
         cat_io_cprintf('warn',...
             ['\nWARNING: No background processes possible because your SPM installation is located in \n' ...
              '         a folder that contains spaces. Please set the number of processes in the GUI \n'...
@@ -113,40 +126,319 @@ if isfield(job,'nproc') && job.nproc>0 && (~isfield(job,'process_index'))
       % prepare system specific path for matlab
       export_cmd = ['set PATH=' fullfile(matlabroot,'bin')];
       [status,result] = system(export_cmd);
-      system_cmd = ['start matlab -nodesktop -nosplash -r ' matlab_cmd ' -logfile ' log_name];
+      system_cmd = ['start matlab -nodesktop -nosplash -r ' matlab_cmd ' -logfile ' log_name{i}];
     else
       % -nodisplay .. nodisplay is without figure output > problem with CAT report ... was there a server problem with -nodesktop?
-      system_cmd = [fullfile(matlabroot,'bin') '/matlab -nodesktop -nosplash -r ' matlab_cmd ' -logfile ' log_name ' 2>&1 & '];
+      system_cmd = [fullfile(matlabroot,'bin') '/matlab -nodesktop -nosplash -r ' matlab_cmd ' -logfile ' log_name{i} ' 2>&1 & '];
     end
     [status,result] = system(system_cmd); 
     cat_check_system_output(status,result);
     
     
-  
-    test = 0; lim = 20; ptime = 0.5;
+    
+    %% look for existing files and extract their PID for later control  
+    %  --------------------------------------------------------------------
+    test    = 0; lim    = 200; ptime    = 0.5; % exist file?
+    testpid = 0; limpid = 400; ptimepid = 2.0; % get PID
+    ptimesid = 1 * 30;                        % update every minute? 
     while test<lim
-      if ~exist(log_name,'file')
+      if ~exist(log_name{i},'file')
         pause(ptime); 
         test = test + ptime; 
         if test>=lim
-          cat_io_cprintf('warn','"%s" not exist after %d seconds! Proceed! \n',log_name,lim)
+          cat_io_cprintf('warn',sprintf('"%s" not exist after %d seconds! Proceed! \n',log_name{i},lim));
         end
       else 
+        % get PIDs for supervising
+        % search for the log entry "CAT parallel processing with MATLAB PID: #####" 
+        if job.getPID
+          try
+            while testpid<limpid
+              pause(ptimepid); 
+              
+              testpid = testpid + ptimepid; 
+              FID     = fopen(log_name{i},'r'); 
+              txt     = textscan(FID,'%s');
+              txt     = txt{1}; 
+              PIDi    = find(cellfun('isempty',strfind(txt,'PID:'))==0,1,'first');
+              fclose(FID);
+              if ~isempty(PIDi)
+                PID(i)  = str2double(txt{PIDi+1}); 
+                testpid = inf; 
+              end
+              
+              if testpid>=limpid && ~isinf(testpid)
+                cat_io_cprintf('warn',sprintf('"%s" no PID information available after %d seconds! Proceed! \n',log_name{i},limpid));
+              end
+            end
+          catch
+            cat_io_cprintf('warn',sprintf('No PID information available! Proceed! \n'));
+          end
+        end
+        
+        % open file in editor if GUI is available
         test = inf; 
-        edit(log_name);
+        if ~strcmpi(spm_check_version,'octave') && usejava('jvm') && feature('ShowFigureWindows') && usejava('awt')
+          edit(log_name{i});
+      end
       end
     end
 
-    edit(log_name);
-    fprintf('\nCheck %s for logging information.\n',spm_file(log_name,'link','edit(''%s'')'));
-    fprintf('_______________________________________________________________\n');
+    % open file in editor if GUI is available
+    if ~strcmpi(spm_check_version,'octave') && usejava('jvm') && feature('ShowFigureWindows') && usejava('awt')
+      edit(log_name{i});
+    end
+    if PID(i)>0
+      fprintf('\nCheck %s for logging information (PID: ',spm_file(log_name{i},'link','edit(''%s'')')); 
+      cat_io_cprintf([1 0 0.5],sprintf('%d',PID(i))); 
+    else
+      fprintf('\nCheck %s for logging information (',spm_file(log_name{i},'link','edit(''%s'')'));
+      cat_io_cprintf([1 0 0.5],'unknown PID'); 
+    end
+    cat_io_cprintf([0 0 0],sprintf(').\n_______________________________________________________________\n'));
 
     % starting many large jobs can cause servere MATLAB errors
     pause(1 + rand(1) + job.nproc + numel(job.data)/100);
+    jobs(i).data = job.data;
+    
+    job = jobo; 
   end
-
+  
   job = update_job(job);
   varargout{1} = vout_job(job);
+  
+  
+  
+  if job.getPID
+    if any(PID==0) 
+      cat_io_cprintf('warn',...
+        ['\nWARNING: CAT was not able to detect the PIDs of the parallel CAT processes. \n' ...
+         '         Please note that no additional modules in the batch can be run \n' ...
+         '         except CAT12 segmentation. Any dependencies will be broken for \n' ...
+         '         subsequent modules if you split the job into separate processes.\n\n']);
+    else
+      %% conclusion without filelist
+      spm_clf('Interactive'); 
+      spm_progress_bar('Init', sum( numel(job_data) ) ,'CAT-Preprocessing','Volumes Complete');      
+      
+      fprintf('\nStarted %d jobs with the following PIDs:\n',job.nproc);
+      for i=1:job.nproc
+        fprintf('%3d) %d subjects (PID: ',i,numel(jobs(i).data));
+        cat_io_cprintf([1 0 0.5],sprintf('%6d',PID(i))); 
+        cat_io_cprintf([0 0 0],sprintf('): ')); 
+        cat_io_cprintf([0 0 1],sprintf('%s\n',spm_file(log_name{i},'link','edit(''%s'')')));
+      end
+      
+      
+      
+      %% supervised pipeline processing 
+      %  ------------------------------------------------------------------
+      %  This is a "simple" while loop that check if the processes still 
+      %  exist and extract information from the log-files, which subject 
+      %  was (successfully) processed. 
+      %  Finally, a report could be generated and exportet in future that 
+      %  e.g. count errors give some suggestions 
+      %  ------------------------------------------------------------------
+      if job.getPID>1
+        cat_io_cprintf('warn',sprintf('\nKilling of this process will not kill the parallel processes!\n'));
+        fprintf('_______________________________________________________________\n');
+        fprintf('Completed volumes (see catlog files for details!):\n');
+        
+        % some variables 
+        err         = struct('aff',0,'vbm',0,'sbm',0,'else',0,'warn0',0,'warn1',0,'warn2',0); 
+        cid         = 0;
+        PIDactive   = ones(size(catSID));
+        catSIDlast  = zeros(size(catSID));
+        [catv,catr] = cat_version;
+            
+        %% loop as long as data is processed by active tasks
+        while cid <= sum( numel(job_data) ) &&  any( PIDactive )
+          pause(ptimesid); 
+          
+          %% get status of each process
+          for i=1:job.nproc
+            % get FID
+            FID = fopen(log_name{i},'r'); 
+            txt = textscan(FID,'%s','Delimiter','\n');
+            txt = txt{1}; 
+            fclose(FID);
+            
+            % search for the _previous_ start entry "CAT12.# r####: 1/14:   ./MRData/*.nii" 
+            catis   = find(cellfun('isempty',strfind(txt,sprintf('%s r%s: ',catv,catr)))==0,2,'last'); 
+            catie   = find(cellfun('isempty',strfind(txt,'CAT preprocessing takes'))==0,1,'last');
+            if ~isempty(catis) && ( numel(catis)>2 ||  ~isempty(catie) )
+              if catis(end)<catie(1)
+                cathd = textscan( txt{catis(end)} ,'%s%s%s','Delimiter',':');
+              else
+                cathd = textscan( txt{catis(1)} ,'%s%s%s','Delimiter',':');
+              end
+              cathd = textscan( char(cathd{2}) ,'%d','Delimiter','/');
+              catSID(i) = cathd{1}(1);
+            else 
+              catSID(i) = 0; 
+            end
+            
+            % search for the end entry "CAT preprocessing takes ... " to get processing time
+            if ~isempty(catie)
+              cathd   = textscan( txt{catie} ,'%s%s%s%d%s%s%d%s','Delimiter',' ');
+              cattime = [cathd{4}(1) cathd{7}(1)]; 
+            else 
+              cattime = [0 0];
+            end
+            
+            % search for the end entry "Image Quality Rating (IQR): ... " to get IQR 
+            cati = find(cellfun('isempty',strfind(txt,'Image Quality Rating (IQR):'))==0,1,'last');
+            if ~isempty(cati) 
+              cathd   = textscan( txt{cati} ,'%s%s%s%s%s%s%s','Delimiter',' ');
+              catiqr  = [cathd{6} cathd{7}]; 
+            else 
+              catiqr = {'unknown'};
+            end
+            
+            %% search for preprocessing errors (and differentiate them)
+            cati = find(cellfun('isempty',strfind(txt,'CAT Preprocessing error'))==0,1,'last');
+            catl = find(cellfun('isempty',strfind(txt,'-----------------------'))==0);
+            if ~isempty(cati) && numel(catis)>2 && catie>catis(1) &&  catie<catis(2)
+              caterr  = textscan( txt{cati+2} ,'%s','Delimiter','\n');
+              caterr  = char(caterr{1});
+              caterrcode = ''; 
+              for ei = 4:(catl(find(catl>cati,1,'first')+2) - cati)
+                catfct{ei-2}  = textscan( txt{cati+ei} ,'%d%s%s','Delimiter',' ');
+                if isempty(caterrcode)
+                  switch char(catfct{ei-2}{3})
+                    % most relevant functions to identify the error 
+                    case {'cat_surf_createCS','cat_main','cat_run'}
+                      caterrcode = sprintf('%s:%d',char(catfct{ei-2}{3}),double(catfct{ei-2}{1}));
+                  end
+                end
+              end
+            else
+              caterr     = '';
+              caterrcode = ''; 
+            end
+            %
+            % We need some simple error codes that helps the user (check origin)
+            % but also us (because they may only send us this line). Hence,
+            % the major position of the error (e.g. cat_run/main) is most
+            % important.
+            %
+            % - affreg VBM error > check origin 
+            % - R#:cat_run:#:Possible registration error - Check origin! 
+            % - R#:cat_main:#:VBM processing error. 
+            % - R#:cat_createCS:#:Surface creation error.
+            % -----
+            % * Handling of warnings?
+            %   * yellow light warning vs. orange severe warning  
+            %   - low IQR?             < 50%  = yellow warning?
+            %   - high topodefarea?    > 1000 = yellow warning? > 5000 = orange warning?
+            %   - template corvariance < 0.80 = yellow warning? < 0.60 = orange warning?
+            %     this required an update of cat_vol_qa
+            % -----
+
+            
+            % find out if the current task is still active
+            if ispc
+              [status,result] = system(sprintf('tasklist /v /fi "PID %d"',PID(i)));  
+            else
+              [status,result] = system(sprintf('ps %d',PID(i)));
+            end
+            if isempty( strfind( result , sprintf('%d',PID(i)) ) ) 
+              PIDactive(i) = 0; 
+            end
+            
+            
+            %% update status
+            %  if this tast was not printed before  ( catSIDlast(i) < catSID(i) )  and 
+            %  if one subject was successfully or with error processed ( any(cattime>0) || ~isempty(caterr) )
+            %fprintf('    %d - %d %d %d %d\n',i,catSIDlast(i), catSID(i), any(cattime>0), ~isempty(caterr) ); 
+            if ( catSIDlast(i) < catSID(i) )  &&  ( any(cattime>0) || ~isempty(caterr) )
+              cid = cid + 1; 
+              catSIDlast(i) = catSID(i);
+              
+              [pp,ff,ee] = spm_fileparts(jobs(i).data{catSID(i)}); 
+              if job.extopts.subfolders
+                catlog = fullfile(pp,'report',['catlog_' ff '.txt']); 
+              else
+                catlog = fullfile(pp,['catlog_' ff '.txt']); 
+              end
+              if exist(catlog,'file')
+                catlogt = ['<a href="matlab:edit(''' catlog ''');">' ...
+                  spm_str_manip( catlog , 'k60') ': </a>'];
+              else
+                catlogt = spm_str_manip( fullfile(pp,[ff ee]), 'k40'); 
+              end
+              
+              
+              switch caterr
+                case 'Bad SPM-Segmentation. Check image orientation!' % pink error that support user interaction  
+                  err.txt   = 'VBM affreg error - Check origin!'; 
+                  err.color = [0.9 0 0.9];
+                  err.aff   = err.aff + 1;
+                case '' % successful processing    
+                  % here it would be necessary to differentiate IQR and PQR
+                  %if 1 % no warning
+                    err.txt   = ''; 
+                    err.color = [0 0 0];
+                    err.warn0 = err.warn0 + 1; 
+                %{
+                elseif 0==1 % light yellow warning
+                  err.txt   = 'Possible error - Check results!'; 
+                  err.color = [0.8 0.6 0];
+                  err.warn1 = err.warn1 + 1; 
+                elseif 0==2 % severe orange waring 
+                  err.txt   = 'Probable error - Check results!'; 
+                  err.color = [1 0.3 0];
+                  err.warn2 = err.warn2 + 1; 
+                end
+                %}
+                otherwise   
+                  err.txt   = errtxt;
+                  err.color = [1 0 0];
+                  err.vbm   = err.vbm + 1;
+              end
+              err.txt = sprintf('R%s:%s:%s',catr,caterrcode,err.txt); 
+            
+              
+              % display
+              cat_io_cprintf(err.color,sprintf('  %d/%d (job %d: %d/%d): ',...
+                cid,sum( numel(job_data) ), i,catSID(i), numel(jobs(i).data) )); 
+              cat_io_cprintf([0 0.0 0],catlogt);
+              if isempty(caterr)
+                cat_io_cprintf(err.color,sprintf(' % 3d.%02d minutes, ',cattime'));
+                cat_io_cprintf([0 0.0 0],sprintf('IQR=%s\n',strrep(catiqr{1},'%','%%')));  
+              else
+                cat_io_cprintf(err.color,sprintf('%s\n',err.txt));  
+              end
+            end
+          end
+          spm_progress_bar('Set', cid );
+                  
+          
+        end
+      end
+    end
+    
+    %% final report
+    fprintf('_______________________________________________________________\n');
+    fprintf(['Conclusion: \n' ...
+     sprintf('  Processed successfully:% 8d volume(s)\n',err.warn0) ...
+     ... sprintf('  Processed with warning:% 8d volume(s)\n',1) ...
+     ... sprintf('  Processed with IQR warning:% 8d volume(s)\n',1) ...
+     ... sprintf('  Processed with PQR warning:% 8d volume(s)\n',1) ...
+     sprintf('  Processed with error:  % 8d volume(s)\n\n',err.aff + err.vbm + err.sbm) ...
+             'In case of warnings and errors please check the correct position\n' ...
+             'of the AC by using the SPM display function.\n' ...
+    ]);   
+    fprintf('_______________________________________________________________\n');
+    
+  else
+    cat_io_cprintf('warn',...
+      ['\nWARNING: Please note that no additional modules in the batch can be run \n' ...
+       '         except CAT12 segmentation. Any dependencies will be broken for \n' ...
+       '         subsequent modules if you split the job into separate processes.\n\n']);
+  end
+
+  spm_progress_bar('Clear');
   return
 end
 
@@ -157,7 +449,14 @@ end
 job = update_job(job);
 
 varargout{1} = run_job(job);
+if isfield(job.extopts,'admin') && isfield(job.extopts.admin,'lazy') && job.extopts.admin.lazy && ...
+  ~isfield(job,'process_index') && isfield(job,'nproc') && job.nproc>-1 && (~isfield(job,'process_index'))  
+  % set default output even it was not processed this time
+  varargout{1} = jobo.vout; 
+end
 
+% remove files that do not exist
+varargout{1} = cat_io_checkdepfiles( varargout{1} );
 return
 %_______________________________________________________________________
 function job = update_job(job)
@@ -190,23 +489,73 @@ function job = update_job(job)
     def.extopts.resval  = job.extopts.restypes.(def.extopts.restype);
   end
   
-  def.extopts.lazy   = 0;
-  def.opts.fwhm      = 1;
-  def.nproc          = 0; 
-  
+  def.extopts.new_release = 0;
+  def.extopts.lazy        = 0;
+  def.opts.fwhm           = 1;
+  def.nproc               = 0; 
+  def.getPID              = 2; % 0 - nothing (old), 1 - get PIDs, 2 - supervise PIDs 
    
   % ROI atlas maps
   if isfield(job.output,'ROImenu') % expert/developer GUI that allows control each atlas map 
     if isfield(job.output.ROImenu,'atlases')
-      % image output
-      def.output.atlases = job.output.ROImenu.atlases;
-      def.output.ROI     = any(cell2mat(struct2cell(job.output.ROImenu.atlases))); 
+      %% image output
+      try, atlases = rmfield(job.output.ROImenu.atlases,'ownatlas'); end
+      def.output.atlases = atlases;
+      def.output.ROI     = any(cell2mat(struct2cell(atlases))) || ~isempty( job.output.ROImenu.atlases.ownatlas ); 
+      
+      if ~isempty( job.output.ROImenu.atlases.ownatlas ) && ~isempty( job.output.ROImenu.atlases.ownatlas{1} )
+        for i=1:numel( job.output.ROImenu.atlases.ownatlas ) 
+          [pp,ff,ee] = spm_fileparts( job.output.ROImenu.atlases.ownatlas{i} ); 
+          if any( strcmp( spm_str_manip( def.extopts.atlas( cell2mat(def.extopts.atlas(:,2)) < cat_get_defaults('extopts.expertgui') + 1 ,1) ,'cs') ,ff))
+            error('cat_run:ownatlasname', ...
+             ['There is a atlas file name conflict. Each atlas name has to be unique. \n' ...
+              'Please rename your own atlas map "%s". \n'],fullfile(pp,[ff ee]) ); 
+          else
+            % add new atlas  
+            def.output.atlases.(ff) = 1; 
+            def.extopts.atlas = [ def.extopts.atlas; [ {job.output.ROImenu.atlases.ownatlas{i}} {def.extopts.expertgui} {{'gm','wm','csf'}} {0} ] ]; 
+          end
+        end
+      end
     else
       def.output.atlases = struct();
       def.output.ROI     = 0; 
     end
     job = cat_io_checkinopt(job,def);
   end
+  % ROI atlas maps
+  if isfield(job.output,'sROImenu') % expert/developer GUI that allows control each atlas map 
+    if isfield(job.output.sROImenu,'satlases')
+      %% image output
+      satlases = rmfield(job.output.sROImenu.satlases,'ownatlas'); 
+      def.output.satlases = satlases;
+      def.output.sROI     = any(cell2mat(struct2cell(satlases))) || ~isempty( job.output.ROImenu.satlases.ownatlas ); 
+      
+      if ~isempty( job.output.sROImenu.satlases.ownatlas ) && ~isempty( job.output.sROImenu.satlases.ownatlas{1} )
+        for i=1:numel( job.output.sROImenu.satlases.ownatlas ) 
+          [pp,ff,ee] = spm_fileparts( job.output.sROImenu.satlases.ownatlas{i} ); 
+          if any(~cellfun('isempty',strfind( spm_str_manip( def.extopts.satlas(:,1) ,'cs') ,ff)))
+            error('cat_run:ownatlasname', ...
+             ['There is a surface atlas file name conflict. Each atlas name has to be unique. \n' ...
+              'Please rename your own surface atlas map "%s". \n'],fullfile(pp,[ff ee]) ); 
+          else
+            % add new atlas  
+            def.output.satlases.(ff) = 1; 
+            def.extopts.satlas = [ def.extopts.satlas; [ {ff} job.output.sROImenu.satlases.ownatlas(i) {def.extopts.expertgui} {0} ] ]; 
+          end
+        end
+      end
+    else
+      def.output.atlases = struct();
+      def.output.sROI    = 0; 
+    end
+    job = cat_io_checkinopt(job,def);
+  else
+    def.output.atlases = struct();
+    def.output.sROI    = 1; 
+    job = cat_io_checkinopt(job,def);
+  end
+  
   
   if ~isfield(job.output,'atlases') 
     % default GUI that only allow to switch on the settings defined in the default file 
@@ -221,25 +570,74 @@ function job = update_job(job)
       job.output.ROI     = any(cell2mat(struct2cell(job.output.atlases))); 
     end
   end
- 
+  if ~isfield(job.output,'satlases') 
+    % default GUI that only allow to switch on the settings defined in the default file 
+    if ~isfield(job.extopts,'satlas')
+      job.extopts.satlas  = def.extopts.satlas;
+    end
+    
+    job.output.satlases   = struct();
+    if job.output.sROI 
+      % if output, than use the parameter of the default file
+      job.output.satlases = cell2struct(job.extopts.satlas(:,4)',spm_str_manip(job.extopts.satlas(:,1),'tr')',2);
+      job.output.sROI     = any(cell2mat(struct2cell(job.output.satlases))); 
+    end
+  end  
+  
+  if ~isfield(job.output,'atlases')
+    if ~isfield(job.extopts,'atlas') && job.output.surface
+      job.extopts.satlas = def.extopts.satlas;
+    end
+  end  
+  
+  % simplyfied default user GUI input
+  if isfield(job.output,'labelnative') 
+    job.output.label.native = job.output.labelnative; 
+    job.output = rmfield(job.output,'labelnative');
+  end
+
+  % simplyfied default user GUI input
+  if isfield(job.output,'jacobianwarped') 
+    job.output.jacobian.warped = job.output.jacobianwarped; 
+    job.output = rmfield(job.output,'jacobianwarped');
+  end
   
   % ROI export 
   for ai = 1:size(job.extopts.atlas,1)
     [pp,ff,ee]  = spm_fileparts(job.extopts.atlas{ai,1}); 
     job.extopts.atlas{ai,4} = job.extopts.atlas{ai,2}<=cat_get_defaults('extopts.expertgui') && ...
       exist(job.extopts.atlas{ai,1},'file') && isfield(def.output,'atlases') && isfield(def.output.atlases,ff) && def.output.atlases.(ff);
+    % show licence message
+    if ~isempty(strfind(ff,'hammers')) && job.extopts.atlas{ai,4}
+      disp('--------------------------------------------')
+      disp('Free academic end user license agreement for Hammers atlas')
+      alert_str = ['For using the Hammers atlas, please fill out license agreement at <a href =',...
+      ' "http://brain-development.org/brain-atlases/adult-brain-atlases/adult-brain-maximum-probability-map-hammers-mith-atlas-n30r83-in-mni-space">www.brain-development.org</a>'];
+      disp(alert_str);
+      disp('--------------------------------------------')
+    end
+    if ~isempty(strfind(ff,'lpba40')) && job.extopts.atlas{ai,4}
+      disp('--------------------------------------------')
+      disp('No commercial use of LPBA40 atlas')
+      alert_str = ['Permission is granted to use this atlas without charge for non-commercial research purposes only: <a href =',...
+      ' "https://www.loni.usc.edu/docs/atlases_methods/Human_Atlas_Methods.pdf">https://www.loni.usc.edu/docs/atlases_methods/Human_Atlas_Methods.pdf</a>'];
+      disp(alert_str);
+      disp('--------------------------------------------')
+    end
   end
+
+
   job = cat_io_checkinopt(job,def);
   if ~isfield(job.extopts,'restypes')
     job.extopts.restypes.(def.extopts.restype) = job.extopts.resval;  
   end
 
-  % handling of SPM biasoptions for specific GUI entry
+  %% handling of SPM biasoptions for specific GUI entry
   if isfield(job.opts,'bias')
-    if isfield(job.opts.bias,'biasfwhm')
+    if isfield(job.opts.bias,'spm')
       job.opts.biasstr  = 0; 
-      job.opts.biasfwhm = job.opts.bias.biasfwhm; 
-      job.opts.biasreg  = job.opts.bias.biasreg; 
+      job.opts.biasfwhm = job.opts.bias.spm.biasfwhm; 
+      job.opts.biasreg  = job.opts.bias.spm.biasreg; 
     elseif isfield(job.opts.bias,'biasstr')
       job.opts.biasstr  = job.opts.bias.biasstr; 
     end
@@ -255,12 +653,59 @@ function job = update_job(job)
     job.opts.biasreg	= min(  10 , max(  0 , 10^-(job.opts.biasstr*2 + 2) ));
     job.opts.biasfwhm	= min( inf , max( 30 , 30 + 60*(1-job.opts.biasstr) ));  
   end
- 
   
-  %% find and check the Dartel templates
+  % SPM preprocessing accuracy
+  if ~isfield(job.opts,'tol')
+    job.opts.tol = cat_get_defaults('opts.tol');
+  end
+  job.opts.tol = min(1e-2,max(1e-6, job.opts.tol));
+  
+  %% handling of SPM accuracy options for specific GUI entry
+  %  Although lower resolution (>3 mm) is not really faster and maybe much 
+  %  worse in sense of quality, it is simpler to have a linear decline
+  %  rather than describing the other case. 
+  %  RD20200130: Takes me a day to figure out that the SPM7771 US failed in 
+  %              T1_dargonchow but also single_subjT1 by lower sampl res:
+  %                sampval = [3 2.5 2 1.5 1];
+  %              Keep in mind that this effects volume resolution (^3), eg
+  %              [32 16 8 4 2] .^(1/3) is close to these values. 
+  %  RD20200301: However, this setting is really slow and did not solve all
+  %              problems, so we go back to previous settings.
+  %                sampval =  [5 4 3 2 1]; % that describes volume of 
+  %              [125 64 27 8 1] that is also describes the changes in 
+  %              processing time roughly 
+  sampval               = [5 4 3 2 1]; 
+  tolval                = [1e-2 1e-3 1e-4 1e-5 1e-6];
+  if isfield(job.opts,'accstr') && ~isfield(job.opts,'acc') 
+    job.opts.samp       = sampval( round(job.opts.accstr*4 + 1) );
+    job.opts.tol        = tolval(  round(job.opts.accstr*4 + 1) );
+  elseif isfield(job.opts,'acc') % developer settings 
+    if isfield(job.opts.acc,'accstr')
+      job.opts.accstr   = job.opts.acc.accstr; 
+      job.opts.samp     = sampval( round(job.opts.acc.accstr*4 + 1));
+      job.opts.tol      = tolval(  round(job.opts.acc.accstr*4 + 1));
+    elseif isfield(job.opts.acc,'spm')
+      job.opts.accstr   = -1; 
+      job.opts.samp     = job.opts.acc.spm.samp;
+      job.opts.tol      = job.opts.acc.spm.tol;
+    end
+    job.opts = rmfield(job.opts,'acc'); 
+  end
+  clear sampval tolval;
+  
+  %% set Dartel/Shooting templates
+  if isfield(job.extopts,'dartel')
+    job.extopts.darteltpm   = job.extopts.dartel.darteltpm;
+    job.extopts.regstr      = 0; 
+  elseif isfield(job.extopts,'shooting')
+    job.extopts.shootingtpm = job.extopts.shooting.shootingtpm;
+    job.extopts.regstr      = job.extopts.shooting.regstr; 
+  end
+  
+  % find and check the Dartel templates
   [tpp,tff,tee] = spm_fileparts(job.extopts.darteltpm{1});
   job.extopts.darteltpm{1} = fullfile(tpp,[tff,tee]); 
-  numpos = min([strfind(tff,'Template_1')]) + 8;
+  numpos = min(strfind(tff,'Template_1')) + 8;
   if isempty(numpos)
     error('CAT:cat_main:TemplateNameError', ...
     ['Could not find the string "Template_1" in Dartel template that \n'...
@@ -278,7 +723,7 @@ function job = update_job(job)
   end
   
   job.extopts.darteltpms(cellfun('length',job.extopts.darteltpms)~=length(job.extopts.darteltpm{1}))=[]; % remove to short/long files
-  if numel(job.extopts.darteltpms)~=6 && any(job.extopts.regstr==4)
+  if numel(job.extopts.darteltpms)~=6 && any(job.extopts.regstr==0)
     %%
     files = ''; for di=1:numel(job.extopts.darteltpms), files=sprintf('%s\n  %s',files,job.extopts.darteltpms{di}); end
     error('CAT:cat_main:TemplateFileError', ...
@@ -289,7 +734,7 @@ function job = update_job(job)
   % find and check the Shooting templates
   [tpp,tff,tee] = spm_fileparts(job.extopts.shootingtpm{1});
   job.extopts.shootingtpm{1} = fullfile(tpp,[tff,tee]); 
-  numpos = min([strfind(tff,'Template_0')]) + 8;
+  numpos = min(strfind(tff,'Template_0')) + 8;
   if isempty(numpos)
     error('CAT:cat_main:TemplateNameError', ...
     ['Could not find the string "Template_0" in Shooting template that \n'...
@@ -298,7 +743,7 @@ function job = update_job(job)
   end
   job.extopts.shootingtpms = cat_vol_findfiles(tpp,[tff(1:numpos) '*' tff(numpos+2:end) tee],struct('depth',1));
   job.extopts.shootingtpms(cellfun('length',job.extopts.shootingtpms)~=length(job.extopts.shootingtpm{1}))=[]; % remove to short/long files
-  if numel(job.extopts.shootingtpms)~=5 && any(job.extopts.regstr~=4)
+  if numel(job.extopts.shootingtpms)~=5 && any(job.extopts.regstr>0)
     %%
     files = ''; for di=1:numel(job.extopts.shootingtpms), files=sprintf('%s\n  %s',files,job.extopts.shootingtpms{di}); end
     error('CAT:cat_main:TemplateFileError', ...
@@ -335,7 +780,7 @@ function job = update_job(job)
   
   
   % set boundary box by Template properties if box inf
-  if job.extopts.regstr(1)==4
+  if job.extopts.regstr(1)==0
     Vd       = spm_vol([job.extopts.darteltpm{1} ',1']);
   else
     Vd       = spm_vol([job.extopts.shootingtpm{1} ',1']);
@@ -357,7 +802,7 @@ function job = update_job(job)
   [pth,nam,ext] = spm_fileparts(job.opts.tpm{1});
   clsn = min(6,numel(spm_vol(fullfile(pth,[nam ext])))); 
   tissue = struct();
-  for i=1:clsn;
+  for i=1:clsn
     tissue(i).ngaus = job.opts.ngaus(i);
     tissue(i).tpm = [fullfile(pth,[nam ext]) ',' num2str(i)];
   end
@@ -370,13 +815,14 @@ function job = update_job(job)
   tissue(3).native = [job.output.CSF.native (job.output.CSF.dartel==1)    (job.output.CSF.dartel==2)   ];
 
   % never write class 4-6
-  for i=4:6;
+  for i=4:6
     tissue(i).warped = [0 0 0];
     tissue(i).native = [0 0 0];
   end
 
   job.channel  = struct('vols',{job.data});
   job.tissue   = tissue;
+
 return;
 
 %_______________________________________________________________________
@@ -384,11 +830,10 @@ function vout = run_job(job)
   vout   = vout_job(job);
 
   % load tpm priors 
-  fprintf('%s\n','Loading TPM priors');
   tpm = char(cat(1,job.tissue(:).tpm));
   tpm = spm_load_priors8(tpm);
 
-  for subj=1:numel(job.channel(1).vols),
+  for subj=1:numel(job.channel(1).vols)
     % __________________________________________________________________
     % Error management with try-catch blocks
     % See also cat_run_newcatch.
@@ -432,14 +877,15 @@ label       = {};
 wlabel      = {};
 rlabel      = {};
 alabel      = {};
+catreportjpg= {};
+catreportpdf= {};
 catreport   = {};
-lhcentral   = {};
-rhcentral   = {};
-lhthickness = {};
-rhthickness = {};
-roi         = {};
-fordef      = {};
-invdef      = {};
+catlog      = {};
+
+
+%roi         = {};
+%fordef      = {};
+%invdef      = {};
 jacobian    = {};
 
 if job.extopts.subfolders
@@ -454,7 +900,7 @@ else
   reportfolder = '';
 end
 
-for j=1:n,
+for j=1:n
     [parts{j,:}] = spm_fileparts(job.channel(1).vols{j});
 end
 
@@ -462,41 +908,94 @@ end
 % ----------------------------------------------------------------------
 roi = cell(n,1);
 for j=1:n
-    catreport{j} = fullfile(parts{j,1},reportfolder,['cat_',parts{j,2},'.xml']);
+    catreport{j}    = fullfile(parts{j,1},reportfolder,['cat_',parts{j,2},'.xml']);
+    catreportpdf{j} = fullfile(parts{j,1},reportfolder,['catreport_',parts{j,2},'.pdf']);
+    catreportjpg{j} = fullfile(parts{j,1},reportfolder,['catreportj_',parts{j,2},'.jpg']);
+end
+
+% 
+for j=1:n
+    catlog{j} = fullfile(parts{j,1},reportfolder,['catlog_',parts{j,2},'.txt']);
 end
 
 
-% lh/rh central surface and thickness
+% lh/rh/cb central/white/pial/layer4 surface and thickness
 % ----------------------------------------------------------------------
-if job.output.surface,
-    lhcentral = cell(n,1);
-    rhcentral = cell(n,1);
-    lhthickness = cell(n,1);
-    rhthickness = cell(n,1);
-    if job.output.surface == 2
-        lccentral = cell(n,1);
-        rccentral = cell(n,1);
-        lcthickness = cell(n,1);
-        rcthickness = cell(n,1);
-    end
-    for j=1:n
-        lhcentral{j} = fullfile(parts{j,1},surffolder,['lh.central.',parts{j,2},'.gii']);
-        rhcentral{j} = fullfile(parts{j,1},surffolder,['rh.central.',parts{j,2},'.gii']);
-        lhthickness{j} = fullfile(parts{j,1},surffolder,['lh.thickness.',parts{j,2}]);
-        rhthickness{j} = fullfile(parts{j,1},surffolder,['rh.thickness.',parts{j,2}]);
-        if job.output.surface == 2
-            lhcentral{j} = fullfile(parts{j,1},surffolder,['lc.central.',parts{j,2},'.gii']);
-            rhcentral{j} = fullfile(parts{j,1},surffolder,['rc.central.',parts{j,2},'.gii']);
-            lhthickness{j} = fullfile(parts{j,1},surffolder,['lc.thickness.',parts{j,2}]);
-            rhthickness{j} = fullfile(parts{j,1},surffolder,['rc.thickness.',parts{j,2}]);
+surfaceoutput = { % surface texture
+  {'central'}                 % no measures - just surfaces
+  {}                          % default
+  {}                          % expert
+  {'pial','white'}            % developer
+};
+measureoutput = {
+  {'thickness'}               % default
+  {}                          % no measures
+  {}                          % expert
+  {'depthWM','depthCSF'}      % developer
+};
+% no output of intlayer4 or defects in cat_surf_createCS but in cat_surf_createCS2 (but not with fast) 
+if isfield(job,'extopts') && isfield(job.extopts,'surface') && ...
+   isfield(job.extopts.surface,'collcorr') && job.extopts.surface.collcorr>19 
+
+  surfaceoutput{1} = [surfaceoutput{1},{'pial','white'}];
+  surfaceoutput{4} = {}; 
+  if any( job.output.surface ~= [ 5 6 ] ) % fast pipeline
+    surfaceoutput{3} = {'layer4'}; 
+    measureoutput{3} = {'intlayer4','defects'};
+  end
+end
+
+sides = {'lh','rh'}; 
+if any( job.output.surface == [ 2 6 8 ] )
+  sides = [sides {'cb'}]; 
+end
+voutsfields = {};
+
+def.output.surf_measures = 1;
+def.extopts.expertgui    = 0;
+job = cat_io_checkinopt(job,def); 
+% create fields
+for si = 1:numel(sides)
+  % surfaces
+  for soi = 1:numel(surfaceoutput)
+    if soi < job.extopts.expertgui + 2
+      for soii = 1:numel(surfaceoutput{soi})
+        eval( sprintf('%s%s = {};' , sides{si} , surfaceoutput{soi}{soii} ) ); 
+        if ~isempty( surfaceoutput{soi} ) && job.output.surface
+          eval( sprintf('%s%s = cell(n,1);' , sides{si} , surfaceoutput{soi}{soii} ) ); 
+          for j = 1:n
+            eval( sprintf('%s%s{j} = fullfile(  parts{j,1} , surffolder , ''%s.%s.%s.gii'' ); ' , ...
+              sides{si} , surfaceoutput{soi}{soii} , ...
+              sides{si} , surfaceoutput{soi}{soii} , parts{j,2} ) ); 
+            voutsfields{end+1} = sprintf('%s%s',  sides{si} , surfaceoutput{soi}{soii} );
+          end
         end
+      end
     end
+  end
+  % measures
+  for soi = 1:numel(measureoutput)
+    if soi < job.extopts.expertgui + 2
+      for soii = 1:numel(measureoutput{soi})
+        eval( sprintf('%s%s = {};' , sides{si} , measureoutput{soi}{soii} ) ); 
+        if ~isempty( measureoutput{soi} ) && job.output.surface
+          eval( sprintf('%s%s = cell(n,1);' , sides{si} , measureoutput{soi}{soii} ) ); 
+          for j = 1:n
+            eval( sprintf('%s%s{j} = fullfile( parts{j,1} , surffolder , ''%s.%s.%s'' ); ' , ...
+              sides{si} , measureoutput{soi}{soii} , ...
+              sides{si} , measureoutput{soi}{soii} , parts{j,2} ) ); 
+            voutsfields{end+1} = sprintf('%s%s',  sides{si} , measureoutput{soi}{soii} );
+          end
+        end
+      end
+    end
+  end
 end
 
 
 % XML label
 % ----------------------------------------------------------------------
-if job.output.ROI,
+if job.output.ROI
     roi = cell(n,1);
     for j=1:n
         roi{j} = fullfile(parts{j,1},roifolder,['catROI_',parts{j,2},'.xml']);
@@ -505,28 +1004,28 @@ end
 
 % bias
 % ----------------------------------------------------------------------
-if job.output.bias.native,
+if job.output.bias.native
     biascorr = cell(n,1);
     for j=1:n
         biascorr{j} = fullfile(parts{j,1},mrifolder,['m',parts{j,2},'.nii']);
     end
 end
 
-if job.output.bias.warped,
+if job.output.bias.warped
     wbiascorr = cell(n,1);
     for j=1:n
         wbiascorr{j} = fullfile(parts{j,1},mrifolder,['wm',parts{j,2},'.nii']);
     end
 end
 
-if job.output.bias.dartel==1,
+if job.output.bias.dartel==1
     rbiascorr = cell(n,1);
     for j=1:n
-        rbiascorr{j} = fullfile(parts{j,1},mrifolder,['rm',parts{j,2},'.nii']);
+        rbiascorr{j} = fullfile(parts{j,1},mrifolder,['rm',parts{j,2},'_rigid.nii']);
     end
 end
 
-if job.output.bias.dartel==2,
+if job.output.bias.dartel==2
     abiascorr = cell(n,1);
     for j=1:n
         abiascorr{j} = fullfile(parts{j,1},mrifolder,['rm',parts{j,2},'_affine.nii']);
@@ -535,28 +1034,28 @@ end
 
 % intensity corrected bias
 % ----------------------------------------------------------------------
-if job.output.las.native,
+if job.output.las.native
     ibiascorr = cell(n,1);
     for j=1:n
         ibiascorr{j} = fullfile(parts{j,1},mrifolder,['mi',parts{j,2},'.nii']);
     end
 end
 
-if job.output.las.warped,
+if job.output.las.warped
     wibiascorr = cell(n,1);
     for j=1:n
         wibiascorr{j} = fullfile(parts{j,1},mrifolder,['wmi',parts{j,2},'.nii']);
     end
 end
 
-if job.output.las.dartel==1,
+if job.output.las.dartel==1
     ribiascorr = cell(n,1);
     for j=1:n
-        ribiascorr{j} = fullfile(parts{j,1},mrifolder,['rmi',parts{j,2},'.nii']);
+        ribiascorr{j} = fullfile(parts{j,1},mrifolder,['rmi',parts{j,2},'_rigid.nii']);
     end
 end
 
-if job.output.las.dartel==2,
+if job.output.las.dartel==2
     aibiascorr = cell(n,1);
     for j=1:n
         aibiascorr{j} = fullfile(parts{j,1},mrifolder,['rmi',parts{j,2},'_affine.nii']);
@@ -566,28 +1065,28 @@ end
 
 % label
 % ----------------------------------------------------------------------
-if job.output.label.native,
+if job.output.label.native
     label = cell(n,1);
     for j=1:n
         label{j} = fullfile(parts{j,1},mrifolder,['p0',parts{j,2},'.nii']);
     end
 end
 
-if job.output.label.warped,
+if job.output.label.warped
     wlabel = cell(n,1);
     for j=1:n
         wlabel{j} = fullfile(parts{j,1},mrifolder,['wp0',parts{j,2},'.nii']);
     end
 end
 
-if job.output.label.dartel==1,
+if job.output.label.dartel==1
     rlabel = cell(n,1);
     for j=1:n
-        rlabel{j} = fullfile(parts{j,1},mrifolder,['rp0',parts{j,2},'.nii']);
+        rlabel{j} = fullfile(parts{j,1},mrifolder,['rp0',parts{j,2},'_rigid.nii']);
     end
 end
 
-if job.output.label.dartel==2,
+if job.output.label.dartel==2
     alabel = cell(n,1);
     for j=1:n
         alabel{j} = fullfile(parts{j,1},mrifolder,['rp0',parts{j,2},'_affine.nii']);
@@ -598,38 +1097,38 @@ end
 % tissues
 % ----------------------------------------------------------------------
 tiss = struct('p',{},'rp',{},'rpa',{},'wp',{},'mwp',{},'m0wp',{});
-for i=1:numel(job.tissue),
-    if job.tissue(i).native(1),
+for i=1:numel(job.tissue)
+    if job.tissue(i).native(1)
         tiss(i).p = cell(n,1);
         for j=1:n
             tiss(i).p{j} = fullfile(parts{j,1},mrifolder,['p',num2str(i),parts{j,2},'.nii']);
         end
     end
-    if job.tissue(i).native(2),
+    if job.tissue(i).native(2)
         tiss(i).rp = cell(n,1);
         for j=1:n
-            tiss(i).rp{j} = fullfile(parts{j,1},mrifolder,['rp',num2str(i),parts{j,2},'.nii']);
+            tiss(i).rp{j} = fullfile(parts{j,1},mrifolder,['rp',num2str(i),parts{j,2},'_rigid.nii']);
         end
     end
-    if job.tissue(i).native(3),
+    if job.tissue(i).native(3)
         tiss(i).rpa = cell(n,1);
         for j=1:n
             tiss(i).rpa{j} = fullfile(parts{j,1},mrifolder,['rp',num2str(i),parts{j,2},'_affine.nii']);
         end
     end
-    if job.tissue(i).warped(1),
+    if job.tissue(i).warped(1)
         tiss(i).wp = cell(n,1);
         for j=1:n
             tiss(i).wp{j} = fullfile(parts{j,1},mrifolder,['wp',num2str(i),parts{j,2},'.nii']);
         end
     end
-    if job.tissue(i).warped(2),
+    if job.tissue(i).warped(2)
         tiss(i).mwp = cell(n,1);
         for j=1:n
             tiss(i).mwp{j} = fullfile(parts{j,1},mrifolder,['mwp',num2str(i),parts{j,2},'.nii']);
         end
     end
-    if job.tissue(i).warped(3),
+    if job.tissue(i).warped(3)
         tiss(i).m0wp = cell(n,1);
         for j=1:n
             tiss(i).m0wp{j} = fullfile(parts{j,1},mrifolder,['m0wp',num2str(i),parts{j,2},'.nii']);
@@ -640,7 +1139,7 @@ end
 
 % deformation fields
 % ----------------------------------------------------------------------
-if job.output.warps(1),
+if job.output.warps(1)
     fordef = cell(n,1);
     for j=1:n
         fordef{j} = fullfile(parts{j,1},mrifolder,['y_',parts{j,2},'.nii']);
@@ -649,7 +1148,7 @@ else
     fordef = {};
 end
 
-if job.output.warps(2),
+if job.output.warps(2)
     invdef = cell(n,1);
     for j=1:n
         invdef{j} = fullfile(parts{j,1},mrifolder,['iy_',parts{j,2},'.nii']);
@@ -661,7 +1160,7 @@ end
 
 % jacobian
 % ----------------------------------------------------------------------
-if job.output.jacobian.warped,
+if job.output.jacobian.warped
     jacobian = cell(n,1);
     for j=1:n
         jacobian{j} = fullfile(parts{j,1},mrifolder,['wj_',parts{j,2},'.nii']);
@@ -674,8 +1173,13 @@ vout  = struct('tiss',tiss,'label',{label},'wlabel',{wlabel},'rlabel',{rlabel},'
                'biascorr',{biascorr},'wbiascorr',{wbiascorr},'roi',{roi},'ibiascorr',{ibiascorr},...
                'wibiascorr',{wibiascorr},'ribiascorr',{ribiascorr},'aibiascorr',{aibiascorr},...
                'invdef',{invdef},'fordef',{fordef},'jacobian',{jacobian},'catreport',{catreport},...
-               'lhcentral',{lhcentral},'rhcentral',{rhcentral},'lhthickness',{lhthickness},...
-               'rhthickness',{rhthickness});
+               'catlog',{catlog},'catreportpdf',{catreportpdf},'catreportjpg',{catreportjpg});
+             
+% add surface fields            
+for fi=1:numel(voutsfields)
+  eval( sprintf( 'vout.(voutsfields{fi}) = %s;', voutsfields{fi} ) ); 
+end
+
 %_______________________________________________________________________
 return
 
@@ -699,16 +1203,14 @@ function [data,err] = remove_already_processed(job,verb)
   cat_io_cprintf('warn',sprintf('  Process %d subjects!\n',numel(data)));
 return
 %=======================================================================
-function [lazy,FNok] = checklazy(job,subj,verb)
+function [lazy,FNok] = checklazy(job,subj,verb) %#ok<INUSD>
   if job.extopts.subfolders
     roifolder    = 'label';
     surffolder   = 'surf';
-    mrifolder    = 'mri';
     reportfolder = 'report';
   else
     roifolder    = '';
     surffolder   = '';
-    mrifolder    = '';
     reportfolder = '';
   end
 
@@ -757,7 +1259,7 @@ function [lazy,FNok] = checklazy(job,subj,verb)
             end
           end
         elseif ischar(job.opts.(FNopts{fni}))
-          if ~strcmp(xml.parameter.opts.(FNopts{fni}),job.opts.(FNopts{fni})); 
+          if ~strcmp(xml.parameter.opts.(FNopts{fni}),job.opts.(FNopts{fni})) 
             FNok = 5; break
           end
         end
@@ -816,9 +1318,9 @@ function [lazy,FNok] = checklazy(job,subj,verb)
         end
       else
         % this did not work anymore due to the GUI subfields :/
-        if 0 %any(xml.parameter.extopts.(FNextopts{fni}) ~= job.extopts.(FNextopts{fni}))
-          FNok = 13; break
-        end
+        %if any(xml.parameter.extopts.(FNextopts{fni}) ~= job.extopts.(FNextopts{fni}))
+        %  FNok = 13; break
+        %end
       end
     end
     if FNok~=1 % different extopts

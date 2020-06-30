@@ -1,8 +1,13 @@
 function [out,s] = cat_plot_boxplot(data,opt)
 % _________________________________________________________________________
 %
-% usage: vargout = cat_plot_boxplot(data,opt);
+% usage: [out, s] = cat_plot_boxplot(data,opt);
 %
+%  opt.style       = 0;             % predefined styles: 
+%                                     0 - boxplot
+%                                     1 - violinplot
+%                                     2 - violinplot with integrated boxplot
+%                                     3 - densityplot
 %  opt.notched     = 0;             % thinner at median [0 1] with 1=0.5
 %  opt.symbol      = '+o';          % outlier symbols
 %  opt.vertical    = 1;             % boxplot orientation 
@@ -12,12 +17,14 @@ function [out,s] = cat_plot_boxplot(data,opt)
 %                  = 2;             % sort groups (descending)[inactive]
 %                  = [index];       % or by a index matrix
 %  opt.names       = [];            % array of group names
-%  opt.fill        = 1;             % filling of boxes
+%  opt.fill        = 1;             % filling of boxes: 0 - no filling; 0.5 - half-filled boxes; 1 - filled boxes
 %  opt.groupnum    = 1;             % add number of elements
 % [opt.groupmin    = 5;]            % minimum number of non-nan-elements
 %                                     in a group [inactive]
+%  opt.xlim        = [-inf inf];    % x-axis scaling
 %  opt.ylim        = [-inf inf];    % y-axis scaling
 %  opt.ygrid       = 1;             % activate y-grid-lines
+%  opt.gridline    = '-';           % grid line-style
 %  opt.box         = 1;             % plot box
 %  opt.outliers    = 1;             % plot outliers
 %  opt.violin      = 0;             % violin-plot: 0 - box plot; 1 - violin plot; 2 - violin + thin box plot
@@ -25,13 +32,29 @@ function [out,s] = cat_plot_boxplot(data,opt)
 %  opt.groupcolor  = [R G B];       % matrix with (group)-bar-color(s) 
 %                                     use jet(numel(data)) 
 %                                     or other color functions
+%  opt.symbolcolor = 'r';           % color of symbols
 %  opt.fontsize    = [];            % axis fontsize 
 %                                     important for ygrid size!
 %  opt.showdata    = 0;             % show data points: 0 - no; 1 - as points; 2 - as short lines (barcode plot)
 %  opt.median      = 2;             % show median: 0 - no; 1 - line; 2 - with different fill colors 
 %  opt.edgecolor   = 'none';        % edge color of box 
+%  opt.changecolor = 0;             % use brighter values for double color entries, e.g. 
+%                                   % [red red blue blue] becomes [red light-red blue light-blue] 
 %  opt.trans       = 0.25;          % transparency of the box
+%  opt.switch      = 0;             % switch between rows and column of data for numeric data (non-cell)
 %  opt.sat         = 0.50;          % saturation of the box
+%  opt.subsets     = false(1,numel(data)); 
+%  opt.hflip       = 0;             % flip x-axis in case of horizontal bars
+%
+%  The returned matrix s has one column for each dataset as follows:
+%
+%    1  minimum
+%    2  1st quartile
+%    3  2nd quartile (median)
+%    4  3rd quartile
+%    5  maximum
+%    6  lower confidence limit for median
+%    7  upper confidence limit for median
 %
 % The box plot is a graphical display that simultaneously describes several 
 % important features of a data set, such as center, spread, departure from 
@@ -103,25 +126,13 @@ function [out,s] = cat_plot_boxplot(data,opt)
 % Robert Dahnke (robert.dahnke@uni-jena.de)
 % original version was written for octave by Alberto Terruzzi
 % _________________________________________________________________________
-% $Id: cat_plot_boxplot.m 1341 2018-07-27 13:14:51Z dahnke $
+% $Id: cat_plot_boxplot.m 1610 2020-04-29 16:49:12Z gaser $
 
 if nargin==0, help cat_plot_boxplot; return; end
 
-% data has to be defined as cell and shouldmbe converted if numeric
-if isnumeric(data)
-  if size(data,1) < size(data,2)
-    data = data';
-  end
-  sz = size(data);
-  tmp = data; clear data
-  data = cell(sz(2),1);
-  for i = 1:sz(2)
-    data{i} = tmp(:,i);
-  end
-end
-
 % default parameter
 if ~exist('opt','var'), opt = struct(''); end
+
 def.notched     = 0;
 def.symbol      = '+o';
 def.vertical    = 1;
@@ -136,6 +147,7 @@ def.groupmin    = 5;
 def.ylim        = [];
 def.xlim        = [];
 def.ygrid       = 0;  
+def.gridline    = '-';  
 def.boxwidth    = 0.8;  
 def.box         = 1;
 def.outliers    = 1;
@@ -149,11 +161,41 @@ def.changecolor = 0;          % use brighter values for double color entries, e.
 def.trans       = 0.25;       % transparency of boxes
 def.sat         = 0.50;       % saturation of boxes
 def.subsets     = false(1,numel(data)); 
-def.hflip       = 0;          % glip x-axis in case of horizontal bars
+def.hflip       = 0;          % flip x-axis in case of horizontal bars
+def.switch      = 0;          % switch between columns and rows of data
+
+% use predefined styles
+if isfield(opt,'style')
+	switch opt.style
+		case 0 % use defaults for boxplot
+		case 1
+			def.violin = 1; def.showdata = 2; def.ygrid = 1; def.gridline = ':';
+		case 2
+			def.violin = 2; def.showdata = 2; def.ygrid = 1; def.gridline = ':';
+		case 3
+			def.violin = 1; def.showdata = 1; def.vertical = 0; def.fill = 0.5; 
+			def.median = 1; def.boxwidth = 2.75; def.ygrid = 1; def.gridline = ':';
+	end
+end
 
 opt             = cat_io_checkinopt(opt,def);
 opt.notched     = max(0,min(1,opt.notched));
 opt.trans       = max(0,min(1,opt.trans * (opt.sat*4) ));
+
+% data has to be defined as cell and should be converted if numeric
+if isnumeric(data)
+  % sometimes you cannot switch between columns and rows
+  if opt.switch
+    data = data';
+  end
+  sz = size(data);
+  tmp = data; clear data
+  data = cell(sz(2),1);
+  for i = 1:sz(2)
+    data{i} = tmp(:,i);
+  end
+end
+
 if max(opt.subsets)>1
   subsets = zeros(1,numel(data)); 
   subsets(opt.subsets+1) = 1; 
@@ -167,16 +209,31 @@ if ~opt.vertical
     opt.ylim = fliplr(-opt.ylim); 
     if isfield(opt,'ytick'), opt.ytick = fliplr(-opt.ytick); end
   else
-    data           = flipud(data); 
+    % we have to switch order of data, names and colors
+    data2 = data;
+    for i=1:length(data)
+      data2{length(data)+1-i} = data{i};
+    end
+    data = data2;
     opt.names      = flipud(opt.names);
     opt.groupcolor = flipud(opt.groupcolor); 
     opt.subsets    = flipud(opt.subsets); 
   end
 end
 
+% always use filling for this median plot option
+if opt.median == 2
+  if opt.fill == 0
+    fprintf('Filling will be always enabled if median is set to 2.\n');
+    opt.fill = 1;
+  end
+end
 
 % always use filling for this median plot option
-if opt.median == 2, opt.fill = 1; end
+if opt.fill == 0.5 & opt.vertical
+    fprintf('Filling with 0.5 will only works in horizontal view. Set filling to 1.\n');
+    opt.fill = 1;
+end
 
 % either violin or box plot
 if opt.violin, opt.box = 0; end
@@ -190,6 +247,7 @@ else
   if isvector(data), data = data(:); end
   nc = columns(data);
 end
+
 opt.names = cellstr(opt.names);
 if numel(opt.names) < nc
   error('ERROR:cat_plot_boxplot:names','ERROR: Too short name list.'); 
@@ -202,6 +260,7 @@ if size(opt.groupcolor,1)==1
   %end
   opt.groupcolor = repmat(opt.groupcolor(1,:),numel(data),1);
 end
+
 % if the same color is used multiple times you may want to change it...
 if opt.changecolor
   tmpcolor = opt.groupcolor(1,:);
@@ -214,7 +273,7 @@ if opt.changecolor
   end
 end
 if numel(opt.sort)>1 && numel(opt.sort) ~= nc
-  error('ERROR:cat_plot_boxplot:sort','ERROR: Too sort list.'); 
+  error('ERROR:cat_plot_boxplot:sort','ERROR: Too short list.'); 
 end
 
 groupnr = cellfun(@(x) sum(~isnan(x)),data);
@@ -231,6 +290,7 @@ if 0 && opt.groupmin>0
   opt.groupcolor(rmdata) = [];
   data(rmdata) = [];
 end
+
 if isempty(data), 
   error('ERROR:cat_plot_boxplot:data','ERROR: Not enough (non-NaN) data (may change opt.groupmin).'); 
 end
@@ -319,7 +379,13 @@ for i=1:nc
   
   % estimate kernel density for violin plot
   if opt.violin
+    try
     [tmp, f, u] = kde(col,2^n2);
+    catch
+      fprintf('WARNING: Creating violin plot failed.\n');
+      opt.violin = 0;
+      break
+    end
     f = (f/max(f)*opt.boxwidth*0.3)'; % width of violin plot is more narrow
     F(:,i) = f;
     U(:,i) = u;
@@ -406,6 +472,7 @@ quartile_y = s([3,7,4,4,7,3,6,2,2,6,3],:);
 
 % thinner boxplot as option for violin plot
 quartile_xthin = ones(11,1)*[1:nc] + [-1;-1;-1;1;1;1;1;1;-1;-1;-1]*0.035*ones(1,nc);
+quartile_ythin = s([3,7,4,4,7,3,6,2,2,6,3],:);
 
 % quartiles below median for different filling colors
 if ~opt.vertical && opt.hflip
@@ -451,166 +518,199 @@ end
 children0=get(gca,'Children');
 
 qn = size(quartile_x,2);
-  
-if ~opt.vertical
-%    tmp = median_x; median_x = median_y; median_y = tmp;
-  tmp = quartile_x; quartile_x = quartile_y; quartile_y = tmp;
-  tmp = quartile_xl; quartile_xl = quartile_yl; quartile_yl = tmp;
-  tmp = cap_x; cap_x = cap_y; cap_y = tmp;
-  tmp = whisker_x; whisker_x = whisker_y; whisker_y = tmp;
-  tmp = outliers_x; outliers_x = outliers_y; outliers_y = tmp;
-  tmp = outliers2_x; outliers2_x = outliers2_y; outliers2_y = tmp;
 
+% switch x and y values for horizontal plot
+if ~opt.vertical
+  tmp = cap_x;       cap_x = cap_y;             cap_y = tmp;
+  tmp = quartile_x;  quartile_x = quartile_y;   quartile_y = tmp;
+  tmp = quartile_xl; quartile_xl = quartile_yl; quartile_yl = tmp;
+  tmp = whisker_x;   whisker_x = whisker_y;     whisker_y = tmp;
+  tmp = outliers_x;  outliers_x = outliers_y;   outliers_y = tmp;
+  tmp = outliers2_x; outliers2_x = outliers2_y; outliers2_y = tmp;
+  tmp = quartile_xthin;  quartile_xthin = quartile_ythin;   quartile_ythin = tmp;
 end
 
+offset = 0;
 for i=1:qn
   
-    % violin plot
-    if opt.violin    
-      if opt.vertical
-        indn = max(find(U(:,i)<median_y(1,i)));
-      else
-        indn = max(find((U(:,i))<median_y(1,i)));
-      end
+  if opt.fill
+    tcol = [1 1 1];
+    tdef = struct('FaceAlpha',1-opt.trans,'EdgeColor','none');
+    fcol = opt.groupcolor(i,:);
+    fdef = struct('FaceAlpha',opt.sat,'EdgeColor',opt.edgecolor);
+    fdefm = struct('FaceAlpha',0.25,'EdgeColor','none');
+  else
+    tcol = struct('Color',[1 1 1]);
+    fcol = struct('Color',opt.groupcolor(i,:));
+  end
+
+  % offset for filling with 0.5 depending on boxwidth
+  if opt.fill == 0.5 & ~opt.vertical
+    offset = max(0.25,sqrt(opt.boxwidth)/4);
+  else
+    offset = 0;
+  end
+
+  % violin plot
+  if opt.violin    
+    indn = max(find(U(:,i)<median_y(1,i)));
+    
+    % correct thickness of median line
+    median_x(:,i) = [F(indn,i)+i-offset;flipud(i-offset-F(indn,i))];
+    
+    if opt.vertical
+      x = [F(:,i)+i;flipud(i-F(:,i))];
+      y = [U(:,i);flipud(U(:,i))];
+      xm = [F(1:indn,i)+i;flipud(i-F(1:indn,i))];
+      ym = [U(1:indn,i);flipud(U(1:indn,i))];
       % correct thickness of median line
-      if opt.vertical
+      median_x(:,i) = [F(indn,i)+i;flipud(i-F(indn,i))];
+    else
+      % correct thickness of median line
+      if opt.fill == 0.5
+        median_x(:,i) = [F(indn,i)+i-offset;i-offset];
+      else
         median_x(:,i) = [F(indn,i)+i;flipud(i-F(indn,i))];
-      else
-        median_x(:,i) = [F(indn,i)+i;flipud(1-F(indn,i))];
+      end
+      x = [U(:,i)]; 
+      y = [F(:,i)+i-offset];
+      xm = [U(1:indn,i)];
+      ym = [F(1:indn,i)+i-offset];
+      if opt.fill > 0.5
+        x = [x;flipud(U(:,i))];
+        y = [y;flipud(i-offset-F(:,i))];
+        xm = [xm;flipud(U(1:indn,i))];
+        ym = [ym;flipud(i-F(1:indn,i))];
+      end
+    end
+    
+    if opt.fill
+      if opt.trans, fill(x,y,tcol,tdef); end % just a white box as background
+      fill(x,y,fcol,fdef);
+      if i==1, hold on; end
+      
+      if opt.median == 2
+        if opt.trans, fill(xm,ym,tcol,tdef); end
+        fill(xm,ym,0.5*fcol,fdefm);
       end
       
+    else
+      if opt.trans, plot(x,y,tcol); end
+      plot(x,y,fcol);
+      if i==1, hold on; end
+    end
+    
+    % add thin box plot
+    if opt.violin == 2
       if opt.fill
-        if opt.vertical
-          if opt.trans, fill([F(:,i)+i;flipud(i-F(:,i))],[U(:,i);flipud(U(:,i))],[1 1 1],'FaceAlpha',1-opt.trans,'EdgeColor','none'); end % just a white box as background
-          fill([F(:,i)+i;flipud(i-F(:,i))],[U(:,i);flipud(U(:,i))],opt.groupcolor(i,:),'FaceAlpha',opt.sat,'EdgeColor',opt.edgecolor);
-        else
-          if opt.trans, fill([U(:,i);flipud(U(:,i))],[F(:,i)+i;flipud(i-F(:,i))],[1 1 1],'FaceAlpha',1-opt.trans,'EdgeColor','none'); end
-          fill([U(:,i);flipud(U(:,i))],[F(:,i)+i;flipud(i-F(:,i))],opt.groupcolor(i,:),'FaceAlpha',opt.sat,'EdgeColor',opt.edgecolor);
-        end
-        if i==1, hold on; end
-        if opt.median == 2
-          if opt.vertical
-            if opt.trans, fill([F(1:indn,i)+i;flipud(i-F(1:indn,i))],[U(1:indn,i);flipud(U(1:indn,i))],[1 1 1],'FaceAlpha',1-opt.trans,'EdgeColor','none'); end
-            fill([F(1:indn,i)+i;flipud(i-F(1:indn,i))],[U(1:indn,i);flipud(U(1:indn,i))],0.5*opt.groupcolor(i,:),'FaceAlpha',0.25,'EdgeColor','none');
-          else
-            if opt.trans, fill([U(1:indn,i);flipud(U(1:indn,i))],[F(1:indn,i)+i;flipud(i-F(1:indn,i))],[1 1 1],'FaceAlpha',1-opt.trans,'EdgeColor','none'); end
-            fill([U(1:indn,i);flipud(U(1:indn,i))],[F(1:indn,i)+i;flipud(i-F(1:indn,i))],0.5*opt.groupcolor(i,:),'FaceAlpha',0.25,'EdgeColor','none');
-          end
-        end
+        fill(quartile_xthin(:,i), quartile_ythin(:,i)-offset,[0.5 0.5 0.5]); 
       else
-        if opt.vertical
-          if opt.trans, plot([F(:,i)+i;flipud(i-F(:,i))],[U(:,i);flipud(U(:,i))],'Color',[1 1 1]); end
-          plot([F(:,i)+i;flipud(i-F(:,i))],[U(:,i);flipud(U(:,i))],'Color',opt.groupcolor(i,:));
-        else
-          if opt.trans, plot([U(:,i);flipud(U(:,i))],[F(:,i)+i;flipud(i-F(:,i))],'Color',[1 1 1]); end
-          plot([U(:,i);flipud(U(:,i))],[F(:,i)+i;flipud(i-F(:,i))],'Color',opt.groupcolor(i,:));
-        end
-        if i==1, hold on; end
-        if opt.median == 2
-          if opt.vertical
-            if opt.trans, plot([F(1:indn,i)+i;flipud(i-F(1:indn,i))],[U(1:indn,i);flipud(U(1:indn,i))],[1 1 1],[1 1 1]); end
-            plot([F(1:indn,i)+i;flipud(i-F(1:indn,i))],[U(1:indn,i);flipud(U(1:indn,i))],0.5*opt.groupcolor(i,:),0.5*opt.groupcolor(i,:));
-          else
-            if opt.trans, plot([U(1:indn,i);flipud(U(1:indn,i))],[F(1:indn,i)+i;flipud(i-F(1:indn,i))],[1 1 1],[1 1 1]); end
-            plot([U(1:indn,i);flipud(U(1:indn,i))],[F(1:indn,i)+i;flipud(i-F(1:indn,i))],0.5*opt.groupcolor(i,:),0.5*opt.groupcolor(i,:));
-          end
-        end
+        plot(quartile_xthin(:,i), quartile_ythin(:,i),'Color',[0.5 0.5 0.5]); 
       end
-      
-      % add thin box plot
-      if opt.violin == 2
-        if opt.fill
-          fill(quartile_xthin(:,i), quartile_y(:,i),[0.5 0.5 0.5]); 
-        else
-          plot(quartile_xthin(:,i), quartile_y(:,i),'Color',[0.5 0.5 0.5]); 
-        end
-        plot(whisker_x(:,[i i+qn]), whisker_y(:,[i i+qn]),'Color',[0.5 0.5 0.5]);
-      end
-      
+      plot(whisker_x(:,[i i+qn]), whisker_y(:,[i i+qn])-offset,'Color',[0.5 0.5 0.5]);
     end
+    
+  end
 
-    if opt.box
-      if opt.fill
-        if opt.trans, fill(quartile_x(:,i), quartile_y(:,i),'b-','FaceColor',[1 1 1],'FaceAlpha',1-opt.trans,'EdgeColor','none'); end
-        fill(quartile_x(:,i), quartile_y(:,i),'b-','FaceColor',opt.groupcolor(i,:),'FaceAlpha',opt.sat,'EdgeColor','none');
-        if i==1, hold on; end
-        if opt.median == 2
-          fill(quartile_xl(:,i), quartile_yl(:,i),'b-','FaceColor',0.5*opt.groupcolor(i,:),'FaceAlpha',0.25,'EdgeColor','none'); 
-        end
-      else
-        plot(quartile_x(:,i), quartile_y(:,i),'Color',opt.groupcolor(i,:)); 
-        if i==1, hold on; end
-      end
+  if opt.box
+    if opt.fill
+      if opt.trans, fill(quartile_x(:,i), quartile_y(:,i),'b-','FaceColor',[1 1 1],tdef); end
+      fill(quartile_x(:,i), quartile_y(:,i),'b-','FaceColor',opt.groupcolor(i,:),'FaceAlpha',opt.sat,'EdgeColor','none');
+      if i==1, hold on; end
       
-      plot(cap_x(:,[i i+qn]), cap_y(:,[i i+qn]),'Color',[0.5 0.5 0.5]); 
-      plot(whisker_x(:,[i i+qn]), whisker_y(:,[i i+qn]),'Color',[0.5 0.5 0.5]);
-      if ~strcmp(opt.edgecolor,'none')
-        plot(quartile_x(:,i), quartile_y(:,i),'Color',opt.edgecolor); 
+      if opt.median == 2
+        fill(quartile_xl(:,i), quartile_yl(:,i),'b-','FaceColor',0.5*opt.groupcolor(i,:),fdef); 
       end
-      
+    
+    else
+      plot(quartile_x(:,i), quartile_y(:,i),'Color',opt.groupcolor(i,:)); 
+      if i==1, hold on; end
     end
+    
+    plot(cap_x(:,[i i+qn]), cap_y(:,[i i+qn]),'Color',[0.5 0.5 0.5]); 
+    plot(whisker_x(:,[i i+qn]), whisker_y(:,[i i+qn]),'Color',[0.5 0.5 0.5]);
+    if ~strcmp(opt.edgecolor,'none')
+      plot(quartile_x(:,i), quartile_y(:,i),'Color',opt.edgecolor); 
+    end
+    
+  end
 
-    % optionally also show data either as points or short lines
-    if opt.showdata == 1
-      if opt.vertical
-        plot(i*ones(1,length(data{i})),data{i}(:),'.','Color',0.25*opt.groupcolor(i,:));
-      else
-        plot(data{i}(:),i*ones(1,length(data{i})),'.','Color',0.25*opt.groupcolor(i,:));
-      end
-    elseif opt.showdata == 2
-      if opt.vertical
-        line(([-.025*ones(length(data{i}),1) .025*ones(length(data{i}),1)]+i)',([data{i}(:) data{i}(:)])','Color',0.25*opt.groupcolor(i,:));
-      else
-        line(([data{i}(:) data{i}(:)])',([-.025*ones(length(data{i}),1) .025*ones(length(data{i}),1)]+i)','Color',0.25*opt.groupcolor(i,:));
-      end
+  % optionally also show data either as points or short lines
+  if opt.showdata == 1
+    if i==1, hold on; end
+    if opt.vertical
+      plot((i-offset)*ones(1,length(data{i})),data{i}(:),'.','Color',0.25*opt.groupcolor(i,:));
+    else
+      plot(data{i}(:),(i-offset)*ones(1,length(data{i})),'.','Color',0.25*opt.groupcolor(i,:));
     end
+  elseif opt.showdata == 2
+    if opt.vertical
+      line(([-.025*ones(length(data{i}),1) .025*ones(length(data{i}),1)]+i)',([data{i}(:) data{i}(:)])','Color',0.25*opt.groupcolor(i,:));
+    else
+      line(([data{i}(:) data{i}(:)])',([-.025*ones(length(data{i}),1) .025*ones(length(data{i}),1)]+i-offset)','Color',0.25*opt.groupcolor(i,:));
+    end
+  end
 
-    if opt.median == 1
-      if opt.groupcolor(i,1)>0.2 && opt.groupcolor(i,2)<0.5 && opt.groupcolor(i,3)<0.5
-        plot(median_x(:,i), median_y(:,i),'Color',[0.5 0 0])
-      else
-        plot(median_x(:,i), median_y(:,i),'Color',[1 0 0])
-      end
+  if opt.median == 1
+    if opt.groupcolor(i,1)>0.2 && opt.groupcolor(i,2)<0.5 && opt.groupcolor(i,3)<0.5
+      col = [0.5 0 0];
+    else
+      col = [1 0 0];
     end
+    plot(median_y(:,i), median_x(:,i),'Color',col)
+  end
     
   end
   
   if opt.symbol(1)~=' ' && opt.outliers
-    plot(outliers_x,  outliers_y ,'MarkerSize',...
+    plot(outliers_x,  outliers_y-offset ,'MarkerSize',...
         max(4,min(8,80/nc)),'Marker',opt.symbol(1),'MarkerEdgeColor',opt.symbolcolor,'LineStyle','none')
   end
+  
   if opt.symbol(2)~=' ' && opt.outliers
-    plot(outliers2_x, outliers2_y,'MarkerSize',...
+    plot(outliers2_x, outliers2_y-offset,'MarkerSize',...
       max(4,min(8,80/nc)),'Marker',opt.symbol(2),'MarkerEdgeColor',opt.symbolcolor,'LineStyle','none');
   end
   
-  % add labels
-  linecolor = [0.8 0.8 0.8];
+  if all( cellfun(@all,cellfun(@isnan,data,'uniformOutput',false) ))
+    hold off; 
+    text(numel(data)/2 + 1/2,0.5,'No (non-NaN) data!','color',[0.8 0 0],'FontWeight','Bold','HorizontalAlignment','center','FontSize',opt.FS*1.2);
+    opt.ygrid = 0; 
+    hold on;
+  end
   if ~opt.vertical
     set(gca,'YTick',1:numel(opt.names),'YTickLabel',opt.names,'TickLength',[0 0],'ylim',[0.5 numel(opt.names)+0.5]);
-    if ~isempty(opt.ylim) && diff(opt.ylim)~=0
+    if ~isempty(opt.ylim) && diff(opt.ylim)~=0 && ~all( isnan(opt.ylim) )
       xlim(gca,opt.ylim);
     end
-    if ~isempty(opt.xlim) && diff(opt.xlim)~=0
+    if ~isempty(opt.xlim) && diff(opt.xlim)~=0 && ~all( isnan(opt.xlim) )
       ylim(gca,opt.xlim);
     end
   else
     set(gca,'XTick',1:numel(opt.names),'XTickLabel',opt.names,'TickLength',[0 0],'xlim',[0.5 numel(opt.names)+0.5]);
-    if ~isempty(opt.ylim) && diff(opt.ylim)~=0
+    if ~isempty(opt.ylim) && diff(opt.ylim)~=0 && ~all( isnan(opt.ylim) )
       ylim(gca,opt.ylim);
     end
-    if ~isempty(opt.xlim) && diff(opt.xlim)~=0
+    if ~isempty(opt.xlim) && diff(opt.xlim)~=0 && ~all( isnan(opt.xlim) )
       xlim(gca,opt.xlim);
     end
   end
-  set(gca,'TickLabelInterpreter','none');
+
+  try, set(gca,'TickLabelInterpreter','none'); end
 
   if ~isempty(opt.fontsize)
     set(gca,'FontSize',opt.fontsize);
   end
 
+
   % plot yticks
+
   if opt.ygrid 
+    if strcmp(opt.gridline,'-')
+      linecolor = [0.8 0.8 0.8];
+    else
+      linecolor = [0.65 0.65 0.65];
+    end
     %%
     if opt.vertical, xytick = 'Ytick'; xylab = 'YTickLabel'; else xytick = 'Xtick'; xylab = 'XTickLabel'; end
     if isfield(opt,'ytick')
@@ -620,18 +720,19 @@ for i=1:qn
       if numel(ytick)<5, ytick=interp1(ytick,1:0.5:numel(ytick)); elseif numel(ytick)>10, ytick=ytick(1:2:end); end
     end
     set(gca,xytick,ytick); 
+    acc = sprintf('%%0.%df',abs(str2double(char(regexp(num2str(min(diff(ytick)),'%e'),'[+-]..','match'))))); 
     if ~opt.vertical && opt.hflip
-      set(gca,xylab,num2str(-ytick',sprintf('%%0.%df',-str2double(char(regexp(num2str(min(diff(ytick)),'%e'),'[+-]..','match'))) ) ) ); 
+      set(gca,xylab,num2str(-ytick',acc)); 
     else
-      set(gca,xylab,num2str( ytick',sprintf('%%0.%df',-str2double(char(regexp(num2str(min(diff(ytick)),'%e'),'[+-]..','match'))) ) ) ); 
+      set(gca,xylab,num2str( ytick',acc)); 
     end
-    
+
     if ytick(1)<=opt.ylim(1)+eps,   ytick(1)=[];   end
     if ytick(end)>=opt.ylim(2)-eps, ytick(end)=[]; end
     if opt.vertical
-      h1=plot(repmat(xlim',1,numel(ytick)),[ytick;ytick],'Color',linecolor);
+      h1=plot(repmat(xlim',1,numel(ytick)),[ytick;ytick],'Color',linecolor,'Linestyle',opt.gridline);
     else
-      h1=plot([ytick;ytick],repmat(ylim',1,numel(ytick)),'Color',linecolor);
+      h1=plot([ytick;ytick],repmat(ylim',1,numel(ytick)),'Color',linecolor,'Linestyle',opt.gridline);
     end
     uistack(h1,'bottom')
 
@@ -643,14 +744,16 @@ for i=1:qn
       ytick2 = setdiff(ytick2,ytick1);
 
       if opt.vertical
-        h2=plot(repmat([0;numel(opt.names)+1],1,numel(ytick2)),[ytick2;ytick2],'Color',linecolor*0.25+0.75*ones(1,3));
+        h2=plot(repmat([0;numel(opt.names)+1],1,numel(ytick2)),[ytick2;ytick2],'Color',linecolor*0.25+0.75*ones(1,3),'Linestyle',opt.gridline);
       else
-        h2=plot([ytick2;ytick2],repmat([0;numel(opt.names)+1],1,numel(ytick2)),'Color',linecolor*0.25+0.75*ones(1,3));
+        h2=plot([ytick2;ytick2],repmat([0;numel(opt.names)+1],1,numel(ytick2)),'Color',linecolor*0.25+0.75*ones(1,3),'Linestyle',opt.gridline);
       end
       uistack(h2,'bottom')
     end
   end
-  
+
+
+
   %% subsets
   if any(opt.subsets)
     f2 = [];
@@ -669,7 +772,7 @@ for i=1:qn
     uistack(h1,'bottom')
     if opt.ygrid>1, uistack(h2,'bottom'); end
   end
-   
+  
 %%
 hold off
 
@@ -705,7 +808,7 @@ function y = prctile(x,p,dim)
 %   See also IQR, MEDIAN, NANMEDIAN, QUANTILE.
 
 %   Copyright 1993-2004 The MathWorks, Inc.
-%   $Revision: 1341 $  $Date: 2018-07-27 15:14:51 +0200 (Fr, 27 Jul 2018) $
+%   $Revision: 1610 $  $Date: 2020-04-29 18:49:12 +0200 (Mi, 29 Apr 2020) $
 
 
 if ~isvector(p) || numel(p) == 0

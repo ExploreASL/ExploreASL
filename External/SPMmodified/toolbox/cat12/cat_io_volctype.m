@@ -1,4 +1,4 @@
-function varargout = cat_io_volctype(varargin)
+function out = cat_io_volctype(varargin)
 % ______________________________________________________________________
 % Convert datatype of images, to have more space on your harddisk. 
 % In example most tissue classifcations can saved as uint8 or uint16 
@@ -10,9 +10,9 @@ function varargout = cat_io_volctype(varargin)
 % Structural Brain Mapping Group
 % University Jena
 % ______________________________________________________________________
-% $Id: cat_io_volctype.m 1337 2018-07-19 17:34:21Z dahnke $
+% $Id: cat_io_volctype.m 1581 2020-03-11 10:20:09Z dahnke $
 
-  SVNid = '$Rev: 1337 $';
+  SVNid = '$Rev: 1581 $';
     
 %% choose images
   
@@ -23,7 +23,7 @@ function varargout = cat_io_volctype(varargin)
   end
   def.force               = 1; 
   def.verb                = 1;
-  def.postfix             = '';
+  def.suffix             = '';
   def.returnOnlyFilename  = 0; 
   job = cat_io_checkinopt(job,def); 
 
@@ -89,12 +89,12 @@ function varargout = cat_io_volctype(varargin)
   if strcmp(job.prefix,'PARA')
     job.prefix = [spm_type(ctype) '_']; 
   end
-  if ~strcmp(job.prefix,'PARA') && strcmp(job.postfix,'PARA')
+  if ~strcmp(job.prefix,'PARA') && strcmp(job.suffix,'PARA')
     job.prefix = ['_' spm_type(ctype)]; 
   end
   for si=1:numel(job.data)
-    [pp,ff,ee,dd]    = spm_fileparts(job.data{si});
-    varargout{1}{si} = fullfile(pp,[job.prefix ff job.postfix ee dd]);
+    [pp,ff,ee,dd] = spm_fileparts(job.data{si});
+    out.files{si} = fullfile(pp,[job.prefix ff job.suffix ee dd]);
   end
   if job.returnOnlyFilename, return; end
   
@@ -134,7 +134,14 @@ function varargout = cat_io_volctype(varargin)
         case 256, ctype = 512; 
       end
     end
-    V(1).dt(1) = ctype;
+    % special case for external input
+    if ctype>0
+      V(1).dt(1) = ctype;
+      descrip = [V(1).descrip ' > ' spm_type(ctype)];
+    else
+      descrip = V(1).descrip;
+    end
+    
 
     % replace NAN and INF in case of integer
     switch V(1).dt(1) 
@@ -143,14 +150,16 @@ function varargout = cat_io_volctype(varargin)
         Y(isinf(Y) & Y<0) = min(Y(:));
         Y(isinf(Y) & Y>0) = max(Y(:));
     end
-     
+    
+    
+   
     if ndims(Y)==4
       %%
-      V(1).fname    = fullfile(pp,[job.prefix ff job.postfix ee]);
+      V(1).fname    = fullfile(pp,[job.prefix ff job.suffix ee]);
       if exist(V(1).fname,'file'), delete(V(1).fname); end % delete required in case of smaller file size! 
       N              = nifti;
       N.dat          = file_array(fullfile(pp,[job.prefix ff ee]),min([inf inf inf size(Y,4)],size(Y)),[ctype spm_platform('bigend')],0,job.cvals,0);
-      N.descrip      = [V(1).descrip ' > ' spm_type(ctype)]; 
+      N.descrip      = descrip; 
       N.mat          = V(1).mat;
       N.mat0         = V(1).private.mat0;
       N.descrip      = V(1).descrip;
@@ -158,8 +167,8 @@ function varargout = cat_io_volctype(varargin)
       %Y(:,:,:,3) = Y(:,:,:,3) + Y(:,:,:,4);
       N.dat(:,:,:,:) = Y(:,:,:,:);
     else
-      V(1).fname    = fullfile(pp,[job.prefix ff job.postfix ee]);
-      V(1).descrip  = [V(1).descrip ' > ' spm_type(ctype)]; 
+      V(1).fname    = fullfile(pp,[job.prefix ff job.suffix ee]);
+      V(1).descrip  = descrip; 
       V = rmfield(V,'private');
       if exist(V(1).fname,'file'), delete(V(1).fname); end % delete required in case of smaller file size!
       spm_write_vol(V,Y);

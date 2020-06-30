@@ -29,7 +29,7 @@ function varargout = cat_io_csv(filename,varargin)
 % Structural Brain Mapping Group
 % University Jena 
 %
-% $Id: cat_io_csv.m 1017 2016-09-23 05:55:23Z dahnke $
+% $Id: cat_io_csv.m 1524 2019-11-28 17:00:31Z gaser $
 % ______________________________________________________________________
 
   if nargout>0, action='r'; else action='w'; end
@@ -186,6 +186,8 @@ function writecsv(filename,C,sheet,pos,opt)
   end
 
   M=cell(size(C,1),1);
+  if strcmpi(spm_check_version,'octave'), M =cellstr(M); end
+  
   for i=1:size(C,1)
     for j=1:size(C,2)
       if ~isstruct(C{i,j}) && ~iscell(C{i,j})

@@ -4,7 +4,7 @@ function varargout = cat_install_tfce(install)
 % the TFCE toolbox
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cat_install_tfce.m 1303 2018-04-10 10:43:59Z dahnke $
+% $Id: cat_install_tfce.m 1604 2020-04-14 12:39:10Z gaser $
 
 if nargin == 0
   install = spm_input('Install TFCE toolbox',1,'yes|no',[1 0],1);
@@ -22,7 +22,7 @@ if install
     rehash
     rehash toolboxcache;
     toolbox_path_cache
-    eval(['spm fmri;spm_cat12']);
+    eval(['spm fmri;clear cat_version;spm_cat12']);
   catch
     le = lasterror;
     switch le.identifier

@@ -31,7 +31,7 @@ function varargout = cat_io_writenii(V,Y,folder,pre,desc,spmtype,range,writes,tr
 % Structural Brain Mapping Group
 % University Jena
 %
-% $Id: cat_io_writenii.m 1305 2018-04-13 19:01:25Z dahnke $
+% $Id: cat_io_writenii.m 1558 2020-01-29 11:28:17Z dahnke $
 %
 %#ok<*WNOFF,*WNON,*ASGLU>
   
@@ -49,6 +49,13 @@ function varargout = cat_io_writenii(V,Y,folder,pre,desc,spmtype,range,writes,tr
       case {'uint8','char'},    spmtype = 'uint8'; 
       case 'uint16',            spmtype = 'uint16';
       case 'uint32',            spmtype = 'uint32'; 
+      case {'single','double'}, spmtype = 'float32'; 
+      otherwise
+    end
+  else
+    switch spmtype
+      case 'logical',           spmtype = 'uint8';   
+      case 'char',              spmtype = 'uint8'; 
       case {'single','double'}, spmtype = 'float32'; 
       otherwise
     end
@@ -282,7 +289,7 @@ function varargout = cat_io_writenii(V,Y,folder,pre,desc,spmtype,range,writes,tr
     % for VBM Dartel, an affine registration was used and we now have to add the scaling factor
 
     elseif (write(3)==1 && transform.warped.dartel==2) || (write(3)==2 && transform.warped.dartel==1)
-    % for VBM Shooting, a ridid registration was used and no further changes are required for standard SPM warped output
+    % for VBM Shooting, a rigid registration was used and no further changes are required for standard SPM warped output
 
     end
 

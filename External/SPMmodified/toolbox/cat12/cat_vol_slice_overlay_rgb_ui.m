@@ -1,7 +1,9 @@
 function cat_vol_slice_overlay_rgb_ui
+% Wrapper to cat_vol_slice_overlay for overlaying
+% 3 different images to a RGB overlay
 %__________________________________________________________________________
 % Christian Gaser
-% $Id: cat_vol_slice_overlay_rgb_ui.m 1209 2017-11-07 16:20:27Z gaser $
+% $Id: cat_vol_slice_overlay_rgb_ui.m 1607 2020-04-17 22:52:07Z gaser $
 
 clear global SO
 global SO
@@ -9,9 +11,9 @@ global SO
 % ---------------------------------------------------------------------------------------
 % image array of max. 3 images
 % ---------------------------------------------------------------------------------------
-name = char(fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm/cobra.nii'),...
-            fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm/mori.nii'),...
-            fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm/cat.nii'));
+name = char(fullfile(spm('dir'),'toolbox','cat12','templates_volumes/cobra.nii'),...
+            fullfile(spm('dir'),'toolbox','cat12','templates_volumes/mori.nii'),...
+            fullfile(spm('dir'),'toolbox','cat12','templates_volumes/cat.nii'));
 
 range = [0 1]; % this should be adapted to the image range
 logP = 0;      % option to use log-scaled colorbars if the input is a log-transformed p-map
@@ -19,7 +21,7 @@ logP = 0;      % option to use log-scaled colorbars if the input is a log-transf
 % ---------------------------------------------------------------------------------------
 % underlying image
 % ---------------------------------------------------------------------------------------
-SO.img(1).vol = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm/Template_T1_IXI555_MNI152_GS.nii'));
+SO.img(1).vol = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_volumes/Template_T1_IXI555_MNI152_GS.nii'));
 SO.img(1).prop = 1;
 SO.img(1).cmap = gray;
 SO.img(1).range = [0.2 1];  % image range have to be adapted
@@ -51,7 +53,7 @@ slices = slices{ind};
 
 
 for i=(1:size(name,1))+1
-    SO.img(i).background = 0;
+  SO.img(i).background = 0;
 	SO.img(i).vol = spm_vol(deblank(name(i-1,:)));
 	SO.img(i).prop = 1;
 
@@ -132,7 +134,7 @@ end
 
 return
 
-function xy=get_xy(n)
+function xy = get_xy(n)
 
 nn = round(n^0.4);
 if n>8, x = nn:round(n/nn); else x = 1:n; end
@@ -157,7 +159,7 @@ xy = unique(xy,'rows');
 return
 
 % --------------------------------------------------------------------------
-function s=remove_zeros(s)
+function s = remove_zeros(s)
 
 pos = length(s);
 while pos>1

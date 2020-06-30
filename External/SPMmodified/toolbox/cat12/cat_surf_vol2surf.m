@@ -64,7 +64,7 @@ function out = cat_surf_vol2surf(varargin)
 %                       (f)MRI data only.
 % ______________________________________________________________________
 % Robert Dahnke, Christian Gaser
-% $Id: cat_surf_vol2surf.m 1311 2018-04-26 08:16:03Z dahnke $
+% $Id: cat_surf_vol2surf.m 1566 2020-02-13 10:25:08Z gaser $
  
   spm_clf('Interactive'); 
  
@@ -97,7 +97,6 @@ function out = cat_surf_vol2surf(varargin)
   end
   job = cat_io_checkinopt(job,def);
   
-
   % if no data_mesh_lh is given for normalized space use default
   % Dartel template surface
   if ~isfield(job,'data_mesh_lh')
@@ -164,6 +163,15 @@ function out = cat_surf_vol2surf(varargin)
     end
   end
     
+  % if only 1 volume but multiple surfaces are given then fill
+  % up the missing volume names with the single volume name
+  if (n_vol == 1) && (n_surf > 1)
+    for i=2:n_surf
+      data_vol{i} = data_vol{1};
+      istemp(i) = 0;
+    end
+  end
+
   %%
   side  = {'data_mesh_lh','data_mesh_rh'};
   sside = {'sinfo_lh','sinfo_rh'};
@@ -223,6 +231,11 @@ function out = cat_surf_vol2surf(varargin)
   mapdef.class = 'GM';
   job.mapping.(mapping) = cat_io_checkinopt( job.mapping.(mapping),mapdef);
  
+  % if only one step is defined force use of "max" as sampling function
+  if job.mapping.(mapping).steps == 1
+    job.sample{1} = 'max';
+  end
+  
   mappingstr = sprintf('-%s -%s -steps "%d" -start "%0.4f" -end "%0.4f"',...
        job.interp{1},job.sample{1}, job.mapping.(mapping).steps, job.mapping.(mapping).startpoint,...
        job.mapping.(mapping).endpoint);   
@@ -247,7 +260,11 @@ function out = cat_surf_vol2surf(varargin)
   end
   fprintf('Mapping %s volume(s) %s grid positions: ',space_str, mapping_str);
   for i=1:job.mapping.(mapping).steps
-    fprintf(' %g', job.mapping.(mapping).startpoint + (i-1)*(job.mapping.(mapping).endpoint-job.mapping.(mapping).startpoint)/(job.mapping.(mapping).steps-1));
+    if job.mapping.(mapping).steps > 1
+      fprintf(' %g', job.mapping.(mapping).startpoint + (i-1)*(job.mapping.(mapping).endpoint-job.mapping.(mapping).startpoint)/(job.mapping.(mapping).steps-1));
+    else
+      fprintf(' %g', job.mapping.(mapping).startpoint);
+    end
   end
   fprintf('.\n\n');
   if isempty(job.datafieldname), dsep = ''; else dsep = '_'; end
@@ -297,7 +314,7 @@ function out = cat_surf_vol2surf(varargin)
             end
           case 'rel_mapping'
             switch job.mapping.(mapping).class
-              case {1,'GM'},  addstr = sprintf(' -thickness "%s" ',P.thickness{vi,si}); 
+              case {1,'GM'},  addstr = sprintf(' -thickness "%s" ',P.thickness{vi,si});
               case {2,'WM'},  error('Not yet supported');
               case {3,'CSF'}, error('Not yet supported'); 
             end
@@ -365,7 +382,13 @@ function out = cat_surf_vol2surf(varargin)
                 
         P.thickness(vi,si) = cat_surf_rename(job.(sside{si})(vi).Pmesh,...
             'preside','','pp',spm_fileparts(job.(sside{si})(vi).fname),...
-            'dataname','thickness','ee','');
+            'dataname','pbt','ee','');
+        if ~exist(P.thickness{vi,si},'file')
+            warning('File %s not found probably because you are using preprocessed data from an older version.',P.thickness{vi,si});
+            P.thickness(vi,si) = cat_surf_rename(job.(sside{si})(vi).Pmesh,...
+                'preside','','pp',spm_fileparts(job.(sside{si})(vi).fname),...
+                'dataname','thickness','ee','');
+        end
         P.depthWM(vi,si) = cat_surf_rename(job.(sside{si})(vi).Pmesh,...
             'preside','','pp',spm_fileparts(job.(sside{si})(vi).fname),...
             'dataname','depthWM','ee','');

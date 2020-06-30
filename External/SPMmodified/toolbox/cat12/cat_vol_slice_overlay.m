@@ -1,14 +1,30 @@
 function cat_vol_slice_overlay(OV)
+% Extension/wrapper to slice_overlay
+% Call help for slice_overlay for any help
+% 
+% Additional fields to slice_overlay:
+% OV.xy    - define number of columns and rows
+%            comment this out for interactive selection
+% OV.atlas - define atlas for labeling
+%            comment this out for interactive selection
+%            or use 'none' for no atlas information
+% OV.save  - save result as png/jpg/pdf/tif
+%            comment this out for interactive selection or use '' for not 
+%            saving any file or use just file extension (png/jpg/pdf/tif) to 
+%            automatically estimate filename to save
 %__________________________________________________________________________
 % Christian Gaser
-% $Id: cat_vol_slice_overlay.m 1326 2018-06-25 15:04:24Z gaser $
+% $Id: cat_vol_slice_overlay.m 1607 2020-04-17 22:52:07Z gaser $
 
 clear global SO
 global SO
 
 if nargin == 0
     
-    imgs = spm_select(2, 'image', 'Select additional overlay image', {fullfile(spm('dir'), 'toolbox', 'cat12', 'templates_1.50mm/Template_T1_IXI555_MNI152_GS.nii')});
+    imgs = spm_select(2, 'image', 'Select additional overlay image', {fullfile(spm('dir'), 'toolbox', 'cat12', 'templates_volumes/Template_T1_IXI555_MNI152_GS.nii')});
+    if isempty(imgs)
+      return;
+    end
     OV = pr_basic_ui(imgs, 0);
     
     % set options
@@ -22,6 +38,7 @@ if nargin == 0
     
 end
 
+spm_figure('GetWin','Graphics');
 FS = spm('FontSizes');
 
 % check filename whether log. scaling was used
@@ -148,7 +165,7 @@ if isempty(SO.slices)
     [mx, mn, XYZ, vol] = volmaxmin(SO.img(2).vol);
     
     % threshold map and restrict coordinates
-    Q = find(vol >= SO.img(2).range(1) & vol <= SO.img(2).range(2));
+    Q = find(vol >= SO.img(2).range(1));
     XYZ = XYZ(:, Q);
     vol = vol(Q);
     
@@ -219,7 +236,7 @@ end
 pos1 = get(spm_figure('FindWin', 'Graphics'), 'Position');
 
 screensize = get(0, 'screensize');
-set(h0, 'Position', [pos1(1), pos1(2) + 0.9 * screensize(4), 2 * size(ref_img, 2), 2 * size(ref_img, 1)], ...
+set(h0, 'Position', [10, 10, 2 * size(ref_img, 2), 2 * size(ref_img, 1)], ...
     'MenuBar', 'none', ...
     'Resize', 'off', ...
     'PaperType', 'A4', ...
@@ -241,7 +258,6 @@ switch lower(OV.transform)
     case 'axial'
         dim = xy .* SO.img(1).vol.dim(1:2);
 end
-screensize = get(0, 'screensize');
 
 % use double size
 dim = 2 * dim;
@@ -290,9 +306,11 @@ if (SO.cbar == 2) & logP
     
     YTickLabel = [];
     for i = 1:length(YTick)
-        YTickLabel = char(YTickLabel, remove_zeros(sprintf('%.g', 10^(-YTick(i)))));
+        YTickLabel = char(YTickLabel, (sprintf(['%9.' num2str(YTick(i)) 'f '], 10^(-YTick(i)))));
     end
-    set(H, 'YTickLabel', YTickLabel)
+    
+    % skip first empty entry
+    set(H, 'YTickLabel', YTickLabel(2:end,:))
     
     set(get(gca, 'YLabel'), 'string', 'p-value', 'position', pos, 'FontSize', FS(14))
     
@@ -300,43 +318,182 @@ end
 
 set(H, 'FontSize', 0.8 * get(H, 'FontSize'))
 
+% select atlas for labeling
+if isfield(OV, 'atlas')
+    atlas_name = OV.atlas;
+    if strcmp(lower(atlas_name),'none') | isempty(atlas_name)
+      xA = [];
+    else
+      xA = spm_atlas('load',atlas_name);
+    end
+else
+	list = spm_atlas('List','installed');
+	atlas_labels{1} = 'None';
+	for i=1:numel(list)
+	  atlas_labels{i+1} = list(i).name;
+	end
+    atlas = spm_input('Select atlas?', '1', 'm', atlas_labels);
+    atlas_name = atlas_labels{atlas};
+    if atlas > 1
+        xA = spm_atlas('load',atlas_name);
+    else
+        xA = [];
+    end
+end
+
+% atlas labeling
+if ~isempty(xA)
+	[mx, mn, XYZ, vol] = volmaxmin(SO.img(2).vol);
+	
+	% threshold map and restrict coordinates
+	if SO.img(2).range(1) >= 0
+		Q = find(vol >= SO.img(2).range(1));
+		XYZ = XYZ(:, Q);
+		vol = vol(Q);
+	end
+	M = SO.img(2).vol.mat;
+	XYZmm = M(1:3, :) * [XYZ; ones(1, size(XYZ, 2))];
+	
+	% apply func that is defined for "i1"
+	i1 = vol;
+    eval(SO.img(2).func)
+	
+	% remove NaN values
+	Q = find(isfinite(i1));
+	XYZ = XYZ(:, Q);
+	i1 = i1(Q);
+	
+	% find clusters
+    A = spm_clusters(XYZ);
+    
+	labk   = cell(max(A)+2,1);
+	Pl     = cell(max(A)+2,1);
+	Zj     = cell(max(A)+2,1);
+	maxZ   = zeros(max(A)+2,1);
+	XYZmmj = cell(max(A)+2,1);
+	Q      = [];
+	
+	for k = 1:min(max(A))
+		j = find(A == k);
+		Q = [Q j];
+		
+		[labk{k}, Pl{k}]  = spm_atlas('query',xA,XYZmm(:,j));
+		Zj{k} = i1(j);
+		XYZmmj{k} = XYZmm(:,j);
+		maxZ(k) = sign(Zj{k}(1))*max(abs(Zj{k}));
+	end
+
+	% sort T/F values and print from max to min values
+	[tmp, maxsort] = sort(maxZ,'descend');
+
+	% use ascending order for neg. values
+	indneg = find(tmp<0);
+	maxsort(indneg) = flipud(maxsort(indneg));
+
+	if ~isempty(maxsort)
+		found_neg = 0;
+		found_pos = 0;
+		for l=1:length(maxsort)
+			j = maxsort(l); 
+			[tmp, indZ] = max(abs(Zj{j}));
+		
+			if ~isempty(indZ)
+				if maxZ(j) < 0,  found_neg = found_neg + 1; end
+				if maxZ(j) >= 0, found_pos = found_pos + 1; end
+				
+				% print header if the first pos./neg. result was found
+				if found_pos == 1
+					fprintf('\n______________________________________________________');
+					fprintf('\n%s: Positive effects\n%s',SO.img(2).vol.fname,atlas_name);
+					fprintf('\n______________________________________________________\n\n');
+					fprintf('%5s\t%7s\t%15s\t%s\n\n','Value','   Size','    xyz [mm]   ','Overlap of atlas region');
+				end
+				if found_neg == 1
+					fprintf('\n______________________________________________________');
+					fprintf('\n%s: Negative effects\n%s',SO.img(2).vol.fname,atlas_name);
+					fprintf('\n______________________________________________________\n\n');
+					fprintf('%5s\t%7s\t%15s\t%s\n\n','Value','   Size','    xyz [mm]   ','Overlap of atlas region');
+				end
+				
+				fprintf('%7.2f\t%7d\t%4.0f %4.0f %4.0f',maxZ(j),length(Zj{j}),XYZmmj{j}(:,indZ));
+				for m=1:numel(labk{j})
+					if Pl{j}(m) >= 1,
+						if m==1, fprintf('\t%3.0f%%\t%s\n',Pl{j}(m),labk{j}{m});
+						else     fprintf('%7s\t%7s\t%15s\t%3.0f%%\t%s\n','       ','       ','               ',...
+							Pl{j}(m),labk{j}{m});
+						end
+					end
+				end
+			end
+		end
+	end
+	fprintf('\n');
+end
+
+auto_savename = 0;
 % save image
 if ~isfield(OV, 'save')
-    image_ext = spm_input('Save image file?', '+1', 'no|png|jpg|pdf|tif', char('none', 'png', 'jpeg', 'pdf', 'tiff'), 2);
+    image_ext = spm_input('Save image file?', '+1', 'none|png|jpg|pdf|tif', char('none', 'png', 'jpg', 'pdf', 'tiff'), 2);
 else
     if isempty(OV.save)
-        image_ext = 'none';
+        image_ext = spm_input('Save image file?', '+1', 'none|png|jpg|pdf|tif', char('none', 'png', 'jpg', 'pdf', 'tiff'), 2);
     else
         [pp, nn, ee] = spm_fileparts(OV.save);
-        image_ext = ee(2:end);
+        if ~isempty(ee)
+            image_ext = ee(2:end);
+        else
+            % if only the extension is given then automatically estimate filename for saving
+            image_ext = OV.save;
+            auto_savename = 1;
+        end
     end
 end
 
 if ~strcmp(image_ext, 'none')
     
     [pt, nm] = spm_fileparts(img);
-    
-    % use shorter ext for jpeg
-    if ~isfield(OV, 'save')
-        if strcmp(image_ext, 'jpeg')
-            imaname = spm_input('Filename', '+1', 's', [nm '_' lower(OV.transform) '.jpg']);
-        else
-            imaname = spm_input('Filename', '+1', 's', [nm '_' lower(OV.transform) '.' image_ext]);
-        end
+    if isempty(pt)
+        pt2 = '';
     else
-        imaname = OV.save;
+        [tmp,nm2] = spm_fileparts(pt);
+        if isempty(nm2)
+            pt2 = [pt '_']; 
+        else
+            pt2 = [nm2 '_']; 
+        end
     end
     
+    if ~isfield(OV, 'save')
+        imaname = spm_input('Filename', '+1', 's', [pt2 nm '_' lower(OV.transform) '.' image_ext]);
+    else
+        if auto_savename
+            imaname = [pt2 nm '_' lower(OV.transform) '.' image_ext];
+        else
+            imaname = OV.save;
+        end
+    end
+    
+		% jpg needs full name to be accepted
+		if strcmp(image_ext, 'jpg')
+				image_ext = 'jpeg';
+		end
+
     % and print
     H = findobj(get(SO.figure, 'Children'), 'flat', 'Type', 'axes');
     set(H, 'Units', 'normalized')
     
     saveas(SO.figure, imaname, image_ext);
+    
+    % read image, remove white border and save it again
+    tmp = imread(imaname);
+    sz = size(tmp);
+    imwrite(tmp(4:sz(1),1:sz(2)-1,:),imaname);
     fprintf('Image %s saved.\n', imaname);
+    
     if n_slice > 0
-        imaname = [lower(OV.transform) '_' replace_strings(OV.slices_str(ind, :)) '.' image_ext];
+        imaname = [pt2 lower(OV.transform) '_' replace_strings(OV.slices_str(ind, :)) '.' image_ext];
     else
-        imaname = [lower(OV.transform) '.' image_ext];
+        imaname = [pt2 lower(OV.transform) '.' image_ext];
     end
     
     saveas(h0, imaname, image_ext);
@@ -370,25 +527,12 @@ xy = unique(xy, 'rows');
 return
 
 % --------------------------------------------------------------------------
-function s = remove_zeros(s)
-
-pos = length(s);
-while pos > 1
-    if strcmp(s(pos), '0')
-        s(pos) = '';
-        pos = pos - 1;
-    else break
-    end
-end
-
-
-% --------------------------------------------------------------------------
 function s = replace_strings(s)
 
 s = deblank(s);
 % replace spaces with "_" and characters like "<" or ">"
-s(findstr(s, ' ')) = '_';
-s(findstr(s, ':')) = '_';
+s(strfind(s, ' ')) = '_';
+s(strfind(s, ':')) = '_';
 s = spm_str_manip(s, 'v');
 
 return
@@ -439,7 +583,7 @@ function SO = pr_basic_ui(imgs, dispf)
 %         (defaults to GUI select if no arguments passed)
 % dispf - optional flag: if set, displays overlay (default = 1)
 %
-% $Id: cat_vol_slice_overlay.m 1326 2018-06-25 15:04:24Z gaser $
+% $Id: cat_vol_slice_overlay.m 1607 2020-04-17 22:52:07Z gaser $
 
 if nargin < 1
     imgs = '';
@@ -455,8 +599,9 @@ if nargin < 2
 end
 
 clear global SO
-global SO
+global SO %#ok<REDEF> this is print as error
 
+spm_clf('Interactive'); 
 spm_input('!SetNextPos', 1);
 
 % load images

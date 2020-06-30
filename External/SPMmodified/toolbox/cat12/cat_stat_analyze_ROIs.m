@@ -3,10 +3,13 @@ function cat_stat_analyze_ROIs(spmmat,alpha,show_results)
 %
 %__________________________________________________________________________
 % Christian Gaser
-% $Id: cat_stat_analyze_ROIs.m 1317 2018-05-09 10:32:45Z gaser $
+% $Id: cat_stat_analyze_ROIs.m 1610 2020-04-29 16:49:12Z gaser $
 
 if nargin < 1
   spmmat = spm_select(1,'SPM.mat','Select SPM.mat file to get design');
+end
+if isempty(spmmat)
+  return
 end
 load(spmmat);
 
@@ -66,7 +69,27 @@ end
 
 % filenames of existing design
 P = SPM.xY.P;
+n = numel(P);
 
+pth = cell(n,1);
+fname = cell(n,1);
+for i=1:n
+  [pth{i},nam,ext] = fileparts(P{i});
+  fname{i} = [nam ext];
+end
+
+[tmp, pat] = spm_str_manip(fname,'C');
+
+% get prepending pattern 
+if ~mesh_detected
+  prepend = fname{1};
+  % check whether prepending pattern is not based on GM/WM
+  if isempty(strfind(prepend,'mwp')) & isempty(strfind(prepend,'m0wp'))
+    fprintf('\nWARNING: ROI analysis is only supported for VBM of GM/WM/CSF. No ROI values for DBM will be estimated.\n',prepend);
+  end
+end
+
+roi_files_found = 0;
 % get names of ROI xml files using saved filename in SPM.mat
 for i=1:numel(P)
   [pth,nam,ext] = fileparts(P{i});
@@ -81,59 +104,86 @@ for i=1:numel(P)
   
   if ~exist(pth_label,'dir')
     fprintf('Label folder %s was not found.\n',pth_label);
-    roi_names = cellstr(spm_select(numel(P) ,'xml','Select xml files',{},'',pattern));
     break
   end
-
-  % check that name of ROI fits to SPM data for 1st file
-  if i==1
-    % check for catROI*-files
-    files = cat_vol_findfiles(pth_label,[pattern '*']);
-    if numel(files) == 0
-      % mesh found
-      if isfield(SPM.xVol,'G')
-        fprintf('No label files found in folder %s. Please check whether you have extracted ROI-based surface values or have moved your data.\n',pth_label);
-      else
-        fprintf('No label files found in folder %s. Please check that you have not moved your data.\n',pth_label);
+  
+  sname = [pattern '*' pat.m{i} '*.xml'];
+  files = cat_vol_findfiles(pth_label,sname);
+  
+  switch numel(files)
+    case 0
+      fprintf('Label file %s not found in %s. Please check whether you have extracted ROI-based surface values or have moved your data.\n',sname,pth_label);
+    case 1
+      roi_names{i} = files{1};
+      roi_files_found = roi_files_found + 1;
+    otherwise
+      % if multiple files were found select that one with the longer filename
+      ind = zeros(numel(files),1);
+      for j=1:numel(files)
+        [rpth,rnam,rext] = fileparts(files{j});
+        tmp = strfind(nam,rnam(numel(pattern)+1:end));
+        if isempty(tmp), tmp = Inf; end
+        ind(j) = tmp;
       end
-      roi_names = cellstr(spm_select(numel(P) ,'xml','Select xml files',{},'',pattern));
-      break
-    end
-    [tmp, tmp_name, ext] = fileparts(files{1});
-    
-    % remove catROI[s]_ from first xml file
-    tmp_name(1:length(pattern)) = [];
-
-    % check whether first filename in SPM.mat and xml-file are from the same subject
-    ind = strfind(nam,tmp_name);
-    if isempty(ind)
-      fprintf('Label file %s does not fit to analyzed file %s. Please check that you have not moved your data.\n',tmp_name,nam);
-      roi_names = cellstr(spm_select(numel(P) ,'xml','Select xml files',{},'',pattern));
-      break
-    end
-    
-    % get prepending pattern 
-    if ~mesh_detected
-      prepend = nam(1:ind-1);
-      % check whether prepending pattern is not based on GM/WM
-      if isempty(strfind(prepend,'mwp')) & isempty(strfind(prepend,'m0wp'))
-        fprintf('\nWARNING: ROI analysis is only supported for VBM of GM/WM/CSF. No ROI values for DBM will be estimated.\n',prepend);
-      end
-    end
-
+      
+      % check for longer filename (=smaller index)
+      [mi,ni] = min(ind);
+      
+      % use longer filename
+      roi_names{i} = files{ni};
+      roi_files_found = roi_files_found + 1;
   end
   
-  % get ROI name for all files and check whether the files are found
-  roi_names{i} = fullfile(pth_label,[pattern nam(ind:end) '.xml']);
-  if ~exist(roi_names{i},'file')
-      % mesh found
-      if isfield(SPM.xVol,'G')
-        fprintf('Label file %s not found. Please check whether you have extracted ROI-based surface values or have moved your data.\n',roi_names{i});
-      else
-        fprintf('Label file %s not found. Please check that you have not moved your data.\n',roi_names{i});
+  if exist('roi_names','var')
+    disp(roi_names{i}) 
+  end 
+  
+end
+
+% select files interactively if no xml files were found
+if roi_files_found ~= n
+  roi_names0 = cellstr(spm_select(n ,'xml','Select xml files in the same order of your SPM design.',{},'',pattern));
+  roi_names = roi_names0;
+  
+  roi_files_found = 0;
+  for i=1:numel(P)
+    [pth,nam,ext] = fileparts(P{i});
+        
+    sname = [pattern '*' pat.m{i} '*.xml'];
+    files = cat_vol_findfiles(fileparts(roi_names0{i}),sname);
+    
+    switch numel(files)
+    case 0
+      fprintf('Order of filenames is uncorrect. Please take care of the same order of file selection as in your SPM design.\n');
+    case 1
+      roi_names{i} = files{1};
+      roi_files_found = roi_files_found + 1;
+    otherwise    
+      % if multiple files were found select that one with the longer filename
+      ind = zeros(numel(files),1);
+      for j=1:numel(files)
+        [rpth,rnam,rext] = fileparts(files{j});
+        tmp = strfind(nam,rnam(numel(pattern)+1:end));
+        if isempty(tmp), tmp = Inf; end
+        ind(j) = tmp;
       end
-      break
+      
+      % check for longer filename (=smaller index)
+      [mi,ni] = min(ind);
+      
+      % use longer filename
+      roi_names{i} = files{ni};
+      roi_files_found = roi_files_found + 1;
+    end
+    
+    disp(roi_names{i})  
   end
+  
+  if roi_files_found ~= n
+    fprintf('%d label files found with pattern %s. Please only retain data from the current analysis.\n',roi_files_found,sname);
+    return
+  end
+
 end
 
 % use 1st xml file to get the available atlases
@@ -143,7 +193,7 @@ xml = convert(xmltree(deblank(roi_names{1})));
 % get selected atlas and measure
 [sel_atlas, sel_measure, atlas, measure] = get_atlas_measure(xml);
 % get names IDs and values of selected atlas and measure inside ROIs
-[ROInames ROIids ROIvalues] = get_ROI_measure(roi_names, sel_atlas, sel_measure);
+[ROInames ROIids ROIvalues] = get_ROI_measure(roi_names, atlas, measure);
 
 % get name of contrast
 str_con = deblank(xCon(Ic).name);
@@ -163,6 +213,12 @@ str_con = spm_str_manip(str_con,'v');
 % build X and Y for GLM
 Y = ROIvalues;
 X = SPM.xX.X;
+
+%-Apply global scaling
+%--------------------------------------------------------------------------
+for i = 1:size(Y,1)
+	Y(i,:) = Y(i,:)*SPM.xGX.gSF(i);
+end
 
 % compare correlation coefficients after Fisher z-transformation
 if compare_two_samples
@@ -203,7 +259,19 @@ end
 n_structures = size(Y,2);
 
 % estimate GLM and get p-value
-[p, Beta] = estimate_GLM(Y,X,SPM,Ic);
+[p, Beta, statval] = estimate_GLM(Y,X,SPM,Ic);
+
+% for huge effects p-value of 0 has to be corrected
+p(p==0) = eps;
+
+% equivalent z-value 
+Ze = spm_invNcdf(1 - p);
+
+if strcmp(SPM.xCon(Ic).STAT,'T')
+  statstr = 'T';
+else
+  statstr = 'F';
+end
 
 % use "1" for left, "2" for right hemisphere and "3" for structures in both hemispheres
 hemi_code = zeros(n_structures,1);
@@ -223,7 +291,7 @@ if length(unique(hemi_code)) == 1
   end
 end
 
-hemi_str = {'lh','rh','both','unknown'};
+hemistr = {'lh','rh','both','unknown'};
 
 n_hemis = max(hemi_code);
 
@@ -235,8 +303,8 @@ for i=1:n_hemis
 end
 
 % prepare corrections for multiple comparisons
-corr = {'uncorrected','FDR corrected for whole brain'};
-corr_short = {'','FDR'};
+corr = {'uncorrected','FDR corrected','Holm-Bonferroni corrected'};
+corr_short = {'','FDR','Holm'};
 n_corr = numel(corr);
 data = cell(size(corr));
 Pcorr = cell(size(corr));
@@ -248,7 +316,29 @@ Pcorr{1} = p;
 % apply FDR correction
 Pcorr{2} = spm_P_FDR(p);
 
+% apply Holm-Bonferroni correction: correct lowest P by n, second lowest by n-1...
+if n_corr > 2
+  [Psort0, indP0] = sort(p);
+  n = length(Psort0);
+  Pcorr{3} = ones(size(p));
+  for k=1:n
+    Pval = p(indP0(k))*(n+1-k);
+    if Pval<alpha
+      Pcorr{3}(indP0(k)) = Pval;
+    else
+      % stop here if corrected p-value exceeds alpha
+      break
+    end
+  end
+end
+
 atlas_loaded = 0;
+
+% set empty index for found results
+ind_corr = cell(n_corr,1);
+for c = 1:n_corr
+  ind_corr{c} = [];
+end
 
 % go through left and right hemisphere and structures in both hemispheres
 for i = sort(unique(hemi_code))'
@@ -256,6 +346,8 @@ for i = sort(unique(hemi_code))'
   N_sel  = ROInames(hemi_ind{i});
   ID_sel = ROIids(hemi_ind{i});
   B_sel  = Beta(:,hemi_ind{i});
+  statval_sel  = statval(hemi_ind{i});
+  Ze_sel = Ze(hemi_ind{i});
 
   for c = 1:n_corr
     Pcorr_sel{c} = Pcorr{c}(hemi_ind{i});
@@ -264,10 +356,11 @@ for i = sort(unique(hemi_code))'
   % sort p-values for FDR and sorted output
   [Psort, indP] = sort(p(hemi_ind{i}));
 
+
   % select surface atlas for each hemisphere
   if mesh_detected
     atlas_name = fullfile(spm('dir'),'toolbox','cat12','atlases_surfaces',...
-        [hemi_str{i} '.' atlas '.freesurfer.annot']);
+        [hemistr{i} '.' atlas '.freesurfer.annot']);
     [vertices, rdata0, colortable, rcsv0] = cat_io_FreeSurfer('read_annotation',atlas_name);
     data0 = round(rdata0);
 
@@ -284,7 +377,7 @@ for i = sort(unique(hemi_code))'
   else
     % load volume atlas only once
     if ~atlas_loaded
-      V = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm',[atlas '.nii']));
+      V = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_volumes',[atlas '.nii']));
       data0 = round(spm_data_read(V));
       atlas_loaded = 1;
   
@@ -316,28 +409,28 @@ for i = sort(unique(hemi_code))'
   % display and save thresholded sorted p-values for each correction
   for c = 1:n_corr
     ind = find(Pcorr_sel{c}(indP)<alpha);
-    ind_corr{c} = ind;
+    if size(ind,1) > 1, ind = ind'; end
     if ~isempty(ind)
-      fprintf('\n%s (P<%g, %s):\n',hemi_str{i},alpha,corr{c});
-      fprintf('P-value\t\t%s\n',atlas);
+      ind_corr{c} = [ind_corr{c} ind];
+      fprintf('\n%s (P<%g, %s):\n',hemistr{i},alpha,corr{c});
+       fprintf('%9s\t%9s\t%9s\t%s\n','P-value',[statstr '-value'],'Ze-value',atlas);
       for j=1:length(ind)
         data{c}(data0 == ID_sel(indP(ind(j)))) = -log10(Pcorr_sel{c}(indP(ind(j))));
-        fprintf('%9g\t%s\n',Pcorr_sel{c}(indP(ind(j))),N_sel{indP(ind(j))});
+        fprintf('%9g\t%9g\t%9g\t%s\n',Pcorr_sel{c}(indP(ind(j))),statval_sel(indP(ind(j))),Ze_sel(indP(ind(j))),N_sel{indP(ind(j))}(:,2:end));
       end
     end
     
     % write label surface with thresholded p-values
     if mesh_detected
       % save P-alues as float32
-      filename = [hemi_str{i} '.logP' corr_short{c} output_name '.gii'];
-      save(gifti(struct('cdata',data{c})),filename);
-      fprintf('\nLabel file with thresholded logP values (%s) saved as %s.',corr{c},filename);
+      filename1 = [hemistr{i} '.logP' corr_short{c} output_name '.gii'];
+      save(gifti(struct('cdata',data{c})),filename1);
 
       if write_beta
         for k=1:length(ind_con)
-          filename = sprintf('%s.beta%d_%s.gii',hemi_str{i},ind_con(k),atlas_name);
-          save(gifti(struct('cdata',dataBeta{k})),filename);
-          fprintf('\Beta image saved as %s.',filename);
+          filename2 = sprintf('%s.beta%d_%s.gii',hemistr{i},ind_con(k),atlas_name);
+          save(gifti(struct('cdata',dataBeta{k})),filename2);
+          fprintf('\Beta image saved as %s.',filename2);
         end
       end
     end
@@ -347,9 +440,30 @@ for i = sort(unique(hemi_code))'
   
 end
 
+% merge hemispheres
+if mesh_detected
+
+  for c = 1:n_corr
+    % name for combined hemispheres
+    name_lh   = ['lh.logP'   corr_short{c} output_name '.gii'];
+    name_rh   = ['rh.logP'   corr_short{c} output_name '.gii'];
+    name_mesh = ['mesh.logP' corr_short{c} output_name '.gii'];
+  
+    % combine left and right 
+    M0 = gifti({name_lh, name_rh});
+    M.cdata = [M0(1).cdata; M0(2).cdata];
+    M.private.metadata = struct('name','SurfaceID','value',name_mesh);
+    save(gifti(M), name_mesh, 'Base64Binary');
+    spm_unlink(name_lh);
+    spm_unlink(name_rh);
+  end
+      
+end
+
 % prepare display ROI results according to found results
 corr{n_corr+1} = 'Do not display';
 ind_show = [];
+
 for c=1:n_corr
   if ~isempty(ind_corr{c})
     ind_show = [ind_show c];
@@ -397,54 +511,44 @@ if ~mesh_detected
   % display ROI results for label image
   if show_results
     % display image as overlay
-    OV.reference_image = fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm','Template_T1_IXI555_MNI152_GS.nii');
+    OV.reference_image = fullfile(spm('dir'),'toolbox','cat12','templates_volumes','Template_T1_IXI555_MNI152_GS.nii');
     OV.reference_range = [0.2 1.0];                        % intensity range for reference image
-    OV.opacity = Inf;                                      % transparence value for overlay (<1)
+    OV.opacity = Inf;                                      % transparency value for overlay (<1)
     OV.cmap    = jet;                                      % colormap for overlay
-    OV.range   = [-log10(alpha) round(max(data{show_results}(:)))];
+    OV.range   = [-log10(alpha) round(max(data{show_results}(isfinite(data{show_results}))))];
     OV.name = ['logP' corr_short{show_results} output_name '.nii'];
     OV.slices_str = char('-30:4:60');
     OV.transform = char('axial');
     cat_vol_slice_overlay(OV);
+    fprintf('You can again call the result file %s using Slice Overlay in CAT12 with more options to select different slices and orientations.\n',OV.name);
   end
   
-end
-
-% surface results display
-if mesh_detected
-  if ~isempty(ind_show)
-    fprintf('\nLabels for both hemispheres are saved, thus it is not necessary to also estimate labels from the SPM.mat file of the opposite hemisphere.\n');
-  else
+else % surface results display
+  if isempty(ind_show)
     fprintf('No results found.\n');
     show_results = 0;
   end
   
-  % remove both hemisphere results if no results were significant
-  for c=1:n_corr 
-    if isempty(ind_corr{c})
-      spm_unlink(['lh.logP' corr_short{c} output_name '.gii']);
-      spm_unlink(['rh.logP' corr_short{c} output_name '.gii']);
-    end
-  end
-    
   % display ROI surface results
   if show_results
-    lh = ['lh.logP' corr_short{show_results} output_name '.gii'];
-    rh = ['rh.logP' corr_short{show_results} output_name '.gii'];
-    cat_surf_results('Disp',lh,rh,0);
+    name_mesh = ['mesh.logP' corr_short{show_results} output_name '.gii'];
+    cat_surf_results('Disp',name_mesh);
   end
+  
 end
 
 %_______________________________________________________________________
-function [p, Beta] = estimate_GLM(Y,X,SPM,Ic);
+function [p, Beta, tval] = estimate_GLM(Y,X,SPM,Ic);
 % estimate GLM and return p-value for F- or T-test
 %
-% FORMAT p = estimate_GLM(Y,X,SPM,Ic);
-% Y   - data matrix
-% X   - design matrix
-% SPM - SPM structure
-% Ic  - selected contrast
-% p   - returned p-value
+% FORMAT [p, Beta, tval] = estimate_GLM(Y,X,SPM,Ic);
+% Y    - data matrix
+% X    - design matrix
+% SPM  - SPM structure
+% Ic   - selected contrast
+% p    - returned p-value
+% Beta - returned beta values
+% tval - returned t/F values
 
 c = SPM.xCon(Ic).c;
 n = size(Y,1);
@@ -476,6 +580,7 @@ if strcmp(SPM.xCon(Ic).STAT,'F')
   end
 
   F(find(isnan(F))) = 0;
+  tval = F;
   p = 1-spm_Fcdf(F,df);
 else
   df   = SPM.xX.erdf;
@@ -492,6 +597,7 @@ else
   ResSD = sqrt(ResMS.*(c'*Bcov*c));
   t = con./(eps+ResSD);
   t(find(isnan(t))) = 0;
+  tval = t;
   p = 1-spm_Tcdf(t,df);
 end
 
@@ -539,13 +645,13 @@ measure = useful_measures{sel_measure};
 measure = deblank(measure);
 
 %_______________________________________________________________________
-function [ROInames ROIids ROIvalues] = get_ROI_measure(roi_names, sel_atlas, sel_measure)
+function [ROInames ROIids ROIvalues] = get_ROI_measure(roi_names, atlas, measure)
 % get names, IDs and values inside ROI for a selected atlas
 %
 % FORMAT [ROInames ROIids ROIvalues] = get_ROI_measure(roi_names, sel_atlas, sel_measure);
 % roi_names    - cell of ROI xml files
-% sel_atlas    - index of selected atlas
-% sel_measure  - index of selected measure
+% atlas        - name of selected atlas
+% measure      - name selected measure
 %
 % ROInames     - array 2*rx1 of ROI names (r - # of ROIs)
 % ROIids       - array 2*rx1 of ROI IDs for left and right hemisphere
@@ -565,25 +671,31 @@ for i=1:n_data
 
   atlases = fieldnames(xml);
   
-  measures = fieldnames(xml.(atlases{sel_atlas}).data);
-  ROInames = xml.(atlases{sel_atlas}).names;
-  ROIids = xml.(atlases{sel_atlas}).ids;
+  measures = fieldnames(xml.(atlas).data);
+  ROInames = xml.(atlas).names;
+  ROIids = xml.(atlas).ids;
 
-  % check that all measures were found
   try
-    tmp = measures{sel_measure};
+    val = xml.(atlas).data.(measure);
   catch
+    measure_found = 0;
     for j = 1:numel(measures)
-      fprintf('Available measures in %s:\n %s\n',roi_names{i},measures{j});
+      if strcmp(deblank(measures{j}),deblank(measure_name)); 
+        val = xml.(atlas).data.(measures{j});
+        measure_found = 1;
+        break;
+      end
     end
-    error('Please check your label files. Measure is not available in %s.\n',roi_names{i});
-  end
 
-  val = xml.(atlases{sel_atlas}).data.(measures{sel_measure});
+    % check that all measures were found
+    if ~measure_found
+      error('Please check your label files. Measure is not available in %s.\n',roi_names{i});
+    end
+  end
   
   if i==1, ROIvalues = zeros(n_data, numel(val)); end
-  
-  ROIvalues(i,:) = xml.(atlases{sel_atlas}).data.(measures{sel_measure});
+
+  ROIvalues(i,:) = xml.(atlas).data.(measure);
 
   spm_progress_bar('Set',i);  
 end

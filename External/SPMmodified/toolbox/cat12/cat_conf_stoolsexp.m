@@ -3,7 +3,7 @@ function stoolsexp = cat_conf_stoolsexp
 % wrapper for calling CAT surface utilities
 %_______________________________________________________________________
 % Robert Dahnke and Christian Gaser
-% $Id: cat_conf_stoolsexp.m 954 2016-06-20 10:44:20Z dahnke $
+% $Id: cat_conf_stoolsexp.m 1576 2020-03-04 13:38:09Z gaser $
 %_______________________________________________________________________
 
 
@@ -86,7 +86,7 @@ function stoolsexp = cat_conf_stoolsexp
   smooth.data.tag     = 'data';
   smooth.data.name    = 'Sample';
   smooth.data.filter  = 'any';
-  smooth.data.ufilter = '^[rl]h.(?!cent|sphe|defe).*';
+  smooth.data.ufilter = '^[rl]h.(?!cent|pial|white|sphe|defe|hull).*';
   smooth.data.num     = [1 Inf];
   smooth.data.help    = {'Select surface data (texture) files for smoothing.'};
   
@@ -139,6 +139,8 @@ function vf = vfiles_smooth(job)
     vf(i) = cat_surf_rename(sinfo(i),'dataname',sprintf('s%d%s',job.fwhm,sinfo(i).dataname));
   end
 return;
+
+%_______________________________________________________________________
 function vf = vfiles_avg(job)
   if isempty(job.outdir{1})
     outdir = spm_fileparts(job.data{1});

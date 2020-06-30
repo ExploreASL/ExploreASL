@@ -28,10 +28,10 @@ function varargout = cat_spm_preproc_run(job,action)
 % Copyright (C) 2008-2015 Wellcome Trust Centre for Neuroimaging
 
 % John Ashburner
-% $Id: cat_spm_preproc_run.m 1286 2018-03-05 11:44:37Z gaser $
+% $Id: cat_spm_preproc_run.m 1514 2019-10-28 06:42:00Z gaser $
 
 
-SVNid = '$Rev: 1286 $';
+SVNid = '$Rev: 1514 $';
 
 if nargin == 1, action = 'run'; end
 if ~isfield(job,'Yclsout'), if nargout==0, job.Yclsout = [0 0 0 0 0 0]; else job.Yclsout = [1 1 1 1 1 1]; end; end %% ADDED RD
@@ -101,6 +101,29 @@ for iter=1:nit
             if ~isempty(job.warp.affreg)
                 if isfield(job.warp,'Affine')
                     Affine = job.warp.Affine;
+                else
+                    % Sometimes the image origins are poorly specified, in which case it might be worth trying
+                    % the centre of the field of view instead. The idea here is to run a coarse registration
+                    % using two sets of starting estimates, and pick the one producing the better objective function.
+
+                    % Run using origin at centre of the field of view
+                    im1            = obj.image(1);
+                    M              = im1.mat;
+                    c              = (im1.dim+1)/2;
+                    im1.mat(1:3,4) = -M(1:3,1:3)*c(:);
+                    [Affine1,ll1]  = spm_maff8(im1,8,(obj.fwhm+1)*16,tpm,[],job.warp.affreg); % Closer to rigid
+                    Affine1        = Affine1*(im1.mat/M);
+
+                    % Run using the origin from the header
+                    im1            = obj.image(1);
+                    [Affine2,ll2]  = spm_maff8(im1,8,(obj.fwhm+1)*16,tpm,[],job.warp.affreg); % Closer to rigid
+
+                    % Pick the result with the best fit and use as starting estimate
+                    if ll1>ll2
+                        Affine  = Affine1;
+                    else
+                        Affine  = Affine2;
+                    end
                 end
                 Affine = spm_maff8(obj.image(1),job.warp.samp,(obj.fwhm+1)*16,tpm,Affine,job.warp.affreg); % Closer to rigid
                 Affine = spm_maff8(obj.image(1),job.warp.samp, obj.fwhm,     tpm,Affine,job.warp.affreg);
@@ -126,7 +149,10 @@ for iter=1:nit
             obj.msk = job.msk ;
         end
 
-        res = spm_preproc8(obj);
+        if isfield(job,'tol')
+            obj.tol = job.tol;
+        end
+        res = cat_spm_preproc8(obj);
 
         if ~isfield(job,'savemat') || job.savemat==1
             try
@@ -137,7 +163,6 @@ for iter=1:nit
         end
 
         if iter==nit
-            fprintf('%s','Final iteration, so write out the required data');
             % Final iteration, so write out the required data.
             tmp1 = [cat(1,job.tissue(:).native) cat(1,job.tissue(:).warped)];
             tmp2 =  cat(1,job.channel(:).write);

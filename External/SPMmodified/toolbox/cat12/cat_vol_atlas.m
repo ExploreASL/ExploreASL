@@ -6,9 +6,9 @@ function cat_vol_atlas(atlas,refinei)
 % probability map and a 3D label map for each subject. Based on the 4D
 % a 4D probability map and a 3D label map were generated for the group. 
 % A refinement (median-filter + complete brain labeling) is possible. 
-% Each Atlas should have a txt-file with informations 
+% Each Atlas should have a txt-file with information 
 %
-% WARNING: This script only create uint8 maps!
+% WARNING: This script only creates uint8 maps!
 %
 % cat_vol_atlas(atlas,refine)
 % 
@@ -37,7 +37,7 @@ function cat_vol_atlas(atlas,refinei)
 %        nur projektion, ggf. original csv-struktur, nummer, ...
 %     2) optimiert .... atlas+.nii
 %        ... meins
-% - opt-struktur für paraemter
+% - opt-struktur für parameter
 %
 % - Zusammenfassung von Atlanten:
 %   Zusatzfunktion die auf den normalisierten Daten aufbauen könnte.
@@ -47,7 +47,7 @@ function cat_vol_atlas(atlas,refinei)
 %   handeln!
 %     - Region-Teilregion
 %_______________________________________________________________________
-% $Id: cat_vol_atlas.m 1317 2018-05-09 10:32:45Z gaser $
+% $Id: cat_vol_atlas.m 1571 2020-02-27 14:51:11Z gaser $
 
 %#ok<*ASGLU,*WNOFF,*WNON,*TRYNC>
   
@@ -165,7 +165,7 @@ function cat_vol_atlas(atlas,refinei)
   % --------------------------------------------------------------------
   elseif strcmpi(atlas,'cat12') 
 
-    cat12tempdir = fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm');
+    cat12tempdir = fullfile(spm('dir'),'toolbox','cat12','templates_volumes');
   
     A.l1A = fullfile(cat12tempdir,'l1A.nii');
     A.ham = fullfile(cat12tempdir,'hammers.nii');
@@ -308,7 +308,7 @@ function [P,PA,Pcsv,Ps,Ptxt,resdir,refine,Pxml] = mydata(atlas)
       Pxml.des = [ ...
         'CAT12 was used to preprocess the T1 data to map each label to IXI555 space. ' ...
         'A 3D median filter was used to remove outliers in the label map. ROI-IDs ' ...
-        'were reseted to guaranty that left side ROIs were described by odd numbers, ' ...
+        'were reset to guaranty that left side ROIs were described by odd numbers, ' ...
         'whereas right-hand side ROIs only have even numbers. ROIs without side-alignment ' ...
         'in the original atlas like the brainstem were broken into a right and left part. ' ...
         'Therefore, a Laplace filter was used to estimate the potential field of unaligned' ...
@@ -338,7 +338,7 @@ function [P,PA,Pcsv,Ps,Ptxt,resdir,refine,Pxml] = mydata(atlas)
         'CAT12 was used to segment the T1 data and estimate Dartel normalization to the ' ...
         'CAT IXI550 template for each subject. Dartel mapping was then applied for label ' ...
         'map. A 3D median filter was used to remove outliers in the label map. ROI-IDs ' ...
-        'were reseted to guaranty that left side ROIs were described by odd numbers, ' ...
+        'were reset to guaranty that left side ROIs were described by odd numbers, ' ...
         'whereas right-hand side ROIs only have even numbers. ROIs without side-alignment ' ... 
         'in the original atlas like the brainstem were broken into a right and left part. ' ...
         'Therefore, a Laplace filter was used to estimate the potential field of unaligned ' ...
@@ -510,7 +510,7 @@ function [P,PA,Pcsv,Ps,Ptxt,resdir,refine,Pxml] = mydata(atlas)
     %}
     
     case 'cat12'
-      mdir    = resdir; %fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm');
+      mdir    = resdir; %fullfile(spm('dir'),'toolbox','cat12','templates_volumes');
       P       = cat_vol_findfiles(mdir,'*.nii');
       PA      = cat_vol_findfiles(mdir,'*.nii');
       Ps      = {''};
@@ -541,20 +541,20 @@ function call_cat(P)
 % This function call CAT segmentation to estimate the normalization
 % parameters for the atlas map.
 % ----------------------------------------------------------------------
-% Job saved on 28-Oct-2013 14:37:37 by cfg_util (rev $Rev: 1317 $)
+% Job saved on 28-Oct-2013 14:37:37 by cfg_util (rev $Rev: 1571 $)
 % spm SPM - SPM12b (5298)
 % cfg_basicio BasicIO - Unknown
 % ----------------------------------------------------------------------
   matlabbatch{1}.spm.tools.cat.estwrite.data = {P};
 
   matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm                = ...
-    {'/Users/dahnke/Neuroimaging/spm12/tpm/TPM.nii'};
+    {fullfile(spm('dir'),'tpm','TPM.nii')};
   matlabbatch{1}.spm.tools.cat.estwrite.opts.biasreg            = 0.0001;
   matlabbatch{1}.spm.tools.cat.estwrite.opts.biasfwhm           = 60;
   matlabbatch{1}.spm.tools.cat.estwrite.opts.affreg             = 'mni';
   matlabbatch{1}.spm.tools.cat.estwrite.opts.warpreg            = [0 0.001 0.5 0.05 0.2];
   matlabbatch{1}.spm.tools.cat.estwrite.extopts.darteltpm       = ...
-    {fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm','Template_1_IXI555_MNI152.nii')};
+    {fullfile(spm('dir'),'toolbox','cat12','templates_volumes','Template_1_IXI555_MNI152.nii')};
   matlabbatch{1}.spm.tools.cat.estwrite.extopts.print           = 1;
   matlabbatch{1}.spm.tools.cat.estwrite.extopts.surface         = 0;
   matlabbatch{1}.spm.tools.cat.estwrite.output.GM.native        = 0;
@@ -642,7 +642,7 @@ function subROIavg(P,PA,Ps,Pcsv,Ptxt,atlas,resdir,Pxml,nlabel)
   % Therefore we create a table cod that contain in the first column the 
   % original label and in the second column the optimized value.
   % --------------------------------------------------------------------
-  VC = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm/Template_1_IXI555_MNI152.nii'));
+  VC = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_volumes/Template_1_IXI555_MNI152.nii'));
   V  = spm_vol(char(P));
   VA = spm_vol(char(PA));
   Y  = spm_read_vols(VA(1));
@@ -1015,7 +1015,7 @@ function ROIavg(P,PA,Ps,Pcsv,Ptxt,atlas,resdir,Pxml,nlabel)
   
   % 4D-probability map
   % --------------------------------------------------------------------
-  VC = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm/Template_1_IXI555_MNI152.nii')); VC=VC(1);
+  VC = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_volumes/Template_1_IXI555_MNI152.nii')); VC=VC(1);
  
   N             = nifti;
   N.dat         = file_array(fullfile(resdir,['a4D' atlas '.nii']),[VC.dim(1:3) ...
@@ -1669,7 +1669,7 @@ function create_cat_atlas(A,C,LAB)
 
   % output file
 %  VC = spm_vol(A.ham); VC.fname = C; 
-  VC = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_1.50mm/Template_1_IXI555_MNI152.nii')); VC=VC(1);
+  VC = spm_vol(fullfile(spm('dir'),'toolbox','cat12','templates_volumes/Template_1_IXI555_MNI152.nii')); VC=VC(1);
   VC.fname = C; 
   
   if 1
@@ -1959,7 +1959,7 @@ function [c, matches] = strsplit(str, aDelim, varargin)
 %   See also REGEXP, STRFIND, STRJOIN.
 
 %   Copyright 2012 The MathWorks, Inc.
-%   $Revision: 1317 $  $Date: 2018-05-09 12:32:45 +0200 (Mi, 09 Mai 2018) $
+%   $Revision: 1571 $  $Date: 2020-02-27 15:51:11 +0100 (Do, 27 Feb 2020) $
 
 %narginchk(1, Inf);
 
@@ -2072,7 +2072,7 @@ function joinedStr = strjoin(c, aDelim)
 %   See also STRCAT, STRSPLIT.
 
 %   Copyright 2012 The MathWorks, Inc.
-%   $Revision: 1317 $  $Date: 2018-05-09 12:32:45 +0200 (Mi, 09 Mai 2018) $
+%   $Revision: 1571 $  $Date: 2020-02-27 15:51:11 +0100 (Do, 27 Feb 2020) $
 
 %narginchk(1, 2);
 
@@ -2138,7 +2138,7 @@ function escapedStr = strescape(str)
 %   See also SPRINTF.
 
 %   Copyright 2012 The MathWorks, Inc.
-%   $Revision: 1317 $  $Date: 2018-05-09 12:32:45 +0200 (Mi, 09 Mai 2018) $
+%   $Revision: 1571 $  $Date: 2020-02-27 15:51:11 +0100 (Do, 27 Feb 2020) $
 
 escapeFcn = @escapeChar;                                        %#ok<NASGU>
 escapedStr = regexprep(str, '\\(.|$)', '${escapeFcn($1)}');

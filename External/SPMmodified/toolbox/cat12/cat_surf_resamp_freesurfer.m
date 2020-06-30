@@ -3,9 +3,9 @@ function cat_surf_resamp_freesurfer(vargin)
 % space and smooth it.
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cat_surf_resamp_freesurfer.m 1264 2018-01-30 11:02:00Z gaser $
+% $Id: cat_surf_resamp_freesurfer.m 1611 2020-04-30 07:00:24Z gaser $
   
-  rev = '$Rev: 1264 $';
+  rev = '$Rev: 1611 $';
   
   if nargin == 1
     Psubj = char(vargin.data_fs);
@@ -29,14 +29,22 @@ function cat_surf_resamp_freesurfer(vargin)
 
   hemi_str = char('lh','rh');
   
+  % use external dat-file if defined to increase processing speed and keep SPM.mat file small
+  % because the cdata field is not saved with full data in SPM.mat
+  if cat_get_defaults('extopts.gifti_dat')
+    gformat = 'ExternalFileBinary';
+  else
+    gformat = 'Base64Binary';
+  end
+  
   for i=1:size(Psubj,1)
   
     stime = clock; 
     exist_hemi = [];
-    [pp,name]   = spm_fileparts(deblank(Psubj(i,:)));
+    [pp,name,ext]   = spm_fileparts(deblank(Psubj(i,:)));
     
     % subject directory
-    dname = fullfile(pp,name,'surf');
+    dname = fullfile(pp,[name ext],'surf');
   
     % check that surf subfolder exists
     if ~exist(dname,'dir')
@@ -86,7 +94,12 @@ function cat_surf_resamp_freesurfer(vargin)
       [pp2,ff2,ex2]   = spm_fileparts([Pfwhm '.gii']);
       g = gifti([Pfwhm '.gii']);
       g.private.metadata = struct('name','SurfaceID','value',[ff2 ex2]);
-      save(g, [Pfwhm '.gii'], 'Base64Binary');
+      
+      if vargin.merge_hemi
+        save(g, [Pfwhm '.gii'], 'Base64Binary');
+      else
+        save(g, [Pfwhm '.gii'], gformat);
+      end
   
       delete(Presamp);
       delete(Pfwhm);
@@ -103,12 +116,10 @@ function cat_surf_resamp_freesurfer(vargin)
       if numel(exist_hemi) > 1
         M0 = gifti({Pfwhm_all{1}, Pfwhm_all{2}});
         delete(Pfwhm_all{1}); delete(Pfwhm_all{2})
-        M.faces = [M0(1).faces; M0(2).faces+size(M0(1).vertices,1)];
-        M.vertices = [M0(1).vertices; M0(2).vertices];
-        M.cdata = [M0(1).cdata; M0(2).cdata];
-        M.mat = M0(1).mat;
+        warning('off','MATLAB:subscripting:noSubscriptsSpecified');
+        M = gifti(spm_mesh_join([M0(1) M0(2)]));
         M.private.metadata = struct('name','SurfaceID','value',[ff ex]);
-        save(gifti(M), Pfwhm, 'Base64Binary');
+        save(M, Pfwhm, gformat);
         Psdata{i} = Pfwhm;
       else
         disp('No data for opposite hemisphere found!');

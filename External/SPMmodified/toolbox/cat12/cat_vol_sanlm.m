@@ -1,4 +1,4 @@
-function varargout = cat_vol_sanlm(varargin)
+function out = cat_vol_sanlm(varargin)
 % Spatial Adaptive Non Local Means (SANLM) Denoising Filter
 %_______________________________________________________________________
 % Filter a set of images and add the prefix 'sanlm_'.
@@ -19,7 +19,7 @@ function varargout = cat_vol_sanlm(varargin)
 %  job
 %   .data             .. set of images 
 %   .prefix           .. prefix for filtered images (default = 'sanlm_') 
-%   .postfix          .. postfix for filtered images (default = '')
+%   .suffix           .. suffix for filtered images (default = '')
 %                        'NCstr' will add the used parameter 
 %   .verb             .. verbose processing (default = 1)
 %   .spm_type         .. file datatype (default single = 16);
@@ -56,7 +56,7 @@ function varargout = cat_vol_sanlm(varargin)
 %   .resolutionDependencyRange .. [full-correction no-correction]
 %     Limit the filter size depending on the general brain size, where 
 %     filtering of images with 2.5 mm voxel size and higher will remove 
-%     important anatomical informations (default = [1 2.5]).    
+%     important anatomical information (default = [1 2.5]).    
 %   .red                  .. low resolution filtering (if high-res data)
 %   .fred                 .. force resolution reduction 
 %   .iter                 .. additional iterations on the reduced resolution
@@ -81,9 +81,11 @@ function varargout = cat_vol_sanlm(varargin)
 %
 %_______________________________________________________________________
 % Christian Gaser, Robert Dahnke
-% $Id: cat_vol_sanlm.m 1343 2018-08-02 08:41:03Z dahnke $
+% $Id: cat_vol_sanlm.m 1577 2020-03-09 17:36:03Z dahnke $
 
-  
+    % this function adds noise to the data to stabilize processing and we
+    % have to define a specific random pattern to get the same results each time
+    if exist('rng','file') == 2, rng('default'); rng(0); else, rand('state',0); randn('state',0); end
     
     if nargin == 0 
         varargin{1}.data = cellstr(spm_select([1 Inf],'image','select images to filter'));
@@ -92,8 +94,8 @@ function varargout = cat_vol_sanlm(varargin)
     
     % default optoins
     def.verb                        = 2;         % be verbose
-    def.prefix                      = 'sanlm2_';  % prefix
-    def.postfix                     = '';        % postfix
+    def.prefix                      = 'sanlm_';  % prefix
+    def.suffix                      = '';        % suffix
     def.replaceNANandINF            = 1;         % replace NAN and INF
     def.spm_type                    = 16;        % file datatype (default single)
     def.NCstr                       = -Inf;      % 0 - no denoising, eps - light denoising, 
@@ -130,18 +132,16 @@ function varargout = cat_vol_sanlm(varargin)
     end 
     
     if nargin <= 1 && isstruct(varargin{1}) % job structure input
-        if nargout>0
-          varargout = cat_vol_sanlm_file(varargin{1});
-        else
-          cat_vol_sanlm_file(varargin{1});
-        end
+        out.files = cat_vol_sanlm_file(varargin{1});
     else % image input
-        varargout{1} = cat_vol_sanlm_filter(varargin{:});
+        out = cat_vol_sanlm_filter(varargin{:});
     end
 
 end
+
+%_______________________________________________________________________
 function varargout = cat_vol_sanlm_file(job)
-    SVNid = '$Rev: 1343 $';
+    SVNid = '$Rev: 1577 $';
     
     if ~isfield(job,'data') || isempty(job.data)
      job.data = cellstr(spm_select([1 Inf],'image','select images to filter'));
@@ -153,8 +153,8 @@ function varargout = cat_vol_sanlm_file(job)
 
     % map GUI data
     if isfield(job,'nlmfilter') 
-        if isfield(job.nlmfilter,'default')
-            job.NCstr =  abs(job.nlmfilter.default.NCstr); 
+        if isfield(job.nlmfilter,'classic') 
+            job.NCstr = 1; 
         elseif isfield(job.nlmfilter,'optimized') 
             FN = fieldnames(job.nlmfilter.optimized); 
             for fni=1:numel(FN)
@@ -188,23 +188,23 @@ function varargout = cat_vol_sanlm_file(job)
                 nprefix, job.NCstr , job.rician , job.resolutionDependency , job.red , job.fred , job.relativeIntensityAdaption , ...
                 job.replaceNANandINF , job.outlier , job.addnoise , job.iterm , job.iter); 
         end
-    elseif ~isempty(strfind(job.postfix,'PARA'))
+    elseif ~isempty(strfind(job.suffix,'PARA'))
         if numel(job.NCstr)==1 && job.NCstr>=0 
-            job.postfix = sprintf('_NC%0.2f',job.NCstr); 
+            job.suffix = sprintf('_NC%0.2f',job.NCstr); 
         elseif isinf(job.NCstr) && sign(job.NCstr)==-1
             job.prefix = sprintf('_NC%0.2f',3); 
         else
-            job.postfix = sprintf('_NC%-0.2f_RN%d_RD%d_RIA%0.2f_RR%d_FR%d_RNI%d_OL%0.2f_PN%0.1f_iterm%d_iter%d',...
+            job.suffix = sprintf('_NC%-0.2f_RN%d_RD%d_RIA%0.2f_RR%d_FR%d_RNI%d_OL%0.2f_PN%0.1f_iterm%d_iter%d',...
                 job.NCstr , job.rician , job.resolutionDependency , job.red , job.fred , job.relativeIntensityAdaption , ...
                 job.replaceNANandINF , job.outlier , job.addnoise , job.iterm , job.iter); 
         end
     end
     % just to get the resulting filenames for SPM batch mode
-    if job.returnOnlyFilename
-        for i = 1:numel(job.data)
+    for i = 1:numel(job.data)
             [pth,nm,xt,vr]  = spm_fileparts(deblank(job.data{i})); 
-            varargout{1}{i} = fullfile(pth,[job.prefix nm job.postfix xt vr]);
-        end
+            varargout{1}{i} = fullfile(pth,[job.prefix nm job.suffix xt vr]);
+    end
+    if job.returnOnlyFilename
         return
     end
 
@@ -222,6 +222,8 @@ function varargout = cat_vol_sanlm_file(job)
     if isfield(job,'process_index') && job.verb, fprintf('Done\n'); end
     spm_progress_bar('Clear');
 end
+
+%_______________________________________________________________________
 function src2 = cat_vol_sanlm_filter(job,V,i,src)
     Vo = V;
 
@@ -239,97 +241,99 @@ function src2 = cat_vol_sanlm_filter(job,V,i,src)
 
     if nargin<4
       src = single(spm_read_vols(V(i)));
-    end
-    
-  for im=1:1+job.miter;   
-    % prevent NaN and INF
-    if job.replaceNANandINF
-      src(isnan(src)) = 0;
-      src(isinf(src) & src<0) = min(src(:));
-      src(isinf(src) & src>0) = max(src(:));
     else
-      if sum(isnan(src(:))>0), nanmsk = isnan(src); end
-      if sum(isinf(src(:))>0), infmsk = int8( isinf(src) .* sign(src) ); end
+      src = single(src);
     end
-    
-    % histogram limit
-    src = cat_stat_histth(src,job.intlim); 
-    
-    % use intensity normalisation because cat_sanlm did not filter values below ~0.01 
-    th  = max( cat_stat_nanmean( src(src(:)>cat_stat_nanmean(src(src(:)>0))) ) , ...
-               abs(cat_stat_nanmean( src(src(:)<abs(cat_stat_nanmean(src(src(:)<0)))))) );
-             
-    % low resolution filtering
-    if job.red>0 && (any(vx_vol<0.8) || job.fred )
-      [srcr,resr]   = cat_vol_resize( src ,'reduceV',vx_vol,min(2.2*(job.fred+1),min(vx_vol)*2.3),32,'median');
-      
-      jobr            = job;
-      jobr.red        = job.red - 1;     
-      jobr.miter      = 0; 
-      jobr.addnoise   = 0;                        % no additional noise on lower resolution 
-      jobr.resolutionDependency      = 1;         % resolution depending filter strength
-      jobr.resolutionDependencyRange = [1 1.6];   % [full-correction no-correction]
-      jobr.outlier    = jobr.outlier*2; 
-      jobr.NCstr      = -prod(3-resr.vx_red)*2 .* ...                 
-                        min(1,1 - (mean(resr.vx_volr) - jobr.resolutionDependencyRange(1) )) / ...
-                        diff(jobr.resolutionDependencyRange); 
-
-      if 1
-        % larger var => more information
-        Ygr   = cat_vol_grad(srcr/th,resr.vx_volr,0); 
-        grsd  = std(Ygr(Ygr(:)>0)); 
-        grrel = numel(Ygr(Ygr(:)>grsd))/numel(Ygr(Ygr(:)>0)); 
-        jobr.NCstr = jobr.NCstr * grrel*10; 
-      end
-
-      srco = src;
-      if any(resr.vx_red>1) && any( resr.vx_volr < jobr.resolutionDependencyRange(2)*(job.fred+1) ) && jobr.NCstr~=0
-        % first block
-        Vr = V(i); Vmat = spm_imatrix(Vr.mat); Vmat(7:9) = Vmat(7:9).*resr.vx_red; Vr.mat = spm_matrix(Vmat);
-        srcR  = cat_vol_resize(srcr,'dereduceV',resr,'cubic');
-        for iter=1:1+job.iter
-          srcr  = cat_vol_sanlm_filter(jobr,Vr,1,srcr);
-        end
-        srcRS = cat_vol_resize(srcr,'dereduceV',resr,'cubic');
-        src   = (src - srcR) + srcRS; 
-        clear srcRS srcr srcR;
-
-        % second block
-        if 1 % the second displaced filtering helps to deduce low frequency noise a little bit more 
-          [srcr,resr] = cat_vol_resize( smooth3(src(2:end,2:end,2:end)) ,'reduceV',...
-            vx_vol,min(2.2*(job.fred+1),min(vx_vol)*2.3),32,'median');
-          srcRr = cat_vol_resize(srcr,'dereduceV',resr,'cubic');
-          srcR  = src; srcR(2:end,2:end,2:end) = srcRr; 
-          for iter=1:1+job.iter
-            srcr  = cat_vol_sanlm_filter(jobr,Vr,1,srcr);
-          end
-          srcRr = cat_vol_resize(srcr,'dereduceV',resr,'cubic');
-          srcRS = src; srcRS(2:end,2:end,2:end) = srcRr; 
-          src   = src + (src - srcR) + srcRS; 
-          clear srcRS srcr srcR;
-          src = src / 2;
-        end
-      end
-      
-      NCstrr = 15 * abs(cat_stat_nanmean(abs(src(:)/th - srco(:)/th))); 
-    else
-      NCstrr = 0; 
-    end
-    if job.verb>1 && (nargin>3 || NCstrr>0) 
-      cat_io_cprintf('g5',sprintf('R%1d) %0.2fx%0.2fx%0.2f mm:  ',job.red,vx_vol)); stime = clock; 
-    end
-    
-    
-    % the real noise filter
-    if im==1, srco = src; end
-    src = (src / th) * 100; 
-    cat_sanlm(src,3,1,job.rician);
-    src = (src / 100) * th; 
-    if job.verb>1 && (nargin>3 || NCstrr>0) && im<1+job.miter
-      if job.verb>1 && (nargin>3 || NCstrr>0), cat_io_cprintf('g5',sprintf('  %5.0fs\n',etime(clock,stime))); end
-    end
-  end
-    
+        
+		for im=1:1+job.miter;   
+			% prevent NaN and INF
+			if job.replaceNANandINF
+				src(isnan(src)) = 0;
+				src(isinf(src) & src<0) = min(src(:));
+				src(isinf(src) & src>0) = max(src(:));
+			else
+				if sum(isnan(src(:))>0), nanmsk = isnan(src); end
+				if sum(isinf(src(:))>0), infmsk = int8( isinf(src) .* sign(src) ); end
+			end
+			
+			% histogram limit
+			src = cat_stat_histth(src,job.intlim); 
+			
+			% use intensity normalisation because cat_sanlm did not filter values below ~0.01 
+			th  = max( cat_stat_nanmean( src(src(:)>cat_stat_nanmean(src(src(:)>0))) ) , ...
+								 abs(cat_stat_nanmean( src(src(:)<abs(cat_stat_nanmean(src(src(:)<0)))))) );
+							 
+			% low resolution filtering
+			if job.red>0 && (any(vx_vol<0.8) || job.fred )
+				[srcr,resr]   = cat_vol_resize( src ,'reduceV',vx_vol,min(2.2*(job.fred+1),min(vx_vol)*2.3),32,'median');
+				
+				jobr            = job;
+				jobr.red        = job.red - 1;     
+				jobr.miter      = 0; 
+				jobr.addnoise   = 0;                        % no additional noise on lower resolution 
+				jobr.resolutionDependency      = 1;         % resolution depending filter strength
+				jobr.resolutionDependencyRange = [1 1.6];   % [full-correction no-correction]
+				jobr.outlier    = jobr.outlier*2; 
+				jobr.NCstr      = -prod(3-resr.vx_red)*2 .* ...                 
+													min(1,1 - (mean(resr.vx_volr) - jobr.resolutionDependencyRange(1) )) / ...
+													diff(jobr.resolutionDependencyRange); 
+	
+				if 1
+					% larger var => more information
+					Ygr   = cat_vol_grad(srcr/th,resr.vx_volr,0); 
+					grsd  = std(Ygr(Ygr(:)>0)); 
+					grrel = numel(Ygr(Ygr(:)>grsd))/numel(Ygr(Ygr(:)>0)); 
+					jobr.NCstr = jobr.NCstr * grrel*10; 
+				end
+	
+				srco = src;
+				if any(resr.vx_red>1) && any( resr.vx_volr < jobr.resolutionDependencyRange(2)*(job.fred+1) ) && jobr.NCstr~=0
+					% first block
+					Vr = V(i); Vmat = spm_imatrix(Vr.mat); Vmat(7:9) = Vmat(7:9).*resr.vx_red; Vr.mat = spm_matrix(Vmat);
+					srcR  = cat_vol_resize(srcr,'dereduceV',resr,'cubic');
+					for iter=1:1+job.iter
+						srcr  = cat_vol_sanlm_filter(jobr,Vr,1,srcr);
+					end
+					srcRS = cat_vol_resize(srcr,'dereduceV',resr,'cubic');
+					src   = (src - srcR) + srcRS; 
+					clear srcRS srcr srcR;
+	
+					% second block
+					if 1 % the second displaced filtering helps to deduce low frequency noise a little bit more 
+						[srcr,resr] = cat_vol_resize( smooth3(src(2:end,2:end,2:end)) ,'reduceV',...
+							vx_vol,min(2.2*(job.fred+1),min(vx_vol)*2.3),32,'median');
+						srcRr = cat_vol_resize(srcr,'dereduceV',resr,'cubic');
+						srcR  = src; srcR(2:end,2:end,2:end) = srcRr; 
+						for iter=1:1+job.iter
+							srcr  = cat_vol_sanlm_filter(jobr,Vr,1,srcr);
+						end
+						srcRr = cat_vol_resize(srcr,'dereduceV',resr,'cubic');
+						srcRS = src; srcRS(2:end,2:end,2:end) = srcRr; 
+						src   = src + (src - srcR) + srcRS; 
+						clear srcRS srcr srcR;
+						src = src / 2;
+					end
+				end
+				
+				NCstrr = 15 * abs(cat_stat_nanmean(abs(src(:)/th - srco(:)/th))); 
+			else
+				NCstrr = 0; 
+			end
+			if job.verb>1 && (nargin>3 || NCstrr>0) 
+				cat_io_cprintf('g5',sprintf('R%1d) %0.2fx%0.2fx%0.2f mm:  ',job.red,vx_vol)); stime = clock; 
+			end
+			
+			
+			% the real noise filter
+			if im==1, srco = src; end
+			src = (src / th) * 100; 
+			cat_sanlm(src,3,1,job.rician);
+			src = (src / 100) * th; 
+			if job.verb>1 && (nargin>3 || NCstrr>0) && im<1+job.miter
+				if job.verb>1 && (nargin>3 || NCstrr>0), cat_io_cprintf('g5',sprintf('  %5.0fs\n',etime(clock,stime))); end
+			end
+		end
+			
     % measures changes
     NCrate = cat_stat_nanmean(abs(src(:)/th - srco(:)/th)); 
     
@@ -342,8 +346,6 @@ function src2 = cat_vol_sanlm_filter(job,V,i,src)
    
     for NCstri = 1:numel(NCstr)
        
-		xASL_TrackProgress(NCstri,numel(NCstr)); %%% ExploreASL fix
-		
         if NCstr(NCstri)<0
         % adaptive local denoising 
 
@@ -400,11 +402,11 @@ function src2 = cat_vol_sanlm_filter(job,V,i,src)
             %  for corrections (job.relativeFilterStengthLimit), where higher values allow 
             %  stronger filtering. 
             [NCi,range]  = cat_stat_histth(src,0.99); % lower values > more similar filtering
-            NCi  = max(eps,log10( (NCi + range(1)) / diff(range) * 7 + 3 )); % bias corr + intensity normalization 
+            NCi  = max(eps,log10( 1 + (NCi + range(1)) / diff(range) * 7 + 3 )); % bias corr + intensity normalization 
             NCi  = cat_vol_smooth3X( NCi , job.relativeIntensityAdaption / mean(vx_vol)); % smoothing
             if job.relativeIntensityAdaption>0 && ...
                job.relativeFilterStengthLimit && ~isinf(job.relativeFilterStengthLimit)
-                NCsi = NCs ./ NCi; 
+                NCsi = NCs ./ max(eps,NCi); 
                 mNCs = cat_stat_nanmean( NCsi(src(:)>th/2 & NCsi(:)>0 )) * ...
                           job.relativeFilterStengthLimit * ...
                           max(1,min(4,4 - job.relativeIntensityAdaption*2)); % lower boundary for strong adaption
@@ -467,9 +469,10 @@ function src2 = cat_vol_sanlm_filter(job,V,i,src)
           % Correction only of regions with less noise and with (src~=0) to 
           % avoid adding of noise in skull-stripped data. This may lead to
           % problems with the skull-stripping detection in cat_run_job!
+          % Also important in case of ADNI.
           src2 = src2 + max( 0 , min(1 , cat_vol_smooth3X( ...
                  ( job.addnoise.*sth/100 ) - abs(srco - src) , 4/mean(vx_vol) ) ./ ( job.addnoise.*sth/100 ) )) .* ...
-                 ... ( src~=0 ) .* ... save skull-stripping / defacing regions
+                 ( src~=0 ) .* ... save skull-stripping / defacing regions
                  (randn(size(src)) * job.addnoise.*sth/100);  
           if ~debug, clear sth; end
         end
@@ -487,10 +490,11 @@ function src2 = cat_vol_sanlm_filter(job,V,i,src)
         end
         
         % use only float precision
-        Vo(i).fname   = fullfile(pth,[job.prefix nm job.postfix '.nii' vr]);
+        Vo(i).fname   = fullfile(pth,[job.prefix nm job.suffix '.nii' vr]);
         Vo(i).descrip = sprintf('%s SANLM filtered (NCstr=%-4.2f > %0.2f)',...
           V(i).descrip,job.NCstr(NCstri),abs(NCstr(NCstri)) + NCstrr);
         Vo(i).dt(1)   = 16; % default - changes later if required 
+        if exist(Vo(i).fname,'file'); delete(Vo(i).fname); end
         spm_write_vol(Vo(i), src2);
         spm_progress_bar('Set',i);
         
@@ -518,7 +522,7 @@ function src2 = cat_vol_sanlm_filter(job,V,i,src)
             % that red means failed filtering ...
             %   green > low filtering 
             %   red   > strong filtering
-            if NCstr(NCstri) || isinf(NCstr(NCstri))
+            if NCstr(NCstri)>0 || isinf(NCstr(NCstri))
                 fprintf('NCstr = '); 
                 cat_io_cprintf( color( ( ( abs(NCstr(NCstri)) ) * 6 )) , ...
                     sprintf('%- 5.2f > %4.2f', job.NCstr(NCstri) , abs(NCstr(NCstri)) ));

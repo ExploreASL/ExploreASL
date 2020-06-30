@@ -1,6 +1,6 @@
 /*
  * Robert Dahnke
- * $Id: cat_vbdist.c 1294 2018-03-19 20:33:44Z gaser $ 
+ * $Id: cat_vbdist.c 1523 2019-11-21 23:12:24Z gaser $ 
  *
  */
 
@@ -23,9 +23,10 @@
  */
 
 #include "mex.h"   
-#include "matrix.h"
 #include "math.h"
 #include "float.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 
 /* estimate minimum of A and its index in A */
@@ -53,40 +54,6 @@ void ind2sub(int i, int *x, int *y, int *z, int sxy, int sy) {
 
 /* main function */
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-  mwSize *sL;
-  int     dL;
-  int     nL;
-  int     x;
-  int     y;
-  int     xy;
-
-  mwSize sS[2] = {1,3};
-  mxArray *SS;
-  double  *S; 
-
-  float s1,s2,s3;
-  float   s12;
-  float   s13;
-  float   s23;
-  float   s123;
-
-  int   NI[14];  
-  float ND[14];
-  int   sN;    
-  float       *DN;
-  float       DNm;
-  int i, n, ni, DNi;
-
-  float         *D;
-  unsigned int  *I;
-  unsigned char *L;
-  
-  float         *V;
-  bool          *R; 
-  bool e255; 
-  
-  int u,v,w,nu,nv,nw; 
-
   if (nrhs<1)                                       mexErrMsgTxt("ERROR:cat_vbdist: not enough input elements\n");
   if (nlhs>3)                                       mexErrMsgTxt("ERROR:cat_vbdist: too many output elements.\n");
   if (mxIsSingle(prhs[0])==0)                       mexErrMsgTxt("ERROR:cat_vbdist: first  input must be an 3d single matrix\n");
@@ -94,47 +61,47 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   if (nrhs==3 && mxIsDouble(prhs[2])==0)            mexErrMsgTxt("ERROR:cat_vbdist: third input must be an double matrix\n");
   if (nrhs==3 && mxGetNumberOfElements(prhs[2])!=3) mexErrMsgTxt("ERROR:cat_vbdist: third input must have 3 Elements"); 
   
-  /* main informations about input data (size, dimensions, ...) */
-  sL = mxGetDimensions(prhs[0]);
-  dL = mxGetNumberOfDimensions(prhs[0]);
-  nL = mxGetNumberOfElements(prhs[0]);
-  x  = (int)sL[0];
-  y  = (int)sL[1];
-  xy = x*y;
+  /* main information about input data (size, dimensions, ...) */
+  const mwSize *sL = mxGetDimensions(prhs[0]);
+  const int     dL = mxGetNumberOfDimensions(prhs[0]);
+  const int     nL = mxGetNumberOfElements(prhs[0]);
+  const int     x  = (int)sL[0];
+  const int     y  = (int)sL[1];
+  const int     xy = x*y;
 
-  sS[0] = 1; 
-  sS[1] = 2; 
-  SS = mxCreateNumericArray(2,sS,mxDOUBLE_CLASS,mxREAL);
-  S = mxGetPr(SS);
+  const mwSize sS[] = {1,3}; 
+  mxArray *SS = mxCreateNumericArray(2,sS,mxDOUBLE_CLASS,mxREAL);
+  double  *S = mxGetPr(SS);
   if (nrhs<3) {S[0]=1.0; S[1]=1.0; S[2]=1.0;} else {S=mxGetPr(prhs[2]);}
   
-  s1 = fabs((float)S[0]),s2 = fabs((float)S[1]),s3 = fabs((float)S[2]);
-  s12  = sqrt( s1*s1  + s2*s2); /* xy - voxel size */
-  s13  = sqrt( s1*s1  + s3*s3); /* xz - voxel size */
-  s23  = sqrt( s2*s2  + s3*s3); /* yz - voxel size */
-  s123 = sqrt(s12*s12 + s3*s3); /* xyz - voxel size */
+  float s1 = fabs((float)S[0]),s2 = fabs((float)S[1]),s3 = fabs((float)S[2]);
+  const float   s12  = sqrt( s1*s1  + s2*s2); /* xy - voxel size */
+  const float   s13  = sqrt( s1*s1  + s3*s3); /* xz - voxel size */
+  const float   s23  = sqrt( s2*s2  + s3*s3); /* yz - voxel size */
+  const float   s123 = sqrt(s12*s12 + s3*s3); /* xyz - voxel size */
   /*printf("%1.2f,%1.2f,%1.2f - %1.2f,%1.2f,%1.2f - %1.2f",s1,s2,s3,s12,s23,s13,s123); */
   
   /* indices of the neighbor Ni (index distance) and euclidean distance NW */
-  NI[0] = 0;  NI[1] = -1;NI[2] = -x+1;NI[3] =  -x;NI[4] = -x-1;NI[5] =  -xy+1;NI[6] = -xy;NI[7] = -xy-1;NI[8] = -xy+x+1;NI[9] = -xy+x;NI[10] = -xy+x-1;NI[11] = -xy-x+1;NI[12] = -xy-x;NI[13] = -xy-x-1;  
-  ND[0] = 0.0;ND[1] = s1;ND[2] =  s12;ND[3] =  s2;ND[4] =  s12;ND[5] =    s13;ND[6] = s3; ND[7] =   s13;ND[8] =    s123;ND[9] =   s23;ND[10] =    s123;ND[11] =    s123;ND[12] =   s23;ND[13] =   s123;
-  sN = sizeof(NI)/4;    
-  DN = (float *) mxMalloc(sizeof(float)*sN);
-  DNm = FLT_MAX;
-  i =0; n = 0; ni = 0; DNi = 0;
+  const int   NI[] = {  0, -1,-x+1, -x,-x-1,  -xy+1,-xy,-xy-1,  -xy+x+1,-xy+x,-xy+x-1,  -xy-x+1,-xy-x,-xy-x-1};  
+  const float ND[] = {0.0, s1, s12, s2, s12,    s13, s3,  s13,     s123,  s23,   s123,     s123,  s23,   s123};
+  const int   sN = sizeof(NI)/4;    
+  float       DN[sN];
+  float       DNm = FLT_MAX;
+  int i, n, ni, DNi = 0;
 
+  
   /* data */
   plhs[0] = mxCreateNumericArray(dL,sL,mxSINGLE_CLASS,mxREAL);
   plhs[1] = mxCreateNumericArray(dL,sL,mxUINT32_CLASS,mxREAL);
   plhs[2] = mxCreateNumericArray(dL,sL,mxUINT8_CLASS,mxREAL);
-  D = (float *)mxGetPr(plhs[0]);
-  I = (unsigned int  *)mxGetPr(plhs[1]);
-  L = (unsigned char *)mxGetPr(plhs[2]);
+  float         *D = (float *)mxGetPr(plhs[0]);
+  unsigned int  *I = (unsigned int  *)mxGetPr(plhs[1]);
+  unsigned char *L = (unsigned char *)mxGetPr(plhs[2]);
   
-  V = (float*)mxGetPr(prhs[0]);
-  if (nrhs>1) R=(bool *)mxGetPr(prhs[1]); 
-  e255 = false; 
-
+  float         *V = (float*)mxGetPr(prhs[0]);
+  bool          *R; if (nrhs>1) R=(bool *)mxGetPr(prhs[1]); 
+  bool e255 = false; 
+  
   /* intitialisation */
   for (i=0;i<nL;i++) 
   {
@@ -153,6 +120,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     I[i]=(unsigned int)i;
   }
 
+  int u,v,w,nu,nv,nw; 
   for (i=0;i<nL;i++) 
   {
     if ( (D[i]>0) && (nrhs==1 || (nrhs>1 && R[i]==true) ) )
@@ -220,7 +188,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     I[i]++;
   }
 
-  mxFree(DN);
 }
 
 

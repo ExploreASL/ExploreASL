@@ -2,7 +2,7 @@ function extopts = cat_conf_extopts(expert,spm)
 % Configuration file for extended CAT options
 %
 % Christian Gaser
-% $Id: cat_conf_extopts.m 1354 2018-08-13 10:21:10Z gaser $
+% $Id: cat_conf_extopts.m 1552 2020-01-17 10:19:24Z dahnke $
 %#ok<*AGROW>
 
 if ~exist('expert','var')
@@ -132,11 +132,10 @@ bb.help    = {'The bounding box (in mm) of the volume which is to be written (re
 if expert==0
   regstr        = cfg_menu;
   regstr.labels = {
-    'Dartel'
-    'Default Shooting'
     'Optimized Shooting'
+    'Default Shooting'
   };
-  regstr.values = {0 4 0.5};
+  regstr.values = {0.5 4}; % special case 0 = 0.5 due to Dartel default seting
   regstr.help   = [regstr.help; { ...
     'For spatial registration CAT offers the use of the Dartel (Ashburner, 2008) and Shooting (Ashburner, 2011) registrations to an existing template. Furthermore, an optimized shooting approach is available that uses an adaptive threshold and lower initial resolutions to obtain a good tradeoff between accuracy and calculation time.  The CAT default templates were obtained by standard Dartel/Shooting registration of 555 IXI subjects between 20 and 80 years. '
     'The registration time is typically about 3, 10, and 5 minutes for Dartel, Shooting, and optimized Shooting for the default registration resolution. '
@@ -145,7 +144,6 @@ if expert==0
 elseif expert==1
   regstr        = cfg_menu;
   regstr.labels = {
-    'Dartel (0)'
     'Default Shooting (4)'
     'Optimized Shooting - vox (5)'
     'Optimized Shooting - fast (eps)'
@@ -155,7 +153,8 @@ elseif expert==1
     'Optimized Shooting - medium (12)'
     'Optimized Shooting - soft (13)'
   };
-  regstr.values = {0 4 5 eps 0.5 1.0 11 12 13};
+  regstr.values = {4 5 eps 0.5 1.0 11 12 13}; % special case 0 = 0.5 due to Dartel default seting
+  regstr.name   = 'Method';
   regstr.help = [regstr.help; { ...
     'The strength of the optimized Shooting registration depends on the stopping criteria (controlled by the "extopts.regstr" parameter) and by the final registration resolution that can be given by the template (fast,standard,fine), as fixed value (hard,medium,soft), or (iii) by the output resolution (vox).   In general the template resolution is the best choice to allow an adaptive normalization depending on the individual anatomy with some control of the calculation time. Fixed resolution allows to roughly define the degree of normalization for all images with 2.0 mm for smoother and 1.0 mm for stronger deformations.  For special cases the registration resolution can also be set by the output resolution controlled by the "extopts.vox" parameter. '
     ''
@@ -176,7 +175,8 @@ else
   regstr         = cfg_entry;
   regstr.strtype = 'r';
   regstr.num     = [1 inf];
-  regstr.help = [regstr.help; { ...
+  regstr.name   = 'Spatial registration';
+  regstr.help    = [regstr.help; { ...
     '"Default Shooting" runs the original Shooting approach for existing templates and takes about 10 minutes per subject for 1.5 mm templates and about 1 hour for 1.0 mm. '
     'The "Optimized Shooting" approach uses lower spatial resolutions in the first iterations and an adaptive stopping criteria that allows faster processing of about 6 minutes for 1.5 mm and 15 minutes for 1.0 mm. '
     ''
@@ -187,6 +187,8 @@ else
     '  3         .. "Optimized Shooting"      .. TR/2:TR/4:TR'
     '  4         .. "Default   Shooting"      .. only TR'
     '  5         .. "Optimized vox Shooting " .. vox/2:vox/4:vox'
+    '  6         .. "Optimized Shooting - hydrocephalus (6)"'
+    '                Use many iterations! Very slow! Use k-means AMAP as initial Segmentation!'
     ''
     '  10        .. "Stronger Shooting"       .. max( 0.5 , [2.5:0.5:0.5] )'
     '  11        .. "Strong Shooting"         .. max( 1.0 , [3.0:0.5:1.0] )'
@@ -209,17 +211,46 @@ else
     }]; 
 end
 regstr.tag    = 'regstr';
-regstr.name   = 'Spatial registration';
-regstr.def    = @(val)cat_get_defaults('extopts.regstr', val{:});
+if cat_get_defaults('extopts.regstr')>0
+  regstr.def    = @(val)cat_get_defaults('extopts.regstr',val{:});
+else
+  regstr.val    = {0.5};
+end
 
 %---------------------------------------------------------------------
 
-registration        = cfg_branch;
-registration.tag    = 'registration';
-registration.name   = 'Spatial Registration';
+dartel        = cfg_branch;
+dartel.tag    = 'dartel';
+dartel.name   = 'Dartel Registration';
+dartel.val    = {darteltpm};
+dartel.help   = {
+  'Classical Dartel (Ashburner, 2008) registrations to a existing template. The CAT default templates were obtained by standard Dartel registration of 555 IXI subjects between 20 and 80 years. '
+  ''
+};
+ 
+shooting        = cfg_branch;
+shooting.tag    = 'shooting';
+shooting.name   = 'Shooting Registration';
+shooting.val    = {shootingtpm regstr};
+shooting.help   = {
+  'Shooting (Ashburner, 2011) registrations to a existing template. Furthermore, an optimized shooting approach is available that use adaptive threshold and lower initial resolution to improve accuracy and calculation time at once. The CAT default templates were obtained by standard Shooting registration of 555 IXI subjects between 20 and 80 years. '
+  ''
+};
+
 if expert<2
-  registration.val  = {darteltpm shootingtpm regstr};
+  registration        = cfg_choice;
+  registration.tag    = 'registration';
+  registration.name   = 'Spatial Registration';
+  registration.values = {dartel shooting};
+  if cat_get_defaults('extopts.regstr')==0
+    registration.val  = {dartel};
+  else
+    registration.val  = {shooting};
+  end
 else
+  registration      = cfg_branch;
+  registration.tag  = 'registration';
+  registration.name = 'Spatial Registration';
   registration.val  = {T1 brainmask cat12atlas darteltpm shootingtpm regstr}; 
 end
 registration.help   = {
@@ -229,6 +260,25 @@ registration.help   = {
 }; 
 
 %---------------------------------------------------------------------
+
+% This version is not ready right now and I packed all working improvments
+% (such as the Laplace-based blood-vessel-correction) into cat_surf_createCS2. 
+pbtver         = cfg_menu;
+pbtver.tag     = 'pbtmethod';
+pbtver.name    = 'Projection-based thickness';
+pbtver.labels  = {'PBT','PBTx','PBT2'};
+pbtver.values  = {'pbt2','pbt2x','pbt3'};
+pbtver.def     = @(val) 'pbt2x';
+pbtver.help    = {
+ ['Version of the projection-based thickness (PBT) thickness and surface reconstruction approach (Dahnke et al., 2013).  ' ...
+  'Version 2 first estimates a temporary central surface by utilizing higher CSF and lower WM boundaries to utilize the partial volume effect.  ' ...
+  'This surface divides the GM into a lower and upper GM area where PBT is used with sulcal reconstruction in the lower and gyrus reconstruction in the upper part. ' ...
+  'The estimated thickness values of each part were projected over the whole GM and summed up to obtain the full thickness.  ' ...
+  'Similar to PBT, the project-based thickness and the direct thickness (of the distance maps without sulcus/gyrus reconstruction) are combined by using the minimum. '] 
+  ''
+  'Experimental development parameter - do not change! '
+  ''
+};
 
 pbtres         = cfg_entry;
 pbtres.tag     = 'pbtres';
@@ -241,6 +291,132 @@ pbtres.help    = {
   ''
 };
 
+pbtlas         = cfg_menu;
+pbtlas.tag     = 'pbtlas';
+pbtlas.name    = 'Use correction for cortical myelination';
+pbtlas.labels  = {'No','Yes'};
+pbtlas.values  = {0 1};
+pbtlas.def     = @(val)cat_get_defaults('extopts.pbtlas', val{:});
+pbtlas.help    = {
+  'Apply correction for cortical myelination by local intensity adaption to improve the description of the GM/WM boundary (added in CAT12.7).'
+  'Experimental parameter, not yet working properly!'
+  ''
+};
+
+% currently only for developer
+collcorr         = cfg_menu;
+collcorr.tag     = 'collcorr';
+collcorr.name    = 'Correction for surface collisions';
+if expert
+collcorr.labels  = {...
+  'No (createCS1; 0)',...
+  'No (createCS2; 20)',...
+  'PBT Self-Intersect (createCS2; 23)',... 
+  'PBT + CAT Self-Intersect on Surface Normals (createCS2; 25)',... 
+  };
+  collcorr.values  = {0 20 23 25};
+end
+collcorr.help    = {
+  ['The creation of the white and pial surface by adding/removing half thickness from the central surface requires further optimization to avoid self-intersections of the surfaces.  ' ...
+   'These self-intersections occur for thin structures in strongly folded regions and were caused by different distance metrics.  ' ...
+   'Most self-intersections can be fast corrected (~2 minutes) by a new correction added in CAT12.7 (201911) using the percentage position map of the PBT approach (default). ' ... 
+   'Although this works quite good in most cases tiny self-intersections still remain and a more efficient but much slower correction would be necessary (plus ~30 minutes). ']
+   ''
+};
+if expert>1
+  collcorr.labels  = {...
+    'No (createCS; 0)',...
+    'CAT Selfintersect surface deformation approach (createCS; 1)',... not working
+    'No (createCS2; 20)',...
+    'CAT self-intersect surface deformation approach (createCS2; 21)',... 
+    'CAT self-intersect surface normal approach (createCS2; 22)',... 
+    'PBT self-intersect without optimization (createCS2; 23)',... 
+    'PBT self-intersect with optimization (createCS2; 24)',... 
+    'PBT + CAT Selfintersect (createCS2; 25)',... 
+    ...'Delaunay Approach with Intensity Optimization (createCS2; 26)', ... not working at all
+    };
+  collcorr.values  = {0 1 20 21 22 23 24 25};
+  collcorr.help    = [collcorr.help 
+    { ...
+   ['There is also an older surface deformation approach (collcorr = 1 | 21) that currently stops too early and results in underestimation of the cortical thickness. ' ...
+    'Moreover, there is a faster version of the "CAT self-intersect surface normal approach" (collcorr = 22) and an optimized version of the PBT (collcorr = 24). '] 
+    ''} ]; 
+end
+collcorr.def     = @(val)cat_get_defaults('extopts.collcorr', val{:});
+
+
+reduce_mesh         = cfg_menu;
+reduce_mesh.tag     = 'reduce_mesh';
+reduce_mesh.name    = 'Reduce Mesh';
+reduce_mesh.labels  = { ...
+  'No reduction, PBT resolution (0)',...  
+  'No reduction, optimal resolution (1)',...  
+  'No reduction, interal resolution (2)',...
+  'SPM approach init (3)',...
+  'SPM approach full (5)',...
+  'MATLAB approach init (4)',...
+  'MATLAB approach full (6)'
+};
+reduce_mesh.values  = {0 1 2 3 5 4 6};
+reduce_mesh.def     = @(val)cat_get_defaults('extopts.reduce_mesh', val{:});
+reduce_mesh.help    = {
+  ['Limitation of the surface resolution is essential for fast processing and acurate and equaly distributed meshes. ' ...
+   'Mesh resolution depends in general on the voxel resolution used for surface creation and can be modified afterwards by refinment and reduction. ' ...
+   'However, surface mesh reduction is not trivial and we observered fatal MATLAB errors (full uncatchable crash) and freezing of the following spherical registration on some computers. ' ...
+   'This variable therefor controls multiple ways to handle mesh resolution in the surface creation process. '] 
+   ''
+  ['The first setting (0) uses no reduction at all, creating the intial surface at the PBT resolution and also use no mesh reduction and is very slow. ' ...
+   'In general, PBT is processed at 0.5 mm and surface creation result in about 1.200k faces with a quadratic increase of processing time. ' ...
+   'However, this resolution is not necessary for nearly all anylsis that often takes place at meshes with 160k (FreeSurfer) or 32k (CIVIT). ']
+   ...
+  ['Option (1) and (2) use volume reduction to created intial meshes on an optimal (1, depending on the final mesh resolution) or ' ...
+   'the internal voxel-resolution (2, depending on your image resolution). ' ...
+   'In both cases the maps are refined and further adapted to the PBT position map with a final mesh resolution of about 300k. '];    
+   ''
+  ['Surface-based reduction by SPM (3,5) or MATLAB (4,6) are used to optimize the initial surface, supporing a fast but still accurate topology correction. ' ...
+   'After topology correction the resolution of the mesh is increased again and adapted for PBT position map.  ' ...
+   'In option 3 and 4, a supersampling with following reduction is used to obtain an optimal equally distributed sampling. ' ...
+   'However, some systems showed problems in the spherical registration (freezing) that seamed to depend on these severe modifications of the mesh. ' ...
+   'Hence, option (1) and (2) only use a normal refinement without supersampling.']  
+   ''
+   'These settings are still in developent!'
+   ''
+};
+if expert
+  reduce_mesh.labels  = [reduce_mesh.labels(1:2) {'MATLAB approach external (7)'} reduce_mesh.labels(3:end)];
+  reduce_mesh.values  = [reduce_mesh.values(1:2) 7                                reduce_mesh.values(3:end)];
+  reduce_mesh.help    = [reduce_mesh.help;{'Option (7) opens an external MATLAB to apply the mesh reduction and only worked on ower systems.';''}]; 
+end
+
+
+
+% This is just an developer parameter (maybe for experts later) 
+% I expect that 300k surfaces support best quality in relation to processing
+% time, because surface reconstruction times are dominated by the registration
+% that depends on the mesh resolution of the individual and template brain. 
+% However a fast and a refined accurate version could be interesting.
+% The fast version could be interesting for fast clinical processing but needs also low mesh average surfaces.  
+% The more accurate version could be useful for high quality surface rendering.
+
+vdist         = cfg_menu;
+vdist.tag     = 'vdist';
+vdist.name    = 'Mesh resolution';
+vdist.labels  = {'low','optimal','fine'};
+vdist.values  = {27/3 4/3 1/6};   % this is the square of the refinement distance 
+vdist.def     = @(val)cat_get_defaults('extopts.vdist', val{:});
+vdist.help    = {
+ ['Higher mesh resolution may support more accurate surface reconstruction.  However, this is only useful for high resolution data (<0.8 mm). ' ...
+  'For each level, the resolution is doubled and accuracy is increased slightly (square root), resulting in a linear increase of processing time for surface creation. ' ...
+  'Because the processing time of the surface registration depends on the resolution of the individual and the template surface (about 300k faces), ' ...
+  'processing speed does not benefit from lower individual resolution. ']
+  ''
+  '  minimal:    maximal vertex distance 4.24 mm > ~100k faces'
+  '  optimal:    maximal vertex distance 1.61 mm > ~300k faces'
+  '  super-fine: maximal vertex distance 0.57 mm > ~900k faces'
+  ''
+  'Experimental development parameter that only works for the "createCS2" options of "Correct for surface collisions" (added in CAT12.7, 201909)!'
+  ''
+};
 
 %------------------------------------------------------------------------
 % special expert and developer options 
@@ -249,11 +425,11 @@ pbtres.help    = {
 lazy         = cfg_menu;
 lazy.tag     = 'lazy';
 lazy.name    = 'Lazy processing';
-lazy.labels  = {'yes','No'};
+lazy.labels  = {'Yes','No'};
 lazy.values  = {1,0};
 lazy.val     = {0};
 lazy.help    = {
-  'Do not process data if result already exist. '
+    'Do not process data if the result already exists. '
 };
 
 experimental        = cfg_menu;
@@ -354,36 +530,60 @@ resfixed.help   = {
     ''
   }; 
 
+resopt        = cfg_entry;
+resopt.tag    = 'optimal';
+resopt.name   = 'Optimal resolution';
+resopt.def    = @(val)cat_get_defaults('extopts.resval', val{:});
+resopt.num    = [1 2];
+resopt.help   = {
+    'Preprocessing with an "optimal" voxel dimension that utilize the median and the volume of the voxel size for special handling of anisotropic images.  In many cases, untypically high slice-resolution (e.g. 0.5 mm for 1.5 Tesla) comes along with higher slice-thickness and increased image interferences.  Our tests showed that a simple interpolation to the best voxel resolution not only resulted in much longer calculation times but also in a worste segmenation (and surface reconstruction) compared to the fixed option with e.g. 1 mm.  Hence, this option tries to incooperate the voxel volume and its isotropy to balance the internal resolution.  E.g., an image with 0.5x0.5x1.5 mm will resampled at a resolution of 0.7x0.7x0.7 mm. ' 
+    'The first parameters defines the lowest spatial resolution, while the second defines a tolerance range to avoid tiny interpolations for almost correct resolutions. '
+    ''
+    'Examples:'
+    '  Parameters    native resolution       internal resolution'
+    '  [1.00 0.10]    0.95 1.05 1.25     >     0.95 1.05 1.00'
+    '  [1.00 0.10]    0.80 0.80 1.00     >     0.80 0.80 0.80'
+    '  [1.00 0.10]    0.50 0.50 2.00     >     1.00 1.00 1.00'
+    '  [1.00 0.10]    0.50 0.50 1.50     >     0.70 0.70 0.70'
+    '  [1.00 0.10]    0.80 1.00 1.00     >     1.00 1.00 1.00'
+    ''
+  };
 
 restype        = cfg_choice;
 restype.tag    = 'restypes';
 restype.name   = 'Internal resampling for preprocessing';
 switch cat_get_defaults('extopts.restype')
-  case 'native', restype.val = {resnative};
-  case 'best',   restype.val = {resbest};
-  case 'fixed',  restype.val = {resfixed};
+  case 'native',  restype.val = {resnative};
+  case 'best',    restype.val = {resbest};
+  case 'fixed',   restype.val = {resfixed};
+  case 'optimal', restype.val = {resopt};
 end
+
 if ~expert
   restype        = cfg_menu;
   restype.tag    = 'restypes';
   restype.name   = 'Internal resampling for preprocessing';
   restype.labels = {
+    'Optimal'
     'Fixed 1.0 mm'
     'Fixed 0.8 mm'
     'Best native'
   };
-  restype.values = {struct('fixed',[1.0 0.1]) ...
-                    struct('fixed',[0.8 0.1]) ...
-                    struct('best', [0.5 0.1])};
-  restype.val    = {struct('fixed',[1.0 0.1])};
-  restype.help   = [regstr.help; { ...
+  restype.values = {struct('optimal', [1.0 0.1]) ...
+                    struct('fixed',   [1.0 0.1]) ...
+                    struct('fixed',   [0.8 0.1]) ...
+                    struct('best',    [0.5 0.1])};
+  restype.val    = {struct('optimal', [1.0 0.1])};
+  restype.help   = {
     'The default fixed image resolution offers a good trade-off between optimal quality and preprocessing time and memory demands. Standard structural data with a voxel resolution around 1 mm or even data with high in-plane resolution and large slice thickness (e.g. 0.5x0.5x1.5 mm) will benefit from this setting. If you have higher native resolutions the highres option "Fixed 0.8 mm" will sometimes offer slightly better preprocessing quality with an increase of preprocessing time and memory demands. In case of even higher resolutions and high signal-to-noise ratio (e.g. for 7 T data) the "Best native" option will process the data on the highest native resolution. I.e. a resolution of 0.4x0.7x1.0 mm will be interpolated to 0.4x0.4x0.4 mm. A tolerance range of 0.1 mm is used to avoid interpolation artifacts, i.e. a resolution of 0.95x1.01x1.08 mm will not be interpolated in case of the "Fixed 1.0 mm"!  '
+    'This "optimal" option prefers an isotropic voxel size with at least 1.1 mm that is controlled by the median voxel size and a volume term that penalizes highly anisotropic voxels.'
     ''
-  }];
+  };
 else
-  restype.values = {resnative resbest resfixed};
+  restype.values = {resopt resnative resbest resfixed};
   restype.help   = {
     'The default fixed image resolution offers a good trade-off between optimal quality and preprocessing time and memory demands. Standard structural data with a voxel resolution around 1mm or even data with high in-plane resolution and large slice thickness (e.g. 0.5x0.5x1.5 mm) will benefit from this setting. If you have higher native resolutions a change of the fixed resolution to smaller values will sometimes offer slightly better preprocessing quality with a increase of preprocessing time and memory demands. In case of even higher resolutions and high signal-to-noise ratio (e.g. for 7T data) the "Best native" option will process the data on the highest native resolution. I.e. a resolution of 0.4x0.7x1.0 mm will be interpolated to 0.4x0.4x0.4 mm. A tolerance range of 0.1 mm is used to avoid interpolation artifacts, i.e. a resolution of 0.95x1.01x1.08 mm will not be interpolated in case of the "Fixed 1.0 mm"!  '
+    'This "optimal" option prefers an isotropic voxel size with at least 1.1 mm that is controlled by the median voxel size and a volume term that penalizes highly anisotropic voxels.'
     ''
   }; 
 end
@@ -445,15 +645,18 @@ gcutstr.tag       = 'gcutstr';
 gcutstr.name      = 'Skull-Stripping';
 gcutstr.def       = @(val)cat_get_defaults('extopts.gcutstr', val{:});
 gcutstr.help      = {
-  'Method of skull-stripping before AMAP segmentation. The SPM approach works quite stable for the majority of data. However, in some rare cases parts of GM (i.e. in frontal lobe) might be cut. If this happens the GCUT approach is a good alternative. GCUT is a graph-cut/region-growing approach starting from the WM area.'
+  'Method of initial skull-stripping before AMAP segmentation. The SPM approach works quite stable for the majority of data. However, in some rare cases parts of GM (i.e. in frontal lobe) might be cut. If this happens the GCUT approach is a good alternative. GCUT is a graph-cut/region-growing approach starting from the WM area. '
+  'APRG (adaptive probability region-growing) is a new method that refines the probability maps of the SPM approach by region-growing techniques of the gcut approach with a final surface-based optimization strategy. This is currently the method with the most accurate and reliable results. '
+  'If you use already skull-stripped data you can turn off skull-stripping although this is automaticaly detected in most cases. '
+  'Please note that the choice of the skull-stripping method will also influence the estimation of TIV, because the methods mainly differ in the handling of the outer CSF around the cortical surface. '
   ''
 };
 if ~expert
-  gcutstr.labels  = {'SPM approach' 'GCUT approach'};
-  gcutstr.values  = {0 0.50};
+  gcutstr.labels  = {'none (already skull-stripped)' 'SPM approach' 'GCUT approach' 'APRG approach'};
+  gcutstr.values  = {-1 0 0.50 2};
 else
-  gcutstr.labels  = {'SPM approach (0)','GCUT medium (0.50)','SPM+ approach (2)','SPM+ and GCUT medium (3)'};
-  gcutstr.values  = {0 0.50 2 3};
+  gcutstr.labels  = {'none (already skull-stripped) (-1)','SPM approach (0)','GCUT medium (0.50)','APRG approach (2)'};
+  gcutstr.values  = {-1 0 0.50 2};
 end
 
 
@@ -518,60 +721,6 @@ LASstr.help    = {
   ''
 };
 
-%------------------------------------------------------------------------
-% XASL quality
-%------------------------------------------------------------------------
-
-xasl_quality    = cfg_menu;
-xasl_quality.tag = 'xasl_quality';
-xasl_quality.name = 'Run xASL on high quality';
-xasl_quality.labels = {'no','yes'};
-xasl_quality.values = {0 1};
-xasl_quality.def = @(val) 1; 
-xasl_quality.help    = {'Runs xASL on high quality, if 0 then run at faster settings with lower resolution and fewer iterations'};
-
-%------------------------------------------------------------------------
-% XASL use lesions for masking
-%------------------------------------------------------------------------
-
-xasl_lesion         = cfg_files;
-xasl_lesion.tag     = 'xasl_lesion';
-xasl_lesion.name    = 'xASL Lesion';
-xasl_lesion.def     = @(val)cat_get_defaults('extopts.xasl_lesion', val{:});
-xasl_lesion.num     = [1 1];
-xasl_lesion.filter  = 'image';
-xasl_lesion.ufilter = 'LesionCAT'; 
-xasl_lesion.help    = {
-  'Select the lesion file that will be used to mask the registration. '
-  ''
-  'This should be a single file - a summary of all lesions.'
-  ''
-};
-
-
-%------------------------------------------------------------------------
-% XASL save steps
-%------------------------------------------------------------------------
-
-xasl_savesteps    = cfg_menu;
-xasl_savesteps.tag = 'xasl_savesteps';
-xasl_savesteps.name = 'Save intermediate registration steps for xASL';
-xasl_savesteps.labels = {'no','yes'};
-xasl_savesteps.values = {0 1};
-xasl_savesteps.def = @(val) 0; 
-xasl_savesteps.help    = {'Do not save only the final DARTEL registration but also all the intermediate steps'};
-
-%------------------------------------------------------------------------
-% XASL disable DARTEL
-%------------------------------------------------------------------------
-
-xasl_disabledartel    = cfg_menu;
-xasl_disabledartel.tag = 'xasl_disabledartel';
-xasl_disabledartel.name = 'Disables the final full DARTEL spatial normalization step as a part of the CAT12 segmentation';
-xasl_disabledartel.labels = {'no','yes'};
-xasl_disabledartel.values = {0 1};
-xasl_disabledartel.def = @(val) 0; 
-xasl_disabledartel.help    = {'When set to 1, the final DARTEL step is not run, and only the basic non-linear registration is utilized'};
 
 %------------------------------------------------------------------------
 % WM Hyperintensities (expert)
@@ -585,7 +734,7 @@ wmhc.help   = {
   'In aging or (neurodegenerative) diseases WM intensity can be reduced locally in T1 or increased in T2/PD images. These so-called WM hyperintensies (WMHs) can lead to preprocessing errors. Large GM areas next to the ventricle can cause normalization problems. Therefore, a temporary correction for normalization is useful if WMHs are expected. CAT allows different ways to handle WMHs: '
   ''
   ' 0) No Correction (handled as GM). '
-  ' 1) Temporary (internal) correction as WM for spatial normalization. '
+  ' 1) Temporary (internal) correction as WM for spatial normalization and estimation of cortical thickness. '
   ' 2) Permanent correction to WM. ' 
   ' 3) Handling as separate class. '
   ''
@@ -594,14 +743,14 @@ wmhc.values = {0 1 2 3};
 if expert>1
   wmhc.labels = { ...
     'no correction (0)' ...
-    'set WMH as WM only for normalization (1)' ... 
+    'set WMH as WM only for normalization (1) and thickness estimation' ... 
     'set WMH as WM (2)' ...
     'set WMH as own class (3)' ...
   };
 else
   wmhc.labels = { ...
     'no WMH correction' ...
-    'set WMH as WM only for normalization' ... 
+    'set WMH as WM only for normalization and thickness estimation' ... 
     'set WMH as WM' ...
     'set WMH as own class' ...
   };
@@ -631,8 +780,8 @@ slc.name   = 'Stroke Lesion Correction (SLC) - in development';
 slc.def    = @(val)cat_get_defaults('extopts.SLC', val{:});
 slc.help   = {
   'WARNING: Please note that the handling of stroke lesion is still under development. '
-  'Without further correction, stroke lesions will be handled by their most probable tissue class, i.e. typically as CSF or GM. Because the spatial registration tries to normalize these regions, the normalization of large regions lead to storng inproper deformations. '
-  'To avoid poor deformations, we created a work-around by manually defined lesion maps. The ... tool can be used to set the tissue intensity to zeros to avoid normalization of stroke lesions. '
+  'Without further correction, stroke lesions will be handled by their most probable tissue class, i.e. typically as CSF or GM. Because the spatial registration tries to normalize these regions, the normalization of large regions will lead to strong inproper deformations. '
+  'To avoid poor deformations, we created a work-around by manually defined lesion maps. The "Manual image (lesion) masking" tool can be used to set the image intensity to zeros to avoid normalization of stroke lesions. '
   ''
   ' 0) No Correction. '
   ' 1) Correction of manually defined regions that were set to zeros. '
@@ -659,56 +808,117 @@ end
 
 
 %------------------------------------------------------------------------
+% Currently there are to much different strategies and this parameter needs 
+% revision. There a three basic APP functions that each include an initial 
+% rough and a following fine method. The first is the SPM appraoch that 
+% is a simple iterative call of the Unified segmentation with following 
+% maximum-based bias correction. It is relatively stable but slow and can be 
+% combined with the other APP routines. The second one is the classical 
+% APP approach with default and fine processing (1070), followed by further 
+% developed version that should be more correct with monitor variables and
+% T2/PD compatibility but finally worse results. 
+%
+% So we need more test to find out which strategies will survive to support 
+% an alternative if the standard failed with a fast standard and slow but 
+% more powerfull other routines. Hence APP1070 (init) or it successor
+% should be the standard. The SPM routines are a good alternative due to 
+% their differnt concept. 
+%------------------------------------------------------------------------
 
 
 app        = cfg_menu;
 app.tag    = 'APP';
 app.name   = 'Affine Preprocessing (APP)';
+% short help text
 app.help   = { ...
-    'Affine registration and SPM preprocessing can fail in some subjects with deviating anatomy (e.g. other species/neonates) or in images with strong signal inhomogeneities, or untypical intensities (e.g. synthetic images). An initial bias correction can help to reduce such problems (see details below). Recommended are the "rough" and "full" option.' 
+    'Affine registration and SPM preprocessing can fail in some subjects with deviating anatomy (e.g. other species/neonates) or in images with strong signal inhomogeneities, or untypical intensities (e.g. synthetic images). An initial bias correction can help to reduce such problems (see details below). Recommended are the "default" and "full" option.' 
     ''
-    ' none   - no additional bias correction.' 
-    ' rough  - rough APP bias correction (r1070)' 
-    ' light  - iterative SPM bias correction on different resolutions' 
-    ' full   - iterative SPM bias correction on different resolutions and final high resolution bias correction' 
-    ''
+    ' none    - no additional bias correction' 
+    ' light   - iterative SPM bias correction on different resolutions' 
+    ' full    - iterative SPM bias correction on different resolutions and final high resolution bias correction' 
+    ' default - default APP bias correction (r1070)' 
   };
-  
-app.labels = {'none','rough','light','full'};
-app.values = {0 1070 1 2};
-
-if expert==2
-  app.labels = {'none','light','full','rough','rough (new)','fine (new)'};
-  app.values = {0 1 2 1070 3 4};
+app.def    = @(val)cat_get_defaults('extopts.APP', val{:});
+app.labels = {'none','light','full','default'};
+app.values = {0 1 2 1070};
+if expert
+  app.labels = [app.labels, {'rough (new)'}];
+  app.values = [app.values {1144}];
   app.help   = [app.help;{ 
-    ' none       - no additional bias correction.' 
-    ' light      - iterative SPM bias correction on different resolutions' 
-    ' full       - iterative SPM bias correction on different resolutions and high resolution bias correction' 
-    ' rough       - rough APP bias correction (R1070)' 
-    ' rough (new) - rough APP bias correction - in development' 
-    ' fine  (new) - rough (new) and fine APP bias correction - in development'    
-    ''
+    ' rough (new) - rough APP bias correction (r1144) - in development' 
   }];
 end  
-app.def    = @(val)cat_get_defaults('extopts.APP', val{:});
+% long help text
 app.help   = [app.help; { ...
-    'rough: Fast correction (~60s) that identifies large homogeneous areas to estimate the intensity inhomogeneity. A maximum-filter is used to reduce the partial volume effect in T1 data. Moreover, gradient and divergence maps were used to avoid side effects by high intensity tissues (e.g. blood vessels or head tissue). '
-    'light: This approach focuses on an iterative application of the standard SPM preprocessing with different bias-correction options from low (samp=6 mm, biasfwhm=120 mm) to high frequency corrections  (samp=4.5 mm, biasfwhm=45 mm). However, the iterative calls require a lot of additional processing time (~500s) and is normally not required in data with low intensity inhomogeneity. '
-    'full: In addition to the "light" approach a final maximum-based filter (similar to the ''rough'' method that needs about additional 60s) is used to remove remaining local inhomogeneities. '
     ''
+    'light: This approach focuses on an iterative application of the standard SPM preprocessing with different bias-correction options from low (samp=6 mm, biasfwhm=120 mm) to high frequency corrections  (samp=4.5 mm, biasfwhm=45 mm). However, the iterative calls require a lot of additional processing time (~500s) and is normally not required in data with low intensity inhomogeneity. '
+    'full:  In addition to the "light" approach a final maximum-based filter (similar to the ''default'' method that needs about additional 60s) is used to remove remaining local inhomogeneities. '
+    'default: Fast correction (~60s) that identifies large homogeneous areas to estimate the intensity inhomogeneity. A maximum-filter is used to reduce the partial volume effects in T1-weighted data. Moreover, gradient and divergence maps were used to avoid side effects by high intensity tissues (e.g. blood vessels or head tissue). '
 }];
-if expert==2
+if expert
     app.help   = [app.help; { ...
     'rough (new): New version of the ''rough'' approach with improved handling of T2/PD data that is still in development. '
-    'fine  (new): Additional fine processing after the ''rough'' processing that incorporates the different brain and head tissues but is also still in development.'
-    ''
-    }];
+     }];
 end
-app.help   = [app.help; { ...
-    'In conclusion, we recommend to use the "rough" option or alternatively the "full" option or in case of further problems the "light", "rough (new)" or "fine (new)" options.'
-    ''
-    }];
+app.help   = [app.help;{''}];
 
+
+%------------------------------------------------------------------------
+
+if expert>1
+  new_release        = cfg_menu;
+  new_release.tag    = 'new_release';
+  new_release.name   = 'New release functions';
+  new_release.help   = { ...
+      'Use new rather then standard functions. '
+    };
+  new_release.val    = {0};  
+  new_release.labels = {'No','Yes'};
+  new_release.values = {0 1};
+end
+
+%------------------------------------------------------------------------
+  
+if expert>1
+  % different Affine registations ... not implemented yet
+  %{
+  spm_affreg        = cfg_menu;
+  spm_affreg.tag    = 'spm_affreg'; 
+  spm_affreg.name   = 'Affine registration approach';
+  spm_affreg.help   = { ...
+      'The affine registion is highly important for the whole pipeline. Failures result in low overlap to the TPM that troubles the Unified Segmenation and all following steps. Therefore, CAT uses different routines to obtain the best solution. However, this can fail especial in atypical subjects (very young/old) and we deside that it is maybe usefull to test the steps separately. Brain or head masks can imrove the results in some but also lead to problems in other cases.'
+      ''
+      '  The affreg routine process a affine registration based the orignal input (T1) image and a similar weighted scan . '
+      '  The maffreg routine use'
+    };
+  %spm_affreg.def    = @(val)cat_get_defaults('extopts.spm_affreg', val{:}); 
+  spm_affreg.labels = {
+    'no affine registration' ... 
+    'only affreg' ...
+    'only maffreg' ...
+    'affreg + maffreg' ...
+    'affreg + maffreg supervised' ...
+    };
+  spm_affreg.values = {0 1 2 3 4};
+  spm_affreg.val    = 3;
+  %}
+  
+  % AMAP rather than SPM segmentation 
+  spm_kamap        = cfg_menu;
+  spm_kamap.tag    = 'spm_kamap';
+  spm_kamap.name   = 'Initial segmentation';
+  spm_kamap.help   = { ...
+      'In rare cases the Unified Segmentation can fail in highly abnormal brains, where e.g. the cerebrospinal fluid of superlarge ventricles (hydrocephalus) were classified as white matter. However, if the affine registration is correct, the AMAP segmentation with an prior-independent k-means initialization can be used to replace the SPM brain tissue classification. ' 
+      'Moreover, if the default Dartel and Shooting registrations will fail then the "Optimized Shooting - superlarge ventricles" option for "Spatial registration" is required! '
+      ''
+      ' SPM Unified Segmentation - use SPM Unified Segmentation segmentation (default) ' 
+      ' k-means AMAP - k-means AMAP approach ' 
+      ''
+    };
+  spm_kamap.def    = @(val)cat_get_defaults('extopts.spm_kamap', val{:});  
+  spm_kamap.labels = {'SPM Unified Segmentation','k-means AMAP'};
+  spm_kamap.values = {0 2};
+end
 
 %------------------------------------------------------------------------
 
@@ -753,9 +963,9 @@ segmentation      = cfg_branch;
 segmentation.tag  = 'segmentation';
 segmentation.name = 'Segmentation Options';
 if expert==1
-  segmentation.val  = {app,NCstr,xasl_quality,xasl_disabledartel,xasl_lesion,xasl_savesteps,LASstr,gcutstr,cleanupstr,wmhc,slc,restype};
+  segmentation.val  = {app,NCstr,LASstr,gcutstr,cleanupstr,wmhc,slc,restype};
 elseif expert==2
-  segmentation.val  = {app,NCstr,xasl_quality,xasl_disabledartel,xasl_lesion,xasl_savesteps,LASstr,gcutstr,cleanupstr,BVCstr,wmhc,slc,mrf,restype}; % WMHCstr,
+  segmentation.val  = {app,NCstr,spm_kamap,LASstr,gcutstr,cleanupstr,BVCstr,wmhc,slc,mrf,restype}; % WMHCstr,
 end
 segmentation.help = {'CAT12 parameter to control the tissue classification.';''};
 
@@ -764,9 +974,9 @@ admin      = cfg_branch;
 admin.tag  = 'admin';
 admin.name = 'Administration Options';
 if expert==1
-  admin.val  = {ignoreErrors verb print};
-else
-  admin.val  = {experimental lazy ignoreErrors verb print};
+  admin.val  = {lazy ignoreErrors verb print};
+elseif expert==2
+  admin.val  = {experimental new_release lazy ignoreErrors verb print};
 end
 admin.help = {'CAT12 parameter to control the behaviour of the preprocessing pipeline.';''};
 
@@ -775,7 +985,11 @@ admin.help = {'CAT12 parameter to control the behaviour of the preprocessing pip
 surface       = cfg_branch;
 surface.tag   = 'surface';
 surface.name  = 'Surface Options';
-surface.val   = {pbtres scale_cortex add_parahipp close_parahipp};
+if expert>1
+  surface.val   = {pbtres pbtver pbtlas collcorr reduce_mesh vdist scale_cortex add_parahipp close_parahipp}; % pbtver
+else
+  surface.val   = {pbtres pbtlas scale_cortex add_parahipp close_parahipp};
+end
 surface.help  = {'CAT12 parameter to control the surface processing.';''};
 
 
@@ -790,7 +1004,7 @@ if ~spm
   if expert>0 % experimental expert options
     extopts.val   = {segmentation,registration,vox,surface,admin}; 
   else
-    extopts.val   = {app,xasl_quality,xasl_disabledartel,xasl_lesion,xasl_savesteps,LASstr,gcutstr,registration,vox,restype}; % NCstr?
+    extopts.val   = {app,LASstr,gcutstr,registration,vox,restype}; % NCstr?
   end
 else
   % SPM based surface processing and thickness estimation

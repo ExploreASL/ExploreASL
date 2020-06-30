@@ -1,11 +1,10 @@
 /*
  * Christian Gaser
- * $Id: cat_amap.c 1289 2018-03-08 11:12:16Z gaser $ 
+ * $Id: cat_amap.c 1523 2019-11-21 23:12:24Z gaser $ 
  *
  */
 
 #include "mex.h"
-#include "matrix.h"
 #include "math.h"
 #include "stdio.h"
 #include "Amap.h"

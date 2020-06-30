@@ -1,9 +1,11 @@
  #! /bin/bash
 
+# $Id: distribute_to_server.sh 1515 2019-11-09 23:01:28Z gaser $
+
 ########################################################
 # global parameters
 ########################################################
-version='distribute_to_server.sh $Id: distribute_to_server.sh 1361 2018-08-31 08:44:57Z gaser $'
+version='distribute_to_server.sh $Id: distribute_to_server.sh 1515 2019-11-09 23:01:28Z gaser $'
 
 COMMAND=""
 SERVER=localhost

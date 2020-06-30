@@ -17,10 +17,12 @@ function cat_stat_check_SPM(job)
 % .check_ortho         - check for design orthogonality
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cat_stat_check_SPM.m 1275 2018-02-12 22:00:05Z gaser $
+% $Id: cat_stat_check_SPM.m 1577 2020-03-09 17:36:03Z dahnke $
 
 if nargin == 0
-    load(spm_select(1,'SPM.mat','Select SPM.mat'));
+    file = spm_select(1,'SPM.mat','Select SPM.mat'); 
+    if isempty(file), return; end % nothing to do
+    load(file);
     use_unsmoothed_data = 1;
     adjust_data         = 1;
     check_cov           = 1;
@@ -94,7 +96,7 @@ if check_cov
         end
     else
         if use_unsmoothed_data
-            fprintf('\nNo unsmoothed data found. Use smoothed data from design matrix.\n');
+            fprintf('\nNo unsmoothed data found. Use original data from design matrix.\n');
         end
     end
     
@@ -111,8 +113,9 @@ if check_cov
     repeated_anova = ~isempty(xX.iB);
     
     if repeated_anova
-        n_samples = length(xX.iB);
-        [rw,cl] = find(xX.I == length(xX.iB)); % find column which codes subject factor (length(xX.iB) -> n_samples)    
+        % coding of group factor should be hopefully always 3rd column of xX.I
+        cl = 3;
+        n_samples = max(xX.I(:,cl));
     else
         if ~isempty(xX.iH)
             n_samples = length(xX.iH);
@@ -163,20 +166,48 @@ if check_cov
     if ~all(SPM.xGX.gSF==1)
         job_check_cov.gSF = SPM.xGX.gSF;
     end
+    
+    % batch mode 
+    if isfield(job.check_SPM_cov.do_check_cov,'save')
+      job_check_cov.fname  = job.check_SPM_cov.do_check_cov.fname; 
+      job_check_cov.outdir = job.check_SPM_cov.do_check_cov.outdir; 
+      job_check_cov.save   = job.check_SPM_cov.do_check_cov.save; 
+    end
 
     cat_stat_check_cov(job_check_cov);
 end
 
 if check_ortho
     fprintf('\n-------------------------------------------\n');
-    fprintf('      Check design orthogoanlity\n');
+    fprintf('      Check design orthogonality\n');
     fprintf('-------------------------------------------\n');
-    check_orthogonality(SPM.xX);
+    h = check_orthogonality(SPM.xX);
+    
+    if isfield(job.check_SPM_cov.do_check_cov,'save')
+      %%
+      if ~isempty(job.check_SPM_cov.do_check_cov.fname)
+        dpi = cat_get_defaults('print.dpi'); 
+        if isempty(dpi), dpi = 150; end
+
+        if isempty(job.check_SPM_cov.do_check_cov.outdir{1}), job.check_SPM_cov.do_check_cov.outdir{1} = pwd; end
+
+        % save
+        warning('OFF','MATLAB:print:UIControlsScaled');
+        fname = fullfile(job.check_SPM_cov.do_check_cov.outdir{1},[job.check_SPM_cov.do_check_cov.fname 'DesignOrthogonality.png']);
+        print(h, '-dpng', '-opengl', sprintf('-r%d',dpi), fname);
+        warning('ON','MATLAB:print:UIControlsScaled');
+      end
+
+      
+      if job.check_SPM_cov.do_check_cov.save>1
+        close(h)
+      end
+    end
 end
 
 %---------------------------------------------------------------
 
-function check_orthogonality(varargin)
+function h = check_orthogonality(varargin)
 % modified function desorth from spm_DesRep.m for checking design orthogonality
 
 if ~isstruct(varargin{1})
@@ -221,23 +252,23 @@ bC      = kron(tmp',tmp);
 %==========================================================================
 % create figure
 ws = spm('Winsize','Graphics');
-FS = spm('FontSizes');
+FS = cat_get_defaults('extopts.fontsize');
 
 h = figure(3);
 clf(h);
 
-set(h,'MenuBar','none','Position',[10 ws(4) 0.85*ws(3) 0.85*ws(4)],'NumberTitle','off',...
+set(h,'MenuBar','none','Position',[10 10 0.85*ws(3) 0.85*ws(4)],'NumberTitle','off',...
     'Color',[1 1 1]);
 
 %-Title
 %--------------------------------------------------------------------------
 hTax = axes('Position',[0.03,0,0.94,1],...
-    'DefaultTextFontSize',FS(9),...
+    'DefaultTextFontSize',FS,...
     'XLim',[0,1],'YLim',[0,1],...
     'Visible','off');
 
 str='Statistical analysis: Design orthogonality';
-text(0.5,0.95,str,'Fontsize',FS(14),'Fontweight','Bold',...
+text(0.5,0.95,str,'Fontsize',FS+5,'Fontweight','Bold',...
     'HorizontalAlignment','center');
 
 line('Parent',hTax,...
@@ -264,7 +295,7 @@ set(hDesMtx,'TickDir','out',...
 %-Parameter names
 if ~isempty(Xnames)
     axes('Position',[.07 .8 .6 .1],'Visible','off',...
-        'DefaultTextFontSize',FS(8),'DefaultTextInterpreter','TeX',...
+        'DefaultTextFontSize',FS-1,'DefaultTextInterpreter','TeX',...
         'XLim',[0,nPar]+0.5)
     for i=PTick, text(i,.05,Xnames{i},'Rotation',90), end
 end
@@ -309,7 +340,7 @@ if ~repeated_anova
             fprintf(' and group factors.\n');
         else fprintf('\n'); end
         fprintf('Orthogonality between nuisance parameters and parameters of interest should be carefully checked for high (absolute) values that point to co-linearity (correlation) between these variables.\n');
-        fprintf('In case of such a high co-linearity nuisance parameters should be preferably used with global scaling.\n');
+        fprintf('In case of such a high co-linearity nuisance parameters should be preferably used with global scaling (optionally with AnCova instead of proportional scaling).\n');
         fprintf('For more information please check the manual or the online help.\n\n');
     end
     
@@ -342,7 +373,7 @@ set(hDesOIm,...
 
 if ~isempty(Xnames)
     axes('Position',[.69 .18 0.01 .2],'Visible','off',...
-        'DefaultTextFontSize',FS(10),...
+        'DefaultTextFontSize',FS+1,...
         'DefaultTextInterpreter','TeX',...
         'YDir','reverse','YLim',[0,nPar]+0.5)
     for i=PTick
@@ -367,26 +398,27 @@ set(hAx,'Units','points');
 AxPos = get(hAx,'Position');
 set(hAx,'YLim',[0,AxPos(4)])
 
-dy = FS(9); y0 = floor(AxPos(4)) -dy; y = y0;
+dy = FS; y0 = floor(AxPos(4)) -dy; y = y0;
 
 text(0.3,y,str,...
     'HorizontalAlignment','Center',...
-    'FontWeight','Bold','FontSize',FS(11))
+    'FontWeight','Bold','FontSize',FS+2)
 y=y-2*dy;
 
 for sf = fieldnames(xs)'
     text(0.3,y,[strrep(sf{1},'_',' '),' :'],...
         'HorizontalAlignment','Right','FontWeight','Bold',...
-        'FontSize',FS(9))
+        'FontSize',FS)
     s = xs.(sf{1});
     if ~iscellstr(s), s={s}; end
     for i=1:numel(s)
-        text(0.31,y,s{i},'FontSize',FS(9))
+        text(0.31,y,s{i},'FontSize',FS)
         y=y-dy;
     end
 end
 
 colormap(gray)
+
 
 %---------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 /* quasi-euclidean distance calculation
  * _____________________________________________________________________________
- * [GMT,RPM,WMD,CSFD,II] = eqdist(SEG,WMD,CSFD[,opt])
+ * [GMT,RPM,WMD,CSFD,II] = cat_vol_pbtp(SEG,WMD,CSFD[,opt])
  *
  * SEG  = (single) segment image with low and high boundary bd
  * GMT  = (single) thickness image
@@ -11,7 +11,7 @@
  *
  * opt.bd   = (single) [low,high] boundary values (default 1.5 and 2.5)
  * opt.CSFD = calculate CSFD
- * opt.PVE  = use PVE informations (0=none,1=fast,2=exact)
+ * opt.PVE  = use PVE information (0=none,1=fast,2=exact)
  *
  * TODO:
  *  - eikonal distance for subsegmentation (region growing)
@@ -23,7 +23,6 @@
  */
 
 #include "mex.h"   
-#include "matrix.h"
 #include "math.h"
 #include <stdlib.h>
 
@@ -98,7 +97,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   if (mxIsSingle(prhs[0])==0) mexErrMsgTxt("ERROR: first  input must be an 3d single matrix\n");
  
   
-  // main informations about input data (size, dimensions, ...)
+  // main information about input data (size, dimensions, ...)
   const mwSize *sL = mxGetDimensions(prhs[0]); 
   mwSize sSEG[] = {sL[0],sL[1],sL[2]}; 
   const int     dL = mxGetNumberOfDimensions(prhs[0]);
@@ -119,13 +118,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   float 	    du, dv, dw, dnu, dnv, dnw, d, dcf, WMu, WMv, WMw, GMu, GMv, GMw, SEGl, SEGu, tmpfloat;
   int         ni,u,v,w,nu,nv,nw, tmpint, WMC=0, CSFC=0;
     
-  // main volumes - actual without memory optimation ...
+  // main volumes - actual without memory optimization ...
   plhs[0] = mxCreateNumericArray(dL,sL,mxSINGLE_CLASS,mxREAL);
   plhs[1] = mxCreateNumericArray(dL,sL,mxSINGLE_CLASS,mxREAL);
+  
+/* not yet defined  
   plhs[2] = mxCreateNumericArray(dL,sL,mxSINGLE_CLASS,mxREAL);
   plhs[3] = mxCreateNumericArray(dL,sL,mxSINGLE_CLASS,mxREAL);
   plhs[4] = mxCreateNumericArray(dL,sL,mxUINT32_CLASS,mxREAL);  
-  
+*/  
+
   // input variables
   float*SEG  = (float *)mxGetPr(prhs[0]);
   float*WMD  = (float *)mxGetPr(prhs[1]);

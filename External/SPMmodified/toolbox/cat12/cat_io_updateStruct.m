@@ -13,7 +13,7 @@ function S=cat_io_updateStruct(S,SN,RepByEmpty,ind)
 %   many subcases and here only a simple alignment is used!
 %
 % _________________________________________________________________________
-% $Id: cat_io_updateStruct.m 942 2016-05-30 12:49:42Z dahnke $
+% $Id: cat_io_updateStruct.m 1452 2019-04-17 16:10:54Z dahnke $
 
   % check input
   if ~exist('RepByEmpty','var'), RepByEmpty=0; end
@@ -43,7 +43,7 @@ function S=cat_io_updateStruct(S,SN,RepByEmpty,ind)
             if numel(S)<ind
               % if the field does not exist yet, we use the first
               % element for initialization 
-              S(ind).(fnS{fnSi})   = cat_io_updateStruct(S(1).(fnS{fnSi}),SN.(fnS{fnSi}),0);
+              S(ind).(fnS{fnSi}) = cat_io_updateStruct(S(1).(fnS{fnSi}),SN.(fnS{fnSi}),0);
             else
               S(ind).(fnS{fnSi}) = cat_io_updateStruct(S(ind).(fnS{fnSi}),SN.(fnS{fnSi}),RepByEmpty);
             end

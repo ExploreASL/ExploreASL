@@ -5,8 +5,8 @@
  * SEG  = 3d sinlge input matrix
  * low  = low boundary threshold
  * high = high boundary threshold
- * TH   = threshold to controll the number of interations
- *        maximum change of an element after interation
+ * TH   = threshold to control the number of iterations
+ *        maximum change of an element after iteration
  *
  * TODO: change of L1 and L2 by pointer
  * _____________________________________________________________________
@@ -14,11 +14,10 @@
  * Structural Brain Mapping Group
  * University Jena
  *
- * $Id: cat_vol_laplace3R.c 1294 2018-03-19 20:33:44Z gaser $ 
+ * $Id: cat_vol_laplace3R.c 1561 2020-02-04 15:49:34Z gaser $ 
  */
 
 #include "mex.h"   
-#include "matrix.h"
 #include "math.h"
 #include "float.h"
 
@@ -44,7 +43,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (nrhs==4 && mxIsDouble(prhs[3])==0)            mexErrMsgTxt("ERROR:laplace3R: 4th input (voxelsize) must be a double matrix\n");
   if (nrhs==4 && mxGetNumberOfElements(prhs[3])!=3) mexErrMsgTxt("ERROR:laplace3R: 4th input (voxelsize) must have 3 Elements");
   
-  /* main informations about input data (size, dimensions, ...) */
+  /* main information about input data (size, dimensions, ...) */
   const mwSize *sL = mxGetDimensions(prhs[0]);
   const int     dL = mxGetNumberOfDimensions(prhs[0]);
   const int     nL = mxGetNumberOfElements(prhs[0]);

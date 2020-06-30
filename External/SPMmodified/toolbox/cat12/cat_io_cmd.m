@@ -36,62 +36,85 @@ function varargout = cat_io_cmd(str,style,strlength,verb,stime)
 %   Department of neurology
 %   University Jena
 % ______________________________________________________________________
-% $Id: cat_io_cmd.m 1212 2017-11-10 12:39:37Z dahnke $ %
+% $Id: cat_io_cmd.m 1520 2019-11-19 21:52:09Z dahnke $ %
 
-  %#ok<*NASGU> 
-
-  if ~exist('verb','var') || isempty(verb), verb=1; end
-  if ~exist('strlength','var') || isempty(strlength), strlength=65; end
-  strlength2 = strlength;
-  if cat_io_matlabversion<20110, strlength2 = strlength2+1; end
+  %#ok<*NASGU>
   
-  if verb
-    switch str
-      case 'testthisfunction'
-        stime1 = cat_io_cmd('Function 0815 (without cleanup)'); fprintf('\n');
-        stime  = cat_io_cmd('  Substep 1','g5','',1);       pause(0.74);
-        stime  = cat_io_cmd('  Substep 2','g5','',1,stime); pause(1.12);
-        stime  = cat_io_cmd('  Substep 3','g5','',1,stime); pause(1.65);
-        stime  = cat_io_cmd(' ','','',1,stime); % last Substeptime
-        stime1 = cat_io_cmd('Function 0816 (with cleanup)','','',1,stime1); fprintf('\n');
-        stime  = cat_io_cmd('  Substep A','g5','',1);       pause(2.34);
-        stime  = cat_io_cmd('  Substep B','g5','',1,stime); pause(1.12);
-        stime  = cat_io_cmd('cleanup',2,'',1,stime1); % cleanup with number of lines 
-        stime1 = cat_io_cmd('Function 0817','','',1); pause(2.12);
-        stime  = cat_io_cmd('','','',1,stime1);
-        fprintf('done.\n');
-        
-% ---        
-% this case does not work equal on all matlab versions, because in some 
-% versions an addition space is placed by cprintf by unknown reasons
-%       case 'cleanup'
-%         % this works not for all matlab versions correctly
-%         fprintf(sprintf('%s',repmat('\b',1,style * (strlength2+7) - 5)));
-%         if exist('stime','var') && ~isempty(stime)
-%           cat_io_cmd('','','',verb,stime);
-%         end
-% ---    
-      case 'cleanup'
-        if exist('stime','var') && ~isempty(stime)
-          fprintf('% 5.0fs\n',etime(clock,stime));
-        end        
-% ---        
-      otherwise
-        if exist('stime','var') && ~isempty(stime)
-          fprintf('% 5.0fs\n',etime(clock,stime));
-        end
+  % Gabriel Ziegler report 2019/04/02 an error in the fprint function for  
+  % many parallel processes (>20) on a large cluster. I expact that the 
+  % problem is caused by to many write processes on the harddisk. 
+  % So one solution is maybe to wait a second and than try again. 
+  
+  timax = 100; 
+  ti    = 0; 
+  
+  while ti<timax
+  ti = ti + 1;
+    try
+      if ~exist('verb','var') || isempty(verb), verb=1; end
+      if ~exist('strlength','var') || isempty(strlength), strlength=65; end
+      strlength2 = strlength;
+      if cat_io_matlabversion<20110, strlength2 = strlength2+1; end
 
-        if ~isempty(str) 
-          if exist('style','var')
-            cat_io_cprintf(style,sprintf('%s%s',str,repmat(' ',1,1+strlength-length(str)))); 
-          else
-            fprintf('%s:%s',str,repmat(' ',1,strlength-length(str))); 
-          end
+      if verb
+        switch str
+          case 'testthisfunction'
+            stime1 = cat_io_cmd('Function 0815 (without cleanup)'); fprintf('\n');
+            stime  = cat_io_cmd('  Substep 1','g5','',1);       pause(0.74);
+            stime  = cat_io_cmd('  Substep 2','g5','',1,stime); pause(1.12);
+            stime  = cat_io_cmd('  Substep 3','g5','',1,stime); pause(1.65);
+            stime  = cat_io_cmd(' ','','',1,stime); % last Substeptime
+            stime1 = cat_io_cmd('Function 0816 (with cleanup)','','',1,stime1); fprintf('\n');
+            stime  = cat_io_cmd('  Substep A','g5','',1);       pause(2.34);
+            stime  = cat_io_cmd('  Substep B','g5','',1,stime); pause(1.12);
+            stime  = cat_io_cmd('cleanup',2,'',1,stime1); % cleanup with number of lines 
+            stime1 = cat_io_cmd('Function 0817','','',1); pause(2.12);
+            stime  = cat_io_cmd('','','',1,stime1);
+            fprintf('done.\n');
+
+    % ---        
+    % this case does not work equal on all matlab versions, because in some 
+    % versions an addition space is placed by cprintf by unknown reasons
+    %       case 'cleanup'
+    %         % this works not for all matlab versions correctly
+    %         fprintf(sprintf('%s',repmat('\b',1,style * (strlength2+7) - 5)));
+    %         if exist('stime','var') && ~isempty(stime)
+    %           cat_io_cmd('','','',verb,stime);
+    %         end
+    % ---    
+          case 'cleanup'
+            if exist('stime','var') && ~isempty(stime)
+              fprintf('% 5.0fs\n',etime(clock,stime));
+            end        
+    % ---        
+          otherwise
+            if exist('stime','var') && ~isempty(stime)
+              fprintf('% 5.0fs\n',etime(clock,stime));
+            end
+
+            if ~isempty(str) 
+              if exist('style','var')
+                cat_io_cprintf(style,sprintf('%s%s',str,repmat(' ',1,1+strlength-length(str)))); 
+              else
+                fprintf('%s:%s',str,repmat(' ',1,strlength-length(str))); 
+              end
+            end
         end
+      end
+
+      if ~strcmp(str,'testthisfunction') && nargout>0
+        varargout{1} = clock; 
+      end
+      
+      break
+    catch
+      pause(0.05 + 0.95*rand);
     end
   end
   
-  if ~strcmp(str,'testthisfunction') && nargout>0;
-    varargout{1} = clock; 
-  end  
+  if ti>=timax
+    % Print something if it was not possible to print ... 
+    % This may cause an error!
+    fprintf('IO error - can''t write after %0.0f iterations',ti); 
+  end
 end

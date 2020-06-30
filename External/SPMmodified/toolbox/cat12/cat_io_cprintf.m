@@ -138,7 +138,7 @@ function count = cat_io_cprintf(style,format,varargin)
 % referenced and attributed as such. The original author maintains the right to be solely associated with this work.
 
 % Programmed and Copyright by Yair M. Altman: altmany(at)gmail.com
-% $Revision: 1118 $  $Date: 2017-03-17 16:57:00 +0100 (Fr, 17 Mär 2017) $
+% $Revision: 1524 $  $Date: 2019-11-28 18:00:31 +0100 (Do, 28 Nov 2019) $
   
   global cprintferror; 
   if isempty(cprintferror), cprintferror=0; end
@@ -175,7 +175,7 @@ function count = cat_io_cprintf(style,format,varargin)
 
       % The following is for debug use only:
       %global docElement txt el
-      if ~exist('el','var') || isempty(el),  el=handle([]);  end  %#ok mlint short-circuit error ("used before defined")
+      try, if ~exist('el','var') || isempty(el),  el=handle([]);  end; end %#ok mlint short-circuit error ("used before defined")
       if nargin<1, showDemo(majorVersion,minorVersion); return;  end
       %if isempty(style),  return;  end
       if isempty(style), style='text'; end
