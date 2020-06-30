@@ -112,15 +112,15 @@ else
 end
 
 % Load JSON file
-VendorRestore = false; % default
+% VendorRestore = false; % default
 if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSON values overwrite the existing values
     % But this can have some exceptions, e.g. the specification of sequence
     % in x.Vendor
     
-    if isfield(x,'Vendor') && (strcmp(x.Vendor,'GE_product') || strcmp(x.Vendor,'GE_WIP'))
-        VendorBackup = x.Vendor;
-        VendorRestore = true;
-	end
+%     if isfield(x,'Vendor') && (strcmp(x.Vendor,'GE_product') || strcmp(x.Vendor,'GE_WIP'))
+%         VendorBackup = x.Vendor;
+%         VendorRestore = true;
+% 	end
    
 	JSONParms = spm_jsonread(JSONPath);
 	
@@ -135,10 +135,10 @@ if isempty(fields(Parms))
     warning('parms seem missing, something wrong with parmsfile?');
 end
 
-if VendorRestore
-    x.Vendor = VendorBackup;
-    Parms.Vendor = VendorBackup;
-end
+% if VendorRestore
+%     x.Vendor = VendorBackup;
+%     Parms.Vendor = VendorBackup;
+% end
 
 
 %% ------------------------------------------------------------------------
