@@ -223,6 +223,7 @@ cat.extopts.shootingtpm  = {fullfile(spm('dir'),'toolbox','cat12','templates_vol
 cat.extopts.cat12atlas   = {fullfile(spm('dir'),'toolbox','cat12','templates_volumes','cat.nii')};                       % CAT atlas with major regions for VBM, SBM & ROIs
 cat.extopts.brainmask    = {fullfile(spm('Dir'),'toolbox','FieldMap','brainmask.nii')};                                 % Brainmask for affine registration
 cat.extopts.T1           = {fullfile(spm('Dir'),'toolbox','FieldMap','T1.nii')};                                        % T1 for affine registration
+cat.extopts.xasl_lesion  = {''};
 
 % surface options
 cat.extopts.pbtres         = 0.5; % internal resolution for thickness estimation in mm (default 0.5) 

@@ -39,6 +39,7 @@ function [prob,indx,indy,indz] = cat_main_amap(Ymi,Yb,Yb0,Ycls,job,res)
   d      = size(Ymi); 
   vx_vol = sqrt(sum(res.image(1).mat(1:3,1:3).^2));
   
+  fprintf('prepare data for segmentation:  ');
   %  prepare data for segmentation
   if 1
     %% classic approach, consider the WMH!
@@ -130,7 +131,7 @@ function [prob,indx,indy,indz] = cat_main_amap(Ymi,Yb,Yb0,Ycls,job,res)
       th{1}(1),char(177),th{1}(2),th{2}(1),char(177),th{2}(2),th{3}(1),char(177),th{3}(2));
   end
   if th{1}(1)<0 || th{1}(1)>0.6 || th{2}(1)<0.5 || th{2}(1)>0.9 || th{3}(1)<0.95-th{3}(2) || th{3}(1)>1.1
-    error('cat_main:amap',['AMAP estimated untypical tissue peaks that point to an \n' ...
+    warning('cat_main:amap',['AMAP estimated untypical tissue peaks that point to an \n' ...
                            'error in the preprocessing before the AMAP segmentation. ']);
   end
   % reorder probability maps according to spm order

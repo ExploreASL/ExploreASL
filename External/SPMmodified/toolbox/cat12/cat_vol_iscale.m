@@ -486,14 +486,17 @@ end
 
 function p=peak(T,ss)
   if ~exist('ss','var'), ss=0.01; end
-  H=hist(T(:),0:ss:2.00); H=smooth(H,20); %'rloess',20);
+  H=hist(T(:),0:ss:2.00); 
+  %H=smooth(H,20); %'rloess',20);
+  window = ones(span,1)/span; % ExploreASL fix
+  H = xASL_im_conv3Dsep(H,window,[],[]);
   [v,p]=max(H(:)); p=p*ss;
 end
 
-function HS = smooth(H,span)
-  window = ones(span,1)/span; 
-  HS = convn(H,window,'same');
-end
+%function HS = smooth(H,span)
+% 
+%  HS = convn(H,window,'same');
+%end
 
 %{ 
 % working version

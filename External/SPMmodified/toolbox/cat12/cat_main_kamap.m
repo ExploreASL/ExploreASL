@@ -192,6 +192,7 @@ function [P,res,stime2] = cat_main_kamap(Ysrc,Ycls,Yy,tpm,job,res,vx_vol,stime2)
   rf = 10^4; Ymib = round(Ymib*rf)/rf;
   Yp0toC  = @(Yp0,c) 1-min(1,abs(Yp0-c));
 
+  fprintf('prepare data for segmentation:  ');
   %  prepare data for segmentation
   % more direct method ... a little bit more WM, less CSF
   Yp0  = (Ymi * 3); Yp0(~Yb | Ymi>1.2) = 0; 

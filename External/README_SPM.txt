@@ -2,7 +2,7 @@
 
 In this textfile we list the modifications. This concerns the following versions:
 SPM12, r7219
-CAT12, r1363
+CAT12, r1615
 LST, r2.0.15 
 
 Aside from the below list of code modifications, 
@@ -35,13 +35,13 @@ External/SPMmodified/toolbox/cat12/cat_conf_extopts.m
 525     : Added xasl_quality as a valid input for CAT12
 725,727,762 : Added xasl_quality as a valid input for CAT12
 External/SPMmodified/toolbox/cat12/cat_main.m:
-21      : set xasl_quality on default to 1
-698     : if job.extopts.xasl_quality is on 0, run Geodesic Shooting on fewer iterations & lower resolution
+905      : set xasl_quality on default to 1
+207      : if job.extopts.xasl_quality is on 0, run Geodesic Shooting on fewer iterations & lower resolution
 1446    : if job.extopts.xasl_quality is on 0, run Geodesic Shooting on fewer iterations & lower resolution
 External/SPMmodified/toolbox/cat12/cat_run_job.m:
 126     : if job.extopts.xasl_quality is on 0, increase segmentation sampling distance from 3 to 6
-563     : if job.extopts.xasl_quality is on 0, decrease denoising strenght
-608     : if job.extopts.xasl_quality is on 0, increase segmentation voxel size to [1.5 1.5 1.5]
+215     : if job.extopts.xasl_quality is on 0, decrease denoising strenght
+302     : if job.extopts.xasl_quality is on 0, increase segmentation voxel size to [1.5 1.5 1.5]
 652 : if job.extopts.xasl_quality is on 0, increase segmentation sampling distance from 3 to 9
 
 
@@ -76,11 +76,12 @@ Remove unused SPM stuff to reduce data size ExploreASL/SPM compilation:
 /templates_surfaces
 /templates_surfaces_32k
 
-/templates_1.50mm:
+/templates_volumes:
 Removed atlases, partly
 left brainmask.nii, cat.nii,
 & all Template_._IXI555_MNI152_(GS|)\.nii
 SPM/toolbox/DARTEL/icbm152.nii
+cat12/templates_volumes/TPM_Age11.5.nii
 
 DATE+NAME:2019_11_13, HM
 DESCRIPTION:
@@ -129,7 +130,7 @@ Some bugfixes:
 FILE:
 cat_main.m:
 set NaNs to zeroes:
-31: for nT1.nii
+915: for nT1.nii
 1456: for edges of Yy transformation fields
 1476: for edges of trans.warped.y transformation fields
 
@@ -137,10 +138,15 @@ DATE+NAME:2019_03_27, Jan Petr
 DESCRIPTION:
 Enabled save of CSF as c3T1.nii from CAT12
 FILE:
-External/SPMmodified/toolbox/cat12/tbx_cfg_cat.m
-529 - added the CSF option for non-expert mode
 External/SPMmodified/toolbox/cat12/cat_conf_opts.m
 297     : activated the SAMP option for non-expert mode
+
+DATE+NAME:2020_05_26, Jan Petr
+DESCRIPTION:
+Remove the link to the older versions like 1173, 1173plus, ,1445, 1585
+FILE:
+External/SPMmodified/toolbox/cat12/tbx_cfg_cat.m
+
 
 DATE+NAME:2019_02_08, Jan Petr
 DESCRIPTION:
@@ -153,8 +159,9 @@ External/SPMmodified/toolbox/cat12/cat_defaults.m
 197: Added the default value '' for the xasl_lesion
 External/SPMmodified/toolbox/cat12/cat_main_registration.m
 407,638: The resliced lesion - ls - can contain NaNs due to reslicing - these must be removed before the mask is applied.
+External/SPMmodified/toolbox/cat12/cat_main_updateSPM.m
+88 - We save our original lesion as LesionFull for later use, because the other lesion gets stripped (and this does not work when T1w has the lesion set to NaN by ExploreASL).
 External/SPMmodified/toolbox/cat12/cat_main.m
-228 - We save our original lesion as LesionFull for later use, because the other lesion gets stripped (and this does not work when T1w has the lesion set to NaN by ExploreASL).
 708 - calling the registration with the Full Lesion, that is not stripped (as the stripped one does not work when NaNs were set to T1w - because the WM segmentation is then missing there).
 1390 - removing the lesion also when the xasl_lesion parameter was set. Few lines below - need to add apply the same transformations also to the non-stripped lesion. Do not divide it by
        255, as this makes it virtually unusable - no idea why CAT does that.
@@ -268,14 +275,11 @@ DESCRIPTION:
 FILE:
 ps_LST_lpa.m at 210 & 288
 
-DATE+NAME:2020-01-06 JP
+DATE+NAME:2020-05-26 JP
 DESCRIPTION:
-Fixing the cat_vol_qa QA so that it works with FLAIR images as well.
-replaced "diff(T1th(2:3))" with "abs(diff(T1th(2:3)))" because this is positive in T1,
-but it was negative in FLAIR and for FLAIR this ruined the ROIs
+Small fix for the boundary conditions
 FILE:
-cat_vol_qa - Line 678
-
+replace round with ceil at cat_vol_qa - Line 627
 
 DATE+NAME:2019_10_20, HM
 DESCRIPTION:
@@ -288,12 +292,6 @@ DESCRIPTION:
 Hack to insert comments that explain WMH volumetrics
 FILE:
 ps_LST_tlv @ 164-174
-
-DATE+NAME:2019_05_06, HM
-DESCRIPTION:
-Disabled version-checking part (quick&dirty)
-FILE:
-cat_io_xml @ 327, 946 (this version-checking part crashed)
 
 DATE+Name: 2018-09-14 JP
 DESCRIPTION:
@@ -398,15 +396,9 @@ REDUCE GRAPHICAL OUTPUT & NON-SPECIFIC WARNINGS. ADD TRACKING PROGRESS AT COMMAN
 
 DATE+NAME:2020_06_22, HM
 DESCRIPTION:
-close all figure windows (e.g. those used for printing PDF)
-FILE:
-cat_main @ 2686
-
-DATE+NAME:2020_06_22, HM
-DESCRIPTION:
 No need to mention subfolders CAT12, xASL moves files from here
 FILE:
-cat_main @ 2657
+cat_main_reportcmd @ 33
 
 DATE+NAME:2020_06_22, HM
 DESCRIPTION:
@@ -503,7 +495,8 @@ Handle screen messages: reduces nr of messages, more ExploreASL-specific, replac
 FILE:
 cat_run_job.m & cat_run_job1070 (163, 181)
 cat_main_gintnorm.m (388)
-cat_main.m (315, 332, 488, 540, 566, 584, 598, 608, 622, 639, 1035, 1903, 2652, 2668, 2690)
+cat_main_updateSPM.m (303-323)
+cat_main.m (315, 332, 488,  1035, 1903, 2652, 2668, 2690)
 cat_spm_preproc_write8.m & spm_preproc_write8.m (190, 192, 291, 293, 304, 306, 609, 611, 627, 629, 667)
 spm_proc8 (196)
 

@@ -85,6 +85,7 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
   %    ds('l2','',vx_vol,Ysrc./WMth,Yp0>0.3,Ysrc./WMth,Yp0,80)
   Yp0  = single(P(:,:,:,3))/255/3 + single(P(:,:,:,1))/255*2/3 + single(P(:,:,:,2))/255;
   if isfield(res,'Ylesion') && sum(res.Ylesion(:)>0)
+    res.YlesionFull = res.Ylesion; % ExploreASL fix
     res.Ylesion = cat_vol_ctype( single(res.Ylesion) .* (Yp0>0.2) ); 
     for k=1:size(P,4), Yl = P(:,:,:,k); Yl(res.Ylesion>0.5) = 0; P(:,:,:,k) = Yl; end  
     Yl = P(:,:,:,3); Yl(res.Ylesion>0.5) = 255; P(:,:,:,3) = Yl; clear Yl; 
@@ -192,6 +193,7 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
   stime2 = cat_io_cmd('  Update probability maps','g5','',job.extopts.verb-1,stime2);
   if ~(job.extopts.INV && any(sign(diff(T3th))==-1))
     %% Update probability maps
+    disp('Update probabiliy maps');
     % background vs. head - important for noisy backgrounds such as in MT weighting
     if size(P,4)==4 % skull-stripped
       Ybg = ~Yb;
@@ -217,6 +219,7 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
 
     
     %% correct probability maps to 100% 
+    disp('correct probability maps to 100%');
     sumP = cat_vol_ctype(255 - sum(P(:,:,:,1:6),4));
     P(:,:,:,1) = P(:,:,:,1) + sumP .* uint8( Ybg<0.5  &  Yb & Ysrc>cat_stat_nanmean(T3th(1:2)) & Ysrc<cat_stat_nanmean(T3th(2:3)));
     P(:,:,:,2) = P(:,:,:,2) + sumP .* uint8( Ybg<0.5  &  Yb & Ysrc>=cat_stat_nanmean(T3th(2:3)));
@@ -236,6 +239,7 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
     % intensities next to the head that were counted as head and not
     % corrected by SPM.
     % e.g. HR075, Magdeburg7T, SRS_SRS_Jena_DaRo81_T1_20150320-191509_MPR-08mm-G2-bw330-nbc.nii, ...
+    disp('head to WM correction');
     Ywm = single(P(:,:,:,2)>128 & Yg<0.3 & Ydiv<0.03); Ywm(Ybb<128 | (P(:,:,:,1)>128 & abs(Ysrc/T3th(3)-2/3)<1/3) | Ydiv>0.03) = nan;
     [Ywm1,YD] = cat_vol_downcut(Ywm,1-Ysrc/T3th(3),0.02); Yb(isnan(Yb))=0; Ywm(YD<300)=1; Ywm(isnan(Ywm))=0; clear Ywm1 YD; %#ok<ASGLU>
     Ywmc = uint8(smooth3(Ywm)>0.7);
@@ -249,6 +253,7 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
 
     
     %% head to GM ... important for children
+    disp('head to GM correction');
     [Ywmr,Ybr,resT2] = cat_vol_resize({Ywm,Yb},'reduceV',vx_vol,2,32); 
     Ygm = cat_vol_morph(Ywmr>0.5,'d',3) & (cat_vol_morph(~Ybr,'d',3) | cat_vol_morph(Ybr,'d',1)); clear Ybr Ywmr;  % close to the head
     Ygm = cat_vol_resize(single(Ygm),'dereduceV',resT2)>0.5;
@@ -266,6 +271,7 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
 
     
     %% remove brain tissues outside the brainmask ...
+    disp('remove brain tissues outside the brainmask ...');
     %  tissues > skull (within the brainmask)
     Yhdc = uint8(smooth3( Ysrc/T3th(3).*(Ybb>cat_vol_ctype(0.2*255)) - Yp0 )>0.5); 
     sumP = sum(P(:,:,:,1:3),4); 
@@ -280,9 +286,11 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
   
 
   %% MRF
-  % Used spm_mrf help and tested the probability TPM map for Q without good results.         
+  % Used spm_mrf help and tested the probability TPM map for Q without good results. 
+  stime = cat_io_cmd('spm_MRF');
   nmrf_its = 0; % 10 iterations better to get full probability in thin GM areas 
   spm_progress_bar('init',nmrf_its,['MRF: Working on ' nam],'Iterations completed');
+  fprintf('%s\n','MRF iterations:   '); % ExploreASL hack
   if isfield(res,'mg'), Kb = max(res.lkp); else Kb = size(res.intensity(1).lik,2); end
   G   = ones([Kb,1],'single');
   vx2 = single(sum(res.image(1).mat(1:3,1:3).^2));
@@ -292,12 +300,15 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
     %% use TPM as Q
     Q = zeros(size(P),'uint8');
     for di=1:6
+      xASL_TrackProgress(di,6); % ExploreASL hack for counting on screen  
       vol = cat_vol_ctype(spm_sample_vol(tpm.V(di),...
         double(Yy(:,:,:,1)),double(Yy(:,:,:,2)),double(Yy(:,:,:,3)),0)*255,'uint8');
       Q(:,:,:,di) = reshape(vol,d);
     end
   end
+  fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b');
   for iter=1:nmrf_its,
+      xASL_TrackProgress(iter,nmrf_its); % ExploreASL hack for counting on screen
       P = spm_mrf(P,single(P),G,vx2); % spm_mrf(P,Q,G,vx2);
       spm_progress_bar('set',iter);
   end
@@ -309,6 +320,7 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
  
   spm_progress_bar('clear');
   for k1=1:size(P,4)
+      xASL_TrackProgress(k1,size(P,4));
       Ycls{k1} = P(:,:,:,k1); %#ok<AGROW>
   end
   clear Q P q q1 Coef b cr N lkp n wp M k1
@@ -353,6 +365,7 @@ function [Yb,Ybb,Yg,Ydiv,P] = cat_main_updateSPM_skullstriped(Ysrc,P,res,vx_vol,
 end
 function [Yb,Ybb,Yg,Ydiv] = cat_main_updateSPM_gcut0(Ysrc,P,vx_vol,T3th)
     % brain mask
+    disp('Resizing brain mask');
     Ym   = single(P(:,:,:,3))/255 + single(P(:,:,:,1))/255 + single(P(:,:,:,2))/255;
     Yb   = (Ym > 0.5);
     Yb   = cat_vol_morph(cat_vol_morph(Yb,'lo'),'c');

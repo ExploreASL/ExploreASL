@@ -1,4 +1,4 @@
-// function Ycls = cat_main(res,tpm,job)
+function Ycls = cat_main(res,tpm,job)
 % ______________________________________________________________________
 % Write out CAT preprocessed data
 %
@@ -659,7 +659,7 @@ end
  
   % EXPLOREASL HACK
   if isfield(trans,'warped')
-      trans.warped.y = single(xASL_im_FillNaNs(trans.warped.y, 3, job.extopts.xasl_quality, [1.5 1.5 1.5])); % SPM doesn't like double format here
+      trans.warped.y = single(xASL_im_FillNaNs(trans.warped.y, 3, job.extopts.xasl_quality)); % SPM doesn't like double format here
   end
   
 %% update WMHs 
@@ -671,7 +671,7 @@ Ycls = cat_main_updateWMHs(Ym,Ycls,Yy,tpm,job,res,trans);
 %% write results
 %  ---------------------------------------------------------------------
 Yp0 = zeros(d,'single'); Yp0(indx,indy,indz) = single(Yp0b)/255*5; 
-cat_warnings = cat_main_write(Ym,Ymi,Ycls,Yp0,Yl1,job,res,trans,cat_warnings);
+cat_warnings = cat_main_write(Ym,Ymi,Ycls,Yp0,Yl1,job,res,trans,cat_warnings,tpm.M);
 if debug, clear Yp0; end
 
 

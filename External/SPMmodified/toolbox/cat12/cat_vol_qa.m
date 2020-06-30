@@ -624,7 +624,7 @@ function varargout = cat_vol_qa(action,varargin)
       %QAS.qualitymeasures.res_MVR       = mean(vx_vol);
       
       % boundary box - brain tissue next to image boundary
-      bbth = round(2/cat_stat_nanmean(vx_vol)); M = true(size(Yp0));
+      bbth = ceil(2/cat_stat_nanmean(vx_vol)); M = true(size(Yp0)); %% EXPLOREASL HACK ceil instead of round
       M(bbth:end-bbth,bbth:end-bbth,bbth:end-bbth) = 0;
       QAS.qualitymeasures.res_BB = sum(Yp0(:)>1.25 & M(:))*prod(abs(vx_vol)); 
 

@@ -38,7 +38,7 @@ function cat_io_report(job,qa,subj,createerr)
 %#ok<*AGROW>
 
   % close diagy 
-  diary off;
+  % diary off; % ExploreASL fix - disable CAT12 outputs as we write everything to ExploreASL log file.
 
   dbs = dbstatus; debug = 0; 
   for dbsi=1:numel(dbs), 

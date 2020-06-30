@@ -830,6 +830,7 @@ function vout = run_job(job)
   vout   = vout_job(job);
 
   % load tpm priors 
+  fprintf('%s\n','Loading TPM priors');
   tpm = char(cat(1,job.tissue(:).tpm));
   tpm = spm_load_priors8(tpm);
 

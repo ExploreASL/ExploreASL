@@ -422,6 +422,8 @@ function cimg = smoothslice(img,s,method,dim)
     x = [-s:s];
     x = exp(-(x).^2/(2*(s).^2));
     x = x/sum(x);
-    cimg = conv2(img,x'*x,'same');
+    %%% ExploreASL hack: Modified by Jan Petr to supply our own convolution to decrease variance between Matlab versions
+    cimg = xASL_im_conv3Dsep(img,x',x,[]);
+    %cimg = conv2(img,x'*x,'same');
   end
 end

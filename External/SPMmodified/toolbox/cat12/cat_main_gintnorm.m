@@ -59,6 +59,7 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     %T3thx = interp1(T3thx,1:1/isc:numel(T3th)*isc,'spline'); %pchip');
 
     for i=2:numel(T3th)
+      xASL_TrackProgress(i,numel(T3th)); %%% ExploreASL fix
       M = Ysrc>T3th(i-1) & Ysrc<=T3th(i);
       Ym(M(:)) = T3thx(i-1) + (Ysrc(M(:)) - T3th(i-1))/diff(T3th(i-1:i))*diff(T3thx(i-1:i));
     end
@@ -146,6 +147,7 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     
     Ym = Ysrc+0; 
     for i=2:numel(T3th)
+      xASL_TrackProgress(i,numel(T3th));%%% ExploreASL fix
       M = Ysrc>T3th(i-1) & Ysrc<=T3th(i);
       Ym(M(:)) = T3thx(i-1) + (Ysrc(M(:)) - T3th(i-1))/diff(T3th(i-1:i))*diff(T3thx(i-1:i));
     end
@@ -362,6 +364,7 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
     if debug
         Ym = Ysrcr+0;
         for i=2:numel(T3th)
+          xASL_TrackProgress(i,numel(T3th));%%% ExploreASL fix
           M = Ysrc>T3th(i-1) & Ysrc<=T3th(i);
           Ym(M(:)) = T3thx(i-1) + (Ysrc(M(:)) - T3th(i-1))/diff(T3th(i-1:i))*diff(T3thx(i-1:i));
         end
@@ -391,7 +394,9 @@ function [Ym,Yb,T3th3,Tth,inv_weighting,noise,cat_warnings] = cat_main_gintnorm(
   Tth.T3thx = T3thx;
     
   Ym = Ysrcr+0; 
+  fprintf('intensity scaling for gradient estimation:   ');
   for i=2:numel(T3th)
+    xASL_TrackProgress(i,numel(T3th));
     M = Ysrcr>T3th(i-1) & Ysrcr<=T3th(i);
     Ym(M(:)) = T3thx(i-1) + (Ysrcr(M(:)) - T3th(i-1))/diff(T3th(i-1:i))*diff(T3thx(i-1:i));
   end

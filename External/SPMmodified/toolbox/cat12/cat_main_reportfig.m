@@ -50,12 +50,14 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
             isempty(findobj('type','Figure','Tag','Menu') ) );
   fg  = spm_figure('FindWin','Graphics'); 
   set(0,'CurrentFigure',fg)
+  %%% Hacking for xASL use here, assume always parallel option on
   if isempty(fg)
-    if nprog
-      fg = spm_figure('Create','Graphics','visible','off'); 
-    else
-      fg = spm_figure('Create','Graphics','visible','on'); 
-    end
+    %if nprog
+      %fg = spm_figure('Create','Graphics','visible','off'); 
+    %else
+     % fg = spm_figure('Create','Graphics','visible','on'); 
+    %end
+    fg = spm_figure('Create','Graphics','visible','off');
   else
     if nprog, set(fg,'visible','off'); end
   end
@@ -424,7 +426,7 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
   for id=1:numel(st.vols)
     if isfield( st.vols{id}, 'mesh'), st = rmfield( st.vols{id} ,'mesh'); end
   end
-  if job.extopts.expertgui>0 - showTPMsurf
+  if 0%job.extopts.expertgui>0 - showTPMsurf
     %Phull = {fullfile(spm('dir'),'toolbox','cat12','templates_surfaces','bh.hull.cat.gii')};
     Phull = {cat_surf_create_TPM_hull_surface(res.tpm)};
     for id=1
@@ -635,7 +637,7 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
   
   
   %% change line style of TPM surf
-  if (job.extopts.expertgui>0 - showTPMsurf) && ov_mesh && exist('Psurf','var') && ~isempty(Psurf)
+  if 0%(job.extopts.expertgui>0 - showTPMsurf) && ov_mesh && exist('Psurf','var') && ~isempty(Psurf)
     for id=1:3
       if isfield(st.vols{id},'ax')   
         hM = findobj(st.vols{id}.ax{1}.cm,'Label','Mesh');

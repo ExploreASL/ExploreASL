@@ -163,6 +163,7 @@ for iter=1:nit
         end
 
         if iter==nit
+            fprintf('%s','Final iteration, so write out the required data');
             % Final iteration, so write out the required data.
             tmp1 = [cat(1,job.tissue(:).native) cat(1,job.tissue(:).warped)];
             tmp2 =  cat(1,job.channel(:).write);

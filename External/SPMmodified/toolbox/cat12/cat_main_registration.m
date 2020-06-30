@@ -343,7 +343,9 @@ function [trans,reg] = cat_main_registration(job,res,Ycls,Yy,tpmM,Ylesion)
 
       % affine parameters
       imat=spm_imatrix(vx2d/vx3); imat(7:9)=imat(7:9) * regres/tmpres; Mad=spm_matrix(imat); 
-      Ma            = M0\inv(res.Affine)*M1t*vx2/vx3;                             % individual to registration space
+      % ExploreASL fix - rounding the results of inversion to increase reproducibility between different OS and Matlab versions
+      %Ma            = M0\inv(res.Affine)*M1t*vx2/vx3;                             % individual to registration space
+      Ma            = xASL_round(M0\inv(res.Affine)*M1t*vx2/vx3,12);                             % individual to registration space
       mat0a         = res.Affine\M1t*vx2/vx3;                                     % mat0 for affine output
       mata          = mm/vx3;                                                    % mat  for affine output
       trans.affine  = struct('odim',odim,'mat',mata,'mat0',mat0a,'M',Ma);        % structure for cat_io_writenii
@@ -351,12 +353,16 @@ function [trans,reg] = cat_main_registration(job,res,Ycls,Yy,tpmM,Ylesion)
 
       % rigid parameters
       [M3,R]        = spm_get_closest_affine( affind(rgrid( idim ) ,M0) , affind(Yy,tpmM) , single(Ycls{1})/255); clear M3; %#ok<ASGLU>
-      Mr            = M0\inv(R)*M1t*vx2/vx3;                                      % transformation from subject to registration space
+      % ExploreASL fix - rounding the results of inversion to increase reproducibility between different OS and Matlab versions
+      %Mr            = M0\inv(R)*M1t*vx2/vx3;                                      % transformation from subject to registration space
+      Mr            = xASL_round(M0\inv(R)*M1t*vx2/vx3,12);                                      % transformation from subject to registration space
       mat0reg       = R\M1tr*vx2/vx3;                                             
       mat0r         = R\M1t*vx2/vx3;                                              % mat0 for rigid ouput
       matr          = mm/vx3;                                                    % mat  for rigid ouput
       trans.rigid   = struct('odim',odim,'mat',matr,'mat0',mat0r,'M',Mr);        % structure for cat_io_writenii
-      res.rigid     = M0\inv(R); 
+      % ExploreASL fix - rounding the results of inversion to increase reproducibility between different OS and Matlab versions
+      %res.rigid     = M0\inv(R); 
+      res.rigid     = xASL_round(M0\inv(R),12);
       clear matr; 
 
       % save old spm normalization used for atlas map
@@ -432,6 +438,7 @@ function [trans,reg] = cat_main_registration(job,res,Ycls,Yy,tpmM,Ylesion)
             for i=1:rdim(3),
               ls(:,:,i) = single(spm_slice_vol(single(Ylesion),Mar*spm_matrix([0 0 i]),rdim(1:2),[1,NaN]));
             end
+            ls(isnan(ls)) = 0;
           end
           
           %% iterative processing
@@ -479,6 +486,10 @@ function [trans,reg] = cat_main_registration(job,res,Ycls,Yy,tpmM,Ylesion)
             dtg = cat_vol_grad(single(dt)); 
             reg(regstri).rmsgdt(it+1)  = mean((dtg(:)).^2).^0.5;
             clear dtg; 
+            % xASL hack - saving the intermediate steps of the DARTEL registration
+            if job.extopts.xasl_savesteps
+		xASL_wrp_DARTELSaveIntermedTrans(Yy,u,odim,rdim,idim,Mar,mat,M0,M1,VT0.fname,it);
+	    end
           end
           reg(regstri).rmsdt         = mean((dt(:)-1).^2).^0.5; 
           reg(regstri).dt            = mean(abs(dt(:)-1));
@@ -565,10 +576,14 @@ function [trans,reg] = cat_main_registration(job,res,Ycls,Yy,tpmM,Ylesion)
             Mads{ri} = (tmpM\mm)/vx3rr;
             if rigidShooting
               if ri==1, mat0reg = R\M1rr * vx2rr/vxtpm; end 
-              Mrregs{ri} = M0\inv(R)*M1rr*vx2rr/vx3rr; %;    
+                 % ExploreASL fix - rounding the results of inversion to increase reproducibility between different OS and Matlab versions
+                 %Mrregs{ri} = M0\inv(R)*M1rr*vx2rr/vx3rr; %;    
+		Mrregs{ri} = xASL_round(M0\inv(R)*M1rr*vx2rr/vx3rr,12);
             else
               if ri==1, mat0reg = res.Affine\M1rr * vx2rr/vxtpm; end 
-              Mrregs{ri} = M0\inv(res.Affine)*M1rr*vx2rr/vx3rr;  
+              % ExploreASL fix - rounding the results of inversion to increase reproducibility between different OS and Matlab versions
+              %Mrregs{ri} = M0\inv(res.Affine)*M1rr*vx2rr/vx3rr;  
+ 	      Mrregs{ri} = xASL_round(M0\inv(res.Affine)*M1rr*vx2rr/vx3rr,12); 
             end
             if ri==1, Mys{ri} = eye(4); else Mys{ri}= eye(4); Mys{ri}(1:12) = Mys{ri}(1:12) * reg(regstri).opt.resfac(ri)/reg(regstri).opt.resfac(ri-1); end;
           end
@@ -659,6 +674,7 @@ function [trans,reg] = cat_main_registration(job,res,Ycls,Yy,tpmM,Ylesion)
                 for i=1:rdims(ti,3),
                   ls(:,:,i) = single(spm_slice_vol(Yclsk1,Mrregs{ti}*spm_matrix([0 0 i]),rdims(ti,1:2),[1,NaN])); 
                 end
+                ls(isnan(ls)) = 0; % ExploreASL fix - to avoid having NaNs
                 for k1=1:numel(g)-1
                   tpm2k1 = res.tpm2{ti}(k1).private.dat(:,:,:,k1); 
                   t = zeros(rdims(ti,1:3),'single');
@@ -689,8 +705,11 @@ function [trans,reg] = cat_main_registration(job,res,Ycls,Yy,tpmM,Ylesion)
               ll  = zeros(1,2);
               if it==1
                 % create shooting maps
+                % ExploreASL fix - rounding the results of inversion to increase reproducibility between different OS and Matlab versions
+                %y   = affind( squeeze( reshape( affind( spm_diffeo('Exp',zeros([rdims(ti,:),3],'single'),[0 1]), ...
+                %      mat0reg), [rdims(ti,:),1,3] ) ) , inv(mat0reg)); clear def;                          % deformation field
                 y   = affind( squeeze( reshape( affind( spm_diffeo('Exp',zeros([rdims(ti,:),3],'single'),[0 1]), ...
-                      mat0reg), [rdims(ti,:),1,3] ) ) , inv(mat0reg)); clear def;                          % deformation field
+                        mat0reg), [rdims(ti,:),1,3] ) ) , xASL_round(inv(mat0reg),12)); clear def;
                 u   = zeros([rdims(ti,:) 3],'single');                                                     % flow field
                 dt  = ones(rdims(ti,:),'single');                                                          % jacobian
               elseif any(rdims(ti,:)~=rdims(ti-1,:))
@@ -797,6 +816,14 @@ function [trans,reg] = cat_main_registration(job,res,Ycls,Yy,tpmM,Ylesion)
               cat_io_cprintf('err',sprintf('Problem with Shooting (dets: %g .. %g)\n', min(dt(:)), max(dt(:)))); %it=nits;
             end
 
+            % xASL hack - saving the intermediate steps of the GS registration
+            if rdim(1) > 80
+                genIt = find(ceil(nits*[1 2 3 4 5 6]/6) == it);
+                if ~isempty(genIt)
+                    xASL_wrp_GSSaveIntermedTrans(y,idim,odim,rdim,M0,M1,R,M1t,M1r,VT0.fname,genIt(1));
+                end
+            end
+                    
             % avoid unneccessary iteration
             if job.extopts.regstr(regstri)>0 && job.extopts.regstr(regstri)~=4 && ...
                 ( ti>1 || (ti==1 && ll(1)/numel(u)<1 && ll(1)/max(eps,llo(1))<1 && ll(1)/max(eps,llo(1))>(1-0.01) )) && ...
@@ -854,12 +881,15 @@ function [trans,reg] = cat_main_registration(job,res,Ycls,Yy,tpmM,Ylesion)
           end
          
           if rigidShooting
-            yi  = spm_diffeo('invdef',yid,idim,inv(M1t\R*M0),eye(4));           % output yi in anatomical resolution 
+            % ExploreASL fix - rounding the results of inversion to increase reproducibility between different OS and Matlab versions
+            % yi  = spm_diffeo('invdef',yid,idim,inv(M1t\R*M0),eye(4));           % output yi in anatomical resolution 
+            yi  = spm_diffeo('invdef',yid,idim,xASL_round(inv(M1t\R*M0),12),eye(4));           % output yi in anatomical resolution
           else 
-            yi  = spm_diffeo('invdef',yid,idim,inv(M1t\res.Affine*M0),eye(4));  % output yi in anatomical resolution 
+            % ExploreASL fix - rounding the results of inversion to increase reproducibility between different OS and Matlab versions
+            % yi  = spm_diffeo('invdef',yid,idim,inv(M1t\res.Affine*M0),eye(4));  % output yi in anatomical resolution 
+            yi  = spm_diffeo('invdef',yid,idim,xASL_round(inv(M1t\res.Affine*M0),12),eye(4));  % output yi in anatomical resolution
           end
           dt2 = spm_diffeo('def2det',yid); if ~debug, clear yid; end  
-          
 
           % interpolation for improved output ... need update 2012/12
           if dreg.fast

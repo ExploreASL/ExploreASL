@@ -721,6 +721,61 @@ LASstr.help    = {
   ''
 };
 
+%------------------------------------------------------------------------
+% XASL quality
+%------------------------------------------------------------------------
+
+xasl_quality    = cfg_menu;
+xasl_quality.tag = 'xasl_quality';
+xasl_quality.name = 'Run xASL on high quality';
+xasl_quality.labels = {'no','yes'};
+xasl_quality.values = {0 1};
+xasl_quality.def = @(val) 1; 
+xasl_quality.help    = {'Runs xASL on high quality, if 0 then run at faster settings with lower resolution and fewer iterations'};
+
+%------------------------------------------------------------------------
+% XASL use lesions for masking
+%------------------------------------------------------------------------
+
+xasl_lesion         = cfg_files;
+xasl_lesion.tag     = 'xasl_lesion';
+xasl_lesion.name    = 'xASL Lesion';
+xasl_lesion.def     = @(val)cat_get_defaults('extopts.xasl_lesion', val{:});
+xasl_lesion.num     = [1 1];
+xasl_lesion.filter  = 'image';
+xasl_lesion.ufilter = 'LesionCAT'; 
+xasl_lesion.help    = {
+  'Select the lesion file that will be used to mask the registration. '
+  ''
+  'This should be a single file - a summary of all lesions.'
+  ''
+};
+
+
+%------------------------------------------------------------------------
+% XASL save steps
+%------------------------------------------------------------------------
+
+xasl_savesteps    = cfg_menu;
+xasl_savesteps.tag = 'xasl_savesteps';
+xasl_savesteps.name = 'Save intermediate registration steps for xASL';
+xasl_savesteps.labels = {'no','yes'};
+xasl_savesteps.values = {0 1};
+xasl_savesteps.def = @(val) 0; 
+xasl_savesteps.help    = {'Do not save only the final DARTEL registration but also all the intermediate steps'};
+
+%------------------------------------------------------------------------
+% XASL disable DARTEL
+%------------------------------------------------------------------------
+
+xasl_disabledartel    = cfg_menu;
+xasl_disabledartel.tag = 'xasl_disabledartel';
+xasl_disabledartel.name = 'Disables the final full DARTEL spatial normalization step as a part of the CAT12 segmentation';
+xasl_disabledartel.labels = {'no','yes'};
+xasl_disabledartel.values = {0 1};
+xasl_disabledartel.def = @(val) 0; 
+xasl_disabledartel.help    = {'When set to 1, the final DARTEL step is not run, and only the basic non-linear registration is utilized'};
+
 
 %------------------------------------------------------------------------
 % WM Hyperintensities (expert)
@@ -963,9 +1018,9 @@ segmentation      = cfg_branch;
 segmentation.tag  = 'segmentation';
 segmentation.name = 'Segmentation Options';
 if expert==1
-  segmentation.val  = {app,NCstr,LASstr,gcutstr,cleanupstr,wmhc,slc,restype};
+  segmentation.val  = {app,NCstr,xasl_quality,xasl_disabledartel,xasl_lesion,xasl_savesteps,LASstr,gcutstr,cleanupstr,wmhc,slc,restype};
 elseif expert==2
-  segmentation.val  = {app,NCstr,spm_kamap,LASstr,gcutstr,cleanupstr,BVCstr,wmhc,slc,mrf,restype}; % WMHCstr,
+  segmentation.val  = {app,NCstr,xasl_quality,xasl_disabledartel,xasl_lesion,xasl_savesteps,spm_kamap,LASstr,gcutstr,cleanupstr,BVCstr,wmhc,slc,mrf,restype}; % WMHCstr,
 end
 segmentation.help = {'CAT12 parameter to control the tissue classification.';''};
 
@@ -1004,7 +1059,7 @@ if ~spm
   if expert>0 % experimental expert options
     extopts.val   = {segmentation,registration,vox,surface,admin}; 
   else
-    extopts.val   = {app,LASstr,gcutstr,registration,vox,restype}; % NCstr?
+    extopts.val   = {app,xasl_quality,xasl_disabledartel,xasl_lesion,xasl_savesteps,LASstr,gcutstr,registration,vox,restype}; % NCstr?
   end
 else
   % SPM based surface processing and thickness estimation

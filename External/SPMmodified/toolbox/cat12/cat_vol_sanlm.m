@@ -345,8 +345,10 @@ function src2 = cat_vol_sanlm_filter(job,V,i,src)
    
    
     for NCstri = 1:numel(NCstr)
+        
+       xASL_TrackProgress(NCstri,numel(NCstr)); %%% ExploreASL fix
        
-        if NCstr(NCstri)<0
+       if NCstr(NCstri)<0
         % adaptive local denoising 
 
             %% prepare local map

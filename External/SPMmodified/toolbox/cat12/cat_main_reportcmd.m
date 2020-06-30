@@ -25,28 +25,28 @@ function cat_main_reportcmd(job,res,qa)
   mark2grad = @(mark) grades{min(numel(grades),max(max(isnan(mark)*numel(grades),1),round((mark+2/3)*3-3)))};
   
   fprintf('\n%s',repmat('-',1,72));
-  fprintf(1,'\nCAT preprocessing takes %0.0f minute(s) and %0.0f second(s).\n', ...
+  fprintf(1,'\nCAT12 preprocessing took %0.0f minute(s) and %0.0f second(s).\n', ...
     floor(round(etime(clock,res.stime))/60),mod(round(etime(clock,res.stime)),60));
   cat_io_cprintf(color(QMC,qa.qualityratings.IQR), sprintf('Image Quality Rating (IQR):  %5.2f%%%% (%s)\n',...
     mark2rps(qa.qualityratings.IQR),mark2grad(qa.qualityratings.IQR)));
 
   % print subfolders
-  if job.extopts.subfolders
-    fprintf('Segmentations are saved in %s%s%s\n',pth,filesep,'mri');
-    fprintf('Reports are saved in %s%s%s\n',pth,filesep,'report');
-    if job.output.ROI
-      fprintf('Labels are saved in %s%s%s\n',pth,filesep,'label');
-    end
-    if job.output.surface && exist('Psurf','var') && ~isempty(Psurf)
-      fprintf('Surface measurements are saved in %s%s%s\n',pth,filesep,'surf');
-    end
-  end
+  %if job.extopts.subfolders
+  %  fprintf('Segmentations are saved in %s%s%s\n',pth,filesep,'mri');
+  %  fprintf('Reports are saved in %s%s%s\n',pth,filesep,'report');
+  %  if job.output.ROI
+  %    fprintf('Labels are saved in %s%s%s\n',pth,filesep,'label');
+  %  end
+  %  if job.output.surface && exist('Psurf','var') && ~isempty(Psurf)
+  %    fprintf('Surface measurements are saved in %s%s%s\n',pth,filesep,'surf');
+  %  end
+  %end
 
   fprintf('%s\n\n',repmat('-',1,72));
 
   % finish diary entry of "../report/cmdln_*.txt"
   % read diary and add the command-line output to the *.xml and *.mat file
-  diary off; 
+  % diary off; % ExploreASL fix - disable CAT12 outputs as we write everything to ExploreASL log file.
   try %#ok<TRYNC>
     fid  =fopen(res.catlog);
     txt = fread(fid,200000,'uint8=>char');

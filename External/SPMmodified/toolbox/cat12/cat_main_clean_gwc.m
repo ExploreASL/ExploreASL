@@ -71,7 +71,9 @@ if level>1, th1 = 0.2; end
 niter  = 32;
 niter2 = 32;
 spm_progress_bar('Init',niter+niter2,'Extracting Brain','Iterations completed');
+fprintf('Clean Up 1:   ');
 for j=1:niter
+    xASL_TrackProgress(j,niter);
     if j>2, th=th1; else th=0.6; end  % Dilate after two its of erosion
     for i=1:size(b,3)
         gp       = single(P(:,:,i,1));
@@ -85,9 +87,12 @@ for j=1:niter
 end
 
 % Also clean up the CSF.
+fprintf('\n');
+fprintf('Also clean up the CSF:   ');
 if niter2 > 0,
     c = b;
     for j=1:niter2
+        xASL_TrackProgress(j,niter2);
         for i=1:size(b,3)
             gp       = single(P(:,:,i,1));
             wp       = single(P(:,:,i,2));
@@ -102,8 +107,10 @@ if niter2 > 0,
 end
 
 th = 0.05;
-
+fprintf('\n');
+fprintf('Some slice-work:   ');
 for i=1:size(b,3)
+    xASL_TrackProgress(i,size(b,3));
     slices = cell(1,size(P,4));
     for k1=1:size(P,4),
         slices{k1} = single(P(:,:,i,k1))/255;

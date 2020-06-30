@@ -1,4 +1,4 @@
-function cat_warnings = cat_main_write(Ym,Ymi,Ycls,Yp0,Yl1,job,res,trans,cat_warnings)
+function cat_warnings = cat_main_write(Ym,Ymi,Ycls,Yp0,Yl1,job,res,trans,cat_warnings,M1)
 % ______________________________________________________________________
 % Write volumetric preprocessing results.
 %  
@@ -260,19 +260,39 @@ function cat_warnings = cat_main_write(Ym,Ymi,Ycls,Yp0,Yl1,job,res,trans,cat_war
 
   %% deformations y - dartel > subject
   if job.output.warps(1)
-      Yy        = spm_diffeo('invdef',trans.warped.y,trans.warped.odim,eye(4),trans.warped.M0);
-      N         = nifti;
-      N.dat     = file_array(fullfile(pth,mrifolder,['y_', nam, '.nii']),[trans.warped.odim(1:3),1,3],'float32',0,1,0);
-      N.mat     = trans.warped.M1;
-      N.mat0    = trans.warped.M1;
-      N.descrip = 'Deformation';
-      create(N);
-      N.dat(:,:,:,:,:) = reshape(Yy,[trans.warped.odim,1,3]);
-      if ~debug, clear Yy; end
+      disp('Saving the subject-DARTEL transformation as NIfTI');
+    % ExploreASL hack: Here, create flow field without DARTEL
+    Yy        = spm_diffeo('invdef',trans.atlas.Yy,[121 145 121],eye(4),res.image.mat); % assuming 1.5 mm MNI
+    %Yy        = spm_diffeo('invdef',trans.warped.y,trans.warped.odim,eye(4),trans.warped.M0);
+    N         = nifti;
+
+	N.dat     = file_array(fullfile(pth,mrifolder,['y_', nam, '_withoutDARTEL.nii']),[121,145,121,1,3],'float32',0,1,0);
+	N.mat     = M1;
+	N.mat0    = M1;
+    N.descrip = 'Deformation';
+    create(N);
+	N.dat(:,:,:,:,:) = reshape(Yy,[121,145,121,1,3]);
+    if ~debug, clear Yy; end
+	clear N;
+
+	% ExploreASL hack, here create flow field + DARTEL
+	if  res.do_dartel
+		
+		Yy        = spm_diffeo('invdef',trans.warped.y,trans.warped.odim,eye(4),trans.warped.M0);
+		N         = nifti;
+		N.dat     = file_array(fullfile(pth,mrifolder,['y_', nam, '.nii']),[trans.warped.odim(1:3),1,3],'float32',0,1,0);
+		N.mat     = trans.warped.M1;
+		N.mat0    = trans.warped.M1;
+		N.descrip = 'Deformation';
+		create(N);
+		N.dat(:,:,:,:,:) = reshape(Yy,[trans.warped.odim,1,3]);
+		clear N;
+	end
   end
 
   %% deformation iy - normalized > subject 
   if job.output.warps(2) 
+      disp('Saving the DARTEL-subject transformation as NIfTI (i.e. inverse)');
     if any(trans.native.Vo.dim~=trans.native.Vi.dim)
       %%
       vx_voli  = sqrt(sum(trans.native.Vi.mat(1:3,1:3).^2));  

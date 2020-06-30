@@ -62,15 +62,19 @@ function cat_run_job(job,tpm,subj)
     % create subject-wise diary file with the command-line output
     [pp,ff,ee,ex] = spm_fileparts(job.data{subj});  %#ok<ASGLU>
     catlog = fullfile(pth,reportfolder,['catlog_' ff '.txt']);
-    if exist(catlog,'file'), delete(catlog); end % write every time a new file, turn this of to have an additional log file
+    if exist(catlog,'file')
+        warning('off','MATLAB:DELETE:Permission'); % ExploreASL hack -> avoid error if diary is already loaded in re-running 
+        delete(catlog); 
+        warning('on','MATLAB:DELETE:Permission');    
+    end % write every time a new file, turn this of to have an additional log file
     
     % check if not another diary is already written that is not the default- or catlog-file. 
     if ~strcmpi(spm_check_version,'octave')
       olddiary = spm_str_manip( get(0,'DiaryFile') , 't');
       usediary = ~isempty(strfind( olddiary , 'diary' )) | ~isempty(strfind( olddiary , 'catlog_' )); 
       if usediary
-        diary(catlog); 
-        diary on; 
+        %diary(catlog); 
+        %diary on; 
       else  
         cat_io_cprintf('warn',sprintf('External diary log is writen to "%s".\n',get(0,'DiaryFile'))); 
       end
@@ -121,7 +125,11 @@ function cat_run_job(job,tpm,subj)
         end
         
         obj.reg      = job.opts.warpreg;
-        obj.samp     = job.opts.samp;              
+        if  job.extopts.xasl_quality  % ExploreASL hack, processing on lower resolution to speed up
+			obj.samp     = job.opts.samp;
+		else
+            obj.samp     = 6;
+        end       
         cfname  = fullfile(pp,[ff ee]);
         ofname  = fullfile(pp,[ff(3:end) ee]); 
         nfname  = fullfile(pp,mrifolder,['n' ff '.nii']); 
@@ -189,6 +197,7 @@ function cat_run_job(job,tpm,subj)
         % always create the n*.nii image because of the real masking of the
         % T1 data for spm_preproc8 that include rewriting the image!
         for n=1:numel(job.channel) 
+          fprintf('Initializing CAT pre-processing');%%% ExploreASL fix
           [pp,ff,ee] = spm_fileparts(job.channel(n).vols{subj}); 
           ofname  = fullfile(pp,[ff ee]); 
           nfname  = fullfile(pp,mrifolder,['n' ff '.nii']); 
@@ -205,6 +214,9 @@ function cat_run_job(job,tpm,subj)
 
           %% denoising
           if job.extopts.NCstr~=0
+              if  ~job.extopts.xasl_quality  % ExploreASL hack, lower denoising strength to speed up
+                    job.extopts.NCstr = 2;
+                end
             NCstr.labels = {'none','full','light','medium','strong','heavy'};
             NCstr.values = {0 1 2 -inf 4 5}; 
             stime = cat_io_cmd(sprintf('SANLM denoising (%s)',...
@@ -224,6 +236,7 @@ function cat_run_job(job,tpm,subj)
           %   - only one background (not in every case?)
           %   - less variance of tissue intensity (only 3 brain classes)
           %  ------------------------------------------------------------
+          fprintf('Initializing CAT pre-processing');%%% ExploreASL fix
           VFn   = spm_vol(nfname); 
           YF    = spm_read_vols(VFn); 
           Oth   = cat_stat_nanmean(YF(YF(:)~=0 & YF(:)>cat_stat_nanmean(YF(:)))); 
@@ -286,6 +299,10 @@ function cat_run_job(job,tpm,subj)
               error('cat_run_job:restype','Unknown resolution type ''%s''. Choose between ''fixed'',''native'',''optimal'', and ''best''.',restype)
           end
 
+          if  ~job.extopts.xasl_quality  % ExploreASL hack, processing on lower resolution to speed up
+              vx_voli   = [1.5 1.5 1.5];
+          end
+          
           % interpolation 
           if any( (vx_vol ~= vx_voli) )  
             stime = cat_io_cmd(sprintf('Internal resampling (%4.2fx%4.2fx%4.2fmm > %4.2fx%4.2fx%4.2fmm)',vx_vol,vx_voli));
@@ -339,6 +356,9 @@ function cat_run_job(job,tpm,subj)
         obj.biasfwhm = job.opts.biasfwhm;
         obj.tpm      = tpm;        
         obj.reg      = job.opts.warpreg;
+        if  ~job.extopts.xasl_quality  % ExploreASL hack, processing on lower resolution to speed up
+            job.opts.samp   = 9;
+        end
         obj.samp     = job.opts.samp;              
         obj.tol      = job.opts.tol;
         obj.lkp      = [];
