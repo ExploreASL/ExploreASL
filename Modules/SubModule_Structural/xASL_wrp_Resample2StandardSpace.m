@@ -43,7 +43,7 @@ if xASL_exist(x.P.Path_c3T1, 'file')
     OUTname{end+1} = x.P.Pop_Path_rc3T1;
 end            
 
-if xASL_exist(x.P.Path_FLAIR,' file')
+if xASL_exist(x.P.Path_FLAIR, 'file')
     INname{end+1} = x.P.Path_FLAIR;
     OUTname{end+1} = x.P.Pop_Path_rFLAIR;
 end
