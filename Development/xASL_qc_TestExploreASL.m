@@ -213,12 +213,7 @@ if bTestSPM
 	else
 		catTempDir = 'templates_1.50mm';
 	end
-    DartelTemplateNII = fullfile(x.MyPath,'External','SPMmodified', 'toolbox', 'cat12', catTempDir, 'Template_1_IXI555_MNI152.nii');
-    GSTemplateNII     = fullfile(x.MyPath,'External','SPMmodified', 'toolbox', 'cat12', catTempDir, 'Template_0_IXI555_MNI152_GS.nii');
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm                         = {SPMTemplateNII};
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.darteltpm   = {DartelTemplateNII}; % Runs DARTEL to this n=555 subjects template
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shootingtpm = {GSTemplateNII}; % Runs Geodesic Shooting to this n=555 subjects template
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.regstr = 1;
+    matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm              = {SPMTemplateNII};
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 0; % low quality
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0; % low quality
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % low quality
@@ -236,15 +231,9 @@ if bTestSPM
     matlabbatch{1}.spm.tools.cat.estwrite.output.WM.native      = 0;   % save c2T1 in native space
     matlabbatch{1}.spm.tools.cat.estwrite.output.WM.mod         = 0;   % don't save modulation
     matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel      = 0;   % don't save DARTEL space c2T1, this happens below in the reslice part
-    matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.native      = 0;   % save c3T1 in native space
-    matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.mod         = 0;   % don't save modulation
-    matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel      = 0;   % don't save DARTEL space c2T1, this happens below in the reslice part
-    matlabbatch{1}.spm.tools.cat.estwrite.output.jacobian.warped= 0;   % don't save Jacobians
+    matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
     matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
     matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
-    matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.native      = 0;   % save c3T1 in native space
-    matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.mod         = 0;   % don't save modulation
-    matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel      = 0;
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
     spm_jobman('run',matlabbatch);
 
