@@ -106,6 +106,17 @@ Line 135 - removed 'spm_cfg_eeg'
 IMAGE PROCESSING IMPROVEMENT
 
 DATE+NAME:2020_07_01, HM
+DESCRIPTION: Add progress tracking
+FILE: 
+cat_vol_imcalc.m @ 207
+cat_main_reportfig.m @ 35, 91, 159, 231, 300, 400, 485, 594, 615, 617
+
+DATE+NAME:2020_07_01, HM
+DESCRIPTION: Improved feedback on PDF creation
+FILE: 
+cat_main_reportfig.m @ 34, 622
+
+DATE+NAME:2020_07_01, HM
 DESCRIPTION: Save CSF as well in newer CAT12 version
 FILE: cat_main.m @ 674
 

@@ -31,6 +31,9 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
 
   dbs = dbstatus; debug = 0; for dbsi=1:numel(dbs), if strcmp(dbs(dbsi).name,mfilename); debug = 1; break; end; end
  
+  fprintf('Saving PDF report:   '); % EXPLOREASL HACK, LET KNOW WHAT WERE DOING
+  xASL_TrackProgress(1, 10);
+  
   VT  = res.image(1); 
   VT0 = res.image0(1);
   [pth,nam] = spm_fileparts(VT0.fname); 
@@ -85,6 +88,8 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
       cm = 'gray';
   end
 
+  xASL_TrackProgress(2, 10);
+  
   % SPM_orthviews work with 60 values. 
   % For the surface we use a larger colormap.
   surfcolors = 128; 
@@ -151,6 +156,7 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
          0.01 0.01 0.48 0.36; 0.51 0.01 0.48 0.36];
   try spm_orthviews('Reset'); end
 
+  xASL_TrackProgress(3, 10);
 
   % BB box is not optimal for all images
   disptype = 'affine'; 
@@ -222,6 +228,7 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
     cat_io_cprintf('warn','WARNING: Can''t display original file "%s"!\n',VT.fname); 
   end
 
+  xASL_TrackProgress(4, 10);
 
   %  Ym - normalized image in original space
   %  ----------------------------------------------------------------------
@@ -290,6 +297,7 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
     VO.dat(:,:,:) = single(Yp0/3);
   end
   
+  xASL_TrackProgress(5, 10);
   
   VO.pinfo  = repmat([1;0],1,size(Yp0,3));
   VO.mat    = dispmat * VO.mat; 
@@ -389,7 +397,7 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
     try spm_orthviews('window',hhp0,[0 cmmax]); end
   end
    
-  
+  xASL_TrackProgress(6, 10);
   
   %% legend
   try
@@ -474,7 +482,7 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
     end
   end
  
- 
+ xASL_TrackProgress(7, 10);
   %% 
   if exist('Psurf','var') && ~isempty(Psurf)
     % ... clearup this part of code when finished ...
@@ -583,7 +591,7 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
     end
   end
 
-
+    xASL_TrackProgress(8, 10);
 
   %% print subject report file as standard PDF/PNG/... file
   job.imgprint.type   = 'pdf';
@@ -604,13 +612,19 @@ function cat_main_reportfig(Ym,Yp0,Yl1,Psurf,job,qa,res,str)
   
   warning('off','MATLAB:hg:patch:RGBColorDataNotSupported');
   print(fg, job.imgprint.ftype(job.imgprint.type), job.imgprint.fdpi(job.imgprint.dpi), job.imgprint.fname); 
+  xASL_TrackProgress(9, 10);
   print(fg, job.imgprint.ftype('jpeg'), job.imgprint.fdpi(job.imgprint.dpi/2), job.imgprint.fnamej); 
+  xASL_TrackProgress(10, 10);
 
   for hti = 1:numel(htext), if htext(hti)>0, set(htext(hti),'Fontsize',fontsize); end; end
   for hti = 1:numel(cc), set(cc{hti},'Fontsize',fontsize); end
   set(fg,'PaperPositionMode',fgold.PaperPositionMode,'resize',fgold.resize,'PaperPosition',fgold.PaperPosition);
-  try
-    fprintf('Print ''Graphics'' figure to: \n  %s\n',job.imgprint.fname);% windows error?
+  try % EXPLOREASL HACK TO GET USER FEEDBACK HERE
+    fprintf('to: %s\n', job.imgprint.fname);% windows error?
+  catch ME
+      fprintf('n\');
+      warning('\nPlease check if PDF report was printed, cannot print its name\n');
+      fprintf('%s\n', ['CAT12 warning was: ' ME.message]);
   end
 
   %% reset colormap to the simple SPM like gray60 colormap

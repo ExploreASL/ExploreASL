@@ -204,6 +204,7 @@ end
 %-Loop over planes computing result Y
 %--------------------------------------------------------------------------
 for p = 1:Vo.dim(3)
+    xASL_TrackProgress(p, Vo.dim(3));
     B = spm_matrix([0 0 -p 0 0 0 1 1 1]);
 
     if dmtx, X = zeros(n,prod(Vo.dim(1:2))); end
