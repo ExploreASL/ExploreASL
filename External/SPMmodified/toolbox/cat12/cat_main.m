@@ -671,6 +671,7 @@ Ycls = cat_main_updateWMHs(Ym,Ycls,Yy,tpm,job,res,trans);
 %% write results
 %  ---------------------------------------------------------------------
 Yp0 = zeros(d,'single'); Yp0(indx,indy,indz) = single(Yp0b)/255*5; 
+job.output.CSF.native = 1; % EXPLOREASL HACK TO SAVE CSF AS WELL
 cat_warnings = cat_main_write(Ym,Ymi,Ycls,Yp0,Yl1,job,res,trans,cat_warnings,tpm.M);
 if debug, clear Yp0; end
 

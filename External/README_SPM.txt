@@ -105,6 +105,10 @@ Line 135 - removed 'spm_cfg_eeg'
 *********************************************************************************************************
 IMAGE PROCESSING IMPROVEMENT
 
+DATE+NAME:2020_07_01, HM
+DESCRIPTION: Save CSF as well in newer CAT12 version
+FILE: cat_main.m @ 674
+
 DATE+NAME:2019_11_11, HM
 DESCRIPTION:
 Replaced TPM.nii by enhanced TPM.nii, from Lorio 2016 Neuroimage. Have more accurate thalamus.
