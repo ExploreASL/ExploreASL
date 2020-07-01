@@ -112,6 +112,11 @@ cat_vol_imcalc.m @ 207
 cat_main_reportfig.m @ 35, 91, 159, 231, 300, 400, 485, 594, 615, 617
 
 DATE+NAME:2020_07_01, HM
+DESCRIPTION: Improved feedback on ROI creation
+FILE: 
+cat_main_roi.m @ 50
+
+DATE+NAME:2020_07_01, HM
 DESCRIPTION: Improved feedback on PDF creation
 FILE: 
 cat_main_reportfig.m @ 34, 622

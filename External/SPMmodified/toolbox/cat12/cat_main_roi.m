@@ -39,14 +39,22 @@ function cat_main_roi(job,trans,Ycls,Yp0)
   vx_vol  = sqrt( sum( trans.native.Vi.mat(1:3,1:3).^2 ) ); % voxel size of the processed image
   vx_voln = sqrt( sum( trans.affine.mat(1:3,1:3).^2 ) );    % voxel size of the registration space
 
-  % print progress
-  stime = cat_io_cmd('ROI estimation'); if job.extopts.verb, fprintf('\n'); end 
+
 
   
   % get atlases maps that should be evaluated
   FAF = job.extopts.atlas; 
   FA  = {}; fai = 1;
   AN  = fieldnames(job.output.atlases);
+  
+  if isempty(AN) % EXPLOREASL HACK, SKIP THIS FUNCTION IF NO ROIs CALCULATED
+      return;
+  else
+      % print progress % EXPLOREASL HACK: ONLY PRINT THIS WHEN CALCULATING ROIS
+      stime = cat_io_cmd('ROI estimation'); if job.extopts.verb, fprintf('\n'); end       
+  end
+  
+  
   for ai = 1:numel(AN)
     fafi = find(cellfun('isempty',strfind(FAF(:,1),[AN{ai} '.']))==0,1); 
     if ~isempty(fafi) && (isempty(job.output.atlases.(AN{ai})) || job.output.atlases.(AN{ai})) 
