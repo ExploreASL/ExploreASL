@@ -456,6 +456,13 @@ if isfield(job.extopts,'admin') && isfield(job.extopts.admin,'lazy') && job.exto
 end
 
 % remove files that do not exist
+% EXPLOREASL HACK CREATE DUMMY LOG FILE, SINCE WE DONT USE THE LOGGING OF CAT12
+if isfield(varargout{1},'catlog')
+    if ~exist(varargout{1}.catlog{1},'file')
+        fclose(fopen(varargout{1}.catlog{1}, 'w'));
+    end
+end
+
 varargout{1} = cat_io_checkdepfiles( varargout{1} );
 return
 %_______________________________________________________________________

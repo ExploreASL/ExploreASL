@@ -106,6 +106,17 @@ Line 135 - removed 'spm_cfg_eeg'
 IMAGE PROCESSING IMPROVEMENT
 
 DATE+NAME:2020_07_01, HM
+DESCRIPTION: Remove feedback missing log-file (we don't use catlog_txt in xASL)
+FILE: 
+cat_run.m @ 459
+cat_run_job.m @ 79
+
+DATE+NAME:2020_07_01, HM
+DESCRIPTION: Add progress tracking
+FILE: 
+cat_vol_imcalc.m @ 207
+
+DATE+NAME:2020_07_01, HM
 DESCRIPTION: Add progress tracking
 FILE: 
 cat_vol_imcalc.m @ 207

@@ -76,7 +76,7 @@ function cat_run_job(job,tpm,subj)
         %diary(catlog); 
         %diary on; 
       else  
-        cat_io_cprintf('warn',sprintf('External diary log is writen to "%s".\n',get(0,'DiaryFile'))); 
+        % cat_io_cprintf('warn',sprintf('External diary log is writen to "%s".\n',get(0,'DiaryFile'))); % EXPLOREASL HACK TO DISABLE DIARY CAT12
       end
     end
     
