@@ -65,6 +65,9 @@ end
 if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
     x.Q.T2 = 180; % default for 3T (ref Jean Chen, MRM 2009)
 end
+if ~isfield(x, 'ApplyQuantification') || isempty(x.ApplyQuantification)
+    x.ApplyQuantification = [1 1 1 1 1];
+end
 
 %% ------------------------------------------------------------------------------------------------
 %% 1    Load PWI
@@ -190,84 +193,87 @@ end
 
 
 
-
-
-%% ------------------------------------------------------------------------------------------------
-%% 5    Load SliceGradient
-if  strcmp(x.readout_dim,'2D')
-    SliceGradient = xASL_io_Nifti2Im(SliceGradientPath);
-else
+if ~x.ApplyQuantification(3) % if conversion PWI for label units is not requested
     SliceGradient = [];
-end
+else
+
+    %% ------------------------------------------------------------------------------------------------
+    %% 5    Load SliceGradient
+    if  strcmp(x.readout_dim,'2D')
+        SliceGradient = xASL_io_Nifti2Im(SliceGradientPath);
+    else
+        SliceGradient = [];
+    end
 
 
-%% ------------------------------------------------------------------------------------------------
-%% 6    Initialize quantification parameters
-if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments) || x.Q.nCompartments>2
-    x.Q.nCompartments = 1; % by default, we use a single-compartment model, as proposed by the Alsop et al. MRM 2014 concensus paper
-end
+    %% ------------------------------------------------------------------------------------------------
+    %% 6    Initialize quantification parameters
+    if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments) || x.Q.nCompartments>2
+        x.Q.nCompartments = 1; % by default, we use a single-compartment model, as proposed by the Alsop et al. MRM 2014 concensus paper
+    end
 
-if ~isfield(x.Q,'ATT')
-    x.Q.ATT = 1800; % ms as default micro-vascular ATT
-end
-if ~isfield(x.Q,'TissueT1')
-    x.Q.TissueT1 = 1240; % T1 GM tissue @ 3T
-end
-if ~isfield(x.Q,'BloodT1')
-    x.Q.BloodT1  = 1650; % T1 relaxation time of arterial blood DEFAULT=1650 @ 3T
-end
-if ~isfield(x.Q,'T2art')
-    x.Q.T2art = 50; % T2* of arterial blood, only used when no M0 image
-end
-if ~isfield(x.Q,'Lambda')
-    x.Q.Lambda = 0.9; % Brain/blood water coefficient (mL 1H/ mL blood)
-end
-% Check correct order of magnitude blood T1 (this value should be around 1700, or ~ 1000-3000)
-if x.Q.BloodT1<10
-    x.Q.BloodT1 = x.Q.BloodT1.*1000;
-end
+    if ~isfield(x.Q,'ATT')
+        x.Q.ATT = 1800; % ms as default micro-vascular ATT
+    end
+    if ~isfield(x.Q,'TissueT1')
+        x.Q.TissueT1 = 1240; % T1 GM tissue @ 3T
+    end
+    if ~isfield(x.Q,'BloodT1')
+        x.Q.BloodT1  = 1650; % T1 relaxation time of arterial blood DEFAULT=1650 @ 3T
+    end
+    if ~isfield(x.Q,'T2art')
+        x.Q.T2art = 50; % T2* of arterial blood, only used when no M0 image
+    end
+    if ~isfield(x.Q,'Lambda')
+        x.Q.Lambda = 0.9; % Brain/blood water coefficient (mL 1H/ mL blood)
+    end
+    % Check correct order of magnitude blood T1 (this value should be around 1700, or ~ 1000-3000)
+    if x.Q.BloodT1<10
+        x.Q.BloodT1 = x.Q.BloodT1.*1000;
+    end
 
-if ~isfield(x.Q,'LabelingType')
-       error('Unknown LabelingType, needed for quantification');
-elseif isempty(regexp(x.Q.LabelingType,'^(PC|P|C)ASL$'))
-       error('x.Q.LabelingType was invalid, should be PASL|CASL|PCASL');
-elseif strcmp(x.Q.LabelingType,'PCASL')
-       x.Q.LabelingType = 'CASL';
-end
+    if ~isfield(x.Q,'LabelingType')
+           error('Unknown LabelingType, needed for quantification');
+    elseif isempty(regexp(x.Q.LabelingType,'^(PC|P|C)ASL$'))
+           error('x.Q.LabelingType was invalid, should be PASL|CASL|PCASL');
+    elseif strcmp(x.Q.LabelingType,'PCASL')
+           x.Q.LabelingType = 'CASL';
+    end
 
-if ~isfield(x.Q,'BackGrSupprPulses')
-    warning('No background suppression pulses known, assuming no background suppression');
-    x.Q.BackGrSupprPulses = 0;
-end
+    if ~isfield(x.Q,'BackGrSupprPulses')
+        warning('No background suppression pulses known, assuming no background suppression');
+        x.Q.BackGrSupprPulses = 0;
+    end
 
 
-%% 7    Labeling efficiency
-if ~isfield(x.Q,'LabelingEfficiency') || isempty(x.Q.LabelingEfficiency)
-    if ~isfield(x.Q,'LabelingEfficiency')
-        switch x.Q.LabelingType
-            case 'PASL'
-                x.Q.LabelingEfficiency = 0.98; % (concensus paper, Wong, MRM 1998)
-            case 'CASL'
-                x.Q.LabelingEfficiency = 0.85; % (concensus paper, Dai, MRM 2008)
+    %% 7    Labeling efficiency
+    if ~isfield(x.Q,'LabelingEfficiency') || isempty(x.Q.LabelingEfficiency)
+        if ~isfield(x.Q,'LabelingEfficiency')
+            switch x.Q.LabelingType
+                case 'PASL'
+                    x.Q.LabelingEfficiency = 0.98; % (concensus paper, Wong, MRM 1998)
+                case 'CASL'
+                    x.Q.LabelingEfficiency = 0.85; % (concensus paper, Dai, MRM 2008)
+            end
         end
     end
-end
-x.Q.LabEff_Bsup = 1; % default for no background suppression
-% Apply the effect of background suppression pulses on labeling efficiency
-switch x.Q.BackGrSupprPulses
-    case 0 % when you have an M0, but no background suppression used for ASL
-        % Then the labeling efficiency doesn't change by background suppression
-    case 2 % e.g. Philips 2D EPI or Siemens 3D GRASE
-        x.Q.LabEff_Bsup = 0.83; % 0.83 = 2 background suppression pulses (Garcia et al., MRM 2005)
-    case 4 % e.g. Philips 3D GRASE
-        x.Q.LabEff_Bsup = 0.81; % 0.81 = as implemented by Philips
-    case 5 % e.g. GE 3D spiral
-        x.Q.LabEff_Bsup = 0.75; % 0.75 = 5 background suppression pulses (GE FSE) (Garcia et al., MRM 2005)
-end
+    x.Q.LabEff_Bsup = 1; % default for no background suppression
+    % Apply the effect of background suppression pulses on labeling efficiency
+    switch x.Q.BackGrSupprPulses
+        case 0 % when you have an M0, but no background suppression used for ASL
+            % Then the labeling efficiency doesn't change by background suppression
+        case 2 % e.g. Philips 2D EPI or Siemens 3D GRASE
+            x.Q.LabEff_Bsup = 0.83; % 0.83 = 2 background suppression pulses (Garcia et al., MRM 2005)
+        case 4 % e.g. Philips 3D GRASE
+            x.Q.LabEff_Bsup = 0.81; % 0.81 = as implemented by Philips
+        case 5 % e.g. GE 3D spiral
+            x.Q.LabEff_Bsup = 0.75; % 0.75 = 5 background suppression pulses (GE FSE) (Garcia et al., MRM 2005)
+    end
 
-x.Q.LabEff_Orig = x.Q.LabelingEfficiency;
-x.Q.LabelingEfficiency = x.Q.LabelingEfficiency*x.Q.LabEff_Bsup;
-
+    x.Q.LabEff_Orig = x.Q.LabelingEfficiency;
+    x.Q.LabelingEfficiency = x.Q.LabelingEfficiency*x.Q.LabEff_Bsup;
+end
+    
 %% ------------------------------------------------------------------------------------------------
 %% 8    Perform Quantification
 [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x);
