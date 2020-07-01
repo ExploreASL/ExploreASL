@@ -212,7 +212,6 @@ OutFile{1} = x.P.Path_c1T1; % GM segmentation
 OutFile{2} = x.P.Path_c2T1; % WM segmentation
 OutFile{3} = x.P.Path_c3T1; % CSF segmentation
 OutFile{4} = x.P.Path_y_T1; % deformation field to common space
-OutFile{5} = fullfile(x.D.TissueVolumeDir,['catROI_' x.P.STRUCT '_' x.P.SubjectID '.mat']); % contains ROI volume values from several atlases
 OutFile{6} = fullfile(x.SUBJECTDIR,['catreport_' x.P.STRUCT '.pdf']);
 OutFile{7} = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
 OutFile{8} = fullfile(x.SUBJECTDIR,[x.P.STRUCT '_BiasFieldCorrected.nii.gz']); % GM segmentation
@@ -535,39 +534,20 @@ end
 % so we can remove it here and ignore it
 %% --------------------------------------------------------------------
 %% CAT12 segmentation quality settings
-if str2double(catVer) > 1500
-	%matlabbatch{1}.spm.tools.cat.estwrite.extopts.SLC = 0;
-	%matlabbatch{1}.spm.tools.cat.estwrite.extopts.WMHC = 0;
 
-	matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % full cleanup. 1070 light cleanup
-	matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % 0.5; % strength local adaptive segmentation
-	matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 2; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
-	matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
-	matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
-	matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
-	
-	if x.T1BiasFieldRegularization
-		matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.5; % CAT12
-	else
-		% disable biasfield regularization for large biasfields (e.g. GE wide bore scanner)
-		matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
-	end
-else
-	matlabbatch{1}.spm.tools.cat.estwrite.extopts.SLC = 0;
+%matlabbatch{1}.spm.tools.cat.estwrite.extopts.SLC = 0;
+%matlabbatch{1}.spm.tools.cat.estwrite.extopts.WMHC = 0;
 
-	matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % full cleanup. 1070 light cleanup
-	matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.05; % 0.5; % strength local adaptive segmentation
-	matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
-	matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
-	matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
-	matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
-	
-	if x.T1BiasFieldRegularization
-		matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.5; % CAT12
-	else
-		% disable biasfield regularization for large biasfields (e.g. GE wide bore scanner)
-		matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
-	end
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % full cleanup. 1070 light cleanup
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % 0.5; % strength local adaptive segmentation
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 2; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
+matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
+matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
+
+if x.T1BiasFieldRegularization
+    % decrease biasfield regularization for large biasfields (e.g. GE wide bore scanner)
+    matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
 end
 
 if ~x.Quality
@@ -599,14 +579,9 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel      = 0;   % don't save
 matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
 
-if str2double(catVer) > 1500
-	matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {''};
-	matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
-	%matlabbatch{1}.spm.tools.cat.estwrite.output.labelnative = 1;
-else
-	matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
-	matlabbatch{1}.spm.tools.cat.estwrite.output.jacobian.warped= 0;   % don't save Jacobians
-end
+matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
+matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
+%matlabbatch{1}.spm.tools.cat.estwrite.output.labelnative = 1;
 
 if ~x.bFixResolution
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
@@ -630,6 +605,10 @@ try % 1) First attempt CAT12
 catch
     if ~x.Quality
         warning('CAT12 failed with x.Quality==0, try x.Quality==1 instead!');
+        matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % 0.5; % strength local adaptive segmentation
+        matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 2; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
+        matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
+        matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance        
     end
 
     try % 2) Second attempt CAT12
