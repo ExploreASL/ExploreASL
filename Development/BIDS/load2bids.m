@@ -17,16 +17,17 @@ lRMFields = {'InstitutionName' 'InstitutionalDepartmentName' 'InstitutionAddress
 			 'PercentPhaseFOV','AcquisitionMatrixPE','ReconMatrixPE','PixelBandwidth','ImageOrientationPatientDICOM',...
 			 'InPlanePhaseEncodingDirectionDICOM','ConversionSoftware','ConversionSoftwareVersion','AcquisitionMatrix',...
 			 'EchoTrainLength','PhaseEncodingSteps','BodyPartExamined','ShimSetting','TxRefAmp','PhaseResolution',...
-			 'RefLinesPE','BandwithPerPixelPhaseEncode','ImageComments','ConsistencyInfo','WipMemBlock','Interpolation2D'}; % Fields to exclude
+			 'RefLinesPE','BandwidthPerPixelPhaseEncode','ImageComments','ConsistencyInfo','WipMemBlock','Interpolation2D',...
+			 'SaturationStopTime','BaseResolution','DerivedVendorReportedEchoSpacing'}; % Fields to exclude
 % The correct order of fields in the JSON
 fieldOrder = {'Manufacturer','ManufacturersModelName','DeviceSerialNumber','StationName','SoftwareVersions','HardcopyDeviceSoftwareVersion',...%BIDS fields
 	          'MagneticFieldStrength','ReceiveCoilName','ReceiveCoilActiveElements','GradientSetType','MRTransmitCoilSequence','MatrixCoilMode',...
-			  'CoilCombinationMethod','PulseSequenceType','ScanningSequence','SequenceVariant','ScanOptions','SequenceName','PulseSequencedetails',...
+			  'CoilCombinationMethod','PulseSequenceType','ScanningSequence','SequenceVariant','ScanOptions','SequenceName','PulseSequenceDetails',...
 			  'NonlinearGradientCorrection','NumberShots','ParallelReductionFactorInPlane','ParallellAcquisitionTechnique','PartialFourier',...
 			  'PartialFourierDirection','PhaseEncodingDirection','EffectiveEchoSpacing','TotalReadoutTime','EchoTime','InversionTime','SliceTiming',...
 			  'SliceEncodingDirection','DwellTime','FlipAngle','MultibandAccelerationFactor','NegativeContrast','AnatomicalLandmarkCoordinates',...
 			  'RepetitionTime','VolumeTiming','TaskName',... % And ASL fields
-			  'LabelingType','PostLabelingDelay','BackgroundSuppression','M0','VascularCrushing','AcquisitionVoxelsize','TotalAcquiredVolumes',...
+			  'LabelingType','PostLabelingDelay','BackgroundSuppression','M0','VascularCrushing','AcquisitionVoxelSize','TotalAcquiredVolumes',...
 			  'BackgroundSuppressionNumberPulses','BackgroundSuppressionPulseTime','VascularCrushingVenc','LabelingLocationDescription',...
 			  'LabelingOrientation','LabelingDistance','LookLocker','LabelingEfficiency','PCASLType','CASLType','LabelingDuration',...
 			  'LabelingPulseAverageGradient','LabelingPulseMaximumGradient','LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle',...
@@ -223,7 +224,20 @@ for ii = 1:length(fList)
 		x = xASL_import_json(PathJSON);
 		xASL_delete([dataParPath,'.m']);
 	end
-
+	
+	% Fill in the generic text for the JSON 
+	descriptionJSON{ii}.Name = fList{ii};
+	descriptionJSON{ii}.BIDSVersion = '1.5.0';
+	descriptionJSON{ii}.DatasetType = 'raw';
+	descriptionJSON{ii}.License = 'RandomText';
+	descriptionJSON{ii}.Authors = {'RandomText'};
+	descriptionJSON{ii}.Acknowledgements = 'RandomText';
+	descriptionJSON{ii}.HowToAcknowledge = 'Please cite this paper: https://www.ncbi.nlm.nih.gov/pubmed/001012092119281';
+	descriptionJSON{ii}.Funding = 'RandomText';
+	descriptionJSON{ii}.EthicsApprovals = 'RandomText';
+	descriptionJSON{ii}.ReferencesAndLinks = {'RandomText'};
+	descriptionJSON{ii}.DatasetDOI = 'RandomText';
+	
 	% Save the x-structure for the study
 	importStr{ii}.x = x;
 
@@ -419,7 +433,6 @@ for ii = 1:length(fList)
 			importStr{ii}.par.AcquisitionVoxelSize = [3.75 3.75 5];
 		
 		case 'Siemens_PCASL_3DGRASE_UCL'
-			importStr{ii}.par.ASLContext = sprintf('%s\n',m0scanStr);
 			for cc = 1:8, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',controlStr,labelStr)];end
 			importStr{ii}.par.LabelingType = 'PCASL';	
 			importStr{ii}.par.AcquisitionVoxelSize = [3.4 3.4 4];
@@ -590,6 +603,8 @@ for ii = 1:length(fList)
 	if ~exist(fullfile(finalPath,importStr{ii}.dirName),'dir')
 		mkdir(fullfile(finalPath,importStr{ii}.dirName));
 	end
+	
+	spm_jsonwrite(fullfile(finalPath,importStr{ii}.dirName,'dataset_description.json'),descriptionJSON{ii});
 
 	% Go through all subjects
 	fSubs = xASL_adm_GetFileList(fullfile(outputPath,importStr{ii}.dirName,'analysis'),[],false,[],true);
@@ -767,7 +782,7 @@ for ii = 1:length(fList)
 						jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails '-'];
 					end
 					jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails jsonDicom.SoftwareVersions];
-					jsonLocal.MRSoftwareVersion = jsonDicom.SoftwareVersions;
+					%jsonLocal.MRSoftwareVersion = jsonDicom.SoftwareVersions;
 				end
 
 				% Fill in extra parameters based on the JSON from the data
@@ -1072,6 +1087,16 @@ if isfield(jsonOut,'CoilString')
 end
 
 jsonOut = rmfield(jsonOut,'NumberOfAverages');
+
+if isfield(jsonOut,'NumberSegments')
+	jsonOut.NumberShots = jsonOut.NumberSegments;
+	jsonOut = rmfield(jsonOut,'NumberSegments');
+end
+
+if isfield(jsonOut,'PhaseEncodingAxis') && strcmp(jsonOut.Manufacturer,'Philips')
+	jsonOut.PhaseEncodingDirection = jsonOut.PhaseEncodingAxis;
+	jsonOut = rmfield(jsonOut,'PhaseEncodingAxis');
+end
 
 for ii = 1:length(removeEmptyFields)
 	if isfield(jsonOut,removeEmptyFields{ii})
