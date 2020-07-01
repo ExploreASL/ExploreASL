@@ -20,6 +20,11 @@ To use **ExploreASL** within Matlab, you can download a stable release version f
 ExploreASL_Master
 ```
 
+## Workflow
+
+![alt text](https://lh6.googleusercontent.com/erpEM7C5Zx3cd3C2eB9PkoHR2gJJepsXdlJEXVJX1QMd2ypxS4Y_pSDvblED16KZt0dQbonTpa9R3dQuyDsqKb6xIs9sUJCMQzCG0Kb18g8TK7IUU-_A=w1280 "Logo Title Text 1")
+
+
 ## Developers
 
 Please contact the co-creators for more information:
