@@ -22,7 +22,7 @@ ExploreASL_Master
 
 ## Workflow
 
-![alt text](https://lh6.googleusercontent.com/erpEM7C5Zx3cd3C2eB9PkoHR2gJJepsXdlJEXVJX1QMd2ypxS4Y_pSDvblED16KZt0dQbonTpa9R3dQuyDsqKb6xIs9sUJCMQzCG0Kb18g8TK7IUU-_A=w1280 "Logo Title Text 1")
+![alt text](https://www.researchgate.net/profile/Andrew_Robertson7/publication/337328693/figure/fig1/AS:826578854481921@1574083164220/Schematic-diagram-of-ExploreASL-processing-steps-Steps-marked-with-a-are-optional.ppm "Logo Title Text 1")
 
 
 ## Developers
