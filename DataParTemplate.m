@@ -205,6 +205,18 @@ function x = DataParTemplate(x)
 %                  - 1 = affine registration enabled
 %                  - 2 = affine registration automatically chosen based on
 %                        spatial CoV of PWI
+% x.bRegisterM02ASL - boolean specifying whether M0 is registered to
+%                     mean_control image (or T1w if no control image exists)
+%                     It can be useful to disable M0 registration if the
+%                     ASL registration is done based on the M0, and little
+%                     motion is expected between the M0 and ASL
+%                     acquisition.
+%                     If no separate M0 image is available, this parameter
+%                     will have no effect. This option is disabled
+%                     automatically for 3D spiral
+%                     (OPTIONAL, DEFAULT = 0)
+%                     - 0 = M0 registration disabled
+%                     - 1 = M0 registration enabled (DEFAULT)
 % x.bUseMNIasDummyStructural - When structural (e.g. T1w) data is missing, copy population-average
 %  							   MNI templates as dummy structural templates. With this option, the
 % 							   ASL module copies the structural templates to fool the pipeline,

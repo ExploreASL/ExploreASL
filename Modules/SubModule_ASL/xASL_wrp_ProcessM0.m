@@ -5,7 +5,19 @@ function xASL_wrp_ProcessM0(x)
 %
 % INPUT:
 %   x       - structure containing fields with all information required to run this submodule (REQUIRED)
-%
+%   x.bRegisterM02ASL - boolean specifying whether M0 is registered to
+%                     mean_control image (or T1w if no control image exists)
+%                     It can be useful to disable M0 registration if the
+%                     ASL registration is done based on the M0, and little
+%                     motion is expected between the M0 and ASL
+%                     acquisition.
+%                     If no separate M0 image is available, this parameter
+%                     will have no effect. This option is disabled
+%                     automatically for 3D spiral
+%                     (OPTIONAL, DEFAULT = 0)
+%                     - 0 = M0 registration disabled
+%                     - 1 = M0 registration enabled (DEFAULT)
+
 % OUTPUT: n/a
 % OUTPUT FILES: NIfTI containing image processed M0 map in native & standard space, with and without smoothing
 %
@@ -104,7 +116,9 @@ xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field 
 % inequality of image contrast for ASL & M0, and because they usually
 % are already in decent registration.
 
-if ~strcmp(x.M0,'UseControlAsM0') && isempty(regexp(x.Sequence, 'spiral'))
+if isfield(x, 'bRegisterM02ASL') && ~x.bRegisterM02ASL
+    fprintf('M0 registration (to ASL or T1w) is skipped upon request\n');
+elseif ~strcmp(x.M0,'UseControlAsM0') && isempty(regexp(x.Sequence, 'spiral'))
     % only register if the M0 and mean control are not identical
     % Which they are when there is no separate M0, but ASL was
     % acquired without background suppression & the mean control image
