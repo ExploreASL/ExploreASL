@@ -33,6 +33,9 @@ Please contact the co-creators for more information:
 * Jan Petr *j.petr@hzdr.de*
 
 ## Other Contributors
+* Michael Stritt *stritt.michael@gmail.com*
+* Paul Groot *p.f.c.groot@amsterdamumc.nl*
+* Pieter Vandemaele *pieter.vandemaele@gmail.com*
 
 ## Acknowledgement
 
