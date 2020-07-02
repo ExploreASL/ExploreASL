@@ -32,8 +32,9 @@ function [Parms, x, Oldx] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
 % Copyright 2015-2019 ExploreASL
 
 
+
 %% ------------------------------------------------------------------------
-%% 0) Admin
+% 0) Admin
 Parms = struct; % default
 
 if nargin<1 || isempty(ParmsPath)
@@ -51,6 +52,14 @@ if nargin<3 || isempty(bVerbose)
 end
 
 [Fpath, Ffile, Fext] = fileparts(ParmsPath);
+
+% List of fields that are transfered to the x.Q
+Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'Lambda'...
+           'T2art' 'BloodT1' 'TissueT1' 'nCompartments' 'NumberOfAverages' 'LabelingEfficiency' 'ATT'};
+
+% Names of files for data sets and older names for backwards compatibility
+namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'         'LabelingEfficiency' 'Hematocrit'};
+namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency'  'LabelingEfficiency' 'Hematocrit'};
 
 %% ------------------------------------------------------------------------
 %% 1) Load .mat parameter file (if exists)
@@ -155,11 +164,8 @@ if size(x.S.SetsID,1)~=x.nSubjectsSessions
     return;
 end
 
-Sets2Find  = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'         'LabelingEfficiency' 'Hematocrit'};
-FieldNames = {'ATT'     'BloodT1' 'LabelingEfficiency'  'LabelingEfficiency' 'Hematocrit'};
-
-for iSet=1:length(Sets2Find)
-    TempIndex = find(cellfun(@(x) strcmp(x, Sets2Find{iSet}), x.S.SetsName));
+for iSet=1:length(namesFieldsOld)
+    TempIndex = find(cellfun(@(x) strcmp(x, namesFieldsOld{iSet}), x.S.SetsName));
 	if ~isempty(TempIndex)
 		SetIndex(iSet) = TempIndex;
 	else
@@ -168,19 +174,19 @@ for iSet=1:length(Sets2Find)
 
     if ~isnan(SetIndex(iSet))
         % Use the data out SetsID
-        Parms.(FieldNames{iSet}) = x.S.SetsID(iSubjSess, SetIndex(iSet));
-        if bVerbose; fprintf('%s\n', ['Loaded ' FieldNames{iSet} ': ' xASL_num2str(Parms.(FieldNames{iSet}))]); end
+        Parms.(namesFieldsNew{iSet}) = x.S.SetsID(iSubjSess, SetIndex(iSet));
+        if bVerbose; fprintf('%s\n', ['Loaded ' namesFieldsNew{iSet} ': ' xASL_num2str(Parms.(namesFieldsNew{iSet}))]); end
         % But check if this is the true data content, or if this is an index (e.g. 1, 2, 3, 4)
         % If its not continuous (x.S.Sets_1_2Sample~=3), then ExploreASL believes that this is an ordinal data set (groups)
         if x.S.Sets1_2Sample(SetIndex(iSet))~=3
             % if data are saved as indices of x.S.SetsOptions, then use
             % the SetsOption field/ID/name
-            if Parms.(FieldNames{iSet})<=length(x.S.SetsOptions{SetIndex(iSet)})
-                Parms.(FieldNames{iSet}) = x.S.SetsOptions{SetIndex(iSet)}{Parms.(FieldNames{iSet})};
+            if Parms.(namesFieldsNew{iSet})<=length(x.S.SetsOptions{SetIndex(iSet)})
+                Parms.(namesFieldsNew{iSet}) = x.S.SetsOptions{SetIndex(iSet)}{Parms.(namesFieldsNew{iSet})};
             end
         end
-        if ischar(Parms.(FieldNames{iSet})) % convert string to float
-            Parms.(FieldNames{iSet}) = str2num(Parms.(FieldNames{iSet}));
+        if ischar(Parms.(namesFieldsNew{iSet})) % convert string to float
+            Parms.(namesFieldsNew{iSet}) = str2num(Parms.(namesFieldsNew{iSet}));
         end
     end
 end
@@ -195,8 +201,7 @@ end
 
 % Move quantification parameters to the Q (quantification) subfield, for
 % backward compatibility
-Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'Lambda'...
-    'T2art' 'BloodT1' 'TissueT1' 'nCompartments' 'NumberOfAverages'};
+
 for iField=1:length(Qfields)
     if isfield(x,Qfields{iField})
         if isfield(x.Q,(Qfields{iField})) && ~min((x.Q.(Qfields{iField})==x.(Qfields{iField})))
