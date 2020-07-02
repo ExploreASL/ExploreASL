@@ -1,10 +1,11 @@
-function xASL_docu_Crawler(folder)
+function xASL_docu_Crawler(folder,mdoutput)
 %xASL_docu_Crawler Script to get information from the file headers and
 % convert the information into a markdown file.
 %
 % FORMAT:       xASL_docu_Crawler(folder)
 % 
-% INPUT:        folder
+% INPUT:        folder - input folder
+%               mdoutput - result file
 %
 % OUTPUT:       None
 % 
@@ -14,7 +15,7 @@ function xASL_docu_Crawler(folder)
 %               markdown file.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLES:     xASL_docu_Crawler('C:\...\ExploreASL\Functions')
+% EXAMPLES:     xASL_docu_Crawler('M:\...\Functions', 'M:\...\Output.md')
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
@@ -44,6 +45,9 @@ listing = dir(folder);
 % Remove folders
 folderList = [listing.isdir]';
 listing(folderList) = [];
+
+% Iterator
+it = 1;
 
 % Get header information from each file
 for i = 1:numel(listing)
@@ -113,30 +117,62 @@ for i = 1:numel(listing)
         lD = size(descriptionText);
         lD = lD(1);
         
+        % Filenames
+        TEXT{it,1} = '----'; it = it+1;
+        escapedName = strrep(fileName,'_','\_');
+        TEXT{it,1} = char(['### ' escapedName]); it = it+1;
+        TEXT{it,1} = ''; it = it+1;
         
-        % RIGHT NOW IT STILL OVERWRITES THE TEXT EACH TIME ETC. BUT IT
-        % SEEMS PRETTY EASY SO FAR...
-        
-        fileID = fopen('C:\...\test.md','w');
-        
-        fprintf(fileID,'----\nFORMAT:\n');
-        
+        % Create format description
+        TEXT{it,1} = '#### Format'; it = it+1; 
+        TEXT{it,1} = ''; it = it+1;
+        TEXT{it,1} = '```matlab'; it = it+1;
         for i=1:lF
-            fprintf(fileID,'%s\n',formatText(i,:));
+            TEXT{it,1} = formatText(i,:); it = it+1;
         end
+        % Remove empty char array after FORMAT description
+        if strcmp(strtrim(TEXT{it-1,1}),'')
+            it=it-1;
+        end
+        TEXT{it,1} = '```'; it = it+1;
+        TEXT{it,1} = ''; it = it+1;
         
-        fprintf(fileID,'----\nDESCRIPTION:\n');
-        
+        % Create description
+        TEXT{it,1} = '#### Description';
+        it = it+1;
         for i=1:lD
-            fprintf(fileID,'%s\n',descriptionText(i,:));
+            TEXT{it,1} = descriptionText(i,:); it = it+1;
         end
         
-        
-        fclose(fileID);
+        % Empty lines
+        TEXT{it,1} = ''; it = it+1;
         
     end
     
 end
+
+% Trim char arrays
+for i=1:numel(TEXT)
+    TEXT(i,:) = strtrim(TEXT(i,:));
+end
+
+
+% Print information to markdown file
+fileID = fopen(mdoutput,'w');
+for i=1:numel(TEXT)
+    fprintf(fileID,'%s\n',char(TEXT(i,:)));
+end
+fclose(fileID);
+
+% Final output
+fprintf('Markdown file generated...\n');
+fprintf(BreakString);
+
+
+
+
+
+
 
 
 
