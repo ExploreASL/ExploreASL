@@ -19,17 +19,17 @@ function [Parms, x, Oldx] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
 % inheritance, any x.S.SetsID parameters (from participants.tsv) are loaded
 % as well. This function performs the following steps:
 %
-% 1) Load .mat parameter file
-% 2) Load JSON file
-% 3) Deal with warnings
-% 4) Find fields with scan-specific data in x.S.Sets, and use this if possible (per BIDS inheritance)
-% 5) Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
-% 6) Fix M0 parameter if not set
+% 1. Load .mat parameter file
+% 2. Load JSON file
+% 3. Deal with warnings
+% 4. Find fields with scan-specific data in x.S.Sets, and use this if possible (per BIDS inheritance)
+% 5. Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
+% 6. Fix M0 parameter if not set
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [~, x] = xASL_adm_LoadParms('/MyStudy/sub-001/ASL_1/ASL4D.json', x, bO);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 
