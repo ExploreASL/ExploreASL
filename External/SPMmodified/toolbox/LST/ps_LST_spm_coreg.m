@@ -272,8 +272,7 @@ spm_progress_bar('Init',V.dim(3),...
     ['Loading ' spm_file(V.fname,'filename')],...
     'Planes loaded');
 udat = zeros(V.dim,'uint8');
-st = rand('state'); % st = rng;
-rand('state',100); % rng(100,'v5uniform'); % rng('defaults');
+rng(0,'twister');
 for p=1:V.dim(3)
     img = spm_slice_vol(V,spm_matrix([0 0 p]),V.dim(1:2),1);
     acc = paccuracy(V,p);
@@ -287,7 +286,7 @@ for p=1:V.dim(3)
     spm_progress_bar('Set',p);
 end
 spm_progress_bar('Clear');
-rand('state',st); % rng(st);
+rng('default');
 
 
 %==========================================================================

@@ -85,7 +85,7 @@ function out = cat_vol_sanlm(varargin)
 
     % this function adds noise to the data to stabilize processing and we
     % have to define a specific random pattern to get the same results each time
-    if exist('rng','file') == 2, rng('default'); rng(0); else, rand('state',0); randn('state',0); end
+    if exist('rng','file') == 2, rng(0,'twister'); rng(0); else, rand('state',0); randn('state',0); end
     
     if nargin == 0 
         varargin{1}.data = cellstr(spm_select([1 Inf],'image','select images to filter'));

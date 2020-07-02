@@ -132,13 +132,12 @@ end
 [thresh,mx]  = spm_minmax(f);
 mn           = zeros(K,1);
 % give same results each time
-st = rand('state'); % st = rng;
-rand('state',0); % rng(0,'v5uniform'); % rng('defaults');
+rng(0,'twister');
 for k1=1:Kb
     kk = sum(lkp==k1);
     mn(lkp==k1) = rand(kk,1)*mx;
 end
-rand('state',st); % rng(st);
+rng('default');
 vr           = ones(K,1)*mx^2;
 mg           = ones(K,1)/K;
 

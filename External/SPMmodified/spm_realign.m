@@ -236,8 +236,7 @@ if numel(P)<2, return; end
 skip = sqrt(sum(P(1).mat(1:3,1:3).^2)).^(-1)*flags.sep;
 d    = P(1).dim(1:3);                                                                                                                        
 lkp  = flags.lkp;
-st   = rand('state'); % st = rng;
-rand('state',0); % rng(0,'v5uniform'); % rng('defaults');
+rng(0,'twister');
 if d(3) < 3
     lkp  = [1 2 6];
     [x1,x2,x3] = ndgrid(1:skip(1):d(1)-.5, 1:skip(2):d(2)-.5, 1:skip(3):d(3));
@@ -249,7 +248,7 @@ else
     x2   = x2 + rand(size(x2))*0.5;
     x3   = x3 + rand(size(x3))*0.5; 
 end
-rand('state',st); % rng(st);
+rng('default');
 
 x1 = x1(:);
 x2 = x2(:);

@@ -218,6 +218,24 @@ External/SPMmodified/toolbox/cat12/cat_main_registration.m
 *********************************************************************************************************
 IMAGE PROCESSING REPRODUCIBILITY
 
+DATE+NAME:2020_07_03, Jan Petr
+DESCRIPTION:
+Reseeding the random number generator for certain functions to make sure they run reproducibly.
+Removing the legacy function for that and using RNG instead. Rather than using a 'default' random number generator that might differ
+potentially between Matlab version, we have used 'twister' everywhere.
+FILEs:
+External/SPMmodified/spm_coreg.m - line 291
+External/SPMmodified/spm_maff8.m line 79
+External/SPMmodified/spm_preproc.m line 132
+External/SPMmodified/spm_preproc8.m line 100
+External/SPMmodified/spm_realign.m line 236
+External/SPMmodified/toolbox/LST/ps_LST_spm_coreg.m line 287
+External/SPMmodified/toolbox/OldNorm/spm_affreg.m line 94
+External/SPMmodified/toolbox/cat12/cat_run_job.m lin 733 - switch off turning of the warnings for this reseeding reasons
+External/SPMmodified/toolbox/cat12/cat_spm_affreg.m line 94
+External/SPMmodified/toolbox/cat12/cat_spm_preproc8.m line 110
+External/SPMmodified/toolbox/cat12/cat_vol_sanlm.m line 85
+
 DATE+NAME:2019_03_28, Jan Petr
 DESCRIPTION:
 Added rounding to inversions in CAT12 to avoid having reproducibility issues between OS and Matlab versions

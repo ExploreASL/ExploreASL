@@ -79,7 +79,7 @@ sf = [mn 1;mx 1]\[0;255];
 
 if spm_type(V.dt(1),'intt'),
     scrand = V.pinfo(1);
-    rand('seed',1);
+    rng(0,'twister');
 else
     scrand = 0;
 end

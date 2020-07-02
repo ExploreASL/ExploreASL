@@ -100,12 +100,8 @@ kron = @(a,b) spm_krutil(a,b);
 
 % Some random numbers are used, so initialise random number generators to
 % give the same results each time.
-%rng('default');
+rng(0,'twister');
 
-% These will eventually need changing
-% because using character strings to control RAND and RANDN is deprecated.
-randn('state',0);
-rand('state',0);
 
 % Fudge Factor - to (approximately) account for non-independence of voxels.
 % Note that variances add, and that Var[a*x + b*y] = a^2*Var[x] + b^2*Var[y]

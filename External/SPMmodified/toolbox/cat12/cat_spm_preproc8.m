@@ -110,7 +110,7 @@ kron = @(a,b) spm_krutil(a,b);
 % Updated RD20200125
 % this function adds noise to the data to stabilize processing and we
 % have to define a specific random pattern to get the same results each time
-if exist('rng','file') == 2, rng('default'); rng(0); else, rand('state',0); randn('state',0); end
+if exist('rng','file') == 2, rng(0,'twister'); rng(0); else, rand('state',0); randn('state',0); end
 
 % Fudge Factor - to (approximately) account for non-independence of voxels.
 % Note that variances add, and that Var[a*x + b*y] = a^2*Var[x] + b^2*Var[y]

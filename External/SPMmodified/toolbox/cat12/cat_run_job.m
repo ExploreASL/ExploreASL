@@ -733,9 +733,7 @@ function cat_run_job(job,tpm,subj)
           stime = cat_io_cmd('SPM preprocessing 1 (estimate 2):','','',job.extopts.verb-1,stime);
           obj.tol = job.opts.tol;  
           if job.opts.redspmres==0 
-            warning off; % turn off "Warning: Using 'state' to set RANDN's internal state causes RAND ..."
             res = cat_spm_preproc8(obj);
-            warning on; 
           else
             image1 = obj.image; 
             [obj.image,redspmres]  = cat_vol_resize(obj.image,'interpv',1);
