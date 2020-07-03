@@ -43,6 +43,12 @@ if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.bNativeSpaceAnalysis)
 	x.bNativeSpaceAnalysis = 0;
 end
 
+% Check if we have ASL or not, to know if we need to run ASL-specific stuff/warnings
+bHasASL = ~isempty(xASL_adm_GetFileList(x.D.PopDir, '^.*ASL_\d\.nii$'));
+if ~bHasASL
+    warning('Detected no ASL scans, skipping ASL-specific parts of the Population module');
+end
+
 x = xASL_init_InitializeMutex(x, 'QC'); % starts mutex locking process to ensure that everything will run only once
 x = xASL_init_FileSystem(x);
 xASL_adm_CreateDir(x.S.StatsDir);
@@ -104,11 +110,11 @@ x = xASL_adm_CreateFileReport(x);
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 2    Create population-based analysis mask for ROI-based analysis & VBA
-if ~x.mutex.HasState(StateName{2})
+if ~x.mutex.HasState(StateName{2}) && bHasASL
     x = xASL_im_CreateAnalysisMask(x);
     x.mutex.AddState(StateName{2});
     fprintf('%s\n',[StateName{2} ' was performed']);
-else
+elseif bHasASL
     fprintf('%s\n',[StateName{2} ' has already been performed, skipping...']);
 end
 
@@ -116,11 +122,11 @@ end
 
 %% -----------------------------------------------------------------------------
 %% 3    Multi-sequence equalization
-if ~x.mutex.HasState(StateName{3})
+if ~x.mutex.HasState(StateName{3}) && bHasASL
     xASL_wrp_CreateBiasfield(x); % later to include: smoothness equalization, geometric distortion correction etc
     x.mutex.AddState(StateName{3});
     fprintf('%s\n',[StateName{3} ' was performed']);
-else
+elseif bHasASL
     fprintf('%s\n',[StateName{3} ' has already been performed, skipping...']);
 end
 
@@ -162,7 +168,7 @@ end
 
 %% -----------------------------------------------------------------------------
 %% 6    Summarize motion statistics (using generated net displacement vector (NDV) motion results from ASL-realign module)
-if ~x.mutex.HasState(StateName{6})
+if ~x.mutex.HasState(StateName{6}) && bHasASL
     try
         xASL_stat_GetMotionStatistics(x);
         x.mutex.AddState(StateName{6});
@@ -171,7 +177,7 @@ if ~x.mutex.HasState(StateName{6})
         warning('Motion summarizing failed:');
         fprintf('%s\n',ME.message);
     end
-else
+elseif bHasASL
     fprintf('%s\n',[StateName{6} ' has already been performed, skipping...']);
 end
 
@@ -254,14 +260,14 @@ end
 
 %% -----------------------------------------------------------------------------
 %% 8    QC categorization based on spatial CoV:
-if ~x.mutex.HasState(StateName{8})
+if ~x.mutex.HasState(StateName{8}) && bHasASL
     xASL_qc_SortBySpatialCoV(x);
 
     % When this has been visually corrected, following function will obtain the QC categories
     % xASL_qc_ObtainQCCategoriesFromJPG(x);
     x.mutex.AddState(StateName{8});
     fprintf('%s\n',[StateName{8} ' was performed']);
-else
+elseif bHasASL
     fprintf('%s\n',[StateName{8} ' has already been performed, skipping...']);
 end
 
