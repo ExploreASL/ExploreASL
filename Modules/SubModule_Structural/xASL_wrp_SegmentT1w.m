@@ -169,8 +169,8 @@ end
 
 %% -------------------------------------------------------------------------------------------
 %% 3) Segmentation using CAT12
-%  This runs by default (default = x.SegmentSPM == 0)
-%  When it fails, it will pass x.SegmentSPM == 1
+%  This runs by default (default = x.SegmentSPM12 == 0)
+%  When it fails, it will pass x.SegmentSPM12 == 1
 if ~SegmentSPM12
     SegmentSPM12 = xASL_wrp_CAT12Segmentation(x);
 end

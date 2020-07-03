@@ -99,7 +99,7 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
         [~, x] = xASL_Iteration(x,'xASL_module_Structural');
         % The following DARTEL module is an optional extension of the structural module
         % to create population-specific templates
-        if isfield(x,'Segment_SPM12') && x.Segment_SPM12 && x.nSubjects>1
+        if isfield(x,'SegmentSPM12') && x.SegmentSPM12 && x.nSubjects>1
             % in case we used SPM12 instead of CAT12 for segmentation,
             % we have to run DARTEL separately
             [~, x] = xASL_Iteration(x,'xASL_module_DARTEL');

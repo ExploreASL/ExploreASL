@@ -27,9 +27,9 @@ function xASL_wrp_GetVolumetrics(x)
 
 %% ------------------------------------------------------------------------------------------------
 %% 1) File management & store tissue volumes
-catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
-MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
-SaveFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']);
+catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']); % CAT12 results
+MatFile = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']); % SPM12 results
+SaveFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']); % ExploreASL results
 
 if xASL_exist(catVolFile, 'file') % for CAT12 segmentation
     catVol = load(catVolFile);
@@ -57,7 +57,7 @@ elseif exist(MatFile, 'file') % for SPM12 segmentation
     matlabbatch{1}.spm.util.tvol.matfiles   = {MatFile};
     matlabbatch{1}.spm.util.tvol.tmax       = 6;
     matlabbatch{1}.spm.util.tvol.mask       = fullfile(x.SPMDIR, 'tpm', 'mask_ICV.nii,1');
-    matlabbatch{1}.spm.util.tvol.outf       = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.csv']);
+    matlabbatch{1}.spm.util.tvol.outf       = SaveFile;
 
     spm_jobman('run', matlabbatch);
 else

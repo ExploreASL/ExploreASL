@@ -186,7 +186,7 @@ function x = DataParTemplate(x)
 %                 - options:
 %                   - 1 = skip processing of a subject that does not have a M0 image
 %                   - 0 = do not skip anything
-% x.SegmentSPM12 - boolean to specify if SPM12 is run instead of CAT12 (OPTIONAL, DEFAULT = 0)
+% x.SegmentSPM12 - boolean to specify if SPM12 segmentation is run instead of CAT12 (OPTIONAL, DEFAULT = 0)
 %                - options:
 %                  - 1 = run SPM12
 %                  - 0 = run CAT12

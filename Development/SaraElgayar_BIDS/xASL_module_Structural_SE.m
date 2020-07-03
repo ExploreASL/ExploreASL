@@ -555,7 +555,7 @@ end
 % this crashes, then we can run SPM12
 
 if ~isfield(x,'Segment_SPM12')
-    x.Segment_SPM12 = 0;
+    x.SegmentSPM12 = 0;
 end
 % by default, use CAT12, not SPM12 for segmentation
 

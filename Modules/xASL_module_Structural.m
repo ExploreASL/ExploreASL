@@ -336,18 +336,19 @@ end
 iState = 6;
 % CAT12 outperforms SPM12. Therefore, always run CAT12, unless this crashes, then we try SPM12
 
-if ~isfield(x,'Segment_SPM12')
-    x.Segment_SPM12 = false; % by default, use CAT12, not SPM12 for segmentation
+if ~isfield(x,'SegmentSPM12')
+    x.SegmentSPM12 = false; % by default, use CAT12, not SPM12 for segmentation
 end
 if ~isfield(x,'bFixResolution')
     x.bFixResolution = false; % by default, keep the original resolution
 end
 
 % Now check if the segmentation results exist
-catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
-TissueVolFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.tsv']);
-MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
+catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']); % CAT12 result
+TissueVolFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.tsv']); % ExploreASL naming
+MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']); % SPM12 result
 VolumetricResultsMissing = ~xASL_exist(catVolFile, 'file') && ~xASL_exist(MatFile, 'file') && ~xASL_exist(TissueVolFile, 'file');
+% we check all 3 here, as the results can come from CAT12 or from SPM12
 SegmentationsMissing = ~xASL_exist(x.P.Path_c1T1, 'file') || ~xASL_exist(x.P.Path_c2T1, 'file');
 Reprocessing = VolumetricResultsMissing || SegmentationsMissing;
 
@@ -366,7 +367,7 @@ if x.mutex.HasState(StateName{iState}) && Reprocessing
 end
 if ~x.mutex.HasState(StateName{iState}) || Reprocessing
 
-    x = xASL_wrp_SegmentT1w(x, x.Segment_SPM12);
+    x = xASL_wrp_SegmentT1w(x, x.SegmentSPM12);
 
     x.mutex.AddState(StateName{iState});  % tracks progress through lock/*.status files, & locks current run
     xASL_adm_CompareDataSets([], [], x); % unit testing
