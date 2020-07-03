@@ -1,4 +1,4 @@
-function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath)
+function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath, bPull)
 %xASL_qc_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
 %
 % FORMAT: [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, RunMethod)
@@ -21,6 +21,7 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %                 Option 0: Other (DEFAULT)
 %   RunTimePath - When using a compiled version, the location of the
 %                 Matlab RunTime libraries (e.g. '/usr/local/MATLAB/MATLAB_Runtime/v96')
+%   bPull       - pull new version of the software (OPTIONAL, DEFAULT=true)
 %                 
 % OUTPUT:
 %   ResultsTable - Table containing all results from the test runs
@@ -78,34 +79,45 @@ end
 if nargin<5 || isempty(MatlabPath)
     MatlabPath = 'matlab';
 end
-if nargin<6
+if nargin<6 || isempty(EmailAddress)
     EmailAddress = [];
     Password = [];
-elseif nargin<7 || isempty(Password)
+end
+
+if ~isempty(EmailAddress) && (nargin<7 || isempty(Password))
     warning('Please provide password for g-mail account!');
 end
+
 if nargin<8 || isempty(bOverwrite)
     bOverwrite = true;
 end
-if nargin<9
+
+if nargin<9 || isempty(testDataUsed)
     testDataUsed = 0;
 end
+
 if RunMethod>2
     % We will test the compiled version, but do some checks first
     if isempty(MatlabPath) || ~exist(MatlabPath, 'file') || ~strcmp(MatlabPath(end-2:end),'.sh')
         warning('Please provide the path to the bash script calling the compiled ExploreASL, skipping');
         return;
-    elseif isempty(RunTimePath) || ~exist(RunTimePath, 'dir')
+    elseif nargin<10 || isempty(RunTimePath) || ~exist(RunTimePath, 'dir')
         warning('Please provide the path to the Matlab Runtime installation, skipping');
         return;        
     end
 end
 
+if nargin<11 || isempty(bPull)
+	bPull = 1;
+end
+
 % ============================================================
 %% 1) Pull latest GitHub version
 % assuming we are in ExploreASL folder
-Answer = system('git fetch','-echo');
-Answer = system('git pull','-echo');
+if bPull
+	Answer = system('git fetch','-echo');
+	Answer = system('git pull','-echo');
+end
 
 x = ExploreASL_Master('',0);
 
