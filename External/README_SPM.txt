@@ -63,6 +63,14 @@ likewise if xasl_quality is set to 2 (when WMH_SEGM pre-exists), load ps_LST_lpa
 *********************************************************************************************************
 REDUCE CODE SIZE
 
+DATE+Name: 2020-07-04 HM
+DESCRIPTION:
+Disable previous CAT12 versions for increased stability
+FILE:
+cat_conf_output.m @ 394
+cat_conf_tools.m @ 135, 168
+tbx_cfg_cat.m @ 11, 103, 107, 112, 145, 239, 242, 245
+
 DATE+NAME:2019_11_13, HM
 DESCRIPTION:
 Remove unused SPM stuff to reduce data size ExploreASL/SPM compilation:

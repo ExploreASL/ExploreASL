@@ -8,9 +8,9 @@ function cat = tbx_cfg_cat
 %#ok<*AGROW>
  
 addpath(fileparts(which(mfilename)));
-addpath(fullfile(fileparts(which(mfilename)),'cat_run1173'));
-addpath(fullfile(fileparts(which(mfilename)),'cat_run1173plus'));
-addpath(fullfile(fileparts(which(mfilename)),'cat_run1445'));
+% addpath(fullfile(fileparts(which(mfilename)),'cat_run1173')); % EXPLOREASL HACK
+% addpath(fullfile(fileparts(which(mfilename)),'cat_run1173plus'));
+% addpath(fullfile(fileparts(which(mfilename)),'cat_run1445'));
 %addpath(fullfile(fileparts(which(mfilename)),'cat_run1585'));
 
 %% ------------------------------------------------------------------------
@@ -100,18 +100,18 @@ end
 extopts     = cat_conf_extopts(expert);   
 opts        = cat_conf_opts(expert); 
 %ROI       = cat_conf_ROI(expert);       % ROI options
-%[output,output_spm,output1173,output1445,output1585] = cat_conf_output(expert); 
-[output,output_spm,output1173,output1445] = cat_conf_output(expert); 
+%[output,output_spm,output1173,output1445,output1585] = cat_conf_output(expert); % EXPLOREASL HACK
+[output,output_spm] = cat_conf_output(expert); 
 
 %------------------------------------------------------------------------
-% additional segmentation versions
-extopts1173                   = cat_conf_extopts1173(expert);   
-extopts1173plus               = cat_conf_extopts1173plus(expert);   
-extopts1445                   = cat_conf_extopts1445(expert);   
+% additional segmentation versions % EXPLOREASL HACK
+% extopts1173                   = cat_conf_extopts1173(expert);   
+% extopts1173plus               = cat_conf_extopts1173plus(expert);   
+% extopts1445                   = cat_conf_extopts1445(expert);   
 %extopts1585                   = cat_conf_extopts1585(expert);   
-opts1173                      = cat_conf_opts1173(expert); 
-opts1173plus                  = cat_conf_opts1173plus(expert); 
-opts1445                      = cat_conf_opts1445(expert); 
+% opts1173                      = cat_conf_opts1173(expert); 
+% opts1173plus                  = cat_conf_opts1173plus(expert); 
+% opts1445                      = cat_conf_opts1445(expert); 
 %opts1585                      = cat_conf_opts1585(expert); 
 
 %% ------------------------------------------------------------------------
@@ -142,61 +142,61 @@ estwrite.help   = {
 'Another important extension to the SPM12 segmentation is the integration of the Dartel normalisation (Ashburner 2007) into the toolbox by an already existing Dartel template in MNI space. This template was derived from 555 healthy control subjects of the IXI-database (http://www.brain-development.org) and provides the six Dartel iteration. Thus, for the majority of studies the creation of sample-specific Dartel templates is not necessary anymore.'};
 
 %------------------------------------------------------------------------
-% CAT surface processing with existing SPM segmentation 
-
-% 1173
-estwrite1173        = estwrite; 
-estwrite1173.name   = 'CAT12.1: Segmentation R1173 (2017/09)';
-%NEW NAME?: estwrite1173.name   = 'CAT12.1: Segmentation R1392 (2017/09)';
-estwrite1173.tag    = 'estwrite1173';
-estwrite1173.prog   = @cat_run1173;
-estwrite1173.help   = [estwrite1173.help;{'';'This batch calls the stable version of the main preprocessing of release R1173 with only slight runtime bug fixes.';''}];
-
-% 1173+ = 1392
-estwrite1173plus        = estwrite1173;
-estwrite1173plus.name   = 'CAT12.3: Segmentation R1173 plus (2018/12)';
-%NEW NAME?: estwrite1173plus.name   = 'CAT12.3: Segmentation R1392 (2018/12)';
-estwrite1173plus.tag    = 'estwrite1173plus';
-estwrite1173plus.prog   = @cat_run1173plus;
-estwrite1173plus.help   = [estwrite1173.help;{'';'This batch calls the revised version of the main preprocessing of release R1173 that include upgrades by several subfunctions (e.g. skull-stripping) from the current CAT12 version.';''}];
-
-% 1445
-estwrite1445        = estwrite; 
-estwrite1445.name   = 'CAT12.6: Segmentation R1445 (2019/03)';
-estwrite1445.tag    = 'estwrite1445';
-estwrite1445.prog   = @cat_run1445;
-estwrite1445.help   = [estwrite1445.help;{'';'This batch calls the stable version of the main preprocessing of release 1445 with only slight runtime bug fixes.';''}];
-
-% 1585
-if 0
-estwrite1585        = estwrite; 
-estwrite1585.name   = 'CAT12.7: Segmentation R1585 (2020/03)';
-estwrite1585.tag    = 'estwrite1585';
-estwrite1585.prog   = @cat_run1585;
-estwrite1585.help   = [estwrite1585.help;{'';'This batch calls the stable version of the main preprocessing of release 1585 with only slight runtime bug fixes.';''}];
-end
-
-if numcores > 1
-  estwrite1173.val      = {data nproc opts1173     extopts1173     output1173}; 
-  estwrite1173plus.val  = {data nproc opts1173plus extopts1173plus output1445}; 
-  if expert>1
-    estwrite1445.val    = {data data_wmh nproc opts1445     extopts1445     output1445}; 
-%    estwrite1585.val    = {data data_wmh nproc opts1585     extopts1585     output1585}; 
-  else
-    estwrite1445.val    = {data nproc opts1445     extopts1445     output1445}; 
-%    estwrite1585.val    = {data nproc opts1585     extopts1585     output1585}; 
-  end
-else
-  estwrite1173.val      = {data opts1173     extopts1173     output1173};
-  estwrite1173plus.val  = {data opts1173plus extopts1173plus output1445};
-  if expert>1
-    estwrite1445.val    = {data data_wmh opts1445     extopts1445     output1445};
-%    estwrite1585.val    = {data data_wmh opts1585     extopts1585     output1585}; 
-  else
-    estwrite1445.val    = {data opts1445     extopts1445     output1445};
-%    estwrite1585.val    = {data opts1585     extopts1585     output1585}; 
-  end
-end
+% CAT surface processing with existing SPM segmentation % EXPLOREASL HACK
+% 
+% % 1173
+% estwrite1173        = estwrite; 
+% estwrite1173.name   = 'CAT12.1: Segmentation R1173 (2017/09)';
+% %NEW NAME?: estwrite1173.name   = 'CAT12.1: Segmentation R1392 (2017/09)';
+% estwrite1173.tag    = 'estwrite1173';
+% estwrite1173.prog   = @cat_run1173;
+% estwrite1173.help   = [estwrite1173.help;{'';'This batch calls the stable version of the main preprocessing of release R1173 with only slight runtime bug fixes.';''}];
+% 
+% % 1173+ = 1392
+% estwrite1173plus        = estwrite1173;
+% estwrite1173plus.name   = 'CAT12.3: Segmentation R1173 plus (2018/12)';
+% %NEW NAME?: estwrite1173plus.name   = 'CAT12.3: Segmentation R1392 (2018/12)';
+% estwrite1173plus.tag    = 'estwrite1173plus';
+% estwrite1173plus.prog   = @cat_run1173plus;
+% estwrite1173plus.help   = [estwrite1173.help;{'';'This batch calls the revised version of the main preprocessing of release R1173 that include upgrades by several subfunctions (e.g. skull-stripping) from the current CAT12 version.';''}];
+% 
+% % 1445
+% estwrite1445        = estwrite; 
+% estwrite1445.name   = 'CAT12.6: Segmentation R1445 (2019/03)';
+% estwrite1445.tag    = 'estwrite1445';
+% estwrite1445.prog   = @cat_run1445;
+% estwrite1445.help   = [estwrite1445.help;{'';'This batch calls the stable version of the main preprocessing of release 1445 with only slight runtime bug fixes.';''}];
+% 
+% % 1585
+% if 0
+% estwrite1585        = estwrite; 
+% estwrite1585.name   = 'CAT12.7: Segmentation R1585 (2020/03)';
+% estwrite1585.tag    = 'estwrite1585';
+% estwrite1585.prog   = @cat_run1585;
+% estwrite1585.help   = [estwrite1585.help;{'';'This batch calls the stable version of the main preprocessing of release 1585 with only slight runtime bug fixes.';''}];
+% end
+% 
+% if numcores > 1
+%   estwrite1173.val      = {data nproc opts1173     extopts1173     output1173}; 
+%   estwrite1173plus.val  = {data nproc opts1173plus extopts1173plus output1445}; 
+%   if expert>1
+%     estwrite1445.val    = {data data_wmh nproc opts1445     extopts1445     output1445}; 
+% %    estwrite1585.val    = {data data_wmh nproc opts1585     extopts1585     output1585}; 
+%   else
+%     estwrite1445.val    = {data nproc opts1445     extopts1445     output1445}; 
+% %    estwrite1585.val    = {data nproc opts1585     extopts1585     output1585}; 
+%   end
+% else
+%   estwrite1173.val      = {data opts1173     extopts1173     output1173};
+%   estwrite1173plus.val  = {data opts1173plus extopts1173plus output1445};
+%   if expert>1
+%     estwrite1445.val    = {data data_wmh opts1445     extopts1445     output1445};
+% %    estwrite1585.val    = {data data_wmh opts1585     extopts1585     output1585}; 
+%   else
+%     estwrite1445.val    = {data opts1445     extopts1445     output1445};
+% %    estwrite1585.val    = {data opts1585     extopts1585     output1585}; 
+%   end
+% end
 
 extopts_spm = cat_conf_extopts(expert,1);   
 estwrite_spm        =  cfg_exbranch;
@@ -236,13 +236,13 @@ cat.name   = 'CAT12';
 cat.tag    = 'cat';
 if expert==2
 %  cat.values = {estwrite estwrite_spm estwrite1585 estwrite1445 estwrite1173plus estwrite1173 catsimple catsimple_long tools stools stoolsexp};
-  cat.values = {estwrite estwrite_spm estwrite1445 estwrite1173plus estwrite1173 catsimple catsimple_long tools stools stoolsexp};
+  cat.values = {estwrite estwrite_spm catsimple catsimple_long tools stools stoolsexp}; % EXPLOREASL HACK
 elseif expert==1
 %  cat.values = {estwrite estwrite_spm estwrite1585 estwrite1445 estwrite1173plus estwrite1173 catsimple catsimple_long tools stools };
-  cat.values = {estwrite estwrite_spm estwrite1445 estwrite1173plus estwrite1173 catsimple catsimple_long tools stools };
+  cat.values = {estwrite estwrite_spm catsimple catsimple_long tools stools }; % EXPLOREASL HACK
 else
 %  cat.values = {estwrite estwrite1585 estwrite1445 estwrite1173plus estwrite1173 catsimple catsimple_long tools stools}; 
-  cat.values = {estwrite estwrite1445 estwrite1173plus estwrite1173 catsimple catsimple_long tools stools}; 
+  cat.values = {estwrite catsimple catsimple_long tools stools}; % EXPLOREASL HACK
 end
 %------------------------------------------------------------------------
 

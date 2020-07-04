@@ -391,39 +391,40 @@ function [output,output_spm,output1173,output1445] = cat_conf_output(expert)
   ''
   };
 
-  % additional segmentation versions
-  [ROI1173,atlases1173]         = cat_conf_ROI1173(expert);       % ROI options
-  [ROI1445,atlases1445]         = cat_conf_ROI1445(expert);       % ROI options
-%  [ROI1585,atlases1585]         = cat_conf_ROI1585(expert);       % ROI options
-  
-  output1173            = output;
-  if expert==2
-    output1173.val      = {surface ROI1173 atlases1173 grey white csf wmh tpmc atlas label bias las jacobian warps}; 
-  elseif expert==1
-    output1173.val      = {surface ROI1173 atlases1173 grey white csf wmh label bias las jacobian warps};
-  else
-    output1173.val      = {surface ROI1173 grey white jacobian warps};
-  end
-  
-  output1445            = output;
-  if expert==2
-    output1445.val      = {surface ROI1445 atlases1445 grey white csf wmh tpmc atlas label bias las jacobian warps}; 
-  elseif expert==1
-    output1445.val      = {surface ROI1445 atlases1445 grey white csf wmh label bias las jacobian warps};
-  else
-    output1445.val      = {surface ROI1445 grey white jacobian warps};
-  end
-
-if 0
-  output1585            = output;
-  if expert==2
-    output1585.val      = {surface ROI1585 atlases1585 grey white csf wmh tpmc atlas label bias las jacobian warps}; 
-  elseif expert==1
-    output1585.val      = {surface ROI1585 atlases1585 grey white csf wmh label bias las jacobian warps};
-  else
-    output1585.val      = {surface ROI1585 atlases1585 grey white jacobian warps};
-  end
-end
+%   % additional segmentation versions % EXPLOREASLHACK, DISABLE PREVIOUS
+%   CAT12 VERSIONS
+%   [ROI1173,atlases1173]         = cat_conf_ROI1173(expert);       % ROI options
+%   [ROI1445,atlases1445]         = cat_conf_ROI1445(expert);       % ROI options
+% %  [ROI1585,atlases1585]         = cat_conf_ROI1585(expert);       % ROI options
+%   
+%   output1173            = output;
+%   if expert==2
+%     output1173.val      = {surface ROI1173 atlases1173 grey white csf wmh tpmc atlas label bias las jacobian warps}; 
+%   elseif expert==1
+%     output1173.val      = {surface ROI1173 atlases1173 grey white csf wmh label bias las jacobian warps};
+%   else
+%     output1173.val      = {surface ROI1173 grey white jacobian warps};
+%   end
+%   
+%   output1445            = output;
+%   if expert==2
+%     output1445.val      = {surface ROI1445 atlases1445 grey white csf wmh tpmc atlas label bias las jacobian warps}; 
+%   elseif expert==1
+%     output1445.val      = {surface ROI1445 atlases1445 grey white csf wmh label bias las jacobian warps};
+%   else
+%     output1445.val      = {surface ROI1445 grey white jacobian warps};
+%   end
+% 
+% if 0
+%   output1585            = output;
+%   if expert==2
+%     output1585.val      = {surface ROI1585 atlases1585 grey white csf wmh tpmc atlas label bias las jacobian warps}; 
+%   elseif expert==1
+%     output1585.val      = {surface ROI1585 atlases1585 grey white csf wmh label bias las jacobian warps};
+%   else
+%     output1585.val      = {surface ROI1585 atlases1585 grey white jacobian warps};
+%   end
+% end
   
 	output_spm  = output; 
 	if expert==2
