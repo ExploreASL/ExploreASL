@@ -54,22 +54,7 @@ x = xASL_init_FileSystem(x);
 xASL_adm_CreateDir(x.S.StatsDir);
 
 % Obtain ASL sequence
-if ~isfield(x,'Sequence') && isfield(x,'readout_dim')
-    if strcmp(x.readout_dim,'2D')
-       x.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of vendor
-    elseif strcmp(x.readout_dim,'3D') && ( ~isempty(regexp(x.Vendor,'Philips')) || ~isempty(regexp(x.Vendor,'Siemens')) )
-           x.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
-    elseif strcmp(x.readout_dim,'3D') && ~isempty(regexp(x.Vendor,'GE'))
-           x.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
-    end
-elseif ~isfield(x,'Sequence') && ~isfield(x,'readout_dim')
-    warning('No general x.Sequence defined, perhaps multiple sequences, needs to be implemented still in Population module');
-    fprintf('Setting x.Sequence=3D spiral to fool the pipeline here\n');
-    fprintf('As this sequence doesnt have any susceptibility masks\n');
-    fprintf('Note that this disables any masking of susceptibility signal dropout areas\n');
-    x.Sequence = '3D_spiral';
-    x.readout_dim = '3D';
-end
+x = xASL_adm_DefineASLSequence(x);
 
 StateName{1} = '010_CreatePopulationTemplates';
 StateName{2} = '020_CreateAnalysisMask';

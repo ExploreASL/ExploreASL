@@ -102,6 +102,9 @@ elseif ~x.S.bMasking
     fprintf('Masking disabled upon request, check results\n');
 end
 
+% Obtain ASL sequence
+x = xASL_adm_DefineASLSequence(x);
+
 bWarnedPVWMH = false;
 namesROIlocal = x.S.NamesROI;
 
