@@ -462,12 +462,12 @@ for iSubject=1:x.nSubjects
 			x.S.SagSlices = x.S.slices;
 			
 			LabelIM = xASL_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:,[1:3:end]), x.WBmask));
-			LabelIM = xASL_im_TransformData2View(LabelIM);
-			DataIM = xASL_im_TransformData2View(Data3D);
+			LabelIM = xASL_vis_TransformData2View(LabelIM);
+			DataIM = xASL_vis_TransformData2View(Data3D);
 			CombiIM = xASL_im_ProjectLabelsOverData(DataIM, LabelIM, x);
 			
 			xASL_adm_CreateDir(x.S.CheckMasksDir);
-			xASL_imwrite(CombiIM, fullfile(x.S.CheckMasksDir,[x.S.output_ID(1:end-16) '_' x.S.SUBJECTID{SubjSess,1} '.jpg']));
+			xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir,[x.S.output_ID(1:end-16) '_' x.S.SUBJECTID{SubjSess,1} '.jpg']));
 		end
 		
 		%         % Labeling efficiency normalization

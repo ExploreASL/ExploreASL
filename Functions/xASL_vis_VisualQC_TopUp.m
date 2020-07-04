@@ -1,7 +1,7 @@
-function [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_im_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, iSubject, CheckDir)
-%xASL_im_VisualQC_TopUp Compute & visualize the effect of TopUp
+function [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_vis_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, iSubject, CheckDir)
+%xASL_vis_VisualQC_TopUp Compute & visualize the effect of TopUp
 %
-% FORMAT: [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_im_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, iSubject, CheckDir)
+% FORMAT: [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_vis_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, iSubject, CheckDir)
 %
 % INPUT:
 %   PathPopB0 	    - path to NIfTI containing NormPE & RevPE images resampled to standard space (called B0 by FSL TopUp) (REQUIRED)
@@ -20,7 +20,7 @@ function [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_im_VisualQC_TopUp(
 %              row) & after (lower row) TopUp.
 %
 %
-% EXAMPLE: xASL_im_VisualQC_TopUp('analysis/Sub-001/dwi/B0.nii', 'analysis/Sub-001/dwi/Unwarped.nii', x, 10, 'analysis/Population/TopUpCheckDir');
+% EXAMPLE: xASL_vis_VisualQC_TopUp('analysis/Sub-001/dwi/B0.nii', 'analysis/Sub-001/dwi/Unwarped.nii', x, 10, 'analysis/Population/TopUpCheckDir');
 %
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
@@ -47,10 +47,10 @@ end
 x.S.TraSlices = x.S.slicesLarge;
 
 %% Create the figure parts
-IM1 = xASL_im_CreateVisualFig(x, Image{1}(:,:,:,1));
-IM2 = xASL_im_CreateVisualFig(x, Image{1}(:,:,:,2));
-IM3 = xASL_im_CreateVisualFig(x, Image{2}(:,:,:,1));
-IM4 = xASL_im_CreateVisualFig(x, Image{2}(:,:,:,2));
+IM1 = xASL_vis_CreateVisualFig(x, Image{1}(:,:,:,1));
+IM2 = xASL_vis_CreateVisualFig(x, Image{1}(:,:,:,2));
+IM3 = xASL_vis_CreateVisualFig(x, Image{2}(:,:,:,1));
+IM4 = xASL_vis_CreateVisualFig(x, Image{2}(:,:,:,2));
 
 %% Create the asymmetry figure parts
 for ii=1:2
@@ -84,7 +84,7 @@ SortInt = SortInt(round(ClipValue*length(SortInt)));
 
 for ii=1:2
     DeltaIm{ii}(DeltaIm{ii}>SortInt) = SortInt; % clip
-    RMSimS{ii} = xASL_im_CreateVisualFig(x, DeltaIm{ii}, [], [], [], x.S.jet256, false);
+    RMSimS{ii} = xASL_vis_CreateVisualFig(x, DeltaIm{ii}, [], [], [], x.S.jet256, false);
 end
 
 %% Save the Figure
@@ -92,7 +92,7 @@ ComposIm = [IM1,IM2,RMSimS{1};IM3,IM4,RMSimS{2}];
 
 OutputFile = fullfile(CheckDir, ['TopUp_QC_' x.SUBJECTS{iSubject} '.jpg']);
 xASL_delete(OutputFile);
-xASL_imwrite(ComposIm, OutputFile);
+xASL_vis_Imwrite(ComposIm, OutputFile);
 
 
 end

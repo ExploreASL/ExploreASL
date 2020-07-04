@@ -213,10 +213,10 @@ if x.S.SubjectWiseVisualization
     % can be improved later)
     for iSub=1:size(x.S.InputMasks,3)
         xASL_TrackProgress(iSub,size(x.S.InputMasks,3));
-        LabelIM = xASL_im_TransformData2View(xASL_Convert4D_3D_atlas(xASL_im_Column2IM(x.S.InputMasks(:,:,iSub),x.WBmask)),x);
-        DataIM = xASL_im_TransformData2View(x.skull.*xASL_io_Nifti2Im(fullfile(x.D.TemplateDir,'rT1.nii')),x);
+        LabelIM = xASL_vis_TransformData2View(xASL_Convert4D_3D_atlas(xASL_im_Column2IM(x.S.InputMasks(:,:,iSub),x.WBmask)),x);
+        DataIM = xASL_vis_TransformData2View(x.skull.*xASL_io_Nifti2Im(fullfile(x.D.TemplateDir,'rT1.nii')),x);
         CombiIM = xASL_im_ProjectLabelsOverData(DataIM,LabelIM,x);
-        xASL_imwrite(CombiIM, fullfile(x.S.CheckMasksDir,[Ffile '_Subj_' num2str(iSub) '.jpg']));
+        xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir,[Ffile '_Subj_' num2str(iSub) '.jpg']));
     end
 end
 

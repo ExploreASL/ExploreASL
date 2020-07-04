@@ -1,7 +1,7 @@
-function FigureOut = xASL_im_TransformData2View(ImagesIn, x)
-%xASL_im_TransformData2View Reshapes MNI image matrix data into visualization figure
+function FigureOut = xASL_vis_TransformData2View(ImagesIn, x)
+%xASL_vis_TransformData2View Reshapes MNI image matrix data into visualization figure
 %
-% FORMAT: FigureOut = xASL_im_TransformData2View(ImagesIn, x)
+% FORMAT: FigureOut = xASL_vis_TransformData2View(ImagesIn, x)
 %
 % INPUT:
 %   ImagesIn - single or series of images that need to be reshaped (REQUIRED)
@@ -29,7 +29,7 @@ function FigureOut = xASL_im_TransformData2View(ImagesIn, x)
 % Reshaping a series of images with this function can be useful for
 % visualization of SPM/voxel-based analyses.
 %
-% EXAMPLE: FigureOut = xASL_im_TransformData2View(ImagesIn);
+% EXAMPLE: FigureOut = xASL_vis_TransformData2View(ImagesIn);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
@@ -169,21 +169,21 @@ for iSet=1:length(TempData)
         if DIMn(1)
             TempIm{1} = xASL_im_rotate(squeeze(TempData{iSet}(iSubject,:,:, x.S.TraSlices)),90);
             CropParms = x.S.TransCrop(1:4);
-            TempIm{1} = xASL_im_CropParmsApply(TempIm{1}, CropParms);
+            TempIm{1} = xASL_vis_CropParmsApply(TempIm{1}, CropParms);
         end
         if  DIMn(2)
-            TempIm{2} = xASL_im_rotate(xASL_im_FlipOrientation(squeeze(TempData{iSet}(iSubject,:,x.S.CorSlices,:))),90);
+            TempIm{2} = xASL_im_rotate(xASL_vis_FlipOrientation(squeeze(TempData{iSet}(iSubject,:,x.S.CorSlices,:))),90);
             CropParms = [x.S.TransCrop(5),x.S.TransCrop(6),x.S.TransCrop(3),x.S.TransCrop(4)];
-            TempIm{2} = xASL_im_CropParmsApply(TempIm{2}, CropParms);
+            TempIm{2} = xASL_vis_CropParmsApply(TempIm{2}, CropParms);
             % Pragmatic correction for strange flipping if nSlices==1
             if length(x.S.CorSlices)==1
                 TempIm{2} = xASL_im_rotate(TempIm{2},180);
             end
         end
         if  DIMn(3)
-            TempIm{3} = xASL_im_FlipOrientation2(squeeze(TempData{iSet}(iSubject,x.S.SagSlices,:,:)));
+            TempIm{3} = xASL_vis_FlipOrientation2(squeeze(TempData{iSet}(iSubject,x.S.SagSlices,:,:)));
             CropParms = [x.S.TransCrop(5),x.S.TransCrop(6),x.S.TransCrop(1),x.S.TransCrop(2)];
-            TempIm{3} = xASL_im_CropParmsApply(TempIm{3}, CropParms);
+            TempIm{3} = xASL_vis_CropParmsApply(TempIm{3}, CropParms);
             % Pragmatic correction for strange flipping if nSlices==1
             if length(x.S.SagSlices)==1
                 TempIm{3} = xASL_im_rotate(TempIm{3},180);
@@ -253,11 +253,11 @@ for iSet=1:length(TempData)
         % rows or columns are the orientations)
         for iDim=DimsTotal
             if UnequalSlices && ~x.S.ConcatSliceDims
-                TempIm{iDim} = xASL_im_TileImages(TempIm{iDim}, 1);
+                TempIm{iDim} = xASL_vis_TileImages(TempIm{iDim}, 1);
             elseif UnequalSlices && x.S.ConcatSliceDims
-                TempIm{iDim} = xASL_im_TileImages(TempIm{iDim}, size(TempIm{iDim},3));
+                TempIm{iDim} = xASL_vis_TileImages(TempIm{iDim}, size(TempIm{iDim},3));
             else % keep default
-                TempIm{iDim} = xASL_im_TileImages(TempIm{iDim}, nColumns);
+                TempIm{iDim} = xASL_vis_TileImages(TempIm{iDim}, nColumns);
             end
         end
         
@@ -292,4 +292,85 @@ end
 
 
 end
+
+
+
+
+%% ===================================================================================================
+%% ===================================================================================================
+
+
+
+function image_out = xASL_vis_FlipOrientation(image_in)
+%FlipOrientation This function flips the 3 dimensions from sagittal to
+%transversal or tra to cor. Leaves other dimensions untouched.
+
+
+image_out   = shiftdim(xASL_im_rotate(image_in,90),1);
+
+% OLD CODE
+% temp=single(xASL_im_rotate(image_in,90));
+% dim=size(temp);
+% image_out=zeros(dim(2),dim(3),dim(1),size(temp,4));
+% 
+% 
+% 
+% for l=1:size(temp,4)
+%     for i=1:dim(2)
+%         for j=1:dim(3)
+%             for k=1:dim(1)
+%                 image_out(i,j,k,l)=temp(k,i,j,l);
+%             end
+%         end
+%     end
+% end
+
+
+%new_y=old_z dim(3)->dim(2)
+%new_x=old_y dim(2)->dim(1)
+%new_z=old_x dim(1)->dim(3)
+
+
+
+end
+
+%% ===================================================================================================
+%% ===================================================================================================
+
+
+function image_out = xASL_vis_FlipOrientation2(image_in)
+%FlipOrientation This function flips the 3 dimensions from sagittal to
+%cor or tra to sag. Leaves other dimensions untouched.
+
+
+image_out               = xASL_im_rotate(shiftdim(xASL_im_rotate(image_in,90),2),180);
+image_out               = image_out(:,:,size(image_out,3):-1:1); % flip
+
+
+% 
+% 
+% temp=xASL_im_rotate(single(image_in),90);
+% dim=size(temp);
+% image_out=zeros(dim(3),dim(1),dim(2),size(temp,4));
+% 
+% for l=1:size(temp,4)
+%     for i=1:dim(3)
+%         for j=1:dim(1)
+%             for k=1:dim(2)
+%                 image_out(i,j,k,l)=temp(j,k,i,l); % new z-direction is magnified/blurred by 2. 2*i-1 = old i & 2*i is average of old i & old (i+1)
+%             end
+%         end
+%     end
+% end
+% 
+% image_out=xASL_im_rotate(image_out,180);
+% 
+%new_y=old_z dim(3)->dim(2)
+%new_x=old_y dim(2)->dim(1)
+%new_z=old_x dim(1)->dim(3)
+
+
+
+end
+
 

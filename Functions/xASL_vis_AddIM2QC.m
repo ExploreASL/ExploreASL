@@ -1,5 +1,5 @@
-function [x]   = xASL_im_AddIM2QC(x,parms)
-%xASL_im_AddIM2QC Checks which images already are loaded, and  adds new image
+function [x]   = xASL_vis_AddIM2QC(x,parms)
+%xASL_vis_AddIM2QC Checks which images already are loaded, and  adds new image
 
 
     %% Admin

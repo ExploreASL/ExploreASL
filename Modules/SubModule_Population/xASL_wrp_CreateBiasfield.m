@@ -247,7 +247,7 @@ function xASL_wrp_CreateBiasfield(x)
 
     %% ------------------------------------------------------------------------------------------------------------
     %% Print reference image
-    xASL_imwrite([RefIM{1};RefIM{2};RefIM{3};RefIM{4}], fullfile(BackupDir,'Overview_biasfields.jpg') );
+    xASL_vis_Imwrite([RefIM{1};RefIM{2};RefIM{3};RefIM{4}], fullfile(BackupDir,'Overview_biasfields.jpg') );
 
     %% ------------------------------------------------------------------------------------------------------------
     %% Rescale CBF images

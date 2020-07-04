@@ -622,11 +622,11 @@ This function reads in a DATA_PAR file and creates the x structure. The name of 
 If the DATA_PAR file is the dataset_description.json file of the BIDS standard, the x structure is created according to BIDS.
 
 ----
-### xASL_imwrite.m
+### xASL_vis_Imwrite.m
 
 #### Function
 ```matlab
-function [ImOut] = xASL_imwrite(ImIn, PathOut, ColorMap, bRescale)
+function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
 ```
 
 #### Description
@@ -815,7 +815,7 @@ Function is structured as:
 
 1. Admin, deal with input arguments
 2. Process image layers separately
-    * xASL_im_TransformData2View: Reshapes image data into visualization figure
+    * xASL_vis_TransformData2View: Reshapes image data into visualization figure
     * xASL_im_ClipExtremes: Clips image to given percentile also we scale for peak intensity, we make sure that there is no visible clipping/distortion
     * Convert to colors, using any input colormaps
 3. Combine image layers, using input argument IntScale
@@ -824,36 +824,22 @@ Function is structured as:
 This function assumes that the first image is a grascale background image (e.g. for transparancy reasons), if there are multiple images.
 
 ----
-### xASL_im_CreateVisualLongReg.m
+### xASL_vis_CropParmsAcquire.m
 
 #### Function
 ```matlab
-function xASL_im_CreateVisualLongReg(x, CurrentSub)
-```
-
-#### Description
-Creates for each Other TimePoint (TP):
-
-* First row 1) First TP 2) Other TP.
-* Second row First TP with normalized difference image between TPs without (1) and with (2) Longitudinal Registration.
-
-----
-### xASL_im_CropParmsAcquire.m
-
-#### Function
-```matlab
-function [xmin xmax ymin ymax] = xASL_im_CropParmsAcquire(temp_image)
+function [xmin xmax ymin ymax] = xASL_vis_CropParmsAcquire(temp_image)
 ```
 
 #### Description
 Goes from outside to inside to acquire crop settings. Works with grayscale images (2 dimensions per slice).image position information (2D matrix) should be first 2 dimensions. Could include colordimension later on.
 
 ----
-### xASL_im_CropParmsApply.m
+### xASL_vis_CropParmsApply.m
 
 #### Function
 ```matlab
-function ImageOut = xASL_im_CropParmsApply(ImageIn,CropParameters,Xmax,Ymin,Ymax)
+function ImageOut = xASL_vis_CropParmsApply(ImageIn,CropParameters,Xmax,Ymin,Ymax)
 ```
 
 #### Description
@@ -974,28 +960,6 @@ function [MatrixOut] = xASL_im_Flip(MatrixIn, varargin)
 Backwards compatibility for flipping left-right in standard space (NB: this can be different than in native space!).
 
 ----
-### xASL_im_FlipOrientation.m
-
-#### Function
-```matlab
-function image_out = xASL_im_FlipOrientation(image_in)
-```
-
-#### Description
-This function flips the 3 dimensions from sagittal to transversal or tra to cor. Leaves other dimensions untouched.
-
-----
-### xASL_im_FlipOrientation2.m
-
-#### Function
-```matlab
-function image_out = xASL_im_FlipOrientation2(image_in)
-```
-
-#### Description
-This function flips the 3 dimensions from sagittal to cor or tra to sag. Leaves other dimensions untouched.
-
-----
 ### xASL_im_IM2Column.m
 
 #### Function
@@ -1007,7 +971,7 @@ function [ColumnOut] = xASL_im_IM2Column(ImageIn, BrainMask, ApplyShiftDim)
 QC Converts an image matrix to a single-dimensional column to save memory space & computation time.
 
 ----
-### xASL_im_joinColormap.m
+### xASL_vis_joinColormap.m
 
 #### Function
 ```matlab
@@ -1143,11 +1107,11 @@ function image_out = xASL_im_NormalizeLabelingTerritories(imageIN, GMmask, x)
 Normalizes per perfusion territory mask should be GM mask.
 
 ----
-### xASL_im_OverlapT1_ASL.m
+### xASL_vis_OverlapT1_ASL.m
 
 #### Function
 ```matlab
-function xASL_im_OverlapT1_ASL(x, ASL)
+function xASL_vis_OverlapT1_ASL(x, ASL)
 ```
 
 #### Description
@@ -1203,7 +1167,7 @@ function OutputIM = xASL_im_ProjectLabelsOverData(DataIM, LabelIM, x, ScaleFacto
 ```
 
 #### Description
-This script projects labels over an image, but works only in 2D. Make sure to make a 2D image from a 3D or 4D image using xASL_im_TransformData2View.m can be used in combination with xASL_imwrite.m
+This script projects labels over an image, but works only in 2D. Make sure to make a 2D image from a 3D or 4D image using xASL_vis_TransformData2View.m can be used in combination with xASL_vis_Imwrite.m
 
 ----
 ### xASL_im_PVCbspline.m
@@ -1247,16 +1211,6 @@ Downsample (or upsample, works similarly) old_res image to low_res image, trilin
 
 **NB:** All dimensions of new_res should have equal size.
 
-----
-### xASL_im_RescaleLinear.m
-
-#### Function
-```matlab
-function [ NewMatrix ] = xASL_im_RescaleLinear(OriMatrix, NewMin, NexMax, NonZerosOption)
-```
-
-#### Description
-Linearly rescales input matrix to output matrix, applying a new minimum and new maximum.
 
 ----
 ### xASL_im_RestoreOrientation.m
@@ -1303,11 +1257,11 @@ function [imSmo,imGaussX,imGaussY,imGaussZ] = xASL_im_Smooth3D(sigma, imIn, PSFt
 ...
 
 ----
-### xASL_im_TileImages.m
+### xASL_vis_TileImages.m
 
 #### Function
 ```matlab
-function [ImOut] = xASL_im_TileImages(ImIn, nColumns)
+function [ImOut] = xASL_vis_TileImages(ImIn, nColumns)
 ```
 
 #### Description
@@ -1318,11 +1272,11 @@ Plots all slices in one figure with specified rows and columns, aiming for a squ
 **PM:** can be extended to multiple slices.
 
 ----
-### xASL_im_TransformData2View.m
+### xASL_vis_TransformData2View.m
 
 #### Function
 ```matlab
-function FigureOut = xASL_im_TransformData2View(ImagesIn, x)
+function FigureOut = xASL_vis_TransformData2View(ImagesIn, x)
 ```
 
 #### Description
@@ -1341,22 +1295,22 @@ function xASL_im_Upsample(PathOrig, PathDest, NewVoxelSize, LeaveEmpty, PaddingD
 Upsamples an ASL image, without changing the orientation matrix, which can be used e.g. for PVEc in higher resolution but same space.
 
 ----
-### xASL_im_VisualizeROIs.m
+### xASL_vis_VisualizeROIs.m
 
 #### Function
 ```matlab
-function xASL_im_VisualizeROIs(x, ROI_T1_list, ROI_FLAIR_list)
+function xASL_vis_VisualizeROIs(x, ROI_T1_list, ROI_FLAIR_list)
 ```
 
 #### Description
 Creates for each subject  a JPEG image containing the original T1w, WMH_SEGM and T1w after lesion-filling.
 
 ----
-### xASL_im_VisualQC_TopUp.m
+### xASL_vis_VisualQC_TopUp.m
 
 #### Function
 ```matlab
-function [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_im_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, iSubject, CheckDir)
+function [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_vis_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, iSubject, CheckDir)
 ```
 
 #### Description

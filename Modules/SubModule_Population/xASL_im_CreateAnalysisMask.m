@@ -221,12 +221,12 @@ MasksAre = {ones(121,145,121) WholeBrain};
 % 1) FoV probability
 FoVim = 1-xASL_io_Nifti2Im(PathFoV);
 FoVim(FoVim>0.5) = 0.5; % show 0-50% missing voxels in colors
-ImOut{1} = xASL_im_CreateVisualFig(x, {PathT1 FoVim}, [], IntScale, [], ColorMap, bClip, [], bWhite);
+ImOut{1} = xASL_vis_CreateVisualFig(x, {PathT1 FoVim}, [], IntScale, [], ColorMap, bClip, [], bWhite);
 
 % % 2) Vascular
 % ImVascular = 1-xASL_io_Nifti2Im(PathVascularMask);
 % ImVascular(ImVascular>0.075) = 0.075; % show
-% ImOut{2} = xASL_im_CreateVisualFig(x, {PathT1 ImVascular}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
+% ImOut{2} = xASL_vis_CreateVisualFig(x, {PathT1 ImVascular}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
 
 % 2) Susceptibility
 ImSusceptibility = 1-xASL_io_Nifti2Im(PathSusceptibilityMask);
@@ -237,13 +237,13 @@ if DoSusceptibility
     ImSusceptibility(~TemplateMask) = 0;
 end
 
-ImOut{2} = xASL_im_CreateVisualFig(x, {PathT1 ImSusceptibility}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
+ImOut{2} = xASL_vis_CreateVisualFig(x, {PathT1 ImSusceptibility}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
 
 % 3) Resulting analysis mask
-ImOut{3} = xASL_im_CreateVisualFig(x, {PathT1 MaskAnalysis}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
+ImOut{3} = xASL_vis_CreateVisualFig(x, {PathT1 MaskAnalysis}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
 
 % 5) Save image
-xASL_imwrite([ImOut{1},ImOut{2},ImOut{3}], fullfile(x.S.StatsDir,'AnalysisMaskCreation.jpg'),[], false);
+xASL_vis_Imwrite([ImOut{1},ImOut{2},ImOut{3}], fullfile(x.S.StatsDir,'AnalysisMaskCreation.jpg'),[], false);
 
 %     figure(1);  imshow([ImOut{1},ImOut{2},ImOut{3}],'border','tight','InitialMagnification',400)
 

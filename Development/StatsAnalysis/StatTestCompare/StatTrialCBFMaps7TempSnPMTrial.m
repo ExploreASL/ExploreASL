@@ -134,7 +134,7 @@ for iI=iInt  % intensities (effect height/size)
             % dip_image(xASL_im_rotate([diffIm(:,:,44,1);diffIm(:,:,44,2);diffIm(:,:,44,3)],90))
             % dip_image(xASL_im_rotate(mean(diffIm(:,:,:,:),4),90))
 
-            % xASL_im_CreateVisualFig_INPUT( mean(diffIm(:,:,:,:),4) )
+            % xASL_vis_CreateVisualFig_INPUT( mean(diffIm(:,:,:,:),4) )
 
             %% Save
             % First delete whole directory

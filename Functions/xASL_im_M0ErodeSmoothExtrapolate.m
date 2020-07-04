@@ -185,7 +185,7 @@ IM = [xASL_im_rotate(ImIn(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask2(:,:,S
 xASL_adm_CreateDir(x.D.M0regASLdir);
 OutputFile = fullfile(x.D.M0regASLdir,['M0_im_proc_' x.P.SubjectID '.jpg']);
 fprintf('%s\n',['Writing ' OutputFile]);
-xASL_imwrite(IM, OutputFile);
+xASL_vis_Imwrite(IM, OutputFile);
 
 
 end

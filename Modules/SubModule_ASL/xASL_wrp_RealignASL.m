@@ -293,7 +293,7 @@ if bSubtraction && nFrames>10 % if we performed outlier exclusion
     for iVolume=1:length(IndexIs)
         ExampleIM(:,:,iVolume) = xASL_stat_MeanNan(SortIM(:,:,Slice2Show,1:IndexIs(iVolume)), 4);
     end
-    TotalCheck = xASL_im_TileImages(xASL_im_rotate(ExampleIM,90), 4);
+    TotalCheck = xASL_vis_TileImages(xASL_im_rotate(ExampleIM,90), 4);
 
     % Find intensities
     SortValues = sort(TotalCheck(isfinite(TotalCheck)));
@@ -305,7 +305,7 @@ if bSubtraction && nFrames>10 % if we performed outlier exclusion
 
     jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_PWI_motion_sorted.jpg']);
     fprintf('Saving motion plot to %s\n',jpgfile);
-    xASL_imwrite(TotalCheck, jpgfile);
+    xASL_vis_Imwrite(TotalCheck, jpgfile);
 
     %% ----------------------------------------------------------------------------------------
     %% 4 Remove spike frames from nifti
