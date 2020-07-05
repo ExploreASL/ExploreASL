@@ -179,8 +179,7 @@ if x.bNativeSpaceAnalysis
 								xASL_io_SaveNifti(listOutputs{kk},listOutputs{kk},imMaskTmp);
 							case 2
 								xASL_spm_deformations(x, listMasks{kk}, listOutputs{kk}, 0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
-								gzip(listOutputs{kk});
-								delete(listOutputs{kk});
+								xASL_adm_GzipNifti(listOutputs{kk});
 						end
 					end
 				end
@@ -189,8 +188,7 @@ if x.bNativeSpaceAnalysis
 	end
 	for kk = 1:length(listMasks)
 		if exist(listMasks{kk},'file')
-			gzip(listMasks{kk});
-			delete(listMasks{kk});
+			xASL_adm_GzipNifti(listMasks{kk});
 		end
 	end
 end

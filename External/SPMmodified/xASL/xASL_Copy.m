@@ -85,7 +85,8 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
         
 		% Zip the destination file
         if ZipInTheEnd
-            gzip(DstPath);
+            xASL_adm_GzipNifti(DstPath);
+
             if exist(DstPath,'file') && exist([DstPath '.gz'],'file')
                 delete(DstPath);
             end
