@@ -268,7 +268,7 @@ end
 % ATT biasfield and vascular peaks
 xASL_im_CreatePseudoCBF(x, 0);
 
-TanimotoPerc{1} = xASL_im_GetSpatialOverlapASL(x);
+TanimotoPerc = xASL_im_GetSpatialOverlapASL(x);
 
 
 %% ----------------------------------------------------------------------------------------
@@ -280,8 +280,8 @@ if x.bAutoACPC
     
     xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
     xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 0); % Then register
-    TanimotoPerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
-    if TanimotoPerc{end}>=TanimotoPerc{end-1} % if alignment improved or remained same
+    TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+    if TanimotoPerc(end)>=TanimotoPerc(end-1) % if alignment improved or remained same
         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
     else % if alignment got worse
         xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
@@ -329,15 +329,14 @@ if bRegistrationControl
         else
             xASL_spm_coreg(x.P.Path_T1, SourcePath, OtherList, x);
         end
-        TanimotoPerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+        TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
         
-        if TanimotoPerc{end}>=TanimotoPerc{end-1}
+        if TanimotoPerc(end)>=TanimotoPerc(end-1)
             % if alignment improved or remained more or less the same
             xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
-            FinalTanimoto = TanimotoPerc{end};
         else % if alignment got significantly (>5% Tanimoto) worse
             xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
-            FinalTanimoto = TanimotoPerc{end-1};
+            TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
         end
     end
 end
@@ -369,30 +368,27 @@ if bRegistrationCBF
         bSkipThis = false;
         for iT=1:nIT
             if ~bSkipThis
-                xASL_im_CreatePseudoCBF(x, spatCoVit(1));
                 OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_mean_PWI_Clipped});
                 xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
+                xASL_im_CreatePseudoCBF(x, spatCoVit(end)); % because this scales the mean_PWI_Clipped, this needs to be run after backing up
                 
                 % then register
                 xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
                 % and check for improvement
-                TanimotoPerc{end+1} = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+                TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
                 
                 if x.bRegistrationContrast~=3 % if we don't don't force CBF-pGM registration
-                    if TanimotoPerc{end}>=TanimotoPerc{end-1}
+                    if TanimotoPerc(end)>=TanimotoPerc(end-1)
                         % if alignment improved or remained more or less the same
                         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
-                        FinalTanimoto = TanimotoPerc{end};
                     else
                         % if alignment got significantly (>1% Tanimoto) worse
                         % we don't force CBF-pGM registration
                         xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
                         bSkipThis = true; % skip next iteration
                         x.bAffineRegistration = 0; % skip affine registration
-                        FinalTanimoto = TanimotoPerc{end-1};
+                        TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
                     end
-                else
-                    FinalTanimoto = TanimotoPerc{end};
                 end
 
                 spatCoVit(iT+1) = xASL_im_GetSpatialCovNativePWI(x);
@@ -400,6 +396,9 @@ if bRegistrationCBF
 		end
 
         %% Affine registration
+        % Note that this is only done upon request (x.bAffineRegistration, advanced option),
+        % hence this doesn't have the automatic backup & restore,
+        % as the CBF->pseudoCBF registration has above
         if isfield(x,'bAffineRegistration') && ~isempty(x.bAffineRegistration)
             if x.bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
                 bAffineRegistration = x.Quality && spatCoVit(end)<0.4;
@@ -424,12 +423,11 @@ if bRegistrationCBF
             fprintf('%s\n','Skipping affine registration');
         end
     end
-    %%%% Another step with SPM_NORMALISE deformations
     fprintf('\n%s\n','--------------------------------------------------------------------');
 
-    fprintf('%s\n',[num2str(length(spatCoVit)) ' registration iterations:']);
-    for iT=1:length(spatCoVit)
-        fprintf('%s\n',['Iteration ' num2str(iT) ', spatial CoV = ' num2str(100*spatCoVit(iT),3) '%']);
+    fprintf('%s\n',[num2str(length(TanimotoPerc)) ' registration iterations:']);
+    for iT=1:length(TanimotoPerc)
+        fprintf('%s\n',['Iteration ' num2str(iT) ', Tanimoto coefficient = ' num2str(100*TanimotoPerc(iT),3) '%']);
     end
     fprintf('%s\n\n','--------------------------------------------------------------------');
 end
@@ -544,6 +542,7 @@ MaskIM = xASL_io_Nifti2Im(x.PathMask)>0.5;
 
 if JointMasks<0.5
     warning('Registration off, spatial CoV detection unreliable');
+    fprintf('Consider using another registration option\n');
 end
 
 %% Determine spatial CoV
