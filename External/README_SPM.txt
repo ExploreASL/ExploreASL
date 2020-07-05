@@ -324,6 +324,11 @@ jsmn.c at line 269
 *********************************************************************************************************
 OTHER CODE HACKS
 
+DATE+NAME:2020-07-05 HM
+DESCRIPTION:
+Allow running CAT12 without JVM
+FILE:
+cat_io_send_to_server at 18
 
 DATE+NAME:2020-03-29 HM
 DESCRIPTION:
