@@ -1,32 +1,58 @@
-function [M0IM]     = xASL_quant_M0(M0IM, x)
-% function xASL_quant_M0
+function [M0IM] = xASL_quant_M0(M0IM, x)
+%xASL_quant_M0 Quantification of M0
 %
-% ExploreASL 2019
-% This function quantifies the M0, except for the difference in voxel size
+% FORMAT: [M0IM] = xASL_quant_M0(M0IM, x)
+% 
+% INPUT:
+%   M0IM        - M0 image matrix or path
+%   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+% OUTPUT:
+%   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function quantifies the M0, except for the difference in voxel size
 % between the M0 and ASL source data (which is scaled in
-% xASL_wrp_ProcessM0.m)
-
-% 1) apply scale slopes, if any
-% 2) correct for incomplete longitudinal recovery
+% xASL_wrp_ProcessM0.m). This function runs the following steps:
+%
+% 1. Correct scale slopes, if Philips
+% 2. Skip M0 quantification if ~x.ApplyQuantification(4)
+% 3. Set TR specifically for GE
+% 4. Check for correct TR values
+% 5. Quantify the M0, either for single 3D volume or slice-wise
+% 6. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: M0IM = xASL_quant_M0('MyStudy/sub-001/ASL_1/rM0.nii', x);
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------------
 %% Admin
+if nargin<2 || isempty(x)
+    warning('x input parameter missing, skipping');
+elseif isempty(M0IM) || sum(isfinite(M0IM(:)))==0
+    warning('Invalid M0 image loaded, skipping');
+end
+
 if strcmp(x.M0,'no_background_suppression')
+    warning('This option will be obsolete in the future, please use M0=UseControlAsM0 instead');
     x.M0 = 'UseControlAsM0'; % backward compatibility
 end
 
-if  strcmp(x.M0, 'UseControlAsM0')
+if strcmp(x.M0, 'UseControlAsM0')
     fprintf('%s\n','x.M0_usesASLtiming didnt exist, set to 1, because of absence background suppression, same timing in mean control (used as M0) as in ASL');
-    x.M0_usesASLtiming    = 1;
+    x.M0_usesASLtiming = 1;
     M0ParmsMat  = x.P.Path_ASL4D_parms_mat;
 elseif ~isfield(x,'M0_usesASLtiming')
-    x.M0_usesASLtiming    = 0; % default value
+    x.M0_usesASLtiming = 0; % default value
     M0ParmsMat  = x.P.Path_M0_parms_mat;
 end
 
+% Allow inputting path instead of image
+M0IM = xASL_io_Nifti2Im(M0IM);
+
 %% ------------------------------------------------------------------------------------------------------
-%% Correct scale slopes, if Philips
+%% 1. Correct scale slopes, if Philips
 if ~x.ApplyQuantification(2)
     fprintf('%s\n','M0 ScaleSlopes skipped');
 else
@@ -42,6 +68,8 @@ else
     end
 end
 
+%% ------------------------------------------------------------------------------------------------------
+%% 2. Skip M0 quantification if ~x.ApplyQuantification(4)
 if ~x.ApplyQuantification(4)
     fprintf('%s\n','M0 quantification for incomplete T1 relaxation skipped');
     % M0 quantification here is only for the incomplete T1 recovery
@@ -52,16 +80,21 @@ if ~x.ApplyQuantification(4)
 else
 
     % Correction for incomplete T1 relaxation of M0 because of short TR.
-    % Control image is smaller than should be, paired subtraction is not.
-    % Therefore, correct this (2% decrease)
-    % Using GM value here, assuming that we are interested in GM. If not, can be corrected later with WM mask
+    % Control image/M0 reference value is smaller than should be, paired subtraction is not 
+    % (i.e. the labeled blood doesn't have this incomplete T1 relaxation
+    % issue from short TR).
+    % Therefore, correct this (~2% decrease)
+    % Using WM value here, since we used the M0 biasfield correction method
+    % in which the M0 is roughly eroded to the WM
     if ~isfield(x.Q,'TissueT1')
         fprintf('%s\n','x.Q.TissueT1 did not exist, default=1240 used');
         x.Q.TissueT1 = 800; % 800 ms for WM, average of frontal & occipital WM from Lu et al., JMRI 2005 & 3 studies they refer to
         % for GM, this would be 1300 ms
         % Here we use the WM T1, since we smooth a lot
     end
-
+    
+    %% ------------------------------------------------------------------------------------------------------
+    %% 3. Set TR specifically for GE
     if ~isempty(regexp(x.Vendor,'GE')) && isempty(regexp(x.Vendor,'Siemens')) &&  isempty(regexp(x.Vendor,'Philips'))
         TR = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
@@ -70,6 +103,8 @@ else
         TR = M0_parms.RepetitionTime; % This will be either the separate M0-scan value or the ASL scan value (if UseControlAsM0)
     end
 
+    %% ------------------------------------------------------------------------------------------------------
+    %% 4. Check for correct TR values
     if TR<1000
         error(['Unusually small TR for ASL M0: ' num2str(TR)]);
     end
@@ -79,7 +114,8 @@ else
         TR  = min(TR);
     end
 
-
+    %% ------------------------------------------------------------------------------------------------------
+    %% 5. Quantify the M0, either for single 3D volume or slice-wise
     if strcmp(x.readout_dim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
             NetTR = TR;
             fprintf('%s\n','Single 3D M0 readout assumed');
@@ -91,10 +127,10 @@ else
 
                 if isfield(ASL_parms,'RepetitionTime')
                     %  Load original file to get nSlices
-                    tORI        = xASL_io_ReadNifti(x.P.Path_ASL4D);
-                    nSlices     = size(tORI.dat,3);
+                    tORI = xASL_io_ReadNifti(x.P.Path_ASL4D);
+                    nSlices = size(tORI.dat,3);
 
-                    x.Q.SliceReadoutTime     = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
+                    x.Q.SliceReadoutTime = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
                 else
                     warning('ASL_parms.RepetitionTime expected but did not exist!');
                 end
@@ -106,40 +142,41 @@ else
                 warning(['qnt_PLDslicereadout=' x.Q.SliceReadoutTime ' is outside of its valid range 10-200 ms']);
             end
 
-            SliceIM     = zeros(size(M0IM));
+            SliceIM = zeros(size(M0IM));
             for iZ=1:size(M0IM,3)
                 SliceIM(:,:,iZ) = iZ;
             end
 
             if  x.M0_usesASLtiming % in this case, the M0 readout has the exact same timing as the ASL readout
                                    % this is the case e.g. for Philips 3D GRASE
-
-                NetTR       = x.Q.LabelingDuration+x.Q.Initial_PLD+x.Q.SliceReadoutTime.*(SliceIM-1);
+                NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+x.Q.SliceReadoutTime.*(SliceIM-1);
                 fprintf('%s\n','2D sliceWise M0 readout assumed, same timing as ASL slices readout used');
             elseif ~x.M0_usesASLtiming
-                NetTR       = TR - ((max(SliceIM(:))-SliceIM).*x.Q.SliceReadoutTime);
+                NetTR = TR - ((max(SliceIM(:))-SliceIM).*x.Q.SliceReadoutTime);
                 % Here we assume the M0 slices readout were at the end of the
                 % TR, with the same time between slices as for the ASL readout
                 fprintf('%s\n','2D SliceWise M0 readout, assumed M0 slices readout at end of TR');
             else
-                    error('Unknown x.M0_usesASLtiming specified');
+                error('Unknown x.M0_usesASLtiming specified');
             end
 
     else
-            error('Unknown x.readout_dim specified');
+        error('Unknown x.readout_dim specified');
     end
 
-    corr_T1         = 1 ./ (1-exp(-NetTR/x.Q.TissueT1));
-    M0IM            = M0IM .* corr_T1;
+    corr_T1 = 1 ./ (1-exp(-NetTR/x.Q.TissueT1));
+    M0IM = M0IM .* corr_T1;
 
-    min_TR          = min(NetTR( NetTR~=0 & isfinite(NetTR)));
-    max_TR          = max(NetTR( NetTR~=0 & isfinite(NetTR)));
-    minCorr_T1      = min(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
-    maxCorr_T1      = max(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
+    min_TR = min(NetTR( NetTR~=0 & isfinite(NetTR)));
+    max_TR = max(NetTR( NetTR~=0 & isfinite(NetTR)));
+    minCorr_T1 = min(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
+    maxCorr_T1 = max(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
 
-    fprintf('%s\n',['M0 correction of incomplete T1 relaxation: TR range ' num2str(min_TR) '-' num2str(max_TR) ' ms, T1 WM tissue ' num2str(x.Q.TissueT1) ' ms, gives factor ' num2str(minCorr_T1) '-' num2str(maxCorr_T1)]);
+    fprintf('%s\n', ['M0 correction of incomplete T1 relaxation: TR range ' num2str(min_TR) '-' num2str(max_TR) ' ms, T1 WM tissue ' num2str(x.Q.TissueT1) ' ms, gives factor ' num2str(minCorr_T1) '-' num2str(maxCorr_T1)]);
 end
 
+%% ------------------------------------------------------------------------------------------------------
+%% 6. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
 if ~isfield(x,'M0_GMScaleFactor') || isempty(x.M0_GMScaleFactor)
     x.M0_GMScaleFactor = 1; % no scaling
 else
@@ -198,7 +235,6 @@ end
 % [1.05584503232182,1.05443748830939,1.05306720374486,1.05173310385921,1.05043414927497,1.04916933462559,1.04793768723894,1.04673826588166,1.04557015956089,1.04443248638046,1.04332439244853,1.04224505083405,1.04119366056948,1.04016944569733;]
 % which is a overestimation of
 % [0.997936143250067,0.998441567448549,0.998919238534379,0.999370395912622,0.999796225936145,1.00019786425810,1.00057639807047,1.00093286823500,1.00126827131231,1.00158356149466,1.00187965244733,1.00215741906377,1.00241769913868,1.00266129496361;]
-
 
 
 end
