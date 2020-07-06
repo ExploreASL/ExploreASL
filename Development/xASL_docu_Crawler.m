@@ -145,6 +145,7 @@ for i = 1:numel(listing)
             TEXT{it,1} = descriptionText(i,:);
             if contains(TEXT{it,1},'_')
                 TEXT{it,:} = strrep(TEXT{it,:},'_','\_'); % Escape underscores in the description
+                TEXT{it,:} = strrep(TEXT{it,:},'*','\*'); % Escape stars in the description
             end
             it = it+1;
         end
