@@ -41,15 +41,15 @@ function [ImOut, FileName] = xASL_im_CreateVisualFig(x, ImIn, DirOut, IntScale, 
 %              path, managing colormaps for different merged image layers. Current use is for visual QC figures and overview in papers.
 %              Function is structured as:
 %
-%              1) Admin, deal with input arguments
-%              2) Process image layers separately
-%                 a) - xASL_im_TransformData2View: Reshapes image data into visualization figure
-%                 b) - xASL_im_ClipExtremes: Clips image to given percentile
-%                      also we scale for peak intensity, we make sure that there is no
-%                      visible clipping/distortion
-%                 c) convert to colors, using any input colormaps
-%              3) combine image layers, using input argument IntScale
-%              4) print figure
+%              1. Admin, deal with input arguments
+%              2. Process image layers separately
+%                 * xASL_im_TransformData2View: Reshapes image data into visualization figure
+%                 * xASL_im_ClipExtremes: Clips image to given percentile
+%                   also we scale for peak intensity, we make sure that there is no
+%                   visible clipping/distortion
+%                 * Convert to colors, using any input colormaps
+%              3. combine image layers, using input argument IntScale
+%              4. print figure
 %
 %              This function assumes that the first image is a grascale background
 %              image (e.g. for transparancy reasons), if there are multiple
@@ -60,7 +60,7 @@ function [ImOut, FileName] = xASL_im_CreateVisualFig(x, ImIn, DirOut, IntScale, 
 %          or for printing to file:
 %          xASL_im_CreateVisualFig(x, {'//AnalysisDir/Population/T1_Sub-001.nii' '//AnalysisDir/Population/rc1T1_Sub-001.nii', '//AnalysisDir/Population/T1w_Check', [1 0.5], 'pGM', {x.S.gray x.S.red});
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 

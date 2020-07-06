@@ -1,6 +1,21 @@
 function [OutputNumber] = xASL_adm_CatchNumbersFromString(InputString)
 %xASL_adm_CatchNumbersFromString Summary of this function goes here
 %   Detailed explanation goes here
+%
+% FORMAT: [OutputNumber] = xASL_adm_CatchNumbersFromString(InputString)
+% 
+% INPUT:
+%   ...
+%
+% OUTPUT:
+%   ...
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  ...
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     % Catch all numbers
     OutputNumber = NaN;

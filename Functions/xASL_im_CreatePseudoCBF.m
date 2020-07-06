@@ -47,13 +47,14 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV)
 %              pseudoTissue & the CBF templates of CBF, ATT biasfield and vascular peaks, based on spatial CoV.
 %
 %              This submodule performs the following steps:
-%              1) Create the pseudoTissue CBF reference image, if it doesnt exist already
-%              2) Create the native space copies of ASL templates, if they dont exist already
-%              3) Spatial CoV input argument check
-%              4) Load native space copies of templates
-%              5) Create pseudoTissue from segmentations, mix this with the mean CBF template depending on spatial CoV
-%              6) Create pseudoCBF reference image used for CBF-based registration
-%              7) Scale mean_PWI_Clipped source image to the same range as PseudoCBF
+%
+%              1. Create the pseudoTissue CBF reference image, if it doesnt exist already
+%              2. Create the native space copies of ASL templates, if they dont exist already
+%              3. Spatial CoV input argument check
+%              4. Load native space copies of templates
+%              5. Create pseudoTissue from segmentations, mix this with the mean CBF template depending on spatial CoV
+%              6. Create pseudoCBF reference image used for CBF-based registration
+%              7. Scale mean_PWI_Clipped source image to the same range as PseudoCBF
 %
 % EXAMPLE: xASL_im_CreatePseudoCBF(x, 0.4);
 % __________________________________

@@ -25,14 +25,15 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 %               is sorted for participants.
 %
 % This function runs the following steps:
-% 1) Admin - Validate that there are not too many columns
-% 2) Admin - Detect nSubjectsSessions
-% 3) Admin - Load pre-existing participants.tsv or create one
-% 4) Admin - Get column number of data
-% 5) Add data to CellArray
-% 6) Sort rows on subjects
-% 7) Fill empty cells
-% 8) Write data to participants.tsv
+%
+% 1. Admin - Validate that there are not too many columns
+% 2. Admin - Detect nSubjectsSessions
+% 3. Admin - Load pre-existing participants.tsv or create one
+% 4. Admin - Get column number of data
+% 5. Add data to CellArray
+% 6. Sort rows on subjects
+% 7. Fill empty cells
+% 8. Write data to participants.tsv
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_Add2ParticipantsTSV(MeanMotion, 'MeanMotion', x);
 % __________________________________
