@@ -463,6 +463,22 @@ if isfield(varargout{1},'catlog')
     end
 end
 
+if ~usejava('jvm') % EXPLOREASL HACK TO SKIP THESE WARNINGS WHEN NO JVM
+  fprintf('Warning, running CAT12 without JVM, so skipping QC PDF report\n');
+
+  FieldsAre = {'catreport' 'catreportpdf' 'catreportjpg'};
+  FilesAre = {'cat_T1.xml' 'catreport_T1.pdf' 'catreportj_T1.jpg'};
+
+  for iFile=1:length(FilesAre)
+    if isfield(varargout{1},FieldsAre{iFile})
+      if ~exist(varargout{1}.(FieldsAre{iFile}){1},'file')
+        fclose(fopen(varargout{1}.(FieldsAre{iFile}){1}, 'w'));
+      end
+    end
+  end
+end
+
+
 varargout{1} = cat_io_checkdepfiles( varargout{1} );
 return
 %_______________________________________________________________________
@@ -857,7 +873,7 @@ function vout = run_job(job)
     end
   end
 
-  if usejava('jvm')
+  if usejava('jvm') %% EXPLOREASL HACK TO AVOID ERROR WHEN noJVM
     colormap(gray);
   end
   

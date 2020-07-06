@@ -6,7 +6,7 @@ function xASL_stat_ComputeWsCV(x)
 % This requires 4D images that have been split
 %
 
-if usejava('jvm')
+if ~usejava('jvm')
     fprintf('Skipping xASL_stat_ComputeWsCV, missing JVM\n');
     return;
 end

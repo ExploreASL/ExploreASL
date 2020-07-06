@@ -109,7 +109,7 @@ if usejava('jvm')
     saveas(fig,PathJPG,'jpg');
     close all;
 else
-    fprinf('Skipping motion vs exclusion overview, missing JVM\n');
+    fprintf('Skipping motion vs exclusion overview, missing JVM\n');
 end
 
 %% -----------------------------------------------------------------------------------------------
