@@ -524,12 +524,19 @@ for iSubject=1:nSubjects
                         end
                     end
 
-                    %% Merge NIfTIs if there are multiple for ASL only
-                    % check the number of created nifiti files in case of ASL: control and label should be merged as one 4D
-                    if length(nii_files)>1 && ~isempty(strfind(scan_name,'ASL4D'))
-                        nii_files = merge_2_ASL_nii_files(nii_files, scan_name);
-                    end
-
+                    %% Merge NIfTIs if there are multiples
+					if length(nii_files)>1
+						1;
+					end
+					% For ASL or M0, merge multiple files
+					if length(nii_files)>1 
+						if ~isempty(strfind(scan_name,'ASL4D'))
+							nii_files = xASL_adm_MergeNiiFiles(nii_files,'ASL');
+						elseif  ~isempty(strfind(scan_name,'M0'))
+							nii_files = xASL_adm_MergeNiiFiles(nii_files,'M0');
+						end
+					end
+					
                     % Extract relevant parameters from nifti header and append to summary file
                     summary_line = AppendNiftiParameters(nii_files);
                     converted_scans(iSubject,iSession,iScan) = 1;
@@ -746,94 +753,6 @@ end
     
 end
 
-% -----------------------------------------------------------------------------
-%
-% -----------------------------------------------------------------------------
-function nii_files = merge_2_ASL_nii_files(nii_files, basename)
-% merge_2_ASL_nii_files
-% CAVE: deletes original files
-
-if length(nii_files)>1
-    fprintf('Warning EXPLOREASL_IMPORT: concatenating multiple NIfTIs & jsons as output from dcm2niiX\n');
-    
-    % First rename the NIfTI and JSON files to 4 digit format & sort them
-    % this avoids 1 10 2 issues
-    for iFile=1:length(nii_files)
-        [Fpath, Ffile, Fext] = xASL_fileparts(nii_files{iFile});
-        [iStart, iEnd] = regexp(Ffile,'\d*$');
-        FfileNew = [Ffile(1:iStart-1) sprintf('%04d', str2num(Ffile(iStart:iEnd)))];
-        PathNew = fullfile(Fpath, [FfileNew Fext]);
-		xASL_Move(nii_files{iFile}, PathNew);
-		nii_files{iFile} = PathNew;
-		
-		% Rename also the JSON if it exists
-		PathOldJSON = fullfile(Fpath,[Ffile '.json']);
-		PathNewJSON = fullfile(Fpath, [FfileNew '.json']);
-		if exist(PathOldJSON,'file')
-			xASL_Move(PathOldJSON,PathNewJSON);
-		end
-    end
-    
-    nii_files = sort(nii_files);
-    
-    % Then create image
-    % Here we issue a warning for dimensionality>4
-	countJSON = 1;
-    for iFile=1:length(nii_files)
-        tempIM = xASL_io_Nifti2Im(nii_files{iFile});
-        if length(size(tempIM))>4
-            error('Dimensionality incorrect for this ASL NIfTI file');
-		end
-		
-		bFileOK = 1;
-		if iFile==1
-			IM = tempIM;
-		else
-			% Check the file sizes and merge only if of similar size
-			sizeFirst = size(IM);
-			sizeFirst = sizeFirst(1:3);
-			sizeNew   = size(tempIM);
-			sizeNew   = sizeNew(1:3);
-			if isequal(sizeNew, sizeFirst)
-				IM(:,:,:,end+1:end+size(tempIM,4)) = tempIM;
-				% Immediately delete the file
-				xASL_delete(nii_files{iFile});
-			else
-				bFileOK = 0;
-			end
-		end
-		% If file was merged, then proceed to delete
-		if bFileOK
-			[tempFpath, tempFfile, ~] = xASL_fileparts(nii_files{iFile});
-			PathOldJSON = fullfile(tempFpath,[tempFfile '.json']);
-			if countJSON == 1
-				if exist(PathOldJSON,'file')
-					% Save the first JSON as ASL4D.json
-					countJSON = countJSON + 1;
-					xASL_Move(PathOldJSON, fullfile(Fpath, 'ASL4D.json'),1);
-				end
-			else
-				% Delete all the other JSONs
-				if exist(PathOldJSON,'file')
-					xASL_delete(PathOldJSON);
-				end
-			end
-		end
-		
-	end
-    
-	% Save the file with the same header and remove the last remaining file
-    NewNIfTI = fullfile(fileparts(nii_files{1}), 'ASL4D.nii');
-    xASL_io_SaveNifti(nii_files{1}, NewNIfTI, IM, [], 0);
-	xASL_delete(nii_files{1});
-    
-    fprintf('Corrected dcm2niiX output for\n');
-    fprintf('%s\n', NewNIfTI);
-    
-    nii_files = {NewNIfTI};
-end
-
-end
 
 
 % -----------------------------------------------------------------------------
