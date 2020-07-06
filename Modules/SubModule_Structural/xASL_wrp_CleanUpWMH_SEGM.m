@@ -185,9 +185,9 @@ INname  = {x.P.Path_FLAIR x.P.Path_WMH_SEGM CleanUpFile};
 OUTname = {x.P.Pop_Path_rFLAIR x.P.Pop_Path_rWMH_SEGM CleanUpFile_Pop};
 xASL_spm_deformations(x, INname, OUTname);
 
-OutIM1 = xASL_im_CreateVisualFig(x, {x.P.Pop_Path_rFLAIR x.P.Pop_Path_rWMH_SEGM}, [], [1 1.5], [], {x.S.gray x.S.red}, false);
-OutIM2 = xASL_im_CreateVisualFig(x, {x.P.Pop_Path_rFLAIR CleanUpFile_Pop}, [], [1 1.5], [], {x.S.gray x.S.red}, false);
-xASL_imwrite([OutIM1,OutIM2], fullfile(x.D.FLAIR_CheckDir, ['CleanUp_WMH_SEGM_' x.P.SubjectID '.jpg']));
+OutIM1 = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rFLAIR x.P.Pop_Path_rWMH_SEGM}, [], [1 1.5], [], {x.S.gray x.S.red}, false);
+OutIM2 = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rFLAIR CleanUpFile_Pop}, [], [1 1.5], [], {x.S.gray x.S.red}, false);
+xASL_vis_Imwrite([OutIM1,OutIM2], fullfile(x.D.FLAIR_CheckDir, ['CleanUp_WMH_SEGM_' x.P.SubjectID '.jpg']));
 
 xASL_delete(x.P.Pop_Path_rWMH_SEGM);
 xASL_delete(CleanUpFile_Pop);

@@ -278,14 +278,14 @@ if ~x.mutex.HasState('006_visualize') && x.mutex.HasState('005_quantification')
     % print visual quality assurance checks
     % PWI (scaled for GM)
 
-    xASL_im_CreateVisualFig(       x.D.PopDir, ['^qCBF_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'], x.D.ASLCheckDir      , ['qCBF_' x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO ); % zero clipping
-    xASL_im_CreateVisualFig(       x.D.PopDir, ['^qCBF_untreated_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'], x.D.ASLCheckDir      , ['qCBF_untreated_' x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO ); % zero clipping
+    xASL_vis_CreateVisualFig(       x.D.PopDir, ['^qCBF_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'], x.D.ASLCheckDir      , ['qCBF_' x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO ); % zero clipping
+    xASL_vis_CreateVisualFig(       x.D.PopDir, ['^qCBF_untreated_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'], x.D.ASLCheckDir      , ['qCBF_untreated_' x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO ); % zero clipping
 
     % Check registration ASL with T1
     visual_registration_check_MNI_1_5(x.D.PopDir, ['^PWI_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'] ,['^rc2' x.P.STRUCT '_' x.P.SubjectID '\.(nii|nii\.gz)$'], x.D.T1_ASLREGDIR,0.5,1);
 
     % Check PV_pGM & PV_pWM
-    xASL_im_CreateVisualFig(       x.D.PopDir, ['^PV_pGM_' x.P.SubjectID '\.(nii|nii\.gz)$'], x.D.ASLCheckDir      , ['PV_pGM_' x.P.SubjectID], x.CLIP_ZERO ); % zero clipping
+    xASL_vis_CreateVisualFig(       x.D.PopDir, ['^PV_pGM_' x.P.SubjectID '\.(nii|nii\.gz)$'], x.D.ASLCheckDir      , ['PV_pGM_' x.P.SubjectID], x.CLIP_ZERO ); % zero clipping
 
     TempNii     = xASL_io_ReadNifti( x.P.ASL4D );
 
@@ -295,7 +295,7 @@ if ~x.mutex.HasState('006_visualize') && x.mutex.HasState('005_quantification')
 %         visual_nii_check_SD_timeseries( x.P.ASL4D, x.RawEPIdir, [x.P.SubjectID '_' x.P.SessionID],0);
 
         % mean control
-        xASL_im_CreateVisualFig(       x.D.PopDir, ['^mean_control_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'],x.D.RawDir      , ['mean_control_' x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO ); % zero clipping
+        xASL_vis_CreateVisualFig(       x.D.PopDir, ['^mean_control_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'],x.D.RawDir      , ['mean_control_' x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO ); % zero clipping
     end
 
     if  size(TempNii.dat,4)>2 % if there are more than two frames
@@ -303,8 +303,8 @@ if ~x.mutex.HasState('006_visualize') && x.mutex.HasState('005_quantification')
 %         visual_nii_check_SD_timeseries( x.P.ASL4D, x.RawEPIdir, ['subtr_' x.P.SubjectID '_' x.P.SessionID],1);
 
         % SD & SNR maps
-        xASL_im_CreateVisualFig(       x.D.PopDir, ['^SD_'  x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'], x.SNRdir      , ['SD_map_'  x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO );
-        xASL_im_CreateVisualFig(       x.D.PopDir, ['^SNR_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'], x.SNRdir      , ['SNR_map_' x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO );
+        xASL_vis_CreateVisualFig(       x.D.PopDir, ['^SD_'  x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'], x.SNRdir      , ['SD_map_'  x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO );
+        xASL_vis_CreateVisualFig(       x.D.PopDir, ['^SNR_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'], x.SNRdir      , ['SNR_map_' x.P.SubjectID '_' x.P.SessionID], x.CLIP_ZERO );
     end
 
         % slice gradient
@@ -313,15 +313,15 @@ if ~x.mutex.HasState('006_visualize') && x.mutex.HasState('005_quantification')
 
     % Check registration M0 with ASL, if instead separate M0 scan (if mean_control was used in case of 'no background suppression', than already perfect registration)
     if  strcmp(x.M0, 'separate_scan')
-        xASL_im_CreateVisualFig( x.D.PopDir, ['^' x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID '\.nii'], x.D.M0CheckDir, [x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID] , 1); % zero clipping
-        xASL_im_CreateVisualFig( x.D.PopDir, ['^' x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID '\.nii'], x.D.M0CheckDir, [x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID] , 1,'x.jet256' ); % zero clipping
+        xASL_vis_CreateVisualFig( x.D.PopDir, ['^' x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID '\.nii'], x.D.M0CheckDir, [x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID] , 1); % zero clipping
+        xASL_vis_CreateVisualFig( x.D.PopDir, ['^' x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID '\.nii'], x.D.M0CheckDir, [x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID] , 1,'x.jet256' ); % zero clipping
     end
 
     if  x.nSessions>1
         if strcmp(x.session.options{1},'crushed') && strcmp(x.session.options{2},'non-crushed')
             if  strcmp(x.SESSIONDIR(length(x.SUBJECTDIR)+2:end),'ASL_2')
-                xASL_im_CreateVisualFig(   x.D.PopDir, ['^TT_' x.P.SubjectID '\.(nii|nii\.gz)$'], x.D.TTCheckDir, ['TT_map_'  x.P.SubjectID], x.CLIP_ZERO );
-                xASL_im_CreateVisualFig(   x.D.PopDir, ['^TT_' x.P.SubjectID '\.(nii|nii\.gz)$'], x.D.TTCheckDir, ['TT_map_'  x.P.SubjectID], x.CLIP_ZERO,x.jet256 );
+                xASL_vis_CreateVisualFig(   x.D.PopDir, ['^TT_' x.P.SubjectID '\.(nii|nii\.gz)$'], x.D.TTCheckDir, ['TT_map_'  x.P.SubjectID], x.CLIP_ZERO );
+                xASL_vis_CreateVisualFig(   x.D.PopDir, ['^TT_' x.P.SubjectID '\.(nii|nii\.gz)$'], x.D.TTCheckDir, ['TT_map_'  x.P.SubjectID], x.CLIP_ZERO,x.jet256 );
                 visual_registration_check_MNI_1_5(x.D.PopDir, ['^TT_' x.P.SubjectID  '\.(nii|nii\.gz)$'] ,['^' 'rc2' x.P.STRUCT '_' x.P.SubjectID '\.nii'], x.D.TTCheckDir,1,1,[],x);
             end
         end

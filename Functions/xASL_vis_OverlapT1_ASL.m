@@ -1,4 +1,4 @@
-function xASL_im_OverlapT1_ASL( x, ASL)
+function xASL_vis_OverlapT1_ASL( x, ASL)
 %overlap_T1_ASL Part of ExploreASL
 % Shows spatial agreement ASL and probability maps
 
@@ -32,17 +32,17 @@ function xASL_im_OverlapT1_ASL( x, ASL)
 
         scale                       = mean(ASL(:))./mean(prob_map{1}(:));
 
-        T1_temp                     = xASL_im_CropParmsApply(xASL_im_rotate( mean(prob_map{1}(:,:,x.slicesLarge,:),4),90),x.S.TransCrop(1),x.S.TransCrop(2),x.S.TransCrop(3),x.S.TransCrop(4) );
-        ASL_temp                    = xASL_im_CropParmsApply(xASL_im_rotate( squeeze(mean(ASL(:,:,:,x.slicesLarge),1)),90),x.S.TransCrop(1),x.S.TransCrop(2),x.S.TransCrop(3),x.S.TransCrop(4) );
+        T1_temp                     = xASL_vis_CropParmsApply(xASL_im_rotate( mean(prob_map{1}(:,:,x.slicesLarge,:),4),90),x.S.TransCrop(1),x.S.TransCrop(2),x.S.TransCrop(3),x.S.TransCrop(4) );
+        ASL_temp                    = xASL_vis_CropParmsApply(xASL_im_rotate( squeeze(mean(ASL(:,:,:,x.slicesLarge),1)),90),x.S.TransCrop(1),x.S.TransCrop(2),x.S.TransCrop(3),x.S.TransCrop(4) );
 
-        T1_color                    = xASL_im_TileImages(T1_temp , 4);
-        ASL_color                   = xASL_im_TileImages(ASL_temp, 4);
+        T1_color                    = xASL_vis_TileImages(T1_temp , 4);
+        ASL_color                   = xASL_vis_TileImages(ASL_temp, 4);
         T1_color                    = ind2rgb(round( T1_color  .*255),x.red);
         ASL_color                   = ind2rgb(round( ASL_color .*255./scale),x.yellow);
         check_nii                   = T1_color + ASL_color;
 
 
-        xASL_imwrite(check_nii, SaveFile);
+        xASL_vis_Imwrite(check_nii, SaveFile);
     end
 
 end

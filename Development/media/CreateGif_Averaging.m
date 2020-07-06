@@ -5,14 +5,14 @@ Pairs   = squeeze(Pairs(:,:,8,:));
 Pairs   = xASL_im_rotate(Pairs,90);
 % Pairs   = Pairs(:,:,1:30);
 
-Pairs   = xASL_im_CropParmsApply(Pairs,10,70,18,62);
+Pairs   = xASL_vis_CropParmsApply(Pairs,10,70,18,62);
 
 clear MeanIM
 for iP=1:size(Pairs,3)
     MeanIM(:,:,iP)  = mean(Pairs(:,:,1:iP),3);
 end
 
-% [xmin xmax ymin ymax] = xASL_im_CropParmsAcquire(MeanIM(:,:,end));
+% [xmin xmax ymin ymax] = xASL_vis_CropParmsAcquire(MeanIM(:,:,end));
 
 SelectIM                = [1:10 12 14 16 18 20 23 26 30];
 

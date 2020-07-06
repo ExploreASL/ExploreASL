@@ -72,9 +72,9 @@ else
                 ContraLateral   = LeftHemisphere .* BrainMask;
         end
 
-		OutIm1 = xASL_im_CreateVisualFig( x, {x.P.Pop_Path_rT1 LesionIM}, [], [0.75 0.35], [], {x.S.gray x.S.red});
-		OutIm2 = xASL_im_CreateVisualFig( x, {x.P.Pop_Path_rT1 PeriMask}, [], [0.75 0.35], [], {x.S.gray x.S.green});
-		OutIm3 = xASL_im_CreateVisualFig( x, {x.P.Pop_Path_rT1 ContraMask}, [], [0.75 0.35], [], {x.S.gray x.S.blue});
+		OutIm1 = xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rT1 LesionIM}, [], [0.75 0.35], [], {x.S.gray x.S.red});
+		OutIm2 = xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rT1 PeriMask}, [], [0.75 0.35], [], {x.S.gray x.S.green});
+		OutIm3 = xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rT1 ContraMask}, [], [0.75 0.35], [], {x.S.gray x.S.blue});
 
 		% Check masks, where to combine the images
         OutIm1Mask  = OutIm1(:,:,1)~=OutIm1(:,:,2) | OutIm1(:,:,2)~=OutIm1(:,:,3)  | OutIm1(:,:,1)~=OutIm1(:,:,3);
@@ -95,7 +95,7 @@ else
 
         jpgFile = fullfile(ImageSaveDir, ['Regions_' Ffile '.jpg']);
 		xASL_adm_CreateDir(ImageSaveDir);
-        xASL_imwrite(OutIm4, jpgFile);
+        xASL_vis_Imwrite(OutIm4, jpgFile);
 
         % Save segmentations
         % intra, pGM+pWM

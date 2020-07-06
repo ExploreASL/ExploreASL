@@ -1,8 +1,8 @@
 function OutputIM = xASL_im_ProjectLabelsOverData(DataIM,LabelIM,x,ScaleFactorData,ScaleFactorLabel)
 %xASL_im_ProjectLabelsOverData This script projects labels over an image,
 % but works only in 2D. Make sure to make a 2D image from a 3D or 4D image
-% using xASL_im_TransformData2View.m
-% can be used in combination with xASL_imwrite.m
+% using xASL_vis_TransformData2View.m
+% can be used in combination with xASL_vis_Imwrite.m
 
 if ~exist('ScaleFactorData','var')
     ScaleFactorData     = 0.3;

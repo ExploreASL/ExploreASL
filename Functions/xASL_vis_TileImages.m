@@ -1,5 +1,5 @@
-function [ImOut] = xASL_im_TileImages(ImIn, nColumns)
-%xASL_im_TileImages Merges selected slices (3D) into one single 2D picture.
+function [ImOut] = xASL_vis_TileImages(ImIn, nColumns)
+%xASL_vis_TileImages Merges selected slices (3D) into one single 2D picture.
 %
 % Plots all slices in one figure with specified rows and columns, aiming
 % for a square tile

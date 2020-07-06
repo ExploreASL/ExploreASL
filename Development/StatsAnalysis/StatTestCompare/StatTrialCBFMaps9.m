@@ -153,14 +153,14 @@ for iM=iMask
 
             %% Save descriptives POST-BLOB (for all subjects)
             % Get representative slice for ROI
-            xASL_im_CreateVisualFig_INPUT( [GoldPos(:,:,:,1)], fullfile(x.ResultDir,['GoldPos_M' num2str(iM) '_I' num2str(iI) '_V' num2str(iV)  '.jpg']) );
-            xASL_im_CreateVisualFig_INPUT( BLOB(:,:,:,1), fullfile(x.ResultDir,['BLOB_M' num2str(iM) '_I' num2str(iI) '_V' num2str(iV)  '.jpg']) );
+            xASL_vis_CreateVisualFig_INPUT( [GoldPos(:,:,:,1)], fullfile(x.ResultDir,['GoldPos_M' num2str(iM) '_I' num2str(iI) '_V' num2str(iV)  '.jpg']) );
+            xASL_vis_CreateVisualFig_INPUT( BLOB(:,:,:,1), fullfile(x.ResultDir,['BLOB_M' num2str(iM) '_I' num2str(iI) '_V' num2str(iV)  '.jpg']) );
             Diff        = CBFImage{2}-CBFImage{1};
             MeanDiff    = xASL_stat_MeanNan(Diff,4);
             StdDiff                         = xASL_stat_StdNan(Diff,0,4); % map of std over subjects (simplifying to paired comparison)
 
-            xASL_im_CreateVisualFig_INPUT( abs(MeanDiff), fullfile( x.ResultDir,['MeanDiff_M' num2str(iM) '_I' num2str(iI) '_V' num2str(iV)  '.jpg']) );
-            xASL_im_CreateVisualFig_INPUT( StdDiff , fullfile( x.ResultDir,['StdDiff_M' num2str(iM) '_I' num2str(iI) '_V' num2str(iV)  '.jpg']) );
+            xASL_vis_CreateVisualFig_INPUT( abs(MeanDiff), fullfile( x.ResultDir,['MeanDiff_M' num2str(iM) '_I' num2str(iI) '_V' num2str(iV)  '.jpg']) );
+            xASL_vis_CreateVisualFig_INPUT( StdDiff , fullfile( x.ResultDir,['StdDiff_M' num2str(iM) '_I' num2str(iI) '_V' num2str(iV)  '.jpg']) );
 
             % Save descriptives
             temp                            = MeanDiff(MaskedGoldPos);
@@ -187,7 +187,7 @@ for iM=iMask
             % dip_image(xASL_im_rotate([diffIm(:,:,44,1);diffIm(:,:,44,2);diffIm(:,:,44,3)],90))
             % dip_image(xASL_im_rotate(mean(diffIm(:,:,:,:),4),90))
 
-            % xASL_im_CreateVisualFig_INPUT( mean(diffIm(:,:,:,:),4) )
+            % xASL_vis_CreateVisualFig_INPUT( mean(diffIm(:,:,:,:),4) )
 
             %% Save
             % First delete whole directory

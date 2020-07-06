@@ -173,7 +173,7 @@ if ~x.mutex.HasState(StateName{7})
 
     x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
 %     if exist('ASL','var')
-%         xASL_im_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
+%         xASL_vis_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
 %     end
     x = xASL_wrp_Load4DMemMapping_LesionsROIs(x); % Create study-specific atlases for ROIs/Lesions
 

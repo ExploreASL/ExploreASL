@@ -271,17 +271,17 @@ if ~x.mutex.HasState('050_visualize')
         end
         % visualize
         Parms.ModuleName = 'func';
-        Parms.IM      = xASL_im_CreateVisualFig( x, ImIn{iM}, DirOut{iM}, x.V.IntScale{iM}, x.V.NameExt{iM}, x.V.ColorMapIs{iM});
+        Parms.IM      = xASL_vis_CreateVisualFig( x, ImIn{iM}, DirOut{iM}, x.V.IntScale{iM}, x.V.NameExt{iM}, x.V.ColorMapIs{iM});
         % add single slice to QC collection
         if  sum(~isnan(Parms.IM(:)))>0 % if image is not empty
-            x   = xASL_im_AddIM2QC(x,Parms);
+            x   = xASL_vis_AddIM2QC(x,Parms);
         end
     end
     fprintf('\n');
 
     %% Visualization TopUp results (quick & dirty)
     if xASL_exist(PathPopB0,'file') && xASL_exist(PathPopUnwarped,'file')% if we have TopUp results
-        [Output1, Output2] = xASL_im_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, x.iSubject, x.D.FuncCheckDir);
+        [Output1, Output2] = xASL_vis_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, x.iSubject, x.D.FuncCheckDir);
         x.Output.func.MeanAI_PreTopUp_Perc = Output1;
         x.Output.func.MeanAI_PostTopUp_Perc = Output2;
         xASL_delete(PathPopB0);

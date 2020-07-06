@@ -1,7 +1,7 @@
-function [ImOut] = xASL_imwrite(ImIn, PathOut, ColorMap, bRescale)
+function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
 % Saves an image to JPG while skipping the visual output to the screen.
 %
-% FORMATL [ImOut] = xASL_imwrite(ImIn, PathOut[, ColorMap, bRescale])
+% FORMATL [ImOut] = xASL_vis_Imwrite(ImIn, PathOut[, ColorMap, bRescale])
 %
 % INPUT:
 %   ImIn    - input image, has to be a 2D (NX x NY) or a 3D matrix (NX x NY x 3),
@@ -19,8 +19,8 @@ function [ImOut] = xASL_imwrite(ImIn, PathOut, ColorMap, bRescale)
 %              This function avoids the graphic interface of Matlab, for running from CLI
 %              Careful: this function overwrites any existing PathOut.
 %              
-% EXAMPLE: xASL_imwrite([80x80x3 matrix], '/MyOutputFolder/MyFileName.jpg');
-%          xASL_imwrite([80x80   matrix], '/MyOutputFolder/MyFileName.jpg', [], false); 
+% EXAMPLE: xASL_vis_Imwrite([80x80x3 matrix], '/MyOutputFolder/MyFileName.jpg');
+%          xASL_vis_Imwrite([80x80   matrix], '/MyOutputFolder/MyFileName.jpg', [], false); 
 %
 % __________________________________
 % Copyright 2015-2019 ExploreASL
@@ -29,21 +29,21 @@ function [ImOut] = xASL_imwrite(ImIn, PathOut, ColorMap, bRescale)
 
 % Admin
     if nargin < 2
-		error('xASL_imwrite: Needs at least two input parameters.');
+		error('xASL_vis_Imwrite: Needs at least two input parameters.');
 	end
 	
 	% Only work for 2D files or files with XxYx3, otherwise reduce to 2D and issue a warning
 	if ndims(ImIn) > 3
-		warning('xASL_imwrite: The number of dimension must be <=3. Ignoring all above 3D.');
+		warning('xASL_vis_Imwrite: The number of dimension must be <=3. Ignoring all above 3D.');
 		ImIn = ImIn(:,:,:,1);
 	end
 	
 	if ndims(ImIn) < 2
-		error('xASL_imwrite: The number of dimension must be 2 or 3.');
+		error('xASL_vis_Imwrite: The number of dimension must be 2 or 3.');
 	end
 	
 	if (ndims(ImIn) == 3) && (size(ImIn,3)~=3)
-		warning('xASL_imwrite: The 3rd dimension can only have 1 or 3 components. Taking the first 2D image only.');
+		warning('xASL_vis_Imwrite: The 3rd dimension can only have 1 or 3 components. Taking the first 2D image only.');
 		ImIn = ImIn(:,:,1);
     end
     
