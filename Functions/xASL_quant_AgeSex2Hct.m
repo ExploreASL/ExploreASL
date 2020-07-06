@@ -1,11 +1,12 @@
 function [Hematocrit] = xASL_quant_AgeSex2Hct(age, sex)
-%xASL_quant_AgeSex2Hct Calculate estimated hematocrit (hct) based on age and sex
+% xASL_quant_AgeSex2Hct Calculate estimated hematocrit (hct) based on age and sex
 %
-% FORMAT: [Hematocrit] = xASL_quant_AgeSex2Hct(age, sex)
+% FORMAT: [Hematocrit] = xASL_quant_AgeSex2Hct([age, sex])
 % 
 % INPUT:
 %   age        - age in years, in any numerical format (OPTIONAL, defaulted (also by NaN) to average Hematocrit over lifespan for male/female)
 %   sex        - 1=male, 2=female (OPTIONAL, defaulted (also by NaN) to average between sexes)
+%
 % OUTPUT:
 %   Hematocrit - hematocrit as fraction (between 0 and 1)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -28,7 +29,13 @@ function [Hematocrit] = xASL_quant_AgeSex2Hct(age, sex)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
+if nargin < 1
+	age = [];
+end
 
+if nargin < 2 || isempty(sex)
+	sex = nan(size(age));
+end
 
 
 
@@ -91,32 +98,32 @@ function [Hematocrit] = xASL_quant_AgeSex2Hct(age, sex)
                 Hematocrit(h) = 0.414;
             end
             % interpolated points between 18 and 21...
-            if (age(h) >18.0 && age(h)<=19.0
+            if age(h) >18.0 && age(h)<=19.0
                 Hematocrit(h) = 0.415;
             end
-            if (age(h) >19.0 && age(h)<=20.0
+            if age(h) >19.0 && age(h)<=20.0
                 Hematocrit(h) = 0.428;
             end
-            if (age(h) >20.0 && age(h)<=21.0
+            if age(h) >20.0 && age(h)<=21.0
                 Hematocrit(h) = 0.441;
             end
             %...end of interpolation
-            if (age(h) >21 && age(h)<=24
+            if age(h) >21 && age(h)<=24
                 Hematocrit(h) = 0.4405;
             end
-            if (age(h) >24 && age(h)<=34
+            if age(h) >24 && age(h)<=34
                 Hematocrit(h) = 0.444;
             end
-            if (age(h) >34 && age(h)<=44
+            if age(h) >34 && age(h)<=44
                 Hematocrit(h) = 0.443;
             end
-            if (age(h) >44 && age(h)<=54
+            if age(h) >44 && age(h)<=54
                 Hematocrit(h) = 0.445;
             end
-            if (age(h) >54 && age(h)<=64
+            if age(h) >54 && age(h)<=64
                 Hematocrit(h) = 0.449;
             end
-            if (age(h) >64 && age(h)<=74
+            if age(h) >64 && age(h)<=74
                 Hematocrit(h) = 0.445;
             end
             if (age(h) >74)

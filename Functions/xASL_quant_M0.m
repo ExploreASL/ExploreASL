@@ -27,7 +27,7 @@ function [M0IM] = xASL_quant_M0(M0IM, x)
 
 
 %% ------------------------------------------------------------------------------------------------------
-%% Admin
+% Admin
 if nargin<2 || isempty(x)
     warning('x input parameter missing, skipping');
 elseif isempty(M0IM) || sum(isfinite(M0IM(:)))==0
@@ -52,7 +52,7 @@ end
 M0IM = xASL_io_Nifti2Im(M0IM);
 
 %% ------------------------------------------------------------------------------------------------------
-%% 1. Correct scale slopes, if Philips
+% 1. Correct scale slopes, if Philips
 if ~x.ApplyQuantification(2)
     fprintf('%s\n','M0 ScaleSlopes skipped');
 else
@@ -69,7 +69,7 @@ else
 end
 
 %% ------------------------------------------------------------------------------------------------------
-%% 2. Skip M0 quantification if ~x.ApplyQuantification(4)
+% 2. Skip M0 quantification if ~x.ApplyQuantification(4)
 if ~x.ApplyQuantification(4)
     fprintf('%s\n','M0 quantification for incomplete T1 relaxation skipped');
     % M0 quantification here is only for the incomplete T1 recovery
@@ -94,7 +94,7 @@ else
     end
     
     %% ------------------------------------------------------------------------------------------------------
-    %% 3. Set TR specifically for GE
+    % 3. Set TR specifically for GE
     if ~isempty(regexp(x.Vendor,'GE')) && isempty(regexp(x.Vendor,'Siemens')) &&  isempty(regexp(x.Vendor,'Philips'))
         TR = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
@@ -104,7 +104,7 @@ else
     end
 
     %% ------------------------------------------------------------------------------------------------------
-    %% 4. Check for correct TR values
+    % 4. Check for correct TR values
     if TR<1000
         error(['Unusually small TR for ASL M0: ' num2str(TR)]);
     end
@@ -115,7 +115,7 @@ else
     end
 
     %% ------------------------------------------------------------------------------------------------------
-    %% 5. Quantify the M0, either for single 3D volume or slice-wise
+    % 5. Quantify the M0, either for single 3D volume or slice-wise
     if strcmp(x.readout_dim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
             NetTR = TR;
             fprintf('%s\n','Single 3D M0 readout assumed');
@@ -176,7 +176,7 @@ else
 end
 
 %% ------------------------------------------------------------------------------------------------------
-%% 6. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
+% 6. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
 if ~isfield(x,'M0_GMScaleFactor') || isempty(x.M0_GMScaleFactor)
     x.M0_GMScaleFactor = 1; % no scaling
 else
