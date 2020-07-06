@@ -19,7 +19,7 @@ function pathOut = xASL_adm_UnzipNifti(pathIn, varargin)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 % Check for the optional parameter overwrite
 if nargin < 2
@@ -116,8 +116,18 @@ end
 
 %% When it comes here - unzip the GZ file and delete it
 bDelete = true;
-try 
-    extracted = gunzip(pathGZ);
+try
+    if ~ispc
+        [result1, result2] = system(['gunzip -f ' pathGZ]); % use system unzipping, is faster & doesn't need JVM
+        extracted{1} = pathNII;
+        if result1~=0
+            warning('Couldnt unzip NIfTI with CLI');
+            fprintf('%s\n', result2);
+        end
+    else % pc, use matlab's JVM
+        extracted = gunzip(pathGZ);
+    end
+
 catch ME % if unzipping didnt work, try reading it without unzipping
     try 
         nifti(pathGZ);
@@ -145,7 +155,9 @@ if length(extracted)==1 && bDelete
 	end
 	
 	% If everything was successful, then delete the unpacked .nii.gz file
-	delete(pathGZ);
+	if exist(pathGZ, 'file')
+        delete(pathGZ);
+    end
 elseif bDelete
 	% Multiple files are extracted - delete extracted files and report an error
 	for ii = 1:length(extracted)
@@ -153,5 +165,6 @@ elseif bDelete
 	end
 	error(['Archive contained more than 1 file: ' pathIn]);
 end
+
 
 end
