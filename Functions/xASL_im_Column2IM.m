@@ -19,11 +19,11 @@ function [ImageOut] = xASL_im_Column2IM(ColumnIn, BrainMask)
 %              See also: xASL_im_IM2Column.m
 % 
 %              The mask mostly used for xASL_im_IM2Column is x.WBmask, which completely
-%              engulfes pGM, pWM & pCSF
+%              engulfes pGM, pWM & pCSF.
 %
 % EXAMPLE: ImageOut = xASL_im_Column2IM(ColumnIn, BrainMask);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 BrainMask = logical(BrainMask);

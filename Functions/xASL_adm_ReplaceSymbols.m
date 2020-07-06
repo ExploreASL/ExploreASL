@@ -1,15 +1,15 @@
 function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, bracketRight)
 % Helper function to replace <symbols> in strings using the values in the symbol table.
 %
-% FORMAT: 
-%     strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable[, bracketLeft, bracketRight])
+% FORMAT:   strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable[, bracketLeft, bracketRight])
+%
 % INPUT:
-%     strIn        - input string (REQUIRED)
-%     symbolTable  - table of symbols (REQUIRED)
-%     bracketLeft  - string describing the left side bracket (OPTIONAL, DEFAULT = '<')
-%     bracketright - string describing the right side bracket (OPTIONAL, DEFAULT = '<')
+%           strIn        - input string (REQUIRED)
+%           symbolTable  - table of symbols (REQUIRED)
+%           bracketLeft  - string describing the left side bracket (OPTIONAL, DEFAULT = '<')
+%           bracketright - string describing the right side bracket (OPTIONAL, DEFAULT = '<')
 % OUTPUT:
-%     strOut - replaced string
+%           strOut - replaced string
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It takes the STRIN on input, then looks for symbols between BRACKETLEFT and BRACKETRIGHT and replaces these symbols in
 %              in the string by the values provided in the SYMBOLTABLE as SYMBOLTABLE.SYMBOL, SYMBOLTABLE.D.SYMBOL, or SYMBOLTABLE.P.SYMBOL
@@ -22,7 +22,7 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright Â© 2015-2019 ExploreASL
+% Copyright © 2015-2020 ExploreASL
 
     % Admin
 	if ~ischar(strIn)

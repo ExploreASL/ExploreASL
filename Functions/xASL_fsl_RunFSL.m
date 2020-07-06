@@ -19,10 +19,12 @@ function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessVa
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function runs an FSL command from ExploreASL:
-%              1) Checking the FSL dir
-%              2) Manage CUDA/CPU parallelization (currently disabled, WIP)
-%              3) Setting up FSL environment
-%              4) Running the command
+%
+%              1. Checking the FSL dir
+%              2. Manage CUDA/CPU parallelization (currently disabled, WIP)
+%              3. Setting up FSL environment
+%              4. Running the command
+%
 % Supports .nii & .nii.gz, Linux, MacOS & Windows (WSL)
 % 
 % EXAMPLE: xASL_fsl_RunFSL(FSLCommand, x);

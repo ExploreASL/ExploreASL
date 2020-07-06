@@ -14,9 +14,9 @@ function [spm_path, spm_version] = xASL_adm_CheckSPM(modality, proposed_spm_path
 %   spm_version       - Version of SPM
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Checks if the spm function exists and if the reported version matches our development 
-%              version (SPM8 or SPM12). If the spm toolbox is not available yet, it will try the 
-%              PROPOSED_SPM_PATH (if specified) or the user selected directory and add it to PATH.
-%              The function will fail if SPM cannot be found or if detecting an unsupported version.
+%              version ({{SPM8}} or {{SPM12}}). If the spm toolbox is not available yet, it will try the 
+%              PROPOSED_SPM_PATH (if specified) or the user selected directory and add it to {{PATH}}.
+%              The function will fail if {{SPM}} cannot be found or if detecting an unsupported version.
 % EXAMPLE: [spm_path, spm_version] = xASL_adm_CheckSPM();
 %          [spm_path] = xASL_adm_CheckSPM('FMRI');  
 %          [spm_path, spm_version] = xASL_adm_CheckSPM('FMRI','/usr/local/spm12');
@@ -24,7 +24,7 @@ function [spm_path, spm_version] = xASL_adm_CheckSPM(modality, proposed_spm_path
 %          [spm_path, spm_version] = xASL_adm_CheckSPM('FMRI','/usr/local/spm12','full');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright Â© 2015-2019 ExploreASL
+% Copyright © 2015-2020 ExploreASL
 
     % Check the input parameters
 	if nargin<1 || isempty(modality)
