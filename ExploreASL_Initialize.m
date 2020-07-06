@@ -649,10 +649,15 @@ if x.Pediatric_Template
 	x.D.AtlasDir            = fullfile(x.MyPath,'External', 'AtlasesNonCommercial', x.Pediatric_Type);
 end
 
+if ~isfield(x, 'SegmentSPM12') && isfield(x, 'Segment_SPM12')
+    warning('Please use input parameter SegmentSPM12 instead of Segment_SPM12 (legacy)');
+    fprintf(['Using legacy option: x.Segment_SPM12 = ' xASL_num2str(x.Segment_SPM12) '\n']);
+    x.SegmentSPM12 = x.Segment_SPM12;
+end
 
 %% --------------------------------------------------------------------------
 %% Manage input parameters ExploreASL course
-Fields = {'bLesionFilling' 'bAutoACPC' 'Segment_SPM12' 'M0_conventionalProcessing' 'bGetControlLabelOrder'};
+Fields = {'bLesionFilling' 'bAutoACPC' 'SegmentSPM12' 'M0_conventionalProcessing' 'bGetControlLabelOrder'};
 Defaults = [true true false false true];
 
 for iL=1:length(Fields)

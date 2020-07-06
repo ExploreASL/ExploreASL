@@ -32,10 +32,10 @@ function xASL_wrp_CreateBiasfield(x)
     CBF_prefix = ['q' x.P.CBF];
 
     % Select the set that contains the variable Site.mat
-    if isfield(x,'SetsName')
+    if isfield(x.S,'SetsName')
         for iSet=1:length(x.S.SetsName)
             if strcmp(x.S.SetsName{iSet},'Site')
-                SiteSet  = iSet;
+                SiteSet = iSet;
             end
         end
     end

@@ -21,16 +21,17 @@ function xASL_docu_Crawler(folder,mdoutput)
 
 % Improve command window output
 BreakString = [repmat('=',1,100),'\n'];
+SeparatorLine = repmat('-',1,149);
 
 %% Update GIT
 fprintf(BreakString)
-try
-    fprintf('GIT: ');
-    system('git fetch','-echo');
-    system('git pull','-echo');
-catch
-    warning('It seems that your working directory is not the ExploreASL directory...');
-end
+% try
+%     fprintf('GIT: ');
+%     system('git fetch','-echo');
+%     system('git pull','-echo');
+% catch
+%     warning('It seems that your working directory is not the ExploreASL directory...');
+% end
 
 %% Input Check
 if nargin < 1
@@ -141,7 +142,12 @@ for i = 1:numel(listing)
         TEXT{it,1} = '#### Description';
         it = it+1;
         for i=1:lD
-            TEXT{it,1} = descriptionText(i,:); it = it+1;
+            TEXT{it,1} = descriptionText(i,:);
+            if contains(TEXT{it,1},'_')
+                TEXT{it,:} = strrep(TEXT{it,:},'_','\_'); % Escape underscores in the description
+                TEXT{it,:} = strrep(TEXT{it,:},'*','\*'); % Escape stars in the description
+            end
+            it = it+1;
         end
         
         % Empty lines
@@ -151,16 +157,22 @@ for i = 1:numel(listing)
     
 end
 
-% Trim char arrays
+% Remove spaces and separator lines
 for i=1:numel(TEXT)
-    TEXT(i,:) = strtrim(TEXT(i,:));
+    % Trim char arrays
+    TEXT{i,:} = strtrim(TEXT{i,:});
+    
+    % Remove line separators
+    if strcmp(TEXT(i,:),SeparatorLine)
+        TEXT{i,:} = strrep(TEXT{i,:},SeparatorLine,'');
+    end
 end
 
 
 % Print information to markdown file
 fileID = fopen(mdoutput,'w');
 for i=1:numel(TEXT)
-    fprintf(fileID,'%s\n',char(TEXT(i,:)));
+    fprintf(fileID,'%s\n',char(TEXT{i,:}));
 end
 fclose(fileID);
 

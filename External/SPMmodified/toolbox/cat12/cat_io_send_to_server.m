@@ -14,6 +14,10 @@ function cat_io_send_to_server(urlinfo)
 %   University Jena
 % ______________________________________________________________________
 % $Id: cat_io_send_to_server.m 1604 2020-04-14 12:39:10Z gaser $
+
+if ~usejava('jvm') %% EXPLOREASL HACK
+	return; % skip sending info to server if no JVM running
+end
   
 urlinfo = regexprep(urlinfo, '\n', '%20'); % replace returns
 urlinfo = regexprep(urlinfo, ' ' , '%20'); % replace spaces

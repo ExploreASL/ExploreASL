@@ -163,9 +163,7 @@ if exist([pathNewNifti '.gz'], 'file')
 end
 
 if bGZip
-    pathNewNifti = xASL_adm_ZipFileNameHandling(pathNewNifti);
-    gzip(pathNewNifti);
-    delete(pathNewNifti);
+    xASL_adm_GzipNifti(pathNewNifti);
 end
 
 if strcmp(pathNewNifti(end-3:end),'.nii') && exist(pathNewNifti,'file') && exist([pathNewNifti '.gz'],'file')

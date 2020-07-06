@@ -45,12 +45,13 @@ function [M, P] = xASL_im_DecomposeAffineTransformation(Mtransformation)
 %               plane, rotate this, which will swap the sagittal slices into transversal)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This function performs the following steps:
-%               0) Start with an output P and M struct
-%               1) Obtain translations
-%               2) Obtain zoom
-%               3) Obtain 90degree rotations
-%               4) Obtain subtle rotations & shearing
-%               5) Check the rounding errors of the decomposition
+%
+%               0. Start with an output P and M struct
+%               1. Obtain translations
+%               2. Obtain zoom
+%               3. Obtain 90degree rotations
+%               4. Obtain subtle rotations & shearing
+%               5. Check the rounding errors of the decomposition
 %
 % EXAMPLE: [M, P] = xASL_im_DecomposeAffineTransformation(Mtransformation);
 % See also: https://nipy.org/nibabel/coordinate_systems.html

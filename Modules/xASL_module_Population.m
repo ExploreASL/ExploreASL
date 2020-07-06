@@ -121,8 +121,8 @@ end
 %% -----------------------------------------------------------------------------
 %% 4    Print DICOM header parameters & check whether there are outliers
 if ~x.mutex.HasState(StateName{4})
-    ScanType = {'ASL4D' 'M0' 'func'};
-    HasSessions = {1 1 1};
+    ScanType = {'ASL4D' 'M0'};
+    HasSessions = {1 1};
 
     for iType=1:length(ScanType)
         xASL_stat_GetDICOMStatistics(x, ScanType{iType}, HasSessions{iType});

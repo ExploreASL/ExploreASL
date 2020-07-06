@@ -25,11 +25,12 @@ function xASL_im_DummyOrientationNIfTI(PathSrc, PathRef, PathDummyOut, bApplyRot
 %               This can be useful to correct for any erroneous rotations from registration,
 %               or to put two images in the same space without applying their
 %               realignment. This function performs the following steps:
-%               1) Load orientations & calculate transformation
-%               2) Calculate the desired transformation
-%               3) Calculate new orientation matrix
-%               4) Calculate the new image size
-%               5) Save the dummy NIfTI
+%
+%               1. Load orientations & calculate transformation
+%               2. Calculate the desired transformation
+%               3. Calculate new orientation matrix
+%               4. Calculate the new image size
+%               5. Save the dummy NIfTI
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % THEORY:   Any rotation will always swap the other dims (X rotation swaps Y/Z, Y
 %           rotation swaps X/Z etc.) because they are perpendicular (haaks)

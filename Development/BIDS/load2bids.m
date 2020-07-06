@@ -159,9 +159,12 @@ end
 system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.json']);
 system(['rm ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_1.nii']);
 system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_a_2.nii ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.nii']);
-xASL_Move([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_a_2.json'],[outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']);
+%xASL_Move([outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_a_2.json'],[outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0.json']);
 
 system(['rm ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_0170*']);
+system(['rm ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_2460*']);
+nii_files = xASL_adm_GetFileList([outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/'],'^*.nii$','FPList',[],false);
+nii_files = xASL_adm_MergeNiiFiles(nii_files, 'ASL');
 
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1.nii ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0.nii']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1.json ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0.json']);
@@ -891,7 +894,7 @@ for ii = 1:length(fList)
 								tagTotalReadoutTime = importStr{ii}.par.TotalReadoutTime;
    								
 								if bJsonLocalM0isFile 
-									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '.nii.gz'];
+									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '.nii.gz,' jsonLocal.M0 '_dir-pa' '.nii.gz'];
 								end
 							else
 								if bJsonLocalM0isFile
@@ -907,6 +910,7 @@ for ii = 1:length(fList)
 							nnStrOut = '_dir-pa';
 							tagPhaseEncodingDirection = 'j';
 							tagIntendedFor = fullfile('perf',['sub-' subLabel sesLabelUnd '_' m0scanStr '_dir-ap.nii.gz']);
+
 							if isfield(importStr{ii}.par,'TotalReadoutTime')
 								tagTotalReadoutTime = importStr{ii}.par.TotalReadoutTime;
 							else
