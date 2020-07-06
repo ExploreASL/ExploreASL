@@ -1,8 +1,7 @@
 function [result, files] = xASL_adm_CheckFileCount(path, expr, mincount, failifmissing)
 % Checks if the number of files matching the expression is more than mincount.
 %
-% FORMAT: 
-%         [result, files] = xASL_adm_CheckFileCount(path, expr[, mincount, failifmissing])
+% FORMAT: [result, files] = xASL_adm_CheckFileCount(path, expr[, mincount, failifmissing])
 %         [result]        = xASL_adm_CheckFileCount(...)
 %
 % INPUT:

@@ -17,10 +17,10 @@ function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids
 %              Also takes into account that the units in BIDS are s, but in xASL ms.
 %              This function performs the following steps:
 %
-%              1) Define field names that need to be convert/renamed/merged
-%              2) Convert XASL fields to the output format (BIDS or XASL)
-%              3) Convert BIDS fields to the output format (BIDS or XASL)
-%              4) Merge the BIDS and XASL fields, convert field values
+%              1. Define field names that need to be convert/renamed/merged
+%              2. Convert XASL fields to the output format (BIDS or XASL)
+%              3. Convert BIDS fields to the output format (BIDS or XASL)
+%              4. Merge the BIDS and XASL fields, convert field values
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: outParms = xASL_bids_parms2BIDS(inXasl, inBids);
 %          outParms = xASL_bids_parms2BIDS(inXasl, [], 1, 0);

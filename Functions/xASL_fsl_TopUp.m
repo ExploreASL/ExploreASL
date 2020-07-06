@@ -14,20 +14,20 @@ function [bSuccess] = xASL_fsl_TopUp(InDir, ScanType, x, OutputPath)
 % DESCRIPTION: This function runs FSL TopUp. It assumes that there are 2
 %              TopUp images, i.e. 1 blip up & 1 blip down.
 %
-%              0) Admin: manage ScanType, NIfTI paths, create TopUp
+%              0. Admin: manage ScanType, NIfTI paths, create TopUp
 %                 parameter file for image to apply TopUp to & for the TopUp NIfTIs,
 %                 delete files from previous run, define the image with the
 %                 same acquisition parameters as TopUp (does the image
 %                 we apply TopUp to, have the Blip up or down?)
-%              1) Register images to image that we apply TopUp to
+%              1. Register images to image that we apply TopUp to
 %                 (registration between blip up/down images is performed by
 %                 TopUp)
-%              2) Run TopUp estimate (i.e. estimate the geometric distortion field from B0 NIfTI &
+%              2. Run TopUp estimate (i.e. estimate the geometric distortion field from B0 NIfTI &
 %                 parameters file), this takes quite long. Also has a x.Quality=0 option that is very fast
 %                 but inaccurate, to try out this pipeline part. Before
 %                 TopUp, NaNs (e.g. from resampling) are removed from the images
 %                 TopUp is run with default settings
-%              3) Apply TopUp
+%              3. Apply TopUp
 %
 % REFERENCE:   Please reference as:
 %              "Data was collected with reversed phase-encode blips, resulting in pairs of images with distortions going in opposite directions. From these pairs the susceptibility-induced off-resonance field was estimated using a method similar to that described in [Andersson 2003] as implemented in FSL [Smith 2004] and the two images were combined into a single corrected one."
@@ -37,7 +37,7 @@ function [bSuccess] = xASL_fsl_TopUp(InDir, ScanType, x, OutputPath)
 %
 % EXAMPLE: xASL_fsl_TopUp('/analysis/Sub-001/dwi', [], x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 
