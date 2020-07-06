@@ -1,10 +1,15 @@
-function x = xASL_stat_ComputeWsCV( x )
+function xASL_stat_ComputeWsCV(x)
 %xASL_stat_ComputeWsCV Calculates the within and between-subject
 %coefficient of variance (wsCV and bsCV respectively), to estimate the
 %power to detect effects
 %
 % This requires 4D images that have been split
 %
+
+if usejava('jvm')
+    fprintf('Skipping xASL_stat_ComputeWsCV, missing JVM\n');
+    return;
+end
 
 CheckList1                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part1_.*\.(nii|nii\.gz)$','FPListRec',[0 Inf]);
 CheckList2                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part2_.*\.(nii|nii\.gz)$','FPListRec',[0 Inf]);

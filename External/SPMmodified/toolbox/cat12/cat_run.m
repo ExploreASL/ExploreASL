@@ -857,7 +857,9 @@ function vout = run_job(job)
     end
   end
 
-  colormap(gray)
+  if usejava('jvm')
+    colormap(gray);
+  end
   
   if isfield(job,'nproc') && job.nproc>0 
     fprintf('\n%s',repmat('_',1,72));

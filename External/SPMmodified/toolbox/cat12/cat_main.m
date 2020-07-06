@@ -881,7 +881,7 @@ clear Yth1;
 %  data (cat_surf_display). The processing is finished by some 
 %  lines in the command line window.
 %  ---------------------------------------------------------------------
-if job.extopts.print
+if job.extopts.print && usejava('jvm')
   str = cat_main_reportstr(job,res,qa,cat_warnings);
   Yp0 = zeros(d,'single'); Yp0(indx,indy,indz) = single(Yp0b)/255*5; 
   if ~exist('Psurf','var'), Psurf = ''; end
