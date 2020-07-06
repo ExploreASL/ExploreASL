@@ -14,9 +14,10 @@ function outNum = xASL_adm_Hex2Num(inStr, type, endian)
 % OUTPUT:
 %   outNum    - converted to decimal float/double
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Takes a hexadecimal string and converts it to number. Works also when the string contains escape characters, and for single-floats and 
-%              for a little and big endian
-%              If containing 8 and less characters than treat as float, if more than as double
+% DESCRIPTION:  Takes a hexadecimal string and converts it to number. Works
+%               also when the string contains escape characters, and for single-floats and 
+%               for a little and big endian. If containing 8 and less
+%               characters than treat as float, if more than as double.
 %
 % EXAMPLE: outNum = xASL_adm_hex2num('b1bd5039')
 %          outNum = xASL_adm_hex2num('b1/bd/50/39')
@@ -25,7 +26,7 @@ function outNum = xASL_adm_Hex2Num(inStr, type, endian)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright Â© 2015-2019 ExploreASL
+% Copyright © 2015-2020 ExploreASL
 %
 % 2019-03-29 JP
 

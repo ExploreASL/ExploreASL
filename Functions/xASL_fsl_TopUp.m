@@ -29,13 +29,13 @@ function [bSuccess] = xASL_fsl_TopUp(InDir, ScanType, x, OutputPath)
 %                 TopUp is run with default settings
 %              3. Apply TopUp
 %
+% EXAMPLE: xASL_fsl_TopUp('/analysis/Sub-001/dwi', [], x);
+%
 % REFERENCE:   Please reference as:
 %              "Data was collected with reversed phase-encode blips, resulting in pairs of images with distortions going in opposite directions. From these pairs the susceptibility-induced off-resonance field was estimated using a method similar to that described in [Andersson 2003] as implemented in FSL [Smith 2004] and the two images were combined into a single corrected one."
 %              [Andersson 2003] J.L.R. Andersson, S. Skare, J. Ashburner How to correct susceptibility distortions in spin-echo echo-planar images: application to diffusion tensor imaging. NeuroImage, 20(2):870-888, 2003.
 %              [Smith 2004] S.M. Smith, M. Jenkinson, M.W. Woolrich, C.F. Beckmann, T.E.J. Behrens, H. Johansen-Berg, P.R. Bannister, M. De Luca, I. Drobnjak, D.E. Flitney, R. Niazy, J. Saunders, J. Vickers, Y. Zhang, N. De Stefano, J.M. Brady, and P.M. Matthews. Advances in functional and structural MR image analysis and implementation as FSL. NeuroImage, 23(S1):208-219, 2004.
 %              https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/topup
-%
-% EXAMPLE: xASL_fsl_TopUp('/analysis/Sub-001/dwi', [], x);
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
 

@@ -1,6 +1,7 @@
 function scaleFactor = xASL_adm_GetPhilipsScaling(parms,header)
 % Checks the nifti header and the additional parameters in a side-car for a nifti file and extract correction
 % scaling factors for Philips.
+%
 % FORMAT: scaleFactor = xASL_adm_GetPhilipsScaling(pathParmsMat,pathNifti)
 % 
 % INPUT:
@@ -13,7 +14,7 @@ function scaleFactor = xASL_adm_GetPhilipsScaling(parms,header)
 % DESCRIPTION: This script provides the correct scaling factors for a NIfTI file. It checks the header of the NIfTI
 %              that normally has the same scaling as RescaleSlope in DICOM, it checks if dcm2nii (by the info in JSON)
 %              has already converted the scale slopes to floating point. And if not, the derive the correct
-%              scaling factor to be applied
+%              scaling factor to be applied.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: scaleFactor = xASL_adm_GetPhilipsScaling('ASL4D_parms.mat','ASL.json');
 % __________________________________

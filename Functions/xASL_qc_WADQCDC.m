@@ -14,31 +14,32 @@ function xASL_qc_WADQCDC(x, iSubject, ScanType)
 % DESCRIPTION: This QC function runs WAD-QC specific Python script to zip QC information &
 %              incorporate this into a DICOM field for analysis on the
 %              WAD-QC server, by the following:
-%              a) Define QCDC script: this is the Python script written by
+%
+%              1. Define QCDC script: this is the Python script written by
 %                 Gaspare, edited by Joost Kuijer & copied to the EPAD
 %                 CustomScripts folder of ExploreASL
-%              b) Python installation location is checked, with several known
+%              2. Python installation location is checked, with several known
 %                 locations, for several servers. If we cannot find it,
 %                 the QCDC is not ran
-%              c) Previous QCDC results are cleaned. QCDC stores all its
+%              3. Previous QCDC results are cleaned. QCDC stores all its
 %                 results in a separate folder (Something like 2 layers up from the current
 %                 folder, here referred to as QCDCDir = [x.D.ROOT 'qcdc_output'])
 %                 from these result files, only the filled DICOM file is
 %                 interesting, all the rest are copies of the QC results
 %                 that we embedded into the DICOM
-%              d) Run QCDC (if Python installation detected)
+%              4. Run QCDC (if Python installation detected)
 %                 The following files need to be set as executable:
 %                     ('QCDC', 'src', 'qc_data_collector.py')
 %                     ('QCDC', 'src', 'bash', 'create_dcm_only_wadqc.sh')
 %                     ('QCDC', 'src', 'bash', 'sendwadqc.sh')
-%              e) Clean up new QCDC results (as above) & move the filled
+%              5. Clean up new QCDC results (as above) & move the filled
 %                 DICOM to ['qcdc_' DummyFile] within the current ScanType
 %                 folder
-%              f) Sending the DICOM to the WAD-QC server using storescu
+%              6. Sending the DICOM to the WAD-QC server using storescu
 %
 % EXAMPLE: xASL_qc_WADQCDC(x, 10, 'ASL');
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 
