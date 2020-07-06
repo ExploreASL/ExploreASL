@@ -44,3 +44,14 @@ The walkthrough document and how-to videos can be found on the [](https://sites.
  
 * Recent changes include the improvement of the documentation within the ExploreASL structure using markdown files and the introduction of a new documentation repository (#7)
 * Some function headers were added for increased understandability (#19). These can be viewed in Matlab by: ```help ExploreASL_Master``` where you can replace ExploreASL_Master by the actual function name
+
+----
+
+# ExploreASL V1.1.0
+
+----
+
+## Bug Fixes
+
+* hotfix minor bug in creating participants.tsv #23
+
