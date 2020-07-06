@@ -47,7 +47,7 @@ The walkthrough document and how-to videos can be found on the [](https://sites.
 
 ----
 
-# ExploreASL V1.1.0
+# ExploreASL V1.1.1
 
 ----
 
