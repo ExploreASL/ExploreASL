@@ -8,6 +8,26 @@ function xASL_qc_PrintOrientation(DIR, reg_exp_INPUT,OUTPUT_DIR,Name)
 % give negative determinant.
 %
 % CAVE: will search recursively through directories for niftis that fullfill reg_exp_INPUT!
+%
+% FORMAT:       xASL_qc_PrintOrientation(DIR, reg_exp_INPUT,OUTPUT_DIR,Name);
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Check orientation of niftis, useful to detect
+%               accidental left-right flips (all other flips will be visible).
+%               translations, rotations or shears are not to be worried about,
+%               only negative zooms. This can be detected by negative determinants.
+%               So orientation parameters and determinants should be similar across
+%               all scans from single scanner/coil, and registration should not
+%               give negative determinant.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 %% Administration CSV
 fclose all;

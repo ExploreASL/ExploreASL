@@ -6,15 +6,33 @@ function xASL_io_PairwiseSubtraction(InputFile,outputPath,do_mask,switch_sign)
 % Remember to consider motion correction/ SPM realign (isotropically)
 % Alternative to this function is robust fit (Camille Maumet)
 %
-% do_mask       = masks perfusion-weighted image based on voxels present in all temporal volumes (default=0)
-% switch_sign   = script checks whether odd or even are largest (control),
-%                 in order to calculate (control-label).
-%                 if this nevertheless goes wrong, switch_sign=1 will invert this. (default=0)
+% FORMAT:       xASL_io_PairwiseSubtraction(InputFile,outputPath,do_mask,switch_sign)
+% 
+% INPUT:        do_mask       = masks perfusion-weighted image based on voxels present in all temporal volumes (default=0)
+%               switch_sign   = script checks whether odd or even are largest (control),
+%                               in order to calculate (control-label).
+%                               if this nevertheless goes wrong, switch_sign=1 will invert this. (default=0)
 %
-% Script dependencies: SPM12
-
-% Default input values
-% If dim(4)==1, it will not process anything but rather create a copy of the original nifti
+%               Script dependencies: SPM12
+%               Default input values.
+%               If dim(4)==1, it will not process anything but rather
+%               create a copy of the original nifti.
+%
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Subtracts controls from labels and takes mean.
+%               Creates new perfusion-weighted delta_M file, prefaced with 's'.
+%               Converts into single precision floating point values (32 bit), removes scale slope.
+%               Only runs if ['s' input_file_ASL] doesn't exist.
+%               Remember to consider motion correction/ SPM realign (isotropically).
+%               Alternative to this function is robust fit (Camille Maumet).
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 
 if ~exist('do_mask','var'); do_mask             = 0; end

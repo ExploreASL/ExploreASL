@@ -1,13 +1,22 @@
 function xASL_adm_SaveJSON(data, jsonFileName)
-% xASL_adm_SaveJSON Saves the values in the structure 'data' to a file in JSON format.
+%xASL_adm_SaveJSON Saves the values in the structure 'data' to a file in JSON format.
 %
-% Example:
-%     data.name = 'chair';
-%     data.color = 'pink';
-%     data.metrics.height = 0.3;
-%     data.metrics.width = 1.3;
-%     data.array = [1 2];
-%     xASL_adm_SaveJSON(data, 'out.json');
+% FORMAT:       xASL_adm_SaveJSON(data, jsonFileName)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Saves the values in the structure 'data' to a file in JSON format.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      data.name = 'chair';
+%               data.color = 'pink';
+%               data.metrics.height = 0.3;
+%               data.metrics.width = 1.3;
+%               data.array = [1 2];
+%               xASL_adm_SaveJSON(data, 'out.json');
 %
 % Output 'out.json':
 % {
@@ -18,8 +27,11 @@ function xASL_adm_SaveJSON(data, jsonFileName)
 % 		"width" : 1.3
 % 		},
 %   "array" : [1, 2]
-% 	}
+% }
 %
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
 %% WITH HACK HERE BY HM, for ExploreASL
 % To allow cells, coming from BIDS JSON Decoding:
 % QUICK & DIRTY FIX

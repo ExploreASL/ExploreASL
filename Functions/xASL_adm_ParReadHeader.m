@@ -1,11 +1,23 @@
 function info =xASL_adm_ParReadHeader(filename)
-% Function for reading the header of a Philips Par / Rec  MR V4.* file 
+%xASL_adm_ParReadHeader Function for reading the header of a Philips Par /
+% Rec  MR V4.* file.
 %
-% info  = xASL_adm_ParReadHeader(filename);
+% FORMAT:       info =xASL_adm_ParReadHeader(filename)
+% 
+% INPUT:        ...
 %
-% examples:
-% 1,  info=xASL_adm_ParReadHeader()
-% 2,  info=xASL_adm_ParReadHeader('volume.par');
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Function for reading the header of a Philips Par /
+%               Rec  MR V4.* file.
+%
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      1. info=xASL_adm_ParReadHeader();
+%               2. info=xASL_adm_ParReadHeader('volume.par');
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 if(exist('filename','var')==0)
     [filename, pathname] = uigetfile('*.par', 'Read par-file');

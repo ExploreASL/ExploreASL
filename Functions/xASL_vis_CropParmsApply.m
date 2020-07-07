@@ -1,7 +1,7 @@
 function ImageOut = xASL_vis_CropParmsApply(ImageIn,CropParameters,Xmax,Ymin,Ymax)
 %xASL_vis_CropParmsApply Crops 2D image data
 %
-% FORMAT: ImageOut = xASL_vis_CropParmsApply(ImageIn,CropParameters)
+% FORMAT:       ImageOut = xASL_vis_CropParmsApply(ImageIn,CropParameters)
 %
 % INPUT:
 %   ImageIn        - single or series of 2D image matrix/matrices that need to be cropped (REQUIRED)
@@ -12,12 +12,15 @@ function ImageOut = xASL_vis_CropParmsApply(ImageIn,CropParameters,Xmax,Ymin,Yma
 %   ImageOut       - cropped image matrix/matrices
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function crops 2D image matrices
 %
-% EXAMPLE to crop a [121 145] MNI 1.5 mm slice to a [121 121] square:
-%         ImageOut = xASL_vis_CropParmsApply(ImageIn,[12 133 0 121])
+% DESCRIPTION:  This function crops 2D image matrices.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+% EXAMPLE:      To crop a [121 145] MNI 1.5 mm slice to a [121 121] square:
+%               ImageOut = xASL_vis_CropParmsApply(ImageIn,[12 133 0 121])
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 %% Manage crop parameters

@@ -1,6 +1,7 @@
 function [x] = xASL_import_json(DataParFile)
-%% xASL_import_json
-% This function reads in a DATA_PAR file and creates the x structure.
+% xASL_import_json This function reads in a DATA_PAR file and creates the x structure.
+%
+% FORMAT:   [x] = xASL_import_json(DataParFile)
 %
 % INPUT:
 %   DataParFile     - Filename of the DATA_PAR file
@@ -9,16 +10,19 @@ function [x] = xASL_import_json(DataParFile)
 %   x               - x structure
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function reads in a DATA_PAR file and creates the x
-% structure. The name of the DATA_PAR file is given as a string or
-% character array. The output is the x structure.
+% DESCRIPTION:  This function reads in a DATA_PAR file and creates the x
+%               structure. The name of the DATA_PAR file is given as a string or
+%               character array. The output is the x structure.
 %
-% If the DATA_PAR file is the dataset_description.json file of the BIDS
-% standard, the x structure is created according to BIDS.
+%               If the DATA_PAR file is the dataset_description.json file of the BIDS
+%               standard, the x structure is created according to BIDS.
 %
-% EXAMPLE: xASL_import_json('DataParFile.json')
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% EXAMPLE: JSON FILE
+% EXAMPLE:      xASL_import_json('DataParFile.json')
+%
+% EXAMPLE 2:    JSON FILE
+%
 % {
 % 	"x": [{
 % 			"name": 				"ExampleDataSet",
@@ -48,9 +52,7 @@ function [x] = xASL_import_json(DataParFile)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright ? 2015-2019 ExploreASL
-%
-% 2019-01-29 Michael Stritt
+% Copyright 2015-2020 ExploreASL
 
 %% Input Check
 if ~exist(DataParFile, 'file')

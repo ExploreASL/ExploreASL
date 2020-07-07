@@ -1,5 +1,5 @@
 function [x] = xASL_stat_GetROIstatistics(x)
-%xASL_stat_GetROIstatistics Compute statistics for each ROI
+%xASL_stat_GetROIstatistics Compute statistics for each ROI.
 %
 % FORMAT: [x] = xASL_stat_GetROIstatistics(x)
 %
@@ -28,17 +28,18 @@ function [x] = xASL_stat_GetROIstatistics(x)
 % DESCRIPTION: This function computes mean and spatial CoV for each ROI,
 %              in a [1.5 1.5 1.5] mm MNI space,
 %              with several ASL-specific adaptions:
-%              1) Skip ROI masks that are smaller than 1 mL 
+%
+%              1. Skip ROI masks that are smaller than 1 mL 
 %                 as this would be too noisy for ASL (skipped when x.S.IsASL==false)
-%              2) Expand each ROI mask such that it has sufficient WM
+%              2. Expand each ROI mask such that it has sufficient WM
 %                 content (skipped when IsASL==false)
-%              3) Create for each ROI mask a left, right and bilateral copy
-%              4) Iterate over all subjects:
-%                 a) Load partial volume maps
-%                 b) Correct for WMH SEGM -> IS THIS STILL REQUIRED???
-%                 c) Load data
-%                 d) Show ROIs projected on ASL image
-%                 e) Actual data computations
+%              3. Create for each ROI mask a left, right and bilateral copy
+%              4. Iterate over all subjects:
+%              - a) Load partial volume maps
+%              - b) Correct for WMH SEGM -> IS THIS STILL REQUIRED???
+%              - c) Load data
+%              - d) Show ROIs projected on ASL image
+%              - e) Actual data computations
 %                    Partial Volume Correction (PVC) options:
 %                    PVC==0 -> perform masking only, no regression
 %                    PVC==1 -> single compartment regression, for pGM
@@ -47,6 +48,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %                    Here we mask out susceptibility artifacts (including
 %                    outside FoV) for all ASL computations, and also mask
 %                    out vascular artifacts for computing the mean.
+%
 %              While other artifacts/FoV can be masked out on population
 %              level (i.e. >0.95 subjects need to have a valid signal in a
 %              certain voxel), vascular artifacts differ too much in their
@@ -57,11 +59,11 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %               have a different or the same meaning
 %               PM: WE COULD CHANGE THIS, INTO MASK BEING USED TO EXCLUDE
 %               VOXELS AND ROI FOR INCLUDING VOXELS
-
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: x = xASL_stat_GetROIstatistics(x);
+% EXAMPLE:      x = xASL_stat_GetROIstatistics(x);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------------------

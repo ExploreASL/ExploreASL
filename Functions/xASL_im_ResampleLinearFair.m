@@ -1,8 +1,25 @@
 function [output_res]=xASL_im_ResampleLinearFair(im_input,newsize)
 % xASL_im_ResampleLinearFair
-% Downsample (or upsample, works similarly) old_res image to low_res image, trilinear
-% NB: new_res should fit exactly integer fold in old_res
-% NB: all dimensions of new_res should have equal size
+%
+% FORMAT:       [output_res]=xASL_im_ResampleLinearFair(im_input,newsize)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Downsample (or upsample, works similarly) old_res image to
+%               low_res image, trilinear.
+%
+%               {{NB:}} new_res should fit exactly integer fold in old_res
+%
+%               {{NB:}} all dimensions of new_res should have equal size
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
  
 old_res          =single(im_input);
 new_res          =zeros(newsize(1),newsize(2),newsize(3));

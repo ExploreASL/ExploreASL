@@ -11,17 +11,20 @@ function [ChildJSON] = xASL_bids_InsertJSONFields(ParentJSON, ChildJSON, Fields2
 %   Fields2Skip - fields from Parent JSON not to include in child JSON
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function takes all parameters from the "parent" JSON & moves them into the "child" JSON.
-% In case of co-existence of a field with different values, then the value in the child JSON will prevail, per BIDS inheritance.
+% DESCRIPTION:  This function takes all parameters from the "parent" JSON & moves them into the "child" JSON.
+%               In case of co-existence of a field with different values,
+%               then the value in the child JSON will prevail, per BIDS inheritance.
 %
 % This function runs the following steps:
-% 1) Load JSON or parms.mat (legacy), if the inputs were paths
-% 2) Insert the fields
-% 3) Save a new JSON file (if ChildJSON was a path)
+%
+% 1. Load JSON or parms.mat (legacy), if the inputs were paths
+% 2. Insert the fields
+% 3. Save a new JSON file (if ChildJSON was a path)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE internally: ChildJSON = xASL_bids_InsertJSONFields(ParentJSONStruct, ChildJSONStruct, {'subject_regexp', 'ROOT'});
-% EXAMPLE externally: xASL_bids_InsertJSONFields('/MyStudy/ASLParameters.json', '/MyStudy/sub-001_ses-001/perf/sub-001_ses-001_run-1_asl.json', {'subject_regexp', 'ROOT'});
+% EXAMPLE:  Internally: ChildJSON = xASL_bids_InsertJSONFields(ParentJSONStruct, ChildJSONStruct, {'subject_regexp', 'ROOT'});
+%           Externally: xASL_bids_InsertJSONFields('/MyStudy/ASLParameters.json', ...
+%           '/MyStudy/sub-001_ses-001/perf/sub-001_ses-001_run-1_asl.json', {'subject_regexp', 'ROOT'});
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 

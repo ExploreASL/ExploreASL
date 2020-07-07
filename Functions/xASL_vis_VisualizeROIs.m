@@ -1,6 +1,21 @@
 function xASL_vis_VisualizeROIs(x, ROI_T1_list, ROI_FLAIR_list)
-% xASL_vis_VisualizeROIs Creates for each subject  a JPEG image containing
+% xASL_vis_VisualizeROIs Creates for each subject a JPEG image containing
 % the original T1w, WMH_SEGM and T1w after lesion-filling
+%
+% FORMAT:       xASL_vis_VisualizeROIs(x, ROI_T1_list, ROI_FLAIR_list)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Creates for each subject a JPEG image containing
+%               the original T1w, WMH_SEGM and T1w after lesion-filling.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     if ~isempty(ROI_T1_list)
         T1File = fullfile(x.D.PopDir, ['r' x.P.STRUCT '_' x.P.SubjectID '.nii']);

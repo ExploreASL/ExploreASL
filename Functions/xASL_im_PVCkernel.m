@@ -15,8 +15,12 @@ function [imPVEC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mod
 %  Hofheinz F, van den Hoff J, Asllani I. Effects of systematic partial 
 %  volume errors on the estimation of gray matter cerebral blood flow with 
 %  arterial spin labeling MRI. MAGMA 2018. DOI:10.1007/s10334-018-0691-y
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FORMAT:       [imPVEC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mode)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% 
 % INPUT:
 %   imCBF - uncorrected CBF image imCBF(X,Y,Z)
 %   imPV  - PV-maps imPV(X,Y,Z,2) - WM/GM does not matter, you get the same
@@ -33,7 +37,18 @@ function [imPVEC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mod
 %   imCBFrec - (X,Y,Z) - reconstruction of CBF from the corrected values
 %                        and PV maps
 %   imResidual(X,Y,Z) - difference between the reconstructed and original
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  PVEc correction of ASL data using prior GM-,WM-partial volume maps.
+%               Follows the principles of the PVEc algorithm by I. Asllani (MRM, 2008).
+%               Free for research use without guarantee. If used in a study or
+%               publication. Please, acknowledge the author.
+%               Created by Jan Petr, j.petr@hzdr.de
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 % Check the input parameters
 switch (mode)

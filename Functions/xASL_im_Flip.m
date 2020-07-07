@@ -1,8 +1,21 @@
-function [ MatrixOut ] = xASL_im_Flip( MatrixIn, varargin )
+function [MatrixOut] = xASL_im_Flip(MatrixIn, varargin)
 %xASL_im_Flip Backwards compatibility for flipping left-right in standard
 %space (NB: this can be different than in native space!)
-
-% [ MatrixOut ] = xASL_im_Flip( MatrixIn, [dim] )
+%
+% FORMAT:       [MatrixOut] = xASL_im_Flip(MatrixIn, varargin)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Backwards compatibility for flipping left-right in standard
+%               space (NB: this can be different than in native space!).
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      [MatrixOut] = xASL_im_Flip(MatrixIn, [dim])
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 
 if nargin < 2

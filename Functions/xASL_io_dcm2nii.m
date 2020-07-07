@@ -1,20 +1,30 @@
 function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, varargin)
-% xASL_io_dcm2nii
-% Convert DICOM NIfTI/BIDS format using the dcm2nii command line utility
+%xASL_io_dcm2nii Convert DICOM NIfTI/BIDS format using the dcm2nii command line utility.
 % (http://www.nitrc.org/projects/mricron)
 %
-% - inpath           path to dicom folder, dicom file, PAR-file or REC-file. In case of a dicom folder, 'DcmExt' will be used to
-%                    filter the folder contents. In case of a dicom file, all dicom files in the same folder will be used.
-% - 'Verbose'        optional: set to true or false to switch terminal feedback; default false
-% - 'Overwrite'      optional: set to true or false to overwrite existing files; default false
-% - 'DicomFilter'    optional: regular expression used to find dicom files; default '^.+\.dcm$'
-% - 'Keep'           optional: vector with indices of output files to keep; default [1:Inf] (all files)
-% - 'IniPath'        optional: string with path of dcm2nii configuration file; default is to use ./mricron/dcm2nii-custom.ini
-% - 'ExePath'        optional: string with path of dcm2nii application; default is to use internal copy in ./mricron folder
-% - 'Version'        optional: string with version stamp of dcm2nii application (yyyymmdd: 20101105, 20130606); default is 20101105
+% FORMAT:       [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, varargin)
+% 
+% INPUT:        - inpath           path to dicom folder, dicom file, PAR-file or REC-file. In case of a dicom folder, 'DcmExt' will be used to
+%                                  filter the folder contents. In case of a dicom file, all dicom files in the same folder will be used.
+%               - 'Verbose'        optional: set to true or false to switch terminal feedback; default false
+%               - 'Overwrite'      optional: set to true or false to overwrite existing files; default false
+%               - 'DicomFilter'    optional: regular expression used to find dicom files; default '^.+\.dcm$'
+%               - 'Keep'           optional: vector with indices of output files to keep; default [1:Inf] (all files)
+%               - 'IniPath'        optional: string with path of dcm2nii configuration file; default is to use ./mricron/dcm2nii-custom.ini
+%               - 'ExePath'        optional: string with path of dcm2nii application; default is to use internal copy in ./mricron folder
+%               - 'Version'        optional: string with version stamp of dcm2nii application (yyyymmdd: 20101105, 20130606); default is 20101105
 %
-% The first DICOM file will be used if inpath is a directory.
-%   Detailed explanation goes here
+%               The first DICOM file will be used if inpath is a directory.
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Convert DICOM NIfTI/BIDS format using the dcm2nii command line utility.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     niifiles = {};
     msg = [];

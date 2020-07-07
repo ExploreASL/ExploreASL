@@ -1,15 +1,27 @@
 function new_mask = xASL_im_DilateErodeSeparable(mask,type,kernel_x,kernel_y,kernel_z)
-% Runs dilation or erosion on a binary mask separably in three dimensions
-% It uses its own dilate_erode function and crops the image so that it
-% contains only the mask
+%xASL_im_DilateErodeSeparable ...
+%
+% FORMAT:       new_mask = xASL_im_DilateErodeSeparable(mask,type,kernel_x,kernel_y,kernel_z)
+% 
+% INPUT:        mask = binary mask
+%               type == 'dilate' or 'erode'
+%               kernel_x,y,z - 1D vectors Nx1 containing the separable erosion kernel - can have different sizes.
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Runs dilation or erosion on a binary mask separably in three dimensions
+%               It uses its own dilate_erode function and crops the image so that it
+%               contains only the mask.
+%
+%               Works only with odd sized kernels
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+% 
 
-% Works only with odd sized kernels
-
-% PARAMETERS
-% mask = binary mask
-% type == 'dilate' or 'erode'
-% kernel_x,y,z - 1D vectors Nx1 containing the separable erosion kernel -
-% can have different sizes.
 new_mask = mask;
 
 if (mod(length(kernel_x),2)+mod(length(kernel_y),2)+mod(length(kernel_z),2))<3

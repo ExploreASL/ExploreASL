@@ -1,6 +1,7 @@
 function xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, PathLowResNIfTI)
 %xASL_im_CreateASLDeformationField Adapt deformation field for lower resolution
-% FORMAT: xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution)
+%
+% FORMAT:   xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution)
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
@@ -14,25 +15,26 @@ function xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, P
 % --------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function smooths a transformation flow field to a lower
 %              resolution. Usually, we use a high resolution anatomical
-%              image (e.g. 3D T1w) to obtain the flowfields from native
+%              image (e.g. {{3D T1w}}) to obtain the flowfields from native
 %              space to standard space, and apply these to the lower
 %              resolution ASL images. Because of the resolution
 %              differences, the flowfields need to be downsampled/smoothed,
 %              to avoid deformation effects that are crispier than the
 %              functional image that is investigated. This function
 %              performs the following steps:
-%              1) Obtain resolutions
-%              2) Fill NaNs at edges y_T1.nii flowfield to prevent interpolation artifact
-%              3) Smooth flowfield
-%              4) Fill NaNs at edges y_ASL.nii
+%
+%              1. Obtain resolutions
+%              2. Fill NaNs at edges y_T1.nii flowfield to prevent interpolation artifact
+%              3. Smooth flowfield
+%              4. Fill NaNs at edges y_ASL.nii
 % 
 %              Note that if the resolution of ASL is not significantly (i.e. >0.5 mm in
 %              any dimension) lower than T1w, the y_T1.nii is copied to y_ASL.nii
 % --------------------------------------------------------------------------------------------------------------------
-% EXAMPLES: xASL_im_CreateASLDeformationField(x);
-%           xASL_im_CreateASLDeformationField(x, 1, [3 3 7]);
+% EXAMPLE:      xASL_im_CreateASLDeformationField(x);
+%               xASL_im_CreateASLDeformationField(x, 1, [3 3 7]);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 %% Admin

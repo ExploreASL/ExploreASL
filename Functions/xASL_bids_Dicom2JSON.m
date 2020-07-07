@@ -10,15 +10,20 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 %        dcmExtFilter (STR) - wildcards specifying the allowed extensions for the RAW files
 %        bUseDCMTK (BOOL)   - if yes, then use DCMTK instead of dicominfo
 %        pathDcmDictIn (STR)- path to the dicom dictionary in case DCMTK fails and DICOMINFO is used
+%
 % OUTPUT:
 %        parms              - structure containing the parsed parameters
 %        pathDcmDictOut     - if dicom dict for dicominfo is initialized then clear this path, otherwise return unchanged pathDcmDictIn
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:
-%        The function goes through the INP files, reads the DICOM or PAR/REC files and parses their headers.
-%        It extracts the DICOM parameters important for ASL, makes sure they are in the correct format, if missing then 
-%        replaces with default value, it also checks if the parameters are consistent across DICOM files for a single sequence.
+% DESCRIPTION:      The function goes through the INP files, reads the DICOM or PAR/REC files and parses their headers.
+%                   It extracts the DICOM parameters important for ASL, makes sure they are in the correct format, if missing then 
+%                   replaces with default value, it also checks if the parameters are consistent across DICOM files for a single sequence.
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+% EXAMPLE:          ...
+%
 % REFERENCES:
 % __________________________________
 % Copyright @ 2015-2019 ExploreASL

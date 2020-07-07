@@ -1,6 +1,19 @@
 function [Struct] = xASL_qc_ComputeNiftiOrientation(x, PathNIfTI, Struct)
-%xASL_qc_ComputeNiftiOrientation Summary of this function goes here
-%   Detailed explanation goes here
+%xASL_qc_ComputeNiftiOrientation ...
+%
+% FORMAT:       [Struct] = xASL_qc_ComputeNiftiOrientation(x, PathNIfTI, Struct)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  ...
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     if ~xASL_exist(PathNIfTI,'file')
         warning(['Missing file: ' PathNIfTI]);

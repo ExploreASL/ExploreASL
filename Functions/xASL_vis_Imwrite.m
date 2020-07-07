@@ -1,7 +1,7 @@
 function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
 % Saves an image to JPG while skipping the visual output to the screen.
 %
-% FORMATL [ImOut] = xASL_vis_Imwrite(ImIn, PathOut[, ColorMap, bRescale])
+% FORMAT:   [ImOut] = xASL_vis_Imwrite(ImIn, PathOut[, ColorMap, bRescale])
 %
 % INPUT:
 %   ImIn    - input image, has to be a 2D (NX x NY) or a 3D matrix (NX x NY x 3),
@@ -13,17 +13,21 @@ function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
 %             
 % OUTPUT:
 %   ImOut   - output image matrix, in Matlab colorscale (3 images for RGB) (OPTIONAL)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %   
 % DESCRIPTION: This functions takes an input image matrix, interpolates it
 %              to HD resolution (1920x1080) for visibility, and saves the image as jpg.
 %              This function avoids the graphic interface of Matlab, for running from CLI
 %              Careful: this function overwrites any existing PathOut.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %              
 % EXAMPLE: xASL_vis_Imwrite([80x80x3 matrix], '/MyOutputFolder/MyFileName.jpg');
 %          xASL_vis_Imwrite([80x80   matrix], '/MyOutputFolder/MyFileName.jpg', [], false); 
 %
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 % 
 % 2015-01-01 HJ
 

@@ -2,7 +2,22 @@ function xASL_im_Modulation(x)
 %xASL_im_Modulation Combines the transformations to create Jacobians, &
 % multiplies the standard space segmentations with these to create volumetric
 % images for volumetric analyses
-
+%
+% FORMAT:       xASL_im_Modulation(x)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Combines the transformations to create Jacobians, &
+%               multiplies the standard space segmentations with these to create volumetric
+%               images for volumetric analyses.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 fprintf('%s\n','Modulating PV images in standard space');
 

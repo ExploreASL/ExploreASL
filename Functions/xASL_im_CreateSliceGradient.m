@@ -1,20 +1,37 @@
 function xASL_im_CreateSliceGradient(x)
 % xASL_im_CreateSliceGradient
 %
+% FORMAT:       xASL_im_CreateSliceGradient(x)
+% 
+% INPUT:        ...
 %
-% 1    Create slice gradient in same space as input file
-% 2    Reslice slice gradient to MNI (using existing ASL matrix changes from e.g. registration to MNI, motion correction, registration to GM)
-% 3    Creating average slice gradient
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  1. Create slice gradient in same space as input file
+%               2. Reslice slice gradient to MNI (using existing ASL matrix changes from e.g. registration to MNI, motion correction, registration to GM)
+%               3. Creating average slice gradient
 %
-% BACKGROUND INFORMATION
-% When a 2D readout is used with ASL, post-label delay and hence T1 decay will be dependent on slice timing
-% Therefore, quantification part needs slice reference to quantify per slice and correct for effective post-label delay differences
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
 %
-% This function uses exact same ASL matrix changes that occurred due to registration to MNI, motion correction and registration to T1
+% BACKGROUND INFORMATION:
+%
+% When a 2D readout is used with ASL, post-label delay and hence T1 decay
+% will be dependent on slice timing.
+% Therefore, quantification part needs slice reference to quantify per
+% slice and correct for effective post-label delay differences.
+%
+% This function uses exact same ASL matrix changes that occurred due to
+% registration to MNI, motion correction and registration to T1.
 %
 % Script dependencies: SPM12
 %
 % HJ Mutsaerts, ExploreASL 2016
+%
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
 
 %% Administration
 

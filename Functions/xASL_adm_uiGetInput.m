@@ -1,6 +1,20 @@
-function [Parms]     = xASL_adm_uiGetInput(Parms)
+function [Parms] = xASL_adm_uiGetInput(Parms)
 %xASL_adm_uiGetInput Checks whether input fields are present,
-% or requests them
+% or requests them.
+%
+% FORMAT:       [Parms] = xASL_adm_uiGetInput(Parms)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Checks whether input fields are present, or requests them.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 % Check if we are in display or CLI mode
  if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')

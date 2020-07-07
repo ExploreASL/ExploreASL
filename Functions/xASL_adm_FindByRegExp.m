@@ -1,8 +1,7 @@
 function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin)
 % FindByPath find files or folders recursively by specifying search patterns
 %
-% FORMAT: 
-%     xasl_adm_FindByRegExp(root, dirSpecs[, varargin])
+% FORMAT: xasl_adm_FindByRegExp(root, dirSpecs[, varargin])
 %
 % INPUT:
 %     root      - root directory to start search
