@@ -1,8 +1,8 @@
-function xASL_docu_Crawler(folder,mdoutput)
-%xASL_docu_Crawler Script to get information from the file headers and
+function xASL_doc_Crawler(folder,mdoutput)
+%xASL_doc_Crawler Script to get information from the file headers and
 % convert the information into a markdown file.
 %
-% FORMAT:       xASL_docu_Crawler(folder)
+% FORMAT:       xASL_doc_Crawler(folder)
 % 
 % INPUT:        folder - input folder
 %               mdoutput - result file
@@ -19,7 +19,7 @@ function xASL_docu_Crawler(folder,mdoutput)
 %               (which is written like this: {{bold text}}).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_docu_Crawler('M:\...\Functions', 'M:\...\Output.md')
+% EXAMPLE:      xASL_doc_Crawler('M:\...\Functions', 'M:\...\Output.md')
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
@@ -47,7 +47,7 @@ SECTION = {'adm', 'bids', 'fsl', 'im', 'init', 'io', 'qc', 'quant', 'spm', 'stat
 SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Imaging', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
     
 % Current section
-cS = 1;
+cS = 0;
 
 % Iterator
 it = 1;
@@ -123,6 +123,16 @@ for i = 1:numel(listing)
         % Length of description text
         lD = size(descriptionText);
         lD = lD(1);
+        
+        % Start of function description
+        if cS==0
+            TEXT{it,1} = '# Functions';  it = it+1;
+            TEXT{it,1} = ' ';  it = it+1;
+            TEXT{it,1} = '----';  it = it+1;
+            TEXT{it,1} = '## General Functions';  it = it+1;
+            TEXT{it,1} = ' ';  it = it+1;
+            cS = cS+1; 
+        end
         
         % Get the current section
         if cS <= length(SECTION)
