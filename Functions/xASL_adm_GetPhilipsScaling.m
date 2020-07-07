@@ -58,27 +58,35 @@ else
 	% Standard scaling using RescaleSlope/RescaleSlopeOriginal or the Nifti slope - which should all be either non-existing or 1 or all equal
 	% Set the scaling to remove
 	scaleFactor = 1;
+	
+	if (rescaleSlopeNifti ~= 1)
+		scaleFactor = rescaleSlopeNifti;
+	end
+	
 	if isfield(parms,'RescaleSlopeOriginal') && (parms.RescaleSlopeOriginal ~= 1)
 		if (scaleFactor ~= 1) && ~isnear(scaleFactor,parms.RescaleSlopeOriginal,scaleFactor/100)
-			warning('%s\n', ['Discrepancy in RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ')']);
+			warning('%s\n%s\n',...
+				['Discrepancy in RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ') and NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')'],...
+				'Using RescaleSlopeOriginal');
 		end
 		scaleFactor = parms.RescaleSlopeOriginal;
 	end
-			
+	
 	if isfield(parms,'RescaleSlope') && (parms.RescaleSlope ~= 1)
 		if (scaleFactor ~= 1) && ~isnear(scaleFactor,parms.RescaleSlope,scaleFactor/100)
-			warning('%s\n', ['Discrepancy in RescaleSlope (' xASL_num2str(parms.RescaleSlope) ')']);
+			if (rescaleSlopeNifti ~= 1) && ~isnear(rescaleSlopeNifti,parms.RescaleSlope,scaleFactor/100)
+				warning('%s\n%s\n',...
+				['Discrepancy in RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') and NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')'],...
+				'Using RescaleSlope');
+			else
+				warning('%s\n%s\n',...
+				['Discrepancy in RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') and RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ')'],...
+				'Using RescaleSlope');
+			end
 		end
 		scaleFactor = parms.RescaleSlope;
 	end
-			
-	if (rescaleSlopeNifti ~= 1)
-		if (scaleFactor ~= 1) && ~isnear(scaleFactor,rescaleSlopeNifti,scaleFactor/100)
-			warning('%s\n', ['Discrepancy in NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')']);
-		end
-		scaleFactor = rescaleSlopeNifti;
-	end
-
+		
 	if scaleFactor == 1
 		warning('Scale slope was 1, could be a scale slope issue');
 	end
