@@ -27,17 +27,8 @@ function xASL_docu_Crawler(folder,mdoutput)
 BreakString = [repmat('=',1,100),'\n'];
 SeparatorLine = repmat('-',1,149);
 
-%% Update GIT
-fprintf(BreakString)
-% try
-%     fprintf('GIT: ');
-%     system('git fetch','-echo');
-%     system('git pull','-echo');
-% catch
-%     warning('It seems that your working directory is not the ExploreASL directory...');
-% end
-
 %% Input Check
+fprintf(BreakString)
 if nargin < 1
     error('Input folder not defined...')
 end
@@ -91,24 +82,22 @@ for i = 1:numel(listing)
             % Check if all descriptions are there
             if isempty(indexFORMAT) || isempty(indexINPUT) || isempty(indexDESCRIPTION) || isempty(indexEXAMPLE)
                 extractHeaderInfo = false;
-                continue
+            else
+                % FORMAT text
+                formatText = headerList(indexFORMAT:indexINPUT-1);
+                formatText = strrep(formatText,'FORMAT:','');
+                formatText = char(strtrim(formatText));
+
+                % DESCRIPTION text
+                descriptionText = headerList(indexDESCRIPTION:indexEXAMPLE-1);
+                descriptionText = strrep(descriptionText,'DESCRIPTION:','');
+                descriptionText = char(strtrim(descriptionText));
+
+                % Give the okay to extract the information of the current file
+                extractHeaderInfo = true;
             end
 
-            % FORMAT text
-            formatText = headerList(indexFORMAT:indexINPUT-1);
-            formatText = strrep(formatText,'FORMAT:','');
-            formatText = char(strtrim(formatText));
-
-            % DESCRIPTION text
-            descriptionText = headerList(indexDESCRIPTION:indexEXAMPLE-1);
-            descriptionText = strrep(descriptionText,'DESCRIPTION:','');
-            descriptionText = char(strtrim(descriptionText));
-
-            % Give the okay to extract the information of the current file
-            extractHeaderInfo = true;
-
         catch
-            fprintf('File %s does not fulfill the documentation requirements...', fileName);
             extractHeaderInfo = false;
         end
     else
@@ -176,7 +165,8 @@ for i = 1:numel(listing)
         
         % Empty lines
         TEXT{it,1} = ''; it = it+1;
-        
+    else
+        fprintf('File %s does not fulfill the documentation requirements...\n', fileName);
     end
     
 end
