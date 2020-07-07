@@ -10,7 +10,7 @@
 #### Description
 Parses the settings and runs the DatabaseLoop sub-function.
 
-##Administration
+## Administration
 
 ----
 ### xASL\_adm\_CatchNumbersFromString.m
@@ -702,7 +702,7 @@ Checks whether input fields are present, or requests them.
 
 
 
-##BIDS
+## BIDS
 
 ----
 ### xASL\_bids\_Add2ParticipantsTSV.m
@@ -807,7 +807,7 @@ This function performs the following steps:
 4. Merge the BIDS and XASL fields, convert field values
 
 
-##FSL
+## FSL
 
 ----
 ### xASL\_fsl\_RunFSL.m
@@ -878,7 +878,7 @@ TopUp is run with default settings
 3. Apply TopUp
 
 
-##Imaging
+## Imaging
 
 ----
 ### xASL\_im\_BilateralFilter.m
@@ -1705,7 +1705,7 @@ standard, the x structure is created according to BIDS.
 
 
 
-##Initialization
+## Initialization
 
 ----
 ### xASL\_init\_ConvertM2JSON.m
@@ -1927,7 +1927,7 @@ used throughout ExploreASL's pipeline and tools, assuming a [121 145 121]
 matrix with 1.5 mm isotropic resolution in MNI space.
 
 
-##Input and Output
+## Input and Output
 
 ----
 ### xASL\_io\_CreateNifti.m
@@ -2083,7 +2083,7 @@ If non-numeric data is provided, it is bypassed (avoiding any issues "num2str" w
 See builtin num2str for more details
 
 
-##QC
+## QC
 
 ----
 ### xASL\_qc\_AsymmetryIndex.m
@@ -2516,7 +2516,7 @@ hardware and acquisition choices ??? Implications for controlling false positive
 4) SPM Utility + toolbox. Cyril Pernet. https://osf.io/wn3h8/
 
 
-##Quantization
+## Quantization
 
 ----
 ### xASL\_quant\_AgeSex2Hct.m
@@ -2651,7 +2651,7 @@ future this could go to different stages, e.g. dcm2niiX or
 PWI stage)
 
 
-##SPM
+## SPM
 
 ----
 ### xASL\_spm\_BiasfieldCorrection.m
@@ -2757,7 +2757,7 @@ deformation calculation (which is the most computation intensive part) needs to 
 
 
 
-##Statistics
+## Statistics
 
 ----
 ### xASL\_stat\_AtlasForStats.m
@@ -3150,7 +3150,7 @@ and converting only strings to numbers. Also allows inputting cells.
 
 
 
-##Visualization
+## Visualization
 
 ----
 ### xASL\_vis\_AddIM2QC.m

@@ -127,7 +127,7 @@ for i = 1:numel(listing)
         % Get the current section
         if cS <= length(SECTION)
             if contains(fileName,['xASL_', char(SECTION{cS,1})])
-                TEXT{it,1} = ['##', char(SECTION_NAMES{cS,1})];  it = it+1;
+                TEXT{it,1} = ['## ', char(SECTION_NAMES{cS,1})];  it = it+1;
                 TEXT{it,1} = '';  it = it+1;
                 cS = cS+1;
             end
