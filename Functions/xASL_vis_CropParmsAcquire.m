@@ -2,6 +2,23 @@ function [xmin xmax ymin ymax] = xASL_vis_CropParmsAcquire(temp_image)
 %xASL_vis_CropParmsAcquire Goes from outside to inside to acquire crop settings.
 % Works with grayscale images (2 dimensions per slice).image position information (2D matrix) should be first 2
 % dimensions. Could include colordimension later on.
+%
+% FORMAT:       [xmin xmax ymin ymax] = xASL_vis_CropParmsAcquire(temp_image)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Goes from outside to inside to acquire crop settings.
+%               Works with grayscale images (2 dimensions per slice).
+%               Image position information (2D matrix) should be first
+%               2 dimensions. Could include colordimension later on.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 dim=size(temp_image);
 if  length(dim)~=3

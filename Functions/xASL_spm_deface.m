@@ -1,7 +1,7 @@
 function xASL_spm_deface(PathIn, bReplace)
 %xASL_spm_deface Defaces an anatomical image to preserve anonimity
-
-% FORMAT: xASL_spm_deface(PathIn, bReplace)
+%
+% FORMAT:       xASL_spm_deface(PathIn, bReplace)
 % 
 % INPUT:
 %   PathIn   - path to anatomical NIfTI file that will be defaced. .nii & .nii.gz are both allowed (REQUIRED)
@@ -12,6 +12,7 @@ function xASL_spm_deface(PathIn, bReplace)
 % OUTPUT n/a
 % OUTPUT file:
 %   Defaced NIfTI (but always .nii, not .nii.gz format)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function removes the face from an anatomical NIfTI
 %              image, e.g. T1w or FLAIR, for disidentification/privacy purposes.
@@ -22,10 +23,13 @@ function xASL_spm_deface(PathIn, bReplace)
 %              to compare results from defaced and non-defaced images.
 %              Also, note that defacing makes it difficult to ensure that
 %              the FLAIR and T1w are from the same subject.
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_spm_deface('PathToMyStudy/T1.nii.gz');
+%
+% EXAMPLE:      xASL_spm_deface('PathToMyStudy/T1.nii.gz');
+%
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
     % ===========================================================
     %% Admin

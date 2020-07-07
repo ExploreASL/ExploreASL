@@ -1,5 +1,5 @@
 function PSNR=xASL_stat_PSNR(imRef,imSrc)
-% Calculates peak signal-to-noise ratio.
+%xASL_stat_PSNR Calculates peak signal-to-noise ratio.
 %
 % FORMAT: PSNR=xASL_stat_PSNR(imRef,imSrc)
 %
@@ -14,9 +14,10 @@ function PSNR=xASL_stat_PSNR(imRef,imSrc)
 %              Uses 95% percentile instead of MAX.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
+% 
+% EXAMPLE:      ...
 % __________________________________
-% Copyright Â© 2015-2019 ExploreASL
+% Copyright © 2015-2020 ExploreASL
 %
 % 2017-00-00 HJ
 

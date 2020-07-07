@@ -1,5 +1,5 @@
 function unpackedFiles = xASL_adm_UnzipOrCopy(srcDir, wildCard, destDir, bOverwrite)
-% Unpacks (or copy if unpacked) one or more files matching the regular expresion
+%xASL_adm_UnzipOrCopy Unpacks (or copy if unpacked) one or more files matching the regular expresion
 %
 % FORMAT: unpackedFiles = xASL_adm_UnzipOrCopy(srcDir, wildCard, destDir [, bOverwrite])
 %
@@ -8,19 +8,22 @@ function unpackedFiles = xASL_adm_UnzipOrCopy(srcDir, wildCard, destDir, bOverwr
 %   wildCard      - wild card to identify the files
 %   destDir       - destination directory
 %   bOverwrite    - (TRUE/FALSE) overwrite on destination (default FALSE)
+%
 % OUTPUT:
 %   unpackedFiles - the list of the unpacked files
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This is a simple wrapper function to (g)unzip one or more files to the specified destination
 %              directory. Existing files or directories will not be overwritten, unless forced with bOverwrite.
 %              A regular file-copy will be used if the source files don't have gz or zip filename extensions.
-
+%
 % EXAMPLE: unpackedFiles = xASL_adm_UnzipOrCopy('c:\User\path\', '*.nii','c:\User\path2\',0);
 %          unpackedFiles = xASL_adm_UnzipOrCopy('c:\User\path\', 'file*.*','c:\User\path2\',0);
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
     % Admin
 	if nargin<3 || isempty(srcDir) || isempty(destDir)

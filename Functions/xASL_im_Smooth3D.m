@@ -1,4 +1,19 @@
 function [imSmo,imGaussX,imGaussY,imGaussZ] = xASL_im_Smooth3D(sigma,imIn,PSFtype)
+%xASL_im_Smooth3D ...
+%
+% FORMAT:       [imSmo,imGaussX,imGaussY,imGaussZ] = xASL_im_Smooth3D(sigma,imIn,PSFtype)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  ...
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 for tp=1:length(PSFtype)
     switch(PSFtype{tp})

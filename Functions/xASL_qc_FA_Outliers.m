@@ -2,7 +2,7 @@ function [FA_Outliers_mL] = xASL_qc_FA_Outliers(InputFA)
 %xASL_qc_FA_Outliers extract the number of FA outliers, i.e. values of FA
 %above 1 or below 0, from a FA image. 
 %
-% FORMAT: [ FA_Outliers_mL ] = xASL_qc_FA_Outliers(InputFA)
+% FORMAT:           [FA_Outliers_mL] = xASL_qc_FA_Outliers(InputFA)
 %
 % INPUT:
 %   InputFA 	     - This can either be the path to the FA.nii file or an
@@ -11,12 +11,17 @@ function [FA_Outliers_mL] = xASL_qc_FA_Outliers(InputFA)
 %
 % OUTPUT:
 %   FA_Outliers_mL   - Number of Outlier expressed in mL
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% 
-% 
-% EXAMPLE: [FA_Outliers_mL] = xASL_qc_FA_Outliers('/examplepath/subjectdir/FA.nii');
+% DESCRIPTION:      Extract the number of FA outliers, i.e. values of FA
+%                   above 1 or below 0, from a FA image. 
 %
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
+% EXAMPLE:          [FA_Outliers_mL] = xASL_qc_FA_Outliers('/examplepath/subjectdir/FA.nii');
+%
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 % Read the header and get voxelsize
 FAnii = xASL_io_ReadNifti(InputFA);

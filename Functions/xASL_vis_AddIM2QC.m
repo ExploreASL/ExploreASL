@@ -1,6 +1,19 @@
-function [x]   = xASL_vis_AddIM2QC(x,parms)
-%xASL_vis_AddIM2QC Checks which images already are loaded, and  adds new image
-
+function [x] = xASL_vis_AddIM2QC(x,parms)
+%xASL_vis_AddIM2QC Checks which images already are loaded, and  adds new image.
+%
+% FORMAT:       [x] = xASL_vis_AddIM2QC(x,parms);
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Checks which images already are loaded, and  adds new image.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     %% Admin
     parms = xASL_HandleInputPars(parms,'bCrop',true); % crop by default

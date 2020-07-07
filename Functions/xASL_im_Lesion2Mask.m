@@ -4,6 +4,24 @@ function LesionIM = xASL_im_Lesion2Mask(LesionPath, T1path, pGMpath, pWMpath, x)
 % mask, as 2nd and 3rd volumes
 % It plots the masks on a T1 image, and masks the new masks with the
 % subjects' brainmask (pGM+pWM)
+%
+% FORMAT:       LesionIM = xASL_im_Lesion2Mask(LesionPath, T1path, pGMpath, pWMpath, x)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  For a standard space lesion mask (or map), this stores
+%               the lesion mask, and in additional its perimask (15 mm) and contralateral
+%               mask, as 2nd and 3rd volumes.
+%               It plots the masks on a T1 image, and masks the new masks with the
+%               subjects' brainmask (pGM+pWM).
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 
 % Distinguish between lesion & ROI masks

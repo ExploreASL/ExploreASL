@@ -17,7 +17,13 @@ function [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,bspli
 %  volume errors on the estimation of gray matter cerebral blood flow with 
 %  arterial spin labeling MRI. MAGMA 2018. DOI:10.1007/s10334-018-0691-y
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+% FORMAT:       [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,bsplineNum)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
 % INPUT:
 %   imCBF - uncorrected CBF image imCBF(X,Y,Z)
 %   imPV  - PV-maps imPV(X,Y,Z,2) - WM/GM does not matter, you get the same
@@ -35,7 +41,19 @@ function [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,bspli
 %   FWHM - approximate Gaussian FWHM of the smoothness of the corrected CBF maps
 %        - no that this is done in Pixels, so it needs to be multiplied by
 %          the input image voxel size
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  PVEc correction of ASL data using prior GM-,WM-partial volume maps.
+%               Follows the principles of the PVEc algorithm by I. Asllani (MRM, 2008).
+%               The PV-corrected CBF_GM and CBF_WM maps are approximated using an
+%               uniformly sampled cubic B-splines.
+%               Free for research use without guarantee. 
+%               Created by Jan Petr, j.petr@hzdr.de
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 % Basic exclusion parameters
 matchThresh = 0.0001;

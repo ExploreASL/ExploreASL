@@ -1,10 +1,25 @@
 function [OtherListSPM, OtherListOut] = xASL_adm_OtherListSPM(OtherList, bList4D)
-%xASL_adm_OtherListSPM Takes care of the others list for registration
-%functions
-% bPadComma1 is to add the ,1 to the end of the pathstring, which SPM uses
+%xASL_adm_OtherListSPM bPadComma1 is to add the ,1 to the end of the pathstring, which SPM uses
 % to assign the first image of a 4D image array (OPTIONAL, DEFAULT = true)
 % bList4D: boolean, true for listing multiple 4D volumes separately in the
-% list (OPTIONAL, DEFAULT=true);
+% list (OPTIONAL, DEFAULT=true).
+%
+% FORMAT:       [OtherListSPM, OtherListOut] = xASL_adm_OtherListSPM(OtherList, bList4D)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  bPadComma1 is to add the ,1 to the end of the pathstring, which SPM uses
+%               to assign the first image of a 4D image array (OPTIONAL, DEFAULT = true)
+%               bList4D: boolean, true for listing multiple 4D volumes separately in the
+%               list (OPTIONAL, DEFAULT=true).
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     if nargin<2 || isempty(bList4D)
         bList4D = true;

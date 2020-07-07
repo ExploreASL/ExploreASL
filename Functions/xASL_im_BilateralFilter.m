@@ -2,7 +2,22 @@ function [ovol] = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x)
 %xASL_im_BilateralFilter This function runs a spatial lowpass temporally
 %highpass filter, and removes outliers within this signal, and adapts the
 %time-series accordingly
-
+%
+% FORMAT:       [ovol] = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  This function runs a spatial lowpass temporally
+%               highpass filter, and removes outliers within this signal, and adapts the
+%               time-series accordingly.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 if  size(volIM,4)<10
     % skip filtering, for no time-series

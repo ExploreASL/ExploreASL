@@ -1,6 +1,21 @@
 function xASL_vis_OverlapT1_ASL( x, ASL)
-%overlap_T1_ASL Part of ExploreASL
-% Shows spatial agreement ASL and probability maps
+%xASL_vis_OverlapT1_ASL Part of ExploreASL.
+% Shows spatial agreement ASL and probability maps.
+%
+% FORMAT:       xASL_vis_OverlapT1_ASL( x, ASL)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Part of ExploreASL.
+%               Shows spatial agreement ASL and probability maps.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 
 

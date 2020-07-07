@@ -5,7 +5,26 @@ function xASL_im_CleanupWMHnoise(InputPath, OutputPath, MinLesionVolume, pThresh
 % inside the GM can be erroneously segmented as WMH, and should not be lesion-filled
 % (otherwise these cannot be fixed later in the Structural module)
 %
+% FORMAT:       xASL_im_CleanupWMHnoise(InputPath, OutputPath, MinLesionVolume, pThresh)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Threshold white matter lesions,
+%               acknowledging the fact that they may be confluent with subresolution connection
+%               through a dilation. This part is executed conservatively, as FLAIR hyperintensities
+%               inside the GM can be erroneously segmented as WMH, and should not be lesion-filled
+%               (otherwise these cannot be fixed later in the Structural module).
+%
 % Note that LST lesion filling expects a probability map, doesnt work nicely with binary mask
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
 
 %% ---------------------------------------------------------------------
 %% Admin

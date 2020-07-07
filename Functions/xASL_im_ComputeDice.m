@@ -1,5 +1,19 @@
 function DiceCoeff = xASL_im_ComputeDice(imA, imB)
 %xASL_im_ComputeDice Calculate Dice coefficient of image overlap
+%
+% FORMAT:       DiceCoeff = xASL_im_ComputeDice(imA, imB)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Calculate Dice coefficient of image overlap.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 if ~islogical(imA)
     warning('Input image was not dichotomous, dichotomizing now');
