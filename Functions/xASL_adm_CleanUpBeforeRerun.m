@@ -39,10 +39,12 @@ function xASL_adm_CleanUpBeforeRerun(AnalysisDir, iModule, bRemoveWMH, bAllSubje
 %
 % NB: still need to add xASL_module_func & xASL_module_dwi for EPAD
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE for rerunning full study: xASL_adm_CleanupBeforeCompleteRerun('/PathToMyStudyAnalysisDir', [], 0, 1);
-% EXAMPLE for rerunning ASL & population modules of single subject: xASL_adm_CleanupBeforeCompleteRerun('/PathToMyStudyAnalysisDir', [2 3], 0, 0, 'Sub-001')
+% EXAMPLE:
+% - For rerunning full study: xASL_adm_CleanupBeforeCompleteRerun('/PathToMyStudyAnalysisDir', [], 0, 1);
+% - For rerunning ASL & population modules of single subject: xASL_adm_CleanupBeforeCompleteRerun('/PathToMyStudyAnalysisDir', [2 3], 0, 0, 'Sub-001')
+%
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 try

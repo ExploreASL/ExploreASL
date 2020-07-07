@@ -1,6 +1,22 @@
-function LoadFile = xASL_adm_Load4DMemMapping( x, WhichModality )
-%xASL_adm_Load4DMemMapping Part of ExploreASL analysis module
-% Loads data & maps it to memory mapping file on disc, if not done before
+function LoadFile = xASL_adm_Load4DMemMapping(x, WhichModality)
+%xASL_adm_Load4DMemMapping Part of ExploreASL analysis module.
+% Loads data & maps it to memory mapping file on disc, if not done before.
+%
+% FORMAT:       LoadFile = xASL_adm_Load4DMemMapping(x, WhichModality)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Part of ExploreASL analysis module.
+%               Loads data & maps it to memory mapping file on disc, if not done before.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
 
 %% Admin, specify for each modality how to treat it
 ModalitiesList  = {'ASL' 'ASL_notScaled' 'ASL_untreated' 'ASL_PVEc'  'ASL_HctCohort'    'ASL_HctCorrInd' 'PWI' 'M0' 'mean_control' 'SD' 'SNR' 'TT' 'PV_pGM' 'PV_pWM'  'FLAIR'   'T1'  'WMH_SEGM'  'c1T1' 'R1'};

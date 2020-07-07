@@ -3,18 +3,40 @@ function x = xASL_adm_CreateFileReport(x, bHasFLAIR, bHasMoCo, bHasM0, bHasLongi
 %individual modules (i.e. Structural, Longiutudinal & ASL modules)
 % Provides a quick check to see what has been skipped, an whether all files
 % are present.
-% This script iterates across
+%
+% FORMAT:       x = xASL_adm_CreateFileReport(x, bHasFLAIR, bHasMoCo, bHasM0, bHasLongitudinal)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Prints a summary of created files or the individual modules
+% (i.e. Structural, Longiutudinal & ASL modules). Provides a quick check to
+% see what has been skipped, an whether all files are present.
+%
+% This script iterates across:
 % Native space 1) subject and 2) session files,
 % Resampled 3) subject and 4) session files,
 % 5) Lock files and 6) QC Figure files.
 %
-% For all we perform a A) count of the files present, summarized in 
-% ileReportSummary.csv, and we B) list the missing files in
-% "Missing*.csv" files
-
-% PM: simplify/optimize this code, to make filename variable changing,
+% For all we perform a:
+%
+% - A) Count of the files present, summarized in FileReportSummary.csv
+% - B) List of the missing files in "Missing*.csv" files
+%
+% PM: Simplify/optimize this code, to make filename variable changing,
 % search within subject-directories, etc. Combine the parts searching for
-% missing & summarizing count
+% missing & summarizing count.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
+
+
+
 
 fclose all;
 if nargin<1

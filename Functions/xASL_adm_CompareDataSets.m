@@ -1,9 +1,23 @@
 function [RMS] = xASL_adm_CompareDataSets(RefAnalysisRoot,SourceAnalysisRoot,x,type,mutexState)
 %xASL_adm_CompareDataSets Compares two ExploreASL datasets for reproducibility
-
-% type 0 - only save
-% type 1 - save and evaluate
-% type 2 - only evaluate
+%
+% FORMAT:       [RMS] = xASL_adm_CompareDataSets(RefAnalysisRoot,SourceAnalysisRoot,x,type,mutexState)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Compare data sets is used to ...
+%
+% - type 0: Only save
+% - type 1: Save and evaluate
+% - type 2: Only evaluate
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 %% -----------------------------------------------------------------------
 %% Admin
