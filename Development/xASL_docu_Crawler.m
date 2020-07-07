@@ -19,7 +19,7 @@ function xASL_docu_Crawler(folder,mdoutput)
 %               (which is written like this: {{bold text}}).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLES:     xASL_docu_Crawler('M:\...\Functions', 'M:\...\Output.md')
+% EXAMPLE:      xASL_docu_Crawler('M:\...\Functions', 'M:\...\Output.md')
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
@@ -41,6 +41,13 @@ listing = dir(folder);
 % Remove folders
 folderList = [listing.isdir]';
 listing(folderList) = [];
+
+% Sections
+SECTION = {'adm', 'bids', 'fsl', 'im', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
+SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Imaging', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
+    
+% Current section
+cS = 1;
 
 % Iterator
 it = 1;
@@ -116,6 +123,15 @@ for i = 1:numel(listing)
         % Length of description text
         lD = size(descriptionText);
         lD = lD(1);
+        
+        % Get the current section
+        if cS <= length(SECTION)
+            if contains(fileName,['xASL_', char(SECTION{cS,1})])
+                TEXT{it,1} = ['##', char(SECTION_NAMES{cS,1})];  it = it+1;
+                TEXT{it,1} = '';  it = it+1;
+                cS = cS+1;
+            end
+        end
         
         % Filenames
         TEXT{it,1} = '----'; it = it+1;
