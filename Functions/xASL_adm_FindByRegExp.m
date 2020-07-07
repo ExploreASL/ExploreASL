@@ -3,6 +3,7 @@ function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin
 %
 % FORMAT: 
 %     xasl_adm_FindByRegExp(root, dirSpecs[, varargin])
+%
 % INPUT:
 %     root      - root directory to start search
 %     dirSpecs  - string, cellstr or structure containing regular expressions for recursive search
@@ -27,11 +28,12 @@ function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin
 %                   'SortBy'          - vector containing token indices for sorting order; negative values sort descending
 % OUTPUT:
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Recursively find files in the root directory according to the dirSpecs
+% DESCRIPTION: Recursively find files in the root directory according to the dirSpecs.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
+% EXAMPLE: ...
 % __________________________________
-% Copyright Â© 2015-2019 ExploreASL
+% Copyright © 2015-2020 ExploreASL
 
     % Setup argument parse for variable arguments
     p = inputParser;

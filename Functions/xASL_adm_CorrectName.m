@@ -9,21 +9,26 @@ function strOut = xASL_adm_CorrectName(strIn, bOption, strExclude)
 %                1 replaces non-word characters with underscore, removes double underscores
 %                2 replaces non-word characters (including underscore) by empty space, concatenating all words
 %   strExclude - list of characters that are exempt from the replacement (DEFAULT '')
+%
 % OUTPUT:
 %   strOut     - corrected output string
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Finds and replaces all non-word characters either by empty space or by an underscore. Optionally leaves in
-%              few selected special characters. Note that if '_' is excluded from replacement, but option 2 is on, then underscores are replaced anyway
+% DESCRIPTION: Finds and replaces all non-word characters either by empty space or by an underscore. 
+%              Optionally leaves in few selected special characters. Note that if '_' is excluded from 
+%              replacement, but option 2 is on, then underscores are replaced anyway.
+%
 % EXAMPLE:     xASL_adm_CorrectName('t_es._-ting^-&&@function')         returns 't_es_ting_function'
 %              xASL_adm_CorrectName('t_es._-ting^-&&@function',1)       returns 't_es_ting_function'
 %              xASL_adm_CorrectName('t_es._-ting^-&&@function',2)       returns 'testingfunction'
 %              xASL_adm_CorrectName('t_es._-ting^-&&@function',1,'&-')  returns 't_es_-ting_-&&_function'
 %              xASL_adm_CorrectName('t_es._-ting^-&&@function',2,'&-')  returns 'tes-ting-&&function'
 %              xASL_adm_CorrectName('t_es._-ting^-&&@function',2,'&-_') returns 't_es_-ting-&&function'
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright ?? 2015-2019 ExploreASL
+% Copyright ?? 2015-2020 ExploreASL
 %
 % 2019-04-05 JP
 

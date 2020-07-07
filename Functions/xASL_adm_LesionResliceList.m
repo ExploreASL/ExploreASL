@@ -1,5 +1,20 @@
 function [INname, OUTname] = xASL_wrp_LesionResliceList(x,bLesion_T1,bLesion_FLAIR,bROI_T1,bROI_FLAIR)
-%xASL_wrp_LesionResliceList Creates list of structural image paths to reslice
+%xASL_wrp_LesionResliceList Creates list of structural image paths to
+% reslice.
+%
+% FORMAT:       [INname, OUTname] = xASL_wrp_LesionResliceList(x,bLesion_T1,bLesion_FLAIR,bROI_T1,bROI_FLAIR)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Creates list of structural image paths to reslice.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 % Do everything unless specified otherwise
 if nargin<2 || isempty(bLesion_T1)

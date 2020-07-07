@@ -14,15 +14,17 @@ function [List] = xASL_adm_CopyMoveFileList(OriDir, DstDir, StrRegExp, bMove, bD
 %                When false, do nothing (OPTIONAL, DEFAULT = false)
 %   bVerbose   - Verbose mode (OPTIONAL, DEFAULT = false)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Moves a file to a file, a file to a directory, or a directory to a directory. It keeps the initial extensions, no unzipping or zipping
-%              after the move. But it makes sure that only one of .nii and .nii.gz exists in the destination directory.
-%              Useful to split a large database
+% DESCRIPTION: Moves a file to a file, a file to a directory, or a directory to a directory. 
+%              It keeps the initial extensions, no unzipping or zipping after the move. 
+%              But it makes sure that only one of {{.nii}} and {{.nii.gz}} exists in the destination directory.
+%              Useful to split a large database.
+%
 % EXAMPLE: xASL_adm_CopyMoveFileList(/mnt/c/Backup/ASL/StudyName/analysis, /mnt/c/Backup/ASL/StudyName/analysis_2, '.*_2.*, 'true); Move all second time point folders & files to a new location, keeping directory structure intact
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright (C) 2019 ExploreASL
+% Copyright (C) 2020 ExploreASL
 %
 % 2019-04-01 Henk Mutsaerts. This file was created as a part of ExploreASL
 % See LICENSE for details.

@@ -1,6 +1,21 @@
-function INDEX = xASL_adm_FindStrIndex( ARRAY, STRING )
+function INDEX = xASL_adm_FindStrIndex(ARRAY, STRING)
 % xASL_adm_FindStrIndex Similar to find, but then for a cell array filled with strings
 % Only takes 4 dimensions
+%
+% FORMAT:       INDEX = xASL_adm_FindStrIndex(ARRAY, STRING)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Similar to find, but then for a cell array filled with strings.
+%               Only takes 4 dimensions.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 nDim    = length(size(ARRAY));
 

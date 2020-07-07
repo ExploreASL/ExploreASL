@@ -1,7 +1,22 @@
-function [Nr DayInYear] = xASL_adm_ConvertDate2Nr( TempDate )
+function [Nr DayInYear] = xASL_adm_ConvertDate2Nr(TempDate)
 %xASL_adm_ConvertDate2Nr Converts date to number
 % input mmdd -> output mm (with days in fractions/floating point)
 % Inverse from ConvertNrDate
+%
+% FORMAT:       [Nr DayInYear] = xASL_adm_ConvertDate2Nr(TempDate)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Converts date to number input mmdd -> output mm (with days in fractions/floating point).
+%               Inverse from ConvertNrDate.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 DaysInMonth     = [31 28.25 31 30 31 30 31 31 30 31 30 31];
 
