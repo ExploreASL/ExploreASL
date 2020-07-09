@@ -21,7 +21,14 @@ ADDED:
 Line 1: added the extra option bZigzag
 Line 117,137,158,181,571: added extra routines for the Zigzag
 
+*********************************************************************************************************
+COST FUNCTION MASKING FOR LESIONS
 
+DATE+NAME:2020-07-08, JP
+DESCRIPTION:
+hotfix minor bug in loading NIfTIs containing lesion masks in CAT12 #28
+FILE:
+cat_run_job.m at 577
 
 *********************************************************************************************************
 ENABLING LOW QUALITY MODE (FOR QUICK TESTING, RUN EVERYTHING BUT WITH LOWER ITERATIONS AND/OR SPATIAL RESOLUTION)

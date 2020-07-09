@@ -40,7 +40,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 	end
 	if nargin<4 || isempty(bUseDCMTK)
 		bUseDCMTK = true; % use this by default
-    elseif bUseDCMTK && isempty(which('dicomdict'))
+    elseif ~bUseDCMTK && isempty(which('dicomdict'))
         error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
 	end
 	if nargin<5

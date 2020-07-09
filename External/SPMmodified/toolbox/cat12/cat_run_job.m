@@ -574,8 +574,19 @@ function cat_run_job(job,tpm,subj)
         %  We further discussed to use a separate mask images but finally desided
         %  to keep this as simple as possible using no additional options!
         obj.image0 = spm_vol(job.channel(1).vols0{subj});
-        Ysrc0      = spm_read_vols(obj.image0); 
-        Ylesion    = single(Ysrc0==0); clear Ysrc0; 
+        		
+		% ExploreASL fix
+        % Ysrc0      = spm_read_vols(obj.image0); 
+        % Ylesion    = single(Ysrc0==0); clear Ysrc0; 
+		if isfield(job.extopts,'xasl_lesion') && ~isempty(job.extopts.xasl_lesion) && (length(job.extopts.xasl_lesion{1}) > 1)
+			Ysrc0 = spm_vol(job.extopts.xasl_lesion{1});
+			Ysrc0 = spm_read_vols(Ysrc0);
+			Ylesion    = single(Ysrc0>0.5); clear Ysrc0;
+		else
+			Ysrc0      = spm_read_vols(obj.image0);
+			Ylesion    = single(Ysrc0==0); clear Ysrc0;
+		end
+				
         Ylesion(smooth3(Ylesion)<0.5)=0; % general denoising 
         if any( obj.image0.dim ~= obj.image.dim )
           mat      = obj.image0.mat \ obj.image.mat;

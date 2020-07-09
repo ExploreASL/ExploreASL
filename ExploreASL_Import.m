@@ -114,7 +114,7 @@ if nargin<5 || isempty(bRunDCM2NII)
 end
 if nargin<3 || isempty(bUseDCMTK)
     bUseDCMTK = true; % default set to using DCM-TK
-elseif bUseDCMTK && isempty(which('dicomdict'))
+elseif ~bUseDCMTK && isempty(which('dicomdict'))
     error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
 end
 if nargin<4 || isempty(bCheckPermissions)

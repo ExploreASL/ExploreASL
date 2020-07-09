@@ -55,3 +55,22 @@ The walkthrough document and how-to videos can be found on the [](https://sites.
 
 * hotfix minor bug in creating participants.tsv #23
 
+----
+
+# ExploreASL V1.1.2
+
+----
+
+## Bug Fixes
+
+* hotfix minor bug in loading NIfTIs containing lesion masks in CAT12 #28
+
+----
+
+# ExploreASL V1.1.3
+
+----
+
+## Bug Fixes
+
+* hotfix minor bug in running the import using DCMTK without the Matlab Image Processing Toolbox #30
