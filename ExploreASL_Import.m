@@ -94,6 +94,9 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %                              Example:
 %                              imPar.tokenSessionAliases = {}; as we don't have sessions
 %    imPar.bMatchDirectories - true if the last layer is a folder, false if the last layer is a filename (as e.g. with PAR/REC, enhanced DICOMs)
+%    imPar.RawRootModName    - If you don't define this field at all, the algorithm will search for the default 'raw' folder.
+%                              You can select 'adaptive' to search for a random subfolder (assuming that there is only one. 
+%                              Or you can define a specific folder.
 %
 % EXAMPLE: ExploreASL_Import(ExploreASL_ImportConfig('//MyDisk/MyStudy'));
 % __________________________________
@@ -176,7 +179,27 @@ else
 end
 
 %% Create the directory for analysis
-imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,'raw');
+if isfield(imPar,'RawRootModName')
+    if strcmp(imPar.RawRootModName,'adaptive')
+        % Search for raw data in archive -> Modified for datasets without a hardcoded "raw" folder
+        curArchive = dir(fullfile(imPar.RawRoot,imPar.studyID));
+        curArchive = curArchive([curArchive.isdir]'); % Only check directories
+        remFolders = strcmp({curArchive.name}','.') | strcmp({curArchive.name}','..') | strcmp({curArchive.name}','analysis');
+        curArchive = curArchive(~remFolders);
+        if numel(curArchive)==1
+            imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,curArchive.name);
+        else
+            % Fallback: Use 'raw'
+            imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,'raw');
+        end
+    else
+        % Option to define the raw folder name manually
+        imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,imPar.RawRootModName);
+    end
+else
+    % Default/Fallback solution
+    imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,'raw');
+end
 imPar.AnalysisRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'analysis');
 imPar.SourceRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'source');
 

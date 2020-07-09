@@ -838,6 +838,11 @@ switch imPar.studyID
         imPar.tokenSessionAliases = {'',''};
         imPar.tokenScanAliases = {'^pseudo_nocrush$','ASL4D';'^T2_TRA$', 'T1'}; 
         imPar.bMatchDirectories = true;
+        
+    case 'incoming' % Potential folder name in the docker environment
+        imPar.folderHierarchy = {'^(\d{4}).*', '^(S).*$', '^(ADNI_).*$'}; % Test with ADNI data
+        imPar.tokenOrdering = [1 2 3];
+        imPar.RawRootModName = 'adaptive'; % Adaptive mode: Search for random subfolder (expecting only one)
 
 	otherwise % by default, append study ID and raw (or analysis) to the roots
 		warning('Unknown study: %s', imPar.studyID);
