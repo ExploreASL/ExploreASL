@@ -463,7 +463,7 @@ end
 %% Transform the everything and realign in the T1 space
 
 % Standard to T1w space
-for iL = 3:length(patientNameList)
+for iL = 1:length(patientNameList)
 	fnm = 'Lesion_T1';
 	if ~xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},[fnm '_1.nii']))
 		fnm = 'Lesion_FLAIR';
