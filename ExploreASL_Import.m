@@ -49,11 +49,12 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %    DICOMs SeriesName/ProtocolName.
 % 3) Once you have all DICOMs in folderstructure with identifyable names
 %    inside //MyDisk/MyStudy/raw, set up the folderstructure in
-%    ExploreASL_ImportConfig.m This setup uses the SPM form of regular
+%    ExploreASL_ImportConfig.m. This setup uses the SPM form of regular
 %    expressions, which can be daunting at first, but are very flexible.
 %    Easiest is to study other examples, before creating your own.
 %    For this example, let's say we have //MyDisk/MyStudy/raw/ScanType/SubjectName
-%    because we downloaded our data from XNAT, ordered per ScanType first, and then per subject
+%    because we downloaded our data from XNAT, ordered per ScanType first,
+%    and then per subject.
 %
 %    BRIEF EXPLANATION:
 %    Let's suppose we don't have sessions (only a single structural and functional scan per subject)
@@ -94,9 +95,6 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %                              Example:
 %                              imPar.tokenSessionAliases = {}; as we don't have sessions
 %    imPar.bMatchDirectories - true if the last layer is a folder, false if the last layer is a filename (as e.g. with PAR/REC, enhanced DICOMs)
-%    imPar.RawRootModName    - If you don't define this field at all, the algorithm will search for the default 'raw' folder.
-%                              You can select 'adaptive' to search for a random subfolder (assuming that there is only one. 
-%                              Or you can define a specific folder.
 %
 % EXAMPLE: ExploreASL_Import(ExploreASL_ImportConfig('//MyDisk/MyStudy'));
 % __________________________________
@@ -178,28 +176,26 @@ else
     fprintf('If you want to overwrite, first remove the full subject folder');
 end
 
-%% Create the directory for analysis
-if isfield(imPar,'RawRootModName')
-    if strcmp(imPar.RawRootModName,'adaptive')
-        % Search for raw data in archive -> Modified for datasets without a hardcoded "raw" folder
-        curArchive = dir(fullfile(imPar.RawRoot,imPar.studyID));
-        curArchive = curArchive([curArchive.isdir]'); % Only check directories
-        remFolders = strcmp({curArchive.name}','.') | strcmp({curArchive.name}','..') | strcmp({curArchive.name}','analysis');
-        curArchive = curArchive(~remFolders);
-        if numel(curArchive)==1
-            imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,curArchive.name);
-        else
-            % Fallback: Use 'raw'
-            imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,'raw');
-        end
+%% Create the basic folder structure for raw & derivative data
+imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID, 'raw'); % default name
+
+if ~exist(imPar.RawRoot, 'dir')
+    warning(['Couldnt find ' imPar.RawRoot ', trying to find a different folder instead...']);
+    
+    % find any folder except for analysis, source, raw, derivatives
+    % xASL_adm_GetFileList uses regular expressions, to create a nice list of foldernames,
+    % with/without FullPath (FPList), with/without recursive (FPListRec)
+    % very powerful once you know how these work
+    FolderNames = xASL_adm_GetFileList(fullfile(imPar.RawRoot, imPar.studyID), '^(?!(analysis|derivatives|source|raw)).*$', 'FPList', [0 Inf], true); 
+    
+    if length(FolderNames)==1
+        imPar.RawRoot = FolderNames{1};
+        fprintf('%s\n', ['Found ' imPar.RawRoot ' as raw folder']);
     else
-        % Option to define the raw folder name manually
-        imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,imPar.RawRootModName);
+        error('Couldnt find a raw folder, please rename one, or move other folders');
     end
-else
-    % Default/Fallback solution
-    imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,'raw');
 end
+
 imPar.AnalysisRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'analysis');
 imPar.SourceRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'source');
 
