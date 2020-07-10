@@ -847,12 +847,11 @@ switch imPar.studyID
         imPar.bMatchDirectories = true;
     
     case 'incoming' % Docker
-        warning('Not specified yet...');
-        %imPar.folderHierarchy = {'^(\d{3}_S_\d{4}).*', '^(ASL_PERFUSION)$', '^(\d{4}.*)$', '^S.*'}; % Test with ADNI data
-        %imPar.tokenOrdering = [1 3 0 2]; % subject visit session scantype
-        %imPar.tokenScanAliases = {'^ASL_PERFUSION$','ASL4D';'^MPRAGE$', 'T1'};
-        %imPar.tokenVisitAliases = {'^2010$','ASL4D';'^1$'};
-        %imPar.bMatchDirectories = true;
+        warning('Not optimized/tested yet...');
+        imPar.folderHierarchy = {'^(sub-).*$', '^(visit-).*$', '^(ASL|T1|FLAIR|M0)'}; % Test with docker data
+        imPar.tokenOrdering = [1 2 0 3]; % subject visit session scantype
+        imPar.tokenScanAliases = {'^ASL_PERFUSION$','ASL4D';'^MPRAGE$', 'T1'};
+        imPar.bMatchDirectories = true;
 
 
 	otherwise % by default, append study ID and raw (or analysis) to the roots
