@@ -1,17 +1,18 @@
-function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
+function xASL_im_CreatePseudoCBF(x, spatialCoV, bExtraScaling, bPVC)
 %xASL_im_CreatePseudoCBF Create a pseudoCBF reference image for CBF-based
 %ASL->T1w registration
 %
 % FORMAT: xASL_im_CreatePseudoCBF(x, spatialCoV[,bPVC])
 %
 % INPUT:
-%   x          - structure containing fields with all information required to run this submodule (REQUIRED)
-%   spatialCoV - estimated spatialCoV of CBF image, that determines the mix
-%                of mean CBF, ATT biasfield and vascular artifacts
-%                (REQUIRED). When this parameter is set to 0 or lower, this
-%                function will skip creating the pseudoCBF NIfTI
-%   bPVC       - Does not set fixed values of GM and WM CBF, but rather calculate the regional PVEC and set 
-%                the values of the PseudoTissue based on that (OPTIONAL, DEFAULT = FALSE)
+%   x             - structure containing fields with all information required to run this submodule (REQUIRED)
+%   spatialCoV    - estimated spatialCoV of CBF image, that determines the mix
+%                   of mean CBF, ATT biasfield and vascular artifacts
+%                   (REQUIRED). When this parameter is set to 0 or lower, this
+%                   function will skip creating the pseudoCBF NIfTI
+%   bExtraScaling - Do a better scaling saved to rPWI.nii to be used, e.g., for DCT (OPTIONAL, DEFAULT = FALSE)
+%   bPVC          - Does not set fixed values of GM and WM CBF, but rather calculate the regional PVEC and set 
+%                   the values of the PseudoTissue based on that (OPTIONAL, DEFAULT = FALSE)
 % OUTPUT: n/a
 % OUTPUT FILES: in the ASL Session Folder:
 %              - PseudoCBF.nii: final pseudoCBF image used for registration
@@ -61,7 +62,16 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
 
-if nargin < 3 || isempty(bPVC)
+if nargin < 3 || isempty(bExtraScaling)
+	bExtraScaling = false;
+end
+
+if nargin < 4 || isempty(bPVC)
+	bPVC = false;
+end
+
+if ~bExtraScaling && bPVC
+	warning('bPVC option requires extra scaling. Turned both of them off.');
 	bPVC = false;
 end
 
@@ -73,12 +83,13 @@ if ~xASL_exist(x.Path_PseudoTissue,'file') || bPVC
     % the 3 dimensions (smallest VoxelSize)
     nii = xASL_io_ReadNifti(x.P.Path_ASL4D);
     NewVoxelSize = repmat(min(nii.hdr.pixdim(2:4)),[1,3]);
-    % Smooth the high resolution pGM & pWM images with the ASL voxelsize, and    
-    
+
+	% Smooth the high resolution pGM & pWM images with the ASL voxelsize, and    
 	% Pre-smooth the high resolution pGM & pWM images to match the ASL voxelsize, and
     % save them as temporary resampled copy prefixed with "r"
     xASL_spm_smooth(x.P.Path_c1T1, NewVoxelSize, x.P.Path_rc1T1);
     xASL_spm_smooth(x.P.Path_c2T1, NewVoxelSize, x.P.Path_rc2T1);
+	
     % Downsample these temporary images to the ASL VoxelSize
     xASL_im_Upsample(x.P.Path_rc1T1, x.P.Path_rc1T1, NewVoxelSize);
     xASL_im_Upsample(x.P.Path_rc2T1, x.P.Path_rc2T1, NewVoxelSize);
@@ -86,28 +97,31 @@ if ~xASL_exist(x.Path_PseudoTissue,'file') || bPVC
     % Calculate the pseudoCBF image from the downsampled tissue posteriors,
     % called PseudoTissue
     PseudoTissue = xASL_io_Nifti2Im(x.P.Path_rc1T1).*80 + xASL_io_Nifti2Im(x.P.Path_rc2T1).*26.7;
+	
     % Save this PseudoTissue NIfTI
     xASL_io_SaveNifti(x.P.Path_rc1T1, x.Path_PseudoTissue, PseudoTissue, [], false);
+	
+	% The rc1T1 can be deleted, unless you do PVC and it is used later in the code - it is then also deleted later
 	if ~bPVC
 		xASL_delete(x.P.Path_rc1T1);
 		xASL_delete(x.P.Path_rc2T1);
 	end
 end
 
-% Prepare the PWI image in the same space as the PseudoTissue
-if exist(x.P.Path_mean_PWI_Clipped_sn_mat,'file')
-	xASL_spm_reslice(x.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped_ORI, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_rPWI);
-else
-	xASL_spm_reslice(x.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped_ORI, [], 0, x.Quality, x.P.Path_rPWI);
+if bExtraScaling
+	% Prepare the PWI image in the same space as the PseudoTissue
+	if exist(x.P.Path_mean_PWI_Clipped_sn_mat,'file')
+		xASL_spm_reslice(x.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped_ORI, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_rPWI);
+	else
+		xASL_spm_reslice(x.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped_ORI, [], 0, x.Quality, x.P.Path_rPWI);
+	end
 end
 
-% Calculate the pseudoTissue again using PVC
+% Calculate the pseudoTissue again using PVC - that means it does the contrast matching locally and takes into account PV
 if bPVC
 	% Load the PV tissue priors
 	imGM = xASL_io_Nifti2Im(x.P.Path_rc1T1);
 	imWM = xASL_io_Nifti2Im(x.P.Path_rc2T1);
-	xASL_delete(x.P.Path_rc1T1);
-	xASL_delete(x.P.Path_rc2T1);
 	imPWI = xASL_io_Nifti2Im(x.P.Path_rPWI);
 	
 	% Run PV-correction with smooth kernel
@@ -118,21 +132,17 @@ if bPVC
 	imPV = [];
 	imPV(:,:,:,1) = imGM;
 	imPV(:,:,:,2) = imWM;
-	[imPVEC,~,imResidual] = xASL_im_PVCkernel(imPWI,imPV,[5 5 5],'asllani');
+	[imPVEC,~,~] = xASL_im_PVCkernel(imPWI,imPV,[5 5 5],'asllani');
 	
-	% Remove from mask all voxels with too high residuals after PVEc
-	imMask = (imGM+imWM)>0.1;
-	imErr = imResidual(imMask);
-	meanErr = mean(imErr);
-	stdErr = std(imErr);
-	imMask = (imResidual < (meanErr + 2*stdErr));
-	imMask = imMask>0;
-	
-	% Create a pseudoCBF image
+	% Create a pseudoCBF image that has the local contrast variation based on the estimated PVEC
 	PseudoTissue = imGM.*imPVEC(:,:,:,1) + imWM.*imPVEC(:,:,:,2);
 	PseudoTissue(PseudoTissue<0) = 0;
 	PseudoTissue(isnan(PseudoTissue)) = 0;
 	xASL_io_SaveNifti(x.P.Path_rc1T1, x.Path_PseudoTissue, PseudoTissue, [], false);
+	
+	% Delete the temporary files
+	xASL_delete(x.P.Path_rc1T1);
+	xASL_delete(x.P.Path_rc2T1);
 end
 
 %% ----------------------------------------------------------------------------------------
@@ -142,8 +152,6 @@ if ~xASL_exist(x.Mean_Native,'file') || ~xASL_exist(x.Mask_Native,'file') || ~xA
     % Trilinear interpolation is fine for smooth template
     xASL_spm_deformations(x,{x.Mean_MNI;x.Bias_MNI;x.Vasc_MNI;x.Mask_MNI},{x.Mean_Native;x.Bias_Native;x.Vasc_Native;x.Mask_Native}, 1, x.Path_PseudoTissue, [], x.P.Path_y_ASL);
 end
-
-
 
 %% ----------------------------------------------------------------------------------------
 %% 3) Spatial CoV input argument check
@@ -156,15 +164,12 @@ elseif spatialCoV<eps
     return;
 end
 
-
-
 %% ----------------------------------------------------------------------------------------
 %% 4) Load native space copies of templates
 Mean_IM = xASL_io_Nifti2Im(x.Mean_Native);
 Bias_IM = xASL_io_Nifti2Im(x.Bias_Native);
 Bias_IM(isnan(Bias_IM)) = 0;
 PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
-
 
 %% ----------------------------------------------------------------------------------------
 %% 5) Create pseudoTissue from segmentations, mix this with the mean CBF template depending on spatial CoV
@@ -198,7 +203,8 @@ xASL_io_SaveNifti(x.Mean_Native, x.P.Path_PseudoCBF, PseudoCBFim, [], 0);
 
 
 %% ----------------------------------------------------------------------------------------
-%% 7) Scale mean_PWI_Clipped source image to the same range as PseudoCBF
+%% 7) Scale mean_PWI_Clipped source image to the same range as PseudoCBF for the rigid and affine registration
+% The rPWI is used for scaling and PWI.nii is used for DCT
 pseudoIM = xASL_io_Nifti2Im(x.P.Path_PseudoCBF);
 
 % Use 5 and 95% percentiles instead of min and max
@@ -209,33 +215,42 @@ sortPseu = sort(pseudoIM(:),'ascend');
 minPseu = sortPseu(ceil(0.05*length(sortPseu)));
 maxPseu = sortPseu(ceil(0.95*length(sortPseu)));
 PWIim = PWIim-minPWI+minPseu;
+
 % Use the whole range (max-min) not only the max for the scaling
 RatioMax = (maxPseu-minPseu)/(maxPWI-minPWI);
 PWIim = PWIim.*RatioMax;
 
+% Save the image for the rigid registration
 xASL_io_SaveNifti(x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped, PWIim, [], 0);
 
-% Calculate the proper scaling of rPWI to PseudoTissue
-imMask = pseudoIM > 10;
-imMask(:,:,[1:2,(end-1):(end)]) = 0;
-PWIIM = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped_ORI);
-rPWIIM = xASL_io_Nifti2Im(x.P.Path_rPWI);
-rPWIIM(rPWIIM<0) = 0;
-rPWIIMsort = sort(rPWIIM(imMask(:)),'ascend');
-rPWIIMmax = rPWIIMsort(floor(0.97*length(rPWIIMsort)));
-PWIIM(PWIIM<0) = 0;
-PWIIM(PWIIM>rPWIIMmax) = rPWIIMmax;
-rPWIIM(rPWIIM>rPWIIMmax) = rPWIIMmax;rPWIIM(isnan(rPWIIM)) = 0;
-X = rPWIIM(imMask);
-X = [ones(length(X),1),X];
+if bExtraScaling
+	% Calculate the proper scaling of rPWI to PseudoTissue, but leaves the other mean_PWI_Clipped unaffected
+	% Masks the perfused brain
+	imMask = pseudoIM > 10;
+	imMask(:,:,[1:2,(end-1):(end)]) = 0;
+	
+	% Load only the perfusion values in a relevant range and mask out the air
+	PWIIM = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped_ORI);
+	rPWIIM = xASL_io_Nifti2Im(x.P.Path_rPWI);
+	rPWIIM(rPWIIM<0) = 0;
+	rPWIIMsort = sort(rPWIIM(imMask(:)),'ascend');
+	rPWIIMmax = rPWIIMsort(floor(0.97*length(rPWIIMsort)));
+	PWIIM(PWIIM<0) = 0;
+	PWIIM(PWIIM>rPWIIMmax) = rPWIIMmax;
+	rPWIIM(rPWIIM>rPWIIMmax) = rPWIIMmax;rPWIIM(isnan(rPWIIM)) = 0;
+	X = rPWIIM(imMask);
 
-Y = pseudoIM(imMask);
-sol = pinv(X)*Y;
-rPWIIM = rPWIIM*sol(2)+sol(1);
-PWIIM = PWIIM*sol(2)+sol(1);
-					
-xASL_io_SaveNifti(x.P.Path_rPWI, x.P.Path_rPWI, rPWIIM, [], 0);
-xASL_io_SaveNifti(x.P.Path_mean_PWI_Clipped_ORI, x.P.Path_PWI, PWIIM, [], 0);
+	% Linear regression for least squares fit of the contrasts
+	X = [ones(length(X),1),X];
+	Y = pseudoIM(imMask);
+	sol = pinv(X)*Y;
+	
+	% Modify and save the images
+	rPWIIM = rPWIIM*sol(2)+sol(1);
+	PWIIM = PWIIM*sol(2)+sol(1);
+	xASL_io_SaveNifti(x.P.Path_rPWI, x.P.Path_rPWI, rPWIIM, [], 0);
+	xASL_io_SaveNifti(x.P.Path_mean_PWI_Clipped_ORI, x.P.Path_PWI, PWIIM, [], 0);
+end
 
 %% Print what we did
 fprintf('%s\n',['PseudoCBF.nii created for spatial CoV=' num2str(100*spatialCoV,3) '% & rescaled mean_PWI_Clipped.nii to this']);

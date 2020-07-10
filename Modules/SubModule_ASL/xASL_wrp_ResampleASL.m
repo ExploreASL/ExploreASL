@@ -136,7 +136,7 @@ if  nVolumes>1 % this is when a mean control image can be created
     InputFiles  = {x.P.Path_mean_control};
     OutputFiles = {x.P.Pop_Path_mean_control};
 
-    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
         AffineTransfPath = [];

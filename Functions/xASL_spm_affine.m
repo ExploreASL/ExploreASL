@@ -35,18 +35,18 @@ else
     otherList = xASL_adm_OtherListSPM(otherList);
 end
 if nargin < 4
-	error('xASL_spm_affine: Requires 4 input parameters.');
+	error('Requires 4 input parameters.');
 end
 if ~xASL_exist(srcPath) || ~xASL_exist(refPath)
-	error('xASL_spm_affine: Cannot find input images.');
+	error('Cannot find input images.');
 end
 
-if nargin < 6
+if nargin < 6 || isempty(bDCT)
 	bDCT = false;
 end
 
 if ~isempty(otherList) && bDCT
-	warning('xASL_spm_affine: Cannot modify the headers in otherList if bDCT is true');
+	warning('Cannot modify the headers in otherList if bDCT is true');
 end
 
 % Unzip the input files 
@@ -63,9 +63,11 @@ matlabbatch{1}.spm.tools.oldnorm.est.eoptions.smoref        = fwhmRef;
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.regtype       = 'subj';
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.cutoff        = 25; % biasfield correction
 if bDCT
-	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits          = 16; % 16 default (includes DCT)
+	% Includes also the Direct Cosine Transform
+	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits          = 16; % 16 is the default for SPM
 else
-	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits          = 0; % 16 default (includes DCT)
+	% Excludes DCT
+	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits          = 0;
 end
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.reg           = 1;
 

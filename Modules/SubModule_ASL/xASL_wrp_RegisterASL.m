@@ -63,16 +63,18 @@ function xASL_wrp_RegisterASL(x)
 %       applied if the spatial CoV<0.67. Note that this is usually the case
 %       for 3D scans because of their lower effective spatial resolution.
 %
-%       x.bAffineRegistration - specifies the ASL-T1w rigid-body
-%                                 registration is followed up by an affine
-%                                 registration (OPTIONAL, DEFAULT = 2)
+%       x.bAffineRegistration - specifies the ASL-T1w rigid-body registration is followed up by an affine
+%                                 registration (OPTIONAL, DEFAULT = 0)
+%                             - turned off on low quality
 %                          - 0 = affine registration disabled
 %                          - 1 = affine registration enabled
 %                          - 2 = affine registration automatically chosen based on
 %                                spatial CoV of PWI
-%       x.bDCTRegistration - Specifies if to include the DCT registration on top of Affine
+%       x.bDCTRegistration - Specifies if to include the DCT registration on top of Affine, all other requirements for 
+%                            affine are thus also taken into account (OPTIONAL, DEFAULT = 0)
 %                          - 0 = DCT registration disabled
-%                          - 1 = DCT registration enabled if Affine enabled
+%                          - 1 = DCT registration enabled if affine enabled and conditions for affine passed
+%                          - 2 = DCT enabled as above, but use PVC on top of it to get the local intensity scaling right
 %
 % EXAMPLE: xASL_wrp_RegisterASL(x);
 % __________________________________
@@ -89,8 +91,32 @@ if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 
-if ~isfield(x,'bRegistrationContrast')
+if ~isfield(x,'bRegistrationContrast') || isempty(x.bRegistrationContrast)
     x.bRegistrationContrast = 2; % register M0-T1w first, then CBF-pGM if sCoV<0.667
+end
+
+if ~isfield(x,'bAffineRegistration') || isempty(x.bAffineRegistration)
+	x.bAffineRegistration = 0; % Default - affine disabled
+end
+
+% Turn off affine and DCT on low quality
+if ~x.Quality 
+	x.bAffineRegistration = 0;
+end
+
+% DCT off by default
+if ~isfield(x,'bDCTRegistration') || isempty(x.bDCTRegistration) 
+	x.bDCTRegistration = 0;
+end
+
+% DCT runs only with affine, switching DCT on and affine off thus produces a warning
+if x.bDCTRegistration && ~x.bAffineRegistration
+	warning('DCT registration cannot run if affine is disabled');
+end
+
+% For DCT, force CBF<->pseudoCBF registration
+if x.bDCTRegistration
+	x.bRegistrationContrast = 3;
 end
 
 %% B) Manage OtherList
@@ -352,15 +378,6 @@ end
 %% 3)   Registration CBF->pseudoCBF
 if bRegistrationCBF
 
-	
-	% Only do DCT registration if the Affine is done as well
-	if ~isfield(x,'bDCTRegistration') || ~x.bAffineRegistration
-		x.bDCTRegistration = 0;
-	end
-	if x.bDCTRegistration
-		x.bRegistrationContrast = 3;
-	end
-	
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
     if x.bRegistrationContrast==3
         nIT = 2; % force CBF-pGM
@@ -401,7 +418,7 @@ if bRegistrationCBF
                         % we don't force CBF-pGM registration
                         xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
                         bSkipThis = true; % skip next iteration
-                        x.bAffineRegistration = 0; % skip affine registration
+                        x.bAffineRegistration = 0; % skip affine registration and therefore also DCT
                         TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
                     end
                 end
@@ -414,20 +431,12 @@ if bRegistrationCBF
 		% Note that this is only done upon request (x.bAffineRegistration, advanced option),
         % hence this doesn't have the automatic backup & restore,
         % as the CBF->pseudoCBF registration has above
-        if isfield(x,'bAffineRegistration') && ~isempty(x.bAffineRegistration)
-            if x.bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
-                bAffineRegistration = x.Quality && spatCoVit(end)<0.4;
-            else
-                bAffineRegistration = x.bAffineRegistration;
-            end
-        else
-            bAffineRegistration = false; % default
-            % default is no affine registration, as the SPM affine COST
-            % function is tricky without proper rescaling & testing this
-		end
-		
-		if x.bDCTRegistration
-			bAffineRegistration = 1;
+		if x.bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
+			bAffineRegistration = spatCoVit(end)<0.4;
+		else
+			% For bAffineRegistration == 1, do always
+			% For bAffineRegsitration == 0, do never
+			bAffineRegistration = x.bAffineRegistration;
 		end
 
         if bAffineRegistration % perform affine registration
@@ -435,19 +444,21 @@ if bRegistrationCBF
             % one image is enlarged, it has more overlap
             fprintf('%s\n','Performing affine registration');
 			if x.bDCTRegistration
-				xASL_im_CreatePseudoCBF(x, spatCoVit(end),0);
-				% Use DCT registration as well
-				xASL_spm_affine(x.P.Path_PWI, x.P.Path_PseudoCBF, 5, 5, [], 1);
-				xASL_Move(x.P.Path_PWI_sn_mat,x.P.Path_mean_PWI_Clipped_sn_mat,1);
-				
-				% % Or iterate two times and use PVC
-				%for iTDCT = 1:2
-				%	xASL_im_CreatePseudoCBF(x, spatCoVit(end),1);
-				%	xASL_spm_affine(x.P.Path_PWI, x.P.Path_PseudoCBF, 5, 5, [], 1);
-				%	xASL_Move(x.P.Path_PWI_sn_mat,x.P.Path_mean_PWI_Clipped_sn_mat,1);
-				%	xASL_spm_reslice(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped_ORI, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_rPWI);
-				%end
-				
+				if x.bDCTRegistration == 1
+					xASL_im_CreatePseudoCBF(x, spatCoVit(end),1,0);
+					% Use Affine with DCT registration as well
+					xASL_spm_affine(x.P.Path_PWI, x.P.Path_PseudoCBF, 5, 5, [], 1);
+					xASL_Move(x.P.Path_PWI_sn_mat,x.P.Path_mean_PWI_Clipped_sn_mat,1);
+				else
+					% Use Affine with DCT registration with PVC to prepare the contrast
+					% Iterate two times to best use the PVC feature
+					for iTDCT = 1:2
+						xASL_im_CreatePseudoCBF(x, spatCoVit(end),1,1);
+						xASL_spm_affine(x.P.Path_PWI, x.P.Path_PseudoCBF, 5, 5, [], 1);
+						xASL_Move(x.P.Path_PWI_sn_mat,x.P.Path_mean_PWI_Clipped_sn_mat,1);
+						xASL_spm_reslice(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped_ORI, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_rPWI);
+					end
+				end
 			else
 				xASL_im_CreatePseudoCBF(x, spatCoVit(end));
 				% apply also to mean_PWI_clipped and other files
