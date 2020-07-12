@@ -1,7 +1,7 @@
-function ExploreASL_io_docker(root)
-%ExploreASL_docker Function for the docker version of ExploreASL.
+function xASL_io_Docker(root)
+%xASL_io_Docker Function for the docker version of ExploreASL.
 %
-% FORMAT:       ExploreASL_io_docker(root, pathDataParFile);
+% FORMAT:       xASL_io_Docker(root, pathDataParFile);
 %
 % INPUT:        root                - Path to DICOM dataset with BIDS(-like) structure.
 %
@@ -31,9 +31,9 @@ function ExploreASL_io_docker(root)
 %
 %               - ...
 %
-% EXAMPLE:      ExploreASL_io_docker('/opt/incoming/');
+% EXAMPLE:      xASL_io_Docker('/opt/incoming/');
 %
-%               ExploreASL_io_docker('M:\SoftwareDevelopment\MATLAB\m.stritt\tmp_data_siemens\incoming');
+%               xASL_io_Docker('M:\SoftwareDevelopment\MATLAB\m.stritt\tmp_data_siemens\incoming');
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
