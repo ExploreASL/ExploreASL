@@ -1,9 +1,9 @@
 function xASL_io_Docker(root)
 %xASL_io_Docker Function for the docker version of ExploreASL.
 %
-% FORMAT:       xASL_io_Docker(root, pathDataParFile);
+% FORMAT:       xASL_io_Docker(root);
 %
-% INPUT:        root                - Path to DICOM dataset with BIDS(-like) structure.
+% INPUT:        root - Path to DICOM dataset with BIDS(-like) structure.
 %
 % OUTPUT:       n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ fID = fopen(DataParFile,'w');
 % Parameters
 data.x.name = "incoming";
 data.x.subject_regexp = "^sub$";
-data.x.Quality = 0;
+data.x.Quality = 1;
 data.x.bNativeSpaceAnalysis = 1;
 
 % Write data to JSON file

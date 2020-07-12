@@ -22,15 +22,16 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, release, docker)
 %              compile SPM (but this can be turned off for speed).
 %
 % This function performs the following steps:
-% 1) Manage ExploreASL and compiler code folders
-% 2) Capture version/date/time
-% 3) File management output folder & starting diary
-% 4) Handle SPM Specific Options
-% 5) Manage compilation paths
-% 6) Run SPM compilation
-% 7) Run ExploreASL compilation
-% 8) Copy .bat file for Windows compilation
-% 9) Save Log-file
+%
+% 1. Manage ExploreASL and compiler code folders
+% 2. Capture version/date/time
+% 3. File management output folder & starting diary
+% 4. Handle SPM Specific Options
+% 5. Manage compilation paths
+% 6. Run SPM compilation
+% 7. Run ExploreASL compilation
+% 8. Copy .bat file for Windows compilation
+% 9. Save Log-file
 %
 % EXAMPLE: ExploreASL_make_standalone('/Path2/Compilation')
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -111,7 +112,11 @@ end
 
 % Different notation for compiled release version
 if release
-    Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_Release']);
+	if docker
+    	Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_Docker']);
+    else
+    	Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_Release']);
+    end
 else
     Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_' MVersion '_' date '_' Time]);
 end
