@@ -1,10 +1,9 @@
-function ExploreASL_io_docker(root, pathDataParFile)
+function ExploreASL_io_docker(root)
 %ExploreASL_docker Function for the docker version of ExploreASL.
 %
 % FORMAT:       ExploreASL_io_docker(root, pathDataParFile);
 %
 % INPUT:        root                - Path to DICOM dataset with BIDS(-like) structure.
-%               pathDataParFile     - Path of the DataParFile within the docker container.
 %
 % OUTPUT:       n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -32,26 +31,43 @@ function ExploreASL_io_docker(root, pathDataParFile)
 %
 %               - ...
 %
-% EXAMPLE:      ExploreASL_io_docker('/opt/incoming/', '/opt/incoming/analysis/DataParFile.json');
+% EXAMPLE:      ExploreASL_io_docker('/opt/incoming/');
+%
+%               ExploreASL_io_docker('M:\SoftwareDevelopment\MATLAB\m.stritt\tmp_data_siemens\incoming');
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
 
 %% Workflow
 
+% Define path to DataParFile
+DataParFile = fullfile(root,'data','DataParFile.json');
+
 % (1) Read in DICOM data and convert the data to the NIFTI/JSON structure
 ExploreASL_Import(ExploreASL_ImportConfig(root),false,true);
 
-
 % (2) Make the structure readable for ExploreASL_Master
 
-% ... WORK IN PROGRESS ...
+% Rename folder
+movefile(fullfile(root,'analysis'),fullfile(root,'data'));
 
-% ... xASL copy, rename etc. ...
+% Generate DataParFile
+fID = fopen(DataParFile,'w');
 
+% Parameters
+data.x.name = "incoming";
+data.x.subject_regexp = "^sub$";
+data.x.Quality = 0;
+data.x.bNativeSpaceAnalysis = 1;
+
+% Write data to JSON file
+JSONstr = jsonencode(data);
+if fID == -1, error('Cannot create JSON file...'); end
+fwrite(fID, JSONstr, 'char');
+fclose(fID);
 
 % (3) Run ExploreASL_Master
-ExploreASL_Master(pathDataParFile, true);
+ExploreASL_Master(DataParFile, true);
 
 
 
