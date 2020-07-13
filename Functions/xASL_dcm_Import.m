@@ -59,8 +59,5 @@ if fID == -1, error('Cannot create JSON file...'); end
 fwrite(fID, JSONstr, 'char');
 fclose(fID);
 
-% Run ExploreASL_Master
-% ExploreASL_Master(DataParFile, true);
-
 
 
