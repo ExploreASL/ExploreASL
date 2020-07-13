@@ -8,9 +8,7 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, bRelease, Function2
 %                     (OPTIONAL, DEFAULT=true)
 %   bRelease        - Set to true for release compilations. Changes the filename.
 %                     DEFAULT=false
-%   Function2Compile - Set to true for docker compilation. Uses a wrapper
-%                     function for the DICOM to BIDS conversion and the
-%                     restructuring of the data.
+%   Function2Compile - path to function that is compiled (OPTIONAL, default='ExploreASL_Master.m')
 %
 % OUTPUT:       Generates a standalone/executable version of ExploreASL.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -76,14 +74,18 @@ if ~exist(OldPath, 'file')
     end
 end
 
-[~, ~, Fext] = fileparts(Function2Compile);
-if ~strcmp(Fext,'.m')
-    warning('The function to compile doesnt seem to be a Matlab function');
-end
-
 CurrDir = fileparts(mfilename('fullpath'));
 ExploreASLPath = fileparts(fileparts(CurrDir)); % assuming to folder layers
 
+if nargin<4 || isempty(Function2Compile)
+    % default function to compile
+    Function2Compile = fullfile(ExploreASLPath,'ExploreASL_Master.m');
+else
+    [~, ~, Fext] = fileparts(Function2Compile);
+    if ~strcmp(Fext,'.m')
+        warning('The function to compile doesnt seem to be a Matlab function');
+    end
+end    
 
 %% 2) Capture version/date/time
 Time = clock;
