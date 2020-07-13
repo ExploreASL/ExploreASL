@@ -33,6 +33,9 @@ function xASL_dcm_Import(root)
 
 %% Workflow
 
+% Initialize ExploreASL
+x = ExploreASL_Initialize('',0);
+
 % Define path to DataParFile
 DataParFile = fullfile(root,'data','DataParFile.json');
 
