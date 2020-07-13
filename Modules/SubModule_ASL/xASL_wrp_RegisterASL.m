@@ -119,13 +119,18 @@ if x.bDCTRegistration
 	x.bRegistrationContrast = 3;
 end
 
+% By default, don't use dummy structural even if the structural image is missing
+if ~isfield(x,'bUseMNIasDummyStructural')
+	x.bUseMNIasDummyStructural = false;
+end
+
 %% B) Manage OtherList
 % Define OtherList for registration
 % Here we mention all possible files that need to be in registration
 % All functions below will remove those that are unexisting, or used in the
 % registration estimation.
 BaseOtherList = {x.P.Path_despiked_ASL4D, x.P.Path_mean_control, x.P.Path_M0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped, x.P.Path_ASL4D_RevPE,...
-	x.P.Path_rPWI,...
+	x.P.Path_rPWI,x.P.Path_mean_PWI_Clipped_ORI,...
     x.P.Path_ASL4D_ORI, fullfile(x.SESSIONDIR, 'B0.nii'), fullfile(x.SESSIONDIR, 'Unwarped.nii'), fullfile(x.SESSIONDIR, 'Field.nii'), fullfile(x.SESSIONDIR, 'TopUp_fieldcoef.nii')};
 
 if ~strcmp(x.P.Path_despiked_ASL4D, x.P.Path_ASL4D)
@@ -204,7 +209,7 @@ StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_O
 if StructuralRawExist && ~StructuralDerivativesExist
     error('Please run structural module first');
 elseif ~StructuralRawExist && ~StructuralDerivativesExist
-    if isfield(x,'bUseMNIasDummyStructural') && x.bUseMNIasDummyStructural
+    if x.bUseMNIasDummyStructural
     
         fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
         IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
@@ -214,8 +219,10 @@ elseif ~StructuralRawExist && ~StructuralDerivativesExist
         % In standard space
         xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
         xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
-        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
-
+		
+		% By default use the GM, WM and T1 from the template
+		xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
+			
         % In native space
         xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_T1});
 
@@ -315,6 +322,7 @@ if x.bAutoACPC
     if TanimotoPerc(end)>=TanimotoPerc(end-1) % if alignment improved or remained same
         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
     else % if alignment got worse
+		TanimotoPerc = TanimotoPerc(1:end-1); % Remove the last Tanimoto number as this has been restored
         xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
     end
 end
@@ -402,7 +410,8 @@ if bRegistrationCBF
                 
                 OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_mean_PWI_Clipped});
                 xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
-                xASL_im_CreatePseudoCBF(x, spatCoVit(end)); % because this scales the mean_PWI_Clipped, this needs to be run after backing up
+                
+				xASL_im_CreatePseudoCBF(x, spatCoVit(end)); % because this scales the mean_PWI_Clipped, this needs to be run after backing up
 				
                 % then register
                 xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
@@ -418,7 +427,9 @@ if bRegistrationCBF
                         % we don't force CBF-pGM registration
                         xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
                         bSkipThis = true; % skip next iteration
-                        x.bAffineRegistration = 0; % skip affine registration and therefore also DCT
+						if iT == 1
+							x.bAffineRegistration = 0; % skip affine registration and therefore also DCT - only when it fails to improve on the first, not on the second
+						end
                         TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
                     end
                 end
@@ -445,22 +456,21 @@ if bRegistrationCBF
             fprintf('%s\n','Performing affine registration');
 			if x.bDCTRegistration
 				if x.bDCTRegistration == 1
-					xASL_im_CreatePseudoCBF(x, spatCoVit(end),1,0);
+					xASL_im_CreatePseudoCBF(x, spatCoVit(end));
+					
 					% Use Affine with DCT registration as well
-					xASL_spm_affine(x.P.Path_PWI, x.P.Path_PseudoCBF, 5, 5, [], 1);
-					xASL_Move(x.P.Path_PWI_sn_mat,x.P.Path_mean_PWI_Clipped_sn_mat,1);
+					xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1);
 				else
 					% Use Affine with DCT registration with PVC to prepare the contrast
 					% Iterate two times to best use the PVC feature
 					for iTDCT = 1:2
-						xASL_im_CreatePseudoCBF(x, spatCoVit(end),1,1);
-						xASL_spm_affine(x.P.Path_PWI, x.P.Path_PseudoCBF, 5, 5, [], 1);
-						xASL_Move(x.P.Path_PWI_sn_mat,x.P.Path_mean_PWI_Clipped_sn_mat,1);
-						xASL_spm_reslice(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped_ORI, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_rPWI);
+						xASL_im_CreatePseudoCBF(x, spatCoVit(end),1);
+						xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1);
 					end
 				end
 			else
 				xASL_im_CreatePseudoCBF(x, spatCoVit(end));
+				
 				% apply also to mean_PWI_clipped and other files
 				xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5, BaseOtherList);
 			end
