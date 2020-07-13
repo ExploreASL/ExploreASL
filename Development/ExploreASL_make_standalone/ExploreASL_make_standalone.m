@@ -79,17 +79,6 @@ end
 CurrDir = fileparts(mfilename('fullpath'));
 ExploreASLPath = fileparts(fileparts(CurrDir)); % assuming to folder layers
 
-% currentPath = mfilename('fullpath');
-% currentPath = strsplit(currentPath,filesep);
-% [~,id] = intersect(currentPath,'ExploreASL','stable');
-% currentPath = string(currentPath(1,1:id));
-% ExploreASLPath = '';
-% for n=1:length(currentPath)
-%     ExploreASLPath = strcat(ExploreASLPath,currentPath(n),filesep);
-% end
-% clear n id currentPath
-
-
 
 %% 2) Capture version/date/time
 Time = clock;
@@ -139,44 +128,6 @@ diary on
 
 
 %% 4) Handle SPM Specific Options
-
-% % First back up the cfg file
-% CfgPath = fullfile(spm('Dir'), 'matlabbatch', 'private', 'cfg_mlbatch_appcfg_master.m');
-% CfgPath2 = fullfile(spm('Dir'), 'matlabbatch', 'private', 'cfg_mlbatch_appcfg_1.m');
-% BackupCfgPath = fullfile(outputPath, 'cfg_mlbatch_appcfg_master.m');
-% BackupCfgPath2 = fullfile(outputPath, 'cfg_mlbatch_appcfg_1.m');
-% if exist(CfgPath, 'file')
-%     xASL_Copy(CfgPath, BackupCfgPath, true);
-% end
-% if exist(CfgPath2, 'file')
-%     xASL_Copy(CfgPath2, BackupCfgPath2, true);
-% end
-
-% Static listing of SPM toolboxes
-% fid = fopen(fullfile(spm('Dir'),'config','spm_cfg_static_tools.m'),'wt');
-% fprintf(fid,'function values = spm_cfg_static_tools\n');
-% fprintf(fid,...
-%     '%% Static listing of all batch configuration files in the SPM toolbox folder\n');
-% % Get the list of toolbox directories
-% tbxdir = fullfile(spm('Dir'),'toolbox');
-% d = [tbxdir; cellstr(spm_select('FPList',tbxdir,'dir'))];
-% ft = {};
-% % Look for '*_cfg_*.m' files in these directories
-% for i=1:numel(d)
-%     fi = spm_select('List',d{i},'.*_cfg_.*\.m$');
-%     if ~isempty(fi) && isempty(regexp(fi,'cfg_(fieldmap|render)')) % remove fieldmap & render, we don't use these, to avoid conflicts
-%         ft = [ft(:); cellstr(fi)];
-%     end
-% end
-% % Create code to insert toolbox config
-% if isempty(ft)
-%     ftstr = '';
-% else
-%     ft = spm_file(ft,'basename');
-%     ftstr = sprintf('%s ', ft{:});
-% end
-% fprintf(fid,'values = {%s};\n', ftstr);
-% fclose(fid);
 
 % Static listing of batch application initialisation files
 cfg_util('dumpcfg');
@@ -232,47 +183,32 @@ end
 
 %% 7) Run ExploreASL compilation
 fprintf('Compiling ExploreASL\n');
-% Check if this is for the docker version
+
+% Check if this is for the docker wrapper or not
 if ~docker
-    mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
-        fullfile(ExploreASLPath,'ExploreASL_Master.m'),...
-        '-d', fullfile(outputPath),...
-        '-o', strcat('ExploreASL_',Version),...
-        '-N', opts{:},...
-        '-a', spm('Dir'),... % For SPM support
-        '-a', AddExploreASLversion,...
-        '-a', fullfile(ExploreASLPath,'Functions'),...
-        '-a', fullfile(ExploreASLPath,'mex'),...
-        '-a', fullfile(ExploreASLPath,'Maps'),...
-        '-a', fullfile(ExploreASLPath,'Modules'),...
-        '-a', fullfile('Modules', 'SubModule_Structural'),...
-        '-a', fullfile('Modules', 'SubModule_ASL'),...
-        '-a', fullfile('Modules', 'SubModule_Population'),...
-        '-a', fullfile('External','isnear'),...
-        '-a', fullfile('External','AtlasesNonCommercial') );
+    masterFile = fullfile(ExploreASLPath,'ExploreASL_Master.m');
 else
-   % Docker version
-   fprintf('Docker version of ExploreASL...');
-   mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
-        fullfile(ExploreASLPath, 'Functions', 'xASL_io_Docker.m'),...
-        '-d', fullfile(outputPath),...
-        '-o', strcat('ExploreASL_',Version),...
-        '-N', opts{:},...
-        '-a', spm('Dir'),... % For SPM support
-        '-a', AddExploreASLversion,...
-        '-a', fullfile(ExploreASLPath,'Functions'),...
-        '-a', fullfile(ExploreASLPath,'mex'),...
-        '-a', fullfile(ExploreASLPath,'Maps'),...
-        '-a', fullfile(ExploreASLPath,'Modules'),...
-        '-a', fullfile(ExploreASLPath,'External','MRIcron'),... % Docker needs DICOM import
-        '-a', fullfile('Modules', 'SubModule_Structural'),...
-        '-a', fullfile('Modules', 'SubModule_ASL'),...
-        '-a', fullfile('Modules', 'SubModule_Population'),...
-        '-a', fullfile('External','isnear'),...
-        '-a', fullfile('External','AtlasesNonCommercial') );
+    masterFile = fullfile(ExploreASLPath, 'Functions', 'xASL_io_Docker.m');
 end
 
-% put opengl('software') in code?
+% Compilation
+mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
+    masterFile,...
+    '-d', fullfile(outputPath),...
+    '-o', strcat('ExploreASL_',Version),...
+    '-N', opts{:},...
+    '-a', spm('Dir'),... % For SPM support
+    '-a', AddExploreASLversion,...
+    '-a', fullfile(ExploreASLPath,'Functions'),...
+    '-a', fullfile(ExploreASLPath,'mex'),...
+    '-a', fullfile(ExploreASLPath,'Maps'),...
+    '-a', fullfile(ExploreASLPath,'Modules'),...
+    '-a', fullfile(ExploreASLPath,'External','MRIcron'),... % Docker needs DICOM import
+    '-a', fullfile('Modules', 'SubModule_Structural'),...
+    '-a', fullfile('Modules', 'SubModule_ASL'),...
+    '-a', fullfile('Modules', 'SubModule_Population'),...
+    '-a', fullfile('External','isnear'),...
+    '-a', fullfile('External','AtlasesNonCommercial') );
 
 %% 8) Copy .bat file for Windows compilation
 if ispc
@@ -287,8 +223,6 @@ end
 % if exist(BackupCfgPath2, 'file')
 %     xASL_Move(BackupCfgPath2, CfgPath2, true);
 % end
-
-
 
 %% 9) Save Log-file
 fprintf('Done\n');
