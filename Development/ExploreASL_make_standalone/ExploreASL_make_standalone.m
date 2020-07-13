@@ -1,4 +1,4 @@
-function ExploreASL_make_standalone(outputPath, bCompileSPM, release, importDCM)
+function ExploreASL_make_standalone(outputPath, bCompileSPM, bRelease, importDCM)
 %ExploreASL_make_standalone This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
 %
@@ -6,7 +6,7 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, release, importDCM)
 %   outputPath      - Folder where the compiled version should be saved (REQUIRED)
 %   bCompileSPM     - Boolean specifying whether SPM is compiled first
 %                     (OPTIONAL, DEFAULT=true)
-%   release         - Set to true for release compilations. Changes the filename.
+%   bRelease        - Set to true for release compilations. Changes the filename.
 %                     DEFAULT=false
 %   importDCM       - Generate a separate standalone import for DICOM2BIDS.
 %                     (OPTIONAL, DEFAULT=false)
@@ -47,7 +47,7 @@ if nargin<2 || isempty(bCompileSPM)
     bCompileSPM = true;
 end
 if nargin<3
-    release = false;
+    bRelease = false;
 end
 if nargin<4
     importDCM = false;
@@ -99,7 +99,7 @@ else
 end
 
 % Different notation for compiled release version
-if release
+if bRelease
     Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_Release']);
 else
     Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_' MVersion '_' date '_' Time]);
@@ -209,7 +209,7 @@ mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.m
 % Compilation DICOM import
 if importDCM
     mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
-    fullfile(ExploreASLPath,'Functions','xASL_io_Docker'),...
+    fullfile(ExploreASLPath,'Functions','xASL_dcm_Import'),...
     '-d', fullfile(outputPathImport),...
     '-o', strcat('ExploreASL_',VersionImport),...
     '-N', opts{:},...

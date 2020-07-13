@@ -1,7 +1,7 @@
-function xASL_io_Docker(root)
-%xASL_io_Docker Function for the docker version of ExploreASL.
+function xASL_dcm_Import(root)
+%xASL_dcm_Import Function for the docker version of ExploreASL.
 %
-% FORMAT:       xASL_io_Docker(root);
+% FORMAT:       xASL_dcm_Import(root);
 %
 % INPUT:        root - Path to DICOM dataset with BIDS(-like) structure.
 %
@@ -24,9 +24,9 @@ function xASL_io_Docker(root)
 %               - /incoming/raw/sub-###/visit-###/FLAIR
 %               - /incoming/raw/sub-###/visit-###/M0
 %
-% EXAMPLE:      xASL_io_Docker('/opt/incoming/');
+% EXAMPLE:      xASL_dcm_Import('/opt/incoming/');
 %
-%               xASL_io_Docker('M:\SoftwareDevelopment\MATLAB\m.stritt\tmp_data_siemens\incoming');
+%               xASL_dcm_Import('M:\SoftwareDevelopment\MATLAB\m.stritt\tmp_data_siemens\incoming');
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
