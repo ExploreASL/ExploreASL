@@ -1,4 +1,4 @@
-function ExploreASL_make_standalone(outputPath, bCompileSPM, bRelease, Function2Compile)
+function ExploreASL_make_standalone(outputPath, bCompileSPM, release, importDCM)
 %ExploreASL_make_standalone This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
 %
@@ -6,9 +6,10 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, bRelease, Function2
 %   outputPath      - Folder where the compiled version should be saved (REQUIRED)
 %   bCompileSPM     - Boolean specifying whether SPM is compiled first
 %                     (OPTIONAL, DEFAULT=true)
-%   bRelease        - Set to true for release compilations. Changes the filename.
+%   release         - Set to true for release compilations. Changes the filename.
 %                     DEFAULT=false
-%   Function2Compile - path to function that is compiled (OPTIONAL, default='ExploreASL_Master.m')
+%   importDCM       - Generate a separate standalone import for DICOM2BIDS.
+%                     (OPTIONAL, DEFAULT=false)
 %
 % OUTPUT:       Generates a standalone/executable version of ExploreASL.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -46,10 +47,10 @@ if nargin<2 || isempty(bCompileSPM)
     bCompileSPM = true;
 end
 if nargin<3
-    bRelease = false;
+    release = false;
 end
 if nargin<4
-    docker = false;
+    importDCM = false;
 end
 
 try
@@ -77,15 +78,6 @@ end
 CurrDir = fileparts(mfilename('fullpath'));
 ExploreASLPath = fileparts(fileparts(CurrDir)); % assuming to folder layers
 
-if nargin<4 || isempty(Function2Compile)
-    % default function to compile
-    Function2Compile = fullfile(ExploreASLPath,'ExploreASL_Master.m');
-else
-    [~, ~, Fext] = fileparts(Function2Compile);
-    if ~strcmp(Fext,'.m')
-        warning('The function to compile doesnt seem to be a Matlab function');
-    end
-end    
 
 %% 2) Capture version/date/time
 Time = clock;
@@ -107,12 +99,21 @@ else
 end
 
 % Different notation for compiled release version
-if bRelease
+if release
     Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_Release']);
 else
     Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_' MVersion '_' date '_' Time]);
 end
 
+% Version name of standalone DICOM import
+if importDCM
+    VersionImport = xASL_adm_CorrectName(['xASL_' xASLVersion '_Import']);
+    % Output folder
+    outputPathImport = fullfile(outputPath,VersionImport);
+    if ~exist(outputPathImport, 'dir')
+        mkdir(outputPathImport);
+    end
+end
 
 %% 3) File management output folder & starting diary
 outputPath = fullfile(outputPath,Version);
@@ -189,7 +190,7 @@ fprintf('Compiling ExploreASL\n');
 
 % Compilation
 mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
-    Function2Compile,...
+    fullfile(ExploreASLPath,'ExploreASL_Master.m'),...
     '-d', fullfile(outputPath),...
     '-o', strcat('ExploreASL_',Version),...
     '-N', opts{:},...
@@ -199,12 +200,25 @@ mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.m
     '-a', fullfile(ExploreASLPath,'mex'),...
     '-a', fullfile(ExploreASLPath,'Maps'),...
     '-a', fullfile(ExploreASLPath,'Modules'),...
-    '-a', fullfile(ExploreASLPath,'External','MRIcron'),... % Docker needs DICOM import
     '-a', fullfile('Modules', 'SubModule_Structural'),...
     '-a', fullfile('Modules', 'SubModule_ASL'),...
     '-a', fullfile('Modules', 'SubModule_Population'),...
     '-a', fullfile('External','isnear'),...
-    '-a', fullfile('External','AtlasesNonCommercial') );
+    '-a', fullfile('External','AtlasesNonCommercial'));
+
+% Compilation DICOM import
+if importDCM
+    mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
+    fullfile(ExploreASLPath,'Functions','xASL_io_Docker'),...
+    '-d', fullfile(outputPathImport),...
+    '-o', strcat('ExploreASL_',VersionImport),...
+    '-N', opts{:},...
+    '-a', AddExploreASLversion,...
+    '-a', fullfile(ExploreASLPath,'Functions'),...
+    '-a', fullfile(ExploreASLPath,'mex'),...
+    '-a', fullfile(ExploreASLPath,'Modules'),...
+    '-a', fullfile(ExploreASLPath,'External','MRIcron')); % DICOM import
+end
 
 %% 8) Copy .bat file for Windows compilation
 if ispc

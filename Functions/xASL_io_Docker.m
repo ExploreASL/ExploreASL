@@ -7,8 +7,7 @@ function xASL_io_Docker(root)
 %
 % OUTPUT:       n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  This function serves as a wrapper for the ExploreASL
-%               workflow.
+% DESCRIPTION:  This function is used for the DICOM import in the docker workflow:
 %
 %               1. A predefined data structure is converted into NIFTI/JSON format.
 %               The function expects an 'incoming' folder, containing a
@@ -17,8 +16,6 @@ function xASL_io_Docker(root)
 %               subfolders: ASL, T1, FLAIR and M0.
 %               2. The output of the ExploreASL_Import function is
 %               restructured to enable the following step.
-%               3. The last step is the execution of ExploreASL_Master on
-%               the generated NIFTI/JSON data structure.
 %
 % Detailed description of the incoming data structure:
 % 
@@ -26,10 +23,6 @@ function xASL_io_Docker(root)
 %               - /incoming/raw/sub-###/visit-###/T1
 %               - /incoming/raw/sub-###/visit-###/FLAIR
 %               - /incoming/raw/sub-###/visit-###/M0
-%
-% Structure we want to have for ExploreASL_Master:
-%
-%               - ...
 %
 % EXAMPLE:      xASL_io_Docker('/opt/incoming/');
 %
@@ -43,10 +36,10 @@ function xASL_io_Docker(root)
 % Define path to DataParFile
 DataParFile = fullfile(root,'data','DataParFile.json');
 
-% (1) Read in DICOM data and convert the data to the NIFTI/JSON structure
+% Read in DICOM data and convert the data to the NIFTI/JSON structure
 ExploreASL_Import(ExploreASL_ImportConfig(root),false,true);
 
-% (2) Make the structure readable for ExploreASL_Master
+% Make the structure readable for ExploreASL_Master
 
 % Rename folder
 movefile(fullfile(root,'analysis'),fullfile(root,'data'));
@@ -66,8 +59,8 @@ if fID == -1, error('Cannot create JSON file...'); end
 fwrite(fID, JSONstr, 'char');
 fclose(fID);
 
-% (3) Run ExploreASL_Master
-ExploreASL_Master(DataParFile, true);
+% Run ExploreASL_Master
+% ExploreASL_Master(DataParFile, true);
 
 
 
