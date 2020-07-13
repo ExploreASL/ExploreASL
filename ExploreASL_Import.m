@@ -531,9 +531,9 @@ for iSubject=1:nSubjects
 					% For ASL or M0, merge multiple files
 					if length(nii_files)>1 
 						if ~isempty(strfind(scan_name,'ASL4D'))
-							nii_files = xASL_adm_MergeNiiFiles(nii_files,'ASL');
+							nii_files = xASL_bids_MergeNifti(nii_files,'ASL');
 						elseif  ~isempty(strfind(scan_name,'M0'))
-							nii_files = xASL_adm_MergeNiiFiles(nii_files,'M0');
+							nii_files = xASL_bids_MergeNifti(nii_files,'M0');
 						end
 					end
 					
