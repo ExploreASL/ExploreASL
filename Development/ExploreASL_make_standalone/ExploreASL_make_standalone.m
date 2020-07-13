@@ -1,4 +1,4 @@
-function ExploreASL_make_standalone(outputPath, bCompileSPM, release, docker)
+function ExploreASL_make_standalone(outputPath, bCompileSPM, bRelease, Function2Compile)
 %ExploreASL_make_standalone This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
 %
@@ -6,9 +6,9 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, release, docker)
 %   outputPath      - Folder where the compiled version should be saved (REQUIRED)
 %   bCompileSPM     - Boolean specifying whether SPM is compiled first
 %                     (OPTIONAL, DEFAULT=true)
-%   release         - Set to true for release compilations. Changes the filename.
+%   bRelease        - Set to true for release compilations. Changes the filename.
 %                     DEFAULT=false
-%   docker          - Set to true for docker compilation. Uses a wrapper
+%   Function2Compile - Set to true for docker compilation. Uses a wrapper
 %                     function for the DICOM to BIDS conversion and the
 %                     restructuring of the data.
 %
@@ -48,7 +48,7 @@ if nargin<2 || isempty(bCompileSPM)
     bCompileSPM = true;
 end
 if nargin<3
-    release = false;
+    bRelease = false;
 end
 if nargin<4
     docker = false;
@@ -76,6 +76,11 @@ if ~exist(OldPath, 'file')
     end
 end
 
+[~, ~, Fext] = fileparts(Function2Compile);
+if ~strcmp(Fext,'.m')
+    warning('The function to compile doesnt seem to be a Matlab function');
+end
+
 CurrDir = fileparts(mfilename('fullpath'));
 ExploreASLPath = fileparts(fileparts(CurrDir)); % assuming to folder layers
 
@@ -100,12 +105,8 @@ else
 end
 
 % Different notation for compiled release version
-if release
-	if docker
-    	Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_Docker']);
-    else
-    	Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_Release']);
-    end
+if bRelease
+    Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_Release']);
 else
     Version = xASL_adm_CorrectName(['xASL_' xASLVersion '_' MVersion '_' date '_' Time]);
 end
@@ -184,16 +185,9 @@ end
 %% 7) Run ExploreASL compilation
 fprintf('Compiling ExploreASL\n');
 
-% Check if this is for the docker wrapper or not
-if ~docker
-    masterFile = fullfile(ExploreASLPath,'ExploreASL_Master.m');
-else
-    masterFile = fullfile(ExploreASLPath, 'Functions', 'xASL_io_Docker.m');
-end
-
 % Compilation
 mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
-    masterFile,...
+    Function2Compile,...
     '-d', fullfile(outputPath),...
     '-o', strcat('ExploreASL_',Version),...
     '-N', opts{:},...
