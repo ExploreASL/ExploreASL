@@ -56,6 +56,10 @@ data.x.subject_regexp = "^sub$";
 data.x.Quality = 1;
 data.x.bNativeSpaceAnalysis = 1;
 
+
+% Add necessary fields here...
+
+
 % Write data to JSON file
 JSONstr = jsonencode(data);
 if fID == -1, error('Cannot create JSON file...'); end
