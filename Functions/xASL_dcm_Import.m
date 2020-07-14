@@ -56,15 +56,27 @@ data.x.subject_regexp = "^sub$";
 data.x.Quality = 1;
 data.x.bNativeSpaceAnalysis = 1;
 
-
-% Add necessary fields here...
-
-
 % Write data to JSON file
 JSONstr = jsonencode(data);
 if fID == -1, error('Cannot create JSON file...'); end
 fwrite(fID, JSONstr, 'char');
 fclose(fID);
+
+% Compare ASL4D and M0 JSON files with list of parameters (from TestDataSet)
+pathASL4D = fullfile(root,'data','sub','ASL_1','ASL4D.json');
+pathM0 = fullfile(root,'data','sub','ASL_1','M0.json');
+xASL_par_Fix(pathASL4D,pathM0);
+
+
+
+
+
+
+
+
+
+
+
 
 
 
