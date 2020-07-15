@@ -37,13 +37,11 @@ else
 	end
 end
 
-
 if length(NiftiPaths)>1
-
 	switch (seqType)
 		case 'M0'
 			% Merges the M0 files
-			pathOut = xASL_adm_MergeNiiFiles_M0Files(NiftiPaths);
+			pathOut = xASL_bids_MergeNifti_M0Files(NiftiPaths);
 			if ~isempty(pathOut)
 				NiftiPaths = {pathOut};
 				fprintf('Corrected dcm2niiX output for\n');
@@ -52,7 +50,7 @@ if length(NiftiPaths)>1
 			
 		case 'ASL'
 			% Merges Siemens ASL file if they have the known pattern of filenames
-			pathOut = xASL_adm_MergeNiiFiles_SiemensASLFiles(NiftiPaths);
+			pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths);
 			if ~isempty(pathOut)
 				NiftiPaths = {pathOut};
 				fprintf('Corrected dcm2niiX output for\n');
@@ -62,7 +60,7 @@ if length(NiftiPaths)>1
 			% Generic merging of ASL4D files for non-Siemens, or Siemens files with an unknown pattern
 			if isempty(pathOut)
 				% If the previous Siemens merging didn't merge them already
-				pathOut = xASL_adm_MergeNiiFiles_AllASLFiles(NiftiPaths);
+				pathOut = xASL_bids_MergeNifti_AllASLFiles(NiftiPaths);
 								
 				if ~isempty(pathOut)
 					NiftiPaths = {pathOut};
@@ -76,7 +74,7 @@ end
 end
 
 %% Generic merging of M0 files
-function pathOut = xASL_adm_MergeNiiFiles_M0Files(NiftiPaths)
+function pathOut = xASL_bids_MergeNifti_M0Files(NiftiPaths)
 
 bCheckConsistency = 1; % So far, no error was found and files can be concatenated
 pathOut = ''; % Newly assigned path of a concatenated file
@@ -130,19 +128,20 @@ end
 % Check if there's no difference in AP-PA direction, if all are the same, then start merging
 if bCheckConsistency
 	[~,indexSortedFile] = sort(listEndNumber);
-	pathOut = xASL_adm_MergeNiiFiles_Merge(NiftiPaths,indexSortedFile,'M0');
+	pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,'M0',0);
 	
 	if ~isempty(pathOut)
-		xASL_adm_MergeNiiFiles_RenameParms(Fpath,'M0');
-		xASL_adm_MergeNiiFiles_Delete(NiftiPaths);
+		xASL_bids_MergeNifti_RenameParms(Fpath,'M0');
+		xASL_bids_MergeNifti_Delete(NiftiPaths);
 	end
 end
 end
 
 %% Merging of Siemens ASL files that have a specific pattern of filenames
-function pathOut = xASL_adm_MergeNiiFiles_SiemensASLFiles(NiftiPaths)
+function pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths)
 		
 bCheckConsistency = 1; % So far, no error was found and files can be concatenated
+bAlternatingControlLabel = 0; % == 1 when two files are given, one file is filled with controls and the other with labels
 pathOut = ''; % Newly assigned path of a concatenated file
 listEndNumber = zeros(length(NiftiPaths),1);
 
@@ -230,8 +229,14 @@ if bCheckConsistency
 				bCheckConsistency = 0;
 			end
 		end
+	elseif checkTimeDim > 2 && length(NiftiPaths) == 2
+		% Exactly two files with longer time dimension is given - we count that one is control and the other label and we merge them
+		% by alternating the volumes from both
+		indexSortedFile = [1 2];
+		bAlternatingControlLabel = 1;
 	else
 		% The Siemens specific scenarios work only with single or two volumes per file
+		% And also with the case that exactly two files are given with more than a single time-dim
 		% All others are skipped and can be merged according to the generic criteria.
 		bCheckConsistency = 0;
 	end
@@ -239,17 +244,17 @@ end
 
 % Correctly identified one of the Siemens scenarios so can merge the files in the indexSortedFile order
 if bCheckConsistency
-	pathOut = xASL_adm_MergeNiiFiles_Merge(NiftiPaths,indexSortedFile,'ASL4D');
+	pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,'ASL4D',bAlternatingControlLabel);
 	
 	if ~isempty(pathOut)
-		xASL_adm_MergeNiiFiles_RenameParms(Fpath,'ASL4D');
-		xASL_adm_MergeNiiFiles_Delete(NiftiPaths);
+		xASL_bids_MergeNifti_RenameParms(Fpath,'ASL4D');
+		xASL_bids_MergeNifti_Delete(NiftiPaths);
 	end
 end
 end
 
 %% Merging of any ASL files
-function pathOut = xASL_adm_MergeNiiFiles_AllASLFiles(NiftiPaths)
+function pathOut = xASL_bids_MergeNifti_AllASLFiles(NiftiPaths)
 % First rename the NIfTI and JSON files to 4 digit format & sort them
 listEndNumber = zeros(length(NiftiPaths),1);
 for iFile=1:length(NiftiPaths)
@@ -260,17 +265,17 @@ for iFile=1:length(NiftiPaths)
 	listEndNumber(iFile) = str2double(Ffile(iStart:iEnd));
 end
 [~,indexSortedFile] = sort(listEndNumber);
-pathOut = xASL_adm_MergeNiiFiles_Merge(NiftiPaths,indexSortedFile,'ASL4D');
+pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,'ASL4D',0);
 
 if ~isempty(pathOut)
-	xASL_adm_MergeNiiFiles_RenameParms(Fpath,'ASL4D');
-	xASL_adm_MergeNiiFiles_Delete(NiftiPaths);
+	xASL_bids_MergeNifti_RenameParms(Fpath,'ASL4D');
+	xASL_bids_MergeNifti_Delete(NiftiPaths);
 end
 end
 
 %% Merges all the NiftiPaths in the order given by indexSortedFile and save to the pathMerged
 % Save also the first JSON to pathMerged.JSON
-function pathOut = xASL_adm_MergeNiiFiles_Merge(NiftiPaths,indexSortedFile,nameMerged)
+function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,nameMerged,bAlternatingControlLabel)
 
 bStatus = 1;
 pathOut = '';
@@ -284,19 +289,43 @@ for iFile=1:length(NiftiPaths)
 		error('Dimensionality incorrect for this ASL NIfTI file');
 	end
 	
-	if iFile==1
-		% Get the size of the first file
-		IM = tempIM;
-		sizeFirst = size(IM);
+	% Compare size of the new file and if similar to the previous than concatenate, otherwise report an error
+	if iFile == 1
+		sizeFirst = size(tempIM);
 		sizeFirst = sizeFirst(1:3);
 	else
-		% Compare size of the new file and if similar to the previous than concatenate, otherwise report an error
 		sizeNew   = size(tempIM);
 		sizeNew   = sizeNew(1:3);
-		if isequal(sizeNew, sizeFirst)
-			IM(:,:,:,end+1:end+size(tempIM,4)) = tempIM;
-		else
+		if ~isequal(sizeNew, sizeFirst)
 			bStatus = 0;
+		end
+	end
+	
+	if bAlternatingControlLabel
+		% Always interlace the two following files
+		% For the first file, create the interleaved first volume
+		if iFile == 1
+			lengthFirst = size(tempIM,4);
+			IM = zeros([sizeFirst,lengthFirst*2]);
+			IM(:,:,:,1:2:end) = tempIM;
+		elseif mod(iFile,2)
+			% For odd files, create a new interleaved addition
+			lengthFirst = size(tempIM,4);
+			IM(:,:,:,end+1:end+2*lengthFirst) = zeros([sizeFirst,lengthFirst*2]);
+			IM(:,:,:,end+2:2:end+2*lengthFirst) = tempIM;
+		else
+			% For even files - fill in the interleave spaces
+			IM(:,:,:,end-2*lengthFirst+2:2:end) = tempIM;
+		end
+	else
+		% Simply merge files in the order in which they come
+		if iFile==1
+			% Get the size of the first file
+			IM = tempIM;
+		else
+			if bStatus
+				IM(:,:,:,end+1:end+size(tempIM,4)) = tempIM;
+			end
 		end
 	end
 	
@@ -329,7 +358,7 @@ end
 
 %%
 % Delete all the NiftiPaths and their associated JSONs
-function xASL_adm_MergeNiiFiles_Delete(NiftiPaths)
+function xASL_bids_MergeNifti_Delete(NiftiPaths)
 
 for iFile=1:length(NiftiPaths)
 	[Fpath, Ffile, ~] = xASL_fileparts(NiftiPaths{iFile});
@@ -346,7 +375,7 @@ end
 
 %%
 % Find file called *_parms.m in the given directory and shorten to the given name
-function xASL_adm_MergeNiiFiles_RenameParms(Fpath,Fname)
+function xASL_bids_MergeNifti_RenameParms(Fpath,Fname)
 
 FileList = xASL_adm_GetFileList(Fpath,'^*_parms.mat$','List',[],false);
 if ~isempty(FileList)
