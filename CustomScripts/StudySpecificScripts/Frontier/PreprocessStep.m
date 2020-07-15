@@ -2,11 +2,11 @@
 % First import data with ImportStep
 % Then run the normal xASL analysis
 % Then run the preprocess step to do the additional resampling and co-registration - something to be later integrated directly in xASL
-%ExploreASL_Master('/pet/projekte/asl/data/FRONTIER/analysis/DataParFrontier.m');
+%ExploreASL_Master('/pet/projekte/asl/data/FRONTIER/analysis/DataParFrontier.json');
 ExploreASL_Master('',0);
 %% Initialize the paths
 rawDir    = '/pet/projekte/asl/data/FRONTIER';
-PETresol  = [7 7 7];
+PETresol  = [5.5 5.5 5.5];
 patientNameList = xASL_adm_GetFileList(fullfile(rawDir,'analysis'), '^P\d{2}$', 'List', [], 1);
 %patientNameList = xASL_adm_GetFileList(fullfile(rawDir,'analysis'), '^P05$', 'List', [], 1);
 x.Quality = 1;
