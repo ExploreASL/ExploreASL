@@ -30,7 +30,7 @@ if nargin > 2
 	error('Maximum number of input parameters is 2');
 end
 
-pathOut = NaN;
+pathOut = '';
 
 % Check if the extension pathIn extension is .nii, .gz - otherwise gives an error
 [pathstr, name0, ext0] = fileparts(pathIn);
@@ -47,11 +47,9 @@ end
 % Gets the correct paths for the NII and NII.GZ files
 if isGZ
 	pathNII = fullfile(pathstr,name0);
-	nameNII = name0;
 	pathGZ  = pathIn;
 else
 	pathNII = pathIn;
-	nameNII = [name0 ext0];
 	pathGZ  = [pathIn '.gz'];
 end
 
@@ -93,7 +91,7 @@ if ~ispc
     end
 else % pc, use matlab's JVM
     gzip(pathNII);
-    delee(pathNII);
+    delete(pathNII);
     pathOut = pathGZ;
 end
 
