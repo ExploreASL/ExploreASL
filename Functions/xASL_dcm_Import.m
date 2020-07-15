@@ -53,7 +53,6 @@ fID = fopen(DataParFile,'w');
 % Parameters
 data.x.name = "incoming";
 data.x.subject_regexp = "^sub$";
-data.x.SESSIONS = "{'ASL_1'}";
 data.x.Quality = 1;
 data.x.bNativeSpaceAnalysis = 1;
 data.x.DELETETEMP = 1;
