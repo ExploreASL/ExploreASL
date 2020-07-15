@@ -67,8 +67,7 @@ fclose(fID);
 
 % Compare ASL4D and M0 JSON files with list of parameters (from TestDataSet)
 pathASL4D = fullfile(root,'data','sub','ASL_1','ASL4D.json');
-pathM0 = fullfile(root,'data','sub','ASL_1','M0.json');
-xASL_par_Fix(DataParFile,pathASL4D,pathM0);
+xASL_par_Fix(DataParFile,pathASL4D);
 
 
 

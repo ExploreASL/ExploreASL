@@ -1,11 +1,10 @@
-function xASL_par_Fix(DataParFile,pathASL4D,pathM0)
+function xASL_par_Fix(DataParFile,pathASL4D)
 %xASL_par_Fix Script which tries to handle some missing parameters.
 %
 % FORMAT:       xASL_par_Fix(pathASL4D,pathM0);
 %
 % INPUT:        DataParFile - Path to DataParFile
 %               pathASL4D - Path to ASL4D JSON file
-%               pathM0 - Path to M0 JSON file
 %
 % OUTPUT:       n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -15,7 +14,7 @@ function xASL_par_Fix(DataParFile,pathASL4D,pathM0)
 %               Right now only the Q field is added and the LabelingType
 %               PCASL is set.
 %
-% EXAMPLE:      xASL_par_Fix('.../ASL4D.json','.../M0.json');
+% EXAMPLE:      xASL_par_Fix('.../DataParFile.json','.../ASL4D.json');
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
@@ -25,71 +24,62 @@ fprintf('Check parameters...\n');
 
 % Checkout the ExploreASL/DataParFile.m for detailed explanations
                 
-%% Fix ASL and M= JSON files
-for i=1:2
-    if i==1, path=pathASL4D; end
-    if i==2, path=pathM0;    end
-    
-    try
-        if xASL_exist(path,'file')
-            % Read JSON file
-            val = jsondecode(fileread(path));
-
-            % Add missing fields if they are not defined
-            if ~isfield(val,'Vendor'),              val.Vendor = val.Manufacturer;  end
-            if ~isfield(val,'Q'),                   val.Q = struct;                 end
-
-            % Get Manufacturer
-            if strcmp(val.Manufacturer,'Siemens')
-                if ~isfield(val.Q,'LabelingType'),      val.Q.LabelingType = "PCASL";       end
-                if ~isfield(val.Q,'BackGrSupprPulses'), val.Q.BackGrSupprPulses = 5;        end
-                if ~isfield(val.Q,'LabelingDuration'),  val.Q.LabelingDuration = 1800;      end
-                if ~isfield(val.Q,'Initial_PLD'),       val.Q.Initial_PLD = 2000;           end
-            elseif strcmp(val.Vendor,'Philips')
-                if ~isfield(val.Q,'LabelingType'),      val.Q.LabelingType = "PCASL";       end
-                if ~isfield(val.Q,'BackGrSupprPulses'), val.Q.BackGrSupprPulses = 2;        end
-                if ~isfield(val.Q,'LabelingDuration'),  val.Q.LabelingDuration = 1800;      end
-                if ~isfield(val.Q,'Initial_PLD'),       val.Q.Initial_PLD = 2000;           end
-            elseif strcmp(val.Vendor,'GE')
-                if ~isfield(val.Q,'LabelingType'),      val.Q.LabelingType = "PCASL";       end
-                if ~isfield(val.Q,'BackGrSupprPulses'), val.Q.BackGrSupprPulses = 5;        end
-                if ~isfield(val.Q,'LabelingDuration'),  val.Q.LabelingDuration = 2025;      end
-                if ~isfield(val.Q,'Initial_PLD'),       val.Q.Initial_PLD = 1450;           end
-            end
-
-            % SliceReadoutTime only necessary for 2D datasets
-            if isfield(val,'MRAcquisitionType')
-                if strcmp(val.MRAcquisitionType,"2D")
-                    if ~isfield(val.Q,'SliceReadoutTime'),  val.Q.SliceReadoutTime = 40;    end
-                end
-            end
+%% Get vendor
+try
+    % Read JSON file
+    if xASL_exist(pathASL4D,'file')
+        val = jsondecode(fileread(pathASL4D));
+        % Get vendor
+        if ~isfield(val,'Vendor')
+            Vendor = val.Manufacturer;
         end
-
-        % Save modified JSON file
-        txt = jsonencode(val);
-        fID = fopen(path,'w');
-        fwrite(fID, txt, 'char');
-        fclose(fID);
-    catch
-       fprintf('Something went wrong trying to fix the JSON file...\n'); 
+        % SliceReadoutTime only necessary for 2D datasets -> Get AcquisitionType
+        if isfield(val,'MRAcquisitionType')
+            Acquisition = val.MRAcquisitionType;
+        end
     end
+catch
+    fprintf('Something went wrong...\n');
 end
+
 
 %% Fix DataParFile
 
 % Open DataParFile
 data = jsondecode(fileread(DataParFile));
 
-switch val.Manufacturer
+% Add Q field
+if ~isfield(data.x,'Q'), data.x.Q = struct; end
+
+switch Vendor
     case 'Siemens'
+        % Define temporarily static parameters
         data.x.M0 = 'separate_scan';
         data.x.Sequence = '3D_GRASE';
+        if ~isfield(data.x.Q,'LabelingType'),      data.x.Q.LabelingType = "PCASL";       end
+        if ~isfield(data.x.Q,'BackGrSupprPulses'), data.x.Q.BackGrSupprPulses = 5;        end
+        if ~isfield(data.x.Q,'LabelingDuration'),  data.x.Q.LabelingDuration = 1800;      end
+        if ~isfield(data.x.Q,'Initial_PLD'),       data.x.Q.Initial_PLD = 2000;           end
     case 'Philips'
+        % Define temporarily static parameters
         data.x.M0 = 'separate_scan';
         data.x.Sequence = '2D_EPI';
+        if ~isfield(data.x.Q,'LabelingType'),      data.x.Q.LabelingType = "PCASL";       end
+        if ~isfield(data.x.Q,'BackGrSupprPulses'), data.x.Q.BackGrSupprPulses = 2;        end
+        if ~isfield(data.x.Q,'LabelingDuration'),  data.x.Q.LabelingDuration = 1800;      end
+        if ~isfield(data.x.Q,'Initial_PLD'),       data.x.Q.Initial_PLD = 2000;           end
     case 'GE'
+        % Define temporarily static parameters
         data.x.M0 = 'UseControlAsM0';
         data.x.Sequence = '3D_spiral';
+        if ~isfield(data.x.Q,'LabelingType'),      data.x.Q.LabelingType = "PCASL";       end
+        if ~isfield(data.x.Q,'BackGrSupprPulses'), data.x.Q.BackGrSupprPulses = 5;        end
+        if ~isfield(data.x.Q,'LabelingDuration'),  data.x.Q.LabelingDuration = 2025;      end
+        if ~isfield(data.x.Q,'Initial_PLD'),       data.x.Q.Initial_PLD = 1450;           end
+end
+
+if strcmp(Acquisition,"2D")
+    if ~isfield(data.x.Q,'SliceReadoutTime'),  data.x.Q.SliceReadoutTime = 40; end
 end
 
 % Save modified JSON file
