@@ -1,9 +1,10 @@
-function xASL_par_Fix(pathASL4D,pathM0)
+function xASL_par_Fix(DataParFile,pathASL4D,pathM0)
 %xASL_par_Fix Script which tries to handle some missing parameters.
 %
 % FORMAT:       xASL_par_Fix(pathASL4D,pathM0);
 %
-% INPUT:        pathASL4D - Path to ASL4D JSON file
+% INPUT:        DataParFile - Path to DataParFile
+%               pathASL4D - Path to ASL4D JSON file
 %               pathM0 - Path to M0 JSON file
 %
 % OUTPUT:       n/a
@@ -22,27 +23,9 @@ function xASL_par_Fix(pathASL4D,pathM0)
 %% Parameters
 fprintf('Check parameters...\n');
 
-% % Parameters (from TestDataSet)
-% parametersASL4D = [ "Modality","MagneticFieldStrength","ImagingFrequency","Manufacturer","ManufacturersModelName","SoftwareVersions",...
-%                     "MRAcquisitionType","ScanningSequence","SequenceVariant","ScanOptions","ImageType","SeriesNumber","AcquisitionTime",...
-%                     "AcquisitionNumber","SliceThickness","SpacingBetweenSlices","SAR","EchoTime","RepetitionTime","FlipAngle",...
-%                     "CoilString","PartialFourier","PercentPhaseFOV","EchoTrainLength","PhaseEncodingSteps","AcquisitionMatrixPE",...
-%                     "ReconMatrixPE","PixelBandwidth","PhaseEncodingAxis","ImageOrientationPatientDICOM","InPlanePhaseEncodingDirectionDICOM",...
-%                     "ConversionSoftware","ConversionSoftwareVersion","M0","readout_dim","Vendor","bReproTesting",...
-%                     "Q",...
-%                     "Q.BackGrSupprPulses","Q.LabelingType","Q.Initial_PLD","Q.LabelingDuration","Q.SliceReadoutTime"]';
-% 
-% % Parameters (from TestDataSet)
-% parametersM0 = [    "Modality","MagneticFieldStrength","ImagingFrequency","Manufacturer","ManufacturersModelName","SoftwareVersions",...
-%                     "MRAcquisitionType","ScanningSequence","SequenceVariant","ScanOptions","AcquisitionTime",...
-%                     "SliceThickness","SpacingBetweenSlices","SAR","EchoTime","RepetitionTime","FlipAngle","CoilString",...
-%                     "PartialFourier","PercentPhaseFOV","EchoTrainLength","PhaseEncodingSteps","AcquisitionMatrixPE",...
-%                     "ReconMatrixPE","PixelBandwidth","PhaseEncodingAxis","ImageOrientationPatientDICOM","InPlanePhaseEncodingDirectionDICOM",...
-%                     "ConversionSoftware","ConversionSoftwareVersion","M0","readout_dim","Vendor","bReproTesting",...
-%                     "Q",...
-%                     "Q.BackGrSupprPulses","Q.LabelingType","Q.Initial_PLD","Q.LabelingDuration","Q.SliceReadoutTime"]';
+% Checkout the ExploreASL/DataParFile.m for detailed explanations
                 
-%% Fix ASL JSON file
+%% Fix ASL and M= JSON files
 for i=1:2
     if i==1, path=pathASL4D; end
     if i==2, path=pathM0;    end
@@ -92,6 +75,28 @@ for i=1:2
     end
 end
 
+%% Fix DataParFile
+
+% Open DataParFile
+data = jsondecode(fileread(DataParFile));
+
+switch val.Manufacturer
+    case 'Siemens'
+        data.x.M0 = 'separate_scan';
+        data.x.Sequence = '3D_GRASE';
+    case 'Philips'
+        data.x.M0 = 'separate_scan';
+        data.x.Sequence = '2D_EPI';
+    case 'GE'
+        data.x.M0 = 'UseControlAsM0';
+        data.x.Sequence = '3D_spiral';
+end
+
+% Save modified JSON file
+txt = jsonencode(data);
+fID = fopen(DataParFile,'w');
+fwrite(fID, txt, 'char');
+fclose(fID);
 
 
 

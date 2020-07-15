@@ -53,8 +53,11 @@ fID = fopen(DataParFile,'w');
 % Parameters
 data.x.name = "incoming";
 data.x.subject_regexp = "^sub$";
+data.x.SESSIONS = "{'ASL_1'}";
 data.x.Quality = 1;
 data.x.bNativeSpaceAnalysis = 1;
+data.x.DELETETEMP = 1;
+data.x.readout_dim = "2D";
 
 % Write data to JSON file
 JSONstr = jsonencode(data);
@@ -65,7 +68,7 @@ fclose(fID);
 % Compare ASL4D and M0 JSON files with list of parameters (from TestDataSet)
 pathASL4D = fullfile(root,'data','sub','ASL_1','ASL4D.json');
 pathM0 = fullfile(root,'data','sub','ASL_1','M0.json');
-xASL_par_Fix(pathASL4D,pathM0);
+xASL_par_Fix(DataParFile,pathASL4D,pathM0);
 
 
 
