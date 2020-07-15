@@ -11,7 +11,7 @@ function pathOut = xASL_adm_GzipNifti(pathIn, bOverwrite)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Take the input file, zips it, overwriting any existing zipped file and return the path of the zipped file.
 %
-% EXAMPLE: pathOut = xASL_adm_UnzipNifti('test.nii',1)
+% EXAMPLE: pathOut = xASL_adm_GzipNifti('test.nii',1)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
@@ -23,11 +23,7 @@ function pathOut = xASL_adm_GzipNifti(pathIn, bOverwrite)
 
 % Check for the optional parameter overwrite
 if nargin < 2 || isempty(bOverwrite)
-	bOverwrite = 1;
-end
-
-if nargin > 2
-	error('Maximum number of input parameters is 2');
+    bOverwrite = 1;
 end
 
 pathOut = '';
@@ -44,9 +40,9 @@ switch (ext0)
 		error(['Handles only .nii and .nii.gz files: ' pathIn]);
 end
 
-% Gets the correct paths for the NII and NII.GZ files
+% Get the correct paths for the NII and NII.GZ files
 if isGZ
-	pathNII = fullfile(pathstr,name0);
+	pathNII = fullfile(pathstr, [name0 '.nii']);
 	pathGZ  = pathIn;
 else
 	pathNII = pathIn;
@@ -54,11 +50,11 @@ else
 end
 
 % Checks that none of those is a directory
-if exist(pathNII,'dir')
+if exist(pathNII, 'dir')
 	error(['Nifti file is a directory: ' pathNII]);
 end
 
-if exist(pathGZ,'dir')
+if exist(pathGZ, 'dir')
 	error(['GZ file is a directory: ' pathGZ]);
 end
 
@@ -81,7 +77,7 @@ end
 %% ------------------------------------------------------
 %% 2. Zip the NIfTI
 if ~ispc
-    [result1, result2] = system(['gzip -f ' pathNII]); % use system unzipping, is faster & doesn't need JVM
+    [result1, result2] = system(['gzip -1 -f ' pathNII]); % use system unzipping, is faster & doesn't need JVM
 
     if result1~=0
         warning('Couldnt gzip NIfTI with CLI');
