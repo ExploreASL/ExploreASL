@@ -42,7 +42,7 @@ end
 
 % Get the correct paths for the NII and NII.GZ files
 if isGZ
-	pathNII = fullfile(pathstr, [name0 '.nii']);
+	pathNII = fullfile(pathstr,name0);
 	pathGZ  = pathIn;
 else
 	pathNII = pathIn;
