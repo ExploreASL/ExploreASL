@@ -174,7 +174,7 @@ for iFile=1:length(NiftiPaths)
 	end
 	
 	% Get the size of the 4th dimension
-    dimTime = size(xASL_io_Nifti2Im(NiftiPaths{iFile}));
+    dimTime = size(xASL_io_Nifti2Im(NiftiPaths{iFile}),4);
 	
 	% Compare the PEAxis and check that it is the same for all of the M0-files
 	if iFile == 1
