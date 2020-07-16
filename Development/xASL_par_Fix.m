@@ -54,7 +54,7 @@ if ~isfield(data.x,'Q'), data.x.Q = struct; end
 switch Vendor
     case 'Siemens'
         % Define temporarily static parameters
-        data.x.M0 = 'separate_scan';
+        data.x.M0 = 'UseControlAsM0'; % Should actually be: data.x.M0 = 'separate_scan'; % but separate M0 does not work on mTRIAL right now
         data.x.Sequence = '3D_GRASE';
         if ~isfield(data.x.Q,'LabelingType'),      data.x.Q.LabelingType = "PCASL";       end
         if ~isfield(data.x.Q,'BackGrSupprPulses'), data.x.Q.BackGrSupprPulses = 5;        end
@@ -62,7 +62,7 @@ switch Vendor
         if ~isfield(data.x.Q,'Initial_PLD'),       data.x.Q.Initial_PLD = 2000;           end
     case 'Philips'
         % Define temporarily static parameters
-        data.x.M0 = 'separate_scan';
+        data.x.M0 = 'UseControlAsM0'; % Should actually be: data.x.M0 = 'separate_scan'; % but separate M0 does not work on mTRIAL right now
         data.x.Sequence = '2D_EPI';
         if ~isfield(data.x.Q,'LabelingType'),      data.x.Q.LabelingType = "PCASL";       end
         if ~isfield(data.x.Q,'BackGrSupprPulses'), data.x.Q.BackGrSupprPulses = 2;        end
