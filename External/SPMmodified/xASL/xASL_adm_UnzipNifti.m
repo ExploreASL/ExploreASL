@@ -118,7 +118,7 @@ end
 bDelete = true;
 try
     if ~ispc
-        [result1, result2] = system(['gunzip -f ' pathGZ]); % use system unzipping, is faster & doesn't need JVM
+        [result1, result2] = system(['gunzip -f ' xASL_adm_UnixPath(pathGZ)]); % use system unzipping, is faster & doesn't need JVM
         extracted{1} = pathNII;
         if result1~=0
             warning('Couldnt unzip NIfTI with CLI');
