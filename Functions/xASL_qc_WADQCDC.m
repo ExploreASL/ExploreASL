@@ -120,9 +120,9 @@ for iScanType=1:length(ScanTypes)
     if RunPython
         fprintf('Incorporating QC results into dummy dicom...\n');
         cd(x.D.ROOT);
-        system(['chmod +x ' QCDC_Path]);
-        system(['chmod +x ' QCDC_sh1]);
-        system(['chmod +x ' QCDC_sh2]);
+        system(['chmod +x ' xASL_adm_UnixPath(QCDC_Path)]);
+        system(['chmod +x ' xASL_adm_UnixPath(QCDC_sh1)]);
+        system(['chmod +x ' xASL_adm_UnixPath(QCDC_sh2)]);
         result = system([PythonPath ' ' xASL_adm_UnixPath(QCDC_Path) ' ' xASL_adm_UnixPath(WAD_Path) ' ' xASL_adm_UnixPath(x.D.ROOT)]);
 
         if result~=0
@@ -147,7 +147,7 @@ for iScanType=1:length(ScanTypes)
         %% f) Try sending the DICOM to WAD-QC server
         if IsSuccess
             cd(x.D.ROOT);
-            [results, results2] = system(['storescu wad-qc 11112 ' NewPath]);
+            [results, results2] = system(['storescu wad-qc 11112 ' xASL_adm_UnixPath(NewPath)]);
             if results==0 && isempty(results2)
                 fprintf('DICOM sent to WADQC server\n');
             else

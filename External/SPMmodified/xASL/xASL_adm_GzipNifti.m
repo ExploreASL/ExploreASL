@@ -77,7 +77,7 @@ end
 %% ------------------------------------------------------
 %% 2. Zip the NIfTI
 if ~ispc
-    [result1, result2] = system(['gzip -1 -f ' pathNII]); % use system unzipping, is faster & doesn't need JVM
+    [result1, result2] = system(['gzip -1 -f ' xASL_adm_UnixPath(pathNII)]); % use system unzipping, is faster & doesn't need JVM
 
     if result1~=0
         warning('Couldnt gzip NIfTI with CLI');
