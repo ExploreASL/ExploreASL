@@ -5,7 +5,10 @@ function [x] = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers
 %
 % INPUT:
 %   DataParPath - path to data parameter file (OPTIONAL, required when ProcessData=true, will then be prompted if omitted)
-%   ProcessData - true if running pipeline on data, false if only initializing ExploreASL (e.g. path management etc, REQUIRED, will be prompted if omitted)
+%   ProcessData - 0 = only initialize ExploreASL functionality (e.g. path management etc, REQUIRED, will be prompted if omitted)
+%               - 1 = initialize ExploreASL functionality, load data & start processing pipeline, 
+%               - 2 = initialize ExploreASL functionality, load data but no processing
+%               - (OPTIONAL, default=prompt the user)
 %   iWorker     - allows parallelization when called externally. iWorker defines which of the parallel ExploreASL calls we are (OPTIONAL, DEFAULT=1)
 %   nWorkers    - allows parallelization when called externally. nWorkers defines how many ExploreASL calls are made in parallel (OPTIONAL, DEFAULT=1)
 %
@@ -71,10 +74,10 @@ end
 x.S = struct;
 
 if nargin>1 && ~isempty(ProcessData)
-    if ProcessData==1 || ProcessData==0
-        x.ProcessData = ProcessData;
+    if ProcessData==0 || ProcessData==1  || ProcessData==2
+        x.ProcessData = ProcessData; % skip GUI
     else
-        warning('argin "ProcessData" should be 1 or 0 (true or false)');
+        warning('Invalid input argument "ProcessData", should be 0, 1, or 2, resetting');
     end
 end
 
@@ -88,7 +91,7 @@ end
 
 if ~isfield(x,'ProcessData')
 
-    x.InitChoice = 'Process dataset';
+    InitChoice = 'Process dataset';
     if ~exist('DataParPath','var')
         ParFileExists = false;
     elseif isempty(DataParPath)
@@ -99,40 +102,45 @@ if ~isfield(x,'ProcessData')
 
     if ~ParFileExists
         if bUseGUI
-            x.InitChoice = questdlg('Would you like to load a dataset or only initialize ExploreASL (set paths etc)?', ...
-                'Initialize ExploreASL', 'Process dataset','Only initialize ExploreASL','Cancel','Cancel');
+            InitChoice = questdlg('Would you like to initialize ExploreASL functionality, load a dataset and/or start the processing pipeline?', ...
+                'Start up ExploreASL', 'Process dataset', 'Only initialize ExploreASL functionality', 'Load dataset only', 'Only initialize ExploreASL functionality');
         else
             fprintf('Would you like to load a dataset or only initialize ExploreASL (set paths etc)?\n');
-            cliChoice = input('Please press [1] for "Process dataset", [2] for "Only initialize ExploreASL", [3] to cancel: ');
+            cliChoice = input('Please press [1] for "Process dataset", [2] for "Only initialize ExploreASL functionality", [4] to cancel: ');
 
             switch cliChoice
                 case 1
-                    x.InitChoice = 'Process dataset';
+                    InitChoice = 'Process dataset';
                 case 2
-                    x.InitChoice = 'Only initialize ExploreASL';
+                    InitChoice = 'Only initialize ExploreASL functionality';
                 case 3
-                    x.InitChoice = 'Cancel';
+                    InitChoice = 'Load dataset only';
+                case 4
+                    InitChoice = 'Cancel';
                 otherwise
-                    fprintf('Wrong choice, please choose 1 2 or 3: ');
+                    fprintf('Wrong choice, please choose 1 2, 3, or 4: ');
                     return;
             end
         end
     end
     % Handle response
-    switch x.InitChoice
+    switch InitChoice
         case 'Process dataset'
-            fprintf('%s\n','Processing & analyzing dataset')
-            x.ProcessData = true;
-        case 'Only initialize ExploreASL'
-            fprintf('%s\n','Only initializing ExploreASL (set paths etc)');
-            x.ProcessData = false;
+            fprintf('%s\n','Loading & processing dataset')
+            x.ProcessData = 1;
+        case 'Only initialize ExploreASL functionality'
+            x.ProcessData = 0;
+        case 'Load dataset only'
+            fprintf('%s\n','Initializing ExploreASL functionality & loading dataset');
+            x.ProcessData = 2;
         case 'Cancel'
             fprintf('%s\n','Exiting ExploreASL, please ignore the errors');
-            x.ProcessData = false;
+            x.ProcessData = 0;
             error('Canceled ExploreASL');
         otherwise
-            x.ProcessData = false;
-            error('Something wrong, please retry');
+            x.ProcessData = 0;
+            fprintf('Unknown option, exiting\n');
+            return;
     end
 end
 
@@ -217,7 +225,7 @@ if ~isdeployed
 end
 
 
-if x.ProcessData
+if x.ProcessData>0
     x = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bUseGUI);
 end
 
@@ -261,9 +269,9 @@ fprintf('\n\n');
 
 
 %% Data-specific initialization
-if ~x.ProcessData
-    fprintf('%s\n','ExploreASL initialized <--');
-else
+fprintf('%s\n','ExploreASL initialized <--');
+
+if x.ProcessData>0
     if isempty(x.D.ROOT)
         error('No root/analysis/study folder defined');
     end
