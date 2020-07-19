@@ -47,6 +47,32 @@ ExploreASL_Import(ExploreASL_ImportConfig(root),false,true);
 % Rename folder
 movefile(fullfile(root,'analysis'),fullfile(root,'data'));
 
+% Create log file
+diary(fullfile(root,'data','xASL_module_Import.log'))
+try
+    % Open file
+    fIDcsv = fopen(fullfile(root,'data','import_summary.csv'),'r');
+    % Get individual text lines
+    while ~feof(fIDcsv)
+        tline = fgetl(fIDcsv);
+        lineElements = strsplit(tline,',');
+        % Get subjects
+        if strcmp('"sub"',char(lineElements(1)))
+            fprintf('Subject:\t%s\n', lineElements{2})
+            fprintf('Visit:\t\t%s\n', lineElements{4})
+            fprintf('NIFTI:\t\t%s\n', lineElements{5})
+        end
+        % disp(tline)
+    end
+    % Close file
+    fclose(fIDcsv);
+
+catch
+    
+end
+% Turn off diary
+diary OFF
+
 % Generate DataParFile
 fID = fopen(DataParFile,'w');
 
