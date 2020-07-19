@@ -44,6 +44,15 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 % is similar between different subjects. Other parametric maps can be
 % decommented (now commented out for speed).
 %
+% Any new addition to participants.tsv will be recognized and loaded, for
+% the generation of new parametric maps for groups specifically
+% (needs to be set in input argument bCompute4Sets)
+%
+% If a set only includes a combination of the following SetOptions:
+% left, right, l, r, n/a, NaN (irrespective of capitals)
+% each image with option right/r, will be flipped in the left-right
+% direction, and left/right will not be treated as separate groups.
+%
 % EXAMPLE: xASL_wrp_CreatePopulationTemplates(x);
 % EXAMPLE for specific scantypes:
 %          xASL_wrp_CreatePopulationTemplates(x, [], [], {{'qCBF'} {'CBF'} 1});
