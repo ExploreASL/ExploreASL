@@ -74,7 +74,7 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
 
     x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
     
-    if ~x.ProcessData
+    if x.ProcessData==0 || x.ProcessData==2
         return; % skip processing
     elseif ~isdeployed && ~SkipPause % if this exists, we skip the break here
         fprintf('%s\n','Press any key to start processing & analyzing');
