@@ -89,6 +89,7 @@ x.nTotalSubjects = length(x.TotalSubjects);
 
 % ------------------------------------------------------------------------------------------------
 %% 2) Create dummy defaults (exclusion list, ASL sessions)
+fprintf('Automatically defining sessions...\n');
 if ~isfield(x,'exclusion') % default no exclusions
     x.exclusion = {''};
 end
@@ -228,7 +229,7 @@ if x.nSessions>1  % if there are sessions (more than 1 session), then sessions=1
         x.S.SetsOptions{1} = x.session.options; % with session options (e.g. morning, evening 2nd morning)
     else
         for iS=1:x.nSessions
-            x.S.SetsOptions{1}{iS} = ['Session_' num2str(iS)];
+            x.S.SetsOptions{1}{iS} = ['ASL_' num2str(iS)];
         end
     end        
     
