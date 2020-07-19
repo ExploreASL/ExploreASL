@@ -86,11 +86,77 @@ function [x] = xASL_init_LoadMetadata(x)
         return;
     end
 
+    
+    
     x = xASL_bids_LoadParticipantTSV(x);
+    
+    if isfield(x,'S') && isfield(x.S, 'SetsName')
+        SetsInParticipantTSV = x.S.SetsName;
+    else
+        SetsInParticipantTSV = '';
+        fprintf('No participants.tsv file detected\n');
+    end
+    
     x = xASL_init_LoadMat(x); % legacy
+    
     %% 
-
+    %% -----------------------------------------------------------------------------------------------
+    %% Add stats in participants.tsv
+    MatsDetected = ~isempty(xASL_adm_GetFileList(x.D.ROOT, '.*\.mat$', 'FPList', [0 Inf]));
+    bCreateParticipantsTsv = 0;
+    
+    if MatsDetected
+        warning('Legacy .mat-files detected in analysis rootfolder');
+        if ~isfield(x, 'S') || ~isfield(x.S, 'SetsName')
+            fprintf('But not added as sets\n');
+            fprintf('Were these .mat files without participant information?\n');
+            fprintf('Any participant information inside a .mat-file should be in a variable with identical name as the .mat filename\n');
+        elseif isempty(SetsInParticipantTSV)
+            fprintf('Creating participants.tsv file from them\n');
+            fprintf('Consider deleting the mat-files and keep the participants.tsv file only\n');
+            bCreateParticipantsTsv = 1;
+        elseif isequal(SetsInParticipantTSV, x.S.SetsName)
+            warning('Both participants.tsv & legacy .mat-files existed, with the same parameters');
+            fprintf('Please merge these manually, and/or delete any old .mat-files\n');
+        else
+            warning('Both participants.tsv & legacy .mat-files existed, trying to merge them');
+            fprintf('Consider deleting the mat-files and keep the participants.tsv file only\n');
+            bCreateParticipantsTsv = 1;
+        end
+    end     
         
+    if bCreateParticipantsTsv
+        for iSession=1:x.nSessions
+            VarDataOri([iSession:x.nSessions:x.nSubjectsSessions-x.nSessions+iSession], 1) = x.SUBJECTS(:);
+        end
+        VarDataOri(:,2) = repmat(x.SESSIONS(:), [x.nSubjects 1]);
+
+        for iSet=1:length(x.S.SetsName)
+            % skip creating metadata columns for some parameters
+            % (session/subjectnlist)
+            if isempty(regexp(lower(x.S.SetsName{iSet}),'(session|subjectnlist)'))
+                % Fill VarData
+                VarData = VarDataOri;
+
+                for iSubjectSession=1:size(x.S.SetsID,1)
+                    if x.S.Sets1_2Sample(iSet)==3
+                        % x.S.SetsID contains continuous numbers
+                        % x.S.SetsOptions == x.S.SetsName
+                        VarData{iSubjectSession,3} = x.S.SetsID(iSubjectSession,iSet);
+                    else % x.S.SetsID contains category number
+                        % x.S.SetsOptions has the name of the category
+                        if isfinite(x.S.SetsID(iSubjectSession,iSet))
+                            VarData{iSubjectSession,3} = x.S.SetsOptions{iSet}{x.S.SetsID(iSubjectSession,iSet)};
+                        else
+                            VarData{iSubjectSession,3} = 'n/a';
+                        end
+                    end
+                end
+
+                xASL_bids_Add2ParticipantsTSV(VarData, x.S.SetsName{iSet}, x, 1); % overwrite
+            end
+        end
+    end
         
     %% ------------------------------------------------------------------------------------------------------------
 
@@ -141,6 +207,8 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
             CellArray = CellArray(:, [SiteIndex 1:SiteIndex-1 SiteIndex+1:end]);
         end
         
+        %% Skip if no data
+        
         
         %% Loop over metadata columns/variables
         for iVar=1:size(CellArray,2)
@@ -170,7 +238,7 @@ function [x] = xASL_init_LoadMat(x)
     % (visit), session (run), cohort etc.
     SiteMat = fullfile(x.D.ROOT, 'Site.mat');
 
-    FileList = xASL_adm_GetFileList( x.D.ROOT, '.*\.mat$','FPList',[0 Inf]);
+    FileList = xASL_adm_GetFileList(x.D.ROOT, '.*\.mat$','FPList', [0 Inf]);
 
     if exist(SiteMat,'file')
         FList{1} = SiteMat;
@@ -454,7 +522,6 @@ end
 %% ------------------------------------------------------------------------------------------------------------
 %% 4) Distinguish continous data (e.g. age) or ordinal data (groups to compare, e.g. cohort)
 % A) Force continuous data for known parameters
-DataIsContinuous = 0;
 ListContinuousData = {'AcquisitionTime' 'age' 'MeanMotion' 'GM_vol' 'WM_vol' 'CSF_vol' 'GMWM_ICVRatio' 'GM_ICVRatio' 'WMH_count' 'WMH_vol'...
     'CBF_spatial_CoV' 'CBF_spatial_CoV_norm' 'PseudoCBF_spatial_CoV' 'Yrs_AAO' 'Hematocrit' 'SliceReadoutTime' 'AcquisitionTime' 'Inititial_PLD'...
     'LabelingEfficiency' 'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'...
@@ -463,17 +530,20 @@ ListContinuousData = {'AcquisitionTime' 'age' 'MeanMotion' 'GM_vol' 'WM_vol' 'CS
 
  % this is a list of known variables that will never be ordinal, always continuous
 % Check if current VarName is one of these
-DataIsQ = find(strcmp(lower(ListContinuousData),lower(VarName)));
-if ~isempty(DataIsQ)
-    DataIsContinuous = 1;
+
+DataIsContinuous = ~isempty(find(strcmp(lower(ListContinuousData),lower(VarName))));
+DataIsContinuous = length(DataOptionList)>MaxNumOrdinalOptions || DataIsContinuous;
+
+if DataIsContinuous
     VarSample = 3; % continuous
+    x.S.Sets1_2Sample(SetIndex) = 3;
 end
 
 
 % B) If data are considered ordinal
 if length(DataOptionList)<MaxNumOrdinalOptions && ~isempty(DataOptionList) && ~DataIsContinuous
     %% Specify variable options, only if the variate is ordinal
-
+   
     if isnumeric(DataOptionList)
         for iD=1:length(DataOptionList)
             VarOptions{iD} = num2str(DataOptionList(iD));
@@ -482,6 +552,9 @@ if length(DataOptionList)<MaxNumOrdinalOptions && ~isempty(DataOptionList) && ~D
         VarOptions = DataOptionList;
     end
 
+    VarSample = 2; % independent samples
+    
+    
     % If data are categorical numbers, but still not ordinal numbers, convert to ordinal numbers
     % This is required because only integer numbers>0 can be indices
     % This will also avoid zeros (by adding 1), since 0's are no valuable index
@@ -591,7 +664,7 @@ if (ManyAbsent && CheckLength) || CheckLength2 % don't include this variable bec
     % (assuming continuous data has at least 25% of sample size
     % as unique values
     if exist('AbsentSubjects', 'var')
-        warning('%s\n',['Variable ' VarName ': following subjects were missing:']);
+        warning('%s\n',['Variable ' VarName ': following subjects were missing & set to NaN:']);
         for iAb=1:size(AbsentSubjects,1)
             fprintf('%s',[AbsentSubjects{iAb,1} ', ']);
             if  (iAb/12)==ceil(iAb/12) % 12 subjects per line
@@ -612,25 +685,27 @@ if size(NewVariable, 1)==size(x.S.SetsID, 1) % include variable
     x.S.Sets1_2Sample(SetIndex) = VarSample;         
     x.S.SetsOptions{SetIndex} = VarOptions;
 
-    % if data seems continuous, force Sets1_2Sample==3
-    ListContinuousData = {'AcquisitionTime' 'spatial_CoV' 'ICVRatio' 'age' 'MeanMotion' 'GM_vol' 'WM_vol' 'CSF_vol' 'GMWM_ICVRatio' 'GM_ICVRatio' 'WMH_count' 'WMH_vol'...
-        'CBF_spatial_CoV' 'CBF_spatial_CoV_norm' 'PseudoCBF_spatial_CoV' 'Yrs_AAO' 'Hematocrit' 'SliceReadoutTime' 'AcquisitionTime' 'Inititial_PLD'...
-        'Blood_T1art' 'GM','deep_WM','WholeBrain','L-ICA','R-ICA','POS','Caudate','Cerebellum','Frontal','Insula','Occipital','Parietal','Putamen'...
-        'Temporal','Thalamus','ACA_1','ACA_2','ACA_3','MCA_1','MCA_2','MCA_3','PCA_1','PCA_2','PCA_3','ACA_bilat','MCA_bilat','PCA_bilat','WMH','NAWM'};
+%% DELETE THIS PART LATER, SEEMS COPY OF ABOVE
+%     % if data seems continuous, force Sets1_2Sample==3
+%     ListContinuousData = {'AcquisitionTime' 'spatial_CoV' 'ICVRatio' 'age' 'MeanMotion' 'GM_vol' 'WM_vol' 'CSF_vol' 'GMWM_ICVRatio' 'GM_ICVRatio' 'WMH_count' 'WMH_vol'...
+%         'CBF_spatial_CoV' 'CBF_spatial_CoV_norm' 'PseudoCBF_spatial_CoV' 'Yrs_AAO' 'Hematocrit' 'SliceReadoutTime' 'AcquisitionTime' 'Inititial_PLD'...
+%         'Blood_T1art' 'GM','deep_WM','WholeBrain','L-ICA','R-ICA','POS','Caudate','Cerebellum','Frontal','Insula','Occipital','Parietal','Putamen'...
+%         'Temporal','Thalamus','ACA_1','ACA_2','ACA_3','MCA_1','MCA_2','MCA_3','PCA_1','PCA_2','PCA_3','ACA_bilat','MCA_bilat','PCA_bilat','WMH','NAWM'};
+% 
+%     % this is a list of known variables that will never be ordinal, always continuous
+%     % These are common continuous variables generated by ExploreASL, and should be treated as continuous
+%     % Check if current VarName is one of these
+%     DataIsContinuous = ~isempty(find(strcmp(lower(ListContinuousData),lower(VarName))));                
+%     UniqueValues = x.S.SetsID(:,SetIndex);
+%     UniqueValues = unique(UniqueValues(isfinite(UniqueValues)));
+%     
+%     if DataIsContinuous || (length(UniqueValues)>MaxNumOrdinalOptions && x.S.Sets1_2Sample(SetIndex)~=3)
+%         x.S.Sets1_2Sample(SetIndex) = 3;
+%     end
 
-    % this is a list of known variables that will never be ordinal, always continuous
-    % These are common continuous variables generated by ExploreASL, and should be treated as continuous
-    % Check if current VarName is one of these
-    DataIsContinuous = ~isempty(find(strcmp(lower(ListContinuousData),lower(VarName))));                
-
-    if DataIsContinuous || (length(unique(x.S.SetsID(:,SetIndex)))>MaxNumOrdinalOptions && x.S.Sets1_2Sample(SetIndex)~=3)
-        x.S.Sets1_2Sample(SetIndex) = 3;
-%         fprintf('%s\n',['Set ' x.S.SetsName{SetIndex} ' is assumed to contain continuous data, not ordinal']);
-    end
 
 
-
-
+%% DELETE THIS PART LATER, SEEMS COPY OF ABOVE
     % ------------------------------------------------------------------------------------------------------------
     % Add ordinal variable options, if they are not yet there
     if x.S.Sets1_2Sample(SetIndex)~=3 && length(x.S.SetsOptions{SetIndex})==1
