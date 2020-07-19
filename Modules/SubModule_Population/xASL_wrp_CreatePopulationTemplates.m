@@ -1,4 +1,4 @@
-function xASL_wrp_CreatePopulationTemplates(x, SaveUnmasked, bCompute4Sets, SpecificScantype, bSkipMissingScans, bRemoveOutliers, FunctionsAre)
+function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, SpecificScantype, bSkipMissingScans, bRemoveOutliers, FunctionsAre)
 %xASL_wrp_CreatePopulationTemplates ExploreASL Population module wrapper,
 %creates population parametric images for each ScanType
 %
@@ -6,9 +6,12 @@ function xASL_wrp_CreatePopulationTemplates(x, SaveUnmasked, bCompute4Sets, Spec
 %
 % INPUT:
 %   x            - structure containing fields with all information required to run the population module (REQUIRED)
-%   SaveUnmasked - allows saving the same images without masking (OPTIONAL, DEFAULT=true)
+%   bSaveUnmasked - allows saving the same images without masking (OPTIONAL, DEFAULT=true)
 %   bCompute4Sets - creates the same parametric images for subsets of the
-%                  data (e.g. cohorts, sites, etc) (OPTIONAL, DEFAULT=false)
+%                  data (e.g. cohorts, sites, etc)
+%                  can be a Boolean for computing for all subsets (1) or
+%                  none (0), or a cell structure with the names of the
+%                  subsets to compute for. (OPTIONAL, DEFAULT=0)
 %   SpecificScantype - allows providing ScanTypes to create templates for:
 %                      should be 3 cells:
 %                      SpecificScantype{1} = PreFixList (prefix string of the NIfTI, associated with the ScanType, e.g. 'qCBF', 'PV_PGM', etc)
@@ -54,11 +57,21 @@ function xASL_wrp_CreatePopulationTemplates(x, SaveUnmasked, bCompute4Sets, Spec
 %% ----------------------------------------------------------------------------------------------------
 %  Admin
 
-if nargin<2 || isempty(SaveUnmasked)
-    SaveUnmasked = true;
+if nargin<2 || isempty(bSaveUnmasked)
+    bSaveUnmasked = true;
 end
 if nargin<3 || isempty(bCompute4Sets)
-    bCompute4Sets = false;
+    bCompute4Sets = 0;
+elseif iscell(bCompute4Sets)
+    Sets2Check = bCompute4Sets;
+    bCompute4Sets = 1;
+elseif bCompute4Sets==1
+    Sets2Check = [];
+elseif bCompute4Sets==0
+    % do nothing
+else
+    error('Invalid bComputeSets option, skipping');
+    return;
 end
 if nargin<5 || isempty(bSkipMissingScans)
     bSkipMissingScans = true;
@@ -94,15 +107,21 @@ x.D.TemplatesStudyDir = fullfile(x.D.PopDir, 'Templates');
 xASL_adm_CreateDir(x.D.TemplatesStudyDir);
 
 if bCompute4Sets
-    % Define sets to create comparative stats for
-    NextN = 1;
-    for iSet=1:size(x.S.SetsID,2)
-        TempUnique = unique(x.S.SetsID(:,iSet));
-        nUniqueValues = length(TempUnique(~isnan(TempUnique)));
-        if  nUniqueValues>1 && nUniqueValues<6
-            Sets2Check(NextN,1) = iSet;
-            NextN = NextN+1;
+    % Reload set parameters to be sure
+    x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
+    
+    if isempty(Sets2Check)
+        % Define sets to create comparative stats for
+        for iSet=1:size(x.S.SetsID,2)
+            TempUnique = unique(x.S.SetsID(:,iSet));
+            nUniqueValues = length(TempUnique(~isnan(TempUnique)));
+            if  nUniqueValues>1 && nUniqueValues<6
+                Sets2Check(end+1,1) = iSet;
+            end
         end
+    else
+        % convert names of sets to indices
+        Sets2Check = find(cellfun(@(y) strcmp(Sets2Check, y), x.S.SetsName));
     end
 end
 
@@ -190,7 +209,7 @@ end
 % Loading data
 for iScanType=1:length(PreFixList)
     UnAvailable = 0;
-    NextN = 1;
+    
 
     fprintf(['Searching ' TemplateNameList{iScanType} ' images:   ']);
     for iSession=1:x.nSessions
@@ -202,17 +221,19 @@ for iScanType=1:length(PreFixList)
         elseif iSession>1  && ~SessionsExist(iScanType)
                 % For structural scans, there are no sessions>1, so
                 % skip this
-                UseThisSession  = 0;
+                UseThisSession = 0;
+                continue; % skip this session
         elseif SessionsExist(iScanType)
                 SessionAppendix = ['_' x.SESSIONS{iSession}];
                 UseThisSession = 1;
         end
 
         % ----------------------------------------------------------------------------------------------------
-        % Predefine memory
-        clear IM IM2 LoadFiles
+        % Predefine & clear memory
+        IM = 0;
+        IM2noMask = 0;
+        LoadFiles = '';
         UnAvailable = 0;
-        NextN = 1;
         NoImageN = 1;
         % Searching for available images
         if UseThisSession
@@ -223,8 +244,7 @@ for iScanType=1:length(PreFixList)
 
                 if xASL_exist(PathNII,'file')
                     % If exist, add this subject/image to the list
-                    LoadFiles{NextN,1} = PathNII;
-                    NextN = NextN+1;
+                    LoadFiles{end+1,1} = PathNII;
                     xASL_io_ReadNifti(PathNII);
                 else
                     % if doesnt exist, dont add to the list
@@ -238,8 +258,8 @@ for iScanType=1:length(PreFixList)
             if ~UseThisSession
                 continue;
             elseif UseThisSession && ~exist('LoadFiles','var')
-                    fprintf('\n%s',['No ' PreFixList{iScanType} ' files found, skipping...']);
-                    continue;
+                fprintf('\n%s',['No ' PreFixList{iScanType} ' files found, skipping...']);
+                continue;
             end
         end
 
@@ -261,7 +281,7 @@ for iScanType=1:length(PreFixList)
         end
 
         IM = zeros(Size1,nSize,'single'); % pre-allocating for speed
-        if SaveUnmasked; IM2 = zeros(121,145,121,nSize, 'single'); end
+        if bSaveUnmasked; IM2noMask = zeros(121,145,121,nSize, 'single'); end
 
         for iSubject=1:nLoad % add images
             xASL_TrackProgress(iSubject,nLoad);
@@ -274,7 +294,7 @@ for iScanType=1:length(PreFixList)
                 continue; % proceed with next ScanType
             end
             IM(:,iSubject) = tempIM1;
-            if SaveUnmasked; IM2(:,:,:,iSubject) = tempIM; end
+            if bSaveUnmasked; IM2noMask(:,:,:,iSubject) = tempIM; end
         end
         fprintf('\n');
 
@@ -286,64 +306,125 @@ for iScanType=1:length(PreFixList)
         end
 
         % create the maps
-        NameIM = TemplateNameList{iScanType};
+        NameIM = [TemplateNameList{iScanType} '_n=' num2str(length(NotOutliers))];
         ComputeParametricImages(IM(:,NotOutliers),NameIM, x, FunctionsAre, true);
 
-        if SaveUnmasked
-            ComputeParametricImages(IM2(:,:,:,NotOutliers),NameIM, x, FunctionsAre, false);
+        if bSaveUnmasked
+            ComputeParametricImages(IM2noMask(:,:,:,NotOutliers),NameIM, x, FunctionsAre, false);
         end
         % ----------------------------------------------------------------------------------------------------
         % This part checks for individual sets (e.g. create statistic images for each cohort/session etc)
-        if bCompute4Sets
+        if ~bCompute4Sets
+            % not requested, skipping
+            continue;
+        elseif isempty(Sets2Check)
+            fprintf('\n');
+            warning('There are no sets that we can create statistical maps for');
+            continue;
+        else
             for iSet=1:length(Sets2Check)
+                % First validate that this set doesnt have continuous data
+                if x.S.Sets1_2Sample(Sets2Check(iSet))==3
+                    warning(['Cannot create maps for non-ordinal set ' x.S.SetsName{Sets2Check(iSet)} ', skipping'])
+                    continue;
+                end
+                
+                % Obtain unique options for this set
                 TempUnique = unique(x.S.SetsID(:,Sets2Check(iSet)));
                 UniqueSet = TempUnique(~isnan(TempUnique));
                 % Now if we have a 0, switch it to 1
                 % This can happen if we have a set with string options, where
                 % the first string is a 0, and then translated into a number.
                 % This should be then index==1 for SetsOptions
-                IndZero = find(UniqueSet==0);
-                if ~isempty(IndZero) && sum(UniqueSet==1)==0
-                    UniqueSet(IndZero) = 1;
+                IndexZero = find(UniqueSet==0);
+                if ~isempty(IndexZero) && sum(UniqueSet==1)==0
+                    UniqueSet(IndexZero) = 1;
                 end
-                for iU=1:length(UniqueSet)
-                    if ~SessionsExist(iScanType) && ~isempty(findstr(x.S.SetsName{Sets2Check(iSet)},'session'))
-                        % This SET is for sessions, but there are no sessions for this scantype
-                        % So skip this
-                    else
-                        try
-                            WithinGroup = x.S.SetsID(:,Sets2Check(iSet))==UniqueSet(iU);
-
-                            if ~SessionsExist(iScanType) % if no sessions exist, only take current session here
-                                CurrSess = [1:x.nSessions:x.nSubjectsSessions]' + (iSession-1);
-                                WithinGroup = WithinGroup(CurrSess);
+                
+                SetOptions = lower(x.S.SetsOptions{Sets2Check(iSet)});
+                tempIM = IM;
+                if bSaveUnmasked
+                    tempIM2noMask = IM2noMask;
+                end
+                
+                % if the only options are left & right (and n/a for missing), assume that this is
+                % a request to flip hemispheres for the 'right' ones
+                bFlipHemisphere = min(cellfun(@(y) ~isempty(regexp(y, '^(left|right|l|r|n/a|nan)$')), SetOptions));
+                
+                if bFlipHemisphere
+                    % get option index for right
+                    Index2Flip = find(cellfun(@(y) ~isempty(regexp(y, '^(right|r)$')), SetOptions));
+                    Images2Flip = x.S.SetsID(:,Sets2Check(iSet))==Index2Flip;
+                    
+                    % Flip the images
+                    % we iterate this, to avoid using large memory
+                    fprintf('Flipping images:   ');
+                    for iImage=1:size(tempIM,2)
+                        xASL_TrackProgress(iImage, size(tempIM,2));
+                        if Images2Flip(iImage)
+                            tIM = xASL_im_Column2IM(tempIM(:,iImage), x.WBmask);
+                            tIM = fliplr(tIM);
+                            tempIM(:,iImage) = xASL_im_IM2Column(tIM, x.WBmask);
+                            if bSaveUnmasked
+                                tempIM2noMask(:,:,:,iImage) = fliplr(tempIM2noMask(:,:,:,iImage));
                             end
-
-                            % select those within the set/group only
-                            NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Sets2Check(iSet)} '_' x.S.SetsOptions{Sets2Check(iSet)}{UniqueSet(iU)}];
-                            tempIM = IM(:,WithinGroup);
-
-                            if bRemoveOutliers
-                                % Exclude outliers
-                                NotOutliers = find(xASL_stat_RobustMean(tempIM))';
-                            else
-                                NotOutliers = [1:1:size(tempIM,2)];
-                            end
-                            
-                            % compute maps
-                            ComputeParametricImages(tempIM(:,NotOutliers), NameIM, x, FunctionsAre, true);
-                            if SaveUnmasked
-                                tempIM2 = IM2(:,:,:,WithinGroup);
-                                ComputeParametricImages(tempIM2(:,:,:,NotOutliers),NameIM, x, false);
-                            end
-                        catch ME
-                            warning('Getting set didnt work');
-                            fprintf('%s\n',ME.message);
                         end
                     end
+                    fprintf('\n');
+                    
+                    % now we change the set options & ID to inclusion
+                    % instead of left/right
+                    IndexInclusion = find(cellfun(@(y) ~isempty(regexp(y, '^(left|right|l|r)$')), SetOptions));
+                    SetID = ~max(x.S.SetsID(:,Sets2Check(iSet))==IndexInclusion, [], 2)+1;
+                    SetOptions = {'' 'n/a'};
+                    UniqueSet = [1;2];
+                    
+                else
+                    SetOptions = lower(x.S.SetsOptions{Sets2Check(iSet)});
+                    SetID = x.S.SetsID(:,Sets2Check(iSet));
                 end
-            end
-        end
+                
+                for iU=1:length(UniqueSet) % iterate over the options/categories of this set
+                    if ~isempty(regexp(SetOptions{UniqueSet(iU)}, '(n/a|nan)'))
+                        % skipping NaNs, consider them as outside of a group
+                        continue;
+                    elseif ~SessionsExist(iScanType) && ~isempty(findstr(x.S.SetsName{Sets2Check(iSet)}, 'session'))
+                        % This SET is for sessions, but there are no sessions for this scantype
+                        % So skip this
+                        continue;
+                    end
+                    try
+                        WithinGroup = SetID==UniqueSet(iU);
+
+                        if ~SessionsExist(iScanType) % if no sessions exist, only take current session here
+                            CurrSess = [1:x.nSessions:x.nSubjectsSessions]' + (iSession-1);
+                            WithinGroup = WithinGroup(CurrSess);
+                        end
+
+                        % select those within the set/group only
+                        tempIM = tempIM(:,WithinGroup);
+
+                        if bRemoveOutliers
+                            % Exclude outliers
+                            NotOutliers = find(xASL_stat_RobustMean(tempIM))';
+                        else
+                            NotOutliers = [1:1:size(tempIM,2)];
+                        end
+
+                        % compute maps
+                        NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Sets2Check(iSet)} '_' SetOptions{UniqueSet(iU)} '_n=' num2str(length(NotOutliers))];
+                        ComputeParametricImages(tempIM(:,NotOutliers), NameIM, x, FunctionsAre, true);
+                        if bSaveUnmasked
+                            tempIM2noMask = tempIM2noMask(:,:,:,WithinGroup);
+                            ComputeParametricImages(tempIM2noMask(:,:,:,NotOutliers),NameIM, x, FunctionsAre, false);
+                        end
+                    catch ME
+                        warning('Getting set didnt work');
+                        fprintf('%s\n',ME.message);
+                    end % try
+                end % iU=1:length(UniqueSet)
+            end % iSet=1:length(Sets2Check)
+        end % if bComputeSets
     end % for iSession=1:x.nSessions
     fprintf('\n');
     if UnAvailable>0
@@ -351,12 +432,18 @@ for iScanType=1:length(PreFixList)
     end
 end  % for iScanType=1:length(PreFixList)
 
+
 end
 
 
 %% ===================================================================================
 function ComputeParametricImages(IM, NameIM, x, FunctionsAre, bMask)
 %ComputeParametricImages Subfunction that computes the parametric images
+
+    if isempty(IM)
+        warning(['No valid images ' NameIM ' found, skipping']);
+        return;
+    end
 
     if bMask
         iDim = 2; % image data as column
@@ -383,15 +470,7 @@ function ComputeParametricImages(IM, NameIM, x, FunctionsAre, bMask)
         IM = IM(:,:,:,logical(UseIM));
     end
 
-    if isempty(IM)
-        warning(['No valid images ' NameIM ' found']);
-        if bMask
-            IM = zeros(sum(x.WBmask(:)),1);
-        else
-            IM = zeros(size(x.WBmask));
-        end
-    end
-    fprintf(['Computing & saving ' NameIM ' parametric images, ']);
+    fprintf(['Computing ' NameIM ' parametric map(s)...\n']);
 
     for iFunction=1:length(FunctionsAre{1})
         FunctionHandle = FunctionsAre{1}{iFunction};
