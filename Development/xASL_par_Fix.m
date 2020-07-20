@@ -20,7 +20,7 @@ function xASL_par_Fix(DataParFile,pathASL4D)
 % Copyright 2015-2020 ExploreASL
 
 %% Parameters
-fprintf('Check parameters...\n');
+% fprintf('Check parameters...\n');
 
 % Checkout the ExploreASL/DataParFile.m for detailed explanations
                 

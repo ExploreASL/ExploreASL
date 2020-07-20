@@ -33,9 +33,6 @@ function xASL_dcm_Import(root)
 
 %% Workflow
 
-% Initialize ExploreASL
-x = ExploreASL_Initialize('',0);
-
 % Define path to DataParFile
 DataParFile = fullfile(root,'data','DataParFile.json');
 
@@ -49,6 +46,8 @@ movefile(fullfile(root,'analysis'),fullfile(root,'data'));
 
 % Create log file
 diary(fullfile(root,'data','xASL_module_Import.log'))
+fprintf('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n');
+fprintf('Starting xASL_dcm_Import...\n');
 try
     % Open file
     fIDcsv = fopen(fullfile(root,'data','import_summary.csv'),'r');
@@ -70,8 +69,6 @@ try
 catch
     
 end
-% Turn off diary
-diary OFF
 
 % Generate DataParFile
 fID = fopen(DataParFile,'w');
@@ -94,7 +91,9 @@ fclose(fID);
 pathASL4D = fullfile(root,'data','sub','ASL_1','ASL4D.json');
 xASL_par_Fix(DataParFile,pathASL4D);
 
-
+% Turn off diary
+fprintf('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n');
+diary OFF
 
 
 
