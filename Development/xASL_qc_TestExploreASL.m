@@ -152,7 +152,7 @@ if bOverwrite && exist(TestDirDest,'dir')
     if ispc
         system(['rmdir /s /q ' TestDirDest]);
     else
-        system(['rm -rf ' TestDirDest]);
+        system(['rm -rf ' xASL_adm_UnixPath(TestDirDest)]);
     end
 end
 
