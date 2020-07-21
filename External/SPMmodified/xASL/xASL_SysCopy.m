@@ -38,7 +38,7 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
         end
     end
 
-    if isunix()
+    if isunix || ismac
         SrcPath = xASL_adm_UnixPath(SrcPath);
         DstPath = xASL_adm_UnixPath(DstPath);
         if bOverwrite

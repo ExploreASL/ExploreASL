@@ -51,6 +51,8 @@ end
 %% Detect OS
 if isunix % check for linux (also used for macOS)
     fprintf('Running FSL from Matlab on Linux\n');
+elseif ismac
+    fprintf('Running FSL from Matlab on macOS\n');
 elseif ispc
     [status, ~] = system('wsl ls;'); % leave status2 here, otherwise system will produce output
     if status~=0
