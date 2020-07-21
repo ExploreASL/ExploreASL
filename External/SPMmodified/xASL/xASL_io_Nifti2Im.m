@@ -96,6 +96,8 @@ end
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % 4) Convert to single precision data format
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+% SPM opens to double precision data format by default, which takes up
+% unnecessary large memory
 if exist('imOut','var') && ~isa(imOut,'single') && ~niiMat
     imOut = single(imOut);
 elseif ~exist('imOut','var') && ~niiMat
@@ -124,5 +126,36 @@ if niiMat
         fprintf('%s\n',['Message: ' ME.message]);
     end
 end        
+
+
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% 6) Check scaling
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% In the import stage, the scaling can go wrong. In this case, we throw a
+% warning & try to correct this
+
+if exist('imOut', 'var') && exist('nii', 'var')
+    if nii.dat.scl_slope>16
+        % this if-clause speeds up in all other cases that don't have this potential Philips import issue
+        MaxIm = max(imOut(isfinite(imOut)));
+        if MaxIm>4096
+            warning('Found unusually large NIfTI scale slope and image data, trying to correct this');
+            
+            ScaleFactor2Apply = 4096/MaxIm;
+            imOut = imOut.*ScaleFactor2Apply;
+            
+            if exist('Fpath', 'var') && exist('Ffile', 'var')
+                if ~isempty(regexp(Ffile,'^.*(ASL|M0).*$'))
+                    fprintf('%s\n', ['ASL image detected: ' niftiIn]);
+                    error('This scale issue needs to be fixed first as it affects both image processing and quantification');
+                else
+                    xASL_io_SaveNifti(niftiIn, niftiIn, imOut, [], 0);
+                    fprintf('%s\n', ['Corrected also in the NIfTI: ' niftiIn]);
+                end
+            end
+        end
+    end
+end
+
 
 end
