@@ -97,7 +97,7 @@ if ~exist(x.S.ROInamesPath,'file')
     end
 end
 
-if isfield(x.S,'ROInamesPath') % open TSV file
+if isfield(x.S,'ROInamesPath') && exist(x.S.ROInamesPath, 'file') % open TSV file
     fclose all;
     FileID = fopen(x.S.ROInamesPath);
 
@@ -201,7 +201,12 @@ end
 
 %% Create dummy ROI names, if we don't have them
 if ~isfield(x.S,'NamesROI')
-    for iR=1:max(InputAtlasIM(:))
+    if size(InputAtlasIM,4)>1
+        maxROI = size(InputAtlasIM,4);
+    else
+        maxROI = max(InputAtlasIM(:));
+    end
+    for iR=1:maxROI
         x.S.NamesROI{iR} = ['ROI_' num2str(iR)]; % default ROIs
     end
 end
