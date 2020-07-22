@@ -53,10 +53,10 @@ end
 
 %% -------------------------------------------------------
 %% Create the file
-xASL_adm_CreateDir(fileparts(CSVfilename)); % avoid errors with non-existing folder
+xASL_adm_CreateDir(fileparts(PathTSV)); % avoid errors with non-existing folder
 FileID = fopen(PathTSV ,'w+'); % create a new file for writing
-if fileID<0 % give warning when cannot create the file
-    fprintf(['Filename is ' CSVfilename '\n']);
+if FileID<0 % give warning when cannot create the file
+    fprintf(['Filename is ' PathTSV '\n']);
     warning('Is something wrong with the path we try to save the file, perhaps it is too long?');
 end
 
@@ -64,12 +64,11 @@ end
 %% Iterate through cells with iX and iY coordinates & print the cell array contents
 for iX=1:size(InputCell,1)
     for iY=1:size(InputCell,2)
-        
-            
         fprintf(FileID,'%s\t', xASL_num2str(InputCell{iX,iY}));
     end
     fprintf(FileID,'\n');
 end
+
 
 %% Close the file & unlock it
 fclose(FileID); 
