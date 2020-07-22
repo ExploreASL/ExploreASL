@@ -1,32 +1,26 @@
-function xASL_csvWrite(CSVfilename,CSVdata)
-%xASL_csvWrite Creates a CSV file that can be opened with excel
-% from your data.
+function xASL_csvWrite(InputCell, PathCSV, bOverwrite)
+%xASL_csvWrite Write cell array to CSV
 %
-% FORMAT:       xASL_csvWrite(CSVfilename,CSVdata)
-% 
-% INPUT:        CSVfilename=FilePathName
-%               CSVdata = your data
-%
-% OUTPUT:       ...
-% 
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  Creates a CSV file that can be opened with excel from
-%               your data.
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% Rudimentary function, please use xASL_tsvWrite instead.
+% For usage, type help xASL_tsvWrite.
+% This function will still work though.
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
-    fileID      = fopen(CSVfilename,'w');
-    for iY=1:size(CSVdata,1)
-        for iX=1:size(CSVdata,2)
-            fprintf(fileID,CSVdata{iY,iX});
-            if  iX<size(CSVdata,2); fprintf(fileID,','); end
-        end
-        if  iY<size(CSVdata,1); fprintf(fileID,'\n'); end
-    end
-    fclose(fileID);
+
+%% -------------------------------------------------------
+%% Admin
+if nargin<3 || isempty(bOverwrite)
+    bOverwrite = false;
+end
+if nargin<2 || isempty(InputCell) || isempty(PathTSV)
+    error('Specify both InputCell and PathTSV');
+end
+
+warning('You are creating a CSV file, please consider using the TSV-file format, which is default in ExploreASL (per BIDS)');
+bCSV = 1;
+xASL_tsvWrite(InputCell, PathCSV, bOverwrite, bCSV);
+
 
 end
 
