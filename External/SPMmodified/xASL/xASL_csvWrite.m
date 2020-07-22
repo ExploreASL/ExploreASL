@@ -1,8 +1,8 @@
-function xASL_adm_CreateCSVfile(CSVfilename,CSVdata)
-%xASL_adm_CreateCSVfile Creates a CSV file that can be opened with excel
+function xASL_csvWrite(CSVfilename,CSVdata)
+%xASL_csvWrite Creates a CSV file that can be opened with excel
 % from your data.
 %
-% FORMAT:       xASL_adm_CreateCSVfile(CSVfilename,CSVdata)
+% FORMAT:       xASL_csvWrite(CSVfilename,CSVdata)
 % 
 % INPUT:        CSVfilename=FilePathName
 %               CSVdata = your data
