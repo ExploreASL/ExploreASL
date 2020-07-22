@@ -46,7 +46,7 @@ for iM=1:2
         end
 
         %% Create csv-file
-        xASL_adm_CreateCSVfile([LoadFileDat(1:end-4) '.csv'],CSVdata);
+        xASL_csvWrite([LoadFileDat(1:end-4) '.csv'],CSVdata);
 
         nMasks                          = length(MaskType); % assume 6 masks
         nIMs                            = 6;
