@@ -41,7 +41,7 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, bRelease, importDCM
 
 %% 1) Manage ExploreASL and compiler code folders
 if nargin<1 || isempty(outputPath)
-    error('OutputPath input missing\n');
+    error('OutputPath input missing');
 end
 if nargin<2 || isempty(bCompileSPM)
     bCompileSPM = true;
