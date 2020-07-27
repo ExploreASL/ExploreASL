@@ -36,6 +36,33 @@ function xASL_dcm_Import(root)
 % "LabelingDuration":  "1800",
 % "SliceReadoutTime":  "40"
 % }
+% 
+% BIDS TEST DATA:
+% 
+% 'Siemens'
+% data.x.M0 = 'UseControlAsM0'; % Should actually be: data.x.M0 = 'separate_scan'; % but separate M0 does not work on mTRIAL right now
+% data.x.Sequence = '3D_GRASE';
+% data.x.Q.LabelingType = "PCASL";
+% data.x.Q.BackGrSupprPulses = 5;
+% data.x.Q.LabelingDuration = 1800;
+% data.x.Q.Initial_PLD = 2000;
+%
+% 'Philips'
+% data.x.M0 = 'UseControlAsM0'; % Should actually be: data.x.M0 = 'separate_scan'; % but separate M0 does not work on mTRIAL right now
+% data.x.Sequence = '2D_EPI';
+% data.x.Q.LabelingType = "PCASL";
+% data.x.Q.BackGrSupprPulses = 2;
+% data.x.Q.LabelingDuration = 1800;
+% data.x.Q.Initial_PLD = 2000;
+%
+% 'GE'
+% data.x.M0 = 'UseControlAsM0';
+% data.x.Sequence = '3D_spiral';
+% data.x.Q.LabelingType = "PCASL";
+% data.x.Q.BackGrSupprPulses = 5;
+% data.x.Q.LabelingDuration = 2025;
+% data.x.Q.Initial_PLD = 1450;
+% 
 %
 % EXAMPLE:      xASL_dcm_Import('/opt/incoming/');
 %
