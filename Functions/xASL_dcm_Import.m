@@ -19,10 +19,23 @@ function xASL_dcm_Import(root)
 %
 % Detailed description of the incoming data structure:
 % 
+%               - /incoming/dockerInterfaceParameters.json
 %               - /incoming/raw/sub-###/visit-###/ASL
 %               - /incoming/raw/sub-###/visit-###/T1
 %               - /incoming/raw/sub-###/visit-###/FLAIR
 %               - /incoming/raw/sub-###/visit-###/M0
+%
+% dockerInterfaceParameters.json: (Siemens e.g.)
+%
+% {
+% "Sequence":          "3D GRASE",
+% "LabelingType":      "PCASL",
+% "readout_dim":       "2D",
+% "BackGrSupprPulses": "5",
+% "Initial_PLD":       "2000",
+% "LabelingDuration":  "1800",
+% "SliceReadoutTime":  "40"
+% }
 %
 % EXAMPLE:      xASL_dcm_Import('/opt/incoming/');
 %
@@ -32,6 +45,9 @@ function xASL_dcm_Import(root)
 % Copyright 2015-2020 ExploreASL
 
 %% Workflow
+
+% Define path to dockerInterfaceParameters
+dockerInterfaceFile = fullfile(root,'dockerInterfaceParameters.json');
 
 % Define path to DataParFile
 DataParFile = fullfile(root,'data','DataParFile.json');
@@ -44,32 +60,6 @@ ExploreASL_Import(ExploreASL_ImportConfig(root),false,true);
 % Rename folder
 movefile(fullfile(root,'analysis'),fullfile(root,'data'));
 
-% Create log file
-diary(fullfile(root,'data','xASL_module_Import.log'))
-fprintf('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n');
-fprintf('Starting xASL_dcm_Import...\n');
-try
-    % Open file
-    fIDcsv = fopen(fullfile(root,'data','import_summary.csv'),'r');
-    % Get individual text lines
-    while ~feof(fIDcsv)
-        tline = fgetl(fIDcsv);
-        lineElements = strsplit(tline,',');
-        % Get subjects
-        if strcmp('"sub"',char(lineElements(1)))
-            fprintf('Subject:\t%s\n', lineElements{2})
-            fprintf('Visit:\t\t%s\n', lineElements{4})
-            fprintf('NIFTI:\t\t%s\n', lineElements{5})
-        end
-        % disp(tline)
-    end
-    % Close file
-    fclose(fIDcsv);
-
-catch
-    
-end
-
 % Generate DataParFile
 fID = fopen(DataParFile,'w');
 
@@ -81,20 +71,60 @@ data.x.bNativeSpaceAnalysis = 1;
 data.x.DELETETEMP = 1;
 data.x.readout_dim = "2D";
 
+% Add Q field
+data.x.Q = struct;
+data.x.M0 = 'UseControlAsM0';
+
+% Read docker interface file
+x_temporary = xASL_import_json(dockerInterfaceFile);
+
+% Reassign fields
+data.x.Sequence = x_temporary.Sequence;
+data.x.Q.LabelingType = x_temporary.LabelingType;
+data.x.readout_dim = x_temporary.readout_dim;
+data.x.Q.BackGrSupprPulses = x_temporary.BackGrSupprPulses;
+data.x.Q.Initial_PLD = x_temporary.Initial_PLD;
+data.x.Q.LabelingDuration = x_temporary.LabelingDuration;
+
+% Fix Sequence name
+switch data.x.Sequence
+    case "3D Spiral"
+        data.x.Sequence = '3D_spiral';
+    case "3D GRASE"
+        data.x.Sequence = '3D_GRASE';
+    case "2D EPI"
+        data.x.Sequence = '2D_EPI';
+end
+
+% Get vendor & Acquisition
+pathASL4D = fullfile(root,'data','sub','ASL_1','ASL4D.json');
+try
+    % Read JSON file
+    if xASL_exist(pathASL4D,'file')
+        val = jsondecode(fileread(pathASL4D));
+        % Get vendor
+        if ~isfield(val,'Vendor')
+            data.x.Vendor = val.Manufacturer;
+        end
+        % SliceReadoutTime only necessary for 2D datasets -> Get AcquisitionType
+        if isfield(val,'MRAcquisitionType')
+            Acquisition = val.MRAcquisitionType;
+        end
+    end
+catch
+    fprintf('Something went wrong...\n');
+end
+
+% Only add SliceReadoutTime for 2D datasets
+if strcmp(Acquisition,"2D")
+    data.x.Q.SliceReadoutTime = x_temporary.SliceReadoutTime;
+end
+
 % Write data to JSON file
 JSONstr = jsonencode(data);
 if fID == -1, error('Cannot create JSON file...'); end
 fwrite(fID, JSONstr, 'char');
 fclose(fID);
-
-% Compare ASL4D and M0 JSON files with list of parameters (from TestDataSet)
-pathASL4D = fullfile(root,'data','sub','ASL_1','ASL4D.json');
-xASL_par_Fix(DataParFile,pathASL4D);
-
-% Turn off diary
-fprintf('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n');
-diary OFF
-
 
 
 
