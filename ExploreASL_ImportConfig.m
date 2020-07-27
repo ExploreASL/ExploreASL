@@ -846,9 +846,9 @@ switch imPar.studyID
         imPar.tokenVisitAliases = {'^2010$','ASL4D';'^1$'};
         imPar.bMatchDirectories = true;
     
-    case 'incoming' % Docker
+    case 'incoming' % Default single participant
         imPar.folderHierarchy = {'^(sub).*$', '^(visit).*$', '^(ASL|T1|FLAIR|M0)'}; % Test with docker data
-        imPar.tokenOrdering = [1 2 3]; % subject visit session scantype
+        imPar.tokenOrdering = [1 2 0 3]; % subject visit session scantype
         imPar.tokenScanAliases = {'^ASL$','ASL4D';'^T1$', 'T1';'^FLAIR$', 'FLAIR'; '^M0$', 'M0'};
         imPar.tokenVisitAliases = {'1', '_1'; '2', '_2'};
         imPar.bMatchDirectories = true;
