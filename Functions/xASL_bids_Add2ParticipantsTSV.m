@@ -168,9 +168,9 @@ for iIndex=1:size(DataIn,1)
         continue;
     end     
     
-    IsEmpty = isempty(CellArray{iRow+1,DataColumn}) || strcmp(CellArray{iRow+1,DataColumn}, 'n/a');
+    IsEmpty = size(CellArray,1)<iRow || isempty(CellArray{iRow,DataColumn}) || strcmp(CellArray{iRow,DataColumn}, 'n/a');
     if IsEmpty || bOverwrite
-        CellArray{iRow+1,DataColumn} = DataIn{iIndex,3};
+        CellArray{iRow+1,DataColumn} = DataIn{iIndex,3}; % iRow+1 for header
     else
         fprintf('Data already existing, skipping\n');
     end
