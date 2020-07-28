@@ -405,37 +405,37 @@ if bRegistrationCBF
     if nIT>0
         % keep this same for all sequences, 3D sequences will simply have a lower spatial CoV because of smoothness
         bSkipThis = false;
-        for iT=1:nIT
-            if ~bSkipThis
-                
-                OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_mean_PWI_Clipped});
-                xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
-                
+		for iT=1:nIT
+			if ~bSkipThis
+				
+				OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_mean_PWI_Clipped});
+				xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
+				
 				xASL_im_CreatePseudoCBF(x, spatCoVit(end)); % because this scales the mean_PWI_Clipped, this needs to be run after backing up
 				
-                % then register
-                xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
-                % and check for improvement
-                TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
-                
-                if x.bRegistrationContrast~=3 % if we don't don't force CBF-pGM registration
-                    if TanimotoPerc(end)>=TanimotoPerc(end-1)
-                        % if alignment improved or remained more or less the same
-                        xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
-                    else
-                        % if alignment got significantly (>1% Tanimoto) worse
-                        % we don't force CBF-pGM registration
-                        xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
-                        bSkipThis = true; % skip next iteration
+				% then register
+				xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
+				% and check for improvement
+				TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+				
+				if x.bRegistrationContrast~=3 % if we don't don't force CBF-pGM registration
+					if TanimotoPerc(end)>=TanimotoPerc(end-1)
+						% if alignment improved or remained more or less the same
+						xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+					else
+						% if alignment got significantly (>1% Tanimoto) worse
+						% we don't force CBF-pGM registration
+						xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+						bSkipThis = true; % skip next iteration
 						if iT == 1
 							x.bAffineRegistration = 0; % skip affine registration and therefore also DCT - only when it fails to improve on the first, not on the second
 						end
-                        TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
-                    end
-                end
-
-                spatCoVit(iT+1) = xASL_im_GetSpatialCovNativePWI(x);
-            end
+						TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
+					end
+				end
+				
+				spatCoVit(iT+1) = xASL_im_GetSpatialCovNativePWI(x);
+			end
 		end
 
         %% Affine registration
@@ -451,10 +451,9 @@ if bRegistrationCBF
 		end
 
         if bAffineRegistration % perform affine registration
-            % NB: here the Tanimoto coefficient check may not work, when e.g.
-            % one image is enlarged, it has more overlap
-            fprintf('%s\n','Performing affine registration');
+			bDCTfailed = 0; % Record the success of DCT, in case that DCT fails, we can still run a simple affine only
 			if x.bDCTRegistration
+				xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
 				if x.bDCTRegistration == 1
 					xASL_im_CreatePseudoCBF(x, spatCoVit(end));
 					
@@ -468,11 +467,41 @@ if bRegistrationCBF
 						xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1);
 					end
 				end
-			else
+				TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+				if TanimotoPerc(end)>=TanimotoPerc(end-1)*0.99
+					% if alignment improved or remained more or less the same
+					xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+				else
+					% if alignment got significantly (>1% Tanimoto) worse
+					bDCTfailed = 1;
+					xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+					TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
+				end
+			end
+			
+			if x.bDCTRegistration == 0 || bDCTfailed
+				% When DCT was not scheduled or failed, still run affine
+				fprintf('%s\n','Performing affine registration');
+				
+				xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
 				xASL_im_CreatePseudoCBF(x, spatCoVit(end));
 				
 				% apply also to mean_PWI_clipped and other files
 				xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5, BaseOtherList);
+				
+				TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+				if TanimotoPerc(end)>=TanimotoPerc(end-1)*0.99
+					% if alignment improved or remained more or less the same
+					xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+				else
+					% if alignment got significantly (>1% Tanimoto) worse
+					xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+					TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
+				end
+			end
+			% Remove the temporary files - Clipped_ORI and rPWI 
+			if xASL_exist(x.P.Path_mean_PWI_Clipped_ORI)
+				xASL_delete(x.P.Path_mean_PWI_Clipped_ORI);
 			end
             spatCoVit(iT+2) = xASL_im_GetSpatialCovNativePWI(x);
         else
@@ -487,7 +516,6 @@ if bRegistrationCBF
     end
     fprintf('%s\n\n','--------------------------------------------------------------------');
 end
-
 
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
@@ -516,9 +544,9 @@ OtherList = BaseOtherList;
 for iList=1:length(List2Remove)
     IndexIs = find(cellfun(@(y) strcmp(y,List2Remove{iList}), OtherList));
     if IndexIs==1
-        IndexList = [2:length(OtherList)];
+        IndexList = 2:length(OtherList);
     elseif IndexIs==length(OtherList)
-        IndexList = [1:length(OtherList)-1];
+        IndexList = 1:length(OtherList)-1;
     else
         IndexList = [1:IndexIs-1 IndexIs+1:length(OtherList)];
     end
