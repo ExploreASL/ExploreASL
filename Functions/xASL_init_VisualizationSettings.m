@@ -37,6 +37,14 @@ function [x] = xASL_init_VisualizationSettings(x)
         x.S = struct;
     end
 
+    if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
+        x.S.bMasking = [1 1 1 1];
+    elseif isequal(x.S.bMasking, 1)
+        x.S.bMasking = [1 1 1 1];
+    elseif isequal(x.S.bMasking, 0)
+        x.S.bMasking = [0 0 0 0];        
+    end
+
     %% Slice numbers
     % Defines which transversal slices to use by default
     x.S.slices           = [53 62 74 87]; % for 1.5mm MNI, ([85 102 119 131] would be the same for 1mm MNI)
@@ -127,7 +135,12 @@ function [x] = xASL_init_VisualizationSettings(x)
         x.BILAT_FILTER = false;
     end
 
-    x.WBmask  = logical(xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii')));
+    ImageWB = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii'));
+    if x.S.bMasking(4)==0
+        x.WBmask = true(size(ImageWB));
+    else
+        x.WBmask = logical(ImageWB);
+    end
 
     if ~isfield(x,'Quality') && isfield(x,'QUALITY')
         x.Quality = x.QUALITY; % backward compatibility
