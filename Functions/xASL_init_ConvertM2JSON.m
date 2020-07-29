@@ -49,7 +49,7 @@ cd(CurrentFolder);
 
 %% -----------------------------------------------
 %% 2) Escape characters that are illegal in JSON
-% Note that most characters (like backslashes) are correctly escape while saving the JSON in spm_jsonwrite
+% Note that most characters (like backslashes) are correctly escaped when saving the JSON in spm_jsonwrite
 FieldsX = fields(x);
 for iField=1:length(FieldsX)
     tString = x.(FieldsX{iField});
@@ -60,7 +60,7 @@ for iField=1:length(FieldsX)
             tString = 1;
         elseif islogical(tString) && ~tString
             tString = 0;
-		end
+	end
         
         x.(FieldsX{iField}) = tString;
     end
