@@ -204,9 +204,11 @@ end
 
 for iField=1:length(Qfields)
     if isfield(x,Qfields{iField})
-        if isfield(x.Q,(Qfields{iField})) && ~min((x.Q.(Qfields{iField})==x.(Qfields{iField})))
-            if bVerbose; warning(['Overwriting x.Q.' Qfields{iField} '=' xASL_num2str(x.Q.(Qfields{iField})) ', with x.' Qfields{iField} '=' xASL_num2str(x.(Qfields{iField}))]); end
-        end
+		if isfield(x.Q,(Qfields{iField})) && ~min((x.Q.(Qfields{iField})==x.(Qfields{iField})))
+			if bVerbose
+				warning(['Overwriting x.Q.' Qfields{iField} '=' xASL_num2str(x.Q.(Qfields{iField}),[],1) ', with x.' Qfields{iField} '=' xASL_num2str(x.(Qfields{iField}),[],1)]);
+			end
+		end
         
         x.Q.(Qfields{iField}) = x.(Qfields{iField});
 %         x = rmfield(x, Qfields{iField}); % For now lets keep the
