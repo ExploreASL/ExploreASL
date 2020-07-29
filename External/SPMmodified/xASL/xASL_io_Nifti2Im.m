@@ -135,17 +135,14 @@ end
 % warning & try to correct this
 
 if exist('imOut', 'var') && exist('nii', 'var')
-	if nii.dat.scl_slope>16
-		% this if-clause speeds up in all other cases that don't have this potential Philips import issue
-		MaxIm = max(imOut(isfinite(imOut)));
-		if MaxIm>1e9
-			if exist('Fpath', 'var') && exist('Ffile', 'var')
-				if ~isempty(regexp(Ffile,'^.*(T1|FLAIR).*$'))
-					warning('%s\n%s','Found a structural image with unusually large NIfTI scale slope and image data, resetting the maximum to 4096 upon reading:',niftiIn);
-					imOut = imOut.*4096./MaxIm;
-				else
-					warning('%s\n%s','Found unusually large NIfTI scale slope and image data, check if all processing and quantification went correctly:',niftiIn);
-				end
+	MaxIm = max(imOut(isfinite(imOut)));
+	if MaxIm>1e9
+		if exist('Fpath', 'var') && exist('Ffile', 'var')
+			if ~isempty(regexp(Ffile,'^.*(T1|FLAIR).*$'))
+				warning('%s\n%s','Found a structural image with unusually large NIfTI scale slope and image data, resetting the maximum to 4096 upon reading:',niftiIn);
+				imOut = imOut.*4096./MaxIm;
+			else
+				warning('%s\n%s','Found unusually large NIfTI scale slope and image data, check if all processing and quantification went correctly:',niftiIn);
 			end
 		end
 	end
