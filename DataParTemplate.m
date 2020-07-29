@@ -229,7 +229,21 @@ function x = DataParTemplate(x)
 % 							   (OPTIONAL, DEFAULT = 0).
 % 							   - 1 = enabled
 % 							   - 0 = disabled
-
+%
+%% Masking parameters
+%   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
+%                       (1 = yes, 0 = no)
+%                       [1 0 0 0] = susceptibility mask (either population-or subject-wise)
+%                       [0 1 0 0] = vascular mask (only subject-wise)
+%                       [0 0 1 0] = subject-specific tissue-masking (e.g. pGM>0.5)
+%                       [0 0 0 1] = WholeBrain masking (used as memory compression)
+%                       [0 0 0 0] = no masking at all
+%                       [1 1 1 1] = apply all masks
+%                       Can also be used as boolean, where 
+%                       1 = [1 1 1 1]
+%                       0 = [0 0 0 0]
+%                       Can be useful for e.g. loading lesion masks outside the GM
+%                       (OPTIONAL, DEFAULT=1)
 
 x.name = ExampleDataSet;
 x.subject_regexp = '^Sub-\d{3}$';
