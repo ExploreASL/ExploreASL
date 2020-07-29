@@ -2,7 +2,7 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 %xASL_im_CreatePseudoCBF Create a pseudoCBF reference image for CBF-based
 %ASL->T1w registration
 %
-% FORMAT: xASL_im_CreatePseudoCBF(x, spatialCoV[,bExtraScaling, bPVC])
+% FORMAT: xASL_im_CreatePseudoCBF(x, spatialCoV[, bPVC])
 %
 % INPUT:
 %   x             - structure containing fields with all information required to run this submodule (REQUIRED)
@@ -50,13 +50,13 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 %              pseudoTissue & the CBF templates of CBF, ATT biasfield and vascular peaks, based on spatial CoV.
 %
 %              This submodule performs the following steps:
-%              1) Create the pseudoTissue CBF reference image, if it doesnt exist already
-%              2) Create the native space copies of ASL templates, if they dont exist already
-%              3) Spatial CoV input argument check
-%              4) Load native space copies of templates
-%              5) Create pseudoTissue from segmentations, mix this with the mean CBF template depending on spatial CoV
-%              6) Create pseudoCBF reference image used for CBF-based registration
-%              7) Scale mean_PWI_Clipped source image to the same range as PseudoCBF
+%              1. Create the pseudoTissue CBF reference image, if it doesnt exist already
+%              2. Create the native space copies of ASL templates, if they dont exist already
+%              3. Spatial CoV input argument check
+%              4. Load native space copies of templates
+%              5. Create pseudoTissue from segmentations, mix this with the mean CBF template depending on spatial CoV
+%              6. Create pseudoCBF reference image used for CBF-based registration
+%              7. Scale mean_PWI_Clipped source image to the same range as PseudoCBF
 %              
 %              Special case is the presence of 
 % EXAMPLE: xASL_im_CreatePseudoCBF(x, 0.4);
@@ -74,7 +74,7 @@ if ~xASL_exist(x.Path_PseudoTissue,'file') || bPVC
     % be lower). For isotropy and simplicity we take the highest resolution of
     % the 3 dimensions (smallest VoxelSize)
     nii = xASL_io_ReadNifti(x.P.Path_ASL4D);
-    NewVoxelSize = repmat(min(nii.hdr.pixdim(2:4)),[1,3]);
+	NewVoxelSize = repmat(min(nii.hdr.pixdim(2:4)),[1,3]);
 
 	% Smooth the high resolution pGM & pWM images with the ASL voxelsize, and
 	% Pre-smooth the high resolution pGM & pWM images to match the ASL voxelsize, and

@@ -1,4 +1,4 @@
-function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
+ffunction xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
 % ExploreASL wrapper for SPM affine registration function (a.k.a. 'old normalize'). On default run without DCT.
 %
 % FORMAT: xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef[,otherList, bDCT])
@@ -46,7 +46,7 @@ if nargin < 6 || isempty(bDCT)
 end
 
 if ~isempty(otherList) && bDCT
-	warning('Cannot modify the headers in otherList if bDCT is true');
+	warning('otherList not empty and bDCT==1. DCT produces a _sn.mat file with transformation parameters, it cannot apply the transformation to the files in the otherList');
 end
 
 % Unzip the input files 

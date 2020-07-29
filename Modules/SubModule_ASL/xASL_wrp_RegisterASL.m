@@ -65,7 +65,6 @@ function xASL_wrp_RegisterASL(x)
 %
 %       x.bAffineRegistration - specifies the ASL-T1w rigid-body registration is followed up by an affine
 %                                 registration (OPTIONAL, DEFAULT = 0)
-%                             - turned off on low quality
 %                          - 0 = affine registration disabled
 %                          - 1 = affine registration enabled
 %                          - 2 = affine registration automatically chosen based on
@@ -99,11 +98,6 @@ if ~isfield(x,'bAffineRegistration') || isempty(x.bAffineRegistration)
 	x.bAffineRegistration = 0; % Default - affine disabled
 end
 
-% Turn off affine and DCT on low quality
-if ~x.Quality 
-	x.bAffineRegistration = 0;
-end
-
 % DCT off by default
 if ~isfield(x,'bDCTRegistration') || isempty(x.bDCTRegistration) 
 	x.bDCTRegistration = 0;
@@ -120,7 +114,7 @@ if x.bDCTRegistration
 end
 
 % By default, don't use dummy structural even if the structural image is missing
-if ~isfield(x,'bUseMNIasDummyStructural')
+if ~isfield(x,'bUseMNIasDummyStructural') || isempty(x.bUseMNIasDummyStructural)
 	x.bUseMNIasDummyStructural = false;
 end
 
@@ -213,17 +207,17 @@ elseif ~StructuralRawExist && ~StructuralDerivativesExist
     
         fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
         IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
+		
         % Copy dummy transformation field
         xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
-        % Create dummy native space structural derivatives
-        % In standard space
+
+		% Use the GM, WM and T1 from the template to create dummy structural files
+        % Create dummy structural derivatives in standard space
         xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
         xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
-		
-		% By default use the GM, WM and T1 from the template
 		xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
 			
-        % In native space
+		% Create dummy structural derivatives in native space
         xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_T1});
 
         % Dummy files
@@ -450,10 +444,19 @@ if bRegistrationCBF
 			bAffineRegistration = x.bAffineRegistration;
 		end
 
-        if bAffineRegistration % perform affine registration
-			bDCTfailed = 0; % Record the success of DCT, in case that DCT fails, we can still run a simple affine only
-			if x.bDCTRegistration
-				xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
+        if bAffineRegistration % perform affine or affine+DCT registration
+			xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
+			
+			if x.bDCTRegistration == 0
+				% The affine registration option
+				fprintf('%s\n','Performing affine registration');
+				xASL_im_CreatePseudoCBF(x, spatCoVit(end));
+				
+				% apply also to mean_PWI_clipped and other files
+				xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5, BaseOtherList);
+			else
+				% The affine+DCT registration option
+				fprintf('%s\n','Performing affine+DCT registration');
 				if x.bDCTRegistration == 1
 					xASL_im_CreatePseudoCBF(x, spatCoVit(end));
 					
@@ -467,38 +470,19 @@ if bRegistrationCBF
 						xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1);
 					end
 				end
-				TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
-				if TanimotoPerc(end)>=TanimotoPerc(end-1)*0.99
-					% if alignment improved or remained more or less the same
-					xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
-				else
-					% if alignment got significantly (>1% Tanimoto) worse
-					bDCTfailed = 1;
-					xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
-					TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
-				end
 			end
 			
-			if x.bDCTRegistration == 0 || bDCTfailed
-				% When DCT was not scheduled or failed, still run affine
-				fprintf('%s\n','Performing affine registration');
-				
-				xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
-				xASL_im_CreatePseudoCBF(x, spatCoVit(end));
-				
-				% apply also to mean_PWI_clipped and other files
-				xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5, BaseOtherList);
-				
-				TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
-				if TanimotoPerc(end)>=TanimotoPerc(end-1)*0.99
-					% if alignment improved or remained more or less the same
-					xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
-				else
-					% if alignment got significantly (>1% Tanimoto) worse
-					xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
-					TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
-				end
+			% Verify if the affine/affine+DCT registration improved the alignment
+			TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+			if TanimotoPerc(end)>=TanimotoPerc(end-1)*0.99
+				% if alignment improved or remained more or less the same
+				xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+			else
+				% if alignment got significantly (>1% Tanimoto) worse
+				xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+				TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
 			end
+			
 			% Remove the temporary files - Clipped_ORI and rPWI 
 			if xASL_exist(x.P.Path_mean_PWI_Clipped_ORI)
 				xASL_delete(x.P.Path_mean_PWI_Clipped_ORI);
