@@ -10,11 +10,11 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 %                   of mean CBF, ATT biasfield and vascular artifacts
 %                   (REQUIRED). When this parameter is set to 0 or lower, this
 %                   function will skip creating the pseudoCBF NIfTI
-%   bPVC          - Does not set fixed values of GM and WM CBF, but rather calculate the regional PVEC and set 
-%                   the values of the PseudoTissue based on that. Do a better scaling saved to rPWI.nii to 
-%                   be used   (OPTIONAL, DEFAULT = FALSE)
+%   bPVC          - boolean for performing regional partial volume correction and to set 
+%                   the values of the PseudoTissue based on its results, rather than a global scaling. Do a better scaling saved to rPWI.nii to 
+%                   be used, especially for non-NMI cost functions (OPTIONAL, DEFAULT = FALSE)
 % OUTPUT: n/a
-% OUTPUT FILES: in the ASL Session Folder:
+% OUTPUT FILES: in the ASL native space folder:
 %              - PseudoCBF.nii: final pseudoCBF image used for registration
 %              - PseudoTissue.nii: pseudoCBF image created from pGM+pWM
 %                from the subject only. Is blended in the pseudoCBF image
@@ -58,10 +58,9 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 %              6. Create pseudoCBF reference image used for CBF-based registration
 %              7. Scale mean_PWI_Clipped source image to the same range as PseudoCBF
 %              
-%              Special case is the presence of 
 % EXAMPLE: xASL_im_CreatePseudoCBF(x, 0.4);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 if nargin < 3 || isempty(bPVC)
 	bPVC = false;

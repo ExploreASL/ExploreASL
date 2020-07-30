@@ -1,4 +1,4 @@
-ffunction xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
+function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
 % ExploreASL wrapper for SPM affine registration function (a.k.a. 'old normalize'). On default run without DCT.
 %
 % FORMAT: xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef[,otherList, bDCT])
@@ -9,7 +9,7 @@ ffunction xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
 %   fwhmSrc   - Gaussian smoothing to be applied to the source image before estimating the affine registration, in FWHM (mm) (REQUIRED)
 %   fwhmRef   - Gaussian smoothing to be applied to the reference image before estimating the affine registration, in FWHM (mm) (REQUIRED)
 %   otherList - a list of NIFTIs to which should this registration be applied (OPTIONAL, default EMPTY)
-%   bDCT      - perfroms the low-degree Discrete Cosine Transform (DCT) (OTIONAL, default FALSE)
+%   bDCT      - boolean specifying to perform the low-degree Discrete Cosine Transform (DCT) (OTIONAL, default FALSE)
 %
 % OUTPUT: n/a
 %                         
@@ -26,7 +26,7 @@ ffunction xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
 % EXAMPLE: xASL_spm_affine('/MyStudy/Subject1/T1.nii.gz', '/MyStudy/Subject1/mean_control.nii', 5, 5);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-% 2015-2020 HJ, JP
+
    
 % Check parameters
 if nargin<5
@@ -35,10 +35,10 @@ else
     otherList = xASL_adm_OtherListSPM(otherList);
 end
 if nargin < 4
-	error('Requires 4 input parameters.');
+	error('Requires 4 input parameters');
 end
 if ~xASL_exist(srcPath) || ~xASL_exist(refPath)
-	error('Cannot find input images.');
+	error('Cannot find input images');
 end
 
 if nargin < 6 || isempty(bDCT)
@@ -64,10 +64,10 @@ matlabbatch{1}.spm.tools.oldnorm.est.eoptions.regtype       = 'subj';
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.cutoff        = 25; % biasfield correction
 if bDCT
 	% Includes also the Direct Cosine Transform
-	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits          = 16; % 16 is the default for SPM
+	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 16; % 16 is the default for SPM
 else
 	% Excludes DCT
-	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits          = 0;
+	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 0;
 end
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.reg           = 1;
 
