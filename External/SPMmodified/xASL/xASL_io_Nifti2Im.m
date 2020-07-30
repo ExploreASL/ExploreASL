@@ -134,16 +134,17 @@ end
 % In the import stage, the scaling can go wrong. In this case, we throw a
 % warning & try to correct this
 
-if exist('imOut', 'var') && exist('nii', 'var')
+if exist('imOut', 'var')
 	MaxIm = max(imOut(isfinite(imOut)));
-	if MaxIm>1e9
-		if exist('Fpath', 'var') && exist('Ffile', 'var')
-			if ~isempty(regexp(Ffile,'^.*(T1|FLAIR).*$'))
-				warning('%s\n%s','Found a structural image with unusually large NIfTI scale slope and image data, resetting the maximum to 4096 upon reading:',niftiIn);
-				imOut = imOut.*4096./MaxIm;
-			else
-				warning('%s\n%s','Found unusually large NIfTI scale slope and image data, check if all processing and quantification went correctly:',niftiIn);
-			end
+	if MaxIm>1e9 && exist('Fpath', 'var') && exist('Ffile', 'var')
+		if ~isempty(regexp(Ffile, '^.*(T1|FLAIR).*$'))
+			warning('%s\n%s', 'Structural image with extremely high image intensities detected, resetting the maximum to 4096:', niftiIn);
+			imOut = imOut.*4096./MaxIm;
+		else
+			warning('%s\n%s', 'Extremely high image intensities detected, check if all processing and quantification went correctly:', niftiIn);
+			fprintf('This issue was seen before with erroneous interpretation of the Philips rescale slope\n');
+			fprintf('We only correct this automatically for T1/FLAIR images to avoid quantification issues\n');
+			fprintf('Hence for this image it is not automatically corrected\n');
 		end
 	end
 end
