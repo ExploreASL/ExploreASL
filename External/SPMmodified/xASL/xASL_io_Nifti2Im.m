@@ -46,7 +46,7 @@ niiMat = false; % default
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 if numel(niftiIn) == 1 % Assume this is a NIfTI
     nii = niftiIn;
-elseif isnumeric(niftiIn) || islogical(niftiIn) && prod(size(niftiIn))>1000 % assume this is an image already
+elseif isnumeric(niftiIn) || islogical(niftiIn) && numel(niftiIn)>1000 % assume this is an image already
     imOut = niftiIn;
 else % assume this is a path, we try to open
     try
@@ -96,6 +96,8 @@ end
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % 4) Convert to single precision data format
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+% SPM opens to double precision data format by default, which takes up
+% unnecessary large memory
 if exist('imOut','var') && ~isa(imOut,'single') && ~niiMat
     imOut = single(imOut);
 elseif ~exist('imOut','var') && ~niiMat
@@ -124,5 +126,28 @@ if niiMat
         fprintf('%s\n',['Message: ' ME.message]);
     end
 end        
+
+
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% 6) Check scaling
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% In the import stage, the scaling can go wrong. In this case, we throw a
+% warning & try to correct this
+
+if exist('imOut', 'var')
+	MaxIm = max(imOut(isfinite(imOut)));
+	if MaxIm>1e9 && exist('Fpath', 'var') && exist('Ffile', 'var')
+		if ~isempty(regexp(Ffile, '^.*(T1|FLAIR).*$'))
+			warning('%s\n%s', 'Structural image with extremely high image intensities detected, resetting the maximum to 4096:', niftiIn);
+			imOut = imOut.*4096./MaxIm;
+		else
+			warning('%s\n%s', 'Extremely high image intensities detected, check if all processing and quantification went correctly:', niftiIn);
+			fprintf('This issue was seen before with erroneous interpretation of the Philips rescale slope\n');
+			fprintf('We only correct this automatically for T1/FLAIR images to avoid quantification issues\n');
+			fprintf('Hence for this image it is not automatically corrected\n');
+		end
+	end
+end
+
 
 end
