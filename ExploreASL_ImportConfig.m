@@ -850,9 +850,11 @@ switch imPar.studyID
         imPar.folderHierarchy = {'^(sub).*$', '^(visit).*$', '^(ASL|T1|FLAIR|M0)'}; % Test with docker data
         imPar.tokenOrdering = [1 2 3]; % subject visit session scantype
         imPar.tokenScanAliases = {'^ASL$','ASL4D';'^T1$', 'T1';'^FLAIR$', 'FLAIR'; '^M0$', 'M0'};
-        imPar.tokenVisitAliases = {'1', '_1'; '2', '_2'};
+		for iToken=1:30
+			imPar.tokenVisitAliases{iToken,1} = num2str(iToken);
+			imPar.tokenVisitAliases{iToken,2} = ['_' num2str(iToken)];
+		end
         imPar.bMatchDirectories = true;
-
 
 	otherwise % by default, append study ID and raw (or analysis) to the roots
 		warning('Unknown study: %s', imPar.studyID);
