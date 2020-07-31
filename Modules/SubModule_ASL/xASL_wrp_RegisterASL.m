@@ -127,7 +127,7 @@ end
 % All functions below will remove those that are unexisting, or used in the
 % registration estimation.
 BaseOtherList = {x.P.Path_despiked_ASL4D, x.P.Path_mean_control, x.P.Path_M0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped, x.P.Path_ASL4D_RevPE,...
-	x.P.Path_rPWI,x.P.Path_mean_PWI_Clipped_ORI,...
+	x.P.Path_mean_PWI_Clipped_DCT,x.P.Path_mean_PWI_Clipped_ORI,...
     x.P.Path_ASL4D_ORI, fullfile(x.SESSIONDIR, 'B0.nii'), fullfile(x.SESSIONDIR, 'Unwarped.nii'), fullfile(x.SESSIONDIR, 'Field.nii'), fullfile(x.SESSIONDIR, 'TopUp_fieldcoef.nii')};
 
 if ~strcmp(x.P.Path_despiked_ASL4D, x.P.Path_ASL4D)
@@ -519,7 +519,7 @@ end
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
 if x.DELETETEMP
-    File2Del = {x.Mean_Native, x.Bias_Native, x.Vasc_Native, x.Mask_Native, x.raw_Native, x.P.Path_mean_PWI_Clipped,...
+    File2Del = {x.Mean_Native, x.Bias_Native, x.Vasc_Native, x.Mask_Native, x.raw_Native, x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_DCT,...
         x.P.Path_mean_control, x.P.Path_PseudoCBF, x.PathMask, x.Path_PseudoTissue, x.PathMask, x.P.Path_mean_PWI_Clipped_ORI};
     for iL=1:length(File2Del)
         xASL_delete(File2Del{iL});
