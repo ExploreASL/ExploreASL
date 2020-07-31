@@ -87,9 +87,6 @@ ExploreASL_Import(ExploreASL_ImportConfig(root),false,true);
 % Rename folder
 movefile(fullfile(root,'analysis'),fullfile(root,'data'));
 
-% Generate DataParFile
-fID = fopen(DataParFile,'w');
-
 % Parameters
 data.x.name = "incoming";
 data.x.subject_regexp = "^sub$";
@@ -128,7 +125,7 @@ pathASL4D = fullfile(root,'data','sub','ASL_1','ASL4D.json');
 try
     % Read JSON file
     if xASL_exist(pathASL4D,'file')
-        val = jsondecode(fileread(pathASL4D));
+        val = spm_jsonread(pathASL4D);
         % Get vendor
         if ~isfield(val,'Vendor')
             data.x.Vendor = val.Manufacturer;
@@ -148,14 +145,7 @@ if strcmp(Acquisition,"2D")
 end
 
 % Write data to JSON file
-JSONstr = jsonencode(data);
-if fID == -1, error('Cannot create JSON file...'); end
-fwrite(fID, JSONstr, 'char');
-fclose(fID);
-
-
-
-
+spm_jsonwrite(DataParFile,data);
 
 
 
