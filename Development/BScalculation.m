@@ -66,5 +66,5 @@ for ii=4:6
 	
 	M((LABDUR+PLD+1):(LABDUR+PLD+IMAG),ii) = 1 - (1 - M(LABDUR+PLD,ii))*exp( -(((LABDUR+PLD+1):(LABDUR+PLD+IMAG))-LABDUR-PLD)/T1B);
 end
-figure;plot(M);hold on
+figure;plot(M(:,1));hold on
 plot([LABDUR+PLD-1,LABDUR+PLD+1],[-1,1],'k')
