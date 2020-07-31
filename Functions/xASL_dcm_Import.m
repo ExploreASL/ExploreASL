@@ -93,7 +93,6 @@ data.x.subject_regexp = "^sub$";
 data.x.Quality = 1;
 data.x.bNativeSpaceAnalysis = 1;
 data.x.DELETETEMP = 1;
-data.x.readout_dim = "2D";
 
 % Add Q field
 data.x.Q = struct;
@@ -103,12 +102,12 @@ data.x.M0 = 'UseControlAsM0';
 x_temporary = xASL_import_json(dockerInterfaceFile);
 
 % Reassign fields
-data.x.Sequence = x_temporary.Sequence;
-data.x.Q.LabelingType = x_temporary.LabelingType;
-data.x.readout_dim = x_temporary.readout_dim;
-data.x.Q.BackGrSupprPulses = x_temporary.BackGrSupprPulses;
-data.x.Q.Initial_PLD = x_temporary.Initial_PLD;
-data.x.Q.LabelingDuration = x_temporary.LabelingDuration;
+if isfield(x_temporary,'Sequence'),             data.x.Sequence = x_temporary.Sequence; end
+if isfield(x_temporary,'LabelingType'),         data.x.Q.LabelingType = x_temporary.LabelingType; end
+if isfield(x_temporary,'readout_dim'),          data.x.readout_dim = x_temporary.readout_dim; end
+if isfield(x_temporary,'BackGrSupprPulses'),    data.x.Q.BackGrSupprPulses = x_temporary.BackGrSupprPulses; end
+if isfield(x_temporary,'Initial_PLD'),          data.x.Q.Initial_PLD = x_temporary.Initial_PLD; end
+if isfield(x_temporary,'LabelingDuration'),     data.x.Q.LabelingDuration = x_temporary.LabelingDuration; end
 
 % Fix Sequence name
 switch data.x.Sequence
@@ -126,28 +125,17 @@ try
     % Read JSON file
     if xASL_exist(pathASL4D,'file')
         val = spm_jsonread(pathASL4D);
-        % Get vendor
-        if ~isfield(val,'Vendor')
-            data.x.Vendor = val.Manufacturer;
-        end
-        % SliceReadoutTime only necessary for 2D datasets -> Get AcquisitionType
-        if isfield(val,'MRAcquisitionType')
-            Acquisition = val.MRAcquisitionType;
-        end
+        % Set vendor to manufacturer and remove slice readout time for 3D cases
+        if ~isfield(val,'Vendor'), data.x.Vendor = val.Manufacturer; end
+        if isfield(val,'MRAcquisitionType'), Acquisition = val.MRAcquisitionType; end
+        if strcmp(Acquisition,"2D"), data.x.Q.SliceReadoutTime = x_temporary.SliceReadoutTime; end
     end
 catch
-    fprintf('Something went wrong...\n');
-end
-
-% Only add SliceReadoutTime for 2D datasets
-if strcmp(Acquisition,"2D")
-    data.x.Q.SliceReadoutTime = x_temporary.SliceReadoutTime;
+    warning('Something went wrong...');
 end
 
 % Write data to JSON file
 spm_jsonwrite(DataParFile,data);
-
-
 
 
 
