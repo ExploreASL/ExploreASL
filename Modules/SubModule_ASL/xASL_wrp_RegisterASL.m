@@ -448,42 +448,58 @@ if bRegistrationCBF
 		end
 
         if bAffineRegistration % perform affine or affine+DCT registration
-			xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
-			
+						
 			if x.bDCTRegistration == 0
 				% The affine registration option
 				fprintf('%s\n','Performing affine registration');
+				
+				xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
+				
 				xASL_im_CreatePseudoCBF(x, spatCoVit(end));
 				
 				% apply also to mean_PWI_clipped and other files
 				xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5, BaseOtherList);
+				
+				% Verify if the affine registration improved the alignment
+				TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+				if TanimotoPerc(end)>=TanimotoPerc(end-1)*0.99
+					% if alignment improved or remained more or less the same
+					xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+				else
+					% if alignment got significantly (>1% Tanimoto) worse
+					xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+					TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
+				end
 			else
 				% The affine+DCT registration option
 				fprintf('%s\n','Performing affine+DCT registration');
+				
+				% Affine+DCT option does not need a backup because no function is modified, but rather a _sn.mat file 
+				% is created and can be simply deleted if needed
 				if x.bDCTRegistration == 1
 					xASL_im_CreatePseudoCBF(x, spatCoVit(end));
 					
 					% Use Affine with DCT registration as well
-					xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1);
+					xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.Quality);
 				else
 					% Use Affine with DCT registration with PVC to prepare the contrast
 					% Iterate two times to best use the PVC feature
 					for iTDCT = 1:2
 						xASL_im_CreatePseudoCBF(x, spatCoVit(end),1);
-						xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1);
+						xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.Quality);
 					end
 				end
-			end
-			
-			% Verify if the affine/affine+DCT registration improved the alignment
-			TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
-			if TanimotoPerc(end)>=TanimotoPerc(end-1)*0.99
-				% if alignment improved or remained more or less the same
-				xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
-			else
-				% if alignment got significantly (>1% Tanimoto) worse
-				xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
-				TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
+				
+				% Verify if the DCT+affine registration improved the alignment
+				TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+				% No need to delete backup if all went fine.
+				if TanimotoPerc(end)<TanimotoPerc(end-1)*0.99
+					% if alignment got significantly (>1% Tanimoto) worse
+					TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
+					
+					[FpathSnMat, FfileSnMat] = xASL_fileparts(x.P.Path_mean_PWI_Clipped);
+					delete(fullfile(FpathSnMat, [FfileSnMat '_sn.mat']));
+				end
 			end
 			
             spatCoVit(iT+2) = xASL_im_GetSpatialCovNativePWI(x);

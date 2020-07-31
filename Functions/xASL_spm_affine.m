@@ -1,7 +1,7 @@
-function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
+function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT, bQuality)
 % ExploreASL wrapper for SPM affine registration function (a.k.a. 'old normalize'). On default run without DCT.
 %
-% FORMAT: xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef[,otherList, bDCT])
+% FORMAT: xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef[,otherList, bDCT, bQuality])
 % 
 % INPUT:
 %   refPath   - path to reference space (NifTI image) you want to register the source image to (REQUIRED)
@@ -10,6 +10,7 @@ function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
 %   fwhmRef   - Gaussian smoothing to be applied to the reference image before estimating the affine registration, in FWHM (mm) (REQUIRED)
 %   otherList - a list of NIFTIs to which should this registration be applied (OPTIONAL, default EMPTY)
 %   bDCT      - boolean specifying to perform the low-degree Discrete Cosine Transform (DCT) (OTIONAL, default FALSE)
+%   bQuality  - boolean for quality mode (TRUE = high, FALSE = low) - decreases the number of DCT coefficients for DCT (OPTIONAL, default TRUE)
 %
 % OUTPUT: n/a
 %                         
@@ -49,6 +50,10 @@ if ~isempty(otherList) && bDCT
 	warning('otherList not empty and bDCT==1. DCT produces a _sn.mat file with transformation parameters, it cannot apply the transformation to the files in the otherList');
 end
 
+if nargin < 7 || isempty(bQuality)
+	bQuality = true;
+end
+
 % Unzip the input files 
 srcPath = xASL_adm_UnzipNifti(srcPath);
 refPath = xASL_adm_UnzipNifti(refPath);
@@ -64,7 +69,11 @@ matlabbatch{1}.spm.tools.oldnorm.est.eoptions.regtype       = 'subj';
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.cutoff        = 25; % biasfield correction
 if bDCT
 	% Includes also the Direct Cosine Transform
-	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 16; % 16 is the default for SPM
+	if bQuality
+		matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 16; % 16 is the default for SPM
+	else
+		matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 4; % low quality mode
+	end
 else
 	% Excludes DCT
 	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 0;

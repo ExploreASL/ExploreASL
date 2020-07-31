@@ -205,6 +205,12 @@ function x = DataParTemplate(x)
 %                  - 1 = affine registration enabled
 %                  - 2 = affine registration automatically chosen based on
 %                        spatial CoV of PWI
+% x.bDCTRegistration -  Specifies if to include the DCT registration on top of Affine, all other 
+%                            requirements for affine are thus also taken into account (OPTIONAL, DEFAULT = 0)
+%                            the x.bAffineRegistration must be >0 for DCT to run
+%                          - 0 = DCT registration disabled
+%                          - 1 = DCT registration enabled if affine enabled and conditions for affine passed
+%                          - 2 = DCT enabled as above, but use PVC on top of it to get the local intensity scaling right
 % x.bRegisterM02ASL - boolean specifying whether M0 is registered to
 %                     mean_control image (or T1w if no control image exists)
 %                     It can be useful to disable M0 registration if the
