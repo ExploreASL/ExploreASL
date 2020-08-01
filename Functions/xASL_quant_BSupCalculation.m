@@ -50,4 +50,37 @@ if nargin < 4 || isempty(SliceTime)
 	SliceTime = 0;
 end
 
+% Sort the BS pulses descending - i.e. from the first to last
+BSupTime = sort(BSupTime,'descend');
+SignalPercentageInitial = zeros(1,1+numel(BSupTime));
+
+% First phase is from the initial saturation to the first BSPulse
+if SaturationTime
+	% Recovery from 0 to 1 at T1 for the period between SaturationTime and the first BSpulse
+	SignalPercentageInitial(1) = 1 - (1 - 0)*exp(-(SaturationTime-BSupTime(1))/T1Time);
+else
+	% Without saturation, full signal is preset
+	SignalPercentageInitial(1) = 1;
+end
+
+% Iterate over the BSup pulses
+for iBSup = 1:length(BSupTime)
+	% First invert the signal by the BSpulse
+	SignalPercentageInitial(iBSup) = -SignalPercentageInitial(iBSup);
+	
+	% Then it relaxes
+	if iBSup == length(BSupTime)
+		% either until the readout
+		SignalPercentageInitial(iBSup+1) = 1 - (1 - SignalPercentageInitial(iBSup))*exp(-BSupTime(iBSup)/T1Time);
+	else
+		% or until the next BS pulse
+		SignalPercentageInitial(iBSup+1) = 1 - (1 - SignalPercentageInitial(iBSup))*exp(-(BSupTime(iBSup)-BSupTime(iBSup+1))/T1Time);
+	end
+end
+
+% SignalPercentageInitial is the signal percentage at the start of the readout
+
+% Calculate the final signal percentages at the given slice times
+SignalPercentage = 1 - (1 - SignalPercentageInitial(end))*exp(-(SliceTime)/T1Time);
+
 end

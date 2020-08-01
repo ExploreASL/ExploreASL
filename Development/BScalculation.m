@@ -27,17 +27,19 @@ switch(3)
 		%BS3 = ;
 end
 
-%T1 = [1240,920,4300];
+T1 = [1240,920,4300];
 LABEFF = 0.9;
 T1B = 1664;
-T1 = [1200,700,4300];
+%T1 = [1200,700,4300];
 
 M  = zeros(LABDUR+PLD+IMAG,5);
 
-% The static tissue signal
+% The static tissue signal - for cycle over the three tissue types
 for ii = 1:3
+	% Phase one - from saturation to the first BS pulse
 	M(1:(BS1-1),ii) = 1 - (1 - 0)*exp(-(1:(BS1-1))/T1(ii));
 
+	% Signal 180 inversion of the first BS pulse
 	M(BS1,ii) = -M(BS1-1,ii);
 
 	M((BS1+1):(BS2-1),ii) = 1 - (1 - M(BS1,ii))*exp( -(((BS1+1):(BS2-1))-BS1)/T1(ii));
@@ -66,5 +68,5 @@ for ii=4:6
 	
 	M((LABDUR+PLD+1):(LABDUR+PLD+IMAG),ii) = 1 - (1 - M(LABDUR+PLD,ii))*exp( -(((LABDUR+PLD+1):(LABDUR+PLD+IMAG))-LABDUR-PLD)/T1B);
 end
-figure;plot(M(:,1));hold on
+figure;plot(M(:,4));hold on
 plot([LABDUR+PLD-1,LABDUR+PLD+1],[-1,1],'k')
