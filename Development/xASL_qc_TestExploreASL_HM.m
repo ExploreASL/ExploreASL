@@ -48,9 +48,9 @@ if bCompiled
     end
     cd(CurrentDir);
     
-    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, 0, MatlabPath, [], [], bOverwrite, [], RunTimePath)
+    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, 0, MatlabPath, [], [], bOverwrite, [], RunTimePath, 0);
 else
-    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, [], [], [], bOverwrite)
+    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, [], [], [], bOverwrite, [], [], 0);
 end
 
 
