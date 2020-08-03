@@ -1,9 +1,31 @@
-# ExploreASL V1.0.0
-
-  ----
-This is the first release version.
+# ExploreASL V1.1.3
 
 ----
+
+## Bug Fixes
+
+* hotfix minor bug in running the import using DCMTK without the Matlab Image Processing Toolbox #30
+
+# ExploreASL V1.1.2
+
+----
+
+## Bug Fixes
+
+* hotfix minor bug in loading NIfTIs containing lesion masks in CAT12 #28
+
+----
+
+# ExploreASL V1.1.1
+
+----
+
+## Bug Fixes
+
+* hotfix minor bug in creating participants.tsv #23
+
+----
+
 
 # ExploreASL V1.1.0
 
@@ -45,32 +67,10 @@ The walkthrough document and how-to videos can be found on the [](https://sites.
 * Recent changes include the improvement of the documentation within the ExploreASL structure using markdown files and the introduction of a new documentation repository (#7)
 * Some function headers were added for increased understandability (#19). These can be viewed in Matlab by: ```help ExploreASL_Master``` where you can replace ExploreASL_Master by the actual function name
 
-----
-
-# ExploreASL V1.1.1
 
 ----
 
-## Bug Fixes
+# ExploreASL V1.0.0
 
-* hotfix minor bug in creating participants.tsv #23
-
-----
-
-# ExploreASL V1.1.2
-
-----
-
-## Bug Fixes
-
-* hotfix minor bug in loading NIfTIs containing lesion masks in CAT12 #28
-
-----
-
-# ExploreASL V1.1.3
-
-----
-
-## Bug Fixes
-
-* hotfix minor bug in running the import using DCMTK without the Matlab Image Processing Toolbox #30
+  ----
+This is the first release version.
