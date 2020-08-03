@@ -1,4 +1,63 @@
-# ExploreASL V1.1.3
+# ExploreASL v1.2.0
+
+----
+## Major feature improvements (still backward compatible)
+
+* Add user flexibility for creating average maps, allowing flipping
+* Provide a lesion or ROI mask, to be used not only for cost function masking but also as standard space ROI for ROI-analysis
+  This use is now easier, by simply adding Lesion_FLAIR_1.nii or Lesion_T1_2.nii etc, and visualization improved. These masks are now automatically created   (where lesion can be any other ROI):
+>> 1. Intralesional
+>> 2. Perilesional, pGM+pWM
+>> 3. Hemisphere (ipsilateral to lesion)
+>> 4. Contralateral (i)
+>> 5. Contralateral (ii)
+>> 6. Contralateral (iii)
+* Option x.S.bMasking added, allowing specifying masking separately for:
+>> 1. bSusceptibilityMask
+>> 2. bVascularMask
+>> 3. subject-wise bGMMask (e.g. the pGM>0.7)
+>> 4. brainmasking when loading for lower memory usage
+* Affine registration improved & Discrete Cosine Transform (DCT) non-linear registration option added, including an option with partial volume correction built-in for improved DCT-based registration
+
+## Bug Fixes
+
+* Allow zipping in Unix-based OS without JavaVirtualMachine 
+* Quantification issue with Philips scale slopes
+* DCTMK fix, import parameters
+* Use _xASL_adm_UnixPath()_ for Unix system calls, for correct path usage (e.g. for spaces that need escaping)
+* Double escaping of backslashes in converting .m to .json for DataPar file - subject-regexp
+* Compilation path error
+* Correctly concatenate numbers when _xASL_num2str_
+* Improvements _xASL_adm_LoadParms_ for converting parameters ASL flavors to BIDS/ExploreASL internally
+----
+
+## Features
+
+* New startup option for starting ExploreASL, loading data, without processing data
+* Shortcut _ExploreASL_ for _ExploreASL_Master_
+* Now we have _xASL_csvWrite_, _xASL_csvRead_, _xASL_tsvRead_, _xASL_tsvWrite_
+* _xASL_io_Nifti2Im_ now detects erroneously extreme high scaling (potential import issue with Philips RescaleSlope)
+  issues a warning and/or tries to fix automatically for FLAIR/T1w images
+
+
+---
+## Work in progress
+* Docu Crawler for automatic documentation creation 
+* ExploreASL_Import for different ASL flavors
+* BIDS implementation import
+
+----
+
+## Documentation
+ 
+* create new prefix for visualization functions (_xASL_vis\_\*_ instead of _xASL_im\_\*_)
+* revamp quantification functions for better headers, comments etc
+
+
+----
+
+
+# ExploreASL v1.1.3
 
 ----
 
@@ -6,7 +65,7 @@
 
 * hotfix minor bug in running the import using DCMTK without the Matlab Image Processing Toolbox #30
 
-# ExploreASL V1.1.2
+# ExploreASL v1.1.2
 
 ----
 
@@ -16,7 +75,7 @@
 
 ----
 
-# ExploreASL V1.1.1
+# ExploreASL v1.1.1
 
 ----
 
@@ -27,19 +86,8 @@
 ----
 
 
-# ExploreASL V1.1.0
+# ExploreASL v1.1.0
 
-  
-
-----
-
-  
-
-Additional information about ExploreASL can be found on the [ExploreASL](www.ExploreASL.org) website.
-To start ExploreASL from Matlab, type in: ```ExploreASL_Master```. 
-The walkthrough document and how-to videos can be found on the [](https://sites.google.com/view/exploreasl) [ExploreASL](www.ExploreASL.org) website, and in the [Neuroimage paper]([https://pubmed.ncbi.nlm.nih.gov/32526385/](https://pubmed.ncbi.nlm.nih.gov/32526385/)). Further documentation is work in progress. For any help please contact the main authors/developers at h.j.mutsaerts@amsterdamumc.nl or j.petr@hzdr.de.
-
-  
 
 ----
 
@@ -70,7 +118,7 @@ The walkthrough document and how-to videos can be found on the [](https://sites.
 
 ----
 
-# ExploreASL V1.0.0
+# ExploreASL v1.0.0
 
   ----
 This is the first release version.
