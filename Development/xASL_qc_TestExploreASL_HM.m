@@ -10,6 +10,9 @@ end
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = 1;
 end
+if nargin<4 || isempty(bCompiled)
+    bCompiled = 0;
+end
 
 if ismac
     TestDirOrig = '/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases';
