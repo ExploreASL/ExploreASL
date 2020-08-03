@@ -44,7 +44,7 @@ FoVim = xASL_io_Nifti2Im(x.P.Path_CBF);
 FoVim(:) = 1;
 xASL_io_SaveNifti(x.P.Path_CBF, x.P.Path_FoV, FoVim, 8, false);
 
-if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
     AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
 else
     AffineTransfPath = [];
