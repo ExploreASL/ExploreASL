@@ -11,8 +11,9 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 %                   (REQUIRED). When this parameter is set to 0 or lower, this
 %                   function will skip creating the pseudoCBF NIfTI
 %   bPVC          - boolean for performing regional partial volume correction and to set 
-%                   the values of the PseudoTissue based on its results, rather than a global scaling. Do a better scaling saved to rPWI.nii to 
-%                   be used, especially for non-NMI cost functions (OPTIONAL, DEFAULT = FALSE)
+%                   the values of the PseudoTissue based on its results, rather than a global scaling. 
+%                   Improved scaling saved to x.P.Path_mean_PWI_Clipped_DCT
+%                   to be used, especially for non-NMI cost functions (OPTIONAL, DEFAULT = FALSE)
 % OUTPUT: n/a
 % OUTPUT FILES: in the ASL native space folder:
 %              - PseudoCBF.nii: final pseudoCBF image used for registration
@@ -192,7 +193,7 @@ xASL_io_SaveNifti(x.Mean_Native, x.P.Path_PseudoCBF, PseudoCBFim, [], 0);
 
 %% ----------------------------------------------------------------------------------------
 %% 7) Scale mean_PWI_Clipped source image to the same range as PseudoCBF for the rigid and affine registration
-% The rPWI is used for scaling and PWI.nii is used for DCT
+% rPWI (x.P.Path_mean_PWI_Clipped_DCT) is used for scaling and PWI.nii is used for DCT
 if ~bPVC
 	pseudoIM = xASL_io_Nifti2Im(x.P.Path_PseudoCBF);
 	pseudoIM(isnan(pseudoIM)) = 0;
@@ -214,7 +215,7 @@ if ~bPVC
 	% Save the image for the rigid registration
 	xASL_io_SaveNifti(x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped, PWIim, [], 0);
 else
-	% Calculate the proper scaling of rPWI to PseudoTissue, but leaves the other mean_PWI_Clipped unaffected
+	% Calculate the proper scaling of rPWI (x.P.Path_mean_PWI_Clipped_DCT) to PseudoTissue, but leave the other mean_PWI_Clipped unaffected
 	% Masks the perfused brain
 	pseudoIM = xASL_io_Nifti2Im(x.P.Path_PseudoCBF);
 	pseudoIM(isnan(pseudoIM)) = 0;
@@ -222,6 +223,7 @@ else
 	imMask(:,:,[1:2,(end-1):(end)]) = 0;
 	
 	% Load only the perfusion values in a relevant range and mask out the air
+    % "rPWI" here is x.P.Path_mean_PWI_Clipped_DCT
 	PWIIM = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
 	rPWIIM = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped_DCT);
 	PWIIM(isnan(PWIIM)) = 0;

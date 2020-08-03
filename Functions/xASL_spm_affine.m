@@ -10,7 +10,7 @@ function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT, bQ
 %   fwhmRef   - Gaussian smoothing to be applied to the reference image before estimating the affine registration, in FWHM (mm) (REQUIRED)
 %   otherList - a list of NIFTIs to which should this registration be applied (OPTIONAL, default EMPTY)
 %   bDCT      - boolean specifying to perform the low-degree Discrete Cosine Transform (DCT) (OTIONAL, default FALSE)
-%   bQuality  - boolean for quality mode (TRUE = high, FALSE = low) - decreases the number of DCT coefficients for DCT (OPTIONAL, default TRUE)
+%   bQuality  - boolean for quality mode, changing the number of DCT coefficients for DCT (TRUE=16, high quality, FALSE=4, low quality) (OPTIONAL, default TRUE)
 %
 % OUTPUT: n/a
 %                         
