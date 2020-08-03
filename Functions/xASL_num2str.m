@@ -45,11 +45,11 @@ end
 if nargin < 4
 	strDelimiter = ',';
 elseif isempty(strDelimiter)
-	strDelimiter = char(strDelimiter);
+	strDelimiter = '';
 end
 
 if size(strDelimiter,1) > 1
-	error('The delimiter can have one row at maximum.');
+	error('The delimiter can only have a single row');
 end
 
 if isnumeric(DataIn)
