@@ -176,7 +176,7 @@ for iFile=1:length(FilePathsAre)
             [Fpath, Ffile] = xASL_fileparts(LesionList{iLesion});
             LesionIM = xASL_io_Nifti2Im(LesionList{iLesion});
             if sum(LesionIM(:))>0
-                fprintf(['>>> Warning: removing ' LesionList{iLesion} ' from ' FilePathsAre{iFile} ' <<<\n']);
+                fprintf('%s\n', ['>>> Warning: removing ' LesionList{iLesion} ' from ' FilePathsAre{iFile} ' <<<']);
                 if ~isequal(unique(LesionIM(:)),[0 1]')
                     warning([LesionList{iLesion} ' was not binary']);
                 end
