@@ -89,33 +89,31 @@ ROI_FLAIR_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^ROI_' x.P.FLAIR '_\d*\.(n
 xASL_adm_VisualCheckLesionRemoval(x, Lesion_T1_list, Lesion_FLAIR_list);
 xASL_vis_VisualizeROIs(x, ROI_T1_list, ROI_FLAIR_list);
 
-% Convert ROIs & lesions to specific masks
-for iLesion=1:length(Lesion_T1_list)
-    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rLesion_' x.P.STRUCT '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), x);
-end
-for iLesion=1:length(ROI_T1_list)
-    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rROI_' x.P.STRUCT '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), x);
-end
-for iLesion=1:length(Lesion_FLAIR_list)
-    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rLesion_' x.P.FLAIR '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), x);
-end
-for iLesion=1:length(ROI_FLAIR_list)
-    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rROI_' x.P.FLAIR '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), x);
-end
-
 % Show lesions individually
 for iLesion=1:length(Lesion_T1_list)
-    xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rT1, fullfile(x.D.PopDir,['rLesion_' x.P.STRUCT '_' num2str(iLesion) '_' x.P.SubjectID '.nii'])}, x.D.LesionCheckDir,[0.8 1], 'Lesions');
+    [~, Ffile] = xASL_fileparts(Lesion_T1_list{iLesion});
+    LesionFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);
+    xASL_im_Lesion2Mask(LesionFile, x); % Convert ROIs & lesions to specific masks
+    xASL_vis_CreateVisualFig(x, {LesionFile}, x.D.LesionCheckDir,[0.8 1], 'Lesions'); % Show lesions individually
 end
 for iLesion=1:length(Lesion_FLAIR_list)
-    xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rFLAIR, fullfile(x.D.PopDir,['rLesion_' x.P.FLAIR '_' num2str(iLesion) '_' x.P.SubjectID '.nii'])}, x.D.LesionCheckDir,[0.8 1], 'Lesions');
+    [~, Ffile] = xASL_fileparts(Lesion_FLAIR_list{iLesion});
+    LesionFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);    
+    xASL_im_Lesion2Mask(LesionFile, x); % Convert ROIs & lesions to specific masks
+    xASL_vis_CreateVisualFig(x, {LesionFile}, x.D.LesionCheckDir,[0.8 1], 'Lesions'); % Show lesions individually
 end
 % Visualize ROIs (these are manually added native space ROIs)
 for iLesion=1:length(ROI_T1_list)
-    xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rT1, fullfile(x.D.PopDir,['rROI_' x.P.STRUCT '_' num2str(iLesion) '_' x.P.SubjectID '.nii'])}, x.D.ROICheckDir,[0.8 1], 'Lesions');
+    [~, Ffile] = xASL_fileparts(ROI_T1_list{iLesion});
+    LesionFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);
+    xASL_im_Lesion2Mask(LesionFile, x); % Convert ROIs & lesions to specific masks    
+    xASL_vis_CreateVisualFig(x, {LesionFile}, x.D.ROICheckDir,[0.8 1], 'Lesions'); % Show lesions individually
 end
 for iLesion=1:length(ROI_FLAIR_list)
-    xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rFLAIR, fullfile(x.D.PopDir,['rROI_' x.P.FLAIR '_' num2str(iLesion) '_' x.P.SubjectID '.nii'])}, x.D.ROICheckDir,[0.8 1], 'Lesions');
+    [~, Ffile] = xASL_fileparts(ROI_FLAIR_list{iLesion});
+    LesionFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);
+    xASL_im_Lesion2Mask(LesionFile, x); % Convert ROIs & lesions to specific masks    
+    xASL_vis_CreateVisualFig(x, {LesionFile}, x.D.ROICheckDir,[0.8 1], 'Lesions'); % Show lesions individually
 end
 
 
@@ -291,23 +289,25 @@ function xASL_adm_VisualCheckLesionRemoval(x, Lesion_T1_list, Lesion_FLAIR_list)
             % Do linear interpolation to avoid negative edge effects
             for iO=1:length(OUTname)
                 if ~xASL_exist(OUTname{iO})
-                    for iL=1:length(INname)
-                        xASL_im_dilateROI(INname{iL});
+                    for iLesion=1:length(INname)
+                        xASL_im_dilateROI(INname{iLesion});
                     end
                     xASL_spm_deformations(x,INname,OUTname,1);
                 end
             end
         end
 
-        for iL=1:length(Lesion_T1_list)
-            LesionFile      = fullfile( x.D.PopDir, ['rLesion_' x.P.STRUCT '_' num2str(iL) '_' x.P.SubjectID '.nii']);
-            TempIM          = xASL_io_Nifti2Im(LesionFile);
-            LesionIM        = min(1,LesionIM+xASL_im_ConvertMap2Mask(TempIM(:,:,:,1)));
+        for iLesion=1:length(Lesion_T1_list)
+            [~, Ffile] = xASL_fileparts(Lesion_FLAIR_list{iLesion});
+            LesionFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);
+            TempIM = xASL_io_Nifti2Im(LesionFile);
+            LesionIM = min(1,LesionIM+xASL_im_ConvertMap2Mask(TempIM(:,:,:,1)));
         end
-        for iL=1:length(Lesion_FLAIR_list)
-            LesionFile      = fullfile( x.D.PopDir, ['rLesion_' x.P.FLAIR '_' num2str(iL) '_' x.P.SubjectID '.nii']);
-            TempIM          = xASL_io_Nifti2Im(LesionFile);
-            LesionIM        = min(1,LesionIM+xASL_im_ConvertMap2Mask(TempIM(:,:,:,1)));
+        for iLesion=1:length(Lesion_FLAIR_list)
+            [~, Ffile] = xASL_fileparts(Lesion_FLAIR_list{iLesion});
+            LesionFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);
+            TempIM = xASL_io_Nifti2Im(LesionFile);
+            LesionIM = min(1,LesionIM+xASL_im_ConvertMap2Mask(TempIM(:,:,:,1)));
 		end
 
 		ImOut1 = xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rc1T1_ORI x.P.Pop_Path_rc2T1_ORI}, [], [1 0.8], [], []);
