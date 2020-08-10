@@ -125,10 +125,15 @@ try
     % Read JSON file
     if xASL_exist(pathASL4D,'file')
         val = spm_jsonread(pathASL4D);
+		valXASL = xASL_bids_parms2BIDS([], val, 0, 1);
         % Set vendor to manufacturer and remove slice readout time for 3D cases
-        if ~isfield(val,'Vendor'), data.x.Vendor = val.Manufacturer; end
-        if isfield(val,'MRAcquisitionType'), Acquisition = val.MRAcquisitionType; end
-        if strcmp(Acquisition,"2D"), data.x.Q.SliceReadoutTime = x_temporary.SliceReadoutTime; end
+        if ~isfield(valXASL,'Vendor'), data.x.Vendor = valXASL.Vendor; end
+		
+		if isfield(valXASL,'readout_dim')
+			if strcmp(valXASL.readout_dim,"2D")
+				data.x.Q.SliceReadoutTime = x_temporary.SliceReadoutTime;
+			end
+		end
     end
 catch
     warning('Something went wrong...');
