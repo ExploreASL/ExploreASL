@@ -165,34 +165,42 @@ for iFile=1:length(FilePathsAre)
         WMHim(isnan(WMHim)) = 0; % set NaNs to zeros
 
         WMHim = xASL_im_ZeroEdges(WMHim); % set edges to zero
-        xASL_io_SaveNifti(FilePathsAre{iFile}, FilePathsAre{iFile}, WMHim, [], false);
-
+        
         %% ----------------------------------------------------------
         %% 7. Remove lesion masks from WMH_SEGM
         % Here we ensure that WMH_SEGM & Lesion*.nii are mutually exclusive
 
-        LesionList = xASL_adm_GetFileList(x.SUBJECTDIR, '^Lesion_(FLAIR|T1)_\d*\.nii$', 'FPList', [0 Inf]);
-        for iLesion=1:length(LesionList)
-            [Fpath, Ffile] = xASL_fileparts(LesionList{iLesion});
-            LesionIM = xASL_io_Nifti2Im(LesionList{iLesion});
-            if sum(LesionIM(:))>0
-                fprintf('%s\n', ['>>> Warning: removing ' LesionList{iLesion} ' from ' FilePathsAre{iFile} ' <<<']);
-                if ~isequal(unique(LesionIM(:)),[0 1]')
-                    warning([LesionList{iLesion} ' was not binary']);
-                end
-                % Resample if needed
-                if ~isequal(size(LesionIM), size(WMHim))
-                    PathTemp = fullfile(Fpath, [Ffile '_temp.nii']);
-                    xASL_spm_reslice(FilePathsAre{iFile}, LesionList{iLesion}, [], [], x.Quality, PathTemp, 0);
-                    LesionIM = xASL_io_Nifti2Im(PathTemp);
-                end
-                
-                % WMHim = xASL_io_Nifti2Im(FilePathsAre{iFile});
-                WMHim(logical(LesionIM)) = 0;
-                xASL_io_SaveNifti(FilePathsAre{iFile}, FilePathsAre{iFile}, WMHim, [], false);
-                xASL_delete(PathTemp);
-            end
-        end
+		LesionList = xASL_adm_GetFileList(x.SUBJECTDIR, '^Lesion_(FLAIR|T1)_\d*\.nii$', 'FPList', [0 Inf]);
+		for iLesion=1:length(LesionList)
+			[Fpath, Ffile] = xASL_fileparts(LesionList{iLesion});
+			LesionIM = xASL_io_Nifti2Im(LesionList{iLesion});
+			if sum(LesionIM(:))>0
+				fprintf('%s\n', ['>>> Warning: removing ' LesionList{iLesion} ' from ' FilePathsAre{iFile} ' <<<']);
+				if ~isequal(unique(LesionIM(:)),[0 1]')
+					warning([LesionList{iLesion} ' was not binary']);
+				end
+				
+				% Resample if needed
+				if ~isequal(size(LesionIM), size(WMHim))
+					PathTemp = fullfile(Fpath, [Ffile '_temp.nii']);
+					xASL_spm_reslice(FilePathsAre{iFile}, LesionList{iLesion}, [], [], x.Quality, PathTemp, 0);
+					LesionIM = xASL_io_Nifti2Im(PathTemp);
+				else
+					PathTemp = [];
+				end
+				
+				% Remove this lesion from WMH_SEGM
+				WMHim(logical(LesionIM)) = 0;
+				
+				% Delete the temporarily resampled file
+				if ~isempty(PathTemp)
+					xASL_delete(PathTemp);
+				end
+			end
+		end
+		
+		% Save the final WMH_SEGM mask after removing all the lesions
+		xASL_io_SaveNifti(FilePathsAre{iFile}, FilePathsAre{iFile}, WMHim, [], false);
     end
 end
                 
