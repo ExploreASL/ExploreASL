@@ -1,7 +1,7 @@
-function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
+function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT, bQuality)
 % ExploreASL wrapper for SPM affine registration function (a.k.a. 'old normalize'). On default run without DCT.
 %
-% FORMAT: xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef[,otherList, bDCT])
+% FORMAT: xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef[,otherList, bDCT, bQuality])
 % 
 % INPUT:
 %   refPath   - path to reference space (NifTI image) you want to register the source image to (REQUIRED)
@@ -9,7 +9,8 @@ function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
 %   fwhmSrc   - Gaussian smoothing to be applied to the source image before estimating the affine registration, in FWHM (mm) (REQUIRED)
 %   fwhmRef   - Gaussian smoothing to be applied to the reference image before estimating the affine registration, in FWHM (mm) (REQUIRED)
 %   otherList - a list of NIFTIs to which should this registration be applied (OPTIONAL, default EMPTY)
-%   bDCT      - perfroms the low-degree Discrete Cosine Transform (DCT) (OTIONAL, default FALSE)
+%   bDCT      - boolean specifying to perform the low-degree Discrete Cosine Transform (DCT) (OTIONAL, default FALSE)
+%   bQuality  - boolean for quality mode, changing the number of DCT coefficients for DCT (TRUE=16, high quality, FALSE=4, low quality) (OPTIONAL, default TRUE)
 %
 % OUTPUT: n/a
 %                         
@@ -26,7 +27,7 @@ function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT)
 % EXAMPLE: xASL_spm_affine('/MyStudy/Subject1/T1.nii.gz', '/MyStudy/Subject1/mean_control.nii', 5, 5);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-% 2015-2020 HJ, JP
+
    
 % Check parameters
 if nargin<5
@@ -35,18 +36,25 @@ else
     otherList = xASL_adm_OtherListSPM(otherList);
 end
 if nargin < 4
-	error('xASL_spm_affine: Requires 4 input parameters.');
+	error('Requires 4 input parameters');
 end
 if ~xASL_exist(srcPath) || ~xASL_exist(refPath)
-	error('xASL_spm_affine: Cannot find input images.');
+	error('Cannot find input images');
 end
 
-if nargin < 6
+if nargin < 6 || isempty(bDCT)
 	bDCT = false;
 end
 
 if ~isempty(otherList) && bDCT
-	warning('xASL_spm_affine: Cannot modify the headers in otherList if bDCT is true');
+	% It can happen that the list is a cell and it contains only a first empty string - that is effectively empty though not captured as empty by isempty
+	if ~iscell(otherList) || numel(otherList) > 1 || ~isempty(otherList{1,1})
+		warning('otherList not empty and bDCT==1. DCT produces a _sn.mat file with transformation parameters, it cannot apply the transformation to the files in the otherList');
+	end
+end
+
+if nargin < 7 || isempty(bQuality)
+	bQuality = true;
 end
 
 % Unzip the input files 
@@ -63,9 +71,15 @@ matlabbatch{1}.spm.tools.oldnorm.est.eoptions.smoref        = fwhmRef;
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.regtype       = 'subj';
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.cutoff        = 25; % biasfield correction
 if bDCT
-	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits          = 16; % 16 default (includes DCT)
+	% Includes also the Direct Cosine Transform
+	if bQuality
+		matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 16; % 16 is the default for SPM
+	else
+		matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 4; % low quality mode
+	end
 else
-	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits          = 0; % 16 default (includes DCT)
+	% Excludes DCT
+	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 0;
 end
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.reg           = 1;
 

@@ -10,6 +10,9 @@ end
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = 1;
 end
+if nargin<4 || isempty(bCompiled)
+    bCompiled = 0;
+end
 
 if ismac
     TestDirOrig = '/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases';
@@ -45,9 +48,9 @@ if bCompiled
     end
     cd(CurrentDir);
     
-    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, 0, MatlabPath, [], [], bOverwrite, [], RunTimePath)
+    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, 0, MatlabPath, [], [], bOverwrite, [], RunTimePath, 0);
 else
-    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, [], [], [], bOverwrite)
+    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, [], [], [], bOverwrite, [], [], 0);
 end
 
 

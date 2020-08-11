@@ -164,7 +164,7 @@ system(['mv ' outputPath '/GE_PCASL_3Dspiral_Product_22q11/analysis/11/ASL_1/M0_
 system(['rm ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_0170*']);
 system(['rm ' outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/ASL4D_2460*']);
 nii_files = xASL_adm_GetFileList([outputPath '/Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38/analysis/Sub2/ASL_1/'],'^*.nii$','FPList',[],false);
-nii_files = xASL_adm_MergeNiiFiles(nii_files, 'ASL');
+nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
 
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1.nii ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0.nii']);
 system(['mv ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0_1.json ' outputPath '/Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar/analysis/Sub1/ASL_1/M0.json']);
@@ -269,7 +269,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.LabelingPulseInterval = 0.4;
 			importStr{ii}.par.LabelingPulsesFlipAngle = 25;
 			importStr{ii}.par.NumberSegments = 2;
-			importStr{ii}.par.TotalAcquiredVolumes = 2;
+			importStr{ii}.par.TotalAcquiredVolumes = [2 2];
 			importStr{ii}.par.TotalReadoutTime = 0.0104;
 			importStr{ii}.par.BackgroundSuppressionPulseTime = [0.85 0.1];
 			importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
@@ -482,9 +482,9 @@ for ii = 1:length(fList)
 		end
 	end
 	
-	if ~isfield(importStr{ii}.par,'TotalAcquiredVolumes') && isfield(importStr{ii}.x.Q,'NumberOfAverages') && (importStr{ii}.x.Q.NumberOfAverages > 1)
-		importStr{ii}.par.TotalAcquiredVolumes = importStr{ii}.x.Q.NumberOfAverages;
-	end
+	%if ~isfield(importStr{ii}.par,'TotalAcquiredVolumes') && isfield(importStr{ii}.x.Q,'NumberOfAverages') && (importStr{ii}.x.Q.NumberOfAverages > 1)
+	%	importStr{ii}.par.TotalAcquiredVolumes = importStr{ii}.x.Q.NumberOfAverages;
+	%end
 
 	if ~isfield(importStr{ii}.par,'ReadoutSegments') && isfield(importStr{ii}.x.Q,'NumberSegments')
 		importStr{ii}.par.NumberSegments = importStr{ii}.x.Q.NumberSegments;
@@ -818,7 +818,7 @@ for ii = 1:length(fList)
 							warning('Discrepancy in the number of averages');
 						end
 					else
-						importStr{ii}.par.TotalAcquiredVolumes = max(imParms.parms.NumberOfAverages);
+						%importStr{ii}.par.TotalAcquiredVolumes = max(imParms.parms.NumberOfAverages);
 					end
 				end
 						
@@ -894,7 +894,8 @@ for ii = 1:length(fList)
 								tagTotalReadoutTime = importStr{ii}.par.TotalReadoutTime;
    								
 								if bJsonLocalM0isFile 
-									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '.nii.gz,' jsonLocal.M0 '_dir-pa' '.nii.gz'];
+									%jsonLocal.M0 = [jsonLocal.M0 nnStrOut '.nii.gz,' jsonLocal.M0 '_dir-pa' '.nii.gz'];
+									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '.nii.gz'];
 								end
 							else
 								if bJsonLocalM0isFile
@@ -991,18 +992,35 @@ for ii = 1:length(fList)
 							if ~isempty(tagTotalReadoutTime)
 								jsonM0Write.TotalReadoutTime = tagTotalReadoutTime;
 							end
+														
+							if nn == 2 && ~exist(fullfile(outSesPath,'fmap'),'dir')
+								mkdir(fullfile(outSesPath,'fmap'));
+							end
 							
 							% if scaling modified then save instead of copy
 							if scaleFactor
-								xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']),imM0,[],1,[]);
+								if nn == 1
+									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']),imM0,[],1,[]);
+								else
+									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']),imM0,[],1,[]);
+								end
 							else
 								% Copy the M0
-								xASL_Copy(fullfile(inSesPath,['M0' nnStrIn '.nii']),...
-									fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']));
+								if nn == 1
+									xASL_Copy(fullfile(inSesPath,['M0' nnStrIn '.nii']),...
+										fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']));
+								else
+									xASL_Copy(fullfile(inSesPath,['M0' nnStrIn '.nii']),...
+										fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']));
+								end
 							end
 							% Save JSON to new dir
 							jsonM0Write = finalJsonCheck(jsonM0Write,fieldOrderStruct,removeEmptyFields);
-							spm_jsonwrite(fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.json']),jsonM0Write);
+							if nn == 1
+								spm_jsonwrite(fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.json']),jsonM0Write);
+							else
+								spm_jsonwrite(fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.json']),jsonM0Write);
+							end
 						end
 					end
 				else

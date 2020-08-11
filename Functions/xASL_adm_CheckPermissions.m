@@ -138,8 +138,8 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
     if ~FoldersOK 
         try
             xASL_TrackProgress(1, 2); % we are half way
-            if isunix
-                system(['find ' InputPath ' -type d -print0 | xargs -0 chmod 775']);
+            if isunix || ismac
+                system(['find ' xASL_adm_UnixPath(InputPath) ' -type d -print0 | xargs -0 chmod 775']);
             elseif ispc
                 system(['attrib -r ' InputPath ' /d /s']); % recursively removes read-only for directories on Windows
             end
@@ -169,8 +169,8 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
     if FileReset
         try
             xASL_TrackProgress(1, 2); % we are half way
-            if isunix
-                system(['find ' InputPath ' -type f -print0 | xargs -0 chmod ' ChmodPars]);
+            if isunix || ismac
+                system(['find ' xASL_adm_UnixPath(InputPath) ' -type f -print0 | xargs -0 chmod ' ChmodPars]);
             elseif ispc
                 system(['attrib -r ' InputPath '\*.* /s']); % recursively removes read-only for files on Windows
             end

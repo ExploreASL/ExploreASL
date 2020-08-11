@@ -140,7 +140,7 @@ cfg_util('dumpcfg');
 sts = copyfile(fullfile(spm('Dir'),'Contents.m'), fullfile(spm('Dir'),'Contents.txt'));
                
 if ~sts
-    warning('Copy of Contents.m failed.');
+    warning('Copy of Contents.m failed');
 end
 
 

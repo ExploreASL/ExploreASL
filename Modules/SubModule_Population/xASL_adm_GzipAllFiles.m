@@ -7,7 +7,7 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux)
     if nargin<2 || isempty(bFolder)
         bFolder = false;
     end
-    if nargin<3 || isempty(bUseLinux) && isunix
+    if nargin<3 || isempty(bUseLinux) && (isunix || ismac)
         bUseLinux = true;
     elseif nargin<3 || isempty(bUseLinux)
         bUseLinux = false;

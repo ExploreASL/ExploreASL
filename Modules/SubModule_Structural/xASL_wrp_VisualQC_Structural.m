@@ -91,16 +91,16 @@ xASL_vis_VisualizeROIs(x, ROI_T1_list, ROI_FLAIR_list);
 
 % Convert ROIs & lesions to specific masks
 for iLesion=1:length(Lesion_T1_list)
-    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rLesion_' x.P.STRUCT '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), [], [], [], x);
+    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rLesion_' x.P.STRUCT '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), x);
 end
 for iLesion=1:length(ROI_T1_list)
-    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rROI_' x.P.STRUCT '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), [], [], [], x);
+    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rROI_' x.P.STRUCT '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), x);
 end
 for iLesion=1:length(Lesion_FLAIR_list)
-    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rLesion_' x.P.FLAIR '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), [], [], [], x);
+    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rLesion_' x.P.FLAIR '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), x);
 end
 for iLesion=1:length(ROI_FLAIR_list)
-    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rROI_' x.P.FLAIR '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), [], [], [], x);
+    xASL_im_Lesion2Mask(fullfile(x.D.PopDir, ['rROI_' x.P.FLAIR '_' num2str(iLesion) '_' x.P.SubjectID '.nii']), x);
 end
 
 % Show lesions individually

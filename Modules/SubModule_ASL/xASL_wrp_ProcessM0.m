@@ -190,7 +190,7 @@ if x.M0_conventionalProcessing
     InList          = {x.P.Path_rM0;x.P.Path_mask_M0};
     OutList         = {x.P.Pop_Path_M0;x.P.Pop_Path_mask_M0};
     
-    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
         AffineTransfPath = [];
@@ -218,7 +218,7 @@ else
     xASL_io_SaveNifti(x.P.Path_rM0,x.P.Path_rM0,M0_im,[],0);
     % Transform to standard space
     
-    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
         AffineTransfPath = [];
@@ -234,7 +234,7 @@ else
     xASL_io_SaveNifti(x.P.Pop_Path_M0, x.P.Pop_Path_M0, IM);
     % Copy M0 biasfield to native space for native space quantification
     
-    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
         AffineTransfPath = [];

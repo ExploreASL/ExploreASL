@@ -18,10 +18,19 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %   x.S.ASL                      - true for ASL data, which will take into account its limited resolution
 %                                  & regions of poor SNR: apply PVC, PVC expansion, avoid too
 %                                  small ROIs, add vascular & susceptibility artifacts masks (OPTIONAL, DEFAULT=true)
-%   x.S.bMasking                 - boolean specifying if we should mask.
-%                                  Useful if masked results are stored as a separate image and we dont
-%                                  want to mask it again by loading a subject-specific mask.
-%                                  (OPTIONAL, DEFAULT=true)
+%   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
+%                       (1 = yes, 0 = no)
+%                       [1 0 0 0] = susceptibility mask (either population-or subject-wise)
+%                       [0 1 0 0] = vascular mask (only subject-wise)
+%                       [0 0 1 0] = subject-specific tissue-masking (e.g. pGM>0.5)
+%                       [0 0 0 1] = WholeBrain masking (used as memory compression)
+%                       [0 0 0 0] = no masking at all
+%                       [1 1 1 1] = apply all masks
+%                       Can also be used as boolean, where 
+%                       1 = [1 1 1 1]
+%                       0 = [0 0 0 0]
+%                       Can be useful for e.g. loading lesion masks outside the GM
+%                       (OPTIONAL, DEFAULT=1)
 % OUTPUT:
 %   x                            - same as input
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -30,7 +39,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %              with several ASL-specific adaptions:
 %
 %              1. Skip ROI masks that are smaller than 1 mL 
-%                 as this would be too noisy for ASL (skipped when x.S.IsASL==false)
+%                 as this would be too noisy for ASL (ignored when x.S.IsASL==false)
 %              2. Expand each ROI mask such that it has sufficient WM
 %                 content (skipped when IsASL==false)
 %              3. Create for each ROI mask a left, right and bilateral copy
@@ -98,13 +107,42 @@ if ~isfield(x.S,'NamesROI')
 	return;
 end
 
+
+%% Manage masking
 if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
-    x.S.bMasking = true;
-elseif ~x.S.bMasking
-    fprintf('Masking disabled upon request, check results\n');
+    x.S.bMasking = [1 1 1 1]; % default
+elseif isequal(x.S.bMasking, 0)
+    x.S.bMasking = [0 0 0 0];
 end
 
-% Obtain ASL sequence
+if ~x.S.IsASL
+    x.S.bMasking(3) = 0; % disable tissue masking
+end
+
+% Print the applied masking settings
+if isequal(x.S.bMasking, [1 1 1 1])
+    fprintf('All ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask\n');
+elseif isequal(x.S.bMasking, [0 0 0 0])
+    fprintf('No ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask\n');
+else
+    fprintf('We will apply the following masking:');
+    if x.S.bMasking(1)==1
+        fprintf('susceptibility mask:');
+    end
+    if x.S.bMasking(2)==1
+        fprintf('vascular mask:');
+    end
+    if x.S.bMasking(3)==1
+        fprintf('tissue-specific mask:');
+    end
+    if x.S.bMasking(4)==1
+        fprintf('WholeBrain mask:');
+    end
+    fprintf('\n');
+end
+
+
+%% Obtain ASL sequence
 x = xASL_adm_DefineASLSequence(x);
 
 bWarnedPVWMH = false;
@@ -137,7 +175,7 @@ else
 	x.S.InputMasks = logical(x.S.InputMasks);
 end
 
-% Define number of sessions to use
+%% Define number of sessions to use
 nSessions = 0;
 NoSessions = 0;
 SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*_ASL_' num2str(nSessions+1) '\.nii'], 'FPList', [0 Inf]);
@@ -156,9 +194,9 @@ if nSessions==0 % check if there are "subject-files"
     NoSessions = 1;
 end
 
-% Determine whether group mask exists
-if x.S.InputNativeSpace || ~x.S.bMasking
-	HasGroupSusceptMask = false;
+%% Determine whether group mask exists
+if x.S.InputNativeSpace
+	x.S.bMasking(1) = 0; % disable susceptibility masking
 else
 	if isfield(x.S,'MaskSusceptibility') && ~min(x.S.MaskSusceptibility == xASL_im_IM2Column(ones(121,145,121),x.WBmask))
 		HasGroupSusceptMask = true;
@@ -167,10 +205,14 @@ else
 	end
 end
 
-if HasGroupSusceptMask
-    fprintf('%s\n', 'Using population-based susceptibility mask');
-elseif ~strcmp(x.Sequence,'3D_spiral') % for 3D spiral we dont need a susceptibility mask
-    fprintf('%s\n', 'Using subject-specific susceptibility mask');
+if x.S.bMasking(1)==1
+    if HasGroupSusceptMask
+        fprintf('%s\n', 'Using population-based susceptibility mask');
+    elseif ~strcmp(x.Sequence,'3D_spiral') % for 3D spiral we dont need a susceptibility mask
+        fprintf('%s\n', 'Using subject-specific susceptibility mask');
+    else
+        warning('No group susceptibility mask found, trying to use subject-wise');
+    end
 end
 
 fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
@@ -185,7 +227,7 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 	else
 		VoxelSize = [1.5 1.5 1.5];
 	end
-	MinVoxels = 1000/prod(VoxelSize);
+	MinVoxels = 1000/prod(VoxelSize); % 1 mL
 	if ~x.S.InputNativeSpace
 		SumList = squeeze(sum(x.S.InputMasks,1));
 		SumList = SumList>MinVoxels;
@@ -301,7 +343,7 @@ for iSubject=1:x.nSubjects
 			x.S.InputMasksTemp(:,1:3:end-2,:)           = x.S.InputMasks;
 			x.S.InputMasksTemp( x.LeftMask,2:3:end-1,:) = x.S.InputMasks( x.LeftMask,:,:); % left  only
 			x.S.InputMasksTemp(~x.LeftMask,3:3:end  ,:) = x.S.InputMasks(~x.LeftMask,:,:); % right only
-			x.S.InputMasks                                = x.S.InputMasksTemp;
+			x.S.InputMasks                              = x.S.InputMasksTemp;
 			bDoOnceROILR = 0;
 		end
 				
@@ -416,14 +458,14 @@ for iSubject=1:x.nSubjects
 		end
 		
 		%% c) Load data
-		if x.S.InputNativeSpace
+		if x.S.InputNativeSpace %% PM: we repeat same code here twice
 			FilePath = fullfile(x.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
 			if xASL_exist(FilePath,'file')
 				Data3D = xASL_io_Nifti2Im(FilePath);
 				DataIm = xASL_im_IM2Column(Data3D,x.WBmask);
             end
 			
-            if x.S.bMasking
+            if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
                 FilePath = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
                 if xASL_exist(FilePath,'file')
@@ -439,7 +481,7 @@ for iSubject=1:x.nSubjects
 				DataIm = xASL_im_IM2Column(Data3D,x.WBmask);
             end
 			
-            if x.S.bMasking
+            if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
                 FilePath = fullfile(x.D.PopDir, ['MaskVascular_' x.S.SUBJECTID{SubjSess,1} '.nii']);
                 if xASL_exist(FilePath,'file')
@@ -478,31 +520,33 @@ for iSubject=1:x.nSubjects
 		%% e) Actual data computations
 		
 		SusceptibilityMask = xASL_im_IM2Column(x.WBmask, x.WBmask); % default = no susceptibility mask
-		if x.S.InputNativeSpace
-			if xASL_exist(x.P.Path_MaskSusceptibilityPop)
-				SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_MaskSusceptibilityPop),x.WBmask);
-			end
-		else
-			if HasGroupSusceptMask % use population-based susceptibility mask
-				SusceptibilityMask = x.S.MaskSusceptibility;
-			elseif strcmp(x.Sequence,'3D_spiral')
-				% if 3D spiral, then we dont need a susceptibility mask
-			else % fall back to try subject-wise Susceptibility Masks
-				FilePath = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.S.SUBJECTID{SubjSess,1} '.nii']);
-				if xASL_exist(FilePath,'file')
-					SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(FilePath), x.WBmask);
-				else
-					if x.S.IsASL
-						fprintf('%s\n',[FilePath ' missing...']);
-					end
-					if isfield(x.S,'MaskSusceptibility')
-						SusceptibilityMask = x.S.MaskSusceptibility;
-					elseif x.S.IsASL % fall back to legacy/backward compatibility  option
-						warning('No susceptibility mask found, using legacy option, no susceptibility masking');
-					end
-				end
-			end
-		end
+        if x.S.bMasking(1)==1
+            if x.S.InputNativeSpace
+                if xASL_exist(x.P.Path_MaskSusceptibilityPop)
+                    SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_MaskSusceptibilityPop),x.WBmask);
+                end
+            else
+                if HasGroupSusceptMask % use population-based susceptibility mask
+                    SusceptibilityMask = x.S.MaskSusceptibility;
+                elseif strcmp(x.Sequence,'3D_spiral')
+                    % if 3D spiral, then we dont need a susceptibility mask
+                else % fall back to try subject-wise Susceptibility Masks
+                    FilePath = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.S.SUBJECTID{SubjSess,1} '.nii']);
+                    if xASL_exist(FilePath,'file')
+                        SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(FilePath), x.WBmask);
+                    else
+                        if x.S.IsASL
+                            fprintf('%s\n',[FilePath ' missing...']);
+                        end
+                        if isfield(x.S,'MaskSusceptibility')
+                            SusceptibilityMask = x.S.MaskSusceptibility;
+                        elseif x.S.IsASL % fall back to legacy/backward compatibility  option
+                            warning('No susceptibility mask found, using legacy option, no susceptibility masking');
+                        end
+                    end
+                end
+            end
+        end
 		
 		
 		
@@ -538,15 +582,29 @@ for iSubject=1:x.nSubjects
 					x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, 0, 0);
 					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, 0, 0);
 				end
-			else
-				CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
+            else
+                if x.S.bMasking(3)==0 % no tissue-masking
+                    pGM_here = ones(size(DataIm));
+                    pWM_here = ones(size(DataIm));
+                end
+                if x.S.bMasking(1)==0 % no susceptibility mask
+                    CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5));
+                else
+                    CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
+                end
+                
 				%% CoV
 				x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
 				% x.S.DAT_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
 				x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 				
 				%% CBF (now remove vascular artifacts)
-				CurrentMask = CurrentMask & VascularMask;
+                if x.S.bMasking(2)==1 % apply vascular mask
+                    CurrentMask = CurrentMask & VascularMask;
+                else
+                    % keep CurrentMask as is, don't apply a vascular mask
+                end
+                
 				x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, -1);
 				x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0);
 				% x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
