@@ -16,6 +16,12 @@ function sts = write_hdr_raw(fname,hdr,be)
 [pth,nam] = fileparts(fname);
 if isempty(pth), pth = pwd; end
 
+% ExploreASL hack
+% When hdr.dim(1) a.k.a dim[0], which specifies what is the number of dimensions is <4, but hdr.pixdim(5) ~= 0, then change hdr.dim(1) to 4, otherwise this crashes BIDS validator
+if hdr.dim(1) < 4 && hdr.pixdim(5) ~= 0
+	hdr.dim(1) = 4;
+end
+
 if isfield(hdr,'magic')
     switch hdr.magic(1:3)
         case {'ni1'}

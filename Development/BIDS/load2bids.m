@@ -745,6 +745,9 @@ for ii = 1:length(fList)
 				if scaleFactor
 					imNii = imNii .* scaleFactor;
 					xASL_io_SaveNifti(fullfile(inSesPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],imNii,[],1,[]);
+				elseif size(imNii,4) == 1
+					% The fourth dimension is 1, so we have to write the file again, to make sure the 
+					xASL_io_SaveNifti(fullfile(inSesPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],imNii,[],1,[]);
 				else
 					% Copy the ASL
 					xASL_Copy(fullfile(inSesPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz']);
@@ -837,11 +840,11 @@ for ii = 1:length(fList)
 					elseif xASL_exist(fullfile(inSesPath,'M0.nii'))
 						if length(fSes)>1
 							%jsonLocal.M0 = fullfile(importStr{ii}.dirName,['sub-' subLabel],['ses-' sesLabel],'asl',['sub-' subLabel sesLabelUnd '_' m0scanStr '.nii.gz']);
-							jsonLocal.M0 = fullfile('perf',['sub-' subLabel sesLabelUnd '_' m0scanStr]);
+							jsonLocal.M0 = fullfile('perf',['sub-' subLabel sesLabelUnd]);
 							bJsonLocalM0isFile = 1;
 						else
 							%jsonLocal.M0 = fullfile(importStr{ii}.dirName,['sub-' subLabel],'asl',['sub-' subLabel sesLabelUnd '_M0Scan.nii.gz']);
-							jsonLocal.M0 = fullfile('perf',['sub-' subLabel sesLabelUnd '_' m0scanStr]);
+							jsonLocal.M0 = fullfile('perf',['sub-' subLabel sesLabelUnd]);
 							bJsonLocalM0isFile = 1;
 						end
 					else
@@ -895,11 +898,11 @@ for ii = 1:length(fList)
    								
 								if bJsonLocalM0isFile 
 									%jsonLocal.M0 = [jsonLocal.M0 nnStrOut '.nii.gz,' jsonLocal.M0 '_dir-pa' '.nii.gz'];
-									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '.nii.gz'];
+									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '_' m0scanStr '.nii.gz'];
 								end
 							else
 								if bJsonLocalM0isFile
-									jsonLocal.M0 = [jsonLocal.M0 '.nii.gz'];
+									jsonLocal.M0 = [jsonLocal.M0 '_' m0scanStr '.nii.gz'];
 								end
 								nnStrOut = '';
 								tagPhaseEncodingDirection = [];
@@ -910,7 +913,7 @@ for ii = 1:length(fList)
 							nnStrIn = 'PERev';
 							nnStrOut = '_dir-pa';
 							tagPhaseEncodingDirection = 'j';
-							tagIntendedFor = fullfile('perf',['sub-' subLabel sesLabelUnd '_' m0scanStr '_dir-ap.nii.gz']);
+							tagIntendedFor = fullfile('perf',['sub-' subLabel sesLabelUnd '_dir-ap' '_' m0scanStr '.nii.gz']);
 
 							if isfield(importStr{ii}.par,'TotalReadoutTime')
 								tagTotalReadoutTime = importStr{ii}.par.TotalReadoutTime;
@@ -998,28 +1001,28 @@ for ii = 1:length(fList)
 							end
 							
 							% if scaling modified then save instead of copy
-							if scaleFactor
+							if scaleFactor || size(imM0,4) == 1
 								if nn == 1
-									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']),imM0,[],1,[]);
+									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.nii.gz']),imM0,[],1,[]);
 								else
-									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']),imM0,[],1,[]);
+									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.nii.gz']),imM0,[],1,[]);
 								end
 							else
 								% Copy the M0
 								if nn == 1
 									xASL_Copy(fullfile(inSesPath,['M0' nnStrIn '.nii']),...
-										fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']));
+										fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.nii.gz']));
 								else
 									xASL_Copy(fullfile(inSesPath,['M0' nnStrIn '.nii']),...
-										fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.nii.gz']));
+										fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.nii.gz']));
 								end
 							end
 							% Save JSON to new dir
 							jsonM0Write = finalJsonCheck(jsonM0Write,fieldOrderStruct,removeEmptyFields);
 							if nn == 1
-								spm_jsonwrite(fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.json']),jsonM0Write);
+								spm_jsonwrite(fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.json']),jsonM0Write);
 							else
-								spm_jsonwrite(fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd '_' m0scanStr nnStrOut '.json']),jsonM0Write);
+								spm_jsonwrite(fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.json']),jsonM0Write);
 							end
 						end
 					end
