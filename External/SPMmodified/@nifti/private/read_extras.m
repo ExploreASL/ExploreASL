@@ -23,7 +23,7 @@ if spm_existfile(mname)
         extras = load(mname, '-mat');
     catch ME
 		warning(['Sidecar ' mname ' seems to exist but cannot be loaded']);
-		fprintf('%s\n', 'Original warning was: ' ME.message]);
+		fprintf('%s\n', ['Original warning was: ' ME.message]);
 		fprintf('%s\n', 'Perhaps something wrong with read/write-access/permissions?');
     end
 end
