@@ -236,8 +236,8 @@ for ii = 1:length(fList)
 	descriptionJSON{ii}.Authors = {'RandomText'};
 	descriptionJSON{ii}.Acknowledgements = 'RandomText';
 	descriptionJSON{ii}.HowToAcknowledge = 'Please cite this paper: https://www.ncbi.nlm.nih.gov/pubmed/001012092119281';
-	descriptionJSON{ii}.Funding = 'RandomText';
-	descriptionJSON{ii}.EthicsApprovals = 'RandomText';
+	descriptionJSON{ii}.Funding = {'RandomText'};
+	descriptionJSON{ii}.EthicsApprovals = {'RandomText'};
 	descriptionJSON{ii}.ReferencesAndLinks = {'RandomText'};
 	descriptionJSON{ii}.DatasetDOI = 'RandomText';
 	
