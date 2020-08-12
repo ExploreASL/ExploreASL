@@ -50,7 +50,7 @@ end
 %% 1) Define field names that need to be convert/renamed/merged
 
 % Fields with these names need to have the time converted between XASL and BIDS
-convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime'};
+convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'BloodT1'};
 
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'};
@@ -147,11 +147,13 @@ end
 % Don't overwrite existing field with a zero, empty, nan or inf value
 if bPriorityBids
 	outParms = inXasl;
-	FieldsA = fields(inBids);
-	for iA = 1:length(FieldsA)
-		if (~isfield(outParms,(FieldsA{iA}))) ||...
-				((sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) == 0)~=length(inBids.(FieldsA{iA}))) && (sum(isinf(inBids.(FieldsA{iA})))==0) && (~isempty(inBids.(FieldsA{iA}))))
-			outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+	if ~isempty(inBids)
+		FieldsA = fields(inBids);
+		for iA = 1:length(FieldsA)
+			if (~isfield(outParms,(FieldsA{iA}))) ||...
+					((sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) == 0)~=length(inBids.(FieldsA{iA}))) && (sum(isinf(inBids.(FieldsA{iA})))==0) && (~isempty(inBids.(FieldsA{iA}))))
+				outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+			end
 		end
 	end
 else
