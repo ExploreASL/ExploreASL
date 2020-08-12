@@ -1,7 +1,7 @@
-function xASL_dcm_Import(root)
+function xASL_io_mTRIAL(root)
 %xASL_dcm_Import Function for the docker version of ExploreASL.
 %
-% FORMAT:       xASL_dcm_Import(root);
+% FORMAT:       xASL_io_mTRIAL(root);
 %
 % INPUT:        root - Path to DICOM dataset with BIDS(-like) structure.
 %
@@ -64,9 +64,9 @@ function xASL_dcm_Import(root)
 % data.x.Q.Initial_PLD = 1450;
 % 
 %
-% EXAMPLE:      xASL_dcm_Import('/opt/incoming/');
+% EXAMPLE:      xASL_io_mTRIAL('/opt/incoming/');
 %
-%               xASL_dcm_Import('M:\SoftwareDevelopment\MATLAB\m.stritt\tmp_data_siemens\incoming');
+%               xASL_io_mTRIAL('C:\...\incoming');
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
