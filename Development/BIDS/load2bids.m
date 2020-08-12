@@ -12,13 +12,14 @@ anonymPath = [baseDir 'BIDSanonymized']; % Takes files in NIFTI+JSON from output
 lRMFields = {'InstitutionName' 'InstitutionalDepartmentName' 'InstitutionAddress' 'DeviceSerialNumber' 'StationName' 'ProcedureStepDescription' 'SeriesDescription' 'ProtocolName'...
 	         'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'UsePhilipsFloatNotDisplayScaling'...
 			 'RescaleSlopeOriginal' 'RescaleSlope'    'MRScaleSlope'      'RescaleIntercept',... % Fields to exclude
-			 'Modality', 'ImagingFrequency', 'PatientPosition','MRAcquisitionType','ImageType',... % Additional fields to remove by Patricia
+			 'Modality', 'ImagingFrequency', 'PatientPosition','MRAcquisitionType','ImageType','PhaseEncodingPolarityGE',... % Additional fields to remove by Patricia
 			 'SeriesNumber','AcquisitionTime','AcquisitionNumber','SliceThickness','SpacingBetweenSlices','SAR',...
 			 'PercentPhaseFOV','AcquisitionMatrixPE','ReconMatrixPE','PixelBandwidth','ImageOrientationPatientDICOM',...
 			 'InPlanePhaseEncodingDirectionDICOM','ConversionSoftware','ConversionSoftwareVersion','AcquisitionMatrix',...
 			 'EchoTrainLength','PhaseEncodingSteps','BodyPartExamined','ShimSetting','TxRefAmp','PhaseResolution',...
 			 'RefLinesPE','BandwidthPerPixelPhaseEncode','ImageComments','ConsistencyInfo','WipMemBlock','Interpolation2D',...
-			 'SaturationStopTime','BaseResolution','DerivedVendorReportedEchoSpacing'}; % Fields to exclude
+			 'SaturationStopTime','BaseResolution','DerivedVendorReportedEchoSpacing','RawImage'}; % Fields to exclude
+lRMFieldsASL = {'InversionTime'}; % Fields to exclude from ASL only
 % The correct order of fields in the JSON
 fieldOrder = {'Manufacturer','ManufacturersModelName','DeviceSerialNumber','StationName','SoftwareVersions','HardcopyDeviceSoftwareVersion',...%BIDS fields
 	          'MagneticFieldStrength','ReceiveCoilName','ReceiveCoilActiveElements','GradientSetType','MRTransmitCoilSequence','MatrixCoilMode',...
@@ -26,7 +27,7 @@ fieldOrder = {'Manufacturer','ManufacturersModelName','DeviceSerialNumber','Stat
 			  'NonlinearGradientCorrection','NumberShots','ParallelReductionFactorInPlane','ParallellAcquisitionTechnique','PartialFourier',...
 			  'PartialFourierDirection','PhaseEncodingDirection','EffectiveEchoSpacing','TotalReadoutTime','EchoTime','InversionTime','SliceTiming',...
 			  'SliceEncodingDirection','DwellTime','FlipAngle','MultibandAccelerationFactor','NegativeContrast','AnatomicalLandmarkCoordinates',...
-			  'RepetitionTime','VolumeTiming','TaskName',... % And ASL fields
+			  'RepetitionTime','VolumeTiming','TaskName','Units',... % And ASL fields
 			  'LabelingType','PostLabelingDelay','BackgroundSuppression','M0','VascularCrushing','AcquisitionVoxelSize','TotalAcquiredVolumes',...
 			  'BackgroundSuppressionNumberPulses','BackgroundSuppressionPulseTime','VascularCrushingVenc','LabelingLocationDescription',...
 			  'LabelingOrientation','LabelingDistance','LookLocker','LabelingEfficiency','PCASLType','CASLType','LabelingDuration',...
@@ -242,7 +243,8 @@ for ii = 1:length(fList)
 	descriptionJSON{ii}.DatasetDOI = 'RandomText';
 	
 	% Save the x-structure for the study
-	importStr{ii}.x = x;
+	%importStr{ii}.x = x;
+	importStr{ii}.x = xASL_bids_parms2BIDS(x, [], 1, []);
 
 	% Defaults to be overwritten
 	importStr{ii}.par = [];
@@ -266,7 +268,7 @@ for ii = 1:length(fList)
 		case 'Siemens_PCASL_GIFMI'
 			importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];
 			importStr{ii}.par.LabelingType = 'PCASL';
-			importStr{ii}.par.LabelingPulseInterval = 0.4;
+			importStr{ii}.par.LabelingPulseInterval = 0.4/1000;
 			importStr{ii}.par.LabelingPulsesFlipAngle = 25;
 			importStr{ii}.par.NumberSegments = 2;
 			importStr{ii}.par.TotalAcquiredVolumes = [2 2];
@@ -288,7 +290,7 @@ for ii = 1:length(fList)
 			for cc = 1:45,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.BolusCutOffFlag = true;
-			importStr{ii}.par.BolusCutOffDelayTime = 900;
+			importStr{ii}.par.BolusCutOffDelayTime = 0.9;
 			importStr{ii}.par.BolusCutOffTechnique = 'Q2TIPS';
 			
 		case 'Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans'
@@ -315,7 +317,7 @@ for ii = 1:length(fList)
 
 		case 'Siemens_PASL_3DGRASE_APGEM_1'
 			%importStr{ii}.par.ASLContext = 'Label+Control';
-			importStr{ii}.par.ASLContext = [sprintf('%s\n%s\n',labelStr,controlStr)];
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',labelStr,controlStr);
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.LabelingLocationDescription = 'Labeling with FAIR';
 			importStr{ii}.par.BolusCutOffFlag = true;
@@ -375,7 +377,7 @@ for ii = 1:length(fList)
 			for cc = 1:31, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.BolusCutOffFlag = true;
-			importStr{ii}.par.BolusCutOffDelayTime = 600;
+			importStr{ii}.par.BolusCutOffDelayTime = 0.6;
 			importStr{ii}.par.BolusCutOffTechnique = 'Q2TIPS';
 			importStr{ii}.par.LabelingSlabThickness = 80;
 
@@ -392,7 +394,7 @@ for ii = 1:length(fList)
 			for cc = 1:2, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.BolusCutOffFlag = true;
-			importStr{ii}.par.BolusCutOffDelayTime = [0 200 400];
+			importStr{ii}.par.BolusCutOffDelayTime = [0 200 400]/1000;
 			importStr{ii}.par.BolusCutOffTechnique = 'QUIPSS';
 			importStr{ii}.par.LabelingSlabThickness = 60;
 
@@ -472,48 +474,52 @@ for ii = 1:length(fList)
 	end
 
 	% Process all the data and automatically fill in the missing parameters
-	if strcmp(importStr{ii}.x.readout_dim,'2D')
+	if strcmp(importStr{ii}.x.MRAcquisitionType,'2D')
 		importStr{ii}.par.PulseSequenceType = '2D_EPI';
 	else
-		if strcmp(importStr{ii}.x.Vendor,'GE') || strcmp(importStr{ii}.x.Vendor,'GE_WIP') || strcmp(importStr{ii}.x.Vendor,'GE_product')
+		if strcmp(importStr{ii}.x.Manufacturer,'GE') || strcmp(importStr{ii}.x.Manufacturer,'GE_WIP') || strcmp(importStr{ii}.x.Manufacturer,'GE_product')
 			importStr{ii}.par.PulseSequenceType = '3D_spiral';
 		else
 			importStr{ii}.par.PulseSequenceType = '3D_GRASE';
 		end
 	end
 	
-	%if ~isfield(importStr{ii}.par,'TotalAcquiredVolumes') && isfield(importStr{ii}.x.Q,'NumberOfAverages') && (importStr{ii}.x.Q.NumberOfAverages > 1)
-	%	importStr{ii}.par.TotalAcquiredVolumes = importStr{ii}.x.Q.NumberOfAverages;
+	%if ~isfield(importStr{ii}.par,'TotalAcquiredVolumes') && isfield(importStr{ii}.x,'NumberOfAverages') && (importStr{ii}.x.NumberOfAverages > 1)
+	%	importStr{ii}.par.TotalAcquiredVolumes = importStr{ii}.x.NumberOfAverages;
 	%end
 
-	if ~isfield(importStr{ii}.par,'ReadoutSegments') && isfield(importStr{ii}.x.Q,'NumberSegments')
-		importStr{ii}.par.NumberSegments = importStr{ii}.x.Q.NumberSegments;
+	if ~isfield(importStr{ii}.par,'ReadoutSegments') && isfield(importStr{ii}.x,'NumberSegments')
+		importStr{ii}.par.NumberSegments = importStr{ii}.x.NumberSegments;
 	end
 	
 	% Labeling delays and durations
 	if strcmp(importStr{ii}.par.LabelingType,'PASL')
-		%importStr{ii}.par.LabelingDuration = 0;% x.Q.LabelingDuration           = 1800;  % for PASL this is TI1
-		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.Q.Initial_PLD;
+		%importStr{ii}.par.LabelingDuration = 0;% importStr{ii}.x.LabelingDuration           = 1.800;  % for PASL this is TI1
+		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
 		if importStr{ii}.par.BolusCutOffFlag
-			importStr{ii}.par.BolusCutOffTimingSequence = x.Q.LabelingDuration;
+			importStr{ii}.par.BolusCutOffTimingSequence = importStr{ii}.x.LabelingDuration;
 		end
 	else
-		importStr{ii}.par.LabelingDuration = importStr{ii}.x.Q.LabelingDuration;
-		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.Q.Initial_PLD;
+		importStr{ii}.par.LabelingDuration = importStr{ii}.x.LabelingDuration;
+		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
 	end
 
-	if importStr{ii}.x.Q.BackGrSupprPulses == 0
+	if importStr{ii}.x.BackGrSupprPulses == 0
 		importStr{ii}.par.BackgroundSuppression = false;
 	else
 		importStr{ii}.par.BackgroundSuppression = true;
 		if ~isfield(importStr{ii}.par,'BackgroundSuppressionPulseTime') || isempty(importStr{ii}.par.BackgroundSuppressionPulseTime)
-			switch (importStr{ii}.x.Q.BackGrSupprPulses)
+			switch (importStr{ii}.x.BackGrSupprPulses)
 				case 2
 					if importStr{ii}.par.PostLabelingDelay > 1.750
 						importStr{ii}.par.BackgroundSuppressionPulseTime = [1.75 0.524];
 						importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
 					elseif importStr{ii}.par.PostLabelingDelay > 1.495
 						importStr{ii}.par.BackgroundSuppressionPulseTime = [1.495 0.345];
+						importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
+					elseif importStr{ii}.par.PostLabelingDelay > 1.195
+						warning('Not properly calculated');
+						importStr{ii}.par.BackgroundSuppressionPulseTime = [1.195 0.245];
 						importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
 					else
 						error('Pulses not fitting');
@@ -527,7 +533,7 @@ for ii = 1:length(fList)
 					end
 				case 5
 					if importStr{ii}.par.PostLabelingDelay > 1.510
-						importStr{ii}.par.BackgroundSuppressionPulseTime = [(importStr{ii}.par.PostLabelingDelay+importStr{ii}.par.LabelingDuration+1)/1000 1.510 0.875 0.375 0.095];
+						importStr{ii}.par.BackgroundSuppressionPulseTime = [(importStr{ii}.par.PostLabelingDelay+importStr{ii}.par.LabelingDuration+1) 1.510 0.875 0.375 0.095];
 						importStr{ii}.par.BackgroundSuppressionNumberPulses = 5;
 					else
 						error('Pulses not fitting');
@@ -548,14 +554,14 @@ for ii = 1:length(fList)
 	% Either to change the automatically filled things above, or to supply further info about multi-PLD, vascular crushing, QUASAR etc.
 	switch (fList{ii})
 		case 'Siemens_PASL_multiTI_GIFMI'
-			importStr{ii}.par.PostLabelingDelay = [300 300 600 600 900 900 1200 1200 1500 1500 1800 1800 2100 2100 2400 2400 2700 2700 3000 3000];
+			importStr{ii}.par.PostLabelingDelay = [300 300 600 600 900 900 1200 1200 1500 1500 1800 1800 2100 2100 2400 2400 2700 2700 3000 3000]/1000;
 			
 		case 'Siemens_PASL_singleTI_GIFMI'
 			importStr{ii}.par.VascularCrushing = true;
 			importStr{ii}.par.VascularCrushingVenc = 100;
 			
 		case 'Siemens_PCASL_3DGRASE_failed_APGEM2'
-			importStr{ii}.par.LabelingDuration = [0 repmat(1800,[1,24])];
+			importStr{ii}.par.LabelingDuration = [0 repmat(1800,[1,24])]/1000;
 			importStr{ii}.par.VascularCrushing = true;
 			importStr{ii}.par.VascularCrushingVenc = 10;
 
@@ -567,12 +573,12 @@ for ii = 1:length(fList)
 			end
 			importStr{ii}.par.FlipAngle = 25;
 			importStr{ii}.par.LookLocker = true;
-			importStr{ii}.par.PostLabelingDelay = repmat(250:250:3750,[1 10]);
+			importStr{ii}.par.PostLabelingDelay = repmat(250:250:3750,[1 10])/1000;
 
 		case 'Philips_PCASL_2DEPI_intera_FIND_multiPLD'
 			%importStr{ii}.par.ASLContext = '(Label+Control)*75';
 			for cc = 1:75, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
-			importStr{ii}.par.PostLabelingDelay = repmat([500 500 1000 1000 1500 1500 1800 1800 2200 2200],[1 15]);
+			importStr{ii}.par.PostLabelingDelay = repmat([500 500 1000 1000 1500 1500 1800 1800 2200 2200],[1 15])/1000;
 
 		case 'Philips_PCASL_2DEPI_intera_FIND_QUASAR'
 			%importStr{ii}.par.ASLContext = '(Label*15+Control*15)*5';
@@ -584,7 +590,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.LookLocker = true;
 			importStr{ii}.par.VascularCrushing = true;
 			importStr{ii}.par.VascularCrushingVenc = [zeros(1,60),10*ones(1,60),zeros(1,3)];
-			importStr{ii}.par.PostLabelingDelay = repmat(250:250:3750,[1 10]);
+			importStr{ii}.par.PostLabelingDelay = repmat(250:250:3750,[1 10])/1000;
 
 	end
 end
@@ -766,6 +772,11 @@ for ii = 1:length(fList)
 							bCP = 0;
 						end
 					end
+					for ll=1:length(lRMFieldsASL)
+						if strcmp(lRMFieldsASL{ll},fn{1})
+							bCP = 0;
+						end
+					end
 					if bCP
 						jsonLocal.(fn{1}) = jsonDicom.(fn{1});
 					end
@@ -793,7 +804,7 @@ for ii = 1:length(fList)
 
 				% Fill in extra parameters based on the JSON from the data
 				if importStr{ii}.par.PulseSequenceType(1) == '2'
-					jsonLocal.SliceTiming = ((0:(size(imNii,3)-1))')*importStr{ii}.x.Q.SliceReadoutTime/1000;
+					jsonLocal.SliceTiming = ((0:(size(imNii,3)-1))')*importStr{ii}.x.SliceReadoutTime;
 				else
 					if isfield(jsonLocal,'SliceTiming')
 						jsonLocal = rmfield(jsonLocal,'SliceTiming');
@@ -965,6 +976,11 @@ for ii = 1:length(fList)
 								bCP = 1;
 								for ll=1:length(lRMFields)
 									if strcmp(lRMFields{ll},fn{1})
+										bCP = 0;
+									end
+								end
+								for ll=1:length(lRMFieldsASL)
+									if strcmp(lRMFieldsASL{ll},fn{1})
 										bCP = 0;
 									end
 								end
