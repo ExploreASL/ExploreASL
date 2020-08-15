@@ -25,14 +25,15 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 %               is sorted for participants.
 %
 % This function runs the following steps:
-% 1) Admin - Validate that there are not too many columns
-% 2) Admin - Detect nSubjectsSessions
-% 3) Admin - Load pre-existing participants.tsv or create one
-% 4) Admin - Get column number of data
-% 5) Add data to CellArray
-% 6) Sort rows on subjects
-% 7) Fill empty cells
-% 8) Write data to participants.tsv
+%
+% 1. Admin - Validate that there are not too many columns
+% 2. Admin - Detect nSubjectsSessions
+% 3. Admin - Load pre-existing participants.tsv or create one
+% 4. Admin - Get column number of data
+% 5. Add data to CellArray
+% 6. Sort rows on subjects
+% 7. Fill empty cells
+% 8. Write data to participants.tsv
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_Add2ParticipantsTSV(MeanMotion, 'MeanMotion', x);
 % __________________________________
@@ -167,9 +168,9 @@ for iIndex=1:size(DataIn,1)
         continue;
     end     
     
-    IsEmpty = isempty(CellArray{iRow+1,DataColumn}) || strcmp(CellArray{iRow+1,DataColumn}, 'n/a');
+    IsEmpty = size(CellArray,1)<iRow || isempty(CellArray{iRow,DataColumn}) || strcmp(CellArray{iRow,DataColumn}, 'n/a');
     if IsEmpty || bOverwrite
-        CellArray{iRow+1,DataColumn} = DataIn{iIndex,3};
+        CellArray{iRow+1,DataColumn} = DataIn{iIndex,3}; % iRow+1 for header
     else
         fprintf('Data already existing, skipping\n');
     end

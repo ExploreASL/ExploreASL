@@ -70,7 +70,7 @@ if nargin < 2 || isempty(bUseDCMTK)
 end
 
 if nargin < 3 || isempty(bCheckPermissions)
-    if isunix
+    if isunix || ismac
         bCheckPermissions = false; % set this to TRUE LATER!!!!!!
     else
         bCheckPermissions = false;

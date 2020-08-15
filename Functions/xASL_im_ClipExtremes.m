@@ -1,6 +1,21 @@
 function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose)
 % xASL_im_ClipExtremes Clips image to given percentile. The percentile is found using non-zeros sorted intensities
 % , so both isfinite & non-zeros
+%
+% FORMAT:       [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Clips image to given percentile. The percentile is found
+%               using non-zeros sorted intensities, so both isfinite & non-zeros.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     %% Admin
     if nargin<4 || isempty(bVerbose)

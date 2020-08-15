@@ -84,7 +84,7 @@ PathPopB0 = fullfile(x.D.PopDir, ['rASL_B0_' x.P.SubjectID '_' x.P.SessionID '.n
 PathPopUnwarped = fullfile(x.D.PopDir, ['rASL_Unwarped_' x.P.SubjectID '_' x.P.SessionID '.nii']);
 
 if xASL_exist(PathPopB0,'file') && xASL_exist(PathPopUnwarped,'file')% if we have TopUp results
-    [Output1, Output2] = xASL_im_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, x.iSubject, x.D.ASLCheckDir);
+    [Output1, Output2] = xASL_vis_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, x.iSubject, x.D.ASLCheckDir);
     x.Output.ASL.MeanAI_PreTopUp_Perc = Output1;
     x.Output.ASL.MeanAI_PostTopUp_Perc = Output2;
     xASL_delete(PathPopB0);
@@ -109,9 +109,9 @@ WB = logical(xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'brainmask.nii'))
 SliceMask = xASL_io_Nifti2Im(x.P.Pop_Path_SliceGradient)~=0;
 T1template = fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii');
 
-IM1 = xASL_im_CreateVisualFig(x, T1template, [], [], [], [], [], WB, true);
-IM2 = xASL_im_CreateVisualFig(x, x.P.Pop_Path_SliceGradient, [], [], [], x.S.jet256, [], SliceMask, true);
-IM3 = xASL_im_CreateVisualFig(x, {T1template x.P.Pop_Path_SliceGradient}, [],[0.65 0.6],[],{x.S.gray,x.S.jet256},[],{WB SliceMask},true);
+IM1 = xASL_vis_CreateVisualFig(x, T1template, [], [], [], [], [], WB, true);
+IM2 = xASL_vis_CreateVisualFig(x, x.P.Pop_Path_SliceGradient, [], [], [], x.S.jet256, [], SliceMask, true);
+IM3 = xASL_vis_CreateVisualFig(x, {T1template x.P.Pop_Path_SliceGradient}, [],[0.65 0.6],[],{x.S.gray,x.S.jet256},[],{WB SliceMask},true);
 
 Parms.IM = [IM1;IM2;IM3];
 
@@ -119,7 +119,7 @@ xASL_adm_CreateDir(x.D.SliceCheckDir);
 OutputFile = fullfile(x.D.SliceCheckDir,['SliceGradient' x.P.SubjectID '_' x.P.SessionID '.jpg']);
 xASL_delete(OutputFile);
 if sum(isfinite(Parms.IM(:)))>100
-    xASL_imwrite(Parms.IM,OutputFile);
+    xASL_vis_Imwrite(Parms.IM,OutputFile);
 end
 
 %% -----------------------------------------------------------------------------------
@@ -287,10 +287,10 @@ for iN=1:nRows
         end    
 
         % Create the image
-        T2.IM = xASL_im_CreateVisualFig( x, T2.ImIn{iM}, T2.DirOut{iM}, T2.IntScale{iM}, T2.NameExt{iM}, T2.ColorMapIs{iM});
+        T2.IM = xASL_vis_CreateVisualFig( x, T2.ImIn{iM}, T2.DirOut{iM}, T2.IntScale{iM}, T2.NameExt{iM}, T2.ColorMapIs{iM});
         % add single slice to QC collection
         if sum(~isnan(T2.IM(:)))>0 % if image is not empty
-            x = xASL_im_AddIM2QC(x,T2);
+            x = xASL_vis_AddIM2QC(x,T2);
         end
     end
 end

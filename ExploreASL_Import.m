@@ -49,11 +49,12 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %    DICOMs SeriesName/ProtocolName.
 % 3) Once you have all DICOMs in folderstructure with identifyable names
 %    inside //MyDisk/MyStudy/raw, set up the folderstructure in
-%    ExploreASL_ImportConfig.m This setup uses the SPM form of regular
+%    ExploreASL_ImportConfig.m. This setup uses the SPM form of regular
 %    expressions, which can be daunting at first, but are very flexible.
 %    Easiest is to study other examples, before creating your own.
 %    For this example, let's say we have //MyDisk/MyStudy/raw/ScanType/SubjectName
-%    because we downloaded our data from XNAT, ordered per ScanType first, and then per subject
+%    because we downloaded our data from XNAT, ordered per ScanType first,
+%    and then per subject.
 %
 %    BRIEF EXPLANATION:
 %    Let's suppose we don't have sessions (only a single structural and functional scan per subject)
@@ -111,7 +112,7 @@ if nargin<5 || isempty(bRunDCM2NII)
 end
 if nargin<3 || isempty(bUseDCMTK)
     bUseDCMTK = true; % default set to using DCM-TK
-elseif bUseDCMTK && isempty(which('dicomdict'))
+elseif ~bUseDCMTK && isempty(which('dicomdict'))
     error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
 end
 if nargin<4 || isempty(bCheckPermissions)
@@ -175,8 +176,26 @@ else
     fprintf('If you want to overwrite, first remove the full subject folder');
 end
 
-%% Create the directory for analysis
-imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID,'raw');
+%% Create the basic folder structure for raw & derivative data
+imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID, 'raw'); % default name
+
+if ~exist(imPar.RawRoot, 'dir')
+    warning(['Couldnt find ' imPar.RawRoot ', trying to find a different folder instead...']);
+    
+    % find any folder except for analysis, source, raw, derivatives
+    % xASL_adm_GetFileList uses regular expressions, to create a nice list of foldernames,
+    % with/without FullPath (FPList), with/without recursive (FPListRec)
+    % very powerful once you know how these work
+    FolderNames = xASL_adm_GetFileList(fullfile(imPar.RawRoot, imPar.studyID), '^(?!(analysis|derivatives|source|raw)).*$', 'FPList', [0 Inf], true); 
+    
+    if length(FolderNames)==1
+        imPar.RawRoot = FolderNames{1};
+        fprintf('%s\n', ['Found ' imPar.RawRoot ' as raw folder']);
+    else
+        error('Couldnt find a raw folder, please rename one, or move other folders');
+    end
+end
+
 imPar.AnalysisRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'analysis');
 imPar.SourceRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'source');
 
@@ -524,12 +543,19 @@ for iSubject=1:nSubjects
                         end
                     end
 
-                    %% Merge NIfTIs if there are multiple for ASL only
-                    % check the number of created nifiti files in case of ASL: control and label should be merged as one 4D
-                    if length(nii_files)>1 && ~isempty(strfind(scan_name,'ASL4D'))
-                        nii_files = merge_2_ASL_nii_files(nii_files, scan_name);
-                    end
-
+                    %% Merge NIfTIs if there are multiples
+					if length(nii_files)>1
+						1;
+					end
+					% For ASL or M0, merge multiple files
+					if length(nii_files)>1 
+						if ~isempty(strfind(scan_name,'ASL4D'))
+							nii_files = xASL_bids_MergeNifti(nii_files,'ASL');
+						elseif  ~isempty(strfind(scan_name,'M0'))
+							nii_files = xASL_bids_MergeNifti(nii_files,'M0');
+						end
+					end
+					
                     % Extract relevant parameters from nifti header and append to summary file
                     summary_line = AppendNiftiParameters(nii_files);
                     converted_scans(iSubject,iSession,iScan) = 1;
@@ -746,94 +772,6 @@ end
     
 end
 
-% -----------------------------------------------------------------------------
-%
-% -----------------------------------------------------------------------------
-function nii_files = merge_2_ASL_nii_files(nii_files, basename)
-% merge_2_ASL_nii_files
-% CAVE: deletes original files
-
-if length(nii_files)>1
-    fprintf('Warning EXPLOREASL_IMPORT: concatenating multiple NIfTIs & jsons as output from dcm2niiX\n');
-    
-    % First rename the NIfTI and JSON files to 4 digit format & sort them
-    % this avoids 1 10 2 issues
-    for iFile=1:length(nii_files)
-        [Fpath, Ffile, Fext] = xASL_fileparts(nii_files{iFile});
-        [iStart, iEnd] = regexp(Ffile,'\d*$');
-        FfileNew = [Ffile(1:iStart-1) sprintf('%04d', str2num(Ffile(iStart:iEnd)))];
-        PathNew = fullfile(Fpath, [FfileNew Fext]);
-		xASL_Move(nii_files{iFile}, PathNew);
-		nii_files{iFile} = PathNew;
-		
-		% Rename also the JSON if it exists
-		PathOldJSON = fullfile(Fpath,[Ffile '.json']);
-		PathNewJSON = fullfile(Fpath, [FfileNew '.json']);
-		if exist(PathOldJSON,'file')
-			xASL_Move(PathOldJSON,PathNewJSON);
-		end
-    end
-    
-    nii_files = sort(nii_files);
-    
-    % Then create image
-    % Here we issue a warning for dimensionality>4
-	countJSON = 1;
-    for iFile=1:length(nii_files)
-        tempIM = xASL_io_Nifti2Im(nii_files{iFile});
-        if length(size(tempIM))>4
-            error('Dimensionality incorrect for this ASL NIfTI file');
-		end
-		
-		bFileOK = 1;
-		if iFile==1
-			IM = tempIM;
-		else
-			% Check the file sizes and merge only if of similar size
-			sizeFirst = size(IM);
-			sizeFirst = sizeFirst(1:3);
-			sizeNew   = size(tempIM);
-			sizeNew   = sizeNew(1:3);
-			if isequal(sizeNew, sizeFirst)
-				IM(:,:,:,end+1:end+size(tempIM,4)) = tempIM;
-				% Immediately delete the file
-				xASL_delete(nii_files{iFile});
-			else
-				bFileOK = 0;
-			end
-		end
-		% If file was merged, then proceed to delete
-		if bFileOK
-			[tempFpath, tempFfile, ~] = xASL_fileparts(nii_files{iFile});
-			PathOldJSON = fullfile(tempFpath,[tempFfile '.json']);
-			if countJSON == 1
-				if exist(PathOldJSON,'file')
-					% Save the first JSON as ASL4D.json
-					countJSON = countJSON + 1;
-					xASL_Move(PathOldJSON, fullfile(Fpath, 'ASL4D.json'),1);
-				end
-			else
-				% Delete all the other JSONs
-				if exist(PathOldJSON,'file')
-					xASL_delete(PathOldJSON);
-				end
-			end
-		end
-		
-	end
-    
-	% Save the file with the same header and remove the last remaining file
-    NewNIfTI = fullfile(fileparts(nii_files{1}), 'ASL4D.nii');
-    xASL_io_SaveNifti(nii_files{1}, NewNIfTI, IM, [], 0);
-	xASL_delete(nii_files{1});
-    
-    fprintf('Corrected dcm2niiX output for\n');
-    fprintf('%s\n', NewNIfTI);
-    
-    nii_files = {NewNIfTI};
-end
-
-end
 
 
 % -----------------------------------------------------------------------------

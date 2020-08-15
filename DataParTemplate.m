@@ -205,6 +205,12 @@ function x = DataParTemplate(x)
 %                  - 1 = affine registration enabled
 %                  - 2 = affine registration automatically chosen based on
 %                        spatial CoV of PWI
+% x.bDCTRegistration -  Specifies if to include the DCT registration on top of Affine, all other 
+%                            requirements for affine are thus also taken into account (OPTIONAL, DEFAULT = 0)
+%                            the x.bAffineRegistration must be >0 for DCT to run
+%                          - 0 = DCT registration disabled
+%                          - 1 = DCT registration enabled if affine enabled and conditions for affine passed
+%                          - 2 = DCT enabled as above, but use PVC on top of it to get the local intensity scaling right
 % x.bRegisterM02ASL - boolean specifying whether M0 is registered to
 %                     mean_control image (or T1w if no control image exists)
 %                     It can be useful to disable M0 registration if the
@@ -229,7 +235,21 @@ function x = DataParTemplate(x)
 % 							   (OPTIONAL, DEFAULT = 0).
 % 							   - 1 = enabled
 % 							   - 0 = disabled
-
+%
+%% Masking parameters
+%   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
+%                       (1 = yes, 0 = no)
+%                       [1 0 0 0] = susceptibility mask (either population-or subject-wise)
+%                       [0 1 0 0] = vascular mask (only subject-wise)
+%                       [0 0 1 0] = subject-specific tissue-masking (e.g. pGM>0.5)
+%                       [0 0 0 1] = WholeBrain masking (used as memory compression)
+%                       [0 0 0 0] = no masking at all
+%                       [1 1 1 1] = apply all masks
+%                       Can also be used as boolean, where 
+%                       1 = [1 1 1 1]
+%                       0 = [0 0 0 0]
+%                       Can be useful for e.g. loading lesion masks outside the GM
+%                       (OPTIONAL, DEFAULT=1)
 
 x.name = ExampleDataSet;
 x.subject_regexp = '^Sub-\d{3}$';

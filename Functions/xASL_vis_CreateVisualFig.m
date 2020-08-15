@@ -1,8 +1,8 @@
-function [ImOut, FileName] = xASL_im_CreateVisualFig(x, ImIn, DirOut, IntScale, NamePrefix, ColorMap, bClip, MaskIn, bWhite, MaxWindow, bTransparancy)
-% xASL_im_CreateVisualFig Flexible tool to create figure for visualization
+function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale, NamePrefix, ColorMap, bClip, MaskIn, bWhite, MaxWindow, bTransparancy)
+% xASL_vis_CreateVisualFig Flexible tool to create figure for visualization
 % of standard space images
 %
-% FORMAT: [ImOut, FileName] = xASL_im_CreateVisualFig(x, ImIn, DirOut, IntScale, NamePrefix, ColorMap, bClip)
+% FORMAT: [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale, NamePrefix, ColorMap, bClip)
 %
 % INPUT:
 %   x            - structure containing fields with information when this function is called from ExploreASL toolbox (OPTIONAL)
@@ -21,7 +21,7 @@ function [ImOut, FileName] = xASL_im_CreateVisualFig(x, ImIn, DirOut, IntScale, 
 %   bWhite       - true for switching background to white (OPTIONAL, DEFAULT=black background)
 %   bTransparancy - true for transparant results when overlaying a mask (OPTIONAL, DEFAULT=false)
 %
-% INPUT FIELDS IN X, USED BY xASL_im_TransformData2View:
+% INPUT FIELDS IN x, USED BY xASL_vis_TransformData2View:
 %              ORIENTATION SETTINGS:
 %               x.S.TraSlices - which transversal slices to show (n, orientation omitted if empty, DEFAULT = 20:7:97)
 %               x.S.CorSlices - which coronal slices to show (n, orientation omitted if empty, DEFAULT = empty)
@@ -41,31 +41,31 @@ function [ImOut, FileName] = xASL_im_CreateVisualFig(x, ImIn, DirOut, IntScale, 
 %              path, managing colormaps for different merged image layers. Current use is for visual QC figures and overview in papers.
 %              Function is structured as:
 %
-%              1) Admin, deal with input arguments
-%              2) Process image layers separately
-%                 a) - xASL_im_TransformData2View: Reshapes image data into visualization figure
-%                 b) - xASL_im_ClipExtremes: Clips image to given percentile
-%                      also we scale for peak intensity, we make sure that there is no
-%                      visible clipping/distortion
-%                 c) convert to colors, using any input colormaps
-%              3) combine image layers, using input argument IntScale
-%              4) print figure
+%              1. Admin, deal with input arguments
+%              2. Process image layers separately
+%                 * xASL_im_TransformData2View: Reshapes image data into visualization figure
+%                 * xASL_im_ClipExtremes: Clips image to given percentile
+%                   also we scale for peak intensity, we make sure that there is no
+%                   visible clipping/distortion
+%                 * Convert to colors, using any input colormaps
+%              3. combine image layers, using input argument IntScale
+%              4. print figure
 %
-%              This function assumes that the first image is a grascale background
+%              This function assumes that the first image is a grayscale background
 %              image (e.g. for transparancy reasons), if there are multiple
 %              images
 %
 % EXAMPLE: for overlaying red GM segmentation over grayscale T1w background:
-%          [ImOut] = xASL_im_CreateVisualFig(x, {'//AnalysisDir/Population/T1_Sub-001.nii' '//AnalysisDir/Population/rc1T1_Sub-001.nii', [], [1 0.5], [], {x.S.gray x.S.red});
+%          [ImOut] = xASL_vis_CreateVisualFig(x, {'//AnalysisDir/Population/T1_Sub-001.nii' '//AnalysisDir/Population/rc1T1_Sub-001.nii', [], [1 0.5], [], {x.S.gray x.S.red});
 %          or for printing to file:
-%          xASL_im_CreateVisualFig(x, {'//AnalysisDir/Population/T1_Sub-001.nii' '//AnalysisDir/Population/rc1T1_Sub-001.nii', '//AnalysisDir/Population/T1w_Check', [1 0.5], 'pGM', {x.S.gray x.S.red});
+%          xASL_vis_CreateVisualFig(x, {'//AnalysisDir/Population/T1_Sub-001.nii' '//AnalysisDir/Population/rc1T1_Sub-001.nii', '//AnalysisDir/Population/T1w_Check', [1 0.5], 'pGM', {x.S.gray x.S.red});
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 
 %% ----------------------------------------------
-%% 1) Admin
+%% 1. Admin
 ImOut = NaN; % if anything goes wrong
 
 % Get visualization settings if required
@@ -118,7 +118,7 @@ if nargin<11 || isempty(bTransparancy)
 end
 
 if isempty(ImIn)
-    fprintf('%s\n', 'xASL_im_CreateVisualFig:No image data, skipping image creation');
+    fprintf('%s\n', 'xASL_vis_CreateVisualFig:No image data, skipping image creation');
     FigureOut{1} = NaN;
     return;
 end
@@ -128,7 +128,7 @@ end
 for iC=1:length(ImIn)
     if  numel(ImIn{iC})<512 % assume this is a FilePath
         if ~xASL_exist(ImIn{iC}, 'file')
-            fprintf('%s\n','xASL_im_CreateVisualFig: No image data, skipping image creation');
+            fprintf('%s\n','xASL_vis_CreateVisualFig: No image data, skipping image creation');
             FigureOut{1} = NaN;
             return;
         else
@@ -140,7 +140,7 @@ end
 
 
 %% ------------------------------------------------------------------------
-%% 2) Process image layers
+%% 2. Process image layers
 for iIm=1:length(ImIn)
     IM{iIm} = xASL_io_Nifti2Im(ImIn{iIm}); % load if NIfTI, pass through if matrix (IM)
 
@@ -151,7 +151,7 @@ for iIm=1:length(ImIn)
     DimIm = size(IM{iIm});
 
     if length(DimIm)>3
-        fprintf('Minor warning, xASL_im_CreateVisualFig: image had multiple 3D images, using first only\n');
+        fprintf('Minor warning, xASL_vis_CreateVisualFig: image had multiple 3D images, using first only\n');
     end
     IM{iIm} = IM{iIm}(:,:,:,1,1,1,1,1,1,1,1,1);
 
@@ -162,7 +162,7 @@ for iIm=1:length(ImIn)
         return;
     end
 
-    %% 0) Masking & shifting to zero
+    %% 0. Masking & shifting to zero
     MaskIn{iIm}(isnan(MaskIn{iIm})) = 0; % Remove NaNs
     IM{iIm}(~logical(MaskIn{iIm})) = 0;
 
@@ -177,7 +177,7 @@ for iIm=1:length(ImIn)
         IM{iIm} = IM{iIm}-MinIntIm;
     end
 
-    %% a) transforms the input images to a visualization format
+    %% a. transforms the input images to a visualization format
     % first do this for the mask
     if bWhite
         % do the same for the mask, allowing to switch background to white
@@ -212,14 +212,14 @@ for iIm=1:length(ImIn)
                 % keep the mask full, we cannot mask
             end
         end
-        MaskWhite{iIm} = xASL_im_TransformData2View(MaskIn{iIm}(:,:,:,1), x);
+        MaskWhite{iIm} = xASL_vis_TransformData2View(MaskIn{iIm}(:,:,:,1), x);
     end
 
     % now do this for the data
     IM{iIm}(isnan(IM{iIm})) = 0; % Remove NaNs
-    IM{iIm} = xASL_im_TransformData2View(IM{iIm}(:,:,:,1), x);
+    IM{iIm} = xASL_vis_TransformData2View(IM{iIm}(:,:,:,1), x);
 
-    %% b) Clipping image intensities for image layer
+    %% b. Clipping image intensities for image layer
     if MaxWindow{iIm}~=0
         MaxInt1 = MaxWindow{iIm};
         MaxInt2 = MaxWindow{iIm};
@@ -257,7 +257,7 @@ for iIm=1:length(ImIn)
     IM{iIm} = IM{iIm} .* IntScale(iIm); % scale the image, if requested
 end
 
-%% 3) Combine image layers
+%% 3. Combine image layers
 % We can add the image layers with the intensities set by IntScale above.
 % However, if we overlay a binary mask on top of a grayscale image with
 % high intensities, this will go wrong: then we need to force transparancy
@@ -302,7 +302,7 @@ if length(IM)>1 % if we have more images, we overlay them on the first
     %% PM: create a transparancy setting
 end
 
-%% 3.5) Deal with background color
+%% 3.5. Deal with background color
 if bWhite
     % first create common mask, by taking the MIP, a voxel will only be
     % masked out (i.e. set to white), if it doesnt exist in any of the
@@ -320,7 +320,7 @@ if bWhite
 end
 
 %%  -----------------------------------------------------------------
-%%  4) Print Figure
+%%  4. Print Figure
 % the output image is always passed through as output argument, if
 % requested. If DirOut is provided, this image is also saved as jpg file
 if numel(DirOut)>1 && numel(ImOut)>1 % when DirOut or ImOut==NaN, skip this
@@ -329,7 +329,7 @@ if numel(DirOut)>1 && numel(ImOut)>1 % when DirOut or ImOut==NaN, skip this
         FileName = [NamePrefix Ffile{iC}];
     end
     OutputFile = fullfile(DirOut,[FileName '.jpg']);
-    xASL_imwrite(ImOut, OutputFile);
+    xASL_vis_Imwrite(ImOut, OutputFile);
 end
 
 if ~exist('FigureOut', 'var')

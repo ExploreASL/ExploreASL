@@ -5,8 +5,8 @@
 % Now run the analysis part
 %% Initialize the paths
 rawDir    = '/pet/projekte/asl/data/FRONTIER';
-modDir = 'ASL_1';
-%modDir = 'PET_1';
+%modDir = 'ASL_1';
+modDir = 'PET_1';
 gmth = 0.7;
 
 %% Do all the comparisons
@@ -179,10 +179,10 @@ for iMod = 1:3
 				imTmp1 = imLocRef(imROI);
 				if ~isempty(imTmp1)
 					imTmp = sort(imTmp1);
-					resMax(iMod,iVal,iRoi,iL,1) = imTmp(floor(0.95*length(imTmp)));
+					resMax(iMod,iVal,iRoi,iL,1) = imTmp(floor(0.97*length(imTmp)));
 					imTmp2 = imLocSrc(imROI);
 					imTmp = sort(imTmp2);
-					resMax(iMod,iVal,iRoi,iL,2) = imTmp(floor(0.95*length(imTmp)));
+					resMax(iMod,iVal,iRoi,iL,2) = imTmp(floor(0.97*length(imTmp)));
 					if iVal == 1
 						resHist(iMod,iVal,iRoi,iL,:,:) = xASL_im_JointHist(imTmp1,imTmp2,ones(size(imTmp1)),0,150,0,150,60);
 					else
@@ -234,10 +234,14 @@ for iMod = 1:nMod
 		title(['mean CBF ' strMod ' ' strRoi]);
 		
 		figure(2);subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
-		plot(squeeze(resMeanGM(iMod,1,iRoi,ind,1)),squeeze(resMeanGM(iMod,1,iRoi,ind,2)),'r+');hold on
+		plot([30,80],[30,80],'k--');hold on
+		for iPnt = ind'
+			[tumorName, tumorColor] = assignNameAndColor(iPnt);
+			plot(squeeze(resMeanGM(iMod,1,iRoi,iPnt,1)),squeeze(resMeanGM(iMod,1,iRoi,iPnt,2)),tumorColor);
+		end
 		%plot(squeeze(resMeanGM(iMod,2,iRoi,ind,1)),squeeze(resMeanGM(iMod,2,iRoi,ind,2)),'go');
 		%plot(squeeze(resMeanGM(iMod,3,iRoi,ind,1)),squeeze(resMeanGM(iMod,3,iRoi,ind,2)),'bx');
-		plot([30,80],[30,80],'k--');
+		
 		title(['mean GM-CBF ' strMod ' ' strRoi]);
 		
 		if ((iMod == 1)||(iMod == 2)) && (iRoi == 2 || iRoi == 3)
@@ -257,6 +261,10 @@ for iMod = 1:nMod
 					[bnoInt,CInoInt,pvalnoInt,statsnoInt] = xASL_stat_MultipleLinReg(squeeze(resMeanGM(iMod,iVal,iRoi,ind,1)),squeeze(resMeanGM(iMod,iVal,iRoi,ind,2)),false);
 					% Mean relative difference
 					mrd = mean(2*abs(squeeze(resMeanGM(iMod,iVal,iRoi,ind,1))-squeeze(resMeanGM(iMod,iVal,iRoi,ind,2)))./(squeeze(resMeanGM(iMod,iVal,iRoi,ind,1))+squeeze(resMeanGM(iMod,iVal,iRoi,ind,2))))*100;
+					% Mean relative difference from the fit
+					mrdnoInt = mean(2*abs(bnoInt*squeeze(resMeanGM(iMod,iVal,iRoi,ind,1))-squeeze(resMeanGM(iMod,iVal,iRoi,ind,2)))./(squeeze(resMeanGM(iMod,iVal,iRoi,ind,1))+squeeze(resMeanGM(iMod,iVal,iRoi,ind,2))))*100;
+					pcc = corrcoef(squeeze(resMeanGM(iMod,iVal,iRoi,ind,1)),squeeze(resMeanGM(iMod,iVal,iRoi,ind,2)));
+					pcc = pcc(1,2);
 				end
 				
 				if iRoi == 3
@@ -264,11 +272,18 @@ for iMod = 1:nMod
 					[bnoInt,CInoInt,pvalnoInt,statsnoInt] = xASL_stat_MultipleLinReg(squeeze(resMean(iMod,iVal,iRoi,ind,1)),squeeze(resMean(iMod,iVal,iRoi,ind,2)),false);
 					% Mean relative difference
 					mrd = mean(2*abs(squeeze(resMean(iMod,iVal,iRoi,ind,1))-squeeze(resMean(iMod,iVal,iRoi,ind,2)))./(squeeze(resMean(iMod,iVal,iRoi,ind,1))+squeeze(resMean(iMod,iVal,iRoi,ind,2))))*100;
+					% Mean relative difference from the fit
+					mrdnoInt = mean(2*abs(squeeze(bnoInt*resMean(iMod,iVal,iRoi,ind,1))-squeeze(resMean(iMod,iVal,iRoi,ind,2)))./(squeeze(resMean(iMod,iVal,iRoi,ind,1))+squeeze(resMean(iMod,iVal,iRoi,ind,2))))*100;
+					pcc = corrcoef(squeeze(resMean(iMod,iVal,iRoi,ind,1)),squeeze(resMean(iMod,iVal,iRoi,ind,2)));
+					pcc = pcc(1,2);
 				end
 				if iRoi == 3
 					[bmax,CImax,pvalmax,statsmax] = xASL_stat_MultipleLinReg(squeeze(resMax(iMod,iVal,iRoi,ind,1)),squeeze(resMax(iMod,iVal,iRoi,ind,2)),true);
 					[bmaxnoInt,CImaxnoInt,pvalmaxnoInt,statsmaxnoInt] = xASL_stat_MultipleLinReg(squeeze(resMax(iMod,iVal,iRoi,ind,1)),squeeze(resMax(iMod,iVal,iRoi,ind,2)),false);
 					mrdmax = mean(2*abs(squeeze(resMax(iMod,iVal,iRoi,ind,1))-squeeze(resMax(iMod,iVal,iRoi,ind,2)))./(squeeze(resMax(iMod,iVal,iRoi,ind,1))+squeeze(resMax(iMod,iVal,iRoi,ind,2))))*100;
+					mrdmaxnoInt = mean(2*abs(bmaxnoInt*squeeze(resMax(iMod,iVal,iRoi,ind,1))-squeeze(resMax(iMod,iVal,iRoi,ind,2)))./(squeeze(resMax(iMod,iVal,iRoi,ind,1))+squeeze(resMax(iMod,iVal,iRoi,ind,2))))*100;
+					pccmax = corrcoef(squeeze(resMax(iMod,iVal,iRoi,ind,1)),squeeze(resMax(iMod,iVal,iRoi,ind,2)));
+					pccmax = pccmax(1,2);
 				end
 				xx = [];
 				yy = [];
@@ -288,6 +303,11 @@ for iMod = 1:nMod
 				[bAllnoint,CIAllnoint,pvalAllnoint,statsAllnoint] = xASL_stat_MultipleLinReg(xxnonlow,yynonlow,false);
 				
 				mrdvoxel = mean(2*abs(xxnonlow-yynonlow)./(xxnonlow+yynonlow))*100;
+				
+				mrdvoxelnoInt = mean(2*abs(bAllnoint*xxnonlow-yynonlow)./(xxnonlow+yynonlow))*100;
+				
+				pccvoxelnoInt = corrcoef(bAllnoint*xxnonlow,yynonlow);
+				pccvoxelnoInt = pccvoxelnoInt(1,2);
 				
 				str = 'Comparison in';
 				if iRoi == 2
@@ -320,17 +340,17 @@ for iMod = 1:nMod
 					end
 					fprintf([strCBF '. %.5f*X+%.5f, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n'],b(1),b(2),CI(1,1),CI(1,2),pval(1),stats.rSQadj);
 					fprintf([strCBF '. %.5f*X, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n'],bnoInt(1),CInoInt(1,1),CInoInt(1,2),pvalnoInt(1),statsnoInt.rSQadj);
-					fprintf(['Mean relative difference in ' strCBF ': %.2f%%\n'],mrd);
+					fprintf(['Mean relative difference in ' strCBF ': %.2f%%, pcc %.2f\n'],mrdnoInt,pcc);
 				end			
 				
 				if iRoi == 3
 					fprintf('Max CBF. %.5f*X+%.5f, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n',bmax(1),bmax(2),CImax(1,1),CImax(1,2),pvalmax(1),statsmax.rSQadj);
 					fprintf('Max CBF. %.5f*X, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n',bmaxnoInt(1),CImaxnoInt(1,1),CImaxnoInt(1,2),pvalmaxnoInt(1),statsmaxnoInt.rSQadj);
-					fprintf('Mean relative difference in max CBF: %.2f%%\n',mrdmax);
+					fprintf('Mean relative difference in max CBF: %.2f%%, pcc %.2f\n',mrdmaxnoInt,pccmax);
 				end
 				fprintf('Voxel-wise CBF. %.5f*X+%.5f, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n',bAll(1),bAll(2),CIAll(1,1),CIAll(1,2),pvalAll(1),statsAll.rSQadj);
 				fprintf('Voxel-wise CBF. %.5f*X, CI %.5f -- %.5f, p=%.5f. Adjusted R2 %.3f\n',bAllnoint(1),CIAllnoint(1,1),CIAllnoint(1,2),pvalAllnoint(1),statsAllnoint.rSQadj);
-				fprintf('Mean relative difference in voxel-wise CBF: %.2f%%\n\n',mrdvoxel);
+				fprintf('Mean relative difference in voxel-wise CBF: %.2f%%, pcc %.2f\n\n',mrdvoxelnoInt,pccvoxelnoInt);
 				%[b,bint,r,rint,stats] = regress(yy,[xx,ones(length(yy),1)]);
 				
 				hold on;
@@ -350,8 +370,19 @@ for iMod = 1:nMod
 			end
 		end
 		
+		figure(17);subplot(nMod,4,4*(iMod-1)+iRoi);
+		ind = find(squeeze(resVec(iMod,1,iRoi,:)));
+		plot([0.4,2.6],[0.4,2.6],'k--');hold on
+		for iPnt = ind'
+			[tumorName, tumorColor] = assignNameAndColor(iPnt);
+			plot(squeeze(resMean(iMod,2,iRoi,iPnt,1)),squeeze(resMean(iMod,2,iRoi,iPnt,2)),tumorColor);
+		end
+		
+		title(['mean CBF ' strMod ' ' strRoi]);
+		
 		figure(3);subplot(2,4,4*(iMod-1)+iRoi);
 		ind = find(squeeze(resVec(iMod,1,iRoi,:)));
+		plot([0.4,2.6],[0.4,2.6],'k--');hold on
 		if iRoi == 3 && iMod == 1
 			indFit = find(squeeze(resVec(iMod,1,iRoi,:)).*[1; 1; 1; 1; 1; 0; 1; 1]);
 			indOut = 6;
@@ -361,17 +392,25 @@ for iMod = 1:nMod
 		end
 		%groupMean = mean(resMean(iMod,1,iRoi,ind,1))/mean(resMean(iMod,2,iRoi,ind,1));
 		%plot(squeeze(resMax(iMod,1,iRoi,ind,1))/groupMean,squeeze(resMax(iMod,1,iRoi,ind,2))/groupMean,'r+');hold on
-		plot(squeeze(resMax(iMod,2,iRoi,ind,1)),squeeze(resMax(iMod,2,iRoi,ind,2)),'rx');hold on
-		if ~isempty(indOut)
-			plot(squeeze(resMax(iMod,2,iRoi,indOut,1)),squeeze(resMax(iMod,2,iRoi,indOut,2)),'rx');
+		for iPnt = ind'
+			[tumorName, tumorColor] = assignNameAndColor(iPnt);
+			plot(squeeze(resMax(iMod,2,iRoi,iPnt,1)),squeeze(resMax(iMod,2,iRoi,iPnt,2)),tumorColor);
 		end
+		
+		if ~isempty(indOut)
+			for iPnt = indOut'
+				[tumorName, tumorColor] = assignNameAndColor(iPnt);
+				plot(squeeze(resMax(iMod,2,iRoi,iPnt,1)),squeeze(resMax(iMod,2,iRoi,iPnt,2)),tumorColor);
+			end
+		end
+		
 		X = [ones(length(indFit),1),squeeze(resMax(iMod,2,iRoi,indFit,1))];
 		Y = squeeze(resMax(iMod,2,iRoi,indFit,2));
 		sol = pinv(X)*Y;
 		%imPseudoCBF = imPseudoCBF*sol(2)+sol(1);
 		%plot([0.4,3.2],[0.4*sol(2)+sol(1),3.2*sol(2)+sol(1)],'r-');
 		%plot(squeeze(resMax(iMod,3,iRoi,ind,1)),squeeze(resMax(iMod,3,iRoi,ind,2)),'bx');
-		plot([0.4,3.2],[0.4,3.2],'k--');
+		
 		title(['max CBF ' strMod ' ' strRoi]);
 		
 		figure(4);sp=subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
@@ -424,12 +463,13 @@ for iMod = 1:nMod
 			for iL = 1:8
 				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_PET.nii'))
 					figure(11);sp=subplot(2,4,iL);
+					[tumorName, tumorColor] = assignNameAndColor(iL);
 					imagesc(((squeeze((resHist(iMod,1,iRoi,iL,:,:)))).^0.4)');hold on
 					set(sp,'Layer','top','XTickLabel',{'25','50','75','100','125','150'});
 					set(sp,'Layer','top','YTickLabel',{'25','50','75','100','125','150'});
 					plot([1,60],[1,60],'r-');
 					axis(sp,'xy');
-					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
+					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL) 10 tumorName]);
 					
 					figure(12);sp=subplot(2,4,iL);
 					imagesc(((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4)');hold on
@@ -438,7 +478,7 @@ for iMod = 1:nMod
 					set(sp,'Layer','top','YTickLabel',{'0.5','1','1.5','2','2.5','3'});
 					plot([1,60],[1,60],'r-');
 					axis(sp,'xy');
-					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
+					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL) 10 tumorName]);
 				end
 			end
 		end
@@ -447,12 +487,13 @@ for iMod = 1:nMod
 			for iL = 1:8
 				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_DSC.nii'))
 					figure(13);sp=subplot(2,4,iL);
+					[tumorName, tumorColor] = assignNameAndColor(iL);
 					imagesc(((squeeze((resHist(iMod,1,iRoi,iL,:,:)))).^0.4)');hold on
 					set(sp,'Layer','top','XTickLabel',{'25','50','75','100','125','150'});
 					set(sp,'Layer','top','YTickLabel',{'25','50','75','100','125','150'});
 					plot([1,60],[1,60],'r-');
 					axis(sp,'xy');
-					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
+					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL) 10 tumorName]);
 					
 					figure(14);sp=subplot(2,4,iL);
 					imagesc(((squeeze((resHist(iMod,2,iRoi,iL,:,:)))).^0.4)');hold on
@@ -461,19 +502,44 @@ for iMod = 1:nMod
 					set(sp,'Layer','top','YTickLabel',{'0.5','1','1.5','2','2.5','3'});
 					plot([1,60],[1,60],'r-');
 					axis(sp,'xy');
-					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL)]);
+					title(['hist CBF ' strMod ' ' strRoi ' P' num2str(iL) 10 tumorName]);
 				end
 			end
 		end
 		
 		
 		figure(9);subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
-		plot(squeeze(resMean(iMod,1,iRoi,ind,1)),squeeze(resMean(iMod,1,iRoi,ind,2)),'r+');hold on
-		plot([1,80],[1,80],'k--');
+		plot([1,80],[1,80],'k--');hold on
+		for iPnt = ind'
+			[tumorName, tumorColor] = assignNameAndColor(iPnt);
+			plot(squeeze(resMean(iMod,1,iRoi,iPnt,1)),squeeze(resMean(iMod,1,iRoi,iPnt,2)),tumorColor);
+		end
+		
 		title(['mean CBF ' strMod ' ' strRoi]);
+
 		figure(10);subplot(nMod,4,4*(iMod-1)+iRoi);ind = find(squeeze(resVec(iMod,1,iRoi,:)));
-		plot(squeeze(resMax(iMod,1,iRoi,ind,1)),squeeze(resMax(iMod,1,iRoi,ind,2)),'r+');hold on
-		plot([1,200],[1,200],'k--');
+		plot([1,200],[1,200],'k--');hold on
+		for iPnt = ind'
+			[tumorName, tumorColor] = assignNameAndColor(iPnt);
+			plot(squeeze(resMax(iMod,1,iRoi,iPnt,1)),squeeze(resMax(iMod,1,iRoi,iPnt,2)),tumorColor);
+		end
 		title(['max CBF ' strMod ' ' strRoi]);
 	end
+end
+
+function [tumorName, tumorColor] = assignNameAndColor(tumorNumber)
+switch(tumorNumber)
+	case {1,4}
+		tumorName = 'glioblastoma IDH mutant';
+		tumorColor = 'mx';
+	case {2,7,8}
+		tumorName = 'glioblastoma IDH wildtype';
+		tumorColor = 'r+';
+	case {3,6}
+		tumorName = 'astrocytoma IDH mutant';
+		tumorColor = 'bo';
+	case {5}
+		tumorName = 'oligodendroglioma 1p/19q-codeleted';
+		tumorColor = 'g*';
+end
 end

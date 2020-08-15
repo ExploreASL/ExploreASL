@@ -2,6 +2,22 @@ function [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct
 %xASL_im_DetermineFlip Check determinants, should be the same
 % before & after registration, otherwise a left-right flip is applied
 % This is not visible, but detrimental for image analysis/stats
+%
+% FORMAT:       [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Check determinants, should be the same
+%               before & after registration, otherwise a left-right flip is applied
+%               This is not visible, but detrimental for image analysis/stats.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     QCstruct.LR_flip_YesNo = NaN; % default
 

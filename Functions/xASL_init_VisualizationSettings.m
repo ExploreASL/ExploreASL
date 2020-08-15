@@ -1,7 +1,7 @@
 function [x] = xASL_init_VisualizationSettings(x)
 %xASL_init_VisualizationSettings Defines the visualization settings for ExploreASL
 %
-% FORMAT [x] = xASL_init_VisualizationSettings(x)
+% FORMAT:   [x] = xASL_init_VisualizationSettings(x)
 %
 % INPUT:
 %  x 	    - structure containing fields with information when this function is called from within the ExploreASL pipeline (REQUIRED)
@@ -9,9 +9,12 @@ function [x] = xASL_init_VisualizationSettings(x)
 % OUTPUT:
 %  x 	    - structure containing fields with information when this function is called from within the ExploreASL pipeline (REQUIRED)
 %
-% DESCRIPTION: This function defines several visualization settings are
-% used throughout ExploreASL's pipeline and tools, assuming a [121 145 121]
-% matrix with 1.5 mm isotropic resolution in MNI space
+% DESCRIPTION:  This function defines several visualization settings are
+%               used throughout ExploreASL's pipeline and tools, assuming a [121 145 121]
+%               matrix with 1.5 mm isotropic resolution in MNI space.
+%
+% EXAMPLE:      [x] = xASL_init_VisualizationSettings(x);
+%
 % INCLUDING:
 %   Slices*    - defines which transversal slices to show by default
 %   TransCrop  - defines default cropping settings for all orientations
@@ -19,9 +22,9 @@ function [x] = xASL_init_VisualizationSettings(x)
 %   VoxelSize  - default voxel-size in standard space/MNI as used by ExploreASL: 1.5 mm
 %   skull      - brainmask for skullstripping
 %
-% EXAMPLE: [x] = xASL_init_VisualizationSettings(x);
+%
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
     %% Admin
@@ -32,6 +35,14 @@ function [x] = xASL_init_VisualizationSettings(x)
 
     if ~isfield(x,'S')
         x.S = struct;
+    end
+
+    if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
+        x.S.bMasking = [1 1 1 1];
+    elseif isequal(x.S.bMasking, 1)
+        x.S.bMasking = [1 1 1 1];
+    elseif isequal(x.S.bMasking, 0)
+        x.S.bMasking = [0 0 0 0];        
     end
 
     %% Slice numbers
@@ -124,7 +135,12 @@ function [x] = xASL_init_VisualizationSettings(x)
         x.BILAT_FILTER = false;
     end
 
-    x.WBmask  = logical(xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii')));
+    ImageWB = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii'));
+    if x.S.bMasking(4)==0
+        x.WBmask = true(size(ImageWB));
+    else
+        x.WBmask = logical(ImageWB);
+    end
 
     if ~isfield(x,'Quality') && isfield(x,'QUALITY')
         x.Quality = x.QUALITY; % backward compatibility

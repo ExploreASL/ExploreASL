@@ -209,8 +209,7 @@ for ii=1:length(nameTPM)
 	for jj=1:length(listMask)
 		IM = xASL_io_Nifti2Im(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']));
 		save(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii.mat']),'IM');
-		gzip(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']));
-		delete(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']));
+		xASL_adm_GzipNifti(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']));
 	end	
 	
 	% Copy normal files
@@ -247,8 +246,7 @@ for ii=1:length(nameTPM)
 	for jj=1:length(listMask)
 		IM = xASL_io_Nifti2Im(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']));
 		save(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii.mat']),'IM');
-		gzip(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']));
-		delete(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']));
+		xASL_adm_GzipNifti(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']));
 	end
 
 	% Copy all the templates and transform to pediatric size
@@ -280,8 +278,7 @@ for ii=1:length(nameTPM)
 			IM = xASL_io_Nifti2Im(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
 			save(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii.mat']),'IM');
 		end
-		gzip(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
-		delete(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
+		xASL_adm_GzipNifti(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
 	end
 	
 	% Copy all the template masks and transform to pediatric size
@@ -308,8 +305,7 @@ for ii=1:length(nameTPM)
 	
 	% Save as .mat and zip
 	for jj=1:length(listTemp)
-		gzip(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
-		delete(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
+		xASL_adm_GzipNifti(fullfile(pathTemplates,nameTPM{ii},[listTemp{jj} '.nii']));
 	end	
 		
 	% Copy all the Atlases and transform to pediatric size
@@ -338,8 +334,7 @@ for ii=1:length(nameTPM)
 	for jj=1:length(listMask)
 		IM = xASL_io_Nifti2Im(fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii']));
 		save(fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii.mat']),'IM');
-		gzip(fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii']));
-		delete(fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii']));
+		xASL_adm_GzipNifti(fullfile(pathAtlases,nameTPM{ii},[listMask{jj} '.nii']));
 	end
 		
 	% Copy normal files

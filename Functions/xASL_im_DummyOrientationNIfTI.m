@@ -25,11 +25,16 @@ function xASL_im_DummyOrientationNIfTI(PathSrc, PathRef, PathDummyOut, bApplyRot
 %               This can be useful to correct for any erroneous rotations from registration,
 %               or to put two images in the same space without applying their
 %               realignment. This function performs the following steps:
-%               1) Load orientations & calculate transformation
-%               2) Calculate the desired transformation
-%               3) Calculate new orientation matrix
-%               4) Calculate the new image size
-%               5) Save the dummy NIfTI
+%
+%               1. Load orientations & calculate transformation
+%               2. Calculate the desired transformation
+%               3. Calculate new orientation matrix
+%               4. Calculate the new image size
+%               5. Save the dummy NIfTI
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: for only applying zooming & dim shifts: xASL_im_DummyOrientationNIfTI('../c1T1.nii', 'ASL4D.nii', OrientationDummy.nii, 0, 1, 1, 0]);
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % THEORY:   Any rotation will always swap the other dims (X rotation swaps Y/Z, Y
 %           rotation swaps X/Z etc.) because they are perpendicular (haaks)
@@ -49,10 +54,8 @@ function xASL_im_DummyOrientationNIfTI(PathSrc, PathRef, PathDummyOut, bApplyRot
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES: See: https://nipy.org/nibabel/coordinate_systems.html,
 % And also the explanation inside xASL_im_DecomposeAffineTransformation.m
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: for only applying zooming & dim shifts: xASL_im_DummyOrientationNIfTI('../c1T1.nii', 'ASL4D.nii', OrientationDummy.nii, 0, 1, 1, 0]);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 

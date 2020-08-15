@@ -1,4 +1,20 @@
 function [pc, score, eigenvalues, tsquare, loadings, Xmean] = xASL_im_PCA(dataIn)
+%xASL_im_PCA ...
+%
+% FORMAT:       [pc, score, eigenvalues, tsquare, loadings, Xmean] = xASL_im_PCA(dataIn)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  ...
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
 
 % Data matrix X, with M rows and N columns. Each row m is a set of measurements with N features.
 [nM,nN] = size(dataIn);

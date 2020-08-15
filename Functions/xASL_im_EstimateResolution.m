@@ -1,6 +1,20 @@
-function [ resFWHM, resSigma,resErr,imSmo,imMask ] = xASL_im_EstimateResolution(imCBF,imGM,imWM,imMaskOrig,PSFtype,maxIter)
+function [resFWHM, resSigma,resErr,imSmo,imMask] = xASL_im_EstimateResolution(imCBF,imGM,imWM,imMaskOrig,PSFtype,maxIter)
+%xASL_im_EstimateResolution ...
+%
+% FORMAT:       [resFWHM, resSigma,resErr,imSmo,imMask] = xASL_im_EstimateResolution(imCBF,imGM,imWM,imMaskOrig,PSFtype,maxIter)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  NB: everything in this code is in voxels, not in mm
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
-% NB: everything in this code is in voxels, not in mm
 
 %%%% Remove too high values
 imCBF(imCBF<0) = 0;

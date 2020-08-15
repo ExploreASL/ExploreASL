@@ -1,5 +1,19 @@
-function [ NewList ] = xASL_adm_CompareLists( list1, list2 )
+function [NewList] = xASL_adm_CompareLists(list1, list2)
 %xASL_adm_CompareLists Compare 2 single dimension lists
+%
+% FORMAT:       [NewList] = xASL_adm_CompareLists(list1, list2)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  ...
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     % Checks
     if  length(size(list1))>2 || length(size(list2))>2

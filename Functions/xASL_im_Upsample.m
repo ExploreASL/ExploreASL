@@ -1,7 +1,22 @@
 function xASL_im_Upsample(PathOrig, PathDest, NewVoxelSize, LeaveEmpty, PaddingDim, Kernel)
 %xASL_im_Upsample upsamples an ASL image, without changing the orientation
 %matrix, which can be used e.g. for PVEc in higher resolution but same space
-
+%
+% FORMAT:       xASL_im_Upsample(PathOrig, PathDest, NewVoxelSize, LeaveEmpty, PaddingDim, Kernel)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Upsamples an ASL image, without changing the orientation
+%               matrix, which can be used e.g. for PVEc in higher
+%               resolution but same space.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     %% Admin
 

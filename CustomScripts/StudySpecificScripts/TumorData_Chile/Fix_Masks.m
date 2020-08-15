@@ -50,7 +50,7 @@ if doPrepareTemplates
 		xASL_io_SaveNifti(fileWM,fullfile(pathNewFiles,['pWMtoRemove' num2str(ii) '.nii']),WMimNew);
 
 		% Show the new WM overlayed over the mean T1w
-		xASL_im_CreateVisualFig(x, {fullfile(dataPath,'Population/Templates','T1_bs-mean.nii'),fullfile(pathNewFiles,['pWMtoRemove' num2str(ii) '.nii'])},pathNewQC,[0.8 1],'rem',[]);
+		xASL_vis_CreateVisualFig(x, {fullfile(dataPath,'Population/Templates','T1_bs-mean.nii'),fullfile(pathNewFiles,['pWMtoRemove' num2str(ii) '.nii'])},pathNewQC,[0.8 1],'rem',[]);
 	end
 end
 
@@ -240,25 +240,25 @@ if doFixMasks
 
 	    % Show QC before and after
 		if isLesion
-			ImOut1 = xASL_im_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,['rLesion_T1_1_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
-			%ImOut1 = xASL_im_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,['rEdema_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
-			%ImOut1 = xASL_im_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,'pWMtoRemove1.nii')},[],[0.8 1],[],[]);
-			ImOut2 = xASL_im_CreateVisualFig(x, {fullfile(pathNewFiles,['rc1T1_Smo_' x.SubjectNameList{ii} '.nii']),fullfile(pathNewFiles,['rc2T1_Smo_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
+			ImOut1 = xASL_vis_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,['rLesion_T1_1_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
+			%ImOut1 = xASL_vis_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,['rEdema_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
+			%ImOut1 = xASL_vis_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,'pWMtoRemove1.nii')},[],[0.8 1],[],[]);
+			ImOut2 = xASL_vis_CreateVisualFig(x, {fullfile(pathNewFiles,['rc1T1_Smo_' x.SubjectNameList{ii} '.nii']),fullfile(pathNewFiles,['rc2T1_Smo_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
 		%	if isLesion
-		%		ImOut2 = xASL_im_CreateVisualFig(x, {fullfile(pathNewFiles,['rc1T1_Smo_' x.SubjectNameList{ii} '.nii']),fullfile(pathNewFiles,['rLesion_T1_1_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
+		%		ImOut2 = xASL_vis_CreateVisualFig(x, {fullfile(pathNewFiles,['rc1T1_Smo_' x.SubjectNameList{ii} '.nii']),fullfile(pathNewFiles,['rLesion_T1_1_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
 		%	else
-		%		ImOut2 = xASL_im_CreateVisualFig(x, {fullfile(pathNewFiles,['rc1T1_Smo_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
+		%		ImOut2 = xASL_vis_CreateVisualFig(x, {fullfile(pathNewFiles,['rc1T1_Smo_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
 			%end
-			%ImOut3 = xASL_im_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,['rAddEdema2_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
-			ImOut3 = xASL_im_CreateVisualFig(x, {fullfile(pathNewFiles,['qCBF_' x.SubjectNameList{ii} '_ASL_1.nii'])},[],[0.8 1],[],[]);
+			%ImOut3 = xASL_vis_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,['rAddEdema2_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
+			ImOut3 = xASL_vis_CreateVisualFig(x, {fullfile(pathNewFiles,['qCBF_' x.SubjectNameList{ii} '_ASL_1.nii'])},[],[0.8 1],[],[]);
 			IM          = [ImOut1,ImOut2,ImOut3];
 
-			xASL_imwrite((IM+eps)./max(IM(:)), fullfile( pathNewQC ,['EdemaCheck_' x.SubjectNameList{ii} '.jpg']));
+			xASL_vis_Imwrite((IM+eps)./max(IM(:)), fullfile( pathNewQC ,['EdemaCheck_' x.SubjectNameList{ii} '.jpg']));
 		end
 
 		if isSuper
-			IM = xASL_im_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,['rSuper_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
-			xASL_imwrite((IM+eps)./max(IM(:)), fullfile( pathNewQC ,['VascularArtifact_' x.SubjectNameList{ii} '.jpg']));
+			IM = xASL_vis_CreateVisualFig(x, {fullfile(dataPath,'Population',['rT1_' x.SubjectNameList{ii} '.nii']) fullfile(pathNewFiles,['rSuper_' x.SubjectNameList{ii} '.nii'])},[],[0.8 1],[],[]);
+			xASL_vis_Imwrite((IM+eps)./max(IM(:)), fullfile( pathNewQC ,['VascularArtifact_' x.SubjectNameList{ii} '.jpg']));
 		end
 	end
 end

@@ -1,4 +1,4 @@
-function [ResultsTable] = xASL_qc_TestExploreASL_HM(RunMethod, bTestSPM, bOverwrite) 
+function [ResultsTable] = xASL_qc_TestExploreASL_HM(RunMethod, bTestSPM, bOverwrite, bCompiled) 
 %xASL_qc_TestExploreASL_HM Run ExploreASL QC for test datasets
 
 if nargin<1 || isempty(RunMethod)
@@ -22,10 +22,33 @@ else
      TestDirOrig = '/home/henk/ownCloud/HolidayPics/ExploreASL_TestCases';
      TestDirDest = '/home/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed';
 end
-   
 
-[ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, [], [], [], bOverwrite)    
+if bCompiled
+    RunMethod = 3; % serial compilation testing
+    RunTimePath = '/usr/local/MATLAB/MATLAB_Runtime/v96';
+    
+    % get latest compilation to test
+    CurrentDir = pwd;
+    CompiledRoot = '/home/henk/CompiledxASL';
+    cd(CompiledRoot);
+    CompiledList = dir('xASL*');
+    
+    bGotPath = 0;
+    for iDir=length(CompiledList):-1:1
+        if CompiledList(iDir).isdir && ~bGotPath
+            MatlabPath = fullfile(CompiledRoot, CompiledList(iDir).name);
+            cd(MatlabPath);
+            FileSh = dir('*.sh');
+            MatlabPath = fullfile(MatlabPath, FileSh(end).name);
+            bGotPath = 1;
+        end
+    end
+    cd(CurrentDir);
+    
+    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, 0, MatlabPath, [], [], bOverwrite, [], RunTimePath)
+else
+    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, [], [], [], bOverwrite)
+end
 
 
 end
-

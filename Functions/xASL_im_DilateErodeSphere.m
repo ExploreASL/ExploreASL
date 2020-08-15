@@ -1,5 +1,19 @@
 function el = xASL_im_DilateErodeSphere(R)
-% 3D structuring element (binary) sphere
+%xASL_im_DilateErodeSphere 3D structuring element (binary) sphere
+%
+% FORMAT:       el = xASL_im_DilateErodeSphere(R)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  3D structuring element (binary) sphere.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 % Size of the element
 N=2*R+1;

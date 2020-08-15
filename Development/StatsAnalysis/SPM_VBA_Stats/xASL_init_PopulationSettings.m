@@ -87,7 +87,7 @@ IM1MASK(~Erosion2)                  = MaxN;
 background_mask                     = (IM1MASK ./ max(nonzeros(IM1MASK(:))) ) .* 1750;
 background_mask                     = background_mask ./ max( background_mask(:) );
 
-DATA_OUT                            = xASL_im_TransformData2View( background_mask, x );
+DATA_OUT                            = xASL_vis_TransformData2View( background_mask, x );
 x.background_view_clr               = double(DATA_OUT ./ (max(DATA_OUT(:)) ));
 x.background_view_clr               = repmat(x.background_view_clr,[1 1 3]);
 % not used

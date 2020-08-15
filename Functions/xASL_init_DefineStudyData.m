@@ -1,5 +1,6 @@
 function [x] = xASL_init_DefineStudyData(x)
-%xASL_init_DefineStudyData % Define study subjects/parameters for this pipeline run
+%xASL_init_DefineStudyData Define study subjects/parameters for this
+% pipeline run.
 %
 % FORMAT: [x] = xASL_init_DefineStudyData(x)
 %
@@ -10,44 +11,45 @@ function [x] = xASL_init_DefineStudyData(x)
 %   x   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This initialization wrapper initializes the parameters for
-% this pipeline run, i.e. subjects, sessions (runs), timepoints (visits),
-% exclusions, sites, cohorts etc.
+% DESCRIPTION:  This initialization wrapper initializes the parameters for
+%               this pipeline run, i.e. subjects, sessions (runs), timepoints (visits),
+%               exclusions, sites, cohorts etc.
 %
-% Note that ASL sessions are defined here as what BIDS calls "runs"
+%               Note that ASL sessions are defined here as what BIDS calls "runs".
 %
-% The "longitudinal_Registration functions here manage different
-% TimePoints, which is what BIDS calls "visits".
-% With different structural scans, from the same participant. This is
-% managed by subject name suffixes _1 _2 _n, and can be used for comparing
-% visits in the population module, or running SPM's longitudinal within-subject
-% registration
+%               The "longitudinal_Registration functions here manage different
+%               TimePoints, which is what BIDS calls "visits".
+%               With different structural scans, from the same participant. This is
+%               managed by subject name suffixes _1 _2 _n, and can be used for comparing
+%               visits in the population module, or running SPM's longitudinal within-subject
+%               registration.
 %
-% Parallelization is allowed here by calling ExploreASL different times,
-% where it divides the subjects/images for processing across the nWorkers,
-% using iWorker as the reference for the part that the current ExploreASL
-% call will process. This requires having a Matlab license that can be
-% started multiple times on a server, or alternatively running the
-% ExploreASL compilation, and doesn't require the Matlab parallel toolbox.
-
-% This function exists from the following parts:
-
-% 1) Manage included & excluded subjects
-% 2) Create dummy defaults (exclusion list, ASL sessions)
-% 3) Create list of total baseline & follow-up subjects, before exclusions
-% 4) Create TimePoint data-lists
-% 5) Manage exclusions
-% 6) Add sessions as statistical variable, if they exist
-% 7) Parallelization: If running parallel, select cases for this worker
-% 8) Add Longitudinal TimePoints (different T1 volumes) as covariate/set, after excluding
-% 9) Load & add statistical variables
-% 10) Make x.S.SetsOptions horizontal if vertical by transposing
-% 11) Create single site dummy, if there were no sites specified
-% 12) Check for time points sets
-% 13) Create list of baseline & follow-up subjects (i.e. after exclusion)
-% 14) Check what excluded from which TimePoints
+%               Parallelization is allowed here by calling ExploreASL different times,
+%               where it divides the subjects/images for processing across the nWorkers,
+%               using iWorker as the reference for the part that the current ExploreASL
+%               call will process. This requires having a Matlab license that can be
+%               started multiple times on a server, or alternatively running the
+%               ExploreASL compilation, and doesn't require the Matlab parallel toolbox.
+%
+%               This function exists from the following parts:
+%
+% 1. Manage included & excluded subjects
+% 2. Create dummy defaults (exclusion list, ASL sessions)
+% 3. Create list of total baseline & follow-up subjects, before exclusions
+% 4. Create TimePoint data-lists
+% 5. Manage exclusions
+% 6. Add sessions as statistical variable, if they exist
+% 7. Parallelization: If running parallel, select cases for this worker
+% 8. Add Longitudinal TimePoints (different T1 volumes) as covariate/set, after excluding
+% 9. Load & add statistical variables
+% 10. Make x.S.SetsOptions horizontal if vertical by transposing
+% 11. Create single site dummy, if there were no sites specified
+% 12. Check for time points sets
+% 13. Create list of baseline & follow-up subjects (i.e. after exclusion)
+% 14. Check what excluded from which TimePoints
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
 % EXAMPLE: x = xASL_init_DefineStudyData(x);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
@@ -87,6 +89,7 @@ x.nTotalSubjects = length(x.TotalSubjects);
 
 % ------------------------------------------------------------------------------------------------
 %% 2) Create dummy defaults (exclusion list, ASL sessions)
+fprintf('Automatically defining sessions...\n');
 if ~isfield(x,'exclusion') % default no exclusions
     x.exclusion = {''};
 end
@@ -226,7 +229,7 @@ if x.nSessions>1  % if there are sessions (more than 1 session), then sessions=1
         x.S.SetsOptions{1} = x.session.options; % with session options (e.g. morning, evening 2nd morning)
     else
         for iS=1:x.nSessions
-            x.S.SetsOptions{1}{iS} = ['Session_' num2str(iS)];
+            x.S.SetsOptions{1}{iS} = ['ASL_' num2str(iS)];
         end
     end        
     

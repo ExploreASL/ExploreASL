@@ -56,7 +56,7 @@ function xASL_spm_GLMsaveMatlab_StatsFigures(diff_view_mean, H_ttestCONTRAST,x)
     fig = figure('Visible','off');
     subplot(1,1,1);
 
-    joined_colormap     = xASL_im_joinColormap(1,x.S.cool,x.S.hot);
+    joined_colormap     = xASL_vis_joinColormap(1,x.S.cool,x.S.hot);
     joinedTickLabels    = [ThreshMin ThreshPlus]; % = get(handleBar,'TickLabels'); % this doesn't work
     
     if  xASL_stat_SumNan(H_ttest(:))>0 % if there are significant differences, otherwise skip to below, to show background only
@@ -94,7 +94,7 @@ function xASL_spm_GLMsaveMatlab_StatsFigures(diff_view_mean, H_ttestCONTRAST,x)
 
     % Show new composed map
     imshow(NewMatrixClr,'border','tight');
-    axesBar = xASL_im_colorbar(joined_colormap,joinedTickLabels);
+    axesBar = xASL_vis_Colorbar(joined_colormap,joinedTickLabels);
     
     %% Text stuff
     printTitle  = x.S.printTitleORI;
@@ -149,12 +149,14 @@ function xASL_spm_GLMsaveMatlab_StatsFigures(diff_view_mean, H_ttestCONTRAST,x)
     saveas( fig ,SaveFile,'epsc');
     close all
 
-
-    
+   
 end
 
 
 
+
+%% ===========================================================================================
+%% ===========================================================================================
 
 function [ NewMatrix ] = xASL_im_RescaleColorbarStats( OriMatrix)
 %xASL_im_RescaleColorbarStats Linearly rescales input matrix to colorbar output matrix,
@@ -167,13 +169,48 @@ NegativeMatrix    = OriMatrix.*(OriMatrix<0);
 PositiveMatrix    = OriMatrix.*(OriMatrix>0);
 
 % Linearly rescale both maps
-negResc     = round(xASL_im_RescaleLinear(NegativeMatrix,  1,128,0));
-posResc     = round(xASL_im_RescaleLinear(PositiveMatrix,129,256,0));
+negResc     = round(xASL_vis_RescaleLinear(NegativeMatrix,  1,128,0));
+posResc     = round(xASL_vis_RescaleLinear(PositiveMatrix,129,256,0));
 
 % Combine maps
 NewMatrix                   = zeros(size(OriMatrix,1),size(OriMatrix,2));
 NewMatrix(:)                = 128;
 NewMatrix(negResc<128)      = negResc(negResc<128);
 NewMatrix(posResc>129)      = posResc(posResc>129);
+
+end
+
+
+function [ NewMatrix ] = xASL_vis_RescaleLinear(OriMatrix,NewMin,NexMax,NonZerosOption)
+%rescale Linearly rescales input matrix to output matrix,
+% applying a new minimum and new maximum.
+
+% % Test values
+% % old_matrix      =round(rand(5,5).*10);
+% % new_minimum     =2;
+% % new_maximum     =6;
+% % 
+
+OriMatrix  = double( OriMatrix );
+
+% If matrix contains zeros only, reinforce nonzerosoption==0
+if  max(OriMatrix(:))==0
+    NonZerosOption=0;
+end
+
+% define minimum old matrix
+if      NonZerosOption==1
+        OriMin         = min(nonzeros(OriMatrix(:)));
+else
+        OriMin         = min(OriMatrix(:));
+end
+
+
+OriMax                 = max(OriMatrix(:));
+OriRange               = OriMax-OriMin;
+NewRange               = NexMax-NewMin;
+
+NewMatrix              = NewMin+NewRange.* (OriMatrix-OriMin)./OriRange;
+
 
 end

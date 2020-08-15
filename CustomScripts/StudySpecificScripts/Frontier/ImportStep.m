@@ -1,5 +1,5 @@
 %% You need to also load the P05, ASL4D.nii and change the (1,4) field in the matrix to 100 and save again - to prealign T1 and ASL - otherwise the registration subsequently fails
-
+% This seems to work now with the new version of ExploreASL and no changes are necessary
 %% Initialize ExploreASL
 
 ExploreASL_Master('',0);
@@ -13,6 +13,10 @@ rawDirROI = fullfile(rawDir,'rawROIs');
 %% Import the raw ASL and DSC data
 imPar = ExploreASL_ImportConfig(rawDir);
 ExploreASL_Import(imPar, 0,1,0);
+
+jsonParms = spm_jsonread(fullfile(rawDir,'analysis','P05','ASL_1','ASL4D.json'));
+jsonParms.MRScaleSlope = jsonParms.MRScaleSlope*2;
+spm_jsonwrite(fullfile(rawDir,'analysis','P05','ASL_1','ASL4D.json'),jsonParms);
 
 % Now we have them!
 % Remove DSC of subjects 2 and 6 since these were not quantified

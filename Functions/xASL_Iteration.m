@@ -53,7 +53,12 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     end
 	    
     if nargin<5 || isempty(SelectedSubjects)
-        SelectedSubjects = x.SUBJECTS;
+        try
+            SelectedSubjects = x.SUBJECTS;
+        catch ME
+            warning('Loading subjects didnt work, verify that ExploreASL was correctly initialized with the correct DataParameter file');
+            fprintf('%s\n', ME.message);
+        end
     end
     
     dbSettings.jobfn                 = str2func(moduleName);

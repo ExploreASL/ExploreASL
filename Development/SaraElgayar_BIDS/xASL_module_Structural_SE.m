@@ -722,35 +722,35 @@ if ~x.mutex.HasState('100_visualize')  % tracks progress through lock/ *.status 
 
         %% Visualize lesions
         xASL_wrp_VisualCheckLesionRemoval( x, Lesion_T1_list, Lesion_FLAIR_list);
-        xASL_im_VisualizeROIs( x, ROI_T1_list, ROI_FLAIR_list);
+        xASL_vis_VisualizeROIs( x, ROI_T1_list, ROI_FLAIR_list);
 
         % Convert ROIs & lesions to specific masks
         for iS=1:length(Lesion_T1_list)
-            xASL_im_Lesion2Mask( fullfile(x.D.PopDir, ['rLesion_' x.P.STRUCT '_' num2str(iS) '_' x.P.SubjectID '.nii']), [], [], [], x );
+            xASL_im_Lesion2Mask( fullfile(x.D.PopDir, ['rLesion_' x.P.STRUCT '_' num2str(iS) '_' x.P.SubjectID '.nii']), x);
         end
         for iS=1:length(ROI_T1_list)
-            xASL_im_Lesion2Mask( fullfile(x.D.PopDir, ['rROI_' x.P.STRUCT '_' num2str(iS) '_' x.P.SubjectID '.nii']), [], [], [], x );
+            xASL_im_Lesion2Mask( fullfile(x.D.PopDir, ['rROI_' x.P.STRUCT '_' num2str(iS) '_' x.P.SubjectID '.nii']), x);
         end
         for iS=1:length(Lesion_FLAIR_list)
-            xASL_im_Lesion2Mask( fullfile(x.D.PopDir, ['rLesion_' x.P.FLAIR '_' num2str(iS) '_' x.P.SubjectID '.nii']), [], [], [], x );
+            xASL_im_Lesion2Mask( fullfile(x.D.PopDir, ['rLesion_' x.P.FLAIR '_' num2str(iS) '_' x.P.SubjectID '.nii']), x);
         end
         for iS=1:length(ROI_FLAIR_list)
-            xASL_im_Lesion2Mask( fullfile(x.D.PopDir, ['rROI_' x.P.FLAIR '_' num2str(iS) '_' x.P.SubjectID '.nii']), [], [], [], x );
+            xASL_im_Lesion2Mask( fullfile(x.D.PopDir, ['rROI_' x.P.FLAIR '_' num2str(iS) '_' x.P.SubjectID '.nii']), x);
         end
 
         % Show lesions individually
         for iS=1:length(Lesion_T1_list)
-            xASL_im_CreateVisualFig( x, {x.P.Pop_Path_rT1, fullfile(x.D.PopDir,['rLesion_' x.P.STRUCT '_' num2str(iS) '_' x.P.SubjectID '.nii'])},x.D.LesionCheckDir,[0.8 1],[],[]);
+            xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rT1, fullfile(x.D.PopDir,['rLesion_' x.P.STRUCT '_' num2str(iS) '_' x.P.SubjectID '.nii'])},x.D.LesionCheckDir,[0.8 1],[],[]);
         end
         for iS=1:length(Lesion_FLAIR_list)
-            xASL_im_CreateVisualFig( x, {x.P.Pop_Path_rFLAIR, fullfile(x.D.PopDir,['rLesion_' x.P.FLAIR '_' num2str(iS) '_' x.P.SubjectID '.nii'])},x.D.LesionCheckDir,[0.8 1],[],[]);
+            xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rFLAIR, fullfile(x.D.PopDir,['rLesion_' x.P.FLAIR '_' num2str(iS) '_' x.P.SubjectID '.nii'])},x.D.LesionCheckDir,[0.8 1],[],[]);
         end
         % Visualize ROIs (these are manually added native space ROIs)
         for iS=1:length(ROI_T1_list)
-            xASL_im_CreateVisualFig( x, {x.P.Pop_Path_rT1, fullfile(x.D.PopDir,['rROI_' x.P.STRUCT '_' num2str(iS) '_' x.P.SubjectID '.nii'])},x.D.ROICheckDir,[0.8 1],[],[]);
+            xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rT1, fullfile(x.D.PopDir,['rROI_' x.P.STRUCT '_' num2str(iS) '_' x.P.SubjectID '.nii'])},x.D.ROICheckDir,[0.8 1],[],[]);
         end
         for iS=1:length(ROI_FLAIR_list)
-            xASL_im_CreateVisualFig( x, {x.P.Pop_Path_rFLAIR, fullfile(x.D.PopDir,['rROI_' x.P.FLAIR '_' num2str(iS) '_' x.P.SubjectID '.nii'])},x.D.ROICheckDir,[0.8 1],[],[]);
+            xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rFLAIR, fullfile(x.D.PopDir,['rROI_' x.P.FLAIR '_' num2str(iS) '_' x.P.SubjectID '.nii'])},x.D.ROICheckDir,[0.8 1],[],[]);
         end
 
         x = xASL_qc_CollectParameters(x, iSubj, 0); % Quick & Dirty solution -> 0 indicates no ASL results

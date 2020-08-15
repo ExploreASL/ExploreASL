@@ -63,11 +63,17 @@ end
 %% -----------------------------------------------------------------------------------------------
 %% 2) Print overview of sets to TSV
 try
+    xASL_adm_CreateDir(fileparts(x.S.SaveFile));
     x.S.FID = fopen(x.S.SaveFile,'wt');
 catch ME
     warning(['Couldnt delete ' x.S.SaveFile ', if it was opened, please close this file first']);
     fprintf('%s\n',['Message: ' ME.message]);
     return;    
+end
+
+if x.S.FID<0
+    fprintf(['x.S.SaveFile is ' x.S.SaveFile '\n']);
+    warning('Is something wrong with the path we try to save the file, perhaps it is too long?');
 end
 
 % Print header

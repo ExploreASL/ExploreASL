@@ -18,14 +18,15 @@ function [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
 %               enabling us to smooth the image without inserting wrong signal. See also
 %               the ExploreASL manuscript for a more extensive explanation. This function
 %               performs the following steps:
-%               * Mask 1) Load segmentations, create structural mask
-%               * Mask 2) Create intensity-based mask to remove extracranial signal
-%               * Mask 3) Erode the combined masks
-%               * Mask 4) Determine any odd borders
-%               * 5) Smoothing
-%               * 6) Extrapolating only
-%               * 7) Scale back to the GM M0
-%               * 8) Print visual QC figure
+%
+%               1. Mask: Load segmentations, create structural mask
+%               2. Mask: Create intensity-based mask to remove extracranial signal
+%               3. Mask: Erode the combined masks
+%               4. Mask: Determine any odd borders
+%               5. Smoothing
+%               6. Extrapolating only
+%               7. Scale back to the GM M0
+%               8. Print visual QC figure
 %
 %               A visual QC figure is created, showing the M0 image processing steps for a single transversal slice (slice 53 in 1.5 mm MNI standard space)
 %               OutputFile = fullfile(x.D.M0regASLdir,['M0_im_proc_' x.P.SubjectID '.jpg']);
@@ -185,7 +186,7 @@ IM = [xASL_im_rotate(ImIn(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask2(:,:,S
 xASL_adm_CreateDir(x.D.M0regASLdir);
 OutputFile = fullfile(x.D.M0regASLdir,['M0_im_proc_' x.P.SubjectID '.jpg']);
 fprintf('%s\n',['Writing ' OutputFile]);
-xASL_imwrite(IM, OutputFile);
+xASL_vis_Imwrite(IM, OutputFile);
 
 
 end

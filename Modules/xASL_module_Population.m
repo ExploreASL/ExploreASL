@@ -121,8 +121,8 @@ end
 %% -----------------------------------------------------------------------------
 %% 4    Print DICOM header parameters & check whether there are outliers
 if ~x.mutex.HasState(StateName{4})
-    ScanType = {'ASL4D' 'M0' 'func'};
-    HasSessions = {1 1 1};
+    ScanType = {'ASL4D' 'M0'};
+    HasSessions = {1 1};
 
     for iType=1:length(ScanType)
         xASL_stat_GetDICOMStatistics(x, ScanType{iType}, HasSessions{iType});
@@ -173,9 +173,8 @@ if ~x.mutex.HasState(StateName{7})
 
     x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
 %     if exist('ASL','var')
-%         xASL_im_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
+%         xASL_vis_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
 %     end
-    x = xASL_wrp_Load4DMemMapping_LesionsROIs(x); % Create study-specific atlases for ROIs/Lesions
 
     xASL_stat_ComputeWsCV(x); % This computes wsCV & bsCV to compute power
 
@@ -225,7 +224,18 @@ if ~x.mutex.HasState(StateName{7})
 		x.S.InputNativeSpace = 1;
 		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_HammersPop);
 		xASL_wrp_GetROIstatistics(x);
-	end
+    end
+    
+    % Check if we should do the same for Lesion or ROI masks (i.e.
+    % individual "atlases") -> NB not yet developed/tested in native space
+    LesionROIList = xASL_adm_GetFileList(x.D.PopDir, 'r(Lesion|ROI).*\.nii$', 'FPList', [0 Inf]);
+    x.S.InputNativeSpace = 0;
+    for iAtlas = 1:length(LesionROIList)
+        x.S.InputAtlasPath = LesionROIList{iAtlas};
+        xASL_wrp_GetROIstatistics(x);
+    end
+
+    
 %     % Do the same for volumetrics
 %     x.S.IsASL = false;
 %     x.S.IsVolume = true;

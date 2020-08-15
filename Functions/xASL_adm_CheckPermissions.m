@@ -16,19 +16,21 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
 % DESCRIPTION: This function does a recursive search through the root
 %              folder & makes a list of the attributes of all files and folders.
 %              It tries to reset the attributes to what we desire, which is by default:
-%              664 for files (meaning only reading & writing for users & group, & read-only for others)
-%              775 for folders (meaning reading, writing & opening for current user & current group, & for others only reading & opening)
-%              For executable files we also want 775.
-%              Note that the permission to 'execute a folder' means opening them
+%
+%              - 664 for files (meaning only reading & writing for users & group, & read-only for others)
+%              - 775 for folders (meaning reading, writing & opening for current user & current group, & for others only reading & opening)
 %              
-%              DataOK checks data permissions
-%              ExeOK checks executable permissions
-%              DataOK also includes executable permissions for folders
-%              This runs recursively (but currently skips the contents of the root-folder) 
+%              For executable files we also want 775.
+%              Note that the permission to 'execute a folder' means opening them.
+%              
+%              - DataOK checks data permissions.
+%              - ExeOK checks executable permissions.
+%              - DataOK also includes executable permissions for folders.
+%              - This runs recursively (but currently skips the contents of the root-folder) .
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_adm_CheckPermissions('/data/RAD/share/EPAD500_new/raw)
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
     %% Check permissions
     fprintf('%s\n', 'Checking permissions:   ');
@@ -136,8 +138,8 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
     if ~FoldersOK 
         try
             xASL_TrackProgress(1, 2); % we are half way
-            if isunix
-                system(['find ' InputPath ' -type d -print0 | xargs -0 chmod 775']);
+            if isunix || ismac
+                system(['find ' xASL_adm_UnixPath(InputPath) ' -type d -print0 | xargs -0 chmod 775']);
             elseif ispc
                 system(['attrib -r ' InputPath ' /d /s']); % recursively removes read-only for directories on Windows
             end
@@ -167,8 +169,8 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
     if FileReset
         try
             xASL_TrackProgress(1, 2); % we are half way
-            if isunix
-                system(['find ' InputPath ' -type f -print0 | xargs -0 chmod ' ChmodPars]);
+            if isunix || ismac
+                system(['find ' xASL_adm_UnixPath(InputPath) ' -type f -print0 | xargs -0 chmod ' ChmodPars]);
             elseif ispc
                 system(['attrib -r ' InputPath '\*.* /s']); % recursively removes read-only for files on Windows
             end

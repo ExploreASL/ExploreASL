@@ -1,6 +1,21 @@
 function xASL_im_RestoreOrientation(PathNIfTI)
 %xASL_im_RestoreOrientation This function reverts the NIfTI header orientation matrix
 % to the original orientation from the scanner/dcm2nii conversion
+%
+% FORMAT:       xASL_im_RestoreOrientation(PathNIfTI)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  This function reverts the NIfTI header orientation matrix
+%               to the original orientation from the scanner/dcm2nii conversion.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 if xASL_exist(PathNIfTI, 'file')
     nii = xASL_io_ReadNifti(PathNIfTI);

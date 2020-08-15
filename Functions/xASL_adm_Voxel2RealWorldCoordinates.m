@@ -1,7 +1,20 @@
-function [X Y Z]     = xASL_adm_Voxel2RealWorldCoordinates(X,Y,Z,VoxelSize)
-    % Converts MNI coordinates from voxel coordinates/indices
-    % Assumes X Y Z = LR LeftRight AP AnteriorPosterior IS InferiorSuperior
-    % VoxelSize should be [1 3]-sized input
+function [X Y Z] = xASL_adm_Voxel2RealWorldCoordinates(X,Y,Z,VoxelSize)
+%xASL_adm_Voxel2RealWorldCoordinates ...
+%
+% FORMAT:       [X Y Z] = xASL_adm_Voxel2RealWorldCoordinates(X,Y,Z,VoxelSize)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Converts MNI coordinates from voxel coordinates/indices.
+%               Assumes X Y Z = LR LeftRight AP AnteriorPosterior IS InferiorSuperior.
+%               VoxelSize should be [1 3]-sized input.
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
     
     % World Coordinates:
     % X = -90:90  mm LR (x.S.SagSlices) -> this is mirrored, see below

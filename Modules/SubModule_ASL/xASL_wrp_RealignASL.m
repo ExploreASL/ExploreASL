@@ -107,7 +107,11 @@ FD{1} = rp;       % position (absolute displacement)
 FD{2} = diff(rp); % motion (relative displacement)
 
 close all;
-fig = figure('Visible','off');
+if usejava('jvm') % only if JVM loaded
+    fig = figure('Visible','off');
+else
+    fprintf('Warning, skipping motion plot, JVM missing\n');
+end
 
 for ii=1:2
     tx{ii} = FD{ii}(:,1); ty{ii} = FD{ii}(:,2); tz{ii}  = FD{ii}(:,3); % translations
@@ -132,29 +136,31 @@ for ii=1:2
     SD_NDV{ii} = std(NDV{ii});
     MAD_NDV{ii} = xASL_stat_MadNan(NDV{ii},0); % median absolute deviation from median
 
-    subplot(3,1,ii); % plot position (subplot 1) & motion (subplot 2)
-    plot(NDV{ii},'Color',[0.4,0.4,0.4]); % lines between frames
-    hold on
-    plot(NDV{ii},'o','MarkerSize',5); % cirkels for frames
-    hold on
+    if usejava('jvm') % only if JVM loaded
+        subplot(3,1,ii); % plot position (subplot 1) & motion (subplot 2)
+        plot(NDV{ii},'Color',[0.4,0.4,0.4]); % lines between frames
+        hold on
+        plot(NDV{ii},'o','MarkerSize',5); % cirkels for frames
+        hold on
 
-    plot(repmat(mean_NDV{ii},151,1),'Color',[0,0,1]); % mean NDV in blue
-    hold on
+        plot(repmat(mean_NDV{ii},151,1),'Color',[0,0,1]); % mean NDV in blue
+        hold on
 
-    if ii==1
-        axis([0 nFrames 0 max(NDV{ii})]);
-        title(['Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame']);
-        ylabel('NDV (mm)');
+        if ii==1
+            axis([0 nFrames 0 max(NDV{ii})]);
+            title(['Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame']);
+            ylabel('NDV (mm)');
 
-    elseif ii==2
+        elseif ii==2
 
-        axis([0 nFrames 0 minVoxelSize]);
-        title(['Motion plot of ' x.P.SubjectID '-' x.P.SessionID]);
-        ylabel('NDV/frame (mm//frame)');
+            axis([0 nFrames 0 minVoxelSize]);
+            title(['Motion plot of ' x.P.SubjectID '-' x.P.SessionID]);
+            ylabel('NDV/frame (mm//frame)');
+        end
+
+        xlabel('frame#');
+        axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
     end
-
-    xlabel('frame#');
-    axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
 end
 
 %% ----------------------------------------------------------------------------------------
@@ -252,37 +258,42 @@ elseif bSubtraction && nFrames>10 % == more than 5 pairs
         end
     end
 
-
-    % Save threshold-free spike detection
-    hold on
-    subplot(3,1,3);
-    hold on
-    plot(exclusion,'r');
-    hold on
-    ylabel('Exclusion matrix');
-    axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
+    if usejava('jvm') % only if JVM loaded
+        % Save threshold-free spike detection
+        hold on
+        subplot(3,1,3);
+        hold on
+        plot(exclusion,'r');
+        hold on
+        ylabel('Exclusion matrix');
+        axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
+    end
 end
 
-jpgfile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID '_' x.P.SessionID '_motion.jpg']);
-fprintf('Saving motion plot to %s\n', jpgfile);
-saveas(fig, jpgfile, 'jpg');
-close all;
-clear fig;
+if usejava('jvm') % only if JVM loaded
+    jpgfile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID '_' x.P.SessionID '_motion.jpg']);
+    fprintf('Saving motion plot to %s\n', jpgfile);
+    saveas(fig, jpgfile, 'jpg');
+    close all;
+    clear fig;
+end
 
 if bSubtraction && nFrames>10 % if we performed outlier exclusion
     tValue(1:3) = tValue(4); % for nicer plotting
 
-    fig = figure('Visible','off');
-    plot([1:length(tValue)],tValue,'b',[1:length(tValue)],mintValuePlot,'r');
-    xlabel('control-label pairs sorted by motion');
-    ylabel('mean voxel-wise 1-sample t-test p-value');
-    PercExcl    = round((sum(exclusion)/length(exclusion)*100)*10)/10;
-    title(['Threshold free motion spike exclusion (red, ' num2str(PercExcl) '%) for ' x.P.SubjectID '_' x.P.SessionID]);
-    jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_threshold_free_spike_detection.jpg']);
-    fprintf('Saving motion plot to %s\n',jpgfile);
-    saveas(fig,jpgfile,'jpg');
-    close all;
-    clear fig;
+    if usejava('jvm') % only if JVM loaded
+        fig = figure('Visible','off');
+        plot([1:length(tValue)],tValue,'b',[1:length(tValue)],mintValuePlot,'r');
+        xlabel('control-label pairs sorted by motion');
+        ylabel('mean voxel-wise 1-sample t-test p-value');
+        PercExcl    = round((sum(exclusion)/length(exclusion)*100)*10)/10;
+        title(['Threshold free motion spike exclusion (red, ' num2str(PercExcl) '%) for ' x.P.SubjectID '_' x.P.SessionID]);
+        jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_threshold_free_spike_detection.jpg']);
+        fprintf('Saving motion plot to %s\n',jpgfile);
+        saveas(fig,jpgfile,'jpg');
+        close all;
+        clear fig;
+    end
 
     % Save 7 images, 3 before & 3 after exclusion
     IndexIs = [1 round(mintValue/3)  round(mintValue/2) mintValue];
@@ -290,10 +301,13 @@ if bSubtraction && nFrames>10 % if we performed outlier exclusion
     IndexIs(5:7) = [mintValue+diffIndex mintValue+2*diffIndex length(tValue)];
     IndexIs = round(IndexIs);
     Slice2Show = floor(size(IM,3)*0.67); % e.g. slice 11/17
+    % pre-allocation for more efficient memory usage
+    ExampleIM = zeros(size(SortIM,1), size(SortIM,2), length(IndexIs));
+    ExampleIM = single(ExampleIM);
     for iVolume=1:length(IndexIs)
         ExampleIM(:,:,iVolume) = xASL_stat_MeanNan(SortIM(:,:,Slice2Show,1:IndexIs(iVolume)), 4);
     end
-    TotalCheck = xASL_im_TileImages(xASL_im_rotate(ExampleIM,90), 4);
+    TotalCheck = xASL_vis_TileImages(xASL_im_rotate(ExampleIM,90), 4);
 
     % Find intensities
     SortValues = sort(TotalCheck(isfinite(TotalCheck)));
@@ -305,7 +319,7 @@ if bSubtraction && nFrames>10 % if we performed outlier exclusion
 
     jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_PWI_motion_sorted.jpg']);
     fprintf('Saving motion plot to %s\n',jpgfile);
-    xASL_imwrite(TotalCheck, jpgfile);
+    xASL_vis_Imwrite(TotalCheck, jpgfile);
 
     %% ----------------------------------------------------------------------------------------
     %% 4 Remove spike frames from nifti

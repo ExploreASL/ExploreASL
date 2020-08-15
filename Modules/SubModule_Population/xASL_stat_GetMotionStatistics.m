@@ -96,18 +96,21 @@ end
 
 
 %% 3) Print motion vs exclusion overview
-fig = figure('Visible','off');
-plot(MeanMotionNum, PercExclusion, 'b.')
-% axis([0 0.8 0 30])
-xlabel('Mean motion (Diff Net Displacement Vector, mm)');
-ylabel('Percentage excluded pairs (%)');
-title('Threshold-free motion spike exclusion to optimize statistical power');
+if usejava('jvm')
+    fig = figure('Visible','off');
+    plot(MeanMotionNum, PercExclusion, 'b.')
+    % axis([0 0.8 0 30])
+    xlabel('Mean motion (Diff Net Displacement Vector, mm)');
+    ylabel('Percentage excluded pairs (%)');
+    title('Threshold-free motion spike exclusion to optimize statistical power');
 
-PathJPG = fullfile( x.D.MotionDir,'Overview_motion_pair-exclusion.jpg');
-fprintf('Saving motion plot to %s\n',PathJPG);
-saveas(fig,PathJPG,'jpg');
-close all;
-
+    PathJPG = fullfile( x.D.MotionDir,'Overview_motion_pair-exclusion.jpg');
+    fprintf('Saving motion plot to %s\n',PathJPG);
+    saveas(fig,PathJPG,'jpg');
+    close all;
+else
+    fprintf('Skipping motion vs exclusion overview, missing JVM\n');
+end
 
 %% -----------------------------------------------------------------------------------------------
 %% 4) Add motion data to participants.tsv

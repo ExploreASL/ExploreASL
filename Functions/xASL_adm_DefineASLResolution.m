@@ -1,4 +1,21 @@
 function x = xASL_adm_DefineASLResolution(x)
+%xASL_adm_DefineASLResolution ...
+%
+% FORMAT:       x = xASL_adm_DefineASLResolution(x)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  ...
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
+
 if ~isfield(x,'ResolutionEstimation')
     x.ResolutionEstimation    = 0; % default: use default resolutions based on the acquisition resolution
 end

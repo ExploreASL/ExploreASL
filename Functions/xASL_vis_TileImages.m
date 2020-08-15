@@ -1,15 +1,24 @@
-function [ImOut] = xASL_im_TileImages(ImIn, nColumns)
-%xASL_im_TileImages Merges selected slices (3D) into one single 2D picture.
+function [ImOut] = xASL_vis_TileImages(ImIn, nColumns)
+%xASL_vis_TileImages Merges selected slices (3D) into one single 2D picture.
 %
-% Plots all slices in one figure with specified rows and columns, aiming
-% for a square tile
-% PM: can be extended to multiple slices
+% FORMAT:       ...
 % 
-% INPUT
-% ImIn = input 3D volume, as stack of 2D slices
-% [nColumns = desired number of columns]
-% OUTPUT
-% ImOut = 2D output image, with all slices tiled
+% INPUT:        ImIn = input 3D volume, as stack of 2D slices
+%               [nColumns = desired number of columns]
+%
+% OUTPUT:       ImOut = 2D output image, with all slices tiled
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Merges selected slices (3D) into one single 2D picture.
+%               Plots all slices in one figure with specified rows and
+%               columns, aiming for a square tile.
+%
+%               PM: can be extended to multiple slices
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 %% Admin
 if nargin<1 || isempty(ImIn)

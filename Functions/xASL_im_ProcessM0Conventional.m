@@ -1,9 +1,27 @@
-function [ Corr_M0 ] = xASL_im_ProcessM0Conventional( ImIn, x )
+function [Corr_M0] = xASL_im_ProcessM0Conventional(ImIn, x)
 %xASL_im_M0ConventionalProcessing This function uses the conventional M0 masking,
 % and only a little smoothing, following what Philips uses for its 3D
 % GRASE. Advantages of the newer M0 processing in ExploreASL are the lack
 % of use of M0 threshold-based masking, the removal of high CSF values and
 % higher SNR for ASL division.
+%
+% FORMAT:       [Corr_M0] = xASL_im_ProcessM0Conventional(ImIn, x)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  This function uses the conventional M0 masking,
+%               and only a little smoothing, following what Philips uses for its 3D
+%               {{GRASE}}. Advantages of the newer M0 processing in ExploreASL are the lack
+%               of use of {{M0}} threshold-based masking, the removal of high CSF values and
+%               higher {{SNR}} for {{ASL}} division.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 
 

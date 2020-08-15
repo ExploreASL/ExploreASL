@@ -80,15 +80,20 @@ function x = xASL_stat_GetAcquisitionTime(x)
     %% -----------------------------------------------------------------------------------------------    
     %% 3) Create time histogram
     if sum(MissingData)<ceil(0.1*x.nSubjectsSessions) % allow 10 percent missing data
-        PathFig = fullfile( x.S.StatsDir, 'AcquisitionTime.jpg');
-        [N, X] = hist(round(AcquisitionTimeN./100)./100);
-        N = N./sum(N);
-        fig = figure('Visible','off');
-        plot(X,N);
-        title('Total population histogram of time of ASL scan');
-        xlabel('Time (hours)');
-        ylabel('Normalized frequency (%)');
-        print(gcf,'-djpeg','-r200', PathFig);
+        if usejava('jvm')
+            % Only create figure when Java Virtual Machine is loaded
+            PathFig = fullfile( x.S.StatsDir, 'AcquisitionTime.jpg');
+            [N, X] = hist(round(AcquisitionTimeN./100)./100);
+            N = N./sum(N);
+            fig = figure('Visible','off');
+            plot(X,N);
+            title('Total population histogram of time of ASL scan');
+            xlabel('Time (hours)');
+            ylabel('Normalized frequency (%)');
+            print(gcf,'-djpeg','-r200', PathFig);
+        else
+            fprintf('Warning: skipping AcquisitiontTime.jpg, JVM missing\n');
+        end
     end
 
 end

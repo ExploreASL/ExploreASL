@@ -1,6 +1,20 @@
 function image_out = xASL_im_NormalizeLabelingTerritories( imageIN, GMmask, x)
 %xASL_im_NormalizeLabelingTerritories Normalizes per perfusion territory
 % mask should be GM mask
+%
+% FORMAT:       image_out = xASL_im_NormalizeLabelingTerritories( imageIN, GMmask, x)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Normalizes per perfusion territory mask should be GM mask.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
     % Load territorymap
     TerritoryMap    = fullfile( x.D.MapsDir, 'LabelingTerritories.nii');

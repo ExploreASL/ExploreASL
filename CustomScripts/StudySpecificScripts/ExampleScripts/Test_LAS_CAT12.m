@@ -45,7 +45,7 @@ for iStrength=1:20
     MaxWindow = [];
     bTransparancy = [];
     
-    ImOut{iStrength} = xASL_im_CreateVisualFig(x, ImIn, [], IntScale, NamePrefix, ColorMap, bClip, MaskIn, bWhite, MaxWindow, bTransparancy);
+    ImOut{iStrength} = xASL_vis_CreateVisualFig(x, ImIn, [], IntScale, NamePrefix, ColorMap, bClip, MaskIn, bWhite, MaxWindow, bTransparancy);
 end
 
 clear ImConcat
@@ -57,7 +57,7 @@ end
 
 clear ImTotal
 for iDim=1:size(ImConcat,3)
-    ImTotal(:,:,iDim) = xASL_im_TileImages(squeeze(ImConcat(:,:,iDim,:)),size(ImConcat,4));
+    ImTotal(:,:,iDim) = xASL_vis_TileImages(squeeze(ImConcat(:,:,iDim,:)),size(ImConcat,4));
 end
     
 figure(1);imshow(ImTotal, 'InitialMagnification', 500)

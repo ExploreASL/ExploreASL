@@ -10,7 +10,7 @@ for iM=1:length(x.S.DATASETS)
     end
 end
 
-view_ASL = xASL_im_TransformData2View( x.S.DATASETS, x );
+view_ASL = xASL_vis_TransformData2View( x.S.DATASETS, x );
 
 for iSet=1:x.S.nSets
     view_ASL{iSet}(view_ASL{iSet}<0)        = 0; % clip values <0
@@ -18,8 +18,8 @@ end
 
 % Save contrast map for later
 diff_view_mean{1}       = (x.S.ContrastMap.^2).^0.5; % abs T-stat map
-diff_view_mean{1}       = xASL_im_TransformData2View( diff_view_mean{1}, x );
-H_ttestCONTRAST         = xASL_im_TransformData2View( x.S.MaskMap>0, x );
+diff_view_mean{1}       = xASL_vis_TransformData2View( diff_view_mean{1}, x );
+H_ttestCONTRAST         = xASL_vis_TransformData2View( x.S.MaskMap>0, x );
 
 if  x.S.GlobalNormalization
     for ii=1:length(view_ASL)
@@ -36,7 +36,7 @@ if      x.S.nSets==1 && x.S.RegressionCOVAR
         FList                       = xASL_adm_GetFileList( x.S.SPMdir, '^beta_\d{4}\.(nii|nii\.gz)$');
         for FL=1:length(FList)
             DIFFMap                 = xASL_io_Nifti2Im( FList{FL} ); % First diff_view_mean is t-stat or f-stat map
-            diff_view_mean{FL+1}    = xASL_im_TransformData2View( DIFFMap, x );
+            diff_view_mean{FL+1}    = xASL_vis_TransformData2View( DIFFMap, x );
 
             clear DIFFMap
         end

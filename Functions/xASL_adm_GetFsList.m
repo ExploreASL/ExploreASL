@@ -31,7 +31,7 @@ function  RES = xASL_adm_GetFsList(strDirectory, strRegEx, bGetDirNames, bExclud
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: List files or directories from a given path. And optionally uses regular expressions to filter the result
 %              with options to exclude hidden files, ignore case, and set a minimal requirement on the number of results.
-%              Sorts the results at the end
+%              Sorts the results at the end.
 % EXAMPLE: 
 %   RES = xASL_adm_GetFsList()                                    all directories from the current directory, exclude hidden
 %   RES = xASL_adm_GetFsList('D:\data','^\d$')                    only files, exclude hidden
@@ -46,7 +46,7 @@ function  RES = xASL_adm_GetFsList(strDirectory, strRegEx, bGetDirNames, bExclud
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright Â© 2015-2019 ExploreASL
+% Copyright © 2015-2020 ExploreASL
 
     % Check input arguments
     if nargin<1 || isempty(strDirectory)

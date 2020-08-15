@@ -1,11 +1,21 @@
-function rotated = xASL_im_rotate( im, angle )
-% Simple rotation of the first two dimension of a ND image by 0,90,180,270 degrees
-% INPUT:
-% 	im - an ND image
-%	angle - angle of rotation in the first two dimensions, can be either 0,90,180,270 or other multiple of 90
-% OUTPUT:
-%	rotated - rotated image of the same dimensions
-% JP, xASL, 2018
+function rotated = xASL_im_rotate(im, angle)
+%xASL_im_rotate Simple rotation of the first two dimension of a ND image by 0,90,180,270 degrees
+%
+% FORMAT:       rotated = xASL_im_rotate(im, angle)
+% 
+% INPUT:        im - an ND image
+%               angle - angle of rotation in the first two dimensions, can be either 0,90,180,270 or other multiple of 90
+%
+% OUTPUT:       rotated - rotated image of the same dimensions
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Simple rotation of the first two dimension of a ND image by
+%               0, 90, 180, 270 degrees.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 % In case the angle is higher than 360 or smaller than 0
 angle = mod(angle,360);

@@ -1,6 +1,7 @@
 function scaleFactor = xASL_adm_GetPhilipsScaling(parms,header)
 % Checks the nifti header and the additional parameters in a side-car for a nifti file and extract correction
 % scaling factors for Philips.
+%
 % FORMAT: scaleFactor = xASL_adm_GetPhilipsScaling(pathParmsMat,pathNifti)
 % 
 % INPUT:
@@ -13,7 +14,7 @@ function scaleFactor = xASL_adm_GetPhilipsScaling(parms,header)
 % DESCRIPTION: This script provides the correct scaling factors for a NIfTI file. It checks the header of the NIfTI
 %              that normally has the same scaling as RescaleSlope in DICOM, it checks if dcm2nii (by the info in JSON)
 %              has already converted the scale slopes to floating point. And if not, the derive the correct
-%              scaling factor to be applied
+%              scaling factor to be applied.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: scaleFactor = xASL_adm_GetPhilipsScaling('ASL4D_parms.mat','ASL.json');
 % __________________________________
@@ -57,27 +58,35 @@ else
 	% Standard scaling using RescaleSlope/RescaleSlopeOriginal or the Nifti slope - which should all be either non-existing or 1 or all equal
 	% Set the scaling to remove
 	scaleFactor = 1;
+	
+	if (rescaleSlopeNifti ~= 1)
+		scaleFactor = rescaleSlopeNifti;
+	end
+	
 	if isfield(parms,'RescaleSlopeOriginal') && (parms.RescaleSlopeOriginal ~= 1)
 		if (scaleFactor ~= 1) && ~isnear(scaleFactor,parms.RescaleSlopeOriginal,scaleFactor/100)
-			warning('%s\n', ['Discrepancy in RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ')']);
+			warning('%s\n%s\n',...
+				['Discrepancy in RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ') and NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')'],...
+				'Using RescaleSlopeOriginal');
 		end
 		scaleFactor = parms.RescaleSlopeOriginal;
 	end
-			
+	
 	if isfield(parms,'RescaleSlope') && (parms.RescaleSlope ~= 1)
 		if (scaleFactor ~= 1) && ~isnear(scaleFactor,parms.RescaleSlope,scaleFactor/100)
-			warning('%s\n', ['Discrepancy in RescaleSlope (' xASL_num2str(parms.RescaleSlope) ')']);
+			if (rescaleSlopeNifti ~= 1) && ~isnear(rescaleSlopeNifti,parms.RescaleSlope,scaleFactor/100)
+				warning('%s\n%s\n',...
+				['Discrepancy in RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') and NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')'],...
+				'Using RescaleSlope');
+			else
+				warning('%s\n%s\n',...
+				['Discrepancy in RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') and RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ')'],...
+				'Using RescaleSlope');
+			end
 		end
 		scaleFactor = parms.RescaleSlope;
 	end
-			
-	if (rescaleSlopeNifti ~= 1)
-		if (scaleFactor ~= 1) && ~isnear(scaleFactor,rescaleSlopeNifti,scaleFactor/100)
-			warning('%s\n', ['Discrepancy in NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')']);
-		end
-		scaleFactor = rescaleSlopeNifti;
-	end
-
+		
 	if scaleFactor == 1
 		warning('Scale slope was 1, could be a scale slope issue');
 	end

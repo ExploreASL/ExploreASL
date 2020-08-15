@@ -11,15 +11,17 @@ function header = xASL_io_DcmtkRead(filepath, bPixel)
 %         header (structure) - structure containing parsed DICOM header
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: 
-%    Calls the MEX function that uses DCMTK library to read the DICOM header.
-%    To change which parameters are read and their names - the MEX file needs to be edited.
-%    This function also corrects formating of certain parameters.
+% DESCRIPTION:  Calls the MEX function that uses DCMTK library to read the DICOM header.
+%               To change which parameters are read and their names - the MEX file needs to be edited.
+%               This function also corrects formating of certain parameters.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:
 % __________________________________
-% Copyright Â© 2015-2018 ExploreASL
+% Copyright © 2015-2020 ExploreASL
 %
 % 2018-12-17, Jan Petr
 %

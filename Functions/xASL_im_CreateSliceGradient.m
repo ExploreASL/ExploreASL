@@ -1,20 +1,37 @@
 function xASL_im_CreateSliceGradient(x)
 % xASL_im_CreateSliceGradient
 %
+% FORMAT:       xASL_im_CreateSliceGradient(x)
+% 
+% INPUT:        ...
 %
-% 1    Create slice gradient in same space as input file
-% 2    Reslice slice gradient to MNI (using existing ASL matrix changes from e.g. registration to MNI, motion correction, registration to GM)
-% 3    Creating average slice gradient
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  1. Create slice gradient in same space as input file
+%               2. Reslice slice gradient to MNI (using existing ASL matrix changes from e.g. registration to MNI, motion correction, registration to GM)
+%               3. Creating average slice gradient
 %
-% BACKGROUND INFORMATION
-% When a 2D readout is used with ASL, post-label delay and hence T1 decay will be dependent on slice timing
-% Therefore, quantification part needs slice reference to quantify per slice and correct for effective post-label delay differences
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
 %
-% This function uses exact same ASL matrix changes that occurred due to registration to MNI, motion correction and registration to T1
+% BACKGROUND INFORMATION:
+%
+% When a 2D readout is used with ASL, post-label delay and hence T1 decay
+% will be dependent on slice timing.
+% Therefore, quantification part needs slice reference to quantify per
+% slice and correct for effective post-label delay differences.
+%
+% This function uses exact same ASL matrix changes that occurred due to
+% registration to MNI, motion correction and registration to T1.
 %
 % Script dependencies: SPM12
 %
 % HJ Mutsaerts, ExploreASL 2016
+%
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
 
 %% Administration
 
@@ -59,7 +76,7 @@ xASL_io_SaveNifti(x.P.Path_SliceGradient_extrapolated,x.P.Path_SliceGradient_ext
 %% ------------------------------------------------------------------------------------
 %%     Reslice slice gradient to MNI (using existing ASL matrix changes from e.g. registration to MNI, motion correction, registration to GM)
 
-if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
 	AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
 else
 	AffineTransfPath = [];
@@ -67,7 +84,7 @@ end
 
 xASL_spm_deformations(x, x.P.Path_SliceGradient, x.P.Pop_Path_SliceGradient, 0, [], AffineTransfPath, x.P.Path_y_ASL); % nearest neighbor
 
-if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
 	AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
 else
 	AffineTransfPath = [];
@@ -79,8 +96,10 @@ xASL_spm_deformations(x, x.P.Path_SliceGradient_extrapolated, x.P.Pop_Path_Slice
 %% Add some more extrapolation to be sure
 SGim = xASL_io_Nifti2Im(x.P.Pop_Path_SliceGradient_extrapolated);
 SGim(SGim==0) = NaN;
+% Count the number of NaNs
 countNanLast = numel(SGim)+1;
 while sum(isnan(SGim(:)))<countNanLast
+	% And make sure that the number of NaNs is decreasing with the filtering, if not 
 	countNanLast = sum(isnan(SGim(:)));
 	SGim = xASL_im_ndnanfilter(SGim,'rect',[8 8 8],2);
 end

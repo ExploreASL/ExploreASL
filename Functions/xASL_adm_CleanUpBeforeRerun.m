@@ -27,22 +27,24 @@ function xASL_adm_CleanUpBeforeRerun(AnalysisDir, iModule, bRemoveWMH, bAllSubje
 %              derivatives will be removed. This function performs the
 %              following steps:
 %   
-%              1) If a Population folder doesn't exist yet but dartel does, rename it
-%              2) Remove whole-study data files in AnalysisDir if bAllSubjects
-%              3) Remove lock files/folders for reprocessing
-%              4) Restore backupped _ORI (original) files
-%              5) Delete native space CAT12 temporary folders (always, independent of iModule)
-%              6) Remove native space files for iModule
-%              7) Remove standard space files for iModule
-%              8) Remove population module files
-%              9) Remove or clean up stored x-struct & QC file -> THIS HAS NO SESSION SUPPORT YET
+%              1. If a Population folder doesn't exist yet but dartel does, rename it
+%              2. Remove whole-study data files in AnalysisDir if bAllSubjects
+%              3. Remove lock files/folders for reprocessing
+%              4. Restore backupped _ORI (original) files
+%              5. Delete native space CAT12 temporary folders (always, independent of iModule)
+%              6. Remove native space files for iModule
+%              7. Remove standard space files for iModule
+%              8. Remove population module files
+%              9. Remove or clean up stored x-struct & QC file -> THIS HAS NO SESSION SUPPORT YET
 %
 % NB: still need to add xASL_module_func & xASL_module_dwi for EPAD
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE for rerunning full study: xASL_adm_CleanupBeforeCompleteRerun('/PathToMyStudyAnalysisDir', [], 0, 1);
-% EXAMPLE for rerunning ASL & population modules of single subject: xASL_adm_CleanupBeforeCompleteRerun('/PathToMyStudyAnalysisDir', [2 3], 0, 0, 'Sub-001')
+% EXAMPLE:
+% - For rerunning full study: xASL_adm_CleanupBeforeCompleteRerun('/PathToMyStudyAnalysisDir', [], 0, 1);
+% - For rerunning ASL & population modules of single subject: xASL_adm_CleanupBeforeCompleteRerun('/PathToMyStudyAnalysisDir', [2 3], 0, 0, 'Sub-001')
+%
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 try

@@ -1,6 +1,22 @@
 function xASL_im_SkullStrip(InPath, PathMNIMask, x, OutPath)
 %xASL_im_SkullStrip Creates skull-stripped T1w image based on
 % MNI -> native space registration from segmentation
+%
+% FORMAT:       xASL_im_SkullStrip(InPath, PathMNIMask, x, OutPath)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Creates skull-stripped {{T1w}} image based on {{MNI}} -> native
+%               space registration from segmentation.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
 
     if nargin<4 || isempty(OutPath)
         [Fpath, Ffile, Fext] = xASL_fileparts(InPath);

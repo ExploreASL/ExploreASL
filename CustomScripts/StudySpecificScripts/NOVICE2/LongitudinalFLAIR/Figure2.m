@@ -19,7 +19,7 @@ x.S.TraSlices = x.S.slicesLarge(5:8);
 x.S.Square = false;
 
 for iPath=1:4
-    ImOut{iPath} = xASL_im_CreateVisualFig(x, {FLAIRpath WMHim{iPath}}, [], [1 0.4], [], {x.S.gray x.S.jet256}, 0, {MaskIM MaskIM}, 1, [], 5);
+    ImOut{iPath} = xASL_vis_CreateVisualFig(x, {FLAIRpath WMHim{iPath}}, [], [1 0.4], [], {x.S.gray x.S.jet256}, 0, {MaskIM MaskIM}, 1, [], 5);
 end
 
 figure(1);imshow([ImOut{1};ImOut{2};ImOut{3};ImOut{4}])
@@ -66,11 +66,11 @@ x.S.Square = false;
 
 for iPath=1:4
     if max(WMHim{iPath}(:))==0
-%         ImOut{iPath} = xASL_im_CreateVisualFig(x, {FLAIRim{iPath}}, [], [1], [], {x.S.gray}, 0, {MaskIM}, 0, [], 5);
-        ImOut{iPath} = xASL_im_CreateVisualFig(x, {FLAIRim{iPath}}, [], [1], [], {x.S.gray}, 0, [], 0, [], 5);
+%         ImOut{iPath} = xASL_vis_CreateVisualFig(x, {FLAIRim{iPath}}, [], [1], [], {x.S.gray}, 0, {MaskIM}, 0, [], 5);
+        ImOut{iPath} = xASL_vis_CreateVisualFig(x, {FLAIRim{iPath}}, [], [1], [], {x.S.gray}, 0, [], 0, [], 5);
     else
-%         ImOut{iPath} = xASL_im_CreateVisualFig(x, {FLAIRim{iPath} WMHim{iPath}}, [], [1 1], [], {x.S.gray x.S.jet256}, 0, {MaskIM MaskIM}, 0, [], 5);
-        ImOut{iPath} = xASL_im_CreateVisualFig(x, {FLAIRim{iPath} WMHim{iPath}}, [], [1 1], [], {x.S.gray x.S.jet256}, 0, [], 0, [], 5);
+%         ImOut{iPath} = xASL_vis_CreateVisualFig(x, {FLAIRim{iPath} WMHim{iPath}}, [], [1 1], [], {x.S.gray x.S.jet256}, 0, {MaskIM MaskIM}, 0, [], 5);
+        ImOut{iPath} = xASL_vis_CreateVisualFig(x, {FLAIRim{iPath} WMHim{iPath}}, [], [1 1], [], {x.S.gray x.S.jet256}, 0, [], 0, [], 5);
     end
 end
 

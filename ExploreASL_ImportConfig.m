@@ -838,6 +838,22 @@ switch imPar.studyID
         imPar.tokenSessionAliases = {'',''};
         imPar.tokenScanAliases = {'^pseudo_nocrush$','ASL4D';'^T2_TRA$', 'T1'}; 
         imPar.bMatchDirectories = true;
+        
+    case 'ADNI'
+        imPar.folderHierarchy = {'^(\d{3}_S_\d{4}).*', '^(ASL_PERFUSION)$', '^(\d{4}.*)$', '^S.*'}; % Test with ADNI data
+        imPar.tokenOrdering = [1 3 0 2]; % subject visit session scantype
+        imPar.tokenScanAliases = {'^ASL_PERFUSION$','ASL4D';'^MPRAGE$', 'T1'};
+        imPar.tokenVisitAliases = {'^2010$','ASL4D';'^1$'};
+        imPar.bMatchDirectories = true;
+    
+    case 'incoming' % Docker
+        warning('Not specified yet...');
+        %imPar.folderHierarchy = {'^(\d{3}_S_\d{4}).*', '^(ASL_PERFUSION)$', '^(\d{4}.*)$', '^S.*'}; % Test with ADNI data
+        %imPar.tokenOrdering = [1 3 0 2]; % subject visit session scantype
+        %imPar.tokenScanAliases = {'^ASL_PERFUSION$','ASL4D';'^MPRAGE$', 'T1'};
+        %imPar.tokenVisitAliases = {'^2010$','ASL4D';'^1$'};
+        %imPar.bMatchDirectories = true;
+
 
 	otherwise % by default, append study ID and raw (or analysis) to the roots
 		warning('Unknown study: %s', imPar.studyID);

@@ -1,17 +1,24 @@
 function [QA_Output] = xASL_qc_CAT12_IQR(InputImage, InputC1, InputC2, InputC3, bFLAIR)
-%xASL_qc_CAT12_IQR Prepare and run CAT12s QC parameters (also for other
-%images)
+%xASL_qc_CAT12_IQR Prepare and run CAT12s QC parameters (also for other images).
 %
-% InputImage = image that will be QCed
-% InputC1, 2, 3 = posterior probability maps (segmentations) for GM, WM,
-% CSF
-% Input should be paths
+% FORMAT:       [QA_Output] = xASL_qc_CAT12_IQR(InputImage, InputC1, InputC2, InputC3, bFLAIR)
+% 
+% INPUT:        InputImage = image that will be QCed
+%               InputC1, 2, 3 = posterior probability maps (segmentations) for GM, WM, CSF
+%               Input should be paths
 %
-% EXAMPLE:
-% InputImage = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/T1.nii';
-% InputC1 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p1T1.nii';
-% InputC2 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p2T1.nii';
-% InputC3 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p3T1.nii';
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  ...
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      InputImage = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/T1.nii';
+%               InputC1 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p1T1.nii';
+%               InputC2 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p2T1.nii';
+%               InputC3 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p3T1.nii';
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 
 if nargin<5 || isempty(bFLAIR)

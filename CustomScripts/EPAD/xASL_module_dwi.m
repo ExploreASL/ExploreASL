@@ -416,7 +416,7 @@ if ~x.mutex.HasState('060_visualize')
     DTI_VisualQC_BVEC(PathBvec, x);
 
     %% Visual QC of TopUp
-    [Output1, Output2] = xASL_im_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, iSubject, x.D.dwiCheckDir);
+    [Output1, Output2] = xASL_vis_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, iSubject, x.D.dwiCheckDir);
     
     x.Output.dwi.MeanAI_PreTopUp_Perc = Output1;
     x.Output.dwi.MeanAI_PostTopUp_Perc = Output2;
@@ -454,10 +454,10 @@ if ~x.mutex.HasState('060_visualize')
         end
         % visualize
         Parms.ModuleName = 'dwi';
-        Parms.IM = xASL_im_CreateVisualFig(x, ImIn{iM}, DirOut{iM}, x.V.IntScale{iM}, x.V.NameExt{iM}, x.V.ColorMapIs{iM});
+        Parms.IM = xASL_vis_CreateVisualFig(x, ImIn{iM}, DirOut{iM}, x.V.IntScale{iM}, x.V.NameExt{iM}, x.V.ColorMapIs{iM});
         % add single slice to QC collection
         if  sum(~isnan(Parms.IM(:)))>0 % if image is not empty
-            x = xASL_im_AddIM2QC(x, Parms);
+            x = xASL_vis_AddIM2QC(x, Parms);
         end
     end
 

@@ -136,7 +136,7 @@ if  nVolumes>1 % this is when a mean control image can be created
     InputFiles  = {x.P.Path_mean_control};
     OutputFiles = {x.P.Pop_Path_mean_control};
 
-    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
         AffineTransfPath = [];
@@ -149,7 +149,7 @@ if  nVolumes>1 % this is when a mean control image can be created
     xASL_adm_DeleteFilePair(x.P.Path_rdespiked_ASL4D, 'mat');
 
     % Visual check of M0-pGM registration for masking
-    xASL_im_CreateVisualFig(x, {x.P.Pop_Path_mean_control x.P.Pop_Path_rc1T1}, x.D.M0regASLdir,[0.5 0.2]);
+    xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_mean_control x.P.Pop_Path_rc1T1}, x.D.M0regASLdir,[0.5 0.2]);
 
     if strcmp(x.M0,'UseControlAsM0') && nVolumes==1
         warning('Couldnt create mean control image to be used as M0, timeseries missing');

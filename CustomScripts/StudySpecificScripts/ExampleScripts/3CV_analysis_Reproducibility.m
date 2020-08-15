@@ -349,12 +349,12 @@ mean_CBF_vendor{7}                  =(mean_CBF_vendor{2}+mean_CBF_vendor{4})./2;
 
 clear slice_mean_CBF slice_view_mean_CBF overview_mean
 for ii=1:length(mean_CBF_vendor)
-    slice_mean_CBF{1}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(mean_CBF_vendor{ii}(:,:,62).*skull_mask_visual(:,:,62),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_mean_CBF{2}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(mean_CBF_vendor{ii}(:,:,76).*skull_mask_visual(:,:,76),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_mean_CBF{3}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(mean_CBF_vendor{ii}(:,63,:).*skull_mask_visual(:,63,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_mean_CBF{4}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(mean_CBF_vendor{ii}(:,95,:).*skull_mask_visual(:,95,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_mean_CBF{5}(:,:,ii)         =xASL_im_CropParmsApply(FlipOrientation2_isotropic( mean_CBF_vendor{ii}(68,:,:) .*skull_mask_visual(68,:,:) ),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
-    slice_mean_CBF{6}(:,:,ii)         =xASL_im_CropParmsApply(FlipOrientation2_isotropic( mean_CBF_vendor{ii}(76,:,:) .*skull_mask_visual(76,:,:) ),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
+    slice_mean_CBF{1}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(mean_CBF_vendor{ii}(:,:,62).*skull_mask_visual(:,:,62),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_mean_CBF{2}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(mean_CBF_vendor{ii}(:,:,76).*skull_mask_visual(:,:,76),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_mean_CBF{3}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(mean_CBF_vendor{ii}(:,63,:).*skull_mask_visual(:,63,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_mean_CBF{4}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(mean_CBF_vendor{ii}(:,95,:).*skull_mask_visual(:,95,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_mean_CBF{5}(:,:,ii)         =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( mean_CBF_vendor{ii}(68,:,:) .*skull_mask_visual(68,:,:) ),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
+    slice_mean_CBF{6}(:,:,ii)         =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( mean_CBF_vendor{ii}(76,:,:) .*skull_mask_visual(76,:,:) ),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
 end
 
 % Switch GE & PH (vendor B & A)
@@ -385,12 +385,12 @@ for ii=1:length(mean_diff)
     mean_diff{ii}                       = rescale( mean_diff{ii},0,30,0);end
 
 for ii=1:length(mean_diff)
-    slice_mean_diff{1}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(mean_diff{ii}(:,:,62).*skull_mask_visual(:,:,62),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_mean_diff{2}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(mean_diff{ii}(:,:,76).*skull_mask_visual(:,:,76),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_mean_diff{3}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(mean_diff{ii}(:,63,:).*skull_mask_visual(:,63,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_mean_diff{4}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(mean_diff{ii}(:,95,:).*skull_mask_visual(:,95,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_mean_diff{5}(:,:,ii)         =xASL_im_CropParmsApply(FlipOrientation2_isotropic( mean_diff{ii}(68,:,:) .*skull_mask_visual(68,:,:) ),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
-    slice_mean_diff{6}(:,:,ii)         =xASL_im_CropParmsApply(FlipOrientation2_isotropic( mean_diff{ii}(76,:,:) .*skull_mask_visual(76,:,:) ),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);end
+    slice_mean_diff{1}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(mean_diff{ii}(:,:,62).*skull_mask_visual(:,:,62),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_mean_diff{2}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(mean_diff{ii}(:,:,76).*skull_mask_visual(:,:,76),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_mean_diff{3}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(mean_diff{ii}(:,63,:).*skull_mask_visual(:,63,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_mean_diff{4}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(mean_diff{ii}(:,95,:).*skull_mask_visual(:,95,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_mean_diff{5}(:,:,ii)         =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( mean_diff{ii}(68,:,:) .*skull_mask_visual(68,:,:) ),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
+    slice_mean_diff{6}(:,:,ii)         =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( mean_diff{ii}(76,:,:) .*skull_mask_visual(76,:,:) ),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);end
 
 % Switch GE & PH (vendor B & A)
 for ii=1:length(mean_diff)
@@ -408,12 +408,12 @@ for ii=1:length(slice_mean_diff)
 % clear CBF_slices vendor subject
 % for vendor=[1:4,7:10]
 %     for subject=1:size(CBF{vendor},4)
-%         CBF_slices{vendor}{1}(:,:,subject)      =xASL_im_CropParmsApply(xASL_im_rotate(CBF{vendor}(:,:,62,subject).*GM_mask_visual(:,:,62),90),ant_crop,size(CBF{vendor},2)-pos_crop,L_crop,size(CBF{vendor},1)-R_crop);
-%         CBF_slices{vendor}{2}(:,:,subject)      =xASL_im_CropParmsApply(xASL_im_rotate(CBF{vendor}(:,:,76,subject).*GM_mask_visual(:,:,76),90),ant_crop,size(CBF{vendor},2)-pos_crop,L_crop,size(CBF{vendor},1)-R_crop);
-%         CBF_slices{vendor}{3}(:,:,subject)      =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(CBF{vendor}(:,63,:,subject).*GM_mask_visual(:,63,:)),90),sup_crop,size(CBF{vendor},2)-inf_crop,L_crop,size(CBF{vendor},1)-R_crop);
-%         CBF_slices{vendor}{4}(:,:,subject)      =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(CBF{vendor}(:,95,:,subject).*GM_mask_visual(:,95,:)),90),sup_crop,size(CBF{vendor},2)-inf_crop,L_crop,size(CBF{vendor},1)-R_crop);
-%         CBF_slices{vendor}{5}(:,:,subject)      =xASL_im_CropParmsApply(FlipOrientation2_isotropic( CBF{vendor}(68,:,:,subject) .*GM_mask_visual(68,:,:) ),sup_crop,size(CBF{vendor},2)-inf_crop,ant_crop,size(CBF{vendor},2)-pos_crop);
-%         CBF_slices{vendor}{6}(:,:,subject)      =xASL_im_CropParmsApply(FlipOrientation2_isotropic( CBF{vendor}(76,:,:,subject) .*GM_mask_visual(76,:,:) ),sup_crop,size(CBF{vendor},2)-inf_crop,ant_crop,size(CBF{vendor},2)-pos_crop);end;end
+%         CBF_slices{vendor}{1}(:,:,subject)      =xASL_vis_CropParmsApply(xASL_im_rotate(CBF{vendor}(:,:,62,subject).*GM_mask_visual(:,:,62),90),ant_crop,size(CBF{vendor},2)-pos_crop,L_crop,size(CBF{vendor},1)-R_crop);
+%         CBF_slices{vendor}{2}(:,:,subject)      =xASL_vis_CropParmsApply(xASL_im_rotate(CBF{vendor}(:,:,76,subject).*GM_mask_visual(:,:,76),90),ant_crop,size(CBF{vendor},2)-pos_crop,L_crop,size(CBF{vendor},1)-R_crop);
+%         CBF_slices{vendor}{3}(:,:,subject)      =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(CBF{vendor}(:,63,:,subject).*GM_mask_visual(:,63,:)),90),sup_crop,size(CBF{vendor},2)-inf_crop,L_crop,size(CBF{vendor},1)-R_crop);
+%         CBF_slices{vendor}{4}(:,:,subject)      =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(CBF{vendor}(:,95,:,subject).*GM_mask_visual(:,95,:)),90),sup_crop,size(CBF{vendor},2)-inf_crop,L_crop,size(CBF{vendor},1)-R_crop);
+%         CBF_slices{vendor}{5}(:,:,subject)      =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( CBF{vendor}(68,:,:,subject) .*GM_mask_visual(68,:,:) ),sup_crop,size(CBF{vendor},2)-inf_crop,ant_crop,size(CBF{vendor},2)-pos_crop);
+%         CBF_slices{vendor}{6}(:,:,subject)      =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( CBF{vendor}(76,:,:,subject) .*GM_mask_visual(76,:,:) ),sup_crop,size(CBF{vendor},2)-inf_crop,ant_crop,size(CBF{vendor},2)-pos_crop);end;end
 %
 % clear orislice diff_slices
 % for orislice=1:6
@@ -569,12 +569,12 @@ clear mean_diff_piled
 
 for ii=1:length(mean_diff)
     if ~isempty(mean_diff{ii})
-        slice_SD_diff{1}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(RMS_SD_diff{ii}(:,:,62).*skull_mask_visual(:,:,62),90),ant_crop,size(CBF{1},2)-pos_crop,L_crop,size(CBF{1},1)-R_crop);
-        slice_SD_diff{2}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(RMS_SD_diff{ii}(:,:,76).*skull_mask_visual(:,:,76),90),ant_crop,size(CBF{1},2)-pos_crop,L_crop,size(CBF{1},1)-R_crop);
-        slice_SD_diff{3}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(RMS_SD_diff{ii}(:,63,:).*skull_mask_visual(:,63,:)),90),ant_crop,size(CBF{1},2)-pos_crop,L_crop,size(CBF{1},1)-R_crop);
-        slice_SD_diff{4}(:,:,ii)         =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(RMS_SD_diff{ii}(:,95,:).*skull_mask_visual(:,95,:)),90),ant_crop,size(CBF{1},2)-pos_crop,L_crop,size(CBF{1},1)-R_crop);
-        slice_SD_diff{5}(:,:,ii)         =xASL_im_CropParmsApply(FlipOrientation2_isotropic( RMS_SD_diff{ii}(68,:,:) .*skull_mask_visual(68,:,:)),sup_crop,size(CBF{1},2)-inf_crop,ant_crop,size(CBF{1},2)-pos_crop);
-        slice_SD_diff{6}(:,:,ii)         =xASL_im_CropParmsApply(FlipOrientation2_isotropic( RMS_SD_diff{ii}(76,:,:) .*skull_mask_visual(76,:,:)),sup_crop,size(CBF{1},2)-inf_crop,ant_crop,size(CBF{1},2)-pos_crop);
+        slice_SD_diff{1}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(RMS_SD_diff{ii}(:,:,62).*skull_mask_visual(:,:,62),90),ant_crop,size(CBF{1},2)-pos_crop,L_crop,size(CBF{1},1)-R_crop);
+        slice_SD_diff{2}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(RMS_SD_diff{ii}(:,:,76).*skull_mask_visual(:,:,76),90),ant_crop,size(CBF{1},2)-pos_crop,L_crop,size(CBF{1},1)-R_crop);
+        slice_SD_diff{3}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(RMS_SD_diff{ii}(:,63,:).*skull_mask_visual(:,63,:)),90),ant_crop,size(CBF{1},2)-pos_crop,L_crop,size(CBF{1},1)-R_crop);
+        slice_SD_diff{4}(:,:,ii)         =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(RMS_SD_diff{ii}(:,95,:).*skull_mask_visual(:,95,:)),90),ant_crop,size(CBF{1},2)-pos_crop,L_crop,size(CBF{1},1)-R_crop);
+        slice_SD_diff{5}(:,:,ii)         =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( RMS_SD_diff{ii}(68,:,:) .*skull_mask_visual(68,:,:)),sup_crop,size(CBF{1},2)-inf_crop,ant_crop,size(CBF{1},2)-pos_crop);
+        slice_SD_diff{6}(:,:,ii)         =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( RMS_SD_diff{ii}(76,:,:) .*skull_mask_visual(76,:,:)),sup_crop,size(CBF{1},2)-inf_crop,ant_crop,size(CBF{1},2)-pos_crop);
     end
 end
 
@@ -590,12 +590,12 @@ for ii=1:6
     wsCV_im{ii}                     =100.*(RMS_SD_diff{ii} ./ mean_CBF_vendor{ii});end % RMS_SD_diff & mean_CBF_vendor weren't switched
 
 for ii=1:6
-    slice_wsCV{1}(:,:,ii)           =xASL_im_CropParmsApply(xASL_im_rotate(wsCV_im{ii}(:,:,62).*GM_mask_visual(:,:,62),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_wsCV{2}(:,:,ii)           =xASL_im_CropParmsApply(xASL_im_rotate(wsCV_im{ii}(:,:,76).*GM_mask_visual(:,:,76),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_wsCV{3}(:,:,ii)           =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(wsCV_im{ii}(:,63,:).*GM_mask_visual(:,63,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_wsCV{4}(:,:,ii)           =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(wsCV_im{ii}(:,95,:).*GM_mask_visual(:,95,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_wsCV{5}(:,:,ii)           =xASL_im_CropParmsApply(FlipOrientation2_isotropic( wsCV_im{ii}(68,:,:) .*GM_mask_visual(68,:,:)),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
-    slice_wsCV{6}(:,:,ii)           =xASL_im_CropParmsApply(FlipOrientation2_isotropic( wsCV_im{ii}(76,:,:) .*GM_mask_visual(76,:,:)),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);end
+    slice_wsCV{1}(:,:,ii)           =xASL_vis_CropParmsApply(xASL_im_rotate(wsCV_im{ii}(:,:,62).*GM_mask_visual(:,:,62),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_wsCV{2}(:,:,ii)           =xASL_vis_CropParmsApply(xASL_im_rotate(wsCV_im{ii}(:,:,76).*GM_mask_visual(:,:,76),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_wsCV{3}(:,:,ii)           =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(wsCV_im{ii}(:,63,:).*GM_mask_visual(:,63,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_wsCV{4}(:,:,ii)           =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(wsCV_im{ii}(:,95,:).*GM_mask_visual(:,95,:)),90),sup_crop,size(CBF{ii},2)-inf_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_wsCV{5}(:,:,ii)           =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( wsCV_im{ii}(68,:,:) .*GM_mask_visual(68,:,:)),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
+    slice_wsCV{6}(:,:,ii)           =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( wsCV_im{ii}(76,:,:) .*GM_mask_visual(76,:,:)),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);end
 
 % Switch GE & PH (vendor B & A)
 for ii=1:6
@@ -707,12 +707,12 @@ ICC{3}          = 100.* ( RMS_SD_diff{7} ./ RMS_SD_diff{8} ) ;
 
 
 for ii=1:length(ICC)
-    slice_ICC{1}{ii}         =xASL_im_CropParmsApply(xASL_im_rotate(ICC{ii}(:,:,62).*GM_mask_visual(:,:,62),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_ICC{2}{ii}         =xASL_im_CropParmsApply(xASL_im_rotate(ICC{ii}(:,:,76).*GM_mask_visual(:,:,76),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
-    slice_ICC{3}{ii}         =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(ICC{ii}(:,63,:).*GM_mask_visual(:,63,:)),90),sup_crop,size(mean_GM,2)-inf_crop,L_crop,size(mean_GM,1)-R_crop);
-    slice_ICC{4}{ii}         =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(ICC{ii}(:,95,:).*GM_mask_visual(:,95,:)),90),sup_crop,size(mean_GM,2)-inf_crop,L_crop,size(mean_GM,1)-R_crop);
-    slice_ICC{5}{ii}         =xASL_im_CropParmsApply(FlipOrientation2_isotropic( ICC{ii}(68,:,:) .*GM_mask_visual(68,:,:)),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
-    slice_ICC{6}{ii}         =xASL_im_CropParmsApply(FlipOrientation2_isotropic( ICC{ii}(76,:,:) .*GM_mask_visual(76,:,:)),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);end
+    slice_ICC{1}{ii}         =xASL_vis_CropParmsApply(xASL_im_rotate(ICC{ii}(:,:,62).*GM_mask_visual(:,:,62),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_ICC{2}{ii}         =xASL_vis_CropParmsApply(xASL_im_rotate(ICC{ii}(:,:,76).*GM_mask_visual(:,:,76),90),ant_crop,size(CBF{ii},2)-pos_crop,L_crop,size(CBF{ii},1)-R_crop);
+    slice_ICC{3}{ii}         =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(ICC{ii}(:,63,:).*GM_mask_visual(:,63,:)),90),sup_crop,size(mean_GM,2)-inf_crop,L_crop,size(mean_GM,1)-R_crop);
+    slice_ICC{4}{ii}         =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(ICC{ii}(:,95,:).*GM_mask_visual(:,95,:)),90),sup_crop,size(mean_GM,2)-inf_crop,L_crop,size(mean_GM,1)-R_crop);
+    slice_ICC{5}{ii}         =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( ICC{ii}(68,:,:) .*GM_mask_visual(68,:,:)),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);
+    slice_ICC{6}{ii}         =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( ICC{ii}(76,:,:) .*GM_mask_visual(76,:,:)),sup_crop,size(CBF{ii},2)-inf_crop,ant_crop,size(CBF{ii},2)-pos_crop);end
 
 for ii=1:2
     view_ICC_total{ii}           =[slice_ICC{1}{ii} slice_ICC{2}{ii} slice_ICC{3}{ii} slice_ICC{4}{ii} slice_ICC{5}{ii}  slice_ICC{6}{ii}];end
@@ -769,12 +769,12 @@ end
 clear CBF_slices vendor subject diff_slices
 for vendor=1:12
     for subject=1:size(CBF{vendor},4)
-        CBF_slices{vendor}{1}(:,:,subject)      =xASL_im_CropParmsApply(xASL_im_rotate(CBF{vendor}(:,:,62,subject).*GM_mask_visual(:,:,62),90),ant_crop,size(CBF{vendor},2)-pos_crop,L_crop,size(CBF{vendor},1)-R_crop);
-        CBF_slices{vendor}{2}(:,:,subject)      =xASL_im_CropParmsApply(xASL_im_rotate(CBF{vendor}(:,:,76,subject).*GM_mask_visual(:,:,76),90),ant_crop,size(CBF{vendor},2)-pos_crop,L_crop,size(CBF{vendor},1)-R_crop);
-        CBF_slices{vendor}{3}(:,:,subject)      =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(CBF{vendor}(:,63,:,subject).*GM_mask_visual(:,63,:)),90),sup_crop,size(CBF{vendor},2)-inf_crop,L_crop,size(CBF{vendor},1)-R_crop);
-        CBF_slices{vendor}{4}(:,:,subject)      =xASL_im_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(CBF{vendor}(:,95,:,subject).*GM_mask_visual(:,95,:)),90),sup_crop,size(CBF{vendor},2)-inf_crop,L_crop,size(CBF{vendor},1)-R_crop);
-        CBF_slices{vendor}{5}(:,:,subject)      =xASL_im_CropParmsApply(FlipOrientation2_isotropic( CBF{vendor}(68,:,:,subject) .*GM_mask_visual(68,:,:) ),sup_crop,size(CBF{vendor},2)-inf_crop,ant_crop,size(CBF{vendor},2)-pos_crop);
-        CBF_slices{vendor}{6}(:,:,subject)      =xASL_im_CropParmsApply(FlipOrientation2_isotropic( CBF{vendor}(76,:,:,subject) .*GM_mask_visual(76,:,:) ),sup_crop,size(CBF{vendor},2)-inf_crop,ant_crop,size(CBF{vendor},2)-pos_crop);
+        CBF_slices{vendor}{1}(:,:,subject)      =xASL_vis_CropParmsApply(xASL_im_rotate(CBF{vendor}(:,:,62,subject).*GM_mask_visual(:,:,62),90),ant_crop,size(CBF{vendor},2)-pos_crop,L_crop,size(CBF{vendor},1)-R_crop);
+        CBF_slices{vendor}{2}(:,:,subject)      =xASL_vis_CropParmsApply(xASL_im_rotate(CBF{vendor}(:,:,76,subject).*GM_mask_visual(:,:,76),90),ant_crop,size(CBF{vendor},2)-pos_crop,L_crop,size(CBF{vendor},1)-R_crop);
+        CBF_slices{vendor}{3}(:,:,subject)      =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(CBF{vendor}(:,63,:,subject).*GM_mask_visual(:,63,:)),90),sup_crop,size(CBF{vendor},2)-inf_crop,L_crop,size(CBF{vendor},1)-R_crop);
+        CBF_slices{vendor}{4}(:,:,subject)      =xASL_vis_CropParmsApply(xASL_im_rotate(FlipOrientation_isotropic(CBF{vendor}(:,95,:,subject).*GM_mask_visual(:,95,:)),90),sup_crop,size(CBF{vendor},2)-inf_crop,L_crop,size(CBF{vendor},1)-R_crop);
+        CBF_slices{vendor}{5}(:,:,subject)      =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( CBF{vendor}(68,:,:,subject) .*GM_mask_visual(68,:,:) ),sup_crop,size(CBF{vendor},2)-inf_crop,ant_crop,size(CBF{vendor},2)-pos_crop);
+        CBF_slices{vendor}{6}(:,:,subject)      =xASL_vis_CropParmsApply(FlipOrientation2_isotropic( CBF{vendor}(76,:,:,subject) .*GM_mask_visual(76,:,:) ),sup_crop,size(CBF{vendor},2)-inf_crop,ant_crop,size(CBF{vendor},2)-pos_crop);
     end
 end
 

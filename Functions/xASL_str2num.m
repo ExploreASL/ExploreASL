@@ -1,6 +1,21 @@
 function [DataOut] = xASL_str2num(DataIn)
 %xASL_str2num str2num wrapper, replacing 'n/a' with NaN (BIDS convention)
 % and converting only strings to numbers. Also allows inputting cells
+%
+% FORMAT:       [DataOut] = xASL_str2num(DataIn)
+% 
+% INPUT:        ...
+%
+% OUTPUT:       ...
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  str2num wrapper, replacing 'n/a' with NaN (BIDS convention)
+%               and converting only strings to numbers. Also allows inputting cells.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      ...
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
 if isempty(DataIn)
 	DataOut = NaN;

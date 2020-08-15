@@ -64,7 +64,7 @@ xASL_io_SaveNifti(x.P.Path_func_bold, x.P.Path_mean_control, PWI, 32, false);
 InputPaths = {x.P.Path_mean_control x.P.Path_SD x.P.Path_SNR};
 OutputPaths = {x.P.Pop_Path_mean_control x.P.Pop_Path_SD x.P.Pop_Path_SNR};
 
-if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, CAN BE REMOVED
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
 	AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
 else
 	AffineTransfPath = [];
