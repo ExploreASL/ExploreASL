@@ -14,12 +14,13 @@ function [M0IM] = xASL_quant_M0(M0IM, x)
 % xASL_wrp_ProcessM0.m). This function runs the following steps:
 %
 % 1. Correct scale slopes, if Philips
-% 2. Skip M0 quantification if ~x.ApplyQuantification(4)
-% 3. Set TR specifically for GE
-% 4. Check for correct TR values
-% 5. Quantify the M0, either for single 3D volume or slice-wise
-% 6. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
-%
+% 2. Convert control image with background suppression to pseudo-M0
+% 3. Skip M0 quantification if ~x.ApplyQuantification(4)
+% 4. Set TR specifically for GE
+% 5. Check for correct TR values
+% 6. Quantify the M0, either for single 3D volume or slice-wise
+% 7. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
+% 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: M0IM = xASL_quant_M0('MyStudy/sub-001/ASL_1/rM0.nii', x);
 % __________________________________
@@ -67,7 +68,58 @@ else
 end
 
 %% ------------------------------------------------------------------------------------------------------
-% 2. Skip M0 quantification if ~x.ApplyQuantification(4)
+% 2. Convert control image with background suppression to pseudo-M0
+% for the GM
+if strcmp(x.M0, 'UseControlAsM0') && x.Q.BackGrSupprPulses>0
+    % we only run this part if there is background suppression, but no M0
+    % image
+    
+    if strcmp(x.readout_dim, '3D')
+        SliceTime = 0;
+    elseif strcmp(x.readout_dim, '2D')
+        if ~isfield(x.Q, 'SliceReadoutTime') || isempty(x.Q.SliceReadoutTime)
+            error('Missing or invalid x.Q.SliceReadoutTime');
+        elseif size(M0IM, 3)<2
+            error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
+        end
+        
+        SliceNumbers = [0:1:size(M0IM,3)];
+        SliceTime = SliceNumbers.*x.Q.SliceReadoutTime;
+    else
+        error(['Unknown x.readout_dim value:' x.readout_dim]);
+    end
+    
+    if ~isfield(x.Q, 'TissueT1') || isempty(x.Q.TissueT1)
+        fprintf('%s\n', 'Warning: GM T1 set to 1240 ms for 3T');
+        x.Q.TissueT1 = 1240;
+    end
+    
+    if ~isfield(x.Q, 'BackgroundSuppressionPulseTime') || isempty(x.Q.BackgroundSuppressionPulseTime)
+        error('x.Q.BackgroundSuppressionPulseTime is missing or empty');
+    elseif ~isfield(x.Q, 'SaturationTime') || isempty(x.Q.SaturationTime)
+        fprintf('x.Q.SaturationTime is missing or empty, assuming no pre-saturation pulse\n');
+        fprintf('Using the default value (== no pre-saturation pulse\n');
+        x.Q.SaturationTime = 0;
+    end
+    
+    % Convert from BIDS (seconds) to here (ms)
+    x.Q.BackgroundSuppressionPulseTime = x.Q.BackgroundSuppressionPulseTime./1000;
+    x.Q.SaturationTime = x.Q.SaturationTime./1000;
+    
+    SignalPercentage = xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, x.Q.SaturationTime, x.Q.TissueT1, SliceTime);
+    M0IM = M0IM./SignalPercentage;
+    fprintf('%s\n', ['Control image divided by ' xASL_num2str(SignalPercentage) ' to correct for background suppression']);
+    fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
+    
+    if x.ApplyQuantification(4)==1
+        fprintf('Background suppression pulses have saturated the pseudo-M0 signal, no need for correcting incomplete T1 relaxation\n');
+        x.ApplyQuantification(4) = 0;
+    end
+end
+
+
+%% ------------------------------------------------------------------------------------------------------
+% 3. Skip M0 quantification if ~x.ApplyQuantification(4)
 if ~x.ApplyQuantification(4)
     fprintf('%s\n','M0 quantification for incomplete T1 relaxation skipped');
     % M0 quantification here is only for the incomplete T1 recovery
@@ -92,7 +144,7 @@ else
     end
 
     %% ------------------------------------------------------------------------------------------------------
-    % 3. Set TR specifically for GE
+    % 4. Set TR specifically for GE
     if ~isempty(regexpi(x.Vendor,'GE')) && isempty(regexpi(x.Vendor,'Siemens')) &&  isempty(regexpi(x.Vendor,'Philips'))
         TR = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
@@ -102,7 +154,7 @@ else
     end
 
     %% ------------------------------------------------------------------------------------------------------
-    % 4. Check for correct TR values
+    % 5. Check for correct TR values
     if TR<1000
         error(['Unusually small TR for ASL M0: ' num2str(TR)]);
     end
@@ -113,7 +165,7 @@ else
     end
 
     %% ------------------------------------------------------------------------------------------------------
-    % 5. Quantify the M0, either for single 3D volume or slice-wise
+    % 6. Quantify the M0, either for single 3D volume or slice-wise
     if strcmpi(x.readout_dim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
             NetTR = TR;
             fprintf('%s\n','Single 3D M0 readout assumed');
@@ -156,7 +208,7 @@ else
 end
 
 %% ------------------------------------------------------------------------------------------------------
-% 6. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
+% 7. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
 if ~isfield(x,'M0_GMScaleFactor') || isempty(x.M0_GMScaleFactor)
     x.M0_GMScaleFactor = 1; % no scaling
 else
