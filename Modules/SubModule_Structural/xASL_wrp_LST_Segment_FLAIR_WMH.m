@@ -20,12 +20,15 @@ function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
 % already existed, the LST is run quickly as dummy only, to be replaced by
 % the original WMH_SEGM image. This function has the following parts:
 % 
-% 1) Reslice FLAIR (& WMH_SEGM, if exists) to T1w
-% 2) Define parameters for segmentation
-% 3) Run the segmentation
-% 4) Replace by already existing WMH_SEGM
-% 5) File management
-% 6) Remove NaNs from segmentations & fix image edges
+% 1. Resample FLAIR (& WMH_SEGM, if exists) to T1w space
+%    where we assume WMH_SEGM_ORI == FLAIR space (if externally provided)
+%    WMH_SEGM == T1w space
+% 2. Define parameters for segmentation
+% 3. Run the segmentation
+% 4. Replace by already existing WMH_SEGM
+% 5. File management
+% 6. Remove NaNs from segmentations & fix image edges
+% 7. Remove lesion masks from WMH_SEGM
 %
 % EXAMPLE: xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath);
 %
@@ -37,7 +40,7 @@ function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
 % Copyright 2015-2020 ExploreASL
 
 
-%% 0) Admin
+%% 0. Admin
 if nargin < 2 || isempty(rWMHPath)
 	error('Requires at least 2 input arguments.');
 end
@@ -49,7 +52,7 @@ end
 
 
 %% ----------------------------------------------------------
-%% 1) Reslice FLAIR (& WMH_SEGM, if exists) to T1w
+%% 1. Reslice FLAIR (& WMH_SEGM, if exists) to T1w
 xASL_io_SaveNifti(x.P.Path_FLAIR, x.P.Path_FLAIR, xASL_io_Nifti2Im(x.P.Path_FLAIR), 16, false); % convert to 16 bit
 xASL_spm_reslice(x.P.Path_T1, x.P.Path_FLAIR, [], [], x.Quality);
 
@@ -67,7 +70,7 @@ end
 
 
 %% ----------------------------------------------------------
-%% 2) Define parameters for segmentation
+%% 2. Define parameters for segmentation
 fprintf('\n%s\n','----------------------------------------');
 
 switch WMHsegmAlg
@@ -109,13 +112,13 @@ end
 
 
 %% ----------------------------------------------------------
-%% 3 Run the segmentation
+%% 3. Run the segmentation
 fprintf('\n');
 spm_jobman('run',matlabbatch); close all
 
 
 %% ----------------------------------------------------------
-%% 4) Replace by already existing WMH_SEGM
+%% 4. Replace by already existing WMH_SEGM
 if xASL_exist(x.P.Path_WMH_SEGM,'file')
     % replace the LST segmentation by the WMH_SEGM.nii. This is either
     % the identical segmentation (because copied before), or an externally provided segmentation
@@ -133,7 +136,7 @@ end
 
 
 %% ----------------------------------------------------------
-%% 5) File management
+%% 5. File management
 % Delete the LST folder & its contents
 CleanUpDir = xASL_adm_GetFileList(x.SUBJECTDIR,'^LST_tmp_.*$','List',[0 Inf], true);
 nList = length(CleanUpDir);
@@ -153,22 +156,53 @@ if x.DELETETEMP
 end
 
 
-%% ----------------------------------------------------------
-%% 6) Remove NaNs from segmentations & fix image edges
-if xASL_exist(x.P.Path_WMH_SEGM, 'file')
-    tIM = xASL_io_Nifti2Im(x.P.Path_WMH_SEGM);
-    tIM(isnan(tIM)) = 0; % set NaNs to zeros
+FilePathsAre = {x.P.Path_WMH_SEGM, rWMHPath};
+for iFile=1:length(FilePathsAre)
+    if xASL_exist(FilePathsAre{iFile}, 'file')
+        %% ----------------------------------------------------------
+        %% 6. Remove NaNs from segmentations & fix image edges
+        WMHim = xASL_io_Nifti2Im(FilePathsAre{iFile});
+        WMHim(isnan(WMHim)) = 0; % set NaNs to zeros
 
-    tIM = xASL_im_ZeroEdges(tIM); % set edges to zero
-    xASL_io_SaveNifti(x.P.Path_WMH_SEGM, x.P.Path_WMH_SEGM, tIM, [], false);
+        WMHim = xASL_im_ZeroEdges(WMHim); % set edges to zero
+        
+        %% ----------------------------------------------------------
+        %% 7. Remove lesion masks from WMH_SEGM
+        % Here we ensure that WMH_SEGM & Lesion*.nii are mutually exclusive
+
+		LesionList = xASL_adm_GetFileList(x.SUBJECTDIR, '^Lesion_(FLAIR|T1)_\d*\.nii$', 'FPList', [0 Inf]);
+		for iLesion=1:length(LesionList)
+			[Fpath, Ffile] = xASL_fileparts(LesionList{iLesion});
+			LesionIM = xASL_io_Nifti2Im(LesionList{iLesion});
+			if sum(LesionIM(:))>0
+				fprintf('%s\n', ['>>> Warning: removing ' LesionList{iLesion} ' from ' FilePathsAre{iFile} ' <<<']);
+				if ~isequal(unique(LesionIM(:)),[0 1]')
+					warning([LesionList{iLesion} ' was not binary']);
+				end
+				
+				% Resample if needed
+				if ~isequal(size(LesionIM), size(WMHim))
+					PathTemp = fullfile(Fpath, [Ffile '_temp.nii']);
+					xASL_spm_reslice(FilePathsAre{iFile}, LesionList{iLesion}, [], [], x.Quality, PathTemp, 0);
+					LesionIM = xASL_io_Nifti2Im(PathTemp);
+				else
+					PathTemp = [];
+				end
+				
+				% Remove this lesion from WMH_SEGM
+				WMHim(logical(LesionIM)) = 0;
+				
+				% Delete the temporarily resampled file
+				if ~isempty(PathTemp)
+					xASL_delete(PathTemp);
+				end
+			end
+		end
+		
+		% Save the final WMH_SEGM mask after removing all the lesions
+		xASL_io_SaveNifti(FilePathsAre{iFile}, FilePathsAre{iFile}, WMHim, [], false);
+    end
 end
-if xASL_exist(rWMHPath, 'file')
-    tIM = xASL_io_Nifti2Im(rWMHPath);
-    tIM(isnan(tIM)) = 0; % set NaNs to zeros
-
-    tIM = xASL_im_ZeroEdges(tIM); % set edges to zero
-    xASL_io_SaveNifti(rWMHPath, rWMHPath, tIM, [], false);
-end
-
+                
 
 end

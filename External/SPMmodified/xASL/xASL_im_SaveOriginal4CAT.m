@@ -30,7 +30,7 @@ else
 	% The parameters of the CAT12 space are taken from the original space and modified
 	volCAT = spm_vol(T1Path); % Loads the parameters of the original space
 	volOriginalvoxelSize    = sqrt(sum(volCAT.mat(1:3,1:3).^2)); % calculates the voxelsize
-	volOriginalvoxelSize    = round(volOriginalvoxelSize,2); % round to two digits after the decimal point
+	volOriginalvoxelSize    = xASL_round(volOriginalvoxelSize, 2); % round to two digits after the decimal point
 
 	% Take the size of the CAT12 space and adapt the resolution
 	volCATvoxelSize   = volCAT.dim .* volOriginalvoxelSize./size(Ycls{1});
