@@ -619,9 +619,9 @@ for iSubject=1:x.nSubjects
         else
             if ~ContainsSessions % If there is no session column
                 for iN=1:length(SubjectIndex) % this debugs any erroneous double entries
-                    VC = VarContent{ SubjectIndex(iN),DataColumn};
+                    CurrentContent = VarContent{ SubjectIndex(iN),DataColumn};
                 end
-                NewVariable(iSubjSess,1) = VC(1);
+                NewVariable(iSubjSess,1) = CurrentContent(1);
             else % if there is a session column
 
                 VarContent(:,2) = strtrim(VarContent(:,2)); % remove whitespaces
@@ -629,19 +629,33 @@ for iSubject=1:x.nSubjects
                 % This code assumes 1 column for x.P.SubjectID & 1 column for x.P.SessionID SessionIndex
                 SessionIndex = xASL_adm_FindStrIndex( VarContent(SubjectIndex(:,1),SessionColumn), x.SESSIONS{iSess} );
 
-                if  isempty(SessionIndex) | SessionIndex==0 % no session data found fpr this subject/session
-                    AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
-                    CountAbsent = CountAbsent+1;
-                elseif  isnumeric(VarContent{ SubjectIndex(SessionIndex),DataColumn}) && ~isempty(VarContent{ SubjectIndex(SessionIndex),DataColumn})  % include this session
-                        nIndex = SubjectIndex(SessionIndex);
-                        for iN=1:length(nIndex) % this debugs any erroneous double entries
-                            VC = VarContent{ nIndex(iN),DataColumn};
-                        end
-                        NewVariable(iSubjSess,1) = VC(1);
+                HadValidEntrance = 0;
+                if isempty(SessionIndex) | SessionIndex==0 % no session data found for this subject/session
+                    % no valid session index
                 else
+                    nIndex = SubjectIndex(SessionIndex);
+                    if length(nIndex)>1
+                        fprintf('>>>>>>>>>>>>>>>>>>>>>>\n')
+                        fprintf(['Warning: We found multiple ' VarName ' entrances for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSess}]);
+                        fprintf('Loading latest valid index, please check results and/or change participants.tsv\n');
+                    end
+                    for iN=1:length(nIndex) % this debugs any erroneous double entries
+                        CurrentContent = VarContent{nIndex(iN),DataColumn};
+                        if ~isempty(CurrentContent) && isnumeric(CurrentContent)
+                            NewVariable(iSubjSess,1) = CurrentContent(1);
+                            HadValidEntrance = 1;
+                        end
+                    end
+                    if ~HadValidEntrance
+                        AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
+                        CountAbsent = CountAbsent+1;                            
+                    end
+                end
+
+                if ~HadValidEntrance
                     AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
                     CountAbsent = CountAbsent+1;
-                end % if isempty(index2) | index2==0
+                end
             end % if ~ContainsSessions
         end % if  max(isempty(index1) | index1==0
     end % for iSess=1:x.nSessions
