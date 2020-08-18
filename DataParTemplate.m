@@ -102,8 +102,9 @@ function x = DataParTemplate(x)
 %                                      BIDS) (REQUIRED when
 %                                      x.Q.UseControlAsM0 &
 %                                      x.Q.BackGrSupprPulses>0)
-% x.Q.SaturationTime - time in ms before the start of the readout, scalar, when the slice has been saturated (90 degree flip)
-%                    this has to come before all the bSup pulses, but doesn't need to be always specified (OPTIONAL, DEFAULT = 0)
+% x.Q.PresaturationTime - time in ms before the start of the readout, scalar, when the slice has been saturated (90 degree flip)
+%                    this has to come before all the bSup pulses, but doesn't need to be always specified 
+%                    (OPTIONAL, defaults to PLD (PASL) or PLD+LabDur ((P)CASL)
 % x.readout_dim - string specifying the readout type (REQUIRED)
 %               - options:
 %                 - '2D' for slice-wise readout

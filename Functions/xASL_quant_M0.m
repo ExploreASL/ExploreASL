@@ -90,25 +90,37 @@ if strcmp(x.M0, 'UseControlAsM0') && x.Q.BackGrSupprPulses>0
     end
     
     if ~isfield(x.Q, 'TissueT1') || isempty(x.Q.TissueT1)
-        fprintf('%s\n', 'Warning: GM T1 set to 1240 ms for 3T');
-        x.Q.TissueT1 = 1240;
+        fprintf('%s\n', 'Warning: WM T1 set to 900 ms for 3T');
+        % Here we use the WM T1, as we mask the M0 for the WM only, smooth it to a biasfield, 
+        % and then extrapolate this
+        x.Q.TissueT1 = 900;
     end
     
     if ~isfield(x.Q, 'BackgroundSuppressionPulseTime') || isempty(x.Q.BackgroundSuppressionPulseTime)
         error('x.Q.BackgroundSuppressionPulseTime is missing or empty');
-    elseif ~isfield(x.Q, 'SaturationTime') || isempty(x.Q.SaturationTime)
-        fprintf('x.Q.SaturationTime is missing or empty, assuming no pre-saturation pulse\n');
-        fprintf('Using the default value (== no pre-saturation pulse\n');
-        x.Q.SaturationTime = 0;
+    elseif ~isfield(x.Q, 'PresaturationTime') || isempty(x.Q.PresaturationTime)
+        fprintf('x.Q.PresaturationTime is missing or empty, using default value\n');
+        fprintf('This assumes that a pre-saturation pulse has been played at the start of the sequence\n');
+        switch x.Q.LabelingType
+            case 'PASL'
+                x.Q.PresaturationTime = x.Q.Initial_PLD;
+            case {'CASL' ',PCASL'}
+                x.Q.PresaturationTime = x.Q.Initial_PLD+x.Q.LabelingDuration;
+            otherwise
+                warning('Unknown labeling strategy, we dont know the presaturation timing for this');
+        end
     end
     
     % Convert from BIDS (seconds) to here (ms)
     x.Q.BackgroundSuppressionPulseTime = x.Q.BackgroundSuppressionPulseTime./1000;
-    x.Q.SaturationTime = x.Q.SaturationTime./1000;
+    x.Q.PresaturationTime = x.Q.PresaturationTime./1000;
     
-    SignalPercentage = xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, x.Q.SaturationTime, x.Q.TissueT1, SliceTime);
+    SignalPercentage = xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceTime);
     M0IM = M0IM./SignalPercentage;
     fprintf('%s\n', ['Control image divided by ' xASL_num2str(SignalPercentage) ' to correct for background suppression']);
+    fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime)]);
+    fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.TissueT1)]);
+    fprintf('%s\n\n', ['And slice timing=' xASL_num2str(SliceTime)]);
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
     
     if x.ApplyQuantification(4)==1
