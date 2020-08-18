@@ -10,29 +10,28 @@ function xASL_wrp_CreateAnalysisMask(x)
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function creates an analysis mask with the following steps:
-%              0) Create FoV mask (native & MNI spaces)
-%              1) Detect negative vascular signal (native & MNI spaces, within pGM>0.5)
-%              2) Detect peak vascular signal (native & MNI spaces, within pGM==80% percentile on ASL image)
-%              3) Brainmasking & FoV-masking (A) native & B) MNI spaces)
+%              0. Create FoV mask (native & MNI spaces)
+%              1. Detect negative vascular signal (native & MNI spaces, within pGM>0.5)
+%              2. Detect peak vascular signal (native & MNI spaces, within pGM==80% percentile on ASL image)
+%              3. Brainmasking & FoV-masking (A) native & B) MNI spaces)
 %                 - Add WM vascular parts back to the mask (defined as pWM>0.8) & remove extracranial signal
 %                   In the WM, negative or peak signal is more expected from
 %                   noise rather than from intra-vascular signal, not many
 %                   big vessels exist in the WM
-%              4) Save vascular masks
-%              5) Create susceptibility mask (standard space only)
+%              4. Save vascular masks
+%              5. Create susceptibility mask (standard space only)
 %                 Here, we combine manually segmented susceptibility artifact regions in which
 %                 a population-based susceptibility probability map is created
 %                 This map is combined (i.e. taking the product) with the mean control & PWI
 %                 intensity distribution in these regions. This product
 %                 is thresholded with the average of the 75th percentile &
 %                 15% of the intensity (for a bit more robustness against individual variability in sinus sizes).
-%              6) Create standard space CBF_masked image to visualize masking effect
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_CreateAnalysisMask(x);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 %
-%% 0) Create native space FoV mask
+%% 0. Create native space FoV mask
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
@@ -40,9 +39,9 @@ if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 
-FoVim = xASL_io_Nifti2Im(x.P.Path_CBF);
+FoVim = xASL_io_Nifti2Im(x.P.Path_PWI);
 FoVim(:) = 1;
-xASL_io_SaveNifti(x.P.Path_CBF, x.P.Path_FoV, FoVim, 8, false);
+xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_FoV, FoVim, 8, false);
 
 if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
     AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
@@ -67,23 +66,23 @@ switch lower(x.Sequence)
         ClipThresholdValue = 5; % more homogeneous image
 end
 
-%% 1) Negative vascular signal
+%% 1. Negative vascular signal
 NegativeMaskNative = xASL_im_MaskNegativeVascularSignal(x, 1); % native space
 NegativeMaskMNI = xASL_im_MaskNegativeVascularSignal(x, 2); % standard space
 NegativeMaskNative = xASL_im_DilateErodeFull(NegativeMaskNative,'dilate',xASL_im_DilateErodeSphere(1));
 NegativeMaskMNI = xASL_im_DilateErodeFull(NegativeMaskMNI,'dilate',xASL_im_DilateErodeSphere(1));
 
-%% 2) Detect peak vascular signal
+%% 2. Detect peak vascular signal
 if xASL_exist(x.P.Path_rM0,'file')
-    PositiveMaskNative = xASL_im_MaskPeakVascularSignal(x.P.Path_CBF, x.P.Path_rM0, [], ClipThresholdValue);
-    PositiveMaskMNI = xASL_im_MaskPeakVascularSignal(x.P.Pop_Path_qCBF, x.P.Pop_Path_M0, [], ClipThresholdValue);
+    PositiveMaskNative = xASL_im_MaskPeakVascularSignal(x.P.Path_PWI, x.P.Path_rM0, [], ClipThresholdValue);
+    PositiveMaskMNI = xASL_im_MaskPeakVascularSignal(x.P.Pop_Path_PWI, x.P.Pop_Path_M0, [], ClipThresholdValue);
 else
-    PositiveMaskNative = xASL_im_MaskPeakVascularSignal(x.P.Path_CBF, [], ClipThresholdValue); % no M0
-    PositiveMaskMNI = xASL_im_MaskPeakVascularSignal(x.P.Pop_Path_qCBF, [], ClipThresholdValue); % no M0
+    PositiveMaskNative = xASL_im_MaskPeakVascularSignal(x.P.Path_PWI, [], ClipThresholdValue); % no M0
+    PositiveMaskMNI = xASL_im_MaskPeakVascularSignal(x.P.Pop_Path_PWI, [], ClipThresholdValue); % no M0
 end
 PositiveMaskMNI = xASL_im_DilateErodeFull(PositiveMaskMNI,'dilate',xASL_im_DilateErodeSphere(1));
 
-%% 3A) Brainmasking & FoV-masking native space
+%% 3A. Brainmasking & FoV-masking native space
 % Use previously created smoothed PGM images
 pGM = xASL_io_Nifti2Im(x.P.Path_PVgm);
 pWM = xASL_io_Nifti2Im(x.P.Path_PVwm);
@@ -95,7 +94,7 @@ MaskVascularNative(~BrainMask) = 0; % Remove extracranial (same setting as in RO
 MaskVascularNative(pWM>0.8) = 1; % Remove WM vascular spots
 MaskVascularNative(pCSF>0.8) = 1; % Remove WM vascular spots
 
-%% 3B) Brainmasking & FoV-masking standard space
+%% 3B. Brainmasking & FoV-masking standard space
 pGM = xASL_io_Nifti2Im(x.P.Pop_Path_rc1T1);
 pWM = xASL_io_Nifti2Im(x.P.Pop_Path_rc2T1);
 pCSF = xASL_io_Nifti2Im(x.P.Pop_Path_rc3T1);
@@ -107,11 +106,11 @@ MaskVascularMNI(~BrainMask) = 0; % Remove extracranial & FoVim
 MaskVascularMNI(pWM>0.9) = 1; % Remove WM vascular spots
 MaskVascularMNI(pCSF>0.9) = 1; % Remove CSF vascular spots
 
-%% 4) Save vascular masks
-xASL_io_SaveNifti(x.P.Path_CBF, x.P.Path_MaskVascular, MaskVascularNative, 8, false);
-xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_MaskVascular, MaskVascularMNI, 8, false);
+%% 4. Save vascular masks
+xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_MaskVascular, MaskVascularNative, 8, false);
+xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_MaskVascular, MaskVascularMNI, 8, false);
 
-%% 5) Create susceptibility mask in standard space
+%% 5. Create susceptibility mask in standard space
 if DoSusceptibility
 	
     if xASL_exist(x.P.Pop_Path_noSmooth_M0)
@@ -123,7 +122,7 @@ if DoSusceptibility
         warning('Please check your susceptibility mask(s), we could only create it with the PWI, no M0 or control image available');
     end
     
-     if prod(size(ControlIm))~=1
+     if numel(ControlIm)~=1
          ControlIm = xASL_im_ndnanfilter(ControlIm, 'gauss',[2 2 2]);
      end
     
@@ -177,12 +176,5 @@ if DoSusceptibility
      xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.PathPop_MaskSusceptibility, MaskSusceptibility, [], false);
 end
 
-%% 6) Create standard space masked image to visualize masking effect
-MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
-MaskedCBF(~MaskVascularMNI) = NaN;
-if DoSusceptibility
-    MaskedCBF(~MaskSusceptibility) = NaN;
-end
-xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_CBF_Masked, MaskedCBF, [], false);
 
 end

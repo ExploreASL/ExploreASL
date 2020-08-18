@@ -17,24 +17,25 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule converts PWIs to quantified CBF maps (or related derivatives):
 %
-%           1) Load PWI
-%           2) Prepare M0
-%           3) Hematocrit & blood T1 correction
-%           4) ASL & M0 parameters comparisons
-%           5) Load SliceGradient
-%           6) Initialize & define quantification parameters
-%           7) Define labeling efficiency
-%           8) Perform quantification
-%           9) Save files
-%          10) Perform FEAST quantification (if exist)
+%           1. Load PWI
+%           2. Prepare M0
+%           3. Hematocrit & blood T1 correction
+%           4. ASL & M0 parameters comparisons
+%           5. Load SliceGradient
+%           6. Initialize & define quantification parameters
+%           7. Define labeling efficiency
+%           8. Perform quantification
+%           9. Save files
+%          10. Perform FEAST quantification (if exist)
+%          11. Create standard space masked image to visualize masking effect
 %
 % EXAMPLE: xASL_wrp_Quantify(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 0)   Administration
+%% 0.   Administration
 
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
@@ -70,7 +71,7 @@ if ~isfield(x, 'ApplyQuantification') || isempty(x.ApplyQuantification)
 end
 
 %% ------------------------------------------------------------------------------------------------
-%% 1    Load PWI
+%% 1.   Load PWI
 fprintf('%s\n','Loading PWI & M0 images');
 
 % Load ASL PWI
@@ -96,7 +97,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 2    Prepare M0
+%% 2.   Prepare M0
 if isnumeric(x.M0)
         % Single value per scanner
         % In this case we assume that this nifti value has been properly acquired,
@@ -151,7 +152,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 3    Hematocrit & blood T1 correction
+%% 3.   Hematocrit & blood T1 correction
 if isfield(x,'Hematocrit')
         x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit);
 elseif isfield(x,'hematocrit')
@@ -162,7 +163,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
+%% 4).  ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
 if strcmp(x.M0,'separate_scan')
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
         % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
@@ -198,7 +199,7 @@ if ~x.ApplyQuantification(3) % if conversion PWI for label units is not requeste
 else
 
     %% ------------------------------------------------------------------------------------------------
-    %% 5    Load SliceGradient
+    %% 5.   Load SliceGradient
     if  strcmp(x.readout_dim,'2D')
         SliceGradient = xASL_io_Nifti2Im(SliceGradientPath);
     else
@@ -207,7 +208,7 @@ else
 
 
     %% ------------------------------------------------------------------------------------------------
-    %% 6    Initialize quantification parameters
+    %% 6.   Initialize quantification parameters
     if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments) || x.Q.nCompartments>2
         x.Q.nCompartments = 1; % by default, we use a single-compartment model, as proposed by the Alsop et al. MRM 2014 concensus paper
     end
@@ -246,7 +247,7 @@ else
     end
 
 
-    %% 7    Labeling efficiency
+    %% 7.   Labeling efficiency
     if ~isfield(x.Q,'LabelingEfficiency') || isempty(x.Q.LabelingEfficiency)
         if ~isfield(x.Q,'LabelingEfficiency')
             switch x.Q.LabelingType
@@ -275,7 +276,7 @@ else
 end
     
 %% ------------------------------------------------------------------------------------------------
-%% 8    Perform Quantification
+%% 8.   Perform Quantification
 [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x);
 
 if x.ApplyQuantification(5)==0
@@ -291,7 +292,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 9	Save files
+%% 9.	Save files
 
 fprintf('%s\n','Saving PWI & CBF niftis');
 
@@ -300,9 +301,22 @@ xASL_io_SaveNifti(PWI_Path, OutputPath, CBF, 32, 0);
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 10    FEAST quantification
+%% 10.   FEAST quantification
 % run FEAST quantification if crushed & non-crushed ASL sessions exist
 xASL_quant_FEAST(x);
+
+
+%% ------------------------------------------------------------------------------------------------
+%% 11.  Create standard space masked image to visualize masking effect
+if strcmp(OutputPath, x.P.Pop_Path_qCBF)
+    x.P.Pop_Path_CBF_Masked = fullfile(x.D.PopDir, ['qCBF_masked_' x.P.SubjectID '_' x.P.SessionID '.nii']);
+    MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
+    MaskedCBF(~MaskVascularMNI) = NaN;
+    if DoSusceptibility
+        MaskedCBF(~MaskSusceptibility) = NaN;
+    end
+    xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_CBF_Masked, MaskedCBF, [], false);
+end
 
 
 end
