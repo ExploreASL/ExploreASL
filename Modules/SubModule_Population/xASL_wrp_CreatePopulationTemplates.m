@@ -310,7 +310,7 @@ for iScanType=1:length(PreFixList)
                         end
 
                         % create the maps
-                        NameIM = [TemplateNameList{iScanType} '_n=' num2str(length(NotOutliers))];
+                        NameIM = [TemplateNameList{iScanType} '_n' num2str(length(NotOutliers))];
                         xASL_wrp_CreatePopulationTemplates_ComputeParametricIm(IM(:,NotOutliers),NameIM, x, FunctionsAre, true);
 
                         if bSaveUnmasked
@@ -434,7 +434,7 @@ for iU=1:length(UniqueSet) % iterate over the options/categories of this set
             end
 
             % compute maps
-            NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Sets2Check(iSet)} '_' SetOptions{UniqueSet(iU)} '_n=' num2str(length(NotOutliers))];
+            NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Sets2Check(iSet)} '_' SetOptions{UniqueSet(iU)} '_n' num2str(length(NotOutliers))];
             xASL_wrp_CreatePopulationTemplates_ComputeParametricIm(IM(:,NotOutliers), NameIM, x, FunctionsAre, true);
             if bSaveUnmasked
                 IM2noMask = IM2noMask(:,:,:,WithinGroup);
