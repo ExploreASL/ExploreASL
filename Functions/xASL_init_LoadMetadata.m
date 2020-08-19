@@ -146,11 +146,7 @@ function [x] = xASL_init_LoadMetadata(x)
                     else % x.S.SetsID contains category number
                         % x.S.SetsOptions has the name of the category
                         if isfinite(x.S.SetsID(iSubjectSession,iSet))
-                            try
-                                VarData{iSubjectSession,3} = x.S.SetsOptions{iSet}{x.S.SetsID(iSubjectSession,iSet)};
-                            catch
-                                
-                            end
+                            VarData{iSubjectSession,3} = x.S.SetsOptions{iSet}{x.S.SetsID(iSubjectSession,iSet)};
                         else
                             VarData{iSubjectSession,3} = 'n/a';
                         end
