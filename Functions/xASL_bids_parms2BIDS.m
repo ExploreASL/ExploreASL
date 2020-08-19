@@ -49,9 +49,11 @@ end
 %% ----------------------------------------------------------------------
 %% 1) Define field names that need to be convert/renamed/merged
 
-% Fields with these names need to have the time converted between XASL and BIDS
+% Fields with these names need to have the time converted between XASL and BIDS, and define their recommended range in ms
 convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'BloodT1'};
-
+convertTimeFieldsRange = [0.5        5                10            5                  5                  100 ;...% Minimum in ms
+                          500        20000            10000         5000               400                5000];% Maximum in ms   
+					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'};
 
@@ -87,6 +89,15 @@ if ~isempty(inXasl)
 			
 			% Convert the units for all time fields from ms to s
 			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
+				% For non-zero fields, check if they are within the predefined range
+				if inXasl.(FieldsA{iA}) ~= 0
+					% If outside of the recommended range, then still convert, but issue a warning
+					if inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT) || inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT)
+						warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' num2str(inXasl.(FieldsA{iA}))...
+							', which is outside of the recommended range <'...
+							num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+					end
+				end
 				inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
 			end
 			
@@ -127,14 +138,27 @@ if ~isempty(inBids)
 		FieldsA = fields(inBids);
 		for iA = 1:length(FieldsA)
 			% Rename all listed fields to XASL variant
+			FieldNameChanged = FieldsA{iA};
 			for iL = find(strcmp(FieldsA{iA},changeNamesBIDS))
 				inBids.(changeNamesXASL{iL}) = inBids.(changeNamesBIDS{iL});
 				inBids = rmfield(inBids,changeNamesBIDS{iL});
+				% Update the name of the field after the change
+				FieldNameChanged = changeNamesXASL{iL};
 			end
 			
 			% Convert the units for all time fields from s to ms
-			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
-				inBids.(FieldsA{iA}) = inBids.(FieldsA{iA})*1000;
+			for iT = find(strcmp(FieldNameChanged,convertTimeFieldsXASL))
+				inBids.(FieldNameChanged) = inBids.(FieldNameChanged)*1000;
+				
+				% Check if the value is within the recommended range after conversion and issue a warning if not
+				if inBids.(FieldNameChanged) ~= 0
+					if inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT) || inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT)
+						warning(['Field ' FieldNameChanged ' in xASL structure has a value ' num2str(inBids.(FieldNameChanged))...
+							', which is outside of the recommended range <'...
+							num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+					end
+				end
+				
 			end
 		end
 	end
@@ -186,8 +210,8 @@ if bOutBids ~= 1
 	FieldsA = fields(outParms);
 	for iA = 1:length(FieldsA)
 		for iL = find(strcmp(FieldsA{iA},xASLqFields))
-			outParms.Q.(FieldsA{iL}) = outParms.(FieldsA{iL});
-			% outParms = rmfield(outParms,FieldsA{iL});
+			outParms.Q.(xASLqFields{iL}) = outParms.(xASLqFields{iL});
+			outParms = rmfield(outParms,xASLqFields{iL});
 		end
 	end
 end
