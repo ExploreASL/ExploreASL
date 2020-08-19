@@ -40,8 +40,16 @@ end
 
 if PresaturationTime
 	if min(PresaturationTime > BSupTime) == 0
-		error('PresaturationTime has to be longer than all BSupTimes');
+		warning('PresaturationTime has to be longer than all BSupTimes');
 	end
+end
+
+% Check order of magnitude
+if PresaturationTime<500
+    warning(['PresaturationTime=' num2str(PresaturationTime) ', seems invalid']);
+end
+if BSupTime<5
+    warning(['Invalid BSupTime of ' num2str(BSupTime) ', seems invalid']);
 end
 
 if nargin < 3 || isempty(T1Time)

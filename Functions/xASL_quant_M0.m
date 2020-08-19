@@ -110,17 +110,26 @@ if strcmp(x.M0, 'UseControlAsM0') && x.Q.BackGrSupprPulses>0
                 warning('Unknown labeling strategy, we dont know the presaturation timing for this');
         end
     end
-    
-    % Convert from BIDS (seconds) to here (ms)
-    x.Q.BackgroundSuppressionPulseTime = x.Q.BackgroundSuppressionPulseTime./1000;
-    x.Q.PresaturationTime = x.Q.PresaturationTime./1000;
-    
+
     SignalPercentage = xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceTime);
-    M0IM = M0IM./SignalPercentage;
-    fprintf('%s\n', ['Control image divided by ' xASL_num2str(SignalPercentage) ' to correct for background suppression']);
+    
+    if strcmp(x.readout_dim, '2D')
+        for iSlice=1:size(M0IM,3)
+            M0IM(:,:,iSlice) = M0IM(:,:,iSlice)./SignalPercentage(iSlice);
+        end
+    else
+        M0IM = M0IM./SignalPercentage;
+    end
+    
+    fprintf('Control image divided by ');
+    if strcmp(x.readout_dim, '2D')
+        fprintf('for the average slice ');
+    end
+    
+    fprintf('%s\n', [xASL_num2str(mean(SignalPercentage)) ' to correct for background suppression']);
     fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime)]);
     fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.TissueT1)]);
-    fprintf('%s\n\n', ['And slice timing=' xASL_num2str(SliceTime)]);
+    fprintf('%s\n\n', ['And SliceReadoutTime=' xASL_num2str(SliceTime)]);
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
     
     if x.ApplyQuantification(4)==1
