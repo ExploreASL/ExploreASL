@@ -102,7 +102,7 @@ function [x] = xASL_init_LoadMetadata(x)
     %% 
     %% -----------------------------------------------------------------------------------------------
     %% Add stats in participants.tsv
-    MatsDetected = ~isempty(xASL_adm_GetFileList(x.D.ROOT, '.*\.mat$', 'FPList', [0 Inf]));
+    MatsDetected = ~isempty(xASL_adm_GetFileList(x.D.ROOT, '^(?!x)(?!xASL)(?!dcm2niiCatchedErrors)).*\.mat$', 'FPList', [0 Inf]));
     bCreateParticipantsTsv = 0;
     
     if MatsDetected
@@ -146,7 +146,11 @@ function [x] = xASL_init_LoadMetadata(x)
                     else % x.S.SetsID contains category number
                         % x.S.SetsOptions has the name of the category
                         if isfinite(x.S.SetsID(iSubjectSession,iSet))
-                            VarData{iSubjectSession,3} = x.S.SetsOptions{iSet}{x.S.SetsID(iSubjectSession,iSet)};
+                            try
+                                VarData{iSubjectSession,3} = x.S.SetsOptions{iSet}{x.S.SetsID(iSubjectSession,iSet)};
+                            catch
+                                
+                            end
                         else
                             VarData{iSubjectSession,3} = 'n/a';
                         end
@@ -238,7 +242,7 @@ function [x] = xASL_init_LoadMat(x)
     % (visit), session (run), cohort etc.
     SiteMat = fullfile(x.D.ROOT, 'Site.mat');
 
-    FileList = xASL_adm_GetFileList(x.D.ROOT, '.*\.mat$','FPList', [0 Inf]);
+    FileList = xASL_adm_GetFileList(x.D.ROOT, '^(?!x)(?!xASL)(?!dcm2niiCatchedErrors)).*\.mat$','FPList', [0 Inf]);
 
     if exist(SiteMat,'file')
         FList{1} = SiteMat;
@@ -249,23 +253,20 @@ function [x] = xASL_init_LoadMat(x)
 
     for iL=1:length(FList)
         [~, FileName] = fileparts(FList{iL});
-        if strcmp(FileName,'x') || strcmp(FileName,'xASL') || strcmp(FileName,'dcm2niiCatchedErrors')
-            % Skip this variable, is part of ExploreASL functionality
-        else
-            VarName = FileName;
-            VarOptions = {FileName};
-            VarSample = 2; % (datatype, 0=one-sample, 1=paired, 2=two-sample, 3=continuous
-            % Here, we assume that the datatype is two-sample. The script below
-            % "AddStatisticalVariable" will automatically change this into a
-            % continuous variable if length(unique)>5
 
-            MatContent = load(FList{iL});
-            if isfield(MatContent,FileName)
-                VarContent  = MatContent.(FileName);
-                x = xASL_init_AddVariable(x, VarName, VarContent, VarOptions, VarSample);
-            else
-                fprintf('%s\n',['mat-file ' FileName '.mat did not contain stats variable equal to variable name & was skipped']);
-            end
+        VarName = FileName;
+        VarOptions = {FileName};
+        VarSample = 2; % (datatype, 0=one-sample, 1=paired, 2=two-sample, 3=continuous
+        % Here, we assume that the datatype is two-sample. The script below
+        % "AddStatisticalVariable" will automatically change this into a
+        % continuous variable if length(unique)>5
+
+        MatContent = load(FList{iL});
+        if isfield(MatContent,FileName)
+            VarContent  = MatContent.(FileName);
+            x = xASL_init_AddVariable(x, VarName, VarContent, VarOptions, VarSample);
+        else
+            fprintf('%s\n',['mat-file ' FileName '.mat did not contain stats variable equal to variable name & was skipped']);
         end
     end
 
@@ -431,11 +432,11 @@ CountString = 0;
 CountNumber = 0;
 
 for iN=1:length(TempDataList)
-        if isstr(TempDataList{iN})
-                CountString = CountString+1;
-        elseif  isnumeric(TempDataList{iN})
-                CountNumber = CountNumber+1;
-        end
+    if isstr(TempDataList{iN})
+            CountString = CountString+1;
+    elseif  isnumeric(TempDataList{iN})
+            CountNumber = CountNumber+1;
+    end
 end
 
 if CountString>0 && CountNumber>0 % if both strings & number exists
@@ -448,12 +449,12 @@ end
 try 
     DataOptionList = unique(TempDataList);
 catch
-        % this workaround is here because "unique" doesnt accept
-        % cells with numbers, only numbers or cells with strings
-        for iD=1:length(TempDataList)
-            NumericDataList(iD) = TempDataList{iD};
-        end
-        DataOptionList = unique(NumericDataList);
+    % this workaround is here because "unique" doesnt accept
+    % cells with numbers, only numbers or cells with strings
+    for iD=1:length(TempDataList)
+        NumericDataList(iD) = TempDataList{iD};
+    end
+    DataOptionList = unique(NumericDataList);
 end
 
 DataOptionList = sort(DataOptionList);
@@ -482,37 +483,37 @@ end
 
 
 
-% B) If data are numbers hidden in strings, convert to numbers
-%    Else, convert strings to ordinal numbers
-for iNum=1:size(VarContent,1)
-    if  islogical(VarContent{iNum,DataColumn})
-        if  VarContent{iNum,DataColumn}==0
-            VarContent{iNum,DataColumn} = 0;
-        else
-            VarContent{iNum,DataColumn} = 1;
-        end
-    elseif ~isnumeric(VarContent{iNum,DataColumn})
-        try
-            VarDataIs = str2num(VarContent{iNum, DataColumn});
-        catch ME
-            fprintf('%s\n', ME.message);
-            error(['Covariant data of ' VarName ' were not numbers?']);
-            
-        end
-
-        if  isempty(VarDataIs)
-            % Assume that data are strings, so take unique strings & assign numbers to them
-            VarDataIs = find(strcmp(DataOptionList,VarContent{iNum,DataColumn}));
-         end
-
-        try
-            VarContent{iNum,DataColumn} = VarDataIs;
-        catch ME
-            fprintf('%s\n', ME.message);
-            error(['Covariant data of ' VarName ' were not numbers?']);
-        end                
-    end
-end
+% % B) If data are numbers hidden in strings, convert to numbers
+% %    Else, convert strings to ordinal numbers
+% for iNum=1:size(VarContent,1)
+%     if  islogical(VarContent{iNum,DataColumn})
+%         if  VarContent{iNum,DataColumn}==0
+%             VarContent{iNum,DataColumn} = 0;
+%         else
+%             VarContent{iNum,DataColumn} = 1;
+%         end
+%     elseif ~isnumeric(VarContent{iNum,DataColumn})
+%         try
+%             VarDataIs = str2num(VarContent{iNum, DataColumn});
+%         catch ME
+%             fprintf('%s\n', ME.message);
+%             error(['Covariant data of ' VarName ' were not numbers?']);
+%             
+%         end
+% 
+%         if  isempty(VarDataIs)
+%             % Assume that data are strings, so take unique strings & assign numbers to them
+%             VarDataIs = find(strcmp(DataOptionList,VarContent{iNum,DataColumn}));
+%          end
+% 
+%         try
+%             VarContent{iNum,DataColumn} = VarDataIs;
+%         catch ME
+%             fprintf('%s\n', ME.message);
+%             error(['Covariant data of ' VarName ' were not numbers?']);
+%         end                
+%     end
+% end
 
 
 
@@ -521,14 +522,14 @@ end
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 4) Distinguish continous data (e.g. age) or ordinal data (groups to compare, e.g. cohort)
-% A) Force continuous data for known parameters
+%% 4A) Force continuous data for known parameters
 ListContinuousData = {'AcquisitionTime' 'age' 'MeanMotion' 'GM_vol' 'WM_vol' 'CSF_vol' 'GMWM_ICVRatio' 'GM_ICVRatio' 'WMH_count' 'WMH_vol'...
     'CBF_spatial_CoV' 'CBF_spatial_CoV_norm' 'PseudoCBF_spatial_CoV' 'Yrs_AAO' 'Hematocrit' 'SliceReadoutTime' 'AcquisitionTime' 'Inititial_PLD'...
     'LabelingEfficiency' 'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'...
     'Blood_T1art' 'GM','deep_WM','WholeBrain','L-ICA','R-ICA','POS','Caudate','Cerebellum','Frontal','Insula','Occipital','Parietal','Putamen'...
     'Temporal','Thalamus','ACA_1','ACA_2','ACA_3','MCA_1','MCA_2','MCA_3','PCA_1','PCA_2','PCA_3','ACA_bilat','MCA_bilat','PCA_bilat','WMH','NAWM'};
 
- % this is a list of known variables that will never be ordinal, always continuous
+% this is a list of known variables that will never be ordinal, always continuous
 % Check if current VarName is one of these
 
 DataIsContinuous = ~isempty(find(strcmp(lower(ListContinuousData),lower(VarName))));
@@ -540,10 +541,9 @@ if DataIsContinuous
 end
 
 
-% B) If data are considered ordinal
+%% 4B) If data are considered ordinal, convert data to indices
 if length(DataOptionList)<MaxNumOrdinalOptions && ~isempty(DataOptionList) && ~DataIsContinuous
     %% Specify variable options, only if the variate is ordinal
-   
     if isnumeric(DataOptionList)
         for iD=1:length(DataOptionList)
             VarOptions{iD} = num2str(DataOptionList(iD));
@@ -554,31 +554,44 @@ if length(DataOptionList)<MaxNumOrdinalOptions && ~isempty(DataOptionList) && ~D
 
     VarSample = 2; % independent samples
     
-    
     % If data are categorical numbers, but still not ordinal numbers, convert to ordinal numbers
     % This is required because only integer numbers>0 can be indices
-    % This will also avoid zeros (by adding 1), since 0's are no valuable index
-    if isnumeric(DataOptionList)
-        if ~min(DataOptionList==[1:1:length(DataOptionList)]) % if numbers are not continuous integers (== ordinal sequence)
-            for iNum=1:size(VarContent,1)
-                for iD=1:length(DataOptionList)
-                    if VarContent{iNum,DataColumn}==DataOptionList(iD)
-                        % this doesn't work for NaNs, hence the
-                        % elseif statement
-                        VarDataIs = iD;
-                    elseif isempty(VarContent{iNum,DataColumn})
-                        % do nothing, this will stay empty
-                    elseif isnan(VarContent{iNum,DataColumn}) && isnan(DataOptionList(iD))
-                        % the NaN will become an option that gets
-                        % a unique ID, just as any other DataOption
-                        VarDataIs = iD;
+    % This will also avoid zeros, since 0's are no valuable index
+    if ~isnumeric(DataOptionList) || ~min(DataOptionList==1:length(DataOptionList)) % if numbers are not continuous integers (== ordinal sequence)
+        if isnumeric(DataOptionList)
+            % we convert the option list to cell
+            CurrentOptionList = num2cell(DataOptionList);
+        else
+            % we convert any string values to numeric if they are numerical
+            CurrentOptionList = xASL_str2num(DataOptionList, 1, 0);
+        end        
+        
+        for iNum=1:size(VarContent,1)
+            if isempty(VarContent{iNum,DataColumn})
+                % do nothing, this will stay empty
+            else % find the corresponding DataOption, to provide this as index
+                CurrentVarContent = VarContent{iNum,DataColumn};
+                if ~isnumeric(CurrentVarContent) && ~isnan(xASL_str2num(CurrentVarContent))
+                    % convert to numerical if appropriate
+                    CurrentVarContent = xASL_str2num(CurrentVarContent);
+                end
+                
+                if isnumeric(CurrentVarContent)
+                    NumericalIndices = find(cellfun(@(y) isnumeric(y), CurrentOptionList));
+                    if isnan(CurrentVarContent)
+                        IndexIs = find(cellfun(@(y) isnan(y), CurrentOptionList(NumericalIndices)));
+                    else
+                        IndexIs = find(cellfun(@(y) CurrentVarContent==y, CurrentOptionList(NumericalIndices)));
                     end
-                end
-                if ~exist('VarDataIs', 'var') || isempty(VarDataIs)
-                    VarContent{iNum,DataColumn} = [];
+                    CurrentVarContent = NumericalIndices(IndexIs);
+                elseif ischar(CurrentVarContent)
+                    StringIndices = find(cellfun(@(y) ischar(y), CurrentOptionList));
+                    IndexIs = find(cellfun(@(y) strcmp(CurrentVarContent, y), CurrentOptionList(StringIndices)));
+                    CurrentVarContent = StringIndices(IndexIs);
                 else
-                    VarContent{iNum,DataColumn} = VarDataIs;
+                    CurrentVarContent = [];
                 end
+                VarContent{iNum,DataColumn} = CurrentVarContent;
             end
         end
     end
@@ -612,16 +625,17 @@ for iSubject=1:x.nSubjects
         % SubjectIndex
         SubjectIndex = xASL_adm_FindStrIndex(VarContent(:,1), x.SUBJECTS{iSubject});
 
-        if  max(isempty(SubjectIndex) | SubjectIndex==0) % if this subject couldn't be found in variable data
+        if max(isempty(SubjectIndex) | SubjectIndex==0) % if this subject couldn't be found in variable data
             AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
             CountAbsent = CountAbsent+1;                    
 
         else
             if ~ContainsSessions % If there is no session column
-                for iN=1:length(SubjectIndex) % this debugs any erroneous double entries
-                    CurrentContent = VarContent{ SubjectIndex(iN),DataColumn};
+                VC = VarContent{SubjectIndex,DataColumn}; % this debugs any erroneous double entries
+                if ~isempty(VC)
+                    NewVariable(iSubjSess,1) = VC(1);
                 end
-                NewVariable(iSubjSess,1) = CurrentContent(1);
+
             else % if there is a session column
 
                 VarContent(:,2) = strtrim(VarContent(:,2)); % remove whitespaces
@@ -629,33 +643,23 @@ for iSubject=1:x.nSubjects
                 % This code assumes 1 column for x.P.SubjectID & 1 column for x.P.SessionID SessionIndex
                 SessionIndex = xASL_adm_FindStrIndex( VarContent(SubjectIndex(:,1),SessionColumn), x.SESSIONS{iSess} );
 
-                HadValidEntrance = 0;
-                if isempty(SessionIndex) | SessionIndex==0 % no session data found for this subject/session
-                    % no valid session index
-                else
-                    nIndex = SubjectIndex(SessionIndex);
-                    if length(nIndex)>1
-                        fprintf('>>>>>>>>>>>>>>>>>>>>>>\n')
-                        fprintf(['Warning: We found multiple ' VarName ' entrances for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSess}]);
-                        fprintf('Loading latest valid index, please check results and/or change participants.tsv\n');
-                    end
-                    for iN=1:length(nIndex) % this debugs any erroneous double entries
-                        CurrentContent = VarContent{nIndex(iN),DataColumn};
-                        if ~isempty(CurrentContent) && isnumeric(CurrentContent)
-                            NewVariable(iSubjSess,1) = CurrentContent(1);
-                            HadValidEntrance = 1;
-                        end
-                    end
-                    if ~HadValidEntrance
-                        AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
-                        CountAbsent = CountAbsent+1;                            
-                    end
-                end
-
-                if ~HadValidEntrance
+                if isempty(SessionIndex) || SessionIndex==0 % no session data found for this subject/session
                     AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
                     CountAbsent = CountAbsent+1;
-                end
+                else
+                    CurrentVarContent = xASL_str2num(VarContent{ SubjectIndex(SessionIndex),DataColumn});
+                    if ~isnan(CurrentVarContent) && ~isempty(CurrentVarContent)
+
+                        nIndex = SubjectIndex(SessionIndex);
+                        VC = VarContent{nIndex, DataColumn}; % this debugs any erroneous double entries
+                        if ~isempty(VC)
+                            NewVariable(iSubjSess,1) = VC(1);
+                        end
+                    else
+                        AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
+                        CountAbsent = CountAbsent+1;
+                    end % if ~isnan(CurrentVarContent) && ~isempty(CurrentVarContent)
+                end % if isempty(index2) | index2==0
             end % if ~ContainsSessions
         end % if  max(isempty(index1) | index1==0
     end % for iSess=1:x.nSessions
