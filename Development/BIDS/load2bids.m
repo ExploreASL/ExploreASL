@@ -10,7 +10,8 @@ finalPath = [baseDir 'BIDSfinal']; % Takes files in NIFTI+JSON from outputPath a
 anonymPath = [baseDir 'BIDSanonymized']; % Takes files in NIFTI+JSON from outputPath and saves the complete BIDS format to finalPath
 
 lRMFields = {'InstitutionName' 'InstitutionalDepartmentName' 'InstitutionAddress' 'DeviceSerialNumber' 'StationName' 'ProcedureStepDescription' 'SeriesDescription' 'ProtocolName'...
-	         'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'UsePhilipsFloatNotDisplayScaling'...
+	         'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'UsePhilipsFloatNotDisplayScaling',...
+			 'RWVSlope' 'PhilipsRWVIntercept',...
 			 'RescaleSlopeOriginal' 'RescaleSlope'    'MRScaleSlope'      'RescaleIntercept',... % Fields to exclude
 			 'Modality', 'ImagingFrequency', 'PatientPosition','MRAcquisitionType','ImageType','PhaseEncodingPolarityGE',... % Additional fields to remove by Patricia
 			 'SeriesNumber','AcquisitionTime','AcquisitionNumber','SliceThickness','SpacingBetweenSlices','SAR',...
@@ -285,6 +286,13 @@ for ii = 1:length(fList)
 			importStr{ii}.par.BackgroundSuppressionPulseTime = [0.85 0.1];
 			importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
 				
+		case 'Philips_PCASL_3DGRASE_Divers'
+			importStr{ii}.par.Units = 'mL/100g/min';
+			%importStr{ii}.par.ASLContext = cbfStr;
+			importStr{ii}.par.ASLContext = sprintf('%s\n',cbfStr);
+			importStr{ii}.par.LabelingType = 'PCASL';
+			importStr{ii}.par.NumberSegments = 5;
+			
 		case 'Siemens_PASL_singleTI_GIFMI'
 			importStr{ii}.par.ASLContext = sprintf('%s\n',m0scanStr);
 			for cc = 1:45,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
@@ -351,9 +359,12 @@ for ii = 1:length(fList)
 			for cc = 1:32, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
-		case {'Philips_PCASL_2DEPI_intera_FIND','Philips_PCASL_2DEPI_Ingenia_FIND','Philips_PCASL_2DEPI_intera_FIND_LL','Philips_PCASL_2DEPI_intera_FIND_multiPLD','Philips_PCASL_2DEPI_intera_FIND_QUASAR'}
+		case {'Philips_PCASL_2DEPI_intera_FIND','Philips_PCASL_2DEPI_Ingenia_FIND'}
 			%importStr{ii}.par.ASLContext = '(Label+Control)*75';
 			for cc = 1:75, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			importStr{ii}.par.LabelingType = 'PCASL';
+			
+		case {'Philips_PCASL_2DEPI_intera_FIND_LL' 'Philips_PCASL_2DEPI_intera_FIND_multiPLD' 'Philips_PCASL_2DEPI_intera_FIND_QUASAR'}
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case {'Philips_PCASL_2DEPI_Achieva_Bsup_GENFI','Philips_PCASL_2DEPI_Achieva_noBsup_GENFI'}
@@ -408,7 +419,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',m0scanStr,cbfStr);
 			importStr{ii}.par.LabelingType = 'PCASL';
 		
-		case {'Philips_PCASL_3DGRASE_Divers', 'GE_PCASL_3Dspiral_WIP_Oslo_AntiPsychotics_Old',...
+		case {'GE_PCASL_3Dspiral_WIP_Oslo_AntiPsychotics_Old',...
 			  'Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar'}
 			importStr{ii}.par.Units = 'mL/100g/min';
 			%importStr{ii}.par.ASLContext = cbfStr;
@@ -811,6 +822,26 @@ for ii = 1:length(fList)
 					end
 				end
 				
+				if isfield(jsonLocal,'EffectiveEchoSpacing')
+					if jsonLocal.EffectiveEchoSpacing == 0
+						jsonLocal = rmfield(jsonLocal,'EffectiveEchoSpacing');
+					else
+						jsonLocal.EffectiveEchoSpacing = abs(jsonLocal.EffectiveEchoSpacing);
+					end
+				end
+				
+				if isfield(jsonLocal,'TotalReadoutTime')
+					if jsonLocal.TotalReadoutTime == 0
+						jsonLocal = rmfield(jsonLocal,'TotalReadoutTime');
+					else
+						jsonLocal.TotalReadoutTime = abs(jsonLocal.TotalReadoutTime);
+					end
+				end
+				
+				if isfield(importStr{ii}.x,'RepetitionTime')
+					jsonLocal.RepetitionTime = importStr{ii}.x.RepetitionTime;
+				end
+									
 				% Fill in the number of averages
 				%ppStr = importStr{ii}.dirName;
 				%if isfield(importStr{ii}.par,'TotalAcquiredVolumes')
@@ -990,18 +1021,51 @@ for ii = 1:length(fList)
 							end
 							
 							if isfield(jsonLocal,'SliceTiming')
-								jsonM0Write.SliceTiming = jsonLocal.SliceTiming;
+								% Issue a warning if the SliceTiming was already existing for M0, but still overwrite with ASL one
+								if isfield(jsonM0Write,'SliceTiming')
+									warning('SliceTiming already existed for M0, overwriting with ASL');
+								end
+								
+								if size(imNii,3) == size(imM0,3)
+									% Either copy if the save number of slices in M0 as in ASL
+									jsonM0Write.SliceTiming = jsonLocal.SliceTiming;
+								else
+									% Or recalculate for M0 if the number of slices differ
+									jsonM0Write.SliceTiming = ((0:(size(imM0,3)-1))')*importStr{ii}.x.SliceReadoutTime;
+								end
 							else
 								if isfield(jsonM0Write,'SliceTiming')
 									jsonM0Write = rmfield(jsonM0Write,'SliceTiming');
+									warning('Removing pre-existing SliceTiming from M0, as there was no SliceTiming for ASL');
 								end
 							end
 							
-							jsonM0Write.RepetitionTime = jsonM0.RepetitionTime;
+							if isfield(importStr{ii}.x,'RepetitionTime')
+								jsonM0Write.RepetitionTime = importStr{ii}.x.RepetitionTime;
+							else
+								jsonM0Write.RepetitionTime = jsonM0.RepetitionTime;
+							end
+							
 							jsonM0Write.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
 							
 							if ~isempty(tagPhaseEncodingDirection)
 								jsonM0Write.PhaseEncodingDirection = tagPhaseEncodingDirection;
+							end
+							
+							if isfield(jsonM0Write,'EffectiveEchoSpacing')
+								if jsonM0Write.EffectiveEchoSpacing == 0
+									jsonM0Write = rmfield(jsonM0Write,'EffectiveEchoSpacing');
+								else
+									jsonM0Write.EffectiveEchoSpacing = abs(jsonM0Write.EffectiveEchoSpacing);
+								end
+							end
+							
+							if isfield(jsonM0Write,'TotalReadoutTime')
+								if jsonM0Write.TotalReadoutTime == 0
+									jsonM0Write = rmfield(jsonM0Write,'TotalReadoutTime');
+								else
+									jsonM0Write.TotalReadoutTime = abs(jsonM0Write.TotalReadoutTime);
+								end
 							end
 							
 							if ~isempty(tagIntendedFor)
@@ -1135,7 +1199,9 @@ if isfield(jsonOut,'NumberSegments')
 end
 
 if isfield(jsonOut,'PhaseEncodingAxis') && strcmp(jsonOut.Manufacturer,'Philips')
-	jsonOut.PhaseEncodingDirection = jsonOut.PhaseEncodingAxis;
+	if ~isfield(jsonOut,'PhaseEncodingDirection')
+		jsonOut.PhaseEncodingDirection = jsonOut.PhaseEncodingAxis;
+	end
 	jsonOut = rmfield(jsonOut,'PhaseEncodingAxis');
 end
 
