@@ -78,7 +78,8 @@ elseif iscell(bCompute4Sets)
 elseif bCompute4Sets==1
     Sets2Check = [];
 elseif bCompute4Sets==0
-    % do nothing
+    Sets2Check = [];
+    % we also set this when computing 4 Sets is disabled, just to be sure
 else
     error('Invalid bComputeSets option, skipping');
 end
@@ -318,9 +319,9 @@ for iScanType=1:length(PreFixList)
                         end
                         % ----------------------------------------------------------------------------------------------------
                         % This part checks for individual sets (e.g. create statistic images for each cohort/session etc)
-                        if bCompute4Sets
+                        if ~bCompute4Sets
                             % not requested, skipping
-                        elseif isempty(Sets2Check)
+                        elseif bCompute4Sets && isempty(Sets2Check)
                             fprintf('\n');
                             warning('There are no sets that we can create statistical maps for');
                         else
