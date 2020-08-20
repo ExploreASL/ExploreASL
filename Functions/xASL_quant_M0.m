@@ -71,71 +71,8 @@ end
 % 2. Convert control image with background suppression to pseudo-M0
 % for the GM
 if strcmp(x.M0, 'UseControlAsM0') && x.Q.BackGrSupprPulses>0
-    % we only run this part if there is background suppression, but no M0
-    % image
-    
-    if strcmp(x.readout_dim, '3D')
-        SliceTime = 0;
-    elseif strcmp(x.readout_dim, '2D')
-        if ~isfield(x.Q, 'SliceReadoutTime') || isempty(x.Q.SliceReadoutTime)
-            error('Missing or invalid x.Q.SliceReadoutTime');
-        elseif size(M0IM, 3)<2
-            error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
-        end
-        
-        SliceNumbers = [0:1:size(M0IM,3)];
-        SliceTime = SliceNumbers.*x.Q.SliceReadoutTime;
-    else
-        error(['Unknown x.readout_dim value:' x.readout_dim]);
-    end
-    
-    if ~isfield(x.Q, 'TissueT1') || isempty(x.Q.TissueT1)
-        fprintf('%s\n', 'Warning: WM T1 set to 900 ms for 3T');
-        % Here we use the WM T1, as we mask the M0 for the WM only, smooth it to a biasfield, 
-        % and then extrapolate this
-        x.Q.TissueT1 = 900;
-    end
-    
-    if ~isfield(x.Q, 'BackgroundSuppressionPulseTime') || isempty(x.Q.BackgroundSuppressionPulseTime)
-        error('x.Q.BackgroundSuppressionPulseTime is missing or empty');
-    elseif ~isfield(x.Q, 'PresaturationTime') || isempty(x.Q.PresaturationTime)
-        fprintf('x.Q.PresaturationTime is missing or empty, using default value\n');
-        fprintf('This assumes that a pre-saturation pulse has been played at the start of the sequence\n');
-        switch x.Q.LabelingType
-            case 'PASL'
-                x.Q.PresaturationTime = x.Q.Initial_PLD;
-            case {'CASL' ',PCASL'}
-                x.Q.PresaturationTime = x.Q.Initial_PLD+x.Q.LabelingDuration;
-            otherwise
-                warning('Unknown labeling strategy, we dont know the presaturation timing for this');
-        end
-    end
-
-    SignalPercentage = xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceTime);
-    
-    if strcmp(x.readout_dim, '2D')
-        for iSlice=1:size(M0IM,3)
-            M0IM(:,:,iSlice) = M0IM(:,:,iSlice)./SignalPercentage(iSlice);
-        end
-    else
-        M0IM = M0IM./SignalPercentage;
-    end
-    
-    fprintf('Control image divided by ');
-    if strcmp(x.readout_dim, '2D')
-        fprintf('for the average slice ');
-    end
-    
-    fprintf('%s\n', [xASL_num2str(mean(SignalPercentage)) ' to correct for background suppression']);
-    fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime)]);
-    fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.TissueT1)]);
-    fprintf('%s\n\n', ['And SliceReadoutTime=' xASL_num2str(SliceTime)]);
-    fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
-    
-    if x.ApplyQuantification(4)==1
-        fprintf('Background suppression pulses have saturated the pseudo-M0 signal, no need for correcting incomplete T1 relaxation\n');
-        x.ApplyQuantification(4) = 0;
-    end
+    % we only run this part if there is background suppression, but no M0 image
+    [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x);
 end
 
 
@@ -290,4 +227,141 @@ end
 % [0.997936143250067,0.998441567448549,0.998919238534379,0.999370395912622,0.999796225936145,1.00019786425810,1.00057639807047,1.00093286823500,1.00126827131231,1.00158356149466,1.00187965244733,1.00215741906377,1.00241769913868,1.00266129496361;]
 
 
+end
+
+function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
+%xASL_quant_RevertBsupFxControl Revert background suppression effects in a
+%control image
+%
+% FORMAT: [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
+% 
+% INPUT:
+%   M0IM        - Control image
+%   x           - struct containing pipeline environment parameters
+% OUTPUT:
+%   M0IM        - Correct control image (==pseudo-M0)
+%   x           - struct containing pipeline environment parameters
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function computes the background suppression efficiency
+% (slice-wise if 2D acquisition), cancels this out from the control image
+% by division, and plots it together with the before & after slice-wise
+% gradient. This helps quantifying ASL when when we have a background suppressed control image
+% but not an M0 image.
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x);
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
+    
+    if strcmp(x.readout_dim, '3D')
+        SliceTime = 0;
+    elseif strcmp(x.readout_dim, '2D')
+        if ~isfield(x.Q, 'SliceReadoutTime') || isempty(x.Q.SliceReadoutTime)
+            error('Missing or invalid x.Q.SliceReadoutTime');
+        elseif size(M0IM, 3)<2
+            error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
+        end
+        
+        SliceTime = [0:1:size(M0IM,3)-1].*x.Q.SliceReadoutTime;
+    else
+        error(['Unknown x.readout_dim value:' x.readout_dim]);
+    end
+    
+    if ~isfield(x.Q, 'TissueT1') || isempty(x.Q.TissueT1)
+        fprintf('%s\n', 'Warning: WM T1 set to 900 ms for 3T');
+        % Here we use the WM T1, as we mask the M0 for the WM only, smooth it to a biasfield, 
+        % and then extrapolate this
+        x.Q.TissueT1 = 900;
+    end
+    
+    if ~isfield(x.Q, 'BackgroundSuppressionPulseTime') || isempty(x.Q.BackgroundSuppressionPulseTime)
+        error('x.Q.BackgroundSuppressionPulseTime is missing or empty');
+    elseif ~isfield(x.Q, 'PresaturationTime') || isempty(x.Q.PresaturationTime)
+        fprintf('x.Q.PresaturationTime is missing or empty, using default value\n');
+        fprintf('This assumes that a pre-saturation pulse has been played at the start of the sequence\n');
+        switch x.Q.LabelingType
+            case 'PASL'
+                x.Q.PresaturationTime = x.Q.Initial_PLD;
+            case {'CASL' ',PCASL'}
+                x.Q.PresaturationTime = x.Q.Initial_PLD+x.Q.LabelingDuration;
+            otherwise
+                warning('Unknown labeling strategy, we dont know the presaturation timing for this');
+        end
+    end
+    
+    % Initialize the figure
+    FigureHandle = figure('visible','off');
+    subplot(2, 2, 1);
+    
+    SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceTime, x.D.M0CheckDir, 1));
+    
+    %% Obtain the slice-wise median Control signal before correction
+    % First create a reasonable mask
+    SortedIntensities = sort(M0IM(isfinite(M0IM)));
+    MaskThreshold = SortedIntensities(round(0.8*length(SortedIntensities)));
+    MaskIm = M0IM>MaskThreshold;
+    
+    % Obtain slice-wise median value
+    for iSlice=1:size(M0IM,3)
+        M0Slice = M0IM(:,:,iSlice);
+        SignalBeforeCorrection(iSlice) = median(M0Slice(MaskIm(:,:,iSlice)));
+    end
+    
+    %% Apply correction
+    if length(SignalPercentage)>1
+        for iSlice=1:size(M0IM,3)
+            M0IM(:,:,iSlice) = M0IM(:,:,iSlice)./SignalPercentage(iSlice);
+        end
+    else
+        M0IM = M0IM./SignalPercentage;
+    end
+
+    %% Obtain slice-wise median pseudo-M0 signal (after correction)
+    % Obtain slice-wise median value
+    for iSlice=1:size(M0IM,3)
+        M0Slice = M0IM(:,:,iSlice);
+        SignalAfterCorrection(iSlice) = median(M0Slice(MaskIm(:,:,iSlice)));
+    end    
+    
+    %% Create the figure
+    % SignalPercentage
+    subplot(2, 2, 2);
+    plot(1:size(M0IM,3), SignalPercentage,'k');
+    title('Signal left after background suppression');
+    ylabel('Residual signal (%)');
+    xlabel('Slice (integer)');    
+    % Before correction
+    subplot(2, 2, 3);
+    plot(1:size(M0IM,3), SignalBeforeCorrection);
+    title('Before correction');
+    ylabel('Pseudo-M0 (a.u.)');
+    xlabel('Slice (integer)');
+    % After correction
+    subplot(2, 2, 4);
+    plot(1:size(M0IM,3), SignalAfterCorrection,'r');
+    title('After correction');
+    ylabel('Pseudo-M0 (a.u.)');
+    xlabel('Slice (integer)');
+
+    % Save and close the figure
+    SavePath = fullfile(x.D.M0CheckDir, 'RevertBsupFxControl.jpg');
+    saveas(FigureHandle, SavePath, 'jpg');
+    close(FigureHandle);
+    
+    fprintf('\n');
+    if strcmp(x.readout_dim, '2D')
+        fprintf('For the average slice: ');
+    end
+    fprintf('Control image divided by ');
+    fprintf('%s\n', [xASL_num2str(mean(SignalPercentage)) ' to correct for background suppression']);
+    fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime)]);
+    fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.TissueT1)]);
+    fprintf('%s\n\n', ['And SliceReadoutTime=' xASL_num2str(SliceTime)]);
+    fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
+    
+    if x.ApplyQuantification(4)==1
+        fprintf('Background suppression pulses have saturated the pseudo-M0 signal, no need for correcting incomplete T1 relaxation\n');
+        x.ApplyQuantification(4) = 0;
+    end
+    
 end
