@@ -148,7 +148,7 @@ if ~bContinue
     fprintf('%s\n','Skipping this subject, because no FLAIR, ASL or M0 present whereas this was requested');
     x.mutex.Unlock();
     cd(oldFolder);
-    result = false;
+    result = true;
     return;
 end
 
