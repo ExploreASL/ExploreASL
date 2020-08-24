@@ -109,7 +109,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
     % Including vascular signal
     ASL.SpatialCoV_GM_Perc = 100*xASL_stat_ComputeSpatialCoV(CBFmasked,[],[],0,GMmasked,WMmasked);
 
-    if xASL_exist(x.P.Path_MaskVascular)
+    if xASL_exist(x.P.Path_MaskVascular, 'file')
         imMask = logical(imMask.*xASL_io_Nifti2Im(x.P.Path_MaskVascular));
     end
     CBFmasked = imCBF(imMask);
