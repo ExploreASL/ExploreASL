@@ -154,10 +154,11 @@ if bOverwrite && exist(TestDirDest,'dir')
     else
         system(['rm -rf ' xASL_adm_UnixPath(TestDirDest)]);
     end
+    
+    % Copy data sets into testing directory
+    xASL_Copy(TestDirOrig, TestDirDest);    
 end
 
-% Copy data sets into testing directory
-xASL_Copy(TestDirOrig, TestDirDest);
 
 % ============================================================
 %% 4) Test standalone SPM on low quality
