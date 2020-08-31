@@ -53,7 +53,12 @@ function x = xASL_stat_GetAcquisitionTime(x)
             % Load the file & field
             if exist(PathMAT ,'file') % legacy
                 Parms = load(PathMAT, '-mat');
-                Parms = Parms.parms;
+                if isfield(Parms, 'parms')
+                    Parms = Parms.parms;
+                else
+                    fprintf('%s\n', ['Warning: parameter-file without parameters, skipping: ' PathMAT]);
+                    continue;
+                end
             elseif exist(PathJSON, 'file')
                 Parms = xASL_import_json(PathJSON);
             else
