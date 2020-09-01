@@ -39,7 +39,4 @@
 "Vendor":"Philips",
 "bReproTesting":0,
 "Q":{"BackGrSupprPulses":2,
-"LabelingType":"CASL",
-"Initial_PLD":2025,
-"LabelingDuration":1650,
-"SliceReadoutTime":43.7647}}
+"SliceReadoutTime":0.0437647}}

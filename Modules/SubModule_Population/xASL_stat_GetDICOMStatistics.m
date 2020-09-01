@@ -74,7 +74,12 @@ for iSubject=1:x.nSubjects
 
         if exist(PathMAT, 'file')
             Parms = load(PathMAT, '-mat');
-            Parms = Parms.parms;
+            if isfield(Parms, 'parms')
+                Parms = Parms.parms;
+            else
+                fprintf('%s\n', ['Warning: parameter-file without parameters, skipping: ' PathMAT]);
+                continue;
+            end
         elseif exist(PathJSON, 'file')
             Parms = xASL_import_json(PathJSON);
         else
