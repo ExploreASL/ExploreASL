@@ -152,13 +152,12 @@ if ~isempty(inBids)
 				
 				% Check if the value is within the recommended range after conversion and issue a warning if not
 				if inBids.(FieldNameChanged) ~= 0
-					if inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT) || inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT)
-						warning(['Field ' FieldNameChanged ' in xASL structure has a value ' num2str(inBids.(FieldNameChanged))...
-							', which is outside of the recommended range <'...
-							num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
-					end
+                    if max(inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT)) || max(inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT))
+                        warning(['Field ' FieldNameChanged ' in xASL structure has a value ' num2str(inBids.(FieldNameChanged))...
+                            ', which is outside of the recommended range <'...
+                            num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+                    end
 				end
-				
 			end
 		end
 	end
