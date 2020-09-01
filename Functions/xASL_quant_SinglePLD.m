@@ -61,18 +61,8 @@ else
         case '2D' % Load slice gradient
             fprintf('%s\n','2D sequence, accounting for SliceReadoutTime');
 
-            if ~isnumeric(x.Q.SliceReadoutTime)
-                if strcmp(x.Q.SliceReadoutTime,'shortestTR')
-                    ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
-                    if  isfield(ASL_parms,'RepetitionTime')
-                        %  Load original file to get nSlices
-                        nSlices = size(xASL_io_Nifti2Im(x.P.Path_ASL4D),3);
-                        x.Q.SliceReadoutTime = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
-                    else
-                        error('ASL_parms.RepetitionTime was expected but did not exist!');
-                    end
-                end
-            end
+            % Calculate SliceReadoutTime for shortestTR
+            [x] = xASL_quant_SliceReadoutTime_ShortestTR(x);
 
             SliceGradient = double(SliceGradient);
             % Correct NaNs
