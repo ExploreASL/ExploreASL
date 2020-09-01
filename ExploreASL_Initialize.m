@@ -793,12 +793,6 @@ if ~isempty(regexp(x.subject_regexp, '^(\^|)\.\*(\$|)$'))
     warning('Subject regexp not specific! Check that no wrong folders are included as subjects');
 end
 
-if isfield(x,'readout_dim')
-    if strcmp(x.readout_dim,'2D') && ~isfield(x.Q,'SliceReadoutTime')
-        warning('x.Q.SliceReadoutTime should be defined for a 2D (multi-slice) sequence!');
-    end
-end
-
 fprintf('\n');
 
 end
