@@ -121,26 +121,8 @@ else
             fprintf('%s\n','Single 3D M0 readout assumed');
     elseif  strcmp(x.readout_dim,'2D') % for 2D readouts, there are slice timing differences
 
-            if strcmp(x.Q.SliceReadoutTime,'shortestTR')
-                % Load ASL parms
-                ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
-
-                if isfield(ASL_parms,'RepetitionTime')
-                    %  Load original file to get nSlices
-                    tORI = xASL_io_ReadNifti(x.P.Path_ASL4D);
-                    nSlices = size(tORI.dat,3);
-
-                    x.Q.SliceReadoutTime = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
-                else
-                    warning('ASL_parms.RepetitionTime expected but did not exist!');
-                end
-            end
-
-            if isnan(x.Q.SliceReadoutTime)
-                error('qnt_PLDslicereadout expected but was NaN');
-            elseif  x.Q.SliceReadoutTime<10 || x.Q.SliceReadoutTime>200
-                warning(['qnt_PLDslicereadout=' x.Q.SliceReadoutTime ' is outside of its valid range 10-200 ms']);
-            end
+            % Calculate SliceReadoutTime for shortestTR
+            [x] = xASL_quant_SliceReadoutTime_ShortestTR(x);
 
             SliceIM = zeros(size(M0IM));
             for iZ=1:size(M0IM,3)
