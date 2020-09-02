@@ -51,8 +51,14 @@ x = xASL_adm_LoadX(x, PathX, true); % assume x.mat is newer than x
 if isfield(x,'Output_im') && isfield(x.Output_im,'ASL')
    x.Output_im = rmfield(x.Output_im,'ASL');
 end
+
 if isfield(x,'Output') && isfield(x.Output,'ASL')
-   x.Output = rmfield(x.Output,'ASL');
+	if isfield(x.Output.ASL,'TC_ASL2T1w_Perc')
+		xKeep.Output.ASL.TC_ASL2T1w_Perc = x.Output.ASL.TC_ASL2T1w_Perc;
+	else
+		xKeep = [];
+	end
+	x.Output = rmfield(x.Output,'ASL');
 end
 
 %% -----------------------------------------------------------------------------------
@@ -165,9 +171,17 @@ end
 %% 8) Summarize ASL orientation & check for left-right flips
 xASL_qc_PrintOrientation(x.SESSIONDIR, x.P.Path_ASL4D, x.SESSIONDIR, 'RigidRegASL');
 
+% Restore previously computed values
+if exist('xKeep','var')
+	fieldNamesList = fieldnames(xKeep.Output.ASL);
+	for iField = 1:length(fieldNamesList)
+		x.Output.ASL.(fieldNamesList{iField}) = xKeep.Output.ASL.(fieldNamesList{iField});
+	end
+end
 
 %% 9) Collect several other parameters & store all in PDF overview
 x = xASL_qc_CollectParameters(x, x.iSubject, 'ASL'); % Quick & Dirty solution, 0 == skip structural part
+
 xASL_delete(PathX);
 save(PathX,'x'); % future: do this in each xWrapper
 xASL_qc_CreatePDF(x, x.iSubject);

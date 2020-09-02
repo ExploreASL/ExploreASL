@@ -516,10 +516,10 @@ if bRegistrationCBF
         fprintf('%s\n',['Iteration ' num2str(iT) ', Tanimoto coefficient = ' num2str(100*TanimotoPerc(iT),3) '%']);
     end
     fprintf('%s\n\n','--------------------------------------------------------------------');
-	
-	% Write the Tanimoto coefficient to the output QC structure
-	x.Output.ASL.TC_ASL2T1_Perc = TanimotoPerc(end);
 end
+
+% Write the Tanimoto coefficient to the output QC structure
+x.Output.ASL.TC_ASL2T1w_Perc = TanimotoPerc(end);
 
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
