@@ -89,16 +89,20 @@ if ~isempty(inXasl)
 			
 			% Convert the units for all time fields from ms to s
 			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
-				% For non-zero fields, check if they are within the predefined range
-				if inXasl.(FieldsA{iA}) ~= 0
-					% If outside of the recommended range, then still convert, but issue a warning
-					if inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT) || inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT)
-						warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' num2str(inXasl.(FieldsA{iA}))...
-							', which is outside of the recommended range <'...
-							num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+				% Convert only numeric fields
+				% In certain cases (e.g. SliceReadoutTime='shortestTR'), a string is given which is then skipped and not converted
+				if isnumeric(inXasl.(FieldsA{iA}))
+					% For non-zero fields, check if they are within the predefined range
+					if inXasl.(FieldsA{iA}) ~= 0
+						% If outside of the recommended range, then still convert, but issue a warning
+						if inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT) || inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT)
+							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' num2str(inXasl.(FieldsA{iA}))...
+								', which is outside of the recommended range <'...
+								num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+						end
 					end
+					inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
 				end
-				inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
 			end
 			
 			% Rename XASL fields to BIDS field according to the information in changeNamesXASL and changeNamesBIDS
@@ -148,15 +152,23 @@ if ~isempty(inBids)
 			
 			% Convert the units for all time fields from s to ms
 			for iT = find(strcmp(FieldNameChanged,convertTimeFieldsXASL))
-				inBids.(FieldNameChanged) = inBids.(FieldNameChanged)*1000;
-				
-				% Check if the value is within the recommended range after conversion and issue a warning if not
-				if inBids.(FieldNameChanged) ~= 0
-                    if max(inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT)) || max(inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT))
-                        warning(['Field ' FieldNameChanged ' in xASL structure has a value ' num2str(inBids.(FieldNameChanged))...
-                            ', which is outside of the recommended range <'...
-                            num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
-                    end
+				% Convert only if the field is numeric
+				% In certain cases (e.g. SliceReadoutTime='shortestTR') a string can be given, which needs to be skipped then
+				if isnumeric(inBids.(FieldNameChanged))
+					inBids.(FieldNameChanged) = inBids.(FieldNameChanged)*1000;
+					
+					% Check if the value is within the recommended range after conversion and issue a warning if not
+					if inBids.(FieldNameChanged) ~= 0
+						if max(inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT)) || max(inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT))
+							warning(['Field ' FieldNameChanged ' in xASL structure has a value ' num2str(inBids.(FieldNameChanged))...
+								', which is outside of the recommended range <'...
+								num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+						end
+					end
+				else
+					% But a warning is issued as this is not according to the BIDS specification
+					warning(['Field ' FieldNameChanged ' should have been converted from ms to s, but the conversion was skipped as it contains a non-numeric value: ' inBids.(FieldNameChanged) '. '...
+						     'This is not according to the BIDS specification.']);
 				end
 			end
 		end
