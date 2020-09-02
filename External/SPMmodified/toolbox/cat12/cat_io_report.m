@@ -173,10 +173,15 @@ function cat_io_report(job,qa,subj,createerr)
     [nam,rev_spm] = spm('Ver');
     QAS.software.version_spm = rev_spm;
     A = ver;
-    for i=1:length(A)
-      if strcmp(A(i).Name,'MATLAB')
-        QAS.software.version_matlab = A(i).Version; 
-      end
+    if isdeployed % xASL fix for deployed mode
+        QAS.software.version_matlab = version;
+        QAS.software.version_matlab = QAS.software.version_matlab(1:3);
+    else
+        for i=1:length(A)
+          if strcmp(A(i).Name,'MATLAB')
+            QAS.software.version_matlab = A(i).Version; 
+          end
+        end
     end
     clear A
     

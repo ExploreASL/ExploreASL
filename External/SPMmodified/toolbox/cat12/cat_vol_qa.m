@@ -504,10 +504,15 @@ function varargout = cat_vol_qa(action,varargin)
       [nam,rev_spm] = spm('Ver');
       QAS.software.version_spm = rev_spm;
       A = ver;
-      for i=1:length(A)
-        if strcmp(A(i).Name,'MATLAB')
-          QAS.software.version_matlab = A(i).Version; 
-        end
+      if isdeployed % xASL fix for deployed mode
+          QAS.software.version_matlab = version;
+          QAS.software.version_matlab = QAS.software.version_matlab(1:3);
+      else
+          for i=1:length(A)
+            if strcmp(A(i).Name,'MATLAB')
+              QAS.software.version_matlab = A(i).Version; 
+            end
+          end
       end
       clear A
       % 1 line: Matlab, SPM12, CAT12 version number and GUI and experimental mode 
@@ -571,10 +576,15 @@ function varargout = cat_vol_qa(action,varargin)
       QAS.software.system       = OSname;
       QAS.software.version_spm  = rev_spm;
       A = ver;
-      for i=1:length(A)
-        if strcmp(A(i).Name,'MATLAB')
-          QAS.software.version_matlab = A(i).Version; 
-        end
+      if isdeployed % xASL fix for deployed mode
+          QAS.software.version_matlab = version;
+          QAS.software.version_matlab = QAS.software.version_matlab(1:3);
+      else
+          for i=1:length(A)
+            if strcmp(A(i).Name,'MATLAB')
+              QAS.software.version_matlab = A(i).Version; 
+            end
+          end
       end
       clear A
       QAS.software.version_cat  = ver_cat;
