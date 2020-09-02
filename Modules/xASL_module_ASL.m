@@ -264,7 +264,7 @@ end
 iState = 3;
 if ~x.mutex.HasState(StateName{iState})
 
-    xASL_wrp_RegisterASL(x);
+    x = xASL_wrp_RegisterASL(x);
 
     x.mutex.AddState(StateName{iState});
     xASL_adm_CompareDataSets([], [], x); % unit testing

@@ -1,4 +1,4 @@
-function xASL_wrp_RegisterASL(x)
+function x = xASL_wrp_RegisterASL(x)
 %xASL_wrp_RegisterASL Submodule of ExploreASL ASL Module, that registers
 %ASL to T1w (or potentially other structural images)
 %
@@ -7,7 +7,8 @@ function xASL_wrp_RegisterASL(x)
 % INPUT:
 %   x  - structure containing fields with all information required to run this submodule (REQUIRED)
 %
-% OUTPUT: n/a (registration changes the NIfTI orientation header only
+% OUTPUT: x - updated structure (mainly the Tanimoto coefficient of the final registration), 
+%             and the registration also changes the NIfTI orientation header
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DEVELOPER: 
@@ -394,11 +395,13 @@ if bRegistrationCBF
         nIT = 1; % speed up for low quality
     else
         nIT = 2;
-    end
+	end
 
+	% Create a local instance of the bAffineRegistration (so that any changes in it are not reflected in the x-struct for outside
+	bAffineRegistration = x.bAffineRegistration;
 
     % 2) Repeat CBF registrations, with iteratively better estimate of the
-    % vascular/tissue perfusion ratio of the template
+    % vascular/tissue perfusion ratio of the template	
     if nIT>0
         % keep this same for all sequences, 3D sequences will simply have a lower spatial CoV because of smoothness
         bSkipThis = false;
@@ -425,7 +428,7 @@ if bRegistrationCBF
 						xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
 						bSkipThis = true; % skip next iteration
 						if iT == 1
-							x.bAffineRegistration = 0; % skip affine registration and therefore also DCT - only when it fails to improve on the first, not on the second
+							bAffineRegistration = 0; % skip affine registration and therefore also DCT - only when it fails to improve on the first, not on the second
 						end
 						TanimotoPerc = TanimotoPerc(1:end-1); % remove last iteration
 					end
@@ -439,12 +442,11 @@ if bRegistrationCBF
 		% Note that this is only done upon request (x.bAffineRegistration, advanced option),
         % hence this doesn't have the automatic backup & restore,
         % as the CBF->pseudoCBF registration has above
-		if x.bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
+		if bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
 			bAffineRegistration = spatCoVit(end)<0.4;
-		else
+		%   else
 			% For bAffineRegistration == 1, do always
 			% For bAffineRegsitration == 0, do never
-			bAffineRegistration = x.bAffineRegistration;
 		end
 
         if bAffineRegistration % perform affine or affine+DCT registration
@@ -514,6 +516,9 @@ if bRegistrationCBF
         fprintf('%s\n',['Iteration ' num2str(iT) ', Tanimoto coefficient = ' num2str(100*TanimotoPerc(iT),3) '%']);
     end
     fprintf('%s\n\n','--------------------------------------------------------------------');
+	
+	% Write the Tanimoto coefficient to the output QC structure
+	x.Output.ASL.TC_ASL2T1_Perc = TanimotoPerc(end);
 end
 
 %% ----------------------------------------------------------------------------------------
