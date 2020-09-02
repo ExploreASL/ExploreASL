@@ -93,7 +93,12 @@ switch ScanType
         
         % General software versions (put this in structural only, to avoid redundant output
         x.Output.(ScanType).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL;
-        x.Output.(ScanType).Version_Matlab = x.Output.SoftwareVersion.Matlab;
+        if isdeployed
+            x.Output.(ScanType).Version_Matlab = x.Output.SoftwareVersion.Matlab;
+        else
+            x.Output.(ScanType).Version_Matlab = version;
+            x.Output.(ScanType).Version_Matlab = x.Output.(ScanType).Version_Matlab(1:3);
+        end
         x.Output.(ScanType).Version_SPM12 = x.Output.SoftwareVersion.SPM12;        
     case {'ASL', 'dwi', 'func'}
         x.Output.(ScanType).Version_FSL = x.Output.SoftwareVersion.FSL;
