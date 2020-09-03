@@ -45,7 +45,7 @@ elseif exist(MatFile, 'file') % for SPM12 segmentation
     clear tpm image Affine lkp MT Twarp Tbias mg mn vr wp ll volumes
     load(MatFile, '-mat');
     for ii=1:6
-        MAT.tpm(ii).fname = fullfile(x.SPMDIR, 'tpm', 'TPM.nii');
+        tpm(ii).fname = fullfile(x.SPMDIR, 'tpm', 'TPM.nii');
     end
     image.fname = fullfile(x.SUBJECTDIR, [x.P.STRUCT '.nii']);
 
