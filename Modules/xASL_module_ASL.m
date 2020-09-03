@@ -158,6 +158,21 @@ if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
     % If we rerun the ASL module, then clean it fully for proper rerunning
     % This function cleans all ASL sessions, so only run this (once) for the first session
     xASL_adm_CleanUpBeforeRerun(x.D.ROOT, 2, false, false, x.P.SubjectID, x.P.SessionID);
+	
+	% Also clean the QC output files
+	x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
+
+	% Clear any previous QC images
+	if isfield(x,'Output_im') && isfield(x.Output_im,'ASL')
+		x.Output_im = rmfield(x.Output_im,'ASL');
+	end
+
+	if isfield(x,'Output') && isfield(x.Output,'ASL')
+		x.Output = rmfield(x.Output,'ASL');
+	end
+	
+	% And saved the cleaned up version
+	xASL_adm_SaveX(x);
 end
 
 if ~isfield(x,'motion_correction')
@@ -264,7 +279,13 @@ end
 iState = 3;
 if ~x.mutex.HasState(StateName{iState})
 
+	% Load the previously saved QC Output
+	x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
+
     x = xASL_wrp_RegisterASL(x);
+
+	% And saved the cleaned up version
+	xASL_adm_SaveX(x);
 
     x.mutex.AddState(StateName{iState});
     xASL_adm_CompareDataSets([], [], x); % unit testing

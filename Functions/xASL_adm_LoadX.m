@@ -1,10 +1,10 @@
 function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite)
 %xASL_adm_LoadX Load x.mat file that keeps track of QC output
-% FORMAT: [x[, IsLoaded]] = xASL_adm_LoadX(x, Path_xASL[, bOverwrite])
+% FORMAT: [x[, IsLoaded]] = xASL_adm_LoadX(x[, Path_xASL, bOverwrite])
 %
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
-%   Path_xASL   - path to the x.mat that contains the QC output (REQUIRED)
+%   Path_xASL   - path to the x.mat that contains the QC output (OPTIONAL, DEFAULT = x.SUBJECTDIR/x.mat)
 %   bOverwrite  - true to overwrite the current x structure with the
 %                 x.Output & x.Output_im from the x.mat (OPTIONAL, DEFAULT=false)
 %
@@ -24,13 +24,21 @@ function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite)
 % EXAMPLE: [x, IsLoaded] = xASL_adm_LoadX(x, fullfile(x.D.ROOT,'x.mat'), true);
 %
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 
 %% -------------------------------------
 %  Admin
 IsLoaded = false; % default
+
+if nargin<2 || isempty(Path_xASL)
+	if ~isfield(x,'SUBJECTDIR')
+		error('Path_xASL not provided and x.SUBJECTDIR not defined.');
+	end
+	Path_xASL = fullfile(x.SUBJECTDIR,'x.mat');
+end
+
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = false;
 end
