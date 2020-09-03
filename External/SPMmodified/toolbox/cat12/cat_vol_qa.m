@@ -505,8 +505,8 @@ function varargout = cat_vol_qa(action,varargin)
       QAS.software.version_spm = rev_spm;
       A = ver;
       if isdeployed % xASL fix for deployed mode
-          QAS.software.version_matlab = version;
-          QAS.software.version_matlab = QAS.software.version_matlab(1:3);
+          version_matlab = version;
+          QAS.software.version_matlab = version_matlab(1:(find(ismember(version_matlab,'.'),1,'first')+1)); % Extract matlab version until one char after first dot
       else
           for i=1:length(A)
             if strcmp(A(i).Name,'MATLAB')
@@ -577,8 +577,8 @@ function varargout = cat_vol_qa(action,varargin)
       QAS.software.version_spm  = rev_spm;
       A = ver;
       if isdeployed % xASL fix for deployed mode
-          QAS.software.version_matlab = version;
-          QAS.software.version_matlab = QAS.software.version_matlab(1:3);
+          version_matlab = version;
+          QAS.software.version_matlab = version_matlab(1:(find(ismember(version_matlab,'.'),1,'first')+1)); % Extract matlab version until one char after first dot
       else
           for i=1:length(A)
             if strcmp(A(i).Name,'MATLAB')
