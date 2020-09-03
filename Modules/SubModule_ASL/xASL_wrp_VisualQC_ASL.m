@@ -44,22 +44,8 @@ nVolumes = double(tempnii.hdr.dim(5));
 fprintf('%s\n','print visual quality assurance checks');
 Parms.ModuleName = 'ASL';
 close all % close all Figures to avoid capturing & saving the wrong Figure
-PathX = fullfile(x.SUBJECTDIR,'x.mat');
-x = xASL_adm_LoadX(x, PathX, true); % assume x.mat is newer than x
 
-% Clear any previous QC images
-if isfield(x,'Output_im') && isfield(x.Output_im,'ASL')
-   x.Output_im = rmfield(x.Output_im,'ASL');
-end
-
-if isfield(x,'Output') && isfield(x.Output,'ASL')
-	if isfield(x.Output.ASL,'TC_ASL2T1w_Perc')
-		xKeep.Output.ASL.TC_ASL2T1w_Perc = x.Output.ASL.TC_ASL2T1w_Perc;
-	else
-		xKeep = [];
-	end
-	x.Output = rmfield(x.Output,'ASL');
-end
+x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 
 %% -----------------------------------------------------------------------------------
 %% 2) Make ASL NIfTIs ready for visualization & conversion to DICOM
@@ -171,19 +157,10 @@ end
 %% 8) Summarize ASL orientation & check for left-right flips
 xASL_qc_PrintOrientation(x.SESSIONDIR, x.P.Path_ASL4D, x.SESSIONDIR, 'RigidRegASL');
 
-% Restore previously computed values
-if exist('xKeep','var')
-	fieldNamesList = fieldnames(xKeep.Output.ASL);
-	for iField = 1:length(fieldNamesList)
-		x.Output.ASL.(fieldNamesList{iField}) = xKeep.Output.ASL.(fieldNamesList{iField});
-	end
-end
-
 %% 9) Collect several other parameters & store all in PDF overview
 x = xASL_qc_CollectParameters(x, x.iSubject, 'ASL'); % Quick & Dirty solution, 0 == skip structural part
 
-xASL_delete(PathX);
-save(PathX,'x'); % future: do this in each xWrapper
+xASL_adm_SaveX(x); % future: do this in each xWrapper
 xASL_qc_CreatePDF(x, x.iSubject);
 
 end
