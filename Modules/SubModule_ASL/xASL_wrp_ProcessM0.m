@@ -199,7 +199,9 @@ if x.M0_conventionalProcessing
     xASL_spm_deformations(x, InList, OutList, 1, [], AffineTransfPath, x.P.Path_y_ASL);
 
     % mask in standard space (native space masking already done)
-    maskIM          = xASL_io_Nifti2Im(x.P.Pop_Path_M0) .* (xASL_io_Nifti2Im(x.P.Pop_Path_mask_M0)==1);
+	maskTmp = xASL_io_Nifti2Im(x.P.Pop_Path_M0);
+    maskIM  = maskTmp.* (xASL_io_Nifti2Im(x.P.Pop_Path_mask_M0)==1);
+	maskIM(maskTmp == 0) = NaN;
     xASL_io_SaveNifti(x.P.Pop_Path_M0,x.P.Pop_Path_M0,maskIM,8,0);
 
     % delete temporary files
