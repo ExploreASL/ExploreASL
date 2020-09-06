@@ -392,28 +392,26 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
         warning(['Skipped standard space quantification: ' x.P.Pop_Path_PWI ' missing']);
     else
         xASL_wrp_Quantify(x);
+        
+        if x.SavePWI4D        
+            fprintf('%s\n','Quantifying ASL timeseries in standard space');
+            xASL_wrp_Quantify(x, x.P.Pop_Path_PWI, x.P.Pop_Path_qCBF4D);
+        end
     end
     % Quantification in native space:
     if ~xASL_exist(x.P.Path_PWI,'file')
         warning('Skipped native space quantification: files missing');
     else
         xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
-    end
-
-    % allow 4D quantification as well
-    if x.SavePWI4D
-        if ~xASL_exist(x.P.Path_PWI4D,'file')
-            fprintf('%s\n','Skipping, native space PWI4D missing');
-        else
+        
+        if x.SavePWI4D
             fprintf('%s\n','Quantifying ASL timeseries in native space');
-            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
-        end
-        if ~xASL_exist(x.P.Pop_Path_PWI4D,'file')
-            fprintf('%s\n','Skipping, standard space PWI4D missing');
-        else
-            fprintf('%s\n','Quantifying ASL timeseries in standard space');
-            xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D, x.P.Pop_Path_qCBF4D);
-        end
+            xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);        
+        end        
+    end
+    
+    if x.DELETETEMP
+        xASL_delete(x.P.Path_PWI);
     end
 
     x.mutex.AddState(StateName{iState});

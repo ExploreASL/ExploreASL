@@ -47,10 +47,6 @@ end
 tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
 nVolumes = double(tempnii.hdr.dim(5));
 
-if ~isfield(x,'SavePWI4D')
-    x.SavePWI4D   = 0;
-end
-
 xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
 
 %% TopUp files
@@ -195,11 +191,6 @@ if dim4>1 && round(dim4/2)==dim4/2 && dim4==nVolumes
     [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
     ASL_im = ControlIm - LabelIm;
     xASL_io_SaveNifti(x.P.Path_temp_despiked_ASL4D, x.P.Path_PWI, ASL_im, [], false);
-
-    if x.SavePWI4D % option to store subtracted time-series (PWI4D)
-        xASL_io_SaveNifti(x.P.Path_temp_despiked_ASL4D, x.P.Path_PWI4D, ASL_im, 32, false);
-        xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PWI4D, [], [], x.Quality, x.P.Path_PWI4D);
-    end
 elseif dim4 == 1
     xASL_io_SaveNifti(x.P.Path_temp_despiked_ASL4D, x.P.Path_PWI, ASL_im, [], false);
 end
@@ -216,10 +207,6 @@ if dim4>1 && round(dim4/2)==dim4/2 && dim4==nVolumes
     % do a paired subtraction
     [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
     ASL_im = ControlIm - LabelIm;
-
-    if x.SavePWI4D % option to store subtracted time-series (PWI4D)
-        xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Pop_Path_PWI4D, ASL_im,32, false);
-    end
 end
 
 
