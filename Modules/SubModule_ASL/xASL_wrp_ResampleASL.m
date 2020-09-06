@@ -194,7 +194,7 @@ if dim4>1 && round(dim4/2)==dim4/2 && dim4==nVolumes
     % do a paired subtraction
     [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
     ASL_im = ControlIm - LabelIm;
-    xASL_io_SaveNifti(x.P.Path_temp_despiked_ASL4D, x.P.Path_PWI, xASL_stat_MeanNan(ASL_im, 4), [], false);
+    xASL_io_SaveNifti(x.P.Path_temp_despiked_ASL4D, x.P.Path_PWI, ASL_im, [], false);
 
     if x.SavePWI4D % option to store subtracted time-series (PWI4D)
         xASL_io_SaveNifti(x.P.Path_temp_despiked_ASL4D, x.P.Path_PWI4D, ASL_im, 32, false);
@@ -225,7 +225,7 @@ end
 
 %% ------------------------------------------------------------------------------------------
 % 6    Save PWI NIfTI & time-series-related maps (SD, SNR)
-PWI = xASL_stat_MeanNan(ASL_im,4);
+PWI = ASL_im;
 MaskIM = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rgrey.nii'));
 MaskIM = MaskIM>(0.7*max(MaskIM(:)));
 

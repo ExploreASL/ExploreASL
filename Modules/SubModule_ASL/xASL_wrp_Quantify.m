@@ -76,6 +76,7 @@ fprintf('%s\n','Loading PWI & M0 images');
 
 % Load ASL PWI
 PWI = xASL_io_Nifti2Im(PWI_Path); % Load CBF nifti
+PWI = xASL_stat_MeanNan(PWI, 4); % average timeseries
 ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
 if xASL_stat_SumNan(PWI(:))==0
