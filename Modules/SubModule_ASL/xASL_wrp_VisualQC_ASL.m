@@ -145,9 +145,7 @@ if nVolumes>10
             end
         end
 
-        if ~ExistPWI4D
-            xASL_delete(x.P.Path_PWI4D);
-        end
+        xASL_delete(x.P.Path_PWI4D);
     else
         warning('Skipping SPM UP QC because structural files didnt exist');
     end

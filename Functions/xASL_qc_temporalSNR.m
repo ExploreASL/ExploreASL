@@ -33,7 +33,7 @@ function tSNR = xASL_qc_temporalSNR(pathIm4D,pathImTissueProb)
 %                 hardware and acquisition choices ??? Implications for controlling false positive rates. NeuroImage, 154,15-22
 %              4) SPM Utility + toolbox. Cyril Pernet. https://osf.io/wn3h8/
 %
-% EXAMPLE: tSNR = xASL_qc_temporalSNR(x.P.Path_PWI4D,{x.P.Path_PVgm x.P.Path_PVwm});
+% EXAMPLE: tSNR = xASL_qc_temporalSNR(x.P.Path_PWI,{x.P.Path_PVgm x.P.Path_PVwm});
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
 
