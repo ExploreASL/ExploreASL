@@ -106,7 +106,7 @@ if ~isfield(x,'ProcessData')
                 'Start up ExploreASL', 'Process dataset', 'Only initialize ExploreASL functionality', 'Load dataset only', 'Only initialize ExploreASL functionality');
         else
             fprintf('Would you like to load a dataset or only initialize ExploreASL (set paths etc)?\n');
-            cliChoice = input('Please press [1] for "Process dataset", [2] for "Only initialize ExploreASL functionality", [4] to cancel: ');
+            cliChoice = input('Please press [1] for "Process dataset", [2] for "Only initialize ExploreASL functionality", [3] for "Load dataset only", or [4] to cancel: ');
 
             switch cliChoice
                 case 1
@@ -134,9 +134,9 @@ if ~isfield(x,'ProcessData')
             fprintf('%s\n','Initializing ExploreASL functionality & loading dataset');
             x.ProcessData = 2;
         case 'Cancel'
-            fprintf('%s\n','Exiting ExploreASL, please ignore the errors');
+            fprintf('%s\n','Exiting ExploreASL');
             x.ProcessData = 0;
-            error('Canceled ExploreASL');
+            return;
         otherwise
             x.ProcessData = 0;
             fprintf('Unknown option, exiting\n');
@@ -151,16 +151,12 @@ end
 % Check if the current directory is the ExploreASL directory
 CurrCD = pwd;
 if exist(fullfile(CurrCD, 'ExploreASL_Master.m'), 'file')
-    MyPath2  = CurrCD;
+    x.MyPath = CurrCD;
 end
 
 % Check whether MyPath is correct, otherwise obtain correct folder
 if ~isfield(x, 'MyPath')
-    x.MyPath  = '/DummyPath';
-end
-
-if exist('MyPath2','var')
-    x.MyPath = MyPath2;
+    x.MyPath = '/DummyPath';
 end
 
 MasterScriptPath = fullfile(x.MyPath, 'ExploreASL_Master.m');
@@ -214,7 +210,8 @@ if ~isdeployed
                             fullfile('External','DCMTK'), ...
                             fullfile('External','ExploreQC'), ...
 							fullfile('External','SPMmodified'), ...
-                            fullfile('External','SPMmodified','xASL'),...                            
+                            fullfile('External','SPMmodified','matlabbatch'),...                            
+                            fullfile('External','SPMmodified','xASL'),...
                             fullfile('External','SPMmodified','toolbox','cat12'), ...
 							fullfile('External','SPMmodified','toolbox','LST'), ...
 							fullfile('External','SPMmodified','toolbox','OldNorm')};
