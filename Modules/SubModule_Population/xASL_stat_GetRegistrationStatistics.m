@@ -1,5 +1,5 @@
 function xASL_stat_GetRegistrationStatistics(x)
-%xASL_stat_GetRegistrationStatistics Collect the Tanimoto Coefficients from registration in CSV file to check
+%xASL_stat_GetRegistrationStatistics Collect the Tanimoto Coefficients from registration in TSV file to check
 %
 % FORMAT: xASL_stat_GetRegistrationStatistics(x)
 % 
@@ -34,8 +34,11 @@ if nargin<1 || isempty(x)
     error('Missing the x-struct');
 end
 
+% Define a list of fields to write
 jsonFields = {'TC_ASL2T1w_Perc'};
 nFields = length(jsonFields);
+
+% Create the file name for TSV file to save
 PathTSV = fullfile(x.D.PopDir, 'Stats','RegistrationTC.tsv');
 
 % Print header
@@ -49,14 +52,17 @@ fprintf('%s\n','Loading & saving individual parameter files...  ');
 for iSubject=1:x.nSubjects
     for iSession=1:x.nSessions
 
-        % Track progress
+        % Joint index for subject and session
         iSubjSess = (iSubject-1)*x.nSessions+iSession;
+		
+		% Track progress
         xASL_TrackProgress(iSubjSess,x.nSubjectsSessions);        
         
-        % Default parameters
+        % Write the subject and session name in the TSV table
         TSV{1+iSubjSess,1} = x.SUBJECTS{iSubject};
         TSV{1+iSubjSess,2} = x.SESSIONS{iSession};
         
+		% Initialize with NaNs
         TSV(1+iSubjSess, 3:nFields+2) = repmat({NaN}, [1 nFields]);
         
         % Define path of the parameter file
