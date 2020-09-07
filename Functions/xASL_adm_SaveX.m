@@ -1,11 +1,11 @@
 function xASL_adm_SaveX(x, Path_xASL, bOverwrite)
 %xASL_adm_SaveX Saves x.mat file that keeps track of QC output
-% FORMAT: xASL_adm_SaveX(x[, Path_xASL])
+% FORMAT: xASL_adm_SaveX(x[, Path_xASL, bOverwrite])
 %
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
 %   Path_xASL   - path to the x.mat that contains the QC output (OPTIONAL, DEFAULT = x.SUBJECTDIR/x.mat)
-%   bOverwite   - boolean specifying if we overwrite
+%   bOverwite   - boolean specifying if we overwrite (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:
 %   n/a
