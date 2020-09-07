@@ -19,8 +19,8 @@ lRMFields = {'InstitutionName' 'InstitutionalDepartmentName' 'InstitutionAddress
 			 'InPlanePhaseEncodingDirectionDICOM','ConversionSoftware','ConversionSoftwareVersion','AcquisitionMatrix',...
 			 'EchoTrainLength','PhaseEncodingSteps','BodyPartExamined','ShimSetting','TxRefAmp','PhaseResolution',...
 			 'RefLinesPE','BandwidthPerPixelPhaseEncode','ImageComments','ConsistencyInfo','WipMemBlock','Interpolation2D',...
-			 'SaturationStopTime','BaseResolution','DerivedVendorReportedEchoSpacing','RawImage'}; % Fields to exclude
-lRMFieldsASL = {'InversionTime'}; % Fields to exclude from ASL only
+			 'SaturationStopTime','BaseResolution','DerivedVendorReportedEchoSpacing','RawImage','PhaseOversampling','BolusDuration'}; % Fields to exclude
+lRMFieldsASL = {'InversionTime','LabelOffset','PostLabelDelay','NumRFBlocks','RFGap','MeanGzx10','PhiAdjust'}; % Fields to exclude from ASL only
 % The correct order of fields in the JSON
 fieldOrder = {'Manufacturer','ManufacturersModelName','DeviceSerialNumber','StationName','SoftwareVersions','HardcopyDeviceSoftwareVersion',...%BIDS fields
 	          'MagneticFieldStrength','ReceiveCoilName','ReceiveCoilActiveElements','GradientSetType','MRTransmitCoilSequence','MatrixCoilMode',...
@@ -346,7 +346,7 @@ for ii = 1:length(fList)
 
 		case 'Siemens_PCASL_3DGRASE_RUNDMCSI_1774_asl_W38'
 			%importStr{ii}.par.ASLContext = 'DeltaM*15';
-			for cc = 1:92, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',deltamStr)];end
+			for cc = 1:90, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',deltamStr)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Philips_PCASL_2DEPI_BioCog_Old'
@@ -384,8 +384,9 @@ for ii = 1:length(fList)
 			importStr{ii}.par.LabelingEfficiency = 0.83;
 
 		case {'Siemens_PASL_2DEPI_noBsup2_EPAD','Siemens_PASL_2DEPI_noBsup_EPAD'}
-			%importStr{ii}.par.ASLContext = '(Label+Control)*31';
+			%importStr{ii}.par.ASLContext = '(Label+Control)*31';(31*L+C)+L
 			for cc = 1:31, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',labelStr)];
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 0.6;
@@ -529,7 +530,7 @@ for ii = 1:length(fList)
 						importStr{ii}.par.BackgroundSuppressionPulseTime = [1.495 0.345];
 						importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
 					elseif importStr{ii}.par.PostLabelingDelay > 1.195
-						warning('Not properly calculated');
+						warning('Backgrou suppresion not properly calculated');
 						importStr{ii}.par.BackgroundSuppressionPulseTime = [1.195 0.245];
 						importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
 					else
@@ -792,6 +793,15 @@ for ii = 1:length(fList)
 						jsonLocal.(fn{1}) = jsonDicom.(fn{1});
 					end
 				end
+				
+				% Check if BolusDuration field is present and not in conflict with the BolusCutoffDelayTime
+				if isfield(jsonDicom,'BolusDuration')
+					if ~isfield(importStr{ii}.par,'BolusCutOffTimingSequence')
+						warning('Bolus duration obtained from DICOM, but not correctly redefined.');
+					elseif ~isequal(jsonDicom.BolusDuration,importStr{ii}.par.BolusCutOffTimingSequence)
+						warning('Bolus duration obtained from DICOM and the manuall defined one differ.');
+					end
+				end
 
 				%jsonLocal.EchoTime = jsonDicom.EchoTime;
 				%jsonLocal.MagneticFieldStrength = jsonDicom.MagneticFieldStrength;
@@ -802,8 +812,8 @@ for ii = 1:length(fList)
 				% Free info about the sequence, now just the scanner type+software
 				if isfield(jsonDicom,'ManufacturersModelName')
 					jsonLocal.PulseSequenceDetails = jsonDicom.ManufacturersModelName;
-				else
-					jsonLocal.PulseSequenceDetails = '';
+				%else
+				%	jsonLocal.PulseSequenceDetails = '';
 				end
 				if isfield(jsonDicom,'SoftwareVersions')
 					if ~isempty(jsonLocal.PulseSequenceDetails)
@@ -840,6 +850,12 @@ for ii = 1:length(fList)
 				
 				if isfield(importStr{ii}.x,'RepetitionTime')
 					jsonLocal.RepetitionTime = importStr{ii}.x.RepetitionTime;
+				end
+				
+				% Check if TR is a vector - replace by the maximum then
+				if length(jsonLocal.RepetitionTime) > 1
+					jsonLocal.RepetitionTime = max(jsonLocal.RepetitionTime);
+					warning('TR was a vector. Taking the maximum only.');
 				end
 									
 				% Fill in the number of averages
@@ -1198,7 +1214,7 @@ if isfield(jsonOut,'NumberSegments')
 	jsonOut = rmfield(jsonOut,'NumberSegments');
 end
 
-if isfield(jsonOut,'PhaseEncodingAxis') && strcmp(jsonOut.Manufacturer,'Philips')
+if isfield(jsonOut,'PhaseEncodingAxis')% && strcmp(jsonOut.Manufacturer,'Philips')
 	if ~isfield(jsonOut,'PhaseEncodingDirection')
 		jsonOut.PhaseEncodingDirection = jsonOut.PhaseEncodingAxis;
 	end
