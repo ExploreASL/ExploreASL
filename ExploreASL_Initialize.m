@@ -104,6 +104,9 @@ if ~isfield(x,'ProcessData')
         if bUseGUI
             InitChoice = questdlg('Would you like to initialize ExploreASL functionality, load a dataset and/or start the processing pipeline?', ...
                 'Start up ExploreASL', 'Process dataset', 'Only initialize ExploreASL functionality', 'Load dataset only', 'Only initialize ExploreASL functionality');
+            if isempty(InitChoice)
+                InitChoice = 'Cancel';
+            end
         else
             fprintf('Would you like to load a dataset or only initialize ExploreASL (set paths etc)?\n');
             cliChoice = input('Please press [1] for "Process dataset", [2] for "Only initialize ExploreASL functionality", [3] for "Load dataset only", or [4] to cancel: ');
