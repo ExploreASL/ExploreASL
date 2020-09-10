@@ -18,18 +18,18 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
 
 
     % Matlab
-    A=ver;
-    if ~isdeployed
-        for ii=1:length(A)
-            if  strcmp(A(ii).Name,'MATLAB')
-                Software.Matlab = [A(ii).Version '_' A(ii).Release(2:end-1)];
-            end
-        end
-    else
-        % Deployed fix
-        Software.Matlab = version;
-        Software.Matlab = Software.Matlab(1:(find(ismember(Software.Matlab,'.'),1,'first')+1)); % Extract matlab version until one char after first dot
-    end
+    %A=ver;
+    %if ~isdeployed
+    %    for ii=1:length(A)
+    %        if  strcmp(A(ii).Name,'MATLAB')
+    %            Software.Matlab = [A(ii).Version '_' A(ii).Release(2:end-1)];
+    %        end
+    %    end
+    %else
+    %    % Deployed fix
+    Software.Matlab = version;
+    Software.Matlab = Software.Matlab(1:(find(ismember(Software.Matlab,'.'),1,'first')+1)); % Extract matlab version until one char after first dot
+    %end
 
     % SPM
     [~, rev_spm] = spm('Ver');
