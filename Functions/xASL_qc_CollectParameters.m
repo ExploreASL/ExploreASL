@@ -90,19 +90,16 @@ switch ScanType
     case 'Structural'
         x.Output.(ScanType).Version_CAT12 = x.Output.SoftwareVersion.CAT12;
         x.Output.(ScanType).Version_LST = x.Output.SoftwareVersion.LST;
-        % General software versions (put this in structural only, to avoid redundant output)
+        
+        % General software versions (put this in structural only, to avoid redundant output
         x.Output.(ScanType).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL;
-        x.Output.(ScanType).Version_SPM12 = x.Output.SoftwareVersion.SPM12;
-        % Now remove the individual software version fields to avoid redundancy
-        if isfield(x.Output.SoftwareVersion,'CAT12'),       x.Output.SoftwareVersion = rmfield(x.Output.SoftwareVersion,'CAT12'); end
-        if isfield(x.Output.SoftwareVersion,'LST'),         x.Output.SoftwareVersion = rmfield(x.Output.SoftwareVersion,'LST'); end
-        if isfield(x.Output.SoftwareVersion,'ExploreASL'),  x.Output.SoftwareVersion = rmfield(x.Output.SoftwareVersion,'ExploreASL'); end
-        if isfield(x.Output.SoftwareVersion,'SPM12'),       x.Output.SoftwareVersion = rmfield(x.Output.SoftwareVersion,'SPM12'); end
+        x.Output.(ScanType).Version_Matlab = x.Output.SoftwareVersion.Matlab;
+        x.Output.(ScanType).Version_SPM12 = x.Output.SoftwareVersion.SPM12;        
     case {'ASL', 'dwi', 'func'}
         x.Output.(ScanType).Version_FSL = x.Output.SoftwareVersion.FSL;
-        % Now remove the individual software version field to avoid redundancy
-        if isfield(x.Output.SoftwareVersion,'FSL'),         x.Output.SoftwareVersion = rmfield(x.Output.SoftwareVersion,'FSL'); end
 end
+% now remove the SoftwareVersion field to avoid redundancy
+x.Output = rmfield(x.Output,'SoftwareVersion');
 
 %% -----------------------------------------------------------------------------------------------
 %% Save QC output
