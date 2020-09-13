@@ -60,7 +60,9 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 % EXAMPLE for Henk on MacOS: [ResultsTable] = xASL_qc_TestExploreASL('/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases', '/Users/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed', 1, 0,[],'henkjanmutsaerts@gmail.com');
 % EXAMPLE for VUmc server: [ResultsTable] = xASL_qc_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
+% ToDo: split this function in subfunctions, each function/subfunction
+% should be short, making it easier to read what this function does
 
 % ============================================================
 %% Admin
@@ -275,6 +277,12 @@ end
 % ============================================================
 %% 5) Test ExploreASL itself
 x = ExploreASL_Master('',0); % here we return the ExploreASL paths, which we removed above for testing SPM
+
+% Remove lock folders, useful for rerun when debugging
+LockFolders = xASL_adm_GetFileList(TestDirDest, '^locked$', 'FPListRec', [0 Inf], true);
+if ~isempty(LockFolders)
+    cellfun(@(y) xASL_delete(y), LockFolders, 'UniformOutput', false);
+end
 
 % Get list of data to test
 Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
