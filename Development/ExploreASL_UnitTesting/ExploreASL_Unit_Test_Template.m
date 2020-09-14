@@ -1,11 +1,14 @@
-function [name,module,submodule,passed,tests] = ExploreASL_Unit_Test_Template
+function UnitTest = ExploreASL_Unit_Test_Template
 %ExploreASL_Unit_Test_Template Individual unit test template
 %
-% INPUT:        name   - Name of the module or submodule which is tested
-%               module - Define if module or submodule is tested (true or false)
+% INPUT:        n/a
 %
-% OUTPUT:       test   - Structure with individual subtest results
-%               passed - Result of all subtests combined (true or false)
+% OUTPUT:       UnitTest  - Test structure
+%               name      - Name of tested module or submodule (char array)
+%               module    - True if module test
+%               submodule - True if submodule test
+%               passed    - Result of all subtests combined (true or false)
+%               test      - Structure with individual subtest results
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  ...
@@ -15,12 +18,12 @@ function [name,module,submodule,passed,tests] = ExploreASL_Unit_Test_Template
 % Copyright 2015-2020 ExploreASL
 
 %% Initialize test structure (this does not have to be changed)
-name = 'Template Test';
-module = true;
-submodule = false;
+UnitTest.name = 'Template Test';
+UnitTest.module = true;
+UnitTest.submodule = false;
 
 %% Test run 1
-tests(1).testname = 'Check A';
+UnitTest.tests(1).testname = 'Check A';
 
 % Start the test
 testTime = tic;
@@ -32,16 +35,16 @@ testTime = tic;
 testCondition = true;
 
 % Get test duration
-tests(1).duration = toc(testTime);
+UnitTest.tests(1).duration = toc(testTime);
 
 % Evaluate your test
-tests(1).passed = testCondition;
+UnitTest.tests(1).passed = testCondition;
 
 
 
 
 %% Test run 2
-tests(2).testname = 'Check B';
+UnitTest.tests(2).testname = 'Check B';
 
 % Start the test
 testTime = tic;
@@ -53,10 +56,10 @@ testTime = tic;
 testCondition = true;
 
 % Get test duration
-tests(2).duration = toc(testTime);
+UnitTest.tests(2).duration = toc(testTime);
 
 % Evaluate your test
-tests(2).passed = testCondition;
+UnitTest.tests(2).passed = testCondition;
 
 
 
@@ -66,8 +69,8 @@ tests(2).passed = testCondition;
 
 % Check if an individual subtest failed
 passed = true;
-for it = 1:numel(tests)
-    if ~tests(it).passed
+for it = 1:numel(UnitTest.tests)
+    if ~UnitTest.tests(it).passed
         passed = false;
     end
 end
