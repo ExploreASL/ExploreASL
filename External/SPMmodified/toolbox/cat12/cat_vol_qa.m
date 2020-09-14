@@ -503,18 +503,11 @@ function varargout = cat_vol_qa(action,varargin)
       % ----------------------------------------------------------------
       [nam,rev_spm] = spm('Ver');
       QAS.software.version_spm = rev_spm;
-      A = ver;
-      if isdeployed % xASL fix for deployed mode
-          version_matlab = version;
-          QAS.software.version_matlab = version_matlab(1:(find(ismember(version_matlab,'.'),1,'first')+1)); % Extract matlab version until one char after first dot
-      else
-          for i=1:length(A)
-            if strcmp(A(i).Name,'MATLAB')
-              QAS.software.version_matlab = A(i).Version; 
-            end
-          end
-      end
-      clear A
+      
+      Software.Matlab = version; %% EXPLOREASL HACK
+      QAS.software.version_matlab = Software.Matlab(1:(find(ismember(Software.Matlab, '.'), 1, 'first')+1));
+      % Extract matlab version until one char after first dot
+      
       % 1 line: Matlab, SPM12, CAT12 version number and GUI and experimental mode 
       if ispc,      OSname = 'WIN';
       elseif ismac, OSname = 'MAC';
@@ -576,15 +569,10 @@ function varargout = cat_vol_qa(action,varargin)
       QAS.software.system       = OSname;
       QAS.software.version_spm  = rev_spm;
       A = ver;
-      if isdeployed % xASL fix for deployed mode
-          version_matlab = version;
-          QAS.software.version_matlab = version_matlab(1:(find(ismember(version_matlab,'.'),1,'first')+1)); % Extract matlab version until one char after first dot
-      else
-          for i=1:length(A)
-            if strcmp(A(i).Name,'MATLAB')
-              QAS.software.version_matlab = A(i).Version; 
-            end
-          end
+      for i=1:length(A)
+        if strcmp(A(i).Name,'MATLAB')
+          QAS.software.version_matlab = A(i).Version; 
+        end
       end
       clear A
       QAS.software.version_cat  = ver_cat;

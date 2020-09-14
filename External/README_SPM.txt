@@ -340,10 +340,10 @@ OTHER CODE HACKS
 
 DATE+NAME:2020-09-02 MS (issue #114)
 DESCRIPTION:
-Matlab version information for deployed mode (bugfix)
+Make Matlab version information robust for both deployed and undeployed mode (bugfix)
 FILE:
-cat_io_report.m, 176 & following
-cat_vol_qa.m, 507 & following, 574 & following
+cat_io_report.m, 176
+cat_vol_qa.m, 507, 574
 
 DATE+NAME:2020-07-06 HM (issue #1)
 DESCRIPTION:
