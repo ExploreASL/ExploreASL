@@ -3,7 +3,7 @@
 > Complementary GUI to assist Arterial Spin Labelling analysis by ExploreASL
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-![Version](https://img.shields.io/badge/Version-0.1.0-yellow)
+![Version](https://img.shields.io/badge/Version-0.2.0-yellow)
 ![PythonVersions](https://img.shields.io/badge/Python-3.7%20%7C%203.8-green)
 
 ## Graphics and Examples
@@ -24,12 +24,7 @@
 ---
 ## Installation
 
-1) After unzipping the contents of this repository to some destination dst, navigate to: 
-dst / ExploreASL_GUI / compiled
-2) Run the ExploreASL_GUI_setup.exe installer
-3) Follow the instructions within the install wizard but **DO NOT** install the program into any administrative directory (i.e ProgramFiles) as the program depends on writing and reading from a json config file that will be located within whatever directory you specify. Preferably, install it within a non-administrative directory such as Documents, your MATLAB directory, a secondary drive,  etc. 
-
-
+To be updated soon
 
 ---
 ## Features

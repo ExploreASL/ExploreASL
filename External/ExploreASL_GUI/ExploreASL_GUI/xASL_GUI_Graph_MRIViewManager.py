@@ -10,6 +10,7 @@ import os
 
 
 class xASL_GUI_MRIViewManager(QWidget):
+
     signal_axesparms_updateplot = Signal()
 
     def __init__(self, parent):
@@ -48,14 +49,14 @@ class xASL_GUI_MRIViewManager(QWidget):
             self.error_init = False
 
         except FileNotFoundError:
-            QMessageBox.warning(self,
+            QMessageBox.warning(self.parent_cw,
                                 "Unable to load Plot & MRI Viewer",
                                 "No DataPar.json was detected in the analysis directory, which is required by the MRI"
                                 " Viewer to be able to select subject images",
                                 QMessageBox.Ok)
             self.error_init = True
         except KeyError:
-            QMessageBox.warning(self,
+            QMessageBox.warning(self.parent_cw,
                                 "Unable to load Plot & MRI Viewer",
                                 "The DataPar.json file either did not contain the appropriate regex key or the regex"
                                 " value was corrupt",
@@ -197,6 +198,15 @@ class xASL_GUI_MRIViewManager(QWidget):
     # Functions Designed to send signals out and sometimes set up parameter dicts
     #############################################################################
     def sendSignal_plotupdate_axescall(self):
+        """
+        On a change in any of the Axes Parameters, a signal is sent out to update the artist
+        """
+        self.signal_axesparms_updateplot.emit()
+
+    def on_subset(self):
+        """
+        On a change in the data being subset, a signal is sent out to update the artist
+        """
         self.signal_axesparms_updateplot.emit()
 
     ##########################################################

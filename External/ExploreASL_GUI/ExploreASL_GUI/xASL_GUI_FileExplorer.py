@@ -34,7 +34,7 @@ class xASL_FileExplorer(QWidget):
             self.hlay_btns.addWidget(btn)
 
         # Define the file system model and its display container
-        self.treev_file = QTreeView()
+        self.treev_file = xASL_FileView()
         self.treev_file.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treev_file.customContextMenuRequested.connect(self.menuContextTree)
         self.model_file = QFileSystemModel()
@@ -227,3 +227,21 @@ class xASL_FileExplorer(QWidget):
             print(f"self.path_index={self.path_index}")
             print(f"current directory post-change: {self.model_file.filePath(self.treev_file.rootIndex())}")
             print("----------------------------\n")
+
+
+class xASL_FileView(QTreeView):
+    """
+    Slightly altered QTreeview to allow for more user-friendly functionality relative to the default implementation.
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+    def mouseDoubleClickEvent(self, event):
+        """
+        Altered double-click to only operate based on left clicks, not right clicks.
+        @param event: QMouseEvent that triggered this slot.
+        """
+        if event.button() == Qt.RightButton:
+            return
+        else:
+            super(xASL_FileView, self).mouseDoubleClickEvent(event)

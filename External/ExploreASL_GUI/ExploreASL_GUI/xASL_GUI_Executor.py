@@ -130,7 +130,6 @@ class xASL_Executor(QMainWindow):
         # Window Size and initial visual setup
         self.setMinimumSize(self.config["ScreenSize"][0] // 2, self.config["ScreenSize"][1] // 2)
         self.resize(self.config["ScreenSize"][0] // 2, self.config["ScreenSize"][1] // 2)
-        print(self.size())
         self.cw = QWidget(self)
         self.setCentralWidget(self.cw)
         self.mainlay = QHBoxLayout(self.cw)
@@ -170,23 +169,30 @@ class xASL_Executor(QMainWindow):
         self.grp_procmod = QGroupBox(title="Process Modifier")
 
         # Run Button
-        self.btn_runExploreASL = QPushButton("Run Explore ASL", self.cw, clicked=self.run_Explore_ASL)
+        self.frame_runExploreASL = QFrame()
+        self.frame_runExploreASL.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
+        self.frame_runExploreASL.setLineWidth(0)
+        # self.frame_runExploreASL.setStyleSheet("border: 2px solid gray; border-radius: 3px; ")
+        self.vlay_frame_runExploreASL = QVBoxLayout(self.frame_runExploreASL)
+        self.btn_runExploreASL = QPushButton("Run Explore ASL", clicked=self.run_Explore_ASL)
         self.btn_runExploreASL.setEnabled(False)
         run_icon_font = QFont()
         run_icon_font.setPointSize(24)
         self.btn_runExploreASL.setFont(run_icon_font)
         set_widget_icon(self.btn_runExploreASL, self.config, "run_icon.svg", (75, 75))
-        self.btn_runExploreASL.setMinimumHeight(75)
+        self.btn_runExploreASL.setMinimumHeight(80)
+        self.btn_runExploreASL.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.vlay_frame_runExploreASL.addWidget(self.btn_runExploreASL)
 
         # Add main players to the appropriate splitters
         self.splitter_leftside.addWidget(self.grp_taskschedule)
         self.splitter_leftside.addWidget(self.grp_procmod)
         self.splitter_rightside.addWidget(self.grp_textoutput)
-        self.splitter_rightside.addWidget(self.btn_runExploreASL)
+        self.splitter_rightside.addWidget(self.frame_runExploreASL)
 
         # Adjust splitter spacing, handle width, and display
-        self.splitter_rightside.setSizes([self.height() // 1.25, self.height() - self.height() // 1.25])
-        self.splitter_leftside.setSizes([self.height() // 1.625, self.height() - self.height() // 1.625])
+        self.splitter_rightside.setSizes([self.height() - 100, 100])
+        self.splitter_leftside.setSizes([self.height() - 200, 200])
         self.splitter_rightside.setHandleWidth(25)
         self.splitter_leftside.setHandleWidth(25)
         handle_path = os.path.join(self.config["ProjectDir"], "media", "3_dots_horizontal.svg").replace('\\', '/')
@@ -200,7 +206,6 @@ class xASL_Executor(QMainWindow):
     # Left side setup; define the number of studies
     def UI_Setup_TaskScheduler(self):
         self.vlay_scrollholder = QVBoxLayout(self.grp_taskschedule)
-        self.vlay_scrollholder.setContentsMargins(0, 0, 0, 0)
         self.scroll_taskschedule = QScrollArea()
         self.cont_taskschedule = QWidget()
         self.scroll_taskschedule.setWidget(self.cont_taskschedule)
@@ -907,6 +912,23 @@ class xASL_Executor(QMainWindow):
             self.threadpool.start(runnable)
 
         self.begin_movie()
+        begin_msg = r"""
+##################################################################################
+  ______            _                          _____ _         _____ _    _ _____ 
+ |  ____|          | |                  /\    / ____| |       / ____| |  | |_   _|
+ | |__  __  ___ __ | | ___  _ __ ___   /  \  | (___ | |      | |  __| |  | | | |  
+ |  __| \ \/ / '_ \| |/ _ \| '__/ _ \ / /\ \  \___ \| |      | | |_ | |  | | | |  
+ | |____ >  <| |_) | | (_) | | |  __// ____ \ ____) | |____  | |__| | |__| |_| |_ 
+ |______/_/\_\ .__/|_|\___/|_|  \___/_/    \_\_____/|______|  \_____|\____/|_____|
+             | |                                                                  
+             |_|                                                                  
+  ______                     _                                                    
+ |  ____|                   | |                                                   
+ | |__  __  _____  ___ _   _| |_ ___  _ __                                        
+ |  __| \ \/ / _ \/ __| | | | __/ _ \| '__|                                       
+ | |____ >  <  __/ (__| |_| | || (_) | |                                          
+ |______/_/\_\___|\___|\__,_|\__\___/|_|                                          """
+        print(begin_msg)
 
 
 class ExploreASL_WatcherSignals(QObject):
@@ -957,8 +979,8 @@ class ExploreASL_Watcher(QRunnable):
         self.workload_translator = translators["ExploreASL_Filename2Workload"]
         if self.config["DeveloperMode"]:
             print(
-                f"Initialized a watcher for the directory {self.dir_to_watch} and will communicate with the progressbar "
-                f"at Python idx: {self.study_idx}")
+                f"Initialized a watcher for the directory {self.dir_to_watch} "
+                f"and will communicate with the progressbar at Python idx: {self.study_idx}")
 
     # Processes the information sent from the event hander and emits signals to update widgets in the main Executor
     @Slot(str)

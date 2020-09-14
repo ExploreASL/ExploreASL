@@ -6,6 +6,7 @@ from matplotlib.backend_bases import PickEvent
 from matplotlib.collections import PathCollection
 import numpy as np
 from nilearn import image
+from glob import glob
 import os
 import json
 from pprint import pprint
@@ -35,7 +36,9 @@ class xASL_GUI_MRIViewArtist(QWidget):
         self.subjects_runs_dict = {}
         self.current_subject = None
         self.current_cbf_img = np.zeros((121, 145, 121))
+        self.current_cbf_max = np.nanmax(self.current_cbf_img)
         self.current_t1_img = np.zeros((121, 145, 121))
+        self.current_t1_max = np.nanmax(self.current_t1_img)
         self.get_filenames()
 
         self.plotting_fig, self.plotting_axes = plt.subplots(nrows=1, ncols=1)
@@ -70,42 +73,103 @@ class xASL_GUI_MRIViewArtist(QWidget):
             match = self.regex.search(subject)
             if match:
                 for run in os.listdir(os.path.join(self.analysis_dir, subject)):
-                    if not os.path.isdir(os.path.join(os.path.join(self.analysis_dir, subject, run))):
+                    run_path = os.path.join(self.analysis_dir, subject, run)
+                    if not os.path.isdir(run_path):
+                        print(f"{run_path} is not a directory")
                         continue
-                    if os.path.exists(os.path.join(self.analysis_dir, subject, run, "CBF.nii")):
+                    if len(glob(os.path.join(self.analysis_dir, subject, run, "CBF.nii*"))) > 0:
                         name = subject + "_" + run
-                        t1_file = os.path.join(self.analysis_dir, "Population", f"rT1_{subject}.nii")
-                        cbf_file = os.path.join(self.analysis_dir, "Population", f"qCBF_{name}.nii")
+                        t1_file = glob(os.path.join(self.analysis_dir, "Population", f"rT1_{subject}.nii*"))
+                        cbf_file = glob(os.path.join(self.analysis_dir, "Population", f"qCBF_{name}.nii*"))
                         self.subjects_runs_dict.setdefault(name, {})
                         self.subjects_runs_dict[name]["T1"] = t1_file
                         self.subjects_runs_dict[name]["CBF"] = cbf_file
-
+        print("\nAttempted to locate all subject_run images based on the structure of the analysis directory.\n"
+              "This is what was found:")
         pprint(self.subjects_runs_dict)
 
     def clear_axes(self):
         for ax in self.plotting_fig.axes:
             ax.clear()
 
+    def reset_images_to_default_black(self):
+        """
+        Resets the current subject back to none and the underlying images as black volumes
+        """
+        self.current_subject = None
+        self.current_cbf_img = np.zeros((121, 145, 121))
+        self.current_cbf_max = np.nanmax(self.current_cbf_img)
+        self.current_t1_img = np.zeros((121, 145, 121))
+        self.current_t1_max = np.nanmax(self.current_t1_img)
+
+    def check_if_files_exist(self, name):
+        """
+        Wrapper for error detection around not finding a subject
+        @param name: The subject_run name extracted from the dataframe (i.e sub_014_ASL_1)
+        """
+        subject = re.search(pattern=self.subject_regex_stripped, string=name).group()
+        t1_path = os.path.join(self.analysis_dir, "Population", f"rT1_{subject}.nii")
+        cbf_path = os.path.join(self.analysis_dir, "Population", f"qCBF_{name}.nii")
+        check_t1 = glob(t1_path)
+        check_cbf = glob(cbf_path)
+        if len(check_t1) == 0:
+            QMessageBox().warning(self.parent_cw,
+                                  "Discrepancy between data and images",
+                                  f"An error occurred while attempting to fetch the T1 data for subject {subject}\n"
+                                  f"Please check if the following file exists:\n{t1_path}\n"
+                                  f"If the file does not exist, you must rerun the analysis for this subject.",
+                                  QMessageBox.Ok)
+            return
+        if len(check_cbf) == 0:
+            QMessageBox().warning(self.parent_cw,
+                                  "Discrepancy between data and images",
+                                  f"An error occurred while attempting to fetch the CBF data for subject_run {name}\n"
+                                  f"Please check if the following file exists:\n{cbf_path}\n"
+                                  f"If the file does not exist, you must rerun the analysis for this subject & run",
+                                  QMessageBox.Ok)
+            return
+
     def switch_subject(self, name):
+        """
+        Detects that the combobox corresponding to subject_run selection has changed and updates the current_image
+        variables appropriately before wrap-calling the plotupdate functions
+        @param name: The subject_run name extracted from the dataframe (i.e sub_014_ASL_1)
+        """
         if name == "Select a subject and run":
-            self.current_subject = None
-            self.current_cbf_img = np.zeros((121, 145, 121))
-            self.current_t1_img = np.zeros((121, 145, 121))
+            self.reset_images_to_default_black()
         else:
+            self.current_subject = name
+
+            # Get the images and if an error occurs, check whether the files actually exist. If they do not exist,
+            # inform the user and reset the images to be black volumes
             try:
                 self.current_cbf_img = image.load_img(self.subjects_runs_dict[name]["CBF"]).get_fdata()
+                self.current_cbf_max = np.nanmax(self.current_cbf_img)
                 self.current_t1_img = image.load_img(self.subjects_runs_dict[name]["T1"]).get_fdata()
-                self.current_subject = name
+                self.current_t1_max = np.nanmax(self.current_t1_img)
+            except ValueError:
+                self.check_if_files_exist(name=name)
+                self.reset_images_to_default_black()
             except KeyError:
-                QMessageBox().warning(self,
-                                      "Discrepancy between data and images",
-                                      f"An error occurred while attempting to fetch image data for subject_run:\n"
-                                      f"{name}. Please check whether see if this subject needs to be re-run",
-                                      QMessageBox.Ok)
-                self.current_subject = None
-                self.current_cbf_img = np.zeros((121, 145, 121))
-                self.current_t1_img = np.zeros((121, 145, 121))
+                # Try to update the subject runs dict just in case the user has recovered the files
+                self.get_filenames()
+                try:
+                    self.current_cbf_img = image.load_img(self.subjects_runs_dict[name]["CBF"]).get_fdata()
+                    self.current_cbf_max = np.nanmax(self.current_cbf_img)
+                    self.current_t1_img = image.load_img(self.subjects_runs_dict[name]["T1"]).get_fdata()
+                    self.current_t1_max = np.nanmax(self.current_t1_img)
+                except KeyError:
+                    QMessageBox().warning(self.parent_cw,
+                                          "Discrepancy between data and images",
+                                          f"An error occurred while attempting to fetch image data for subject_run "
+                                          f"{name}\n"
+                                          f"It is possible that the images exist in the Population directory, but the "
+                                          f"program could not fetch them due to a possible discrepancy between the "
+                                          f"Population folder and the rest of the analysis folder.",
+                                          QMessageBox.Ok)
+                    self.reset_images_to_default_black()
 
+        # Regardless of outcome, tell the canvases to update
         self.plotupdate_axialslice(self.manager.slider_axialslice.value())
         self.plotupdate_coronalslice(self.manager.slider_coronalslice.value())
         self.plotupdate_sagittalslice(self.manager.slider_sagittalslice.value())
@@ -119,7 +183,6 @@ class xASL_GUI_MRIViewArtist(QWidget):
                                ))
         # Index into the 2D matrix of X-coords and Y-coords, then flatten into a list
         coordinates = coords[idx].flatten()
-        # print(coordinates)
         # In the case of a stripplot, you must convert the numeric x axis position into the nearest label
         if self.manager.cmb_axestype.currentText() == "Strip Plot":
             parameters = [coord2label[round(coordinates[0])], coordinates[1]]
@@ -128,10 +191,21 @@ class xASL_GUI_MRIViewArtist(QWidget):
 
         x_var = self.manager.axes_arg_x()
         y_var = self.manager.axes_arg_y()
-        # print(f"X Variable: {x_var}; Y Variable: {y_var}")
 
         df = self.parent_cw.loader.long_data
         subject = df.loc[(df[x_var] == parameters[0]) & (df[y_var] == parameters[1]), "SUBJECT"].tolist()
+
+        # Sometimes if a dtype change has occurred and this is a stipplot, the data may still be numerical, but the
+        # graph interpreted the new data correctly as categorical, resulting in strings
+        if len(subject) == 0 and self.manager.cmb_axestype.currentText() == "Strip Plot":
+            df[x_var] = df[x_var].values.astype(np.str)
+            subject = df.loc[(df[x_var] == parameters[0]) & (df[y_var] == parameters[1]), "SUBJECT"].tolist()
+
+        if self.parent_cw.config["DeveloperMode"]:
+            print(f"Inside on_pick function in the MRIViewArtist.\n"
+                  f"Based on the click made, the following subjects correspond to datapoints nearest to the click:\n"
+                  f"{subject}\nSelecting the closest one.\n")
+
         if len(subject) == 1:
             cmb_idx = self.manager.cmb_selectsubject.findText(subject[0])
             if cmb_idx == -1:
@@ -191,23 +265,47 @@ class xASL_GUI_MRIViewArtist(QWidget):
     def plotupdate_axialslice(self, value):
 
         self.axial_t1.clear()
-        self.axial_t1.imshow(np.rot90(self.current_t1_img[:, :, value]), cmap="gray")
+        self.axial_t1.imshow(np.rot90(self.current_t1_img[:, :, value]).squeeze(),
+                             cmap="gray",
+                             vmin=0,
+                             vmax=self.current_t1_max
+                             )
         self.axial_cbf.clear()
-        self.axial_cbf.imshow(np.rot90(self.current_cbf_img[:, :, value]), cmap="gray")
+        self.axial_cbf.imshow(np.rot90(self.current_cbf_img[:, :, value]).squeeze(),
+                              cmap="gray",
+                              vmin=0,
+                              vmax=self.current_cbf_max,
+                              )
         self.axial_canvas.draw()
 
     def plotupdate_coronalslice(self, value):
 
         self.coronal_t1.clear()
-        self.coronal_t1.imshow(np.rot90(self.current_t1_img[:, value, :]), cmap="gray")
+        self.coronal_t1.imshow(np.rot90(self.current_t1_img[:, value, :]).squeeze(),
+                               cmap="gray",
+                               vmin=0,
+                               vmax=self.current_t1_max
+                               )
         self.coronal_cbf.clear()
-        self.coronal_cbf.imshow(np.rot90(self.current_cbf_img[:, value, :]), cmap="gray")
+        self.coronal_cbf.imshow(np.rot90(self.current_cbf_img[:, value, :]).squeeze(),
+                                cmap="gray",
+                                vmin=0,
+                                vmax=self.current_cbf_max,
+                                )
         self.coronal_canvas.draw()
 
     def plotupdate_sagittalslice(self, value):
 
         self.sagittal_t1.clear()
-        self.sagittal_t1.imshow(np.rot90(self.current_t1_img[value, :, :]), cmap="gray")
+        self.sagittal_t1.imshow(np.rot90(self.current_t1_img[value, :, :]).squeeze(),
+                                cmap="gray",
+                                vmin=0,
+                                vmax=self.current_t1_max
+                                )
         self.sagittal_cbf.clear()
-        self.sagittal_cbf.imshow(np.rot90(self.current_cbf_img[value, :, :]), cmap="gray")
+        self.sagittal_cbf.imshow(np.rot90(self.current_cbf_img[value, :, :]).squeeze(),
+                                 cmap="gray",
+                                 vmin=0,
+                                 vmax=self.current_cbf_max,
+                                 )
         self.sagittal_canvas.draw()

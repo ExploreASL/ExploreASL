@@ -1,9 +1,12 @@
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit, DandD_FileExplorer2ListWidget
+from ExploreASL_GUI.xASL_GUI_HelperFuncs_StringOps import set_os_dependent_text
 import json
 import os
+from glob import iglob, glob
 from tdda import rexpy
+from more_itertools import peekable
 
 
 class xASL_Parms(QMainWindow):
@@ -23,7 +26,7 @@ class xASL_Parms(QMainWindow):
         self.mainlay = QVBoxLayout(self.cw)
         self.setLayout(self.mainlay)
         self.setWindowTitle("Explore ASL - Parameter File Maker")
-        # self.setWindowIcon(QIcon(os.path.join(self.config["ProjectDir"], "media", "ExploreASL_logo.png")))
+
         # Buttons for executing the fundamental functions
         btn_font = QFont()
         btn_font.setPointSize(16)
@@ -32,6 +35,7 @@ class xASL_Parms(QMainWindow):
         for btn in [self.btn_make_parms, self.btn_load_parms]:
             btn.setFont(btn_font)
             btn.setMinimumHeight(50)
+
         # TabWidget Setup and containers
         self.tab_main = QTabWidget(self.cw)
         self.mainlay.addWidget(self.tab_main)
@@ -44,19 +48,26 @@ class xASL_Parms(QMainWindow):
 
         # Misc Players
         self.import_error_logger = []
+        self.asl_json_sidecar_data = {}
+        self.can_update_slicereadouttime = False
 
         self.UI_Setup_Basic()
         self.UI_Setup_Advanced()
+
+        # After all UI is set up, make certain connections
+        self.le_study_dir.textChanged.connect(self.update_asl_json_sidecar_data)
 
     def UI_Setup_Basic(self):
         self.formlay_basic = QFormLayout(self.cont_basic)
         self.hlay_easl_dir, self.le_easl_dir, self.btn_easl_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_exploreasl_dir,
-            default=self.config['ExploreASLRoot'])
+            default=''
+        )
         self.le_studyname = QLineEdit(text="My Study")
         self.hlay_study_dir, self.le_study_dir, self.btn_study_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_study_dir,
-            default=self.config["DefaultRootDir"])
+            default=''
+        )
         self.le_subjectregex = QLineEdit(text='\\d+')
         self.le_subjectregex.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.lst_included_subjects = DandD_FileExplorer2ListWidget()
@@ -64,13 +75,13 @@ class xASL_Parms(QMainWindow):
         self.btn_included_subjects = QPushButton("Clear Subjects", clicked=self.clear_included)
         self.lst_excluded_subjects = DandD_FileExplorer2ListWidget()
         self.btn_excluded_subjects = QPushButton("Clear Excluded", clicked=self.clear_excluded)
-        self.le_run_names = QLineEdit(text="ASL_1", placeholderText="Indicate run names, "
-                                                                    "each separated by a comma and space")
-        self.le_run_options = QLineEdit(placeholderText="Indicate option names, "
-                                                        "each separated by a comma and space")
+        self.le_run_names = QLineEdit(text="ASL_1",
+                                      placeholderText="Indicate run names, each separated by a comma and space")
+        self.le_run_options = QLineEdit(placeholderText="Indicate option names, each separated by a comma and space")
         self.cmb_vendor = self.make_cmb_and_items(["Siemens", "Philips", "GE", "GE_WIP"])
         self.cmb_sequencetype = self.make_cmb_and_items(["3D GRaSE", "2D EPI", "3D Spiral"])
         self.cmb_labelingtype = self.make_cmb_and_items(["Q2 TIPS PASL", "pCASL/CASL"])
+        self.cmb_labelingtype.currentTextChanged.connect(self.autocalc_slicereadouttime)
         self.cmb_m0_isseparate = self.make_cmb_and_items(["Proton density scan (M0) was acquired",
                                                           "Use mean control ASL as proton density mimic"])
         self.cmb_m0_posinasl = self.make_cmb_and_items(
@@ -109,10 +120,12 @@ class xASL_Parms(QMainWindow):
         self.cmb_nsup_pulses = self.make_cmb_and_items(["0", "2", "4", "5"], 1)
         self.cmb_readout_dim = self.make_cmb_and_items(["3D", "2D"])
         self.spinbox_initialpld = QDoubleSpinBox(maximum=2500, minimum=0, value=1800)
+        self.spinbox_initialpld.valueChanged.connect(self.autocalc_slicereadouttime)
         self.spinbox_labdur = QDoubleSpinBox(maximum=2000, minimum=0, value=800)
+        self.spinbox_labdur.valueChanged.connect(self.autocalc_slicereadouttime)
         self.hlay_slice_readout = QHBoxLayout()
         self.cmb_slice_readout = self.make_cmb_and_items(["Use Indicated Value", "Use Shortest TR"])
-        self.spinbox_slice_readout = QDoubleSpinBox(maximum=100, minimum=0, value=37)
+        self.spinbox_slice_readout = QDoubleSpinBox(maximum=1000, minimum=0, value=37)
         self.hlay_slice_readout.addWidget(self.cmb_slice_readout)
         self.hlay_slice_readout.addWidget(self.spinbox_slice_readout)
         for description, widget in zip(["Number of Suppression Pulses", "Readout Dimension",
@@ -189,10 +202,157 @@ class xASL_Parms(QMainWindow):
                                 [self.chk_detectfsl, self.chk_outputcbfmaps]):
             self.formlay_envparms.addRow(desc, widget)
 
+    ################################
+    # Json Sidecar Related Functions
+    ################################
+    def update_asl_json_sidecar_data(self, analysis_dir_text):
+        """
+        Receives a signal from the le_study_dir lineedit and will accordingly update several fields
+        @param analysis_dir_text: the text updated from the analysis directory
+        """
+
+        # First set of checks
+        if any([analysis_dir_text == '',  # Do not react to blank lines
+                not os.path.exists(analysis_dir_text),  # Do not react to nonexistent paths
+                ]):
+            return
+
+        # Second set of checks
+        if any([not os.path.isdir(analysis_dir_text),  # Must be a directory
+                os.path.basename(analysis_dir_text) != "analysis"
+                ]):
+            return
+
+        if self.config["DeveloperMode"]:
+            print(f"Detected an update to the specified analysis directory. Attempting to find asl json sidecars and "
+                  f"infer appropriate field values from within.\n")
+
+        # Retrieve any asl json sidecar
+        asl_sides_legacy = iglob(os.path.join(analysis_dir_text, "**", "ASL4D.json"), recursive=True)
+        asl_sides_legacy = peekable(asl_sides_legacy)
+        asl_sides_bids = iglob(os.path.join(analysis_dir_text, "**", "*_asl.json"), recursive=True)
+        asl_sides_bids = peekable(asl_sides_bids)
+
+        # Disengage if there is no luck finding any sidecar
+        if not asl_sides_legacy:
+            if not asl_sides_bids:
+                return
+            else:
+                asl_sidecar = next(asl_sides_bids)
+        else:
+            asl_sidecar = next(asl_sides_legacy)
+        try:
+            with open(asl_sidecar) as sidecar_reader:
+                self.asl_json_sidecar_data = json.load(sidecar_reader)
+        except json.decoder.JSONDecodeError as json_e:
+            QMessageBox.warning(self.parent(),
+                                "Json sidecars not in proper json format",
+                                f"ExploreASL GUI has detected that the json sidecars present for this dataset "
+                                f"are not in appropriate format. The following inconsistency was found:\n{json_e}",
+                                QMessageBox.Ok)
+            return
+
+        # Now we can update a couple of fields
+        # First, the vendor
+        try:
+            idx = self.cmb_vendor.findText(self.asl_json_sidecar_data["Manufacturer"])
+            if idx != -1:
+                self.cmb_vendor.setCurrentIndex(idx)
+        except KeyError:
+            if self.config["DeveloperMode"]:
+                print(f"Warning in update_asl_json_sidecar_data. The field: Manufacturer was not present in the "
+                      f"detected asl json sidecar.\n")
+
+        # Next, the readout dimension
+        try:
+            idx = self.cmb_readout_dim.findText(self.asl_json_sidecar_data["MRAcquisitionType"])
+            if idx != -1:
+                self.cmb_readout_dim.setCurrentIndex(idx)
+        except KeyError:
+            if self.config["DeveloperMode"]:
+                print(f"Warning in update_asl_json_sidecar_data. The field: MRAcquisitionType was not present in the "
+                      f"detected asl json sidecar.\n")
+
+        # Next the inversion time (i.e Post-Label Duration)
+        try:
+            value = self.asl_json_sidecar_data["InversionTime"]
+            self.spinbox_labdur.setValue(value * 1000)
+        except KeyError:
+            if self.config["DeveloperMode"]:
+                print(f"Warning in update_asl_json_sidecar_data. The field: InversionTime was not present in the "
+                      f"detected asl json sidecar.\n")
+
+        # Next get a few essentials for auto-calculating the SliceReadoutTime
+        try:
+            has_tr = "RepetitionTime" in self.asl_json_sidecar_data
+            has_nslices = "NumberOfSlices" in self.asl_json_sidecar_data
+            print(has_tr, has_nslices)
+            if has_tr and has_nslices:
+                self.can_update_slicereadouttime = True
+            else:
+                self.can_update_slicereadouttime = False
+        except KeyError:
+            pass
+
+        # Retrieve any M0 json sidecar
+        m0_sides_legacy = iglob(os.path.join(analysis_dir_text, "**", "M0.json"), recursive=True)
+        m0_sides_legacy = peekable(m0_sides_legacy)
+        m0_sides_bids = iglob(os.path.join(analysis_dir_text, "**", "*_m0scan.json"), recursive=True)
+        m0_sides_bids = peekable(m0_sides_bids)
+
+        # Disengage if there is no luck finding any m0 sidecar
+        if not m0_sides_legacy:
+            if not m0_sides_bids:
+                return
+            else:
+                m0_sidecar = next(m0_sides_bids)
+        else:
+            m0_sidecar = next(m0_sides_legacy)
+
+        if m0_sidecar:
+            idx = self.cmb_m0_isseparate.findText("Proton density scan (M0) was acquired")
+            if idx != -1:
+                self.cmb_m0_isseparate.setCurrentIndex(idx)
+
+            # If there was an M0 sidecar, it stands to reason there was also background suppression and that field
+            # should be set appropriately
+            try:
+                manufac = self.asl_json_sidecar_data["Manufacturer"]
+                acq_type = self.asl_json_sidecar_data["MRAcquisitionType"]
+                if manufac == "GE":
+                    idx = self.cmb_nsup_pulses.findText('5')
+                elif manufac == "Philips" and acq_type == "2D":
+                    idx = self.cmb_nsup_pulses.findText("2")
+                elif manufac == "Philips" and acq_type == "3D":
+                    idx = self.cmb_nsup_pulses.findText("4")
+                elif manufac == "Siemens":
+                    idx = self.cmb_nsup_pulses.findText("2")
+                else:
+                    if self.config["DeveloperMode"]:
+                        print(f"Warning in update_asl_json_sidecar_data. An M0 json sidecar was detected, but its "
+                              f"Manufacturer field was not present, preventing the appropriate setting for the number "
+                              f"of background suppression pulses to be established.\n")
+                    return
+                self.cmb_nsup_pulses.setCurrentIndex(idx)
+
+            except KeyError:
+                pass
+
+    def autocalc_slicereadouttime(self):
+        if not self.can_update_slicereadouttime or self.cmb_labelingtype.currentText() != "pCASL/CASL":
+            return
+
+        tr = self.asl_json_sidecar_data["RepetitionTime"]*1000
+        labdur = self.spinbox_labdur.value()
+        ini_pld = self.spinbox_initialpld.value()
+        nslices = self.asl_json_sidecar_data["NumberOfSlices"]
+        readouttime = round((tr - labdur - ini_pld) / nslices, 2)
+
+        self.spinbox_slice_readout.setValue(readouttime)
+
     ################
     # Misc Functions
     ################
-
     # Clears the currently-included subjects list and resets the regex
     def clear_included(self):
         self.lst_included_subjects.clear()
@@ -236,7 +396,9 @@ class xASL_Parms(QMainWindow):
                                       QMessageBox.Ok)
                 return
             else:
-                self.le_easl_dir.setText(exploreasl_filepath)
+                set_os_dependent_text(linedit=self.le_easl_dir,
+                                      config_ossystem=self.config["Platform"],
+                                      text_to_set=exploreasl_filepath)
         else:
             QMessageBox().warning(self,
                                   "The filepath you specified does not exist",
@@ -266,7 +428,9 @@ class xASL_Parms(QMainWindow):
                                       QMessageBox.Ok)
                 return
             else:
-                self.le_study_dir.setText(analysisdir_filepath)
+                set_os_dependent_text(linedit=self.le_study_dir,
+                                      config_ossystem=self.config["Platform"],
+                                      text_to_set=analysisdir_filepath)
         else:
             QMessageBox().warning(self,
                                   "The filepath you specified does not exist",
@@ -626,6 +790,13 @@ class xASL_Parms(QMainWindow):
 
     @staticmethod
     def make_droppable_clearable_le(le_connect_to=None, btn_connect_to=None, default=''):
+        """
+        Convenience function for creating a lineedit-button pair within a HBoxlayout
+        @param le_connect_to: Optional; the function that the linedit's textChanged signal should connect to
+        @param btn_connect_to: Optional; the function that the button's clicked signal should connect to
+        @param default: the default text to specify
+        @return: HBoxlayout, DandD_FileExplorer2LineEdit, QPushButton, in that order
+        """
         hlay = QHBoxLayout()
         le = DandD_FileExplorer2LineEdit()
         le.setText(default)

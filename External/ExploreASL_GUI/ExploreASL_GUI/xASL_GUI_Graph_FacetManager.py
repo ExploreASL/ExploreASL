@@ -88,12 +88,6 @@ class xASL_GUI_FacetManager(QWidget):
             print("UI_Setup_Connections the artist had a value of None")
 
     def UI_Setup_CommonParameters(self):
-        # # Set up the overall plot style
-        # self.cmb_plotstyle = QComboBox()
-        # self.cmb_plotstyle.addItems(self.plotstylenames)
-        # # self.cmb_plotstyle.currentTextChanged.connect(self.plotupdate_plotstyle)  # DO NOT FORGET THIS!!!!!!!!!!!!!!
-        # self.formlay_commonparms.addRow("Overall Plot Style", self.cmb_plotstyle)
-
         # Set up the padding
         self.spinbox_toppad = QDoubleSpinBox()
         self.spinbox_bottompad = QDoubleSpinBox()
@@ -131,7 +125,7 @@ class xASL_GUI_FacetManager(QWidget):
         self.chk_despine = QCheckBox(checked=True)
         self.chk_margin_titles = QCheckBox(checked=True)
 
-        # Generate Mappings
+        # Generate Facet Figure-level Mappings
         self.fig_kwargs = {"row": self.le_row.text,
                            "col": self.le_col.text,
                            "sharex": self.chk_sharex.isChecked,
@@ -408,6 +402,9 @@ class xASL_GUI_FacetManager(QWidget):
 
     def sendSignal_plotupdate_figurecall(self):
         self.signal_figparms_updateplot.emit()
+
+    def on_subset(self):
+        self.sendSignal_plotupdate_figurecall()
 
 
 class xASL_GUI_FacetLegend(QWidget):
