@@ -1,3 +1,35 @@
+# ExploreASL v1.2.1
+
+----
+
+
+## Bug Fixes
+* xASL_qc_TestExploreASL: Remove locked folders if rerun
+* #90 xASL_io_Nifti2Im: manage the detection of odd scaling
+* #93 xASL_SysMove: diz illegal symbols Windows
+* #102 xASL_wrp_CreatePopulationTemplates: minor bugfix
+* #104 Fix creation ResultsTable for TestCases (also #86)
+* #114 Acquiring Matlab version doesn't crash anymore in deployed mode
+* #115 Fixing NaNs problem in M0 mask computation
+* #118 xASL_adm_GzipAllFiles doesn't crash anymore in Windows
+
+* #116 ExploreASL testing fixes:
+** Edit header of saved .tsv-file
+** Cosmetic changes\nUnzip before SPM
+** Clear variables before loading .mat
+** Replace spaces in headers with underscores (which happened automatically apparently upon saving)
+** Remove SPM cellstring 
+
+
+---
+## ASL-BIDS-related bug fixes
+* #96 Fix order of magnitude in JSON sidecars
+* #109 No warning if SliceReadoutTime not provided in DataPar
+* #110 xASL_bids_parms2BIDS.m now deals correctly with vectors and SliceReadoutTime = 'shortestTR': created function for this: xASL_quant_SliceReadoutTime_Shortest_TR
+
+
+----
+
 # ExploreASL v1.2.0
 
 ----
@@ -19,6 +51,8 @@
 >> 4. brainmasking when loading for lower memory usage
 * Affine registration improved & Discrete Cosine Transform (DCT) non-linear registration option added, including an option with partial volume correction built-in for improved DCT-based registration
 
+----
+
 ## Bug Fixes
 
 * Allow zipping in Unix-based OS without JavaVirtualMachine 
@@ -29,6 +63,7 @@
 * Compilation path error
 * Correctly concatenate numbers when _xASL_num2str_
 * Improvements _xASL_adm_LoadParms_ for converting parameters ASL flavors to BIDS/ExploreASL internally
+
 ----
 
 ## Features
@@ -38,7 +73,6 @@
 * Now we have _xASL_csvWrite_, _xASL_csvRead_, _xASL_tsvRead_, _xASL_tsvWrite_
 * _xASL_io_Nifti2Im_ now detects erroneously extreme high scaling (potential import issue with Philips RescaleSlope)
   issues a warning and/or tries to fix automatically for FLAIR/T1w images
-
 
 ---
 ## Work in progress
@@ -53,9 +87,7 @@
 * create new prefix for visualization functions (_xASL_vis\_\*_ instead of _xASL_im\_\*_)
 * revamp quantification functions for better headers, comments etc
 
-
 ----
-
 
 # ExploreASL v1.1.3
 
