@@ -16,10 +16,10 @@ function UnitTests = ExploreASL_Unit_Testing
 UnitTests = struct;
 
 % Unit test A
-[UnitTests(1).test, UnitTests(1).passed] = ExploreASL_Unit_Test_Template('Template Test', true);
+[UnitTests(1).name,UnitTests(1).module,UnitTests(1).submodule,UnitTests(1).passed,UnitTests(1).tests] = ExploreASL_Unit_Test_Template;
 
 % Unit test B
-[UnitTests(2).test, UnitTests(2).passed] = ExploreASL_Unit_Test_Template('Template Test 2', false);
+[UnitTests(2).name,UnitTests(2).module,UnitTests(2).submodule,UnitTests(2).passed,UnitTests(2).tests] = ExploreASL_Unit_Test_Template;
 
 
 
