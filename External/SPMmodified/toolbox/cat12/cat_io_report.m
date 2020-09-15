@@ -172,13 +172,10 @@ function cat_io_report(job,qa,subj,createerr)
     ver_cat = ver_cat(4:end); % remove leading CAT
     [nam,rev_spm] = spm('Ver');
     QAS.software.version_spm = rev_spm;
-    A = ver;
-    for i=1:length(A)
-      if strcmp(A(i).Name,'MATLAB')
-        QAS.software.version_matlab = A(i).Version; 
-      end
-    end
-    clear A
+
+    Software.Matlab = version; %% EXPLOREASL HACK
+    QAS.software.version_matlab = Software.Matlab(1:(find(ismember(Software.Matlab, '.'), 1, 'first')+1));
+    % Extract matlab version until one char after first dot    
     
     if ispc,      OSname = 'WIN';
     elseif ismac, OSname = 'MAC';

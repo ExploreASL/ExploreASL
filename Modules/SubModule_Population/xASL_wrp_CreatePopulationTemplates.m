@@ -78,7 +78,8 @@ elseif iscell(bCompute4Sets)
 elseif bCompute4Sets==1
     Sets2Check = [];
 elseif bCompute4Sets==0
-    % do nothing
+    Sets2Check = [];
+    % we also set this when computing 4 Sets is disabled, just to be sure
 else
     error('Invalid bComputeSets option, skipping');
 end
@@ -310,7 +311,7 @@ for iScanType=1:length(PreFixList)
                         end
 
                         % create the maps
-                        NameIM = [TemplateNameList{iScanType} '_n=' num2str(length(NotOutliers))];
+                        NameIM = [TemplateNameList{iScanType} '_n' num2str(length(NotOutliers))];
                         xASL_wrp_CreatePopulationTemplates_ComputeParametricIm(IM(:,NotOutliers),NameIM, x, FunctionsAre, true);
 
                         if bSaveUnmasked
@@ -318,9 +319,9 @@ for iScanType=1:length(PreFixList)
                         end
                         % ----------------------------------------------------------------------------------------------------
                         % This part checks for individual sets (e.g. create statistic images for each cohort/session etc)
-                        if bCompute4Sets
+                        if ~bCompute4Sets
                             % not requested, skipping
-                        elseif isempty(Sets2Check)
+                        elseif bCompute4Sets && isempty(Sets2Check)
                             fprintf('\n');
                             warning('There are no sets that we can create statistical maps for');
                         else
@@ -434,7 +435,7 @@ for iU=1:length(UniqueSet) % iterate over the options/categories of this set
             end
 
             % compute maps
-            NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Sets2Check(iSet)} '_' SetOptions{UniqueSet(iU)} '_n=' num2str(length(NotOutliers))];
+            NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Sets2Check(iSet)} '_' SetOptions{UniqueSet(iU)} '_n' num2str(length(NotOutliers))];
             xASL_wrp_CreatePopulationTemplates_ComputeParametricIm(IM(:,NotOutliers), NameIM, x, FunctionsAre, true);
             if bSaveUnmasked
                 IM2noMask = IM2noMask(:,:,:,WithinGroup);

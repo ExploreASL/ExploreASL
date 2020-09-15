@@ -51,12 +51,13 @@ function [MaskIM, TreatedCBF] = xASL_im_MaskPeakVascularSignal(PathCBF, Path_M0,
 % Admin
 
 if nargin<1 || isempty(PathCBF)
-    warning('No CBF image found, skipping...');
-    return;
+    error('No CBF image found, skipping...');
 else
     TreatedCBF = xASL_io_Nifti2Im(PathCBF);
     if sum(isfinite(TreatedCBF(:)))==0
         warning('Empty CBF image, skipping...');
+        MaskIM = ones(size(TreatedCBF));
+        TreatedCBF = TreatedCBF;
         return;
     end
 end

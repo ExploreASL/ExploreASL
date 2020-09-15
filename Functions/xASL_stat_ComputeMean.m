@@ -69,6 +69,13 @@ if (nargout>1) && isempty(imWM)
 	warning('Cannot calculate CBF_WM when imWM is not provided');
 end
 
+if sum(isfinite(imCBF(:)))==0
+    warning('CBF image is empty, skipping');
+    CBF_GM = NaN;
+    CBF_WM = NaN;
+    return;
+end
+
 % ------------------------------------------------------------------------------
 % Mask calculations
 % ------------------------------------------------------------------------------

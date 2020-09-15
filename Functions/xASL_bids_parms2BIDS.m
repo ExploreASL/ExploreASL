@@ -49,16 +49,18 @@ end
 %% ----------------------------------------------------------------------
 %% 1) Define field names that need to be convert/renamed/merged
 
-% Fields with these names need to have the time converted between XASL and BIDS
-convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime'};
-
+% Fields with these names need to have the time converted between XASL and BIDS, and define their recommended range in ms
+convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1'};
+convertTimeFieldsRange = [0.5        5                10            5                  5                  100       10   100;...% Minimum in ms
+                          500        20000            10000         5000               400                5000      500  5000];% Maximum in ms   
+					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'};
 
 % Some JSON fields need to be updated to fit the BIDS definition
 % This is a one way process of changing the names from old to new
-updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'};
-updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'};
+updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'PhilipsRWVIntercept'};
+updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'        'RWVIntercept'};
 
 % These fields have different names in xASL and in BIDS
 % They are therefore renamed depending on the type of output
@@ -87,7 +89,20 @@ if ~isempty(inXasl)
 			
 			% Convert the units for all time fields from ms to s
 			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
-				inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
+				% Convert only numeric fields
+				% In certain cases (e.g. SliceReadoutTime='shortestTR'), a string is given which is then skipped and not converted
+				if isnumeric(inXasl.(FieldsA{iA}))
+					% For non-zero fields, check if they are within the predefined range
+					if inXasl.(FieldsA{iA}) ~= 0
+						% If outside of the recommended range, then still convert, but issue a warning
+						if inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT) || inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT)
+							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' num2str(inXasl.(FieldsA{iA}))...
+								', which is outside of the recommended range <'...
+								num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+						end
+					end
+					inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
+				end
 			end
 			
 			% Rename XASL fields to BIDS field according to the information in changeNamesXASL and changeNamesBIDS
@@ -127,14 +142,34 @@ if ~isempty(inBids)
 		FieldsA = fields(inBids);
 		for iA = 1:length(FieldsA)
 			% Rename all listed fields to XASL variant
+			FieldNameChanged = FieldsA{iA};
 			for iL = find(strcmp(FieldsA{iA},changeNamesBIDS))
 				inBids.(changeNamesXASL{iL}) = inBids.(changeNamesBIDS{iL});
 				inBids = rmfield(inBids,changeNamesBIDS{iL});
+				% Update the name of the field after the change
+				FieldNameChanged = changeNamesXASL{iL};
 			end
 			
 			% Convert the units for all time fields from s to ms
-			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
-				inBids.(FieldsA{iA}) = inBids.(FieldsA{iA})*1000;
+			for iT = find(strcmp(FieldNameChanged,convertTimeFieldsXASL))
+				% Convert only if the field is numeric
+				% In certain cases (e.g. SliceReadoutTime='shortestTR') a string can be given, which needs to be skipped then
+				if isnumeric(inBids.(FieldNameChanged))
+					inBids.(FieldNameChanged) = inBids.(FieldNameChanged)*1000;
+					
+					% Check if the value is within the recommended range after conversion and issue a warning if not
+					if inBids.(FieldNameChanged) ~= 0
+						if max(inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT)) || max(inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT))
+							warning(['Field ' FieldNameChanged ' in xASL structure has a value ' num2str(inBids.(FieldNameChanged))...
+								', which is outside of the recommended range <'...
+								num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+						end
+					end
+				else
+					% But a warning is issued as this is not according to the BIDS specification
+					warning(['Field ' FieldNameChanged ' should have been converted from ms to s, but the conversion was skipped as it contains a non-numeric value: ' inBids.(FieldNameChanged) '. '...
+						     'This is not according to the BIDS specification.']);
+				end
 			end
 		end
 	end
@@ -147,11 +182,13 @@ end
 % Don't overwrite existing field with a zero, empty, nan or inf value
 if bPriorityBids
 	outParms = inXasl;
-	FieldsA = fields(inBids);
-	for iA = 1:length(FieldsA)
-		if (~isfield(outParms,(FieldsA{iA}))) ||...
-				((sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) == 0)~=length(inBids.(FieldsA{iA}))) && (sum(isinf(inBids.(FieldsA{iA})))==0) && (~isempty(inBids.(FieldsA{iA}))))
-			outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+	if ~isempty(inBids)
+		FieldsA = fields(inBids);
+		for iA = 1:length(FieldsA)
+			if (~isfield(outParms,(FieldsA{iA}))) ||...
+					((sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) == 0)~=length(inBids.(FieldsA{iA}))) && (sum(isinf(inBids.(FieldsA{iA})))==0) && (~isempty(inBids.(FieldsA{iA}))))
+				outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+			end
 		end
 	end
 else
@@ -184,8 +221,8 @@ if bOutBids ~= 1
 	FieldsA = fields(outParms);
 	for iA = 1:length(FieldsA)
 		for iL = find(strcmp(FieldsA{iA},xASLqFields))
-			outParms.Q.(FieldsA{iL}) = outParms.(FieldsA{iL});
-			% outParms = rmfield(outParms,FieldsA{iL});
+			outParms.Q.(xASLqFields{iL}) = outParms.(xASLqFields{iL});
+			outParms = rmfield(outParms,xASLqFields{iL});
 		end
 	end
 end

@@ -331,6 +331,13 @@ jsmn.c at line 269
 *********************************************************************************************************
 OTHER CODE HACKS
 
+DATE+NAME:2020-09-02 MS (issue #114)
+DESCRIPTION:
+Make Matlab version information robust for both deployed and undeployed mode (bugfix)
+FILE:
+cat_io_report.m, 176
+cat_vol_qa.m, 507, 574
+
 DATE+NAME:2020-07-06 HM (issue #1)
 DESCRIPTION:
 Allow running CAT12 without JVM

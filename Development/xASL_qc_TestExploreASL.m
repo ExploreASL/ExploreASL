@@ -60,7 +60,9 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 % EXAMPLE for Henk on MacOS: [ResultsTable] = xASL_qc_TestExploreASL('/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases', '/Users/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed', 1, 0,[],'henkjanmutsaerts@gmail.com');
 % EXAMPLE for VUmc server: [ResultsTable] = xASL_qc_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
+% ToDo: split this function in subfunctions, each function/subfunction
+% should be short, making it easier to read what this function does
 
 % ============================================================
 %% Admin
@@ -154,10 +156,11 @@ if bOverwrite && exist(TestDirDest,'dir')
     else
         system(['rm -rf ' xASL_adm_UnixPath(TestDirDest)]);
     end
+    
+    % Copy data sets into testing directory
+    xASL_Copy(TestDirOrig, TestDirDest);    
 end
 
-% Copy data sets into testing directory
-xASL_Copy(TestDirOrig, TestDirDest);
 
 % ============================================================
 %% 4) Test standalone SPM on low quality
@@ -275,6 +278,12 @@ end
 %% 5) Test ExploreASL itself
 x = ExploreASL_Master('',0); % here we return the ExploreASL paths, which we removed above for testing SPM
 
+% Remove lock folders, useful for rerun when debugging
+LockFolders = xASL_adm_GetFileList(TestDirDest, '^locked$', 'FPListRec', [0 Inf], true);
+if ~isempty(LockFolders)
+    cellfun(@(y) xASL_delete(y), LockFolders, 'UniformOutput', false);
+end
+
 % Get list of data to test
 Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
 LogFiles = cellfun(@(y) fullfile(TestDirDest,y,'Population','xASL_module_Population.log'), Dlist, 'UniformOutput',false);
@@ -340,47 +349,62 @@ for iList=1:length(Dlist) % iterate over example datasets
     AnalysisDir = fullfile(TestDirDest, Dlist{iList});
     PopulationDir = fullfile(AnalysisDir, 'Population');
     StatsDir = fullfile(PopulationDir, 'Stats');
+	VolumeDir = fullfile(PopulationDir, 'TissueVolume');
     
     clear ResultsFile
     ResultFile{1} = xASL_adm_GetFileList(StatsDir,'^mean_qCBF.*TotalGM.*PVC2\.tsv','FPList');
     ResultFile{2} = xASL_adm_GetFileList(StatsDir,'^median_qCBF.*TotalGM.*PVC0\.tsv','FPList');
     ResultFile{3} = xASL_adm_GetFileList(StatsDir,'^median_qCBF.*DeepWM.*PVC0\.tsv','FPList');
     ResultFile{4} = xASL_adm_GetFileList(StatsDir,'^CoV_qCBF.*TotalGM.*PVC0\.tsv','FPList');
-    ResultFile{5} = xASL_adm_GetFileList(StatsDir,'^CoV_qCBF.*TotalGM.*PVC0\.tsv','FPList');
+    ResultFile{5} = xASL_adm_GetFileList(VolumeDir,'^TissueVolume.*\.tsv','FPList');
 
-    for iFile=1:length(ResultFile) % iterate over ROI results
-        if length(ResultFile{iFile})<1
+	for iFile=1:length(ResultFile) % iterate over ROI results
+		if length(ResultFile{iFile})<1
             ResultsTable{1+iList,1+iFile} = 'empty';
             ResultsTable{1+iList,2+iFile} = 'empty';
             ResultsTable{1+iList,3+iFile} = 'empty';
-        elseif iFile<5 % check the ASL parameters
+		elseif iFile<5 % check the ASL parameters
             [~, TempTable] = xASL_bids_csv2tsvReadWrite(ResultFile{iFile}{end});
             ResultsTable{1+iList,1+iFile} = TempTable{3,end-2};
-        else % check the volumetric parameters
-            IndexGM = find(cellfun(@(y) strcmp(y,'GM_vol'), TempTable(1,:)));
-            IndexWM = find(cellfun(@(y) strcmp(y,'WM_vol'), TempTable(1,:)));
-            IndexCSF = find(cellfun(@(y) strcmp(y,'CSF_vol'), TempTable(1,:)));
-            ResultsTable{1+iList,1+iFile} = TempTable{3, IndexGM};
-            ResultsTable{1+iList,2+iFile} = TempTable{3, IndexWM};
-            ResultsTable{1+iList,3+iFile} = TempTable{3, IndexCSF};
-        end
-        % check if there are missing lock files
-        if exist(fullfile(AnalysisDir,'Missing_Lock_files.csv'),'file')
-            ResultsTable{1+iList,4+iFile} = 0; % pipeline not completed
-        else
-            ResultsTable{1+iList,4+iFile} = 1; % pipeline completed
-        end
-    end
+		else % check the volumetric parameters
+			[~, TempTable] = xASL_bids_csv2tsvReadWrite(ResultFile{iFile}{end});
+            IndexGM = find(cellfun(@(y) strcmp(y,'GM_volume_(L)'), TempTable(1,:)));
+            IndexWM = find(cellfun(@(y) strcmp(y,'WM_volume_(L)'), TempTable(1,:)));
+            IndexCSF = find(cellfun(@(y) strcmp(y,'CSF_volume_(L)'), TempTable(1,:)));
+			if ~isempty(IndexGM)
+				ResultsTable{1+iList,1+iFile} = TempTable{2, IndexGM};
+			else
+				ResultsTable{1+iList,1+iFile} = 'n/a';
+			end
+			if ~isempty(IndexWM)
+				ResultsTable{1+iList,2+iFile} = TempTable{2, IndexWM};
+			else
+				ResultsTable{1+iList,2+iFile} = 'n/a';
+			end
+			if ~isempty(IndexCSF)
+				ResultsTable{1+iList,3+iFile} = TempTable{2, IndexCSF};
+			else
+				ResultsTable{1+iList,2+iFile} = 'n/a';
+			end
+		end
+	end
+	% check if there are missing lock files
+	if exist(fullfile(AnalysisDir,'Missing_Lock_files.csv'),'file')
+		ResultsTable{1+iList,4+length(ResultFile)} = 0; % pipeline not completed
+	else
+		ResultsTable{1+iList,4+length(ResultFile)} = 1; % pipeline completed
+	end
+	
     % Get registration performance
     PathTemplateASL = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
     PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
     PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
     PathM0 = xASL_adm_GetFileList(PopulationDir,'^(noSmooth_M0|mean_control).*\.nii$', 'FPList');
     if ~isempty(PathCBF)
-        ResultsTable{1+iList,5+iFile} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+        ResultsTable{1+iList,5+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
     end
     if ~isempty(PathM0)
-        ResultsTable{1+iList,6+iFile} = xASL_qc_TanimotoCoeff(PathM0{1}, PathTemplateM0, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+        ResultsTable{1+iList,6+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathM0{1}, PathTemplateM0, x.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
     end
 end
 fprintf('\n');
