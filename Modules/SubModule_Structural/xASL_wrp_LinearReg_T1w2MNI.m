@@ -42,7 +42,7 @@ end
 
 Lesion_T1_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^Lesion_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
 Lesion_FLAIR_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
-
+ROI_T1_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^ROI_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
 
 
 %% ---------------------------------------------------------------------------------------------------
@@ -61,7 +61,9 @@ end
 for iS=1:length(Lesion_FLAIR_list)
     OtherList{end+1,1} = Lesion_FLAIR_list{iS};
 end    
-
+for iS=1:length(ROI_T1_list)
+    OtherList{end+1,1} = ROI_T1_list{iS};
+end
 % Add ASL images to the registration list
 for iSess = 1:x.nSessions
     OtherList{end+1,1} = x.P.Path_ASL4D;
