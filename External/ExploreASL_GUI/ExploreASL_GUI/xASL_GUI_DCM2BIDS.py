@@ -11,6 +11,7 @@ from more_itertools import peekable
 import struct
 from ast import literal_eval
 from nilearn import image
+from platform import system
 
 pd.set_option("display.width", 600)
 pd.set_option("display.max_columns", 15)
@@ -510,7 +511,7 @@ def clean_niftis_in_temp(temp_dir: str, add_parms: dict, subject: str, visit: st
             visit = visit.replace("-", "")
         if "_" in visit:
             visit = visit.replace("_", "")
-        visit = f"ses-{visit}_"
+        visit = f"run-{visit}_"
 
     if legacy_mode:
         final_nifti_filename = os.path.join(os.path.dirname(temp_dir), f"{scan}.nii")
@@ -699,14 +700,18 @@ def bids_m0_followup(analysis_dir):
         # Ensure that the asl json sidecar and nifti images actually exist adjacent to the m0scan.json
         if os.path.exists(asl_json) and os.path.exists(asl_nifti):
 
-            # BIDS standard: the "IntendedFor" filepath must be relative to the subject and contain forward slashes
-            truncated_asl_json = asl_nifti.replace(analysis_dir, "")
-            if '\\' in truncated_asl_json:
-                truncated_asl_json = truncated_asl_json.replace("\\", "/")
+            # BIDS standard: the "IntendedFor" filepath must be relative to the subject (exclusive)
+            # and contain forward slashes
+            truncated_asl_nifti = asl_nifti.replace(analysis_dir, "").replace("\\", "/")
+            by_parts = truncated_asl_nifti.split(sep='/')
+            truncated_asl_nifti = "/".join(by_parts[2:])
+
+            if system() == "Windows":
+                truncated_asl_nifti = truncated_asl_nifti.replace('/', '\\')
 
             with open(m0_json) as m0_json_reader:
                 m0_parms = json.load(m0_json_reader)
-            m0_parms["IntendedFor"] = truncated_asl_json
+            m0_parms["IntendedFor"] = truncated_asl_nifti
             with open(m0_json, 'w') as m0_json_writer:
                 json.dump(m0_parms, m0_json_writer, indent=3)
 

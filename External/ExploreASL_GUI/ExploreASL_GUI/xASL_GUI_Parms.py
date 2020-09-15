@@ -13,11 +13,7 @@ class xASL_Parms(QMainWindow):
     def __init__(self, parent_win=None):
         # Parent window is fed into the constructor to allow for communication with parent window devices
         super().__init__(parent=parent_win)
-        if parent_win is not None:
-            self.config = self.parent().config
-        else:
-            with open("ExploreASL_GUI_masterconfig.json") as f:
-                self.config = json.load(f)
+        self.config = self.parent().config
 
         # Window Size and initial visual setup
         self.setMinimumSize(512, 960)
@@ -64,6 +60,7 @@ class xASL_Parms(QMainWindow):
             default=''
         )
         self.le_studyname = QLineEdit(text="My Study")
+        self.chk_overwrite_for_bids = QCheckBox(checked=True)
         self.hlay_study_dir, self.le_study_dir, self.btn_study_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_study_dir,
             default=''
@@ -80,7 +77,7 @@ class xASL_Parms(QMainWindow):
         self.le_run_options = QLineEdit(placeholderText="Indicate option names, each separated by a comma and space")
         self.cmb_vendor = self.make_cmb_and_items(["Siemens", "Philips", "GE", "GE_WIP"])
         self.cmb_sequencetype = self.make_cmb_and_items(["3D GRaSE", "2D EPI", "3D Spiral"])
-        self.cmb_labelingtype = self.make_cmb_and_items(["Q2 TIPS PASL", "pCASL/CASL"])
+        self.cmb_labelingtype = self.make_cmb_and_items(["Pulsed ASL", "Pseudo-continuous ASL", "Continuous ASL"])
         self.cmb_labelingtype.currentTextChanged.connect(self.autocalc_slicereadouttime)
         self.cmb_m0_isseparate = self.make_cmb_and_items(["Proton density scan (M0) was acquired",
                                                           "Use mean control ASL as proton density mimic"])
@@ -88,14 +85,19 @@ class xASL_Parms(QMainWindow):
             ["M0 exists as a separate scan", "M0 is the first ASL control-label pair",
              "M0 is the first ASL scan volume", "M0 is the second ASL scan volume"])
         self.cmb_quality = self.make_cmb_and_items(["Low", "High"])
+        self.cmb_quality.setCurrentIndex(1)
 
-        for desc, widget in zip(["ExploreASL Directory", "Name of Study", "Study Directory", "Subject Regex",
+        for desc, widget in zip(["ExploreASL Directory", "Name of Study", "Study Directory",
+                                 "Overwrite keys\nin BIDS sidecars?",
+                                 # "Subject Regex",
                                  "Subjects to Assess\n(Drag and Drop Directories)",
                                  "Subjects to Exclude\n(Drag and Drop Directories)",
                                  "Run Names", "Run Options", "Vendor", "Sequence Type", "Labelling Type",
                                  "M0 was acquired?", "M0 Position in ASL", "Quality"],
                                 [self.hlay_easl_dir, self.le_studyname, self.hlay_study_dir,
-                                 self.le_subjectregex, self.lst_included_subjects, self.lst_excluded_subjects,
+                                 self.chk_overwrite_for_bids,
+                                 # self.le_subjectregex,
+                                 self.lst_included_subjects, self.lst_excluded_subjects,
                                  self.le_run_names, self.le_run_options, self.cmb_vendor, self.cmb_sequencetype,
                                  self.cmb_labelingtype, self.cmb_m0_isseparate, self.cmb_m0_posinasl,
                                  self.cmb_quality]):
@@ -276,7 +278,7 @@ class xASL_Parms(QMainWindow):
         # Next the inversion time (i.e Post-Label Duration)
         try:
             value = self.asl_json_sidecar_data["InversionTime"]
-            self.spinbox_labdur.setValue(value * 1000)
+            self.spinbox_initialpld.setValue(value * 1000)
         except KeyError:
             if self.config["DeveloperMode"]:
                 print(f"Warning in update_asl_json_sidecar_data. The field: InversionTime was not present in the "
@@ -339,16 +341,109 @@ class xASL_Parms(QMainWindow):
                 pass
 
     def autocalc_slicereadouttime(self):
-        if not self.can_update_slicereadouttime or self.cmb_labelingtype.currentText() != "pCASL/CASL":
+        if not self.can_update_slicereadouttime or self.cmb_labelingtype.currentText() in ["Pseudo-continuous ASL",
+                                                                                           "Continuous ASL"]:
             return
 
-        tr = self.asl_json_sidecar_data["RepetitionTime"]*1000
+        tr = self.asl_json_sidecar_data["RepetitionTime"] * 1000
         labdur = self.spinbox_labdur.value()
         ini_pld = self.spinbox_initialpld.value()
         nslices = self.asl_json_sidecar_data["NumberOfSlices"]
         readouttime = round((tr - labdur - ini_pld) / nslices, 2)
 
         self.spinbox_slice_readout.setValue(readouttime)
+
+    def overwrite_bids_fields(self):
+        self.flag_impossible_m0 = False
+        bad_jsons = []
+
+        if self.config["DeveloperMode"]:
+            print("Overwriting BIDS ASL json sidecar fields\n")
+
+        # If this is not in a BIDS format
+        if not os.path.exists(os.path.join(self.le_study_dir.text(), "dataset_description.json")):
+            QMessageBox().warning(self.parent(),
+                                  "Indicated BIDS overwrite for non-BIDS dataset",
+                                  "Please ensure your dataset has been imported properly by the Importer Module into a "
+                                  "BIDS format if you have 'Overwrite keys in BIDS sidecars?' checked.\n\n"
+                                  "Proceeding with the rest of the DataPar file creation.",
+                                  QMessageBox.Ok)
+            return
+
+        analysis_dir = self.le_study_dir.text()
+        asl_jsons = peekable(iglob(os.path.join(analysis_dir, "**", "*_asl.json"), recursive=True))
+        # If json sidecars cannot be found, exit early
+        if not asl_jsons:
+            QMessageBox().warning(self.parent(),
+                                  "No Json sidecards could be detected",
+                                  "You have indicated 'Overwrite keys in BIDS sidecars?' as True, implying that this is "
+                                  "a BIDS imported dataset. However, no ASL json sidecars could be detected. Please "
+                                  "ensure your dataset has been imported properly by the Importer Module into a "
+                                  "BIDS format.\n\nProceeding with the rest of the DataPar file creation.",
+                                  QMessageBox.Ok)
+            return
+
+        for asl_sidecar in asl_jsons:
+            # Load in the data
+            with open(asl_sidecar) as asl_sidecar_reader:
+                asl_sidecar_data = json.load(asl_sidecar_reader)
+
+            # M0 key behavior
+            # Priority 1 - if there is an M0 present, use its path as the value
+            possible_m0 = asl_sidecar.replace("_asl.json", "_m0scan.json")
+            if self.config["Platform"] == "Windows":
+                possible_m0 = possible_m0.replace('/', '\\')
+
+            if os.path.exists(possible_m0):
+                asl_sidecar_data["M0"] = possible_m0
+            # Priority 2 - if the M0 is present within the asl nifti, as indicated by the user, go with that
+            elif self.cmb_m0_isseparate.currentText() == "Proton density scan (M0) was acquired":
+
+                if self.cmb_m0_posinasl.currentText() in ["M0 is the first ASL control-label pair",
+                                                          "M0 is the first ASL scan volume",
+                                                          "M0 is the second ASL scan volume"]:
+                    asl_sidecar_data["M0"] = True
+                else:
+                    self.flag_impossible_m0 = True
+                    bad_jsons.append(asl_sidecar)
+
+            elif self.cmb_m0_isseparate.currentText() == "Use mean control ASL as proton density mimic":
+                asl_sidecar_data["M0"] = False
+
+            else:
+                self.flag_impossible_m0 = True
+                bad_jsons.append(asl_sidecar)
+
+            # LabelingType
+            asl_sidecar_data["LabelingType"] = {"Pulsed ASL": "PASL",
+                                                "Pseudo-continuous ASL": "PCASL",
+                                                "Continuous ASL": "CASL"
+                                                }[self.cmb_labelingtype.currentText()]
+
+            # Post Label Delay
+            asl_sidecar_data["PostLabelingDelay"] = self.spinbox_initialpld.value()
+
+            # Background Suppression
+            if self.cmb_nsup_pulses.currentText() == "0":
+                asl_sidecar_data["BackgroundSuppression"] = False
+            else:
+                asl_sidecar_data["BackgroundSuppression"] = True
+
+            # PulseSequenceType
+            asl_sidecar_data["PulseSequenceType"] = {"3D Spiral": "3D_spiral",
+                                                     "3D GRaSE": "3D_GRASE",
+                                                     "2D EPI": "2D_EPI"}[self.cmb_sequencetype.currentText()]
+
+            with open(asl_sidecar, 'w') as asl_sidecar_writer:
+                json.dump(asl_sidecar_data, asl_sidecar_writer, indent=3)
+
+        if self.flag_impossible_m0:
+            bad_jsons = "; ".join([os.path.basename(asl_json).strip(".json") for asl_json in bad_jsons])
+            QMessageBox().warning(self.parent(),
+                                  "An impossible M0 setting was encountered",
+                                  f"The user has indicated that 'M0 exists as a separate scan' but no _m0scan.json "
+                                  f"could be found for the following: {bad_jsons}",
+                                  QMessageBox.Ok)
 
     ################
     # Misc Functions
@@ -442,6 +537,26 @@ class xASL_Parms(QMainWindow):
     # Main Functions for this module - saving to json and loading from json
     #######################################################################
     def saveparms2json(self):
+        # Defensive programming first
+        if any([self.le_study_dir.text() == '',
+                not os.path.exists(self.le_study_dir.text()),
+                not os.path.isdir(self.le_study_dir.text())
+                ]):
+            QMessageBox().warning(self.parent(),
+                                  "Cannot save to the indicated directory",
+                                  "The study path you specified to save the DataPar file to is not a valid study "
+                                  "directory to which the DataPar.json file would be saved to. Aborting operation.",
+                                  QMessageBox.Ok)
+            return
+
+        if any([os.path.basename(self.le_study_dir.text()) != "analysis"]):
+            QMessageBox().warning(self.parent(),
+                                  "Cannot save to the indicated directory",
+                                  "The study path you specified to save the DataPar file to is not a valid study "
+                                  "directory to which the DataPar.json file would be saved to. Aborting operation.",
+                                  QMessageBox.Ok)
+            return
+
         json_parms = {
             "MyPath": self.le_easl_dir.text(),
             "name": self.le_studyname.text(),
@@ -482,7 +597,10 @@ class xASL_Parms(QMainWindow):
             "ApplyQuantification": self.prep_quantparms(),
             "Q": {
                 "BackGrSupprPulses": int(self.cmb_nsup_pulses.currentText()),
-                "LabelingType": {"Q2 TIPS PASL": "PASL", "pCASL/CASL": "CASL"}[self.cmb_labelingtype.currentText()],
+                "LabelingType": {"Pulsed ASL": "PASL",
+                                 "Pseudo-continuous ASL": "CASL",
+                                 "Continuous ASL": "CASL"
+                                 }[self.cmb_labelingtype.currentText()],
                 "Initial_PLD": float(self.spinbox_initialpld.value()),
                 "LabelingDuration": float(self.spinbox_labdur.value()),
                 "SliceReadoutTime": float(self.spinbox_slice_readout.value()),
@@ -495,7 +613,8 @@ class xASL_Parms(QMainWindow):
 
         if self.cmb_m0_posinasl.currentText() != "M0 exists as a separate scan":
             parms_m0_pos_translate = {"M0 is the first ASL control-label pair": "[1 2]",
-                                      "M0 is the first ASL scan volume": 1, "M0 is the second ASL scan volume": 2}
+                                      "M0 is the first ASL scan volume": 1,
+                                      "M0 is the second ASL scan volume": 2}
             json_parms["M0PositionInASL4D"] = parms_m0_pos_translate[self.cmb_m0_posinasl.currentText()]
         try:
             with open(os.path.join(self.le_study_dir.text(), "DataPar.json"), 'w') as w:
@@ -519,11 +638,16 @@ class xASL_Parms(QMainWindow):
                                   QMessageBox.Ok)
             return
 
+        # Also, overwrite asl_json sidecars if the dataset has been imported as BIDS format
+        if self.chk_overwrite_for_bids.isChecked():
+            self.overwrite_bids_fields()
+
         QMessageBox().information(self,
                                   "DataPar.json successfully saved",
                                   f"The parameter file was successfully saved to:\n"
                                   f"{self.le_study_dir.text()}",
                                   QMessageBox.Ok)
+
 
     def loadjson2parms(self):
         self.import_error_logger.clear()
@@ -769,7 +893,7 @@ class xASL_Parms(QMainWindow):
         self.cmb_nsup_pulses.setCurrentIndex(index)
 
     def get_labelingtype(self, value):
-        translator = {"PASL": "Q2 TIPS PASL", "CASL": "pCASL/CASL"}
+        translator = {"PASL": "Pulsed ASL", "CASL": "Pseudo-continuous ASL", "PCASL": "Pseudo-continuous ASL"}
         text = translator[value]
         index = self.cmb_labelingtype.findText(text)
         if index == -1:

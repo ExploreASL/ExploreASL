@@ -124,7 +124,7 @@ class xASL_GUI_Importer(QMainWindow):
         self.btn_setrootdir = QPushButton("...", self.grp_dirstruct, clicked=self.set_import_root_directory)
         self.hlay_rootdir.addWidget(self.le_rootdir)
         self.hlay_rootdir.addWidget(self.btn_setrootdir)
-        self.chk_uselegacy = QCheckBox(checked=False)
+        self.chk_uselegacy = QCheckBox(checked=True)
         self.formlay_rootdir.addRow("Raw Root Directory", self.hlay_rootdir)
         self.formlay_rootdir.addRow("Use Legacy Import", self.chk_uselegacy)
 
@@ -139,7 +139,7 @@ class xASL_GUI_Importer(QMainWindow):
 
         # Next specify the QLineEdits that will be receiving the dragged text
         self.hlay_receivers = QHBoxLayout()
-        self.lab_rootlabel = QLabel(text="source")
+        self.lab_rootlabel = QLabel(text="raw")
         self.lab_rootlabel.setFont(self.labfont)
         self.levels = {}
         for idx, (level, func) in enumerate(zip(["Level1", "Level2", "Level3", "Level4", "Level5"],
@@ -679,9 +679,6 @@ class xASL_GUI_Importer(QMainWindow):
         # Create the import summary
         create_import_summary(import_summaries=self.import_summaries, config=self.import_parms)
 
-        # Also create the template for the dataset description
-        self.create_dataset_description_template(analysis_dir)
-
         # If there were any failures, write them to disk now
         if len(self.failed_runs) > 0:
             with open(os.path.join(analysis_dir, "import_summary_failed.json"), 'w') as failed_writer:
@@ -692,15 +689,12 @@ class xASL_GUI_Importer(QMainWindow):
             # Ensure all M0 jsons have the appropriate "IntendedFor" field if this is in BIDS
             bids_m0_followup(analysis_dir=analysis_dir)
 
+            # Create the template for the dataset description
+            self.create_dataset_description_template(analysis_dir)
+
             # Create the "bidsignore" file
             with open(os.path.join(analysis_dir, ".bidsignore"), 'w') as ignore_writer:
                 ignore_writer.writelines(["import_summary.tsv\n", "DataPar.json\n"])
-
-            # Create a placeholder for the root-level asl.json
-            # M0 key is not listed here, as it will be defined at the terminal level _asl.json
-            asl_placeholder = {"LabelingType": None, "PostLabelingDelay": None, "BackgroundSuppression": None}
-            with open(os.path.join(analysis_dir, "asl.json"), 'w') as asl_placeholder_writer:
-                json.dump(asl_placeholder, asl_placeholder_writer, indent=3)
 
     @staticmethod
     def create_dataset_description_template(analysis_dir):

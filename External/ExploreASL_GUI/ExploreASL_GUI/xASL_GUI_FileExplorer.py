@@ -172,6 +172,7 @@ class xASL_FileExplorer(QWidget):
 
     def go_down(self, filepath_modelindex):
         filepath = self.model_file.filePath(filepath_modelindex)
+        # User wants to open a directory
         if os.path.isdir(filepath):
             self.path_change(newpath=filepath, current_index=self.path_index)
             try:
@@ -182,8 +183,19 @@ class xASL_FileExplorer(QWidget):
             except IndexError:
                 self.path_history.append(filepath.replace('\\', '/'))
                 self.path_index += 1
-
             self.dev_path_print("Double-clicked to go down into a directory")
+
+        # User wants to open a file
+        elif os.path.isfile(filepath):
+            result = QDesktopServices.openUrl(QUrl.fromLocalFile(filepath))
+            self.dev_path_print("Attempted to open a file")
+            if not result:
+                QMessageBox().warning(self.parent(),
+                                      "Could not open file",
+                                      "Please ensure you have defined a default program to open this type of file in "
+                                      "your machine's settings.",
+                                      QMessageBox.Ok)
+        # Something went wrong
         else:
             print(f"The filepath: {filepath} is not a directory that can be entered into")
 
@@ -233,6 +245,7 @@ class xASL_FileView(QTreeView):
     """
     Slightly altered QTreeview to allow for more user-friendly functionality relative to the default implementation.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 

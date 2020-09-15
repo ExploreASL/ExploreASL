@@ -64,7 +64,7 @@ class DandD_FileExplorer2LineEdit(QLineEdit):
             - "File",
             - "Directory"
             - "Both"
-        - supported_extensions
+        - supported_extensions = a list of the .filetypes that this lineedit will accept (i.e .csv , .txt , etc.),
 
     """
 
