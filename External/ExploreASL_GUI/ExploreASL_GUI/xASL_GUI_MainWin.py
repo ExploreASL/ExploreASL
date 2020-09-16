@@ -63,7 +63,6 @@ class xASL_MainWin(QMainWindow):
 
         # Set up each of the subcomponents of the main window program
         self.UI_Setup_Navigator()
-        self.UI_Setup_MenuBar()
         self.UI_Setup_MainSelections()
         self.UI_Setup_Connections()
 
@@ -73,6 +72,9 @@ class xASL_MainWin(QMainWindow):
         self.plotter = xASL_Plotting(self)
         self.importer = xASL_GUI_Importer(self)
 
+        # Menubar has to come after, as it references the main widgets
+        self.UI_Setup_MenuBar()
+
     # This dockable navigator will contain the most essential parameters and will be repeatedly accessed by other
     # subwidgets within the program; should also be dockable within any of them.
     def UI_Setup_Navigator(self):
@@ -81,65 +83,52 @@ class xASL_MainWin(QMainWindow):
         self.vlay_navigator = QVBoxLayout(self.cont_navigator)
 
         # Essential Widgets
-        # First, the lineedit for the ExploreASL directory
-        self.le_exploreasl_dir = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
-        set_os_dependent_text(linedit=self.le_exploreasl_dir,
-                              config_ossystem=self.config["Platform"],
-                              text_to_set=self.config["ExploreASLRoot"])
-        self.le_exploreasl_dir.textChanged.connect(self.set_exploreasl_dir)
-        self.le_exploreasl_dir.setReadOnly(True)
-        self.le_exploreasl_dir.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.btn_exploreasl_dir = QPushButton("...", clicked=self.set_exploreasl_dir_frombtn)
-        self.hlay_exploreasl_dir = QHBoxLayout()
-        self.hlay_exploreasl_dir.addWidget(self.le_exploreasl_dir)
-        self.hlay_exploreasl_dir.addWidget(self.btn_exploreasl_dir)
-
-        # Second, the lineedit for the study analysis directory
-        self.le_currentanalysis_dir = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
-        set_os_dependent_text(linedit=self.le_currentanalysis_dir,
+        # The lineedit for the study analysis directory
+        self.le_defaultdir = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
+        set_os_dependent_text(linedit=self.le_defaultdir,
                               config_ossystem=self.config["Platform"],
                               text_to_set=self.config["DefaultRootDir"])
-        self.le_currentanalysis_dir.textChanged.connect(self.set_analysis_dir)
-        self.le_currentanalysis_dir.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.btn_currentanalysis_dir = QPushButton("...", self.cont_navigator, clicked=self.set_analysis_dir_frombtn)
-        self.hlay_currentanalysis_dir = QHBoxLayout()
-        self.hlay_currentanalysis_dir.addWidget(self.le_currentanalysis_dir)
-        self.hlay_currentanalysis_dir.addWidget(self.btn_currentanalysis_dir)
+        self.le_defaultdir.textChanged.connect(self.set_analysis_dir)
+        self.le_defaultdir.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.btn_defaultdir = QPushButton("...", self.cont_navigator, clicked=self.set_analysis_dir_frombtn)
+        self.hlay_defaultdir = QHBoxLayout()
+        self.hlay_defaultdir.addWidget(self.le_defaultdir)
+        self.hlay_defaultdir.addWidget(self.btn_defaultdir)
 
-        # Third, the checkbox of whether to make the analysis directory list as the default display in other modules
-        self.chk_makedefault_analysisdir = QCheckBox(self.cont_navigator)
-        self.chk_makedefault_analysisdir.setChecked(True)
         # These aforementioned widgets will be packaged into a form layout
-        self.formlay_navigator = QFormLayout()
-        self.formlay_navigator.addRow("Explore ASL Directory", self.hlay_exploreasl_dir)
-        self.formlay_navigator.addRow("Current Analysis Directory", self.hlay_currentanalysis_dir)
-        self.formlay_navigator.addRow("Set selected directory as default?", self.chk_makedefault_analysisdir)
+        self.formlay_defaultdir = QFormLayout()
+        self.formlay_defaultdir.addRow("Default Directory", self.hlay_defaultdir)
 
-        self.vlay_navigator.addLayout(self.formlay_navigator)
+        # Add the form layout to the starft of the file explorer after it has been added. It isn't defined within the
+        # file explorer, as it interfaces with setting the config in this
         self.vlay_navigator.addWidget(self.file_explorer)
+        self.file_explorer.mainlay.insertLayout(0, self.formlay_defaultdir)
+        self.vlay_navigator.setContentsMargins(0, 0, 0, 0)
 
         # Finally add this whole widget group to the main layout
         self.mainlay.addWidget(self.cont_navigator, 0, 0, 2, 2)
         self.cont_navigator.setMinimumWidth(600)
         self.cont_navigator.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
-    # Setup the standard Menu
     def UI_Setup_MenuBar(self):
         # Main menubar and main submenus setup
         self.menubar_main = QMenuBar(self)
-        menu_names = ["File", "Edit", "Settings", "About"]
-        self.menu_file, self.menu_edit, self.menu_settings, self.menu_about = [self.menubar_main.addMenu(name) for name
-                                                                               in menu_names]
+        self.setMenuBar(self.menubar_main)
+        menu_names = ["File", "Modules", "About"]
+        self.menu_file, self.menu_modules, self.menu_about = [self.menubar_main.addMenu(name) for name in menu_names]
+
         # Setup the actions of the File menu
-        # self.menu_file.addAction("Show Navigator", self.dock_navigator.show)
         self.menu_file.addAction("Save Master Config", self.save_config)
         self.menu_file.addAction("Select Analysis Directory", self.set_analysis_dir_frombtn)
-        self.menu_file.addAction("About ExploreASL", self.show_AboutExploreASL)
-        # Setup the actions of the Edit menu
-        # Setup the actions of the Settings menu
-        self.setMenuBar(self.menubar_main)
+        self.menu_file.addSeparator()
+        self.menu_file.addAction("Exit", self.close)
 
-    # Setup the main selection
+        # Setup the actions of the Modules menu
+        self.menu_modules.addAction("Import Module", self.importer.show)
+        self.menu_modules.addAction("Parameters Module", self.parmsmaker.show)
+        self.menu_modules.addAction("ExploreASL Module", self.executor.show)
+        self.menu_modules.addAction("Post-Processing Module", self.plotter.show)
+
     def UI_Setup_MainSelections(self):
 
         expanding_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -184,7 +173,7 @@ class xASL_MainWin(QMainWindow):
         super(xASL_MainWin, self).resizeEvent(event)
         for btn in self.main_btns:
             adjusted = min([self.width(), self.height()])
-            btn.setIconSize(QSize(adjusted//2.8, adjusted//2.8))
+            btn.setIconSize(QSize(adjusted // 2.8, adjusted // 2.8))
 
     def UI_Setup_Connections(self):
         actions = [self.show_Importer,
@@ -246,13 +235,12 @@ class xASL_MainWin(QMainWindow):
         if not os.path.isdir(directory):
             return
         # Change the lineedit
-        set_os_dependent_text(linedit=self.le_currentanalysis_dir,
+        set_os_dependent_text(linedit=self.le_defaultdir,
                               config_ossystem=self.config["Platform"],
                               text_to_set=directory)
         # Update user config to have a new default analysis dir to refer to in on future startups
-        if self.chk_makedefault_analysisdir.isChecked():
-            self.config["DefaultRootDir"] = directory
-            self.save_config()
+        self.config["DefaultRootDir"] = directory
+        self.save_config()
 
     # Sets the ExploreASL directory of the user from the push button
     def set_exploreasl_dir_frombtn(self):
@@ -276,3 +264,7 @@ class xASL_MainWin(QMainWindow):
         # Update user config to have a new ExploreASL directory specified
         self.config["ExploreASLRoot"] = directory
         self.save_config()
+
+    # This will be modified in the future to perform certain actions on end
+    def closeEvent(self, event):
+        super(xASL_MainWin, self).closeEvent(event)

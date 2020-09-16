@@ -706,9 +706,6 @@ def bids_m0_followup(analysis_dir):
             by_parts = truncated_asl_nifti.split(sep='/')
             truncated_asl_nifti = "/".join(by_parts[2:])
 
-            if system() == "Windows":
-                truncated_asl_nifti = truncated_asl_nifti.replace('/', '\\')
-
             with open(m0_json) as m0_json_reader:
                 m0_parms = json.load(m0_json_reader)
             m0_parms["IntendedFor"] = truncated_asl_nifti
