@@ -842,6 +842,18 @@ def bids_m0_followup(analysis_dir):
                 json.dump(m0_parms, m0_json_writer, indent=3)
 
 
+def alter_nifti_header_pixdimvals(img: nib.Nifti1Image):
+    """
+    Alters the pixdim values of a nifti
+    :param img: path to the m0scan or otherwise any nifti that needs its pixdim values at dim==1 values zeroed out
+    """
+    new_pixdim = np.where(img.header["dim"] > 1,  # where the dim value is greater than 1
+                          img.header["pixdim"],  # keep the pixdim value as it is
+                          0)  # otherwise, replace it with a zero
+    img.header["pixdim"] = new_pixdim
+    return img
+
+
 def fix_mosaic(mosaic_nifti: nib.Nifti1Image, acq_dims: tuple):
     """
     Fixes incorrectly-processed NIFTIs by dcm2niix where they still remain mosaics due to a lack of
