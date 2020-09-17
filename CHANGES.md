@@ -1,7 +1,15 @@
-# ExploreASL v1.2.1
+# ExploreASL v1.2.2
 
 ----
 
+## Bug Fixes
+* #119 xASL_wrp_LinearReg_T1w2MNI.m: ROI .nii files correctly aligned with T1
+
+----
+
+# ExploreASL v1.2.1
+
+----
 
 ## Bug Fixes
 * xASL_qc_TestExploreASL: Remove locked folders if rerun
@@ -20,19 +28,18 @@
 ** Replace spaces in headers with underscores (which happened automatically apparently upon saving)
 ** Remove SPM cellstring 
 
-
 ---
 ## ASL-BIDS-related bug fixes
 * #96 Fix order of magnitude in JSON sidecars
 * #109 No warning if SliceReadoutTime not provided in DataPar
 * #110 xASL_bids_parms2BIDS.m now deals correctly with vectors and SliceReadoutTime = 'shortestTR': created function for this: xASL_quant_SliceReadoutTime_Shortest_TR
 
-
 ----
 
 # ExploreASL v1.2.0
 
 ----
+
 ## Major feature improvements (still backward compatible)
 
 * Add user flexibility for creating average maps, allowing flipping
