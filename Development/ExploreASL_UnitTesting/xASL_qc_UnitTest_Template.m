@@ -1,5 +1,5 @@
-function UnitTest = ExploreASL_Unit_Test_Template
-%ExploreASL_Unit_Test_Template Individual unit test template
+function UnitTest = xASL_qc_UnitTest_Template
+%xASL_qc_UnitTest_Template Individual unit test template
 %
 % INPUT:        n/a
 %
@@ -11,18 +11,35 @@ function UnitTest = ExploreASL_Unit_Test_Template
 %               test      - Structure with individual subtest results
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  ...
+% DESCRIPTION:  To improve quality control, each developer can define unit
+%               tests using this template. Please save the individual unit
+%               test in the "Tests" directory.
+%               Only modify the UnitTest.name, UnitTest.module, UnitTest.submodule
+%               and the individual UnitTest.tests(x).testname fields.
+%               Insert your test code/functions in the "Run your test here ..."
+%               areas.
+%               Naming conventions: please name your individual unit test
+%               according to the following scheme:
+%               xASL_qc_UnitTest_[name of the module/submodule]
+%               For example: the unit test of the xASL_module_ASL would be called:
+%               xASL_qc_UnitTest_module_ASL
 %
-% EXAMPLE:      [name,module,submodule,passed,tests] = ExploreASL_Unit_Test_Template;
+% EXAMPLE:      [name,module,submodule,passed,tests] = xASL_qc_UnitTest_Template;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
 
-%% Initialize test structure (this does not have to be changed)
+%% Initialize test structure
+
+% Insert test name here
 UnitTest.name = 'Template Test';
+
+% Define whether you are testing a module or submodule 
 UnitTest.module = true;
 UnitTest.submodule = false;
 
 %% Test run 1
+
+% Give your individual subtest a name
 UnitTest.tests(1).testname = 'Check A';
 
 % Start the test
@@ -44,6 +61,8 @@ UnitTest.tests(1).passed = testCondition;
 
 
 %% Test run 2
+
+% Give your individual subtest a name
 UnitTest.tests(2).testname = 'Check B';
 
 % Start the test
