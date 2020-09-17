@@ -5,8 +5,7 @@ function UnitTest = xASL_qc_UnitTest_Template
 %
 % OUTPUT:       UnitTest  - Test structure
 %               name      - Name of tested module or submodule (char array)
-%               module    - True if module test
-%               submodule - True if submodule test
+%               unit      - Insert one of the following: 'Module', 'Submodule' or 'Function'
 %               passed    - Result of all subtests combined (true or false)
 %               test      - Structure with individual subtest results
 %
@@ -14,17 +13,17 @@ function UnitTest = xASL_qc_UnitTest_Template
 % DESCRIPTION:  To improve quality control, each developer can define unit
 %               tests using this template. Please save the individual unit
 %               test in the "Tests" directory.
-%               Only modify the UnitTest.name, UnitTest.module, UnitTest.submodule
-%               and the individual UnitTest.tests(x).testname fields.
+%               Only modify the UnitTest.name, UnitTest.unit and the
+%               individual UnitTest.tests(x).testname fields.
 %               Insert your test code/functions in the "Run your test here ..."
 %               areas.
 %               Naming conventions: please name your individual unit test
 %               according to the following scheme:
-%               xASL_qc_UnitTest_[name of the module/submodule]
+%               xASL_qc_UnitTest_[name of the module/submodule/function]
 %               For example: the unit test of the xASL_module_ASL would be called:
 %               xASL_qc_UnitTest_module_ASL
 %
-% EXAMPLE:      [name,module,submodule,passed,tests] = xASL_qc_UnitTest_Template;
+% EXAMPLE:      UnitTests(1) = xASL_qc_UnitTest_Template;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
 
@@ -33,9 +32,8 @@ function UnitTest = xASL_qc_UnitTest_Template
 % Insert test name here
 UnitTest.name = 'Template Test';
 
-% Define whether you are testing a module or submodule 
-UnitTest.module = true;
-UnitTest.submodule = false;
+% Define whether you are testing a module, submodule or function
+UnitTest.unit = 'Module';
 
 %% Test run 1
 
