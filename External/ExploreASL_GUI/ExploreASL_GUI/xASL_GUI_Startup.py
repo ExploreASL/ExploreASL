@@ -2,6 +2,7 @@ from ExploreASL_GUI.xASL_GUI_MainWin import xASL_MainWin
 from PySide2.QtWidgets import QApplication, QMessageBox, QWidget
 from PySide2.QtGui import QIcon
 from platform import system
+from shutil import which
 import os
 import sys
 import json
@@ -15,7 +16,6 @@ def startup():
     project_dir = current_dir
     json_logic_dir = os.path.join(current_dir, "JSON_LOGIC")
     scripts_dir = os.path.join(current_dir, "ExploreASL_GUI")
-
     regex = re.compile("'(.*)'")
     # Get the appropriate default style based on the user's operating system
     if system() == "Windows":  # Windows
@@ -48,8 +48,11 @@ def startup():
 
     # Check if the master config file exists; if it doesn't, the app will initialize one on the first startup
     if os.path.exists(os.path.join(json_logic_dir, "ExploreASL_GUI_masterconfig.json")):
+        print("Loading masterconfig file.")
         with open(os.path.join(json_logic_dir, "ExploreASL_GUI_masterconfig.json")) as master_config_reader:
             master_config = json.load(master_config_reader)
+
+    # Otherwise, this is a first time startup and additional things need to be checked
     else:
         master_config = {"ExploreASLRoot": "",  # The filepath to the ExploreASL directory
                          "DefaultRootDir": current_dir,  # The default root for the navigator to watch from
@@ -59,12 +62,18 @@ def startup():
                          "ScreenSize": (screen_size.width(), screen_size.height()),  # Screen dimensions
                          "DeveloperMode": True  # Whether to launch the app in developer mode or not
                          }
-        result = subprocess.run(["matlab", "-nosplash", "-nodesktop", "-batch", "matlabroot"],
-                                capture_output=True, text=True)
-        if result.returncode == 0:
-            match = regex.search(result.stdout)
+
+        # We must also check for the MATLAB version present on the machine
+        # First try the faster shutil.which method
+        print("First time startup. Please be patient as the matlab version is detected")
+        print("Attempting shutil method first")
+        result = which("matlab")
+        if result is not None:
+            regex = re.compile(r".*R\d{4}[ab]")
+            match = regex.search(result)
             if match:
-                master_config["MATLABROOT"] = match.group(1)
+                master_config["MATLABROOT"] = match.group()
+                print(f"shutil method was a success and located: {match.group()}")
             else:
                 QMessageBox().warning(QWidget(),
                                       "No MATLAB directory found",
@@ -74,16 +83,35 @@ def startup():
                                       "listed in your system's PATH variable.",
                                       QMessageBox.Ok)
                 sys.exit()
+        # Otherwise, try the old subprocess methods
         else:
-            QMessageBox().warning(QWidget(),
-                                  "No MATLAB directory found",
-                                  "No path to the MATLAB root directory could be located on this device. "
-                                  "If MATLAB 2019 or later is installed on this device and this message is still "
-                                  "displaying, please contact your system administration and check whether MATLAB is "
-                                  "listed in your system's PATH variable. Otherwise, if your MATLAB version is not "
-                                  "2019a or later, then this GUI is incompatible with your version of MATLAB",
-                                  QMessageBox.Ok)
-            sys.exit()
+            print("shutil method unsuccessful in locating a path. Attempting backup subprocess method")
+            result = subprocess.run(["matlab", "-nosplash", "-nodesktop", "-batch", "matlabroot"],
+                                    capture_output=True, text=True)
+            if result.returncode == 0:
+                match = regex.search(result.stdout)
+                if match:
+                    master_config["MATLABROOT"] = match.group(1)
+                    print(f"subprocess method was a success and located: {match.group(1)}")
+                else:
+                    QMessageBox().warning(QWidget(),
+                                          "No MATLAB directory found",
+                                          "No path to the MATLAB root directory could be located on this device. "
+                                          "If MATLAB is installed on this device and this message is displaying, "
+                                          "please contact your system administration and check whether MATLAB is "
+                                          "listed in your system's PATH variable.",
+                                          QMessageBox.Ok)
+                    sys.exit()
+            else:
+                QMessageBox().warning(QWidget(),
+                                      "No MATLAB directory found",
+                                      "No path to the MATLAB root directory could be located on this device. "
+                                      "If MATLAB 2019 or later is installed on this device and this message is still "
+                                      "displaying, please contact your system administration and check whether MATLAB"
+                                      "is in your system's PATH variable. Otherwise, if your MATLAB version is not "
+                                      "2019a or later, then this GUI is incompatible with your version of MATLAB",
+                                      QMessageBox.Ok)
+                sys.exit()
 
     # Memory cleanup
     del regex, current_dir

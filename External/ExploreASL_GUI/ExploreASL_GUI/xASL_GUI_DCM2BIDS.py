@@ -650,7 +650,7 @@ def update_json_sidecar(json_file: str, nifti_file: str, dcm_parms: dict):
                     "PhilipsRescaleIntercept" in json_sidecar_parms,
                     "PhilipsScaleSlope" in json_sidecar_parms,
                     "PhilipsRWVSlope" not in json_sidecar_parms,
-                    json_sidecar_parms["UsePhilipsFloatNotDisplayScaling"] == 0
+                    json_sidecar_parms.get("UsePhilipsFloatNotDisplayScaling", None) == 0,
                     ]):
                 nifti_img: nib.Nifti1Image = image.load_img(nifti_file)
                 nifti_data: np.ndarray = image.get_data(nifti_img)
@@ -670,7 +670,7 @@ def update_json_sidecar(json_file: str, nifti_file: str, dcm_parms: dict):
                       "PhilipsRescaleIntercept" in json_sidecar_parms,
                       "PhilipsScaleSlope" in json_sidecar_parms,
                       "PhilipsRWVSlope" in json_sidecar_parms,
-                      json_sidecar_parms["UsePhilipsFloatNotDisplayScaling"] == 1
+                      json_sidecar_parms.get("UsePhilipsFloatNotDisplayScaling", None) == 1,
                       ]):
                 nifti_img: nib.Nifti1Image = image.load_img(nifti_file)
                 nifti_data: np.ndarray = image.get_data(nifti_img)

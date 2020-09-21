@@ -62,7 +62,6 @@ class xASL_GUI_Dehybridizer(QWidget):
         self.le_rootdir = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
         self.le_rootdir.setPlaceholderText("Drag and drop your study's raw directory here")
         self.le_rootdir.setReadOnly(True)
-        self.le_rootdir.setText(r'C:\Users\Maurice\Documents\Diver')
         self.le_rootdir.textChanged.connect(self.can_specify_components)
         self.le_rootdir.textChanged.connect(self.can_dehybridize)
         self.btn_setrootdir = QPushButton("...", clicked=self.set_source_root_directory)
@@ -74,7 +73,6 @@ class xASL_GUI_Dehybridizer(QWidget):
         self.le_exampledir = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
         self.le_exampledir.setPlaceholderText("Drag and drop any directory existent at target depth")
         self.le_exampledir.setReadOnly(True)
-        self.le_exampledir.setText(r'C:\Users\Maurice\Documents\Diver\1\1_bl')
         self.le_exampledir.textChanged.connect(self.can_specify_components)
         self.le_exampledir.textChanged.connect(self.can_dehybridize)
         self.btn_exampledir = QPushButton("...", clicked=self.set_example_directory)
@@ -84,7 +82,6 @@ class xASL_GUI_Dehybridizer(QWidget):
         # Third, specify the delimiter
         self.le_delimiter = QLineEdit(placeholderText="Specify the delimiter, if any")
         self.le_delimiter.setClearButtonEnabled(True)
-        self.le_delimiter.setText("_")
 
         # Fourth, specify the button to search fill the delimiter spaces
         self.btn_fill_spaces = QPushButton("Specify components at indicated directory level",
