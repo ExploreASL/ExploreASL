@@ -63,6 +63,9 @@ if ~xASL_exist(x.P.Path_T1,'file') && ~xASL_exist(x.P.Path_T1_ORI,'file')
     else
         warning([x.SUBJECTDIR ' didnt contain a T1w structural image, skipping...']);
         result = true;
+		
+		% Unlocks the patient as this wouldn't be done in the iteration for the last subject
+		x.mutex.Unlock();
         return;
     end
 end
