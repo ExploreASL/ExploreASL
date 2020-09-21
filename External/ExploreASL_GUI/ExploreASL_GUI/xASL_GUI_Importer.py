@@ -5,6 +5,7 @@ from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
 from ExploreASL_GUI.xASL_GUI_DCM2BIDS import get_dicom_directories, asldcm2bids_onedir, create_import_summary, \
     bids_m0_followup
 from ExploreASL_GUI.xASL_GUI_HelperFuncs_StringOps import set_os_dependent_text
+from ExploreASL_GUI.xASL_GUI_Dehybridizer import xASL_GUI_Dehybridizer
 from glob import iglob
 from tdda import rexpy
 from pprint import pprint
@@ -60,52 +61,68 @@ class xASL_GUI_Importer(QMainWindow):
     def __init__(self, parent_win=None):
         # Parent window is fed into the constructor to allow for communication with parent window devices
         super().__init__(parent=parent_win)
-        if parent_win is not None:
-            self.config = self.parent().config
-        else:
-            with open("ExploreASL_GUI_masterconfig.json") as config_reader:
-                self.config = json.load(config_reader)
+        self.config = parent_win.config
 
         # Misc and Default Attributes
         self.labfont = QFont()
         self.labfont.setPointSize(16)
+        self.lefont = QFont()
+        self.lefont.setPointSize(12)
         self.rawdir = ''
         self.subject_regex = None
         self.visit_regex = None
+        self.run_regex = None
         self.scan_regex = None
-        self.visit_aliases = OrderedDict()
+        self.run_aliases = OrderedDict()
         self.scan_aliases = dict.fromkeys(["ASL4D", "T1", "M0", "FLAIR"])
-        self.cmb_visitaliases_dict = {}
+        self.cmb_runaliases_dict = {}
         self.threadpool = QThreadPool()
         self.import_summaries = []
         self.failed_runs = []
 
         # Window Size and initial visual setup
-        self.setMinimumSize(540, 720)
+        self.setMinimumSize(600, 720)
         self.resize(600, 720)
         self.setWindowTitle("ExploreASL ASL2BIDS Importer")
         self.cw = QWidget(self)
         self.setCentralWidget(self.cw)
         self.mainlay = QVBoxLayout(self.cw)
-        self.mainsplit = QSplitter(Qt.Vertical, self.cw)
+        self.mainlay.setContentsMargins(0, 5, 0, 0)
+
+        # The central tab widget and its setup
+        self.central_tab_widget = QTabWidget()
+        self.cont_import = QWidget()
+        self.vlay_import = QVBoxLayout(self.cont_import)
+        self.cont_dehybridizer = QWidget()
+        self.vlay_dehybridizer = QVBoxLayout(self.cont_dehybridizer)
+        self.vlay_dehybridizer.setContentsMargins(0, 0, 0, 0)
+        self.central_tab_widget.addTab(self.cont_import, "Importer")
+        self.central_tab_widget.addTab(self.cont_dehybridizer, "Folder Unpack")
+        self.mainlay.addWidget(self.central_tab_widget)
+
+        # The importer UI setup
+        self.mainsplit = QSplitter(Qt.Vertical)
         handle_path = os.path.join(self.config["ProjectDir"], "media", "3_dots_horizontal.svg").replace('\\', '/')
         handle_style = 'QSplitter::handle {image: url(' + handle_path + ');}'
         self.mainsplit.setStyleSheet(handle_style)
         self.mainsplit.setHandleWidth(20)
-        self.cw.setLayout(self.mainlay)
-        self.mainlay.addWidget(self.mainsplit)
 
         self.Setup_UI_UserSpecifyDirStuct()
         self.Setup_UI_UserSpecifyScanAliases()
-        self.Setup_UI_UserSpecifyVisitAliases()
+        self.Setup_UI_UserSpecifyRunAliases()
 
-        self.btn_run_importer = QPushButton("Run ASL2BIDS", self.cw, clicked=self.run_importer)
+        self.btn_run_importer = QPushButton("Run ASL2BIDS", clicked=self.run_importer)
         self.btn_run_importer.setFont(self.labfont)
         self.btn_run_importer.setFixedHeight(50)
         self.btn_run_importer.setEnabled(False)
-        self.mainsplit.addWidget(self.btn_run_importer)
 
+        self.mainsplit.addWidget(self.btn_run_importer)
         self.mainsplit.setSizes([150, 225, 300, 50])
+        self.vlay_import.addWidget(self.mainsplit)
+
+        # The dehybridizer UI setup
+        self.dehybridizer = xASL_GUI_Dehybridizer(self)
+        self.vlay_dehybridizer.addWidget(self.dehybridizer)
 
     def Setup_UI_UserSpecifyDirStuct(self):
         self.grp_dirstruct = QGroupBox(title="Specify Directory Structure")
@@ -121,7 +138,7 @@ class xASL_GUI_Importer(QMainWindow):
         self.le_rootdir.textChanged.connect(self.set_rootdir_variable)
         self.le_rootdir.textChanged.connect(self.clear_widgets)
         self.le_rootdir.textChanged.connect(self.is_ready_import)
-        self.btn_setrootdir = QPushButton("...", self.grp_dirstruct, clicked=self.set_import_root_directory)
+        self.btn_setrootdir = QPushButton("...", clicked=self.set_import_root_directory)
         self.hlay_rootdir.addWidget(self.le_rootdir)
         self.hlay_rootdir.addWidget(self.btn_setrootdir)
         self.chk_uselegacy = QCheckBox(checked=True)
@@ -131,10 +148,12 @@ class xASL_GUI_Importer(QMainWindow):
         # Next specify the QLabels that can be dragged to have their text copied elsewhere
         self.hlay_placeholders = QHBoxLayout()
         self.lab_holdersub = DraggableLabel("Subject", self.grp_dirstruct)
-        self.lab_holdersess = DraggableLabel("Visit", self.grp_dirstruct)
+        self.lab_holdervisit = DraggableLabel("Visit", self.grp_dirstruct)
+        self.lab_holderrun = DraggableLabel("Run", self.grp_dirstruct)
         self.lab_holderscan = DraggableLabel("Scan", self.grp_dirstruct)
         self.lab_holderdummy = DraggableLabel("Dummy", self.grp_dirstruct)
-        for lab in [self.lab_holdersub, self.lab_holdersess, self.lab_holderscan, self.lab_holderdummy]:
+        for lab in [self.lab_holdersub, self.lab_holdervisit, self.lab_holderrun,
+                    self.lab_holderscan, self.lab_holderdummy]:
             self.hlay_placeholders.addWidget(lab)
 
         # Next specify the QLineEdits that will be receiving the dragged text
@@ -142,8 +161,8 @@ class xASL_GUI_Importer(QMainWindow):
         self.lab_rootlabel = QLabel(text="raw")
         self.lab_rootlabel.setFont(self.labfont)
         self.levels = {}
-        for idx, (level, func) in enumerate(zip(["Level1", "Level2", "Level3", "Level4", "Level5"],
-                                                [self.get_nth_level_dirs] * 5)):
+        for idx, (level, func) in enumerate(zip(["Level1", "Level2", "Level3", "Level4", "Level5", "Level6"],
+                                                [self.get_nth_level_dirs] * 6)):
             le = DandD_Label2LineEdit(self, self.grp_dirstruct, idx)
             le.modified_text.connect(self.get_nth_level_dirs)
             le.textChanged.connect(self.update_sibling_awareness)
@@ -159,9 +178,9 @@ class xASL_GUI_Importer(QMainWindow):
         lab_sep.setFont(self.labfont)
         self.hlay_receivers.addWidget(lab_sep)
         for ii, level in enumerate(self.levels.values()):
-            level.setFont(self.labfont)
+            level.setFont(self.lefont)
             self.hlay_receivers.addWidget(level)
-            if ii < 4:
+            if ii < 5:
                 lab_sep = QLabel(text=separator)
                 lab_sep.setFont(self.labfont)
                 self.hlay_receivers.addWidget(lab_sep)
@@ -196,21 +215,21 @@ class xASL_GUI_Importer(QMainWindow):
 
         self.mainsplit.addWidget(self.grp_scanaliases)
 
-    def Setup_UI_UserSpecifyVisitAliases(self):
+    def Setup_UI_UserSpecifyRunAliases(self):
         # Define the groupbox and its main layout
-        self.grp_visitaliases = QGroupBox(title="Specify Visit Aliases and Ordering")
-        self.vlay_visitaliases = QVBoxLayout(self.grp_visitaliases)
-        self.vlay_visitaliases.setContentsMargins(0, 0, 0, 0)
-        self.scroll_visitaliases = QScrollArea(self.grp_visitaliases)
-        self.cont_visitaliases = QWidget()
-        self.scroll_visitaliases.setWidget(self.cont_visitaliases)
-        self.scroll_visitaliases.setWidgetResizable(True)
+        self.grp_runaliases = QGroupBox(title="Specify Run Aliases and Ordering")
+        self.vlay_runaliases = QVBoxLayout(self.grp_runaliases)
+        self.vlay_runaliases.setContentsMargins(0, 0, 0, 0)
+        self.scroll_runaliases = QScrollArea(self.grp_runaliases)
+        self.cont_runaliases = QWidget()
+        self.scroll_runaliases.setWidget(self.cont_runaliases)
+        self.scroll_runaliases.setWidgetResizable(True)
 
         # Arrange widgets and layouts
-        self.le_visitaliases_dict = dict()
-        self.formlay_visitaliases = QFormLayout(self.cont_visitaliases)
-        self.vlay_visitaliases.addWidget(self.scroll_visitaliases)
-        self.mainsplit.addWidget(self.grp_visitaliases)
+        self.le_runaliases_dict = dict()
+        self.formlay_runaliases = QFormLayout(self.cont_runaliases)
+        self.vlay_runaliases.addWidget(self.scroll_runaliases)
+        self.mainsplit.addWidget(self.grp_runaliases)
 
     # Purpose of this function is to set the directory of the root path lineedit based on the adjacent pushbutton
     @Slot()
@@ -237,7 +256,7 @@ class xASL_GUI_Importer(QMainWindow):
 
     def get_nth_level_dirs(self, dir_type: str, level: int):
         """
-        :param dir_type: whether this is a subject, visit, or scan
+        :param dir_type: whether this is a subject, visit, run or scan
         :param level: which lineedit, in python index terms, emitted this signal
         """
         # Requirements to proceed
@@ -286,9 +305,14 @@ class xASL_GUI_Importer(QMainWindow):
             del directories, basenames
 
         elif dir_type == "Visit":
-            self.visit_regex = self.infer_regex(list(set(basenames)))
+            self.visit_regex = self.infer_regex(list(basenames))
             print(f"Visit regex: {self.visit_regex}")
-            self.reset_visit_aliases(basenames=list(set(basenames)))
+            del directories, basenames
+
+        elif dir_type == "Run":
+            self.run_regex = self.infer_regex(list(set(basenames)))
+            print(f"Run regex: {self.run_regex}")
+            self.reset_run_aliases(basenames=list(set(basenames)))
             del directories, basenames
 
         elif dir_type == "Scan":
@@ -317,11 +341,12 @@ class xASL_GUI_Importer(QMainWindow):
         # Resets everything back to normal
         self.subject_regex = None
         self.visit_regex = None
+        self.run_regex = None
         self.scan_regex = None
         self.clear_receivers()
-        self.clear_visit_alias_cmbs_and_les()
+        self.clear_run_alias_cmbs_and_les()
         self.reset_scan_alias_cmbs(basenames=[])
-        self.visit_aliases = OrderedDict()
+        self.run_aliases = OrderedDict()
         self.scan_aliases = dict.fromkeys(["ASL4D", "T1", "M0", "FLAIR"])
 
         if self.config["DeveloperMode"]:
@@ -341,8 +366,12 @@ class xASL_GUI_Importer(QMainWindow):
         # If visits is not in the currently-specified structure and the regex has been already set
         if "Visit" not in used_directories and self.visit_regex is not None:
             self.visit_regex = None
-            self.visit_aliases.clear()
-            self.clear_visit_alias_cmbs_and_les()  # This clears the visitaliases dict and the widgets
+
+        # If runs is not in the currently-specified structure and the regex has been already set
+        if "Run" not in used_directories and self.run_regex is not None:
+            self.run_regex = None
+            self.run_aliases.clear()
+            self.clear_run_alias_cmbs_and_les()  # This clears the runaliases dict and the widgets
 
         if "Scan" not in used_directories and self.scan_regex is not None:
             self.scan_regex = None
@@ -383,19 +412,19 @@ class xASL_GUI_Importer(QMainWindow):
             else:
                 self.scan_aliases[key] = None
 
-    def clear_visit_alias_cmbs_and_les(self):
+    def clear_run_alias_cmbs_and_les(self):
         """
-        Removes all row widgets from the visits section. Clears the lineedits dict linking directory names to user-
+        Removes all row widgets from the runs section. Clears the lineedits dict linking directory names to user-
         preferred aliases. Clears the comboboxes dictionary specifying order.
         """
-        for idx in range(self.formlay_visitaliases.rowCount()):
-            self.formlay_visitaliases.removeRow(0)
-        self.le_visitaliases_dict.clear()
-        self.cmb_visitaliases_dict.clear()
+        for idx in range(self.formlay_runaliases.rowCount()):
+            self.formlay_runaliases.removeRow(0)
+        self.le_runaliases_dict.clear()
+        self.cmb_runaliases_dict.clear()
 
-    def reset_visit_aliases(self, basenames=None):
+    def reset_run_aliases(self, basenames=None):
         """
-        Resets the entire visit section. Clears previous rows if necessary. Resets the global variables for the
+        Resets the entire run section. Clears previous rows if necessary. Resets the global variables for the
         lineedits and comboboxes containing mappings of the basename to the row widgets.
         :param basenames: filepath basenames to populate the row labels with and establish alias mappings with
         """
@@ -403,29 +432,28 @@ class xASL_GUI_Importer(QMainWindow):
             basenames = []
 
         # If this is an update, remove the previous widgets and clear the dict
-        if len(self.le_visitaliases_dict) > 0:
-            self.clear_visit_alias_cmbs_and_les()
+        if len(self.le_runaliases_dict) > 0:
+            self.clear_run_alias_cmbs_and_les()
 
         # Generate the new dict mappings of directory basename to preferred alias name and mapping
-        self.le_visitaliases_dict = dict.fromkeys(basenames)
-        self.cmb_visitaliases_dict = dict.fromkeys(basenames)
+        self.le_runaliases_dict = dict.fromkeys(basenames)
+        self.cmb_runaliases_dict = dict.fromkeys(basenames)
 
         # Repopulate the format layout, and establish mappings for the lineedits and the comboboxes
-        for ii, key in enumerate(self.le_visitaliases_dict):
+        for ii, key in enumerate(self.le_runaliases_dict):
             hlay = QHBoxLayout()
             cmb = QComboBox()
-            nums_to_add = [str(num) for num in range(1, len(self.le_visitaliases_dict) + 1)]
+            nums_to_add = [str(num) for num in range(1, len(self.le_runaliases_dict) + 1)]
             cmb.addItems(nums_to_add)
             cmb.setCurrentIndex(ii)
             cmb.currentIndexChanged.connect(self.is_ready_import)
-            le = QLineEdit()
-            le.setPlaceholderText("(Optional) Specify the alias for this visit")
+            le = QLineEdit(placeholderText="(Optional) Specify the alias for this run")
             hlay.addWidget(le)
             hlay.addWidget(cmb)
-            self.formlay_visitaliases.addRow(key, hlay)
+            self.formlay_runaliases.addRow(key, hlay)
             # This is where the mappings are re-established
-            self.le_visitaliases_dict[key] = le
-            self.cmb_visitaliases_dict[key] = cmb
+            self.le_runaliases_dict[key] = le
+            self.cmb_runaliases_dict[key] = cmb
 
     ##########################
     # SECTION - MISC FUNCTIONS
@@ -477,13 +505,13 @@ class xASL_GUI_Importer(QMainWindow):
             self.btn_run_importer.setEnabled(False)
             return
 
-        # Next requirement; if Visit is indicated, the aliases and ordering must both be unique
-        if "Visit" in current_texts and len(self.cmb_visitaliases_dict) > 0:
-            current_visit_aliases = [le.text() for le in self.le_visitaliases_dict.values() if le.text() != '']
-            current_visit_ordering = [cmb.currentText() for cmb in self.cmb_visitaliases_dict.values()]
+        # Next requirement; if Run is indicated, the aliases and ordering must both be unique
+        if "Run" in current_texts and len(self.cmb_runaliases_dict) > 0:
+            current_run_aliases = [le.text() for le in self.le_runaliases_dict.values() if le.text() != '']
+            current_run_ordering = [cmb.currentText() for cmb in self.cmb_runaliases_dict.values()]
             if any([
-                len(set(current_visit_aliases)) != len(current_visit_aliases),  # unique aliases requires
-                len(set(current_visit_ordering)) != len(current_visit_ordering)  # unique ordering required
+                len(set(current_run_aliases)) != len(current_run_aliases),  # unique aliases requires
+                len(set(current_run_ordering)) != len(current_run_ordering)  # unique ordering required
             ]):
                 self.btn_run_importer.setEnabled(False)
                 return
@@ -516,7 +544,7 @@ class xASL_GUI_Importer(QMainWindow):
                 QMessageBox().warning(self,
                                       "Invalid directory structure entered",
                                       "You must indicate filler directories occuring between"
-                                      "\nSubject/Visit/Scan directories using the Dummy label provided",
+                                      "\nSubject/Visit/Run/Scan directories using the Dummy label provided",
                                       QMessageBox.Ok)
                 return False, []
             elif name == '' and not encountered_nonblank:
@@ -530,7 +558,7 @@ class xASL_GUI_Importer(QMainWindow):
                 "Scan" not in valid_dirs]):
             QMessageBox().warning(self,
                                   "Invalid directory structure entered",
-                                  "A minimum of Visit and Scan directories must be present in your study for"
+                                  "A minimum of Subject and Scan directories must be present in your study for"
                                   "ExploreASL to import data correctly.")
             return False, []
 
@@ -562,34 +590,34 @@ class xASL_GUI_Importer(QMainWindow):
 
         return True, scan_aliases
 
-    def get_visit_aliases(self):
+    def get_run_aliases(self):
         """
-        Retrieves a mapping of the visit alias names and the user-specified preferred name
-        @return: status, whether the operation was a success; visit_aliases, the mapping
+        Retrieves a mapping of the run alias names and the user-specified preferred name
+        @return: status, whether the operation was a success; run_aliases, the mapping
         """
 
-        visit_aliases = OrderedDict()
+        run_aliases = OrderedDict()
 
-        # If the visit aliases dict is empty, simply return the empty dict, as visits are not mandatory to outline
-        if len(self.cmb_visitaliases_dict) == 0:
-            return True, visit_aliases
+        # If the run aliases dict is empty, simply return the empty dict, as runs are not mandatory to outline
+        if len(self.cmb_runaliases_dict) == 0:
+            return True, run_aliases
 
         # First, make sure that every number is unique:
-        current_orderset = [cmb.currentText() for cmb in self.cmb_visitaliases_dict.values()]
+        current_orderset = [cmb.currentText() for cmb in self.cmb_runaliases_dict.values()]
         if len(current_orderset) != len(set(current_orderset)):
             QMessageBox().warning(self,
-                                  "Invalid visits alias ordering entered",
+                                  "Invalid runs alias ordering entered",
                                   "Please check for accidental doublings",
                                   QMessageBox.Ok)
-            return False, visit_aliases
+            return False, run_aliases
 
-        basename_keys = list(self.le_visitaliases_dict.keys())
-        aliases = list(le.text() for le in self.le_visitaliases_dict.values())
-        orders = list(cmb.currentText() for cmb in self.cmb_visitaliases_dict.values())
+        basename_keys = list(self.le_runaliases_dict.keys())
+        aliases = list(le.text() for le in self.le_runaliases_dict.values())
+        orders = list(cmb.currentText() for cmb in self.cmb_runaliases_dict.values())
 
         if self.config["DeveloperMode"]:
-            print(f"Inside get_visit_aliases, the following variable values were in play prior to generating the "
-                  f"visit aliases dict:\n"
+            print(f"Inside get_run_aliases, the following variable values were in play prior to generating the "
+                  f"run aliases dict:\n"
                   f"basename_keys: {basename_keys}\n"
                   f"aliases: {aliases}\n"
                   f"orders: {orders}")
@@ -599,33 +627,33 @@ class xASL_GUI_Importer(QMainWindow):
             current_alias = aliases[idx]
             current_basename = basename_keys[idx]
             if current_alias == '':
-                visit_aliases[current_basename] = f"ASL_{num}"
+                run_aliases[current_basename] = f"ASL_{num}"
             else:
-                visit_aliases[current_basename] = current_alias
+                run_aliases[current_basename] = current_alias
 
-        return True, visit_aliases
+        return True, run_aliases
 
     # Utilizes the other get_ functions above to create the import parameters file
     def get_import_parms(self):
-        import_parms = {}.fromkeys(["Regex", "Directory Structure", "Scan Aliases", "Ordered Visit Aliases"])
-        # Get the directory structure, the scan aliases, and the visit aliases
+        import_parms = {}.fromkeys(["Regex", "Directory Structure", "Scan Aliases", "Ordered Run Aliases"])
+        # Get the directory structure, the scan aliases, and the run aliases
         directory_status, valid_directories = self.get_directory_structure()
         scanalias_status, scan_aliases = self.get_scan_aliases()
-        visitalias_status, visit_aliases = self.get_visit_aliases()
+        runalias_status, run_aliases = self.get_run_aliases()
         if any([self.subject_regex == '',  # Subject regex must be established
                 self.scan_regex == '',  # Scan regex must be established
                 not directory_status,  # Getting the directory structure must have been successful
                 not scanalias_status,  # Getting the scan aliases must have been successful
-                not visitalias_status  # Getting the visit aliases must have been successful
+                not runalias_status  # Getting the run aliases must have been successful
                 ]):
             return None
 
         # Otherwise, green light to create the import parameters
         import_parms["RawDir"] = self.le_rootdir.text()
-        import_parms["Regex"] = [self.subject_regex, self.visit_regex, self.scan_regex]
+        import_parms["Regex"] = [self.subject_regex, self.run_regex, self.scan_regex]
         import_parms["Directory Structure"] = valid_directories
         import_parms["Scan Aliases"] = scan_aliases
-        import_parms["Ordered Visit Aliases"] = visit_aliases
+        import_parms["Ordered Run Aliases"] = run_aliases
 
         # Save a copy of the import parms to the raw directory in question
         with open(os.path.join(self.le_rootdir.text(), "ImportConfig.json"), 'w') as w:
@@ -837,7 +865,7 @@ class DandD_Label2LineEdit(QLineEdit):
         self.setAcceptDrops(True)
         self.setReadOnly(True)
         self.superparent = superparent  # This is the Importer Widget itself
-        self.sibling_awareness = ['', '', '', '', '']
+        self.sibling_awareness = [''] * 6
         self.id = identification  # This is the python index of which level after ..\\raw does this lineedit represent
         self.textChanged.connect(self.modifiedtextChanged)
 

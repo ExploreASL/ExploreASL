@@ -241,29 +241,15 @@ class xASL_MainWin(QMainWindow):
         # Update user config to have a new default analysis dir to refer to in on future startups
         self.config["DefaultRootDir"] = directory
         self.save_config()
+        self.communicate_config_change()
 
-    # Sets the ExploreASL directory of the user from the push button
-    def set_exploreasl_dir_frombtn(self):
-        directory: str = QFileDialog.getExistingDirectory(self,
-                                                          "Select the path to ExploreASL",  # Window title
-                                                          os.getcwd(),  # Default dir
-                                                          QFileDialog.ShowDirsOnly)  # Display options
-        self.set_exploreasl_dir(directory)
-
-    def set_exploreasl_dir(self, directory):
-        # Abort if the provided directory is not a filepath
-        if not os.path.exists(directory):
-            return
-        # Abort if the provided directory is actually not a directory
-        if not os.path.isdir(directory):
-            return
-        # Change the lineedit
-        set_os_dependent_text(linedit=self.le_exploreasl_dir,
-                              config_ossystem=self.config["Platform"],
-                              text_to_set=directory)
-        # Update user config to have a new ExploreASL directory specified
-        self.config["ExploreASLRoot"] = directory
-        self.save_config()
+    def communicate_config_change(self):
+        self.parmsmaker.config = self.config
+        self.file_explorer.config = self.config
+        self.plotter.config = self.config
+        self.executor.config = self.config
+        self.importer.config = self.config
+        self.importer.dehybridizer.config = self.config
 
     # This will be modified in the future to perform certain actions on end
     def closeEvent(self, event):

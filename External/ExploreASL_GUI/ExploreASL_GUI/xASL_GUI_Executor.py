@@ -285,6 +285,7 @@ class xASL_Executor(QMainWindow):
                 inner_cmb.currentTextChanged.connect(self.set_nstudies_selectable)
                 inner_cmb.currentTextChanged.connect(self.is_ready_to_run)
                 inner_le = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
+                inner_le.setClearButtonEnabled(True)
                 inner_le.setPlaceholderText("Select the analysis directory to your study")
                 inner_le.textChanged.connect(self.is_ready_to_run)
                 inner_btn = RowAwareQPushButton(self.formlay_nrows, "...")
@@ -479,7 +480,8 @@ class xASL_Executor(QMainWindow):
         for le in self.formlay_lineedits_list:
             directory = le.text()
             if os.path.exists(directory):
-                if all([os.path.isdir(directory), len(glob(os.path.join(directory, "*Par*.json")))]):
+                if all([os.path.isdir(directory),
+                        len(glob(os.path.join(directory, "*Par*.json")))]):
                     checks.append(True)
                 else:
                     checks.append(False)
@@ -487,18 +489,37 @@ class xASL_Executor(QMainWindow):
                 checks.append(False)
 
         # Second check: for any study that has its module set as Population, the number of cores must be 1
-        for cmb_cores, cmb_runopt in zip(self.formlay_cmbs_ncores_list, self.formlay_cmbs_runopts_list):
+        for cmb_cores, le_analysisdir, cmb_runopt in zip(self.formlay_cmbs_ncores_list,
+                                                         self.formlay_lineedits_list,
+                                                         self.formlay_cmbs_runopts_list):
             if cmb_runopt.currentText() == "Population" and cmb_cores.currentText() != "1":
                 checks.append(False)
 
-        if all(checks):
-            self.btn_runExploreASL.setEnabled(True)
-        else:
-            self.btn_runExploreASL.setEnabled(False)
+            if cmb_runopt.currentText() != "Population":
+                try:
+                    with open(os.path.join(le_analysisdir.text(), "DataPar.json")) as datapar_reader:
+                        regex = json.load(datapar_reader)["subject_regexp"]
+                    n_subjects = sum([True if re.search(regex, subject) else False
+                                      for subject in os.listdir(le_analysisdir.text())])
+                    if n_subjects >= int(cmb_cores.currentText()):
+                        checks.append(True)
+                    else:
+                        checks.clear()
+                        self.btn_runExploreASL.setEnabled(False)
+                        return
+                except (KeyError, FileNotFoundError) as e:
+                    checks.clear()
+                    self.btn_runExploreASL.setEnabled(False)
+                    return
 
-    ###################################
-    # CONCURRENT AND POST-RUN FUNCTIONS
-    ###################################
+            if all(checks):
+                self.btn_runExploreASL.setEnabled(True)
+            else:
+                self.btn_runExploreASL.setEnabled(False)
+
+        ###################################
+        # CONCURRENT AND POST-RUN FUNCTIONS
+        ###################################
 
     def post_run_main(self):
         """
@@ -635,8 +656,9 @@ class xASL_Executor(QMainWindow):
         """
         selected_progbar: QProgressBar = self.formlay_progbars_list[study_idx]
         if self.config["DeveloperMode"]:
-            print(f"update_progressbar received a signal from watcher {study_idx} to increase the progressbar value by "
-                  f"{val_to_inc_by}")
+            print(
+                f"update_progressbar received a signal from watcher {study_idx} to increase the progressbar value by "
+                f"{val_to_inc_by}")
             print(f"The progressbar's value before update: {selected_progbar.value()} "
                   f"out of maximum {selected_progbar.maximum()}")
         selected_progbar.setValue(selected_progbar.value() + val_to_inc_by)
@@ -752,29 +774,41 @@ class xASL_Executor(QMainWindow):
                 return
 
             # Get a few essentials that will be needed for the workers and the watcher for this study
-            with open(parms_file) as f:
-                parms = json.load(f)
-                try:
-                    str_regex: str = parms["subject_regexp"]
-                    explore_asl_path = parms["MyPath"]
-                    regex = re.compile(str_regex)
-                    sess_names = parms["SESSIONS"]
-                    if str_regex.startswith("^") or str_regex.endswith('$'):
-                        str_regex = str_regex.strip('^$')
-                except KeyError:
-                    QMessageBox().warning(self,
-                                          f"Problem prior to starting ExploreASL",
-                                          f"Essential parameters not present within the DataPar file for study:"
-                                          f"\n{path.text()}\n"
-                                          f"Please ensure that parameter file contains fields detailing:\n"
-                                          f"1) A MyPath key detailing the path to the Explore ASL directory\n"
-                                          f"2) A subject_regex key representing subjects in the study\n"
-                                          f"3) A SESSIONS key detailing the sessions in the study, if any",
-                                          QMessageBox.Ok)
+            try:
+                with open(parms_file) as f:
+                    parms = json.load(f)
+                    try:
+                        str_regex: str = parms["subject_regexp"]
+                        explore_asl_path = parms["MyPath"]
+                        regex = re.compile(str_regex)
+                        sess_names = parms["SESSIONS"]
+                        if str_regex.startswith("^") or str_regex.endswith('$'):
+                            str_regex = str_regex.strip('^$')
+                    except KeyError:
+                        QMessageBox().warning(self,
+                                              f"Problem prior to starting ExploreASL",
+                                              f"Essential parameters not present within the DataPar file for study:"
+                                              f"\n{path.text()}\n"
+                                              f"Please ensure that parameter file contains fields detailing:\n"
+                                              f"1) A MyPath key detailing the path to the Explore ASL directory\n"
+                                              f"2) A subject_regex key representing subjects in the study\n"
+                                              f"3) A SESSIONS key detailing the sessions in the study, if any",
+                                              QMessageBox.Ok)
 
-                    # Remember to re-activate widgets
-                    self.set_widgets_activation_states(True)
-                    return
+                        # Remember to re-activate widgets
+                        self.set_widgets_activation_states(True)
+                        return
+            except json.decoder.JSONDecodeError as e:
+                QMessageBox().warning(self.parent(),
+                                      f"Problem prior to starting ExploreASL - Bad Json syntax",
+                                      f"The DataPar.json file in {os.path.dirname(parms_file)}\n"
+                                      f"could not be read.\n"
+                                      f"Please ensure the DataPar.json file has come from the GUI module for defining "
+                                      f"study-level run parameters.",
+                                      QMessageBox.Ok)
+                # Remember to re-activate widgets
+                self.set_widgets_activation_states(True)
+                return
 
             # With the parms now loaded, additional checks can be made to prevent false runs
             if any([not os.path.exists(parms["MyPath"]),  # ExploreASL dir must exist
@@ -806,7 +840,8 @@ class xASL_Executor(QMainWindow):
                 if ii < int(box.currentText()):
                     worker = ExploreASL_Worker(
                         explore_asl_path,  # The exploreasl filepath
-                        glob(os.path.join(path.text(), "*Par*.json"))[0].replace('\\', '/'),  # The filepath to parms
+                        glob(os.path.join(path.text(), "*Par*.json"))[0].replace('\\', '/'),
+                        # The filepath to parms
                         1,  # Process the data
                         1,  # Skip the pause
                         ii + 1,  # iWorker
@@ -866,7 +901,8 @@ class xASL_Executor(QMainWindow):
             watcher = ExploreASL_Watcher(target=path.text(),  # the analysis directory
                                          regex=str_regex,  # the regex used to recognize subjects
                                          watch_debt=debt,  # the debt used to determine when to stop watching
-                                         study_idx=study_idx,  # the identifier used to know which progressbar to signal
+                                         study_idx=study_idx,
+                                         # the identifier used to know which progressbar to signal
                                          translators=self.executor_translators,
                                          config=self.config
                                          )
@@ -898,8 +934,9 @@ class xASL_Executor(QMainWindow):
                 worker.signals.stdout_processing_error.connect(self.update_stdout_error_dicts)
                 worker.signals.stderr_processing_error.connect(self.update_stderr_error_dicts)
 
-                self.textedit_textoutput.append(f"Preparing Worker {idx + 1} of {len(inner_worker_block)} for study: "
-                                                f"{path.text()}")
+                self.textedit_textoutput.append(
+                    f"Preparing Worker {idx + 1} of {len(inner_worker_block)} for study: "
+                    f"{path.text()}")
 
         ######################################
         # THIS IS NOW OUTSIDE OF THE FOR LOOPS
@@ -914,20 +951,20 @@ class xASL_Executor(QMainWindow):
         self.begin_movie()
         begin_msg = r"""
 ##################################################################################
-  ______            _                          _____ _         _____ _    _ _____ 
- |  ____|          | |                  /\    / ____| |       / ____| |  | |_   _|
- | |__  __  ___ __ | | ___  _ __ ___   /  \  | (___ | |      | |  __| |  | | | |  
- |  __| \ \/ / '_ \| |/ _ \| '__/ _ \ / /\ \  \___ \| |      | | |_ | |  | | | |  
- | |____ >  <| |_) | | (_) | | |  __// ____ \ ____) | |____  | |__| | |__| |_| |_ 
- |______/_/\_\ .__/|_|\___/|_|  \___/_/    \_\_____/|______|  \_____|\____/|_____|
-             | |                                                                  
-             |_|                                                                  
-  ______                     _                                                    
- |  ____|                   | |                                                   
- | |__  __  _____  ___ _   _| |_ ___  _ __                                        
- |  __| \ \/ / _ \/ __| | | | __/ _ \| '__|                                       
- | |____ >  <  __/ (__| |_| | || (_) | |                                          
- |______/_/\_\___|\___|\__,_|\__\___/|_|                                          """
+______            _                          _____ _         _____ _    _ _____ 
+|  ____|          | |                  /\    / ____| |       / ____| |  | |_   _|
+| |__  __  ___ __ | | ___  _ __ ___   /  \  | (___ | |      | |  __| |  | | | |  
+|  __| \ \/ / '_ \| |/ _ \| '__/ _ \ / /\ \  \___ \| |      | | |_ | |  | | | |  
+| |____ >  <| |_) | | (_) | | |  __// ____ \ ____) | |____  | |__| | |__| |_| |_ 
+|______/_/\_\ .__/|_|\___/|_|  \___/_/    \_\_____/|______|  \_____|\____/|_____|
+         | |                                                                  
+         |_|                                                                  
+______                     _                                                    
+|  ____|                   | |                                                   
+| |__  __  _____  ___ _   _| |_ ___  _ __                                        
+|  __| \ \/ / _ \/ __| | | | __/ _ \| '__|                                       
+| |____ >  <  __/ (__| |_| | || (_) | |                                          
+|______/_/\_\___|\___|\__,_|\__\___/|_|                                          """
         print(begin_msg)
 
 
@@ -994,7 +1031,8 @@ class ExploreASL_Watcher(QRunnable):
         workload_val = None
 
         if os.path.isdir(created_path):  # Lock dir
-            if detected_module.group(1) == "Structural" and not detected_subject.group() in self.sessions_seen_struct:
+            if detected_module.group(
+                    1) == "Structural" and not detected_subject.group() in self.sessions_seen_struct:
                 self.sessions_seen_struct.append(detected_subject.group())
                 msg = f"Structural Module has started for subject: {detected_subject.group()}"
             elif detected_module.group(1) == "ASL" and not detected_subject.group() in self.sessions_seen_asl:

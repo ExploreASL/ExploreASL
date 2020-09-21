@@ -7,6 +7,7 @@ import os
 from glob import iglob, glob
 from tdda import rexpy
 from more_itertools import peekable
+import nibabel as nib
 
 
 class xASL_Parms(QMainWindow):
@@ -65,6 +66,7 @@ class xASL_Parms(QMainWindow):
             btn_connect_to=self.set_study_dir,
             default=''
         )
+        self.le_study_dir.setPlaceholderText("Indicate the analysis directory filepath here")
         self.le_subjectregex = QLineEdit(text='\\d+')
         self.le_subjectregex.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.lst_included_subjects = DandD_FileExplorer2ListWidget()
@@ -87,7 +89,7 @@ class xASL_Parms(QMainWindow):
         self.cmb_quality = self.make_cmb_and_items(["Low", "High"])
         self.cmb_quality.setCurrentIndex(1)
 
-        for desc, widget in zip(["ExploreASL Directory", "Name of Study", "Study Directory",
+        for desc, widget in zip(["ExploreASL Directory", "Name of Study", "Analysis Directory",
                                  "Dataset is in BIDS format?",
                                  # "Subject Regex",
                                  "Subjects to Assess\n(Drag and Drop Directories)",
@@ -254,8 +256,15 @@ class xASL_Parms(QMainWindow):
                                 QMessageBox.Ok)
             return
 
-        # Now we can update a couple of fields
-        # First, the vendor
+        # First, check if this is bids
+        if os.path.exists(os.path.join(analysis_dir_text, "dataset_description.json")):
+            self.chk_overwrite_for_bids.setChecked(True)
+            print("This is BIDS")
+        else:
+            self.chk_overwrite_for_bids.setChecked(False)
+            print("This is not BIDS")
+
+        # Next, the vendor
         try:
             idx = self.cmb_vendor.findText(self.asl_json_sidecar_data["Manufacturer"])
             if idx != -1:
@@ -422,6 +431,8 @@ class xASL_Parms(QMainWindow):
             else:
                 self.flag_impossible_m0 = True
                 bad_jsons.append(asl_sidecar)
+
+
 
             # LabelingType
             asl_sidecar_data["LabelingType"] = {"Pulsed ASL": "PASL",
@@ -677,8 +688,18 @@ class xASL_Parms(QMainWindow):
                                   QMessageBox.Ok)
             return
 
-        with open(json_filepath, 'r') as reader:
-            parms: dict = json.load(reader)
+        try:
+            with open(json_filepath, 'r') as reader:
+                parms: dict = json.load(reader)
+
+        except json.decoder.JSONDecodeError as datapar_json_e:
+            QMessageBox().warning(self.parent(),
+                                  "Json sidecars not in proper json format",
+                                  f"ExploreASL GUI has detected that the json you have loaded from is not a "
+                                  f"properly-formatted json. The following inconsistency was found:\n"
+                                  f"{datapar_json_e}",
+                                  QMessageBox.Ok)
+            return
 
         json_setter = {
             "MyPath": self.le_easl_dir.setText,

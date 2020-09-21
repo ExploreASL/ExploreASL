@@ -66,7 +66,7 @@ class xASL_Plotting(QMainWindow):
 
         self.le_demographics_file = DandD_FileExplorer2LineEdit(acceptable_path_type="File",
                                                                 supported_extensions=[".tsv", ".csv", ".xlsx"])
-        self.le_demographics_file.setPlaceholderText("Drag & Drap a supporting .tsv/.csv/.xlsx file")
+        self.le_demographics_file.setPlaceholderText("Drag & Drap a covariates .tsv/.csv/.xlsx file")
         self.cmb_atlas_selection = QComboBox()
         self.cmb_atlas_selection.addItems(["MNI", "Hammers"])
         self.cmb_pvc_selection = QComboBox()
@@ -82,7 +82,7 @@ class xASL_Plotting(QMainWindow):
         self.btn_load_in_data.clicked.connect(self.full_reset)
 
         self.formlay_directories.addRow("Analysis Directory", self.hlay_analysis_dir)
-        self.formlay_directories.addRow("Ancillary Study Dataframe", self.le_demographics_file)
+        self.formlay_directories.addRow("Metadata/Covariates file", self.le_demographics_file)
         self.formlay_directories.addRow("Which Atlas to Utilize", self.cmb_atlas_selection)
         self.formlay_directories.addRow("Which Partial-Volume Stats to View", self.cmb_pvc_selection)
         self.formlay_directories.addRow("Which Statistic to View", self.cmb_stats_selection)
@@ -108,7 +108,7 @@ class xASL_Plotting(QMainWindow):
         self.grp_pltsettings = QGroupBox(title="Plotting Settings", parent=self.cont_maindock)
         self.vlay_pltsettings = QVBoxLayout(self.grp_pltsettings)
         self.cmb_figuretypeselection = QComboBox(self.grp_pltsettings)
-        self.cmb_figuretypeselection.addItems(["Select an option", "Facet Grid", "Scatterplot & MRI View"])
+        self.cmb_figuretypeselection.addItems(["Select an option", "Facet Grid", "Plot & MRI Viewer"])
         self.cmb_figuretypeselection.setEnabled(False)
         self.cmb_figuretypeselection.currentTextChanged.connect(self.set_manager_and_artist)
         self.vlay_pltsettings.addWidget(self.cmb_figuretypeselection)
