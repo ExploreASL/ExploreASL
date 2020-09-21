@@ -2,7 +2,7 @@ function [DataOut] = xASL_str2num(DataIn, bKeepCell, bReplaceNonNumerical)
 %xASL_str2num str2num wrapper, replacing 'n/a' with NaN (BIDS convention)
 % and converting only strings to numbers. Also allows inputting cells
 %
-% FORMAT: [DataOut] = xASL_str2num(DataIn)
+% FORMAT: [DataOut] = xASL_str2num(DataIn[, bKeepCell, bReplaceNonNumerical])
 % 
 % INPUT: DataIn - character, numerical or cell array
 %        bKeepCell - boolean specifying if cell array should be
