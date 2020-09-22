@@ -167,7 +167,9 @@ if x.bNativeSpaceAnalysis
 						switch (listType(kk))
 							case 1
 								% Pre-smooth the mask before downsampling to native space
-								pathTmpPreSmooth = xASL_im_PreSmooth(x.P.Path_PWI,listMasks{kk},[],x.S.optimFWHM_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+								[tmpPath,tmpFile,tmpExt] = xASL_fileparts(listOutputs{kk});
+								pathTmpPreSmooth = fullfile(tmpPath,['pres_' tmpFile tmpExt]);
+								pathTmpPreSmooth = xASL_im_PreSmooth(x.P.Path_PWI,listMasks{kk},pathTmpPreSmooth,x.S.optimFWHM_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 								
 								% Transform the Mask to native space
 								xASL_spm_deformations(x, pathTmpPreSmooth, listOutputs{kk}, 2, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
