@@ -6,7 +6,9 @@ function xASL_spm_deformations(x, PathIn, PathOut, Interpolation, InverseSpace, 
 % 
 % INPUT:
 %   PathIn              - path or cell containing list of paths of images to transform/warp (REQUIRED)
+%                         can be either .nii or .nii.gz
 %   PathOut             - path to cell containing list of paths of output names. Needs to be same numel as PathIn (REQUIRED)
+%                         can be either .nii or .nii.gz
 %   x                   - ExploreASL structure containing fields with global information about the pipeline environment
 %                         and settings (e.g. x.Quality), useful when you want this script to copy the options of an ExploreASL pipeline run (OPTIONAL)
 %   Interpolation       - interpolation setting used by warping, options:
@@ -121,8 +123,8 @@ end
 
 xASL_adm_UnzipNifti(DeformationPath); % always within data folder, can be unzipped "on site"
 
-
-
+% Get filename of DeformationPath
+[~, DeformationFile] = xASL_fileparts(DeformationPath);
 
 
 %% ------------------------------------------------------------------------------------------------------------
@@ -193,6 +195,11 @@ for iS=1:length(PathIn)
         % 3) Rename the inputname variable accordingly
         PathIn{iS} = PathOut{iS};
     end
+    
+    % Set extension to .nii (remove .gz if it is there)
+    [Fpath1, Ffile] = xASL_fileparts(PathIn{iS});
+    PathIn{iS} = fullfile(Fpath1, [Ffile '.nii']);
+    
     xASL_adm_UnzipNifti(PathIn{iS}); % unzip if needed    
 end
 
@@ -253,9 +260,9 @@ end
 if AddInverse
     matlabbatch{1}.spm.util.defs.comp{end+1}.inv.comp{1}.def    = {DeformationPath};
     matlabbatch{1}.spm.util.defs.comp{end}.inv.space            = {InverseSpace};
-    fprintf('%s\n',['Inverse segmentation transformation y_' x.P.STRUCT '.nii of ' x.P.SubjectID ', to space: ' InverseSpaceFile '.nii']);
+    fprintf('%s\n',['Inverse segmentation transformation ' DeformationFile '.nii of ' x.P.SubjectID ', to space: ' InverseSpaceFile '.nii']);
 else
-    fprintf('%s\n',['Segmentation transformation y_' x.P.STRUCT '.nii of ' x.P.SubjectID]);
+    fprintf('%s\n',['Segmentation transformation ' DeformationFile '.nii of ' x.P.SubjectID]);
     matlabbatch{1}.spm.util.defs.comp{end+1}.def                = {DeformationPath};
 end
 
@@ -279,10 +286,16 @@ matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
 spm_jobman('run',matlabbatch); % this applies the SPM job (i.e. joint transformation)
 
 for iL=1:length(PathIn)
-    [Fpath, Ffile, Fext] = fileparts(PathIn{iL});
-    wname = fullfile(Fpath, ['w' Ffile Fext]);
-    if xASL_exist(PathIn{iL}, 'file') && ~strcmp(wname, PathOut{iL})
-        xASL_Move(wname, PathOut{iL}, 1);
+    [Fpath, Ffile] = xASL_fileparts(PathIn{iL});
+    wname = fullfile(Fpath, ['w' Ffile '.nii']);
+    xASL_delete(PathOut{iL}); % delete PathOut if it exists
+    [Fpath, Ffile, Fext] = xASL_fileparts(PathOut{iL});
+    PathOutNii = fullfile(Fpath, [Ffile '.nii']);
+    if xASL_exist(wname, 'file') && ~strcmp(wname, PathOutNii)
+        xASL_Move(wname, PathOutNii, 1);
+        if strcmp(Fext, '.nii.gz')
+            xASL_adm_GzipNifti(PathOutNii);
+        end
     end
 end
 
