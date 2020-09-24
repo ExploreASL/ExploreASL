@@ -152,8 +152,23 @@ class xASL_GUI_Importer(QMainWindow):
         self.lab_holderrun = DraggableLabel("Run", self.grp_dirstruct)
         self.lab_holderscan = DraggableLabel("Scan", self.grp_dirstruct)
         self.lab_holderdummy = DraggableLabel("Dummy", self.grp_dirstruct)
-        for lab in [self.lab_holdersub, self.lab_holdervisit, self.lab_holderrun,
-                    self.lab_holderscan, self.lab_holderdummy]:
+        for lab, tip in zip([self.lab_holdersub, self.lab_holdervisit, self.lab_holderrun,
+                             self.lab_holderscan, self.lab_holderdummy],
+                            ["This label tells the importer that a directory level contains subject information\n"
+                             "A subject is a person or animal participating in the study",
+                             "This label tells the importer that a directory level contains visit information.\n"
+                             "A visit is a logical grouping of neuroimaging data acquired during the presence of\n"
+                             "a subject at the site of the study (i.e baseline, 1-year followup, etc.)",
+                             "This label tells the importer that a directory level contains run information.\n"
+                             "A run is an uninterrupted repetition of data acquisition with the same parameters\n"
+                             "during a visit",
+                             "This label tells the importer that a directory level contains scan information.\n"
+                             "A scan is an acquisition of neuroimaging data at using particular scanner machine\n"
+                             "parameters (i.e arterial spin labelling, T1-weighted imaging, etc.)",
+                             "This label tells the importer that a directory level contains no important information\n"
+                             "and that this level should be skipped over when discerning folder structure"
+                             ]):
+            lab.setToolTip(tip)
             self.hlay_placeholders.addWidget(lab)
 
         # Next specify the QLineEdits that will be receiving the dragged text
@@ -167,6 +182,8 @@ class xASL_GUI_Importer(QMainWindow):
             le.modified_text.connect(self.get_nth_level_dirs)
             le.textChanged.connect(self.update_sibling_awareness)
             le.textChanged.connect(self.is_ready_import)
+            le.setToolTip(f"This field accepts a drag & droppable label describing the information found at\n"
+                          f"a directory depth of {idx + 1} after the root folder")
             self.levels[level] = le
 
         self.hlay_receivers.addWidget(self.lab_rootlabel)
@@ -709,8 +726,18 @@ class xASL_GUI_Importer(QMainWindow):
 
         # If there were any failures, write them to disk now
         if len(self.failed_runs) > 0:
-            with open(os.path.join(analysis_dir, "import_summary_failed.json"), 'w') as failed_writer:
-                json.dump(dict(self.failed_runs), failed_writer, indent=3)
+            try:
+                with open(os.path.join(analysis_dir, "import_summary_failed.json"), 'w') as failed_writer:
+                    json.dump(dict(self.failed_runs), failed_writer, indent=3)
+            except FileNotFoundError:
+                QMessageBox().warning(self,
+                                      "Critical Import Error",
+                                      "The import module suffered a critical error and could not generate the "
+                                      "analysis directory. This usually occurs if the user has specified an incorrect "
+                                      "folder structure, commonly forgetting a DUMMY directory that may be present at "
+                                      "the tail end. Check if you have appropriately specified the existence of DUMMY "
+                                      "folders.",
+                                      QMessageBox.Ok)
 
         # If the settings is BIDS...
         if not self.chk_uselegacy.isChecked():
@@ -822,18 +849,20 @@ class DraggableLabel(QLabel):
     def __init__(self, text='', parent=None):
         super(DraggableLabel, self).__init__(parent)
         self.setText(text)
-        self.setStyleSheet("border-style: solid;"
+        self.setStyleSheet("QLabel { border-style: solid;"
                            "border-width: 2px;"
                            "border-color: black;"
                            "border-radius: 10px;"
                            "background-color: white;"
-                           "margin-bottom: 5px;")
+                           "margin-bottom: 5px }"
+                           "QToolTip { color: ##ffffe1; background-color: #000000; border: 1px; }")
         font = QFont()
         font.setPointSize(16)
         self.setFont(font)
         self.setMinimumHeight(75)
         self.setMaximumHeight(100)
         self.setAlignment(Qt.AlignCenter)
+        self.setToolTip("TESTING")
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:

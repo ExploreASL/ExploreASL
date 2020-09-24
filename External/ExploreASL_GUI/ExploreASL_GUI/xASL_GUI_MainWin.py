@@ -18,44 +18,22 @@ import re
 
 # Explore ASL Main Window
 # by Maurice Pasternak @ 2020
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Quick Preface of function nomenclature for future developers
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%
-# UI_   --> the function is associated with building the visual interface of the GUI or connecting widgets with each
-#           other; there should be minimal setting of functional attributes, processing, etc. being done here
-# get_  --> the function is associated with retrieving a value
-# set_  --> the function is associated with setting a value; fields and attributes are manipulated in the process
-# load_ --> the function is associated with retrieving data from a file; fields and attributes may or may not be set
-#           in the process
-# save_ --> the function is associated with saving parameters and variable to a file
-# show_ --> the function is associated with making certain widgets or widget elements visible
-# on_off_ --> the function is associated purely with enabling/disabling widgets or their elements
-#
-# Some helpful prefix shortcuts to know:
-#  act = Action; btn = PushButton; cmb = ComboBox; cont = Widget/container; dock = DockWidget; formlay = Form Layout
-#  hlay = horizontal Layout; le = LineEdit; lst = ListWidget;
-#  spinbox = DoubleSpinBox; vlay = vertical Layout
-
-
-# noinspection PyAttributeOutsideInit
 class xASL_MainWin(QMainWindow):
     def __init__(self, config):
         super().__init__()
         # Load in the master config file if it exists; otherwise, make it
         self.config = config
-        self.save_config()
 
-        self.load_tooltips()
         # Window Size and initial visual setup
         # self.setWindowFlags(Qt.WindowStaysOnTopHint)
-        self.resize(self.config["ScreenSize"][0] // 2, self.config["ScreenSize"][1] // 2.5)
+        self.resize(self.config["ScreenSize"][0] // 4, self.config["ScreenSize"][1] // 2.5)
         self.cw = QWidget(self)
         self.setCentralWidget(self.cw)
         # Main Icon setup
         self.icon_main = QIcon(os.path.join(self.config["ProjectDir"], "media", "ExploreASL_logo.png"))
         self.setWindowIcon(self.icon_main)
         # Main Layout Setup
-        self.mainlay = QGridLayout(self.cw)
+        self.mainlay = QVBoxLayout(self.cw)
         self.setWindowTitle("Explore ASL GUI")
 
         # Misc Players
@@ -63,8 +41,6 @@ class xASL_MainWin(QMainWindow):
 
         # Set up each of the subcomponents of the main window program
         self.UI_Setup_Navigator()
-        self.UI_Setup_MainSelections()
-        self.UI_Setup_Connections()
 
         # Pre-initialize the main players
         self.parmsmaker = xASL_Parms(self)
@@ -74,6 +50,11 @@ class xASL_MainWin(QMainWindow):
 
         # Menubar has to come after, as it references the main widgets
         self.UI_Setup_MenuBar()
+        self.UI_Setup_ToolBar()
+
+        # Save the configuration
+        self.save_config()
+        self.load_tooltips()
 
     # This dockable navigator will contain the most essential parameters and will be repeatedly accessed by other
     # subwidgets within the program; should also be dockable within any of them.
@@ -90,7 +71,10 @@ class xASL_MainWin(QMainWindow):
                               text_to_set=self.config["DefaultRootDir"])
         self.le_defaultdir.textChanged.connect(self.set_analysis_dir)
         self.le_defaultdir.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.btn_defaultdir = QPushButton("...", self.cont_navigator, clicked=self.set_analysis_dir_frombtn)
+        self.le_defaultdir.setToolTip("The default directory that will be suggested when searching for a file or "
+                                      "folder")
+        self.btn_defaultdir = QPushButton("...", self.cont_navigator, clicked=self.set_analysis_dir_frombtn,
+                                          toolTip="Set the default directory")
         self.hlay_defaultdir = QHBoxLayout()
         self.hlay_defaultdir.addWidget(self.le_defaultdir)
         self.hlay_defaultdir.addWidget(self.btn_defaultdir)
@@ -106,8 +90,8 @@ class xASL_MainWin(QMainWindow):
         self.vlay_navigator.setContentsMargins(0, 0, 0, 0)
 
         # Finally add this whole widget group to the main layout
-        self.mainlay.addWidget(self.cont_navigator, 0, 0, 2, 2)
-        self.cont_navigator.setMinimumWidth(600)
+        self.mainlay.addWidget(self.cont_navigator)
+        self.mainlay.setContentsMargins(0, 0, 0, 0)
         self.cont_navigator.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     def UI_Setup_MenuBar(self):
@@ -129,85 +113,32 @@ class xASL_MainWin(QMainWindow):
         self.menu_modules.addAction("ExploreASL Module", self.executor.show)
         self.menu_modules.addAction("Post-Processing Module", self.plotter.show)
 
-    def UI_Setup_MainSelections(self):
-
-        expanding_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        font_policy = QFont()
-        font_policy.setPointSize(16)
-        font_policy.setBold(True)
-
-        # Set up the main buttons
-        self.btn_open_runexploreasl = QToolButton(self.cw)
-        self.btn_open_parmsmaker = QToolButton(self.cw)
-        self.btn_open_importer = QToolButton(self.cw)
-        self.btn_open_postanalysis = QToolButton(self.cw)
-        self.main_btns = [self.btn_open_importer,
-                          self.btn_open_runexploreasl,
-                          self.btn_open_parmsmaker,
-                          self.btn_open_postanalysis]
-
-        imgs = [os.path.join(self.config["ProjectDir"], "media", "importer_icon.svg"),
-                os.path.join(self.config["ProjectDir"], "media", "run_exploreasl_icon.svg"),
-                os.path.join(self.config["ProjectDir"], "media", "parmsmaker_icon.svg"),
-                os.path.join(self.config["ProjectDir"], "media", "postrun_analysis_icon.svg")]
-        txt_labels = ["Import DCM to NIFTI",
-                      "Process Data",
-                      "Create Parameters File",
-                      "Post-Run Analysis"]
-
-        for btn, img, text in zip(self.main_btns, imgs, txt_labels):
-            btn.setSizePolicy(expanding_policy)
-            btn.setIcon(QIcon(img))
-            btn.setIconSize(QSize(175, 175))
-            btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-            btn.setText(text)
-            btn.setFont(font_policy)
-
-        # Add the buttons to the layout
-        self.mainlay.addWidget(self.btn_open_importer, 0, 3, 1, 1)
-        self.mainlay.addWidget(self.btn_open_parmsmaker, 0, 4, 1, 1)
-        self.mainlay.addWidget(self.btn_open_runexploreasl, 1, 3, 1, 1)
-        self.mainlay.addWidget(self.btn_open_postanalysis, 1, 4, 1, 1)
-
-    def resizeEvent(self, event):
-        super(xASL_MainWin, self).resizeEvent(event)
-        for btn in self.main_btns:
-            adjusted = min([self.width(), self.height()])
-            btn.setIconSize(QSize(adjusted // 2.8, adjusted // 2.8))
-
-    def UI_Setup_Connections(self):
-        actions = [self.show_Importer,
-                   self.show_Executor,
-                   self.show_ParmsMaker,
-                   self.show_PostAnalysis]
-        for btn, action in zip(self.main_btns, actions):
-            btn.clicked.connect(action)
-
-    # Lauch the Executor window
-    def show_Executor(self):
-        self.executor.show()
-
-    # Launch the ParmsMaker window
-    def show_ParmsMaker(self):
-        self.parmsmaker.show()
-
-    # Launch the Importer window
-    def show_Importer(self):
-        self.importer.show()
-
-    # Launch the Post-Analysis window
-    def show_PostAnalysis(self):
-        self.plotter.show()
-
-    # Launch the "About Explore ASL" window
-    def show_AboutExploreASL(self):
-        pass
+    def UI_Setup_ToolBar(self):
+        self.toolbar = QToolBar(self, orientation=Qt.Horizontal, iconSize=QSize(75, 75),
+                                allowedAreas=Qt.AllToolBarAreas)
+        self.addToolBar(Qt.TopToolBarArea, self.toolbar)
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.toolactions = {}  # Hack; keeps the toolbuttons in memory so that they can be added and remain visible
+        paths = [os.path.join(self.config["ProjectDir"], "media", "importer_icon.svg"),
+                 os.path.join(self.config["ProjectDir"], "media", "parmsmaker_icon.svg"),
+                 os.path.join(self.config["ProjectDir"], "media", "run_exploreasl_icon.svg"),
+                 os.path.join(self.config["ProjectDir"], "media", "postrun_analysis_icon.svg")]
+        funcs = [self.importer.show, self.parmsmaker.show, self.executor.show, self.plotter.show]
+        descs = ["Import DCM to NIFTI", "Define Study Parameters", "Run ExploreASL", "Visualize Results"]
+        tips = ["Convert a source directory containing DICOM images into NIFTI format for ExploreASL processing",
+                "Define the parameters relevant to the study being analyzed and create the required DataPar.m file",
+                "Analyze the data and/or modify analysis directories for specific re-runs",
+                "Visualize and create figures for an analyzed dataset"]
+        for path, func, desc, tip in zip(paths, funcs, descs, tips):
+            self.toolactions[path] = QAction(icon=QIcon(path), triggered=func, iconText=desc, toolTip=tip)
+            self.toolbar.addAction(self.toolactions[path])
 
     # Convenience function for saving to the master configuration file
     def save_config(self):
         dst = os.path.join(self.config["ProjectDir"], "JSON_LOGIC", "ExploreASL_GUI_masterconfig.json")
         with open(dst, "w") as master_config_writer:
             json.dump(self.config, master_config_writer, indent=1)
+        self.communicate_config_change()
         del master_config_writer, dst
 
     def load_tooltips(self):
@@ -241,7 +172,6 @@ class xASL_MainWin(QMainWindow):
         # Update user config to have a new default analysis dir to refer to in on future startups
         self.config["DefaultRootDir"] = directory
         self.save_config()
-        self.communicate_config_change()
 
     def communicate_config_change(self):
         self.parmsmaker.config = self.config

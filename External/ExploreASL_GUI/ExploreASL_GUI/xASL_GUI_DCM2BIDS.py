@@ -26,8 +26,48 @@ def get_dicom_directories(config: dict):
     """
     raw_dir = config["RawDir"]
     n_levels = ["*"] * len(config["Directory Structure"])
-    dcm_dirs = glob(os.path.join(raw_dir, *n_levels))
+    dcm_dirs = [directory for directory in glob(os.path.join(raw_dir, *n_levels)) if os.path.isdir(directory)]
     return dcm_dirs
+
+
+def get_structure_components(dcm_dir: str, config: dict):
+    """
+    Returns the essential subject, visit, run, and scan names of the currently-assessed dicom directory.
+    :param dcm_dir: the absolute path to the directory containing the dicoms to be converted
+    :param config: a dict with essentials details the raw directory structure and mappings of aliases
+    :return: returns the current subject, visit, run, and scan names in their alias form
+    """
+    subject, visit, run, scan = None, None, None, None
+    dirname = dcm_dir
+    for dir_type in reversed(config["Directory Structure"]):
+        if dir_type == "Subject":
+            dirname, basename = os.path.split(dirname)
+            subject = basename
+        elif dir_type == "Visit":
+            dirname, basename = os.path.split(dirname)
+            visit = basename
+        elif dir_type == "Run":
+            dirname, basename = os.path.split(dirname)
+            run = basename
+        elif dir_type == "Scan":
+            dirname, basename = os.path.split(dirname)
+            scan = basename
+        else:
+            dirname, _ = os.path.split(dirname)
+
+    try:
+        scan_translator = {value: key for key, value in config["Scan Aliases"].items()}
+        scan_dst_name = scan_translator[scan]
+    except KeyError:
+        return False, subject, visit, run, scan
+
+    if run is not None:
+        run_translator = config["Ordered Run Aliases"]
+        run_dst_name = run_translator[run]
+    else:
+        run_dst_name = None
+
+    return True, subject, visit, run_dst_name, scan_dst_name
 
 
 def get_manufacturer(dcm_dir: str):
@@ -39,7 +79,7 @@ def get_manufacturer(dcm_dir: str):
     dcm_files = iglob(os.path.join(dcm_dir, "*"))
     dcm_files = peekable(dcm_files)
     if not dcm_files:
-        return None
+        return False, None
 
     dcm_data = None
     for dcm_file in dcm_files:
@@ -49,9 +89,12 @@ def get_manufacturer(dcm_dir: str):
         except InvalidDicomError:
             print(f"DICOM dir bad bad file: {dcm_file}")
             continue
+        except PermissionError:
+            continue
+
 
     if dcm_data is None:
-        return
+        return False, None
 
     detected_manufac = []
     manufac_tags = [(0x0008, 0x0070), (0x0019, 0x0010)]
@@ -62,13 +105,13 @@ def get_manufacturer(dcm_dir: str):
             detected_manufac.append("")
 
     if any(["SIEMENS" in result for result in detected_manufac]):
-        return "Siemens"
+        return True, "Siemens"
     elif any(["PHILIPS" in result for result in detected_manufac]):
-        return "Philips"
+        return True, "Philips"
     elif any(["GE" in result for result in detected_manufac]):
-        return "GE"
+        return True, "GE"
     else:
-        return
+        return False, None
 
 
 def get_dicom_value(data: pydicom.Dataset, tags: list, default=None):
@@ -134,7 +177,7 @@ def get_additional_dicom_parms(dcm_dir: str, manufacturer: str):
     dcm_files = iglob(os.path.join(dcm_dir, "*"))
     dcm_files = peekable(dcm_files)
     if not dcm_files:
-        return None
+        return False, None
 
     dcm_data = None
     for dcm_file in dcm_files:
@@ -143,9 +186,11 @@ def get_additional_dicom_parms(dcm_dir: str, manufacturer: str):
             break
         except InvalidDicomError:
             continue
+        except PermissionError:
+            continue
 
     if dcm_data is None:
-        return
+        return False, None
 
     if manufacturer == 'Philips':
         tags_dict = {
@@ -233,47 +278,7 @@ def get_additional_dicom_parms(dcm_dir: str, manufacturer: str):
     except KeyError:
         pass
 
-    return additional_dcm_info
-
-
-def get_structure_components(dcm_dir: str, config: dict):
-    """
-    Returns the essential subject, visit, and scan names of the currently-assessed dicom directory.
-    :param dcm_dir: the absolute path to the directory containing the dicoms to be converted
-    :param config: a dict with essentials details the raw directory structure and mappings of aliases
-    :return: returns the current subject, visit, run, and scan names in their alias form
-    """
-    subject, visit, run, scan = None, None, None, None
-    dirname = dcm_dir
-    for dir_type in reversed(config["Directory Structure"]):
-        if dir_type == "Subject":
-            dirname, basename = os.path.split(dirname)
-            subject = basename
-        elif dir_type == "Visit":
-            dirname, basename = os.path.split(dirname)
-            visit = basename
-        elif dir_type == "Run":
-            dirname, basename = os.path.split(dirname)
-            visit = basename
-        elif dir_type == "Scan":
-            dirname, basename = os.path.split(dirname)
-            scan = basename
-        else:
-            dirname, _ = os.path.split(dirname)
-
-    try:
-        scan_translator = {value: key for key, value in config["Scan Aliases"].items()}
-        scan_dst_name = scan_translator[scan]
-    except KeyError:
-        return False, subject, visit, run, scan
-
-    if run is not None:
-        run_translator = config["Ordered Run Aliases"]
-        run_dst_name = run_translator[run]
-    else:
-        run_dst_name = None
-
-    return True, subject, visit, run_dst_name, scan_dst_name
+    return True, additional_dcm_info
 
 
 def get_tempdst_dirname(raw_dir: str, subject: str, visit: str, run: str, scan: str, legacy_mode: bool = False):
@@ -526,7 +531,7 @@ def clean_niftis_in_temp(temp_dir: str, add_parms: dict, subject: str, run: str,
         nii_objs = [nib.load(nifti) for nifti in reorganized_niftis]
         final_nifti_obj = image.mean_img(nii_objs)
         # Must correct for bad headers under BIDS specification
-        if not legacy_mode:
+        if not legacy_mode and final_nifti_obj.ndim < 4:
             pixdim_copy = final_nifti_obj.header["pixdim"].copy()
             final_nifti_obj.header["dim"][0] = 4
             final_nifti_obj.header["pixdim"] = pixdim_copy
@@ -534,12 +539,12 @@ def clean_niftis_in_temp(temp_dir: str, add_parms: dict, subject: str, run: str,
                                               final_nifti_obj.affine,
                                               final_nifti_obj.header)
 
-    # Scenario: single M0
+    # Scenario: single M0 or single ASL4D
     elif any([len(reorganized_niftis) == 1 and scan == "M0",  # Single independent M0
               len(reorganized_niftis) == 1 and scan == "ASL4D"]):  # Could be a CBF or delta image
-        final_nifti_obj = nib.load(reorganized_niftis[0])
+        final_nifti_obj: nib.Nifti1Image = nib.load(reorganized_niftis[0])
         # Must correct for bad headers under BIDS specification
-        if not legacy_mode:
+        if not legacy_mode and final_nifti_obj.ndim < 4:
             pixdim_copy = final_nifti_obj.header["pixdim"].copy()
             final_nifti_obj.header["dim"][0] = 4
             final_nifti_obj.header["pixdim"] = pixdim_copy
@@ -564,7 +569,7 @@ def clean_niftis_in_temp(temp_dir: str, add_parms: dict, subject: str, run: str,
     import_summary["scan"] = scan
     import_summary["filename"] = scan + ".nii"
 
-    if len(zooms) == 4:
+    if len(zooms) >= 4:
         import_summary["dx"], import_summary["dy"], import_summary["dz"] = zooms[0:3]
     else:
         import_summary["dx"], import_summary["dy"], import_summary["dz"] = zooms
@@ -657,7 +662,7 @@ def update_json_sidecar(json_file: str, nifti_file: str, dcm_parms: dict):
                 RI = json_sidecar_parms["PhilipsRescaleIntercept"]
                 RS = json_sidecar_parms["PhilipsRescaleSlope"]
                 SS = json_sidecar_parms["PhilipsScaleSlope"]
-                new_nifti_data = (nifti_data + (RI/RS))/SS
+                new_nifti_data = (nifti_data + (RI / RS)) / SS
                 new_nifti = nib.Nifti1Image(dataobj=new_nifti_data, header=nifti_img.header, affine=nifti_img.affine)
                 del nifti_img, nifti_data, RI, RS, SS, new_nifti_data
                 new_nifti.to_filename(nifti_file)
@@ -711,10 +716,20 @@ def asldcm2bids_onedir(dcm_dir: str, config: dict, legacy_mode: bool = False):
                       f"ERROR: Failed at getting directory structure components", None
 
     # Get the manufacturer tag
-    manufacturer = get_manufacturer(dcm_dir=dcm_dir)
+    successful_run, manufacturer = get_manufacturer(dcm_dir=dcm_dir)
+    if not successful_run:
+        print(f"FAILURE ENCOUNTERED AT GETTING THE MANUFACTURER STEP")
+        return False, f"SUBJECT: {subject}; " \
+                      f"SCAN: {scan}; " \
+                      f"ERROR: Failed retrieving the manufacturer value", None
 
     # Retrieve the additional DICOM parameters and include the Philips rescale slope indicator
-    addtional_dcm_parameters = get_additional_dicom_parms(dcm_dir=dcm_dir, manufacturer=manufacturer)
+    successful_run, addtional_dcm_parameters = get_additional_dicom_parms(dcm_dir=dcm_dir, manufacturer=manufacturer)
+    if not successful_run:
+        print(f"FAILURE ENCOUNTERED AT THE ADDITIONAL DCM PARMS RETRIEVAL STEP")
+        return False, f"SUBJECT: {subject}; " \
+                      f"SCAN: {scan}; " \
+                      f"ERROR: Failed at retrieving additional dicom parameters", None
 
     # Generate the directories for dumping dcm2niix output
     successful_run, temp_dst_dir = get_tempdst_dirname(raw_dir=config["RawDir"],
@@ -799,15 +814,19 @@ def create_import_summary(import_summaries: list, config: dict):
     :param config: the import configuration file generated by the GUI to help locate the analysis directory
     """
     analysis_dir = os.path.join(os.path.dirname(config["RawDir"]), "analysis")
-    df = pd.concat([pd.Series(import_summary) for import_summary in import_summaries], axis=1, sort=True).T
+    try:
+        df = pd.concat([pd.Series(import_summary) for import_summary in import_summaries], axis=1, sort=True).T
+    except ValueError as concat_error:
+        print(concat_error)
+        return
+
     df["dt"] = df["RepetitionTime"]
     appropriate_ordering = ['subject', 'visit', 'run', 'scan', 'dx', 'dy', 'dz', 'dt', 'nx', 'ny', 'nz', 'nt',
                             "RepetitionTime", "EchoTime", "NumberOfAverages", "RescaleSlope", "RescaleIntercept",
                             "MRScaleSlope", "AcquisitionTime",
                             "AcquisitionMatrix", "TotalReadoutTime", "EffectiveEchoSpacing"]
     df = df.reindex(columns=appropriate_ordering)
-    df = df.sort_values(by=["scan", "subject"]).reset_index(drop=True)
-
+    df = df.sort_values(by=["scan", "subject", "visit", "run"]).reset_index(drop=True)
     print(df)
 
     try:

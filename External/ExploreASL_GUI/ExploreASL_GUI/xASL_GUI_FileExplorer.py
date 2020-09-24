@@ -23,14 +23,16 @@ class xASL_FileExplorer(QWidget):
         self.btn_back = QPushButton(clicked=self.go_back)
         self.btn_up = QPushButton(clicked=self.go_up)
         self.btn_forward = QPushButton(clicked=self.go_forward)
-        for btn, icon_name in zip([self.btn_back,
-                                   self.btn_up,
-                                   self.btn_forward],
-                                  ["arrow_left_encircled.svg",
-                                   "arrow_up_encircled.svg",
-                                   "arrow_right_encircled.svg"]):
+        for btn, icon_name, tip in zip([self.btn_back, self.btn_up, self.btn_forward],
+                                       ["arrow_left_encircled.svg", "arrow_up_encircled.svg",
+                                        "arrow_right_encircled.svg"],
+                                       ["Press to go back in your filepaths visited history",
+                                        "Press to go up a directory level",
+                                        "Press to go forward in your filepaths visited history"]
+                                       ):
             set_widget_icon(widget=btn, config=self.config, icon_name=icon_name, size=(25, 25))
             btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            btn.setToolTip(tip)
             self.hlay_btns.addWidget(btn)
 
         # Define the file system model and its display container
