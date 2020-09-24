@@ -1,4 +1,4 @@
-function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwrite)
+function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwrite, ResampleDir, SubRegExp)
 %xASL_im_SplitImageLabels Extract individual label/regions from image(s)
 %
 % FORMAT: xASL_im_SplitImageLabels(ImagePaths, Path2TSV, OutputFolder)
@@ -14,6 +14,11 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 %                     of the original image (OPTIONAL, DEFAULT = empty)
 %   bOverwrite      - true for overwriting existing NIfTIs
 %                     (OPTIONAL, DEFAULT = false)
+%   ResampleDir     - path to folder where resampled label image to standard space
+%                     should be saved. If empty, resampling is skipped. (OPTIONAL, DEFAULT = empty)
+%   SubRegExp       - regular expression of subject name/ID inside the
+%                     filepath, used when resampling to standard space
+%                     e.g. x.subject_regexp (OPTIONAL, DEFAULT = empty).
 %
 % OUTPUT: n/a
 % OUTPUT FILES: separate label images
@@ -27,15 +32,23 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 %              2. Process images
 %
 % EXAMPLE LabelTable as separate TSV-file: xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.PopDir,'^4V_(?!MAP).*\.nii$', 'FPList'), '/ExampleTerritoryLabels.tsv', x.D.PopDir);
-% EXAMPLE LabelTable as cell: xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.PopDir,'^4V_(?!MAP).*\.nii$', 'FPList'), {1, 'ICA-L'; 2 'ICA-R'; 3, 'POS-L'; 4, 'POS-R'}, x.D.PopDir);
+% EXAMPLE LabelTable as cell: xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.ROOT,'^4V\.nii$', 'FPListRec'), {1, 'ICA-L'; 2 'ICA-R'; 3, 'POS-L'; 4, 'POS-R'}, [], 1, x.D.PopDir, x.subject_regexp);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
     
 
+if nargin<6 || isnumeric(SubRegExp)
+    SubRegExp = [];
+end
+if nargin<5 || isnumeric(ResampleDir)
+    ResampleDir = [];
+elseif isempty(SubRegExp)
+    error('Resampling requested but no subject regular expression provided');
+end
 if nargin<4 || isempty(bOverwrite)
     bOverwrite = false;
 end
-if nargin<3 || isempty(OutputFolder)
+if nargin<3 || isempty(OutputFolder) || isnumeric(OutputFolder)
     warning('No output folder specified, outputting file in its original folder');
     OutputFolder = [];
 end
@@ -119,6 +132,24 @@ for iImage=1:length(ImagePaths)
             fprintf('%s\n', [FileName ' already existed, skipping']);
         else
             xASL_io_SaveNifti(ImagePaths{iImage}, FileName, LabelImage);
+            
+            if ~isempty(ResampleDir)
+                % Get subject id
+                [StartIndex, EndIndex] = regexp(FileName, SubRegExp(2:end-1));
+                SubjectID = FileName(StartIndex:EndIndex);
+                % get filetype
+                [~, FileType] = xASL_fileparts(FileName);
+                
+                PathOut = fullfile(ResampleDir, [FileType '_' SubjectID '.nii']);
+                Path_y_ASL = fullfile(FileName(1:EndIndex), 'ASL_1', 'y_ASL.nii');
+                if ~xASL_exist(Path_y_ASL)
+                    warning(['file didnt exist: ' Path_y_ASL]);
+                elseif ~xASL_exist(FileName)
+                    warning(['file didnt exist: ' FileName]);
+                else
+                    xASL_spm_deformations([], FileName, [PathOut '.gz'], 0, [], [], Path_y_ASL);
+                end
+            end
         end
         
         if bResetOutputFolder
