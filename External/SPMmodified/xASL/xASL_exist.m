@@ -47,8 +47,10 @@ if strcmp(PathIn(end-3:end),'.nii')
 elseif  strcmp(PathIn(end-2:end),'.gz')
 	PathInNII = PathIn(1:end-3);
 	OutputArg = exist(PathIn, 'file') || exist(PathInNII, 'file');
-else
+elseif ~isempty(Type)
 	OutputArg = exist(PathIn, Type);
+else
+    OutputArg = exist(PathIn);
 end
         
 end
