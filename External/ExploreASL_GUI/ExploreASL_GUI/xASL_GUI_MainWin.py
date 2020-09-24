@@ -9,11 +9,7 @@ from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
 from ExploreASL_GUI.xASL_GUI_HelperFuncs_StringOps import set_os_dependent_text
 from ExploreASL_GUI.xASL_GUI_FileExplorer import xASL_FileExplorer
 import os
-import sys
 import json
-import platform
-import subprocess
-import re
 
 
 # Explore ASL Main Window
@@ -26,7 +22,7 @@ class xASL_MainWin(QMainWindow):
 
         # Window Size and initial visual setup
         # self.setWindowFlags(Qt.WindowStaysOnTopHint)
-        self.resize(self.config["ScreenSize"][0] // 4, self.config["ScreenSize"][1] // 2.5)
+        self.resize(self.config["ScreenSize"][0] // 2.5, self.config["ScreenSize"][1] // 2.25)
         self.cw = QWidget(self)
         self.setCentralWidget(self.cw)
         # Main Icon setup
@@ -114,9 +110,9 @@ class xASL_MainWin(QMainWindow):
         self.menu_modules.addAction("Post-Processing Module", self.plotter.show)
 
     def UI_Setup_ToolBar(self):
-        self.toolbar = QToolBar(self, orientation=Qt.Horizontal, iconSize=QSize(75, 75),
+        self.toolbar = QToolBar(self, orientation=Qt.Vertical, iconSize=QSize(75, 75),
                                 allowedAreas=Qt.AllToolBarAreas)
-        self.addToolBar(Qt.TopToolBarArea, self.toolbar)
+        self.addToolBar(Qt.LeftToolBarArea, self.toolbar)
         self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.toolactions = {}  # Hack; keeps the toolbuttons in memory so that they can be added and remain visible
         paths = [os.path.join(self.config["ProjectDir"], "media", "importer_icon.svg"),

@@ -85,9 +85,9 @@ class xASL_GUI_Data_Loader(QWidget):
 
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # Third Section - If there is any ancillary data specified, load it in
-        if all([os.path.exists(self.parent_cw.le_demographics_file.text()),
-                os.path.isfile(self.parent_cw.le_demographics_file.text()),
-                os.path.splitext(self.parent_cw.le_demographics_file.text())[1] in [".tsv", ".csv", ".xlsx"]
+        if all([os.path.exists(self.parent_cw.le_metadata.text()),
+                os.path.isfile(self.parent_cw.le_metadata.text()),
+                os.path.splitext(self.parent_cw.le_metadata.text())[1] in [".tsv", ".csv", ".xlsx"]
                 ]):
             result = self.load_ancillary_data(df)
             if result is not None:
@@ -134,7 +134,7 @@ class xASL_GUI_Data_Loader(QWidget):
         self.long_data = self.loaded_long_data.copy()  # THIS IS OVERWRITTEN BY SUBSETTING THE ORIGINAL
 
         # Allow to dtype indicator to be aware of the newly loaded data if a legitimate covariates file was provided
-        if os.path.exists(self.parent_cw.le_demographics_file.text()):
+        if os.path.exists(self.parent_cw.le_metadata.text()):
             self.parent_cw.dtype_indicator.update_known_covariates(self.long_data)
             self.parent_cw.btn_indicate_dtype.setEnabled(True)
             for cmb in self.parent_cw.dtype_indicator.covariate_cols.values():
@@ -166,7 +166,6 @@ class xASL_GUI_Data_Loader(QWidget):
                                            "Proceed?",
                                            QMessageBox.Yes, QMessageBox.No)
             if choice == QMessageBox.Yes:
-                pandas_dtype = {"numerical": "float32", "categorical": "category"}[newtype]
                 vals = df[colname].values.astype(np.str)
                 self.long_data[colname] = vals
 
@@ -176,7 +175,6 @@ class xASL_GUI_Data_Loader(QWidget):
                 self.parent_cw.dtype_indicator.covariate_cols[colname].setCurrentIndex(idx)
 
         else:
-            pandas_dtype = {"numerical": "float32", "categorical": "category"}[newtype]
             if newtype == "categorical":
                 vals = df[colname].values.astype(np.str)
                 self.long_data[colname] = vals
@@ -200,10 +198,9 @@ class xASL_GUI_Data_Loader(QWidget):
 
             self.signal_dtype_was_changed.emit(colname, newtype)
 
-
     def load_ancillary_data(self, exasl_df):
         # Load in the other dataframe, with flexibility for filetype
-        file = self.parent_cw.le_demographics_file.text()
+        file = self.parent_cw.le_metadata.text()
         filetype = os.path.splitext(file)[1]
         if filetype == '.tsv':
             demo_df = pd.read_csv(file, sep='\t')
