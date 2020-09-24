@@ -34,14 +34,17 @@ function xASL_spm_deformations(x, PathIn, PathOut, Interpolation, InverseSpace, 
 % space images into standard space, or vice versa.
 % Best to combine as many files as possible within this function, since the
 % deformation calculation (which is the most computation intensive part) needs to be performed once for multi-file resampling
-%
+% This function runs the following steps:
+% 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_spm_deformations(x, '/MyStudy/Subject1/T1.nii.gz', '/MyStudy/Population/rT1.nii.gz');
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
+
+
 
 %% ------------------------------------------------------------------------------------------------------------
-%% Administration
+%% 0. Administration
 if (iscell(PathIn) && ~iscell(PathOut)) || (~iscell(PathIn) && iscell(PathOut))
     error('PathIn & PathOut should both be either cell/string & equally large!');
 end
@@ -128,7 +131,7 @@ xASL_adm_UnzipNifti(DeformationPath); % always within data folder, can be unzipp
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% Interpolation admin
+%% 1. Interpolation admin
 if nargin<4 || isempty(Interpolation)
     Interpolation = 2; % default interpolation
 end
@@ -147,7 +150,7 @@ fprintf('%s\n',['SPM deformation utility executed, using ' InterpMeth{Interpolat
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% Skip unexisting files
+%% 2. Skip unexisting files
 tIN = '';
 tOUT = '';
 for iS=1:length(PathIn)
@@ -171,14 +174,14 @@ PathOut = tOUT;
 
 fprintf('%s',' ');
 
-%% Remove .gz extensions
-if strcmp(DeformationPath(end-2:end),'.gz')
+%% 3. Remove .gz extensions
+if strcmp(DeformationPath(end-2:end), '.gz')
     DeformationPath = DeformationPath(1:end-3);
 end
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% If input & output directory are not the same, first copy the files to the output directory. & unzip
+%% 4. If input & output directory are not the same, first copy the files to the output directory. & unzip
 % & rename variables accordingly. This allows for using read-only
 % files/directories, that can be zipped
 
@@ -209,12 +212,12 @@ fprintf('%s\n','Combining transformations:');
 matlabbatch{1}.spm.util.defs.comp  = ''; % initialize transformation combination
 
 
-%% If inverse transformation and x.Quality==0, then invert the transformation on lowest resolution
+%% 5. If inverse transformation and x.Quality==0, then invert the transformation on lowest resolution
 %  This means we will reslice the InverseSpaceFile to the y_Transformation
 %  resolution, if the y_Transformation resolution is lower than the destination
 %  resolution
 
-RevertResolution = false;
+bRevertResolution = false;
 if AddInverse && (Interpolation==0 || x.Quality==0)
     TransformationResolution = xASL_io_ReadNifti(DeformationPath);
     TransformationResolution = TransformationResolution.hdr.pixdim(2:4);
@@ -229,12 +232,12 @@ if AddInverse && (Interpolation==0 || x.Quality==0)
         xASL_spm_reslice(DeformationPath, InverseSpace, [], [], false, PathTempRefSpace, 0);
         InverseSpaceOriginal = InverseSpace;
         InverseSpace = PathTempRefSpace;
-        RevertResolution = true;
+        bRevertResolution = true;
     end
 end
    
 %% ------------------------------------------------------------------------------------------------------------
-%% If an affine registration of ASL to T1w exists, we apply this
+%% 6. If an affine registration of ASL to T1w exists, we apply this
 if AddAffine
     if AddInverse
         [~, AffineTransFile] = fileparts(AffineTrans);
@@ -255,19 +258,19 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% Here, we apply the transformation to MNI (inversely if requested)
+%% 7. Here, we apply the transformation to MNI (inversely if requested)
 
 if AddInverse
-    matlabbatch{1}.spm.util.defs.comp{end+1}.inv.comp{1}.def    = {DeformationPath};
-    matlabbatch{1}.spm.util.defs.comp{end}.inv.space            = {InverseSpace};
+    matlabbatch{1}.spm.util.defs.comp{end+1}.inv.comp{1}.def = {DeformationPath};
+    matlabbatch{1}.spm.util.defs.comp{end}.inv.space = {InverseSpace};
     fprintf('%s\n',['Inverse segmentation transformation ' DeformationFile '.nii of ' x.P.SubjectID ', to space: ' InverseSpaceFile '.nii']);
 else
     fprintf('%s\n',['Segmentation transformation ' DeformationFile '.nii of ' x.P.SubjectID]);
-    matlabbatch{1}.spm.util.defs.comp{end+1}.def                = {DeformationPath};
+    matlabbatch{1}.spm.util.defs.comp{end+1}.def = {DeformationPath};
 end
 
 %% ------------------------------------------------------------------------------------------------------------
-%% Determine the output voxelsize
+%% 8. Determine the output voxelsize
 if min(VoxelSize~=[1.5 1.5 1.5])
     matlabbatch{1}.spm.util.defs.comp{end+1}.idbbvox.vox = VoxelSize;
     matlabbatch{1}.spm.util.defs.comp{end}.idbbvox.bb = [NaN NaN NaN
@@ -275,14 +278,14 @@ if min(VoxelSize~=[1.5 1.5 1.5])
 end
 
 %% ------------------------------------------------------------------------------------------------------------
-%% Define path to apply deformations to
+%% 9. Define path to apply deformations to
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = PathIn;
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.savesrc = 1; % saves in SUBJECTDIR, because we need to rename still
 matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
 matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
 
 %% ------------------------------------------------------------------------------------------------------------
-%% Run the job & rename
+%% 10. Run the SPM job & rename
 spm_jobman('run',matlabbatch); % this applies the SPM job (i.e. joint transformation)
 
 for iL=1:length(PathIn)
@@ -299,7 +302,7 @@ for iL=1:length(PathIn)
     end
 end
 
-if RevertResolution
+if bRevertResolution
     for iS=1:length(PathOut)
         xASL_spm_reslice(InverseSpaceOriginal, PathOut{iS}, [], [], x.Quality, PathOut{iS}, Interpolation);
     end
