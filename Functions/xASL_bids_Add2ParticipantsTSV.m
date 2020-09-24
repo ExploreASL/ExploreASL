@@ -159,18 +159,18 @@ for iIndex=1:size(DataIn,1)
     iRow = find(iSubject & iSession);
     
     if isempty(iRow)
-        iRow = size(CellArray,1)+1;
+        iRow = size(CellArray,1)+1; % next row
         CellArray{iRow,1} = DataIn{iIndex,1};
         CellArray{iRow,2} = DataIn{iIndex,2};
         % Fill non-subject/non-session/non-data columns with 'n/a'
     elseif length(iRow)>1
         warning('This SubjectSession combination exists multiple times, bug? Skipping');
         continue;
-    end     
+    end
     
     IsEmpty = size(CellArray,1)<iRow || isempty(CellArray{iRow,DataColumn}) || strcmp(CellArray{iRow,DataColumn}, 'n/a');
     if IsEmpty || bOverwrite
-        CellArray{iRow+1,DataColumn} = DataIn{iIndex,3}; % iRow+1 for header
+        CellArray{iRow, DataColumn} = DataIn{iIndex,3};
     else
         fprintf('Data already existing, skipping\n');
     end
