@@ -95,11 +95,11 @@ for iLesion=1:length(Lesion_list)
     xASL_vis_CreateVisualFig(x, {LesionFile}, x.D.LesionCheckDir,[0.8 1], 'Lesions'); % Show lesions individually
 end
 % Visualize ROIs (these are manually added native space ROIs)
-for iLesion=1:length(ROI_list)
-    [~, Ffile] = xASL_fileparts(ROI_list{iLesion});
-    LesionFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);
-    xASL_im_Lesion2Mask(LesionFile, x); % Convert ROIs & lesions to specific masks    
-    xASL_vis_CreateVisualFig(x, {LesionFile}, x.D.ROICheckDir,[0.8 1], 'Lesions'); % Show lesions individually
+for iROI=1:length(ROI_list)
+    [~, Ffile] = xASL_fileparts(ROI_list{iROI});
+    ROIFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);
+    xASL_im_Lesion2Mask(ROIFile, x); % Convert ROIs & lesions to specific masks    
+    xASL_vis_CreateVisualFig(x, {ROIFile}, x.D.ROICheckDir,[0.8 1], 'Lesions'); % Show lesions individually
 end
 
 %% -----------------------------------------------------------------------------------
