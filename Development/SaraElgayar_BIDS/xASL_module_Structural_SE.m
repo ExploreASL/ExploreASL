@@ -722,7 +722,7 @@ if ~x.mutex.HasState('100_visualize')  % tracks progress through lock/ *.status 
 
         %% Visualize lesions
         xASL_wrp_VisualCheckLesionRemoval( x, Lesion_T1_list, Lesion_FLAIR_list);
-        xASL_vis_VisualizeROIs( x, ROI_T1_list, ROI_FLAIR_list);
+        xASL_vis_VisualizeROIs( x, [ROI_T1_list; ROI_FLAIR_list]);
 
         % Convert ROIs & lesions to specific masks
         for iS=1:length(Lesion_T1_list)

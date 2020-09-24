@@ -82,11 +82,10 @@ x = xASL_wrp_VisualCheckCollective_Structural(x);
 %% -----------------------------------------------------------------------------------
 %% 4) Visualize lesions
 Lesion_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^Lesion_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
-ROI_T1_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^ROI_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
-ROI_FLAIR_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^ROI_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
+ROI_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^ROI_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
 
 xASL_adm_VisualCheckLesionRemoval(x, Lesion_list);
-xASL_vis_VisualizeROIs(x, ROI_T1_list, ROI_FLAIR_list);
+xASL_vis_VisualizeROIs(x, ROI_list);
 
 % Show lesions individually
 for iLesion=1:length(Lesion_list)
@@ -96,20 +95,12 @@ for iLesion=1:length(Lesion_list)
     xASL_vis_CreateVisualFig(x, {LesionFile}, x.D.LesionCheckDir,[0.8 1], 'Lesions'); % Show lesions individually
 end
 % Visualize ROIs (these are manually added native space ROIs)
-for iLesion=1:length(ROI_T1_list)
-    [~, Ffile] = xASL_fileparts(ROI_T1_list{iLesion});
+for iLesion=1:length(ROI_list)
+    [~, Ffile] = xASL_fileparts(ROI_list{iLesion});
     LesionFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);
     xASL_im_Lesion2Mask(LesionFile, x); % Convert ROIs & lesions to specific masks    
     xASL_vis_CreateVisualFig(x, {LesionFile}, x.D.ROICheckDir,[0.8 1], 'Lesions'); % Show lesions individually
 end
-for iLesion=1:length(ROI_FLAIR_list)
-    [~, Ffile] = xASL_fileparts(ROI_FLAIR_list{iLesion});
-    LesionFile = fullfile(x.D.PopDir, ['r' Ffile '_' x.P.SubjectID '.nii']);
-    xASL_im_Lesion2Mask(LesionFile, x); % Convert ROIs & lesions to specific masks    
-    xASL_vis_CreateVisualFig(x, {LesionFile}, x.D.ROICheckDir,[0.8 1], 'Lesions'); % Show lesions individually
-end
-
-
 
 %% -----------------------------------------------------------------------------------
 %% 5) Final QCs
