@@ -73,9 +73,9 @@ if  ~isempty(ROI_T1_list) || ~isempty(ROI_FLAIR_list)
 end
 
 
-if      strcmp(x.WMHsegmAlg,'LPA')
+if      strcmpi(x.WMHsegmAlg,'LPA')
         rWMHPath               = fullfile( x.SUBJECTDIR, ['ples_lpa_mr' x.P.FLAIR '.nii']);
-elseif  strcmp(x.WMHsegmAlg,'LGA')
+elseif  strcmpi(x.WMHsegmAlg,'LGA')
         rWMHPath                = fullfile( x.SUBJECTDIR, ['ples_lga_0.3_rmr' x.P.FLAIR '.nii']);% 0.3 an initial threshold.
 else
         error('Unknown WMH segmentation option');
@@ -363,17 +363,17 @@ end
 if ~x.mutex.HasState('040_segment_FLAIR')  % tracks progress through lock/ *.status files, & locks current run
     if  xASL_exist(x.P.Path_rFLAIR,'file')
 
-        if  strcmp(x.WMHsegmAlg,'LPA')
+        if  strcmpi(x.WMHsegmAlg,'LPA')
             fprintf('%s\n','WMH segmentation performed using LST LPA')
             % Lesion Prediction Algorithm (LPA)
              rWMHPath = xASL_wrp_LST_lpa(x);
 
-        elseif strcmp(x.WMHsegmAlg,'LGA')
+        elseif strcmpi(x.WMHsegmAlg,'LGA')
             fprintf('%s\n','WMH segmentation performed using LST LGA');
             % Lesion Growth Algorithm (LGA)
             rWMHPath= xASL_wrp_LST_lga(x);
 
-        elseif ~strcmp(x.WMHsegmAlg,'LPA') || ~strcmp(x.WMHsegmAlg,'LGA')
+        elseif ~strcmpi(x.WMHsegmAlg,'LPA') || ~strcmpi(x.WMHsegmAlg,'LGA')
                 error('Wrong WMH segmentation defined -> x.WMHsegmAlg should be LPA or LGA');
         end
 

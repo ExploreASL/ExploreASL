@@ -65,7 +65,7 @@ namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency'  'LabelingEfficiency'
 %% 1) Load .mat parameter file (if exists)
 % if ~exist(ParmsPath, 'file') && isfield(x.Q,'ASL')
 %     warning('No ParmsPath found, trying to use general parameters!');
-%     
+%
 %     if ~isempty(regexp(Ffile,'ASL4D'))
 %         if bVerbose; fprintf('Use generic ASL parameters\n'); end
 %         ImType = 'ASL';
@@ -73,14 +73,14 @@ namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency'  'LabelingEfficiency'
 %         if bVerbose; fprintf('Use generic M0 parameters\n'); end
 %         ImType = 'M0';
 %     end
-%     
+%
 %     FieldsGeneric = fields(x.Q.(ImType));
 %     for iField=1:length(FieldsGeneric)
 %         if ~isfield(x.Q,FieldsGeneric{iField})
 %             x.Q.(FieldsGeneric{iField}) = x.Q.(ImType).(FieldsGeneric{iField});
 %         end
 %     end
-    
+
 if exist(ParmsPath, 'file') && strcmp(Fext,'.mat')
     Parms = load(ParmsPath,'-mat');
     if  isfield(Parms,'parms')
@@ -114,7 +114,7 @@ else
         JSONPath = xASL_adm_GetFileList(Fpath,'dwi.*dwi\.json',  'FPList', [0 Inf]);
         if ~isempty(JSONPath)
             JSONPath = JSONPath{1};
-        end    
+        end
     else
         warning('Could not define JSON path');
     end
@@ -125,18 +125,18 @@ end
 if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSON values overwrite the existing values
     % But this can have some exceptions, e.g. the specification of sequence
     % in x.Vendor
-    
-%     if isfield(x,'Vendor') && (strcmp(x.Vendor,'GE_product') || strcmp(x.Vendor,'GE_WIP'))
+
+%     if isfield(x,'Vendor') && (strcmpi(x.Vendor,'GE_product') || strcmpi(x.Vendor,'GE_WIP'))
 %         VendorBackup = x.Vendor;
 %         VendorRestore = true;
 % 	end
-   
+
 	JSONParms = spm_jsonread(JSONPath);
-	
+
 	Parms = xASL_bids_parms2BIDS(Parms, JSONParms, 0, 1);
-	
+
 end
-    
+
 
 %% ------------------------------------------------------------------------
 %% 3) Deal with warnings
@@ -209,7 +209,7 @@ for iField=1:length(Qfields)
 				warning(['Overwriting x.Q.' Qfields{iField} '=' xASL_num2str(x.Q.(Qfields{iField}),[],1) ', with x.' Qfields{iField} '=' xASL_num2str(x.(Qfields{iField}),[],1)]);
 			end
 		end
-        
+
         x.Q.(Qfields{iField}) = x.(Qfields{iField});
 %         x = rmfield(x, Qfields{iField}); % For now lets keep the
 %         parameter both in x and x.Q for backwards compatibility, we fix
@@ -233,7 +233,7 @@ if ~isfield(x,'M0')
 end
 
 if ~exist('Parms','var')
-    Parms = struct; 
+    Parms = struct;
     if bVerbose; warning('parms seem missing, something wrong with parmsfile?'); end
 end
 
@@ -265,7 +265,7 @@ for iPar=1:length(ParmsNames)
             % first we create empty X field
             x.(ParmsNames{iPar}) = struct;
         end
-        
+
         x.(ParmsNames{iPar}) = xASL_adm_SyncParmsX(Parms.(ParmsNames{iPar}), x.(ParmsNames{iPar}));
     else % overwrite X by Parms
         x.(ParmsNames{iPar}) = Parms.(ParmsNames{iPar});

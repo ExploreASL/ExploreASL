@@ -10,8 +10,8 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 %                   of mean CBF, ATT biasfield and vascular artifacts
 %                   (REQUIRED). When this parameter is set to 0 or lower, this
 %                   function will skip creating the pseudoCBF NIfTI
-%   bPVC          - boolean for performing regional partial volume correction and to set 
-%                   the values of the PseudoTissue based on its results, rather than a global scaling. 
+%   bPVC          - boolean for performing regional partial volume correction and to set
+%                   the values of the PseudoTissue based on its results, rather than a global scaling.
 %                   Improved scaling saved to x.P.Path_mean_PWI_Clipped_DCT
 %                   to be used, especially for non-NMI cost functions (OPTIONAL, DEFAULT = FALSE)
 % OUTPUT: n/a
@@ -34,11 +34,11 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 %              CBF-based registration even when there is less tissue CBF contrast
 %              and more vascular contrast. The alternative is to use the
 %              (mean) control image for registration, but this only
-%              outperforms the CBF-based registration for images with 
+%              outperforms the CBF-based registration for images with
 %              high effective spatial resolution (2D EPI), and some ASL
 %              sequence do not provide the Control images. Smooth ASL
 %              sequences still have sufficient CBF contrast, but the
-%              control image can be nearly flat, especially with background suppression and 
+%              control image can be nearly flat, especially with background suppression and
 %              incomplete T1 relaxation. See Mutsaerts, Petr et al, JMRI 2018
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function creates a pseudo-CBF image from mean CBF template,
@@ -58,7 +58,7 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 %              5. Create pseudoTissue from segmentations, mix this with the mean CBF template depending on spatial CoV
 %              6. Create pseudoCBF reference image used for CBF-based registration
 %              7. Scale mean_PWI_Clipped source image to the same range as PseudoCBF
-%              
+%
 % EXAMPLE: xASL_im_CreatePseudoCBF(x, 0.4);
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
@@ -81,18 +81,18 @@ if ~xASL_exist(x.Path_PseudoTissue,'file') || bPVC
 	% save them as temporary resampled copy prefixed with "r"
 	xASL_spm_smooth(x.P.Path_c1T1, NewVoxelSize, x.P.Path_rc1T1);
 	xASL_spm_smooth(x.P.Path_c2T1, NewVoxelSize, x.P.Path_rc2T1);
-	
+
 	% Downsample these temporary images to the ASL VoxelSize
 	xASL_im_Upsample(x.P.Path_rc1T1, x.P.Path_rc1T1, NewVoxelSize);
 	xASL_im_Upsample(x.P.Path_rc2T1, x.P.Path_rc2T1, NewVoxelSize);
-	
+
 	% Calculate the pseudoCBF image from the downsampled tissue posteriors,
 	% called PseudoTissue
 	PseudoTissue = xASL_io_Nifti2Im(x.P.Path_rc1T1).*80 + xASL_io_Nifti2Im(x.P.Path_rc2T1).*26.7;
-	
+
 	% Save this PseudoTissue NIfTI
 	xASL_io_SaveNifti(x.P.Path_rc1T1, x.Path_PseudoTissue, PseudoTissue, [], false);
-	
+
 	% The rc1T1 can be deleted, unless you do PVC and it is used later in the code - it is then also deleted later
 	if ~bPVC
 		xASL_delete(x.P.Path_rc1T1);
@@ -116,7 +116,7 @@ if bPVC
 	imGM = xASL_io_Nifti2Im(x.P.Path_rc1T1);
 	imWM = xASL_io_Nifti2Im(x.P.Path_rc2T1);
 	imPWI = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped_DCT);
-	
+
 	% Run PV-correction with smooth kernel
 	imGM(imGM<0) = 0;
 	imGM(imGM>1) = 1;
@@ -126,12 +126,12 @@ if bPVC
 	imPV(:,:,:,1) = imGM;
 	imPV(:,:,:,2) = imWM;
 	[imPVEC,~,~] = xASL_im_PVCkernel(imPWI,imPV,[5 5 5],'asllani');
-	
+
 	% Create a pseudoCBF image that has the local contrast variation based on the estimated PVEC
 	PseudoTissue = imGM.*imPVEC(:,:,:,1) + imWM.*imPVEC(:,:,:,2);
 	PseudoTissue(PseudoTissue<0) = 0;
 	xASL_io_SaveNifti(x.P.Path_rc1T1, x.Path_PseudoTissue, PseudoTissue, [], false);
-	
+
 	% Delete the temporary files
 	xASL_delete(x.P.Path_rc1T1);
 	xASL_delete(x.P.Path_rc2T1);
@@ -180,7 +180,7 @@ PseudoCBFim = max(PseudoCBFim, 0);
 % add residual, for if no signal is left
 PseudoCBFim = PseudoCBFim+Mean_IM./25;
 
-if ~strcmp(x.Sequence,'3D_spiral')
+if ~strcmpi(x.Sequence,'3D_spiral')
 	% With 3D spiral, we nearly see no vascular artifacts because of low
 	% effective spatial resolution
 	Vasc_IM = xASL_io_Nifti2Im(x.Vasc_Native);
@@ -198,7 +198,7 @@ if ~bPVC
 	pseudoIM = xASL_io_Nifti2Im(x.P.Path_PseudoCBF);
 	pseudoIM(isnan(pseudoIM)) = 0;
 	PWIim(isnan(PWIim)) = 0;
-	
+
 	% Use 5 and 95% percentiles instead of min and max
 	sortPWI = sort(PWIim(:),'ascend');
 	minPWI = sortPWI(ceil(0.05*length(sortPWI)));
@@ -207,11 +207,11 @@ if ~bPVC
 	minPseu = sortPseu(ceil(0.05*length(sortPseu)));
 	maxPseu = sortPseu(ceil(0.95*length(sortPseu)));
 	PWIim = PWIim-minPWI+minPseu;
-	
+
 	% Use the whole range (max-min) not only the max for the scaling
 	RatioMax = (maxPseu-minPseu)/(maxPWI-minPWI);
 	PWIim = PWIim.*RatioMax;
-	
+
 	% Save the image for the rigid registration
 	xASL_io_SaveNifti(x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped, PWIim, [], 0);
 else
@@ -221,7 +221,7 @@ else
 	pseudoIM(isnan(pseudoIM)) = 0;
 	imMask = pseudoIM > 10;
 	imMask(:,:,[1:2,(end-1):(end)]) = 0;
-	
+
 	% Load only the perfusion values in a relevant range and mask out the air
     % "rPWI" here is x.P.Path_mean_PWI_Clipped_DCT
 	PWIIM = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
@@ -240,7 +240,7 @@ else
 	X = [ones(length(X),1),X];
 	Y = pseudoIM(imMask);
 	sol = pinv(X)*Y;
-	
+
 	% Modify and save the images
 	rPWIIM = rPWIIM*sol(2)+sol(1);
 	PWIIM = PWIIM*sol(2)+sol(1);
@@ -259,7 +259,7 @@ end
 % PseudoMixFactor = ii/10;
 % MeanImIs{ii} = Mean_IM.*PseudoMixFactor+PseudoTissue.*(1-PseudoMixFactor);
 % NewIm = MeanImIs{ii};
-% 
+%
 % for ii=2:10
 %     PseudoMixFactor = ii/10;
 %     MeanImIs{ii} = Mean_IM.*PseudoMixFactor+PseudoTissue.*(1-PseudoMixFactor);

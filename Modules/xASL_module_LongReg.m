@@ -72,7 +72,7 @@ iSubject = find(strcmp(x.SUBJECTS,x.P.SubjectID));
 iSession = 1; % append sessions to accommodate sessions in x.S.SetsID
 iSubjSess = ((iSubject-1)*x.nSessions)+iSession;
 
-if ~isfield(x,'WhichLongReg') || isempty(x.WhichLongReg) || ~strcmp(x.WhichLongReg,'DARTEL')
+if ~isfield(x,'WhichLongReg') || isempty(x.WhichLongReg) || ~strcmpi(x.WhichLongReg,'DARTEL')
     x.WhichLongReg = 'LongReg'; % default
 end
 
@@ -209,7 +209,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             % keep default)
             LongRegBatch{1}.spm.tools.longit{1}.series.bparam    = 1000000;
             if isfield(x,'Vendor')
-                if ~isempty(regexp(x.Vendor,'GE'))
+                if ~isempty(regexpi(x.Vendor,'GE'))
                     LongRegBatch{1}.spm.tools.longit{1}.series.bparam    = 0;
                 end
             end
@@ -270,7 +270,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
                 xASL_delete(Path_rT1);
 
-                if strcmp(x.WhichLongReg,'DARTEL')
+                if strcmpi(x.WhichLongReg,'DARTEL')
                     xASL_spm_reslice(x.D.ResliceRef, Path_c1T1, [], [], x.Quality, [], 1);
                     xASL_spm_reslice(x.D.ResliceRef, Path_c2T1, [], [], x.Quality, [], 1);
                     if exist(Path_c3T1,'file')
@@ -311,7 +311,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                 xASL_Move(DeformationFile, TempRegFile, true);
             end
 
-            if strcmp(x.WhichLongReg, 'DARTEL')
+            if strcmpi(x.WhichLongReg, 'DARTEL')
                 spm_jobman('run',DARTELbatch);
             else % default
                 spm_jobman('run',LongRegBatch);
@@ -320,7 +320,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             %% ---------------------------------------------------------------------------------
             % Rename deformation file
             for iS=1:length(CurrentSub)
-                if strcmp(x.WhichLongReg,'DARTEL')
+                if strcmpi(x.WhichLongReg,'DARTEL')
                     DeformationFile = fullfile(x.D.ROOT, CurrentSub{iS}, 'u_rc1T1_Template.nii');
                 else
                     DeformationFile = fullfile(x.D.ROOT, CurrentSub{iS}, 'y_rT1.nii');
@@ -393,7 +393,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                     % combine the longitdinal transformations & the y_T1.nii from the first TimePoint
                     % & then remove the original longitudinal transformations
 
-                    if strcmp(x.WhichLongReg,'DARTEL')
+                    if strcmpi(x.WhichLongReg,'DARTEL')
                         matlabbatch{1}.spm.util.defs.comp{1}.dartel.flowfield = {LongRegFile2};
                         matlabbatch{1}.spm.util.defs.comp{1}.dartel.times = [1 0];
                         matlabbatch{1}.spm.util.defs.comp{1}.dartel.K = 6;

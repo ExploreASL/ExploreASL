@@ -76,41 +76,41 @@ if ~xASL_exist(PathpGM, 'file')
 end
 if ~xASL_exist(PathpWM, 'file')
     if ~bSkipStandard; warning('Missing pWM image, using MNI version'); end
-    PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');    
+    PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');
 end
 
 if ~bSkipStandard
 	%% Creation GM, WM & WholeBrain masks by p>0.5
 	GMmask = xASL_io_Nifti2Im(PathpGM)>0.5;
 	WMmask = xASL_io_Nifti2Im(PathpWM)>0.5;
-	
+
 	if xASL_exist(PathpCSF,'file')
 		pCSF = xASL_io_Nifti2Im(PathpCSF)>0.5;
 		WholeBrain = (GMmask+WMmask+pCSF)>0.5;
 	else
 		WholeBrain = (GMmask+WMmask)>0.5;
 	end
-	
+
 	GMmask = GMmask>0.5;
 	WMmask = WMmask>0.5;
-	
+
 	%% B) Create, combine & save vascula, susceptibity & FoV masks
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
 	MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);
-	
-	
+
+
 	DoSusceptibility = true;
 	if ~isfield(x,'Sequence')
 		error('x.Sequence parameter missing!');
-	elseif strcmp(lower(x.Sequence),'2d_epi')
+	elseif strcmpi(x.Sequence,'2D_EPI')
 		Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
-	elseif strcmp(lower(x.Sequence),'3d_grase')
+	elseif strcmpi(x.Sequence,'3D_GRASE')
 		Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
 	else
 		% don't mask susceptibility artifacts
 		DoSusceptibility = false;
 	end
-	
+
 	MaskFoV = xASL_io_Nifti2Im(PathFoV)>=Threshold;
 	if DoSusceptibility
 		TemplateMask = xASL_io_Nifti2Im(Path_Template)~=1; % MaskSusceptibility<0.85 &
@@ -118,20 +118,20 @@ if ~bSkipStandard
 		TemplateMask = TemplateMask & MaskSusceptibility<0.8;
 		ThrValues = MaskSusceptibility(TemplateMask);
 		ThresholdSuscept = Threshold.*max(ThrValues(:));
-		
+
 		% Remove some extremes using 95% percentile,
 		% as here we aim to obtain the 95% threshold within the probability map
 		% (i.e. excluding the manually created mask to isolate the skull
 		% regions of air cavities)
 		MaskSusceptibility = MaskSusceptibility > ThresholdSuscept;
-		
+
 		% Combine susceptibility & FoV
 		MaskSusceptibility = MaskSusceptibility & MaskFoV;
 	else
 		MaskSusceptibility = MaskFoV; % if we don't have susceptibility artifacts
 	end
-	
-	
+
+
 	% Save them
 	xASL_io_SaveNifti(PathVascularMask, MaskVascularPath, MaskVascular, 8, true);
 	xASL_io_SaveNifti(PathSusceptibilityMask, MaskSusceptibilityPath, MaskSusceptibility, 8, true);
@@ -143,15 +143,15 @@ if x.bNativeSpaceAnalysis
 	x = xASL_adm_DefineASLResolution(x);
 	for iSession=1:x.nSessions
 		%x.SESSIONS{iSession}
-		
+
 		% Searching for available images
 		for iSubject = 1:x.nSubjects
 			SubjSess = (iSubject-1)*x.nSessions + iSession;
-			
+
 			x.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 			x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
-			
+
 			xASL_TrackProgress(SubjSess,x.nSubjects*x.nSessions);
 			if xASL_exist(x.P.Path_PWI)
 				listMasks = {MaskSusceptibilityPath fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
@@ -161,7 +161,7 @@ if x.bNativeSpaceAnalysis
 				listType  = [ 1 1 1 2 2 2];
 				% 1 - binary masks - presmooth, spline-interpolation, cut at 50%
 				% 2 - multi-label masks - no presmooth, nearest-neighbot interpolation, no thresholding
-				
+
 				for kk = 1:length(listMasks)
 					if xASL_exist(listMasks{kk},'file')
 						switch (listType(kk))
@@ -170,11 +170,11 @@ if x.bNativeSpaceAnalysis
 								[tmpPath,tmpFile,tmpExt] = xASL_fileparts(listOutputs{kk});
 								pathTmpPreSmooth = fullfile(tmpPath,['pres_' tmpFile tmpExt]);
 								pathTmpPreSmooth = xASL_im_PreSmooth(x.P.Path_PWI,listMasks{kk},pathTmpPreSmooth,x.S.optimFWHM_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-								
+
 								% Transform the Mask to native space
 								xASL_spm_deformations(x, pathTmpPreSmooth, listOutputs{kk}, 2, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
 								xASL_delete(pathTmpPreSmooth);
-								
+
 								% Threshold at 50%
 								imMaskTmp = xASL_io_Nifti2Im(listOutputs{kk});
 								imMaskTmp = imMaskTmp > 0.5;
@@ -194,11 +194,11 @@ if x.bNativeSpaceAnalysis
 		end
 	end
 end
-				
+
 if bSkipStandard
 	return;
 end
-				
+
 %% C) Create & save VBA mask
 MaskAnalysis = MaskSusceptibility;
 x.S.VBAmask = MaskAnalysis & GMmask; % this should be an image matrix, not a column

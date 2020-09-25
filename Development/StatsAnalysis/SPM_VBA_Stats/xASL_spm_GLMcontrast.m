@@ -15,30 +15,30 @@ save(x.S.SPMmat,'SPM');
 
 %% ------------------------------------------------------------------------------------------------------
 %% Get cluster extent (crashes if no inmask voxels)
-if      strcmp(x.S.MultiComparisonCorrType,'FWE') || strcmp(x.S.MultiComparisonCorrType,'uncorrected')
+if      strcmpi(x.S.MultiComparisonCorrType,'FWE') || strcmpi(x.S.MultiComparisonCorrType,'uncorrected')
         x.S.ClusterExtent   = 0;
-elseif  strcmp(x.S.MultiComparisonCorrType,'cluster')
+elseif  strcmpi(x.S.MultiComparisonCorrType,'cluster')
         load(x.S.SPMmat);
-        [k,Pc] = CorrClusTh(SPM,x.S.clusterPthr,x.S.uncorrThresh,1:50000);            
-        x.S.ClusterExtent   = k;            
+        [k,Pc] = CorrClusTh(SPM,x.S.clusterPthr,x.S.uncorrThresh,1:50000);
+        x.S.ClusterExtent   = k;
 end
 
 
 
 %% ------------------------------------------------------------------------------------------------------
 %% Get type of multiple comparison correction
-if      strcmp(x.S.MultiComparisonCorrType,'FWE')
+if      strcmpi(x.S.MultiComparisonCorrType,'FWE')
         x.S.ThreshType  = 'FWE';
         x.S.PrintTitleStats = ['p=' num2str(x.S.uncorrThresh) ', Bonferroni FWE'];
 
-elseif  strcmp(x.S.MultiComparisonCorrType,'cluster')
+elseif  strcmpi(x.S.MultiComparisonCorrType,'cluster')
         x.S.ThreshType      = 'none';
         x.S.PrintTitleStats = ['primThr p=' num2str(x.S.clusterPthr) ', cluster FWE p=' num2str(x.S.uncorrThresh) ', clustersize ' num2str(k) ' voxels'];
 
-elseif  strcmp(x.S.MultiComparisonCorrType,'uncorrected')
+elseif  strcmpi(x.S.MultiComparisonCorrType,'uncorrected')
         x.S.ThreshType      = 'none';
         x.S.PrintTitleStats = ['p=' num2str(x.S.uncorrThresh) ', unc.'];
-end       
+end
 
 if ~exist('Conweights','var') % allow inputting contrast
 
@@ -53,7 +53,7 @@ if ~exist('Conweights','var') % allow inputting contrast
                 Conweights    = [1];
 
                 % this creates t-test contrast [1 -1] if x.S.nSets==2
-                % & ANOVA contrasts when x.S.nSets>2                
+                % & ANOVA contrasts when x.S.nSets>2
         else
                 Conweights    = diff(eye(x.S.nSets));
                 % Conweights    = [-1 1 -1 1];
@@ -90,7 +90,7 @@ matlabbatch{1}.spm.stats.con.delete                                 = 0;
 if  x.S.nSets>2 % f-contrast, such as for ANOVA
     matlabbatch{1}.spm.stats.con.consess{1}.fcon.weights            = Conweights;
     matlabbatch{1}.spm.stats.con.consess{1}.fcon.name               = 'Test';
-    matlabbatch{1}.spm.stats.con.consess{1}.fcon.sessrep            = 'none';            
+    matlabbatch{1}.spm.stats.con.consess{1}.fcon.sessrep            = 'none';
 else % t-contrast
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights            = Conweights;
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name               = 'Test';
@@ -107,4 +107,3 @@ save(x.S.SPMmat3,'SPM');
 
 
 end
-

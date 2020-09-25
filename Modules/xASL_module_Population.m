@@ -80,7 +80,7 @@ if ~x.mutex.HasState(StateName{1})
 
     FoVPath = fullfile(x.D.TemplatesStudyDir,'FoV_bs-mean_Unmasked.nii');
     SusceptPath = fullfile(x.D.TemplatesStudyDir,'MaskSusceptibility_bs-mean.nii');
-    if strcmp(x.Sequence,'3D_spiral') && xASL_exist(FoVPath)
+    if strcmpi(x.Sequence,'3D_spiral') && xASL_exist(FoVPath)
         xASL_io_SaveNifti(FoVPath, SusceptPath, xASL_io_Nifti2Im(FoVPath),[],false);
     end
 
@@ -142,9 +142,9 @@ end
 %% -----------------------------------------------------------------------------
 %% 5    Summarize volume statistics (uses native space)
 if ~x.mutex.HasState(StateName{5})
-    
+
     xASL_stat_GetVolumeStatistics(x);
-    
+
     x.mutex.AddState(StateName{5});
     fprintf('%s\n',[StateName{5} ' was performed']);
 else
@@ -215,7 +215,7 @@ if ~x.mutex.HasState(StateName{8})
 		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_TotalGMPop);
 		xASL_wrp_GetROIstatistics(x);
 	end
-		
+
 	x.S.InputNativeSpace = 0;
     x.S.InputAtlasPath = fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii');
 	xASL_wrp_GetROIstatistics(x);
@@ -224,7 +224,7 @@ if ~x.mutex.HasState(StateName{8})
 		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_DeepWMPop);
 		xASL_wrp_GetROIstatistics(x);
 	end
-	
+
 	x.S.InputNativeSpace = 0;
     x.S.InputAtlasPath = fullfile(x.D.MapsSPMmodifiedDir,'MNI_structural.nii');
 	xASL_wrp_GetROIstatistics(x);
@@ -241,7 +241,7 @@ if ~x.mutex.HasState(StateName{8})
 		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_HammersPop);
 		xASL_wrp_GetROIstatistics(x);
     end
-    
+
     % Check if we should do the same for Lesion or ROI masks (i.e.
     % individual "atlases") -> NB not yet developed/tested in native space
     LesionROIList = xASL_adm_GetFileList(x.D.PopDir, 'r(Lesion|ROI).*\.nii$', 'FPList', [0 Inf]);
@@ -251,7 +251,7 @@ if ~x.mutex.HasState(StateName{8})
         xASL_wrp_GetROIstatistics(x);
     end
 
-    
+
 %     % Do the same for volumetrics
 %     x.S.IsASL = false;
 %     x.S.IsVolume = true;

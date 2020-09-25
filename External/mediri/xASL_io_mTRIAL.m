@@ -18,7 +18,7 @@ function xASL_io_mTRIAL(root)
 %               restructured to enable the following step.
 %
 % Detailed description of the incoming data structure:
-% 
+%
 %               - /incoming/dockerInterfaceParameters.json
 %               - /incoming/raw/sub-###/visit-###/ASL
 %               - /incoming/raw/sub-###/visit-###/T1
@@ -36,9 +36,9 @@ function xASL_io_mTRIAL(root)
 % "LabelingDuration":  "1800",
 % "SliceReadoutTime":  "40"
 % }
-% 
+%
 % BIDS TEST DATA:
-% 
+%
 % 'Siemens'
 % data.x.M0 = 'UseControlAsM0'; % Should actually be: data.x.M0 = 'separate_scan'; % but separate M0 does not work on mTRIAL right now
 % data.x.Sequence = '3D_GRASE';
@@ -62,7 +62,7 @@ function xASL_io_mTRIAL(root)
 % data.x.Q.BackGrSupprPulses = 5;
 % data.x.Q.LabelingDuration = 2025;
 % data.x.Q.Initial_PLD = 1450;
-% 
+%
 %
 % EXAMPLE:      xASL_io_mTRIAL('/opt/incoming/');
 %
@@ -110,12 +110,12 @@ if isfield(x_temporary,'Initial_PLD'),          data.x.Q.Initial_PLD = x_tempora
 if isfield(x_temporary,'LabelingDuration'),     data.x.Q.LabelingDuration = x_temporary.LabelingDuration; end
 
 % Fix Sequence name
-switch data.x.Sequence
-    case "3D Spiral"
+switch lower(data.x.Sequence)
+    case "3d spiral"
         data.x.Sequence = '3D_spiral';
-    case "3D GRASE"
+    case "3d grase"
         data.x.Sequence = '3D_GRASE';
-    case "2D EPI"
+    case "2d epi"
         data.x.Sequence = '2D_EPI';
 end
 
@@ -128,9 +128,9 @@ try
 		valXASL = xASL_bids_parms2BIDS([], val, 0, 1);
         % Set vendor to manufacturer and remove slice readout time for 3D cases
         if ~isfield(valXASL,'Vendor'), data.x.Vendor = valXASL.Vendor; end
-		
+
 		if isfield(valXASL,'readout_dim')
-			if strcmp(valXASL.readout_dim,"2D")
+			if strcmpi(valXASL.readout_dim,"2D")
 				data.x.Q.SliceReadoutTime = x_temporary.SliceReadoutTime;
 			end
 		end
@@ -141,8 +141,3 @@ end
 
 % Write data to JSON file
 spm_jsonwrite(DataParFile,data);
-
-
-
-
-
