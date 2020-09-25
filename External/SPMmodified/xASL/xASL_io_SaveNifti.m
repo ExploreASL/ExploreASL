@@ -31,11 +31,11 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 
 % Admin
 if nargin < 3
-	error('xASL_io_SaveNifti: Needs at least three input parameters.');
+	error('Needs at least three input parameters.');
 end
 
 if min(size(imNew))==0 % QA
-    error(['xASL_io_SaveNifti: Empty image: ' pathOrigNifti]);
+    error(['Empty image: ' pathOrigNifti]);
 end
 
 if nargin < 5 || isempty(bGZip)
@@ -46,17 +46,29 @@ if nargin < 6 || isempty(changeMat)
 	changeMat = [];
 else
 	if ~isequal(size(changeMat),[4 4])
-		error('xASL_io_SaveNifti: changeMat has to be 4x4');
+		error('changeMat has to be 4x4');
 	end
 end
 
-
+if length(fileparts(pathNewNifti))<2
+    warning(['Invalid folder of file: ' pathNewNifti]);
+end
 
 % Create temporary name for new NIFTI, since if pathOrigNifti & pathNewNifti
 % are the same, this will work better
 tempName = [pathNewNifti(1:end-4) '_temp.nii'];
 tempMat = [pathNewNifti(1:end-4) '_temp.mat'];
 newMat = [pathNewNifti(1:end-4) '.mat'];
+
+% Remove temp files in case they exist from a previous crash
+if xASL_exist(tempName)
+    warning(['Temporary file already existed, removing: ' tempName]);
+    xASL_delete(tempName);
+end
+if xASL_exist(tempMat)
+    warning(['Temporary file already existed, removing: ' tempMat]);
+    xASL_delete(tempMat);
+end
 
 % First unzip original Nifti if needed
 xASL_io_ReadNifti(pathOrigNifti);

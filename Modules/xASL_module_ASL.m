@@ -203,7 +203,7 @@ x = xASL_adm_DefineASLSequence(x);
 
 %% -----------------------------------------------------------------------------
 %% 1 TopUp (WIP, only supported if FSL installed)
-Path_RevPE = xASL_adm_GetFileList(x.SESSIONDIR, '^ASL4D.*RevPE\.nii$', 'FPList', [0 Inf]);
+Path_RevPE = xASL_adm_GetFileList(x.SESSIONDIR, '^(ASL4D|M0).*RevPE\.nii$', 'FPList', [0 Inf]);
 
 iState = 1;
 if xASL_exist(x.P.Path_M0,'file') && ~isempty(Path_RevPE)
