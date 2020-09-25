@@ -58,36 +58,61 @@ class xASL_Parms(QMainWindow):
         self.formlay_basic = QFormLayout(self.cont_basic)
         self.hlay_easl_dir, self.le_easl_dir, self.btn_easl_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_exploreasl_dir,
-            default=''
-        )
+            default='')
+        self.le_easl_dir.setToolTip("Specify the filepath to the ExploreASL folder located on your machine.\n"
+                                    "For example:\nC:\\Users\\JohnSmith\\MATLAB\\ExploreASL")
         self.le_studyname = QLineEdit(text="My Study")
+        self.le_studyname.setToolTip("Specify the name of the study you would like it to have")
         self.chk_overwrite_for_bids = QCheckBox(checked=True)
+        self.chk_overwrite_for_bids.setToolTip("Specify whether the study dataset is in BIDS format (CHECKED)\n"
+                                               "OR whether the study dataset is in the older legacy format (UNCHECKED)")
         self.hlay_study_dir, self.le_study_dir, self.btn_study_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_study_dir,
-            default=''
-        )
+            default='')
+        self.le_study_dir.setToolTip("Specify the filepath to the analysis folder of your study.\nFor example:\n"
+                                     "C:\\Users\\JohnSmith\\MyStudy\\analysis")
         self.le_study_dir.setPlaceholderText("Indicate the analysis directory filepath here")
         self.le_subjectregex = QLineEdit(text='\\d+')
         self.le_subjectregex.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.lst_included_subjects = DandD_FileExplorer2ListWidget()
         self.lst_included_subjects.alert_regex.connect(self.update_regex)
+        self.lst_included_subjects.setToolTip("Drag and Drop the subjects that should be analyzed")
         self.btn_included_subjects = QPushButton("Clear Subjects", clicked=self.clear_included)
         self.lst_excluded_subjects = DandD_FileExplorer2ListWidget()
+        self.lst_excluded_subjects.setToolTip("Drag and Drop the subjects that should be exluded from analysis")
         self.btn_excluded_subjects = QPushButton("Clear Excluded", clicked=self.clear_excluded)
         self.le_run_names = QLineEdit(text="ASL_1",
                                       placeholderText="Indicate run names, each separated by a comma and space")
+        self.le_run_names.setToolTip("Specify the names of run folders that are present within the analysis folder\n"
+                                     "AFTER an import has been performed. Run names must be separated by a comma and\n"
+                                     "one space")
         self.le_run_options = QLineEdit(placeholderText="Indicate option names, each separated by a comma and space")
+        self.le_run_options.setToolTip("Specify the names that runs should have in the final output. For example, if\n"
+                                       "there are run folders called 'ASL_1' and 'ASL_2', you can specify here that\n"
+                                       "they should be called 'control' and 'treatment' in the final output")
         self.cmb_vendor = self.make_cmb_and_items(["Siemens", "Philips", "GE", "GE_WIP"])
+        self.cmb_vendor.setToolTip("Specify the Vendor of the scans in the analysis folder")
         self.cmb_sequencetype = self.make_cmb_and_items(["3D GRaSE", "2D EPI", "3D Spiral"])
+        self.cmb_sequencetype.setToolTip("Specify the imaging sequence utilized during scan acquisition")
+        self.cmb_sequencetype.currentTextChanged.connect(self.update_readout_dim)
         self.cmb_labelingtype = self.make_cmb_and_items(["Pulsed ASL", "Pseudo-continuous ASL", "Continuous ASL"])
+        self.cmb_labelingtype.setToolTip("Specify the labelling strategy used during ASL scan acquisition")
         self.cmb_labelingtype.currentTextChanged.connect(self.autocalc_slicereadouttime)
         self.cmb_m0_isseparate = self.make_cmb_and_items(["Proton density scan (M0) was acquired",
                                                           "Use mean control ASL as proton density mimic"])
+        self.cmb_m0_isseparate.setToolTip("Specify whether a proton density scan (M0) was acquired\n"
+                                          "If a scan was not acquired, the mean control ASL image set\n"
+                                          "will be used as a substitute.")
         self.cmb_m0_posinasl = self.make_cmb_and_items(
             ["M0 exists as a separate scan", "M0 is the first ASL control-label pair",
              "M0 is the first ASL scan volume", "M0 is the second ASL scan volume"])
+        self.cmb_m0_posinasl.setToolTip("If a proton density (M0) scan was acquired, specify its location.\n"
+                                        "This argument is ignored if the user has indicated that an M0 scan\n"
+                                        "was not acquired")
         self.cmb_quality = self.make_cmb_and_items(["Low", "High"])
         self.cmb_quality.setCurrentIndex(1)
+        self.cmb_quality.setToolTip("Indicate the precision with which certain processing steps should be taken, such\n"
+                                    "as segmentation. Higher quality results in longer processing times.")
 
         for desc, widget in zip(["ExploreASL Directory", "Name of Study", "Analysis Directory",
                                  "Dataset is in BIDS format?",
@@ -122,14 +147,23 @@ class xASL_Parms(QMainWindow):
         # Set up the Sequence Parameters
         self.formlay_sequenceparms = QFormLayout(self.grp_sequenceparms)
         self.cmb_nsup_pulses = self.make_cmb_and_items(["0", "2", "4", "5"], 1)
+        self.cmb_nsup_pulses.setToolTip("Specify the number of background suppression pulses that were utilized\n"
+                                        "for ASL scans in your study")
         self.cmb_readout_dim = self.make_cmb_and_items(["3D", "2D"])
+        self.cmb_readout_dim.setToolTip("Specify the dimension of ASL acquisitions as they came off the scanner")
         self.spinbox_initialpld = QDoubleSpinBox(maximum=2500, minimum=0, value=1800)
         self.spinbox_initialpld.valueChanged.connect(self.autocalc_slicereadouttime)
+        self.spinbox_initialpld.setToolTip("Specify the time, in milliseconds, of the post-label delay.\n"
+                                           "- For 3D scans this is fixed for the whole brain\n"
+                                           "- For 2D scans this is the post-label delay of the FIRST acquired slice")
         self.spinbox_labdur = QDoubleSpinBox(maximum=2000, minimum=0, value=800)
         self.spinbox_labdur.valueChanged.connect(self.autocalc_slicereadouttime)
+        self.spinbox_labdur.setToolTip("Specify the time, in milliseconds, of the pulse labeling period.")
         self.hlay_slice_readout = QHBoxLayout()
         self.cmb_slice_readout = self.make_cmb_and_items(["Use Indicated Value", "Use Shortest TR"])
         self.spinbox_slice_readout = QDoubleSpinBox(maximum=1000, minimum=0, value=37)
+        self.spinbox_slice_readout.setToolTip("Specify the value of the time added to the PLD after each slice\n"
+                                              "This is required for 2D readout ASL acquisitions")
         self.hlay_slice_readout.addWidget(self.cmb_slice_readout)
         self.hlay_slice_readout.addWidget(self.spinbox_slice_readout)
         for description, widget in zip(["Number of Suppression Pulses", "Readout Dimension",
@@ -142,11 +176,24 @@ class xASL_Parms(QMainWindow):
         # Set up the Quantification Parameters
         self.formlay_quantparms = QFormLayout(self.grp_quantparms)
         self.spinbox_lambda = QDoubleSpinBox(maximum=1, minimum=0, value=0.9, singleStep=0.01)
+        self.spinbox_lambda.setToolTip("Specify the blood/brain water coefficient (0.9 in Alsop MRM 2014)")
         self.spinbox_artt2 = QDoubleSpinBox(maximum=100, minimum=0, value=50, singleStep=0.1)
+        self.spinbox_artt2.setToolTip("Specify the T2* of the arterial blood at 3T")
         self.spinbox_bloodt1 = QDoubleSpinBox(maximum=2000, minimum=0, value=1650, singleStep=0.1)
+        self.spinbox_bloodt1.setToolTip("Specify the T1 relaxation time of arterial blood at 3T "
+                                        "(1650 in Alsop MRM 2014)")
         self.spinbox_tissuet1 = QDoubleSpinBox(maximum=2000, minimum=0, value=1240, singleStep=0.1)
+        self.spinbox_tissuet1.setToolTip("Specify the T1 relaxation time of grey matter tissue at 3T "
+                                         "(1240 in Alsop MRM 2014)")
         self.cmb_ncomparts = self.make_cmb_and_items(["1", "2"], 0)
+        self.cmb_ncomparts.setToolTip("Specify the number of compartments to model during quantification")
         self.le_quantset = QLineEdit(text="1 1 1 1 1")
+        self.le_quantset.setToolTip("Specify the vector of actions to perform during quantification:\n"
+                                    "1) Apply ScaleSlopes ASL4D\n"
+                                    "2) Apply ScaleSlopes M0\n"
+                                    "3) Convert PWI a.u. to label\n"
+                                    "4) Quantify M0 a.u.\n"
+                                    "5) Perform division by M0")
         for description, widget in zip(["Lambda", "Arterial T2*", "Blood T1",
                                         "Tissue T1", "Number of Compartments", "Quantification Settings"],
                                        [self.spinbox_lambda, self.spinbox_artt2, self.spinbox_bloodt1,
@@ -156,7 +203,13 @@ class xASL_Parms(QMainWindow):
         # Set up the remaining M0 Parameters
         self.formlay_m0parms = QFormLayout(self.grp_m0parms)
         self.cmb_m0_algorithm = self.make_cmb_and_items(["New Image Processing", "Standard Processing"], 0)
+        self.cmb_m0_algorithm.setToolTip("Specify whether to use the newer M0 processing algorithm or the standard one")
         self.spinbox_gmscale = QDoubleSpinBox(maximum=100, minimum=0.01, value=1, singleStep=0.01)
+        self.spinbox_gmscale.setToolTip("Specify whether the M0 image should be multiplied by a specific factor.\n"
+                                        "This is useful when you have background suppression but no M0 image acquired\n"
+                                        "without suppression. If you know the M0 scalefactor, you can use the control\n"
+                                        "image as M0 and apply this factor to scale back what was suppressed by the\n"
+                                        "background suppression")
         for description, widget in zip(["M0 Processing Algorithm", "GM Scale Factor"],
                                        [self.cmb_m0_algorithm, self.spinbox_gmscale]):
             self.formlay_m0parms.addRow(description, widget)
@@ -358,6 +411,12 @@ class xASL_Parms(QMainWindow):
             except KeyError:
                 pass
 
+    def update_readout_dim(self, text):
+        if text == "2D EPI":
+            self.cmb_readout_dim.setCurrentIndex(1)
+        else:
+            self.cmb_readout_dim.setCurrentIndex(0)
+
     def autocalc_slicereadouttime(self):
         if not self.can_update_slicereadouttime or self.cmb_labelingtype.currentText() in ["Pseudo-continuous ASL",
                                                                                            "Continuous ASL"]:
@@ -431,8 +490,6 @@ class xASL_Parms(QMainWindow):
             else:
                 self.flag_impossible_m0 = True
                 bad_jsons.append(asl_sidecar)
-
-
 
             # LabelingType
             asl_sidecar_data["LabelingType"] = {"Pulsed ASL": "PASL",

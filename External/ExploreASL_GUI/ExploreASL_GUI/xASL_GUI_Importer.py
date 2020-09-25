@@ -134,6 +134,8 @@ class xASL_GUI_Importer(QMainWindow):
         self.hlay_rootdir = QHBoxLayout()
         self.le_rootdir = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
         self.le_rootdir.setPlaceholderText("Drag and drop your study's raw directory here")
+        self.le_rootdir.setToolTip("Specify the filepath to the raw folder of your study.\nFor example:\n"
+                                   "C:\\Users\\JohnSmith\\MyStudy\\raw")
         self.le_rootdir.setReadOnly(True)
         self.le_rootdir.textChanged.connect(self.set_rootdir_variable)
         self.le_rootdir.textChanged.connect(self.clear_widgets)
@@ -142,6 +144,8 @@ class xASL_GUI_Importer(QMainWindow):
         self.hlay_rootdir.addWidget(self.le_rootdir)
         self.hlay_rootdir.addWidget(self.btn_setrootdir)
         self.chk_uselegacy = QCheckBox(checked=True)
+        self.chk_uselegacy.setToolTip("Specify whether the legacy import should be used (CHECKED)\n"
+                                      "OR whether the newer BIDS import should be used (UNCHECKED)")
         self.formlay_rootdir.addRow("Raw Root Directory", self.hlay_rootdir)
         self.formlay_rootdir.addRow("Use Legacy Import", self.chk_uselegacy)
 
@@ -224,6 +228,7 @@ class xASL_GUI_Importer(QMainWindow):
                                           "FLAIR scan alias:\n(Optional)"],
                                          self.cmb_scanaliases_dict.keys()):
             cmb = QComboBox(self.grp_scanaliases)
+            cmb.setToolTip("Specify the folder name that corresponds to the indicated type of scan on the left")
             cmb.addItems(["Select an alias"])
             cmb.currentTextChanged.connect(self.update_scan_aliases)
             cmb.currentTextChanged.connect(self.is_ready_import)
@@ -460,11 +465,15 @@ class xASL_GUI_Importer(QMainWindow):
         for ii, key in enumerate(self.le_runaliases_dict):
             hlay = QHBoxLayout()
             cmb = QComboBox()
+            cmb.setToolTip("Indicates the relative positioning this run has relative to the others in the event that "
+                           "run order is important to the study")
             nums_to_add = [str(num) for num in range(1, len(self.le_runaliases_dict) + 1)]
             cmb.addItems(nums_to_add)
             cmb.setCurrentIndex(ii)
             cmb.currentIndexChanged.connect(self.is_ready_import)
             le = QLineEdit(placeholderText="(Optional) Specify the alias for this run")
+            le.setToolTip(f"Indicates the run name that the folder indicated on the left should take on after being\n"
+                          f"imported. If not specified, the name of this folder will be ASL_{ii}")
             hlay.addWidget(le)
             hlay.addWidget(cmb)
             self.formlay_runaliases.addRow(key, hlay)

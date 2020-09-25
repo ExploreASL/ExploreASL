@@ -4,6 +4,7 @@ from PySide2.QtGui import *
 
 from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
 from ExploreASL_GUI.xASL_GUI_HelperFuncs_StringOps import set_os_dependent_text
+from ExploreASL_GUI.xASL_GUI_AnimationClasses import xASL_ImagePlayer
 import os
 import shutil
 import re
@@ -41,6 +42,9 @@ class xASL_GUI_Dehybridizer(QWidget):
         # The setup
         self.SetupUI_UserSpecifyHybridDir()
         self.SetupUI_LeftandRightSections()
+        self.expanddirs_movieplayer = xASL_ImagePlayer(os.path.join(self.config["ProjectDir"],
+                                                                    "media",
+                                                                    "processing.gif"))
 
         self.chk_makebackup = QCheckBox(text="(STRONGLY RECOMMENDED) Make a backup of the source directory "
                                              "before folder restructuring?", checked=True)
@@ -61,31 +65,45 @@ class xASL_GUI_Dehybridizer(QWidget):
         self.hlay_rootdir = QHBoxLayout()
         self.le_rootdir = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
         self.le_rootdir.setPlaceholderText("Drag and drop your study's raw directory here")
+        self.le_rootdir.setToolTip("The path to the root directory that will have a backup made prior to an expansion\n"
+                                   "and which tells the program where to begin looking. Usually this is the /raw/\n"
+                                   "folder of your study")
         self.le_rootdir.setReadOnly(True)
         self.le_rootdir.textChanged.connect(self.can_specify_components)
         self.le_rootdir.textChanged.connect(self.can_dehybridize)
         self.btn_setrootdir = QPushButton("...", clicked=self.set_source_root_directory)
+        self.btn_setrootdir.setToolTip("Specify the path to the root directory through a file dialogue rather than by\n"
+                                       "drag and drop")
         self.hlay_rootdir.addWidget(self.le_rootdir)
         self.hlay_rootdir.addWidget(self.btn_setrootdir)
 
         # Second, specify the example directory
         self.hlay_exampledir = QHBoxLayout()
         self.le_exampledir = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
+        self.le_exampledir.setToolTip("Specify any directory that is an example of what must be expanded. This tells\n"
+                                      "the program the relative folder depth at which sibling folders can be found")
         self.le_exampledir.setPlaceholderText("Drag and drop any directory existent at target depth")
         self.le_exampledir.setReadOnly(True)
         self.le_exampledir.textChanged.connect(self.can_specify_components)
         self.le_exampledir.textChanged.connect(self.can_dehybridize)
         self.btn_exampledir = QPushButton("...", clicked=self.set_example_directory)
+        self.btn_exampledir.setToolTip("Specify the path to the example directory through a file dialogue rather than\n"
+                                       "by drag and drop")
         self.hlay_exampledir.addWidget(self.le_exampledir)
         self.hlay_exampledir.addWidget(self.btn_exampledir)
 
         # Third, specify the delimiter
-        self.le_delimiter = QLineEdit(placeholderText="Specify the delimiter, if any")
+        self.le_delimiter = QLineEdit(placeholderText="(OPTIONAL) Specify the delimiter, if any")
+        self.le_delimiter.setToolTip("Specify whether there is a character that separates two pieces of information\n"
+                                     "found at the indicated directory. For example subject_session is separated by\n"
+                                     "a '_' delimiter")
         self.le_delimiter.setClearButtonEnabled(True)
 
         # Fourth, specify the button to search fill the delimiter spaces
         self.btn_fill_spaces = QPushButton("Specify components at indicated directory level",
                                            clicked=self.specify_components)
+        self.btn_fill_spaces.setToolTip("Click to extract all relevant folder names at the indicated level,\n"
+                                        "separating names as appropriate if a delimiter was specified")
 
         # Add to layout
         self.formlay_basedirs.addRow("Source Directory", self.hlay_rootdir)
@@ -104,7 +122,8 @@ class xASL_GUI_Dehybridizer(QWidget):
         self.vlay_leftside = QVBoxLayout(self.grp_leftside)
         self.vlay_leftside.setContentsMargins(0, 0, 0, 0)
         self.hlay_leftautofill = QHBoxLayout()
-        self.le_leftautofill = QLineEdit(placeholderText="Fill all rows with this text")
+        self.le_leftautofill = QLineEdit(placeholderText="Fill all rows with this text", clearButtonEnabled=True)
+        self.le_leftautofill.setToolTip("Enter text in this field that you wish to be present in all rows.")
         self.btn_leftautofill = QPushButton("Fill", clicked=self.autofill_leftside)
         self.hlay_leftautofill.addWidget(self.le_leftautofill)
         self.hlay_leftautofill.addWidget(self.btn_leftautofill)
@@ -121,7 +140,8 @@ class xASL_GUI_Dehybridizer(QWidget):
         self.vlay_rightside = QVBoxLayout(self.grp_rightside)
         self.vlay_rightside.setContentsMargins(0, 0, 0, 0)
         self.hlay_rightautofill = QHBoxLayout()
-        self.le_rightautofill = QLineEdit(placeholderText="Fill all rows with this text")
+        self.le_rightautofill = QLineEdit(placeholderText="Fill all rows with this text", clearButtonEnabled=True)
+        self.le_rightautofill.setToolTip("Enter text in this field that you wish to be present in all rows.")
         self.btn_rightautofill = QPushButton("Fill", clicked=self.autofill_rightside)
         self.hlay_rightautofill.addWidget(self.le_rightautofill)
         self.hlay_rightautofill.addWidget(self.btn_rightautofill)
@@ -211,12 +231,15 @@ class xASL_GUI_Dehybridizer(QWidget):
         if side == "left":
             self.leftside_name2le[component] = QLineEdit(placeholderText="Specify parent directory name",
                                                          clearButtonEnabled=True)
+            self.leftside_name2le[component].setToolTip("Specify the name of the parent folder that the indicated\n "
+                                                        "child folder should be placed under")
             self.leftside_name2le[component].textChanged.connect(self.can_dehybridize)
-
             self.formlay_leftside.addRow(component, self.leftside_name2le[component])
         else:
             self.rightside_name2le[component] = QLineEdit(placeholderText="Specify parent directory name",
                                                           clearButtonEnabled=True)
+            self.rightside_name2le[component].setToolTip("Specify the name of the parent folder that the indicated\n "
+                                                         "child folder should be placed under")
             self.rightside_name2le[component].textChanged.connect(self.can_dehybridize)
             self.formlay_rightside.addRow(component, self.rightside_name2le[component])
 
@@ -278,9 +301,7 @@ class xASL_GUI_Dehybridizer(QWidget):
         if len(self.basenames) < 1:
             return
 
-        delimiter = self.le_delimiter.text()
-        left_bases = []
-        right_bases = []
+        delimiter, left_bases, right_bases = self.le_delimiter.text(), [], []
         try:
             if delimiter != "":
                 for basename in self.basenames:
@@ -321,14 +342,16 @@ class xASL_GUI_Dehybridizer(QWidget):
         if self.grp_leftside.isChecked():
             for left_component in sorted(left_bases):
                 self.add_components_to_layout(component=left_component, side="left")
-            print(f'Left components: {self.leftside_name2le}')
 
         # Then fill right bases
         if self.grp_rightside.isChecked():
             for right_component in sorted(right_bases):
                 self.add_components_to_layout(component=right_component, side="right")
+
+        if self.config["DeveloperMode"]:
+            print(f'Left components: {self.leftside_name2le}')
             print(f'Right components: {self.rightside_name2le}')
-        print('\n')
+
         # These will be important for accounting for the user switching directories between determining delimiters and
         # the main function
         self.documented_sourcedir = self.le_rootdir.text()
@@ -392,14 +415,20 @@ class xASL_GUI_Dehybridizer(QWidget):
             return False, basename2dehybridized
 
     def run_dehybridizer(self):
+        """
+        The main dehybridizer function
+        """
+        # The glob path is of the type raw/*/* etc. which defines how far down the tree it should located the folders
+        # that need expanding
         if self.glob_path == "":
             return
 
+        # Retrieve the mapping from the basename of a target path to the parent folder it should be placed under
         status, basename2dehybridized = self.get_basename2dehybridized()
         if not status:
             return
 
-        in_basename_but_not_dehybrid = set(self.basenames.keys()).difference(set(basename2dehybridized.keys()))
+        # Standard warning message first to prevent accidental runs
         choice = QMessageBox().information(self,
                                            "This is a folder restructuring operation",
                                            f"The structure within the following source directory is about to be "
@@ -410,6 +439,9 @@ class xASL_GUI_Dehybridizer(QWidget):
         if choice == QMessageBox.No:
             return
 
+        # Ascertain any directories that could not be processed when a delimiter is specified and warn the user with
+        # a final chance to back out
+        in_basename_but_not_dehybrid = set(self.basenames.keys()).difference(set(basename2dehybridized.keys()))
         if len(in_basename_but_not_dehybrid) > 0:
             names = '\n'.join(in_basename_but_not_dehybrid)
             choice = QMessageBox().warning(self,
@@ -424,14 +456,20 @@ class xASL_GUI_Dehybridizer(QWidget):
         # Disable the run button to present multi-inputs
         self.btn_run_dehybridizer.setEnabled(False)
 
-        # Get the targets again and split them up
+        # Get the targets again and split them up; make as many threads as there are paths until a certain threshold
+        # by which time the harddrive or SSD is fully saturated and no speedup will be gained through more threads
         paths = glob(self.glob_path)
-        if len(paths) < 4:
-            n_div = len(paths)
+        if len(paths) < 10:
+            n_threads = len(paths)
         else:
-            n_div = 4
-        self.paths = divide(n_div, paths)
+            n_threads = 10
+
+        # Store the divided paths and the translator under global variables for accessing by other functions
+        self.paths = divide(n_threads, paths)
         self.translator = basename2dehybridized
+
+        # Start the gif
+        self.begin_movie()
 
         # Make the backup. The finished signal of the backup worker will indicate for the main function to begin
         if self.chk_makebackup.isChecked():
@@ -453,6 +491,10 @@ class xASL_GUI_Dehybridizer(QWidget):
 
     @Slot()
     def expand_directories(self):
+        """
+        Slot; receives a signal EITHER from a Dehybridizer_CopyWorker that has completed the backup copying step OR
+        from the main widget in the event that the backup step was omitted
+        """
         workers = []
         for path_grp in self.paths:
             expander_worker = Dehybridizer_ExpandWorker(paths=path_grp, translator=self.translator)
@@ -465,9 +507,32 @@ class xASL_GUI_Dehybridizer(QWidget):
 
     @Slot()
     def re_enable_dehybridizer(self):
+        """
+        Slot; receives a signal from a Dehybridizer_ExpandWorker that has completed its job. Once all processing debt
+        is paid off, the run button is re-enabled and the gif ends
+        """
         self.global_debt += 1
         if self.global_debt == 0:
             self.btn_run_dehybridizer.setEnabled(True)
+            self.end_movie()
+
+    # Convenience function; adds a gif indicating processing below the textoutput and starts the gif
+    def begin_movie(self):
+        """
+        Convenience function; inserts a gif indicating the start of folder copying and/or folder expansion
+        """
+        self.expanddirs_movieplayer.movie.start()
+        self.expanddirs_movieplayer.setVisible(True)
+        self.mainlay.insertWidget(2, self.expanddirs_movieplayer)
+
+    # Convenience function; removes the gif below the textoutput and stops the gif
+    def end_movie(self):
+        """
+        Convenience function; removes the gif below the mainlayout and stops it
+        """
+        self.expanddirs_movieplayer.movie.stop()
+        self.expanddirs_movieplayer.setVisible(False)
+        self.mainlay.removeWidget(self.expanddirs_movieplayer)
 
 
 class Dehybridizer_CopyWorkerSignals(QObject):
