@@ -267,7 +267,7 @@ for iScanType=1:length(PreFixList)
                 end
             end
 
-            if bSkipWhenMissingScans && isempty(LoadFiles)
+            if isempty(LoadFiles)
                 fprintf('\n%s',['No ' PreFixList{iScanType} ' files found, skipping...']);
             else
 
