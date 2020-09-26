@@ -316,6 +316,7 @@ if bWhite
     end
     % convert mask to "color mask"
     CombinedMask = repmat(logical(CombinedMask),[1 1 3]);
+    ImOut = ImOut./max(ImOut(:)); % rescaling needed to set background to white instead of gray
     ImOut(~CombinedMask) = 1; % set background to white
 end
 
