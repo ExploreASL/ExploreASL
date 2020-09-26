@@ -1,7 +1,7 @@
 function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwrite, ResampleDir, SubRegExp)
 %xASL_im_SplitImageLabels Extract individual label/regions from image(s)
 %
-% FORMAT: xASL_im_SplitImageLabels(ImagePaths, Path2TSV, OutputFolder)
+% FORMAT: xASL_im_SplitImageLabels(ImagePaths, LabelTable[, OutputFolder, bOverwrite, ResampleDir, SubRegExp])
 %
 % INPUT:
 %   ImagePaths      - cell containing paths to label images (REQUIRED)
