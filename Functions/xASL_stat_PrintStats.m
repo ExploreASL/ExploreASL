@@ -10,7 +10,7 @@ function [x] = xASL_stat_PrintStats(x)
 %   x.S.SetsName        - names of the covariates/sets
 %   x.S.NamesROI        - names of the ROIs
 %   x.S.SUBJECTID       - names of the subjects (can differ from x.SUBJECTS
-%                         if not all subjects were included, or not all had data)
+%                         if not all subjects had data)
 %   x.S.SetsID          - values of the sets
 %   x.S.SetsOptions     - options for sets (if the sets are ordinal)
 %                         
@@ -21,7 +21,10 @@ function [x] = xASL_stat_PrintStats(x)
 %              data that were acquired per ROI, in a TSV file. It starts by
 %              printing covariates (called "Sets"). Rows will be
 %              subjects/sessions, columns will be the sets and
-%              ROI-statistics:
+%              ROI-statistics.
+%              Any missing data will be skipped (setting them to NaN should
+%              have happened in a previous function).
+%              This function performs the following steps:
 %              1) First remove previous TSV-file, if already existed
 %                 printing to a TSV file can be tricky if it is opened by
 %                 Excel. Make sure to close previous versions first,
@@ -36,9 +39,7 @@ function [x] = xASL_stat_PrintStats(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_stat_PrintStats(x);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
-
-
+% Copyright 2015-2020 ExploreASL
 
 
 
@@ -122,33 +123,40 @@ end
 for iSubject=1:x.nSubjects
     for iSession=1:nSessions
         iSubjectSession = (iSubject-1)* nSessions +iSession;
+        
+        % check first if this SubjectSession has data, otherwise skip &
+        % issue a warning
+        if length(x.S.SUBJECTID)<iSubjectSession || size(x.S.DAT, 1)<iSubjectSession
+            warning(['Missing data, skipping printing data for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}]);
+        else
+            
+            % print subject name
+            fprintf(x.S.FID,'%s\t', x.S.SUBJECTID{iSubjectSession, 1});
 
-        % print subject name
-        fprintf(x.S.FID,'%s\t', x.S.SUBJECTID{iSubjectSession, 1});
-
-        % print values for other covariates
-        % here we always have nSubjects*nSessions values
-        % so use "SubjectSession"
-        if isfield(x.S,'SetsID') 
-            for iPrint=1:size(x.S.SetsID,2)
-                String2Print = x.S.SetsID(iSubjectSession,iPrint);
-                if length(x.S.SetsOptions{iPrint})>1 % we need options
-                    if length(x.S.SetsOptions{iPrint}) >= length(unique(x.S.SetsID(:,iPrint)))-2 % allow for zeros & NaNs
-                        if isnumeric(String2Print) && (int16(String2Print) == String2Print) && String2Print>0 && x.S.Sets1_2Sample(iPrint)~=3
-                            String2Print = x.S.SetsOptions{iPrint}{String2Print};
+            % print values for other covariates
+            % here we always have nSubjects*nSessions values
+            % so use "SubjectSession"
+            if isfield(x.S,'SetsID')
+                for iPrint=1:size(x.S.SetsID,2)
+                    String2Print = x.S.SetsID(iSubjectSession,iPrint);
+                    if length(x.S.SetsOptions{iPrint})>1 % we need options
+                        if length(x.S.SetsOptions{iPrint}) >= length(unique(x.S.SetsID(:,iPrint)))-2 % allow for zeros & NaNs
+                            if isnumeric(String2Print) && (int16(String2Print) == String2Print) && String2Print>0 && x.S.Sets1_2Sample(iPrint)~=3
+                                String2Print = x.S.SetsOptions{iPrint}{String2Print};
+                            end
                         end
                     end
+                    fprintf(x.S.FID,'%s\t', xASL_num2str(String2Print));
                 end
-                fprintf(x.S.FID,'%s\t', xASL_num2str(String2Print));
             end
-        end
 
-        % This part is different for volume or TT, since there will
-        % be only 1 value per subject (this will be done by the above in which nSessions is set to 1
-        for iPrint=1:size(x.S.DAT,2) % print actual data
-            fprintf(x.S.FID,'%s\t', xASL_num2str(x.S.DAT(iSubjectSession, iPrint)));
+            % This part is different for volume or TT, since there will
+            % be only 1 value per subject (this will be done by the above in which nSessions is set to 1
+            for iPrint=1:size(x.S.DAT,2) % print actual data
+                fprintf(x.S.FID,'%s\t', xASL_num2str(x.S.DAT(iSubjectSession, iPrint)));
+            end
+            fprintf(x.S.FID,'\n');
         end
-        fprintf(x.S.FID,'\n');
     end
 end
 
