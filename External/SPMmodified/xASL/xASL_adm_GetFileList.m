@@ -104,9 +104,9 @@ function filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequire
         mincount=min(nRequired);
         maxcount=max(nRequired);
         if n<mincount
-            error('xASL_adm_GetFileList:missingfiles','Expected at least %i files, but found %i\nUsing pattern [%s] in [%s]',mincount,n,strRegEx,strDirectory);
+            warning('xASL_adm_GetFileList:missingfiles','Expected at least %i files, but found %i\nUsing pattern [%s] in [%s]',mincount,n,strRegEx,strDirectory);
         elseif n>maxcount
-            error('xASL_adm_GetFileList:toomanyfiles','Expected at most %i files, but found %i\nUsing pattern [%s] in [%s]',maxcount,n,strRegEx,strDirectory);
+            warning('xASL_adm_GetFileList:toomanyfiles','Expected at most %i files, but found %i\nUsing pattern [%s] in [%s]',maxcount,n,strRegEx,strDirectory);
         end
     end
 end
