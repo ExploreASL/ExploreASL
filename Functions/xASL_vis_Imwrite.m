@@ -32,23 +32,28 @@ function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
 % 2015-01-01 HJ
 
 % Admin
-    if nargin < 2
-		error('xASL_vis_Imwrite: Needs at least two input parameters.');
+	if nargin < 2
+        error('Needs at least two input parameters');
 	end
 	
 	% Only work for 2D files or files with XxYx3, otherwise reduce to 2D and issue a warning
 	if ndims(ImIn) > 3
-		warning('xASL_vis_Imwrite: The number of dimension must be <=3. Ignoring all above 3D.');
-		ImIn = ImIn(:,:,:,1);
-	end
+        warning('The number of dimension must be <=3. Ignoring all above 3D');
+        ImIn = ImIn(:,:,:,1);
+    end
 	
-	if ndims(ImIn) < 2
-		error('xASL_vis_Imwrite: The number of dimension must be 2 or 3.');
-	end
+    if ndims(ImIn) < 2
+		error('The number of dimension must be 2 or 3');
+    end
 	
-	if (ndims(ImIn) == 3) && (size(ImIn,3)~=3)
-		warning('xASL_vis_Imwrite: The 3rd dimension can only have 1 or 3 components. Taking the first 2D image only.');
+    if ndims(ImIn) == 3 && size(ImIn,3)~=3
+		warning('The 3rd dimension can only have 1 or 3 components. Taking the first 2D image only');
 		ImIn = ImIn(:,:,1);
+    end
+    
+    if sum(isfinite(ImIn(:)))==0
+        warning('Empty image, skipping...');
+        return;
     end
     
     % manage extension, force jpg
