@@ -229,6 +229,7 @@ if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status 
         x.mutex.DelState(StateName{iState+1});
 	else
 		if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);end
+        x.mutex.AddState(StateName{iState});        
     end
 
 else
@@ -250,6 +251,7 @@ iState = 3;
 
 if xASL_exist(x.P.Path_WMH_SEGM,'file') || ~xASL_exist(x.P.Path_FLAIR,'file')
     if bO; fprintf('%s\n','WMH segmentation already existing, or FLAIR.nii missing, skipping FLAIR biasfield correction'); end % We skip now
+    x.mutex.AddState(StateName{iState});    
 else
     if ~x.mutex.HasState(StateName{iState})
 		if xASL_exist(x.P.Path_FLAIR,'file')
@@ -264,6 +266,7 @@ else
 			x.mutex.DelState(StateName{iState+1});
 		else
 			if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);end
+            x.mutex.AddState(StateName{iState});
 		end
 	else
 		if xASL_exist(x.P.Path_FLAIR,'file')
@@ -290,6 +293,7 @@ if ~x.mutex.HasState(StateName{iState})  % tracks progress through lock/*.status
         x.mutex.DelState(StateName{iState+1});
 
     elseif bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);
+        x.mutex.AddState(StateName{iState});
     end
 else
 	if xASL_exist(x.P.Path_FLAIR,'file')
@@ -319,6 +323,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.bLesionFilling  % tracks progress t
         x.mutex.DelState(StateName{iState+1});
 	else
 		if bO; fprintf('%s\n','050_LesionFilling: No FLAIR data found, skipping...'); end
+        x.mutex.AddState(StateName{iState});
     end
 
 else
@@ -396,10 +401,10 @@ if ~x.mutex.HasState(StateName{iState})
             xASL_wrp_CleanUpWMH_SEGM(x);
         end
 
-        x.mutex.AddState(StateName{iState});
-        xASL_adm_CompareDataSets([], [], x); % unit testing
         x.mutex.DelState(StateName{iState+1});
     end
+    x.mutex.AddState(StateName{iState});
+    xASL_adm_CompareDataSets([], [], x); % unit testing    
 else
 	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
