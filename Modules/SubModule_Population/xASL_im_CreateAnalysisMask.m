@@ -65,7 +65,7 @@ if x.nSubjectsSessions<16
     x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.WBmask);
     x.S.VBAmask = x.S.MaskSusceptibility;
     bSkipStandard = 1;
-elseif ~xASL_exist(PathSusceptibilityMask, 'file')
+elseif ~xASL_exist(PathSusceptibilityMask, 'file') && ~strcmpi(x.Sequence,'3d_spiral')
     warning('Missing susceptibility maps, skipping...');
     bSkipStandard = 1;
 end
@@ -93,12 +93,10 @@ if ~bSkipStandard
 
 	GMmask = GMmask>0.5;
 	WMmask = WMmask>0.5;
-
-	%% B) Create, combine & save vascula, susceptibity & FoV masks
+	
+	%% B) Create, combine & save vascular, susceptibity & FoV masks
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
-	MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);
-
-
+	
 	DoSusceptibility = true;
 	if ~isfield(x,'Sequence')
 		error('x.Sequence parameter missing!');
@@ -113,7 +111,9 @@ if ~bSkipStandard
 
 	MaskFoV = xASL_io_Nifti2Im(PathFoV)>=Threshold;
 	if DoSusceptibility
-		TemplateMask = xASL_io_Nifti2Im(Path_Template)~=1; % MaskSusceptibility<0.85 &
+        MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);        
+
+        TemplateMask = xASL_io_Nifti2Im(Path_Template)~=1; % MaskSusceptibility<0.85 &
 		TemplateMask(:,:,1:10) = 0;
 		TemplateMask = TemplateMask & MaskSusceptibility<0.8;
 		ThrValues = MaskSusceptibility(TemplateMask);
@@ -131,10 +131,9 @@ if ~bSkipStandard
 		MaskSusceptibility = MaskFoV; % if we don't have susceptibility artifacts
 	end
 
-
 	% Save them
-	xASL_io_SaveNifti(PathVascularMask, MaskVascularPath, MaskVascular, 8, true);
-	xASL_io_SaveNifti(PathSusceptibilityMask, MaskSusceptibilityPath, MaskSusceptibility, 8, true);
+	xASL_io_SaveNifti(PathFoV, MaskVascularPath, MaskVascular, 8, true);
+	xASL_io_SaveNifti(PathFoV, MaskSusceptibilityPath, MaskSusceptibility, 8, true);
 	% this is used in stats:
 	x.S.MaskSusceptibility = xASL_im_IM2Column(MaskSusceptibility,x.WBmask);
 end
@@ -202,7 +201,7 @@ end
 %% C) Create & save VBA mask
 MaskAnalysis = MaskSusceptibility;
 x.S.VBAmask = MaskAnalysis & GMmask; % this should be an image matrix, not a column
-xASL_io_SaveNifti(PathSusceptibilityMask, VBA_maskPath, x.S.VBAmask, 8, true);
+xASL_io_SaveNifti(PathFoV, VBA_maskPath, x.S.VBAmask, 8, true);
 
 %% D) Visualization
 % 0) Admin
@@ -229,12 +228,14 @@ ImOut{1} = xASL_vis_CreateVisualFig(x, {PathT1 FoVim}, [], IntScale, [], ColorMa
 % ImOut{2} = xASL_vis_CreateVisualFig(x, {PathT1 ImVascular}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
 
 % 2) Susceptibility
-ImSusceptibility = 1-xASL_io_Nifti2Im(PathSusceptibilityMask);
 if DoSusceptibility
+    ImSusceptibility = 1-xASL_io_Nifti2Im(PathSusceptibilityMask);
     % ImSusceptibility(ImSusceptibility>0.5) = 0.5; % ThresholdSuscept
     ImSusceptibility(ImSusceptibility<(1-ThresholdSuscept)) = 1-ThresholdSuscept;
     ImSusceptibility = ImSusceptibility-(1-ThresholdSuscept);
     ImSusceptibility(~TemplateMask) = 0;
+else
+    ImSusceptibility = MaskSusceptibility;
 end
 
 ImOut{2} = xASL_vis_CreateVisualFig(x, {PathT1 ImSusceptibility}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
