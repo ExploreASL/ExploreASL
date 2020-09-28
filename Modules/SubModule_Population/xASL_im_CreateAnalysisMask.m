@@ -74,16 +74,16 @@ if x.nSubjectsSessions<16
     x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.WBmask);
     x.S.VBAmask = x.S.MaskSusceptibility;
     bSkipStandard = 1;
-elseif ~xASL_exist(PathSusceptibilityMask, 'file') && ~strcmpi(x.Sequence,'3d_spiral')
+elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Sequence,'3d_spiral')
     warning('Missing susceptibility maps, skipping...');
     bSkipStandard = 1;
 end
 
-if ~xASL_exist(PathpGM, 'file')
+if isempty(PathpGM)
     if ~bSkipStandard; warning('Missing pGM image, using MNI version'); end
     PathpGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii');
 end
-if ~xASL_exist(PathpWM, 'file')
+if isempty(PathpWM)
     if ~bSkipStandard; warning('Missing pWM image, using MNI version'); end
     PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');
 end
@@ -92,8 +92,8 @@ if ~bSkipStandard
 	%% Creation GM, WM & WholeBrain masks by p>0.5
 	GMmask = xASL_io_Nifti2Im(PathpGM)>0.5;
 	WMmask = xASL_io_Nifti2Im(PathpWM)>0.5;
-
-	if xASL_exist(PathpCSF,'file')
+	
+	if ~isempty(PathpCSF)
 		pCSF = xASL_io_Nifti2Im(PathpCSF)>0.5;
 		WholeBrain = (GMmask+WMmask+pCSF)>0.5;
 	else
@@ -197,7 +197,7 @@ if x.bNativeSpaceAnalysis
 		end
 	end
 	for kk = 1:length(listMasks)
-		if exist(listMasks{kk},'file')
+		if xASL_exist(listMasks{kk},'file')
 			xASL_adm_GzipNifti(listMasks{kk});
 		end
 	end
