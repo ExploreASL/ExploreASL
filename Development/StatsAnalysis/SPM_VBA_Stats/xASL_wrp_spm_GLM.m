@@ -89,7 +89,7 @@ else % do memory mapping first
                 % don't smooth, image is already smooth
                 bSmooth     = 0;
             elseif exist('SeqID','var') % multi-sequence study that has a "sequence" variable
-                   if  strcmp(x.S.SetsOptions{SeqID}{x.S.SetsID(iSS,SeqID)},'3D spiral')
+                   if  strcmp(x.S.SetsOptions{SeqID}{x.S.SetsID(iSS,SeqID)},'3D_spiral')
                        % don't smooth, image is already smooth
                        bSmooth  = 0;
                    else
