@@ -34,7 +34,7 @@ function xASL_wrp_ResampleASL(x)
 
 %% ------------------------------------------------------------------------------------------
 %% 0) Administration
-if strcmp(x.M0,'no_background_suppression')
+if strcmpi(x.M0,'no_background_suppression')
     x.M0 = 'UseControlAsM0'; % backward compatibility
 end
 
@@ -151,11 +151,11 @@ if  nVolumes>1 % this is when a mean control image can be created
     % Visual check of M0-pGM registration for masking
     xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_mean_control x.P.Pop_Path_rc1T1}, x.D.M0regASLdir,[0.5 0.2]);
 
-    if strcmp(x.M0,'UseControlAsM0') && nVolumes==1
+    if strcmpi(x.M0,'UseControlAsM0') && nVolumes==1
         warning('Couldnt create mean control image to be used as M0, timeseries missing');
     end
 
-    if  strcmp(x.M0,'UseControlAsM0')
+    if  strcmpi(x.M0,'UseControlAsM0')
         % if there is no background suppression, we use the mean control
         % image as M0 image, which has perfect registration
 

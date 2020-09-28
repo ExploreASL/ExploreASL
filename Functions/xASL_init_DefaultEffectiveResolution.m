@@ -11,7 +11,7 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 % OUTPUT:
 %   EffectiveResolution     - mm FWHM of estimated Gaussian kernel
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This ExploreASL module provides an educated guess on 
+% DESCRIPTION: This ExploreASL module provides an educated guess on
 % the effective spatial resolution of ASL. This may depend on the
 % combination of acquisition PSF, reconstruction filter, head motion.
 % Note that the derived/processed images may have a lower effective
@@ -24,7 +24,7 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 % 1) Educated-guess FWHM
 % 2) Attempt accounting for in-plane interpolation in reconstruction
 % 3) Calculate and report effective spatial resolution
-% 
+%
 % EXAMPLE: EffectiveResolution = xASL_init_DefaultEffectiveResolution('/MyStudy/sub-001/ASL_1/ASL4D.nii.gz, x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES: Petr, 2018 MAGMA; Vidorreta 2013 Neuroimage
@@ -48,7 +48,7 @@ switch lower(x.Sequence)
         % for 2D EPI the PSF is effectively negligible
         Estimated_FWHM = [1 1 1];
     case '3d_spiral_wip'
-        % educated guess: 3D spiral acquision has large through-plane PSF 
+        % educated guess: 3D spiral acquision has large through-plane PSF
         Estimated_FWHM = [1.1158 1.1289 1.9525]; % average between 3D_spiral & 3D_GRASE
     case '3d_spiral'
         % estimation by Petr, MAGMA
@@ -71,10 +71,10 @@ end
 
 %% ----------------------------------------------------------------------------------------
 %% 2) Attempt accounting for in-plane interpolation in reconstruction
-if ~isempty(regexp(x.Sequence,'3D_spiral')) && NativeResolution(1)<4
+if ~isempty(regexpi(x.Sequence,'3D_spiral')) && NativeResolution(1)<4
         NativeResolution(1:2) = max(NativeResolution(1:2),[3.75 3.75]);
         % to account for in-plane interpolation
-elseif ~isempty(regexp(x.Sequence,'3D_GRASE')) && NativeResolution(1)<3
+elseif ~isempty(regexpi(x.Sequence,'3D_GRASE')) && NativeResolution(1)<3
         NativeResolution(1:2) = max(NativeResolution(1:2),[3.8 3.8]);
 end
 

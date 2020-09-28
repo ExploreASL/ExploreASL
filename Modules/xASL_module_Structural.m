@@ -63,7 +63,7 @@ if ~xASL_exist(x.P.Path_T1,'file') && ~xASL_exist(x.P.Path_T1_ORI,'file')
     else
         warning([x.SUBJECTDIR ' didnt contain a T1w structural image, skipping...']);
         result = true;
-		
+
 		% Unlocks the patient as this wouldn't be done in the iteration for the last subject
 		x.mutex.Unlock();
         return;
@@ -98,25 +98,25 @@ elseif WMHexist && ~bO
     x.WMHsegmAlg = 'LPA';
 elseif ~isfield(x,'WMHsegmAlg') || isempty(x.WMHsegmAlg)
     x.WMHsegmAlg = 'LPA'; % default WMH segmentation algorithm, seems more robust & faster than LGA
-elseif strcmp(x.WMHsegmAlg, 'LGA')
+elseif strcmpi(x.WMHsegmAlg, 'LGA')
     % keep LGA
 elseif xASL_exist(x.P.Path_FLAIR, 'file')
     warning('Unknown WMH segmentation option, selecting LPA');
     x.WMHsegmAlg = 'LPA';
 end
 
-if xASL_exist(rWMHPathLPA, 'file') && strcmp(x.WMHsegmAlg, 'LGA')
+if xASL_exist(rWMHPathLPA, 'file') && strcmpi(x.WMHsegmAlg, 'LGA')
     warning('LST LPA output detected from previous run, forcing LST LPA segmentation');
     x.WMHsegmAlg = 'LPA';
-elseif xASL_exist(rWMHPathLGA, 'file') && strcmp(x.WMHsegmAlg, 'LPA')
+elseif xASL_exist(rWMHPathLGA, 'file') && strcmpi(x.WMHsegmAlg, 'LPA')
     warning('LST LGA output detected from previous run, forcing LST LGA segmentation');
     x.WMHsegmAlg = 'LGA';
 end
 
-switch x.WMHsegmAlg
-    case 'LPA'
+switch lower(x.WMHsegmAlg)
+    case 'lpa'
         rWMHPath = rWMHPathLPA;
-    case 'LGA'
+    case 'lga'
         rWMHPath = rWMHPathLGA;
 end
 
@@ -176,7 +176,7 @@ if ~x.mutex.HasState(StateName{1})
     % are dependent of the structural module for segmentation/registration)
     % don't remove any previous WMH_SEGM
     xASL_adm_CleanUpBeforeRerun(x.D.ROOT, [1 2], false, false, x.P.SubjectID);
-    
+
     if xASL_exist(x.P.Path_T1, 'file') % Fix multiple T1w iterations
         IM = xASL_io_Nifti2Im(x.P.Path_T1);
         if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
@@ -394,7 +394,7 @@ if ~x.mutex.HasState(StateName{iState})
     if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 
         UniqueN = unique(xASL_io_Nifti2Im(x.P.Path_WMH_SEGM));
-        
+
         if length(UniqueN)==2 && UniqueN(1)==0 && UniqueN(2)==1
             warning('Skipping WMH cleanup, because WMH_SEGM seems imported as binary mask');
         else

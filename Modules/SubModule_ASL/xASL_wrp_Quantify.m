@@ -11,7 +11,7 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 %   SliceGradientPath   - path to Slice gradient NIfTI (OPTIONAL, default = x.P.Pop_Path_SliceGradient_extrapolated)
 %
 % OUTPUT: n/a
-% OUTPUT FILES: NIfTI containing quantified CBF map in native or standard space (depending on input NIfTI), 
+% OUTPUT FILES: NIfTI containing quantified CBF map in native or standard space (depending on input NIfTI),
 % or other derivatives that need a quantification, e.g. FEAST
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -122,11 +122,11 @@ else
 
     fprintf('%s\n','M0 scan used');
     M0_im = xASL_io_Nifti2Im(M0Path);
-    
+
     if xASL_stat_SumNan(M0_im(:))==0
         warning(['Empty M0:' M0Path]);
     end
-    
+
     M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
 
 % %     % Philips dcm2niiX scaling fix:
@@ -163,7 +163,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
-if strcmp(x.M0,'separate_scan')
+if strcmpi(x.M0,'separate_scan')
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
         % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
         if  ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.05)
@@ -171,7 +171,7 @@ if strcmp(x.M0,'separate_scan')
             warning('TE of ASL and M0 were unequal! Check geometric distortion');
         end
 
-        if strcmp(x.Sequence,'3D_spiral')
+        if strcmpi(x.Sequence,'3D_spiral')
            CorrFactor = x.Q.T2;
            CorrName = 'T2';
         else % assume T2* signal decay 2D_EPI or 3D GRASE
@@ -199,7 +199,7 @@ else
 
     %% ------------------------------------------------------------------------------------------------
     %% 5    Load SliceGradient
-    if  strcmp(x.readout_dim,'2D')
+    if  strcmpi(x.readout_dim,'2D')
         SliceGradient = xASL_io_Nifti2Im(SliceGradientPath);
     else
         SliceGradient = [];
@@ -234,9 +234,9 @@ else
 
     if ~isfield(x.Q,'LabelingType')
            error('Unknown LabelingType, needed for quantification');
-    elseif isempty(regexp(x.Q.LabelingType,'^(PC|P|C)ASL$'))
+    elseif isempty(regexpi(x.Q.LabelingType,'^(PC|P|C)ASL$'))
            error('x.Q.LabelingType was invalid, should be PASL|CASL|PCASL');
-    elseif strcmp(x.Q.LabelingType,'PCASL')
+    elseif strcmpi(x.Q.LabelingType,'PCASL')
            x.Q.LabelingType = 'CASL';
     end
 
@@ -249,10 +249,10 @@ else
     %% 7    Labeling efficiency
     if ~isfield(x.Q,'LabelingEfficiency') || isempty(x.Q.LabelingEfficiency)
         if ~isfield(x.Q,'LabelingEfficiency')
-            switch x.Q.LabelingType
-                case 'PASL'
+            switch lower(x.Q.LabelingType)
+                case 'pasl'
                     x.Q.LabelingEfficiency = 0.98; % (concensus paper, Wong, MRM 1998)
-                case 'CASL'
+                case 'casl'
                     x.Q.LabelingEfficiency = 0.85; % (concensus paper, Dai, MRM 2008)
             end
         end
@@ -273,7 +273,7 @@ else
     x.Q.LabEff_Orig = x.Q.LabelingEfficiency;
     x.Q.LabelingEfficiency = x.Q.LabelingEfficiency*x.Q.LabEff_Bsup;
 end
-    
+
 %% ------------------------------------------------------------------------------------------------
 %% 8    Perform Quantification
 [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x);
@@ -286,7 +286,7 @@ if x.ApplyQuantification(5)==0
         fprintf('%s\n',['mean whole image CBF normalized from ' xASL_num2str(MeanCBF) ' to 10 mL/100g/min']);
     end
 end
-    
+
 
 
 

@@ -26,11 +26,11 @@ function [x] = xASL_adm_DefineASLSequence(x)
 
 % Obtain ASL sequence
 if ~isfield(x,'Sequence') && isfield(x,'readout_dim')
-    if strcmp(x.readout_dim,'2D')
+    if strcmpi(x.readout_dim,'2D')
        x.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of vendor
-    elseif strcmp(x.readout_dim,'3D') && ( ~isempty(regexp(x.Vendor,'Philips')) || ~isempty(regexp(x.Vendor,'Siemens')) )
+    elseif strcmpi(x.readout_dim,'3D') && ( ~isempty(regexpi(x.Vendor,'Philips')) || ~isempty(regexpi(x.Vendor,'Siemens')) )
            x.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
-    elseif strcmp(x.readout_dim,'3D') && ~isempty(regexp(x.Vendor,'GE'))
+    elseif strcmpi(x.readout_dim,'3D') && ~isempty(regexpi(x.Vendor,'GE'))
            x.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
     end
 elseif ~isfield(x,'Sequence') && ~isfield(x,'readout_dim')
@@ -48,4 +48,3 @@ end
 
 
 end
-

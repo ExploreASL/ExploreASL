@@ -229,8 +229,8 @@ for ii = 1:length(fList)
 		x = xASL_import_json(PathJSON);
 		xASL_delete([dataParPath,'.m']);
 	end
-	
-	% Fill in the generic text for the JSON 
+
+	% Fill in the generic text for the JSON
 	descriptionJSON{ii}.Name = fList{ii};
 	descriptionJSON{ii}.BIDSVersion = '1.5.0';
 	descriptionJSON{ii}.DatasetType = 'raw';
@@ -242,7 +242,7 @@ for ii = 1:length(fList)
 	descriptionJSON{ii}.EthicsApprovals = {'RandomText'};
 	descriptionJSON{ii}.ReferencesAndLinks = {'RandomText'};
 	descriptionJSON{ii}.DatasetDOI = 'RandomText';
-	
+
 	% Save the x-structure for the study
 	%importStr{ii}.x = x;
 	importStr{ii}.x = xASL_bids_parms2BIDS(x, [], 1, []);
@@ -276,7 +276,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.TotalReadoutTime = 0.0104;
 			importStr{ii}.par.BackgroundSuppressionPulseTime = [0.85 0.1];
 			importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
-			
+
 		case 'Siemens_PASL_multiTI_GIFMI'
 			for cc = 1:10,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
 			importStr{ii}.par.LabelingType = 'PASL';
@@ -285,14 +285,14 @@ for ii = 1:length(fList)
 			importStr{ii}.par.BolusCutOffDelayTime = 0;
 			importStr{ii}.par.BackgroundSuppressionPulseTime = [0.85 0.1];
 			importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
-				
+
 		case 'Philips_PCASL_3DGRASE_Divers'
 			importStr{ii}.par.Units = 'mL/100g/min';
 			%importStr{ii}.par.ASLContext = cbfStr;
 			importStr{ii}.par.ASLContext = sprintf('%s\n',cbfStr);
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.NumberSegments = 5;
-			
+
 		case 'Siemens_PASL_singleTI_GIFMI'
 			importStr{ii}.par.ASLContext = sprintf('%s\n',m0scanStr);
 			for cc = 1:45,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
@@ -300,7 +300,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 0.9;
 			importStr{ii}.par.BolusCutOffTechnique = 'Q2TIPS';
-			
+
 		case 'Siemens_PCASL_2DEPI_Harmy_recombine_ASLscans'
 			%importStr{ii}.par.ASLContext = '(Label+Control)*23';
 			for cc = 1:46, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
@@ -363,7 +363,7 @@ for ii = 1:length(fList)
 			%importStr{ii}.par.ASLContext = '(Label+Control)*75';
 			for cc = 1:75, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case {'Philips_PCASL_2DEPI_intera_FIND_LL' 'Philips_PCASL_2DEPI_intera_FIND_multiPLD' 'Philips_PCASL_2DEPI_intera_FIND_QUASAR'}
 			importStr{ii}.par.LabelingType = 'PCASL';
 
@@ -414,12 +414,12 @@ for ii = 1:length(fList)
 			importStr{ii}.par.Units = 'mL/100g/min';
 			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',cbfStr,m0scanStr);
 			importStr{ii}.par.LabelingType = 'PCASL';
-			
+
 		case 'GE_PCASL_3Dspiral_Product_GE'
 			importStr{ii}.par.Units = 'mL/100g/min';
 			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',m0scanStr,cbfStr);
 			importStr{ii}.par.LabelingType = 'PCASL';
-		
+
 		case {'GE_PCASL_3Dspiral_WIP_Oslo_AntiPsychotics_Old',...
 			  'Philips_PCASL_3DGRASE_R5.4_PlusTopUp_TestKoen_FatSat_noDataPar'}
 			importStr{ii}.par.Units = 'mL/100g/min';
@@ -443,17 +443,17 @@ for ii = 1:length(fList)
 			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',m0scanStr,deltamStr);
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [4 4 8];
-			
+
 		case 'Philips_PCASL_2DEPI_UCL'
 			for cc = 1:35, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',controlStr,labelStr)];end
-			importStr{ii}.par.LabelingType = 'PCASL';	
+			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [3.75 3.75 5];
-		
+
 		case 'Siemens_PCASL_3DGRASE_UCL'
 			for cc = 1:8, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',controlStr,labelStr)];end
-			importStr{ii}.par.LabelingType = 'PCASL';	
+			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [3.4 3.4 4];
-			
+
 		case {'Philips_PCASL_2DEPI_Frontier','Philips_PCASL_2DEPI_Chili'}
 			%importStr{ii}.par.ASLContext = '(Control+Label)*30';
 			for cc = 1:30, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',controlStr,labelStr)];end
@@ -486,16 +486,16 @@ for ii = 1:length(fList)
 	end
 
 	% Process all the data and automatically fill in the missing parameters
-	if strcmp(importStr{ii}.x.MRAcquisitionType,'2D')
+	if strcmpi(importStr{ii}.x.MRAcquisitionType,'2D')
 		importStr{ii}.par.PulseSequenceType = '2D_EPI';
 	else
-		if strcmp(importStr{ii}.x.Manufacturer,'GE') || strcmp(importStr{ii}.x.Manufacturer,'GE_WIP') || strcmp(importStr{ii}.x.Manufacturer,'GE_product')
+		if strcmpi(importStr{ii}.x.Manufacturer,'GE') || strcmpi(importStr{ii}.x.Manufacturer,'GE_WIP') || strcmpi(importStr{ii}.x.Manufacturer,'GE_product')
 			importStr{ii}.par.PulseSequenceType = '3D_spiral';
 		else
 			importStr{ii}.par.PulseSequenceType = '3D_GRASE';
 		end
 	end
-	
+
 	%if ~isfield(importStr{ii}.par,'TotalAcquiredVolumes') && isfield(importStr{ii}.x,'NumberOfAverages') && (importStr{ii}.x.NumberOfAverages > 1)
 	%	importStr{ii}.par.TotalAcquiredVolumes = importStr{ii}.x.NumberOfAverages;
 	%end
@@ -503,9 +503,9 @@ for ii = 1:length(fList)
 	if ~isfield(importStr{ii}.par,'ReadoutSegments') && isfield(importStr{ii}.x,'NumberSegments')
 		importStr{ii}.par.NumberSegments = importStr{ii}.x.NumberSegments;
 	end
-	
+
 	% Labeling delays and durations
-	if strcmp(importStr{ii}.par.LabelingType,'PASL')
+	if strcmpi(importStr{ii}.par.LabelingType,'PASL')
 		%importStr{ii}.par.LabelingDuration = 0;% importStr{ii}.x.LabelingDuration           = 1.800;  % for PASL this is TI1
 		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
 		if importStr{ii}.par.BolusCutOffFlag
@@ -567,11 +567,11 @@ for ii = 1:length(fList)
 	switch (fList{ii})
 		case 'Siemens_PASL_multiTI_GIFMI'
 			importStr{ii}.par.PostLabelingDelay = [300 300 600 600 900 900 1200 1200 1500 1500 1800 1800 2100 2100 2400 2400 2700 2700 3000 3000]/1000;
-			
+
 		case 'Siemens_PASL_singleTI_GIFMI'
 			importStr{ii}.par.VascularCrushing = true;
 			importStr{ii}.par.VascularCrushingVenc = 100;
-			
+
 		case 'Siemens_PCASL_3DGRASE_failed_APGEM2'
 			importStr{ii}.par.LabelingDuration = [0 repmat(1800,[1,24])]/1000;
 			importStr{ii}.par.VascularCrushing = true;
@@ -624,7 +624,7 @@ for ii = 1:length(fList)
 	if ~exist(fullfile(finalPath,importStr{ii}.dirName),'dir')
 		mkdir(fullfile(finalPath,importStr{ii}.dirName));
 	end
-	
+
 	spm_jsonwrite(fullfile(finalPath,importStr{ii}.dirName,'dataset_description.json'),descriptionJSON{ii});
 
 	% Go through all subjects
@@ -737,13 +737,13 @@ for ii = 1:length(fList)
 					imParms = [];
 				end
 				imNii = xASL_io_Nifti2Im(fullfile(inSesPath,[aslLabel '.nii']));
-				
+
 				rescaleParms = [];
-				ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'...        
+				ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'...
 					'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
 				JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'...
 					'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
-				
+
 				for pp = 1:length(ParmsFields)
 					if isfield(jsonDicom,JSONFields{pp})
 						rescaleParms.(ParmsFields{pp}) = jsonDicom.(JSONFields{pp});
@@ -759,18 +759,18 @@ for ii = 1:length(fList)
 				else
 					scaleFactor = 0;
 				end
-				
+
 				if scaleFactor
 					imNii = imNii .* scaleFactor;
 					xASL_io_SaveNifti(fullfile(inSesPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],imNii,[],1,[]);
 				elseif size(imNii,4) == 1
-					% The fourth dimension is 1, so we have to write the file again, to make sure the 
+					% The fourth dimension is 1, so we have to write the file again, to make sure the
 					xASL_io_SaveNifti(fullfile(inSesPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],imNii,[],1,[]);
 				else
 					% Copy the ASL
 					xASL_Copy(fullfile(inSesPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz']);
 				end
-							
+
 
 				% Copy the basic ones
 				jsonLocal = importStr{ii}.par;
@@ -793,7 +793,7 @@ for ii = 1:length(fList)
 						jsonLocal.(fn{1}) = jsonDicom.(fn{1});
 					end
 				end
-				
+
 				% Check if BolusDuration field is present and not in conflict with the BolusCutoffDelayTime
 				if isfield(jsonDicom,'BolusDuration')
 					if ~isfield(importStr{ii}.par,'BolusCutOffTimingSequence')
@@ -831,7 +831,7 @@ for ii = 1:length(fList)
 						jsonLocal = rmfield(jsonLocal,'SliceTiming');
 					end
 				end
-				
+
 				if isfield(jsonLocal,'EffectiveEchoSpacing')
 					if jsonLocal.EffectiveEchoSpacing == 0
 						jsonLocal = rmfield(jsonLocal,'EffectiveEchoSpacing');
@@ -839,7 +839,7 @@ for ii = 1:length(fList)
 						jsonLocal.EffectiveEchoSpacing = abs(jsonLocal.EffectiveEchoSpacing);
 					end
 				end
-				
+
 				if isfield(jsonLocal,'TotalReadoutTime')
 					if jsonLocal.TotalReadoutTime == 0
 						jsonLocal = rmfield(jsonLocal,'TotalReadoutTime');
@@ -847,17 +847,17 @@ for ii = 1:length(fList)
 						jsonLocal.TotalReadoutTime = abs(jsonLocal.TotalReadoutTime);
 					end
 				end
-				
+
 				if isfield(importStr{ii}.x,'RepetitionTime')
 					jsonLocal.RepetitionTime = importStr{ii}.x.RepetitionTime;
 				end
-				
+
 				% Check if TR is a vector - replace by the maximum then
 				if length(jsonLocal.RepetitionTime) > 1
 					jsonLocal.RepetitionTime = max(jsonLocal.RepetitionTime);
 					warning('TR was a vector. Taking the maximum only.');
 				end
-									
+
 				% Fill in the number of averages
 				%ppStr = importStr{ii}.dirName;
 				%if isfield(importStr{ii}.par,'TotalAcquiredVolumes')
@@ -865,13 +865,13 @@ for ii = 1:length(fList)
 				%else
 				%	ppStr = [ppStr ' -.-'];
 				%end
-				
+
 				%if isfield(imParms,'parms') && isfield(imParms.parms, 'NumberOfAverages')  && (max(imParms.parms.NumberOfAverages) > 1)
 				%	ppStr = [ppStr ' -' num2str(max(imParms.parms.NumberOfAverages)) '-'];
 				%else
 				%	ppStr = [ppStr ' -.-'];
 				%end
-				
+
 				% Import the number of averages
 				if isfield(imParms,'parms') && isfield(imParms.parms,'NumberOfAverages') && (max(imParms.parms.NumberOfAverages) > 1)
 					if isfield(importStr{ii}.par,'TotalAcquiredVolumes')
@@ -882,17 +882,17 @@ for ii = 1:length(fList)
 						%importStr{ii}.par.TotalAcquiredVolumes = max(imParms.parms.NumberOfAverages);
 					end
 				end
-						
+
 				%if isfield(importStr{ii}.par,'TotalAcquiredVolumes')
 				%	ppStr = [ppStr ' -' num2str(max(importStr{ii}.par.TotalAcquiredVolumes(:))) '-'];
 				%else
 				%	ppStr = [ppStr ' -.-'];
 				%end
 				%fprintf('%s\n',ppStr);
-				
+
 				% Type of an M0 image
 				bJsonLocalM0isFile = 0;
-				if strcmp(importStr{ii}.x.M0,'separate_scan')
+				if strcmpi(importStr{ii}.x.M0,'separate_scan')
 					if isfield(importStr{ii}.x,'M0PositionInASL4D') && (max(importStr{ii}.x.M0PositionInASL4D(:))>0)
 						jsonLocal.M0 = true;
 					elseif xASL_exist(fullfile(inSesPath,'M0.nii'))
@@ -913,10 +913,10 @@ for ii = 1:length(fList)
 						end
 					end
 				else
-					if strcmp(importStr{ii}.x.M0,'UseControlAsM0')
+					if strcmpi(importStr{ii}.x.M0,'UseControlAsM0')
 						jsonLocal.M0 = false;
 					else
-						if strcmp(importStr{ii}.x.M0,'no_background_suppression')
+						if strcmpi(importStr{ii}.x.M0,'no_background_suppression')
 							jsonLocal.M0 = false;
 						else
 							jsonLocal.M0 = importStr{ii}.x.M0;
@@ -933,28 +933,28 @@ for ii = 1:length(fList)
 						importStr{ii}.flavors.(jsonToFlavors{ll}) = jsonLocal.(jsonToFlavors{ll});
 					end
 				end
-				
+
 				% Remove the AslContext field and save it as a separate file
 				fContext = fopen([aslOutLabel '_' aslcontextStr '.tsv'],'w+');
 				fwrite(fContext,sprintf('volume_type\n'));
 				fwrite(fContext,jsonLocal.ASLContext);
 				fclose(fContext);
-				
+
 				jsonLocal = rmfield(jsonLocal,'ASLContext');
-				
+
 				if mm == 1
 					for nn = 1:2
 						if nn == 1
 							nnStrIn = '';
 							if xASL_exist(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},fSes{kk},'M0PERev.nii'))
 								nnStrOut = '_dir-ap';
-								
+
 								tagPhaseEncodingDirection = 'j-';
 								jsonLocal.PhaseEncodingDirection = 'j-';
 								tagIntendedFor = [];
 								tagTotalReadoutTime = importStr{ii}.par.TotalReadoutTime;
-   								
-								if bJsonLocalM0isFile 
+
+								if bJsonLocalM0isFile
 									%jsonLocal.M0 = [jsonLocal.M0 nnStrOut '.nii.gz,' jsonLocal.M0 '_dir-pa' '.nii.gz'];
 									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '_' m0scanStr '.nii.gz'];
 								end
@@ -988,7 +988,7 @@ for ii = 1:length(fList)
 							else
 								imParmsM0 = [];
 							end
-							
+
 							rescaleParms = [];
 							ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'...
 								'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
@@ -1004,18 +1004,18 @@ for ii = 1:length(fList)
 									end
 								end
 							end
-							
-							
+
+
 							if ~isempty(strfind(jsonDicom.Manufacturer,'Philips')) || ~isempty(strfind(jsonDicom.Manufacturer,'philips'))
 								scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,['M0' nnStrIn '.nii'])));
 							else
 								scaleFactor = 0;
 							end
-							
+
 							if scaleFactor
 								imM0 = imM0 .* scaleFactor;
-							end							
-														
+							end
+
 							jsonM0Write = [];
 							% Copy all dicom ones
 							for fn = fieldnames(jsonM0)'
@@ -1035,13 +1035,13 @@ for ii = 1:length(fList)
 									jsonM0Write.(fn{1}) = jsonM0.(fn{1});
 								end
 							end
-							
+
 							if isfield(jsonLocal,'SliceTiming')
 								% Issue a warning if the SliceTiming was already existing for M0, but still overwrite with ASL one
 								if isfield(jsonM0Write,'SliceTiming')
 									warning('SliceTiming already existed for M0, overwriting with ASL');
 								end
-								
+
 								if size(imNii,3) == size(imM0,3)
 									% Either copy if the save number of slices in M0 as in ASL
 									jsonM0Write.SliceTiming = jsonLocal.SliceTiming;
@@ -1055,19 +1055,19 @@ for ii = 1:length(fList)
 									warning('Removing pre-existing SliceTiming from M0, as there was no SliceTiming for ASL');
 								end
 							end
-							
+
 							if isfield(importStr{ii}.x,'RepetitionTime')
 								jsonM0Write.RepetitionTime = importStr{ii}.x.RepetitionTime;
 							else
 								jsonM0Write.RepetitionTime = jsonM0.RepetitionTime;
 							end
-							
+
 							jsonM0Write.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
-							
+
 							if ~isempty(tagPhaseEncodingDirection)
 								jsonM0Write.PhaseEncodingDirection = tagPhaseEncodingDirection;
 							end
-							
+
 							if isfield(jsonM0Write,'EffectiveEchoSpacing')
 								if jsonM0Write.EffectiveEchoSpacing == 0
 									jsonM0Write = rmfield(jsonM0Write,'EffectiveEchoSpacing');
@@ -1075,7 +1075,7 @@ for ii = 1:length(fList)
 									jsonM0Write.EffectiveEchoSpacing = abs(jsonM0Write.EffectiveEchoSpacing);
 								end
 							end
-							
+
 							if isfield(jsonM0Write,'TotalReadoutTime')
 								if jsonM0Write.TotalReadoutTime == 0
 									jsonM0Write = rmfield(jsonM0Write,'TotalReadoutTime');
@@ -1083,19 +1083,19 @@ for ii = 1:length(fList)
 									jsonM0Write.TotalReadoutTime = abs(jsonM0Write.TotalReadoutTime);
 								end
 							end
-							
+
 							if ~isempty(tagIntendedFor)
 								jsonM0Write.IntendedFor = tagIntendedFor;
 							end
-							
+
 							if ~isempty(tagTotalReadoutTime)
 								jsonM0Write.TotalReadoutTime = tagTotalReadoutTime;
 							end
-														
+
 							if nn == 2 && ~exist(fullfile(outSesPath,'fmap'),'dir')
 								mkdir(fullfile(outSesPath,'fmap'));
 							end
-							
+
 							% if scaling modified then save instead of copy
 							if scaleFactor || size(imM0,4) == 1
 								if nn == 1
@@ -1130,7 +1130,7 @@ for ii = 1:length(fList)
 				% Save JSON to new dir
 				jsonLocal = finalJsonCheck(jsonLocal,fieldOrderStruct,removeEmptyFields);
 				spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
-				
+
 			end
 		end
 	end
@@ -1214,7 +1214,7 @@ if isfield(jsonOut,'NumberSegments')
 	jsonOut = rmfield(jsonOut,'NumberSegments');
 end
 
-if isfield(jsonOut,'PhaseEncodingAxis')% && strcmp(jsonOut.Manufacturer,'Philips')
+if isfield(jsonOut,'PhaseEncodingAxis')% && strcmpi(jsonOut.Manufacturer,'Philips')
 	if ~isfield(jsonOut,'PhaseEncodingDirection')
 		jsonOut.PhaseEncodingDirection = jsonOut.PhaseEncodingAxis;
 	end

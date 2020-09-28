@@ -2,11 +2,11 @@ function x = xASL_adm_DefineASLResolution(x)
 %xASL_adm_DefineASLResolution ...
 %
 % FORMAT:       x = xASL_adm_DefineASLResolution(x)
-% 
+%
 % INPUT:        ...
 %
 % OUTPUT:       ...
-% 
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  ...
 %
@@ -29,12 +29,12 @@ if x.ResolutionEstimation
     % Here we choose a range of GM-WM CBF ratios to search along
     % but they can be surprising, so lets give each sequence the same range
 
-    if      strcmp(x.Sequence,'3D_spiral')
+    if      strcmpi(x.Sequence,'3D_spiral')
             relPSF = [2.6667 2.6667 2.3750];
             % This assumes the inplane interpolation of GE from [4 4 4] to [2 2 4]
-    elseif  strcmp(x.Sequence,'2D_EPI')
+    elseif  strcmpi(x.Sequence,'2D_EPI')
             relPSF = [1.2167 1.2167 1.0857];
-    elseif  strcmp(x.Sequence,'3D_GRASE')
+    elseif  strcmpi(x.Sequence,'3D_GRASE')
             relPSF = [1.9417 1.9417 1.7304]; % average of 2D EPI & 3D spiral
     end
 

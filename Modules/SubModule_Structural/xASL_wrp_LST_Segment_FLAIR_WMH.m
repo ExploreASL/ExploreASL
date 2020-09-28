@@ -19,7 +19,7 @@ function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
 % The LPA oversegmentation is corrected in a later submodule. If a WMH_SEGM
 % already existed, the LST is run quickly as dummy only, to be replaced by
 % the original WMH_SEGM image. This function has the following parts:
-% 
+%
 % 1. Resample FLAIR (& WMH_SEGM, if exists) to T1w space
 %    where we assume WMH_SEGM_ORI == FLAIR space (if externally provided)
 %    WMH_SEGM == T1w space
@@ -61,7 +61,7 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     if ~xASL_exist(x.P.Path_WMH_SEGM_ORI, 'file')
         xASL_Copy(x.P.Path_WMH_SEGM, x.P.Path_WMH_SEGM_ORI);
     end
-    
+
     % if an externally provided WMH_SEGM exists, resample it to the T1w space
     % use linear resampling, to avoid B-spline edge effects
     xASL_spm_reslice(x.P.Path_T1, x.P.Path_WMH_SEGM, [], [], x.Quality, x.P.Path_WMH_SEGM, 1);
@@ -73,22 +73,22 @@ end
 %% 2. Define parameters for segmentation
 fprintf('\n%s\n','----------------------------------------');
 
-switch WMHsegmAlg
-    case 'LPA'
+switch lower(WMHsegmAlg)
+    case 'lpa'
         fprintf('%s\n','WMH segmentation performed using LST LPA');
 
         % Lesion Prediction Algorithm (LPA)
         matlabbatch{1}.spm.tools.LST.lpa.data_F2        = {x.P.Path_rFLAIR}; % FLAIR resampled to T1 native space
         matlabbatch{1}.spm.tools.LST.lpa.data_coreg     = {''};
         matlabbatch{1}.spm.tools.LST.lpa.html_report    = 0; % no HTML report output (takes a long time)
-        
+
         if xASL_exist(x.P.Path_WMH_SEGM, 'file')
             matlabbatch{1}.spm.tools.LST.lpa.xasl_quality   = 2; % ultralow quality
         else
             matlabbatch{1}.spm.tools.LST.lpa.xasl_quality   = x.Quality;
         end
 
-    case 'LGA'
+    case 'lga'
         fprintf('%s\n','WMH segmentation performed using LST LGA');
 
         % Lesion Growth Algorithm (LGA)
@@ -165,7 +165,7 @@ for iFile=1:length(FilePathsAre)
         WMHim(isnan(WMHim)) = 0; % set NaNs to zeros
 
         WMHim = xASL_im_ZeroEdges(WMHim); % set edges to zero
-        
+
         %% ----------------------------------------------------------
         %% 7. Remove lesion masks from WMH_SEGM
         % Here we ensure that WMH_SEGM & Lesion*.nii are mutually exclusive
@@ -179,7 +179,7 @@ for iFile=1:length(FilePathsAre)
 				if ~isequal(unique(LesionIM(:)),[0 1]')
 					warning([LesionList{iLesion} ' was not binary']);
 				end
-				
+
 				% Resample if needed
 				if ~isequal(size(LesionIM), size(WMHim))
 					PathTemp = fullfile(Fpath, [Ffile '_temp.nii']);
@@ -188,21 +188,21 @@ for iFile=1:length(FilePathsAre)
 				else
 					PathTemp = [];
 				end
-				
+
 				% Remove this lesion from WMH_SEGM
 				WMHim(logical(LesionIM)) = 0;
-				
+
 				% Delete the temporarily resampled file
 				if ~isempty(PathTemp)
 					xASL_delete(PathTemp);
 				end
 			end
 		end
-		
+
 		% Save the final WMH_SEGM mask after removing all the lesions
 		xASL_io_SaveNifti(FilePathsAre{iFile}, FilePathsAre{iFile}, WMHim, [], false);
     end
 end
-                
+
 
 end
