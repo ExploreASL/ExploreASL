@@ -20,6 +20,9 @@ function OutputArg = xASL_exist(PathIn, Type)
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
 
+% Default output
+OutputArg = false;
+
 % It can have one or two input parameters
 if nargin>2
 	error('Two input parameters is maximum');
@@ -30,12 +33,14 @@ if nargin<2 || isempty(Type)
 elseif ~strcmp(Type, 'file')
     OutputArg = exist(PathIn, Type);
     return; % bypass rest if not a file
-end
-
-% Function only accepts strings on input
-if ~ischar(PathIn)
-    OutputArg = false; %%%% >>>>> difficult to debug
-%     warning('xASL_exist: Cannot check PathIn');
+elseif isempty(PathIn)
+     %%%% >>>>> Using warning rather than error for easier debugging
+    warning('Input argument PathIn was empty');
+    return;
+elseif ~ischar(PathIn)
+    % Function only accepts strings on input
+     %%%% >>>>> Using warning rather than error for easier debugging
+    warning('PathIn was not a string');
     return;
 end
 
@@ -52,6 +57,6 @@ elseif ~isempty(Type)
 else
     OutputArg = exist(PathIn);
 end
-        
-end
 
+
+end
