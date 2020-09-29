@@ -177,13 +177,15 @@ for iIndex=1:size(DataIn,1)
 end
 
 
-%% -------------------------------------------------------------------------------------------
-%% 6) Sort rows on subjects
-CellArray(2:end,:) = sortrows(CellArray(2:end,:), 1);
-
-%% 7) Fill empty cells
+%% 6) Fill empty cells
 IsEmpty = cellfun(@(y) isempty(y), CellArray);
 CellArray(IsEmpty) = {'n/a'};
+
+
+%% -------------------------------------------------------------------------------------------
+%% 7) Sort rows on subjects
+CellArray(2:end,:) = sortrows(CellArray(2:end,:), 1);
+
         
 
 %% -------------------------------------------------------------------------------------------

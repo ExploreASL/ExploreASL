@@ -243,6 +243,19 @@ bDoOnceROIStart = 1;
 
 for iSubject=1:x.nSubjects
 	for iSess=1:nSessions
+        
+		% ID (which name, group etc), all for identification
+		% Subject_session definition
+		DataIm = NaN;
+		SubjSess = (iSubject-1)* nSessions +iSess;
+		if NoSessions
+			x.S.SUBJECTID{SubjSess,1} = x.SUBJECTS{iSubject};
+            TotalRows = x.nSubjects;
+		else
+			x.S.SUBJECTID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSess}];
+            TotalRows = x.nSubjectsSessions;
+        end
+        
 		if x.S.IsASL
 			%% ------------------------------------------------------------------------------------------------------------
 			%% 2) For all ROIs, expand ROIs to contain sufficient pWM for PVEc
@@ -447,16 +460,6 @@ for iSubject=1:x.nSubjects
 		% but the one above that can be forced to a single nSessions
 		% in case of volume or TT
 
-		% ID (which name, group etc), all for identification
-		% Subject_session definition
-		DataIm = NaN;
-		SubjSess = (iSubject-1)* nSessions +iSess;
-		if NoSessions
-			x.S.SUBJECTID{SubjSess,1} = x.SUBJECTS{iSubject};
-		else
-			x.S.SUBJECTID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSess}];
-		end
-
 		%% c) Load data
 		if x.S.InputNativeSpace %% PM: we repeat same code here twice
 			FilePath = fullfile(x.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
@@ -547,9 +550,14 @@ for iSubject=1:x.nSubjects
                 end
             end
         end
-
-
-
+        
+        % Initialize matrices with NaNs
+		FieldsAre = {'DAT_mean_PVC0' 'DAT_median_PVC0' 'DAT_mean_PVC2'}; % update this with fields filled below!
+        for iField = 1:length(FieldsAre)
+            x.S.(FieldsAre{iField})(SubjSess, 1:size(SubjectSpecificMasks,2)) = NaN;
+        end
+		
+        % Now fill with data
 		for iROI=1:size(SubjectSpecificMasks,2)
 			% Swap tissue compartments if needed (this is easier scripting-wise)
 			%
@@ -617,6 +625,16 @@ for iSubject=1:x.nSubjects
 
 			end
 		end % for iROI=1:size(SubjectSpecificMasks,2)
+        
+        % Create last row if missing
+        for iField = 1:length(FieldsAre)
+            if isfield(x.S, FieldsAre{iField})
+                if size(x.S.(FieldsAre{iField}), 1) < TotalRows
+                    x.S.(FieldsAre{iField})(TotalRows, 1:end) = NaN;
+                end
+            end
+        end
+        
 	end % for iSess=1:nSessions
 end % for iSub=1:x.nSubjects
 
