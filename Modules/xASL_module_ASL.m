@@ -78,7 +78,7 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
 end
 
 %% Manage an M0 within time series
-if isfield(x,'M0PositionInASL4D') && x.ApplyQuantification(5)
+if isfield(x,'M0PositionInASL4D')
     x.M0PositionInASL4D = xASL_str2num(x.M0PositionInASL4D); % make sure it is numeric when coming from JSON string
     if ~isnumeric(x.M0PositionInASL4D)
         warning('Something wrong with x.M0PositionInASL4D');
