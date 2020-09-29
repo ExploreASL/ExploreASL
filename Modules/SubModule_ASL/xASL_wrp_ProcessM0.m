@@ -88,16 +88,12 @@ elseif x.M0_conventionalProcessing == 1 && strcmpi(x.readout_dim,'3D')
        warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end
 
-%% 0B) Acquire voxel sizes to scale PD between ASL & M0
-if x.ApplyQuantification(2)
-    M0nii       = xASL_io_ReadNifti(x.P.Path_M0);
-    M0size      = prod(M0nii.hdr.pixdim(2:4));
-    ASLnii      = xASL_io_ReadNifti(x.P.Path_ASL4D);
-    ASLsize     = prod(ASLnii.hdr.pixdim(2:4));
-    M0ScaleF    = ASLsize/M0size;
-else
-    M0ScaleF = 1;
-end
+%% 0B) Scale PD between ASL & M0 if voxel sizes differ
+M0nii       = xASL_io_ReadNifti(x.P.Path_M0);
+M0size      = prod(M0nii.hdr.pixdim(2:4));
+ASLnii      = xASL_io_ReadNifti(x.P.Path_ASL4D);
+ASLsize     = prod(ASLnii.hdr.pixdim(2:4));
+M0ScaleF    = ASLsize/M0size;
 
 % copy existing M0 for processing, in single precision
 % averaging if multiple frames, as we will blur later anyway,

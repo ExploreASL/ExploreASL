@@ -65,9 +65,6 @@ end
 if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
     x.Q.T2 = 180; % default for 3T (ref Jean Chen, MRM 2009)
 end
-if ~isfield(x, 'ApplyQuantification') || isempty(x.ApplyQuantification)
-    x.ApplyQuantification = [1 1 1 1 1];
-end
 
 %% ------------------------------------------------------------------------------------------------
 %% 1    Load PWI
