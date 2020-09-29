@@ -840,18 +840,19 @@ switch imPar.studyID
         imPar.bMatchDirectories = true;
         
     case 'ADNI'
-        ADNI_ASL_series_descriptions = '^(ASL.*)|^(Axial_3D_PASL.*)|^(Axial_3D_pCASL.*)';
-        ADNI_T1_series_descriptions = '^(SAG_MPRAGE.*)|^(MPRAGE.*)|^(mprage.*)|^(Accelerated_Sagittal_MPRAGE.*)';
-        ADNI_FLAIR_series_descriptions = '^(Axial_T2-FLAIR.*)|^(Sagittal_3D_FLAIR.*)|^(AX_T2_FLAIR_NO_ANGLE.*)';
+        ADNI_ASL_series = '^(ASL.*)|^(Axial_3D_PASL.*)|^(Axial_3D_pCASL.*)';
+        ADNI_T1_series = '^(SAG_MPRAGE.*)|^(MPRAGE.*)|^(mprage.*)|^(Accelerated_Sagittal_MPRAGE.*)';
+        ADNI_FLAIR_series = '^(Axial_T2-FLAIR.*)|^(Sagittal_3D_FLAIR.*)|^(AX_T2_FLAIR_NO_ANGLE.*)';
         imPar.folderHierarchy = {'^(\d{3}_S_\d{4}).*',...
-                                ['^(',ADNI_ASL_series_descriptions,'|',ADNI_T1_series_descriptions,'|',ADNI_FLAIR_series_descriptions,')$'],...
+                                ['^(',ADNI_ASL_series,'|',ADNI_T1_series,'|',ADNI_FLAIR_series,')$'],...
                                  '^(\d{4}.*)$', '^S.*'};
         imPar.tokenOrdering = [1 3 0 2]; % subject visit session scantype
-        imPar.tokenScanAliases = {'^ASL_PERFUSION$','ASL4D';'^MPRAGE$', 'T1'};
-        for iToken=1:30
-            imPar.tokenVisitAliases{iToken,1} = num2str(iToken);
-            imPar.tokenVisitAliases{iToken,2} = ['_' num2str(iToken)];
-        end
+        imPar.tokenScanAliases = {'^(ASL.*)','ASL4D'; '^(Axial_3D_PASL.*)','ASL4D'; '^(Axial_3D_pCASL.*)','ASL4D';...
+                                  '^(SAG_MPRAGE.*)','T1'; '^(MPRAGE.*)','T1'; '^(mprage.*)','T1'; '^(Accelerated_Sagittal_MPRAGE.*)','T1';...
+                                  '^(Axial_T2-FLAIR.*)', 'FLAIR'; '^(Sagittal_3D_FLAIR.*)', 'FLAIR'; '^(AX_T2_FLAIR_NO_ANGLE.*)', 'FLAIR'};
+        %imPar.tokenVisitAliases = {'^(\d{4}.*)$','_1';...
+        %                           '^(\d{4}.*)$','_2';...
+        %                           '^(\d{4}.*)$','_3'};
         imPar.bMatchDirectories = true;
     
     case 'incoming' % Default single participant
