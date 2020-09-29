@@ -840,10 +840,18 @@ switch imPar.studyID
         imPar.bMatchDirectories = true;
         
     case 'ADNI'
-        imPar.folderHierarchy = {'^(\d{3}_S_\d{4}).*', '^(ASL_PERFUSION)$', '^(\d{4}.*)$', '^S.*'}; % Test with ADNI data
+        ADNI_ASL_series_descriptions = '^(ASL.*)|^(Axial_3D_PASL.*)|^(Axial_3D_pCASL.*)';
+        ADNI_T1_series_descriptions = '^(SAG_MPRAGE.*)|^(MPRAGE.*)|^(mprage.*)|^(Accelerated_Sagittal_MPRAGE.*)';
+        ADNI_FLAIR_series_descriptions = '^(Axial_T2-FLAIR.*)|^(Sagittal_3D_FLAIR.*)|^(AX_T2_FLAIR_NO_ANGLE.*)';
+        imPar.folderHierarchy = {'^(\d{3}_S_\d{4}).*',...
+                                ['^(',ADNI_ASL_series_descriptions,'|',ADNI_T1_series_descriptions,'|',ADNI_FLAIR_series_descriptions,')$'],...
+                                 '^(\d{4}.*)$', '^S.*'};
         imPar.tokenOrdering = [1 3 0 2]; % subject visit session scantype
         imPar.tokenScanAliases = {'^ASL_PERFUSION$','ASL4D';'^MPRAGE$', 'T1'};
-        imPar.tokenVisitAliases = {'^2010$','ASL4D';'^1$'};
+        for iToken=1:30
+            imPar.tokenVisitAliases{iToken,1} = num2str(iToken);
+            imPar.tokenVisitAliases{iToken,2} = ['_' num2str(iToken)];
+        end
         imPar.bMatchDirectories = true;
     
     case 'incoming' % Default single participant
