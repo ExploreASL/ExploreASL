@@ -52,11 +52,11 @@ MaskSusceptibilityPath = fullfile(x.S.StatsDir,'MaskSusceptibility.nii');
 % Define pre-existing paths, including warning when less or more than 1 are found
 PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^FoV_.*bs-mean\.nii$', 'FPList', [1 1]);
 PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskVascular_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskSusceptibility_bs-mean\.nii$', 'FPList', [1 1]);
-PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pGM_bs-mean\.nii$', 'FPList', [1 1]);
-PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pWM_bs-mean\.nii$', 'FPList', [1 1]);
-PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pCSF_bs-mean\.nii$', 'FPList', [1 1]);
-PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^T1_bs-mean_Unmasked\.nii$', 'FPList', [1 1]);
+PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskSusceptibility_.*bs-mean\.nii$', 'FPList', [1 1]);
+PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pGM_.*bs-mean\.nii$', 'FPList', [1 1]);
+PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pWM_.*bs-mean\.nii$', 'FPList', [1 1]);
+PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pCSF_.*bs-mean\.nii$', 'FPList', [1 1]);
+PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^T1_.*bs-mean_Unmasked\.nii$', 'FPList', [1 1]);
 
 % Set to use first mask
 if ~isempty(PathFoV); PathFoV = PathFoV{1}; end
