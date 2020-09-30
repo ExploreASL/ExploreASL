@@ -1,3 +1,54 @@
+# ExploreASL v1.3.0
+
+----
+## Feature improvements (still backward compatible)
+
+* #59: Assign "weights" to status files, allowing the external Python ExploreASL GUI to provide a better estimate of the progress
+* #71 Remove custom lesions _(Lesion\_(FLAIR|T1)\_\\d\\.nii)_ from _WMH_SEGM.nii_
+* #76: Improve functionality of ExploreASL through Command Line Interface (CLI), i.e. without using the Graphical User Interface (GUI) of Matlab
+* #123 Create status files also for skipped processing parts: this is mainly the case for running the structural module without a FLAIR scan. Having all status files helps third-party tools such as the Python ExploreASL GUI to know that processing has succesfully completed (duplicate issues #137 and #129)
+* #145: Improve .nii(.gz) management in xASL_spm_deformations: allow either .nii or .nii.gz as input, treat them equally, and when .nii.gz is provided as output path, zip the resulting deformed image
+
+----
+## Work in progress
+*  #106 xASL_im_SplitImageLabels: Allow splitting labels, and warping them to standard space.
+This is part of a continuous development on creating average flow territory templates and figures.
+* #162 Remove bNativeSpaceProcessing from TestDataSet for now, return this when bNativeSpaceProcess is made more modular
+
+### ASL-BIDS
+* #82 Avoid 4D files with nT==1, which is not allowed in the BIDS validator
+### Compilation/stand-alone version
+* #88 xASL_SysMove error in Windows when a path includes whitespaces ' '
+
+----
+
+## Bug Fixes
+
+* #85 Improvement ApplyQuantification
+* #99 Improve loading of metadata (xASL_str2num & xASL_init_LoadMetaData)
+* #105 In case of missing data, fill x.S.SUBJECTID and S.DAT data for the last subject/session
+* #119 Unlocking structural files for last subject, if it's processing is skipped
+* #120 xASL_im_CreateAnalysisMask in native space mode when in parallel execution
+* #138 Fix structure TestDataJSON & its JSON files
+* #139 Ensure that x fields are not case sensitive, by e.g. replacing _strcmp_ by _strcmpi_ 
+* #141 Solve conflicts between develop and master, these were minor edits that weren't implemented in develop yet
+* #143 ensure that VBA masks are also created for a 3D spiral sequence (this was not created yet as the susceptibility masks were missing for this sequence)
+* #148 Syncing the ROI/lesion processing of T1w & FLAIR
+* #151 Minor bugfixes for TopUp
+
+----
+
+## Documentation
+#159 Ensure that all sequence notations use underscores instead of whitespace, e.g. _3D_spiral_ instead of _3D spiral_
+
+
+## Testing
+* #86 xASL_qc_TestExploreASL: improve Table creation
+* #112 Save Tanimoto Coefficient (i.e. a fuzzy overlap/Dice score) of the final ASL-T1w registration
+* #128 Improved one internal test dataset
+* #130 xASL_qc_TestExploreASL: Complete functionality by allowing Windows parallelization & testing the Windows ExploreASL compilation. Also added unit testing framework in the same issue.
+
+
 # ExploreASL v1.2.2
 
 ----
