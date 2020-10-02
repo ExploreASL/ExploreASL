@@ -145,6 +145,7 @@ class xASL_GUI_MRIViewArtist(QWidget):
             try:
                 self.current_cbf_img = image.load_img(self.subjects_runs_dict[name]["CBF"]).get_fdata()
                 self.current_cbf_max = np.nanmax(self.current_cbf_img)
+                self.current_cbf_img = self.current_cbf_img.clip(0, self.current_cbf_max)
                 self.current_t1_img = image.load_img(self.subjects_runs_dict[name]["T1"]).get_fdata()
                 self.current_t1_max = np.nanmax(self.current_t1_img)
             except ValueError:
@@ -156,6 +157,7 @@ class xASL_GUI_MRIViewArtist(QWidget):
                 try:
                     self.current_cbf_img = image.load_img(self.subjects_runs_dict[name]["CBF"]).get_fdata()
                     self.current_cbf_max = np.nanmax(self.current_cbf_img)
+                    self.current_cbf_img = self.current_cbf_img.clip(0, self.current_cbf_max)
                     self.current_t1_img = image.load_img(self.subjects_runs_dict[name]["T1"]).get_fdata()
                     self.current_t1_max = np.nanmax(self.current_t1_img)
                 except KeyError:
@@ -170,9 +172,7 @@ class xASL_GUI_MRIViewArtist(QWidget):
                     self.reset_images_to_default_black()
 
         # Regardless of outcome, tell the canvases to update
-        self.plotupdate_axialslice(self.manager.slider_axialslice.value())
-        self.plotupdate_coronalslice(self.manager.slider_coronalslice.value())
-        self.plotupdate_sagittalslice(self.manager.slider_sagittalslice.value())
+        self.plotupdate_allslices()
 
     def on_pick(self, event: PickEvent):
         artist: PathCollection = event.artist
@@ -262,17 +262,26 @@ class xASL_GUI_MRIViewArtist(QWidget):
         print("PLOTUPDATE_AXESCALL TRIGGERED")
         self.plotupdate_axes()
 
-    def plotupdate_axialslice(self, value):
+    @Slot()
+    def plotupdate_cmapcall(self):
+        print("PLOTUPDATE_CMAPCALL TRIGGERED")
+        self.plotupdate_allslices()
 
+    def plotupdate_allslices(self):
+        self.plotupdate_axialslice(self.manager.slider_axialslice.value())
+        self.plotupdate_coronalslice(self.manager.slider_coronalslice.value())
+        self.plotupdate_sagittalslice(self.manager.slider_sagittalslice.value())
+
+    def plotupdate_axialslice(self, value):
         self.axial_t1.clear()
         self.axial_t1.imshow(np.rot90(self.current_t1_img[:, :, value]).squeeze(),
-                             cmap="gray",
+                             cmap=self.manager.cmb_cbf_cmap.currentText(),
                              vmin=0,
                              vmax=self.current_t1_max
                              )
         self.axial_cbf.clear()
         self.axial_cbf.imshow(np.rot90(self.current_cbf_img[:, :, value]).squeeze(),
-                              cmap="gray",
+                              cmap=self.manager.cmb_cbf_cmap.currentText(),
                               vmin=0,
                               vmax=self.current_cbf_max,
                               )
@@ -282,13 +291,13 @@ class xASL_GUI_MRIViewArtist(QWidget):
 
         self.coronal_t1.clear()
         self.coronal_t1.imshow(np.rot90(self.current_t1_img[:, value, :]).squeeze(),
-                               cmap="gray",
+                               cmap=self.manager.cmb_cbf_cmap.currentText(),
                                vmin=0,
                                vmax=self.current_t1_max
                                )
         self.coronal_cbf.clear()
         self.coronal_cbf.imshow(np.rot90(self.current_cbf_img[:, value, :]).squeeze(),
-                                cmap="gray",
+                                cmap=self.manager.cmb_cbf_cmap.currentText(),
                                 vmin=0,
                                 vmax=self.current_cbf_max,
                                 )
@@ -298,13 +307,13 @@ class xASL_GUI_MRIViewArtist(QWidget):
 
         self.sagittal_t1.clear()
         self.sagittal_t1.imshow(np.rot90(self.current_t1_img[value, :, :]).squeeze(),
-                                cmap="gray",
+                                cmap=self.manager.cmb_cbf_cmap.currentText(),
                                 vmin=0,
                                 vmax=self.current_t1_max
                                 )
         self.sagittal_cbf.clear()
         self.sagittal_cbf.imshow(np.rot90(self.current_cbf_img[value, :, :]).squeeze(),
-                                 cmap="gray",
+                                 cmap=self.manager.cmb_cbf_cmap.currentText(),
                                  vmin=0,
                                  vmax=self.current_cbf_max,
                                  )

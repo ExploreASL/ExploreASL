@@ -279,7 +279,11 @@ class xASL_Executor(QMainWindow):
                 self.formlay_nrows += 1
                 inner_cmb = QComboBox()
                 inner_cmb.setMinimumWidth(140)
-                inner_cmb.setToolTip("Specify the number of cores to allocate to this study")
+                inner_cmb.setToolTip("Specify the number of cores to allocate to this study.\n"
+                                     "Important points:\n"
+                                     "\t-DO NOT specify more cores than there are subjects for the study\n"
+                                     "\t-DO NOT specify more than one core for a study that will have the \n"
+                                     "\tPopulation Module run on it")
                 inner_cmb.addItems(list(map(str, range(1, os.cpu_count() // 2 + 1))))
                 inner_cmb.currentTextChanged.connect(self.set_ncores_left)
                 inner_cmb.currentTextChanged.connect(self.set_ncores_selectable)

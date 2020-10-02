@@ -221,10 +221,6 @@ class xASL_Plotting(QMainWindow):
         if metadata_filepath == '':
             return
 
-        print(os.path.splitext(metadata_filepath))
-        print(not os.path.isfile(metadata_filepath))
-        print(os.path.splitext(metadata_filepath)[1] not in [".tsv", ".csv", ".xlsx"])
-
         # Quality control
         if os.path.exists(metadata_filepath):
             if any([not os.path.isfile(metadata_filepath),

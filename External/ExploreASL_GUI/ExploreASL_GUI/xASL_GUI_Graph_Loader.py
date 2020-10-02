@@ -4,6 +4,7 @@ import pandas as pd
 import os
 from glob import glob
 import numpy as np
+import re
 
 
 class xASL_GUI_Data_Loader(QWidget):
@@ -225,8 +226,24 @@ class xASL_GUI_Data_Loader(QWidget):
         merged = pd.merge(left=demo_df, right=exasl_df, how='inner', on='SUBJECT', sort=True)
         if len(merged) == 0:
             return None
-        sub_in_merge, sub_in_demo, sub_in_exasl = set(merged["SUBJECT"].tolist()), set(
-            demo_df["SUBJECT"].tolist()), set(exasl_df["SUBJECT"].tolist())
+
+        # Perform a few dtype changes regarding typical categorical variables that may be in the covariates dataframe
+        regex = re.compile(r"(sex|hand|site|\bscanner\b|education|employ|ethinicity|race|culture|gender|.*status\b|"
+                           r".*type\b|.*disease\b)")
+        colname: str
+        for colname in merged.columns:
+            if regex.search(colname.lower()):
+                if str(merged[colname].dtype) not in ["object", "category"]:
+                    print(f'Detected that the metadata column {colname} is a typical candidate for being '
+                          f'misinterpreted as numerical. Setting as a categorical variable')
+                    old_data = merged.pop(colname)
+                    new_data = old_data.astype(np.str)
+                    merged[colname] = new_data.astype("category")
+                    del old_data, new_data
+
+        sub_in_merge, sub_in_demo, sub_in_exasl = (set(merged["SUBJECT"].tolist()),
+                                                   set(demo_df["SUBJECT"].tolist()),
+                                                   set(exasl_df["SUBJECT"].tolist()))
         diff_in_demo = sub_in_demo.difference(sub_in_merge)
         diff_in_exasl = sub_in_exasl.difference(sub_in_merge)
         if any([len(diff_in_demo) > 0, len(diff_in_exasl) > 0]):

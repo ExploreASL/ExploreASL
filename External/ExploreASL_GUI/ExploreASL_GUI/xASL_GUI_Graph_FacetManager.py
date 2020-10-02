@@ -8,7 +8,6 @@ import json
 import os
 from ExploreASL_GUI.xASL_GUI_Graph_FacetArtist import xASL_GUI_FacetArtist
 from ExploreASL_GUI.xASL_GUI_Graph_FacetLabels import xASL_GUI_FacetLabels
-# from pprint import pprint
 
 
 class xASL_GUI_FacetManager(QWidget):
@@ -55,8 +54,16 @@ class xASL_GUI_FacetManager(QWidget):
         self.tab_pltsettings = QTabWidget()
         self.cont_commonparms, self.cont_figparms, self.cont_axesparms = QWidget(), QWidget(), QWidget()
         self.tab_pltsettings.addTab(self.cont_commonparms, "Common Parameters")
+        self.tab_pltsettings.setTabToolTip(0, "These parameters are universal across all plot types\n"
+                                              "(i.e. the padding around the figure, the title, etc.)")
         self.tab_pltsettings.addTab(self.cont_figparms, "Facet-Level Parameters")
+        self.tab_pltsettings.setTabToolTip(1, "These parameters control aspects of the canvas at the Facet Grid level\n"
+                                              "(i.e. whether axis labels are shared between individual plots.")
         self.tab_pltsettings.addTab(self.cont_axesparms, "Plot-Level Parameters")
+        self.tab_pltsettings.setTabToolTip(2, "These parameters control aspects of the canvas at the individual plot "
+                                              "level\n(i.e. palette used per plot, the thickness of lines, etc.)\n\n"
+                                              "No setting will show up here until the user has specified a particular\n"
+                                              "plot type in the Facet-Level Parameters tab")
         self.tab_pltsettings.setMaximumHeight(400)
 
         # Also define the formlayouts here and in advance
@@ -102,6 +109,7 @@ class xASL_GUI_FacetManager(QWidget):
                                                 [0.91, 0.057, 0.055,
                                                  0.95, 0.2, 0.2]):
             widget.setValue(default)
+            widget.setToolTip(f"Indicate the {description.lower()} for this figure canvas")
             widget.setRange(0, 1)
             widget.setSingleStep(0.01)
             widget.valueChanged.connect(self.sendSignal_plotupdate_paddingcall)
@@ -109,21 +117,41 @@ class xASL_GUI_FacetManager(QWidget):
 
         # Set up the text options and connect the plotlabels signals to the appropriate function
         self.btn_showplotlabels = QPushButton("Show Plot Label Settings", clicked=self.labels_widget.show)
+        self.btn_showplotlabels.setToolTip("Click to open a window with additional settings for controlling plot\n"
+                                           "and figure labels (i.e. title, x-axis labels,  y-axis labels, etc.)")
         self.formlay_commonparms.addRow(self.btn_showplotlabels)
 
     def UI_Setup_FigureParms(self):
         # Define Widgets
         self.le_row = DandD_Graphing_ListWidget2LineEdit(self.parent_cw, ["object", "category"])
+        self.le_row.setToolTip("Indicate the Categorical variable by which multiple plots should be generated, with\n"
+                               "each level of the variable alloting a plot to a separate row")
         self.le_row.setPlaceholderText("Drag & Drop variable to define facet rows")
         self.le_col = DandD_Graphing_ListWidget2LineEdit(self.parent_cw, ["object", "category"])
+        self.le_col.setToolTip("Indicate the Categorical variable by which multiple plots should be generated, with\n"
+                               "each level of the variable alloting a plot to a separate column")
         self.le_col.setPlaceholderText("Drag & Drop variable to define facet columns")
         self.chk_sharex = QCheckBox(checked=True)
+        self.chk_sharex.setToolTip("Indicate whether, when creating multiple plots on different rows, that the\n"
+                                   "x-axis of which are shared between plots")
         self.chk_sharey = QCheckBox(checked=True)
+        self.chk_sharey.setToolTip("Indicate whether, when creating multiple plots on different columns, that the\n"
+                                   "y-axis of which are shared between plots")
         self.spinbox_facetheight = QDoubleSpinBox(maximum=10, minimum=1, value=5, singleStep=0.1)
+        self.spinbox_facetheight.setToolTip("Indicate, for saving and printout, the height of the plot in inches.")
         self.spinbox_aspect = QDoubleSpinBox(maximum=2, minimum=0.5, value=1, singleStep=0.1)
+        self.spinbox_aspect.setToolTip("Indicate, for saving and printout, the aspect ratio of the plot.\n"
+                                       "Note that aspect_ratio * height gives the width of each facet in\n"
+                                       "inches")
         self.chk_legend_out = QCheckBox(checked=True)
+        self.chk_legend_out.setToolTip("Indicate whether the legend should be permitted to be plotted beyond the\n"
+                                       "bounds of the facetgrid. Recommended to be checked.")
         self.chk_despine = QCheckBox(checked=True)
+        self.chk_despine.setToolTip("Indicate whether the plots in this facet grid should be de-spined")
         self.chk_margin_titles = QCheckBox(checked=True)
+        self.chk_margin_titles.setToolTip("Indicate whether, when create multiple plots on different rows, that the\n"
+                                          "levels of the row-wise grouping variable are displayed parallel to the\n"
+                                          "y-axis of each plot for that row")
 
         # Generate Facet Figure-level Mappings
         self.fig_kwargs = {"row": self.le_row.text,
@@ -152,6 +180,7 @@ class xASL_GUI_FacetManager(QWidget):
         self.cmb_axestype = QComboBox()
         self.cmb_axestype.addItems(["Select a plot type", "Point Plot", "Strip Plot", "Swarm Plot", "Box Plot",
                                     "Violin Plot", "Boxen Plot", "Scatter Plot"])  # "Bar Plot", "Line Plot"
+        self.cmb_axestype.setToolTip("Indicate the type of plot on which the data should be displayed")
         font = QFont()
         font.setPointSize(12)
         self.cmb_axestype.setFont(font)
@@ -177,8 +206,10 @@ class xASL_GUI_FacetManager(QWidget):
                                                "Box Plot", "Violin Plot", "Boxen Plot"]:
             self.le_x = DandD_Graphing_ListWidget2LineEdit(self.parent_cw, self.categorical_dtypes)
             self.le_x.setPlaceholderText("Drag & Drop the X-axis Variable")
+            self.le_x.setToolTip("Indicate the Categorical variable that should be on the x-axis")
             self.le_y = DandD_Graphing_ListWidget2LineEdit(self.parent_cw, self.numeric_dtypes)
             self.le_y.setPlaceholderText("Drag & Drop the Y-axis Variable")
+            self.le_y.setToolTip("Indicate the Numberical variable that should be on the y-axis")
 
         elif self.cmb_axestype.currentText() in ["Scatter Plot", "Line Plot",
                                                  "Regression Plot", "Residuals Plot"]:
@@ -191,6 +222,8 @@ class xASL_GUI_FacetManager(QWidget):
 
         self.le_hue = DandD_Graphing_ListWidget2LineEdit(self.parent_cw, ["object", "category"])
         self.le_hue.setPlaceholderText("Drag & Drop the Hue Grouping Variable")
+        self.le_hue.setToolTip("Indicate the Categorical variable by which data should be grouped\n "
+                               "using marker color differences")
         self.axes_arg_x = self.le_x.text
         self.axes_arg_y = self.le_y.text
         self.axes_arg_hue = self.le_hue.text
@@ -199,11 +232,18 @@ class xASL_GUI_FacetManager(QWidget):
             # Define row widgets
             self.plotting_func = sns.pointplot
             self.ci = QDoubleSpinBox(maximum=100, minimum=0, value=95, singleStep=1)
+            self.ci.setToolTip("Indicate the confidence interval that should be displayed in the error bars")
             self.dodge = QCheckBox(checked=True)
+            self.dodge.setToolTip("Indicate whether, when grouping by a Hue variable, the plot should feature\n"
+                                  "separate points for different levels within the Hue variable category")
             self.join = QCheckBox(checked=True)
+            self.join.setToolTip("Indicate whether points across the different estimates should be join by solid lines")
             self.errwidth = QDoubleSpinBox(maximum=2, minimum=0, value=2, singleStep=0.05)
+            self.errwidth.setToolTip("Indicate the thickness of the lines of the error bars. Units are arbitary")
             self.capsize = QDoubleSpinBox(maximum=1, minimum=0, value=0.05, singleStep=0.005)
+            self.capsize.setToolTip("Indicate the width of the error bar cap. Units are arbitrary")
             self.cmb_palette = self.UI_Setup_PaletteCombobox()
+            self.cmb_palette.setToolTip("Indicate the color palette that should be used")
             self.axes_kwargs = self.UI_Setup_AxesMappings(["ci", "dodge", "join", "errwidth", "capsize", "palette"],
                                                           [self.ci, self.dodge, self.join, self.errwidth, self.capsize,
                                                            self.cmb_palette])
@@ -224,9 +264,14 @@ class xASL_GUI_FacetManager(QWidget):
             else:
                 self.plotting_func = sns.swarmplot
             self.dodge = QCheckBox(checked=True)
+            self.dodge.setToolTip("Indicate whether, when grouping by a Hue variable, the plot should feature\n"
+                                  "separate points for different levels within the Hue variable category")
             self.size = QDoubleSpinBox(maximum=10, minimum=1, value=4.5, singleStep=0.1)
+            self.size.setToolTip("Indicate the radius of the marker points. Units are arbitary.")
             self.linewidth = QDoubleSpinBox(maximum=2, minimum=0, value=0.1, singleStep=0.1)
+            self.linewidth.setToolTip("Indicate the thickness of the outline around points. Units are arbitary")
             self.cmb_palette = self.UI_Setup_PaletteCombobox()
+            self.cmb_palette.setToolTip("Indicate the color palette that should be used")
             self.axes_kwargs = self.UI_Setup_AxesMappings(["dodge", "size", "linewidth", "palette"],
                                                           [self.dodge, self.size, self.linewidth, self.cmb_palette])
             # Create the underlying widget container and form layout
@@ -243,11 +288,19 @@ class xASL_GUI_FacetManager(QWidget):
         elif plot_type == "Box Plot":
             self.plotting_func = sns.boxplot
             self.barwidth = QDoubleSpinBox(maximum=1, minimum=0, value=0.7, singleStep=0.05)
+            self.barwidth.setToolTip("Indicate the width of the bar outlines")
             self.dodge = QCheckBox(checked=True)
+            self.dodge.setToolTip("Indicate whether, when grouping by a Hue variable, the plot should feature\n"
+                                  "separated boxes for different levels within the Hue variable category")
             self.fliersize = QDoubleSpinBox(maximum=10, minimum=0, value=5, singleStep=0.25)
+            self.fliersize.setToolTip("Indicate the size of the markers used to dictate outliers. Units are arbitrary")
             self.linewidth = QDoubleSpinBox(maximum=5, minimum=0, value=1.55, singleStep=0.05)
+            self.linewidth.setToolTip("Indicate the thickness of the outline for the boxes. Units are arbitrary")
             self.whis = QDoubleSpinBox(maximum=3, minimum=0, value=1.5, singleStep=0.1)
+            self.whis.setToolTip("Indicate the proportion of the IQR past the low and high quartiles\n"
+                                 "to extend the plot's whiskers towards")
             self.cmb_palette = self.UI_Setup_PaletteCombobox()
+            self.cmb_palette.setToolTip("Indicate the color palette that should be used")
             self.axes_kwargs = self.UI_Setup_AxesMappings(["width", "dodge", "fliersize",
                                                            "linewidth", "palette", "whis"],
                                                           [self.barwidth, self.dodge, self.fliersize,
@@ -269,12 +322,21 @@ class xASL_GUI_FacetManager(QWidget):
             self.plotting_func = sns.violinplot
             self.kernalbwalgo = QComboBox()
             self.kernalbwalgo.addItems(["scott", "silverman"])
+            self.kernalbwalgo.setToolTip("Indicate the algorithm to use when computing the kernel bandwidth")
             self.scale = QComboBox()
+            self.scale.setToolTip("Indicate the method used to scale each violin")
             self.scale.addItems(["area", "count", "width"])
             self.scale_hue = QCheckBox(checked=True)
+            self.scale_hue.setToolTip("When nesting violins along a Hue grouping variable, whether the scaling \n"
+                                      "is computed within each level of the major grouping variable (CHECKED)\n"
+                                      "or across all the violins in the plot (UNCHECKED)")
             self.dodge = QCheckBox(checked=True)
+            self.dodge.setToolTip("Indicate whether, when grouping by a Hue variable, the plot should feature\n"
+                                  "separated violins for different levels within the Hue variable category")
             self.linewidth = QDoubleSpinBox(maximum=5, minimum=0, value=1.8, singleStep=0.1)
+            self.linewidth.setToolTip("Indicate the width of the lines outlining the frame of violins")
             self.cmb_palette = self.UI_Setup_PaletteCombobox()
+            self.cmb_palette.setToolTip("Indicate the color palette that should be used")
             self.axes_kwargs = self.UI_Setup_AxesMappings(["bw", "scale", "scale_hue", "dodge", "linewidth", "palette"],
                                                           [self.kernalbwalgo, self.scale, self.scale_hue, self.dodge,
                                                            self.linewidth,
@@ -294,11 +356,19 @@ class xASL_GUI_FacetManager(QWidget):
         elif plot_type == "Boxen Plot":
             self.plotting_func = sns.boxenplot
             self.barwidth = QDoubleSpinBox(maximum=1, minimum=0, value=0.8, singleStep=0.05)
+            self.barwidth.setToolTip("Indicate the width of a boxen element when NOT using hue-based nesting")
             self.dodge = QCheckBox(checked=True)
+            self.dodge.setToolTip("Indicate whether, when grouping by a Hue variable, the plot should feature\n"
+                                  "separated elements for different levels within the Hue variable category")
             self.linewidth = QDoubleSpinBox(maximum=5, minimum=0, value=0.7, singleStep=0.1)
+            self.linewidth.setToolTip("Indicate the width of the lines outlining the frame of the boxen elements")
             self.outlier_prop = QDoubleSpinBox(maximum=1, minimum=0, value=0.007, singleStep=0.001)
+            self.outlier_prop.setToolTip("Indicate the proportion of the data believe to be outliers\n"
+                                         "(0 meaning none and 1 meaning 1)")
             self.show_outliers = QCheckBox(checked=True)
+            self.show_outliers.setToolTip("Indicate whether outliers should be displayed")
             self.cmb_palette = self.UI_Setup_PaletteCombobox()
+            self.cmb_palette.setToolTip("Indicate the color palette that should be used")
             self.axes_kwargs = self.UI_Setup_AxesMappings(["width", "dodge", "linewidth", "outlier_prop",
                                                            "showfliers", "palette"],
                                                           [self.barwidth, self.dodge, self.linewidth, self.outlier_prop,
@@ -319,10 +389,16 @@ class xASL_GUI_FacetManager(QWidget):
             self.plotting_func = sns.scatterplot
             self.size_grouper = DandD_Graphing_ListWidget2LineEdit(self.parent_cw, self.all_dtypes)
             self.size_grouper.setPlaceholderText("(Optional) Drag & Drop the Markersize-Grouping Variable")
+            self.size_grouper.setToolTip("Indicate the variable by which data should be grouped\n"
+                                         "using marker size differences")
             self.style_grouper = DandD_Graphing_ListWidget2LineEdit(self.parent_cw, ["object", "category"])
             self.style_grouper.setPlaceholderText("(Optional) Drag & Drop the Markerstyle-Grouping Variable")
+            self.style_grouper.setToolTip("Indicate the variable by which data should be grouped\n"
+                                          "using marker style differences")
             self.cmb_palette = self.UI_Setup_PaletteCombobox()
+            self.cmb_palette.setToolTip("Indicate the color palette that should be used")
             self.spinbox_markersize = QDoubleSpinBox(maximum=100, minimum=0, value=40, singleStep=1)
+            self.spinbox_markersize.setToolTip("Indicate the radius of the points. Units are arbitary.")
             self.axes_kwargs = self.UI_Setup_AxesMappings(["size", "style", "palette", "s"],
                                                           [self.size_grouper, self.style_grouper,
                                                            self.cmb_palette, self.spinbox_markersize])
@@ -380,7 +456,10 @@ class xASL_GUI_FacetManager(QWidget):
     # Convenience function to generate the axes-level widgets that will grant access to legend parameters
     def UI_Setup_Btn2LegendParms(self):
         self.chk_showlegend = QCheckBox(clicked=self.legend_widget.sendSignal_legendparms_updateplot)
+        self.chk_showlegend.setToolTip("Whether the legend should be shown for the plots")
         self.btn_legendparms = QPushButton("Change Legend Parameters", clicked=self.legend_widget.show)
+        self.btn_legendparms.setToolTip("Click to open a new window with additional parameters\n"
+                                        "controlling the legend for this type of plot")
         self.formlay_axesparms.addRow("Show legend in figure?", self.chk_showlegend)
         self.formlay_axesparms.addRow(self.btn_legendparms)
 

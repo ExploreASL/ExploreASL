@@ -3,8 +3,8 @@
 > Complementary GUI to assist Arterial Spin Labelling analysis by ExploreASL
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-![Version](https://img.shields.io/badge/Version-0.2.0-yellow)
-![PythonVersions](https://img.shields.io/badge/Python-3.7%20%7C%203.8-green)
+![Version](https://img.shields.io/badge/Version-0.2.3-yellow)
+![PythonVersions](https://img.shields.io/badge/Python-3.8-green)
 
 ## Graphics and Examples
 
@@ -94,7 +94,7 @@ A: The underlying toolkit utilized in the creation of this program is PySide2, a
 
 > **Q: Do I need MATLAB in order to run this program?**
 
-A: Unfortunately, as ExploreASL itself has not been compiled into a binary executable, the GUI currently remains reliant on the user having an installed & activated version of MATLAB on their machine. Upon ExploreASL becoming a separate executable, this GUI will no longer require MATLAB to be present.
+A: Unfortunately, as ExploreASL itself has not been compiled into a binary executable, the GUI currently remains reliant on the user having an installed & activated version of MATLAB 2019a or later on their machine. Upon ExploreASL becoming a separate executable, this GUI will no longer require MATLAB to be present.
 
 > **Q: The number of cores listed in your Executor module is off. My machine has ___ cores but you list ___ instead.**
 

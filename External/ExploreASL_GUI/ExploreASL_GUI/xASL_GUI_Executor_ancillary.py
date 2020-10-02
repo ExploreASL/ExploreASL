@@ -112,11 +112,14 @@ def calculate_anticipated_workload(parmsdict, run_options, translators):
             directory = os.path.join(analysis_directory, "lock", "xASL_module_Structural", subject,
                                      "xASL_module_Structural")
             current_status_files = os.listdir(directory)
+            ###########################################
+            # Keeping this here in case of switch back
             if has_flair_img:
                 workload = default_workload + flair_workload
             else:
                 workload = default_workload
-
+            # workload = default_workload + flair_workload  # The full workload is assumed now every time
+            ############################################
             # Filter out any anticipated status files that are already present in the lock dirs
             filtered_workload = set(workload).difference(set(current_status_files))
             # Append the filepaths; these will be used after analysis to check for incompleted STATUS workloads

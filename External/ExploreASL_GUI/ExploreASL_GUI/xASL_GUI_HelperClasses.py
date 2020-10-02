@@ -14,6 +14,7 @@ class DandD_Graphing_ListWidget2LineEdit(QLineEdit):
         super().__init__(parent)
         self.permitted_dtypes = dtype_list
         self.setAcceptDrops(True)
+        self.setClearButtonEnabled(True)
         self.PostProc_widget = postproc_widget
 
     def dragEnterEvent(self, event) -> None:

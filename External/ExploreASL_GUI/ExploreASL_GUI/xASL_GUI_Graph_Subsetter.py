@@ -50,10 +50,11 @@ class xASL_GUI_Subsetter(QWidget):
 
         colnames = df.columns
         for colname in colnames:
+
             # Skip any column based on criteria
             if any([colname in self.current_subsettable_fields.keys(),  # skip if already encountered
                     str(df[colname].dtype) not in ["object", "category"],  # skip if not categorical
-                    colname in ["SUBJECT", "SubjectNList"]  # skip some unnecessary defaults with too many categories
+                    colname in ["SUBJECT", "SubjectNList", "MeanMotion"]  # skip some unnecessary defaults
                     ]):
                 continue
 
@@ -203,7 +204,7 @@ class xASL_GUI_Datatype_Indicator(QWidget):
         self.parent_cw = parent
 
         self.covariate_cols = {}
-        self.off_limits = {"Side of the Brain", "CBF", "Anatomical Area", "LongitudinalTimePoint",
+        self.off_limits = {"Side of the Brain", "CBF", "Anatomical Area", "MeanMotion", "LongitudinalTimePoint",
                            "AcquisitionTime", "GM_vol", "WM_vol", "CSF_vol", "GM_ICVRatio", "GMWM_ICVRatio",
                            "WMH_vol", "WMH_count", "SUBJECT", "Site", "SubjectNList"}
         self.dtypes_to_general = {"object": "categorical", "category": "categorical", "bool": "categorical",
@@ -231,7 +232,7 @@ class xASL_GUI_Datatype_Indicator(QWidget):
         # Always start off with a clearing of the contents
         self.clear_contents()
         # If the lineedit for the covariates dataframe file is empty during a dataload, clear everything
-        if self.parent_cw.le_demographics_file.text() == '':
+        if self.parent_cw.le_metadata.text() == '':
             return
 
         # Otherwise, update the widget
