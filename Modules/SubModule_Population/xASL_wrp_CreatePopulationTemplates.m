@@ -1,4 +1,4 @@
-function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre)
+function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre, bUpdateMetadata)
 %xASL_wrp_CreatePopulationTemplates ExploreASL Population module wrapper,
 %creates population parametric images for each ScanType
 %
@@ -31,6 +31,10 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 %                       "SpecificScantype" above). First should be a
 %                       functionhandle, e.g. @xASL_stat_MeanNan (not a
 %                       string)
+%   bUpdateMetadata   - boolean specifying if we reload the metadata, e.g.
+%                       for potentially other defined cohorts etc in the
+%                       Participants.tsv. This can some time though.  Only relevant when computing multiple sets. 
+%                       (OPTIONAL, DEFAULT = false);
 %
 % OUTPUT: n/a
 %
@@ -100,6 +104,9 @@ else
         FunctionsAre{2}{1} = FunctionsAre{2};
     end    
 end 
+if nargin<8 || isempty(bUpdateMetadata)
+    bUpdateMetadata = false;
+end
 
 if ~isfield(x,'GradualSkull')
     x.GradualSkull = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'));
@@ -118,7 +125,9 @@ xASL_adm_CreateDir(x.D.TemplatesStudyDir);
 
 if bCompute4Sets
     % Reload set parameters to be sure
-    x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
+    if bUpdateMetadata
+        x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
+    end
     
     if isempty(Sets2Check)
         % Define sets to create comparative stats for
@@ -249,8 +258,15 @@ for iScanType=1:length(PreFixList)
             LoadFiles = '';
             UnAvailable = 0;
             NoImageN = 1;
+            SetsID = 0;
             % Searching for available images
-
+            
+            if size(x.S.SetsID, 1)~=x.nSubjectsSessions
+                error('Mismatch between x.S.SetsID & x.nSubjectsSessions');
+            end
+            
+            LoadSetsID = logical(zeros(size(x.S.SetsID, 1), 1));
+            
             for iSubject = 1:x.nSubjects
                 SubjSess = (iSubject-1)*x.nSessions + iSession;
                 xASL_TrackProgress(SubjSess,x.nSubjects*x.nSessions);
@@ -259,6 +275,7 @@ for iScanType=1:length(PreFixList)
                 if xASL_exist(PathNII,'file')
                     % If exist, add this subject/image to the list
                     LoadFiles{end+1,1} = PathNII;
+                    LoadSetsID(SubjSess, 1) = 1;
                     xASL_io_ReadNifti(PathNII);
                 else
                     % if doesnt exist, dont add to the list
@@ -270,7 +287,6 @@ for iScanType=1:length(PreFixList)
             if isempty(LoadFiles)
                 fprintf('\n%s',['No ' PreFixList{iScanType} ' files found, skipping...']);
             else
-
                 fprintf(', loading images:   ');
                 % load data
 
@@ -285,26 +301,28 @@ for iScanType=1:length(PreFixList)
                     fprintf('\n%s',['More than 10% missing ' PreFixList{iScanType} ' files, skipping...']);
                 else
 
-                    IM = zeros(Size1,nSize,'single'); % pre-allocating for speed
-                    if bSaveUnmasked; IM2noMask = zeros(121,145,121,nSize, 'single'); end
+                    IM = zeros(Size1,nLoad,'single'); % pre-allocating for speed
+                    if bSaveUnmasked; IM2noMask = zeros(121,145,121,nLoad, 'single'); end
 
-                    for iSubject=1:nLoad % add images
-                        xASL_TrackProgress(iSubject,nLoad);
-                        tempIM = xASL_io_Nifti2Im(LoadFiles{iSubject,1});
+                    for iLoad=1:nLoad % add images
+                        xASL_TrackProgress(iLoad,nLoad);
+                        tempIM = xASL_io_Nifti2Im(LoadFiles{iLoad,1});
                         tempIM(tempIM<0) = 0; % clipping below zero for visualization
                         tempIM1 = xASL_im_IM2Column(tempIM, x.WBmask);
 
-                        if iSubject>1 && ~(size(tempIM1,1)==size(IM,1))
-                            warning(['Wrong size:' LoadFiles{iSubject,1}]);
+                        if iLoad>1 && ~(size(tempIM1,1)==size(IM,1))
+                            warning(['Wrong size:' LoadFiles{iLoad,1}]);
                             bProceed = 0;
                             % proceed with next ScanType
                         else % add the image
-                            IM(:,iSubject) = tempIM1;
-                            if bSaveUnmasked; IM2noMask(:,:,:,iSubject) = tempIM; end
+                            IM(:,iLoad) = tempIM1;
+                            if bSaveUnmasked; IM2noMask(:,:,:,iLoad) = tempIM; end
                         end
                     end
                     fprintf('\n');
 
+                    CurrentSetsID = x.S.SetsID(LoadSetsID, :);
+                    
                     if bProceed
                         if bRemoveOutliers
                             % Exclude outliers
@@ -334,7 +352,7 @@ for iScanType=1:length(PreFixList)
                                     warning(['Cannot create maps for non-ordinal set ' x.S.SetsName{Sets2Check(iSet)} ', skipping'])
                                 else
                                     % run an iteration for a subset
-                                    xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check, IM, IM2noMask, iSet, iScanType, SessionsExist, iSession, TemplateNameList);
+                                    xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check, IM, IM2noMask, iSet, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID);
                                 end
                             end % iSet=1:length(Sets2Check)
                         end % if bComputeSets
@@ -359,12 +377,12 @@ end
 
 %% ===================================================================================
 %% ===================================================================================
-function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check, IM, IM2noMask, iSet, iScanType, SessionsExist, iSession, TemplateNameList)
+function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check, IM, IM2noMask, iSet, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID)
 %xASL_wrp_CreatePopulationTemplates4Sets Subfunction that creates the parametric images for subsets
 
                 
 % Obtain unique options for this set
-TempUnique = unique(x.S.SetsID(:,Sets2Check(iSet)));
+TempUnique = unique(CurrentSetsID(:,Sets2Check(iSet)));
 UniqueSet = TempUnique(~isnan(TempUnique));
 % Now if we have a 0, switch it to 1
 % This can happen if we have a set with string options, where
@@ -384,7 +402,7 @@ bFlipHemisphere = min(cellfun(@(y) ~isempty(regexp(y, '^(.|)(left|right|l|r|n/a|
 if bFlipHemisphere
     % get option index for right
     Index2Flip = find(cellfun(@(y) ~isempty(regexp(y, '^(.|)(right|r)(.|)$')), SetOptions));
-    Images2Flip = x.S.SetsID(:,Sets2Check(iSet))==Index2Flip;
+    Images2Flip = CurrentSetsID(:,Sets2Check(iSet))==Index2Flip;
 
     % Flip the images
     % we iterate this, to avoid using large memory
@@ -405,13 +423,13 @@ if bFlipHemisphere
     % now we change the set options & ID to inclusion
     % instead of left/right
     IndexInclusion = find(cellfun(@(y) ~isempty(regexp(y, '^(.|)(left|right|l|r)(.|)$')), SetOptions));
-    SetID = ~max(x.S.SetsID(:,Sets2Check(iSet))==IndexInclusion, [], 2)+1;
+    SetID = ~max(CurrentSetsID(:,Sets2Check(iSet))==IndexInclusion, [], 2)+1;
     SetOptions = {'' 'n/a'};
     UniqueSet = [1;2];
 
 else
     SetOptions = lower(x.S.SetsOptions{Sets2Check(iSet)});
-    SetID = x.S.SetsID(:,Sets2Check(iSet));
+    SetID = CurrentSetsID(:,Sets2Check(iSet));
 end
 
 for iU=1:length(UniqueSet) % iterate over the options/categories of this set
@@ -428,21 +446,21 @@ for iU=1:length(UniqueSet) % iterate over the options/categories of this set
             end
 
             % select those within the set/group only
-            IM = IM(:,WithinGroup);
+            CurrentIM = IM(:,WithinGroup);
 
             if bRemoveOutliers
                 % Exclude outliers
-                NotOutliers = find(xASL_stat_RobustMean(IM))';
+                NotOutliers = find(xASL_stat_RobustMean(CurrentIM))';
             else
-                NotOutliers = 1:size(IM,2);
+                NotOutliers = 1:size(CurrentIM,2);
             end
 
             % compute maps
             NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Sets2Check(iSet)} '_' SetOptions{UniqueSet(iU)} '_n' num2str(length(NotOutliers))];
-            xASL_wrp_CreatePopulationTemplates_ComputeParametricIm(IM(:,NotOutliers), NameIM, x, FunctionsAre, true);
+            xASL_wrp_CreatePopulationTemplates_ComputeParametricIm(CurrentIM(:,NotOutliers), NameIM, x, FunctionsAre, true);
             if bSaveUnmasked
-                IM2noMask = IM2noMask(:,:,:,WithinGroup);
-                xASL_wrp_CreatePopulationTemplates_ComputeParametricIm(IM2noMask(:,:,:,NotOutliers),NameIM, x, FunctionsAre, false);
+                CurrentIM2noMask = IM2noMask(:,:,:,WithinGroup);
+                xASL_wrp_CreatePopulationTemplates_ComputeParametricIm(CurrentIM2noMask(:,:,:,NotOutliers),NameIM, x, FunctionsAre, false);
             end
         catch ME
             warning('Getting set didnt work');
