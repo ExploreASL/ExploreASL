@@ -5,6 +5,7 @@ from ExploreASL_GUI.xASL_GUI_HelperFuncs import set_widget_icon
 from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
 from ExploreASL_GUI.xASL_GUI_HelperFuncs_StringOps import set_os_dependent_text
 import os
+import shutil
 
 
 class xASL_FileExplorer(QWidget):
@@ -41,7 +42,7 @@ class xASL_FileExplorer(QWidget):
         self.treev_file.customContextMenuRequested.connect(self.menuContextTree)
         self.model_file = QFileSystemModel()
 
-        self.model_file.setRootPath(self.model_file.myComputer(Qt.DisplayRole))
+        self.model_file.setRootPath(self.config["DefaultRootDir"])
         self.treev_file.setModel(self.model_file)
         self.treev_file.setRootIndex(self.model_file.index(self.config["DefaultRootDir"]))
         self.treev_file.header().resizeSection(0, 250)
@@ -77,12 +78,33 @@ class xASL_FileExplorer(QWidget):
         index = self.treev_file.indexAt(point)
 
         if not index.isValid():
+            menu = QMenu()
+            paste_action = menu.addAction("Paste")
+            paste_action.triggered.connect(self.menu_based_paste)
+            menu.exec_(self.treev_file.mapToGlobal(point))
             return
 
         # We build the menu.
         menu = QMenu()
-        action = menu.addAction("To be implemented to a future update")
+        delete_action = menu.addAction("Delete")
+        delete_action.triggered.connect(self.menu_based_delete)
+        copy_action = menu.addAction("Copy")
+        copy_action.triggered.connect(self.menu_based_copy)
+        paste_action = menu.addAction("Paste")
+        paste_action.triggered.connect(self.menu_based_paste)
         menu.exec_(self.treev_file.mapToGlobal(point))
+
+    # Hack, this method of calling the event prevents automatic triggering
+    def menu_based_delete(self):
+        self.treev_file.delete_event()
+
+    # Hack, this method of calling the event prevents automatic triggering
+    def menu_based_copy(self):
+        self.treev_file.copy_event()
+
+    # Hack, this method of calling the event prevents automatic triggering
+    def menu_based_paste(self):
+        self.treev_file.paste_event()
 
     def path_change(self, newpath, current_index):
         try:
@@ -172,6 +194,8 @@ class xASL_FileExplorer(QWidget):
 
         self.dev_path_print("Pressed go_up")
 
+    # Go into a directory or open a file
+    # noinspection PyCallByClass
     def go_down(self, filepath_modelindex):
         filepath = self.model_file.filePath(filepath_modelindex)
         # User wants to open a directory
@@ -243,6 +267,7 @@ class xASL_FileExplorer(QWidget):
             print("----------------------------\n")
 
 
+# noinspection PyCallingNonCallable
 class xASL_FileView(QTreeView):
     """
     Slightly altered QTreeview to allow for more user-friendly functionality relative to the default implementation.
@@ -250,6 +275,10 @@ class xASL_FileView(QTreeView):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self.pressed_keys = []
+        self.copy_buffer = []
+        self.is_busy = False
+        self.threadpool = QThreadPool()
 
     def mouseDoubleClickEvent(self, event):
         """
@@ -260,3 +289,160 @@ class xASL_FileView(QTreeView):
             return
         else:
             super(xASL_FileView, self).mouseDoubleClickEvent(event)
+
+    @Slot()
+    def no_longer_busy(self):
+        print("File operation was completed. Resetting 'is busy' variable back to False")
+        self.is_busy = False
+
+    def delete_event(self):
+        if self.is_busy:
+            return
+        selected_items = {self.model().filePath(model_idx) for model_idx in self.selectedIndexes()}
+        selected_items = list(selected_items)
+        print(f"Deleting items: {selected_items}")
+        worker = xASL_FileWorker(srcs=selected_items, dst=None, task="Delete")
+        worker.signals.signal_done_processing.connect(self.no_longer_busy)
+        self.is_busy = True
+        self.threadpool.start(worker)
+
+    def copy_event(self):
+        if self.is_busy:
+            return
+        selected_items = {self.model().filePath(model_idx) for model_idx in self.selectedIndexes()}
+        selected_items = list(selected_items)
+        print(f"Copying items: {selected_items}")
+        self.copy_buffer.clear()
+        self.copy_buffer.extend(selected_items.copy())
+
+    def paste_event(self):
+        current_dir = self.model().rootPath()
+        print(f"{current_dir=}")
+        worker = xASL_FileWorker(srcs=self.copy_buffer.copy(), dst=current_dir, task="Paste")
+        worker.signals.signal_done_processing.connect(self.no_longer_busy)
+        self.is_busy = True
+        self.threadpool.start(worker)
+        self.copy_buffer.clear()
+
+    def keyPressEvent(self, event: QKeyEvent):
+        # Conditions to break early
+        if any([event.isAutoRepeat(), self.is_busy, event.key() in self.pressed_keys]):
+            return
+
+        print("Key Pressed")
+        self.pressed_keys.append(event.key())
+
+        # Initiate delete
+        if all([len(self.pressed_keys) == 1, Qt.Key_Delete in self.pressed_keys]):
+            print("Attempting to initiate delete event")
+            self.delete_event()
+            self.pressed_keys.clear()
+
+        # Initiate copy
+        elif all([len(self.pressed_keys) == 2,
+                  Qt.Key_Control in self.pressed_keys and Qt.Key_C in self.pressed_keys]):
+            print("Attempting to initiate copy event")
+            self.copy_event()
+            self.pressed_keys.clear()
+
+        # Initiate paste
+        elif all([len(self.copy_buffer) > 0,
+                  len(self.pressed_keys) == 2,
+                  Qt.Key_Control in self.pressed_keys and Qt.Key_V in self.pressed_keys]):
+            print("Attempting to initiate paste event")
+            self.paste_event()
+            self.pressed_keys.clear()
+
+        else:
+            print("Nothing was done:")
+            print(f"{self.pressed_keys=}")
+            print(f"{self.copy_buffer=}")
+            print(f"{self.is_busy=}")
+            pass
+
+        super(xASL_FileView, self).keyPressEvent(event)
+
+    def keyReleaseEvent(self, event: QKeyEvent):
+        if any([event.isAutoRepeat(), self.is_busy]):
+            return
+
+        try:
+            del self.pressed_keys[-1]
+        except IndexError:
+            self.pressed_keys.clear()
+
+        super(xASL_FileView, self).keyReleaseEvent(event)
+
+
+class xASL_FileWorker_Signals(QObject):
+    signal_done_processing = Signal()
+
+
+class xASL_FileWorker(QRunnable):
+    def __init__(self, srcs, dst, task):
+        super().__init__()
+        self.signals = xASL_FileWorker_Signals()
+        self.srcs = srcs
+        self.dst = dst
+        self.task = task
+
+    def run(self):
+        if self.task == "Delete":
+            for filepath in self.srcs:
+                if os.path.isfile(filepath):
+                    os.remove(filepath)
+                else:
+                    shutil.rmtree(filepath, ignore_errors=True)
+
+        elif self.task == "Paste":
+            for filepath in self.srcs:
+                copy_flag = True
+                copy_number = 1
+
+                # If it is a file
+                if os.path.isfile(filepath):
+                    try:
+                        dst = os.path.join(self.dst, os.path.basename(filepath))
+                        shutil.copyfile(filepath, dst)
+                    except shutil.SameFileError:
+
+                        # Increment the copy string until it no longer spawns the SameFileError
+                        while copy_flag:
+                            if copy_number == 1:
+                                copy_str = "- Copy"
+                            else:
+                                copy_str = f"- Copy_{copy_number}"
+
+                            try:
+                                fileparts = os.path.splitext(os.path.basename(filepath))
+                                dst = os.path.join(self.dst, fileparts[0] + copy_str + fileparts[1])
+                                if os.path.exists(dst):
+                                    continue
+                                shutil.copyfile(filepath, dst)
+                                copy_flag = False
+                            except shutil.SameFileError:
+                                copy_number += 1
+                # If it is a folder
+                else:
+                    try:
+                        dst = os.path.join(self.dst, os.path.basename(filepath))
+                        shutil.copytree(filepath, dst)
+                    except FileExistsError:
+
+                        # Increment the copy string until it no longer spawns the SameFileError
+                        while copy_flag:
+                            if copy_number == 1:
+                                copy_str = "- Copy"
+                            else:
+                                copy_str = f"- Copy_{copy_number}"
+                            try:
+                                dst = os.path.join(self.dst, os.path.basename(filepath + copy_str))
+                                shutil.copytree(filepath, dst)
+                                copy_flag = False
+                            except FileExistsError:
+                                copy_number += 1
+
+        else:
+            pass
+
+        self.signals.signal_done_processing.emit()
