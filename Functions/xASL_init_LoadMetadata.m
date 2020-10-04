@@ -97,15 +97,16 @@ function [x] = xASL_init_LoadMetadata(x)
         fprintf('No participants.tsv file detected\n');
     end
     
-    x = xASL_init_LoadMat(x); % legacy
+    MatFileList = xASL_adm_GetFileList(x.D.ROOT, '^(?!(x|xASL|dcm2niiCatchedErrors)).*\.mat$', 'FPList', [0 Inf]);
+    
+    x = xASL_init_LoadMat(x, MatFileList); % legacy
     
     %% 
     %% -----------------------------------------------------------------------------------------------
     %% Add stats in participants.tsv
-    MatsDetected = ~isempty(xASL_adm_GetFileList(x.D.ROOT, '^(?!x)(?!xASL)(?!dcm2niiCatchedErrors)).*\.mat$', 'FPList', [0 Inf]));
     bCreateParticipantsTsv = 0;
     
-    if MatsDetected
+    if ~isempty(MatFileList)
         warning('Legacy .mat-files detected in analysis rootfolder');
         if ~isfield(x, 'S') || ~isfield(x.S, 'SetsName')
             fprintf('But not added as sets\n');
@@ -123,7 +124,7 @@ function [x] = xASL_init_LoadMetadata(x)
             fprintf('Consider deleting the mat-files and keep the participants.tsv file only\n');
             bCreateParticipantsTsv = 1;
         end
-    end     
+    end
         
     if bCreateParticipantsTsv
         for iSession=1:x.nSessions
@@ -134,7 +135,7 @@ function [x] = xASL_init_LoadMetadata(x)
         for iSet=1:length(x.S.SetsName)
             % skip creating metadata columns for some parameters
             % (session/subjectnlist)
-            if isempty(regexp(lower(x.S.SetsName{iSet}),'(session|subjectnlist)'))
+            if isempty(regexpi(x.S.SetsName{iSet},'(session|subjectnlist)'))
                 % Fill VarData
                 VarData = VarDataOri;
 
@@ -228,7 +229,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------------------
-function [x] = xASL_init_LoadMat(x)
+function [x] = xASL_init_LoadMat(x, MatFileList)
 %xASL_init_LoadMat
 
     %% Add from mat-files. Start with site
@@ -238,13 +239,11 @@ function [x] = xASL_init_LoadMat(x)
     % (visit), session (run), cohort etc.
     SiteMat = fullfile(x.D.ROOT, 'Site.mat');
 
-    FileList = xASL_adm_GetFileList(x.D.ROOT, '^(?!x)(?!xASL)(?!dcm2niiCatchedErrors)).*\.mat$','FPList', [0 Inf]);
-
     if exist(SiteMat,'file')
         FList{1} = SiteMat;
-        FList(2:1+length(FileList),1) = FileList;
+        FList(2:1+length(MatFileList),1) = MatFileList;
     else
-        FList = FileList;
+        FList = MatFileList;
     end
 
     for iL=1:length(FList)
