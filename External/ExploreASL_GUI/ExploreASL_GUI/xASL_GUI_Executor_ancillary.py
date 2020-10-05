@@ -1,10 +1,6 @@
 import os
 from glob import glob
 import re
-from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
-from PySide2.QtWidgets import QWidget, QLabel, QVBoxLayout
-from PySide2.QtGui import QMovie, Qt
-from PySide2.QtCore import QSize, QByteArray
 from platform import system
 from itertools import chain
 from pprint import pprint

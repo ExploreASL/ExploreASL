@@ -409,19 +409,21 @@ class xASL_FileWorker(QRunnable):
                         # Increment the copy string until it no longer spawns the SameFileError
                         while copy_flag:
                             if copy_number == 1:
-                                copy_str = "- Copy"
+                                copy_str = " - Copy"
                             else:
-                                copy_str = f"- Copy_{copy_number}"
+                                copy_str = f" - Copy_{copy_number}"
 
                             try:
                                 fileparts = os.path.splitext(os.path.basename(filepath))
                                 dst = os.path.join(self.dst, fileparts[0] + copy_str + fileparts[1])
                                 if os.path.exists(dst):
+                                    copy_number += 1
                                     continue
                                 shutil.copyfile(filepath, dst)
                                 copy_flag = False
                             except shutil.SameFileError:
                                 copy_number += 1
+                                print(f"Incremented copy_number to {copy_number}")
                 # If it is a folder
                 else:
                     try:
@@ -432,9 +434,9 @@ class xASL_FileWorker(QRunnable):
                         # Increment the copy string until it no longer spawns the SameFileError
                         while copy_flag:
                             if copy_number == 1:
-                                copy_str = "- Copy"
+                                copy_str = " - Copy"
                             else:
-                                copy_str = f"- Copy_{copy_number}"
+                                copy_str = f" - Copy_{copy_number}"
                             try:
                                 dst = os.path.join(self.dst, os.path.basename(filepath + copy_str))
                                 shutil.copytree(filepath, dst)

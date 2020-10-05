@@ -1,8 +1,7 @@
-from PySide2.QtWidgets import QWidget, QLabel, QComboBox, QFormLayout, QVBoxLayout, QMessageBox, QPushButton, \
-    QScrollArea
+from PySide2.QtWidgets import (QWidget, QLabel, QComboBox, QFormLayout, QVBoxLayout, QPushButton,
+                               QScrollArea)
 from PySide2.QtGui import Qt, QFont
 from PySide2.QtCore import Signal, Slot
-# from ExploreASL_GUI.xASL_GUI_Plotting import xASL_Plotting
 import pandas as pd
 import numpy as np
 

@@ -4,10 +4,9 @@ from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit, D
 from ExploreASL_GUI.xASL_GUI_HelperFuncs_StringOps import set_os_dependent_text
 import json
 import os
-from glob import iglob, glob
+from glob import iglob
 from tdda import rexpy
 from more_itertools import peekable
-import nibabel as nib
 
 
 class xASL_Parms(QMainWindow):
