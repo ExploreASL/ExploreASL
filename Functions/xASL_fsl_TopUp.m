@@ -348,6 +348,7 @@ else
                 warning('Significant amount of negative voxels in TopUp result, could be a bug');
             end
         end
+    end
 end
 
 %% Householding
