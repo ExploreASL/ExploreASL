@@ -34,8 +34,12 @@ function x = DataParTemplate(x)
 %                             if disabled, this function will try to use the system-initialized FSL 
 %                             and throw an error if FSL is not initialized
 %                             (OPTIONAL, DEFAULT = disabled)
-% x.MakeNIfTI4DICOM - Boolean to output CBF native space maps resampled and/or registered to the original T1w/ASL, and contrast adapted and in 12 bit
-% 					  range allowing to convert the NIfTI to a DICOM file, e.g. for implementation in PACS or other DICOM archives
+% x.MakeNIfTI4DICOM - if set to true, an additional CBF image will be
+%                     created with modifications that allow it to be easily
+%                     implemented back into a DICOM for e.g. PACS:
+%                     1. Remove peak & valley signal, remove NaNs, rescale
+%                     to 12 bit integers, apply original orientation
+%                     (2 copies saved, with original ASL and T1w orientation)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % STUDY PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -294,17 +298,16 @@ function x = DataParTemplate(x)
 %                    - 1 = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel
 %                    - 0 = disabled, use 'flat' kernel with voxels given in PVCNativeSpaceKernel
 %
-% x.MakeNIfTI4DICOM - if set to true, an additional CBF image will be
-%                     created with modifications that allow it to be easily
-%                     implemented back into a DICOM for e.g. PACS:
-%                     1. Remove peak & valley signal, remove NaNs, rescale
-%                     to 12 bit integers, apply original orientation
-%                     (2 copies saved, with original ASL and T1w orientation)
-%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% MASKING & ATLAS PARAMETERS
+% VISUALIZATION PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
+% x.bVisualQCCBFvsGMWMTemplate - if == 1, uses the template GM and WM to make visualization overlays with CBF and other derived maps
+%                              if == 0, uses the individual GM and WM maps of the subject to make visualizations
+%                              (OPTIONAL, DEFAULT = 0)
+% x.bVisualQCCBFvsGMWMContour -  if == 1, then produces the WM and GM as a contour in the overlay with CBF and derived maps, not a full ROI - 1 pixel thickness (contour calculated per slice basis).
+%                              if == 0, then a standard full GM or WM ROI is used
+%                              (OPTIONAL, DEFAULT = 0)
+%   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
 %                       (1 = yes, 0 = no)
 %                       [1 0 0 0] = susceptibility mask (either population-or subject-wise)
 %                       [0 1 0 0] = vascular mask (only subject-wise)

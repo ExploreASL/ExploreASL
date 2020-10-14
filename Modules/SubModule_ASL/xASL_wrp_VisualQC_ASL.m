@@ -181,9 +181,51 @@ function x = xASL_qc_VisualCheckCollective_ASL(x)
 
 x               = xASL_adm_ResetVisualizationSlices(x);
 
-T.ImIn          = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF x.P.Pop_Path_PV_pWM} x.P.Pop_Path_SNR};
-T.ImIn(5:8)     = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Path_noSmooth_M0 x.P.Pop_Path_PV_pGM} x.P.Pop_Path_M0};
-T.ImIn(9:10)    = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT x.P.Pop_Path_PV_pWM}};
+% Path to the WM map used for the QC here
+% This can be either the individual map or the template WM map - based on the input parameters
+if isfield(x,'bVisualQCCBFvsGMWMTemplate') && ~isempty(x.bVisualQCCBFvsGMWMTemplate) && x.bVisualQCCBFvsGMWMTemplate == 1
+	% Use the template version for visualization and not the individual one
+	PathpWM = fullfile(x.D.MapsSPMmodifiedDir,'rc2T1.nii');
+	PathpGM = fullfile(x.D.MapsSPMmodifiedDir,'rc1T1.nii');
+	TextpWM = ['Temp_' x.SUBJECTS{x.iSubject}];
+	TextpGM = ['Temp_' x.SUBJECTS{x.iSubject}];
+else
+	PathpWM = x.P.Pop_Path_PV_pWM;
+	PathpGM = x.P.Pop_Path_PV_pGM;
+	TextpWM = 'Reg';
+	TextpGM = 'Reg';
+end
+
+% If this option is defined, then do not use the full maps, but rather their contours
+if isfield(x,'bVisualQCCBFvsGMWMContour') && ~isempty(x.bVisualQCCBFvsGMWMContour) && x.bVisualQCCBFvsGMWMContour == 1
+	% Load the map
+	imGM = xASL_io_Nifti2Im(PathpGM);
+	imWM = xASL_io_Nifti2Im(PathpWM);
+	
+	% Threshold at 50%
+	imGM = imGM>0.5;
+	imWM = imWM>0.5;
+	
+	% Distance to the inversion == 1 is the inner border
+	imGM = (xASL_im_DistanceTransform(1-imGM)==1);
+	imWM = (xASL_im_DistanceTransform(1-imWM)==1);
+	
+	% Distance to the original mask == 1 is the outer border
+	% imGM = (xASL_im_DistanceTransform(imGM)==1);
+	% imWM = (xASL_im_DistanceTransform(imWM)==1);
+		
+	% Save the temporary map with a contour
+	xASL_io_SaveNifti(PathpGM,fullfile(x.SESSIONDIR,'pGMC.nii'),imGM,[],0);
+	xASL_io_SaveNifti(PathpWM,fullfile(x.SESSIONDIR,'pWMC.nii'),imWM,[],0);
+
+	% In the later - use the contour instead of the mask
+	PathpGM = fullfile(x.SESSIONDIR,'pGMC.nii');
+	PathpWM = fullfile(x.SESSIONDIR,'pWMC.nii');
+end
+	
+T.ImIn          = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF PathpWM} x.P.Pop_Path_SNR};
+T.ImIn(5:8)     = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Path_noSmooth_M0 PathpGM} x.P.Pop_Path_M0};
+T.ImIn(9:10)    = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT PathpWM}};
 
 T.DirOut        = {x.D.ASLCheckDir x.D.SNRdir      x.D.ASLCheckDir       x.D.SNRdir};
 T.DirOut(5:8)   = {x.D.RawDir      x.D.M0CheckDir  x.D.M0regASLdir       x.D.M0CheckDir};
@@ -195,9 +237,9 @@ T.IntScale{8}   = [0.75 0.65];
 T.ColorMapIs{10}= x.S.jet256;
 T.ColorMapIs{11}= {x.S.jet256};
 
-T.NameExt       = {[] [] 'Reg' []};
-T.NameExt( 5:8) = {[] [] 'Reg' []};
-T.NameExt(9:11) = {[] 'Reg' 'AnalysisMask'};
+T.NameExt       = {[] [] TextpWM []};
+T.NameExt( 5:8) = {[] [] TextpGM []};
+T.NameExt(9:11) = {[] TextpWM 'AnalysisMask'};
 
 % Fill missing cells
 Pars = {'ImIn' 'DirOut' 'ClipZero' 'IntScale' 'NameExt' 'ColorMapIs'}; % default pars
@@ -282,6 +324,14 @@ for iN=1:nRows
             x = xASL_vis_AddIM2QC(x,T2);
         end
     end
+end
+
+% Delete the temporary contours if they exist
+if exist(fullfile(x.SESSIONDIR,'pGMC.nii'),'file')
+	xASL_delete(fullfile(x.SESSIONDIR,'pGMC.nii'));
+end
+if exist(fullfile(x.SESSIONDIR,'pWMC.nii'),'file')
+	xASL_delete(fullfile(x.SESSIONDIR,'pWMC.nii'));
 end
 
 fprintf('\n');
