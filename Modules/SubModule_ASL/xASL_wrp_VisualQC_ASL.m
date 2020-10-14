@@ -192,8 +192,14 @@ if isfield(x,'bVisualQCCBFvsGMWMTemplate') && ~isempty(x.bVisualQCCBFvsGMWMTempl
 else
 	PathpWM = x.P.Pop_Path_PV_pWM;
 	PathpGM = x.P.Pop_Path_PV_pGM;
-	TextpWM = 'Reg';
-	TextpGM = 'Reg';
+
+	if isfield(x,'bVisualQCCBFvsGMWMContour') && ~isempty(x.bVisualQCCBFvsGMWMContour) && x.bVisualQCCBFvsGMWMContour == 1
+		TextpWM = ['Reg_' x.SUBJECTS{x.iSubject}];
+		TextpGM = ['Reg_' x.SUBJECTS{x.iSubject}];
+	else
+		TextpWM = 'Reg';
+		TextpGM = 'Reg';
+	end
 end
 
 % If this option is defined, then do not use the full maps, but rather their contours
