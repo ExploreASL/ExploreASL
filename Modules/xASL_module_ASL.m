@@ -228,6 +228,7 @@ end
 iState = 2;
 if ~x.motion_correction
     if bO; fprintf('%s\n','Motion correction was disabled, skipping'); end
+    x.mutex.AddState(StateName{iState});
 elseif ~x.mutex.HasState(StateName{iState})
 
         % Remove previous files
