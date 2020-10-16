@@ -3322,7 +3322,7 @@ row) & after (lower row) TopUp.
 #### Format
 
 ```matlab
-xASL_vis_VisualizeROIs(x, ROI_T1_list, ROI_FLAIR_list)
+xASL_vis_VisualizeROIs(x, ROI_list)
 ```
 
 #### Description

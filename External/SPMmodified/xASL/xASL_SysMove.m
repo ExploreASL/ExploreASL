@@ -53,14 +53,20 @@ function xASL_SysMove(SrcPath, DstPath, bForce,bSourceCheck)
             error('Error moving %s to %s: %s', SrcPath, DstPath, result);
         end
     elseif ispc
-        if bForce
-            strforce = '/Y';
+        if isdeployed
+            % Deployed mode
+            movefile(SrcPath,DstPath,'f');
         else
-            strforce = [];
-        end
-        [status,result] = system(['move ' strforce ' ' SrcPath ' ' DstPath]);
-        if bSourceCheck && status~=0
-            error('Error moving %s to %s: %s', SrcPath, DstPath, result);
+            % Normal windows mode
+            if bForce
+                strforce = '/Y';
+            else
+                strforce = [];
+            end
+            [status,result] = system(['move ' strforce ' ' SrcPath ' ' DstPath]);
+            if bSourceCheck && status~=0
+                error('Error moving %s to %s: %s', SrcPath, DstPath, result);
+            end
         end
     else
         if bForce

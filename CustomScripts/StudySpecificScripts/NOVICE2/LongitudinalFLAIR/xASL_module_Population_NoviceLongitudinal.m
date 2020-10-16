@@ -14,7 +14,7 @@ function [result, x] = xASL_module_Population(x)
 % group level. It assumes that all images were adequately processed in the
 % previous modules. It will perform the following group-wise processing and
 % checks:
-% 
+%
 % 010_CreatePopulationTemplates - Create population average images, to compare scanners, cohorts etc without physiological variance
 % 020_CreateAnalysisMask        - Generate a group-level mask by combining individuals masks, for ROI-based analysis & VBA
 % 030_CreateBiasfield           - When there are multiple scanners, create scanner-specific biasfields (uses Site.mat for this)
@@ -40,11 +40,11 @@ xASL_adm_CreateDir(x.S.StatsDir);
 
 % Define ASL sequence (quick&dirty, if ASL information exists)
 if ~isfield(x,'Sequence') && isfield(x,'readout_dim')
-    if strcmp(x.readout_dim,'2D')
+    if strcmpi(x.readout_dim,'2D')
        x.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of vendor
-    elseif strcmp(x.readout_dim,'3D') && ( ~isempty(regexp(x.Vendor,'Philips')) || ~isempty(regexp(x.Vendor,'Siemens')) )
+    elseif strcmpi(x.readout_dim,'3D') && ( ~isempty(regexpi(x.Vendor,'Philips')) || ~isempty(regexpi(x.Vendor,'Siemens')) )
            x.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
-    elseif strcmp(x.readout_dim,'3D') && ~isempty(regexp(x.Vendor,'GE'))
+    elseif strcmpi(x.readout_dim,'3D') && ~isempty(regexpi(x.Vendor,'GE'))
            x.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
     end
 end
@@ -64,7 +64,7 @@ StateName{9} = '090_DeleteAndZip';
 %% ------------------------------------------------------------------------------------------------------------
 %% 1    Create template images
 if ~x.mutex.HasState(StateName{1})
-    
+
     % Get initial data
     IndexCohort = find(cellfun(@(y) strcmp(y,'Cohort'), x.S.SetsName));
     IndexTP = find(cellfun(@(y) strcmp(y,'LongitudinalTimePoint'), x.S.SetsName));
@@ -73,14 +73,14 @@ if ~x.mutex.HasState(StateName{1})
     CohortIs{3} = x.S.SetsID(:,IndexCohort)==2 & x.S.SetsID(:,IndexTP)==1; % HC 1
     CohortIs{4} = x.S.SetsID(:,IndexCohort)==2 & x.S.SetsID(:,IndexTP)==2; % HC 2
     NameIs = {'HIV1' 'HIV2' 'HC1' 'HC2'};
-    
+
     % Backup data
     SubjectsBackup = x.SUBJECTS;
     SetsIDBackup = x.S.SetsID;
 
     PathFLAIR = fullfile(x.D.TemplatesStudyDir,'FLAIR_bs-mean.nii');
     PathWMH = fullfile(x.D.TemplatesStudyDir,'WMH_SEGM_bs-sum.nii');
-    
+
     for iCohort=1:4
         x.SUBJECTS = SubjectsBackup(CohortIs{iCohort});
         x.nSubjects = length(x.SUBJECTS);
@@ -94,7 +94,7 @@ if ~x.mutex.HasState(StateName{1})
         xASL_Move(PathFLAIR, Path_TemplateFLAIR);
         xASL_Move(PathWMH, Path_TemplateWMH);
     end
-        
+
 
 %     % 5) Get average FLAIR
 %     x.SUBJECTS = SubjectsBackup;
@@ -107,8 +107,8 @@ else
     fprintf('%s\n',[StateName{1} ' has already been performed, skipping...']);
 end
 
-    
-    
+
+
 %% -----------------------------------------------------------------------------
 %% 9    Reduce data size
 if ~x.mutex.HasState(StateName{9})

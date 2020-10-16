@@ -142,6 +142,7 @@ DataColumn = find(strcmp(CellArray(1,:), DataName));
 if isempty(DataColumn)
     DataColumn = size(CellArray,2)+1;
     CellArray{1,DataColumn} = DataName;
+    % now predefine/prefill with NaNs
     CellArray(2:end,DataColumn) = repmat({'n/a'}, [size(CellArray,1)-1 1]);
 elseif length(DataColumn)>1
     warning('Too many columns, skipping');
@@ -156,34 +157,36 @@ end
 for iIndex=1:size(DataIn,1)
     iSubject = strcmp(CellArray(2:end,1), DataIn{iIndex,1});
     iSession = strcmp(CellArray(2:end,2), DataIn{iIndex,2});
-    iRow = find(iSubject & iSession);
+    iRow = find(iSubject & iSession)+1; % add one for the header, assuming that DataIn has no header
     
     if isempty(iRow)
-        iRow = size(CellArray,1)+1;
+        iRow = size(CellArray,1)+1; % next row
         CellArray{iRow,1} = DataIn{iIndex,1};
         CellArray{iRow,2} = DataIn{iIndex,2};
         % Fill non-subject/non-session/non-data columns with 'n/a'
     elseif length(iRow)>1
         warning('This SubjectSession combination exists multiple times, bug? Skipping');
         continue;
-    end     
+    end
     
     IsEmpty = size(CellArray,1)<iRow || isempty(CellArray{iRow,DataColumn}) || strcmp(CellArray{iRow,DataColumn}, 'n/a');
     if IsEmpty || bOverwrite
-        CellArray{iRow+1,DataColumn} = DataIn{iIndex,3}; % iRow+1 for header
+        CellArray{iRow, DataColumn} = DataIn{iIndex,3};
     else
         fprintf('Data already existing, skipping\n');
     end
 end
 
 
-%% -------------------------------------------------------------------------------------------
-%% 6) Sort rows on subjects
-CellArray(2:end,:) = sortrows(CellArray(2:end,:), 1);
-
-%% 7) Fill empty cells
+%% 6) Fill empty cells
 IsEmpty = cellfun(@(y) isempty(y), CellArray);
 CellArray(IsEmpty) = {'n/a'};
+
+
+%% -------------------------------------------------------------------------------------------
+%% 7) Sort rows on subjects
+CellArray(2:end,:) = sortrows(CellArray(2:end,:), 1);
+
         
 
 %% -------------------------------------------------------------------------------------------

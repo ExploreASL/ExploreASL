@@ -62,7 +62,7 @@ end
 
 % Check whether we should do normal or strong biasfield correction
 x.T1BiasFieldRegularization = true; % default
-if isfield(x,'Vendor') && ~isempty(regexp(x.Vendor,'GE'))
+if isfield(x,'Vendor') && ~isempty(regexpi(x.Vendor,'GE'))
     x.T1BiasFieldRegularization = false; % SPM12
     % GE has wider bore scanners, resulting in a wide biasfield
 end
@@ -88,12 +88,12 @@ if x.bFixResolution % if we use CAT12 to segment
     CurrentVoxelSize = tNii.hdr.pixdim(2:4);
     if max(CurrentVoxelSize./[1.5 1.5 1.5]>[1.1 1.1 1.1]) % if any dimension is smaller than 1.5 mm resolution:
         NewVoxelSize = min(CurrentVoxelSize,[1.5 1.5 1.5]);
-    
+
         % first backup T1, if backup doest exist yet
         if ~xASL_exist(x.P.Path_T1_ORI)
             xASL_Copy(x.P.Path_T1, x.P.Path_T1_ORI);
         end
-        
+
         xASL_im_Upsample(x.P.Path_T1, x.P.Path_T1, NewVoxelSize, [], [], 'spline');
     end
 end
@@ -123,7 +123,7 @@ end
 % 'DARTEL' = does only DARTEL
 if ~isfield(x.Seg,'Method')
 	x.Seg.Method = 'default';
-elseif ~strcmp(x.Seg.Method, 'default') && ~strcmp(x.Seg.Method, 'DARTEL') && ~strcmp(x.Seg.Method, 'GS')
+elseif ~strcmpi(x.Seg.Method, 'default') && ~strcmpi(x.Seg.Method, 'DARTEL') && ~strcmpi(x.Seg.Method, 'GS')
     warning(['Wrong x.Seg.Method: ' xASL_num2str(x.Seg.Method) ', using default setting instead']);
     x.Seg.Method = 'default';
 end
@@ -379,7 +379,7 @@ if bForce
         if exist(DirList{iL}, 'dir')
            try
               rmdir(DirList{iL}, 's');
-           catch ME 
+           catch ME
                warning(ME.message);
            end
         end
@@ -418,7 +418,7 @@ function xASL_wrp_SPM12Segmentation(x)
 			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.SPMDIR, 'tpm', ['TPM.nii,' num2str(iDim)])};
 		end
 	end
-	
+
 
     %% Tissue-class specific options
     matlabbatch{1}.spm.spatial.preproc.tissue(1).ngaus      = 1;
@@ -608,7 +608,7 @@ catch
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % 0.5; % strength local adaptive segmentation
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 2; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
-        matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance        
+        matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
     end
 
     try % 2) Second attempt CAT12

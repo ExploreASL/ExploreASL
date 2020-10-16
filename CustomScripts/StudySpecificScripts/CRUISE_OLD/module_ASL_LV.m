@@ -15,10 +15,10 @@ xASL_adm_CreateDir(x.D.ASLCheckDir);
 xASL_adm_CreateDir(x.MotionDir);   xASL_adm_CreateDir(x.ExclusionDir);
 xASL_adm_CreateDir(x.SNRdir);      xASL_adm_CreateDir(x.RawEPIdir);
 
-if  strcmp(x.M0,'separate_scan')
+if  strcmpi(x.M0,'separate_scan')
     xASL_adm_CreateDir(x.D.M0CheckDir);  xASL_adm_CreateDir(x.D.M0regASLdir);
 end
-if  strcmp(x.M0,'no_background_suppression')
+if  strcmpi(x.M0,'no_background_suppression')
     xASL_adm_CreateDir(x.D.RawDir);
 end
 
@@ -312,7 +312,7 @@ if ~x.mutex.HasState('006_visualize') && x.mutex.HasState('005_quantification')
         visual_registration_check_MNI_1_5_cor_sag(x.D.PopDir, ['^PWI_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'],x.D.PopDir, ['^slice_gradient_' x.P.SubjectID '_' x.P.SessionID '\.(nii|nii\.gz)$'],x.D.SliceCheckDir,['slice_gradient_' x.P.SubjectID '_' x.P.SessionID],x.jet256);
 
     % Check registration M0 with ASL, if instead separate M0 scan (if mean_control was used in case of 'no background suppression', than already perfect registration)
-    if  strcmp(x.M0, 'separate_scan')
+    if  strcmpi(x.M0, 'separate_scan')
         xASL_vis_CreateVisualFig( x.D.PopDir, ['^' x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID '\.nii'], x.D.M0CheckDir, [x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID] , 1); % zero clipping
         xASL_vis_CreateVisualFig( x.D.PopDir, ['^' x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID '\.nii'], x.D.M0CheckDir, [x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID] , 1,'x.jet256' ); % zero clipping
     end

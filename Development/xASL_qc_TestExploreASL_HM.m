@@ -10,16 +10,19 @@ end
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = 1;
 end
+if nargin<4 || isempty(bCompiled)
+    bCompiled = 0;
+end
 
 if ismac
-    TestDirOrig = '/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases';
+    TestDirOrig = '/Users/henk/ExploreASL/TestDataSets';
     TestDirDest = '/Users/henk/ExploreASL/ASL/TestCasesProcessed';
 elseif ispc
     TestDirOrig = 'S:\gifmi\Projects\ExploreASL\ExploreASL_TestCases\ExploreASL_TestCases';
     TestDirDest = 'S:\gifmi\Projects\ExploreASL\ExploreASL_TestCases\ProcessedCases';
 else
     % linux
-     TestDirOrig = '/home/henk/ownCloud/HolidayPics/ExploreASL_TestCases';
+     TestDirOrig = '/home/henk/ExploreASL/TestDataSets';
      TestDirDest = '/home/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed';
 end
 
@@ -45,9 +48,9 @@ if bCompiled
     end
     cd(CurrentDir);
     
-    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, 0, MatlabPath, [], [], bOverwrite, [], RunTimePath)
+    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, 0, MatlabPath, [], [], bOverwrite, [], RunTimePath, 0);
 else
-    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, [], [], [], bOverwrite)
+    [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, [], [], [], bOverwrite, [], [], 0);
 end
 
 

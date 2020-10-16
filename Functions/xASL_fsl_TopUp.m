@@ -66,7 +66,7 @@ end
 switch lower(ScanType)
     case 'asl'
         RegExpStr{1} = '^M0\.nii$'; % normal phase encoding direction
-        RegExpStr{2} = '^ASL4D.*RevPE\.nii$'; % reversed phase encoding direction
+        RegExpStr{2} = '^(ASL4D|M0).*RevPE\.nii$'; % reversed phase encoding direction
         RegExpStr{3} = '^ASL4D(|_run-\d)\.nii$'; % file to apply TopUp to
     case 'dwi'
         RegExpStr{1} = '^dwi.*NormPE\.nii$'; % normal phase encoding direction
@@ -137,10 +137,19 @@ xASL_delete(PathUnwarped);
 xASL_delete(PathLog);
 
 %% Revert previous ORI storage
-[Fpath, Ffile] = xASL_fileparts(PathNII{end});
-PathOrig = fullfile(Fpath, [Ffile '_ORI.nii']);
-if xASL_exist(PathOrig)
-    xASL_Move(PathOrig, PathNII{end}, true);
+if strcmp(ScanType, 'asl')
+    PathsORI{1} = fullfile(InDir, 'ASL4D.nii');
+    PathsORI{2} = fullfile(InDir, 'M0.nii');
+else
+    PathsORI{1} = PathNII{end};
+end
+
+for iORI=1:length(PathsORI)
+    [Fpath, Ffile] = xASL_fileparts(PathsORI{iROI});
+    PathOrig = fullfile(Fpath, [Ffile '_ORI.nii']);
+    if xASL_exist(PathOrig)
+        xASL_Move(PathOrig, PathNII{end}, true);
+    end
 end
 
 %% Create Parms file for TopUp
@@ -277,52 +286,68 @@ fprintf('\n');
 %% ========================================================================
 % =========================================================================
 %% 3) Apply TopUp
-
 if ~exist('OutputPath','var') || isempty(OutputPath)
     % Skipping TopUp application, wasn't required
 elseif result1~=0
         fprintf('TopUp application skipped as TopUp failed to run\n');
 else
-    [Fpath, Ffile] = xASL_fileparts(PathNII{end});
-    PathOrig = fullfile(Fpath, [Ffile '_ORI.nii']);
-    [Fpath2, Ffile2] = xASL_fileparts(OutputPath);
-    if strcmp(fullfile(Fpath, Ffile), fullfile(Fpath2, Ffile2))
-        % backup input file when output file has same name
-        % but don't overwrite previous backup
+    
+    if strcmp(ScanType, 'asl')
+        PathApplyTopUp{1} = fullfile(InDir, 'ASL4D.nii');
+        PathApplyTopUp{2} = fullfile(InDir, 'M0.nii');
 
-        xASL_Move(PathNII{end}, PathOrig);
-        PathNII{end} = PathOrig; % avoid .nii/.nii.gz issues
-        % NB: HERE WE APPLY TOPUP TO THE RENAMED _ORI FILE, but THIS IS THE
-        % SAME AS THE file without _ORI
-    end
-
-    % Now we convert the images in single precision before running TopUp
-    xASL_io_SaveNifti(PathNII{end}, PathNII{end}, single(xASL_io_Nifti2Im(PathNII{end})), 32, false);
-
-    fprintf('\n\n=========================================================================\n')
-    fprintf('%s\n',['Applying FSL TopUp to ' PathNII{end}]);
-    fprintf('=========================================================================\n')
-
-    % Apply TopUp (method: Use jacobian modulation (jac) or least-squares resampling (lsr, default)
-    [~, result1] = xASL_fsl_RunFSL(['/bin/applytopup --imain=' xASL_adm_UnixPath(PathNII{end}) ' --inindex=1'...
-             ' --datain=' xASL_adm_UnixPath(PathParms2) ' --topup=' xASL_adm_UnixPath(PathResults)...
-             ' --out=' xASL_adm_UnixPath(OutputPath) ' --method=jac'], x); %  --verbose=true
-
-    if result1~=0
-        warning('Apply TopUp failed, skipping negative signal detection');
-        bSuccess = false;
+        PathOutput = PathApplyTopUp;
     else
-        % Check if TopUp provided significant negative results
-        IM = xASL_io_Nifti2Im(OutputPath);
-        PercNonfinite = sum(~isfinite(IM(:))) / numel(IM);
-        IM = IM(isfinite(IM(:)));
-        PercNegative = sum(IM<0)/numel(IM);
-        if PercNegative>0.25 || PercNonfinite>0.25
-            warning([xASL_num2str(PercNegative) '% negative signal and/or ' xASL_num2str(PercNonfinite) '% detected in TopUp result, could be a bug']);
+        PathApplyTopUp{1} = PathNII{end};
+
+        PathOutput{1} = OutputPath;
+    end
+    
+    for iTopUp=1:length(PathApplyTopUp)
+        
+        [Fpath, Ffile] = xASL_fileparts(PathApplyTopUp{iTopUp});
+        PathOrig = fullfile(Fpath, [Ffile '_ORI.nii']);
+        [Fpath2, Ffile2] = xASL_fileparts(PathOutput{iTopUp});
+        if strcmp(fullfile(Fpath, Ffile), fullfile(Fpath2, Ffile2))
+            % backup input file when output file has same name
+            % but don't overwrite previous backup
+
+            xASL_Move(PathApplyTopUp{iTopUp}, PathOrig);
+            PathApplyTopUp{iTopUp} = PathOrig; % avoid .nii/.nii.gz issues
+            % NB: HERE WE APPLY TOPUP TO THE RENAMED _ORI FILE, but THIS IS THE
+            % SAME AS THE file without _ORI
         end
-    %     IM = xASL_io_Nifti2Im(OutputPath);
-    %     IM(IM<0) = -IM(IM<0);
-    %     xASL_io_SaveNifti(OutputPath, OutputPath, IM, [], false);
+
+        % Now we convert the images in single precision before running TopUp
+        xASL_io_SaveNifti(PathApplyTopUp{iTopUp}, PathApplyTopUp{iTopUp}, single(xASL_io_Nifti2Im(PathApplyTopUp{iTopUp})), 32, false);
+
+        fprintf('\n\n=========================================================================\n')
+        fprintf('%s\n',['Applying FSL TopUp to ' PathApplyTopUp{iTopUp}]);
+        fprintf('=========================================================================\n')
+
+        % Apply TopUp (method: Use jacobian modulation (jac) or least-squares resampling (lsr, default)
+        [~, result1] = xASL_fsl_RunFSL(['/bin/applytopup --imain=' xASL_adm_UnixPath(PathApplyTopUp{iTopUp}) ' --inindex=1'...
+                 ' --datain=' xASL_adm_UnixPath(PathParms2) ' --topup=' xASL_adm_UnixPath(PathResults)...
+                 ' --out=' xASL_adm_UnixPath(PathOutput{iTopUp}) ' --method=jac'], x); %  --verbose=true
+
+        if result1~=0
+            warning('Apply TopUp failed, skipping negative signal detection');
+            bSuccess = false;
+        else
+            % Check if TopUp provided significant negative results
+            IM = xASL_io_Nifti2Im(PathOutput{iTopUp});
+            PercNonfinite = sum(~isfinite(IM(:))) / numel(IM);
+            IM = IM(isfinite(IM(:)));
+            NegativeTreshold = -0.001 * (60/xASL_stat_MeanNan(IM(:)));
+            % We can allow a little bit negative values from resampling
+            PercNegative = sum(IM<NegativeTreshold)/numel(IM);
+            
+            fprintf('%s\n', ['TopUp resampling resulted in ' xASL_num2str(PercNegative*100, 2) '% negative voxels (thresholded at ' xASL_num2str(NegativeTreshold)]);
+            fprintf('Note that we do not remove this negative signal, to keep the noise distribution intact\n');
+            if PercNegative>0.1 || PercNonfinite>0.1
+                warning('Significant amount of negative voxels in TopUp result, could be a bug');
+            end
+        end
     end
 end
 
@@ -410,6 +435,8 @@ end
 xASL_spm_coreg(refPath, srcPath, OtherList, x);
 
 %% C) Resample
+%% PM: should we resample here only the temporary TopUp images, or also the images we apply TopUp to?
+% Currently, we resample all images
 for iO=1:length(OtherList)
     srcPath{end+1} = OtherList{iO};
 end
@@ -447,6 +474,11 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
 %              PhaseEncodingDirection - i j k (for orientation) and - for
 %                                       negative (e.g. i = LeftToRight, i- = RightToLeft)
 %                                       in TopUp format, this becomes '1 0 0
+%              However, it seems that this directionality goes with the
+%              DICOM acquisition orientation, so i = x, j = y, etc. And i =
+%              LeftRight, J=AP, K=IZ only in case of transversal
+%              acquisition (which is true 99% of the case of 2D EPI
+%              acquisitions)
 %              TotalReadoutTime       -
 %              Using the following steps:
 %              A) Load the JSON
@@ -462,7 +494,7 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
     AcqParms = '';
     [Fpath, Ffile] = xASL_fileparts(PathIn);
     JSONin = fullfile(Fpath, [Ffile '.json']);
-    if ~xASL_exist(JSONin)
+    if ~exist(JSONin, 'file')
         warning('JSON file missing, skipping TopUp');
         return;
     end

@@ -200,7 +200,7 @@ if  isfield(ASL_parms,'RescaleSlope') && isfield(ASL_parms,'RescaleSlopeOriginal
     end
 end
 
-switch x.M0
+switch lower(x.M0)
     case 'separate_scan'
         % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
         if  ASL_parms.EchoTime<(M0_parms.EchoTime*0.99) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.01)
@@ -220,12 +220,12 @@ end
 
 % Create factor, single compartment model, including T2* correction (if M0 = number)
 % Take care of PLD
-switch x.readout_dim
-    case '3D'
+switch lower(x.readout_dim)
+    case '3d'
         fprintf('%s\n','3D sequence, not accounting for SliceReadoutTime (homogeneous PLD for complete volume)');
         qnt_slice_gradient         = qnt_init_PLD;
 
-    case '2D' % Load slice gradient
+    case '2d' % Load slice gradient
 %% 3    Load slice gradient if 2D
         fprintf('%s\n','2D sequence, accounting for SliceReadoutTime (inhomogeneous/slice-specific PLD)');
 
@@ -236,8 +236,8 @@ switch x.readout_dim
             if  isnumeric(x.Q.SliceReadoutTime)
 
             else
-                switch x.Q.SliceReadoutTime
-                    case 'shortestTR'
+                switch lower(x.Q.SliceReadoutTime)
+                    case 'shortesttr'
                         if  isfield(ASL_parms,'RepetitionTime')
                             %  Load original file to get nSlices
                             tORI        = xASL_io_ReadNifti(x.P.ASL4D);
@@ -294,10 +294,10 @@ if  xASL_stat_SumNan(qnt_slice_gradient(:))==0
 end
 
 %% 4    CBF quantification: labeling efficiency
-switch x.Q.LabelingType
-    case 'PASL'
+switch lower(x.Q.LabelingType)
+    case 'pasl'
         x.Q.LabelingEfficiency                     = 0.98; % (concensus paper, Wong, MRM 1998)
-    case 'CASL'
+    case 'casl'
         x.Q.LabelingEfficiency                     = 0.85; % (concensus paper, Dai, MRM 2008)
     otherwise error(['Unknown ' x.Q.LabelingType ', should be PASL or CASL (latter also for PCASL)'])
 end
@@ -310,7 +310,7 @@ for iS=1:length(x.S.SetsName)
 end
 
 % Apply the effect of background suppression pulses on labeling efficiency
-switch x.M0
+switch lower(x.M0)
     case 'no_background_suppression'
         % don't change it
     otherwise
@@ -333,12 +333,12 @@ fprintf('%s\n','Getting CBF quantification factor');
 switch x.Q.nCompartments
 
     case 1 % single-compartment model (Alsop et al MRM 2014 concensus paper)
-        switch x.Q.LabelingType
-            case 'PASL'
+        switch lower(x.Q.LabelingType)
+            case 'pasl'
                 DivisionFactor     = x.Q.LabelingDuration;
 
                 fprintf('%s\n','Using single-compartment PASL model');
-            case 'CASL'
+            case 'casl'
                 DivisionFactor     = x.Q.BloodT1 .* (1 - exp(-x.Q.LabelingDuration./x.Q.BloodT1));
 
                 fprintf('%s\n','Using single-compartment CASL model');
@@ -349,13 +349,13 @@ switch x.Q.nCompartments
 
 
     case 2 % (Wang 2002) dual-compartment model. For equation, see Gevers et al 2012
-        switch x.Q.LabelingType
-            case 'PASL'
+        switch lower(x.Q.LabelingType)
+            case 'pasl'
                 DivisionFactor = x.Q.LabelingDuration;
                 qnt_slice_gradient = exp((x.Q.ATT./x.Q.BloodT1))*exp(((qnt_slice_gradient-x.Q.ATT)./x.Q.TissueT1))./ (2.*x.Q.LabelingEfficiency.*DivisionFactor );
 
                 fprintf('%s\n','Using Dual compartment PASL model');
-            case 'CASL'
+            case 'casl'
                 DivisionFactor     = x.Q.TissueT1 .* (exp((min(x.Q.ATT-qnt_slice_gradient,0))./x.Q.TissueT1) - exp((min(x.Q.ATT-x.Q.LabelingDuration-qnt_slice_gradient,0))./x.Q.TissueT1));
                 qnt_slice_gradient = exp((x.Q.ATT./x.Q.BloodT1))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor );
 
@@ -372,17 +372,17 @@ fprintf('%s\n',['labda = ' num2str(x.Q.Lambda)]);
 fprintf('%s\n',['labeling efficiency = ' num2str(x.Q.LabelingEfficiency)]);
 fprintf('%s\n',['T1 arterial blood = ' num2str(x.Q.BloodT1) ' ms']);
 
-switch x.Q.LabelingType
-    case 'PASL'
+switch lower(x.Q.LabelingType)
+    case 'pasl'
         fprintf('%s\n',['TI1 = ' num2str(x.Q.LabelingDuration)   ' ms']);
         fprintf('%s\n',['initial TI  = ' num2str(qnt_init_PLD) ' ms']);
-    case 'CASL'
+    case 'casl'
         fprintf('%s\n',['labeling duration = ' num2str(x.Q.LabelingDuration) ' ms']);
         fprintf('%s\n',['initial post-label delay = ' num2str(qnt_init_PLD) ' ms']);
 end
 
 % Now slice gradient has quantification factor numbers
-% if  strcmp(x.Vendor,'Siemens') && strcmp(x.M0, 'no_background_suppression') && strcmp(x.readout_dim,'3D')
+% if  strcmpi(x.Vendor,'Siemens') && strcmpi(x.M0, 'no_background_suppression') && strcmpi(x.readout_dim,'3D')
 % % Siemens sometimes seems to multiply by 100, sometimes not, see also below where there is another Siemens-specific scaleslope
 %     qnt_slice_gradient              = qnt_slice_gradient*60000;
 % else
@@ -439,7 +439,7 @@ clear M0_im
 %% 6    Vendor-specific quantification correction
 
 if ~x.DisableQuantification
-    if  ~isempty(findstr(x.Vendor,'GE'))
+    if  ~isempty(regexpi(x.Vendor,'GE'))
 
             if ~isfield(ASL_parms,'NumberOfAverages')
                 % GE accumulates signal instead of averaging by NEX, therefore division by NEX is required
@@ -448,18 +448,18 @@ if ~x.DisableQuantification
 
             ASL_parms.NumberOfAverages  = max(ASL_parms.NumberOfAverages); % fix for combination of M0 & PWI in same nifti, for GE quantification
 
-            switch x.Vendor
+            switch lower(x.Vendor)
                 % For some reason the older GE Alsop Work in Progress (WIP) version
                 % has a different scale factor than the current GE product sequence
 
-                case 'GE_product' % GE new version
+                case 'ge_product' % GE new version
 
                     qnt_R1gain          = 1/32;          % R1 analogue gain/ simple multiplier
                     qnt_C1              = 6000;          % GE constant multiplier
 
                     qnt_GEscaleFactor   = (qnt_C1*qnt_R1gain)/(ASL_parms.NumberOfAverages);
 
-                case 'GE_WIP' %     GE old version
+                case 'ge_wip' %     GE old version
 
                     qnt_RGcorr          = 45.24;         % Correction for receiver gain in PDref (but not used apparently?)
                     qnt_GEscaleFactor   = qnt_RGcorr*ASL_parms.NumberOfAverages;
@@ -469,7 +469,7 @@ if ~x.DisableQuantification
             fprintf('%s\n',['Quantification corrected for GE scale factor ' num2str(qnt_GEscaleFactor)]);
 %               fprintf('%s\n','No GE scale factor applied');
 
-    elseif    strcmp(x.Vendor,'Siemens') && ~strcmp(x.Vendor,'Siemens_JJ_Wang')
+    elseif    strcmpi(x.Vendor,'Siemens') && ~strcmpi(x.Vendor,'Siemens_JJ_Wang')
                 % The Siemens readout divides M0 by 10
                 % But JJ Wang's sequence doesn't
               ScaleImage            = ScaleImage./10;

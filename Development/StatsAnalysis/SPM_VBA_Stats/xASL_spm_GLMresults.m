@@ -28,7 +28,7 @@ function [x] = xASL_spm_GLMresults(x)
     matlabbatch{1}.spm.stats.results.conspec.contrasts  = Inf; % use all existing contrasts
     matlabbatch{1}.spm.stats.results.conspec.threshdesc = x.S.ThreshType; % 'FWE'; % family-wise error
 
-    if  strcmp(x.S.MultiComparisonCorrType,'cluster')
+    if  strcmpi(x.S.MultiComparisonCorrType,'cluster')
         matlabbatch{1}.spm.stats.results.conspec.thresh = x.S.clusterPthr;  % height threshold
     else
         matlabbatch{1}.spm.stats.results.conspec.thresh = x.S.uncorrThresh; % height threshold

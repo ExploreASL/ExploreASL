@@ -308,6 +308,13 @@ toolbox/cat12/cat_vol_correct_slice_scaling line 425
 *********************************************************************************************************
 BIDS/JSON
 
+DATE+NAME:2020_08_11, JP
+DESCRIPTION:
+Error in the NIfTI header. 3D NIfTI files (dim[0] == 3) that have the size of the fourth dimension NT==1 (dim[4] == 1), but have TR defined (pixdim[4] ~= 1)
+do not pass through the BIDS validator. The SPM NIfTI writing function needs to be modified to save dim[4]==4 in this case even though the size of the fourth dimension is 1.
+FILE:
+External/SPMmodified/@nifti/private/write_hdr_raw.m at line 20
+
 DATE+NAME:2020_04_29, HM
 DESCRIPTION:
 Instead of error for an imaginary number, put it in a string

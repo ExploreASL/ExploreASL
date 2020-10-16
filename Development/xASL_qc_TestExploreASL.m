@@ -156,10 +156,10 @@ if bOverwrite && exist(TestDirDest,'dir')
     else
         system(['rm -rf ' xASL_adm_UnixPath(TestDirDest)]);
     end
-    
-    % Copy data sets into testing directory
-    xASL_Copy(TestDirOrig, TestDirDest);    
 end
+% Copy data sets into testing directory
+xASL_Copy(TestDirOrig, TestDirDest);    
+
 
 
 % ============================================================
@@ -284,6 +284,16 @@ if ~isempty(LockFolders)
     cellfun(@(y) xASL_delete(y), LockFolders, 'UniformOutput', false);
 end
 
+% Evaluate parallelization in linux
+if isunix && (RunMethod==2 || RunMethod==4)
+    [Result1, Result2] = system('screen -dmS TryOut exit');
+    if Result1~=0
+        warning('Please install screen for testing ExploreASL parallel in a mac/linux');
+        fprintf('%s\n', Result2);
+        error('Skipping');
+    end
+end
+
 % Get list of data to test
 Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
 LogFiles = cellfun(@(y) fullfile(TestDirDest,y,'Population','xASL_module_Population.log'), Dlist, 'UniformOutput',false);
@@ -292,31 +302,52 @@ for iList=1:length(Dlist)
     AnalysisDir = fullfile(TestDirDest,Dlist{iList});
     DataParFile{iList} = xASL_adm_GetFileList(AnalysisDir,'(DAT|dat|Dat).*\.(m|json)');
     xASL_delete(LogFiles{iList}); % useful for rerun when debugging
-
+    ScreenName = ['TestxASL_' num2str(iList)];
+    
     if ~isempty(DataParFile{iList})
-	    % Run ExploreASL
-	    cd(x.MyPath);
-	    switch RunMethod
-	        case 1 % run ExploreASL serially
-                try
-                    ExploreASL_Master(DataParFile{iList}{1}, true, true); % can we run screen from here? or run matlab in background, linux easy
-                catch ME
-                    warning(ME);
-                end
-	        case 2 % run ExploreASl parallel (start new MATLAB instances)
-                ScreenName = ['TestxASL_' num2str(iList)];
-	            MatlabRunString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
-	            RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',1,1);system([''screen -SX ' ScreenName ' kill'']);"'];
-	            system([MatlabRunString RunExploreASLString ' &']);
-	        case 3 % run ExploreASL compilation serially
+        try
+            % Run ExploreASL
+            cd(x.MyPath);
+            
+            if RunMethod>2 % prepare compilation testing
                 [Fpath, Ffile, Fext] = fileparts(MatlabPath);
-                system(['cd ' Fpath ';bash ' Ffile Fext ' ' RunTimePath ' ' DataParFile{iList}{1}]);
-                
-                
-	        case 4 % run ExploreASL compilation parallel
-	        otherwise
-	    end
-	end
+                if isunix
+                    CompilationString = ['cd ' Fpath ';bash ' Ffile Fext ' ' RunTimePath ' ' DataParFile{iList}{1}];
+                else
+                    CompilationString = ['cd ' Fpath '; ' Ffile Fext ' ' RunTimePath ' ' DataParFile{iList}{1}];
+                end
+            end
+            
+            switch RunMethod
+                case 1 % run ExploreASL serially
+                    ExploreASL_Master(DataParFile{iList}{1}, true, true); % can we run screen from here? or run matlab in background, linux easy
+                case 2 % run ExploreASl parallel (start new MATLAB instances)
+                    if isunix
+                        ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
+                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',1,1);system([''screen -SX ' ScreenName ' kill'']);"'];
+                    else
+                        ScreenString = [MatlabPath ' -nodesktop -nosplash -r '];
+                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',1,1);system([''exit'']);"'];
+                    end
+                    system([ScreenString RunExploreASLString ' &']);
+                case 3 % run ExploreASL compilation serially
+                    system(CompilationString);
+
+                case 4 % run ExploreASL compilation parallel
+                    if isunix
+                        ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 '];
+                    else
+                        ScreenString = [];
+                    end
+                    
+                    system([ScreenString CompilationString ' &']);
+                otherwise
+            end
+        catch ME
+            warning('Something went wrong:');
+            fprintf('%s\', ME);
+        end
+    end
 end
 
 % Wait until all *.log files exist (which will surely be created, even with a crash)

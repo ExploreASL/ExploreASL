@@ -63,6 +63,9 @@ if ~xASL_exist(x.P.Path_T1,'file') && ~xASL_exist(x.P.Path_T1_ORI,'file')
     else
         warning([x.SUBJECTDIR ' didnt contain a T1w structural image, skipping...']);
         result = true;
+
+		% Unlocks the patient as this wouldn't be done in the iteration for the last subject
+		x.mutex.Unlock();
         return;
     end
 end
@@ -95,25 +98,25 @@ elseif WMHexist && ~bO
     x.WMHsegmAlg = 'LPA';
 elseif ~isfield(x,'WMHsegmAlg') || isempty(x.WMHsegmAlg)
     x.WMHsegmAlg = 'LPA'; % default WMH segmentation algorithm, seems more robust & faster than LGA
-elseif strcmp(x.WMHsegmAlg, 'LGA')
+elseif strcmpi(x.WMHsegmAlg, 'LGA')
     % keep LGA
 elseif xASL_exist(x.P.Path_FLAIR, 'file')
     warning('Unknown WMH segmentation option, selecting LPA');
     x.WMHsegmAlg = 'LPA';
 end
 
-if xASL_exist(rWMHPathLPA, 'file') && strcmp(x.WMHsegmAlg, 'LGA')
+if xASL_exist(rWMHPathLPA, 'file') && strcmpi(x.WMHsegmAlg, 'LGA')
     warning('LST LPA output detected from previous run, forcing LST LPA segmentation');
     x.WMHsegmAlg = 'LPA';
-elseif xASL_exist(rWMHPathLGA, 'file') && strcmp(x.WMHsegmAlg, 'LPA')
+elseif xASL_exist(rWMHPathLGA, 'file') && strcmpi(x.WMHsegmAlg, 'LPA')
     warning('LST LGA output detected from previous run, forcing LST LGA segmentation');
     x.WMHsegmAlg = 'LGA';
 end
 
-switch x.WMHsegmAlg
-    case 'LPA'
+switch lower(x.WMHsegmAlg)
+    case 'lpa'
         rWMHPath = rWMHPathLPA;
-    case 'LGA'
+    case 'lga'
         rWMHPath = rWMHPathLGA;
 end
 
@@ -145,7 +148,7 @@ if ~bContinue
     fprintf('%s\n','Skipping this subject, because no FLAIR, ASL or M0 present whereas this was requested');
     x.mutex.Unlock();
     cd(oldFolder);
-    result = false;
+    result = true;
     return;
 end
 
@@ -173,7 +176,7 @@ if ~x.mutex.HasState(StateName{1})
     % are dependent of the structural module for segmentation/registration)
     % don't remove any previous WMH_SEGM
     xASL_adm_CleanUpBeforeRerun(x.D.ROOT, [1 2], false, false, x.P.SubjectID);
-    
+
     if xASL_exist(x.P.Path_T1, 'file') % Fix multiple T1w iterations
         IM = xASL_io_Nifti2Im(x.P.Path_T1);
         if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
@@ -226,6 +229,7 @@ if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status 
         x.mutex.DelState(StateName{iState+1});
 	else
 		if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);end
+        x.mutex.AddState(StateName{iState});        
     end
 
 else
@@ -247,6 +251,7 @@ iState = 3;
 
 if xASL_exist(x.P.Path_WMH_SEGM,'file') || ~xASL_exist(x.P.Path_FLAIR,'file')
     if bO; fprintf('%s\n','WMH segmentation already existing, or FLAIR.nii missing, skipping FLAIR biasfield correction'); end % We skip now
+    x.mutex.AddState(StateName{iState});    
 else
     if ~x.mutex.HasState(StateName{iState})
 		if xASL_exist(x.P.Path_FLAIR,'file')
@@ -261,6 +266,7 @@ else
 			x.mutex.DelState(StateName{iState+1});
 		else
 			if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);end
+            x.mutex.AddState(StateName{iState});
 		end
 	else
 		if xASL_exist(x.P.Path_FLAIR,'file')
@@ -287,6 +293,7 @@ if ~x.mutex.HasState(StateName{iState})  % tracks progress through lock/*.status
         x.mutex.DelState(StateName{iState+1});
 
     elseif bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);
+        x.mutex.AddState(StateName{iState});
     end
 else
 	if xASL_exist(x.P.Path_FLAIR,'file')
@@ -316,6 +323,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.bLesionFilling  % tracks progress t
         x.mutex.DelState(StateName{iState+1});
 	else
 		if bO; fprintf('%s\n','050_LesionFilling: No FLAIR data found, skipping...'); end
+        x.mutex.AddState(StateName{iState});
     end
 
 else
@@ -386,17 +394,17 @@ if ~x.mutex.HasState(StateName{iState})
     if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 
         UniqueN = unique(xASL_io_Nifti2Im(x.P.Path_WMH_SEGM));
-        
+
         if length(UniqueN)==2 && UniqueN(1)==0 && UniqueN(2)==1
             warning('Skipping WMH cleanup, because WMH_SEGM seems imported as binary mask');
         else
             xASL_wrp_CleanUpWMH_SEGM(x);
         end
 
-        x.mutex.AddState(StateName{iState});
-        xASL_adm_CompareDataSets([], [], x); % unit testing
         x.mutex.DelState(StateName{iState+1});
     end
+    x.mutex.AddState(StateName{iState});
+    xASL_adm_CompareDataSets([], [], x); % unit testing    
 else
 	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation

@@ -2,7 +2,7 @@ function [M0IM] = xASL_quant_M0(M0IM, x)
 %xASL_quant_M0 Quantification of M0
 %
 % FORMAT: [M0IM] = xASL_quant_M0(M0IM, x)
-% 
+%
 % INPUT:
 %   M0IM        - M0 image matrix or path
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -19,7 +19,7 @@ function [M0IM] = xASL_quant_M0(M0IM, x)
 % 4. Check for correct TR values
 % 5. Quantify the M0, either for single 3D volume or slice-wise
 % 6. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
-% 
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: M0IM = xASL_quant_M0('MyStudy/sub-001/ASL_1/rM0.nii', x);
 % __________________________________
@@ -34,12 +34,12 @@ elseif isempty(M0IM) || sum(isfinite(M0IM(:)))==0
     warning('Invalid M0 image loaded, skipping');
 end
 
-if strcmp(x.M0,'no_background_suppression')
+if strcmpi(x.M0,'no_background_suppression')
     warning('This option will be obsolete in the future, please use M0=UseControlAsM0 instead');
     x.M0 = 'UseControlAsM0'; % backward compatibility
 end
 
-if strcmp(x.M0, 'UseControlAsM0')
+if strcmpi(x.M0, 'UseControlAsM0')
     fprintf('%s\n','x.M0_usesASLtiming didnt exist, set to 1, because of absence background suppression, same timing in mean control (used as M0) as in ASL');
     x.M0_usesASLtiming = 1;
     M0ParmsMat  = x.P.Path_ASL4D_parms_mat;
@@ -56,15 +56,13 @@ M0IM = xASL_io_Nifti2Im(M0IM);
 if ~x.ApplyQuantification(2)
     fprintf('%s\n','M0 ScaleSlopes skipped');
 else
-    if ~isempty(strfind(x.Vendor,'Philips'))
-		
+    if ~isempty(regexpi(x.Vendor,'Philips'))
+
 		scaleFactor = xASL_adm_GetPhilipsScaling(xASL_adm_LoadParms(M0ParmsMat, x),xASL_io_ReadNifti(x.P.Path_M0));
-		
+
 		if scaleFactor
 			M0IM = M0IM .* scaleFactor;
 		end
-    else
-        fprintf('%s\n',[x.Vendor ' M0 scan (not Philips), so no M0 scale slope assumed']);
     end
 end
 
@@ -80,7 +78,7 @@ if ~x.ApplyQuantification(4)
 else
 
     % Correction for incomplete T1 relaxation of M0 because of short TR.
-    % Control image/M0 reference value is smaller than should be, paired subtraction is not 
+    % Control image/M0 reference value is smaller than should be, paired subtraction is not
     % (i.e. the labeled blood doesn't have this incomplete T1 relaxation
     % issue from short TR).
     % Therefore, correct this (~2% decrease)
@@ -92,10 +90,10 @@ else
         % for GM, this would be 1300 ms
         % Here we use the WM T1, since we smooth a lot
     end
-    
+
     %% ------------------------------------------------------------------------------------------------------
     % 3. Set TR specifically for GE
-    if ~isempty(regexp(x.Vendor,'GE')) && isempty(regexp(x.Vendor,'Siemens')) &&  isempty(regexp(x.Vendor,'Philips'))
+    if ~isempty(regexpi(x.Vendor,'GE')) && isempty(regexpi(x.Vendor,'Siemens')) &&  isempty(regexpi(x.Vendor,'Philips'))
         TR = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
     else
@@ -116,10 +114,10 @@ else
 
     %% ------------------------------------------------------------------------------------------------------
     % 5. Quantify the M0, either for single 3D volume or slice-wise
-    if strcmp(x.readout_dim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
+    if strcmpi(x.readout_dim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
             NetTR = TR;
             fprintf('%s\n','Single 3D M0 readout assumed');
-    elseif  strcmp(x.readout_dim,'2D') % for 2D readouts, there are slice timing differences
+    elseif  strcmpi(x.readout_dim,'2D') % for 2D readouts, there are slice timing differences
 
             % Calculate SliceReadoutTime for shortestTR
             [x] = xASL_quant_SliceReadoutTime_ShortestTR(x);
@@ -174,7 +172,7 @@ end
 % Note that there is no option for separate tissue scaling (e.g. WM & GM),
 % because ExploreASL pragmatically smooths the M0 a lot, assuming that
 % head motion and registration between M0 & ASL4D will differ between
-% patients and controls. 
+% patients and controls.
 
 
 

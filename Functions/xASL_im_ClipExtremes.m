@@ -1,35 +1,55 @@
 function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose)
-% xASL_im_ClipExtremes Clips image to given percentile. The percentile is found using non-zeros sorted intensities
-% , so both isfinite & non-zeros
+%xASL_im_ClipExtremes Clips image to threshold
 %
-% FORMAT:       [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose)
+% FORMAT:  [NewIM] = xASL_im_ClipExtremes(InputIm[, ThreshHigh, ThreshLow, bVerbose])
 % 
-% INPUT:        ...
+% INPUT:
+%  InputIm      - path to image or image matrix (REQUIRED)
+%  ThreshHigh   - upper clipping threshold [0-1]
+%                 e.g. set to 1 for no clipping
+%                 (OPTIONAL, DEFAULT=0.999)
+%  ThreshLow    - lower clipping threshold [0-1]
+%                 e.g. set to 0 for no clipping
+%                 (OPTIONAL, DEFAULT=1-ThreshHigh)
+%  bVerbose     - boolean specifying verbosity
+%                 (OPTIONAL, DEFAULT=true)
 %
-% OUTPUT:       ...
+% OUTPUT:
+%  NewIM        - clipped image (OPTIONAL)
+% OUTPUT FILES:
+%  NIfTI containing the clipped image, if InputIm was a path
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  Clips image to given percentile. The percentile is found
+% DESCRIPTION:  This function clips an image to a given percentile. The percentile is found
 %               using non-zeros sorted intensities, so both isfinite & non-zeros.
-%
+%               This function performs the following steps:
+%               1. Constrain clippable intensities
+%               2. Clip high intensities
+%               3. Clip low intensities
+%               4. Save as NIfTI if the input was a NIfTI
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:      xASL_im_ClipExtremes('MyStudy/anat/T1w.nii.gz');
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
-    %% Admin
+
+    %% 0. Admin
     if nargin<4 || isempty(bVerbose)
         bVerbose = true; % default is output clipped intensities
     end
 
     if nargin<2 || isempty(ThreshHigh)    
         % To disable high clipping, set to 1
-        fprintf('No upper threshold set, set to 0.999');
+        if bVerbose
+            fprintf('No upper threshold set, set to 0.999\n');
+        end
         ThreshHigh = 0.999;
     end
 
     if nargin<3 || isempty(ThreshLow)
-        fprintf('No lower threshold set, set to 1-high threshold\n');
+        if bVerbose
+            fprintf('No lower threshold set, set to 1-high threshold\n');
+        end
         % By default, ThreshLow is 1-ThreshHigh (i.e. 0.001)
         % To disable, set ThreshLow to 0
            ThreshLow = 1-ThreshHigh;
@@ -38,7 +58,7 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
     end    
     
     %% ------------------------------------------------------------------------------------------
-    % Constrain clippable intensities
+    % 1. Constrain clippable intensities
     if ThreshLow~=0
         if ThreshHigh<0.5
             ThreshHigh=0.5;
@@ -57,7 +77,7 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
     NewIM = xASL_io_Nifti2Im(InputIm);
     SortedInt = sort(NewIM(NewIM~=0 & isfinite(NewIM)));
 
-    % Clip high intensities
+    % 2. Clip high intensities
     IndexNumber = round(ThreshHigh*length(SortedInt));
     if IndexNumber<=length(SortedInt) && IndexNumber>0
 
@@ -74,7 +94,7 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
 
     %% ------------------------------------------------------------------------------------------
     if ThreshLow~=0
-        % Clip low intensities
+        % 3. Clip low intensities
         IndexNumber = round(ThreshLow*length(SortedInt));
         if IndexNumber>0
             minInt = min(NewIM(:));
@@ -90,9 +110,14 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
 
 
     %% ------------------------------------------------------------------------------------------
-    % Save as NIfTI if the input was a NIfTI
-    if xASL_exist(InputIm,'file')
-        xASL_io_SaveNifti(InputIm, InputIm, NewIM, [], false);
+    % 4. Save as NIfTI if the input was a NIfTI
+    if ischar(InputIm) && xASL_exist(InputIm, 'file')
+        [~, ~, Fext] = xASL_fileparts(InputIm);
+        if strcmp(Fext, '.nii.gz')
+            xASL_io_SaveNifti(InputIm, InputIm, NewIM, [], true);
+        else
+            xASL_io_SaveNifti(InputIm, InputIm, NewIM, [], false);
+        end
     end
 
 end

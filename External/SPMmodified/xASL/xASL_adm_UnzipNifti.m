@@ -1,7 +1,7 @@
-function pathOut = xASL_adm_UnzipNifti(pathIn, varargin)
+function pathOut = xASL_adm_UnzipNifti(pathIn, bOverwrite)
 % Takes the pathIn file, unzips it and deletes the original ZIP file.
 %
-% FORMAT: pathOut = xASL_adm_UnzipNifti(pathIn [,bOverwrite])
+% FORMAT: pathOut = xASL_adm_UnzipNifti(pathIn[, bOverwrite])
 %
 % INPUT:
 %   pathIn     - path and filename to the file to be unzipped (.NII or .NII.GZ)
@@ -22,10 +22,8 @@ function pathOut = xASL_adm_UnzipNifti(pathIn, varargin)
 % Copyright (C) 2015-2020 ExploreASL
 
 % Check for the optional parameter overwrite
-if nargin < 2
+if nargin < 2 || isempty(bOverwrite)
 	bOverwrite = 0;
-else
-	bOverwrite = varargin{1};
 end
 
 if nargin > 2
@@ -44,15 +42,21 @@ switch (ext0)
 		error(['Handles only .nii and .nii.gz files: ' pathIn]);
 end
 
+% Checks if the pathIn was given as an absolute path or if as a file-name only
+if isempty(pathstr)
+	% If a file-name only, then add the full current path to avoid ambiguity
+	pathstr = xASL_adm_UnixPath(pwd());
+end
+
 % Gets the correct paths for the NII and NII.GZ files
 if isGZ
 	pathNII = fullfile(pathstr,name0);
 	nameNII = name0;
-	pathGZ  = pathIn;
+	pathGZ  = fullfile(pathstr, [name0, ext0]);
 else
-	pathNII = pathIn;
+	pathNII = fullfile(pathstr, [name0, ext0]);
 	nameNII = [name0 ext0];
-	pathGZ  = [pathIn '.gz'];
+	pathGZ  = fullfile(pathstr, [name0, ext0 '.gz']);
 end
 
 % Checks that none of those is a directory

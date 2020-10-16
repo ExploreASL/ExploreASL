@@ -2,7 +2,7 @@ function [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
 %xASL_quant_SliceReadoutTime_ShortestTR Calculate SliceReadoutTime for shortest TR
 %
 % FORMAT: [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
-% 
+%
 % INPUT:
 %   x     - struct containing pipeline environment parameters (REQUIRED)
 % OUTPUT:
@@ -15,7 +15,7 @@ function [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
 %              slices is TR - InitialPostLabelDelay - LabelingDuration, and
 %              dividing this by the number of slices gives the
 %              SliceReadoutTime
-% 
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_quant_SliceReadoutTime_ShortestTR(x);
 % __________________________________
@@ -32,7 +32,7 @@ function [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
 
     %% ---------------------------------------------------
     %% Compute SliceReadoutTime in case of shortest TR
-    if ~isnumeric(x.Q.SliceReadoutTime) && strcmp(x.Q.SliceReadoutTime,'shortestTR')
+    if ~isnumeric(x.Q.SliceReadoutTime) && strcmpi(x.Q.SliceReadoutTime,'shortestTR')
         % Load ASL parms
         ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
@@ -45,13 +45,12 @@ function [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
         end
     end
 
-    %% ---------------------------------------------------    
+    %% ---------------------------------------------------
     %% Check output
     if isnan(x.Q.SliceReadoutTime)
         error('qnt_PLDslicereadout expected but was NaN');
     elseif min(x.Q.SliceReadoutTime)<5 || max(x.Q.SliceReadoutTime)>400
         warning(['qnt_PLDslicereadout=' num2str(x.Q.SliceReadoutTime) ' is outside of its valid range 5-400 ms']);
     end
-    
-end
 
+end

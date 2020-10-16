@@ -100,10 +100,10 @@ for iSubject=1:x.nSubjects
         end
     end
     if DidExist==0
-        fprintf('%s\n',['WMH volume for subject ' x.SUBJECTS{iSubject} ' was not found   \n']);
+        fprintf('%s\n',['WMH volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
         vol(iSubject,4:5) = NaN;
     elseif DidExist==1
-        fprintf('%s\n',['WMH volume for subject ' x.SUBJECTS{iSubject} ' could not be read   \n']);
+        fprintf('%s\n',['WMH volume for subject ' x.SUBJECTS{iSubject} ' could not be read']);
         vol(iSubject,4:5) = NaN;
     end    
 end

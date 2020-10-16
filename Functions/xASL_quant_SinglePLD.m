@@ -1,7 +1,7 @@
 function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x)
 %xASL_quant_SinglePLD % Perform a multi-step quantification
 % FORMAT: [ScaleImage[, CBF]] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x)
-% 
+%
 % INPUT:
 %   PWI             - image matrix of perfusion-weighted image (REQUIRED)
 %   M0_im           - M0 image (can be a single number or image matrix) (REQUIRED)
@@ -53,12 +53,12 @@ if ~x.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 else
     %% 1    PLD scalefactor (gradient if 2D multi-slice)
-    switch x.readout_dim
-        case '3D'
+    switch lower(x.readout_dim)
+        case '3d'
             fprintf('%s\n','3D sequence, not accounting for SliceReadoutTime (homogeneous PLD for complete volume)');
             ScaleImage = ScaleImage.*x.Q.Initial_PLD;
 
-        case '2D' % Load slice gradient
+        case '2d' % Load slice gradient
             fprintf('%s\n','2D sequence, accounting for SliceReadoutTime');
 
             % Calculate SliceReadoutTime for shortestTR
@@ -88,11 +88,11 @@ else
     %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
     switch x.Q.nCompartments
         case 1 % single-compartment model
-            switch x.Q.LabelingType
-                case 'PASL'
+            switch lower(x.Q.LabelingType)
+                case 'pasl'
                     DivisionFactor = x.Q.LabelingDuration;
                     fprintf('%s\n','Using single-compartment PASL');
-                case 'CASL'
+                case 'casl'
                     DivisionFactor = x.Q.BloodT1 .* (1 - exp(-x.Q.LabelingDuration./x.Q.BloodT1));
                     fprintf('%s\n','Using single-compartment CASL');
             end
@@ -100,12 +100,12 @@ else
             ScaleImage = exp((ScaleImage./x.Q.BloodT1)) ./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
 
         case 2 % dual-compartment model
-            switch x.Q.LabelingType
-                case 'PASL'
+            switch lower(x.Q.LabelingType)
+                case 'pasl'
                     DivisionFactor = x.Q.LabelingDuration;
                     ScaleImage = exp((x.Q.ATT./x.Q.BloodT1)).*exp(((ScaleImage-x.Q.ATT)./x.Q.TissueT1))./ (2.*x.Q.LabelingEfficiency.*DivisionFactor);
                     fprintf('%s\n','Using dual compartment PASL');
-                case 'CASL'
+                case 'casl'
                     DivisionFactor = x.Q.TissueT1 .* (exp((min(x.Q.ATT-ScaleImage,0))./x.Q.TissueT1) - exp((min(x.Q.ATT-x.Q.LabelingDuration-ScaleImage,0))./x.Q.TissueT1));
                     ScaleImage = exp((x.Q.ATT./x.Q.BloodT1))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
                     fprintf('%s\n','Using dual compartment CASL');
@@ -129,9 +129,9 @@ if ~x.ApplyQuantification(1)
 else
     % Load the stored parameters
 	ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
-	
+
 	% Throw warning if no Philips scans, but some of the scale slopes are not 1:
-	if isempty(regexp(x.Vendor,'Philips'))
+	if isempty(regexpi(x.Vendor,'Philips'))
 		if isfield(ASL_parms,'RescaleSlopeOriginal') && ASL_parms.RescaleSlopeOriginal~=1
 			warning('We detected a RescaleSlopeOriginal~=1, verify that this is not a Philips scan!!!');
 		end
@@ -144,53 +144,53 @@ else
 	end
 
 	% Set GE specific scalings
-	if ~isempty(regexp(x.Vendor,'GE'))
+	if ~isempty(regexpi(x.Vendor,'GE'))
 		if ~isfield(x.Q,'NumberOfAverages')
 			% GE accumulates signal instead of averaging by NEX, therefore division by NEX is required
 			error('GE-data expected, "NumberOfAverages" should be a dicom-field, but was not found!!!')
 		else
 			x.Q.NumberOfAverages = max(x.Q.NumberOfAverages); % fix for combination of M0 & PWI in same nifti, for GE quantification
 		end
-		
-		switch x.Vendor
+
+		switch lower(x.Vendor)
 			% For some reason the older GE Alsop Work in Progress (WIP) version
 			% has a different scale factor than the current GE product sequence
-			
-			case {'GE_product','GE'} % GE new version
+
+			case {'ge_product','ge'} % GE new version
 				%                 qnt_R1gain = 1/32;
 				%                 qnt_C1 = 6000; % GE constant multiplier
-				
+
 				%                 qnt_GEscaleFactor = (qnt_C1*qnt_R1gain)/(x.Q.NumberOfAverages); % OLD incorrect
 				qnt_R1gain = 32; %  PWI is scaled up by 32 (default GE scalefactor)
 				qnt_GEscaleFactor = qnt_R1gain*x.Q.NumberOfAverages;
 				% division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
-				
-			case 'GE_WIP' % GE old version
+
+			case 'ge_wip' % GE old version
 				qnt_RGcorr = 45.24; % Correction for receiver gain in PDref (but not used apparently?)
 				% or should this be 6000/45.24?
 				qnt_GEscaleFactor = qnt_RGcorr*x.Q.NumberOfAverages;
 			otherwise
 				error('Please set x.Vendor to GE_product or GE_WIP');
 		end
-		
+
 		ScaleImage = ScaleImage./qnt_GEscaleFactor;
 		fprintf('%s\n',['Quantification corrected for GE scale factor ' num2str(qnt_GEscaleFactor) ' for NSA=' num2str(x.Q.NumberOfAverages)]);
-		
+
 		% Set Philips specific scaling
-	elseif ~isempty(regexp(x.Vendor,'Philips'))
+	elseif ~isempty(regexpi(x.Vendor,'Philips'))
 		% Philips has specific scale & rescale slopes
 		% If these are not corrected for, only relative CBF quantification can be performed,
 		% i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
-		
+
 		scaleFactor = xASL_adm_GetPhilipsScaling(xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat,x),xASL_io_ReadNifti(x.P.Path_ASL4D));
-		
+
 		if scaleFactor
 			ScaleImage = ScaleImage .* scaleFactor;
 		end
 
 		% Siemens specific scalings
-	elseif strcmp(x.Vendor,'Siemens')
-		if ~strcmp(x.Vendor,'Siemens_JJ_Wang') && strcmp(x.M0,'separate_scan')
+	elseif strcmpi(x.Vendor,'Siemens')
+		if ~strcmpi(x.Vendor,'Siemens_JJ_Wang') && strcmpi(x.M0,'separate_scan')
 			% Some Siemens readouts divide M0 by 10, others don't
 			ScaleImage = ScaleImage./10;
 			fprintf('%s\n','M0 corrected for Siemens scale factor 10')
@@ -210,13 +210,13 @@ end
 
 M0_im = repmat(M0_im,MatchSizeM0);
 ScaleImage = repmat(ScaleImage,MatchSizeSI);
-    
+
 if ~x.ApplyQuantification(5)
     fprintf('%s\n','We skip the PWI/M0 division');
-else    
+else
     ScaleImage = ScaleImage./M0_im;
 end
-     
+
 %% 6    Apply quantification
 CBF = PWI.*ScaleImage;
 
@@ -225,17 +225,17 @@ CBF = PWI.*ScaleImage;
 fprintf('%s\n',' model with parameters:');
 
 if x.ApplyQuantification(3)
-    switch x.Q.LabelingType
-        case 'PASL'
+    switch lower(x.Q.LabelingType)
+        case 'pasl'
             fprintf('%s',['TI1 = ' num2str(x.Q.LabelingDuration) ' ms, ']);
             fprintf('%s',['TI (ms) = ' num2str(x.Q.Initial_PLD)]);
-        case 'CASL'
+        case 'casl'
             fprintf('%s',['LabelingDuration = ' num2str(x.Q.LabelingDuration) ' ms, ']);
             fprintf('%s',['PLD (ms) = ' num2str(x.Q.Initial_PLD)]);
     end
 
     if isfield(x.Q,'SliceReadoutTime')
-        if x.Q.SliceReadoutTime>0 && strcmp(x.readout_dim,'2D')
+        if x.Q.SliceReadoutTime>0 && strcmpi(x.readout_dim,'2D')
             fprintf('%s',[' + ' num2str(x.Q.SliceReadoutTime) ' ms*(slice-1)']);
         end
     end
