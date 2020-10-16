@@ -142,6 +142,7 @@ DataColumn = find(strcmp(CellArray(1,:), DataName));
 if isempty(DataColumn)
     DataColumn = size(CellArray,2)+1;
     CellArray{1,DataColumn} = DataName;
+    % now predefine/prefill with NaNs
     CellArray(2:end,DataColumn) = repmat({'n/a'}, [size(CellArray,1)-1 1]);
 elseif length(DataColumn)>1
     warning('Too many columns, skipping');
@@ -156,7 +157,7 @@ end
 for iIndex=1:size(DataIn,1)
     iSubject = strcmp(CellArray(2:end,1), DataIn{iIndex,1});
     iSession = strcmp(CellArray(2:end,2), DataIn{iIndex,2});
-    iRow = find(iSubject & iSession);
+    iRow = find(iSubject & iSession)+1; % add one for the header, assuming that DataIn has no header
     
     if isempty(iRow)
         iRow = size(CellArray,1)+1; % next row

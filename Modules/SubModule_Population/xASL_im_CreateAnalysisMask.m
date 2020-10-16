@@ -44,6 +44,28 @@ if nargin<2 || isempty(Threshold)
     Threshold = 0.95; % default threshold
 end
 
+PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskSusceptibility_.*bs-mean\.nii$', 'FPList');
+
+bSkipStandard = 0;
+
+if x.nSubjectsSessions<16
+    fprintf('%s\n', ['Too few subjects (' num2str(x.nSubjectsSessions) ') to create population-based analysis mask']);
+    x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.WBmask);
+    x.S.VBAmask = x.S.MaskSusceptibility;
+    bSkipStandard = 1;
+elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Sequence,'3d_spiral')
+    warning('Missing susceptibility maps, skipping...');
+    bSkipStandard = 1;
+end
+
+if bSkipStandard && ~x.bNativeSpaceAnalysis
+    return;
+    % we skip creating a group mask if we have fewer images than specified
+    % above.
+    % Not sure if this is the same for the NativeSpaceAnalysis, this still
+    % has to be fixed by Jan
+end
+
 % Define paths to create
 VBA_maskPath = fullfile(x.D.PopDir,'VBA_mask_final.nii'); % later move to statsdir
 MaskVascularPath = fullfile(x.S.StatsDir,'MaskVascular.nii');
@@ -52,7 +74,6 @@ MaskSusceptibilityPath = fullfile(x.S.StatsDir,'MaskSusceptibility.nii');
 % Define pre-existing paths, including warning when less or more than 1 are found
 PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^FoV_.*bs-mean\.nii$', 'FPList', [1 1]);
 PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskVascular_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskSusceptibility_.*bs-mean\.nii$', 'FPList', [1 1]);
 PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pGM_.*bs-mean\.nii$', 'FPList', [1 1]);
 PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pWM_.*bs-mean\.nii$', 'FPList', [1 1]);
 PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pCSF_.*bs-mean\.nii$', 'FPList', [1 1]);
@@ -67,28 +88,18 @@ if ~isempty(PathpWM); PathpWM = PathpWM{1}; end
 if ~isempty(PathpCSF); PathpCSF = PathpCSF{1}; end
 if ~isempty(PathT1); PathT1 = PathT1{1}; end
 
-bSkipStandard = 0;
 
-if x.nSubjectsSessions<16
-    fprintf('%s\n', ['Too few subjects (' num2str(x.nSubjectsSessions) ') to create population-based analysis mask']);
-    x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.WBmask);
-    x.S.VBAmask = x.S.MaskSusceptibility;
-    bSkipStandard = 1;
-elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Sequence,'3d_spiral')
-    warning('Missing susceptibility maps, skipping...');
-    bSkipStandard = 1;
-end
-
-if isempty(PathpGM)
-    if ~bSkipStandard; warning('Missing pGM image, using MNI version'); end
-    PathpGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii');
-end
-if isempty(PathpWM)
-    if ~bSkipStandard; warning('Missing pWM image, using MNI version'); end
-    PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');
-end
 
 if ~bSkipStandard
+    if isempty(PathpGM)
+        warning('Missing pGM image, using MNI version');
+        PathpGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii');
+    end
+    if isempty(PathpWM)
+        warning('Missing pWM image, using MNI version');
+        PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');
+    end    
+    
 	%% Creation GM, WM & WholeBrain masks by p>0.5
 	GMmask = xASL_io_Nifti2Im(PathpGM)>0.5;
 	WMmask = xASL_io_Nifti2Im(PathpWM)>0.5;

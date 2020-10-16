@@ -63,8 +63,6 @@ else
 		if scaleFactor
 			M0IM = M0IM .* scaleFactor;
 		end
-    else
-        fprintf('%s\n',[x.Vendor ' M0 scan (not Philips), so no M0 scale slope assumed']);
     end
 end
 
