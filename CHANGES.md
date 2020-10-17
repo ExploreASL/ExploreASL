@@ -2,6 +2,14 @@
 # ExploreASL v1.3.0
 
 ----
+## Versions included software
+Versions included & used third-party tools (see /External/README_SPM.txt):
+
+SPM12 7219 
+CAT12 r1615 
+LST 2.0.15 
+
+----
 ## Feature improvements (still backward compatible)
 
 * #59: Assign "weights" to status files, allowing the external Python ExploreASL GUI to provide a better estimate of the progress
@@ -98,6 +106,14 @@ This is part of a continuous development on creating average flow territory temp
 # ExploreASL v1.2.0
 
 ----
+## Versions included software
+Versions included & used third-party tools (see /External/README_SPM.txt):
+
+SPM12 7219 
+CAT12 r1615 
+LST 2.0.15
+
+----
 
 ## Major feature improvements (still backward compatible)
 
@@ -188,6 +204,14 @@ This is part of a continuous development on creating average flow territory temp
 
 
 ----
+## Versions included software
+Versions included & used third-party tools (see /External/README_SPM.txt):
+
+SPM12 7219 
+CAT12 r1615 
+LST 2.0.15
+
+----
 
 ## Bug Fixes
 
@@ -220,3 +244,11 @@ This is part of a continuous development on creating average flow territory temp
 
   ----
 This is the first release version.
+
+----
+## Versions included software
+Versions included & used third-party tools (see /External/README_SPM.txt):
+
+SPM12 7219 
+CAT12 r1363
+LST 2.0.15

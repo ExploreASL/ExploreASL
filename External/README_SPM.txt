@@ -1,9 +1,9 @@
 //External/SPMmodified is a modified version of SPM12, CAT12 and LST, which is redistributed with the same license (GPL, see license files inside folders). This was developed parallel with ExploreASL, but is a separate project, with its own license.
 
 In this textfile we list the modifications. This concerns the following versions:
-SPM12, r7219
-CAT12, r1615
-LST, r2.0.15 
+SPM12, r7219 (/External/SPMmodified/Contents.txt)
+CAT12, r1615 (/External/SPMmodified/toolbox/cat12/CHANGES.txt)
+LST, r2.0.15 (/External/SPMmodified/toolbox/LST/lst-version.txt)
 
 Aside from the below list of code modifications, 
 we have added new maps (//External/SPMmodified/MapsAdded/README_Maps.txt)
