@@ -306,13 +306,13 @@ xASL_quant_FEAST(x);
 %% ------------------------------------------------------------------------------------------------
 %% 11.  Create standard space masked image to visualize masking effect
 if strcmp(OutputPath, x.P.Pop_Path_qCBF)
-    x.P.Pop_Path_CBF_Masked = fullfile(x.D.PopDir, ['qCBF_masked_' x.P.SubjectID '_' x.P.SessionID '.nii']);
+    x.P.Pop_Path_qCBF_masked = fullfile(x.D.PopDir, ['qCBF_masked_' x.P.SubjectID '_' x.P.SessionID '.nii']);
     MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
     MaskedCBF(~MaskVascularMNI) = NaN;
     if DoSusceptibility
         MaskedCBF(~MaskSusceptibility) = NaN;
     end
-    xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_CBF_Masked, MaskedCBF, [], false);
+    xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_qCBF_masked, MaskedCBF, [], false);
 end
 
 

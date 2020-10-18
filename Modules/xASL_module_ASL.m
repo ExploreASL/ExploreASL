@@ -377,10 +377,6 @@ end
 %% -----------------------------------------------------------------------------
 %% 7    Create analysis mask
 iState = 7;
-x.P.Path_MaskVascular = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
-x.P.Pop_Path_MaskVascular = fullfile(x.D.PopDir, ['MaskVascular_' x.P.SubjectID '_' x.P.SessionID '.nii']);
-x.PathPop_MaskSusceptibility = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.P.SubjectID '_' x.P.SessionID '.nii']);
-
 if ~x.mutex.HasState(StateName{iState})
     if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
         if size(xASL_io_Nifti2Im(x.P.Path_PWI),4)>1

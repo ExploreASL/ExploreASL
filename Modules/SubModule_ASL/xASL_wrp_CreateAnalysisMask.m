@@ -174,7 +174,7 @@ if DoSusceptibility
      MaskSusceptibility = BrainMask;
      MaskSusceptibility(MaskSuscept) = FinalMask(MaskSuscept);
 
-     xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.PathPop_MaskSusceptibility, MaskSusceptibility, [], false);
+     xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Path_Pop_MaskSusceptibility, MaskSusceptibility, [], false);
 end
 
 

@@ -81,7 +81,7 @@ FileDef{1} = {'FLAIR' 'T1' 'T1_filled' 'c1T1' 'c2T1' 'c3T1' 'j_T1' 'y_T1' 'WMH_S
 
 % FileTypes in SESSIONDIR
 FileDef{2} = {'y_ASL' 'ASL4D' 'ASL4D_RevPE'...
-	           'CBF' 'qCBF' 'qCBF4D' 'qCBF_untreated' 'despiked_ASL4D' ...
+	           'CBF' 'qCBF' 'qCBF4D' 'qCBF_untreated' 'qCBF_masked' 'despiked_ASL4D' ...
 			   'PseudoCBF' 'PWI' 'PWI4D' 'mean_PWI_Clipped' 'mean_PWI_Clipped_DCT' 'M0' 'mean_control' 'SD' 'SNR' 'SD_control'...
 			   'SNR_control' 'SliceGradient' 'SliceGradient_extrapolated' 'FoV' 'TT' 'PVgm' 'PVwm' 'PVcsf' 'PVwmh' 'CBFgm' 'CBFwm' 'MaskSusceptibilityPop' 'TotalGMPop' 'DeepWMPop' 'HammersPop' 'MNIStructuralPop' 'LeftRightPop' 'HOcort_CONNPop' 'HOsub_CONNPop'}; 
 
@@ -162,9 +162,15 @@ if isfield(x.P,'SubjectID')
             end
         end
     end
+    
+    %% ------------------------------------------------------------------------------------------
+    %% Add custom cases
+    if isfield(x, 'SESSIONDIR')
+        x.P.Path_MaskVascular = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
+    end
+    x.P.Pop_Path_MaskVascular = fullfile(x.D.PopDir, ['MaskVascular_' x.P.SubjectID '_' x.P.SessionID '.nii']);
+    x.P.Path_Pop_MaskSusceptibility = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.P.SubjectID '_' x.P.SessionID '.nii']);    
 end
-
-
 
 
 %% ------------------------------------------------------------------------------------------
