@@ -188,7 +188,8 @@ kFil = kFil/sum(kFil(:));
 % ===============================================================================
 %% 5) Apply the smoothing filter on the source image(s)
 % Do this within the first 3 dimensions only
-TotalDim = size(imSrc.dat,4)*size(imSrc.dat,5)*size(imSrc.dat,6)*size(imSrc.dat,7);
+SourceImage = single(imSrc.dat(:,:,:,:,:,:,:));
+TotalDim = size(SourceImage,4)*size(SourceImage,5)*size(SourceImage,6)*size(SourceImage,7);
 imSmo = zeros(size(imSrc.dat));
 It = 1;
 for i7=1:size(imSrc.dat,7)
@@ -196,7 +197,7 @@ for i7=1:size(imSrc.dat,7)
         for i5=1:size(imSrc.dat,5)
             for i4=1:size(imSrc.dat,4)
                 xASL_TrackProgress(It, TotalDim);
-                imSmo(:,:,:,i4,i5,i6,i7) = convn(imSrc.dat(:,:,:,i4,i5,i6,i7),kFil,'same');
+                imSmo(:,:,:,i4,i5,i6,i7) = convn(SourceImage(:,:,:,i4,i5,i6,i7), kFil, 'same');
                 It = It+1;
             end
         end
