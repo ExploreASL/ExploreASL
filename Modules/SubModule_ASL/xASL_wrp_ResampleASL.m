@@ -96,6 +96,9 @@ if nVolumes>1
     matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
 
     spm_jobman('run',matlabbatch); % this applies the motion correction in native space
+    
+    [Fpath, Ffile] = xASL_fileparts(x.P.Path_despiked_ASL4D);
+    x.P.Path_rdespiked_ASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
 else
     x.P.Path_rdespiked_ASL4D = x.P.Path_despiked_ASL4D;
 end
