@@ -156,7 +156,9 @@ try
             % Prepare text to print
             if ~isstruct(Str{iField}(ii).value) % no extra layer
                 TempValue  = Str{iField}(ii).value;
-                if  isnumeric(TempValue); TempValue = num2str(TempValue,4); end
+                if isnumeric(TempValue) || islogical(TempValue)
+                    TempValue = num2str(TempValue,4); 
+                end
 
             else % add extra layer
                 TempFields = fieldnames(x.Output.(OutputFields{iField}).(Str{iField}(ii).name));
