@@ -28,9 +28,9 @@ function xASL_im_Upsample(PathOrig, PathDest, NewVoxelSize, LeaveEmpty, PaddingD
     dimLow      = size(imASL);
     imLow       = imASL;
 
-    if length(dimLow)>3 || length(dimLow)>NewVoxelSize
+    if length(dimLow)>3 || length(dimLow)>length(NewVoxelSize)
         error([PathOrig ' has too many dimensions']);
-    end        
+    end
     
     if nargin<4 || isempty(LeaveEmpty)
         LeaveEmpty = false;
