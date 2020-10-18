@@ -39,6 +39,9 @@ function xASL_wrp_CreateAnalysisMask(x)
 if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
+if ~xASL_exist(x.P.Path_PWI, 'file')
+    error([x.P.Path_PWI ' missing']);
+end
 
 FoVim = xASL_io_Nifti2Im(x.P.Path_PWI);
 FoVim(:) = 1;
