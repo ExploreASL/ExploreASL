@@ -15,7 +15,9 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 % or other derivatives that need a quantification, e.g. FEAST
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This submodule converts PWIs to quantified CBF maps (or related derivatives):
+% DESCRIPTION: This submodule converts PWIs to quantified CBF maps (or
+% related derivatives). Note that we don't delete x.P.Path_PWI4D here, as
+% this NIfTI file may be needed by xASL_wrp_VisualQC_ASL.m
 %
 %           1. Load PWI
 %           2. Prepare M0
