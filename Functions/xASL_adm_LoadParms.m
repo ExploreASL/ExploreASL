@@ -219,7 +219,12 @@ end
 
 
 %% ------------------------------------------------------------------------
-%% 6) Fix M0 parameter if not set
+%% 6) Fix M0 parameter
+if isfield(x, 'M0') && strcmpi(x.M0, 'no_background_suppression')
+    warning('Legacy option x.M0=no_background_suppression detected, replacing this by UseControlAsM0');
+    x.M0 = 'UseControlAsM0';
+end
+
 if ~isfield(x,'M0')
     if xASL_exist(fullfile(Fpath, 'M0.nii'),'file') && (exist(fullfile(Fpath, 'M0.json'),'file') || exist(fullfile(Fpath, 'M0_parms.mat'),'file') )
         x.M0 = 'separate_scan';
