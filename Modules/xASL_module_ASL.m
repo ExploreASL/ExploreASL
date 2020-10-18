@@ -105,9 +105,6 @@ x = xASL_init_FileSystem(x); % do this only here, to save time when skipping thi
 if ~isfield(x,'Q')
     x.Q = struct;
 end
-if ~isfield(x.Q,'SaveCBF4D')
-    x.Q.SaveCBF4D = false;
-end
 if ~isfield(x,'DoWADQCDC')
     x.DoWADQCDC = false; % default skip WAD-QC stuff
 end
@@ -419,7 +416,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     end
 
     % allow 4D quantification as well
-    if x.Q.SaveCBF4D
+    if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D==1
         if ~xASL_exist(x.P.Path_PWI4D,'file')
             fprintf('%s\n','Skipping, native space PWI4D missing');
         else
