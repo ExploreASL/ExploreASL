@@ -840,10 +840,17 @@ switch imPar.studyID
         imPar.bMatchDirectories = true;
         
     case 'ADNI'
-        imPar.folderHierarchy = {'^(\d{3}_S_\d{4}).*', '^(ASL_PERFUSION)$', '^(\d{4}.*)$', '^S.*'}; % Test with ADNI data
-        imPar.tokenOrdering = [1 3 0 2]; % subject visit session scantype
-        imPar.tokenScanAliases = {'^ASL_PERFUSION$','ASL4D';'^MPRAGE$', 'T1'};
-        imPar.tokenVisitAliases = {'^2010$','ASL4D';'^1$'};
+        ADNI_ASL_series = '^(ASL.*)|^(Axial_3D_PASL.*)|^(Axial_3D_pCASL.*)';
+        ADNI_T1_series = '^(SAG_MPRAGE.*)|^(MPRAGE.*)|^(mprage.*)|^(Accelerated_Sagittal_MPRAGE.*)';
+        ADNI_FLAIR_series = '^(Axial_T2-FLAIR.*)|^(Sagittal_3D_FLAIR.*)|^(AX_T2_FLAIR_NO_ANGLE.*)';
+        imPar.folderHierarchy = {'^(\d{3}_S_\d{4}).*',...
+                                ['^(',ADNI_ASL_series,'|',ADNI_T1_series,'|',ADNI_FLAIR_series,')$'],...
+                                 '^(\d{4}.*)$', '^(\d{2}.*)$'};
+        imPar.tokenOrdering = [1 4 0 2]; % subject visit session scantype
+        imPar.tokenScanAliases = {'.(ASL).*','ASL4D';...
+                                  '.(MPRAGE).*','T1'; '.(mprage).*','T1'; ...
+                                  '.(FLAIR).*', 'FLAIR'};
+        imPar.tokenVisitAliases = {'01','_1'; '02','_2'; '03','_3'; '04','_4'; '05','_5'; '06','_6'; '07','_7'}; % Works if you rename the [S...] visit folders accordingly [01, 02, etc.]
         imPar.bMatchDirectories = true;
     
     case 'incoming' % Default single participant
