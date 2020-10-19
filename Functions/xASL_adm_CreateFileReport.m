@@ -166,7 +166,7 @@ MNI_session_prefix = {['q' x.P.CBF] 'PWI' 'SliceGradient'};
 % 5) Lock dirs
 lockDIRS = {'xASL_module_Structural', 'xASL_module_ASL'};
 lockPrefix{1} = {'010_LinearReg_T1w2MNI', '060_Segment_T1w', '080_Resample2StandardSpace', '090_GetVolumetrics', '100_VisualQC_Structural'}; % struct % struct
-lockPrefix{2} = {'030_RegisterASL', '040_ResampleASL', '050_PreparePV', '070_Quantification', '080_CreateAnalysisMask', '090_VisualQC_ASL'}; % ASL
+lockPrefix{2} = {'030_RegisterASL', '040_ResampleASL', '050_PreparePV', '070_CreateAnalysisMask', '080_Quantification', '090_VisualQC_ASL'}; % ASL
 
 
 % Add dirs for specific image processing
