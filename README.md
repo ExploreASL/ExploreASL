@@ -1,3 +1,5 @@
+![ExploreASL](https://github.com/ExploreASL/ExploreASL/blob/develop/ExploreASL_logoSmall.png)
+
 # ExploreASL
 
 ## Description
