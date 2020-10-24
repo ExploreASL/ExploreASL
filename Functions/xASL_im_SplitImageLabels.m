@@ -127,7 +127,7 @@ for iImage=1:length(ImagePaths)
         if isempty(OutputFolder)
             OutputFolder = Fpath;
         end
-        FileName = fullfile(OutputFolder, [LabelName{iLabel} '_' Ffile '.nii']);
+        FileName = fullfile(OutputFolder, [Ffile '_' LabelName{iLabel} '.nii']);
         if xASL_exist(FileName, 'file') && ~bOverwrite
             fprintf('%s\n', [FileName ' already existed, skipping']);
         else
