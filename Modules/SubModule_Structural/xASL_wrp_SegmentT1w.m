@@ -60,6 +60,9 @@ end
 if ~isfield(x,'Seg')
 	x.Seg = {};
 end
+if ~isfield(x, 'bHammersCAT12')
+    x.bHammersCAT12 = false;
+end
 
 % Check whether we should do normal or strong biasfield correction
 x.T1BiasFieldRegularization = true; % default
@@ -204,7 +207,7 @@ InFile{1} = fullfile(x.SUBJECTDIR,'mri',['p1' x.P.STRUCT '.nii']);
 InFile{2} = fullfile(x.SUBJECTDIR,'mri',['p2' x.P.STRUCT '.nii']);
 InFile{3} = fullfile(x.SUBJECTDIR,'mri',['p3' x.P.STRUCT '.nii']);
 InFile{4} = fullfile(x.SUBJECTDIR,'mri',['y_' x.P.STRUCT '.nii']);
-InFile{5} = fullfile(x.SUBJECTDIR,'label',['catROI_' x.P.STRUCT '.mat']);
+InFile{5} = fullfile(x.SUBJECTDIR,'label',['catROI_' x.P.STRUCT '.tsv']);
 InFile{6} = fullfile(x.SUBJECTDIR,'report',['catreport_' x.P.STRUCT '.pdf']);
 InFile{7} = fullfile(x.SUBJECTDIR,'report',['cat_' x.P.STRUCT '.mat']);
 InFile{8} = fullfile(x.SUBJECTDIR,'mri',['n' x.P.STRUCT '.nii']);
@@ -213,6 +216,7 @@ OutFile{1} = x.P.Path_c1T1; % GM segmentation
 OutFile{2} = x.P.Path_c2T1; % WM segmentation
 OutFile{3} = x.P.Path_c3T1; % CSF segmentation
 OutFile{4} = x.P.Path_y_T1; % deformation field to common space
+OutFile{5} = fullfile(x.D.TissueVolumeDir,['catROI_' x.P.STRUCT '_' x.P.SubjectID '.tsv']);
 OutFile{6} = fullfile(x.SUBJECTDIR,['catreport_' x.P.STRUCT '.pdf']);
 OutFile{7} = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
 OutFile{8} = fullfile(x.SUBJECTDIR,[x.P.STRUCT '_BiasFieldCorrected.nii.gz']); % GM segmentation
@@ -580,7 +584,12 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel      = 0;   % don't save
 matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
 
-matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
+if x.bHammersCAT12
+    matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {'/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/toolbox/cat12/templates_volumes/HammersCAT12.nii'};
+else
+    matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
+end
+
 matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
 %matlabbatch{1}.spm.tools.cat.estwrite.output.labelnative = 1;
 
