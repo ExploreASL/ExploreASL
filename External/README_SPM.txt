@@ -338,6 +338,10 @@ jsmn.c at line 269
 *********************************************************************************************************
 OTHER CODE HACKS
 
+DATE+NAME:2020-10-26 HM (issue #190)
+DESCRIPTION: Add atlas ROI creation comments and add creation of catROI_T1.tsv
+FILE: cat_main.m, 127
+
 DATE+NAME:2020-09-02 MS (issue #114)
 DESCRIPTION:
 Make Matlab version information robust for both deployed and undeployed mode (bugfix)
