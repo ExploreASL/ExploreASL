@@ -476,7 +476,7 @@ SetOptions = lower(x.S.SetsOptions{Sets2Check(iSet)});
 
 % if the only options are left & right (and n/a for missing), assume that this is
 % a request to flip hemispheres for the 'right' ones
-bFlipHemisphere = min(cellfun(@(y) ~isempty(regexp(y, '^(.|)(left|right|l|r|n/a|nan)(.|)$')), SetOptions));
+bFlipHemisphere = min(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(left|right|l|r|n/a|nan)(.|)$')), SetOptions));
 
 if length(IM)==1
     bUnilateralImages = false;
@@ -497,7 +497,7 @@ end
 if bFlipHemisphere
     fprintf('%s\n', 'Left-right designations detected, flipping images with designation right');
     % get option index for right
-    Index2Flip = find(cellfun(@(y) ~isempty(regexp(y, '^(.|)(right|r)(.|)$')), SetOptions));
+    Index2Flip = find(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(right|r)(.|)$')), SetOptions));
     Images2Flip = CurrentSetsID(:,Sets2Check(iSet))==Index2Flip;
 
     % Flip the images
@@ -529,7 +529,7 @@ if bFlipHemisphere
 
     % now we change the set options & ID to inclusion
     % instead of left/right
-    IndexInclusion = find(cellfun(@(y) ~isempty(regexp(y, '^(.|)(left|right|l|r)(.|)$')), SetOptions)); % these are the indices for inclusion (either left or right)
+    IndexInclusion = find(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(left|right|l|r)(.|)$')), SetOptions)); % these are the indices for inclusion (either left or right)
     SetID = ~max(CurrentSetsID(:,Sets2Check(iSet))==IndexInclusion, [], 2)+1;
     SetOptions = {'' 'n/a'}; % include ones, exclude twos
     UniqueSet = [1;2];
@@ -540,8 +540,8 @@ else
 end
 
 for iU=1:length(UniqueSet) % iterate over the options/categories of this set
-    HasNaN = ~isempty(regexp(SetOptions{UniqueSet(iU)}, '(n/a|nan)')); % skipping NaNs, consider them as outside of a group
-    CannotHaveSessions = ~SessionsExist(iScanType) && ~isempty(regexp(x.S.SetsName{Sets2Check(iSet)}, 'session')); % This SET is for sessions, but there are no sessions for this scantype, so skip this
+    HasNaN = ~isempty(regexpi(SetOptions{UniqueSet(iU)}, '(n/a|nan)')); % skipping NaNs, consider them as outside of a group
+    CannotHaveSessions = ~SessionsExist(iScanType) && ~isempty(regexpi(x.S.SetsName{Sets2Check(iSet)}, 'session')); % This SET is for sessions, but there are no sessions for this scantype, so skip this
 
     if ~HasNaN && ~CannotHaveSessions
         try
@@ -580,6 +580,11 @@ end % iU=1:length(UniqueSet)
 
 
 end
+
+
+
+
+
 
 
 %% ===================================================================================
