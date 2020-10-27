@@ -459,9 +459,17 @@ end
 function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check, IM, IM2noMask, iSet, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM)
 %xASL_wrp_CreatePopulationTemplates4Sets Subfunction that creates the parametric images for subsets
 
-                
+% Valid options for averaging hemispheres are:
+% 'n/a' = don't include this subject/session
+% 'left' = include the left hemisphere only for this subject/session
+% 'right' = include the right hemisphere only for this subject/session
+% 'both' = include both hemispheres for this subject/session
+
+% Get CurrentSet
+CurrentSet = CurrentSetsID(:,Sets2Check(iSet));
+
 % Obtain unique options for this set
-TempUnique = unique(CurrentSetsID(:,Sets2Check(iSet)));
+TempUnique = unique(CurrentSet);
 UniqueSet = TempUnique(~isnan(TempUnique));
 % Now if we have a 0, switch it to 1
 % This can happen if we have a set with string options, where
@@ -472,11 +480,11 @@ if ~isempty(IndexZero) && sum(UniqueSet==1)==0
     UniqueSet(IndexZero) = 1;
 end
 
-SetOptions = lower(x.S.SetsOptions{Sets2Check(iSet)});
+SetOptions = x.S.SetsOptions{Sets2Check(iSet)};
 
 % if the only options are left & right (and n/a for missing), assume that this is
 % a request to flip hemispheres for the 'right' ones
-bFlipHemisphere = min(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(left|right|l|r|n/a|nan)(.|)$')), SetOptions));
+bFlipHemisphere = min(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(left|right|l|r|n/a|nan|both|bothleftright)(.|)$')), SetOptions));
 
 if length(IM)==1
     bUnilateralImages = false;
@@ -495,16 +503,35 @@ else
 end
 
 if bFlipHemisphere
-    fprintf('%s\n', 'Left-right designations detected, flipping images with designation right');
-    % get option index for right
-    Index2Flip = find(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(right|r)(.|)$')), SetOptions));
-    Images2Flip = CurrentSetsID(:,Sets2Check(iSet))==Index2Flip;
-
-    % Flip the images
-    % we iterate this, to avoid using large memory
+    fprintf('%s\n', 'Hemisphere encoding (left-right designations) detected, flipping images with designation right');
+    
+    % 1. For indices with 'both', clone them so they have both left and right
+    % First we clone the image to the end as new image, with the
+    % designation 'right', and reset the current designation to 'left'
+    % (instead of 'both') so they are both averaged in
+    IndexLeft = find(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(left|l)(.|)$')), SetOptions));
+    IndexRight = find(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(right|r)(.|)$')), SetOptions));    
+    IndexBoth = find(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(both|bothleftright)(.|)$')), SetOptions));
+    
+    ImagesBoth = find(CurrentSet==IndexBoth);
+    % loop over these indices
+    for iBoth=1:length(ImagesBoth)
+        % add new index containing right
+        CurrentSet(end+1) = IndexRight;
+        % set current index to left (instead of both)
+        CurrentSet(ImagesBoth(iBoth)) = IndexLeft;
+        % copy current image to new image index
+        for iIM=1:length(IM)
+            IM{iIM}(:,end+1) = IM{iIM}(:,ImagesBoth(iBoth));
+        end
+    end
+    
+    % 2. Flip images with index 'right'
+    Images2Flip = CurrentSet==IndexRight;
+    
     fprintf('Flipping images:   ');
     
-    for iImage=1:size(IM{1}, 2)
+    for iImage=1:size(IM{1}, 2) % we iterate this, to avoid using large memory
         xASL_TrackProgress(iImage, size(IM{1},2));
         if Images2Flip(iImage)
             if bUnilateralImages
@@ -527,16 +554,18 @@ if bFlipHemisphere
     % Now all images are flipped to IM{1} & IM2noMask{1}, for both
     % bUnilateralImages (IM has 2 cells) & ~bUnilateralImages (IM has 1 cell)
 
-    % now we change the set options & ID to inclusion
-    % instead of left/right
+    % now we change the set options & ID to inclusion instead of left/right
+    % to fool the subsequent processing that should split groups
+    % instead of splitting left/right, the subsequent processing will
+    % include all (as they may have been flipped above)
     IndexInclusion = find(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(left|right|l|r)(.|)$')), SetOptions)); % these are the indices for inclusion (either left or right)
-    SetID = ~max(CurrentSetsID(:,Sets2Check(iSet))==IndexInclusion, [], 2)+1;
+    SetID = ~max(CurrentSet==IndexInclusion, [], 2)+1;
     SetOptions = {'' 'n/a'}; % include ones, exclude twos
     UniqueSet = [1;2];
 
 else
     SetOptions = lower(x.S.SetsOptions{Sets2Check(iSet)});
-    SetID = CurrentSetsID(:,Sets2Check(iSet));
+    SetID = CurrentSet;
 end
 
 for iU=1:length(UniqueSet) % iterate over the options/categories of this set
