@@ -1,4 +1,4 @@
-function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale, NamePrefix, ColorMap, bClip, MaskIn, bWhite, MaxWindow, bTransparancy)
+function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale, NamePrefix, ColorMap, bClip, MaskIn, bWhite, MaxWindow, bTransparancy, bVerbose)
 % xASL_vis_CreateVisualFig Flexible tool to create figure for visualization
 % of standard space images
 %
@@ -19,7 +19,9 @@ function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale,
 %   bClip        - vector, false for disabling clipping (OPTIONAL, DEFAULT=true for first image, false for overlays)
 %   MaskIn       - cell structure containing binary mask matrices (OPTIONAL, DEFAULT=no masking)
 %   bWhite       - true for switching background to white (OPTIONAL, DEFAULT=black background)
+%   MaxWindow    - 
 %   bTransparancy - true for transparant results when overlaying a mask (OPTIONAL, DEFAULT=false)
+%   bVerbose      - true for feedback on what this function does (OPTIONAL, DEFAULT=false)
 %
 % INPUT FIELDS IN x, USED BY xASL_vis_TransformData2View:
 %              ORIENTATION SETTINGS:
@@ -115,6 +117,9 @@ if nargin<10 || isempty(MaxWindow)
 end
 if nargin<11 || isempty(bTransparancy)
     bTransparancy = false;
+end
+if nargin<12 || isempty(bVerbose)
+    bVerbose = false;
 end
 
 if isempty(ImIn)
@@ -231,23 +236,35 @@ for iIm=1:length(ImIn)
     if bClip(iIm)
         IM{iIm} = xASL_im_ClipExtremes(IM{iIm}, MaxInt1, 0, 0);
         % this function clips the image, to avoid a too large viewing window
+    end
 
-        Um = unique(IM{iIm}(:));
-        if ~(length(Um)==1 && Um==0)
-            SortInt = sort(IM{iIm}(:));
-            MaxInt2 = SortInt(round(MaxInt2*length(SortInt)));
-            IM{iIm}(IM{iIm}>MaxInt2) = MaxInt2;
-            IM{iIm} = IM{iIm} ./MaxInt2;
-            % Here we set the 5th upper percentile as maximum intensity,
-            % this is an arbitrary windowing level setting that often works
-        end
+    Um = unique(IM{iIm}(:));
+    if length(Um)==1 && Um==0
+        warning('This image cannot be sorted, skipping');
+        return;
+    end
+        
+    SortInt = sort(IM{iIm}(:));
+    MaxInt2 = SortInt(round(MaxInt2*length(SortInt)));
+
+    if bVerbose && iIm==1
+        fprintf('%s\n', ['Min & max value were [' xASL_num2str(min(IM{iIm}(:))) ' ' xASL_num2str(MaxInt2) '] for background image']);
+    elseif bVerbose
+        fprintf('%s\n', ['Min & max value were [' xASL_num2str(min(IM{iIm}(:))) ' ' xASL_num2str(MaxInt2) '] for overlay image ' xASL_num2str(iIm-1)]);
+    end
+
+    if bClip(iIm)
+        IM{iIm}(IM{iIm}>MaxInt2) = MaxInt2;
+        IM{iIm} = IM{iIm} ./MaxInt2;
+        % Here we set the 5th upper percentile as maximum intensity,
+        % this is an arbitrary windowing level setting that often works
     end
 
     %% c) Convert image layer to colors
     SzC = size(ColorMap{iIm},1);
     if SzC<250 || SzC>260
         warning(['Colormap expects 256 indices, but had only ' num2str(SzC)]);
-        disp('This can lead to image clipping artifacts');
+        fprintf('This can lead to image clipping artifacts\n');
         % PM: here we can resample the input colormap into 256 if it is a power of
         % e.g. 32/64
     end
