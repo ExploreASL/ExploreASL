@@ -96,7 +96,7 @@ if ~isempty(inXasl)
 					% For non-zero fields, check if they are within the predefined range
 					if inXasl.(FieldsA{iA}) ~= 0
 						% If outside of the recommended range, then still convert, but issue a warning
-						if inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT) || inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT)
+						if max(inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT)) || max(inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT))
 							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' num2str(inXasl.(FieldsA{iA}))...
 								', which is outside of the recommended range <'...
 								num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
