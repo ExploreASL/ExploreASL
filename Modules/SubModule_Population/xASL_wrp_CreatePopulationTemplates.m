@@ -431,7 +431,7 @@ for iScanType=1:length(PreFixList)
                                     warning(['Cannot create maps for non-ordinal set ' x.S.SetsName{Sets2Check(iSet)} ', skipping'])
                                 else
                                     % run an iteration for a subset
-                                    xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check, IM, IM2noMask, iSet, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM);
+                                    xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check{iSet}, IM, IM2noMask, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM);
                                 end
                             end % iSet=1:length(Sets2Check)
                         end % if bComputeSets
@@ -456,17 +456,79 @@ end
 
 %% ===================================================================================
 %% ===================================================================================
-function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check, IM, IM2noMask, iSet, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM)
+function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Set2Check, IM, IM2noMask, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM)
 %xASL_wrp_CreatePopulationTemplates4Sets Subfunction that creates the parametric images for subsets
+%
+% INPUT:
+%   x                 - structure containing fields with all information required to run the population module (REQUIRED)
+%   bSaveUnmasked     - allows saving the same images without masking (OPTIONAL, DEFAULT=true)
+%   bRemoveOutliers   - This parameter makes robust statistics, by removing
+%                       outliers (OPTIONAL, DEFAULT=false)
+%   FunctionsAre      - two cells, with functions, and with names
+%                       (OPTIONAL, DEFAULT is mean and SD). Same setup as
+%                       "SpecificScantype" above). First should be a
+%                       functionhandle, e.g. @xASL_stat_MeanNan (not a
+%                       string)
+%   Set2Check         - the set for which parametric maps will be computed 
+%   IM                - Cell structure with either one (bilateral images) or two
+%                       (unilateral left or right hemispheres separately).
+%                       Each cell contains the image matrix, masked/compressed into columns, 
+%                       with [IntraMask N] (N==subjects/sessions)
+%   IM2noMask         - same as IM but without the masking/compression, so 4D
+%                       matrices with [X Y Z N]
+%   iSet              - index of current set
+%   iScanType         - index of the scan types for which parametric maps are
+%                       computed
+%   SessionsExist     - boolean indicating if sessions exist for this
+%                       ScanType
+%   iSession          - index of session for which parametric maps are computed
+%                       (default = 1, also if there are no sessions)
+%   TemplateNameList  - output name for the parametric map NIfTI file
+%   CurrentSetsID     - table of values for sets that are currently iterated over
+%   SmoothingFWHM     - Full-Width-Half-Maximum in [X Y Z] voxels for smoothing of the output image
+%                       (OPTIONAL, DEFAULT = [0 0 0] (i.e. no smoothing)%
+% OUTPUT: n/a
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This subfunction iterates over different sets/categories/options, to
+% create parametric maps for each of them. E.g. if SetsOptions{1}{1} =
+% 'Cases' and SetsOptions{1}{2} = 'Controls', this subfunction will create
+% separate parametric maps for cases and controls. This function needs
+% categorical/ordinal sets, it will be skipped for continuous sets (e.g.
+% 'age'). Subject/sessions with 'n/a' will be skipped.
+%
+% Optionally, this subfunction performs a left-right flip, to average
+% hemispheres. When for a given image type, sufficex with both '-left' and '-right'
+% exist, these will be loaded accordingly as unilateral hemispheres, such
+% that the average hemisphere is unilateral.
+%
+% The following options should be provided for each subject/session:
+% in case left & right hemispheres are split between two NIfTIs:
+%   'n/a' = don't include this subject/session
+%   'left' = include the left hemisphere only for this subject/session
+%   'right' = include the right hemisphere only for this subject/session
+%   'both' = include both hemispheres for this subject/session
+% in case left & right hemispheres are in the same NIfTI image (not split):
+%   'n/a' = don't include
+%   'left' = include a non flipped image
+%   'right' = include a flipped image
+%   'both' = both include a flipped and non-flipped image
+%
+% This subfunction performs the following steps:
+% 0. Admin (define sets and input validations)
+% 1. For indices with 'both', clone them so they have both left and right
+% 2. Flip images with index 'right'
+% 3. Reset SetOptions to inclusion/NaN instead of left/right/NaN
+% 4. iterate over the options/categories of this set, to create parametric maps
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
-% Valid options for averaging hemispheres are:
-% 'n/a' = don't include this subject/session
-% 'left' = include the left hemisphere only for this subject/session
-% 'right' = include the right hemisphere only for this subject/session
-% 'both' = include both hemispheres for this subject/session
 
 % Get CurrentSet
-CurrentSet = CurrentSetsID(:,Sets2Check(iSet));
+CurrentSet = CurrentSetsID(:,Set2Check);
+
+% ----------------------------------------------------------------------------------------------------
+%% 0. Admin (define sets and input validations)
 
 % Obtain unique options for this set
 TempUnique = unique(CurrentSet);
@@ -480,7 +542,7 @@ if ~isempty(IndexZero) && sum(UniqueSet==1)==0
     UniqueSet(IndexZero) = 1;
 end
 
-SetOptions = x.S.SetsOptions{Sets2Check(iSet)};
+SetOptions = x.S.SetsOptions{Set2Check};
 
 % if the only options are left & right (and n/a for missing), assume that this is
 % a request to flip hemispheres for the 'right' ones
@@ -505,7 +567,8 @@ end
 if bFlipHemisphere
     fprintf('%s\n', 'Hemisphere encoding (left-right designations) detected, flipping images with designation right');
     
-    % 1. For indices with 'both', clone them so they have both left and right
+    % ----------------------------------------------------------------------------------------------------
+    %% 1. For indices with 'both', clone them so they have both left and right
     % First we clone the image to the end as new image, with the
     % designation 'right', and reset the current designation to 'left'
     % (instead of 'both') so they are both averaged in
@@ -515,18 +578,22 @@ if bFlipHemisphere
     
     ImagesBoth = find(CurrentSet==IndexBoth);
     % loop over these indices
-    for iBoth=1:length(ImagesBoth)
-        % add new index containing right
-        CurrentSet(end+1) = IndexRight;
-        % set current index to left (instead of both)
-        CurrentSet(ImagesBoth(iBoth)) = IndexLeft;
-        % copy current image to new image index
-        for iIM=1:length(IM)
-            IM{iIM}(:,end+1) = IM{iIM}(:,ImagesBoth(iBoth));
+    if ~isempty(ImagesBoth)
+        fprintf('%s\n', 'Detected designation both, using both left and right hemispheres from these images');
+        for iBoth=1:length(ImagesBoth)
+            % add new index containing right
+            CurrentSet(end+1) = IndexRight;
+            % set current index to left (instead of both)
+            CurrentSet(ImagesBoth(iBoth)) = IndexLeft;
+            % copy current image to new image index
+            for iIM=1:length(IM)
+                IM{iIM}(:,end+1) = IM{iIM}(:,ImagesBoth(iBoth));
+            end
         end
     end
     
-    % 2. Flip images with index 'right'
+    % ----------------------------------------------------------------------------------------------------
+    %% 2. Flip images with index 'right'
     Images2Flip = CurrentSet==IndexRight;
     
     fprintf('Flipping images:   ');
@@ -551,6 +618,8 @@ if bFlipHemisphere
     end
     fprintf('\n');
     
+    % ----------------------------------------------------------------------------------------------------
+    %% 3. Reset SetOptions to inclusion/NaN instead of left/right/NaN
     % Now all images are flipped to IM{1} & IM2noMask{1}, for both
     % bUnilateralImages (IM has 2 cells) & ~bUnilateralImages (IM has 1 cell)
 
@@ -562,15 +631,17 @@ if bFlipHemisphere
     SetID = ~max(CurrentSet==IndexInclusion, [], 2)+1;
     SetOptions = {'' 'n/a'}; % include ones, exclude twos
     UniqueSet = [1;2];
-
 else
-    SetOptions = lower(x.S.SetsOptions{Sets2Check(iSet)});
+    % Don't apply the hemispheric averaging by flipping, simply keep as is
+    SetOptions = lower(x.S.SetsOptions{Set2Check});
     SetID = CurrentSet;
 end
 
-for iU=1:length(UniqueSet) % iterate over the options/categories of this set
+% ----------------------------------------------------------------------------------------------------
+%% 4. iterate over the options/categories of this set, to create parametric maps
+for iU=1:length(UniqueSet)
     HasNaN = ~isempty(regexpi(SetOptions{UniqueSet(iU)}, '(n/a|nan)')); % skipping NaNs, consider them as outside of a group
-    CannotHaveSessions = ~SessionsExist(iScanType) && ~isempty(regexpi(x.S.SetsName{Sets2Check(iSet)}, 'session')); % This SET is for sessions, but there are no sessions for this scantype, so skip this
+    CannotHaveSessions = ~SessionsExist(iScanType) && ~isempty(regexpi(x.S.SetsName{Set2Check}, 'session')); % This SET is for sessions, but there are no sessions for this scantype, so skip this
 
     if ~HasNaN && ~CannotHaveSessions
         try
@@ -594,10 +665,10 @@ for iU=1:length(UniqueSet) % iterate over the options/categories of this set
             end
 
             % compute maps
-            NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Sets2Check(iSet)} '_' SetOptions{UniqueSet(iU)} '_n' num2str(length(NotOutliers))];
+            NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{SetsCheck} '_' SetOptions{UniqueSet(iU)} '_n' num2str(length(NotOutliers))];
             xASL_wrp_CreatePopulationTemplates_Computation(CurrentIM(:,NotOutliers), NameIM, x, FunctionsAre, true, SmoothingFWHM);
             if bSaveUnmasked
-                CurrentIM2noMask = IM2noMask(:,:,:,WithinGroup);
+                CurrentIM2noMask = IM2noMask{1}(:,:,:,WithinGroup);
                 xASL_wrp_CreatePopulationTemplates_Computation(CurrentIM2noMask(:,:,:,NotOutliers),NameIM, x, FunctionsAre, false, SmoothingFWHM);
             end
         catch ME
@@ -619,8 +690,39 @@ end
 %% ===================================================================================
 %% ===================================================================================
 function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, FunctionsAre, bMask, SmoothingFWHM)
-%xASL_wrp_CreatePopulationTemplates_Computation Subfunction that computes the parametric images
+%xASL_wrp_CreatePopulationTemplates_Computation Subfunction that computes the parametric maps
+%
+% INPUT:
+%   IM              - Image matrix, either masked/compressed into columns, with [IntraMask N] (N==subjects/sessions)
+%                     or not, with [X Y Z N]
+%   NameIM          - name of the scan type/image
+%   x               - structure containing fields with all information required to run the population module (REQUIRED)
+%   FunctionsAre    - two cells, with functions, and with names
+%                     (OPTIONAL, DEFAULT is mean and SD). Same setup as
+%                     "SpecificScantype" above). First should be a
+%                     functionhandle, e.g. @xASL_stat_MeanNan (not a
+%                     string)
+%   bMask           - boolean specifying if IM are masked (2D) or unmasked (4D)
+%                     as indicated above
+%   SmoothingFWHM   - Full-Width-Half-Maximum in [X Y Z] voxels for smoothing of the output image
+%                     (OPTIONAL, DEFAULT = [0 0 0] (i.e. no smoothing)%
+% OUTPUT: n/a
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This subfunction computes the parametric maps, and saves
+% them as NIfTI, with the following steps:
+% 0. Admin
+% 1. Remove empty images (those for which sum(isfinite())==0)
+% 2. Specify the desired function (e.g. 'sum', 'mean', 'stdev' etc)
+% 3. Compute the map
+% 4. Smooth the map (if requested)
+% 5. Save the map as NIfTI
+% __________________________________
+% Copyright 2015-2020 ExploreASL
 
+
+    % ----------------------------------------------------------------------------------------------------
+    %% 0. Admin
     if isempty(IM)
         warning(['No valid images ' NameIM ' found, skipping']);
         return;
@@ -632,7 +734,8 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
         iDim = 4; % image data as image
     end
 
-    % Remove empty images
+    % ----------------------------------------------------------------------------------------------------
+    %% 1. Remove empty images (those for which sum(isfinite())==0)
     UseIM = ones(size(IM,iDim),1);
     for iM=1:size(IM,iDim)
         if bMask
@@ -654,7 +757,13 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
     fprintf(['Computing ' NameIM ' parametric map(s)...\n']);
 
     for iFunction=1:length(FunctionsAre{1})
+        
+        % ----------------------------------------------------------------------------------------------------
+        %% 2. Specify the desired function (e.g. 'sum', 'mean', 'stdev' etc)
         FunctionHandle = FunctionsAre{1}{iFunction};
+        
+        % ----------------------------------------------------------------------------------------------------
+        %% 3. Compute the map
         if bMask
             ImageIs = xASL_im_Column2IM(FunctionHandle(IM, 2), x.WBmask).* x.GradualSkull;
             PathSave = fullfile(x.D.TemplatesStudyDir, [NameIM '_bs-' FunctionsAre{2}{iFunction} '.nii']);
@@ -663,10 +772,14 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
             PathSave = fullfile(x.D.TemplatesStudyDir, [NameIM '_bs-' FunctionsAre{2}{iFunction} '_Unmasked.nii']);
         end
         
+        % ----------------------------------------------------------------------------------------------------
+        %% 4. Smooth the map (if requested)
         if max(SmoothingFWHM)>0
             ImageIs = xASL_im_ndnanfilter(ImageIs, 'gauss', SmoothingFWHM, 1); % smooths with about 6 mm FWHM
         end
-            
+        
+        % ----------------------------------------------------------------------------------------------------
+        %% 5. Save the map as NIfTI
         xASL_io_SaveNifti(x.D.ResliceRef, PathSave, ImageIs);
     end
 
