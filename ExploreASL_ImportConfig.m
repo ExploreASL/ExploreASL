@@ -44,7 +44,7 @@ imPar.RawRoot = fpath;
 imPar.folderHierarchy = {}; % must define this per study; use a cell array of regular expressions. One cell per directory level.
 imPar.tokenOrdering = []; % must match imPar.folderHierarchy: 1==subject, 2=visit, 3==session, 4==scan (if visit or session are omitted, they will be skipped)
 imPar.tokenScanAliases = [];
-impar.tokenVisitAliases = [];
+imPar.tokenVisitAliases = [];
 imPar.tokenSessionAliases = [];
 imPar.bMatchDirectories  = false;
 
