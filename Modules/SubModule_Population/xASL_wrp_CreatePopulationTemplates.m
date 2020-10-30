@@ -160,10 +160,19 @@ if bCompute4Sets
         end
     else
         % convert names of sets to indices
+        FoundSets = 0;
         for iSetCheck=1:length(Sets2Check)
-            TempCheck(iSetCheck) = find(cellfun(@(y) strcmp(Sets2Check{iSetCheck}, y), x.S.SetsName));
+            TempCheck = find(cellfun(@(y) strcmp(Sets2Check{iSetCheck}, y), x.S.SetsName));
+            if isempty(TempCheck)
+                warning(['Couldnt find set: ' Sets2Check{iSetCheck}]);
+            else
+                Sets2Check(iSetCheck) = TempCheck;
+                FoundSets = FoundSets+1;
+            end
         end
-        Sets2Check = TempCheck;
+        if FoundSets==0
+            error('No sets found, skipping. Please check participants.tsv vs bCompute4Sets');
+        end
     end
 end
 
