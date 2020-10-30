@@ -1,11 +1,11 @@
-function [identical,results] = xASL_bids_compareStructures(rootStructureA,rootStructureB)
+function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB)
 %xASL_bids_compareStructures Function that compares two BIDS folders with several subfolders and studies and prints the differences.
 %
-% FORMAT: results = xASL_bids_compareStructures(rootStructureA,rootStructureB)
+% FORMAT: [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB);
 %
 % INPUT:
-%        rootStructureA     - path to first BIDS structure (REQUIRED)
-%        rootStructureB     - path to second BIDS structure (REQUIRED)
+%        pathDatasetA       - path to first BIDS structure (REQUIRED)
+%        pathDatasetB       - path to second BIDS structure (REQUIRED)
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -16,13 +16,48 @@ function [identical,results] = xASL_bids_compareStructures(rootStructureA,rootSt
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% EXAMPLE:          rootStructureA = '...\bids-examples\ds001';
-%                   rootStructureB = '...\bids-examples\ds001_exact_copy'
-%                   [identical,results] = xASL_bids_compareStructures(rootStructureA,rootStructureB);
+% EXAMPLE:          pathDatasetA = '...\bids-examples\eeg_rest_fmri';
+%                   pathDatasetB = '...\bids-examples\eeg_rest_fmri_exact_copy'
+%                   [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB);
 %
 % REFERENCES:       ...
 % __________________________________
 % Copyright @ 2015-2020 ExploreASL
+
+
+%% Input Check
+
+% Check if both root folders are valid char arrays or strings
+if ~(ischar(pathDatasetA) || isstring(pathDatasetA))
+    error('The path of structure A is neither a char array not a string...');
+end
+if ~(ischar(pathDatasetB) || isstring(pathDatasetB))
+    error('The path of structure A is neither a char array not a string...');
+end
+
+% Check if both root folders exists
+if ~(xASL_exist(pathDatasetA)==7)
+    error('The root folder of structure A does not exist...');
+end
+if ~(xASL_exist(pathDatasetB)==7)
+    error('The root folder of structure B does not exist...');
+end
+
+
+%% Defaults
+
+% Set identical to true (will be set to false as soon as a difference is found)
+identical = true;
+
+% Initialize results structure
+results = struct;
+
+%% Check first level (expected files and folders: participants, dataset_description, sub-xx, code, sourcedata, derivatives etc.)
+datasetA_files_level1 = xASL_adm_GetFileList(pathDatasetA);
+datasetA_folders_level1 = xASL_adm_GetFileList(pathDatasetA,[],true,[],true);
+
+datasetB_files_level1 = xASL_adm_GetFileList(pathDatasetA);
+datasetB_folders_level1 = xASL_adm_GetFileList(pathDatasetA,[],true,[],true);
 
 
 
