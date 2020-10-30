@@ -1,4 +1,4 @@
-function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB)
+function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB,printReport)
 %xASL_bids_compareStructures Function that compares two BIDS folders with several subfolders and studies and prints the differences.
 %
 % FORMAT: [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB);
@@ -6,6 +6,7 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
 % INPUT:
 %        pathDatasetA       - path to first BIDS structure (REQUIRED)
 %        pathDatasetB       - path to second BIDS structure (REQUIRED)
+%        printReport        - true or false to print console report
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -18,7 +19,7 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
 %
 % EXAMPLE:          pathDatasetA = '...\bids-examples\eeg_rest_fmri';
 %                   pathDatasetB = '...\bids-examples\eeg_rest_fmri_exact_copy'
-%                   [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB);
+%                   [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB,true);
 %
 % REFERENCES:       ...
 % __________________________________
@@ -99,18 +100,25 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
     end
     
     % Report
-    fprintf(strcat(repmat('=',100,1)','\n'));
-    fprintf('Dataset:\t\t%s\n',datasetA)
-    printList(results.(datasetA).missingFolders)
-    printList(results.(datasetA).missingFiles)
+    if printReport
+        fprintf(strcat(repmat('=',100,1)','\n'));
+        fprintf('Dataset:\t\t%s\n',datasetA)
+        printList(results.(datasetA).missingFolders)
+        printList(results.(datasetA).missingFiles)
+
+        fprintf(strcat(repmat('=',100,1)','\n'));
+        fprintf('Dataset:\t\t%s\n',datasetB)
+        printList(results.(datasetB).missingFolders)
+        printList(results.(datasetB).missingFiles)
+
+        % End of report
+        fprintf(strcat(repmat('=',100,1)','\n'));
+    end
     
-    fprintf(strcat(repmat('=',100,1)','\n'));
-    fprintf('Dataset:\t\t%s\n',datasetB)
-    printList(results.(datasetB).missingFolders)
-    printList(results.(datasetB).missingFiles)
+    % Compare file content
+    identical = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,printReport);
+
     
-    % End of report
-    fprintf(strcat(repmat('=',100,1)','\n'));
     
 
 end
@@ -139,5 +147,38 @@ function printList(currentList)
         end
     end
 end
+
+% Check file contents
+function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,pathDatasetB,identical,printReportFunction)
+    
+    % All files
+    allFiles = unique([filesDatasetA',filesDatasetB']');
+    
+    % Iterate over list
+    for it=1:length(allFiles)
+        % Assign root directory of dataset A
+        currentFileA = fullfile(pathDatasetA,allFiles(it));
+        currentFileB = fullfile(pathDatasetB,allFiles(it));
+        % Get extension
+        [~,~,extension] = fileparts(allFiles(it));
+        % Check extension
+        if strcmp(extension,'.json') || strcmp(extension,'.tsv') || strcmp(extension,'.txt') || strcmp(extension,'.csv')
+            % Read files if they exist
+            if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+                currentFileTextA = fileread(currentFileA);
+                currentFileTextB = fileread(currentFileB);
+                if printReportFunction
+                    fprintf('Checking:\t\t%s\n',allFiles(it))
+                    if ~strcmp(currentFileTextA,currentFileTextB)
+                        warning('Different file content!')
+                        identical = false;
+                    end
+                end
+            end
+        end
+    end
+    
+end
+
 
 
