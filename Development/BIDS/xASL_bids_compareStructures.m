@@ -175,9 +175,46 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                     end
                 end
             end
+        elseif strcmp(extension,'.nii') || contains(allFiles(it),'.nii.gz') % Warning: This unzips your NIFTIs right now!
+            % Read files if they exist
+            if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+                % Check file size (there were some 0KB images in the bids-examples)
+                tmpFileA = dir(currentFileA);
+                tmpFileB = dir(currentFileB);
+                sizeA = tmpFileA.bytes;
+                sizeB = tmpFileB.bytes;
+                % Check file size (images with a file size lower than 1 byte are corrupt)
+                if (sizeA>1 && sizeB>1)
+                    if contains(allFiles(it),'.nii.gz')
+                        % Unzip first
+                        tmpPathImageA = xASL_adm_UnzipNifti(char(currentFileA));
+                        tmpPathImageB = xASL_adm_UnzipNifti(char(currentFileB));
+                        % Read in image
+                        imageA = xASL_io_Nifti2Im(tmpPathImageA);
+                        imageB = xASL_io_Nifti2Im(tmpPathImageB);
+                        % GZIP Niftis afterwards
+                        pathImageA = xASL_adm_GzipNifti(tmpPathImageA);
+                        pathImageB = xASL_adm_GzipNifti(tmpPathImageB);
+                    else
+                        imageA = xASL_io_Nifti2Im(char(currentFileA));
+                        imageB = xASL_io_Nifti2Im(char(currentFileB));
+                    end
+                    % Report function which prints to the console
+                    if printReportFunction
+                        fprintf('Checking:\t\t%s\n',allFiles(it))
+                        differenceAB = sum(imageA-imageB,'all');
+                        thresh = 0.01;
+                        if (differenceAB>thresh)
+                            warning('Difference of NIFTIs above threshold!')
+                            identical = false;
+                        end
+                    end
+                else
+                    warning('Files are too small to be real images!')
+                end
+            end
         end
     end
-    
 end
 
 
