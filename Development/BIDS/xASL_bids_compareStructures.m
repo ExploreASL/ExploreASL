@@ -52,62 +52,92 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
     % Initialize results structure
     results = struct;
 
-    %% Check first level (expected files and folders: participants, dataset_description, sub-xx, code, sourcedata, derivatives etc.)
+    %% Initialization
 
     % Get dataset names
     [~,datasetA,~] = fileparts(pathDatasetA);
     [~,datasetB,~] = fileparts(pathDatasetB);
 
+    % Make sure you have valid identifiers for the field names
+    datasetA = matlab.lang.makeValidName(datasetA,'ReplacementStyle','delete');
+    datasetB = matlab.lang.makeValidName(datasetB,'ReplacementStyle','delete');
     results.(datasetA) = struct;
     results.(datasetB) = struct;
-
-    % Get all files and folders of dataset A (level 1)
-    datasetA_files_level1 = xASL_adm_GetFileList(pathDatasetA,[],false);
-    datasetA_folders_level1 = xASL_adm_GetFileList(pathDatasetA,[],false,[],true);
-
-    % Get all files and folders of dataset B (level 1)
-    datasetB_files_level1 = xASL_adm_GetFileList(pathDatasetB,[],false);
-    datasetB_folders_level1 = xASL_adm_GetFileList(pathDatasetB,[],false,[],true);
-
-    % Get files of A that are not in B
-    [identical,results.(datasetB).missingFiles] = getMissingFilesAndFolders(identical,datasetA_files_level1,datasetB_files_level1,datasetB,'file');
     
-    % Get files of B that are not in A
-    [identical,results.(datasetA).missingFiles] = getMissingFilesAndFolders(identical,datasetB_files_level1,datasetA_files_level1,datasetA,'folder');    
-
-    % Get folders of A that are not in B
-    [identical,results.(datasetB).missingFolders] = getMissingFilesAndFolders(identical,datasetA_folders_level1,datasetB_folders_level1,datasetB,'folder');
+    % Get files and folders of datasets A and B
+    filesA = dir(fullfile(pathDatasetA, '**\*.*'));
+    filesB = dir(fullfile(pathDatasetB, '**\*.*'));
     
-    % Get folders of B that are not in A
-    [identical,results.(datasetA).missingFolders] = getMissingFilesAndFolders(identical,datasetB_folders_level1,datasetA_folders_level1,datasetA,'folder');
-
+    % Remove root path
+    filesA = modifyFileList(filesA,pathDatasetA);
+    filesB = modifyFileList(filesB,pathDatasetB);
     
-    %% Check second level (folder contents of first level folders)
-
-
-
-end
-
-%% Helper functions
-function [identical,missingFiles] = getMissingFilesAndFolders(identical,filesA,filesB,datasetName,FileOrFolder)
-
-    % Check if all files of A are in B and the other way round
-    if ~isempty(setdiff(filesA,filesB)) || ~isempty(setdiff(filesB,filesA))
-        % Set identical to false
+    % Get folder lists
+    folderListA = unique(string({filesA.folder}'));
+    folderListB = unique(string({filesB.folder}'));
+    
+    % Get real file lists
+    fileListA = unique(string({filesA.name}'));
+    fileListB = unique(string({filesB.name}'));
+    
+    % Missing Folders
+    results.(datasetA).missingFolders = setdiff(folderListB,folderListA);
+    results.(datasetB).missingFolders = setdiff(folderListA,folderListB);
+    
+    % Missing Files
+    results.(datasetA).missingFiles = setdiff(fileListB,fileListA);
+    results.(datasetB).missingFiles = setdiff(fileListA,fileListB);
+    
+    % Identical check
+    if ~isempty(results.(datasetA).missingFolders) || ~isempty(results.(datasetB).missingFolders)
         identical = false;
-        fprintf(repmat('=',100,1));
-        fprintf('\nLEVEL 1: %s\n',datasetName);
-        % Get missing files of A that are not in B
-        missingFiles = setdiff(filesA,filesB);
-        if ~isempty(missingFiles)
-            % Iterate over files
-            for it=1:length(missingFiles)
-                fprintf('%s: %s\n',FileOrFolder,missingFiles{it,1});
-            end
-        end
-    else
-        % Fallback
-        missingFiles = []; 
     end
+    
+    % Identical check
+    if ~isempty(results.(datasetA).missingFiles) || ~isempty(results.(datasetB).missingFiles)
+        identical = false;
+    end
+    
+    % Report
+    fprintf(strcat(repmat('=',100,1)','\n'));
+    fprintf('Dataset:\t\t%s\n',datasetA)
+    printList(results.(datasetA).missingFolders)
+    printList(results.(datasetA).missingFiles)
+    
+    fprintf(strcat(repmat('=',100,1)','\n'));
+    fprintf('Dataset:\t\t%s\n',datasetB)
+    printList(results.(datasetB).missingFolders)
+    printList(results.(datasetB).missingFiles)
+    
+    % End of report
+    fprintf(strcat(repmat('=',100,1)','\n'));
+    
 
 end
+
+% Modify file list functions
+function fileList = modifyFileList(fileList,root)
+    % Iterate over file list: change folder names
+    for it=1:numel(fileList)
+        fileList(it).folder = strrep(fileList(it).folder,root,'');
+    end
+    % Iterate over file list: change file names
+    for it=1:numel(fileList)
+        % Check that the current element is not a folder
+        if ~strcmp(fileList(it).name,'.') && ~strcmp(fileList(it).name,'..')
+            fileList(it).name = fullfile(fileList(it).folder,fileList(it).name);
+        end
+    end
+end
+
+% Print list functions
+function printList(currentList)
+    % Iterate over list
+    if ~isempty(currentList)
+        for it=1:length(currentList)
+            fprintf('Missing:\t\t%s\n',currentList(it))
+        end
+    end
+end
+
+
