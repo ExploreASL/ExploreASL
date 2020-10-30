@@ -431,7 +431,7 @@ for iScanType=1:length(PreFixList)
                                     warning(['Cannot create maps for non-ordinal set ' x.S.SetsName{Sets2Check(iSet)} ', skipping'])
                                 else
                                     % run an iteration for a subset
-                                    xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check{iSet}, IM, IM2noMask, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM);
+                                    xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check(iSet), IM, IM2noMask, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM);
                                 end
                             end % iSet=1:length(Sets2Check)
                         end % if bComputeSets
@@ -665,7 +665,7 @@ for iU=1:length(UniqueSet)
             end
 
             % compute maps
-            NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{SetsCheck} '_' SetOptions{UniqueSet(iU)} '_n' num2str(length(NotOutliers))];
+            NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Set2Check} '_' SetOptions{UniqueSet(iU)} '_n' num2str(length(NotOutliers))];
             xASL_wrp_CreatePopulationTemplates_Computation(CurrentIM(:,NotOutliers), NameIM, x, FunctionsAre, true, SmoothingFWHM);
             if bSaveUnmasked
                 CurrentIM2noMask = IM2noMask{1}(:,:,:,WithinGroup);
