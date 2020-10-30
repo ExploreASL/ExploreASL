@@ -55,24 +55,24 @@ results = struct;
 %% Check first level (expected files and folders: participants, dataset_description, sub-xx, code, sourcedata, derivatives etc.)
 
 % Get all files and folders of dataset A (level 1)
-datasetA_files_level1 = xASL_adm_GetFileList(pathDatasetA);
-datasetA_folders_level1 = xASL_adm_GetFileList(pathDatasetA,[],true,[],true);
+datasetA_files_level1 = xASL_adm_GetFileList(pathDatasetA,[],false);
+datasetA_folders_level1 = xASL_adm_GetFileList(pathDatasetA,[],false,[],true);
 
 % Get all files and folders of dataset B (level 1)
-datasetB_files_level1 = xASL_adm_GetFileList(pathDatasetA);
-datasetB_folders_level1 = xASL_adm_GetFileList(pathDatasetA,[],true,[],true);
+datasetB_files_level1 = xASL_adm_GetFileList(pathDatasetB,[],false);
+datasetB_folders_level1 = xASL_adm_GetFileList(pathDatasetB,[],false,[],true);
 
 % Check if all files of A are in B and the other way round
-if ~isempty(setdiff(datasetA_files_level1,datasetB_files_level1)) && ~isempty(setdiff(datasetB_files_level1,datasetA_files_level1))
+if ~isempty(setdiff(datasetA_files_level1,datasetB_files_level1)) || ~isempty(setdiff(datasetB_files_level1,datasetA_files_level1))
     fprintf(repmat('=',100,1));
-    fprintf('\nLEVEL 1\nMissing files...');
+    fprintf('\nLEVEL 1\nMissing files...\n');
     identical = false;
 end
 
 % Check if all folders of A are in B and the other way round
-if ~isempty(setdiff(datasetA_folders_level1,datasetB_folders_level1)) && ~isempty(setdiff(datasetB_folders_level1,datasetA_folders_level1))
+if ~isempty(setdiff(datasetA_folders_level1,datasetB_folders_level1)) || ~isempty(setdiff(datasetB_folders_level1,datasetA_folders_level1))
     fprintf(repmat('=',100,1));
-    fprintf('\nLEVEL 1\nMissing folders...');
+    fprintf('\nLEVEL 1\nMissing folders...\n');
     identical = false;
 end
 
