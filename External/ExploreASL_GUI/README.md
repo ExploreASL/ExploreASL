@@ -3,7 +3,7 @@
 > Complementary GUI to assist Arterial Spin Labelling analysis by ExploreASL
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-![Version](https://img.shields.io/badge/Version-0.2.3-yellow)
+![Version](https://img.shields.io/badge/Version-0.2.5-yellow)
 ![PythonVersions](https://img.shields.io/badge/Python-3.8-green)
 
 ## Graphics and Examples
@@ -24,7 +24,61 @@
 ---
 ## Installation
 
-To be updated soon
+### For Linux
+
+Pre-requisites:
+
+- (Optional for Step 1) You have `git` installed. This can be verified by the command `which git` in your command line / terminal
+
+- You have python 3.8 installed. [A quick guide to doing so can be found here](https://tecadmin.net/install-python-3-8-ubuntu/). Ubuntu 20.04 onwards comes with this by default.
+
+(tested thus far for Ubuntu 20.04)
+
+1) Preferably, open a terminal, change directory to the location you would like ExploreASL_GUI to be installed. 
+For those not familiar with navigating your filesystem, an excellent tutorial [can be found by clicking on this link](https://www.youtube.com/watch?v=j6vKLJxAKfw&t=10s&ab_channel=CoreySchafer).
+Once you are within your desired directory, clone this github repository via command:
+
+       git clone https://github.com/MauricePasternak/ExploreASL_GUI.git
+   
+   Alternatively, download the zip folder and extract it to your desired destination.
+
+2) Using the terminal, navigate to the ExploreASL_GUI directory (ExploreASL_GUI-master if you opted for zip & extraction). It contains the install script `ExploreASL_GUI_Linux_Install.py`
+
+3) Install via the following command:
+
+       python3.8 ./ExploreASL_GUI_Linux_Install.py
+   
+   You will be requested to give your sudo password so that the program may be accessible to Applications
+
+### For Windows
+
+\**To be updated once executable is made avaliable**
+
+### For MacOS
+
+\**To be updated**
+
+## Uninstallation
+
+### For Linux
+
+1) Navigate to the ExploreASL_GUI directory via terminal.
+
+2) Uninstall via the following command:
+
+       python3.8 ./ExploreASL_GUI_Linux_Uninstall.py
+       
+   You will be requested to give your sudo password once so that .desktop file in /usr/local/applications may be removed as well.
+   
+3) Remember to `cd` out of the no-longer-existent ExploreASL_GUI directory or close the terminal.
+
+### For Windows
+
+\**To be updated once executable is made avaliable**
+
+### For MacOS
+
+\**To be updated**
 
 ---
 ## Features

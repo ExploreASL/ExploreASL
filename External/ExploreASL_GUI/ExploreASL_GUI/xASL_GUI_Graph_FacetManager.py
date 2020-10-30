@@ -26,6 +26,7 @@ class xASL_GUI_FacetManager(QWidget):
         ##########################################
         # Prepare arguments for legend widget
         self.legend_widget = xASL_GUI_FacetLegend(self)
+        self.ticklabels_widget = xASL_GUI_FacetTickWidget(self)
         self.labels_widget = xASL_GUI_FacetLabels(self)
 
         # Set up variables that the artist will reference when updating the plot
@@ -76,13 +77,20 @@ class xASL_GUI_FacetManager(QWidget):
     def UI_Setup_ConnectManager2Artist(self):
         self.artist: xASL_GUI_FacetArtist = self.parent_cw.fig_artist
         if self.artist is not None:
+            # Connect the combobox for changing the
             self.cmb_axestype.currentTextChanged.connect(self.UI_Setup_AxesParms)
+
             # Connect Facet Signals to the artist's Slots
             self.signal_figparms_updateplot.connect(self.artist.plotupdate_figurecall)
             self.signal_axesparms_updateplot.connect(self.artist.plotupdate_axescall)
             self.signal_paddingparms_updateplot.connect(self.artist.plotupdate_paddingcall)
+
             # Connect the legend_widget's signals to the artist's Slots
             self.legend_widget.signal_legendcall_updateplot.connect(self.artist.plotupdate_legendcall)
+
+            # Connect the ticklabel_widget's signals to the artist's Slots
+            self.ticklabels_widget.signal_tickcall_updateplot.connect(self.artist.plotupdate_tickcall)
+
             # Connect the label_widget's signals to the artist's Slots
             self.labels_widget.signal_xaxislabel_plotupdate.connect(self.artist.plotupdate_xlabel)
             self.labels_widget.signal_yaxislabel_plotupdate.connect(self.artist.plotupdate_ylabel)
@@ -416,6 +424,7 @@ class xASL_GUI_FacetManager(QWidget):
         # Setup the wigets associated with connecting to the legend parameters each time
         if plot_type != "Select a plot type":
             self.UI_Setup_Btn2LegendParms()
+            self.UI_Setup_Btn2AxisTickLabelsParms()
 
         # Regardless of what type of plot was selected, the current axes should be cleared
         self.artist.clear_axes()
@@ -463,6 +472,10 @@ class xASL_GUI_FacetManager(QWidget):
         self.formlay_axesparms.addRow("Show legend in figure?", self.chk_showlegend)
         self.formlay_axesparms.addRow(self.btn_legendparms)
 
+    def UI_Setup_Btn2AxisTickLabelsParms(self):
+        self.btn_showticklabels = QPushButton("Change X-tick Labels Parameters", clicked=self.ticklabels_widget.show)
+        self.formlay_axesparms.addRow(self.btn_showticklabels)
+
     #############################################################################
     # Functions Designed to send signals out and sometimes set up parameter dicts
     #############################################################################
@@ -491,12 +504,12 @@ class xASL_GUI_FacetLegend(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.parent = parent  # The Facet Grid Manager
+        self.parent: xASL_GUI_FacetManager = parent  # The Facet Grid Manager
         self.setWindowFlag(Qt.Window)
         self.setWindowTitle("FacetGrid Legend Settings")
-        self.setMinimumSize(300, 480)
-        self.legend_kwargs = {}
         self.formlay_legend = QFormLayout(self)
+
+        # Widgets
         self.cmb_location = QComboBox()
         self.cmb_location.addItems(["best", "upper right", "upper left", "lower left", "lower right", "center left",
                                     "center right", "lower center", "upper center"])
@@ -537,3 +550,51 @@ class xASL_GUI_FacetLegend(QWidget):
         if self.chk_manual_loc.isChecked():
             constructor["bbox_to_anchor"] = (self.spinbox_legend_x.value(), self.spinbox_legend_y.value())
         self.signal_legendcall_updateplot.emit(constructor)
+
+
+class xASL_GUI_FacetTickWidget(QWidget):
+    signal_tickcall_updateplot = Signal(dict)
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.parent: xASL_GUI_FacetManager = parent  # The Facet Grid Manager
+        self.setWindowFlag(Qt.Window)
+        self.setWindowTitle("FacetGrid Ticklabels Settings")
+        self.formlay_ticks = QFormLayout(self)
+
+        # Widgets
+        self.cmb_hfontsize = QComboBox()
+        self.cmb_hfontsize.addItems(["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large"])
+        self.cmb_hfontsize.setCurrentIndex(2)
+        self.cmb_hfontweight = QComboBox()
+        self.cmb_hfontweight.addItems(["normal", "bold", "extra bold"])
+        self.cmb_hfontweight.setCurrentIndex(0)
+        self.cmb_hfontstyle = QComboBox()
+        self.cmb_hfontstyle.addItems(["normal", "italic"])
+        self.cmb_hfontstyle.setCurrentIndex(0)
+        self.cmb_halign = QComboBox()
+        self.cmb_halign.addItems(["center", "left", "right"])
+        self.cmb_halign.setCurrentIndex(2)
+        self.spinbox_hrot = QSpinBox(maximum=90, minimum=0, value=0, singleStep=1)
+        self.spinbox_halpha = QDoubleSpinBox(maximum=1, minimum=0, value=1, singleStep=0.01)
+
+        for widget, description in zip([self.cmb_hfontsize, self.cmb_hfontweight, self.cmb_hfontstyle, self.cmb_halign,
+                                        self.spinbox_hrot, self.spinbox_halpha],
+                                       ["Font Size", "Font Weight", "Font Style", "Alignment", "Rotation", "Opaqueness"
+                                        ]):
+            self.formlay_ticks.addRow(description, widget)
+            connect_widget_to_signal(widget, self.sendSignal_tickparms_updateplot)
+
+        self.xtick_kwargs = {
+            "fontsize": self.cmb_hfontsize.currentText,
+            "fontweight": self.cmb_hfontweight.currentText,
+            "fontstyle": self.cmb_hfontstyle.currentText,
+            "horizontalalignment": self.cmb_halign.currentText,
+            "rotation": self.spinbox_hrot.value,
+            "alpha": self.spinbox_halpha.value
+        }
+
+    def sendSignal_tickparms_updateplot(self):
+        constructor = {key: call() for key, call in self.xtick_kwargs.items()}
+        print(constructor)
+        self.signal_tickcall_updateplot.emit(constructor)

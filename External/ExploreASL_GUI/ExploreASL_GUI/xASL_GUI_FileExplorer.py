@@ -79,19 +79,22 @@ class xASL_FileExplorer(QWidget):
 
         if not index.isValid():
             menu = QMenu()
-            paste_action = menu.addAction("Paste")
+            paste_action = menu.addAction(QIcon.fromTheme("edit-paste"), "Paste")
             paste_action.triggered.connect(self.menu_based_paste)
             menu.exec_(self.treev_file.mapToGlobal(point))
             return
 
         # We build the menu.
         menu = QMenu()
-        delete_action = menu.addAction("Delete")
+        delete_action = menu.addAction(QIcon.fromTheme("edit-delete"), "Delete")
         delete_action.triggered.connect(self.menu_based_delete)
-        copy_action = menu.addAction("Copy")
+        copy_action = menu.addAction(QIcon.fromTheme("edit-copy"), "Copy")
         copy_action.triggered.connect(self.menu_based_copy)
-        paste_action = menu.addAction("Paste")
+        paste_action = menu.addAction(QIcon.fromTheme("edit-paste"), "Paste")
         paste_action.triggered.connect(self.menu_based_paste)
+        rename_action = menu.addAction(QIcon(os.path.join(self.config["ProjectDir"], "media", "rename_icon.png")),
+                                       "Rename")
+        rename_action.triggered.connect(self.menu_based_rename)
         menu.exec_(self.treev_file.mapToGlobal(point))
 
     # Hack, this method of calling the event prevents automatic triggering
@@ -105,6 +108,9 @@ class xASL_FileExplorer(QWidget):
     # Hack, this method of calling the event prevents automatic triggering
     def menu_based_paste(self):
         self.treev_file.paste_event()
+
+    def menu_based_rename(self):
+        self.treev_file.begin_rename_event()
 
     def path_change(self, newpath, current_index):
         try:
@@ -279,6 +285,8 @@ class xASL_FileView(QTreeView):
         self.copy_buffer = []
         self.is_busy = False
         self.threadpool = QThreadPool()
+        self.editor = None
+        self.orig_filepath = None
 
     def mouseDoubleClickEvent(self, event):
         """
@@ -294,6 +302,7 @@ class xASL_FileView(QTreeView):
     def no_longer_busy(self):
         print("File operation was completed. Resetting 'is busy' variable back to False")
         self.is_busy = False
+        QApplication.restoreOverrideCursor()
 
     def delete_event(self):
         if self.is_busy:
@@ -305,6 +314,7 @@ class xASL_FileView(QTreeView):
         worker.signals.signal_done_processing.connect(self.no_longer_busy)
         self.is_busy = True
         self.threadpool.start(worker)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
 
     def copy_event(self):
         if self.is_busy:
@@ -322,7 +332,69 @@ class xASL_FileView(QTreeView):
         worker.signals.signal_done_processing.connect(self.no_longer_busy)
         self.is_busy = True
         self.threadpool.start(worker)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
         self.copy_buffer.clear()
+
+    def begin_rename_event(self):
+        try:
+            selected_model_idx = self.selectedIndexes()[0]
+            self.orig_filepath = self.model().filePath(selected_model_idx)
+        except IndexError:
+            return
+        self.openPersistentEditor(selected_model_idx)
+        self.editor: QLineEdit = self.indexWidget(selected_model_idx)
+        self.idx_of_editor = selected_model_idx
+
+    def end_rename_event(self):
+        proposed_basename = self.editor.text()
+        orig_dirname = os.path.dirname(self.orig_filepath)
+        proposed_filepath = os.path.join(orig_dirname, proposed_basename)
+        _, proposed_filepath_ext = os.path.splitext(proposed_filepath)
+        _, orig_ext = os.path.splitext(self.orig_filepath)
+
+        if proposed_filepath == self.orig_filepath:
+            self.full_close_editor()
+            return
+
+        if os.path.exists(proposed_filepath):
+            QMessageBox.information(self, "Directory already exists",
+                                    f"The specified name {proposed_basename} already exists within:\n"
+                                    f"{orig_dirname}\n"
+                                    f"Please specify a different name")
+            self.full_close_editor()
+            return
+
+        # If it is a directory
+        if os.path.isdir(self.orig_filepath):
+            try:
+                os.rename(self.orig_filepath, proposed_filepath)
+            except FileNotFoundError:
+                QMessageBox.information(self, "Illegal file or directory name specified",
+                                        f"The specified name {proposed_basename} is not a valid path ending for "
+                                        f"this operating system")
+            self.full_close_editor()
+            return
+
+        # If it is a file
+        else:
+            if proposed_filepath_ext == "":
+                proposed_filepath += orig_ext
+            try:
+                os.rename(self.orig_filepath, proposed_filepath)
+            except FileNotFoundError:
+                QMessageBox.information(self, "Illegal file or directory name specified",
+                                        f"The specified name {proposed_basename} is not a valid path ending for "
+                                        f"this operating system")
+            self.full_close_editor()
+            return
+
+    def full_close_editor(self):
+        self.closeEditor(self.editor, QAbstractItemDelegate.NoHint)
+        self.closePersistentEditor(self.idx_of_editor)
+        self.idx_of_editor = None
+        self.orig_filepath = None
+        self.editor = None
+        return
 
     def keyPressEvent(self, event: QKeyEvent):
         # Conditions to break early
@@ -351,6 +423,12 @@ class xASL_FileView(QTreeView):
                   Qt.Key_Control in self.pressed_keys and Qt.Key_V in self.pressed_keys]):
             print("Attempting to initiate paste event")
             self.paste_event()
+            self.pressed_keys.clear()
+
+        elif all([self.idx_of_editor is not None,
+                  event.key() == Qt.Key_Return]):
+            print("Attempting to complete rename event")
+            self.end_rename_event()
             self.pressed_keys.clear()
 
         else:

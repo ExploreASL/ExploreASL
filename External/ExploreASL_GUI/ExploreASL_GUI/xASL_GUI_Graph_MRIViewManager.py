@@ -11,6 +11,7 @@ import os
 
 class xASL_GUI_MRIViewManager(QWidget):
     signal_axesparms_updateplot = Signal()
+    signal_rotate_xticklabels = Signal()
 
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -84,10 +85,14 @@ class xASL_GUI_MRIViewManager(QWidget):
         if self.artist is not None:
             self.cmb_selectsubject.currentTextChanged.connect(self.artist.switch_subject)
             self.cmb_cbf_cmap.currentTextChanged.connect(self.artist.plotupdate_allslices)
+            self.cmb_t1w_cmap.currentTextChanged.connect(self.artist.plotupdate_allslices)
+            self.spinbox_mincbf.valueChanged.connect(self.artist.plotupdate_allslices)
+            self.spinbox_maxcbf.valueChanged.connect(self.artist.plotupdate_allslices)
             self.slider_axialslice.valueChanged.connect(self.artist.plotupdate_axialslice)
             self.slider_coronalslice.valueChanged.connect(self.artist.plotupdate_coronalslice)
             self.slider_sagittalslice.valueChanged.connect(self.artist.plotupdate_sagittalslice)
             self.signal_axesparms_updateplot.connect(self.artist.plotupdate_axescall)
+            self.signal_rotate_xticklabels.connect(self.artist.plotupdate_xticklabels)
         else:
             print("UI_Setup_Connections; the artist had a value of None")
 
@@ -133,6 +138,15 @@ class xASL_GUI_MRIViewManager(QWidget):
                 self.formlay_axesparms.addRow(description, widget)
                 connect_widget_to_signal(widget, self.sendSignal_plotupdate_axescall)
 
+            # xticklabels rotation has a different connection
+            self.spinbox_xticksrot = QSpinBox(minimum=0, maximum=90, value=0, singleStep=1)
+            connect_widget_to_signal(self.spinbox_xticksrot, self.sendSignal_plotupdate_xticksrot)
+            connect_widget_to_signal(self.le_x, self.artist.plotupdate_xticklabels_from_le)
+            connect_widget_to_signal(self.le_y, self.artist.plotupdate_xticklabels_from_le)
+            connect_widget_to_signal(self.le_hue, self.artist.plotupdate_xticklabels_from_le)
+            self.formlay_axesparms.addRow("X Axis Ticklabels Rotation", self.spinbox_xticksrot)
+
+            # Don't forget to remove the spacer item
             self.vlay_axesparms.removeItem(self.spacer)
 
         elif plot_type == "Scatter Plot":
@@ -208,15 +222,31 @@ class xASL_GUI_MRIViewManager(QWidget):
         self.hlay_sagittalslice = self.UI_Setup_Slide_Spin(self.slider_sagittalslice, self.spinbox_sagittalslice,
                                                            "Control which sagittal slice is presented",
                                                            "Set the value of the sagittal slice being presented")
+        # Colormaps
         self.cmb_cbf_cmap = QComboBox()
-        self.cmb_cbf_cmap.setToolTip("Control the colormap used to present the images")
+        self.cmb_cbf_cmap.setToolTip("Control the colormap used to present the CBF images")
         self.cmb_cbf_cmap.addItems(["gray", "inferno", "nipy_spectral", "gnuplot2"])
+        self.cmb_t1w_cmap = QComboBox()
+        self.cmb_t1w_cmap.setToolTip("Control the colormap used to present the T1w images")
+        self.cmb_t1w_cmap.addItems(["gray", "inferno", "nipy_spectral", "gnuplot2"])
 
+        # Max-Min Value
+        self.spinbox_mincbf = QDoubleSpinBox(minimum=0, value=0, singleStep=0.01)
+        self.spinbox_mincbf.setToolTip("Set which pixel value counts as the minimum of the colormap\n"
+                                       "(i.e. on grayscale, all values lower than this are black)")
+        self.spinbox_maxcbf = QDoubleSpinBox(minimum=0, singleStep=0.01)
+        self.spinbox_maxcbf.setToolTip("Set which pixel value counts as the maximum of the colormap\n"
+                                       "(i.e. on grayscale, all values higher than this are white)")
+
+        # Add all widgets to the layout
         self.formlay_mriparms.addRow("Subject_Run Selection", self.cmb_selectsubject)
         self.formlay_mriparms.addRow("Axial Slice", self.hlay_axialslice)
         self.formlay_mriparms.addRow("Coronal Slice", self.hlay_coronalslice)
         self.formlay_mriparms.addRow("Sagittal Slice", self.hlay_sagittalslice)
-        self.formlay_mriparms.addRow("Colormap", self.cmb_cbf_cmap)
+        self.formlay_mriparms.addRow("CBF Image Colormap", self.cmb_cbf_cmap)
+        self.formlay_mriparms.addRow("T1w Image Colormap", self.cmb_t1w_cmap)
+        self.formlay_mriparms.addRow("Darkest Pixel Value", self.spinbox_mincbf)
+        self.formlay_mriparms.addRow("Brightest Pixel Value", self.spinbox_maxcbf)
 
     # Convenience Function - clears the Axes Parameters Tab
     # noinspection PyTypeChecker
@@ -229,6 +259,20 @@ class xASL_GUI_MRIViewManager(QWidget):
             del self.subcont_axesparms
             self.axes_widget = None
 
+    ############################################################
+    # Functions for the Artist communicating back to the Manager
+    ############################################################
+    @Slot(float, float)
+    def update_contrastvals(self, new_val, new_max):
+        """
+        Upon the loading of a new subject's images, adjust the constrasts accordingly
+        """
+        print(f"update_contrastvals received the following values: {new_val} and {new_max}")
+        for widget in [self.spinbox_maxcbf, self.spinbox_mincbf]:
+            widget.setMaximum(new_max)
+        self.spinbox_mincbf.setValue(0)
+        self.spinbox_maxcbf.setValue(new_val)
+
     #############################################################################
     # Functions Designed to send signals out and sometimes set up parameter dicts
     #############################################################################
@@ -237,6 +281,12 @@ class xASL_GUI_MRIViewManager(QWidget):
         On a change in any of the Axes Parameters, a signal is sent out to update the artist
         """
         self.signal_axesparms_updateplot.emit()
+
+    def sendSignal_plotupdate_xticksrot(self):
+        """
+        On a change in the xaxis labels rotation, a signal is sent out to update the artist
+        """
+        self.signal_rotate_xticklabels.emit()
 
     def on_subset(self):
         """

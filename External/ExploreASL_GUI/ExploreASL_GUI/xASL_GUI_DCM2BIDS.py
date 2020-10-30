@@ -92,7 +92,6 @@ def get_manufacturer(dcm_dir: str):
         except PermissionError:
             continue
 
-
     if dcm_data is None:
         return False, None
 
@@ -417,17 +416,32 @@ def run_dcm2niix(temp_dir: str, dcm_dir: str, subject: str, visit, run: str, sca
     # -v : Whether to be very verbose; value n indicates no (although its still somewhat verbose...)
     # final argument is the source directory where the dicoms are located
 
-    command = f"dcm2niix -b y -z n -x n -t n -m n -s n -v n " \
-              f"-f {output_filename_format} " \
-              f"-o {temp_dir} " \
-              f"{dcm_dir}"
+    if system() == "Windows":
+        command = f"dcm2niix -b y -z n -x n -t n -m n -s n -v n " \
+                  f"-f {output_filename_format} " \
+                  f"-o {temp_dir} " \
+                  f"{dcm_dir}"
 
-    return_code = subprocess.run(command.split(" "))
-    print(f"Return code: {return_code.returncode}")
-    if return_code.returncode == 0:
-        return True
-    else:
-        return False
+        return_code = subprocess.run(command.split(" "))
+        print(f"Return code: {return_code.returncode}")
+        if return_code.returncode == 0:
+            return True
+        else:
+            return False
+    elif system() == "Linux":
+        command = f"./dcm2niix -b y -z n -x n -t n -m n -s n -v n " \
+                  f"-f {output_filename_format} " \
+                  f"-o {temp_dir} " \
+                  f"{dcm_dir}".split(" ")
+        p = subprocess.Popen(command, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+                             universal_newlines=True)
+
+        p.wait()
+        return_code = p.returncode
+        if return_code == 0:
+            return True
+        else:
+            return False
 
 
 def remove_illegal_chars(item):
@@ -575,11 +589,11 @@ def clean_niftis_in_temp(temp_dir: str, add_parms: dict, subject: str, run: str,
         import_summary["dx"], import_summary["dy"], import_summary["dz"] = zooms
 
     if len(shape) == 4:
-        import_summary["nx"], import_summary["ny"], \
-        import_summary["nz"], import_summary["nt"] = shape
+        (import_summary["nx"], import_summary["ny"],
+         import_summary["nz"], import_summary["nt"]) = shape
     else:
-        import_summary["nx"], import_summary["ny"], \
-        import_summary["nz"], import_summary["nt"] = shape[0], shape[1], shape[2], 1
+        (import_summary["nx"], import_summary["ny"],
+         import_summary["nz"], import_summary["nt"]) = shape[0], shape[1], shape[2], 1
 
     ################################
     # PART 3 NAMING AND MOVING FILES
@@ -758,16 +772,16 @@ def asldcm2bids_onedir(dcm_dir: str, config: dict, legacy_mode: bool = False):
                       f"ERROR: Failed at DCM2NIIX conversion", None
 
     # Clean the niftis in the TEMP directory
-    successful_run, \
-    nifti_parmameters, \
-    nifti_filepath, \
-    json_filepath = clean_niftis_in_temp(temp_dir=temp_dst_dir,
-                                         add_parms=addtional_dcm_parameters,
-                                         subject=subject,
-                                         run=run,
-                                         visit=visit,
-                                         scan=scan,
-                                         legacy_mode=legacy_mode)
+    (successful_run,
+     nifti_parmameters,
+     nifti_filepath,
+     json_filepath) = clean_niftis_in_temp(temp_dir=temp_dst_dir,
+                                           add_parms=addtional_dcm_parameters,
+                                           subject=subject,
+                                           run=run,
+                                           visit=visit,
+                                           scan=scan,
+                                           legacy_mode=legacy_mode)
     if not successful_run:
         print(f"FAILURE ENCOUNTERED AT CLEANING THE NIFTIs IN THE TEMP FOLDER")
         return False, f"SUBJECT: {subject}; " \

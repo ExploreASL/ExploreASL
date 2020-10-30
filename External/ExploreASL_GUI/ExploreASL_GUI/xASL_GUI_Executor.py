@@ -21,12 +21,14 @@ from ExploreASL_GUI.xASL_GUI_HelperFuncs_StringOps import set_os_dependent_text
 from pprint import pprint
 from collections import defaultdict
 import subprocess
+from shutil import rmtree
 
 
 class ExploreASL_WorkerSignals(QObject):
     """
     Class for handling the signals sent by an ExploreASL worker
     """
+    started_processing = Signal()
     finished_processing = Signal()  # Signal sent by worker to watcher to help indicate it when to stop watching
     stdout_processing_error = Signal(dict)  # Signal sent by a worker to update the main stdout errors dict
     stderr_processing_error = Signal(dict)  # Signal sent by a worker to update the main stderr errors dict
@@ -42,6 +44,7 @@ class ExploreASL_Worker(QRunnable):
         self.args = args
         super().__init__()
         self.signals = ExploreASL_WorkerSignals()
+        self.is_running = False
         print(f"Initialized Worker with args {self.args}")
 
     # This is called by the threadpool during threadpool.start(worker)
@@ -62,21 +65,37 @@ class ExploreASL_Worker(QRunnable):
                     f"{nworkers}, " \
                     f"[{' '.join([str(item) for item in imodules])}])"
 
-        # Compile and run MATLAB session from command line
-        result = subprocess.run(
-            ["matlab",
-             "-nodesktop",
-             "-nosplash",
-             "-batch",
-             f"cd('{exploreasl_path}'); ExploreASL_Master{func_line}"],
-            capture_output=True, text=True
-        )
+        cmds = ["matlab",
+                "-nodesktop",
+                "-nosplash",
+                "-batch",
+                f"cd('{exploreasl_path}'); ExploreASL_Master{func_line}"]
 
+        # # Compile and run MATLAB session from command line
+        # result = subprocess.run(cmds, capture_output=True, text=True)
+        # stdout = result.stdout
+        # stderr = result.stderr
+        # print(f"RESULTs for IWorker {iworker} of {nworkers}:"
+        #       f"\n\tReturn code = {result.returncode}")
+
+        self.proc = subprocess.Popen(cmds, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.is_running = True
+
+        # Must keep it in a loop to prevent code from proceeding until the process is definitely done for purposely
+        # terminated
+        # while self.proc.poll() is None:
+        #     print(f"Worker {iworker} of {nworkers} for study {par_path} is still running.")
+        #     print(f"{self.proc.poll()=}")
+        #     sleep(10)
+
+        stdout, stderr = self.proc.communicate()
         print(f"RESULTs for IWorker {iworker} of {nworkers}:"
-              f"\n\tReturn code = {result.returncode}")
+              f"\n\tReturn code = {self.proc.returncode}")
+        # print(f"{stdout=}")
+        # print(f"{stderr=}")
+        self.is_running = False
+
         worker_analysis_dir = re.search(r'.*analysis', par_path).group()
-        stdout = result.stdout
-        stderr = result.stderr
         stdout_error_dict = {}
         stderr_error_dict = {}
 
@@ -109,7 +128,8 @@ class ExploreASL_Worker(QRunnable):
         #################################
         # SEND THE APPROPRIATE END SIGNAL
         #################################
-        if result.returncode == 0:
+        # if result.returncode == 0:
+        if self.proc.returncode == 0:
             print(f"WORKER {iworker} IS EMITTING FINISHED PROCESSING SIGNAL")
             self.signals.finished_processing.emit()
         else:
@@ -117,6 +137,14 @@ class ExploreASL_Worker(QRunnable):
             stderr_error_dict[re.search(r'.*analysis', par_path).group()] = stderr
             self.signals.stderr_processing_error.emit(stderr_error_dict)
             self.signals.encountered_fatal_error.emit()
+
+    @Slot()
+    def terminate_run(self):
+        print("RECEIVED TERMINATE CLICK. CHECKING FOR WHETHER THE WORKER IS STILL RUNNING!")
+        if self.is_running:
+            if self.proc.poll() is None:
+                print("THE WORKER WAS FOUND TO STILL BE RUNNING. ATTEMPTING TO TERMINATE THE PROCESS NOW!")
+                self.proc.terminate()
 
 
 # noinspection PyCallingNonCallable,PyAttributeOutsideInit,PyCallByClass
@@ -229,9 +257,9 @@ class xASL_Executor(QMainWindow):
         self.hlay_nstudies.addWidget(self.lab_nstudies)
         self.hlay_nstudies.addWidget(self.cmb_nstudies)
 
-        self.cont_filler = QWidget(self.grp_taskschedule)
-        self.formlay_filler = QFormLayout(self.cont_filler)
-        self.formlay_filler.addRow("Number of Cores to Allocate ||", QLabel(text="Filepaths to Analysis Directories"))
+        # self.cont_filler = QWidget(self.grp_taskschedule)
+        # self.formlay_filler = QFormLayout(self.cont_filler)
+        # self.formlay_filler.addRow("Cores to Allocate ||", QLabel(text="Filepaths to Analysis Directories"))
 
         self.cont_tasks = QWidget(self.grp_taskschedule)
         self.formlay_tasks = QFormLayout(self.cont_tasks)
@@ -246,11 +274,12 @@ class xASL_Executor(QMainWindow):
         self.formlay_cmbs_runopts_list = []
         self.formlay_nrows = 0
         self.formlay_progbars_list = []
+        self.formlay_stopbtns_list = []
 
         self.vlay_taskschedule.addWidget(self.lab_coresinfo)
         self.vlay_taskschedule.addWidget(self.lab_coresleft)
         self.vlay_taskschedule.addWidget(self.cont_nstudies)
-        self.vlay_taskschedule.addWidget(self.cont_filler)
+        # self.vlay_taskschedule.addWidget(self.cont_filler)
         self.vlay_taskschedule.addWidget(self.cont_tasks)
         self.vlay_taskschedule.addWidget(self.cont_progbars)
         self.vlay_taskschedule.addStretch(2)
@@ -277,26 +306,32 @@ class xASL_Executor(QMainWindow):
         if diff > 0:
             for ii in range(diff):
                 self.formlay_nrows += 1
-                inner_cmb = QComboBox()
-                inner_cmb.setMinimumWidth(140)
-                inner_cmb.setToolTip("Specify the number of cores to allocate to this study.\n"
-                                     "Important points:\n"
-                                     "\t-DO NOT specify more cores than there are subjects for the study\n"
-                                     "\t-DO NOT specify more than one core for a study that will have the \n"
-                                     "\tPopulation Module run on it")
-                inner_cmb.addItems(list(map(str, range(1, os.cpu_count() // 2 + 1))))
-                inner_cmb.currentTextChanged.connect(self.set_ncores_left)
-                inner_cmb.currentTextChanged.connect(self.set_ncores_selectable)
-                inner_cmb.currentTextChanged.connect(self.set_nstudies_selectable)
-                inner_cmb.currentTextChanged.connect(self.is_ready_to_run)
+
+                # Combobox to specify the number of cores to allocate
+                inner_cmb_ncores = QComboBox()
+                inner_cmb_ncores.setMinimumWidth(140)
+                inner_cmb_ncores.setToolTip("Specify the number of cores to allocate to this study.\n"
+                                            "Important points:\n"
+                                            "\t-DO NOT specify more cores than there are subjects for the study\n"
+                                            "\t-DO NOT specify more than one core for a study that will have the \n"
+                                            "\tPopulation Module run on it")
+                inner_cmb_ncores.addItems(list(map(str, range(1, os.cpu_count() // 2 + 1))))
+                inner_cmb_ncores.currentTextChanged.connect(self.set_ncores_left)
+                inner_cmb_ncores.currentTextChanged.connect(self.set_ncores_selectable)
+                inner_cmb_ncores.currentTextChanged.connect(self.set_nstudies_selectable)
+                inner_cmb_ncores.currentTextChanged.connect(self.is_ready_to_run)
+
+                # Lineedit to specify
                 inner_le = DandD_FileExplorer2LineEdit(acceptable_path_type="Directory")
                 inner_le.setToolTip("Specify the filepath to the analysis folder of your study.\nFor example:\n"
-                                     "C:\\Users\\JohnSmith\\MyStudy\\analysis")
+                                    "C:\\Users\\JohnSmith\\MyStudy\\analysis")
                 inner_le.setClearButtonEnabled(True)
                 inner_le.setPlaceholderText("Select the analysis directory to your study")
                 inner_le.textChanged.connect(self.is_ready_to_run)
-                inner_btn = RowAwareQPushButton(self.formlay_nrows, "...")
-                inner_btn.row_idx_signal.connect(self.set_analysis_directory)
+                inner_btn_browsedirs = RowAwareQPushButton(self.formlay_nrows, "...")
+                inner_btn_browsedirs.row_idx_signal.connect(self.set_analysis_directory)
+
+                # Combobox to specify when module to run
                 inner_cmb_procopts = QComboBox()
                 inner_cmb_procopts.setToolTip("Specify which ExploreASL module to run:\n"
                                               "\t-Structural: Structural Module for processing T1w and FLAIR scans\n"
@@ -307,23 +342,46 @@ class xASL_Executor(QMainWindow):
                 inner_cmb_procopts.addItems(["Structural", "ASL", "Both", "Population"])
                 inner_cmb_procopts.setCurrentIndex(2)
                 inner_cmb_procopts.currentTextChanged.connect(self.is_ready_to_run)
+
+                # Stop Button
+                stop_icon_path = os.path.join(self.config["ProjectDir"], "media", "stop_processing.png")
+                inner_btn_stop = QPushButton(QIcon(stop_icon_path), "", enabled=False)
+                inner_btn_stop.setToolTip("Stop this study being run")
+
+                # Package it all in another FormLayout
+                inner_grp = QGroupBox(f"Study {inner_btn_browsedirs.row_idx}")
+                inner_formlay = QFormLayout(inner_grp)
+                inner_formlay.addRow("Assigned Number of Cores", inner_cmb_ncores)
                 inner_hbox = QHBoxLayout()
                 inner_hbox.addWidget(inner_le)
-                inner_hbox.addWidget(inner_btn)
-                inner_hbox.addWidget(inner_cmb_procopts)
+                inner_hbox.addWidget(inner_btn_browsedirs)
+                inner_formlay.addRow("Path to Analysis Folder", inner_hbox)
+                inner_formlay.addRow("Which Modules to Run", inner_cmb_procopts)
+                inner_formlay.addRow("Terminate Processing", inner_btn_stop)
+
+                # Package it all in an HBoxLayout
+                # inner_hbox = QHBoxLayout()
+                # inner_hbox.addWidget(inner_le)
+                # inner_hbox.addWidget(inner_btn_browsedirs)
+                # inner_hbox.addWidget(inner_cmb_procopts)
+                # inner_hbox.addWidget(inner_btn_stop)
+
+                # Add progressbars
                 inner_progbar = QProgressBar(orientation=Qt.Horizontal, value=0, maximum=100, minimum=0)
                 inner_progbar.setPalette(self.green_palette)
 
                 # Update format layouts through addition of the appropriate row
-                self.formlay_tasks.addRow(inner_cmb, inner_hbox)
-                self.formlay_progbars.addRow(f"Study {inner_btn.row_idx}", inner_progbar)
+                # self.formlay_tasks.addRow(inner_cmb_ncores, inner_hbox)
+                self.formlay_tasks.addRow(inner_grp)
+                self.formlay_progbars.addRow(f"Study {inner_btn_browsedirs.row_idx}", inner_progbar)
 
                 # Add widgets to their respective containers
-                self.formlay_cmbs_ncores_list.append(inner_cmb)
+                self.formlay_cmbs_ncores_list.append(inner_cmb_ncores)
                 self.formlay_lineedits_list.append(inner_le)
-                self.formlay_buttons_list.append(inner_btn)
+                self.formlay_buttons_list.append(inner_btn_browsedirs)
                 self.formlay_cmbs_runopts_list.append(inner_cmb_procopts)
                 self.formlay_progbars_list.append(inner_progbar)
+                self.formlay_stopbtns_list.append(inner_btn_stop)
 
         # Removal of rows
         elif diff < 0:
@@ -340,6 +398,7 @@ class xASL_Executor(QMainWindow):
                 self.formlay_buttons_list.pop()
                 self.formlay_cmbs_runopts_list.pop()
                 self.formlay_progbars_list.pop()
+                self.formlay_stopbtns_list.pop()
                 self.formlay_nrows -= 1
 
         # Adjust the number of cores selectable in each of the comboboxes
@@ -361,9 +420,10 @@ class xASL_Executor(QMainWindow):
                                    "\t'Re-run a study': Re-run parts of a previously-run study\n"
                                    "\t'Alter participants.tsv': Add metadata to the tsv file such that biasfields for\n"
                                    "\tthat metadata may be created when running the Population module")
-        self.hlay_modjob, self.le_modjob, \
-        self.btn_modjob = make_droppable_clearable_le(btn_connect_to=self.set_modjob_analysis_dir,
-                                                      acceptable_path_type="Directory")
+        (self.hlay_modjob,
+         self.le_modjob,
+         self.btn_modjob) = make_droppable_clearable_le(btn_connect_to=self.set_modjob_analysis_dir,
+                                                        acceptable_path_type="Directory")
         self.le_modjob.setPlaceholderText("Drag & Drop analysis directory here")
         self.le_modjob.setToolTip("Specify the filepath to the analysis folder of your study.\nFor example:\n"
                                   "C:\\Users\\JohnSmith\\MyStudy\\analysis")
@@ -612,9 +672,9 @@ class xASL_Executor(QMainWindow):
         # If at least one study had an issue, print out a warning and generate a log file in that study directory
         if len(postrun_diagnosis) > 0:
             for study_dir, incomplete_files in postrun_diagnosis.items():
-                structmod_msgs, \
-                aslmod_msgs, \
-                popmod_msgs = interpret_statusfile_errors(incomplete_files, self.executor_translators)
+                (structmod_msgs,
+                 aslmod_msgs,
+                 popmod_msgs) = interpret_statusfile_errors(incomplete_files, self.executor_translators)
 
                 specific_stdout_msg = []
                 # Extract the specific error messages
@@ -717,14 +777,16 @@ class xASL_Executor(QMainWindow):
     def set_widgets_activation_states(self, state: bool):
         self.btn_runExploreASL.setEnabled(state)
         self.cmb_nstudies.setEnabled(state)
-        for core_cmb, le, btn, runopt_cmb in zip(self.formlay_cmbs_ncores_list,
-                                                 self.formlay_lineedits_list,
-                                                 self.formlay_buttons_list,
-                                                 self.formlay_cmbs_runopts_list):
+        for core_cmb, le, browse_btn, runopt_cmb, stop_btn in zip(self.formlay_cmbs_ncores_list,
+                                                                  self.formlay_lineedits_list,
+                                                                  self.formlay_buttons_list,
+                                                                  self.formlay_cmbs_runopts_list,
+                                                                  self.formlay_stopbtns_list):
             core_cmb.setEnabled(state)
             le.setEnabled(state)
-            btn.setEnabled(state)
+            browse_btn.setEnabled(state)
             runopt_cmb.setEnabled(state)
+            stop_btn.setEnabled(not state)
 
     # Convenience function; adds a gif indicating processing below the textoutput and starts the gif
     def begin_movie(self):
@@ -750,14 +812,25 @@ class xASL_Executor(QMainWindow):
     def run_Explore_ASL(self):
 
         # Immediately abandon this if the MATLAB version is not newer
-        if os.path.basename(self.config["MATLABROOT"]) not in ["R2019a", "R2019b", "R2020a", "R2020b"]:
+        version_checks = []
+        for version in ["R2019a", "R2019b", "R2020a", "R2020b", "R2021a"]:
+            if version in os.path.basename(self.config["MATLABROOT"]):
+                version_checks.append(True)
+            else:
+                version_checks.append(False)
+
+        # If none of those versions could be detected, exit out
+        if not any(version_checks):
             QMessageBox().warning(self,
                                   f"Incompatible MATLAB version on your machine",
                                   f"The program has detected that you have MATLAB version:\n"
                                   f"{os.path.basename(self.config['MATLABROOT'])}\n"
                                   f"This program requires a MATLAB installation of 2019a or later.",
                                   QMessageBox.Ok)
+            del version_checks, version
             return
+        else:  # Otherwise, garbage collect
+            del version_checks, version
 
         if self.config["DeveloperMode"]:
             print("%" * 60)
@@ -776,10 +849,12 @@ class xASL_Executor(QMainWindow):
         self.textedit_textoutput.clear()
 
         # Outer for loop; loops over the studies
-        for study_idx, (box, path, run_opts, progressbar) in enumerate(zip(self.formlay_cmbs_ncores_list,
-                                                                           self.formlay_lineedits_list,
-                                                                           self.formlay_cmbs_runopts_list,
-                                                                           self.formlay_progbars_list)):
+        for study_idx, (box, path, run_opts, progressbar, stop_btn) in enumerate(
+                zip(self.formlay_cmbs_ncores_list,  # Comboboxes for number of cores
+                    self.formlay_lineedits_list,  # Lineedits for analysis directory path
+                    self.formlay_cmbs_runopts_list,  # Comboboxes for the modules to run
+                    self.formlay_progbars_list,  # Progressbars for the study
+                    self.formlay_stopbtns_list)):  # Stop Buttons for that study
 
             #########################################
             # INNER FOR LOOP - For a particular study
@@ -873,8 +948,7 @@ class xASL_Executor(QMainWindow):
                 if ii < int(box.currentText()):
                     worker = ExploreASL_Worker(
                         explore_asl_path,  # The exploreasl filepath
-                        glob(os.path.join(path.text(), "*Par*.json"))[0].replace('\\', '/'),
-                        # The filepath to parms
+                        glob(os.path.join(path.text(), "*Par*.json"))[0].replace('\\', '/'),  # The filepath to parms
                         1,  # Process the data
                         1,  # Skip the pause
                         ii + 1,  # iWorker
@@ -905,7 +979,11 @@ class xASL_Executor(QMainWindow):
                     print(f"Detected locked direcorties in {path.text()} prior to starting ExploreASL. "
                           f"Removing them first.")
                 for lock_dir in locked_dirs:
-                    os.removedirs(lock_dir)
+                    try:
+                        os.rmdir(lock_dir)
+                    except OSError as lock_err:  # Just in case a user tampers with the lock directory
+                        print(f"{lock_err}...but proceeding to recursive delete")
+                        rmtree(path=lock_dir, ignore_errors=True)
 
             # %%%%%%%%%%%%%%%%%%%%%%%%%
             # Step 4 - Calculate the anticipated workload based on missing .STATUS files; adjust the progressbar's
@@ -966,6 +1044,8 @@ class xASL_Executor(QMainWindow):
                 # accounted for errors
                 worker.signals.stdout_processing_error.connect(self.update_stdout_error_dicts)
                 worker.signals.stderr_processing_error.connect(self.update_stderr_error_dicts)
+                # Connect the stop button for that study to its terminator function
+                stop_btn.clicked.connect(worker.terminate_run)
 
                 self.textedit_textoutput.append(
                     f"Preparing Worker {idx + 1} of {len(inner_worker_block)} for study: "

@@ -3,5 +3,9 @@
 # ignore temporary Matlab files:
 *.asv
 *.m~
+JSON_LOGIC/ExploreASL_GUI_masterconfig.json
 .idea
 __pycache__
+*MRI_viewer.mp4
+/venv/
+xASL_GUI_run.sh

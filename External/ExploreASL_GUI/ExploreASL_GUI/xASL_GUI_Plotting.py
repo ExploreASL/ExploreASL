@@ -44,9 +44,14 @@ class xASL_Plotting(QMainWindow):
         # Main Widgets setup
         self.UI_Setup_Docker()
 
+    def resizeEvent(self, event):
+        self.dock.setMaximumHeight(self.height())
+        super().resizeEvent(event)
+
     def UI_Setup_Docker(self):
         self.dock = QDockWidget(windowTitle="Data Visualization Settings", parent=self.cw)
         self.dock.setMinimumWidth(480)
+        self.dock.setMaximumHeight(self.height())
         self.dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
         self.cont_maindock = QWidget(self.dock)
@@ -56,6 +61,7 @@ class xASL_Plotting(QMainWindow):
         # Set up the directory settings - what analysis folder
         self.grp_directories = QGroupBox(title="Directory settings", parent=self.cont_maindock)
         self.formlay_directories = QFormLayout(self.grp_directories)
+        self.formlay_directories.setContentsMargins(2, 2, 2, 2)
         self.hlay_analysis_dir, self.le_analysis_dir, self.btn_analysis_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_analysis_dir,
             default="",
@@ -113,16 +119,18 @@ class xASL_Plotting(QMainWindow):
         # Setup the main Variable Viewer
         self.grp_varview = QGroupBox(title="Variables", parent=self.cont_maindock)
         self.vlay_varview = QVBoxLayout(self.grp_varview)
+        self.vlay_varview.setContentsMargins(0, 0, 0, 0)
         self.lst_varview = QListWidget(self.grp_varview)
         self.lst_varview.setToolTip("This area houses the variables extracted from column headers found within the\n"
                                     "study's dataframes as well as any metadata loaded in by the user")
-        self.lst_varview.setFixedHeight(225)
+        self.lst_varview.setFixedHeight(200)
         self.lst_varview.setDragEnabled(True)
         self.vlay_varview.addWidget(self.lst_varview)
 
         # Setup the start of Plotting Settings
         self.grp_pltsettings = QGroupBox(title="Plotting Settings", parent=self.cont_maindock)
         self.vlay_pltsettings = QVBoxLayout(self.grp_pltsettings)
+        self.vlay_pltsettings.setContentsMargins(0, 0, 0, 0)
         self.cmb_figuretypeselection = QComboBox(self.grp_pltsettings)
         self.cmb_figuretypeselection.setToolTip("This will select the type of plotting submodule to use.\n"
                                                 "Options include:\n"
