@@ -166,10 +166,11 @@ if bCompute4Sets
             if isempty(TempCheck)
                 warning(['Couldnt find set: ' Sets2Check{iSetCheck}]);
             else
-                Sets2Check(iSetCheck) = TempCheck;
+                TempCheck2(iSetCheck) = TempCheck;
                 FoundSets = FoundSets+1;
             end
         end
+        Sets2Check = TempCheck2;
         if FoundSets==0
             error('No sets found, skipping. Please check participants.tsv vs bCompute4Sets');
         end
@@ -585,6 +586,19 @@ if bFlipHemisphere
     IndexRight = find(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(right|r)(.|)$')), SetOptions));    
     IndexBoth = find(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(both|bothleftright)(.|)$')), SetOptions));
     
+    if isempty(IndexLeft)
+        SetOptions{end+1} = 'left';
+        IndexLeft = length(SetOptions);
+    end
+    if isempty(IndexRight)
+        SetOptions{end+1} = 'right';
+        IndexRight = length(SetOptions);
+    end
+    if isempty(IndexBoth)
+        SetOptions{end+1} = 'both';
+        IndexBoth = length(SetOptions);
+    end    
+    
     ImagesBoth = find(CurrentSet==IndexBoth);
     % loop over these indices
     if ~isempty(ImagesBoth)
@@ -592,6 +606,7 @@ if bFlipHemisphere
         for iBoth=1:length(ImagesBoth)
             % add new index containing right
             CurrentSet(end+1) = IndexRight;
+                
             % set current index to left (instead of both)
             CurrentSet(ImagesBoth(iBoth)) = IndexLeft;
             % copy current image to new image index
@@ -611,7 +626,7 @@ if bFlipHemisphere
         xASL_TrackProgress(iImage, size(IM{1},2));
         if Images2Flip(iImage)
             if bUnilateralImages
-                tIM = IM{2}; % flip right image (to left)
+                tIM = IM{2}(:,iImage); % flip right image (to left)
             else
                 tIM = IM{1}(:,iImage); % flip bilateral image (right-left direction)
             end
