@@ -630,13 +630,13 @@ if bFlipHemisphere
             else
                 tIM = IM{1}(:,iImage); % flip bilateral image (right-left direction)
             end
-            tIM = fliplr(xASL_im_Column2IM(tIM, x.WBmask));
+            tIM = flip(xASL_im_Column2IM(tIM, x.WBmask), 1);
             IM{1}(:,iImage) = xASL_im_IM2Column(tIM, x.WBmask);
 
             if bSaveUnmasked && bUnilateralImages
-                IM2noMask{1}(:,:,:,iImage) = fliplr(IM2noMask{2}(:,:,:,iImage)); % flip right image (to left)
+                IM2noMask{1}(:,:,:,iImage) = flip(IM2noMask{2}(:,:,:,iImage), 1); % flip right image (to left)
             elseif bSaveUnmasked && ~bUnilateralImages
-                IM2noMask{1}(:,:,:,iImage) = fliplr(IM2noMask{1}(:,:,:,iImage)); % flip bilateral image (right-left direction)
+                IM2noMask{1}(:,:,:,iImage) = flip(IM2noMask{1}(:,:,:,iImage), 1); % flip bilateral image (right-left direction)
             end
         end
     end
