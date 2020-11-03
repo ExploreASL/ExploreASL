@@ -64,6 +64,16 @@
         "code",
         "tool"
       ]
+    },
+    {
+      "login": "MauricePasternak",
+      "name": "MauricePasternak",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/57411571?v=4",
+      "profile": "https://github.com/MauricePasternak",
+      "contributions": [
+        "code",
+        "design"
+      ]
     }
   ],
   "contributorsPerLine": 7,
