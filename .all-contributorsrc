@@ -34,6 +34,56 @@
         "content",
         "doc"
       ]
+    },
+    {
+      "login": "pfcgroot",
+      "name": "Paul Groot",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/18597189?v=4",
+      "profile": "http://www.amsterdamumc.nl",
+      "contributions": [
+        "code",
+        "content"
+      ]
+    },
+    {
+      "login": "pvdemael",
+      "name": "Pieter Vandemaele",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/37624277?v=4",
+      "profile": "https://github.com/pvdemael",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
+      "login": "luislorenzini",
+      "name": "luislorenzini",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/57985241?v=4",
+      "profile": "https://github.com/luislorenzini",
+      "contributions": [
+        "code",
+        "tool"
+      ]
+    },
+    {
+      "login": "MauricePasternak",
+      "name": "MauricePasternak",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/57411571?v=4",
+      "profile": "https://github.com/MauricePasternak",
+      "contributions": [
+        "code",
+        "design"
+      ]
+    },
+    {
+      "login": "sandeepganji",
+      "name": "Sandeep Ganji",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/12124746?v=4",
+      "profile": "https://github.com/sandeepganji",
+      "contributions": [
+        "content",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
