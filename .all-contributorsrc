@@ -34,6 +34,16 @@
         "content",
         "doc"
       ]
+    },
+    {
+      "login": "luislorenzini",
+      "name": "luislorenzini",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/57985241?v=4",
+      "profile": "https://github.com/luislorenzini",
+      "contributions": [
+        "code",
+        "tool"
+      ]
     }
   ],
   "contributorsPerLine": 7,
