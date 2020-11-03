@@ -74,6 +74,16 @@
         "code",
         "design"
       ]
+    },
+    {
+      "login": "sandeepganji",
+      "name": "Sandeep Ganji",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/12124746?v=4",
+      "profile": "https://github.com/sandeepganji",
+      "contributions": [
+        "content",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
