@@ -1,0 +1,45 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "HenkMutsaerts",
+      "name": "Henk Mutsaerts",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/27774254?v=4",
+      "profile": "http://www.ExploreASL.org",
+      "contributions": [
+        "design",
+        "content"
+      ]
+    },
+    {
+      "login": "jan-petr",
+      "name": "Jan Petr",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/29886537?v=4",
+      "profile": "https://github.com/jan-petr",
+      "contributions": [
+        "content",
+        "design"
+      ]
+    },
+    {
+      "login": "MichaelStritt",
+      "name": "Michael Stritt",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/46593074?v=4",
+      "profile": "https://github.com/MichaelStritt",
+      "contributions": [
+        "content",
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "ExploreASL",
+  "projectOwner": "ExploreASL",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
