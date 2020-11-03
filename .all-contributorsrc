@@ -43,6 +43,15 @@
       "contributions": [
         "code",
         "ideas"
+    },
+    {
+      "login": "pfcgroot",
+      "name": "Paul Groot",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/18597189?v=4",
+      "profile": "http://www.amsterdamumc.nl",
+      "contributions": [
+        "code",
+        "content"
       ]
     }
   ],

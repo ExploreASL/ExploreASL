@@ -62,6 +62,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/jan-petr"><img src="https://avatars0.githubusercontent.com/u/29886537?v=4" width="100px;" alt=""/><br /><sub><b>Jan Petr</b></sub></a><br /><a href="#content-jan-petr" title="Content">🖋</a> <a href="#design-jan-petr" title="Design">🎨</a></td>
     <td align="center"><a href="https://github.com/MichaelStritt"><img src="https://avatars0.githubusercontent.com/u/46593074?v=4" width="100px;" alt=""/><br /><sub><b>Michael Stritt</b></sub></a><br /><a href="#content-MichaelStritt" title="Content">🖋</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=MichaelStritt" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/pvdemael"><img src="https://avatars1.githubusercontent.com/u/37624277?v=4" width="100px;" alt=""/><br /><sub><b>Pieter Vandemaele</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=pvdemael" title="Code">💻</a> <a href="#ideas-pvdemael" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="http://www.amsterdamumc.nl"><img src="https://avatars0.githubusercontent.com/u/18597189?v=4" width="100px;" alt=""/><br /><sub><b>Paul Groot</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=pfcgroot" title="Code">💻</a> <a href="#content-pfcgroot" title="Content">🖋</a></td>
   </tr>
 </table>
 
