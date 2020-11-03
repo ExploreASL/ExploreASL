@@ -1,6 +1,6 @@
 # ExploreASL
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## Description
@@ -61,6 +61,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="http://www.ExploreASL.org"><img src="https://avatars0.githubusercontent.com/u/27774254?v=4" width="100px;" alt=""/><br /><sub><b>Henk Mutsaerts</b></sub></a><br /><a href="#design-HenkMutsaerts" title="Design">🎨</a> <a href="#content-HenkMutsaerts" title="Content">🖋</a></td>
     <td align="center"><a href="https://github.com/jan-petr"><img src="https://avatars0.githubusercontent.com/u/29886537?v=4" width="100px;" alt=""/><br /><sub><b>Jan Petr</b></sub></a><br /><a href="#content-jan-petr" title="Content">🖋</a> <a href="#design-jan-petr" title="Design">🎨</a></td>
     <td align="center"><a href="https://github.com/MichaelStritt"><img src="https://avatars0.githubusercontent.com/u/46593074?v=4" width="100px;" alt=""/><br /><sub><b>Michael Stritt</b></sub></a><br /><a href="#content-MichaelStritt" title="Content">🖋</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=MichaelStritt" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/sandeepganji"><img src="https://avatars0.githubusercontent.com/u/12124746?v=4" width="100px;" alt=""/><br /><sub><b>Sandeep Ganji</b></sub></a><br /><a href="#content-sandeepganji" title="Content">🖋</a> <a href="#ideas-sandeepganji" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
