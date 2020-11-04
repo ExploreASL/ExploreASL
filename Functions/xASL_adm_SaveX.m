@@ -1,5 +1,6 @@
 function xASL_adm_SaveX(x, Path_xASL, bOverwrite)
 %xASL_adm_SaveX Saves x.mat file that keeps track of QC output
+%
 % FORMAT: xASL_adm_SaveX(x[, Path_xASL, bOverwrite])
 %
 % INPUT:
@@ -9,12 +10,14 @@ function xASL_adm_SaveX(x, Path_xASL, bOverwrite)
 %
 % OUTPUT:
 %   n/a
-
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function saves the x.mat either to the predefined path or the the subject x.mat
 %
-% EXAMPLE outside ExploreASL: xASL_adm_SaveX(x, fullfile(x.D.ROOT,'x.mat'));
-% EXAMPLE inside ExploreASL: xASL_adm_SaveX(x);
+% EXAMPLE: outside ExploreASL: xASL_adm_SaveX(x, fullfile(x.D.ROOT,'x.mat'));
+%           inside ExploreASL: xASL_adm_SaveX(x);
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
 

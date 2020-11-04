@@ -20,9 +20,12 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 %                     filepath, used when resampling to standard space
 %                     e.g. x.subject_regexp (OPTIONAL, DEFAULT = empty).
 %
-% OUTPUT: n/a
-% OUTPUT FILES: separate label images
+% OUTPUT: 
+%  variables        - n/a
+%  files            - separate label images
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
 % DESCRIPTION: This function allows extracting of labels from a NIfTI file
 %              containing multiple labels, into single NIfTI files each
 %              containing a single label.
@@ -31,9 +34,11 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 %              1. Load TSV file
 %              2. Process images
 %
-% EXAMPLE LabelTable as separate TSV-file: xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.PopDir,'^4V_(?!MAP).*\.nii$', 'FPList'), '/ExampleTerritoryLabels.tsv', x.D.PopDir);
-% EXAMPLE LabelTable as cell: xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.ROOT,'^4V\.nii$', 'FPListRec'), {1, 'ICA-L'; 2 'ICA-R'; 3, 'POS-L'; 4, 'POS-R'}, [], 1, x.D.PopDir, x.subject_regexp);
+% EXAMPLE: LabelTable as separate TSV-file: xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.PopDir,'^4V_(?!MAP).*\.nii$', 'FPList'), '/ExampleTerritoryLabels.tsv', x.D.PopDir);
+%          LabelTable as cell: xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.ROOT,'^4V\.nii$', 'FPListRec'), {1, 'ICA-L'; 2 'ICA-R'; 3, 'POS-L'; 4, 'POS-R'}, [], 1, x.D.PopDir, x.subject_regexp);
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
 % Copyright 2015-2020 ExploreASL
     
 
