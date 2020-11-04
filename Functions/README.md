@@ -243,21 +243,6 @@ replacement, but option 2 is on, then underscores are replaced anyway.
 
 
 ----
-### xASL\_adm\_CreateCSVfile.m
-
-#### Format
-
-```matlab
-xASL_adm_CreateCSVfile(CSVfilename,CSVdata)
-```
-
-#### Description
-Creates a CSV file that can be opened with excel from
-your data.
-
-
-
-----
 ### xASL\_adm\_CreateFileReport.m
 
 #### Format
@@ -510,7 +495,7 @@ as well. This function performs the following steps:
 #### Format
 
 ```matlab
-[x[, IsLoaded]] = xASL_adm_LoadX(x, Path_xASL[, bOverwrite])
+[x[, IsLoaded]] = xASL_adm_LoadX(x[, Path_xASL, bOverwrite])
 ```
 
 #### Description
@@ -649,6 +634,19 @@ Saves the values in the structure 'data' to a file in JSON format.
 
 
 ----
+### xASL\_adm\_SaveX.m
+
+#### Format
+
+```matlab
+xASL_adm_SaveX(x[, Path_xASL, bOverwrite])
+```
+
+#### Description
+This function saves the x.mat either to the predefined path or the the subject x.mat
+
+
+----
 ### xASL\_adm\_UnzipOrCopy.m
 
 #### Format
@@ -775,6 +773,38 @@ This function runs the following steps:
 2. Insert the fields
 3. Save a new JSON file (if ChildJSON was a path)
 
+
+
+----
+### xASL\_bids\_MergeNifti.m
+
+#### Format
+
+```matlab
+NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
+```
+
+#### Description
+This function takes a list of M0 or ASL4D files and concatenates them together in a longer 4D volume if possible
+following certain patterns: works only with 3D and 4D files; all files in the list must have the same size of the
+first three dimensions; files are generarily sorted according to the last number in the filename and outputted
+to M0.nii or ASL4D.nii; first JSON is taken and renamed, all other JSONs and NIIs are deleted after merging;
+M0\*\_parms.m or ASL\*\_parms.mat is renamed to M0\_parms.m or ASL4D\_parms.m; M0 files are checked if the field
+PhaseEncodingAxis is consistent through all the volumes, if not the nothing is merged; this is applied to a generic case
+and 3 other specific Siemens scenarios are implemented:
+
+i) All NII files have two volumes, then simply concatenate according to the last number.
+ii) Two files with a single volume each are merged according to the last number in the file name.
+iii) Multiple files with each containing a single volume are sorted to tags ASL4D\_x\_x\_Y and controls ASL4D\_Y and merged in the order
+of the last number in the filename (Y) alternating the tags and controls
+
+This function performs the following steps in subfunctions:
+1. xASL\_bids\_MergeNifti\_M0Files Generic merging of M0 files
+2. xASL\_bids\_MergeNifti\_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
+3. xASL\_bids\_MergeNifti\_AllASLFiles Merge any ASL files
+4. xASL\_bids\_MergeNifti\_Merge Merge NiftiPaths & save to pathMerged
+5. xASL\_bids\_MergeNifti\_Delete Delete NiftiPaths and associated JSONs
+6. xASL\_bids\_MergeNifti\_RenameParms Find \*\_parms.m files in directory and shorten to provided name
 
 
 ----
@@ -948,13 +978,17 @@ Note that LST lesion filling expects a probability map, doesnt work nicely with 
 #### Format
 
 ```matlab
-[NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose)
+[NewIM] = xASL_im_ClipExtremes(InputIm[, ThreshHigh, ThreshLow, bVerbose])
 ```
 
 #### Description
-Clips image to given percentile. The percentile is found
+This function clips an image to a given percentile. The percentile is found
 using non-zeros sorted intensities, so both isfinite & non-zeros.
-
+This function performs the following steps:
+1. Constrain clippable intensities
+2. Clip high intensities
+3. Clip low intensities
+4. Save as NIfTI if the input was a NIfTI
 
 
 ----
@@ -1042,7 +1076,7 @@ any dimension) lower than T1w, the y\_T1.nii is copied to y\_ASL.nii
 #### Format
 
 ```matlab
-xASL_im_CreatePseudoCBF(x, spatialCoV)
+xASL_im_CreatePseudoCBF(x, spatialCoV[, bPVC])
 ```
 
 #### Description
@@ -1056,7 +1090,6 @@ The second part of this code computes a pseudoCBF image based on the
 pseudoTissue & the CBF templates of CBF, ATT biasfield and vascular peaks, based on spatial CoV.
 
 This submodule performs the following steps:
-
 1. Create the pseudoTissue CBF reference image, if it doesnt exist already
 2. Create the native space copies of ASL templates, if they dont exist already
 3. Spatial CoV input argument check
@@ -1310,15 +1343,27 @@ If there are no lesions found, the images are untouched.
 #### Format
 
 ```matlab
-LesionIM = xASL_im_Lesion2Mask(LesionPath, T1path, pGMpath, pWMpath, x)
+LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 ```
 
 #### Description
-For a standard space lesion mask (or map), this stores
-the lesion mask, and in additional its perimask (15 mm) and contralateral
-mask, as 2nd and 3rd volumes.
-It plots the masks on a T1 image, and masks the new masks with the
-subjects' brainmask (pGM+pWM).
+This function takes a mask and adds several ROIs, to be used as custom "atlas", e.g. when computing region-average CBF values.
+The mask % can be an ROI or lesion, if we assume it is a lesion, the following masks are created:
+1. Intralesional
+2. Perilesional (15 mm rim around the lesion)
+3. Hemisphere (ipsilateral to lesion)
+4. Contralateral version of 1
+5. Contralateral version of 2
+6. Contralateral version of 3
+All these masks are masked by a brainmask (pGM+pWM)>0.5
+
+This function performs the following steps:
+1. If lesion is empty, skip this & delete the file
+2. BrainMasking
+3. Create hemispheres
+4. Save mutually exclusive masks
+5. Create tsv-sidecar containing the names of the ROIs
+6. Visual QC
 
 
 
@@ -1627,6 +1672,25 @@ space registration from segmentation.
 #### Description
 ...
 
+
+
+----
+### xASL\_im\_SplitImageLabels.m
+
+#### Format
+
+```matlab
+xASL_im_SplitImageLabels(ImagePaths, LabelTable[, OutputFolder, bOverwrite, ResampleDir, SubRegExp])
+```
+
+#### Description
+This function allows extracting of labels from a NIfTI file
+containing multiple labels, into single NIfTI files each
+containing a single label.
+Not all existing labels need to be extracted.
+The following steps are performed:
+1. Load TSV file
+2. Process images
 
 
 ----
@@ -2078,13 +2142,14 @@ Convert DICOM NIfTI/BIDS format using the dcm2nii command line utility.
 #### Format
 
 ```matlab
-[DataOut] = xASL_num2str(DataIn[, f])
+[DataOut] = xASL_num2str(DataIn[, f, bConcatenate, strDelimiter])
 ```
 
 #### Description
 when the provided data is numeric, this function will convert the number to string/characters,
 rewriting NaN into 'n/a' (BIDS convention) but otherwise preserving the Matlab builtin functionality, also for the second argument "f".
 If non-numeric data is provided, it is bypassed (avoiding any issues "num2str" will have with non-numeric data).
+It can concatenate an array/matrix of strings, taking first the columns in the first row, and then going across the rows.
 See builtin num2str for more details
 
 
@@ -2235,8 +2300,9 @@ RigidBody2Anat\_mm - Net Displacement Vector (RMS) from func to T1w image (mm) f
 ```
 
 #### Description
-This functions collects software versions for matlab, SPM, CAT, LST & ExploreASL
-These are stored in x.Output.Software
+This functions collects software versions for Matlab, SPM, CAT, LST & ExploreASL
+If FSL is installed, it will obtain its version as well.
+These are stored in x.Output.Software.
 
 
 ----
@@ -2656,6 +2722,26 @@ future this could go to different stages, e.g. dcm2niiX or
 PWI stage)
 
 
+----
+### xASL\_quant\_SliceReadoutTime\_ShortestTR.m
+
+#### Format
+
+```matlab
+[x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
+```
+
+#### Description
+When the TR is set to "shortestTR" in the ASL acquisition,
+each ASL scan will have its unique TR. As this is shortest,
+there won't be a delay between the readout of the last slice
+and the end of the TR. Therefore, the time to read out all
+slices is TR - InitialPostLabelDelay - LabelingDuration, and
+dividing this by the number of slices gives the
+SliceReadoutTime
+
+
+
 ## SPM
 
 ----
@@ -2685,7 +2771,7 @@ images. It conducts the following steps:
 #### Format
 
 ```matlab
-xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef[,otherList, bDCT])
+xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef[,otherList, bDCT, bQuality])
 ```
 
 #### Description
@@ -2759,6 +2845,7 @@ propagation of undesired interpolation effects. Mainly used to get native
 space images into standard space, or vice versa.
 Best to combine as many files as possible within this function, since the
 deformation calculation (which is the most computation intensive part) needs to be performed once for multi-file resampling
+This function runs the following steps:
 
 
 
@@ -2870,7 +2957,7 @@ in a [1.5 1.5 1.5] mm MNI space,
 with several ASL-specific adaptions:
 
 1. Skip ROI masks that are smaller than 1 mL
-as this would be too noisy for ASL (skipped when x.S.IsASL==false)
+as this would be too noisy for ASL (ignored when x.S.IsASL==false)
 2. Expand each ROI mask such that it has sufficient WM
 content (skipped when IsASL==false)
 3. Create for each ROI mask a left, right and bilateral copy
@@ -2976,7 +3063,10 @@ This function prints an overview of statistics from
 data that were acquired per ROI, in a TSV file. It starts by
 printing covariates (called "Sets"). Rows will be
 subjects/sessions, columns will be the sets and
-ROI-statistics:
+ROI-statistics.
+Any missing data will be skipped (setting them to NaN should
+have happened in a previous function).
+This function performs the following steps:
 1) First remove previous TSV-file, if already existed
 printing to a TSV file can be tricky if it is opened by
 Excel. Make sure to close previous versions first,
@@ -3146,13 +3236,14 @@ A normal distribution of the data with an unknown variance is assumed.
 #### Format
 
 ```matlab
-[DataOut] = xASL_str2num(DataIn)
+[DataOut] = xASL_str2num(DataIn[, bKeepCell, bReplaceNonNumerical])
 ```
 
 #### Description
-str2num wrapper, replacing 'n/a' with NaN (BIDS convention)
-and converting only strings to numbers. Also allows inputting cells.
-
+str2num wrapper, which only converts strings to numbers, and allows inputting cells.
+Also, it replaces 'n/a' with NaN (BIDS convention). And it
+has some other functionality as described in bKeepCell &
+bReplaceNonNumerical above.
 
 
 ## Visualization
