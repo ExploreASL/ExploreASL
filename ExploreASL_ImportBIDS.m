@@ -107,7 +107,7 @@ function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodule
 % EXAMPLE: ExploreASL_ImportBIDS('//MyDisk/MyStudy');
 %          ExploreASL_ImportBIDS('//MyDisk/MyStudy','imPar.json','studyHiQ.json');
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 %% 1. Initialize the parameters
 
@@ -204,10 +204,15 @@ end
 if ~isfield(imPar,'RawRoot') || isempty(imPar.RawRoot)
 	imPar.RawRoot = fpath;
 end
+if ~isfield(imPar,'BidsRoot') || isempty(imPar.BidsRoot)
+	imPar.BidsRoot = fpath;
+end
+
 
 % Finalize the directories
 imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID, 'raw'); % default name
 imPar.AnalysisRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'analysis');
+imPar.BidsRoot = fullfile(imPar.BidsRoot,imPar.studyID,'bids');
 
 % Specify the tokens
 if ~isfield(imPar,'folderHierarchy')
@@ -258,19 +263,76 @@ end
 
 %% 4. Run the NIIX to ASL-BIDS
 if bRunSubmodules(2)
+	% Loads the general configuration necessary for the conversion and BIDS saving
+	bidsPar = xASL_bids_Config();
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Load the study parameters + dataset description
+	if ~exist(studyParPath,'file')
+		warning('Study-par file is not provided.');
+		studyPar = struct;
+	else
+		%studyParPath = xASL_init_ConvertM2JSON(studyParPath); % convert .m to .json - outdated import from an m-file
+		studyPar = xASL_import_json(studyParPath);
+	end
+	
+	% The Name has to be always assigned
+	if ~isfield(studyPar,'Name')
+		studyPar.Name = imPar.studyID;
+	end
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Create the study description output and verify that all is there
+	datasetDescription = ExploreASL_ImportBIDS_datasetDescription(studyPar,bidsPar.BIDSVersion,bidsPar.datasetDescription);
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Make the output directory and save the description
+		
+	if ~exist(fullfile(imPar.BidsRoot),'dir')
+		mkdir(fullfile(imPar.BidsRoot));
+	end
+	
+	spm_jsonwrite(fullfile(imPar.BidsRoot,[bidsPar.datasetDescription.filename '.json']),datasetDescription);
+
+	
+	
+		
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 
+	% First gather data from individual subjects
+	
+	% then start recalculating missing info and merging individual and study parameters
 
+	% Do the data verification and dependencies right before saving 
+	
+	% use the special structures and conditional structures
+	
+	% Also report errors only before saving
 
+	% Parse and extend the ASL context
+	
+	% After final comparison, need to remove the random study descriptions and rename it correctly
 
-
-
-
-
-
-
-
-
+	% Automatic reading of more ASL parameters
+	
+	% Automatic control/label order extraction
 
 
 
@@ -941,4 +1003,65 @@ end
 	end
 	
 	fprintf('\n');
+end
+
+%-----------------------------------------------------------------
+% Create the study description output and verify that all is there
+%-----------------------------------------------------------------
+function datasetDescription = ExploreASL_ImportBIDS_datasetDescription(studyPar,BIDSVersion,datasetDescriptionConfig)
+
+% Check and assign the REQUIRED fields
+for iList = 1:length(datasetDescriptionConfig.Required)
+	% Skip name and BIDSVersion as these were treated previously
+	if isfield(studyPar,datasetDescriptionConfig.Required{iList})
+		datasetDescription.(datasetDescriptionConfig.Required{iList}) = studyPar.(datasetDescriptionConfig.Required{iList});
+		if strcmp(datasetDescriptionConfig.Required{iList},'BIDSVersion') && ~strcmp(BIDSVersion,studyPar.BIDSVersion)
+			warning('Provided BIDS version is not consistent with the current BIDS-version-config.');
+		end
+	else
+		% The BIDS version can be provided separately
+		if strcmp(datasetDescriptionConfig.Required{iList},'BIDSVersion')
+			datasetDescription.BIDSVersion = BIDSVersion;
+		else
+			error(['Missing a required field for datasetDescription: ' datasetDescriptionConfig.Required{iList}]);
+		end
 	end
+end
+		
+% Browse through the recommended fields and report missing ones
+listMissingFiles = '';
+for iList = 1:length(datasetDescriptionConfig.Recommended)
+	if isfield(studyPar,datasetDescriptionConfig.Recommended{iList})
+		datasetDescription.(datasetDescriptionConfig.Recommended{iList}) = studyPar.(datasetDescriptionConfig.Recommended{iList});
+	else
+		if length(listMissingFiles)>1
+			listMissingFiles = [listMissingFiles ', '];
+		end
+		listMissingFiles = [listMissingFiles datasetDescriptionConfig.Recommended{iList}];
+	end
+end
+if length(listMissingFiles)>1
+	% Report the missing fields
+	fprintf('dataset_description.json is missing the following RECOMMENDED fields: \n%s\n',listMissingFiles);
+end
+	
+% Browse through the optional fields and report missing ones
+listMissingFiles = '';
+for iList = 1:length(datasetDescriptionConfig.Optional)
+	if isfield(studyPar,datasetDescriptionConfig.Optional{iList})
+		datasetDescription.(datasetDescriptionConfig.Optional{iList}) = studyPar.(datasetDescriptionConfig.Optional{iList});
+	else
+		if length(listMissingFiles)>1
+			listMissingFiles = [listMissingFiles ', '];
+		end
+		listMissingFiles = [listMissingFiles datasetDescriptionConfig.Optional{iList}];
+	end
+end
+
+if length(listMissingFiles)>1
+	% Report the missing fields
+	fprintf('dataset_description.json is missing the following OPTIONAL fields: \n%s\n',listMissingFiles);
+end
+
+end
+	

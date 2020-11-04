@@ -1,4 +1,4 @@
-%% Load the zeroed-out DICOMs the BIDS format and fill in all the missing info to the JSON
+%% Load the DICOMs to the BIDS format and fill in all the missing info to the JSON
 ExploreASL_Initialize([],false);
 
 % FILLIN
@@ -82,7 +82,6 @@ for ii = 1:length(fList)
 end
 
 
-%%
 
 
 
@@ -91,131 +90,23 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%%
-lRMFields = {'InstitutionName' 'InstitutionalDepartmentName' 'InstitutionAddress' 'DeviceSerialNumber' 'StationName' 'ProcedureStepDescription' 'SeriesDescription' 'ProtocolName'...
-	         'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'UsePhilipsFloatNotDisplayScaling',...
-			 'RWVSlope' 'PhilipsRWVIntercept',...
-			 'RescaleSlopeOriginal' 'RescaleSlope'    'MRScaleSlope'      'RescaleIntercept',... % Fields to exclude
-			 'Modality', 'ImagingFrequency', 'PatientPosition','MRAcquisitionType','ImageType','PhaseEncodingPolarityGE',... % Additional fields to remove by Patricia
-			 'SeriesNumber','AcquisitionTime','AcquisitionNumber','SliceThickness','SpacingBetweenSlices','SAR',...
-			 'PercentPhaseFOV','AcquisitionMatrixPE','ReconMatrixPE','PixelBandwidth','ImageOrientationPatientDICOM',...
-			 'InPlanePhaseEncodingDirectionDICOM','ConversionSoftware','ConversionSoftwareVersion','AcquisitionMatrix',...
-			 'EchoTrainLength','PhaseEncodingSteps','BodyPartExamined','ShimSetting','TxRefAmp','PhaseResolution',...
-			 'RefLinesPE','BandwidthPerPixelPhaseEncode','ImageComments','ConsistencyInfo','WipMemBlock','Interpolation2D',...
-			 'SaturationStopTime','BaseResolution','DerivedVendorReportedEchoSpacing','RawImage','PhaseOversampling','BolusDuration'}; % Fields to exclude
-lRMFieldsASL = {'InversionTime','LabelOffset','PostLabelDelay','NumRFBlocks','RFGap','MeanGzx10','PhiAdjust'}; % Fields to exclude from ASL only
-% The correct order of fields in the JSON
-fieldOrder = {'Manufacturer','ManufacturersModelName','DeviceSerialNumber','StationName','SoftwareVersions','HardcopyDeviceSoftwareVersion',...%BIDS fields
-	          'MagneticFieldStrength','ReceiveCoilName','ReceiveCoilActiveElements','GradientSetType','MRTransmitCoilSequence','MatrixCoilMode',...
-			  'CoilCombinationMethod','PulseSequenceType','ScanningSequence','SequenceVariant','ScanOptions','SequenceName','PulseSequenceDetails',...
-			  'NonlinearGradientCorrection','NumberShots','ParallelReductionFactorInPlane','ParallellAcquisitionTechnique','PartialFourier',...
-			  'PartialFourierDirection','PhaseEncodingDirection','EffectiveEchoSpacing','TotalReadoutTime','EchoTime','InversionTime','SliceTiming',...
-			  'SliceEncodingDirection','DwellTime','FlipAngle','MultibandAccelerationFactor','NegativeContrast','AnatomicalLandmarkCoordinates',...
-			  'RepetitionTime','VolumeTiming','TaskName','Units',... % And ASL fields
-			  'LabelingType','PostLabelingDelay','BackgroundSuppression','M0','VascularCrushing','AcquisitionVoxelSize','TotalAcquiredVolumes',...
-			  'BackgroundSuppressionNumberPulses','BackgroundSuppressionPulseTime','VascularCrushingVenc','LabelingLocationDescription',...
-			  'LabelingOrientation','LabelingDistance','LookLocker','LabelingEfficiency','PCASLType','CASLType','LabelingDuration',...
-			  'LabelingPulseAverageGradient','LabelingPulseMaximumGradient','LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle',...
-			  'LabelingPulseInterval','PASLType','LabelingSlabThickness','BolusCutOffFlag','BolusCutOffDelayTime',...
-			  'BolusCutOffTechnique'};
-removeEmptyFields = {'EffectiveEchoSpacing','TotalReadoutTime'};
-lAnat = {'T1w' 'T2w' 'FLAIR'}; % A list of anatomical scans to include
-aslcontextStr = 'aslcontext';
-labelStr = 'label';
-controlStr = 'control';
-m0scanStr = 'm0scan';
-cbfStr = 'cbf';
-deltamStr = 'deltam';
 
 %% Specify the missing study parameters
 % This is the most important part - it takes the imported JSONs and fills in all the study specific information that is currently still missing.
 % Several parameters are automatically retrieved from the DICOMs, some are retrieved from Data_Par.m just below. And the rest needs to be filled in.
 for ii = 1:length(fList)
-	% Load the data-par
-
-	%clear x;
-	dataParPath = fullfile(parPath,importStr{ii}.dirName);
-
-	if exist([dataParPath,'.mat'],'file')
-        TempVar = load([dataParPath,'.mat']);
-        FieldN = fields(TempVar);
-        x = TempVar.(FieldN{1});
-    elseif exist([dataParPath,'.json'],'file')
-        % JSON import
-        x = xASL_import_json([dataParPath,'.json']);
-    elseif exist([dataParPath,'.m'],'file')
-		PathJSON = xASL_init_ConvertM2JSON([dataParPath,'.m']); % convert .m to .json
-		x = xASL_import_json(PathJSON);
-		xASL_delete([dataParPath,'.m']);
-	end
-
-	% Fill in the generic text for the JSON
-	descriptionJSON{ii}.Name = fList{ii};
-	descriptionJSON{ii}.BIDSVersion = '1.5.0';
-	descriptionJSON{ii}.DatasetType = 'raw';
-	descriptionJSON{ii}.License = 'RandomText';
-	descriptionJSON{ii}.Authors = {'RandomText'};
-	descriptionJSON{ii}.Acknowledgements = 'RandomText';
-	descriptionJSON{ii}.HowToAcknowledge = 'Please cite this paper: https://www.ncbi.nlm.nih.gov/pubmed/001012092119281';
-	descriptionJSON{ii}.Funding = {'RandomText'};
-	descriptionJSON{ii}.EthicsApprovals = {'RandomText'};
-	descriptionJSON{ii}.ReferencesAndLinks = {'RandomText'};
-	descriptionJSON{ii}.DatasetDOI = 'RandomText';
-
-	% Save the x-structure for the study
-	%importStr{ii}.x = x;
-	importStr{ii}.x = xASL_bids_parms2BIDS(x, [], 1, []);
+	
 
 	% Defaults to be overwritten
 	importStr{ii}.par = [];
 	importStr{ii}.par.VascularCrushing = false;
 	importStr{ii}.par.LabelingLocationDescription = 'Random description';
-	%importStr{ii}.par.LabelingOrientation = 'Random description';
 	importStr{ii}.par.LabelingDistance = 40;
 
 	importStr{ii}.par.ASLContext = '';
 	switch (fList{ii})
-		% FILLIN
-		% - the basic information (ASLContext, LabelingType) needs to be filled for all
-		%   - See 'Siemens_PCASL_2DEPI_AD' and 'Siemens_PCASL_3DGRASE_AD' for different types of Control/label order.
-		%   - For PASL examples, see 'Siemens_PASL_3DGRASE_AD2' or 'Siemens_PASL_2DEPI_noBsup_AD2'
-		%   - Complete info for pCASL is in 'GE_PCASL_2DEPI_volunteer'
-		case 'StudyName'
-			%importStr{ii}.par.ASLContext = '(Label+Control)*23';
-			for cc = 1:23, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
-			importStr{ii}.par.LabelingType = 'PCASL';
-
 		case 'Siemens_PCASL_volunteer'
-			importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];
+			importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.LabelingPulseInterval = 0.4/1000;
 			importStr{ii}.par.LabelingPulsesFlipAngle = 25;
@@ -226,7 +117,7 @@ for ii = 1:length(fList)
 			importStr{ii}.par.BackgroundSuppressionNumberPulses = 2;
 
 		case 'Siemens_PASL_multiTI'
-			for cc = 1:10,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:10,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.NumberSegments = 2;
 			importStr{ii}.par.BolusCutOffFlag = true;
@@ -236,14 +127,14 @@ for ii = 1:length(fList)
 
 		case 'Philips_PCASL_3DGRASE_functional'
 			importStr{ii}.par.Units = 'mL/100g/min';
-			%importStr{ii}.par.ASLContext = cbfStr;
-			importStr{ii}.par.ASLContext = sprintf('%s\n',cbfStr);
+			%importStr{ii}.par.ASLContext = bidsPar.strCbf;
+			importStr{ii}.par.ASLContext = sprintf('%s\n',bidsPar.strCbf);
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.NumberSegments = 5;
 
 		case 'Siemens_PASL_singleTI'
-			importStr{ii}.par.ASLContext = sprintf('%s\n',m0scanStr);
-			for cc = 1:45,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			importStr{ii}.par.ASLContext = sprintf('%s\n',bidsPar.strM0scan);
+			for cc = 1:45,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 0.9;
@@ -251,29 +142,29 @@ for ii = 1:length(fList)
 
 		case 'Siemens_PCASL_2DEPI_AD'
 			%importStr{ii}.par.ASLContext = '(Label+Control)*23';
-			for cc = 1:46, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:46, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Siemens_PASL_3DGRASE_AD'
 			importStr{ii}.par.LabelingType = 'PASL';
-			%importStr{ii}.par.ASLContext = deltamStr;
-			importStr{ii}.par.ASLContext = sprintf('%s\n',deltamStr);
+			%importStr{ii}.par.ASLContext = bidsPar.strDeltaM;
+			importStr{ii}.par.ASLContext = sprintf('%s\n',bidsPar.strDeltaM);
 			importStr{ii}.par.BolusCutOffFlag = false;
 			
 		case 'Siemens_PCASL_3DGRASE_AD'
 			%importStr{ii}.par.ASLContext = 'M0+((Label+Control)*12)';
-			importStr{ii}.par.ASLContext = sprintf('%s\n',m0scanStr);
-			for cc = 1:12, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			importStr{ii}.par.ASLContext = sprintf('%s\n',bidsPar.strM0scan);
+			for cc = 1:12, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Siemens_PCASL_2DEPI_pharma'
 			%importStr{ii}.par.ASLContext = '(Label+Control)*44';
-			for cc = 1:44, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:44, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Siemens_PASL_3DGRASE_AD2'
 			%importStr{ii}.par.ASLContext = 'Label+Control';
-			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',labelStr,controlStr);
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl);
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.LabelingLocationDescription = 'Labeling with FAIR';
 			importStr{ii}.par.BolusCutOffFlag = true;
@@ -282,34 +173,34 @@ for ii = 1:length(fList)
 
 		case 'Philips_PCASL_3DGRASE_volunteer'
 			%importStr{ii}.par.ASLContext = '(M0*2)+((Label+Control)*7)';
-			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',m0scanStr,m0scanStr);
-			for cc = 1:7, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',bidsPar.strM0scan,bidsPar.strM0scan);
+			for cc = 1:7, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Siemens_PCASL_3DGRASE_volunteer'
 			%importStr{ii}.par.ASLContext = 'M0+((Label+Control)*15)';
-			importStr{ii}.par.ASLContext = sprintf('%s\n',m0scanStr);
-			for cc = 1:15, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			importStr{ii}.par.ASLContext = sprintf('%s\n',bidsPar.strM0scan);
+			for cc = 1:15, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Siemens_PCASL_3DGRASE_vascular'
 			%importStr{ii}.par.ASLContext = 'DeltaM*15';
-			for cc = 1:90, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',deltamStr)];end
+			for cc = 1:90, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',bidsPar.strDeltaM)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Philips_PCASL_2DEPI_pharma'
 			%importStr{ii}.par.ASLContext = '(Label+Control)*38';
-			for cc = 1:38, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:38, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Philips_PCASL_2DEPI_pharma2'
 			%importStr{ii}.par.ASLContext = '(Label+Control)*32';
-			for cc = 1:32, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:32, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case {'Philips_PCASL_2DEPI_Intera_volunteer','Philips_PCASL_2DEPI_Ingenia_volunteer'}
 			%importStr{ii}.par.ASLContext = '(Label+Control)*75';
-			for cc = 1:75, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:75, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case {'Philips_PCASL_2DEPI_dummyLL' 'Philips_PCASL_2DEPI_dummyMultiPLD' 'Philips_PCASL_2DEPI_dummyQUASAR'}
@@ -317,24 +208,24 @@ for ii = 1:length(fList)
 
 		case {'Philips_PCASL_2DEPI_Bsup_AD1','Philips_PCASL_2DEPI_noBsup_AD'}
 			%importStr{ii}.par.ASLContext = '(Label+Control)*40';
-			for cc = 1:40, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:40, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case {'Philips_PCASL_2DEPI_Bsup_AD2','Philips_PCASL_2DEPI_Bsup_AD3'}
 			%importStr{ii}.par.ASLContext = '(Label+Control)*30';
-			for cc = 1:30, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:30, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'Philips_PCASL_2DEPI_Bsup_AD4'
 			importStr{ii}.par.LabelingType = 'PCASL';
-			%importStr{ii}.par.ASLContext = deltamStr;
-			importStr{ii}.par.ASLContext = sprintf('%s\n',deltamStr);
+			%importStr{ii}.par.ASLContext = bidsPar.strDeltaM;
+			importStr{ii}.par.ASLContext = sprintf('%s\n',bidsPar.strDeltaM);
 			importStr{ii}.par.LabelingEfficiency = 0.83;
 
 		case {'Siemens_PASL_2DEPI_noBsup_AD2','Siemens_PASL_2DEPI_noBsup_AD'}
 			%importStr{ii}.par.ASLContext = '(Label+Control)*31';(31*L+C)+L
-			for cc = 1:31, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
-			importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',labelStr)];
+			for cc = 1:31, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
+			importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',bidsPar.strLabel)];
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 0.6;
@@ -343,7 +234,7 @@ for ii = 1:length(fList)
 
 		case {'Siemens_PASL_3DGRASE_Prisma_Bsup_AD1','Siemens_PASL_3DGRASE_Prisma_Bsup_AD2'}
 			%importStr{ii}.par.ASLContext = '(Label+Control)*10';
-			for cc = 1:10, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:10, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = 0;
@@ -351,7 +242,7 @@ for ii = 1:length(fList)
 
 		case 'Siemens_PASL_3DGRASE_Prisma_Bsup_AD3'
 			%importStr{ii}.par.ASLContext = '(Label+Control)*2';
-			for cc = 1:2, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:2, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PASL';
 			importStr{ii}.par.BolusCutOffFlag = true;
 			importStr{ii}.par.BolusCutOffDelayTime = [0 200 400]/1000;
@@ -360,25 +251,25 @@ for ii = 1:length(fList)
 
 		case 'GE_PCASL_3Dspiral_Product_pharma'
 			importStr{ii}.par.Units = 'mL/100g/min';
-			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',cbfStr,m0scanStr);
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',bidsPar.strCbf,bidsPar.strM0scan);
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'GE_PCASL_3Dspiral_Product_volunteer'
 			importStr{ii}.par.Units = 'mL/100g/min';
-			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',m0scanStr,cbfStr);
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',bidsPar.strM0scan,bidsPar.strCbf);
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case {'GE_PCASL_3Dspiral_WIP_pharma',...
 			  'Philips_PCASL_3DGRASE_R5.4_TopUp'}
 			importStr{ii}.par.Units = 'mL/100g/min';
-			%importStr{ii}.par.ASLContext = cbfStr;
-			importStr{ii}.par.ASLContext = sprintf('%s\n',cbfStr);
+			%importStr{ii}.par.ASLContext = bidsPar.strCbf;
+			importStr{ii}.par.ASLContext = sprintf('%s\n',bidsPar.strCbf);
 			importStr{ii}.par.LabelingType = 'PCASL';
 
 		case 'GE_PCASL_3Dspiral_WIP_volunteer'
 			importStr{ii}.par.Units = 'mL/100g/min';
 			%importStr{ii}.par.ASLContext = 'CBF+M0';
-			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',cbfStr,m0scanStr);
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',bidsPar.strCbf,bidsPar.strM0scan);
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [4 4 8];
 			importStr{ii}.par.LabelingPulseAverageGradient = 0.6;
@@ -388,23 +279,23 @@ for ii = 1:length(fList)
 			importStr{ii}.par.PCASLType = 'balanced';
 
 		case 'GE_PCASL_3Dspiral_volunteer'
-			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',m0scanStr,deltamStr);
+			importStr{ii}.par.ASLContext = sprintf('%s\n%s\n',bidsPar.strM0scan,bidsPar.strDeltaM);
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [4 4 8];
 
 		case 'Philips_PCASL_2DEPI_volunteer3'
-			for cc = 1:35, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',controlStr,labelStr)];end
+			for cc = 1:35, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strControl,bidsPar.strLabel)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [3.75 3.75 5];
 
 		case 'Siemens_PCASL_3DGRASE_volunteer2'
-			for cc = 1:8, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',controlStr,labelStr)];end
+			for cc = 1:8, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strControl,bidsPar.strLabel)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [3.4 3.4 4];
 
 		case {'Philips_PCASL_2DEPI_glioma','Philips_PCASL_2DEPI_GBM'}
 			%importStr{ii}.par.ASLContext = '(Control+Label)*30';
-			for cc = 1:30, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',controlStr,labelStr)];end
+			for cc = 1:30, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strControl,bidsPar.strLabel)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.LabelingPulseAverageGradient = 0.7;
 			importStr{ii}.par.LabelingPulseMaximumGradient = 7;
@@ -414,7 +305,7 @@ for ii = 1:length(fList)
 
 		case {'GE_PCASL_2DEPI_volunteer','Philips_PCASL_2DEPI_volunteer_1','Philips_PCASL_2DEPI_volunteer_2','Siemens_PCASL_2DEPI_volunteer'}
 			%importStr{ii}.par.ASLContext = '(Control+Label)*70';
-			for cc = 1:70, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',controlStr,labelStr)];end
+			for cc = 1:70, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strControl,bidsPar.strLabel)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.LabelingLocationDescription = 'Fixed, 9 cm below ACPC';
 			importStr{ii}.par.LabelingPulseAverageGradient = 0.6;
@@ -528,8 +419,8 @@ for ii = 1:length(fList)
 		case 'Philips_PCASL_2DEPI_dummyLL'
 			%importStr{ii}.par.ASLContext = '(Label*15+Control*15)*5';
 			for cc = 1:5
-				for dd=1:15,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',labelStr)];end
-				for dd=1:15,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',controlStr)];end
+				for dd=1:15,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',bidsPar.strLabel)];end
+				for dd=1:15,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',bidsPar.strControl)];end
 			end
 			importStr{ii}.par.FlipAngle = 25;
 			importStr{ii}.par.LookLocker = true;
@@ -537,14 +428,14 @@ for ii = 1:length(fList)
 
 		case 'Philips_PCASL_2DEPI_dummyMultiPLD'
 			%importStr{ii}.par.ASLContext = '(Label+Control)*75';
-			for cc = 1:75, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',labelStr,controlStr)];end
+			for cc = 1:75, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.PostLabelingDelay = repmat([500 500 1000 1000 1500 1500 1800 1800 2200 2200],[1 15])/1000;
 
 		case 'Philips_PCASL_2DEPI_dummyQUASAR'
 			%importStr{ii}.par.ASLContext = '(Label*15+Control*15)*5';
 			for cc = 1:5
-				for dd=1:15,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',labelStr)];end
-				for dd=1:15,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',controlStr)];end
+				for dd=1:15,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',bidsPar.strLabel)];end
+				for dd=1:15,importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n',bidsPar.strControl)];end
 			end
 			importStr{ii}.par.FlipAngle = [25*ones(1,120),12*ones(1,30)];
 			importStr{ii}.par.LookLocker = true;
@@ -557,8 +448,8 @@ end
 
 % Create the structure with the correct field order
 fieldOrderStruct = [];
-for ii=1:length(fieldOrder)
-	fieldOrderStruct.(fieldOrder{ii}) = '';
+for ii=1:length(bidsPar.listFieldOrder)
+	fieldOrderStruct.(bidsPar.listFieldOrder{ii}) = '';
 end
 
 %% Go through all studies and check all the M0 and ASLs and modify the JSONs
@@ -568,12 +459,7 @@ for ii = 1:length(fList)
 	% Make a copy of the par to the Flavors
 	importStr{ii}.flavors = importStr{ii}.par;
 
-	% Make an output directory
-	if ~exist(fullfile(finalPath,importStr{ii}.dirName),'dir')
-		mkdir(fullfile(finalPath,importStr{ii}.dirName));
-	end
 
-	spm_jsonwrite(fullfile(finalPath,importStr{ii}.dirName,'dataset_description.json'),descriptionJSON{ii});
 
 	% Go through all subjects
 	fSubs = xASL_adm_GetFileList(fullfile(outputPath,importStr{ii}.dirName,'analysis'),[],false,[],true);
@@ -587,7 +473,7 @@ for ii = 1:length(fList)
 		end
 
 		% Go throught the list of anat files
-		for iiAnat = lAnat
+		for iiAnat = bidsPar.listAnatTypes
 			% Check if it exists
 			anatPath = '';
 			if xASL_exist(fullfile(outputPath,importStr{ii}.dirName,'analysis',fSubs{jj},[iiAnat{1},'.nii']),'file')
@@ -616,8 +502,8 @@ for ii = 1:length(fList)
 				for fn = fieldnames(jsonAnat)'
 					% Fields to skip
 					bCP = 1;
-					for ll=1:length(lRMFields)
-						if strcmp(lRMFields{ll},fn{1})
+					for ll=1:length(bidsPar.listFieldsRemoveGeneral)
+						if strcmp(bidsPar.listFieldsRemoveGeneral{ll},fn{1})
 							bCP = 0;
 						end
 					end
@@ -627,7 +513,7 @@ for ii = 1:length(fList)
 				end
 
 				% Save the JSON
-				jsonLocal = finalJsonCheck(jsonLocal,fieldOrderStruct,removeEmptyFields);
+				jsonLocal = finalJsonCheck(jsonLocal,fieldOrderStruct,bidsPar.listRemoveIfEmpty);
 				spm_jsonwrite(fullfile(finalPath,importStr{ii}.dirName,['sub-' subLabel],'anat',['sub-' subLabel '_' iiAnat{1} '.json']),jsonLocal);
 			end
 		end
@@ -727,13 +613,13 @@ for ii = 1:length(fList)
 				for fn = fieldnames(jsonDicom)'
 					% Fields to skip
 					bCP = 1;
-					for ll=1:length(lRMFields)
-						if strcmp(lRMFields{ll},fn{1})
+					for ll=1:length(bidsPar.listFieldsRemoveGeneral)
+						if strcmp(bidsPar.listFieldsRemoveGeneral{ll},fn{1})
 							bCP = 0;
 						end
 					end
-					for ll=1:length(lRMFieldsASL)
-						if strcmp(lRMFieldsASL{ll},fn{1})
+					for ll=1:length(bidsPar.listFieldsRemoveASL)
+						if strcmp(bidsPar.listFieldsRemoveASL{ll},fn{1})
 							bCP = 0;
 						end
 					end
@@ -845,7 +731,7 @@ for ii = 1:length(fList)
 						jsonLocal.M0 = true;
 					elseif xASL_exist(fullfile(inSesPath,'M0.nii'))
 						if length(fSes)>1
-							%jsonLocal.M0 = fullfile(importStr{ii}.dirName,['sub-' subLabel],['ses-' sesLabel],'asl',['sub-' subLabel sesLabelUnd '_' m0scanStr '.nii.gz']);
+							%jsonLocal.M0 = fullfile(importStr{ii}.dirName,['sub-' subLabel],['ses-' sesLabel],'asl',['sub-' subLabel sesLabelUnd '_' bidsPar.strM0scan '.nii.gz']);
 							jsonLocal.M0 = fullfile('perf',['sub-' subLabel sesLabelUnd]);
 							bJsonLocalM0isFile = 1;
 						else
@@ -854,7 +740,7 @@ for ii = 1:length(fList)
 							bJsonLocalM0isFile = 1;
 						end
 					else
-						if ~isempty(strfind(importStr{ii}.par.ASLContext,m0scanStr))
+						if ~isempty(strfind(importStr{ii}.par.ASLContext,bidsPar.strM0scan))
 							jsonLocal.M0 = true;
 						else
 							jsonLocal.M0 = false;
@@ -883,7 +769,7 @@ for ii = 1:length(fList)
 				end
 
 				% Remove the AslContext field and save it as a separate file
-				fContext = fopen([aslOutLabel '_' aslcontextStr '.tsv'],'w+');
+				fContext = fopen([aslOutLabel '_' bidsPar.strAslContext '.tsv'],'w+');
 				fwrite(fContext,sprintf('volume_type\n'));
 				fwrite(fContext,jsonLocal.ASLContext);
 				fclose(fContext);
@@ -904,11 +790,11 @@ for ii = 1:length(fList)
 
 								if bJsonLocalM0isFile
 									%jsonLocal.M0 = [jsonLocal.M0 nnStrOut '.nii.gz,' jsonLocal.M0 '_dir-pa' '.nii.gz'];
-									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '_' m0scanStr '.nii.gz'];
+									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '_' bidsPar.strM0scan '.nii.gz'];
 								end
 							else
 								if bJsonLocalM0isFile
-									jsonLocal.M0 = [jsonLocal.M0 '_' m0scanStr '.nii.gz'];
+									jsonLocal.M0 = [jsonLocal.M0 '_' bidsPar.strM0scan '.nii.gz'];
 								end
 								nnStrOut = '';
 								tagPhaseEncodingDirection = [];
@@ -919,7 +805,7 @@ for ii = 1:length(fList)
 							nnStrIn = 'PERev';
 							nnStrOut = '_dir-pa';
 							tagPhaseEncodingDirection = 'j';
-							tagIntendedFor = fullfile('perf',['sub-' subLabel sesLabelUnd '_dir-ap' '_' m0scanStr '.nii.gz']);
+							tagIntendedFor = fullfile('perf',['sub-' subLabel sesLabelUnd '_dir-ap' '_' bidsPar.strM0scan '.nii.gz']);
 
 							if isfield(importStr{ii}.par,'TotalReadoutTime')
 								tagTotalReadoutTime = importStr{ii}.par.TotalReadoutTime;
@@ -969,13 +855,13 @@ for ii = 1:length(fList)
 							for fn = fieldnames(jsonM0)'
 								% Fields to skip
 								bCP = 1;
-								for ll=1:length(lRMFields)
-									if strcmp(lRMFields{ll},fn{1})
+								for ll=1:length(bidsPar.listFieldsRemoveGeneral)
+									if strcmp(bidsPar.listFieldsRemoveGeneral{ll},fn{1})
 										bCP = 0;
 									end
 								end
-								for ll=1:length(lRMFieldsASL)
-									if strcmp(lRMFieldsASL{ll},fn{1})
+								for ll=1:length(bidsPar.listFieldsRemoveASL)
+									if strcmp(bidsPar.listFieldsRemoveASL{ll},fn{1})
 										bCP = 0;
 									end
 								end
@@ -1047,26 +933,26 @@ for ii = 1:length(fList)
 							% if scaling modified then save instead of copy
 							if scaleFactor || size(imM0,4) == 1
 								if nn == 1
-									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.nii.gz']),imM0,[],1,[]);
+									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' bidsPar.strM0scan '.nii.gz']),imM0,[],1,[]);
 								else
-									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.nii.gz']),imM0,[],1,[]);
+									xASL_io_SaveNifti(fullfile(inSesPath,['M0' nnStrIn '.nii']),fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd nnStrOut '_' bidsPar.strM0scan '.nii.gz']),imM0,[],1,[]);
 								end
 							else
 								% Copy the M0
 								if nn == 1
 									xASL_Copy(fullfile(inSesPath,['M0' nnStrIn '.nii']),...
-										fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.nii.gz']));
+										fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' bidsPar.strM0scan '.nii.gz']));
 								else
 									xASL_Copy(fullfile(inSesPath,['M0' nnStrIn '.nii']),...
-										fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.nii.gz']));
+										fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd nnStrOut '_' bidsPar.strM0scan '.nii.gz']));
 								end
 							end
 							% Save JSON to new dir
-							jsonM0Write = finalJsonCheck(jsonM0Write,fieldOrderStruct,removeEmptyFields);
+							jsonM0Write = finalJsonCheck(jsonM0Write,fieldOrderStruct,bidsPar.listRemoveIfEmpty);
 							if nn == 1
-								spm_jsonwrite(fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.json']),jsonM0Write);
+								spm_jsonwrite(fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' bidsPar.strM0scan '.json']),jsonM0Write);
 							else
-								spm_jsonwrite(fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd nnStrOut '_' m0scanStr '.json']),jsonM0Write);
+								spm_jsonwrite(fullfile(outSesPath,'fmap',['sub-' subLabel sesLabelUnd nnStrOut '_' bidsPar.strM0scan '.json']),jsonM0Write);
 							end
 						end
 					end
@@ -1076,7 +962,7 @@ for ii = 1:length(fList)
 					end
 				end
 				% Save JSON to new dir
-				jsonLocal = finalJsonCheck(jsonLocal,fieldOrderStruct,removeEmptyFields);
+				jsonLocal = finalJsonCheck(jsonLocal,fieldOrderStruct,bidsPar.listRemoveIfEmpty);
 				spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
 
 			end
@@ -1102,7 +988,7 @@ for ii = 1:3
 end
 
 %%
-function jsonOut = finalJsonCheck(jsonIn,fieldOrderStruct,removeEmptyFields)
+function jsonOut = finalJsonCheck(jsonIn,fieldOrderStruct,listRemoveIfEmpty)
 jsonOut = jsonIn;
 if isfield(jsonOut,'CoilString')
 	switch (jsonOut.Manufacturer)
@@ -1132,10 +1018,10 @@ if isfield(jsonOut,'PhaseEncodingAxis')% && strcmpi(jsonOut.Manufacturer,'Philip
 	jsonOut = rmfield(jsonOut,'PhaseEncodingAxis');
 end
 
-for ii = 1:length(removeEmptyFields)
-	if isfield(jsonOut,removeEmptyFields{ii})
-		if isempty(jsonOut.(removeEmptyFields{ii}))
-			jsonOut = rmfield(jsonOut,removeEmptyFields{ii});
+for ii = 1:length(listRemoveIfEmpty)
+	if isfield(jsonOut,listRemoveIfEmpty{ii})
+		if isempty(jsonOut.(listRemoveIfEmpty{ii}))
+			jsonOut = rmfield(jsonOut,listRemoveIfEmpty{ii});
 		end
 	end
 end
