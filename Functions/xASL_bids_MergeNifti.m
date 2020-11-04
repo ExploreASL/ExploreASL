@@ -1,5 +1,6 @@
 function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %xASL_bids_MergeNifti Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible
+%
 % FORMAT: NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 % 
 % INPUT:
@@ -8,6 +9,7 @@ function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %
 % OUTPUT:
 % NiftiPaths   - return either the same list of files if nothing was done or the path to the newly created file
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function takes a list of M0 or ASL4D files and concatenates them together in a longer 4D volume if possible
 %              following certain patterns: works only with 3D and 4D files; all files in the list must have the same size of the
@@ -29,6 +31,8 @@ function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %              4. xASL_bids_MergeNifti_Merge Merge NiftiPaths & save to pathMerged
 %              5. xASL_bids_MergeNifti_Delete Delete NiftiPaths and associated JSONs
 %              6. xASL_bids_MergeNifti_RenameParms Find *_parms.m files in directory and shorten to provided name
+%
+% EXAMPLE:     n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
