@@ -1,20 +1,19 @@
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit, DandD_FileExplorer2ListWidget
+from ExploreASL_GUI.xASL_GUI_HelperFuncs_StringOps import set_os_dependent_text
 import json
 import os
+from glob import iglob
 from tdda import rexpy
+from more_itertools import peekable
 
 
 class xASL_Parms(QMainWindow):
     def __init__(self, parent_win=None):
         # Parent window is fed into the constructor to allow for communication with parent window devices
         super().__init__(parent=parent_win)
-        if parent_win is not None:
-            self.config = self.parent().config
-        else:
-            with open("ExploreASL_GUI_masterconfig.json") as f:
-                self.config = json.load(f)
+        self.config = self.parent().config
 
         # Window Size and initial visual setup
         self.setMinimumSize(512, 960)
@@ -23,7 +22,7 @@ class xASL_Parms(QMainWindow):
         self.mainlay = QVBoxLayout(self.cw)
         self.setLayout(self.mainlay)
         self.setWindowTitle("Explore ASL - Parameter File Maker")
-        # self.setWindowIcon(QIcon(os.path.join(self.config["ProjectDir"], "media", "ExploreASL_logo.png")))
+
         # Buttons for executing the fundamental functions
         btn_font = QFont()
         btn_font.setPointSize(16)
@@ -32,6 +31,7 @@ class xASL_Parms(QMainWindow):
         for btn in [self.btn_make_parms, self.btn_load_parms]:
             btn.setFont(btn_font)
             btn.setMinimumHeight(50)
+
         # TabWidget Setup and containers
         self.tab_main = QTabWidget(self.cw)
         self.mainlay.addWidget(self.tab_main)
@@ -44,47 +44,86 @@ class xASL_Parms(QMainWindow):
 
         # Misc Players
         self.import_error_logger = []
+        self.asl_json_sidecar_data = {}
+        self.can_update_slicereadouttime = False
 
         self.UI_Setup_Basic()
         self.UI_Setup_Advanced()
+
+        # After all UI is set up, make certain connections
+        self.le_study_dir.textChanged.connect(self.update_asl_json_sidecar_data)
 
     def UI_Setup_Basic(self):
         self.formlay_basic = QFormLayout(self.cont_basic)
         self.hlay_easl_dir, self.le_easl_dir, self.btn_easl_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_exploreasl_dir,
-            default=self.config['ExploreASLRoot'])
+            default='')
+        self.le_easl_dir.setToolTip("Specify the filepath to the ExploreASL folder located on your machine.\n"
+                                    "For example:\nC:\\Users\\JohnSmith\\MATLAB\\ExploreASL")
         self.le_studyname = QLineEdit(text="My Study")
+        self.le_studyname.setToolTip("Specify the name of the study you would like it to have")
+        self.chk_overwrite_for_bids = QCheckBox(checked=True)
+        self.chk_overwrite_for_bids.setToolTip("Specify whether the study dataset is in BIDS format (CHECKED)\n"
+                                               "OR whether the study dataset is in the older legacy format (UNCHECKED)")
         self.hlay_study_dir, self.le_study_dir, self.btn_study_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_study_dir,
-            default=self.config["DefaultRootDir"])
+            default='')
+        self.le_study_dir.setToolTip("Specify the filepath to the analysis folder of your study.\nFor example:\n"
+                                     "C:\\Users\\JohnSmith\\MyStudy\\analysis")
+        self.le_study_dir.setPlaceholderText("Indicate the analysis directory filepath here")
         self.le_subjectregex = QLineEdit(text='\\d+')
         self.le_subjectregex.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.lst_included_subjects = DandD_FileExplorer2ListWidget()
         self.lst_included_subjects.alert_regex.connect(self.update_regex)
+        self.lst_included_subjects.setToolTip("Drag and Drop the subjects that should be analyzed")
         self.btn_included_subjects = QPushButton("Clear Subjects", clicked=self.clear_included)
         self.lst_excluded_subjects = DandD_FileExplorer2ListWidget()
+        self.lst_excluded_subjects.setToolTip("Drag and Drop the subjects that should be exluded from analysis")
         self.btn_excluded_subjects = QPushButton("Clear Excluded", clicked=self.clear_excluded)
-        self.le_run_names = QLineEdit(text="ASL_1", placeholderText="Indicate run names, "
-                                                                    "each separated by a comma and space")
-        self.le_run_options = QLineEdit(placeholderText="Indicate option names, "
-                                                        "each separated by a comma and space")
+        self.le_run_names = QLineEdit(text="ASL_1",
+                                      placeholderText="Indicate run names, each separated by a comma and space")
+        self.le_run_names.setToolTip("Specify the names of run folders that are present within the analysis folder\n"
+                                     "AFTER an import has been performed. Run names must be separated by a comma and\n"
+                                     "one space")
+        self.le_run_options = QLineEdit(placeholderText="Indicate option names, each separated by a comma and space")
+        self.le_run_options.setToolTip("Specify the names that runs should have in the final output. For example, if\n"
+                                       "there are run folders called 'ASL_1' and 'ASL_2', you can specify here that\n"
+                                       "they should be called 'control' and 'treatment' in the final output")
         self.cmb_vendor = self.make_cmb_and_items(["Siemens", "Philips", "GE", "GE_WIP"])
+        self.cmb_vendor.setToolTip("Specify the Vendor of the scans in the analysis folder")
         self.cmb_sequencetype = self.make_cmb_and_items(["3D GRaSE", "2D EPI", "3D Spiral"])
-        self.cmb_labelingtype = self.make_cmb_and_items(["Q2 TIPS PASL", "pCASL/CASL"])
+        self.cmb_sequencetype.setToolTip("Specify the imaging sequence utilized during scan acquisition")
+        self.cmb_sequencetype.currentTextChanged.connect(self.update_readout_dim)
+        self.cmb_labelingtype = self.make_cmb_and_items(["Pulsed ASL", "Pseudo-continuous ASL", "Continuous ASL"])
+        self.cmb_labelingtype.setToolTip("Specify the labelling strategy used during ASL scan acquisition")
+        self.cmb_labelingtype.currentTextChanged.connect(self.autocalc_slicereadouttime)
         self.cmb_m0_isseparate = self.make_cmb_and_items(["Proton density scan (M0) was acquired",
                                                           "Use mean control ASL as proton density mimic"])
+        self.cmb_m0_isseparate.setToolTip("Specify whether a proton density scan (M0) was acquired\n"
+                                          "If a scan was not acquired, the mean control ASL image set\n"
+                                          "will be used as a substitute.")
         self.cmb_m0_posinasl = self.make_cmb_and_items(
             ["M0 exists as a separate scan", "M0 is the first ASL control-label pair",
              "M0 is the first ASL scan volume", "M0 is the second ASL scan volume"])
+        self.cmb_m0_posinasl.setToolTip("If a proton density (M0) scan was acquired, specify its location.\n"
+                                        "This argument is ignored if the user has indicated that an M0 scan\n"
+                                        "was not acquired")
         self.cmb_quality = self.make_cmb_and_items(["Low", "High"])
+        self.cmb_quality.setCurrentIndex(1)
+        self.cmb_quality.setToolTip("Indicate the precision with which certain processing steps should be taken, such\n"
+                                    "as segmentation. Higher quality results in longer processing times.")
 
-        for desc, widget in zip(["ExploreASL Directory", "Name of Study", "Study Directory", "Subject Regex",
+        for desc, widget in zip(["ExploreASL Directory", "Name of Study", "Analysis Directory",
+                                 "Dataset is in BIDS format?",
+                                 # "Subject Regex",
                                  "Subjects to Assess\n(Drag and Drop Directories)",
                                  "Subjects to Exclude\n(Drag and Drop Directories)",
                                  "Run Names", "Run Options", "Vendor", "Sequence Type", "Labelling Type",
                                  "M0 was acquired?", "M0 Position in ASL", "Quality"],
                                 [self.hlay_easl_dir, self.le_studyname, self.hlay_study_dir,
-                                 self.le_subjectregex, self.lst_included_subjects, self.lst_excluded_subjects,
+                                 self.chk_overwrite_for_bids,
+                                 # self.le_subjectregex,
+                                 self.lst_included_subjects, self.lst_excluded_subjects,
                                  self.le_run_names, self.le_run_options, self.cmb_vendor, self.cmb_sequencetype,
                                  self.cmb_labelingtype, self.cmb_m0_isseparate, self.cmb_m0_posinasl,
                                  self.cmb_quality]):
@@ -107,12 +146,23 @@ class xASL_Parms(QMainWindow):
         # Set up the Sequence Parameters
         self.formlay_sequenceparms = QFormLayout(self.grp_sequenceparms)
         self.cmb_nsup_pulses = self.make_cmb_and_items(["0", "2", "4", "5"], 1)
+        self.cmb_nsup_pulses.setToolTip("Specify the number of background suppression pulses that were utilized\n"
+                                        "for ASL scans in your study")
         self.cmb_readout_dim = self.make_cmb_and_items(["3D", "2D"])
+        self.cmb_readout_dim.setToolTip("Specify the dimension of ASL acquisitions as they came off the scanner")
         self.spinbox_initialpld = QDoubleSpinBox(maximum=2500, minimum=0, value=1800)
+        self.spinbox_initialpld.valueChanged.connect(self.autocalc_slicereadouttime)
+        self.spinbox_initialpld.setToolTip("Specify the time, in milliseconds, of the post-label delay.\n"
+                                           "- For 3D scans this is fixed for the whole brain\n"
+                                           "- For 2D scans this is the post-label delay of the FIRST acquired slice")
         self.spinbox_labdur = QDoubleSpinBox(maximum=2000, minimum=0, value=800)
+        self.spinbox_labdur.valueChanged.connect(self.autocalc_slicereadouttime)
+        self.spinbox_labdur.setToolTip("Specify the time, in milliseconds, of the pulse labeling period.")
         self.hlay_slice_readout = QHBoxLayout()
         self.cmb_slice_readout = self.make_cmb_and_items(["Use Indicated Value", "Use Shortest TR"])
-        self.spinbox_slice_readout = QDoubleSpinBox(maximum=100, minimum=0, value=37)
+        self.spinbox_slice_readout = QDoubleSpinBox(maximum=1000, minimum=0, value=37)
+        self.spinbox_slice_readout.setToolTip("Specify the value of the time added to the PLD after each slice\n"
+                                              "This is required for 2D readout ASL acquisitions")
         self.hlay_slice_readout.addWidget(self.cmb_slice_readout)
         self.hlay_slice_readout.addWidget(self.spinbox_slice_readout)
         for description, widget in zip(["Number of Suppression Pulses", "Readout Dimension",
@@ -125,11 +175,24 @@ class xASL_Parms(QMainWindow):
         # Set up the Quantification Parameters
         self.formlay_quantparms = QFormLayout(self.grp_quantparms)
         self.spinbox_lambda = QDoubleSpinBox(maximum=1, minimum=0, value=0.9, singleStep=0.01)
+        self.spinbox_lambda.setToolTip("Specify the blood/brain water coefficient (0.9 in Alsop MRM 2014)")
         self.spinbox_artt2 = QDoubleSpinBox(maximum=100, minimum=0, value=50, singleStep=0.1)
+        self.spinbox_artt2.setToolTip("Specify the T2* of the arterial blood at 3T")
         self.spinbox_bloodt1 = QDoubleSpinBox(maximum=2000, minimum=0, value=1650, singleStep=0.1)
+        self.spinbox_bloodt1.setToolTip("Specify the T1 relaxation time of arterial blood at 3T "
+                                        "(1650 in Alsop MRM 2014)")
         self.spinbox_tissuet1 = QDoubleSpinBox(maximum=2000, minimum=0, value=1240, singleStep=0.1)
+        self.spinbox_tissuet1.setToolTip("Specify the T1 relaxation time of grey matter tissue at 3T "
+                                         "(1240 in Alsop MRM 2014)")
         self.cmb_ncomparts = self.make_cmb_and_items(["1", "2"], 0)
+        self.cmb_ncomparts.setToolTip("Specify the number of compartments to model during quantification")
         self.le_quantset = QLineEdit(text="1 1 1 1 1")
+        self.le_quantset.setToolTip("Specify the vector of actions to perform during quantification:\n"
+                                    "1) Apply ScaleSlopes ASL4D\n"
+                                    "2) Apply ScaleSlopes M0\n"
+                                    "3) Convert PWI a.u. to label\n"
+                                    "4) Quantify M0 a.u.\n"
+                                    "5) Perform division by M0")
         for description, widget in zip(["Lambda", "Arterial T2*", "Blood T1",
                                         "Tissue T1", "Number of Compartments", "Quantification Settings"],
                                        [self.spinbox_lambda, self.spinbox_artt2, self.spinbox_bloodt1,
@@ -139,7 +202,13 @@ class xASL_Parms(QMainWindow):
         # Set up the remaining M0 Parameters
         self.formlay_m0parms = QFormLayout(self.grp_m0parms)
         self.cmb_m0_algorithm = self.make_cmb_and_items(["New Image Processing", "Standard Processing"], 0)
+        self.cmb_m0_algorithm.setToolTip("Specify whether to use the newer M0 processing algorithm or the standard one")
         self.spinbox_gmscale = QDoubleSpinBox(maximum=100, minimum=0.01, value=1, singleStep=0.01)
+        self.spinbox_gmscale.setToolTip("Specify whether the M0 image should be multiplied by a specific factor.\n"
+                                        "This is useful when you have background suppression but no M0 image acquired\n"
+                                        "without suppression. If you know the M0 scalefactor, you can use the control\n"
+                                        "image as M0 and apply this factor to scale back what was suppressed by the\n"
+                                        "background suppression")
         for description, widget in zip(["M0 Processing Algorithm", "GM Scale Factor"],
                                        [self.cmb_m0_algorithm, self.spinbox_gmscale]):
             self.formlay_m0parms.addRow(description, widget)
@@ -189,10 +258,276 @@ class xASL_Parms(QMainWindow):
                                 [self.chk_detectfsl, self.chk_outputcbfmaps]):
             self.formlay_envparms.addRow(desc, widget)
 
+    ################################
+    # Json Sidecar Related Functions
+    ################################
+    def update_asl_json_sidecar_data(self, analysis_dir_text):
+        """
+        Receives a signal from the le_study_dir lineedit and will accordingly update several fields
+        @param analysis_dir_text: the text updated from the analysis directory
+        """
+
+        # First set of checks
+        if any([analysis_dir_text == '',  # Do not react to blank lines
+                not os.path.exists(analysis_dir_text),  # Do not react to nonexistent paths
+                ]):
+            return
+
+        # Second set of checks
+        if any([not os.path.isdir(analysis_dir_text),  # Must be a directory
+                os.path.basename(analysis_dir_text) != "analysis"
+                ]):
+            return
+
+        if self.config["DeveloperMode"]:
+            print(f"Detected an update to the specified analysis directory. Attempting to find asl json sidecars and "
+                  f"infer appropriate field values from within.\n")
+
+        # Retrieve any asl json sidecar
+        asl_sides_legacy = iglob(os.path.join(analysis_dir_text, "**", "ASL4D.json"), recursive=True)
+        asl_sides_legacy = peekable(asl_sides_legacy)
+        asl_sides_bids = iglob(os.path.join(analysis_dir_text, "**", "*_asl.json"), recursive=True)
+        asl_sides_bids = peekable(asl_sides_bids)
+
+        # Disengage if there is no luck finding any sidecar
+        if not asl_sides_legacy:
+            if not asl_sides_bids:
+                return
+            else:
+                asl_sidecar = next(asl_sides_bids)
+        else:
+            asl_sidecar = next(asl_sides_legacy)
+        try:
+            with open(asl_sidecar) as sidecar_reader:
+                self.asl_json_sidecar_data = json.load(sidecar_reader)
+        except json.decoder.JSONDecodeError as json_e:
+            QMessageBox.warning(self.parent(),
+                                "Json sidecars not in proper json format",
+                                f"ExploreASL GUI has detected that the json sidecars present for this dataset "
+                                f"are not in appropriate format. The following inconsistency was found:\n{json_e}",
+                                QMessageBox.Ok)
+            return
+
+        # First, check if this is bids
+        if os.path.exists(os.path.join(analysis_dir_text, "dataset_description.json")):
+            self.chk_overwrite_for_bids.setChecked(True)
+            print("This is BIDS")
+        else:
+            self.chk_overwrite_for_bids.setChecked(False)
+            print("This is not BIDS")
+
+        # Next, the vendor
+        try:
+            idx = self.cmb_vendor.findText(self.asl_json_sidecar_data["Manufacturer"])
+            if idx != -1:
+                self.cmb_vendor.setCurrentIndex(idx)
+        except KeyError:
+            if self.config["DeveloperMode"]:
+                print(f"Warning in update_asl_json_sidecar_data. The field: Manufacturer was not present in the "
+                      f"detected asl json sidecar.\n")
+
+        # Next, the readout dimension
+        try:
+            idx = self.cmb_readout_dim.findText(self.asl_json_sidecar_data["MRAcquisitionType"])
+            if idx != -1:
+                self.cmb_readout_dim.setCurrentIndex(idx)
+        except KeyError:
+            if self.config["DeveloperMode"]:
+                print(f"Warning in update_asl_json_sidecar_data. The field: MRAcquisitionType was not present in the "
+                      f"detected asl json sidecar.\n")
+
+        # Next the inversion time (i.e Post-Label Duration)
+        try:
+            value = self.asl_json_sidecar_data["InversionTime"]
+            self.spinbox_initialpld.setValue(value * 1000)
+        except KeyError:
+            if self.config["DeveloperMode"]:
+                print(f"Warning in update_asl_json_sidecar_data. The field: InversionTime was not present in the "
+                      f"detected asl json sidecar.\n")
+
+        # Next get a few essentials for auto-calculating the SliceReadoutTime
+        try:
+            has_tr = "RepetitionTime" in self.asl_json_sidecar_data
+            has_nslices = "NumberOfSlices" in self.asl_json_sidecar_data
+            print(has_tr, has_nslices)
+            if has_tr and has_nslices:
+                self.can_update_slicereadouttime = True
+            else:
+                self.can_update_slicereadouttime = False
+        except KeyError:
+            pass
+
+        # Retrieve any M0 json sidecar
+        m0_sides_legacy = iglob(os.path.join(analysis_dir_text, "**", "M0.json"), recursive=True)
+        m0_sides_legacy = peekable(m0_sides_legacy)
+        m0_sides_bids = iglob(os.path.join(analysis_dir_text, "**", "*_m0scan.json"), recursive=True)
+        m0_sides_bids = peekable(m0_sides_bids)
+
+        # Disengage if there is no luck finding any m0 sidecar
+        if not m0_sides_legacy:
+            if not m0_sides_bids:
+                return
+            else:
+                m0_sidecar = next(m0_sides_bids)
+                # Activate the checkbox to overwrite sidecar data
+                self.chk_overwrite_for_bids.setChecked(True)
+        else:
+            m0_sidecar = next(m0_sides_legacy)
+            # Deactivate the checkbox to overwrite sidecar data
+            self.chk_overwrite_for_bids.setChecked(False)
+
+        if m0_sidecar:
+            idx = self.cmb_m0_isseparate.findText("Proton density scan (M0) was acquired")
+            if idx != -1:
+                self.cmb_m0_isseparate.setCurrentIndex(idx)
+
+            # If there was an M0 sidecar, it stands to reason there was also background suppression and that field
+            # should be set appropriately
+            try:
+                manufac = self.asl_json_sidecar_data["Manufacturer"]
+                acq_type = self.asl_json_sidecar_data["MRAcquisitionType"]
+                if manufac == "GE":
+                    idx = self.cmb_nsup_pulses.findText('5')
+                elif manufac == "Philips" and acq_type == "2D":
+                    idx = self.cmb_nsup_pulses.findText("2")
+                elif manufac == "Philips" and acq_type == "3D":
+                    idx = self.cmb_nsup_pulses.findText("4")
+                elif manufac == "Siemens":
+                    idx = self.cmb_nsup_pulses.findText("2")
+                else:
+                    if self.config["DeveloperMode"]:
+                        print(f"Warning in update_asl_json_sidecar_data. An M0 json sidecar was detected, but its "
+                              f"Manufacturer field was not present, preventing the appropriate setting for the number "
+                              f"of background suppression pulses to be established.\n")
+                    return
+                self.cmb_nsup_pulses.setCurrentIndex(idx)
+
+                # If it is 2D, it must be 2D EPI
+                if acq_type == "2D":
+                    idx = self.cmb_sequencetype.findText("2D EPI")
+                    self.cmb_sequencetype.setCurrentIndex(idx)
+
+            except KeyError:
+                pass
+
+    def update_readout_dim(self, text):
+        if text == "2D EPI":
+            self.cmb_readout_dim.setCurrentIndex(1)
+        else:
+            self.cmb_readout_dim.setCurrentIndex(0)
+
+    def autocalc_slicereadouttime(self):
+        if not self.can_update_slicereadouttime or self.cmb_labelingtype.currentText() in ["Pseudo-continuous ASL",
+                                                                                           "Continuous ASL"]:
+            return
+
+        tr = self.asl_json_sidecar_data["RepetitionTime"] * 1000
+        labdur = self.spinbox_labdur.value()
+        ini_pld = self.spinbox_initialpld.value()
+        nslices = self.asl_json_sidecar_data["NumberOfSlices"]
+        readouttime = round((tr - labdur - ini_pld) / nslices, 2)
+
+        self.spinbox_slice_readout.setValue(readouttime)
+
+    def overwrite_bids_fields(self):
+        self.flag_impossible_m0 = False
+        bad_jsons = []
+
+        if self.config["DeveloperMode"]:
+            print("Overwriting BIDS ASL json sidecar fields\n")
+
+        # If this is not in a BIDS format
+        if not os.path.exists(os.path.join(self.le_study_dir.text(), "dataset_description.json")):
+            QMessageBox().warning(self.parent(),
+                                  "Indicated BIDS overwrite for non-BIDS dataset",
+                                  "Please ensure your dataset has been imported properly by the Importer Module into a "
+                                  "BIDS format if you have 'Overwrite keys in BIDS sidecars?' checked.\n\n"
+                                  "Proceeding with the rest of the DataPar file creation.",
+                                  QMessageBox.Ok)
+            return
+
+        analysis_dir = self.le_study_dir.text()
+        asl_jsons = peekable(iglob(os.path.join(analysis_dir, "**", "*_asl.json"), recursive=True))
+        # If json sidecars cannot be found, exit early
+        if not asl_jsons:
+            QMessageBox().warning(self.parent(),
+                                  "No Json sidecards could be detected",
+                                  "You have indicated 'Overwrite keys in BIDS sidecars?' as True, "
+                                  "implying that this is a BIDS imported dataset. "
+                                  "However, no ASL json sidecars could be detected. Please ensure your dataset has "
+                                  "been imported properly by the Importer Module into a BIDS format.\n\n"
+                                  "Proceeding with the rest of the DataPar file creation.",
+                                  QMessageBox.Ok)
+            return
+
+        for asl_sidecar in asl_jsons:
+            # Load in the data
+            with open(asl_sidecar) as asl_sidecar_reader:
+                asl_sidecar_data = json.load(asl_sidecar_reader)
+
+            # M0 key behavior
+            # Priority 1 - if there is an M0 present, use its path as the value
+            possible_m0_json = asl_sidecar.replace("_asl.json", "_m0scan.json")
+            relative_path = "/".join(possible_m0_json.replace('\\', '/').split('/')[-2:])
+
+            if os.path.exists(possible_m0_json):
+                asl_sidecar_data["M0"] = relative_path.replace("_m0scan.json", "_m0scan.nii")
+            # Priority 2 - if the M0 is present within the asl nifti, as indicated by the user, go with that
+            elif self.cmb_m0_isseparate.currentText() == "Proton density scan (M0) was acquired":
+
+                if self.cmb_m0_posinasl.currentText() in ["M0 is the first ASL control-label pair",
+                                                          "M0 is the first ASL scan volume",
+                                                          "M0 is the second ASL scan volume"]:
+                    asl_sidecar_data["M0"] = True
+                else:
+                    self.flag_impossible_m0 = True
+                    bad_jsons.append(asl_sidecar)
+
+            elif self.cmb_m0_isseparate.currentText() == "Use mean control ASL as proton density mimic":
+                asl_sidecar_data["M0"] = False
+
+            else:
+                self.flag_impossible_m0 = True
+                bad_jsons.append(asl_sidecar)
+
+            # LabelingType
+            asl_sidecar_data["LabelingType"] = {"Pulsed ASL": "PASL",
+                                                "Pseudo-continuous ASL": "PCASL",
+                                                "Continuous ASL": "CASL"
+                                                }[self.cmb_labelingtype.currentText()]
+
+            # Post Label Delay
+            asl_sidecar_data["PostLabelingDelay"] = self.spinbox_initialpld.value() / 1000
+
+            # Label Duration
+            if self.cmb_labelingtype.currentText() in ["Pseudo-continuous ASL", "Continuous ASL"]:
+                asl_sidecar_data["LabelingDuration"] = self.spinbox_labdur.value() / 1000
+
+            # Background Suppression
+            if self.cmb_nsup_pulses.currentText() == "0":
+                asl_sidecar_data["BackgroundSuppression"] = False
+            else:
+                asl_sidecar_data["BackgroundSuppression"] = True
+
+            # PulseSequenceType
+            asl_sidecar_data["PulseSequenceType"] = {"3D Spiral": "3D_spiral",
+                                                     "3D GRaSE": "3D_GRASE",
+                                                     "2D EPI": "2D_EPI"}[self.cmb_sequencetype.currentText()]
+
+            with open(asl_sidecar, 'w') as asl_sidecar_writer:
+                json.dump(asl_sidecar_data, asl_sidecar_writer, indent=3)
+
+        if self.flag_impossible_m0:
+            bad_jsons = "; ".join([os.path.basename(asl_json).strip(".json") for asl_json in bad_jsons])
+            QMessageBox().warning(self.parent(),
+                                  "An impossible M0 setting was encountered",
+                                  f"The user has indicated that 'M0 exists as a separate scan' but no _m0scan.json "
+                                  f"could be found for the following: {bad_jsons}",
+                                  QMessageBox.Ok)
+
     ################
     # Misc Functions
     ################
-
     # Clears the currently-included subjects list and resets the regex
     def clear_included(self):
         self.lst_included_subjects.clear()
@@ -216,7 +551,7 @@ class xASL_Parms(QMainWindow):
             self.le_subjectregex.setText(inferred_regex)
 
     def set_exploreasl_dir(self):
-        exploreasl_filepath = QFileDialog.getExistingDirectory(self,
+        exploreasl_filepath = QFileDialog.getExistingDirectory(self.parent(),
                                                                "Select ExploreASL directory",
                                                                self.config["DefaultRootDir"],
                                                                QFileDialog.ShowDirsOnly)
@@ -236,7 +571,9 @@ class xASL_Parms(QMainWindow):
                                       QMessageBox.Ok)
                 return
             else:
-                self.le_easl_dir.setText(exploreasl_filepath)
+                set_os_dependent_text(linedit=self.le_easl_dir,
+                                      config_ossystem=self.config["Platform"],
+                                      text_to_set=exploreasl_filepath)
         else:
             QMessageBox().warning(self,
                                   "The filepath you specified does not exist",
@@ -245,7 +582,7 @@ class xASL_Parms(QMainWindow):
             return
 
     def set_study_dir(self):
-        analysisdir_filepath = QFileDialog.getExistingDirectory(self,
+        analysisdir_filepath = QFileDialog.getExistingDirectory(self.parent(),
                                                                 "Select the study's analysis directory",
                                                                 self.config["DefaultRootDir"],
                                                                 QFileDialog.ShowDirsOnly)
@@ -266,7 +603,9 @@ class xASL_Parms(QMainWindow):
                                       QMessageBox.Ok)
                 return
             else:
-                self.le_study_dir.setText(analysisdir_filepath)
+                set_os_dependent_text(linedit=self.le_study_dir,
+                                      config_ossystem=self.config["Platform"],
+                                      text_to_set=analysisdir_filepath)
         else:
             QMessageBox().warning(self,
                                   "The filepath you specified does not exist",
@@ -278,6 +617,26 @@ class xASL_Parms(QMainWindow):
     # Main Functions for this module - saving to json and loading from json
     #######################################################################
     def saveparms2json(self):
+        # Defensive programming first
+        if any([self.le_study_dir.text() == '',
+                not os.path.exists(self.le_study_dir.text()),
+                not os.path.isdir(self.le_study_dir.text())
+                ]):
+            QMessageBox().warning(self.parent(),
+                                  "Cannot save to the indicated directory",
+                                  "The study path you specified to save the DataPar file to is not a valid study "
+                                  "directory to which the DataPar.json file would be saved to. Aborting operation.",
+                                  QMessageBox.Ok)
+            return
+
+        if any([os.path.basename(self.le_study_dir.text()) != "analysis"]):
+            QMessageBox().warning(self.parent(),
+                                  "Cannot save to the indicated directory",
+                                  "The study path you specified to save the DataPar file to is not a valid study "
+                                  "directory to which the DataPar.json file would be saved to. Aborting operation.",
+                                  QMessageBox.Ok)
+            return
+
         json_parms = {
             "MyPath": self.le_easl_dir.text(),
             "name": self.le_studyname.text(),
@@ -318,7 +677,10 @@ class xASL_Parms(QMainWindow):
             "ApplyQuantification": self.prep_quantparms(),
             "Q": {
                 "BackGrSupprPulses": int(self.cmb_nsup_pulses.currentText()),
-                "LabelingType": {"Q2 TIPS PASL": "PASL", "pCASL/CASL": "CASL"}[self.cmb_labelingtype.currentText()],
+                "LabelingType": {"Pulsed ASL": "PASL",
+                                 "Pseudo-continuous ASL": "CASL",
+                                 "Continuous ASL": "CASL"
+                                 }[self.cmb_labelingtype.currentText()],
                 "Initial_PLD": float(self.spinbox_initialpld.value()),
                 "LabelingDuration": float(self.spinbox_labdur.value()),
                 "SliceReadoutTime": float(self.spinbox_slice_readout.value()),
@@ -331,7 +693,8 @@ class xASL_Parms(QMainWindow):
 
         if self.cmb_m0_posinasl.currentText() != "M0 exists as a separate scan":
             parms_m0_pos_translate = {"M0 is the first ASL control-label pair": "[1 2]",
-                                      "M0 is the first ASL scan volume": 1, "M0 is the second ASL scan volume": 2}
+                                      "M0 is the first ASL scan volume": 1,
+                                      "M0 is the second ASL scan volume": 2}
             json_parms["M0PositionInASL4D"] = parms_m0_pos_translate[self.cmb_m0_posinasl.currentText()]
         try:
             with open(os.path.join(self.le_study_dir.text(), "DataPar.json"), 'w') as w:
@@ -355,6 +718,10 @@ class xASL_Parms(QMainWindow):
                                   QMessageBox.Ok)
             return
 
+        # Also, overwrite asl_json sidecars if the dataset has been imported as BIDS format
+        if self.chk_overwrite_for_bids.isChecked():
+            self.overwrite_bids_fields()
+
         QMessageBox().information(self,
                                   "DataPar.json successfully saved",
                                   f"The parameter file was successfully saved to:\n"
@@ -377,8 +744,18 @@ class xASL_Parms(QMainWindow):
                                   QMessageBox.Ok)
             return
 
-        with open(json_filepath, 'r') as reader:
-            parms: dict = json.load(reader)
+        try:
+            with open(json_filepath, 'r') as reader:
+                parms: dict = json.load(reader)
+
+        except json.decoder.JSONDecodeError as datapar_json_e:
+            QMessageBox().warning(self.parent(),
+                                  "Json sidecars not in proper json format",
+                                  f"ExploreASL GUI has detected that the json you have loaded from is not a "
+                                  f"properly-formatted json. The following inconsistency was found:\n"
+                                  f"{datapar_json_e}",
+                                  QMessageBox.Ok)
+            return
 
         json_setter = {
             "MyPath": self.le_easl_dir.setText,
@@ -605,7 +982,7 @@ class xASL_Parms(QMainWindow):
         self.cmb_nsup_pulses.setCurrentIndex(index)
 
     def get_labelingtype(self, value):
-        translator = {"PASL": "Q2 TIPS PASL", "CASL": "pCASL/CASL"}
+        translator = {"PASL": "Pulsed ASL", "CASL": "Pseudo-continuous ASL", "PCASL": "Pseudo-continuous ASL"}
         text = translator[value]
         index = self.cmb_labelingtype.findText(text)
         if index == -1:
@@ -626,6 +1003,13 @@ class xASL_Parms(QMainWindow):
 
     @staticmethod
     def make_droppable_clearable_le(le_connect_to=None, btn_connect_to=None, default=''):
+        """
+        Convenience function for creating a lineedit-button pair within a HBoxlayout
+        @param le_connect_to: Optional; the function that the linedit's textChanged signal should connect to
+        @param btn_connect_to: Optional; the function that the button's clicked signal should connect to
+        @param default: the default text to specify
+        @return: HBoxlayout, DandD_FileExplorer2LineEdit, QPushButton, in that order
+        """
         hlay = QHBoxLayout()
         le = DandD_FileExplorer2LineEdit()
         le.setText(default)

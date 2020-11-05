@@ -24,6 +24,13 @@ class xASL_GUI_RerunPrep(QWidget):
         self.dir_struct = self.get_directory_structure(os.path.join(self.target_dir, "lock"))
 
         self.lock_tree = QTreeWidget(self)
+        self.lock_tree.setToolTip("Indicate which parts of the pipeline should be re-run for which \n"
+                                  "modules/subjects/runs/etc.\n"
+                                  "This window will delete all created .status files with the lock\n"
+                                  "directory for the selected folders & files. When ExploreASL is\n"
+                                  "re-run, it will detect these missing .status files and interpret\n"
+                                  "that as a signal to re-run that particular section of the study's\n"
+                                  "pipeline.")
         self.fill_tree(self.lock_tree.invisibleRootItem(), self.dir_struct)
         self.lock_tree.expandToDepth(2)
         self.lock_tree.itemChanged.connect(self.change_check_state)
@@ -111,6 +118,12 @@ class xASL_GUI_RerunPrep(QWidget):
         self.fill_tree(self.lock_tree.invisibleRootItem(), self.dir_struct)
         self.lock_tree.expandToDepth(2)
         self.lock_tree.itemChanged.connect(self.change_check_state)
+
+        QMessageBox.information(self.parent,
+                                f"Re-run setup complete",
+                                f"Successfully deleted the indicated .status files for the study:\n"
+                                f"{self.target_dir}",
+                                QMessageBox.Ok)
 
 
 # noinspection PyAttributeOutsideInit
