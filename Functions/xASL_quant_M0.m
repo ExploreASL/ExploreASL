@@ -70,7 +70,7 @@ end
 %% ------------------------------------------------------------------------------------------------------
 % 2. Convert control image with background suppression to pseudo-M0
 % for the GM
-if strcmp(x.M0, 'UseControlAsM0') && x.Q.BackGrSupprPulses>0
+if strcmp(x.M0, 'UseControlAsM0') && x.Q.BackgroundSuppressionNumberPulses>0
     % we only run this part if there is background suppression, but no M0 image
     [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x);
 end
@@ -272,7 +272,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
         % Here we use the WM T1, as we mask the M0 for the WM only, smooth it to a biasfield, 
         % and then extrapolate this
         x.Q.TissueT1 = 900;
-    end
+	end
     
     if ~isfield(x.Q, 'BackgroundSuppressionPulseTime') || isempty(x.Q.BackgroundSuppressionPulseTime)
         error('x.Q.BackgroundSuppressionPulseTime is missing or empty');
@@ -354,7 +354,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     end
     fprintf('Control image divided by ');
     fprintf('%s\n', [xASL_num2str(mean(SignalPercentage)) ' to correct for background suppression']);
-    fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime)]);
+    fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime(:)')]);
     fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.TissueT1)]);
     fprintf('%s\n\n', ['And SliceReadoutTime=' xASL_num2str(SliceTime)]);
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');

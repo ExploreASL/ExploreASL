@@ -240,9 +240,9 @@ else
            x.Q.LabelingType = 'CASL';
     end
 
-    if ~isfield(x.Q,'BackGrSupprPulses')
+    if ~isfield(x.Q,'BackgroundSuppressionNumberPulses')
         warning('No background suppression pulses known, assuming no background suppression');
-        x.Q.BackGrSupprPulses = 0;
+        x.Q.BackgroundSuppressionNumberPulses = 0;
     end
 
 
@@ -259,7 +259,7 @@ else
     end
     x.Q.LabEff_Bsup = 1; % default for no background suppression
     % Apply the effect of background suppression pulses on labeling efficiency
-    switch x.Q.BackGrSupprPulses
+    switch x.Q.BackgroundSuppressionNumberPulses
         case 0 % when you have an M0, but no background suppression used for ASL
             % Then the labeling efficiency doesn't change by background suppression
         case 2 % e.g. Philips 2D EPI or Siemens 3D GRASE

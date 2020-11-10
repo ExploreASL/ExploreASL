@@ -108,9 +108,9 @@ end
 if ~isfield(x,'DoWADQCDC')
     x.DoWADQCDC = false; % default skip WAD-QC stuff
 end
-if ~isfield(x.Q,'BackGrSupprPulses') && isfield(x,'BackGrSupprPulses')
+if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
     % Temporary backwards compatibility that needs to go
-    x.Q.BackGrSupprPulses = x.BackGrSupprPulses;
+    x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
 end
 
 

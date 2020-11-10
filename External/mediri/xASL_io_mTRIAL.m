@@ -69,7 +69,7 @@ x_temporary = xASL_import_json(dockerInterfaceFile);
 if isfield(x_temporary,'Sequence'),             data.x.Sequence = x_temporary.Sequence; end
 if isfield(x_temporary,'LabelingType'),         data.x.Q.LabelingType = x_temporary.LabelingType; end
 if isfield(x_temporary,'readout_dim'),          data.x.readout_dim = x_temporary.readout_dim; end
-if isfield(x_temporary,'BackGrSupprPulses'),    data.x.Q.BackGrSupprPulses = x_temporary.BackGrSupprPulses; end
+if isfield(x_temporary,'BackgroundSuppressionNumberPulses'),    data.x.Q.BackgroundSuppressionNumberPulses = x_temporary.BackgroundSuppressionNumberPulses; end
 if isfield(x_temporary,'Initial_PLD'),          data.x.Q.Initial_PLD = x_temporary.Initial_PLD; end
 if isfield(x_temporary,'LabelingDuration'),     data.x.Q.LabelingDuration = x_temporary.LabelingDuration; end
 if isfield(x_temporary,'M0PositionInASL4D')

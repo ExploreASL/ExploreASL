@@ -149,9 +149,9 @@ SignalPercentage = 1 - (1 - SignalPercentageInitial(end))*exp(-(SliceTime)/T1Tim
  
 % Repeat the same in a 1ms interval for a graphical output
 if ~isempty(PathGraph)
-    SignalPercentageVector(PresaturationTimeDummy+1:round(PresaturationTimeDummy+max(SliceTime))) = ...
+    SignalPercentageVector(PresaturationTimeDummy+(1:round(max(SliceTime)))) = ...
         1 - (1 - SignalPercentageVector(PresaturationTimeDummy))*...
-        exp(-(1:max(SliceTime))/T1Time);
+        exp(-(1:round(max(SliceTime)))/T1Time);
 end
  
 % Plot the visualization

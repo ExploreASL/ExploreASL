@@ -55,11 +55,12 @@ end
 
 % List of fields that are transfered to the x.Q
 Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'Lambda'...
-           'T2art' 'BloodT1' 'TissueT1' 'nCompartments' 'NumberOfAverages' 'LabelingEfficiency' 'ATT'};
+           'T2art' 'BloodT1' 'TissueT1' 'nCompartments' 'NumberOfAverages' 'LabelingEfficiency' 'ATT' ...
+		   'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses'};
 
 % Names of files for data sets and older names for backwards compatibility
-namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'         'LabelingEfficiency' 'Hematocrit'};
-namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency'  'LabelingEfficiency' 'Hematocrit'};
+namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'         'LabelingEfficiency' 'Hematocrit' 'BackGrSupprPulses'};
+namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency'  'LabelingEfficiency' 'Hematocrit' 'BackgroundSuppressionNumberPulses'};
 
 %% ------------------------------------------------------------------------
 %% 1) Load .mat parameter file (if exists)
@@ -229,11 +230,11 @@ if ~isfield(x,'M0')
     if xASL_exist(fullfile(Fpath, 'M0.nii'),'file') && (exist(fullfile(Fpath, 'M0.json'),'file') || exist(fullfile(Fpath, 'M0_parms.mat'),'file') )
         x.M0 = 'separate_scan';
         if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.M0]); end
-    elseif isfield(Parms,'BackGrSupprPulses') && Parms.BackGrSupprPulses==0
+    elseif isfield(Parms,'BackgroundSuppressionNumberPulses') && Parms.BackgroundSuppressionNumberPulses==0
         x.M0 = 'UseControlAsM0';
         if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.M0]); end
     else
-        if bVerbose; fprintf('%s\n','M0 parameter was missing, OR didnt find M0 scan, AND BackGrSupprPulses wasnt set to 0...'); end
+        if bVerbose; fprintf('%s\n','M0 parameter was missing, OR didnt find M0 scan, AND BackgroundSuppressionNumberPulses wasnt set to 0...'); end
     end
 end
 
