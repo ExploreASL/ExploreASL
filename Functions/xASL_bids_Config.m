@@ -55,16 +55,78 @@ bidsPar.listFieldOrder = {'Manufacturer','ManufacturersModelName','DeviceSerialN
 			  'BolusCutOffTechnique'};
 
 % Definition of ASL fields		  
-bidsPar.ASLfields.Required = {};		  
-bidsPar.ASLfields.Recommended = {};		  
-bidsPar.ASLfields.Optional = {};		  
+bidsPar.ASLfields.Required = {'EchoTime','MagneticFieldStrength','PulseSequenceType','LabelingType','PostLabelingDelay',...
+	'BackgroundSuppression','M0'};		  
+bidsPar.ASLfields.Recommended = {'PulseSequenceDetails','Manufacturer','SliceEncodingDirection','FlipAngle','VascularCrushing',...
+	'AcquisitionVoxelSize','LabelingLocationDescription','LabelingOrientation','LabelingDistance',};		  
+bidsPar.ASLfields.Optional = {'TotalAcquiredVolumes','LookLocker','LabelingEfficiency','Units'};		  
 
 % Conditional dependencies
-bidsPar.ASLCondition{1}.field = '';
+% RepetitionTime and VolumeTiming are mutually exclusive
+bidsPar.ASLCondition{1}.field = 'RepetitionTime';
 bidsPar.ASLCondition{1}.value = '';
 bidsPar.ASLCondition{1}.RequiredFilled = {};
-bidsPar.ASLCondition{1}.RequiredEmpty = {};
+bidsPar.ASLCondition{1}.RequiredEmpty = {'VolumeTiming'};
 bidsPar.ASLCondition{1}.RecommendedFilled = {};
+
+bidsPar.ASLCondition{2}.field = 'VolumeTiming';
+bidsPar.ASLCondition{2}.value = '';
+bidsPar.ASLCondition{2}.RequiredFilled = {'AcquisitionDuration','SliceTiming'};
+bidsPar.ASLCondition{2}.RequiredEmpty = {'RepetitionTime'};
+bidsPar.ASLCondition{2}.RecommendedFilled = {};
+
+bidsPar.ASLCondition{3}.field = 'PulseSequenceType';
+bidsPar.ASLCondition{3}.value = '2D';
+bidsPar.ASLCondition{3}.RequiredFilled = {'SliceTiming'};
+bidsPar.ASLCondition{3}.RequiredEmpty = {};
+bidsPar.ASLCondition{3}.RecommendedFilled = {};
+
+bidsPar.ASLCondition{4}.field = 'LookLocker';
+bidsPar.ASLCondition{4}.value = true;
+bidsPar.ASLCondition{4}.RequiredFilled = {'FlipAngle'};
+bidsPar.ASLCondition{4}.RequiredEmpty = {};
+bidsPar.ASLCondition{4}.RecommendedFilled = {};
+
+bidsPar.ASLCondition{5}.field = 'BackgroundSuppression';
+bidsPar.ASLCondition{5}.value = true;
+bidsPar.ASLCondition{5}.RequiredFilled = {};
+bidsPar.ASLCondition{5}.RequiredEmpty = {};
+bidsPar.ASLCondition{5}.RecommendedFilled = {'BackgroundSuppressionNumberPulses','BackgroundSuppressionPulseTime'};
+
+bidsPar.ASLCondition{6}.field = 'VascularCrushing';
+bidsPar.ASLCondition{6}.value = true;
+bidsPar.ASLCondition{6}.RequiredFilled = {};
+bidsPar.ASLCondition{6}.RequiredEmpty = {};
+bidsPar.ASLCondition{6}.RecommendedFilled = {'VascularCrushingVenc'};
+
+bidsPar.ASLCondition{7}.field = 'LabelingType';
+bidsPar.ASLCondition{7}.value = 'PCASL';
+bidsPar.ASLCondition{7}.RequiredFilled = {'LabelingDuration'};
+bidsPar.ASLCondition{7}.RequiredEmpty = {'CASLType','PASLType','LabelingSlabThickness','BolusCutOffFlag','BolusCutOffDelayTime',...
+	'BolusCutOffTechnique'};
+bidsPar.ASLCondition{7}.RecommendedFilled = {'PCASLType','LabelingPulseAverageGradient','LabelingPulseMaximumGradient',...
+	'LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle','LabelingPulseInterval'};
+
+bidsPar.ASLCondition{8}.field = 'LabelingType';
+bidsPar.ASLCondition{8}.value = '^CASL';
+bidsPar.ASLCondition{8}.RequiredFilled = {'LabelingDuration'};
+bidsPar.ASLCondition{8}.RequiredEmpty = {'PCASLType','PASLType','LabelingSlabThickness','BolusCutOffFlag','BolusCutOffDelayTime',...
+	'BolusCutOffTechnique'};
+bidsPar.ASLCondition{8}.RecommendedFilled = {'CASLType','LabelingPulseAverageGradient','LabelingPulseMaximumGradient',...
+	'LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle','LabelingPulseInterval'};
+
+bidsPar.ASLCondition{9}.field = 'LabelingType';
+bidsPar.ASLCondition{9}.value = 'PASL';
+bidsPar.ASLCondition{9}.RequiredFilled = {'BolusCutOffFlag'};
+bidsPar.ASLCondition{9}.RequiredEmpty = {'PCASLType','CASLType','LabelingPulseAverageGradient','LabelingPulseMaximumGradient',...
+	'LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle','LabelingPulseInterval'};
+bidsPar.ASLCondition{9}.RecommendedFilled = {'PASLType','LabelingSlabThickness'};
+
+bidsPar.ASLCondition{10}.field = 'BolusCutOffFlag';
+bidsPar.ASLCondition{10}.value = true;
+bidsPar.ASLCondition{10}.RequiredFilled = {};
+bidsPar.ASLCondition{10}.RequiredEmpty = {};
+bidsPar.ASLCondition{10}.RecommendedFilled = {'BolusCutOffDelayTime','BolusCutOffTechnique'};
 
 % List of fields to be removed if they are empty
 bidsPar.listRemoveIfEmpty = {'EffectiveEchoSpacing','TotalReadoutTime'};
