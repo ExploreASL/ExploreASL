@@ -1,12 +1,12 @@
 function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB,printReport)
 %xASL_bids_compareStructures Function that compares two BIDS folders with several subfolders and studies and prints the differences.
 %
-% FORMAT: [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB);
+% FORMAT: [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB[,printReport]);
 %
 % INPUT:
 %        pathDatasetA       - path to first BIDS structure (REQUIRED)
 %        pathDatasetB       - path to second BIDS structure (REQUIRED)
-%        printReport        - true or false to print console report
+%        printReport        - true or false to print console report (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -42,7 +42,11 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
     end
     if ~(xASL_exist(pathDatasetB)==7)
         error('The root folder of structure B does not exist...');
-    end
+	end
+	
+	if nargin < 3 || isempty(printReport)
+		printReport = false;
+	end
 
 
     %% Defaults
