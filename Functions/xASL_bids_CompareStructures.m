@@ -6,7 +6,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 % INPUT:
 %        pathDatasetA       - path to first BIDS structure (REQUIRED)
 %        pathDatasetB       - path to second BIDS structure (REQUIRED)
-%        printReport        - true or false to print console report (OPTIONAL, DEFAULT = false)
+%        printReport        - true or false to print console report (OPTIONAL, DEFAULT = true)
 %        thresh             - RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 0.1)
 %
 % OUTPUT:
@@ -15,6 +15,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:      Function that compares two BIDS folders with several subfolders and studies and prints the differences.
+%                   We recommend to set printReport to true, because you otherwise can't see significant file content differences.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
@@ -47,7 +48,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 	
     % Default value for printReport
 	if nargin < 3 || isempty(printReport)
-		printReport = false;
+		printReport = true;
     end
     
     % Default value for RMSE threshold
@@ -186,6 +187,9 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
         [~,~,extension] = fileparts(allFiles(it));
         % Check extension
         if strcmp(extension,'.json')
+            if printReportFunction
+                fprintf('Checking:\t\t%s\n',allFiles(it))
+            end
             % Compare JSON files on field basis
             if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
                 % Import JSON files
@@ -199,29 +203,26 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                 differenceB = setdiff(fieldNamesB,fieldNamesA);
                 if isempty(differenceA) && isempty(differenceB)
                     % Both JSON files have the same fields, so we can compare the content
-                    for curField=1:numel(fieldNamesA)
-                        curFieldNameA = string(fieldNamesA(curField));
-                        curFieldNameB = string(fieldNamesB(curField));
-                        fieldContentA = jsonA.(fieldNamesA{curField});
-                        fieldContentB = jsonB.(fieldNamesB{curField});
-                        if isnumeric(fieldContentA) && isnumeric(fieldContentB)
-                            % Compare numbers
-                            if ~(fieldContentA==fieldContentB)
-                                fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
-                            end
-                        elseif (ischar(fieldContentA) || isstring(fieldContentA)) && (ischar(fieldContentB) || isstring(fieldContentB))
-                            % Compare char arrays and strings
-                            if ~(strcmp(fieldContentA,fieldContentB))
-                                fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
-                            end
-                        else
-                            % Neither number nor text
-                            fprintf('It seems we are comparing neither numbers nor text in %s ...\n',curFieldNameA);
-                        end
-                    end
+                    compareFieldLists(jsonA,jsonB,fieldNamesA,fieldNamesB,printReportFunction);
                 else
                     % The JSON files have different fields
-                    % ...
+                    sharedFieldsAB = intersect(fieldNamesB,fieldNamesA);
+                    allFields = union(fieldNamesA,fieldNamesB);
+                    missingFields = setdiff(allFields,sharedFieldsAB);
+                    % Print out and compare shared fields 
+                    for sharedField=1:numel(sharedFieldsAB)
+                        if printReportFunction
+                            fprintf('Shared field %s ...\n',string(sharedFieldsAB{sharedField}));
+                        end
+                        % Now we can compare these fields like in the part above
+                        compareFieldLists(jsonA,jsonB,sharedFieldsAB,sharedFieldsAB,printReportFunction);
+                    end
+                    % Print out missing fields 
+                    for missingField=1:numel(missingFields)
+                        if printReportFunction
+                            fprintf('Missing field %s ...\n',string(missingFields{missingField}));
+                        end
+                    end
                 end
             end
         elseif strcmp(extension,'.tsv') || strcmp(extension,'.txt') || strcmp(extension,'.csv')
@@ -278,6 +279,46 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
             end
         end
     end
+end
+
+% Compare field lists
+function compareFieldLists(jsonStructA,jsonStructB,fieldListA,fieldListB,printReportNow)
+
+    % Iterate over fields
+    for curField=1:numel(fieldListA)
+        curFieldNameA = string(fieldListA(curField));
+        curFieldNameB = string(fieldListB(curField));
+        fieldContentA = jsonStructA.(fieldListA{curField});
+        fieldContentB = jsonStructB.(fieldListB{curField});
+        if isnumeric(fieldContentA) && isnumeric(fieldContentB)
+            % Compare numbers
+            if ~(fieldContentA==fieldContentB)
+                if printReportNow
+                    fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
+                end
+            end
+        elseif (ischar(fieldContentA) || isstring(fieldContentA)) && (ischar(fieldContentB) || isstring(fieldContentB))
+            % Compare char arrays and strings
+            if ~(strcmp(fieldContentA,fieldContentB))
+                if printReportNow
+                    fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
+                end
+            end
+        elseif iscell(fieldContentA) && iscell(fieldContentB)
+            % Compare cell arrays
+            if ~(isempty(setdiff(fieldContentA,fieldContentB)) && isempty(setdiff(fieldContentB,fieldContentA)))
+                if printReportNow
+                    fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
+                end
+            end
+        else
+            % Neither number nor text
+            if printReportNow
+                fprintf('It seems we are comparing neither numbers nor text in %s ...\n',curFieldNameA);
+            end
+        end
+    end
+    
 end
 
 
