@@ -1,7 +1,7 @@
-function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB,printReport,thresh)
-%xASL_bids_compareStructures Function that compares two BIDS folders with several subfolders and studies and prints the differences.
+function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,printReport,thresh)
+%xASL_bids_CompareStructures Function that compares two BIDS folders with several subfolders and studies and prints the differences.
 %
-% FORMAT: [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB,[printReport,thresh]);
+% FORMAT: [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,[printReport,thresh]);
 %
 % INPUT:
 %        pathDatasetA       - path to first BIDS structure (REQUIRED)
@@ -20,7 +20,7 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
 %
 % EXAMPLE:          pathDatasetA = '...\bids-examples\eeg_rest_fmri';
 %                   pathDatasetB = '...\bids-examples\eeg_rest_fmri_exact_copy'
-%                   [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB,true);
+%                   [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,true);
 %
 % REFERENCES:       ...
 % __________________________________
