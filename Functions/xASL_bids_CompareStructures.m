@@ -123,7 +123,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
         identical = false;
     end
     
-    % Report
+    % Full Report
     if printReport
         fprintf(strcat(repmat('=',100,1)','\n'));
         fprintf('Dataset:\t\t%s\n',datasetA)
@@ -147,7 +147,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 
 end
 
-% Modify file list functions
+%% Modify file lists
 function fileList = modifyFileList(fileList,root)
     % Iterate over file list: change folder names
     for it=1:numel(fileList)
@@ -172,7 +172,7 @@ function printList(currentList)
     end
 end
 
-% Check file contents
+%% Check file contents
 function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,pathDatasetB,identical,printReportFunction,thresh)
     
     % All files
@@ -212,7 +212,7 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                     % Print out and compare shared fields 
                     for sharedField=1:numel(sharedFieldsAB)
                         if printReportFunction
-                            fprintf('Shared field %s ...\n',string(sharedFieldsAB{sharedField}));
+                            % fprintf('\t\t\t\tShared field %s ...\n',string(sharedFieldsAB{sharedField}));
                         end
                         % Now we can compare these fields like in the part above
                         compareFieldLists(jsonA,jsonB,sharedFieldsAB,sharedFieldsAB,printReportFunction);
@@ -220,7 +220,7 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                     % Print out missing fields 
                     for missingField=1:numel(missingFields)
                         if printReportFunction
-                            fprintf('Missing field %s ...\n',string(missingFields{missingField}));
+                            fprintf('\t\t\t\tMissing field %s ...\n',string(missingFields{missingField}));
                         end
                     end
                 end
@@ -234,7 +234,7 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                 if printReportFunction
                     fprintf('Checking:\t\t%s\n',allFiles(it))
                     if ~strcmp(currentFileTextA,currentFileTextB)
-                        warning('Different file content!')
+                        fprintf('\t\t\t\tDifferent file content!\n')
                         identical = false;
                     end
                 end
@@ -247,6 +247,9 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                 tmpFileB = dir(currentFileB);
                 sizeA = tmpFileA.bytes;
                 sizeB = tmpFileB.bytes;
+                if printReportFunction
+                    fprintf('Checking:\t\t%s\n',allFiles(it));
+                end
                 % Check file size (images with a file size lower than 1 byte are corrupt)
                 if (sizeA>1 && sizeB>1)
                     if contains(allFiles(it),'.nii.gz')
@@ -265,23 +268,24 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                     end
                     % Report function which prints to the console
                     if printReportFunction
-                        fprintf('Checking:\t\t%s\n',allFiles(it))
                         % differenceAB = sum(imageA-imageB,'all');
                         RMSE = sqrt(mean(imageA(:).^2 - imageB(:).^2)) ;
                         if (RMSE>thresh)
-                            warning('RMSE of NIFTIs above threshold!')
+                            fprintf('RMSE of NIFTIs above threshold!\n')
                             identical = false;
                         end
                     end
                 else
-                    warning('Files are too small to be real images!')
+                    if printReportFunction
+                        fprintf('\t\t\t\tFile is too small to be a real image!\n');
+                    end
                 end
             end
         end
     end
 end
 
-% Compare field lists
+%% Compare field lists
 function compareFieldLists(jsonStructA,jsonStructB,fieldListA,fieldListB,printReportNow)
 
     % Iterate over fields
@@ -294,27 +298,34 @@ function compareFieldLists(jsonStructA,jsonStructB,fieldListA,fieldListB,printRe
             % Compare numbers
             if ~(fieldContentA==fieldContentB)
                 if printReportNow
-                    fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
+                    fprintf('\t\t\t\tMismatch of JSON field %s ...\n', curFieldNameA);
                 end
             end
         elseif (ischar(fieldContentA) || isstring(fieldContentA)) && (ischar(fieldContentB) || isstring(fieldContentB))
             % Compare char arrays and strings
             if ~(strcmp(fieldContentA,fieldContentB))
                 if printReportNow
-                    fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
+                    fprintf('\t\t\t\tMismatch of JSON field %s ...\n', curFieldNameA);
                 end
             end
         elseif iscell(fieldContentA) && iscell(fieldContentB)
             % Compare cell arrays
             if ~(isempty(setdiff(fieldContentA,fieldContentB)) && isempty(setdiff(fieldContentB,fieldContentA)))
                 if printReportNow
-                    fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
+                    fprintf('\t\t\t\tMismatch of JSON field %s ...\n', curFieldNameA);
+                end
+            end
+        elseif isstruct(fieldContentA) && isstruct(fieldContentB)
+            % Compare cell arrays
+            if ~(isequal(fieldContentA,fieldContentB))
+                if printReportNow
+                    fprintf('\t\t\t\tMismatch of JSON field %s ...\n', curFieldNameA);
                 end
             end
         else
             % Neither number nor text
             if printReportNow
-                fprintf('It seems we are comparing neither numbers nor text in %s ...\n',curFieldNameA);
+                fprintf('\t\t\t\tIt seems we are comparing neither numbers nor text ...\n');
             end
         end
     end
