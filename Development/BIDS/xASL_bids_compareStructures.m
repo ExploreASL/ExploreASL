@@ -58,6 +58,18 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
     results = struct;
 
     %% Initialization
+    
+    % Remove last character if it is a slash
+    if strcmp(pathDatasetA(end),'/') || strcmp(pathDatasetA(end),'\')
+        pathDatasetA = pathDatasetA(1:end-1);
+    end
+    if strcmp(pathDatasetB(end),'/') || strcmp(pathDatasetB(end),'\')
+        pathDatasetB = pathDatasetB(1:end-1);
+    end
+    
+    % Convert to valid paths
+    pathDatasetA = fullfile(pathDatasetA);
+    pathDatasetB = fullfile(pathDatasetB);
 
     % Get dataset names
     [~,datasetA,~] = fileparts(pathDatasetA);
