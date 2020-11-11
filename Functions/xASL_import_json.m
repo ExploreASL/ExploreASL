@@ -59,6 +59,11 @@ if ~exist(DataParFile, 'file')
     error('DataParFile does not exist...');
 end
 
+% Input has to be a character array
+if isstring(DataParFile)
+    DataParFile = char(DataParFile);
+end
+
 %% Decode JSON file
 jsonData = spm_jsonread(DataParFile);
 
