@@ -189,10 +189,40 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
             % Compare JSON files on field basis
             if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
                 % Import JSON files
-                % jsonA = xASL_import_json(currentFileA);
-                % jsonB = xASL_import_json(currentFileB);
-                % Compare content
-                % ...
+                jsonA = xASL_import_json(char(currentFileA));
+                jsonB = xASL_import_json(char(currentFileB));
+                % Get JSON field names
+                fieldNamesA = fieldnames(jsonA);
+                fieldNamesB = fieldnames(jsonB);
+                % Check if both JSON files have the same fields
+                differenceA = setdiff(fieldNamesA,fieldNamesB);
+                differenceB = setdiff(fieldNamesB,fieldNamesA);
+                if isempty(differenceA) && isempty(differenceB)
+                    % Both JSON files have the same fields, so we can compare the content
+                    for curField=1:numel(fieldNamesA)
+                        curFieldNameA = string(fieldNamesA(curField));
+                        curFieldNameB = string(fieldNamesB(curField));
+                        fieldContentA = jsonA.(fieldNamesA{curField});
+                        fieldContentB = jsonB.(fieldNamesB{curField});
+                        if isnumeric(fieldContentA) && isnumeric(fieldContentB)
+                            % Compare numbers
+                            if ~(fieldContentA==fieldContentB)
+                                fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
+                            end
+                        elseif (ischar(fieldContentA) || isstring(fieldContentA)) && (ischar(fieldContentB) || isstring(fieldContentB))
+                            % Compare char arrays and strings
+                            if ~(strcmp(fieldContentA,fieldContentB))
+                                fprintf('Mismatch of JSON field %s ...\n', curFieldNameA);
+                            end
+                        else
+                            % Neither number nor text
+                            fprintf('It seems we are comparing neither numbers nor text in %s ...\n',curFieldNameA);
+                        end
+                    end
+                else
+                    % The JSON files have different fields
+                    % ...
+                end
             end
         elseif strcmp(extension,'.tsv') || strcmp(extension,'.txt') || strcmp(extension,'.csv')
             % Read files if they exist
