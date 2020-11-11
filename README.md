@@ -3,12 +3,8 @@
 # ExploreASL
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3905262.svg)](https://doi.org/10.5281/zenodo.3905262)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
-
-<!-- ZENODO-BADGE:START - Do not remove or modify this section -->
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3905262.svg)](https://doi.org/10.5281/zenodo.3905262)
-<!-- ZENODO-BADGE:END -->
 
 * [ExploreASL](#exploreasl)
 	* [Description](#description)
