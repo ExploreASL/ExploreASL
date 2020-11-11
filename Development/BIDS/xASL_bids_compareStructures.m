@@ -1,12 +1,13 @@
-function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB,printReport)
+function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB,printReport,thresh)
 %xASL_bids_compareStructures Function that compares two BIDS folders with several subfolders and studies and prints the differences.
 %
-% FORMAT: [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB[,printReport]);
+% FORMAT: [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathDatasetB,[printReport,thresh]);
 %
 % INPUT:
 %        pathDatasetA       - path to first BIDS structure (REQUIRED)
 %        pathDatasetB       - path to second BIDS structure (REQUIRED)
 %        printReport        - true or false to print console report (OPTIONAL, DEFAULT = false)
+%        thresh             - RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 0.1)
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -42,11 +43,17 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
     end
     if ~(xASL_exist(pathDatasetB)==7)
         error('The root folder of structure B does not exist...');
-	end
+    end
 	
+    % Default value for printReport
 	if nargin < 3 || isempty(printReport)
 		printReport = false;
-	end
+    end
+    
+    % Default value for RMSE threshold
+    if nargin < 4
+       thresh = 0.1; 
+    end
 
 
     %% Defaults
@@ -132,7 +139,7 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
     end
     
     % Compare file content
-    identical = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,printReport);
+    identical = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,printReport,thresh);
 
     
     
@@ -165,7 +172,7 @@ function printList(currentList)
 end
 
 % Check file contents
-function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,pathDatasetB,identical,printReportFunction)
+function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,pathDatasetB,identical,printReportFunction,thresh)
     
     % All files
     allFiles = unique([filesDatasetA',filesDatasetB']');
@@ -218,10 +225,10 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                     % Report function which prints to the console
                     if printReportFunction
                         fprintf('Checking:\t\t%s\n',allFiles(it))
-                        differenceAB = sum(imageA-imageB,'all');
-                        thresh = 0.01;
-                        if (differenceAB>thresh)
-                            warning('Difference of NIFTIs above threshold!')
+                        % differenceAB = sum(imageA-imageB,'all');
+                        RMSE = sqrt(mean(imageA(:).^2 - imageB(:).^2)) ;
+                        if (RMSE>thresh)
+                            warning('RMSE of NIFTIs above threshold!')
                             identical = false;
                         end
                     end
