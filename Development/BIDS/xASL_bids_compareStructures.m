@@ -89,8 +89,8 @@ function [identical,results] = xASL_bids_compareStructures(pathDatasetA,pathData
     results.(datasetB) = struct;
     
     % Get files and folders of datasets A and B
-    filesA = dir(fullfile(pathDatasetA, '**\*.*'));
-    filesB = dir(fullfile(pathDatasetB, '**\*.*'));
+    filesA = dir(fullfile(pathDatasetA, '**','*.*'));
+    filesB = dir(fullfile(pathDatasetB, '**','*.*'));
     
     % Remove root path
     filesA = modifyFileList(filesA,pathDatasetA);
