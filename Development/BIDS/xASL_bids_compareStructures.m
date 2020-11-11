@@ -188,7 +188,11 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
         if strcmp(extension,'.json')
             % Compare JSON files on field basis
             if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
-                
+                % Import JSON files
+                % jsonA = xASL_import_json(currentFileA);
+                % jsonB = xASL_import_json(currentFileB);
+                % Compare content
+                % ...
             end
         elseif strcmp(extension,'.tsv') || strcmp(extension,'.txt') || strcmp(extension,'.csv')
             % Read files if they exist
