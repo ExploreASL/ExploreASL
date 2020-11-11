@@ -185,9 +185,15 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
         % Get extension
         [~,~,extension] = fileparts(allFiles(it));
         % Check extension
-        if strcmp(extension,'.json') || strcmp(extension,'.tsv') || strcmp(extension,'.txt') || strcmp(extension,'.csv')
+        if strcmp(extension,'.json')
+            % Compare JSON files on field basis
+            if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+                
+            end
+        elseif strcmp(extension,'.tsv') || strcmp(extension,'.txt') || strcmp(extension,'.csv')
             % Read files if they exist
             if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+                % Compare text files content directly
                 currentFileTextA = fileread(currentFileA);
                 currentFileTextB = fileread(currentFileB);
                 if printReportFunction
