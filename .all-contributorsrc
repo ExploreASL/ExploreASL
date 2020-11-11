@@ -1,0 +1,114 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "HenkMutsaerts",
+      "name": "Henk Mutsaerts",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/27774254?v=4",
+      "profile": "http://www.ExploreASL.org",
+      "contributions": [
+        "design",
+        "content"
+      ]
+    },
+    {
+      "login": "jan-petr",
+      "name": "Jan Petr",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/29886537?v=4",
+      "profile": "https://github.com/jan-petr",
+      "contributions": [
+        "content",
+        "design"
+      ]
+    },
+    {
+      "login": "MichaelStritt",
+      "name": "Michael Stritt",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/46593074?v=4",
+      "profile": "https://github.com/MichaelStritt",
+      "contributions": [
+        "content",
+        "doc"
+      ]
+    },
+    {
+      "login": "pfcgroot",
+      "name": "Paul Groot",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/18597189?v=4",
+      "profile": "http://www.amsterdamumc.nl",
+      "contributions": [
+        "code",
+        "content"
+      ]
+    },
+    {
+      "login": "pvdemael",
+      "name": "Pieter Vandemaele",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/37624277?v=4",
+      "profile": "https://github.com/pvdemael",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
+      "login": "luislorenzini",
+      "name": "luislorenzini",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/57985241?v=4",
+      "profile": "https://github.com/luislorenzini",
+      "contributions": [
+        "code",
+        "tool"
+      ]
+    },
+    {
+      "login": "MauricePasternak",
+      "name": "MauricePasternak",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/57411571?v=4",
+      "profile": "https://github.com/MauricePasternak",
+      "contributions": [
+        "code",
+        "design"
+      ]
+    },
+    {
+      "login": "sandeepganji",
+      "name": "Sandeep Ganji",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/12124746?v=4",
+      "profile": "https://github.com/sandeepganji",
+      "contributions": [
+        "content",
+        "ideas"
+      ]
+    },
+    {
+      "login": "jozsait",
+      "name": "jozsait",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/19532128?v=4",
+      "profile": "https://github.com/jozsait",
+      "contributions": [
+        "code",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "DaveThoma5",
+      "name": "DaveThoma5",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/3704113?v=4",
+      "profile": "https://github.com/DaveThoma5",
+      "contributions": [
+        "ideas"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "ExploreASL",
+  "projectOwner": "ExploreASL",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
