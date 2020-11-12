@@ -4,12 +4,10 @@
 
 
 # download xASL 
-# git clone https://github.com/ExploreASL/ExploreASL.git
+git clone https://github.com/ExploreASL/ExploreASL.git
+
+# copy relevant data
+cp ./ExploreASL/External/TestDataSet TestDataSet
 
 # submit job
 sbatch xASL_job.run
-
-# copy relevant data
-
-# delete xASL folder
-# rm -rf ExploreASL

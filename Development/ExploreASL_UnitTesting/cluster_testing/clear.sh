@@ -1,3 +1,2 @@
-rm .login_srnm
-rm .my_vpn.conf
-rm submission_output.log
+rm -rf .login_srnm
+rm -rf .my_vpn.conf

@@ -7,4 +7,4 @@
 #SBATCH --mail-type=ALL
 
 module load matlab/R2020a 
-matlab -batch "v=version;display(v);exit;"
+matlab -batch "xASL_test;exit;"
