@@ -26,7 +26,7 @@ function outNum = xASL_adm_Hex2Num(inStr, type, endian)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright © 2015-2020 ExploreASL
+% Copyright ï¿½ 2015-2020 ExploreASL
 %
 % 2019-03-29 JP
 
@@ -93,6 +93,15 @@ if ~endian
 end
 
 switch (lower(type))
+	case 'char'
+		% Delivered as a decimal string in hex
+	
+		% First convert hex to decimal
+		outNum = hex2dec(reshape(outNum,2,[])');
+		
+		% Then decimal to char
+		outNum = char(outNum');
+		
 	case 'decimal'
 		% Delivered as a decimal string in hex
 	
