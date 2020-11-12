@@ -381,4 +381,9 @@ for ii = 1:3
 	delete(fullfile(anonymPath,pthVec{ii},'sub-Sub1','anat','sub-Sub1_T1w.nii'));
 end
 
+%%
+testSet = {'GE_PCASL_2DEPI_volunteer','GE_PCASL_3Dspiral_Product_pharma','GE_PCASL_3Dspiral_Product_volunteer','GE_PCASL_3Dspiral_volunteer','GE_PCASL_3Dspiral_WIP_pharma','GE_PCASL_3Dspiral_WIP_volunteer'};
 
+for iTest = 1:length(testSet)
+	[i,r] = xASL_bids_CompareStructures(['/pet/projekte/asl/data/BIDS/BIDS/' testSet{iTest} '/bids'],['/home/janpetr/tmp/comp/old/' testSet{iTest}]);
+end

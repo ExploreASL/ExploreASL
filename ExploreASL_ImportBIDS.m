@@ -305,10 +305,13 @@ if bRunSubmodules(2)
 	
 	spm_jsonwrite(fullfile(imPar.BidsRoot,[bidsPar.datasetDescription.filename '.json']),datasetDescription);
 
-	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Go through all studies and check all the M0 and ASLs and modify the JSONs
+	% This step should be completely automatic, just taking the info filled above and using it to convert to full BIDS.
 	
 		
 		
+	
 	
 	
 	
@@ -325,58 +328,28 @@ if bRunSubmodules(2)
 	
 	
 	% Control and label should be separated by , or ; - this is replaced by \n and spaces are deleted
+	% Parse and extend the ASL context	
+	% Before saving ASL context - replicate enough times
 	
+	% For M0 in aslcontext, filling in PLD and labdur as zero
 
-	% First gather data from individual subjects
-	
-	% then start recalculating missing info and merging individual and study parameters
-
-	% Do the data verification and dependencies right before saving 
-	
-	% use the special structures and conditional structures
-	
-	% Also report errors only before saving
-
-	% Parse and extend the ASL context
-	
 	% After final comparison, need to remove the random study descriptions and rename it correctly
 
 	% Automatic reading of more ASL parameters
 	
 	% Automatic control/label order extraction
 	
-	% Use all the bidsConfig things
-
-% Parse required recommende optional ASL during output
-% Parse ASL conditions during the output
-
-% For M0 in aslcontext, filling in PLD and labdur as zero
-
-% Before saving ASL context - replicate enough times
-
-% Remove tags from dataset_description from StudyPar - don't let them through to the final json
-
-% BSup sanity check
-%if par.BackgroundSuppression = false
-%	then null and remove 'BackgroundSuppressionPulseTime and BackgroundSuppressionNumberPulses'
-%	verify that importStr{ii}.par.BackgroundSuppressionNumberPulses = length(importStr{ii}.par.BackgroundSuppressionPulseTime);
-
 % Slice readouttiming for 3D can be set to 0
 
 % M0 field can be numerical provided. Otherwise - true, separate, false, can be either copied as true or false. Or we simply assign true/false/file based on the fact if you provide M0 or if within series or if contol without BS
 % Missing separate file+Bsup or missing separate+nocontrol should be evaluated as an error
 
-% Load and verify the studyPar file
-
-% Initialize the specific BIDS field lists
-
 % Run the defacing module
 
-% Fix all the stuff in the jsonCheck function at the end
+
+% Do the anonymization
 %%%%%%%%%%% start todo fixing
-%% Go through all studies and check all the M0 and ASLs and modify the JSONs
-% This step should be completely automatic, just taking the info filled above and using it to convert to full BIDS.
-% No edits should be necessary unless there's something wrong that needs to be fixed.
+
 
 % Go through all subjects
 fSubs = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
@@ -413,24 +386,10 @@ for jj = 1:length(fSubs)
 			
 			% Load the JSON
 			jsonAnat = spm_jsonread([anatPath,'.json']);
-			jsonLocal = [];
-			% Discard the fields
-			% Copy all dicom ones
-			for fn = fieldnames(jsonAnat)'
-				% Fields to skip
-				bCP = 1;
-				for ll=1:length(bidsPar.listFieldsRemoveGeneral)
-					if strcmp(bidsPar.listFieldsRemoveGeneral{ll},fn{1})
-						bCP = 0;
-					end
-				end
-				if bCP
-					jsonLocal.(fn{1}) = jsonAnat.(fn{1});
-				end
-			end
+			jsonLocal = jsonAnat;
 			
 			% Save the JSON
-			jsonLocal = ExploreASL_ImportBIDS_jsonCheck(jsonLocal,bidsPar);
+			jsonLocal = ExploreASL_ImportBIDS_jsonCheck(jsonLocal,bidsPar,0);
 			spm_jsonwrite(fullfile(imPar.BidsRoot,['sub-' subLabel],'anat',['sub-' subLabel '_' iiAnat{1} '.json']),jsonLocal);
 		end
 	end
@@ -525,21 +484,7 @@ for jj = 1:length(fSubs)
 			
 			% Copy all dicom ones
 			for fn = fieldnames(jsonDicom)'
-				% Fields to skip
-				bCP = 1;
-				for ll=1:length(bidsPar.listFieldsRemoveGeneral)
-					if strcmp(bidsPar.listFieldsRemoveGeneral{ll},fn{1})
-						bCP = 0;
-					end
-				end
-				for ll=1:length(bidsPar.listFieldsRemoveASL)
-					if strcmp(bidsPar.listFieldsRemoveASL{ll},fn{1})
-						bCP = 0;
-					end
-				end
-				if bCP
-					jsonLocal.(fn{1}) = jsonDicom.(fn{1});
-				end
+				jsonLocal.(fn{1}) = jsonDicom.(fn{1});
 			end
 			
 			% Check if BolusDuration field is present and not in conflict with the BolusCutoffDelayTime
@@ -548,6 +493,32 @@ for jj = 1:length(fSubs)
 					warning('Bolus duration obtained from DICOM, but not correctly redefined.');
 				elseif ~isequal(jsonDicom.BolusDuration,studyPar.BolusCutOffDelayTime(1))
 					warning('Bolus duration obtained from DICOM and the manuall defined one differ.');
+				end
+			end
+			
+			% BSup sanity check
+			%if par.BackgroundSuppression = false
+			%	then null and remove 'BackgroundSuppressionPulseTime and BackgroundSuppressionNumberPulses'
+			%	verify that importStr{ii}.par.BackgroundSuppressionNumberPulses = length(importStr{ii}.par.BackgroundSuppressionPulseTime);
+			
+			% BSup sanity check - remove pulsenumbers and timings if BSup is OFF
+			if jsonLocal.BackgroundSuppression == false
+				if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
+					jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionNumberPulses');
+				end
+				if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
+					jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionPulseTime');
+				end
+			else
+				% If times are given, but not the number of pulses, then assign the length
+				if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
+					if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
+						if jsonLocal.BackgroundSuppressionNumberPulses ~= length(jsonLocal.BackgroundSuppressionPulseTime)
+							fprintf('Warning: Number of pulses and their timings do not match.');
+						end
+					else
+						jsonLocal.BackgroundSuppressionNumberPulses = length(jsonLocal.BackgroundSuppressionPulseTime);
+					end
 				end
 			end
 			
@@ -756,25 +727,8 @@ for jj = 1:length(fSubs)
 							imM0 = imM0 .* scaleFactor;
 						end
 						
-						jsonM0Write = [];
-						% Copy all dicom ones
-						for fn = fieldnames(jsonM0)'
-							% Fields to skip
-							bCP = 1;
-							for ll=1:length(bidsPar.listFieldsRemoveGeneral)
-								if strcmp(bidsPar.listFieldsRemoveGeneral{ll},fn{1})
-									bCP = 0;
-								end
-							end
-							for ll=1:length(bidsPar.listFieldsRemoveASL)
-								if strcmp(bidsPar.listFieldsRemoveASL{ll},fn{1})
-									bCP = 0;
-								end
-							end
-							if bCP
-								jsonM0Write.(fn{1}) = jsonM0.(fn{1});
-							end
-						end
+						%jsonM0Write = [];
+						jsonM0Write = jsonM0;
 						
 						if isfield(jsonLocal,'SliceTiming')
 							% Issue a warning if the SliceTiming was already existing for M0, but still overwrite with ASL one
@@ -854,7 +808,7 @@ for jj = 1:length(fSubs)
 							end
 						end
 						% Save JSON to new dir
-						jsonM0Write = ExploreASL_ImportBIDS_jsonCheck(jsonM0Write,bidsPar);
+						jsonM0Write = ExploreASL_ImportBIDS_jsonCheck(jsonM0Write,bidsPar,1);
 						if nn == 1
 							spm_jsonwrite(fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' bidsPar.strM0scan '.json']),jsonM0Write);
 						else
@@ -868,7 +822,7 @@ for jj = 1:length(fSubs)
 				end
 			end
 			% Save JSON to new dir
-			jsonLocal = ExploreASL_ImportBIDS_jsonCheck(jsonLocal,bidsPar);
+			jsonLocal = ExploreASL_ImportBIDS_jsonCheck(jsonLocal,bidsPar,1);
 			spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
 			
 		end
@@ -1605,85 +1559,229 @@ end
 
 %%
 % Final checking of the JSON structure, renaming and sorting last fields and checking last conditions
-function jsonOut = ExploreASL_ImportBIDS_jsonCheck(jsonIn,bidsPar)
-% Copy all fields to output
-jsonOut = jsonIn;
+function jsonOut = ExploreASL_ImportBIDS_jsonCheck(jsonIn,bidsPar,bIsASL)
+% Create an empty output structure and a structure with fields to delete
+jsonOut = struct;
+jsonRemove = struct;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Rename certain fields from the vendor-name to BIDS name
 
 % Rename the coil names for different manufacturers
-if isfield(jsonOut,'CoilString')
-	switch (jsonOut.Manufacturer)
+if isfield(jsonIn,'CoilString')
+	switch (jsonIn.Manufacturer)
 		case 'Philips'
-			jsonOut.ReceiveCoilName = jsonOut.CoilString;
+			jsonOut.ReceiveCoilName = jsonIn.CoilString;
 		case 'GE'
-			jsonOut.ReceiveCoilName = jsonOut.CoilString;
+			jsonOut.ReceiveCoilName = jsonIn.CoilString;
 		case 'Siemens'
-			jsonOut.ReceiveCoilActiveElements = jsonOut.CoilString;
+			jsonOut.ReceiveCoilActiveElements = jsonIn.CoilString;
 		otherwise
 			error('Unknown manufacturer')
 	end
-	jsonOut = rmfield(jsonOut,'CoilString');
+	jsonRemove.CoilString = '';
 end
 
 % Rename the fields with number of segments
-jsonOut = rmfield(jsonOut,'NumberOfAverages');
-if isfield(jsonOut,'NumberSegments')
-	jsonOut.NumberShots = jsonOut.NumberSegments;
-	jsonOut = rmfield(jsonOut,'NumberSegments');
+jsonRemove.NumberOfAverages = '';
+if isfield(jsonIn,'NumberSegments')
+	jsonOut.NumberShots = jsonIn.NumberSegments;
+	jsonRemove.NumberSegments = '';
 end
 
 % Rename the phase encoding directions fields
-if isfield(jsonOut,'PhaseEncodingAxis')
-	if ~isfield(jsonOut,'PhaseEncodingDirection')
-		jsonOut.PhaseEncodingDirection = jsonOut.PhaseEncodingAxis;
+if isfield(jsonIn,'PhaseEncodingAxis')
+	if ~isfield(jsonIn,'PhaseEncodingDirection')
+		jsonOut.PhaseEncodingDirection = jsonIn.PhaseEncodingAxis;
 	end
-	jsonOut = rmfield(jsonOut,'PhaseEncodingAxis');
+	jsonRemove.PhaseEncodingAxis = '';
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Remove fields not belonging to BIDS
 
 % Remove certain empty fields
-for ii = 1:length(bidsPar.listRemoveIfEmpty)
-	if isfield(jsonOut,bidsPar.listRemoveIfEmpty{ii})
-		if isempty(jsonOut.(bidsPar.listRemoveIfEmpty{ii}))
-			jsonOut = rmfield(jsonOut,bidsPar.listRemoveIfEmpty{ii});
+for iField = 1:length(bidsPar.listRemoveIfEmpty)
+	if isfield(jsonIn,bidsPar.listRemoveIfEmpty{iField})
+		if isempty(jsonIn.(bidsPar.listRemoveIfEmpty{iField}))
+			jsonRemove.(bidsPar.listRemoveIfEmpty{iField}) = '';
 		end
 	end
 end
 
 % Remove non-BIDS fields
-%bidsPar.listFieldsRemoveGeneral
+for iField = 1:length(bidsPar.listFieldsRemoveGeneral)
+	if isfield(jsonIn,bidsPar.listFieldsRemoveGeneral{iField})
+		jsonRemove.(bidsPar.listFieldsRemoveGeneral{iField}) = '';
+	end
+end
 
 % Remove non-ASL-BIDS fields
-%bidsPar.listFieldsRemoveASL
+if bIsASL
+	for iField = 1:length(bidsPar.listFieldsRemoveASL)
+		if isfield(jsonIn,bidsPar.listFieldsRemoveASL{iField})
+			jsonRemove.(bidsPar.listFieldsRemoveASL{iField}) = '';
+		end
+	end
+end
+
+% Remove fields belonging to dataset_description
+for iField = 1:length(bidsPar.datasetDescription.Required)
+	if isfield(jsonIn,bidsPar.datasetDescription.Required{iField})
+		jsonRemove.(bidsPar.datasetDescription.Required{iField}) = '';
+	end
+end
+for iField = 1:length(bidsPar.datasetDescription.Recommended)
+	if isfield(jsonIn,bidsPar.datasetDescription.Recommended{iField})
+		jsonRemove.(bidsPar.datasetDescription.Recommended{iField}) = '';
+	end
+end
+for iField = 1:length(bidsPar.datasetDescription.Optional)
+	if isfield(jsonIn,bidsPar.datasetDescription.Optional{iField})
+		jsonRemove.(bidsPar.datasetDescription.Optional{iField}) = '';
+	end
+end
+
+% Go through all input fields and copy to output, but skip those in jsonRemove
+for nameField = fieldnames(jsonIn)'
+	if ~isfield(jsonRemove, nameField{1})
+		jsonOut.(nameField{1}) = jsonIn.(nameField{1});
+	end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Check field requirements and dependencies
 
 % Check required ASL fields
-%bidsPar.ASLfields.Required
-%bidsPar.ASLfields.Recommended
-%bidsPar.ASLfields.Optional
+if bIsASL
+	strReport = '';
+	for iField = 1:length(bidsPar.ASLfields.Required)
+		if ~isfield(jsonOut,bidsPar.ASLfields.Required{iField})
+			if isempty(strReport)
+				strReport = bidsPar.ASLfields.Required{iField};
+			else
+				strReport = [strReport ', ' bidsPar.ASLfields.Required{iField}];
+			end
+		end
+	end
+	if ~isempty(strReport)
+		fprintf('%s\n\n',['Missing required ASL fields: ' strReport]);
+	end
+	
+	strReport = '';
+	for iField = 1:length(bidsPar.ASLfields.Recommended)
+		if ~isfield(jsonOut,bidsPar.ASLfields.Recommended{iField})
+			if isempty(strReport)
+				strReport = bidsPar.ASLfields.Recommended{iField};
+			else
+				strReport = [strReport ', ' bidsPar.ASLfields.Recommended{iField}];
+			end
+		end
+	end
+	if ~isempty(strReport)
+		fprintf('%s\n\n',['Missing Recommended ASL fields: ' strReport]);
+	end
+end
 
 % Check ASL dependencies
-%bidsPar.ASLCondition{8}.field = 'LabelingType';
-%bidsPar.ASLCondition{8}.value = '^CASL'; can be true and empty as well
-%bidsPar.ASLCondition{8}.RequiredFilled = {'LabelingDuration'};
-%bidsPar.ASLCondition{8}.RequiredEmpty = {'PCASLType','PASLType','LabelingSlabThickness','BolusCutOffFlag','BolusCutOffDelayTime',...
-%	'BolusCutOffTechnique'};
-%bidsPar.ASLCondition{8}.RecommendedFilled = {'CASLType','LabelingPulseAverageGradient','LabelingPulseMaximumGradient',...
-%	'LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle','LabelingPulseInterval'};
+if bIsASL
+	for iCond = 1:length(bidsPar.ASLCondition)
+		% First check if the field is present
+		if isfield(jsonOut,bidsPar.ASLCondition{iCond}.field)
+			
+			% Checking if the condition is met, assuming no
+			bCond = 0;
+			if isempty(bidsPar.ASLCondition{iCond}.value)
+				% Empty value means the field is only present
+				bCond = 1;
+			elseif ischar(bidsPar.ASLCondition{iCond}.value)
+				% strings are checked with regexpi
+				if regexpi(jsonOut.(bidsPar.ASLCondition{iCond}.field),bidsPar.ASLCondition{iCond}.value)
+					bCond = 1;
+				end
+			elseif isequal(jsonOut.(bidsPar.ASLCondition{iCond}.field),bidsPar.ASLCondition{iCond}.value)
+				% Logical and numbers are checked with isequal
+				bCond = 1;
+			end
+			
+			% Conditions are met, now check for dependencies
+			if bCond
+				% Check the required filled fields
+				strReportFilled = '';
+				for iField = 1:length(bidsPar.ASLCondition{iCond}.RequiredFilled)
+					if ~isfield(jsonOut,bidsPar.ASLCondition{iCond}.RequiredFilled{iField}) || isempty(jsonOut.(bidsPar.ASLCondition{iCond}.RequiredFilled{iField}))
+						if isempty(strReportFilled)
+							strReportFilled = bidsPar.ASLCondition{iCond}.RequiredFilled{iField};
+						else
+							strReportFilled = [strReportFilled ', ' bidsPar.ASLCondition{iCond}.RequiredFilled{iField}];
+						end
+					end
+				end
+				
+				% Check the required empty fields
+				strReportEmpty = '';
+				for iField = 1:length(bidsPar.ASLCondition{iCond}.RequiredEmpty)
+					if isfield(jsonOut,bidsPar.ASLCondition{iCond}.RequiredEmpty{iField}) && ~isempty(jsonOut.(bidsPar.ASLCondition{iCond}.RequiredEmpty{iField}))
+						if isempty(strReportEmpty)
+							strReportEmpty = bidsPar.ASLCondition{iCond}.RequiredEmpty{iField};
+						else
+							strReportEmpty = [strReportEmpty ', ' bidsPar.ASLCondition{iCond}.RequiredEmpty{iField}];
+						end
+					end
+				end
+				
+				% Check the recommended filled fields
+				strReportRecommended = '';
+				for iField = 1:length(bidsPar.ASLCondition{iCond}.RecommendedFilled)
+					if ~isfield(jsonOut,bidsPar.ASLCondition{iCond}.RecommendedFilled{iField}) || isempty(jsonOut.(bidsPar.ASLCondition{iCond}.RecommendedFilled{iField}))
+						if isempty(strReportRecommended)
+							strReportRecommended = bidsPar.ASLCondition{iCond}.RecommendedFilled{iField};
+						else
+							strReportRecommended = [strReportRecommended ', ' bidsPar.ASLCondition{iCond}.RecommendedFilled{iField}];
+						end
+					end
+				end
+				
+				% One of the dependencies was not fulfilled
+				if ~isempty(strReportFilled) || ~isempty(strReportEmpty) || ~isempty(strReportRecommended)
+					% Report the conditional field
+					if isempty(bidsPar.ASLCondition{iCond}.value)
+						fprintf('The field %s is empty, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field);
+					elseif islogical(bidsPar.ASLCondition{iCond}.value)
+						if bidsPar.ASLCondition{iCond}.value
+							fprintf('The field %s is true, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field);
+						else
+							fprintf('The field %s is false, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field);
+						end
+					else
+						fprintf('The field %s is %s, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field,bidsPar.ASLCondition{iCond}.value);
+					end
+					
+					% Report the incorrect dependencies
+					if ~isempty(strReportFilled)
+						fprintf('The required fields are missing: %s\n',strReportFilled);
+					end
+					if ~isempty(strReportEmpty)
+						frpintf('The following fields should be empty: %s\n',strReportEmpty);
+					end
+					if ~isempty(strReportRecommended)
+						fprintf('The recommended fields are missing: %s\n',strReportRecommended);
+					end
+					fprintf('\n');
+				end
+			end
+		end
+	end
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sort fields in a predefined order
 
 % Create the structure with the correct field order
 fieldOrderStruct = [];
-for ii=1:length(bidsPar.listFieldOrder)
-	fieldOrderStruct.(bidsPar.listFieldOrder{ii}) = '';
+for iField=1:length(bidsPar.listFieldOrder)
+	fieldOrderStruct.(bidsPar.listFieldOrder{iField}) = '';
 end
 
 % And sort the fields
