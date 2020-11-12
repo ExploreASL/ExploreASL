@@ -1,10 +1,11 @@
-function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData)
+function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData,bUseDCMTK)
 %xASL_bids_PhoenixProtocolReader Function that reads raw DICOM data and extracts the phoenix protocol parameters.
 %
-% FORMAT: [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData);
+% FORMAT: [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData,bUseDCMTK);
 %
 % INPUT:
 %        pathData           - path to DICOM dataset (REQUIRED)
+%        bUseDCMTK          - use DCMTK toolbox to get the phoenix protocol (OPTIONAL, DEFAULT: true)
 %
 % OUTPUT:
 %        parameterList      - list of parameters from the reduced phoenix protocol
@@ -17,7 +18,7 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          pathData = '...\test-data';
-%                   [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData);
+%                   [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData,bUseDCMTK);
 %
 % REFERENCES:       ...
 % __________________________________
@@ -29,6 +30,11 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
     % Check number of input parameters
     if nargin < 1
         error('Missing input parameters...');
+    end
+
+    % Check bUseDCMTK
+    if nargin < 2
+        bUseDCMTK = true;
     end
 
     % Check if the input path is a character array or a string
@@ -52,10 +58,14 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
     endOfProtocol = '### ASCCONV END';
 
     %% Read Phoenix Protocol
-    py.importlib.import_module('pydicom');
-    ds = py.pydicom.dcmread(pathData,false,true);
-    phoenixProtocol = char(ds{2691104}.value); % 2691104 = (0x29,0x1020)
-    phoenixProtocol = [strsplit(phoenixProtocol,'\\n')]';
+    if bUseDCMTK
+        % INSERT JAN'S CODE HERE
+    else
+        py.importlib.import_module('pydicom');
+        ds = py.pydicom.dcmread(pathData,false,true);
+        phoenixProtocol = char(ds{2691104}.value); % 2691104 = (0x29,0x1020)
+        phoenixProtocol = [strsplit(phoenixProtocol,'\\n')]';
+    end
     
     % Remove tabs
     for line=1:numel(phoenixProtocol)
