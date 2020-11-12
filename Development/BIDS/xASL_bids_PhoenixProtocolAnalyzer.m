@@ -35,13 +35,13 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     
     if contains(parameters.tSequenceFileName,'SiemensSeq')
         xasl.SequenceType = 'Siemens'; 
-    elseif contains(parameters.tSequenceFileName,'xxxxxxxxxxxxxx')
+    elseif contains(parameters.tSequenceFileName,'CustomerSeq')
         xasl.SequenceType = 'Customer'; 
     end
     
     if contains(parameters.tSequenceFileName,'ep2d')
         xasl.Sequence = '2D EPI'; 
-    elseif contains(parameters.tSequenceFileName,'xxxxxxxxxxxxxx')
+    elseif contains(parameters.tSequenceFileName,'gse')
         xasl.Sequence = '3D GRASE'; 
     end
     
