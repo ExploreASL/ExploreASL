@@ -25,10 +25,13 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     %% Defaults
     parameters.tSequenceFileName = NaN;
     parameters.tProtocolName = NaN;
+    %parameters.ulMode = NaN; % Maybe use cell arrays with key value pairs instead of structs?
+    %parameters.alTI0 = NaN;
+    %parameters.alTI2 = NaN;
     
     
     %% Get the predefined parameters
-    parameters = getIDofParameter(parameters,parameterList,false);
+    parameters = getPhoenixParameters(parameters,parameterList,false);
     
     
     %% Get xASL parameters
@@ -55,7 +58,7 @@ end
 
 
 %% Get ID of parameter name
-function parameters = getIDofParameter(parameters,phoenixParameterList,debugMode)
+function parameters = getPhoenixParameters(parameters,phoenixParameterList,debugMode)
 
     % Get number of parameters
     parameterNames = fieldnames(parameters);
