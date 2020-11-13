@@ -18,7 +18,7 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          pathData = '...\test-data';
-%                   [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData,bUseDCMTK);
+%                   [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData,true);
 %
 % REFERENCES:       ...
 % __________________________________
@@ -60,7 +60,8 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
     %% Read Phoenix Protocol
     if bUseDCMTK
         headerDCMTK = xASL_io_DcmtkRead(pathData);
-        phoenixProtocol = headerDCMTK.phoenixProtocol;
+        phoenixProtocol = headerDCMTK.PhoenixProtocol;
+        phoenixProtocol = [strsplit(phoenixProtocol,'\n')]';
     else
         py.importlib.import_module('pydicom');
         ds = py.pydicom.dcmread(pathData,false,true);
