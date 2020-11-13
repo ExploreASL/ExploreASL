@@ -59,7 +59,8 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
 
     %% Read Phoenix Protocol
     if bUseDCMTK
-        % INSERT JAN'S CODE HERE
+        headerDCMTK = xASL_io_DcmtkRead(pathData);
+        phoenixProtocol = headerDCMTK.phoenixProtocol;
     else
         py.importlib.import_module('pydicom');
         ds = py.pydicom.dcmread(pathData,false,true);
