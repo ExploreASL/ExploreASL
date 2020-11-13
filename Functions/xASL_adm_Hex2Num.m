@@ -1,5 +1,5 @@
 function outNum = xASL_adm_Hex2Num(inStr, type, endian)
-% Converts string in hexadecimal to a decimal number. 
+% Converts string in hexadecimal to a number of string. 
 %
 % FORMAT: outNum = xASL_adm_hex2num(inStr)
 %
@@ -14,7 +14,7 @@ function outNum = xASL_adm_Hex2Num(inStr, type, endian)
 % OUTPUT:
 %   outNum    - converted to decimal float/double
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  Takes a hexadecimal string and converts it to number. Works
+% DESCRIPTION:  Takes a hexadecimal string and converts it to number or string. Works
 %               also when the string contains escape characters, and for single-floats and 
 %               for a little and big endian. If containing 8 and less
 %               characters than treat as float, if more than as double.
@@ -41,7 +41,7 @@ if (nargin<2) || isempty(type)
 end
 
 if (nargin<3) || isempty(endian)
-	if strcmpi(type,'decimal')
+	if strcmpi(type,'decimal') || strcmpi(type,'char')
 		endian = 1;
 	else
 		endian = 0;
@@ -56,6 +56,13 @@ end
 
 % Take out the backslashes
 outNum = xASL_adm_CorrectName(inStr,2);
+
+% If the output is supposed to be char, then check if the input is not char already
+if strcmpi(type,'char')
+	if sum((outNum>'f' & outNum<'z')+(outNum>'F' & outNum<'Z'))
+		return;
+	end
+end
 
 % Skip padding with zeros for now...
 % 
