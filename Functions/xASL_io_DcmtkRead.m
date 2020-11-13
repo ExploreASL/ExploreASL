@@ -21,7 +21,7 @@ function header = xASL_io_DcmtkRead(filepath, bPixel)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:
 % __________________________________
-% Copyright © 2015-2020 ExploreASL
+% Copyright ï¿½ 2015-2020 ExploreASL
 %
 % 2018-12-17, Jan Petr
 %
@@ -53,20 +53,25 @@ if ~isempty(header.SeriesTime)
 end
 
 % Convert the MRScaleSlope - i.e. the Private_2005_100e tag
+listConvert = {'MRScaleSlope' 'PhilipsNumberTemporalScans' 'PhilipsLabelControl' 'PhoenixProtocol'};
+typeConvert = {'float' 'decimal' 'char' 'char'};
+endianConvert = [0 1 1 1];
 % If the field exists and is still in a string format
-if isfield(header,'MRScaleSlope') && ~isempty(header.MRScaleSlope) && ischar(header.MRScaleSlope)
-	% FL
-	% First try normal conversion to a double precision
-	num = str2double(header.MRScaleSlope);
-	if isnan(num)
-		% Conversion failed - it is not a string, but it is probably given in hex
-		num = xASL_adm_Hex2Num(header.MRScaleSlope,'float',0);
-		if ~isnan(num)
-			header.MRScaleSlope = num;
+for iField = 1:length(listConvert)
+	if isfield(header,listConvert{iField}) && ~isempty(header.(listConvert{iField})) && ischar(header.(listConvert{iField}))
+		% FL
+		% First try normal conversion to a double precision
+		num = str2double(header.(listConvert{iField}));
+		if isnan(num)
+			% Conversion failed - it is not a string, but it is probably given in hex
+			num = xASL_adm_Hex2Num(header.(listConvert{iField}),typeConvert{iField},endianConvert(iField));
+			if ~isnan(num)
+				header.(listConvert{iField}) = num;
+			end
+		else
+			% Conversion went fine, convert to single
+			header.(listConvert{iField}) = single(num);
 		end
-	else
-		% Conversion went fine, convert to single
-		header.MRScaleSlope = single(num);
 	end
 end
 

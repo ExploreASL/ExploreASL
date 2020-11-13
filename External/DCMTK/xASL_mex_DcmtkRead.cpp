@@ -17,7 +17,8 @@
  *    Currently, it reads the following parameters from normal/enhanced DICOM (it uses the DCMTK tag definition for that):
  *    RepetitionTime, EchoTime, RescaleSlope, RescaleIntercept, NumberOfTemporalPositions, NumberOfAverages, AcquisitionTime, 
  *    MediaStorageSOPClassUID, Manufacturer, SeriesDescription, ProtocolName, StudyDate, SeriesTime, StudyInstanceUID, 
- *    SeriesInstanceUID, ImageType, AcquisitionDate, SeriesDate, Rows, Columns, AcquisitionMatrix, InPlanePhaseEncodingDirection
+ *    SeriesInstanceUID, ImageType, AcquisitionDate, SeriesDate, Rows, Columns, AcquisitionMatrix, InPlanePhaseEncodingDirection,
+ *    AcquisitionContrast, ComplexImageComponent, PulseSequenceName, InversionTime, TemporalPositionIdentifier, SoftwareVersions
  *    
  *    The image data are stored in:
  *    PixelData
@@ -33,6 +34,11 @@
  *    MRScaleSlope - 0x2005, 0x100e or 
  *                   0x2005, 0x120e
  *    RescaleSlopeOriginal - 0x2005, 0x140a
+ *    GELabelingType - 0x0019, 0x109C
+ *    GELabelingDuration - 0x0043, 0x10A5
+ *    PhilipsNumberTemporalScans - 0x2001, 0x1008
+ *    PhilipsLabelControl - 0x2005, 0x1429
+ *    PhoenixProtocol - 0x0029, 0x1020
  *
  *    What is read is hard coded - to change that, you need to change the MEX file
  *
@@ -47,6 +53,7 @@
  * 
  * 2010-07-30 Joost Kuijer - VUmc - original version
  * 2018-12-17 Jan Petr - adapted for xASL use
+ * 2020-11-12 Jan Petr - added more private tags
  */
 
 // Matlab MEX stuff
@@ -496,6 +503,11 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "SeriesDate"               , MXAGetStringArray( dataset,        DCM_SeriesDate        ) );
 	mxSetField( pmxOutput, 0, "Rows"                     , MXAGetInt16Array(  dataset,        DCM_Rows    ));
 	mxSetField( pmxOutput, 0, "Columns"                  , MXAGetInt16Array(  dataset,        DCM_Columns ));
+	mxSetField( pmxOutput, 0, "AcquisitionContrast"      , MXAGetString( dataset,             DCM_AcquisitionContrast ) );	
+	mxSetField( pmxOutput, 0, "ComplexImageComponent"    , MXAGetString( dataset,             DCM_ComplexImageComponent ) );	
+	mxSetField( pmxOutput, 0, "PulseSequenceName"        , MXAGetString( dataset,             DCM_PulseSequenceName ) );	
+	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetFloat64AsDouble( dataset,    DCM_InversionTime       ) );
+	mxSetField( pmxOutput, 0, "SoftwareVersions"         , MXAGetStringArray( dataset,        DCM_SoftwareVersions        ) );
 	
 	
 	// Parameters for EPI readout needed for TopUp
@@ -507,6 +519,11 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "BandwidthPerPixelPhaseEncode", MXAGetStringArray(dataset, DcmTagKey(0x0019, 0x1028)));
 	mxSetField( pmxOutput, 0, "InPlanePhaseEncodingDirection", MXAGetStringArray(dataset, DCM_InPlanePhaseEncodingDirection));
 	 
+	// Extra GE and Siemens parameters
+	mxSetField( pmxOutput, 0, "GELabelingType"             , MXAGetString( dataset,       DcmTagKey(0x0019, 0x109C) ) );
+	mxSetField( pmxOutput, 0, "GELabelingDuration"         , MXAGetLongIntAsDouble( dataset, DcmTagKey(0x0043, 0x10a5)     ) );
+	mxSetField( pmxOutput, 0, "PhoenixProtocol"            , MXAGetStringArray(dataset, DcmTagKey(0x0029, 0x1020)));
+			
 	if ((rwItem) && (rwItem->tagExistsWithValue(DCM_RealWorldValueIntercept) == OFTrue))
 		mxSetField( pmxOutput, 0, "RWVIntercept"         , MXAGetFloat64AsDouble( rwItem,    DCM_RealWorldValueIntercept       ) );
 	if ((rwItem) && (rwItem->tagExistsWithValue(DCM_RealWorldValueSlope) == OFTrue))
@@ -542,6 +559,21 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 		mxSetField( pmxOutput, 0, "NumberOfTemporalPositions", MXAGetLongIntAsDouble( privatItem,    DCM_NumberOfTemporalPositions) );
 	else
 		mxSetField( pmxOutput, 0, "NumberOfTemporalPositions", MXAGetLongIntAsDouble( dataset,    DCM_NumberOfTemporalPositions) );
+	if ( ( privatItem ) && ( privatItem->tagExistsWithValue( DCM_TemporalPositionIdentifier ) == OFTrue ) )
+		mxSetField( pmxOutput, 0, "TemporalPositionIdentifier", MXAGetLongIntAsDouble( privatItem,    DCM_TemporalPositionIdentifier) );
+	else
+		mxSetField( pmxOutput, 0, "TemporalPositionIdentifier", MXAGetLongIntAsDouble( dataset,    DCM_TemporalPositionIdentifier) );
+	
+	if ( ( privatItem ) && ( privatItem->tagExistsWithValue( DcmTagKey(0x2001, 0x1008) ) == OFTrue ) )
+		mxSetField( pmxOutput, 0, "PhilipsNumberTemporalScans", MXAGetStringArray( privatItem,    DcmTagKey(0x2001, 0x1008)) );
+	else
+		mxSetField( pmxOutput, 0, "PhilipsNumberTemporalScans", MXAGetStringArray( dataset,    DcmTagKey(0x2001, 0x1008)) );
+	
+		if ( ( privatItem ) && ( privatItem->tagExistsWithValue( DcmTagKey(0x2005, 0x1429) ) == OFTrue ) )
+		mxSetField( pmxOutput, 0, "PhilipsLabelControl", MXAGetStringArray( privatItem,    DcmTagKey(0x2005, 0x1429)) );
+	else
+		mxSetField( pmxOutput, 0, "PhilipsLabelControl", MXAGetStringArray( dataset,    DcmTagKey(0x2005, 0x1429)) );
+	
 	
 	if ((privatItem) && 
 		((privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x100e))==OFTrue)||
@@ -627,10 +659,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	    "SeriesDescription", "ProtocolName", "SeriesTime", "AcquisitionDate", "SeriesDate", \
 		"AssetRFactor", "EffectiveEchoSpacing", "AcquisitionMatrix", "MRSeriesWaterFatShift", \
 	    "MRSeriesEPIFactor", "BandwidthPerPixelPhaseEncode", "InPlanePhaseEncodingDirection", \
-	    "Rows", "Columns", "RescaleSlopeOriginal", "RWVIntercept", "RWVSlope"
+	    "Rows", "Columns", "RescaleSlopeOriginal", "RWVIntercept", "RWVSlope", \
+	    "AcquisitionContrast", "ComplexImageComponent", "GELabelingType", "PulseSequenceName", \
+		"InversionTime", "GELabelingDuration", "PhilipsNumberTemporalScans", \
+		"PhilipsLabelControl", "TemporalPositionIdentifier", "PhoenixProtocol", "SoftwareVersions"			  
     };
 
-    const int inFields = 32;
+    const int inFields = 43;
 	int readPixel;
 	double *tmp;
 
