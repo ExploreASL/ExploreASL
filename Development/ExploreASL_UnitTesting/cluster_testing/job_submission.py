@@ -42,6 +42,8 @@ else:
         os.system(ssh_copy_command)
         ssh_copy_command  = 'sshpass -p ' + cluster_psswrd + ' scp ./xASL_job.run ' + username + '@' + cluster_ddrss + ':~/xASL_job.run'
         os.system(ssh_copy_command)
+        ssh_copy_command  = 'sshpass -p ' + cluster_psswrd + ' scp ./xASL_test.m ' + username + '@' + cluster_ddrss + ':~/xASL_test.m'
+        os.system(ssh_copy_command)
         ssh_login_command = 'sshpass -p ' + cluster_psswrd + ' ssh ' + username + '@' + cluster_ddrss + ' "bash cluster_commands.sh; exit;"'
         os.system(ssh_login_command)
     else:
@@ -71,6 +73,8 @@ else:
         ssh_copy_command  = 'sshpass -p ' + cluster_psswrd + ' scp ./cluster_commands.sh ' + username + '@' + cluster_ddrss + ':~/cluster_commands.sh'
         os.system(ssh_copy_command)
         ssh_copy_command  = 'sshpass -p ' + cluster_psswrd + ' scp ./xASL_job.run ' + username + '@' + cluster_ddrss + ':~/xASL_job.run'
+        os.system(ssh_copy_command)
+        ssh_copy_command  = 'sshpass -p ' + cluster_psswrd + ' scp ./xASL_test.m ' + username + '@' + cluster_ddrss + ':~/xASL_test.m'
         os.system(ssh_copy_command)
         ssh_login_command = 'sshpass -p ' + cluster_psswrd + ' ssh ' + username + '@' + cluster_ddrss + ' "bash cluster_commands.sh; exit;"'
         os.system(ssh_login_command)

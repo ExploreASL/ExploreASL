@@ -7,7 +7,7 @@
 git clone https://github.com/ExploreASL/ExploreASL.git
 
 # copy relevant data
-cp ./ExploreASL/External/TestDataSet TestDataSet
+cp -r ./ExploreASL/External/TestDataSet TestDataSet
 
 # submit job
 sbatch xASL_job.run

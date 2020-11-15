@@ -8,3 +8,5 @@
 
 module load matlab/R2020a 
 matlab -batch "xASL_test;exit;"
+rm -r ExploreASL
+rm -r TestDataSet
