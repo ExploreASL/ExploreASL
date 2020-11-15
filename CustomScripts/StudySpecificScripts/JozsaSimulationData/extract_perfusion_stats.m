@@ -1,4 +1,4 @@
-function extract_stats_for_virtual_brain_model_fct(data_dir,kernel_size,PVC_mask_treshold,quantile_lim)
+function extract_perfusion_stats(xASL_path,data_dir,kernel_size,PVC_mask_treshold,quantile_lim)
 % This is a script created by Tamas Jozsa to extract statistics from CBF maps processed by ExploreASL
 %
 % data_dir - string of the folder containing the data
@@ -7,7 +7,7 @@ function extract_stats_for_virtual_brain_model_fct(data_dir,kernel_size,PVC_mask
 % qunatile_lim - float to extract symmetric quantiles: 0.25 will lead to 25 and 75 percentiles
 %
 % Example:
-% extract_stats_for_virtual_brain_model_fct('./EPAD_stats/',3,0.6,0.25)
+% extract_perfusion_stats('./ExploreASL/','./EPAD_stats/',3,0.6,0.25)
 
 clc;
 
@@ -20,7 +20,6 @@ outfile = ['patient_stats_kernel' num2str(kernel_size) '_trsh' num2str(PVC_mask_
 myKernel = [kernel_size,kernel_size,kernel_size];
 
 %% 2. initialise xASL
-xASL_path = './ExploreASL-1.1.2/'; %'/home/atom/Downloads/ExploreASL/';
 CurrentPath = pwd;
 cd(xASL_path);
 ExploreASL_Master('',0); % initialize ExploreASL, without processing data
@@ -39,7 +38,7 @@ patient_data = zeros(sum(pass_check),11);
 
 cter = 1;
 for ii = 1:n_patients
-    if pass_check(ii)
+    if pass_check(ii) && exist(fullfile(stat_dir, patient_folders{ii}, patient_folders{ii}, ASL_data_folder, 'CBF.nii'))>0
         % read age, sex info
         % TODO: please implement reading patients' age and sex -> H: Will do
         age = str2double( Age(ii) );
@@ -95,8 +94,8 @@ for ii = 1:n_patients
                 GM_stat = num2cell( quantile(CBF_GM_array,[quantile_lim, 1-quantile_lim]) );
                 WM_stat = num2cell( quantile(CBF_WM_array,[quantile_lim, 1-quantile_lim]) );
             else
-                GM_stat = num2cell( quantile_mlab2014(CBF_GM_array,[quantile_lim, 1-quantile_lim]) );
-                WM_stat = num2cell( quantile_mlab2014(CBF_WM_array,[quantile_lim, 1-quantile_lim]) );
+                GM_stat = num2cell( quantile_fct(CBF_GM_array,[quantile_lim, 1-quantile_lim]) );
+                WM_stat = num2cell( quantile_fct(CBF_WM_array,[quantile_lim, 1-quantile_lim]) );
             end
 
             [GM_perc_a,GM_perc_b] = deal( GM_stat{:} );

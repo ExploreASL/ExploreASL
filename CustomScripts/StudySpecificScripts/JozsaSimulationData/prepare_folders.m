@@ -9,8 +9,6 @@ function prepare_folders(EPAD_data_dir,copied_data_dir,data_par_template_file,qu
 %
 % example:
 % prepare_folders('/home/henk/ExploreASL/ASL/VirtualBrain/analysis_EPAD/','./EPAD_stats/','DATA_PAR_template.json',1,'./ExploreASL-1.1.2/','patient_info.mat')
-clear all;
-close all;
 clc;
 
 %% 1. define files, folders, and quality

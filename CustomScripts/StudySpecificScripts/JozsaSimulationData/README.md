@@ -21,4 +21,5 @@ For further details, see the corresponding functions.
 The quantile and percentile functions (see quantile_fct.m and prctile_fct.m) are needed only if an older matlab version is used and they are not available by default.
 
 ### ToDo
-- [ ] Test implementation
+- [x] Test implementation
+- [ ] Implement affine transformation matrix computation approximating patient brain with virtual brain
