@@ -1,0 +1,12 @@
+{"name":"Philips2DEPI",
+"subject_regexp":"^040EPAD00001$",
+"M0":"separate_scan",
+"Q":{"BackGrSupprPulses":2,
+"LabelingType":"CASL",
+"Initial_PLD":2025,
+"LabelingDuration":1650,
+"SliceReadoutTime":36.5278},
+"readout_dim":"2D",
+"Quality":1,
+"Vendor":"Philips",
+"Sequence":"2D_EPI"}
