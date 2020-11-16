@@ -79,6 +79,22 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
         phoenixProtocol{line,1} = strrep(phoenixProtocol{line,1},'\t','');
     end
     
+    % Remove empty lines
+    try
+        for line=1:numel(phoenixProtocol)
+            if line<=numel(phoenixProtocol)
+                lineWithoutSpaces = deblank(phoenixProtocol{line,1});
+                if isempty(lineWithoutSpaces)
+                    phoenixProtocol(line,:) = [];
+                    line = line-1;
+                end
+            end
+        end
+    catch
+        fprintf('Was not able to remove empty lines...\n');
+    end
+    
+    
 
     %% Extract parameters
     

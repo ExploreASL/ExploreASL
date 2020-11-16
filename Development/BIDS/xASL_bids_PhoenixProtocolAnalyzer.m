@@ -24,7 +24,7 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     %% Defaults    
     parameters{1,1} = 'tSequenceFileName';      parameters{1,2} = NaN;
     parameters{2,1} = 'tProtocolName';          parameters{2,2} = NaN;
-    parameters{3,1} = 'ulMode';                 parameters{3,2} = NaN;
+    parameters{3,1} = 'sAsl.ulMode';            parameters{3,2} = NaN;
     parameters{4,1} = 'alTI[0]';                parameters{4,2} = NaN;
     parameters{5,1} = 'alTI[2]';                parameters{5,2} = NaN;
     
@@ -41,23 +41,29 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
         xasl.SequenceType = 'Customer'; 
     end
     
-    if contains(parameters.tSequenceFileName,'ep2d')
+    if contains(lower(parameters.tSequenceFileName),'ep2d')
         xasl.Sequence = '2D EPI'; 
-    elseif contains(parameters.tSequenceFileName,'gse')
+    elseif contains(lower(parameters.tSequenceFileName),'gse')
         xasl.Sequence = '3D GRASE'; 
     end
     
-    if contains(parameters.tSequenceFileName,'pasl')
-       xasl.LabelingType = 'PASL'; 
+    if contains(lower(parameters.tSequenceFileName),'pasl')
+        xasl.LabelingType = 'PASL';
+    end
+    if contains(lower(parameters.tSequenceFileName),'casl')
+        xasl.LabelingType = 'CASL';
+    end
+    if contains(lower(parameters.tSequenceFileName),'pcasl')
+        xasl.LabelingType = 'PCASL';
     end
     
-    if parameters.ulMode==4
-        xasl.Technique = 'QII';
+    if parameters.sAslulMode==4
+        xasl.Technique = 'Q2TIPS';
     end
     
-    if str2double(parameters.alTI0)~=100000 && str2double(parameters.alTI2)~=7000000
+    if parameters.alTI0~=100000 && parameters.alTI2~=7000000
         xasl.ScanType = 'ASL';
-    elseif str2double(parameters.alTI0)==100000 && str2double(parameters.alTI2)==7000000
+    elseif parameters.alTI0==100000 && parameters.alTI2==7000000
         xasl.ScanType = 'PseudoM0';
     end
 
@@ -71,6 +77,10 @@ function value = getPhoePar(parameters,curParToExtract)
     cellID = find(contains(parameters, curParToExtract));
     % Return value
     value = parameters{cellID,2};
+    % Convert string numbers to numbers
+    if ~isnan(str2double(value))
+        value = str2double(value);
+    end
 end
 
 %% Convert cell array to struct
@@ -105,13 +115,20 @@ function parameters = getPhoenixParameters(parameters,phoenixParameterList,debug
         % Find parameter
         curFoundParID = find(contains(phoenixParameterList, curName));
         if length(curFoundParID)==1
-            IDs(curParameter,1) = find(contains(phoenixParameterList, curName));
+            IDs(curParameter,1) = curFoundParID;
+        elseif length(curFoundParID)>1
+            % Parameter exists more than once
+            IDs(curParameter,1) = curFoundParID(1);
+            fprintf('Parameter %s found more than once. Using first occurrence...\n', curName);
         else
             % Parameter exists more than once
             IDs(curParameter,1) = NaN;
+            fprintf('Parameter %s not found...\n', curName);
         end
         if ~isempty(IDs(curParameter,1)) && ~isnan(IDs(curParameter,1))
             parameters{newPar,2} = [phoenixParameterList{IDs(curParameter,1),2}];
+            parameters{newPar,2} = strtrim(parameters{newPar,2});
+            
             % Print out current information
             if debugMode
                fprintf('%s = %s\n',parameters{newPar,1},parameters{newPar,2}); 
