@@ -103,13 +103,24 @@ function parameters = getPhoenixParameters(parameters,phoenixParameterList,debug
         curName = parameterNames{curParameter,1};
         
         % Find parameter
-        IDs(curParameter,1) = find(contains(phoenixParameterList, curName));
-        if ~isempty(IDs(curParameter,1))
+        curFoundParID = find(contains(phoenixParameterList, curName));
+        if length(curFoundParID)==1
+            IDs(curParameter,1) = find(contains(phoenixParameterList, curName));
+        else
+            % Parameter exists more than once
+            IDs(curParameter,1) = NaN;
+        end
+        if ~isempty(IDs(curParameter,1)) && ~isnan(IDs(curParameter,1))
             parameters{newPar,2} = [phoenixParameterList{IDs(curParameter,1),2}];
             % Print out current information
             if debugMode
                fprintf('%s = %s\n',parameters{newPar,1},parameters{newPar,2}); 
             end
+            % Iterate
+            newPar = newPar+1;
+        else
+            % Parameter not found or multiple ones exists
+            parameters{newPar,2} = '';
             % Iterate
             newPar = newPar+1;
         end

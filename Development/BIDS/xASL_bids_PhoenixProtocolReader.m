@@ -60,8 +60,13 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
     %% Read Phoenix Protocol
     if bUseDCMTK
         headerDCMTK = xASL_io_DcmtkRead(pathData);
-        phoenixProtocol = headerDCMTK.PhoenixProtocol;
-        phoenixProtocol = [strsplit(phoenixProtocol,'\n')]';
+        % Check if protocol exists
+        if isfield(headerDCMTK,'PhoenixProtocol')
+            phoenixProtocol = headerDCMTK.PhoenixProtocol;
+            phoenixProtocol = [strsplit(phoenixProtocol,'\n')]';
+        else
+            phoenixProtocol = "";
+        end
     else
         py.importlib.import_module('pydicom');
         ds = py.pydicom.dcmread(pathData,false,true);
