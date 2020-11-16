@@ -95,10 +95,51 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
     end
     
     
+    %% Defaults
+    parIterator = 2;
+    
+    
+    %% Extract preamble parameters
+    preambleParIdentifier = '<Param';
+    
+    % Iterate over phoenix protocol
+    for line=1:numel(phoenixProtocol)
+        % Current line
+        curLine = char(phoenixProtocol{line,1});
+        % Search for preambleParIdentifier
+        if contains(curLine,preambleParIdentifier)
+            % Find the parameter name
+            quotationIDs = strfind(curLine,'""');
+            if length(quotationIDs)==2
+                parameterToExtract = curLine(quotationIDs(1)+2:quotationIDs(2)-1);
+                % Get actual parameter
+                indexStart = strfind(curLine,'{');
+                indexEnd = strfind(curLine,'}');
+                % Check validity of parameter
+                validParameter = contains(curLine,[preambleParIdentifier,'Long'])...
+                              || contains(curLine,[preambleParIdentifier,'String'])...
+                              || contains(curLine,[preambleParIdentifier,'Bool'])...
+                              || contains(curLine,[preambleParIdentifier,'Double']);
+                if ~isempty(indexStart) && ~isempty(indexEnd) && validParameter
+                    % curLine.contains([preambleParIdentifier,'Long'])
+                    valueToExtract = curLine(indexStart+1:indexEnd-1);
+                    % Add key and value to general parameterList
+                    parameterList{parIterator,1} = parameterToExtract;
+                    parameterList{parIterator,2} = valueToExtract;
+                    parIterator = parIterator+1;
+                else
+                    valueToExtract = '';
+                end
+                if debug
+                    fprintf('%s: %s\n',parameterToExtract,valueToExtract);
+                end
+            end
+
+        end
+    end
+    
 
     %% Extract parameters
-    
-    parIterator = 2;
     protocolStarted = false;
     protocolEnded = false;
     
