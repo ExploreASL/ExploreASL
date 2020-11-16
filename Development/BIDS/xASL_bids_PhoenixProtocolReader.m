@@ -121,14 +121,19 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
                               || contains(curLine,[preambleParIdentifier,'Bool'])...
                               || contains(curLine,[preambleParIdentifier,'Double']);
                 if ~isempty(indexStart) && ~isempty(indexEnd) && validParameter
-                    % curLine.contains([preambleParIdentifier,'Long'])
+                    % Get the paramater value
                     valueToExtract = curLine(indexStart+1:indexEnd-1);
                     % Add key and value to general parameterList
                     parameterList{parIterator,1} = parameterToExtract;
                     parameterList{parIterator,2} = valueToExtract;
                     parIterator = parIterator+1;
                 else
+                    % Not a valid parameter
                     valueToExtract = '';
+                    % Add key and value to general parameterList nevertheless
+                    parameterList{parIterator,1} = parameterToExtract;
+                    parameterList{parIterator,2} = valueToExtract;
+                    parIterator = parIterator+1;
                 end
                 if debug
                     fprintf('%s: %s\n',parameterToExtract,valueToExtract);
