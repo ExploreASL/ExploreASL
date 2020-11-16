@@ -39,6 +39,7 @@
  *    PhilipsNumberTemporalScans - 0x2001, 0x1008
  *    PhilipsLabelControl - 0x2005, 0x1429
  *    PhoenixProtocol - 0x0029, 0x1020
+ *    SiemensSliceTime - 0x0019, 0x0010
  *
  *    What is read is hard coded - to change that, you need to change the MEX file
  *
@@ -523,6 +524,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "GELabelingType"             , MXAGetString( dataset,       DcmTagKey(0x0019, 0x109C) ) );
 	mxSetField( pmxOutput, 0, "GELabelingDuration"         , MXAGetLongIntAsDouble( dataset, DcmTagKey(0x0043, 0x10a5)     ) );
 	mxSetField( pmxOutput, 0, "PhoenixProtocol"            , MXAGetStringArray(dataset, DcmTagKey(0x0029, 0x1020)));
+	mxSetField( pmxOutput, 0, "SiemensSliceTime"           , MXAGetFloat64ArrayAsDouble( dataset,    DcmTagKey(0x0019, 0x1029)  ) );
 			
 	if ((rwItem) && (rwItem->tagExistsWithValue(DCM_RealWorldValueIntercept) == OFTrue))
 		mxSetField( pmxOutput, 0, "RWVIntercept"         , MXAGetFloat64AsDouble( rwItem,    DCM_RealWorldValueIntercept       ) );
@@ -662,10 +664,11 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	    "Rows", "Columns", "RescaleSlopeOriginal", "RWVIntercept", "RWVSlope", \
 	    "AcquisitionContrast", "ComplexImageComponent", "GELabelingType", "PulseSequenceName", \
 		"InversionTime", "GELabelingDuration", "PhilipsNumberTemporalScans", \
-		"PhilipsLabelControl", "TemporalPositionIdentifier", "PhoenixProtocol", "SoftwareVersions"			  
+		"PhilipsLabelControl", "TemporalPositionIdentifier", "PhoenixProtocol", "SoftwareVersions", \
+		"SiemensSliceTime"
     };
 
-    const int inFields = 43;
+    const int inFields = 44;
 	int readPixel;
 	double *tmp;
 

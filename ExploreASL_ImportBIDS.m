@@ -555,6 +555,10 @@ for jj = 1:length(fSubs)
 					jsonLocal.SliceTiming = studyPar.SliceTiming;
 				end
 				
+				if isfield(jsonLocal.SiemensSliceTime) && ~isempty(jsonLocal.SiemensSliceTime)
+					jsonLocal.SliceTiming = jsonLocal.SiemensSliceTime/1000;
+				end
+				
 				% If the length of SliceTiming fits to the number of slices, do nothing
 				if length(jsonLocal.SliceTiming) ~= size(imNii,3)
 					% if the length of studyPar.sliceTiming is higher than 1 and the difference non-zero then use this
