@@ -1,5 +1,5 @@
 function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn)
-%xASL_bids_Dicom2JSON Go through the DICOM or PAR/REC files, parses the header and saves it in MAT
+%xASL_bids_Dicom2JSON Go through the DICOM or PAR/REC files, parses the header and saves it in JSON
 %
 % FORMAT: [parms pathDcmDictOut] = xASL_bids_Dicom2Parms(inp[, parmsfile, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
 %

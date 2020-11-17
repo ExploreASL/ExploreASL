@@ -191,29 +191,13 @@ for ii = 1:length(fList)
 			for cc = 1:32, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 
-		case {'Philips_PCASL_2DEPI_Intera_volunteer','Philips_PCASL_2DEPI_Ingenia_volunteer'}
-			%importStr{ii}.par.ASLContext = '(Label+Control)*75';
-			for cc = 1:75, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
-			importStr{ii}.par.LabelingType = 'PCASL';
-
 		case {'Philips_PCASL_2DEPI_dummyLL' 'Philips_PCASL_2DEPI_dummyMultiPLD' 'Philips_PCASL_2DEPI_dummyQUASAR'}
 			importStr{ii}.par.LabelingType = 'PCASL';
 
-		case {'Philips_PCASL_2DEPI_Bsup_AD1','Philips_PCASL_2DEPI_noBsup_AD'}
+		case {'Philips_PCASL_2DEPI_noBsup_AD'}
 			%importStr{ii}.par.ASLContext = '(Label+Control)*40';
 			for cc = 1:40, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
-
-		case {'Philips_PCASL_2DEPI_Bsup_AD2','Philips_PCASL_2DEPI_Bsup_AD3'}
-			%importStr{ii}.par.ASLContext = '(Label+Control)*30';
-			for cc = 1:30, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strLabel,bidsPar.strControl)];end
-			importStr{ii}.par.LabelingType = 'PCASL';
-
-		case 'Philips_PCASL_2DEPI_Bsup_AD4'
-			importStr{ii}.par.LabelingType = 'PCASL';
-			%importStr{ii}.par.ASLContext = bidsPar.strDeltaM;
-			importStr{ii}.par.ASLContext = sprintf('%s\n',bidsPar.strDeltaM);
-			importStr{ii}.par.LabelingEfficiency = 0.83;
 
 		case {'Siemens_PASL_2DEPI_noBsup_AD2','Siemens_PASL_2DEPI_noBsup_AD'}
 			%importStr{ii}.par.ASLContext = '(Label+Control)*31';(31*L+C)+L
@@ -257,16 +241,6 @@ for ii = 1:length(fList)
 			for cc = 1:8, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strControl,bidsPar.strLabel)];end
 			importStr{ii}.par.LabelingType = 'PCASL';
 			importStr{ii}.par.AcquisitionVoxelSize = [3.4 3.4 4];
-
-		case {'Philips_PCASL_2DEPI_glioma','Philips_PCASL_2DEPI_GBM'}
-			%importStr{ii}.par.ASLContext = '(Control+Label)*30';
-			for cc = 1:30, importStr{ii}.par.ASLContext = [importStr{ii}.par.ASLContext sprintf('%s\n%s\n',bidsPar.strControl,bidsPar.strLabel)];end
-			importStr{ii}.par.LabelingType = 'PCASL';
-			importStr{ii}.par.LabelingPulseAverageGradient = 0.7;
-			importStr{ii}.par.LabelingPulseMaximumGradient = 7;
-			importStr{ii}.par.LabelingPulseFlipAngle = 23;
-			importStr{ii}.par.LabelingPulseDuration = 0.0005;
-			importStr{ii}.par.PCASLType = 'balanced';
 
 		case {'Philips_PCASL_2DEPI_volunteer_1','Philips_PCASL_2DEPI_volunteer_2','Siemens_PCASL_2DEPI_volunteer'}
 			%importStr{ii}.par.ASLContext = '(Control+Label)*70';
@@ -382,7 +356,9 @@ for ii = 1:3
 end
 
 %%
-testSet = {'GE_PCASL_2DEPI_volunteer','GE_PCASL_3Dspiral_Product_pharma','GE_PCASL_3Dspiral_Product_volunteer','GE_PCASL_3Dspiral_volunteer','GE_PCASL_3Dspiral_WIP_pharma','GE_PCASL_3Dspiral_WIP_volunteer'};
+testSet = {'GE_PCASL_2DEPI_volunteer','GE_PCASL_3Dspiral_Product_pharma','GE_PCASL_3Dspiral_Product_volunteer','GE_PCASL_3Dspiral_volunteer','GE_PCASL_3Dspiral_WIP_pharma','GE_PCASL_3Dspiral_WIP_volunteer'...
+	'Philips_PCASL_2DEPI_Bsup_AD1' 'Philips_PCASL_2DEPI_Bsup_AD2' 'Philips_PCASL_2DEPI_Bsup_AD3' 'Philips_PCASL_2DEPI_Bsup_AD4' 'Philips_PCASL_2DEPI_GBM' 'Philips_PCASL_2DEPI_glioma'...
+	'Philips_PCASL_2DEPI_Ingenia_volunteer' 'Philips_PCASL_2DEPI_Intera_volunteer'};
 
 for iTest = 1:length(testSet)
 	[i,r] = xASL_bids_CompareStructures(['/pet/projekte/asl/data/BIDS/BIDS/' testSet{iTest} '/bids'],['/home/janpetr/tmp/comp/old/' testSet{iTest}]);

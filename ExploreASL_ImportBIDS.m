@@ -306,11 +306,55 @@ if bRunSubmodules(2)
 	spm_jsonwrite(fullfile(imPar.BidsRoot,[bidsPar.datasetDescription.filename '.json']),datasetDescription);
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	% Go through all studies and check all the M0 and ASLs and modify the JSONs
+	% Go through all subjects and check all the M0 and ASLs and modify the JSONs
 	% This step should be completely automatic, just taking the info filled above and using it to convert to full BIDS.
 	
+	% Go through all subjects
+	listSubjects = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
+	for iSubject = 1:length(listSubjects)
 		
+		subLabel = xASL_adm_CorrectName(listSubjects{iSubject},2);
 		
+		% Make a subject directory
+		if ~exist(fullfile(imPar.BidsRoot,['sub-' subLabel]),'dir')
+			mkdir(fullfile(imPar.BidsRoot,['sub-' subLabel]));
+		end
+	
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		% Process all the anatomical files
+		% Go throught the list of anat files
+		for iAnatType = bidsPar.listAnatTypes
+			
+			% Check if it exists
+			anatPath = '';
+			if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},[iAnatType{1},'.nii']),'file')
+				anatPath = fullfile(imPar.AnalysisRoot,listSubjects{iSubject},iAnatType{1});
+			end
+			
+			if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},[iAnatType{1} '_1'],[iAnatType{1},'.nii']),'file')
+				anatPath = fullfile(imPar.AnalysisRoot,listSubjects{iSubject},[iAnatType{1} '_1'],iAnatType{1});
+			end
+			
+			% If anatomical file of this type exist, then BIDSify its structure
+			if ~isempty(anatPath)
+				
+				% Create the anatomical directory
+				if ~exist(fullfile(imPar.BidsRoot,['sub-' subLabel],'anat'),'dir')
+					mkdir(fullfile(imPar.BidsRoot,['sub-' subLabel],'anat'));
+				end
+				
+				% Copy the NiFTI file
+				xASL_Copy([anatPath '.nii'],fullfile(imPar.BidsRoot,['sub-' subLabel],'anat',...
+					['sub-' subLabel '_' iAnatType{1} '.nii.gz']));
+				
+				% Load the JSON
+				jsonAnat = spm_jsonread([anatPath,'.json']);
+				
+				% Save the JSON
+				jsonAnat = ExploreASL_ImportBIDS_jsonCheck(jsonAnat,bidsPar,0);
+				spm_jsonwrite(fullfile(imPar.BidsRoot,['sub-' subLabel],'anat',['sub-' subLabel '_' iAnatType{1} '.json']),jsonAnat);
+			end
+		end
 	
 	
 	
@@ -324,9 +368,8 @@ if bRunSubmodules(2)
 	
 	
 	
-	
-	
-	
+	%%%%%%%%%%% start todo fixing
+
 	% Control and label should be separated by , or ; - this is replaced by \n and spaces are deleted
 	% Parse and extend the ASL context	
 	% Before saving ASL context - replicate enough times
@@ -345,56 +388,12 @@ if bRunSubmodules(2)
 % Missing separate file+Bsup or missing separate+nocontrol should be evaluated as an error
 
 % Run the defacing module
-
-
 % Do the anonymization
-%%%%%%%%%%% start todo fixing
 
-
-% Go through all subjects
-fSubs = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
-for jj = 1:length(fSubs)
 	
-	subLabel = xASL_adm_CorrectName(fSubs{jj},2);
 	
-	% Make a subject directory
-	if ~exist(fullfile(imPar.BidsRoot,['sub-' subLabel]),'dir')
-		mkdir(fullfile(imPar.BidsRoot,['sub-' subLabel]));
-	end
 	
-	% Go throught the list of anat files
-	for iiAnat = bidsPar.listAnatTypes
-		% Check if it exists
-		anatPath = '';
-		if xASL_exist(fullfile(imPar.AnalysisRoot,fSubs{jj},[iiAnat{1},'.nii']),'file')
-			anatPath = fullfile(imPar.AnalysisRoot,fSubs{jj},iiAnat{1});
-		end
-		
-		if xASL_exist(fullfile(imPar.AnalysisRoot,fSubs{jj},[iiAnat{1} '_1'],[iiAnat{1},'.nii']),'file')
-			anatPath = fullfile(imPar.AnalysisRoot,fSubs{jj},[iiAnat{1} '_1'],iiAnat{1});
-		end
-		
-		if ~isempty(anatPath)
-			
-			if ~exist(fullfile(imPar.BidsRoot,['sub-' subLabel],'anat'),'dir')
-				mkdir(fullfile(imPar.BidsRoot,['sub-' subLabel],'anat'));
-			end
-			
-			% If yes, then copy the file
-			xASL_Copy([anatPath '.nii'],fullfile(imPar.BidsRoot,['sub-' subLabel],'anat',...
-				['sub-' subLabel '_' iiAnat{1} '.nii.gz']));
-			
-			% Load the JSON
-			jsonAnat = spm_jsonread([anatPath,'.json']);
-			jsonLocal = jsonAnat;
-			
-			% Save the JSON
-			jsonLocal = ExploreASL_ImportBIDS_jsonCheck(jsonLocal,bidsPar,0);
-			spm_jsonwrite(fullfile(imPar.BidsRoot,['sub-' subLabel],'anat',['sub-' subLabel '_' iiAnat{1} '.json']),jsonLocal);
-		end
-	end
-	
-	fSes = xASL_adm_GetFileList(fullfile(imPar.AnalysisRoot,fSubs{jj}),'^ASL.+$',false,[],true);
+	fSes = xASL_adm_GetFileList(fullfile(imPar.AnalysisRoot,listSubjects{iSubject}),'^ASL.+$',false,[],true);
 	
 	% Go through all sessions
 	for kk = 1:length(fSes)
@@ -407,7 +406,7 @@ for jj = 1:length(fSubs)
 				mkdir(fullfile(imPar.BidsRoot,['sub-' subLabel],sesLabel));
 				mkdir(fullfile(imPar.BidsRoot,['sub-' subLabel],sesLabel,'asl'));
 			end
-			inSesPath = fullfile(imPar.AnalysisRoot,fSubs{jj},fSes{kk});
+			inSesPath = fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk});
 			outSesPath = fullfile(imPar.BidsRoot,['sub-' subLabel],sesLabel);
 		else
 			sesLabel = '';
@@ -418,7 +417,7 @@ for jj = 1:length(fSubs)
 				mkdir(fullfile(imPar.BidsRoot,['sub-' subLabel]));
 				mkdir(fullfile(imPar.BidsRoot,['sub-' subLabel],'perf'));
 			end
-			inSesPath = fullfile(imPar.AnalysisRoot,fSubs{jj},fSes{kk});
+			inSesPath = fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk});
 			outSesPath = fullfile(imPar.BidsRoot,['sub-' subLabel]);
 		end
 		
@@ -439,30 +438,24 @@ for jj = 1:length(fSubs)
 			
 			% Load the JSON
 			jsonDicom = spm_jsonread(fullfile(inSesPath,[aslLabel '.json']));
-			if exist(fullfile(inSesPath,[aslLabel '_parms.mat']),'file')
-				imParms = load(fullfile(inSesPath,[aslLabel '_parms.mat']));
-			else
-				imParms = [];
-			end
 			imNii = xASL_io_Nifti2Im(fullfile(inSesPath,[aslLabel '.nii']));
 			
 			rescaleParms = [];
-			ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'...
-				'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
-			JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'...
-				'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
+			ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'};
+			JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'};
 			
 			for pp = 1:length(ParmsFields)
 				if isfield(jsonDicom,JSONFields{pp})
 					rescaleParms.(ParmsFields{pp}) = jsonDicom.(JSONFields{pp});
 				end
-				if ~isempty(imParms)
-					if isfield(imParms.parms,ParmsFields{pp})
-						rescaleParms.(ParmsFields{pp}) = imParms.parms.(ParmsFields{pp});
+				if isfield(jsonDicom,ParmsFields{pp})
+					rescaleParms.(ParmsFields{pp}) = jsonDicom.(ParmsFields{pp});
+					if isfield(jsonDicom,JSONFields{pp}) && ~isequal(jsonDicom.(JSONFields{pp}),jsonDicom.(ParmsFields{pp}))
+						sprintf('Warning: Fields %s=%f and %s=%f differ.\n',JSONFields{pp},jsonDicom.(JSONFields{pp}),ParmsFields{pp},jsonDicom.(ParmsFields{pp}));
 					end
 				end
 			end
-			if ~isempty(strfind(jsonDicom.Manufacturer,'Philips')) || ~isempty(strfind(jsonDicom.Manufacturer,'philips'))
+			if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
 				scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,[aslLabel '.nii'])));
 			else
 				scaleFactor = 0;
@@ -547,6 +540,12 @@ for jj = 1:length(fSubs)
 				end
 			end
 			
+			if isfield (studyPar,'SliceReadoutTime')
+				if isfield(studyPar,'SliceTiming') && ~isequal(studyPar.SliceTiming,studyPar.SliceReadoutTime)
+					sprintf('Warning, difference in SliceTiming and SliceReadoutTime');
+				end
+				studyPar.SliceTiming = studyPar.SliceReadoutTime;
+			end
 			
 			% Fill in extra parameters based on the JSON from the data
 			if jsonLocal.PulseSequenceType(1) == '2'
@@ -555,8 +554,9 @@ for jj = 1:length(fSubs)
 					jsonLocal.SliceTiming = studyPar.SliceTiming;
 				end
 				
-				if isfield(jsonLocal.SiemensSliceTime) && ~isempty(jsonLocal.SiemensSliceTime)
-					jsonLocal.SliceTiming = jsonLocal.SiemensSliceTime/1000;
+				% The siemens field is rather reliable though
+				if isfield(jsonLocal,'SiemensSliceTime') && ~isempty(jsonLocal.SiemensSliceTime)
+					jsonLocal.SliceTiming = jsonLocal.SiemensSliceTime;
 				end
 				
 				% If the length of SliceTiming fits to the number of slices, do nothing
@@ -604,9 +604,9 @@ for jj = 1:length(fSubs)
 			end
 			
 			% Import the number of averages
-			if isfield(imParms,'parms') && isfield(imParms.parms,'NumberOfAverages') && (max(imParms.parms.NumberOfAverages) > 1)
+			if isfield(jsonLocal,'NumberOfAverages') && (max(jsonLocal.NumberOfAverages) > 1)
 				if isfield(studyPar,'TotalAcquiredVolumes')
-					if max(imParms.parms.NumberOfAverages) ~= studyPar.TotalAcquiredVolumes
+					if max(jsonLocal.NumberOfAverages) ~= studyPar.TotalAcquiredVolumes
 						warning('Discrepancy in the number of averages');
 					end
 				end
@@ -662,7 +662,7 @@ for jj = 1:length(fSubs)
 				for nn = 1:2
 					if nn == 1
 						nnStrIn = '';
-						if xASL_exist(fullfile(imPar.AnalysisRoot,fSubs{jj},fSes{kk},'M0PERev.nii'))
+						if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk},'M0PERev.nii'))
 							nnStrOut = '_dir-ap';
 							
 							tagPhaseEncodingDirection = 'j-';
@@ -695,33 +695,27 @@ for jj = 1:length(fSubs)
 						end
 					end
 					% If M0, then copy M0 and add ASL path to the IntendedFor
-					if xASL_exist(fullfile(imPar.AnalysisRoot,fSubs{jj},fSes{kk},['M0' nnStrIn '.nii']))
+					if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk},['M0' nnStrIn '.nii']))
 						jsonM0 = spm_jsonread(fullfile(inSesPath,['M0' nnStrIn '.json']));
 						imM0   = xASL_io_Nifti2Im(fullfile(inSesPath,['M0' nnStrIn '.json']));
-						if exist(fullfile(inSesPath,['M0' nnStrIn '_parms.mat']),'file')
-							imParmsM0 = load(fullfile(inSesPath,['M0' nnStrIn '_parms.mat']));
-						else
-							imParmsM0 = [];
-						end
 						
 						rescaleParms = [];
-						ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'...
-							'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
-						JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'...
-							'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope'};
+						ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'};
+						JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'};
 						for pp = 1:length(ParmsFields)
 							if isfield(jsonM0,JSONFields{pp})
 								rescaleParms.(ParmsFields{pp}) = jsonM0.(JSONFields{pp});
 							end
-							if ~isempty(imParmsM0)
-								if isfield(imParmsM0.parms,ParmsFields{pp})
-									rescaleParms.(ParmsFields{pp}) = imParmsM0.parms.(ParmsFields{pp});
+							
+							if isfield(jsonM0,ParmsFields{pp})
+								rescaleParms.(ParmsFields{pp}) = jsonM0.(ParmsFields{pp});
+								if isfield(jsonM0,JSONFields{pp}) && ~isequal(jsonM0.(JSONFields{pp}),jsonM0.(ParmsFields{pp}))
+									sprintf('Warning: Fields %s=%f and %s=%f differ.\n',JSONFields{pp},jsonM0.(JSONFields{pp}),ParmsFields{pp},jsonM0.(ParmsFields{pp}));
 								end
 							end
 						end
 						
-						
-						if ~isempty(strfind(jsonDicom.Manufacturer,'Philips')) || ~isempty(strfind(jsonDicom.Manufacturer,'philips'))
+						if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
 							scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,['M0' nnStrIn '.nii'])));
 						else
 							scaleFactor = 0;
@@ -731,7 +725,6 @@ for jj = 1:length(fSubs)
 							imM0 = imM0 .* scaleFactor;
 						end
 						
-						%jsonM0Write = [];
 						jsonM0Write = jsonM0;
 						
 						if isfield(jsonLocal,'SliceTiming')
@@ -745,7 +738,7 @@ for jj = 1:length(fSubs)
 								jsonM0Write.SliceTiming = jsonLocal.SliceTiming;
 							else
 								% Or recalculate for M0 if the number of slices differ
-								jsonM0Write.SliceTiming = ((0:(size(imM0,3)-1))')*studyParOld.SliceReadoutTime;
+								jsonM0Write.SliceTiming = ((0:(size(imM0,3)-1))')*(jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1));
 							end
 						else
 							if isfield(jsonM0Write,'SliceTiming')
@@ -1353,7 +1346,7 @@ end
 						if exist(SavePathJSON{iPath}, 'file') && ~isempty(first_match)
 							[~, ~, fext] = fileparts(first_match);
 							if  strcmpi(fext,'.PAR')
-								parms = xASL_adm_Par2Parms(first_match, SavePathJSON{iPath});
+								parms = xASL_adm_Par2JSON(first_match, SavePathJSON{iPath});
 							elseif strcmpi(fext,'.nii')
 								parms = [];
 							elseif imPar.bMatchDirectories
@@ -1385,7 +1378,7 @@ end
 								DestPath = [nii_files{iFile}(1:iStart-1) 'source' nii_files{iFile}(iEnd+1:end)];
 								xASL_Copy(nii_files{iFile}, DestPath, true);
 								% do the same for other extensions
-								Extensions = {'.json' '_parms.json' '_parms.mat'};
+								Extensions = {'.json' '_parms.json'};
 								for iExt=1:length(Extensions)
 									[Fpath, Ffile] = xASL_fileparts(nii_files{iFile});
 									CopyPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
