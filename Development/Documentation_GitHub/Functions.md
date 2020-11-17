@@ -429,7 +429,7 @@ outNum = xASL_adm_hex2num(inStr)
 ```
 
 #### Description
-Takes a hexadecimal string and converts it to number. Works
+Takes a hexadecimal string and converts it to number or string. Works
 also when the string contains escape characters, and for single-floats and
 for a little and big endian. If containing 8 and less
 characters than treat as float, if more than as double.
@@ -734,6 +734,22 @@ This function runs the following steps:
 6. Sort rows on subjects
 7. Fill empty cells
 8. Write data to participants.tsv
+
+
+----
+### xASL\_bids\_CompareStructures.m
+
+#### Format
+
+```matlab
+[identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,[bPrintReport,threshRmseNii]);
+```
+
+#### Description
+Function that compares two BIDS folders with several subfolders and studies and prints the differences.
+We recommend to set bPrintReport to true, because you otherwise can't see significant file content differences.
+
+
 
 
 ----
