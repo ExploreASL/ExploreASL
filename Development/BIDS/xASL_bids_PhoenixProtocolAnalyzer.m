@@ -22,11 +22,12 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 % Copyright @ 2015-2020 ExploreASL
 
     %% Defaults    
-    parameters{1,1} = 'tSequenceFileName';      parameters{1,2} = NaN;
-    parameters{2,1} = 'tProtocolName';          parameters{2,2} = NaN;
-    parameters{3,1} = 'sAsl.ulMode';            parameters{3,2} = NaN;
-    parameters{4,1} = 'alTI[0]';                parameters{4,2} = NaN;
-    parameters{5,1} = 'alTI[2]';                parameters{5,2} = NaN;
+    parameters{1,1} = 'tSequenceFileName';          parameters{1,2} = NaN;
+    parameters{2,1} = 'tProtocolName';              parameters{2,2} = NaN;
+    parameters{3,1} = 'sAsl.ulMode';                parameters{3,2} = NaN;
+    parameters{4,1} = 'alTI[0]';                    parameters{4,2} = NaN;
+    parameters{5,1} = 'alTI[2]';                    parameters{5,2} = NaN;
+    parameters{6,1} = 'sWipMemBlock.alFree[0]';     parameters{6,2} = NaN;
     
     %% Get the predefined parameters
     parameters = getPhoenixParameters(parameters,parameterList,false);

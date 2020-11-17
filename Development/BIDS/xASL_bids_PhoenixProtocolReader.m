@@ -43,11 +43,11 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
     end
     
     % Get file parts
-    [filePath,fileName,fileExtension] = fileparts(pathData);
+    [~,~,fileExtension] = fileparts(pathData);
     
     % Check extension
     if ~strcmp(fileExtension,'.dcm')
-        error('Input path is not a DICOM file...');
+        warning('Input path is not a DICOM file...');
     end
 
     %% Defaults
