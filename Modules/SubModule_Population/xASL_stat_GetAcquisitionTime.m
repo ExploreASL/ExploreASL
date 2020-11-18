@@ -19,9 +19,9 @@ function x = xASL_stat_GetAcquisitionTime(x)
 % full study, which can be useful to check time of scanning -> can
 % influence physiological CBF variability.
 %
-% 1) Collect times
-% 2) Save times
-% 3) Create time histogram
+% 1. Collect times
+% 2. Save times
+% 3. Create time histogram
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_stat_GetAcquisitionTime(x);

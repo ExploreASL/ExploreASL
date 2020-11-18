@@ -1,11 +1,12 @@
-function xASL_doc_Crawler(folder,mdoutput)
+function xASL_doc_Crawler(folder,mdoutput,content)
 %xASL_doc_Crawler Script to get information from the file headers and
 % convert the information into a markdown file.
 %
 % FORMAT:       xASL_doc_Crawler(folder)
 % 
-% INPUT:        folder - input folder
-%               mdoutput - result file
+% INPUT:        folder     - input folder
+%               mdoutput   - result file
+%               content    - "Functions", "StructuralModule", ...
 %
 % OUTPUT:       None
 % 
@@ -80,20 +81,33 @@ function xASL_doc_Crawler(folder,mdoutput)
 
             % Start of function description
             if cS==0
-                TEXT{it,1} = '# Functions';  it = it+1;
-                TEXT{it,1} = ' ';  it = it+1;
-                TEXT{it,1} = '----';  it = it+1;
-                TEXT{it,1} = '## General Functions';  it = it+1;
-                TEXT{it,1} = ' ';  it = it+1;
+                if strcmp(content,'Functions')
+                    TEXT{it,1} = '# Functions';  it = it+1;
+                    TEXT{it,1} = ' ';  it = it+1;
+                    TEXT{it,1} = '----';  it = it+1;
+                    TEXT{it,1} = '## General Functions';  it = it+1;
+                    TEXT{it,1} = ' ';  it = it+1;
+                elseif strcmp(content,'StructuralModule')
+                    TEXT{it,1} = '# Submodules of the Structural Module';  it = it+1;
+                    TEXT{it,1} = ' ';  it = it+1;
+                elseif strcmp(content,'ASLModule')
+                    TEXT{it,1} = '# Submodules of the ASL Module';  it = it+1;
+                    TEXT{it,1} = ' ';  it = it+1;
+                elseif strcmp(content,'PopulationModule')
+                    TEXT{it,1} = '# Submodules of the Population Module';  it = it+1;
+                    TEXT{it,1} = ' ';  it = it+1;
+                end
                 cS = cS+1; 
             end
 
             % Get the current section
-            if cS <= length(SECTION)
-                if contains(fileName,['xASL_', char(SECTION{cS,1})])
-                    TEXT{it,1} = ['## ', char(SECTION_NAMES{cS,1})];  it = it+1;
-                    TEXT{it,1} = '';  it = it+1;
-                    cS = cS+1;
+            if strcmp(content,"Functions")
+                if cS <= length(SECTION)
+                    if contains(fileName,['xASL_', char(SECTION{cS,1})])
+                        TEXT{it,1} = ['## ', char(SECTION_NAMES{cS,1})];  it = it+1;
+                        TEXT{it,1} = '';  it = it+1;
+                        cS = cS+1;
+                    end
                 end
             end
 
@@ -171,7 +185,6 @@ function xASL_doc_Crawler(folder,mdoutput)
 
     % Final output
     fprintf('Markdown file generated...\n');
-    fprintf(BreakString);
 
 end
 

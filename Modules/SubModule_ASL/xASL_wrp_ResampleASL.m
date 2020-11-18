@@ -16,15 +16,15 @@ function xASL_wrp_ResampleASL(x)
 %              The applied interpolation is a combination of all transformations (e.g. motion correction, registration to
 %              T1w, and transformation of T1w to standard space. This submodule performs the following steps:
 %
-%   1    Create slice gradient image for quantification reference, in case of 2D ASL
-%   2    Reslice ASL time series to MNI space (currently 1.5 mm^3)
-%   3    Create mean control image, if available
+%   1.    Create slice gradient image for quantification reference, in case of 2D ASL
+%   2.    Reslice ASL time series to MNI space (currently 1.5 mm^3)
+%   3.    Create mean control image, if available
 %         This also applies a bilateral filter, if requested
 %         If x.M0 is set as UseControlAsM0, this mean control NIfTI will be
 %         copied to an M0 NIfTI (and processed in the M0 submodule)
-%   4    Perform pair-wise subtraction (to create PWI.nii), in native space
-%   5    Same in standard space
-%   6    Save PWI NIfTI & time-series-related maps (SD, SNR)
+%   4.    Perform pair-wise subtraction (to create PWI.nii), in native space
+%   5.    Same in standard space
+%   6.    Save PWI NIfTI & time-series-related maps (SD, SNR)
 %
 % EXAMPLE: xASL_wrp_ResampleASL(x);
 % __________________________________

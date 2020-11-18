@@ -18,25 +18,26 @@ function [x] = xASL_im_CreateAnalysisMask(x, Threshold)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function takes the mean population-based probability
 %              maps of masks, thresholds and combines them:
-%              A) Creation GM, WM & WholeBrain masks by p>0.5
-%              B) Create, combine & save vascular, susceptibity & FoV
+%
+%              A. Creation GM, WM & WholeBrain masks by p>0.5
+%              B. Create, combine & save vascular, susceptibity & FoV
 %                 masks:
 %                 - MaskVascular
 %                 - MaskSusceptibility = MaskSusceptibility & MaskFoV
-%              C) Create & save VBA mask
+%              C. Create & save VBA mask
 %                 - MaskAnalysis = MaskVascular & MaskSusceptibility
 %                 - x.S.VBAmask = MaskAnalysis & GMmask
-%              D) Visualization: Creates a figure with columns being
+%              D. Visualization: Creates a figure with columns being
 %                 following maps/masks overlaid over mean population T1w:
-%                 1) FoV probability 0-50% missing voxels
-%                 2) Vascular 0-7.5% missing voxels
-%                 3) Susceptibility 0-50% missing voxels
-%                 4) Analysis mask
+%                 1. FoV probability 0-50% missing voxels
+%                 2. Vascular 0-7.5% missing voxels
+%                 3. Susceptibility 0-50% missing voxels
+%                 4. Analysis mask
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_im_CreateAnalysisMask(x);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 %% Admin

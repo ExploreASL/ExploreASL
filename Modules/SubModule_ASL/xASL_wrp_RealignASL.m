@@ -22,14 +22,15 @@ function xASL_wrp_RealignASL(x,bSubtraction)
 % view this link for image of rotation roll, pitch and yaw https://www.google.nl/search?q=rotation+pitch+yaw+roll&espv=2&tbm=isch&imgil=LW3Nn1K-L6Oc7M%253A%253B-aSyykkRityJoM%253Bhttp%25253A%25252F%25252Fwww.grc.nasa.gov%25252FWWW%25252Fk-12%25252Fairplane%25252Frotations.html&source=iu&usg=__MlLQ5VuyRbm6kZP0vBJlPxmfbkw%3D&sa=X&ei=TWfjU4WcK4bqyQPqu4Fo&ved=0CD8Q9QEwBQ&biw=1680&bih=946#facrc=_&imgdii=_&imgrc=LW3Nn1K-L6Oc7M%253A%3B-aSyykkRityJoM%3Bhttp%253A%252F%252Fwww.grc.nasa.gov%252FWWW%252Fk-12%252Fairplane%252FImages%252Frotations.gif%3Bhttp%253A%252F%252Fwww.grc.nasa.gov%252FWWW%252Fk-12%252Fairplane%252Frotations.html%3B709%3B533
 % 
 % This submodule performs the following steps:
-% 1 Estimate motion
-% 2 Calculate and plot position and motion parameters
-% 3) Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
-% 4 Remove spike frames from nifti
+%
+% 1. Estimate motion
+% 2. Calculate and plot position and motion parameters
+% 3. Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
+% 4. Remove spike frames from nifti
 %
 % EXAMPLE: xASL_wrp_RealignASL(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 %% ----------------------------------------------------------------------------------------

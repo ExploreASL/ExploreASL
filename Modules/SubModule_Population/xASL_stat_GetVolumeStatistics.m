@@ -9,11 +9,12 @@ function xASL_stat_GetVolumeStatistics(x)
 % OUTPUT: n/a
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This functions collects motion stats, with the following
-% steps:
-% 1) Collect structural volume data
-% 2) Collect WMH data
-% 3) Add stats in participants.tsv
+% DESCRIPTION: This functions collects motion stats, with the following. Steps:
+%
+% 1. Collect structural volume data
+% 2. Collect WMH data
+% 3. Add stats in participants.tsv
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_stat_GetVolumeStatistics(x);
 % __________________________________

@@ -8,6 +8,7 @@ function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
 %   x 	    - structure containing fields with all information required to run this submodule (REQUIRED)
 %   x.P     - paths with NIfTIs for which this function should be applied to (REQUIRED)
 %   rWMHPath - path of the WMH segmentation (either performed by LST or a copy of x.P.Path_WMH_SEGM) (REQUIRED)
+%
 % OUTPUT: n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -22,11 +23,12 @@ function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
 %
 % Note when changing the lesion filling here, LST lesion filling expects a probability map, doesnt work nicely with binary mask
 % This function runs the following steps:
-% 1) File management
-% 2) Clean up the WMH segmentation used for lesion filling
-% 3) Run lesion filling
-% 4) Correction of too much/erronous lesion filling
-% 5) File management
+%
+% 1. File management
+% 2. Clean up the WMH segmentation used for lesion filling
+% 3. Run lesion filling
+% 4. Correction of too much/erronous lesion filling
+% 5. File management
 %
 % EXAMPLE: xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath);
 %

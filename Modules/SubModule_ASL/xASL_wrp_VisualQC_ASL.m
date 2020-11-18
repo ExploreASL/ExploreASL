@@ -14,16 +14,17 @@ function xASL_wrp_VisualQC_ASL(x)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule performs several visualizations for visual & quantitative QC.
-%              1) After initial admin
-%              2) It starts with making ASL NIfTIs ready for visualization
+%
+%              1. After initial admin
+%              2. It starts with making ASL NIfTIs ready for visualization
 %                 & conversion to DICOM (though skipped by default)
-%              3) Then it performs a collection of visualizations
-%              4) Visualizes results of the TopUp geometric distortion correction
-%              5) Visualization of slice gradient
-%              6) Visualization & calculation of temporal QC parameters
-%              7) Compute DICE overlap/intersection of ASL brain in FoV & T1w, to calculate coverage
-%              8) Summarize orientation & check left-right flips
-%              9) Collect several other parameters & store in PDF overview
+%              3. Then it performs a collection of visualizations
+%              4. Visualizes results of the TopUp geometric distortion correction
+%              5. Visualization of slice gradient
+%              6. Visualization & calculation of temporal QC parameters
+%              7. Compute DICE overlap/intersection of ASL brain in FoV & T1w, to calculate coverage
+%              8. Summarize orientation & check left-right flips
+%              9. Collect several other parameters & store in PDF overview
 %
 % EXAMPLE: xASL_wrp_VisualQC_ASL(x);
 % __________________________________

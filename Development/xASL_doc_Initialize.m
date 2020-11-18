@@ -36,10 +36,15 @@ function xASL_doc_Initialize
                   '(./img/ExploreASL_Workflow.jpg "Workflow ExploreASL")');
     
     % Create the functions markdown file
-    xASL_doc_Crawler(fullfile(x.MyPath,'Functions'), fullfile(x.MyPath,'Development','Documentation_GitHub','Functions.md'));
+    xASL_doc_Crawler(fullfile(x.MyPath,'Functions'), fullfile(x.MyPath,'Development','Documentation_GitHub','Functions.md'),'Functions');
 
     % Convert and copy lincense file
     convertLicenseToMarkdown(fullfile(x.MyPath,'LICENSE-EXPLOREASL'),fullfile(x.MyPath,'Development','Documentation_GitHub','License.md'));
+    
+    % Use documentation crawler for individual modules
+    xASL_doc_Crawler(fullfile(x.MyPath,'Modules','SubModule_Structural'), fullfile(x.MyPath,'Development','Documentation_GitHub','Structural_Module.md'),'StructuralModule');
+    xASL_doc_Crawler(fullfile(x.MyPath,'Modules','SubModule_ASL'), fullfile(x.MyPath,'Development','Documentation_GitHub','ASL_Module.md'),'ASLModule');
+    xASL_doc_Crawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(x.MyPath,'Development','Documentation_GitHub','Population_Module.md'),'PopulationModule');
 
 
 
@@ -96,14 +101,23 @@ function convertLicenseToMarkdown(filePath,newPath)
     end
     fclose(file_id);
 
-%     %% Change text
-%     for curLine=1:numel(text_cell)
-%         if ~isempty(text_cell{curLine,1})
-%             if ~isempty(contains(text_cell{curLine,1},text2swap))
-%                 text_cell{curLine,1}= strrep(char(text_cell{curLine,1}),text2swap,newText);
-%             end
-%         end
-%     end
+    %% Markdown styling
+    for curLine=1:numel(text_cell)
+        if ~isempty(text_cell{curLine,1})
+            % Convert "ExploreASL" to bold text
+            if ~isempty(contains(text_cell{curLine,1},'ExploreASL'))
+                text_cell{curLine,1}= strrep(char(text_cell{curLine,1}),'ExploreASL','**ExploreASL**');
+            end
+            % Convert "the Software" to bold text
+            if ~isempty(contains(text_cell{curLine,1},'"the Software'))
+                text_cell{curLine,1}= strrep(char(text_cell{curLine,1}),'the Software','**the Software**');
+            end
+            % Convert "the University" to bold text
+            if ~isempty(contains(text_cell{curLine,1},'the University'))
+                text_cell{curLine,1}= strrep(char(text_cell{curLine,1}),'the University','**the University**');
+            end
+        end
+    end
 
     %% Save new file
     file_id=fopen(newPath,'w');

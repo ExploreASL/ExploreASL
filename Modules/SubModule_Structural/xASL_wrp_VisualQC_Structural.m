@@ -11,20 +11,21 @@ function xASL_wrp_VisualQC_Structural(x)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule performs several visualizations for visual & quantitative QC.
-%              1) After initial admin
-%              2) It starts with the SPM UP parameters (courtesy of Cyril Pernet, his SPM UP scripts were
-%                 made more robust & accurate by Jan & Henk, & are implemented here for T1w (& optionally FLAIR).
-%              3) Then it performs a collection of visualizations
-%              4) Also repeated specifically for lesions & manually provided ROIs
-%              5) Finally, this contains a report of all missing raw & derivative files, in native & standard space,
-%                 printing the NIfTI orientation matrix content before (hdr.mat0) & after registrations (hdr.mat)
-%                 The determinant of these matrices should be the same, otherwise LeftRight has flipped. This should
-%                 also be the same across a group scanned at the same scanner
-%                 Then various other QC functions are called & all are summarized in a PDF report.
+%
+% 1. After initial admin
+% 2. It starts with the SPM UP parameters (courtesy of Cyril Pernet, his SPM UP scripts were
+%    made more robust & accurate by Jan & Henk, & are implemented here for T1w (& optionally FLAIR).
+% 3. Then it performs a collection of visualizations
+% 4. Also repeated specifically for lesions & manually provided ROIs
+% 5. Finally, this contains a report of all missing raw & derivative files, in native & standard space,
+%    printing the NIfTI orientation matrix content before (hdr.mat0) & after registrations (hdr.mat)
+%    The determinant of these matrices should be the same, otherwise LeftRight has flipped. This should
+%    also be the same across a group scanned at the same scanner
+%    Then various other QC functions are called & all are summarized in a PDF report.
 %
 % EXAMPLE: xASL_wrp_VisualQC_Structural(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------

@@ -17,7 +17,7 @@ function xASL_wrp_ProcessM0(x)
 %                     (OPTIONAL, DEFAULT = 0)
 %                     - 0 = M0 registration disabled
 %                     - 1 = M0 registration enabled (DEFAULT)
-
+%
 % OUTPUT: n/a
 % OUTPUT FILES: NIfTI containing image processed M0 map in native & standard space, with and without smoothing
 %
@@ -25,11 +25,11 @@ function xASL_wrp_ProcessM0(x)
 % DESCRIPTION: This submodule performs the image processing and
 %           quantification of M0 maps (if they exist), with the following steps:
 %
-%           1) Register M0 to mean control if it exists
+%           1. Register M0 to mean control if it exists
 %              Before registration, contrast is equalized between the
 %              images & biasfields are removed
-%           2) Quantify M0 (correction scale slope & incomplete T1 recovery)
-%           3) Masking & smoothing of M0 image, either using:
+%           2. Quantify M0 (correction scale slope & incomplete T1 recovery)
+%           3. Masking & smoothing of M0 image, either using:
 %              A) traditional technique (very sharp masking & little smoothing)
 %              B) new ExploreASL-specific technique:
 %                 * extrapolating outside mask (avoiding artifacts from too
@@ -56,7 +56,7 @@ function xASL_wrp_ProcessM0(x)
 %
 % EXAMPLE: xASL_wrp_ProcessM0(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 

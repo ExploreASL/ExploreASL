@@ -19,19 +19,20 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 % This transformation includes Geodesic Shooting/DARTEL for CAT12.
 %
 % This submodule contains the following steps:
-% 1) Administration
-% 2) Extra segmentation options by Jan Petr
-% 3) Segmentation using CAT12
+%
+% 1. Administration
+% 2. Extra segmentation options by Jan Petr
+% 3. Segmentation using CAT12
 %    -> If CAT12 fails, it will be repeated with higher contrast, higher strength affine preprocessing & less biasfield regularization
 %    -> If CAT12 fails twice, it will be skipped & SPM12 will be run
-% 4) Segmentation using SPM12
-% 5) File management CAT12
-% 6) File management lesions
-% 7) Resample lesions to standard space
+% 4. Segmentation using SPM12
+% 5. File management CAT12
+% 6. File management lesions
+% 7. Resample lesions to standard space
 %    -> for the lesion masking. MORE EXPLANATION NEEDED BY JAN
-% 8) Manage flowfields
+% 8. Manage flowfields
 %    -> smooth combination non-linear flowfield outside the lesion & uniform flowfield within the lesion
-% 9) File management
+% 9. File management
 %
 %
 % EXAMPLE: xASL_wrp_SegmentT1w(x);

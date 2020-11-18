@@ -17,20 +17,20 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule converts PWIs to quantified CBF maps (or related derivatives):
 %
-%           1) Load PWI
-%           2) Prepare M0
-%           3) Hematocrit & blood T1 correction
-%           4) ASL & M0 parameters comparisons
-%           5) Load SliceGradient
-%           6) Initialize & define quantification parameters
-%           7) Define labeling efficiency
-%           8) Perform quantification
-%           9) Save files
-%          10) Perform FEAST quantification (if exist)
+%           1. Load PWI
+%           2. Prepare M0
+%           3. Hematocrit & blood T1 correction
+%           4. ASL & M0 parameters comparisons
+%           5. Load SliceGradient
+%           6. Initialize & define quantification parameters
+%           7. Define labeling efficiency
+%           8. Perform quantification
+%           9. Save files
+%          10. Perform FEAST quantification (if exist)
 %
 % EXAMPLE: xASL_wrp_Quantify(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------

@@ -1,10 +1,26 @@
 function xASL_stat_ComputeWsCV(x)
 %xASL_stat_ComputeWsCV Calculates the within and between-subject
-%coefficient of variance (wsCV and bsCV respectively), to estimate the
-%power to detect effects
+% coefficient of variance (wsCV and bsCV respectively), to estimate the
+% power to detect effects.
 %
-% This requires 4D images that have been split
+% FORMAT:       xASL_stat_ComputeWsCV(x)
+% 
+% INPUT:        x     - x structure
 %
+% OUTPUT:       n/a
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Calculates the within and between-subject
+%               coefficient of variance (wsCV and bsCV respectively), to estimate the
+%               power to detect effects.
+%
+%               This requires 4D images that have been split.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      xASL_stat_ComputeWsCV(x);
+% __________________________________
+% Copyright 2015-2020 ExploreASL
+
 
 if ~usejava('jvm')
     fprintf('Skipping xASL_stat_ComputeWsCV, missing JVM\n');
