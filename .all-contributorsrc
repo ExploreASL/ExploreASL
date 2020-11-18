@@ -7,7 +7,7 @@
   "types": {
     "data": {
       "symbol": "🧠",
-      "description": "MRI Data",
+      "description": "Data Acquisition & Management",
       "link": "[<%= symbol %>](<%= url %> \"<%= description %>\"),"
     },
     "creator": {
