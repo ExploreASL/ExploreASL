@@ -9,6 +9,11 @@
       "symbol": "🧠",
       "description": "MRI Data",
       "link": "[<%= symbol %>](<%= url %> \"<%= description %>\"),"
+    },
+    "creator": {
+      "symbol": "👨‍🔬",
+      "description": "Mentor and Creator",
+      "link": "[<%= symbol %>](<%= url %> \"<%= description %>\"),"
     }
   },
   "contributors": [
