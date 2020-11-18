@@ -14,6 +14,11 @@
       "symbol": "👨‍🔬",
       "description": "Mentor and Creator",
       "link": "[<%= symbol %>](<%= url %> \"<%= description %>\"),"
+    },
+    "interface": {
+      "symbol": "📊",
+      "description": "Graphical User Interface",
+      "link": "[<%= symbol %>](<%= url %> \"<%= description %>\"),"
     }
   },
   "contributors": [
@@ -45,9 +50,9 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/46593074?v=4",
       "profile": "https://github.com/MichaelStritt",
       "contributions": [
+      	"code",
         "content",
-        "doc",
-        "code"
+        "doc"
       ]
     },
     {
@@ -86,6 +91,7 @@
       "avatar_url": "https://avatars3.githubusercontent.com/u/57411571?v=4",
       "profile": "https://github.com/MauricePasternak",
       "contributions": [
+      	"interface",
         "code",
         "design"
       ]
@@ -116,7 +122,8 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/3704113?v=4",
       "profile": "https://github.com/DaveThoma5",
       "contributions": [
-        "ideas"
+        "ideas",
+        "data"
       ]
     }
   ],
