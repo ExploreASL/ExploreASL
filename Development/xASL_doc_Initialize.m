@@ -9,8 +9,8 @@ function xASL_doc_Initialize
 % OUTPUT:       None
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  This function calls individual documentation crawlers to
-%               create the function description markdown files.
+% DESCRIPTION:  This function generates all markdown files, which are
+%               necessary for the mkdocs documentation.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_doc_Initialize
@@ -35,11 +35,11 @@ function xASL_doc_Initialize
                   '(https://www.researchgate.net/profile/Andrew_Robertson7/publication/337328693/figure/fig1/AS:826578854481921@1574083164220/Schematic-diagram-of-ExploreASL-processing-steps-Steps-marked-with-a-are-optional.ppm "Workflow of ExploreASL")',...
                   '(./img/ExploreASL_Workflow.jpg "Workflow ExploreASL")');
     
-
     % Create the functions markdown file
     xASL_doc_Crawler(fullfile(x.MyPath,'Functions'), fullfile(x.MyPath,'Development','Documentation_GitHub','Functions.md'));
 
-
+    % Convert and copy lincense file
+    convertLicenseToMarkdown(fullfile(x.MyPath,'LICENSE-EXPLOREASL'),fullfile(x.MyPath,'Development','Documentation_GitHub','License.md'));
 
 
 
@@ -73,6 +73,40 @@ function swapTextInFile(filePath,text2swap,newText)
     
     %% Change file
     file_id=fopen(filePath,'w');
+    for i=1:length(text_cell)    
+        fprintf(file_id,'%s\n', text_cell{i});
+    end
+    fclose(file_id);
+
+end
+
+%% Convert license file to markdown file
+function convertLicenseToMarkdown(filePath,newPath)
+    %% Open file
+    file_id=fopen(filePath,'r');
+    text_cell=cell(1);
+    while 1
+        text_line_read=fgetl(file_id);
+        if text_line_read == -1
+            break
+        else
+            text_cell(end,1)=cellstr(text_line_read);
+            text_cell(end+1,1)=cell(1);
+        end
+    end
+    fclose(file_id);
+
+%     %% Change text
+%     for curLine=1:numel(text_cell)
+%         if ~isempty(text_cell{curLine,1})
+%             if ~isempty(contains(text_cell{curLine,1},text2swap))
+%                 text_cell{curLine,1}= strrep(char(text_cell{curLine,1}),text2swap,newText);
+%             end
+%         end
+%     end
+
+    %% Save new file
+    file_id=fopen(newPath,'w');
     for i=1:length(text_cell)    
         fprintf(file_id,'%s\n', text_cell{i});
     end
