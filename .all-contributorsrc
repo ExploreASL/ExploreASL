@@ -4,6 +4,13 @@
   ],
   "imageSize": 100,
   "commit": false,
+  "types": {
+    "data": {
+      "symbol": "🧠",
+      "description": "MRI Data",
+      "link": "[<%= symbol %>](<%= url %> \"<%= description %>\"),"
+    }
+  },
   "contributors": [
     {
       "login": "HenkMutsaerts",
