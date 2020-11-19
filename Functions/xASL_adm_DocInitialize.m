@@ -42,6 +42,9 @@ function xASL_adm_DocInitialize(outputFolder)
     % Copy the REQUIREMENTS file
     copyfile(fullfile(x.MyPath,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
     
+    % Copy the ABOUT file
+    copyfile(fullfile(x.MyPath,'ABOUT.md'),fullfile(outputFolder,'About.md'));
+    
     % Create the functions markdown file
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
 
@@ -56,6 +59,7 @@ function xASL_adm_DocInitialize(outputFolder)
                         fullfile(outputFolder,'Modules.md'),'Modules');
     
     % Use documentation crawler for submodules
+    xASL_adm_DocCrawler(fullfile(x.MyPath,'ExploreASL_ImportConfig.m'), fullfile(outputFolder,'Import_Module.md'),'ImportModule');
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Structural'), fullfile(outputFolder,'Structural_Module.md'),'StructuralModule');
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');

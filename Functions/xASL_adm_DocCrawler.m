@@ -114,6 +114,9 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
                 elseif strcmp(content,'Modules')
                     TEXT{it,1} = '# Modules';  it = it+1;
                     TEXT{it,1} = ' ';  it = it+1;
+                elseif strcmp(content,'ImportModule')
+                    TEXT{it,1} = '# Submodules of the Import Module';  it = it+1;
+                    TEXT{it,1} = ' ';  it = it+1;
                 elseif strcmp(content,'StructuralModule')
                     TEXT{it,1} = '# Submodules of the Structural Module';  it = it+1;
                     TEXT{it,1} = ' ';  it = it+1;
