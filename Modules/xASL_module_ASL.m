@@ -18,16 +18,16 @@ function [result, x] = xASL_module_ASL(x)
 % Both 2D and 3D options are automatially chosen, as well as processing of time-series (if available), such as motion correction and outlier
 % exclusion. This module has the following submodules/wrappers:
 %
-% 010_TopUpASL          - FSL TopUp geometric distortion correction (if M0 images with reversed phase-encoding are present)
-% 020_RealignASL        - If time-series are present, motion correction and outlier exclusion (ENABLE)
-% 030_RegisterASL       - Registration of ASL to T1w anatomical images (if lacking, to MNI images)
-% 040_ResliceASL        - Resample ASL images to standard space
-% 050_PreparePV         - Create partial volume images in ASL space with ASL resolution
-% 060_ProcessM0         - M0 image processing
-% 070_Quantification    - CBF quantification
-% 080_CreateAnalysisMask- Create mask using FoV, vascular outliers & susceptibility atlas
-% 090_VisualQC_ASL      - Generate QC parameters & images
-% 100_WADQC             - QC for WAD-QC DICOM server (OPTIONAL)
+% - 010_TopUpASL          - FSL TopUp geometric distortion correction (if M0 images with reversed phase-encoding are present)
+% - 020_RealignASL        - If time-series are present, motion correction and outlier exclusion (ENABLE)
+% - 030_RegisterASL       - Registration of ASL to T1w anatomical images (if lacking, to MNI images)
+% - 040_ResliceASL        - Resample ASL images to standard space
+% - 050_PreparePV         - Create partial volume images in ASL space with ASL resolution
+% - 060_ProcessM0         - M0 image processing
+% - 070_Quantification    - CBF quantification
+% - 080_CreateAnalysisMask- Create mask using FoV, vascular outliers & susceptibility atlas
+% - 090_VisualQC_ASL      - Generate QC parameters & images
+% - 100_WADQC             - QC for WAD-QC DICOM server (OPTIONAL)
 %
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------

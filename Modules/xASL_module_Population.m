@@ -15,16 +15,16 @@ function [result, x] = xASL_module_Population(x)
 % previous modules. It will perform the following group-wise processing and
 % checks:
 %
-% 010_CreatePopulationTemplates - Create population average images, to compare scanners, cohorts etc without physiological variance
-% 020_CreateAnalysisMask        - Generate a group-level mask by combining individuals masks, for ROI-based analysis & VBA
-% 030_CreateBiasfield           - When there are multiple scanners, create scanner-specific biasfields (uses Site.mat for this)
-% 040_GetDICOMStatistics        - Create TSV file with overview of DICOM parameters
-% 050_GetVolumeStatistics       - Create TSV file with overview of volumetric parameters
-% 060_GetMotionStatistics       - Create TSV file with overview of motion parameters
-% 065_GetRegistrationStatistics - Create TSV file with overview of the registration statistics
-% 070_GetROIstatistics          - Create TSV file with overview of regional values (e.g. qCBF, mean control, pGM etc)
-% 080_SortBySpatialCoV          - Sort ASL_Check QC images by their spatial CoV in quality bins
-% 090_DeleteAndZip              - Delete temporary files and gzip all NIfTIs
+% - 010_CreatePopulationTemplates - Create population average images, to compare scanners, cohorts etc without physiological variance
+% - 020_CreateAnalysisMask        - Generate a group-level mask by combining individuals masks, for ROI-based analysis & VBA
+% - 030_CreateBiasfield           - When there are multiple scanners, create scanner-specific biasfields (uses Site.mat for this)
+% - 040_GetDICOMStatistics        - Create TSV file with overview of DICOM parameters
+% - 050_GetVolumeStatistics       - Create TSV file with overview of volumetric parameters
+% - 060_GetMotionStatistics       - Create TSV file with overview of motion parameters
+% - 065_GetRegistrationStatistics - Create TSV file with overview of the registration statistics
+% - 070_GetROIstatistics          - Create TSV file with overview of regional values (e.g. qCBF, mean control, pGM etc)
+% - 080_SortBySpatialCoV          - Sort ASL_Check QC images by their spatial CoV in quality bins
+% - 090_DeleteAndZip              - Delete temporary files and gzip all NIfTIs
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
