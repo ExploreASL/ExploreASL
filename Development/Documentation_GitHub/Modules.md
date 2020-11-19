@@ -21,7 +21,7 @@ This function takes any folder input, but the folder input should be
 specified in the imPar definition in the ExploreASL\_ImportConfig.m (later
 to be converted to e.g. a CSV file). Follow the steps below, for study "MyStudy" located on "//MyDisk":
 
-1) Make sure you have your DICOM data. Export them from XNAT, download them, or whatsoever
+1. Make sure you have your DICOM data. Export them from XNAT, download them, or whatsoever
 Create a root folder with study ID name, and put the DICOMs in any structure in the raw folder within the study ID root folder
 
 ----
