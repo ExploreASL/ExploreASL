@@ -41,7 +41,14 @@ function xASL_doc_Initialize
     % Convert and copy lincense file
     convertLicenseToMarkdown(fullfile(x.MyPath,'LICENSE-EXPLOREASL'),fullfile(x.MyPath,'Development','Documentation_GitHub','License.md'));
     
-    % Use documentation crawler for individual modules
+    % Use documentation crawler for modules
+    xASL_doc_Crawler({fullfile(x.MyPath,'ExploreASL_Import.m'),...
+                      fullfile(x.MyPath,'Modules','xASL_module_Structural.m'),...
+                      fullfile(x.MyPath,'Modules','xASL_module_ASL.m'),...
+                      fullfile(x.MyPath,'Modules','xASL_module_Population.m')},...
+                      fullfile(x.MyPath,'Development','Documentation_GitHub','Modules.md'),'Modules');
+    
+    % Use documentation crawler for submodules
     xASL_doc_Crawler(fullfile(x.MyPath,'Modules','SubModule_Structural'), fullfile(x.MyPath,'Development','Documentation_GitHub','Structural_Module.md'),'StructuralModule');
     xASL_doc_Crawler(fullfile(x.MyPath,'Modules','SubModule_ASL'), fullfile(x.MyPath,'Development','Documentation_GitHub','ASL_Module.md'),'ASLModule');
     xASL_doc_Crawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(x.MyPath,'Development','Documentation_GitHub','Population_Module.md'),'PopulationModule');

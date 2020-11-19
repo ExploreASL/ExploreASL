@@ -1,14 +1,14 @@
-function xASL_doc_Crawler(folder,mdoutput,content)
+function xASL_doc_Crawler(inputPath,mdoutput,content)
 %xASL_doc_Crawler Script to get information from the file headers and
 % convert the information into a markdown file.
 %
 % FORMAT:       xASL_doc_Crawler(folder)
 % 
-% INPUT:        folder     - input folder
-%               mdoutput   - result file
-%               content    - "Functions", "StructuralModule", ...
+% INPUT:        inputPath     - input folder (or file)
+%               mdoutput      - result file
+%               content       - "Functions", "StructuralModule", ...
 %
-% OUTPUT:       None
+% OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This function checks each individual file header and
@@ -20,48 +20,72 @@ function xASL_doc_Crawler(folder,mdoutput,content)
 %               (which is written like this: {{bold text}}).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_doc_Crawler('M:\...\Functions', 'M:\...\Output.md')
+% EXAMPLE:      xASL_doc_Crawler('M:\...\Functions', 'M:\...\Output.md','Functions');
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
-    % Reminder
+    %% Reminder
     fprintf('============================================= REMINDER =============================================\n');
     fprintf('A correct ExploreASL header should include the following tags in the correct order:\n');
     fprintf('"FORMAT:", "INPUT:", "OUTPUT:", "DESCRIPTION:" and "EXAMPLE:"\n');
 
-    %% Improve command window output
-    BreakString = [repmat('=',1,100),'\n'];
+    %% Defaults
     SeparatorLine = repmat('-',1,149);
-
-    %% Input Check
-    fprintf(BreakString)
-    if nargin < 1
-        error('Input folder not defined...')
-    end
-
-    %% Check directory
-    listing = dir(folder);
-
-    %% Iterate over files
-
-    % Remove folders
-    folderList = [listing.isdir]';
-    listing(folderList) = [];
-
-    % Sections
+    isFileList = false;
+    
+    % Sections for "Functions" folder
     SECTION = {'adm', 'bids', 'fsl', 'im', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
     SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Imaging', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
 
-    cS = 0;     % Current section
-    it = 1;     % Iterator
+    %% Input Check
+    if nargin < 1
+        error('Input path not defined...')
+    end
+    
+    if nargin < 2
+        error('Output file not defined...')
+    end
+    
+    if nargin < 3
+        error('Content not defined...')
+    end
+
+    %% Check directory
+    if ~iscell(inputPath)
+        listing = dir(inputPath);
+    else
+        listing = [];
+    end
+
+    %% Iterate over files
+
+    % Check if input is folder or file
+    if ~isempty(listing)
+        % Remove folders from list
+        folderList = [listing.isdir]';
+        listing(folderList) = [];
+    else
+        % Input path is a list of files
+        isFileList = true;
+        for individualPath=1:numel(inputPath)
+            listing(individualPath).name = inputPath{individualPath};
+        end
+    end
+
+    % Current section and iterator
+    cS = 0;
+    it = 1;
+    
+    % Predefine cell array
+    TEXT = cell(1,1);
 
     % Get header information from each file
     for i = 1:numel(listing)
         % Get filename
         fileName = listing(i).name;
-        % Set defaults
-        formatText = "";
-        descriptionText = "";
+        if isFileList
+            [~, fileName, ~] = fileparts(fileName);
+        end
 
         % Get information from header if it's not an .md or .mat file
         [extractHeaderInfo,formatText,descriptionText] = analyzeHeader(fileName);
@@ -87,6 +111,9 @@ function xASL_doc_Crawler(folder,mdoutput,content)
                     TEXT{it,1} = '----';  it = it+1;
                     TEXT{it,1} = '## General Functions';  it = it+1;
                     TEXT{it,1} = ' ';  it = it+1;
+                elseif strcmp(content,'Modules')
+                    TEXT{it,1} = '# Modules';  it = it+1;
+                    TEXT{it,1} = ' ';  it = it+1;
                 elseif strcmp(content,'StructuralModule')
                     TEXT{it,1} = '# Submodules of the Structural Module';  it = it+1;
                     TEXT{it,1} = ' ';  it = it+1;
@@ -99,7 +126,25 @@ function xASL_doc_Crawler(folder,mdoutput,content)
                 end
                 cS = cS+1; 
             end
-
+            
+            if strcmp(fileName,'ExploreASL_Import')
+                TEXT{it,1} = '----';  it = it+1;
+                TEXT{it,1} = '## 1. Import Module';  it = it+1;
+                TEXT{it,1} = ' ';  it = it+1;
+            elseif strcmp(fileName,'xASL_module_Structural')
+                TEXT{it,1} = '----';  it = it+1;
+                TEXT{it,1} = '## 2. Structural Module';  it = it+1;
+                TEXT{it,1} = ' ';  it = it+1;
+            elseif strcmp(fileName,'xASL_module_ASL')
+                TEXT{it,1} = '----';  it = it+1;
+                TEXT{it,1} = '## 3. ASL Module';  it = it+1;
+                TEXT{it,1} = ' ';  it = it+1;
+            elseif strcmp(fileName,'xASL_module_Population')
+                TEXT{it,1} = '----';  it = it+1;
+                TEXT{it,1} = '## 4. Population Module';  it = it+1;
+                TEXT{it,1} = ' ';  it = it+1;
+            end
+            
             % Get the current section
             if strcmp(content,"Functions")
                 if cS <= length(SECTION)
@@ -121,8 +166,8 @@ function xASL_doc_Crawler(folder,mdoutput,content)
             TEXT{it,1} = '#### Format'; it = it+1; 
             TEXT{it,1} = ''; it = it+1;
             TEXT{it,1} = '```matlab'; it = it+1;
-            for i=1:lF
-                TEXT{it,1} = formatText(i,:); it = it+1;
+            for iter=1:lF
+                TEXT{it,1} = formatText(iter,:); it = it+1;
             end
             % Remove empty char array after FORMAT description
             if strcmp(strtrim(TEXT{it-1,1}),'')
@@ -134,13 +179,9 @@ function xASL_doc_Crawler(folder,mdoutput,content)
             % Create description
             TEXT{it,1} = '#### Description';
             it = it+1;
-            for i=1:lD
-                TEXT{it,1} = descriptionText(i,:);
-
+            for iter=1:lD
+                TEXT{it,1} = descriptionText(iter,:);
                 % WITH THIS SYNTAX WE CANT USE STAR SYMBOLS AND BOLD TEXT IN ONE LINE
-
-                % fprintf([TEXT{it,:},'\n']);
-
                 % OUR NEW BOLD TEXT SYMBOLS ARE {{ AND }} (curly brackets)
                 if contains(TEXT{it,1},' {') || contains(TEXT{it,1},'} ')
                     TEXT{it,:} = strrep(TEXT{it,:},'{{','**');
