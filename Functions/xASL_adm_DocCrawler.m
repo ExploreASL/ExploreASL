@@ -2,7 +2,7 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
 %xASL_doc_Crawler Script to get information from the file headers and
 % convert the information into a markdown file.
 %
-% FORMAT:       xASL_adm_DocCrawler(folder)
+% FORMAT:       xASL_adm_DocCrawler(inputPath)
 % 
 % INPUT:        inputPath     - input folder (or file)
 %               mdoutput      - result file

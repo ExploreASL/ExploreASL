@@ -337,7 +337,7 @@ replaces with default value, it also checks if the parameters are consistent acr
 #### Format
 
 ```matlab
-xASL_adm_DocCrawler(folder)
+xASL_adm_DocCrawler(inputPath)
 ```
 
 #### Description

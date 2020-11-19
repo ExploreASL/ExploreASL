@@ -38,6 +38,9 @@ function xASL_adm_DocInitialize(outputFolder)
     swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(https://www.researchgate.net/profile/Andrew_Robertson7/publication/337328693/figure/fig1/AS:826578854481921@1574083164220/Schematic-diagram-of-ExploreASL-processing-steps-Steps-marked-with-a-are-optional.ppm "Workflow of ExploreASL")',...
                   '(./img/ExploreASL_Workflow.jpg "Workflow ExploreASL")');
+              
+    % Copy the REQUIREMENTS file
+    copyfile(fullfile(x.MyPath,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
     
     % Create the functions markdown file
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
