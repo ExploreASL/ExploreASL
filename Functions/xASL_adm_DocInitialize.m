@@ -1,10 +1,11 @@
-function xASL_adm_DocInitialize(outputFolder)
+function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
 %xASL_adm_DocInitialize Script to call the separate documentation crawler
 % functions.
 %
 % FORMAT:       xASL_adm_DocInitialize
 % 
-% INPUT:        outputFolder   - Folder where the generated markdown files are stored (OPTIONAL)
+% INPUT:        outputFolder     - Folder where the generated markdown files are stored (OPTIONAL, DEFAULT = fullfile(x.MyPath,'Development','Documentation_GitHub'))
+%               updateExploreASL - Update README files in ExploreASL structure (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:       n/a
 % 
@@ -13,7 +14,7 @@ function xASL_adm_DocInitialize(outputFolder)
 %               necessary for the mkdocs documentation.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_adm_DocInitialize
+% EXAMPLE:      xASL_adm_DocInitialize(fullfile(x.MyPath,'Development','Documentation_GitHub'),true);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
@@ -28,6 +29,10 @@ function xASL_adm_DocInitialize(outputFolder)
         outputFolder = fullfile(x.MyPath,'Development','Documentation_GitHub');
     end
 
+    if nargin < 2
+        updateExploreASL = true;
+    end
+    
     % Copy and modify the index README
     copyfile(fullfile(x.MyPath,'README.md'),fullfile(outputFolder,'index.md'));
     % Logo
@@ -63,7 +68,16 @@ function xASL_adm_DocInitialize(outputFolder)
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Structural'), fullfile(outputFolder,'Structural_Module.md'),'StructuralModule');
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
-
+    
+    
+    %% Update documentation read me files in the ExploreASL folder structure
+    if updateExploreASL
+        copyfile(fullfile(outputFolder,'Functions.md'),fullfile(x.MyPath,'Functions','README.md'));                                     % Functions
+        copyfile(fullfile(outputFolder,'Modules.md'),fullfile(x.MyPath,'Modules','README.md'));                                         % Modules
+        copyfile(fullfile(outputFolder,'Structural_Module.md'),fullfile(x.MyPath,'Modules','SubModule_Structural','README.md'));        % SubModules (Structural)
+        copyfile(fullfile(outputFolder,'ASL_Module.md'),fullfile(x.MyPath,'Modules','SubModule_ASL','README.md'));                  % SubModules (ASL)
+        copyfile(fullfile(outputFolder,'Population_Module.md'),fullfile(x.MyPath,'Modules','SubModule_Population','README.md'));    % SubModules (Population)
+    end
 
 
 
