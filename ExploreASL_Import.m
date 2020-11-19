@@ -34,20 +34,20 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 % specified in the imPar definition in the ExploreASL_ImportConfig.m (later
 % to be converted to e.g. a CSV file). Follow the steps below, for study "MyStudy" located on "//MyDisk":
 %
-% 1) Make sure you have your DICOM data. Export them from XNAT, download them, or whatsoever
+% 1. Make sure you have your DICOM data. Export them from XNAT, download them, or whatsoever
 %    Create a root folder with study ID name, and put the DICOMs in any structure in the raw folder within the study ID root folder
 %    Example:
 %    imPar.StudyID: MyStudy
 %    StudyRoot folder: //MyDisk/MyStudy
 %    Raw folder containing DICOMs: //MyDisk/MyStudy/raw
-% 2) Make sure that your DICOM data has any structure that can be retrieved
+% 2. Make sure that your DICOM data has any structure that can be retrieved
 %    from the folder and/or file names. This function doesn't yet read the DICOM headers
 %    For a quick and dirty (but actually slow) function that converts a
 %    DICOM folder/file structure into readable format, first run
 %    ConvertDicomFolderStructure_CarefulSlow.m. This will read each DICOM
 %    individually, and put it in a folder with the name identical to the
 %    DICOMs SeriesName/ProtocolName.
-% 3) Once you have all DICOMs in folderstructure with identifyable names
+% 3. Once you have all DICOMs in folderstructure with identifyable names
 %    inside //MyDisk/MyStudy/raw, set up the folderstructure in
 %    ExploreASL_ImportConfig.m. This setup uses the SPM form of regular
 %    expressions, which can be daunting at first, but are very flexible.
