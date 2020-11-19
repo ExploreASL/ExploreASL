@@ -1,57 +1,61 @@
-function xASL_doc_Initialize
-%xASL_doc_Initialize Script to call the separate documentation crawler
+function xASL_adm_DocInitialize(outputFolder)
+%xASL_adm_DocInitialize Script to call the separate documentation crawler
 % functions.
 %
-% FORMAT:       xASL_docu_Initialize
+% FORMAT:       xASL_adm_DocInitialize
 % 
-% INPUT:        None
+% INPUT:        outputFolder   - Folder where the generated markdown files are stored (OPTIONAL)
 %
-% OUTPUT:       None
+% OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This function generates all markdown files, which are
 %               necessary for the mkdocs documentation.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_doc_Initialize
+% EXAMPLE:      xASL_adm_DocInitialize
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
 
 
     %% Workflow
 
     % Initialize ExploreASL
     x = ExploreASL_Initialize([],0);
+    
+    % Define output folder
+    if nargin < 1
+        outputFolder = fullfile(x.MyPath,'Development','Documentation_GitHub');
+    end
 
     % Copy and modify the index README
-    copyfile(fullfile(x.MyPath,'README.md'),fullfile(x.MyPath,'Development','Documentation_GitHub','index.md'));
+    copyfile(fullfile(x.MyPath,'README.md'),fullfile(outputFolder,'index.md'));
     % Logo
-    swapTextInFile(fullfile(x.MyPath,'Development','Documentation_GitHub','index.md'),...
+    swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(https://github.com/ExploreASL/ExploreASL/blob/develop/ExploreASL_logoSmall.png)',...
                   '(./img/title.png "ExploreASL")');
     % Workflow
-    swapTextInFile(fullfile(x.MyPath,'Development','Documentation_GitHub','index.md'),...
+    swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(https://www.researchgate.net/profile/Andrew_Robertson7/publication/337328693/figure/fig1/AS:826578854481921@1574083164220/Schematic-diagram-of-ExploreASL-processing-steps-Steps-marked-with-a-are-optional.ppm "Workflow of ExploreASL")',...
                   '(./img/ExploreASL_Workflow.jpg "Workflow ExploreASL")');
     
     % Create the functions markdown file
-    xASL_doc_Crawler(fullfile(x.MyPath,'Functions'), fullfile(x.MyPath,'Development','Documentation_GitHub','Functions.md'),'Functions');
+    xASL_adm_DocCrawler(fullfile(x.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
 
     % Convert and copy lincense file
-    convertLicenseToMarkdown(fullfile(x.MyPath,'LICENSE-EXPLOREASL'),fullfile(x.MyPath,'Development','Documentation_GitHub','License.md'));
+    convertLicenseToMarkdown(fullfile(x.MyPath,'LICENSE-EXPLOREASL'),fullfile(outputFolder,'License.md'));
     
     % Use documentation crawler for modules
-    xASL_doc_Crawler({fullfile(x.MyPath,'ExploreASL_Import.m'),...
-                      fullfile(x.MyPath,'Modules','xASL_module_Structural.m'),...
-                      fullfile(x.MyPath,'Modules','xASL_module_ASL.m'),...
-                      fullfile(x.MyPath,'Modules','xASL_module_Population.m')},...
-                      fullfile(x.MyPath,'Development','Documentation_GitHub','Modules.md'),'Modules');
+    xASL_adm_DocCrawler({fullfile(x.MyPath,'ExploreASL_Import.m'),...
+                        fullfile(x.MyPath,'Modules','xASL_module_Structural.m'),...
+                        fullfile(x.MyPath,'Modules','xASL_module_ASL.m'),...
+                        fullfile(x.MyPath,'Modules','xASL_module_Population.m')},...
+                        fullfile(outputFolder,'Modules.md'),'Modules');
     
     % Use documentation crawler for submodules
-    xASL_doc_Crawler(fullfile(x.MyPath,'Modules','SubModule_Structural'), fullfile(x.MyPath,'Development','Documentation_GitHub','Structural_Module.md'),'StructuralModule');
-    xASL_doc_Crawler(fullfile(x.MyPath,'Modules','SubModule_ASL'), fullfile(x.MyPath,'Development','Documentation_GitHub','ASL_Module.md'),'ASLModule');
-    xASL_doc_Crawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(x.MyPath,'Development','Documentation_GitHub','Population_Module.md'),'PopulationModule');
+    xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Structural'), fullfile(outputFolder,'Structural_Module.md'),'StructuralModule');
+    xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
+    xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
 
 
 

@@ -332,6 +332,41 @@ replaces with default value, it also checks if the parameters are consistent acr
 
 
 ----
+### xASL\_adm\_DocCrawler.m
+
+#### Format
+
+```matlab
+xASL_adm_DocCrawler(folder)
+```
+
+#### Description
+This function checks each individual file header and
+extracts the information. The results is saved as a
+markdown file.
+
+If you want to use star symbols (\*testFile.m e.g.) we
+recommend not to use them in the same line with bold text
+(which is written like this: **bold text**).
+
+
+
+----
+### xASL\_adm\_DocInitialize.m
+
+#### Format
+
+```matlab
+xASL_adm_DocInitialize
+```
+
+#### Description
+This function generates all markdown files, which are
+necessary for the mkdocs documentation.
+
+
+
+----
 ### xASL\_adm\_FindByRegExp.m
 
 #### Format
