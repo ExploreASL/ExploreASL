@@ -358,10 +358,17 @@ if bRunSubmodules(2)
 	
 	
 	
-	
-	
-	
-	
+% ERRORS TO FIX
+	%GE_PCASL_3Dspiral_Product_volunteer
+	%issing field: LabelingDuration - check if correctly loaded and saved by us
+% /sub-Sub0004/perf/sub-Sub0004_asl.nii.gz:		
+% 				RMSE of NIFTIs above threshold. check if Philips scalings correctly loaded and saved by both dcm2nii and us
+% Dataset:		Philips_PCASL_2DEPI_Ingenia_volunteer
+% /sub-Sub1/perf/sub-Sub1_asl.nii.gz:		
+% 				RMSE of NIFTIs above threshold.
+% Dataset:		Philips_PCASL_2DEPI_Intera_volunteer
+% /sub-Sub1/perf/sub-Sub1_asl.nii.gz:		
+% 				RMSE of NIFTIs above threshold.
 	
 	
 	
@@ -369,10 +376,6 @@ if bRunSubmodules(2)
 	
 	
 	%%%%%%%%%%% start todo fixing
-
-	% Control and label should be separated by , or ; - this is replaced by \n and spaces are deleted
-	% Parse and extend the ASL context	
-	% Before saving ASL context - replicate enough times
 	
 	% For M0 in aslcontext, filling in PLD and labdur as zero
 
@@ -440,6 +443,9 @@ if bRunSubmodules(2)
 			jsonDicom = spm_jsonread(fullfile(inSesPath,[aslLabel '.json']));
 			imNii = xASL_io_Nifti2Im(fullfile(inSesPath,[aslLabel '.nii']));
 			
+			
+			
+			
 			rescaleParms = [];
 			ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'};
 			JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'};
@@ -487,6 +493,16 @@ if bRunSubmodules(2)
 				elseif ~isequal(jsonDicom.BolusDuration,studyPar.BolusCutOffDelayTime(1))
 					warning('Bolus duration obtained from DICOM and the manuall defined one differ.');
 				end
+			end
+			
+			if isfield(jsonDicom,'GELabelingDuration')
+				if isfield(studyPar,'LabelingDuration') && jsonDicom.GELabelingDuration ~= studyPar.LabelingDuration
+					warning('Labeling duration mismatch with GE private field.');
+				end
+				if isfield(jsonDicom,'LabelingDuration') && jsonDicom.GELabelingDuration ~= studyPar.LabelingDuration
+					warning('Labeling duration mismatch with GE private field.');
+				end
+				jsonDicom.LabelingDuration = jsonDicom.GELabelingDuration;
 			end
 			
 			% BSup sanity check
@@ -649,6 +665,34 @@ if bRunSubmodules(2)
 					end
 				end
 			end
+			
+			% Reformat ASLcontext field
+			% Remove ',' and ';' at the 
+			if (jsonLocal.ASLContext(end) == ';') || (jsonLocal.ASLContext(end) == ',')
+				jsonLocal.ASLContext = jsonLocal.ASLContext(1:(end-1));
+			end
+			
+			% Replace all ',' and ';' by \n
+			jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ' ','');
+			jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ';',',');
+			lengthASLContext = sum(jsonLocal.ASLContext == ',')+1;
+			jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ',',sprintf('\n'));
+			
+			
+			% Check if the length is the same
+			if size(imNii,4) ~= lengthASLContext
+				% Check if we can simply repeat it 
+				if mod(size(imNii,4),lengthASLContext)
+					error('Cannot find a match between the ASLContext and the 4th dimension of the NIFTI');
+				else
+					numRepeat = size(imNii,4)/lengthASLContext;
+					tmpStr = jsonLocal.ASLContext;
+					for iRepeat = 2:numRepeat
+						jsonLocal.ASLContext = sprintf('%s\n%s',jsonLocal.ASLContext,tmpStr);
+					end
+				end
+			end
+			jsonLocal.ASLContext = sprintf('%s\n',jsonLocal.ASLContext);
 			
 			% Remove the AslContext field and save it as a separate file
 			fContext = fopen([aslOutLabel '_' bidsPar.strAslContext '.tsv'],'w+');

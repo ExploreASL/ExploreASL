@@ -36,7 +36,8 @@ bidsPar.listFieldsRemoveGeneral = {'InstitutionName' 'InstitutionalDepartmentNam
 	'SaturationStopTime','BaseResolution','DerivedVendorReportedEchoSpacing','RawImage','PhaseOversampling','BolusDuration'}; % Fields to exclude as not defined in BIDS
 
 % A list of fields to remove the ASL-BIDS JSON files only
-bidsPar.listFieldsRemoveASL = {'InversionTime','LabelOffset','PostLabelDelay','NumRFBlocks','RFGap','MeanGzx10','PhiAdjust'}; % Fields to exclude from ASL only
+bidsPar.listFieldsRemoveASL = {'SliceReadoutTime','InversionTime','LabelOffset','PostLabelDelay','NumRFBlocks',...
+	'GELabelingDuration','RFGap','MeanGzx10','PhiAdjust'}; % Fields to exclude from ASL only
 
 % Gives the correct order of fields to be saved in JSON so that it corresponds to the BIDS definition
 % This is not mandatory, just makes things more accessible
