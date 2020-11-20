@@ -62,43 +62,43 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %
 %    and the subject names are 'MyStudy001' .. 'MyStudy002' .. etc.
 %
-%    imPar.folderHierarchy   - contains a a cell array of regular expressions, with each cell specifying a directory layer/level
-%                              the parts within brackets () tell the script that this is a token (i.e. subject, session, ScanType)
-%                              Examples:
-%                              imPar.folderHierarchy = {'^(3D_FLAIR|T1w|PCASL).*', '^(Sub-\d{3})$'};
-%                              here we say that there are two folder layers '', separated by comma ,
-%                              where the names between brackets are used to define what is what.
-%                              ^ means that the foldername has to start with the following, $ means that the previous has to be the end of the foldername
-%                              .* means anything, anylength, \d{3} means three digits
-%    imPar.tokenOrdering     - defines which tokens are captured by the brackets () in imPar.folderHierarchy: position 1==subject, 2==visit, 3==session, 4==ScanType
-%                              Examples:
-%                              imPar.tokenOrdering = [2 3 0 1]; stating that subject is the 2nd token, visit is the 3rd token, session has no token (i.e. no session) and ScanType is the 1st token
-%    imPar.tokenVisitAliases - cell array that defines the aliases for the Visits, i.e. it tells the script which scans are which timepoint/visit.
-%                              Similar as explained below for ScanAliases.
-%                              First column contains the names that are
-%                              recognized in raw DICOM folders for visits,
-%                              second column how it is named in NIfTI
-%                              structure (should be _1 _2 _3 etc).
-%                              Examples:
-%                              imPar.tokenVisitAliases = {'Screening','_1'; 'Month_12','_2'; 'Month_24','_3'; 'Month_36','_4'; 'Month_48','_5'};
-%                              Note that if you specify tokenVisitAliases, the folders will receive
-%                              the indices (e.g. _1 _2 _3), or even _1 only with a single Visit). If you don't specify
-%                              them, they will not get this postfix.
-%    imPar.tokenScanAliases  - cell array that defines the aliases for the ScanTypes, i.e. it tells the script which scans are which ScanType.
-%                              First column should contain regular expression corresponding with the matching criteria in imPar.folderHierarchy
-%                              whereas the second column contains the
-%                              alias. Following valid aliases exist:
-%                              'T1' 'FLAIR' 'ASL4D' 'M0' 'ASL4D_RevPE' 'func' 'func_NormPE' 'func_RevPE' 'dwi' 'dwi_RevPE' 'DSC4D'
-%                              Examples:
-%                              imPar.tokenScanAliases = {'^3D_FLAIR$', 'FLAIR'; '^T1w$', 'T1'; '^PCASL$', 'ASL4D'};
-%    imPar.tokenSessionAliases-same as tokenScanAliases but for sessions
-%                              Examples:
-%                              imPar.tokenSessionAliases = {}; as we don't have sessions
-%    imPar.bMatchDirectories - true if the last layer is a folder, false if the last layer is a filename (as e.g. with PAR/REC, enhanced DICOMs)
+%    - imPar.folderHierarchy   - contains a a cell array of regular expressions, with each cell specifying a directory layer/level
+%                                the parts within brackets () tell the script that this is a token (i.e. subject, session, ScanType)
+%                                Examples:
+%                                imPar.folderHierarchy = {'^(3D_FLAIR|T1w|PCASL).*', '^(Sub-\d{3})$'};
+%                                here we say that there are two folder layers '', separated by comma ,
+%                                where the names between brackets are used to define what is what.
+%                                ^ means that the foldername has to start with the following, $ means that the previous has to be the end of the foldername
+%                                .* means anything, anylength, \d{3} means three digits
+%    - imPar.tokenOrdering     - defines which tokens are captured by the brackets () in imPar.folderHierarchy: position 1==subject, 2==visit, 3==session, 4==ScanType
+%                                Examples:
+%                                imPar.tokenOrdering = [2 3 0 1]; stating that subject is the 2nd token, visit is the 3rd token, session has no token (i.e. no session) and ScanType is the 1st token
+%    - imPar.tokenVisitAliases - cell array that defines the aliases for the Visits, i.e. it tells the script which scans are which timepoint/visit.
+%                                Similar as explained below for ScanAliases.
+%                                First column contains the names that are
+%                                recognized in raw DICOM folders for visits,
+%                                second column how it is named in NIfTI
+%                                structure (should be _1 _2 _3 etc).
+%                                Examples:
+%                                imPar.tokenVisitAliases = {'Screening','_1'; 'Month_12','_2'; 'Month_24','_3'; 'Month_36','_4'; 'Month_48','_5'};
+%                                Note that if you specify tokenVisitAliases, the folders will receive
+%                                the indices (e.g. _1 _2 _3), or even _1 only with a single Visit). If you don't specify
+%                                them, they will not get this postfix.
+%    - imPar.tokenScanAliases  - cell array that defines the aliases for the ScanTypes, i.e. it tells the script which scans are which ScanType.
+%                                First column should contain regular expression corresponding with the matching criteria in imPar.folderHierarchy
+%                                whereas the second column contains the
+%                                alias. Following valid aliases exist:
+%                                'T1' 'FLAIR' 'ASL4D' 'M0' 'ASL4D_RevPE' 'func' 'func_NormPE' 'func_RevPE' 'dwi' 'dwi_RevPE' 'DSC4D'
+%                                Examples:
+%                                imPar.tokenScanAliases = {'^3D_FLAIR$', 'FLAIR'; '^T1w$', 'T1'; '^PCASL$', 'ASL4D'};
+%    - imPar.tokenSessionAliases-same as tokenScanAliases but for sessions
+%                                Examples:
+%                                imPar.tokenSessionAliases = {}; as we don't have sessions
+%    - imPar.bMatchDirectories - true if the last layer is a folder, false if the last layer is a filename (as e.g. with PAR/REC, enhanced DICOMs)
 %
 % EXAMPLE: ExploreASL_Import(ExploreASL_ImportConfig('//MyDisk/MyStudy'));
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 
