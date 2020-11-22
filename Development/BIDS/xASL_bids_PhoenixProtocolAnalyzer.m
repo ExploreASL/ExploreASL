@@ -130,10 +130,20 @@ function parameters = getPhoenixParameters(parameters,phoenixParameterList,debug
         curFoundParID = find(contains(phoenixParameterList, curName));
         if length(curFoundParID)==1
             IDs(curParameter,1) = curFoundParID;
-        elseif length(curFoundParID)>1
-            % Parameter exists more than once
-            IDs(curParameter,1) = curFoundParID(1);
-            fprintf('Parameter %s found more than once. Using first occurrence...\n', curName);
+        elseif length(curFoundParID)>1            
+            % Select exact match
+            for tmpPar=1:length(curFoundParID)
+                curParToCompare = phoenixParameterList{curFoundParID(tmpPar,1),:};
+                tmpParList{tmpPar,1} = strtrim(curParToCompare);
+                if strcmp(tmpParList{tmpPar,1},curName)
+                    IDs(curParameter,1) = curFoundParID(tmpPar,1);
+                end
+            end
+            % Fallback
+            if isnan(IDs(curParameter,1))
+                IDs(curParameter,1) = curFoundParID(1);
+                fprintf('Parameter %s found more than once and there is no exact match. Using first occurrence...\n', curName);
+            end
         else
             % Parameter exists more than once
             IDs(curParameter,1) = NaN;
