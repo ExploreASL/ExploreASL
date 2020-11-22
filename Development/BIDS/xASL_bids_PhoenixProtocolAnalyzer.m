@@ -22,12 +22,25 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 % Copyright @ 2015-2020 ExploreASL
 
     %% Defaults    
-    parameters{1,1} = 'tSequenceFileName';          parameters{1,2} = NaN;
-    parameters{2,1} = 'tProtocolName';              parameters{2,2} = NaN;
-    parameters{3,1} = 'sAsl.ulMode';                parameters{3,2} = NaN;
-    parameters{4,1} = 'alTI[0]';                    parameters{4,2} = NaN;
-    parameters{5,1} = 'alTI[2]';                    parameters{5,2} = NaN;
-    parameters{6,1} = 'sWipMemBlock.alFree[0]';     parameters{6,2} = NaN;
+    parameters{1,1} = 'tSequenceFileName';                      parameters{1,2} = NaN;
+    parameters{2,1} = 'tProtocolName';                          parameters{2,2} = NaN;
+    parameters{3,1} = 'UserScaleFactor';                        parameters{3,2} = NaN;
+    parameters{4,1} = 'M0Threshold';                            parameters{4,2} = NaN;
+    parameters{5,1} = 'TI1_us';                                 parameters{5,2} = NaN;
+    parameters{6,1} = 'TI2_us';                                 parameters{6,2} = NaN;
+    parameters{7,1} = 'sProtConsistencyInfo.tBaselineString';   parameters{7,2} = NaN;
+    parameters{8,1} = 'sAsl.ulMode';                            parameters{8,2} = NaN;
+    parameters{9,1} = 'alTR[0]';                                parameters{9,2} = NaN;
+    parameters{10,1} = 'alTI[0]';                               parameters{10,2} = NaN;
+    parameters{11,1} = 'alTI[1]';                               parameters{11,2} = NaN;
+    parameters{12,1} = 'alTI[2]';                               parameters{12,2} = NaN;
+    parameters{13,1} = 'alTE[0]';                               parameters{13,2} = NaN;
+    parameters{14,1} = 'acFlowComp[0]';                         parameters{14,2} = NaN;
+    parameters{15,1} = 'sGroupArray.sPSat.dThickness';          parameters{15,2} = NaN;
+    parameters{16,1} = 'sGroupArray.sPSat.dGap';                parameters{16,2} = NaN;
+    parameters{17,1} = 'lRepetitions';                          parameters{17,2} = NaN;
+    parameters{18,1} = 'sAsl.fFlowLimit';                       parameters{18,2} = NaN;
+    parameters{19,1} = 'sWipMemBlock.alFree[0]';                parameters{19,2} = NaN;
     
     %% Get the predefined parameters
     parameters = getPhoenixParameters(parameters,parameterList,false);
