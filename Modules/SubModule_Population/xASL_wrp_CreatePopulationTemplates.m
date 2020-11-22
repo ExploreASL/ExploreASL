@@ -390,11 +390,11 @@ for iScanType=1:length(PreFixList)
                                 end
                             end
                             fprintf('\n');
+                            
+                            % clip below zero for visualization
+                            IM{iCell}(IM{iCell}<0) = 0;
+                            if bSaveUnmasked; IM2noMask{iCell}(IM2noMask{iCell}<0) = 0; end                            
                         end
-                        
-                        % clip below zero for visualization
-                        IM{iCell}(IM{iCell}<0) = 0;
-                        if bSaveUnmasked; IM2noMask{iCell}(IM2noMask{iCell}<0) = 0; end                        
                     end
                     
                     CurrentSetsID = x.S.SetsID(LoadSetsID, :);
