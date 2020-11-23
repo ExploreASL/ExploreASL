@@ -50,9 +50,9 @@ end
 %% 1) Define field names that need to be convert/renamed/merged
 
 % Fields with these names need to have the time converted between XASL and BIDS, and define their recommended range in ms
-convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
-convertTimeFieldsRange = [0.5        5                10            5                  5                  100       10   100        5                  5;...% Minimum in ms
-                          500        20000            10000         5000               400                5000      500  5000       400                10000];% Maximum in ms   
+convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
+convertTimeFieldsRange = [0.5        5                10            10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
+                          500        20000            10000         5000               5000                 5000            400                5000      500  5000       400                10000];% Maximum in ms   
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
@@ -186,9 +186,21 @@ if bPriorityBids
 	if ~isempty(inBids)
 		FieldsA = fields(inBids);
 		for iA = 1:length(FieldsA)
-			if (~isfield(outParms,(FieldsA{iA}))) ||...
-					((sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) == 0)~=length(inBids.(FieldsA{iA}))) && (sum(isinf(inBids.(FieldsA{iA})))==0) && (~isempty(inBids.(FieldsA{iA}))))
+			if ~isfield(outParms,(FieldsA{iA}))
+				% If the field is not yet there, then copy it
 				outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+			else
+				% If the field is already there, then check if the field to overwrite is not contain NaN or full of zeros or empty strings
+				% Do this separately for cell and non-cell arrays
+				if iscell(inBids.(FieldsA{iA}))
+					if sum(~cellfun(@isempty,inBids.(FieldsA{iA})))>0
+						outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+					end
+				else
+					if (sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) ~= 0) > 0) && (sum(~isinf(inBids.(FieldsA{iA})))>0) && (~isempty(inBids.(FieldsA{iA})))
+						outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+					end
+				end
 			end
 		end
 	end
@@ -196,9 +208,21 @@ else
 	outParms = inBids;
 	FieldsA = fields(inXasl);
 	for iA = 1:length(FieldsA)
-		if (~isfield(outParms,(FieldsA{iA}))) ||...
-				((sum(isnan(inXasl.(FieldsA{iA})))==0) && (sum(inXasl.(FieldsA{iA}) == 0)~=length(inXasl.(FieldsA{iA}))) && (sum(isinf(inXasl.(FieldsA{iA})))==0) && (~isempty(inXasl.(FieldsA{iA}))))
+		if ~isfield(outParms,(FieldsA{iA}))
+			% If the field is not yet there, then copy it
 			outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
+		else
+			% If the field is already there, then check if the field to overwrite is not contain NaN or full of zeros or empty strings
+			% Do this separately for cell and non-cell arrays
+			if iscell(inXasl.(FieldsA{iA}))
+				if sum(~cellfun(@isempty,inXasl.(FieldsA{iA})))>0
+					outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
+				end
+			else
+				if (sum(isnan(inXasl.(FieldsA{iA})))==0) && (sum(inXasl.(FieldsA{iA}) ~= 0)>0) && (sum(~isinf(inXasl.(FieldsA{iA})))>0) && (~isempty(inXasl.(FieldsA{iA})))
+					outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
+				end
+			end
 		end
 	end
 end
@@ -215,6 +239,11 @@ for iA = 1:length(FieldsA)
 			outParms.AcquisitionTime = tP;
 		end
 	end
+end
+
+% Remove zeros from PhoenixProtocol
+if isfield(outParms,'PhoenixProtocol')
+	outParms.PhoenixProtocol = strrep(outParms.PhoenixProtocol,0,'');
 end
 
 % If output is in XASL, then copy into Q subfield

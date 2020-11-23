@@ -361,6 +361,7 @@ if bRunSubmodules(2)
 % ERRORS TO FIX
 	%GE_PCASL_3Dspiral_Product_volunteer
 	%issing field: LabelingDuration - check if correctly loaded and saved by us
+% Philips_PCASL_2DEPI_GBM	
 % /sub-Sub0004/perf/sub-Sub0004_asl.nii.gz:		
 % 				RMSE of NIFTIs above threshold. check if Philips scalings correctly loaded and saved by both dcm2nii and us
 % Dataset:		Philips_PCASL_2DEPI_Ingenia_volunteer

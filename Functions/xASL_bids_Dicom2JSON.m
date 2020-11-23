@@ -70,6 +70,19 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 	DcmParDefaults.MRSeriesEPIFactor = NaN;
 	DcmParDefaults.BandwidthPerPixelPhaseEncode = NaN;
 	
+	DcmParDefaults.Rows = NaN;
+	DcmParDefaults.Columns = NaN;
+	DcmParDefaults.TemporalPositionIdentifier = NaN;
+	DcmParDefaults.PhilipsNumberTemporalScans = NaN;
+	DcmParDefaults.GELabelingDuration = NaN;
+	DcmParDefaults.InversionTime = NaN;
+	
+	DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
+		'GELabelingDuration' 'InversionTime'};
+	
+	DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
+	DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
+	
 	bVendor = 'Unknown';
 	
 	%% ----------------------------------------------------------------------------------
@@ -240,13 +253,15 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 				
 				dcmfields = {'RepetitionTime', 'EchoTime', 'NumberOfAverages', 'RescaleSlope', ...
 					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
-					'AcquisitionMatrix'};
+					'AcquisitionMatrix' 'Rows' 'Columns' 'NumberOfAverages' 'NumberOfTemporalPositions'};
 				
 				switch bVendor
 					case 'GE'
-						dcmfields(end+1:end+2) = {'AssetRFactor', 'EffectiveEchoSpacing'}; % (0043,1083) (0043,102c)
+						dcmfields(end+1:end+4) = {'AssetRFactor', 'EffectiveEchoSpacing'...
+							'GELabelingDuration' 'InversionTime' }; % (0043,1083) (0043,102c)
 					case 'Philips'
-						dcmfields(end+1:end+2) = {'MRSeriesWaterFatShift', 'MRSeriesEPIFactor'}; % (2001,1022) (2001,1013)
+						dcmfields(end+1:end+4) = {'MRSeriesWaterFatShift', 'MRSeriesEPIFactor'...
+							'TemporalPositionIdentifier'  'PhilipsNumberTemporalScans'}; % (2001,1022) (2001,1013)
 					case 'Siemens'
 						dcmfields(end+1) = {'BandwidthPerPixelPhaseEncode'}; % (0019,1028)
 					otherwise
@@ -256,7 +271,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 			
 			%% -----------------------------------------------------------------------------
 			% Obtain the selected DICOM parameters from the header
-			% Write the new parameter to the list (or put the default value
+			% Write the new parameter to the list (or put the default value)
 			% -----------------------------------------------------------------------------
 			for iField=1:length(dcmfields)
 				fieldname = dcmfields{iField};
@@ -278,10 +293,26 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 					
 					t_parms.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
 				else
-					if imPar.bVerbose; if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end; end
+					if imPar.bVerbose
+						if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
+					end
 					t_parms.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
 				end
 			end
+			
+			% The more complex fields - strings and arrays are saved in cell
+			for iField=1:length(DcmComplexFieldAll)
+				if isfield(temp,DcmComplexFieldAll{iField}) && ~isempty(temp.(DcmComplexFieldAll{iField}))
+					c_all_parms.(DcmComplexFieldAll{iField}){iMrFile} = temp.(DcmComplexFieldAll{iField});
+				end
+			end
+			
+			for iField=1:length(DcmComplexFieldFirst)
+				if isfield(temp,DcmComplexFieldFirst{iField}) && ~isempty(temp.(DcmComplexFieldFirst{iField}))
+					c_first_parms.(DcmComplexFieldFirst{iField}) = temp.(DcmComplexFieldFirst{iField});
+				end
+			end
+			
 		end
 		
 		%% If no files were found previously (just directories etc.) then the manufacturer won't be identified and 
@@ -326,6 +357,35 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 						end
 					end
 				end
+			end
+		end
+		
+		% Remove fields that are NaN
+		for iField=1:length(DcmSkipNan)
+			if isfield(parms,DcmSkipNan{iField}) && sum(isnan(parms.(DcmSkipNan{iField})))
+				parms = rmfield(parms,DcmSkipNan{iField});
+			end
+		end
+		
+		% The more complex fields - strings and arrays are saved in cell
+		for iField=1:length(DcmComplexFieldAll)
+			if isfield(c_all_parms,DcmComplexFieldAll{iField})
+				listEmptyFields = find(cellfun(@isempty,c_all_parms.(DcmComplexFieldAll{iField})));
+				for iFieldEmpty = listEmptyFields
+					c_all_parms.(DcmComplexFieldAll{iField})(iFieldEmpty) = '';
+				end
+				c_all_unique = unique(c_all_parms.(DcmComplexFieldAll{iField}));
+				if length(c_all_unique) == 1
+					parms.(DcmComplexFieldAll{iField}) = c_all_unique;
+				else
+					parms.(DcmComplexFieldAll{iField}) = c_all_parms.(DcmComplexFieldAll{iField});
+				end
+			end
+		end
+		
+		for iField=1:length(DcmComplexFieldFirst)
+			if isfield(c_first_parms,DcmComplexFieldFirst{iField}) && ~isempty(c_first_parms.(DcmComplexFieldFirst{iField}))
+				parms.(DcmComplexFieldFirst{iField}) = c_first_parms.(DcmComplexFieldFirst{iField});
 			end
 		end
 		
@@ -407,10 +467,10 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 		end
 		
 		% In case more than one value is given, then keep only the value that is not equal to 1. Or set to 1 if all are 1
-		parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope'};
+		parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope','RWVSlope'};
 		for parmNameInd = 1:length(parmNameToCheck)
 			parmName = parmNameToCheck{parmNameInd};
-			if  (length(parms.(parmName))>1)
+			if  isfield(parms,parmName) && (length(parms.(parmName))>1)
 				indNonOne = find(parms.(parmName)~=1);
 				if isempty(indNonOne)
 					parms.(parmName) = 1;
@@ -421,7 +481,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 		end
 				
 		% In case multiple different scale slopes are given, report a warning
-		if length(parms.MRScaleSlope)>1  || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleIntercept)>1 || length(parms.RescaleSlope)>1
+		if length(parms.MRScaleSlope)>1  || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleSlope)>1 || (isfield(parms,parmName) && length(parms.RWVSlope)>1)
 			warning('xASL_adm_Dicom2JSON: Multiple scale slopes exist for a single scan!');
 			parms = rmfield(parms,'MRScaleSlope');
 			parms = rmfield(parms,'RescaleSlope');
