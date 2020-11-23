@@ -21,26 +21,52 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 % __________________________________
 % Copyright @ 2015-2020 ExploreASL
 
-    %% Defaults    
-    parameters{1,1} = 'tSequenceFileName';                      parameters{1,2} = NaN;
-    parameters{2,1} = 'tProtocolName';                          parameters{2,2} = NaN;
-    parameters{3,1} = 'UserScaleFactor';                        parameters{3,2} = NaN;
-    parameters{4,1} = 'M0Threshold';                            parameters{4,2} = NaN;
-    parameters{5,1} = 'TI1_us';                                 parameters{5,2} = NaN;
-    parameters{6,1} = 'TI2_us';                                 parameters{6,2} = NaN;
-    parameters{7,1} = 'sProtConsistencyInfo.tBaselineString';   parameters{7,2} = NaN;
-    parameters{8,1} = 'sAsl.ulMode';                            parameters{8,2} = NaN;
-    parameters{9,1} = 'alTR[0]';                                parameters{9,2} = NaN;
-    parameters{10,1} = 'alTI[0]';                               parameters{10,2} = NaN;
-    parameters{11,1} = 'alTI[1]';                               parameters{11,2} = NaN;
-    parameters{12,1} = 'alTI[2]';                               parameters{12,2} = NaN;
-    parameters{13,1} = 'alTE[0]';                               parameters{13,2} = NaN;
-    parameters{14,1} = 'acFlowComp[0]';                         parameters{14,2} = NaN;
-    parameters{15,1} = 'sGroupArray.sPSat.dThickness';          parameters{15,2} = NaN;
-    parameters{16,1} = 'sGroupArray.sPSat.dGap';                parameters{16,2} = NaN;
-    parameters{17,1} = 'lRepetitions';                          parameters{17,2} = NaN;
-    parameters{18,1} = 'sAsl.fFlowLimit';                       parameters{18,2} = NaN;
-    parameters{19,1} = 'sWipMemBlock.alFree[0]';                parameters{19,2} = NaN;
+    %% Defaults
+    parameters = addParToList('tSequenceFileName',{},1);
+    parameters = addParToList('UserScaleFactor',parameters,2);
+    parameters = addParToList('M0Threshold',parameters,3);
+    parameters = addParToList('TI1_us',parameters,4);
+    parameters = addParToList('TI2_us',parameters,5);
+    parameters = addParToList('sAsl.ulMode',parameters,6);
+    parameters = addParToList('sAsl.ulAveragingMode',parameters,7);
+    parameters = addParToList('sAsl.ulSuppressionMode',parameters,8);
+    parameters = addParToList('sAsl.ulArrayLength',parameters,9);
+    parameters = addParToList('M0Mode',parameters,10);
+    parameters = addParToList('alTE[0]',parameters,11);
+    parameters = addParToList('alTR[0]',parameters,12);
+    parameters = addParToList('alTI[0]',parameters,13);
+    parameters = addParToList('alTI[1]',parameters,14);
+    parameters = addParToList('alTI[2]',parameters,15);
+    parameters = addParToList('alTR.__attribute__.size',parameters,16);
+    parameters = addParToList('alTI.__attribute__.size',parameters,17);
+    parameters = addParToList('acFlowComp[0]',parameters,18);
+    parameters = addParToList('lRepetitions',parameters,19);
+    parameters = addParToList('lAverages',parameters,20);
+    parameters = addParToList('lScanTimeSec',parameters,21);
+    parameters = addParToList('CBFUpperLimit',parameters,22);
+    parameters = addParToList('PerfPrepMode',parameters,23);
+    parameters = addParToList('Slab_thickness_mm',parameters,24);
+    parameters = addParToList('Dist_factor',parameters,25);
+    parameters = addParToList('Flow_limit',parameters,26);
+    parameters = addParToList('sGroupArray.sPSat.dGap',parameters,27);
+    parameters = addParToList('sGroupArray.sPSat.dThickness',parameters,28);
+    parameters = addParToList('sProtConsistencyInfo.tBaselineString',parameters,29);
+    parameters = addParToList('sAsl.fFlowLimit',parameters,30);
+    parameters = addParToList('sWipMemBlock.tFree',parameters,31);
+    parameters = addParToList('sWipMemBlock.alFree.__attribute__.size',parameters,32);
+    parameters = addParToList('sWipMemBlock.alFree[0]',parameters,33);
+    parameters = addParToList('sWipMemBlock.alFree[1]',parameters,34);
+    parameters = addParToList('sWipMemBlock.alFree[2]',parameters,35);
+    parameters = addParToList('sWipMemBlock.alFree[5]',parameters,36);
+    parameters = addParToList('sWipMemBlock.alFree[6]',parameters,37);
+    parameters = addParToList('sWipMemBlock.alFree[63]',parameters,38);
+    parameters = addParToList('sWipMemBlock.adFree.__attribute__.size',parameters,39);
+    parameters = addParToList('sWipMemBlock.adFree[7]',parameters,40);
+    parameters = addParToList('sWipMemBlock.adFree[8]',parameters,41);
+    parameters = addParToList('sWipMemBlock.adFree[9]',parameters,42);
+    parameters = addParToList('sWipMemBlock.adFree[10]',parameters,43);
+    parameters = addParToList('sWipMemBlock.adFree[13]',parameters,44);
+
     
     %% Get the predefined parameters
     parameters = getPhoenixParameters(parameters,parameterList,false);
@@ -167,3 +193,10 @@ function parameters = getPhoenixParameters(parameters,phoenixParameterList,debug
         end
     end
 end
+
+% Add parameter to list
+function parameters = addParToList(parName,parameters,parNum)
+    parameters{parNum,1} = parName;
+    parameters{parNum,2} = NaN;
+end
+
