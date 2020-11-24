@@ -356,45 +356,96 @@ if bRunSubmodules(2)
 			end
 		end
 	
-	
-	
-% ERRORS TO FIX
-	%GE_PCASL_3Dspiral_Product_volunteer
-	%issing field: LabelingDuration - check if correctly loaded and saved by us
-% Philips_PCASL_2DEPI_GBM	
-% /sub-Sub0004/perf/sub-Sub0004_asl.nii.gz:		
-% 				RMSE of NIFTIs above threshold. check if Philips scalings correctly loaded and saved by both dcm2nii and us
-% Dataset:		Philips_PCASL_2DEPI_Ingenia_volunteer
-% /sub-Sub1/perf/sub-Sub1_asl.nii.gz:		
-% 				RMSE of NIFTIs above threshold.
-% Dataset:		Philips_PCASL_2DEPI_Intera_volunteer
-% /sub-Sub1/perf/sub-Sub1_asl.nii.gz:		
-% 				RMSE of NIFTIs above threshold.
-	
-	
-	
-	
-	
-	
-	%%%%%%%%%%% start todo fixing
+%% ERRORS FIXED	
+% Dataset:		Philips_PCASL_3DGRASE_R5
+% /sub-Sub1/fmap/sub-Sub1_dir-pa_m0scan.json:
+%				Extra field: EffectiveEchoSpacing
+%				Different value: TotalReadoutTime (0.029286 vs 0.013600)	
+
+% Siemens_PASL_2DEPI_noBsup_AD - strange different value that breaks formatting
+
+% Philips_PCASL_3DGRASE_functional
+%			/sub-Patient1/perf/sub-Patient1_asl.json:
+%				Different value: RepetitionTime (0.008077 vs 4.280000)
+% %Siemens_PASL_2DEPI_noBsup_AD and the same for 2
+% %xtra field: SiemensSliceTime
+%% ERRORS TO FIX
+%Philips_PCASL_2DEPI_GBM + strange error
+%							Extra field: EffectiveEchoSpacing
+%				Different value: SliceTiming (0.000000 vs 43.764700)
+
+% Philips_PCASL_2DEPI_GBM	- NII
+% Philips_PCASL_2DEPI_Ingenia_volunteer
+% Philips_PCASL_2DEPI_Intera_volunteer
+% Philips_PCASL_2DEPI_dummyLL
+% Philips_PCASL_2DEPI_dummyQUASAR	
+% Philips_PCASL_2DEPI_dummyMultiPLD
+% Philips_PCASL_2DEPI_pharma - NII
+% Philips_PCASL_2DEPI_pharma2 - NII - also M0
+% Philips_PCASL_2DEPI_volunteer3 - NII
+% Philips_PCASL_2DEPI_volunteer_1 - NII
+% Philips_PCASL_2DEPI_volunteer_2 - NII
+% Philips_PCASL_3DGRASE_functional - NII
+
+% Philips_PCASL_2DEPI_volunteer3
+%Extra field: EffectiveEchoSpacing
+%				Different value: RepetitionTime (4.571680 vs 4.571681)
+% Philips_PCASL_2DEPI_dummyQUASAR	
+% Different value: VascularCrushingVenc (0.000000 vs 0.000000) + something other and strange
+%Siemens_PASL_2DEPI_noBsup_AD and the same for 2
+				%Different value: BolusCutOffDelayTime (0.800000 vs 1.400000)
+%1.400000e+00				Different value: 				Different value: EffectiveEchoSpacing (0.000058 vs 0.000348)
+%				Different value: SliceTiming (0.000000 vs 0.045000)
+%Siemens_PASL_singleTI, Siemens_PCASL_2DEPI_AD
+%Different value: BolusCutOffDelayTime (0.700000 vs 1.600000)
+%Different value: EffectiveEchoSpacing (0.000128 vs 0.000510)
+% Different value: SliceTiming (0.000000 vs 0.042500)
+%Different value: TotalReadoutTime (0.032513 vs 0.032130)
+
 	
 	% For M0 in aslcontext, filling in PLD and labdur as zero
 
+	% Test if all works equally well with dicominfo only
+	
+	% Multi TI - recognized as multiple TIs (and for similar fields as well) - give priority to the study-par file if the dicom value is single...
+	
 	% After final comparison, need to remove the random study descriptions and rename it correctly
 
+	% Flip angle priority of studypar over data
+	
 	% Automatic reading of more ASL parameters
 	
 	% Automatic control/label order extraction
+	
+	% Q2TIPS has two timing entries
+	
+% 	if ~isfield(importStr{ii}.par,'ReadoutSegments') && isfield(importStr{ii}.x,'NumberSegments')
+%		importStr{ii}.par.NumberSegments = importStr{ii}.x.NumberSegments;
+%	end	
 	
 % Slice readouttiming for 3D can be set to 0
 
 % M0 field can be numerical provided. Otherwise - true, separate, false, can be either copied as true or false. Or we simply assign true/false/file based on the fact if you provide M0 or if within series or if contol without BS
 % Missing separate file+Bsup or missing separate+nocontrol should be evaluated as an error
 
+% Update to new BIDS version
+
 % Run the defacing module
 % Do the anonymization
 
-	
+	% This can all go, will be in files
+% 	% Labeling delays and durations
+% 	if strcmpi(importStr{ii}.par.LabelingType,'PASL')
+% 		%importStr{ii}.par.LabelingDuration = 0;% importStr{ii}.x.LabelingDuration           = 1.800;  % for PASL this is TI1
+% 		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
+% 		if importStr{ii}.par.BolusCutOffFlag
+% 			importStr{ii}.par.BolusCutOffDelayTime = importStr{ii}.par.BolusCutOffDelayTime + importStr{ii}.x.LabelingDuration;
+% 		end
+% 	else
+% 		importStr{ii}.par.LabelingDuration = importStr{ii}.x.LabelingDuration;
+% 		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
+% 	end
+
 	
 	
 	fSes = xASL_adm_GetFileList(fullfile(imPar.AnalysisRoot,listSubjects{iSubject}),'^ASL.+$',false,[],true);
@@ -443,27 +494,9 @@ if bRunSubmodules(2)
 			% Load the JSON
 			jsonDicom = spm_jsonread(fullfile(inSesPath,[aslLabel '.json']));
 			imNii = xASL_io_Nifti2Im(fullfile(inSesPath,[aslLabel '.nii']));
-			
-			
-			
-			
-			rescaleParms = [];
-			ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'};
-			JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'};
-			
-			for pp = 1:length(ParmsFields)
-				if isfield(jsonDicom,JSONFields{pp})
-					rescaleParms.(ParmsFields{pp}) = jsonDicom.(JSONFields{pp});
-				end
-				if isfield(jsonDicom,ParmsFields{pp})
-					rescaleParms.(ParmsFields{pp}) = jsonDicom.(ParmsFields{pp});
-					if isfield(jsonDicom,JSONFields{pp}) && ~isequal(jsonDicom.(JSONFields{pp}),jsonDicom.(ParmsFields{pp}))
-						sprintf('Warning: Fields %s=%f and %s=%f differ.\n',JSONFields{pp},jsonDicom.(JSONFields{pp}),ParmsFields{pp},jsonDicom.(ParmsFields{pp}));
-					end
-				end
-			end
+						
 			if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
-				scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,[aslLabel '.nii'])));
+				scaleFactor = xASL_adm_GetPhilipsScaling(jsonDicom,xASL_io_ReadNifti(fullfile(inSesPath,[aslLabel '.nii'])));
 			else
 				scaleFactor = 0;
 			end
@@ -484,6 +517,9 @@ if bRunSubmodules(2)
 			
 			% Copy all dicom ones
 			for fn = fieldnames(jsonDicom)'
+				if isfield(jsonLocal,fn{1}) && ~isequal(jsonLocal.(fn{1}),jsonDicom.(fn{1}))
+					warning('User defined and DICOM field %s differ.\n',fn{1});
+				end
 				jsonLocal.(fn{1}) = jsonDicom.(fn{1});
 			end
 			
@@ -496,14 +532,14 @@ if bRunSubmodules(2)
 				end
 			end
 			
-			if isfield(jsonDicom,'GELabelingDuration')
-				if isfield(studyPar,'LabelingDuration') && jsonDicom.GELabelingDuration ~= studyPar.LabelingDuration
+			if isfield(jsonLocal,'GELabelingDuration')
+				if isfield(studyPar,'LabelingDuration') && jsonLocal.GELabelingDuration ~= studyPar.LabelingDuration
 					warning('Labeling duration mismatch with GE private field.');
 				end
-				if isfield(jsonDicom,'LabelingDuration') && jsonDicom.GELabelingDuration ~= studyPar.LabelingDuration
+				if isfield(jsonDicom,'LabelingDuration') && jsonLocal.GELabelingDuration ~= studyPar.LabelingDuration
 					warning('Labeling duration mismatch with GE private field.');
 				end
-				jsonDicom.LabelingDuration = jsonDicom.GELabelingDuration;
+				jsonLocal.LabelingDuration = jsonLocal.GELabelingDuration;
 			end
 			
 			% BSup sanity check
@@ -547,7 +583,7 @@ if bRunSubmodules(2)
 			end
 			
 			% Process all the data and automatically fill in the missing parameters
-			if strcmpi(jsonDicom.MRAcquisitionType,'2D')
+			if strcmpi(jsonLocal.MRAcquisitionType,'2D')
 				jsonLocal.PulseSequenceType = '2D_EPI';
 			else
 				if strcmpi(jsonLocal.Manufacturer,'GE') || strcmpi(jsonLocal.Manufacturer,'GE_WIP') || strcmpi(jsonLocal.Manufacturer,'GE_product')
@@ -667,6 +703,23 @@ if bRunSubmodules(2)
 				end
 			end
 			
+			% If Post-labeling delay or labeling duration is longer than 1, but shorten then number of volumes
+			% then repeat it
+			listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVenc','FlipAngle','RepetitionTime'};
+			for iRepeat = 1:length(listFieldsRepeat)
+				if isfield(jsonLocal,(listFieldsRepeat{iRepeat})) && (length(jsonLocal.(listFieldsRepeat{iRepeat})) > 1) && (size(imNii,4) ~= length(jsonLocal.(listFieldsRepeat{iRepeat})))
+					if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
+						error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
+					else
+						jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat}),[1 size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat}))]);
+					end
+				end
+			end
+			
+			if isfield(studyPar,'RepetitionTime') && studyPar.RepetitionTime ~= jsonLocal.RepetitionTime
+				warning('User defined repetition time differs from DICOM, using user defined: %d vs %d \n',studyPar.RepetitionTime,jsonLocal.RepetitionTime);
+			end
+			
 			% Reformat ASLcontext field
 			% Remove ',' and ';' at the 
 			if (jsonLocal.ASLContext(end) == ';') || (jsonLocal.ASLContext(end) == ',')
@@ -744,24 +797,9 @@ if bRunSubmodules(2)
 						jsonM0 = spm_jsonread(fullfile(inSesPath,['M0' nnStrIn '.json']));
 						imM0   = xASL_io_Nifti2Im(fullfile(inSesPath,['M0' nnStrIn '.json']));
 						
-						rescaleParms = [];
-						ParmsFields = {'RescaleSlope' 'RWVSlope'    'MRScaleSlope' 'RescaleIntercept'};
-						JSONFields  = {'PhilipsRescaleSlope'  'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept'};
-						for pp = 1:length(ParmsFields)
-							if isfield(jsonM0,JSONFields{pp})
-								rescaleParms.(ParmsFields{pp}) = jsonM0.(JSONFields{pp});
-							end
-							
-							if isfield(jsonM0,ParmsFields{pp})
-								rescaleParms.(ParmsFields{pp}) = jsonM0.(ParmsFields{pp});
-								if isfield(jsonM0,JSONFields{pp}) && ~isequal(jsonM0.(JSONFields{pp}),jsonM0.(ParmsFields{pp}))
-									sprintf('Warning: Fields %s=%f and %s=%f differ.\n',JSONFields{pp},jsonM0.(JSONFields{pp}),ParmsFields{pp},jsonM0.(ParmsFields{pp}));
-								end
-							end
-						end
-						
+								
 						if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
-							scaleFactor = xASL_adm_GetPhilipsScaling(rescaleParms,xASL_io_ReadNifti(fullfile(inSesPath,['M0' nnStrIn '.nii'])));
+							scaleFactor = xASL_adm_GetPhilipsScaling(jsonDicom,xASL_io_ReadNifti(fullfile(inSesPath,['M0' nnStrIn '.nii'])));
 						else
 							scaleFactor = 0;
 						end

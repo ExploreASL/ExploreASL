@@ -32,18 +32,18 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 
     % Check if both root folders are valid char arrays or strings
     if ~(ischar(pathDatasetA) || isstring(pathDatasetA))
-        error('The path of structure A is neither a char array not a string...');
+        error('The path of structure A is neither a char array not a string.');
     end
     if ~(ischar(pathDatasetB) || isstring(pathDatasetB))
-        error('The path of structure A is neither a char array not a string...');
+        error('The path of structure A is neither a char array not a string.');
     end
 
     % Check if both root folders exists
     if ~(xASL_exist(pathDatasetA)==7)
-        error('The root folder of structure A does not exist...');
+        error('The root folder of structure A does not exist: %s',pathDatasetA);
     end
     if ~(xASL_exist(pathDatasetB)==7)
-        error('The root folder of structure B does not exist...');
+        error('The root folder of structure B does not exist: %s',pathDatasetB);
     end
 	
     % Default value for bPrintReport
@@ -302,7 +302,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
         fieldContentB = jsonStructB.(fieldList{iField});
         if isnumeric(fieldContentA) && isnumeric(fieldContentB)
             % Compare numbers
-            if ~(fieldContentA==fieldContentB)
+            if ~isequal(fieldContentA,fieldContentB)
                 strError = sprintf('%s\t\t\t\tDifferent value: %s (%f vs %f)\n', strError,curFieldName,fieldContentA,fieldContentB);
             end
         elseif (ischar(fieldContentA) || isstring(fieldContentA)) && (ischar(fieldContentB) || isstring(fieldContentB))

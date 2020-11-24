@@ -97,25 +97,27 @@ if scaleFactor
     if ~isfield(parms,'MRScaleSlope')
         warning('MRScaleSlope missing, potential quantification error, skipping');
         return;
-    end
-    
-	if length(parms.MRScaleSlope) > 1
-		ssInd = find(parms.MRScaleSlope ~= 1);
+	end
+	% Make a local copy to potentially modify
+    MRScaleSlope = parms.MRScaleSlope;
+	
+	if length(MRScaleSlope) > 1
+		ssInd = find(MRScaleSlope ~= 1);
 		if isempty(ssInd)
-			parms.MRScaleSlope = 1;
+			MRScaleSlope = 1;
 		else
 			if length(ssInd) > 1
 				warning('Philips MR ScaleSlope has more than a single value, could be a scale slope issue');
 			end
-			parms.MRScaleSlope = parms.MRScaleSlope(ssInd);
+			MRScaleSlope = MRScaleSlope(ssInd);
 		end
 	end
-	if parms.MRScaleSlope == 1
+	if MRScaleSlope == 1
 		warning('Philips MR ScaleSlope was 1, could be a scale slope issue.');
 	end
 	
-	fprintf('%s\n',['Using DICOM (re)scale slopes ' num2str(scaleFactor) ' * ' num2str(parms.MRScaleSlope)]);
-	scaleFactor = 1./(scaleFactor .* parms.MRScaleSlope);
+	fprintf('%s\n',['Using DICOM (re)scale slopes ' num2str(scaleFactor) ' * ' num2str(MRScaleSlope)]);
+	scaleFactor = 1./(scaleFactor .* MRScaleSlope);
 end
 
 

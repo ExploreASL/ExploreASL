@@ -300,6 +300,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 				end
 			end
 			
+			c_all_parms = struct;
 			% The more complex fields - strings and arrays are saved in cell
 			for iField=1:length(DcmComplexFieldAll)
 				if isfield(temp,DcmComplexFieldAll{iField}) && ~isempty(temp.(DcmComplexFieldAll{iField}))
@@ -307,6 +308,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 				end
 			end
 			
+			c_first_parms = struct;
 			for iField=1:length(DcmComplexFieldFirst)
 				if isfield(temp,DcmComplexFieldFirst{iField}) && ~isempty(temp.(DcmComplexFieldFirst{iField}))
 					c_first_parms.(DcmComplexFieldFirst{iField}) = temp.(DcmComplexFieldFirst{iField});
@@ -371,14 +373,15 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 		for iField=1:length(DcmComplexFieldAll)
 			if isfield(c_all_parms,DcmComplexFieldAll{iField})
 				listEmptyFields = find(cellfun(@isempty,c_all_parms.(DcmComplexFieldAll{iField})));
-				for iFieldEmpty = listEmptyFields
-					c_all_parms.(DcmComplexFieldAll{iField})(iFieldEmpty) = '';
-				end
-				c_all_unique = unique(c_all_parms.(DcmComplexFieldAll{iField}));
-				if length(c_all_unique) == 1
-					parms.(DcmComplexFieldAll{iField}) = c_all_unique;
+				if ~isempty(listEmptyFields)
+					warning('Field %s contains empty fields, skipping\n',DcmComplexFieldAll{iField});
 				else
-					parms.(DcmComplexFieldAll{iField}) = c_all_parms.(DcmComplexFieldAll{iField});
+					c_all_unique = unique(c_all_parms.(DcmComplexFieldAll{iField}));
+					if length(c_all_unique) == 1
+						parms.(DcmComplexFieldAll{iField}) = c_all_unique;
+					else
+						parms.(DcmComplexFieldAll{iField}) = c_all_parms.(DcmComplexFieldAll{iField});
+					end
 				end
 			end
 		end
@@ -432,7 +435,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
                     parms = rmfield(parms, {'MRSeriesWaterFatShift' 'MRSeriesEPIFactor'});
                 end
             case 'Siemens'
-                if isfield(parms,'BandwidthPerPixelPhaseEncode') && isfield(parms,'InPlanePhaseEncodingDirection')
+                if isfield(parms,'BandwidthPerPixelPhaseEncode') && (~isnan(parms.BandwidthPerPixelPhaseEncode)) && isfield(parms,'InPlanePhaseEncodingDirection')
                     parms.BandwidthPerPixelPhaseEncode = double(parms.BandwidthPerPixelPhaseEncode);
                     
                     if strcmp(parms.InPlanePhaseEncodingDirection,'COL')

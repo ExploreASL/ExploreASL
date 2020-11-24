@@ -54,15 +54,17 @@ if ~ischar(inStr)
 	return;
 end
 
-% Take out the backslashes
-outNum = xASL_adm_CorrectName(inStr,2);
-
 % If the output is supposed to be char, then check if the input is not char already
 if strcmpi(type,'char')
-	if sum((outNum>'f' & outNum<'z')+(outNum>'F' & outNum<'Z'))
+	if sum((inStr>'f' & inStr<'z')+(inStr>'F' & inStr<'Z'))
+		outNum = inStr;
 		return;
 	end
 end
+
+% Take out the backslashes
+outNum = xASL_adm_CorrectName(inStr,2);
+
 
 % Skip padding with zeros for now...
 % 
