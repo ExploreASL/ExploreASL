@@ -69,6 +69,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 	DcmParDefaults.MRSeriesWaterFatShift = NaN;
 	DcmParDefaults.MRSeriesEPIFactor = NaN;
 	DcmParDefaults.BandwidthPerPixelPhaseEncode = NaN;
+	DcmParDefaults.RWVIntercept   = NaN;
+	DcmParDefaults.RWVSlope   = NaN;
 	
 	DcmParDefaults.Rows = NaN;
 	DcmParDefaults.Columns = NaN;
@@ -78,10 +80,14 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 	DcmParDefaults.InversionTime = NaN;
 	
 	DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
-		'GELabelingDuration' 'InversionTime'};
+		'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
 	
 	DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
 	DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
+	
+	DcmFieldList = {'RepetitionTime', 'EchoTime', 'NumberOfAverages', 'RescaleSlope', ...
+					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
+					'AcquisitionMatrix' 'Rows' 'Columns' 'NumberOfAverages' 'NumberOfTemporalPositions' 'RWVIntercept' 'RWVSlope'};
 	
 	bVendor = 'Unknown';
 	
@@ -251,9 +257,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 					warning('xASL_adm_Dicom2JSON: Manufacturer unknown for %s', filepath);
 				end
 				
-				dcmfields = {'RepetitionTime', 'EchoTime', 'NumberOfAverages', 'RescaleSlope', ...
-					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
-					'AcquisitionMatrix' 'Rows' 'Columns' 'NumberOfAverages' 'NumberOfTemporalPositions'};
+				dcmfields = DcmFieldList;
 				
 				switch bVendor
 					case 'GE'
@@ -348,6 +352,13 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 				fieldname = dcmfields{iField};
 				if  isfield(t_parms,fieldname)
 					parms.(fieldname) = unique(t_parms.(fieldname));
+					
+					% Remove (set to NaN) also those that differ only minimally
+					if length(parms.(fieldname))>1 && isnumeric(parms.(fieldname))
+						iDiff = abs(parms.(fieldname) - parms.(fieldname)(1))./parms.(fieldname)(1);
+						iDiff(1) = 1;
+						parms.(fieldname)(iDiff<0.001) = NaN;
+					end
 					% There's one or more NaNs
 					nNaN = sum(isnan(parms.(fieldname)));
 					if nNaN > 0
@@ -438,7 +449,15 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
                 if isfield(parms,'BandwidthPerPixelPhaseEncode') && (~isnan(parms.BandwidthPerPixelPhaseEncode)) && isfield(parms,'InPlanePhaseEncodingDirection')
                     parms.BandwidthPerPixelPhaseEncode = double(parms.BandwidthPerPixelPhaseEncode);
                     
-                    if strcmp(parms.InPlanePhaseEncodingDirection,'COL')
+					if isfield(parms,'AcquisitionMatrix') && ~isempty(parms.AcquisitionMatrix) && ~sum(isnan(parms.AcquisitionMatrix))
+						if length(parms.AcquisitionMatrix) == 1
+							parms.ReconMatrixPE = parms.AcquisitionMatrix;
+						elseif strcmp(parms.InPlanePhaseEncodingDirection,'COL')
+							parms.ReconMatrixPE = parms.AcquisitionMatrix(2);
+						else
+							parms.ReconMatrixPE = parms.AcquisitionMatrix(1);
+						end
+					elseif strcmp(parms.InPlanePhaseEncodingDirection,'COL')
                        parms.ReconMatrixPE = double(parms.Rows);
                     elseif strcmp(parms.InPlanePhaseEncodingDirection,'ROW')
                        parms.ReconMatrixPE = double(parms.Columns);
@@ -474,22 +493,26 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 		for parmNameInd = 1:length(parmNameToCheck)
 			parmName = parmNameToCheck{parmNameInd};
 			if  isfield(parms,parmName) && (length(parms.(parmName))>1)
+				
 				indNonOne = find(parms.(parmName)~=1);
 				if isempty(indNonOne)
 					parms.(parmName) = 1;
 				else
 					parms.(parmName) = parms.(parmName)(indNonOne);
 				end
+				
 			end
 		end
 				
 		% In case multiple different scale slopes are given, report a warning
-		if length(parms.MRScaleSlope)>1  || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleSlope)>1 || (isfield(parms,parmName) && length(parms.RWVSlope)>1)
+		if length(parms.MRScaleSlope)>1  || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleSlope)>1 ||...
+				(isfield(parms,'RWVSlope') && length(parms.RWVSlope)>1)
 			warning('xASL_adm_Dicom2JSON: Multiple scale slopes exist for a single scan!');
-			parms = rmfield(parms,'MRScaleSlope');
-			parms = rmfield(parms,'RescaleSlope');
-			parms = rmfield(parms,'RescaleSlopeOriginal');
-			parms = rmfield(parms,'RescaleIntercept');
+			%parms = rmfield(parms,'MRScaleSlope');
+			%parms = rmfield(parms,'RescaleSlope');
+			%parms = rmfield(parms,'RescaleSlopeOriginal');
+			%parms = rmfield(parms,'RescaleIntercept');
+			%parms = rmfield(parms,'RWVSlope');
 		end
 		
         %% Save the info in JSON file

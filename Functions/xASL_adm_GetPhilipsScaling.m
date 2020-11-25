@@ -30,6 +30,22 @@ rescaleSlopeNifti = header.dat.scl_slope;
 
 if isfield(parms,'RWVSlope')
 	% If the RealWorldValue is present, then dcm2nii scales to them and ignores everything else
+	if length(parms.RWVSlope)>1
+		[~,idx] = min(abs(parms.RWVSlope - rescaleSlopeNifti));
+		parms.RWVSlope = parms.RWVSlope(idx);
+		if isfield(parms,'RescaleSlopeOriginal') && length(parms.RescaleSlopeOriginal)>1
+			parms.RescaleSlopeOriginal = parms.RescaleSlopeOriginal(idx);
+		end
+		
+		if isfield(parms,'RescaleSlope') && length(parms.RescaleSlope)>1
+			parms.RescaleSlope = parms.RescaleSlope(idx);
+		end
+		
+		if isfield(parms,'MRScaleSlope') && length(parms.MRScaleSlope)>1
+			parms.MRScaleSlope = parms.MRScaleSlope(idx);
+		end
+	end
+	
 	if ~isnear(parms.RWVSlope,rescaleSlopeNifti,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
 		fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and NIfTI slope (' xASL_num2str(rescaleSlopeNifti) ') differ, using RWVSlope']);
 	end

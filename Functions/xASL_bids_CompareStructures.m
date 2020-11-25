@@ -7,7 +7,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 %        pathDatasetA       - path to first BIDS structure (REQUIRED)
 %        pathDatasetB       - path to second BIDS structure (REQUIRED)
 %        bPrintReport       - true or false to print console report (OPTIONAL, DEFAULT = true)
-%        threshRmseNii      - RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 0.1)
+%        threshRmseNii      - normalized RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 0.01)
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -53,7 +53,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     
     % Default value for RMSE threshold
     if nargin < 4
-       threshRmseNii = 0.1; 
+       threshRmseNii = 0.01; 
     end
 
 
@@ -273,7 +273,7 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                     % Report function which prints to the console
                     if bPrintReport
                         % differenceAB = sum(imageA-imageB,'all');
-                        RMSE = sqrt(mean(imageA(:).^2 - imageB(:).^2)) ;
+                        RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
                         if (RMSE>threshRmseNii)
 							fprintf('%s:\t\t\n',allFiles(iFile));
                             fprintf('\t\t\t\tRMSE of NIFTIs above threshold.\n');

@@ -18,7 +18,8 @@
  *    RepetitionTime, EchoTime, RescaleSlope, RescaleIntercept, NumberOfTemporalPositions, NumberOfAverages, AcquisitionTime, 
  *    MediaStorageSOPClassUID, Manufacturer, SeriesDescription, ProtocolName, StudyDate, SeriesTime, StudyInstanceUID, 
  *    SeriesInstanceUID, ImageType, AcquisitionDate, SeriesDate, Rows, Columns, AcquisitionMatrix, InPlanePhaseEncodingDirection,
- *    AcquisitionContrast, ComplexImageComponent, PulseSequenceName, InversionTime, TemporalPositionIdentifier, SoftwareVersions
+ *    AcquisitionContrast, ComplexImageComponent, PulseSequenceName, InversionTime, TemporalPositionIdentifier, SoftwareVersions,
+ *    RWVIntercept, RWVSlope
  *    
  *    The image data are stored in:
  *    PixelData

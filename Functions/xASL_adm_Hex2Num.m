@@ -63,7 +63,8 @@ if strcmpi(type,'char')
 end
 
 % Take out the backslashes
-outNum = xASL_adm_CorrectName(inStr,2);
+%outNum = xASL_adm_CorrectName(inStr,2);
+outNum = strrep(inStr,'\','');
 
 
 % Skip padding with zeros for now...

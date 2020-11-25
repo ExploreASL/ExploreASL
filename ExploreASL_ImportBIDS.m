@@ -351,57 +351,14 @@ if bRunSubmodules(2)
 				jsonAnat = spm_jsonread([anatPath,'.json']);
 				
 				% Save the JSON
-				jsonAnat = ExploreASL_ImportBIDS_jsonCheck(jsonAnat,bidsPar,0);
+				jsonAnat = ExploreASL_bids_VendorFieldCheck(jsonAnat,0);
+				jsonAnat = ExploreASL_bids_JsonCheck(jsonAnat,0);
 				spm_jsonwrite(fullfile(imPar.BidsRoot,['sub-' subLabel],'anat',['sub-' subLabel '_' iAnatType{1} '.json']),jsonAnat);
 			end
 		end
 	
-%% ERRORS FIXED	
-% Dataset:		Philips_PCASL_3DGRASE_R5
-% /sub-Sub1/fmap/sub-Sub1_dir-pa_m0scan.json:
-%				Extra field: EffectiveEchoSpacing
-%				Different value: TotalReadoutTime (0.029286 vs 0.013600)	
 
-% Siemens_PASL_2DEPI_noBsup_AD - strange different value that breaks formatting
-
-% Philips_PCASL_3DGRASE_functional
-%			/sub-Patient1/perf/sub-Patient1_asl.json:
-%				Different value: RepetitionTime (0.008077 vs 4.280000)
-% %Siemens_PASL_2DEPI_noBsup_AD and the same for 2
-% %xtra field: SiemensSliceTime
-%% ERRORS TO FIX
-%Philips_PCASL_2DEPI_GBM + strange error
-%							Extra field: EffectiveEchoSpacing
-%				Different value: SliceTiming (0.000000 vs 43.764700)
-
-% Philips_PCASL_2DEPI_GBM	- NII
-% Philips_PCASL_2DEPI_Ingenia_volunteer
-% Philips_PCASL_2DEPI_Intera_volunteer
-% Philips_PCASL_2DEPI_dummyLL
-% Philips_PCASL_2DEPI_dummyQUASAR	
-% Philips_PCASL_2DEPI_dummyMultiPLD
-% Philips_PCASL_2DEPI_pharma - NII
-% Philips_PCASL_2DEPI_pharma2 - NII - also M0
-% Philips_PCASL_2DEPI_volunteer3 - NII
-% Philips_PCASL_2DEPI_volunteer_1 - NII
-% Philips_PCASL_2DEPI_volunteer_2 - NII
-% Philips_PCASL_3DGRASE_functional - NII
-
-% Philips_PCASL_2DEPI_volunteer3
-%Extra field: EffectiveEchoSpacing
-%				Different value: RepetitionTime (4.571680 vs 4.571681)
-% Philips_PCASL_2DEPI_dummyQUASAR	
-% Different value: VascularCrushingVenc (0.000000 vs 0.000000) + something other and strange
-%Siemens_PASL_2DEPI_noBsup_AD and the same for 2
-				%Different value: BolusCutOffDelayTime (0.800000 vs 1.400000)
-%1.400000e+00				Different value: 				Different value: EffectiveEchoSpacing (0.000058 vs 0.000348)
-%				Different value: SliceTiming (0.000000 vs 0.045000)
-%Siemens_PASL_singleTI, Siemens_PCASL_2DEPI_AD
-%Different value: BolusCutOffDelayTime (0.700000 vs 1.600000)
-%Different value: EffectiveEchoSpacing (0.000128 vs 0.000510)
-% Different value: SliceTiming (0.000000 vs 0.042500)
-%Different value: TotalReadoutTime (0.032513 vs 0.032130)
-
+%% FEATURES TO ADD
 	
 	% For M0 in aslcontext, filling in PLD and labdur as zero
 
@@ -414,8 +371,6 @@ if bRunSubmodules(2)
 	% Flip angle priority of studypar over data
 	
 	% Automatic reading of more ASL parameters
-	
-	% Automatic control/label order extraction
 	
 	% Q2TIPS has two timing entries
 	
@@ -446,7 +401,7 @@ if bRunSubmodules(2)
 % 		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
 % 	end
 
-	
+%% CODE TO REVIEW	
 	
 	fSes = xASL_adm_GetFileList(fullfile(imPar.AnalysisRoot,listSubjects{iSubject}),'^ASL.+$',false,[],true);
 	
@@ -571,15 +526,12 @@ if bRunSubmodules(2)
 			% Free info about the sequence, now just the scanner type+software
 			if isfield(jsonDicom,'ManufacturersModelName')
 				jsonLocal.PulseSequenceDetails = jsonDicom.ManufacturersModelName;
-				%else
-				%	jsonLocal.PulseSequenceDetails = '';
 			end
 			if isfield(jsonDicom,'SoftwareVersions')
 				if ~isempty(jsonLocal.PulseSequenceDetails)
 					jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails '-'];
 				end
 				jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails jsonDicom.SoftwareVersions];
-				%jsonLocal.MRSoftwareVersion = jsonDicom.SoftwareVersions;
 			end
 			
 			% Process all the data and automatically fill in the missing parameters
@@ -629,15 +581,7 @@ if bRunSubmodules(2)
 					jsonLocal = rmfield(jsonLocal,'SliceTiming');
 				end
 			end
-			
-			if isfield(jsonLocal,'EffectiveEchoSpacing')
-				if jsonLocal.EffectiveEchoSpacing == 0
-					jsonLocal = rmfield(jsonLocal,'EffectiveEchoSpacing');
-				else
-					jsonLocal.EffectiveEchoSpacing = abs(jsonLocal.EffectiveEchoSpacing);
-				end
-			end
-			
+						
 			if isfield(jsonLocal,'TotalReadoutTime')
 				if jsonLocal.TotalReadoutTime == 0
 					jsonLocal = rmfield(jsonLocal,'TotalReadoutTime');
@@ -646,9 +590,9 @@ if bRunSubmodules(2)
 				end
 			end
 			
-			%if isfield(studyPar,'RepetitionTime')
-			%	jsonLocal.RepetitionTime = studyPar.RepetitionTime;
-			%end
+			if isfield(studyPar,'RepetitionTime')
+				jsonLocal.RepetitionTime = studyPar.RepetitionTime;
+			end
 			
 			% Check if TR is a vector - replace by the maximum then
 			if length(jsonLocal.RepetitionTime) > 1
@@ -703,7 +647,7 @@ if bRunSubmodules(2)
 				end
 			end
 			
-			% If Post-labeling delay or labeling duration is longer than 1, but shorten then number of volumes
+			% If Post-labeling delay or labeling duration is longer than 1, but shorter then number of volumes
 			% then repeat it
 			listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVenc','FlipAngle','RepetitionTime'};
 			for iRepeat = 1:length(listFieldsRepeat)
@@ -799,7 +743,7 @@ if bRunSubmodules(2)
 						
 								
 						if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
-							scaleFactor = xASL_adm_GetPhilipsScaling(jsonDicom,xASL_io_ReadNifti(fullfile(inSesPath,['M0' nnStrIn '.nii'])));
+							scaleFactor = xASL_adm_GetPhilipsScaling(jsonM0,xASL_io_ReadNifti(fullfile(inSesPath,['M0' nnStrIn '.nii'])));
 						else
 							scaleFactor = 0;
 						end
@@ -842,14 +786,6 @@ if bRunSubmodules(2)
 							jsonM0Write.PhaseEncodingDirection = tagPhaseEncodingDirection;
 						end
 						
-						if isfield(jsonM0Write,'EffectiveEchoSpacing')
-							if jsonM0Write.EffectiveEchoSpacing == 0
-								jsonM0Write = rmfield(jsonM0Write,'EffectiveEchoSpacing');
-							else
-								jsonM0Write.EffectiveEchoSpacing = abs(jsonM0Write.EffectiveEchoSpacing);
-							end
-						end
-						
 						if isfield(jsonM0Write,'TotalReadoutTime')
 							if jsonM0Write.TotalReadoutTime == 0
 								jsonM0Write = rmfield(jsonM0Write,'TotalReadoutTime');
@@ -888,7 +824,8 @@ if bRunSubmodules(2)
 							end
 						end
 						% Save JSON to new dir
-						jsonM0Write = ExploreASL_ImportBIDS_jsonCheck(jsonM0Write,bidsPar,1);
+						jsonM0Write = ExploreASL_bids_VendorFieldCheck(jsonM0Write,1);
+						jsonM0Write = ExploreASL_bids_JsonCheck(jsonM0Write,1);
 						if nn == 1
 							spm_jsonwrite(fullfile(outSesPath,'perf',['sub-' subLabel sesLabelUnd nnStrOut '_' bidsPar.strM0scan '.json']),jsonM0Write);
 						else
@@ -902,7 +839,8 @@ if bRunSubmodules(2)
 				end
 			end
 			% Save JSON to new dir
-			jsonLocal = ExploreASL_ImportBIDS_jsonCheck(jsonLocal,bidsPar,1);
+			jsonLocal = ExploreASL_bids_VendorFieldCheck(jsonLocal,1);
+			jsonLocal = ExploreASL_bids_JsonCheck(jsonLocal,1);
 			spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
 			
 		end
@@ -910,9 +848,28 @@ if bRunSubmodules(2)
 end
 
 
-
-
-
+%% Export the fully anonymized datasets for public sharing
+% TODO TODO TODO TODO
+if 0
+	finalPath = [baseDirImport 'BIDSfinal']; % Takes files in NIFTI+JSON from outputPath and saves the complete BIDS format to finalPath
+	anonymPath = [baseDirImport 'BIDSanonymized']; % Takes files in NIFTI+JSON from outputPath and saves the complete BIDS format to finalPath
+	
+	pthVec = {'GE_PCASL_3Dspiral_volunteer' 'Siemens_PCASL_3DGRASE_volunteer2' 'Philips_PCASL_2DEPI_volunteer3'};
+	for ii = 1:3
+		xASL_Copy(fullfile(finalPath,pthVec{ii}),fullfile(anonymPath,pthVec{ii}));
+		xASL_spm_deface(fullfile(anonymPath,pthVec{ii},'sub-Sub103','anat','sub-Sub103_T1w.nii'),true);
+		gzip(fullfile(anonymPath,pthVec{ii},'sub-Sub103','anat','sub-Sub103_T1w.nii'));
+		delete(fullfile(anonymPath,pthVec{ii},'sub-Sub103','anat','sub-Sub103_T1w.nii'));
+	end
+	
+	pthVec = {'Siemens_PASL_multiTI','Siemens_PASL_singleTI','Siemens_PCASL_volunteer'};
+	for ii = 1:3
+		xASL_Copy(fullfile(finalPath,pthVec{ii}),fullfile(anonymPath,pthVec{ii}));
+		xASL_spm_deface(fullfile(anonymPath,pthVec{ii},'sub-Sub1','anat','sub-Sub1_T1w.nii'),true);
+		gzip(fullfile(anonymPath,pthVec{ii},'sub-Sub1','anat','sub-Sub1_T1w.nii'));
+		delete(fullfile(anonymPath,pthVec{ii},'sub-Sub1','anat','sub-Sub1_T1w.nii'));
+	end
+end
 
 
 
@@ -1635,235 +1592,4 @@ if length(listMissingFiles)>1
 	fprintf('dataset_description.json is missing the following OPTIONAL fields: \n%s\n',listMissingFiles);
 end
 
-end
-
-%%
-% Final checking of the JSON structure, renaming and sorting last fields and checking last conditions
-function jsonOut = ExploreASL_ImportBIDS_jsonCheck(jsonIn,bidsPar,bIsASL)
-% Create an empty output structure and a structure with fields to delete
-jsonOut = struct;
-jsonRemove = struct;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Rename certain fields from the vendor-name to BIDS name
-
-% Rename the coil names for different manufacturers
-if isfield(jsonIn,'CoilString')
-	switch (jsonIn.Manufacturer)
-		case 'Philips'
-			jsonOut.ReceiveCoilName = jsonIn.CoilString;
-		case 'GE'
-			jsonOut.ReceiveCoilName = jsonIn.CoilString;
-		case 'Siemens'
-			jsonOut.ReceiveCoilActiveElements = jsonIn.CoilString;
-		otherwise
-			error('Unknown manufacturer')
-	end
-	jsonRemove.CoilString = '';
-end
-
-% Rename the fields with number of segments
-jsonRemove.NumberOfAverages = '';
-if isfield(jsonIn,'NumberSegments')
-	jsonOut.NumberShots = jsonIn.NumberSegments;
-	jsonRemove.NumberSegments = '';
-end
-
-% Rename the phase encoding directions fields
-if isfield(jsonIn,'PhaseEncodingAxis')
-	if ~isfield(jsonIn,'PhaseEncodingDirection')
-		jsonOut.PhaseEncodingDirection = jsonIn.PhaseEncodingAxis;
-	end
-	jsonRemove.PhaseEncodingAxis = '';
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Remove fields not belonging to BIDS
-
-% Remove certain empty fields
-for iField = 1:length(bidsPar.listRemoveIfEmpty)
-	if isfield(jsonIn,bidsPar.listRemoveIfEmpty{iField})
-		if isempty(jsonIn.(bidsPar.listRemoveIfEmpty{iField}))
-			jsonRemove.(bidsPar.listRemoveIfEmpty{iField}) = '';
-		end
-	end
-end
-
-% Remove non-BIDS fields
-for iField = 1:length(bidsPar.listFieldsRemoveGeneral)
-	if isfield(jsonIn,bidsPar.listFieldsRemoveGeneral{iField})
-		jsonRemove.(bidsPar.listFieldsRemoveGeneral{iField}) = '';
-	end
-end
-
-% Remove non-ASL-BIDS fields
-if bIsASL
-	for iField = 1:length(bidsPar.listFieldsRemoveASL)
-		if isfield(jsonIn,bidsPar.listFieldsRemoveASL{iField})
-			jsonRemove.(bidsPar.listFieldsRemoveASL{iField}) = '';
-		end
-	end
-end
-
-% Remove fields belonging to dataset_description
-for iField = 1:length(bidsPar.datasetDescription.Required)
-	if isfield(jsonIn,bidsPar.datasetDescription.Required{iField})
-		jsonRemove.(bidsPar.datasetDescription.Required{iField}) = '';
-	end
-end
-for iField = 1:length(bidsPar.datasetDescription.Recommended)
-	if isfield(jsonIn,bidsPar.datasetDescription.Recommended{iField})
-		jsonRemove.(bidsPar.datasetDescription.Recommended{iField}) = '';
-	end
-end
-for iField = 1:length(bidsPar.datasetDescription.Optional)
-	if isfield(jsonIn,bidsPar.datasetDescription.Optional{iField})
-		jsonRemove.(bidsPar.datasetDescription.Optional{iField}) = '';
-	end
-end
-
-% Go through all input fields and copy to output, but skip those in jsonRemove
-for nameField = fieldnames(jsonIn)'
-	if ~isfield(jsonRemove, nameField{1})
-		jsonOut.(nameField{1}) = jsonIn.(nameField{1});
-	end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Check field requirements and dependencies
-
-% Check required ASL fields
-if bIsASL
-	strReport = '';
-	for iField = 1:length(bidsPar.ASLfields.Required)
-		if ~isfield(jsonOut,bidsPar.ASLfields.Required{iField})
-			if isempty(strReport)
-				strReport = bidsPar.ASLfields.Required{iField};
-			else
-				strReport = [strReport ', ' bidsPar.ASLfields.Required{iField}];
-			end
-		end
-	end
-	if ~isempty(strReport)
-		fprintf('%s\n\n',['Missing required ASL fields: ' strReport]);
-	end
-	
-	strReport = '';
-	for iField = 1:length(bidsPar.ASLfields.Recommended)
-		if ~isfield(jsonOut,bidsPar.ASLfields.Recommended{iField})
-			if isempty(strReport)
-				strReport = bidsPar.ASLfields.Recommended{iField};
-			else
-				strReport = [strReport ', ' bidsPar.ASLfields.Recommended{iField}];
-			end
-		end
-	end
-	if ~isempty(strReport)
-		fprintf('%s\n\n',['Missing Recommended ASL fields: ' strReport]);
-	end
-end
-
-% Check ASL dependencies
-if bIsASL
-	for iCond = 1:length(bidsPar.ASLCondition)
-		% First check if the field is present
-		if isfield(jsonOut,bidsPar.ASLCondition{iCond}.field)
-			
-			% Checking if the condition is met, assuming no
-			bCond = 0;
-			if isempty(bidsPar.ASLCondition{iCond}.value)
-				% Empty value means the field is only present
-				bCond = 1;
-			elseif ischar(bidsPar.ASLCondition{iCond}.value)
-				% strings are checked with regexpi
-				if regexpi(jsonOut.(bidsPar.ASLCondition{iCond}.field),bidsPar.ASLCondition{iCond}.value)
-					bCond = 1;
-				end
-			elseif isequal(jsonOut.(bidsPar.ASLCondition{iCond}.field),bidsPar.ASLCondition{iCond}.value)
-				% Logical and numbers are checked with isequal
-				bCond = 1;
-			end
-			
-			% Conditions are met, now check for dependencies
-			if bCond
-				% Check the required filled fields
-				strReportFilled = '';
-				for iField = 1:length(bidsPar.ASLCondition{iCond}.RequiredFilled)
-					if ~isfield(jsonOut,bidsPar.ASLCondition{iCond}.RequiredFilled{iField}) || isempty(jsonOut.(bidsPar.ASLCondition{iCond}.RequiredFilled{iField}))
-						if isempty(strReportFilled)
-							strReportFilled = bidsPar.ASLCondition{iCond}.RequiredFilled{iField};
-						else
-							strReportFilled = [strReportFilled ', ' bidsPar.ASLCondition{iCond}.RequiredFilled{iField}];
-						end
-					end
-				end
-				
-				% Check the required empty fields
-				strReportEmpty = '';
-				for iField = 1:length(bidsPar.ASLCondition{iCond}.RequiredEmpty)
-					if isfield(jsonOut,bidsPar.ASLCondition{iCond}.RequiredEmpty{iField}) && ~isempty(jsonOut.(bidsPar.ASLCondition{iCond}.RequiredEmpty{iField}))
-						if isempty(strReportEmpty)
-							strReportEmpty = bidsPar.ASLCondition{iCond}.RequiredEmpty{iField};
-						else
-							strReportEmpty = [strReportEmpty ', ' bidsPar.ASLCondition{iCond}.RequiredEmpty{iField}];
-						end
-					end
-				end
-				
-				% Check the recommended filled fields
-				strReportRecommended = '';
-				for iField = 1:length(bidsPar.ASLCondition{iCond}.RecommendedFilled)
-					if ~isfield(jsonOut,bidsPar.ASLCondition{iCond}.RecommendedFilled{iField}) || isempty(jsonOut.(bidsPar.ASLCondition{iCond}.RecommendedFilled{iField}))
-						if isempty(strReportRecommended)
-							strReportRecommended = bidsPar.ASLCondition{iCond}.RecommendedFilled{iField};
-						else
-							strReportRecommended = [strReportRecommended ', ' bidsPar.ASLCondition{iCond}.RecommendedFilled{iField}];
-						end
-					end
-				end
-				
-				% One of the dependencies was not fulfilled
-				if ~isempty(strReportFilled) || ~isempty(strReportEmpty) || ~isempty(strReportRecommended)
-					% Report the conditional field
-					if isempty(bidsPar.ASLCondition{iCond}.value)
-						fprintf('The field %s is empty, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field);
-					elseif islogical(bidsPar.ASLCondition{iCond}.value)
-						if bidsPar.ASLCondition{iCond}.value
-							fprintf('The field %s is true, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field);
-						else
-							fprintf('The field %s is false, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field);
-						end
-					else
-						fprintf('The field %s is %s, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field,bidsPar.ASLCondition{iCond}.value);
-					end
-					
-					% Report the incorrect dependencies
-					if ~isempty(strReportFilled)
-						fprintf('The required fields are missing: %s\n',strReportFilled);
-					end
-					if ~isempty(strReportEmpty)
-						frpintf('The following fields should be empty: %s\n',strReportEmpty);
-					end
-					if ~isempty(strReportRecommended)
-						fprintf('The recommended fields are missing: %s\n',strReportRecommended);
-					end
-					fprintf('\n');
-				end
-			end
-		end
-	end
-end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Sort fields in a predefined order
-
-% Create the structure with the correct field order
-fieldOrderStruct = [];
-for iField=1:length(bidsPar.listFieldOrder)
-	fieldOrderStruct.(bidsPar.listFieldOrder{iField}) = '';
-end
-
-% And sort the fields
-jsonOut = xASL_adm_OrderFields(jsonOut,fieldOrderStruct);
 end

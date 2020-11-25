@@ -226,7 +226,7 @@ elseif ~isfinite(json)
         end
     end
 else
-    S = num2str(json,16);
+    S = num2str(json,12);
 end
 
 %==========================================================================
