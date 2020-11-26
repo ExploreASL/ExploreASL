@@ -449,7 +449,7 @@ if bRunSubmodules(2)
 			% Load the JSON
 			jsonDicom = spm_jsonread(fullfile(inSesPath,[aslLabel '.json']));
 			imNii = xASL_io_Nifti2Im(fullfile(inSesPath,[aslLabel '.nii']));
-						
+
 			if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
 				scaleFactor = xASL_adm_GetPhilipsScaling(jsonDicom,xASL_io_ReadNifti(fullfile(inSesPath,[aslLabel '.nii'])));
 			else
@@ -528,6 +528,9 @@ if bRunSubmodules(2)
 				jsonLocal.PulseSequenceDetails = jsonDicom.ManufacturersModelName;
 			end
 			if isfield(jsonDicom,'SoftwareVersions')
+				if ~isfield(jsonLocal,'PulseSequenceDetails')
+					jsonLocal.PulseSequenceDetails = '';
+				end
 				if ~isempty(jsonLocal.PulseSequenceDetails)
 					jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails '-'];
 				end
