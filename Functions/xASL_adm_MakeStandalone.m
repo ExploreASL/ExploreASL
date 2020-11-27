@@ -1,5 +1,5 @@
-function ExploreASL_make_standalone(outputPath, bCompileSPM, importDCM)
-%ExploreASL_make_standalone This function was written to create a compiled "standalone" version of
+function xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLatest)
+%xASL_adm_MakeStandalone This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
 %
 % INPUT:
@@ -7,7 +7,10 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, importDCM)
 %   bCompileSPM     - Boolean specifying whether SPM is compiled first
 %                     (OPTIONAL, DEFAULT=true)
 %   importDCM       - Generate a separate standalone import for DICOM2BIDS.
-%                     (OPTIONAL, DEFAULT=false)
+%                     (OPTIONAL, DEFAULT=true)
+%   markAsLatest    - Option to mark the generated compiled versions as
+%                     "latest" instead, to simplify the docker integration for example.
+%                     (OPTIONAL, DEFAULT=true)
 %
 % OUTPUT:       Generates a standalone/executable version of ExploreASL.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -30,7 +33,7 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, importDCM)
 % 8. Copy .bat file for Windows compilation
 % 9. Save Log-file
 %
-% EXAMPLE: ExploreASL_make_standalone('/Path2/Compilation')
+% EXAMPLE: xASL_adm_MakeStandalone('/Path2/Compilation')
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2020 ExploreASL
 
@@ -38,37 +41,16 @@ function ExploreASL_make_standalone(outputPath, bCompileSPM, importDCM)
 %% 1) Manage ExploreASL and compiler code folders
 if nargin<1 || isempty(outputPath),     error('OutputPath input missing');  end
 if nargin<2 || isempty(bCompileSPM),    bCompileSPM = true;                 end
-if nargin<3,                            importDCM = false;                  end
+if nargin<3,                            importDCM = true;                   end
+if nargin<4,                            markAsLatest = true;                end
 
-try
-    ExploreASL_Master('',0);
-catch
-    cd ../..
-    ExploreASL_Master('',0);
-end
+% Initialize Explore ASL
+x = ExploreASL_Initialize([],0);
 
-OldPath = 'RunExploreASL.bat';
+% Get current directory
+ExploreASLPath = x.MyPath;
 
-if ~exist(OldPath, 'file')
-    try
-        cd('Development');
-        cd('ExploreASL_make_standalone');
-    catch ME
-        warning('Couldnt access standalone compiler folder');
-        fprintf('%s\n', ME.message);
-    end
-    if ~exist(OldPath, 'file')
-        error('Please start this script in its own folder');
-    end
-end
-
-CurrDir = fileparts(mfilename('fullpath'));
-ExploreASLPath = fileparts(fileparts(CurrDir)); % assuming to folder layers
-
-
-%% 2) Capture version/date/time
-Time = clock;
-Time = [num2str(round(Time(4))) 'h' num2str(round(Time(5))) 'm'];
+%% 2) Define Versioning
 VersionPath = xASL_adm_GetFileList(ExploreASLPath, '^VERSION_.*', 'List', [0 Inf]);
 if ~isempty(VersionPath)
     xASLVersion = VersionPath{1}(9:end);
@@ -76,13 +58,8 @@ else
     xASLVersion = '';
 end
 
-MVersion = version;
-[StartIndex, EndIndex] = regexp(MVersion,'R\d{4}(a|b)');
-if ~isempty(StartIndex)
-    MVersion = MVersion(StartIndex:EndIndex);
-else
-    warning('Couldnt find Matlab version');
-    MVersion = '';
+if markAsLatest
+    xASLVersion = 'latest';
 end
 
 % Define file name (add version)
@@ -174,7 +151,7 @@ fprintf('Compiling ExploreASL\n');
 mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
     fullfile(ExploreASLPath,'ExploreASL_Master.m'),...
     '-d', fullfile(outputPath),...
-    '-o', strcat('ExploreASL_',Version),...
+    '-o', Version,...
     '-N', opts{:},...
     '-a', spm('Dir'),... % For SPM support
     '-a', AddExploreASLversion,...
@@ -193,7 +170,7 @@ if importDCM
     mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
     fullfile(ExploreASLPath,'External','mediri','xASL_io_mTRIAL'),...
     '-d', fullfile(outputPathImport),...
-    '-o', strcat('ExploreASL_',VersionImport),...
+    '-o', VersionImport,...
     '-N', opts{:},...
     '-a', spm('Dir'),... % For SPM support
     '-a', AddExploreASLversion,...
@@ -208,9 +185,10 @@ if importDCM
 end
 
 %% 8) Copy .bat file for Windows compilation
-if ispc
+createBat = false;
+if ispc && createBat
     NewPath = fullfile(outputPath, 'RunExploreASL.bat');
-    xASL_Copy(OldPath, NewPath, true);
+    xASL_Copy(outputPath, NewPath, true);
 end
 
 %% Restore cfg file
