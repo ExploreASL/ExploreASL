@@ -555,6 +555,24 @@ for iScanType=1:length(ScanTypeList)
             end
         end
         
+        % Replace * (asterisk) by _ (otherwise SPMs 'FPListRec' will not
+        % work properly)
+        if ~isempty(strfind(lower(ScanList{iScan}), '*')) && exist(ScanDir,'dir')
+            ScanList{iScan} = RemoveExistingRegExp(ScanList{iScan}, ['\*' '\d*']);
+
+            ScanList{iScan} = ReplaceAsterisk(ScanList{iScan});
+
+            NewDir = fullfile(ScanTypeDir, ScanList{iScan});
+            if ~strcmp(ScanDir, NewDir) % if the new directory differs from the old
+                while exist(NewDir,'dir')
+                    NewDir = [NewDir '_2'];
+                end
+                xASL_Move(ScanDir, NewDir);
+                ScanDir = NewDir;
+            end
+        end
+        
+        
         %% b) File management (unzipping, fix dcm extensions, remove dicom0 files)
         % Unzip dicoms
         if ~isempty(xASL_adm_GetFileList(ScanDir, '^.*\.dcm\.gz$', 'FPList', [0 Inf]))
@@ -820,6 +838,9 @@ end
 
 CorrAcqName = xASL_adm_CorrectName(lower(ScanListSeriesName), 2, '*'); % The asterisk '*' is left in for T2*
 CorrDcmName = xASL_adm_CorrectName(lower(SeriesDescription), 2, '*');
+
+CorrDcmName = ReplaceAsterisk(CorrDcmName);
+
 if isempty(strfind(CorrAcqName, CorrDcmName))
     % if there is a name discrepancy between dicom field & folder
     % (the SeriesDescription should be inside the FolderName)
@@ -837,7 +858,8 @@ if isempty(strfind(CorrAcqName, CorrDcmName))
         
         % Then rename folder
         ScanList = xASL_adm_CorrectName(SeriesDescription, 1, '*');
-
+        ScanList = ReplaceAsterisk(ScanList);
+        
         if ~isempty(PreFix)
             ScanList = [PreFix ScanList];
         end
@@ -1659,5 +1681,33 @@ while ~isempty(Ind1) && ~isempty(Ind2)
     ThroughputString = [ThroughputString(1:Ind1(1)-1) ThroughputString(Ind2(1)+1:end)];
     [Ind1, Ind2] = regexp(lower(ThroughputString),lower(InputRegExp));
 end
+
+end
+
+
+
+function [ThroughputString] = ReplaceAsterisk(ThroughputString)
+%ReplaceAsterisk Replace T2* by T2star, and otherwise * by _
+
+if iscell(ThroughputString) && length(ThroughputString)>1
+    error('Multiple cells not supported');
+elseif iscell(ThroughputString)
+    ThroughputString = ThroughputString{1};
+    WasCell = true;
+else
+    WasCell = false;
+end
+    
+ThroughputString = strrep(ThroughputString,'t2*', 't2star');
+ThroughputString = strrep(ThroughputString,'T2*', 'T2star');
+
+if ~isempty(regexpi(ThroughputString, '\*'))
+    ThroughputString = strrep(ThroughputString,'*', '_'); % replace the residual asterisks with an underscore
+    warning('Replaced * asterisk with _ underscore');
+end
+
+if WasCell
+    ThroughputString = {ThroughputString};
+end    
 
 end
