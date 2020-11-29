@@ -4,8 +4,8 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 % FORMAT: [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,[bPrintReport,threshRmseNii]);
 %
 % INPUT:
-%        pathDatasetA       - path to first BIDS structure (REQUIRED)
-%        pathDatasetB       - path to second BIDS structure (REQUIRED)
+%        pathDatasetA       - path to first BIDS structure [char array] (REQUIRED)
+%        pathDatasetB       - path to second BIDS structure [char array] (REQUIRED)
 %        bPrintReport       - true or false to print console report (OPTIONAL, DEFAULT = true)
 %        threshRmseNii      - normalized RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 0.01)
 %
@@ -31,10 +31,10 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     %% Input Check
 
     % Check if both root folders are valid char arrays or strings
-    if ~(ischar(pathDatasetA) || isstring(pathDatasetA))
+    if ~(ischar(pathDatasetA))
         error('The path of structure A is neither a char array not a string.');
     end
-    if ~(ischar(pathDatasetB) || isstring(pathDatasetB))
+    if ~(ischar(pathDatasetB))
         error('The path of structure A is neither a char array not a string.');
     end
 
@@ -305,7 +305,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
             if ~isequal(fieldContentA,fieldContentB)
                 strError = sprintf('%s\t\t\t\tDifferent value: %s (%f vs %f)\n', strError,curFieldName,fieldContentA,fieldContentB);
             end
-        elseif (ischar(fieldContentA) || isstring(fieldContentA)) && (ischar(fieldContentB) || isstring(fieldContentB))
+        elseif ischar(fieldContentA) && ischar(fieldContentB)
             % Compare char arrays and strings
             if ~(strcmp(fieldContentA,fieldContentB))
                 strError = sprintf('%s\t\t\t\tDifferent value: %s (%s vs %s)\n', strError,curFieldName,fieldContentA,fieldContentB);
