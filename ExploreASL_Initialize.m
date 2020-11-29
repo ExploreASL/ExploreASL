@@ -537,6 +537,35 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
 			x.D.ROOT = pathstr; % default
 		end
     end
+    
+    % Get atlases
+    if isfield(x,'Atlases')
+        if ~iscell(x.Atlases) % dont change definition if already cell array
+            try
+                tempAtlases = strsplit(x.Atlases,',');
+                tempAtlases = strrep(strrep(tempAtlases,'{',''),'}','');
+                x.Atlases = strrep(tempAtlases,'''','');
+            catch
+                x.Atlases = {'TotalGM','DeepWM'}; % fallback
+            end
+        end
+    else
+        x.Atlases = {'TotalGM','DeepWM'}; % default
+    end
+    
+    % Print out warning if atlases were selected which need susceptibility masking
+    if sum(ismember(x.Atlases,'HO_cortex')) || sum(ismember(x.Atlases,'HO_subcortical'))
+        if ~isfield(x.S,'bMasking')
+            fprintf('Susceptibility masking required...\n');
+            x.S.bMasking = [1 0 0 0];
+        end
+    end
+    
+    % Check if native or standard space
+    if ~isfield(x,'bGetAtlasROIsInNativeSpace')
+        % Default/fallback: Don't get atlases in native space
+        x.bGetAtlasROIsInNativeSpace = false;
+    end
 
     if ~exist(x.D.ROOT, 'dir')
         warning([x.D.ROOT ' didnt exist as folder, trying path of DataPar file']);

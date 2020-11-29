@@ -28,7 +28,7 @@ function [result, x] = xASL_module_Population(x)
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 
@@ -41,7 +41,7 @@ if x.iWorker>1 % run population module only once when ExploreASL is called multi
 end
 
 if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.bNativeSpaceAnalysis)
-	x.bNativeSpaceAnalysis = 0;
+    x.bNativeSpaceAnalysis = 0;
 end
 
 % Check if we have ASL or not, to know if we need to run ASL-specific stuff/warnings
@@ -184,65 +184,76 @@ else
     fprintf('%s\n',[StateName{7} ' has already been performed, skipping...']);
 end
 
+
 %% -----------------------------------------------------------------------------
 %% 7    ROI statistics
 if ~x.mutex.HasState(StateName{8})
 
     x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
-%     if exist('ASL','var')
-%         xASL_vis_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
-%     end
+    % if exist('ASL','var')
+    %     xASL_vis_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
+    % end
 
-    xASL_stat_ComputeWsCV(x); % This computes wsCV & bsCV to compute power
-
+    xASL_stat_ComputeWsCV(x); % This computes wsCV & bsCV to compute power   
+    
+    % Iterate over atlases in cell structure
+    
     % ROI statistics
     % x.S.SubjectWiseVisualization =1; % set this on to visualize the subject-wise masks
     % over CBF maps (takes lot of extra time though)
-%     x.S.InputDataStr              = 'SD'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
-%     x.S.InputAtlasPath            = fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii');
-%     % x.S.InputAtlasPath            = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
-%     xASL_wrp_GetROIstatistics( x);
-%     x.S.InputDataStr              = 'SNR'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
-%     x.S.InputAtlasPath            = fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii');
-%     xASL_wrp_GetROIstatistics( x);
+    
+    % x.S.InputDataStr              = 'SD'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+    % x.S.InputAtlasPath            = fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii');
+    % % x.S.InputAtlasPath            = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
+    % xASL_wrp_GetROIstatistics( x);
+    % x.S.InputDataStr              = 'SNR'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+    % x.S.InputAtlasPath            = fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii');
+    % xASL_wrp_GetROIstatistics( x);
 
     x.S.InputDataStr = 'qCBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
 	x.S.InputDataStrNative = 'CBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
-    x.S.InputNativeSpace = 0;
-	x.S.InputAtlasPath = fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii');
-	xASL_wrp_GetROIstatistics(x);
-	if x.bNativeSpaceAnalysis
-		x.S.InputNativeSpace = 1;
-		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_TotalGMPop);
-		xASL_wrp_GetROIstatistics(x);
-	end
-
-	x.S.InputNativeSpace = 0;
-    x.S.InputAtlasPath = fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii');
-	xASL_wrp_GetROIstatistics(x);
-	if x.bNativeSpaceAnalysis
-		x.S.InputNativeSpace = 1;
-		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_DeepWMPop);
-		xASL_wrp_GetROIstatistics(x);
-	end
-
-	x.S.InputNativeSpace = 0;
-    x.S.InputAtlasPath = fullfile(x.D.MapsSPMmodifiedDir,'MNI_structural.nii');
-	xASL_wrp_GetROIstatistics(x);
-	if x.bNativeSpaceAnalysis
-		x.S.InputNativeSpace = 1;
-		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_MNIStructuralPop);
-		xASL_wrp_GetROIstatistics(x);
-	end
-	x.S.InputNativeSpace = 0;
-    x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'Hammers.nii');
-	xASL_wrp_GetROIstatistics(x);
-	if x.bNativeSpaceAnalysis
-		x.S.InputNativeSpace = 1;
-		[~,x.S.InputAtlasNativeName] = xASL_fileparts(x.P.Path_HammersPop);
-		xASL_wrp_GetROIstatistics(x);
+    
+    x.P.Atlas.TotalGM = fullfile(x.D.MapsSPMmodifiedDir, 'TotalGM.nii');
+    x.P.Atlas.DeepWM = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
+    x.P.Atlas.WholeBrain = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
+    x.P.Atlas.MNI = fullfile(x.D.MapsSPMmodifiedDir, 'MNI_structural.nii');
+    x.P.Atlas.Hammers = fullfile(x.D.AtlasDir, 'Hammers.nii');
+    x.P.Atlas.HO_cortex = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
+    x.P.Atlas.HO_subcortical = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
+    x.P.Atlas.Thalamus = fullfile(x.D.AtlasDir, 'Thalamus.nii');
+    x.P.Atlas.Tatu_ACA_MCA_PCA = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'CortVascTerritoriesTatu.nii.nii');
+    x.P.Atlas.Tatu_ICA_PCA = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii');
+    x.P.Atlas.Tatu_ICA_L_ICA_R_PCA = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
+    x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
+    
+    % Iterate over atlases
+    for iAtlas=1:length(x.Atlases)        
+        
+        % Check if atlas name is in path list
+        if isfield(x.P.Atlas,x.Atlases{iAtlas})
+            x.S.InputAtlasPath = x.P.Atlas.(x.Atlases{iAtlas});
+        end
+        
+        % Check if native space or not
+        if strcmp(x.Atlases{iAtlas},'HO_cortex') || strcmp(x.Atlases{iAtlas},'HO_subcortical')
+            % There seems to be a problem with the VascularMask
+            x.S.IsVolume = true;
+            x.S.InputDataStr = 'mrc1T1';
+        end
+        
+        % ROI statistics (default: standard space)
+        x.S.InputNativeSpace = 0;
+        xASL_wrp_GetROIstatistics(x);
+        % ROI statistics (optional: native space)
+        if x.bGetAtlasROIsInNativeSpace
+            x.S.InputNativeSpace = 1;
+            x.S.InputAtlasNativeName = x.Atlases{iAtlas};
+            xASL_wrp_GetROIstatistics(x);
+        end
+        
+        
     end
-
+    
     % Check if we should do the same for Lesion or ROI masks (i.e.
     % individual "atlases") -> NB not yet developed/tested in native space
     LesionROIList = xASL_adm_GetFileList(x.D.PopDir, 'r(Lesion|ROI).*\.nii$', 'FPList', [0 Inf]);
@@ -251,18 +262,17 @@ if ~x.mutex.HasState(StateName{8})
         x.S.InputAtlasPath = LesionROIList{iAtlas};
         xASL_wrp_GetROIstatistics(x);
     end
-
-
-%     % Do the same for volumetrics
-%     x.S.IsASL = false;
-%     x.S.IsVolume = true;
-%     x.S.InputDataStr = 'mrc1T1'; % GM volume
-%     x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
-%     xASL_wrp_GetROIstatistics(x);
-%     x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
-%     xASL_wrp_GetROIstatistics(x);
-%     x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'Hammers.nii');
-%     xASL_wrp_GetROIstatistics(x);
+    
+    % % Do the same for volumetrics
+    % x.S.IsASL = false;
+    % x.S.IsVolume = true;
+    % x.S.InputDataStr = 'mrc1T1'; % GM volume
+    % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
+    % xASL_wrp_GetROIstatistics(x);
+    % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
+    % xASL_wrp_GetROIstatistics(x);
+    % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'Hammers.nii');
+    % xASL_wrp_GetROIstatistics(x);
 
     x.mutex.AddState(StateName{8});
     fprintf('%s\n',[StateName{8} ' was performed']);
