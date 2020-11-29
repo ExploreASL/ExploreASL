@@ -123,6 +123,8 @@ end
 
 x = ExploreASL_Master('',0);
 
+clc;
+
 % ============================================================
 %% 2) Initialize SPM
 % Reset path
