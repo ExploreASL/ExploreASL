@@ -70,7 +70,12 @@ likewise if xasl_quality is set to 2 (when WMH_SEGM pre-exists), load ps_LST_lpa
 *********************************************************************************************************
 REDUCE CODE SIZE
 
-DATE+Name: 2020-11-29 HM
+DATE+Name: 2020-11-29 HM (#243)
+DESCRIPTION: Avoid initializing unused toolboxes
+FILE:
+External/SPMmodified/config/spm_cfg.m @ several locations
+
+DATE+Name: 2020-11-29 HM (#243)
 DESCRIPTION: Move SPM templates used by CAT12 out of Fieldmap folder
 FILE:
 External/SPMmodified/toolbox/cat12/cat_defaults.m @ 224
