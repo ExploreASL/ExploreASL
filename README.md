@@ -43,7 +43,7 @@ Additional information about ExploreASL can be found in the [Neuroimage paper]([
 
 * [Henk Mutsaerts](mailto:h.j.mutsaerts@amsterdamumc.nl?subject=[GitHub]%20ExploreASL) - co-creator
 * [Jan Petr](mailto:j.petr@hzdr.de?subject=[GitHub]%20ExploreASL) - co-creator
-* [Michael Stritt](mailto:stritt.michael@gmail.com?subject=[GitHub]%20ExploreASL) - ASPIRE PhD
+* [Michael Stritt](mailto:m.stritt@mediri.com?subject=[GitHub]%20ExploreASL) - ASPIRE PhD
 * [Paul Groot](mailto:p.f.c.groot@amsterdamumc.nl?subject=[GitHub]%20ExploreASL) - developer backbone, IT specialist
 * [Pieter Vandemaele](mailto:pieter.vandemaele@gmail.com?subject=[GitHub]%20ExploreASL) - developer Matlab BIDS app
 * [Luigi Lorenzini](mailto:l.lorenzini@amsterdamumc.nl?subject=[GitHub]%20ExploreASL) - developer ExploreQC
