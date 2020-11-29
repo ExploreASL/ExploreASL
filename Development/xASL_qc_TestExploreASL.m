@@ -347,7 +347,7 @@ for iList=1:length(Dlist)
             end
         catch ME
             warning('Something went wrong:');
-            fprintf('%s\', ME);
+            fprintf('%s\', ME.message);
         end
     end
 end

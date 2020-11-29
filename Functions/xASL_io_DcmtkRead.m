@@ -142,7 +142,7 @@ end
 % 	if isfield(header,'Private_2005_100e')
 % 		% The old import script uses single, but looses some precision by that.
 % 		% header.MRScaleSlope = single(str2double(header.Private_2005_100e));
-% 		if isstring(header.Private_2005_100e) || ischar(header.Private_2005_100e)
+% 		if ischar(header.Private_2005_100e) || isstring(header.Private_2005_100e) % note that isstring crashes before 2016b
 % 			header.MRScaleSlope = str2double(header.Private_2005_100e);
 % 		else
 % 			header.MRScaleSlope = double(header.Private_2005_100e);
