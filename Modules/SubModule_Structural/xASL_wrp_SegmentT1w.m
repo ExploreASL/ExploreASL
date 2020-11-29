@@ -585,7 +585,7 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
 
 if x.bHammersCAT12
-    matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {'/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/toolbox/cat12/templates_volumes/HammersCAT12.nii'};
+    matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {fullfile(x.MyPath, 'External', 'AtlasesNonCommercial', 'HammersCAT12.nii')};
 else
     matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
 end
