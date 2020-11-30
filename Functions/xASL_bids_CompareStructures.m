@@ -7,7 +7,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 %        pathDatasetA       - path to first BIDS structure [char array] (REQUIRED)
 %        pathDatasetB       - path to second BIDS structure [char array] (REQUIRED)
 %        bPrintReport       - true or false to print console report (OPTIONAL, DEFAULT = true)
-%        threshRmseNii      - normalized RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 0.01)
+%        threshRmseNii      - normalized RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 1e-5)
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -53,7 +53,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     
     % Default value for RMSE threshold
     if nargin < 4
-       threshRmseNii = 0.01; 
+       threshRmseNii = 1e-5;
     end
 
 
@@ -280,7 +280,7 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                                 RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
                                 if (RMSE>threshRmseNii)
                                     fprintf('File:\t\t\t%s\n',allFiles(iFile));
-                                    fprintf('\t\t\t\tRMSE of NIFTIs above threshold.\n');
+                                    fprintf('\t\t\t\tRMSE (%d) of NIFTIs above threshold.\n',RMSE);
                                     identical = false;
                                 end
                             else
@@ -308,6 +308,9 @@ end
 %% Compare field lists
 function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
     strError = '';
+    
+    % Threshold for the difference of numeric values
+    threshNumeric = 1e-5;
 
     % Iterate over fields
     for iField=1:numel(fieldList)
@@ -316,8 +319,37 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
         fieldContentB = jsonStructB.(fieldList{iField});
         if isnumeric(fieldContentA) && isnumeric(fieldContentB)
             % Compare numbers
-            if ~isequal(fieldContentA,fieldContentB)
-                strError = sprintf('%s\t\t\t\tDifferent value: %s (%f vs %f)\n', strError,curFieldName,fieldContentA,fieldContentB);
+            if length(fieldContentA)==length(fieldContentB)
+                if length(fieldContentA)==1
+                    % Compare numbers (check absolute difference)
+                    if abs(fieldContentA-fieldContentB)>threshNumeric
+                        strError = sprintf('%s\t\t\t\tDifferent value: %s (%.6f vs %.6f)\n', strError,curFieldName,fieldContentA,fieldContentB);
+                    end
+                else
+                    % Compare arrays (check sum of absolute differences)
+                    sumDiff = sum(abs(fieldContentA-fieldContentB));
+                    if sumDiff>threshNumeric
+                        strError = sprintf('%s\t\t\t\tDifferent value: %s (check arrays)\n', strError,curFieldName);
+                        if length(fieldContentA)>6
+                            elA1 = fieldContentA(1); elA2 = fieldContentA(2); elA3 = fieldContentA(3); 
+                            elA4 = fieldContentA(4); elA5 = fieldContentA(5); elA6 = fieldContentA(6);
+                            elB1 = fieldContentB(1); elB2 = fieldContentB(2); elB3 = fieldContentB(3); 
+                            elB4 = fieldContentB(4); elB5 = fieldContentB(5); elB6 = fieldContentB(6);
+                            strError = sprintf('%s\t\t\t\t[%.4f, %.4f, %.4f, %.4f, %.4f, %.4f ...]\n', strError,elA1,elA2,elA3,elA4,elA5,elA6);
+                            strError = sprintf('%s\t\t\t\t[%.4f, %.4f, %.4f, %.4f, %.4f, %.4f ...]\n', strError,elB1,elB2,elB3,elB4,elB5,elB6);
+                        elseif length(fieldContentA)>3
+                            elA1 = fieldContentA(1); elA2 = fieldContentA(2); elA3 = fieldContentA(3);
+                            elB1 = fieldContentB(1); elB2 = fieldContentB(2); elB3 = fieldContentB(3);
+                            strError = sprintf('%s\t\t\t\t[%.4f, %.4f, %.4f ...]\n', strError,elA1,elA2,elA3);
+                            strError = sprintf('%s\t\t\t\t[%.4f, %.4f, %.4f ...]\n', strError,elB1,elB2,elB3);
+                        else
+                            strError = sprintf('%s\t\t\t\t[%.4f ...]\n', strError,fieldContentA(1));
+                            strError = sprintf('%s\t\t\t\t[%.4f ...]\n', strError,fieldContentB(1));
+                        end
+                    end
+                end
+            else
+                strError = sprintf('%s\t\t\t\tDifferent dimension: %s\n', strError,curFieldName);
             end
         elseif ischar(fieldContentA) && ischar(fieldContentB)
             % Compare char arrays and strings
