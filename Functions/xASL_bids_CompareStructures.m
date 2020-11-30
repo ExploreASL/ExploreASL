@@ -21,7 +21,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 %
 % EXAMPLE:          pathDatasetA = '...\bids-examples\eeg_rest_fmri';
 %                   pathDatasetB = '...\bids-examples\eeg_rest_fmri_exact_copy'
-%                   [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,true);
+%                   [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,true,0.01);
 %
 % REFERENCES:       ...
 % __________________________________
@@ -131,7 +131,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
         printList(results.(datasetA).missingFiles)
 		
 		if isempty(results.(datasetA).missingFolders) && isempty(results.(datasetA).missingFiles)
-			fprintf('\t\t\t%s\n','No missing files');
+			fprintf('\t\t\t\t%s\n','No missing files');
 		end
 
         fprintf(strcat(repmat('=',100,1)','\n'));
@@ -140,7 +140,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
         printList(results.(datasetB).missingFiles)
 		
 		if isempty(results.(datasetB).missingFolders) && isempty(results.(datasetB).missingFiles)
-			fprintf('\t\t\t%s\n','No missing files');
+			fprintf('\t\t\t\t%s\n','No missing files');
 		end
 
         % End of report
@@ -227,7 +227,7 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
 				jsonErrorReport = [jsonErrorReport, compareFieldLists(jsonA,jsonB,sharedFieldsAB)];
 				
 				if bPrintReport && ~isempty(jsonErrorReport)
-					fprintf('%s:\n',allFiles(iFile));
+					fprintf('File:\t\t\t%s\n',allFiles(iFile));
 					fprintf('%s',jsonErrorReport);
 				end
 			end
@@ -272,11 +272,25 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                     end
                     % Report function which prints to the console
                     if bPrintReport
-                        % differenceAB = sum(imageA-imageB,'all');
-                        RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
-                        if (RMSE>threshRmseNii)
-							fprintf('%s:\t\t\n',allFiles(iFile));
-                            fprintf('\t\t\t\tRMSE of NIFTIs above threshold.\n');
+                        % Check that matrix dimensions agree first
+                        sizeA = size(imageA);
+                        sizeB = size(imageB);
+                        if length(sizeA)==length(sizeB)
+                            if sum(sizeA==sizeB)==length(sizeA)
+                                RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
+                                if (RMSE>threshRmseNii)
+                                    fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                                    fprintf('\t\t\t\tRMSE of NIFTIs above threshold.\n');
+                                    identical = false;
+                                end
+                            else
+                                fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                                fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                                identical = false;
+                            end
+                        else
+                            fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                            fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
                             identical = false;
                         end
                     end
