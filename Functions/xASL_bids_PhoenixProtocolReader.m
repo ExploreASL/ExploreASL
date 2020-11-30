@@ -38,7 +38,7 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
     end
 
     % Check if the input path is a character array or a string
-    if ~(ischar(pathData) || isstring(pathData))
+    if ~(ischar(pathData))
         error('Input path is neither a char array not a string...');
     end
     
@@ -46,7 +46,7 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
     [~,~,fileExtension] = fileparts(pathData);
     
     % Check extension
-    if ~strcmp(fileExtension,'.dcm')
+    if ~strcmp(fileExtension,'.dcm') && ~strcmp(fileExtension,'.IMA')
         warning('Input path is not a DICOM file...');
     end
 
@@ -61,7 +61,7 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathD
     if bUseDCMTK
         headerDCMTK = xASL_io_DcmtkRead(pathData);
         % Check if protocol exists
-        if isfield(headerDCMTK,'PhoenixProtocol')
+        if isfield(headerDCMTK,'PhoenixProtocol') && ~isempty(headerDCMTK.PhoenixProtocol)
             phoenixProtocol = headerDCMTK.PhoenixProtocol;
             phoenixProtocol = [strsplit(phoenixProtocol,'\n')]';
         else

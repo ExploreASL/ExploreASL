@@ -74,7 +74,7 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     %% Get xASL parameters
     parameters = convertCellArrayToStruct(parameters);
 
-    %% Analyze parameters
+    %% Analyze parameters                                                   % Exemplary dataset in ExploreASL flavor library
     if contains(parameters.tSequenceFileName,'SiemensSeq')
         xasl.SequenceType = 'Siemens'; 
     elseif contains(parameters.tSequenceFileName,'CustomerSeq')
@@ -83,7 +83,8 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     
     if contains(lower(parameters.tSequenceFileName),'ep2d')
         xasl.Sequence = '2D EPI'; 
-    elseif contains(lower(parameters.tSequenceFileName),'gse')
+    elseif contains(lower(parameters.tSequenceFileName),'gse') || ...
+           contains(lower(parameters.tSequenceFileName),'grs3d')            % Siemens PASL 3DGRASE AD
         xasl.Sequence = '3D GRASE'; 
     end
     
@@ -96,17 +97,27 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     if contains(lower(parameters.tSequenceFileName),'pcasl')
         xasl.LabelingType = 'PCASL';
     end
+    if contains(lower(parameters.sWipMemBlocktFree),'pcasl')                % Siemens PCASL 3DGRASE volunteer2
+        xasl.LabelingType = 'PCASL';
+    end
+    
+    if contains(lower(parameters.tSequenceFileName),'M0_') || ...           % Siemens PASL 3DGRASE AD
+       contains(lower(parameters.tSequenceFileName),'_fid')                 % Siemens PASL 2D EPI noBsup AD
+        xasl.ScanType = 'M0';
+    end
     
     if parameters.sAslulMode==4
         xasl.Technique = 'Q2TIPS';
     end
     
-    if parameters.alTI0~=100000 && parameters.alTI2~=7000000
-        xasl.ScanType = 'ASL';
-    elseif parameters.alTI0==100000 && parameters.alTI2==7000000
-        xasl.ScanType = 'PseudoM0';
+    if ~isempty(parameters.alTI0) && ~isempty(parameters.alTI2)
+        if parameters.alTI0~=100000 && parameters.alTI2~=7000000
+            xasl.ScanType = 'ASL';
+        elseif parameters.alTI0==100000 && parameters.alTI2==7000000
+            xasl.ScanType = 'PseudoM0';
+        end
     end
-
+    
 
 
 end
