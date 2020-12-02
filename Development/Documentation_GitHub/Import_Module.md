@@ -10,6 +10,5 @@ imPar = ExploreASL_ImportConfig(StudyRoot)
 ```
 
 #### Description
-Configures the import parameters used by ExploreASL\_Import.
-
+Please read the help of ExploreASL\_Import for more information
 

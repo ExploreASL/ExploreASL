@@ -1,6 +1,6 @@
 ![ExploreASL](./img/title.png "ExploreASL")
 
-# ExploreASL
+# ExploreASL v1.3.0
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3905262.svg)](https://doi.org/10.5281/zenodo.3905262)
@@ -43,7 +43,7 @@ Additional information about ExploreASL can be found in the [Neuroimage paper]([
 
 * [Henk Mutsaerts](mailto:h.j.mutsaerts@amsterdamumc.nl?subject=[GitHub]%20ExploreASL) - co-creator
 * [Jan Petr](mailto:j.petr@hzdr.de?subject=[GitHub]%20ExploreASL) - co-creator
-* [Michael Stritt](mailto:stritt.michael@gmail.com?subject=[GitHub]%20ExploreASL) - ASPIRE PhD
+* [Michael Stritt](mailto:m.stritt@mediri.com?subject=[GitHub]%20ExploreASL) - ASPIRE PhD
 * [Paul Groot](mailto:p.f.c.groot@amsterdamumc.nl?subject=[GitHub]%20ExploreASL) - developer backbone, IT specialist
 * [Pieter Vandemaele](mailto:pieter.vandemaele@gmail.com?subject=[GitHub]%20ExploreASL) - developer Matlab BIDS app
 * [Luigi Lorenzini](mailto:l.lorenzini@amsterdamumc.nl?subject=[GitHub]%20ExploreASL) - developer ExploreQC
@@ -97,5 +97,6 @@ The following provides an example as how to correctly cite ExploreASL and its th
 * Ref4: CAT12 reference: https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib55. Note that the CAT12 version (e.g. 1364) is adapted for use with ExploreASL.
 * Ref5: LST reference: https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib118. Note that the LST version (e.g. 2.0.15) is adapted for use with ExploreASL.
 * Ref6: Matlab publishes a release twice yearly, which can be reviewed here: https://www.mathworks.com/products/compiler/matlab-runtime.html. You can provide the release number (e.g. 9.4) or year number (e.g. 2018a), or both.
+
 
 
