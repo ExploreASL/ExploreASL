@@ -167,6 +167,27 @@ if isempty(imPar.RawRoot)
 elseif isempty(imPar.AnalysisRoot)
     error('imPar.AnalysisRoot was empty');
 end
+if ~isfield(imPar,'tokenScanAliases')
+	imPar.tokenScanAliases = [];
+else
+	tokenScanAliasesOld = imPar.tokenScanAliases;
+	imPar.tokenScanAliases = tokenScanAliasesOld(1:2:end);
+	imPar.tokenScanAliases(:,2) = tokenScanAliasesOld(2:2:end);
+end
+if ~isfield(imPar,'tokenVisitAliases')
+	imPar.tokenVisitAliases = [];
+else
+	tokenVisitAliasesOld = imPar.tokenVisitAliases;
+	imPar.tokenVisitAliases = tokenVisitAliasesOld(1:2:end);
+	imPar.tokenVisitAliases(:,2) = tokenVisitAliasesOld(2:2:end);
+end
+if ~isfield(imPar,'tokenSessionAliases')
+	imPar.tokenSessionAliases = [];
+else
+	tokenSessionAliasesOld = imPar.tokenSessionAliases;
+	imPar.tokenSessionAliases =tokenSessionAliasesOld(1:2:end);
+	imPar.tokenSessionAliases(:,2) = tokenSessionAliasesOld(2:2:end);
+end
 if ~isfield(imPar,'SkipSubjectIfExists') || isempty(imPar.SkipSubjectIfExists)
     % allows to skip existing subject folders in the analysis folder, when this is set to true,
     % avoiding partly re-importing/converting dcm2niiX when processing has been partly done
@@ -208,7 +229,11 @@ end
 
 % here we try to fix backwards compatibility, but this may break
 if length(imPar.tokenOrdering)==3 % backwards compatibility Visits
-    imPar.tokenOrdering = [imPar.tokenOrdering(1) 0 imPar.tokenOrdering(2:3)]; % insert Visits(none)
+	if size(imPar.tokenOrdering,1) > 1
+		% Vertical vector
+		imPar.tokenOrdering = imPar.tokenOrdering';
+	end
+	imPar.tokenOrdering = [imPar.tokenOrdering(1) 0 imPar.tokenOrdering(2:3)]; % insert Visits(none)
 elseif length(imPar.tokenOrdering)==2 % backwards compatibility Visits & sessions
     imPar.tokenOrdering = [imPar.tokenOrdering(1) 0 0 imPar.tokenOrdering(2)]; % insert sessions & visits(none)
 end

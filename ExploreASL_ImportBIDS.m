@@ -1023,6 +1023,10 @@ end
 	
 	% here we try to fix backwards compatibility, but this may break
 	if length(imPar.tokenOrdering)==3 % backwards compatibility Visits
+		if size(imPar.tokenOrdering,1) > 1
+			% Vertical vector
+			imPar.tokenOrdering = imPar.tokenOrdering';
+		end
 		imPar.tokenOrdering = [imPar.tokenOrdering(1) 0 imPar.tokenOrdering(2:3)]; % insert Visits(none)
 	elseif length(imPar.tokenOrdering)==2 % backwards compatibility Visits & sessions
 		imPar.tokenOrdering = [imPar.tokenOrdering(1) 0 0 imPar.tokenOrdering(2)]; % insert sessions & visits(none)

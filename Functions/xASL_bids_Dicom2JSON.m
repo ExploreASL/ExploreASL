@@ -385,7 +385,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 			if isfield(c_all_parms,DcmComplexFieldAll{iField})
 				listEmptyFields = find(cellfun(@isempty,c_all_parms.(DcmComplexFieldAll{iField})));
 				if ~isempty(listEmptyFields)
-					warning('Field %s contains empty fields, skipping\n',DcmComplexFieldAll{iField});
+					fprintf('Field %s contains empty fields, skipping\n',DcmComplexFieldAll{iField});
 				else
 					c_all_unique = unique(c_all_parms.(DcmComplexFieldAll{iField}));
 					if length(c_all_unique) == 1

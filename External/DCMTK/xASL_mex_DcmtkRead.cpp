@@ -33,8 +33,9 @@
  *    MRSeriesEPIFactor - 0x2001, 0x1013
  *    BandwidthPerPixelPhaseEncode - 0x0019, 0x1028
  *    MRScaleSlope - 0x2005, 0x100e or 
+ *                   0x2005, 0x110e or
  *                   0x2005, 0x120e
- *    RescaleSlopeOriginal - 0x2005, 0x140a
+ *    RescaleSlopeOriginal - 0x2005, 0x140a or 0x2005, 0x110a
  *    GELabelingType - 0x0019, 0x109C
  *    GELabelingDuration - 0x0043, 0x10A5
  *    PhilipsNumberTemporalScans - 0x2001, 0x1008
@@ -580,31 +581,40 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	
 	if ((privatItem) && 
 		((privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x100e))==OFTrue)||
+		 (privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x110e))==OFTrue)|| 	
 		 (privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x120e))==OFTrue)))
 	{
 		if (privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x120e))==OFTrue)
 			mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x120e) ) );
 		else
-			mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x100e) ) );
+		{
+			if (privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x110e))==OFTrue)
+				mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x110e) ) );
+			else
+				mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x100e) ) );
+		}
 		
-		mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x140a) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetFloat32AsDouble( privatItem,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetFloat32AsDouble( privatItem,             DcmTagKey(0x2005, 0x100e) ) );
+		if (privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x140a))==OFTrue)
+			mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x140a) ) );
+		else
+			mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x110a) ) );
 	}
 	else
 	{
 		if (dataset->tagExistsWithValue(DcmTagKey(0x2005, 0x120e))==OFTrue)
 			mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x120e) ) );
 		else
-			mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x100e) ) );
+		{
+			if (dataset->tagExistsWithValue(DcmTagKey(0x2005, 0x110e))==OFTrue)
+				mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x110e) ) );
+			else
+				mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x100e) ) );
+		}
 		
-		mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x140a) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetFloat32AsDouble( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetInt16Array( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetFloat64AsDouble( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetLongIntAsDouble( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		
+		if (dataset->tagExistsWithValue(DcmTagKey(0x2005, 0x140a))==OFTrue)
+			mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x140a) ) );
+		else
+			mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x110a) ) );
 	}
 		
 	if ( ( privatItem ) && ( privatItem->tagExistsWithValue( DCM_NumberOfAverages ) == OFTrue ) )
