@@ -330,21 +330,38 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
                     sumDiff = sum(abs(fieldContentA-fieldContentB));
                     if sumDiff>threshNumeric
                         strError = sprintf('%s\t\t\t\tDifferent value: %s (check arrays)\n', strError,curFieldName);
-                        if length(fieldContentA)>6
-                            elA1 = fieldContentA(1); elA2 = fieldContentA(2); elA3 = fieldContentA(3); 
-                            elA4 = fieldContentA(4); elA5 = fieldContentA(5); elA6 = fieldContentA(6);
-                            elB1 = fieldContentB(1); elB2 = fieldContentB(2); elB3 = fieldContentB(3); 
-                            elB4 = fieldContentB(4); elB5 = fieldContentB(5); elB6 = fieldContentB(6);
-                            strError = sprintf('%s\t\t\t\t[%.4f, %.4f, %.4f, %.4f, %.4f, %.4f ...]\n', strError,elA1,elA2,elA3,elA4,elA5,elA6);
-                            strError = sprintf('%s\t\t\t\t[%.4f, %.4f, %.4f, %.4f, %.4f, %.4f ...]\n', strError,elB1,elB2,elB3,elB4,elB5,elB6);
-                        elseif length(fieldContentA)>3
-                            elA1 = fieldContentA(1); elA2 = fieldContentA(2); elA3 = fieldContentA(3);
-                            elB1 = fieldContentB(1); elB2 = fieldContentB(2); elB3 = fieldContentB(3);
-                            strError = sprintf('%s\t\t\t\t[%.4f, %.4f, %.4f ...]\n', strError,elA1,elA2,elA3);
-                            strError = sprintf('%s\t\t\t\t[%.4f, %.4f, %.4f ...]\n', strError,elB1,elB2,elB3);
-                        else
-                            strError = sprintf('%s\t\t\t\t[%.4f ...]\n', strError,fieldContentA(1));
-                            strError = sprintf('%s\t\t\t\t[%.4f ...]\n', strError,fieldContentB(1));
+                        % Set max number of elements to display
+                        maxNumElements = 10;
+                        if length(fieldContentA)<maxNumElements
+                            maxNumElements = length(fieldContentA);
+                        end
+                        % Initialize array view
+                        strError = sprintf('%s\t\t\t\t[',strError);
+                        % Iterate over individual elements of array A
+                        for elField=1:length(fieldContentA)
+                            if elField<=maxNumElements
+                                if elField<maxNumElements
+                                    strError = sprintf('%s%.4f, ',strError,fieldContentA(elField));
+                                elseif elField==length(fieldContentA)
+                                    strError = sprintf('%s%.4f]\n',strError,fieldContentA(elField));
+                                elseif elField==maxNumElements
+                                    strError = sprintf('%s%.4f ...]\n',strError,fieldContentA(elField));
+                                end
+                            end
+                        end
+                        % Initialize array view
+                        strError = sprintf('%s\t\t\t\t[',strError);
+                        % Iterate over individual elements of array B
+                        for elField=1:length(fieldContentB)
+                            if elField<=maxNumElements
+                                if elField<maxNumElements
+                                    strError = sprintf('%s%.4f, ',strError,fieldContentB(elField));
+                                elseif elField==length(fieldContentB)
+                                    strError = sprintf('%s%.4f]\n',strError,fieldContentB(elField));
+                                elseif elField==maxNumElements
+                                    strError = sprintf('%s%.4f ...]\n',strError,fieldContentB(elField));
+                                end
+                            end
                         end
                     end
                 end
