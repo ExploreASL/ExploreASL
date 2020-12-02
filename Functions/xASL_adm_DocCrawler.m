@@ -24,11 +24,6 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
-    %% Reminder
-    fprintf('============================================= REMINDER =============================================\n');
-    fprintf('A correct ExploreASL header should include the following tags in the correct order:\n');
-    fprintf('"FORMAT:", "INPUT:", "OUTPUT:", "DESCRIPTION:" and "EXAMPLE:"\n');
-
     %% Defaults
     SeparatorLine = repmat('-',1,149);
     isFileList = false;
@@ -92,17 +87,13 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
 
         % Extract and save information
         if extractHeaderInfo
-
             % Write data to markdown
-
             % Length of format text
             lF = size(formatText);
             lF = lF(1);
-
             % Length of description text
             lD = size(descriptionText);
             lD = lD(1);
-
             % Start of function description
             if cS==0
                 if strcmp(content,'Functions')
@@ -204,7 +195,11 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
             % Empty lines
             TEXT{it,1} = ''; it = it+1;
         else
-            fprintf('File %s does not fulfill the documentation requirements...\n', fileName);
+            % Only print warning for non-mat files
+            [~,~,fileExtension] = fileparts(fileName);
+            if ~strcmp(fileExtension,'.mat') && ~strcmp(fileExtension,'.asv') && ~strcmp(fileName,'README.md')
+                fprintf('File %s does not fulfill the documentation requirements...\n', fileName);
+            end
         end
 
     end

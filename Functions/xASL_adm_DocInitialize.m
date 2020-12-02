@@ -24,6 +24,12 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     % Initialize ExploreASL
     x = ExploreASL_Initialize([],0);
     
+    % Reminder
+    fprintf('============================================= REMINDER =============================================\n');
+    fprintf('A correct ExploreASL header should include the following tags in the correct order:\n');
+    fprintf('"FORMAT:", "INPUT:", "OUTPUT:", "DESCRIPTION:" and "EXAMPLE:"\n');
+    fprintf('====================================================================================================\n');
+    
     % Define output folder
     if nargin < 1
         outputFolder = fullfile(x.MyPath,'Development','Documentation_GitHub');
@@ -43,6 +49,10 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(https://www.researchgate.net/profile/Andrew_Robertson7/publication/337328693/figure/fig1/AS:826578854481921@1574083164220/Schematic-diagram-of-ExploreASL-processing-steps-Steps-marked-with-a-are-optional.ppm "Workflow of ExploreASL")',...
                   '(./img/ExploreASL_Workflow.jpg "Workflow ExploreASL")');
+    % Add an up-to-date version information
+    swapTextInFile(fullfile(outputFolder,'index.md'),...
+                  '# ExploreASL',...
+                  ['# ExploreASL v',x.Version],true);
               
     % Copy the REQUIREMENTS file
     copyfile(fullfile(x.MyPath,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
@@ -75,8 +85,8 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
         copyfile(fullfile(outputFolder,'Functions.md'),fullfile(x.MyPath,'Functions','README.md'));                                     % Functions
         copyfile(fullfile(outputFolder,'Modules.md'),fullfile(x.MyPath,'Modules','README.md'));                                         % Modules
         copyfile(fullfile(outputFolder,'Structural_Module.md'),fullfile(x.MyPath,'Modules','SubModule_Structural','README.md'));        % SubModules (Structural)
-        copyfile(fullfile(outputFolder,'ASL_Module.md'),fullfile(x.MyPath,'Modules','SubModule_ASL','README.md'));                  % SubModules (ASL)
-        copyfile(fullfile(outputFolder,'Population_Module.md'),fullfile(x.MyPath,'Modules','SubModule_Population','README.md'));    % SubModules (Population)
+        copyfile(fullfile(outputFolder,'ASL_Module.md'),fullfile(x.MyPath,'Modules','SubModule_ASL','README.md'));                      % SubModules (ASL)
+        copyfile(fullfile(outputFolder,'Population_Module.md'),fullfile(x.MyPath,'Modules','SubModule_Population','README.md'));        % SubModules (Population)
     end
 
 
@@ -84,8 +94,13 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
 end
 
 %% Function to swap text segments of documentation files
-function swapTextInFile(filePath,text2swap,newText)
-    %% Open file
+function swapTextInFile(filePath,text2swap,newText,onlyFirst)
+    changeText = true;
+    % Check nargin
+    if nargin < 4
+        onlyFirst = false;
+    end
+    % Open file
     file_id=fopen(filePath,'r');
     text_cell=cell(1);
     while 1
@@ -103,7 +118,13 @@ function swapTextInFile(filePath,text2swap,newText)
     for curLine=1:numel(text_cell)
         if ~isempty(text_cell{curLine,1})
             if ~isempty(contains(text_cell{curLine,1},text2swap))
-                text_cell{curLine,1}= strrep(char(text_cell{curLine,1}),text2swap,newText);
+                curLineText = char(text_cell{curLine,1});
+                if changeText && contains(curLineText,text2swap)
+                    text_cell{curLine,1}= strrep(curLineText,text2swap,newText);
+                    if onlyFirst
+                        changeText = false;
+                    end
+                end
             end
         end
     end
