@@ -1,12 +1,13 @@
 function imPar = ExploreASL_ImportConfig(StudyRoot)
 %ExploreASL_ImportConfig Configures the import parameters used by ExploreASL_Import
 %
-% FORMAT: imPar = ExploreASL_ImportConfig(StudyRoot)
+% FORMAT:      imPar = ExploreASL_ImportConfig(StudyRoot)
 % 
-% INPUT: root of study folder containing DICOMs, e.g. '//MyDisk/MyStudy'
-% OUTPUT: imPar which is input to ExploreASL_Import
+% INPUT:       root of study folder containing DICOMs, e.g. '//MyDisk/MyStudy'
+% OUTPUT:      imPar which is input to ExploreASL_Import
 %
-% Please read the help of ExploreASL_Import for more information
+% DESCRIPTION: Please read the help of ExploreASL_Import for more information
+% EXAMPLE:     n/a
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
