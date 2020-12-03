@@ -12,6 +12,7 @@ function [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:      This function analyzes the parameter list of the phoenix protocol (tag = [0x29,0x1020]).
+%                   This function is usually called from xASL_bids_GetPhoenixProtocol.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %

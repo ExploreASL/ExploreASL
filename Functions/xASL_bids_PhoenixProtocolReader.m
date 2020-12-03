@@ -1,34 +1,24 @@
-function [parameterList,phoenixProtocol,rawPhoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData,bUseDCMTK)
+function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPhoenixProtocol)
 %xASL_bids_PhoenixProtocolReader Function that reads raw DICOM data and extracts the phoenix protocol parameters.
 %
-% FORMAT: [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(pathData,bUseDCMTK);
+% FORMAT: [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPhoenixProtocol)
 %
 % INPUT:
-%        pathData           - Path to the DICOM dataset [CHAR ARRAY] (REQUIRED)
-%                             Please insert a single path as a char array (not a string). The file extension should be
-%                             either ".dcm" or ".IMA". The script is going to check this.
-%        bUseDCMTK          - Use DCMTK toolbox to get the phoenix protocol (OPTIONAL, DEFAULT: true)
-%                             If you select "true", then the DICOM tag will be read using the DCMTK toolbox.
-%                             Alternatively, you can select "false" to read the DICOM tag using python.
-%                             We highly recommend using the default option.
+%        rawPhoenixProtocol - Raw phoenix protocol [CHAR ARRAY]
 %
 % OUTPUT:
 %        parameterList      - List of parameters from the reduced phoenix protocol. This parameter list is created to 
 %                             make it easier to analyze and interpret the individual phoenix protocol parameters.
 %                             You can alternatively check out the actual protocol as a cell array or char array.
 %        phoenixProtocol    - Cell array containing the Siemens phoenix protocol [CELL ARRAY]
-%        rawPhoenixProtocol - Raw phoenix protocol [CHAR ARRAY]
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      Function that reads raw DICOM data (".dcm" or ".IMA") and extracts the phoenix protocol parameters.
-%                   Only works for Siemens DICOM data with phoenix protocol (tag = [0x29,0x1020]).
+% DESCRIPTION:      Function to parse the raw phoenix protocol. This function is usually called from xASL_bids_GetPhoenixProtocol.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% EXAMPLE:          % Define your test data path
-%                   pathData = '...\test-data.dcm';
-%                   % Run the script (here we don't return the raw protocol and use DCMTK)
-%                   [parameterList,phoenixProtocol,~] = xASL_bids_PhoenixProtocolReader(pathData,true);
+% EXAMPLE:          rawPhoenixProtocol = '...'; % Protocol extracted from DICOM tag [0x29,0x1020]
+%                   [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPhoenixProtocol);
 %
 % REFERENCES:       ...
 % __________________________________
@@ -42,34 +32,15 @@ function [parameterList,phoenixProtocol,rawPhoenixProtocol] = xASL_bids_PhoenixP
         error('Missing input parameters...');
     end
 
-    % Check bUseDCMTK
-    if nargin < 2
-        bUseDCMTK = true;
-    end
-
-    % Check if the input path is a character array or a string
-    if ~(ischar(pathData))
-        error('Input path is neither a char array not a string...');
-    end
-    
-    % Get file parts
-    [~,~,fileExtension] = fileparts(pathData);
-    
-    % Check extension
-    if ~strcmp(fileExtension,'.dcm') && ~strcmp(fileExtension,'.IMA')
-        warning('Input path is not a DICOM file...');
-    end
-
     %% Defaults
-    
     debug = false;
     parameterList = {'Name','Value'};
     startOfProtocol = '### ASCCONV BEGIN';
     endOfProtocol = '### ASCCONV END';
-
-    %% Read Phoenix Protocol
-    [phoenixProtocol,rawPhoenixProtocol] = parsePhoenixProtocol(pathData,bUseDCMTK);
     
+    % Phoenix protocol in cell array format
+    phoenixProtocol = [strsplit(rawPhoenixProtocol,'\n')]';
+
     % Remove tabs
     for line=1:numel(phoenixProtocol)
         phoenixProtocol{line,1} = strrep(phoenixProtocol{line,1},'\t','');
@@ -182,33 +153,7 @@ function [parameterList,phoenixProtocol,rawPhoenixProtocol] = xASL_bids_PhoenixP
         
     end
     
-
-
 end
-
-% Function to parse the phoenix protocol
-function [phoenixProtocol,rawPhoenixProtocol] = parsePhoenixProtocol(pathData,bUseDCMTK)
-    rawPhoenixProtocol = ''; % Fallback
-    if bUseDCMTK
-        headerDCMTK = xASL_io_DcmtkRead(pathData);
-        % Check if protocol exists
-        if isfield(headerDCMTK,'PhoenixProtocol') && ~isempty(headerDCMTK.PhoenixProtocol)
-            phoenixProtocol = headerDCMTK.PhoenixProtocol;
-            rawPhoenixProtocol = phoenixProtocol;                   % Raw phoenix protocol as a char array
-            phoenixProtocol = [strsplit(phoenixProtocol,'\n')]';    % Phoenix protocol in cell array format
-        else
-            phoenixProtocol = "";
-        end
-    else
-        py.importlib.import_module('pydicom');
-        ds = py.pydicom.dcmread(pathData,false,true);
-        phoenixProtocol = char(ds{2691104}.value); % 2691104 = (0x29,0x1020)
-        rawPhoenixProtocol = phoenixProtocol;                       % Raw phoenix protocol as a char array
-        phoenixProtocol = [strsplit(phoenixProtocol,'\\n')]';       % Phoenix protocol in cell array format
-    end
-end
-
-
 
 
 
