@@ -26,7 +26,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 %
 % REFERENCES:
 % __________________________________
-% Copyright @ 2015-2019 ExploreASL
+% Copyright 2015-2019 ExploreASL
 
     %% ----------------------------------------------------------------------------------
 	% Admin
