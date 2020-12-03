@@ -46,6 +46,14 @@ if isfield(jsonIn,'EffectiveEchoSpacing')
 	end
 end
 
+if isfield(jsonIn,'TotalReadoutTime') 
+	if isempty(jsonIn.TotalReadoutTime) || sum(jsonIn.TotalReadoutTime == 0) || sum(isnan(jsonIn.TotalReadoutTime))
+		jsonRemove.TotalReadoutTime = '';
+	else
+		jsonIn.TotalReadoutTime = abs(jsonIn.TotalReadoutTime);
+	end
+end
+
 % Rename the fields with number of segments
 jsonRemove.NumberOfAverages = '';
 if isfield(jsonIn,'NumberSegments')
