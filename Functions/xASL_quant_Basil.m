@@ -77,6 +77,7 @@ else
     %
     xASL_io_CreateNifti('basil_input_data.nii', PWI)
     xASL_io_CreateNifti('basil_mask.nii', mask)
+    fprintf('Basil: Number of input data volumes: %i\n', size(PWI, 4));
 
     %
     % option_file contains options which are passed to Fabber
@@ -139,7 +140,7 @@ else
     %
     %  Bolus duration typically fixed but can be inferred
     %
-    if isfield(x.Q,'BasilInferTau') & x.Q.BasilInferTau
+    if isfield(x, 'BasilInferTau') & x.BasilInferTau
          fprintf(option_file, '--infertau\n');
          fprintf('Basil: Infer bolus duration component\n')
     else
@@ -151,20 +152,20 @@ else
     %
     if SinglePLD
         fprintf('Basil: Single-delay data - cannot infer ATT or arterial component\n');
-        x.Q.BasilInferATT = 0;
-        x.Q.BasilInferArt = 0;
+        x.BasilInferATT = 0;
+        x.BasilInferArt = 0;
     end
 
     %
     % Infer arterial transit time
     %
-    if isfield(x.Q,'BasilInferATT') & x.Q.BasilInferATT
-        if ~isfield(x.Q, 'BasilATTSD')
-            x.Q.BasilATTSD = 1.0;
+    if isfield(x, 'BasilInferATT') & x.BasilInferATT
+        if ~isfield(x, 'BasilATTSD')
+            x.BasilATTSD = 1.0;
         end
         fprintf(option_file, '--inferbat\n');
-        fprintf(option_file, '--batsd=%f\n', x.Q.BasilATTSD);
-	    fprintf('Basil: Setting std dev of the (tissue) BAT prior std.dev. to %f\n', x.Q.BasilATTSD);
+        fprintf(option_file, '--batsd=%f\n', x.BasilATTSD);
+	    fprintf('Basil: Setting std dev of the (tissue) BAT prior std.dev. to %f\n', x.BasilATTSD);
     else
         basil_options = [basil_options ' --fixbat'];
         fprintf('Basil: Fixed arterial arrival time\n');
@@ -173,7 +174,7 @@ else
     %
     % Infer arterial component
     %
-    if isfield(x.Q,'BasilInferATT') & x.Q.BasilInferATT
+    if isfield(x, 'BasilInferATT') & x.BasilInferATT
         fprintf(option_file, '--inferart\n');
         fprintf('Basil: Infer arterial component');
         fprintf('Basil: Variable arterial component arrival time');
@@ -184,69 +185,77 @@ else
     % noise prior. User can specify assumed SNR for this, or give noise std.dev
     % directly.
     %
-    if ~isfield(x.Q,'BasilSNR') | ~x.Q.BasilSNR
-        x.Q.BasilSNR = 10;
+    if ~isfield(x, 'BasilSNR') | ~x.BasilSNR
+        x.BasilSNR = 10;
     end
 
     if size(PWI, 4) < 5
-        x.Q.BasilNoisePrior = 1;
+        x.BasilNoisePrior = 1;
         fprintf('Basil: Small number of volumes (%i < 5): informative noise prior will be used\n', size(PWI, 4));
     end
 
-    if isfield(x.Q,'BasilNoisePrior') & x.Q.BasilNoisePrior
+    if isfield(x, 'BasilNoisePrior') & x.BasilNoisePrior
         % Use an informative noise prior
-        if ~isfield(x.Q,'BasilNoiseSD') | ~x.Q.BasilNoiseSD
-            fprintf('Basil: Using SNR of %f to set noise std dev\n', x.Q.BasilSNR);
+        if ~isfield(x, 'BasilNoiseSD') | ~x.BasilNoiseSD
+            fprintf('Basil: Using SNR of %f to set noise std dev\n', x.BasilSNR);
             % Estimate signal magntiude FIXME brain mask assume half of voxels
             mag_max = max(unmasked_data, [], 2);
             brain_mag = 2*mean(mag_max, 'all');
             fprintf('Basil: Mean maximum signal across brain: %f\n', brain_mag);
             % This will correspond to whole brain CBF (roughly) - about 0.5 of GM
-            x.Q.BasilNoiseSD = sqrt(brain_mag * 2 / x.Q.BasilSNR);
+            x.BasilNoiseSD = sqrt(brain_mag * 2 / x.BasilSNR);
         end
-        fprintf('Basil: Using a prior noise std.dev. of: %f\n', x.Q.BasilNoiseSD);
-        fprintf(option_file, '--prior-noise-stddev=%f\n', x.Q.BasilNoiseSD);
+        fprintf('Basil: Using a prior noise std.dev. of: %f\n', x.BasilNoiseSD);
+        fprintf(option_file, '--prior-noise-stddev=%f\n', x.BasilNoiseSD);
     end
 
     %
     % Various optional features
     %
 
-    if isfield(x,'BasilSpatial') & x.Q.BasilSpatial
+    if isfield(x,'BasilSpatial') & x.BasilSpatial
         fprintf('Basil: Instructing BASIL to use automated spatial smoothing\n');
         basil_options = [basil_options ' --spatial'];
     end
 
-    if isfield(x.Q,'BasilInferT1') & x.Q.BasilInferT1
+    if isfield(x, 'BasilInferT1') & x.BasilInferT1
         fprintf(option_file, '--infert1\n');
         fprintf('Basil: Instructing BASIL to infer variable T1 values\n');
     end
 
-    if isfield(x.Q,'BasilExch')
-        fprintf('Basil: Using exchange model: %s\n', x.Q.BasilExch);
-        fprintf(option_file, '--exch=%s\n', x.Q.BasilExch);
+    if isfield(x, 'BasilExch')
+        fprintf('Basil: Using exchange model: %s\n', x.BasilExch);
+        fprintf(option_file, '--exch=%s\n', x.BasilExch);
     end
 
-    if isfield(x.Q,'BasilDisp')
-        fprintf('Basil: Using dispersion model: %s\n', x.Q.BasilDisp);
-        fprintf(option_file, '--disp=%s\n', x.Q.BasilDisp);
+    if isfield(x, 'BasilDisp')
+        fprintf('Basil: Using dispersion model: %s\n', x.BasilDisp);
+        fprintf(option_file, '--disp=%s\n', x.BasilDisp);
     end
 
-    if isfield(x.Q,'BasilDebug') & x.Q.BasilDebug
+    if isfield(x, 'BasilDebug') & x.BasilDebug
         basil_options = [basil_options ' --devel'];
     end
     fclose(option_file);
 
     %
     % Run Basil and retrieve CBF output
-    % FIXME might not be step1 if using spatial mode
-    % FIXME can we be sure it will be .nii not .nii.gz?
     %
-    rmdir('basil_out', 's');
+    if exist('basil_out', 'dir')
+        rmdir('basil_out', 's');
+    end
     args.bAutomaticallyDetectFSL=1;
     xASL_fsl_RunFSL(['basil -i basil_input_data -m basil_mask -@ model_options.txt -o basil_out' basil_options], args);
 
-    ftiss = xASL_io_ReadNifti('basil_out/step1/mean_ftiss.nii');
+    final_step = 1;
+    while exist(strcat('basil_out/step', num2str(final_step+1)), 'dir')
+        final_step = final_step + 1;
+    end
+    final_step_dir = strcat('basil_out/step', num2str(final_step));
+    fprintf('Basil: Final step output is in %s', final_step_dir);
+
+    % FIXME can we be sure it will be .nii not .nii.gz?
+    ftiss = xASL_io_ReadNifti(strcat(final_step_dir, '/mean_ftiss.nii'));
     CBF_nocalib = ftiss.dat(:, :, :);
 
     %
