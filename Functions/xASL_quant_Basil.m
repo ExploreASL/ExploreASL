@@ -371,17 +371,17 @@ ScaleImage = CBF ./ PWI;
 fprintf('%s\n',' model with parameters:');
 
 if x.ApplyQuantification(3)
-    switch x.Q.LabelingType
-        case 'PASL'
+    switch lower(x.Q.LabelingType)
+        case 'pasl'
             fprintf('%s',['TI1 = ' num2str(x.Q.LabelingDuration) ' ms, ']);
             fprintf('%s',['TI (ms) = ' num2str(x.Q.Initial_PLD)]);
-        case 'CASL'
+        case 'casl'
             fprintf('%s',['LabelingDuration = ' num2str(x.Q.LabelingDuration) ' ms, ']);
             fprintf('%s',['PLD (ms) = ' num2str(x.Q.Initial_PLD)]);
     end
 
     if isfield(x.Q,'SliceReadoutTime')
-        if x.Q.SliceReadoutTime>0 && strcmp(x.readout_dim,'2D')
+        if x.Q.SliceReadoutTime>0 && strcmpi(x.readout_dim,'2D')
             fprintf('%s',[' + ' num2str(x.Q.SliceReadoutTime) ' ms*(slice-1)']);
         end
     end
