@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "MDijsselhof",
+      "name": "Mathijs Dijsselhof",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/75380250?v=4",
+      "profile": "https://github.com/MDijsselhof",
+      "contributions": [
+        "content"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "ExploreASL",
+  "projectOwner": "ExploreASL",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
