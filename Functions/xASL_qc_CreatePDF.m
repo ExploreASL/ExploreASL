@@ -20,8 +20,9 @@ function xASL_qc_CreatePDF(x, DoSubject)
 %              Further code explanation:
 %              Below, using the Matlab & SPM Figure tools we create an image, which is
 %              then printed to a PDF file
-%              fg = the main Figure handle
-%              ax = "axes" handles, these are objects containing either 1) text or 2)
+%
+%              - fg = the main Figure handle
+%              - ax = "axes" handles, these are objects containing either 1) text or 2)
 %              images, with fg as "parent" (1) & (2) images have ax as "parent"
 %              Positions are calculated in such a way that 4 categories can be printed,
 %              which will be the first 4 fields found in x.Output

@@ -27,12 +27,13 @@ function pathOut = xASL_im_PreSmooth(pathRef,pathSrc,pathSmo,resRef,resSrc,srcAf
 %              of the pre-smoothing in the source space. Then it performs the smoothing.
 %
 %              The following steps are performed:
-%               1) Obtain the voxel size
-%               2) Skip this function if reference resolution is equal to, or lower than source resolution
-%               3) Deal with affine transformation
-%               4) Obtain the transformation matrix from the Reference to the Source space
-%               5) Apply the smoothing filter on the source image(s)
-%               6) Save the smoothed image
+%
+%               1. Obtain the voxel size
+%               2. Skip this function if reference resolution is equal to, or lower than source resolution
+%               3. Deal with affine transformation
+%               4. Obtain the transformation matrix from the Reference to the Source space
+%               5. Apply the smoothing filter on the source image(s)
+%               6. Save the smoothed image
 %
 % EXAMPLE:
 %     pathOut = xASL_im_PreSmooth('/home/tmp/CBF.nii','/home/tmp/T1.nii')

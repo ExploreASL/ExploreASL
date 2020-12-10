@@ -63,13 +63,12 @@ function [x] = xASL_init_LoadMetadata(x)
 %
 % This function iterates through the following steps for each variable:
 %
-% 1) Admin (what nOptions do we call ordinal, convert subject numeric to
-%    string, remove white spaces from data)
-% 2) Get unique list of data options & check for missing data
-% 3) Deal with data format (correct NaNs, deal with numeric vs strings)
-% 4) Distinguish continous data (e.g. age) or ordinal data (groups to compare, e.g. cohort)
-% 5) Check if data is complete for all subjects
-% 6) Include complete data in x.S.SETS
+% 1. Admin (what nOptions do we call ordinal, convert subject numeric to string, remove white spaces from data)
+% 2. Get unique list of data options & check for missing data
+% 3. Deal with data format (correct NaNs, deal with numeric vs strings)
+% 4. Distinguish continous data (e.g. age) or ordinal data (groups to compare, e.g. cohort)
+% 5. Check if data is complete for all subjects
+% 6. Include complete data in x.S.SETS
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_init_LoadMetadata(x);

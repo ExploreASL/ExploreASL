@@ -24,18 +24,21 @@ function [x] = xASL_stat_PrintStats(x)
 %              ROI-statistics.
 %              Any missing data will be skipped (setting them to NaN should
 %              have happened in a previous function).
+%
 %              This function performs the following steps:
-%              1) First remove previous TSV-file, if already existed
+%
+%              1. First remove previous TSV-file, if already existed
 %                 printing to a TSV file can be tricky if it is opened by
 %                 Excel. Make sure to close previous versions first,
 %                 otherwise this part will crash.
-%              2) Print overview of sets to TSV
+%              2. Print overview of sets to TSV
 %                 as explained above. Uses subfunction
 %                 xASL_stat_CreateLegend to put legends. Aim is to create a
 %                 single TSV file that has a proper overview of the data,
 %                 & is self-explanatory to those reading/using it.
-%              3) Define number of ASL sessions, force to 1 in case of TT or volume metrics
-%              4) Print the overview
+%              3. Define number of ASL sessions, force to 1 in case of TT or volume metrics
+%              4. Print the overview
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_stat_PrintStats(x);
 % __________________________________

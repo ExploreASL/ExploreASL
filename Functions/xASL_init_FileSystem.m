@@ -14,11 +14,13 @@ function [x] = xASL_init_FileSystem(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function initializes the file system used throughout ExploreASL, for processing a single dataset/scan.
 % It is repeated for each scan, and runs the following parts:
-% 1) Create folders
-% 2) Subject/session definitions
-% 3) Add prefixes & suffixes
-% 4) Add Subject-specific prefixes
-% 5) Add sidecars
+%
+% 1. Create folders
+% 2. Subject/session definitions
+% 3. Add prefixes & suffixes
+% 4. Add Subject-specific prefixes
+% 5. Add sidecars
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_init_FileSystem(x);
 % __________________________________

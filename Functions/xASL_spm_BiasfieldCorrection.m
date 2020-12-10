@@ -16,11 +16,12 @@ function xASL_spm_BiasfieldCorrection(PathIn, SPMdir, Quality, PathMask, PathOut
 % function, for biasfield removal. It is tested for M0 and mean control
 % images. It conducts the following steps:
 %
-% 1) Create implicit mask
-% 2) Define SPM 'old segmentation' settings
-% 3) Run SPM 'old segmentation'
-% 4) Delete temporary files
-% 5) Rename temporary SPM file into output file
+% 1. Create implicit mask
+% 2. Define SPM 'old segmentation' settings
+% 3. Run SPM 'old segmentation'
+% 4. Delete temporary files
+% 5. Rename temporary SPM file into output file
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_spm_BiasfieldCorrection('/MyStudy/sub-001/T1.nii', x.SPMdir);
 % __________________________________

@@ -23,10 +23,12 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
 % DESCRIPTION:  This function clips an image to a given percentile. The percentile is found
 %               using non-zeros sorted intensities, so both isfinite & non-zeros.
 %               This function performs the following steps:
+%
 %               1. Constrain clippable intensities
 %               2. Clip high intensities
 %               3. Clip low intensities
 %               4. Save as NIfTI if the input was a NIfTI
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_im_ClipExtremes('MyStudy/anat/T1w.nii.gz');
 % __________________________________
