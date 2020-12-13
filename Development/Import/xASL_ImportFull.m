@@ -1,7 +1,7 @@
 %% Default import ExploreASL
 
 %% Specify parameters
-InputFolder = '/Users/henk/ExploreASL/ASL/DataStephanUlmer/DICOM/20200512/11260000/26580018';
+InputFolder = '/Users/henk/ExploreASL/ASL/Dent_MCI';
 RawFolder = fullfile(InputFolder, 'raw');
 bUseDCMTK = 0;
 bCheckPermissions = 0;
@@ -22,7 +22,11 @@ imPar.SkipSubjectIfExists = true;
 %% Step 1) Put the DICOMs in folders with the SeriesDescription as name, and
 % add DICOM extension if needed
 
-ConvertDicomFolderStructure_CarefulSlow(InputFolder, bUseDCMTK, 1);
+DirList = xASL_adm_GetFileList(RawFolder, '^MCI-00\d{2}$', 'FPList', [0 Inf], 1);
+for iDir=1:length(DirList)
+    iDir
+    ConvertDicomFolderStructure_CarefulSlow(fullfile(DirList{iDir}, 'DICOM'), bUseDCMTK, 1);
+end
 
 %% Step 2) Move data to 'raw' folder
 xASL_adm_CreateDir(RawFolder);
