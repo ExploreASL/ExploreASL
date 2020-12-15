@@ -72,22 +72,14 @@ MaskVascularPath = fullfile(x.S.StatsDir,'MaskVascular.nii');
 MaskSusceptibilityPath = fullfile(x.S.StatsDir,'MaskSusceptibility.nii');
 
 % Define pre-existing paths, including warning when less or more than 1 are found
-PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^FoV_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskVascular_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pGM_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pWM_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pCSF_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^T1_.*bs-mean_Unmasked\.nii$', 'FPList', [1 1]);
-
-% Set to use first mask
-if ~isempty(PathFoV); PathFoV = PathFoV{1}; end
-if ~isempty(PathVascularMask); PathVascularMask = PathVascularMask{1}; end
-if ~isempty(PathSusceptibilityMask); PathSusceptibilityMask = PathSusceptibilityMask{1}; end
-if ~isempty(PathpGM); PathpGM = PathpGM{1}; end
-if ~isempty(PathpWM); PathpWM = PathpWM{1}; end
-if ~isempty(PathpCSF); PathpCSF = PathpCSF{1}; end
-if ~isempty(PathT1); PathT1 = PathT1{1}; end
-
+% First for SubjectsSessions (e.g. ASL)
+PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
+% Then for Subjects (e.g. structural)
+PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pGM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pCSF_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
 
 
 if ~bSkipStandard
