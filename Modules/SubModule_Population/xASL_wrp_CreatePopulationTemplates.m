@@ -1,4 +1,4 @@
-function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre, bUpdateMetadata, SmoothingFWHM)
+function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre, bUpdateMetadata, SmoothingFWHM, bSaveMasks4QC)
 %xASL_wrp_CreatePopulationTemplates ExploreASL Population module wrapper,
 %creates population parametric images for each ScanType
 %
@@ -37,6 +37,11 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 %                       (OPTIONAL, DEFAULT = false);
 %   SmoothingFWHM     - Full-Width-Half-Maximum in [X Y Z] voxels for smoothing of the output image
 %                       (OPTIONAL, DEFAULT = [0 0 0] (i.e. no smoothing)
+%   bSaveMasks4QC     - boolean specifying if we wish to save the final
+%                       images used for computations. Only recommended for
+%                       masks, to avoid space redundancy, which is also why
+%                       this is stored in uint8 and zipped. (OPTIONAL,
+%                       DEFAULT = 0)
 %
 % OUTPUT: n/a
 %
@@ -126,6 +131,15 @@ elseif any(SmoothingFWHM<0)
     error('Negative values in smoothing kernel are invalid');
 else
     SmoothingFWHM = double(SmoothingFWHM);
+end
+if nargin<10 || isempty(bSaveMasks4QC)
+    x.S.bSaveMasks4QC = 0;
+elseif bSaveMasks4QC==1
+    x.S.bSaveMasks4QC = 1;
+elseif bSaveMasks4QC==0
+    x.S.bSaveMasks4QC = 0;
+else
+    error('Illegal value for bSaveMasks4QC');
 end
 
 if ~isfield(x,'GradualSkull')
@@ -805,6 +819,18 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
         % ----------------------------------------------------------------------------------------------------
         %% 5. Save the map as NIfTI
         xASL_io_SaveNifti(x.D.ResliceRef, PathSave, ImageIs);
+        
+        
+        % ----------------------------------------------------------------------------------------------------
+        %% 6. Save the current masks for QC
+        if bMask && iFunction==1 && x.S.bSaveMasks4QC
+            % only recommended for checking masks, otherwise this will take
+            % up a lot of disk space
+            Masks4D = xASL_im_Column2IM(uint8(IM), x.WBmask);
+            PathSave = fullfile(x.D.TemplatesStudyDir, ['Masks4D_' NameIM '.nii']);
+            xASL_io_SaveNifti(x.D.ResliceRef, PathSave, Masks4D);
+        end
     end
 
+    
 end
