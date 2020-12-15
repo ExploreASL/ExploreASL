@@ -539,33 +539,35 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
     end
     
     % Get atlases
-    if isfield(x,'Atlases')
-        if ~iscell(x.Atlases) % dont change definition if already cell array
+    if isfield(x.S,'Atlases')
+        if ~iscell(x.S.Atlases) % dont change definition if already cell array
             try
-                tempAtlases = strsplit(x.Atlases,',');
+                tempAtlases = strsplit(x.S.Atlases,',');
                 tempAtlases = strrep(strrep(tempAtlases,'{',''),'}','');
-                x.Atlases = strrep(tempAtlases,'''','');
+                x.S.Atlases = strrep(tempAtlases,'''','');
             catch
-                x.Atlases = {'TotalGM','DeepWM'}; % fallback
+                x.S.Atlases = {'TotalGM','DeepWM'}; % fallback
             end
         end
     else
-        x.Atlases = {'TotalGM','DeepWM'}; % default
+        x.S.Atlases = {'TotalGM','DeepWM'}; % default
     end
     
+    % THIS SEEMS TO BE INCORRECT AND NEEDS TO BE FIXED
     % Print out warning if atlases were selected which need susceptibility masking
-    if sum(ismember(x.Atlases,'HO_cortex')) || sum(ismember(x.Atlases,'HO_subcortical'))
-        if ~isfield(x.S,'bMasking')
-            fprintf('Susceptibility masking required...\n');
-            x.S.bMasking = [1 0 0 0];
-        end
-    end
+    %     if sum(ismember(x.S.Atlases,'HO_cortex')) || sum(ismember(x.S.Atlases,'HO_subcortical'))
+    %         if ~isfield(x.S,'bMasking')
+    %             fprintf('Susceptibility masking required...\n');
+    %             x.S.bMasking = [1 0 0 0];
+    %         end
+    %     end
     
+    % HERE WE SHOULD AGREE ON WHICH PARAMETER TO USE
     % Check if native or standard space
-    if ~isfield(x,'bGetAtlasROIsInNativeSpace')
-        % Default/fallback: Don't get atlases in native space
-        x.bGetAtlasROIsInNativeSpace = false;
-    end
+    %     if ~isfield(x,'bGetAtlasROIsInNativeSpace')
+    %         % Default/fallback: Don't get atlases in native space
+    %         x.bGetAtlasROIsInNativeSpace = false;
+    %     end
 
     if ~exist(x.D.ROOT, 'dir')
         warning([x.D.ROOT ' didnt exist as folder, trying path of DataPar file']);

@@ -227,19 +227,20 @@ if ~x.mutex.HasState(StateName{8})
     x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
     
     % Iterate over atlases
-    for iAtlas=1:length(x.Atlases)        
+    for iAtlas=1:length(x.S.Atlases)        
         
         % Check if atlas name is in path list
-        if isfield(x.P.Atlas,x.Atlases{iAtlas})
-            x.S.InputAtlasPath = x.P.Atlas.(x.Atlases{iAtlas});
+        if isfield(x.P.Atlas,x.S.Atlases{iAtlas})
+            x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
         end
         
+        % THIS DOES NOT SEEM TO BE CORRECT AND NEEDS TO BE FIXED
         % Check if native space or not
-        if strcmp(x.Atlases{iAtlas},'HO_cortex') || strcmp(x.Atlases{iAtlas},'HO_subcortical')
-            % There seems to be a problem with the VascularMask
-            x.S.IsVolume = true;
-            x.S.InputDataStr = 'mrc1T1';
-        end
+        %         if strcmp(x.S.Atlases{iAtlas},'HO_cortex') || strcmp(x.S.Atlases{iAtlas},'HO_subcortical')
+        %             % There seems to be a problem with the VascularMask
+        %             x.S.IsVolume = true;
+        %             x.S.InputDataStr = 'mrc1T1';
+        %         end
         
         % ROI statistics (default: standard space)
         x.S.InputNativeSpace = 0;
@@ -247,7 +248,7 @@ if ~x.mutex.HasState(StateName{8})
         % ROI statistics (optional: native space)
         if x.bGetAtlasROIsInNativeSpace
             x.S.InputNativeSpace = 1;
-            x.S.InputAtlasNativeName = x.Atlases{iAtlas};
+            x.S.InputAtlasNativeName = x.S.Atlases{iAtlas};
             xASL_wrp_GetROIstatistics(x);
         end
         
