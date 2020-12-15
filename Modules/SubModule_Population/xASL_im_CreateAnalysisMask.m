@@ -172,11 +172,14 @@ if x.bNativeSpaceAnalysis
 				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop x.P.Path_HOcort_CONNPop x.P.Path_HOsub_CONN};
 				MaskType  = [1 1 1 2 2 2 2 2];
 				% 1 - binary masks - presmooth, spline-interpolation, cut at 50%
-				% 2 - multi-label masks - no presmooth, nearest-neighbot interpolation, no thresholding
+				% 2 - multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding
+                % PM:   in the future we can also do option 1 for multi-label
+                %       masks, by splitting them in multiple individual masks and
+                %       treating those separately
 
 				for kk = 1:length(listMasks)
 					if xASL_exist(listMasks{kk},'file')
-						switch (listType(kk))
+						switch (MaskType(kk))
 							case 1
 								% Pre-smooth the mask before downsampling to native space
 								[tmpPath,tmpFile,tmpExt] = xASL_fileparts(listOutputs{kk});
