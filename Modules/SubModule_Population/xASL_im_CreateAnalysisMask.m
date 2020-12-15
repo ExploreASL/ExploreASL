@@ -152,7 +152,6 @@ if ~bSkipStandard
 end
 %% B2) Save FOV mask for each subject
 if x.bNativeSpaceAnalysis
-	x = xASL_adm_DefineASLResolution(x);
 	for iSession=1:x.nSessions
 		%x.SESSIONS{iSession}
 
@@ -163,6 +162,7 @@ if x.bNativeSpaceAnalysis
 			x.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 			x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
+			x = xASL_adm_DefineASLResolution(x);
 
 			xASL_TrackProgress(SubjSess,x.nSubjects*x.nSessions);
 			if xASL_exist(x.P.Path_PWI)
