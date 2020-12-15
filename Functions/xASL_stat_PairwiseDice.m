@@ -43,6 +43,25 @@ function [DiceCoeff] = xASL_stat_PairwiseDice(GroupA, GroupB)
 
 
 %% 1. Admin (check cell, image exist etc)
+if ~iscell(GroupA) && isnumeric(GroupA) && ndims(GroupA)==4
+    fprintf('Group A matrix detected, converting to cell structure\n');
+    TempMatrix = GroupA;
+    GroupA = '';
+    for iCell=1:size(TempMatrix, 4)
+        GroupA{iCell} = TempMatrix(:,:,:,iCell);
+    end
+end
+
+if ~iscell(GroupB) && isnumeric(GroupB) && ndims(GroupB)==4
+    fprintf('Group B matrix detected, converting to cell structure\n');
+    TempMatrix = GroupB;
+    GroupB = '';
+    for iCell=1:size(TempMatrix, 4)
+        GroupB{iCell} = TempMatrix(:,:,:,iCell);
+    end
+end
+
+
 if ~iscell(GroupA) || ~iscell(GroupB)
     error('Input images/paths should be a cell structure');
 end
@@ -53,13 +72,13 @@ ExcludeGroupA = zeros(InitialLengths(1), 1);
 ExcludeGroupB = zeros(InitialLengths(2), 1);
 
 for iSubject=1:length(GroupA)
-    if ~xASL_exist(GroupA{iSubject}, 'file')
+    if ~isnumeric(GroupA{iSubject}) && ~xASL_exist(GroupA{iSubject}, 'file')
         warning([GroupA{iSubject} ' did not exist, excluding']);
         ExcludeGroupA(iSubject, 1) = 1;
     end
 end
 for iSubject=1:length(GroupB)
-    if ~xASL_exist(GroupB{iSubject}, 'file')
+    if ~isnumeric(GroupA{iSubject}) && ~xASL_exist(GroupB{iSubject}, 'file')
         warning([GroupB{iSubject} ' did not exist, excluding']);
         ExcludeGroupB(iSubject, 1) = 1;
     end
