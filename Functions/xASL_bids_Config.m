@@ -64,6 +64,7 @@ bidsPar.ASLfields.Required = {'RepetitionTimePreparation','EchoTime','MagneticFi
 bidsPar.ASLfields.Recommended = {'PulseSequenceDetails','Manufacturer','SliceEncodingDirection','FlipAngle','VascularCrushing',...
 	'AcquisitionVoxelSize','LabelingLocationDescription','LabelingOrientation','LabelingDistance',};		  
 bidsPar.ASLfields.Optional = {'TotalAcquiredVolumes','LookLocker','LabelingEfficiency','Units','PulseSequenceType'};		  
+bidsPar.M0fields.Required = {'RepetitionTimePreparation','EchoTime','MagneticFieldStrength','MRAcquisitionType'};
 
 % Defined strings for certain ASL-BIDS keywords
 bidsPar.strAslContext = 'aslcontext';
@@ -76,6 +77,7 @@ bidsPar.strM0Separate = 'Separate';
 bidsPar.strM0Included = 'Included';
 bidsPar.strM0Estimate = 'Estimate';
 bidsPar.strM0Absent   = 'Absent';
+bidsPar.strPerfusion = 'perf';
 
 % Conditional dependencies
 % RepetitionTime and VolumeTiming are mutually exclusive
@@ -155,8 +157,6 @@ bidsPar.listRemoveIfEmpty = {'EffectiveEchoSpacing','TotalReadoutTime'};
 
 % A list of anatomical scan-types to include
 bidsPar.listAnatTypes = {'T1w' 'T2w' 'FLAIR'}; 
-
-		  
 
 % Definition of the dataset_description.json fields
 % https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html

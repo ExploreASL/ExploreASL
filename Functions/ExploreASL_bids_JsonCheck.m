@@ -1,11 +1,11 @@
-function jsonOut = ExploreASL_bids_JsonCheck(jsonIn,bIsASL)
+function jsonOut = ExploreASL_bids_JsonCheck(jsonIn,fileType)
 %ExploreASL_bids_JsonCheck Goes through the JSON structure before saving it and ensures that it fits the ASL-BIDS format
 %
-% FORMAT: jsonOut = ExploreASL_bids_JsonCheck(jsonIn,bIsASL)
+% FORMAT: jsonOut = ExploreASL_bids_JsonCheck(jsonIn,fileType)
 %
 % INPUT:
 %   jsonIn  - JSON with the input fields (REQUIRED)
-%   bIsASL  - true when the input and output is ASL-BIDS, false for normal BIDS (REQUIRED)
+%   fileType   - 'ASL' or 'M0' when the input and output is ASL-BIDS, empty for normal BIDS (REQUIRED)
 %
 % OUTPUT: 
 %   jsonOut - ordered and checked JSON structure
@@ -44,7 +44,7 @@ for iField = 1:length(bidsPar.listFieldsRemoveGeneral)
 end
 
 % Remove non-ASL-BIDS fields
-if bIsASL
+if strcmpi(fileType,'ASL') || strcmpi(fileType,'M0')
 	for iField = 1:length(bidsPar.listFieldsRemoveASL)
 		if isfield(jsonIn,bidsPar.listFieldsRemoveASL{iField})
 			jsonRemove.(bidsPar.listFieldsRemoveASL{iField}) = '';
@@ -80,7 +80,7 @@ end
 % Check field requirements and dependencies
 
 % Check required ASL fields
-if bIsASL
+if strcmpi(fileType,'ASL')
 	strReport = '';
 	for iField = 1:length(bidsPar.ASLfields.Required)
 		if ~isfield(jsonOut,bidsPar.ASLfields.Required{iField})
@@ -110,8 +110,25 @@ if bIsASL
 	end
 end
 
+% Check required M0 fields
+if strcmpi(fileType,'M0')
+	strReport = '';
+	for iField = 1:length(bidsPar.M0fields.Required)
+		if ~isfield(jsonOut,bidsPar.M0fields.Required{iField})
+			if isempty(strReport)
+				strReport = bidsPar.M0fields.Required{iField};
+			else
+				strReport = [strReport ', ' bidsPar.M0fields.Required{iField}];
+			end
+		end
+	end
+	if ~isempty(strReport)
+		fprintf('%s\n\n',['Missing required M0 fields: ' strReport]);
+	end
+end
+
 % Check ASL dependencies
-if bIsASL
+if strcmpi(fileType,'ASL')
 	for iCond = 1:length(bidsPar.ASLCondition)
 		% First check if the field is present
 		if isfield(jsonOut,bidsPar.ASLCondition{iCond}.field)

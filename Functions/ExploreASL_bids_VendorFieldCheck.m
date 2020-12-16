@@ -1,4 +1,4 @@
-function jsonOut = ExploreASL_bids_VendorFieldCheck(jsonIn,bIsASL)
+function jsonOut = ExploreASL_bids_VendorFieldCheck(jsonIn)
 %ExploreASL_bids_VendorFieldCheck Goes through the JSON structure before saving it and ensures that all 
 % vendor specific fields are properly checked and renamed if necessary
 %
@@ -6,7 +6,6 @@ function jsonOut = ExploreASL_bids_VendorFieldCheck(jsonIn,bIsASL)
 %
 % INPUT:
 %   jsonIn  - JSON with the input fields (REQUIRED)
-%   bIsASL  - true when the input and output is ASL-BIDS, false for normal BIDS (REQUIRED)
 %
 % OUTPUT: 
 %   jsonOut - ordered and checked JSON structure
