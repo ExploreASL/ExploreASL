@@ -27,7 +27,7 @@ bidsPar.listFieldsRemoveGeneral = {'InstitutionName' 'InstitutionalDepartmentNam
 	'ProcedureStepDescription' 'SeriesDescription' 'ProtocolName'... % Anonymization
 	'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'UsePhilipsFloatNotDisplayScaling' 'RWVSlope',...
 	'PhilipsRWVIntercept' 'RescaleSlopeOriginal' 'RescaleSlope' 'MRScaleSlope' 'RescaleIntercept', 'RWVIntercept',... % Scales slopes have to be applied and removed
-	'Modality', 'ImagingFrequency', 'PatientPosition','MRAcquisitionType','ImageType','PhaseEncodingPolarityGE',...
+	'Modality', 'ImagingFrequency', 'PatientPosition','ImageType','PhaseEncodingPolarityGE',...
 	'SeriesNumber','AcquisitionTime','AcquisitionNumber','SliceThickness','SpacingBetweenSlices','SAR',...
 	'Rows' 'Columns' 'InPlanePhaseEncodingDirection' 'NumberOfTemporalPositions','GELabelingType', 'PulseSequenceName','AcquisitionContrast',...
 	'PhilipsNumberTemporalScans','TemporalPositionIdentifier','PhilipsLabelControl','NumberOfTemporalPositions','PhoenixProtocol','SiemensSliceTime',...
@@ -39,7 +39,7 @@ bidsPar.listFieldsRemoveGeneral = {'InstitutionName' 'InstitutionalDepartmentNam
 
 % A list of fields to remove the ASL-BIDS JSON files only
 bidsPar.listFieldsRemoveASL = {'SliceReadoutTime','InversionTime','LabelOffset','PostLabelDelay','NumRFBlocks',...
-	'GELabelingDuration','RFGap','MeanGzx10','PhiAdjust'}; % Fields to exclude from ASL only
+	'GELabelingDuration','RFGap','MeanGzx10','PhiAdjust','M0','LabelingType'}; % Fields to exclude from ASL only
 
 % Gives the correct order of fields to be saved in JSON so that it corresponds to the BIDS definition
 % This is not mandatory, just makes things more accessible
@@ -50,19 +50,32 @@ bidsPar.listFieldOrder = {'Manufacturer','ManufacturersModelName','DeviceSerialN
 			  'PartialFourierDirection','PhaseEncodingDirection','EffectiveEchoSpacing','TotalReadoutTime','EchoTime','InversionTime','SliceTiming',...
 			  'SliceEncodingDirection','DwellTime','FlipAngle','MultibandAccelerationFactor','NegativeContrast','AnatomicalLandmarkCoordinates',...
 			  'RepetitionTime','VolumeTiming','TaskName','Units',... % And ASL-BIDS fields
-			  'LabelingType','PostLabelingDelay','BackgroundSuppression','M0','VascularCrushing','AcquisitionVoxelSize','TotalAcquiredVolumes',...
-			  'BackgroundSuppressionNumberPulses','BackgroundSuppressionPulseTime','VascularCrushingVenc','LabelingLocationDescription',...
+			  'RepetitionTimePreparation','ArterialSpinLabelingType','PostLabelingDelay','BackgroundSuppression','VascularCrushing','AcquisitionVoxelSize',...
+			  'MRAcquisitionType','TotalAcquiredVolumes',...
+			  'BackgroundSuppressionNumberPulses','BackgroundSuppressionPulseTime','VascularCrushingVenc','M0Type','M0Estimate','LabelingLocationDescription',...
 			  'LabelingOrientation','LabelingDistance','LookLocker','LabelingEfficiency','PCASLType','CASLType','LabelingDuration',...
 			  'LabelingPulseAverageGradient','LabelingPulseMaximumGradient','LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle',...
 			  'LabelingPulseInterval','PASLType','LabelingSlabThickness','BolusCutOffFlag','BolusCutOffDelayTime',...
 			  'BolusCutOffTechnique'};
 
 % Definition of ASL fields		  
-bidsPar.ASLfields.Required = {'EchoTime','MagneticFieldStrength','PulseSequenceType','LabelingType','PostLabelingDelay',...
-	'BackgroundSuppression','M0'};		  
+bidsPar.ASLfields.Required = {'RepetitionTimePreparation','EchoTime','MagneticFieldStrength','MRAcquisitionType','ArterialSpinLabelingType','PostLabelingDelay',...
+	'BackgroundSuppression','M0Type'};		  
 bidsPar.ASLfields.Recommended = {'PulseSequenceDetails','Manufacturer','SliceEncodingDirection','FlipAngle','VascularCrushing',...
 	'AcquisitionVoxelSize','LabelingLocationDescription','LabelingOrientation','LabelingDistance',};		  
-bidsPar.ASLfields.Optional = {'TotalAcquiredVolumes','LookLocker','LabelingEfficiency','Units'};		  
+bidsPar.ASLfields.Optional = {'TotalAcquiredVolumes','LookLocker','LabelingEfficiency','Units','PulseSequenceType'};		  
+
+% Defined strings for certain ASL-BIDS keywords
+bidsPar.strAslContext = 'aslcontext';
+bidsPar.strLabel = 'label';
+bidsPar.strControl = 'control';
+bidsPar.strM0scan = 'm0scan';
+bidsPar.strCbf = 'cbf';
+bidsPar.strDeltaM = 'deltam';
+bidsPar.strM0Separate = 'Separate';
+bidsPar.strM0Included = 'Included';
+bidsPar.strM0Estimate = 'Estimate';
+bidsPar.strM0Absent   = 'Absent';
 
 % Conditional dependencies
 % RepetitionTime and VolumeTiming are mutually exclusive
@@ -78,7 +91,7 @@ bidsPar.ASLCondition{2}.RequiredFilled = {'AcquisitionDuration','SliceTiming'};
 bidsPar.ASLCondition{2}.RequiredEmpty = {'RepetitionTime'};
 bidsPar.ASLCondition{2}.RecommendedFilled = {};
 
-bidsPar.ASLCondition{3}.field = 'PulseSequenceType';
+bidsPar.ASLCondition{3}.field = 'MRAcquisitionType';
 bidsPar.ASLCondition{3}.value = '2D';
 bidsPar.ASLCondition{3}.RequiredFilled = {'SliceTiming'};
 bidsPar.ASLCondition{3}.RequiredEmpty = {};
@@ -102,7 +115,7 @@ bidsPar.ASLCondition{6}.RequiredFilled = {};
 bidsPar.ASLCondition{6}.RequiredEmpty = {};
 bidsPar.ASLCondition{6}.RecommendedFilled = {'VascularCrushingVenc'};
 
-bidsPar.ASLCondition{7}.field = 'LabelingType';
+bidsPar.ASLCondition{7}.field = 'ArterialSpinLabelingType';
 bidsPar.ASLCondition{7}.value = 'PCASL';
 bidsPar.ASLCondition{7}.RequiredFilled = {'LabelingDuration'};
 bidsPar.ASLCondition{7}.RequiredEmpty = {'CASLType','PASLType','LabelingSlabThickness','BolusCutOffFlag','BolusCutOffDelayTime',...
@@ -110,7 +123,7 @@ bidsPar.ASLCondition{7}.RequiredEmpty = {'CASLType','PASLType','LabelingSlabThic
 bidsPar.ASLCondition{7}.RecommendedFilled = {'PCASLType','LabelingPulseAverageGradient','LabelingPulseMaximumGradient',...
 	'LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle','LabelingPulseInterval'};
 
-bidsPar.ASLCondition{8}.field = 'LabelingType';
+bidsPar.ASLCondition{8}.field = 'ArterialSpinLabelingType';
 bidsPar.ASLCondition{8}.value = '^CASL';
 bidsPar.ASLCondition{8}.RequiredFilled = {'LabelingDuration'};
 bidsPar.ASLCondition{8}.RequiredEmpty = {'PCASLType','PASLType','LabelingSlabThickness','BolusCutOffFlag','BolusCutOffDelayTime',...
@@ -118,11 +131,11 @@ bidsPar.ASLCondition{8}.RequiredEmpty = {'PCASLType','PASLType','LabelingSlabThi
 bidsPar.ASLCondition{8}.RecommendedFilled = {'CASLType','LabelingPulseAverageGradient','LabelingPulseMaximumGradient',...
 	'LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle','LabelingPulseInterval'};
 
-bidsPar.ASLCondition{9}.field = 'LabelingType';
+bidsPar.ASLCondition{9}.field = 'ArterialSpinLabelingType';
 bidsPar.ASLCondition{9}.value = 'PASL';
 bidsPar.ASLCondition{9}.RequiredFilled = {'BolusCutOffFlag'};
 bidsPar.ASLCondition{9}.RequiredEmpty = {'PCASLType','CASLType','LabelingPulseAverageGradient','LabelingPulseMaximumGradient',...
-	'LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle','LabelingPulseInterval'};
+	'LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle','LabelingPulseInterval','LabelingDuration'};
 bidsPar.ASLCondition{9}.RecommendedFilled = {'PASLType','LabelingSlabThickness'};
 
 bidsPar.ASLCondition{10}.field = 'BolusCutOffFlag';
@@ -131,19 +144,19 @@ bidsPar.ASLCondition{10}.RequiredFilled = {};
 bidsPar.ASLCondition{10}.RequiredEmpty = {};
 bidsPar.ASLCondition{10}.RecommendedFilled = {'BolusCutOffDelayTime','BolusCutOffTechnique'};
 
+bidsPar.ASLCondition{11}.field = 'M0Type';
+bidsPar.ASLCondition{11}.value = bidsPar.strM0Estimate;
+bidsPar.ASLCondition{11}.RequiredFilled = {'M0Estimate'};
+bidsPar.ASLCondition{11}.RequiredEmpty = {};
+bidsPar.ASLCondition{11}.RecommendedFilled = {};
+
 % List of fields to be removed if they are empty
 bidsPar.listRemoveIfEmpty = {'EffectiveEchoSpacing','TotalReadoutTime'};
 
 % A list of anatomical scan-types to include
 bidsPar.listAnatTypes = {'T1w' 'T2w' 'FLAIR'}; 
 
-% Defined strings for certain ASL-BIDS keywords
-bidsPar.strAslContext = 'aslcontext';
-bidsPar.strLabel = 'label';
-bidsPar.strControl = 'control';
-bidsPar.strM0scan = 'm0scan';
-bidsPar.strCbf = 'cbf';
-bidsPar.strDeltaM = 'deltam';		  
+		  
 
 % Definition of the dataset_description.json fields
 % https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html

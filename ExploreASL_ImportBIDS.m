@@ -383,14 +383,12 @@ if bRunSubmodules(2)
 % M0 field can be numerical provided. Otherwise - true, separate, false, can be either copied as true or false. Or we simply assign true/false/file based on the fact if you provide M0 or if within series or if contol without BS
 % Missing separate file+Bsup or missing separate+nocontrol should be evaluated as an error
 
-% Update to new BIDS version
-
 % Run the defacing module
 % Do the anonymization
 
 	% This can all go, will be in files
 % 	% Labeling delays and durations
-% 	if strcmpi(importStr{ii}.par.LabelingType,'PASL')
+% 	if strcmpi(importStr{ii}.par.ArterialSpinLabelingType,'PASL')
 % 		%importStr{ii}.par.LabelingDuration = 0;% importStr{ii}.x.LabelingDuration           = 1.800;  % for PASL this is TI1
 % 		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
 % 		if importStr{ii}.par.BolusCutOffFlag
@@ -487,6 +485,10 @@ if bRunSubmodules(2)
 				end
 			end
 			
+			if isfield(jsonLocal,'LabelingType')
+				jsonLocal.ArterialSpinLabelingType = jsonLocal.LabelingType;
+			end
+			
 			if isfield(jsonLocal,'GELabelingDuration')
 				if isfield(studyPar,'LabelingDuration') && jsonLocal.GELabelingDuration ~= studyPar.LabelingDuration
 					warning('Labeling duration mismatch with GE private field.');
@@ -556,7 +558,7 @@ if bRunSubmodules(2)
 			end
 			
 			% Fill in extra parameters based on the JSON from the data
-			if jsonLocal.PulseSequenceType(1) == '2'
+			if jsonLocal.MRAcquisitionType(1) == '2'
 				% Take the studyPar as a prior source of SliceTiming since this is mostly wrong in DICOM otherwise
 				if isfield(studyPar,'SliceTiming')
 					jsonLocal.SliceTiming = studyPar.SliceTiming;
@@ -593,14 +595,22 @@ if bRunSubmodules(2)
 				end
 			end
 			
-			if isfield(studyPar,'RepetitionTime')
-				jsonLocal.RepetitionTime = studyPar.RepetitionTime;
+			if isfield(jsonLocal,'RepetitionTime') && ~isfield(jsonLocal,'RepetitionTimePreparation')
+				jsonLocal.RepetitionTimePreparation = jsonLocal.RepetitionTime;
 			end
 			
 			% Check if TR is a vector - replace by the maximum then
-			if length(jsonLocal.RepetitionTime) > 1
-				jsonLocal.RepetitionTime = max(jsonLocal.RepetitionTime);
+			if length(jsonLocal.RepetitionTimePreparation) > 1
+				jsonLocal.RepetitionTimePreparation = max(jsonLocal.RepetitionTimePreparation);
 				warning('TR was a vector. Taking the maximum only.');
+			end
+			
+			if isfield(studyPar,'RepetitionTime')
+				jsonLocal.RepetitionTimePreparation = studyPar.RepetitionTime;
+			end
+			
+			if isfield(studyPar,'RepetitionTimePreparation')
+				jsonLocal.RepetitionTimePreparation = studyPar.RepetitionTimePreparation;
 			end
 			
 			% Import the number of averages
@@ -623,36 +633,51 @@ if bRunSubmodules(2)
 			if ~isfield(studyPar,'M0') || isempty(studyPar.M0) || strcmpi(studyPar.M0,'separate_scan')
 				if isfield(studyPar,'M0PositionInASL4D') && (max(studyPar.M0PositionInASL4D(:))>0)
 					jsonLocal.M0 = true;
+					jsonLocal.M0Type = bidsPar.strM0Included;
 				elseif xASL_exist(fullfile(inSesPath,'M0.nii'))
 					if length(fSes)>1
 						jsonLocal.M0 = fullfile('perf',['sub-' subLabel sesLabelUnd]);
+						jsonLocal.M0Type = bidsPar.strM0Separate;
 						bJsonLocalM0isFile = 1;
 					else
 						jsonLocal.M0 = fullfile('perf',['sub-' subLabel sesLabelUnd]);
+						jsonLocal.M0Type = bidsPar.strM0Separate;
 						bJsonLocalM0isFile = 1;
 					end
 				else
 					if ~isempty(strfind(studyPar.ASLContext,bidsPar.strM0scan))
 						jsonLocal.M0 = true;
+						jsonLocal.M0Type = bidsPar.strM0Included;
 					else
 						jsonLocal.M0 = false;
+						jsonLocal.M0Type = bidsPar.strM0Absent;
 					end
 				end
 			else
 				if strcmpi(studyPar.M0,'UseControlAsM0')
-					jsonLocal.M0 = false;
+					jsonLocal.M0 = bidsPar.strM0Absent;
 				else
 					if strcmpi(studyPar.M0,'no_background_suppression')
-						jsonLocal.M0 = false;
+						jsonLocal.M0 = bidsPar.strM0Absent;
 					else
 						jsonLocal.M0 = studyPar.M0;
+						if isnumeric(studyPar.M0)
+							jsonLocal.M0Type = bidsPar.strM0Estimate;
+							jsonLocal.M0Estimate = studyPar.M0;
+						elseif xASL_exist(fullfile(inSesPath,'M0.nii'))
+							jsonLocal.M0Type = bidsPar.strM0Separate;
+						elseif ~isempty(strfind(studyPar.ASLContext,bidsPar.strM0scan))
+							jsonLocal.M0Type = bidsPar.strM0Included;
+						else
+							jsonLocal.M0Type = bidsPar.strM0Absent;
+						end
 					end
 				end
 			end
 			
 			% If Post-labeling delay or labeling duration is longer than 1, but shorter then number of volumes
 			% then repeat it
-			listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVenc','FlipAngle','RepetitionTime'};
+			listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVenc','FlipAngle','RepetitionTimePreparation'};
 			for iRepeat = 1:length(listFieldsRepeat)
 				if isfield(jsonLocal,(listFieldsRepeat{iRepeat})) && (length(jsonLocal.(listFieldsRepeat{iRepeat})) > 1) && (size(imNii,4) ~= length(jsonLocal.(listFieldsRepeat{iRepeat})))
 					if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
@@ -663,9 +688,9 @@ if bRunSubmodules(2)
 				end
 			end
 			
-			if isfield(studyPar,'RepetitionTime') && studyPar.RepetitionTime ~= jsonLocal.RepetitionTime
-				warning('User defined repetition time differs from DICOM, using user defined: %d vs %d \n',studyPar.RepetitionTime,jsonLocal.RepetitionTime);
-			end
+			%if isfield(studyPar,'RepetitionTime') && studyPar.RepetitionTime ~= jsonLocal.RepetitionTime
+			%	warning('User defined repetition time differs from DICOM, using user defined: %d vs %d \n',studyPar.RepetitionTime,jsonLocal.RepetitionTime);
+			%end
 			
 			% Reformat ASLcontext field
 			% Remove ',' and ';' at the 
@@ -778,9 +803,9 @@ if bRunSubmodules(2)
 						end
 						
 						if isfield(studyPar,'RepetitionTime')
-							jsonM0Write.RepetitionTime = studyPar.RepetitionTime;
+							jsonM0Write.RepetitionTimePreparation = studyPar.RepetitionTime;
 						else
-							jsonM0Write.RepetitionTime = jsonM0.RepetitionTime;
+							jsonM0Write.RepetitionTimePreparation = jsonM0.RepetitionTime;
 						end
 						
 						jsonM0Write.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
@@ -916,7 +941,7 @@ function [s, FieldNames] = AppendParmsParameters(parms)
 % This function outputs s=fields of _parms.mat
 s = [];
 
-FieldNames = {'RepetitionTime' 'EchoTime' 'NumberOfAverages' 'RescaleSlope' 'RescaleSlopeOriginal'...
+FieldNames = {'RepetitionTimePreparation' 'RepetitionTime' 'EchoTime' 'NumberOfAverages' 'RescaleSlope' 'RescaleSlopeOriginal'...
     'MRScaleSlope' 'RescaleIntercept' 'AcquisitionTime' 'AcquisitionMatrix' 'TotalReadoutTime'...
     'EffectiveEchoSpacing'};
 
