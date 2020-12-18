@@ -8,6 +8,14 @@ function [M0IM] = xASL_quant_M0(M0IM, x)
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 % OUTPUT:
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%                 assigns the following values:
+%                 x.M0_usesASLtiming - is 1 when the start of M0 readout is set to TR-labdur-PLD+slice*sliceTime for 2D
+%                                    - is 0 when the start of M0 readout is set to TR-slice*sliceTime for 2D
+%                                    - set to 1 for M0 within ASL, 0 for standalone
+%                 x.Q.TissueT1 - is set to 800 when missing
+%                 x.M0_GMScaleFactor - is set to 1 when missing
+%                 x.Q.PresaturationTime - when Bsup-M0 correction is on, and PreSat missing, then set to the start of the sequence
+%                 x.ApplyQuantification(4) - is set to 0 when BSup-M0 correction is done, because no further T1-relaxation compensation of M0 is necessary
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function quantifies the M0, except for the difference in voxel size
 % between the M0 and ASL source data (which is scaled in
@@ -281,13 +289,18 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
         fprintf('This assumes that a pre-saturation pulse has been played at the start of the sequence\n');
         switch x.Q.LabelingType
             case 'PASL'
-                x.Q.PresaturationTime = x.Q.Initial_PLD;
+                x.Q.PresaturationTime = 1;
             case {'CASL' ',PCASL'}
-                x.Q.PresaturationTime = x.Q.Initial_PLD+x.Q.LabelingDuration;
+                x.Q.PresaturationTime = 1;
             otherwise
                 warning('Unknown labeling strategy, we dont know the presaturation timing for this');
         end
-    end
+	end
+	
+	% For implementation reasons, let it start at 1 instead of 0
+	if x.Q.PresaturationTime < 1
+		x.Q.PresaturationTime = 1;
+	end
     
     % Initialize the figure
     FigureHandle = figure('visible','off');
@@ -360,7 +373,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
     
     if x.ApplyQuantification(4)==1
-        fprintf('Background suppression pulses have saturated the pseudo-M0 signal, no need for correcting incomplete T1 relaxation\n');
+        fprintf('Correction of the Background suppression of the pseudo-M0 signal has been done, no need for correcting the incomplete T1 relaxation\n');
         x.ApplyQuantification(4) = 0;
     end
     
