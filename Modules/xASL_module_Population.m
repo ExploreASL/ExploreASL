@@ -221,19 +221,11 @@ if ~x.mutex.HasState(StateName{8})
             x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
         end
         
-        % THIS DOES NOT SEEM TO BE CORRECT AND NEEDS TO BE FIXED
-        % Check if native space or not
-        %         if strcmp(x.S.Atlases{iAtlas},'HO_cortex') || strcmp(x.S.Atlases{iAtlas},'HO_subcortical')
-        %             % There seems to be a problem with the VascularMask
-        %             x.S.IsVolume = true;
-        %             x.S.InputDataStr = 'mrc1T1';
-        %         end
-        
         % ROI statistics (default: standard space)
         x.S.InputNativeSpace = 0;
         xASL_wrp_GetROIstatistics(x);
         % ROI statistics (optional: native space)
-        if x.bGetAtlasROIsInNativeSpace
+        if x.bNativeSpaceAnalysis
             x.S.InputNativeSpace = 1;
             x.S.InputAtlasNativeName = x.S.Atlases{iAtlas};
             xASL_wrp_GetROIstatistics(x);

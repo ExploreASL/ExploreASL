@@ -385,18 +385,6 @@ if isfield(x, 'MyPath')
     x.D.IdentityTransfRef   = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
     x.D.TemplateDir         = fullfile(x.MyPath, 'Maps', 'Templates');
     x.D.AtlasDir            = fullfile(x.MyPath, 'External', 'AtlasesNonCommercial');
-    x.P.Atlas.TotalGM           = fullfile(x.D.MapsSPMmodifiedDir, 'TotalGM.nii');
-    x.P.Atlas.DeepWM            = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
-    x.P.Atlas.WholeBrain        = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
-    x.P.Atlas.MNI               = fullfile(x.D.MapsSPMmodifiedDir, 'MNI_structural.nii');
-    x.P.Atlas.Hammers           = fullfile(x.D.AtlasDir, 'Hammers.nii');
-    x.P.Atlas.HO_cortex         = fullfile(x.D.AtlasDir, 'HOcort_CONN.nii');
-    x.P.Atlas.HO_subcortical    = fullfile(x.D.AtlasDir, 'HOsub_CONN.nii');
-    x.P.Atlas.Thalamus          = fullfile(x.D.AtlasDir, 'Thalamus.nii');
-    x.P.Atlas.Tatu_ACA_MCA_PCA  = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'CortVascTerritoriesTatu.nii.nii');
-    x.P.Atlas.Tatu_ICA_PCA      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii');
-    x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
-    x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
 else
     warning('MyPath field not defined...');
 end

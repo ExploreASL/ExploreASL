@@ -14,11 +14,12 @@ function [x] = xASL_init_FileSystem(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function initializes the file system used throughout ExploreASL, for processing a single dataset/scan.
 % It is repeated for each scan, and runs the following parts:
-% 1) Create folders
-% 2) Subject/session definitions
-% 3) Add prefixes & suffixes
-% 4) Add Subject-specific prefixes
-% 5) Add sidecars
+% 1. Create folders
+% 2. Subject/session definitions
+% 3. Add prefixes & suffixes
+% 4. Add Subject-specific prefixes
+% 5. Add sidecars
+% 6. Add atlas paths
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_init_FileSystem(x);
 % __________________________________
@@ -177,6 +178,22 @@ for iL=12:length(FieldList) % here we should remove the prefixes
         x.P.([FieldList{iL} CarSuf1{iS}]) = [x.P.(FieldList{iL})(1:end-4) CarSuf2{iS}];
     end
 end    
+
+
+%% ------------------------------------------------------------------------------------------
+%% 6) Add atlas paths
+x.P.Atlas.TotalGM                           = fullfile(x.D.MapsSPMmodifiedDir, 'TotalGM.nii');
+x.P.Atlas.DeepWM                            = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
+x.P.Atlas.WholeBrain                        = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
+x.P.Atlas.MNI                               = fullfile(x.D.MapsSPMmodifiedDir, 'MNI_structural.nii');
+x.P.Atlas.Hammers                           = fullfile(x.D.AtlasDir, 'Hammers.nii');
+x.P.Atlas.HO_cortex                         = fullfile(x.D.AtlasDir, 'HOcort_CONN.nii');
+x.P.Atlas.HO_subcortical                    = fullfile(x.D.AtlasDir, 'HOsub_CONN.nii');
+x.P.Atlas.Thalamus                          = fullfile(x.D.AtlasDir, 'Thalamus.nii');
+x.P.Atlas.Tatu_ACA_MCA_PCA                  = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'CortVascTerritoriesTatu.nii.nii');
+x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii');
+x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
+x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
 
 
 end
