@@ -59,15 +59,8 @@ if ~exist(DataParFile, 'file')
     error('DataParFile does not exist...');
 end
 
-% Get Matlab version
-VersionMatlab = version;
-% VersionMatlab = str2num(VersionMatlab(end-5:end-2));
-VersionMatlab = str2double(VersionMatlab(find(ismember(VersionMatlab,'('))+2:find(ismember(VersionMatlab,')'))-2)); % Year is between parentheses
-
-% Input has to be a character array
-if VersionMatlab>2015 && isstring(DataParFile) % isstring is introduced in 2016b
-    DataParFile = char(DataParFile);
-end
+% Input has to be a character array (we convert it everytime now, just to be sure)
+DataParFile = char(DataParFile);
 
 %% Decode JSON file
 jsonData = spm_jsonread(DataParFile);
@@ -99,122 +92,39 @@ for n=1:size(sFields,1)
             end
         end
     end
+    if ischar(x.(sFields{n})) % Make sure the field is a character array
+        if contains(x.(sFields{n}),'{') && contains(x.(sFields{n}),'}') % Automatically detect cell arrays (like the "Atlases" e.g.)
+            tempField = x.(sFields{n});
+            tempField = strsplit(tempField,',');
+            tempField = strrep(strrep(tempField,'{',''),'}','');
+            x.(sFields{n}) = strrep(tempField,'''','');
+        end
+    end
+    % Also look for cell arrays in sub structures (like the atlases in the S struct e.g.)
+    if isstruct(x.(sFields{n}))
+        sFieldsStruct = fieldnames(x.(sFields{n}));
+        for m=1:size(sFieldsStruct,1)
+            if ischar(x.(sFields{n}).(sFieldsStruct{m})) % Make sure the field is a character array
+                if contains(x.(sFields{n}).(sFieldsStruct{m}),'{') && contains(x.(sFields{n}).(sFieldsStruct{m}),'}') % Automatically detect cell arrays (like the "Atlases" e.g.)
+                    tempField = x.(sFields{n}).(sFieldsStruct{m});
+                    tempField = strsplit(tempField,',');
+                    tempField = strrep(strrep(tempField,'{',''),'}','');
+                    x.(sFields{n}).(sFieldsStruct{m}) = strrep(tempField,'''','');
+                end
+            end
+        end
+    end
 end
+
+
+
+
 
 %% Convert strings containing numbers to number
 x = ConvertNumericalFields(x);
 if isfield(x,'Q')
 	x.Q = ConvertNumericalFields(x.Q);
 end
-
-%% NEW BIDS VERSION, FUTURE USE
-%% elseif isfield(jsonData,'BIDSVersion')
-%     %% dataset_description file identified
-%     
-%     % Create x structure
-%     x = jsonData;
-%     
-%     % Get folder of dataset_description file
-%     [rootBIDS,~,~] = fileparts(DataParFile);
-%     if exist(rootBIDS,'dir')
-%         % Check if participants file exists
-%         if exist(fullfile(rootBIDS,'participants.tsv'),'file')
-%             participants = tdfread(fullfile(rootBIDS, 'participants.tsv'));
-%             % Check if the participants id field exists
-%             if isfield(participants,'participant_id')
-%                 % Get number of participants
-%                 numOfP = size(participants.participant_id,1);
-%                 partFieldNames = fieldnames(participants);
-%                 % Convert struct to struct array, so that you can access a
-%                 % participant by using: x.participant(n)
-%                 for n=1:numOfP
-%                     % Go trough all fields
-%                     for m=1:length(partFieldNames)
-%                         % Assign field to new struct
-%                         x.participant(n).(partFieldNames{m})=participants.(partFieldNames{m})(n,:);
-%                     end
-%                 end
-%             end
-%         end
-%         % Get task list
-%         x.taskList = dir(fullfile(rootBIDS, 'task*.json'));
-%         
-%         % Check participants
-%         if isfield(x,'participant')
-%             % Get number of participants
-%             numOfP = size(participants.participant_id,1);
-%             % Iterate over participants
-%             for n=1:numOfP
-%                 % Get current participant id
-%                 curID = x.participant(n).participant_id;
-%                 % Check if corresponding folder exists
-%                 if exist(fullfile(rootBIDS,string(curID)),'dir')
-%                     % Subject file
-%                     subFile = dir(fullfile(rootBIDS,string(curID),'*.tsv'));
-%                     % Get session tsv file
-%                     if exist(fullfile(subFile.folder,subFile.name),'file')
-%                         % Display current participant
-%                         disp('----------------------------------------------------------------------------------')
-%                         xFieldNames = fieldnames(x.participant);
-%                         for r=1:length(xFieldNames)
-%                             if strcmp(xFieldNames{r},'participant_id')
-%                                 fprintf('Participant:\t\t\t\t\t%s\n',string(x.participant(n).(xFieldNames{r})));
-%                             elseif ~contains(xFieldNames{r},'session')
-%                                 fprintf('%s:\t\t\t\t\t\t\t%s\n',xFieldNames{r},string(x.participant(n).(xFieldNames{r})));
-%                             end
-%                         end
-%                         % Load the current session information
-%                         tmpSubject = tdfread(fullfile(subFile.folder,subFile.name));
-%                         fieldNames = fieldnames(tmpSubject);
-%                         % Create Session Sub Structure
-%                         numOfSessions = numel(fieldnames(tmpSubject));
-%                         x.participant(n).session(1:numOfSessions)=struct;
-%                         % Add Fields to Sub Structure
-%                         for m=1:numOfSessions
-%                             for p=1:length(fieldNames)
-%                                 x.participant(n).session(m).(fieldNames{p})=tmpSubject.(fieldNames{p})(m,:);
-%                             end
-%                         end
-%                         % Add Session Fields
-%                         for m=1:size(x.participant(n).session,2)
-%                             % Add path
-%                             x.participant(n).session(m).path = fullfile(subFile.folder,x.participant(n).session(m).session_id);
-%                             % Load the specific session information
-%                             tableDir = dir(fullfile(x.participant(n).session(m).path,'*.tsv'));
-%                             specSession = tdfread(fullfile(tableDir.folder,tableDir.name));
-%                             specFieldNames = fieldnames(specSession);
-%                             % Create Session Sub Structure
-%                             numOfFields = numel(fieldnames(specSession));
-%                             % Add Fields to Sub Structure
-%                             for p=1:numOfFields
-%                                 x.participant(n).session(m).(specFieldNames{p})=specSession.(specFieldNames{p});
-%                             end
-%                             % Display Session
-%                             fprintf('Session:\t\t\t\t\t\t%s\n',x.participant(n).session(m).session_id);
-%                             if isfield(x.participant(n).session(m),'filename')
-%                                 for rx=1:size(x.participant(n).session(m).filename,1)
-%                                     fprintf('File:\t\t\t\t\t\t\t%s\n',x.participant(n).session(m).filename(rx,:));
-%                                 end
-%                             end
-%                         end
-%                     end
-%                 end
-%             end
-%         end      
-%         
-%         % End
-%         disp('----------------------------------------------------------------------------------')
-%                 
-%         % Work in progress ...
-%         disp('Work in progress...')
-%         pause;
-%     end
-%     
-%     
-% else
-%     disp('Neither the old nor the new standard was used...');
-% end
-
 
 end
 

@@ -621,17 +621,7 @@ if ~isfield(x,'Q')
 end
 
 % Default & Fallback for Atlases
-if isfield(x.S,'Atlases')
-    if ~iscell(x.S.Atlases) % Don't change definition if already cell array
-        try % WE COULD SKIP THIS IF WE FIX THIS IN THE JSON READER
-            tempAtlases = strsplit(x.S.Atlases,',');
-            tempAtlases = strrep(strrep(tempAtlases,'{',''),'}','');
-            x.S.Atlases = strrep(tempAtlases,'''','');
-        catch
-            x.S.Atlases = {'TotalGM','DeepWM'}; % Fallback
-        end
-    end
-else
+if ~isfield(x.S,'Atlases')
     x.S.Atlases = {'TotalGM','DeepWM'}; % Default
 end
 
