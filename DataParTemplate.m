@@ -153,6 +153,7 @@ function x = DataParTemplate(x)
 %                         - ASL4D is an already quantified CBF image, disable all quantification '[0 0 0 0 0]'
 %                         - To compare label but not CBF (e.g. label in vessels or sinus vs tissue): '[1 1 1 1 0]''
 %                       - Note that the output always goes to CBF.nii
+% x.Q.SaveCBF4D - boolean, true to also save 4D CBF timeseries, if ASL4D had timeseries (OPTIONAL, DEFAULT=false)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % PROCESSING PARAMETERS

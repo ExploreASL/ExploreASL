@@ -8,7 +8,7 @@ function xASL_wrp_ResampleASL(x)
 %   x  - structure containing fields with all information required to run this submodule (REQUIRED)
 %
 % OUTPUT:
-% OUTPUT FILES: NIfTIs in standard space
+% OUTPUT FILES: NIfTIs in native & standard space
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule resamples native space NIfTIs to standard space, using the deformation fields computed in the structural module
@@ -16,15 +16,18 @@ function xASL_wrp_ResampleASL(x)
 %              The applied interpolation is a combination of all transformations (e.g. motion correction, registration to
 %              T1w, and transformation of T1w to standard space. This submodule performs the following steps:
 %
-%   1.    Create slice gradient image for quantification reference, in case of 2D ASL
-%   2.    Reslice ASL time series to MNI space (currently 1.5 mm^3)
-%   3.    Create mean control image, if available
-%         This also applies a bilateral filter, if requested
-%         If x.M0 is set as UseControlAsM0, this mean control NIfTI will be
-%         copied to an M0 NIfTI (and processed in the M0 submodule)
-%   4.    Perform pair-wise subtraction (to create PWI.nii), in native space
-%   5.    Same in standard space
-%   6.    Save PWI NIfTI & time-series-related maps (SD, SNR)
+%               0. Administration   
+%               1. Warp TopUp QC files
+%               2. Create slice gradient image for quantification reference, in case of 2D ASL
+%               3. Resample ASL time series to MNI space
+%               4. Resample to native space (applying any motion correction or registration)
+%               5. Bilateral filter (currently disabled)
+%               6. Create mean control image, if available, in native & standard space
+%               7. Clone mean control image to be used as pseudo-M0 (if x.M0==UseControlAsM0)
+%               8. Pair-wise subtraction & saving PWI & PWI4D in both spaces
+%               9. Save PWI NIfTI & time-series-related maps (SD, SNR)
+%               10. Delete temporary files
+%               11. Report spatial CoV as QC
 %
 % EXAMPLE: xASL_wrp_ResampleASL(x);
 % __________________________________
@@ -33,27 +36,21 @@ function xASL_wrp_ResampleASL(x)
 
 
 %% ------------------------------------------------------------------------------------------
-%% 0) Administration
-if strcmpi(x.M0,'no_background_suppression')
-    x.M0 = 'UseControlAsM0'; % backward compatibility
-end
+% 0. Administration
 
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
-if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
+if ~xASL_exist(x.P.Path_despiked_ASL4D, 'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
-tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
-nVolumes = double(tempnii.hdr.dim(5));
-
-if ~isfield(x,'SavePWI4D')
-    x.SavePWI4D   = 0;
-end
+tempnii = xASL_io_Nifti2Im(x.P.Path_despiked_ASL4D);
+nVolumes = size(tempnii, 4);
 
 xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
 
-%% TopUp files
+%% ------------------------------------------------------------------------------------------
+% 1. Warp TopUp QC files
 PathB0 = fullfile(x.SESSIONDIR ,'B0.nii');
 PathUnwarped = fullfile(x.SESSIONDIR ,'Unwarped.nii');
 PathPopB0 = fullfile(x.D.PopDir, ['rASL_B0_' x.P.SubjectID '_' x.P.SessionID '.nii']);
@@ -64,174 +61,200 @@ OutputPaths = {PathPopB0, PathPopUnwarped};
 xASL_spm_deformations(x, InputPaths, OutputPaths, [], [], [], x.P.Path_y_ASL);
 
 %% ------------------------------------------------------------------------------------------
-%% 1    Create slice gradient image for quantification reference, in case of 2D ASL
+% 2. Create slice gradient image for quantification reference, in case of 2D ASL
 xASL_im_CreateSliceGradient(x);
 
 
 %% ------------------------------------------------------------------------------------------
-%% 2    Reslice ASL time series to MNI space (currently 1.5 mm^3)
+% 3. Resample ASL time series to MNI space (currently 1.5 mm^3)
 fprintf('%s\n','Convert ASL time series to single precision');
-xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_temp_despiked_ASL4D, tempnii.dat(:,:,:,:),32,0);
-
 % Convertion to single precision for precious data, to avoid
 % digitization artifacts in the spatial processing
-% Plus this creates a temporary copy to not touch the original ASL file
+xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_despiked_ASL4D, tempnii, 32, 0);
 
+% Resample to standard space
 if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % BACKWARDS COMPATIBILITY, AND NOW NEEDED ALSO WHEN DCT APPLIED ON TOP OF AFFINE
     AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
 else
     AffineTransfPath = [];
 end
 
-xASL_spm_deformations(x, x.P.Path_temp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, 4, [], AffineTransfPath, x.P.Path_y_ASL);
+xASL_spm_deformations(x, x.P.Path_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, 4, [], AffineTransfPath, x.P.Path_y_ASL);
 
 
 %% ------------------------------------------------------------------------------------------
-%% 3    Create mean control image, if available
-%       This also applies a bilateral filter, if requested
-%       If x.M0 is set as UseControlAsM0, this mean control NIfTI will be
-%       copied to an M0 NIfTI (and processed in the M0 submodule)
-if  nVolumes>1 % this is when a mean control image can be created
-
-    %% First create SD and SNR images for control series, to use for QC
-
+% 4. Resample to native space (applying any motion correction or registration)
+if nVolumes>1
     for iS=1:nVolumes
         matlabbatch{1}.spm.spatial.realign.write.data{iS,1} = [x.P.Path_despiked_ASL4D ',' num2str(iS)];
     end
 
     matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
-    matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 2;
+    matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 4;
     matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
     matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
     matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
 
     spm_jobman('run',matlabbatch); % this applies the motion correction in native space
+    
+    [Fpath, Ffile] = xASL_fileparts(x.P.Path_despiked_ASL4D);
+    x.P.Path_rdespiked_ASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
+else
+    x.P.Path_rdespiked_ASL4D = x.P.Path_despiked_ASL4D;
+end
 
-    if ~xASL_exist(x.P.Path_rdespiked_ASL4D,'file')
-        [Fpath, Ffile, Fext]        = xASL_fileparts(x.P.Path_despiked_ASL4D);
-        x.P.Path_rdespiked_ASL4D    = fullfile(Fpath,['r' Ffile Fext]);
+
+%% ------------------------------------------------------------------------------------------
+% 5. Bilateral filter (currently disabled)
+    if x.BILAT_FILTER>0
+        warning('The bilateral filter is currently disabled, as it needs more testing');
     end
+%     %% ------------------------------------------------------------------------------------------
+%     %% Bilateral filter to remove smooth artifacts
+%     if ~isdeployed % skip this part for compilation, to avoid DIP image issues
+%         if  x.BILAT_FILTER>0 && nVolumes>9
+%             volIM = xASL_io_ReadNifti(x.P.Path_rtemp_despiked_ASL4D); % load resliced time-series
+%             VoxelSize = double(volIM.hdr.pixdim(2:4));
+%             volIM = single(volIM.dat(:,:,:,:,:,:,:,:));
+% 
+%             mask = x.skull; % get standard space mask
+%             mask(isnan(mean(volIM,4))) = 0; % remove outside FoV voxels
+%             ovol = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x); % run filter
+% 
+%             xASL_io_SaveNifti( x.P.Path_rtemp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, ovol,32,0 ); % store in file
+%         end
+%     end
 
 
-    %% ------------------------------------------------------------------------------------------
-    %% Bilateral filter to remove smooth artifacts
-    if ~isdeployed % skip this part for compilation, to avoid DIP image issues
-        if  x.BILAT_FILTER>0 && nVolumes>9
-            volIM = xASL_io_ReadNifti(x.P.Path_rtemp_despiked_ASL4D); % load resliced time-series
-            VoxelSize = double(volIM.hdr.pixdim(2:4));
-            volIM = single(volIM.dat(:,:,:,:,:,:,:,:));
 
-            mask = x.skull; % get standard space mask
-            mask(isnan(mean(volIM,4))) = 0; % remove outside FoV voxels
-            ovol = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x); % run filter
-
-            xASL_io_SaveNifti( x.P.Path_rtemp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, ovol,32,0 ); % store in file
-        end
-    end
-
+%% ------------------------------------------------------------------------------------------
+% 6. Create mean control image, if available, in native & standard space
+if  nVolumes>1    
+    % Create mean control in native space
     ControlIm = xASL_quant_GetControlLabelOrder(xASL_io_Nifti2Im(x.P.Path_rdespiked_ASL4D));
-    IM_mean = xASL_stat_MeanNan(ControlIm,4);
+    IM_mean = xASL_stat_MeanNan(ControlIm, 4);
     xASL_io_SaveNifti(x.P.Path_rdespiked_ASL4D, x.P.Path_mean_control, IM_mean, [], 0);
 
-    InputFiles  = {x.P.Path_mean_control};
-    OutputFiles = {x.P.Pop_Path_mean_control};
-
+    % Transform mean control to standard space
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
         AffineTransfPath = [];
     end
 
-    xASL_spm_deformations(x, InputFiles, OutputFiles, [], [], AffineTransfPath, x.P.Path_y_ASL);
-
-    xASL_adm_DeleteFilePair(x.P.Path_SD_control, 'mat');
-    xASL_adm_DeleteFilePair(x.P.Path_SNR_control, 'mat');
-    xASL_adm_DeleteFilePair(x.P.Path_rdespiked_ASL4D, 'mat');
-
+    xASL_spm_deformations(x, {x.P.Path_mean_control}, {x.P.Pop_Path_mean_control}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+    
     % Visual check of M0-pGM registration for masking
     xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_mean_control x.P.Pop_Path_rc1T1}, x.D.M0regASLdir,[0.5 0.2]);
-
-    if strcmpi(x.M0,'UseControlAsM0') && nVolumes==1
-        warning('Couldnt create mean control image to be used as M0, timeseries missing');
-    end
-
-    if  strcmpi(x.M0,'UseControlAsM0')
-        % if there is no background suppression, we use the mean control
-        % image as M0 image, which has perfect registration
-
-        if  xASL_exist(x.P.Path_M0,'file') && ~xASL_exist(x.P.Path_M0_backup,'file')
-            % Backup M0, if not already performed in previous run
-            xASL_Copy(x.P.Path_M0,x.P.Path_M0_backup);
-        end
-        if  exist(x.P.Path_M0_parms_mat,'file') && ~exist(x.P.Path_M0_backup_parms_mat,'file')
-            % Same for the parms file
-            xASL_Copy(x.P.Path_M0_parms_mat,x.P.Path_M0_backup_parms_mat);
-        end
-
-        xASL_Copy(x.P.Path_mean_control, x.P.Path_M0,1); % overwrite M0 in case of previous processing
-        if exist(x.P.Path_ASL4D_parms_mat,'file')
-            xASL_Copy(x.P.Path_ASL4D_parms_mat, x.P.Path_M0_parms_mat,1);
-        end
-        if exist(x.P.Path_ASL4D_json,'file')
-            xASL_Copy(x.P.Path_ASL4D_json, x.P.Path_M0_json,1);
-        end
-        fprintf('%s\n','Copying mean control image, for use as M0');
-    end
-
 else
-    fprintf('%s\n','Creation mean control image was skipped, because there was only 1 frame');
+    fprintf('%s\n', 'Creation mean control image was skipped, because there was only 1 volume');
 end
 
 
 %% ------------------------------------------------------------------------------------------
-%% 4    Pair-wise subtraction native space
-% Load ASL time series (after being pre-processed)
-ASL_im = xASL_io_Nifti2Im(x.P.Path_temp_despiked_ASL4D); % Load time-series nifti
-dim4 = size(ASL_im,4);
+% 7. Clone mean control image to be used as pseudo-M0 (if x.M0==UseControlAsM0)
 
-if dim4>1 && round(dim4/2)==dim4/2 && dim4==nVolumes
-    % if has an even time series, same length as before (not changed by filter)
-    % do a paired subtraction
-    [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
-    ASL_im = ControlIm - LabelIm;
-    xASL_io_SaveNifti(x.P.Path_temp_despiked_ASL4D, x.P.Path_PWI, xASL_stat_MeanNan(ASL_im, 4), [], false);
+% If x.M0 is set as UseControlAsM0, this mean control NIfTI will be
+% cloned to an M0 NIfTI (and processed in the M0 submodule)
+if strcmpi(x.M0, 'UseControlAsM0')
+    if nVolumes==1
+        warning('Cant clone mean control NIfTI as M0.nii, timeseries missing');
+        % we assume that a single ASL image is already subtracted, so does not
+        % contain control (== raw image) information (e.g. GE 3D spiral)            
+    elseif ~xASL_exist(x.P.Path_mean_control)
+        error('Cant clone mean control NIfTI as M0.nii, NIfTI missing. Something went wrong earlier in this function');
+    else
+        % Here we clone the mean control image as M0 image, which has perfect registration with PWI
+        % Clone the M0, overwrite in case of previous processing            
+        fprintf('%s\n','Cloning mean control image for use as M0 (overwriting if needed)');
+        fprintf('%s\n',[x.P.Path_mean_control '->' x.P.Path_M0]);
 
-    if x.SavePWI4D % option to store subtracted time-series (PWI4D)
-        xASL_io_SaveNifti(x.P.Path_temp_despiked_ASL4D, x.P.Path_PWI4D, ASL_im, 32, false);
-        xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PWI4D, [], [], x.Quality, x.P.Path_PWI4D);
+        % First backup any pre-existing M0, if it is not already performed in previous run
+        if xASL_exist(x.P.Path_M0, 'file')
+            fprintf('%s\n\', ['Pre-existing M0 NIfTI detected: ' x.P.Path_M0]);
+
+            if ~xASL_exist(x.P.Path_M0_backup, 'file')
+                fprintf('%s\n', ['Backing up ' x.P.Path_M0 ' to ' x.P.Path_M0_backup]);
+                xASL_Move(x.P.Path_M0, x.P.Path_M0_backup);
+            else
+                fprintf('%s\n', ['Not backing this up, backup already existed:' x.P.Path_M0_backup]);
+            end
+        end
+
+        % Do the same for the JSON sidecar & legacy parms.mat
+        if exist(x.P.Path_M0_parms_mat, 'file') && ~exist(x.P.Path_M0_backup_parms_mat, 'file')
+            xASL_Move(x.P.Path_M0_json, x.P.Path_M0_backup_json);
+        end
+        if exist(x.P.Path_M0_parms_mat, 'file') && ~exist(x.P.Path_M0_backup_parms_mat, 'file')
+            xASL_Move(x.P.Path_M0_parms_mat, x.P.Path_M0_backup_parms_mat);
+        end
+
+        xASL_Copy(x.P.Path_mean_control, x.P.Path_M0, true);
+        % Do the same for the JSON sidecar & legacy parms.mat
+        if exist(x.P.Path_ASL4D_json, 'file')
+            xASL_Copy(x.P.Path_ASL4D_json, x.P.Path_M0_json, true);
+        end
+        if exist(x.P.Path_ASL4D_parms_mat, 'file')
+            xASL_Copy(x.P.Path_ASL4D_parms_mat, x.P.Path_M0_parms_mat, true);
+        end
     end
-elseif dim4 == 1
-    xASL_io_SaveNifti(x.P.Path_temp_despiked_ASL4D, x.P.Path_PWI, ASL_im, [], false);
 end
 
 
 %% ------------------------------------------------------------------------------------------
-%% 5    Pair-wise subtraction standard space
+% 8. Pair-wise subtraction & saving PWI & PWI4D in both spaces
 % Load ASL time series (after being pre-processed)
-ASL_im = xASL_io_Nifti2Im(x.P.Path_rtemp_despiked_ASL4D); % Load time-series nifti
-dim4 = size(ASL_im,4);
+StringSpaceIs = {'native' 'standard'};
+PathASL = {x.P.Path_rdespiked_ASL4D x.P.Path_rtemp_despiked_ASL4D};
+PathPWI = {x.P.Path_PWI x.P.Pop_Path_PWI};
+PathPWI4D = {x.P.Path_PWI4D x.P.Pop_Path_PWI4D};
 
-if dim4>1 && round(dim4/2)==dim4/2 && dim4==nVolumes
-    % if has an even time series, same length as before (not changed by filter)
-    % do a paired subtraction
-    [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
-    ASL_im = ControlIm - LabelIm;
+for iSpace=1:2
+    fprintf('%s\n', ['Saving in ' StringSpaceIs{iSpace} ' space:']);
+    
+    ASL_im = xASL_io_Nifti2Im(PathASL{iSpace}); % Load time-series nifti
+    dim4 = size(ASL_im, 4);
 
-    if x.SavePWI4D % option to store subtracted time-series (PWI4D)
-        xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Pop_Path_PWI4D, ASL_im,32, false);
+    if dim4==1
+        % Apparently, subtraction was already done on the scanner/reconstruction
+        fprintf('%s\n', PathPWI{iSpace});
+        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, ASL_im, 32, false);
+    elseif round(dim4/2)~=dim4/2
+        warning('Odd number of control-label pairs, skipping');
+        return;
+    else    
+        % Paired subtraction
+        [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
+        ASL_im = ControlIm - LabelIm;
+        % Save PWI4D
+        fprintf('%s', [PathPWI4D{iSpace} ', ']);
+        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
+        % Average PWI
+        PWI = xASL_stat_MeanNan(ASL_im, 4);
+        % Save PWI
+        fprintf('%s\n', PathPWI{iSpace});
+        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI, 32, false);
     end
 end
 
 
 %% ------------------------------------------------------------------------------------------
-% 6    Save PWI NIfTI & time-series-related maps (SD, SNR)
-PWI = xASL_stat_MeanNan(ASL_im,4);
+% 9. Save PWI NIfTI & time-series-related maps (SD, SNR)
 MaskIM = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rgrey.nii'));
 MaskIM = MaskIM>(0.7*max(MaskIM(:)));
+PWI = xASL_stat_MeanNan(ASL_im, 4); % repeat this here, in case it is skipped above for single volumes (e.g. GE 3D spiral)
 
-CoV0 = xASL_stat_ComputeSpatialCoV(PWI,MaskIM)*100;
+if size(ASL_im, 4)>3
+    % Save SD & SNR maps
+    SD = xASL_stat_StdNan(ASL_im, 0, 4);
+    SNR = PWI./SD;
+    SNR(SNR<0) = 0; % clip @ zero    
+    
+    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Pop_Path_SD, SD ,[], 0);
+    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Pop_Path_SNR, SNR, [], 0);
+    fprintf('%s\n','Standard space SD & SNR saved, & part1 & part2 for reproducibility');
 
-if  size(ASL_im,4)>1
+    
     % Calculate two halves, for reproducibility (wsCV) CBF & spatial CoV
     HalfVol                         = round(size(ASL_im,4)/2);
     Part1                           = xASL_stat_MeanNan(ASL_im(:,:,:,1:HalfVol),4);
@@ -250,31 +273,33 @@ if  size(ASL_im,4)>1
 
     fprintf('%s\n',['pGM>0.7: wsCV mean CBF = ' num2str(wsCV_mean,3) '%, wsCV spatial CoV = ' num2str(wsCV_CoV,3) '%'])
 
-    new_SD                          = xASL_stat_StdNan( ASL_im,0,4);
-    new_SNR                         = PWI./new_SD;
-    new_SNR(new_SNR<0)              = 0; % clip @ zero
-
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.PopDir,['PWI_part1_'  x.P.SubjectID '_' x.P.SessionID '.nii']),Part1,32);
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.PopDir,['PWI_part2_'  x.P.SubjectID '_' x.P.SessionID '.nii']),Part2,32);
-
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,x.P.Pop_Path_SD ,new_SD ,32,0);
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,x.P.Pop_Path_SNR,new_SNR,32,0);
-    fprintf('%s\n','Standard space timeseries-related images saved (SD & SNR), & part1 & part2 for reproducibility');
+    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.PopDir,['PWI_part1_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part1, 32);
+    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.PopDir,['PWI_part2_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part2, 32);
+    fprintf('%s\n','Also saved part1 & part2 for reproducibility');
+    
 else
-    fprintf('%s\n',['Standard space SD & SNR maps were not created because of only ' num2str(size(ASL_im,4)) ' frame(s)']);
+    fprintf('%s\n',['Standard space SD, SNR & reproducibility part1 & part2 maps were skipped, had only ' num2str(size(ASL_im,4)) ' volumes(s)']);
 end
 
-xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Pop_Path_PWI ,PWI,32, 0); % single precision for better precision
 
-if  x.DELETETEMP
+%% ------------------------------------------------------------------------------------------
+% 10. Delete temporary files
+if x.DELETETEMP
+    if ~strcmp(x.P.Path_ASL4D, x.P.Path_rdespiked_ASL4D)
+        % in case of single volumes, these can be set to the same NIfTI
+        xASL_adm_DeleteFilePair(x.P.Path_rdespiked_ASL4D, 'mat');
+    end
     xASL_delete(x.P.Path_rtemp_despiked_ASL4D);
-    xASL_adm_DeleteFilePair( x.P.Path_temp_despiked_ASL4D, 'mat');
+    xASL_adm_DeleteFilePair(x.P.Path_temp_despiked_ASL4D, 'mat');
 else
     xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, ASL_im, 32);
 end
 
 
-fprintf('%s\n','Standard space PWI maps saved');
-fprintf('%s\n',['Spatial CoV pGM>0.7 = ' num2str(CoV0,3) '%']);
+%% ------------------------------------------------------------------------------------------
+% 11. Report spatial CoV as QC
+CoV0 = xASL_stat_ComputeSpatialCoV(PWI, MaskIM)*100;
+fprintf('%s\n',['Standard space spatial CoV pGM>0.7 = ' num2str(CoV0,3) '%']);
+
 
 end
