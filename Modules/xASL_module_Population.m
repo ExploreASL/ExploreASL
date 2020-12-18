@@ -213,19 +213,6 @@ if ~x.mutex.HasState(StateName{8})
     x.S.InputDataStr = 'qCBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
 	x.S.InputDataStrNative = 'CBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
     
-    x.P.Atlas.TotalGM = fullfile(x.D.MapsSPMmodifiedDir, 'TotalGM.nii');
-    x.P.Atlas.DeepWM = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
-    x.P.Atlas.WholeBrain = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
-    x.P.Atlas.MNI = fullfile(x.D.MapsSPMmodifiedDir, 'MNI_structural.nii');
-    x.P.Atlas.Hammers = fullfile(x.D.AtlasDir, 'Hammers.nii');
-    x.P.Atlas.HO_cortex = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
-    x.P.Atlas.HO_subcortical = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
-    x.P.Atlas.Thalamus = fullfile(x.D.AtlasDir, 'Thalamus.nii');
-    x.P.Atlas.Tatu_ACA_MCA_PCA = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'CortVascTerritoriesTatu.nii.nii');
-    x.P.Atlas.Tatu_ICA_PCA = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii');
-    x.P.Atlas.Tatu_ICA_L_ICA_R_PCA = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
-    x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
-    
     % Iterate over atlases
     for iAtlas=1:length(x.S.Atlases)        
         

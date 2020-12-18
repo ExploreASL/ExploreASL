@@ -385,6 +385,18 @@ if isfield(x, 'MyPath')
     x.D.IdentityTransfRef   = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
     x.D.TemplateDir         = fullfile(x.MyPath, 'Maps', 'Templates');
     x.D.AtlasDir            = fullfile(x.MyPath, 'External', 'AtlasesNonCommercial');
+    x.P.Atlas.TotalGM           = fullfile(x.D.MapsSPMmodifiedDir, 'TotalGM.nii');
+    x.P.Atlas.DeepWM            = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
+    x.P.Atlas.WholeBrain        = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
+    x.P.Atlas.MNI               = fullfile(x.D.MapsSPMmodifiedDir, 'MNI_structural.nii');
+    x.P.Atlas.Hammers           = fullfile(x.D.AtlasDir, 'Hammers.nii');
+    x.P.Atlas.HO_cortex         = fullfile(x.D.AtlasDir, 'HOcort_CONN.nii');
+    x.P.Atlas.HO_subcortical    = fullfile(x.D.AtlasDir, 'HOsub_CONN.nii');
+    x.P.Atlas.Thalamus          = fullfile(x.D.AtlasDir, 'Thalamus.nii');
+    x.P.Atlas.Tatu_ACA_MCA_PCA  = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'CortVascTerritoriesTatu.nii.nii');
+    x.P.Atlas.Tatu_ICA_PCA      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii');
+    x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
+    x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
 else
     warning('MyPath field not defined...');
 end
@@ -420,7 +432,7 @@ if and(isfield(x.D, 'ROOT'), isfield(x, 'ProcessData'))
         x.D.TTCheckDir          = fullfile(x.D.PopDir, 'ATT_Check');
         x.D.TemplatesStudyDir   = fullfile(x.D.PopDir, 'Templates');
 
-        % ANALYZE module
+        % POPULATION module
         x.SpaghettiDir          = fullfile(x.D.PopDir, 'SpaghettiPlots');
         x.S.StatsDir            = fullfile(x.D.PopDir, 'Stats');
         x.HistogramDir          = fullfile(x.D.PopDir, 'Histograms');
@@ -538,21 +550,6 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
 		end
     end
     
-    % Get atlases
-    if isfield(x.S,'Atlases')
-        if ~iscell(x.S.Atlases) % dont change definition if already cell array
-            try
-                tempAtlases = strsplit(x.S.Atlases,',');
-                tempAtlases = strrep(strrep(tempAtlases,'{',''),'}','');
-                x.S.Atlases = strrep(tempAtlases,'''','');
-            catch
-                x.S.Atlases = {'TotalGM','DeepWM'}; % fallback
-            end
-        end
-    else
-        x.S.Atlases = {'TotalGM','DeepWM'}; % default
-    end
-    
     % THIS SEEMS TO BE INCORRECT AND NEEDS TO BE FIXED
     % Print out warning if atlases were selected which need susceptibility masking
     %     if sum(ismember(x.S.Atlases,'HO_cortex')) || sum(ismember(x.S.Atlases,'HO_subcortical'))
@@ -621,6 +618,21 @@ end
 
 if ~isfield(x,'Q')
     x.Q = struct;
+end
+
+% Default & Fallback for Atlases
+if isfield(x.S,'Atlases')
+    if ~iscell(x.S.Atlases) % Don't change definition if already cell array
+        try % WE COULD SKIP THIS IF WE FIX THIS IN THE JSON READER
+            tempAtlases = strsplit(x.S.Atlases,',');
+            tempAtlases = strrep(strrep(tempAtlases,'{',''),'}','');
+            x.S.Atlases = strrep(tempAtlases,'''','');
+        catch
+            x.S.Atlases = {'TotalGM','DeepWM'}; % Fallback
+        end
+    end
+else
+    x.S.Atlases = {'TotalGM','DeepWM'}; % Default
 end
 
 x = xASL_init_DefinePaths(x);
