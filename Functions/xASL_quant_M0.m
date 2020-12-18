@@ -296,17 +296,27 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
                 warning('Unknown labeling strategy, we dont know the presaturation timing for this');
         end
 	end
-	
-	% For implementation reasons, let it start at 1 instead of 0
-	if x.Q.PresaturationTime < 1
-		x.Q.PresaturationTime = 1;
+	   
+	switch x.Q.LabelingType
+		case 'PASL'
+			if isfield(x.Q,'PostLabelingDelay')
+				ReadoutTime = x.Q.PostLabelingDelay;
+			else
+				ReadoutTime = x.PostLabelingDelay;
+			end
+		case {'CASL' ',PCASL'}
+			if isfield(x.Q,'PostLabelingDelay')
+				ReadoutTime = x.Q.PostLabelingDelay + x.Q.LabelingDuration;
+			else
+				ReadoutTime = x.PostLabelingDelay + x.LabelingDuration;
+			end
 	end
-    
+	
     % Initialize the figure
     FigureHandle = figure('visible','off');
     subplot(2, 2, 1);
     
-    SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceTime, x.D.M0CheckDir, 1));
+    SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, ReadoutTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceTime, x.D.M0CheckDir, 1));
     
     %% Obtain the slice-wise median Control signal before correction
     % First create a reasonable mask
