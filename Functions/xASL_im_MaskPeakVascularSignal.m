@@ -76,7 +76,7 @@ else
 		M0_im = 1;
 	else
 		M0_im = xASL_io_Nifti2Im(Path_M0); % allow both a path or image matrix
-		if ~(min(size(PWI)==size(M0_im))) % if CBF & M0 images arent the same size (which is why rM0 should be the input path in case of different sizes)
+		if ~(min(size(PWI)==size(M0_im))) % if PWI & M0 images arent the same size (which is why rM0 should be the input path in case of different sizes)
 			warning('M0 & CBF images differed in size, using CBF image only');
 			M0_im = 1;
 		elseif xASL_stat_SumNan(M0_im(:))==0
