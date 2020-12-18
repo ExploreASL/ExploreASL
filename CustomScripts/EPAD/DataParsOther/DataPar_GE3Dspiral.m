@@ -9,7 +9,7 @@ x.subject_regexp     = '^060-\d{5}$';
 
 % list parameters here
 x.M0 				    = 'separate_scan';
-x.Q.BackGrSupprPulses = 5;
+x.Q.BackgroundSuppressionNumberPulses = 5;
 x.readout_dim          = '3D'; % 2D or 3D
 x.Quality              = 1; % 1 = normal, 0 = low for fast try-out
 

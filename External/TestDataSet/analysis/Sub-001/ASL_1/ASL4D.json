@@ -35,7 +35,7 @@
 "readout_dim":"2D",
 "Vendor":"Philips",
 "bReproTesting":0,
-"Q":{"BackGrSupprPulses":2,
+"Q":{"BackgroundSuppressionNumberPulses":2,
 "LabelingType":"CASL",
 "InitialPostLabelDelay":2.025,
 "LabelingDuration":1.650,

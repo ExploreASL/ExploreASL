@@ -90,12 +90,21 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % SEQUENCE PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.Q.BackGrSupprPulses - used to estimate decrease of labeling efficiency (REQUIRED)
+% x.Q.BackgroundSuppressionNumberPulses - used to estimate decrease of labeling efficiency (REQUIRED)
 %                       - options:
 %                         - 0 = (no background suppression)
 %                         - 2 = labeling efficiency factor 0.83 (e.g. Philips 2D EPI & Siemens 3D GRASE)
 %                         - 4 = labeling efficiency factor 0.81 (e.g. Philips 3D GRASE)
 %                         - 5 = labeling efficiency factor 0.75 (e.g. GE 3D spiral)
+% x.Q.BackgroundSuppressionPulseTime - Vector containing timing, in seconds, 
+%                                      of the background suppression pulses
+%                                      before the start of the readout (per
+%                                      BIDS) (REQUIRED when
+%                                      x.Q.UseControlAsM0 &
+%                                      x.Q.BackgroundSuppressionNumberPulses>0)
+% x.Q.PresaturationTime - time in ms before the start of the readout, scalar, when the slice has been saturated (90 degree flip)
+%                    this has to come before all the bSup pulses, but doesn't need to be always specified 
+%                    (OPTIONAL, defaults to PLD (PASL) or PLD+LabDur ((P)CASL)
 % x.readout_dim - string specifying the readout type (REQUIRED)
 %               - options:
 %                 - '2D' for slice-wise readout
@@ -261,7 +270,7 @@ x.readout_dim = '2D';
 x.Quality = 0;
 x.DELETETEMP = 1;
 x.Vendor = 'Philips';
-x.Q.BackGrSupprPulses = 2;
+x.Q.BackgroundSuppressionNumberPulses = 2;
 x.LabelingType = 'CASL';
 x.Initial_PLD = 1525;
 x.LabelingDuration = 1650;

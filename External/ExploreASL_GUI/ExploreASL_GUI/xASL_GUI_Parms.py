@@ -676,7 +676,7 @@ class xASL_Parms(QMainWindow):
             "bUseMNIasDummyStructural": int(self.chk_usemniasdummy.isChecked()),
             "ApplyQuantification": self.prep_quantparms(),
             "Q": {
-                "BackGrSupprPulses": int(self.cmb_nsup_pulses.currentText()),
+                "BackgroundSuppressionNumberPulses": int(self.cmb_nsup_pulses.currentText()),
                 "LabelingType": {"Pulsed ASL": "PASL",
                                  "Pseudo-continuous ASL": "CASL",
                                  "Continuous ASL": "CASL"
@@ -706,7 +706,7 @@ class xASL_Parms(QMainWindow):
                 asl_parms = {
                     "LabelingType": json_parms["Q"]["LabelingType"],
                     "PostLabelingDelay": json_parms["Q"]["Initial_PLD"],
-                    "BackgroundSuppression": json_parms["Q"]["BackGrSupprPulses"] == 0}
+                    "BackgroundSuppression": json_parms["Q"]["BackgroundSuppressionNumberPulses"] == 0}
                 with open(asl_json, 'w') as asl_json_writer:
                     json.dump(asl_parms, asl_json_writer, indent=3)
 
@@ -790,7 +790,7 @@ class xASL_Parms(QMainWindow):
             "bUseMNIasDummyStructural": self.chk_usemniasdummy.setChecked,
             "ApplyQuantification": self.get_quantparms,
             "Q": {
-                "BackGrSupprPulses": self.get_backgroundpulses,
+                "BackgroundSuppressionNumberPulses": self.get_backgroundpulses,
                 "LabelingType": self.get_labelingtype,
                 "Initial_PLD": self.spinbox_initialpld.setValue,
                 "LabelingDuration": self.spinbox_labdur.setValue,
