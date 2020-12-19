@@ -45,7 +45,7 @@ if nargin<2 || isempty(Threshold)
     Threshold = 0.95; % default threshold
 end
 
-PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskSusceptibility_.*bs-mean\.nii$', 'FPList');
+PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskSusceptibility_' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$', 'FPList');
 
 bSkipStandard = 0;
 
@@ -82,24 +82,13 @@ PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM_n' xASL_num2str(x.n
 PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pCSF_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
 PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
 
-if ~isempty(PathFoV) && iscell(PathFoV)
-	PathFoV = PathFoV{1};
-end
-if ~isempty(PathVascularMask) && iscell(PathVascularMask)
-	PathVascularMask = PathVascularMask{1};
-end
-if ~isempty(PathpGM) && iscell(PathpGM)
-	PathpGM = PathpGM{1};
-end
-if ~isempty(PathpWM) && iscell(PathpWM)
-	PathpWM = PathpWM{1};
-end
-if ~isempty(PathpCSF) && iscell(PathpCSF)
-	PathpCSF = PathpCSF{1};
-end
-if ~isempty(PathT1) && iscell(PathT1)
-	PathT1 = PathT1{1};
-end
+if ~isempty(PathSusceptibilityMask); PathSusceptibilityMask = PathSusceptibilityMask{1}; end
+if ~isempty(PathFoV); PathFoV = PathFoV{1}; end
+if ~isempty(PathVascularMask); PathVascularMask = PathVascularMask{1}; end
+if ~isempty(PathpGM); PathpGM = PathpGM{1}; end
+if ~isempty(PathpWM); PathpWM = PathpWM{1}; end
+if ~isempty(PathpCSF); PathpCSF = PathpCSF{1}; end
+if ~isempty(PathT1); PathT1 = PathT1{1}; end
 
 if ~bSkipStandard
     if isempty(PathpGM)
