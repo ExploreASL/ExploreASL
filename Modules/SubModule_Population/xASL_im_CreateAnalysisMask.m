@@ -180,10 +180,10 @@ if x.bNativeSpaceAnalysis
 			x.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 			x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
-			x = xASL_adm_DefineASLResolution(x);
 
 			xASL_TrackProgress(SubjSess,x.nSubjects*x.nSessions);
 			if xASL_exist(x.P.Path_PWI)
+				x = xASL_adm_DefineASLResolution(x);
 				listMasks = {MaskSusceptibilityPath fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
 					fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') fullfile(x.D.MapsSPMmodifiedDir,'MNI_structural.nii')...
 					fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') fullfile(x.D.AtlasDir,'Hammers.nii')...
