@@ -82,6 +82,24 @@ PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM_n' xASL_num2str(x.n
 PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pCSF_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
 PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
 
+if ~isempty(PathFoV) && iscell(PathFoV)
+	PathFoV = PathFoV{1};
+end
+if ~isempty(PathVascularMask) && iscell(PathVascularMask)
+	PathVascularMask = PathVascularMask{1};
+end
+if ~isempty(PathpGM) && iscell(PathpGM)
+	PathpGM = PathpGM{1};
+end
+if ~isempty(PathpWM) && iscell(PathpWM)
+	PathpWM = PathpWM{1};
+end
+if ~isempty(PathpCSF) && iscell(PathpCSF)
+	PathpCSF = PathpCSF{1};
+end
+if ~isempty(PathT1) && iscell(PathT1)
+	PathT1 = PathT1{1};
+end
 
 if ~bSkipStandard
     if isempty(PathpGM)
@@ -170,7 +188,7 @@ if x.bNativeSpaceAnalysis
 					fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') fullfile(x.D.MapsSPMmodifiedDir,'MNI_structural.nii')...
 					fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') fullfile(x.D.AtlasDir,'Hammers.nii')...
                     fullfile(x.D.AtlasDir,'HOcort_CONN.nii') fullfile(x.D.AtlasDir,'HOsub_CONN.nii')};
-				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop x.P.Path_HOcort_CONNPop x.P.Path_HOsub_CONN};
+				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop x.P.Path_HOcort_CONNPop x.P.Path_HOsub_CONNPop};
 				MaskType  = [1 1 1 2 2 2 2 2];
 				% 1 - binary masks - presmooth, spline-interpolation, cut at 50%
 				% 2 - multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding

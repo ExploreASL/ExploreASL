@@ -82,7 +82,7 @@ if ~x.mutex.HasState(StateName{1})
     SusceptPath = fullfile(x.D.TemplatesStudyDir,'MaskSusceptibility_bs-mean.nii');
 
     if strcmpi(x.Sequence,'3d_spiral') && ~isempty(FoVPath)
-        xASL_io_SaveNifti(FoVPath, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}),[],false);
+        xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}),[],false);
     end
 
     x.mutex.AddState(StateName{1});
