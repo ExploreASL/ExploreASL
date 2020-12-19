@@ -73,13 +73,17 @@ StateName{10} = '090_DeleteAndZip';
 %% ------------------------------------------------------------------------------------------------------------
 %% 1    Create template images
 if ~x.mutex.HasState(StateName{1})
-    xASL_wrp_CreatePopulationTemplates(x);  % this doesn't work nicely yet with sessions, should be changed after new BIDS is implemented
+	if isfield(x,'bSkipWhenMissingScans')
+		xASL_wrp_CreatePopulationTemplates(x,[],[],[],x.bSkipWhenMissingScans);  % this doesn't work nicely yet with sessions, should be changed after new BIDS is implemented
+	else
+		xASL_wrp_CreatePopulationTemplates(x);  % this doesn't work nicely yet with sessions, should be changed after new BIDS is implemented
+	end
 
     % Save FoV mask as susceptibility mask for 3D spiral
     % as 3D spiral doesnt have a susceptibility artifact (or negligible)
 
     FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^FoV_.*bs-mean_Unmasked\.nii$', 'FPList');
-    SusceptPath = fullfile(x.D.TemplatesStudyDir,'MaskSusceptibility_bs-mean.nii');
+    SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean.nii']);
 
     if strcmpi(x.Sequence,'3d_spiral') && ~isempty(FoVPath)
         xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}),[],false);
