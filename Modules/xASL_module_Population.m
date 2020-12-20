@@ -44,6 +44,10 @@ if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.bNativeSpaceAnalysis)
 	x.bNativeSpaceAnalysis = 0;
 end
 
+if ~isfield(x,'bSkipTemplateCreationWhenMissingScans') || isempty(x.bSkipTemplateCreationWhenMissingScans)
+	x.bSkipTemplateCreationWhenMissingScans = 0;
+end
+
 % Check if we have ASL or not, to know if we need to run ASL-specific stuff/warnings
 bHasASL = ~isempty(xASL_adm_GetFileList(x.D.PopDir, '^.*ASL_\d\.nii$'));
 if ~bHasASL
@@ -73,11 +77,7 @@ StateName{10} = '090_DeleteAndZip';
 %% ------------------------------------------------------------------------------------------------------------
 %% 1    Create template images
 if ~x.mutex.HasState(StateName{1})
-	if isfield(x,'bSkipWhenMissingScans')
-		xASL_wrp_CreatePopulationTemplates(x,[],[],[],x.bSkipWhenMissingScans);  % this doesn't work nicely yet with sessions, should be changed after new BIDS is implemented
-	else
-		xASL_wrp_CreatePopulationTemplates(x);  % this doesn't work nicely yet with sessions, should be changed after new BIDS is implemented
-	end
+	xASL_wrp_CreatePopulationTemplates(x,[],[],[],x.bSkipTemplateCreationWhenMissingScans);  % this doesn't work nicely yet with sessions, should be changed after new BIDS is implemented
 
     % Save FoV mask as susceptibility mask for 3D spiral
     % as 3D spiral doesnt have a susceptibility artifact (or negligible)

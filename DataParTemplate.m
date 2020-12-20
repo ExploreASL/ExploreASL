@@ -202,7 +202,7 @@ function x = DataParTemplate(x)
 %                  - 0 = run CAT12
 % x.bHammersCAT12 - boolean specifying if CAT12 should provide Hammers volumetric ROI results (OPTIONAL, DEFAULT = 0)
 % x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
-% x.bSkipWhenMissingScans - skip creating population templates when more than 10% scans are missing (OPTIONAL, DEFAULT=1)
+% x.bSkipTemplateCreationWhenMissingScans - skip creating population templates when more than 10% scans are missing (OPTIONAL, DEFAULT=0)
 % x.bRegistrationContrast - specifies the image contrast used for
 %                                 registration (OPTIONAL, DEFAULT = 2):
 %                           - 0 = Control->T1w
