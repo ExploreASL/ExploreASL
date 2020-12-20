@@ -299,16 +299,16 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 	   
 	switch x.Q.LabelingType
 		case 'PASL'
-			if isfield(x.Q,'PostLabelingDelay')
-				ReadoutTime = x.Q.PostLabelingDelay;
+			if isfield(x.Q,'Initial_PLD')
+				ReadoutTime = x.Q.Initial_PLD;
 			else
-				ReadoutTime = x.PostLabelingDelay;
+				ReadoutTime = x.Initial_PLD;
 			end
 		case {'CASL' ',PCASL'}
-			if isfield(x.Q,'PostLabelingDelay')
-				ReadoutTime = x.Q.PostLabelingDelay + x.Q.LabelingDuration;
+			if isfield(x.Q,'Initial_PLD')
+				ReadoutTime = x.Q.Initial_PLD + x.Q.LabelingDuration;
 			else
-				ReadoutTime = x.PostLabelingDelay + x.LabelingDuration;
+				ReadoutTime = x.Initial_PLD + x.LabelingDuration;
 			end
 	end
 	
