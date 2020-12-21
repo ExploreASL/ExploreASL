@@ -415,6 +415,12 @@ if bRunSubmodules(2)
 					scaleFactor = 0;
 				end
 				
+				% Check if the Phoenix protocol is present and parse it
+				if isfield(jsonDicom,'PhoenixProtocol') && ~isempty(regexpi(jsonDicom.Manufacturer,'Siemens'))
+					PhoenixParsed = xASL_bids_PhoenixProtocolReader(jsonDicom.PhoenixProtocol);
+					jsonDicom.PhoenixAnalyzed = xASL_bids_PhoenixProtocolAnalyzer(PhoenixParsed);
+				end
+				
 				if scaleFactor
 					imNii = imNii .* scaleFactor;
 				end
@@ -589,6 +595,30 @@ if bRunSubmodules(2)
 				end
 			end
 			
+			% Overwrite differing fields with those from the Phoenix protocol, but report all differences
+			if isfield(jsonDicom,'PhoenixAnalyzed') && ~isempty(jsonDicom.PhoenixAnalyzed)
+				strDifferentFields = '';
+				for fn = fieldnames(jsonDicom.PhoenixAnalyzed)'
+					if isfield(jsonLocal,fn{1})
+						% If the field is there, then report different fields
+						if ~isequal(jsonLocal.(fn{1}),jsonDicom.PhoenixAnalyzed.(fn{1}))
+							% Just if this is not only a different vector orientation
+							if ~isnumeric(jsonLocal.(fn{1})) ||...
+									(size(jsonLocal.(fn{1}),1)>1 && size(jsonLocal.(fn{1}),1) >1) ||...
+									~isequal((jsonLocal.(fn{1}))',jsonDicom.PhoenixAnalyzed.(fn{1}))
+								strDifferentFields = [strDifferentFields ' ' fn{1}];
+							end
+						end
+					end
+					% Prioritize the Phoenix field values in the general case
+					jsonLocal.(fn{1}) = jsonDicom.PhoenixAnalyzed.(fn{1});
+				end
+				% Report if certain fields were different as a warning
+				if ~isempty(strDifferentFields)
+					warning('The following user-defined/DICOM fields and DICOM-Phoenix fields differ:\n %s \n',strDifferentFields);
+				end
+			end
+				
 			if isfield (studyPar,'SliceReadoutTime')
 				if isfield(studyPar,'SliceTiming') && ~isequal(studyPar.SliceTiming,studyPar.SliceReadoutTime)
 					sprintf('Warning, difference in SliceTiming and SliceReadoutTime');
@@ -633,6 +663,7 @@ if bRunSubmodules(2)
 					jsonLocal.TotalReadoutTime = abs(jsonLocal.TotalReadoutTime);
 				end
 			end
+			
 			
 			
 			% Import the number of averages
