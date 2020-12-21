@@ -206,7 +206,7 @@ if strcmpi(fileType,'ASL')
 						fprintf('The required fields are missing: %s\n',strReportFilled);
 					end
 					if ~isempty(strReportEmpty)
-						frpintf('The following fields should be empty: %s\n',strReportEmpty);
+						fprintf('The following fields should be empty: %s\n',strReportEmpty);
 					end
 					if ~isempty(strReportRecommended)
 						fprintf('The recommended fields are missing: %s\n',strReportRecommended);

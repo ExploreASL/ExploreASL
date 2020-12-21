@@ -437,7 +437,12 @@ if bRunSubmodules(2)
 					if isfield(jsonLocal,fn{1})
 						% If the field is there, then report different fields
 						if ~isequal(jsonLocal.(fn{1}),jsonDicom.(fn{1}))
-							strDifferentFields = [strDifferentFields ' ' fn{1}];
+							% Just if this is not only a different vector orientation
+							if ~isnumeric(jsonLocal.(fn{1})) ||...
+									(size(jsonLocal.(fn{1}),1)>1 && size(jsonLocal.(fn{1}),1) >1) ||...
+									~isequal((jsonLocal.(fn{1}))',jsonDicom.(fn{1}))
+								strDifferentFields = [strDifferentFields ' ' fn{1}];
+							end
 						end
 					end
 					% Prioritize the DICOM values in general case
