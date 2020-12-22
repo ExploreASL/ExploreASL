@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+from nipype import freesurfer as fs
+
+# Convert the joint fusion labels
+rs = fs.Resample()
+rs.inputs.in_file = 'OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152_v2.nii.gz'
+rs.inputs.resampled_file = 'OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152_2mm_v2.nii.gz'
+rs.inputs.voxel_size = (2,2,2)
+rs.inputs.args = '-rt nearest -ns 1'
+rs.run()
+
+# Convert the template
+rs = fs.Resample()
+rs.inputs.in_file = 'OASIS-30_Atropos_template_in_MNI152.nii.gz'
+rs.inputs.resampled_file = 'OASIS-30_Atropos_template_in_MNI152_2mm.nii.gz'
+rs.inputs.voxel_size = (2,2,2)
+rs.inputs.args = '-rt cubic'
+rs.run()
+

@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+"""
+Use the jointfusion algorithm in the ANTS software package
+and functions in convert3D (both from UPenn's PICSL group)
+to construct a maximum probability atlas from the 20
+OASIS-TRT-20 DKT31 cortex + CMA noncortex labeled brain images
+that have been nonlinearly registered with antsRegistration
+(as part of antsCorticalThickness.sh) to the OASIS-30 Atropos template.
+
+Additionally transform the results to the OASIS-30 Atropos template
+in MNI152 space with nearest neighbor interpolation.
+
+(See http://mindboggle.info/data)
+
+Authors:
+Arno Klein, 2014  .  arno@mindboggle.info  .  www.binarybottle.com
+
+Copyright 2014,  Mindboggle team (http://mindboggle.info), Apache v2.0 License
+
+"""
+import os
+
+# Label numbers:
+from mindboggle.LABELS import DKTprotocol
+dkt = DKTprotocol()
+label_numbers = dkt.label_numbers
+
+# Inputs:
+jointfusion_cmd = 'jointfusion' #'/software/antsbin/bin/jointfusion'
+template = '/data/brains/Atropos_templates/OASIS-30_Atropos_template/T_template0_BrainCerebellum.nii.gz'
+mni_template = '/data/brains/OASIS_Atropos_template_in_MNI152.nii.gz'
+affine_transform_to_mni = '/data/brains/OASIS_Atropos_template_to_MNI152Affine.txt'
+
+# Outputs:
+jointfusion_warp_out = 'OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_OASIS-30.nii.gz'
+jointfusion_prob_warp_out = 'OASIS-TRT-20_jointfusion_DKT31_CMA_label_probabilities_in_OASIS-30.nii.gz'
+jointfusion_warp_out_mni = 'OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152.nii.gz'
+jointfusion_prob_warp_out_mni = 'OASIS-TRT-20_jointfusion_DKT31_CMA_label_probabilities_in_MNI152.nii.gz'
+
+# Run steps:
+joint_warp = True
+combine_warp_probs = True
+apply_transform_to_mni = True
+
+# Joint fusion of OASIS-TRT-20 DKT31 cortex + CMA noncortex labels 
+# that have been nonlinearly transformed (warped) to the OASIS-30 Atropos template:
+if joint_warp:
+    args = [jointfusion_cmd, '3 1 -p prob_warp/prob_label%04d_warp.nii.gz',
+            '-g /data/brains/OASIS-TRT-20/OASIS-TRT_brains_to_OASIS_Atropos_template/*.nii.gz',
+            '-tg', template,
+            '-l /data/brains/OASIS-TRT-20/OASIS-TRT_labels_to_OASIS_Atropos_template/*.nii.gz',
+            '-m Joint', jointfusion_warp_out]
+    cmd = ' '.join(args)
+    print(cmd)
+    os.system(cmd)
+
+if combine_warp_probs:
+    maxprobs = []
+    for label in label_numbers:
+        if label < 10:
+            labelstr = '000' + str(label)
+        elif label < 100:
+            labelstr = '00' + str(label)
+        elif label < 1000:
+            labelstr = '0' + str(label)
+        else:
+            labelstr = str(label)
+
+        prob = 'prob_warp/prob_label'+labelstr+'_warp.nii.gz'
+
+        if os.path.exists(prob):
+
+            maxprob = 'maxprob_warp/maxprob_label'+labelstr+'_warp.nii.gz'
+            args = ['/software/c3d/bin/c3d', jointfusion_warp_out,
+                    '-threshold', str(label), str(label), '1 0',
+                    prob, '-multiply', '-o', maxprob]
+            cmd = ' '.join(args)
+            print(cmd)
+            os.system(cmd)
+            maxprobs.append(maxprob)
+
+    maxprobs = maxprobs[0] + ' ' + ' -add '.join(maxprobs[1::])
+    args = ['/software/c3d/bin/c3d', maxprobs, '-add', '-o', jointfusion_prob_warp_out]
+    cmd = ' '.join(args)
+    print(cmd)
+    os.system(cmd)
+
+if apply_transform_to_mni:
+
+    args = ['WarpImageMultiTransform 3', jointfusion_warp_out, 
+            jointfusion_warp_out_mni, '-R', mni_template,
+            '--use-NN', affine_transform_to_mni]
+    cmd = ' '.join(args)
+    print(cmd); os.system(cmd)
+
+    args = ['WarpImageMultiTransform 3', jointfusion_prob_warp_out, 
+            jointfusion_prob_warp_out_mni, '-R', mni_template,
+            '--use-NN', affine_transform_to_mni]
+    cmd = ' '.join(args)
+    print(cmd); os.system(cmd)
+

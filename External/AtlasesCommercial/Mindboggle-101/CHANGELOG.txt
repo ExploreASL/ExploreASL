@@ -1,0 +1,105 @@
+CHANGELOG for the Mindboggle-101 dataset:
+
+2015-09-28: The OASIS-TRT-20 whole-brain subcortical labels had the 
+original Neuromorphometrics numbers, so we converted them to FreeSurfer
+label numbers for consistency (http://www.mindboggle.info/faq/labels.html).
+The Mindboggle-101 joint fusion atlases were not impacted.
+
+2015-02-22: We discovered and fixed a mistaken label in one of the 101
+subjects:  the region corresponding to right isthmus cingulate in subject
+NKI-RS-22-16 was incorrectly labeled as inferior temporal, so in that
+hemisphere, there were two separate regions with the "inferior temporal"
+label. The Mindboggle-101 joint fusion atlases were not impacted since
+they were constructed without use of this subject.
+
+2014-10-18: Included summary information about the scans:
+http://mindboggle.info/data/mindboggle101_extras/scans_info.tar.gz
+
+2014-09-29: Fixed the alignment of subcortical and cortical labels in the
+individual OASIS-TRT-20 whole-brain label volumes. Constructed a new joint
+fusion atlas from these combined label volumes (hardly any change).
+Both are called "version 2". The cortical labels were unaffected. 
+It turns out there was a discrepancy between the IDs assigned to the 
+MICCAI2012 challenge / BrainCOLOR volumes and the renumbered OASIS-TRT-20
+volumes, so some of the transforms were applied to the wrong subcortical labels.
+Fortunately, there is extremely little difference from the earlier version.
+
+2014-03-26: The subcortical labels in the OASIS-TRT-20 whole-brain label
+set were discovered to be out of alignment for many of the 20 brains.  
+We have removed the link to these labeled volumes until the source of the
+problem is found. <FIXED on 2014-09-29>
+
+2014-01-08: Replaced all Atropos template priors again (error found).
+Updated antsCorticalThickness.sh call in README.
+
+2013-12-19: Replaced all Atropos template priors that include cerebella
+and brainstem, and segmented volumes with 6 classes (GM, WM, CSF, deep GM,
+cerebella, brainstem).
+
+2013-10-04: Added new 2mm resampled versions the OASIS-30 template and joint
+fusion atlas, along with the Python resampling script.  Thanks, Satrajit Ghosh!
+
+2013-10-04: Updated the OASIS-TRT-20 jointfusion atlas and corresponding files.
+Now includes labels and probabilities in OASIS-30 Atropos template as well as
+MNI space.
+
+2013-09-12: Added corresponding 2mm versions of joint fusion atlas and
+Atropos template. Thanks, Satrajit Ghosh!
+
+2013-09-11: Replaced joint fusion atlas originally built with ANTS-registered
+brains with antsRegistration-registered Atropos-cropped brains using the
+latest antsCorticalThickness.sh.
+
+2013-09-06: Replaced head templates built using buildtemplateparallel.sh 
+in ANTs with new ones built using antsMultivariateTemplateConstruction.sh.
+
+2013-09-05: Replaced outdated Atropos template with newer templates
+constructed by Nicholas Tustison (for use with antsAtroposN4.sh).
+
+2013-08-22: Added 2mm versions of template and joint fusion atlas:
+  - OASIS-TRT-20_template_in_MNI152_2mm.nii.gz
+  - OASIS-TRT-20_DKT31_CMA_jointfusion_atlas_in_MNI152_2mm.nii.gz
+Thanks, Satrajit Ghosh!
+
+2013-08-21: Converted all OASIS-TRT-20 subcortical labels to conform to 
+FreeSurfer's label values.  Five labels did not have counterparts and were 
+assigned to unused numbers in FreeSurferColorLUT.txt:
+cerebellar vermal lobules (630-632) and basal forebrain (91-92).
+Rebuilt the joint fusion atlases accordingly, and updated the scripts.
+<FIXED on 2014-09-29>
+
+2013-08-20: Replaced corrupted FreeSurfer .mgz files for the HLN-12 subjects.
+
+2013-07-30: Included a new description of the protocol with sulcus and gyrus 
+label lists and corresponding label numbers in the protocol.txt file.
+
+2013-07-26: We have created a joint fusion atlas and label probability volume 
+from the manually labeled OASIS-TRT-20 brains!
+
+2013-07-12: We have combined manually labeled OASIS-TRT-20 cortical, subcortical, 
+and cerebellar labels!  <FIXED on 2014-09-29>
+
+2013-06-26: Corrected orientation of OASIS-TRT-20_template.nii.gz 
+and included an MNI152-registered version.
+
+2013-05-11: Fixed nifti volume labels for the Colin27-1 brain. Thanks, Bob Cox!
+
+2013-04-27: We have included manually labeled OASIS-TRT-20 subcortical volumes!
+
+2013-02-17: VERTICES section removed from surface VTK files
+The VERTICES section of the labeled surface VTK files are not necessary,
+and were improperly formatted, so they have been removed.
+
+2013-02-09: MNI152-registered volume data replaced
+A couple of images were found not to have registered properly to the MNI152 
+template (MMRR-21-1 and -21) using FSL's flirt, so all of the brain images 
+were registered again using ANTS instead.
+
+2013-01-08: Volume data replaced
+Label images were accidentally placed in the OASIS-TRT-20_volumes/ and 
+NKI-RS-22_volumes/ folders as t1weighted_brain.nii.gz files, and the
+MNI152-registered label volumes were transformed using trilinear vs. nearest
+neighbor interpolation.  We rewrote the software that postprocesses the
+whole-head and label data (now included in the new Supplementary Material online)
+that not only corrects these errors, but also improves upon the brain extraction
+using both the manual cortical as well as the automated subcortical labels.
