@@ -385,6 +385,7 @@ if isfield(x, 'MyPath')
     x.D.IdentityTransfRef   = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
     x.D.TemplateDir         = fullfile(x.MyPath, 'Maps', 'Templates');
     x.D.AtlasDir            = fullfile(x.MyPath, 'External', 'AtlasesNonCommercial');
+    x.D.AtlasDirCommercial  = fullfile(x.MyPath, 'External', 'AtlasesCommercial');
 else
     warning('MyPath field not defined...');
 end

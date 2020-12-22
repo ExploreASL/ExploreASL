@@ -194,9 +194,12 @@ x.P.Atlas.Tatu_ACA_MCA_PCA                  = fullfile(x.D.MapsSPMmodifiedDir, '
 x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii');
 x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
 x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
-
-% Mindboggle-101
-% x.P.Atlas.DKT_Atlas_40                      = fullfile('External', 'AtlasesCommercial', 'Mindboggle-101', 'DKTatlas40.tar.gz');
+x.P.Atlas.DKT_Atlas_40                      = fullfile(x.D.AtlasDirCommercial, 'Mindboggle-101', 'DKTatlas40.tar.gz');
+x.P.Atlas.DKT31_CMA_labels_OASIS30          = fullfile(x.D.AtlasDirCommercial, 'Mindboggle-101', 'OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_OASIS-30_v2.nii.gz');
+x.P.Atlas.DKT31_CMA_labels_MNI152           = fullfile(x.D.AtlasDirCommercial, 'Mindboggle-101', 'OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152_v2.nii.gz');
+x.P.Atlas.DKT31_CMA_labels_MNI152_2mm       = fullfile(x.D.AtlasDirCommercial, 'Mindboggle-101', 'OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152_2mm_v2.nii.gz');
+x.P.Atlas.DKT31_CMA_labels_prob_OASIS30     = fullfile(x.D.AtlasDirCommercial, 'Mindboggle-101', 'OASIS-TRT-20_jointfusion_DKT31_CMA_label_probabilities_in_OASIS-30_v2.nii.gz');
+x.P.Atlas.DKT31_CMA_labels_prob_MNI152      = fullfile(x.D.AtlasDirCommercial, 'Mindboggle-101', 'OASIS-TRT-20_jointfusion_DKT31_CMA_label_probabilities_in_MNI152_v2.nii.gz');
 
 
 end
