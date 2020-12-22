@@ -195,5 +195,8 @@ x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, '
 x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
 x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
 
+% Mindboggle-101
+% x.P.Atlas.DKT_Atlas_40                      = fullfile('External', 'AtlasesCommercial', 'Mindboggle-101', 'DKTatlas40.tar.gz');
+
 
 end
