@@ -80,7 +80,7 @@ function [bidsPar,rawPar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
         bidsPar.SequenceType = 'Siemens'; % Not really a BIDS field
     elseif contains(rawPar.tSequenceFileName,'CustomerSeq')
         bidsPar.SequenceType = 'Customer'; 
-    end
+	end
     
     if contains(lower(rawPar.tSequenceFileName),'ep2d')
         bidsPar.PulseSequenceType = '2D_EPI'; 
@@ -105,13 +105,16 @@ function [bidsPar,rawPar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     if contains(lower(rawPar.tSequenceFileName),'M0_') || ...           % Siemens PASL 3DGRASE AD
        contains(lower(rawPar.tSequenceFileName),'_fid')                 % Siemens PASL 2D EPI noBsup AD
         bidsPar.ScanType = 'M0';
-    end
+	end
     
-    if rawPar.sAslulMode==4
-        bidsPar.BolusCutOffFlag = true;
-		bidsPar.BolusCutOffTechnique = 'Q2TIPS';
-    end
+	%TODO
+	% Saw this option also in QUIPSSII
+    %if rawPar.sAslulMode==4
+    %    bidsPar.BolusCutOffFlag = true;
+	%	bidsPar.BolusCutOffTechnique = 'Q2TIPS';
+    %end
     
+	%TODO - does it really work for other sequences?
     if ~isempty(rawPar.alTI0) && ~isempty(rawPar.alTI2)
         if rawPar.alTI0~=100000 && rawPar.alTI2~=7000000
             bidsPar.ScanType = 'ASL';
@@ -128,40 +131,63 @@ function [bidsPar,rawPar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		bidsPar.LabelingDistance = rawPar.sGroupArraysPSatdGap;
 	end
 	
-	if isfield(rawPar,'sGroupArraysPSatdThickness') && ~isempty(rawPar.sGroupArraysPSatdThickness)
+	if isfield(bidsPar,'ArterialSpinLabelingType') && ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl')) &&...
+			isfield(rawPar,'sGroupArraysPSatdThickness') && ~isempty(rawPar.sGroupArraysPSatdThickness)
 		bidsPar.LabelingSlabThickness = rawPar.sGroupArraysPSatdThickness;
 	end
+	
+	% The function of this parameter is unclear
+	%if isfield(rawPar,'Slab_thickness_mm') && ~isempty(rawPar.Slab_thickness_mm)
+	%	bidsPar.LabelingSlabThickness = rawPar.Slab_thickness_mm;
+	%end
 	
 	if isfield(rawPar,'alTE0') && ~isempty(rawPar.alTE0)
 		bidsPar.EchoTime = rawPar.alTE0 / 1000 / 1000;
 	end
-
-	if isfield(rawPar,'alTI0') && ~isempty(rawPar.alTI0)
-		bidsPar.PostLabelingDelay = rawPar.alTI0 / 1000 / 1000;
-	end
 	
+	% If the labeling type is recognized, then proceed to labeling timing information extraction
 	if isfield(bidsPar,'ArterialSpinLabelingType') 
 		if~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl'))
-			if isfield(rawPar,'alTI1') && ~isempty(rawPar.alTI1)
-				if isfield(rawPar,'alTI2') && ~isempty(rawPar.alTI2)
-					bidsPar.BolusCutOffDelayTime = [rawPar.alTI1, rawPar.alTI2] / 1000 / 1000;
-					bidsPar.BolusCutOffFlag = true;
-					bidsPar.BolusCutOffTechnique = 'Q2TIPS';
+			if isfield(bidsPar,'SoftwareVersions') &&...
+					(~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB15A'))||...
+					 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB17A'))||...
+					 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB19A'))||...
+					 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VD13D'))||...
+					 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VE11C')))
+				
+				if isfield(rawPar,'alTI0') && ~isempty(rawPar.alTI0)
 					bidsPar.PostLabelingDelay = rawPar.alTI0 / 1000 / 1000;
-				else
-					bidsPar.PostLabelingDelay = rawPar.alTI0 / 1000 / 1000;
-					bidsPar.LabelingDuration = rawPar.alTI1 / 1000 / 1000;
 				end
-			else
-				if isfield(rawPar,'alTI2') && ~isempty(rawPar.alTI2)
-					bidsPar.PostLabelingDelay = rawPar.alTI2 / 1000 / 1000;
-					bidsPar.LabelingDuration = rawPar.alTI0 / 1000 / 1000;
-					bidsPar.BolusCutOffFlag = true;
-					bidsPar.BolusCutOffTechnique = 'QUIPSSII';
+				if isfield(rawPar,'alTI1') && ~isempty(rawPar.alTI1)
+					if isfield(rawPar,'alTI2') && ~isempty(rawPar.alTI2)
+						%N4_VB15A, N4_VB17A, N4_VB19A
+						bidsPar.BolusCutOffDelayTime = [rawPar.alTI1, rawPar.alTI2] / 1000 / 1000;
+						bidsPar.BolusCutOffFlag = true;
+						bidsPar.BolusCutOffTechnique = 'Q2TIPS';
+						bidsPar.PostLabelingDelay = rawPar.alTI0 / 1000 / 1000;
+					else
+						bidsPar.PostLabelingDelay = rawPar.alTI0 / 1000 / 1000;
+						bidsPar.LabelingDuration = rawPar.alTI1 / 1000 / 1000;
+					end
+				else
+					%N4_VD13D, N4_VE11C
+					if isfield(rawPar,'alTI2') && ~isempty(rawPar.alTI2)
+						bidsPar.PostLabelingDelay = rawPar.alTI2 / 1000 / 1000;
+						bidsPar.BolusCutOffDelayTime = rawPar.alTI0 / 1000 / 1000;
+						bidsPar.BolusCutOffFlag = true;
+						bidsPar.BolusCutOffTechnique = 'QUIPSSII';
+					end
 				end
 			end
 		elseif ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl'))
 			bidsPar.LabelingDuration = rawPar.alTI0 / 1000 / 1000;
+		elseif ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pcasl'))
+			if isfield(rawPar,'alTI0') && ~isempty(rawPar.alTI0)
+				bidsPar.LabelingDuration = rawPar.alTI0 / 1000 / 1000;
+				if isfield(rawPar,'alTI2') && ~isempty(rawPar.alTI2)
+					bidsPar.PostLabelingDelay = (rawPar.alTI2-rawPar.alTI0) / 1000 / 1000;
+				end
+			end
 		end
 	end
 
