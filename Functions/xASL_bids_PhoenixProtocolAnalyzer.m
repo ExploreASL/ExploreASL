@@ -76,10 +76,10 @@ function [bidsPar,rawPar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     rawPar = convertCellArrayToStruct(rawPar);
 
     %% Analyze parameters                                                   % Exemplary dataset in ExploreASL flavor library
-    if contains(rawPar.tSequenceFileName,'SiemensSeq')
-        bidsPar.SequenceType = 'Siemens'; % Not really a BIDS field
-    elseif contains(rawPar.tSequenceFileName,'CustomerSeq')
-        bidsPar.SequenceType = 'Customer'; 
+	if contains(rawPar.tSequenceFileName,'SiemensSeq')
+		bidsPar.SequenceType = 'Siemens'; % Not really a BIDS field
+	elseif contains(rawPar.tSequenceFileName,'CustomerSeq')
+		bidsPar.SequenceType = 'Customer';
 	end
     
     if contains(lower(rawPar.tSequenceFileName),'ep2d')
@@ -127,15 +127,20 @@ function [bidsPar,rawPar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		bidsPar.SoftwareVersions = strrep(rawPar.sProtConsistencyInfotBaselineString,'"','');
 	end
 	
-	if isfield(rawPar,'sGroupArraysPSatdGap') && ~isempty(rawPar.sGroupArraysPSatdGap)
-		bidsPar.LabelingDistance = rawPar.sGroupArraysPSatdGap;
-	end
+	% N4_VD13D and N4_VE11C have also slab_thickness_mm parameter defined and it is unclear if this is imaging FOV or labeling slab thickness...
+	if isfield(bidsPar,'SoftwareVersions') &&...
+			(~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB15A'))||...
+			 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB17A'))||...
+			 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB19A')))
+		if isfield(rawPar,'sGroupArraysPSatdGap') && ~isempty(rawPar.sGroupArraysPSatdGap)
+			bidsPar.LabelingDistance = rawPar.sGroupArraysPSatdGap;
+		end
 	
-	if isfield(bidsPar,'ArterialSpinLabelingType') && ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl')) &&...
-			isfield(rawPar,'sGroupArraysPSatdThickness') && ~isempty(rawPar.sGroupArraysPSatdThickness)
-		bidsPar.LabelingSlabThickness = rawPar.sGroupArraysPSatdThickness;
+		if isfield(bidsPar,'ArterialSpinLabelingType') && ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl')) &&...
+				isfield(rawPar,'sGroupArraysPSatdThickness') && ~isempty(rawPar.sGroupArraysPSatdThickness)
+			bidsPar.LabelingSlabThickness = rawPar.sGroupArraysPSatdThickness;
+		end
 	end
-	
 	% The function of this parameter is unclear
 	%if isfield(rawPar,'Slab_thickness_mm') && ~isempty(rawPar.Slab_thickness_mm)
 	%	bidsPar.LabelingSlabThickness = rawPar.Slab_thickness_mm;
