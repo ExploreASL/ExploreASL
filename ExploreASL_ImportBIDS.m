@@ -1,10 +1,10 @@
 function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
-%ExploreASL_ImportBIDS Imports the DICOM or PAR/REC raw data to NIFTIs in ASL-BIDS format
+%ExploreASL_ImportBIDS Imports the DICOM or PAR/REC source data to NIFTIs in ASL-BIDS format
 %
 % FORMAT: ExploreASL_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
 %
 % INPUT:
-%   studyPath           - path to the study directory containing the 'raw' directory with the DICOM files (REQUIRED)
+%   studyPath           - path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED)
 %   imParPath           - path to the JSON file with structure with import parameters, output of ExploreASL_ImportConfig.m (originally)
 %                         All other input parameters are configured within this function. (OPTIONAL)
 %                         The path is optional, but the file has to be there. Either provided as a full path or a filename in the path,
@@ -43,11 +43,11 @@ function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodule
 % specified in the imPar definition. Follow the steps below, for study "MyStudy" located on "//MyDisk":
 %
 % 1) Make sure you have your DICOM data. Export them from XNAT, download them, or whatsoever
-%    Create a root folder with study ID name, and put the DICOMs in any structure in the raw folder within the study ID root folder
+%    Create a root folder with study ID name, and put the DICOMs in any structure in the sourcedata folder within the study ID root folder
 %    Example:
 %    imPar.StudyID: MyStudy
 %    StudyRoot folder: //MyDisk/MyStudy
-%    Raw folder containing DICOMs: //MyDisk/MyStudy/raw
+%    sourcedata folder containing DICOMs: //MyDisk/MyStudy/sourcedata
 % 2) Make sure that your DICOM data has any structure that can be retrieved
 %    from the folder and/or file names. This function doesn't yet read the DICOM headers
 %    For a quick and dirty (but actually slow) function that converts a
@@ -56,11 +56,11 @@ function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodule
 %    individually, and put it in a folder with the name identical to the
 %    DICOMs SeriesName/ProtocolName.
 % 3) Once you have all DICOMs in folderstructure with identifyable names
-%    inside //MyDisk/MyStudy/raw, set up the folderstructure in
+%    inside //MyDisk/MyStudy/sourcedata, set up the folderstructure in
 %    ExploreASL_ImportConfig.m. This setup uses the SPM form of regular
 %    expressions, which can be daunting at first, but are very flexible.
 %    Easiest is to study other examples, before creating your own.
-%    For this example, let's say we have //MyDisk/MyStudy/raw/ScanType/SubjectName
+%    For this example, let's say we have //MyDisk/MyStudy/sourcedata/ScanType/SubjectName
 %    because we downloaded our data from XNAT, ordered per ScanType first,
 %    and then per subject.
 %
@@ -84,7 +84,7 @@ function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodule
 %    imPar.tokenVisitAliases - cell array that defines the aliases for the Visits, i.e. it tells the script which scans are which timepoint/visit.
 %                              Similar as explained below for ScanAliases.
 %                              First column contains the names that are
-%                              recognized in raw DICOM folders for visits,
+%                              recognized in sourcedata DICOM folders for visits,
 %                              second column how it is named in NIfTI
 %                              structure (should be _1 _2 _3 etc).
 %                              Example:
@@ -209,9 +209,9 @@ if ~isfield(imPar,'BidsRoot') || isempty(imPar.BidsRoot)
 end
 
 % Finalize the directories
-imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID, 'raw'); % default name
+imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID, 'sourcedata'); % default name
 imPar.AnalysisRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'analysis');
-imPar.BidsRoot = fullfile(imPar.BidsRoot,imPar.studyID,'bids');
+imPar.BidsRoot = fullfile(imPar.BidsRoot,imPar.studyID,'rawdata');
 
 % Specify the tokens
 if ~isfield(imPar,'folderHierarchy')
@@ -1074,7 +1074,7 @@ end
 		fprintf('If you want to overwrite, first remove the full subject folder');
 	end
 	
-	% Create the basic folder structure for raw & derivative data
+	% Create the basic folder structure for sourcedata & derivative data
 	if ~exist(imPar.RawRoot, 'dir')
 		warning(['Couldnt find ' imPar.RawRoot ', trying to find a different folder instead...']);
 		
@@ -1082,13 +1082,13 @@ end
 		% xASL_adm_GetFileList uses regular expressions, to create a nice list of foldernames,
 		% with/without FullPath (FPList), with/without recursive (FPListRec)
 		% very powerful once you know how these work
-		FolderNames = xASL_adm_GetFileList(fullfile(imPar.RawRoot, imPar.studyID), '^(?!(analysis|derivatives|source|raw)).*$', 'FPList', [0 Inf], true);
+		FolderNames = xASL_adm_GetFileList(fullfile(imPar.RawRoot, imPar.studyID), '^(?!(analysis|derivatives|source|sourcedata)).*$', 'FPList', [0 Inf], true);
 		
 		if length(FolderNames)==1
 			imPar.RawRoot = FolderNames{1};
-			fprintf('%s\n', ['Found ' imPar.RawRoot ' as raw folder']);
+			fprintf('%s\n', ['Found ' imPar.RawRoot ' as sourcedata folder']);
 		else
-			error('Couldnt find a raw folder, please rename one, or move other folders');
+			error('Couldnt find a sourcedata folder, please rename one, or move other folders');
 		end
 	end
 	

@@ -4,7 +4,7 @@ function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bCo
 % FORMAT: xASL_bids_TestBidsConversion(baseDirImport[,baseDirReference,bImport,bComparison])
 %
 % INPUT:
-%   baseDirImport    - Directory for import - raw files are in the 'raw' folder (REQUIRED)
+%   baseDirImport    - Directory for import - sourcedata files are in the 'sourcedata' folder (REQUIRED)
 %   baseDirReference - Reference directory with correct ASL-BIDS data (OPTIONAL)
 %   bImport          - Specify if import should be performed (OPTIONAL, DEFAULT=TRUE)
 %   bComparison      - Specify if comparison should be performed (OPTIONAL, DEFAULT=FALSE)
@@ -13,10 +13,10 @@ function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bCo
 %         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:
-% Runs the DICOM to ASL-BIDS import for all data in the baseDirImport directory. Study directories are supposed to be in, containing a 'raw' folder - this folder
+% Runs the DICOM to ASL-BIDS import for all data in the baseDirImport directory. Study directories are supposed to be in, containing a 'sourcedata' folder - this folder
 % can contain subject directories and also imPar.json and studyPar.json specifying the directory structure and the additional study parameters, respectively.
 % The import creates first the 'analysis' subfolder with data after dcm2nii and with all tags read and saved to JSON. Then it assembles everything with the
-% studyParameters and makes sure all is in BIDS format and saves it correctly in the 'bids' subdirectory.
+% studyParameters and makes sure all is in BIDS format and saves it correctly in the 'rawdata' subdirectory.
 % EXAMPLE: xASL_bids_TestBidsConversion('mydir/testImport');
 %          xASL_bids_TestBidsConversion('mydir/testImport','mydir/testReference',0,1);
 % __________________________________
@@ -124,8 +124,9 @@ if bComparison
 	% List all studies in the import directory
 	filenameCompare = xASL_adm_GetFileList(baseDirImport,'^.+$','List',[],true);
 	for iCompare = 1:length(filenameCompare)
-		% Compare the imported data in the 'bids' subdirectory with the counterpart
-		xASL_bids_CompareStructures(fullfile(baseDirImport, filenameCompare{iCompare},'bids'),fullfile(baseDirReference,filenameCompare{iCompare}));
+		% Compare the imported data in the 'rawdata' subdirectory with the counterpart
+		display(['Dataset: '  filenameCompare{iCompare}]);
+		xASL_bids_CompareStructures(fullfile(baseDirImport, filenameCompare{iCompare},'rawdata'),fullfile(baseDirReference,filenameCompare{iCompare},'rawdata'));
 	end
 end
 
