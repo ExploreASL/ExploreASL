@@ -175,6 +175,20 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
         fprintf('Participants.tsv (BIDS) detected, loading...\n');
         CellArray = xASL_tsvRead(PathTSV);
         
+        % Check if the TSV has empty cells, because this can cause crashes & is illegal (per BIDS)
+        HasEmptyCells = false;
+        for iX=1:size(CellArray, 1)
+            for iY=1:size(CellArray, 2)
+                if isempty(CellArray{iX, iY})
+                    HasEmptyCells = true;
+                end
+            end
+        end
+        if HasEmptyCells
+            warning('Participants.tsv contains empty cells, missing data should be filled by n/a (per BIDS)');
+        end           
+            
+        
         %% First isolate fixed variables (subject, session/run, site)
         SubjectIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(participant|subject).*id*$')), lower(CellArray(1,:))));
         SessionIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(session).*(id)*$')), lower(CellArray(1,:))));
