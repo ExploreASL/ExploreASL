@@ -20,10 +20,11 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 %                      
 %                      (OPTIONAL, DEFAULT = use predefined ScanTypes)
 %   bSkipWhenMissingScans - This parameter allows to choose if we want to
-%                       skip creating templates if not all datasets are
+%                       skip creating templates if more than 10% of the datasets are
 %                       present (1), or also create templates when subjects
-%                       are missing (0)
-%                       (OPTIONAL, DEFAULT=true)
+%                       are missing (0). 
+%                       (OPTIONAL, DEFAULT=x.bSkipTemplateCreationWhenMissingScans 
+%                       or 0 if x.bSkipTemplateCreationWhenMissingScans is not defined)
 %   bRemoveOutliers   - This parameter makes robust statistics, by removing
 %                       outliers (OPTIONAL, DEFAULT=false)
 %   FunctionsAre      - two cells, with functions, and with names
@@ -104,7 +105,11 @@ else
     error('Invalid bComputeSets option, skipping');
 end
 if nargin<5 || isempty(bSkipWhenMissingScans)
-    bSkipWhenMissingScans = true;
+    if isfield(x, 'bSkipWhenMissingScans') && ~isempty(x.bSkipWhenMissingScans) && x.bSkipWhenMissingScans==1
+        bSkipWhenMissingScans = true;
+    else
+        bSkipWhenMissingScans = false;
+    end
 end
 if nargin<6 || isempty(bRemoveOutliers)
     bRemoveOutliers = false;

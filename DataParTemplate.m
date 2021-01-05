@@ -191,6 +191,7 @@ function x = DataParTemplate(x)
 %                  - 1 = run SPM12
 %                  - 0 = run CAT12
 % x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
+% x.bSkipTemplateCreationWhenMissingScans - skip creating population templates when more than 10% scans are missing (OPTIONAL, DEFAULT=0)
 % x.bRegistrationContrast - specifies the image contrast used for
 %                                 registration (OPTIONAL, DEFAULT = 2):
 %                           - 0 = Control->T1w
