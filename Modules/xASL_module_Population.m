@@ -78,11 +78,11 @@ if ~x.mutex.HasState(StateName{1})
     % Save FoV mask as susceptibility mask for 3D spiral
     % as 3D spiral doesnt have a susceptibility artifact (or negligible)
 
-    FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^FoV_.*bs-mean_Unmasked\.nii$', 'FPList');
-    SusceptPath = fullfile(x.D.TemplatesStudyDir,'MaskSusceptibility_bs-mean.nii');
+    FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean_Unmasked\.nii$'], 'FPList');
+    SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean.nii']);
 
     if strcmpi(x.Sequence,'3d_spiral') && ~isempty(FoVPath)
-        xASL_io_SaveNifti(FoVPath, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}),[],false);
+        xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}), [], false);
     end
 
     x.mutex.AddState(StateName{1});
