@@ -170,15 +170,15 @@ if x.bNativeSpaceAnalysis
 			x.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 			x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
-			x = xASL_adm_DefineASLResolution(x);
 
 			xASL_TrackProgress(SubjSess,x.nSubjects*x.nSessions);
 			if xASL_exist(x.P.Path_PWI)
+				x = xASL_adm_DefineASLResolution(x);
 				listMasks = {MaskSusceptibilityPath fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
 					fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') fullfile(x.D.MapsSPMmodifiedDir,'MNI_structural.nii')...
 					fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') fullfile(x.D.AtlasDir,'Hammers.nii')...
                     fullfile(x.D.AtlasDir,'HOcort_CONN.nii') fullfile(x.D.AtlasDir,'HOsub_CONN.nii')};
-				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop x.P.Path_HOcort_CONNPop x.P.Path_HOsub_CONN};
+				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop x.P.Path_HOcort_CONNPop x.P.Path_HOsub_CONNPop};
 				MaskType  = [1 1 1 2 2 2 2 2];
 				% 1 - binary masks - presmooth, spline-interpolation, cut at 50%
 				% 2 - multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding

@@ -91,6 +91,7 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 if nargin<2 || isempty(bSaveUnmasked)
     bSaveUnmasked = true;
 end
+
 if nargin<3 || isempty(bCompute4Sets)
     bCompute4Sets = 0;
 elseif iscell(bCompute4Sets)
@@ -104,16 +105,22 @@ elseif bCompute4Sets==0
 else
     error('Invalid bComputeSets option, skipping');
 end
+
 if nargin<5 || isempty(bSkipWhenMissingScans)
-    if isfield(x, 'bSkipWhenMissingScans') && ~isempty(x.bSkipWhenMissingScans) && x.bSkipWhenMissingScans==1
-        bSkipWhenMissingScans = true;
-    else
-        bSkipWhenMissingScans = false;
-    end
+	if isfield(x,'bSkipTemplateCreationWhenMissingScans') && ~isempty(x.bSkipTemplateCreationWhenMissingScans) && x.bSkipTemplateCreationWhenMissingScans==1
+		bSkipWhenMissingScans = true;
+	elseif isfield(x, 'bSkipWhenMissingScans') && ~isempty(x.bSkipWhenMissingScans) && x.bSkipWhenMissingScans==1
+		warning('x-struct field bSkipWhenMissingScans is deprecated, please use bSkipTemplateCreationWhenMissingScans instead.');
+		bSkipWhenMissingScans = true;
+	else
+		bSkipWhenMissingScans = false;
+	end
 end
+
 if nargin<6 || isempty(bRemoveOutliers)
     bRemoveOutliers = false;
 end
+
 if nargin<7 || isempty(FunctionsAre)
     FunctionsAre{1} = {@xASL_stat_MeanNan,@xASL_stat_StdNan};
     FunctionsAre{2} = {'mean' 'sd'};
@@ -125,9 +132,11 @@ else
         FunctionsAre{2}{1} = FunctionsAre{2};
     end    
 end 
+
 if nargin<8 || isempty(bUpdateMetadata)
     bUpdateMetadata = false;
 end
+
 if nargin<9 || isempty(SmoothingFWHM)
     SmoothingFWHM = [0 0 0];
 elseif length(SmoothingFWHM)~=3 || ~isnumeric(SmoothingFWHM)
@@ -137,6 +146,7 @@ elseif any(SmoothingFWHM<0)
 else
     SmoothingFWHM = double(SmoothingFWHM);
 end
+
 if nargin<10 || isempty(bSaveMasks4QC)
     x.S.bSaveMasks4QC = 0;
 elseif bSaveMasks4QC==1
