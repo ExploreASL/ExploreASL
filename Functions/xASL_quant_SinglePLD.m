@@ -15,19 +15,22 @@ function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x)
 % DESCRIPTION: This script performs a multi-step quantification, by
 %              initializing a ScaleImage that travels through this script & gets changed by the following quantification
 %              factors:
-%              1)    PLD scalefactor (gradient if 2D multi-slice) (if x.ApplyQuantification(3))
-%              2)    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
+%
+%              1.    {{PLD scalefactor}} (gradient if 2D multi-slice) (if x.ApplyQuantification(3))
+%              2.    {{Label decay scale factor}} for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
 %                    Single-compartment model: Alsop MRM 2014
 %                    Dual-compartment model: Wang MRM 2002: Gevers JMRI 2012 (if x.ApplyQuantification(3))
-%              3)    Scaling to physiological units [ml/gr/ms =>ml/100gr/min =>(60,000 ms=>min)(1 gr=>100gr)]
+%              3.    {{Scaling to physiological units}} [ml/gr/ms =>ml/100gr/min =>(60,000 ms=>min)(1 gr=>100gr)]
 %                    (if x.ApplyQuantification(3))
-%              4)    Vendor-specific scalefactor (if x.ApplyQuantification(1) -> future move to dcm2niiX stage)
+%              4.    {{Vendor-specific scalefactor}} (if x.ApplyQuantification(1) -> future move to dcm2niiX stage)
 %              Finally, we:
-%              5)    Divide PWI/M0 (if x.ApplyQuantification(5))
-%              6)    Print parameters used
+%              5.    Divide PWI/M0 (if x.ApplyQuantification(5))
+%              6.    Print parameters used
+%
 %              Note that the output always goes to the CBF image (in the
 %              future this could go to different stages, e.g. dcm2niiX or
 %              PWI stage)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x);
 % __________________________________

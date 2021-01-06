@@ -14,15 +14,18 @@ function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, OrientationPath, ResampleP
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function converts a NIfTI file to one that is ready to convert to DICOM for
 %              PACS visualization purposes:
+%
 %              For scaling/visualization:
-%              1) Remove peak signal
-%              2) Remove valley signal
-%              3) Remove NaNs
-%              4) Rescale to 12 bit integers
-%              5) Save NIfTI. We also zip the NIfTI as this NIfTI won't be opened by ExploreASL
-%              6) Manage scale slope/datatype
-%              7) Apply original orientation
-%              8) Zip NIfTI
+%
+%              1. Remove peak signal
+%              2. Remove valley signal
+%              3. Remove NaNs
+%              4. Rescale to 12 bit integers
+%              5. Save NIfTI. We also zip the NIfTI as this NIfTI won't be opened by ExploreASL
+%              6. Manage scale slope/datatype
+%              7. Apply original orientation
+%              8. Zip NIfTI
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_io_MakeNifti4DICOM(x.P.PathCBF, x);
 % __________________________________

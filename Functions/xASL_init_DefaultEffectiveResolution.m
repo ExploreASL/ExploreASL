@@ -21,9 +21,10 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 % segments can affect the smoothness.
 %
 % This function conducts the following steps:
-% 1) Educated-guess FWHM
-% 2) Attempt accounting for in-plane interpolation in reconstruction
-% 3) Calculate and report effective spatial resolution
+%
+% 1. Educated-guess FWHM
+% 2. Attempt accounting for in-plane interpolation in reconstruction
+% 3. Calculate and report effective spatial resolution
 %
 % EXAMPLE: EffectiveResolution = xASL_init_DefaultEffectiveResolution('/MyStudy/sub-001/ASL_1/ASL4D.nii.gz, x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------

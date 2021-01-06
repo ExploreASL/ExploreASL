@@ -15,7 +15,9 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 % or other derivatives that need a quantification, e.g. FEAST
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This submodule converts PWIs to quantified CBF maps (or related derivatives):
+% DESCRIPTION: This submodule converts PWIs to quantified CBF maps (or
+% related derivatives). Note that we don't delete x.P.Path_PWI4D here, as
+% this NIfTI file may be needed by xASL_wrp_VisualQC_ASL.m
 %
 %           1. Load PWI
 %           2. Prepare M0
@@ -27,6 +29,7 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 %           8. Perform quantification
 %           9. Save files
 %          10. Perform FEAST quantification (if exist)
+%          11. Create standard space masked image to visualize masking effect
 %
 % EXAMPLE: xASL_wrp_Quantify(x);
 % __________________________________
@@ -34,7 +37,7 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 0)   Administration
+%% 0.   Administration
 
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
@@ -67,7 +70,7 @@ if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
 end
 
 %% ------------------------------------------------------------------------------------------------
-%% 1    Load PWI
+%% 1.   Load PWI
 fprintf('%s\n','Loading PWI & M0 images');
 
 % Load ASL PWI
@@ -93,7 +96,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 2    Prepare M0
+%% 2.   Prepare M0
 if isnumeric(x.M0)
         % Single value per scanner
         % In this case we assume that this nifti value has been properly acquired,
@@ -148,7 +151,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 3    Hematocrit & blood T1 correction
+%% 3.   Hematocrit & blood T1 correction
 if isfield(x,'Hematocrit')
         x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit);
 elseif isfield(x,'hematocrit')
@@ -204,7 +207,7 @@ else
 
 
     %% ------------------------------------------------------------------------------------------------
-    %% 6    Initialize quantification parameters
+    %% 6.   Initialize quantification parameters
     if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments) || x.Q.nCompartments>2
         x.Q.nCompartments = 1; % by default, we use a single-compartment model, as proposed by the Alsop et al. MRM 2014 concensus paper
     end
@@ -237,13 +240,13 @@ else
            x.Q.LabelingType = 'CASL';
     end
 
-    if ~isfield(x.Q,'BackGrSupprPulses')
+    if ~isfield(x.Q,'BackgroundSuppressionNumberPulses')
         warning('No background suppression pulses known, assuming no background suppression');
-        x.Q.BackGrSupprPulses = 0;
+        x.Q.BackgroundSuppressionNumberPulses = 0;
     end
 
 
-    %% 7    Labeling efficiency
+    %% 7.   Labeling efficiency
     if ~isfield(x.Q,'LabelingEfficiency') || isempty(x.Q.LabelingEfficiency)
         if ~isfield(x.Q,'LabelingEfficiency')
             switch lower(x.Q.LabelingType)
@@ -256,7 +259,7 @@ else
     end
     x.Q.LabEff_Bsup = 1; % default for no background suppression
     % Apply the effect of background suppression pulses on labeling efficiency
-    switch x.Q.BackGrSupprPulses
+    switch x.Q.BackgroundSuppressionNumberPulses
         case 0 % when you have an M0, but no background suppression used for ASL
             % Then the labeling efficiency doesn't change by background suppression
         case 2 % e.g. Philips 2D EPI or Siemens 3D GRASE
@@ -292,7 +295,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 9	Save files
+%% 9.	Save files
 
 fprintf('%s\n','Saving PWI & CBF niftis');
 
@@ -301,9 +304,32 @@ xASL_io_SaveNifti(PWI_Path, OutputPath, CBF, 32, 0);
 
 
 %% ------------------------------------------------------------------------------------------------
-%% 10    FEAST quantification
+%% 10.   FEAST quantification
 % run FEAST quantification if crushed & non-crushed ASL sessions exist
 xASL_quant_FEAST(x);
+
+
+%% ------------------------------------------------------------------------------------------------
+%% 11.  Create standard space masked image to visualize masking effect
+if strcmp(OutputPath, x.P.Pop_Path_qCBF)
+    % Load CBF image
+    MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
+    % Mask vascular voxels (i.e. set them to NaN)
+    MaskVascularMNI = xASL_io_Nifti2Im(x.P.Pop_Path_MaskVascular);
+    MaskedCBF(~MaskVascularMNI) = NaN;
+    
+    % Mask susceptibility voxels (i.e. set them to NaN)
+    if strcmpi(x.Sequence, '2d_epi') || strcmpi(x.Sequence, '3d_grase')
+        if ~xASL_exist(x.P.Path_Pop_MaskSusceptibility)
+            warning([x.P.Path_Pop_MaskSusceptibility ' missing, cannot create ' x.P.Pop_Path_qCBF_masked]);
+            return;
+        else
+            MaskSusceptibility = xASL_io_Nifti2Im(x.P.Path_Pop_MaskSusceptibility);
+            MaskedCBF(~MaskSusceptibility) = NaN;
+        end
+    end
+    xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_qCBF_masked, MaskedCBF, [], false);
+end
 
 
 end

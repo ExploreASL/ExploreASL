@@ -20,7 +20,7 @@ SequenceName = {'Philips2DEPI1'     'Philips2DEPI2' 'Siemens2DEPI' 'Siemens3DGRA
 Sites        = {'(020|022|030|040)' '050'           '(012|031)'    '(010|011|060)'};
 
 G.M0 				  = {'separate_scan' 'separate_scan' 'no_background_suppression' 'separate_scan'};
-G.BackGrSupprPulses   = {2 2 0 2};
+G.BackgroundSuppressionNumberPulses   = {2 2 0 2};
 G.readout_dim         = {'2D' '2D' '2D' '3D'};
 G.Vendor        	  = {'Philips' 'Philips' 'Siemens' 'Siemens'};
 G.LabelingType        = {'CASL' 'CASL' 'PASL' 'PASL'};

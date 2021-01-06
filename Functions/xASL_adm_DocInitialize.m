@@ -79,6 +79,8 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
     
+    % Add DATAPAR.md text to ImportModule
+    addDATAPARtoImport(fullfile(x.MyPath,'DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
     
     %% Update documentation read me files in the ExploreASL folder structure
     if updateExploreASL
@@ -181,6 +183,49 @@ function convertLicenseToMarkdown(filePath,newPath)
 
 end
 
+%% Add DATAPAR.md text to Import Module
+function addDATAPARtoImport(dataParMdPath,ImportModulePath)
 
+    %% Open DATAPAR
+    file_id=fopen(dataParMdPath,'r');
+    text_cell=cell(1);
+    while 1
+        text_line_read=fgetl(file_id);
+        if text_line_read == -1
+            break
+        else
+            text_cell(end,1)=cellstr(text_line_read);
+            text_cell(end+1,1)=cell(1);
+        end
+    end
+    fclose(file_id);
+    
+    %% Open Import Module
+    file_id=fopen(ImportModulePath,'r');
+    text_cell2=cell(1);
+    while 1
+        text_line_read=fgetl(file_id);
+        if text_line_read == -1
+            break
+        else
+            text_cell2(end,1)=cellstr(text_line_read);
+            text_cell2(end+1,1)=cell(1);
+        end
+    end
+    fclose(file_id);
+    
+    %% Updated file
+    
+    % Concatenate cell arrays
+    text_cell_total = vertcat(text_cell2,text_cell);
+    
+    % Write cell arrays back to file
+    file_id=fopen(ImportModulePath,'w');
+    for i=1:length(text_cell_total)    
+        fprintf(file_id,'%s\n', text_cell_total{i});
+    end
+    fclose(file_id);
+
+end
 
 

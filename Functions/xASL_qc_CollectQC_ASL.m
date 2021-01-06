@@ -11,7 +11,9 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
 %   x        - same as input
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This functions collects QC parameters for the ASL module
+%
 %              These are stored in x.Output.ASL:
+%
 %              ID - SubjectName
 %              ASL_LR_flip_YesNo - Checks whether any image processing changed the left-right orientation
 %                                  by checking whether the determinant differs between nii.mat & nii.mat0
@@ -20,6 +22,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
 %               MotionExcl_Perc  - percentage of excluded outliers
 %               MotionMax_mm     - max motion
 %               MotionSD_mm      - SD motion
+%
 %              ASL quantification (strange average CBF, or strange GM-WM contrast)
 %              ASL acquisition parameters (should be fairly consistent over subjects/scans):
 %               TE - echo time

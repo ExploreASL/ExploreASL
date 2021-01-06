@@ -75,6 +75,10 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
     
     if x.ProcessData==0 || x.ProcessData==2
+        if x.ProcessData==2 && nargout==0
+            warning('Data loading requested but no output structure defined');
+            fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
+        end
         return; % skip processing
     elseif ~isdeployed && ~SkipPause % if this exists, we skip the break here
         fprintf('%s\n','Press any key to start processing & analyzing');

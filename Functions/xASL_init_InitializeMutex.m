@@ -18,8 +18,10 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 % module for a single scan) to allow parallelization. It also allows
 % stopping and continuing of ExploreASL. This function runs the following
 % steps:
-% 1) Lock folder management
-% 2) Initialize mutex object
+%
+% 1. Lock folder management
+% 2. Initialize mutex object
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [x] = xASL_init_InitializeMutex(x, 'xASL_module_Structural')
 % __________________________________

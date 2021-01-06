@@ -19,12 +19,13 @@ function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %              PhaseEncodingAxis is consistent through all the volumes, if not the nothing is merged; this is applied to a generic case
 %              and 3 other specific Siemens scenarios are implemented:
 %
-%              i) All NII files have two volumes, then simply concatenate according to the last number.
-%              ii) Two files with a single volume each are merged according to the last number in the file name.
-%              iii) Multiple files with each containing a single volume are sorted to tags ASL4D_x_x_Y and controls ASL4D_Y and merged in the order
+%              - i) All NII files have two volumes, then simply concatenate according to the last number.
+%              - ii) Two files with a single volume each are merged according to the last number in the file name.
+%              - iii) Multiple files with each containing a single volume are sorted to tags ASL4D_x_x_Y and controls ASL4D_Y and merged in the order
 %                   of the last number in the filename (Y) alternating the tags and controls
 %
 %              This function performs the following steps in subfunctions:
+%
 %              1. xASL_bids_MergeNifti_M0Files Generic merging of M0 files
 %              2. xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
 %              3. xASL_bids_MergeNifti_AllASLFiles Merge any ASL files

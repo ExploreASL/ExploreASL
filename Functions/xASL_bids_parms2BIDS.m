@@ -50,17 +50,18 @@ end
 %% 1) Define field names that need to be convert/renamed/merged
 
 % Fields with these names need to have the time converted between XASL and BIDS, and define their recommended range in ms
-convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1'};
-convertTimeFieldsRange = [0.5        5                10            5                  5                  100       10   100;...% Minimum in ms
-                          500        20000            10000         5000               400                5000      500  5000];% Maximum in ms   
+convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'BackgroundSuppressionPulseTime'};
+convertTimeFieldsRange = [0.5        5                10            5                  5                  100       10   100        5;...% Minimum in ms
+                          500        20000            10000         5000               400                5000      500  5000       10000];% Maximum in ms   
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
-xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'};
+xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
+	           'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses'};
 
 % Some JSON fields need to be updated to fit the BIDS definition
 % This is a one way process of changing the names from old to new
-updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'PhilipsRWVIntercept'};
-updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'        'RWVIntercept'};
+updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'PhilipsRWVIntercept' 'BackGrSupprPulses'};
+updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'        'RWVIntercept'        'BackgroundSuppressionNumberPulses'};
 
 % These fields have different names in xASL and in BIDS
 % They are therefore renamed depending on the type of output

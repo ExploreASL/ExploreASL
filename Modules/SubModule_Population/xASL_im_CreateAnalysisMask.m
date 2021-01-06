@@ -73,22 +73,14 @@ MaskVascularPath = fullfile(x.S.StatsDir,'MaskVascular.nii');
 MaskSusceptibilityPath = fullfile(x.S.StatsDir,'MaskSusceptibility.nii');
 
 % Define pre-existing paths, including warning when less or more than 1 are found
-PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^FoV_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskVascular_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pGM_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pWM_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pCSF_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^T1_.*bs-mean_Unmasked\.nii$', 'FPList', [1 1]);
-
-% Set to use first mask
-if ~isempty(PathFoV); PathFoV = PathFoV{1}; end
-if ~isempty(PathVascularMask); PathVascularMask = PathVascularMask{1}; end
-if ~isempty(PathSusceptibilityMask); PathSusceptibilityMask = PathSusceptibilityMask{1}; end
-if ~isempty(PathpGM); PathpGM = PathpGM{1}; end
-if ~isempty(PathpWM); PathpWM = PathpWM{1}; end
-if ~isempty(PathpCSF); PathpCSF = PathpCSF{1}; end
-if ~isempty(PathT1); PathT1 = PathT1{1}; end
-
+% First for SubjectsSessions (e.g. ASL)
+PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
+% Then for Subjects (e.g. structural)
+PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pGM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pCSF_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
 
 
 if ~bSkipStandard
@@ -160,7 +152,6 @@ if ~bSkipStandard
 end
 %% B2) Save FOV mask for each subject
 if x.bNativeSpaceAnalysis
-	x = xASL_adm_DefineASLResolution(x);
 	for iSession=1:x.nSessions
 		%x.SESSIONS{iSession}
 
@@ -171,20 +162,25 @@ if x.bNativeSpaceAnalysis
 			x.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 			x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
+			x = xASL_adm_DefineASLResolution(x);
 
 			xASL_TrackProgress(SubjSess,x.nSubjects*x.nSessions);
 			if xASL_exist(x.P.Path_PWI)
 				listMasks = {MaskSusceptibilityPath fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
 					fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') fullfile(x.D.MapsSPMmodifiedDir,'MNI_structural.nii')...
-					fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') fullfile(x.D.AtlasDir,'Hammers.nii')};
-				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop};
-				listType  = [ 1 1 1 2 2 2];
+					fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') fullfile(x.D.AtlasDir,'Hammers.nii')...
+                    fullfile(x.D.AtlasDir,'HOcort_CONN.nii') fullfile(x.D.AtlasDir,'HOsub_CONN.nii')};
+				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop x.P.Path_HOcort_CONNPop x.P.Path_HOsub_CONN};
+				MaskType  = [1 1 1 2 2 2 2 2];
 				% 1 - binary masks - presmooth, spline-interpolation, cut at 50%
-				% 2 - multi-label masks - no presmooth, nearest-neighbot interpolation, no thresholding
+				% 2 - multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding
+                % PM:   in the future we can also do option 1 for multi-label
+                %       masks, by splitting them in multiple individual masks and
+                %       treating those separately
 
 				for kk = 1:length(listMasks)
 					if xASL_exist(listMasks{kk},'file')
-						switch (listType(kk))
+						switch (MaskType(kk))
 							case 1
 								% Pre-smooth the mask before downsampling to native space
 								[tmpPath,tmpFile,tmpExt] = xASL_fileparts(listOutputs{kk});

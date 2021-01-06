@@ -70,6 +70,20 @@ likewise if xasl_quality is set to 2 (when WMH_SEGM pre-exists), load ps_LST_lpa
 *********************************************************************************************************
 REDUCE CODE SIZE
 
+DATE+Name: 2020-11-29 HM (#243)
+DESCRIPTION: Avoid initializing unused toolboxes
+FILE:
+External/SPMmodified/config/spm_cfg.m @ several locations
+
+DATE+Name: 2020-11-29 HM (#243)
+DESCRIPTION: Move SPM templates used by CAT12 out of Fieldmap folder
+FILE:
+External/SPMmodified/toolbox/cat12/cat_defaults.m @ 224
+(also same changes in:
+External/SPMmodified/toolbox/cat12/cat_run1173plus/cat_defaults1173plus.m
+External/SPMmodified/toolbox/cat12/cat_run1585/cat_defaults1585.m
+External/SPMmodified/toolbox/cat12/cat_vol_groupwise_ls.m)
+
 DATE+Name: 2020-07-04 HM
 DESCRIPTION:
 Disable previous CAT12 versions for increased stability
@@ -96,7 +110,7 @@ Removed atlases, partly
 left brainmask.nii, cat.nii,
 & all Template_._IXI555_MNI152_(GS|)\.nii
 SPM/toolbox/DARTEL/icbm152.nii
-cat12/templates_volumes/TPM_Age11.5.nii
+cat12/templates_volumes/TPM_Age11.5.nii (but returned by JP later?)
 
 DATE+NAME:2019_11_13, HM
 DESCRIPTION:
@@ -337,6 +351,10 @@ jsmn.c at line 269
 
 *********************************************************************************************************
 OTHER CODE HACKS
+
+DATE+NAME:2020-10-26 HM (issue #190)
+DESCRIPTION: Add atlas ROI creation comments and add creation of catROI_T1.tsv
+FILE: cat_main.m, 127
 
 DATE+NAME:2020-09-02 MS (issue #114)
 DESCRIPTION:
