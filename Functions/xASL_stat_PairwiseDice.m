@@ -43,6 +43,10 @@ function [DiceCoeff] = xASL_stat_PairwiseDice(GroupA, GroupB)
 
 
 %% 1. Admin (check cell, image exist etc)
+if nargin < 2 || isempty(GroupA) || isempty(GroupB)
+	error('Two inputs are required.');
+end
+
 if ~iscell(GroupA) && isnumeric(GroupA) && ndims(GroupA)==4
     fprintf('Group A matrix detected, converting to cell structure\n');
     TempMatrix = GroupA;
