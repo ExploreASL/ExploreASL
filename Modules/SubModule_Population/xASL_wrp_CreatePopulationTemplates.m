@@ -106,15 +106,27 @@ else
     error('Invalid bComputeSets option, skipping');
 end
 
-if nargin<5 || isempty(bSkipWhenMissingScans)
-	if isfield(x,'bSkipTemplateCreationWhenMissingScans') && ~isempty(x.bSkipTemplateCreationWhenMissingScans) && x.bSkipTemplateCreationWhenMissingScans==1
+if nargin>4 && ~isempty(bSkipWhenMissingScans) && ~islogical(bSkipWhenMissingScans)
+    warning('Invalid input bSkipWhenMissingScans');
+end
+
+if isfield(x,'bSkipTemplateCreationWhenMissingScans') && ~isempty(x.bSkipTemplateCreationWhenMissingScans)
+    if x.bSkipTemplateCreationWhenMissingScans==1
+        bSkipWhenMissingScans = true;
+        if nargin>4 && ~isempty(bSkipWhenMissingScans) && bSkipWhenMissingScans==0
+            warning('bSkipWhenMissingScans ignored, using x.bSkipTemplateCreationWhenMissingScans instead');
+        end
+    elseif x.bSkipTemplateCreationWhenMissingScans==0
+        bSkipWhenMissingScans = false;
+        if nargin>4 && ~isempty(bSkipWhenMissingScans) && bSkipWhenMissingScans==1
+            warning('bSkipWhenMissingScans ignored, using x.bSkipTemplateCreationWhenMissingScans instead');
+        end
+    end
+elseif nargin>4 && ~isempty(bSkipWhenMissingScans) && x.bSkipWhenMissingScans==1
+		warning('x-struct field bSkipWhenMissingScans is deprecated, please use bSkipTemplateCreationWhenMissingScans instead');
 		bSkipWhenMissingScans = true;
-	elseif isfield(x, 'bSkipWhenMissingScans') && ~isempty(x.bSkipWhenMissingScans) && x.bSkipWhenMissingScans==1
-		warning('x-struct field bSkipWhenMissingScans is deprecated, please use bSkipTemplateCreationWhenMissingScans instead.');
-		bSkipWhenMissingScans = true;
-	else
+else
 		bSkipWhenMissingScans = false;
-	end
 end
 
 if nargin<6 || isempty(bRemoveOutliers)
