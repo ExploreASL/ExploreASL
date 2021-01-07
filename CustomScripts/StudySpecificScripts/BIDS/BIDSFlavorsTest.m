@@ -3,7 +3,7 @@
 % Set the paths
 srcPath = '/pet/projekte/asl/data/BIDS/';
 
-flavorsPath  = fullfile(srcPath,'Flavors');
+flavorsPath  = fullfile(srcPath,'FlavorDatabase');
 conversionPath = fullfile(srcPath,'TmpConversion');
 referencePath = fullfile(srcPath,'TmpReference');
 %% Copy the source data apart
