@@ -165,15 +165,8 @@ function x = DataParTemplate(x)
 % x.Q.SaveCBF4D - boolean, true to also save 4D CBF timeseries, if ASL4D had timeseries (OPTIONAL, DEFAULT=false)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% PROCESSING PARAMETERS
+% GENERAL PROCESSING PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.SpikeRemovalThreshold - minimal t-stat improval needed to remove motion spikes (OPTIONAL, DEFAULT = 0.01) 
-%                         - examples:
-%                           - 1 = effectively disabling spike removal
-% x.motion_correction - boolean to perform motion correction in case of timeseries (OPTIONAL, DEFAULT = 1)
-%                     - options:
-%                       - 1 = on
-%                       - 0 = off
 % x.Quality - boolean specifying on which quality the pipeline should be run (OPTIONAL, DEFAULT = 1)
 %           - options:
 %             - 1 = normal quality 
@@ -196,12 +189,29 @@ function x = DataParTemplate(x)
 %                 - options:
 %                   - 1 = skip processing of a subject that does not have a M0 image
 %                   - 0 = do not skip anything
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% STRUCTURAL PROCESSING PARAMETERS
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% x.bRunModule_LongReg - run longitudinal registration (OPTIONAL, DEFAULT = 0)
+% x.bRunModule_DARTEL - run between-subject registration/create templates (OPTIONAL, DEFAULT = 0)
 % x.SegmentSPM12 - boolean to specify if SPM12 segmentation is run instead of CAT12 (OPTIONAL, DEFAULT = 0)
 %                - options:
 %                  - 1 = run SPM12
 %                  - 0 = run CAT12
 % x.bHammersCAT12 - boolean specifying if CAT12 should provide Hammers volumetric ROI results (OPTIONAL, DEFAULT = 0)
 % x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% ASL PROCESSING PARAMETERS
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% x.motion_correction - boolean to perform motion correction in case of timeseries (OPTIONAL, DEFAULT = 1)
+%                     - options:
+%                       - 1 = on
+%                       - 0 = off
+% x.SpikeRemovalThreshold - minimal t-stat improval needed to remove motion spikes (OPTIONAL, DEFAULT = 0.01) 
+%                         - examples:
+%                           - 1 = effectively disabling spike removal
 % x.bRegistrationContrast - specifies the image contrast used for
 %                                 registration (OPTIONAL, DEFAULT = 2):
 %                           - 0 = Control->T1w
