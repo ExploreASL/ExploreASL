@@ -75,5 +75,4 @@ for nameField = fieldnames(jsonIn)'
 	end
 end
 
-
 end

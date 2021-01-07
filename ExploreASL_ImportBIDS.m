@@ -276,7 +276,7 @@ end
 if bRunSubmodules(2)
 	% Loads the general configuration necessary for the conversion and BIDS saving
 	bidsPar = xASL_bids_Config();
-
+	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% Load the study parameters + dataset description
 	if ~exist(studyParPath,'file')
@@ -298,7 +298,7 @@ if bRunSubmodules(2)
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% Make the output directory and save the description
-		
+	
 	if ~exist(fullfile(imPar.BidsRoot),'dir')
 		mkdir(fullfile(imPar.BidsRoot));
 	end
@@ -437,6 +437,17 @@ if bRunSubmodules(2)
 				% Take all the manually predefined fields from studyPar
 				jsonLocal = studyPar;
 				
+				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+				% In case of LookLocker and manually defined multiple flip angle, use this as a priority
+				if isfield(studyPar,'LookLocker') && ~isempty(studyPar.LookLocker) && studyPar.LookLocker
+					if isfield(studyPar,'FlipAngle') && ~isempty(studyPar.FlipAngle) && length(studyPar.FlipAngle)>1
+						if isfield(jsonDicom,'FlipAngle') && ~isequal(jsonDicom.FlipAngle,jsonLocal.FlipAngle)
+							jsonDicom.FlipAngle = jsonLocal.FlipAngle;
+						end
+					end
+				end
+				
+				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 				% Overwrite differing fields with those from Dicom, but report all differences
 				strDifferentFields = '';
 				for fn = fieldnames(jsonDicom)'
@@ -484,484 +495,400 @@ if bRunSubmodules(2)
 						jsonLocal.ArterialSpinLabelingType = jsonLocal.LabelingType;
 					end
 				end
-%% FEATURES TO ADD
-	
-	% For M0 in aslcontext, filling in PLD and labdur as zero
-
-	% Test if all works equally well with dicominfo only
-	
-	% Multi TI - recognized as multiple TIs (and for similar fields as well) - give priority to the study-par file if the dicom value is single...
-	
-	% After final comparison, need to remove the random study descriptions and rename it correctly
-
-	% Flip angle priority of studypar over data
-	
-	% Automatic reading of more ASL parameters
-	
-	% Q2TIPS has two timing entries
-	
-% 	if ~isfield(importStr{ii}.par,'ReadoutSegments') && isfield(importStr{ii}.x,'NumberSegments')
-%		importStr{ii}.par.NumberSegments = importStr{ii}.x.NumberSegments;
-%	end	
-	
-% Slice readouttiming for 3D can be set to 0
-
-% Run the defacing module
-% Do the anonymization
-
-	% This can all go, will be in files
-% 	% Labeling delays and durations
-% 	if strcmpi(importStr{ii}.par.ArterialSpinLabelingType,'PASL')
-% 		%importStr{ii}.par.LabelingDuration = 0;% importStr{ii}.x.LabelingDuration           = 1.800;  % for PASL this is TI1
-% 		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
-% 		if importStr{ii}.par.BolusCutOffFlag
-% 			importStr{ii}.par.BolusCutOffDelayTime = importStr{ii}.par.BolusCutOffDelayTime + importStr{ii}.x.LabelingDuration;
-% 		end
-% 	else
-% 		importStr{ii}.par.LabelingDuration = importStr{ii}.x.LabelingDuration;
-% 		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
-% 	end
-
-%% CODE TO REVIEW	
-		
-			
-			% Check if BolusDuration field is present and not in conflict with the BolusCutoffDelayTime
-			if isfield(jsonDicom,'BolusDuration')
-				if ~isfield(studyPar,'BolusCutOffDelayTime')
-					warning('Bolus duration obtained from DICOM, but not correctly redefined.');
-				elseif ~isequal(jsonDicom.BolusDuration,studyPar.BolusCutOffDelayTime(1))
-					warning('Bolus duration obtained from DICOM and the manualy defined one differ.');
+				
+				% The Labeling defined in a private GE field has a priority
+				if isfield(jsonLocal,'GELabelingDuration') && ~isempty(jsonLocal.GELabelingDuration)
+					if isfield(jsonLocal,'LabelingDuration') && ~isequal(jsonLocal.GELabelingDuration,jsonLocal.LabelingDuration)
+						warning('Labeling duration mismatch with GE private field.');
+					end
+					jsonLocal.LabelingDuration = jsonLocal.GELabelingDuration;
 				end
-			end
-						
-			if isfield(jsonLocal,'GELabelingDuration')
-				if isfield(studyPar,'LabelingDuration') && jsonLocal.GELabelingDuration ~= studyPar.LabelingDuration
-					warning('Labeling duration mismatch with GE private field.');
+				
+				% Free info about the sequence, now just the scanner type+software
+				if isfield(jsonDicom,'ManufacturersModelName')
+					jsonLocal.PulseSequenceDetails = jsonDicom.ManufacturersModelName;
 				end
-				if isfield(jsonDicom,'LabelingDuration') && jsonLocal.GELabelingDuration ~= studyPar.LabelingDuration
-					warning('Labeling duration mismatch with GE private field.');
+				if isfield(jsonDicom,'SoftwareVersions')
+					if ~isfield(jsonLocal,'PulseSequenceDetails')
+						jsonLocal.PulseSequenceDetails = '';
+					end
+					if ~isempty(jsonLocal.PulseSequenceDetails)
+						jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails '-'];
+					end
+					jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails jsonDicom.SoftwareVersions];
 				end
-				jsonLocal.LabelingDuration = jsonLocal.GELabelingDuration;
-			end
-			
-			% BSup sanity check
-			%if par.BackgroundSuppression = false
-			%	then null and remove 'BackgroundSuppressionPulseTime and BackgroundSuppressionNumberPulses'
-			%	verify that importStr{ii}.par.BackgroundSuppressionNumberPulses = length(importStr{ii}.par.BackgroundSuppressionPulseTime);
-			
-			% BSup sanity check - remove pulsenumbers and timings if BSup is OFF
-			if jsonLocal.BackgroundSuppression == false
-				if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
-					jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionNumberPulses');
-				end
-				if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
-					jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionPulseTime');
-				end
-			else
-				% If times are given, but not the number of pulses, then assign the length
-				if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
-					if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
-						if jsonLocal.BackgroundSuppressionNumberPulses ~= length(jsonLocal.BackgroundSuppressionPulseTime)
-							fprintf('Warning: Number of pulses and their timings do not match.');
-						end
+				
+				% Process all the data and automatically fill in the missing parameters
+				if strcmpi(jsonLocal.MRAcquisitionType,'2D')
+					jsonLocal.PulseSequenceType = '2D_EPI';
+				else
+					if strcmpi(jsonLocal.Manufacturer,'GE') || strcmpi(jsonLocal.Manufacturer,'GE_WIP') || strcmpi(jsonLocal.Manufacturer,'GE_product')
+						jsonLocal.PulseSequenceType = '3D_spiral';
 					else
-						jsonLocal.BackgroundSuppressionNumberPulses = length(jsonLocal.BackgroundSuppressionPulseTime);
+						jsonLocal.PulseSequenceType = '3D_GRASE';
 					end
 				end
-			end
-			
-			% Free info about the sequence, now just the scanner type+software
-			if isfield(jsonDicom,'ManufacturersModelName')
-				jsonLocal.PulseSequenceDetails = jsonDicom.ManufacturersModelName;
-			end
-			if isfield(jsonDicom,'SoftwareVersions')
-				if ~isfield(jsonLocal,'PulseSequenceDetails')
-					jsonLocal.PulseSequenceDetails = '';
-				end
-				if ~isempty(jsonLocal.PulseSequenceDetails)
-					jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails '-'];
-				end
-				jsonLocal.PulseSequenceDetails = [jsonLocal.PulseSequenceDetails jsonDicom.SoftwareVersions];
-			end
-			
-			% Process all the data and automatically fill in the missing parameters
-			if strcmpi(jsonLocal.MRAcquisitionType,'2D')
-				jsonLocal.PulseSequenceType = '2D_EPI';
-			else
-				if strcmpi(jsonLocal.Manufacturer,'GE') || strcmpi(jsonLocal.Manufacturer,'GE_WIP') || strcmpi(jsonLocal.Manufacturer,'GE_product')
-					jsonLocal.PulseSequenceType = '3D_spiral';
-				else
-					jsonLocal.PulseSequenceType = '3D_GRASE';
-				end
-			end
-			
-			% Overwrite differing fields with those from the Phoenix protocol, but report all differences
-			if isfield(jsonDicom,'PhoenixAnalyzed') && ~isempty(jsonDicom.PhoenixAnalyzed)
-				strDifferentFields = '';
-				for fn = fieldnames(jsonDicom.PhoenixAnalyzed)'
-					if isfield(jsonLocal,fn{1})
-						% If the field is there, then report different fields
-						if ~isequal(jsonLocal.(fn{1}),jsonDicom.PhoenixAnalyzed.(fn{1}))
-							% Just if this is not only a different vector orientation
-							if ~isnumeric(jsonLocal.(fn{1})) ||...
-									(size(jsonLocal.(fn{1}),1)>1 && size(jsonLocal.(fn{1}),1) >1) ||...
-									~isequal((jsonLocal.(fn{1}))',jsonDicom.PhoenixAnalyzed.(fn{1}))
-								strDifferentFields = [strDifferentFields ' ' fn{1}];
+				
+				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+				% Overwrite differing fields with those from the Phoenix protocol, but report all differences
+				if isfield(jsonDicom,'PhoenixAnalyzed') && ~isempty(jsonDicom.PhoenixAnalyzed)
+					strDifferentFields = '';
+					for fn = fieldnames(jsonDicom.PhoenixAnalyzed)'
+						if isfield(jsonLocal,fn{1})
+							% If the field is there, then report different fields
+							if ~isequal(jsonLocal.(fn{1}),jsonDicom.PhoenixAnalyzed.(fn{1}))
+								% Just if this is not only a different vector orientation
+								if ~isnumeric(jsonLocal.(fn{1})) ||...
+										(size(jsonLocal.(fn{1}),1)>1 && size(jsonLocal.(fn{1}),1) >1) ||...
+										~isequal((jsonLocal.(fn{1}))',jsonDicom.PhoenixAnalyzed.(fn{1}))
+									strDifferentFields = [strDifferentFields ' ' fn{1}];
+								end
 							end
 						end
+						% Prioritize the Phoenix field values in the general case
+						jsonLocal.(fn{1}) = jsonDicom.PhoenixAnalyzed.(fn{1});
 					end
-					% Prioritize the Phoenix field values in the general case
-					jsonLocal.(fn{1}) = jsonDicom.PhoenixAnalyzed.(fn{1});
-				end
-				% Report if certain fields were different as a warning
-				if ~isempty(strDifferentFields)
-					warning('The following user-defined/DICOM fields and DICOM-Phoenix fields differ:\n %s \n',strDifferentFields);
-				end
-			end
-				
-			if isfield (studyPar,'SliceReadoutTime')
-				if isfield(studyPar,'SliceTiming') && ~isequal(studyPar.SliceTiming,studyPar.SliceReadoutTime)
-					sprintf('Warning, difference in SliceTiming and SliceReadoutTime');
-				end
-				studyPar.SliceTiming = studyPar.SliceReadoutTime;
-			end
-			
-			% Fill in extra parameters based on the JSON from the data
-			if jsonLocal.MRAcquisitionType(1) == '2'
-				% Take the studyPar as a prior source of SliceTiming since this is mostly wrong in DICOM otherwise
-				if isfield(studyPar,'SliceTiming')
-					jsonLocal.SliceTiming = studyPar.SliceTiming;
+					% Report if certain fields were different as a warning
+					if ~isempty(strDifferentFields)
+						warning('The following user-defined/DICOM fields and DICOM-Phoenix fields differ:\n %s \n',strDifferentFields);
+					end
 				end
 				
-				% The siemens field is rather reliable though
-				if isfield(jsonLocal,'SiemensSliceTime') && ~isempty(jsonLocal.SiemensSliceTime)
-					jsonLocal.SliceTiming = jsonLocal.SiemensSliceTime;
+				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+				% BSup sanity check
+				if jsonLocal.BackgroundSuppression == false
+					% remove pulsenumbers and timings if BSup is OFF
+					if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
+						jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionNumberPulses');
+					end
+					if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
+						jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionPulseTime');
+					end
+				else
+					% If times are given, but not the number of pulses, then assign the length
+					if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
+						if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
+							if jsonLocal.BackgroundSuppressionNumberPulses ~= length(jsonLocal.BackgroundSuppressionPulseTime)
+								fprintf('Warning: Number of pulses and their timings do not match.');
+							end
+						else
+							jsonLocal.BackgroundSuppressionNumberPulses = length(jsonLocal.BackgroundSuppressionPulseTime);
+						end
+					end
 				end
 				
-				% If the length of SliceTiming fits to the number of slices, do nothing
-				if length(jsonLocal.SliceTiming) ~= size(imNii,3)
-					% if the length of studyPar.sliceTiming is higher than 1 and the difference non-zero then use this
-					if length(jsonLocal.SliceTiming) > 1 && abs(jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1)) > 0
-						jsonLocal.SliceTiming = jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1);
+				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+				% SliceReadoutTime from the manual entry is prioritized
+				if isfield (studyPar,'SliceReadoutTime')
+					if isfield(studyPar,'SliceTiming') && ~isequal(studyPar.SliceTiming,studyPar.SliceReadoutTime)
+						sprintf('Warning, difference in SliceTiming and SliceReadoutTime');
+					end
+					studyPar.SliceTiming = studyPar.SliceReadoutTime;
+				end
+				
+				% Fill in extra parameters based on the JSON from the data
+				if jsonLocal.MRAcquisitionType(1) == '2'
+					% Take the studyPar as a prior source of SliceTiming since this is mostly wrong in DICOM otherwise
+					if isfield(studyPar,'SliceTiming')
+						jsonLocal.SliceTiming = studyPar.SliceTiming;
 					end
 					
-					if abs(jsonLocal.SliceTiming) > 0
-						jsonLocal.SliceTiming = ((0:(size(imNii,3)-1))')*jsonLocal.SliceTiming;
+					% The Siemens field is rather reliable though
+					if isfield(jsonLocal,'SiemensSliceTime') && ~isempty(jsonLocal.SiemensSliceTime)
+						jsonLocal.SliceTiming = jsonLocal.SiemensSliceTime;
 					end
-				end
-			else
-				% 3D sequences should not have a SliceTiming or have it defined as zero
-				if isfield(jsonLocal,'SliceTiming')
-					jsonLocal = rmfield(jsonLocal,'SliceTiming');
-				end
-			end
+					
+					% If the length of SliceTiming fits to the number of slices, do nothing
+					if length(jsonLocal.SliceTiming) ~= size(imNii,3)
+						% if the length of studyPar.sliceTiming is higher than 1 and the difference non-zero then use this
+						if length(jsonLocal.SliceTiming) > 1 && abs(jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1)) > 0
+							jsonLocal.SliceTiming = jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1);
+						end
 						
-			if isfield(jsonLocal,'TotalReadoutTime')
-				if jsonLocal.TotalReadoutTime == 0
-					jsonLocal = rmfield(jsonLocal,'TotalReadoutTime');
-				else
-					jsonLocal.TotalReadoutTime = abs(jsonLocal.TotalReadoutTime);
-				end
-			end
-			
-			
-			
-			% Import the number of averages
-			if isfield(jsonLocal,'NumberOfAverages') && (max(jsonLocal.NumberOfAverages) > 1)
-				if isfield(studyPar,'TotalAcquiredVolumes')
-					if max(jsonLocal.NumberOfAverages) ~= studyPar.TotalAcquiredVolumes
-						warning('Discrepancy in the number of averages');
-					end
-				end
-			end
-			
-			%m0 true - check asl context (copied as is from the input)
-			%m0 false - mean control (or UseControlAsM0, no_background_suppression) (copied as is from the input)
-			%m0 value - use value numerical (copied as is from the input)
-			%m0 separate_file, or empty or anything - use that
-			%m0 missing, empty or separate_scan - assign path, true or false based on the data
-			
-			% Type of an M0 image
-			bJsonLocalM0isFile = 0;
-			if ~isfield(studyPar,'M0') || isempty(studyPar.M0) || strcmpi(studyPar.M0,'separate_scan')
-				if isfield(studyPar,'M0PositionInASL4D') && (max(studyPar.M0PositionInASL4D(:))>0)
-					jsonLocal.M0 = true;
-					jsonLocal.M0Type = bidsPar.strM0Included;
-				elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
-					if length(fSes)>1
-						jsonLocal.M0 = fullfile(bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel]);
-						jsonLocal.M0Type = bidsPar.strM0Separate;
-						bJsonLocalM0isFile = 1;
-					else
-						jsonLocal.M0 = fullfile(bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel]);
-						jsonLocal.M0Type = bidsPar.strM0Separate;
-						bJsonLocalM0isFile = 1;
+						if abs(jsonLocal.SliceTiming) > 0
+							jsonLocal.SliceTiming = ((0:(size(imNii,3)-1))')*jsonLocal.SliceTiming;
+						end
 					end
 				else
-					if ~isempty(strfind(studyPar.ASLContext,bidsPar.strM0scan))
+					% 3D sequences should not have a SliceTiming or have it defined as zero
+					if isfield(jsonLocal,'SliceTiming')
+						jsonLocal = rmfield(jsonLocal,'SliceTiming');
+					end
+				end
+				
+				% Import the number of averages
+				if isfield(jsonLocal,'NumberOfAverages') && (max(jsonLocal.NumberOfAverages) > 1)
+					if isfield(studyPar,'TotalAcquiredVolumes')
+						if max(jsonLocal.NumberOfAverages) ~= studyPar.TotalAcquiredVolumes
+							warning('Discrepancy in the number of averages');
+						end
+					end
+				end
+				
+				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+				% Define the M0 type
+				% Type of an M0 image
+				bJsonLocalM0isFile = 0;
+				if ~isfield(studyPar,'M0') || isempty(studyPar.M0) || strcmpi(studyPar.M0,'separate_scan')
+					if isfield(studyPar,'M0PositionInASL4D') && (max(studyPar.M0PositionInASL4D(:))>0)
 						jsonLocal.M0 = true;
 						jsonLocal.M0Type = bidsPar.strM0Included;
+					elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
+						jsonLocal.M0 = fullfile(bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel]);
+						jsonLocal.M0Type = bidsPar.strM0Separate;
+						bJsonLocalM0isFile = 1;
 					else
-						jsonLocal.M0 = false;
-						jsonLocal.M0Type = bidsPar.strM0Absent;
-					end
-				end
-			else
-				if strcmpi(studyPar.M0,'UseControlAsM0')
-					jsonLocal.M0 = bidsPar.strM0Absent;
-				else
-					if strcmpi(studyPar.M0,'no_background_suppression')
-						jsonLocal.M0 = bidsPar.strM0Absent;
-					else
-						jsonLocal.M0 = studyPar.M0;
-						if isnumeric(studyPar.M0)
-							jsonLocal.M0Type = bidsPar.strM0Estimate;
-							jsonLocal.M0Estimate = studyPar.M0;
-						elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
-							jsonLocal.M0Type = bidsPar.strM0Separate;
-						elseif ~isempty(strfind(studyPar.ASLContext,bidsPar.strM0scan))
+						if ~isempty(strfind(studyPar.ASLContext,bidsPar.strM0scan))
+							jsonLocal.M0 = true;
 							jsonLocal.M0Type = bidsPar.strM0Included;
 						else
+							jsonLocal.M0 = false;
 							jsonLocal.M0Type = bidsPar.strM0Absent;
 						end
 					end
-				end
-			end
-			
-			% If Post-labeling delay or labeling duration is longer than 1, but shorter then number of volumes
-			% then repeat it
-			listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVenc','FlipAngle','RepetitionTimePreparation'};
-			for iRepeat = 1:length(listFieldsRepeat)
-				if isfield(jsonLocal,(listFieldsRepeat{iRepeat})) && (length(jsonLocal.(listFieldsRepeat{iRepeat})) > 1) && (size(imNii,4) ~= length(jsonLocal.(listFieldsRepeat{iRepeat})))
-					if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
-						error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
-					else
-						jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat}),[1 size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat}))]);
-					end
-				end
-			end
-			
-			%if isfield(studyPar,'RepetitionTime') && studyPar.RepetitionTime ~= jsonLocal.RepetitionTime
-			%	warning('User defined repetition time differs from DICOM, using user defined: %d vs %d \n',studyPar.RepetitionTime,jsonLocal.RepetitionTime);
-			%end
-			
-			% Reformat ASLcontext field
-			% Remove ',' and ';' at the 
-			if (jsonLocal.ASLContext(end) == ';') || (jsonLocal.ASLContext(end) == ',')
-				jsonLocal.ASLContext = jsonLocal.ASLContext(1:(end-1));
-			end
-			
-			% Replace all ',' and ';' by \n
-			jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ' ','');
-			jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ';',',');
-			lengthASLContext = sum(jsonLocal.ASLContext == ',')+1;
-			jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ',',sprintf('\n'));
-			
-			
-			% Check if the length is the same
-			if size(imNii,4) ~= lengthASLContext
-				% Check if we can simply repeat it 
-				if mod(size(imNii,4),lengthASLContext)
-					error('Cannot find a match between the ASLContext and the 4th dimension of the NIFTI');
 				else
-					numRepeat = size(imNii,4)/lengthASLContext;
-					tmpStr = jsonLocal.ASLContext;
-					for iRepeat = 2:numRepeat
-						jsonLocal.ASLContext = sprintf('%s\n%s',jsonLocal.ASLContext,tmpStr);
-					end
-				end
-			end
-			jsonLocal.ASLContext = sprintf('%s\n',jsonLocal.ASLContext);
-			
-			% Remove the AslContext field and save it as a separate file
-			fContext = fopen([aslOutLabel '_' bidsPar.strAslContext '.tsv'],'w+');
-			fwrite(fContext,sprintf('volume_type\n'));
-			fwrite(fContext,jsonLocal.ASLContext);
-			fclose(fContext);
-			
-			jsonLocal = rmfield(jsonLocal,'ASLContext');
-			
-			if mm == 1
-				for nn = 1:2
-					if nn == 1
-						nnStrIn = '';
-						if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk},'M0PERev.nii'))
-							nnStrOut = '_dir-ap';
-							
-							tagPhaseEncodingDirection = 'j-';
-							jsonLocal.PhaseEncodingDirection = 'j-';
-							tagIntendedFor = [];
-							tagTotalReadoutTime = studyPar.TotalReadoutTime;
-							
-							if bJsonLocalM0isFile
-								jsonLocal.M0 = [jsonLocal.M0 nnStrOut '_' bidsPar.strM0scan '.nii.gz'];
-							end
-						else
-							if bJsonLocalM0isFile
-								jsonLocal.M0 = [jsonLocal.M0 '_' bidsPar.strM0scan '.nii.gz'];
-							end
-							nnStrOut = '';
-							tagPhaseEncodingDirection = [];
-							tagIntendedFor = [];
-							tagTotalReadoutTime = [];
-						end
+					if strcmpi(studyPar.M0,'UseControlAsM0')
+						jsonLocal.M0 = bidsPar.strM0Absent;
 					else
-						nnStrIn = 'PERev';
-						nnStrOut = '_dir-pa';
-						tagPhaseEncodingDirection = 'j';
-						tagIntendedFor = fullfile(bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel '_dir-ap' '_' bidsPar.strM0scan '.nii.gz']);
-						
-						if isfield(studyPar,'TotalReadoutTime')
-							tagTotalReadoutTime = studyPar.TotalReadoutTime;
+						if strcmpi(studyPar.M0,'no_background_suppression')
+							jsonLocal.M0 = bidsPar.strM0Absent;
 						else
-							tagTotalReadoutTime = [];
+							jsonLocal.M0 = studyPar.M0;
+							if isnumeric(studyPar.M0)
+								jsonLocal.M0Type = bidsPar.strM0Estimate;
+								jsonLocal.M0Estimate = studyPar.M0;
+							elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
+								jsonLocal.M0Type = bidsPar.strM0Separate;
+							elseif ~isempty(strfind(studyPar.ASLContext,bidsPar.strM0scan))
+								jsonLocal.M0Type = bidsPar.strM0Included;
+							else
+								jsonLocal.M0Type = bidsPar.strM0Absent;
+							end
 						end
 					end
-					% If M0, then copy M0 and add ASL path to the IntendedFor
-					if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk},['M0' nnStrIn '.nii']))
-						jsonM0 = spm_jsonread(fullfile(inSessionPath,['M0' nnStrIn '.json']));
-						imM0   = xASL_io_Nifti2Im(fullfile(inSessionPath,['M0' nnStrIn '.json']));
-						
-								
-						if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
-							scaleFactor = xASL_adm_GetPhilipsScaling(jsonM0,xASL_io_ReadNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii'])));
+				end
+				
+				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+				% If Post-labeling delay or labeling duration is longer than 1, but shorter then number of volumes then repeat it
+				listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVenc','FlipAngle','RepetitionTimePreparation'};
+				for iRepeat = 1:length(listFieldsRepeat)
+					if isfield(jsonLocal,(listFieldsRepeat{iRepeat})) && (length(jsonLocal.(listFieldsRepeat{iRepeat})) > 1) && (size(imNii,4) ~= length(jsonLocal.(listFieldsRepeat{iRepeat})))
+						if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
+							error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
 						else
-							scaleFactor = 0;
+							jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat}),[1 size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat}))]);
 						end
-						
-						if scaleFactor
-							imM0 = imM0 .* scaleFactor;
+					end
+				end
+				
+				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+				% Reformat ASLcontext field
+				% Remove ',' and ';' at the
+				if (jsonLocal.ASLContext(end) == ';') || (jsonLocal.ASLContext(end) == ',')
+					jsonLocal.ASLContext = jsonLocal.ASLContext(1:(end-1));
+				end
+				
+				% Replace all ',' and ';' by \n
+				jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ' ','');
+				jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ';',',');
+				lengthASLContext = sum(jsonLocal.ASLContext == ',')+1;
+				jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ',',sprintf('\n'));
+				
+				% Check if the length is the same
+				if size(imNii,4) ~= lengthASLContext
+					% Check if we can simply repeat it
+					if mod(size(imNii,4),lengthASLContext)
+						error('Cannot find a match between the ASLContext and the 4th dimension of the NIFTI');
+					else
+						numRepeat = size(imNii,4)/lengthASLContext;
+						tmpStr = jsonLocal.ASLContext;
+						for iRepeat = 2:numRepeat
+							jsonLocal.ASLContext = sprintf('%s\n%s',jsonLocal.ASLContext,tmpStr);
 						end
-							
-						jsonM0Write = jsonM0;
-						
-						if isfield(jsonLocal,'SliceTiming')
-							% Issue a warning if the SliceTiming was already existing for M0, but still overwrite with ASL one
-							if isfield(jsonM0Write,'SliceTiming')
-								warning('SliceTiming already existed for M0, overwriting with ASL');
-							end
-							
-							if size(imNii,3) == size(imM0,3)
-								% Either copy if the save number of slices in M0 as in ASL
-								jsonM0Write.SliceTiming = jsonLocal.SliceTiming;
-							else
-								% Or recalculate for M0 if the number of slices differ
-								jsonM0Write.SliceTiming = ((0:(size(imM0,3)-1))')*(jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1));
-							end
-						else
-							if isfield(jsonM0Write,'SliceTiming')
-								jsonM0Write = rmfield(jsonM0Write,'SliceTiming');
-								warning('Removing pre-existing SliceTiming from M0, as there was no SliceTiming for ASL');
-							end
+					end
+				end
+				jsonLocal.ASLContext = sprintf('%s\n',jsonLocal.ASLContext);
+				
+				% Remove the AslContext field and save it as a separate file
+				fContext = fopen([aslOutLabel '_' bidsPar.strAslContext '.tsv'],'w+');
+				fwrite(fContext,sprintf('volume_type\n'));
+				fwrite(fContext,jsonLocal.ASLContext);
+				fclose(fContext);
+				
+				jsonLocal = rmfield(jsonLocal,'ASLContext');
+				
+				if isfield(jsonLocal,'BolusCutOffFlag') && jsonLocal.BolusCutOffFlag
+					if isfield(jsonLocal,'BolusCutOffTechnique') && strcmpi(jsonLocal.BolusCutOffTechnique,'Q2TIPS')
+						if ~isfield(jsonLocal,'BolusCutOffDelayTime') || length(jsonLocal.BolusCutOffDelayTime)~=2
+							warning('Q2TIPS BolusCutOff has to have 2 values defined');
 						end
-						
-						if isfield(studyPar,'RepetitionTime')
-							jsonM0Write.RepetitionTimePreparation = studyPar.RepetitionTime;
-						else
-							jsonM0Write.RepetitionTimePreparation = jsonM0.RepetitionTime;
-						end
-						
-						jsonM0Write.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
-						
-						if ~isempty(tagPhaseEncodingDirection)
-							jsonM0Write.PhaseEncodingDirection = tagPhaseEncodingDirection;
-						end
-						
-						if isfield(jsonM0Write,'TotalReadoutTime')
-							if jsonM0Write.TotalReadoutTime == 0
-								jsonM0Write = rmfield(jsonM0Write,'TotalReadoutTime');
-							else
-								jsonM0Write.TotalReadoutTime = abs(jsonM0Write.TotalReadoutTime);
-							end
-						end
-						
-						if ~isempty(tagIntendedFor)
-							jsonM0Write.IntendedFor = tagIntendedFor;
-						end
-						
-						if ~isempty(tagTotalReadoutTime)
-							jsonM0Write.TotalReadoutTime = tagTotalReadoutTime;
-						end
-						
-						if nn == 2 && ~exist(fullfile(outSessionPath,'fmap'),'dir')
-							mkdir(fullfile(outSessionPath,'fmap'));
-						end
-						
-						% if scaling modified then save instead of copy
-						if scaleFactor || size(imM0,4) == 1
-							if nn == 1
-								xASL_io_SaveNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii']),fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']),imM0,[],1,[]);
-							else
-								xASL_io_SaveNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii']),fullfile(outSessionPath,'fmap',['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']),imM0,[],1,[]);
-							end
-						else
-							% Copy the M0
-							if nn == 1
-								xASL_Copy(fullfile(inSessionPath,['M0' nnStrIn '.nii']),...
-									fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']));
-							else
-								xASL_Copy(fullfile(inSessionPath,['M0' nnStrIn '.nii']),...
-									fullfile(outSessionPath,'fmap',['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']));
-							end
-						end
-						% Save JSON to new dir
-						jsonM0Write = ExploreASL_bids_VendorFieldCheck(jsonM0Write);
-						jsonM0Write = ExploreASL_bids_JsonCheck(jsonM0Write,'M0');
+					end
+				end
+				
+				if mm == 1
+					for nn = 1:2
 						if nn == 1
-							spm_jsonwrite(fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.json']),jsonM0Write);
+							nnStrIn = '';
+							if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk},'M0PERev.nii'))
+								nnStrOut = '_dir-ap';
+								
+								tagPhaseEncodingDirection = 'j-';
+								jsonLocal.PhaseEncodingDirection = 'j-';
+								tagIntendedFor = [];
+								tagTotalReadoutTime = studyPar.TotalReadoutTime;
+								
+								if bJsonLocalM0isFile
+									jsonLocal.M0 = [jsonLocal.M0 nnStrOut '_' bidsPar.strM0scan '.nii.gz'];
+								end
+							else
+								if bJsonLocalM0isFile
+									jsonLocal.M0 = [jsonLocal.M0 '_' bidsPar.strM0scan '.nii.gz'];
+								end
+								nnStrOut = '';
+								tagPhaseEncodingDirection = [];
+								tagIntendedFor = [];
+								tagTotalReadoutTime = [];
+							end
 						else
-							spm_jsonwrite(fullfile(outSessionPath,'fmap',['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.json']),jsonM0Write);
+							nnStrIn = 'PERev';
+							nnStrOut = '_dir-pa';
+							tagPhaseEncodingDirection = 'j';
+							tagIntendedFor = fullfile(bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel '_dir-ap' '_' bidsPar.strM0scan '.nii.gz']);
+							
+							if isfield(studyPar,'TotalReadoutTime')
+								tagTotalReadoutTime = studyPar.TotalReadoutTime;
+							else
+								tagTotalReadoutTime = [];
+							end
+						end
+						
+						% If M0, then copy M0 and add ASL path to the IntendedFor
+						if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk},['M0' nnStrIn '.nii']))
+							jsonM0 = spm_jsonread(fullfile(inSessionPath,['M0' nnStrIn '.json']));
+							imM0   = xASL_io_Nifti2Im(fullfile(inSessionPath,['M0' nnStrIn '.json']));
+							
+							if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
+								scaleFactor = xASL_adm_GetPhilipsScaling(jsonM0,xASL_io_ReadNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii'])));
+							else
+								scaleFactor = 0;
+							end
+							
+							if scaleFactor
+								imM0 = imM0 .* scaleFactor;
+							end
+							
+							jsonM0Write = jsonM0;
+							
+							if isfield(jsonLocal,'SliceTiming')
+								% Issue a warning if the SliceTiming was already existing for M0, but still overwrite with ASL one
+								if isfield(jsonM0Write,'SliceTiming')
+									warning('SliceTiming already existed for M0, overwriting with ASL');
+								end
+								
+								if size(imNii,3) == size(imM0,3)
+									% Either copy if the save number of slices in M0 as in ASL
+									jsonM0Write.SliceTiming = jsonLocal.SliceTiming;
+								else
+									% Or recalculate for M0 if the number of slices differ
+									jsonM0Write.SliceTiming = ((0:(size(imM0,3)-1))')*(jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1));
+								end
+							else
+								if isfield(jsonM0Write,'SliceTiming')
+									jsonM0Write = rmfield(jsonM0Write,'SliceTiming');
+									warning('Removing pre-existing SliceTiming from M0, as there was no SliceTiming for ASL');
+								end
+							end
+							
+							%if isfield(studyPar,'RepetitionTime')
+							%	jsonM0Write.RepetitionTimePreparation = studyPar.RepetitionTime;
+							%else
+							jsonM0Write.RepetitionTimePreparation = jsonM0.RepetitionTime;
+							%end
+							
+							jsonM0Write.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
+							
+							if ~isempty(tagPhaseEncodingDirection)
+								jsonM0Write.PhaseEncodingDirection = tagPhaseEncodingDirection;
+							end
+							
+							if ~isempty(tagIntendedFor)
+								jsonM0Write.IntendedFor = tagIntendedFor;
+							end
+							
+							if ~isempty(tagTotalReadoutTime)
+								jsonM0Write.TotalReadoutTime = tagTotalReadoutTime;
+							end
+							
+							if nn == 2 && ~exist(fullfile(outSessionPath,'fmap'),'dir')
+								mkdir(fullfile(outSessionPath,'fmap'));
+							end
+							
+							% if scaling modified then save instead of copy
+							if scaleFactor || size(imM0,4) == 1
+								if nn == 1
+									xASL_io_SaveNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii']),fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']),imM0,[],1,[]);
+								else
+									xASL_io_SaveNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii']),fullfile(outSessionPath,'fmap',['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']),imM0,[],1,[]);
+								end
+							else
+								% Copy the M0
+								if nn == 1
+									xASL_Copy(fullfile(inSessionPath,['M0' nnStrIn '.nii']),...
+										fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']));
+								else
+									xASL_Copy(fullfile(inSessionPath,['M0' nnStrIn '.nii']),...
+										fullfile(outSessionPath,'fmap',['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']));
+								end
+							end
+							% Save JSON to new dir
+							jsonM0Write = ExploreASL_bids_VendorFieldCheck(jsonM0Write);
+							jsonM0Write = ExploreASL_bids_JsonCheck(jsonM0Write,'M0');
+							if nn == 1
+								spm_jsonwrite(fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.json']),jsonM0Write);
+							else
+								spm_jsonwrite(fullfile(outSessionPath,'fmap',['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.json']),jsonM0Write);
+							end
 						end
 					end
+				else
+					if bJsonLocalM0isFile
+						jsonLocal.M0 = [jsonLocal.M0 '.nii.gz'];
+					end
 				end
-			else
-				if bJsonLocalM0isFile
-					jsonLocal.M0 = [jsonLocal.M0 '.nii.gz'];
-				end
+				% Save JSON to new dir
+				jsonLocal = ExploreASL_bids_VendorFieldCheck(jsonLocal);
+				jsonLocal = ExploreASL_bids_JsonCheck(jsonLocal,'ASL');
+				spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
+				
 			end
-			% Save JSON to new dir
-			jsonLocal = ExploreASL_bids_VendorFieldCheck(jsonLocal);
-			jsonLocal = ExploreASL_bids_JsonCheck(jsonLocal,'ASL');
-			spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
-			
 		end
 	end
 end
 
 
-%% Export the fully anonymized datasets for public sharing
-% TODO TODO TODO TODO
-if 0
-	finalPath = [baseDirImport 'BIDSfinal']; % Takes files in NIFTI+JSON from outputPath and saves the complete BIDS format to finalPath
-	anonymPath = [baseDirImport 'BIDSanonymized']; % Takes files in NIFTI+JSON from outputPath and saves the complete BIDS format to finalPath
-	
-	pthVec = {'GE_PCASL_3Dspiral_volunteer' 'Siemens_PCASL_3DGRASE_volunteer2' 'Philips_PCASL_2DEPI_volunteer3'};
-	for ii = 1:3
-		xASL_Copy(fullfile(finalPath,pthVec{ii}),fullfile(anonymPath,pthVec{ii}));
-		xASL_spm_deface(fullfile(anonymPath,pthVec{ii},'sub-Sub103','anat','sub-Sub103_T1w.nii'),true);
-		gzip(fullfile(anonymPath,pthVec{ii},'sub-Sub103','anat','sub-Sub103_T1w.nii'));
-		delete(fullfile(anonymPath,pthVec{ii},'sub-Sub103','anat','sub-Sub103_T1w.nii'));
-	end
-	
-	pthVec = {'Siemens_PASL_multiTI','Siemens_PASL_singleTI','Siemens_PCASL_volunteer'};
-	for ii = 1:3
-		xASL_Copy(fullfile(finalPath,pthVec{ii}),fullfile(anonymPath,pthVec{ii}));
-		xASL_spm_deface(fullfile(anonymPath,pthVec{ii},'sub-Sub1','anat','sub-Sub1_T1w.nii'),true);
-		gzip(fullfile(anonymPath,pthVec{ii},'sub-Sub1','anat','sub-Sub1_T1w.nii'));
-		delete(fullfile(anonymPath,pthVec{ii},'sub-Sub1','anat','sub-Sub1_T1w.nii'));
-	end
-end
-
-
-
-
-%%%%%%%%%%%% end todo
-end
-
-
 %% 5. Run defacing
 if bRunSubmodules(3)
-end
+	listSubjects = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
+	for iSubject = 1:length(listSubjects)
+		
+		subjectLabel = xASL_adm_CorrectName(listSubjects{iSubject},2);
+		
+		% Check if the anatomical directory exists
+		if exist(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'dir')
+			% Process all anatomical files
+			fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'^.+\.nii',false,[]);
+			for iAnat = 1:length(fAnat)
+				%Unzip the file for SPM
+				pathUnzipped = xASL_adm_UnzipNifti(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat',fAnat{iAnat}));
+				% Remove the face
+				xASL_spm_deface(pathUnzipped,true);
+				% Zip again
+				gzip(pathUnzipped);
+				delete(pathUnzipped);
+			end
+		end
+	end
+end % End of defacing
 
 % end of import
 end

@@ -87,27 +87,27 @@ if bImport
 				end
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [0 1 0], false, true, false, false);
 				
-			case 'Siemens_PASL_multiTI'
+			case 'Siemens_PCASL_multiTI'
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [1 0 0], false, true, false, false);
-				if xASL_exist([baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_300.nii'])
+				if xASL_exist([baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_300.nii'])
 					mTIvec = [300,600,900,1200,1500,1800,2100,2400,2700,3000];
 					for jj = 1:length(mTIvec)
 						if jj>1
-							system(['rm ' baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.json']);
-							system(['rm ' baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.json']);
-							imNSSS(:,:,:,2*(jj-1)+1) = xASL_io_Nifti2Im([baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.nii']);
-							imNSSS(:,:,:,2*(jj-1)+2) = xASL_io_Nifti2Im([baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.nii']);
+							system(['rm ' baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.json']);
+							system(['rm ' baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.json']);
+							imNSSS(:,:,:,2*(jj-1)+1) = xASL_io_Nifti2Im([baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.nii']);
+							imNSSS(:,:,:,2*(jj-1)+2) = xASL_io_Nifti2Im([baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.nii']);
 						else
-							system(['mv ' baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.json ' baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D.json']);
-							system(['rm ' baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.json']);
-							imNSSS = xASL_io_Nifti2Im([baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.nii']);
-							imNSSS(:,:,:,2) = xASL_io_Nifti2Im([baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.nii']);
+							system(['mv ' baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.json ' baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D.json']);
+							system(['rm ' baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.json']);
+							imNSSS = xASL_io_Nifti2Im([baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.nii']);
+							imNSSS(:,:,:,2) = xASL_io_Nifti2Im([baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.nii']);
 						end
 					end
-					xASL_io_SaveNifti([baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(1)) '.nii'],[baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D.nii'],imNSSS/10,[],1,[]);
+					xASL_io_SaveNifti([baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(1)) '.nii'],[baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D.nii'],imNSSS/10,[],1,[]);
 					for jj = 1:length(mTIvec)
-						system(['rm ' baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.nii']);
-						system(['rm ' baseDirImport '/Siemens_PASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.nii']);
+						system(['rm ' baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_NS_' num2str(mTIvec(jj)) '.nii']);
+						system(['rm ' baseDirImport '/Siemens_PCASL_multiTI/analysis/Sub1/ASL_1/ASL4D_SS_' num2str(mTIvec(jj)) '.nii']);
 					end
 				end
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [0 1 0], false, true, false, false);
