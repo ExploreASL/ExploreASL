@@ -23,8 +23,7 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 %                       skip creating templates if more than 10% of the datasets are
 %                       present (1), or also create templates when subjects
 %                       are missing (0). 
-%                       (OPTIONAL, DEFAULT=x.bSkipTemplateCreationWhenMissingScans 
-%                       or 0 if x.bSkipTemplateCreationWhenMissingScans is not defined)
+%                       (OPTIONAL, DEFAULT=0)
 %   bRemoveOutliers   - This parameter makes robust statistics, by removing
 %                       outliers (OPTIONAL, DEFAULT=false)
 %   FunctionsAre      - two cells, with functions, and with names
@@ -106,27 +105,8 @@ else
     error('Invalid bComputeSets option, skipping');
 end
 
-if nargin>4 && ~isempty(bSkipWhenMissingScans) && ~islogical(bSkipWhenMissingScans)
-    warning('Invalid input bSkipWhenMissingScans');
-end
-
-if isfield(x,'bSkipTemplateCreationWhenMissingScans') && ~isempty(x.bSkipTemplateCreationWhenMissingScans)
-    if x.bSkipTemplateCreationWhenMissingScans==1
-        bSkipWhenMissingScans = true;
-        if nargin>4 && ~isempty(bSkipWhenMissingScans) && bSkipWhenMissingScans==0
-            warning('bSkipWhenMissingScans ignored, using x.bSkipTemplateCreationWhenMissingScans instead');
-        end
-    elseif x.bSkipTemplateCreationWhenMissingScans==0
-        bSkipWhenMissingScans = false;
-        if nargin>4 && ~isempty(bSkipWhenMissingScans) && bSkipWhenMissingScans==1
-            warning('bSkipWhenMissingScans ignored, using x.bSkipTemplateCreationWhenMissingScans instead');
-        end
-    end
-elseif nargin>4 && ~isempty(bSkipWhenMissingScans) && x.bSkipWhenMissingScans==1
-		warning('x-struct field bSkipWhenMissingScans is deprecated, please use bSkipTemplateCreationWhenMissingScans instead');
-		bSkipWhenMissingScans = true;
-else
-		bSkipWhenMissingScans = false;
+if nargin<5 || isempty(bSkipWhenMissingScans)
+	bSkipWhenMissingScans = false;
 end
 
 if nargin<6 || isempty(bRemoveOutliers)
