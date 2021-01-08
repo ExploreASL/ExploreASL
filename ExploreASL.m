@@ -11,6 +11,8 @@ function [x] = ExploreASL(var1, var2, var3, var4, var5, var6)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
+fprintf('Mathijs is here already and AM is too late\n');
+
 if nargin<6
     var6 = [];
 end
