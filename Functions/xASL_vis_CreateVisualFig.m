@@ -17,9 +17,9 @@ function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale,
 %   ColorMap     - colormaps used for each layer (OPTIONAL, DEFAULT =x.S.colors_ROI
 %                  x.S.colors_ROI = {gray red blue green yellow purple turqoise orange}
 %   bClip        - vector, false for disabling clipping (OPTIONAL, DEFAULT=true for first image, false for overlays)
-%   MaskIn       - cell structure containing binary mask matrices (OPTIONAL, DEFAULT=no masking)
+%   MaskIn       - cell structure containing 2 binary masks matrices (OPTIONAL, DEFAULT=no masking)
 %   bWhite       - true for switching background to white (OPTIONAL, DEFAULT=black background)
-%   MaxWindow    - 
+%   MaxWindow    - cell structure containing 2 maximal values (ceiling clipping) (OPTIONAL, DEFAULT=automatic window-leveling)
 %   bTransparancy - true for transparant results when overlaying a mask (OPTIONAL, DEFAULT=false)
 %   bVerbose      - true for feedback on what this function does (OPTIONAL, DEFAULT=false)
 %
