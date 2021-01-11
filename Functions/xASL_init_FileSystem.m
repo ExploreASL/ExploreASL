@@ -211,5 +211,3 @@ x.P.Atlas.DKT31_CMA_labels_prob_MNI152      = fullfile(x.D.AtlasDir_CC_BY_4_0, '
 
 
 end
-
-end
