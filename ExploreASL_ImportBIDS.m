@@ -8,7 +8,7 @@ function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodule
 %   imParPath           - path to the JSON file with structure with import parameters, output of ExploreASL_ImportConfig.m (originally)
 %                         All other input parameters are configured within this function. (OPTIONAL)
 %                         The path is optional, but the file has to be there. Either provided as a full path or a filename in the path,
-%                         or default names (case-insensitive) ImPar.json, ImagePar.json are seeked
+%                         or default names (case-insensitive) sourceStructure.json, ImagePar.json are seeked
 %   studyParPath        - path to the JSON file with the BIDS parameters relevant for the whole study. These parameters are used
 %                         if they cannot be extracted from the DICOMs automatically. (OPTIONAL)
 %                         Looking automatically for file studyPar.json
@@ -105,7 +105,7 @@ function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodule
 %    imPar.bMatchDirectories - true if the last layer is a folder, false if the last layer is a filename (as e.g. with PAR/REC, enhanced DICOMs)
 %
 % EXAMPLE: ExploreASL_ImportBIDS('//MyDisk/MyStudy');
-%          ExploreASL_ImportBIDS('//MyDisk/MyStudy','imPar.json','studyHiQ.json');
+%          ExploreASL_ImportBIDS('//MyDisk/MyStudy','sourceStructure.json','studyHiQ.json');
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
@@ -122,10 +122,10 @@ end
 
 % Check the imagePar input file
 if nargin < 2 || isempty(imParPath)
-	% If the path is empty, then try to find impar.json or imagepar.json
-	fListImPar = xASL_adm_GetFileList(studyPath,'^(im|image|Im|Image)(Par|par).json$', 'List', [], 0);
+	% If the path is empty, then try to find sourceStructure.json or sourcestruct.json
+	fListImPar = xASL_adm_GetFileList(studyPath,'^(source|Source)(Structure|Struct|structure|struct).json$', 'List', [], 0);
 	if length(fListImPar) < 1
-		error('Could not find the ImPar.json file');
+		error('Could not find the sourceStructure.json file');
 	end
 	imParPath = fullfile(studyPath,fListImPar{1});
 else
@@ -137,7 +137,7 @@ end
 
 % Find the studyPar input file
 if nargin < 3 || isempty(studyParPath)
-	% If the path is empty, then try to find impar.json or imagepar.json
+	% If the path is empty, then try to find studyPar.json
 	fListStudyPar = xASL_adm_GetFileList(studyPath,'^(study|Study)(Par|par).json$', 'List', [], 0);
 	if length(fListStudyPar) < 1
 		warning('Could not find the StudyPar.json file');

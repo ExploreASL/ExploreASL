@@ -14,7 +14,7 @@ function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bCo
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:
 % Runs the DICOM to ASL-BIDS import for all data in the baseDirImport directory. Study directories are supposed to be in, containing a 'sourcedata' folder - this folder
-% can contain subject directories and also imPar.json and studyPar.json specifying the directory structure and the additional study parameters, respectively.
+% can contain subject directories and also sourceStructure.json and studyPar.json specifying the directory structure and the additional study parameters, respectively.
 % The import creates first the 'analysis' subfolder with data after dcm2nii and with all tags read and saved to JSON. Then it assembles everything with the
 % studyParameters and makes sure all is in BIDS format and saves it correctly in the 'rawdata' subdirectory.
 % EXAMPLE: xASL_bids_TestBidsConversion('mydir/testImport');

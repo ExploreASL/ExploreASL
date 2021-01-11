@@ -20,7 +20,7 @@ for iList = 1:length(fList)
 		mkdir(fullfile(conversionPath,fList{iList}, 'sourcedata'));
 	end
 	system(['cp -r ' fullfile(flavorsPath,fList{iList},'sourcedata','*') ' ' fullfile(conversionPath,fList{iList},'sourcedata')]);
-	system(['cp -r ' fullfile(flavorsPath,fList{iList},'imPar.json') ' ' fullfile(conversionPath,fList{iList},'imPar.json')]);
+	system(['cp -r ' fullfile(flavorsPath,fList{iList},'sourceStructure.json') ' ' fullfile(conversionPath,fList{iList},'sourceStructure.json')]);
 	system(['cp -r ' fullfile(flavorsPath,fList{iList},'studyPar.json') ' ' fullfile(conversionPath,fList{iList},'studyPar.json')]);
 end
 
