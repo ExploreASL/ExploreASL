@@ -188,6 +188,11 @@ end
 %% -----------------------------------------------------------------------------
 %% 7    ROI statistics
 if ~x.mutex.HasState(StateName{8})
+    
+    % Default & Fallback for Atlases
+    if ~isfield(x.S,'Atlases')
+        x.S.Atlases = {'TotalGM','DeepWM'}; % Default
+    end
 
     x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
     % if exist('ASL','var')

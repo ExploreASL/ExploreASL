@@ -593,11 +593,6 @@ if ~isfield(x,'Q')
     x.Q = struct;
 end
 
-% Default & Fallback for Atlases
-if ~isfield(x.S,'Atlases')
-    x.S.Atlases = {'TotalGM','DeepWM'}; % Default
-end
-
 x = xASL_init_DefinePaths(x);
 x = xASL_init_Toolboxes(x); % Initialize toolboxes
 x = xASL_init_VisualizationSettings(x); % visual settings

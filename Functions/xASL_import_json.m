@@ -78,6 +78,10 @@ end
 % Check field names -> LEGACY
 sFields = fieldnames(x);
 for n=1:size(sFields,1)
+    % Check if the current field is valid (char, numeric value, structure or cell array)
+    if ~(ischar(x.(sFields{n})) || isstruct(x.(sFields{n})) || isnumeric(x.(sFields{n})))
+        warning('JSON field type could be invalid...');
+    end
     if strcmp(sFields{n},'group') % Convert group fields to correct Matlab cell arrays
         % Generate new Matlab cell array
         x.group{str2num(strrep(sFields{n},'group',''))} = x.(sFields{n});
@@ -93,11 +97,13 @@ for n=1:size(sFields,1)
         end
     end
     if ischar(x.(sFields{n})) % Make sure the field is a character array
-        if contains(x.(sFields{n}),'{') && contains(x.(sFields{n}),'}') % Automatically detect cell arrays (like the "Atlases" e.g.)
-            tempField = x.(sFields{n});
-            tempField = strsplit(tempField,',');
-            tempField = strrep(strrep(tempField,'{',''),'}','');
-            x.(sFields{n}) = strrep(tempField,'''','');
+        if ~strcmp(sFields{n},'subject_regexp') % Make sure the field does not contain a regular expression
+            if contains(x.(sFields{n}),'{') && contains(x.(sFields{n}),'}') % Automatically detect cell arrays (like the "Atlases" e.g.)
+                tempField = x.(sFields{n});
+                tempField = strsplit(tempField,',');
+                tempField = strrep(strrep(tempField,'{',''),'}','');
+                x.(sFields{n}) = strrep(tempField,'''','');
+            end
         end
     end
     % Also look for cell arrays in sub structures (like the atlases in the S struct e.g.)
