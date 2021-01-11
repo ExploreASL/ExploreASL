@@ -351,8 +351,8 @@ if bRunSubmodules(2)
 				jsonAnat = spm_jsonread([anatPath,'.json']);
 				
 				% Save the JSON
-				jsonAnat = ExploreASL_bids_VendorFieldCheck(jsonAnat);
-				jsonAnat = ExploreASL_bids_JsonCheck(jsonAnat,'');
+				jsonAnat = xASL_bids_VendorFieldCheck(jsonAnat);
+				jsonAnat = xASL_bids_JsonCheck(jsonAnat,'');
 				spm_jsonwrite(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat',['sub-' subjectLabel '_' iAnatType{1} '.json']),jsonAnat);
 			end
 		end
@@ -841,8 +841,8 @@ if bRunSubmodules(2)
 								end
 							end
 							% Save JSON to new dir
-							jsonM0Write = ExploreASL_bids_VendorFieldCheck(jsonM0Write);
-							jsonM0Write = ExploreASL_bids_JsonCheck(jsonM0Write,'M0');
+							jsonM0Write = xASL_bids_VendorFieldCheck(jsonM0Write);
+							jsonM0Write = xASL_bids_JsonCheck(jsonM0Write,'M0');
 							if nn == 1
 								spm_jsonwrite(fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.json']),jsonM0Write);
 							else
@@ -856,8 +856,8 @@ if bRunSubmodules(2)
 					end
 				end
 				% Save JSON to new dir
-				jsonLocal = ExploreASL_bids_VendorFieldCheck(jsonLocal);
-				jsonLocal = ExploreASL_bids_JsonCheck(jsonLocal,'ASL');
+				jsonLocal = xASL_bids_VendorFieldCheck(jsonLocal);
+				jsonLocal = xASL_bids_JsonCheck(jsonLocal,'ASL');
 				spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
 				
 			end
