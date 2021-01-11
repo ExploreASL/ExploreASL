@@ -11,7 +11,7 @@ x.subject_regexp     = '^\d{7}_\d$';
 
 % list parameters here
 x.M0 				    = 10^4;  % Dennis obtained in PET-MRI study, rescale Ingenia-Intera later
-x.Q.BackGrSupprPulses 	= 2;
+x.Q.BackgroundSuppressionNumberPulses 	= 2;
 x.readout_dim          = '3D'; % 2D or 3D
 
 x.Vendor        	 	= 'Siemens';   % Options: 'GE_product' 'GE_WIP' 'Philips' 'Siemens', for applying vendor-specific scale factors

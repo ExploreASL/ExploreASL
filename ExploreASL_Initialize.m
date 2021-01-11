@@ -147,6 +147,10 @@ if ~isfield(x,'ProcessData')
     end
 end
 
+if x.ProcessData==2 && nargout==0
+    warning('Data loading requested but no output structure defined');
+    fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
+end
 
 %% -----------------------------------------------------------------------------
 %% Get ExploreASL path

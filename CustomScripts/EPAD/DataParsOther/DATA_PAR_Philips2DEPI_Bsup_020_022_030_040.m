@@ -9,7 +9,7 @@ x.subject_regexp     = '^(020|022|030|040)-\d{5}$';
 
 % list parameters here
 x.M0 				    = 'separate_scan';
-x.Q.BackGrSupprPulses = 2;
+x.Q.BackgroundSuppressionNumberPulses = 2;
 x.readout_dim          = '2D'; % 2D or 3D
 x.Quality              = 1; % 1 = normal, 0 = low for fast try-out
 

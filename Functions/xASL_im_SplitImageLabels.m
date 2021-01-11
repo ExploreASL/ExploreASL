@@ -30,7 +30,9 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 %              containing multiple labels, into single NIfTI files each
 %              containing a single label.
 %              Not all existing labels need to be extracted.
+%
 %              The following steps are performed:
+%
 %              1. Load TSV file
 %              2. Process images
 %

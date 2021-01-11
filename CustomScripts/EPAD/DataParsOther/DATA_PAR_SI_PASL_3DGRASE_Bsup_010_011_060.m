@@ -10,7 +10,7 @@ x.subject_regexp     = '^(010|011|060)-\d{5}$';
 
 % list parameters here
 x.M0 				    = 'UseControlAsM0'; % this has background suppression, but doesn't have an M0, so let's divide by control image
-x.Q.BackGrSupprPulses = 2;
+x.Q.BackgroundSuppressionNumberPulses = 2;
 x.readout_dim          = '3D'; % 2D or 3D
 x.Quality              = 1; % 1 = normal, 0 = low for fast try-out
 

@@ -8,11 +8,12 @@ function spmjobs = spm_cfg
 %--------------------------------------------------------------------------
 % Temporal
 %--------------------------------------------------------------------------
-temporal        = cfg_choice;
-temporal.tag    = 'temporal';
-temporal.name   = 'Temporal';
-temporal.help   = {'Temporal pre-processing functions.'};
-temporal.values = { spm_cfg_st };
+% EXPLOREASL HACK, NOT USING THIS
+% temporal        = cfg_choice;
+% temporal.tag    = 'temporal';
+% temporal.name   = 'Temporal';
+% temporal.help   = {'Temporal pre-processing functions.'};
+% temporal.values = { spm_cfg_st };
 
 %--------------------------------------------------------------------------
 % Spatial
@@ -35,31 +36,34 @@ stats.values = { spm_cfg_fmri_spec spm_cfg_fmri_design spm_cfg_fmri_data spm_cfg
 %--------------------------------------------------------------------------
 % Dynamic Causal Modelling
 %--------------------------------------------------------------------------
-spm_cfg_dcm_spec        = cfg_choice;
-spm_cfg_dcm_spec.tag    = 'spec';
-spm_cfg_dcm_spec.name   = 'DCM specification';
-spm_cfg_dcm_spec.values = { spm_cfg_dcm_fmri };
-
-dcm        = cfg_choice;
-dcm.tag    = 'dcm';
-dcm.name   = 'DCM';
-dcm.help   = {'Dynamic Causal Modelling.'};
-dcm.values = { spm_cfg_dcm_spec spm_cfg_dcm_est spm_cfg_dcm_bms spm_cfg_dcm_peb };
+% EXPLOREASL HACK, NOT USING THIS
+% spm_cfg_dcm_spec        = cfg_choice;
+% spm_cfg_dcm_spec.tag    = 'spec';
+% spm_cfg_dcm_spec.name   = 'DCM specification';
+% spm_cfg_dcm_spec.values = { spm_cfg_dcm_fmri };
+% 
+% dcm        = cfg_choice;
+% dcm.tag    = 'dcm';
+% dcm.name   = 'DCM';
+% dcm.help   = {'Dynamic Causal Modelling.'};
+% dcm.values = { spm_cfg_dcm_spec spm_cfg_dcm_est spm_cfg_dcm_bms spm_cfg_dcm_peb };
 
 %--------------------------------------------------------------------------
 % Util
 %--------------------------------------------------------------------------
-spm_cfg_import        = cfg_choice;
-spm_cfg_import.tag    = 'import';
-spm_cfg_import.name   = 'Import';
-spm_cfg_import.help   = {'Import.'};
-spm_cfg_import.values = { spm_cfg_dicom spm_cfg_minc spm_cfg_ecat spm_cfg_parrec };
+% EXPLOREASL HACK, NOT USING THIS
+% spm_cfg_import        = cfg_choice;
+% spm_cfg_import.tag    = 'import';
+% spm_cfg_import.name   = 'Import';
+% spm_cfg_import.help   = {'Import.'};
+% spm_cfg_import.values = { spm_cfg_dicom spm_cfg_minc spm_cfg_ecat spm_cfg_parrec };
 
 util        = cfg_choice;
 util.tag    = 'util';
 util.name   = 'Util';
 util.help   = {'Utility tools.'};
-util.values = { spm_cfg_disp spm_cfg_checkreg spm_cfg_render spm_cfg_import spm_cfg_imcalc spm_cfg_reorient spm_cfg_voi spm_cfg_cdir spm_cfg_md spm_cfg_bbox spm_cfg_deface spm_cfg_deformations spm_cfg_tissue_volumes spm_cfg_print spm_cfg_cat spm_cfg_split spm_cfg_exp_frames spm_cfg_sendmail };
+util.values = { spm_cfg_disp spm_cfg_checkreg spm_cfg_render spm_cfg_imcalc spm_cfg_reorient spm_cfg_voi spm_cfg_cdir spm_cfg_md spm_cfg_bbox spm_cfg_deface spm_cfg_deformations spm_cfg_tissue_volumes spm_cfg_print spm_cfg_cat spm_cfg_split spm_cfg_exp_frames spm_cfg_sendmail };
+% EXPLOREASL HACK, NOT USING THIS: spm_cfg_import
 
 %--------------------------------------------------------------------------
 % Tools
@@ -132,5 +136,6 @@ spmjobs.help   = {
     'The current release is designed for the analysis of fMRI, PET, SPECT, and MEG.'
     ''
     }';
-spmjobs.values = { temporal spatial stats dcm util tools };
+spmjobs.values = {spatial stats util tools};
+% EXPLOREASL HACK, NOT USING THIS: temporal dcm
 spmjobs.rewrite_job = @spm_rewrite_job;

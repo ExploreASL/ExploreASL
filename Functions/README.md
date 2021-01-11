@@ -844,12 +844,13 @@ M0\*\_parms.m or ASL\*\_parms.mat is renamed to M0\_parms.m or ASL4D\_parms.m; M
 PhaseEncodingAxis is consistent through all the volumes, if not the nothing is merged; this is applied to a generic case
 and 3 other specific Siemens scenarios are implemented:
 
-i) All NII files have two volumes, then simply concatenate according to the last number.
-ii) Two files with a single volume each are merged according to the last number in the file name.
-iii) Multiple files with each containing a single volume are sorted to tags ASL4D\_x\_x\_Y and controls ASL4D\_Y and merged in the order
+- i) All NII files have two volumes, then simply concatenate according to the last number.
+- ii) Two files with a single volume each are merged according to the last number in the file name.
+- iii) Multiple files with each containing a single volume are sorted to tags ASL4D\_x\_x\_Y and controls ASL4D\_Y and merged in the order
 of the last number in the filename (Y) alternating the tags and controls
 
 This function performs the following steps in subfunctions:
+
 1. xASL\_bids\_MergeNifti\_M0Files Generic merging of M0 files
 2. xASL\_bids\_MergeNifti\_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
 3. xASL\_bids\_MergeNifti\_AllASLFiles Merge any ASL files
@@ -1036,10 +1037,12 @@ Note that LST lesion filling expects a probability map, doesnt work nicely with 
 This function clips an image to a given percentile. The percentile is found
 using non-zeros sorted intensities, so both isfinite & non-zeros.
 This function performs the following steps:
+
 1. Constrain clippable intensities
 2. Clip high intensities
 3. Clip low intensities
 4. Save as NIfTI if the input was a NIfTI
+
 
 
 ----
@@ -1141,6 +1144,7 @@ The second part of this code computes a pseudoCBF image based on the
 pseudoTissue & the CBF templates of CBF, ATT biasfield and vascular peaks, based on spatial CoV.
 
 This submodule performs the following steps:
+
 1. Create the pseudoTissue CBF reference image, if it doesnt exist already
 2. Create the native space copies of ASL templates, if they dont exist already
 3. Spatial CoV input argument check
@@ -1400,15 +1404,18 @@ LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 #### Description
 This function takes a mask and adds several ROIs, to be used as custom "atlas", e.g. when computing region-average CBF values.
 The mask % can be an ROI or lesion, if we assume it is a lesion, the following masks are created:
+
 1. Intralesional
 2. Perilesional (15 mm rim around the lesion)
 3. Hemisphere (ipsilateral to lesion)
 4. Contralateral version of 1
 5. Contralateral version of 2
 6. Contralateral version of 3
+
 All these masks are masked by a brainmask (pGM+pWM)>0.5
 
 This function performs the following steps:
+
 1. If lesion is empty, skip this & delete the file
 2. BrainMasking
 3. Create hemispheres
@@ -1619,12 +1626,13 @@ the difference between the two images a produces the Gaussian covariance matrix
 of the pre-smoothing in the source space. Then it performs the smoothing.
 
 The following steps are performed:
-1) Obtain the voxel size
-2) Skip this function if reference resolution is equal to, or lower than source resolution
-3) Deal with affine transformation
-4) Obtain the transformation matrix from the Reference to the Source space
-5) Apply the smoothing filter on the source image(s)
-6) Save the smoothed image
+
+1. Obtain the voxel size
+2. Skip this function if reference resolution is equal to, or lower than source resolution
+3. Deal with affine transformation
+4. Obtain the transformation matrix from the Reference to the Source space
+5. Apply the smoothing filter on the source image(s)
+6. Save the smoothed image
 
 
 ----
@@ -1739,7 +1747,9 @@ This function allows extracting of labels from a NIfTI file
 containing multiple labels, into single NIfTI files each
 containing a single label.
 Not all existing labels need to be extracted.
+
 The following steps are performed:
+
 1. Load TSV file
 2. Process images
 
@@ -1844,9 +1854,9 @@ Note that the deployed/compiled version of ExploreASL
 requires the JSON file, this function should not be compiled
 along. This function performs the following steps:
 
-1) Run the m-file to load parameters
-2) Escape characters that are illegal in JSON
-3) Write the JSON
+1. Run the m-file to load parameters
+2. Escape characters that are illegal in JSON
+3. Write the JSON
 
 
 ----
@@ -1869,9 +1879,10 @@ especially for 3D GRASE sequences, where e.g. the choice of number of
 segments can affect the smoothness.
 
 This function conducts the following steps:
-1) Educated-guess FWHM
-2) Attempt accounting for in-plane interpolation in reconstruction
-3) Calculate and report effective spatial resolution
+
+1. Educated-guess FWHM
+2. Attempt accounting for in-plane interpolation in reconstruction
+3. Calculate and report effective spatial resolution
 
 
 ----
@@ -1936,11 +1947,13 @@ This function exists from the following parts:
 #### Description
 This function initializes the file system used throughout ExploreASL, for processing a single dataset/scan.
 It is repeated for each scan, and runs the following parts:
-1) Create folders
-2) Subject/session definitions
-3) Add prefixes & suffixes
-4) Add Subject-specific prefixes
-5) Add sidecars
+
+1. Create folders
+2. Subject/session definitions
+3. Add prefixes & suffixes
+4. Add Subject-specific prefixes
+5. Add sidecars
+
 
 
 ----
@@ -1959,8 +1972,10 @@ synchronization mechanism for enforcing limits of access to data (here a
 module for a single scan) to allow parallelization. It also allows
 stopping and continuing of ExploreASL. This function runs the following
 steps:
-1) Lock folder management
-2) Initialize mutex object
+
+1. Lock folder management
+2. Initialize mutex object
+
 
 
 ----
@@ -1991,13 +2006,12 @@ before going through the mat-files
 
 This function iterates through the following steps for each variable:
 
-1) Admin (what nOptions do we call ordinal, convert subject numeric to
-string, remove white spaces from data)
-2) Get unique list of data options & check for missing data
-3) Deal with data format (correct NaNs, deal with numeric vs strings)
-4) Distinguish continous data (e.g. age) or ordinal data (groups to compare, e.g. cohort)
-5) Check if data is complete for all subjects
-6) Include complete data in x.S.SETS
+1. Admin (what nOptions do we call ordinal, convert subject numeric to string, remove white spaces from data)
+2. Get unique list of data options & check for missing data
+3. Deal with data format (correct NaNs, deal with numeric vs strings)
+4. Distinguish continous data (e.g. age) or ordinal data (groups to compare, e.g. cohort)
+5. Check if data is complete for all subjects
+6. Include complete data in x.S.SETS
 
 
 
@@ -2027,9 +2041,12 @@ should be registered longitudinally, for the second function we specify a
 list of first visits only, as the between-subject registration in
 ExploreASL is based on the first scan (as opposed to the average
 subject's scan).
+
 This function runs the following steps:
-1) Get TimePoint-list (list of visits)
-2) Find subject IDs
+
+1. Get TimePoint-list (list of visits)
+2. Find subject IDs
+
 
 
 ----
@@ -2063,12 +2080,13 @@ This function creates a new NIfTI file, using the SPM "nifti" functionality, wit
 specified as input arguments. This function performs the
 following steps:
 
-1) Initialize NIfTI
-2) Choose datatype (bit resolution)
-3) Create scale slopes
-4) Create orientation matrix
-5) Write the new NIfTI, image matrix & scale slopes
-6) Zip and deal with zipping (.nii vs. .nii.gz)
+1. Initialize NIfTI
+2. Choose datatype (bit resolution)
+3. Create scale slopes
+4. Create orientation matrix
+5. Write the new NIfTI, image matrix & scale slopes
+6. Zip and deal with zipping (.nii vs. .nii.gz)
+
 
 
 ----
@@ -2110,15 +2128,18 @@ xASL_io_MakeNifti4DICOM(PathIn, x)
 #### Description
 This function converts a NIfTI file to one that is ready to convert to DICOM for
 PACS visualization purposes:
+
 For scaling/visualization:
-1) Remove peak signal
-2) Remove valley signal
-3) Remove NaNs
-4) Rescale to 12 bit integers
-5) Save NIfTI. We also zip the NIfTI as this NIfTI won't be opened by ExploreASL
-6) Manage scale slope/datatype
-7) Apply original orientation
-8) Zip NIfTI
+
+1. Remove peak signal
+2. Remove valley signal
+3. Remove NaNs
+4. Rescale to 12 bit integers
+5. Save NIfTI. We also zip the NIfTI as this NIfTI won't be opened by ExploreASL
+6. Manage scale slope/datatype
+7. Apply original orientation
+8. Zip NIfTI
+
 
 
 ----
@@ -2258,7 +2279,9 @@ This function collects QC parameters for a module
 
 #### Description
 This functions collects QC parameters for the ASL module
+
 These are stored in x.Output.ASL:
+
 ID - SubjectName
 ASL\_LR\_flip\_YesNo - Checks whether any image processing changed the left-right orientation
 by checking whether the determinant differs between nii.mat & nii.mat0
@@ -2267,6 +2290,7 @@ MotionMean\_mm    - mean motion
 MotionExcl\_Perc  - percentage of excluded outliers
 MotionMax\_mm     - max motion
 MotionSD\_mm      - SD motion
+
 ASL quantification (strange average CBF, or strange GM-WM contrast)
 ASL acquisition parameters (should be fairly consistent over subjects/scans):
 TE - echo time
@@ -2314,7 +2338,9 @@ volumetric: GM\_vol\_mL, WM\_vol\_mL, CSF\_vol\_mL, ICV\_vol\_mL, GM\_ICV\_Ratio
 
 #### Description
 This functions collects QC parameters for the func module
+
 These are stored in x.Output.func:
+
 ID - SubjectName
 func\_LR\_flip\_YesNo - Checks whether any image processing changed the left-right orientation
 by checking whether the determinant differs between nii.mat & nii.mat0
@@ -2329,6 +2355,7 @@ CBF\_WM\_Median\_mL100gmin - median WM CBF
 SpatialCoV\_GM\_Perc      - GM spatial CoV
 SpatialCoV\_WM\_Perc      - WM spatial CoV
 CBF\_GM\_WM\_Ratio         - GM-WM CBF ratio
+
 func acquisition parameters (should be fairly consistent over subjects/scans):
 TE - echo time
 TR - repetition time
@@ -2425,8 +2452,9 @@ of all ExploreASL pipeline steps.
 Further code explanation:
 Below, using the Matlab & SPM Figure tools we create an image, which is
 then printed to a PDF file
-fg = the main Figure handle
-ax = "axes" handles, these are objects containing either 1) text or 2)
+
+- fg = the main Figure handle
+- ax = "axes" handles, these are objects containing either 1) text or 2)
 images, with fg as "parent" (1) & (2) images have ax as "parent"
 Positions are calculated in such a way that 4 categories can be printed,
 which will be the first 4 fields found in x.Output
@@ -2476,18 +2504,19 @@ spatial CoV, and should be visually checked & put in the correct folder.
 
 #### Description
 This function computes several anatomical QC parameters as proposed in SPM Univariate Plus:
-WM\_ref\_vol\_mL    - volume of the WM reference region (mL)
-WMref\_vol\_Perc   - same but as percentage of total WM volume
-SNR\_GM           - GM signal-to-Noise Ratio (SNR), ie the mean intensity within GM divided
+
+- WM\_ref\_vol\_mL    - volume of the WM reference region (mL)
+- WMref\_vol\_Perc   - same but as percentage of total WM volume
+- SNR\_GM           - GM signal-to-Noise Ratio (SNR), ie the mean intensity within GM divided
 by SD of WM reference region. Higher = better.
-CNR\_GM\_WM        - GM-WM Contrast-to-Noise Ratio (CNR), i.e. the mean of GM - mean of WM
+- CNR\_GM\_WM        - GM-WM Contrast-to-Noise Ratio (CNR), i.e. the mean of GM - mean of WM
 divided by the SD of the WM reference region. Higher = better.
-FBER\_WMref\_Ratio - Foreground to Background Energy Ratio (FBER), i.e. the variance of voxels within the brain (in pGM+pWM mask)
+- FBER\_WMref\_Ratio - Foreground to Background Energy Ratio (FBER), i.e. the variance of voxels within the brain (in pGM+pWM mask)
 divided by the variance of voxels in the WM reference region. Higher = better.
-EFC\_bits         - Shannon Entropy Focus Criterion (EFC), i.e. the entropy of voxel intensities proportional to the maximum
+- EFC\_bits         - Shannon Entropy Focus Criterion (EFC), i.e. the entropy of voxel intensities proportional to the maximum
 possibly entropy for a similarly sized image. Indicates ghosting and head motion-induced blurring. Lower = better.
-Mean\_AI\_Perc     - mean relative voxel-wise absolute Asymmetry Index (AI) within the brain (pGM+pWM mask) (%)
-SD               - same but SD (%)
+- Mean\_AI\_Perc     - mean relative voxel-wise absolute Asymmetry Index (AI) within the brain (pGM+pWM mask) (%)
+- SD               - same but SD (%)
 
 REFERENCES:
 Preprocessed Connectome Project Quality Assurance Protocol (QAP):
@@ -2589,20 +2618,20 @@ xASL_qc_WADQC_GenerateDescriptor(x, iSubject)
 This QC function generates a JSON descriptor for Gaspare'
 QCDC script, by the following steps:
 
-a) include information about where to find the dummy DICOM (i.e. placeholder DICOM)
-b) For ExploreASL' QC fields (as passed through in
+- a) include information about where to find the dummy DICOM (i.e. placeholder DICOM)
+- b) For ExploreASL' QC fields (as passed through in
 x.Output), here we note all these QC fields for each
 ScanType, as the x.Output should have been collected
 equally in the QC file 'QC\_collection\_SubjectName.json'
 by function xASL\_qc\_CollectParameters
-c) Subfunction xASL\_qc\_WADQC\_images - Includes visual standard space QC
+- c) Subfunction xASL\_qc\_WADQC\_images - Includes visual standard space QC
 images, by searching them on prescribed paths within the
 Population folder (where currently all derivatives reside)
-d) Insert the PDF report; this PDF report is
+- d) Insert the PDF report; this PDF report is
 subject-specific, not scan-specific. For completeness it
 is added to each QCDC descriptor
-e) Add WAD-QC server details (i.e. IP address etc)
-f) Save the Descriptor JSON file.
+- e) Add WAD-QC server details (i.e. IP address etc)
+- f) Save the Descriptor JSON file.
 
 
 ----
@@ -2624,18 +2653,20 @@ tSNR.tSNR\_GMWM\_Ratio    : mean (GM+WM) signal / sqrt(std(GM+WM)^2+std(WMref)^2
 tSNR.tSNR\_GMWM\_WMref\_Ratio: mean (GM+WM) signal / std WMref over time
 tSNR.tSNR\_Physio2Thermal\_Ratio: sqrt((tSNR(GM+WM)/tSNR\_GMWM\_WMref\_Ratio))^2-1)
 tSNR.tSNR\_Slope\_Corr:
+
 Differences to the SPM U+ suggestion:
+
 - eroded WM is used for estimating background noise
 - Brainmask is determined in the same way as the structural anatQC,
 - CSF is determined from the pGM&pWM maps;
 
 REFERENCES:
-1) Thomas Liu (2016). Noise contributions to the fMRI signal: An overview NeuroImage, 343, 141-151
+1. Thomas Liu (2016). Noise contributions to the fMRI signal: An overview NeuroImage, 343, 141-151
 http://dx.doi.org/10.1016/j.neuroimage.2016.09.008
-2) Cesar Caballero-Gaudes and Richard C. Reynolds (2016). Methods For Cleaning The BOLD fMRI Signal. NeuroImage, 154,128-149
-3) Lawrence Wald and Jonathan R Polimeni (2016). Impacting the effect of fMRI noise through
+2. Cesar Caballero-Gaudes and Richard C. Reynolds (2016). Methods For Cleaning The BOLD fMRI Signal. NeuroImage, 154,128-149
+3. Lawrence Wald and Jonathan R Polimeni (2016). Impacting the effect of fMRI noise through
 hardware and acquisition choices ??? Implications for controlling false positive rates. NeuroImage, 154,15-22
-4) SPM Utility + toolbox. Cyril Pernet. https://osf.io/wn3h8/
+4. SPM Utility + toolbox. Cyril Pernet. https://osf.io/wn3h8/
 
 
 ## Quantization
@@ -2677,11 +2708,13 @@ proportional to ATT.
 Note that the order of sessions should be 1) crushed 2) non-crushed
 
 This function runs the following steps:
+
 1. Skip this function if no FEAST data available
 2. Admin
 3. Load data & correct for timing differences (PLD etc)
 4. Smooth and clip CBF maps & FEAST ratio
 5. Compute TT maps
+
 
 
 ----
@@ -2715,11 +2748,13 @@ calculations defined by Patrick Hales. With courtesy and thanks!
 Note that we assume a venous O2 saturation of 68% (Yv=0.68)
 
 This function performs the following steps:
-1) Check fraction vs percentage hematocrit & Y, should be between 0 and 1
-2) Specify defaults (Hb, Fe)
-3) Perform calculation
-4) Convert s to ms
-5) Print what we did
+
+1. Check fraction vs percentage hematocrit & Y, should be between 0 and 1
+2. Specify defaults (Hb, Fe)
+3. Perform calculation
+4. Convert s to ms
+5. Print what we did
+
 --------------------------------------------------------------------------------------------------------------
 
 ----
@@ -2758,19 +2793,22 @@ xASL\_wrp\_ProcessM0.m). This function runs the following steps:
 This script performs a multi-step quantification, by
 initializing a ScaleImage that travels through this script & gets changed by the following quantification
 factors:
-1)    PLD scalefactor (gradient if 2D multi-slice) (if x.ApplyQuantification(3))
-2)    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
+
+1.    **PLD scalefactor** (gradient if 2D multi-slice) (if x.ApplyQuantification(3))
+2.    **Label decay scale factor** for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
 Single-compartment model: Alsop MRM 2014
 Dual-compartment model: Wang MRM 2002: Gevers JMRI 2012 (if x.ApplyQuantification(3))
-3)    Scaling to physiological units [ml/gr/ms =>ml/100gr/min =>(60,000 ms=>min)(1 gr=>100gr)]
+3.    **Scaling to physiological units** [ml/gr/ms =>ml/100gr/min =>(60,000 ms=>min)(1 gr=>100gr)]
 (if x.ApplyQuantification(3))
-4)    Vendor-specific scalefactor (if x.ApplyQuantification(1) -> future move to dcm2niiX stage)
+4.    **Vendor-specific scalefactor** (if x.ApplyQuantification(1) -> future move to dcm2niiX stage)
 Finally, we:
-5)    Divide PWI/M0 (if x.ApplyQuantification(5))
-6)    Print parameters used
+5.    Divide PWI/M0 (if x.ApplyQuantification(5))
+6.    Print parameters used
+
 Note that the output always goes to the CBF image (in the
 future this could go to different stages, e.g. dcm2niiX or
 PWI stage)
+
 
 
 ----
@@ -2809,11 +2847,12 @@ This function is a wrapper around the SPM "old segment"
 function, for biasfield removal. It is tested for M0 and mean control
 images. It conducts the following steps:
 
-1) Create implicit mask
-2) Define SPM 'old segmentation' settings
-3) Run SPM 'old segmentation'
-4) Delete temporary files
-5) Rename temporary SPM file into output file
+1. Create implicit mask
+2. Define SPM 'old segmentation' settings
+3. Run SPM 'old segmentation'
+4. Delete temporary files
+5. Rename temporary SPM file into output file
+
 
 
 ----
@@ -2917,14 +2956,16 @@ their ROI names, for later use as ROI definition in xASL\_stat\_GetROIstatistics
 Note that the atlases should be integer values, or different 4rd
 dimensions (i.e. multiple images), that are mutually
 exclusive. This function takes the following steps:
-1) Load atlas ROI names
+
+1. Load atlas ROI names
 There should be a TSV sidecar to the atlas NIfTI file, as
 explained above.
-2) deal with memory mapping
-3) Resample atlas 50 1.5 mm^3 MNI
-4) Converted atlas with integers to 4D binary image
-5) Convert/compress masks into Columns
-6) Print atlas overview image
+2. deal with memory mapping
+3. Resample atlas 50 1.5 mm^3 MNI
+4. Converted atlas with integers to 4D binary image
+5. Convert/compress masks into Columns
+6. Print atlas overview image
+
 
 
 ----
@@ -3035,6 +3076,7 @@ location between subjects, so we mask this on subject-level.
 Note that the words "mask" and "ROI" are used
 interchangeably throughout this function, where they can
 have a different or the same meaning
+
 PM: WE COULD CHANGE THIS, INTO MASK BEING USED TO EXCLUDE
 VOXELS AND ROI FOR INCLUDING VOXELS
 
@@ -3117,18 +3159,21 @@ subjects/sessions, columns will be the sets and
 ROI-statistics.
 Any missing data will be skipped (setting them to NaN should
 have happened in a previous function).
+
 This function performs the following steps:
-1) First remove previous TSV-file, if already existed
+
+1. First remove previous TSV-file, if already existed
 printing to a TSV file can be tricky if it is opened by
 Excel. Make sure to close previous versions first,
 otherwise this part will crash.
-2) Print overview of sets to TSV
+2. Print overview of sets to TSV
 as explained above. Uses subfunction
 xASL\_stat\_CreateLegend to put legends. Aim is to create a
 single TSV file that has a proper overview of the data,
 & is self-explanatory to those reading/using it.
-3) Define number of ASL sessions, force to 1 in case of TT or volume metrics
-4) Print the overview
+3. Define number of ASL sessions, force to 1 in case of TT or volume metrics
+4. Print the overview
+
 
 
 ----

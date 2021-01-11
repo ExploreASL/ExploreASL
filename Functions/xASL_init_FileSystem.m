@@ -82,9 +82,9 @@ FileDef{1} = {'FLAIR' 'T1' 'T1_filled' 'c1T1' 'c2T1' 'c3T1' 'j_T1' 'y_T1' 'WMH_S
 
 % FileTypes in SESSIONDIR
 FileDef{2} = {'y_ASL' 'ASL4D' 'ASL4D_RevPE'...
-	           'CBF' 'qCBF' 'qCBF4D' 'qCBF_untreated' 'despiked_ASL4D' ...
+	           'CBF' 'qCBF' 'qCBF4D' 'qCBF_untreated' 'qCBF_masked' 'despiked_ASL4D' ...
 			   'PseudoCBF' 'PWI' 'PWI4D' 'mean_PWI_Clipped' 'mean_PWI_Clipped_DCT' 'M0' 'mean_control' 'SD' 'SNR' 'SD_control'...
-			   'SNR_control' 'SliceGradient' 'SliceGradient_extrapolated' 'FoV' 'TT' 'PVgm' 'PVwm' 'PVcsf' 'PVwmh' 'CBFgm' 'CBFwm' 'MaskSusceptibilityPop' 'TotalGMPop' 'DeepWMPop' 'HammersPop' 'MNIStructuralPop' 'LeftRightPop'}; 
+			   'SNR_control' 'SliceGradient' 'SliceGradient_extrapolated' 'FoV' 'TT' 'PVgm' 'PVwm' 'PVcsf' 'PVwmh' 'CBFgm' 'CBFwm' 'MaskSusceptibilityPop' 'TotalGMPop' 'DeepWMPop' 'HammersPop' 'MNIStructuralPop' 'LeftRightPop' 'HOcort_CONNPop' 'HOsub_CONNPop'}; 
 
 Prefix = {'r' 'm' 's' 'mr' 'rmr' 'rr' 'temp_' 'rtemp_' 'mask_' 'BiasField_' 'noSmooth_'}; % r=resample m=modulate s=smooth w=warp q=quantified p=probability % USE t for TEMP? replace w by r
 Suffix = {'_backup' '_ORI'};
@@ -163,9 +163,15 @@ if isfield(x.P,'SubjectID')
             end
         end
     end
+    
+    %% ------------------------------------------------------------------------------------------
+    %% Add custom cases
+    if isfield(x, 'SESSIONDIR')
+        x.P.Path_MaskVascular = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
+    end
+    x.P.Pop_Path_MaskVascular = fullfile(x.D.PopDir, ['MaskVascular_' x.P.SubjectID '_' x.P.SessionID '.nii']);
+    x.P.Path_Pop_MaskSusceptibility = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.P.SubjectID '_' x.P.SessionID '.nii']);    
 end
-
-
 
 
 %% ------------------------------------------------------------------------------------------
@@ -203,5 +209,7 @@ x.P.Atlas.DKT31_CMA_labels_MNI152_2mm       = fullfile(x.D.AtlasDir_CC_BY_4_0, '
 x.P.Atlas.DKT31_CMA_labels_prob_OASIS30     = fullfile(x.D.AtlasDir_CC_BY_4_0, 'Mindboggle-101', 'OASIS-TRT-20_jointfusion_DKT31_CMA_label_probabilities_in_OASIS-30_v2.nii.gz');
 x.P.Atlas.DKT31_CMA_labels_prob_MNI152      = fullfile(x.D.AtlasDir_CC_BY_4_0, 'Mindboggle-101', 'OASIS-TRT-20_jointfusion_DKT31_CMA_label_probabilities_in_MNI152_v2.nii.gz');
 
+
+end
 
 end

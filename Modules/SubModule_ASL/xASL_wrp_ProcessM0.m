@@ -183,9 +183,9 @@ if x.M0_conventionalProcessing
     xASL_io_SaveNifti(x.P.Path_rM0, x.P.Path_mask_M0, M0_im>0,8,0);
 
     % also transform to standard space
-    InList          = {x.P.Path_rM0;x.P.Path_mask_M0};
-    OutList         = {x.P.Pop_Path_M0;x.P.Pop_Path_mask_M0};
-
+    InList  = {x.P.Path_rM0;x.P.Path_mask_M0};
+    OutList = {x.P.Pop_Path_M0;x.P.Pop_Path_mask_M0};
+    
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else

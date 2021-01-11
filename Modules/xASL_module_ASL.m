@@ -24,14 +24,14 @@ function [result, x] = xASL_module_ASL(x)
 % - 040_ResliceASL        - Resample ASL images to standard space
 % - 050_PreparePV         - Create partial volume images in ASL space with ASL resolution
 % - 060_ProcessM0         - M0 image processing
-% - 070_Quantification    - CBF quantification
-% - 080_CreateAnalysisMask- Create mask using FoV, vascular outliers & susceptibility atlas
+% - 070_CreateAnalysisMask- Create mask using FoV, vascular outliers & susceptibility atlas
+% - 080_Quantification    - CBF quantification
 % - 090_VisualQC_ASL      - Generate QC parameters & images
 % - 100_WADQC             - QC for WAD-QC DICOM server (OPTIONAL)
 %
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 %% Admin
@@ -102,18 +102,15 @@ end
 
 x = xASL_init_FileSystem(x); % do this only here, to save time when skipping this module
 
-if ~isfield(x,'SavePWI4D')
-    x.SavePWI4D=0;
-end
 if ~isfield(x,'Q')
     x.Q = struct;
 end
 if ~isfield(x,'DoWADQCDC')
     x.DoWADQCDC = false; % default skip WAD-QC stuff
 end
-if ~isfield(x.Q,'BackGrSupprPulses') && isfield(x,'BackGrSupprPulses')
+if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
     % Temporary backwards compatibility that needs to go
-    x.Q.BackGrSupprPulses = x.BackGrSupprPulses;
+    x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
 end
 
 
@@ -147,8 +144,8 @@ StateName{ 3} = '030_RegisterASL';
 StateName{ 4} = '040_ResampleASL';
 StateName{ 5} = '050_PreparePV';
 StateName{ 6} = '060_ProcessM0';
-StateName{ 7} = '070_Quantification';
-StateName{ 8} = '080_CreateAnalysisMask';
+StateName{ 7} = '070_CreateAnalysisMask';
+StateName{ 8} = '080_Quantification';
 StateName{ 9} = '090_VisualQC_ASL';
 StateName{10} = '100_WADQC';
 
@@ -375,10 +372,33 @@ end
 
 
 %% -----------------------------------------------------------------------------
-%% 7    Quantification
-% Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
+%% 7    Create analysis mask
 iState = 7;
-if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
+if ~x.mutex.HasState(StateName{iState})
+    if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
+        if size(xASL_io_Nifti2Im(x.P.Path_PWI),4)>1
+            warning('Skipped vascular masking because we had too many images');
+		else
+            xASL_wrp_CreateAnalysisMask(x);
+
+            x.mutex.AddState(StateName{iState});
+            xASL_adm_CompareDataSets([], [], x); % unit testing
+        end
+    else
+        if  bO;fprintf('%s\n',['T1w-related images missing, skipping ' StateName{iState}]);end
+    end
+else
+    xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
+    if  bO;fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);end
+end
+
+
+
+%% -----------------------------------------------------------------------------
+%% 8    Quantification
+% Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
+iState = 8;
+if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
     fprintf('%s\n','Quantifying ASL:   ');
 
@@ -396,7 +416,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
     end
 
     % allow 4D quantification as well
-    if x.SavePWI4D
+    if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D==1
         if ~xASL_exist(x.P.Path_PWI4D,'file')
             fprintf('%s\n','Skipping, native space PWI4D missing');
         else
@@ -418,33 +438,6 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
 else
 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
 	if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
-end
-
-
-%% -----------------------------------------------------------------------------
-%% 8    Create analysis mask
-iState = 8;
-x.P.Pop_Path_CBF_Masked = fullfile(x.D.PopDir, ['qCBF_masked_' x.P.SubjectID '_' x.P.SessionID '.nii']);
-x.P.Path_MaskVascular = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
-x.P.Pop_Path_MaskVascular = fullfile(x.D.PopDir, ['MaskVascular_' x.P.SubjectID '_' x.P.SessionID '.nii']);
-x.PathPop_MaskSusceptibility = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.P.SubjectID '_' x.P.SessionID '.nii']);
-
-if ~x.mutex.HasState(StateName{iState})
-    if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
-        if size(xASL_io_Nifti2Im(x.P.Path_CBF),4)>1
-            warning('Skipped vascular masking because we had too many images');
-		else
-            xASL_wrp_CreateAnalysisMask(x);
-
-            x.mutex.AddState(StateName{iState});
-            xASL_adm_CompareDataSets([], [], x); % unit testing
-        end
-    else
-        if  bO;fprintf('%s\n',['T1w-related images missing, skipping ' StateName{iState}]);end
-    end
-else
-    xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-    if  bO;fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);end
 end
 
 

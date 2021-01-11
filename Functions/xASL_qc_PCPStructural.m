@@ -14,18 +14,19 @@ function [anatQA] = xASL_qc_PCPStructural(PathT1, Pathc1T1, Pathc2T1, x, PopPath
 %   anatQA     - struct containing the QC parameters
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function computes several anatomical QC parameters as proposed in SPM Univariate Plus:
-%              WM_ref_vol_mL    - volume of the WM reference region (mL)
-%              WMref_vol_Perc   - same but as percentage of total WM volume
-%              SNR_GM           - GM signal-to-Noise Ratio (SNR), ie the mean intensity within GM divided
-%                                 by SD of WM reference region. Higher = better.
-%              CNR_GM_WM        - GM-WM Contrast-to-Noise Ratio (CNR), i.e. the mean of GM - mean of WM
-%                                 divided by the SD of the WM reference region. Higher = better.
-%              FBER_WMref_Ratio - Foreground to Background Energy Ratio (FBER), i.e. the variance of voxels within the brain (in pGM+pWM mask)
-%                                 divided by the variance of voxels in the WM reference region. Higher = better.
-%              EFC_bits         - Shannon Entropy Focus Criterion (EFC), i.e. the entropy of voxel intensities proportional to the maximum
-%                                 possibly entropy for a similarly sized image. Indicates ghosting and head motion-induced blurring. Lower = better.
-%              Mean_AI_Perc     - mean relative voxel-wise absolute Asymmetry Index (AI) within the brain (pGM+pWM mask) (%)
-%              SD               - same but SD (%)
+%
+%              - WM_ref_vol_mL    - volume of the WM reference region (mL)
+%              - WMref_vol_Perc   - same but as percentage of total WM volume
+%              - SNR_GM           - GM signal-to-Noise Ratio (SNR), ie the mean intensity within GM divided
+%                                   by SD of WM reference region. Higher = better.
+%              - CNR_GM_WM        - GM-WM Contrast-to-Noise Ratio (CNR), i.e. the mean of GM - mean of WM
+%                                   divided by the SD of the WM reference region. Higher = better.
+%              - FBER_WMref_Ratio - Foreground to Background Energy Ratio (FBER), i.e. the variance of voxels within the brain (in pGM+pWM mask)
+%                                   divided by the variance of voxels in the WM reference region. Higher = better.
+%              - EFC_bits         - Shannon Entropy Focus Criterion (EFC), i.e. the entropy of voxel intensities proportional to the maximum
+%                                   possibly entropy for a similarly sized image. Indicates ghosting and head motion-induced blurring. Lower = better.
+%              - Mean_AI_Perc     - mean relative voxel-wise absolute Asymmetry Index (AI) within the brain (pGM+pWM mask) (%)
+%              - SD               - same but SD (%)
 %
 % REFERENCES:
 %              Preprocessed Connectome Project Quality Assurance Protocol (QAP):

@@ -18,9 +18,9 @@ function [PathJSON] = xASL_init_ConvertM2JSON(PathM, bOverwrite)
 %              requires the JSON file, this function should not be compiled
 %              along. This function performs the following steps:
 %
-%              1) Run the m-file to load parameters
-%              2) Escape characters that are illegal in JSON
-%              3) Write the JSON
+%              1. Run the m-file to load parameters
+%              2. Escape characters that are illegal in JSON
+%              3. Write the JSON
 %
 % EXAMPLE: PathJSON = xASL_init_ConvertM2JSON('/MyStudy/DataParameterFile.m');
 % __________________________________

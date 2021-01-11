@@ -25,45 +25,6 @@ function xASL_io_mTRIAL(root)
 %               - /incoming/raw/sub-###/visit-###/FLAIR
 %               - /incoming/raw/sub-###/visit-###/M0
 %
-% dockerInterfaceParameters.json: (Siemens e.g.)
-%
-% {
-% "Sequence":          "3D GRASE",
-% "LabelingType":      "PCASL",
-% "readout_dim":       "2D",
-% "BackGrSupprPulses": "5",
-% "Initial_PLD":       "2000",
-% "LabelingDuration":  "1800",
-% "SliceReadoutTime":  "40"
-% }
-%
-% BIDS TEST DATA:
-%
-% 'Siemens'
-% data.x.M0 = 'UseControlAsM0'; % Should actually be: data.x.M0 = 'separate_scan'; % but separate M0 does not work on mTRIAL right now
-% data.x.Sequence = '3D_GRASE';
-% data.x.Q.LabelingType = "PCASL";
-% data.x.Q.BackGrSupprPulses = 5;
-% data.x.Q.LabelingDuration = 1800;
-% data.x.Q.Initial_PLD = 2000;
-%
-% 'Philips'
-% data.x.M0 = 'UseControlAsM0'; % Should actually be: data.x.M0 = 'separate_scan'; % but separate M0 does not work on mTRIAL right now
-% data.x.Sequence = '2D_EPI';
-% data.x.Q.LabelingType = "PCASL";
-% data.x.Q.BackGrSupprPulses = 2;
-% data.x.Q.LabelingDuration = 1800;
-% data.x.Q.Initial_PLD = 2000;
-%
-% 'GE'
-% data.x.M0 = 'UseControlAsM0';
-% data.x.Sequence = '3D_spiral';
-% data.x.Q.LabelingType = "PCASL";
-% data.x.Q.BackGrSupprPulses = 5;
-% data.x.Q.LabelingDuration = 2025;
-% data.x.Q.Initial_PLD = 1450;
-%
-%
 % EXAMPLE:      xASL_io_mTRIAL('/opt/incoming/');
 %
 %               xASL_io_mTRIAL('C:\...\incoming');
@@ -91,8 +52,11 @@ movefile(fullfile(root,'analysis'),fullfile(root,'data'));
 data.x.name = "incoming";
 data.x.subject_regexp = "^sub$";
 data.x.Quality = 1;
-data.x.bNativeSpaceAnalysis = 1;
 data.x.DELETETEMP = 1;
+
+% Default atlas options
+data.x.bGetAtlasROIsInNativeSpace = 0;
+data.x.Atlases = {'TotalGM','DeepWM','HO_cortex','HO_subcortical'};
 
 % Add Q field
 data.x.Q = struct;
@@ -105,9 +69,14 @@ x_temporary = xASL_import_json(dockerInterfaceFile);
 if isfield(x_temporary,'Sequence'),             data.x.Sequence = x_temporary.Sequence; end
 if isfield(x_temporary,'LabelingType'),         data.x.Q.LabelingType = x_temporary.LabelingType; end
 if isfield(x_temporary,'readout_dim'),          data.x.readout_dim = x_temporary.readout_dim; end
-if isfield(x_temporary,'BackGrSupprPulses'),    data.x.Q.BackGrSupprPulses = x_temporary.BackGrSupprPulses; end
+if isfield(x_temporary,'BackgroundSuppressionNumberPulses'),    data.x.Q.BackgroundSuppressionNumberPulses = x_temporary.BackgroundSuppressionNumberPulses; end
 if isfield(x_temporary,'Initial_PLD'),          data.x.Q.Initial_PLD = x_temporary.Initial_PLD; end
 if isfield(x_temporary,'LabelingDuration'),     data.x.Q.LabelingDuration = x_temporary.LabelingDuration; end
+if isfield(x_temporary,'M0PositionInASL4D')
+    if x_temporary.M0PositionInASL4D~=0
+        data.x.M0PositionInASL4D = x_temporary.M0PositionInASL4D;
+    end
+end
 
 % Fix Sequence name
 switch lower(data.x.Sequence)

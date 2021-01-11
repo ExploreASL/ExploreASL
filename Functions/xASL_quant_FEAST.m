@@ -14,11 +14,13 @@ function xASL_quant_FEAST(x)
 % Note that the order of sessions should be 1) crushed 2) non-crushed
 %
 % This function runs the following steps:
+%
 % 1. Skip this function if no FEAST data available
 % 2. Admin
 % 3. Load data & correct for timing differences (PLD etc)
 % 4. Smooth and clip CBF maps & FEAST ratio
 % 5. Compute TT maps
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_quant_FEAST(x);
 % REFERENCE: JJ Wang, 2003 MRM; Y Chen, 2012 MAGMA
