@@ -33,7 +33,7 @@ function outNum = xASL_adm_Hex2Num(inStr, type, endian)
 % Not enough input parameters
 if (nargin<1) || isempty(inStr)
 	outNum = NaN;
-	return;
+	error('Not enough input parameters...');
 end
 
 if (nargin<2) || isempty(type)
@@ -51,14 +51,14 @@ end
 % Takes only char on input
 if ~ischar(inStr)
 	outNum = NaN;
-	return;
+	error('Input should be a char (array)...');
 end
 
 % If the output is supposed to be char, then check if the input is not char already
 if strcmpi(type,'char')
 	if sum((inStr>'f' & inStr<'z')+(inStr>'F' & inStr<'Z'))
 		outNum = inStr;
-		return;
+		return
 	end
 end
 

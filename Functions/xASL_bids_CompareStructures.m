@@ -31,11 +31,11 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     %% Input Check
 
     % Check if both root folders are valid char arrays or strings
-    if ~(ischar(pathDatasetA))
-        error('The path of structure A is neither a char array not a string.');
+    if ~ischar(pathDatasetA)
+        error('The path of structure A is not a char array.');
     end
-    if ~(ischar(pathDatasetB))
-        error('The path of structure A is neither a char array not a string.');
+    if ~ischar(pathDatasetB)
+        error('The path of structure B is not a char array.');
     end
 
     % Check if both root folders exists
@@ -370,7 +370,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
             end
         elseif ischar(fieldContentA) && ischar(fieldContentB)
             % Compare char arrays and strings
-            if ~(strcmp(fieldContentA,fieldContentB))
+            if ~strcmp(fieldContentA,fieldContentB)
                 strError = sprintf('%s\t\t\t\tDifferent value: %s (%s vs %s)\n', strError,curFieldName,fieldContentA,fieldContentB);
             end
         elseif iscell(fieldContentA) && iscell(fieldContentB)
@@ -380,7 +380,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
             end
         elseif isstruct(fieldContentA) && isstruct(fieldContentB)
 			% Compare cell arrays
-			if ~(isequal(fieldContentA,fieldContentB))
+			if ~isequal(fieldContentA,fieldContentB)
 				strError = sprintf('%s\t\t\t\tDifferent value: %s (array)\n', strError,curFieldName);
 			end
 		elseif islogical(fieldContentA) && islogical(fieldContentB)

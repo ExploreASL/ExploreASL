@@ -34,14 +34,14 @@ end
 % Parms already exist
 if ~bRecreate && exist(pathJSON, 'file')
 	if nargout > 0
-		fprintf('Loading parameters from %s\n',pathJSON);
+		fprintf('Loading parameters from %s\n', pathJSON);
 		parms = spm_jsonread(pathJSON);
 	end
 	return;
 end
 
 % Recreate again
-fprintf('Recreating parameter file: %s\n',pathJSON);
+fprintf('Recreating parameter file: %s\n', pathJSON);
 parms = struct();
 
 % Parse header
@@ -60,4 +60,5 @@ parms = xASL_bids_parms2BIDS(parms, [], 1, 0);
 		
 % Saves the JSON file
 spm_jsonwrite(pathJSON, parms);
+
 return

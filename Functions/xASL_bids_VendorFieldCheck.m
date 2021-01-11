@@ -1,8 +1,8 @@
-function jsonOut = ExploreASL_bids_VendorFieldCheck(jsonIn)
-%ExploreASL_bids_VendorFieldCheck Goes through the JSON structure before saving it and ensures that all 
+function jsonOut = xASL_bids_VendorFieldCheck(jsonIn)
+%xASL_bids_VendorFieldCheck Goes through the JSON structure before saving it and ensures that all 
 % vendor specific fields are properly checked and renamed if necessary
 %
-% FORMAT: jsonOut = ExploreASL_bids_VendorFieldCheck(jsonIn,bIsASL)
+% FORMAT: jsonOut = xASL_bids_VendorFieldCheck(jsonIn,bIsASL)
 %
 % INPUT:
 %   jsonIn  - JSON with the input fields (REQUIRED)
@@ -14,6 +14,8 @@ function jsonOut = ExploreASL_bids_VendorFieldCheck(jsonIn)
 % DESCRIPTION:
 % It checks all the JSON fields, make sure that they are renamed from vendor specific names to common BIDS names
 %
+% EXAMPLE: n/a
+%
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 jsonOut = struct;
@@ -24,7 +26,7 @@ jsonRemove = struct;
 
 % Rename the coil names for different manufacturers
 if isfield(jsonIn,'CoilString')
-	switch (jsonIn.Manufacturer)
+	switch jsonIn.Manufacturer
 		case 'Philips'
 			jsonOut.ReceiveCoilName = jsonIn.CoilString;
 		case 'GE'

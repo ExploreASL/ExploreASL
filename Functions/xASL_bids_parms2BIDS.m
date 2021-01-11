@@ -89,7 +89,7 @@ if ~isempty(inXasl)
 		for iA = 1:length(FieldsA)
 			
 			% Convert the units for all time fields from ms to s
-			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
+			for iT = find(strcmp(FieldsA{iA}, convertTimeFieldsXASL))
 				% Convert only numeric fields
 				% In certain cases (e.g. SliceReadoutTime='shortestTR'), a string is given which is then skipped and not converted
 				if isnumeric(inXasl.(FieldsA{iA}))
@@ -97,9 +97,9 @@ if ~isempty(inXasl)
 					if inXasl.(FieldsA{iA}) ~= 0
 						% If outside of the recommended range, then still convert, but issue a warning
 						if max(inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT)) || max(inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT))
-							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' num2str(inXasl.(FieldsA{iA}))...
+							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' xASL_num2str(inXasl.(FieldsA{iA}))...
 								', which is outside of the recommended range <'...
-								num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+								xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
 						end
 					end
 					inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
@@ -132,7 +132,7 @@ if ~isempty(inBids)
 	% Update all the old JSON fields to the respective BIDS field name
 	FieldsA = fields(inBids);
 	for iA = 1:length(FieldsA)
-		for iL = find(strcmp(FieldsA{iA},updateNamesBIDSold))
+		for iL = find(strcmp(FieldsA{iA}, updateNamesBIDSold))
 			inBids.(updateNamesBIDSnew{iL}) = inBids.(updateNamesBIDSold{iL});
 			inBids = rmfield(inBids,updateNamesBIDSold{iL});
 		end
@@ -144,15 +144,15 @@ if ~isempty(inBids)
 		for iA = 1:length(FieldsA)
 			% Rename all listed fields to XASL variant
 			FieldNameChanged = FieldsA{iA};
-			for iL = find(strcmp(FieldsA{iA},changeNamesBIDS))
+			for iL = find(strcmp(FieldsA{iA}, changeNamesBIDS))
 				inBids.(changeNamesXASL{iL}) = inBids.(changeNamesBIDS{iL});
-				inBids = rmfield(inBids,changeNamesBIDS{iL});
+				inBids = rmfield(inBids, changeNamesBIDS{iL});
 				% Update the name of the field after the change
 				FieldNameChanged = changeNamesXASL{iL};
 			end
 			
 			% Convert the units for all time fields from s to ms
-			for iT = find(strcmp(FieldNameChanged,convertTimeFieldsXASL))
+			for iT = find(strcmp(FieldNameChanged, convertTimeFieldsXASL))
 				% Convert only if the field is numeric
 				% In certain cases (e.g. SliceReadoutTime='shortestTR') a string can be given, which needs to be skipped then
 				if isnumeric(inBids.(FieldNameChanged))
@@ -161,9 +161,9 @@ if ~isempty(inBids)
 					% Check if the value is within the recommended range after conversion and issue a warning if not
 					if inBids.(FieldNameChanged) ~= 0
 						if max(inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT)) || max(inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT))
-							warning(['Field ' FieldNameChanged ' in xASL structure has a value ' num2str(inBids.(FieldNameChanged))...
+							warning(['Field ' FieldNameChanged ' in xASL structure has a value ' xASL_num2str(inBids.(FieldNameChanged))...
 								', which is outside of the recommended range <'...
-								num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+								xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
 						end
 					end
 				else
@@ -186,14 +186,14 @@ if bPriorityBids
 	if ~isempty(inBids)
 		FieldsA = fields(inBids);
 		for iA = 1:length(FieldsA)
-			if ~isfield(outParms,(FieldsA{iA}))
+			if ~isfield(outParms, (FieldsA{iA}))
 				% If the field is not yet there, then copy it
 				outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
 			else
 				% If the field is already there, then check if the field to overwrite is not contain NaN or full of zeros or empty strings
 				% Do this separately for cell and non-cell arrays
 				if iscell(inBids.(FieldsA{iA}))
-					if sum(~cellfun(@isempty,inBids.(FieldsA{iA})))>0
+					if sum(~cellfun(@isempty, inBids.(FieldsA{iA})))>0
 						outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
 					end
 				else
@@ -208,14 +208,14 @@ else
 	outParms = inBids;
 	FieldsA = fields(inXasl);
 	for iA = 1:length(FieldsA)
-		if ~isfield(outParms,(FieldsA{iA}))
+		if ~isfield(outParms, (FieldsA{iA}))
 			% If the field is not yet there, then copy it
 			outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
 		else
 			% If the field is already there, then check if the field to overwrite is not contain NaN or full of zeros or empty strings
 			% Do this separately for cell and non-cell arrays
 			if iscell(inXasl.(FieldsA{iA}))
-				if sum(~cellfun(@isempty,inXasl.(FieldsA{iA})))>0
+				if sum(~cellfun(@isempty, inXasl.(FieldsA{iA})))>0
 					outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
 				end
 			else
@@ -252,10 +252,10 @@ if bOutBids ~= 1
 	for iA = 1:length(FieldsA)
 		for iL = find(strcmp(FieldsA{iA},xASLqFields))
 			outParms.Q.(xASLqFields{iL}) = outParms.(xASLqFields{iL});
-			outParms = rmfield(outParms,xASLqFields{iL});
+			outParms = rmfield(outParms, xASLqFields{iL});
 		end
 	end
 end
 
 end
-	
+

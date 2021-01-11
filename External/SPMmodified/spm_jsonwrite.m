@@ -226,7 +226,7 @@ elseif ~isfinite(json)
         end
     end
 else
-    S = num2str(json,12);
+    S = xASL_num2str(json,12);
 end
 
 %==========================================================================

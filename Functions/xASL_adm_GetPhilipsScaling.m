@@ -132,7 +132,7 @@ if scaleFactor
 		warning('Philips MR ScaleSlope was 1, could be a scale slope issue.');
 	end
 	
-	fprintf('%s\n',['Using DICOM (re)scale slopes ' num2str(scaleFactor) ' * ' num2str(MRScaleSlope)]);
+	fprintf('%s\n',['Using DICOM (re)scale slopes ' xASL_num2str(scaleFactor) ' * ' xASL_num2str(MRScaleSlope)]);
 	scaleFactor = 1./(scaleFactor .* MRScaleSlope);
 end
 
