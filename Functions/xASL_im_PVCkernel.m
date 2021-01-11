@@ -1,13 +1,34 @@
-function [imPVEC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mode)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% PVEc correction of ASL data using prior GM-,WM-partial volume maps.
-% Follows the principles of the PVEc algorithm by I. Asllani (MRM, 2008).
-% Free for research use without guarantee. If used in a study or
-% publication. Please, acknowledge the author.
-% Created by Jan Petr, j.petr@hzdr.de
-% Version 0.8, 2018-06
+function [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mode)
+%xASL_im_PVCkernel PV-correction of ASL data using GM-,WM-partial volume maps using linear regression
 %
-% Please cite:
+% FORMAT: [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV [,kernel,mode])
+%
+% INPUT:
+%   imCBF  - uncorrected CBF image imCBF(NX,NY,NZ) (REQUIRED)
+%   imPV   - PV-maps imPV(NX,NY,NZ,2) - WM/GM order does not matter, you get the same
+%            order in output as it is defined for input (REQUIRED)
+%   kernel - 3D window size [NI,NJ,NK] (OPTIONAL, DEFAULT = [5 5 1])
+%   mode   - Type of the kernel used - flat or Gaussian (OPTIONAL, DEFAULT = 'flat')
+%            'flat' - standard implementation, flat kernel with size
+%             [NI,NJ,NK], all the numbers must be odd.
+%            'gauss' - Gaussian kernel is used with [NI,NJ,NK] is FWHM in
+%             voxels, the window size is adjusted automatically to match
+%             the Gaussians
+%
+% OUTPUT: 
+%   imPVC - corrected CBF maps for both tissues - imPVC(NX,NY,NZ,2)
+%   imCBFrec - (NX,NY,NZ) - reconstruction of CBF from the corrected values
+%                        and PV maps
+%   imResidual(NX,NY,NZ) - difference between the reconstructed and original
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  PV-correction of ASL data using prior GM-,WM-partial volume maps.
+%               Follows the principles of the PVC algorithm by I. Asllani (MRM, 2008).
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,[5 5 1],'flat')
+%
+% REFERENCES:
 % -Asllani I, Borogovac A, Brown TR. Regression algorithm correcting for 
 %  partial volume effects in arterial spin labeling MRI. Magnetic Resonance 
 %  in Medicine. 2008 Dec 1;60(6):1362-71.
@@ -15,44 +36,26 @@ function [imPVEC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mod
 %  Hofheinz F, van den Hoff J, Asllani I. Effects of systematic partial 
 %  volume errors on the estimation of gray matter cerebral blood flow with 
 %  arterial spin labeling MRI. MAGMA 2018. DOI:10.1007/s10334-018-0691-y
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
-% FORMAT:       [imPVEC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mode)
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% 
-% INPUT:
-%   imCBF - uncorrected CBF image imCBF(X,Y,Z)
-%   imPV  - PV-maps imPV(X,Y,Z,2) - WM/GM does not matter, you get the same
-%           order in output as it is defined for input
-%   kernel - 3D window size [I,J,K]
-%   mode   - 'asllani' - standard implementation, flat kernel with size
-%             [I,J,K], all the numbers must be odd.
-%            'gauss' - Gaussian kernel is used with [I,J,K] is FWHM in
-%             voxels, the window size is adjusted automatically to match
-%             the Gaussians
-%
-% OUTPUT: 
-%   imPVEC - corrected CBF maps for both tissues - imPVEC(X,Y,Z,2)
-%   imCBFrec - (X,Y,Z) - reconstruction of CBF from the corrected values
-%                        and PV maps
-%   imResidual(X,Y,Z) - difference between the reconstructed and original
-% 
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  PVEc correction of ASL data using prior GM-,WM-partial volume maps.
-%               Follows the principles of the PVEc algorithm by I. Asllani (MRM, 2008).
-%               Free for research use without guarantee. If used in a study or
-%               publication. Please, acknowledge the author.
-%               Created by Jan Petr, j.petr@hzdr.de
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
+%% 0. Admin
+if nargin<2
+	error('CBF image and PV-maps have to be given on the input');
+end
+
+if nargin<3 || isempty(kernel)
+	kernel = [5 5 1];
+end
+
+if nargin<4 || isempty(mode)
+	mode = 'flat';
+end
+
+%% 1. Prepare the parameters
 % Check the input parameters
-switch (mode)
-	case 'asllani'
+switch (lower(mode))
+	case 'flat'
 		% The kernel size has to be odd in all dimensions
 		if (sum(mod(kernel,2))<3)
 			error('xASL_im_PVCkernel: kernel size has to be odd in all dimensions.');
@@ -80,7 +83,7 @@ switch (mode)
 		
 		doGauss = 1;
 	otherwise
-		error('xASL_im_PVCkernel: Only gauss and asllani modes are supported.');
+		error('xASL_im_PVCkernel: Only gauss and flat modes are supported.');
 end
 
 imPV(isnan(imPV)) = 0;
@@ -106,6 +109,7 @@ end
 % Any value below this is 
 opt.resMin = 0;
 
+%% 2. Performs the PV correction
 imTotPV = sum(imPV,4);
 
 % Creates a mask of the region covered by tissue
@@ -114,16 +118,13 @@ imMask = (imTotPV > opt.pvTh);
 imCBF = imCBF.*imMask;
 imPV = imPV.*repmat(imMask,[1 1 1 2]);
 
-% Setting of the parameters for the lsqlin function
-optLsqlin = optimset('Display','off','TolX',0.01,'TolFun',0.01,'FunValCheck','off','MaxIter',30);
-
 % Specify the vectors for defining the kernel
 xVec = (-winWidth(1)):winWidth(1);
 yVec = (-winWidth(2)):winWidth(2);
 zVec = (-winWidth(3)):winWidth(3);
 
 % Creates the empty images for the tissue specific magnetization
-imPVEC = zeros(size(imPV));
+imPVC = zeros(size(imPV));
 
 %tic
 % For each pixel on the mask do the calculation
@@ -139,7 +140,7 @@ for z=1:size(imCBF,3)
 	
 	for y = (winWidth(2)+1):(size(imCBF,2)-winWidth(2))
 		for x = (winWidth(1)+1):(size(imCBF,1)-winWidth(1))
-			imPVEC(x,y,z,1:2) = [0,0];
+			imPVC(x,y,z,1:2) = [0,0];
 		
 			if imMask(x,y,z)
 				% Create the empty vectors
@@ -191,7 +192,7 @@ for z=1:size(imCBF,3)
 							%res = ((PMatv.*PMatds.')*(PMatu'))*ASLMat;
 							res = (PMatv*diag(PMatds)*PMatu')*ASLMat;
 							
-							imPVEC(x,y,z,1:2) = res;
+							imPVC(x,y,z,1:2) = res;
 							
 							% In case that the result for one or both
 							% tissue is below minimal allowed value, we set
@@ -208,10 +209,10 @@ for z=1:size(imCBF,3)
 								
 								% Set the results for the smaller value to
 								% the minimum
-								imPVEC(x,y,z,indMin) = opt.resMin;
+								imPVC(x,y,z,indMin) = opt.resMin;
 								
 								% Calculate the result for the other value
-								imPVEC(x,y,z,indMax) = sum(ASLMatUp.*PMat(:,indMax))/sum(PMat(:,indMax).^2);
+								imPVC(x,y,z,indMax) = sum(ASLMatUp.*PMat(:,indMax))/sum(PMat(:,indMax).^2);
 							end
 						end
 					else
@@ -225,7 +226,7 @@ for z=1:size(imCBF,3)
 								ind = 2;
 							end
 							
-							imPVEC(x,y,z,ind) = sum(ASLMat.*PMat(:,ind))/sum(PMat(:,ind).^2);
+							imPVC(x,y,z,ind) = sum(ASLMat.*PMat(:,ind))/sum(PMat(:,ind).^2);
 						end
 					end
 				end
@@ -235,10 +236,12 @@ for z=1:size(imCBF,3)
 end
 %toc
 
+%% 3. Creates additional outputs
 % Reconstructed CBF based on CBF-PVEC and PV maps
-imCBFrec = sum(imPV.*imPVEC,4);
+imCBFrec = sum(imPV.*imPVC,4);
         
 % The residual error
 imResidual = imMask.*(abs(imCBFrec-imCBF));
 
-return;
+end
+
