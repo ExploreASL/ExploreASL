@@ -56,11 +56,11 @@ data.x.DELETETEMP = 1;
 
 % Default atlas options
 data.x.bGetAtlasROIsInNativeSpace = 0;
-data.x.Atlases = {'TotalGM','DeepWM','HO_cortex','HO_subcortical'};
 
 % Add Q field
 data.x.Q = struct;
 data.x.M0 = 'UseControlAsM0';
+data.x.S.Atlases = {'DKT31_CMA_labels_MNI152'}; 
 
 % Read docker interface file
 x_temporary = xASL_import_json(dockerInterfaceFile);
