@@ -32,11 +32,11 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     
     % Define output folder
     if nargin < 1
-        outputFolder = fullfile(x.MyPath,'Development','Documentation_GitHub');
+        outputFolder = fullfile(x.MyPath,'CustomScripts','GitHubDocumentation','docs');
     end
 
     if nargin < 2
-        updateExploreASL = true;
+        updateExploreASL = false;
     end
     
     % Copy and modify the index README
@@ -55,10 +55,10 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
                   ['# ExploreASL v',x.Version],true);
               
     % Copy the REQUIREMENTS file
-    copyfile(fullfile(x.MyPath,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
+    copyfile(fullfile(x.MyPath,'CustomScripts','GitHubDocumentation','templates','REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
     
     % Copy the ABOUT file
-    copyfile(fullfile(x.MyPath,'ABOUT.md'),fullfile(outputFolder,'About.md'));
+    copyfile(fullfile(x.MyPath,'CustomScripts','GitHubDocumentation','templates','ABOUT.md'),fullfile(outputFolder,'About.md'));
     
     % Create the functions markdown file
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
@@ -80,7 +80,7 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
     
     % Add DATAPAR.md text to ImportModule
-    addDATAPARtoImport(fullfile(x.MyPath,'DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
+    addDATAPARtoImport(fullfile(x.MyPath,'CustomScripts','GitHubDocumentation','templates','DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
     
     %% Update documentation read me files in the ExploreASL folder structure
     if updateExploreASL

@@ -23,8 +23,8 @@ function [PermutationList] = xASL_stat_UniquePairwisePermutations(GroupA, GroupB
 % PM: Allow entering one group only
 % PM: could extend with xASL_qc_TanimotoCoeff
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE SINGLE SAMPLE: PermutationList = xASL_stat_UniquePairwisePermutations([1 2 3]);
-% EXAMPLE TWO SAMPLES: PermutationList = xASL_stat_UniquePairwisePermutations([1 2 3], [4 5 6]);
+% EXAMPLE: SINGLE SAMPLE: PermutationList = xASL_stat_UniquePairwisePermutations([1 2 3]);
+%            TWO SAMPLES: PermutationList = xASL_stat_UniquePairwisePermutations([1 2 3], [4 5 6]);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
