@@ -343,7 +343,7 @@ function subject = parse_perf(subject)
                 end
                 
                 % add type
-                subject.perf(j).type = 'asl_time_series';
+                subject.perf(j).type = 'asl';
                 
                 % default to run 1 ((!) TODO: but could be that we need to check this
                 % at the end!)
