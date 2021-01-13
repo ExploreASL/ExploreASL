@@ -61,7 +61,12 @@ end
 
 % Get Matlab version
 VersionMatlab = version;
-VersionMatlab = str2num(VersionMatlab(end-5:end-2));
+indexR = find(VersionMatlab == 'R',1,'first');
+if isempty(indexR)
+	VersionMatlab = str2num(VersionMatlab(end-5:end-2));
+else
+	VersionMatlab = str2num(VersionMatlab((1:4)+indexR));
+end
 
 % Input has to be a character array
 if VersionMatlab>2015 && isstring(DataParFile) % isstring is introduced in 2016b
