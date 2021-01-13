@@ -59,14 +59,8 @@ if ~exist(DataParFile, 'file')
     error('DataParFile does not exist...');
 end
 
-% Get Matlab version
-VersionMatlab = version;
-VersionMatlab = str2num(VersionMatlab(end-5:end-2));
-
 % Input has to be a character array
-if VersionMatlab>2015 && isstring(DataParFile) % isstring is introduced in 2016b
-    DataParFile = char(DataParFile);
-end
+DataParFile = char(DataParFile);
 
 %% Decode JSON file
 jsonData = spm_jsonread(DataParFile);
