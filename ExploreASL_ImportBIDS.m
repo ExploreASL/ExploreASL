@@ -670,7 +670,7 @@ if bRunSubmodules(2)
 				
 				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 				% If Post-labeling delay or labeling duration is longer than 1, but shorter then number of volumes then repeat it
-				listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVenc','FlipAngle','RepetitionTimePreparation'};
+				listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVENC','FlipAngle','RepetitionTimePreparation'};
 				for iRepeat = 1:length(listFieldsRepeat)
 					if isfield(jsonLocal,(listFieldsRepeat{iRepeat})) && (length(jsonLocal.(listFieldsRepeat{iRepeat})) > 1) && (size(imNii,4) ~= length(jsonLocal.(listFieldsRepeat{iRepeat})))
 						if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
