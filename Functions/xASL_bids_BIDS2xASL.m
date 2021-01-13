@@ -1,39 +1,68 @@
-function xASL_bids_BIDS_xASL(Dir_RawData, bOverwrite)
-%xASL_bids_BIDS_xASL Convert BIDS rawdata to derivatives/ExploreASL
+function xASL_bids_BIDS2Legacy(Dir_RawData, bOverwrite)
+%xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
+%
+% FORMAT: xASL_bids_BIDS2xASL(Dir_RawData[, bOverwrite])
+% 
+% INPUT:
+%   Dir_RawData - path to the folder containing the raw BIDS data (REQUIRED)
+%   bOverwrite  - boolean, true for overwriting files (OPTIONAL, DEFAULT = true)
+%   
+% OUTPUT: n/a
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function converts BIDS rawdata (e.g. /StudyName/rawdata/) 
+% to xASL legacy derivative format (e.g. /StudyName/derivatives/ExploreASL/)
+%
 % Can be updated step-by-step when ExploreASL's derivative structure moves to BIDS
 % NB: ask how Visits/session layer is defined in bids-matlab (should be
 % separate layer within subjects, but now isn't?)
 %
-% PM: If multiple runs, this is fine. If multiple NIfTIs per run, issue a
-% warning
-% PM: could move folder/name configuration to JSON file
-% PM: Add TopUp compatibility
+% This function performs the following steps:
+% 1. Parse a folder using bids-matlab
+% 2. Define Subject
+% 3. Define SubjectVisit
+% 4. Parse modality
+% 5. Parse scantype
+% 6. Compile paths for copying
+% 7. Manage sidecars to copy
+% 8. Copy files
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: xASL_bids_BIDS2xASL('MyStudy/rawdata')
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
+
+
+%% ------------------------------------------------------------------------------------
+%% Configuration
+% PM: This configuration section could be taken outside this script, e.g. to a JSON file
 FolderNameConfiguration =  {'type'   'modality' 'foldernames' 'filenames'      'run_locations'   'run_1_index';...
                             'T1w'    'anat'     ''            'T1'             'file'            false;...
                             'FLAIR'  'anat'     ''            'FLAIR'          'file'            false;...
                             'asl'    'perf'     'ASL'         'ASL4D'          'folder'          true;...
-                            'm0scan' 'perf'     'ASL'         'M0'             'folder'          true;};
+                            'm0scan' 'perf'     'ASL'         'M0'             'folder'          true;...
+                            'm0scan' 'fmap'     'ASL'         'M0_RevPE'       'folder'          true;};
 
-types = FolderNameConfiguration(2:end, 1);
-modalities = FolderNameConfiguration(2:end, 2);
-foldernames = FolderNameConfiguration(2:end, 3);
-filenames = FolderNameConfiguration(2:end, 4);
-run_locations = FolderNameConfiguration(2:end, 5);
-run_1_index = FolderNameConfiguration(2:end, 6);
+types = FolderNameConfiguration(2:end, 1); % scantypes
+modalities = FolderNameConfiguration(2:end, 2); % the BIDS domains of scantypes
+foldernames = FolderNameConfiguration(2:end, 3); % xASL legacy subfolder name (empty means no subfolder)
+filenames = FolderNameConfiguration(2:end, 4); % xASL legacy filename
+run_locations = FolderNameConfiguration(2:end, 5); % xASL legacy location of run specification (e.g. T1_2.nii.gz vs ASL_2/ASL4D.nii.gz for file vs folder location)
+run_1_index = FolderNameConfiguration(2:end, 6); % if xASL legacy requires to specify the first run (e.g. T1.nii.gz vs ASL_1/ASL4D.nii.gz)
 
 % Sidecars definition
 Sidecars = {'.json' '_aslcontext.tsv' '_labeling.jpg'};
 SidecarRequired =[1 0 0];
+SidecarTypeSpecific = {'no' 'asl' 'asl'};
 SidecarSuffixType = [1 0 0]; % specifies if the sidecar suffix keeps the scantype (e.g. yes for *_asl.json, not for *_aslcontext
+
 
 %% ------------------------------------------------------------------------------------
 %% Admin
 if nargin<2 || isempty(bOverwrite)
     bOverwrite = 1;
 end
-
-Dir_RawData = '/Users/henk/ExploreASL/ASL/TestBIDS/GE_PCASL_3Dspiral/rawdata';
 
 [~, Ffile] = xASL_fileparts(Dir_RawData);
 if ~strcmp(Ffile, 'rawdata')
@@ -50,24 +79,26 @@ else
     xASL_adm_CreateDir(Dir_xASL);
 end
 
+
 %% ------------------------------------------------------------------------------------
-%% 1. Parse folder using bids-matlab
+%% 1. Parse a folder using bids-matlab
 BIDS = bids.layout(Dir_RawData);
 
-%% ------------------------------------------------------------------------------------
-%% 2. Clone /rawdata as parsed by BIDS to /derivatives/ExploreASL 
+fprintf('%s\n', ['Converting ' Dir_RawData]);
+fprintf('%s', ' -> ../derivatives/ExploreASL:   ');
 
 
-% -----------------------------------------------
-% 2a. Define Subject
+%% -----------------------------------------------
+%% 2. Define Subject
 nSubjects = length(BIDS.subjects);
 for iSubject=1:nSubjects % iterate over subjects
+    xASL_TrackProgress(iSubject, nSubjects);
     SubjectID = BIDS.subjects(iSubject).name;
     % Currently, ExploreASL concatenates subject_visit/timepoint in the
     % same folder layer, so we only use SubjectSession
 
-    % -----------------------------------------------
-    % 2b. Define SubjectVisit    
+    %% -----------------------------------------------
+    %% 3. Define SubjectVisit
     nVisits = max([1 length(BIDS.subjects(iSubject).session)]); % minimal 1 visit
     for iVisit=1:nVisits % iterate visits in this Subject
         % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
@@ -81,8 +112,8 @@ for iSubject=1:nSubjects % iterate over subjects
         SubjectVisit = [SubjectID VisitString];
         xASL_adm_CreateDir(Dir_xASL_SubjectVisit);
 
-        % -----------------------------------------------
-        % 2c. Parse modality
+        %% -----------------------------------------------
+        %% 4. Parse modality
         ModalitiesUnique = unique(modalities);
         nModalities = length(ModalitiesUnique);
         for iModality=1:nModalities % iterate modalities in this Subject/Visit
@@ -106,8 +137,8 @@ for iSubject=1:nSubjects % iterate over subjects
                 RunsAre = cellfun(@(y) y, Reference(2:end, 3));
                 RunsUnique = unique(RunsAre);
                 
-                % -----------------------------------------------
-                % 2d. Parse scantype
+                %% -----------------------------------------------
+                %% 5. Parse scantype
                 for iType=1:length(types) % iterate scantypes in this Subject/Visit/Modality
                     TypeIs = types{iType};
                     TypeIndices = cellfun(@(y) strcmp(y, TypeIs), Reference(2:end, 2)); % this are the indices for this ScanType
@@ -122,8 +153,8 @@ for iSubject=1:nSubjects % iterate over subjects
                                 TypeRunIndex = TypeRunIndex(1);
                             end
 
-                            % -----------------------------------------------
-                            % 2e. Compile paths for copying                            
+                            %% -----------------------------------------------
+                            %% 6. Compile paths for copying                          
                             if length(TypeRunIndex)==1 % if this scantype-run combination exists
 
                                 % ModalityIs = current modality (e.g. 'anat' 'perf')
@@ -132,7 +163,10 @@ for iSubject=1:nSubjects % iterate over subjects
                                 % TypeRunIndex = index of current scantype & run inside the above created Reference Table
                                 
                                 % Define folder & filename
-                                ConfigIndex = find(cellfun(@(y) strcmp(TypeIs, y), types));
+                                ConfigIndex = cellfun(@(y) strcmp(TypeIs, y), types); % find scantype index
+                                ConfigIndex2 = cellfun(@(y) strcmp(ModalityIs, y), modalities); % find modality index
+                                ConfigIndex = find(ConfigIndex & ConfigIndex2); % Combine them & convert to index
+                                
                                 FolderIs = foldernames{ConfigIndex};
                                 FileIs = filenames{ConfigIndex};
                                 
@@ -152,9 +186,14 @@ for iSubject=1:nSubjects % iterate over subjects
                                         FolderIs = [FolderIs '_' xASL_num2str(RunIs)];
                                     end
                                 end
-                                    
+                                
                                 Path_Orig{1} = fullfile(BIDS.subjects(iSubject).path, ModalityIs, ModalityFields(TypeRunIndex).filename);
-                                Path_Dest{1} = fullfile(Dir_xASL_SubjectVisit, FolderIs, [FileIs ModalityFields(TypeRunIndex).ext]);
+                                [~, ~, Fext] = xASL_fileparts(ModalityFields(TypeRunIndex).filename);
+                                Path_Dest{1} = fullfile(Dir_xASL_SubjectVisit, FolderIs, [FileIs Fext]);
+                                
+                                
+                                %% -----------------------------------------------
+                                %% 7. Manage sidecars to copy
                                 
                                 % Assuming that each .nii has a .json
                                 % sidecar, do the same for .json (and for
@@ -170,8 +209,11 @@ for iSubject=1:nSubjects % iterate over subjects
                                     end
                                     TempSidecar = fullfile(Fpath, [Ffile Sidecars{iCar}]);
                                     
-                                    if ~exist(TempSidecar, 'file') && SidecarRequired(iCar)
-                                        warning([TempSidecar ' missing']);
+                                    if ~strcmp(SidecarTypeSpecific{iCar}, 'no') && ~strcmp(SidecarTypeSpecific{iCar}, TypeIs)
+                                        % skip this sidecar (e.g. some
+                                        % asl-specific sidecars for non-asl NIfTIs)
+                                    elseif ~exist(TempSidecar, 'file') && SidecarRequired(iCar)
+                                            warning([TempSidecar ' missing']);
                                     elseif exist(TempSidecar, 'file')
                                         Path_Orig{iCount+1} = TempSidecar;
 
@@ -181,8 +223,8 @@ for iSubject=1:nSubjects % iterate over subjects
                                     end
                                 end
                                     
-                                % -----------------------------------------------
-                                % 2f. Copy files
+                                %% -----------------------------------------------
+                                %% 8. Copy files
                                 for iFile=1:length(Path_Orig)
                                     xASL_bids_BIDS2xASL_CopyFile(Path_Orig{iFile}, Path_Dest{iFile}, bOverwrite);
                                 end
@@ -196,6 +238,7 @@ for iSubject=1:nSubjects % iterate over subjects
     end
 end
 
+fprintf('\n');
 
 end
 
