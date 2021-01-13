@@ -388,8 +388,7 @@ if isfield(x, 'MyPath')
     x.D.ResliceRef          = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'rgrey.nii');
     x.D.IdentityTransfRef   = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
     x.D.TemplateDir         = fullfile(x.MyPath, 'Maps', 'Templates');
-    x.D.AtlasDir            = fullfile(x.MyPath, 'External', 'Atlases', 'License_Restricted_Use');
-    x.D.AtlasDir_CC_BY_4_0  = fullfile(x.MyPath, 'External', 'Atlases', 'License_CC_BY_4_0');
+    x.D.AtlasDir            = fullfile(x.MyPath, 'External', 'Atlases');
 else
     warning('MyPath field not defined...');
 end
