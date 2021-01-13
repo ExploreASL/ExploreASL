@@ -1,4 +1,4 @@
-function [ output_args ] = xASL_bids_BIDS_xASL(Dir_RawData, bOverwrite)
+function xASL_bids_BIDS_xASL(Dir_RawData, bOverwrite)
 %xASL_bids_BIDS_xASL Convert BIDS rawdata to derivatives/ExploreASL
 % Can be updated step-by-step when ExploreASL's derivative structure moves to BIDS
 % NB: ask how Visits/session layer is defined in bids-matlab (should be
@@ -10,10 +10,10 @@ function [ output_args ] = xASL_bids_BIDS_xASL(Dir_RawData, bOverwrite)
 % PM: Add TopUp compatibility
 
 FolderNameConfiguration =  {'type'   'modality' 'foldernames' 'filenames'      'run_locations'   'run_1_index';...
-                            'T1w'    'anat'     ''            'T1'             'file'            'no';...
-                            'FLAIR'  'anat'     ''            'FLAIR'          'file'            'no';...
-                            'asl'    'perf'     'ASL'         'ASL4D'          'folder'          'yes';...
-                            'm0scan' 'perf'     'ASL'         'M0'             'folder'          'yes';};
+                            'T1w'    'anat'     ''            'T1'             'file'            false;...
+                            'FLAIR'  'anat'     ''            'FLAIR'          'file'            false;...
+                            'asl'    'perf'     'ASL'         'ASL4D'          'folder'          true;...
+                            'm0scan' 'perf'     'ASL'         'M0'             'folder'          true;};
 
 types = FolderNameConfiguration(2:end, 1);
 modalities = FolderNameConfiguration(2:end, 2);
@@ -21,7 +21,12 @@ foldernames = FolderNameConfiguration(2:end, 3);
 filenames = FolderNameConfiguration(2:end, 4);
 run_locations = FolderNameConfiguration(2:end, 5);
 run_1_index = FolderNameConfiguration(2:end, 6);
-                        
+
+% Sidecars definition
+Sidecars = {'.json' '_aslcontext.tsv' '_labeling.jpg'};
+SidecarRequired =[1 0 0];
+SidecarSuffixType = [1 0 0]; % specifies if the sidecar suffix keeps the scantype (e.g. yes for *_asl.json, not for *_aslcontext
+
 %% ------------------------------------------------------------------------------------
 %% Admin
 if nargin<2 || isempty(bOverwrite)
@@ -111,47 +116,109 @@ for iSubject=1:nSubjects % iterate over subjects
                         for iRun=1:length(RunsUnique) % iterate runs in this Subject/Visit/Modality
                             RunIs = RunsUnique(iRun);
                             RunIndices = RunsAre==RunsUnique(iRun);
-                            TypeRunIndices = find(RunIndices & TypeIndices);
-                            if length(TypeRunIndices)>1
+                            TypeRunIndex = find(RunIndices & TypeIndices);
+                            if length(TypeRunIndex)>1
                                 warning(['Multiple NIfTIs found for ' SubjectVisit '_run-' xASL_num2str(RunIs) '_' TypeIs ', using first only']);
-                                TypeRunIndices = TypeRunIndices(1);
+                                TypeRunIndex = TypeRunIndex(1);
                             end
 
-                            if length(TypeRunIndices)==1 % if this scantype-run combination exists
-                                % -----------------------------------------------
-                                % 2e. Compile paths for copying
+                            % -----------------------------------------------
+                            % 2e. Compile paths for copying                            
+                            if length(TypeRunIndex)==1 % if this scantype-run combination exists
+
+                                % ModalityIs = current modality (e.g. 'anat' 'perf')
+                                % TypeIs = current scantype, e.g. 'asl' 'm0' 't1w'
+                                % RunIs = current run (e.g. 1, 2, 3)
+                                % TypeRunIndex = index of current scantype & run inside the above created Reference Table
                                 
-                                TypeIs
-                                RunIs
-                                TypeRunIndices
-                                ModalityIs
+                                % Define folder & filename
+                                ConfigIndex = find(cellfun(@(y) strcmp(TypeIs, y), types));
+                                FolderIs = foldernames{ConfigIndex};
+                                FileIs = filenames{ConfigIndex};
                                 
-                                % HERE WE COMPILE THE rawdata NIFTI PATH
-                                % THEN WE COMPILE THE derivatives NIFTI PATH
-                                % JSONs are always the full path with
-                                % different extension, that we compile as
-                                % well
-                                % 
+                                % Manage runs
+                                PrintRun = false;
+                                if RunIs==1 && run_1_index{ConfigIndex}==1
+                                    % if we need to print first run
+                                    PrintRun = true;
+                                elseif RunIs>1
+                                    PrintRun = true;
+                                end
                                 
+                                if PrintRun==1
+                                    if strcmp(run_locations{ConfigIndex}, 'file')
+                                        FileIs = [FileIs '_' xASL_num2str(RunIs)];
+                                    elseif strcmp(run_locations{ConfigIndex}, 'folder')
+                                        FolderIs = [FolderIs '_' xASL_num2str(RunIs)];
+                                    end
+                                end
                                     
-                                    % -----------------------------------------------
-                                    % 2f. Copy, check for overwriting, and
-                                    % existance file
-                                    % also
-                                    % xASL_adm_CreateDir(fileparts(Path2Copy))
+                                Path_Orig{1} = fullfile(BIDS.subjects(iSubject).path, ModalityIs, ModalityFields(TypeRunIndex).filename);
+                                Path_Dest{1} = fullfile(Dir_xASL_SubjectVisit, FolderIs, [FileIs ModalityFields(TypeRunIndex).ext]);
+                                
+                                % Assuming that each .nii has a .json
+                                % sidecar, do the same for .json (and for
+                                % other sidecars only if they exist per
+                                % SidecarRequired)
+                                
+                                iCount = 1;
+                                for iCar=1:length(Sidecars)
+                                    [Fpath, Ffile] = xASL_fileparts(Path_Orig{1});
+                                    
+                                    if ~SidecarSuffixType(iCar)
+                                        Ffile = Ffile(1:end-length(TypeIs)-1);
+                                    end
+                                    TempSidecar = fullfile(Fpath, [Ffile Sidecars{iCar}]);
+                                    
+                                    if ~exist(TempSidecar, 'file') && SidecarRequired(iCar)
+                                        warning([TempSidecar ' missing']);
+                                    elseif exist(TempSidecar, 'file')
+                                        Path_Orig{iCount+1} = TempSidecar;
 
-                                Path_Raw_Anat = fullfile(BIDS.subjects(iSubject).path, 'anat', ModalityFields(iScan).filename);
-                                Path_xASL_Anat = fullfile(Dir_xASL_SubjectVisit, '
+                                        [Fpath, Ffile] = xASL_fileparts(Path_Dest{1});
+                                        Path_Dest{iCount+1} = fullfile(Fpath, [Ffile Sidecars{iCar}]);
+                                        iCount = iCount+1;
+                                    end
+                                end
+                                    
+                                % -----------------------------------------------
+                                % 2f. Copy files
+                                for iFile=1:length(Path_Orig)
+                                    xASL_bids_BIDS2xASL_CopyFile(Path_Orig{iFile}, Path_Dest{iFile}, bOverwrite);
+                                end
 
-                                if ~xASL_exist(Path_Raw_Anat)
-                                    warning(['Couldnt find ' Path_Raw_Anat, ' skipping']);
-                                else
-                                    xASL_Copy(
+                            end
+                        end % iterate runs in this Subject/Visit/Modality
+                    end
+                end
+            end
+        end
+    end
+end
 
 
-                        
-                        
-                        
+end
 
 
+
+
+
+
+%% ===========================================================================
+function xASL_bids_BIDS2xASL_CopyFile(Path_Orig, Path_Dest, bOverwrite)
+%xASL_bids_BIDS2xASL_CopyFile
+
+    % Create folder(s) if didnt exist
+    xASL_adm_CreateDir(fileparts(Path_Dest));
+
+    % check for existance & overwriting
+    if ~xASL_exist(Path_Orig)
+        warning(['Couldnt find ' Path_Orig, ' skipping']);
+    elseif xASL_exist(Path_Dest) && ~bOverwrite
+        warning([Path_Dest ' already existed, skipping']);
+    else % if didnt already exist, or bOverwrite is true
+        xASL_Copy(Path_Orig, Path_Dest, 1);
+    end
+    
+    
 end
