@@ -2,6 +2,8 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLates
 %xASL_adm_MakeStandalone This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
 %
+% FORMAT: xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLatest);
+%
 % INPUT:
 %   outputPath      - Folder where the compiled version should be saved (REQUIRED)
 %   bCompileSPM     - Boolean specifying whether SPM is compiled first

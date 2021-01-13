@@ -264,6 +264,15 @@ If a set only includes a combination of the following SetOptions:
 left, right, l, r, n/a, NaN (irrespective of capitals)
 each image with option right/r, will be flipped in the left-right
 direction, and left/right will not be treated as separate groups.
+This function performs the following steps:
+
+1. Define images/scantypes (if they are not defined by input argument SpecificScantype)
+2. Iterate over scan types & sessions
+3. Check availability images
+4. Load images
+5. Remove outliers
+6. Compute templates for all subjects together (only for bilateral images)
+7. Compute templates for individual sets
 
 
 ----

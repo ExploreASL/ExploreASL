@@ -348,6 +348,12 @@ Edited the jsmn.c so that spm_jsonread.c can read JSONs that have empty string a
 FILE:
 jsmn.c at line 269
 
+DATE+NAME:2021_01_12, JP
+DESCRIPTION:
+Edited the spm_jsonread.c so that spm_jsonread MEX correctly reads files that contain 0-character inside the text. A character with value 0 appears in some - otherwise empty - strings. 
+Which causes that the JSON is not read entirely. We now read the entire JSON and replace 0 by a space.
+FILE:
+spm_jsonread.c at line 496
 
 *********************************************************************************************************
 OTHER CODE HACKS

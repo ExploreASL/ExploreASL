@@ -59,7 +59,7 @@ if ~exist(DataParFile, 'file')
     error('DataParFile does not exist...');
 end
 
-% Input has to be a character array (we convert it everytime now, just to be sure)
+% Input has to be a character array
 DataParFile = char(DataParFile);
 
 %% Decode JSON file

@@ -141,8 +141,8 @@ exclusion. This module has the following submodules/wrappers:
 - 040\_ResliceASL        - Resample ASL images to standard space
 - 050\_PreparePV         - Create partial volume images in ASL space with ASL resolution
 - 060\_ProcessM0         - M0 image processing
-- 070\_Quantification    - CBF quantification
-- 080\_CreateAnalysisMask- Create mask using FoV, vascular outliers & susceptibility atlas
+- 070\_CreateAnalysisMask- Create mask using FoV, vascular outliers & susceptibility atlas
+- 080\_Quantification    - CBF quantification
 - 090\_VisualQC\_ASL      - Generate QC parameters & images
 - 100\_WADQC             - QC for WAD-QC DICOM server (OPTIONAL)
 
