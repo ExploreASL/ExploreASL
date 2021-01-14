@@ -1,3 +1,51 @@
+# ExploreASL v1.4.0
+
+----
+## Versions included software
+Versions included & used third-party tools (see /External/README_SPM.txt):
+
+SPM12 7219 
+CAT12 r1615 
+LST 2.0.15 
+
+----
+## Feature improvements (still backward compatible)
+* #20 Implement BASIL -> changed order quantification/masking, and always save resampled PWI4D for quantification, facilitating BASIL
+* #35 Calculation background suppression efficiency for pseudo-M0 -> in case of missing separate M0 images but still using background suppressed mean control as pseudo-M0, a single correction value (3D) or slice-wise correction value (2D) are applied to the pseudo-M0 image/slices
+* #131 ExploreASL_GUI beta-testing enhancements set 1 -> Aesthetic improvements in certain modules, fixed incorrect removal of Philips-related json-sidecar fields in DCM2BIDS / Import module. Correction of ASL image flickering bug and ability for the user to subset without having to reload the data. Added ability to clarify data type of variables without the need to reload data. Added auto-select / auto-complete functionality in the ParmsMaker module as soon as the user indicates an analysis directory (i.e auto-completion of SliceReadoutTime for pCASL)
+* #166 Update ADNI import in ExploreASL_Import
+* #179 Finish creation average maps for CICERO -> improvements xASL_wrp_CreatePopulationTemplates
+* #190 Hammers atlas option CAT12 -> restored the original Hammers atlas option for a colleague (note it's license though!)
+* #225 Create DataPar option for running SPM12 longitudinal registration
+* #241 Add warning when loading data without x output structure 
+* #243 Shorten SPM initialization time -> removed configuration loading of unused toolboxes (check if the SPM DICOM import module is still needed)
+
+----
+## Work in progress
+
+
+### ASL-BIDS
+* #193 Comparing BIDS folders (for testing purpose)
+* #226 Add new DICOM tags to DCMTK import
+
+----
+
+## Bug Fixes
+* #191 WMH warning when no FLAIR analyzed -> this warning is now removed if no FLAIR was present in the data
+* #248 Temporary fix native space processing -> in Population module
+* #252 Population modules analysis masks - minor errors
+* #267 Error in reading JSONs from EPAD
+
+----
+
+## Documentation
+* #196 All contributors -> all contributors are now automatically added to the main README.md
+* #217 Documentation improvements
+* #219 Add user to documentation
+
+----
+
+
 # ExploreASL v1.3.0
 
 ----
