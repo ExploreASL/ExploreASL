@@ -1,10 +1,18 @@
 # ignore macOS files:
 .DS_Store
-# ignore temporary Matlab files:
+# ignore temporary Matlab paths:
 *.asv
 *.m~
+# Operation-related paths:
 JSON_LOGIC/ExploreASL_GUI_masterconfig.json
+xASL_GUI_run.sh
+# Pycharm & venv related paths:
 .idea
 __pycache__
 *MRI_viewer.mp4
-/venv/
+venv
+
+# Pyinstaller-related paths
+output
+pyinstaller_script.sh
+deprecated

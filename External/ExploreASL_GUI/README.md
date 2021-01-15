@@ -3,7 +3,7 @@
 > Complementary GUI to assist Arterial Spin Labelling analysis by ExploreASL
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-![Version](https://img.shields.io/badge/Version-0.2.5-yellow)
+![Version](https://img.shields.io/badge/Version-0.2.6-yellow)
 ![PythonVersions](https://img.shields.io/badge/Python-3.8-green)
 
 ## Graphics and Examples
@@ -42,11 +42,11 @@ Once you are within your desired directory, clone this github repository via com
    
    Alternatively, download the zip folder and extract it to your desired destination.
 
-2) Using the terminal, navigate to the ExploreASL_GUI directory (ExploreASL_GUI-master if you opted for zip & extraction). It contains the install script `ExploreASL_GUI_Linux_Install.py`
+2) Using the terminal, navigate to the ExploreASL_GUI directory (ExploreASL_GUI-master if you opted for zip & extraction). It contains the install script `ExploreASL_GUI_Linux_Install.sh`
 
 3) Install via the following command:
 
-       python3.8 ./ExploreASL_GUI_Linux_Install.py
+       ./ExploreASL_GUI_Linux_Install.sh
    
    You will be requested to give your sudo password so that the program may be accessible to Applications
 
@@ -66,7 +66,7 @@ Once you are within your desired directory, clone this github repository via com
 
 2) Uninstall via the following command:
 
-       python3.8 ./ExploreASL_GUI_Linux_Uninstall.py
+       ./ExploreASL_GUI_Linux_Uninstall.sh
        
    You will be requested to give your sudo password once so that .desktop file in /usr/local/applications may be removed as well.
    

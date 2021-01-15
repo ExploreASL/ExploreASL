@@ -7,7 +7,6 @@ CLASSIFIERS = [
     "Intended Audience :: Science/Research",
     "Development Status :: Unstable",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Medical Science Apps."]
@@ -19,11 +18,11 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name='ExploreASL_GUI',
-    version='0.0.1',
-    python_requires=">=3.7",
+    name='src',
+    version='0.2.6',
+    python_requires=">=3.8",
     packages=find_packages(),
-    package_dir={"": "ExploreASL_GUI"},
+    package_dir={"": "src"},
     url='https://github.com/MauricePasternak/ExploreASL_GUI',
     license='GPLv3',
     author='Maurice Pasternak',
@@ -33,7 +32,7 @@ setup(
     long_description_content_type='text/markdown',
     install_requires=required,
     package_data={
-        "JSON_LOGIC": ["ExecutorTranslators.json", "GraphingParameters.json"],
+        "JSON_LOGIC": ["ExecutorTranslators.json", "GraphingParameters.json", "ErrorsListing.json", "ToolTips.json"],
         "media": ["*.png", "*.gif", "*.svg", "*.ico"],
         "External": ["DCM2NIIX/*.exe"]
     },

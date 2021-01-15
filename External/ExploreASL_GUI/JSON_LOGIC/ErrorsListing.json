@@ -1,0 +1,137 @@
+{
+  "NoMATLABver": [
+    "No MATLAB Version could be determined",
+    "MATLAB was detected on this system, but its location is unconventional\nand the version number could not be detected"
+  ],
+  "NoMATLAB": [
+    "No MATLAB directory found",
+    "No path to the MATLAB root directory could be located on this device.\nIf MATLAB is installed on this device and this message is displaying,\nplease contact your system administration and check whether MATLAB is\nlisted in your system's PATH variable."
+  ],
+  "JsonImproperFormat": [
+    "Json sidecars not in proper json format",
+    "ExploreASL GUI has detected that the json sidecars present for this dataset\nare not in appropriate format. The following inconsistency was found:"
+  ],
+  "NoJsonSidecars": [
+    "No Json sidecards could be detected",
+    "You have indicated 'Overwrite keys in BIDS sidecars?' as True, implying that this is a BIDS imported dataset. However, no ASL json sidecars could be detected. Please ensure your dataset has been imported properly by the Importer Module into a BIDS format.\n\nProceeding with the rest of the DataPar file creation."
+  ],
+  "BIDSoverwriteforNonBIDS": [
+    "Indicated BIDS overwrite for non-BIDS dataset",
+    "Please ensure your dataset has been imported properly by the Importer Module into a BIDS format if you have 'Overwrite keys in BIDS sidecars?' checked.\n\nProceeding with the rest of the DataPar file creation."
+  ],
+  "ImpossibleM0": [
+    "An impossible M0 setting was encountered",
+    "The user has indicated that 'M0 exists as a separate scan' but no _m0scan.json\ncould be found for the following: "
+  ],
+  "InvalidExploreASLDir": [
+    "Invalid Directory Selected",
+    "The path you specified is not an ExploreASL directory."
+  ],
+  "InvalidDirectory": [
+    "Invalid Directory Selected",
+    "The path you have selected is not a valid directory."
+  ],
+  "InvalidFSLDirectory": [
+    "Invalid Directory Selected",
+    "The path you have selected is not a valid FSL bin directory"
+  ],
+  "InvalidStudyDirectory": [
+    "Invalid Study Directory Selected",
+    "The path you have selected for your study directory is not a valid study path"
+  ],
+  "FileNoteFound": [
+    "File Not Found",
+    "The indicated filepath could not be found:\n"
+  ],
+  "IncorrectFile": [
+    "Incorrect File Selected",
+    "The file selected was either of the wrong filetype than what is required\nor it did not exist"
+  ],
+  "BadParFile": [
+    "Bad DataPar File",
+    "ExploreASL GUI has detected that the json you have loaded from is not a\nproperly-formatted json. The following inconsistency was found:\n"
+  ],
+  "ImpossibleDirDepth": [
+    "Impossible directory depth",
+    "The directory depth you have indicated does not have directories present at that level"
+  ],
+  "ImportCritError": [
+    "Critical Import Error",
+    "The import module could not generate the analysis directory.\nThis usually occurs if the user has specified an incorrect directory structure.\nPerhaps a DUMMY directory was forgotten?"
+  ],
+  "IncompatibleMATLAB": [
+    "Incompatible MATLAB version on your machine",
+    "Running ExploreASL requires a MATLAB version of 2019a or later"
+  ],
+  "NoDataPar": [
+    "No Data Parameters file located",
+    "The required DataPar.json file could not be located for this directory. Exiting."
+  ],
+  "BadDataParFile": [
+    "Data Par File has bad formatting",
+    "One or more keys could not be read from the DataPar.json file.\nPlease ensure the DataPar.json was not altered incorrectly by the user.\nThe specific error detected was:\n\n"
+  ],
+  "BadDataParFileJson": [
+    "Data Par File has incorrect JSON syntax",
+    "The DataPar.json file has an incorrect json syntax.\nPlease fix before attempting a re-run.\nThe specific error detected is as follows:\n\n"
+  ],
+  "NoWorkloadDetected": [
+    "No Workload Detected",
+    "The number of anticipated .status files was zero.\nIf you are wanting to perform a re-run, use the Process Modifier subsection\nof this window to indicate which operations you'd like to re-run."
+  ],
+  "ParticipantsTSVNotFound": [
+    "participants.tsv was not located in this directory",
+    "The participants.tsv file could not be located in the directory you provided.\nThis file is usually made during the Population module.\nPlease ensure you have run the Population module for the study you wish to assess"
+  ],
+  "LockDirSystemNotFound": [
+    "lock directory system not found",
+    "The study you provided does not have a lock directory system in play.\nThis would be automatically created if a study was run. Please run your\nstudy first before trying to modify it for a re-run."
+  ],
+  "SubjectsNotFound": [
+    "The subjects listed were not found",
+    "The list of subjects whose json files you which to manipulate were not found in the current study\n"
+  ],
+  "UnsuccessfulExploreASLrun": [
+    "Errors were encountered during ExploreASL run",
+    "The following study directories encountered at least 1 error during their run:\n",
+    "Please review the generated [Date of run] ExploreASL run - errors.txt\nwithin each of the listed studies to see which subjects could not be processed"
+  ],
+  "NoStartExploreASL": [
+    "Problem prior to starting ExploreASL",
+    "An error was encountered while preparing study:\n",
+    "Please check for each of the following:\n\t1) The filepath to the study exists\n\t2) The filepath to the study matches the one provided to the Task Scheduler\n\t3) That the ExploreASL filepath specified within the parms file exists\n\t4) That the subjects within the study are the same as when the DataPar.json file was defined"
+  ],
+  "BadStudyDir": [
+    "Invalid Study Directory Selected",
+    "The filepath you have specfied either does not exist, is not a directory,\nor is a study that did not have its Population Module run"
+  ],
+  "BadMetaDataFile": [
+    "Invalid Metadata File Selected",
+    "The filepath you have specified either does not exist, is not a file,\nor has an incorrect extension. Supported file types include:\n- Comma-separated values (.csv)\n- Tab-separated values (.tsv)\n- Excel spreadsheets (.xlsx)"
+  ],
+  "ImpossibleDtype": [
+    "Impossible data type change attempted",
+    "You are trying to convert a column with word categories into a numerical.\nThis is not permitted. Reverting back to categorical."
+  ],
+  "MRIPlotNoDataPar": [
+    "Unable to load Plot & MRI Viewer",
+    "No DataPar.json parameters file was located in the analysis directory.\nThis is required by MRI Viewer to be able to select subjects"
+  ],
+  "MRIPlotBadDataPar": [
+    "Unable to load Plot & MRI Viewer",
+    "The DataPar.json parameter file was located, but there is a syntax error and some keys could not be accessed"
+  ],
+  "MRIPlotNoT1": [
+    "Discrepancy between data and images",
+    "An error occurred while trying to fetch the T1 data for subject"
+  ],
+  "MRIPlotNoCBF": [
+    "Discrepancy between data and images",
+    "An error occurred while trying to fetch the qCBF data for subject"
+  ],
+  "MRIPlotDiscrep": [
+    "Discrepancy between data and images",
+    "An error occurred while trying to fetch image data for subject_run",
+    "It is possible that the images exist in the Population directory, but the\nprogram could not fetch them due to a possible discrepancy between the\nPopulation folder and the rest of the study folder."
+  ]
+}
