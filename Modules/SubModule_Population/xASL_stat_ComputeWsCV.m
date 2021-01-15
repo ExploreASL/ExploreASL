@@ -27,11 +27,6 @@ if ~usejava('jvm')
     return;
 end
 
-if ~usejava('jvm')
-    fprintf('Skipping xASL_stat_ComputeWsCV, missing JVM\n');
-    return;
-end
-
 CheckList1                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part1_.*\.(nii|nii\.gz)$','FPListRec',[0 Inf]);
 CheckList2                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part2_.*\.(nii|nii\.gz)$','FPListRec',[0 Inf]);
 
