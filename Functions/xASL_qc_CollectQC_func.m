@@ -11,7 +11,9 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject)
 %   x        - same as input
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This functions collects QC parameters for the func module
+%
 %              These are stored in x.Output.func:
+%
 %              ID - SubjectName
 %              func_LR_flip_YesNo - Checks whether any image processing changed the left-right orientation
 %                                  by checking whether the determinant differs between nii.mat & nii.mat0
@@ -26,6 +28,7 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject)
 %               SpatialCoV_GM_Perc      - GM spatial CoV
 %               SpatialCoV_WM_Perc      - WM spatial CoV
 %               CBF_GM_WM_Ratio         - GM-WM CBF ratio
+%
 %              func acquisition parameters (should be fairly consistent over subjects/scans):
 %               TE - echo time
 %               TR - repetition time

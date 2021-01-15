@@ -466,8 +466,10 @@ static jsmntok_t * parse(const char *js, size_t jslen) {
 static char * get_data(const mxArray * mx, size_t * jslen) {
     /* should attempt to minimise copy */
     int i, filename, sts;
+	size_t jslenString;
     mxArray *ma = NULL;
     char *js = NULL;
+	unsigned short *ms = NULL;
 
     js = mxArrayToString(mx);
     if (js == NULL) {
@@ -490,12 +492,33 @@ static char * get_data(const mxArray * mx, size_t * jslen) {
         if (sts != 0) {
             mexErrMsgTxt("Cannot read JSON file.");
         }
+		
         js = mxArrayToString(ma);
         if (js == NULL) {
             mexErrMsgTxt("mxArrayToString()");
         }
+		/* ExploreASL hack - obtain the length of the string from the mxArray and not from the converted string.
+		 * The difference is that the strlen will search for 0-character ending a string */
+		*jslen = mxGetNumberOfElements(ma);
+		jslenString = strlen(js);
+		
+		/* Difference in jslen and jslenString can only occur if a 0-character is there inside the string - that
+		 * is against C++ conventions, but somehow happens in certain JSON files */
+		if (*jslen != jslenString) {
+			/* If this happens, then we search through the string and replace the 0 with a space, 
+			   we do it for all occurences and then re-run the conversion to string, because the 
+			   mxArrayToString also doesn't work fine after a zero*/
+			ms = mxGetData(ma);
+			for (i = 0; i < (*jslen - 1); i++) {
+				if (ms[i] == '\0') {
+					/* Replace with a space */
+					ms[i] = 32;
+				}
+			}
+			/* Re-run the conversion */
+			js = mxArrayToString(ma);
+		}
         mxDestroyArray(ma);
-        *jslen = strlen(js);
     }
     return js;
 }

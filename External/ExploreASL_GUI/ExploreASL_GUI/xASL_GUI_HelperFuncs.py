@@ -1,8 +1,8 @@
 import os
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import QSize
-from PySide2.QtWidgets import QDoubleSpinBox, QSpinBox, QComboBox, QLineEdit, QCheckBox
-from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_Graphing_ListWidget2LineEdit
+from PySide2.QtWidgets import (QDoubleSpinBox, QSpinBox, QComboBox, QLineEdit, QCheckBox, QHBoxLayout, QPushButton)
+from ExploreASL_GUI.xASL_GUI_HelperClasses import (DandD_Graphing_ListWidget2LineEdit, DandD_FileExplorer2LineEdit)
 
 
 def set_widget_icon(widget, config: dict, icon_name: str, size: tuple = None):
@@ -59,3 +59,25 @@ def disconnect_widget_and_reset(widget, target_signal, default):
         widget.setChecked(default)
     else:
         print(f'{widget} could not be connected')
+
+
+def make_droppable_clearable_le(le_connect_to=None, btn_connect_to=None, default='', **kwargs):
+    """
+    Function for creating a typical QLineEdit-QPushButton pair encapsulated within a QHboxLayout.
+    :param le_connect_to: the function that the lineedit's textChanged signal should connect to, if any
+    :param btn_connect_to: the function that the pushbutton's clicked signal should connect to, if any
+    :param default: the default text that should be present in the lineedit
+    :param kwargs: additional keywords that are fed into DandD_FileExplorer2LineEdit
+    """
+    hlay = QHBoxLayout()
+    le = DandD_FileExplorer2LineEdit(**kwargs)
+    le.setText(default)
+    le.setClearButtonEnabled(True)
+    if le_connect_to is not None:
+        le.textChanged.connect(le_connect_to)
+    btn = QPushButton("...", )
+    if btn_connect_to is not None:
+        btn.clicked.connect(btn_connect_to)
+    hlay.addWidget(le)
+    hlay.addWidget(btn)
+    return hlay, le, btn

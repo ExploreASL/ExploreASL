@@ -9,7 +9,7 @@ function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
 %   x.P     - paths with NIfTIs for which this function should be applied to (REQUIRED)
 %   rWMHPath - path of the WMH segmentation (either performed by LST or a copy of x.P.Path_WMH_SEGM) (REQUIRED)
 %   WMHsegmAlg - Choose the LST algorithm 'LGA'/'LPA' (OPTIONAL, DEFAULT = 'LPA')
-
+%
 % OUTPUT: n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------

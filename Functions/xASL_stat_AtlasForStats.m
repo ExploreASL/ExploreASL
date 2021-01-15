@@ -26,14 +26,16 @@ function [x] = xASL_stat_AtlasForStats(x)
 %              Note that the atlases should be integer values, or different 4rd
 %              dimensions (i.e. multiple images), that are mutually
 %              exclusive. This function takes the following steps:
-%              1) Load atlas ROI names
+%
+%              1. Load atlas ROI names
 %                 There should be a TSV sidecar to the atlas NIfTI file, as
 %                 explained above.
-%              2) deal with memory mapping
-%              3) Resample atlas 50 1.5 mm^3 MNI
-%              4) Converted atlas with integers to 4D binary image
-%              5) Convert/compress masks into Columns
-%              6) Print atlas overview image
+%              2. deal with memory mapping
+%              3. Resample atlas 50 1.5 mm^3 MNI
+%              4. Converted atlas with integers to 4D binary image
+%              5. Convert/compress masks into Columns
+%              6. Print atlas overview image
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_stat_AtlasForStats(x);
 % __________________________________

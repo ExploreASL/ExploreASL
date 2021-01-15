@@ -314,7 +314,7 @@ switch lower(x.M0)
     case 'no_background_suppression'
         % don't change it
     otherwise
-        switch x.Q.BackGrSupprPulses
+        switch x.Q.BackgroundSuppressionNumberPulses
             case 0 % when you have an M0, but no background suppression used for ASL
                 % Then the labeling efficiency doesn't change by background suppression
             case 2 % e.g. Philips 2D EPI or Siemens 3D GRASE

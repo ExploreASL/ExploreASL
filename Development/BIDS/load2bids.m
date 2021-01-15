@@ -516,12 +516,12 @@ for ii = 1:length(fList)
 		importStr{ii}.par.PostLabelingDelay = importStr{ii}.x.InitialPostLabelDelay;
 	end
 
-	if importStr{ii}.x.BackGrSupprPulses == 0
+	if importStr{ii}.x.BackgroundSuppressionNumberPulses == 0
 		importStr{ii}.par.BackgroundSuppression = false;
 	else
 		importStr{ii}.par.BackgroundSuppression = true;
 		if ~isfield(importStr{ii}.par,'BackgroundSuppressionPulseTime') || isempty(importStr{ii}.par.BackgroundSuppressionPulseTime)
-			switch (importStr{ii}.x.BackGrSupprPulses)
+			switch (importStr{ii}.x.BackgroundSuppressionNumberPulses)
 				case 2
 					if importStr{ii}.par.PostLabelingDelay > 1.750
 						importStr{ii}.par.BackgroundSuppressionPulseTime = [1.75 0.524];

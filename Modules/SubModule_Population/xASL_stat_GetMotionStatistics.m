@@ -21,12 +21,13 @@ function xASL_stat_GetMotionStatistics(x)
 % OUTPUT: n/a
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This functions collects motion stats, with the following
-% steps:
-% 1) Collect motion data
-% 2) If no data, skip this function
-% 3) Print motion vs exclusion overview
-% 4) Add motion data to participants.tsv
+% DESCRIPTION: This functions collects motion stats, with the following steps:
+%
+% 1. Collect motion data
+% 2. If no data, skip this function
+% 3. Print motion vs exclusion overview
+% 4. Add motion data to participants.tsv
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_stat_GetMotionStatistics(x);
 % __________________________________

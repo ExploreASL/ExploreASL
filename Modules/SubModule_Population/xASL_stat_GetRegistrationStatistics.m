@@ -18,10 +18,11 @@ function xASL_stat_GetRegistrationStatistics(x)
 %                         
 % ------------------------------------------------------------------------------------------------
 % DESCRIPTION: Loads the data from the study given in the QC_collection*.json files. Goes through all subjects and 
-%              sessions and prints the Tanimoto coefficients that define the quality of the registrations.
-% steps:
+%              sessions and prints the Tanimoto coefficients that define the quality of the registrations. Steps:
+%
 % 1. Load & extract parameters from individual parameter files
 % 2. Write TSV file
+%
 % ------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_stat_GetRegistrationStatistics(x);
 % __________________________________

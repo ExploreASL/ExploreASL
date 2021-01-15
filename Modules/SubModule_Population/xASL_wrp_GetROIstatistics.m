@@ -32,10 +32,12 @@ function xASL_wrp_GetROIstatistics(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This wrapper organizes the computation of statistics for different ROIs
 %              in a [1.5 1.5 1.5] mm MNI space:
-%              1) Load the atlas: xASL_stat_AtlasForStats
-%              2) Organize TSV output name: using x.S.output_ID
-%              3) Obtain the ROI statistics: xASL_stat_GetROIstatistics
-%              4) Print statistics in TSV files: xASL_stat_PrintStats
+%
+%              1. Load the atlas: xASL_stat_AtlasForStats
+%              2. Organize TSV output name: using x.S.output_ID
+%              3. Obtain the ROI statistics: xASL_stat_GetROIstatistics
+%              4. Print statistics in TSV files: xASL_stat_PrintStats
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_GetROIstatistics(x);
 % __________________________________

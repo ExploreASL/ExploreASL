@@ -3,8 +3,8 @@
 > Complementary GUI to assist Arterial Spin Labelling analysis by ExploreASL
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-![Version](https://img.shields.io/badge/Version-0.1.0-yellow)
-![PythonVersions](https://img.shields.io/badge/Python-3.7%20%7C%203.8-green)
+![Version](https://img.shields.io/badge/Version-0.2.5-yellow)
+![PythonVersions](https://img.shields.io/badge/Python-3.8-green)
 
 ## Graphics and Examples
 
@@ -24,12 +24,61 @@
 ---
 ## Installation
 
-1) After unzipping the contents of this repository to some destination dst, navigate to: 
-dst / ExploreASL_GUI / compiled
-2) Run the ExploreASL_GUI_setup.exe installer
-3) Follow the instructions within the install wizard but **DO NOT** install the program into any administrative directory (i.e ProgramFiles) as the program depends on writing and reading from a json config file that will be located within whatever directory you specify. Preferably, install it within a non-administrative directory such as Documents, your MATLAB directory, a secondary drive,  etc. 
+### For Linux
 
+Pre-requisites:
 
+- (Optional for Step 1) You have `git` installed. This can be verified by the command `which git` in your command line / terminal
+
+- You have python 3.8 installed. [A quick guide to doing so can be found here](https://tecadmin.net/install-python-3-8-ubuntu/). Ubuntu 20.04 onwards comes with this by default.
+
+(tested thus far for Ubuntu 20.04)
+
+1) Preferably, open a terminal, change directory to the location you would like ExploreASL_GUI to be installed. 
+For those not familiar with navigating your filesystem, an excellent tutorial [can be found by clicking on this link](https://www.youtube.com/watch?v=j6vKLJxAKfw&t=10s&ab_channel=CoreySchafer).
+Once you are within your desired directory, clone this github repository via command:
+
+       git clone https://github.com/MauricePasternak/ExploreASL_GUI.git
+   
+   Alternatively, download the zip folder and extract it to your desired destination.
+
+2) Using the terminal, navigate to the ExploreASL_GUI directory (ExploreASL_GUI-master if you opted for zip & extraction). It contains the install script `ExploreASL_GUI_Linux_Install.py`
+
+3) Install via the following command:
+
+       python3.8 ./ExploreASL_GUI_Linux_Install.py
+   
+   You will be requested to give your sudo password so that the program may be accessible to Applications
+
+### For Windows
+
+\**To be updated once executable is made avaliable**
+
+### For MacOS
+
+\**To be updated**
+
+## Uninstallation
+
+### For Linux
+
+1) Navigate to the ExploreASL_GUI directory via terminal.
+
+2) Uninstall via the following command:
+
+       python3.8 ./ExploreASL_GUI_Linux_Uninstall.py
+       
+   You will be requested to give your sudo password once so that .desktop file in /usr/local/applications may be removed as well.
+   
+3) Remember to `cd` out of the no-longer-existent ExploreASL_GUI directory or close the terminal.
+
+### For Windows
+
+\**To be updated once executable is made avaliable**
+
+### For MacOS
+
+\**To be updated**
 
 ---
 ## Features
@@ -99,7 +148,7 @@ A: The underlying toolkit utilized in the creation of this program is PySide2, a
 
 > **Q: Do I need MATLAB in order to run this program?**
 
-A: Unfortunately, as ExploreASL itself has not been compiled into a binary executable, the GUI currently remains reliant on the user having an installed & activated version of MATLAB on their machine. Upon ExploreASL becoming a separate executable, this GUI will no longer require MATLAB to be present.
+A: Unfortunately, as ExploreASL itself has not been compiled into a binary executable, the GUI currently remains reliant on the user having an installed & activated version of MATLAB 2019a or later on their machine. Upon ExploreASL becoming a separate executable, this GUI will no longer require MATLAB to be present.
 
 > **Q: The number of cores listed in your Executor module is off. My machine has ___ cores but you list ___ instead.**
 

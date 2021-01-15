@@ -792,7 +792,7 @@ end
 %% ROI data extraction 
 %  ---------------------------------------------------------------------
 %  This part estimates individual measurements for different ROIs.
-%  The ROIs are described in the CAT normalized space and there are to 
+%  The ROIs are described in the CAT normalized space and there are two 
 %  ways to estimate them - (1) in subject space, and (2) in normalized 
 %  space. Estimation in normalized space is more direct and avoids further
 %  transformations. The way over the subject space has the advantage 

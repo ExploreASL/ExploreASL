@@ -13,15 +13,18 @@ function LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function takes a mask and adds several ROIs, to be used as custom "atlas", e.g. when computing region-average CBF values.
 % The mask % can be an ROI or lesion, if we assume it is a lesion, the following masks are created:
+%
 % 1. Intralesional
 % 2. Perilesional (15 mm rim around the lesion)
 % 3. Hemisphere (ipsilateral to lesion)
 % 4. Contralateral version of 1
 % 5. Contralateral version of 2
 % 6. Contralateral version of 3
+%
 % All these masks are masked by a brainmask (pGM+pWM)>0.5
 % 
 % This function performs the following steps:
+%
 % 1. If lesion is empty, skip this & delete the file
 % 2. BrainMasking
 % 3. Create hemispheres

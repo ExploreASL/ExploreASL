@@ -80,7 +80,7 @@ for iL=1:length(Flist)
             parms.M0                = 1050;
             parms.readout_dim       = '3D';
             parms.EchoTime          = 20; % Dummy parameter!!!!!!!!!!!!!!!!!!!!!!!
-            parms.BackGrSupprPulses = 2;
+            parms.BackgroundSuppressionNumberPulses = 2;
             parms.RepetitionTime    = 5000;
             save(ParmsMat, 'parms');
     elseif ~isempty(strfind(Flist{iL},'ASL_2')) % 2D EPI

@@ -14,16 +14,17 @@ function xASL_wrp_VisualQC_ASL(x)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule performs several visualizations for visual & quantitative QC.
-%              1) After initial admin
-%              2) It starts with making ASL NIfTIs ready for visualization
+%
+%              1. After initial admin
+%              2. It starts with making ASL NIfTIs ready for visualization
 %                 & conversion to DICOM (though skipped by default)
-%              3) Then it performs a collection of visualizations
-%              4) Visualizes results of the TopUp geometric distortion correction
-%              5) Visualization of slice gradient
-%              6) Visualization & calculation of temporal QC parameters
-%              7) Compute DICE overlap/intersection of ASL brain in FoV & T1w, to calculate coverage
-%              8) Summarize orientation & check left-right flips
-%              9) Collect several other parameters & store in PDF overview
+%              3. Then it performs a collection of visualizations
+%              4. Visualizes results of the TopUp geometric distortion correction
+%              5. Visualization of slice gradient
+%              6. Visualization & calculation of temporal QC parameters
+%              7. Compute DICE overlap/intersection of ASL brain in FoV & T1w, to calculate coverage
+%              8. Summarize orientation & check left-right flips
+%              9. Collect several other parameters & store in PDF overview
 %
 % EXAMPLE: xASL_wrp_VisualQC_ASL(x);
 % __________________________________
@@ -121,10 +122,7 @@ if nVolumes>10
     if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
         % If segmented files exist, then the PVgm should already be prepared previously
 
-        if xASL_exist(x.P.Path_PWI4D, 'file')
-            ExistPWI4D = true;
-        else
-            ExistPWI4D = false;
+        if ~xASL_exist(x.P.Path_PWI4D, 'file')
             [ControlIM, LabelIM] = xASL_quant_GetControlLabelOrder(xASL_io_Nifti2Im(x.P.Path_ASL4D));
             xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_PWI4D, ControlIM-LabelIM);
         end
@@ -137,14 +135,14 @@ if nVolumes>10
             end
         end
 
-        if ~ExistPWI4D
-            xASL_delete(x.P.Path_PWI4D);
-        end
     else
         warning('Skipping SPM UP QC because structural files didnt exist');
     end
 end
 
+% Remove PWI4D in both native & standard space
+xASL_delete(x.P.Path_PWI4D);
+xASL_delete(x.P.Pop_Path_PWI4D);
 
 %% 7) Compute overlap (intersection)/DICE coefficient with T1w brainmask
 if xASL_exist(x.P.Path_mean_control,'file')

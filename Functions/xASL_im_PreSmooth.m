@@ -27,12 +27,13 @@ function pathOut = xASL_im_PreSmooth(pathRef,pathSrc,pathSmo,resRef,resSrc,srcAf
 %              of the pre-smoothing in the source space. Then it performs the smoothing.
 %
 %              The following steps are performed:
-%               1) Obtain the voxel size
-%               2) Skip this function if reference resolution is equal to, or lower than source resolution
-%               3) Deal with affine transformation
-%               4) Obtain the transformation matrix from the Reference to the Source space
-%               5) Apply the smoothing filter on the source image(s)
-%               6) Save the smoothed image
+%
+%               1. Obtain the voxel size
+%               2. Skip this function if reference resolution is equal to, or lower than source resolution
+%               3. Deal with affine transformation
+%               4. Obtain the transformation matrix from the Reference to the Source space
+%               5. Apply the smoothing filter on the source image(s)
+%               6. Save the smoothed image
 %
 % EXAMPLE:
 %     pathOut = xASL_im_PreSmooth('/home/tmp/CBF.nii','/home/tmp/T1.nii')
@@ -187,7 +188,8 @@ kFil = kFil/sum(kFil(:));
 % ===============================================================================
 %% 5) Apply the smoothing filter on the source image(s)
 % Do this within the first 3 dimensions only
-TotalDim = size(imSrc.dat,4)*size(imSrc.dat,5)*size(imSrc.dat,6)*size(imSrc.dat,7);
+SourceImage = single(imSrc.dat(:,:,:,:,:,:,:));
+TotalDim = size(SourceImage,4)*size(SourceImage,5)*size(SourceImage,6)*size(SourceImage,7);
 imSmo = zeros(size(imSrc.dat));
 It = 1;
 for i7=1:size(imSrc.dat,7)
@@ -195,7 +197,7 @@ for i7=1:size(imSrc.dat,7)
         for i5=1:size(imSrc.dat,5)
             for i4=1:size(imSrc.dat,4)
                 xASL_TrackProgress(It, TotalDim);
-                imSmo(:,:,:,i4,i5,i6,i7) = convn(imSrc.dat(:,:,:,i4,i5,i6,i7),kFil,'same');
+                imSmo(:,:,:,i4,i5,i6,i7) = convn(SourceImage(:,:,:,i4,i5,i6,i7), kFil, 'same');
                 It = It+1;
             end
         end

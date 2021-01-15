@@ -63,13 +63,12 @@ function [x] = xASL_init_LoadMetadata(x)
 %
 % This function iterates through the following steps for each variable:
 %
-% 1) Admin (what nOptions do we call ordinal, convert subject numeric to
-%    string, remove white spaces from data)
-% 2) Get unique list of data options & check for missing data
-% 3) Deal with data format (correct NaNs, deal with numeric vs strings)
-% 4) Distinguish continous data (e.g. age) or ordinal data (groups to compare, e.g. cohort)
-% 5) Check if data is complete for all subjects
-% 6) Include complete data in x.S.SETS
+% 1. Admin (what nOptions do we call ordinal, convert subject numeric to string, remove white spaces from data)
+% 2. Get unique list of data options & check for missing data
+% 3. Deal with data format (correct NaNs, deal with numeric vs strings)
+% 4. Distinguish continous data (e.g. age) or ordinal data (groups to compare, e.g. cohort)
+% 5. Check if data is complete for all subjects
+% 6. Include complete data in x.S.SETS
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_init_LoadMetadata(x);
@@ -175,6 +174,20 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
     if exist(PathTSV, 'file')
         fprintf('Participants.tsv (BIDS) detected, loading...\n');
         CellArray = xASL_tsvRead(PathTSV);
+        
+        % Check if the TSV has empty cells, because this can cause crashes & is illegal (per BIDS)
+        HasEmptyCells = false;
+        for iX=1:size(CellArray, 1)
+            for iY=1:size(CellArray, 2)
+                if isempty(CellArray{iX, iY})
+                    HasEmptyCells = true;
+                end
+            end
+        end
+        if HasEmptyCells
+            warning('Participants.tsv contains empty cells, missing data should be filled by n/a (per BIDS)');
+        end           
+            
         
         %% First isolate fixed variables (subject, session/run, site)
         SubjectIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(participant|subject).*id*$')), lower(CellArray(1,:))));

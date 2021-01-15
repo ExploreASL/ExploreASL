@@ -17,22 +17,24 @@ function x = xASL_wrp_PreparePV(x, bStandardSpace)
 %              standard space):
 %
 % If bStandardSpace:
-%   1) Create dummy upsampled ASL scan, for registration
-%   2) Reslice pGM & pWM to hi-res ASL
-%   3) Estimate effective spatial resolution of ASL
-%   4) Smooth pGM & pWM to this spatial resolution
-%   5) Move smoothed tissue posteriors to MNI space
+%
+%   1. Create dummy upsampled ASL scan, for registration
+%   2. Reslice pGM & pWM to hi-res ASL
+%   3. Estimate effective spatial resolution of ASL
+%   4. Smooth pGM & pWM to this spatial resolution
+%   5. Move smoothed tissue posteriors to MNI space
+%
 % else: run step 3 only, which will use the effective spatial resolution
 % that is default for the respective sequence:
 % 2D EPI: [1 1 1] * VoxelSize
 % 3D GRASE: [1.1 1.1 1.38] * VoxelSize
 % 3D spiral: [4.3 4.4 10.1] * VoxelSize (assuming GE uses the upsampled 2x2x4 mm 
 % & run steps 1&2, but in native space these entail presmoothing &
-% downsampling
+% downsampling.
 %
 % EXAMPLE: xASL_wrp_PreparePV(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 

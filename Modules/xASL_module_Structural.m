@@ -19,17 +19,17 @@ function [result, x] = xASL_module_Structural(x)
 % by default but if this fails it falls back to SPM after trying to
 % optimize the image contrast. This module has the following steps/submodules/wrappers:
 %
-% 010_LinearReg_T1w2MNI         - Ensure the alignment of subjects' anterior commissure (AC) with the AC in MNI & apply this to all images
-% 020_LinearReg_FLAIR2T1w       - Align the FLAIR (if present) with T1w
-% 030_FLAIR_BiasfieldCorrection - Perform a biasfield correction (if not performed  by LST in following steps)
-% 040_LST_Segment_FLAIR_WMH     - Segment WMH lesions on FLAIR (if present)
-% 050_LST_T1w_LesionFilling_WMH - Use WMH segmentation to fill lesions on T1w
-% 060_Segment_T1w               - Tissue segmentation on T1w
-% 070_CleanUpWMH_SEGM           - Extra WMH cleanup of some over- and under-segmentation
-% 080_Resample2StandardSpace    - Clone all images to standard space
-% 090_GetVolumetrics            - Obtain whole-brain volumes of GM, WM, CSF, WMH
-% 100_VisualQC                  - Obtain QC parameters & save QC Figures
-% 110_DoWADQCDC                 - QC for WAD-QC DICOM server (OPTIONAL)
+% - 010_LinearReg_T1w2MNI         - Ensure the alignment of subjects' anterior commissure (AC) with the AC in MNI & apply this to all images
+% - 020_LinearReg_FLAIR2T1w       - Align the FLAIR (if present) with T1w
+% - 030_FLAIR_BiasfieldCorrection - Perform a biasfield correction (if not performed  by LST in following steps)
+% - 040_LST_Segment_FLAIR_WMH     - Segment WMH lesions on FLAIR (if present)
+% - 050_LST_T1w_LesionFilling_WMH - Use WMH segmentation to fill lesions on T1w
+% - 060_Segment_T1w               - Tissue segmentation on T1w
+% - 070_CleanUpWMH_SEGM           - Extra WMH cleanup of some over- and under-segmentation
+% - 080_Resample2StandardSpace    - Clone all images to standard space
+% - 090_GetVolumetrics            - Obtain whole-brain volumes of GM, WM, CSF, WMH
+% - 100_VisualQC                  - Obtain QC parameters & save QC Figures
+% - 110_DoWADQCDC                 - QC for WAD-QC DICOM server (OPTIONAL)
 %
 % EXAMPLE: [~, x] = xASL_module_Structural(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------

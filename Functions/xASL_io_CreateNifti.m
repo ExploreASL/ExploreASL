@@ -21,12 +21,13 @@ function xASL_io_CreateNifti(pathNewNifti, imNew, resMat, nBits, bGZip)
 %              specified as input arguments. This function performs the
 %              following steps:
 %
-%              1) Initialize NIfTI
-%              2) Choose datatype (bit resolution)
-%              3) Create scale slopes
-%              4) Create orientation matrix
-%              5) Write the new NIfTI, image matrix & scale slopes
-%              6) Zip and deal with zipping (.nii vs. .nii.gz)
+%              1. Initialize NIfTI
+%              2. Choose datatype (bit resolution)
+%              3. Create scale slopes
+%              4. Create orientation matrix
+%              5. Write the new NIfTI, image matrix & scale slopes
+%              6. Zip and deal with zipping (.nii vs. .nii.gz)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_io_CreateNifti('c:\User\path\new.nii', im)
 %          xASL_io_CreateNifti('c:\User\path\new.nii', im, [3 3 7])

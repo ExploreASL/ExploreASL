@@ -75,6 +75,10 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
     
     if x.ProcessData==0 || x.ProcessData==2
+        if x.ProcessData==2 && nargout==0
+            warning('Data loading requested but no output structure defined');
+            fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
+        end
         return; % skip processing
     elseif ~isdeployed && ~SkipPause % if this exists, we skip the break here
         fprintf('%s\n','Press any key to start processing & analyzing');
@@ -113,7 +117,12 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
 
     % Optional modules
     % The following are optional extensions of the structural module and not required to run, normally they can be ignored:
-    % [~, x] = xASL_Iteration(x,'xASL_module_LongReg'); % use this module for longitudinal registration
+    if isfield(x, 'bRunModule_LongReg') && x.bRunModule_LongReg
+        [~, x] = xASL_Iteration(x,'xASL_module_LongReg'); % use this module for longitudinal registration
+    end
+    if isfield(x, 'bRunModule_DARTEL') && x.bRunModule_DARTEL
+        [~, x] = xASL_Iteration(x,'xASL_module_DARTEL'); % use this module for additional additional -subject registration/creating templates
+    end
     
     % -----------------------------------------------------------------------------
     %% 2    xASL_module_ASL  

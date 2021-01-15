@@ -303,8 +303,8 @@ for level=nlevels:-1:1 % Loop over resolutions, starting with the lowest
               if use_brainmask
                 fprintf('Use initial brainmask for final resolution level.\n');
                 
-                PG = fullfile(spm('Dir'),'toolbox','FieldMap','T1.nii');
-                PB = fullfile(spm('Dir'),'toolbox','FieldMap','brainmask.nii');
+                PG = fullfile(spm('Dir'),'MapsAdded','T1_2mm.nii');                                        % T1 for affine registration
+                PB = fullfile(spm('Dir'),'MapsAdded','brainmask_2mm.nii');                                 % Brainmask for affine registration
 
                 [pth,nam]   = fileparts(Nii(1).dat.fname);
                 nam         = fullfile(pth,['avg_' nam '.nii']);

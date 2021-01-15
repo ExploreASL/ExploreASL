@@ -221,8 +221,8 @@ cat1585.extopts.vox          = 1.5;   % voxel size for normalized data (EXPERIME
 cat1585.extopts.darteltpm    = {fullfile(spm('dir'),'toolbox','cat12','templates_volumes','Template_1_IXI555_MNI152.nii')};     % Indicate first Dartel template (Template_1)
 cat1585.extopts.shootingtpm  = {fullfile(spm('dir'),'toolbox','cat12','templates_volumes','Template_0_IXI555_MNI152_GS.nii')};  % Indicate first Shooting template (Template 0) - not working
 cat1585.extopts.cat12atlas   = {fullfile(spm('dir'),'toolbox','cat12','templates_volumes','cat.nii')};                       % CAT atlas with major regions for VBM, SBM & ROIs
-cat1585.extopts.brainmask    = {fullfile(spm('Dir'),'toolbox','FieldMap','brainmask.nii')};                                 % Brainmask for affine registration
-cat1585.extopts.T1           = {fullfile(spm('Dir'),'toolbox','FieldMap','T1.nii')};                                        % T1 for affine registration
+cat1585.extopts.brainmask    = {fullfile(spm('Dir'),'MapsAdded','brainmask_2mm.nii')};                                 % Brainmask for affine registration
+cat1585.extopts.T1           = {fullfile(spm('Dir'),'MapsAdded','T1_2mm.nii')};                                        % T1 for affine registration
 
 % surface options
 cat1585.extopts.pbtres         = 0.5; % internal resolution for thickness estimation in mm (default 0.5) 

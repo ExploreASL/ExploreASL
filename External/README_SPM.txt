@@ -1,9 +1,9 @@
 //External/SPMmodified is a modified version of SPM12, CAT12 and LST, which is redistributed with the same license (GPL, see license files inside folders). This was developed parallel with ExploreASL, but is a separate project, with its own license.
 
 In this textfile we list the modifications. This concerns the following versions:
-SPM12, r7219
-CAT12, r1615
-LST, r2.0.15 
+SPM12, r7219 (/External/SPMmodified/Contents.txt)
+CAT12, r1615 (/External/SPMmodified/toolbox/cat12/CHANGES.txt)
+LST, r2.0.15 (/External/SPMmodified/toolbox/LST/lst-version.txt)
 
 Aside from the below list of code modifications, 
 we have added new maps (//External/SPMmodified/MapsAdded/README_Maps.txt)
@@ -70,6 +70,20 @@ likewise if xasl_quality is set to 2 (when WMH_SEGM pre-exists), load ps_LST_lpa
 *********************************************************************************************************
 REDUCE CODE SIZE
 
+DATE+Name: 2020-11-29 HM (#243)
+DESCRIPTION: Avoid initializing unused toolboxes
+FILE:
+External/SPMmodified/config/spm_cfg.m @ several locations
+
+DATE+Name: 2020-11-29 HM (#243)
+DESCRIPTION: Move SPM templates used by CAT12 out of Fieldmap folder
+FILE:
+External/SPMmodified/toolbox/cat12/cat_defaults.m @ 224
+(also same changes in:
+External/SPMmodified/toolbox/cat12/cat_run1173plus/cat_defaults1173plus.m
+External/SPMmodified/toolbox/cat12/cat_run1585/cat_defaults1585.m
+External/SPMmodified/toolbox/cat12/cat_vol_groupwise_ls.m)
+
 DATE+Name: 2020-07-04 HM
 DESCRIPTION:
 Disable previous CAT12 versions for increased stability
@@ -96,7 +110,7 @@ Removed atlases, partly
 left brainmask.nii, cat.nii,
 & all Template_._IXI555_MNI152_(GS|)\.nii
 SPM/toolbox/DARTEL/icbm152.nii
-cat12/templates_volumes/TPM_Age11.5.nii
+cat12/templates_volumes/TPM_Age11.5.nii (but returned by JP later?)
 
 DATE+NAME:2019_11_13, HM
 DESCRIPTION:
@@ -334,9 +348,19 @@ Edited the jsmn.c so that spm_jsonread.c can read JSONs that have empty string a
 FILE:
 jsmn.c at line 269
 
+DATE+NAME:2021_01_12, JP
+DESCRIPTION:
+Edited the spm_jsonread.c so that spm_jsonread MEX correctly reads files that contain 0-character inside the text. A character with value 0 appears in some - otherwise empty - strings. 
+Which causes that the JSON is not read entirely. We now read the entire JSON and replace 0 by a space.
+FILE:
+spm_jsonread.c at line 496
 
 *********************************************************************************************************
 OTHER CODE HACKS
+
+DATE+NAME:2020-10-26 HM (issue #190)
+DESCRIPTION: Add atlas ROI creation comments and add creation of catROI_T1.tsv
+FILE: cat_main.m, 127
 
 DATE+NAME:2020-09-02 MS (issue #114)
 DESCRIPTION:

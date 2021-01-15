@@ -1,6 +1,6 @@
 {
 	"Site010" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -8,7 +8,7 @@
 		"readout_dim" : "3D"
 		},
 	"Site110" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -16,7 +16,7 @@
 		"readout_dim" : "3D"
 		},
 	"Site011" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -24,7 +24,7 @@
 		"readout_dim" : "3D"
 		},
 	"Site012" : {
-		"BackGrSupprPulses" : 0,
+		"BackgroundSuppressionNumberPulses" : 0,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -32,7 +32,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site014" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2020,
 		"LabelingDuration" : 800,
@@ -40,7 +40,7 @@
 		"readout_dim" : "3D"
 		},
 	"Site015" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -48,7 +48,7 @@
 		"readout_dim" : "3D"
 		},
 	"Site016" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -56,7 +56,7 @@
 		"readout_dim" : "3D"
 		},
 	"Site019" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PCASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -64,7 +64,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site020" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
@@ -72,7 +72,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site022" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
@@ -80,7 +80,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site030" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
@@ -88,7 +88,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site031" : {
-		"BackGrSupprPulses" : 0,
+		"BackgroundSuppressionNumberPulses" : 0,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -96,7 +96,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site032" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -104,7 +104,7 @@
 		"readout_dim" : "3D"
 		},
 	"Site040" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
@@ -112,7 +112,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site041" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
@@ -120,7 +120,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site050" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 1800,
 		"LabelingDuration" : 1650,
@@ -128,7 +128,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site060" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -136,7 +136,7 @@
 		"readout_dim" : "3D"
 		}
 	"Site072" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "CASL",
 		"Initial_PLD" : 2025,
 		"LabelingDuration" : 1650,
@@ -144,7 +144,7 @@
 		"readout_dim" : "2D"
 		},
 	"Site074" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,
@@ -152,7 +152,7 @@
 		"readout_dim" : "2D"
 		}
 	"Site075" : {
-		"BackGrSupprPulses" : 2,
+		"BackgroundSuppressionNumberPulses" : 2,
 		"LabelingType" : "PASL",
 		"Initial_PLD" : 2000,
 		"LabelingDuration" : 800,

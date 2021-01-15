@@ -14,11 +14,13 @@ function [x] = xASL_init_FileSystem(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function initializes the file system used throughout ExploreASL, for processing a single dataset/scan.
 % It is repeated for each scan, and runs the following parts:
-% 1) Create folders
-% 2) Subject/session definitions
-% 3) Add prefixes & suffixes
-% 4) Add Subject-specific prefixes
-% 5) Add sidecars
+%
+% 1. Create folders
+% 2. Subject/session definitions
+% 3. Add prefixes & suffixes
+% 4. Add Subject-specific prefixes
+% 5. Add sidecars
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_init_FileSystem(x);
 % __________________________________
@@ -79,9 +81,9 @@ FileDef{1} = {'FLAIR' 'T1' 'T1_filled' 'c1T1' 'c2T1' 'c3T1' 'j_T1' 'y_T1' 'WMH_S
 
 % FileTypes in SESSIONDIR
 FileDef{2} = {'y_ASL' 'ASL4D' 'ASL4D_RevPE'...
-	           'CBF' 'qCBF' 'qCBF4D' 'qCBF_untreated' 'despiked_ASL4D' ...
+	           'CBF' 'qCBF' 'qCBF4D' 'qCBF_untreated' 'qCBF_masked' 'despiked_ASL4D' ...
 			   'PseudoCBF' 'PWI' 'PWI4D' 'mean_PWI_Clipped' 'mean_PWI_Clipped_DCT' 'M0' 'mean_control' 'SD' 'SNR' 'SD_control'...
-			   'SNR_control' 'SliceGradient' 'SliceGradient_extrapolated' 'FoV' 'TT' 'PVgm' 'PVwm' 'PVcsf' 'PVwmh' 'CBFgm' 'CBFwm' 'MaskSusceptibilityPop' 'TotalGMPop' 'DeepWMPop' 'HammersPop' 'MNIStructuralPop' 'LeftRightPop'}; 
+			   'SNR_control' 'SliceGradient' 'SliceGradient_extrapolated' 'FoV' 'TT' 'PVgm' 'PVwm' 'PVcsf' 'PVwmh' 'CBFgm' 'CBFwm' 'MaskSusceptibilityPop' 'TotalGMPop' 'DeepWMPop' 'HammersPop' 'MNIStructuralPop' 'LeftRightPop' 'HOcort_CONNPop' 'HOsub_CONNPop'}; 
 
 Prefix = {'r' 'm' 's' 'mr' 'rmr' 'rr' 'temp_' 'rtemp_' 'mask_' 'BiasField_' 'noSmooth_'}; % r=resample m=modulate s=smooth w=warp q=quantified p=probability % USE t for TEMP? replace w by r
 Suffix = {'_backup' '_ORI'};
@@ -160,9 +162,15 @@ if isfield(x.P,'SubjectID')
             end
         end
     end
+    
+    %% ------------------------------------------------------------------------------------------
+    %% Add custom cases
+    if isfield(x, 'SESSIONDIR')
+        x.P.Path_MaskVascular = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
+    end
+    x.P.Pop_Path_MaskVascular = fullfile(x.D.PopDir, ['MaskVascular_' x.P.SubjectID '_' x.P.SessionID '.nii']);
+    x.P.Path_Pop_MaskSusceptibility = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.P.SubjectID '_' x.P.SessionID '.nii']);    
 end
-
-
 
 
 %% ------------------------------------------------------------------------------------------

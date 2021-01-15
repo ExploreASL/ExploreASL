@@ -16,11 +16,13 @@ function BloodT1 = xASL_quant_Hct2BloodT1(Hematocrit, Y, B0, bVerbose)
 %              Note that we assume a venous O2 saturation of 68% (Yv=0.68)
 %
 %              This function performs the following steps:
-%              1) Check fraction vs percentage hematocrit & Y, should be between 0 and 1
-%              2) Specify defaults (Hb, Fe)
-%              3) Perform calculation
-%              4) Convert s to ms
-%              5) Print what we did
+%
+%              1. Check fraction vs percentage hematocrit & Y, should be between 0 and 1
+%              2. Specify defaults (Hb, Fe)
+%              3. Perform calculation
+%              4. Convert s to ms
+%              5. Print what we did
+%
 % --------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_Quantify(x);
 % REFERENCE: Hales, 2014 JCBFM

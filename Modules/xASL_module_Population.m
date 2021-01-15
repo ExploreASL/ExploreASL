@@ -15,16 +15,16 @@ function [result, x] = xASL_module_Population(x)
 % previous modules. It will perform the following group-wise processing and
 % checks:
 %
-% 010_CreatePopulationTemplates - Create population average images, to compare scanners, cohorts etc without physiological variance
-% 020_CreateAnalysisMask        - Generate a group-level mask by combining individuals masks, for ROI-based analysis & VBA
-% 030_CreateBiasfield           - When there are multiple scanners, create scanner-specific biasfields (uses Site.mat for this)
-% 040_GetDICOMStatistics        - Create TSV file with overview of DICOM parameters
-% 050_GetVolumeStatistics       - Create TSV file with overview of volumetric parameters
-% 060_GetMotionStatistics       - Create TSV file with overview of motion parameters
-% 065_GetRegistrationStatistics - Create TSV file with overview of the registration statistics
-% 070_GetROIstatistics          - Create TSV file with overview of regional values (e.g. qCBF, mean control, pGM etc)
-% 080_SortBySpatialCoV          - Sort ASL_Check QC images by their spatial CoV in quality bins
-% 090_DeleteAndZip              - Delete temporary files and gzip all NIfTIs
+% - 010_CreatePopulationTemplates - Create population average images, to compare scanners, cohorts etc without physiological variance
+% - 020_CreateAnalysisMask        - Generate a group-level mask by combining individuals masks, for ROI-based analysis & VBA
+% - 030_CreateBiasfield           - When there are multiple scanners, create scanner-specific biasfields (uses Site.mat for this)
+% - 040_GetDICOMStatistics        - Create TSV file with overview of DICOM parameters
+% - 050_GetVolumeStatistics       - Create TSV file with overview of volumetric parameters
+% - 060_GetMotionStatistics       - Create TSV file with overview of motion parameters
+% - 065_GetRegistrationStatistics - Create TSV file with overview of the registration statistics
+% - 070_GetROIstatistics          - Create TSV file with overview of regional values (e.g. qCBF, mean control, pGM etc)
+% - 080_SortBySpatialCoV          - Sort ASL_Check QC images by their spatial CoV in quality bins
+% - 090_DeleteAndZip              - Delete temporary files and gzip all NIfTIs
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -78,11 +78,11 @@ if ~x.mutex.HasState(StateName{1})
     % Save FoV mask as susceptibility mask for 3D spiral
     % as 3D spiral doesnt have a susceptibility artifact (or negligible)
 
-    FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^FoV_.*bs-mean_Unmasked\.nii$', 'FPList');
-    SusceptPath = fullfile(x.D.TemplatesStudyDir,'MaskSusceptibility_bs-mean.nii');
+    FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean_Unmasked\.nii$'], 'FPList');
+    SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean.nii']);
 
     if strcmpi(x.Sequence,'3d_spiral') && ~isempty(FoVPath)
-        xASL_io_SaveNifti(FoVPath, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}),[],false);
+        xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}), [], false);
     end
 
     x.mutex.AddState(StateName{1});

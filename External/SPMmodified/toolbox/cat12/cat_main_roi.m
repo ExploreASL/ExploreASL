@@ -124,7 +124,25 @@ function cat_main_roi(job,trans,Ycls,Yp0)
     end
     
     %% extract ROI data
-    csv   = cat_vol_ROIestimate(wYp0,wYa,wYcls,ai,'V',[],FA{ai,3},FA);  % volume
+    csv = cat_vol_ROIestimate(wYp0,wYa,wYcls,ai,'V',[],FA{ai,3},FA);  % volume
+    %% EXPLOREASL HACK-COMMENT
+    % wYp0: combination of probability maps
+    % wYa: atlas
+    % wYcls: cells containing probability maps
+    % FA: cells containing paths and options
+    
+    % these prefixes "w" mean "warped", so they are all in the Hammers spaces
+    % before, flowfields were combined, to transw.y
+    % above calculation shows that transw.y is scaled with voxel size:
+    % -> for i=1:3, transw.y(:,:,:,i) = transw.y(:,:,:,i) * job.extopts.vox ./ VAvx_vol(ai,i);  end
+    % differences (which are not there for ExploreASL/CAT12 use, 
+    % both Hammers template & DARTEL being both in [1.5 1.5 1.5])
+    % and translation is being "added" uniformly:
+    % -> transw.y    = cat(4,transw.y(:,:,:,1) + matit(1), transw.y(:,:,:,2) + matit(2), transw.y(:,:,:,3) + matit(3) );
+    % which leads to negligible changes (matit ~= 10^-13), so we can
+    % neglect this for visualization purposes.
+    PathTSV = fullfile(pth, labelfolder, ['catROI_' nam '.tsv']);
+    xASL_tsvWrite(csv, PathTSV, 1);
     
     % thickness
     if exist('Yth1','var') 

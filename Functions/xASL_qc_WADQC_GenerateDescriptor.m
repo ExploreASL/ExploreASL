@@ -18,20 +18,20 @@ function xASL_qc_WADQC_GenerateDescriptor(x, iSubject, ScanTypeIs)
 % DESCRIPTION: This QC function generates a JSON descriptor for Gaspare'
 %              QCDC script, by the following steps:
 %
-%              a) include information about where to find the dummy DICOM (i.e. placeholder DICOM)
-%              b) For ExploreASL' QC fields (as passed through in
-%                 x.Output), here we note all these QC fields for each
-%                 ScanType, as the x.Output should have been collected
-%                 equally in the QC file 'QC_collection_SubjectName.json'
-%                 by function xASL_qc_CollectParameters
-%              c) Subfunction xASL_qc_WADQC_images - Includes visual standard space QC
-%                 images, by searching them on prescribed paths within the
-%                 Population folder (where currently all derivatives reside)
-%              d) Insert the PDF report; this PDF report is
-%                 subject-specific, not scan-specific. For completeness it
-%                 is added to each QCDC descriptor
-%              e) Add WAD-QC server details (i.e. IP address etc)
-%              f) Save the Descriptor JSON file.
+%              - a) include information about where to find the dummy DICOM (i.e. placeholder DICOM)
+%              - b) For ExploreASL' QC fields (as passed through in
+%                   x.Output), here we note all these QC fields for each
+%                   ScanType, as the x.Output should have been collected
+%                   equally in the QC file 'QC_collection_SubjectName.json'
+%                   by function xASL_qc_CollectParameters
+%              - c) Subfunction xASL_qc_WADQC_images - Includes visual standard space QC
+%                   images, by searching them on prescribed paths within the
+%                   Population folder (where currently all derivatives reside)
+%              - d) Insert the PDF report; this PDF report is
+%                   subject-specific, not scan-specific. For completeness it
+%                   is added to each QCDC descriptor
+%              - e) Add WAD-QC server details (i.e. IP address etc)
+%              - f) Save the Descriptor JSON file.
 % 
 % EXAMPLE: xASL_qc_WADQC_GenerateDescriptor(x, iSubject)
 % For more information about WAD-QC please visit: https://github.com/wadqc/WAD_Documentatie/wiki

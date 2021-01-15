@@ -1,12 +1,13 @@
 function imPar = ExploreASL_ImportConfig(StudyRoot)
 %ExploreASL_ImportConfig Configures the import parameters used by ExploreASL_Import
 %
-% FORMAT: imPar = ExploreASL_ImportConfig(StudyRoot)
+% FORMAT:      imPar = ExploreASL_ImportConfig(StudyRoot)
 % 
-% INPUT: root of study folder containing DICOMs, e.g. '//MyDisk/MyStudy'
-% OUTPUT: imPar which is input to ExploreASL_Import
+% INPUT:       root of study folder containing DICOMs, e.g. '//MyDisk/MyStudy'
+% OUTPUT:      imPar which is input to ExploreASL_Import
 %
-% Please read the help of ExploreASL_Import for more information
+% DESCRIPTION: Please read the help of ExploreASL_Import for more information
+% EXAMPLE:     n/a
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
@@ -51,6 +52,22 @@ imPar.bMatchDirectories  = false;
 % Study specific parameters
 % -----------------------------------------------------------------------------
 switch imPar.studyID
+    
+    case 'RACE5_Siemens'
+		imPar.folderHierarchy = {'^(Subject)' '.*(T1w|ASL|FLAIR|M0)(_\d|).*'};
+		imPar.tokenOrdering = [1 0 3 2];
+		imPar.tokenSessionAliases = {'^(_1|)$', '_1'; '^2$', '_2'};
+        imPar.tokenVisitAliases = {};
+		imPar.tokenScanAliases = {'^T1w$', 'T1'; '^FLAIR$', 'FLAIR'; '^M0$', 'M0'; 'ASL', 'ASL4D'};
+		imPar.bMatchDirectories = true;
+        
+    case 'RACE5_Philips'
+		imPar.folderHierarchy = {'^(Subject)' '.*(T1w|ASL|FLAIR|M0).*'};
+		imPar.tokenOrdering = [1 0 0 2];
+		imPar.tokenSessionAliases = {};
+        imPar.tokenVisitAliases = {};
+		imPar.tokenScanAliases = {'^T1w$', 'T1'; '^FLAIR$', 'FLAIR'; '^M0$', 'M0'; 'ASL', 'ASL4D'};
+		imPar.bMatchDirectories = true;        
 
 	case 'TimFit'
 		imPar.folderHierarchy = {'^(SUB\d{3})_(1|2)$' '(T1_MPRAGE|T2.*FL|SS.*TI5000_0005|PERFUSION_WEIGHTED).*'};

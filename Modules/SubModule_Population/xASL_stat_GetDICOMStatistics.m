@@ -17,9 +17,10 @@ function xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
 %              Can be useful to detect software upgrades, where only slight
 %              parameter changes can hint on quantification changes.
 %              This function carries out the following steps:
-%              1) Load & save individual parameter files
-%              2) Print summary
-%              3) Write TSV file
+%
+%              1. Load & save individual parameter files
+%              2. Print summary
+%              3. Write TSV file
 % ------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_stat_GetDICOMStatistics(x, 'ASL', true);
 % __________________________________

@@ -1,10 +1,6 @@
 import os
 from glob import glob
 import re
-from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
-from PySide2.QtWidgets import QWidget, QLabel, QVBoxLayout
-from PySide2.QtGui import QMovie, Qt
-from PySide2.QtCore import QSize, QByteArray
 from platform import system
 from itertools import chain
 from pprint import pprint
@@ -112,11 +108,16 @@ def calculate_anticipated_workload(parmsdict, run_options, translators):
             directory = os.path.join(analysis_directory, "lock", "xASL_module_Structural", subject,
                                      "xASL_module_Structural")
             current_status_files = os.listdir(directory)
+            ###########################################
+            # Keeping this here in case of switch back
             if has_flair_img:
                 workload = default_workload + flair_workload
             else:
                 workload = default_workload
 
+            # Uncomment this if full workload is the assumption each time
+            # workload = default_workload + flair_workload  # The full workload is assumed now every time
+            ############################################
             # Filter out any anticipated status files that are already present in the lock dirs
             filtered_workload = set(workload).difference(set(current_status_files))
             # Append the filepaths; these will be used after analysis to check for incompleted STATUS workloads
@@ -192,6 +193,7 @@ def calculate_anticipated_workload(parmsdict, run_options, translators):
                             "040_GetDICOMStatistics.status",
                             "050_GetVolumeStatistics.status",
                             "060_GetMotionStatistics.status",
+                            "065_GetRegistrationStatistics.status",
                             "070_GetROIstatistics.status",
                             "080_SortBySpatialCoV.status",
                             "090_DeleteAndZip.status",
@@ -383,24 +385,3 @@ def interpret_statusfile_errors(incomplete_files, translators: dict):
         pop_msgs = [msg]
 
     return struct_msgs, asl_msgs, pop_msgs
-
-
-class xASL_ImagePlayer(QWidget):
-    def __init__(self, filename, parent=None):
-        QWidget.__init__(self, parent)
-
-        # Load the file into a QMovie with the appropriate size
-        self.movie = QMovie(filename, QByteArray(), self)
-        self.movie.setScaledSize(QSize(75, 75))
-        self.movie.setCacheMode(QMovie.CacheAll)
-        self.movie.setSpeed(100)
-
-        # Add the QMovie object to a label container
-        self.movie_screen = QLabel()
-        self.movie_screen.setAlignment(Qt.AlignCenter)
-        self.movie_screen.setMovie(self.movie)
-
-        # Create the layout
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.movie_screen)
-        self.setLayout(main_layout)

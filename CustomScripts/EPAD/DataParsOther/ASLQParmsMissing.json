@@ -1,48 +1,48 @@
 {
 	"Site013" : {
-		"BackGrSupprPulses" : 
+		"BackgroundSuppressionNumberPulses" : 
 		"LabelingType" : 
 		"Initial_PLD" : 
 		"LabelingDuration" : 
 		"SliceReadoutTime" : 
 		},
 	"Site017" : {
-		"BackGrSupprPulses" : 
+		"BackgroundSuppressionNumberPulses" : 
 		"LabelingType" : 
 		"Initial_PLD" : 
 		"LabelingDuration" : 
 		"SliceReadoutTime" : 
 		},
 	"Site018" : {
-		"BackGrSupprPulses" : 
+		"BackgroundSuppressionNumberPulses" : 
 		"LabelingType" : 
 		"Initial_PLD" : 
 		"LabelingDuration" : 
 		"SliceReadoutTime" : 
 		},
 	"Site021" : {
-		"BackGrSupprPulses" : 
+		"BackgroundSuppressionNumberPulses" : 
 		"LabelingType" : 
 		"Initial_PLD" : 
 		"LabelingDuration" : 
 		"SliceReadoutTime" : 
 		},
 	"Site023" : {
-		"BackGrSupprPulses" : 
+		"BackgroundSuppressionNumberPulses" : 
 		"LabelingType" : 
 		"Initial_PLD" : 
 		"LabelingDuration" : 
 		"SliceReadoutTime" : 
 		},
 	"Site024" : {
-		"BackGrSupprPulses" : 
+		"BackgroundSuppressionNumberPulses" : 
 		"LabelingType" : 
 		"Initial_PLD" : 
 		"LabelingDuration" : 
 		"SliceReadoutTime" : 
 		},
 	"Site025" : {
-		"BackGrSupprPulses" : 
+		"BackgroundSuppressionNumberPulses" : 
 		"LabelingType" : 
 		"Initial_PLD" : 
 		"LabelingDuration" : 

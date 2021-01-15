@@ -28,9 +28,12 @@ function [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume] = xASL_init
 % list of first visits only, as the between-subject registration in
 % ExploreASL is based on the first scan (as opposed to the average
 % subject's scan).
+%
 % This function runs the following steps:
-%  1) Get TimePoint-list (list of visits)
-% 2) Find subject IDs
+%
+% 1. Get TimePoint-list (list of visits)
+% 2. Find subject IDs
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume] = xASL_init_LongitudinalRegistration(x);
 % __________________________________

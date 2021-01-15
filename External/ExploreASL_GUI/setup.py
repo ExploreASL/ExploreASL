@@ -32,5 +32,11 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=required,
+    package_data={
+        "JSON_LOGIC": ["ExecutorTranslators.json", "GraphingParameters.json"],
+        "media": ["*.png", "*.gif", "*.svg", "*.ico"],
+        "External": ["DCM2NIIX/*.exe"]
+    },
+    include_package_data=True,
     classifiers=CLASSIFIERS
 )

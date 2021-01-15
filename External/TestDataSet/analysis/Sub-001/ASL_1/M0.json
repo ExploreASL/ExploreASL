@@ -38,5 +38,5 @@
 "readout_dim":"2D",
 "Vendor":"Philips",
 "bReproTesting":0,
-"Q":{"BackGrSupprPulses":2,
+"Q":{"BackgroundSuppressionNumberPulses":2,
 "SliceReadoutTime":0.0437647}}

@@ -20,18 +20,20 @@ function tSNR = xASL_qc_temporalSNR(pathIm4D,pathImTissueProb)
 %            tSNR.tSNR_GMWM_WMref_Ratio: mean (GM+WM) signal / std WMref over time
 %            tSNR.tSNR_Physio2Thermal_Ratio: sqrt((tSNR(GM+WM)/tSNR_GMWM_WMref_Ratio))^2-1)
 %            tSNR.tSNR_Slope_Corr:
+%
 %            Differences to the SPM U+ suggestion: 
+%
 %            - eroded WM is used for estimating background noise
 %            - Brainmask is determined in the same way as the structural anatQC,
 %            - CSF is determined from the pGM&pWM maps;
 %
 % REFERENCES:
-%              1) Thomas Liu (2016). Noise contributions to the fMRI signal: An overview NeuroImage, 343, 141-151
+%              1. Thomas Liu (2016). Noise contributions to the fMRI signal: An overview NeuroImage, 343, 141-151
 %                 http://dx.doi.org/10.1016/j.neuroimage.2016.09.008
-%              2) Cesar Caballero-Gaudes and Richard C. Reynolds (2016). Methods For Cleaning The BOLD fMRI Signal. NeuroImage, 154,128-149
-%              3) Lawrence Wald and Jonathan R Polimeni (2016). Impacting the effect of fMRI noise through 
+%              2. Cesar Caballero-Gaudes and Richard C. Reynolds (2016). Methods For Cleaning The BOLD fMRI Signal. NeuroImage, 154,128-149
+%              3. Lawrence Wald and Jonathan R Polimeni (2016). Impacting the effect of fMRI noise through 
 %                 hardware and acquisition choices ??? Implications for controlling false positive rates. NeuroImage, 154,15-22
-%              4) SPM Utility + toolbox. Cyril Pernet. https://osf.io/wn3h8/
+%              4. SPM Utility + toolbox. Cyril Pernet. https://osf.io/wn3h8/
 %
 % EXAMPLE: tSNR = xASL_qc_temporalSNR(x.P.Path_PWI4D,{x.P.Path_PVgm x.P.Path_PVwm});
 % __________________________________

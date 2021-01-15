@@ -28,7 +28,7 @@ function [x] = xASL_import_json(DataParFile)
 % 			"name": 				"ExampleDataSet",
 % 			"subject_regexp": 		"^Sub-\\d{3}$",
 % 			"M0": 					"separate_scan",
-% 			"BackGrSupprPulses":	"2",
+% 			"BackgroundSuppressionNumberPulses":	"2",
 % 			"readout_dim": 			"2D",
 % 			"QUALITY": 				"0",
 % 			"Vendor": 				"Philips",
@@ -58,6 +58,9 @@ function [x] = xASL_import_json(DataParFile)
 if ~exist(DataParFile, 'file')
     error('DataParFile does not exist...');
 end
+
+% Input has to be a character array
+DataParFile = char(DataParFile);
 
 %% Decode JSON file
 jsonData = spm_jsonread(DataParFile);

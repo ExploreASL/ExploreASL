@@ -14,6 +14,7 @@ class DandD_Graphing_ListWidget2LineEdit(QLineEdit):
         super().__init__(parent)
         self.permitted_dtypes = dtype_list
         self.setAcceptDrops(True)
+        self.setClearButtonEnabled(True)
         self.PostProc_widget = postproc_widget
 
     def dragEnterEvent(self, event) -> None:
@@ -64,7 +65,7 @@ class DandD_FileExplorer2LineEdit(QLineEdit):
             - "File",
             - "Directory"
             - "Both"
-        - supported_extensions
+        - supported_extensions = a list of the .filetypes that this lineedit will accept (i.e .csv , .txt , etc.),
 
     """
 
@@ -83,7 +84,42 @@ class DandD_FileExplorer2LineEdit(QLineEdit):
 
     def dragEnterEvent(self, event) -> None:
         if event.mimeData().hasUrls():
-            event.accept()
+            for url in event.mimeData().urls():
+                if url.isLocalFile():
+                    if not os.path.exists(url.toLocalFile()):
+                        continue
+                    else:
+                        path_string = str(url.toLocalFile())
+
+                    # Scenario 1: Accept all filetypes
+                    if self.path_type == "Both" and os.path.exists(path_string):
+                        event.accept()
+                        return
+
+                    # Scenario 2: Accept only Files
+                    elif self.path_type == "File" and os.path.isfile(path_string):
+                        if len(self.supported_ext) == 0:
+                            event.accept()
+                            return
+                        else:
+                            if os.path.splitext(path_string)[1] in self.supported_ext:
+                                event.accept()
+                                return
+                            else:
+                                event.ignore()
+                                return
+
+                    # Scenario 3: Accept only Direcories
+                    elif self.path_type == "Directory" and os.path.isdir(path_string):
+                        event.accept()
+                        return
+
+                    else:
+                        event.ignore()
+                # Is not a local file
+                else:
+                    event.ignore()
+            event.ignore()
         else:
             event.ignore()
 

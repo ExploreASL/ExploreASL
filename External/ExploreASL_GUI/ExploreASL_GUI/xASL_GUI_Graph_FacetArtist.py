@@ -38,7 +38,7 @@ class xASL_GUI_FacetArtist(QWidget):
 
             # Then create the FacetGrid from the constructor
             self.grid = sns.FacetGrid(data=self.parent_cw.loader.long_data, **constructor)
-            self.mainfig = self.grid.fig
+            self.mainfig: plt.Figure = self.grid.fig
 
         # Add this to the widget setup
         self.canvas = FigureCanvas(self.mainfig)
@@ -191,3 +191,14 @@ class xASL_GUI_FacetArtist(QWidget):
         else:
             plt.legend("", frameon=False)
         self.canvas.draw()
+
+    @Slot(dict)
+    def plotupdate_tickcall(self, ticklabel_kwargs):
+        print("INSIDE PLOTDATE_TICKCALL")
+        if all([len(ticklabel_kwargs) > 0,  # kwargs for the ticklabels must exist
+                ]):
+            ax: plt.Axes
+            for ax in self.mainfig.axes:
+                ax.set_xticklabels(labels=ax.get_xticklabels(), **ticklabel_kwargs)
+
+            self.canvas.draw()

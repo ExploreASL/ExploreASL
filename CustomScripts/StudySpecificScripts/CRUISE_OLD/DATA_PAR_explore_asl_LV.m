@@ -62,7 +62,7 @@ x.M0                          = 'separate_scan'; % no_background_suppression
 % The middle of these two is:
 % Ingenia AMC = 2.1412*10^5
 
-x.Q.BackGrSupprPulses       = 2; % '2' or '5' (this parameter will be ignored when M0='no_background_suppression').
+x.Q.BackgroundSuppressionNumberPulses       = 2; % '2' or '5' (this parameter will be ignored when M0='no_background_suppression').
 % GE 3D FSE uses 5 pulses, Philips 2D & Siemens 3D use both 2 pulses
 % This parameter is used to estimate decrease of labeling efficiency  (0.83 & 0.75 for 2 & 5 pulses respectively)
 % When you have an M0, but no background suppression, this parameter should be set to '0'

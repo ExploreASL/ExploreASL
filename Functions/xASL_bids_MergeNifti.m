@@ -1,5 +1,6 @@
 function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %xASL_bids_MergeNifti Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible
+%
 % FORMAT: NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 % 
 % INPUT:
@@ -8,6 +9,7 @@ function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %
 % OUTPUT:
 % NiftiPaths   - return either the same list of files if nothing was done or the path to the newly created file
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function takes a list of M0 or ASL4D files and concatenates them together in a longer 4D volume if possible
 %              following certain patterns: works only with 3D and 4D files; all files in the list must have the same size of the
@@ -17,18 +19,21 @@ function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %              PhaseEncodingAxis is consistent through all the volumes, if not the nothing is merged; this is applied to a generic case
 %              and 3 other specific Siemens scenarios are implemented:
 %
-%              i) All NII files have two volumes, then simply concatenate according to the last number.
-%              ii) Two files with a single volume each are merged according to the last number in the file name.
-%              iii) Multiple files with each containing a single volume are sorted to tags ASL4D_x_x_Y and controls ASL4D_Y and merged in the order
+%              - i) All NII files have two volumes, then simply concatenate according to the last number.
+%              - ii) Two files with a single volume each are merged according to the last number in the file name.
+%              - iii) Multiple files with each containing a single volume are sorted to tags ASL4D_x_x_Y and controls ASL4D_Y and merged in the order
 %                   of the last number in the filename (Y) alternating the tags and controls
 %
 %              This function performs the following steps in subfunctions:
+%
 %              1. xASL_bids_MergeNifti_M0Files Generic merging of M0 files
 %              2. xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
 %              3. xASL_bids_MergeNifti_AllASLFiles Merge any ASL files
 %              4. xASL_bids_MergeNifti_Merge Merge NiftiPaths & save to pathMerged
 %              5. xASL_bids_MergeNifti_Delete Delete NiftiPaths and associated JSONs
 %              6. xASL_bids_MergeNifti_RenameParms Find *_parms.m files in directory and shorten to provided name
+%
+% EXAMPLE:     n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________

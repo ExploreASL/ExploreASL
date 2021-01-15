@@ -2,12 +2,13 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from ExploreASL_GUI.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
-from ExploreASL_GUI.xASL_GUI_Graph_Subsetter import xASL_GUI_Subsetter
+from ExploreASL_GUI.xASL_GUI_Graph_Subsetter import xASL_GUI_Subsetter, xASL_GUI_Datatype_Indicator
 from ExploreASL_GUI.xASL_GUI_Graph_Loader import xASL_GUI_Data_Loader
 from ExploreASL_GUI.xASL_GUI_Graph_FacetManager import xASL_GUI_FacetManager
 from ExploreASL_GUI.xASL_GUI_Graph_FacetArtist import xASL_GUI_FacetArtist
 from ExploreASL_GUI.xASL_GUI_Graph_MRIViewManager import xASL_GUI_MRIViewManager
 from ExploreASL_GUI.xASL_GUI_Graph_MRIViewArtist import xASL_GUI_MRIViewArtist
+from ExploreASL_GUI.xASL_GUI_HelperFuncs_StringOps import set_os_dependent_text
 import os
 
 
@@ -24,27 +25,33 @@ class xASL_Plotting(QMainWindow):
 
         # Window Size and initial visual setup
         self.setMinimumSize(1920, 1000)
-        # self.resize(self.config["ScreenSize"][0], self.config["ScreenSize"][1])
         self.cw = QWidget(self)
         self.setCentralWidget(self.cw)
         self.mainlay = QVBoxLayout(self.cw)
         self.setWindowTitle("Explore ASL - Post Processing Visualization")
-        self.setWindowIcon(QIcon(os.path.join(self.config["ProjectDir"], "media", "ExploreASL_logo.png")))
 
-        # Central Classes
+        # Central Classes and their connections
+        self.dtype_indicator = xASL_GUI_Datatype_Indicator(self)
         self.subsetter = xASL_GUI_Subsetter(self)
         self.loader = xASL_GUI_Data_Loader(self)
+        self.loader.signal_dtype_was_changed.connect(self.subsetter.add_or_remove_subsetable_field)
 
         # Initialize blank givens
         self.fig_manager = None
         self.fig_artist = None
         self.spacer = QSpacerItem(0, 1, QSizePolicy.Preferred, QSizePolicy.Expanding)
+
         # Main Widgets setup
         self.UI_Setup_Docker()
+
+    def resizeEvent(self, event):
+        self.dock.setMaximumHeight(self.height())
+        super().resizeEvent(event)
 
     def UI_Setup_Docker(self):
         self.dock = QDockWidget(windowTitle="Data Visualization Settings", parent=self.cw)
         self.dock.setMinimumWidth(480)
+        self.dock.setMaximumHeight(self.height())
         self.dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
         self.cont_maindock = QWidget(self.dock)
@@ -54,52 +61,82 @@ class xASL_Plotting(QMainWindow):
         # Set up the directory settings - what analysis folder
         self.grp_directories = QGroupBox(title="Directory settings", parent=self.cont_maindock)
         self.formlay_directories = QFormLayout(self.grp_directories)
+        self.formlay_directories.setContentsMargins(2, 2, 2, 2)
         self.hlay_analysis_dir, self.le_analysis_dir, self.btn_analysis_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_analysis_dir,
-            default=self.config["DefaultRootDir"],
-            acceptable_path_type="Directory"
-        )
-
-        self.le_demographics_file = DandD_FileExplorer2LineEdit(acceptable_path_type="File",
-                                                                supported_extensions=[".tsv", ".csv", ".xlsx"])
-        self.le_demographics_file.setPlaceholderText("Drag & Drap a supporting .tsv/.csv/.xlsx file")
-        self.cmb_atlas_selection = QComboBox(self.grp_directories)
+            default="",
+            acceptable_path_type="Directory")
+        self.le_analysis_dir.setPlaceholderText("Drag & Drop an analysis directory here")
+        self.le_analysis_dir.setToolTip("Indicate the analysis directory in this field\n"
+                                        "(i.e C:Users\\JohnSmith\\MyStudy\\analysis)")
+        self.hlay_metadata, self.le_metadata, self.btn_metadata = self.make_droppable_clearable_le(
+            btn_connect_to=self.set_metadata_file,
+            default="",
+            acceptable_path_type="File",
+            supported_extensions=[".tsv", ".csv", ".xlsx"])
+        self.le_metadata.setPlaceholderText("Drag & Drop a covariates .tsv/.csv/.xlsx file")
+        self.le_metadata.setToolTip("Indicate the filepath to a file containing study metadata.\n"
+                                    "This should be either a .csv, .tsv, or .xlsx file")
+        self.cmb_atlas_selection = QComboBox()
+        self.cmb_atlas_selection.setToolTip("Select which atlas' the CBF values should be based on")
         self.cmb_atlas_selection.addItems(["MNI", "Hammers"])
-        self.cmb_pvc_selection = QComboBox(self.grp_directories)
+        self.cmb_pvc_selection = QComboBox()
+        self.cmb_pvc_selection.setToolTip("Select whether the CBF values should be based on\n"
+                                          "partial-volume correction or uncorrected")
         self.cmb_pvc_selection.addItems(["Without Partial Volume Correction", "With Partial Volume Correction"])
-        self.cmb_stats_selection = QComboBox(self.grp_directories)
+        self.cmb_stats_selection = QComboBox()
+        self.cmb_stats_selection.setToolTip("Select which statistic the CBF values should represent")
         self.cmb_stats_selection.addItems(["Mean", "Median", "Coefficient of Variation"])
-        self.btn_subset_data = QPushButton("Subset Data", self.grp_directories, clicked=self.subsetter.show)
+        self.btn_subset_data = QPushButton("Subset Data", clicked=self.subsetter.show)
+        self.btn_subset_data.setToolTip("This will open a window to allow you to subset the loaded data on based on\n"
+                                        "levels in a categorical variable")
         self.btn_subset_data.setEnabled(False)
+        self.btn_indicate_dtype = QPushButton("Clarify Covariate Datatype", clicked=self.dtype_indicator.show)
+        self.btn_indicate_dtype.setToolTip("This will open a window to allow you to correct the program's\n"
+                                           "interpretation of the datatype of a particular variable\n(i.e Sex encoded "
+                                           "by 1s and 0s may be misinterpreted as a numerical type)")
+        self.btn_indicate_dtype.setEnabled(False)
         self.btn_load_in_data = QPushButton("Load Data", self.grp_directories)
+        self.btn_load_in_data.setToolTip("This will load in the data from the indicated analysis directory")
         self.btn_load_in_data.clicked.connect(self.loader.load_exploreasl_data)
         self.btn_load_in_data.clicked.connect(self.full_reset)
 
         self.formlay_directories.addRow("Analysis Directory", self.hlay_analysis_dir)
-        self.formlay_directories.addRow("Ancillary Study Dataframe", self.le_demographics_file)
+        self.formlay_directories.addRow("Metadata/Covariates file", self.hlay_metadata)
         self.formlay_directories.addRow("Which Atlas to Utilize", self.cmb_atlas_selection)
         self.formlay_directories.addRow("Which Partial-Volume Stats to View", self.cmb_pvc_selection)
         self.formlay_directories.addRow("Which Statistic to View", self.cmb_stats_selection)
         self.formlay_directories.addRow(self.btn_subset_data)
+        self.formlay_directories.addRow(self.btn_indicate_dtype)
         self.formlay_directories.addRow(self.btn_load_in_data)
 
-        # Connect the appropriate lineedits to the subsetter class
+        # Connect the appropriate lineedits to the subsetter and dtype indicator classes
         self.le_analysis_dir.textChanged.connect(self.subsetter.clear_contents)
-        self.le_demographics_file.textChanged.connect(self.subsetter.clear_contents)
+        self.le_analysis_dir.textChanged.connect(self.dtype_indicator.clear_contents)
+        self.le_metadata.textChanged.connect(self.subsetter.clear_contents)
+        self.le_metadata.textChanged.connect(self.dtype_indicator.clear_contents)
 
         # Setup the main Variable Viewer
         self.grp_varview = QGroupBox(title="Variables", parent=self.cont_maindock)
         self.vlay_varview = QVBoxLayout(self.grp_varview)
+        self.vlay_varview.setContentsMargins(0, 0, 0, 0)
         self.lst_varview = QListWidget(self.grp_varview)
-        self.lst_varview.setFixedHeight(250)
+        self.lst_varview.setToolTip("This area houses the variables extracted from column headers found within the\n"
+                                    "study's dataframes as well as any metadata loaded in by the user")
+        self.lst_varview.setFixedHeight(200)
         self.lst_varview.setDragEnabled(True)
         self.vlay_varview.addWidget(self.lst_varview)
 
         # Setup the start of Plotting Settings
         self.grp_pltsettings = QGroupBox(title="Plotting Settings", parent=self.cont_maindock)
         self.vlay_pltsettings = QVBoxLayout(self.grp_pltsettings)
+        self.vlay_pltsettings.setContentsMargins(0, 0, 0, 0)
         self.cmb_figuretypeselection = QComboBox(self.grp_pltsettings)
-        self.cmb_figuretypeselection.addItems(["Select an option", "Facet Grid", "Scatterplot & MRI View"])
+        self.cmb_figuretypeselection.setToolTip("This will select the type of plotting submodule to use.\n"
+                                                "Options include:\n"
+                                                "- Facet Grid: for standard plotting (i.e Box Plots)\n"
+                                                "- Plot & MRI View: for selecting ASL and T1w scans from datapoints")
+        self.cmb_figuretypeselection.addItems(["Select an option", "Facet Grid", "Plot & MRI Viewer"])
         self.cmb_figuretypeselection.setEnabled(False)
         self.cmb_figuretypeselection.currentTextChanged.connect(self.set_manager_and_artist)
         self.vlay_pltsettings.addWidget(self.cmb_figuretypeselection)
@@ -119,7 +156,7 @@ class xASL_Plotting(QMainWindow):
         if figure_type == "Facet Grid":
             self.fig_manager = xASL_GUI_FacetManager(self)
             self.fig_artist = xASL_GUI_FacetArtist(self)
-        elif figure_type == "Scatterplot & MRI View":
+        elif figure_type == "Plot & MRI Viewer":
             self.fig_manager = xASL_GUI_MRIViewManager(self)
             # Do NOT proceed if the manager could not be initialized appropriately
             if self.fig_manager.error_init:
@@ -151,6 +188,7 @@ class xASL_Plotting(QMainWindow):
             self.fig_manager = None
 
     def set_analysis_dir(self):
+        # noinspection PyCallByClass
         analysisdir_filepath = QFileDialog.getExistingDirectory(self,
                                                                 "Select the study's analysis directory",
                                                                 self.config["DefaultRootDir"],
@@ -173,10 +211,45 @@ class xASL_Plotting(QMainWindow):
                 return
             else:
                 self.le_analysis_dir.setText(analysisdir_filepath)
+                set_os_dependent_text(linedit=self.le_analysis_dir,
+                                      config_ossystem=self.config["Platform"],
+                                      text_to_set=analysisdir_filepath)
         else:
             QMessageBox().warning(self,
                                   "The filepath you specified does not exist",
                                   "Please select an existent ExploreASL directory",
+                                  QMessageBox.Ok)
+            return
+
+    def set_metadata_file(self):
+        # noinspection PyCallByClass
+        metadata_filepath, _ = QFileDialog.getOpenFileName(self,
+                                                           "Select the filepath to your study's metadata",
+                                                           self.config["DefaultRootDir"])
+        if metadata_filepath == '':
+            return
+
+        # Quality control
+        if os.path.exists(metadata_filepath):
+            if any([not os.path.isfile(metadata_filepath),
+                    os.path.splitext(metadata_filepath)[1] not in [".tsv", ".csv", ".xlsx"]]):
+                QMessageBox().warning(self,
+                                      "Invalid File Selected",
+                                      "The path you have specified is not a file. Supported file types include:\n"
+                                      "- Comma Separated Values (.csv)\n"
+                                      "- Tab Separated Values (.tsv)\n"
+                                      "- Excel Spreadsheets (.xlsx)\n",
+                                      QMessageBox.Ok)
+                return
+            else:
+                self.le_metadata.setText(metadata_filepath)
+                set_os_dependent_text(linedit=self.le_metadata,
+                                      config_ossystem=self.config["Platform"],
+                                      text_to_set=metadata_filepath)
+        else:
+            QMessageBox().warning(self,
+                                  "The filepath you specified does not exist",
+                                  "Please select an existent filepath",
                                   QMessageBox.Ok)
             return
 

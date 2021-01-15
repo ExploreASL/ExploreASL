@@ -17,7 +17,7 @@ function xASL_wrp_ProcessM0(x)
 %                     (OPTIONAL, DEFAULT = 0)
 %                     - 0 = M0 registration disabled
 %                     - 1 = M0 registration enabled (DEFAULT)
-
+%
 % OUTPUT: n/a
 % OUTPUT FILES: NIfTI containing image processed M0 map in native & standard space, with and without smoothing
 %
@@ -25,11 +25,11 @@ function xASL_wrp_ProcessM0(x)
 % DESCRIPTION: This submodule performs the image processing and
 %           quantification of M0 maps (if they exist), with the following steps:
 %
-%           1) Register M0 to mean control if it exists
+%           1. Register M0 to mean control if it exists
 %              Before registration, contrast is equalized between the
 %              images & biasfields are removed
-%           2) Quantify M0 (correction scale slope & incomplete T1 recovery)
-%           3) Masking & smoothing of M0 image, either using:
+%           2. Quantify M0 (correction scale slope & incomplete T1 recovery)
+%           3. Masking & smoothing of M0 image, either using:
 %              A) traditional technique (very sharp masking & little smoothing)
 %              B) new ExploreASL-specific technique:
 %                 * extrapolating outside mask (avoiding artifacts from too
@@ -56,7 +56,7 @@ function xASL_wrp_ProcessM0(x)
 %
 % EXAMPLE: xASL_wrp_ProcessM0(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2020 ExploreASL
 
 
 
@@ -183,9 +183,9 @@ if x.M0_conventionalProcessing
     xASL_io_SaveNifti(x.P.Path_rM0, x.P.Path_mask_M0, M0_im>0,8,0);
 
     % also transform to standard space
-    InList          = {x.P.Path_rM0;x.P.Path_mask_M0};
-    OutList         = {x.P.Pop_Path_M0;x.P.Pop_Path_mask_M0};
-
+    InList  = {x.P.Path_rM0;x.P.Path_mask_M0};
+    OutList = {x.P.Pop_Path_M0;x.P.Pop_Path_mask_M0};
+    
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else

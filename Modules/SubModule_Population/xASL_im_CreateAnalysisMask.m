@@ -18,25 +18,26 @@ function [x] = xASL_im_CreateAnalysisMask(x, Threshold)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function takes the mean population-based probability
 %              maps of masks, thresholds and combines them:
-%              A) Creation GM, WM & WholeBrain masks by p>0.5
-%              B) Create, combine & save vascular, susceptibity & FoV
+%
+%              A. Creation GM, WM & WholeBrain masks by p>0.5
+%              B. Create, combine & save vascular, susceptibity & FoV
 %                 masks:
 %                 - MaskVascular
 %                 - MaskSusceptibility = MaskSusceptibility & MaskFoV
-%              C) Create & save VBA mask
+%              C. Create & save VBA mask
 %                 - MaskAnalysis = MaskVascular & MaskSusceptibility
 %                 - x.S.VBAmask = MaskAnalysis & GMmask
-%              D) Visualization: Creates a figure with columns being
+%              D. Visualization: Creates a figure with columns being
 %                 following maps/masks overlaid over mean population T1w:
-%                 1) FoV probability 0-50% missing voxels
-%                 2) Vascular 0-7.5% missing voxels
-%                 3) Susceptibility 0-50% missing voxels
-%                 4) Analysis mask
+%                 1. FoV probability 0-50% missing voxels
+%                 2. Vascular 0-7.5% missing voxels
+%                 3. Susceptibility 0-50% missing voxels
+%                 4. Analysis mask
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_im_CreateAnalysisMask(x);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 %% Admin
@@ -44,7 +45,7 @@ if nargin<2 || isempty(Threshold)
     Threshold = 0.95; % default threshold
 end
 
-PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskSusceptibility_.*bs-mean\.nii$', 'FPList');
+PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList');
 
 bSkipStandard = 0;
 
@@ -72,22 +73,22 @@ MaskVascularPath = fullfile(x.S.StatsDir,'MaskVascular.nii');
 MaskSusceptibilityPath = fullfile(x.S.StatsDir,'MaskSusceptibility.nii');
 
 % Define pre-existing paths, including warning when less or more than 1 are found
-PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^FoV_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^MaskVascular_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pGM_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pWM_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^pCSF_.*bs-mean\.nii$', 'FPList', [1 1]);
-PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, '^T1_.*bs-mean_Unmasked\.nii$', 'FPList', [1 1]);
+% First for SubjectsSessions (e.g. ASL)
+PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
+% Then for Subjects (e.g. structural)
+PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pGM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pCSF_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
 
-% Set to use first mask
+if ~isempty(PathSusceptibilityMask); PathSusceptibilityMask = PathSusceptibilityMask{1}; end
 if ~isempty(PathFoV); PathFoV = PathFoV{1}; end
 if ~isempty(PathVascularMask); PathVascularMask = PathVascularMask{1}; end
-if ~isempty(PathSusceptibilityMask); PathSusceptibilityMask = PathSusceptibilityMask{1}; end
 if ~isempty(PathpGM); PathpGM = PathpGM{1}; end
 if ~isempty(PathpWM); PathpWM = PathpWM{1}; end
 if ~isempty(PathpCSF); PathpCSF = PathpCSF{1}; end
 if ~isempty(PathT1); PathT1 = PathT1{1}; end
-
 
 
 if ~bSkipStandard
@@ -159,7 +160,6 @@ if ~bSkipStandard
 end
 %% B2) Save FOV mask for each subject
 if x.bNativeSpaceAnalysis
-	x = xASL_adm_DefineASLResolution(x);
 	for iSession=1:x.nSessions
 		%x.SESSIONS{iSession}
 
@@ -173,17 +173,22 @@ if x.bNativeSpaceAnalysis
 
 			xASL_TrackProgress(SubjSess,x.nSubjects*x.nSessions);
 			if xASL_exist(x.P.Path_PWI)
+				x = xASL_adm_DefineASLResolution(x);
 				listMasks = {MaskSusceptibilityPath fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
 					fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') fullfile(x.D.MapsSPMmodifiedDir,'MNI_structural.nii')...
-					fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') fullfile(x.D.AtlasDir,'Hammers.nii')};
-				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop};
-				listType  = [ 1 1 1 2 2 2];
+					fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') fullfile(x.D.AtlasDir,'Hammers.nii')...
+                    fullfile(x.D.AtlasDir,'HOcort_CONN.nii') fullfile(x.D.AtlasDir,'HOsub_CONN.nii')};
+				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop x.P.Path_HOcort_CONNPop x.P.Path_HOsub_CONNPop};
+				MaskType  = [1 1 1 2 2 2 2 2];
 				% 1 - binary masks - presmooth, spline-interpolation, cut at 50%
-				% 2 - multi-label masks - no presmooth, nearest-neighbot interpolation, no thresholding
+				% 2 - multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding
+                % PM:   in the future we can also do option 1 for multi-label
+                %       masks, by splitting them in multiple individual masks and
+                %       treating those separately
 
 				for kk = 1:length(listMasks)
 					if xASL_exist(listMasks{kk},'file')
-						switch (listType(kk))
+						switch (MaskType(kk))
 							case 1
 								% Pre-smooth the mask before downsampling to native space
 								[tmpPath,tmpFile,tmpExt] = xASL_fileparts(listOutputs{kk});
