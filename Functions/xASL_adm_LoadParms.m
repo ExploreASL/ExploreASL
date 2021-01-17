@@ -59,9 +59,18 @@ Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' '
 		   'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses'};
 
 % Names of files for data sets and older names for backwards compatibility
-namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'         'LabelingEfficiency' 'Hematocrit' 'BackGrSupprPulses'};
-namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency'  'LabelingEfficiency' 'Hematocrit' 'BackgroundSuppressionNumberPulses'};
+namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff' 'LabelingEfficiency'...
+    'Hematocrit' 'BackGrSupprPulses' 'readout_dim' 'Vendor'...
+    'RepetitionTime' 'LabelingType' 'Initial_PLD' 'SliceReadoutTime'};
+namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency'...
+    'Hematocrit' 'BackgroundSuppressionNumberPulses' 'MRAcquisitionType' 'Manufacturer'...
+    'RepetitionTimePreparation' 'ArterialSpinLabelingType' 'PostLabelingDelay' 'SliceTiming'};
 
+% from PASL LabelingDuration (for PASL and if BolusCutOffFlag == true) from
+% BolusCutOffDelayTime
+
+% BackgroundSuppressionNumberPulses == 0 -> BackgroundSuppression == false
+%
 %% ------------------------------------------------------------------------
 %% 1) Load .mat parameter file (if exists)
 % if ~exist(ParmsPath, 'file') && isfield(x.Q,'ASL')
