@@ -64,7 +64,11 @@ end
 %% Iterate through cells with iX and iY coordinates & print the cell array contents
 for iX=1:size(InputCell,1)
     for iY=1:size(InputCell,2)
-        fprintf(FileID,'%s\t', xASL_num2str(InputCell{iX,iY}));
+        if iY==size(InputCell,2)
+            fprintf(FileID,'%s', xASL_num2str(InputCell{iX,iY}));
+        else
+            fprintf(FileID,'%s\t', xASL_num2str(InputCell{iX,iY}));
+        end
     end
     fprintf(FileID,'\n');
 end
