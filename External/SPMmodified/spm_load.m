@@ -128,6 +128,13 @@ S   = regexprep(S,{'\r\n','\r','(\n)\1+'},{'\n','\n','$1'});
 h   = find(S == eol,1);
 hdr = S(1:h-1);
 var = regexp(hdr,delim,'split');
+
+% EXPLOREASL HACK: manage trailing \t on header only
+if isempty(var{end})
+    var = var(1:end-1);
+    warning('Trailing tab on header; temporary ExploreASL fix, this could be removed');
+end
+
 N   = numel(var);
 n1  = isnan(cellfun(@str2double,var));
 n2  = cellfun(@(x) strcmpi(x,'NaN'),var);
@@ -155,7 +162,11 @@ if strcmpi(spm_check_version,'octave') % bug #51093
     delim = '#';
 end
 d = textscan(S,'%s','Delimiter',delim);
-if rem(numel(d{1}),N), error('Varying number of delimiters per line.'); end
+
+if rem(numel(d{1}),N)
+    error('Varying number of delimiters per line.');
+end
+
 d = reshape(d{1},N,[])';
 allnum = true;
 for i=1:numel(var)
