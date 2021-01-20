@@ -28,7 +28,7 @@ function [result, x] = xASL_module_Population(x)
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2020 ExploreASL
 
 
 
@@ -36,7 +36,8 @@ function [result, x] = xASL_module_Population(x)
 %% Admin
 
 if x.iWorker>1 % run population module only once when ExploreASL is called multiple times in parallel
-    warning(['I am worker ' xASL_num2str(x.iWorker) ', population module shouldnt run parallel, skipping']);
+    warning(['I am worker ' xASL_num2str(x.iWorker) ', population module should not run in parallel, skipping']);
+    result = true;
     return;
 end
 
