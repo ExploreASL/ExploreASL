@@ -1,11 +1,10 @@
-function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
+function xASL_adm_DocInitialize(outputFolder)
 %xASL_adm_DocInitialize Script to call the separate documentation crawler
 % functions.
 %
 % FORMAT:       xASL_adm_DocInitialize
 % 
 % INPUT:        outputFolder     - Folder where the generated markdown files are stored (OPTIONAL, DEFAULT = fullfile(x.MyPath,'Development','Documentation_GitHub'))
-%               updateExploreASL - Update README files in ExploreASL structure (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:       n/a
 % 
@@ -33,10 +32,6 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     % Define output folder
     if nargin < 1
         outputFolder = fullfile(x.MyPath,'Documentation','docs');
-    end
-
-    if nargin < 2
-        updateExploreASL = false;
     end
     
     % Copy and modify the index README
