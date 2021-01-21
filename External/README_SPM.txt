@@ -358,6 +358,10 @@ spm_jsonread.c at line 496
 *********************************************************************************************************
 OTHER CODE HACKS
 
+DATE+NAME:2021-01-20 HM (issue #276)
+DESCRIPTION: Manage trailing \t on header only
+FILE: spm_load.m, 131, 165
+
 DATE+NAME:2020-10-26 HM (issue #190)
 DESCRIPTION: Add atlas ROI creation comments and add creation of catROI_T1.tsv
 FILE: cat_main.m, 127
