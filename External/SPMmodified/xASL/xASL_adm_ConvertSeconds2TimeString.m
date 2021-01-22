@@ -2,6 +2,26 @@ function TimeString = xASL_adm_ConvertSeconds2TimeString(Seconds)
 %xASL_adm_ConvertNr2Time Converts number to time
 % input hh (with minutes in fractions/floating point) -> output hhmm 
 % Inverse from xASL_adm_ConvertTime2Nr
+%
+% FORMAT: TimeString = xASL_adm_ConvertSeconds2TimeString(Seconds)
+%
+% INPUT:
+%   Seconds	    - Number
+%
+% OUTPUT:
+%   TimeString  - Time
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Converts number to time
+% input hh (with minutes in fractions/floating point) -> output hhmm 
+% Inverse from xASL_adm_ConvertTime2Nr.
+%
+% EXAMPLE:     n/a
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
 if ~isnumeric(Seconds)
     error('Input parameter Seconds should be numeric');

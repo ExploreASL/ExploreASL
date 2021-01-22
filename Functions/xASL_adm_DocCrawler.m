@@ -117,6 +117,9 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
                 elseif strcmp(content,'PopulationModule')
                     TEXT{it,1} = '# Submodules of the Population Module';  it = it+1;
                     TEXT{it,1} = ' ';  it = it+1;
+                elseif strcmp(content,'SPMxASL')
+                    TEXT{it,1} = '# SPM xASL Functions';  it = it+1;
+                    TEXT{it,1} = ' ';  it = it+1;
                 end
                 cS = cS+1; 
             end
