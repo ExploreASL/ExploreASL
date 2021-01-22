@@ -78,6 +78,35 @@ xASL_TrackProgress(iCurrent[, iMax])
 Counts the percentage of the work done and display on the screen. Either iCurrent of iMax are given. Or only the percentages are given.
 
 ----
+### xASL\_adm\_ConvertSeconds2TimeString.m
+
+#### Format
+
+```matlab
+TimeString = xASL_adm_ConvertSeconds2TimeString(Seconds)
+```
+
+#### Description
+Converts number to time
+input hh (with minutes in fractions/floating point) -> output hhmm
+Inverse from xASL\_adm\_ConvertTime2Nr.
+
+
+----
+### xASL\_adm\_ConvertSlash.m
+
+#### Format
+
+```matlab
+[newString] = xASL_adm_ConvertSlash( StringOriginal,ForceUnix)
+```
+
+#### Description
+Converts Windows forward slashes to backward slashes
+Prevents confusion file separation & regular expression forward slashes
+in Windows.
+
+----
 ### xASL\_adm\_CreateDir.m
 
 #### Format
@@ -161,6 +190,26 @@ with a zero matrix
 
 
 ----
+### xASL\_adm\_UnixPath.m
+
+#### Format
+
+```matlab
+[PathIs] = xASL_adm_UnixPath(PathIs)
+```
+
+#### Description
+This function performs the following steps to convert a path to a path that is compatible with the Unix-filesystem
+as used in e.g. Linux/MacOS/Windows Subsystem for Linux (WSL).
+
+1. Skip this function without Unix-filesystem
+2. Trim whitespace
+3. Selectively convert forward to backward slashes (ignore already escaped whitespace)
+4. Escape characters and residual whitespaces (ignore already escaped whitespaces)
+5. If WSL: add mounting prefix
+
+
+----
 ### xASL\_adm\_UnzipNifti.m
 
 #### Format
@@ -227,6 +276,21 @@ is the format that BIDS prefers - and outputs it to a cell array.
 
 
 ----
+### xASL\_csvWrite.m
+
+#### Format
+
+```matlab
+xASL_csvWrite(InputCell, PathCSV, bOverwrite)
+```
+
+#### Description
+Rudimentary function, please use xASL\_tsvWrite instead.
+For usage, type help xASL\_tsvWrite.
+This function will still work though.
+
+
+----
 ### xASL\_delete.m
 
 #### Format
@@ -267,6 +331,23 @@ Otherwise, exist is used normally.
 Returns the path, file name, and file extension for InputPath using the fileparts.m function.
 If a file ending at nii.gz is given, then the whole nii.gz is returned as the extension.
 Does not verify the existence of the file, or existence of .nii or .nii.gz
+
+----
+### xASL\_im\_ConvertMap2Mask.m
+
+#### Format
+
+```matlab
+[IMout] = xASL_im_ConvertMap2Mask(IMin)
+```
+
+#### Description
+Provides a robust way of conversion of
+a continuous map to a binary mask, which can be used for lesions, ROIs,
+or tissue probability maps. Based on the assumption that a map should
+be thresholded at 50% to form a map, which is often the case for
+automatic segmentations.
+
 
 ----
 ### xASL\_io\_Nifti2Im.m
