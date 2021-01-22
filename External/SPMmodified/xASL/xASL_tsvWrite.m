@@ -1,7 +1,7 @@
 function xASL_tsvWrite(InputCell, PathTSV, bOverwrite, bCSV)
 %xASL_tsvWrite Write cell array to TSV
 %
-% FORMAT: xASL_tsvWrite(InputCell, PathTSV[, bOverwrite])
+% FORMAT: xASL_tsvWrite(InputCell, PathTSV[, bOverwrite, bCSV])
 %
 % INPUT:
 %   InputCell           - cell array, containing a combination of numerical

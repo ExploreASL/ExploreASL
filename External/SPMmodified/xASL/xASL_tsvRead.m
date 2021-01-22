@@ -1,7 +1,7 @@
 function [CellContents] = xASL_tsvRead(PathTSV, bStruct)
 %xASL_tsvRead Read a TSV file and output contents to cell array
 %
-% FORMAT: [CellContents] = xASL_tsvRead(PathTSV)
+% FORMAT: [CellContents] = xASL_tsvRead(PathTSV[, bStruct])
 %
 % INPUT:
 %   PathTSV             - file, with TSV extension (REQUIRED)
@@ -24,6 +24,7 @@ function [CellContents] = xASL_tsvRead(PathTSV, bStruct)
 %% Admin
 if nargin<1 || isempty(PathTSV)
     warning('Invalid PathTSV input argument, skipping');
+	CellContents = {};
     return;
 end    
 if nargin<2 || isempty(bStruct)
