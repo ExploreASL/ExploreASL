@@ -1,7 +1,7 @@
 function xASL_tsvWrite(InputCell, PathTSV, bOverwrite, bCSV)
 %xASL_tsvWrite Write cell array to TSV
 %
-% FORMAT: xASL_adm_tsvWrite(InputCell, PathTSV[, bOverwrite])
+% FORMAT: xASL_tsvWrite(InputCell, PathTSV[, bOverwrite])
 %
 % INPUT:
 %   InputCell           - cell array, containing a combination of numerical
@@ -16,13 +16,13 @@ function xASL_tsvWrite(InputCell, PathTSV, bOverwrite, bCSV)
 % DESCRIPTION: This function loads a cell array and prints it to a
 % tab-separated value (TSV) file, which is the format that BIDS prefers.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_adm_tsvWrite(ParticipantsMetadata, '/MyStudy/participants.tsv');
+% EXAMPLE: xASL_tsvWrite(ParticipantsMetadata, '/MyStudy/participants.tsv');
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
 %% -------------------------------------------------------
 %% Admin
-if nargin<4 || isempty(bCSV)
+if nargin<4 || isempty(bCSV) || bCSV==0
     DelimiterIs = '%s\t'; % tab-separated values (TSV)
 elseif bCSV==1
     DelimiterIs = '%s,'; % comma-separated values (CSV)
@@ -38,9 +38,14 @@ if nargin<2 || isempty(InputCell) || isempty(PathTSV)
 end
 
 [Fpath, Ffile, Fext] = xASL_fileparts(PathTSV);
-if ~strcmp(Fext,'.tsv')
-    warning('Wrong extension, resetting to .tsv');
+if ~strcmp(Fext,'.tsv') && ~strcmp(Fext,'.csv')
+    warning('Wrong extension, resetting to default (.tsv).');
     PathTSV = fullfile(Fpath, [Ffile '.tsv']);
+end
+
+% Extension was set to .tsv but bCSV is true or the other way round
+if (bCSV==1 && strcmp(Fext,'.tsv')) || (bCSV==0 && strcmp(Fext,'.csv'))
+    error('File extension and selection of tsv/csv do not match...');
 end
 
 if xASL_exist(PathTSV, 'file') && ~bOverwrite
@@ -67,7 +72,7 @@ for iX=1:size(InputCell,1)
         if iY==size(InputCell,2)
             fprintf(FileID,'%s', xASL_num2str(InputCell{iX,iY}));
         else
-            fprintf(FileID,'%s\t', xASL_num2str(InputCell{iX,iY}));
+            fprintf(FileID,DelimiterIs, xASL_num2str(InputCell{iX,iY}));
         end
     end
     fprintf(FileID,'\n');
