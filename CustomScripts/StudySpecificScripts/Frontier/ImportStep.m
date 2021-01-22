@@ -193,3 +193,15 @@ xASL_io_SaveNifti('T1.nii','T1new.nii',T1,[],1,[]);
 xASL_delete('LF.nii');
 xASL_Move('T1.nii','T1old.nii');
 xASL_Move('/pet/projekte/asl/data/FRONTIER/analysis/P08/T1new.nii','/pet/projekte/asl/data/FRONTIER/analysis/P08/T1.nii');
+
+%% Read the CSV files to import all the coordinates
+coordinateTable = [];
+for iL = 1:length(patientNameList)
+	coordinateList = xASL_adm_GetFileList(fullfile(rawDir,'rawCoordinates'), ['^P' num2str(iL,'%.2d') 'BFaT\d{2}.csv$'], 'List', [], 0);
+	for iCoor = 1:length(coordinateList)
+		coordinateNumber = str2num(coordinateList{iCoor}(8:9));
+		coordinateValue = xASL_csvRead(fullfile(rawDir,'rawCoordinates',coordinateList{iCoor}));
+		coordinateTable(iL,coordinateNumber,1:3) = str2num(strrep(coordinateValue{1},'__',' '));
+	end
+end
+save(fullfile(rawDir,'analysis','trajectoryASL.mat'),'coordinateTable')

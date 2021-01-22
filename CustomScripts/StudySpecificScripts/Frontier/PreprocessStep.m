@@ -7,6 +7,7 @@ ExploreASL_Master('',0);
 %% Initialize the paths
 rawDir    = '/pet/projekte/asl/data/FRONTIER';
 PETresol  = [5.5 5.5 5.5];
+DSCnames = {'rBF','rBV','rBV_correct'};
 patientNameList = xASL_adm_GetFileList(fullfile(rawDir,'analysis'), '^P\d{2}$', 'List', [], 1);
 %patientNameList = xASL_adm_GetFileList(fullfile(rawDir,'analysis'), '^P05$', 'List', [], 1);
 x.Quality = 1;
@@ -96,11 +97,13 @@ for iL = 1:length(patientNameList)
 end
 %% DSC smooth and reslice
 for iL = 1:length(patientNameList)
-	if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','rBF.nii'))
-		xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','rBF.nii'));
-		xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','srBF.nii'),...
-			[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF_DSC_rBF.nii'), 1)
-		xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','srBF.nii'));
+	for iDSCnames = 1:length(DSCnames)
+		if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',[DSCnames{iDSCnames} '.nii']))
+			xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',[DSCnames{iDSCnames} '.nii']));
+			xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['s' DSCnames{iDSCnames} '.nii']),...
+				[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1',['CBF_DSC_' DSCnames{iDSCnames} '.nii']), 1)
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['s' DSCnames{iDSCnames} '.nii']));
+		end
 	end
 end
 %% Downsample GM and WM and ROIs to the DSC space
@@ -233,113 +236,114 @@ for iL = 1:length(patientNameList)
 	xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF_PseudoMask.nii'));
 
 	xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF_Pseudo.nii'));
-	xASL_Move(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','wCBF_Affine.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF_Deform.nii'),1);
+	xASL_Move(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','wCBF_Affine.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF_ASL_Deform.nii'),1);
 	xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF_Affine.nii'));
 end
 
 %% Run further alignment of DSC and T1w
 for iL = 1:length(patientNameList)
-	if xASL_exist (fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','rBF.nii'))
-		% Read CBF and GM/WM for intensity scaling
-		imCBF = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','rBF.nii'));
-		imGM = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'));
-		imWM = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_WM.nii'));
-
-		% Otherwise align to a pseudoCBF
-		% Run PV-correction with smooth kernel
-		imGM(imGM<0) = 0;
-		imGM(imGM>1) = 1;
-		imWM(imWM<0) = 0;
-		imWM(imWM>1) = 1;
-
-		imPV = [];
-		maskPV = (imGM+imWM)>0.2;
-		imPV(:,:,:,1) = imGM;
-		imPV(:,:,:,2) = imWM;
-		[imPVEC,~,imResidual] = xASL_im_PVCkernel(imCBF.*maskPV,imPV.*repmat(maskPV,[1 1 1 2]),[5 5 5],'asllani');
-
-		% Remove from mask all voxels with too high residuals after PVEc
-		imMask = (imGM+imWM)>0.1;
-		imErr = imResidual(imMask);
-		meanErr = mean(imErr);
-		stdErr = std(imErr);
-		imMask = (imResidual < (meanErr + 2*stdErr));
-		imMask = imMask>0;
-
-		% Create a pseudoCBF image
-		imPVEC(imPVEC<-20) = -20;
-		imPVEC(imPVEC>200) = 200;
-		imPseudoCBF = imPV(:,:,:,1).*imPVEC(:,:,:,1) + imPV(:,:,:,2).*imPVEC(:,:,:,2);
-		imPseudoCBF(imPseudoCBF<0) = 0;
-		imPseudoCBF(isnan(imPseudoCBF)) = 0;
-
-		% Combine the Lesion ROIs to exclude them
-		imLesion = zeros(size(imMask));
-		if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Lesion_T1.nii'))
-			imLesion = imLesion + (xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Lesion_T1.nii'))>0);
+	for iDSCnames = 1:length(DSCnames)
+		if xASL_exist (fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',[DSCnames{iDSCnames} '.nii']))
+			% Read CBF and GM/WM for intensity scaling
+			imCBF = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',[DSCnames{iDSCnames} '.nii']));
+			imGM = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'));
+			imWM = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_WM.nii'));
+			
+			% Otherwise align to a pseudoCBF
+			% Run PV-correction with smooth kernel
+			imGM(imGM<0) = 0;
+			imGM(imGM>1) = 1;
+			imWM(imWM<0) = 0;
+			imWM(imWM>1) = 1;
+			
+			imPV = [];
+			maskPV = (imGM+imWM)>0.2;
+			imPV(:,:,:,1) = imGM;
+			imPV(:,:,:,2) = imWM;
+			[imPVEC,~,imResidual] = xASL_im_PVCkernel(imCBF.*maskPV,imPV.*repmat(maskPV,[1 1 1 2]),[5 5 5],'asllani');
+			
+			% Remove from mask all voxels with too high residuals after PVEc
+			imMask = (imGM+imWM)>0.1;
+			imErr = imResidual(imMask);
+			meanErr = mean(imErr);
+			stdErr = std(imErr);
+			imMask = (imResidual < (meanErr + 2*stdErr));
+			imMask = imMask>0;
+			
+			% Create a pseudoCBF image
+			imPVEC(imPVEC<-20) = -20;
+			imPVEC(imPVEC>200) = 200;
+			imPseudoCBF = imPV(:,:,:,1).*imPVEC(:,:,:,1) + imPV(:,:,:,2).*imPVEC(:,:,:,2);
+			imPseudoCBF(imPseudoCBF<0) = 0;
+			imPseudoCBF(isnan(imPseudoCBF)) = 0;
+			
+			% Combine the Lesion ROIs to exclude them
+			imLesion = zeros(size(imMask));
+			if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Lesion_T1.nii'))
+				imLesion = imLesion + (xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Lesion_T1.nii'))>0);
+			end
+			if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Lesion_FLAIR.nii'))
+				imLesion = imLesion + (xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Lesion_FLAIR.nii'))>0);
+			end
+			imLesion = 1-(imLesion>0);
+			imLesion((imGM+imWM)<0.9) = 0;
+			imLesion(isnan(imLesion)) = 0;
+			xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_PseudoMask.nii'), imLesion, [], 0);
+			
+			% Load the M0 image - also use for exclusions to mask the skull
+			% Exclude the first and last three slices.
+			imMask(:,:,[1:4,(end-3):(end)]) = 0;
+			imMask = (imMask.*(imCBF>0))>0;
+			xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Mask.nii'), imMask, [], 0);
+			
+			% Find the ideal scaling and apply it
+			imMask = (imMask.*((imGM+imWM)>0.8)) > 0;
+			X = imPseudoCBF(imMask);
+			X = [ones(length(X),1),X];
+			Y = imCBF(imMask);
+			sol = pinv(X)*Y;
+			imPseudoCBF = imPseudoCBF*sol(2)+sol(1);% + imCSF*valCSF;
+			xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Pseudo.nii'), imPseudoCBF, [], 0);
+			xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine.nii'), imCBF, [], 0);
+			
+			% Estimate the affine registration
+			flags.smosrc = 1;
+			flags.smoref = 1;
+			flags.regtype = 'subj';
+			flags.cutoff = 25;
+			flags.nits = 16;
+			flags.reg = 1;
+			paramsAffine = spm_normalise(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Pseudo.nii'),...
+				fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine.nii'),...
+				fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine_src_sn.mat'),...
+				fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_PseudoMask.nii'),...
+				fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Mask.nii'),flags);
+			
+			% Apply the affine registration
+			matlabbatch = [];
+			matlabbatch{1}.spm.util.defs.comp{1}.sn2def.matname = {fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine_src_sn.mat')};
+			matlabbatch{1}.spm.util.defs.comp{1}.sn2def.vox = [NaN NaN NaN];
+			matlabbatch{1}.spm.util.defs.comp{1}.sn2def.bb = [NaN NaN NaN
+				NaN NaN NaN];
+			matlabbatch{1}.spm.util.defs.comp{2}.id.space = {fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii')};
+			matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {
+				fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine.nii')
+				};
+			matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.savesrc = 1;
+			matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 4;
+			matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+			matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+			spm_jobman('run',matlabbatch);
+			
+			% Delete temporary files
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine_src_sn.mat'));
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Mask.nii'));
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_PseudoMask.nii'));
+			
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Pseudo.nii'));
+			xASL_Move(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','wDSC_Affine.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['DSC_Deform_' DSCnames{iDSCnames} '.nii']),1);
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine.nii'));
 		end
-		if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Lesion_FLAIR.nii'))
-			imLesion = imLesion + (xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Lesion_FLAIR.nii'))>0);
-		end
-		imLesion = 1-(imLesion>0);
-		imLesion((imGM+imWM)<0.9) = 0;
-		imLesion(isnan(imLesion)) = 0;
-		xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_PseudoMask.nii'), imLesion, [], 0);
-
-		% Load the M0 image - also use for exclusions to mask the skull
-		% Exclude the first and last three slices.
-		imMask(:,:,[1:4,(end-3):(end)]) = 0;
-		imMask = (imMask.*(imCBF>0))>0;
-		xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Mask.nii'), imMask, [], 0);
-
-		% Find the ideal scaling and apply it
-		imMask = (imMask.*((imGM+imWM)>0.8)) > 0;
-		X = imPseudoCBF(imMask);
-		X = [ones(length(X),1),X];
-		Y = imCBF(imMask);
-		sol = pinv(X)*Y;
-		imPseudoCBF = imPseudoCBF*sol(2)+sol(1);% + imCSF*valCSF;
-		xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Pseudo.nii'), imPseudoCBF, [], 0);
-		xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii'), fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine.nii'), imCBF, [], 0);
-
-		% Estimate the affine registration
-		flags.smosrc = 1;
-		flags.smoref = 1;
-		flags.regtype = 'subj';
-		flags.cutoff = 25;
-		flags.nits = 16;
-		flags.reg = 1;
-		paramsAffine = spm_normalise(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Pseudo.nii'),...
-			fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine.nii'),...
-			fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine_src_sn.mat'),...
-			fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_PseudoMask.nii'),...
-			fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Mask.nii'),flags);
-
-		% Apply the affine registration
-		matlabbatch = [];
-		matlabbatch{1}.spm.util.defs.comp{1}.sn2def.matname = {fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine_src_sn.mat')};
-		matlabbatch{1}.spm.util.defs.comp{1}.sn2def.vox = [NaN NaN NaN];
-		matlabbatch{1}.spm.util.defs.comp{1}.sn2def.bb = [NaN NaN NaN
-			NaN NaN NaN];
-		matlabbatch{1}.spm.util.defs.comp{2}.id.space = {fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_GM.nii')};
-		matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {
-			fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine.nii')
-			};
-		matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.savesrc = 1;
-		matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 4;
-		matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
-		matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
-		spm_jobman('run',matlabbatch);
-
-		% Delete temporary files
-		xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine_src_sn.mat'));
-		xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Mask.nii'));
-		xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_PseudoMask.nii'));
-
-		xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Pseudo.nii'));
-		xASL_Move(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','wDSC_Affine.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Deform.nii'),1);
-		xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Deform_rBF.nii'));
-		xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Affine.nii'));
 	end
 end
 
@@ -374,49 +378,99 @@ for iL = 1:length(patientNameList)
 	% Smooth the CBF images
 	xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),[],PETresol,[]);
 	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','sCBF.nii'),...
-		[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','Final_CBF.nii'), 1);
+		[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','Final_ASL.nii'), 1);
 	if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'))
 		xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),[],PETresol,[]);
 		xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','sCBF.nii'),...
-			[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_CBF.nii'), 1);
+			[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_ASL.nii'), 1);
 	end
 	xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','sCBF.nii'));
 
 	% Smooth the CBF images
 	xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF_Deform.nii'),[],PETresol,[]);
 	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','sCBF_Deform.nii'),...
-		[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','Final_CBF_Deform.nii'), 1);
+		[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','Final_ASL_Deform.nii'), 1);
 	if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'))
 		xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF_Deform.nii'),[],PETresol,[]);
 		xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','sCBF_Deform.nii'),...
-			[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_CBF_Deform.nii'), 1);
+			[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_ASL_Deform.nii'), 1);
 	end
 	xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','sCBF_Deform.nii'));
 
-	if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','rBF.nii'))
-		% Smooth the DSC images
-		xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','rBF.nii'),[],PETresol,[]);
-		xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','srBF.nii'),...
-			[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','Final_DSC.nii'), 1);
-		if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'))
-			xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','rBF.nii'),[],PETresol,[]);
-			xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','srBF.nii'),...
-				[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_DSC.nii'), 1);
+	for iDSCnames = 1:length(DSCnames)
+		if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',[DSCnames{iDSCnames} '.nii']))
+			% Smooth the DSC images
+			xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',[DSCnames{iDSCnames} '.nii']),[],PETresol,[]);
+			xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['s' DSCnames{iDSCnames} '.nii']),...
+				[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1',['Final_DSC_' DSCnames{iDSCnames} '.nii']), 1);
+			if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'))
+				xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',[DSCnames{iDSCnames} '.nii']),[],PETresol,[]);
+				xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['s' DSCnames{iDSCnames} '.nii']),...
+					[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'PET_1',['Final_DSC_' DSCnames{iDSCnames} '.nii']), 1);
+			end
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['s' DSCnames{iDSCnames} '.nii']));
+			
+			% Smooth the DSC images
+			xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['DSC_Deform_' DSCnames{iDSCnames} '.nii']),[],PETresol,[]);
+			xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['sDSC_Deform_' DSCnames{iDSCnames} '.nii']),...
+				[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1',['Final_DSC_Deform_' DSCnames{iDSCnames} '.nii']), 1);
+			if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'))
+				xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['DSC_Deform_' DSCnames{iDSCnames} '.nii']),[],PETresol,[]);
+				xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['sDSC_Deform_' DSCnames{iDSCnames} '.nii']),...
+					[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'PET_1',['Final_DSC_Deform_' DSCnames{iDSCnames} '.nii']), 1);
+			end
+			xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1',['sDSC_Deform_' DSCnames{iDSCnames} '.nii']));
 		end
-		xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','srBF.nii'));
-
-		% Smooth the DSC images
-		xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Deform.nii'),[],PETresol,[]);
-		xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','sDSC_Deform.nii'),...
-			[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','Final_DSC_Deform.nii'), 1);
-		if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'))
-			xASL_im_PreSmooth(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','DSC_Deform.nii'),[],PETresol,[]);
-			xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','CBF.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','sDSC_Deform.nii'),...
-				[],[],x.Quality, fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_DSC_Deform.nii'), 1);
-		end
-		xASL_delete(fullfile(rawDir,'analysis',patientNameList{iL},'DSC_1','sDSC_Deform.nii'));
 	end
 end
+
+%% Transform the trajectory coordinates to the PET reference frame
+%Load all the coordinates in ASL space
+coordinateASL = load(fullfile(rawDir,'analysis','trajectoryASL.mat'));
+coordinateASL = coordinateASL.coordinateTable;
+
+coordinatePET = zeros(size(coordinateASL));
+
+for iL = 1:size(coordinateASL,1)
+	% If some coordinates are given for a subject
+	if sum(sum(abs(squeeze(coordinateASL(iL,:,:)))))
+		
+		% Load the ASL and PET reference matrices
+		imPET = xASL_io_ReadNifti(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_PET.nii'));
+		imASL = xASL_io_ReadNifti(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','Final_ASL.nii'));
+		
+		% Create empty images for saving the coordinates
+		imPETCoor = zeros(imPET.dat.dim);
+		imASLCoor = zeros(imASL.dat.dim);
+		
+		% Go through all trajectories and find the non-zero ones
+		for iT = 1:size(coordinateASL,2)
+			if sum(abs(coordinateASL(iL,iT,:)),3)
+				coorASL = [squeeze(coordinateASL(iL,iT,:));1];
+				% Transform from ASL to world coordinates
+				coorWorld = imASL.mat*coorASL;
+				
+				% Transform from world coordinates to PET coordinates
+				coorPET = ((imPET.mat)^-1)*coorWorld;
+				
+				% Put to the PET coordinate table
+				coordinatePET(iL,iT,:) = coorPET(1:3);
+				%coorVec = (0:2);
+				coorVec = 1;
+				imASLCoor(round(coorASL(1))+coorVec,round(coorASL(2))+coorVec,round(coorASL(3))+coorVec) = 1;
+				imPETCoor(round(coorPET(1))+coorVec,round(coorPET(2))+coorVec,round(coorPET(3))+coorVec) = 1;
+			end
+		end
+
+		% Save the images with the coordinates
+		xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_PET.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Trajectories.nii'),imPETCoor);
+		xASL_io_SaveNifti(fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','Final_ASL.nii'),fullfile(rawDir,'analysis',patientNameList{iL},'ASL_1','Trajectories.nii'),imASLCoor);
+		
+	end
+end
+% Save all
+coordinateTable = coordinatePET;
+save(fullfile(rawDir,'analysis','trajectoryPET.mat'),'coordinateTable')
 
 %% Transform the multiple-ROI back to T1w. And then downsample to ASL and PET space
 
@@ -489,8 +543,13 @@ for iL = 1:length(patientNameList)
 
 	xASL_Move(fullfile(rawDir,'analysis',patientNameList{iL},['wr' fnm '_1_' patientNameList{iL} '.nii']),fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),1);
 	
-	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_CBF.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_CBF.nii'),[]);
-	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_DSC.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_DSC.nii'),[]);
+	for iDSCnames = 1:length(DSCnames)
+		if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},'PET_1',['Final_DSC_' DSCnames{iDSCnames} '.nii']))
+			xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1',['Final_DSC_' DSCnames{iDSCnames} '.nii']),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},['Final_DSC_' DSCnames{iDSCnames} '.nii']),[]);
+		end
+	end
+	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_ASL.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_ASL.nii'),[]);
+	
 	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'PET_1','Final_PET.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_PET.nii'),[]);
 	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'T1.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_T1.nii'),[]);
 	xASL_spm_reslice(fullfile(rawDir,'analysis',patientNameList{iL},['Final_' fnm '_1_.nii']),fullfile(rawDir,'analysis',patientNameList{iL},'T1_ORI.nii'),[],[],1,fullfile(rawDir,'analysis',patientNameList{iL},'Final_T1_ORI.nii'),[]);
