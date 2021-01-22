@@ -23,7 +23,7 @@ function pathOut = xASL_adm_GzipNifti(pathIn, bOverwrite)
 
 % Check for the optional parameter overwrite
 if nargin < 2 || isempty(bOverwrite)
-    bOverwrite = 1;
+    bOverwrite = 0;
 end
 
 pathOut = '';
