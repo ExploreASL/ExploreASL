@@ -23,6 +23,7 @@ function xASL_tsvWrite(InputCell, PathTSV, bOverwrite, bCSV)
 %% -------------------------------------------------------
 %% Admin
 if nargin<4 || isempty(bCSV) || bCSV==0
+	bCSV = 0;
     DelimiterIs = '%s\t'; % tab-separated values (TSV)
 elseif bCSV==1
     DelimiterIs = '%s,'; % comma-separated values (CSV)
