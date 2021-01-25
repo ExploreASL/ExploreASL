@@ -1,6 +1,24 @@
-function [ Ycls, LesionImOut] = xASL_im_LesionRemoval4CAT( Ycls, PathIn )
+function [Ycls, LesionImOut] = xASL_im_LesionRemoval4CAT(Ycls, PathIn)
 %xASL_im_LesionRemoval4CAT For all lesion masks in the anatomical directory, remove
 %them from the current segmentations
+% 
+% FORMAT: [Ycls, LesionImOut] = xASL_im_LesionRemoval4CAT(Ycls, PathIn)
+%
+% INPUT:
+%  Ycls     - ...
+%  PathIn   - ...
+%
+% OUTPUT:
+%  Ycls        - ...
+%  LesionImOut - ...
+%
+% DESCRIPTION: For all lesion masks in the anatomical directory, remove
+% them from the current segmentations.
+%
+% EXAMPLE: n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
 %%%   If there are no lesions found, the images are untouched
 

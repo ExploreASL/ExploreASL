@@ -1,15 +1,29 @@
 function imConv = xASL_im_conv3Dsep(im, kX, varargin)
-% 3D separable convolution with a supplied kernel
+% xASL_im_conv3Dsep 3D separable convolution with a supplied kernel
 % It converts the results to double
 % Returned is the convoluted image
 % The wrapper makes sure that kX are Nx1 format, removes nan, and removes excessive zeros at the ends
 %
-% [imConv] = xASL_mex_conv3Dsep(im,kX,[kY,kZ])
+% FORMAT: [imConv] = xASL_mex_conv3Dsep(im,kX,[kY,kZ])
+%
+% INPUT:
 % im - 3D image, double
 % kX, kY, kZ - are the 1D kernels for the convolution
 % 	- kY and kZ are optional
 %      - if 0 or [] is supplied, then convolution in this dimension will be skipped
+%
+% OUTPUT:
 % imConv - convolved image
+%
+% DESCRIPTION: 3D separable convolution with a supplied kernel
+% It converts the results to double
+% Returned is the convoluted image
+% The wrapper makes sure that kX are Nx1 format, removes nan, and removes
+% excessive zeros at the ends.
+% 
+% EXAMPLE: n/a
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
 % Get the kY and kZ from the varargin
 if nargin < 1
