@@ -14,6 +14,17 @@ function [ScaleImage, CBF] = xASL_quant_Basil(PWI, M0_im, SliceGradient, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs quantification of the PWI using the FSL Basil pipeline. Final calibration to
 %              physiological units is performed by dividing the quantified PWI by the M0 image/value
+%
+%              This script is called if the parameter UseBasilQuantification=1
+%
+%              Other options relevant to Basil have the prefix Basil:
+%                - BasilInferTau=1: Infer bolus duration (default=off)
+%                - BasilInferT1=1: Infer voxelwise T1 (default=off)
+%                - BasilInferSpatial=1: Use spatial regularization (default=off)
+%                - BasilInferExch=<model>: Exchange model (default=none)
+%                - BasilInferDisp=<model>: Dispersion model (default=no dispersion)
+%                - BasilDebug=1: Debug mode (default=off)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [ScaleImage, CBF] = xASL_quant_Basil(PWI, M0_im, SliceGradient, x);
 % __________________________________
