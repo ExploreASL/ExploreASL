@@ -11,7 +11,6 @@ xASL_wrp_CreateAnalysisMask(x)
 
 #### Description
 This function creates an analysis mask with the following steps:
-
 0. Create FoV mask (native & MNI spaces)
 1. Detect negative vascular signal (native & MNI spaces, within pGM>0.5)
 2. Detect peak vascular signal (native & MNI spaces, within pGM==80% percentile on ASL image)
@@ -28,7 +27,6 @@ This map is combined (i.e. taking the product) with the mean control & PWI
 intensity distribution in these regions. This product
 is thresholded with the average of the 75th percentile &
 15% of the intensity (for a bit more robustness against individual variability in sinus sizes).
-6. Create standard space CBF\_masked image to visualize masking effect
 
 
 
@@ -116,7 +114,9 @@ xASL_wrp_Quantify(x)
 ```
 
 #### Description
-This submodule converts PWIs to quantified CBF maps (or related derivatives):
+This submodule converts PWIs to quantified CBF maps (or
+related derivatives). Note that we don't delete x.P.Path\_PWI4D here, as
+this NIfTI file may be needed by xASL\_wrp\_VisualQC\_ASL.m
 
 1. Load PWI
 2. Prepare M0
@@ -128,6 +128,7 @@ This submodule converts PWIs to quantified CBF maps (or related derivatives):
 8. Perform quantification
 9. Save files
 10. Perform FEAST quantification (if exist)
+11. Create standard space masked image to visualize masking effect
 
 
 ----
@@ -247,15 +248,18 @@ after smoothing these transformation fields to the ASL resolution.
 The applied interpolation is a combination of all transformations (e.g. motion correction, registration to
 T1w, and transformation of T1w to standard space. This submodule performs the following steps:
 
-1.    Create slice gradient image for quantification reference, in case of 2D ASL
-2.    Reslice ASL time series to MNI space (currently 1.5 mm^3)
-3.    Create mean control image, if available
-This also applies a bilateral filter, if requested
-If x.M0 is set as UseControlAsM0, this mean control NIfTI will be
-copied to an M0 NIfTI (and processed in the M0 submodule)
-4.    Perform pair-wise subtraction (to create PWI.nii), in native space
-5.    Same in standard space
-6.    Save PWI NIfTI & time-series-related maps (SD, SNR)
+0. Administration
+1. Warp TopUp QC files
+2. Create slice gradient image for quantification reference, in case of 2D ASL
+3. Resample ASL time series to MNI space
+4. Resample to native space (applying any motion correction or registration)
+5. Bilateral filter (currently disabled)
+6. Create mean control image, if available, in native & standard space
+7. Clone mean control image to be used as pseudo-M0 (if x.M0==UseControlAsM0)
+8. Pair-wise subtraction & saving PWI & PWI4D in both spaces
+9. Save PWI NIfTI & time-series-related maps (SD, SNR)
+10. Delete temporary files
+11. Report spatial CoV as QC
 
 
 ----

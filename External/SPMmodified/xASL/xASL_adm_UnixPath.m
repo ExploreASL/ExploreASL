@@ -1,27 +1,28 @@
 function [PathIs] = xASL_adm_UnixPath(PathIs)
-    %xASL_adm_UnixPath Convert paths to Unix-compatible paths
-    %
-    % FORMAT: [PathIs] = xASL_adm_UnixPath(PathIs)
-    %
-    % INPUT:
-    %   PathIs - string containing a single path to correct (REQUIRED)
-    %
-    % OUTPUT:
-    %   PathIs - corrected path (DEFAULT = uncorrected, same as input path.
-    %            Path is only changed when a Unix-filesystem is detected.
-    % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % DESCRIPTION: This function performs the following steps to convert a path to a path that is compatible with the Unix-filesystem
-    %              as used in e.g. Linux/MacOS/Windows Subsystem for Linux (WSL).
-    % 1) Skip this function without Unix-filesystem
-    % 2) Trim whitespace
-    % 3) Selectively convert forward to backward slashes (ignore already escaped whitespace)
-    % 4) Escape characters and residual whitespaces (ignore already escaped whitespaces)
-    % 5) If WSL: add mounting prefix
-    % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % EXAMPLE xASL_adm_UnixPath('   \Users/User/Google Drive\My      Photos\Name(With)Brackets)  ');
-    % This should output '/Users/User/Google\ Drive/My\ \ \ \ \ \ Photos/Name\(With\)Brackets\)'
-    % __________________________________
-    % Copyright 2020 ExploreASL
+%xASL_adm_UnixPath Convert paths to Unix-compatible paths
+%
+% FORMAT: [PathIs] = xASL_adm_UnixPath(PathIs)
+%
+% INPUT:
+%   PathIs - string containing a single path to correct (REQUIRED)
+%
+% OUTPUT:
+%   PathIs - corrected path (DEFAULT = uncorrected, same as input path.
+%            Path is only changed when a Unix-filesystem is detected.
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function performs the following steps to convert a path to a path that is compatible with the Unix-filesystem
+%              as used in e.g. Linux/MacOS/Windows Subsystem for Linux (WSL).
+%
+% 1. Skip this function without Unix-filesystem
+% 2. Trim whitespace
+% 3. Selectively convert forward to backward slashes (ignore already escaped whitespace)
+% 4. Escape characters and residual whitespaces (ignore already escaped whitespaces)
+% 5. If WSL: add mounting prefix
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: xASL_adm_UnixPath('   \Users/User/Google Drive\My      Photos\Name(With)Brackets)  ');
+% This should output '/Users/User/Google\ Drive/My\ \ \ \ \ \ Photos/Name\(With\)Brackets\)'
+% __________________________________
+% Copyright 2021 ExploreASL
         
     %% ===================================================================================
     %% 1) Skip this function without Unix-filesystem

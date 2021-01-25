@@ -544,6 +544,36 @@ will be loaded to the memory x struct
 
 
 ----
+### xASL\_adm\_MakeStandalone.m
+
+#### Format
+
+```matlab
+xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLatest);
+```
+
+#### Description
+This function creates an output folder including a
+standalone version of ExploreASL, which can be used with the Matlab
+Runtime outside of Matlab itself.
+
+A quick fix to solve path dependencies etc. is to first
+compile SPM (but this can be turned off for speed).
+
+This function performs the following steps:
+
+1. Manage ExploreASL and compiler code folders
+2. Capture version/date/time
+3. File management output folder & starting diary
+4. Handle SPM Specific Options
+5. Manage compilation paths
+6. Run SPM compilation
+7. Run ExploreASL compilation
+8. Copy .bat file for Windows compilation
+9. Save Log-file
+
+
+----
 ### xASL\_adm\_OrderFields.m
 
 #### Format
@@ -805,6 +835,22 @@ replaces with default value, it also checks if the parameters are consistent acr
 
 
 ----
+### xASL\_bids\_GetPhoenixProtocol.m
+
+#### Format
+
+```matlab
+[xasl,parameters,parameterList,phoenixProtocol] = xASL_bids_GetPhoenixProtocol(pathData,bUseDCMTK)
+```
+
+#### Description
+Function that reads raw DICOM data (".dcm" or ".IMA") and extracts the phoenix protocol parameters.
+Only works for Siemens DICOM data with phoenix protocol (tag = [0x29,0x1020]).
+
+
+
+
+----
 ### xASL\_bids\_InsertJSONFields.m
 
 #### Format
@@ -870,6 +916,37 @@ parms = xASL_adm_Par2Parms(pathPar, PathJSON)
 
 #### Description
 Opens the Philips type PAR file. Reads the relevant DICOM header fields and adds them to the .json sidecar file.
+
+
+----
+### xASL\_bids\_PhoenixProtocolAnalyzer.m
+
+#### Format
+
+```matlab
+[xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
+```
+
+#### Description
+This function analyzes the parameter list of the phoenix protocol (tag = [0x29,0x1020]).
+This function is usually called from xASL\_bids\_GetPhoenixProtocol.
+
+
+
+
+----
+### xASL\_bids\_PhoenixProtocolReader.m
+
+#### Format
+
+```matlab
+[parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPhoenixProtocol)
+```
+
+#### Description
+Function to parse the raw phoenix protocol. This function is usually called from xASL\_bids\_GetPhoenixProtocol.
+
+
 
 
 ----
@@ -1087,11 +1164,11 @@ points, for both NIfTIs, to ensure that the same precision is compared.
 #### Format
 
 ```matlab
-DiceCoeff = xASL_im_ComputeDice(imA, imB)
+[DiceCoeff] = xASL_im_ComputeDice(imA, imB)
 ```
 
 #### Description
-Calculate Dice coefficient of image overlap.
+This function calculates the Dice coefficient of image overlap.
 
 
 
@@ -1467,7 +1544,7 @@ Whereas the masking avoids mixing with cerebrospinal fluid or extracranial signa
 #### Format
 
 ```matlab
-[NegativeMask, TreatedCBF] = xASL_quant_DetectNegativeVascularSignal(x)
+[NegativeMask, TreatedPWI] = xASL_quant_DetectNegativeVascularSignal(x)
 ```
 
 #### Description
@@ -1482,13 +1559,17 @@ Negative signal from wrong background suppression timing
 this as well.
 The procedure works as follows:
 
-1) Obtain mask of negative voxels within pGM>0.5 mask
-2) Obtain distribution of subzero clusters
-3) Define the negative threshold
-4) Create mask by thresholding whole image
+1. Obtain mask of negative voxels within pGM>0.5 mask
+2. Obtain distribution of subzero clusters
+3. Define the negative threshold
+4. Create mask by thresholding whole image
 
 Note that the definition of the threshold is obtained within
-the GM only, but that this threshold is applied to the full image
+the GM only, but that this threshold is applied to the full image.
+
+Note that instead of the PWI path input, a CBF image should
+work equally well, as we don't expect a smooth M0 biasfield
+to change the distribution of negative clusters
 
 
 ----
@@ -1497,7 +1578,7 @@ the GM only, but that this threshold is applied to the full image
 #### Format
 
 ```matlab
-[MaskIM, CBF] = xASL_quant_VascularContrast(PathCBF, Path_M0, CompressionRate, ClipThresholdValue, bClip)
+[MaskIM, CBF] = xASL_quant_VascularContrast(PathPWI, Path_M0, CompressionRate, ClipThresholdValue, bClip)
 ```
 
 #### Description
@@ -1520,6 +1601,10 @@ have NaNs for intra-vascular voxels.
 Note that the definition of the threshold is obtained within
 the GM only, but that this threshold is applied to the full
 image to also remove extracranial extreme values.
+
+Note that the performance may change when using this script
+with or without M0, as this will change the distribution
+that determines where the threshold for extremes lies.
 
 
 ----
@@ -2693,6 +2778,25 @@ literature-based values for age and sex. It performs the following steps:
 
 
 ----
+### xASL\_quant\_BSupCalculation.m
+
+#### Format
+
+```matlab
+signalPercentage = xASL_quant_BSupCalculation(BackgroundSuppressionPulseTime, ReadoutTime[, PresaturationTime, T1Time, SliceTime, PathGraph])
+```
+
+#### Description
+This function computes the tissue signal percentage that
+remains after background suppression pulses are played in the ASL
+acquisition.
+It assumes that the signal is, at first, optionally saturated by a 90 degree flip at PresaturationTime before readout.
+Then follows a series of BSup pulses (times before readout are given) that do a 180 degree flip. The observed tissue relaxes with time
+T1time and the signal attenuation is calculated for several slices acquired at times relative to the readout.
+
+
+
+----
 ### xASL\_quant\_FEAST.m
 
 #### Format
@@ -2772,11 +2876,12 @@ between the M0 and ASL source data (which is scaled in
 xASL\_wrp\_ProcessM0.m). This function runs the following steps:
 
 1. Correct scale slopes, if Philips
-2. Skip M0 quantification if ~x.ApplyQuantification(4)
-3. Set TR specifically for GE
-4. Check for correct TR values
-5. Quantify the M0, either for single 3D volume or slice-wise
-6. Apply custom scalefactor if requested (x.M0\_GMScaleFactor)
+2. Convert control image with background suppression to pseudo-M0
+3. Skip M0 quantification if ~x.ApplyQuantification(4)
+4. Set TR specifically for GE
+5. Check for correct TR values
+6. Quantify the M0, either for single 3D volume or slice-wise
+7. Apply custom scalefactor if requested (x.M0\_GMScaleFactor)
 
 
 
@@ -3143,6 +3248,27 @@ Uses 95% percentile instead of MAX.
 
 
 ----
+### xASL\_stat\_PairwiseDice.m
+
+#### Format
+
+```matlab
+[DiceCoeff] = xASL_stat_PairwiseDice(GroupA, GroupB)
+```
+
+#### Description
+This function obtains for two lists of images Dice
+coefficients, for all possible permutations of both lists, by the
+following steps:
+1. Admin (check cell, image exist etc)
+2. Obtain matrix of pair-wise permutations
+3. Obtain DICE scores
+
+PM: Allow entering one group only
+PM: could extend with xASL\_qc\_TanimotoCoeff
+
+
+----
 ### xASL\_stat\_PrintStats.m
 
 #### Format
@@ -3243,6 +3369,28 @@ y = xASL_stat_SumNan(x[,dim])
 
 #### Description
 It uses the function SUM, but it sets all the NaNs to zero before calling it.
+
+
+----
+### xASL\_stat\_UniquePairwisePermutations.m
+
+#### Format
+
+```matlab
+[PermutationList] = xASL_stat_UniquePairwisePermutations(GroupA, GroupB)
+```
+
+#### Description
+This function lists for one or two samples of indices
+all possible permutations of indices,
+performing the following steps:
+
+1. One sample permutations
+2. Two sample permutations
+3. Print conclusion
+
+PM: Allow entering one group only
+PM: could extend with xASL\_qc\_TanimotoCoeff
 
 
 ----

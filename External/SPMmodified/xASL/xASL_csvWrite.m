@@ -1,9 +1,21 @@
 function xASL_csvWrite(InputCell, PathCSV, bOverwrite)
 %xASL_csvWrite Write cell array to CSV
 %
-% Rudimentary function, please use xASL_tsvWrite instead.
+% FORMAT: xASL_csvWrite(InputCell, PathCSV, bOverwrite)
+%
+% INPUT:    InputCell   - cell array
+%           PathCSV     - path to file
+%           bOverwrite  - overwrite file
+%
+% OUTPUT:   n/a
+%
+%
+% DESCRIPTION: Rudimentary function, please use xASL_tsvWrite instead.
 % For usage, type help xASL_tsvWrite.
 % This function will still work though.
+%
+% EXAMPLE: n/a
+%
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 

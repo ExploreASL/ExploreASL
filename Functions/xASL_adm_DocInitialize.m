@@ -1,11 +1,10 @@
-function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
+function xASL_adm_DocInitialize(outputFolder)
 %xASL_adm_DocInitialize Script to call the separate documentation crawler
 % functions.
 %
 % FORMAT:       xASL_adm_DocInitialize
 % 
 % INPUT:        outputFolder     - Folder where the generated markdown files are stored (OPTIONAL, DEFAULT = fullfile(x.MyPath,'Development','Documentation_GitHub'))
-%               updateExploreASL - Update README files in ExploreASL structure (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:       n/a
 % 
@@ -32,11 +31,7 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     
     % Define output folder
     if nargin < 1
-        outputFolder = fullfile(x.MyPath,'Development','Documentation_GitHub');
-    end
-
-    if nargin < 2
-        updateExploreASL = true;
+        outputFolder = fullfile(x.MyPath,'Documentation','docs');
     end
     
     % Copy and modify the index README
@@ -55,13 +50,19 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
                   ['# ExploreASL v',x.Version],true);
               
     % Copy the REQUIREMENTS file
-    copyfile(fullfile(x.MyPath,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
+    copyfile(fullfile(x.MyPath,'Documentation','templates','REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
     
     % Copy the ABOUT file
-    copyfile(fullfile(x.MyPath,'ABOUT.md'),fullfile(outputFolder,'About.md'));
+    copyfile(fullfile(x.MyPath,'Documentation','templates','ABOUT.md'),fullfile(outputFolder,'About.md'));
+    
+    % Copy the TUTORIALS file
+    copyfile(fullfile(x.MyPath,'Documentation','templates','TUTORIALS.md'),fullfile(outputFolder,'Tutorials.md'));
     
     % Create the functions markdown file
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
+    
+    % Create the functions markdown file
+    xASL_adm_DocCrawler(fullfile(x.MyPath,'External','SPMmodified','xASL'), fullfile(outputFolder,'SPMxASL.md'),'SPMxASL');
 
     % Convert and copy lincense file
     convertLicenseToMarkdown(fullfile(x.MyPath,'LICENSE-EXPLOREASL'),fullfile(outputFolder,'License.md'));
@@ -80,18 +81,7 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
     
     % Add DATAPAR.md text to ImportModule
-    addDATAPARtoImport(fullfile(x.MyPath,'DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
-    
-    %% Update documentation read me files in the ExploreASL folder structure
-    if updateExploreASL
-        copyfile(fullfile(outputFolder,'Functions.md'),fullfile(x.MyPath,'Functions','README.md'));                                     % Functions
-        copyfile(fullfile(outputFolder,'Modules.md'),fullfile(x.MyPath,'Modules','README.md'));                                         % Modules
-        copyfile(fullfile(outputFolder,'Structural_Module.md'),fullfile(x.MyPath,'Modules','SubModule_Structural','README.md'));        % SubModules (Structural)
-        copyfile(fullfile(outputFolder,'ASL_Module.md'),fullfile(x.MyPath,'Modules','SubModule_ASL','README.md'));                      % SubModules (ASL)
-        copyfile(fullfile(outputFolder,'Population_Module.md'),fullfile(x.MyPath,'Modules','SubModule_Population','README.md'));        % SubModules (Population)
-    end
-
-
+    addDATAPARtoImport(fullfile(x.MyPath,'Documentation','templates','DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
 
 end
 

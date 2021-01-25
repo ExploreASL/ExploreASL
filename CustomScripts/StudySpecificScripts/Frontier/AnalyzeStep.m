@@ -7,9 +7,19 @@
 rawDir    = '/pet/projekte/asl/data/FRONTIER';
 %modDir = 'ASL_1';
 modDir = 'PET_1';
+dscType = 'rBF'; %rBF, rBV, rBV_correct
 gmth = 0.7;
 
 %% Do all the comparisons
+
+% Load the coordinate tables
+switch modDir
+	case 'PET_1'
+		coordinateTable = load(fullfile(rawDir,'analysis','trajectoryPET.mat'));
+	case 'ASL_1'
+		coordinateTable = load(fullfile(rawDir,'analysis','trajectoryASL.mat'));
+end
+coordinateTable = coordinateTable.coordinateTable;
 
 % Load all the ROIs, Maps, and CBFs
 patientNameList = xASL_adm_GetFileList(fullfile(rawDir,'analysis'), '^P\d{2}$', 'List', [], 1);
@@ -35,7 +45,7 @@ vecT1  = zeros(length(patientNameList),1);
 
 
 for iL = 1:length(patientNameList)
-	if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_CBF.nii'))
+	if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_ASL.nii'))
 		imTmp = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_GM.nii'));imGM(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),iL) = imTmp;
 		imWM(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_WM.nii'));
 
@@ -55,14 +65,14 @@ for iL = 1:length(patientNameList)
 			imT1(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),:,iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_Lesion_T1.nii'));
 		end
 
-		if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_DSC.nii'))
+		if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,['Final_DSC_' dscType '.nii']))
 			vecDSC(iL) = 1;
-			imDSC(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),1,iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_DSC.nii'));
-			imDSC(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),2,iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_DSC_Deform.nii'));
+			imDSC(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),1,iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,['Final_DSC_' dscType '.nii']));
+			imDSC(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),2,iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,['Final_DSC_Deform_' dscType '.nii']));
 		end
 
-		imASL(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),1,iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_CBF.nii'));
-		imASL(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),2,iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_CBF_Deform.nii'));
+		imASL(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),1,iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_ASL.nii'));
+		imASL(1:size(imTmp,1),1:size(imTmp,2),1:size(imTmp,3),2,iL) = xASL_io_Nifti2Im(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_ASL_Deform.nii'));
 	end
 end
 
@@ -75,6 +85,8 @@ resMean = zeros(3,3,4,8,2);
 resMeanGM = zeros(3,3,4,8,2);
 resMax = zeros(3,3,4,8,2);
 resHist = zeros(3,3,4,8,60,60);
+resTra = zeros(length(patientNameList),size(coordinateTable,2),3,2,2); % Subject, trajectory, modality (ASL,DSC,PET), size (1x1x1 or max 3x3x3),normalized by healthy GM CBF
+
 % Compare PET, ASL, DSC
 for iMod = 1:3
 	switch (iMod)
@@ -198,8 +210,88 @@ for iMod = 1:3
 
 end
 
+%Evaluate CBF at the given trajectories
+% For each patient
+for iL = 1:size(coordinateTable,1)
+	% For each trajectory
+	for iT = 1:size(coordinateTable,2)
+		if sum(abs(squeeze(coordinateTable(iL,iT,:)))) > 0
+			for iM = 1:3
+				switch iM
+					case 1
+						imLocal = imASL(:,:,:,1,iL);
+						normLocal = resMeanGM(1,1,2,iL,2);
+					case 2
+						imLocal = imDSC(:,:,:,1,iL);
+						normLocal = resMeanGM(2,1,2,iL,2);
+					case 3
+						imLocal = imPET(:,:,:,1,iL);
+						normLocal = resMeanGM(1,1,2,iL,1);
+				end
+				coorVec = 1;
+				resTra(iL,iT,iM,1,1) = imLocal(round(coordinateTable(iL,iT,1))+coorVec,round(coordinateTable(iL,iT,2))+coorVec,round(coordinateTable(iL,iT,3))+coorVec);
+				coorVec = 0:2;
+				resTra(iL,iT,iM,2,1) = max(max(max(imLocal(round(coordinateTable(iL,iT,1))+coorVec,round(coordinateTable(iL,iT,2))+coorVec,round(coordinateTable(iL,iT,3))+coorVec))));
+				resTra(iL,iT,iM,1,2) = resTra(iL,iT,iM,1,1)/normLocal;
+				resTra(iL,iT,iM,2,2) = resTra(iL,iT,iM,2,1)/normLocal;
+			end
+			
+		end
+	end
+end
+
 %% Create graphs
 % Compare PET, ASL, DSC
+
+if ~exist(fullfile(rawDir,'analysis','results'),'dir')
+	mkdir(fullfile(rawDir,'analysis','results'));
+end
+
+% Write a table with normalized CBF values for all patients/trajectories and ASL, DSC, PET
+	
+for iL = 1:size(coordinateTable,1)
+	% For each trajectory
+	resTraCellASL{1,iL+1} = ['P' num2str(iL,'%.2d')];
+	resTraCellDSC{1,iL+1} = ['P' num2str(iL,'%.2d')];
+	resTraCellPET{1,iL+1} = ['P' num2str(iL,'%.2d')];
+	for iT = 1:size(coordinateTable,2)
+		if resTra(iL,iT,1,1,2)
+			resTraCellASL{iT+1,iL+1} = resTra(iL,iT,1,1,2);
+		else
+			resTraCellASL{iT+1,iL+1} = '';
+		end
+		
+		if resTra(iL,iT,2,1,2)
+			resTraCellDSC{iT+1,iL+1} = resTra(iL,iT,2,1,2);
+		else
+			resTraCellDSC{iT+1,iL+1} = '';
+		end
+		
+		if resTra(iL,iT,3,1,2)
+			resTraCellPET{iT+1,iL+1} = resTra(iL,iT,3,1,2);
+		else
+			resTraCellPET{iT+1,iL+1} = '';
+		end
+	end
+end
+
+% Add headers
+resTraCellASL{1,1} = 'ASL';
+resTraCellDSC{1,1} = 'DSC';
+resTraCellPET{1,1} = 'PET';
+for iT = 1:size(coordinateTable,2)
+	resTraCellASL{iT+1,1} = ['T' num2str(iT,'%.2d')];
+	resTraCellDSC{iT+1,1} = ['T' num2str(iT,'%.2d')];
+	resTraCellPET{iT+1,1} = ['T' num2str(iT,'%.2d')];
+end
+
+xASL_tsvWrite(resTraCellASL,fullfile(rawDir,'analysis','results','resTraASL.tsv'),1);
+xASL_tsvWrite(resTraCellDSC,fullfile(rawDir,'analysis','results','resTraDSC.tsv'),1);
+xASL_tsvWrite(resTraCellPET,fullfile(rawDir,'analysis','results','resTraPET.tsv'),1);
+
+% - plot a scatter plot of ASL vs DSC and ASL vs PET for all available trajectories
+
+	
 nMod = 2;
 for iMod = 1:nMod
 	switch (iMod)
@@ -485,7 +577,7 @@ for iMod = 1:nMod
 		
 		if (iMod == 2) && (iRoi == 3)
 			for iL = 1:8
-				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,'Final_DSC.nii'))
+				if xASL_exist(fullfile(rawDir,'analysis',patientNameList{iL},modDir,['Final_DSC_' dscType '.nii']))
 					figure(13);sp=subplot(2,4,iL);
 					[tumorName, tumorColor] = assignNameAndColor(iL);
 					imagesc(((squeeze((resHist(iMod,1,iRoi,iL,:,:)))).^0.4)');hold on
@@ -526,7 +618,7 @@ for iMod = 1:nMod
 		title(['max CBF ' strMod ' ' strRoi]);
 	end
 end
-
+%%
 function [tumorName, tumorColor] = assignNameAndColor(tumorNumber)
 switch(tumorNumber)
 	case {1,4}

@@ -1,10 +1,12 @@
-function [CellContents] = xASL_tsvRead(PathTSV)
+function [CellContents] = xASL_tsvRead(PathTSV, bStruct)
 %xASL_tsvRead Read a TSV file and output contents to cell array
 %
-% FORMAT: [CellContents] = xASL_tsvRead(PathTSV)
+% FORMAT: [CellContents] = xASL_tsvRead(PathTSV[, bStruct])
 %
 % INPUT:
 %   PathTSV             - file, with TSV extension (REQUIRED)
+%   bStruct             - parse to a struct with separate field per tsv
+%                         column (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 %   CellContents        - cell array, containing a combination of numerical
@@ -22,8 +24,12 @@ function [CellContents] = xASL_tsvRead(PathTSV)
 %% Admin
 if nargin<1 || isempty(PathTSV)
     warning('Invalid PathTSV input argument, skipping');
+	CellContents = {};
     return;
 end    
+if nargin<2 || isempty(bStruct)
+    bStruct = false;
+end
 
 [Fpath, Ffile, Fext] = xASL_fileparts(PathTSV);
 if ~strcmp(Fext,'.tsv')
@@ -32,23 +38,33 @@ if ~strcmp(Fext,'.tsv')
 end
 
 %% -------------------------------------------------------
-%% Read the file
-ReadCell = textread(PathTSV, '%s', 'delimiter','\t\n', 'bufsize', 10000000);
-% now we have a 1D cell structure, where the \n became empty cells (other stuff is skipped)
-iRow = 1;
-iColumn = 1;
-for iCell=1:length(ReadCell)
-    if isempty(ReadCell{iCell})
-        iRow = iRow+1;
-        iColumn = 1;
-    else
-        CellContents{iRow,iColumn} = ReadCell{iCell};
-        iColumn = iColumn+1;
+%% Read the file into multiple cell structures
+ReadCell = spm_load(PathTSV);
+
+if bStruct
+    % Keep output as structs
+    CellContents = ReadCell;
+else
+    % Parse struct and convert to cell array
+    FieldsAre = fields(ReadCell);
+    for iField=1:length(FieldsAre)
+        % Header
+        CellContents{1, iField} = FieldsAre{iField};
+
+        % Content
+        CurrentContents = ReadCell.(FieldsAre{iField});
+
+        if ~iscell(CurrentContents)
+            for iRow=1:length(CurrentContents)
+                NewContents{iRow, 1} = CurrentContents(iRow, 1);
+            end
+        else
+            NewContents = CurrentContents;
+        end
+
+        CellContents(2:length(NewContents)+1, iField) = NewContents;
     end
 end
-
     
     
-
 end
-
