@@ -4,6 +4,7 @@ from PySide2.QtCore import *
 from src.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
 from src.xASL_GUI_DCM2BIDS import get_dicom_directories, asldcm2bids_onedir, create_import_summary, \
     bids_m0_followup
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import set_formlay_options
 from src.xASL_GUI_Dehybridizer import xASL_GUI_Dehybridizer
 from glob import iglob
 from tdda import rexpy
@@ -133,6 +134,13 @@ class xASL_GUI_Importer(QMainWindow):
         self.dehybridizer = xASL_GUI_Dehybridizer(self)
         self.vlay_dehybridizer.addWidget(self.dehybridizer)
 
+        # Additional MacOS options
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_rootdir, vertical_spacing=3)
+            set_formlay_options(self.formlay_scanaliases)
+            set_formlay_options(self.formlay_runaliases)
+            self.vlay_dirstruct.setSpacing(5)
+
     def Setup_UI_UserSpecifyDirStuct(self):
         self.grp_dirstruct = QGroupBox(title="Specify Directory Structure")
         self.vlay_dirstruct = QVBoxLayout(self.grp_dirstruct)
@@ -223,6 +231,8 @@ class xASL_GUI_Importer(QMainWindow):
             cmb.currentTextChanged.connect(self.is_ready_import)
             self.cmb_scanaliases_dict[scantype] = cmb
             self.formlay_scanaliases.addRow(description, cmb)
+            if system() == "Darwin":
+                cmb.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         self.mainsplit.addWidget(self.grp_scanaliases)
 
@@ -398,6 +408,7 @@ class xASL_GUI_Importer(QMainWindow):
 
         # Must first disconnect the combobox or else update_scan_aliases goes berserk because the index
         # will be reset for each combobox in the process. Reconnect after changes.
+        cmb: QComboBox
         for key, cmb in self.cmb_scanaliases_dict.items():
             cmb.currentTextChanged.disconnect(self.update_scan_aliases)
             cmb.clear()
@@ -461,6 +472,9 @@ class xASL_GUI_Importer(QMainWindow):
             # This is where the mappings are re-established
             self.le_runaliases_dict[key] = le
             self.cmb_runaliases_dict[key] = cmb
+            if system() == "Darwin":
+                le.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                cmb.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     ##########################
     # SECTION - MISC FUNCTIONS

@@ -77,7 +77,7 @@
   ],
   "NoWorkloadDetected": [
     "No Workload Detected",
-    "The number of anticipated .status files was zero.\nIf you are wanting to perform a re-run, use the Process Modifier subsection\nof this window to indicate which operations you'd like to re-run."
+    "The number of anticipated .status files was zero.\nIf you are wanting to perform a re-run, use the Process Modifier subsection of this window to indicate which operations you'd like to re-run."
   ],
   "ParticipantsTSVNotFound": [
     "participants.tsv was not located in this directory",

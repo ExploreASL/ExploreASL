@@ -11,20 +11,20 @@ from PySide2.QtWidgets import *
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 from src.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
-from src.xASL_GUI_Executor_ancillary import (initialize_all_lock_dirs, calculate_anticipated_workload,
-                                             calculate_missing_STATUS, interpret_statusfile_errors)
+from src.xASL_GUI_Executor_ancillary import *
 from src.xASL_GUI_AnimationClasses import xASL_ImagePlayer
 from src.xASL_GUI_Executor_Modjobs import (xASL_GUI_RerunPrep, xASL_GUI_TSValter,
                                            xASL_GUI_ModSidecars, xASL_GUI_MergeDirs)
-from src.xASL_GUI_HelperFuncs_WidgetFuncs import (set_widget_icon, make_droppable_clearable_le)
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import (set_widget_icon, make_droppable_clearable_le, set_formlay_options)
 from pprint import pprint
 from collections import defaultdict
 import subprocess
-from shutil import rmtree
+from shutil import rmtree, which
 from pathlib import Path
 from platform import system
 import signal
 from psutil import Process, NoSuchProcess
+from typing import Union
 
 
 class ExploreASL_WorkerSignals(QObject):
@@ -57,7 +57,7 @@ class ExploreASL_Worker(QRunnable):
         # PREPARE ARGUMENTS AND RUN THE UNDERLYING PROGRAM
         ##################################################
 
-        exploreasl_path, par_path, process_data, skip_pause, iworker, nworkers, imodules = self.args[0:-1]
+        mpath, mver, exploreasl_path, par_path, process_data, skip_pause, iworker, nworkers, imodules = self.args[0:-1]
         subject_regex_str = self.args[-1]
 
         # Generate the string that the command line will feed into the complied MATLAB session
@@ -67,13 +67,21 @@ class ExploreASL_Worker(QRunnable):
                     f"{iworker}, " \
                     f"{nworkers}, " \
                     f"[{' '.join([str(item) for item in imodules])}])"
+        matlab_cmd = "matlab" if which("matlab") is not None else mpath
+        if mver >= 2019:
+            cmds = [f"{matlab_cmd}",
+                    "-nodesktop",
+                    "-nosplash",
+                    "-batch",
+                    f"cd('{exploreasl_path}'); ExploreASL_Master{func_line}"]
+        else:
+            cmds = [f"{matlab_cmd}",
+                    "-nosplash",
+                    "-nodisplay",
+                    "-r",
+                    f"cd('{exploreasl_path}'); ExploreASL_Master{func_line}; exit"]
 
-        cmds = ["matlab",
-                "-nodesktop",
-                "-nosplash",
-                "-batch",
-                f"cd('{exploreasl_path}'); ExploreASL_Master{func_line}"]
-
+        print(f"{cmds=}")
         self.proc = subprocess.Popen(cmds, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.is_running = True
 
@@ -271,6 +279,9 @@ class xASL_Executor(QMainWindow):
 
         self.cont_progbars = QWidget(self.grp_taskschedule)
         self.formlay_progbars = QFormLayout(self.cont_progbars)
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_progbars)
+            self.vlay_taskschedule.setSpacing(0)
 
         # Need python lists to keep track of row additions/removals; findChildren's ordering is incorrect
         self.formlay_lineedits_list = []
@@ -292,7 +303,7 @@ class xASL_Executor(QMainWindow):
         self.vlay_textoutput = QVBoxLayout(self.grp_textoutput)
         self.textedit_textoutput = QTextEdit(self.grp_textoutput)
         self.textedit_textoutput.setPlaceholderText("Processing Progress will appear within this window")
-        self.textedit_textoutput.setFontPointSize(8)
+        self.textedit_textoutput.setFontPointSize(8 if system() != "Darwin" else 10)
         self.vlay_textoutput.addWidget(self.textedit_textoutput)
 
     # Rare exception of a UI function that is also technically a setter; this will dynamically alter the number of
@@ -342,6 +353,10 @@ class xASL_Executor(QMainWindow):
                 # Package it all in another FormLayout
                 inner_grp = QGroupBox(title=f"Study {inner_btn_browsedirs.row_idx}")
                 inner_formlay = QFormLayout(inner_grp)
+                if system() == "Darwin":
+                    set_formlay_options(inner_formlay, vertical_spacing=0)
+                    for widget in [inner_cmb_ncores, inner_le, inner_cmb_procopts, inner_btn_stop]:
+                        widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
                 inner_formlay.addRow("Assigned Number of Cores", inner_cmb_ncores)
                 inner_hbox = QHBoxLayout()
                 inner_hbox.addWidget(inner_le)
@@ -396,6 +411,7 @@ class xASL_Executor(QMainWindow):
     def UI_Setup_ProcessModification(self):
         self.vlay_procmod = QVBoxLayout(self.grp_procmod)
         self.formlay_promod = QFormLayout()
+
         # Set up the widgets in this section
         self.cmb_modjob = QComboBox(self.grp_procmod)
         self.cmb_modjob.addItems(["Re-run a study", "Alter participants.tsv",
@@ -421,6 +437,12 @@ class xASL_Executor(QMainWindow):
         self.formlay_promod.addRow("Path to analysis dir to modify", self.hlay_modjob)
         self.vlay_procmod.addLayout(self.formlay_promod)
         self.vlay_procmod.addWidget(self.btn_runmodjob)
+
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_promod, vertical_spacing=0)
+            self.btn_runmodjob.setMinimumHeight(90)
+            for widget in [self.cmb_modjob, self.le_modjob]:
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     # Runs the selected modification widget
     # noinspection PyCallByClass
@@ -547,6 +569,14 @@ class xASL_Executor(QMainWindow):
                         checks.clear()
                         self.btn_runExploreASL.setEnabled(False)
                         return
+                    except json.decoder.JSONDecodeError as json_err:
+                        QMessageBox.warning(self, self.exec_errs["BadDataParFileJson"][0],
+                                            f"{self.exec_errs['BadDataParFileJson'][1]}{json_err}", QMessageBox.Ok)
+                        le_analysisdir.clear()
+                        checks.clear()
+                        self.btn_runExploreASL.setEnabled(False)
+                        return
+
                 n_subjects = sum([True if re.search(regex, path.name) else False
                                   for path in Path(le_analysisdir.text()).iterdir()])
                 if n_subjects >= int(cmb_cores.currentText()):
@@ -764,15 +794,50 @@ class xASL_Executor(QMainWindow):
     ###################################################################################################################
     def run_Explore_ASL(self):
 
-        # Immediately abandon this if the MATLAB version is not newer
-        v_path = Path(self.config["MATLABROOT"]).name
-        if not re.search(r"R\d{4}[ab]", v_path):
-            QMessageBox().warning(self, self.exec_errs["IncompatibleMATLAB"][0],
-                                  self.exec_errs["IncompatibleMATLAB"][1], QMessageBox.Ok)
-            del v_path
+        # Immediately abandon this if the MATLAB version is not compatible with batch commands
+        if self.config["MATLAB_VER"] is None or not isinstance(self.config["MATLAB_VER"], str):
+            QMessageBox().warning(self, "Unknown MATLAB version",
+                                  "The MATLAB version must be known for this to run. "
+                                  "See the main menu for specifying a MATLAB command path "
+                                  "which will also determine the appropriate version", QMessageBox.Ok)
             return
-        else:  # Otherwise, garbage collect
-            del v_path
+
+        # Immediately abandone this if the MATLAB command path is not known
+        if self.config["MATLAB_CMD_PATH"] is None or not Path(self.config["MATLAB_CMD_PATH"]).resolve().exists():
+            QMessageBox().warning(self, "Unknown MATLAB command path",
+                                  "The path to the matlab command (MacOS/Linux) or matlab.exe must be known for this "
+                                  "to run. You may specify this using the main menu under "
+                                  "File --> Specify path to MATLAB executable, ",
+                                  QMessageBox.Ok)
+            return
+
+        try:
+            mlab_ver = int(re.search(r"R(\d{4})[ab]", self.config["MATLAB_VER"]).group(1))
+            # Immediately abandon this if the MATLAB version is too old
+            if mlab_ver < 2017:
+                QMessageBox().warning(self, "MATLAB is too old",
+                                      f"The MATLAB version on this machine: {mlab_ver}\nis not compatible with "
+                                      f"ExploreASL. Please contact your system administrator for upgrading your "
+                                      f"MATLAB installation to at least 2017a for MacOS or Linux, or to at least 2019a "
+                                      f"for Windows.", QMessageBox.Ok)
+                return
+            # Or if too old for Windows due to the lack of the -nodisplay option
+            if system() == "Windows" and not mlab_ver >= 2019:
+                QMessageBox().warning(self, "Incompatible MATLAB version with Windows",
+                                      f"Due to the issues with MATLAB's Windows implementation, this program cannot "
+                                      f"launch ExploreASL on MATLAB versions prior to 2019a on Windows systems. Please "
+                                      f"contact your system administrator for upgrading your MATLAB installation to at "
+                                      f"least 2019a for Windows or 2017a for MacOS or Linux.",
+                                      QMessageBox.Ok)
+                return
+        # Or if something went wrong getting the version
+        except AttributeError:
+            QMessageBox().warning(self, "Unknown MATLAB version",
+                                  "The MATLAB version must be known for this to run. "
+                                  "See the main menu under File --> Specify path to MATLAB executable for specifying "
+                                  "a MATLAB command path which will also determine the appropriate version",
+                                  QMessageBox.Ok)
+            return
 
         if self.config["DeveloperMode"]:
             print("%" * 60)
@@ -826,7 +891,6 @@ class xASL_Executor(QMainWindow):
                             str_regex = str_regex.strip('^$')
                         regex: re.Pattern = re.compile(str_regex)
                         explore_asl_path: str = parms["MyPath"]
-                        run_names: list = parms["SESSIONS"]
                     except KeyError as parms_keyerror:
                         QMessageBox().warning(self, self.exec_errs["BadDataParFile"][0],
                                               self.exec_errs["BadDataParFile"][1] + f"{parms_keyerror}", QMessageBox.Ok)
@@ -859,13 +923,15 @@ class xASL_Executor(QMainWindow):
             for ii in range(box.count()):
                 if ii < int(box.currentText()):
                     worker = ExploreASL_Worker(
+                        self.config["MATLAB_CMD_PATH"],  # Backup matlab command path
+                        mlab_ver,
                         explore_asl_path,  # The exploreasl filepath
                         str(parms_file),  # The filepath to parms
                         1,  # Process the data
                         1,  # Skip the pause
                         ii + 1,  # iWorker
                         int(box.currentText()),  # nWorkers
-                        translator[run_opts.currentText()],  # Processing options
+                        translator[run_opts.currentText()],  # Which modules Structural, ASL, Both, Population
                         str_regex)  # For catching errors for particular subjects
 
                     inner_worker_block.append(worker)
@@ -876,11 +942,12 @@ class xASL_Executor(QMainWindow):
             self.workers.append(inner_worker_block)
 
             # %%%%%%%%%%%%%%%%%%%%%%%%%
-            # Step 3 - Create all lock directories in advance; this will give the watcher full oversight
-            initialize_all_lock_dirs(analysis_dir=ana_path,
-                                     regex=regex,
-                                     run_options=run_opts.currentText(),
-                                     run_names=run_names)
+            # Step 3 - Calculate the anticipated workload based on missing .STATUS files; adjust the progressbar's
+            # maxvalue from that
+            # This now ALSO makes the lock dirs that do not exist
+            workload, expected_status_files = calculate_anticipated_workload(parmsdict=parms,
+                                                                             run_options=run_opts.currentText(),
+                                                                             translators=self.exec_translators)
 
             # Also delete any directories called "locked" in the study
             locked_dirs = peekable(ana_path.rglob("locked"))
@@ -894,12 +961,6 @@ class xASL_Executor(QMainWindow):
                         print(f"{lock_err}...but proceeding to recursive delete")
                         rmtree(path=lock_dir, ignore_errors=True)
 
-            # %%%%%%%%%%%%%%%%%%%%%%%%%
-            # Step 4 - Calculate the anticipated workload based on missing .STATUS files; adjust the progressbar's
-            # maxvalue from that
-            workload, expected_status_files = calculate_anticipated_workload(parmsdict=parms,
-                                                                             run_options=run_opts.currentText(),
-                                                                             translators=self.exec_translators)
             if not workload or len(expected_status_files) == 0:
                 QMessageBox.information(self, self.exec_errs["NoWorkloadDetected"][0],
                                         self.exec_errs["NoWorkloadDetected"][1], QMessageBox.Ok)
@@ -920,19 +981,20 @@ class xASL_Executor(QMainWindow):
                 pprint(expected_status_files)
 
             # %%%%%%%%%%%%%%%%%%%%%%%%%%%
-            # Step 5 - Create a Watcher for that study
+            # Step 4 - Create a Watcher for that study
             watcher = ExploreASL_Watcher(target=path.text(),  # the analysis directory
                                          regex=str_regex,  # the regex used to recognize subjects
                                          watch_debt=debt,  # the debt used to determine when to stop watching
                                          study_idx=study_idx,
                                          # the identifier used to know which progressbar to signal
                                          translators=self.exec_translators,
-                                         config=self.config
+                                         config=self.config,
+                                         datapar_dict=parms
                                          )
             self.textedit_textoutput.append(f"Setting a Watcher thread on {ana_path}")
 
             # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            # Step 6 - Set up watcher connections
+            # Step 5 - Set up watcher connections
             # Connect the watcher to signal to the text output
             watcher.signals.update_text_output_signal.connect(self.update_text)
             # Connect the watcher to signal to the progressbar
@@ -942,7 +1004,7 @@ class xASL_Executor(QMainWindow):
             self.watchers.append(watcher)
 
             # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            # Step 7 - Set up worker connections
+            # Step 6 - Set up worker connections
             # Worker connections setup within a study
             for idx, worker in enumerate(inner_worker_block):
                 # Connect the finished signal to the watcher debt to help it understand when it should stop watching
@@ -994,10 +1056,11 @@ class ExploreASL_Watcher(QRunnable):
     3)
     """
 
-    def __init__(self, target, regex, watch_debt, study_idx, translators, config):
+    def __init__(self, target, regex, watch_debt, study_idx, translators, config, datapar_dict: dict):
         super().__init__()
         self.signals = ExploreASL_WatcherSignals()
         self.dir_to_watch = Path(target) / "lock"
+        self.datapar_dict = datapar_dict
 
         # Regexes
         self.subject_regex = re.compile(regex)
@@ -1027,7 +1090,11 @@ class ExploreASL_Watcher(QRunnable):
                                path=str(self.dir_to_watch),
                                recursive=True)
         self.stuct_status_file_translator: dict = translators["Structural_Module_Filename2Description"]
-        self.asl_status_file_translator: dict = translators["ASL_Module_Filename2Description"]
+        if is_earlier_version(easl_dir=self.datapar_dict["MyPath"], threshold_higher=140):
+            self.asl_status_file_translator: dict = translators["ASL_Module_Filename2Description_PRE140"]
+        else:
+            self.asl_status_file_translator: dict = translators["ASL_Module_Filename2Description"]
+
         self.pop_status_file_translator: dict = translators["Population_Module_Filename2Description"]
         self.workload_translator: dict = translators["ExploreASL_Filename2Workload"]
         if self.config["DeveloperMode"]:

@@ -1,8 +1,9 @@
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
-from src.xASL_GUI_HelperFuncs_WidgetFuncs import connect_widget_to_signal, disconnect_widget_and_reset
-
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import (connect_widget_to_signal, disconnect_widget_and_reset,
+                                                  set_formlay_options)
+from platform import system
 
 class xASL_GUI_FacetLabels(QWidget):
     """
@@ -36,6 +37,12 @@ class xASL_GUI_FacetLabels(QWidget):
         self.mainlay.addWidget(self.grp_xaxislabel)
         self.mainlay.addWidget(self.grp_yaxislabel)
 
+        # Additional MacOS actions
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_title)
+            set_formlay_options(self.formlay_xaxislabel)
+            set_formlay_options(self.formlay_yaxislabel)
+
     def Setup_UI_XAxisLabelParms(self):
         # X-Axis Label Properties
         self.le_xaxislabeltext = QLineEdit()
@@ -53,6 +60,8 @@ class xASL_GUI_FacetLabels(QWidget):
         for description, widget in zip(["Text", "Fontsize", "Rotation", "Fontweight"], self.xaxis_widgets):
             connect_widget_to_signal(widget, self.sendSignal_xaxislabel_updateplot)
             self.formlay_xaxislabel.addRow(description, widget)
+            if system() == "Darwin":
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     def Setup_UI_YAxisLabelParms(self):
         # Y-Axis Label Properties
@@ -71,6 +80,8 @@ class xASL_GUI_FacetLabels(QWidget):
         for description, widget in zip(["Text", "Fontsize", "Rotation", "Fontweight"], self.yaxis_widgets):
             connect_widget_to_signal(widget, self.sendSignal_yaxislabel_updateplot)
             self.formlay_yaxislabel.addRow(description, widget)
+            if system() == "Darwin":
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     def Setup_UI_TitleParms(self):
         # Title Properties
@@ -89,6 +100,8 @@ class xASL_GUI_FacetLabels(QWidget):
         for description, widget in zip(["Text", "Location", "Fontsize", "Fontweight"], self.title_widgets):
             connect_widget_to_signal(widget, self.sendSignal_title_updateplot)
             self.formlay_title.addRow(description, widget)
+            if system() == "Darwin":
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     def reset_labels(self):
         """

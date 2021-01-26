@@ -4,54 +4,50 @@ import re
 from platform import system
 from itertools import chain
 from pprint import pprint
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple, Union
 
 
-def initialize_all_lock_dirs(analysis_dir: Path, regex: re.Pattern, run_options: str, run_names: list):
+def is_earlier_version(easl_dir: Union[Path, str], threshold_higher: int = 140, threshold_lower: int = 0):
     """
-    Convenience function for creating the lock directories in advance of a run such that a file system watcher
-    could effectively be set at the root and detect any downstream changes
-    :param analysis_dir: the root analysis directory of the study ex. User\\Study_Name\\analysis
-    :param regex: the regex used to identify subjects
-    :param run_options: the type of run (ex. ASL, Structural, Both, Population)
-    :param run_names: the expected session names that should be encountered (ex. ASL_1, ASL_2, etc.)
+    Helper function to determine whether a given ExploreASL directory is between some set of integer thresholds
+    representing the versions
     """
-
-    def dirnames_for_asl(analysis_directory: Path, subjects, runs):
-        dirnames = [analysis_directory / "lock" / f"xASL_module_ASL" / subject / f"xASL_module_ASL_{run}"
-                    for subject in subjects for run in runs]
-        return dirnames
-
-    def dirnames_for_structural(analysis_directory: Path, subjects):
-        dirnames = [analysis_directory / "lock" / f"xASL_module_Structural" / subject / "xASL_module_Structural"
-                    for subject in subjects]
-        return dirnames
-
-    def dirnames_for_population(analysis_directory):
-        return [analysis_directory / "lock" / "xASL_module_Population" / "xASL_module_Population"]
-
-    print(f"Generating the appropriate lock dirs for {analysis_dir}")
-    subject_names = [subject.name for subject in analysis_dir.iterdir() if regex.search(str(subject))]
-
-    # Prepare the list of names of lockdirs to expect to create based on the run options, session names and detected
-    # sessions in the analysis root directory
-    if run_options == "Both":
-        struc_dirs = dirnames_for_structural(analysis_dir, subject_names)
-        asl_dirs = dirnames_for_asl(analysis_dir, subject_names, run_names)
-        lock_dirs = struc_dirs + asl_dirs
-    elif run_options == "ASL":
-        lock_dirs = dirnames_for_asl(analysis_dir, subject_names, run_names)
-    elif run_options == "Structural":
-        lock_dirs = dirnames_for_structural(analysis_dir, subject_names)
-    elif run_options == "Population":
-        lock_dirs = dirnames_for_population(analysis_dir)
+    ver_regex = re.compile(r"VERSION_(.*)")
+    easl_dir = Path(easl_dir).resolve()
+    try:
+        ver_file = next(easl_dir.rglob("VERSION_*"))
+    except StopIteration:
+        return True
+    ver_str = ver_regex.search(str(ver_file)).group(1).replace(".", "")
+    if threshold_lower < int(ver_str) < threshold_higher:
+        return True
     else:
-        raise ValueError("Impossible outcome in initialize_all_lock_dirs")
+        return False
 
-    # Create empty directories where applicable
-    for lock_dir in lock_dirs:
-        if not lock_dir.exists():
-            lock_dir.mkdir(parents=True)
+
+def is_valid_for_analysis(path: Path, parms: dict, glob_dict: dict):
+    """
+    Helper function. Given a subject or session, the parameters from DataPar.json, and a dict of glob_patterns to use,
+    determine whether this path should be skipped.
+    """
+    try:
+        has_flair_img = next(path.glob(glob_dict["FLAIR"])).exists()
+    except StopIteration:
+        has_flair_img = False
+    try:
+        has_m0_img = next(path.glob(glob_dict["M0"])).exists()
+    except StopIteration:
+        has_m0_img = False
+    try:
+        has_asl_img = next(path.glob(glob_dict["ASL"])).exists()
+    except StopIteration:
+        has_asl_img = False
+
+    if any([parms["SkipIfNoM0"] and not has_m0_img,
+            parms["SkipIfNoASL"] and not has_asl_img,
+            parms["SkipIfNoFlair"] and not has_flair_img]):
+        return False
+    return True
 
 
 def calculate_anticipated_workload(parmsdict, run_options, translators):
@@ -64,131 +60,108 @@ def calculate_anticipated_workload(parmsdict, run_options, translators):
     used to determine the appropriate maximum value for the progressbar
     """
 
-    def get_structural_workload(analysis_directory: Path, study_subjects, structuralmod_dict,
-                                skip_if_no_asl, skip_if_no_m0, skip_if_no_flair, workload_translator):
-        default_workload = ["010_LinearReg_T1w2MNI.status",
-                            "060_Segment_T1w.status",
-                            "080_Resample2StandardSpace.status",
-                            "090_GetVolumetrics.status",
-                            "100_VisualQC_Structural.status",
-                            "999_ready.status"]
-        flair_workload = ["020_LinearReg_FLAIR2T1w.status",
-                          "030_FLAIR_BiasfieldCorrection.status",
-                          "040_LST_Segment_FLAIR_WMH.status",
-                          "050_LST_T1w_LesionFilling_WMH.status",
-                          "070_CleanUpWMH_SEGM.status"]
+    def get_structural_workload(analysis_directory: Path, parms: dict, incl_regex: re.Pattern,
+                                workload_translator: dict):
+        structuralmod_dict = {}
         status_files = []
-        for subject in study_subjects:
-            # Do not proceed to if a particular subject/session is missing the required image based on parms
-            try:
-                has_flair_img = next((analysis_directory / subject).glob("*FLAIR.nii*")).exists()
-            except StopIteration:
-                has_flair_img = False
-            try:
-                has_m0_img = next((analysis_directory / subject).glob("*/*M0.nii*")).exists()
-            except StopIteration:
-                has_m0_img = False
-            try:
-                has_asl_img = next((analysis_directory / subject).glob("*/*ASL*.nii*")).exists()
-            except StopIteration:
-                has_asl_img = False
+        workload = {"010_LinearReg_T1w2MNI.status", "020_LinearReg_FLAIR2T1w.status",
+                    "030_FLAIR_BiasfieldCorrection.status", "040_LST_Segment_FLAIR_WMH.status",
+                    "050_LST_T1w_LesionFilling_WMH.status", "060_Segment_T1w.status", "070_CleanUpWMH_SEGM.status",
+                    "080_Resample2StandardSpace.status", "090_GetVolumetrics.status", "100_VisualQC_Structural.status",
+                    "999_ready.status"}
+        glob_dictionary = {"ASL": "*/*ASL*.nii*", "FLAIR": "*FLAIR.nii*", "M0": "*/*M0.nii*"}
 
-            if any([skip_if_no_m0 and not has_m0_img,
-                    skip_if_no_asl and not has_asl_img,
-                    skip_if_no_flair and not has_flair_img]):
+        for subject_path in analysis_directory.iterdir():
+            # Disregard files, standard directories, subjects that fail regex, and subjects that are to be excluded
+            if any([subject_path.is_file(), subject_path.name in ["Population", "lock"],
+                    subject_path.name in parms["exclusion"], not incl_regex.search(subject_path.name)]):
+                continue
+            # Account for SkipIfNo flags
+            if not is_valid_for_analysis(path=subject_path, parms=parms, glob_dict=glob_dictionary):
                 continue
 
-            directory = analysis_directory / "lock" / "xASL_module_Structural" / subject / "xASL_module_Structural"
-            workload = set(default_workload + flair_workload)  # The full workload is assumed now every time
-            filtered_workload = [directory / name for name in workload if not (directory / name).exists()]
+            lock_dir: Path = analysis_directory / "lock" / "xASL_module_Structural" / subject_path.name / \
+                             "xASL_module_Structural"
+            if not lock_dir.exists():
+                lock_dir.mkdir(parents=True)
+            filtered_workload = [lock_dir / name for name in workload if not (lock_dir / name).exists()]
             # Filter out any anticipated status files that are already present in the lock dirs
             status_files.extend(filtered_workload.copy())
             num_repr = sum([workload_translator[stat_file.name] for stat_file in filtered_workload])
-            structuralmod_dict[subject] = num_repr
+            structuralmod_dict[subject_path.name] = num_repr
 
         return structuralmod_dict, status_files
 
-    def get_asl_workload(analysis_directory, study_subjects, session_names, aslmod_dict,
-                         skip_if_no_asl, skip_if_no_m0, skip_if_no_flair, workload_translator,
+    def get_asl_workload(analysis_directory, parms: dict, workload_translator: dict, incl_regex: re.Pattern,
                          conditions: List[Tuple[str, bool]] = None):
-        if conditions is None:
-            conditions = []
-        workload = ["020_RealignASL.status",
-                    "030_RegisterASL.status",
-                    "040_ResampleASL.status",
-                    "050_PreparePV.status",
-                    "060_ProcessM0.status",
-                    "070_CreateAnalysisMask.status",
-                    "080_Quantification.status",
-                    "090_VisualQC_ASL.status",
-                    "999_ready.status"]
+        aslmod_dict = {}
+        status_files = []
+        glob_dictionary = {"ASL": "*ASL*.nii*", "FLAIR": "*FLAIR.nii*", "M0": "*M0.nii*"}
+        # OLD EXPECTATION
+        if is_earlier_version(parms["MyPath"], 140):
+            workload = {"020_RealignASL.status", "030_RegisterASL.status", "040_ResampleASL.status",
+                        "050_PreparePV.status", "060_ProcessM0.status", "070_Quantification.status",
+                        "080_CreateAnalysisMask.status", "090_VisualQC_ASL.status", "999_ready.status"}
+        # NEW EXPECTATION
+        else:
+            workload = {"020_RealignASL.status", "030_RegisterASL.status", "040_ResampleASL.status",
+                        "050_PreparePV.status", "060_ProcessM0.status", "070_CreateAnalysisMask.status",
+                        "080_Quantification.status", "090_VisualQC_ASL.status", "999_ready.status"}
 
         # conditions is a list of tuples whose first element is a workload filename that may be impacted and whose
         # second element is a boolean that defines whether to remove it or not
+        if conditions is None:
+            conditions = []
         for condition in conditions:
             filename, to_remove = condition
             if to_remove:
                 workload.remove(filename)
 
         # Must iterate through both the subject level listing AND the session level (ASL_1, ASL_2, etc.) listing
-        status_files = []
-        for subject in study_subjects:
-            for run in session_names:
-                try:
-                    has_flair_img = next((analysis_directory / subject).glob("*FLAIR.nii*")).exists()
-                except StopIteration:
-                    has_flair_img = False
-                try:
-                    has_m0_img = next((analysis_directory / subject / run).glob("*M0.nii*")).exists()
-                except StopIteration:
-                    has_m0_img = False
-                try:
-                    has_asl_img = next((analysis_directory / subject / run).glob("*ASL*.nii*")).exists()
-                except StopIteration:
-                    has_asl_img = False
-
-                if any([skip_if_no_m0 and not has_m0_img,
-                        skip_if_no_asl and not has_asl_img,
-                        skip_if_no_flair and not has_flair_img]):
+        for subject_path in analysis_directory.iterdir():
+            # Disregard files, standard directories, subjects that fail regex and subjects that are to be excluded
+            if any([subject_path.is_file(), subject_path.name in ["Population", "lock"],
+                    subject_path.name in parms["exclusion"], not incl_regex.search(subject_path.name)]):
+                continue
+            aslmod_dict[subject_path.name] = {}
+            for run_path in subject_path.iterdir():
+                if run_path.is_file():  # This is kept separate since many files are expected
+                    continue
+                if not is_valid_for_analysis(path=run_path, parms=parms, glob_dict=glob_dictionary):
                     continue
 
-                directory = analysis_directory / "lock" / "xASL_module_ASL" / subject / f"xASL_module_ASL_{run}"
+                # Deduce the lock dir path and make it if it doesn't exist
+                lock_dir: Path = analysis_directory / "lock" / "xASL_module_ASL" / subject_path.name / \
+                                 f"xASL_module_ASL_{run_path.name}"
+                if not lock_dir.exists():
+                    lock_dir.mkdir(parents=True)
+
                 # Filter out any anticipated status files that are already present in the lock dirs
-                filtered_workload = [directory / name for name in workload if not (directory / name).exists()]
+                filtered_workload = [lock_dir / name for name in workload if not (lock_dir / name).exists()]
                 status_files.extend(filtered_workload)
                 # Calculate the numerical representation of the STATUS files workload
                 num_repr = sum([workload_translator[stat_file.name] for stat_file in filtered_workload])
-                aslmod_dict[subject][run] = num_repr
+                aslmod_dict[subject_path.name][run_path.name] = num_repr
 
         return aslmod_dict, status_files
 
     def get_population_workload(analysis_directory, workload_translator):
-        workload = ["010_CreatePopulationTemplates.status",
-                    "020_CreateAnalysisMask.status",
-                    "030_CreateBiasfield.status",
-                    "040_GetDICOMStatistics.status",
-                    "050_GetVolumeStatistics.status",
-                    "060_GetMotionStatistics.status",
-                    "065_GetRegistrationStatistics.status",
-                    "070_GetROIstatistics.status",
-                    "080_SortBySpatialCoV.status",
-                    "090_DeleteAndZip.status",
-                    "999_ready.status"]
+        workload = {"010_CreatePopulationTemplates.status", "020_CreateAnalysisMask.status",
+                    "030_CreateBiasfield.status", "040_GetDICOMStatistics.status", "050_GetVolumeStatistics.status",
+                    "060_GetMotionStatistics.status", "065_GetRegistrationStatistics.status",
+                    "070_GetROIstatistics.status", "080_SortBySpatialCoV.status", "090_DeleteAndZip.status",
+                    "999_ready.status"}
         directory = analysis_directory / "lock" / "xASL_module_Population" / "xASL_module_Population"
+        if not directory.exists():
+            directory.mkdir(parents=True)
         status_files = [directory / name for name in workload if not (directory / name).exists()]
         numerical_representation = sum([workload_translator[stat_file.name] for stat_file in status_files])
         return numerical_representation, status_files
 
-    # Define the individual translators
+    # Define the individual translators and analysis directory
     filename2workload = translators["ExploreASL_Filename2Workload"]
-
-    # First get all the subjects
     analysis_dir = Path(parmsdict["D"]["ROOT"])
-    regex: re.Pattern = re.compile(parmsdict["subject_regexp"])
-    sess_names: List[str] = parmsdict["SESSIONS"]
-    skipnoasl, skipnom0, skipnoflair = parmsdict["SkipIfNoASL"], parmsdict["SkipIfNoM0"], parmsdict["SkipIfNoFlair"]
-    subjects: List[str] = [sub.name for sub in analysis_dir.iterdir() if
-                           all([regex.search(str(sub.name)), sub.is_dir(), sub.name not in ["lock", "Population"]])]
+    subject_regex = re.compile(parmsdict["subject_regexp"])
 
     # Account for conditions that influence whether a .status file is to be removed from the expected workload or not
     asl_conditions = []
@@ -200,39 +173,35 @@ def calculate_anticipated_workload(parmsdict, run_options, translators):
     #     except KeyError:
     #         asl_conditions.append((statfile, default))
 
-    # Use a dict to keep track of everything
-    struct_dict = {subject: 0 for subject in subjects}
-    asl_dict = {subject: {} for subject in subjects}
     # Update the dicts as appropriate
     if run_options == "Both":
-        s_res = get_structural_workload(analysis_dir, subjects, struct_dict, skipnoasl, skipnom0, skipnoflair,
-                                        workload_translator=filename2workload)
+        s_res = get_structural_workload(analysis_dir, parms=parmsdict, workload_translator=filename2workload,
+                                        incl_regex=subject_regex)
         struct_dict, struct_status = s_res
-        a_res = get_asl_workload(analysis_dir, subjects, sess_names, asl_dict, skipnoasl, skipnom0, skipnoflair,
-                                 workload_translator=filename2workload, conditions=asl_conditions)
+        a_res = get_asl_workload(analysis_dir, parms=parmsdict, workload_translator=filename2workload,
+                                 conditions=asl_conditions, incl_regex=subject_regex)
         asl_dict, asl_status = a_res
 
         struct_totalworkload = sum(struct_dict.values())
-        asl_totalworkload = {subject: sum(asl_dict[subject].values()) for subject in subjects}
-        asl_totalworkload = sum(asl_totalworkload.values())
+        asl_totalworkload = sum([sum(subject_dict.values()) for subject_dict in asl_dict.values()])
+
         print(f"Structural Calculated Workload: {struct_totalworkload}")
         print(f"ASL Calculated Workload: {asl_totalworkload}")
         # Return the numerical sum of the workload and the combined list of the expected status files
         return struct_totalworkload + asl_totalworkload, sorted(struct_status + asl_status)
 
     elif run_options == "ASL":
-        a_res = get_asl_workload(analysis_dir, subjects, sess_names, asl_dict, skipnoasl, skipnom0, skipnoflair,
-                                 workload_translator=filename2workload, conditions=asl_conditions)
+        a_res = get_asl_workload(analysis_dir, parms=parmsdict, workload_translator=filename2workload,
+                                 conditions=asl_conditions, incl_regex=subject_regex)
         asl_dict, asl_status = a_res
-        asl_totalworkload = {asl_subject: sum(asl_dict[asl_subject].values()) for asl_subject in subjects}
-        asl_totalworkload = sum(asl_totalworkload.values())
+        asl_totalworkload = sum([sum(subject_dict.values()) for subject_dict in asl_dict.values()])
         print(f"ASL Calculated Workload: {asl_totalworkload}")
         # Return the numerical sum of the workload and the list of expected status files
         return asl_totalworkload, asl_status
 
     elif run_options == "Structural":
-        s_res = get_structural_workload(analysis_dir, subjects, struct_dict, skipnoasl, skipnom0, skipnoflair,
-                                        workload_translator=filename2workload)
+        s_res = get_structural_workload(analysis_dir, parms=parmsdict, workload_translator=filename2workload,
+                                        incl_regex=subject_regex)
         struct_dict, struct_status = s_res
         struct_totalworkload = sum(struct_dict.values())
         print(f"Structural Calculated Workload: {struct_totalworkload}")

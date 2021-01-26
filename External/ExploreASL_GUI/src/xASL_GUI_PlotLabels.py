@@ -2,6 +2,8 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from src.xASL_GUI_HelperFuncs_WidgetFuncs import connect_widget_to_signal, disconnect_widget_and_reset
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import set_formlay_options
+from platform import system
 
 
 class xASL_GUI_PlotLabels(QWidget):
@@ -35,6 +37,12 @@ class xASL_GUI_PlotLabels(QWidget):
         self.mainlay.addWidget(self.grp_title)
         self.mainlay.addWidget(self.grp_xaxislabel)
         self.mainlay.addWidget(self.grp_yaxislabel)
+
+        # Additional MacOS actions
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_title)
+            set_formlay_options(self.formlay_xaxislabel)
+            set_formlay_options(self.formlay_yaxislabel)
 
     def Setup_UI_XAxisLabelParms(self):
         # X-Axis Label Properties

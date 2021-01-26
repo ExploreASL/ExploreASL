@@ -3,11 +3,13 @@ from PySide2.QtGui import Qt, QFont, QIcon
 from PySide2.QtCore import Signal, QSize, Slot
 from src.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit, DandD_FileExplorer2ListWidget
 from src.xASL_GUI_HelperFuncs_DirOps import *
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import set_formlay_options
 import pandas as pd
 from functools import partial
 from pathlib import Path
 from pprint import pprint
-from json import load, dump
+import json
+from platform import system
 
 
 class xASL_GUI_MergeDirs(QWidget):
@@ -28,6 +30,19 @@ class xASL_GUI_MergeDirs(QWidget):
         self.list_hlay_srcdirs: List[QHBoxLayout] = []
         self.list_btn_srcdirs: List[QPushButton] = []
 
+        # Grep 3 - Buttoms
+        # Although these are the finishing widgets, they must be initialized first due to the automatic connections
+        # made during instantiation
+        self.btn_mergedirs = QPushButton("Merge Directories", clicked=self.merge_dirs)
+        self.btn_mergedirs.setEnabled(False)
+        btn_font = QFont()
+        btn_font.setPointSize(16)
+        self.btn_mergedirs.setFont(btn_font)
+        self.btn_mergedirs.setMinimumHeight(50)
+        merge_icon = QIcon(str(Path(self.parent.config["ProjectDir"]) / "media" / "merge_ios_100ax100.png"))
+        self.btn_mergedirs.setIcon(merge_icon)
+        self.btn_mergedirs.setIconSize(QSize(50, 50))
+
         # Group 1 - Overall settings
         self.grp_settings = QGroupBox(title="Merge Settings")
         self.formlay_settings = QFormLayout(self.grp_settings)
@@ -44,7 +59,9 @@ class xASL_GUI_MergeDirs(QWidget):
                                         ["Number of Studies to Merge", "Create Symlinks?", "Overwrite Existing?"],
                                         ["spin_nsrcdirs", "chk_symlinks", "chk_overwrite"]):
             self.formlay_settings.addRow(desc, widget)
-            widget.setToolTip(self.parent.exec_tips["Modjob_RerunPrep"][tipkey])
+            widget.setToolTip(self.parent.exec_tips["Modjob_MergeDirs"][tipkey])
+            if system() == "Darwin":
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         # Group 2 - Source Directories
         self.grp_srcdirs = QGroupBox(title="Directories to Merge")
@@ -60,24 +77,20 @@ class xASL_GUI_MergeDirs(QWidget):
 
         self.add_remove_srcdirs(2)
 
-        # Finishing Widgets
-        self.btn_mergedirs = QPushButton("Merge Directories", clicked=self.merge_dirs)
-        self.btn_mergedirs.setEnabled(False)
-        btn_font = QFont()
-        btn_font.setPointSize(16)
-        self.btn_mergedirs.setFont(btn_font)
-        self.btn_mergedirs.setMinimumHeight(50)
-        merge_icon = QIcon(str(Path(self.parent.config["ProjectDir"]) / "media" / "merge_ios_100ax100.png"))
-        self.btn_mergedirs.setIcon(merge_icon)
-        self.btn_mergedirs.setIconSize(QSize(50, 50))
-
         # Adding groups to main layout and adding tooltips
         self.mainlay.addWidget(self.grp_settings)
         self.mainlay.addWidget(self.grp_srcdirs)
         self.mainlay.addWidget(self.btn_mergedirs)
         for widget, tipkey in zip([self.le_mergedst, self.btn_mergedirs],
                                   ["le_mergedst", "btn_mergedirs"]):
-            widget.setToolTip(self.parent.exec_tips["Modjob_RerunPrep"][tipkey])
+            widget.setToolTip(self.parent.exec_tips["Modjob_MergeDirs"][tipkey])
+            if system() == "Darwin":
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        # Additional MacOS actions
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_settings, vertical_spacing=5)
+            self.vlay_srcdirs_lvl2.setSpacing(3)
 
     def add_remove_srcdirs(self, n_dirs: int):
         # Add widgets
@@ -85,7 +98,7 @@ class xASL_GUI_MergeDirs(QWidget):
             for _ in range(abs(n_dirs - len(self.list_le_srcdirs))):
                 hlay, le, btn = self.make_le_btn_pair("Specify the path to a study directory", self.select_dir,
                                                       self.can_merge)
-                le.setToolTip(self.parent.exec_tips["Modjob_RerunPrep"]["le_studypath"])
+                le.setToolTip(self.parent.exec_tips["Modjob_MergeDirs"]["le_studypath"])
                 self.list_le_srcdirs.append(le)
                 self.list_hlay_srcdirs.append(hlay)
                 self.list_btn_srcdirs.append(btn)
@@ -193,7 +206,7 @@ class xASL_GUI_ModSidecars(QWidget):
         self.grp_fromlist.clicked.connect(self.is_ready)
         self.formlay_fromlist = QFormLayout(self.grp_fromlist)
         self.lab_subs = QLabel(text="Drag and drop the directories of the subjects\n"
-                               "whose json sidecars should be altered")
+                                    "whose json sidecars should be altered")
         self.lst_subs = DandD_FileExplorer2ListWidget()
         self.lst_subs.itemsAdded.connect(self.le_fromfile.clear)
         self.lst_subs.itemsAdded.connect(self.is_ready)
@@ -224,6 +237,8 @@ class xASL_GUI_ModSidecars(QWidget):
                                 ["Which action to perform",
                                  "Do this for ASL JSONs", "Do this for M0 JSONs", "Do this for T1 JSONs", ""]):
             self.formlay_runsettings.addRow(widget) if desc == "" else self.formlay_runsettings.addRow(desc, widget)
+            if system() == "Darwin":
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         # Put it all together
         for grp in [self.grp_fromfile, self.grp_fromlist, self.grp_runsettings]:
@@ -232,6 +247,11 @@ class xASL_GUI_ModSidecars(QWidget):
         # Add tooltips
         for tipkey, tiptext in self.parent.exec_tips["Modjob_ModSidecars"].items():
             getattr(self, tipkey).setToolTip(tiptext)
+
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_fromfile)
+            set_formlay_options(self.formlay_fromlist, vertical_spacing=3)
+            set_formlay_options(self.formlay_runsettings)
 
     def ctrl_which_option(self, widget):
         if widget == self.grp_fromlist:
@@ -438,6 +458,13 @@ class xASL_GUI_TSValter(QWidget):
         if not (Path(self.target_dir) / "participants_orig.tsv").exists():
             self.btn_revert.setEnabled(False)
         self.load_parttsvfile()
+
+        # Addtional MacOS actions
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_metadatafile, vertical_spacing=5)
+            for le in [self.le_metadatafile, self.le_metadata_subjectcol, self.le_parttsv_subjectcol]:
+                le.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            self.mainlay.setSpacing(3)
 
     def Setup_UI_TSValter(self):
         self.mainlay = QVBoxLayout(self)

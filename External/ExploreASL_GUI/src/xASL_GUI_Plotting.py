@@ -8,8 +8,10 @@ from src.xASL_GUI_Graph_FacetManager import xASL_GUI_FacetManager
 from src.xASL_GUI_Graph_FacetArtist import xASL_GUI_FacetArtist
 from src.xASL_GUI_Graph_MRIViewManager import xASL_GUI_MRIViewManager
 from src.xASL_GUI_Graph_MRIViewArtist import xASL_GUI_MRIViewArtist
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import make_scrollbar_area, set_formlay_options
 from json import load
 from pathlib import Path
+from platform import system
 
 
 # noinspection PyCallingNonCallable
@@ -50,6 +52,14 @@ class xASL_Plotting(QMainWindow):
         # Main Widgets setup
         self.UI_Setup_Docker()
 
+        # MacOS addtional actions
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_directories, vertical_spacing=0)
+            self.hlay_analysis_dir.setContentsMargins(5, 0, 5, 0)
+            self.hlay_metadata.setContentsMargins(5, 0, 5, 0)
+            self.vlay_directories.setSpacing(0)
+            self.vlay_directories.addStretch(1)
+
     def resizeEvent(self, event):
         self.dock.setMaximumHeight(self.height())
         super().resizeEvent(event)
@@ -66,7 +76,9 @@ class xASL_Plotting(QMainWindow):
 
         # Set up the directory settings - what analysis folder
         self.grp_directories = QGroupBox(title="Directory settings", parent=self.cont_maindock)
-        self.formlay_directories = QFormLayout(self.grp_directories)
+        (self.vlay_directories, self.scroll_directories,
+         self.cont_directories) = make_scrollbar_area(self.grp_directories)
+        self.formlay_directories = QFormLayout(self.cont_directories)
         self.formlay_directories.setContentsMargins(2, 2, 2, 2)
         self.hlay_analysis_dir, self.le_analysis_dir, self.btn_analysis_dir = self.make_droppable_clearable_le(
             btn_connect_to=self.set_analysis_dir,
@@ -86,7 +98,7 @@ class xASL_Plotting(QMainWindow):
         self.cmb_atlas_selection.addItems(["MNI", "Hammers"])
         self.cmb_pvc_selection = QComboBox()
         self.cmb_pvc_selection.setToolTip(self.plot_tips["cmb_pvc_selection"])
-        self.cmb_pvc_selection.addItems(["Without Partial Volume Correction", "With Partial Volume Correction"])
+        self.cmb_pvc_selection.addItems(["Without PVC", "With PVC"])
         self.cmb_stats_selection = QComboBox()
         self.cmb_stats_selection.setToolTip("Select which statistic the CBF values should represent")
         self.cmb_stats_selection.addItems(["Mean", "Median", "Coefficient of Variation"])
@@ -101,10 +113,10 @@ class xASL_Plotting(QMainWindow):
         self.btn_load_in_data.clicked.connect(self.loader.load_exploreasl_data)
         self.btn_load_in_data.clicked.connect(self.full_reset)
 
-        self.formlay_directories.addRow("Analysis Directory", self.hlay_analysis_dir)
+        self.formlay_directories.addRow("Study Directory", self.hlay_analysis_dir)
         self.formlay_directories.addRow("Metadata/Covariates file", self.hlay_metadata)
-        self.formlay_directories.addRow("Which Atlas to Utilize", self.cmb_atlas_selection)
-        self.formlay_directories.addRow("Which Partial-Volume Stats to View", self.cmb_pvc_selection)
+        self.formlay_directories.addRow("Which Atlas", self.cmb_atlas_selection)
+        self.formlay_directories.addRow("Which Partial-Volume Statistic", self.cmb_pvc_selection)
         self.formlay_directories.addRow("Which Statistic to View", self.cmb_stats_selection)
         self.formlay_directories.addRow(self.btn_subset_data)
         self.formlay_directories.addRow(self.btn_indicate_dtype)

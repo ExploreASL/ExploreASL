@@ -168,12 +168,13 @@ class DandD_FileExplorer2ListWidget(QListWidget):
     """
     itemsAdded = Signal()  # Signal that is sent whenever items are successfully added to the widget
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, overwrite_on_drop=False):
         """
         Modified QListWidget intended to receive multiple
         """
         super().__init__(parent)
         self.setAcceptDrops(True)
+        self._overwrite_on_drop = overwrite_on_drop
 
     def dragEnterEvent(self, event) -> None:
         if event.mimeData().hasUrls():
@@ -194,14 +195,15 @@ class DandD_FileExplorer2ListWidget(QListWidget):
             subject_directories = []
             for url in event.mimeData().urls():
                 if url.isLocalFile():
-                    subject_directories.append(str(url.toLocalFile()))
+                    subject_directories.append(Path(str(url.toLocalFile())))
             # Only filter for the basenames of directories; also, avoid bringing in unnecessary directories like lock
-            basenames = [os.path.basename(directory) for directory in subject_directories if os.path.isdir(directory)
-                         and directory not in ['lock', "Population"]]
+            basenames = {directory.name for directory in subject_directories if directory.is_dir()
+                         and directory.name not in ['lock', "Population"]}
             # Avoid double-dipping the names
-            current_names = [self.item(idx).text() for idx in range(self.count())]
-            filtered_basenames = [name for name in basenames if name not in current_names]
-            self.addItems(filtered_basenames)
+            current_names = {self.item(idx).text() for idx in range(self.count())}
+            if self._overwrite_on_drop:
+                self.clear()
+            self.addItems(sorted(basenames.difference(current_names)))
             self.itemsAdded.emit()
         else:
             event.ignore()
