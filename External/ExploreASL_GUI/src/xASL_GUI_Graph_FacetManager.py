@@ -3,7 +3,8 @@ from PySide2.QtGui import *
 from PySide2.QtCore import *
 import seaborn as sns
 from src.xASL_GUI_HelperClasses import DandD_Graphing_ListWidget2LineEdit
-from src.xASL_GUI_HelperFuncs_WidgetFuncs import connect_widget_to_signal
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import connect_widget_to_signal, set_formlay_options
+from platform import system
 from json import load
 from pathlib import Path
 from src.xASL_GUI_Graph_FacetArtist import xASL_GUI_FacetArtist
@@ -50,6 +51,11 @@ class xASL_GUI_FacetManager(QWidget):
         self.UI_Setup_CommonParameters()
         self.UI_Setup_FigureParms()
 
+        # Additional MacOS actions:
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_commonparms)
+            set_formlay_options(self.formlay_figparms)
+
     def UI_Setup_Tabs(self):
         self.tab_pltsettings = QTabWidget()
         self.cont_commonparms, self.cont_figparms, self.cont_axesparms = QWidget(), QWidget(), QWidget()
@@ -70,6 +76,7 @@ class xASL_GUI_FacetManager(QWidget):
         self.formlay_commonparms = QFormLayout(self.cont_commonparms)
         self.formlay_figparms = QFormLayout(self.cont_figparms)
         self.vlay_axesparms = QVBoxLayout(self.cont_axesparms)
+        self.vlay_axesparms.setContentsMargins(0, 0, 0, 0)
         self.mainlay.addWidget(self.tab_pltsettings)
 
     # Set up connections with an artist
@@ -121,6 +128,8 @@ class xASL_GUI_FacetManager(QWidget):
             widget.setSingleStep(0.01)
             widget.valueChanged.connect(self.sendSignal_plotupdate_paddingcall)
             self.formlay_commonparms.addRow(description, widget)
+            if system() == "Darwin":
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         # Set up the text options and connect the plotlabels signals to the appropriate function
         self.btn_showplotlabels = QPushButton("Show Plot Label Settings", clicked=self.labels_widget.show)
@@ -181,6 +190,8 @@ class xASL_GUI_FacetManager(QWidget):
                                         self.chk_legend_out, self.chk_despine, self.chk_margin_titles]):
             self.formlay_figparms.addRow(description, widget)
             connect_widget_to_signal(widget, self.sendSignal_plotupdate_figurecall)
+            if system() == "Darwin":
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         # Finally add the combobox for selecting the axes type. The connect signal will be established later in
         # UI_Setup_ConnectManager2Artist to ensure that the artist exists
@@ -264,6 +275,8 @@ class xASL_GUI_FacetManager(QWidget):
                                             self.errwidth, self.capsize, self.cmb_palette]):
                 self.formlay_axesparms.addRow(description, widget)
                 connect_widget_to_signal(widget, self.sendSignal_plotupdate_axescall)
+                if system() == "Darwin":
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         elif plot_type == "Strip Plot" or plot_type == "Swarm Plot":
             if plot_type == "Strip Plot":
@@ -291,6 +304,8 @@ class xASL_GUI_FacetManager(QWidget):
                                             self.cmb_palette]):
                 self.formlay_axesparms.addRow(description, widget)
                 connect_widget_to_signal(widget, self.sendSignal_plotupdate_axescall)
+                if system() == "Darwin":
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         elif plot_type == "Box Plot":
             self.plotting_func = sns.boxplot
@@ -324,6 +339,8 @@ class xASL_GUI_FacetManager(QWidget):
                                             self.fliersize, self.linewidth, self.cmb_palette, self.whis]):
                 self.formlay_axesparms.addRow(description, widget)
                 connect_widget_to_signal(widget, self.sendSignal_plotupdate_axescall)
+                if system() == "Darwin":
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         elif plot_type == "Violin Plot":
             self.plotting_func = sns.violinplot
@@ -359,6 +376,8 @@ class xASL_GUI_FacetManager(QWidget):
                                             self.scale_hue, self.dodge, self.linewidth, self.cmb_palette]):
                 self.formlay_axesparms.addRow(description, widget)
                 connect_widget_to_signal(widget, self.sendSignal_plotupdate_axescall)
+                if system() == "Darwin":
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         elif plot_type == "Boxen Plot":
             self.plotting_func = sns.boxenplot
@@ -391,6 +410,8 @@ class xASL_GUI_FacetManager(QWidget):
                                             self.linewidth, self.outlier_prop, self.show_outliers, self.cmb_palette]):
                 self.formlay_axesparms.addRow(description, widget)
                 connect_widget_to_signal(widget, self.sendSignal_plotupdate_axescall)
+                if system() == "Darwin":
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         elif plot_type == "Scatter Plot":
             self.plotting_func = sns.scatterplot
@@ -419,6 +440,8 @@ class xASL_GUI_FacetManager(QWidget):
                                             self.spinbox_markersize, self.cmb_palette]):
                 self.formlay_axesparms.addRow(description, widget)
                 connect_widget_to_signal(widget, self.sendSignal_plotupdate_axescall)
+                if system() == "Darwin":
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         # Setup the wigets associated with connecting to the legend parameters each time
         if plot_type != "Select a plot type":
@@ -437,6 +460,8 @@ class xASL_GUI_FacetManager(QWidget):
         self.axes_widget = True
         self.vlay_axesparms.addWidget(self.subcont_axesparms)
         self.formlay_axesparms = QFormLayout(self.subcont_axesparms)
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_axesparms)
 
     @staticmethod
     def UI_Setup_AxesMappings(keywords: list, widgets: list):
@@ -560,6 +585,8 @@ class xASL_GUI_FacetTickWidget(QWidget):
         self.setWindowFlag(Qt.Window)
         self.setWindowTitle("FacetGrid Ticklabels Settings")
         self.formlay_ticks = QFormLayout(self)
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_ticks)
 
         # Widgets
         self.cmb_hfontsize = QComboBox()
@@ -583,6 +610,8 @@ class xASL_GUI_FacetTickWidget(QWidget):
                                         ]):
             self.formlay_ticks.addRow(description, widget)
             connect_widget_to_signal(widget, self.sendSignal_tickparms_updateplot)
+            if system() == "Darwin":
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         self.xtick_kwargs = {
             "fontsize": self.cmb_hfontsize.currentText,

@@ -9,10 +9,3 @@ JSON_LOGIC/ExploreASL_GUI_masterconfig.json
 .idea
 __pycache__
 *MRI_viewer.mp4
-xASL_GUI_run.sh
-ExploreASL_GUI/venv
-ExploreASL_GUI/deprecated
-ExploreASL_GUI/pyinstaller_script.sh
-ExploreASL_GUI/.gitignore
-ExploreASL_GUI/.git
-ExploreASL_GUI/hooks

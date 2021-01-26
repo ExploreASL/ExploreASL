@@ -28,8 +28,6 @@
     "le_study_dir": "Specify the filepath to the raw folder of your study.\nFor example: /home/jsmith/MyStudy/derivatives",
     "lst_included_subjects": "Drag and Drop the subjects that should be analyzed",
     "lst_excluded_subjects": "Drag and Drop the subjects that should be excluded from the analysis",
-    "le_run_names": "Specify the names of run folders that are present within the analysis folder\nAFTER an import has been performed. Run names must be separated by a comma and\none space",
-    "le_run_options": "Specify the names that runs should have in the final output. For example, if\nthere are run folders called 'ASL_1' and 'ASL_2', you can specify here that\nhey should be called 'control' and 'treatment' in the final output",
     "cmb_vendor": "Specify the Vendor of the scans in the analysis folder",
     "cmb_sequencetype": "Specify the imaging sequence utilized during scan acquisition",
     "cmb_labelingtype": "Specify the labelling strategy used during ASL scan acquisition",
@@ -98,6 +96,7 @@
       "chk_symlinks": "Indicate whether the merge directory should be real directories (unchecked) or symbolic pointers to real files (checked).\nThe latter saves diskspace at the detriment of depending on the original file existing.",
       "chk_overwrite": "Indicate whether existing files in the merge destination should be overwritten during the merge operation (checked) or skipped (unchecked).",
       "le_mergedst": "Indicate the path to the merge directory.\nFor example: /home/jsmith/MergeStudies/derivatives",
+      "btn_mergedirs": "Merge indicated analysis directories together",
       "le_studypath": "Specify the filepath to the root folder of your study.\nFor example: /home/jsmith/MyStudy/derivatives"
     },
     "Modjob_ModSidecars": {

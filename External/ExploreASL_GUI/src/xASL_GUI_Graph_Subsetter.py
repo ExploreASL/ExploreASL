@@ -1,9 +1,11 @@
 from PySide2.QtWidgets import (QWidget, QLabel, QComboBox, QFormLayout, QVBoxLayout, QPushButton,
-                               QScrollArea)
+                               QScrollArea, QSizePolicy)
 from PySide2.QtGui import Qt, QFont
 from PySide2.QtCore import Signal, Slot
 import pandas as pd
 import numpy as np
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import set_formlay_options
+from platform import system
 
 
 # noinspection PyAttributeOutsideInit
@@ -23,6 +25,10 @@ class xASL_GUI_Subsetter(QWidget):
         self.do_not_add = ['', np.nan, 'nan']
         # Main Setup
         self.Setup_UI_MainWidgets()
+
+        # Additional MacOS actions
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_subsets)
 
     def Setup_UI_MainWidgets(self):
         self.mainlay = QVBoxLayout(self)
@@ -60,6 +66,7 @@ class xASL_GUI_Subsetter(QWidget):
             # Otherwise, create a combobox, add it to the form layout, and add the method to the current text as a
             # value, as this will be used to
             cmb = Subsetter_QCombobox(column_name=colname)
+            cmb.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             values = self.parent_cw.loader.loaded_long_data[colname].unique()
             to_add = [value for value in values if value not in self.do_not_add]
             cmb.addItems(["Select a subset"] + to_add)

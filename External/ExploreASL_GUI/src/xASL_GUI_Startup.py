@@ -1,45 +1,97 @@
 from src.xASL_GUI_MainWin import xASL_MainWin
-from PySide2.QtWidgets import QApplication, QMessageBox, QWidget, QDialog
+from PySide2.QtWidgets import QApplication, QMessageBox, QWidget, QDialog, QDialogButtonBox
 from PySide2.QtGui import QIcon
 from platform import system
 from shutil import which
-from glob import glob
+from glob import iglob
 from os import chdir
 from pathlib import Path
 import sys
 from json import load
+from typing import Union
 import subprocess
 import re
 
 
+def get_local_matlab() -> (bool, Union[str, None]):
+    matlab_cmd_path = which("matlab")
+    matlab_ver_regex = re.compile(r"R\d{4}[ab]")
+    # Get version #
+    matlab_ver = None
+
+    # Is on PATH
+    if matlab_cmd_path is not None:
+
+        match = matlab_ver_regex.search(matlab_cmd_path)
+
+        # If the version number was found
+        if match:
+            print(f"shutil method was a success and located: {match.group()}")
+            matlab_ver = match.group()
+            return matlab_ver, matlab_cmd_path
+
+        # Otherwise,
+        # For Linux/MacOS with promising root
+        if system() == "Linux" and '/usr/' in matlab_cmd_path:
+            print(f"User clearly has the matlab command in {matlab_cmd_path}, but the version number could not be "
+                  f"ascertained. Attempting to locate around '/usr/local/")
+            for search_pattern in ["/usr/local/matlab**/bin", "/usr/local/**/MATLAB/*/bin"]:
+                try:
+                    local_result = next(iglob(search_pattern, recursive=True))
+                    local_match = matlab_ver_regex.search(local_result[0])
+                    if local_match:
+                        matlab_ver = local_match.group()
+                        return matlab_ver, matlab_cmd_path
+                except StopIteration:
+                    continue
+
+        # If no luck so far, resort to using subprocess since matlab is on PATH
+        if matlab_ver is None:
+            print("Version was not readily visible in PATH. Attempting backup subprocess method to extract version")
+            result = subprocess.run(["matlab", "-nosplash", "-nodesktop", "-batch", "matlabroot"],
+                                    capture_output=True, text=True)
+            match = matlab_ver_regex.search(result.stdout)
+            if result.returncode == 0 and match:
+                matlab_ver = match.group()
+            return matlab_ver, matlab_cmd_path
+
+        # Windows or no lucky search pattern
+        return matlab_ver, matlab_cmd_path
+
+    # Not on PATH
+    else:
+        if system() != "Darwin":
+            return matlab_ver, matlab_cmd_path
+        # MacOS, default installation to Applications seems to avoid adding MATLAB to PATH. Look for it in applications
+        applications_path = Path("/Applications").resolve()
+        try:
+            matlab_cmd_path = str(next(applications_path.rglob("bin/matlab")))
+            matlab_ver = matlab_ver_regex.search(matlab_cmd_path).group()
+            return matlab_ver, matlab_cmd_path
+        except (StopIteration, AttributeError):
+            return matlab_ver, matlab_cmd_path
+
+
 def startup():
-    print(f"Launching script at: {Path(__file__)} ")
     app = QApplication(sys.argv)
-    project_dir = Path(__file__).resolve().parent.parent
-    print(f"Project Directory is: {project_dir}")
-    # Get the appropriate default style based on the user's operating system
-    if system() in ["Windows", "Linux"]:  # Windows
-        app.setStyle("Fusion")
-    else:  # Mac
-        app.setStyle("macintosh")
-
-    if not (project_dir / "JSON_LOGIC").exists():
-        QMessageBox().warning(QWidget(),
-                              "No JSON_LOGIC directory found",
-                              f"The program directory structure is compromised. No JSON_LOGIC directory was located"
-                              f"in {project_dir}",
-                              QMessageBox.Ok)
-        sys.exit(1)
-
-    # Get the screen credentials
     screen = app.primaryScreen()
     screen_size = screen.availableSize()
+    project_dir = Path(__file__).resolve().parent.parent
+    print(f"Launching script at: {Path(__file__)} ")
+    print(f"Project Directory is: {project_dir}")
 
-    if (project_dir / "JSON_LOGIC" / "ErrorsListing.json").exists():
-        with open(project_dir / "JSON_LOGIC" / "ErrorsListing.json") as startup_errs_reader:
-            startup_errs = load(startup_errs_reader)
-    else:
-        sys.exit(1)
+    # Get the appropriate default style based on the user's operating system
+    app.setStyle("Fusion") if system() in ["Windows", "Linux"] else app.setStyle("macintosh")
+
+    # Ensure essential directories exist
+    for essential_dir in ["JSON_LOGIC", "media", "External"]:
+        if not (project_dir / essential_dir).exists():
+            QMessageBox().warning(QWidget(),
+                                  "No JSON_LOGIC directory found",
+                                  f"The program directory structure is compromised. No JSON_LOGIC directory was located"
+                                  f"in {project_dir}",
+                                  QMessageBox.Ok)
+            sys.exit(1)
 
     # Check if the master config file exists; if it doesn't, the app will initialize one on the first startup
     if (project_dir / "JSON_LOGIC" / "ExploreASL_GUI_masterconfig.json").exists():
@@ -63,78 +115,41 @@ def startup():
                          "DeveloperMode": True}  # Whether to launch the app in developer mode or not
 
         # We must also check for the MATLAB version present on the machine
-        # Two common possibilities on Linux:
-        # 1) the PATH registered is /usr/local/MATLAB/[VERSION]/bin
-        # 2) the PATH registered is /usr/bin
-        # Try option 1 first to get the version, opt for looking around /usr/local if Option 2 comes around
-        print("First time startup. Please be patient as the matlab version is detected\n"
-              "Attempting shutil method first")
+        desc = "Is a standard MATLAB program installed on this machine?"
+        check_for_local = QMessageBox.question(QWidget(), "MATLAB Detection", desc,
+                                               (QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel))
+        if check_for_local == QMessageBox.Cancel:
+            sys.exit(0)
 
-        # Is matlab even on PATH?
-        result = which("matlab")
-        if result is not None:
-            # If matlab was found on PATH, see if the version number can be extracted from it as per possibility #1
-            # On Windows, this should always work. On Linux...*sigh*
-            regex = re.compile(r".*R\d{4}[ab]")
-            match = regex.search(result)
-            if match:
-                master_config["MATLABROOT"] = match.group()
-                print(f"shutil method was a success and located: {match.group()}")
-
-            # Not a success, see if the version number can be extracted from possibility #2
-            elif not match and '/usr/' in result:
-                version_is_located = False
-                print(f"User clearly has the matlab command in {result}, but the version number could not be "
-                      f"ascertained. Attempting to locate around '/usr/local/")
-                for search_pattern in ["/usr/local/matlab**/bin", "/usr/local/**/MATLAB/*/bin"]:
-                    local_result = glob(search_pattern, recursive=True)
-                    if len(local_result) != 0:
-                        local_match = regex.search(local_result[0])
-                        if local_match:
-                            print(f"Located MATLAB version number: {local_match.group()}")
-                            master_config["MATLABROOT"] = local_match.group()
-                            version_is_located = True
-                            break
-
-                if not version_is_located:
-                    QMessageBox().warning(QWidget(), startup_errs["NoMATLABVer"][0],
-                                          startup_errs["NoMATLABVer"][1], QMessageBox.Ok)
-                    sys.exit(1)
-
-            # Neither a success with possibility #1 or #2
+        if check_for_local == QMessageBox.Yes:
+            version, cmd_path = get_local_matlab()
+            master_config["MATLAB_VER"] = version
+            master_config["MATLAB_CMD_PATH"] = cmd_path
+            if cmd_path is None:
+                QMessageBox.warning(QWidget(), "No MATLAB Command Found",
+                                    "The matlab command could not be found on this local system. ASL analysis "
+                                    "cannot be locally performed without the GUI knowing from where MATLAB can be "
+                                    "launched.", QMessageBox.Ok)
+            elif cmd_path is not None and version is None:
+                QMessageBox.warning(QWidget(), "No MATLAB Version Found",
+                                    f"The matlab command was found at:\n{str(cmd_path)}.\nHowever, the version could "
+                                    f"not be determined. The GUI requires knowledge of the MATLAB version being run "
+                                    f"in order to process data", QMessageBox.Ok)
             else:
-                QMessageBox().warning(QWidget(), startup_errs["NoMATLABVer"][0],
-                                      startup_errs["NoMATLABVer"][1], QMessageBox.Ok)
-                sys.exit(1)
-
-            # Assuming the above was successful, dcm2niix may not have executable permission; add execute permissions
-            dcm2niix_dir = project_dir / "External" / "DCM2NIIX" / f"DCM2NIIX_{system()}"
-            dcm2niix_file = next(dcm2niix_dir.glob("dcm2niix*"))
-            stat = oct(dcm2niix_file.stat().st_mode)
-            if not stat.endswith("775"):
-                dcm2niix_file.chmod(0o775)
-            else:
-                print(f"dcm2niix already has execute permissions")
-
-        # Otherwise, try the old subprocess methods
+                pass
         else:
-            print("shutil method unsuccessful in locating a path. Attempting backup subprocess method")
-            regex = re.compile("'(.*)'")
-            result = subprocess.run(["matlab", "-nosplash", "-nodesktop", "-batch", "matlabroot"],
-                                    capture_output=True, text=True)
-            if result.returncode == 0:
-                match = regex.search(result.stdout)
-                if match:
-                    master_config["MATLABROOT"] = match.group(1)
-                    print(f"subprocess method was a success and located: {match.group(1)}")
-                else:
-                    QMessageBox().warning(QWidget(), startup_errs["NoMATLAB"][0],
-                                          startup_errs["NoMATLAB"][1], QMessageBox.Ok)
-                    sys.exit(1)
-            else:
-                QMessageBox().warning(QWidget(), startup_errs["NoMATLAB"][0],
-                                      startup_errs["NoMATLAB"][1], QMessageBox.Ok)
-                sys.exit(1)
+            QMessageBox.information(QWidget(), "No off-local support at the current time",
+                                    "The current version of ExploreASL_GUI does not offer support for compiled or "
+                                    "virtual MATLAB runtimes.", QMessageBox.Ok)
+
+        # Assuming the above was successful, dcm2niix may not have executable permission; add execute permissions
+        dcm2niix_dir = project_dir / "External" / "DCM2NIIX" / f"DCM2NIIX_{system()}"
+        dcm2niix_file = next(dcm2niix_dir.glob("dcm2niix*"))
+        stat = oct(dcm2niix_file.stat().st_mode)
+        if not stat.endswith("775"):
+            dcm2niix_file.chmod(0o775)
+        else:
+            print(f"dcm2niix already has execute permissions")
 
     # If all was successful, launch the GUI
     app.setWindowIcon(QIcon(str(project_dir / "media" / "ExploreASL_logo.ico")))

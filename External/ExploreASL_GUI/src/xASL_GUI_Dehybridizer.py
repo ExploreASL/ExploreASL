@@ -3,6 +3,7 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from src.xASL_GUI_HelperClasses import DandD_FileExplorer2LineEdit
 from src.xASL_GUI_AnimationClasses import xASL_ImagePlayer
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import set_formlay_options
 from json import load
 from pathlib import Path
 import shutil
@@ -67,6 +68,11 @@ class xASL_GUI_Dehybridizer(QWidget):
 
         # Connect signals
         self.signal_startexpanding.connect(self.expand_directories)
+
+        # MacOS additional actions
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_basedirs, vertical_spacing=3)
+            self.mainlay.setContentsMargins(5, 0, 5, 5)
 
     def SetupUI_UserSpecifyHybridDir(self):
         # First, specify the root directory

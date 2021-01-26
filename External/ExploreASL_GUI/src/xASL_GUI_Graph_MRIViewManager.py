@@ -6,7 +6,8 @@ from json import load
 from pathlib import Path
 from src.xASL_GUI_Graph_MRIViewArtist import xASL_GUI_MRIViewArtist
 from src.xASL_GUI_HelperClasses import DandD_Graphing_ListWidget2LineEdit
-from src.xASL_GUI_HelperFuncs_WidgetFuncs import connect_widget_to_signal
+from src.xASL_GUI_HelperFuncs_WidgetFuncs import connect_widget_to_signal, set_formlay_options
+from platform import system
 
 
 class xASL_GUI_MRIViewManager(QWidget):
@@ -46,6 +47,10 @@ class xASL_GUI_MRIViewManager(QWidget):
             self.UI_Setup_MRIViewParameters()
             self.error_init = False
 
+            # Additional MacOS actions
+            if system() == "Darwin":
+                set_formlay_options(self.formlay_mriparms, vertical_spacing=5)
+
         except (FileNotFoundError, StopIteration):
             QMessageBox.warning(self.parent_cw, self.parent_cw.plot_errs["MRIPlotNoDataPar"][0],
                                 self.parent_cw.plot_errs["MRIPlotNoDataPar"][1], QMessageBox.Ok)
@@ -62,6 +67,7 @@ class xASL_GUI_MRIViewManager(QWidget):
         self.tab_pltsettings.addTab(self.cont_mriparms, "MRI Viewer Parameters")
 
         self.vlay_axesparms = QVBoxLayout(self.cont_scatterparms)
+        self.vlay_axesparms.setContentsMargins(0, 0, 0, 0)
         self.formlay_mriparms = QFormLayout(self.cont_mriparms)
         self.mainlay.addWidget(self.tab_pltsettings)
 
@@ -129,6 +135,8 @@ class xASL_GUI_MRIViewManager(QWidget):
                                             self.cmb_palette]):
                 self.formlay_axesparms.addRow(description, widget)
                 connect_widget_to_signal(widget, self.sendSignal_plotupdate_axescall)
+                if system() == "Darwin":
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
             # xticklabels rotation has a different connection
             self.spinbox_xticksrot = QSpinBox(minimum=0, maximum=90, value=0, singleStep=1)
@@ -137,6 +145,8 @@ class xASL_GUI_MRIViewManager(QWidget):
             connect_widget_to_signal(self.le_y, self.artist.plotupdate_xticklabels_from_le)
             connect_widget_to_signal(self.le_hue, self.artist.plotupdate_xticklabels_from_le)
             self.formlay_axesparms.addRow("X Axis Ticklabels Rotation", self.spinbox_xticksrot)
+            if system() == "Darwin":
+                self.spinbox_xticksrot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
             # Don't forget to remove the spacer item
             self.vlay_axesparms.removeItem(self.spacer)
@@ -182,6 +192,8 @@ class xASL_GUI_MRIViewManager(QWidget):
                                             self.spinbox_markersize, self.cmb_palette]):
                 self.formlay_axesparms.addRow(description, widget)
                 connect_widget_to_signal(widget, self.sendSignal_plotupdate_axescall)
+                if system() == "Darwin":
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
             self.vlay_axesparms.removeItem(self.spacer)
 
@@ -239,6 +251,12 @@ class xASL_GUI_MRIViewManager(QWidget):
         self.formlay_mriparms.addRow("T1w Image Colormap", self.cmb_t1w_cmap)
         self.formlay_mriparms.addRow("Darkest Pixel Value", self.spinbox_mincbf)
         self.formlay_mriparms.addRow("Brightest Pixel Value", self.spinbox_maxcbf)
+
+        if system() == "Darwin":
+            for widget in {self.cmb_selectsubject, self.slider_axialslice, self.slider_sagittalslice,
+                           self.slider_coronalslice, self.cmb_cbf_cmap, self.cmb_t1w_cmap, self.spinbox_mincbf,
+                           self.spinbox_maxcbf}:
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     # Convenience Function - clears the Axes Parameters Tab
     # noinspection PyTypeChecker
@@ -305,6 +323,8 @@ class xASL_GUI_MRIViewManager(QWidget):
         self.axes_widget = True
         self.vlay_axesparms.addWidget(self.subcont_axesparms)
         self.formlay_axesparms = QFormLayout(self.subcont_axesparms)
+        if system() == "Darwin":
+            set_formlay_options(self.formlay_axesparms, vertical_spacing=5)
 
     @staticmethod
     def UI_Setup_Slide_Spin(slider: QSlider, spinbox: QSpinBox, slider_tip: str, spintip: str):

@@ -36,6 +36,8 @@ class xASL_GUI_Data_Loader(QWidget):
 
     def load_exploreasl_data(self):
         # Cautionary measures
+        from src.xASL_GUI_Plotting import xASL_Plotting
+        self.parent_cw: xASL_Plotting
         stats_dir = Path(self.parent_cw.le_analysis_dir.text()) / "Population" / "Stats"
         if any([not stats_dir.exists(), not stats_dir.is_dir(), len(list(stats_dir.glob("*.tsv"))) == 0]):
             QMessageBox().warning(self.parent_cw, self.parent_cw.plot_errs["BadStudyDir"][0],
@@ -45,8 +47,7 @@ class xASL_GUI_Data_Loader(QWidget):
         # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # First Section - Load in the ExploreASL Stats directory data
         atlas = {"MNI": "MNI_structural", "Hammers": "Hammers"}[self.parent_cw.cmb_atlas_selection.currentText()]
-        pvc = {"With Partial Volume Correction": "PVC2",
-               "Without Partial Volume Correction": "PVC0"}[self.parent_cw.cmb_pvc_selection.currentText()]
+        pvc = {"With PVC": "PVC2", "Without PVC": "PVC0"}[self.parent_cw.cmb_pvc_selection.currentText()]
         stat = {"Mean": "mean", "Median": "median",
                 "Coefficient of Variation": "CoV"}[self.parent_cw.cmb_stats_selection.currentText()]
         # Get the relevant files; exit if not all files can be found
