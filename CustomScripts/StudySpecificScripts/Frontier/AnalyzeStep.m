@@ -249,45 +249,54 @@ end
 
 % Write a table with normalized CBF values for all patients/trajectories and ASL, DSC, PET
 	
-for iL = 1:size(coordinateTable,1)
-	% For each trajectory
-	resTraCellASL{1,iL+1} = ['P' num2str(iL,'%.2d')];
-	resTraCellDSC{1,iL+1} = ['P' num2str(iL,'%.2d')];
-	resTraCellPET{1,iL+1} = ['P' num2str(iL,'%.2d')];
-	for iT = 1:size(coordinateTable,2)
-		if resTra(iL,iT,1,1,2)
-			resTraCellASL{iT+1,iL+1} = resTra(iL,iT,1,1,2);
-		else
-			resTraCellASL{iT+1,iL+1} = '';
-		end
-		
-		if resTra(iL,iT,2,1,2)
-			resTraCellDSC{iT+1,iL+1} = resTra(iL,iT,2,1,2);
-		else
-			resTraCellDSC{iT+1,iL+1} = '';
-		end
-		
-		if resTra(iL,iT,3,1,2)
-			resTraCellPET{iT+1,iL+1} = resTra(iL,iT,3,1,2);
-		else
-			resTraCellPET{iT+1,iL+1} = '';
+% For 1x1x1 and 3x3x3 ROIs
+for iR = 1:2
+	for iL = 1:size(coordinateTable,1)
+		% For each trajectory
+		resTraCellASL{1,iL+1} = ['P' num2str(iL,'%.2d')];
+		resTraCellDSC{1,iL+1} = ['P' num2str(iL,'%.2d')];
+		resTraCellPET{1,iL+1} = ['P' num2str(iL,'%.2d')];
+		for iT = 1:size(coordinateTable,2)
+			if resTra(iL,iT,1,iR,2)
+				resTraCellASL{iT+1,iL+1} = resTra(iL,iT,1,iR,2);
+			else
+				resTraCellASL{iT+1,iL+1} = '';
+			end
+			
+			if resTra(iL,iT,2,iR,2)
+				resTraCellDSC{iT+1,iL+1} = resTra(iL,iT,2,iR,2);
+			else
+				resTraCellDSC{iT+1,iL+1} = '';
+			end
+			
+			if resTra(iL,iT,3,iR,2)
+				resTraCellPET{iT+1,iL+1} = resTra(iL,iT,3,iR,2);
+			else
+				resTraCellPET{iT+1,iL+1} = '';
+			end
 		end
 	end
+	
+	% Add headers
+	resTraCellASL{1,1} = 'ASL';
+	resTraCellDSC{1,1} = 'DSC';
+	resTraCellPET{1,1} = 'PET';
+	for iT = 1:size(coordinateTable,2)
+		resTraCellASL{iT+1,1} = ['T' num2str(iT,'%.2d')];
+		resTraCellDSC{iT+1,1} = ['T' num2str(iT,'%.2d')];
+		resTraCellPET{iT+1,1} = ['T' num2str(iT,'%.2d')];
+	end
+	
+	if iR == 1
+		xASL_tsvWrite(resTraCellASL,fullfile(rawDir,'analysis','results','resTraASL.tsv'),1);
+		xASL_tsvWrite(resTraCellDSC,fullfile(rawDir,'analysis','results','resTraDSC.tsv'),1);
+		xASL_tsvWrite(resTraCellPET,fullfile(rawDir,'analysis','results','resTraPET.tsv'),1);
+	else
+		xASL_tsvWrite(resTraCellASL,fullfile(rawDir,'analysis','results','resTra333ASL.tsv'),1);
+		xASL_tsvWrite(resTraCellDSC,fullfile(rawDir,'analysis','results','resTra333DSC.tsv'),1);
+		xASL_tsvWrite(resTraCellPET,fullfile(rawDir,'analysis','results','resTra333PET.tsv'),1);
+	end
 end
-
-% Add headers
-resTraCellASL{1,1} = 'ASL';
-resTraCellDSC{1,1} = 'DSC';
-resTraCellPET{1,1} = 'PET';
-for iT = 1:size(coordinateTable,2)
-	resTraCellASL{iT+1,1} = ['T' num2str(iT,'%.2d')];
-	resTraCellDSC{iT+1,1} = ['T' num2str(iT,'%.2d')];
-	resTraCellPET{iT+1,1} = ['T' num2str(iT,'%.2d')];
-end
-
-xASL_tsvWrite(resTraCellASL,fullfile(rawDir,'analysis','results','resTraASL.tsv'),1);
-xASL_tsvWrite(resTraCellDSC,fullfile(rawDir,'analysis','results','resTraDSC.tsv'),1);
-xASL_tsvWrite(resTraCellPET,fullfile(rawDir,'analysis','results','resTraPET.tsv'),1);
 
 % - plot a scatter plot of ASL vs DSC and ASL vs PET for all available trajectories
 
