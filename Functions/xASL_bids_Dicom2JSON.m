@@ -1,12 +1,12 @@
-function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn)
+function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn)
 %xASL_bids_Dicom2JSON Go through the DICOM or PAR/REC files, parses the header and saves it in JSON
 %
-% FORMAT: [parms pathDcmDictOut] = xASL_bids_Dicom2Parms(inp[, parmsfile, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
+% FORMAT: [parms pathDcmDictOut] = xASL_bids_Dicom2Parms(imPar, pathIn[, pathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
 %
 % INPUT:
 %        imPar              - struct with import parameters (REQUIRED)
-%        inp (PATH)         - path to the RAW files (REQUIRED)
-%        PathJSON (PATH)    - path to the JSON file for saving parameters (OPTIONAL, DEFAULT = don't save)
+%        pathIn (PATH)         - path to the RAW files (REQUIRED)
+%        pathJSON (PATH)    - path to the JSON file for saving parameters (OPTIONAL, DEFAULT = don't save)
 %        dcmExtFilter (STR) - wildcards specifying the allowed extensions for the RAW files
 %        bUseDCMTK (BOOL)   - if yes, then use DCMTK instead of dicominfo
 %        pathDcmDictIn (STR)- path to the dicom dictionary in case DCMTK fails and DICOMINFO is used
@@ -16,7 +16,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 %        pathDcmDictOut     - if dicom dict for dicominfo is initialized then clear this path, otherwise return unchanged pathDcmDictIn
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      The function goes through the INP files, reads the DICOM or PAR/REC files and parses their headers.
+% DESCRIPTION:      The function goes through the pathIn files, reads the DICOM or PAR/REC files and parses their headers.
 %                   It extracts the DICOM parameters important for ASL, makes sure they are in the correct format, if missing then 
 %                   replaces with default value, it also checks if the parameters are consistent across DICOM files for a single sequence.
 %
@@ -32,8 +32,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 	% Admin
 	% ----------------------------------------------------------------------------------
 	
-	if nargin<2 || isempty(PathJSON)
-		PathJSON = [];
+	if nargin<2 || isempty(pathJSON)
+		pathJSON = [];
 	end
 	if nargin<3 || isempty(dcmExtFilter)
 		dcmExtFilter='^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
@@ -94,19 +94,19 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 	%% ----------------------------------------------------------------------------------
 	% Recreate the parameter file from raw data
 	% ----------------------------------------------------------------------------------
-	if ~isempty(PathJSON)
-		if imPar.bVerbose; fprintf('Recreating parameter file: %s\n',PathJSON); end
+	if ~isempty(pathJSON)
+		if imPar.bVerbose; fprintf('Recreating parameter file: %s\n',pathJSON); end
 	end
 	parms = struct();
 	
-	if exist(inp, 'dir')
-		FileList            = xASL_adm_GetFileList(inp, dcmExtFilter, 'FPList', [0 Inf]); % we assume all the dicoms are in the same folder
+	if exist(pathIn, 'dir')
+		FileList            = xASL_adm_GetFileList(pathIn, dcmExtFilter, 'FPList', [0 Inf]); % we assume all the dicoms are in the same folder
 		for iF=1:length(FileList)
 			[~, fname, ext] = fileparts(FileList{iF});
 			FileList{iF}        = [fname ext];
 		end
 	else
-		[inp, fname, ext] = fileparts(inp);
+		[pathIn, fname, ext] = fileparts(pathIn);
 		FileList = {[fname ext]};
 	end
 	
@@ -134,7 +134,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
             end
             
 			ifname = FileList{iFile};
-			filepath = fullfile(inp, ifname); % this is a file by definition, according to the xASL_adm_GetFileList command above
+			filepath = fullfile(pathIn, ifname); % this is a file by definition, according to the xASL_adm_GetFileList command above
 			
 			%% ----------------------------------------------------------------------------------
 			% Use DCMTK library to read the DICOM header to temp
@@ -518,8 +518,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
         %% Save the info in JSON file
 		
 		% Loads the JSON parms
-		if exist(PathJSON,'file')
-			JSONParms = spm_jsonread(PathJSON);
+		if exist(pathJSON,'file')
+			JSONParms = spm_jsonread(pathJSON);
 		else
 			JSONParms = [];
 		end
@@ -528,7 +528,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 		parms = xASL_bids_parms2BIDS(parms, JSONParms, 1, 0);
 		
 		% Saves the JSON file
-		spm_jsonwrite(PathJSON, parms);
+		spm_jsonwrite(pathJSON, parms);
 		
     end
 

@@ -1,15 +1,15 @@
 function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids)
-% Takes the input parameters from xASL format (parms) and BIDS format, merges them and converts to either xASL or BIDS.
-% FORMAT: outBids = xASL_bids_parms2BIDS(inParms[, inBids, bOutBids, priorityBids])
+% Takes the input parameters from xASL legacy format (inXasl) and BIDS format, merges them and converts to either xASL legacy or BIDS format.
+% FORMAT: outBids = xASL_bids_parms2BIDS(inXasl[, inBids, bOutBids, priorityBids])
 % 
 % INPUT:
-%   inXasl       - a structure with input parameters in the xASL format (REQUIRED)
+%   inXasl       - a structure with input parameters in the legacy xASL format (REQUIRED)
 %   inBids       - a structure with input parameters in the BIDS format (OPTIONAL, DEFAULT = [])
 %   bOutBids     - the output structures is in BIDS format (==1, default) or xASL format (==0) (OPTIONAL, DEFAULT = 1)
 %   bPriorityBids - in case of conflicts, the BIDS input is preferred (==1, default), otherwise (==0), xASL is prefered (OPTIONAL, DEFAULT = 1)
 %
 % OUTPUT:
-% outParms       - the merged output structure in the correct format
+% outParms       - the merged output structure in the selected format
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This functions takes two parameter structures and merges them. At the same time, renames all fields
 %              according to the output type (note that only some fields have two standardised names different between the two formats.
@@ -49,7 +49,7 @@ end
 %% ----------------------------------------------------------------------
 %% 1) Define field names that need to be convert/renamed/merged
 
-% Fields with these names need to have the time converted between XASL and BIDS, and define their recommended range in ms
+% Fields with these names need to have the time converted between XASL legacy and BIDS, and define their recommended range in ms
 convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
 convertTimeFieldsRange = [0.5        5                10            10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
                           500        20000            10000         5000               5000                 5000            400                5000      500  5000       400                10000];% Maximum in ms   
@@ -70,7 +70,7 @@ changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'InitialPostLabelDelay'};
 
 
 %% ----------------------------------------------------------------------
-%% 2) Convert XASL fields to the output format (BIDS or XASL)
+%% 2) Convert XASL fields to the output format (BIDS or XASL legacy)
 
 % Goes through all XASL fields
 if ~isempty(inXasl)
@@ -258,4 +258,3 @@ if bOutBids ~= 1
 end
 
 end
-

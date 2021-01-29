@@ -1,17 +1,17 @@
 function parms = xASL_bids_Par2JSON(pathPar, pathJSON, bRecreate)
-%xASL_bids_Par2JSON Read relevant dicom fields from Philips PAR file and saves them as JSON-file
+%xASL_bids_Par2JSON Reads the relevant DICOM fields from Philips PAR-file and saves them in a JSON sidecar
 %
 % FORMAT: parms = xASL_bids_Par2JSON(pathPar, pathJSON[, bRecreate])
 %
 % INPUT:
-%   pathPar   - path to the philips PAR-file
-%   pathJSON - path to the output MAT-file
+%   pathPar   - path to the Philips PAR-file
+%   pathJSON  - path to the output JSON sidecar
 %   bRecreate - Recreate the parms file if already exists (OPTIONAL, DEFAULT false)
 %
 % OUTPUT:
 %   parms     - OPTIONAL - outputs the loaded/extracted parameters
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Opens the Philips type PAR file. Reads the relevant DICOM headers and saves them to JSON file in BIDS format.
+% DESCRIPTION: Opens the Philips PAR file. Reads the relevant DICOM headers and saves them to JSON sidecar in a BIDS format.
 %              Only recreates an existing file if bRecreate option is set to TRUE.
 %
 % EXAMPLE: parms = xASL_bids_Par2JSON('patient.par','ASL4D.json',true)
@@ -34,14 +34,14 @@ end
 % Parms already exist
 if ~bRecreate && exist(pathJSON, 'file')
 	if nargout > 0
-		fprintf('Loading parameters from %s\n', pathJSON);
+		fprintf('Loading parameters from Philips PAR file: %s\n', pathJSON);
 		parms = spm_jsonread(pathJSON);
 	end
 	return;
 end
 
 % Recreate again
-fprintf('Recreating parameter file: %s\n', pathJSON);
+fprintf('Recreating parameter file in a JSON sidecar: %s\n', pathJSON);
 parms = struct();
 
 % Parse header
@@ -55,10 +55,10 @@ parms.MRScaleSlope                  = unique([hdr.SliceInformation(:).ScaleSlope
 parms.RescaleSlopeOriginal          = unique([hdr.SliceInformation(:).RescaleSlope]);
 parms.RescaleIntercept              = unique([hdr.SliceInformation(:).RescaleIntercept]);
 
-% Save to .MAT file
+% Converts parameters from the legacy to the BIDS format
 parms = xASL_bids_parms2BIDS(parms, [], 1, 0);
 		
-% Saves the JSON file
+% Saves the JSON sidecar
 spm_jsonwrite(pathJSON, parms);
 
 return
