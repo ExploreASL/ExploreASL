@@ -93,9 +93,9 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
 
         for iC=1:size(CellTSV,1)
             if ~isempty(findstr(CellTSV{iC,1}, Struct.ID))
-                Struct.T1w_GM_vol_mL = xASL_round(str2num(CellTSV{iC,2})*1000);
-                Struct.T1w_WM_vol_mL = xASL_round(str2num(CellTSV{iC,3})*1000);
-                Struct.T1w_CSF_vol_mL = xASL_round(str2num(CellTSV{iC,4})*1000,1); % bugfix SPM12 volume output
+                Struct.T1w_GM_vol_mL = xASL_round(xASL_str2num(CellTSV{iC,2})*1000);
+                Struct.T1w_WM_vol_mL = xASL_round(xASL_str2num(CellTSV{iC,3})*1000);
+                Struct.T1w_CSF_vol_mL = xASL_round(xASL_str2num(CellTSV{iC,4})*1000,1); % bugfix SPM12 volume output
 
                 Struct.T1w_ICV_vol_mL = xASL_round(Struct.T1w_GM_vol_mL+Struct.T1w_WM_vol_mL+Struct.T1w_CSF_vol_mL);
                 Struct.T1w_GM_ICV_Ratio = xASL_round(Struct.T1w_GM_vol_mL/Struct.T1w_ICV_vol_mL,3);
