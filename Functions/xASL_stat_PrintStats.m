@@ -209,19 +209,21 @@ function [Legend] = xASL_stat_CreateLegend(x)
                     Legend{iSet+1} = 'n lesions (integer)';
                 case 'WMH_vol'
                     Legend{iSet+1} = 'mL'; % 1 mL = 10 mm * 10 mm * 10 mm (so 1000 1 mm^3 voxels)
+                case 'MeanMotion'
+                    Legend{iSet+1} = 'mm';
                 otherwise
                     Legend{iSet+1} = '...';
             end
         end
         
         for iSet=1:length(x.S.SetsName)
-            if strcmp(Legend{iSet},'...') && ~isempty(strcmp(x.S.SetsName{iSet},'count'))
-                Legend{iSet} = 'integer';
+            if strcmp(Legend{iSet+1},'...') && ~isempty(strfind(x.S.SetsName{iSet},'count'))
+                Legend{iSet+1} = 'integer';
             end
         end
     end
     
-    if isfield(x.S,'NamesRoi') && isfield(x.S,'SaveFile')
+    if isfield(x.S,'NamesROI') && isfield(x.S,'SaveFile')
         for iM=1:length(x.S.NamesROI)
             if ~isempty(findstr(x.S.SaveFile,'spatialCoV'))
                 Legend{end+1} = '% SD/mean';
@@ -231,6 +233,8 @@ function [Legend] = xASL_stat_CreateLegend(x)
                 Legend{end+1} = '...';
             end
         end
+    else
+        warning('Could not find ROI names or filename to save, tsv header may be invalid');
     end
 
 end
