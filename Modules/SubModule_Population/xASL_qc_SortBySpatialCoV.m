@@ -47,7 +47,7 @@ if nargin<3 || isempty(Threshold2)
 end
 
 %% Find spatial CoV stats
-FileList = xASL_adm_GetFileList(x.S.StatsDir, '.*CoV_qCBF.*TotalGM.*PVC0.tsv$', 'List',[0 Inf]);
+FileList = xASL_adm_GetFileList(x.S.StatsDir, ['.*CoV_qCBF.*TotalGM_n=' num2str(x.nSubjects) '_.*PVC0\.tsv$'], 'List',[0 Inf]);
 
 if isempty(FileList)
     warning('Couldnt find spatial CoV information! File missing, skipping...');
