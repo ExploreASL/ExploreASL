@@ -18,7 +18,8 @@
  *    RepetitionTime, EchoTime, RescaleSlope, RescaleIntercept, NumberOfTemporalPositions, NumberOfAverages, AcquisitionTime, 
  *    MediaStorageSOPClassUID, Manufacturer, SeriesDescription, ProtocolName, StudyDate, SeriesTime, StudyInstanceUID, 
  *    SeriesInstanceUID, ImageType, AcquisitionDate, SeriesDate, Rows, Columns, AcquisitionMatrix, InPlanePhaseEncodingDirection,
- *    AcquisitionContrast, ComplexImageComponent, PulseSequenceName, InversionTime, TemporalPositionIdentifier, SoftwareVersions
+ *    AcquisitionContrast, ComplexImageComponent, PulseSequenceName, InversionTime, TemporalPositionIdentifier, SoftwareVersions,
+ *    RWVIntercept, RWVSlope
  *    
  *    The image data are stored in:
  *    PixelData
@@ -32,13 +33,15 @@
  *    MRSeriesEPIFactor - 0x2001, 0x1013
  *    BandwidthPerPixelPhaseEncode - 0x0019, 0x1028
  *    MRScaleSlope - 0x2005, 0x100e or 
+ *                   0x2005, 0x110e or
  *                   0x2005, 0x120e
- *    RescaleSlopeOriginal - 0x2005, 0x140a
+ *    RescaleSlopeOriginal - 0x2005, 0x140a or 0x2005, 0x110a
  *    GELabelingType - 0x0019, 0x109C
  *    GELabelingDuration - 0x0043, 0x10A5
  *    PhilipsNumberTemporalScans - 0x2001, 0x1008
  *    PhilipsLabelControl - 0x2005, 0x1429
  *    PhoenixProtocol - 0x0029, 0x1020
+ *    SiemensSliceTime - 0x0019, 0x0010
  *
  *    What is read is hard coded - to change that, you need to change the MEX file
  *
@@ -446,7 +449,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	DcmItem * 	timingItem = NULL;
 	DcmItem * 	echoItem   = NULL;
 	DcmItem *   pixelItem  = NULL;
-	DcmItem * 	privatItem = NULL;
+	DcmItem * 	privateItem = NULL;
         
 	// Load the file
 	dcmStatus = DcmMyFile->loadFile( pchFileName );
@@ -471,7 +474,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 		sharedItem->findAndGetSequenceItem(	DCM_MRTimingAndRelatedParametersSequence, timingItem, 0 );
 	}
 	
-	// Reading the Enhanced DICOM -> echoItem, pixelItem, privatItem
+	// Reading the Enhanced DICOM -> echoItem, pixelItem, privateItem
 	// PerFrameFunctionalGroupsSequence.Item_1.MREchoSequence.Item_1
 	// PerFrameFunctionalGroupsSequence.Item_1.PixelValueTransformationSequence.Item_1
 	// PerFrameFunctionalGroupsSequence.Item_1.Private_2005_140f.Item_1
@@ -480,7 +483,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	{
 		perFrmItem->findAndGetSequenceItem(	DCM_MREchoSequence , echoItem, 0 );
 		perFrmItem->findAndGetSequenceItem(	DCM_PixelValueTransformationSequence, pixelItem, 0 );
-		perFrmItem->findAndGetSequenceItem(	DcmTagKey(0x2005, 0x140f), privatItem, 0 );
+		perFrmItem->findAndGetSequenceItem(	DcmTagKey(0x2005, 0x140f), privateItem, 0 );
 	}
 	
 	//RealWorldValueMappingSequence.Item_1
@@ -523,6 +526,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "GELabelingType"             , MXAGetString( dataset,       DcmTagKey(0x0019, 0x109C) ) );
 	mxSetField( pmxOutput, 0, "GELabelingDuration"         , MXAGetLongIntAsDouble( dataset, DcmTagKey(0x0043, 0x10a5)     ) );
 	mxSetField( pmxOutput, 0, "PhoenixProtocol"            , MXAGetStringArray(dataset, DcmTagKey(0x0029, 0x1020)));
+	mxSetField( pmxOutput, 0, "SiemensSliceTime"           , MXAGetFloat64ArrayAsDouble( dataset,    DcmTagKey(0x0019, 0x1029)  ) );
 			
 	if ((rwItem) && (rwItem->tagExistsWithValue(DCM_RealWorldValueIntercept) == OFTrue))
 		mxSetField( pmxOutput, 0, "RWVIntercept"         , MXAGetFloat64AsDouble( rwItem,    DCM_RealWorldValueIntercept       ) );
@@ -555,57 +559,66 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 
 	
 	// Read the temporalpositions and private rescale tags from Philips private tags
-	if ( ( privatItem ) && ( privatItem->tagExistsWithValue( DCM_NumberOfTemporalPositions ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "NumberOfTemporalPositions", MXAGetLongIntAsDouble( privatItem,    DCM_NumberOfTemporalPositions) );
+	if ( ( privateItem ) && ( privateItem->tagExistsWithValue( DCM_NumberOfTemporalPositions ) == OFTrue ) )
+		mxSetField( pmxOutput, 0, "NumberOfTemporalPositions", MXAGetLongIntAsDouble( privateItem,    DCM_NumberOfTemporalPositions) );
 	else
 		mxSetField( pmxOutput, 0, "NumberOfTemporalPositions", MXAGetLongIntAsDouble( dataset,    DCM_NumberOfTemporalPositions) );
-	if ( ( privatItem ) && ( privatItem->tagExistsWithValue( DCM_TemporalPositionIdentifier ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "TemporalPositionIdentifier", MXAGetLongIntAsDouble( privatItem,    DCM_TemporalPositionIdentifier) );
+	if ( ( privateItem ) && ( privateItem->tagExistsWithValue( DCM_TemporalPositionIdentifier ) == OFTrue ) )
+		mxSetField( pmxOutput, 0, "TemporalPositionIdentifier", MXAGetLongIntAsDouble( privateItem,    DCM_TemporalPositionIdentifier) );
 	else
 		mxSetField( pmxOutput, 0, "TemporalPositionIdentifier", MXAGetLongIntAsDouble( dataset,    DCM_TemporalPositionIdentifier) );
 	
-	if ( ( privatItem ) && ( privatItem->tagExistsWithValue( DcmTagKey(0x2001, 0x1008) ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "PhilipsNumberTemporalScans", MXAGetStringArray( privatItem,    DcmTagKey(0x2001, 0x1008)) );
+	if ( ( privateItem ) && ( privateItem->tagExistsWithValue( DcmTagKey(0x2001, 0x1008) ) == OFTrue ) )
+		mxSetField( pmxOutput, 0, "PhilipsNumberTemporalScans", MXAGetStringArray( privateItem,    DcmTagKey(0x2001, 0x1008)) );
 	else
 		mxSetField( pmxOutput, 0, "PhilipsNumberTemporalScans", MXAGetStringArray( dataset,    DcmTagKey(0x2001, 0x1008)) );
 	
-		if ( ( privatItem ) && ( privatItem->tagExistsWithValue( DcmTagKey(0x2005, 0x1429) ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "PhilipsLabelControl", MXAGetStringArray( privatItem,    DcmTagKey(0x2005, 0x1429)) );
+		if ( ( privateItem ) && ( privateItem->tagExistsWithValue( DcmTagKey(0x2005, 0x1429) ) == OFTrue ) )
+		mxSetField( pmxOutput, 0, "PhilipsLabelControl", MXAGetStringArray( privateItem,    DcmTagKey(0x2005, 0x1429)) );
 	else
 		mxSetField( pmxOutput, 0, "PhilipsLabelControl", MXAGetStringArray( dataset,    DcmTagKey(0x2005, 0x1429)) );
 	
 	
-	if ((privatItem) && 
-		((privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x100e))==OFTrue)||
-		 (privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x120e))==OFTrue)))
+	if (( privateItem ) && 
+		(( privateItem->tagExistsWithValue( DcmTagKey(0x2005, 0x100e) ) == OFTrue )||
+		 ( privateItem->tagExistsWithValue( DcmTagKey(0x2005, 0x110e) ) == OFTrue )|| 	
+		 ( privateItem->tagExistsWithValue( DcmTagKey(0x2005, 0x120e) ) == OFTrue )))
 	{
-		if (privatItem->tagExistsWithValue(DcmTagKey(0x2005, 0x120e))==OFTrue)
-			mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x120e) ) );
+		if ( privateItem->tagExistsWithValue(DcmTagKey(0x2005, 0x120e))==OFTrue )
+			mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( privateItem,             DcmTagKey(0x2005, 0x120e) ) );
 		else
-			mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x100e) ) );
+		{
+			if ( privateItem->tagExistsWithValue( DcmTagKey(0x2005, 0x110e) ) == OFTrue )
+				mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( privateItem,             DcmTagKey(0x2005, 0x110e) ) );
+			else
+				mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( privateItem,             DcmTagKey(0x2005, 0x100e) ) );
+		}
 		
-		mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( privatItem,             DcmTagKey(0x2005, 0x140a) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetFloat32AsDouble( privatItem,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetFloat32AsDouble( privatItem,             DcmTagKey(0x2005, 0x100e) ) );
+		if ( privateItem->tagExistsWithValue(DcmTagKey(0x2005, 0x140a)) == OFTrue )
+			mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( privateItem,             DcmTagKey(0x2005, 0x140a) ) );
+		else
+			mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( privateItem,             DcmTagKey(0x2005, 0x110a) ) );
 	}
 	else
 	{
 		if (dataset->tagExistsWithValue(DcmTagKey(0x2005, 0x120e))==OFTrue)
 			mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x120e) ) );
 		else
-			mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x100e) ) );
+		{
+			if (dataset->tagExistsWithValue(DcmTagKey(0x2005, 0x110e))==OFTrue)
+				mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x110e) ) );
+			else
+				mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x100e) ) );
+		}
 		
-		mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x140a) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetFloat32AsDouble( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetInt16Array( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetFloat64AsDouble( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetLongIntAsDouble( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		//mxSetField( pmxOutput, 0, "MRScaleSlope"        , MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x100e) ) );
-		
+		if (dataset->tagExistsWithValue(DcmTagKey(0x2005, 0x140a))==OFTrue)
+			mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x140a) ) );
+		else
+			mxSetField( pmxOutput, 0, "RescaleSlopeOriginal", MXAGetStringArray( dataset,             DcmTagKey(0x2005, 0x110a) ) );
 	}
 		
-	if ( ( privatItem ) && ( privatItem->tagExistsWithValue( DCM_NumberOfAverages ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "NumberOfAverages"         , MXAGetFloat64AsDouble( privatItem,    DCM_NumberOfAverages ) );
+	if ( ( privateItem ) && ( privateItem->tagExistsWithValue( DCM_NumberOfAverages ) == OFTrue ) )
+		mxSetField( pmxOutput, 0, "NumberOfAverages"         , MXAGetFloat64AsDouble( privateItem,    DCM_NumberOfAverages ) );
 	else
 		mxSetField( pmxOutput, 0, "NumberOfAverages"         , MXAGetFloat64AsDouble( dataset,    DCM_NumberOfAverages ) );
 	
@@ -662,10 +675,11 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	    "Rows", "Columns", "RescaleSlopeOriginal", "RWVIntercept", "RWVSlope", \
 	    "AcquisitionContrast", "ComplexImageComponent", "GELabelingType", "PulseSequenceName", \
 		"InversionTime", "GELabelingDuration", "PhilipsNumberTemporalScans", \
-		"PhilipsLabelControl", "TemporalPositionIdentifier", "PhoenixProtocol", "SoftwareVersions"			  
+		"PhilipsLabelControl", "TemporalPositionIdentifier", "PhoenixProtocol", "SoftwareVersions", \
+		"SiemensSliceTime"
     };
 
-    const int inFields = 43;
+    const int inFields = 44;
 	int readPixel;
 	double *tmp;
 

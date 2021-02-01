@@ -4,10 +4,10 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 % FORMAT: [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,[bPrintReport,threshRmseNii]);
 %
 % INPUT:
-%        pathDatasetA       - path to first BIDS structure (REQUIRED)
-%        pathDatasetB       - path to second BIDS structure (REQUIRED)
+%        pathDatasetA       - path to first BIDS structure [char array] (REQUIRED)
+%        pathDatasetB       - path to second BIDS structure [char array] (REQUIRED)
 %        bPrintReport       - true or false to print console report (OPTIONAL, DEFAULT = true)
-%        threshRmseNii      - RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 0.1)
+%        threshRmseNii      - normalized RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 1e-5)
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -21,7 +21,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 %
 % EXAMPLE:          pathDatasetA = '...\bids-examples\eeg_rest_fmri';
 %                   pathDatasetB = '...\bids-examples\eeg_rest_fmri_exact_copy'
-%                   [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,true);
+%                   [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,true,0.01);
 %
 % REFERENCES:       ...
 % __________________________________
@@ -31,19 +31,19 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     %% Input Check
 
     % Check if both root folders are valid char arrays or strings
-    if ~(ischar(pathDatasetA) || isstring(pathDatasetA))
-        error('The path of structure A is neither a char array not a string...');
+    if ~ischar(pathDatasetA)
+        error('The path of structure A is not a char array.');
     end
-    if ~(ischar(pathDatasetB) || isstring(pathDatasetB))
-        error('The path of structure A is neither a char array not a string...');
+    if ~ischar(pathDatasetB)
+        error('The path of structure B is not a char array.');
     end
 
     % Check if both root folders exists
     if ~(xASL_exist(pathDatasetA)==7)
-        error('The root folder of structure A does not exist...');
+        error('The root folder of structure A does not exist: %s',pathDatasetA);
     end
     if ~(xASL_exist(pathDatasetB)==7)
-        error('The root folder of structure B does not exist...');
+        error('The root folder of structure B does not exist: %s',pathDatasetB);
     end
 	
     % Default value for bPrintReport
@@ -53,7 +53,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     
     % Default value for RMSE threshold
     if nargin < 4
-       threshRmseNii = 0.1; 
+       threshRmseNii = 1e-5;
     end
 
 
@@ -131,7 +131,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
         printList(results.(datasetA).missingFiles)
 		
 		if isempty(results.(datasetA).missingFolders) && isempty(results.(datasetA).missingFiles)
-			fprintf('\t\t\t%s\n','No missing files');
+			fprintf('\t\t\t\t%s\n','No missing files');
 		end
 
         fprintf(strcat(repmat('=',100,1)','\n'));
@@ -140,7 +140,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
         printList(results.(datasetB).missingFiles)
 		
 		if isempty(results.(datasetB).missingFolders) && isempty(results.(datasetB).missingFiles)
-			fprintf('\t\t\t%s\n','No missing files');
+			fprintf('\t\t\t\t%s\n','No missing files');
 		end
 
         % End of report
@@ -227,7 +227,7 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
 				jsonErrorReport = [jsonErrorReport, compareFieldLists(jsonA,jsonB,sharedFieldsAB)];
 				
 				if bPrintReport && ~isempty(jsonErrorReport)
-					fprintf('%s:\n',allFiles(iFile));
+					fprintf('File:\t\t\t%s\n',allFiles(iFile));
 					fprintf('%s',jsonErrorReport);
 				end
 			end
@@ -272,11 +272,25 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                     end
                     % Report function which prints to the console
                     if bPrintReport
-                        % differenceAB = sum(imageA-imageB,'all');
-                        RMSE = sqrt(mean(imageA(:).^2 - imageB(:).^2)) ;
-                        if (RMSE>threshRmseNii)
-							fprintf('%s:\t\t\n',allFiles(iFile));
-                            fprintf('\t\t\t\tRMSE of NIFTIs above threshold.\n');
+                        % Check that matrix dimensions agree first
+                        sizeA = size(imageA);
+                        sizeB = size(imageB);
+                        if length(sizeA)==length(sizeB)
+                            if sum(sizeA==sizeB)==length(sizeA)
+                                RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
+                                if (RMSE>threshRmseNii)
+                                    fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                                    fprintf('\t\t\t\tRMSE (%d) of NIFTIs above threshold.\n',RMSE);
+                                    identical = false;
+                                end
+                            else
+                                fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                                fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                                identical = false;
+                            end
+                        else
+                            fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                            fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
                             identical = false;
                         end
                     end
@@ -294,6 +308,9 @@ end
 %% Compare field lists
 function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
     strError = '';
+    
+    % Threshold for the difference of numeric values
+    threshNumeric = 1e-5;
 
     % Iterate over fields
     for iField=1:numel(fieldList)
@@ -302,12 +319,58 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
         fieldContentB = jsonStructB.(fieldList{iField});
         if isnumeric(fieldContentA) && isnumeric(fieldContentB)
             % Compare numbers
-            if ~(fieldContentA==fieldContentB)
-                strError = sprintf('%s\t\t\t\tDifferent value: %s (%f vs %f)\n', strError,curFieldName,fieldContentA,fieldContentB);
+            if length(fieldContentA)==length(fieldContentB)
+                if length(fieldContentA)==1
+                    % Compare numbers (check absolute difference)
+                    if abs(fieldContentA-fieldContentB)>threshNumeric
+                        strError = sprintf('%s\t\t\t\tDifferent value: %s (%.6f vs %.6f)\n', strError,curFieldName,fieldContentA,fieldContentB);
+                    end
+                else
+                    % Compare arrays (check sum of absolute differences)
+                    sumDiff = sum(abs(fieldContentA-fieldContentB));
+                    if sumDiff>threshNumeric
+                        strError = sprintf('%s\t\t\t\tDifferent value: %s (check arrays)\n', strError,curFieldName);
+                        % Set max number of elements to display
+                        maxNumElements = 10;
+                        if length(fieldContentA)<maxNumElements
+                            maxNumElements = length(fieldContentA);
+                        end
+                        % Initialize array view
+                        strError = sprintf('%s\t\t\t\t[',strError);
+                        % Iterate over individual elements of array A
+                        for elField=1:length(fieldContentA)
+                            if elField<=maxNumElements
+                                if elField<maxNumElements
+                                    strError = sprintf('%s%.4f, ',strError,fieldContentA(elField));
+                                elseif elField==length(fieldContentA)
+                                    strError = sprintf('%s%.4f]\n',strError,fieldContentA(elField));
+                                elseif elField==maxNumElements
+                                    strError = sprintf('%s%.4f ...]\n',strError,fieldContentA(elField));
+                                end
+                            end
+                        end
+                        % Initialize array view
+                        strError = sprintf('%s\t\t\t\t[',strError);
+                        % Iterate over individual elements of array B
+                        for elField=1:length(fieldContentB)
+                            if elField<=maxNumElements
+                                if elField<maxNumElements
+                                    strError = sprintf('%s%.4f, ',strError,fieldContentB(elField));
+                                elseif elField==length(fieldContentB)
+                                    strError = sprintf('%s%.4f]\n',strError,fieldContentB(elField));
+                                elseif elField==maxNumElements
+                                    strError = sprintf('%s%.4f ...]\n',strError,fieldContentB(elField));
+                                end
+                            end
+                        end
+                    end
+                end
+            else
+                strError = sprintf('%s\t\t\t\tDifferent dimension: %s\n', strError,curFieldName);
             end
-        elseif (ischar(fieldContentA) || isstring(fieldContentA)) && (ischar(fieldContentB) || isstring(fieldContentB))
+        elseif ischar(fieldContentA) && ischar(fieldContentB)
             % Compare char arrays and strings
-            if ~(strcmp(fieldContentA,fieldContentB))
+            if ~strcmp(fieldContentA,fieldContentB)
                 strError = sprintf('%s\t\t\t\tDifferent value: %s (%s vs %s)\n', strError,curFieldName,fieldContentA,fieldContentB);
             end
         elseif iscell(fieldContentA) && iscell(fieldContentB)
@@ -317,7 +380,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
             end
         elseif isstruct(fieldContentA) && isstruct(fieldContentB)
 			% Compare cell arrays
-			if ~(isequal(fieldContentA,fieldContentB))
+			if ~isequal(fieldContentA,fieldContentB)
 				strError = sprintf('%s\t\t\t\tDifferent value: %s (array)\n', strError,curFieldName);
 			end
 		elseif islogical(fieldContentA) && islogical(fieldContentB)

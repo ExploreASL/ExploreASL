@@ -322,6 +322,14 @@ toolbox/cat12/cat_vol_correct_slice_scaling line 425
 *********************************************************************************************************
 BIDS/JSON
 
+DATE+NAME:2020_03_12, JP
+DESCRIPTION:
+In DICOM header reader, removed the extra processing for CSASeriesHeaderInfo as the Phoenix Siemens protocol is saved under that DICOM tag and need a simple conversion to string. The type is redefined as LT in the External/SPMmodified/spm_dicom_dict.txt. Moreover, new DICOM fields are added at the end. The .mat dictionary is generated using a spm_dicom_text_to_dict('spm_dicom_dict.txt') command.
+FILE:
+spm_dicom_header.m at line 102
+External/SPMmodified/spm_dicom_dict.txt at line 3607 and 3665 till the end
+
+
 DATE+NAME:2020_08_11, JP
 DESCRIPTION:
 Error in the NIfTI header. 3D NIfTI files (dim[0] == 3) that have the size of the fourth dimension NT==1 (dim[4] == 1), but have TR defined (pixdim[4] ~= 1)

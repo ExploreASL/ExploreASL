@@ -62,7 +62,7 @@ try
     if isempty(hdr)
         fclose(fp);
         return;
-    end
+	end
 
     hdr.Filename = fopen(fp);
 catch
@@ -102,7 +102,7 @@ while len<lim
                 ret.StartOfCSAData = ftell(fp);
                 ret.SizeOfCSAData = tag.length;
                 fseek(fp,tag.length,'cof');
-            case {'CSAImageHeaderInfo', 'CSASeriesHeaderInfo','CSANonImageHeaderInfoVA','CSAMiscProtocolHeaderInfoVA','CSANonImageHeaderInfoVB','CSAMiscProtocolHeaderInfoVB'},
+            case {'CSAImageHeaderInfo', 'CSANonImageHeaderInfoVA','CSAMiscProtocolHeaderInfoVA','CSANonImageHeaderInfoVB','CSAMiscProtocolHeaderInfoVB'},
                 dat  = decode_csa(fp,tag.length);
                 ret.(tag.name) = dat;
             case {'TransferSyntaxUID'},

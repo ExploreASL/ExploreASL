@@ -30,6 +30,22 @@ rescaleSlopeNifti = header.dat.scl_slope;
 
 if isfield(parms,'RWVSlope')
 	% If the RealWorldValue is present, then dcm2nii scales to them and ignores everything else
+	if length(parms.RWVSlope)>1
+		[~,idx] = min(abs(parms.RWVSlope - rescaleSlopeNifti));
+		parms.RWVSlope = parms.RWVSlope(idx);
+		if isfield(parms,'RescaleSlopeOriginal') && length(parms.RescaleSlopeOriginal)>1
+			parms.RescaleSlopeOriginal = parms.RescaleSlopeOriginal(idx);
+		end
+		
+		if isfield(parms,'RescaleSlope') && length(parms.RescaleSlope)>1
+			parms.RescaleSlope = parms.RescaleSlope(idx);
+		end
+		
+		if isfield(parms,'MRScaleSlope') && length(parms.MRScaleSlope)>1
+			parms.MRScaleSlope = parms.MRScaleSlope(idx);
+		end
+	end
+	
 	if ~isnear(parms.RWVSlope,rescaleSlopeNifti,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
 		fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and NIfTI slope (' xASL_num2str(rescaleSlopeNifti) ') differ, using RWVSlope']);
 	end
@@ -97,25 +113,27 @@ if scaleFactor
     if ~isfield(parms,'MRScaleSlope')
         warning('MRScaleSlope missing, potential quantification error, skipping');
         return;
-    end
-    
-	if length(parms.MRScaleSlope) > 1
-		ssInd = find(parms.MRScaleSlope ~= 1);
+	end
+	% Make a local copy to potentially modify
+    MRScaleSlope = parms.MRScaleSlope;
+	
+	if length(MRScaleSlope) > 1
+		ssInd = find(MRScaleSlope ~= 1);
 		if isempty(ssInd)
-			parms.MRScaleSlope = 1;
+			MRScaleSlope = 1;
 		else
 			if length(ssInd) > 1
 				warning('Philips MR ScaleSlope has more than a single value, could be a scale slope issue');
 			end
-			parms.MRScaleSlope = parms.MRScaleSlope(ssInd);
+			MRScaleSlope = MRScaleSlope(ssInd);
 		end
 	end
-	if parms.MRScaleSlope == 1
+	if MRScaleSlope == 1
 		warning('Philips MR ScaleSlope was 1, could be a scale slope issue.');
 	end
 	
-	fprintf('%s\n',['Using DICOM (re)scale slopes ' num2str(scaleFactor) ' * ' num2str(parms.MRScaleSlope)]);
-	scaleFactor = 1./(scaleFactor .* parms.MRScaleSlope);
+	fprintf('%s\n',['Using DICOM (re)scale slopes ' xASL_num2str(scaleFactor) ' * ' xASL_num2str(MRScaleSlope)]);
+	scaleFactor = 1./(scaleFactor .* MRScaleSlope);
 end
 
 

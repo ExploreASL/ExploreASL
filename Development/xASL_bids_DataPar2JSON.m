@@ -1,10 +1,10 @@
 function xASL_bids_DataPar2JSON(DataParPath)
-%xASL_bids_DataPar2JSON Take DataPar ASL parameters and move them to JSON sidecars per BIDS
+%xASL_bids_DataPar2JSON Take DataParPath ASL-legacy parameters and move them to JSON sidecars per BIDS
 %
 % FORMAT: [x] = xASL_bids_FromDataPar2JSON(DataParPath)
 % 
 % INPUT:
-%   DataParPath - path to data parameter JSON file (REQUIRED)
+%   DataParPath - path to data parameter JSON file with xASL legacy format (REQUIRED)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function takes all parameters from the DataPar & moves them into all lower-level JSONs, per BIDS inheritance
@@ -12,13 +12,14 @@ function xASL_bids_DataPar2JSON(DataParPath)
 % Also note that this function will recursively create JSON files (if non-existing) for all NIfTI files, so is supposed to run on raw data only.
 %
 % This function runs the following steps:
-% 1) Load parent DataPar JSON file
-% 2) Get list of NIfTIs (i.e. "children" that will get the parameters)
-% 3) Load & add JSON child (if exist) to memory
-% 4) Load & add parms.mat child (if exist (legacy)) to memory
-% 5) Add parent fields to memory
-% 6) Save (& overwrite if existed) new JSON from memory
-% 7) Delete parms.mat if existed
+%
+% 1. Load parent DataParPath JSON file in xASL legacy format
+% 2. Get list of NIfTIs (i.e. "children" that will get the parameters)
+% 3. Load & add JSON child (if exist) to memory
+% 4. Load & add parms.mat child (if exist (legacy)) to memory
+% 5. Add parent fields to memory
+% 6. Save (& overwrite if existed) new JSON from memory
+% 7. Delete parms.mat if existed
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_FromDataPar2JSON('/MyStudy/DataParameterFile.json');
@@ -79,6 +80,5 @@ for iList=1:length(FileList)
 end
 
 fprintf('\n');
-
 
 end

@@ -1,12 +1,12 @@
-function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn)
-%xASL_bids_Dicom2JSON Go through the DICOM or PAR/REC files, parses the header and saves it in MAT
+function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn)
+%xASL_bids_Dicom2JSON Go through the DICOM or PAR/REC files, parses the header and saves it in JSON
 %
-% FORMAT: [parms pathDcmDictOut] = xASL_bids_Dicom2Parms(inp[, parmsfile, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
+% FORMAT: [parms pathDcmDictOut] = xASL_bids_Dicom2Parms(imPar, pathIn[, pathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
 %
 % INPUT:
 %        imPar              - struct with import parameters (REQUIRED)
-%        inp (PATH)         - path to the RAW files (REQUIRED)
-%        PathJSON (PATH)    - path to the JSON file for saving parameters (OPTIONAL, DEFAULT = don't save)
+%        pathIn (PATH)         - path to the RAW files (REQUIRED)
+%        pathJSON (PATH)    - path to the JSON file for saving parameters (OPTIONAL, DEFAULT = don't save)
 %        dcmExtFilter (STR) - wildcards specifying the allowed extensions for the RAW files
 %        bUseDCMTK (BOOL)   - if yes, then use DCMTK instead of dicominfo
 %        pathDcmDictIn (STR)- path to the dicom dictionary in case DCMTK fails and DICOMINFO is used
@@ -16,7 +16,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 %        pathDcmDictOut     - if dicom dict for dicominfo is initialized then clear this path, otherwise return unchanged pathDcmDictIn
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      The function goes through the INP files, reads the DICOM or PAR/REC files and parses their headers.
+% DESCRIPTION:      The function goes through the pathIn files, reads the DICOM or PAR/REC files and parses their headers.
 %                   It extracts the DICOM parameters important for ASL, makes sure they are in the correct format, if missing then 
 %                   replaces with default value, it also checks if the parameters are consistent across DICOM files for a single sequence.
 %
@@ -26,14 +26,14 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 %
 % REFERENCES:
 % __________________________________
-% Copyright @ 2015-2019 ExploreASL
+% Copyright 2015-2019 ExploreASL
 
     %% ----------------------------------------------------------------------------------
 	% Admin
 	% ----------------------------------------------------------------------------------
 	
-	if nargin<2 || isempty(PathJSON)
-		PathJSON = [];
+	if nargin<2 || isempty(pathJSON)
+		pathJSON = [];
 	end
 	if nargin<3 || isempty(dcmExtFilter)
 		dcmExtFilter='^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
@@ -69,25 +69,44 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 	DcmParDefaults.MRSeriesWaterFatShift = NaN;
 	DcmParDefaults.MRSeriesEPIFactor = NaN;
 	DcmParDefaults.BandwidthPerPixelPhaseEncode = NaN;
+	DcmParDefaults.RWVIntercept   = NaN;
+	DcmParDefaults.RWVSlope   = NaN;
+	
+	DcmParDefaults.Rows = NaN;
+	DcmParDefaults.Columns = NaN;
+	DcmParDefaults.TemporalPositionIdentifier = NaN;
+	DcmParDefaults.PhilipsNumberTemporalScans = NaN;
+	DcmParDefaults.GELabelingDuration = NaN;
+	DcmParDefaults.InversionTime = NaN;
+	
+	DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
+		'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
+	
+	DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
+	DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
+	
+	DcmFieldList = {'RepetitionTime', 'EchoTime', 'NumberOfAverages', 'RescaleSlope', ...
+					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
+					'AcquisitionMatrix' 'Rows' 'Columns' 'NumberOfAverages' 'NumberOfTemporalPositions' 'RWVIntercept' 'RWVSlope'};
 	
 	bVendor = 'Unknown';
 	
 	%% ----------------------------------------------------------------------------------
 	% Recreate the parameter file from raw data
 	% ----------------------------------------------------------------------------------
-	if ~isempty(PathJSON)
-		if imPar.bVerbose; fprintf('Recreating parameter file: %s\n',PathJSON); end
+	if ~isempty(pathJSON)
+		if imPar.bVerbose; fprintf('Recreating parameter file: %s\n',pathJSON); end
 	end
 	parms = struct();
 	
-	if exist(inp, 'dir')
-		FileList            = xASL_adm_GetFileList(inp, dcmExtFilter, 'FPList', [0 Inf]); % we assume all the dicoms are in the same folder
+	if exist(pathIn, 'dir')
+		FileList            = xASL_adm_GetFileList(pathIn, dcmExtFilter, 'FPList', [0 Inf]); % we assume all the dicoms are in the same folder
 		for iF=1:length(FileList)
 			[~, fname, ext] = fileparts(FileList{iF});
 			FileList{iF}        = [fname ext];
 		end
 	else
-		[inp, fname, ext] = fileparts(inp);
+		[pathIn, fname, ext] = fileparts(pathIn);
 		FileList = {[fname ext]};
 	end
 	
@@ -115,7 +134,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
             end
             
 			ifname = FileList{iFile};
-			filepath = fullfile(inp, ifname); % this is a file by definition, according to the xASL_adm_GetFileList command above
+			filepath = fullfile(pathIn, ifname); % this is a file by definition, according to the xASL_adm_GetFileList command above
 			
 			%% ----------------------------------------------------------------------------------
 			% Use DCMTK library to read the DICOM header to temp
@@ -238,15 +257,15 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 					warning('xASL_adm_Dicom2JSON: Manufacturer unknown for %s', filepath);
 				end
 				
-				dcmfields = {'RepetitionTime', 'EchoTime', 'NumberOfAverages', 'RescaleSlope', ...
-					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
-					'AcquisitionMatrix'};
+				dcmfields = DcmFieldList;
 				
 				switch bVendor
 					case 'GE'
-						dcmfields(end+1:end+2) = {'AssetRFactor', 'EffectiveEchoSpacing'}; % (0043,1083) (0043,102c)
+						dcmfields(end+1:end+4) = {'AssetRFactor', 'EffectiveEchoSpacing'...
+							'GELabelingDuration' 'InversionTime' }; % (0043,1083) (0043,102c)
 					case 'Philips'
-						dcmfields(end+1:end+2) = {'MRSeriesWaterFatShift', 'MRSeriesEPIFactor'}; % (2001,1022) (2001,1013)
+						dcmfields(end+1:end+4) = {'MRSeriesWaterFatShift', 'MRSeriesEPIFactor'...
+							'TemporalPositionIdentifier'  'PhilipsNumberTemporalScans'}; % (2001,1022) (2001,1013)
 					case 'Siemens'
 						dcmfields(end+1) = {'BandwidthPerPixelPhaseEncode'}; % (0019,1028)
 					otherwise
@@ -256,7 +275,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 			
 			%% -----------------------------------------------------------------------------
 			% Obtain the selected DICOM parameters from the header
-			% Write the new parameter to the list (or put the default value
+			% Write the new parameter to the list (or put the default value)
 			% -----------------------------------------------------------------------------
 			for iField=1:length(dcmfields)
 				fieldname = dcmfields{iField};
@@ -278,10 +297,28 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 					
 					t_parms.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
 				else
-					if imPar.bVerbose; if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end; end
+					if imPar.bVerbose
+						if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
+					end
 					t_parms.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
 				end
 			end
+			
+			c_all_parms = struct;
+			% The more complex fields - strings and arrays are saved in cell
+			for iField=1:length(DcmComplexFieldAll)
+				if isfield(temp,DcmComplexFieldAll{iField}) && ~isempty(temp.(DcmComplexFieldAll{iField}))
+					c_all_parms.(DcmComplexFieldAll{iField}){iMrFile} = temp.(DcmComplexFieldAll{iField});
+				end
+			end
+			
+			c_first_parms = struct;
+			for iField=1:length(DcmComplexFieldFirst)
+				if isfield(temp,DcmComplexFieldFirst{iField}) && ~isempty(temp.(DcmComplexFieldFirst{iField}))
+					c_first_parms.(DcmComplexFieldFirst{iField}) = temp.(DcmComplexFieldFirst{iField});
+				end
+			end
+			
 		end
 		
 		%% If no files were found previously (just directories etc.) then the manufacturer won't be identified and 
@@ -315,6 +352,13 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 				fieldname = dcmfields{iField};
 				if  isfield(t_parms,fieldname)
 					parms.(fieldname) = unique(t_parms.(fieldname));
+					
+					% Remove (set to NaN) also those that differ only minimally
+					if length(parms.(fieldname))>1 && isnumeric(parms.(fieldname))
+						iDiff = abs(parms.(fieldname) - parms.(fieldname)(1))./parms.(fieldname)(1);
+						iDiff(1) = 1;
+						parms.(fieldname)(iDiff<0.001) = NaN;
+					end
 					% There's one or more NaNs
 					nNaN = sum(isnan(parms.(fieldname)));
 					if nNaN > 0
@@ -326,6 +370,36 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 						end
 					end
 				end
+			end
+		end
+		
+		% Remove fields that are NaN
+		for iField=1:length(DcmSkipNan)
+			if isfield(parms,DcmSkipNan{iField}) && sum(isnan(parms.(DcmSkipNan{iField})))
+				parms = rmfield(parms,DcmSkipNan{iField});
+			end
+		end
+		
+		% The more complex fields - strings and arrays are saved in cell
+		for iField=1:length(DcmComplexFieldAll)
+			if isfield(c_all_parms,DcmComplexFieldAll{iField})
+				listEmptyFields = find(cellfun(@isempty,c_all_parms.(DcmComplexFieldAll{iField})));
+				if ~isempty(listEmptyFields)
+					fprintf('Field %s contains empty fields, skipping\n',DcmComplexFieldAll{iField});
+				else
+					c_all_unique = unique(c_all_parms.(DcmComplexFieldAll{iField}));
+					if length(c_all_unique) == 1
+						parms.(DcmComplexFieldAll{iField}) = c_all_unique;
+					else
+						parms.(DcmComplexFieldAll{iField}) = c_all_parms.(DcmComplexFieldAll{iField});
+					end
+				end
+			end
+		end
+		
+		for iField=1:length(DcmComplexFieldFirst)
+			if isfield(c_first_parms,DcmComplexFieldFirst{iField}) && ~isempty(c_first_parms.(DcmComplexFieldFirst{iField}))
+				parms.(DcmComplexFieldFirst{iField}) = c_first_parms.(DcmComplexFieldFirst{iField});
 			end
 		end
 		
@@ -372,10 +446,18 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
                     parms = rmfield(parms, {'MRSeriesWaterFatShift' 'MRSeriesEPIFactor'});
                 end
             case 'Siemens'
-                if isfield(parms,'BandwidthPerPixelPhaseEncode') && isfield(parms,'InPlanePhaseEncodingDirection')
+                if isfield(parms,'BandwidthPerPixelPhaseEncode') && (~isnan(parms.BandwidthPerPixelPhaseEncode)) && isfield(parms,'InPlanePhaseEncodingDirection')
                     parms.BandwidthPerPixelPhaseEncode = double(parms.BandwidthPerPixelPhaseEncode);
                     
-                    if strcmp(parms.InPlanePhaseEncodingDirection,'COL')
+					if isfield(parms,'AcquisitionMatrix') && ~isempty(parms.AcquisitionMatrix) && ~sum(isnan(parms.AcquisitionMatrix))
+						if length(parms.AcquisitionMatrix) == 1
+							parms.ReconMatrixPE = parms.AcquisitionMatrix;
+						elseif strcmp(parms.InPlanePhaseEncodingDirection,'COL')
+							parms.ReconMatrixPE = parms.AcquisitionMatrix(2);
+						else
+							parms.ReconMatrixPE = parms.AcquisitionMatrix(1);
+						end
+					elseif strcmp(parms.InPlanePhaseEncodingDirection,'COL')
                        parms.ReconMatrixPE = double(parms.Rows);
                     elseif strcmp(parms.InPlanePhaseEncodingDirection,'ROW')
                        parms.ReconMatrixPE = double(parms.Columns);
@@ -407,33 +489,37 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 		end
 		
 		% In case more than one value is given, then keep only the value that is not equal to 1. Or set to 1 if all are 1
-		parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope'};
+		parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope','RWVSlope'};
 		for parmNameInd = 1:length(parmNameToCheck)
 			parmName = parmNameToCheck{parmNameInd};
-			if  (length(parms.(parmName))>1)
+			if  isfield(parms,parmName) && (length(parms.(parmName))>1)
+				
 				indNonOne = find(parms.(parmName)~=1);
 				if isempty(indNonOne)
 					parms.(parmName) = 1;
 				else
 					parms.(parmName) = parms.(parmName)(indNonOne);
 				end
+				
 			end
 		end
 				
 		% In case multiple different scale slopes are given, report a warning
-		if length(parms.MRScaleSlope)>1  || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleIntercept)>1 || length(parms.RescaleSlope)>1
+		if length(parms.MRScaleSlope)>1  || length(parms.RescaleSlopeOriginal)>1 || length(parms.RescaleSlope)>1 ||...
+				(isfield(parms,'RWVSlope') && length(parms.RWVSlope)>1)
 			warning('xASL_adm_Dicom2JSON: Multiple scale slopes exist for a single scan!');
-			parms = rmfield(parms,'MRScaleSlope');
-			parms = rmfield(parms,'RescaleSlope');
-			parms = rmfield(parms,'RescaleSlopeOriginal');
-			parms = rmfield(parms,'RescaleIntercept');
+			%parms = rmfield(parms,'MRScaleSlope');
+			%parms = rmfield(parms,'RescaleSlope');
+			%parms = rmfield(parms,'RescaleSlopeOriginal');
+			%parms = rmfield(parms,'RescaleIntercept');
+			%parms = rmfield(parms,'RWVSlope');
 		end
 		
         %% Save the info in JSON file
 		
 		% Loads the JSON parms
-		if exist(PathJSON,'file')
-			JSONParms = spm_jsonread(PathJSON);
+		if exist(pathJSON,'file')
+			JSONParms = spm_jsonread(pathJSON);
 		else
 			JSONParms = [];
 		end
@@ -442,7 +528,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, inp, PathJSON, dc
 		parms = xASL_bids_parms2BIDS(parms, JSONParms, 1, 0);
 		
 		% Saves the JSON file
-		spm_jsonwrite(PathJSON, parms);
+		spm_jsonwrite(pathJSON, parms);
 		
     end
 
