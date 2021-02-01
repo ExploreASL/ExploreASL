@@ -56,8 +56,14 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     % Copy the ABOUT file
     copyfile(fullfile(x.MyPath,'Documentation','templates','ABOUT.md'),fullfile(outputFolder,'About.md'));
     
+    % Copy the TUTORIALS file
+    copyfile(fullfile(x.MyPath,'Documentation','templates','TUTORIALS.md'),fullfile(outputFolder,'Tutorials.md'));
+    
     % Create the functions markdown file
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
+    
+    % Create the functions markdown file
+    xASL_adm_DocCrawler(fullfile(x.MyPath,'External','SPMmodified','xASL'), fullfile(outputFolder,'SPMxASL.md'),'SPMxASL');
 
     % Convert and copy lincense file
     convertLicenseToMarkdown(fullfile(x.MyPath,'LICENSE-EXPLOREASL'),fullfile(outputFolder,'License.md'));
@@ -76,8 +82,7 @@ function xASL_adm_DocInitialize(outputFolder,updateExploreASL)
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
     
     % Add DATAPAR.md text to ImportModule
-    addDATAPARtoImport(fullfile(x.MyPath,'CustomScripts','GitHubDocumentation','templates','DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
-
+    addDATAPARtoImport(fullfile(x.MyPath,'Documentation','templates','DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
 
 end
 
