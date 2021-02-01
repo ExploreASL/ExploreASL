@@ -5,7 +5,7 @@ function pathOut = xASL_adm_GzipNifti(pathIn, bOverwrite)
 %
 % INPUT:
 %   pathIn     - path and filename to the file to be zipped (.NII or .NII.GZ)
-%   bOverwrite - indicates if we should overwrite the .NII file (OPTIONAL, default = FALSE)
+%   bOverwrite - indicates if we should overwrite the .NII file (OPTIONAL, default = TRUE)
 % OUTPUT:
 %   pathOut    - path to the zipped file
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
