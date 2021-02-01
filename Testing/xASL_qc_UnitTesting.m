@@ -10,6 +10,8 @@ function UnitTests = xASL_qc_UnitTesting
 %               define a unit test, please use the xASL_qc_UnitTest_Template.
 %               The idea is that this script can run independently from the
 %               rest of ExploreASL, to enable unbiased and robust testing.
+% 				This means you, as a developer, should not use/add ExploreASL
+% 				functions within this script!
 %
 % EXAMPLE:      UnitTests = xASL_qc_UnitTesting;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
