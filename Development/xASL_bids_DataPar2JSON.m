@@ -12,13 +12,14 @@ function xASL_bids_DataPar2JSON(DataParPath)
 % Also note that this function will recursively create JSON files (if non-existing) for all NIfTI files, so is supposed to run on raw data only.
 %
 % This function runs the following steps:
-% 1) Load parent DataParPath JSON file in xASL legacy format
-% 2) Get list of NIfTIs (i.e. "children" that will get the parameters)
-% 3) Load & add JSON child (if exist) to memory
-% 4) Load & add parms.mat child (if exist (legacy)) to memory
-% 5) Add parent fields to memory
-% 6) Save (& overwrite if existed) new JSON from memory
-% 7) Delete parms.mat if existed
+%
+% 1. Load parent DataParPath JSON file in xASL legacy format
+% 2. Get list of NIfTIs (i.e. "children" that will get the parameters)
+% 3. Load & add JSON child (if exist) to memory
+% 4. Load & add parms.mat child (if exist (legacy)) to memory
+% 5. Add parent fields to memory
+% 6. Save (& overwrite if existed) new JSON from memory
+% 7. Delete parms.mat if existed
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_FromDataPar2JSON('/MyStudy/DataParameterFile.json');
