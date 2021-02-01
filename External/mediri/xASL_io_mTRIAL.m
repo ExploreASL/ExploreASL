@@ -60,7 +60,7 @@ data.x.bGetAtlasROIsInNativeSpace = 0;
 % Add Q field
 data.x.Q = struct;
 data.x.M0 = 'UseControlAsM0';
-data.x.S.Atlases = {'DKT31_CMA_labels_MNI152'}; 
+data.x.S.Atlases = {'Mindboggle'}; 
 
 % Read docker interface file
 x_temporary = xASL_import_json(dockerInterfaceFile);
