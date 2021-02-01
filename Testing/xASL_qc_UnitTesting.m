@@ -46,6 +46,9 @@ end
 % Unit test: xASL_tsvRead
 UnitTests(1) = xASL_qc_UnitTest_function_tsvRead(TestRepository);
 
+% Unit test: xASL_tsvWrite
+UnitTests(2) = xASL_qc_UnitTest_function_tsvWrite(TestRepository);
+
 %% Print test results
 clc
 fprintf('================================= TEST RESULTS =================================\n')

@@ -1,4 +1,4 @@
-function UnitTest = xASL_qc_UnitTest_function_tsvRead(TestRepository)
+function UnitTest = xASL_qc_UnitTest_function_tsvWrite(TestRepository)
 %xASL_qc_UnitTest_Template Individual unit test template
 %
 % INPUT:        TestRepository - Path to test repository.
@@ -30,7 +30,7 @@ function UnitTest = xASL_qc_UnitTest_function_tsvRead(TestRepository)
 %% Initialize test structure
 
 % Insert test name here
-UnitTest.name = 'xASL_tsvRead';
+UnitTest.name = 'xASL_tsvWrite';
 
 % Define whether you are testing a module, submodule or function
 UnitTest.unit = 'Function';
@@ -38,29 +38,40 @@ UnitTest.unit = 'Function';
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Read test file (default options)';
+UnitTest.tests(1).testname = 'Read and write test file (default options)';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
 testFile = fullfile(TestRepository,'UnitTesting\io_files\TestFile.tsv');
-CellContents = xASL_tsvRead(testFile);
+testFileWrite = fullfile(TestRepository,'UnitTesting\working_directory\TestFile.tsv');
+InputCell = xASL_tsvRead(testFile);
+% Write test file
+xASL_tsvWrite(InputCell, testFileWrite, false, false);
+% Read test file
+OutputCell = xASL_tsvRead(testFileWrite);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
-if ~iscell(CellContents)
+if ~isfile(testFileWrite)
+    testCondition = false; % Test failed
+end
+if ~iscell(OutputCell)
 	testCondition = false; % Test failed
 end
-if ~(size(CellContents,1)==5 && size(CellContents,2)==3)
+if ~(size(OutputCell,1)==5 && size(OutputCell,2)==3)
     testCondition = false; % Test failed
 end
-if ~(strcmp(CellContents{1,1},'Parameter') && strcmp(CellContents{1,2},'Description') && strcmp(CellContents{1,3},'Value'))
+if ~(strcmp(OutputCell{1,1},'Parameter') && strcmp(OutputCell{1,2},'Description') && strcmp(OutputCell{1,3},'Value'))
     testCondition = false; % Test failed
 end
-if ~(ischar(CellContents{2,1}) && ischar(CellContents{2,2}) && isa(CellContents{2,3},'double'))
+if ~(ischar(OutputCell{2,1}) && ischar(OutputCell{2,2}) && isa(OutputCell{2,3},'double'))
     testCondition = false; % Test failed
 end
+
+% Remove file after test
+delete(testFileWrite);
 
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
@@ -72,29 +83,41 @@ UnitTest.tests(1).passed = testCondition;
 %% Test run 2
 
 % Give your individual subtest a name
-UnitTest.tests(2).testname = 'Read test file (bStruct option)';
+UnitTest.tests(2).testname = 'Read and write test file (force overwrite)';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
 testFile = fullfile(TestRepository,'UnitTesting\io_files\TestFile.tsv');
-CellContents = xASL_tsvRead(testFile,true);
+testFileWrite = fullfile(TestRepository,'UnitTesting\working_directory\TestFile.tsv');
+InputCell = xASL_tsvRead(testFile);
+% Write test file
+xASL_tsvWrite(InputCell, testFileWrite, false, false);
+xASL_tsvWrite(InputCell, testFileWrite, true, false); % Overwrite file from previous step
+% Read test file
+OutputCell = xASL_tsvRead(testFileWrite);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
-if ~isstruct(CellContents)
+if ~isfile(testFileWrite)
+    testCondition = false; % Test failed
+end
+if ~iscell(OutputCell)
 	testCondition = false; % Test failed
 end
-if ~(numel(CellContents.Parameter)==4 && numel(CellContents.Description)==4)
+if ~(size(OutputCell,1)==5 && size(OutputCell,2)==3)
     testCondition = false; % Test failed
 end
-if ~(strcmp(CellContents.Parameter{1,1},'Height') && strcmp(CellContents.Parameter{2,1},'Width') && strcmp(CellContents.Parameter{3,1},'Length') && strcmp(CellContents.Parameter{4,1},'Depth'))
+if ~(strcmp(OutputCell{1,1},'Parameter') && strcmp(OutputCell{1,2},'Description') && strcmp(OutputCell{1,3},'Value'))
     testCondition = false; % Test failed
 end
-if ~(ischar(CellContents.Parameter{1,1}) && ischar(CellContents.Description{1,1}) && isa(CellContents.Value(1),'double'))
+if ~(ischar(OutputCell{2,1}) && ischar(OutputCell{2,2}) && isa(OutputCell{2,3},'double'))
     testCondition = false; % Test failed
 end
+
+% Remove file after test
+delete(testFileWrite);
 
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);
