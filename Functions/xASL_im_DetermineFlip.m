@@ -39,8 +39,8 @@ function [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct
         return;
     end
 
-    Det_Ori = str2num(CellTSV{iRow,13});
-    Det_New = str2num(CellTSV{iRow,26});
+    Det_Ori = xASL_str2num(CellTSV{iRow,13});
+    Det_New = xASL_str2num(CellTSV{iRow,26});
     QCstruct.LR_flip_YesNo = uint8(~min((Det_Ori.*Det_New)>0));
 
     if QCstruct.LR_flip_YesNo>0
