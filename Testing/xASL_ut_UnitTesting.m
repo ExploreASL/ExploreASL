@@ -1,4 +1,4 @@
-function UnitTests = xASL_qc_UnitTesting
+function UnitTests = xASL_ut_UnitTesting
 %xASL_qc_UnitTesting Main script to run all individual unit tests
 %
 % INPUT:        n/a
@@ -44,10 +44,10 @@ end
 %% Test Workflow
 
 % Unit test: xASL_tsvRead
-UnitTests(1) = xASL_qc_UnitTest_function_tsvRead(TestRepository);
+UnitTests(1) = xASL_ut_UnitTest_function_tsvRead(TestRepository);
 
 % Unit test: xASL_tsvWrite
-UnitTests(2) = xASL_qc_UnitTest_function_tsvWrite(TestRepository);
+UnitTests(2) = xASL_ut_UnitTest_function_tsvWrite(TestRepository);
 
 %% Print test results
 clc

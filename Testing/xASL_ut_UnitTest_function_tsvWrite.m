@@ -1,5 +1,5 @@
-function UnitTest = xASL_qc_UnitTest_function_tsvWrite(TestRepository)
-%xASL_qc_UnitTest_Template Individual unit test template
+function UnitTest = xASL_ut_UnitTest_function_tsvWrite(TestRepository)
+%xASL_ut_UnitTest_Template Individual unit test template
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -21,9 +21,9 @@ function UnitTest = xASL_qc_UnitTest_function_tsvWrite(TestRepository)
 %               according to the following scheme:
 %               xASL_qc_UnitTest_[name of the module/submodule/function]
 %               For example: the unit test of the xASL_module_ASL would be called:
-%               xASL_qc_UnitTest_module_ASL
+%               xASL_ut_UnitTest_module_ASL
 %
-% EXAMPLE:      UnitTests(1) = xASL_qc_UnitTest_Template(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_Template(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
@@ -127,22 +127,8 @@ UnitTest.tests(2).passed = testCondition;
 
 
 %% End of testing
+UnitTest = xASL_ut_CheckSubtests(UnitTest);
 
-% Check if an individual subtest failed
-UnitTest.passed = true;
-for it = 1:numel(UnitTest.tests)
-    if ~UnitTest.tests(it).passed
-        UnitTest.passed = false;
-    end
 end
-
-
-
-
-
-
-
-
-
 
 
