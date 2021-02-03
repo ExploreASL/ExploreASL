@@ -388,7 +388,7 @@ if isfield(x, 'MyPath')
     x.D.ResliceRef          = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'rgrey.nii');
     x.D.IdentityTransfRef   = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
     x.D.TemplateDir         = fullfile(x.MyPath, 'Maps', 'Templates');
-    x.D.AtlasDir            = fullfile(x.MyPath, 'External', 'AtlasesNonCommercial');
+    x.D.AtlasDir            = fullfile(x.MyPath, 'External', 'Atlases');
 else
     warning('MyPath field not defined...');
 end
@@ -424,7 +424,7 @@ if and(isfield(x.D, 'ROOT'), isfield(x, 'ProcessData'))
         x.D.TTCheckDir          = fullfile(x.D.PopDir, 'ATT_Check');
         x.D.TemplatesStudyDir   = fullfile(x.D.PopDir, 'Templates');
 
-        % ANALYZE module
+        % POPULATION module
         x.SpaghettiDir          = fullfile(x.D.PopDir, 'SpaghettiPlots');
         x.S.StatsDir            = fullfile(x.D.PopDir, 'Stats');
         x.HistogramDir          = fullfile(x.D.PopDir, 'Histograms');
