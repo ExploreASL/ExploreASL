@@ -136,7 +136,9 @@ def startup():
                                     f"not be determined. The GUI requires knowledge of the MATLAB version being run "
                                     f"in order to process data", QMessageBox.Ok)
             else:
-                pass
+                QMessageBox.information(QWidget(), "Local MATLAB Located && Version discerned",
+                                        f"Detected the matlab path to be: {cmd_path}\n"
+                                        f"Detected the matlab version to be: {version}", QMessageBox.Ok)
         else:
             QMessageBox.information(QWidget(), "No off-local support at the current time",
                                     "The current version of ExploreASL_GUI does not offer support for compiled or "

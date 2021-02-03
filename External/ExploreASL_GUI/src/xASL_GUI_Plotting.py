@@ -59,6 +59,10 @@ class xASL_Plotting(QMainWindow):
             self.hlay_metadata.setContentsMargins(5, 0, 5, 0)
             self.vlay_directories.setSpacing(0)
             self.vlay_directories.addStretch(1)
+            for widget in [self.cmb_figuretypeselection, self.cmb_stats_selection, self.cmb_atlas_selection,
+                           self.cmb_pvc_selection]:
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
 
     def resizeEvent(self, event):
         self.dock.setMaximumHeight(self.height())

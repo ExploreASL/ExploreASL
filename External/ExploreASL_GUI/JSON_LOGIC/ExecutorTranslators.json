@@ -12,6 +12,14 @@
     "100_VisualQC_Structural.status": "T1w-image & FLAIR-image visual (and quantitative) quality control",
     "999_ready.status": "finishing the module"
   },
+  "Structural_Module_Filename2Description_PRE120_NOFLAIR": {
+    "010_LinearReg_T1w2MNI.status": "T1w-image rigid-body registration to MNI standard space",
+    "060_Segment_T1w.status": "CAT12/SPM12 T1w-image segmentation",
+    "080_Resample2StandardSpace.status": "T1w-image reslicing to MNI standard space",
+    "090_GetVolumetrics.status": "GM, WM, & CSF volume calculation",
+    "100_VisualQC_Structural.status": "T1w-image & FLAIR-image visual (and quantitative) quality control",
+    "999_ready.status": "finishing the module"
+  },
   "ASL_Module_Filename2Description": {
     "020_RealignASL.status": "motion correction and spike removal",
     "030_RegisterASL.status": "ASL series rigid-body registration to the T1w image",

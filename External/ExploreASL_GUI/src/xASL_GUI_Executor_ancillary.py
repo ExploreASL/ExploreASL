@@ -80,6 +80,13 @@ def calculate_anticipated_workload(parmsdict, run_options, translators):
             if not is_valid_for_analysis(path=subject_path, parms=parms, glob_dict=glob_dictionary):
                 continue
 
+            # Account for version 1.2.1 and earlier
+            has_flair = len(list(subject_path.glob(glob_dictionary["FLAIR"]))) > 0
+            if is_earlier_version(parms["MyPath"], threshold_higher=130) and not has_flair:
+                workload = {"010_LinearReg_T1w2MNI.status", "060_Segment_T1w.status",
+                            "080_Resample2StandardSpace.status", "090_GetVolumetrics.status",
+                            "100_VisualQC_Structural.status", "999_ready.status"}
+
             lock_dir: Path = analysis_directory / "lock" / "xASL_module_Structural" / subject_path.name / \
                              "xASL_module_Structural"
             if not lock_dir.exists():

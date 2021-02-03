@@ -73,7 +73,7 @@ class ExploreASL_Worker(QRunnable):
                     "-nodesktop",
                     "-nosplash",
                     "-batch",
-                    f"cd('{exploreasl_path}'); ExploreASL_Master{func_line}"]
+                    f"cd('{exploreasl_path}'); ExploreASL_Master{func_line}; exit"]
         else:
             cmds = [f"{matlab_cmd}",
                     "-nosplash",
@@ -814,11 +814,11 @@ class xASL_Executor(QMainWindow):
         try:
             mlab_ver = int(re.search(r"R(\d{4})[ab]", self.config["MATLAB_VER"]).group(1))
             # Immediately abandon this if the MATLAB version is too old
-            if mlab_ver < 2017:
+            if mlab_ver < 2016:
                 QMessageBox().warning(self, "MATLAB is too old",
                                       f"The MATLAB version on this machine: {mlab_ver}\nis not compatible with "
                                       f"ExploreASL. Please contact your system administrator for upgrading your "
-                                      f"MATLAB installation to at least 2017a for MacOS or Linux, or to at least 2019a "
+                                      f"MATLAB installation to at least 2016a for MacOS or Linux, or to at least 2019a "
                                       f"for Windows.", QMessageBox.Ok)
                 return
             # Or if too old for Windows due to the lack of the -nodisplay option
@@ -827,7 +827,7 @@ class xASL_Executor(QMainWindow):
                                       f"Due to the issues with MATLAB's Windows implementation, this program cannot "
                                       f"launch ExploreASL on MATLAB versions prior to 2019a on Windows systems. Please "
                                       f"contact your system administrator for upgrading your MATLAB installation to at "
-                                      f"least 2019a for Windows or 2017a for MacOS or Linux.",
+                                      f"least 2019a for Windows or 2016a for MacOS or Linux.",
                                       QMessageBox.Ok)
                 return
         # Or if something went wrong getting the version
@@ -1089,7 +1089,13 @@ class ExploreASL_Watcher(QRunnable):
         self.observer.schedule(event_handler=self.event_handler,
                                path=str(self.dir_to_watch),
                                recursive=True)
-        self.stuct_status_file_translator: dict = translators["Structural_Module_Filename2Description"]
+
+        if all([is_earlier_version(easl_dir=self.datapar_dict["MyPath"], threshold_higher=120),
+                len(list(self.dir_to_watch.parent.glob("*/*FLAIR*"))) == 0
+                ]):
+            self.struct_status_file_translator = translators["Structural_Module_Filename2Description_PRE120_NOFLAIR"]
+        else:
+            self.struct_status_file_translator: dict = translators["Structural_Module_Filename2Description"]
         if is_earlier_version(easl_dir=self.datapar_dict["MyPath"], threshold_higher=140):
             self.asl_status_file_translator: dict = translators["ASL_Module_Filename2Description_PRE140"]
         else:
@@ -1102,6 +1108,34 @@ class ExploreASL_Watcher(QRunnable):
                 f"Initialized a watcher for the directory {self.dir_to_watch} "
                 f"and will communicate with the progressbar at Python idx: {self.study_idx}")
 
+    def determine_skip(self, which_dict, created_status_path: Path, subject=None, run=None):
+        msgs_to_return = []
+        if which_dict == "ASL":
+            iterator = iter(self.asl_status_file_translator.items())
+        elif which_dict == "Structural":
+            iterator = iter(self.struct_status_file_translator.items())
+        else:
+            iterator = iter(self.pop_status_file_translator.items())
+
+        # First, exhaust the iterator until the current file is reached
+        next_file, next_description = next(iterator)
+        while next_file != created_status_path.name:
+            next_file, next_description = next(iterator)
+
+        # Then, keep appending msgs until a nonexistant file is reached
+        for statusfile_key, description in iterator:
+            if created_status_path.with_name(statusfile_key).exists():
+                if which_dict == "ASL":
+                    msgs_to_return.append(f"Skipping {description} for subject {subject} ; run {run}")
+                elif which_dict == "Structural":
+                    msgs_to_return.append(f"Skipping {description} for subject {subject}")
+                elif which_dict == "Population":
+                    msgs_to_return.append(f"Skipping {description}")
+            else:
+                break
+
+        return msgs_to_return
+
     # Processes the information sent from the event hander and emits signals to update widgets in the main Executor
     @Slot(str)
     def process_message(self, created_path):
@@ -1113,12 +1147,13 @@ class ExploreASL_Watcher(QRunnable):
         created_path = Path(created_path)
         msg = None
         workload_val = None
+        files_to_skip = None
 
         if created_path.is_dir():  # Lock dir
-            n_statfiles = len(list(created_path.parent.glob("*.status")))
-            if detected_module.group(1) == "Structural" and n_statfiles < len(self.stuct_status_file_translator.keys()):
+            n_statfile = len(list(created_path.parent.glob("*.status")))
+            if detected_module.group(1) == "Structural" and n_statfile < len(self.struct_status_file_translator.keys()):
                 msg = f"Structural Module has started for subject: {detected_subject.group()}"
-            elif detected_module.group(1) == "ASL" and n_statfiles < len(self.asl_status_file_translator.keys()):
+            elif detected_module.group(1) == "ASL" and n_statfile < len(self.asl_status_file_translator.keys()):
                 msg = f"ASL Module has started for subject: {detected_subject.group()}"
             elif detected_module.group(1) == "Population" and not self.pop_mod_started:
                 self.pop_mod_started = True
@@ -1128,23 +1163,32 @@ class ExploreASL_Watcher(QRunnable):
 
         elif created_path.is_file():  # Status file
             if detected_module.group(1) == "Structural" and detected_subject:
-                msg = f"Completed {self.stuct_status_file_translator[created_path.name]} in the Structural module " \
+                msg = f"Completed {self.struct_status_file_translator[created_path.name]} in the Structural module " \
                       f"for subject: {detected_subject.group()}"
+                files_to_skip = self.determine_skip(which_dict="Structural", created_status_path=created_path,
+                                                    subject=detected_subject.group())
             elif detected_module.group(1) == "ASL" and detected_subject:
                 run = self.asl_struct_regex.search(str(created_path)).group(2)
                 msg = f"Completed {self.asl_status_file_translator[created_path.name]} in the ASL module " \
                       f"for subject: {detected_subject.group()} ; run: {run}"
+                files_to_skip = self.determine_skip(which_dict="ASL", created_status_path=created_path,
+                                                    subject=detected_subject.group(), run=run)
             elif detected_module.group(1) == "Population":
                 msg = f"Completed {self.pop_status_file_translator[created_path.name]} in the Population module"
+                files_to_skip = self.determine_skip(which_dict="Population", created_status_path=created_path)
 
             workload_val = self.workload_translator[created_path.name]
 
         else:
-            print("Neither a file nor a directory was detected")
+            print(f"Neither a file nor a directory was detected: {str(created_path)=}")
 
         # Emit the message to inform the user of the most recent progress
         if msg:
             self.signals.update_text_output_signal.emit(msg)
+            print(f"{files_to_skip=}")
+            if files_to_skip is not None:
+                for file_msg in files_to_skip:
+                    self.signals.update_text_output_signal.emit(file_msg)
 
         # Emit the workload value associated with the completion of that status file as well as the study idx so that
         # the appropriate progressbar is updated

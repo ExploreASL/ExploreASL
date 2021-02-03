@@ -4,6 +4,7 @@ import subprocess
 import nibabel as nib
 import pydicom
 from pydicom.errors import InvalidDicomError
+from pydicom.multival import MultiValue
 import json
 import pandas as pd
 from more_itertools import peekable
@@ -12,7 +13,7 @@ from ast import literal_eval
 from nilearn import image
 from platform import system
 from pathlib import Path
-from typing import Union, List
+from typing import Union, List, Tuple
 from datetime import datetime
 
 pd.set_option("display.width", 600)
@@ -73,77 +74,41 @@ def get_structure_components(dcm_dir: Path, config: dict):
     return True, subject, visit, run_dst_name, scan_dst_name
 
 
-def get_manufacturer(dcm_dir: Path) -> (bool, str):
+def get_value(subset, remaining_tags: List[Tuple[int]], default=None):
+    for hex_pair in remaining_tags:
+        in_subset = hex_pair in subset
+        if any([not in_subset]):
+            return default
+        if not hasattr(subset[hex_pair], "value"):
+            return default
+
+        item = subset[hex_pair].value
+        if isinstance(item, pydicom.DataElement):
+            return item.value
+        elif isinstance(item, pydicom.Sequence) and len(item) > 0:
+            return get_value(subset=item[0], remaining_tags=remaining_tags[1:], default=default)
+        else:
+            return item
+
+
+def get_dicom_value(data: pydicom.Dataset, tags: List[List[tuple]], default=None):
     """
-    Returns the string suggesting which manufacturer the dicoms in the provided dicom directory belong to.
-    :param dcm_dir: the absolute path to the directory containing the dicoms to be converted.
-    :return: returns the string "Siemens", "Philips", or "GE". Otherwise returns None.
-    """
-    dcm_files = peekable(dcm_dir.glob("*"))
-    if not dcm_files:
-        return False, None
+    Convenience function for retrieving the value of a dicom tag. Otherwise, returns the indicated default.
 
-    dcm_data = None
-    for dcm_file in dcm_files:
-        if dcm_file.is_dir():
-            continue
-        try:
-            dcm_data = pydicom.read_file(dcm_file)
-            break
-        except InvalidDicomError:
-            print(f"DICOM dir bad bad file: {dcm_file}")
-            continue
-        except PermissionError:
-            continue
-
-    if dcm_data is None:
-        return False, None
-
-    detected_manufac = []
-    manufac_tags = [(0x0008, 0x0070), (0x0019, 0x0010)]
-    for tag in manufac_tags:
-        try:
-            detected_manufac.append(f"{dcm_data[tag].value}".upper())
-        except KeyError:
-            detected_manufac.append("")
-
-    if any(["SIEMENS" in result.upper() for result in detected_manufac]):
-        return True, "Siemens"
-    elif any(["PHILIPS" in result.upper() for result in detected_manufac]):
-        return True, "Philips"
-    elif any(["GE" in result.upper() for result in detected_manufac]):
-        return True, "GE"
-    else:
-        return False, None
-
-
-def get_dicom_value(data: pydicom.Dataset, tags: list, default=None):
-    """
-    Convenience function for retrieving the value of a dicom tag. Otherwise, returns the indicated default
-    :param data: the dicom data as a Pydicom Dataset
-    :param tags: a list of tuples, each tuple usually being 2 elements (0x####, 0x####). 4 element tuples are used
-    to delve into nested dicom structures
+    :param data: the dicom data as a Pydicom Dataset object
+    :param tags: a list of lists of tuples. Each 1st-level inner list describes an entire pathway to get
+    to a value. Each 2nd-level inner list contains length-2 tuples that are each steps to getting to the
+    desired value.
     :param default: the default value to return if nothing can be found
     :return: value: the first valid value associated with the tag
     """
     detected_values = []
-    for tag in tags:
-        # For tags that are nested
-        if len(tag) == 4:
-            try:
-                first = (tag[0], tag[1])
-                second = (tag[2], tag[3])
-                detected_values.append(f"{data[first][0][second].value}")
-            except (KeyError, TypeError):
-                detected_values.append(None)
-        # For base level tags
-        else:
-            try:
-                detected_values.append(f"{data[tag].value}")
-            except KeyError:
-                detected_values.append(None)
+    for tag_set in tags:
+        detected_values.append(get_value(subset=data, remaining_tags=tag_set, default=default))
 
     # Additional for loop for types
+    while default in detected_values:
+        detected_values.remove(default)
     types = [type(value) for value in detected_values]
 
     if str in types and float in types:
@@ -160,10 +125,14 @@ def get_dicom_value(data: pydicom.Dataset, tags: list, default=None):
                 if value.isnumeric():
                     return float(value)
                 elif value.startswith("b'") and value.endswith("'"):
-                    return struct.unpack('f', literal_eval(value))[0]
+                    try:
+                        return struct.unpack('f', literal_eval(value))[0]
+                    except struct.error:
+                        return float(literal_eval(value)[0])
                 else:
                     return value
-
+            elif isinstance(value, bytes):
+                return (struct.unpack("f", value))[0]
             return value
 
     return default
@@ -193,7 +162,7 @@ def get_additional_dicom_parms(dcm_dir: Path) -> (bool, dict):
     if dcm_data is None:
         return False, None
 
-    manufacturer = get_dicom_value(data=dcm_data, tags=[(0x0008, 0x0070), (0x0019, 0x0010)], default=None)
+    manufacturer = get_dicom_value(data=dcm_data, tags=[[(0x0008, 0x0070)], [(0x0019, 0x0010)]], default=None)
     if manufacturer is None:
         return False, None
     else:
@@ -206,18 +175,23 @@ def get_additional_dicom_parms(dcm_dir: Path) -> (bool, dict):
         else:
             return False, None
 
+    tags_dict = {
+        "AcquisitionMatrix": [[(0x0018, 0x1310)], [(0x5200, 0x9230), (0x0018, 0x1310)]],
+        "SoftwareVersions": [[(0x0018, 0x1020)]],
+        "NumberOfAverages": [[(0x0018, 0x0083)]],
+        "RescaleSlope": [[(0x0028, 0x1053)], [(0x2005, 0x110A)], [(0x2005, 0x140A)],
+                         [(0x5200, 0x9230), (0x0028, 0x9145), (0x0028, 0x1053)]
+                         ],
+        "RescaleIntercept": [(0x0028, 0x1052)],
+        "MRScaleSlope": [[(0x2005, 0x120E)], [(0x2005, 0x110E)], [(0x2005, 0x100E)],
+                         [(0x5200, 0x2930), (0x2005, 0x140F), (0x2005, 0x100E)],
+                         [(0x5200, 0x2930), (0x2005, 0x140F), (0x2005, 0x120E)],
+                         ],
+        "RealWorldValueSlope": [[(0x0040, 0x9096), (0x0040, 0x9225)]],
+        "NumberOfSlices": [[(0x0054, 0x0081)]],
+        "AcquisitionTime": [[(0x0008, 0x0032)]]
+    }
     if manufacturer == 'Philips':
-        tags_dict = {
-            "AcquisitionMatrix": [(0x0018, 0x1310)],
-            "SoftwareVersions": [(0x0018, 0x1020)],
-            "NumberOfAverages": [(0x0018, 0x0083)],
-            "RescaleSlope": [(0x0028, 0x1053), (0x2005, 0x110A), (0x2005, 0x140A)],
-            "RescaleIntercept": [(0x0028, 0x1052)],
-            "MRScaleSlope": [(0x2005, 0x120E), (0x2005, 0x110E), (0x2005, 0x100E)],
-            "RealWorldValueSlope": [(0x0040, 0x9096, 0x0040, 0x9225)],
-            "NumberOfSlices": [(0x0054, 0x0081)],
-            "AcquisitionTime": [(0x0008, 0x0032)]
-        }
         defaults = [None,  # AcquisitionMatrix
                     None,  # SoftwareVersions
                     1,  # NumberOfAverages
@@ -229,15 +203,8 @@ def get_additional_dicom_parms(dcm_dir: Path) -> (bool, dict):
                     0  # AcquisitionTime
                     ]
     else:
-        tags_dict = {
-            "AcquisitionMatrix": [(0x0018, 0x1310)],
-            "SoftwareVersions": [(0x0018, 0x1020)],
-            "NumberOfAverages": [(0x0018, 0x0083)],
-            "RescaleSlope": [(0x0028, 0x1053), (0x2005, 0x110A)],
-            "RescaleIntercept": [(0x0028, 0x1052)],
-            "NumberOfSlices": [(0x0054, 0x0081)],
-            "AcquisitionTime": [(0x0008, 0x0032)]
-        }
+        del tags_dict["RealWorldValueSlope"]
+        del tags_dict["MRScaleSlope"]
         defaults = [None,  # AcquisitionMatrix
                     None,  # SoftwareVersions
                     1,  # NumberOfAverages
@@ -252,9 +219,12 @@ def get_additional_dicom_parms(dcm_dir: Path) -> (bool, dict):
     for (key, value), default in zip(tags_dict.items(), defaults):
         result = get_dicom_value(dcm_data, value, default)
 
+        if isinstance(result, MultiValue):
+            result = list(result)
         # Additional processing for specific keys
         if key == "AcquisitionMatrix" and result is not None:
-            result = result.strip('[]').split(", ")
+            if isinstance(result, str):
+                result = result.strip('[]').split(", ")
             result = [int(number) for number in result]
 
         # Convert any lingering strings to float
@@ -548,7 +518,7 @@ def clean_niftis_in_temp(temp_dir: Path, add_parms: dict, subject: str, run: str
     if len(reorganized_niftis) > 1 and scan == "ASL4D":
         nii_objs = []
         for nifti in reorganized_niftis:
-            nii_obj: nib.Nifti1Image = nib.load(nifti)
+            nii_obj: nib.Nifti1Image = nib.load(str(nifti))
 
             # dcm2niix error: imports a 4D NIFTI instead of a 3D one. Solution: must be split first and concatenated
             # with the others at a later step
@@ -571,7 +541,7 @@ def clean_niftis_in_temp(temp_dir: Path, add_parms: dict, subject: str, run: str
 
     # Scenario: multiple M0; will take their mean as final
     elif len(reorganized_niftis) > 1 and scan == "M0":
-        nii_objs = [nib.load(nifti) for nifti in reorganized_niftis]
+        nii_objs = [nib.load(str(nifti)) for nifti in reorganized_niftis]
         final_nifti_obj = image.mean_img(nii_objs)
         # Must correct for bad headers under BIDS specification
         if not legacy_mode and final_nifti_obj.ndim < 4:
@@ -585,7 +555,7 @@ def clean_niftis_in_temp(temp_dir: Path, add_parms: dict, subject: str, run: str
     # Scenario: single M0 or single ASL4D
     elif any([len(reorganized_niftis) == 1 and scan == "M0",  # Single independent M0
               len(reorganized_niftis) == 1 and scan == "ASL4D"]):  # Could be a CBF or delta image
-        final_nifti_obj: nib.Nifti1Image = nib.load(reorganized_niftis[0])
+        final_nifti_obj: nib.Nifti1Image = nib.load(str(reorganized_niftis[0]))
         # Must correct for bad headers under BIDS specification
         if not legacy_mode and final_nifti_obj.ndim < 4:
             pixdim_copy = final_nifti_obj.header["pixdim"].copy()
@@ -597,11 +567,11 @@ def clean_niftis_in_temp(temp_dir: Path, add_parms: dict, subject: str, run: str
 
     # Scenario: one of the structural types
     elif len(reorganized_niftis) == 1 and scan in ["T1", "FLAIR"]:
-        final_nifti_obj = nib.load(reorganized_niftis[0])
+        final_nifti_obj = nib.load(str(reorganized_niftis[0]))
 
     # Scenario: multiple T1 acquisitions...take the mean
     elif len(reorganized_niftis) > 1 and scan in ["T1", "FLAIR"]:
-        nii_objs = [nib.load(nifti) for nifti in reorganized_niftis]
+        nii_objs = [nib.load(str(nifti)) for nifti in reorganized_niftis]
         final_nifti_obj = image.mean_img(nii_objs)
 
     # Otherwise, something went wrong and the operation should stop
@@ -707,7 +677,7 @@ def update_json_sidecar(json_file: Path, nifti_file: Path, dcm_parms: dict):
                     "PhilipsRWVSlope" not in json_sidecar_parms,
                     json_sidecar_parms.get("UsePhilipsFloatNotDisplayScaling", None) == 0,
                     ]):
-                nifti_img: nib.Nifti1Image = image.load_img(nifti_file)
+                nifti_img: nib.Nifti1Image = image.load_img(str(nifti_file))
                 nifti_data: np.ndarray = image.get_data(nifti_img)
                 RI = json_sidecar_parms["PhilipsRescaleIntercept"]
                 RS = json_sidecar_parms["PhilipsRescaleSlope"]
@@ -727,7 +697,7 @@ def update_json_sidecar(json_file: Path, nifti_file: Path, dcm_parms: dict):
                       "PhilipsRWVSlope" in json_sidecar_parms,
                       json_sidecar_parms.get("UsePhilipsFloatNotDisplayScaling", None) == 1,
                       ]):
-                nifti_img: nib.Nifti1Image = image.load_img(nifti_file)
+                nifti_img: nib.Nifti1Image = image.load_img(str(nifti_file))
                 nifti_data: np.ndarray = image.get_data(nifti_img)
                 RS, SS = json_sidecar_parms["PhilipsRescaleSlope"], json_sidecar_parms["PhilipsScaleSlope"]
                 new_nifti_data = nifti_data / (RS * SS)
@@ -771,14 +741,6 @@ def asldcm2bids_onedir(dcm_dir: Union[Path, str], config: dict, legacy_mode: boo
         return False, f"SUBJECT: {subject}; " \
                       f"SCAN: {scan}; " \
                       f"ERROR: Failed at getting directory structure components", None
-
-    # Get the manufacturer tag
-    # successful_run, manufacturer = get_manufacturer(dcm_dir=dcm_dir)
-    # if not successful_run:
-    #     print(f"FAILURE ENCOUNTERED AT GETTING THE MANUFACTURER STEP")
-    #     return False, f"SUBJECT: {subject}; " \
-    #                   f"SCAN: {scan}; " \
-    #                   f"ERROR: Failed retrieving the manufacturer value", None
 
     # Retrieve the additional DICOM parameters and include the Philips rescale slope indicator
     successful_run, additional_dcm_parameters = get_additional_dicom_parms(dcm_dir=dcm_dir)

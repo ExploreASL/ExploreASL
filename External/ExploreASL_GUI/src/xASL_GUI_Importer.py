@@ -6,7 +6,6 @@ from src.xASL_GUI_DCM2BIDS import get_dicom_directories, asldcm2bids_onedir, cre
     bids_m0_followup
 from src.xASL_GUI_HelperFuncs_WidgetFuncs import set_formlay_options
 from src.xASL_GUI_Dehybridizer import xASL_GUI_Dehybridizer
-from glob import iglob
 from tdda import rexpy
 from pprint import pprint
 from collections import OrderedDict
@@ -15,7 +14,7 @@ import json
 from os import chdir
 from platform import system
 from pathlib import Path
-from typing import List, Union
+from typing import List
 
 
 class Importer_WorkerSignals(QObject):
@@ -51,7 +50,7 @@ class Importer_Worker(QRunnable):
             if result:
                 self.import_summaries.append(import_summary)
             else:
-                self.failed_runs.append((dicom_dir, last_job))
+                self.failed_runs.append((str(dicom_dir), last_job))
 
         self.signals.signal_send_summaries.emit(self.import_summaries)
         if len(self.failed_runs) > 0:
@@ -809,7 +808,8 @@ class xASL_GUI_Importer(QMainWindow):
             print('\n')
 
         # Create workers
-        dicom_dirs = list(divide(4, dicom_dirs))
+        NTHREADS = 4
+        dicom_dirs = list(divide(NTHREADS, dicom_dirs))
         for ddirs in dicom_dirs:
             worker = Importer_Worker(ddirs,  # The list of dicom directories
                                      self.import_parms,  # The import parameters
