@@ -1,0 +1,16 @@
+================================================ LICENSE ================================================
+
+You shall, in any use of the Materials, include an acknowledgement in the form of 
+“(c) Copyright Imperial College of Science, Technology and Medicine 2007. All rights reserved.” 
+In addition, in all publications or presentations, you shall cite (i) the source of the Materials 
+as “www.brain-development.org” and (ii) appropriate papers documenting the creation of the Atlases 
+(currently Hammers A, Allom R et al., Hum Brain Mapp 2003 for regions 01-49, Gousias IS et al. 
+Neuroimage 2008 for regions 50-83, Faillenot I et al. 2017 for regions 86-95).
+
+http://brain-development.org/brain-atlases/individual-adult-brain-atlases-new/
+
+These Hammers regions were bilaterally averaged, to accommodate the LeftRight separation system
+in ExploreASL. The Hammers atlas contains 3 regions that were already bilateral, accumulating to
+(95+3)/2=49 regions in the bilateral Hammers atlas provided here.
+
+=========================================================================================================
