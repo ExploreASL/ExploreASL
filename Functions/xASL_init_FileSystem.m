@@ -194,14 +194,27 @@ x.P.Atlas.TotalGM                           = fullfile(x.D.MapsSPMmodifiedDir, '
 x.P.Atlas.DeepWM                            = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
 x.P.Atlas.WholeBrain                        = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
 x.P.Atlas.MNI                               = fullfile(x.D.MapsSPMmodifiedDir, 'MNI_structural.nii');
-x.P.Atlas.Hammers                           = fullfile(x.D.AtlasDir, 'Hammers.nii');
-x.P.Atlas.HO_cortex                         = fullfile(x.D.AtlasDir, 'HOcort_CONN.nii');
-x.P.Atlas.HO_subcortical                    = fullfile(x.D.AtlasDir, 'HOsub_CONN.nii');
-x.P.Atlas.Thalamus                          = fullfile(x.D.AtlasDir, 'Thalamus.nii');
 x.P.Atlas.Tatu_ACA_MCA_PCA                  = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'CortVascTerritoriesTatu.nii.nii');
 x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii');
 x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
 x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
-x.P.Atlas.Mindboggle                        = fullfile(x.D.AtlasDir, 'Mindboggle.nii'); % 1.5mm resampled version of OASIS-TRT-20_jointfusion_DKT31_CMA_labels_in_MNI152_v2
+
+% Add atlases from atlasDir
+x = xASL_init_AtlasList(x,x.D.AtlasDir);
+
+end
+
+% Add all NIFTIs from the atlasDir to the x.P.Atlas field
+function x = xASL_init_AtlasList(x,atlasDir)
+
+% Get all files in atlas directory
+filesInAtlasDir = xASL_adm_GetFileList(atlasDir,'^.+\.nii$');
+
+for it=1:numel(filesInAtlasDir)
+    % Get current atlas
+    [~,currentAtlas,~] = fileparts(filesInAtlasDir{it});
+    currentAtlas = strrep(currentAtlas,'.nii','');
+    x.P.Atlas.(currentAtlas) = filesInAtlasDir{it};
+end
 
 end
