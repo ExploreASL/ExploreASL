@@ -29,7 +29,7 @@
 "AcquisitionMatrixPE":62,
 "ReconMatrixPE":64,
 "PixelBandwidth":3054,
-"PhaseEncodingAxis":0+1i,
+"PhaseEncodingAxis":"i",
 "ImageOrientationPatientDICOM":[0.988042,-0.143706,0.0558729,0.154183,0.918592,-0.363889],
 "InPlanePhaseEncodingDirectionDICOM":"COL",
 "ConversionSoftware":"dcm2niix",
