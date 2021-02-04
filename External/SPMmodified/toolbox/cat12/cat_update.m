@@ -19,6 +19,8 @@ function varargout = cat_update(update)
 
 rev = '$Rev: 1613 $';
 
+return; %% EXPLOREASL HACK
+
 if isdeployed
   sts= Inf;
   msg = 'Update function is not working for compiled CAT12. Please check for a new compiled CAT12 version.';
