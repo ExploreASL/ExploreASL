@@ -44,7 +44,13 @@ function [PathIs] = xASL_adm_UnixPath(PathIs)
     
     %% ===================================================================================
     %% 4) Escape characters in file name
-    PathIs = regexprep(PathIs, '(?<!\\)( |\(|\)|[|]|{|}|*|:|;|+|=|,|<|>|!|~|@|#|%|^|&|*)', '\\$1');
+    if ispc
+        IllegalCharacters = '(?<!\\)( |\(|\)|[|]|{|}|*|;|+|=|,|<|>|!|~|@|#|%|^|&|*)';
+    else
+        IllegalCharacters = '(?<!\\)( |\(|\)|[|]|{|}|*|;|+|=|,|<|>|!|~|@|#|%|^|&|*|:)';
+    end    
+    
+    PathIs = regexprep(PathIs, IllegalCharacters, '\\$1');
     
     %% ===================================================================================
     %% 5) If WSL: add mounting prefix
