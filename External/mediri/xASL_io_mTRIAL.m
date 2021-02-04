@@ -56,7 +56,7 @@ data.x.DELETETEMP = 1;
 
 % Default atlas options
 data.x.bGetAtlasROIsInNativeSpace = 0;
-data.x.Atlases = {'TotalGM','DeepWM','HO_cortex','HO_subcortical'};
+data.x.Atlases = {'Mindboggle_OASIS_DKT31_CMA'};
 
 % Add Q field
 data.x.Q = struct;
@@ -73,7 +73,8 @@ if isfield(x_temporary,'BackgroundSuppressionNumberPulses'),    data.x.Q.Backgro
 if isfield(x_temporary,'Initial_PLD'),          data.x.Q.Initial_PLD = x_temporary.Initial_PLD; end
 if isfield(x_temporary,'LabelingDuration'),     data.x.Q.LabelingDuration = x_temporary.LabelingDuration; end
 if isfield(x_temporary,'M0PositionInASL4D')
-    if x_temporary.M0PositionInASL4D~=0
+    if x_temporary.M0PositionInASL4D~=0 % Could change to 'null' soon
+        data.x.M0 = 'separate_scan';
         data.x.M0PositionInASL4D = x_temporary.M0PositionInASL4D;
     end
 end

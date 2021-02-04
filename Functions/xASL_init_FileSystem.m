@@ -205,16 +205,16 @@ x = xASL_init_AtlasList(x,x.D.AtlasDir);
 end
 
 % Add all NIFTIs from the atlasDir to the x.P.Atlas field
-function x = xASL_init_AtlasList(x,atlasDir)
+function [x] = xASL_init_AtlasList(x,atlasDir)
 
 % Get all files in atlas directory
 filesInAtlasDir = xASL_adm_GetFileList(atlasDir,'^.+\.nii$');
 
-for it=1:numel(filesInAtlasDir)
+% Iterate over atlases
+for iFile=1:numel(filesInAtlasDir)
     % Get current atlas
-    [~,currentAtlas,~] = fileparts(filesInAtlasDir{it});
-    currentAtlas = strrep(currentAtlas,'.nii','');
-    x.P.Atlas.(currentAtlas) = filesInAtlasDir{it};
+    [~,currentAtlas] = xASL_fileparts(filesInAtlasDir{iFile});
+    x.P.Atlas.(currentAtlas) = filesInAtlasDir{iFile};
 end
 
 end

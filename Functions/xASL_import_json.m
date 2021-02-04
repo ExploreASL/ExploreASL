@@ -50,9 +50,16 @@ function [x] = xASL_import_json(DataParFile)
 % 	"Authors":      ["..."]
 % }
 %
+% EXAMPLE 3: To define cell arrays, use the official JSON array notation:
+%
+%   ...
+%   "S":
+%	{"Atlases": ["TotalGM","DeepWM","Hammers","HOcort_CONN","HOsub_CONN","Mindboggle_OASIS_DKT31_CMA"]}
+%   ...
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 %% Input Check
 if ~exist(DataParFile, 'file')
@@ -97,34 +104,7 @@ for n=1:size(sFields,1)
             end
         end
     end
-    if ischar(x.(sFields{n})) % Make sure the field is a character array
-        if ~strcmp(sFields{n},'subject_regexp') % Make sure the field does not contain a regular expression
-            if contains(x.(sFields{n}),'{') && contains(x.(sFields{n}),'}') % Automatically detect cell arrays (like the "Atlases" e.g.)
-                tempField = x.(sFields{n});
-                tempField = strsplit(tempField,',');
-                tempField = strrep(strrep(tempField,'{',''),'}','');
-                x.(sFields{n}) = strrep(tempField,'''','');
-            end
-        end
-    end
-    % Also look for cell arrays in sub structures (like the atlases in the S struct e.g.)
-    if isstruct(x.(sFields{n}))
-        sFieldsStruct = fieldnames(x.(sFields{n}));
-        for m=1:size(sFieldsStruct,1)
-            if ischar(x.(sFields{n}).(sFieldsStruct{m})) % Make sure the field is a character array
-                if contains(x.(sFields{n}).(sFieldsStruct{m}),'{') && contains(x.(sFields{n}).(sFieldsStruct{m}),'}') % Automatically detect cell arrays (like the "Atlases" e.g.)
-                    tempField = x.(sFields{n}).(sFieldsStruct{m});
-                    tempField = strsplit(tempField,',');
-                    tempField = strrep(strrep(tempField,'{',''),'}','');
-                    x.(sFields{n}).(sFieldsStruct{m}) = strrep(tempField,'''','');
-                end
-            end
-        end
-    end
 end
-
-
-
 
 
 %% Convert strings containing numbers to number
