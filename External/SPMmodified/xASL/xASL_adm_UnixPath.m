@@ -1,17 +1,21 @@
-function [PathIs] = xASL_adm_UnixPath(PathIs)
+function [PathIs] = xASL_adm_UnixPath(PathIs, bWSL)
 %xASL_adm_UnixPath Convert paths to Unix-compatible paths
 %
 % FORMAT: [PathIs] = xASL_adm_UnixPath(PathIs)
 %
 % INPUT:
 %   PathIs - string containing a single path to correct (REQUIRED)
+%   bWSL   - boolean, true for Windows Subsystem for Linux (WSL) functionality
+%            (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 %   PathIs - corrected path (DEFAULT = uncorrected, same as input path.
 %            Path is only changed when a Unix-filesystem is detected.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function performs the following steps to convert a path to a path that is compatible with the Unix-filesystem
-%              as used in e.g. Linux/MacOS/Windows Subsystem for Linux (WSL).
+%              as used in e.g. Linux/MacOS.
+%              It also has special support for Windows Subsystem for Linux (WSL),
+%              though this should only be activated specifically for WSL calls.
 %
 % 1. Skip this function without Unix-filesystem
 % 2. Trim whitespace
@@ -24,11 +28,20 @@ function [PathIs] = xASL_adm_UnixPath(PathIs)
 % __________________________________
 % Copyright 2021 ExploreASL
         
+    if nargin<2 || isempty(bWSL)
+        bWSL = false;
+    elseif ispc
+        [statusWSL, ~] = system('wsl ls');
+        if statusWSL==0
+            bWSL = true;
+        end
+    end
+
     %% ===================================================================================
     %% 1) Skip this function without Unix-filesystem
     % If we don't have a Unix-compatible filesystem, then skip this function
-    [statusWSL, ~] = system('wsl ls');
-    if ~isunix && ~statusWSL==0
+    
+    if ~isunix && ~bWSL
         return;
         % dont change path if we dont have unix installed, either as main OS or as
         % subsystem for Windows
@@ -54,9 +67,10 @@ function [PathIs] = xASL_adm_UnixPath(PathIs)
     
     %% ===================================================================================
     %% 5) If WSL: add mounting prefix
-    if ispc && statusWSL==0 && strcmp(PathIs(2), ':') % if we have Windows Subsystem for Linux
-        if statusWSL==0 && strcmp(PathIs(2), ':')
+    if bWSL % if we have Windows Subsystem for Linux
+        if strcmp(PathIs(2), ':')
             PathIs = ['/mnt/' lower(PathIs(1)) '/' PathIs(4:end)];
         end
     end
+    
 end
