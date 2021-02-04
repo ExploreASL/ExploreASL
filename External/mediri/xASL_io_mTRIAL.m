@@ -56,7 +56,7 @@ data.x.DELETETEMP = 1;
 
 % Default atlas options
 data.x.bGetAtlasROIsInNativeSpace = 0;
-data.x.Atlases = {'Mindboggle_OASIS_DKT31_CMA'};
+data.x.S.Atlases = {'Mindboggle_OASIS_DKT31_CMA'};
 
 % Add Q field
 data.x.Q = struct;
