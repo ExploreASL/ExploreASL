@@ -103,6 +103,10 @@ if isfield(x.S,'Legend')
     fprintf(x.S.FID,'\n');
 end
 
+% Check if number of ROIs and actual regions in the atlas match
+% if ~((length(x.S.SetsName)+length(x.S.NamesROI))==length(x.S.Legend))
+%    warning('Mismatch of ROIs and actual regions in the atlas...');
+% end
 
 
 %% -----------------------------------------------------------------------------------------------
