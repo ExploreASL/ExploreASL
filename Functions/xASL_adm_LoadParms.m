@@ -269,6 +269,31 @@ if ~exist('Parms','var')
 end
 
 
+%% ------------------------------------------------------------------------
+%% 7) Pars SliceTiming
+
+if ~isfield(x.Q, 'SliceReadoutTime') && isfield(x, 'SliceTiming')
+    SliceReadoutTime = x.SliceTiming(2:end) - x.SliceTiming(1:end-1);
+    SliceReadoutTime = unique(SliceReadoutTime);
+    
+    % If they are nearly equal, simplify
+    TimeDiff = SliceReadoutTime(2:end) - SliceReadoutTime(1:end-1);
+    Tolerance = 0.05 * mean(SliceReadoutTime); % 5% tolerance
+    TimeDiff = TimeDiff<Tolerance;
+    
+    x.Q.SliceReadoutTime = SliceReadoutTime(1);
+    for iTime=1:numel(TimeDiff)
+        if TimeDiff(iTime)==0
+            x.Q.SliceReadoutTime(end+1) = SliceReadoutTime(iTime+1);
+        end
+    end
+    
+    if numel(x.Q.SliceReadoutTime)>1
+        warning('Multiple slice readout timings detected');
+    end
+    
+    x.Q.SliceReadoutTime = x.Q.SliceReadoutTime.*1000;
+end
 
 end
 
