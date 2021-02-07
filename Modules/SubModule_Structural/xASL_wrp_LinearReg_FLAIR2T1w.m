@@ -48,7 +48,8 @@ end
 %% ---------------------------------------------------------------------------------------------------
 %% 2)Perform the registration
 
-xASL_im_ClipExtremes(x.P.Path_FLAIR, 0.999999, 0); % First we clip high vascular intensities, for more stable image contrast
+xASL_im_ClipExtremes(x.P.Path_FLAIR, 0.999999, 0, [], 1); % First we clip high vascular intensities & normalize to 4096, for more stable image contrast
+
 if bAutoACPC % Then start with center of mass detection & realign with this
     xASL_im_CenterOfMass(x.P.Path_FLAIR, OtherList);
 end
