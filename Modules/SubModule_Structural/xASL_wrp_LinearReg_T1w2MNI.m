@@ -59,6 +59,7 @@ for iSess = 1:x.nSessions
     OtherList{end+1,1} = x.P.Path_ASL4D;
     OtherList{end+1,1} = x.P.Path_M0;
     OtherList{end+1,1} = x.P.Path_ASL4D_RevPE;
+    OtherList{end+1,1} = x.P.Path_M0_RevPE;
     
     % Check for other ScanTypes
     OtherScanTypes = {'dwi' 'func'};
