@@ -44,6 +44,13 @@ if  xASL_stat_SumNan(M0_im(:))==0
     error('Empty M0 image, something went wrong in M0 processing');
 end
 
+x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
+if numel(x.Q.Initial_PLD)>1
+    warning('Multiple PLDs detected, selecting maximal value');
+    fprintf('%s\n', 'A multi-PLD quantification may provide more accurate results');
+    x.Q.Initial_PLD = max(x.Q.Initial_PLD);
+end
+
 ScaleImage = 1; % initializing (double data format by default in Matlab)
 
 % Convert to double precision to increase quantification precision
