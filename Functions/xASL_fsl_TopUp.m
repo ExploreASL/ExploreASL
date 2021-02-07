@@ -184,7 +184,11 @@ for iC=1:length(CompareParms)
         if strcmp(ParmsOutput(1:6),CompareParms{iC}(1:6)) % same blip (Up/Down)
             N1 = xASL_str2num(ParmsOutput(7:end));
             N2 = xASL_str2num(CompareParms{iC}(7:end));
-            if ~(N1>1.1*N2 || N2>1.1*N1) % check that TotalReadoutTime is not more than 10% different
+            
+            if isnan(N1)
+                warning('No TotalReadoutTime detected for output image, assuming it is equal to the TopUp images');
+                SameParmsInd = iC;
+            elseif ~(N1>1.1*N2 || N2>1.1*N1) % check that TotalReadoutTime is not more than 10% different
                 SameParmsInd = iC;
             end
         end
@@ -501,11 +505,11 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
     json = xASL_adm_LoadParms(JSONin, x);
 
  	if ~isfield(json,'PhaseEncodingDirection')
-        warning('PhaseEncodingDirection JSON field missing, skipping TopUp');
-        return;
+        warning(['PhaseEncodingDirection JSON field missing: ' PathIn]);
+        json.PhaseEncodingDirection = NaN;
     elseif ~isfield(json,'TotalReadoutTime')
-        warning('TotalReadoutTime JSON field missing, skipping TopUp');
-        return;
+        warning(['TotalReadoutTime JSON field missing: ' PathIn]);
+        json.TotalReadoutTime = NaN;
     end
 
     %% B) Read the JSON
@@ -523,9 +527,10 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
         case 'k-'
             AcqParms = '0 0 -1';
         otherwise
-            warning('Unknown PhaseEncodingDirection, skipping TopUp');
-            return;
+            warning(['Unknown PhaseEncodingDirection: ' PathIn]);
+            AcqParms = 'n/a n/a n/a';
     end
+
     %% C) Print the parameters in TopUp format
     AcqParms = [AcqParms ' ' xASL_num2str(json.TotalReadoutTime)];
 
