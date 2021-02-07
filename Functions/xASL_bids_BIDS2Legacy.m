@@ -240,11 +240,26 @@ end
 
 fprintf('\n');
 
+%% Parse M0
+ListASL4D = xASL_adm_GetFileList(Dir_xASL, '^ASL4D\.nii$', 'FPListRec');
+if ~isempty(ListASL4D)
+    for iList=1:numel(ListASL4D)
+        xASL_bids_parseM0(ListASL4D{iList});
+    end
+    fprintf('%s\n', ['M0 parsed for ' ListASL4D{iList}]);
+else
+    warning(['No ASL4D file found in ' Dir_xASL]);
 end
 
+%% Create DataPar.json
+PathDataPar = fullfile(Dir_xASL, 'DataPar.json');
+JSON.x.subject_regexp = '^sub-.*$';
+JSON.x.Quality = 0;
+JSON.x.DELETETEMP = 1;
+spm_jsonwrite(PathDataPar, JSON');
 
 
-
+end
 
 
 %% ===========================================================================
