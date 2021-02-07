@@ -1,4 +1,4 @@
-function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose)
+function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose, bNormalize)
 %xASL_im_ClipExtremes Clips image to threshold
 %
 % FORMAT:  [NewIM] = xASL_im_ClipExtremes(InputIm[, ThreshHigh, ThreshLow, bVerbose])
@@ -13,6 +13,11 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
 %                 (OPTIONAL, DEFAULT=1-ThreshHigh)
 %  bVerbose     - boolean specifying verbosity
 %                 (OPTIONAL, DEFAULT=true)
+%  bNormalize   - normalizes maximum value to 4096 (12 bit max, 12^2)
+%                 This can help with anatomical images that are incorrectly
+%                 exported by the scanner with very high values.
+%                 This is disabled by default, for quantitative images.
+%                 (OPTIONAL, DEFAULT=false)
 %
 % OUTPUT:
 %  NewIM        - clipped image (OPTIONAL)
@@ -27,7 +32,8 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
 %               1. Constrain clippable intensities
 %               2. Clip high intensities
 %               3. Clip low intensities
-%               4. Save as NIfTI if the input was a NIfTI
+%               4. Normalize to 4096 (12 bit, 12^2)
+%               5. Save as NIfTI if the input was a NIfTI
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_im_ClipExtremes('MyStudy/anat/T1w.nii.gz');
@@ -36,6 +42,10 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
 
 
     %% 0. Admin
+    if nargin<5 || isempty(bNormalize)
+        bNormalize = false;
+    end
+    
     if nargin<4 || isempty(bVerbose)
         bVerbose = true; % default is output clipped intensities
     end
@@ -109,10 +119,18 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
         end
     end
 
+    
+    %% ------------------------------------------------------------------------------------------    
+    % 4. Normalize to 4096
+    if bNormalize
+        NewIM = single(NewIM); % avoid clipping artifacts
+        MaxIM = max(NewIM(:));
+        NewIM = 4096.*(NewIM./MaxIM);
+    end
 
 
     %% ------------------------------------------------------------------------------------------
-    % 4. Save as NIfTI if the input was a NIfTI
+    % 5. Save as NIfTI if the input was a NIfTI
     if ischar(InputIm) && xASL_exist(InputIm, 'file')
         [~, ~, Fext] = xASL_fileparts(InputIm);
         if strcmp(Fext, '.nii.gz')
