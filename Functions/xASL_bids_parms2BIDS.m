@@ -46,6 +46,7 @@ if nargin < 4 || isempty(bPriorityBids)
 end
 
 
+
 %% ----------------------------------------------------------------------
 %% 1) Define field names that need to be convert/renamed/merged
 
@@ -65,8 +66,8 @@ updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'    
 
 % These fields have different names in xASL and in BIDS
 % They are therefore renamed depending on the type of output
-changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'             'LabelingType'              'RepetitionTime'};
-changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'InitialPostLabelDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation'};
+changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'         'LabelingType'              'RepetitionTime'};
+changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation'};
 
 
 %% ----------------------------------------------------------------------
