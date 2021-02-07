@@ -630,8 +630,13 @@ catch
         if ~xASL_exist(x.P.Path_T1_ORI, 'file') && xASL_exist(x.P.Path_T1, 'file')
             xASL_Copy(x.P.Path_T1, x.P.Path_T1_ORI);
         end
-
-        xASL_io_SaveNifti(x.P.Path_T1,x.P.Path_T1, xASL_io_Nifti2Im(x.P.Path_T1).^(2^0.5), [], false); % increase contrast
+        
+        % increase contrast
+        IM = xASL_io_Nifti2Im(x.P.Path_T1);
+        IM = IM.^(2^0.5);
+        IM = IM./max(IM(:)) .* 4096; % normalization
+        xASL_io_SaveNifti(x.P.Path_T1,x.P.Path_T1, IM, [], false);
+        
         matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % increase biasfield correction
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP = 1; % Increase strenght affine preprocessing
 
