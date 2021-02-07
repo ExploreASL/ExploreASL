@@ -176,41 +176,45 @@ end
 %% 4) Find fields with scan-specific data in x.S.Sets, and use this if possible (per BIDS inheritance)
 % Note that x.S.Sets is filled with data from participants.tsv or e.g. qnt_T1a.mat in the analysis root folder
 
-% Find current index
-iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID));
-iSession = find(strcmp(x.SESSIONS, x.P.SessionID));
-iSubjSess = (iSubject-1)*x.nSessions + iSession;
+if isfield(x, 'SUBJECTS')
+    % Find current index
+    iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID));
+    iSession = find(strcmp(x.SESSIONS, x.P.SessionID));
+    iSubjSess = (iSubject-1)*x.nSessions + iSession;
 
-if size(x.S.SetsID,1)~=x.nSubjectsSessions
-    warning('Inheritance x.S.SetsID data was not equal to numbers of Subjects/Sessions, skipping');
-    return;
-end
-
-for iSet=1:length(namesFieldsOld)
-    TempIndex = find(cellfun(@(x) strcmp(x, namesFieldsOld{iSet}), x.S.SetsName));
-	if ~isempty(TempIndex)
-		SetIndex(iSet) = TempIndex;
-	else
-		SetIndex(iSet) = NaN;
+    if size(x.S.SetsID,1)~=x.nSubjectsSessions
+        warning('Inheritance x.S.SetsID data was not equal to numbers of Subjects/Sessions, skipping');
+        return;
     end
 
-    if ~isnan(SetIndex(iSet))
-        % Use the data out SetsID
-        Parms.(namesFieldsNew{iSet}) = x.S.SetsID(iSubjSess, SetIndex(iSet));
-        if bVerbose; fprintf('%s\n', ['Loaded ' namesFieldsNew{iSet} ': ' xASL_num2str(Parms.(namesFieldsNew{iSet}))]); end
-        % But check if this is the true data content, or if this is an index (e.g. 1, 2, 3, 4)
-        % If its not continuous (x.S.Sets_1_2Sample~=3), then ExploreASL believes that this is an ordinal data set (groups)
-        if x.S.Sets1_2Sample(SetIndex(iSet))~=3
-            % if data are saved as indices of x.S.SetsOptions, then use
-            % the SetsOption field/ID/name
-            if Parms.(namesFieldsNew{iSet})<=length(x.S.SetsOptions{SetIndex(iSet)})
-                Parms.(namesFieldsNew{iSet}) = x.S.SetsOptions{SetIndex(iSet)}{Parms.(namesFieldsNew{iSet})};
+    for iSet=1:length(namesFieldsOld)
+        TempIndex = find(cellfun(@(x) strcmp(x, namesFieldsOld{iSet}), x.S.SetsName));
+        if ~isempty(TempIndex)
+            SetIndex(iSet) = TempIndex;
+        else
+            SetIndex(iSet) = NaN;
+        end
+
+        if ~isnan(SetIndex(iSet))
+            % Use the data out SetsID
+            Parms.(namesFieldsNew{iSet}) = x.S.SetsID(iSubjSess, SetIndex(iSet));
+            if bVerbose; fprintf('%s\n', ['Loaded ' namesFieldsNew{iSet} ': ' xASL_num2str(Parms.(namesFieldsNew{iSet}))]); end
+            % But check if this is the true data content, or if this is an index (e.g. 1, 2, 3, 4)
+            % If its not continuous (x.S.Sets_1_2Sample~=3), then ExploreASL believes that this is an ordinal data set (groups)
+            if x.S.Sets1_2Sample(SetIndex(iSet))~=3
+                % if data are saved as indices of x.S.SetsOptions, then use
+                % the SetsOption field/ID/name
+                if Parms.(namesFieldsNew{iSet})<=length(x.S.SetsOptions{SetIndex(iSet)})
+                    Parms.(namesFieldsNew{iSet}) = x.S.SetsOptions{SetIndex(iSet)}{Parms.(namesFieldsNew{iSet})};
+                end
+            end
+            if ischar(Parms.(namesFieldsNew{iSet})) % convert string to float
+                Parms.(namesFieldsNew{iSet}) = str2num(Parms.(namesFieldsNew{iSet}));
             end
         end
-        if ischar(Parms.(namesFieldsNew{iSet})) % convert string to float
-            Parms.(namesFieldsNew{iSet}) = str2num(Parms.(namesFieldsNew{iSet}));
-        end
     end
+else
+    warning('x.SUBJECTS field missing, skipping parsing x.S.Sets*');
 end
 
 
