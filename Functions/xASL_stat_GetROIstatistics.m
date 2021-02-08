@@ -617,12 +617,13 @@ for iSubject=1:x.nSubjects
                 end
 
                 % Now check for empty masks
+                fprintf('\n');
                 if xASL_stat_SumNan(CurrentMask(:)) == 0
-                    warning(['Empty mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                    fprintf('%s\n', ['Empty mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
                 elseif xASL_stat_SumNan(pGM_here(:)) == 0
-                    warning(['Empty pGM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                    fprintf('%s\n', ['Empty pGM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
                 elseif xASL_stat_SumNan(pWM_here(:)) == 0
-                    warning(['Empty pWM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                    fprintf('%s\n', ['Empty pWM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
                 else                    
 
                     %% CoV
@@ -641,7 +642,7 @@ for iSubject=1:x.nSubjects
                         % Now check again for empty mask (as it was
                         % masked now also with a vascular artifact
                         % mask)
-                        warning(['Empty CBF mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]); % slightly different warning/mask as above for sCoV
+                        fprintf('%s\n', ['Empty CBF mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]); % slightly different warning/mask as above for sCoV
                     else
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, -1);
                         x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0);
