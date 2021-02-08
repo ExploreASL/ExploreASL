@@ -1,7 +1,0 @@
-include README.md
-include External/DCM2NIIX/*.exe
-include JSON_LOGIC/*.json
-include media/*.svg
-include media/*.gif
-include media/*.ico
-include media/*.png
