@@ -66,8 +66,8 @@ updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'    
 
 % These fields have different names in xASL and in BIDS
 % They are therefore renamed depending on the type of output
-changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'         'LabelingType'              'RepetitionTime'};
-changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation'};
+changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'         'LabelingType'              'RepetitionTime'            'NumberOfAverages'};
+changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation' 'TotalAcquiredVolumes'};
 
 
 %% ----------------------------------------------------------------------
