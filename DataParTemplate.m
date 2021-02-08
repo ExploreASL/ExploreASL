@@ -82,7 +82,8 @@ function x = DataParTemplate(x)
 %                      head motion and registration between M0 & ASL4D will differ between
 %                      patients and controls. 
 % x.M0PositionInASL4D - indicates the position of M0 in TimeSeries, if it is integrated by the vendor in the 
-%                       DICOM export. Will move this from ASL4D.nii to M0.nii(OPTIONAL, DEFAULT = no M0 in timeseries) 
+%                       DICOM export. Will move this from ASL4D.nii to M0.nii(OPTIONAL, DEFAULT = [] (no M0 in timeseries))
+%                     - If x.M0PositionInASL4D is not empty, then x.M0 is set to 'separate_scan'.
 %                     - example for Philips 3D GRASE = '[1 2]' % (first control-label pair)
 %                     - example for Siemens 3D GRASE = 1 % first image
 %                     - example for GE 3D spiral = 2 % where first image is PWI & last = M0

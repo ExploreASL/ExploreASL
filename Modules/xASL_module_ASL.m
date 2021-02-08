@@ -83,8 +83,11 @@ if isfield(x,'M0PositionInASL4D')
     if ~isnumeric(x.M0PositionInASL4D)
         warning('Something wrong with x.M0PositionInASL4D');
     end
-    % make sure to split the M0 from the ASL time-series if needed
-    xASL_io_SplitASL_M0(x.P.Path_ASL4D, x.M0PositionInASL4D);
+    % Make sure to split the M0 from the ASL time-series if needed
+	if ~isempty(x.M0PositionInASL4D)
+	    xASL_io_SplitASL_M0(x.P.Path_ASL4D, x.M0PositionInASL4D);
+        x.M0 = 'separate_scan';
+	end
 end
 
 
