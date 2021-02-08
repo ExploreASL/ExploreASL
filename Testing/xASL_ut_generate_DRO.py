@@ -35,15 +35,15 @@ if not os.path.exists(os.path.join(str(args.testdir),"DRO")):
 		os.makedirs(os.path.join(str(args.testdir),"DRO"))
 
 # Create default ASL DRO parameter file
-inputParmsFile = os.path.join(str(args.testdir),"DRO","input_params.json")
+inputParmsFile = os.path.join(str(args.testdir),"UnitTesting","dro_files","input_params.json")
 os.system("asldro output params "+inputParmsFile)
 
 # Run default ASL DRO workflow
-testDRO = os.path.join(str(args.testdir),"DRO","test_dataset.zip")
+testDRO = os.path.join(str(args.testdir),"UnitTesting","dro_files","test_dataset.zip")
 os.system("asldro generate "+testDRO)
 
 # Unzip folder
-testPatient = os.path.join(str(args.testdir),"DRO","test_patient")
+testPatient = os.path.join(str(args.testdir),"UnitTesting","dro_files","test_patient")
 with zipfile.ZipFile(testDRO, 'r') as zip_ref:
     zip_ref.extractall(testPatient)
 
