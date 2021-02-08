@@ -2,6 +2,8 @@ function varargout = ps_LST_update(varargin)
 %ps_LST_tlv   Check if the newest version of LST is installed.
 %   Part of the LST toolbox, www.statistical-modeling.de/lst.html
 
+return; %% EXPLOREASL HACK
+
 installed = importdata(fullfile(spm('dir'), 'toolbox', 'LST', 'lst-version.txt'));
 proceed = 1;
 try

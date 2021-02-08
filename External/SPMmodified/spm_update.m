@@ -33,6 +33,9 @@ else
     update = true;
 end
 
+return; %% EXPLOREASL HACK
+
+
 %-Get list of updates from SPM server
 %--------------------------------------------------------------------------
 [s,status] = urlread(url);

@@ -78,16 +78,16 @@ if nargin <= 1
   
   [catversion.rel, catversion.ver, catversion.dat] = cat_version;
 
-  % check for update and send Matlab version with 10s delay
-  if strcmpi(spm_check_version,'octave')
-    call_server;
-  else
-    try
-      start(timer('StartDelay',10,'TimerFcn',@call_server));  
-    catch
-      call_server;
-    end
-  end
+  % check for update and send Matlab version with 10s delay %% EXPLOREASL HACK
+  % if strcmpi(spm_check_version,'octave')
+  %   call_server;
+  % else
+  %   try
+  %     start(timer('StartDelay',10,'TimerFcn',@call_server));  
+  %   catch
+  %     call_server;
+  %   end
+  % end
   
   cat_bg = imread(fullfile(spm('dir'),'toolbox','cat12','html','images','cat_bg.jpg'));
   

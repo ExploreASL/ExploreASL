@@ -366,6 +366,15 @@ spm_jsonread.c at line 496
 *********************************************************************************************************
 OTHER CODE HACKS
 
+DATE+NAME:2021-02-04 HM (issue #302)
+DESCRIPTION: Deactivate (comment out) calls of SPM/LST/CAT12 to server
+FILE:
+Cat12 at line 81
+cat_update at line 22
+spm_update at line 36
+cat_io_send_to_server at line 19
+ps_LST_update at line 5
+
 DATE+NAME:2021-01-20 HM (issue #276)
 DESCRIPTION: Manage trailing \t on header only
 FILE: spm_load.m, 131, 165
@@ -385,7 +394,6 @@ DATE+NAME:2020-07-06 HM (issue #1)
 DESCRIPTION:
 Allow running CAT12 without JVM
 FILE:
-cat_io_send_to_server at 18
 cat_run at 466, 860
 cat_main at 884
 
