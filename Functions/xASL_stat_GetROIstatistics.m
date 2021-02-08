@@ -603,50 +603,50 @@ for iSubject=1:x.nSubjects
                 % Provide some feedback for debugging                
                 if xASL_stat_SumNan(DataIm(:)) == 0
                     % Check for empty CBF map first
-                    warning(['Empty image for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);                
-                
-                    if x.S.bMasking(3)==0 % no tissue-masking
-                        pGM_here = ones(size(DataIm));
-                        pWM_here = ones(size(DataIm));
-                    end
-                    if x.S.bMasking(1)==0 % no susceptibility mask
-                        CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5));
+                    warning(['Empty image for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                end
+
+                if x.S.bMasking(3)==0 % no tissue-masking
+                    pGM_here = ones(size(DataIm));
+                    pWM_here = ones(size(DataIm));
+                end
+                if x.S.bMasking(1)==0 % no susceptibility mask
+                    CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5));
+                else
+                    CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
+                end
+
+                % Now check for empty masks
+                if xASL_stat_SumNan(CurrentMask(:)) == 0
+                    warning(['Empty mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                elseif xASL_stat_SumNan(pGM_here(:)) == 0
+                    warning(['Empty pGM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                elseif xASL_stat_SumNan(pWM_here(:)) == 0
+                    warning(['Empty pWM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                else                    
+
+                    %% CoV
+                    x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
+                    % x.S.DAT_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
+                    x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+
+                    %% CBF (now remove vascular artifacts)
+                    if x.S.bMasking(2)==1 % apply vascular mask
+                        CurrentMask = CurrentMask & VascularMask;
                     else
-                        CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
+                        % keep CurrentMask as is, don't apply a vascular mask
                     end
 
-                    % Now check for empty masks
                     if xASL_stat_SumNan(CurrentMask(:)) == 0
-                        warning(['Empty mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
-                    elseif xASL_stat_SumNan(pGM_here(:)) == 0
-                        warning(['Empty pGM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
-                    elseif xASL_stat_SumNan(pWM_here(:)) == 0
-                        warning(['Empty pWM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
-                    else                    
-                    
-                        %% CoV
-                        x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
-                        % x.S.DAT_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
-                        x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
-
-                        %% CBF (now remove vascular artifacts)
-                        if x.S.bMasking(2)==1 % apply vascular mask
-                            CurrentMask = CurrentMask & VascularMask;
-                        else
-                            % keep CurrentMask as is, don't apply a vascular mask
-                        end
-
-                        if xASL_stat_SumNan(CurrentMask(:)) == 0
-                            % Now check again for empty mask (as it was
-                            % masked now also with a vascular artifact
-                            % mask)
-                            warning(['Empty CBF mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]); % slightly different warning/mask as above for sCoV
-                        else
-                            x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, -1);
-                            x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0);
-                            % x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
-                            x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)                    
-                        end
+                        % Now check again for empty mask (as it was
+                        % masked now also with a vascular artifact
+                        % mask)
+                        warning(['Empty CBF mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]); % slightly different warning/mask as above for sCoV
+                    else
+                        x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, -1);
+                        x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0);
+                        % x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
+                        x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)                    
                     end
                 end
 
