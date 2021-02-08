@@ -270,7 +270,7 @@ end
 
 
 %% ------------------------------------------------------------------------
-%% 7) Pars SliceTiming
+%% 7) Parse SliceTiming
 
 if ~isfield(x.Q, 'SliceReadoutTime') && isfield(x, 'SliceTiming')
     SliceReadoutTime = x.SliceTiming(2:end) - x.SliceTiming(1:end-1);
@@ -294,6 +294,22 @@ if ~isfield(x.Q, 'SliceReadoutTime') && isfield(x, 'SliceTiming')
     
     x.Q.SliceReadoutTime = x.Q.SliceReadoutTime.*1000;
 end
+
+
+%% ------------------------------------------------------------------------
+%% 8) Interpret PASL 
+if strcmp(x.Q.LabelingType, 'PASL') && ~isfield(x.Q, 'LabelingDuration')
+    if isfield(x, 'BolusCutOffDelayTime')
+        x.Q.LabelingDuration = x.BolusCutOffDelayTime(1);
+    else
+        warning('Labeling Duration missing for this PASL sequence');
+    end
+end
+    
+
+
+
+
 
 end
 
