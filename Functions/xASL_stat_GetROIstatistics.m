@@ -617,7 +617,6 @@ for iSubject=1:x.nSubjects
                 end
 
                 % Now check for empty masks
-                fprintf('\n');
                 if xASL_stat_SumNan(CurrentMask(:)) == 0
                     fprintf('%s\n', ['Empty mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
                 elseif xASL_stat_SumNan(pGM_here(:)) == 0
