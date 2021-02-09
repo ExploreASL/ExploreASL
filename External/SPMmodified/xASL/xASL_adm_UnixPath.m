@@ -1,4 +1,4 @@
-function [PathIs] = xASL_adm_UnixPath(PathIs, bWSL)
+function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL)
 %xASL_adm_UnixPath Convert paths to Unix-compatible paths
 %
 % FORMAT: [PathIs] = xASL_adm_UnixPath(PathIs)
@@ -17,6 +17,11 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bWSL)
 %              It also has special support for Windows Subsystem for Linux (WSL),
 %              though this should only be activated specifically for WSL calls.
 %
+%              Note that we want to use this function for most Unix calls
+%              (to fix paths), but in the case of WSL only for some calls,
+%              where Matlab in Windows calls Linux-code through WSL (e.g.
+%              for FSL).
+%
 % 1. Skip this function without Unix-filesystem
 % 2. Trim whitespace
 % 3. Selectively convert forward to backward slashes (ignore already escaped whitespace)
@@ -28,9 +33,10 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bWSL)
 % __________________________________
 % Copyright 2021 ExploreASL
         
-    if nargin<2 || isempty(bWSL)
-        bWSL = false;
-    elseif ispc
+    bWSL = false;
+    if nargin>1 && ~isempty(bTryWSL) && bTryWSL && ispc
+        % only in cases where bTryWSL is specifically called
+        % and we have a PC system with WSL installed
         [statusWSL, ~] = system('wsl ls');
         if statusWSL==0
             bWSL = true;
