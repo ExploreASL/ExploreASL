@@ -122,9 +122,9 @@ end
 
 % Print the applied masking settings
 if isequal(x.S.bMasking, [1 1 1 1])
-    fprintf('All ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask\n');
+    fprintf('All ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask)\n');
 elseif isequal(x.S.bMasking, [0 0 0 0])
-    fprintf('No ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask\n');
+    fprintf('No ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask)\n');
 else
     fprintf('We will apply the following masking:');
     if x.S.bMasking(1)==1
