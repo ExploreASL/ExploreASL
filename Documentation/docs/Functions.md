@@ -823,11 +823,11 @@ We recommend to set bPrintReport to true, because you otherwise can't see signif
 #### Format
 
 ```matlab
-[parms pathDcmDictOut] = xASL_bids_Dicom2Parms(inp[, parmsfile, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
+[parms pathDcmDictOut] = xASL_bids_Dicom2Parms(imPar, pathIn[, pathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
 ```
 
 #### Description
-The function goes through the INP files, reads the DICOM or PAR/REC files and parses their headers.
+The function goes through the pathIn files, reads the DICOM or PAR/REC files and parses their headers.
 It extracts the DICOM parameters important for ASL, makes sure they are in the correct format, if missing then
 replaces with default value, it also checks if the parameters are consistent across DICOM files for a single sequence.
 
@@ -873,6 +873,21 @@ This function runs the following steps:
 
 
 ----
+### xASL\_bids\_JsonCheck.m
+
+#### Format
+
+```matlab
+jsonOut = xASL_bids_JsonCheck(jsonIn,fileType)
+```
+
+#### Description
+
+It checks the existence of all BIDS fields, removes superfluous fields, checks all the conditions and orderes
+the structure on the output. It works according to the normal BIDS, or ASL-BIDS definition
+
+
+----
 ### xASL\_bids\_MergeNifti.m
 
 #### Format
@@ -906,16 +921,17 @@ This function performs the following steps in subfunctions:
 
 
 ----
-### xASL\_bids\_PARREC2JSON.m
+### xASL\_bids\_Par2JSON.m
 
 #### Format
 
 ```matlab
-parms = xASL_adm_Par2Parms(pathPar, PathJSON)
+parms = xASL_bids_Par2JSON(pathPar, pathJSON[, bRecreate])
 ```
 
 #### Description
-Opens the Philips type PAR file. Reads the relevant DICOM header fields and adds them to the .json sidecar file.
+Opens the Philips PAR file. Reads the relevant DICOM headers and saves them to JSON sidecar in a BIDS format.
+Only recreates an existing file if bRecreate option is set to TRUE.
 
 
 ----
@@ -924,7 +940,7 @@ Opens the Philips type PAR file. Reads the relevant DICOM header fields and adds
 #### Format
 
 ```matlab
-[xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
+[bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
 ```
 
 #### Description
@@ -950,12 +966,26 @@ Function to parse the raw phoenix protocol. This function is usually called from
 
 
 ----
+### xASL\_bids\_VendorFieldCheck.m
+
+#### Format
+
+```matlab
+jsonOut = xASL_bids_VendorFieldCheck(jsonIn,bIsASL)
+```
+
+#### Description
+
+It checks all the JSON fields, make sure that they are renamed from vendor specific names to common BIDS names
+
+
+----
 ### xASL\_bids\_parms2BIDS.m
 
 #### Format
 
 ```matlab
-outBids = xASL_bids_parms2BIDS(inParms[, inBids, bOutBids, priorityBids])
+outBids = xASL_bids_parms2BIDS(inXasl[, inBids, bOutBids, priorityBids])
 ```
 
 #### Description
@@ -2303,7 +2333,7 @@ Convert DICOM NIfTI/BIDS format using the dcm2nii command line utility.
 ```
 
 #### Description
-when the provided data is numeric, this function will convert the number to string/characters,
+When the provided data is numeric, this function will convert the number to string/characters,
 rewriting NaN into 'n/a' (BIDS convention) but otherwise preserving the Matlab builtin functionality, also for the second argument "f".
 If non-numeric data is provided, it is bypassed (avoiding any issues "num2str" will have with non-numeric data).
 It can concatenate an array/matrix of strings, taking first the columns in the first row, and then going across the rows.
