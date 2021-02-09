@@ -325,7 +325,7 @@ for iSubject=1:x.nSubjects
 					pGM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii'));
 					pWM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii'));
 
-					fprintf('Expanding ROIs for PVC:   ');
+					fprintf('Expanding ROIs for PVC:    ');
 					for iROI=1:size(x.S.InputMasks,2)
 						xASL_TrackProgress(iROI,size(x.S.InputMasks,2));
 						for iMask=1:size(x.S.InputMasks,3)
@@ -363,7 +363,7 @@ for iSubject=1:x.nSubjects
 
 		%% 4) Iterate over all subjects
 		if bDoOnceROIStart
-			fprintf('%s\n','Computing ROI data:   ');
+			fprintf('\n%s\n','Computing ROI data:   ');
 			bDoOnceROIStart = 0;
 		end
 		SubjectSpecificMasks = x.S.InputMasks(:,:,1); % changed below if size(x.S.InputMasks,3)>1
