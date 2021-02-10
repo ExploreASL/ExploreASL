@@ -578,9 +578,6 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.GM.dartel      = 0;   % don't save 
 matlabbatch{1}.spm.tools.cat.estwrite.output.WM.native      = 1;   % save c2T1 in native space
 matlabbatch{1}.spm.tools.cat.estwrite.output.WM.mod         = 0;   % don't save modulation
 matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel      = 0;   % don't save DARTEL space c2T1, this happens below in the reslice part
-matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.native      = 1;   % save c3T1 in native space
-matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.mod         = 0;   % don't save modulation
-matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel      = 0;   % don't save DARTEL space c2T1, this happens below in the reslice part
 matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
 
