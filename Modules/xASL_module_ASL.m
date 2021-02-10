@@ -79,15 +79,15 @@ end
 
 %% Manage an M0 within time series
 if isfield(x,'M0PositionInASL4D')
-    x.M0PositionInASL4D = xASL_str2num(x.M0PositionInASL4D); % make sure it is numeric when coming from JSON string
+    x.M0PositionInASL4D = xASL_str2num(x.M0PositionInASL4D);
+    % Make sure it is numeric (or empty) when coming from JSON string
     if ~isnumeric(x.M0PositionInASL4D)
-        warning('Something wrong with x.M0PositionInASL4D');
+        warning('Something wrong with x.M0PositionInASL4D...');
     end
     % Make sure to split the M0 from the ASL time-series if needed
-	if ~isempty(x.M0PositionInASL4D)
-	    xASL_io_SplitASL_M0(x.P.Path_ASL4D, x.M0PositionInASL4D);
-        x.M0 = 'separate_scan';
-	end
+    if ~isempty(x.M0PositionInASL4D)
+        xASL_io_SplitASL_M0(x.P.Path_ASL4D, x.M0PositionInASL4D);
+    end
 end
 
 
