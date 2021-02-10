@@ -712,15 +712,15 @@ function cat_io_report(job,qa,subj,createerr)
 
   %warning on;  %#ok<WNON>
 
-  if job.extopts.expertgui>0 - showTPMsurf
-    id = 1; 
-    hM = findobj(st.vols{id}.ax{1}.cm,'Label','Mesh');
-    UD = get(hM,'UserData');
-    UD.width = 0.75; 
-    UD.style = repmat({'r--'},1,numel(Phull));
-    set(hM,'UserData',UD);
-    try spm_ov_mesh('redraw',id); end
-  end  
+%   if job.extopts.expertgui>0 - showTPMsurf
+%     id = 1; 
+%     hM = findobj(st.vols{id}.ax{1}.cm,'Label','Mesh');
+%     UD = get(hM,'UserData');
+%     UD.width = 0.75; 
+%     UD.style = repmat({'r--'},1,numel(Phull));
+%     set(hM,'UserData',UD);
+%     try spm_ov_mesh('redraw',id); end
+%   end  
   
   warning('ON','MATLAB:subscripting:noSubscriptsSpecified')
   
