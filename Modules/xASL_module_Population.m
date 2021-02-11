@@ -36,8 +36,8 @@ function [result, x] = xASL_module_Population(x)
 %% Admin
 
 if x.iWorker>1 % run population module only once when ExploreASL is called multiple times in parallel
-    warning(['I am worker ' xASL_num2str(x.iWorker) ', population module shouldnt run parallel, skipping']);
-    return;
+    warning(['I am worker ' xASL_num2str(x.iWorker) ', population module should not run in parallel, skipping']);
+    result = true;
 end
 
 if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.bNativeSpaceAnalysis)
