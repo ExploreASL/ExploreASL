@@ -1,13 +1,15 @@
 function [Y,fil] = xASL_im_ndnanfilter(X,filterType,F,WNAN)
 % xASL_im_ndnanfilter   3-dimensional convolution, ignoring NaNs.
-
+%
 % By Jan Petr/ HJ Mutsaerts:
 %   Syntax:
 %         Y = xASL_im_ndnanfilter(X,filterType,F);
 %         Y = xASL_im_ndnanfilter(X,filterType,F,WNAN);
 %     [Y,W] = xASL_im_ndnanfilter(...);
 %
-%   Input:
+% FORMAT: [Y,fil] = xASL_im_ndnanfilter(X,filterType,F,WNAN)
+%
+%   INPUT:
 %     X          - Data to be filtered with/without NaNs.
 %     filterType - Smoothing kernel type. 
 %                  Can be either:
@@ -24,11 +26,11 @@ function [Y,fil] = xASL_im_ndnanfilter(X,filterType,F,WNAN)
 %              2: Leaves non-NaNs how they were and interpolate NaNs with values form non-NaNs
 %              See the NOTEs below
 %
-%   Output:
+%   OUTPUT:
 %     Y      - Filtered X data (same size as X!).
 %     W      - Cell 1x3 with the separable filters in each dimension.
 %
-%   Description:
+%   DESCRIPTION:
 %     This function applies a 3-dimensional convolution of X with given kernel.
 %     NaNs elements are taken into account (ignored).
 %
@@ -49,17 +51,22 @@ function [Y,fil] = xASL_im_ndnanfilter(X,filterType,F,WNAN)
 %       as with the 'rect' filter.
 %     * Note that the FWHM of Gaussian is given in VOXELS, not in mm
 %     * For the Gaussian filter, use (previous N, new FWHM)
-					 % N= 1 ~ FWHM 0.94
-					 % N= 2 ~ FWHM 1.885 
-					 % N= 4 ~ FWHM 3.76  
-					 % N= 6 ~ FWHM 5.652
-					 % N= 8 ~ FWHM 7.536 
-					 % N=10 ~ FWHM 9.42  
-					 % N=12 ~ FWHM 11.3
-					 % N=16 ~ FWHM 15.07
-					 % N=20 ~ FWHM 18.84
-					 % N=10/2.355 ~ FWHM 4
-					 % Basically divide by 1.06
+% N= 1 ~ FWHM 0.94
+% N= 2 ~ FWHM 1.885
+% N= 4 ~ FWHM 3.76
+% N= 6 ~ FWHM 5.652
+% N= 8 ~ FWHM 7.536
+% N=10 ~ FWHM 9.42
+% N=12 ~ FWHM 11.3
+% N=16 ~ FWHM 15.07
+% N=20 ~ FWHM 18.84
+% N=10/2.355 ~ FWHM 4
+% Basically divide by 1.06
+%
+% EXAMPLE:     n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
 
 % Check inputs and sets defaults of main input arguments:

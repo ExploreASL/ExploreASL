@@ -24,7 +24,7 @@ function x = DataParTemplate(x)
 %
 % EXAMPLE: ExploreASL_Master('//StudyFolder/analysis/DataPar_HiQ.json');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % ENVIRONMENT PARAMETERS
@@ -82,7 +82,8 @@ function x = DataParTemplate(x)
 %                      head motion and registration between M0 & ASL4D will differ between
 %                      patients and controls. 
 % x.M0PositionInASL4D - indicates the position of M0 in TimeSeries, if it is integrated by the vendor in the 
-%                       DICOM export. Will move this from ASL4D.nii to M0.nii(OPTIONAL, DEFAULT = no M0 in timeseries) 
+%                       DICOM export. Will move this from ASL4D.nii to M0.nii(OPTIONAL, DEFAULT = [] (no M0 in timeseries))
+%                     - Note that the x.M0PositionInASL4D parameter is independent from the x.M0 parameter choice.
 %                     - example for Philips 3D GRASE = '[1 2]' % (first control-label pair)
 %                     - example for Siemens 3D GRASE = 1 % first image
 %                     - example for GE 3D spiral = 2 % where first image is PWI & last = M0

@@ -39,10 +39,10 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, x)
 %              2) Replace NaNs
 %              3) Save image
 % --------------------------------------------------------------------------------------------------------------------
-% EXAMPLE for filling NaNs: xASL_im_FillNaNs('/MyStudy/sub-001/ASL_1/M0.nii');
-% EXAMPLE for fixing flowfield edges: xASL_im_FillNaNs('/MyStudy/sub-001/y_T1.nii', 3);
+% EXAMPLE:   for filling NaNs: xASL_im_FillNaNs('/MyStudy/sub-001/ASL_1/M0.nii');
+% EXAMPLE2:  for fixing flowfield edges: xASL_im_FillNaNs('/MyStudy/sub-001/y_T1.nii', 3);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 %% Admin
 IM = NaN; % default

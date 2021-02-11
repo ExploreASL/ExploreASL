@@ -1,15 +1,15 @@
 function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids)
-% Takes the input parameters from xASL format (parms) and BIDS format, merges them and converts to either xASL or BIDS.
-% FORMAT: outBids = xASL_bids_parms2BIDS(inParms[, inBids, bOutBids, priorityBids])
+% Takes the input parameters from xASL legacy format (inXasl) and BIDS format, merges them and converts to either xASL legacy or BIDS format.
+% FORMAT: outBids = xASL_bids_parms2BIDS(inXasl[, inBids, bOutBids, priorityBids])
 % 
 % INPUT:
-%   inXasl       - a structure with input parameters in the xASL format (REQUIRED)
+%   inXasl       - a structure with input parameters in the legacy xASL format (REQUIRED)
 %   inBids       - a structure with input parameters in the BIDS format (OPTIONAL, DEFAULT = [])
 %   bOutBids     - the output structures is in BIDS format (==1, default) or xASL format (==0) (OPTIONAL, DEFAULT = 1)
 %   bPriorityBids - in case of conflicts, the BIDS input is preferred (==1, default), otherwise (==0), xASL is prefered (OPTIONAL, DEFAULT = 1)
 %
 % OUTPUT:
-% outParms       - the merged output structure in the correct format
+% outParms       - the merged output structure in the selected format
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This functions takes two parameter structures and merges them. At the same time, renames all fields
 %              according to the output type (note that only some fields have two standardised names different between the two formats.
@@ -49,10 +49,10 @@ end
 %% ----------------------------------------------------------------------
 %% 1) Define field names that need to be convert/renamed/merged
 
-% Fields with these names need to have the time converted between XASL and BIDS, and define their recommended range in ms
-convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'BackgroundSuppressionPulseTime'};
-convertTimeFieldsRange = [0.5        5                10            5                  5                  100       10   100        5;...% Minimum in ms
-                          500        20000            10000         5000               400                5000      500  5000       10000];% Maximum in ms   
+% Fields with these names need to have the time converted between XASL legacy and BIDS, and define their recommended range in ms
+convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
+convertTimeFieldsRange = [0.5        5                10            10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
+                          500        20000            10000         5000               5000                 5000            400                5000      500  5000       400                10000];% Maximum in ms   
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
@@ -70,7 +70,7 @@ changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'InitialPostLabelDelay'};
 
 
 %% ----------------------------------------------------------------------
-%% 2) Convert XASL fields to the output format (BIDS or XASL)
+%% 2) Convert XASL fields to the output format (BIDS or XASL legacy)
 
 % Goes through all XASL fields
 if ~isempty(inXasl)
@@ -89,17 +89,17 @@ if ~isempty(inXasl)
 		for iA = 1:length(FieldsA)
 			
 			% Convert the units for all time fields from ms to s
-			for iT = find(strcmp(FieldsA{iA},convertTimeFieldsXASL))
+			for iT = find(strcmp(FieldsA{iA}, convertTimeFieldsXASL))
 				% Convert only numeric fields
 				% In certain cases (e.g. SliceReadoutTime='shortestTR'), a string is given which is then skipped and not converted
 				if isnumeric(inXasl.(FieldsA{iA}))
 					% For non-zero fields, check if they are within the predefined range
 					if inXasl.(FieldsA{iA}) ~= 0
 						% If outside of the recommended range, then still convert, but issue a warning
-						if inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT) || inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT)
-							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' num2str(inXasl.(FieldsA{iA}))...
+						if max(inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT)) || max(inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT))
+							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' xASL_num2str(inXasl.(FieldsA{iA}))...
 								', which is outside of the recommended range <'...
-								num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+								xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
 						end
 					end
 					inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
@@ -132,7 +132,7 @@ if ~isempty(inBids)
 	% Update all the old JSON fields to the respective BIDS field name
 	FieldsA = fields(inBids);
 	for iA = 1:length(FieldsA)
-		for iL = find(strcmp(FieldsA{iA},updateNamesBIDSold))
+		for iL = find(strcmp(FieldsA{iA}, updateNamesBIDSold))
 			inBids.(updateNamesBIDSnew{iL}) = inBids.(updateNamesBIDSold{iL});
 			inBids = rmfield(inBids,updateNamesBIDSold{iL});
 		end
@@ -144,15 +144,15 @@ if ~isempty(inBids)
 		for iA = 1:length(FieldsA)
 			% Rename all listed fields to XASL variant
 			FieldNameChanged = FieldsA{iA};
-			for iL = find(strcmp(FieldsA{iA},changeNamesBIDS))
+			for iL = find(strcmp(FieldsA{iA}, changeNamesBIDS))
 				inBids.(changeNamesXASL{iL}) = inBids.(changeNamesBIDS{iL});
-				inBids = rmfield(inBids,changeNamesBIDS{iL});
+				inBids = rmfield(inBids, changeNamesBIDS{iL});
 				% Update the name of the field after the change
 				FieldNameChanged = changeNamesXASL{iL};
 			end
 			
 			% Convert the units for all time fields from s to ms
-			for iT = find(strcmp(FieldNameChanged,convertTimeFieldsXASL))
+			for iT = find(strcmp(FieldNameChanged, convertTimeFieldsXASL))
 				% Convert only if the field is numeric
 				% In certain cases (e.g. SliceReadoutTime='shortestTR') a string can be given, which needs to be skipped then
 				if isnumeric(inBids.(FieldNameChanged))
@@ -161,9 +161,9 @@ if ~isempty(inBids)
 					% Check if the value is within the recommended range after conversion and issue a warning if not
 					if inBids.(FieldNameChanged) ~= 0
 						if max(inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT)) || max(inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT))
-							warning(['Field ' FieldNameChanged ' in xASL structure has a value ' num2str(inBids.(FieldNameChanged))...
+							warning(['Field ' FieldNameChanged ' in xASL structure has a value ' xASL_num2str(inBids.(FieldNameChanged))...
 								', which is outside of the recommended range <'...
-								num2str(convertTimeFieldsRange(1,iT)) ',' num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+								xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
 						end
 					end
 				else
@@ -186,9 +186,21 @@ if bPriorityBids
 	if ~isempty(inBids)
 		FieldsA = fields(inBids);
 		for iA = 1:length(FieldsA)
-			if (~isfield(outParms,(FieldsA{iA}))) ||...
-					((sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) == 0)~=length(inBids.(FieldsA{iA}))) && (sum(isinf(inBids.(FieldsA{iA})))==0) && (~isempty(inBids.(FieldsA{iA}))))
+			if ~isfield(outParms, (FieldsA{iA}))
+				% If the field is not yet there, then copy it
 				outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+			else
+				% If the field is already there, then check if the field to overwrite is not contain NaN or full of zeros or empty strings
+				% Do this separately for cell and non-cell arrays
+				if iscell(inBids.(FieldsA{iA}))
+					if sum(~cellfun(@isempty, inBids.(FieldsA{iA})))>0
+						outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+					end
+				else
+					if (sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) ~= 0) > 0) && (sum(~isinf(inBids.(FieldsA{iA})))>0) && (~isempty(inBids.(FieldsA{iA})))
+						outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+					end
+				end
 			end
 		end
 	end
@@ -196,9 +208,21 @@ else
 	outParms = inBids;
 	FieldsA = fields(inXasl);
 	for iA = 1:length(FieldsA)
-		if (~isfield(outParms,(FieldsA{iA}))) ||...
-				((sum(isnan(inXasl.(FieldsA{iA})))==0) && (sum(inXasl.(FieldsA{iA}) == 0)~=length(inXasl.(FieldsA{iA}))) && (sum(isinf(inXasl.(FieldsA{iA})))==0) && (~isempty(inXasl.(FieldsA{iA}))))
+		if ~isfield(outParms, (FieldsA{iA}))
+			% If the field is not yet there, then copy it
 			outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
+		else
+			% If the field is already there, then check if the field to overwrite is not contain NaN or full of zeros or empty strings
+			% Do this separately for cell and non-cell arrays
+			if iscell(inXasl.(FieldsA{iA}))
+				if sum(~cellfun(@isempty, inXasl.(FieldsA{iA})))>0
+					outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
+				end
+			else
+				if (sum(isnan(inXasl.(FieldsA{iA})))==0) && (sum(inXasl.(FieldsA{iA}) ~= 0)>0) && (sum(~isinf(inXasl.(FieldsA{iA})))>0) && (~isempty(inXasl.(FieldsA{iA})))
+					outParms.(FieldsA{iA}) = inXasl.(FieldsA{iA});
+				end
+			end
 		end
 	end
 end
@@ -217,16 +241,20 @@ for iA = 1:length(FieldsA)
 	end
 end
 
+% Remove zeros from PhoenixProtocol
+if isfield(outParms,'PhoenixProtocol')
+	outParms.PhoenixProtocol = strrep(outParms.PhoenixProtocol,0,'');
+end
+
 % If output is in XASL, then copy into Q subfield
 if bOutBids ~= 1
 	FieldsA = fields(outParms);
 	for iA = 1:length(FieldsA)
 		for iL = find(strcmp(FieldsA{iA},xASLqFields))
 			outParms.Q.(xASLqFields{iL}) = outParms.(xASLqFields{iL});
-			outParms = rmfield(outParms,xASLqFields{iL});
+			outParms = rmfield(outParms, xASLqFields{iL});
 		end
 	end
 end
 
 end
-	

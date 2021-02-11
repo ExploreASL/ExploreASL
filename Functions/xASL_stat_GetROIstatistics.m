@@ -122,9 +122,9 @@ end
 
 % Print the applied masking settings
 if isequal(x.S.bMasking, [1 1 1 1])
-    fprintf('All ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask\n');
+    fprintf('All ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask)\n');
 elseif isequal(x.S.bMasking, [0 0 0 0])
-    fprintf('No ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask\n');
+    fprintf('No ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask)\n');
 else
     fprintf('We will apply the following masking:');
     if x.S.bMasking(1)==1
@@ -325,7 +325,7 @@ for iSubject=1:x.nSubjects
 					pGM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii'));
 					pWM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii'));
 
-					fprintf('Expanding ROIs for PVC:   ');
+					fprintf('Expanding ROIs for PVC:    ');
 					for iROI=1:size(x.S.InputMasks,2)
 						xASL_TrackProgress(iROI,size(x.S.InputMasks,2));
 						for iMask=1:size(x.S.InputMasks,3)
@@ -363,7 +363,7 @@ for iSubject=1:x.nSubjects
 
 		%% 4) Iterate over all subjects
 		if bDoOnceROIStart
-			fprintf('%s\n','Computing ROI data:   ');
+			fprintf('\n%s\n','Computing ROI data:   ');
 			bDoOnceROIStart = 0;
 		end
 		SubjectSpecificMasks = x.S.InputMasks(:,:,1); % changed below if size(x.S.InputMasks,3)>1
@@ -592,6 +592,20 @@ for iSubject=1:x.nSubjects
 					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, 0, 0);
 				end
             else
+                % Start with defaults
+                x.S.DAT_mean_PVC0(SubjSess,iROI) = NaN;
+                x.S.DAT_median_PVC0(SubjSess,iROI) = NaN;
+                x.S.DAT_mean_PVC2(SubjSess,iROI) = NaN;                
+                
+                x.S.DAT_CoV_PVC0(SubjSess,iROI) = NaN;
+                x.S.DAT_CoV_PVC2(SubjSess,iROI) = NaN;
+                
+                % Provide some feedback for debugging                
+                if xASL_stat_SumNan(DataIm(:)) == 0
+                    % Check for empty CBF map first
+                    warning(['Empty image for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                end
+
                 if x.S.bMasking(3)==0 % no tissue-masking
                     pGM_here = ones(size(DataIm));
                     pWM_here = ones(size(DataIm));
@@ -602,22 +616,39 @@ for iSubject=1:x.nSubjects
                     CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
                 end
 
-				%% CoV
-				x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
-				% x.S.DAT_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
-				x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+                % Now check for empty masks
+                if xASL_stat_SumNan(CurrentMask(:)) == 0
+                    fprintf('%s\n', ['Empty mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                elseif xASL_stat_SumNan(pGM_here(:)) == 0
+                    fprintf('%s\n', ['Empty pGM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                elseif xASL_stat_SumNan(pWM_here(:)) == 0
+                    fprintf('%s\n', ['Empty pWM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                else                    
 
-				%% CBF (now remove vascular artifacts)
-                if x.S.bMasking(2)==1 % apply vascular mask
-                    CurrentMask = CurrentMask & VascularMask;
-                else
-                    % keep CurrentMask as is, don't apply a vascular mask
+                    %% CoV
+                    x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
+                    % x.S.DAT_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
+                    x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+
+                    %% CBF (now remove vascular artifacts)
+                    if x.S.bMasking(2)==1 % apply vascular mask
+                        CurrentMask = CurrentMask & VascularMask;
+                    else
+                        % keep CurrentMask as is, don't apply a vascular mask
+                    end
+
+                    if xASL_stat_SumNan(CurrentMask(:)) == 0
+                        % Now check again for empty mask (as it was
+                        % masked now also with a vascular artifact
+                        % mask)
+                        fprintf('%s\n', ['Empty CBF mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]); % slightly different warning/mask as above for sCoV
+                    else
+                        x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, -1);
+                        x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0);
+                        % x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
+                        x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)                    
+                    end
                 end
-
-				x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, -1);
-				x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0);
-				% x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
-				x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 
 				%% Diff_CoV, new parameter by Jan Petr
 				% x.S.DAT_Diff_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMask, 0);

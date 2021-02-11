@@ -350,6 +350,148 @@ automatic segmentations.
 
 
 ----
+### xASL\_im\_DistanceTransform.m
+
+#### Format
+
+```matlab
+[dist, x, y, z] = xASL_im_DistanceTransform(im)
+```
+
+#### Description
+Calculates the distance transform in a binary image
+Uses Borgefors Chamfers computation of Euclidean distance in 3D using a
+5x5x5 window.
+
+
+----
+### xASL\_im\_FillNaNs.m
+
+#### Format
+
+```matlab
+xASL_im_FillNaNs(InputPath[, UseMethod, bQuality])
+```
+
+#### Description
+This function fills any NaNs in an image. In SPM, any voxels
+outside the boundary box/field of view are filled by NaNs
+when resampling. These NaNs can confuse some algorithms,
+hence it doesn't hurt replacing them in some cases (e.g. for
+flowfields). Also, smoothing restricted in a mask is done in
+ExploreASL with the function xASL\_im\_ndnanfilter, after
+first setting all voxels outside the mask to NaN. In this
+case, this functon can be useful to extrapolate the smoothed
+image to avoid any division artifact near brain edges (e.g.
+for reducing the M0 image to a smooth biasfield).
+This function performs the following 3 steps:
+1) Load image
+2) Replace NaNs
+3) Save image
+--------------------------------------------------------------------------------------------------------------------
+
+----
+### xASL\_im\_LesionRemoval4CAT.m
+
+#### Format
+
+```matlab
+[Ycls, LesionImOut] = xASL_im_LesionRemoval4CAT(Ycls, PathIn)
+```
+
+#### Description
+For all lesion masks in the anatomical directory, remove
+them from the current segmentations.
+
+
+----
+### xASL\_im\_ResampleIM.m
+
+#### Format
+
+```matlab
+[imOut] = xASL_im_ResampleIM(imIn,matIn,matOut,dimOut,intMethod)
+```
+
+#### Description
+Resamples an image using Matlab interp3 function.
+
+
+----
+### xASL\_im\_SaveOriginal4CAT.m
+
+#### Format
+
+```matlab
+xASL_im_SaveOriginal4CAT(Ycls, PathIn)
+```
+
+#### Description
+Save the segmentation before lesion masking.
+
+
+----
+### xASL\_im\_conv3Dsep.m
+
+#### Format
+
+```matlab
+[imConv] = xASL_mex_conv3Dsep(im,kX,[kY,kZ])
+```
+
+#### Description
+3D separable convolution with a supplied kernel
+It converts the results to double
+Returned is the convoluted image
+The wrapper makes sure that kX are Nx1 format, removes nan, and removes
+excessive zeros at the ends.
+
+
+----
+### xASL\_im\_ndnanfilter.m
+
+#### Format
+
+```matlab
+[Y,fil] = xASL_im_ndnanfilter(X,filterType,F,WNAN)
+```
+
+#### Description
+
+This function applies a 3-dimensional convolution of X with given kernel.
+NaNs elements are taken into account (ignored).
+
+By default, edges are not padded and one-sided filter is used at the image edges.
+
+Notes:
+\* Accepts empty value for any input. When X is empty, the program can
+be used as a N-dimensional window generator.
+\* NaNs elements surrounded by no-NaNs elements (which will depend on
+window width) are the ones that will be interpolated. The others
+are leaved untouched.
+\* When WNAN=2, the programs acts like an NAN-interpolat/GAP-filling,
+leaving untouched the no-NaNs elements but the filtering is
+perfomed anyway. I recommend the default behaviour (WNAN=0) in order
+to keep the filtered data in the workspace, and then use the code
+at the end of this function to get/remove the interpolated NaNs
+\* To achieve similar results as ndnanfilter previously, use same F
+as with the 'rect' filter.
+\* Note that the FWHM of Gaussian is given in VOXELS, not in mm
+\* For the Gaussian filter, use (previous N, new FWHM)
+N= 1 ~ FWHM 0.94
+N= 2 ~ FWHM 1.885
+N= 4 ~ FWHM 3.76
+N= 6 ~ FWHM 5.652
+N= 8 ~ FWHM 7.536
+N=10 ~ FWHM 9.42
+N=12 ~ FWHM 11.3
+N=16 ~ FWHM 15.07
+N=20 ~ FWHM 18.84
+N=10/2.355 ~ FWHM 4
+Basically divide by 1.06
+
+
+----
 ### xASL\_io\_Nifti2Im.m
 
 #### Format
@@ -409,6 +551,19 @@ these parameters, but new image matrix from imNew. It saves the result in pathNe
 #### Description
 Recent Matlab versions support a second input that specifies that number of decimals to round at,
 but earlier Matlab versions do not support this. For backward compatibility, use this wrapper instead of round.
+
+
+----
+### xASL\_spm\_admin.m
+
+#### Format
+
+```matlab
+[InPath] = xASL_spm_admin(InPath, bPadComma1)
+```
+
+#### Description
+n/a
 
 
 ----
@@ -483,7 +638,7 @@ It calculates the MEDIAN along the given dimension, but it sets all the NaNs to 
 #### Format
 
 ```matlab
-[CellContents] = xASL_tsvRead(PathTSV)
+[CellContents] = xASL_tsvRead(PathTSV[, bStruct])
 ```
 
 #### Description
@@ -497,11 +652,37 @@ is the format that BIDS prefers - and outputs it to a cell array.
 #### Format
 
 ```matlab
-xASL_adm_tsvWrite(InputCell, PathTSV[, bOverwrite])
+xASL_tsvWrite(InputCell, PathTSV[, bOverwrite, bCSV])
 ```
 
 #### Description
 This function loads a cell array and prints it to a
 tab-separated value (TSV) file, which is the format that BIDS prefers.
+
+
+----
+### xASL\_wrp\_DARTELSaveIntermedTrans.m
+
+#### Format
+
+```matlab
+xASL_wrp_DARTELSaveIntermedTrans(Yy,u,odim,rdim,idim,Mar,mat,M0,M1,fname,it)
+```
+
+#### Description
+n/a
+
+
+----
+### xASL\_wrp\_GSSaveIntermedTrans.m
+
+#### Format
+
+```matlab
+xASL_wrp_GSSaveIntermedTrans(y,idim,odim,rdim,M0,M1,R,M1t,M1r,fname,it)
+```
+
+#### Description
+n/a
 
 

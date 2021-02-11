@@ -20,6 +20,7 @@ function [x] = xASL_init_FileSystem(x)
 % 3. Add prefixes & suffixes
 % 4. Add Subject-specific prefixes
 % 5. Add sidecars
+% 6. Add atlas paths
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_init_FileSystem(x);
@@ -186,5 +187,34 @@ for iL=12:length(FieldList) % here we should remove the prefixes
     end
 end    
 
+
+%% ------------------------------------------------------------------------------------------
+%% 6) Add atlas paths
+x.P.Atlas.TotalGM                           = fullfile(x.D.MapsSPMmodifiedDir, 'TotalGM.nii');
+x.P.Atlas.DeepWM                            = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
+x.P.Atlas.WholeBrain                        = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
+x.P.Atlas.MNI                               = fullfile(x.D.MapsSPMmodifiedDir, 'MNI_structural.nii');
+x.P.Atlas.Tatu_ACA_MCA_PCA                  = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'CortVascTerritoriesTatu.nii.nii');
+x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii');
+x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
+x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
+
+% Add atlases from atlasDir
+x = xASL_init_AtlasList(x,x.D.AtlasDir);
+
+end
+
+% Add all NIFTIs from the atlasDir to the x.P.Atlas field
+function [x] = xASL_init_AtlasList(x,atlasDir)
+
+% Get all files in atlas directory
+filesInAtlasDir = xASL_adm_GetFileList(atlasDir,'^.+\.nii$');
+
+% Iterate over atlases
+for iFile=1:numel(filesInAtlasDir)
+    % Get current atlas
+    [~,currentAtlas] = xASL_fileparts(filesInAtlasDir{iFile});
+    x.P.Atlas.(currentAtlas) = filesInAtlasDir{iFile};
+end
 
 end

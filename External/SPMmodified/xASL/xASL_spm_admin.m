@@ -4,6 +4,21 @@ function [InPath] = xASL_spm_admin(InPath, bPadComma1)
 % IMname should be a cell
 % bPadComma1 is to add the ,1 to the end of the pathstring, which SPM uses
 % to assign the first image of a 4D image array (OPTIONAL, DEFAULT = true)
+%
+% FORMAT: [InPath] = xASL_spm_admin(InPath, bPadComma1)
+%
+% INPUT:
+% InPath      - ...
+% bPadComma1  - ...
+%
+% OUTPUT:
+% InPath      - ...
+%
+% DESCRIPTION: n/a
+%
+% EXAMPLE: n/a
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
 if nargin<2 || isempty(bPadComma1)
     bPadComma1 = true; % default

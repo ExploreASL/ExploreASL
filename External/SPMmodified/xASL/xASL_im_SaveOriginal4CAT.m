@@ -1,5 +1,21 @@
-function xASL_im_SaveOriginal4CAT( Ycls, PathIn )
+function xASL_im_SaveOriginal4CAT(Ycls, PathIn)
 %xASL_im_SaveOriginal4CAT Save the segmentation before lesion masking
+%
+% FORMAT: xASL_im_SaveOriginal4CAT(Ycls, PathIn)
+%
+% INPUT:
+%   Ycls	    - ...
+%   PathIn	    - ...
+%
+% OUTPUT: n/a
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Save the segmentation before lesion masking.
+%
+% EXAMPLE:     n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
 %%%   If there are no lesions found, the images are untouched
 

@@ -34,7 +34,9 @@ x = ExploreASL_Master(var1, var2, var3, var4, var5, var6);
 
 if x.ProcessData==2 && nargout==0
     warning('Data loading requested but no output structure defined');
-    fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
+	fprintf('%s\n', 'Next time, try adding "x = " to the command to load data into the x structure');
+	fprintf('%s\n', 'Hint: you can now run "x = ans" to load the data into the x structure');
+	fprintf('%s\n', 'Note that this only works if you did not run another command and generated a new ans variable in between');
 end
 
 end

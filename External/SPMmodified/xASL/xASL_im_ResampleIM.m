@@ -1,7 +1,27 @@
 function [imOut] = xASL_im_ResampleIM(imIn,matIn,matOut,dimOut,intMethod)
 % xASL_im_ResampleIM Resamples an image using Matlab interp3 function
-
+%
 % IntMethod can be one of 'linear' 'cubic' 'or 'nearest'
+%
+% FORMAT: [imOut] = xASL_im_ResampleIM(imIn,matIn,matOut,dimOut,intMethod)
+%
+% INPUT:
+%   imIn	    - ...
+%   matIn	    - ...
+%   matOut	    - ...
+%   dimOut	    - ...
+%   intMethod   - ...
+%
+% OUTPUT:
+%  imOut        - ...
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Resamples an image using Matlab interp3 function.
+%
+% EXAMPLE:     n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
 if ~exist('intMethod','var')
     % default, CAT12 also uses linear interpolation & single precision:

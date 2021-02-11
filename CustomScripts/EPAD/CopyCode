@@ -1,1 +1,0 @@
-rsync -avz h.mutsaerts@145.121.126.53:/mnt/s4e_data/RAD/share/EPAD500_new/analysis/* ./
