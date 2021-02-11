@@ -49,6 +49,9 @@ function UnitTests = xASL_ut_UnitTesting
     % Unit test: xASL_tsvWrite
     UnitTests(2) = xASL_ut_UnitTest_function_tsvWrite(TestRepository);
 
+    % Unit test: xASL_io_Nifti2Im
+    UnitTests(3) = xASL_ut_UnitTest_function_Nifti2Im(TestRepository);
+
     %% Print test results
     clc
     fprintf('================================= TEST RESULTS =================================\n')
