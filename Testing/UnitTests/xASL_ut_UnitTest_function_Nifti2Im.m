@@ -44,17 +44,30 @@ UnitTest.tests(1).testname = 'Load DRO image matrix (default options)';
 testTime = tic;
 
 % Run your test here
-testFile = fullfile(TestRepository,'UnitTesting\dro_files\001_asl.nii.gz');
+aslFile = fullfile(TestRepository,'UnitTesting','dro_files','test_patient','asl','001_asl.nii.gz');
+testFile = fullfile(TestRepository,'UnitTesting','working_directory','001_asl.nii.gz');
+unzippedTestFile = fullfile(TestRepository,'UnitTesting','working_directory','001_asl.nii');
+
+% Copy test NIFTI
+copyfile(aslFile,testFile);
+
+% Run function
 imTest = xASL_io_Nifti2Im(testFile);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
-if ~ismatrix(imTest)
+if ~exist(unzippedTestFile,'file')
+    testCondition = false; % Test failed
+end
+if ~isa(imTest,'single')
+    testCondition = false; % Test failed
+end
+if numel(imTest)~=(64*64*12*3) % Matrix size: [64, 64, 12, 3]
     testCondition = false; % Test failed
 end
 
 % Remove file after test
-delete(testFileWrite);
+delete(unzippedTestFile);
 
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
