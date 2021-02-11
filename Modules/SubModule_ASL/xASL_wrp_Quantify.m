@@ -73,6 +73,18 @@ end
 %% 1.   Load PWI
 fprintf('%s\n','Loading PWI & M0 images');
 
+if isfield(x,'UseBasilQuantification') & x.UseBasilQuantification
+    % For BASIL we want the 4D PWI even though we will end up with
+    % 3D output - so identify which one we need and substitute it
+    if strcmp(PWI_Path, x.P.Path_PWI)
+        % We are in native space
+        PWI_Path = x.P.Path_PWI4D;
+    else
+        % We are in standard space
+        PWI_Path = x.P.Pop_Path_PWI4D;
+    end
+end
+
 % Load ASL PWI
 PWI = xASL_io_Nifti2Im(PWI_Path); % Load CBF nifti
 ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
