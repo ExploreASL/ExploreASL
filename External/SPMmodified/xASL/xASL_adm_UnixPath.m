@@ -1,26 +1,25 @@
 function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL)
 %xASL_adm_UnixPath Convert paths to Unix-compatible paths
 %
-% FORMAT: [PathIs] = xASL_adm_UnixPath(PathIs)
+% FORMAT: [PathIs] = xASL_adm_UnixPath(PathIs[, bTryWSL])
 %
 % INPUT:
-%   PathIs - string containing a single path to correct (REQUIRED)
-%   bWSL   - boolean, true for Windows Subsystem for Linux (WSL) functionality
-%            (OPTIONAL, DEFAULT = false)
+%   PathIs    - string containing a single path to correct (REQUIRED)
+%   bTryWSL   - boolean, test for the presence of Windows Subsystem for Linux (WSL) functionality
+%               and if present, provide a combined path to the mounted drive (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
-%   PathIs - corrected path (DEFAULT = uncorrected, same as input path.
+%   PathIs - corrected path (DEFAULT = uncorrected, same as input path).
 %            Path is only changed when a Unix-filesystem is detected.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function performs the following steps to convert a path to a path that is compatible with the Unix-filesystem
-%              as used in e.g. Linux/MacOS.
-%              It also has special support for Windows Subsystem for Linux (WSL),
+%              as used in e.g. Linux/MacOS. It also has special support for Windows Subsystem for Linux (WSL),
 %              though this should only be activated specifically for WSL calls.
 %
 %              Note that we want to use this function for most Unix calls
 %              (to fix paths), but in the case of WSL only for some calls,
 %              where Matlab in Windows calls Linux-code through WSL (e.g.
-%              for FSL).
+%              for FSL) - these have to be explicitly specified by the bTryWSL option.
 %
 % 1. Skip this function without Unix-filesystem
 % 2. Trim whitespace
@@ -33,8 +32,16 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL)
 % __________________________________
 % Copyright 2021 ExploreASL
         
+    %% ===================================================================================
+	%% Input parameter administration
+	
+	% First initializing the optional input parameter
+	if nargin < 2 || isempty(bTryWSL)
+		bTryWSL = false;
+	end
+	
     bWSL = false;
-    if nargin>1 && ~isempty(bTryWSL) && bTryWSL && ispc
+    if bTryWSL && ispc
         % only in cases where bTryWSL is specifically called
         % and we have a PC system with WSL installed
         [statusWSL, ~] = system('wsl ls');
