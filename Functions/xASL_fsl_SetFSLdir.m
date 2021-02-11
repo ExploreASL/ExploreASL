@@ -169,14 +169,15 @@ else
 end
 FSLdir = FSLdir{1};
 RootFSLDir = RootFSLDir{1};
-RootWSLdir = RootWSLdir{1};
+if ~isnan(RootWSLdir)
+  RootWSLdir = RootWSLdir{1};
+end
 
 if ispc
     FSLdirWin = FSLdir;
     FSLdir = FSLdirWin(length(RootWSLdir)+1:end);
 end
 FSLdir = strrep(FSLdir,'\','/');
-
 
 % %% If FSL is installed in a subfolder, find it
 % if ~exist(fullfile(FSLdir,'bin'),'dir') || ~exist(fullfile(FSLdir,'bin','fsl'),'file') || ~exist(fullfile(FSLdir,'bin','bet'),'file')
@@ -208,6 +209,10 @@ if ~exist('RootWSLdir','var')
 else
     RootWSLdir = fullfile(RootWSLdir, FSLdir); % for e.g. WSL
 end
+
+RootWSLdir = strtrim(regexprep(RootWSLdir,char(0),''));
+RootFSLDir = strtrim(regexprep(RootFSLDir,char(0),''));
+FSLdir = strtrim(regexprep(FSLdir,char(0),''));
 
 %% Add to x
 x.FSLdir = FSLdir;
