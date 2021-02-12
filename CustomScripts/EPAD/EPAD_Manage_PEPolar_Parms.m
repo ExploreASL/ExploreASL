@@ -75,7 +75,7 @@ for iSubject=1:length(SubjectList)
             continue;
         end
 
-        if ~isempty(strfind(lower(jsonFile), 'asl')) || ~isempty(strfind(lower(jsonFile), 'func'))
+        if ~isempty(strfind(lower(jsonFile), 'asl')) || ~isempty(strfind(lower(jsonFile), 'm0')) || ~isempty(strfind(lower(jsonFile), 'func')
             if ~isempty(strfind(lower(jsonFile),'revpe'))
                 jsonData.PhaseEncodingDirection = 'j-'; % for EPAD ASL & func RevPE
             else
