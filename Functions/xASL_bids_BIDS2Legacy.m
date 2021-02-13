@@ -254,7 +254,8 @@ end
 %% Create DataPar.json
 PathDataPar = fullfile(Dir_xASL, 'DataPar.json');
 JSON.x.subject_regexp = '^sub-.*$';
-JSON.x.Quality = 0;
+JSON.x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
+JSON.x.Quality = 0; % speed up testing
 JSON.x.DELETETEMP = 1;
 spm_jsonwrite(PathDataPar, JSON');
 
