@@ -205,6 +205,15 @@ end
 %% Define sequence (educated guess)
 x = xASL_adm_DefineASLSequence(x);
 
+
+%% Skip processing if invalid image
+
+tempASL = xASL_io_Nifti2Im(x.P.Path_ASL4D);
+if max(tempASL(:))==0 || numel(unique(tempASL(:)))==1
+    error('Invalid ASL image');
+end
+
+
 %% -----------------------------------------------------------------------------
 %% 1 TopUp (WIP, only supported if FSL installed)
 Path_RevPE = xASL_adm_GetFileList(x.SESSIONDIR, '^(ASL4D|M0).*RevPE\.nii$', 'FPList', [0 Inf]);
