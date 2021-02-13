@@ -71,6 +71,12 @@ tempnii = xASL_io_ReadNifti(InputPath);
 nFrames = double(tempnii.hdr.dim(5));
 minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 
+% Issue warning if empty image
+if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
+    warning('Invalid input image, skipping');
+    return;
+end
+
 switch x.Quality
 	case 1 % normal quality
     flags.quality = 1;
@@ -106,6 +112,11 @@ MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al.
 % FD = frame displacement
 FD{1} = rp;       % position (absolute displacement)
 FD{2} = diff(rp); % motion (relative displacement)
+
+if max(rp(:))==0
+    warning('Something wrong with motion parameters, skipping');
+    return;
+end
 
 close all;
 if usejava('jvm') % only if JVM loaded
