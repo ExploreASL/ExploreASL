@@ -160,11 +160,17 @@ if ~isempty(inBids)
 					inBids.(FieldNameChanged) = inBids.(FieldNameChanged)*1000;
 					
 					% Check if the value is within the recommended range after conversion and issue a warning if not
-					if inBids.(FieldNameChanged) ~= 0
+					if max(inBids.(FieldNameChanged) ~= 0) % if any of the numeric values is not zero
 						if max(inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT)) || max(inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT))
-							warning(['Field ' FieldNameChanged ' in xASL structure has a value ' xASL_num2str(inBids.(FieldNameChanged))...
-								', which is outside of the recommended range <'...
-								xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+							if numel(inBids.(FieldNameChanged))==1
+                                PrintString = ['a value of ' xASL_num2str(inBids.(FieldNameChanged))];
+                            else
+                                PrintString = ['multiple values, from ' xASL_num2str(min(inBids.(FieldNameChanged))) ' to ' xASL_num2str(max(inBids.(FieldNameChanged)))];
+                            end
+                                
+                            warning(['Field ' FieldNameChanged ' in xASL structure has ' PrintString...
+                                ', which is outside of the recommended range <'...
+                                xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
 						end
 					end
 				else
