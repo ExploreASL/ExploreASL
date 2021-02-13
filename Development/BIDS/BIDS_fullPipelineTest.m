@@ -10,10 +10,17 @@ clc
 
 DirExploreASL = '/Users/henk/ExploreASL/ExploreASL';
 cd(DirExploreASL);
+ExploreASL_Master('',0);
 
 addpath(fullfile('Development', 'BIDS'));
 
 ROOT = '/Users/henk/ExploreASL/ASL/TestBIDS';
+ROOT = fullfile(ROOT, 'FlavorDatabase');
+if ~exist(ROOT, 'dir')
+    cd(fileparts(ROOT));
+    system('git clone https://github.com/ExploreASL/FlavorDatabase.git');
+end
+
 ListFolders = xASL_adm_GetFileList(ROOT, '^rawdata$', 'FPListRec', [0 Inf], 1);
 
 for iList=1:numel(ListFolders)
@@ -35,6 +42,6 @@ for iList=1:numel(ListFolders)
     
     %% 3. Run ExploreASL
     PathDataPar = fullfile(DerivativesDir, 'ExploreASL', 'DataPar.json');
-    ExploreASL_Master(PathDataPar, 1, 1);
+    ExploreASL_Master(PathDataPar, 1, 1, [], [], [1 2]); % don't run population module
     
 end
