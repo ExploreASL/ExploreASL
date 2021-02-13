@@ -427,7 +427,7 @@ function subject = parse_perf(subject)
                             % obtained from an external scan and/or study
                             subject.perf(j).m0type = 'single_value';
                             subject.perf(j).m0explanation = 'this is a single estimated M0 value, e.g. when the M0 is obtained from an external scan and/or study';
-                            subject.perf(j).m0_value = subject.perf(j).meta.M0;                            
+                            subject.perf(j).m0_value = subject.perf(j).meta.M0Estimate;                            
                             
                         case 'Absent'
                             % this shows that there is no M0, so this

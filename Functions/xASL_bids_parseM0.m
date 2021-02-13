@@ -45,9 +45,9 @@ if isfield(JSON, 'M0Type')
                 warning(['Missing: ' PathM0]);
             end
         %% Option 3. Estimate
-        case 'single_value'
-            if isfield(JSON, 'm0_value')
-                JSON.M0 = JSON.m0_value;
+        case 'Estimate'
+            if isfield(JSON, 'M0Estimate')
+                JSON.M0 = JSON.M0Estimate;
                 spm_jsonwrite(PathJSON, JSON);
             else
                 warning(['Field M0_value missing in ' PathJSON]);
@@ -65,7 +65,8 @@ if isfield(JSON, 'M0Type')
             else
                 warning(['Missing field backgroundSuppression in ' PathJSON]);
             end
-        otherwise error(['Invalid M0Type in ' PathJSON]);
+        otherwise
+            error(['Invalid M0Type in ' PathJSON]);
     end
 else
     warning(['Field M0Type missing in ' PathJSON]);
