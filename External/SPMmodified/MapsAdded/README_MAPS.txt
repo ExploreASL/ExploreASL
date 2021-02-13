@@ -12,6 +12,7 @@ ParenchymNarrow.nii: ICBM_152_nonlinear_symm wholeBrain (GM+WM) mask that is ero
 rbrainmask.nii: ICBM_152_linear brainmask resampled to 1.5 mm MNI
 rc1T1.nii & rc2T1.nii, : ICBM pGM & pWM templates resampled to 1.5 mm MNI
 rc1T1_ASL_res.nii & rc2T1_ASL_res.nii: same but smoothed to typical ASL resolution (4x4x4mm)
+rc3T1.nii & rc3T1_ASL_res.nii: created from rc1T1 & rc2T1, see below
 rgrey.nii: SPM OldSeg pGM (ICBM_152_lin) resampled to 1.5 mm MNI
 rT1.nii: ICBM T1 template resampled to 1.5 mm MNI
 TotalGM.nii, TotalWM.nii, WholeBrain.nii: ICBM wholebrain mask, resampled to 1.5 mm MNI
@@ -36,3 +37,36 @@ REF: https://mriqc.readthedocs.io/en/stable/iqms/bold.html
 1 = Signal
 2 = Non-ghost
 3 = Ghost
+
+rc3T1.nii & rc3T1_ASL_res.nii: created by subtracting pGM and pWM from pMask, using the code below. While downloading a ICBM CSF map is probably nicer, this way would also need to update the rc1T1 & rc2T1, hence this way is more backward compatible/reproducible.
+
+PathGM = '/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/MapsAdded/rc1T1.nii';
+PathWM = '/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/MapsAdded/rc2T1.nii';
+PathCSF = '/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/MapsAdded/rc3T1.nii';
+PathMask = '/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/MapsAdded/brainmask.nii';
+
+pGM=xASL_io_Nifti2Im(PathGM);
+pWM=xASL_io_Nifti2Im(PathWM);
+pMask = xASL_io_Nifti2Im(PathMask);
+
+pCSF = pMask - min(pGM + pWM, ones(size(pGM)));
+pCSF(pCSF<0) = 0;
+pCSF(pCSF>1) = 1;
+
+xASL_io_SaveNifti(PathGM, PathCSF, pCSF, [], 0);
+
+% Same for rc3T3_ASL_res
+PathGM = '/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/MapsAdded/rc1T1_ASL_res.nii';
+PathWM = '/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/MapsAdded/rc2T1_ASL_res.nii';
+PathCSF = '/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/MapsAdded/rc3T1_ASL_res.nii';
+PathMask = '/Users/henk/ExploreASL/ExploreASL/External/SPMmodified/MapsAdded/brainmask.nii';
+
+pGM=xASL_io_Nifti2Im(PathGM);
+pWM=xASL_io_Nifti2Im(PathWM);
+pMask = xASL_io_Nifti2Im(PathMask);
+
+pCSF = pMask - min(pGM + pWM, ones(size(pGM)));
+pCSF(pCSF<0) = 0;
+pCSF(pCSF>1) = 1;
+
+xASL_io_SaveNifti(PathGM, PathCSF, pCSF, [], 0);

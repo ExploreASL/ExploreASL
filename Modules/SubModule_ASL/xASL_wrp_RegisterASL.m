@@ -155,7 +155,11 @@ if      strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'Philips'))
         x.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
         x.raw_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii');
 
-elseif  strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'Siemens'))
+elseif  strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'(Siemens|GE)'))
+        %% PM: quicky & dirty fix to run GE 2D EPI with the Siemens 2D EPI template
+        % though the template choice may not have a significant effect, as
+        % opposed to the inter-individual differences in geometric
+        % distortion
         x.Mean_MNI = fullfile(x.D.TemplateDir,'Siemens_2DEPI_PCASL_noBsup_CBF.nii');
         x.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
         x.raw_MNI = fullfile(x.D.TemplateDir,'Siemens_2DEPI_PCASL_noBsup_Control.nii');
@@ -219,10 +223,11 @@ elseif ~StructuralRawExist && ~StructuralDerivativesExist
         % Create dummy structural derivatives in standard space
         xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
         xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
+        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc3T1.nii'), x.P.Pop_Path_rc3T1);
 		xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
 
 		% Create dummy structural derivatives in native space
-        xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_T1});
+        xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rc3T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_c3T1, x.P.Path_T1});
 
         % Dummy files
         catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
