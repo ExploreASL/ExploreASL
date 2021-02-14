@@ -77,7 +77,7 @@ for iSubject=1:x.nSubjects
         try
             [~, CellArray] = xASL_bids_csv2tsvReadWrite(PathCSV);
             for iMeas=1:size(CellArray,2)-1
-                vol(iSubject,iMeas) = str2num(CellArray{2,iMeas+1});
+                vol(iSubject,iMeas) = xASL_str2num(CellArray{2,iMeas+1});
             end
 
             GM_vol{iSubject,2} = vol(iSubject,1);
@@ -87,14 +87,14 @@ for iSubject=1:x.nSubjects
             GMWM_ICVRatio{iSubject,2} = sum(vol(iSubject,1:2))/sum(vol(iSubject,1:3));
             DidExist = 2;
         catch ME
-            fprintf('%s\n',ME.message);
+            fprintf('%s\n', ME.message);
         end
     end
     if DidExist==0
-        fprintf('%s\n',['Tissue volume for subject ' x.SUBJECTS{iSubject} ' was not found   \n']);
+        fprintf('%s\n', ['Tissue volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
         vol(iSubject,1:3) = NaN;
     elseif DidExist==1
-        fprintf('%s\n',['Tissue volume for subject ' x.SUBJECTS{iSubject} ' could not be read   \n']);
+        fprintf('%s\n', ['Tissue volume for subject ' x.SUBJECTS{iSubject} ' could not be read']);
         vol(iSubject,1:3) = NaN;
     end
 
@@ -109,23 +109,23 @@ for iSubject=1:x.nSubjects
             [~, CellArray] = xASL_bids_csv2tsvReadWrite(PathCSV{1});
             WMH_vol{iSubject,1} = x.SUBJECTS{iSubject};
             WMH_vol{iSubject,2} = CellArray{2,4};
-            vol(iSubject,4) = str2num(WMH_vol{iSubject,2});
+            vol(iSubject,4) = xASL_str2num(WMH_vol{iSubject,2});
             
             WMH_count{iSubject,1} = x.SUBJECTS{iSubject};
             WMH_count{iSubject,2} = CellArray{2,5};
-            vol(iSubject,5) = str2num(WMH_count{iSubject,2});
+            vol(iSubject,5) = xASL_str2num(WMH_count{iSubject,2});
             DidExist = 2;
             
             HasWMH = true; % even if no WMH existed in native space
         catch ME
-            fprintf('%s\n',ME.message);
+            fprintf('%s\n', ME.message);
         end
     end
     if HasWMH && DidExist==0
-        fprintf('%s\n',['WMH volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
+        fprintf('%s\n', ['WMH volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
         vol(iSubject,4:5) = NaN;
     elseif HasWMH && DidExist==1
-        fprintf('%s\n',['WMH volume for subject ' x.SUBJECTS{iSubject} ' could not be read']);
+        fprintf('%s\n', ['WMH volume for subject ' x.SUBJECTS{iSubject} ' could not be read']);
         vol(iSubject,4:5) = NaN;
     end    
 end
