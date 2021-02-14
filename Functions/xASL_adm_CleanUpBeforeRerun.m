@@ -167,7 +167,7 @@ try
                 % specify session ID
                 if exist(LockDirs2{iDir}, 'dir')
                     for iSession=1:nSessions
-                        CurrentDir{end+1} = xASL_adm_GetFileList(fullfile(LockDirs2{iDir}, SubjectID), ['^xASL_module_ASL_' SessionID{iSession} '$'], 'FPList', [0 Inf], true);
+                        CurrentDir(end+1) = xASL_adm_GetFileList(fullfile(LockDirs2{iDir}, SubjectID), ['^xASL_module_ASL_' SessionID{iSession} '$'], 'FPList', [0 Inf], true);
                     end
                 end
             end
@@ -196,14 +196,14 @@ try
     fprintf('Restoring backupped _ORI (original) files:   ');
 
     if bAllSubjects
-        OriList{end+1} = xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPListRec', [0 Inf]); % for all subjects/sessions
+        OriList(end+1) = xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPListRec', [0 Inf]); % for all subjects/sessions
     elseif ~isempty(find(iModule==1)) % if we remove the structural data
-        OriList{end+1} = xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SubjectDir
-        OriList{end+1} = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '(?!_ASL_\d+)\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
+        OriList(end+1) = xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SubjectDir
+        OriList(end+1) = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '(?!_ASL_\d+)\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
     elseif ~isempty(find(iModule==2)) % if we remove the ASL data
         for iSession=1:nSessions
-            OriList{end+1} = xASL_adm_GetFileList(SessionDir{iSession}, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SessionDir
-            OriList{end+1} = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '_' SessionID{iSession} '\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
+            OriList(end+1) = xASL_adm_GetFileList(SessionDir{iSession}, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SessionDir
+            OriList(end+1) = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '_' SessionID{iSession} '\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
         end
     end
     % Merge lists
