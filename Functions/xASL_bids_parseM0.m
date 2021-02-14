@@ -55,7 +55,7 @@ if isfield(JSON, 'M0Type')
         %% Option 4. Absent
         % (in this case we use the control image as pseudo-M0, 
         % which happens in xASL_wrp_Resample
-        case 'use_control_as_m0'
+        case {'use_control_as_m0', 'Absent'}
             if isfield(JSON, 'BackgroundSuppression')
                 if JSON.BackgroundSuppression
                     warning('Using mean control as M0 but background suppression was present');
