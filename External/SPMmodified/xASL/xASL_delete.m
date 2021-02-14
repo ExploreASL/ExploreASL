@@ -25,6 +25,15 @@ elseif ischar(bFolderContent) || ~(bFolderContent==0 || bFolderContent==1)
     error(['Invalid parameter bFolderContent:' bFolderContent]);
 end
 
+% Dealing with cell input (e.g. accidental output from xASL_adm_GetFileList)
+if iscell(InputPath) && numel(InputPath)>1
+    error('InputPath should be a path to the file/folder to be deleted, but was a cell');
+elseif iscell(InputPath) && ischar(InputPath{1}) && xASL_exist(InputPath{1})
+    warning('InputPath was a cell, using first cell contents')
+    InputPath = InputPath{1};
+end
+    
+
 if  xASL_exist(InputPath,'file')
 	
 	[Fpath, Ffile, Fext] = xASL_fileparts(InputPath);
