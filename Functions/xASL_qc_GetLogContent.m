@@ -4,7 +4,7 @@ function [logContent] = xASL_qc_GetLogContent(rootDir, printContent, storeFullPa
 % FORMAT: [logContent] = xASL_qc_GetLogContent(rootDir, [printContent], [storeFullPath])
 %
 % INPUT:
-%        rootDir            - Case root directory
+%        rootDir            - Case root directory (OPTIONAL)
 %        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false)
 %        storeFullPath      - Store full path in logContent table instead of module name (OPTIONAL, DEFAULT = false)
 %
@@ -25,7 +25,7 @@ function [logContent] = xASL_qc_GetLogContent(rootDir, printContent, storeFullPa
 
     %% Input Check
     if nargin < 1
-        error('Missing xASL directory...');
+        rootDir = uigetdir(pwd,'Select the root directory...');
     end
     
     if nargin < 2
