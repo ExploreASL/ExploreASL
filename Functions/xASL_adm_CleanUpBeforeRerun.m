@@ -140,7 +140,7 @@ try
     fprintf('Removing lock folders:   ');
 
     for iDir=iModule
-        CurrentDir = '';
+        CurrentDir = {};
         % remove population lock files
         if ~isempty(regexp(LockDirs2{iDir},'xASL_module_Population'))
             xASL_adm_DeleteFileList(LockDirs2{iDir}, '.*', true, [0 Inf]);
@@ -162,7 +162,7 @@ try
         else % remove for specific subject/session
             if ~isempty(regexp(LockDirs2{iDir},'xASL_module_Structural'))
                 % specify subject ID
-                CurrentDir = xASL_adm_GetFileList(LockDirs2{iDir}, SubjectID, 'FPList', [0 Inf], true);         
+                CurrentDir(end+1) = xASL_adm_GetFileList(LockDirs2{iDir}, SubjectID, 'FPList', [0 Inf], true);         
             elseif ~isempty(regexp(LockDirs2{iDir},'xASL_module_ASL'))
                 % specify session ID
                 if exist(LockDirs2{iDir}, 'dir')
@@ -192,30 +192,25 @@ try
     % ===========================================================================================
     %% 4) Restore backupped _ORI (original) files
     % Here we search recursively for ORI files, if any found, and the original as well, replace original by ORI
-    OriList = ''; % initiate list
+    OriList = {}; % initiate list
     fprintf('Restoring backupped _ORI (original) files:   ');
 
     if bAllSubjects
-        OriList(end+1) = xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPListRec', [0 Inf]); % for all subjects/sessions
+        OriList = [OriList;xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPListRec', [0 Inf])]; % for all subjects/sessions
     elseif ~isempty(find(iModule==1)) % if we remove the structural data
-        OriList(end+1) = xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SubjectDir
-        OriList(end+1) = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '(?!_ASL_\d+)\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
+        OriList = [OriList;xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPList', [0 Inf])]; % within the native space SubjectDir
+        OriList = [OriList;xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '(?!_ASL_\d+)\.nii$'], 'FPListRec', [0 Inf])]; % within the standard space PopulationDir
     elseif ~isempty(find(iModule==2)) % if we remove the ASL data
         for iSession=1:nSessions
-            OriList(end+1) = xASL_adm_GetFileList(SessionDir{iSession}, '.*_ORI\.nii$', 'FPList', [0 Inf]); % within the native space SessionDir
-            OriList(end+1) = xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '_' SessionID{iSession} '\.nii$'], 'FPListRec', [0 Inf]); % within the standard space PopulationDir
+            OriList = [OriList;xASL_adm_GetFileList(SessionDir{iSession}, '.*_ORI\.nii$', 'FPList', [0 Inf])]; % within the native space SessionDir
+            OriList = [OriList;xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '_' SessionID{iSession} '\.nii$'], 'FPListRec', [0 Inf])]; % within the standard space PopulationDir
         end
     end
-    % Merge lists
-    OriListTotal = '';
-    for iList=1:length(OriList)
-        OriListTotal = [OriListTotal OriList{iList}]; % combine the lists
-    end
 
-    for iList=1:length(OriListTotal)
-        xASL_TrackProgress(iList, length(OriListTotal));
-        NonOriPath = strrep(OriListTotal{iList},'_ORI','');
-        xASL_Move(OriListTotal{iList}, NonOriPath, 1, 0); % if the non-ori file existed, overwrite it
+    for iList=1:length(OriList)
+        xASL_TrackProgress(iList, length(OriList));
+        NonOriPath = strrep(OriList{iList},'_ORI','');
+        xASL_Move(OriList{iList}, NonOriPath, 1, 0); % if the non-ori file existed, overwrite it
     end
     fprintf('\n');
 
