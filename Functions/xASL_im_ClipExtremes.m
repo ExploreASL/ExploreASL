@@ -1,7 +1,7 @@
 function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose, bNormalize)
 %xASL_im_ClipExtremes Clips image to threshold
 %
-% FORMAT:  [NewIM] = xASL_im_ClipExtremes(InputIm[, ThreshHigh, ThreshLow, bVerbose])
+% FORMAT:  [NewIM] = xASL_im_ClipExtremes(InputIm[, ThreshHigh, ThreshLow, bVerbose, bNormalize])
 % 
 % INPUT:
 %  InputIm      - path to image or image matrix (REQUIRED)

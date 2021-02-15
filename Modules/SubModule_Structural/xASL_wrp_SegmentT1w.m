@@ -633,7 +633,7 @@ catch
         
         % increase contrast
         IM = xASL_io_Nifti2Im(x.P.Path_T1);
-        IM = IM.^(2^0.5);
+        IM = abs(IM).^(2^0.5);
         IM = IM./max(IM(:)) .* 4096; % normalization
         xASL_io_SaveNifti(x.P.Path_T1,x.P.Path_T1, IM, [], false);
         
