@@ -127,13 +127,23 @@ if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSO
     % But this can have some exceptions, e.g. the specification of sequence
     % in x.Vendor
 
-%     if isfield(x,'Vendor') && (strcmpi(x.Vendor,'GE_product') || strcmpi(x.Vendor,'GE_WIP'))
-%         VendorBackup = x.Vendor;
-%         VendorRestore = true;
-% 	end
+    % if isfield(x,'Vendor') && (strcmpi(x.Vendor,'GE_product') || strcmpi(x.Vendor,'GE_WIP'))
+    % 	VendorBackup = x.Vendor;
+    % 	VendorRestore = true;
+    % end
 
 	JSONParms = spm_jsonread(JSONPath);
+    
+    % Check if PhaseEncodingAxis was read as imaginary number instead of char array
+    if isfield(JSONParms, 'PhaseEncodingAxis')
+        if isnumeric(JSONParms.PhaseEncodingAxis)
+            if JSONParms.PhaseEncodingAxis==1i
+                JSONParms.PhaseEncodingAxis = 'i';
+            end
+        end
+    end
 
+    % Convert parameters to BIDS
 	Parms = xASL_bids_parms2BIDS(Parms, JSONParms, 0, 1);
 
 end
