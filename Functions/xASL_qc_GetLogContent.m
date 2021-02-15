@@ -1,11 +1,12 @@
-function [logContent] = xASL_qc_GetLogContent(rootDir, printContent)
+function [logContent] = xASL_qc_GetLogContent(rootDir, printContent, storeFullPath)
 %xASL_qc_GetLogContent Get warnings and errors from log files
 %
-% FORMAT: [logContent] = xASL_qc_GetLogContent(rootDir)
+% FORMAT: [logContent] = xASL_qc_GetLogContent(rootDir, [printContent], [storeFullPath])
 %
 % INPUT:
 %        rootDir            - Case root directory
 %        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false)
+%        storeFullPath      - Store full path in logContent table instead of module name (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 %        logContent         - table containing warnings and errors
@@ -16,7 +17,7 @@ function [logContent] = xASL_qc_GetLogContent(rootDir, printContent)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          rootDir = '.\Test_Runs\TestDataSet';
-%                   [logContent] = xASL_qc_GetLogContent(rootDir,true);
+%                   [logContent] = xASL_qc_GetLogContent(rootDir,true,true);
 %
 % REFERENCES:       ...
 % __________________________________
@@ -29,6 +30,10 @@ function [logContent] = xASL_qc_GetLogContent(rootDir, printContent)
     
     if nargin < 2
         printContent = false;
+    end
+    
+    if nargin < 3
+        storeFullPath = false;
     end
     
     % Initialize table
@@ -66,13 +71,21 @@ function [logContent] = xASL_qc_GetLogContent(rootDir, printContent)
         if ~isempty(warningsInFile{1,1})
             for thisWarning=1:numel(warningsInFile)
                 currentWarning = warningsInFile(thisWarning,1);
-                logContent = [logContent;{fileList(iFile).name,curSubject,'Warning',currentWarning}];
+                if storeFullPath
+                    logContent = [logContent;{curFile,curSubject,'Warning',currentWarning}];
+                else
+                    logContent = [logContent;{fileList(iFile).name,curSubject,'Warning',currentWarning}];
+                end
             end
         end
         if ~isempty(errorsInFile{1,1})
             for thisError=1:numel(errorsInFile)
-                currentWarning = errorsInFile(thisError,1);
-                logContent = [logContent;{fileList(iFile).name,curSubject,'Error',currentWarning}];
+                currentError = errorsInFile(thisError,1);
+                if storeFullPath
+                    logContent = [logContent;{curFile,curSubject,'Error',currentError}];
+                else
+                    logContent = [logContent;{fileList(iFile).name,curSubject,'Error',currentError}];
+                end
             end
         end
         
