@@ -27,8 +27,8 @@ function [logContent] = xASL_qc_GetLogContent(rootDir)
     end
     
     % Initialize table
-    logContent = array2table(zeros(0,3));
-    logContent.Properties.VariableNames = {'Module','Type','Content'};
+    logContent = array2table(zeros(0,4));
+    logContent.Properties.VariableNames = {'Module','Subject','Type','Content'};
     
     %% Get all log files within root directory
     fileList = dir(fullfile(rootDir, '**\*.log'));  % Get list of log files and folders in any subfolder
@@ -40,6 +40,18 @@ function [logContent] = xASL_qc_GetLogContent(rootDir)
         curFile = fullfile(fileList(iFile).folder,fileList(iFile).name);
         % Print log file
         fprintf('Log file: %s\n',fileList(iFile).name);
+        % Fallback subject definition
+        curSubject = 'unknown';
+        % Current file array
+        curFileArr = strsplit(curFile,filesep);
+        % Get subject if there is one
+        for level=1:numel(curFileArr)
+            if contains(lower(curFileArr(level)), 'sub')
+                curSubject = curFileArr(level);
+            elseif contains(lower(curFileArr(level)), 'population')
+                curSubject = 'Population';
+            end
+        end
         
         % Extract warnings and errors from current log file
         warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master');
@@ -49,13 +61,13 @@ function [logContent] = xASL_qc_GetLogContent(rootDir)
         if ~isempty(warningsInFile{1,1})
             for thisWarning=1:numel(warningsInFile)
                 currentWarning = warningsInFile(thisWarning,1);
-                logContent = [logContent;{fileList(iFile).name,'Warning',currentWarning}];
+                logContent = [logContent;{fileList(iFile).name,curSubject,'Warning',currentWarning}];
             end
         end
         if ~isempty(errorsInFile{1,1})
             for thisError=1:numel(errorsInFile)
                 currentWarning = errorsInFile(thisError,1);
-                logContent = [logContent;{fileList(iFile).name,'Error',currentWarning}];
+                logContent = [logContent;{fileList(iFile).name,curSubject,'Error',currentWarning}];
             end
         end
         
