@@ -1,10 +1,11 @@
-function [logContent] = xASL_qc_GetLogContent(rootDir)
+function [logContent] = xASL_qc_GetLogContent(rootDir, printContent)
 %xASL_qc_GetLogContent Get warnings and errors from log files
 %
 % FORMAT: [logContent] = xASL_qc_GetLogContent(rootDir)
 %
 % INPUT:
 %        rootDir            - Case root directory
+%        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 %        logContent         - table containing warnings and errors
@@ -15,7 +16,7 @@ function [logContent] = xASL_qc_GetLogContent(rootDir)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          rootDir = '.\Test_Runs\TestDataSet';
-%                   [logContent] = xASL_qc_GetLogContent(rootDir);
+%                   [logContent] = xASL_qc_GetLogContent(rootDir,true);
 %
 % REFERENCES:       ...
 % __________________________________
@@ -24,6 +25,10 @@ function [logContent] = xASL_qc_GetLogContent(rootDir)
     %% Input Check
     if nargin < 1
         error('Missing xASL directory...');
+    end
+    
+    if nargin < 2
+        printContent = false;
     end
     
     % Initialize table
@@ -71,6 +76,18 @@ function [logContent] = xASL_qc_GetLogContent(rootDir)
             end
         end
         
+    end
+    
+    % Optional: Print log content
+    if printContent
+        fprintf('====================================================================================================\n')
+        for curPrint=1:numel(logContent.Content)
+            fprintf('Log file: %s\n',logContent.Module{curPrint});
+            for linePrint=1:size(logContent.Content{curPrint},1)
+                fprintf('%s\n',logContent.Content{curPrint,1}{linePrint});
+            end
+            fprintf('====================================================================================================\n')
+        end
     end
    
 end
