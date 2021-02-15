@@ -88,7 +88,7 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier)
             startC = line;
             
             % Search for end of content
-            for subline=startC:numel(fileLines)
+            for subline=startC+1:numel(fileLines)
                 curSubLine = char(fileLines(subline,1));
                 % Check for start of warning or error
                 if contains(curSubLine, endIdentifier)
