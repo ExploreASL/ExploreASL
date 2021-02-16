@@ -1,5 +1,5 @@
 function [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mode)
-%xASL_im_PVCkernel PV-correction of ASL data using GM-,WM-partial volume maps using linear regression
+%xASL_im_PVCkernel Partial volume correction (PVC) of ASL data using GM-,WM-partial volume maps using linear regression
 %
 % FORMAT: [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV [,kernel,mode])
 %
@@ -22,7 +22,7 @@ function [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mode
 %   imResidual(NX,NY,NZ) - difference between the reconstructed and original
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  PV-correction of ASL data using prior GM-,WM-partial volume maps.
+% DESCRIPTION:  Partial volume correction (PVC) of ASL data using prior GM-,WM-partial volume maps.
 %               Follows the principles of the PVC algorithm by I. Asllani (MRM, 2008).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------

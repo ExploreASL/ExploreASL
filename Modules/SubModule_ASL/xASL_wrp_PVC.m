@@ -1,18 +1,18 @@
-function xASL_wrp_PVCorrection(x)
-% xASL_wrp_PVCorrection Submodule of ExploreASL ASL Module, to perform PV correction in ASL native space
+function xASL_wrp_PVC(x)
+% xASL_wrp_PVC Submodule of ExploreASL ASL Module, to perform PV correction in ASL native space
 %
-% FORMAT:  xASL_wrp_PVCorrection(x)
+% FORMAT:  xASL_wrp_PVC(x)
 %
 % INPUT:
 %   x - structure containing fields with all information required to run this submodule (REQUIRED)
-%       x.PVCorrectionNativeSpaceKernel - Window size for the ASL native space PV correction. Equal weighting 
+%       x.PVCNativeSpaceKernel - Window size for the ASL native space PV correction. Equal weighting 
 %                                         of all voxels within the kernel is assumed. 3D kernel can be used, 
 %                                         but any of the dimension can be also set to 1. Only odd number of 
 %                                         voxels can be used in each dimension (e.g. [3 7 5] not [2 3 1]).
 %                                         (OPTIONAL, 
-%                                         DEFAULT = [5 5 1] for bPVCorrectionGaussianMM==0,
-%                                         DEFAULT = [10 10 4] for bPVCorrectionGaussianMM==1).
-%       x.bPVCorrectionGaussianMM - PV-correction with a Gaussian instead of square kernel. It uses Gaussian 
+%                                         DEFAULT = [5 5 1] for bPVCGaussianMM==0,
+%                                         DEFAULT = [10 10 4] for bPVCGaussianMM==1).
+%       x.bPVCGaussianMM - PV-correction with a Gaussian instead of square kernel. It uses Gaussian 
 %                                   weighting of the PV kernel instead of equal weights as per Asllani's 
 %                                   original method. Unlike with the square kernel when the size is defined in 
 %                                   voxels, here the FWHM of the Gaussian in mm is defined in each dimension. 
@@ -20,8 +20,8 @@ function xASL_wrp_PVCorrection(x)
 %                                   value can be entered which is valid for datasets with different 
 %                                   voxel-sizes without having a kernel of different effective size.
 %                                   (OPTIONAL, DEFAULT = 0)
-%                                    1 = enabled, use Gaussian kernel with FWHM in mm given in PVCorrectionNativeSpaceKernel
-%                                    0 = disabled, use flat kernel with voxels given in PVCorrectionNativeSpaceKernel
+%                                    1 = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel
+%                                    0 = disabled, use flat kernel with voxels given in PVCNativeSpaceKernel
 %
 % OUTPUT FILES: NIfTI containing PV-corrected CBF maps in ASL resolution in ASL native space
 %
@@ -36,34 +36,34 @@ function xASL_wrp_PVCorrection(x)
 %              3. Saving files and cleaning
 %
 %
-% EXAMPLE: xASL_wrp_PVCorrection(x);
+% EXAMPLE: xASL_wrp_PVC(x);
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 0. Admin and checking values and files
-if ~isfield(x,'bPVCorrectionGaussianMM') || isempty(x.bPVCorrectionGaussianMM)
-	x.bPVCorrectionGaussianMM = 0;
+if ~isfield(x,'bPVCGaussianMM') || isempty(x.bPVCGaussianMM)
+	x.bPVCGaussianMM = 0;
 end
 
 % If the kernel is non-existent or empty then initialize it
-if ~isfield(x,'PVCorrectionNativeSpaceKernel') || isempty(x.PVCorrectionNativeSpaceKernel)
-	if x.bPVCorrectionGaussianMM
-		x.PVCorrectionNativeSpaceKernel = [10 10 4];
+if ~isfield(x,'PVCNativeSpaceKernel') || isempty(x.PVCNativeSpaceKernel)
+	if x.bPVCGaussianMM
+		x.PVCNativeSpaceKernel = [10 10 4];
 	else
-		x.PVCorrectionNativeSpaceKernel = [5 5 1];
+		x.PVCNativeSpaceKernel = [5 5 1];
 	end
 end
 
 % If the size of the kernel was under 3, then add the remaining dimensions from the default
-dimKernel = length(x.PVCorrectionNativeSpaceKernel);
+dimKernel = length(x.PVCNativeSpaceKernel);
 if dimKernel < 3
-	if x.bPVCorrectionGaussianMM
+	if x.bPVCGaussianMM
 		defaultKernel = [10 10 4];
 	else
 		defaultKernel = [5 5 1];
 	end
-	x.PVCorrectionNativeSpaceKernel(dimKernel:3) = defaultKernel(dimKernel:3);
+	x.PVCNativeSpaceKernel(dimKernel:3) = defaultKernel(dimKernel:3);
 end
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -94,35 +94,35 @@ end
 imPV = imGM;
 imPV(:,:,:,2) = imWM;
 
-if x.bPVCorrectionGaussianMM
+if x.bPVCGaussianMM
 	% Prepare the kernel size. Convert the FWHM from voxels to MM
 	voxelSize = xASL_io_ReadNifti(x.P.Path_CBF);
 	voxelSize = [norm(voxelSize.mat(:,1)), norm(voxelSize.mat(:,2)), norm(voxelSize.mat(:,3))];
 	
-	kernelPVC = x.PVCorrectionNativeSpaceKernel./voxelSize;
+	kernelPVC = x.PVCNativeSpaceKernel./voxelSize;
 else
-	kernelPVC = x.PVCorrectionNativeSpaceKernel;
+	kernelPVC = x.PVCNativeSpaceKernel;
 end
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 2. Running PV-correction
 
-if x.bPVCorrectionGaussianMM
-	[imPVEC,~,~] = xASL_im_PVCkernel(imCBF, imPV, kernelPVC, 'gauss');
+if x.bPVCGaussianMM
+	[imPVC,~,~] = xASL_im_PVCkernel(imCBF, imPV, kernelPVC, 'gauss');
 else
-	[imPVEC,~,~] = xASL_im_PVCkernel(imCBF, imPV, kernelPVC, 'flat');
+	[imPVC,~,~] = xASL_im_PVCkernel(imCBF, imPV, kernelPVC, 'flat');
 end
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 3. Saving files and cleaning
 % Remove areas of GM-CBF and WM-CBF with respective GM-PV and WM-PV under 3 percent
-imPVEC(:,:,:,1) = imPVEC(:,:,:,1).*(imGM>0.1);
-imPVEC(:,:,:,2) = imPVEC(:,:,:,2).*(imWM>0.1);
-imPVEC(:,:,:,1) = imPVEC(:,:,:,1).*((imGM+imWM)>0.3);
-imPVEC(:,:,:,2) = imPVEC(:,:,:,2).*((imGM+imWM)>0.3);
+imPVC(:,:,:,1) = imPVC(:,:,:,1).*(imGM>0.1);
+imPVC(:,:,:,2) = imPVC(:,:,:,2).*(imWM>0.1);
+imPVC(:,:,:,1) = imPVC(:,:,:,1).*((imGM+imWM)>0.3);
+imPVC(:,:,:,2) = imPVC(:,:,:,2).*((imGM+imWM)>0.3);
 
 % Save the GM-CBF and WM-CBF files to the individual ASL directory
-xASL_io_SaveNifti(x.P.Path_CBF,x.P.Path_CBFgm,imPVEC(:,:,:,1));
-xASL_io_SaveNifti(x.P.Path_CBF,x.P.Path_CBFwm,imPVEC(:,:,:,2));
+xASL_io_SaveNifti(x.P.Path_CBF,x.P.Path_CBFgm,imPVC(:,:,:,1));
+xASL_io_SaveNifti(x.P.Path_CBF,x.P.Path_CBFwm,imPVC(:,:,:,2));
 
 end

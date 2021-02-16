@@ -1,38 +1,19 @@
 function [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,bsplineNum)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% PVEc correction of ASL data using prior GM-,WM-partial volume maps.
-% Follows the principles of the PVEc algorithm by I. Asllani (MRM, 2008).
-% The PV-corrected CBF_GM and CBF_WM maps are approximated using an
-% uniformly sampled cubic B-splines.
-% Free for research use without guarantee. 
-% Created by Jan Petr, j.petr@hzdr.de
-% Version 0.8, 2016-09-15
-% 
-% Please cite:
-% -Asllani I, Borogovac A, Brown TR. Regression algorithm correcting for 
-%  partial volume effects in arterial spin labeling MRI. Magnetic Resonance 
-%  in Medicine. 2008 Dec 1;60(6):1362-71.
-% -Petr J, Mutsaerts HJ, De Vita E, Steketee RM, Smits M, Nederveen AJ, 
-%  Hofheinz F, van den Hoff J, Asllani I. Effects of systematic partial 
-%  volume errors on the estimation of gray matter cerebral blood flow with 
-%  arterial spin labeling MRI. MAGMA 2018. DOI:10.1007/s10334-018-0691-y
+%xASL_im_PVCbspline Partial volume correction (PVC) of ASL data using prior GM-,WM-partial volume maps using
+% a global optimization rather than local kernel.
 %
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
-% FORMAT:       [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,bsplineNum)
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% FORMAT:       [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV[,bsplineNum])
 %
 % INPUT:
-%   imCBF - uncorrected CBF image imCBF(X,Y,Z)
+%   imCBF - uncorrected CBF image imCBF(X,Y,Z) (REQUIRED)
 %   imPV  - PV-maps imPV(X,Y,Z,2) - WM/GM does not matter, you get the same
-%           order in output as it is defined for input
+%           order in output as it is defined for input (REQUIRED)
 %   bsplineNum - number of cubic B-splines for each dimension
 %              - bsplineNum(I,J,K), it should be smaller than (X,Y,Z),
 %                taking into consideration if the imCBF was upsampled
 %              - (I,J,K) should stay the same for upsampled imCBF as for
-%                the low resolution imCBF
+%                the low resolution imCBF 
+%                (OPTIONAL, DEFAULT = [15 15 1]
 % OUTPUT: 
 %   imPVEC - corrected CBF maps for both tissues - imPVEC(X,Y,Z,2)
 %   imCBFrec - (X,Y,Z) - reconstruction of CBF from the corrected values
@@ -42,18 +23,34 @@ function [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,bspli
 %        - no that this is done in Pixels, so it needs to be multiplied by
 %          the input image voxel size
 % 
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  PVEc correction of ASL data using prior GM-,WM-partial volume maps.
+% ----------------------------------------------------------------------------------------------
+% DESCRIPTION:  PVC of ASL data using prior GM-,WM-partial volume maps.
 %               Follows the principles of the PVEc algorithm by I. Asllani (MRM, 2008).
 %               The PV-corrected CBF_GM and CBF_WM maps are approximated using an
 %               uniformly sampled cubic B-splines.
-%               Free for research use without guarantee. 
-%               Created by Jan Petr, j.petr@hzdr.de
-%
+% ----------------------------------------------------------------------------------------------
+% 
+% REFERENCES:
+% -Asllani I, Borogovac A, Brown TR. Regression algorithm correcting for 
+%  partial volume effects in arterial spin labeling MRI. Magnetic Resonance 
+%  in Medicine. 2008 Dec 1;60(6):1362-71.
+% -Petr J, Mutsaerts HJ, De Vita E, Steketee RM, Smits M, Nederveen AJ, 
+%  Hofheinz F, van den Hoff J, Asllani I. Effects of systematic partial 
+%  volume errors on the estimation of gray matter cerebral blood flow with 
+%  arterial spin labeling MRI. MAGMA 2018. DOI:10.1007/s10334-018-0691-y
+
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE: [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,[17 17 1])
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
+
+if nargin<2
+	error('CBF image and PV-maps have to be given on the input');
+end
+
+if nargin<3 || isempty(bsplineNum)
+	bsplineNum = [15 15 1];
+end
 
 % Basic exclusion parameters
 matchThresh = 0.0001;
@@ -69,7 +66,7 @@ if sum(size(imCBF,2)<(3*bsplineNum(2)))
 end
 
 if (size(imCBF,3)==1) && (bsplineNum(3)>1)
-    error('For single slice, bsplineNum-3 must be 1');
+    error('For single slice, bsplineNum(3) must be 1');
 end
 
 if (size(imCBF,3)<bsplineNum(3))

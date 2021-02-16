@@ -257,30 +257,30 @@ function x = DataParTemplate(x)
 % 							   (OPTIONAL, DEFAULT = 0).
 % 							   - 1 = enabled
 % 							   - 0 = disabled
-% x.bPVCorrectionNativeSpace - Perform PV-Correction in ASL native space using the GM and WM maps
+% x.bPVCNativeSpace - Performs partial volume correction (PVC) in ASL native space using the GM and WM maps
 %                                 obtained from previously segmented T1-weighted images. Skipped with warning
 %                                 when those maps do not exist and are not resampled to the ASL space.
 %                                 (OPTIONAL, DEFAULT = 0).
 %                                 - 1 = enabled
 %                                 - 0 = disabled
-% x.PVCorrectionNativeSpaceKernel - Window size for the ASL native space PV correction. This is ignored when 
-%                                   x.bPVCorrectionNativeSpace is set to 0. Equal weighting of all voxels within 
+% x.PVCNativeSpaceKernel - Window size for the ASL native space PVC. This is ignored when 
+%                                   x.bPVCNativeSpace is set to 0. Equal weighting of all voxels within 
 %                                   the kernel is assumed. 3D kernel can be used, but any of the dimension can be
 %                                   also set to 1. Only odd number of voxels can be used in each dimension (e.g. 
 %                                   [3 7 5] not [2 3 1]).
 %                                   (OPTIONAL, 
-%                                    DEFAULT = [5 5 1] for bPVCorrectionGaussianMM==0,
-%                                    DEFAULT = [10 10 4] for bPVCorrectionGaussianMM==1).
-% x.bPVCorrectionGaussianMM - PV-correction with a Gaussian instead of square kernel. Ignored when 
-%                             x.bPVCorrectionNativeSpace is set to 0. It uses Gaussian weighting of the PV kernel
+%                                    DEFAULT = [5 5 1] for bPVCGaussianMM==0,
+%                                    DEFAULT = [10 10 4] for bPVCGaussianMM==1).
+% x.bPVCGaussianMM - PV-correction with a Gaussian instead of square kernel. Ignored when 
+%                             x.bPVCNativeSpace is set to 0. It uses Gaussian weighting of the PV kernel
 %                             instead of equal weights as per Asllani's original method. Unlike with the square kernel
 %                             when the size is defined in voxels, here the FWHM of the Gaussian in mm is defined in each
 %                             dimension. The advantage is twofold - continuous values can be added and a single value can be
 %                             entered which is valid for datasets with different voxel-sizes without having a kernel of 
 %                             different effective size.
 %                             (OPTIONAL, DEFAULT = 0)
-%                             - 1 = enabled, use Gaussian kernel with FWHM in mm given in PVCorrectionNativeSpaceKernel
-%                             - 0 = disabled, use flat kernel with voxels given in PVCorrectionNativeSpaceKernel
+%                             - 1 = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel
+%                             - 0 = disabled, use flat kernel with voxels given in PVCNativeSpaceKernel
 %
 %% Masking parameters
 %   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask

@@ -26,7 +26,6 @@ function [result, x] = xASL_module_ASL(x)
 % - 060_ProcessM0         - M0 image processing
 % - 070_CreateAnalysisMask- Create mask using FoV, vascular outliers & susceptibility atlas
 % - 080_Quantification    - CBF quantification
-% - 085_PVCorrection      - PV-correction in ASL native space
 % - 090_VisualQC_ASL      - Generate QC parameters & images
 % - 100_WADQC             - QC for WAD-QC DICOM server (OPTIONAL)
 %
@@ -49,8 +48,8 @@ elseif length(x.ApplyQuantification)<5
     x.ApplyQuantification(length(x.ApplyQuantification)+1:5) = 1;
 end
 
-if ~isfield(x,'bPVCorrectionNativeSpace') || isempty(x.bPVCorrectionNativeSpace)
-	x.bPVCorrectionNativeSpace = 0;
+if ~isfield(x,'bPVCNativeSpace') || isempty(x.bPVCNativeSpace)
+	x.bPVCNativeSpace = 0;
 end
 
 % Only continue if ASL exists
@@ -154,9 +153,8 @@ StateName{ 5} = '050_PreparePV';
 StateName{ 6} = '060_ProcessM0';
 StateName{ 7} = '070_CreateAnalysisMask';
 StateName{ 8} = '080_Quantification';
-StateName{ 9} = '085_PVCorrection';
-StateName{10} = '090_VisualQC_ASL';
-StateName{11} = '100_WADQC';
+StateName{ 9} = '090_VisualQC_ASL';
+StateName{10} = '100_WADQC';
 
 
 %% Delete old files
@@ -402,6 +400,7 @@ end
 %% -----------------------------------------------------------------------------
 %% 8    Quantification
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
+% Including PVC
 iState = 8;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
@@ -420,58 +419,43 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
         xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
     end
 
-    % allow 4D quantification as well
-    if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D==1
-        if ~xASL_exist(x.P.Path_PWI4D,'file')
-            fprintf('%s\n','Skipping, native space PWI4D missing');
-        else
-            fprintf('%s\n','Quantifying ASL timeseries in native space');
-            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
-        end
-        if ~xASL_exist(x.P.Pop_Path_PWI4D,'file')
-            fprintf('%s\n','Skipping, standard space PWI4D missing');
-        else
-            fprintf('%s\n','Quantifying ASL timeseries in standard space');
-            xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D, x.P.Pop_Path_qCBF4D);
-        end
-    end
+	% allow 4D quantification as well
+	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D==1
+		if ~xASL_exist(x.P.Path_PWI4D,'file')
+			fprintf('%s\n','Skipping, native space PWI4D missing');
+		else
+			fprintf('%s\n','Quantifying ASL timeseries in native space');
+			xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
+		end
+		if ~xASL_exist(x.P.Pop_Path_PWI4D,'file')
+			fprintf('%s\n','Skipping, standard space PWI4D missing');
+		else
+			fprintf('%s\n','Quantifying ASL timeseries in standard space');
+			xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D, x.P.Pop_Path_qCBF4D);
+		end
+	end
+	
+	if x.bPVCNativeSpace
+		fprintf('%s\n','Partial volume correcting ASL in native space:   ');
+		if xASL_exist(x.P.Path_PVgm,'file') && xASL_exist(x.P.Path_PVwm,'file')
+			xASL_wrp_PVC(x);
+		else
+			warning(['Skipped PV: ' x.P.Path_PVgm ' or ' x.P.PathPVwm ' missing']);
+		end
+	end
 
     x.mutex.AddState(StateName{iState});
     xASL_adm_CompareDataSets([], [], x); % unit testing
     x.mutex.DelState(StateName{iState+1});
     x.mutex.DelState(StateName{iState+2});
-	x.mutex.DelState(StateName{iState+3});
 else
 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
 	if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
 end
 
 %% -----------------------------------------------------------------------------
-%% 9    PV correction in ASL native space
+%% 9    Visual QC
 iState = 9;
-if x.bPVCorrectionNativeSpace
-	if ~x.mutex.HasState(StateName{iState})
-		fprintf('%s\n','Partial volume correcting ASL in native space:   ');
-		if xASL_exist(x.P.Path_PVgm,'file') && xASL_exist(x.P.Path_PVwm,'file')
-			
-			xASL_wrp_PVCorrection(x);
-			
-			x.mutex.AddState(StateName{iState});
-			xASL_adm_CompareDataSets([], [], x); % unit testing
-			x.mutex.DelState(StateName{iState+1});
-			x.mutex.DelState(StateName{iState+2});
-		else
-			warning(['Skipped PV: ' x.P.Path_PVgm ' or ' x.P.PathPVwm ' missing']);
-		end
-	else
-		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-		if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
-	end
-end
-
-%% -----------------------------------------------------------------------------
-%% 10    Visual QC
-iState = 10;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
 
     xASL_wrp_VisualQC_ASL(x);
@@ -482,8 +466,8 @@ else
 end
 
 %% -----------------------------------------------------------------------------
-%% 11    WAD-QC
-iState = 11;
+%% 10    WAD-QC
+iState = 10;
 if ~x.mutex.HasState(StateName{iState}) && x.DoWADQCDC
     xASL_qc_WADQCDC(x, x.iSubject, 'ASL');
     x.mutex.AddState(StateName{iState});
