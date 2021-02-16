@@ -525,6 +525,10 @@ if bRunSubmodules(2)
 				end
 				
 				% Process all the data and automatically fill in the missing parameters
+				if ~isfield(jsonLocal,'MRAcquisitionType')
+					error('MRAcquisitionType has to be defined either in the data or studyPar');
+				end
+				
 				if strcmpi(jsonLocal.MRAcquisitionType,'2D')
 					jsonLocal.PulseSequenceType = '2D_EPI';
 				else
