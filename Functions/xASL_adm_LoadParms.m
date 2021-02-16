@@ -139,6 +139,8 @@ if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSO
         if isnumeric(JSONParms.PhaseEncodingAxis)
             if JSONParms.PhaseEncodingAxis==1i
                 JSONParms.PhaseEncodingAxis = 'i';
+            elseif JSONParms.PhaseEncodingAxis==-1i
+                JSONParms.PhaseEncodingAxis = '-i';
             end
         end
     end
