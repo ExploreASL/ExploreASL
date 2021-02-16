@@ -1,12 +1,13 @@
-function [logContent] = xASL_qc_GetLogContent(rootDir, printContent, storeFullPath)
+function [logContent] = xASL_qc_GetLogContent(rootDir, printContent, storeFullPath, exportTSV)
 %xASL_qc_GetLogContent Get warnings and errors from log files
 %
-% FORMAT: [logContent] = xASL_qc_GetLogContent(rootDir, [printContent], [storeFullPath])
+% FORMAT: [logContent] = xASL_qc_GetLogContent(rootDir, [printContent], [storeFullPath], [exportTSV])
 %
 % INPUT:
-%        rootDir            - Case root directory (OPTIONAL)
+%        rootDir            - Case root directory (OPTIONAL, DEFAULT = user input)
 %        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false)
 %        storeFullPath      - Store full path in logContent table instead of module name (OPTIONAL, DEFAULT = false)
+%        exportTSV          - Export a tsv file containing the log content (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 %        logContent         - table containing warnings and errors
@@ -17,23 +18,31 @@ function [logContent] = xASL_qc_GetLogContent(rootDir, printContent, storeFullPa
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          rootDir = '.\Test_Runs\TestDataSet';
-%                   [logContent] = xASL_qc_GetLogContent(rootDir,true,true);
+%                   [logContent] = xASL_qc_GetLogContent(rootDir,false,false,true);
 %
 % REFERENCES:       ...
 % __________________________________
 % Copyright @ 2015-2021 ExploreASL
 
     %% Input Check
-    if nargin < 1
-        rootDir = uigetdir(pwd,'Select the root directory...');
+    if (nargin < 1) || isempty(rootDir)
+        if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
+            rootDir = input('Insert the root directory: ');
+        else
+            rootDir = uigetdir(pwd,'Select the root directory...');
+        end
     end
     
-    if nargin < 2
+    if (nargin < 2) || isempty(printContent)
         printContent = false;
     end
     
-    if nargin < 3
+    if (nargin < 3) || isempty(storeFullPath)
         storeFullPath = false;
+    end
+    
+    if (nargin < 4) || isempty(exportTSV)
+        exportTSV = false;
     end
     
     % Initialize table
@@ -53,12 +62,12 @@ function [logContent] = xASL_qc_GetLogContent(rootDir, printContent, storeFullPa
         % Fallback subject definition
         curSubject = 'unknown';
         % Current file array
-        curFileArr = strsplit(curFile,filesep);
+        currentFileArray = strsplit(curFile,filesep);
         % Get subject if there is one
-        for level=1:numel(curFileArr)
-            if contains(lower(curFileArr(level)), 'sub')
-                curSubject = curFileArr(level);
-            elseif contains(lower(curFileArr(level)), 'population')
+        for level=1:numel(currentFileArray)
+            if contains(lower(currentFileArray(level)), 'sub')
+                curSubject = currentFileArray(level);
+            elseif contains(lower(currentFileArray(level)), 'population')
                 curSubject = 'Population';
             end
         end
@@ -91,7 +100,7 @@ function [logContent] = xASL_qc_GetLogContent(rootDir, printContent, storeFullPa
         
     end
     
-    % Optional: Print log content
+    %% Optional: Print log content
     if printContent
         fprintf('====================================================================================================\n')
         for curPrint=1:numel(logContent.Content)
@@ -102,7 +111,30 @@ function [logContent] = xASL_qc_GetLogContent(rootDir, printContent, storeFullPa
             fprintf('====================================================================================================\n')
         end
     end
+    
+    %% Optional: Export TSV
+    if exportTSV
+        % Convert warnings & errors from cell to char array
+        logContent = logContentCellToChar(logContent);
+        % Convert to cell array
+        logContentCell = table2cell(logContent);
+        % Export TSV file
+        xASL_tsvWrite(logContentCell, fullfile(rootDir,'logContent.tsv'), true);
+    end
    
+end
+
+% Convert warnings & errors from cell to char array
+function logContent = logContentCellToChar(logContent)
+    % Iterate over rows
+    for row=1:size(logContent,1)
+        thisContentField = '';
+        for thisLine=1:size(logContent.Content{row,1},1)
+            thisContentField = strcat(thisContentField,char(logContent.Content{row,1}(thisLine)));
+            thisContentField = strcat(thisContentField,' - ');
+        end
+        logContent.Content{row,1} = thisContentField;
+    end
 end
 
 % Extract warnigns or errors
