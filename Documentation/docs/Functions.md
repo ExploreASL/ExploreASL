@@ -2068,6 +2068,7 @@ It is repeated for each scan, and runs the following parts:
 3. Add prefixes & suffixes
 4. Add Subject-specific prefixes
 5. Add sidecars
+6. Add atlas paths
 
 
 
