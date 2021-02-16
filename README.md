@@ -49,6 +49,7 @@ Additional information about ExploreASL can be found in the [Neuroimage paper]([
 * [Luigi Lorenzini](mailto:l.lorenzini@amsterdamumc.nl?subject=[GitHub]%20ExploreASL) - developer ExploreQC
 * [Maurice Pasternak](mailto:maurice.pasternak@mail.utoronto.ca?subject=[GitHub]%20ExploreASL) - developer GUI
 * [Mathijs Dijsselhof](mailto:m.b.dijsselhof@amsterdamumc.nl?subject=[GitHub]%20ExploreASL) - PhD student Cerebrovascular Age
+* [Beatriz Padrela](mailto:b.estevespadrela@amsterdamumc.nl@amsterdamumc.nl?subject=[GitHub]%20ExploreASL) - PhD student
 * [Sandeep Ganji](mailto:Sandeep.g.bio@gmail.com?subject=[GitHub]%20ExploreASL) - developer integration Philips ISD
 * [Patricia Clement](mailto:Patricia.Clement@ugent.be?subject=[GitHub]%20ExploreASL) - developer ASL-BIDS & organizer
 
