@@ -225,23 +225,29 @@ end
 if ~isfield(imPar,'tokenScanAliases')
 	imPar.tokenScanAliases = [];
 else
-	tokenScanAliasesOld = imPar.tokenScanAliases;
-	imPar.tokenScanAliases = tokenScanAliasesOld(1:2:end);
-	imPar.tokenScanAliases(:,2) = tokenScanAliasesOld(2:2:end);
+	if (size(imPar.tokenScanAliases,2) > 2) || (size(imPar.tokenScanAliases,2) == 1)
+		tokenScanAliasesOld = imPar.tokenScanAliases;
+		imPar.tokenScanAliases = tokenScanAliasesOld(1:2:end);
+		imPar.tokenScanAliases(:,2) = tokenScanAliasesOld(2:2:end);
+	end
 end
 if ~isfield(imPar,'tokenVisitAliases')
 	imPar.tokenVisitAliases = [];
 else
-	tokenVisitAliasesOld = imPar.tokenVisitAliases;
-	imPar.tokenVisitAliases = tokenVisitAliasesOld(1:2:end);
-	imPar.tokenVisitAliases(:,2) = tokenVisitAliasesOld(2:2:end);
+	if (size(imPar.tokenVisitAliases,2) > 2) || (size(imPar.tokenVisitAliases,2) == 1)
+		tokenVisitAliasesOld = imPar.tokenVisitAliases;
+		imPar.tokenVisitAliases = tokenVisitAliasesOld(1:2:end);
+		imPar.tokenVisitAliases(:,2) = tokenVisitAliasesOld(2:2:end);
+	end
 end
 if ~isfield(imPar,'tokenSessionAliases')
 	imPar.tokenSessionAliases = [];
 else
-	tokenSessionAliasesOld = imPar.tokenSessionAliases;
-	imPar.tokenSessionAliases =tokenSessionAliasesOld(1:2:end);
-	imPar.tokenSessionAliases(:,2) = tokenSessionAliasesOld(2:2:end);
+	if (size(imPar.tokenSessionAliases,2) > 2) || (size(imPar.tokenSessionAliases,2) == 1)
+		tokenSessionAliasesOld = imPar.tokenSessionAliases;
+		imPar.tokenSessionAliases =tokenSessionAliasesOld(1:2:end);
+		imPar.tokenSessionAliases(:,2) = tokenSessionAliasesOld(2:2:end);
+	end
 end
 if ~isfield(imPar,'bMatchDirectories')
 	imPar.bMatchDirectories  = false;
@@ -1398,7 +1404,7 @@ end
 						if exist(SavePathJSON{iPath}, 'file') && ~isempty(first_match)
 							[~, ~, fext] = fileparts(first_match);
 							if  strcmpi(fext,'.PAR')
-								parms = xASL_adm_Par2JSON(first_match, SavePathJSON{iPath});
+								parms = xASL_bids_Par2JSON(first_match, SavePathJSON{iPath});
 							elseif strcmpi(fext,'.nii')
 								parms = [];
 							elseif imPar.bMatchDirectories

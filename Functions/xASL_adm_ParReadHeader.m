@@ -50,7 +50,7 @@ while(true)
     if(strfind(str,'= END OF DATA DESCRIPTION FILE =')), mode=5; end
     
     switch(mode)
-        case -1;
+        case -1
         case 0
             nHC=nHC+1; HeaderComment{nHC}=str;
         case 1
@@ -134,29 +134,42 @@ while(true)
             end
         case 2
         case 3
-            if(str(1)=='#');
-                [type datatype datalength]=Image_Information_Line(str);
+            if(str(1)=='#')
+                [type, datatype, datalength, imagekey]=Image_Information_Line(str);
                 if(~isempty(type))
                     nIC=nIC+1;
                     ImageInformationTags(nIC).Name=type;
                     ImageInformationTags(nIC).DataType=datatype;
                     ImageInformationTags(nIC).NumberOfValues=datalength;
+					ImageInformationTags(nIC).ImageKey=imagekey;
                 end
             end
         case 4
-            if(str(1)~='#');
+            if(str(1)~='#')
                 nSC=nSC+1;
+				% Convert the values to a cell array of strings
                 vals=regexp(str, '\s+','split');
-                vald=sscanf(str, '%lf')';
+				if isempty(vals{1})
+					vals = vals(2:end);
+				end
+				
+				% Converts the cell array of strings to floats
+				vald = cellfun(@str2num,vals);
+
                 current_loc=0;
                 for i=1:length(ImageInformationTags)
                     IIT=ImageInformationTags(i);
-                    if(strcmp(IIT.DataType,'string'))
-                        SliceInformation(nSC).(IIT.Name)=vals{current_loc+1};
-                    else
-                        SliceInformation(nSC).(IIT.Name)=vald(current_loc+1:current_loc+IIT.NumberOfValues);
-                    end
-                    current_loc=current_loc+IIT.NumberOfValues;
+					if(strcmp(IIT.DataType,'string'))
+						if current_loc+1 <= length(vals)
+							SliceInformation(nSC).(IIT.Name)=vals{current_loc+1};
+							current_loc=current_loc+1;
+						end
+					else
+						if current_loc+IIT.NumberOfValues <= length(vald)
+							SliceInformation(nSC).(IIT.Name)=vald(current_loc+1:current_loc+IIT.NumberOfValues);
+							current_loc=current_loc+IIT.NumberOfValues;
+						end
+					end
                 end
             end
             
@@ -215,8 +228,14 @@ else
 end
 
 
-function [type datatype datalength]=Image_Information_Line(str)
+function [type, datatype, datalength, imagekey]=Image_Information_Line(str)
 s=find(str=='(',1,'last');
+if ~isempty(strfind(str,'(imagekey!)'))
+	imagekey = 1;
+else
+	imagekey = 0;
+end
+
 if(isempty(s)), s=length(str); end
 type=str(1:s-1);  data=str(s+1:end);
 type=regexp(type, '\s+|/|_', 'split');
@@ -246,7 +265,7 @@ if(~isempty(data))
         datalength=str2double(data(1:s-1));  datatype=data(s+1:end);
     end
 else
-    datalength=0; datatype=''; type='';
+    datalength=0; datatype=''; type=''; imagekey = 0;
 end
 
 
