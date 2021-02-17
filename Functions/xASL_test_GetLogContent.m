@@ -1,7 +1,7 @@
 function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFullPath, exportTable)
 %xASL_test_GetLogContent Get warnings and errors from log files
 %
-% FORMAT: [logContent] = xASL_test_GetLogContent(rootDir, [printContent], [storeFullPath], [exportTSV])
+% FORMAT: [logContent] = xASL_test_GetLogContent(rootDir, [printContent], [storeFullPath], [exportTable])
 %
 % INPUT:
 %        rootDir            - Case root directory (OPTIONAL, DEFAULT = user input)
@@ -18,8 +18,9 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% EXAMPLE:          rootDir = '.\Test_Runs\TestDataSet';
-%                   [logContent] = xASL_test_GetLogContent(rootDir,false,false,true);
+% EXAMPLE:          % Run the GetLogContent script, do not print the messages, store the full path and export an XLSX
+%                   rootDir = '.\Test_Runs\TestDataSet';
+%                   [logContent] = xASL_test_GetLogContent(rootDir,0,1,2);
 %
 % REFERENCES:       ...
 % __________________________________
