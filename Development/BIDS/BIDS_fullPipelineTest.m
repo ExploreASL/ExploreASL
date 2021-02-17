@@ -1,31 +1,48 @@
 %% BIDS testing script
+% Fully test the Flavors by DICOM->BIDS->Legacy import with dedicated results validation
+% And then processing all through the ExploreASL pipeline
 
-% 1. DICOM2BIDS
+% Please first run your local path initialization and clone the Flavors Database, the proceed with step
+% by step testing
+%% Preparation for Henk
+clc
+pathExploreASL = '/Users/henk/ExploreASL/ExploreASL';
+pathTest = '/Users/henk/ExploreASL/ASL/TestBIDS';
+cmdCloneFlavors = 'git clone https://github.com/ExploreASL/FlavorDatabase.git';
+
+%% Preparation for Jan
+clc
+pathExploreASL = '/home/janpetr/code/ExploreASL';
+pathTest = '/pet/projekte/asl/data/BIDS';
+cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
+
+%% Clone the flavors database if necessary
+if ~exist(fullfile(pathTest,'FlavorDatabase'), 'dir')
+    cd(pathTest);
+    system(cmdCloneFlavors);
+end
+
+%% Test execution
+
+% Prepare the data
+xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[1 0 0 0 0 0 0]);
+
+% Convert to BIDS
+xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 1 0 0 0 0 0]);
+
+% Check the BIDS conversion
+xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 1 0 0 0 0]);
+
+%% Legacy testing below - to be moved to the dedicated testing function
 % 2. BIDS2legacy
 % 3. ExploreASL
 
-%% 0. Admin
 
-clc
 
-DirExploreASL = '/Users/henk/ExploreASL/ExploreASL';
-cd(DirExploreASL);
-ExploreASL_Master('',0);
 
-addpath(fullfile('Development', 'BIDS'));
-
-ROOT = '/Users/henk/ExploreASL/ASL/TestBIDS';
-ROOT = fullfile(ROOT, 'FlavorDatabase');
-if ~exist(ROOT, 'dir')
-    cd(fileparts(ROOT));
-    system('git clone https://github.com/ExploreASL/FlavorDatabase.git');
-end
-
-ListFolders = xASL_adm_GetFileList(ROOT, '^rawdata$', 'FPListRec', [0 Inf], 1);
+ListFolders = xASL_adm_GetFileList(pathTest, '^rawdata$', 'FPListRec', [0 Inf], 1);
 
 for iList=1:numel(ListFolders)
-    %% 1. DICOM2BIDS
-    
     
     %% 2. BIDS2Legacy
     DerivativesDir = fullfile(fileparts(ListFolders{iList}), 'derivatives');
