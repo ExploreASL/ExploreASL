@@ -258,29 +258,28 @@ function x = DataParTemplate(x)
 % 							   - 1 = enabled
 % 							   - 0 = disabled
 % x.bPVCNativeSpace - Performs partial volume correction (PVC) in ASL native space using the GM and WM maps
-%                                 obtained from previously segmented T1-weighted images. Skipped with warning
-%                                 when those maps do not exist and are not resampled to the ASL space.
-%                                 (OPTIONAL, DEFAULT = 0).
-%                                 - 1 = enabled
-%                                 - 0 = disabled
-% x.PVCNativeSpaceKernel - Window size for the ASL native space PVC. This is ignored when 
-%                                   x.bPVCNativeSpace is set to 0. Equal weighting of all voxels within 
-%                                   the kernel is assumed. 3D kernel can be used, but any of the dimension can be
-%                                   also set to 1. Only odd number of voxels can be used in each dimension (e.g. 
-%                                   [3 7 5] not [2 3 1]).
-%                                   (OPTIONAL, 
-%                                    DEFAULT = [5 5 1] for bPVCGaussianMM==0,
-%                                    DEFAULT = [10 10 4] for bPVCGaussianMM==1).
-% x.bPVCGaussianMM - PV-correction with a Gaussian instead of square kernel. Ignored when 
-%                             x.bPVCNativeSpace is set to 0. It uses Gaussian weighting of the PV kernel
-%                             instead of equal weights as per Asllani's original method. Unlike with the square kernel
-%                             when the size is defined in voxels, here the FWHM of the Gaussian in mm is defined in each
-%                             dimension. The advantage is twofold - continuous values can be added and a single value can be
-%                             entered which is valid for datasets with different voxel-sizes without having a kernel of 
-%                             different effective size.
-%                             (OPTIONAL, DEFAULT = 0)
-%                             - 1 = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel
-%                             - 0 = disabled, use flat kernel with voxels given in PVCNativeSpaceKernel
+%                     obtained from previously segmented T1-weighted images. Skipped with warning when those 
+%                     maps do not exist and are not resampled to the ASL space. PVC can take several minutes 
+%                     for larger scans (e.g. 128x128x30), so it is deactivated by default
+%                     (OPTIONAL, DEFAULT = 0).
+%                     - 1 = enabled
+%                     - 0 = disabled
+% x.PVCNativeSpaceKernel - Kernel size for the ASL native space PVC. This is ignored when x.bPVCNativeSpace is 
+%                          set to 0. Equal weighting of all voxels within the kernel is assumed. 3D kernel can 
+%                          be used, but any of the dimension can be also set to 1. Only odd number of voxels 
+%                          can be used in each dimension (e.g. [3 7 5] not [2 3 1]).
+%                          (OPTIONAL, 
+%                           DEFAULT = [5 5 1] for bPVCGaussianMM==0,
+%                           DEFAULT = [10 10 4] for bPVCGaussianMM==1).
+% x.bPVCGaussianMM - If set to 1, PV-correction with a Gaussian weighting is used instead of the equal weights 
+%                    of all voxels in the kernel ('flat' kernel) as per Asllani's original method. Ignored when 
+%                    x.bPVCNativeSpace is set to 0. Unlike with the flat kernel when the size is defined in 
+%                    voxels, here the FWHM of the Gaussian in mm is defined in each dimension. The advantage 
+%                    is twofold - continuous values can be added and a single value can be entered which is 
+%                    valid for datasets with different voxel-sizes without having a kernel of different effective size.
+%                    (OPTIONAL, DEFAULT = 0)
+%                    - 1 = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel
+%                    - 0 = disabled, use 'flat' kernel with voxels given in PVCNativeSpaceKernel
 %
 %% Masking parameters
 %   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask

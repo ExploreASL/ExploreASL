@@ -456,7 +456,7 @@ end
 %% -----------------------------------------------------------------------------
 %% 9    Visual QC
 iState = 9;
-if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
+if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
 
     xASL_wrp_VisualQC_ASL(x);
     x.mutex.AddState(StateName{iState});

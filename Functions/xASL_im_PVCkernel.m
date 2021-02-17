@@ -9,11 +9,11 @@ function [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mode
 %            order in output as it is defined for input (REQUIRED)
 %   kernel - 3D window size [NI,NJ,NK] (OPTIONAL, DEFAULT = [5 5 1])
 %   mode   - Type of the kernel used - flat or Gaussian (OPTIONAL, DEFAULT = 'flat')
-%            'flat' - standard implementation, flat kernel with size
-%             [NI,NJ,NK], all the numbers must be odd.
-%            'gauss' - Gaussian kernel is used with [NI,NJ,NK] is FWHM in
-%             voxels, the window size is adjusted automatically to match
-%             the Gaussians
+%            'flat' - standard implementation with kernel size [NI,NJ,NK], all the numbers must be odd.
+%                     all weights within the kernel are equal  
+%            'gauss' - weights in the kernel are assigned according to a Gaussian distribution. Unlike for
+%                      flat kernel, [NI,NJ,NK] defines the FWHM of the Gaussian in voxels, the kernel size is 
+%                      adjusted automatically to include 2*SDs of the Gaussians
 %
 % OUTPUT: 
 %   imPVC - corrected CBF maps for both tissues - imPVC(NX,NY,NZ,2)

@@ -1,6 +1,6 @@
 function [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,bsplineNum)
 %xASL_im_PVCbspline Partial volume correction (PVC) of ASL data using prior GM-,WM-partial volume maps using
-% a global optimization rather than local kernel.
+% a global optimization with B-spline approximation of the correction weights rather than a local kernel.
 %
 % FORMAT:       [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV[,bsplineNum])
 %
