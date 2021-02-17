@@ -128,7 +128,9 @@ imPVC = zeros(size(imPV));
 
 %tic
 % For each pixel on the mask do the calculation
+fprintf('\nCalculating PVC:    ');
 for z=1:size(imCBF,3)
+    xASL_TrackProgress(z, size(imCBF,3));
 	% Since the FOV in Z-direction is limited, we always go through all the
 	% voxels in the Z-direction, but we have to adapt the kernel not to go
 	% out of the volume
@@ -228,12 +230,13 @@ for z=1:size(imCBF,3)
 							
 							imPVC(x,y,z,ind) = sum(ASLMat.*PMat(:,ind))/sum(PMat(:,ind).^2);
 						end
-					end
-				end
-			end
-		end
-	end
-end
+                    end % if ( isPV1 && isPV2 )
+                end % if (sum(PMat(:)) > opt.pvTotTh)
+            end % if imMask(x,y,z)
+        end % for x = (winWidth(1)+1):(size(imCBF,1)-winWidth(1))
+    end % for y = (winWidth(2)+1):(size(imCBF,2)-winWidth(2))
+end % for z=1:size(imCBF,3)
+fprintf('\n');
 %toc
 
 %% 3. Creates additional outputs
