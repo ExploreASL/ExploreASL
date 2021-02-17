@@ -5,9 +5,9 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
 %
 % INPUT:
 %        rootDir            - Case root directory (OPTIONAL, DEFAULT = user input)
-%        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false)
-%        storeFullPath      - Store full path in logContent table instead of module name (OPTIONAL, DEFAULT = false)
-%        exportTSV          - Export a tsv file containing the log content (OPTIONAL, DEFAULT = true)
+%        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false, BOOLEAN)
+%        storeFullPath      - Store full path in logContent table instead of module name (OPTIONAL, DEFAULT = false, BOOLEAN)
+%        exportTSV          - Export a tsv file containing the log content (OPTIONAL, DEFAULT = true, BOOLEAN)
 %
 % OUTPUT:
 %        logContent         - table containing warnings and errors
@@ -56,6 +56,9 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
     % Get Matlab version
     versionYear = version('-release');
     versionYear = str2num(versionYear(1:4));
+    if versionYear < 2017
+    	fprintf('You are using Matlab %s, we recommend Matlab 2017 or newer...\n',string(versionYear));
+    end
     
     %% Iterate over log files
     for iFile=1:numel(fileList)
