@@ -1,4 +1,4 @@
-function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFullPath, exportTSV)
+function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFullPath, exportTable)
 %xASL_test_GetLogContent Get warnings and errors from log files
 %
 % FORMAT: [logContent] = xASL_test_GetLogContent(rootDir, [printContent], [storeFullPath], [exportTSV])
@@ -7,7 +7,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
 %        rootDir            - Case root directory (OPTIONAL, DEFAULT = user input)
 %        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false, BOOLEAN)
 %        storeFullPath      - Store full path in logContent table instead of module name (OPTIONAL, DEFAULT = false, BOOLEAN)
-%        exportTSV          - Export a tsv file containing the log content (OPTIONAL, DEFAULT = true, BOOLEAN)
+%        exportTable        - Export a tsv or xlsx file containing the log content (OPTIONAL, DEFAULT = 1, BOOLEAN)
+%                             (0 = no export, 1 = TSV export, 2 = XLSX export)
 %
 % OUTPUT:
 %        logContent         - table containing warnings and errors
@@ -41,8 +42,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
         storeFullPath = false;
     end
     
-    if (nargin < 4) || isempty(exportTSV)
-        exportTSV = true;
+    if (nargin < 4) || isempty(exportTable)
+        exportTable = 1;
     end
     
     % Initialize table
@@ -133,14 +134,19 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
         end
     end
     
-    %% Optional: Export TSV
-    if exportTSV
+    %% Optional: Export (0 = no export, 1 = TSV export, 2 = XLSX export)
+    if exportTable==1
         % Convert warnings & errors from cell to char array
         logContent = logContentCellToChar(logContent);
         % Convert to cell array
         logContentCell = table2cell(logContent);
         % Export TSV file
         xASL_tsvWrite(logContentCell, fullfile(rootDir,'logContent.tsv'), true);
+    elseif exportTable==2
+        % Convert warnings & errors from cell to char array
+        logContent = logContentCellToChar(logContent);
+        % Export table
+        writetable(logContent,fullfile(rootDir,'logContent.xlsx'),'WriteVariableNames',true);
     end
    
 end
