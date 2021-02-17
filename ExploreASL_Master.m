@@ -52,6 +52,23 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     % or 2nd column is session-id (e.g. 'ASL_1', then
     % 3rd column contains parameter values
     
+    % Accept string arguments (deployed mode)
+    if nargin > 1 && ~isempty(ProcessData)
+    	ProcessData = str2num(ProcessData);
+    end
+    if nargin > 2 && ~isempty(SkipPause)
+    	SkipPause= str2num(SkipPause);
+    end
+    if nargin > 3 && ~isempty(iWorker)
+    	iWorker= str2num(iWorker);
+    end
+    if nargin > 4 && ~isempty(nWorkers)
+    	nWorkers= str2num(nWorkers);
+    end
+    if nargin > 5 && ~isempty(iModules)
+    	iModules= str2num(iModules);
+    end
+    
     % using exist(var) here as nargin doesnt work when debugging
     if ~exist('nWorkers','var') || isempty(nWorkers)
         nWorkers = 1;
