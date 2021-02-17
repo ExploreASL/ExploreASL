@@ -1,7 +1,7 @@
-function xASL_qc_RemoveLogFilesForRerun(rootDir)
-%xASL_qc_RemoveLogFilesForRerun Removes all log files from xASL directory
+function xASL_adm_RemoveLogFilesForRerun(rootDir)
+%xASL_adm_RemoveLogFilesForRerun Removes all log files from xASL directory
 %
-% FORMAT: xASL_qc_RemoveLogFilesForRerun(rootDir);
+% FORMAT: xASL_adm_RemoveLogFilesForRerun(rootDir);
 %
 % INPUT:
 %        rootDir            - Case root directory
@@ -15,7 +15,7 @@ function xASL_qc_RemoveLogFilesForRerun(rootDir)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          rootDir = '.\Test_Runs\TestDataSet';
-%                   xASL_qc_RemoveLogFilesForRerun(rootDir);
+%                   xASL_adm_RemoveLogFilesForRerun(rootDir);
 %
 % REFERENCES:       ...
 % __________________________________
