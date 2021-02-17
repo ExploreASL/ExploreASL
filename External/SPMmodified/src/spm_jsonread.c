@@ -440,6 +440,7 @@ static jsmntok_t * parse(const char *js, size_t jslen) {
     
     for (;;) {
         r = jsmn_parse(&p, js, jslen, tok, tokcount);
+		
         if (r < 0) {
             if (r == JSMN_ERROR_NOMEM) {
                 tokcount = tokcount * 2;
@@ -518,6 +519,10 @@ static char * get_data(const mxArray * mx, size_t * jslen) {
 			/* Re-run the conversion */
 			js = mxArrayToString(ma);
 		}
+		
+		/* After fixing the 0-characters, we have to obtain the length of string again, because NumberOfElements 
+		 * give the number of UTF-8 characters and we need the number of bytes here */
+		*jslen = strlen(js);
         mxDestroyArray(ma);
     }
     return js;
