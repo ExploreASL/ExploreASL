@@ -50,8 +50,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
     logContent.Properties.VariableNames = {'Module','Subject','Type','File','Line','Content'};
     
     %% Get all log files within root directory
-    fileList = dir(fullfile(rootDir, '**\*.log'));  % Get list of log files and folders in any subfolder
-    fileList = fileList(~[fileList.isdir]);         % Remove folders from list
+    fileList = xASL_adm_GetFileList(rootDir, '^.+\.log$', 'FPListRec');
     
     % Get Matlab version
     versionYear = version('-release');
@@ -63,9 +62,10 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
     %% Iterate over log files
     for iFile=1:numel(fileList)
         % Get current file path
-        curFile = fullfile(fileList(iFile).folder,fileList(iFile).name);
+        curFile = fileList{iFile,1};
+        [~, printName] = fileparts(curFile);
         % Print log file
-        fprintf('Log file: %s\n',fileList(iFile).name);
+        fprintf('Log file: %s\n',printName);
         % Fallback subject definition
         curSubject = 'unknown';
         % Current file array
@@ -102,7 +102,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
                 if storeFullPath
                     logContent = [logContent;{curFile,curSubject,'Warning',lastWarningFile,correspondingLine,currentWarning}];
                 else
-                    logContent = [logContent;{fileList(iFile).name,curSubject,'Warning',lastWarningFile,correspondingLine,currentWarning}];
+                    logContent = [logContent;{printName,curSubject,'Warning',lastWarningFile,correspondingLine,currentWarning}];
                 end
             end
         end
@@ -114,7 +114,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
                 if storeFullPath
                     logContent = [logContent;{curFile,curSubject,'Error',lastErrorFile,correspondingLine,currentError}];
                 else
-                    logContent = [logContent;{fileList(iFile).name,curSubject,'Error',lastErrorFile,correspondingLine,currentError}];
+                    logContent = [logContent;{printName,curSubject,'Error',lastErrorFile,correspondingLine,currentError}];
                 end
             end
         end
