@@ -29,6 +29,7 @@ SkipPause = true;
 
 
 To compile ExploreASL you have to run the `xASL_adm_MakeStandalone.m` script. If necessary, you can also ask the developer team for a specific compiled version. Providing a compiled version for every operating system and corresponding Matlab version is currently not feasible for us. Please feel free to ask us for help though!
+A compiled version of ExploreASL always requires the corresponding Matlab Runtime. Please checkout the official [Matlab Documentation](https://mathworks.com/products/compiler/matlab-runtime.html). Download the Matlab Runtime of the Matlab Version which was used for the compilation. Make sure to install the Matlab Runtime correctly. If you're using Windows, it is important that the path to the Matlab Runtime is added to Windows **PATH** during the installation.
 
 #### Windows
 
@@ -38,14 +39,118 @@ Let's assume you want to run the compiled version of **ExploreASL v1.4.0**. Chec
 xASL_1_4_0.exe "c:\path_to_your\DataParFile.json"
 ```
 
-The executable will extract all necessary data from the CTF archive within the folder. This is totally normal.
+The executable will extract all necessary data from the CTF archive within the folder. This is totally normal. Within the command window you should see that **ExploreASL** is starting to process the given dataset:
+
+```
+xASL_1_4_0.exe "c:\path_to_your\DataParFile.json"
+==============================================================================================
+ctfroot:  .\xASL_1_4_0\xASL_1_4_0_mcr
+x.MyPath: .\xASL_1_4_0\xASL_1_4_0_mcr\xASL_1_4_0
+==============================================================================================
+ ___  ____  __  __
+/ __)(  _ \(  \/  )  modified xASL version
+\__ \ )___/ )    (   Statistical Parametric Mapping
+(___/(__)  (_/\/\_)  SPM12 - http://www.fil.ion.ucl.ac.uk/spm/
+
+--> Initializing ExploreASL v1.4.0...
+
+
+==============================================================================================
+ ________                      __                                 ______    ______   __
+/        |                    /  |                               /      \  /      \ /  |
+########/  __    __   ______  ## |  ______    ______    ______  /######  |/######  |## |
+## |__    /  \  /  | /      \ ## | /      \  /      \  /      \ ## |__## |## \__##/ ## |
+##    |   ##  \/##/ /######  |## |/######  |/######  |/######  |##    ## |##      \ ## |
+#####/     ##  ##<  ## |  ## |## |## |  ## |## |  ##/ ##    ## |######## | ######  |## |
+## |_____  /####  \ ## |__## |## |## \__## |## |      ########/ ## |  ## |/  \__## |## |_____
+##       |/##/ ##  |##    ##/ ## |##    ##/ ## |      ##       |## |  ## |##    ##/ ##       |
+########/ ##/   ##/ #######/  ##/  ######/  ##/        #######/ ##/   ##/  ######/  ########/
+                    ## |
+                    ## |
+                    ##/
+==============================================================================================
+
+
+ExploreASL initialized <--
+Automatically defining sessions...
+-------------------------------------------
+ExploreASL will run with following settings:
+
+Root folder = .\TestDataSet\analysis
+
+1 scans - 0 exclusions, resulting in 1 scans of:
+Longitudinal timePoint 1 = 1 scans - 0 exclusions = 1 scans
+ASL sessions: 1
+
+Ancillary data, sets:
+3 sets are defined for 1 "SubjectsSessions":
+Set 1 = "LongitudinalTimePoint" options "TimePoint_1", codes for paired data
+Set 2 = "SubjectNList" options "SubjectNList", codes for paired data
+Set 3 = "Site" options "SingleSite", codes for two-sample data
+x.DELETETEMP = 1 (delete temporary files)
+x.Quality    = 0 (0 = fast try-out; 1 = normal high quality)
+
+---------------------------------------------
+
+
+Running xASL_module_Structural ...
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+...
+```
+
+To test if it is possible to initialize **ExploreASL** without the processing of a dataset, you could run the following command:
+
+```
+xASL_1_4_0.exe "" "0" "1" "1" "1"
+```
+
+The usual **ExploreASL** parameters (DataParPath, ProcessData, SkipPause, iWorker, nWorkers) have to be given to the compiled **ExploreASL** version as strings. The resulting output could look like this:
+
+```
+xASL_1_4_0.exe "" "0" "1" "1" "1"
+==============================================================================================
+ctfroot:  .\xASL_1_4_0\xASL_1_4_0_mcr
+x.MyPath: .\xASL_1_4_0\xASL_1_4_0_mcr\xASL_1_4_0
+==============================================================================================
+ ___  ____  __  __
+/ __)(  _ \(  \/  )  modified xASL version
+\__ \ )___/ )    (   Statistical Parametric Mapping
+(___/(__)  (_/\/\_)  SPM12 - http://www.fil.ion.ucl.ac.uk/spm/
+
+--> Initializing ExploreASL v1.4.0...
+
+
+==============================================================================================
+ ________                      __                                 ______    ______   __
+/        |                    /  |                               /      \  /      \ /  |
+########/  __    __   ______  ## |  ______    ______    ______  /######  |/######  |## |
+## |__    /  \  /  | /      \ ## | /      \  /      \  /      \ ## |__## |## \__##/ ## |
+##    |   ##  \/##/ /######  |## |/######  |/######  |/######  |##    ## |##      \ ## |
+#####/     ##  ##<  ## |  ## |## |## |  ## |## |  ##/ ##    ## |######## | ######  |## |
+## |_____  /####  \ ## |__## |## |## \__## |## |      ########/ ## |  ## |/  \__## |## |_____
+##       |/##/ ##  |##    ##/ ## |##    ##/ ## |      ##       |## |  ## |##    ##/ ##       |
+########/ ##/   ##/ #######/  ##/  ######/  ##/        #######/ ##/   ##/  ######/  ########/
+                    ## |
+                    ## |
+                    ##/
+==============================================================================================
+
+
+ExploreASL initialized <--
+```
 
 #### Linux
 
 On Linux you can basically do the same as above. Let's assume we chose the option to create a compiled **ExploreASL** version labelled with the **latest** tag within `xASL_adm_MakeStandalone.m` script. We can run the ExploreASL shell script with a specified Matlab MCR (here we use version 96 e.g.) using the following command:
 
 ```
-/bin/bash /path/to/xasl/xASL_latest/xASL_latest.sh /path/to/mcr/v96/ "path_to_your_DataParFile.json"
+./run_xASL_latest.sh /usr/local/MATLAB/MATLAB_Runtime/v96/ "" "0" "1" "1" "1"
+```
+
+Using the options `"" "0" "1" "1" "1"` we initialize **ExploreASL**, but do not process a dataset. To run a dataset, we have to switch the ProcessData parameter from 0 to 1 and pass a path for the DataParPath. This could look something like this:
+
+```
+./run_xASL_latest.sh /usr/local/MATLAB/MATLAB_Runtime/v96/ "/home/TestDataSet/analysis/DataParFile.json" "1" "1" "1" "1"
 ```
 
 
