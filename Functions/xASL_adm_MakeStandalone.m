@@ -41,10 +41,10 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLates
 
 
 %% 1) Manage ExploreASL and compiler code folders
-if nargin<1 || isempty(outputPath),     error('OutputPath input missing');  end
-if nargin<2 || isempty(bCompileSPM),    bCompileSPM = true;                 end
-if nargin<3,                            importDCM = true;                   end
-if nargin<4,                            markAsLatest = true;                end
+if nargin<1 || isempty(outputPath);     error('OutputPath input missing');  end
+if nargin<2 || isempty(bCompileSPM);    bCompileSPM = true;                 end
+if nargin<3 || isempty(importDCM);      importDCM = true;                   end
+if nargin<4 || isempty(markAsLatest);   markAsLatest = true;                end
 
 % Initialize Explore ASL
 x = ExploreASL_Initialize([],0);
@@ -72,15 +72,13 @@ if importDCM
     VersionImport = xASL_adm_CorrectName(['xASL_' xASLVersion '_Import']);
     % Output folder
     outputPathImport = fullfile(outputPath,VersionImport);
-    if ~exist(outputPathImport, 'dir')
-        mkdir(outputPathImport);
-    end
+    xASL_adm_CreateDir(outputPathImport); % this function creates folders only if they don't exist, including different layers
 end
 
 %% 3) File management output folder & starting diary
 outputPath = fullfile(outputPath,Version);
 if ~exist(outputPath, 'dir')
-    mkdir(outputPath);
+    xASL_adm_CreateDir(outputPath);
 else
     warning(['Compilation output folder ' outputPath ' already existed, will now delete all files in this folder recursively']);
     fprintf('%s\n','Press any key to start processing & analyzing');
@@ -98,7 +96,7 @@ diary on
 cfg_util('dumpcfg');
 
 % Duplicate Contents.m in Contents.txt for use in spm('Ver')
-sts = copyfile(fullfile(spm('Dir'),'Contents.m'), fullfile(spm('Dir'),'Contents.txt'));
+sts = xASL_Copy(fullfile(spm('Dir'),'Contents.m'), fullfile(spm('Dir'),'Contents.txt'));
                
 if ~sts
     warning('Copy of Contents.m failed');
@@ -168,7 +166,7 @@ mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.m
     '-a', fullfile(ExploreASLPath,'External','Atlases'));
 
 % Copy version file to compilation folder
-copyfile(AddExploreASLversion,fullfile(outputPath,VersionPath{1}),'f');
+xASL_Copy(AddExploreASLversion, fullfile(outputPath, VersionPath{1}), 1);
 
 % Compilation DICOM import (Work in progress -> Meant to be used for docker integration)
 if importDCM
