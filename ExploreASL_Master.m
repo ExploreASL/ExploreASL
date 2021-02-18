@@ -38,7 +38,7 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
 % EXAMPLE for calling externally to run the ASL & Population modules: ExploreASL('//MyDisk/MyStudy/DataPar.m', true, true, [], [], [2 3]);
 % EXAMPLE for debugging/initialization only: [x] = ExploreASL('',0);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
     % -----------------------------------------------------------------------------
     %% 1 Initialization when calling this function
@@ -53,22 +53,20 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     % 3rd column contains parameter values
     
     % Accept string arguments (deployed mode)
-    if isdeployed
-        if nargin > 1 && ~isempty(ProcessData)
-            ProcessData = str2num(ProcessData);
-        end
-        if nargin > 2 && ~isempty(SkipPause)
-            SkipPause= str2num(SkipPause);
-        end
-        if nargin > 3 && ~isempty(iWorker)
-            iWorker= str2num(iWorker);
-        end
-        if nargin > 4 && ~isempty(nWorkers)
-            nWorkers= str2num(nWorkers);
-        end
-        if nargin > 5 && ~isempty(iModules)
-            iModules= str2num(iModules);
-        end
+    if nargin > 1 && ~isempty(ProcessData)
+        ProcessData = xASL_str2num(ProcessData);
+    end
+    if nargin > 2 && ~isempty(SkipPause)
+        SkipPause= xASL_str2num(SkipPause);
+    end
+    if nargin > 3 && ~isempty(iWorker)
+        iWorker= xASL_str2num(iWorker);
+    end
+    if nargin > 4 && ~isempty(nWorkers)
+        nWorkers= xASL_str2num(nWorkers);
+    end
+    if nargin > 5 && ~isempty(iModules)
+        iModules= xASL_str2num(iModules);
     end
     
     % using exist(var) here as nargin doesnt work when debugging
