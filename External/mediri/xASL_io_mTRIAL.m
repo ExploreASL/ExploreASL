@@ -66,12 +66,13 @@ data.x.M0 = 'UseControlAsM0';
 x_temporary = xASL_import_json(dockerInterfaceFile);
 
 % Reassign fields
-if isfield(x_temporary,'Sequence'),             data.x.Sequence = x_temporary.Sequence; end
-if isfield(x_temporary,'LabelingType'),         data.x.Q.LabelingType = x_temporary.LabelingType; end
-if isfield(x_temporary,'readout_dim'),          data.x.readout_dim = x_temporary.readout_dim; end
+if isfield(x_temporary,'Sequence'),                             data.x.Sequence = x_temporary.Sequence; end
+if isfield(x_temporary,'LabelingType'),                         data.x.Q.LabelingType = x_temporary.LabelingType; end
+if isfield(x_temporary,'readout_dim'),                          data.x.readout_dim = x_temporary.readout_dim; end
 if isfield(x_temporary,'BackgroundSuppressionNumberPulses'),    data.x.Q.BackgroundSuppressionNumberPulses = x_temporary.BackgroundSuppressionNumberPulses; end
-if isfield(x_temporary,'Initial_PLD'),          data.x.Q.Initial_PLD = x_temporary.Initial_PLD; end
-if isfield(x_temporary,'LabelingDuration'),     data.x.Q.LabelingDuration = x_temporary.LabelingDuration; end
+if isfield(x_temporary,'Initial_PLD'),                          data.x.Q.Initial_PLD = x_temporary.Initial_PLD; end
+if isfield(x_temporary,'LabelingDuration'),                     data.x.Q.LabelingDuration = x_temporary.LabelingDuration; end
+if isfield(x_temporary,'M0'),                                   data.x.M0 = x_temporary.M0; end
 if isfield(x_temporary,'M0PositionInASL4D')
     if x_temporary.M0PositionInASL4D~=0 % Could change to 'null' soon
         data.x.M0 = 'separate_scan';
@@ -95,15 +96,15 @@ try
     % Read JSON file
     if xASL_exist(pathASL4D,'file')
         val = spm_jsonread(pathASL4D);
-		valXASL = xASL_bids_parms2BIDS([], val, 0, 1);
+        valXASL = xASL_bids_parms2BIDS([], val, 0, 1);
         % Set vendor to manufacturer and remove slice readout time for 3D cases
         if ~isfield(valXASL,'Vendor'), data.x.Vendor = valXASL.Vendor; end
 
-		if isfield(valXASL,'readout_dim')
-			if strcmpi(valXASL.readout_dim,"2D")
-				data.x.Q.SliceReadoutTime = x_temporary.SliceReadoutTime;
-			end
-		end
+        if isfield(valXASL,'readout_dim')
+            if strcmpi(valXASL.readout_dim,"2D")
+                data.x.Q.SliceReadoutTime = x_temporary.SliceReadoutTime;
+            end
+        end
     end
 catch
     warning('Something went wrong...');
