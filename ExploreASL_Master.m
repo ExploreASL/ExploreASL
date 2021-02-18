@@ -52,43 +52,34 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     % or 2nd column is session-id (e.g. 'ASL_1', then
     % 3rd column contains parameter values
     
-    % Accept string arguments (deployed mode)
-    if nargin > 1 && ~isempty(ProcessData)
-        ProcessData = xASL_str2num(ProcessData);
-    end
-    if nargin > 2 && ~isempty(SkipPause)
-        SkipPause= xASL_str2num(SkipPause);
-    end
-    if nargin > 3 && ~isempty(iWorker)
-        iWorker= xASL_str2num(iWorker);
-    end
-    if nargin > 4 && ~isempty(nWorkers)
-        nWorkers= xASL_str2num(nWorkers);
-    end
-    if nargin > 5 && ~isempty(iModules)
-        iModules= xASL_str2num(iModules);
-    end
-    
     % using exist(var) here as nargin doesnt work when debugging
-    if ~exist('nWorkers','var') || isempty(nWorkers)
-        nWorkers = 1;
+    if exist('ProcessData', 'var') && ~isempty(ProcessData)
+        ProcessData = xASL_str2num(ProcessData);
+    else
+        ProcessData = []; % by default we let the user choose
     end
-    if ~exist('iWorker','var') || isempty(iWorker)
-        iWorker = 1;
-    end
-    if ~exist('DataParPath','var') || isempty(DataParPath)
-        DataParPath = [];
-    end
-    if ~exist('ProcessData','var') || isempty(ProcessData)
-        ProcessData = [];
-    end
-    if ~exist('iModules','var') || isempty(iModules)
-        iModules = [1 2 3];
-    end
-    if ~exist('SkipPause','var') || isempty(SkipPause)
+    if exist('SkipPause', 'var') && ~isempty(SkipPause)
+        SkipPause= xASL_str2num(SkipPause);
+    else
         SkipPause = false; % by default we don't skip the pause question below
     end
-
+    if exist('iWorker', 'var') && ~isempty(iWorker)
+        iWorker= xASL_str2num(iWorker);
+    else
+        iWorker = 1; % by default we don't parallelize ExploreASL instances
+    end
+    if exist('nWorkers', 'var') && ~isempty(nWorkers)
+        nWorkers= xASL_str2num(nWorkers);
+    else
+        nWorkers = 1; % by default we don't parallelize ExploreASL instances
+    end
+    if exist('iModules', 'var') && ~isempty(iModules)
+        iModules= xASL_str2num(iModules);
+    else
+        iModules = [1 2 3]; % by default we run all default modules (1) Structural, 2) ASL, 3) Population)
+    end
+    
+    
     x = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers);
     
     if x.ProcessData==0 || x.ProcessData==2
