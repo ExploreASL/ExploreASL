@@ -167,6 +167,9 @@ mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.m
     '-a', fullfile(ExploreASLPath,'External','isnear'),...
     '-a', fullfile(ExploreASLPath,'External','Atlases'));
 
+% Copy version file to compilation folder
+copyfile(AddExploreASLversion,fullfile(outputPath,VersionPath{1}),'f');
+
 % Compilation DICOM import (Work in progress -> Meant to be used for docker integration)
 if importDCM
     mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
