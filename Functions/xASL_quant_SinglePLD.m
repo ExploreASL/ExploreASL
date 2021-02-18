@@ -83,8 +83,14 @@ else
 
             SliceGradient(~isfinite(SliceGradient)) = 1;
             SliceGradient(SliceGradient<1) = 1;
-
-            ScaleImage = ScaleImage.*(x.Q.Initial_PLD + ((SliceGradient-1) .* x.Q.SliceReadoutTime)); % effective/net PLD
+			if length(x.Q.SliceReadoutTime) == 1
+				ScaleImage = ScaleImage.*(x.Q.Initial_PLD + ((SliceGradient-1) .* x.Q.SliceReadoutTime)); % effective/net PLD
+			else
+				imGradientRounded = round(SliceGradient);
+				imGradientRounded(imGradientRounded<1) = 1;
+				imGradientRounded(imGradientRounded>length(x.Q.SliceReadoutTime)) = length(x.Q.SliceReadoutTime);
+				ScaleImage = ScaleImage.*(x.Q.Initial_PLD + x.Q.SliceReadoutTime(imGradientRounded)); % effective/net PLD
+			end
         otherwise
             error('Wrong x.readout_dim value!');
     end
@@ -245,8 +251,12 @@ if x.ApplyQuantification(3)
     end
 
     if isfield(x.Q,'SliceReadoutTime')
-        if x.Q.SliceReadoutTime>0 && strcmpi(x.readout_dim,'2D')
-            fprintf('%s',[' + ' num2str(x.Q.SliceReadoutTime) ' ms*(slice-1)']);
+        if max(x.Q.SliceReadoutTime)>0 && strcmpi(x.readout_dim,'2D')
+			if length(x.Q.SliceReadoutTime) > 1
+				fprintf('%s',[' + ' num2str(x.Q.SliceReadoutTime(2)-x.Q.SliceReadoutTime(1)) ' ms*(slice-1)']);
+			else
+				fprintf('%s',[' + ' num2str(x.Q.SliceReadoutTime) ' ms*(slice-1)']);
+			end
         end
     end
 

@@ -145,12 +145,21 @@ else
                 SliceIM(:,:,iZ) = iZ;
             end
 
-            if  x.M0_usesASLtiming % in this case, the M0 readout has the exact same timing as the ASL readout
-                                   % this is the case e.g. for Philips 3D GRASE
-                NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+x.Q.SliceReadoutTime.*(SliceIM-1);
+            if  x.M0_usesASLtiming 
+				% in this case, the M0 readout has the exact same timing as the ASL readout
+				% this is the case e.g. for Philips 3D GRASE
+				if length(x.Q.SliceReadoutTime) == 1
+					NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+x.Q.SliceReadoutTime.*(SliceIM-1);
+				else
+					NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+x.Q.SliceReadoutTime(SliceIM);
+				end
                 fprintf('%s\n','2D sliceWise M0 readout assumed, same timing as ASL slices readout used');
             elseif ~x.M0_usesASLtiming
-                NetTR = TR - ((max(SliceIM(:))-SliceIM).*x.Q.SliceReadoutTime);
+				if length(x.Q.SliceReadoutTime) == 1
+					NetTR = TR - ((max(SliceIM(:))-SliceIM).*x.Q.SliceReadoutTime);
+				else
+					NetTR = TR + x.Q.SliceReadoutTime(SliceIM) - max(x.Q.SliceReadoutTime) - (max(x.Q.SliceReadoutTime)-min(x.Q.SliceReadoutTime))/(size(M0IM,3)-1);
+				end
                 % Here we assume the M0 slices readout were at the end of the
                 % TR, with the same time between slices as for the ASL readout
                 fprintf('%s\n','2D SliceWise M0 readout, assumed M0 slices readout at end of TR');
@@ -268,9 +277,14 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
             error('Missing or invalid x.Q.SliceReadoutTime');
         elseif size(M0IM, 3)<2
             error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
-        end
-        
-        SliceTime = [0:1:size(M0IM,3)-1].*x.Q.SliceReadoutTime;
+		end
+		if length(x.Q.SliceReadoutTime) == 1
+			SliceTime = (0:1:size(M0IM,3)-1).*x.Q.SliceReadoutTime;
+		elseif length(x.Q.SliceReadoutTime) == size(M0IM,3)
+			SliceTime = x.Q.SliceReadoutTime;
+		else
+			error('SliceReadoutTime has to be a scalar or match the number of slices');
+		end
     else
         error(['Unknown x.readout_dim value:' x.readout_dim]);
     end

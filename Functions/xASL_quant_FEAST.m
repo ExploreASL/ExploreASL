@@ -55,7 +55,14 @@ for iSession=1:2
     CBF{iSession} = xASL_io_Nifti2Im(PathCBF{iSession});
     Gradient{iSession} = xASL_io_Nifti2Im(fullfile(x.D.PopDir, ['SliceGradient_extrapolated_' x.P.SubjectID '_' x.SESSIONS{iSession} '.nii']));
     % correct different PLD scales
-    PLD{iSession} = x.Q.Initial_PLD + ((Gradient{iSession}-1) .* x.Q.SliceReadoutTime);
+	if length(x.Q.SliceReadoutTime) == 1
+		PLD{iSession} = x.Q.Initial_PLD + ((Gradient{iSession}-1) .* x.Q.SliceReadoutTime);
+	else
+		imGradientRounded = round(Gradient{iSession});
+		imGradientRounded(imGradientRounded<1) = 1;
+		imGradientRounded(imGradientRounded>length(x.Q.SliceReadoutTime)) = length(x.Q.SliceReadoutTime);
+		PLD{iSession} = x.Q.Initial_PLD + x.Q.SliceReadoutTime(imGradientRounded);
+	end
     Gradient{iSession} = exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.LabelingDuration./x.Q.BloodT1)) );
     CBF{iSession} = CBF{iSession}./Gradient{iSession};
 end
