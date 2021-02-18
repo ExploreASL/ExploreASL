@@ -145,7 +145,7 @@ else
 end
 
 for iORI=1:length(PathsORI)
-    [Fpath, Ffile] = xASL_fileparts(PathsORI{iROI});
+    [Fpath, Ffile] = xASL_fileparts(PathsORI{iORI});
     PathOrig = fullfile(Fpath, [Ffile '_ORI.nii']);
     if xASL_exist(PathOrig)
         xASL_Move(PathOrig, PathNII{end}, true);
