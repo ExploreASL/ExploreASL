@@ -54,6 +54,12 @@ flavorsPath  = fullfile(pathTest, 'FlavorDatabase');
 conversionPath = fullfile(pathTest, 'TmpConversion');
 referencePath = fullfile(pathTest, 'TmpReference');
 
+% Default dataPar.json for the testing that is fast to run
+defaultDataPar.x.subject_regexp = '^sub-.*$';
+defaultDataPar.x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
+defaultDataPar.x.Quality = 0; % speed up testing
+defaultDataPar.x.DELETETEMP = 1;
+
 %% 1. Make a temporary copy of the Flavors data
 if bTest(1)
 	% Copy the DICOM source data apart
@@ -92,12 +98,52 @@ if bTest(1)
 		system(['cp -r ' fullfile(flavorsPath,fList{iList}, 'rawdata','*') ' ' fullfile(referencePath,fList{iList},'rawdata')]);
 	end
 end
+
 %% 2. Run the conversion of source data to BIDS
 if bTest(2)
 	xASL_bids_TestBidsConversion(conversionPath, referencePath, 1, 0);
 end
 
-%% Run the comparison
+%% 3. Run the comparison of converted BIDS with the reference data
 if bTest(3)
 	xASL_bids_TestBidsConversion(conversionPath, referencePath, 0, 1);
+end
+
+%% 4. Run the BIDS to Legacy conversion
+if bTest(4)
+	% Go through all studies
+	ListFolders = xASL_adm_GetFileList(conversionPath, '^.+$', 'FPListRec', [0 Inf], 1);
+	for iList=1:numel(ListFolders)
+		% Convert only those containing raw data
+		if exist(fullfile(ListFolders{iList},'rawdata'),'dir')
+			
+			% Currently, we clean the old data for unix only
+			if isunix
+				if exist(fullfile(ListFolders{iList}, 'derivatives'), 'dir')
+					diary('off');
+					fclose('all'); % ensure that no file is locked
+					system(['rm -rf ' fullfile(ListFolders{iList}, 'derivatives')]);
+				end
+			else
+				warning('Here we expect a unix-ish system');
+			end
+			
+			% Run the legacy conversion
+			xASL_bids_BIDS2Legacy(ListFolders{iList}, 1, defaultDataPar);
+		end
+	end
+end
+
+%% 5. Run the comparison of data converted to the legacy format with the reference data
+if bTest(5)
+	error('Not yet implemented');
+end
+
+%% 6. Run ExploreASL on all Legacy-converted data
+if bTest(6)
+	error('Not yet implemented');
+    PathDataPar = fullfile(DerivativesDir, 'ExploreASL', 'DataPar.json');
+    ExploreASL_Master(PathDataPar, 1, 1, [], [], [1 2]); % don't run population module
+    
+end
 end

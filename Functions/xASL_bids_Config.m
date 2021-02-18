@@ -81,6 +81,11 @@ bidsPar.strM0Estimate = 'Estimate';
 bidsPar.strM0Absent   = 'Absent';
 bidsPar.strPerfusion = 'perf';
 
+bidsPar.sidecarName = {'.json' '_aslcontext.tsv' '_labeling.jpg'};
+bidsPar.sidecarRequired =[1 0 0];
+bidsPar.sidecarTypeSpecific = {'no' 'asl' 'asl'};
+bidsPar.sidecarSuffixType = [1 0 0]; % specifies if the sidecar suffix keeps the scantype (e.g. yes for *_asl.json, not for *_aslcontext
+
 % Conditional dependencies
 % RepetitionTime and VolumeTiming are mutually exclusive
 bidsPar.ASLCondition{1}.field = 'RepetitionTime';
@@ -165,6 +170,16 @@ bidsPar.listRemoveIfEmpty = {'EffectiveEchoSpacing','TotalReadoutTime'};
 
 % A list of anatomical scan-types to include
 bidsPar.listAnatTypes = {'T1w' 'T2w' 'FLAIR'}; 
+
+% A list of directories for BIDS to Legacy conversion
+bidsPar.BIDS2LegacyFolderConfiguration =...
+	{'type'   'modality' 'foldernames' 'filenames'      'run_locations'   'run_1_index';...
+	 'T1w'    'anat'     ''            'T1'             'file'            false;...
+	 'T2w'    'anat'     ''            'T2'             'file'            false;...
+	 'FLAIR'  'anat'     ''            'FLAIR'          'file'            false;...
+	 'asl'    'perf'     'ASL'         'ASL4D'          'folder'          true;...
+	 'm0scan' 'perf'     'ASL'         'M0'             'folder'          true;...
+	 'm0scan' 'fmap'     'ASL'         'M0_RevPE'       'folder'          true;};
 
 % Definition of the dataset_description.json fields
 % https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html

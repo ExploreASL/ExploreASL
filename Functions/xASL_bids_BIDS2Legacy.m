@@ -1,17 +1,19 @@
-function xASL_bids_BIDS2Legacy(Dir_RawData, bOverwrite)
+function xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
 %xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
-% FORMAT: xASL_bids_BIDS2xASL(Dir_RawData[, bOverwrite])
+% FORMAT: xASL_bids_BIDS2Legacy(pathStudy[, bOverwrite, dataPar])
 % 
 % INPUT:
-%   Dir_RawData - path to the folder containing the raw BIDS data (REQUIRED)
-%   bOverwrite  - boolean, true for overwriting files (OPTIONAL, DEFAULT = true)
+%   pathStudy  - path to the study folder containing the BIDS data in rawdata subfolder (REQUIRED)
+%   bOverwrite - boolean, true for overwriting files (OPTIONAL, DEFAULT = true)
+%   dataPar    - dataPar values to be filled in a basic dataPar created with the conversion to legacy 
+%                (OPTIONAL, DEFAULT = basic dataPar settings)
 %   
 % OUTPUT: n/a
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function converts BIDS rawdata (e.g. /StudyName/rawdata/) 
-% to xASL legacy derivative format (e.g. /StudyName/derivatives/ExploreASL/)
+% DESCRIPTION: This function converts BIDS rawdata (in pathStudy/rawdata/) 
+% to xASL legacy derivative format (e.g. pathStudy/derivatives/ExploreASL/)
 %
 % Can be updated step-by-step when ExploreASL's derivative structure moves to BIDS
 % NB: ask how Visits/session layer is defined in bids-matlab (should be
@@ -28,65 +30,65 @@ function xASL_bids_BIDS2Legacy(Dir_RawData, bOverwrite)
 % 8. Copy files
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_bids_BIDS2xASL('MyStudy/rawdata')
+% EXAMPLE: xASL_bids_BIDS2xASL('pathMyStudy')
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
 
-
 %% ------------------------------------------------------------------------------------
-%% Configuration
-% PM: This configuration section could be taken outside this script, e.g. to a JSON file
-FolderNameConfiguration =  {'type'   'modality' 'foldernames' 'filenames'      'run_locations'   'run_1_index';...
-                            'T1w'    'anat'     ''            'T1'             'file'            false;...
-                            'FLAIR'  'anat'     ''            'FLAIR'          'file'            false;...
-                            'asl'    'perf'     'ASL'         'ASL4D'          'folder'          true;...
-                            'm0scan' 'perf'     'ASL'         'M0'             'folder'          true;...
-                            'm0scan' 'fmap'     'ASL'         'M0_RevPE'       'folder'          true;};
+%% 0. Admin
 
-types = FolderNameConfiguration(2:end, 1); % scantypes
-modalities = FolderNameConfiguration(2:end, 2); % the BIDS domains of scantypes
-foldernames = FolderNameConfiguration(2:end, 3); % xASL legacy subfolder name (empty means no subfolder)
-filenames = FolderNameConfiguration(2:end, 4); % xASL legacy filename
-run_locations = FolderNameConfiguration(2:end, 5); % xASL legacy location of run specification (e.g. T1_2.nii.gz vs ASL_2/ASL4D.nii.gz for file vs folder location)
-run_1_index = FolderNameConfiguration(2:end, 6); % if xASL legacy requires to specify the first run (e.g. T1.nii.gz vs ASL_1/ASL4D.nii.gz)
+% Verify the input parameters
+if nargin<1 || isempty(pathStudy)
+	error('pathStudy is a required parameter.');
+end
 
-% Sidecars definition
-Sidecars = {'.json' '_aslcontext.tsv' '_labeling.jpg'};
-SidecarRequired =[1 0 0];
-SidecarTypeSpecific = {'no' 'asl' 'asl'};
-SidecarSuffixType = [1 0 0]; % specifies if the sidecar suffix keeps the scantype (e.g. yes for *_asl.json, not for *_aslcontext
-
-
-%% ------------------------------------------------------------------------------------
-%% Admin
 if nargin<2 || isempty(bOverwrite)
     bOverwrite = 1;
 end
 
-[~, Ffile] = xASL_fileparts(Dir_RawData);
-if ~strcmp(Ffile, 'rawdata')
-    warning('Invalid folder selected, needs to be rawdata folder');
+% Verify that the rawdata subfolder exists
+if ~exist(fullfile(pathStudy,'rawdata'),'dir')
+    warning('Invalid folder selected, not containing rawdata folder');
     return;
 end
 
-Dir_xASL = fullfile(fileparts(Dir_RawData), 'derivatives', 'ExploreASL');
-if exist(Dir_xASL, 'dir') && bOverwrite
-    warning([Dir_xASL ' already existed, overwriting']);
-elseif exist(Dir_xASL, 'dir')
-    fprintf('%s\n', [Dir_xASL ' existed, merging']);
+% Creates the derivatives directory
+pathLegacy = fullfile(pathStudy, 'derivatives', 'ExploreASL');
+if exist(pathLegacy, 'dir') && bOverwrite
+    warning([pathLegacy ' already exists, overwriting']);
+elseif exist(pathLegacy, 'dir')
+    fprintf('%s\n', [pathLegacy ' exists, merging']);
 else
-    xASL_adm_CreateDir(Dir_xASL);
+    xASL_adm_CreateDir(pathLegacy);
 end
 
+% Creates a default dataPar 
+if nargin < 3 || isempty(dataPar)
+	dataPar = struct();
+end
+
+% Fills in important information in the dataPar if missing
+if ~isfield(dataPar,'x.subject_regexp')
+	dataPar.x.subject_regexp = '^sub-.*$';
+end
+
+if ~isfield(dataPar,'x.Quality')
+	dataPar.x.Quality = 1;
+end
+
+if ~isfield(dataPar,'x.DELETETEMP')
+	dataPar.x.DELETETEMP = 1;
+end
+
+% Loads the configuration for file renaming from the BIDS configuration file
+bidsPar = xASL_bids_Config();
 
 %% ------------------------------------------------------------------------------------
 %% 1. Parse a folder using bids-matlab
-BIDS = bids.layout(Dir_RawData);
+BIDS = bids.layout(fullfile(pathStudy,'rawdata'));
 
-fprintf('%s\n', ['Converting ' Dir_RawData]);
-fprintf('%s', ' -> ../derivatives/ExploreASL:   ');
-
+fprintf('%s\n', ['Converting from BIDS to Legacy: ' pathStudy]);
 
 %% -----------------------------------------------
 %% 2. Define Subject
@@ -103,18 +105,19 @@ for iSubject=1:nSubjects % iterate over subjects
     for iVisit=1:nVisits % iterate visits in this Subject
         % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
         if nVisits==1
-            Dir_xASL_SubjectVisit = fullfile(Dir_xASL, SubjectID);
+            pathLegacy_SubjectVisit = fullfile(pathLegacy, SubjectID);
             VisitString = '';
         else
-            Dir_xASL_SubjectVisit = fullfile(Dir_xASL, [SubjectID '_' xASL_num2str(iVisit)]);
+            pathLegacy_SubjectVisit = fullfile(pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
             VisitString = [' visit ' BIDS.subjects(iSubject).session];
         end
         SubjectVisit = [SubjectID VisitString];
-        xASL_adm_CreateDir(Dir_xASL_SubjectVisit);
+        xASL_adm_CreateDir(pathLegacy_SubjectVisit);
 
         %% -----------------------------------------------
         %% 4. Parse modality
-        ModalitiesUnique = unique(modalities);
+		% Modalities - the BIDS domains of scantypes
+        ModalitiesUnique = unique(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
         nModalities = length(ModalitiesUnique);
         for iModality=1:nModalities % iterate modalities in this Subject/Visit
             ModalityIs = ModalitiesUnique{iModality};
@@ -139,8 +142,8 @@ for iSubject=1:nSubjects % iterate over subjects
                 
                 %% -----------------------------------------------
                 %% 5. Parse scantype
-                for iType=1:length(types) % iterate scantypes in this Subject/Visit/Modality
-                    TypeIs = types{iType};
+                for iType=1:length(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 1)) % iterate scantypes in this Subject/Visit/Modality
+                    TypeIs = bidsPar.BIDS2LegacyFolderConfiguration{iType+1,1};
                     TypeIndices = cellfun(@(y) strcmp(y, TypeIs), Reference(2:end, 2)); % this are the indices for this ScanType
 
                     if ~isempty(TypeIndices)
@@ -163,16 +166,20 @@ for iSubject=1:nSubjects % iterate over subjects
                                 % TypeRunIndex = index of current scantype & run inside the above created Reference Table
                                 
                                 % Define folder & filename
-                                ConfigIndex = cellfun(@(y) strcmp(TypeIs, y), types); % find scantype index
-                                ConfigIndex2 = cellfun(@(y) strcmp(ModalityIs, y), modalities); % find modality index
+                                ConfigIndex = cellfun(@(y) strcmp(TypeIs, y), bidsPar.BIDS2LegacyFolderConfiguration(2:end, 1)); % find scantype index
+                                ConfigIndex2 = cellfun(@(y) strcmp(ModalityIs, y), bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2)); % find modality index
                                 ConfigIndex = find(ConfigIndex & ConfigIndex2); % Combine them & convert to index
                                 
-                                FolderIs = foldernames{ConfigIndex};
-                                FileIs = filenames{ConfigIndex};
+								% xASL legacy subfolder name (empty means no subfolder)
+                                FolderIs = bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,3};
+								
+								% xASL legacy filename
+                                FileIs = bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,4};
                                 
                                 % Manage runs
                                 PrintRun = false;
-                                if RunIs==1 && run_1_index{ConfigIndex}==1
+								% if xASL legacy requires to specify the first run (e.g. T1.nii.gz vs ASL_1/ASL4D.nii.gz)
+                                if RunIs==1 && bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1, 6}==1
                                     % if we need to print first run
                                     PrintRun = true;
                                 elseif RunIs>1
@@ -180,53 +187,51 @@ for iSubject=1:nSubjects % iterate over subjects
                                 end
                                 
                                 if PrintRun==1
-                                    if strcmp(run_locations{ConfigIndex}, 'file')
+									% xASL legacy location of run specification (e.g. T1_2.nii.gz vs ASL_2/ASL4D.nii.gz for file vs folder location)
+                                    if strcmp(bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,5}, 'file')
                                         FileIs = [FileIs '_' xASL_num2str(RunIs)];
-                                    elseif strcmp(run_locations{ConfigIndex}, 'folder')
+                                    elseif strcmp(bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,5}, 'folder')
                                         FolderIs = [FolderIs '_' xASL_num2str(RunIs)];
                                     end
                                 end
                                 
-                                Path_Orig{1} = fullfile(BIDS.subjects(iSubject).path, ModalityIs, ModalityFields(TypeRunIndex).filename);
+                                pathOrig{1} = fullfile(BIDS.subjects(iSubject).path, ModalityIs, ModalityFields(TypeRunIndex).filename);
                                 [~, ~, Fext] = xASL_fileparts(ModalityFields(TypeRunIndex).filename);
-                                Path_Dest{1} = fullfile(Dir_xASL_SubjectVisit, FolderIs, [FileIs Fext]);
-                                
+                                pathDest{1} = fullfile(pathLegacy_SubjectVisit, FolderIs, [FileIs Fext]);
                                 
                                 %% -----------------------------------------------
                                 %% 7. Manage sidecars to copy
-                                
-                                % Assuming that each .nii has a .json
-                                % sidecar, do the same for .json (and for
-                                % other sidecars only if they exist per
-                                % SidecarRequired)
+								% Sidecars definitions are loaded by xASL_bids_Config at function start
+
+                                % Assuming that each .nii has a .json sidecar, do the same for .json (and for
+                                % other sidecars only if they exist per bidsPar.sidecarRequired)
                                 
                                 iCount = 1;
-                                for iCar=1:length(Sidecars)
-                                    [Fpath, Ffile] = xASL_fileparts(Path_Orig{1});
+                                for iCar=1:length(bidsPar.sidecarName)
+                                    [Fpath, Ffile] = xASL_fileparts(pathOrig{1});
                                     
-                                    if ~SidecarSuffixType(iCar)
+                                    if ~bidsPar.sidecarSuffixType(iCar)
                                         Ffile = Ffile(1:end-length(TypeIs)-1);
                                     end
-                                    TempSidecar = fullfile(Fpath, [Ffile Sidecars{iCar}]);
+                                    TempSidecar = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
                                     
-                                    if ~strcmp(SidecarTypeSpecific{iCar}, 'no') && ~strcmp(SidecarTypeSpecific{iCar}, TypeIs)
-                                        % skip this sidecar (e.g. some
-                                        % asl-specific sidecars for non-asl NIfTIs)
-                                    elseif ~exist(TempSidecar, 'file') && SidecarRequired(iCar)
+                                    if ~strcmp(bidsPar.sidecarTypeSpecific{iCar}, 'no') && ~strcmp(bidsPar.sidecarTypeSpecific{iCar}, TypeIs)
+                                        % skip this sidecar (e.g. some asl-specific sidecars for non-asl NIfTIs)
+                                    elseif ~exist(TempSidecar, 'file') && bidsPar.sidecarRequired(iCar)
                                             warning([TempSidecar ' missing']);
                                     elseif exist(TempSidecar, 'file')
-                                        Path_Orig{iCount+1} = TempSidecar;
+                                        pathOrig{iCount+1} = TempSidecar;
 
-                                        [Fpath, Ffile] = xASL_fileparts(Path_Dest{1});
-                                        Path_Dest{iCount+1} = fullfile(Fpath, [Ffile Sidecars{iCar}]);
+                                        [Fpath, Ffile] = xASL_fileparts(pathDest{1});
+                                        pathDest{iCount+1} = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
                                         iCount = iCount+1;
                                     end
                                 end
                                     
                                 %% -----------------------------------------------
                                 %% 8. Copy files
-                                for iFile=1:length(Path_Orig)
-                                    xASL_bids_BIDS2xASL_CopyFile(Path_Orig{iFile}, Path_Dest{iFile}, bOverwrite);
+                                for iFile=1:length(pathOrig)
+                                    xASL_bids_BIDS2xASL_CopyFile(pathOrig{iFile}, pathDest{iFile}, bOverwrite);
                                 end
 
                             end
@@ -241,43 +246,36 @@ end
 fprintf('\n');
 
 %% Parse M0
-ListASL4D = xASL_adm_GetFileList(Dir_xASL, '^ASL4D\.nii$', 'FPListRec');
+ListASL4D = xASL_adm_GetFileList(pathLegacy, '^ASL4D\.nii$', 'FPListRec');
 if ~isempty(ListASL4D)
     for iList=1:numel(ListASL4D)
         xASL_bids_parseM0(ListASL4D{iList});
     end
     fprintf('%s\n', ['M0 parsed for ' ListASL4D{iList}]);
 else
-    warning(['No ASL4D file found in ' Dir_xASL]);
+    warning(['No ASL4D file found in ' pathLegacy]);
 end
 
 %% Create DataPar.json
-PathDataPar = fullfile(Dir_xASL, 'DataPar.json');
-JSON.x.subject_regexp = '^sub-.*$';
-JSON.x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
-JSON.x.Quality = 0; % speed up testing
-JSON.x.DELETETEMP = 1;
-spm_jsonwrite(PathDataPar, JSON');
-
+spm_jsonwrite(fullfile(pathLegacy, 'DataPar.json'), dataPar);
 
 end
 
 
 %% ===========================================================================
-function xASL_bids_BIDS2xASL_CopyFile(Path_Orig, Path_Dest, bOverwrite)
+function xASL_bids_BIDS2xASL_CopyFile(pathOrig, pathDest, bOverwrite)
 %xASL_bids_BIDS2xASL_CopyFile
 
     % Create folder(s) if didnt exist
-    xASL_adm_CreateDir(fileparts(Path_Dest));
+    xASL_adm_CreateDir(fileparts(pathDest));
 
     % check for existance & overwriting
-    if ~xASL_exist(Path_Orig)
-        warning(['Couldnt find ' Path_Orig, ' skipping']);
-    elseif xASL_exist(Path_Dest) && ~bOverwrite
-        warning([Path_Dest ' already existed, skipping']);
+    if ~xASL_exist(pathOrig)
+        warning(['Couldnt find ' pathOrig, ' skipping']);
+    elseif xASL_exist(pathDest) && ~bOverwrite
+        warning([pathDest ' already existed, skipping']);
     else % if didnt already exist, or bOverwrite is true
-        xASL_Copy(Path_Orig, Path_Dest, 1);
+        xASL_Copy(pathOrig, pathDest, 1);
     end
-    
     
 end

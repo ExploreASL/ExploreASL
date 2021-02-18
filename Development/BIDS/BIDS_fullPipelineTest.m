@@ -33,32 +33,20 @@ xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 1 0 0 0 0 0]);
 % Check the BIDS conversion
 xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 1 0 0 0 0]);
 
-%% Legacy testing below - to be moved to the dedicated testing function
-% 2. BIDS2legacy
-% 3. ExploreASL
+% Convert BIDS to Legacy
+xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 1 0 0 0]);
 
+% Check the Legacy conversion
+%xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 1 0 0]);
 
+% Run the pipeline
+%xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 0 1 0]);
 
+% Check the pipeline results
+%xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 0 0 1]);
 
-ListFolders = xASL_adm_GetFileList(pathTest, '^rawdata$', 'FPListRec', [0 Inf], 1);
-
-for iList=1:numel(ListFolders)
-    
-    %% 2. BIDS2Legacy
-    DerivativesDir = fullfile(fileparts(ListFolders{iList}), 'derivatives');
-    if ~isunix
-        warning('Here we expect a unix-ish system');
-    end
-    if exist(DerivativesDir, 'dir')
-        diary('off');
-        fclose('all'); % ensure that no file is locked
-        system(['rm -rf ' DerivativesDir]);
-    end
-
-    xASL_bids_BIDS2Legacy(ListFolders{iList});
-    
-    %% 3. Run ExploreASL
-    PathDataPar = fullfile(DerivativesDir, 'ExploreASL', 'DataPar.json');
-    ExploreASL_Master(PathDataPar, 1, 1, [], [], [1 2]); % don't run population module
-    
-end
+% TODO
+% - check legacy conversion
+% - run the pipeline
+% - check the pipeline results
+% - convert the datapar.json if provided
