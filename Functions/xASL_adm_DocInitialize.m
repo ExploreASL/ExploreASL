@@ -1,10 +1,10 @@
-function xASL_adm_DocInitialize(outputFolder)
+function xASL_adm_DocInitialize(baseOutputFolder)
 %xASL_adm_DocInitialize Script to call the separate documentation crawler
 % functions.
 %
 % FORMAT:       xASL_adm_DocInitialize
 % 
-% INPUT:        outputFolder     - Folder where the generated markdown files are stored (OPTIONAL, DEFAULT = fullfile(x.MyPath,'Development','Documentation_GitHub'))
+% INPUT:        baseOutputFolder     - Folder where the generated markdown files are stored (OPTIONAL, DEFAULT = ExploreASL/Documentation repository)
 %
 % OUTPUT:       n/a
 % 
@@ -29,10 +29,26 @@ function xASL_adm_DocInitialize(outputFolder)
     fprintf('"FORMAT:", "INPUT:", "OUTPUT:", "DESCRIPTION:" and "EXAMPLE:"\n');
     fprintf('====================================================================================================\n');
     
-    % Define output folder
-    if nargin < 1
-        outputFolder = fullfile(x.MyPath,'Documentation','docs');
+    % Try to find the ExploreASL/Documentation repository on the same folder level
+    [scriptPath,~,~] = fileparts(mfilename('fullpath'));
+    potentialDocumentationDirectory = strrep(scriptPath,fullfile('ExploreASL','Functions'),'Documentation');
+    if ~isempty(xASL_adm_GetFileList(potentialDocumentationDirectory))
+        fprintf('Documentation repository found...\n');
+        baseOutputFolder = potentialDocumentationDirectory;
     end
+    
+    % Ask user for Documentation repository
+    if nargin < 1 && isempty(baseOutputFolder)
+        if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
+            baseOutputFolder = input('Insert Documentation directory: ');
+        else
+            baseOutputFolder = uigetdir('Select Documentation repository...');
+        end
+    end
+    
+    % Set up output folder
+    outputFolder = fullfile(baseOutputFolder,'docs');
+    templatesDir = fullfile(baseOutputFolder,'templates');
     
     % Copy and modify the index README
     copyfile(fullfile(x.MyPath,'README.md'),fullfile(outputFolder,'index.md'));
@@ -50,13 +66,13 @@ function xASL_adm_DocInitialize(outputFolder)
                   ['# ExploreASL v',x.Version],true);
               
     % Copy the REQUIREMENTS file
-    copyfile(fullfile(x.MyPath,'Documentation','templates','REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
+    copyfile(fullfile(templatesDir,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
     
     % Copy the ABOUT file
-    copyfile(fullfile(x.MyPath,'Documentation','templates','ABOUT.md'),fullfile(outputFolder,'About.md'));
+    copyfile(fullfile(templatesDir,'ABOUT.md'),fullfile(outputFolder,'About.md'));
     
     % Copy the TUTORIALS file
-    copyfile(fullfile(x.MyPath,'Documentation','templates','TUTORIALS.md'),fullfile(outputFolder,'Tutorials.md'));
+    copyfile(fullfile(templatesDir,'TUTORIALS.md'),fullfile(outputFolder,'Tutorials.md'));
     
     % Create the functions markdown file
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
@@ -81,7 +97,7 @@ function xASL_adm_DocInitialize(outputFolder)
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
     
     % Add DATAPAR.md text to ImportModule
-    addDATAPARtoImport(fullfile(x.MyPath,'Documentation','templates','DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
+    addDATAPARtoImport(fullfile(templatesDir,'DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
 
 end
 
