@@ -61,13 +61,18 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
     	fprintf('You are using Matlab %s, we recommend Matlab 2017 or newer...\n',string(versionYear));
     end
     
+    % Switch on to check where the script fails
+    debugMode = false;
+    
     %% Iterate over log files
     for iFile=1:numel(fileList)
         % Get current file path
         curFile = fileList{iFile,1};
         [~, printName] = fileparts(curFile);
         % Print log file
-        fprintf('Log file: %s\n',printName);
+        if debugMode
+            fprintf('Log file: %s\n',printName);
+        end
         % Fallback subject definition
         curSubject = 'unknown';
         % Current file array
@@ -143,11 +148,21 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
         logContentCell = table2cell(logContent);
         % Export TSV file
         xASL_tsvWrite(logContentCell, fullfile(rootDir,'logContent.tsv'), true);
+        fprintf('logContent.tsv exported...\n')
     elseif exportTable==2
         % Convert warnings & errors from cell to char array
         logContent = logContentCellToChar(logContent);
         % Export table
-        writetable(logContent,fullfile(rootDir,'logContent.xlsx'),'WriteVariableNames',true);
+        try
+            if xASL_exist(fullfile(rootDir,'logContent.xlsx'))
+                fprintf('Deleting previous logContent.xlsx file...\n');
+                delete(fullfile(rootDir,'logContent.xlsx'));
+            end
+            writetable(logContent,fullfile(rootDir,'logContent.xlsx'),'WriteVariableNames',true);
+            fprintf('logContent.xlsx exported...\n')
+        catch ME
+            fprintf('%s\n', ME.message);
+        end
     end
    
 end
