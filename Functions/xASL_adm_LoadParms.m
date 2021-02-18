@@ -60,17 +60,10 @@ Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' '
 
 % Names of files for data sets and older names for backwards compatibility
 namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff' 'LabelingEfficiency'...
-    'Hematocrit' 'BackGrSupprPulses' 'readout_dim' 'Vendor'...
-    'RepetitionTime' 'LabelingType' 'Initial_PLD' 'SliceReadoutTime'};
+    'Hematocrit' 'BackGrSupprPulses'};
 namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency'...
-    'Hematocrit' 'BackgroundSuppressionNumberPulses' 'MRAcquisitionType' 'Manufacturer'...
-    'RepetitionTimePreparation' 'ArterialSpinLabelingType' 'PostLabelingDelay' 'SliceTiming'};
+    'Hematocrit' 'BackgroundSuppressionNumberPulses'};
 
-% from PASL LabelingDuration (for PASL and if BolusCutOffFlag == true) from
-% BolusCutOffDelayTime
-
-% BackgroundSuppressionNumberPulses == 0 -> BackgroundSuppression == false
-%
 %% ------------------------------------------------------------------------
 %% 1) Load .mat parameter file (if exists)
 % if ~exist(ParmsPath, 'file') && isfield(x.Q,'ASL')
@@ -268,49 +261,6 @@ if ~exist('Parms','var')
     if bVerbose; warning('parms seem missing, something wrong with parmsfile?'); end
 end
 
-
-%% ------------------------------------------------------------------------
-%% 7) Parse SliceTiming
-
-if ~isfield(x.Q, 'SliceReadoutTime') && isfield(x, 'SliceTiming')
-    SliceReadoutTime = x.SliceTiming(2:end) - x.SliceTiming(1:end-1);
-    SliceReadoutTime = unique(SliceReadoutTime);
-    
-    % If they are nearly equal, simplify
-    TimeDiff = SliceReadoutTime(2:end) - SliceReadoutTime(1:end-1);
-    Tolerance = 0.05 * mean(SliceReadoutTime); % 5% tolerance
-    TimeDiff = TimeDiff<Tolerance;
-    
-    x.Q.SliceReadoutTime = SliceReadoutTime(1);
-    for iTime=1:numel(TimeDiff)
-        if TimeDiff(iTime)==0
-            x.Q.SliceReadoutTime(end+1) = SliceReadoutTime(iTime+1);
-        end
-    end
-    
-    if numel(x.Q.SliceReadoutTime)>1
-        warning('Multiple slice readout timings detected');
-    end
-    
-    x.Q.SliceReadoutTime = x.Q.SliceReadoutTime.*1000;
-end
-
-
-%% ------------------------------------------------------------------------
-%% 8) Interpret PASL 
-if strcmp(x.Q.LabelingType, 'PASL') && ~isfield(x.Q, 'LabelingDuration')
-    if isfield(x, 'BolusCutOffDelayTime')
-        x.Q.LabelingDuration = x.BolusCutOffDelayTime(1);
-    else
-        warning('Labeling Duration missing for this PASL sequence');
-    end
-end
-    
-
-
-
-
-
 end
 
 
@@ -352,6 +302,5 @@ for iPar=1:length(ParmsNames)
         end
     end
 end
-
 
 end

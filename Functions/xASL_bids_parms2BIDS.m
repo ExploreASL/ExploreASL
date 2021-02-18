@@ -45,8 +45,6 @@ if nargin < 4 || isempty(bPriorityBids)
 	bPriorityBids = 1;
 end
 
-
-
 %% ----------------------------------------------------------------------
 %% 1) Define field names that need to be convert/renamed/merged
 
@@ -66,9 +64,8 @@ updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'    
 
 % These fields have different names in xASL and in BIDS
 % They are therefore renamed depending on the type of output
-changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'         'LabelingType'              'RepetitionTime'            'NumberOfAverages'};
-changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation' 'TotalAcquiredVolumes'};
-
+changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'         'LabelingType'              'RepetitionTime'            'NumberOfAverages'     'SliceReadoutTime' 'Sequence'};
+changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation' 'TotalAcquiredVolumes' 'SliceTiming'      'PulseSequenceType'};
 
 %% ----------------------------------------------------------------------
 %% 2) Convert XASL fields to the output format (BIDS or XASL legacy)
@@ -110,8 +107,24 @@ if ~isempty(inXasl)
 			% Rename XASL fields to BIDS field according to the information in changeNamesXASL and changeNamesBIDS
 			for iL = find(strcmp(FieldsA{iA},changeNamesXASL))
 				inXasl.(changeNamesBIDS{iL}) = inXasl.(changeNamesXASL{iL});
-				inXasl = rmfield(inXasl,changeNamesXASL{iL});
+				
+				% Remove only if the name was different
+				if ~strcmp(changeNamesBIDS{iL},changeNamesXASL{iL})
+					inXasl = rmfield(inXasl,changeNamesXASL{iL});
+				end
 			end
+			
+			if isfield(inXasl,'LabelingType') && strcmpi(inXasl.LabelingType,'PASL') && isfield(inXasl,'LabelingDuration')
+				inXasl.BolusCutOffDelayTime(1) = inXasl.LabelingDuration;
+				inXasl = rmfield(inXasl,'LabelingDuration');
+				inXasl.BolusCutOffFlag = true;
+			end
+			
+			if isfield(inXasl,'BackgroundSuppression') && inXasl.BackgroundSuppression == false
+				inXasl.BackgroundSuppressionNumberPulses = 0;
+				inXasl = rmfield(inXasl,'BackgroundSuppression');
+			end
+			
 		end
 	end
 end
@@ -141,6 +154,20 @@ if ~isempty(inBids)
 	
 	% When the output is in XASL we need to convert from BIDS to XASL
 	if bOutBids ~= 1
+		% Preconvert certain names upfront - so that the values can be converted s-ms in the step below
+		if isfield(inBids,'ArterialSpinLabelingType') && strcmpi(inBids.ArterialSpinLabelingType,'PASL') && isfield(inBids,'BolusCutOffDelayTime')
+			inBids.LabelingDuration = inBids.BolusCutOffDelayTime(1);
+			inBids = rmfield(inBids,'BolusCutOffDelayTime');
+		end
+			
+		if isfield(inBids,'BackgroundSuppressionNumberPulses')
+			if inBids.BackgroundSuppressionNumberPulses == 0
+				inBids.BackgroundSuppression = false;
+			else
+				inBids.BackgroundSuppression = true;
+			end
+		end
+		
 		FieldsA = fields(inBids);
 		for iA = 1:length(FieldsA)
 			% Rename all listed fields to XASL variant
@@ -151,7 +178,7 @@ if ~isempty(inBids)
 				% Update the name of the field after the change
 				FieldNameChanged = changeNamesXASL{iL};
 			end
-			
+						
 			% Convert the units for all time fields from s to ms
 			for iT = find(strcmp(FieldNameChanged, convertTimeFieldsXASL))
 				% Convert only if the field is numeric
@@ -163,11 +190,11 @@ if ~isempty(inBids)
 					if max(inBids.(FieldNameChanged) ~= 0) % if any of the numeric values is not zero
 						if max(inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT)) || max(inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT))
 							if numel(inBids.(FieldNameChanged))==1
-                                PrintString = ['a value of ' xASL_num2str(inBids.(FieldNameChanged))];
-                            else
-                                PrintString = ['multiple values, from ' xASL_num2str(min(inBids.(FieldNameChanged))) ' to ' xASL_num2str(max(inBids.(FieldNameChanged)))];
-                            end
-                                
+								PrintString = ['a value of ' xASL_num2str(inBids.(FieldNameChanged))];
+							else
+								PrintString = ['multiple values, from ' xASL_num2str(min(inBids.(FieldNameChanged))) ' to ' xASL_num2str(max(inBids.(FieldNameChanged)))];
+							end
+							
                             warning(['Field ' FieldNameChanged ' in xASL structure has ' PrintString...
                                 ', which is outside of the recommended range <'...
                                 xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
