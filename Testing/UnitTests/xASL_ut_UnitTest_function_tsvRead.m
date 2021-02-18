@@ -1,5 +1,5 @@
 function UnitTest = xASL_ut_UnitTest_function_tsvRead(TestRepository)
-%xASL_ut_UnitTest_Template Individual unit test template
+%xASL_ut_UnitTest_function_tsvRead Individual unit test for xASL_tsvRead
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -10,20 +10,9 @@ function UnitTest = xASL_ut_UnitTest_function_tsvRead(TestRepository)
 %               test      - Structure with individual subtest results
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  To improve quality control, each developer can define unit
-%               tests using this template. Please save the individual unit
-%               test in the "Tests" directory.
-%               Only modify the UnitTest.name, UnitTest.unit and the
-%               individual UnitTest.tests(x).testname fields.
-%               Insert your test code/functions in the "Run your test here ..."
-%               areas.
-%               Naming conventions: please name your individual unit test
-%               according to the following scheme:
-%               xASL_qc_UnitTest_[name of the module/submodule/function]
-%               For example: the unit test of the xASL_module_ASL would be called:
-%               xASL_ut_UnitTest_module_ASL
+% DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_Template(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_tsvRead(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 

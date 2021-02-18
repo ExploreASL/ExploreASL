@@ -32,13 +32,26 @@ function UnitTests = xASL_ut_UnitTesting
     clear
 
     %% Get Test Repository
-    if usejava('desktop')
-        TestRepository = uigetdir([],'Select test repository...');
-    else
-        TestRepository = input('Insert test repository: ');
+    
+    % Try to find the ExploreASL/Testing repository on the same folder level
+    [scriptPath,~,~] = fileparts(mfilename('fullpath'));
+    potentialTestingDirectory = strrep(scriptPath,fullfile('ExploreASL','Testing'),'Testing');
+    if isfolder(potentialTestingDirectory)
+        fprintf('Testing repository found...\n');
+        TestRepository = potentialTestingDirectory;
+    else    
+        TestRepository = [];
     end
-    if ~ischar(TestRepository)
-        error('Test repository path required...');
+    
+    if isempty(TestRepository)
+        if usejava('desktop')
+            TestRepository = uigetdir([],'Select test repository...');
+        else
+            TestRepository = input('Insert test repository: ');
+        end
+        if ~ischar(TestRepository)
+            error('Test repository path required...');
+        end
     end
 
     %% Test Workflow
@@ -53,7 +66,7 @@ function UnitTests = xASL_ut_UnitTesting
     UnitTests(3) = xASL_ut_UnitTest_function_Nifti2Im(TestRepository);
 
     %% Print test results
-    clc
+    % clc
     fprintf('================================= TEST RESULTS =================================\n')
     for it = 1:numel(UnitTests)
         fprintf('TEST:\t\t%s\n',UnitTests(it).name)
