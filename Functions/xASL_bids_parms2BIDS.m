@@ -120,9 +120,9 @@ if ~isempty(inXasl)
 				inXasl.BolusCutOffFlag = true;
 			end
 			
-			if isfield(inXasl,'BackgroundSuppression') && inXasl.BackgroundSuppression == false
-				inXasl.BackgroundSuppressionNumberPulses = 0;
-				inXasl = rmfield(inXasl,'BackgroundSuppression');
+			if isfield(inXasl,'BackgroundSuppressionNumberPulses') && inXasl.BackgroundSuppressionNumberPulses == 0
+				inXasl.BackgroundSuppression = false;
+				inXasl = rmfield(inXasl,'BackgroundSuppressionNumberPulses');
 			end
 			
 		end
@@ -160,12 +160,9 @@ if ~isempty(inBids)
 			inBids = rmfield(inBids,'BolusCutOffDelayTime');
 		end
 			
-		if isfield(inBids,'BackgroundSuppressionNumberPulses')
-			if inBids.BackgroundSuppressionNumberPulses == 0
-				inBids.BackgroundSuppression = false;
-			else
-				inBids.BackgroundSuppression = true;
-			end
+		if isfield(inBids,'BackgroundSuppression') && (inBids.BackgroundSuppression == false)
+			inBids.BackgroundSuppressionNumberPulses = 0;
+			inBids = rmfield(inBids,'BackgroundSuppression');
 		end
 		
 		FieldsA = fields(inBids);
