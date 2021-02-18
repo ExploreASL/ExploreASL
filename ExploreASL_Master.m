@@ -74,7 +74,8 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
         nWorkers = 1; % by default we don't parallelize ExploreASL instances
     end
     if exist('iModules', 'var') && ~isempty(iModules)
-        iModules= xASL_str2num(iModules);
+        iModules = xASL_str2num(iModules);
+        iModules = ParseIModules(iModules);
     else
         iModules = [1 2 3]; % by default we run all default modules (1) Structural, 2) ASL, 3) Population)
     end
@@ -166,5 +167,31 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     fprintf('Note that ExploreASL is a collaborative effort.\n');
     fprintf('Therefore, please don''t hesitate to contribute by feedback, adding code snippets, or clinical experience!\n');
     
+
+end
+
+
+%% ================================================================================
+%% ================================================================================
+function [iModules] = ParseIModules(iModules)
+%ParseIModules % Check if iModules has multiple strings, which is
+% incorrectly concatenated by (xASL_)str2num
+
+    if max(iModules>3)
+        warning('Incorrect iModules input, trying to parse it');
+        % it has three modules
+        Module1 = floor(iModules/100);
+        iModules = iModules-(Module1*100);
+        Module2 = floor(iModules/10);
+        iModules = iModules-(Module2*10);
+        Module3 = iModules;
+
+        iModules = [Module1 Module2 Module3];
+
+        if max(iModules>3)
+            warning('Incorrect iModules input, resetting to default [1 2 3]');
+            iModules = [1 2 3]; % by default we run all default modules (1) Structural, 2) ASL, 3) Population)
+        end
+    end
 
 end
