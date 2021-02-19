@@ -67,7 +67,7 @@ UnitTest.tests(2).testname = 'Read test file (bStruct option)';
 testTime = tic;
 
 % Run your test here
-testFile = fullfile(TestRepository,'UnitTesting\io_files\TestFile.tsv');
+testFile = fullfile(TestRepository,'UnitTesting','io_files','TestFile.tsv');
 CellContents = xASL_tsvRead(testFile,true);
 
 % Define one or multiple test conditions here

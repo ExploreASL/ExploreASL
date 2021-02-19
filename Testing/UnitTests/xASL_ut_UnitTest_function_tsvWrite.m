@@ -33,8 +33,8 @@ UnitTest.tests(1).testname = 'Read and write test file (default options)';
 testTime = tic;
 
 % Run your test here
-testFile = fullfile(TestRepository,'UnitTesting\io_files\TestFile.tsv');
-testFileWrite = fullfile(TestRepository,'UnitTesting\working_directory\TestFile.tsv');
+testFile = fullfile(TestRepository,'UnitTesting','io_files','TestFile.tsv');
+testFileWrite = fullfile(TestRepository,'UnitTesting','working_directory','TestFile.tsv');
 InputCell = xASL_tsvRead(testFile);
 % Write test file
 xASL_tsvWrite(InputCell, testFileWrite, false, false);
@@ -78,8 +78,8 @@ UnitTest.tests(2).testname = 'Read and write test file (force overwrite)';
 testTime = tic;
 
 % Run your test here
-testFile = fullfile(TestRepository,'UnitTesting\io_files\TestFile.tsv');
-testFileWrite = fullfile(TestRepository,'UnitTesting\working_directory\TestFile.tsv');
+testFile = fullfile(TestRepository,'UnitTesting','io_files','TestFile.tsv');
+testFileWrite = fullfile(TestRepository,'UnitTesting','working_directory','TestFile.tsv');
 InputCell = xASL_tsvRead(testFile);
 % Write test file
 xASL_tsvWrite(InputCell, testFileWrite, false, false);
