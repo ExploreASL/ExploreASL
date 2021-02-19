@@ -33,7 +33,7 @@ UnitTest.tests(1).testname = 'Read test file (default options)';
 testTime = tic;
 
 % Run your test here
-testFile = fullfile(TestRepository,'UnitTesting\io_files\TestFile.tsv');
+testFile = fullfile(TestRepository,'UnitTesting','io_files','TestFile.tsv');
 CellContents = xASL_tsvRead(testFile);
 
 % Define one or multiple test conditions here

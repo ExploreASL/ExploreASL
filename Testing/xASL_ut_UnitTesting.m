@@ -1,9 +1,10 @@
-function UnitTests = xASL_ut_UnitTesting
+function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
 %xASL_qc_UnitTesting Main script to run all individual unit tests
 %
 % INPUT:        n/a
 %
-% OUTPUT:       UnitTests structure
+% OUTPUT:       UnitTests       - structure containing the unit test results
+%               UnitTestsTable  - table containing the unit test results
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This function is used to run all individual unit tests. To
@@ -13,7 +14,7 @@ function UnitTests = xASL_ut_UnitTesting
 % 				This means you, as a developer, should not use/add ExploreASL
 % 				functions within this script!
 %
-% EXAMPLE:      UnitTests = xASL_qc_UnitTesting;
+% EXAMPLE:      [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
@@ -77,8 +78,9 @@ function UnitTests = xASL_ut_UnitTesting
         end
     end
     fprintf('================================================================================\n')
-
-
+    
+    %% Export table as well
+    UnitTestsTable = struct2table(UnitTests);
 
 end
 
