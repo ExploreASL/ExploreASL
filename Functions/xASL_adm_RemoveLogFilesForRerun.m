@@ -22,23 +22,21 @@ function xASL_adm_RemoveLogFilesForRerun(rootDir)
 % Copyright @ 2015-2021 ExploreASL
 
     %% Input Check
-    if nargin < 1
+    if nargin < 1 || isempty(rootDir)
         error('Missing xASL directory...');
     end
     
     
     %% Get all log files within root directory
-    fileList = dir(fullfile(rootDir, '**\*.log'));  % Get list of log files and folders in any subfolder
-    fileList = fileList(~[fileList.isdir]);         % Remove folders from list
-    
+    fileList = xASL_adm_GetFileList(rootDir, '^.+\.log$', 'FPListRec');
     
     %% Iterate over log files
     for iFile=1:numel(fileList)
         % Get current file path
-        curFile = fullfile(fileList(iFile).folder,fileList(iFile).name);
+        curFile = fileList{iFile};
         % Delete file
-        fprintf('Delete: %s\n',fileList(iFile).name);
-        delete(curFile)
+        fprintf('Delete: %s\n',curFile);
+        xASL_delete(curFile)
     end
 
 end
