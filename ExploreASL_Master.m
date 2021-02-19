@@ -53,29 +53,29 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     % 3rd column contains parameter values
     
     % using exist(var) here as nargin doesnt work when debugging
+    DataParPath = char(DataParPath); % convert to char on default
     if exist('ProcessData', 'var') && ~isempty(ProcessData)
-        if ischar(ProcessData); ProcessData = str2num(ProcessData); end
+        ProcessData = xASL_str2num(ProcessData);
     else
         ProcessData = []; % by default we let the user choose
     end
     if exist('SkipPause', 'var') && ~isempty(SkipPause)
-        if ischar(SkipPause); SkipPause= str2num(SkipPause); end
+        SkipPause= xASL_str2num(SkipPause);
     else
         SkipPause = false; % by default we don't skip the pause question below
     end
     if exist('iWorker', 'var') && ~isempty(iWorker)
-        if ischar(iWorker); iWorker= str2num(iWorker); end
+        iWorker= xASL_str2num(iWorker);
     else
         iWorker = 1; % by default we don't parallelize ExploreASL instances
     end
     if exist('nWorkers', 'var') && ~isempty(nWorkers)
-        if ischar(nWorkers); nWorkers = str2num(nWorkers); end
+        nWorkers = xASL_str2num(nWorkers);
     else
         nWorkers = 1; % by default we don't parallelize ExploreASL instances
     end
     if exist('iModules', 'var') && ~isempty(iModules)
-        if ischar(iModules); iModules = str2num(iModules); end
-        iModules = ParseIModules(iModules);
+        iModules = xASL_str2num(iModules);
     else
         iModules = [1 2 3]; % by default we run all default modules (1) Structural, 2) ASL, 3) Population)
     end
@@ -171,27 +171,4 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
 end
 
 
-%% ================================================================================
-%% ================================================================================
-function [iModules] = ParseIModules(iModules)
-%ParseIModules % Check if iModules has multiple strings, which is
-% incorrectly concatenated by (xASL_)str2num
 
-    if max(iModules>3)
-        warning('Incorrect iModules input, trying to parse it');
-        % it has three modules
-        Module1 = floor(iModules/100);
-        iModules = iModules-(Module1*100);
-        Module2 = floor(iModules/10);
-        iModules = iModules-(Module2*10);
-        Module3 = iModules;
-
-        iModules = [Module1 Module2 Module3];
-
-        if max(iModules>3)
-            warning('Incorrect iModules input, resetting to default [1 2 3]');
-            iModules = [1 2 3]; % by default we run all default modules (1) Structural, 2) ASL, 3) Population)
-        end
-    end
-
-end
