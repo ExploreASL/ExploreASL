@@ -6,13 +6,10 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLates
 %
 % INPUT:
 %   outputPath      - Folder where the compiled version should be saved (REQUIRED)
-%   bCompileSPM     - Boolean specifying whether SPM is compiled first
-%                     (OPTIONAL, DEFAULT=true)
-%   importDCM       - Generate a separate standalone import for DICOM2BIDS.
-%                     (OPTIONAL, DEFAULT=true)
-%   markAsLatest    - Option to mark the generated compiled versions as
-%                     "latest" instead, to simplify the docker integration for example.
-%                     (OPTIONAL, DEFAULT=true)
+%   bCompileSPM     - Boolean specifying whether SPM is compiled first (OPTIONAL, DEFAULT = true)
+%   importDCM       - Generate a separate standalone import for DICOM2BIDS (OPTIONAL, DEFAULT = true)
+%   markAsLatest    - Option to mark the generated compiled versions as "latest" instead, to simplify 
+%                     the docker integration for example (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:       Generates a standalone/executable version of ExploreASL.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -96,12 +93,7 @@ diary on
 cfg_util('dumpcfg');
 
 % Duplicate Contents.m in Contents.txt for use in spm('Ver')
-sts = xASL_Copy(fullfile(spm('Dir'),'Contents.m'), fullfile(spm('Dir'),'Contents.txt'));
-               
-if ~sts
-    warning('Copy of Contents.m failed');
-end
-
+xASL_Copy(fullfile(spm('Dir'),'Contents.m'), fullfile(spm('Dir'),'Contents.txt'));
 
 %% 5) Manage compilation paths
 % It is important that there aren't any syntax errors in the scripts of the
