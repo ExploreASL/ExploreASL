@@ -1,12 +1,12 @@
-function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFullPath, exportTable)
+function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRelativePath, exportTable)
 %xASL_test_GetLogContent Get warnings and errors from log files
 %
-% FORMAT: [logContent] = xASL_test_GetLogContent(rootDir, [printContent], [storeFullPath], [exportTable])
+% FORMAT: [logContent] = xASL_test_GetLogContent(rootDir, [printContent], [storeRelativePath], [exportTable])
 %
 % INPUT:
 %        rootDir            - Case root directory (OPTIONAL, DEFAULT = user input)
 %        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false, BOOLEAN)
-%        storeFullPath      - Store full path in logContent table instead of module name (OPTIONAL, DEFAULT = false, BOOLEAN)
+%        storeRelativePath  - Store relative path in logContent table instead of module name (OPTIONAL, DEFAULT = true, BOOLEAN)
 %        exportTable        - Export a tsv or xlsx file containing the log content (OPTIONAL, DEFAULT = 1, BOOLEAN)
 %                             (0 = no export, 1 = TSV export, 2 = XLSX export)
 %
@@ -39,8 +39,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
         printContent = false;
     end
     
-    if (nargin < 3) || isempty(storeFullPath)
-        storeFullPath = false;
+    if (nargin < 3) || isempty(storeRelativePath)
+        storeRelativePath = true;
     end
     
     if (nargin < 4) || isempty(exportTable)
@@ -53,13 +53,6 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
     
     %% Get all log files within root directory
     fileList = xASL_adm_GetFileList(rootDir, '^.+\.log$', 'FPListRec');
-    
-    % Get Matlab version
-    versionYear = version('-release');
-    versionYear = str2num(versionYear(1:4));
-    if versionYear < 2017
-    	fprintf('You are using Matlab %s, we recommend Matlab 2017 or newer...\n',string(versionYear));
-    end
     
     % Switch on to check where the script fails
     debugMode = false;
@@ -79,26 +72,19 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
         currentFileArray = strsplit(curFile,filesep);
         % Get subject if there is one
         for level=1:numel(currentFileArray)
-            if versionYear<2017 % Backwards compatibility
-                if strfind(lower(currentFileArray{level}),'sub')
-                    curSubject = currentFileArray{level};
-                elseif strfind(lower(currentFileArray{level}),'population')
-                    curSubject = 'Population';
-                end
-            else
-                if contains(lower(currentFileArray{level}), 'sub')
-                    curSubject = currentFileArray{level};
-                elseif contains(lower(currentFileArray{level}), 'population')
-                    curSubject = 'Population';
-                end
+            if strfind(lower(currentFileArray{level}),'sub')
+                curSubject = currentFileArray{level};
+            elseif strfind(lower(currentFileArray{level}),'population')
+                curSubject = 'Population';
             end
         end
         
         % Extract warnings and errors from current log file
         warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master');
-        warningsInFile = getLastFileWarning(warningsInFile,'> in ',versionYear,'DocCallback',',');
+        warningsInFile = getLastFileWarning(warningsInFile,'in <');
         errorsInFile = extractWarnings(curFile,'ERROR: Job iteration terminated!','CONT: but continue with next iteration!');
-        errorsInFile = getLastFileError(errorsInFile,'error using ','error in ',versionYear,'DocCallback',',');
+        errorsInFile = getLastFileError(errorsInFile,'error using <','error in <');
+        relativeFileName = strrep(curFile,rootDir,'');
         
         % Add current warnings and errors
         if ~isempty(warningsInFile{1,1})
@@ -106,8 +92,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
                 currentWarning = warningsInFile(thisWarning,1);
                 lastWarningFile = warningsInFile(thisWarning,2);
                 correspondingLine = warningsInFile(thisWarning,3);
-                if storeFullPath
-                    logContent = [logContent;{curFile,curSubject,'Warning',lastWarningFile,correspondingLine,currentWarning}];
+                if storeRelativePath
+                    logContent = [logContent;{relativeFileName,curSubject,'Warning',lastWarningFile,correspondingLine,currentWarning}];
                 else
                     logContent = [logContent;{printName,curSubject,'Warning',lastWarningFile,correspondingLine,currentWarning}];
                 end
@@ -118,8 +104,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
                 currentError = errorsInFile(thisError,1);
                 lastErrorFile = errorsInFile(thisError,2);
                 correspondingLine = errorsInFile(thisError,3);
-                if storeFullPath
-                    logContent = [logContent;{curFile,curSubject,'Error',lastErrorFile,correspondingLine,currentError}];
+                if storeRelativePath
+                    logContent = [logContent;{relativeFileName,curSubject,'Error',lastErrorFile,correspondingLine,currentError}];
                 else
                     logContent = [logContent;{printName,curSubject,'Error',lastErrorFile,correspondingLine,currentError}];
                 end
@@ -141,17 +127,16 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
     end
     
     %% Optional: Export (0 = no export, 1 = TSV export, 2 = XLSX export)
+    
+    % Convert warnings & errors from cell to char array
+    logContent = logContentCellToChar(logContent);
     if exportTable==1
-        % Convert warnings & errors from cell to char array
-        logContent = logContentCellToChar(logContent);
         % Convert to cell array
         logContentCell = table2cell(logContent);
         % Export TSV file
         xASL_tsvWrite(logContentCell, fullfile(rootDir,'logContent.tsv'), true);
         fprintf('logContent.tsv exported...\n')
     elseif exportTable==2
-        % Convert warnings & errors from cell to char array
-        logContent = logContentCellToChar(logContent);
         % Export table
         try
             if xASL_exist(fullfile(rootDir,'logContent.xlsx'))
@@ -168,7 +153,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeFull
 end
 
 % Get last file of warning or error message (first file in content)
-function content = getLastFileWarning(content,identifier,versionYear,startMessage,endMessage)
+function content = getLastFileWarning(content,identifier)
 
     % Iterate over warnings/error messages
     for thisContent=1:numel(content)
@@ -177,46 +162,40 @@ function content = getLastFileWarning(content,identifier,versionYear,startMessag
         content{thisContent,2} = 'unkown';
         content{thisContent,3} = 'unkown';
         found = false;
-        % Find "first" file
+        % Find and restyle warnings
         for line=1:size(currentContent{1,1},1)
-            if versionYear<2017 % Backwards compatibility
-                if ~isempty(strfind(lower(currentContent{1,1}{line}),identifier)) && ~found
+            if ~isempty(strfind(lower(currentContent{1,1}{line}),identifier))
+                % Check if HTML style text is in current line
+                if ~isempty(strfind(currentContent{1,1}{line},'DocCallback('))
+                    % Get Message
                     contentMessage = currentContent{1,1}{line};
-                    startFile = strfind(contentMessage,startMessage)+13;
-                    contentMessage = contentMessage(startFile:end);
-                    endFile = strfind(contentMessage,endMessage);
-                    startLineMessage = strfind(contentMessage,'line ');
-                    lineInfo = contentMessage(startLineMessage:end-5);
-                    contentMessage = contentMessage(1:endFile(1)-2);
-                    content{thisContent,2} = contentMessage;
-                    content{thisContent,3} = lineInfo;
-                    found = true;
+                    % Edit style
+                    startMessage = strfind(contentMessage,'DocCallback(');
+                    contentMessageUpdate = contentMessage(startMessage+length('DocCallback(')+1:end);
+                    endMessage = strfind(contentMessageUpdate,',');
+                    contentMessageUpdate = contentMessageUpdate(1:endMessage(1)-2);
+                    % Line message
+                    startLine = strfind(contentMessage,'">line');
+                    lineMessageUpdate = contentMessage(startLine+length('">line')+1:end);
+                    endLine = strfind(lineMessageUpdate,'</a>');
+                    lineMessageUpdate = lineMessageUpdate(1:endLine-1);
+                    % Store back
+                    content{thisContent,1}{line} = [contentMessageUpdate,', line ',lineMessageUpdate];
+                    if ~found
+                        content{thisContent,2} = contentMessageUpdate;
+                        content{thisContent,3} = lineMessageUpdate;
+                        found = true;
+                    end
                 end
             else
-                if contains(lower(currentContent{1,1}{line}),identifier) && ~found
-                    contentMessage = currentContent{1,1}{line};
-                    startFile = strfind(contentMessage,startMessage)+13;
-                    contentMessage = contentMessage(startFile:end);
-                    endFile = strfind(contentMessage,endMessage);
-                    startLineMessage = strfind(contentMessage,'line ');
-                    lineInfo = contentMessage(startLineMessage:end-5);
-                    contentMessage = contentMessage(1:endFile(1)-2);
-                    content{thisContent,2} = contentMessage;
-                    content{thisContent,3} = lineInfo;
-                    found = true;
-                end
-                % Find problems
-                if line==size(currentContent{1,1},1) && ~found
-                    disp('test');
-                    
-                end
+                content{thisContent,1}{line} = ''; % Remove this warning text
             end
         end
     end
 end
 
 % Get last file of warning or error message (first file in content)
-function content = getLastFileError(content,identifierA,identifierB,versionYear,startMessage,endMessage)
+function content = getLastFileError(content,identifierA,identifierB)
 
     % Iterate over warnings/error messages
     for thisContent=1:numel(content)
@@ -225,38 +204,38 @@ function content = getLastFileError(content,identifierA,identifierB,versionYear,
         content{thisContent,2} = 'unkown';
         content{thisContent,3} = 'unkown';
         found = false;
-        % Find "first" file
+        % Find and restyle warnings
         for line=1:size(currentContent{1,1},1)
-            if versionYear<2017 % Backwards compatibility
-                if (~isempty(strfind(lower(currentContent{1,1}{line}),identifierA)) || ~isempty(strfind(lower(currentContent{1,1}{line}),identifierB))) && ~found
+            if ~isempty(strfind(lower(currentContent{1,1}{line}),identifierA)) || ~isempty(strfind(lower(currentContent{1,1}{line}),identifierB))
+                % Check if HTML style text is in current line
+                if ~isempty(strfind(currentContent{1,1}{line},'DocCallback('))
+                    % Get Message
                     contentMessage = currentContent{1,1}{line};
-                    startFile = strfind(contentMessage,startMessage)+13;
-                    contentMessage = contentMessage(startFile:end);
-                    endFile = strfind(contentMessage,endMessage);
-                    startLineMessage = strfind(contentMessage,'line ');
-                    lineInfo = contentMessage(startLineMessage:end-5);
-                    contentMessage = contentMessage(1:endFile(1)-2);
-                    content{thisContent,2} = contentMessage;
-                    content{thisContent,3} = lineInfo;
-                    found = true;
+                    % Edit style
+                    startMessage = strfind(contentMessage,'DocCallback(');
+                    contentMessageUpdate = contentMessage(startMessage+length('DocCallback(')+1:end);
+                    endMessage = strfind(contentMessageUpdate,',');
+                    contentMessageUpdate = contentMessageUpdate(1:endMessage(1)-2);
+                    % Line message
+                    startLine = strfind(contentMessage,'">line');
+                    lineMessageUpdate = contentMessage(startLine+length('">line')+1:end);
+                    endLine = strfind(lineMessageUpdate,'</a>');
+                    lineMessageUpdate = lineMessageUpdate(1:endLine-1);
+                    % Store back
+                    content{thisContent,1}{line} = [contentMessageUpdate,', line ',lineMessageUpdate];
+                    if ~found
+                        content{thisContent,2} = contentMessageUpdate;
+                        content{thisContent,3} = lineMessageUpdate;
+                        found = true;
+                    end
                 end
             else
-                if (contains(lower(currentContent{1,1}{line}),identifierA) || contains(lower(currentContent{1,1}{line}),identifierB)) && ~found
-                    contentMessage = currentContent{1,1}{line};
-                    startFile = strfind(contentMessage,startMessage)+13;
-                    contentMessage = contentMessage(startFile:end);
-                    endFile = strfind(contentMessage,endMessage);
-                    startLineMessage = strfind(contentMessage,'line ');
-                    lineInfo = contentMessage(startLineMessage:end-5);
-                    contentMessage = contentMessage(1:endFile(1)-2);
-                    content{thisContent,2} = contentMessage;
-                    content{thisContent,3} = lineInfo;
-                    found = true;
-                end
+                content{thisContent,1}{line} = ''; % Remove this warning text
             end
         end
     end
 end
+
 
 
 % Convert warnings & errors from cell to char array
@@ -265,8 +244,10 @@ function logContent = logContentCellToChar(logContent)
     for row=1:size(logContent,1)
         thisContentField = '';
         for thisLine=1:size(logContent.Content{row,1},1)
-            thisContentField = strcat(thisContentField,char(logContent.Content{row,1}(thisLine)));
-            thisContentField = strcat(thisContentField,' - ');
+            if ~isempty(logContent.Content{row,1}{thisLine})
+                thisContentField = [thisContentField,logContent.Content{row,1}{thisLine}];
+                thisContentField = [char(thisContentField),', '];
+            end
         end
         logContent.Content{row,1} = thisContentField;
     end
