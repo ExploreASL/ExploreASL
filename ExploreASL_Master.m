@@ -55,28 +55,28 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     % using exist(var) here as nargin doesnt work when debugging
     DataParPath = char(DataParPath); % convert to char on default
     if exist('ProcessData', 'var') && ~isempty(ProcessData)
-        if ispc && ischar(ProcessData)
+        if ischar(ProcessData)
             ProcessData = str2num(ProcessData);
         end
     else
         ProcessData = []; % by default we let the user choose
     end
     if exist('SkipPause', 'var') && ~isempty(SkipPause)
-        if ispc && ischar(SkipPause)
+        if ischar(SkipPause)
             SkipPause= str2num(SkipPause);
         end
     else
         SkipPause = false; % by default we don't skip the pause question below
     end
     if exist('iWorker', 'var') && ~isempty(iWorker)
-        if ispc && ischar(iWorker)
+        if ischar(iWorker)
             iWorker= str2num(iWorker);
         end
     else
         iWorker = 1; % by default we don't parallelize ExploreASL instances
     end
     if exist('nWorkers', 'var') && ~isempty(nWorkers)
-        if ispc && ischar(nWorkers)
+        if ischar(nWorkers)
             nWorkers = str2num(nWorkers);
         end
     else
