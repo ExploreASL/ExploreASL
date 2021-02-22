@@ -1,16 +1,16 @@
 function xASL_adm_RemoveLogFilesForRerun(rootDir)
-%xASL_adm_RemoveLogFilesForRerun Removes all log files from xASL directory
+%xASL_adm_RemoveLogFilesForRerun Removes all log files from a directory containing .log files.
 %
 % FORMAT: xASL_adm_RemoveLogFilesForRerun(rootDir);
 %
 % INPUT:
-%        rootDir            - Case root directory
+%        rootDir            - Case root directory (REQUIRED)
 %
 % OUTPUT:
 %        n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      Removes all log files from xASL directory.
+% DESCRIPTION:      Removes all log files from any directory containing .log files.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
@@ -23,7 +23,7 @@ function xASL_adm_RemoveLogFilesForRerun(rootDir)
 
     %% Input Check
     if nargin < 1 || isempty(rootDir)
-        error('Missing xASL directory...');
+        error('Missing directory...');
     end
     
     

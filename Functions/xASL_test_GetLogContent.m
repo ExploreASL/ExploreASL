@@ -4,7 +4,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 % FORMAT: [logContent] = xASL_test_GetLogContent(rootDir, [printContent], [storeRelativePath], [exportTable])
 %
 % INPUT:
-%        rootDir            - Case root directory (OPTIONAL, DEFAULT = user input)
+%        rootDir            - Case root directory (REQUIRED, DEFAULT = user input)
 %        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false, BOOLEAN)
 %        storeRelativePath  - Store relative path in logContent table instead of module name (OPTIONAL, DEFAULT = true, BOOLEAN)
 %        exportTable        - Export a tsv or xlsx file containing the log content (OPTIONAL, DEFAULT = 1, BOOLEAN)
@@ -18,7 +18,11 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% EXAMPLE:          % Run the GetLogContent script, do not print the messages, store the full path and export an XLSX
+% EXAMPLE:          To extract all warnings and errors from all log files
+%                   in a directory, you can run this script with the following command.
+%                   These settings will not print the warning or error messages, a relative
+%                   path will be stored for each file and both TSV and XLSX report files will be generated.
+%                   Check out the logContent table if you want to see the results from within Matlab.
 %                   rootDir = '.\Test_Runs\TestDataSet';
 %                   [logContent] = xASL_test_GetLogContent(rootDir,0,1,3);
 %
@@ -48,11 +52,19 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
     end
     
     % Initialize table
-    logContent = array2table(zeros(0,6));
-    logContent.Properties.VariableNames = {'Module','Subject','Type','File','Line','Content'};
+    logContent = array2table(zeros(0,7));
+    logContent.Properties.VariableNames = {'Module','Subject','Type','Message','File','Line','Content'};
     
     %% Get all log files within root directory
+    
+    % All log files
     fileList = xASL_adm_GetFileList(rootDir, '^.+\.log$', 'FPListRec');
+    
+    % Import logs
+    fileListImportLogs = xASL_adm_GetFileList(rootDir, '^import_log_.+\.txt$', 'FPListRec');
+    
+    % Concat lists
+    fileList = vertcat(fileList, fileListImportLogs);
     
     % Switch on to check where the script fails
     debugMode = false;
@@ -81,9 +93,9 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
         
         % Extract warnings and errors from current log file
         warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master');
-        warningsInFile = getLastFileWarning(warningsInFile,'in <');
+        [warningsInFile,mainWarnings] = getLastFileWarning(warningsInFile,'in <');
         errorsInFile = extractWarnings(curFile,'ERROR: Job iteration terminated!','CONT: but continue with next iteration!');
-        errorsInFile = getLastFileError(errorsInFile,'error using <','error in <');
+        [errorsInFile,mainErrors] = getLastFileError(errorsInFile,'error using <','error in <');
         relativeFileName = strrep(curFile,rootDir,'');
         
         % Add current warnings and errors
@@ -93,9 +105,9 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
                 lastWarningFile = warningsInFile(thisWarning,2);
                 correspondingLine = warningsInFile(thisWarning,3);
                 if storeRelativePath
-                    logContent = [logContent;{relativeFileName,curSubject,'Warning',lastWarningFile,correspondingLine,currentWarning}];
+                    logContent = [logContent;{relativeFileName,curSubject,'Warning',mainWarnings,lastWarningFile,correspondingLine,currentWarning}];
                 else
-                    logContent = [logContent;{printName,curSubject,'Warning',lastWarningFile,correspondingLine,currentWarning}];
+                    logContent = [logContent;{printName,curSubject,'Warning',mainWarnings,lastWarningFile,correspondingLine,currentWarning}];
                 end
             end
         end
@@ -105,9 +117,9 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
                 lastErrorFile = errorsInFile(thisError,2);
                 correspondingLine = errorsInFile(thisError,3);
                 if storeRelativePath
-                    logContent = [logContent;{relativeFileName,curSubject,'Error',lastErrorFile,correspondingLine,currentError}];
+                    logContent = [logContent;{relativeFileName,curSubject,'Error',mainErrors,lastErrorFile,correspondingLine,currentError}];
                 else
-                    logContent = [logContent;{printName,curSubject,'Error',lastErrorFile,correspondingLine,currentError}];
+                    logContent = [logContent;{printName,curSubject,'Error',mainErrors,lastErrorFile,correspondingLine,currentError}];
                 end
             end
         end
@@ -157,7 +169,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 end
 
 % Get last file of warning or error message (first file in content)
-function content = getLastFileWarning(content,identifier)
+function [content,returnMessages] = getLastFileWarning(content,identifier)
 
     % Iterate over warnings/error messages
     for thisContent=1:numel(content)
@@ -165,6 +177,7 @@ function content = getLastFileWarning(content,identifier)
         currentContent = content(thisContent,1);
         content{thisContent,2} = 'unkown';
         content{thisContent,3} = 'unkown';
+        returnMessages{thisContent,1} = 'unknown';
         found = false;
         % Find and restyle warnings
         for line=1:size(currentContent{1,1},1)
@@ -192,14 +205,25 @@ function content = getLastFileWarning(content,identifier)
                     end
                 end
             else
-                content{thisContent,1}{line} = ''; % Remove this warning text
+                if line==1
+                    mainMessage = currentContent{1,1}{line};
+                    startMainMessage = strfind(mainMessage,'Warning: ');
+                    mainMessage = mainMessage(startMainMessage+length('Warning: '):end);
+                    mainMessage = strrep(mainMessage,'[','');
+                    mainMessage = strrep(mainMessage,']','');
+                    mainMessage = strtrim(mainMessage); % This does not seem to work, yet
+                    returnMessages{thisContent,1} = mainMessage;
+                    content{thisContent,1}{line} = ''; % Remove this warning text
+                else
+                    content{thisContent,1}{line} = ''; % Remove this warning text
+                end
             end
         end
     end
 end
 
 % Get last file of warning or error message (first file in content)
-function content = getLastFileError(content,identifierA,identifierB)
+function [content,returnMessages] = getLastFileError(content,identifierA,identifierB)
 
     % Iterate over warnings/error messages
     for thisContent=1:numel(content)
@@ -207,6 +231,7 @@ function content = getLastFileError(content,identifierA,identifierB)
         currentContent = content(thisContent,1);
         content{thisContent,2} = 'unkown';
         content{thisContent,3} = 'unkown';
+        returnMessages{thisContent,1} = 'unknown';
         found = false;
         % Find and restyle warnings
         for line=1:size(currentContent{1,1},1)
@@ -234,7 +259,16 @@ function content = getLastFileError(content,identifierA,identifierB)
                     end
                 end
             else
-                content{thisContent,1}{line} = ''; % Remove this warning text
+                if line==1
+                    mainMessage = currentContent{1,1}{line};
+                    startMainMessage = strfind(mainMessage,'ERROR: ');
+                    mainMessage = mainMessage(startMainMessage+length('ERROR: '):end);
+                    mainMessage = strtrim(mainMessage); % This does not seem to work, yet
+                    returnMessages{thisContent,1} = mainMessage;
+                    content{thisContent,1}{line} = ''; % Remove this warning text
+                else
+                    content{thisContent,1}{line} = ''; % Remove this warning text
+                end
             end
         end
     end
