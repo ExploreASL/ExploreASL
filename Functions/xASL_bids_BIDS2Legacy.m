@@ -28,6 +28,8 @@ function xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
 % 6. Compile paths for copying
 % 7. Manage sidecars to copy
 % 8. Copy files
+% 9. Parse M0
+% 10. Create DataPar.json
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_BIDS2xASL('pathMyStudy')
@@ -245,7 +247,7 @@ end
 
 fprintf('\n');
 
-%% Parse M0
+%% 9. Parse M0
 ListASL4D = xASL_adm_GetFileList(pathLegacy, '^ASL4D\.nii$', 'FPListRec');
 if ~isempty(ListASL4D)
     for iList=1:numel(ListASL4D)
@@ -256,7 +258,7 @@ else
     warning(['No ASL4D file found in ' pathLegacy]);
 end
 
-%% Create DataPar.json
+%% 10. Create DataPar.json
 spm_jsonwrite(fullfile(pathLegacy, 'DataPar.json'), dataPar);
 
 end
