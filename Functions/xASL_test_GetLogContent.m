@@ -93,9 +93,9 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
         
         % Extract warnings and errors from current log file
         warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master');
-        [warningsInFile,mainWarnings] = getLastFileWarning(warningsInFile,'in <');
+        warningsInFile = getLastFileWarning(warningsInFile,'in <');
         errorsInFile = extractWarnings(curFile,'ERROR: Job iteration terminated!','CONT: but continue with next iteration!');
-        [errorsInFile,mainErrors] = getLastFileError(errorsInFile,'error using <','error in <');
+        errorsInFile = getLastFileError(errorsInFile,'error using <','error in <');
         relativeFileName = strrep(curFile,rootDir,'');
         
         % Add current warnings and errors
@@ -104,6 +104,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
                 currentWarning = warningsInFile(thisWarning,1);
                 lastWarningFile = warningsInFile(thisWarning,2);
                 correspondingLine = warningsInFile(thisWarning,3);
+                mainWarnings = warningsInFile(thisWarning,4);
                 if storeRelativePath
                     logContent = [logContent;{relativeFileName,curSubject,'Warning',mainWarnings,lastWarningFile,correspondingLine,currentWarning}];
                 else
@@ -116,6 +117,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
                 currentError = errorsInFile(thisError,1);
                 lastErrorFile = errorsInFile(thisError,2);
                 correspondingLine = errorsInFile(thisError,3);
+                mainErrors = warningsInFile(thisWarning,4);
                 if storeRelativePath
                     logContent = [logContent;{relativeFileName,curSubject,'Error',mainErrors,lastErrorFile,correspondingLine,currentError}];
                 else
@@ -142,19 +144,60 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
     
     % Convert warnings & errors from cell to char array
     logContent = logContentCellToChar(logContent);
-    if (exportTable==1 || exportTable==3) && ~isempty(logContent)
+    if exportTable==1 && ~isempty(logContent)
         % Convert to cell array
         logContentCell = table2cell(logContent);
         % Export TSV file
-        xASL_tsvWrite(logContentCell, fullfile(rootDir,'logContent.tsv'), true);
-        fprintf('logContent.tsv exported...\n')
+        try
+            if xASL_exist(fullfile(rootDir,'logContent.tsv'))
+                fprintf('Deleting previous logContent.tsv file...\n');
+                xASL_delete(fullfile(rootDir,'logContent.tsv'));
+            end
+            xASL_tsvWrite(logContentCell, fullfile(rootDir,'logContent.tsv'), true);
+            fprintf('logContent.tsv exported...\n')
+        catch ME
+            fprintf('%s\n', ME.message);
+        end
+        if xASL_exist(fullfile(rootDir,'logContent.xlsx'))
+            xASL_delete(fullfile(rootDir,'logContent.xlsx'));
+            fprintf('logContent.xlsx deleted...\n')
+        end
     end
-    if (exportTable==2 || exportTable==3) && ~isempty(logContent)
+    if exportTable==2 && ~isempty(logContent)
         % Export table
         try
             if xASL_exist(fullfile(rootDir,'logContent.xlsx'))
                 fprintf('Deleting previous logContent.xlsx file...\n');
-                delete(fullfile(rootDir,'logContent.xlsx'));
+                xASL_delete(fullfile(rootDir,'logContent.xlsx'));
+            end
+            writetable(logContent,fullfile(rootDir,'logContent.xlsx'),'WriteVariableNames',true);
+            fprintf('logContent.xlsx exported...\n')
+            if xASL_exist(fullfile(rootDir,'logContent.tsv'))
+                xASL_delete(fullfile(rootDir,'logContent.tsv'));
+                fprintf('logContent.tsv deleted...\n')
+            end
+        catch ME
+            fprintf('%s\n', ME.message);
+        end
+    end
+    if exportTable==3 && ~isempty(logContent)
+        % Convert to cell array
+        logContentCell = table2cell(logContent);
+        % Export tsv and table
+        try
+            if xASL_exist(fullfile(rootDir,'logContent.tsv'))
+                fprintf('Deleting previous logContent.tsv file...\n');
+                xASL_delete(fullfile(rootDir,'logContent.tsv'));
+            end
+            xASL_tsvWrite(logContentCell, fullfile(rootDir,'logContent.tsv'), true);
+            fprintf('logContent.tsv exported...\n')
+        catch ME
+            fprintf('%s\n', ME.message);
+        end
+        try
+            if xASL_exist(fullfile(rootDir,'logContent.xlsx'))
+                fprintf('Deleting previous logContent.xlsx file...\n');
+                xASL_delete(fullfile(rootDir,'logContent.xlsx'));
             end
             writetable(logContent,fullfile(rootDir,'logContent.xlsx'),'WriteVariableNames',true);
             fprintf('logContent.xlsx exported...\n')
@@ -169,7 +212,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 end
 
 % Get last file of warning or error message (first file in content)
-function [content,returnMessages] = getLastFileWarning(content,identifier)
+function content = getLastFileWarning(content,identifier)
 
     % Iterate over warnings/error messages
     for thisContent=1:numel(content)
@@ -177,7 +220,7 @@ function [content,returnMessages] = getLastFileWarning(content,identifier)
         currentContent = content(thisContent,1);
         content{thisContent,2} = 'unkown';
         content{thisContent,3} = 'unkown';
-        returnMessages{thisContent,1} = 'unknown';
+        content{thisContent,4} = 'unknown';
         found = false;
         % Find and restyle warnings
         for line=1:size(currentContent{1,1},1)
@@ -212,7 +255,7 @@ function [content,returnMessages] = getLastFileWarning(content,identifier)
                     mainMessage = strrep(mainMessage,'[','');
                     mainMessage = strrep(mainMessage,']','');
                     mainMessage = strtrim(mainMessage); % This does not seem to work, yet
-                    returnMessages{thisContent,1} = mainMessage;
+                    content{thisContent,4} = mainMessage;
                     content{thisContent,1}{line} = ''; % Remove this warning text
                 else
                     content{thisContent,1}{line} = ''; % Remove this warning text
@@ -223,7 +266,7 @@ function [content,returnMessages] = getLastFileWarning(content,identifier)
 end
 
 % Get last file of warning or error message (first file in content)
-function [content,returnMessages] = getLastFileError(content,identifierA,identifierB)
+function content = getLastFileError(content,identifierA,identifierB)
 
     % Iterate over warnings/error messages
     for thisContent=1:numel(content)
