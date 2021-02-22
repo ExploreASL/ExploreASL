@@ -55,27 +55,37 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     % using exist(var) here as nargin doesnt work when debugging
     DataParPath = char(DataParPath); % convert to char on default
     if exist('ProcessData', 'var') && ~isempty(ProcessData)
-        ProcessData = xASL_str2num(ProcessData);
+        if ispc && isstring(ProcessData)
+            ProcessData = str2num(ProcessData);
+        end
     else
         ProcessData = []; % by default we let the user choose
     end
     if exist('SkipPause', 'var') && ~isempty(SkipPause)
-        SkipPause= xASL_str2num(SkipPause);
+        if ispc && isstring(SkipPause)
+            SkipPause= str2num(SkipPause);
+        end
     else
         SkipPause = false; % by default we don't skip the pause question below
     end
     if exist('iWorker', 'var') && ~isempty(iWorker)
-        iWorker= xASL_str2num(iWorker);
+        if ispc && isstring(iWorker)
+            iWorker= str2num(iWorker);
+        end
     else
         iWorker = 1; % by default we don't parallelize ExploreASL instances
     end
     if exist('nWorkers', 'var') && ~isempty(nWorkers)
-        nWorkers = xASL_str2num(nWorkers);
+        if ispc && isstring(nWorkers)
+            nWorkers = str2num(nWorkers);
+        end
     else
         nWorkers = 1; % by default we don't parallelize ExploreASL instances
     end
     if exist('iModules', 'var') && ~isempty(iModules)
-        iModules = xASL_str2num(iModules);
+        if ispc && isstring(iModules)
+            iModules = str2num(iModules);
+        end
     else
         iModules = [1 2 3]; % by default we run all default modules (1) Structural, 2) ASL, 3) Population)
     end
