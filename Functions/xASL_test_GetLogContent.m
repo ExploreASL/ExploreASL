@@ -142,7 +142,17 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
     end
     
     %% Optional: Export (0 = no export, 1 = TSV export, 2 = XLSX export)
+    exportLogContent(rootDir,logContent,exportTable);
     
+    if isempty(logContent)
+        fprintf('No warnings or errors found...\n');
+    end
+   
+end
+
+%% Export files
+function exportLogContent(rootDir,logContent,exportTable)
+
     % Convert warnings & errors from cell to char array
     logContent = logContentCellToChar(logContent);
     if exportTable==1 && ~isempty(logContent)
@@ -206,11 +216,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
             fprintf('%s\n', ME.message);
         end
     end
-    if isempty(logContent)
-        fprintf('No warnings or errors found...\n');
-    end
-   
 end
+
 
 %% Get last file of warning or error message (first file in content)
 function content = getLastFileWarning(content,identifier)
