@@ -91,14 +91,14 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
             end
         end
         
-        % Extract warnings and errors from current log file
+        %% Extract warnings and errors from current log file
         warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master','In <a');
         warningsInFile = getLastFileWarning(warningsInFile,'in <');
         errorsInFile = extractWarnings(curFile,'ERROR: Job iteration terminated!','CONT: but continue with next iteration!');
         errorsInFile = getLastFileError(errorsInFile,'error using <','error in <');
         relativeFileName = strrep(curFile,rootDir,'');
         
-        % Add current warnings and errors
+        %% Add current warnings
         if ~isempty(warningsInFile{1,1})
             for thisWarning=1:size(warningsInFile,1)
                 currentWarning = warningsInFile(thisWarning,1);
@@ -112,6 +112,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
                 end
             end
         end
+
+        %% Add current errors
         if ~isempty(errorsInFile{1,1})
             for thisError=1:size(errorsInFile,1)
                 currentError = errorsInFile(thisError,1);
@@ -210,7 +212,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
    
 end
 
-% Get last file of warning or error message (first file in content)
+%% Get last file of warning or error message (first file in content)
 function content = getLastFileWarning(content,identifier)
 
     % Iterate over warnings/error messages
@@ -267,7 +269,7 @@ function content = getLastFileWarning(content,identifier)
     end
 end
 
-% Get last file of warning or error message (first file in content)
+%% Get last file of warning or error message (first file in content)
 function content = getLastFileError(content,identifierA,identifierB)
 
     % Iterate over warnings/error messages
@@ -332,7 +334,7 @@ end
 
 
 
-% Convert warnings & errors from cell to char array
+%% Convert warnings & errors from cell to char array
 function logContent = logContentCellToChar(logContent)
     % Iterate over rows
     for row=1:size(logContent,1)
@@ -352,7 +354,7 @@ function logContent = logContentCellToChar(logContent)
     end
 end
 
-% Extract warnigns or errors (the alternativeStartIdentifier was necessary for warnings starting without 'Warning:')
+%% Extract warnigns or errors (the alternativeStartIdentifier was necessary for warnings starting without 'Warning:')
 function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,alternativeStartIdentifier)
 
     % Check input arguments
@@ -458,7 +460,7 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
     end
 end
 
-% Read text file into cell array
+%% Read text file into cell array
 function fileLines = readFileIntoCellArray(filePath)
 
     % Read file
