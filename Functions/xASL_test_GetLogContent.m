@@ -8,7 +8,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 %        printContent       - Print warnings and errors (OPTIONAL, DEFAULT = false, BOOLEAN)
 %        storeRelativePath  - Store relative path in logContent table instead of module name (OPTIONAL, DEFAULT = true, BOOLEAN)
 %        exportTable        - Export a tsv or xlsx file containing the log content (OPTIONAL, DEFAULT = 1, BOOLEAN)
-%                             (0 = no export, 1 = TSV export, 2 = XLSX export)
+%                             (0 = no export, 1 = TSV export, 2 = XLSX export, 3 = both TSV & XLSX export)
 %
 % OUTPUT:
 %        logContent         - table containing warnings and errors
@@ -20,7 +20,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 %
 % EXAMPLE:          % Run the GetLogContent script, do not print the messages, store the full path and export an XLSX
 %                   rootDir = '.\Test_Runs\TestDataSet';
-%                   [logContent] = xASL_test_GetLogContent(rootDir,0,1,2);
+%                   [logContent] = xASL_test_GetLogContent(rootDir,0,1,3);
 %
 % REFERENCES:       ...
 % __________________________________
@@ -130,13 +130,14 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
     
     % Convert warnings & errors from cell to char array
     logContent = logContentCellToChar(logContent);
-    if exportTable==1
+    if (exportTable==1 || exportTable==3) && ~isempty(logContent)
         % Convert to cell array
         logContentCell = table2cell(logContent);
         % Export TSV file
         xASL_tsvWrite(logContentCell, fullfile(rootDir,'logContent.tsv'), true);
         fprintf('logContent.tsv exported...\n')
-    elseif exportTable==2
+    end
+    if (exportTable==2 || exportTable==3) && ~isempty(logContent)
         % Export table
         try
             if xASL_exist(fullfile(rootDir,'logContent.xlsx'))
@@ -148,6 +149,9 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
         catch ME
             fprintf('%s\n', ME.message);
         end
+    end
+    if isempty(logContent)
+        fprintf('No warnings or errors found...\n');
     end
    
 end
