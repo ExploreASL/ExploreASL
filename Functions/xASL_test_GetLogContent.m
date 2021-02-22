@@ -92,7 +92,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
         end
         
         % Extract warnings and errors from current log file
-        warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master');
+        warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master','In <a');
         warningsInFile = getLastFileWarning(warningsInFile,'in <');
         errorsInFile = extractWarnings(curFile,'ERROR: Job iteration terminated!','CONT: but continue with next iteration!');
         errorsInFile = getLastFileError(errorsInFile,'error using <','error in <');
@@ -117,7 +117,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
                 currentError = errorsInFile(thisError,1);
                 lastErrorFile = errorsInFile(thisError,2);
                 correspondingLine = errorsInFile(thisError,3);
-                mainErrors = warningsInFile(thisWarning,4);
+                mainErrors = errorsInFile(thisError,4);
                 if storeRelativePath
                     logContent = [logContent;{relativeFileName,curSubject,'Error',mainErrors,lastErrorFile,correspondingLine,currentError}];
                 else
@@ -125,7 +125,6 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
                 end
             end
         end
-        
     end
     
     %% Optional: Print log content
@@ -224,6 +223,22 @@ function content = getLastFileWarning(content,identifier)
         found = false;
         % Find and restyle warnings
         for line=1:size(currentContent{1,1},1)
+            if line==1
+                mainMessage = currentContent{1,1}{line};
+                startMainMessage = strfind(mainMessage,'Warning: ');
+                if ~isempty(startMainMessage)
+                    mainMessage = mainMessage(startMainMessage+length('Warning: '):end);
+                    mainMessage = strrep(mainMessage,'[','');
+                    mainMessage = strrep(mainMessage,']','');
+                    mainMessage = strtrim(mainMessage); % This does not seem to work, yet
+                else
+                    mainMessage = 'unknown';
+                end
+                content{thisContent,4} = mainMessage;
+                content{thisContent,1}{line} = ''; % Remove this warning text
+            else
+                content{thisContent,1}{line} = ''; % Remove this warning text
+            end
             if ~isempty(strfind(lower(currentContent{1,1}{line}),identifier))
                 % Check if HTML style text is in current line
                 if ~isempty(strfind(currentContent{1,1}{line},'DocCallback('))
@@ -247,19 +262,6 @@ function content = getLastFileWarning(content,identifier)
                         found = true;
                     end
                 end
-            else
-                if line==1
-                    mainMessage = currentContent{1,1}{line};
-                    startMainMessage = strfind(mainMessage,'Warning: ');
-                    mainMessage = mainMessage(startMainMessage+length('Warning: '):end);
-                    mainMessage = strrep(mainMessage,'[','');
-                    mainMessage = strrep(mainMessage,']','');
-                    mainMessage = strtrim(mainMessage); % This does not seem to work, yet
-                    content{thisContent,4} = mainMessage;
-                    content{thisContent,1}{line} = ''; % Remove this warning text
-                else
-                    content{thisContent,1}{line} = ''; % Remove this warning text
-                end
             end
         end
     end
@@ -274,10 +276,32 @@ function content = getLastFileError(content,identifierA,identifierB)
         currentContent = content(thisContent,1);
         content{thisContent,2} = 'unkown';
         content{thisContent,3} = 'unkown';
-        returnMessages{thisContent,1} = 'unknown';
+        content{thisContent,4} = 'unknown';
         found = false;
         % Find and restyle warnings
         for line=1:size(currentContent{1,1},1)
+            if line==1
+                mainMessage = currentContent{1,1}{line};
+                startMainMessage = strfind(mainMessage,'Warning: ');
+                startMainErrorMessage = strfind(mainMessage,'ERROR: ');
+                if ~isempty(startMainMessage)
+                    mainMessage = mainMessage(startMainMessage+length('Warning: '):end);
+                    mainMessage = strrep(mainMessage,'[','');
+                    mainMessage = strrep(mainMessage,']','');
+                    mainMessage = strtrim(mainMessage); % This does not seem to work, yet
+                elseif ~isempty(startMainErrorMessage)
+                    mainMessage = mainMessage(startMainErrorMessage+length('ERROR: '):end);
+                    mainMessage = strrep(mainMessage,'[','');
+                    mainMessage = strrep(mainMessage,']','');
+                    mainMessage = strtrim(mainMessage); % This does not seem to work, yet
+                else
+                    mainMessage = 'unknown';
+                end
+                content{thisContent,4} = mainMessage;
+                content{thisContent,1}{line} = ''; % Remove this warning text
+            else
+                content{thisContent,1}{line} = ''; % Remove this warning text
+            end
             if ~isempty(strfind(lower(currentContent{1,1}{line}),identifierA)) || ~isempty(strfind(lower(currentContent{1,1}{line}),identifierB))
                 % Check if HTML style text is in current line
                 if ~isempty(strfind(currentContent{1,1}{line},'DocCallback('))
@@ -301,17 +325,6 @@ function content = getLastFileError(content,identifierA,identifierB)
                         found = true;
                     end
                 end
-            else
-                if line==1
-                    mainMessage = currentContent{1,1}{line};
-                    startMainMessage = strfind(mainMessage,'ERROR: ');
-                    mainMessage = mainMessage(startMainMessage+length('ERROR: '):end);
-                    mainMessage = strtrim(mainMessage); % This does not seem to work, yet
-                    returnMessages{thisContent,1} = mainMessage;
-                    content{thisContent,1}{line} = ''; % Remove this warning text
-                else
-                    content{thisContent,1}{line} = ''; % Remove this warning text
-                end
             end
         end
     end
@@ -325,17 +338,27 @@ function logContent = logContentCellToChar(logContent)
     for row=1:size(logContent,1)
         thisContentField = '';
         for thisLine=1:size(logContent.Content{row,1},1)
-            if ~isempty(logContent.Content{row,1}{thisLine})
-                thisContentField = [thisContentField,logContent.Content{row,1}{thisLine}];
-                thisContentField = [char(thisContentField),', '];
+            if iscell(logContent.Content{row,1})
+                if ~isempty(logContent.Content{row,1}{thisLine})
+                    thisContentField = [thisContentField,logContent.Content{row,1}{thisLine}];
+                    thisContentField = [char(thisContentField),', '];
+                end
+            else
+                % Do not modify custom single line warnings
+                thisContentField = logContent.Content{row,1};
             end
         end
         logContent.Content{row,1} = thisContentField;
     end
 end
 
-% Extract warnigns or errors
-function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier)
+% Extract warnigns or errors (the alternativeStartIdentifier was necessary for warnings starting without 'Warning:')
+function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,alternativeStartIdentifier)
+
+    % Check input arguments
+    if nargin<4
+        alternativeStartIdentifier = [];
+    end 
 
     % Read file
     fileLines = readFileIntoCellArray(filePath);
@@ -349,30 +372,89 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier)
     endC = NaN;
     
     % Iterate over lines
-    for line=1:numel(fileLines)
+    line = 1;
+    while line<numel(fileLines)
         
         % Get current line
         curLine = char(fileLines(line,1));
         
         % Check for start of warning or error
-        if contains(curLine, startIdentifier)
-            startC = line;
-            
-            % Search for end of content
-            for subline=startC+1:numel(fileLines)
-                curSubLine = char(fileLines(subline,1));
-                % Check for start of warning or error
-                if contains(curSubLine, endIdentifier)
-                    endC = subline;                                     % Current line number
-                    currentContentToExtract = fileLines(startC:endC);   % Complete content text
-                    startC = NaN;                                       % Reset
-                    endC = NaN;                                         % Reset
-                    contentInFile(id,1) = {currentContentToExtract};    % Add content to cell array
-                    id = id+1;
-                    break;                                              % Skip this loop
+        if isempty(alternativeStartIdentifier)
+            if contains(curLine, startIdentifier)
+                startC = line;
+
+                % Search for end of content
+                for subline=startC+1:numel(fileLines)
+                    curSubLine = char(fileLines(subline,1));
+                    % Check for start of warning or error
+                    if contains(curSubLine, endIdentifier)
+                        endC = subline;                                     % Current line number
+                        currentContentToExtract = fileLines(startC:endC);   % Complete content text
+                        startC = NaN;                                       % Reset
+                        endC = NaN;                                         % Reset
+                        contentInFile(id,1) = {currentContentToExtract};    % Add content to cell array
+                        id = id+1;
+                        line = subline;                                     % Skip lines
+                        break;                                              % Skip this loop
+                    end
+                end
+            end
+        else % Handle warnings without 'Warning:' text -> 'In <a'
+            if contains(curLine, startIdentifier) || contains(curLine, alternativeStartIdentifier)
+                startC = line;
+
+                % Search for end of content
+                for subline=startC+1:numel(fileLines)
+                    % If the last line was reached, this has to be the endC
+                    if subline+1>numel(fileLines)
+                        endC = subline;                                     % Current line number
+                        currentContentToExtract = fileLines(startC:endC);   % Complete content text
+                        startC = NaN;                                       % Reset
+                        endC = NaN;                                         % Reset
+                        contentInFile(id,1) = {currentContentToExtract};    % Add content to cell array
+                        id = id+1;
+                        line = subline;                                     % Skip lines
+                        break;
+                    end
+                    % Otherwise ...
+                    curSubLine = lower(char(fileLines(subline,1)));         % We have to check this and the following line, because the warning main message can have
+                    followingSubLine = lower(char(fileLines(subline+1,1))); % multiple lines and if there is no end identifier, we have to exclude this line as well.
+                    % Check for start of warning or error (stop message extraction with end identifier)
+                    if contains(curSubLine, lower(endIdentifier)) && ~(contains(followingSubLine, 'in <') || contains(followingSubLine, '> in')) 
+                        endC = subline;                                     % Current line number
+                        currentContentToExtract = fileLines(startC:endC);   % Complete content text
+                        startC = NaN;                                       % Reset
+                        endC = NaN;                                         % Reset
+                        contentInFile(id,1) = {currentContentToExtract};    % Add content to cell array
+                        id = id+1;
+                        line = subline;                                     % Skip lines
+                        break;                                              % Skip this loop
+                    end
+                    if strcmp(lower(curLine(1:length('warning: '))),'warning: ')   % Custom single line warnings in import_log
+                        endC = subline-1;                                   % Current line number
+                        currentContentToExtract = fileLines(startC:endC);   % Complete content text
+                        startC = NaN;                                       % Reset
+                        endC = NaN;                                         % Reset
+                        contentInFile(id,1) = {currentContentToExtract};    % Add content to cell array
+                        id = id+1;
+                        line = subline-1;                                     % Skip lines
+                        break;                                              % Skip this loop
+                    end
+                    if ~(contains(curSubLine, 'in <') || contains(curSubLine, '> in')) && ...  % stop if 'in <' or '> in' does not occur anymore
+                       ~(contains(followingSubLine, 'in <') || contains(followingSubLine, '> in')) 
+                        endC = subline-1;                                   % Current line number
+                        currentContentToExtract = fileLines(startC:endC);   % Complete content text
+                        startC = NaN;                                       % Reset
+                        endC = NaN;                                         % Reset
+                        contentInFile(id,1) = {currentContentToExtract};    % Add content to cell array
+                        id = id+1;
+                        line = subline;                                     % Skip lines
+                        break;                                              % Skip this loop
+                    end
                 end
             end
         end
+        line = line+1;
     end
 end
 
