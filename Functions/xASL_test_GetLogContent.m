@@ -226,8 +226,8 @@ function content = getLastFileWarning(content,identifier)
     for thisContent=1:numel(content)
         % Get current content
         currentContent = content(thisContent,1);
-        content{thisContent,2} = 'unkown';
-        content{thisContent,3} = 'unkown';
+        content{thisContent,2} = 'unknown';
+        content{thisContent,3} = 'unknown';
         content{thisContent,4} = 'unknown';
         found = false;
         % Find and restyle warnings
@@ -283,8 +283,8 @@ function content = getLastFileError(content,identifierA,identifierB)
     for thisContent=1:numel(content)
         % Get current content
         currentContent = content(thisContent,1);
-        content{thisContent,2} = 'unkown';
-        content{thisContent,3} = 'unkown';
+        content{thisContent,2} = 'unknown';
+        content{thisContent,3} = 'unknown';
         content{thisContent,4} = 'unknown';
         found = false;
         % Find and restyle warnings
