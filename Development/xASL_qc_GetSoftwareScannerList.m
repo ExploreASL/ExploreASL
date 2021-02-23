@@ -28,6 +28,10 @@ for iDir=1:length(DirList)
             SequenceList = xASL_adm_GetFileList(fullfile(RootIn, DirList{iDir}), '^T1.*\.json$', 'FPList');
         case 'FLAIR'
             SequenceList = xASL_adm_GetFileList(fullfile(RootIn, DirList{iDir}), '^FLAIR.*\.json$', 'FPList');
+		case 'T2'
+            SequenceList = xASL_adm_GetFileList(fullfile(RootIn, DirList{iDir}), '^T2.*\.json$', 'FPList');
+		case 'T1c'
+            SequenceList = xASL_adm_GetFileList(fullfile(RootIn, DirList{iDir}), '^T1c.*\.json$', 'FPList');
         case 'ASL'
             SequenceList = xASL_adm_GetFileList(fullfile(RootIn, DirList{iDir}, 'ASL_1'), '^ASL4D.*\.json$', 'FPList');
         case 'M0'

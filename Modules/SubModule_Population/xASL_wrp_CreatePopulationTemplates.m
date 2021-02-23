@@ -234,6 +234,8 @@ if UsePredefined
     PreFixList{end+1}   = ['rc3' x.P.STRUCT];                   TemplateNameList{end+1}    = 'pCSF';        SessionsExist(end+1) =  0;
     PreFixList{end+1}   = ['r' x.P.FLAIR];                      TemplateNameList{end+1}    = 'FLAIR';       SessionsExist(end+1) =  0;
     PreFixList{end+1}   = ['r' x.P.WMH_SEGM];                   TemplateNameList{end+1}    = 'WMH_SEGM';    SessionsExist(end+1) =  0;
+	PreFixList{end+1}   = ['r' x.P.T1c];                        TemplateNameList{end+1}    = 'T1c';         SessionsExist(end+1) =  0;
+	PreFixList{end+1}   = ['r' x.P.T2];                         TemplateNameList{end+1}    = 'T2';          SessionsExist(end+1) =  0;
     PreFixList{end+1}   = 'PV_pGM';                             TemplateNameList{end+1}    = 'PV_pGM';      SessionsExist(end+1) =  0;
     PreFixList{end+1}   = 'PV_pWM';                             TemplateNameList{end+1}    = 'PV_pWM';      SessionsExist(end+1) =  0;
     PreFixList{end+1}   = 'R1';                                 TemplateNameList{end+1}    = 'R1';          SessionsExist(end+1) =  0;
