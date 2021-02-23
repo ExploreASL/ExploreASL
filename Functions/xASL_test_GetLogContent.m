@@ -15,8 +15,9 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:      Get warnings and errors from log files.
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% 0. Input check
+% 1. Load all log files
+% -----------------------------------------------------------------------------------------------------------------------------------------------------% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          To extract all warnings and errors from all log files
 %                   in a directory, you can run this script with the following command.
@@ -30,7 +31,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 % __________________________________
 % Copyright @ 2015-2021 ExploreASL
 
-    %% Input Check
+    %% -----------------------------------------------------------------------------------------------------------------------------------------------------
+    %% 0. Input Check
     if (nargin < 1) || isempty(rootDir)
         if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
             rootDir = input('Insert the root directory: ');
@@ -55,7 +57,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
     logContent = array2table(zeros(0,7));
     logContent.Properties.VariableNames = {'Module','Subject','Type','Message','File','Line','Content'};
     
-    %% Get all log files within root directory
+    %% -----------------------------------------------------------------------------------------------------------------------------------------------------
+    %% 1. Get all log files within root directory
     
     % All log files
     fileList = xASL_adm_GetFileList(rootDir, '^.+\.log$', 'FPListRec');
