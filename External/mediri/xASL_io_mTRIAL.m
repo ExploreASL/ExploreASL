@@ -72,6 +72,7 @@ if isfield(x_temporary,'readout_dim'),                          data.x.readout_d
 if isfield(x_temporary,'BackgroundSuppressionNumberPulses'),    data.x.Q.BackgroundSuppressionNumberPulses = x_temporary.BackgroundSuppressionNumberPulses; end
 if isfield(x_temporary,'Initial_PLD'),                          data.x.Q.Initial_PLD = x_temporary.Initial_PLD; end
 if isfield(x_temporary,'LabelingDuration'),                     data.x.Q.LabelingDuration = x_temporary.LabelingDuration; end
+if isfield(x_temporary,'DummyScanPositionInASL4D')              data.x.DummyScanPositionInASL4D = x_temporary.DummyScanPositionInASL4D;end
 if isfield(x_temporary,'M0'),                                   data.x.M0 = x_temporary.M0; end
 if isfield(x_temporary,'M0PositionInASL4D')
     if x_temporary.M0PositionInASL4D~=0 % Could change to 'null' soon

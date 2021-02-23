@@ -82,18 +82,17 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
 end
 
 %% Manage an M0 within time series
-if isfield(x,'M0PositionInASL4D')
-    x.M0PositionInASL4D = xASL_str2num(x.M0PositionInASL4D);
-    % Make sure it is numeric (or empty) when coming from JSON string
-    if ~isnumeric(x.M0PositionInASL4D)
-        warning('Something wrong with x.M0PositionInASL4D...');
-    end
-    % Make sure to split the M0 from the ASL time-series if needed
-    if ~isempty(x.M0PositionInASL4D)
-        xASL_io_SplitASL_M0(x.P.Path_ASL4D, x.M0PositionInASL4D);
-    end
+% Initialize the DummyScan and M0 position fields - by default empty
+if ~isfield(x,'DummyScanPositionInASL4D') 
+	x.DummyScanPositionInASL4D = [];
 end
 
+if ~isfield(x,'M0PositionInASL4D') 
+	x.M0PositionInASL4D = [];
+end
+
+% Make sure to split the M0 from the ASL time-series if needed
+xASL_io_SplitASL_M0(x.P.Path_ASL4D, x.M0PositionInASL4D, x.DummyScanPositionInASL4D);
 
 % Do the same for the ancillary files
 FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat','FPList',[0 Inf]);

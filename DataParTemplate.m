@@ -88,6 +88,13 @@ function x = DataParTemplate(x)
 %                     - example for Philips 3D GRASE = '[1 2]' % (first control-label pair)
 %                     - example for Siemens 3D GRASE = 1 % first image
 %                     - example for GE 3D spiral = 2 % where first image is PWI & last = M0
+% x.DummyScanPositionInASL4D - indicates the position of Dummy scans in TimeSeries if they are integrated by the vendor in the 
+%                              DICOM export. This allows to remove the dummy scans or noise scans that are part of the Timeseries.
+%                              A new ASL4D.nii is saved with dummy scans removed and the original is backed-up. Works in a similar way 
+%                              as M0PositionInASL4D, both can be entered at the same time and both indicate the original position 
+%                              in the Timeseries independend of each other. (OPTIONAL, DEFAULT = [] (no M0 in timeseries))
+%                            - example for Siemens 2D EPI = '[79 80]' % Skip the control-label pair used for noise measurements
+%                            - example for certain Siemens 3D GRASE = 2 % Skip the first dummy control image
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % SEQUENCE PARAMETERS
@@ -316,6 +323,7 @@ x.name = ExampleDataSet;
 x.subject_regexp = '^Sub-\d{3}$';
 x.M0 = 'separate_scan';
 x.M0PositionInASL4D = '[1 2]';
+x.DummyScanPositionInASL4D = [];
 x.readout_dim = '2D';
 x.Quality = 0;
 x.DELETETEMP = 1;
