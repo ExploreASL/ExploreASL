@@ -18,7 +18,7 @@ function x = DataParTemplate(x)
 % The compiled version of ExploreASL only allows for JSON input.
 %
 % For the DataPar.json:
-% Make sure that booleans are inputted as numbers (e.g. 0 or 1) and not as words (e.g. true or false)
+% Make sure that booleans are inputted as numbers (e.g. 1 or 0) and not as words (e.g. true or false)
 % Scalars can be inputted as scalars, but vectors need to be inputted as string, e.g. '[1 2]'
 % This is to allow for valid JSONs. The conversion is carried out internally.
 %
