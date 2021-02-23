@@ -36,7 +36,7 @@ function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodule
 %   //AnalysisDir/import_summary.csv - hence the name
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:
-% Import batch T1, FLAIR, DWI, fMRI, M0, ASL data from dicom 2 NIfTI in ASL-BIDS format and structure.
+% Import batch T1, T2, FLAIR, DWI, fMRI, M0, ASL data from dicom 2 NIfTI in ASL-BIDS format and structure.
 % Uses dcm2niiX for the conversion, and additionally collects important DICOM header data
 % and puts them in .json sidecars to be used with the ExploreASL pipeline.
 % This function takes any folder input, but the folder input should be
@@ -1287,7 +1287,7 @@ end
 					switch scan_name
 						case {'ASL4D', 'M0', 'ASL4D_RevPE', 'func_bold'}
 							bPutInSessionFolder = true;
-						case {'T1', 'WMH_SEGM', 'FLAIR'}
+						case {'T1', 'WMH_SEGM', 'FLAIR', 'T2', 'T1c'}
 							bPutInSessionFolder = false;
 					end
 					

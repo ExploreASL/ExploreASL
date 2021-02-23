@@ -93,7 +93,8 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 	% this should not give an error, but multiple ASL scale slopes should give an error
 	% Check if FLAIR occurs
 	isASL = true; % by default, assume these are ASL DICOMs
-	if ~isempty(findstr(FileList{1},'FLAIR')) || ~isempty(findstr(FileList{1},'T1'))
+	if ~isempty(findstr(FileList{1},'FLAIR')) || ~isempty(findstr(FileList{1},'T1')) ||...
+			~isempty(findstr(FileList{1},'T1c')) || ~isempty(findstr(FileList{1},'T2'))
 		isASL = false;
 	end
 	

@@ -115,7 +115,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	% this should not give an error, but multiple ASL scale slopes should give an error
 	% Check if FLAIR occurs
 	isASL = true; % by default, assume these are ASL DICOMs
-	if ~isempty(findstr(FileList{1},'FLAIR')) || ~isempty(findstr(FileList{1},'T1'))
+	if ~isempty(findstr(FileList{1},'FLAIR')) || ~isempty(findstr(FileList{1},'T1')) ...
+			|| ~isempty(findstr(FileList{1},'T2')) || ~isempty(findstr(FileList{1},'T1c'))
 		isASL = false;
 	end
 	

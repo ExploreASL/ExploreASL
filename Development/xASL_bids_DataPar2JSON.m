@@ -37,7 +37,7 @@ DataPar = xASL_import_json(DataParPath);
 AnalysisDir = fileparts(DataParPath);
 
 fprintf('Converting *_parms.mat to *.json & implementing BIDS inheritance:   ');
-FileList = xASL_adm_GetFileList(AnalysisDir, '^(T1|FLAIR|ASL4D|M0)\.nii$','FPListRec',[0 Inf]);
+FileList = xASL_adm_GetFileList(AnalysisDir, '^(T1|FLAIR|T1c|T2|ASL4D|M0)\.nii$','FPListRec',[0 Inf]);
 
 Fields2Skip = {'Quality' 'DELETETEMP' 'subject_regexp' 'name' 'exclusion' 'exclusionReason' 'SESSIONS' 'ROOT'};
 % These fields are environment parameters, not ASL-specific parameters

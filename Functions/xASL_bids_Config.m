@@ -169,7 +169,7 @@ bidsPar.ASLCondition{12}.RecommendedFilled = {};
 bidsPar.listRemoveIfEmpty = {'EffectiveEchoSpacing','TotalReadoutTime'};
 
 % A list of anatomical scan-types to include
-bidsPar.listAnatTypes = {'T1w' 'T2w' 'FLAIR'}; 
+bidsPar.listAnatTypes = {'T1w' 'T2w' 'T1c' 'FLAIR'}; 
 
 % A list of directories for BIDS to Legacy conversion
 bidsPar.BIDS2LegacyFolderConfiguration =...

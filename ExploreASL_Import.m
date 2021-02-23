@@ -476,7 +476,7 @@ for iSubject=1:nSubjects
                 switch scan_name
                     case {'ASL4D', 'M0', 'ASL4D_RevPE', 'func_bold'}
                         bPutInSessionFolder = true;
-                    case {'T1', 'WMH_SEGM', 'FLAIR'}
+                    case {'T1', 'WMH_SEGM', 'FLAIR', 'T1c', 'T2'}
                         bPutInSessionFolder = false;
                 end
 

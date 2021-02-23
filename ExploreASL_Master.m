@@ -110,8 +110,8 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     
     %% -----------------------------------------------------------------------------
     %% 1  xASL_module_Structural
-    %  1  Alignment T1w -> ACPC in MNI
-    %  2) Coregister FLAIR -> T1w
+    %  1) Alignment T1w -> ACPC in MNI
+    %  2) Coregister FLAIR, T2, T1c -> T1w
     %  3) FLAIR biasfield correction
     %  4) Segment FLAIR
     %  5) Lesion Filling

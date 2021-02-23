@@ -185,14 +185,30 @@ if ~x.mutex.HasState(StateName{1})
             xASL_io_SaveNifti(x.P.Path_T1, x.P.Path_T1, IM(:,:,:,1,1,1,1), [], false);
         end
     end
-    if xASL_exist(x.P.Path_FLAIR, 'file') % Fix multiple T1w iterations
+    if xASL_exist(x.P.Path_FLAIR, 'file') % Fix multiple FLAIR iterations
         IM = xASL_io_Nifti2Im(x.P.Path_FLAIR);
         if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
-            warning(['Too many dims, using first: ' x.P.Path_T1]);
+            warning(['Too many dims, using first: ' x.P.Path_FLAIR]);
             xASL_Move(x.P.Path_FLAIR, x.P.Path_FLAIR_ORI, true);
             xASL_io_SaveNifti(x.P.Path_FLAIR, x.P.Path_FLAIR, IM(:,:,:,1,1,1,1), [], false);
         end
-    end
+	end
+	if xASL_exist(x.P.Path_T2, 'file') % Fix multiple T2w iterations
+		IM = xASL_io_Nifti2Im(x.P.Path_T2);
+		if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
+			warning(['Too many dims, using first: ' x.P.Path_T2]);
+			xASL_Move(x.P.Path_T2, x.P.Path_T2_ORI, true);
+			xASL_io_SaveNifti(x.P.Path_T2, x.P.Path_T2, IM(:,:,:,1,1,1,1), [], false);
+		end
+	end
+	if xASL_exist(x.P.Path_T1c, 'file') % Fix multiple T1c iterations
+		IM = xASL_io_Nifti2Im(x.P.Path_T1c);
+		if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
+			warning(['Too many dims, using first: ' x.P.Path_T1c]);
+			xASL_Move(x.P.Path_T1c, x.P.Path_T1c_ORI, true);
+			xASL_io_SaveNifti(x.P.Path_T1c, x.P.Path_T1c, IM(:,:,:,1,1,1,1), [], false);
+		end
+	end
 end
 
 
@@ -218,22 +234,29 @@ end
 
 %% -----------------------------------------------------------------------------
 %% 2    Register FLAIR -> T1w (if FLAIR.nii exists)
+% Additionally register T2 and T1c -> T1
 iState = 2;
 if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status files, & locks current run
-    if xASL_exist(x.P.Path_FLAIR, 'file')
+    if xASL_exist(x.P.Path_FLAIR, 'file') || xASL_exist(x.P.Path_T1c, 'file') || xASL_exist(x.P.Path_T2, 'file')
+		
+		if xASL_exist(x.P.Path_FLAIR, 'file')
+			xASL_wrp_LinearReg_FLAIR2T1w(x, x.bAutoACPC);
+		end
 
-        xASL_wrp_LinearReg_FLAIR2T1w(x, x.bAutoACPC);
-
+		if xASL_exist(x.P.Path_T1c, 'file') || xASL_exist(x.P.Path_T2, 'file')
+			xASL_wrp_LinearReg_Others2T1w(x, x.bAutoACPC);
+		end
+			
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
         x.mutex.DelState(StateName{iState+1});
 	else
-		if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR data found, skipping...']);end
+		if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR, T2, or T1c data found, skipping...']);end
         x.mutex.AddState(StateName{iState});        
     end
 
 else
-	if xASL_exist(x.P.Path_FLAIR, 'file')
+	if xASL_exist(x.P.Path_FLAIR, 'file') || xASL_exist(x.P.Path_T1c, 'file') || xASL_exist(x.P.Path_T2, 'file')
 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
 	end
 	if bO
