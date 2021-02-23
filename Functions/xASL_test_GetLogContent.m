@@ -385,6 +385,11 @@ function logContent = logContentCellToChar(logContent)
 end
 
 %% Extract warnigns or errors (the alternativeStartIdentifier was necessary for warnings starting without 'Warning:')
+% INPUT:    filePath (path of the corresponding log file, CHAR, REQUIRED)
+%           startIdentifier (identifier which is supposed to help to find the start of the warning or error message, CHAR, REQUIRED)
+%           endIdentifier (identifier which is supposed to help to find the end of the warning or error message, CHAR, REQUIRED)
+%           alternativeStartIdentifier (alternative identifier which is supposed to help to find the start of the warning or error message, CHAR, REQUIRED)
+% OUTPUT:   contentInFile (cell array containing the found warning or error messages, CELL)
 function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,alternativeStartIdentifier)
 
     % Check input arguments
@@ -491,6 +496,8 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
 end
 
 %% Read text file into cell array
+% INPUT:    filePath (path of the corresponding log file, CHAR, REQUIRED)
+% OUTPUT:   fileLines (cell array containing the file text, CELL)
 function fileLines = readFileIntoCellArray(filePath)
 
     % Read file
