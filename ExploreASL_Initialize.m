@@ -405,6 +405,8 @@ if and(isfield(x.D, 'ROOT'), isfield(x, 'ProcessData'))
         x.D.TissueVolumeDir     = fullfile(x.D.PopDir, 'TissueVolume');
         x.D.CoregDir            = fullfile(x.D.PopDir, 'T1wCoregCheck');
         x.D.FLAIR_CheckDir      = fullfile(x.D.PopDir, 'FLAIRCheck' );
+		x.D.T1c_CheckDir        = fullfile(x.D.PopDir, 'T1cCheck' );
+		x.D.T2_CheckDir         = fullfile(x.D.PopDir, 'T2Check' );
         x.D.FLAIR_REGDIR        = fullfile(x.D.PopDir, 'FLAIRReg'   );
         x.D.FlowFieldCheck      = fullfile(x.D.PopDir, 'FlowFieldCheck' );
         x.D.LongRegCheckDir     = fullfile(x.D.PopDir, 'LongRegCheck');
