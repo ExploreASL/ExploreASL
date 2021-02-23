@@ -162,6 +162,10 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 end
 
 %% Export files
+% INPUT:    rootDir (directory where the resulting files will be stored, CHAR, REQUIRED)
+%           logContent (table containing warnings & errors, TABLE, REQUIRED)
+%           exportTable (0 = no export, 1 = export TSV, 2 = export XLSX, REQUIRED)
+% OUTPUT:   n/a (only stores files)
 function exportLogContent(rootDir,logContent,exportTable)
 
     % Convert warnings & errors from cell to char array
@@ -231,6 +235,9 @@ end
 
 
 %% Get last file of warning or error message (first file in content)
+% INPUT:    content (cell array containing a warning or error message, CELL, REQUIRED)
+%           identifier (char array containing the identifier of the warning or error, CHAR, REQUIRED)
+% OUTPUT:   content (same as input, but re-styled and with additional fields describing the main message etc., CELL)
 function content = getLastFileWarning(content,identifier)
 
     % Iterate over warnings/error messages
@@ -288,6 +295,10 @@ function content = getLastFileWarning(content,identifier)
 end
 
 %% Get last file of warning or error message (first file in content)
+% INPUT:    content (cell array containing a warning or error message, CELL, REQUIRED)
+%           identifierA (char array containing the identifier of the warning or error, CHAR, REQUIRED)
+%           identifierA (char array containing the identifier of the warning or error, CHAR, REQUIRED)
+% OUTPUT:   content (same as input, but re-styled and with additional fields describing the main message etc., CELL)
 function content = getLastFileError(content,identifierA,identifierB)
 
     % Iterate over warnings/error messages
@@ -351,8 +362,9 @@ function content = getLastFileError(content,identifierA,identifierB)
 end
 
 
-
 %% Convert warnings & errors from cell to char array
+% INPUT:    logContent (table containing warnings & errors, TABLE, REQUIRED)
+% OUTPUT:   logContent (same as input, but the messages are converted from cell arrays to char arrays, TABLE)
 function logContent = logContentCellToChar(logContent)
     % Iterate over rows
     for row=1:size(logContent,1)
