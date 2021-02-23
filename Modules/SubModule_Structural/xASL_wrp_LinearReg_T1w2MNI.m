@@ -49,6 +49,8 @@ refPath = fullfile(x.SPMDIR, 'toolbox','OldNorm','T1.nii'); % = SPM8 T1 template
 % This one empirically works fine
 OtherList{1,1} = x.P.Path_FLAIR;
 OtherList{end+1,1} = x.P.Path_WMH_SEGM;
+OtherList{end+1,1} = x.P.Path_T1c;
+OtherList{end+1,1} = x.P.Path_T2;
 
 % Add lesion masks to the registration list
 for iS=1:length(Lesion_ROI_list)

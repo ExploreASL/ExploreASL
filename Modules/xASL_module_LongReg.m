@@ -181,6 +181,8 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                 OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, ['c2' x.P.STRUCT '.nii']);
                 OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.FLAIR '.nii']);
                 OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.WMH_SEGM '.nii']);
+				OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.T1c '.nii']);
+				OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.T2 '.nii']);
 
                 for iSess = 1:x.nSessions
                     SessionDir = fullfile(x.D.ROOT,CurrentSub{iV},x.SESSIONS{iSess});
