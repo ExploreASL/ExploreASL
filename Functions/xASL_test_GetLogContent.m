@@ -15,8 +15,13 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:      Get warnings and errors from log files.
+%
 % 0. Input check
 % 1. Load all log files
+% 2. Iterate over log files
+% 3. Optional: Print log content
+% 4. Optional: Export (0 = no export, 1 = TSV export, 2 = XLSX export)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          To extract all warnings and errors from all log files
@@ -72,7 +77,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
     % Switch on to check where the script fails
     debugMode = false;
     
-    %% Iterate over log files
+    %% -----------------------------------------------------------------------------------------------------------------------------------------------------
+    %% 2. Iterate over log files
     for iFile=1:numel(fileList)
         % Get current file path
         curFile = fileList{iFile,1};
@@ -132,7 +138,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
         end
     end
     
-    %% Optional: Print log content
+    %% -----------------------------------------------------------------------------------------------------------------------------------------------------
+    %% 3. Optional: Print log content
     if printContent
         fprintf('====================================================================================================\n')
         for curPrint=1:numel(logContent.Content)
@@ -144,7 +151,8 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
         end
     end
     
-    %% Optional: Export (0 = no export, 1 = TSV export, 2 = XLSX export)
+    %% -----------------------------------------------------------------------------------------------------------------------------------------------------
+    %% 4. Optional: Export (0 = no export, 1 = TSV export, 2 = XLSX export)
     exportLogContent(rootDir,logContent,exportTable);
     
     if isempty(logContent)
