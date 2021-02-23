@@ -1,32 +1,61 @@
-function xASL_io_SplitASL_M0(InPath,iM0)
-%xASL_io_SplitASL_M0 Splits ASL & M0 images, when they are within the same NIfTI
+function xASL_io_SplitASL_M0(inPath, iM0, iDummy)
+%xASL_io_SplitASL_M0 Splits ASL & M0 & Dummy images, when they are within the same NIfTI
 %
-% FORMAT: xASL_io_SplitASL_M0(InPath,iM0)
+% FORMAT: xASL_io_SplitASL_M0(inPath[, iM0, iDummy])
 %
 % INPUT:
-%   InPath      - path to ASL NIfTI file (e.g. //analysis/ASL_1/ASL4D.nii) (REQUIRED)
-%   iM0         - index/indices of volume(s) containing the M0 (REQUIRED)
+%   inPath      - path to ASL NIfTI file (e.g. //analysis/ASL_1/ASL4D.nii) (REQUIRED)
+%   iM0         - index/indices of volume(s) containing the M0 (OPTIONAL, DEFAULT = [])
+%   iDummy      - index/indices of volume(s) containing the Dummy scans (OPTIONAL, DEFAULT = [])
 %
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function splits ASL4D & M0 if they were in the same sequence.
+% DESCRIPTION: This function splits ASL4D & M0 & Dummy images if they were in the same sequence.
 %              If dcm2niiX has already splitted the ASL4D NIfTI, this is reconstructed first.
-%              If no M0 exists, or only ASL splitting is desired, leave iM0 empty ([])
+%              If no M0 exists, or only ASL splitting is desired, leave iM0 empty ([]).
+%              The dummy scans can be excluded from the ASL sequence during the splitting. Both iM0 and iDummy
+%              are the absolute positions of both in the original time series
 %
 %              Vendor product sequence examples:
 %              GE 3D spiral sometimes puts the M0 at the last volume of the series -> iM0 = [2];
 %              Philips 3D GRASE puts the M0 as control-label volume pair -> iM0 = [1 2];
 %              Siemens 3D GRASE puts the M0 as the first volume -> iM0 = 1;
+%              Some Siemens 3D GRASE puts a second Dummy control image -> iDummy = 2;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
 % xASL_io_SplitASL_M0('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [1 2]);
 % EXAMPLE for concatenating files only:
 % xASL_io_SplitASL_M0('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', []);
+% EXAMPLE for both excluding the Dummy scans and splitting M0:
+% xASL_io_SplitASL_M0('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [],1);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
+    %% -----------------------------------------------------------------------------------------------------------------------------------------------------
+    %% Input parameter admin
+	% Can be char or number on input, output should be a horizontal vector
 
-    [Fpath, Ffile] = xASL_fileparts(InPath);
+	if nargin < 2 || isempty(iM0)
+		iM0 = [];
+	else
+		if ischar(iM0)
+			iM0 = xASL_str2num(iM0);
+		end
+		iM0 = iM0(:)';
+	end
+	
+	if nargin < 3 || isempty(iDummy)
+		iDummy = [];
+	else
+		if ischar(iDummy)
+			iDummy = xASL_str2num(iDummy);
+		end
+		iDummy = iDummy(:)';
+	end
+	
+	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
+	%% Prepare paths
+    [Fpath, Ffile] = xASL_fileparts(inPath);
 
     % Split_ASL_M0
     ASLname = fullfile(Fpath, 'ASL4D.nii');
@@ -127,18 +156,21 @@ function xASL_io_SplitASL_M0(InPath,iM0)
         end
 
         %% Determine ASL indices
-        ASLindices          = 1:1:size(tIM,4);
-        IndexASL            = ones(1,size(tIM,4));
-        if ~isempty(iM0)
-            IndexASL(iM0)       = 0;
-        end
+        ASLindices = 1:1:size(tIM,4);
+        IndexASL   = ones(1,size(tIM,4));
+		if ~isempty(iM0)
+			IndexASL(iM0) = 0;
+		end
+		if ~isempty(iDummy)
+			IndexASL(iDummy) = 0;
+		end
         ASLindices          = ASLindices(logical(IndexASL));
         % Check for even number of volumes
         nASL                = numel(ASLindices);
         IsEven              = nASL/2==round(nASL/2); % even can be divided by 2
         ContainsTimeSeries  = nASL>5;
         if ContainsTimeSeries && ~IsEven
-            warning('After removing M0 volume, no even number of volumes (control-label)');
+            warning('After removing M0 volume and Dummy scans, no even number of volumes (control-label)');
         end
 
         %% Save ASL4D NIfTI
