@@ -59,13 +59,13 @@ xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuratio
 
 % Some JSON fields need to be updated to fit the BIDS definition
 % This is a one way process of changing the names from old to new
-updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'PhilipsRWVIntercept' 'BackGrSupprPulses'};
-updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'        'RWVIntercept'        'BackgroundSuppressionNumberPulses'};
+updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'PhilipsRWVIntercept' 'BackGrSupprPulses'                 'TotalAcquiredVolumes'};
+updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'        'RWVIntercept'        'BackgroundSuppressionNumberPulses' 'TotalAcquiredPairs'};
 
 % These fields have different names in xASL and in BIDS
 % They are therefore renamed depending on the type of output
 changeNamesXASL = {'Vendor'       'readout_dim'       'Initial_PLD'         'LabelingType'              'RepetitionTime'            'NumberOfAverages'     'SliceReadoutTime' 'Sequence'};
-changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation' 'TotalAcquiredVolumes' 'SliceTiming'      'PulseSequenceType'};
+changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation' 'TotalAcquiredPairs'   'SliceTiming'      'PulseSequenceType'};
 
 %% ----------------------------------------------------------------------
 %% 2) Convert XASL fields to the output format (BIDS or XASL legacy)

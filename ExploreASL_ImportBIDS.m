@@ -628,8 +628,8 @@ if bRunSubmodules(2)
 				
 				% Import the number of averages
 				if isfield(jsonLocal,'NumberOfAverages') && (max(jsonLocal.NumberOfAverages) > 1)
-					if isfield(studyPar,'TotalAcquiredVolumes')
-						if max(jsonLocal.NumberOfAverages) ~= studyPar.TotalAcquiredVolumes
+					if isfield(studyPar,'TotalAcquiredPairs')
+						if max(jsonLocal.NumberOfAverages) ~= studyPar.TotalAcquiredPairs
 							warning('Discrepancy in the number of averages');
 						end
 					end
