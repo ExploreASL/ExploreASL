@@ -19,7 +19,8 @@ function x = DataParTemplate(x)
 %
 % For the DataPar.json:
 % Make sure that booleans are inputted as numbers (e.g. 1 or 0) and not as words (e.g. true or false)
-% Scalars can be inputted as scalars, but vectors need to be inputted as string, e.g. '[1 2]'
+% Scalars can be inputted as scalars. For vectors/arrays of character arrays, we recommend to insert 
+% vectors of strings, e.g. ["optionA" "optionB"] instead of ['optionA', 'optionB'].
 % This is to allow for valid JSONs. The conversion is carried out internally.
 %
 % EXAMPLE: ExploreASL_Master('//StudyFolder/analysis/DataPar_HiQ.json');
@@ -281,8 +282,10 @@ function x = DataParTemplate(x)
 %                    - 1 = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel
 %                    - 0 = disabled, use 'flat' kernel with voxels given in PVCNativeSpaceKernel
 %
-%% Masking parameters
-%   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% MASKING & ATLAS PARAMETERS
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
 %                       (1 = yes, 0 = no)
 %                       [1 0 0 0] = susceptibility mask (either population-or subject-wise)
 %                       [0 1 0 0] = vascular mask (only subject-wise)
@@ -295,7 +298,20 @@ function x = DataParTemplate(x)
 %                       0 = [0 0 0 0]
 %                       Can be useful for e.g. loading lesion masks outside the GM
 %                       (OPTIONAL, DEFAULT=1)
-
+%
+% x.S.Atlases         - vector specifying the atlases which should be used within the population module.
+%                       Check out the available atlases in ExploreASL/External/Atlases.
+%                       Default definition within the Population Module:
+%                       x.S.Atlases = {'TotalGM','DeepWM'};
+%                       Exemplary notation within the JSON parameter file:
+%                       "x": [{
+%                       ...
+%                       "S": {"Atlases": ["TotalGM","DeepWM","Hammers","HOcort_CONN","HOsub_CONN","Mindboggle_OASIS_DKT31_CMA"]}
+%                       ...
+%                       }]
+%                       (OPTIONAL, DEFAULT={'TotalGM','DeepWM'})
+%
+%
 x.name = ExampleDataSet;
 x.subject_regexp = '^Sub-\d{3}$';
 x.M0 = 'separate_scan';
