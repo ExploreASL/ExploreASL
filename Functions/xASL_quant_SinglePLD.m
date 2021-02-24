@@ -62,6 +62,11 @@ M0_im = double(M0_im);
 if ~x.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 else
+	% Calculate the vector of SliceTime
+	imASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
+	nSlices = size(imASL.dat,3);
+	SliceTime = xASL_quant_SliceTimeVector(x,nSlices);
+	
     %% 1    PLD scalefactor (gradient if 2D multi-slice)
     switch lower(x.readout_dim)
         case '3d'
@@ -70,9 +75,6 @@ else
 
         case '2d' % Load slice gradient
             fprintf('%s\n','2D sequence, accounting for SliceReadoutTime');
-
-            % Calculate SliceReadoutTime for shortestTR
-            [x] = xASL_quant_SliceReadoutTime_ShortestTR(x);
 
             SliceGradient = double(SliceGradient);
             % Correct NaNs
@@ -83,14 +85,11 @@ else
 
             SliceGradient(~isfinite(SliceGradient)) = 1;
             SliceGradient(SliceGradient<1) = 1;
-			if length(x.Q.SliceReadoutTime) == 1
-				ScaleImage = ScaleImage.*(x.Q.Initial_PLD + ((SliceGradient-1) .* x.Q.SliceReadoutTime)); % effective/net PLD
-			else
-				imGradientRounded = round(SliceGradient);
-				imGradientRounded(imGradientRounded<1) = 1;
-				imGradientRounded(imGradientRounded>length(x.Q.SliceReadoutTime)) = length(x.Q.SliceReadoutTime);
-				ScaleImage = ScaleImage.*(x.Q.Initial_PLD + x.Q.SliceReadoutTime(imGradientRounded)); % effective/net PLD
-			end
+			
+			imGradientRounded = round(SliceGradient);
+			imGradientRounded(imGradientRounded<1) = 1;
+			imGradientRounded(imGradientRounded>length(SliceTime)) = length(SliceTime);
+			ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceTime(imGradientRounded)); % effective/net PLD
         otherwise
             error('Wrong x.readout_dim value!');
     end
@@ -248,17 +247,11 @@ if x.ApplyQuantification(3)
         case 'casl'
             fprintf('%s',['LabelingDuration = ' num2str(x.Q.LabelingDuration) ' ms, ']);
             fprintf('%s',['PLD (ms) = ' num2str(x.Q.Initial_PLD)]);
-    end
+	end
 
-    if isfield(x.Q,'SliceReadoutTime')
-        if max(x.Q.SliceReadoutTime)>0 && strcmpi(x.readout_dim,'2D')
-			if length(x.Q.SliceReadoutTime) > 1
-				fprintf('%s',[' + ' num2str(x.Q.SliceReadoutTime(2)-x.Q.SliceReadoutTime(1)) ' ms*(slice-1)']);
-			else
-				fprintf('%s',[' + ' num2str(x.Q.SliceReadoutTime) ' ms*(slice-1)']);
-			end
-        end
-    end
+	if max(SliceTime)>0 && strcmpi(x.readout_dim,'2D')
+		fprintf('%s',[' + ' num2str(SliceTime(2)-SliceTime(1)) ' ms*(slice-1)']);
+	end
 
     fprintf('\n%s',['labeling efficiency (neck*Bsup) = ' num2str(x.Q.LabEff_Orig) ' * ' num2str(x.Q.LabEff_Bsup) ', ']);
     fprintf('\n%s','assuming ');

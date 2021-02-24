@@ -38,7 +38,8 @@ function [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
 
         if isfield(ASL_parms,'RepetitionTime')
             %  Load original file to get nSlices
-            nSlices = size(xASL_io_Nifti2Im(x.P.Path_ASL4D),3);
+			imASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
+			nSlices = size(imASL.dat,3);
             x.Q.SliceReadoutTime = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
         else
             warning('ASL_parms.RepetitionTime expected but did not exist!');
@@ -47,8 +48,8 @@ function [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
 
     %% ---------------------------------------------------
     %% Check output
-    if isnan(x.Q.SliceReadoutTime)
-        error('qnt_PLDslicereadout expected but was NaN');
+    if max(isnan(x.Q.SliceReadoutTime))
+        error('SliceTime expected but was NaN');
 	else
 		if length(x.Q.SliceReadoutTime) == 1
 			ScalarSliceReadoutTime = x.Q.SliceReadoutTime(1);

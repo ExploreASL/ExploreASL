@@ -25,7 +25,7 @@ function xASL_quant_FEAST(x)
 % EXAMPLE: xASL_quant_FEAST(x);
 % REFERENCE: JJ Wang, 2003 MRM; Y Chen, 2012 MAGMA
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 %% -------------------------------------------------------------
@@ -54,15 +54,17 @@ for iSession=1:2
     % Load data
     CBF{iSession} = xASL_io_Nifti2Im(PathCBF{iSession});
     Gradient{iSession} = xASL_io_Nifti2Im(fullfile(x.D.PopDir, ['SliceGradient_extrapolated_' x.P.SubjectID '_' x.SESSIONS{iSession} '.nii']));
-    % correct different PLD scales
-	if length(x.Q.SliceReadoutTime) == 1
-		PLD{iSession} = x.Q.Initial_PLD + ((Gradient{iSession}-1) .* x.Q.SliceReadoutTime);
-	else
-		imGradientRounded = round(Gradient{iSession});
-		imGradientRounded(imGradientRounded<1) = 1;
-		imGradientRounded(imGradientRounded>length(x.Q.SliceReadoutTime)) = length(x.Q.SliceReadoutTime);
-		PLD{iSession} = x.Q.Initial_PLD + x.Q.SliceReadoutTime(imGradientRounded);
-	end
+	% Obtain the correct SliceTime
+	imASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
+	nSlices = size(imASL.dat,3);
+	SliceTime = xASL_quant_SliceTimeVector(x,nSlices);
+	
+    % Correct different PLD scales
+	imGradientRounded = round(Gradient{iSession});
+	imGradientRounded(imGradientRounded<1) = 1;
+	imGradientRounded(imGradientRounded>length(SliceTime)) = length(SliceTime);
+	PLD{iSession} = x.Q.Initial_PLD + SliceTime(imGradientRounded);
+	
     Gradient{iSession} = exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.LabelingDuration./x.Q.BloodT1)) );
     CBF{iSession} = CBF{iSession}./Gradient{iSession};
 end

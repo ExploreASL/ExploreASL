@@ -133,39 +133,33 @@ else
     %% ------------------------------------------------------------------------------------------------------
     % 6. Quantify the M0, either for single 3D volume or slice-wise
     if strcmpi(x.readout_dim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
-            NetTR = TR;
-            fprintf('%s\n','Single 3D M0 readout assumed');
+		NetTR = TR;
+		fprintf('%s\n','Single 3D M0 readout assumed');
     elseif  strcmpi(x.readout_dim,'2D') % for 2D readouts, there are slice timing differences
 
-            % Calculate SliceReadoutTime for shortestTR
-            [x] = xASL_quant_SliceReadoutTime_ShortestTR(x);
+		% Calculate SliceTime as a vector
+		SliceTime = xASL_quant_SliceTimeVector(x,size(M0IM,3));
 
-            SliceIM = zeros(size(M0IM));
-            for iZ=1:size(M0IM,3)
-                SliceIM(:,:,iZ) = iZ;
-            end
+		SliceIM = zeros(size(M0IM));
+		for iZ=1:size(M0IM,3)
+			SliceIM(:,:,iZ) = iZ;
+		end
 
-            if  x.M0_usesASLtiming 
-				% in this case, the M0 readout has the exact same timing as the ASL readout
-				% this is the case e.g. for Philips 3D GRASE
-				if length(x.Q.SliceReadoutTime) == 1
-					NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+x.Q.SliceReadoutTime.*(SliceIM-1);
-				else
-					NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+x.Q.SliceReadoutTime(SliceIM);
-				end
-                fprintf('%s\n','2D sliceWise M0 readout assumed, same timing as ASL slices readout used');
-            elseif ~x.M0_usesASLtiming
-				if length(x.Q.SliceReadoutTime) == 1
-					NetTR = TR - ((max(SliceIM(:))-SliceIM).*x.Q.SliceReadoutTime);
-				else
-					NetTR = TR + x.Q.SliceReadoutTime(SliceIM) - max(x.Q.SliceReadoutTime) - (max(x.Q.SliceReadoutTime)-min(x.Q.SliceReadoutTime))/(size(M0IM,3)-1);
-				end
-                % Here we assume the M0 slices readout were at the end of the
-                % TR, with the same time between slices as for the ASL readout
-                fprintf('%s\n','2D SliceWise M0 readout, assumed M0 slices readout at end of TR');
-            else
-                error('Unknown x.M0_usesASLtiming specified');
-            end
+		if  x.M0_usesASLtiming
+			% in this case, the M0 readout has the exact same timing as the ASL readout
+			% this is the case e.g. for Philips 3D GRASE
+			NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+SliceTime(SliceIM);
+
+			fprintf('%s\n','2D sliceWise M0 readout assumed, same timing as ASL slices readout used');
+		elseif ~x.M0_usesASLtiming
+			NetTR = TR + SliceTime(SliceIM) - max(SliceTime) - (max(SliceTime)-min(SliceTime))/(nSlices-1);
+		
+			% Here we assume the M0 slices readout were at the end of the
+			% TR, with the same time between slices as for the ASL readout
+			fprintf('%s\n','2D SliceWise M0 readout, assumed M0 slices readout at end of TR');
+		else
+			error('Unknown x.M0_usesASLtiming specified');
+		end
 
     else
         error('Unknown x.readout_dim specified');
@@ -267,28 +261,14 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
-    
-    if strcmp(x.readout_dim, '3D')
-        SliceTime = 0;
-    elseif strcmp(x.readout_dim, '2D')
-        if ~isfield(x.Q, 'SliceReadoutTime') || isempty(x.Q.SliceReadoutTime)
-            error('Missing or invalid x.Q.SliceReadoutTime');
-        elseif size(M0IM, 3)<2
-            error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
-		end
-		if length(x.Q.SliceReadoutTime) == 1
-			SliceTime = (0:1:size(M0IM,3)-1).*x.Q.SliceReadoutTime;
-		elseif length(x.Q.SliceReadoutTime) == size(M0IM,3)
-			SliceTime = x.Q.SliceReadoutTime;
-		else
-			error('SliceReadoutTime has to be a scalar or match the number of slices');
-		end
-    else
-        error(['Unknown x.readout_dim value:' x.readout_dim]);
-    end
-    
+    if size(M0IM, 3)<2
+		error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
+	end
+	
+    SliceTime = xASL_quant_SliceTimeVector(x,size(M0IM,3));
+        
     if ~isfield(x.Q, 'TissueT1') || isempty(x.Q.TissueT1)
         fprintf('%s\n', 'Warning: WM T1 set to 900 ms for 3T');
         % Here we use the WM T1, as we mask the M0 for the WM only, smooth it to a biasfield, 
@@ -393,7 +373,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     fprintf('%s\n', [xASL_num2str(mean(SignalPercentage)) ' to correct for background suppression']);
     fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime(:)')]);
     fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.TissueT1)]);
-    fprintf('%s\n\n', ['And SliceReadoutTime=' xASL_num2str(SliceTime)]);
+    fprintf('%s\n\n', ['And SliceTime=' xASL_num2str(SliceTime)]);
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
     
     if x.ApplyQuantification(4)==1
