@@ -50,9 +50,6 @@ xASL_adm_CreateDir(x.D.TissueVolumeDir);
 xASL_adm_CreateDir(x.D.FLAIR_CheckDir);
 % xASL_adm_CreateDir(x.D.FLAIR_REGDIR);
 
-xASL_adm_CreateDir(x.D.T1c_CheckDir);
-xASL_adm_CreateDir(x.D.T2_CheckDir);
-
 xASL_adm_CreateDir(x.D.ASLCheckDir);
 xASL_adm_CreateDir(x.D.MotionDir);
 % xASL_adm_CreateDir(x.D.RawEPIdir);

@@ -176,41 +176,22 @@ if ~x.mutex.HasState(StateName{1})
     % are dependent of the structural module for segmentation/registration)
     % don't remove any previous WMH_SEGM
     xASL_adm_CleanUpBeforeRerun(x.D.ROOT, [1 2], false, false, x.P.SubjectID);
-
-    if xASL_exist(x.P.Path_T1, 'file') % Fix multiple T1w iterations
-        IM = xASL_io_Nifti2Im(x.P.Path_T1);
-        if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
-            warning(['Too many dims, using first: ' x.P.Path_T1]);
-            xASL_Copy(x.P.Path_T1, x.P.Path_T1_ORI, true);
-            xASL_io_SaveNifti(x.P.Path_T1, x.P.Path_T1, IM(:,:,:,1,1,1,1), [], false);
-        end
-    end
-    if xASL_exist(x.P.Path_FLAIR, 'file') % Fix multiple FLAIR iterations
-        IM = xASL_io_Nifti2Im(x.P.Path_FLAIR);
-        if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
-            warning(['Too many dims, using first: ' x.P.Path_FLAIR]);
-            xASL_Move(x.P.Path_FLAIR, x.P.Path_FLAIR_ORI, true);
-            xASL_io_SaveNifti(x.P.Path_FLAIR, x.P.Path_FLAIR, IM(:,:,:,1,1,1,1), [], false);
-        end
-	end
-	if xASL_exist(x.P.Path_T2, 'file') % Fix multiple T2w iterations
-		IM = xASL_io_Nifti2Im(x.P.Path_T2);
-		if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
-			warning(['Too many dims, using first: ' x.P.Path_T2]);
-			xASL_Move(x.P.Path_T2, x.P.Path_T2_ORI, true);
-			xASL_io_SaveNifti(x.P.Path_T2, x.P.Path_T2, IM(:,:,:,1,1,1,1), [], false);
-		end
-	end
-	if xASL_exist(x.P.Path_T1c, 'file') % Fix multiple T1c iterations
-		IM = xASL_io_Nifti2Im(x.P.Path_T1c);
-		if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
-			warning(['Too many dims, using first: ' x.P.Path_T1c]);
-			xASL_Move(x.P.Path_T1c, x.P.Path_T1c_ORI, true);
-			xASL_io_SaveNifti(x.P.Path_T1c, x.P.Path_T1c, IM(:,:,:,1,1,1,1), [], false);
+	
+	% Fix multiple T1w|T2w|T1c|FLAIR iterations
+	listFile     = {x.P.Path_T1, x.P.Path_FLAIR, x.P.Path_T2, x.P.Path_T1c};
+	listFile_ORI = {x.P.Path_T1_ORI, x.P.Path_FLAIR_ORI, x.P.Path_T2_ORI, x.P.Path_T1c_ORI};
+	
+	for iFile = 1:length(listFile)
+		if xASL_exist(listFile{iFile}, 'file') % Fix multiple T1w iterations
+			IM = xASL_io_Nifti2Im(listFile{iFile});
+			if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
+				warning(['Too many dims, using first: ' listFile{iFile}]);
+				xASL_Copy(listFile{iFile}, listFile_ORI{iFile}, true);
+				xASL_io_SaveNifti(listFile{iFile}, listFile{iFile}, IM(:,:,:,1,1,1,1), [], false);
+			end
 		end
 	end
 end
-
 
 
 %% -----------------------------------------------------------------------------
@@ -244,6 +225,14 @@ if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status 
 		end
 
 		if xASL_exist(x.P.Path_T1c, 'file') || xASL_exist(x.P.Path_T2, 'file')
+			if xASL_exist(x.P.Path_T1c, 'file') && ~xASL_exist(x.D.T1c_CheckDir)
+				xASL_adm_CreateDir(x.D.T1c_CheckDir);
+			end
+			
+			if xASL_exist(x.P.Path_T2, 'file') && ~xASL_exist(x.D.T2_CheckDir)
+				xASL_adm_CreateDir(x.D.T2_CheckDir);
+			end			
+			
 			xASL_wrp_LinearReg_Others2T1w(x, x.bAutoACPC);
 		end
 			

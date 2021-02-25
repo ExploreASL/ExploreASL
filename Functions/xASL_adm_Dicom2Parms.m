@@ -88,16 +88,6 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 		FileList = {[fname ext]};
 	end
 	
-	%% ----------------------------------------------------------------------------------
-	% Quick & Dirty fix for multiple FLAIR/T1w NIfTIs/scale slopes,
-	% this should not give an error, but multiple ASL scale slopes should give an error
-	% Check if FLAIR occurs
-	isASL = true; % by default, assume these are ASL DICOMs
-	if ~isempty(findstr(FileList{1},'FLAIR')) || ~isempty(findstr(FileList{1},'T1')) ||...
-			~isempty(findstr(FileList{1},'T1c')) || ~isempty(findstr(FileList{1},'T2'))
-		isASL = false;
-	end
-	
     TryDicominfo = true; % this is only set to false below upon succesful DcmtkRead
     
 	if ~isempty(FileList)
