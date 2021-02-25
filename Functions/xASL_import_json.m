@@ -86,7 +86,7 @@ end
 sFields = fieldnames(x);
 for n=1:size(sFields,1)
     % Check if the current field is valid (char, numeric value, structure or cell array)
-    if ~(ischar(x.(sFields{n})) || isstruct(x.(sFields{n})) || isnumeric(x.(sFields{n})) || iscell(x.(sFields{n})))
+    if ~(ischar(x.(sFields{n})) || isstruct(x.(sFields{n})) || isnumeric(x.(sFields{n})) || islogical(x.(sFields{n})) || iscell(x.(sFields{n})))
         fprintf('\n%s\n',char(sFields{n}));
         warning('JSON field type could be invalid...');
     end
