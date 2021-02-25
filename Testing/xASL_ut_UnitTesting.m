@@ -65,6 +65,9 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
 
     % Unit test: xASL_io_Nifti2Im
     UnitTests(3) = xASL_ut_UnitTest_function_Nifti2Im(TestRepository);
+    
+    % Unit test: xASL_test_GetLogContent
+    UnitTests(4) = xASL_ut_UnitTest_function_GetLogContent(TestRepository);
 
     %% Print test results
     % clc
