@@ -141,9 +141,22 @@ end
 
 %% 6. Run ExploreASL on all Legacy-converted data
 if bTest(6)
-	error('Not yet implemented');
-    PathDataPar = fullfile(DerivativesDir, 'ExploreASL', 'DataPar.json');
-    ExploreASL_Master(PathDataPar, 1, 1, [], [], [1 2]); % don't run population module
-    
+	ListFolders = xASL_adm_GetFileList(conversionPath, '^.+$', 'FPListRec', [0 Inf], 1);
+	for iList=1:numel(ListFolders)
+		pathDerivatives = fullfile(ListFolders{iList},'derivatives');
+		% Process data that were converted to derivatives
+		if exist(pathDerivatives,'dir')
+			pathDerivatives = fullfile(pathDerivatives,'ExploreASL');
+			if exist(pathDerivatives,'dir')
+				ExploreASL_Master(fullfile(pathDerivatives,'DataPar.json'), 1, 1, [], [], [1 2]); % don't run population module
+			end
+		end
+	end
 end
+
+%% 5. Run the comparison of processed legacy-format data with the reference data
+if bTest(7)
+	error('Not yet implemented');
+end
+
 end

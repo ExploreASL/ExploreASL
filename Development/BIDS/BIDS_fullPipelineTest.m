@@ -12,7 +12,7 @@ cmdCloneFlavors = 'git clone https://github.com/ExploreASL/FlavorDatabase.git';
 
 %% Preparation for Jan
 clc
-pathExploreASL = '/home/janpetr/code/ExploreASL';
+pathExploreASL = '/home/janpetr/ExploreASL/ExploreASL';
 pathTest = '/pet/projekte/asl/data/BIDS';
 cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
 
@@ -40,7 +40,7 @@ xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 1 0 0 0]);
 %xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 1 0 0]);
 
 % Run the pipeline
-%xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 0 1 0]);
+xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 0 1 0]);
 
 % Check the pipeline results
 %xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 0 0 1]);
