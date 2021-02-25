@@ -50,8 +50,8 @@ end
 
 % Fields with these names need to have the time converted between XASL legacy and BIDS, and define their recommended range in ms
 convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
-convertTimeFieldsRange = [0.5        5                10            10                 10                   10              0                  100       10   100        5                  5;...% Minimum in ms
-                          500        20000            10000         5000               5000                 5000            2000               5000      500  5000       400                10000];% Maximum in ms   
+convertTimeFieldsRange = [0.5        5                10            10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
+                          500        20000            10000         5000               5000                 5000            400               5000      500  5000       400                10000];% Maximum in ms   
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
@@ -93,9 +93,18 @@ if ~isempty(inXasl)
 				if isnumeric(inXasl.(FieldsA{iA}))
 					% For non-zero fields, check if they are within the predefined range
 					if inXasl.(FieldsA{iA}) ~= 0
+						% For SliceTime - compare the difference of the first two fields
+						if strcmpi(FieldsA{iA},'SliceTime') || strcmpi(FieldsA{iA},'SliceReadoutTime')
+							valueCheck = inXasl.(FieldsA{iA});
+							if length(valueCheck) > 1
+								valueCheck = valueCheck(2) - valueCheck(1);
+							end
+						else
+							valueCheck = inXasl.(FieldsA{iA});
+						end
 						% If outside of the recommended range, then still convert, but issue a warning
-						if max(inXasl.(FieldsA{iA}) < convertTimeFieldsRange(1,iT)) || max(inXasl.(FieldsA{iA}) > convertTimeFieldsRange(2,iT))
-							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' xASL_num2str(inXasl.(FieldsA{iA}))...
+						if max(valueCheck < convertTimeFieldsRange(1,iT)) || max(valueCheck > convertTimeFieldsRange(2,iT))
+							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' xASL_num2str(valueCheck)...
 								', which is outside of the recommended range <'...
 								xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
 						end
