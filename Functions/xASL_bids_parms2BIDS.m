@@ -50,8 +50,8 @@ end
 
 % Fields with these names need to have the time converted between XASL legacy and BIDS, and define their recommended range in ms
 convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
-convertTimeFieldsRange = [0.5        5                10            10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
-                          500        20000            10000         5000               5000                 5000            400                5000      500  5000       400                10000];% Maximum in ms   
+convertTimeFieldsRange = [0.5        5                10            10                 10                   10              0                  100       10   100        5                  5;...% Minimum in ms
+                          500        20000            10000         5000               5000                 5000            2000               5000      500  5000       400                10000];% Maximum in ms   
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...

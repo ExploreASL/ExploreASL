@@ -49,8 +49,15 @@ function [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
     %% Check output
     if isnan(x.Q.SliceReadoutTime)
         error('qnt_PLDslicereadout expected but was NaN');
-    elseif min(x.Q.SliceReadoutTime)<5 || max(x.Q.SliceReadoutTime)>400
-        warning(['qnt_PLDslicereadout=' num2str(x.Q.SliceReadoutTime) ' is outside of its valid range 5-400 ms']);
+	else
+		if length(x.Q.SliceReadoutTime) == 1
+			ScalarSliceReadoutTime = x.Q.SliceReadoutTime(1);
+		else
+			ScalarSliceReadoutTime = abs(x.Q.SliceReadoutTime(2)-x.Q.SliceReadoutTime(1));
+		end
+		if min(ScalarSliceReadoutTime)<5 || max(ScalarSliceReadoutTime)>400
+			warning(['SliceTime=' num2str(ScalarSliceReadoutTime) ' is outside of its valid range 5-400 ms']);
+		end
     end
 
 end
