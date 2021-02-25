@@ -118,6 +118,12 @@ if exist(PathTSV, 'file')
     CellArrayOrig = CellArrayOrig(:, [1:SessionIndex-1 SessionIndex+1:end]);
     CellArray = [CellArray CellArrayOrig];
     
+	% If the participant ID is listed as number, then convert to char
+	ParticipantIndexNumeric = find(cellfun(@(y) isnumeric(y),CellArray(1:end,1)));
+	if ~isempty(ParticipantIndexNumeric)
+		CellArray(ParticipantIndexNumeric,1) = cellfun(@(y) num2str(y),CellArray(ParticipantIndexNumeric,1),'UniformOutput',false);
+	end
+
 else
     % 3C) Create required columns subjects & sessions from x.SUBJECTS & x.SESSIONS
 

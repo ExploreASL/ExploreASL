@@ -59,8 +59,8 @@ xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuratio
 
 % Some JSON fields need to be updated to fit the BIDS definition
 % This is a one way process of changing the names from old to new
-updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'PhilipsRWVIntercept' 'BackGrSupprPulses'                 'TotalAcquiredVolumes'};
-updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'        'RWVIntercept'        'BackgroundSuppressionNumberPulses' 'TotalAcquiredPairs'};
+updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'PhilipsRWVIntercept' 'BackGrSupprPulses'                 'TotalAcquiredVolumes'  'InitialPostLabelDelay'};
+updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'        'RWVIntercept'        'BackgroundSuppressionNumberPulses' 'TotalAcquiredPairs'    'PostLabelingDelay'};
 
 % These fields have different names in xASL and in BIDS
 % They are therefore renamed depending on the type of output
