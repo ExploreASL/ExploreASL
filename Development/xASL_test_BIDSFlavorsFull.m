@@ -142,7 +142,7 @@ if bTest(4)
 				warning('Here we expect a unix-ish system');
                 diary('off');
                 fclose('all'); % ensure that no file is locked
-                xASL_delete(fullfile(ListFolders{iList}, 'derivatives'));
+                xASL_delete(fullfile(ListFolders{iList}, 'derivatives'),true);
 			end
 			
 			% Run the legacy conversion
