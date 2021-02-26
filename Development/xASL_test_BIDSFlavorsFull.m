@@ -68,10 +68,10 @@ if bTest(1)
 		mkdir(conversionPath);
     end
     
-    if xASL_exist(flavorsPath)
+    if xASL_exist(flavorsPath,'dir')
         fList = xASL_adm_GetFileList(flavorsPath, [], 'List', [], 1);
     else
-        error('No source directory...');
+        error('No FlavorDatabase folder found...');
     end
 	for iList = 1:length(fList)
 		if ~exist(fullfile(conversionPath,fList{iList}), 'dir')
