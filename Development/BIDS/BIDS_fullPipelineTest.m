@@ -7,7 +7,12 @@
 
 %% Get Username
 clc
-username = getenv('username');
+if isunix
+    [~,username] = system('id -u -n');
+    username=username(1:end-1);
+else
+    username = getenv('username');
+end
 
 %% Preparation for Henk
 if strcmp(username,'henk')
@@ -17,7 +22,7 @@ if strcmp(username,'henk')
 end
 
 %% Preparation for Jan
-if strcmp(username,'jan')
+if strcmp(username,'janpetr')
     pathExploreASL = '/home/janpetr/ExploreASL/ExploreASL';
     pathTest = '/pet/projekte/asl/data/BIDS';
     cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
