@@ -68,4 +68,7 @@ xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 0 1 0]);
 % - check legacy conversion
 % - run the pipeline
 % - check the pipeline results
+[logContent] = xASL_test_GetLogContent(pathTest,0,1,1);
+
 % - convert the datapar.json if provided
+
