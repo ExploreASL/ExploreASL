@@ -427,6 +427,11 @@ if bRunSubmodules(2)
 					jsonDicom.PhoenixAnalyzed = xASL_bids_PhoenixProtocolAnalyzer(PhoenixParsed);
 				end
 				
+				% TotalAcquiredPairs - use only the maximum values from DICOM
+				if isfield(jsonDicom,'TotalAcquiredPairs') && ~isempty(jsonDicom.TotalAcquiredPairs) && length(jsonDicom.TotalAcquiredPairs)>1
+					jsonDicom.TotalAcquiredPairs = max(jsonDicom.TotalAcquiredPairs);
+				end
+				
 				if scaleFactor
 					imNii = imNii .* scaleFactor;
 				end
@@ -465,6 +470,9 @@ if bRunSubmodules(2)
 									(size(jsonLocal.(fn{1}),1)>1 && size(jsonLocal.(fn{1}),1) >1) ||...
 									~isequal((jsonLocal.(fn{1}))',jsonDicom.(fn{1}))
 								strDifferentFields = [strDifferentFields ' ' fn{1}];
+							end
+							if strcmp(fn{1},'TotalAcquiredPairs')
+								jsonDicom.(fn{1}) = jsonLocal.(fn{1});
 							end
 						end
 					end

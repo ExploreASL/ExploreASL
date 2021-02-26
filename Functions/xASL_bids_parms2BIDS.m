@@ -283,7 +283,8 @@ end
 
 % Remove zeros from PhoenixProtocol
 if isfield(outParms,'PhoenixProtocol')
-	outParms.PhoenixProtocol = strrep(outParms.PhoenixProtocol,0,'');
+	nullChar = char(0);
+	outParms.PhoenixProtocol = strrep(outParms.PhoenixProtocol,nullChar,'');
 end
 
 % If output is in XASL, then copy into Q subfield
