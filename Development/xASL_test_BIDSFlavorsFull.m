@@ -66,19 +66,29 @@ if bTest(1)
 	fprintf('Copying the source data to a temporary folder: %s\n',conversionPath);
 	if ~exist(conversionPath, 'dir')
 		mkdir(conversionPath);
-	end
-	
-	fList = xASL_adm_GetFileList(flavorsPath, [], 'List', [], 1);
+    end
+    
+    if xASL_exist(flavorsPath)
+        fList = xASL_adm_GetFileList(flavorsPath, [], 'List', [], 1);
+    else
+        error('No source directory...');
+    end
 	for iList = 1:length(fList)
 		if ~exist(fullfile(conversionPath,fList{iList}), 'dir')
 			mkdir(fullfile(conversionPath,fList{iList}));
 		end
 		if ~exist(fullfile(conversionPath,fList{iList}, 'sourcedata'), 'dir')
 			mkdir(fullfile(conversionPath,fList{iList}, 'sourcedata'));
-		end
-		system(['cp -r ' fullfile(flavorsPath,fList{iList},'sourcedata','*') ' ' fullfile(conversionPath,fList{iList},'sourcedata')]);
-		system(['cp -r ' fullfile(flavorsPath,fList{iList},'sourceStructure.json') ' ' fullfile(conversionPath,fList{iList},'sourceStructure.json')]);
-		system(['cp -r ' fullfile(flavorsPath,fList{iList},'studyPar.json') ' ' fullfile(conversionPath,fList{iList},'studyPar.json')]);
+        end
+        if ~ispc
+            system(['cp -r ' fullfile(flavorsPath,fList{iList},'sourcedata','*') ' ' fullfile(conversionPath,fList{iList},'sourcedata')]);
+            system(['cp -r ' fullfile(flavorsPath,fList{iList},'sourceStructure.json') ' ' fullfile(conversionPath,fList{iList},'sourceStructure.json')]);
+            system(['cp -r ' fullfile(flavorsPath,fList{iList},'studyPar.json') ' ' fullfile(conversionPath,fList{iList},'studyPar.json')]);
+        else
+            copyfile(fullfile(flavorsPath,fList{iList},'sourcedata'), fullfile(conversionPath,fList{iList},'sourcedata'));
+            copyfile(fullfile(flavorsPath,fList{iList},'sourceStructure.json'), fullfile(conversionPath,fList{iList},'sourceStructure.json'));
+            copyfile(fullfile(flavorsPath,fList{iList},'studyPar.json'), fullfile(conversionPath,fList{iList},'studyPar.json'));
+        end
 	end
 	
 	% Create a copy of the reference BIDS data
@@ -94,8 +104,12 @@ if bTest(1)
 		end
 		if ~exist(fullfile(referencePath,fList{iList}, 'rawdata'), 'dir')
 			mkdir(fullfile(referencePath,fList{iList}, 'rawdata'));
-		end
-		system(['cp -r ' fullfile(flavorsPath,fList{iList}, 'rawdata','*') ' ' fullfile(referencePath,fList{iList},'rawdata')]);
+        end
+        if ~ispc
+            system(['cp -r ' fullfile(flavorsPath,fList{iList}, 'rawdata','*') ' ' fullfile(referencePath,fList{iList},'rawdata')]);
+        else
+           copyfile(fullfile(flavorsPath,fList{iList}, 'rawdata'), fullfile(referencePath,fList{iList},'rawdata')); 
+        end
 	end
 end
 
@@ -126,6 +140,9 @@ if bTest(4)
 				end
 			else
 				warning('Here we expect a unix-ish system');
+                diary('off');
+                fclose('all'); % ensure that no file is locked
+                xASL_delete(fullfile(ListFolders{iList}, 'derivatives'));
 			end
 			
 			% Run the legacy conversion
@@ -154,7 +171,7 @@ if bTest(6)
 	end
 end
 
-%% 5. Run the comparison of processed legacy-format data with the reference data
+%% 7. Run the comparison of processed legacy-format data with the reference data
 if bTest(7)
 	error('Not yet implemented');
 end
