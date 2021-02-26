@@ -4,17 +4,31 @@
 
 % Please first run your local path initialization and clone the Flavors Database, the proceed with step
 % by step testing
-%% Preparation for Henk
+
+%% Get Username
 clc
-pathExploreASL = '/Users/henk/ExploreASL/ExploreASL';
-pathTest = '/Users/henk/ExploreASL/ASL/TestBIDS';
-cmdCloneFlavors = 'git clone https://github.com/ExploreASL/FlavorDatabase.git';
+username = getenv('username');
+
+%% Preparation for Henk
+if strcmp(username,'henk')
+    pathExploreASL = '/Users/henk/ExploreASL/ExploreASL';
+    pathTest = '/Users/henk/ExploreASL/ASL/TestBIDS';
+    cmdCloneFlavors = 'git clone https://github.com/ExploreASL/FlavorDatabase.git';
+end
 
 %% Preparation for Jan
-clc
-pathExploreASL = '/home/janpetr/ExploreASL/ExploreASL';
-pathTest = '/pet/projekte/asl/data/BIDS';
-cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
+if strcmp(username,'jan')
+    pathExploreASL = '/home/janpetr/ExploreASL/ExploreASL';
+    pathTest = '/pet/projekte/asl/data/BIDS';
+    cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
+end
+
+%% Preparation for Michael
+if strcmp(username,'matlab')
+    pathExploreASL = 'M:\SoftwareDevelopment\MATLAB\m.stritt\ExploreASL';
+    pathTest = 'M:\SoftwareDevelopment\MATLAB\m.stritt\TestBIDS';
+    cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
+end
 
 %% Clone the flavors database if necessary
 if ~exist(fullfile(pathTest,'FlavorDatabase'), 'dir')
