@@ -68,6 +68,9 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
     
     % Unit test: xASL_test_GetLogContent
     UnitTests(4) = xASL_ut_UnitTest_function_GetLogContent(TestRepository);
+    
+    % Unit test: xASL_bids_BIDS2Legacy
+    UnitTests(5) = xASL_ut_UnitTest_function_BIDS2Legacy(TestRepository);
 
     %% Print test results
     % clc
