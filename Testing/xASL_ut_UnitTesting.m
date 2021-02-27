@@ -71,22 +71,15 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
     
     % Unit test: xASL_bids_BIDS2Legacy
     UnitTests(5) = xASL_ut_UnitTest_function_BIDS2Legacy(TestRepository);
-
-    %% Print test results
-    % clc
-    fprintf('================================= TEST RESULTS =================================\n')
-    for it = 1:numel(UnitTests)
-        fprintf('TEST:\t\t%s\n',UnitTests(it).name)
-        if UnitTests(it).passed
-            fprintf('RESULTS:\t%s\n','Passed')
-        else
-            fprintf('RESULTS:\t%s\n','Failed')
-        end
-    end
-    fprintf('================================================================================\n')
     
     %% Export table as well
     UnitTestsTable = struct2table(UnitTests);
+    
+    %% Print test results
+    clc
+    fprintf('================================= TEST RESULTS =================================\n\n')
+    disp(UnitTestsTable);
+    fprintf('================================================================================\n')
 
 end
 
