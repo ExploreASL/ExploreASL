@@ -5,7 +5,7 @@ function xASL_bids_PrepareDRO(droTestPatient,droSubject)
 % 
 % INPUT:
 %   droTestPatient      - Path to the DRO (CHAR ARRAY, REQUIRED)
-%   droSubject          - Subject name (CHAR ARRAY, REQUIRED)
+%   droSubject          - Subject name (CHAR ARRAY, OPTIONAL, DEFAULT = 'sub-Sub1')
 %
 % OUTPUT:
 %   n/a
@@ -21,6 +21,11 @@ function xASL_bids_PrepareDRO(droTestPatient,droSubject)
 %               
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+
+    % Check input arguments
+    if nargin<2
+        droSubject = 'sub-Sub1'; % DEFAULT
+    end
 
     % Directory definitions
     perfDirectory = fullfile(droTestPatient,'rawdata',droSubject,'perf');
