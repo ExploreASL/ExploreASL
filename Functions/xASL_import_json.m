@@ -115,31 +115,44 @@ end
 
 end
 
-function [StructOut] = ConvertNumericalFields(StructIn)
-% Also remove invalid fields    
+%% ConvertNumericalFields (Convert strings which contain numbers to numbers, remove invalid fields)
+function [StructOut] = ConvertNumericalFields(StructIn)   
 
-FieldsAre = fields(StructIn);
-for iField=1:length(FieldsAre)
-    if length(FieldsAre{iField})>63
-        warning('Invalid field name, removing from struct');
-    else
-        TempField = xASL_str2num(StructIn.(FieldsAre{iField}));
-        if isnumeric(TempField) && size(TempField,1)>size(TempField,2)
-            % enforce a horizontal vector if numerical
-            TempField = TempField';
-        end
+    % Get fields
+    FieldsAre = fields(StructIn);
+    
+    % Iterate over fields
+    for iField=1:length(FieldsAre)
         
-        if min(isnumeric(TempField)) && min(~isnan(TempField))
-            % if there is a numerical vector inside the string
-%                 if min(isfinite(TempField))
-                StructOut.(FieldsAre{iField}) = TempField;
-%                 end
+        % Check maximum number of fields
+        if length(FieldsAre{iField})>63
+            warning('Invalid field name, removing from struct');
         else
-            % keep the string
-            StructOut.(FieldsAre{iField}) = StructIn.(FieldsAre{iField});
+            % Convert string to num
+            TempField = xASL_str2num(StructIn.(FieldsAre{iField}));
+            
+            % Check if we got an imaginary number
+            if isnumeric(TempField)
+                if imag(TempField)~=0
+                    TempField = StructIn.(FieldsAre{iField}); % Do not convert complex numbers
+                end
+            end
+            
+            % Check if conversion was correct
+            if isnumeric(TempField) && size(TempField,1)>size(TempField,2)
+                % Enforce a horizontal vector if numerical
+                TempField = TempField';
+            end
+
+            % Check if there is a numerical vector inside the string
+            if min(isnumeric(TempField)) && min(~isnan(TempField))
+                StructOut.(FieldsAre{iField}) = TempField;
+            else
+                % Otherwise keep the string
+                StructOut.(FieldsAre{iField}) = StructIn.(FieldsAre{iField});
+            end
         end
     end
-end
 
 
 end

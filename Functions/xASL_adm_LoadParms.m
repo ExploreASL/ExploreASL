@@ -66,24 +66,6 @@ namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency'.
 
 %% ------------------------------------------------------------------------
 %% 1) Load .mat parameter file (if exists)
-% if ~exist(ParmsPath, 'file') && isfield(x.Q,'ASL')
-%     warning('No ParmsPath found, trying to use general parameters!');
-%
-%     if ~isempty(regexp(Ffile,'ASL4D'))
-%         if bVerbose; fprintf('Use generic ASL parameters\n'); end
-%         ImType = 'ASL';
-%     elseif ~isempty(regexp(Ffile,'M0'))
-%         if bVerbose; fprintf('Use generic M0 parameters\n'); end
-%         ImType = 'M0';
-%     end
-%
-%     FieldsGeneric = fields(x.Q.(ImType));
-%     for iField=1:length(FieldsGeneric)
-%         if ~isfield(x.Q,FieldsGeneric{iField})
-%             x.Q.(FieldsGeneric{iField}) = x.Q.(ImType).(FieldsGeneric{iField});
-%         end
-%     end
-
 if exist(ParmsPath, 'file') && strcmp(Fext,'.mat')
     Parms = load(ParmsPath,'-mat');
     if  isfield(Parms,'parms')
@@ -124,28 +106,9 @@ else
 end
 
 % Load JSON file
-% VendorRestore = false; % default
 if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSON values overwrite the existing values
-    % But this can have some exceptions, e.g. the specification of sequence
-    % in x.Vendor
-
-    % if isfield(x,'Vendor') && (strcmpi(x.Vendor,'GE_product') || strcmpi(x.Vendor,'GE_WIP'))
-    % 	VendorBackup = x.Vendor;
-    % 	VendorRestore = true;
-    % end
 
 	JSONParms = spm_jsonread(JSONPath);
-    
-    % Check if PhaseEncodingAxis was read as imaginary number instead of char array
-    if isfield(JSONParms, 'PhaseEncodingAxis')
-        if isnumeric(JSONParms.PhaseEncodingAxis)
-            if JSONParms.PhaseEncodingAxis==1i
-                JSONParms.PhaseEncodingAxis = 'i';
-            elseif JSONParms.PhaseEncodingAxis==-1i
-                JSONParms.PhaseEncodingAxis = '-i';
-            end
-        end
-    end
 
     % Convert parameters to BIDS
 	Parms = xASL_bids_parms2BIDS(Parms, JSONParms, 0, 1);
