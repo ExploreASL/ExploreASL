@@ -165,6 +165,24 @@ if  xASL_exist(x.P.Path_FLAIR,'file')
     x = CreateVisual(x, T);
 end
 
+if  xASL_exist(x.P.Path_T2,'file')
+    % Same as above but then for T2
+    T.ImIn        = {{x.P.Pop_Path_rT2} {x.P.Pop_Path_rT2 x.P.Pop_Path_rc2T1}};
+    T.ImIn(3:4)   = T.ImIn(1:2);
+    T.DirOut(1:4) = {x.D.T2_CheckDir};
+
+    x = CreateVisual(x, T);
+end
+
+if  xASL_exist(x.P.Path_T1c,'file')
+    % Same as above but then for T1c
+    T.ImIn        = {{x.P.Pop_Path_rT1c} {x.P.Pop_Path_rT1c x.P.Pop_Path_rc2T1}};
+    T.ImIn(3:4)   = T.ImIn(1:2);
+    T.DirOut(1:4) = {x.D.T1c_CheckDir};
+
+    x = CreateVisual(x, T);
+end
+
 xASL_delete(Path_CentralWM_QC); % householding
 
 end
