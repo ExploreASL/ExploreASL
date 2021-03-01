@@ -53,7 +53,11 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
     % 3rd column contains parameter values
     
     % using exist(var) here as nargin doesnt work when debugging
-    DataParPath = char(DataParPath); % convert to char on default
+    if exist('DataParPath', 'var') && ~isempty(ProcessData)
+        DataParPath = char(DataParPath); % convert to char on default
+    else
+        DataParPath = [];
+    end
     if exist('ProcessData', 'var') && ~isempty(ProcessData)
         if ischar(ProcessData)
             ProcessData = str2num(ProcessData);
