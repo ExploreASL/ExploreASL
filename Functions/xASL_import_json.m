@@ -119,40 +119,34 @@ end
 function [StructOut] = ConvertNumericalFields(StructIn)   
 
     % Get fields
-    FieldsAre = fields(StructIn);
+    listFields = fields(StructIn);
     
     % Iterate over fields
-    for iField=1:length(FieldsAre)
+    for iField=1:length(listFields)
         
-        % Check maximum number of fields
-        if length(FieldsAre{iField})>63
-            warning('Invalid field name, removing from struct');
-        else
-            % Convert string to num
-            TempField = xASL_str2num(StructIn.(FieldsAre{iField}));
+		% Convert string to num
+		TempField = xASL_str2num(StructIn.(listFields{iField}));
             
-            % Check if we got an imaginary number
-            if isnumeric(TempField)
-                if imag(TempField)~=0
-                    TempField = StructIn.(FieldsAre{iField}); % Do not convert complex numbers
-                end
-            end
+		% Check if we got an imaginary number
+		if max(isnumeric(TempField))
+			if imag(TempField)~=0
+				TempField = StructIn.(listFields{iField}); % Do not convert complex numbers
+			end
+		end
             
-            % Check if conversion was correct
-            if isnumeric(TempField) && size(TempField,1)>size(TempField,2)
-                % Enforce a horizontal vector if numerical
-                TempField = TempField';
-            end
+		% Check if conversion was correct
+		if min(isnumeric(TempField)) && size(TempField,1)>size(TempField,2)
+			% Enforce a horizontal vector if numerical
+			TempField = TempField';
+		end
 
-            % Check if there is a numerical vector inside the string
-            if min(isnumeric(TempField)) && min(~isnan(TempField))
-                StructOut.(FieldsAre{iField}) = TempField;
-            else
-                % Otherwise keep the string
-                StructOut.(FieldsAre{iField}) = StructIn.(FieldsAre{iField});
-            end
-        end
+		% Check if there is a numerical vector inside the string
+		if min(isnumeric(TempField)) && min(~isnan(TempField))
+			StructOut.(listFields{iField}) = TempField;
+		else
+			% Otherwise keep the string
+			StructOut.(listFields{iField}) = StructIn.(listFields{iField});
+		end
     end
-
 
 end
