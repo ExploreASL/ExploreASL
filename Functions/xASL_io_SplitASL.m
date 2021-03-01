@@ -1,7 +1,7 @@
-function xASL_io_SplitASL_M0(inPath, iM0, iDummy)
-%xASL_io_SplitASL_M0 Splits ASL & M0 & Dummy images, when they are within the same NIfTI
+function xASL_io_SplitASL(inPath, iM0, iDummy)
+%xASL_io_SplitASL Splits ASL & M0 & Dummy images, when they are within the same NIfTI
 %
-% FORMAT: xASL_io_SplitASL_M0(inPath[, iM0, iDummy])
+% FORMAT: xASL_io_SplitASL(inPath[, iM0, iDummy])
 %
 % INPUT:
 %   inPath      - path to ASL NIfTI file (e.g. //analysis/ASL_1/ASL4D.nii) (REQUIRED)
@@ -22,12 +22,16 @@ function xASL_io_SplitASL_M0(inPath, iM0, iDummy)
 %              Siemens 3D GRASE puts the M0 as the first volume -> iM0 = 1;
 %              Some Siemens 3D GRASE puts a second Dummy control image -> iDummy = 2;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:
-% xASL_io_SplitASL_M0('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [1 2]);
+% EXAMPLE for moving the first two volumes to M0.nii:
+% xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [1 2]);
 % EXAMPLE for concatenating files only:
-% xASL_io_SplitASL_M0('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', []);
-% EXAMPLE for both excluding the Dummy scans and splitting M0:
-% xASL_io_SplitASL_M0('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [],1);
+% xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', []);
+% EXAMPLE for moving the first two volumes to M0.ii and removing the 3rd volume as dummy:
+% xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [1 2],3);
+% EXAMPLE for moving the third volume to M0.ii and removing the first 2 volumes as dummy:
+% xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', 3,[1 2]);
+% EXAMPLE for removing the 1st volume as dummy
+% xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [],1);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -38,21 +42,21 @@ function xASL_io_SplitASL_M0(inPath, iM0, iDummy)
 	if nargin < 2 || isempty(iM0)
 		iM0 = [];
 	else
-		if ischar(iM0)
-			iM0 = xASL_str2num(iM0);
-		end
+		iM0 = xASL_str2num(iM0);
 		iM0 = iM0(:)';
 	end
 	
 	if nargin < 3 || isempty(iDummy)
 		iDummy = [];
 	else
-		if ischar(iDummy)
-			iDummy = xASL_str2num(iDummy);
-		end
+		iDummy = xASL_str2num(iDummy);
 		iDummy = iDummy(:)';
 	end
 	
+	% Only run the splitting if indexes are provided
+	if isempty(iM0) && isempty(iDummy)
+		return;
+	end
 	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
 	%% Prepare paths
     [Fpath, Ffile] = xASL_fileparts(inPath);

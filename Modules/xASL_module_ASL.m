@@ -91,10 +91,8 @@ if ~isfield(x,'M0PositionInASL4D')
 	x.M0PositionInASL4D = [];
 end
 
-% Make sure to split the M0 from the ASL time-series if needed
-if ~isempty(x.M0PositionInASL4D) || ~isempty(x.DummyScanPositionInASL4D)
-	xASL_io_SplitASL_M0(x.P.Path_ASL4D, x.M0PositionInASL4D, x.DummyScanPositionInASL4D);
-end
+% Split the M0 and dummy scans from the ASL time-series
+xASL_io_SplitASL(x.P.Path_ASL4D, x.M0PositionInASL4D, x.DummyScanPositionInASL4D);
 
 % Do the same for the ancillary files
 FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat','FPList',[0 Inf]);
