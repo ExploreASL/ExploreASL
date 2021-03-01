@@ -27,7 +27,7 @@ function xASL_wrp_Resample2StandardSpace(x)
 
 %% -----------------------------------------------------------------
 %% 0) Admin
-if nargin<0 || isempty(x)
+if nargin<1 || isempty(x)
 	error('x-struct missing');
 end
 

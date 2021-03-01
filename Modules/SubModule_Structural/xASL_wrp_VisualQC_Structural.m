@@ -166,6 +166,9 @@ if  xASL_exist(x.P.Path_FLAIR,'file')
 end
 
 if  xASL_exist(x.P.Path_T2,'file')
+	% It is created only if the T2 file exists
+	xASL_adm_CreateDir(x.D.T2_CheckDir);
+	
     % Same as above but then for T2
     T.ImIn        = {{x.P.Pop_Path_rT2} {x.P.Pop_Path_rT2 x.P.Pop_Path_rc2T1}};
     T.ImIn(3:4)   = T.ImIn(1:2);
@@ -175,6 +178,9 @@ if  xASL_exist(x.P.Path_T2,'file')
 end
 
 if  xASL_exist(x.P.Path_T1c,'file')
+	% It is created only if the T1c file exists
+	xASL_adm_CreateDir(x.D.T1c_CheckDir);
+	
     % Same as above but then for T1c
     T.ImIn        = {{x.P.Pop_Path_rT1c} {x.P.Pop_Path_rT1c x.P.Pop_Path_rc2T1}};
     T.ImIn(3:4)   = T.ImIn(1:2);
