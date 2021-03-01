@@ -23,13 +23,17 @@ function xASL_wrp_Resample2StandardSpace(x)
 %
 % EXAMPLE: xASL_wrp_Resample2StandardSpace(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
-%
-% 2019-05-02 HJM
+% Copyright (C) 2015-2021 ExploreASL
 
+%% -----------------------------------------------------------------
+%% 0) Admin
+if nargin<0 || isempty(x)
+	error('x-struct missing');
+end
 
-
-
+if ~isfield(x,'P')
+	error('Missing the P-field inside x-struct');
+end
 
 %% -----------------------------------------------------------------
 %% 1) Define pathname list of structural images to be resliced
@@ -38,14 +42,15 @@ fprintf('%s\n','Reslice structural images & move to Population folder');
 INname         = {x.P.Path_T1; x.P.Path_c1T1; x.P.Path_c2T1};
 OUTname        = {x.P.Pop_Path_rT1; x.P.Pop_Path_rc1T1; x.P.Pop_Path_rc2T1};
 
-if xASL_exist(x.P.Path_c3T1, 'file')
-    INname{end+1} = x.P.Path_c3T1;
-    OUTname{end+1} = x.P.Pop_Path_rc3T1;
-end            
+% Add these files to the list to transform only if they exist
+INAdditional = {x.P.Path_c3T1       x.P.Path_FLAIR      x.P.Path_T2      x.P.Path_T1c};   % Source path
+OUTAdditional = {x.P.Pop_Path_rc3T1 x.P.Pop_Path_rFLAIR x.P.Pop_Path_rT2 x.P.Pop_Path_rT1c}; % Population path
 
-if xASL_exist(x.P.Path_FLAIR, 'file')
-    INname{end+1} = x.P.Path_FLAIR;
-    OUTname{end+1} = x.P.Pop_Path_rFLAIR;
+for iFile = 1:length(INAdditional)
+	if xASL_exist(INAdditional{iFile}, 'file')
+		INname{end+1} = INAdditional{iFile};
+		OUTname{end+1} = OUTAdditional{iFile};
+	end
 end
 
 %% -----------------------------------------------------------------

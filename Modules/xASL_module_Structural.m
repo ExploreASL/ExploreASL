@@ -427,9 +427,11 @@ end
 %% 8    Resample to standard space
 iState = 8;
 FileMissing = false; % Check availability NIfTIs in standard space, else redo warping
-List2Check = {x.P.Pop_Path_rT1 x.P.Pop_Path_rc1T1 x.P.Pop_Path_rc2T1};
+List2CheckSource = {x.P.Path_T1    , x.P.Path_T1      , x.P.Path_T1,        x.P.Path_FLAIR,     x.P.Path_T2,     x.P.Path_T1c};   % Source path
+List2Check =       {x.P.Pop_Path_rT1 x.P.Pop_Path_rc1T1 x.P.Pop_Path_rc2T1, x.P.Pop_Path_rFLAIR x.P.Pop_Path_rT2 x.P.Pop_Path_rT1c}; % Population path
 for iCheck=1:length(List2Check)
-    if ~xASL_exist(List2Check{iCheck},'file')
+    if xASL_exist(List2CheckSource{iCheck},'file') && ~xASL_exist(List2Check{iCheck},'file')
+		% If the source file in the native space exist and the file in the population folder doesn't
         FileMissing = true;
     end
 end
