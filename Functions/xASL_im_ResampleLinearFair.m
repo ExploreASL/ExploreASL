@@ -1,11 +1,13 @@
-function [output_res]=xASL_im_ResampleLinearFair(im_input,newsize)
+function [output_res]=xASL_im_ResampleLinearFair(im_input,newsize,showWaitbar)
 % xASL_im_ResampleLinearFair
 %
 % FORMAT:       [output_res]=xASL_im_ResampleLinearFair(im_input,newsize)
 % 
-% INPUT:        ...
+% INPUT:        im_input    - Image matrix (REQUIRED, DOUBLE, SINGLE or INT)
+%               newsize     - Size of ouput image (REQUIRED, INTEGER ARRAY)
+%               showWaitbar - Show waitbar (OPTIONAL, DEFAULT = true)
 %
-% OUTPUT:       ...
+% OUTPUT:       output_res  - Resampled image matrix (SINGLE)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Downsample (or upsample, works similarly) old_res image to
@@ -16,24 +18,38 @@ function [output_res]=xASL_im_ResampleLinearFair(im_input,newsize)
 %               {{NB:}} all dimensions of new_res should have equal size
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:      image = xASL_io_Nifti2Im('.\M0.nii.gz');
+%               output = xASL_im_ResampleLinearFair(image,[2,2,2],false);
+%
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
- 
+% Input check
+if nargin < 1 || nargin < 2 || ~exist('im_input','var') || ~exist('newsize','var')
+    error('Missing input arguments...');
+end
+if nargin < 3 || ~exist('showWaitbar','var')
+    showWaitbar = true;
+end
+
+% Calculation
 old_res          =single(im_input);
 new_res          =zeros(newsize(1),newsize(2),newsize(3));
  
 if newsize(1)~=size(im_input,1) && newsize(2)~=size(im_input,2) && newsize(3)~=size(im_input,3)
-h = waitbar(1,'Initializing resample_min...');  
+if showWaitbar
+    h = waitbar(1,'Initializing resample_min...');
+end
 %% 3-dimensional change
 for k=1:size(new_res,3)
     for j=1:size(new_res,2) % prepare new_res blocks
         for i=1:size(new_res,1) % prepare new_res blocks
  
             % Display progress
-            percentage      =( (k-1)*size(new_res,2)*size(new_res,1)+(j-1)*size(new_res,1)+i )   /   (size(new_res,3) * size(new_res,2) * size(new_res,1) );
-            h = waitbar(100*round(percentage),h,['resample ' num2str(100*round(percentage)) '% completed']);          
+            if showWaitbar
+                percentage      =( (k-1)*size(new_res,2)*size(new_res,1)+(j-1)*size(new_res,1)+i )   /   (size(new_res,3) * size(new_res,2) * size(new_res,1) );
+                h = waitbar(100*round(percentage),h,['resample ' num2str(100*round(percentage)) '% completed']);
+            end
 
             start1              =(i-1)* (size(old_res,1) / size(new_res,1));
             end1                =i    * (size(old_res,1) / size(new_res,1));
@@ -393,6 +409,14 @@ end
 else output_res=im_input;
 
 end
+    % Close waitbar after processing
+    if showWaitbar
+        try
+            close(h);
+        catch
+            warning('Waitbar manually closed...');
+        end
+    end
 end
 
 
