@@ -1,7 +1,7 @@
 function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
 %xASL_io_ExportVTK Export VTK image file.
 %
-% FORMAT: xASL_io_MeshExport(nifti, [mask])
+% FORMAT: xASL_io_MeshExport(pathExploreASL, nifti, [mask, exportPath])
 %
 % INPUT:
 %   pathExploreASL - Path to ExploreASL (REQUIRED, CHAR ARRAY)
@@ -13,10 +13,11 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
 %   n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Export VTK image file.
+% DESCRIPTION:      Export a VTK image file based on a 3D NIFTI or a 3D image matrix.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:          [x] = ExploreASL_Initialize('',0);
+% EXAMPLE:          To export the "test" NIFTI to structured points in VTK format, you can run the following lines.
+%                   [x] = ExploreASL_Initialize('',0);
 %                   nifti = '.\test.nii';
 %                   xASL_io_ExportVTK(x.MyPath,nifti);
 % __________________________________
