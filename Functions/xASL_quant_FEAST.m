@@ -53,20 +53,19 @@ xASL_adm_CreateDir(x.D.TTCheckDir);
 for iSession=1:2
     % Load data
     CBF{iSession} = xASL_io_Nifti2Im(PathCBF{iSession});
-    Gradient{iSession} = xASL_io_Nifti2Im(fullfile(x.D.PopDir, ['SliceGradient_extrapolated_' x.P.SubjectID '_' x.SESSIONS{iSession} '.nii']));
+    SliceNumber = xASL_io_Nifti2Im(fullfile(x.D.PopDir, ['SliceGradient_extrapolated_' x.P.SubjectID '_' x.SESSIONS{iSession} '.nii']));
 	% Obtain the correct SliceTime
 	imASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
 	nSlices = size(imASL.dat,3);
 	SliceTime = xASL_quant_SliceTimeVector(x,nSlices);
 	
     % Correct different PLD scales
-	imGradientRounded = round(Gradient{iSession});
-	imGradientRounded(imGradientRounded<1) = 1;
-	imGradientRounded(imGradientRounded>length(SliceTime)) = length(SliceTime);
-	PLD{iSession} = x.Q.Initial_PLD + SliceTime(imGradientRounded);
+	SliceNumber = round(SliceNumber);
+	SliceNumber(SliceNumber<1) = 1;
+	SliceNumber(SliceNumber>length(SliceTime)) = length(SliceTime);
+	PLD{iSession} = x.Q.Initial_PLD + SliceTime(SliceNumber);
 	
-    Gradient{iSession} = exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.LabelingDuration./x.Q.BloodT1)) );
-    CBF{iSession} = CBF{iSession}./Gradient{iSession};
+    CBF{iSession} = CBF{iSession}./(exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.LabelingDuration./x.Q.BloodT1)) ));
 end
 % Average different PLD scales
 PLD_combined= (PLD{1}+PLD{2})./2;

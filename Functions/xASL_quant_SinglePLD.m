@@ -1,11 +1,11 @@
-function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x)
+function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x)
 %xASL_quant_SinglePLD % Perform a multi-step quantification
-% FORMAT: [ScaleImage[, CBF]] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x)
+% FORMAT: [ScaleImage[, CBF]] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x)
 %
 % INPUT:
 %   PWI             - image matrix of perfusion-weighted image (REQUIRED)
 %   M0_im           - M0 image (can be a single number or image matrix) (REQUIRED)
-%   SliceGradient   - image matrix showing slice number in current ASL space (REQUIRED for 2D multi-slice)
+%   imSliceNumber   - image matrix showing slice number in current ASL space (REQUIRED for 2D multi-slice)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
 %
 % OUTPUT:
@@ -32,7 +32,7 @@ function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x)
 %              PWI stage)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x);
+% EXAMPLE: [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
@@ -76,20 +76,20 @@ else
         case '2d' % Load slice gradient
             fprintf('%s\n','2D sequence, accounting for SliceReadoutTime');
 
-            SliceGradient = double(SliceGradient);
+            imSliceNumber = double(imSliceNumber);
             % Correct NaNs
             % Fix reslicing errors:
-            if sum(isnan(SliceGradient(:)))>0
-                SliceGradient = xASL_im_ndnanfilter(SliceGradient,'gauss',[16 16 16],2); % code doesn't smooth, only extrapolates
+            if sum(isnan(imSliceNumber(:)))>0
+                imSliceNumber = xASL_im_ndnanfilter(imSliceNumber,'gauss',[16 16 16],2); % code doesn't smooth, only extrapolates
             end
 
-            SliceGradient(~isfinite(SliceGradient)) = 1;
-            SliceGradient(SliceGradient<1) = 1;
+            imSliceNumber(~isfinite(imSliceNumber)) = 1;
+            imSliceNumber(imSliceNumber<1) = 1;
 			
-			imGradientRounded = round(SliceGradient);
-			imGradientRounded(imGradientRounded<1) = 1;
-			imGradientRounded(imGradientRounded>length(SliceTime)) = length(SliceTime);
-			ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceTime(imGradientRounded)); % effective/net PLD
+			imSliceNumber = round(imSliceNumber);
+			imSliceNumber(imSliceNumber<1) = 1;
+			imSliceNumber(imSliceNumber>length(SliceTime)) = length(SliceTime);
+			ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceTime(imSliceNumber)); % effective/net PLD
         otherwise
             error('Wrong x.readout_dim value!');
     end
