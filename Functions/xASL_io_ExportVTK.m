@@ -1,7 +1,7 @@
 function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
 %xASL_io_ExportVTK Export VTK image file.
 %
-% FORMAT: xASL_io_MeshExport(pathExploreASL, nifti, [mask, exportPath])
+% FORMAT: xASL_io_ExportVTK(pathExploreASL, nifti, [mask, exportPath])
 %
 % INPUT:
 %   pathExploreASL - Path to ExploreASL (REQUIRED, CHAR ARRAY)
