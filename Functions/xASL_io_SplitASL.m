@@ -43,6 +43,9 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 		iM0 = [];
 	else
 		iM0 = xASL_str2num(iM0);
+		if size(iM0,1)>1 && size(iM0,2)>1
+			warning('M0PositionInASL4D should be provided as a vector and not as a matrix')
+		end
 		iM0 = iM0(:)';
 	end
 	
@@ -50,6 +53,9 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 		iDummy = [];
 	else
 		iDummy = xASL_str2num(iDummy);
+		if size(iDummy,1)>1 && size(iDummy,2)>1
+			warning('DummyPositionInASL4D should be provided as a vector and not as a matrix')
+		end
 		iDummy = iDummy(:)';
 	end
 	
