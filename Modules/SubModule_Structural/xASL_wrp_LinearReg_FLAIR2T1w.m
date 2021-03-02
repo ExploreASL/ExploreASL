@@ -28,6 +28,9 @@ if nargin<2 || isempty(bAutoACPC)
     bAutoACPC = true;
 end
 
+if ~xASL_exist(x.P.Path_FLAIR, 'file')
+	return;
+end
 
 fprintf('\n%s\n','---------------------------------');
 fprintf('%s\n','FLAIR.nii detected, processing...');

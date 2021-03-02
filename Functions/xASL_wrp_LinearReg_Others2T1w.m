@@ -25,6 +25,9 @@ if nargin<2 || isempty(bAutoACPC)
     bAutoACPC = true;
 end
 
+if (~xASL_exist(x.P.Path_T1c, 'file')) && (~xASL_exist(x.P.Path_T2, 'file'))
+	return;
+end
 
 fprintf('\n%s\n','----------------------------------------');
 fprintf('%s\n','T1c.nii or T2.nii detected, processing...');

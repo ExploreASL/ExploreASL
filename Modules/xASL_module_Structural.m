@@ -220,13 +220,9 @@ iState = 2;
 if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status files, & locks current run
     if xASL_exist(x.P.Path_FLAIR, 'file') || xASL_exist(x.P.Path_T1c, 'file') || xASL_exist(x.P.Path_T2, 'file')
 		
-		if xASL_exist(x.P.Path_FLAIR, 'file')
-			xASL_wrp_LinearReg_FLAIR2T1w(x, x.bAutoACPC);
-		end
+		xASL_wrp_LinearReg_FLAIR2T1w(x, x.bAutoACPC);
 
-		if xASL_exist(x.P.Path_T1c, 'file') || xASL_exist(x.P.Path_T2, 'file')
-			xASL_wrp_LinearReg_Others2T1w(x, x.bAutoACPC);
-		end
+		xASL_wrp_LinearReg_Others2T1w(x, x.bAutoACPC);
 			
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
