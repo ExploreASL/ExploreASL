@@ -228,7 +228,7 @@ if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status 
         xASL_adm_CompareDataSets([], [], x); % unit testing
         x.mutex.DelState(StateName{iState+1});
 	else
-		if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR, T2, or T1c data found, skipping...']);end
+		if bO; fprintf('%s\n',[StateName{iState} ': No FLAIR, T2w, or T1w-c data found, skipping registering them to T1w.']);end
         x.mutex.AddState(StateName{iState});        
     end
 
