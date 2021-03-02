@@ -57,20 +57,20 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
 
     %% Test Workflow
 
-    % Unit test: xASL_tsvRead
-    UnitTests(1) = xASL_ut_UnitTest_function_tsvRead(TestRepository);
-
-    % Unit test: xASL_tsvWrite
-    UnitTests(2) = xASL_ut_UnitTest_function_tsvWrite(TestRepository);
-
-    % Unit test: xASL_io_Nifti2Im
-    UnitTests(3) = xASL_ut_UnitTest_function_Nifti2Im(TestRepository);
+    % Get unit tests
+    addpath(fullfile(scriptPath,'UnitTests'));
+    fileList = dir(fullfile(scriptPath,'UnitTests','*.m'));
     
-    % Unit test: xASL_test_GetLogContent
-    UnitTests(4) = xASL_ut_UnitTest_function_GetLogContent(TestRepository);
+    % Iterate over tests
+    for test = 1:size(fileList,1)
+        testScript = fileList(test).name;
+        [~,testScript,~] = fileparts(testScript);
+        testHandle = str2func(testScript);
+        UnitTests(test) = testHandle(TestRepository);
+    end
+        
     
-    % Unit test: xASL_bids_BIDS2Legacy
-    UnitTests(5) = xASL_ut_UnitTest_function_BIDS2Legacy(TestRepository);
+    
     
     %% Export table as well
     UnitTestsTable = struct2table(UnitTests);
