@@ -1380,10 +1380,21 @@ end
 							end
 						end
 						
-						% Merge NIfTIs if there are multiples
-						if length(nii_files)>1
-							1;
+						%% In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
+						[~,~,scanExtension] = xASL_fileparts(scanpath);
+						if ~isempty(regexpi(scanExtension,'par|rec')) && length(nii_files)==1 && ~isempty(regexpi(scan_name,'ASL'))
+							% For a PAR/REC files that produces a single ASL4D NIFTI
+							imASL = xASL_io_Nifti2Im(nii_files{1});
+							% If multiple dynamics
+							if size(imASL,4) > 1
+								% Then reshuffle them
+								imASLreordered = zeros(size(imASL));
+								imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
+								imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
+								xASL_io_SaveNifti(nii_files{1},nii_files{1},imASLreordered);
+							end
 						end
+						% Merge NIfTIs if there are multiples
 						% For ASL or M0, merge multiple files
 						if length(nii_files)>1
 							if ~isempty(strfind(scan_name,'ASL4D'))

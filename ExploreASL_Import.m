@@ -556,7 +556,7 @@ for iSubject=1:nSubjects
                                 [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, 'DicomFilter', imPar.dcmExtFilter, 'Verbose', imPar.bVerbose, 'Overwrite', imPar.bOverwrite, 'Version', imPar.dcm2nii_version, 'x', x);
 
                                 % If dcm2nii produced a warning or error, catch this & store it
-                                if ~isempty(MsgDcm2nii) && ~isempty(regexp(lower(MsgDcm2nii),'.*(warning|error).*')) % if it contains a warning/error
+                                if ~isempty(MsgDcm2nii) && ~isempty(regexp(lower(MsgDcm2nii),'.*(error).*')) % if it contains a warning/error
                                     dcm2niiCatchedErrors = CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ['dcm2nii_' imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
                                 end
 
@@ -572,12 +572,23 @@ for iSubject=1:nSubjects
                             first_match = xASL_adm_GetFileList(scanpath, ['.*' imPar.dcmExtFilter],'FPList',[0 Inf]);
                             if  ~isempty(first_match); first_match = first_match{1}; end
                         end
-                    end
-
-                    %% Merge NIfTIs if there are multiples
-					if length(nii_files)>1
-						1;
 					end
+
+					%% In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
+					[~,~,scanExtension] = xASL_fileparts(scanpath);
+					if ~isempty(regexpi(scanExtension,'par|rec')) && length(nii_files)==1 && ~isempty(regexpi(scan_name,'ASL'))
+						% For a PAR/REC files that produces a single ASL4D NIFTI
+						imASL = xASL_io_Nifti2Im(nii_files{1});
+						% If multiple dynamics
+						if size(imASL,4) > 1
+							% Then reshuffle them
+							imASLreordered = zeros(size(imASL));
+							imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
+							imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
+							xASL_io_SaveNifti(nii_files{1},nii_files{1},imASLreordered);
+						end
+					end
+                    %% Merge NIfTIs if there are multiples
 					% For ASL or M0, merge multiple files
 					if length(nii_files)>1 
 						if ~isempty(strfind(scan_name,'ASL4D'))
