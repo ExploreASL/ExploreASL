@@ -44,19 +44,24 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
     end
     
     % Check dimensions
-    if numel(size(image))~=3
+    if numel(size(image))~=3 && numel(size(image))~=4
         error('Input image dimensions are incorrect...');
     end
+    if numel(size(image))==4
+        fprintf('4D image will be exported as a VTK time series...\n');
+    end
 
-    % Apply mask
-    if nargin > 2 && exist('mask','var')
-        if ~isempty(mask)
-            % Get mask
-            imageMask = xASL_io_Nifti2Im(mask);
-            % Resample mask to image
-            [maskResampled] = xASL_im_ResampleLinearFair(imageMask,size(image));
-            % Apply mask
-            image = image.*maskResampled;
+    % Apply mask (Only supported for 3D images right now)
+    if numel(size(image))==3
+        if nargin > 2 && exist('mask','var')
+            if ~isempty(mask)
+                % Get mask
+                imageMask = xASL_io_Nifti2Im(mask);
+                % Resample mask to image
+                [maskResampled] = xASL_im_ResampleLinearFair(imageMask,size(image));
+                % Apply mask
+                image = image.*maskResampled;
+            end
         end
     end
     
@@ -65,19 +70,38 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
         if ischar(nifti)
             % Define export file
             folder = fileparts(nifti);
-            exportPath = fullfile(folder,'export.vtk');
+            if numel(size(image))==3 % 3D
+                exportPath = fullfile(folder,'export.vtk');
+            else % 4D
+                exportPath = fullfile(folder,'export-NUM.vtk');
+            end
         else
             % Neither export path nor nifti path given
-            exportPath = fullfile(pwd,'export.vtk');
+            if numel(size(image))==3 % 3D
+                exportPath = fullfile(pwd,'export.vtk');
+            else % 4D
+                exportPath = fullfile(pwd,'export-NUM.vtk');
+            end
         end
     end
     
     % Select export method
     fprintf('Export vtk as structured points...\n');
-    image = squeeze(image);
+    
     % Export to vtk (MIT-License) % https://www.mathworks.com/matlabcentral/fileexchange/47814-vtkwrite-exports-various-2d-3d-data-to-paraview-in-vtk-file-format
     readAndPrintTextFile(fullfile(pathExploreASL,'External','vtkwrite','MIT_License.txt'));
-    vtkwrite(exportPath, 'structured_points', 'image', image)
+    if numel(size(image))==3 % 3D
+        image = squeeze(image);
+        vtkwrite(exportPath, 'structured_points', 'image', image)
+    end
+    if numel(size(image))==4 % 4D
+        % Iterate over fourth dimension
+        for frame3D = 1:size(image,4)
+            exportPath3D = char(strrep(exportPath,'NUM',string(frame3D)));
+            image3D = image(:,:,:,frame3D);
+            vtkwrite(exportPath3D, 'structured_points', 'image', image3D)
+        end
+    end
 
 end
 
