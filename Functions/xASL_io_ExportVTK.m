@@ -5,7 +5,7 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
 %
 % INPUT:
 %   pathExploreASL - Path to ExploreASL (REQUIRED, CHAR ARRAY)
-%   nifti          - Path to NIFTI image or image matrix (REQUIRED, CHAR ARRAY or 3D IMAGE)
+%   nifti          - Path to NIFTI image or image matrix (REQUIRED, CHAR ARRAY or 3D/4D IMAGE)
 %   mask           - Path to NIFTI mask (OPTIONAL, CHAR ARRAY, DEFAULT = [])
 %   exportPath     - Path of the exported VTK file (OPTIONAL, DEFAULT = nifti path -> export.vtk)
 %
@@ -13,7 +13,8 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
 %   n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      Export a VTK image file based on a 3D NIFTI or a 3D image matrix.
+% DESCRIPTION:      Export a VTK image file based on a 3D NIFTI or a 3D/4D image matrix.
+%                   4D images will be exported as a VTK time series (export-1.vtk, export-2.vtk, etc.).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:          To export the "test" NIFTI to structured points in VTK format, you can run the following lines.
