@@ -12,6 +12,8 @@ function [output_res]=xASL_im_ResampleLinearFair(im_input,newsize,showWaitbar)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Downsample (or upsample, works similarly) old_res image to
 %               low_res image, trilinear.
+%               We recommend using "xASL_spm_Resample" instead, because of
+%               better performance.
 %
 %               {{NB:}} new_res should fit exactly integer fold in old_res
 %
