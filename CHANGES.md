@@ -1,3 +1,70 @@
+# ExploreASL v1.5.0
+
+----
+## Versions included software
+Versions included & used third-party tools (see /External/README_SPM.txt):
+
+SPM12 7219 
+CAT12 r1615 
+LST 2.0.15 
+
+----
+## Feature improvements (still backward compatible)
+
+* #39: Create PV-corrected GM & WM CBF maps in native space
+* #56:  Add Mindboggle atlas to ExploreASL and restructure general atlas access in population module
+* #283: `xASL_stat_GetROIstatistics` provide more feedback on missing images
+* #299: Move `CustomScripts` with study-specific scripts to a separate repository
+* #302: Remove server calls in CAT12 functions
+* #313: Move GUI to a separate repository
+* #351: T2 and T1c files are now also aligned to the T1w and outputted to standard space
+* #354: Added an option x.DummyPositionInASL4D that removes marked dummy scans when splitting ASL to ASL+M0+dummy
+* #356: Internally restructure SliceTime allowing ExploreASL now to work with multi-band 2D EPI as well or any other SliceTime order
+
+----
+## Work in progress
+
+### ASL-BIDS
+* #163,#189,#357,#373: Conversion from DICOM to BIDS
+* #334,#382: Import of PAR-REC to BIDS
+* #343: Add separate M0 option to mTrial import
+
+### Compilation/stand-alone version
+* #335: All input arguments can be passed in the deployed mode
+* #380: Enable advanced input parsing for xASL compiled
+
+----
+
+## Bug Fixes
+
+* #228: Fix CAT12 warnings with non-existent field cm
+* #272: Fix errors in JSON import of ASL sidecars
+* #273,#285,#291,#363: Minor fixes in input parameter administration
+* #276,#280,#288,#329: Fix error in reading TSV files with unclear number of columns
+* #282: Population module is run serially in otherwise parallel mode
+* #292: `xASL_qc_SortBySpatialCoV` now use all subjects without skipping
+* #305: `xASL_adm_UnixPath`: bug with Windows+WSL
+* #306,#378: Fix JSON reading with 'i' interpreted as a complex number
+* #309: Fix non-linear registration of T1w to standard space with too high T1w values
+* #312: `xASL_stat_GetROIstatistics` fix skipping of actual ROI extraction
+* #325: `xASL_adm_CleanUpBeforeRerun` delete files correctly
+* #339: Fix JSON reading of special characters
+
+----
+
+## Documentation
+* #7: Create README files in subfolders and added to interactive documentation 
+* #279, #345: Move documentation to a separate repository
+* #300,#318: Improve ExploreASL tutorial
+* #355: Documentation improvements regarding input parameters
+
+## Testing
+* #193,#350: Testing DICOM to BIDS conversion against a reference
+* #294: Implement initial unit testing framework
+* #326: Parse warnings/errors from all log in all subdirectories
+* #369: Unit testing of `xASL_test_getLogContent`
+* #371,#376: Testing script for the DICOM->BIDS->Legacy conversion and processing
+
 # ExploreASL v1.4.0
 
 ----
