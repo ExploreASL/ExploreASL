@@ -63,9 +63,7 @@ if ~x.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 else
 	% Calculate the vector of SliceTime
-	imASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
-	nSlices = size(imASL.dat,3);
-	SliceTime = xASL_quant_SliceTimeVector(x,nSlices);
+	SliceTime = xASL_quant_SliceTimeVector(x,x.P.Path_ASL4D);
 	
     %% 1    PLD scalefactor (gradient if 2D multi-slice)
     switch lower(x.readout_dim)

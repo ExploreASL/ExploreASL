@@ -157,7 +157,7 @@ end
 
 %% -----------------------------------------------------------------------------------------------
 %% 2) Quantify M0 (correction scale slope & incomplete T1 recovery)
-M0_im = xASL_quant_M0(xASL_io_Nifti2Im(x.P.Path_rM0), x);
+M0_im = xASL_quant_M0(x.P.Path_rM0, x);
 
 
 

@@ -1,16 +1,18 @@
-function SliceTime = xASL_quant_SliceTimeVector(x,nSlices)
+function SliceTime = xASL_quant_SliceTimeVector(x,imPathMatrix)
 %xASL_quant_SliceTimeVector Calculates the vector of slice-times for the given number of slices
 %
-% FORMAT: SliceTime = xASL_quant_SliceTimeVector(x,nSlices)
+% FORMAT: SliceTime = xASL_quant_SliceTimeVector(x,imPathMatrix)
 %
 % INPUT:
-%   x          - struct containing pipeline environment parameters (REQUIRED)
-%   nSlices    - number of slices in ASL native space to calculate the SliceTime for (REQUIRED)
+%   x            - struct containing pipeline environment parameters (REQUIRED)
+%   imPathMatrix - path to the image or an image matrix used to calculated the number of slices to calculate the SliceTime for (REQUIRED)
 % OUTPUT:
-%   SliceTime  - a vector of SliceTimes with the length nSlices
+%   SliceTime  - a vector of SliceTimes with the length corresponding to the third dimension in imPathMatrix
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function takes the x.SliceReadoutTime, which can be a vector or scalar and creates a vector
 %              out of it with the correct length. It also checks the x.readout_dim for which it returns 0.
+%              It loads the image from imPathMatrix and calculates the SliceTime according to the number of slices in the third dimension
+%              If a path is given, it also checks if it can find a JSON and loads it a looks for SliceTime as a replacement for the value in x-struct
 %
 % 0. Admin
 % 1. ShortestTR
@@ -26,8 +28,44 @@ if nargin < 1 || isempty(x)
 	error('The x-structure needs to be provided');
 end
 
-if nargin < 2 || isempty(nSlices) 
-	error('The nSlices parameter needs to be provided');
+if nargin < 2 || isempty(imPathMatrix) 
+	error('The imPathMatrix parameter needs to be provided');
+end
+
+% Loads the matrix if path is provided
+if ischar(imPathMatrix)
+	% If path was given, load and check its third dimension
+	imMatrix = xASL_io_ReadNifti(imPathMatrix);
+	nSlices = size(imMatrix.dat,3);
+	
+	% Additionally, look for the JSON sidecar and its content
+	[Fpath, Ffile, ~] = xASL_fileparts(imPathMatrix);
+	pathJson = fullfile(Fpath,[Ffile,'.json']);
+	
+	% There might be an additional 'r' at the start to remove
+	if ~xASL_exist(pathJson,'file') && (Ffile(1) == 'r')
+		pathJson = fullfile(Fpath,[Ffile(2:end),'.json']);
+	end
+	
+	% Check if the JSON exists
+	if xASL_exist(pathJson,'file')
+		parmsLocal = spm_jsonread(pathJson);
+		% Loads and converts to the Legacy format
+		parmsLocal = xASL_bids_parms2BIDS([], parmsLocal, 0);
+		
+		% Gets the SliceReadoutTime out of it
+		if isfield(parmsLocal,'Q') && isfield(parmsLocal.Q,'SliceReadoutTime') && ~isempty(parmsLocal.Q.SliceReadoutTime)
+			% If the field from JSON differs with the x-struct, but the JSON variant has the correct length, then replace it
+			if ~isequal(parmsLocal.Q.SliceReadoutTime(:),x.Q.SliceReadoutTime(:)) &&...
+					( (length(parmsLocal.Q.SliceReadoutTime) == 1) || (length(parmsLocal.Q.SliceReadoutTime) == nSlices))
+				x.Q.SliceReadoutTime = parmsLocal.Q.SliceReadoutTime;
+				warning(['Replacing the x-struct SliceReadoutTime with the one from: ' pathJson]);
+			end
+		end
+	end
+else
+	% If a matrix was given, check its third dimension
+	nSlices = size(imPathMatrix,3);
 end
 
 % The readout_dim needs to be provided
