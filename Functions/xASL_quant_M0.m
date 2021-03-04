@@ -268,7 +268,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 		error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
 	end
 	
-    SliceTime = xASL_quant_SliceTimeVector(x,size(M0IM,3));
+    SliceTime = xASL_quant_SliceTimeVector(x,M0IM);
         
     if ~isfield(x.Q, 'TissueT1') || isempty(x.Q.TissueT1)
         fprintf('%s\n', 'Warning: WM T1 set to 900 ms for 3T');
@@ -282,24 +282,24 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     elseif ~isfield(x.Q, 'PresaturationTime') || isempty(x.Q.PresaturationTime)
         fprintf('x.Q.PresaturationTime is missing or empty, using default value\n');
         fprintf('This assumes that a pre-saturation pulse has been played at the start of the sequence\n');
-        switch x.Q.LabelingType
-            case 'PASL'
+        switch lower(x.Q.LabelingType)
+            case 'pasl'
                 x.Q.PresaturationTime = 1;
-            case {'CASL' ',PCASL'}
+            case {'casl' 'pcasl'}
                 x.Q.PresaturationTime = 1;
             otherwise
                 warning('Unknown labeling strategy, we dont know the presaturation timing for this');
         end
 	end
 	   
-	switch x.Q.LabelingType
-		case 'PASL'
+	switch lower(x.Q.LabelingType)
+		case 'pasl'
 			if isfield(x.Q,'Initial_PLD')
 				ReadoutTime = x.Q.Initial_PLD;
 			else
 				ReadoutTime = x.Initial_PLD;
 			end
-		case {'CASL' ',PCASL'}
+		case {'casl' 'pcasl'}
 			if isfield(x.Q,'Initial_PLD')
 				ReadoutTime = x.Q.Initial_PLD + x.Q.LabelingDuration;
 			else
@@ -374,7 +374,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     fprintf('%s\n', [xASL_num2str(mean(SignalPercentage)) ' to correct for background suppression']);
     fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime(:)')]);
     fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.TissueT1)]);
-    fprintf('%s\n\n', ['And SliceTime=' xASL_num2str(SliceTime)]);
+    fprintf('%s\n\n', ['And SliceTime=' xASL_num2str(SliceTime(:)')]);
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
     
     if x.ApplyQuantification(4)==1
