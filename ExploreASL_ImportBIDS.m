@@ -1382,7 +1382,7 @@ end
 						
 						%% In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
 						[~,~,scanExtension] = xASL_fileparts(scanpath);
-						if ~isempty(regexpi(scanExtension,'par|rec')) && length(nii_files)==1 && ~isempty(regexpi(scan_name,'ASL'))
+						if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
 							% For a PAR/REC files that produces a single ASL4D NIFTI
 							imASL = xASL_io_Nifti2Im(nii_files{1});
 							% If multiple dynamics
@@ -1398,15 +1398,15 @@ end
 						% For ASL or M0, merge multiple files
 						if length(nii_files)>1
 							if ~isempty(strfind(scan_name,'ASL4D'))
-								nii_files = xASL_bids_MergeNifti(nii_files,'ASL');
+								nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
 							elseif  ~isempty(strfind(scan_name,'M0'))
-								nii_files = xASL_bids_MergeNifti(nii_files,'M0');
+								nii_files = xASL_bids_MergeNifti(nii_files, 'M0');
 							end
 						end
 						
 						% Extract relevant parameters from nifti header and append to summary file
 						summary_line = AppendNiftiParameters(nii_files);
-						converted_scans(iSubject,iSession,iScan) = 1;
+						converted_scans(iSubject, iSession, iScan) = 1;
 					end
 					
 					% extract relevant parameters from dicom header, if not

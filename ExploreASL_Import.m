@@ -457,7 +457,7 @@ for iSubject=1:nSubjects
 
                 % convert scan ID to a suitable name and set scan-specific parameters
                 if size(imPar.tokenScanAliases,2)==2
-                    iAlias = find(~cellfun(@isempty,regexp(lower(scanID),lower(imPar.tokenScanAliases(:,1)),'once')));
+                    iAlias = find(~cellfun(@isempty,regexpi(scanID,imPar.tokenScanAliases(:,1),'once')));
                     if ~isempty(iAlias)
                         scanNames{iScan} = imPar.tokenScanAliases{iAlias,2};
                     else
@@ -485,7 +485,7 @@ for iSubject=1:nSubjects
                 end
 
                 % now pick the matching one from the folder list
-                iMatch = find(strcmp(vSubjectIDs,subjectID) & strcmp(vVisitIDs, xASL_adm_CorrectName(visitID,2,'_')) & strcmp(vSessionIDs,sessionID) & strcmp(lower(vScanIDs),lower(scanID)) ); % only get the matching session
+                iMatch = find(strcmp(vSubjectIDs,subjectID) & strcmp(vVisitIDs, xASL_adm_CorrectName(visitID,2,'_')) & strcmp(vSessionIDs,sessionID) & strcmpi(vScanIDs,scanID) ); % only get the matching session
                 if isempty(iMatch)
                     % only report as missing if we need a scan for each session (i.e. ASL)
                     if sum(converted_scans(iSubject,iVisit,:,iScan))==0
@@ -534,7 +534,7 @@ for iSubject=1:nSubjects
                     xASL_adm_CreateDir(destdir);
 
                     % check if we have a nii(gz) file, or something that needs to be converted (parrec/dicom)
-                    if ~exist(scanpath, 'dir') && ~isempty(regexp(lower(scanpath),'(\.nii|\.nii\.gz)$'))
+                    if ~exist(scanpath, 'dir') && ~isempty(regexpi(scanpath,'(\.nii|\.nii\.gz)$'))
                         % we found a NIfTI file
                         % check if output exists
                         first_match = fullfile(destdir, [scan_name '.nii']);
@@ -556,7 +556,7 @@ for iSubject=1:nSubjects
                                 [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, 'DicomFilter', imPar.dcmExtFilter, 'Verbose', imPar.bVerbose, 'Overwrite', imPar.bOverwrite, 'Version', imPar.dcm2nii_version, 'x', x);
 
                                 % If dcm2nii produced a warning or error, catch this & store it
-                                if ~isempty(MsgDcm2nii) && ~isempty(regexp(lower(MsgDcm2nii),'.*(error).*')) % if it contains a warning/error
+                                if ~isempty(MsgDcm2nii) && ~isempty(regexpi(MsgDcm2nii,'.*(error).*')) % if it contains a warning/error
                                     dcm2niiCatchedErrors = CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ['dcm2nii_' imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
                                 end
 
@@ -576,31 +576,31 @@ for iSubject=1:nSubjects
 
 					%% In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
 					[~,~,scanExtension] = xASL_fileparts(scanpath);
-					if ~isempty(regexpi(scanExtension,'par|rec')) && length(nii_files)==1 && ~isempty(regexpi(scan_name,'ASL'))
+					if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
 						% For a PAR/REC files that produces a single ASL4D NIFTI
 						imASL = xASL_io_Nifti2Im(nii_files{1});
 						% If multiple dynamics
 						if size(imASL,4) > 1
 							% Then reshuffle them
 							imASLreordered = zeros(size(imASL));
-							imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
-							imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
-							xASL_io_SaveNifti(nii_files{1},nii_files{1},imASLreordered);
+							imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL, 4)/2));
+							imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL, 4)/2)+1:end);
+							xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASLreordered);
 						end
 					end
                     %% Merge NIfTIs if there are multiples
 					% For ASL or M0, merge multiple files
 					if length(nii_files)>1 
 						if ~isempty(strfind(scan_name,'ASL4D'))
-							nii_files = xASL_bids_MergeNifti(nii_files,'ASL');
+							nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
 						elseif  ~isempty(strfind(scan_name,'M0'))
-							nii_files = xASL_bids_MergeNifti(nii_files,'M0');
+							nii_files = xASL_bids_MergeNifti(nii_files, 'M0');
 						end
 					end
 					
                     % Extract relevant parameters from nifti header and append to summary file
                     summary_line = AppendNiftiParameters(nii_files);
-                    converted_scans(iSubject,iSession,iScan) = 1;
+                    converted_scans(iSubject, iSession, iScan) = 1;
                 end
 
                 % extract relevant parameters from dicom header, if not
