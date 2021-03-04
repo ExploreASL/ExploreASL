@@ -144,6 +144,7 @@ else
 		for iZ=1:size(M0IM,3)
 			SliceIM(:,:,iZ) = iZ;
 		end
+		nSlices = size(M0IM,3);
 
 		if  x.M0_usesASLtiming
 			% in this case, the M0 readout has the exact same timing as the ASL readout
