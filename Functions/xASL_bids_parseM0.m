@@ -29,8 +29,14 @@ if isfield(JSON, 'M0Type')
                TSV = xASL_tsvRead(PathContext);
                M0Index = find(strcmp(TSV, 'm0scan'))-1;
                if ~isempty(M0Index)
-                   xASL_io_SplitASL_M0(PathNifti, M0Index);
+				   if isfield(JSON,'DummyScanPositionInASL4D') && ~isempty(JSON.DummyScanPositionInASL4D)
+					   xASL_io_SplitASL(PathNifti, M0Index,JSON.DummyScanPositionInASL4D);
+					   JSON = rmfield(JSON,'DummyScanPositionInASL4D');
+				   else
+					   xASL_io_SplitASL(PathNifti, M0Index);
+				   end
                    JSON.M0 = 'separate_scan';
+				   JSON = rmfield(JSON,'M0Type');
                    spm_jsonwrite(PathJSON, JSON);
                else
                    warning(['M0Index missing in ' PathContext]);
@@ -48,6 +54,7 @@ if isfield(JSON, 'M0Type')
         case 'Estimate'
             if isfield(JSON, 'M0Estimate')
                 JSON.M0 = JSON.M0Estimate;
+				JSON = rmfield(JSON,'M0Type');
                 spm_jsonwrite(PathJSON, JSON);
             else
                 warning(['Field M0_value missing in ' PathJSON]);
@@ -61,6 +68,7 @@ if isfield(JSON, 'M0Type')
                     warning('Using mean control as M0 but background suppression was present');
                 end
                 JSON.M0 = 'UseControlAsM0';
+				JSON = rmfield(JSON,'M0Type');
                 spm_jsonwrite(PathJSON, JSON);
             else
                 warning(['Missing field backgroundSuppression in ' PathJSON]);
