@@ -94,7 +94,7 @@ if ~isempty(inXasl)
 					% For non-zero fields, check if they are within the predefined range
 					if inXasl.(FieldsA{iA}) ~= 0
 						% For SliceTime - compare the difference of the first two fields
-						if strcmpi(FieldsA{iA},'SliceTime') || strcmpi(FieldsA{iA},'SliceReadoutTime')
+						if strcmpi(FieldsA{iA},'SliceTiming') || strcmpi(FieldsA{iA},'SliceReadoutTime')
 							valueCheck = inXasl.(FieldsA{iA});
 							if length(valueCheck) > 1
 								valueCheck = valueCheck(2) - valueCheck(1);
@@ -194,11 +194,22 @@ if ~isempty(inBids)
 					
 					% Check if the value is within the recommended range after conversion and issue a warning if not
 					if max(inBids.(FieldNameChanged) ~= 0) % if any of the numeric values is not zero
-						if max(inBids.(FieldNameChanged) < convertTimeFieldsRange(1,iT)) || max(inBids.(FieldNameChanged) > convertTimeFieldsRange(2,iT))
-							if numel(inBids.(FieldNameChanged))==1
-								PrintString = ['a value of ' xASL_num2str(inBids.(FieldNameChanged))];
+						
+						% For SliceTiming - compare the difference of the first two fields
+						if strcmpi(FieldNameChanged,'SliceTiming') || strcmpi(FieldNameChanged,'SliceReadoutTime')
+							valueCheck = inBids.(FieldNameChanged);
+							if length(valueCheck) > 1
+								valueCheck = valueCheck(2) - valueCheck(1);
+							end
+						else
+							valueCheck = inBids.(FieldNameChanged);
+						end
+						
+						if max(valueCheck < convertTimeFieldsRange(1,iT)) || max(valueCheck > convertTimeFieldsRange(2,iT))
+							if numel(valueCheck)==1
+								PrintString = ['a value of ' xASL_num2str(valueCheck)];
 							else
-								PrintString = ['multiple values, from ' xASL_num2str(min(inBids.(FieldNameChanged))) ' to ' xASL_num2str(max(inBids.(FieldNameChanged)))];
+								PrintString = ['multiple values, from ' xASL_num2str(min(valueCheck)) ' to ' xASL_num2str(max(valueCheck))];
 							end
 							
                             warning(['Field ' FieldNameChanged ' in xASL structure has ' PrintString...
