@@ -55,10 +55,16 @@ if bImport
 			% Afterwards we can continue with the NII+JSON->ASL-BIDS
 			case 'Siemens_PCASL_3DGRASE_vascular'
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [1 0 0], false, true, false, false);
-				xASL_delete(fullfile([baseDirImport '/Siemens_PCASL_3DGRASE_vascular/analysis/Sub1/ASL_1/ASL4D_7*']));
-				xASL_delete(fullfile([baseDirImport '/Siemens_PCASL_3DGRASE_vascular/analysis/Sub1/ASL_1/ASL4D_8*']));
-				xASL_delete(fullfile([baseDirImport '/Siemens_PCASL_3DGRASE_vascular/analysis/Sub1/ASL_1/ASL4D_9*']));
-				xASL_delete(fullfile([baseDirImport '/Siemens_PCASL_3DGRASE_vascular/analysis/Sub1/ASL_1/ASL4D_10*']));
+                fileList_7 = xASL_adm_GetFileList(fullfile([baseDirImport '/Siemens_PCASL_3DGRASE_vascular/analysis/Sub1/ASL_1/ASL4D_7*']));
+                fileList_8 = xASL_adm_GetFileList(fullfile([baseDirImport '/Siemens_PCASL_3DGRASE_vascular/analysis/Sub1/ASL_1/ASL4D_8*']));
+                fileList_9 = xASL_adm_GetFileList(fullfile([baseDirImport '/Siemens_PCASL_3DGRASE_vascular/analysis/Sub1/ASL_1/ASL4D_9*']));
+                fileList_10 = xASL_adm_GetFileList(fullfile([baseDirImport '/Siemens_PCASL_3DGRASE_vascular/analysis/Sub1/ASL_1/ASL4D_10*']));
+                fullFileList = vertcat(fileList_7,fileList_8,fileList_9,fileList_10);
+                if ~isempty(fullFileList)
+                    for iFile=1:numel(fullFileList)
+                        xASL_delete(fullFileList{iFile});
+                    end
+                end
 				nii_files = xASL_adm_GetFileList([baseDirImport '/Siemens_PCASL_3DGRASE_vascular/analysis/Sub1/ASL_1/'],'^*.nii$','FPList',[],false);
 				nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [0 1 0], false, true, false, false);
