@@ -191,7 +191,7 @@ function [Legend] = xASL_stat_CreateLegend(x)
                     Legend{iSet+1} = 'integer';
                 case 'AcquisitionTime'
                     Legend{iSet+1} = 'hhmmss';
-                case {'GM_vol', 'GM (L)', 'WM_vol', 'WM (L)', 'CSF_vol', 'CSF (L)'}
+                case {'GM_vol', 'GM_L', 'WM_vol', 'WM_L', 'CSF_vol', 'CSF_L'}
                     Legend{iSet+1} = 'Liter'; % 1 Liter = 10 cm*10 cm * 10 cm
                 case {'WMH_vol'}
                     Legend{iSet+1} = 'mL';

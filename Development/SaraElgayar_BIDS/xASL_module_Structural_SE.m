@@ -596,7 +596,7 @@ if ~x.mutex.HasState('080_TissueVolume')   % tracks progress through lock/ *.sta
             SaveFile= fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']);
             %SaveFile= fullfile(x.D.TissueVolumeDir,BIDS_FileName(['TissueVolume_' x.P.SubjectID '.csv']));
             FileID  = fopen(SaveFile,'wt');
-            fprintf(FileID,'%s\n', 'File,GM volume (L),WM volume (L),CSF volume (L)');
+            fprintf(FileID,'%s\n', 'File,GM volume L,WM volume L,CSF volume L');
             fprintf(FileID,'%s', [catVolFile ',' num2str(GMvol) ',' num2str(WMvol) ',' num2str(CSFvol)]);
             fclose(FileID);
 

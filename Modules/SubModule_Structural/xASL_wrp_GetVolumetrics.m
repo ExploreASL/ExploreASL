@@ -34,7 +34,7 @@ if xASL_exist(catVolFile, 'file') % for CAT12 segmentation
     CSFvol = catVol.S.subjectmeasures.vol_abs_CGW(1)/1000;
 
     FileID = fopen(SaveFile, 'wt');
-    fprintf(FileID,'%s\n', 'File,GM_volume_(L),WM_volume_(L),CSF_volume_(L)');
+    fprintf(FileID,'%s\n', 'File,GM_volume_L,WM_volume_L,CSF_volume_L');
     fprintf(FileID,'%s', [catVolFile ',' num2str(GMvol) ',' num2str(WMvol) ',' num2str(CSFvol)]);
     fclose(FileID);
 
@@ -61,7 +61,7 @@ elseif exist(MatFile, 'file') % for SPM12 segmentation
     
     % Edit the header names
     CSV = xASL_csvRead(SaveFile);
-    CSV(1, 2:end) = {'GM_volume_(L)' 'WM_volume_(L)' 'CSF_volume_(L)' 'Tissue_volume_(L)' 'Bone_volume_(L)' 'Air_volume_(L)'};
+    CSV(1, 2:end) = {'GM_volume_L' 'WM_volume_L' 'CSF_volume_L' 'Tissue_volume_L' 'Bone_volume_L' 'Air_volume_L'};
     xASL_tsvWrite(CSV, [SaveFile(1:end-4) '.tsv'], 1);
     xASL_delete(SaveFile);
 else

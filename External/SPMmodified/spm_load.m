@@ -132,7 +132,6 @@ var = regexp(hdr,delim,'split');
 % EXPLOREASL HACK: manage trailing \t on header only
 if isempty(var{end})
     var = var(1:end-1);
-    warning('Trailing tab on header; temporary ExploreASL fix, this could be removed');
 end
 
 N   = numel(var);

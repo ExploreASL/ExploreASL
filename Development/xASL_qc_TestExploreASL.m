@@ -401,9 +401,9 @@ for iList=1:length(Dlist) % iterate over example datasets
             ResultsTable{1+iList,1+iFile} = TempTable{3,end-2};
 		else % check the volumetric parameters
 			[~, TempTable] = xASL_bids_csv2tsvReadWrite(ResultFile{iFile}{end});
-            IndexGM = find(cellfun(@(y) strcmp(y,'GM_volume_(L)'), TempTable(1,:)));
-            IndexWM = find(cellfun(@(y) strcmp(y,'WM_volume_(L)'), TempTable(1,:)));
-            IndexCSF = find(cellfun(@(y) strcmp(y,'CSF_volume_(L)'), TempTable(1,:)));
+            IndexGM = find(cellfun(@(y) strcmp(y,'GM_volume_L'), TempTable(1,:)));
+            IndexWM = find(cellfun(@(y) strcmp(y,'WM_volume_L'), TempTable(1,:)));
+            IndexCSF = find(cellfun(@(y) strcmp(y,'CSF_volume_L'), TempTable(1,:)));
 			if ~isempty(IndexGM)
 				ResultsTable{1+iList,1+iFile} = TempTable{2, IndexGM};
 			else

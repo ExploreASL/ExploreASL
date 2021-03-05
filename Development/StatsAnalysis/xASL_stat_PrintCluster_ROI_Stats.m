@@ -28,7 +28,7 @@ function []                 = xASL_stat_PrintCluster_ROI_Stats(MaskMap,x,printTi
     x.S.FID                   = fopen(x.S.SaveFile,'w');
 
     % Print header
-    Header1                 = {'Label' 'VoxelsLabel_(n)' 'VolumeLabel_(L)' 'meanTstat' 'peakTstat' 'XvoxelpeakTstat' 'Y' 'Z' 'XmnipeakTstat' 'Y' 'Z' 'XvoxelCentroid' 'Y' 'Z' 'XmniCentroid' 'Y' 'Z' 'ROIsInLabel_(ROI name_Percentage_Overlap)_sorted for_Percentage_Overlap'};
+    Header1                 = {'Label' 'VoxelsLabel_n' 'VolumeLabel_L' 'meanTstat' 'peakTstat' 'XvoxelpeakTstat' 'Y' 'Z' 'XmnipeakTstat' 'Y' 'Z' 'XvoxelCentroid' 'Y' 'Z' 'XmniCentroid' 'Y' 'Z' 'ROIsInLabel_(ROI name_Percentage_Overlap)_sorted for_Percentage_Overlap'};
     for iH=1:length(Header1)
         fprintf(x.S.FID,'%s\t',Header1{iH});
     end
