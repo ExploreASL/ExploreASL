@@ -443,7 +443,8 @@ end
 fprintf('\n');
 
 % Save results
-SaveFile = fullfile(TestDirOrig, [datestr(now,'yyyy-mm-dd_HH:MM') '_ResultsTable.mat']);
+ResultTableName = matlab.lang.makeValidName(datestr(now,'yyyy-mm-dd_HH_MM'));
+SaveFile = fullfile(TestDirOrig, [ResultTableName,'_ResultsTable.mat']);
 save(SaveFile, 'ResultsTable');
 
 % ============================================================
