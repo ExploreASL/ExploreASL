@@ -65,25 +65,32 @@ if bImport
 				
 			case 'Philips_PCASL_3DGRASE_R5.4_TopUp'
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [1 0 0], false, true, false, false);
-				xASL_Move(fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0_1.nii ' baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0.nii']));
-				xASL_Move(fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0_1.json ' baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0.json']));
-				xASL_Move(fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0_2.nii ' baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0PERev.nii']));
-				xASL_Move(fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0_2.json ' baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0PERev.json']));
+				xASL_Move(fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0_1.nii']),...
+                          fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0.nii']),1);
+				xASL_Move(fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0_1.json']),...
+                          fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0.json']),1);
+				xASL_Move(fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0_2.nii']),...
+                          fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0PERev.nii']),1);
+				xASL_Move(fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0_2.json']),...
+                          fullfile([baseDirImport '/Philips_PCASL_3DGRASE_R5.4_TopUp/analysis/Sub1/ASL_1/M0PERev.json']),1);
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [0 1 0], false, true, false, false);
 				
 			case 'Siemens_PCASL_volunteer'
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [1 0 0], false, true, false, false);
 				if xASL_exist([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D_NS.nii'])
 					xASL_delete(fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D_NS.json']));
-					xASL_Move(fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D_SS.json ' baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D.json']));
+					xASL_Move(fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D_SS.json']),...
+                              fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D.json']),1);
 					imNS = xASL_io_Nifti2Im([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D_NS.nii']);
 					imSS = xASL_io_Nifti2Im([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D_SS.nii']);
 					imNS(:,:,:,2) = imSS;
 					xASL_io_SaveNifti([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D_NS.nii'],[baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D.nii'],imNS/10,[],1,[]);
 					xASL_delete(fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D_NS.nii']));
 					xASL_delete(fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/ASL4D_SS.nii']));
-					xASL_Move(fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/M0_2.json ' baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/M0PERev.json']));
-					xASL_Move(fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/M0_2.nii ' baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/M0PERev.nii']));
+					xASL_Move(fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/M0_2.json']),...
+                              fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/M0PERev.json']),1);
+					xASL_Move(fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/M0_2.nii']),...
+                              fullfile([baseDirImport '/Siemens_PCASL_volunteer/analysis/Sub1/ASL_1/M0PERev.nii']),1);
 				end
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [0 1 0], false, true, false, false);
 				
