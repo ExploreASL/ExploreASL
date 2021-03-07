@@ -57,10 +57,8 @@ if bImport
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
                 DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
                 
-                xASL_adm_DeleteFileList(DirASL, '^ASL4D_7.*$', 1);
-                xASL_adm_DeleteFileList(DirASL, '^ASL4D_8.*$', 1);
-                xASL_adm_DeleteFileList(DirASL, '^ASL4D_9.*$', 1);
-                xASL_adm_DeleteFileList(DirASL, '^ASL4D_10.*$', 1);
+                xASL_adm_DeleteFileList(DirASL, '^ASL4D_(7|8|9|10).*$', 1);
+
 				nii_files = xASL_adm_GetFileList(DirASL, '^*.nii$', 'FPList', [], false);
 				nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
