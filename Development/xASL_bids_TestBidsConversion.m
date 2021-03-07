@@ -59,7 +59,7 @@ if bImport
                 
                 xASL_adm_DeleteFileList(DirASL, '^ASL4D_(7|8|9|10).*$', 1);
 
-				nii_files = xASL_adm_GetFileList(DirASL, '^*.nii$', 'FPList', [], false);
+				nii_files = xASL_adm_GetFileList(DirASL, '^.*\.nii$', 'FPList', [], false);
 				nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
 				
