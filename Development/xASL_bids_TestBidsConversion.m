@@ -1,7 +1,7 @@
-function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bComparison)
-%xASL_bids_TestBidsConversion Runs the conversion for the DICOM flavors to ASL-BIDS and compares the results with reference data
+function xASL_bids_TestBidsConversion(baseDirImport, baseDirReference, bImport, bComparison)
+%xASL_bids_TestBidsConversion Convert ASL flavors from DICOM to BIDS, comparing the results with reference data
 %
-% FORMAT: xASL_bids_TestBidsConversion(baseDirImport[,baseDirReference,bImport,bComparison])
+% FORMAT: xASL_bids_TestBidsConversion(baseDirImport[, baseDirReference, bImport, bComparison])
 %
 % INPUT:
 %   baseDirImport    - Directory for import - sourcedata files are in the 'sourcedata' folder (REQUIRED)
@@ -17,14 +17,26 @@ function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bCo
 % can contain subject directories and also sourceStructure.json and studyPar.json specifying the directory structure and the additional study parameters, respectively.
 % The import creates first the 'analysis' subfolder with data after dcm2nii and with all tags read and saved to JSON. Then it assembles everything with the
 % studyParameters and makes sure all is in BIDS format and saves it correctly in the 'rawdata' subdirectory.
+%
+% This function runs the following sections:
+% 1.  Initialization
+% 2.  Go through all flavors and import them (i.e. convert them to BIDS)
+% 2a. Siemens_PCASL_3DGRASE_vascular
+% 2b. Philips_PCASL_3DGRASE_R5.4_TopUp
+% 2c. Siemens_PCASL_volunteer
+% 2d. Siemens_PCASL_multiTI
+% 2e. Flavor not needing manual adjustment
+% 3.  Run the comparison with the reference directory
+%
 % EXAMPLE: xASL_bids_TestBidsConversion('mydir/testImport');
-%          xASL_bids_TestBidsConversion('mydir/testImport','mydir/testReference',0,1);
+%          xASL_bids_TestBidsConversion('mydir/testImport', 'mydir/testReference',0,1);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
+
 %% Admin
-if nargin<2 
-	baseDirReference = '';
+if nargin<2 || isempty(baseDirReference)
+	baseDirReference = ''; % isempty() is from [], so still needs conversion
 end
 
 if nargin<3 || isempty(bImport)
@@ -35,24 +47,27 @@ if nargin<4 || isempty(bComparison)
 	bComparison = false;
 end
 
-if isempty(baseDirReference) && bComparison
-	error('Cannot compare to reference if the reference directory is not specified');
+if bComparison && isempty(baseDirReference)
+	error('Cannot compare to a reference if the reference directory missing');
 end
 
-%% Initialization
+%% 1. Initialization
 % Initialize ExploreASL 
 ExploreASL_Initialize([], false);
 
 % Load the list of the directories
 flavorList = xASL_adm_GetFileList(baseDirImport, [], false, [], true);
 
-%% Go through all studies and import them
+%% 2. Go through all flavors and import them (i.e. convert them to BIDS)
 if bImport
 	for iFlavor = 1:length(flavorList)
-		% Import the whole session to JSON and NIFTI
+        
 		switch(flavorList{iFlavor})
-			% For certain session, we first run the import to NII+JSON, then the ASL files need to be curated and
+			% For certain flavors, we first run the import to NII+JSON (i.e. dcm2niiX),
+            % after which the ASL files need to be curated
 			% Afterwards we can continue with the NII+JSON->ASL-BIDS
+            
+            % 2a. 'Siemens_PCASL_3DGRASE_vascular'
 			case 'Siemens_PCASL_3DGRASE_vascular'
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
                 DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
@@ -63,6 +78,7 @@ if bImport
 				nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
 				
+            % 2b. 'Philips_PCASL_3DGRASE_R5.4_TopUp'
 			case 'Philips_PCASL_3DGRASE_R5.4_TopUp'
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
                 DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
@@ -73,6 +89,7 @@ if bImport
 				xASL_Move(fullfile(DirASL, 'M0_2.json'), fullfile(DirASL, 'M0PERev.json'), 1);
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
 				
+            % 2c. 'Siemens_PCASL_volunteer'
 			case 'Siemens_PCASL_volunteer'
 				ExploreASL_ImportBIDS(fullfile(baseDirImport,flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
                 DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
@@ -94,6 +111,7 @@ if bImport
 				end
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
 				
+            % 2d. 'Siemens_PCASL_multiTI'
 			case 'Siemens_PCASL_multiTI'
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
                 DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
@@ -122,23 +140,24 @@ if bImport
 				end
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
 				
+            % 2e. 'Flavor not needing manual adjustment'
 			otherwise
-				% But in normal case, no special manipulation is needed
 				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 1 0], false, true, false, false);
 		end
 	end
 end
 
-%% Runs the comparison with the reference directory
+%% 3. Run the comparison with the reference directory
 if bComparison
 	% List all studies in the import directory
 	filenameCompare = xASL_adm_GetFileList(baseDirImport, '^.+$', 'List', [], true);
 	for iCompare = 1:length(filenameCompare)
 		% Compare the imported data in the 'rawdata' subdirectory with the counterpart
-		display(['Dataset: '  filenameCompare{iCompare}]);
+		fprintf('%s\n', ['Dataset: '  filenameCompare{iCompare}]);
 		xASL_bids_CompareStructures(fullfile(baseDirImport, filenameCompare{iCompare}, 'rawdata'),...
             fullfile(baseDirReference, filenameCompare{iCompare}, 'rawdata'));
 	end
 end
+
 
 end
