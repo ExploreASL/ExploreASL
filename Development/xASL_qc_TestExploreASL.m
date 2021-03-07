@@ -443,32 +443,46 @@ end
 fprintf('\n');
 
 % Save results
-ResultTableName = matlab.lang.makeValidName(datestr(now,'yyyy-mm-dd_HH_MM'));
-SaveFile = fullfile(TestDirOrig, [ResultTableName,'_ResultsTable.mat']);
+ResultTableName = datestr(now,'yyyy-mm-dd_HH_MM');
+ResultTableName(end-2) = 'h';
+ResultTableFile = [ResultTableName,'_ResultsTable.mat'];
+SaveFile = fullfile(TestDirOrig, ResultTableFile);
 save(SaveFile, 'ResultsTable');
 
 % ============================================================
 %% 8) Compare table with reference table
 try
-    % Save ResultsTable
-    PreviousSaveFile = fullfile(TestDirOrig, '2020-05-07_06:25_ResultsTable.mat');
-    PreviousTable = load(PreviousSaveFile, '-mat');
-
-    clear DifferenceTable
-    DifferenceTable(1:size(ResultsTable,1),1:size(ResultsTable,2)) = {''};
-    DifferenceTable(1,:) = ResultsTable(1,:);
-    DifferenceTable(:,1) = ResultsTable(:,1);
-    for iX=2:size(ResultsTable,1)
-        for iY=2:size(ResultsTable,2)
-            A = xASL_str2num(ResultsTable{iX,iY});
-            B = xASL_str2num(PreviousTable.ResultsTable{iX,iY});
-            AsymmIndex = (A-B)/(A+B);
-            DifferenceTable{iX,iY} = [xASL_num2str(AsymmIndex) '%'];
-        end
+    % Find all result tables in directory
+    AllResultTables = xASL_adm_GetFsList(fullfile(TestDirOrig),'^.+\_ResultsTable.mat$',false)';
+    IndexCurrentTable = find(contains(AllResultTables, ResultTableFile));
+    if ~isempty(IndexCurrentTable)
+        AllResultTables(IndexCurrentTable) = [];
     end
+    % Previous Table name
+    if ~isempty(AllResultTables)
+        PreviousTableName = AllResultTables{numel(AllResultTables)};
+        PreviousSaveFile = fullfile(TestDirOrig, PreviousTableName);
+        PreviousTable = load(PreviousSaveFile, '-mat');
 
-% ============================================================
-%% 9) E-mail results
+        clear DifferenceTable
+        DifferenceTable(1:size(ResultsTable,1),1:size(ResultsTable,2)) = {''};
+        DifferenceTable(1,:) = ResultsTable(1,:);
+        DifferenceTable(:,1) = ResultsTable(:,1);
+        for iX=2:size(ResultsTable,1)
+            for iY=2:size(ResultsTable,2)
+                A = xASL_str2num(ResultsTable{iX,iY});
+                B = xASL_str2num(PreviousTable.ResultsTable{iX,iY});
+                AsymmIndex = (A-B)/(A+B);
+                DifferenceTable{iX,iY} = [xASL_num2str(AsymmIndex) '%'];
+            end
+        end
+    else
+        % Could not find previous tables
+        DifferenceTable = [];
+    end
+    
+    % ============================================================
+    %% 9) E-mail results
     if ~isempty(EmailAddress)
         % First convert table to string to send by e-mail
         NewTable{1,1} = 'mean_qCBF_TotalGM     median_qCBF_TotalGM     median_qCBF_DeepWM     CoV_qCBF_TotalGM             GMvol                 WMvol                 CSFvol             PipelineCompleted     TC_ASL_Registration    TC_M0_Registration';
