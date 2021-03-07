@@ -36,7 +36,7 @@ if nargin<4 || isempty(bComparison)
 end
 
 if isempty(baseDirReference) && bComparison
-	error('Cannot compare to reference if the reference directory is not specified.');
+	error('Cannot compare to reference if the reference directory is not specified');
 end
 
 %% Initialization
@@ -44,18 +44,18 @@ end
 ExploreASL_Initialize([], false);
 
 % Load the list of the directories
-fList = xASL_adm_GetFileList(baseDirImport, [], false, [], true);
+flavorList = xASL_adm_GetFileList(baseDirImport, [], false, [], true);
 
 %% Go through all studies and import them
 if bImport
-	for ii = 1:length(fList)
+	for iFlavor = 1:length(flavorList)
 		% Import the whole session to JSON and NIFTI
-		switch(fList{ii})
+		switch(flavorList{iFlavor})
 			% For certain session, we first run the import to NII+JSON, then the ASL files need to be curated and
 			% Afterwards we can continue with the NII+JSON->ASL-BIDS
 			case 'Siemens_PCASL_3DGRASE_vascular'
-				ExploreASL_ImportBIDS(fullfile(baseDirImport, fList{ii}), [],[], [1 0 0], false, true, false, false);
-                DirASL = fullfile(baseDirImport, fList{ii}, 'analysis', 'Sub1', 'ASL_1');
+				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
+                DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
                 
                 xASL_adm_DeleteFileList(DirASL, '^ASL4D_7.*$', 1);
                 xASL_adm_DeleteFileList(DirASL, '^ASL4D_8.*$', 1);
@@ -63,21 +63,21 @@ if bImport
                 xASL_adm_DeleteFileList(DirASL, '^ASL4D_10.*$', 1);
 				nii_files = xASL_adm_GetFileList(DirASL, '^*.nii$', 'FPList', [], false);
 				nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
-				ExploreASL_ImportBIDS(fullfile(baseDirImport, fList{ii}), [],[], [0 1 0], false, true, false, false);
+				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
 				
 			case 'Philips_PCASL_3DGRASE_R5.4_TopUp'
-				ExploreASL_ImportBIDS(fullfile(baseDirImport, fList{ii}), [],[], [1 0 0], false, true, false, false);
-                DirASL = fullfile(baseDirImport, fList{ii}, 'analysis', 'Sub1', 'ASL_1');
+				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
+                DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
                 
 				xASL_Move(fullfile(DirASL, 'M0_1.nii'), fullfile(DirASL, 'M0.nii'), 1);
 				xASL_Move(fullfile(DirASL, 'M0_1.json'), fullfile(DirASL, 'M0.json'), 1);
 				xASL_Move(fullfile(DirASL, 'M0_2.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
 				xASL_Move(fullfile(DirASL, 'M0_2.json'), fullfile(DirASL, 'M0PERev.json'), 1);
-				ExploreASL_ImportBIDS(fullfile(baseDirImport, fList{ii}), [],[], [0 1 0], false, true, false, false);
+				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
 				
 			case 'Siemens_PCASL_volunteer'
-				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [1 0 0], false, true, false, false);
-                DirASL = fullfile(baseDirImport, fList{ii}, 'analysis', 'Sub1', 'ASL_1');
+				ExploreASL_ImportBIDS(fullfile(baseDirImport,flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
+                DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
                 
 				if xASL_exist(fullfile(DirASL, 'ASL4D_NS.nii'))
 					xASL_delete(fullfile(DirASL, ASL4D_NS.json'));
@@ -94,39 +94,39 @@ if bImport
 					xASL_Move(fullfile(DirASL, M0_2.json'), fullfile(DirASL, M0PERev.json'), 1);
 					xASL_Move(fullfile(DirASL, M0_2.nii'), fullfile(DirASL, M0PERev.nii'), 1);
 				end
-				ExploreASL_ImportBIDS(fullfile(baseDirImport, fList{ii}), [],[], [0 1 0], false, true, false, false);
+				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
 				
 			case 'Siemens_PCASL_multiTI'
-				ExploreASL_ImportBIDS(fullfile(baseDirImport, fList{ii}), [],[], [1 0 0], false, true, false, false);
-                DirASL = fullfile(baseDirImport, fList{ii}, 'analysis', 'Sub1', 'ASL_1');
+				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
+                DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
                 
 				if xASL_exist(fullfile(DirASL, 'ASL4D_NS_300.nii'))
-					mTIvec = [300,600,900,1200,1500,1800,2100,2400,2700,3000];
-					for jj = 1:length(mTIvec)
-						if jj>1
-                            xASL_delete(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvec(jj)) '.json']));
-                            xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvec(jj)) '.json']));
-							imNSSS(:,:,:,2*(jj-1)+1) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvec(jj)) '.nii']));
-							imNSSS(:,:,:,2*(jj-1)+2) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvec(jj)) '.nii']));
+					mTIvector = [300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000];
+					for iTI = 1:length(mTIvector)
+						if iTI>1
+                            xASL_delete(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.json']));
+                            xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.json']));
+							imNSSS(:,:,:,2*(iTI-1)+1) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.nii']));
+							imNSSS(:,:,:,2*(iTI-1)+2) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
                         else
-                            xASL_Move(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvec(jj)) '.json']), fullfile(DirASL, 'ASL4D.json'));
-                            xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvec(jj)) '.json']));
-							imNSSS = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvec(jj)) '.nii']));
-							imNSSS(:,:,:,2) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvec(jj)) '.nii']));
+                            xASL_Move(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.json']), fullfile(DirASL, 'ASL4D.json'));
+                            xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.json']));
+							imNSSS = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.nii']));
+							imNSSS(:,:,:,2) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
 						end
 					end
-					xASL_io_SaveNifti(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvec(1)) '.nii']),...
+					xASL_io_SaveNifti(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(1)) '.nii']),...
                         fullfile(DirASL, 'ASL4D.nii'), imNSSS/10, [], 1, []);
-					for jj = 1:length(mTIvec)
-						xASL_delete(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvec(jj)) '.nii']));
-						xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvec(jj)) '.nii']));
+					for iTI = 1:length(mTIvector)
+						xASL_delete(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.nii']));
+						xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
 					end
 				end
-				ExploreASL_ImportBIDS(fullfile(baseDirImport, fList{ii}), [],[], [0 1 0], false, true, false, false);
+				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
 				
 			otherwise
 				% But in normal case, no special manipulation is needed
-				ExploreASL_ImportBIDS(fullfile(baseDirImport, fList{ii}), [],[], [1 1 0], false, true, false, false);
+				ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 1 0], false, true, false, false);
 		end
 	end
 end
