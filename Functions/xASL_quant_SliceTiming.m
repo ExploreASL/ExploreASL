@@ -100,7 +100,7 @@ end
 %% 1. ShortestTR
 % If SliceReadoutTiem is specified as "shortestTR", it calculates it with the knowledge of TR and PLD
 % If a scalar or vector is given for SliceReadoutTime, then this function doesn't do anything
-x = xASL_quant_SliceReadoutTime_ShortestTR(x);
+x = xASL_quant_SliceTiming_ShortestTR(x);
 
 %% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 2. Assign the vector value
