@@ -138,7 +138,7 @@ else
     elseif  strcmpi(x.readout_dim,'2D') % for 2D readouts, there are slice timing differences
 
 		% Calculate SliceTime as a vector
-		SliceTime = xASL_quant_SliceTimeVector(x,inputM0);
+		SliceTime = xASL_quant_SliceTiming(x,inputM0);
 
 		SliceIM = zeros(size(M0IM));
 		for iZ=1:size(M0IM,3)
@@ -268,7 +268,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 		error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
 	end
 	
-    SliceTime = xASL_quant_SliceTimeVector(x,M0IM);
+    SliceTime = xASL_quant_SliceTiming(x,M0IM);
         
     if ~isfield(x.Q, 'TissueT1') || isempty(x.Q.TissueT1)
         fprintf('%s\n', 'Warning: WM T1 set to 900 ms for 3T');

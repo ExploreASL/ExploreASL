@@ -56,7 +56,7 @@ for iSession=1:2
     SliceNumber = xASL_io_Nifti2Im(fullfile(x.D.PopDir, ['SliceGradient_extrapolated_' x.P.SubjectID '_' x.SESSIONS{iSession} '.nii']));
 
 	% Obtain the correct SliceTime
-	SliceTime = xASL_quant_SliceTimeVector(x,x.P.Path_ASL4D);
+	SliceTime = xASL_quant_SliceTiming(x,x.P.Path_ASL4D);
 	
     % Correct different PLD scales
 	SliceNumber = round(SliceNumber);

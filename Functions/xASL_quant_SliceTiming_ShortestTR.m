@@ -1,7 +1,7 @@
-function [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
-%xASL_quant_SliceReadoutTime_ShortestTR Calculate SliceReadoutTime for shortest TR
+function [x] = xASL_quant_SliceTiming_ShortestTR(x)
+%xASL_quant_SliceTiming_ShortestTR Calculate SliceReadoutTime for shortest TR
 %
-% FORMAT: [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
+% FORMAT: [x] = xASL_quant_SliceTiming_ShortestTR(x)
 %
 % INPUT:
 %   x     - struct containing pipeline environment parameters (REQUIRED)
@@ -17,7 +17,7 @@ function [x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
 %              SliceReadoutTime
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: x = xASL_quant_SliceReadoutTime_ShortestTR(x);
+% EXAMPLE: x = xASL_quant_SliceTiming_ShortestTR(x);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 

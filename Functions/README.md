@@ -2812,12 +2812,12 @@ PWI stage)
 
 
 ----
-### xASL\_quant\_SliceReadoutTime\_ShortestTR.m
+### xASL\_quant\_SliceTiming\_ShortestTR.m
 
 #### Format
 
 ```matlab
-[x] = xASL_quant_SliceReadoutTime_ShortestTR(x)
+[x] = xASL_quant_SliceTiming_ShortestTR(x)
 ```
 
 #### Description
