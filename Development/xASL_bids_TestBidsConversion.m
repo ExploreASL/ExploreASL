@@ -67,7 +67,7 @@ if bImport
         DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
         
         %% 3. Manual curation for certain flavors
-		switch(flavorList{iFlavor})
+		switch (flavorList{iFlavor})
 		
             % 3a. 'Siemens_PCASL_3DGRASE_vascular'
 			case 'Siemens_PCASL_3DGRASE_vascular'
@@ -90,19 +90,19 @@ if bImport
 			case 'Siemens_PCASL_volunteer'
                 
 				if xASL_exist(fullfile(DirASL, 'ASL4D_NS.nii'))
-					xASL_delete(fullfile(DirASL, ASL4D_NS.json'));
-					xASL_Move(fullfile(DirASL, ASL4D_SS.json'), fullfile(DirASL, ASL4D.json'), 1);
+					xASL_delete(fullfile(DirASL, 'ASL4D_NS.json'));
+					xASL_Move(fullfile(DirASL, 'ASL4D_SS.json'), fullfile(DirASL, 'ASL4D.json'), 1);
                               
-					imNS = xASL_io_Nifti2Im(fullfile(DirASL, ASL4D_NS.nii'));
-					imSS = xASL_io_Nifti2Im(fullfile(DirASL, ASL4D_SS.nii'));
+					imNS = xASL_io_Nifti2Im(fullfile(DirASL, 'ASL4D_NS.nii'));
+					imSS = xASL_io_Nifti2Im(fullfile(DirASL, 'ASL4D_SS.nii'));
 					imNS(:,:,:,2) = imSS;
-					xASL_io_SaveNifti(fullfile(DirASL, ASL4D_NS.nii'), fullfile(DirASL, ASL4D.nii'), imNS/10, [], 1);
+					xASL_io_SaveNifti(fullfile(DirASL, 'ASL4D_NS.nii'), fullfile(DirASL, 'ASL4D.nii'), imNS/10, [], 1);
                         
-					xASL_delete(fullfile(DirASL, ASL4D_NS.nii'));
-					xASL_delete(fullfile(DirASL, ASL4D_SS.nii'));
+					xASL_delete(fullfile(DirASL, 'ASL4D_NS.nii'));
+					xASL_delete(fullfile(DirASL, 'ASL4D_SS.nii'));
                     
-					xASL_Move(fullfile(DirASL, M0_2.json'), fullfile(DirASL, M0PERev.json'), 1);
-					xASL_Move(fullfile(DirASL, M0_2.nii'), fullfile(DirASL, M0PERev.nii'), 1);
+					xASL_Move(fullfile(DirASL, 'M0_2.json'), fullfile(DirASL, 'M0PERev.json'), 1);
+					xASL_Move(fullfile(DirASL, 'M0_2.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
 				end
 				
             % 3d. 'Siemens_PCASL_multiTI'
@@ -130,11 +130,11 @@ if bImport
 						xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
 					end
 				end
-        end
+		end
         
         %% 4. Convert NII+JSON -> BIDS
         ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
-    end % for iFlavor
+	end % for iFlavor
 end % if bImport
 
 
