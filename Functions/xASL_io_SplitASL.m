@@ -154,11 +154,13 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             if exist(OriJSONPath,'file') && ~strcmp(OriJSONPath, BackupJSONPath)
                 xASL_Move(OriJSONPath, BackupJSONPath);
             end
-        end
+		end
 
+		% Load the backup-file
+		tIM = xASL_io_Nifti2Im(BackupName);
+		
         %% Save M0 NIfTI
         if ~xASL_exist(Path_M0,'file') && ~isempty(iM0) % don't overwrite, and skip if no M0
-            tIM = xASL_io_Nifti2Im(BackupName);
             xASL_io_SaveNifti(BackupName,Path_M0 ,tIM(:,:,:,iM0),[],0);
             bCreateM0 = true;
         else
