@@ -58,11 +58,17 @@ elseif nargin < 2 && isvector(x)
   nCompare = numel(x)-sum(isnan(x));
   half = floor(nCompare/2);
   y = x(half+1);
-  if 2*half == nCompare        % Average if even number of elements
-    y = (x(half)+y)/2;
-  end
-  if isnan(x(nCompare))        % Check last index for NaN
-    y = nan(class(x));
+  % If at least a single non-NaN element
+  if nCompare > 0
+	  if 2*half == nCompare        % Average if even number of elements
+		  y = (x(half)+y)/2;
+	  end
+	  if isnan(x(nCompare))        % Check last index for NaN
+		  y = nan(class(x));
+	  end
+  else
+	  % If all elements are NaN
+	  y = nan(class(x));
   end
 else
   x = double(x); % Single failed in large arrays according to CAT12
