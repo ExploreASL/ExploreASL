@@ -1,10 +1,10 @@
-function [M0IM] = xASL_quant_M0(M0matrixPath, x)
+function [M0IM] = xASL_quant_M0(inputM0, x)
 %xASL_quant_M0 Quantification of M0
 %
-% FORMAT: [M0IM] = xASL_quant_M0(M0matrixPath, x)
+% FORMAT: [M0IM] = xASL_quant_M0(inputM0, x)
 %
 % INPUT:
-%   M0matrixPath        - M0 image matrix or path
+%   inputM0     - M0 image matrix or path
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 % OUTPUT:
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -39,7 +39,7 @@ function [M0IM] = xASL_quant_M0(M0matrixPath, x)
 % Admin
 if nargin<2 || isempty(x)
     warning('x input parameter missing, skipping');
-elseif isempty(M0matrixPath) || sum(isfinite(M0matrixPath(:)))==0
+elseif isempty(inputM0) || sum(isfinite(inputM0(:)))==0
     warning('Invalid M0 image loaded, skipping');
 end
 
@@ -58,7 +58,7 @@ elseif ~isfield(x,'M0_usesASLtiming')
 end
 
 % Allow inputting path instead of image
-M0IM = xASL_io_Nifti2Im(M0matrixPath);
+M0IM = xASL_io_Nifti2Im(inputM0);
 
 %% ------------------------------------------------------------------------------------------------------
 % 1. Correct scale slopes, if Philips
@@ -138,7 +138,7 @@ else
     elseif  strcmpi(x.readout_dim,'2D') % for 2D readouts, there are slice timing differences
 
 		% Calculate SliceTime as a vector
-		SliceTime = xASL_quant_SliceTimeVector(x,M0matrixPath);
+		SliceTime = xASL_quant_SliceTimeVector(x,inputM0);
 
 		SliceIM = zeros(size(M0IM));
 		for iZ=1:size(M0IM,3)
