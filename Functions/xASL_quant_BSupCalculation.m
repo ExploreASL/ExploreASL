@@ -54,7 +54,7 @@ end
 if PresaturationTime>20
     warning(['PresaturationTime=' num2str(PresaturationTime) ', seems invalid']);
 end
-if sum(BackgroundSuppressionPulseTime>(ReadoutTime-5))
+if max(BackgroundSuppressionPulseTime)>min(ReadoutTime)
     warning(['BackgroundSuppressionTime of ' num2str(BackgroundSuppressionPulseTime) ', seems invalid']);
 end
  
