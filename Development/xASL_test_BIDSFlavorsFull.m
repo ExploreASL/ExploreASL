@@ -146,7 +146,17 @@ if bTest(4)
 			end
 			
 			% Run the legacy conversion
-			xASL_bids_BIDS2Legacy(ListFolders{iList}, 1, defaultDataPar);
+			% Check if a dataPar is provided, otherwise use the defaults
+			fListDataPar = xASL_adm_GetFileList(ListFolders{iList},'^(data|Data)(Par|par).json$', 'FPList', [], 0);
+			if length(fListDataPar) < 1
+				% Fill the dataPars with default parameters
+				xASL_bids_BIDS2Legacy(ListFolders{iList}, 1, defaultDataPar);
+			else
+				% Fill the dataPars with the provided parameters
+				dataPar = spm_jsonread(fListDataPar{1});
+				xASL_bids_BIDS2Legacy(ListFolders{iList}, 1, dataPar);
+			end
+			
 		end
 	end
 end
