@@ -45,6 +45,13 @@ function str = cat_main_reportstr(job,res,qa,cat_warnings)
   % use red output if a beta version is used
   catv = qa.software.revision_cat; isbeta = strfind(lower(catv),'beta'); 
   if ~isempty(isbeta), catv = [catv(1:isbeta-1) '\color[rgb]{0.8 0 0}' catv(isbeta:isbeta+3 ) '\color[rgb]{0.8 0 0}' catv(isbeta+4:end)]; end
+  
+  % ExploreASL Hack
+  if ~isfield(qa.software,'version_matlab')
+      dotIndex = strfind(version,'.');
+      version_matlab = version;
+      qa.software.version_matlab = version_matlab(1:dotIndex(1)+1);
+  end
     
   % 1 line: Matlab, SPM12, CAT12 version number and GUI and experimental mode 
   str{1} = [str{1} struct('name', 'Version: OS / Matlab / SPM12 / CAT12:','value',...

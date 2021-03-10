@@ -366,6 +366,10 @@ spm_jsonread.c at line 496
 *********************************************************************************************************
 OTHER CODE HACKS
 
+DATE+NAME: 2021-03-10 MS (issue #408)
+DESCRIPTION: Missing version_matlab field in compiled xASL.
+FILE: cat_main_reportstr, 50-54
+
 DATE+NAME:2021-02-04 HM (issue #302)
 DESCRIPTION: Deactivate (comment out) calls of SPM/LST/CAT12 to server
 FILE:
