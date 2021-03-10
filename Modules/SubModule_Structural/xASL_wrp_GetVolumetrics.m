@@ -29,9 +29,14 @@ SaveFile = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.csv'])
 
 if xASL_exist(catVolFile, 'file') % for CAT12 segmentation
     catVol = load(catVolFile);
-    GMvol = catVol.S.subjectmeasures.vol_abs_CGW(2)/1000; % volume was in cm^3, /1000 = dm^3 or Liter
-    WMvol = catVol.S.subjectmeasures.vol_abs_CGW(3)/1000;
-    CSFvol = catVol.S.subjectmeasures.vol_abs_CGW(1)/1000;
+    if isfield(catVol.S,'subjectmeasures')
+        GMvol = catVol.S.subjectmeasures.vol_abs_CGW(2)/1000; % volume was in cm^3, /1000 = dm^3 or Liter
+        WMvol = catVol.S.subjectmeasures.vol_abs_CGW(3)/1000;
+        CSFvol = catVol.S.subjectmeasures.vol_abs_CGW(1)/1000;
+    else
+        warning('catVol.S does not contain the subjectmeasures field...');
+        GMvol = nan; WMvol = nan; CSFvol = nan;
+    end
 
     FileID = fopen(SaveFile, 'wt');
     fprintf(FileID,'%s\n', 'File,GM_volume_L,WM_volume_L,CSF_volume_L');
