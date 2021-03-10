@@ -6,7 +6,7 @@ x.S.bMasking = false;
 
 AtlasPath{1} = fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii');
 AtlasPath{2} = fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii');
-AtlasPath{3} = fullfile(x.D.MapsSPMmodifiedDir,'MNI_structural.nii');
+AtlasPath{3} = fullfile(x.D.MapsSPMmodifiedDir,'MNI_Structural.nii');
 AtlasPath{4} = fullfile(x.D.AtlasDir,'Hammers.nii');
 AtlasPath{5} = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
 AtlasPath{6} = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
