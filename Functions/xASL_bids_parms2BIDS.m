@@ -94,7 +94,7 @@ if ~isempty(inXasl)
 					% For non-zero fields, check if they are within the predefined range
 					if inXasl.(FieldsA{iA}) ~= 0
 						% For SliceTime - compare the difference of the first two fields
-						if strcmpi(FieldsA{iA},'SliceTiming') || strcmpi(FieldsA{iA},'SliceReadoutTime')
+						if strcmpi(FieldsA{iA},'SliceTiming') || strcmpi(FieldsA{iA},'SliceReadoutTime') || strcmpi(FieldsA{iA},'SiemensSliceTime')
 							valueCheck = inXasl.(FieldsA{iA});
 							if length(valueCheck) > 1
 								valueCheck = valueCheck(2) - valueCheck(1);
@@ -196,7 +196,7 @@ if ~isempty(inBids)
 					if max(inBids.(FieldNameChanged) ~= 0) % if any of the numeric values is not zero
 						
 						% For SliceTiming - compare the difference of the first two fields
-						if strcmpi(FieldNameChanged,'SliceTiming') || strcmpi(FieldNameChanged,'SliceReadoutTime')
+						if strcmpi(FieldNameChanged,'SliceTiming') || strcmpi(FieldNameChanged,'SliceReadoutTime') || strcmpi(FieldNameChanged,'SiemensSliceTime')
 							valueCheck = inBids.(FieldNameChanged);
 							if length(valueCheck) > 1
 								valueCheck = valueCheck(2) - valueCheck(1);
