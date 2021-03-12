@@ -54,7 +54,7 @@ end
 
 %% 1. Initialization
 % Initialize ExploreASL 
-ExploreASL_Initialize([], false);
+x = ExploreASL_Initialize([], false);
 
 % Load the list of the directories
 flavorList = xASL_adm_GetFileList(baseDirImport, [], false, [], true);
@@ -63,7 +63,7 @@ if bImport
 	for iFlavor = 1:length(flavorList)
         
         %% 2. DICOM -> NII+JSON (i.e. dcm2niiX)
-        ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false);
+        ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false, x);
         DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
         
         %% 3. Manual curation for certain flavors
@@ -133,7 +133,7 @@ if bImport
 		end
         
         %% 4. Convert NII+JSON -> BIDS
-        ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false);
+        ExploreASL_ImportBIDS(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false, x);
 	end % for iFlavor
 end % if bImport
 
