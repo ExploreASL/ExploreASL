@@ -226,7 +226,11 @@ elseif ~isfinite(json)
         end
     end
 else
-    S = xASL_num2str(json, '%.12f');
+    if floor(json)==json % Integers
+        S = xASL_num2str(json, '%d');
+    else % Rational numbers
+        S = xASL_num2str(json, '%.10f');
+    end
 end
 
 %==========================================================================
