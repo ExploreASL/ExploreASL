@@ -74,21 +74,18 @@ if bTest(1)
         error('No FlavorDatabase folder found...');
     end
 	for iList = 1:length(fList)
+		xASL_TrackProgress(iList,length(fList));
 		if ~exist(fullfile(conversionPath,fList{iList}), 'dir')
 			mkdir(fullfile(conversionPath,fList{iList}));
 		end
 		if ~exist(fullfile(conversionPath,fList{iList}, 'sourcedata'), 'dir')
 			mkdir(fullfile(conversionPath,fList{iList}, 'sourcedata'));
         end
-        if ~ispc
-            system(['cp -r ' fullfile(flavorsPath,fList{iList},'sourcedata','*') ' ' fullfile(conversionPath,fList{iList},'sourcedata')]);
-            system(['cp -r ' fullfile(flavorsPath,fList{iList},'sourceStructure.json') ' ' fullfile(conversionPath,fList{iList},'sourceStructure.json')]);
-            system(['cp -r ' fullfile(flavorsPath,fList{iList},'studyPar.json') ' ' fullfile(conversionPath,fList{iList},'studyPar.json')]);
-        else
-            copyfile(fullfile(flavorsPath,fList{iList},'sourcedata'), fullfile(conversionPath,fList{iList},'sourcedata'));
-            copyfile(fullfile(flavorsPath,fList{iList},'sourceStructure.json'), fullfile(conversionPath,fList{iList},'sourceStructure.json'));
-            copyfile(fullfile(flavorsPath,fList{iList},'studyPar.json'), fullfile(conversionPath,fList{iList},'studyPar.json'));
-        end
+        
+		xASL_Copy(fullfile(flavorsPath,fList{iList},'sourcedata'),fullfile(conversionPath,fList{iList}),1);
+		xASL_Copy(fullfile(flavorsPath,fList{iList},'sourceStructure.json'),fullfile(conversionPath,fList{iList},'sourceStructure.json'));
+		xASL_Copy(fullfile(flavorsPath,fList{iList},'studyPar.json'),fullfile(conversionPath,fList{iList},'studyPar.json'));
+		
 	end
 	
 	% Create a copy of the reference BIDS data
@@ -99,6 +96,7 @@ if bTest(1)
 	
 	fList = xASL_adm_GetFileList(flavorsPath, [], 'List', [], 1);
 	for iList = 1:length(fList)
+		xASL_TrackProgress(iList,length(fList));
 		if ~exist(fullfile(referencePath,fList{iList}), 'dir')
 			mkdir(fullfile(referencePath,fList{iList}));
 		end
@@ -147,7 +145,7 @@ if bTest(4)
 			
 			% Run the legacy conversion
 			% Check if a dataPar is provided, otherwise use the defaults
-			fListDataPar = xASL_adm_GetFileList(ListFolders{iList},'^(data|Data)(Par|par).json$', 'FPList', [], 0);
+			fListDataPar = xASL_adm_GetFileList(ListFolders{iList},'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
 			if length(fListDataPar) < 1
 				% Fill the dataPars with default parameters
 				xASL_bids_BIDS2Legacy(ListFolders{iList}, 1, defaultDataPar);
