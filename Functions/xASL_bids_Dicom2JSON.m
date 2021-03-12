@@ -48,7 +48,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	end
 	
 	pathDcmDictOut = pathDcmDictIn;
-	
+    
 	%% ----------------------------------------------------------------------------------
 	% Set up the default values
 	% ----------------------------------------------------------------------------------
@@ -122,6 +122,13 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
             if TryDicominfo && iFile>1
                 continue;
                 % with dicominfo, reading is very slow, so we only read 1 dicom
+            elseif ismac() && iFile>1
+                % spm_jsonread is very slow, which is used in
+                % xASL_io_DmtkRead for macOS, so we also only read one file
+                % for macOS
+                continue;
+            else
+                xASL_TrackProgress(iFile, nFiles);
             end
             
 			ifname = FileList{iFile};
@@ -135,7 +142,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                 try
                     temp = xASL_io_DcmtkRead(filepath, 0);
                     TryDicominfo = false;
-				catch
+                catch
                     warning(['xASL_adm_Dicom2JSON: xASL_io_DcmtkRead failed for ' filepath ', trying dicominfo']);
                 end
             end
