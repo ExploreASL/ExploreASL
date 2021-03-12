@@ -18,7 +18,7 @@ LST 2.0.15
 * #302: Remove server calls in CAT12 functions
 * #313: Move GUI to a separate repository
 * #351: T2 and T1c files are now also aligned to the T1w and outputted to standard space
-* #354: Added an option x.DummyPositionInASL4D that removes marked dummy scans when splitting ASL to ASL+M0+dummy
+* #354: Added an option x.DummyScanPositionInASL4D that removes marked dummy scans when splitting ASL to ASL+M0+dummy
 * #356: Internally restructure SliceTime allowing ExploreASL now to work with multi-band 2D EPI as well or any other SliceTime order
 
 ----

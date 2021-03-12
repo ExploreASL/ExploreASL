@@ -54,7 +54,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 	else
 		iDummy = xASL_str2num(iDummy);
 		if size(iDummy,1)>1 && size(iDummy,2)>1
-			warning('DummyPositionInASL4D should be provided as a vector and not as a matrix')
+			warning('DummyScanPositionInASL4D should be provided as a vector and not as a matrix')
 		end
 		iDummy = iDummy(:)';
 	end
