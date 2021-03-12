@@ -142,8 +142,9 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                 try
                     temp = xASL_io_DcmtkRead(filepath, 0);
                     TryDicominfo = false;
-                catch
+                catch ME
                     warning(['xASL_adm_Dicom2JSON: xASL_io_DcmtkRead failed for ' filepath ', trying dicominfo']);
+                    fprintf('%s\n', ['Message: ' ME.message]);
                 end
             end
             
@@ -158,20 +159,24 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				
 				try % 1) use current dictionary
 					temp = dicominfo(filepath);
-				catch
+                catch ME
 					try % 2) use default dictionary
+                        fprintf('%s\n', ['Warning: ' ME.message]);
 						dicomdict('factory'); % temporarily set to default dictionary
-						temp            = dicominfo(filepath); % retry reading dicom
-					catch
+						temp = dicominfo(filepath); % retry reading dicom
+                    catch ME
 						try % 3) change UseDictionaryVR setting with current dictionary
-							dicomdict('set',DictionaryDCM);
+							fprintf('%s\n', ['Warning: ' ME.message]);
+                            dicomdict('set',DictionaryDCM);
 							temp = dicominfo(filepath,'UseDictionaryVR', true);
-						catch
+                        catch ME
 							try % 4) change UseDictionaryVR setting with default dictionary
+                                fprintf('%s\n', ['Warning: ' ME.message]);
 								dicomdict('factory');
 								temp = dicominfo(filepath,'UseDictionaryVR', true);
-							catch
-								warning('xASL_adm_Dicom2JSON: dicominfo also did not work, check this!');
+                            catch ME
+								warning('dicominfo also did not work, check this!');
+                                fprintf('%s\n', ['Message: ' ME.message]);
 								dicomdict('set',DictionaryDCM); % reset dictionary
 								continue;
 							end
