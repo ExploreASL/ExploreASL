@@ -32,17 +32,17 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 
     % Check if both root folders are valid char arrays or strings
     if ~ischar(pathDatasetA)
-        error('The path of structure A is not a char array.');
+        error('The path of structure A is not a char array');
     end
     if ~ischar(pathDatasetB)
-        error('The path of structure B is not a char array.');
+        error('The path of structure B is not a char array');
     end
 
     % Check if both root folders exists
-    if ~(xASL_exist(pathDatasetA)==7)
+    if ~xASL_exist(pathDatasetA, 'dir')
         error('The root folder of structure A does not exist: %s',pathDatasetA);
     end
-    if ~(xASL_exist(pathDatasetB)==7)
+    if ~xASL_exist(pathDatasetB, 'dir')
         error('The root folder of structure B does not exist: %s',pathDatasetB);
     end
 	
@@ -52,7 +52,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 	end
     
     % Default value for RMSE threshold
-    if nargin < 4
+    if nargin < 4 || isempty(threshRmseNii)
        threshRmseNii = 1e-5;
     end
 
@@ -80,8 +80,8 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     pathDatasetB = fullfile(pathDatasetB);
 
     % Get dataset names
-    [~,datasetA,~] = fileparts(pathDatasetA);
-    [~,datasetB,~] = fileparts(pathDatasetB);
+    [~, datasetA] = fileparts(pathDatasetA);
+    [~, datasetB] = fileparts(pathDatasetB);
 
     % Make sure you have valid identifiers for the field names
     datasetA = matlab.lang.makeValidName(datasetA,'ReplacementStyle','delete');
