@@ -9,8 +9,8 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 % OUTPUT:
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %                 assigns the following values:
-%                 x.M0_usesASLtiming - is 1 when the start of M0 readout is set to TR-labdur-PLD+slice*sliceTime for 2D
-%                                    - is 0 when the start of M0 readout is set to TR-slice*sliceTime for 2D
+%                 x.M0_usesASLtiming - is 1 when the start of M0 readout is set to TR-labdur-PLD+slice*SliceReadoutTime for 2D
+%                                    - is 0 when the start of M0 readout is set to TR-slice*SliceReadoutTime for 2D
 %                                    - set to 1 for M0 within ASL, 0 for standalone
 %                 x.Q.TissueT1 - is set to 800 when missing
 %                 x.M0_GMScaleFactor - is set to 1 when missing
@@ -137,8 +137,8 @@ else
 		fprintf('%s\n','Single 3D M0 readout assumed');
     elseif  strcmpi(x.readout_dim,'2D') % for 2D readouts, there are slice timing differences
 
-		% Calculate SliceTime as a vector
-		SliceTime = xASL_quant_SliceTiming(x,inputM0);
+		% Calculate SliceReadoutTime as a vector
+		SliceReadoutTime = xASL_quant_SliceTiming(x,inputM0);
 
 		SliceIM = zeros(size(M0IM));
 		for iZ=1:size(M0IM,3)
@@ -149,11 +149,11 @@ else
 		if  x.M0_usesASLtiming
 			% in this case, the M0 readout has the exact same timing as the ASL readout
 			% this is the case e.g. for Philips 3D GRASE
-			NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+SliceTime(SliceIM);
+			NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+SliceReadoutTime(SliceIM);
 
 			fprintf('%s\n','2D sliceWise M0 readout assumed, same timing as ASL slices readout used');
 		elseif ~x.M0_usesASLtiming
-			NetTR = TR + SliceTime(SliceIM) - max(SliceTime) - (max(SliceTime)-min(SliceTime))/(nSlices-1);
+			NetTR = TR + SliceReadoutTime(SliceIM) - max(SliceReadoutTime) - (max(SliceReadoutTime)-min(SliceReadoutTime))/(nSlices-1);
 		
 			% Here we assume the M0 slices readout were at the end of the
 			% TR, with the same time between slices as for the ASL readout
@@ -268,7 +268,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 		error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
 	end
 	
-    SliceTime = xASL_quant_SliceTiming(x,M0IM);
+    SliceReadoutTime = xASL_quant_SliceTiming(x,M0IM);
         
     if ~isfield(x.Q, 'TissueT1') || isempty(x.Q.TissueT1)
         fprintf('%s\n', 'Warning: WM T1 set to 900 ms for 3T');
@@ -311,7 +311,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     FigureHandle = figure('visible','off');
     subplot(2, 2, 1);
     
-    SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, ReadoutTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceTime, x.D.M0CheckDir, 1));
+    SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, ReadoutTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceReadoutTime, x.D.M0CheckDir, 1));
     
     %% Obtain the slice-wise median Control signal before correction
     % First create a reasonable mask
@@ -374,7 +374,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     fprintf('%s\n', [xASL_num2str(mean(SignalPercentage)) ' to correct for background suppression']);
     fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime(:)')]);
     fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.TissueT1)]);
-    fprintf('%s\n\n', ['And SliceTime=' xASL_num2str(SliceTime(:)')]);
+    fprintf('%s\n\n', ['And SliceReadoutTime=' xASL_num2str(SliceReadoutTime(:)')]);
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
     
     if x.ApplyQuantification(4)==1

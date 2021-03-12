@@ -55,14 +55,14 @@ for iSession=1:2
     CBF{iSession} = xASL_io_Nifti2Im(PathCBF{iSession});
     SliceNumber = xASL_io_Nifti2Im(fullfile(x.D.PopDir, ['SliceGradient_extrapolated_' x.P.SubjectID '_' x.SESSIONS{iSession} '.nii']));
 
-	% Obtain the correct SliceTime
-	SliceTime = xASL_quant_SliceTiming(x,x.P.Path_ASL4D);
+	% Obtain the correct SliceReadoutTime
+	SliceReadoutTime = xASL_quant_SliceTiming(x,x.P.Path_ASL4D);
 	
     % Correct different PLD scales
 	SliceNumber = round(SliceNumber);
 	SliceNumber(SliceNumber<1) = 1;
-	SliceNumber(SliceNumber>length(SliceTime)) = length(SliceTime);
-	PLD{iSession} = x.Q.Initial_PLD + SliceTime(SliceNumber);
+	SliceNumber(SliceNumber>length(SliceReadoutTime)) = length(SliceReadoutTime);
+	PLD{iSession} = x.Q.Initial_PLD + SliceReadoutTime(SliceNumber);
 	
     CBF{iSession} = CBF{iSession}./(exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.LabelingDuration./x.Q.BloodT1)) ));
 end
