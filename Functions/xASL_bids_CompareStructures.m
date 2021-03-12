@@ -98,12 +98,12 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     filesB = modifyFileList(filesB,pathDatasetB);
     
     % Get folder lists
-    folderListA = unique(string({filesA.folder}'));
-    folderListB = unique(string({filesB.folder}'));
+    folderListA = unique({filesA.folder}');
+    folderListB = unique({filesB.folder}');
     
     % Get real file lists
-    fileListA = unique(string({filesA.name}'));
-    fileListB = unique(string({filesB.name}'));
+    fileListA = unique({filesA.name}');
+    fileListB = unique({filesB.name}');
     
     % Missing Folders
     results.(datasetA).missingFolders = setdiff(folderListB,folderListA);
@@ -175,7 +175,7 @@ function printList(currentList)
     % Iterate over list
     if ~isempty(currentList)
         for iFile=1:length(currentList)
-            fprintf('Missing:\t\t%s\n',currentList(iFile))
+            fprintf('Missing:\t\t%s\n',currentList{iFile})
         end
     end
 end
@@ -189,10 +189,10 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
     % Iterate over list
     for iFile=1:length(allFiles)
         % Assign root directory of dataset A
-        currentFileA = fullfile(pathDatasetA,allFiles(iFile));
-        currentFileB = fullfile(pathDatasetB,allFiles(iFile));
+        currentFileA = fullfile(pathDatasetA,allFiles{iFile});
+        currentFileB = fullfile(pathDatasetB,allFiles{iFile});
         % Get extension
-        [~,~,extension] = fileparts(allFiles(iFile));
+        [~,~,extension] = fileparts(allFiles{iFile});
         % Check extension
         if strcmp(extension,'.json')
 			jsonErrorReport='';
@@ -214,20 +214,20 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
 				missingFields = setdiff(fieldNamesB,fieldNamesA);
 				% Print out missing fields
 				for iField=1:numel(missingFields)
-					jsonErrorReport = sprintf('%s\t\t\t\tMissing field: %s\n',jsonErrorReport,string(missingFields{iField}));
+					jsonErrorReport = sprintf('%s\t\t\t\tMissing field: %s\n',jsonErrorReport,missingFields{iField});
 				end
 				
 				extraFields = setdiff(fieldNamesA,fieldNamesB);
 				% Print out missing fields
 				for iField=1:numel(extraFields)
-					jsonErrorReport = sprintf('%s\t\t\t\tExtra field: %s\n',jsonErrorReport,string(extraFields{iField}));
+					jsonErrorReport = sprintf('%s\t\t\t\tExtra field: %s\n',jsonErrorReport,extraFields{iField});
 				end
 				
 				% Now we can compare these fields like in the part above
 				jsonErrorReport = [jsonErrorReport, compareFieldLists(jsonA,jsonB,sharedFieldsAB)];
 				
 				if bPrintReport && ~isempty(jsonErrorReport)
-					fprintf('File:\t\t\t%s\n',allFiles(iFile));
+					fprintf('File:\t\t\t%s\n',allFiles{iFile});
 					fprintf('%s',jsonErrorReport);
 				end
 			end
@@ -239,13 +239,13 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                 currentFileTextB = fileread(currentFileB);
                 if bPrintReport
                     if ~strcmp(currentFileTextA,currentFileTextB)
-						fprintf('%s:\t\t\n',allFiles(iFile));
+						fprintf('%s:\t\t\n',allFiles{iFile});
                         fprintf('\t\t\t\tDifferent file content.\n');
                         identical = false;
                     end
                 end
             end
-        elseif strcmp(extension,'.nii') || contains(allFiles(iFile),'.nii.gz') % Warning: This unzips your NIFTIs right now!
+        elseif strcmp(extension,'.nii') || contains(allFiles{iFile},'.nii.gz') % Warning: This unzips your NIFTIs right now!
             % Read files if they exist
             if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
                 % Check file size (there were some 0KB images in the bids-examples)
@@ -256,7 +256,7 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
 
                 % Check file size (images with a file size lower than 1 byte are corrupt)
                 if (sizeA>1 && sizeB>1)
-                    if contains(allFiles(iFile),'.nii.gz')
+                    if contains(allFiles{iFile},'.nii.gz')
                         % Unzip first
                         tmpPathImageA = xASL_adm_UnzipNifti(char(currentFileA));
                         tmpPathImageB = xASL_adm_UnzipNifti(char(currentFileB));
@@ -279,24 +279,24 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                             if sum(sizeA==sizeB)==length(sizeA)
                                 RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
                                 if (RMSE>threshRmseNii)
-                                    fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                                    fprintf('File:\t\t\t%s\n',allFiles{iFile});
                                     fprintf('\t\t\t\tRMSE (%d) of NIFTIs above threshold.\n',RMSE);
                                     identical = false;
                                 end
                             else
-                                fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                                fprintf('File:\t\t\t%s\n',allFiles{iFile});
                                 fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
                                 identical = false;
                             end
                         else
-                            fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                            fprintf('File:\t\t\t%s\n',allFiles{iFile});
                             fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
                             identical = false;
                         end
                     end
                 else
                     if bPrintReport
-						fprintf('%s:\t\t\n',allFiles(iFile));
+						fprintf('%s:\t\t\n',allFiles{iFile});
                         fprintf('\t\t\t\tFile is too small to be a real image.\n');
                     end
                 end
@@ -314,7 +314,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
 
     % Iterate over fields
     for iField=1:numel(fieldList)
-        curFieldName = string(fieldList(iField));
+        curFieldName = fieldList{iField};
         fieldContentA = jsonStructA.(fieldList{iField});
         fieldContentB = jsonStructB.(fieldList{iField});
         if isnumeric(fieldContentA) && isnumeric(fieldContentB)
