@@ -63,10 +63,9 @@ defaultDataPar.x.DELETETEMP = 1;
 %% 1. Make a temporary copy of the Flavors data
 if bTest(1)
 	% Copy the DICOM source data apart
-	fprintf('Copying the source data to a temporary folder: %s\n',conversionPath);
-	if ~exist(conversionPath, 'dir')
-		mkdir(conversionPath);
-    end
+	fprintf('Copying the source data to a temporary folder: %s\n', conversionPath);
+    fprintf('Copying:   ');
+	xASL_adm_CreateDir(conversionPath);
     
     if xASL_exist(flavorsPath,'dir')
         fList = xASL_adm_GetFileList(flavorsPath, [], 'List', [], 1);
@@ -75,41 +74,31 @@ if bTest(1)
     end
     fprintf('  '); % Make empty spaces for xASL_TrackProgress
 	for iList = 1:length(fList)
-		xASL_TrackProgress(iList,length(fList));
-		if ~exist(fullfile(conversionPath,fList{iList}), 'dir')
-			mkdir(fullfile(conversionPath,fList{iList}));
-		end
-		if ~exist(fullfile(conversionPath,fList{iList}, 'sourcedata'), 'dir')
-			mkdir(fullfile(conversionPath,fList{iList}, 'sourcedata'));
-        end
-        
-		xASL_Copy(fullfile(flavorsPath,fList{iList},'sourcedata'),fullfile(conversionPath,fList{iList}),1);
-		xASL_Copy(fullfile(flavorsPath,fList{iList},'sourceStructure.json'),fullfile(conversionPath,fList{iList},'sourceStructure.json'));
-		xASL_Copy(fullfile(flavorsPath,fList{iList},'studyPar.json'),fullfile(conversionPath,fList{iList},'studyPar.json'));
+		xASL_TrackProgress(iList, length(fList));
+		xASL_adm_CreateDir(fullfile(conversionPath,fList{iList}));
+		xASL_adm_CreateDir(fullfile(conversionPath,fList{iList}, 'sourcedata'));
 		
+		SourceDir = fullfile(flavorsPath, fList{iList}, 'sourcedata');
+        DestinationDir = fullfile(conversionPath, fList{iList}, 'sourcedata');
+        xASL_Copy(SourceDir, DestinationDir, 1);
+		
+		xASL_Copy(fullfile(flavorsPath,fList{iList},'sourceStructure.json'), fullfile(conversionPath,fList{iList},'sourceStructure.json'), 1);
+		xASL_Copy(fullfile(flavorsPath,fList{iList},'studyPar.json'), fullfile(conversionPath,fList{iList},'studyPar.json'), 1);
 	end
+	fprintf('\n');
 	
 	% Create a copy of the reference BIDS data
-	fprintf('Copying the BIDS reference data to a temporary folder: %s\n',referencePath);
-	if ~exist(referencePath,'dir')
-		mkdir(referencePath);
-	end
+	fprintf('Copying the BIDS reference data to a temporary folder: %s\n', referencePath);
+	xASL_adm_CreateDir(referencePath);
 	
 	fList = xASL_adm_GetFileList(flavorsPath, [], 'List', [], 1);
     fprintf('  '); % Make empty spaces for xASL_TrackProgress
 	for iList = 1:length(fList)
 		xASL_TrackProgress(iList,length(fList));
-		if ~exist(fullfile(referencePath,fList{iList}), 'dir')
-			mkdir(fullfile(referencePath,fList{iList}));
-		end
-		if ~exist(fullfile(referencePath,fList{iList}, 'rawdata'), 'dir')
-			mkdir(fullfile(referencePath,fList{iList}, 'rawdata'));
-        end
-        if ~ispc
-            system(['cp -r ' fullfile(flavorsPath,fList{iList}, 'rawdata','*') ' ' fullfile(referencePath,fList{iList},'rawdata')]);
-        else
-           copyfile(fullfile(flavorsPath,fList{iList}, 'rawdata'), fullfile(referencePath,fList{iList},'rawdata')); 
-        end
+		xASL_adm_CreateDir(fullfile(referencePath,fList{iList}));
+		xASL_adm_CreateDir(fullfile(referencePath,fList{iList}, 'rawdata'));
+
+        xASL_Copy(fullfile(flavorsPath,fList{iList}, 'rawdata'), fullfile(referencePath,fList{iList},'rawdata'), 1); 
 	end
 end
 
