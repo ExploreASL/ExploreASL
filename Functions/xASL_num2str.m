@@ -63,6 +63,14 @@ if isnumeric(DataIn)
 		DataOut = 'n/a';
 	elseif isempty(f)
 		DataOut = num2str(DataIn);
+    elseif strcmp(f,'auto') % Automatic mode
+        if floor(DataIn)==DataIn % Integers
+            DataOut = num2str(DataIn, '%d');
+        else
+            DataOut = num2str(DataIn, '%.12f');
+            % Remove trailing zeros
+            DataOut = strip(DataOut,'right','0');
+        end
 	else
 		DataOut = num2str(DataIn, f);
 	end

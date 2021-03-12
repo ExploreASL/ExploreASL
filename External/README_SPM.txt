@@ -322,12 +322,6 @@ toolbox/cat12/cat_vol_correct_slice_scaling line 425
 *********************************************************************************************************
 BIDS/JSON
 
-DATE+NAME:2021_12_03, MS
-DESCRIPTION: 
-Edited the spm_jsonwrite to improve number format.
-FILE:
-spm_jsonwrite lines 229-233
-
 DATE+NAME:2020_03_12, JP
 DESCRIPTION:
 In DICOM header reader, removed the extra processing for CSASeriesHeaderInfo as the Phoenix Siemens protocol is saved under that DICOM tag and need a simple conversion to string. The type is redefined as LT in the External/SPMmodified/spm_dicom_dict.txt. Moreover, new DICOM fields are added at the end. The .mat dictionary is generated using a spm_dicom_text_to_dict('spm_dicom_dict.txt') command.
