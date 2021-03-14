@@ -18,7 +18,7 @@ LST 2.0.15
 * #302: Remove server calls in CAT12 functions
 * #313: Move GUI to a separate repository
 * #351: T2 and T1c files are now also aligned to the T1w and outputted to standard space
-* #354: Added an option x.DummyScanPositionInASL4D that removes marked dummy scans when splitting ASL to ASL+M0+dummy
+* #354: Added an option `x.DummyScanPositionInASL4D` that removes marked dummy scans when splitting ASL to ASL+M0+dummy
 * #356,#396,#397: Internally restructure SliceTime allowing ExploreASL now to work with multi-band 2D EPI as well or any other SliceTime order
 
 ----
@@ -51,7 +51,7 @@ LST 2.0.15
 * #339: Fix JSON reading of special characters
 * #399: Fix special characters in Windows filenames
 * #405: Fix range-check error in Background Suppression timing calculation
-* #406: Fix xASL_stat_MedianNan for all-NaN input
+* #406: Fix `xASL_stat_MedianNan` for all-NaN input
 * #408,#409: Skip missing fields in CAT during reports in compiled ExploreASL
 
 ----
