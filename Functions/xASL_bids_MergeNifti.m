@@ -27,11 +27,12 @@ function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %              This function performs the following steps in subfunctions:
 %
 %              1. xASL_bids_MergeNifti_M0Files Generic merging of M0 files
-%              2. xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
-%              3. xASL_bids_MergeNifti_AllASLFiles Merge any ASL files
-%              4. xASL_bids_MergeNifti_Merge Merge NiftiPaths & save to pathMerged
-%              5. xASL_bids_MergeNifti_Delete Delete NiftiPaths and associated JSONs
-%              6. xASL_bids_MergeNifti_RenameParms Find *_parms.m files in directory and shorten to provided name
+%              2. xASL_bids_MergeNifti_GEASLFiles Merge GE ASL files and extract scan order from DICOM tags
+%              3. xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
+%              4. xASL_bids_MergeNifti_AllASLFiles Merge any ASL files
+%              5. xASL_bids_MergeNifti_Merge Merge NiftiPaths & save to pathMerged
+%              6. xASL_bids_MergeNifti_Delete Delete NiftiPaths and associated JSONs
+%              7. xASL_bids_MergeNifti_RenameParms Find *_parms.m files in directory and shorten to provided name
 %
 % EXAMPLE:     n/a
 %
@@ -58,37 +59,28 @@ if length(NiftiPaths)>1
     case 'M0'
         % Merges the M0 files
         pathOut = xASL_bids_MergeNifti_M0Files(NiftiPaths);
-        if ~isempty(pathOut)
-            NiftiPaths = {pathOut};
-            fprintf('Corrected dcm2niiX output for\n');
-            fprintf('%s\n', pathOut);
-        end
 
     case 'ASL'
+		% Run the GE merging procedure first, that returns an empty path if not all conditions are met
+		pathOut = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths);
+		
         % Merges Siemens ASL file if they have the known pattern of filenames
-        pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths);
-        if ~isempty(pathOut)
-            NiftiPaths = {pathOut};
-            fprintf('Corrected dcm2niiX output for Siemens files:\n');
-            fprintf('%s\n', pathOut);
-        end
+		if isempty(pathOut)
+			pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths);
+		end
 
         % Generic merging of ASL4D files for non-Siemens, or Siemens files with an unknown pattern
         if isempty(pathOut)
             % If the previous Siemens merging didn't merge them already
             pathOut = xASL_bids_MergeNifti_AllASLFiles(NiftiPaths);
-
-            if ~isempty(pathOut)
-                NiftiPaths = {pathOut};
-                fprintf('Corrected dcm2niiX output for following files:\n');
-                fprintf('%s\n', pathOut);
-            else
-                pathOut = NiftiPaths;
-            end
         end
 	end
 end
 
+% If the merging worked, return the merged path
+if ~isempty(pathOut)
+	NiftiPaths = {pathOut};
+end
 
 end
 
@@ -151,9 +143,115 @@ if bCheckConsistency
 	if ~isempty(pathOut)
 		xASL_bids_MergeNifti_RenameParms(Fpath, 'M0');
 		xASL_bids_MergeNifti_Delete(NiftiPaths);
+		fprintf('Corrected dcm2niiX output for\n');
+		fprintf('%s\n', pathOut);
 	end
 end
 
+
+end
+
+%% ==========================================================================
+%% ==========================================================================
+function pathOut = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths)
+%xASL_bids_MergeNifti_GEASLFiles merge any ASL files in alphabetical order, but also load and use the GE ASL 
+% tags and save them to a correct ASL context
+%
+% Description: Uses the GE ImageType tag to sort out the files correctly and saves this order
+
+% By default, the conversion did not work
+pathOut = ''; 
+
+% And ASLContext is empty
+ASLContext = '';
+
+% Goes through all files
+for iFile=1:length(NiftiPaths)
+	% For each file, finds the JSONs
+	[jsonPath,jsonName,~] = fileparts(NiftiPaths{iFile});
+	jsonPath = fullfile(jsonPath, [jsonName, '.json']);
+		
+	% Loads the JSON file
+	if exist(jsonPath,'file')
+		jsonPar = spm_jsonread(jsonPath);
+	else
+		fprintf('Warning: Non-existent JSON sidecar: %s\n',jsonPath) ;
+		jsonPar = [];
+	end
+		
+	% Finds the manufacturer of the file
+	if ~isempty(jsonPar) && isfield(jsonPar,'Manufacturer')
+		varManufacturer = jsonPar.Manufacturer;
+	else
+		varManufacturer = '';
+	end
+		
+	% If GE is not identified or ImageType field doesn't exist, then exits
+	if ~regexpi(varManufacturer,'GE') || ~isfield(jsonPar,'ImageType')
+		return;
+	end
+	
+	% Starts looking for the correct image type
+	imageType = '';
+
+	% ["ImageType": ["DERIVED", "PRIMARY", "ASL", "PERFUSION", "ASL"] - deltaM
+	if length(jsonPar.ImageType) == 5 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
+			strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION') && strcmpi(jsonPar.ImageType{5},'ASL')
+		imageType = 'deltam';
+	end
+	
+	% ["DERIVED", "PRIMARY", "ASL", "PERFUSION_ASL"] - deltaM
+	if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
+			strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION_ASL')
+		imageType = 'deltam';
+	end
+	
+	% ["ORIGINAL", "PRIMARY", "ASL"] - M0
+	if length(jsonPar.ImageType) == 3 && strcmpi(jsonPar.ImageType{1},'ORIGINAL') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
+			strcmpi(jsonPar.ImageType{3},'ASL')
+		imageType = 'm0scan';
+	end
+	
+	% ["DERIVED", "PRIMARY", "CBF", "CBF"] - CBF
+	if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
+			strcmpi(jsonPar.ImageType{3},'CBF') && strcmpi(jsonPar.ImageType{4},'CBF')
+		imageType = 'cbf';
+	end
+
+	% If imageType is not identified for all scans, then skip this one
+	if isempty(imageType)
+		return;
+	end
+	
+	% Save this to the ASL context
+	if isempty(ASLContext)
+		ASLContext = imageType;
+	else
+		ASLContext = [ASLContext,',',imageType];
+	end
+end
+
+% Merges all the files together
+pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,1:length(NiftiPaths),'ASL4D',0);
+
+% If this worked
+if ~isempty(pathOut)
+	% And adds the ASLContext to the JSON
+	[jsonPath,jsonName,~] = fileparts(pathOut);
+		
+	jsonPar = spm_jsonread(fullfile(jsonPath, [jsonName, '.json']));
+	jsonPar.ASLContext = ASLContext;
+	jsonPar = rmfield(jsonPar,'ImageType');
+	spm_jsonwrite(fullfile(jsonPath, [jsonName, '.json']),jsonPar);
+	
+	% And deletes the old files
+	xASL_bids_MergeNifti_RenameParms(jsonPath,'ASL4D');
+	xASL_bids_MergeNifti_Delete(NiftiPaths);
+	
+	fprintf('Corrected dcm2niiX output for GE files and found the correct scan order:\n');
+	fprintf('%s\n', pathOut);
+	fprintf('%s\n', ASLContext);
+end
 
 end
 
@@ -268,6 +366,8 @@ if bCheckConsistency
 	if ~isempty(pathOut)
 		xASL_bids_MergeNifti_RenameParms(Fpath,'ASL4D');
 		xASL_bids_MergeNifti_Delete(NiftiPaths);
+		fprintf('Corrected dcm2niiX output for Siemens files:\n');
+		fprintf('%s\n', pathOut);
 	end
 end
 
@@ -296,8 +396,9 @@ pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,'ASL4D',0);
 if ~isempty(pathOut)
 	xASL_bids_MergeNifti_RenameParms(Fpath,'ASL4D');
 	xASL_bids_MergeNifti_Delete(NiftiPaths);
+	fprintf('Corrected dcm2niiX output for following files:\n');
+	fprintf('%s\n', pathOut);
 end
-
 
 end
 

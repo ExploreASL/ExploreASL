@@ -656,7 +656,7 @@ if bRunSubmodules(2)
 						jsonLocal.M0Type = bidsPar.strM0Separate;
 						bJsonLocalM0isFile = 1;
 					else
-						if ~isempty(strfind(studyPar.ASLContext,bidsPar.strM0scan))
+						if ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
 							jsonLocal.M0 = true;
 							jsonLocal.M0Type = bidsPar.strM0Included;
 						else
@@ -677,7 +677,7 @@ if bRunSubmodules(2)
 								jsonLocal.M0Estimate = studyPar.M0;
 							elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
 								jsonLocal.M0Type = bidsPar.strM0Separate;
-							elseif ~isempty(strfind(studyPar.ASLContext,bidsPar.strM0scan))
+							elseif ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
 								jsonLocal.M0Type = bidsPar.strM0Included;
 							else
 								jsonLocal.M0Type = bidsPar.strM0Absent;
@@ -701,7 +701,7 @@ if bRunSubmodules(2)
 				
 				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 				% Reformat ASLcontext field
-				% Remove ',' and ';' at the
+				% Remove ',' and ';' at the end
 				if (jsonLocal.ASLContext(end) == ';') || (jsonLocal.ASLContext(end) == ',')
 					jsonLocal.ASLContext = jsonLocal.ASLContext(1:(end-1));
 				end
