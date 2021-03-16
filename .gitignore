@@ -8,4 +8,5 @@ JSON_LOGIC/ExploreASL_GUI_masterconfig.json
 __pycache__
 *MRI_viewer.mp4
 /venv/
-xASL_GUI_run.sh*Thumbs.db
+xASL_GUI_run.sh
+*Thumbs.db
