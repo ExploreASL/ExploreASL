@@ -31,6 +31,9 @@ function [DataOut] = xASL_num2str(DataIn, f, bConcatenate, strDelimiter)
 % [DataOut] = xASL_num2str(123.456789, '%.5f'); % Get exactly 5 digits after the comma
 % DataOut = '123.45679'
 %
+% We also added an automatic mode for the num2str export in JSON files:
+% xASL_num2str(1.23456789000, 'auto'); % Will remove trailing zeros
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright (C) 2015-2020 ExploreASL
 %
