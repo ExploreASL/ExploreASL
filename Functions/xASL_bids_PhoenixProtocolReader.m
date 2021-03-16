@@ -74,7 +74,7 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
         % Current line
         curLine = char(phoenixProtocol{line,1});
         % Search for preambleParIdentifier
-        if contains(curLine,preambleParIdentifier)
+        if ~isempty(strfind(curLine,preambleParIdentifier)) % We previously used contains, which is sadly not backwards compatible
             % Find the parameter name
             quotationIDs = strfind(curLine,'""');
             if length(quotationIDs)==2
@@ -83,10 +83,12 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
                 indexStart = strfind(curLine,'{');
                 indexEnd = strfind(curLine,'}');
                 % Check validity of parameter
-                validParameter = contains(curLine,[preambleParIdentifier,'Long'])...
-                              || contains(curLine,[preambleParIdentifier,'String'])...
-                              || contains(curLine,[preambleParIdentifier,'Bool'])...
-                              || contains(curLine,[preambleParIdentifier,'Double']);
+                condition_A = ~isempty(strfind(curLine,[preambleParIdentifier,'Long'])); % We are using strfind for backwards compatibility
+                condition_B = ~isempty(strfind(curLine,[preambleParIdentifier,'String']));
+                condition_C = ~isempty(strfind(curLine,[preambleParIdentifier,'Bool']));
+                condition_D = ~isempty(strfind(curLine,[preambleParIdentifier,'Double']));
+                % Use conditions
+                validParameter = condition_A || condition_B || condition_C || condition_D;
                 if ~isempty(indexStart) && ~isempty(indexEnd) && validParameter
                     % Get the paramater value
                     valueToExtract = curLine(indexStart+1:indexEnd-1);
@@ -119,15 +121,15 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
     for line=1:numel(phoenixProtocol)
         
         % Current line
-        curLine = string(phoenixProtocol{line,1});
+        curLine = phoenixProtocol{line,1};
         
         % Print current line in debug mode
         if debug
-            fprintf('%s\n',string(phoenixProtocol(line,1)));
+            fprintf('%s\n',phoenixProtocol{line,1});
         end
         
         % Check if protocol ended
-        if curLine.contains(endOfProtocol)
+        if ~isempty(strfind(curLine,endOfProtocol))
             protocolEnded = true;
         end
         
@@ -147,7 +149,7 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
         end
         
         % Check if protocol started
-        if curLine.contains(startOfProtocol)
+        if ~isempty(strfind(curLine,startOfProtocol))
             protocolStarted = true;
         end
         
