@@ -38,7 +38,7 @@ function [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,bspli
 %  Hofheinz F, van den Hoff J, Asllani I. Effects of systematic partial 
 %  volume errors on the estimation of gray matter cerebral blood flow with 
 %  arterial spin labeling MRI. MAGMA 2018. DOI:10.1007/s10334-018-0691-y
-
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [imPVEC,imCBFrec,imResidual,FWHM] = xASL_im_PVCbspline(imCBF,imPV,[17 17 1])
 % __________________________________

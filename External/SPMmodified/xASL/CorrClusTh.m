@@ -1,6 +1,9 @@
 function varargout = CorrClusTh(SPM,u,alpha,guess);
 % Find the corrected cluster size threshold for a given alpha
-% function [k,Pc] =CorrClusTh(SPM,u,alpha,guess)
+%
+% FORMAT: function [k,Pc] = CorrClusTh(SPM,u,alpha,guess)
+%
+% INPUT:
 % SPM   - SPM data structure
 % u     - Cluster defining threshold
 %         If less than zero, u is taken to be uncorrected P-value
@@ -11,8 +14,12 @@ function varargout = CorrClusTh(SPM,u,alpha,guess);
 %         If guess is a (non-NaN) scalar nothing happens, except the the
 %         corrected P-value of guess is printed. 
 %
-% Finds the corrected cluster size (spatial extent) threshold for a given
-% cluster defining threshold u and FWE-corrected level alpha. 
+% OUTPUT: n/a
+%
+% DESCRIPTION: Finds the corrected cluster size (spatial extent) threshold for a given
+%              cluster defining threshold u and FWE-corrected level alpha. 
+%
+% EXAMPLE:     n/a
 %
 %_________________________________________________________________________
 % $Id: CorrClusTh.m,v 1.10 2006/05/08 15:31:02 nichols Exp $ Thomas Nichols, Marko Wilke

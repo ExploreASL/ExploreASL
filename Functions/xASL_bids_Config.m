@@ -16,8 +16,10 @@ function bidsPar = xASL_bids_Config()
 %             datasetDescription      - A list of req, rec, and opt fields to be put to dataset_description.json - they all need to be predefined by the user
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Creates several structures necessary for configuring the DICOM to BIDS conversion and saving of BIDS JSON files and NII structure.
+%
+% EXAMPLE:     n/a
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 % BIDS version is hard-coded
 bidsPar.BIDSVersion = '1.5.0';

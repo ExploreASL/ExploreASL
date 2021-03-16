@@ -1,6 +1,19 @@
 function xASL_bids_parseM0(PathNifti)
 %xASL_bids_parseM0 This function check the M0 possibilities and will
-%convert them to the ExploreASL legacy format
+% convert them to the ExploreASL legacy format
+%
+% FORMAT:      xASL_bids_parseM0(PathNifti)
+%
+% INPUT:       PathNifti - Path to a NIFTI file (CHAR ARRAY, REQUIRED)
+% 
+% OUTPUT:      n/a
+%
+% DESCRIPTION: This function check the M0 possibilities and will convert them to the ExploreASL legacy format.
+%
+% EXAMPLE:     n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
 %PathNifti should be ASL Nifti
 

@@ -22,15 +22,15 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 %              Siemens 3D GRASE puts the M0 as the first volume -> iM0 = 1;
 %              Some Siemens 3D GRASE puts a second Dummy control image -> iDummy = 2;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE for moving the first two volumes to M0.nii:
+% EXAMPLE: for moving the first two volumes to M0.nii:
 % xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [1 2]);
-% EXAMPLE for concatenating files only:
+% EXAMPLE 2: for concatenating files only:
 % xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', []);
-% EXAMPLE for moving the first two volumes to M0.ii and removing the 3rd volume as dummy:
+% EXAMPLE 3: for moving the first two volumes to M0.ii and removing the 3rd volume as dummy:
 % xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [1 2],3);
-% EXAMPLE for moving the third volume to M0.ii and removing the first 2 volumes as dummy:
+% EXAMPLE 4: for moving the third volume to M0.ii and removing the first 2 volumes as dummy:
 % xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', 3,[1 2]);
-% EXAMPLE for removing the 1st volume as dummy
+% EXAMPLE 5: for removing the 1st volume as dummy
 % xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [],1);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
