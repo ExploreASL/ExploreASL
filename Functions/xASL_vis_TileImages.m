@@ -1,7 +1,7 @@
 function [ImOut] = xASL_vis_TileImages(ImIn, nColumns)
 %xASL_vis_TileImages Merges selected slices (3D) into one single 2D picture.
 %
-% FORMAT:       ...
+% FORMAT:       [ImOut] = xASL_vis_TileImages(ImIn, nColumns)
 % 
 % INPUT:        ImIn = input 3D volume, as stack of 2D slices
 %               [nColumns = desired number of columns]

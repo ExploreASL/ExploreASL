@@ -8,13 +8,14 @@ function [InPath] = xASL_spm_admin(InPath, bPadComma1)
 % FORMAT: [InPath] = xASL_spm_admin(InPath, bPadComma1)
 %
 % INPUT:
+%
 % InPath      - ...
 % bPadComma1  - ...
 %
 % OUTPUT:
 % InPath      - ...
 %
-% DESCRIPTION: n/a
+% DESCRIPTION: Force ,1 at end of IMname. This is useful for refIM/srcIM in CoregInit, OldNormalizeWrapper etc.
 %
 % EXAMPLE: n/a
 % __________________________________

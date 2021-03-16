@@ -36,32 +36,34 @@ function [Y,fil] = xASL_im_ndnanfilter(X,filterType,F,WNAN)
 %
 %     By default, edges are not padded and one-sided filter is used at the image edges.
 %
-%   Notes: 
-%     * Accepts empty value for any input. When X is empty, the program can
+%   Notes:
+%
+%   - * Accepts empty value for any input. When X is empty, the program can
 %       be used as a N-dimensional window generator.
-%     * NaNs elements surrounded by no-NaNs elements (which will depend on
+%   - * NaNs elements surrounded by no-NaNs elements (which will depend on
 %       window width) are the ones that will be interpolated. The others
 %       are leaved untouched.
-%     * When WNAN=2, the programs acts like an NAN-interpolat/GAP-filling,
+%   - * When WNAN=2, the programs acts like an NAN-interpolat/GAP-filling,
 %       leaving untouched the no-NaNs elements but the filtering is
 %       perfomed anyway. I recommend the default behaviour (WNAN=0) in order
 %       to keep the filtered data in the workspace, and then use the code
 %       at the end of this function to get/remove the interpolated NaNs
-%     * To achieve similar results as ndnanfilter previously, use same F
+%   - * To achieve similar results as ndnanfilter previously, use same F
 %       as with the 'rect' filter.
-%     * Note that the FWHM of Gaussian is given in VOXELS, not in mm
-%     * For the Gaussian filter, use (previous N, new FWHM)
-% N= 1 ~ FWHM 0.94
-% N= 2 ~ FWHM 1.885
-% N= 4 ~ FWHM 3.76
-% N= 6 ~ FWHM 5.652
-% N= 8 ~ FWHM 7.536
-% N=10 ~ FWHM 9.42
-% N=12 ~ FWHM 11.3
-% N=16 ~ FWHM 15.07
-% N=20 ~ FWHM 18.84
-% N=10/2.355 ~ FWHM 4
-% Basically divide by 1.06
+%   - * Note that the FWHM of Gaussian is given in VOXELS, not in mm
+%   - * For the Gaussian filter, use (previous N, new FWHM)
+%
+% - N= 1 ~ FWHM 0.94
+% - N= 2 ~ FWHM 1.885
+% - N= 4 ~ FWHM 3.76
+% - N= 6 ~ FWHM 5.652
+% - N= 8 ~ FWHM 7.536
+% - N=10 ~ FWHM 9.42
+% - N=12 ~ FWHM 11.3
+% - N=16 ~ FWHM 15.07
+% - N=20 ~ FWHM 18.84
+% - N=10/2.355 ~ FWHM 4
+% - Basically divide by 1.06
 %
 % EXAMPLE:     n/a
 %

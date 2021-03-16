@@ -15,14 +15,15 @@ function xASL_adm_ManageMoCoMat(PathIn)
 %              header is correct.
 %              This function performs several checks & corrects if
 %              necessary, combined with throwing a warning:
-%              A) the nVolumes in .mat & .nii image should be equal, if not, delete sidecar
-%              B) .mat should have more than one volume, if not delete sidecar
-%              C) If there are illegal numbers in the diagonal of the .mat
-%                 orientation matrices (here only checked for zeros or non
-%                 finite values) then the .mat is removed
-%              D) If this is true for the first volume only, the .mat is
-%                 retained but the first volume orientation is overwritten
-%                 with a zero matrix
+%
+%              - A) the nVolumes in .mat & .nii image should be equal, if not, delete sidecar
+%              - B) .mat should have more than one volume, if not delete sidecar
+%              - C) If there are illegal numbers in the diagonal of the .mat
+%                   orientation matrices (here only checked for zeros or non
+%                   finite values) then the .mat is removed
+%              - D) If this is true for the first volume only, the .mat is
+%                   retained but the first volume orientation is overwritten
+%                   with a zero matrix
 %
 % EXAMPLE: xASL_adm_ManageMoCoMat('/analysis/Sub-001/ASL_1/ASL4D.nii');
 % __________________________________

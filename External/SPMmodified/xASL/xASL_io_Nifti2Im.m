@@ -17,11 +17,12 @@ function imOut = xASL_io_Nifti2Im(niftiIn, ImageSize)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function loads a NIfTI image matrix with flexible input
 %              (as explained under INPUT: niftiIn). It does the following.
-%              1) Try to load a NIfTI
-%              2) If NIfTI successfully loaded, try to load the NIfTI image
-%              3) If the above didnt work, try to create a dummy image
-%              4) Convert to single precision data format
-%              5) Also able to load NIfTI as .nii.mat format
+%
+%              1. Try to load a NIfTI
+%              2. If NIfTI successfully loaded, try to load the NIfTI image
+%              3. If the above didnt work, try to create a dummy image
+%              4. Convert to single precision data format
+%              5. Also able to load NIfTI as .nii.mat format
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: imOut = xASL_io_Nifti2Im('/analysis/Sub-001/ASL_1/CBF.nii');

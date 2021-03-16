@@ -17,9 +17,10 @@ function [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn, bDeleteCSV
 % CSV file exists but not a TSV file, it converts and replaces the CSV to
 % TSV file, per BIDS. This function has the following parts:
 %
-% 1) Read the CSV or TSV file
-% 2) Write the TSV file (if requested)
-% 3) Delete the CSV file (if requested)
+% 1. Read the CSV or TSV file
+% 2. Write the TSV file (if requested)
+% 3. Delete the CSV file (if requested)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_adm_tsvWrite(ParticipantsMetadata, '/MyStudy/participants.tsv');
 % __________________________________

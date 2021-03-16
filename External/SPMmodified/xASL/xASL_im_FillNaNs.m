@@ -35,9 +35,11 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, x)
 %              image to avoid any division artifact near brain edges (e.g.
 %              for reducing the M0 image to a smooth biasfield).
 %              This function performs the following 3 steps:
-%              1) Load image
-%              2) Replace NaNs
-%              3) Save image
+%
+%              1. Load image
+%              2. Replace NaNs
+%              3. Save image
+%
 % --------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:   for filling NaNs: xASL_im_FillNaNs('/MyStudy/sub-001/ASL_1/M0.nii');
 % EXAMPLE2:  for fixing flowfield edges: xASL_im_FillNaNs('/MyStudy/sub-001/y_T1.nii', 3);

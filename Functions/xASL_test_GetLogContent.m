@@ -22,8 +22,6 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 % 3. Optional: Print log content
 % 4. Optional: Export (0 = no export, 1 = TSV export, 2 = XLSX export)
 %
-% -----------------------------------------------------------------------------------------------------------------------------------------------------% -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
 % EXAMPLE:          To extract all warnings and errors from all log files
 %                   in a directory, you can run this script with the following command.
 %                   These settings will not print the warning or error messages, a relative

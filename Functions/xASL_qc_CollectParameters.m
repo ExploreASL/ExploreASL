@@ -12,7 +12,7 @@ function x = xASL_qc_CollectParameters(x, iSubject, ScanType)
 %   x                   - same as input
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function collects QC parameters for a module
+% DESCRIPTION: This function collects QC parameters for a module.
 % 
 % EXAMPLE: x = xASL_qc_CollectParameters_Structural(x, 10, 'ASL');
 % __________________________________

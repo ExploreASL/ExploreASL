@@ -3,7 +3,8 @@ function xASL_im_dilateROI(PathIn, PathTemp)
 %
 % FORMAT:       xASL_im_dilateROI(PathIn, PathTemp)
 % 
-% INPUT:        ...
+% INPUT:        PathIn   - ...
+%               PathTemp - ...
 %
 % OUTPUT:       ...
 % 
@@ -13,7 +14,7 @@ function xASL_im_dilateROI(PathIn, PathTemp)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      ...
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 if nargin<2
     PathTemp = PathIn;

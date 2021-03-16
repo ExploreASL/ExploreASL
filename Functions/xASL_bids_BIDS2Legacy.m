@@ -20,6 +20,7 @@ function xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
 % separate layer within subjects, but now isn't?)
 %
 % This function performs the following steps:
+%
 % 1. Parse a folder using bids-matlab
 % 2. Define Subject
 % 3. Define SubjectVisit

@@ -3,17 +3,20 @@ function [NewList] = xASL_adm_CompareLists(list1, list2)
 %
 % FORMAT:       [NewList] = xASL_adm_CompareLists(list1, list2)
 % 
-% INPUT:        ...
+% INPUT:        list1    - vertical list of things (CELL ARRAY, REQUIRED)
+%               list2    - vertical list of things (CELL ARRAY, REQUIRED)
 %
-% OUTPUT:       ...
+% OUTPUT:       NewList  - vertical list of things
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  ...
+% DESCRIPTION:  This script compares two single dimension lists.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:      testListA = {1, 2, 3, 'A', 'B', 'C'}';
+%               testListB = {4, 5, 6, 'A', 'B', 'C'}';
+%               [NewList] = xASL_adm_CompareLists(testListA, testListB); 
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
     % Checks
     if  length(size(list1))>2 || length(size(list2))>2

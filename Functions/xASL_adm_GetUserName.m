@@ -1,17 +1,17 @@
 function UserName = xASL_adm_GetUserName()
-%xASL_adm_GetUserName ...
+%xASL_adm_GetUserName Get the name of the current user.
 %
-% FORMAT:        UserName = xASL_adm_GetUserName()
+% FORMAT:       UserName = xASL_adm_GetUserName()
 % 
-% INPUT:        ...
+% INPUT:        n/a
 %
-% OUTPUT:       ...
+% OUTPUT:       UserName   - Name of the current user (CHAR ARRAY)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  ...
+% DESCRIPTION:  Get the name of the current user.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:      UserName = xASL_adm_GetUserName();
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 

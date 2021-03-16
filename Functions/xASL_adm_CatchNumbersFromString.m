@@ -1,21 +1,20 @@
 function [OutputNumber] = xASL_adm_CatchNumbersFromString(InputString)
-%xASL_adm_CatchNumbersFromString Summary of this function goes here
-%   Detailed explanation goes here
+%xASL_adm_CatchNumbersFromString Extracts a number from a char array.
 %
 % FORMAT: [OutputNumber] = xASL_adm_CatchNumbersFromString(InputString)
 % 
 % INPUT:
-%   ...
+%   InputString   - String containing a number (CHAR ARRAY, REQUIRED)
 %
 % OUTPUT:
-%   ...
+%   OutputNumber  - Number (DOUBLE)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  ...
+% DESCRIPTION:    Extracts a number from a char array.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:        [OutputNumber] = xASL_adm_CatchNumbersFromString('test123test');
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
     % Catch all numbers
     OutputNumber = NaN;

@@ -7,10 +7,10 @@ function [QA_Output] = xASL_qc_CAT12_IQR(InputImage, InputC1, InputC2, InputC3, 
 %               InputC1, 2, 3 = posterior probability maps (segmentations) for GM, WM, CSF
 %               Input should be paths
 %
-% OUTPUT:       ...
+% OUTPUT:       QA_Output n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  ...
+% DESCRIPTION:  Prepare and run CAT12s QC parameters (also for other images).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      InputImage = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/T1.nii';
