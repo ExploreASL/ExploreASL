@@ -20,7 +20,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 %
 % REFERENCES:       ...
 % __________________________________
-% Copyright @ 2015-2020 ExploreASL
+% Copyright @ 2015-2021 ExploreASL
 
     %% Defaults
     sourcePar = addParToList('tSequenceFileName',{},1);
@@ -76,34 +76,34 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     sourcePar = convertCellArrayToStruct(sourcePar);
 
     %% Analyze parameters                                                   % Exemplary dataset in ExploreASL flavor library
-	if contains(sourcePar.tSequenceFileName,'SiemensSeq')
+	if ~isempty(strfind(sourcePar.tSequenceFileName,'SiemensSeq'))
 		bidsPar.SequenceType = 'Siemens'; % Not really a BIDS field
-	elseif contains(sourcePar.tSequenceFileName,'CustomerSeq')
+	elseif ~isempty(strfind(sourcePar.tSequenceFileName,'CustomerSeq'))
 		bidsPar.SequenceType = 'Customer';
 	end
     
-    if contains(lower(sourcePar.tSequenceFileName),'ep2d')
+    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'ep2d'))
         bidsPar.PulseSequenceType = '2D_EPI'; 
-    elseif contains(lower(sourcePar.tSequenceFileName),'gse') || ...
-           contains(lower(sourcePar.tSequenceFileName),'grs3d')            % Siemens PASL 3DGRASE AD
+    elseif ~isempty(strfind(lower(sourcePar.tSequenceFileName),'gse')) || ...
+           ~isempty(strfind(lower(sourcePar.tSequenceFileName),'grs3d'))            % Siemens PASL 3DGRASE AD
         bidsPar.PulseSequenceType = '3D_GRASE'; 
     end
     
-    if contains(lower(sourcePar.tSequenceFileName),'pasl')
+    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'pasl'))
         bidsPar.ArterialSpinLabelingType = 'PASL';
     end
-    if contains(lower(sourcePar.tSequenceFileName),'casl')
+    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'casl'))
         bidsPar.ArterialSpinLabelingType = 'CASL';
     end
-    if contains(lower(sourcePar.tSequenceFileName),'pcasl')
+    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'pcasl'))
         bidsPar.ArterialSpinLabelingType = 'PCASL';
     end
-    if contains(lower(sourcePar.sWipMemBlocktFree),'pcasl')                % Siemens PCASL 3DGRASE volunteer2
+    if ~isempty(strfind(lower(sourcePar.sWipMemBlocktFree),'pcasl'))                % Siemens PCASL 3DGRASE volunteer2
         bidsPar.ArterialSpinLabelingType = 'PCASL';
     end
     
-    if contains(lower(sourcePar.tSequenceFileName),'M0_') || ...           % Siemens PASL 3DGRASE AD
-       contains(lower(sourcePar.tSequenceFileName),'_fid')                 % Siemens PASL 2D EPI noBsup AD
+    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'M0_')) || ...           % Siemens PASL 3DGRASE AD
+       ~isempty(strfind(lower(sourcePar.tSequenceFileName),'_fid'))                 % Siemens PASL 2D EPI noBsup AD
         bidsPar.ScanType = 'M0';
 	end
     
@@ -201,7 +201,8 @@ end
 %% Get individual phoenix parameter
 function value = getPhoePar(sourcePar,curParToExtract)
     % Get cell ID
-    cellID = find(contains(sourcePar, curParToExtract));
+    IndexC = strfind(sourcePar,curParToExtract);
+    cellID = find(not(cellfun('isempty',IndexC)));
     % Return value
     value = sourcePar{cellID,2};
     % Convert string numbers to numbers
@@ -240,7 +241,8 @@ function parameters = getPhoenixParameters(parameters,phoenixParameterList,debug
         curName = parameterNames{curParameter,1};
         
         % Find parameter
-        curFoundParID = find(contains(phoenixParameterList, curName));
+        IndexC = strfind(phoenixParameterList,curName);
+        curFoundParID = find(not(cellfun('isempty',IndexC)));
         if length(curFoundParID)==1
             IDs(curParameter,1) = curFoundParID;
         elseif length(curFoundParID)>1            
