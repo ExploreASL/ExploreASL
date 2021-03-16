@@ -31,6 +31,9 @@ function [DataOut] = xASL_num2str(DataIn, f, bConcatenate, strDelimiter)
 % [DataOut] = xASL_num2str(123.456789, '%.5f'); % Get exactly 5 digits after the comma
 % DataOut = '123.45679'
 %
+% We also added an automatic mode for the num2str export in JSON files:
+% xASL_num2str(1.23456789000, 'auto'); % Will remove trailing zeros
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright (C) 2015-2020 ExploreASL
 %
@@ -63,6 +66,25 @@ if isnumeric(DataIn)
 		DataOut = 'n/a';
 	elseif isempty(f)
 		DataOut = num2str(DataIn);
+    elseif strcmp(f,'auto') % Automatic mode
+        if floor(DataIn)==DataIn % Integers
+            DataOut = num2str(DataIn, '%d');
+        else
+            DataOut = num2str(DataIn, '%.12f');
+            % Remove trailing zeros in Matlab versions > 2016b
+            [~, dateString] = version();
+            if str2num(dateString(end-3:end))>2016
+                DataOut = strip(DataOut,'right','0');
+			else
+				% Find out trailing zeros
+				indZeros = regexp(DataOut,'0*$');
+				% If the string ends with zeros only
+				if ~isempty(indZeros)
+					% Remove the trailing zeros
+					DataOut = DataOut(1:(indZeros(1)-1));
+				end
+			end
+        end
 	else
 		DataOut = num2str(DataIn, f);
 	end
