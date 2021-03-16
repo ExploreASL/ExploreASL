@@ -68,8 +68,11 @@ if isnumeric(DataIn)
             DataOut = num2str(DataIn, '%d');
         else
             DataOut = num2str(DataIn, '%.12f');
-            % Remove trailing zeros
-            DataOut = strip(DataOut,'right','0');
+            % Remove trailing zeros in Matlab versions > 2016b
+            [~, dateString] = version();
+            if str2num(dateString(end-3:end))>2016
+                DataOut = strip(DataOut,'right','0');
+            end
         end
 	else
 		DataOut = num2str(DataIn, f);
