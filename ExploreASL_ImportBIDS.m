@@ -516,6 +516,15 @@ if bRunSubmodules(2)
 						warning('Labeling duration mismatch with GE private field.');
 					end
 					jsonLocal.LabelingDuration = jsonLocal.GELabelingDuration;
+					
+					% GELabelingDuration comes together with the PostLabelingDelay defined in the standard DICOM field called InversionTime
+					if isfield(jsonLocal,'InversionTime') && ~isempty(jsonLocal.InversionTime)
+						% Verify if this doesn't differ from the predefined file, but the DICOM field has priority
+						if isfield(jsonLocal,'PostLabelingDelay') && ~isequal(jsonLocal.PostLabelingDelay,jsonLocal.InversionTime)
+							warning('PostLabelingDelay mismatch with the GE-DICOM value in Inversion time.');
+						end
+						jsonLocal.PostLabelingDelay = jsonLocal.InversionTime;
+					end
 				end
 				
 				% Free info about the sequence, now just the scanner type+software
