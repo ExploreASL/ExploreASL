@@ -325,6 +325,13 @@ function content = getLastFileError(content,identifierA,identifierB)
                     mainMessage = strrep(mainMessage,'[','');
                     mainMessage = strrep(mainMessage,']','');
                     mainMessage = strtrim(mainMessage); % This does not seem to work, yet
+                    % Try to retrieve specific messages
+                    if strcmp(currentContent{1,1}{line+2},'ans =')
+                        if ~isempty(currentContent{1,1}{line+4}) && ~isempty(find(isletter(currentContent{1,1}{line+4}), 1))
+                            idx = find(isletter(currentContent{1,1}{line+4}), 1);
+                            mainMessage = [mainMessage,' -> ', currentContent{1,1}{line+4}(idx:end)];
+                        end
+                    end
                 else
                     mainMessage = 'unknown';
                 end
