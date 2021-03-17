@@ -22,7 +22,7 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright © 2015-2020 ExploreASL
+% Copyright ï¿½ 2015-2020 ExploreASL
 
     % Admin
 	if ~ischar(strIn)
@@ -66,7 +66,9 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
             elseif  isfield(symbolTable.P,symbolName) % paths
                     symbolValue = symbolTable.P.(symbolName);
             else
-                    error('xASL_adm_ReplaceSymbols: Symbol not defined: %s',symbolName);
+                    warning('xASL_adm_ReplaceSymbols: Symbol not defined: %s',symbolName);
+					strOut = strIn;
+					return;
             end
                 
             if isnumeric(symbolValue)
