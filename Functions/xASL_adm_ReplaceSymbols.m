@@ -22,15 +22,15 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright � 2015-2020 ExploreASL
+% Copyright ??? 2015-2020 ExploreASL
 
     % Admin
 	if ~ischar(strIn)
-		error('xASL_adm_ReplaceSymbols only works on text strings, not on %s', class(strIn));
+		error('This function only works on text strings, not on %s', class(strIn));
 	end
 	
 	if nargin<2 || isempty(symbolTable)
-		error('xASL_adm_ReplaceSymbols needs at least two input parameters.');
+		error('This function needs at least two input parameters.');
 	end
 
 	if nargin<3 || isempty(bracketLeft)
@@ -54,7 +54,7 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
         if isempty(symbols)
             break; % no symbols anymore
         elseif iRecurse==max_depth
-            error('xASL_adm_ReplaceSymbols: Symbol definition is probably cyclic: %s\nAborted expansion after %u iterations!\n',strOut,max_depth)
+            error('Symbol definition is probably cyclic: %s\nAborted expansion after %u iterations!\n',strOut,max_depth)
         end
         for iSymbol=1:length(symbols)
             bracket = symbols{iSymbol}; % ie '<SYMBOLNAME>'
@@ -66,7 +66,7 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
             elseif  isfield(symbolTable.P,symbolName) % paths
                     symbolValue = symbolTable.P.(symbolName);
             else
-                    warning('xASL_adm_ReplaceSymbols: Symbol not defined: %s',symbolName);
+                    warning('Symbol not defined: %s',symbolName);
 					strOut = strIn;
 					return;
             end
@@ -74,7 +74,7 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
             if isnumeric(symbolValue)
                 symbolValue = num2str(symbolValue);
             elseif ~ischar(symbolValue)
-                error('xASL_adm_ReplaceSymbols: Cannot insert symbols that are not text strings: %s is a %s', symbolName, class(symbolValue))
+                error('Cannot insert symbols that are not text strings: %s is a %s', symbolName, class(symbolValue))
             end
             strOut = strrep(strOut,bracket,symbolValue);
         end
