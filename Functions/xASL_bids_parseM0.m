@@ -1,34 +1,28 @@
-function xASL_bids_parseM0(PathNifti)
-%xASL_bids_parseM0 This function check the M0 possibilities and will
-% convert them to the ExploreASL legacy format
+function xASL_bids_parseM0(pathASLNifti)
+%xASL_bids_parseM0 Check the ASL file in BIDS format for its M0 possibilities and 
+% convert the ASL NIFTI in ExploreASL legacy format
 %
-% FORMAT:      xASL_bids_parseM0(PathNifti)
+% FORMAT:      xASL_bids_parseM0(pathASLNifti)
 %
-% INPUT:       PathNifti - Path to a NIFTI file (CHAR ARRAY, REQUIRED)
+% INPUT:       pathASLNifti - Path to a ASL NIFTI file in BIDS format (CHAR ARRAY, REQUIRED)
 % 
 % OUTPUT:      n/a
 %
-% DESCRIPTION: This function check the M0 possibilities and will convert them to the ExploreASL legacy format.
+% DESCRIPTION: Check the .JSON and aslContext.tsv sidecards of an ASL file in BIDS format and find the 
+%              specified M0 possibilities. Then it converts the ASL file to ExploreASL legacy format including 
+%              splitting of ASL and M0 NIFTIes if needed.
 %
-% EXAMPLE:     n/a
+% EXAMPLE:     xASL_bids_parseM0('/test/sub-001_asl.nii')
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-%PathNifti should be ASL Nifti
-
-[Fpath, Ffile] = xASL_fileparts(PathNifti);
+% Verify that pathASLNifti leads to ASL Nifti
+[Fpath, Ffile] = xASL_fileparts(pathASLNifti);
+if isempty(regexpi(Ffile,'_asl$'))
+	error('The provided path is not ASL in BIDS format');
+end
 PathJSON = fullfile(Fpath, [Ffile '.json']);
-
-% if ~isempty(regexpi(Ffile, 'm0'))
-%     NiftiIs = 1;
-% elseif ~isempty(regexpi(Ffile, 'asl'))
-%     NiftiIs = 2;
-% else
-%     % no m0scan or asl found, skipping
-%     return;
-% end
-%     
 
 %% Parse & process M0 options
 
@@ -36,17 +30,20 @@ JSON = xASL_import_json(PathJSON);
 if isfield(JSON, 'M0Type')
     switch JSON.M0Type
         %% Option 1. Included
+		% The M0 file is included in the ASL timeseries as specified in the aslContext
         case 'Included'
             PathContext = fullfile(Fpath, [Ffile '_aslcontext.tsv']);
             if exist(PathContext, 'file')
                TSV = xASL_tsvRead(PathContext);
+			   % Checks for the m0scan in ASLContext
                M0Index = find(strcmp(TSV, 'm0scan'))-1;
                if ~isempty(M0Index)
+				   % If specified to remove the Dummy ASL scans, then remove them while splitting ASL to ASL and M0
 				   if isfield(JSON,'DummyScanPositionInASL4D') && ~isempty(JSON.DummyScanPositionInASL4D)
-					   xASL_io_SplitASL(PathNifti, M0Index,JSON.DummyScanPositionInASL4D);
+					   xASL_io_SplitASL(pathASLNifti, M0Index,JSON.DummyScanPositionInASL4D);
 					   JSON = rmfield(JSON,'DummyScanPositionInASL4D');
 				   else
-					   xASL_io_SplitASL(PathNifti, M0Index);
+					   xASL_io_SplitASL(pathASLNifti, M0Index);
 				   end
                    JSON.M0 = 'separate_scan';
 				   JSON = rmfield(JSON,'M0Type');
@@ -58,12 +55,18 @@ if isfield(JSON, 'M0Type')
                 warning([PathContext ' missing']);
             end
         %% Option 2. Separate
+		% M0 image is already provided as a separate image - checks for its existence
         case 'Separate'
             PathM0 = fullfile(Fpath, 'M0.nii');
-            if ~xASL_exist(fullfile(PathM0))
+			if ~xASL_exist(fullfile(PathM0))
                 warning(['Missing: ' PathM0]);
-            end
+			else
+				JSON.M0 = 'separate_scan';
+				JSON = rmfield(JSON,'M0Type');
+				spm_jsonwrite(PathJSON, JSON);
+			end
         %% Option 3. Estimate
+		% If a single M0 values is provided then keep it, just rename the field
         case 'Estimate'
             if isfield(JSON, 'M0Estimate')
                 JSON.M0 = JSON.M0Estimate;
@@ -93,6 +96,4 @@ else
     warning(['Field M0Type missing in ' PathJSON]);
 end
         
-
-
 end
