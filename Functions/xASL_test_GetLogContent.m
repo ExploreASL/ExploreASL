@@ -424,14 +424,14 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
         
         % Check for start of warning or error
         if isempty(alternativeStartIdentifier)
-            if contains(curLine, startIdentifier)
+            if ~isempty(strfind(curLine, startIdentifier))
                 startC = line;
 
                 % Search for end of content
                 for subline=startC+1:numel(fileLines)
                     curSubLine = char(fileLines(subline,1));
                     % Check for start of warning or error
-                    if contains(curSubLine, endIdentifier)
+                    if ~isempty(strfind(curSubLine, endIdentifier))
                         endC = subline;                                     % Current line number
                         currentContentToExtract = fileLines(startC:endC);   % Complete content text
                         startC = NaN;                                       % Reset
@@ -444,7 +444,7 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
                 end
             end
         else % Handle warnings without 'Warning:' text -> 'In <a'
-            if contains(curLine, startIdentifier) || contains(curLine, alternativeStartIdentifier)
+            if ~isempty(strfind(curLine, startIdentifier)) || ~isempty(strfind(curLine, alternativeStartIdentifier))
                 startC = line;
 
                 % Search for end of content
@@ -464,7 +464,7 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
                     curSubLine = lower(char(fileLines(subline,1)));         % We have to check this and the following line, because the warning main message can have
                     followingSubLine = lower(char(fileLines(subline+1,1))); % multiple lines and if there is no end identifier, we have to exclude this line as well.
                     % Check for start of warning or error (stop message extraction with end identifier)
-                    if contains(curSubLine, lower(endIdentifier)) && ~(contains(followingSubLine, 'in <') || contains(followingSubLine, '> in')) 
+                    if ~isempty(strfind(curSubLine, lower(endIdentifier))) && ~(~isempty(strfind(followingSubLine, 'in <')) || ~isempty(strfind(followingSubLine, '> in'))) 
                         endC = subline;                                     % Current line number
                         currentContentToExtract = fileLines(startC:endC);   % Complete content text
                         startC = NaN;                                       % Reset
@@ -484,8 +484,8 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
                         line = subline-1;                                     % Skip lines
                         break;                                              % Skip this loop
                     end
-                    if ~(contains(curSubLine, 'in <') || contains(curSubLine, '> in')) && ...  % stop if 'in <' or '> in' does not occur anymore
-                       ~(contains(followingSubLine, 'in <') || contains(followingSubLine, '> in')) 
+                    if ~(~isempty(strfind(curSubLine, 'in <')) || ~isempty(strfind(curSubLine, '> in'))) && ...  % stop if 'in <' or '> in' does not occur anymore
+                       ~(~isempty(strfind(followingSubLine, 'in <')) || ~isempty(strfind(followingSubLine, '> in'))) 
                         endC = subline-1;                                   % Current line number
                         currentContentToExtract = fileLines(startC:endC);   % Complete content text
                         startC = NaN;                                       % Reset
