@@ -101,40 +101,57 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
         end
         
         %% Extract warnings and errors from current log file
-        warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master','In <a');
+        
+        % Warnings
+        warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master','In <a','Operation terminated by user during');
         warningsInFile = getLastFileWarning(warningsInFile,'in <');
+        
+        % Errors
         errorsInFile = extractWarnings(curFile,'ERROR: Job iteration terminated!','CONT: but continue with next iteration!');
         errorsInFile = getLastFileError(errorsInFile,'error using <','error in <');
+        
+        % Relative file name without root directory in string
         relativeFileName = strrep(curFile,rootDir,'');
         
         %% Add current warnings
-        if ~isempty(warningsInFile{1,1})
-            for thisWarning=1:size(warningsInFile,1)
-                currentWarning = warningsInFile(thisWarning,1);
-                lastWarningFile = warningsInFile(thisWarning,2);
-                correspondingLine = warningsInFile(thisWarning,3);
-                mainWarnings = warningsInFile(thisWarning,4);
-                if storeRelativePath
-                    logContent = [logContent;{relativeFileName,curSubject,'Warning',mainWarnings,lastWarningFile,correspondingLine,currentWarning}];
-                else
-                    logContent = [logContent;{printName,curSubject,'Warning',mainWarnings,lastWarningFile,correspondingLine,currentWarning}];
+        if exist('warningsInFile','var')
+            if ~isempty(warningsInFile{1,1})
+                for thisWarning=1:size(warningsInFile,1)
+                    currentWarning = warningsInFile(thisWarning,1);
+                    lastWarningFile = warningsInFile(thisWarning,2);
+                    correspondingLine = warningsInFile(thisWarning,3);
+                    mainWarnings = warningsInFile(thisWarning,4);
+                    if storeRelativePath
+                        logContent = [logContent;{relativeFileName,curSubject,'Warning',mainWarnings,lastWarningFile,correspondingLine,currentWarning}];
+                    else
+                        logContent = [logContent;{printName,curSubject,'Warning',mainWarnings,lastWarningFile,correspondingLine,currentWarning}];
+                    end
                 end
             end
         end
 
         %% Add current errors
-        if ~isempty(errorsInFile{1,1})
-            for thisError=1:size(errorsInFile,1)
-                currentError = errorsInFile(thisError,1);
-                lastErrorFile = errorsInFile(thisError,2);
-                correspondingLine = errorsInFile(thisError,3);
-                mainErrors = errorsInFile(thisError,4);
-                if storeRelativePath
-                    logContent = [logContent;{relativeFileName,curSubject,'Error',mainErrors,lastErrorFile,correspondingLine,currentError}];
-                else
-                    logContent = [logContent;{printName,curSubject,'Error',mainErrors,lastErrorFile,correspondingLine,currentError}];
+        if exist('errorsInFile','var')
+            if ~isempty(errorsInFile{1,1})
+                for thisError=1:size(errorsInFile,1)
+                    currentError = errorsInFile(thisError,1);
+                    lastErrorFile = errorsInFile(thisError,2);
+                    correspondingLine = errorsInFile(thisError,3);
+                    mainErrors = errorsInFile(thisError,4);
+                    if storeRelativePath
+                        logContent = [logContent;{relativeFileName,curSubject,'Error',mainErrors,lastErrorFile,correspondingLine,currentError}];
+                    else
+                        logContent = [logContent;{printName,curSubject,'Error',mainErrors,lastErrorFile,correspondingLine,currentError}];
+                    end
                 end
             end
+        end
+    end
+    
+    % Remove empty content lines
+    for iContent=1:size(logContent,1)
+        if size(logContent.Content{iContent,1},1)>1
+            logContent.Content{iContent,1} = logContent.Content{iContent,1}(~cellfun('isempty',logContent.Content{iContent,1}));
         end
     end
     
@@ -259,7 +276,12 @@ function content = getLastFileWarning(content,identifier)
                     mainMessage = strrep(mainMessage,']','');
                     mainMessage = strtrim(mainMessage); % This does not seem to work, yet
                 else
-                    mainMessage = 'unknown';
+                    % Check if operation was terminated by user
+                    if ~isempty(strfind(mainMessage,'Operation terminated by user during'))
+                        mainMessage = 'Operation terminated by user...';
+                    else
+                        mainMessage = 'unknown';
+                    end
                 end
                 content{thisContent,4} = mainMessage;
                 content{thisContent,1}{line} = ''; % Remove this warning text
@@ -397,11 +419,12 @@ end
 %           endIdentifier (identifier which is supposed to help to find the end of the warning or error message, CHAR, REQUIRED)
 %           alternativeStartIdentifier (alternative identifier which is supposed to help to find the start of the warning or error message, CHAR, REQUIRED)
 % OUTPUT:   contentInFile (cell array containing the found warning or error messages, CELL)
-function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,alternativeStartIdentifier)
+function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,altStartIdentifier1,altStartIdentifier2)
 
     % Check input arguments
     if nargin<4
-        alternativeStartIdentifier = [];
+        altStartIdentifier1 = [];
+        altStartIdentifier2 = [];
     end 
 
     % Read file
@@ -419,11 +442,17 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
     line = 1;
     while line<numel(fileLines)
         
+        % Set to false on default
+        operationWasTerminatedByUser = 0;
+        
         % Get current line
         curLine = char(fileLines(line,1));
         
+        % Operation terminated by user
+        operationWasTerminatedByUser = ~isempty(strfind(curLine, altStartIdentifier2));
+        
         % Check for start of warning or error
-        if isempty(alternativeStartIdentifier)
+        if isempty(altStartIdentifier1) && isempty(altStartIdentifier2)
             if ~isempty(strfind(curLine, startIdentifier))
                 startC = line;
 
@@ -444,7 +473,11 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
                 end
             end
         else % Handle warnings without 'Warning:' text -> 'In <a'
-            if ~isempty(strfind(curLine, startIdentifier)) || ~isempty(strfind(curLine, alternativeStartIdentifier))
+            if ~isempty(strfind(curLine, startIdentifier)) || ...
+               ~isempty(strfind(curLine, altStartIdentifier1)) || ...
+               ~isempty(strfind(curLine, altStartIdentifier2))
+           
+                % Start line
                 startC = line;
 
                 % Search for end of content
@@ -481,11 +514,12 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
                         endC = NaN;                                         % Reset
                         contentInFile(id,1) = {currentContentToExtract};    % Add content to cell array
                         id = id+1;
-                        line = subline-1;                                     % Skip lines
+                        line = subline-1;                                   % Skip lines
                         break;                                              % Skip this loop
                     end
-                    if ~(~isempty(strfind(curSubLine, 'in <')) || ~isempty(strfind(curSubLine, '> in'))) && ...  % stop if 'in <' or '> in' does not occur anymore
-                       ~(~isempty(strfind(followingSubLine, 'in <')) || ~isempty(strfind(followingSubLine, '> in'))) 
+                    if (~(~isempty(strfind(curSubLine, 'in <')) || ~isempty(strfind(curSubLine, '> in'))) && ...  % stop if 'in <' or '> in' does not occur anymore
+                        ~(~isempty(strfind(followingSubLine, 'in <')) || ~isempty(strfind(followingSubLine, '> in')))) && ...
+                        ~operationWasTerminatedByUser                       % Here empty lines are possible
                         endC = subline-1;                                   % Current line number
                         currentContentToExtract = fileLines(startC:endC);   % Complete content text
                         startC = NaN;                                       % Reset
