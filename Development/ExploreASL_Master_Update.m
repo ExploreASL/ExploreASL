@@ -2,8 +2,6 @@ function [x] = ExploreASL_Master_Update(varargin)
 
     % Test: [x] = ExploreASL_Master_Update('MY_PATH','[1 1 1]','[1 1 1]','1','1','1');
     % Test: [x] = ExploreASL_Master_Update('MY_PATH',[1 1 1],[1 1 1],1,1,1);
-    % Test: [x] = ExploreASL_Master_Update('MY_PATH','[1 1 1]','[1 1 1]','1','1','1');
-    % Test: [x] = ExploreASL_Master_Update('MY_PATH','[1 1 1]','[1 1 1]','1','1','1');
 
     % Define input parser
     p = inputParsing(varargin{:});

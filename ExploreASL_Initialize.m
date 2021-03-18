@@ -1,16 +1,10 @@
-function [x] = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers)
+function [x] = ExploreASL_Initialize(varargin)
 %ExploreASL_Initialize Initializes ExploreASL
 %
 % FORMAT: [x] = ExploreASL_Initialize([DataParPath, ProcessData, iWorker, nWorkers])
 %
 % INPUT:
-%   DataParPath - path to data parameter file (OPTIONAL, required when ProcessData=true, will then be prompted if omitted)
-%   ProcessData - 0 = only initialize ExploreASL functionality (e.g. path management etc, REQUIRED, will be prompted if omitted)
-%               - 1 = initialize ExploreASL functionality, load data & start processing pipeline, 
-%               - 2 = initialize ExploreASL functionality, load data but no processing
-%               - (OPTIONAL, default=prompt the user)
-%   iWorker     - allows parallelization when called externally. iWorker defines which of the parallel ExploreASL calls we are (OPTIONAL, DEFAULT=1)
-%   nWorkers    - allows parallelization when called externally. nWorkers defines how many ExploreASL calls are made in parallel (OPTIONAL, DEFAULT=1)
+%   This script can accept the same arguments as ExploreASL_Master. Check out the definitions there.
 %
 % OUTPUT:
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -27,129 +21,69 @@ function [x] = ExploreASL_Initialize(DataParPath, ProcessData, iWorker, nWorkers
 % xASL_init_FileSystem             - dirty initialization of common filenames used throughout the pipeline
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE for GUI: ExploreASL_Initialize
-% EXAMPLE for calling externally: ExploreASL_Initialize('//MyDisk/MyStudy/DataPar.m', true, 1, 1);
-% EXAMPLE for debugging/initialization only: [x] = ExploreASL_Initialize('',0);
+% EXAMPLE for calling externally: ExploreASL_Initialize('//MyDisk/MyStudy/DataPar.m');
+% EXAMPLE for debugging/initialization only: [x] = ExploreASL_Initialize('',0,0);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 
 %% Admin
 
-% Defaults
-if nargin<4 || isempty(nWorkers)
-    nWorkers = 1;
-end
-if nargin<3 || isempty(iWorker)
-    iWorker = 1;
-end
+% Define input parser
+p = inputParsing(varargin{:});
 
-x.nWorkers = 1;
-x.iWorker = 1;
+% Convert parsed input
+parameters = convertParsedInput(p.Results);
 
-if nargin>3 && ~isempty(nWorkers)
-    if isnumeric(nWorkers)
-        x.nWorkers = nWorkers;
-    else
-        warning('argin "nWorkers" should be numerical, using default==1');
-    end
-end
-if nargin>2 && ~isempty(iWorker)
-    if isnumeric(iWorker)
-        x.iWorker = iWorker;
-    else
-        warning('argin "iWorker" should be numerical, using default==1');
-    end
-end
+% Store parsed input
+x = storeParsedInput(parameters);
 
-if nargin<1 || isempty(DataParPath)
+% Check if the DataParPath is a file or a directory
+if isempty(x.DataParPath)
     SelectParFile = true;
-elseif exist(DataParPath,'dir')
+elseif exist(x.DataParPath,'dir')
     SelectParFile = true;
-    warning('Data parameter file was inputted as folder, but should point to a file instead');
+    warning('Data parameter file was inputted as a folder, but should point to a file instead');
 else
     SelectParFile = false;
 end
 
+% Initialize S substruct
 x.S = struct;
 
-if nargin>1 && ~isempty(ProcessData)
-    if ProcessData==0 || ProcessData==1  || ProcessData==2
-        x.ProcessData = ProcessData; % skip GUI
-    else
-        warning('Invalid input argument "ProcessData", should be 0, 1, or 2, resetting');
-    end
+% Check if the ExploreASL pipeline should be run or not
+if sum(x.ProcessArray)>0
+    x.ProcessData = 1; % Loading & processing dataset
+else
+    warning('The ExploreASL pipeline will not be executed, since the ProcessArray argument is set to 0');
+    x.ProcessData = 0; % Only initialize ExploreASL functionality
 end
 
-
-%% Question dialogue - initialize only or run data
- if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
-     bUseGUI = false;
- else
-     bUseGUI = true;
- end
-
-if ~isfield(x,'ProcessData')
-
-    InitChoice = 'Process dataset';
-    if ~exist('DataParPath','var')
-        ParFileExists = false;
-    elseif isempty(DataParPath)
-        ParFileExists = false;
-    else
-        ParFileExists = true;
-    end
-
-    if ~ParFileExists
-        if bUseGUI
-            InitChoice = questdlg('Would you like to initialize ExploreASL functionality, load a dataset and/or start the processing pipeline?', ...
-                'Start up ExploreASL', 'Process dataset', 'Only initialize ExploreASL functionality', 'Load dataset only', 'Only initialize ExploreASL functionality');
-            if isempty(InitChoice)
-                InitChoice = 'Cancel';
-            end
-        else
-            fprintf('Would you like to load a dataset or only initialize ExploreASL (set paths etc)?\n');
-            cliChoice = input('Please press [1] for "Process dataset", [2] for "Only initialize ExploreASL functionality", [3] for "Load dataset only", or [4] to cancel: ');
-
-            switch cliChoice
-                case 1
-                    InitChoice = 'Process dataset';
-                case 2
-                    InitChoice = 'Only initialize ExploreASL functionality';
-                case 3
-                    InitChoice = 'Load dataset only';
-                case 4
-                    InitChoice = 'Cancel';
-                otherwise
-                    fprintf('Wrong choice, please choose 1 2, 3, or 4: ');
-                    return;
-            end
-        end
-    end
-    % Handle response
-    switch InitChoice
-        case 'Process dataset'
-            fprintf('%s\n','Loading & processing dataset')
-            x.ProcessData = 1;
-        case 'Only initialize ExploreASL functionality'
-            x.ProcessData = 0;
-        case 'Load dataset only'
-            fprintf('%s\n','Initializing ExploreASL functionality & loading dataset');
-            x.ProcessData = 2;
-        case 'Cancel'
-            fprintf('%s\n','Exiting ExploreASL');
-            x.ProcessData = 0;
-            return;
-        otherwise
-            x.ProcessData = 0;
-            fprintf('Unknown option, exiting\n');
-            return;
-    end
+% Check if pipeline should be run, but there is no DataParFile
+if sum(x.ProcessArray)>0 && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
+    x.DataParPath = input('Please insert the path to your DataParFile: ');
 end
 
-if x.ProcessData==2 && nargout==0
+% Recheck the DataParFile, which is possibly not a file or does not exist
+if ~exist(x.DataParPath,'file')
+    warning('DataPar file does not exist, ExploreASL will only be initialized');
+    x.ProcessData = 0;
+    x.ProcessArray = [0 0 0];
+    SelectParFile = false;
+end
+
+% Check output
+if x.ProcessData>0 && nargout==0
     warning('Data loading requested but no output structure defined');
     fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
+end
+
+% Check if GUI options are available
+if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
+    bUseGUI = false;
+else
+    bUseGUI = true;
 end
 
 %% -----------------------------------------------------------------------------
@@ -232,7 +166,7 @@ end
 
 
 if x.ProcessData>0
-    x = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bUseGUI);
+    x = xASL_init_LoadDataParameterFile(x, x.DataParPath, SelectParFile);
 end
 
 
@@ -244,8 +178,6 @@ x = xASL_init_DefineDataDependentSettings(x); % these settings depend on the dat
 
 %% --------------------------------------------------------------------------------------------------------------------
 %% Print logo
-fprintf('%s\n',['--> Initializing ExploreASL v' x.Version '...']);
-
 BreakString = '==============================================================================================\n';
 
 LogoString = [...
@@ -262,20 +194,18 @@ LogoString = [...
 '                    ## |                                                                      \n'...
 '                    ##/  \n'];
 
-fprintf('\n\n');
-fprintf([BreakString LogoString BreakString]);
-fprintf('\n\n');
+fprintf(['\n\n' BreakString LogoString '\n']);
 
+%% Print chosen settings
+printSettings(x);
 
 
 %% Check permissions
 %xASL_adm_CheckPermissions(x.MyPath, false);
 
 
-
-
 %% Data-specific initialization
-fprintf('%s\n','ExploreASL initialized <--');
+fprintf('ExploreASL v%s initialized ... \n', x.Version);
 
 if x.ProcessData>0
     if isempty(x.D.ROOT)
@@ -293,7 +223,7 @@ if x.ProcessData>0
 
     
     %% Remove lock dirs from previous runs, if ExploreASL is not running in parallel
-    if nWorkers==1
+    if x.nWorkers==1
         x = xASL_init_RemoveLockDirs(x);
     end
 
@@ -443,23 +373,12 @@ end
 
 %% ==================================================================================
 %% ==================================================================================
-function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bUseGUI)
+function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile)
 %xASL_init_LoadDataParameterFile
 
     if SelectParFile
-        if bUseGUI
-            if ismac % somehow macOS doesnt show the title of the question dialogue
-                fprintf('Select the study-specific parameter file --->>> DataParameters.(m|json)');
-            end
-            [name, pathstr] = uigetfile('*.m;*.mat;*.json', 'Select the study-specific parameter file --->>> DataParameters.(m|json)');
-            if sum(pathstr==0) || ~(strcmp(name(end-1:end),'.m') || strcmp(name(end-3:end),'.mat') || strcmp(name(end-4:end),'.json'))
-                return
-            end
-            DataParPath = fullfile(pathstr,name);
-        else
-            fprintf('ExploreASL requires a data parameter file, which can be either a .m, .mat or .json file\n');
-            DataParPath = input('Please provide the full path of the DataParameter file, including ": ');
-        end
+        fprintf('ExploreASL requires a data parameter file, which can be either a .m or .json file\n');
+        DataParPath = input('Please provide the full path of the DataParameter file, including ": ');
     end
 
     [pathstr, ~, Dext] = fileparts(DataParPath);
@@ -804,4 +723,104 @@ end
 fprintf('\n');
 
 end
+
+
+%% Define input parser
+function p = inputParsing(varargin)
+
+    % Initialize input parser
+    p = inputParser;
+    
+    % Define valid input variables
+    validDataParPath = @(variable) ischar(variable) || isempty(variable);
+    validImportArray = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
+    validProcessArray = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
+    validSkipPause = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
+    validiWorker = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
+    validnWorkers = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
+    
+    % Define defaults
+    defaultDataParPath = [];
+    defaultImportArray = [0 0 0];
+    defaultProcessArray = [0 0 0];
+    defaultSkipPause = 0;
+    defaultiWorker = 1;
+    defaultnWorkers = 1;
+    
+    % Add definitions to the input parser
+    addOptional(p, 'DataParPath', defaultDataParPath, validDataParPath);
+    addOptional(p, 'ImportArray', defaultImportArray, validImportArray);
+    addOptional(p, 'ProcessArray', defaultProcessArray, validProcessArray);
+    addOptional(p, 'SkipPause', defaultSkipPause, validSkipPause);
+    addOptional(p, 'iWorker', defaultiWorker, validiWorker);
+    addOptional(p, 'nWorkers', defaultnWorkers, validnWorkers);
+    
+    % Parse input
+    parse(p,varargin{:});
+
+end
+
+%% Convert parsed input
+function parameters = convertParsedInput(parameters)
+
+    % Check if inputs are empty or chars
+    if isempty(parameters.DataParPath),     parameters.DataParPath = '';                                    end
+    if ischar(parameters.ImportArray),      parameters.ImportArray = str2num(parameters.ImportArray);       end
+    if ischar(parameters.ProcessArray),     parameters.ProcessArray = str2num(parameters.ProcessArray);     end
+    if ischar(parameters.SkipPause),        parameters.SkipPause = str2num(parameters.SkipPause);           end
+    if ischar(parameters.iWorker),          parameters.iWorker = str2num(parameters.iWorker);               end
+    if ischar(parameters.nWorkers),         parameters.nWorkers = str2num(parameters.nWorkers);             end
+    
+    % Check length of arrays (single digit input)
+    if length(parameters.ImportArray)<3
+        parameters.ImportArray = [parameters.ImportArray(1),...
+                                  parameters.ImportArray(1),...
+                                  parameters.ImportArray(1)];
+    end
+    if length(parameters.ProcessArray)<3
+        parameters.ProcessArray = [parameters.ProcessArray(1),...
+                                   parameters.ProcessArray(1),...
+                                   parameters.ProcessArray(1)];
+    end
+    
+    % Different default for deployed mode
+    if isdeployed
+        parameters.SkipPause = 0;
+    end
+
+
+end
+
+%% Store parsed input
+function x = storeParsedInput(parameters)
+
+    % Store input
+    x.DataParPath = parameters.DataParPath;
+    x.ImportArray = parameters.ImportArray;
+    x.ProcessArray = parameters.ProcessArray;
+    x.SkipPause = parameters.SkipPause;
+    x.iWorker = parameters.iWorker;
+    x.nWorkers = parameters.nWorkers;
+    
+end
+
+%% Print chosen settings
+function printSettings(x)
+
+    fprintf('==================================== ExploreASL Settings =====================================\n');
+    fprintf('DataParPath\t\t\t\t%s\n', x.DataParPath);
+    fprintf('Run DCM2NII\t\t\t\t%d\n', x.ImportArray(1));
+    fprintf('Run NII2BIDS\t\t\t%d\n', x.ImportArray(2));
+    fprintf('Run BIDS2LEGACY\t\t\t%d\n', x.ImportArray(3));
+    fprintf('Run Structural Module\t%d\n', x.ProcessArray(1));
+    fprintf('Run ASL Module\t\t\t%d\n', x.ProcessArray(2));
+    fprintf('Run Population Module\t%d\n', x.ProcessArray(3));
+    fprintf('SkipPause\t\t\t\t%d\n', x.SkipPause);
+    fprintf('iWorker\t\t\t\t\t%d\n', x.iWorker);
+    fprintf('nWorkers\t\t\t\t%d\n', x.nWorkers);
+    fprintf('==============================================================================================\n');
+
+end
+
+
 
