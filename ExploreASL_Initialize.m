@@ -1,7 +1,7 @@
 function [x] = ExploreASL_Initialize(varargin)
 %ExploreASL_Initialize Initializes ExploreASL
 %
-% FORMAT: [x] = ExploreASL_Initialize([DataParPath, ProcessData, iWorker, nWorkers])
+% FORMAT: [x] = ExploreASL_Initialize([DataParPath, ImportArray, ProcessArray, SkipPause, iWorker, nWorkers])
 %
 % INPUT:
 %   This script can accept the same arguments as ExploreASL_Master. Check out the definitions there.
@@ -163,6 +163,18 @@ if ~isdeployed
         addpath(fullfile(x.MyPath,subfolders_to_add{ii}));
     end
 end
+
+%% Import
+
+if sum(x.ImportArray)>0
+    warning('Call import scripts here? But then we should make sure not to call ExploreASL_Initialize within the import sripts of Jan!!!');
+end
+
+
+%% Proceed with Initialization
+
+% Go to ExploreASL folder
+cd(x.MyPath);
 
 
 if x.ProcessData>0

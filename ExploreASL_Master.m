@@ -28,11 +28,10 @@ function [x] = ExploreASL_Master(varargin)
 %   x           - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This masterscript starts ExploreASL by first calling ExploreASL_Initialize, 
-% then running xASL_Module_Structure, xASL_module_ASL and xASL_module_Population
-% When ProcessData is set to false (either as argument or when prompted),
-% the ExploreASL pipeline is not started but only initialized for debugging.
-% This pipeline can be run from CLI or as GUI (later to be implemented in the SPM GUI)
+% DESCRIPTION:    This masterscript starts ExploreASL by first calling ExploreASL_Initialize, 
+%                 then running xASL_Module_Structure, xASL_module_ASL and xASL_module_Population.
+%                 When ProcessArray is set to 0, the ExploreASL pipeline is not started but only  
+%                 initialized for debugging. This pipeline can be run from CLI or using the python GUI.
 %
 % xASL_Module_Structure  - processes structural data, i.e. high-resolution
 %                          T1w and FLAIR scans, type help xASL_module_Structural for more information
