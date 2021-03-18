@@ -1,30 +1,41 @@
-function xASL_wrp_GSSaveIntermedTrans(y,idim,odim,rdim,M0,M1,R,M1t,M1r,fname,it)
-% xASL_wrp_GSSaveIntermedTrans
+function xASL_wrp_GSSaveIntermedTrans(y, idim, odim, rdim, M0, M1, R, M1t, M1r, nameOut, numIteration)
+%xASL_wrp_GSSaveIntermedTrans Saves the intermediate results, the transformation field of the Geodesic shooting
 %
-% FORMAT: xASL_wrp_GSSaveIntermedTrans(y,idim,odim,rdim,M0,M1,R,M1t,M1r,fname,it)
+% FORMAT: xASL_wrp_GSSaveIntermedTrans(y, idim, odim, rdim, M0, M1, R, M1t, M1r, nameOut, numIteration)
 %
 % INPUT:
-% y           - ...
-% idim        - ...
-% odim        - ...
-% rdim        - ...
-% M0          - ...
-% M1          - ...
-% R           - ...
-% M1t         - ...
-% M1r         - ...
-% fname       - ...
-% it          - ...
+% y            - internal parameter of the CAT12 - segmentation (REQUIRED)
+% idim         - internal parameter of the CAT12 - segmentation (REQUIRED)
+% odim         - internal parameter of the CAT12 - segmentation (REQUIRED)
+% rdim         - internal parameter of the CAT12 - segmentation (REQUIRED)
+% M0           - internal parameter of the CAT12 - segmentation (REQUIRED)
+% M1           - internal parameter of the CAT12 - segmentation (REQUIRED)
+% R            - internal parameter of the CAT12 - segmentation (REQUIRED)
+% M1t          - internal parameter of the CAT12 - segmentation (REQUIRED)
+% M1r          - internal parameter of the CAT12 - segmentation (REQUIRED)
+% nameOut      - name of the output file (REQUIRED)
+% numIteration - number of the registration iteration (REQUIRED)
 %
-% OUTPUT: n/a
+% OUTPUT: Saves the deformation field under a filename ./mri/y_nameOut_numIteration.nii
 %
-% DESCRIPTION: n/a
+% DESCRIPTION: This function is called from the CAT12 segmentation function to save the intermediate results
+%              of the Geodesic shooting transformation. Normally, the registration only saves the final results - 
+%              the final transformation field. This function enables to save also the intermediate transformation field.
+%              It takes all the internal variables from the transformation and save the field to a sub-directory 'mri'
+%              that normally contains all the intermediate results of the CAT12 segmentation. It adds a 'y_' prefix
+%              and adds the specified iteration number as postfix.
 %
-% EXAMPLE: n/a
+% EXAMPLE: xASL_wrp_GSSaveIntermedTrans(y,idim,odim,rdim,M0,M1,R,M1t,M1r,'T1',3)
+%          Saves a file in ./mri/y_T1_3.nii
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-% update for output resolution
+if nargin <11
+	error('Requires 11 input parameters');
+end
+
+%% Calculates the transformation field
+% Update for output resolution
 if any(odim ~= rdim)
 	eyev = eye(4); eyev(1:end-1) = eyev(1:end-1) * M1t(1)./M1r(1);
 	yid  = zeros([odim 3],'single');
@@ -55,19 +66,21 @@ end
 
 clear yi vx_vols vx_volt;
 
-% Create the filename
-% VT0.fname == fname
-[pth,nam] = spm_fileparts(fname);
-fnameNew  = fullfile(pth,'mri',['y_' nam '_' num2str(it) '.nii']);
-fprintf('%s %d %s %s\n','Saving intermediate step',it,'to file:',fnameNew);
+%% Saves the file
+% Creates the output pathname
+[Fpath,Fname] = spm_fileparts(nameOut);
+nameOut  = fullfile(Fpath,'mri',['y_' Fname '_' num2str(numIteration) '.nii']);
+
+% Prints a message about saving
+fprintf('%s %d %s %s\n','Saving GS intermediate step',numIteration,'to a file:',nameOut);
+
+% Creates and saves the NIFTI file
 Yy2       = spm_diffeo('invdef',yx,odim,eye(4),M0);
 N         = nifti;
-N.dat     = file_array(fnameNew,[odim(1:3),1,3],'float32',0,1,0);
+N.dat     = file_array(nameOut,[odim(1:3),1,3],'float32',0,1,0);
 N.mat     = M1;
 N.mat0    = M1;
 N.descrip = 'Deformation';
 create(N);
 N.dat(:,:,:,:,:) = reshape(Yy2,[odim,1,3]);
-clear Yy2;
-
 end

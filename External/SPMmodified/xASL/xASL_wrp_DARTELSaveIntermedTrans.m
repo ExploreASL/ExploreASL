@@ -1,30 +1,40 @@
-function xASL_wrp_DARTELSaveIntermedTrans(Yy,u,odim,rdim,idim,Mar,mat,M0,M1,fname,it)
-% xASL_wrp_DARTELSaveIntermedTrans
+function xASL_wrp_DARTELSaveIntermedTrans(Yy, u, odim, rdim, idim, Mar, mat, M0, M1, nameOut, numIteration)
+%xASL_wrp_DARTELSaveIntermedTrans Saves the intermediate results, the transformation field of DARTEL
 %
-% FORMAT: xASL_wrp_DARTELSaveIntermedTrans(Yy,u,odim,rdim,idim,Mar,mat,M0,M1,fname,it)
+% FORMAT: xASL_wrp_DARTELSaveIntermedTrans(Yy, u, odim, rdim, idim, Mar, mat, M0, M1, nameOut, numIteration)
 %
 % INPUT:
-% Yy        - ...
-% u         - ...
-% odim      - ...
-% rdim      - ...
-% idim      - ...
-% Mar       - ...
-% mat       - ...
-% M0        - ...
-% M1        - ...
-% fname     - ...
-% it        - ...
+% Yy           - internal parameter of the CAT12 - segmentation (REQUIRED)
+% u            - internal parameter of the CAT12 - segmentation (REQUIRED)
+% odim         - internal parameter of the CAT12 - segmentation (REQUIRED)
+% rdim         - internal parameter of the CAT12 - segmentation (REQUIRED)
+% idim         - internal parameter of the CAT12 - segmentation (REQUIRED)
+% Mar          - internal parameter of the CAT12 - segmentation (REQUIRED)
+% mat          - internal parameter of the CAT12 - segmentation (REQUIRED)
+% M0           - internal parameter of the CAT12 - segmentation (REQUIRED)
+% M1           - internal parameter of the CAT12 - segmentation (REQUIRED)
+% nameOut      - name of the output file (REQUIRED)
+% numIteration - number of the registration iteration (REQUIRED)
 %
-% OUTPUT: n/a
+% OUTPUT: Saves the deformation field under a filename ./mri/y_nameOut_numIteration.nii
 %
-% DESCRIPTION: n/a
+% DESCRIPTION: This function is called from the CAT12 segmentation function to save the intermediate results
+%              of the DARTEL transformation. Normally, the registration only saves the final results - 
+%              the final transformation field. This function enables to save also the intermediate transformation field.
+%              It takes all the internal variables from the transformation and save the field to a sub-directory 'mri'
+%              that normally contains all the intermediate results of the CAT12 segmentation. It adds a 'y_' prefix
+%              and adds the specified iteration number as postfix.
 %
-% EXAMPLE: n/a
+% EXAMPLE: xASL_wrp_DARTELSaveIntermedTrans(Yy, u, odim, rdim, idim, Mar, mat, M0, M1, 'T1',3)
+%          Saves a file in ./mri/y_T1_3.nii
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-% deformation
+if nargin <11
+	error('Requires 11 input parameters');
+end
+
+%% Calculates the transformation field
 y0      = spm_dartel_integrate(reshape(u,[rdim(1:3) 1 3]),[0 1], 6);
 prm     = [3 3 3 0 0 0];
 Coef    = cell(1,3);
@@ -46,7 +56,7 @@ end
 clear Coef t1 t2 t3 t11 t22 t33 z
 
 M = mat\M1;
-for i=1:size(Yyd,3),
+for i=1:size(Yyd,3)
 	t1          = Yyd(:,:,i,1);
 	t2          = Yyd(:,:,i,2);
 	t3          = Yyd(:,:,i,3);
@@ -70,20 +80,21 @@ end
 
 clear vx_vols vx_volt Yyd interpol;	      
 
-% Create the filename
-% VT0.fname == fname
-[pth,nam] = spm_fileparts(fname);
-fnameNew  = fullfile(pth,'mri',['y_' nam '_' num2str(it) '.nii']);
-fprintf('%s %d %s %s\n','Saving intermediate step',it,'to file:',fnameNew);
+%% Saves the file
+% Creates the output pathname
+[Fpath,Fname] = spm_fileparts(nameOut);
+nameOut  = fullfile(Fpath,'mri',['y_' Fname '_' num2str(numIteration) '.nii']);
+fprintf('%s %d %s %s\n','Saving DARTEL intermediate step',numIteration,'to a file:',nameOut);
+
+% Creates and saves the NIFTI file
 Yy2       = spm_diffeo('invdef',Yx,odim,eye(4),M0);
 N         = nifti;
-N.dat     = file_array(fnameNew,[odim(1:3),1,3],'float32',0,1,0);
+N.dat     = file_array(nameOut,[odim(1:3),1,3],'float32',0,1,0);
 N.mat     = M1;
 N.mat0    = M1;
 N.descrip = 'Deformation';
 create(N);
 N.dat(:,:,:,:,:) = reshape(Yy2,[odim,1,3]);
-clear Yy2;
 end
 
 %=======================================================================
