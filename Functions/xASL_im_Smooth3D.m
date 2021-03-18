@@ -1,25 +1,40 @@
-function [imSmo,imGaussX,imGaussY,imGaussZ] = xASL_im_Smooth3D(sigma,imIn,PSFtype)
-%xASL_im_Smooth3D ...
+function [imSmo, imGaussX, imGaussY, imGaussZ] = xASL_im_Smooth3D(imIn, sigma, PSFtype)
+%xASL_im_Smooth3D Smoothing a 3D image with a 3D separable kernel
 %
-% FORMAT:       [imSmo,imGaussX,imGaussY,imGaussZ] = xASL_im_Smooth3D(sigma,imIn,PSFtype)
+% FORMAT:       [imSmo, imGaussX, imGaussY, imGaussZ] = xASL_im_Smooth3D(imIn, sigma[, PSFtype])
 % 
-% INPUT:        sigma   - ...
-%               imIn    - ...
-%               PSFtype - ...
+% INPUT:        imIn    - input 3D image (REQUIRED)
+%               sigma   - SD or other parameter of the 3D smoothing (vector 3x1, REQUIRED)
+%               PSFtype - Point spread function in all dimensions, can be different in all dimensions and specified
+%                         as 'gaussian','sinc','lorentzian', or 'flat' (OPTIONAL, DEFAULT = {'gaussian','gaussian','gaussian'}
 %
-% OUTPUT:       imSmo    - ...
-%               imGaussX - ...
-%               imGaussY - ...
-%               imGaussZ - ...
+% OUTPUT:       imSmo    - Output smoothed image
+%               imGaussX - Vector with the smoothing kernel along the X dimension
+%               imGaussY - Vector with the smoothing kernel along the Y dimension
+%               imGaussZ - Vector with the smoothing kernel along the Z dimension
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  ...
+% DESCRIPTION: It smooths the 3D image with a 3D kernels that has defined the shape and SD of the smoothing separably in three dimension.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE: [imSmo,~,~,~] = xASL_im_Smooth3D(imIn, [3 5 4], {'gaussian','gaussian','flat'})
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+%% Admin
+if nargin < 1 || isempty(imIn)
+	error('The input image needs to be provided');
+end
+
+if nargin < 2 || isempty(sigma) || length(sigma)~=3
+	error('Sigma needs to be defined as a 1x3 vector');
+end
+
+if nargin < 3 || isempty(PSFtype)
+	PSFtype = {'gaussian','gaussian','gaussian'};
+end
+
+%% Prepare the separable kernels
 for tp=1:length(PSFtype)
     switch(PSFtype{tp})
         case 'gaussian'
@@ -57,6 +72,7 @@ for tp=1:length(PSFtype)
 			end
 	end
 end
+%% Normalize the kernels
 imGaussX = imGauss{1};
 imGaussY = imGauss{2};
 imGaussZ = imGauss{3};
@@ -71,6 +87,8 @@ imGaussZ = repmat(imGaussZ/sum(imGaussZ(:)),[1 1 1]);
 imGaussZ = shiftdim(imGaussZ,-1);
 %imSmo = convn(locGMY,imGaussZ,'same');
 
+%% Runs the smoothing
 imSmo = xASL_im_conv3Dsep(imIn,imGaussX,imGaussY,imGaussZ);
 
-return
+end
+

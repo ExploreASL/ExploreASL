@@ -103,8 +103,8 @@ imMask = imMask.*(imResidual < (meanErr + 2*stdErr));
 for i=1:3
     % Re-run Bspline PVEC with presmoothed imPV according to the last
     % estimate
-    [imGMSmo,~,~,~] = xASL_im_Smooth3D(optimSigma,imGM,PSFtype);
-    [imWMSmo,~,~,~] = xASL_im_Smooth3D(optimSigma,imWM,PSFtype);
+    [imGMSmo,~,~,~] = xASL_im_Smooth3D(imGM,optimSigma,PSFtype);
+    [imWMSmo,~,~,~] = xASL_im_Smooth3D(imWM,optimSigma,PSFtype);
     imPVSmo(:,:,:,1) = imGMSmo;
     imPVSmo(:,:,:,2) = imWMSmo;
     [imPVEC,~,~,~] = xASL_im_PVCbspline(imCBF,imPVSmo,[9 9 9]);
@@ -125,7 +125,7 @@ for i=1:3
 end
 
 %% Calculate resolution, smoothed image and so on
-[imSmo,imGauss{1},imGauss{2},imGauss{3}] = xASL_im_Smooth3D(optimSigma,imPseudoCBF,PSFtype);
+[imSmo,imGauss{1},imGauss{2},imGauss{3}] = xASL_im_Smooth3D(imPseudoCBF,optimSigma,PSFtype);
 
 imGauss{1} = imGauss{1}(:);
 imGauss{2} = imGauss{2}(:);
@@ -150,7 +150,7 @@ return;
 function err = minFunc(sigma,imPseudoCBF,imCBF,PSFtype,imMask)
         
 % Do the smoothing
-[imSmo,~,~,~] = xASL_im_Smooth3D(sigma,imPseudoCBF,PSFtype);
+[imSmo,~,~,~] = xASL_im_Smooth3D(imPseudoCBF,sigma,PSFtype);
 
 % Restrict only to voxels on the mask
 imSmoMasked = imSmo(imMask>0);
