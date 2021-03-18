@@ -73,6 +73,7 @@ if bTest(1)
     else
         error('No FlavorDatabase folder found...');
     end
+    fprintf('  '); % Make empty spaces for xASL_TrackProgress
 	for iList = 1:length(fList)
 		xASL_TrackProgress(iList,length(fList));
 		if ~exist(fullfile(conversionPath,fList{iList}), 'dir')
@@ -95,6 +96,7 @@ if bTest(1)
 	end
 	
 	fList = xASL_adm_GetFileList(flavorsPath, [], 'List', [], 1);
+    fprintf('  '); % Make empty spaces for xASL_TrackProgress
 	for iList = 1:length(fList)
 		xASL_TrackProgress(iList,length(fList));
 		if ~exist(fullfile(referencePath,fList{iList}), 'dir')
