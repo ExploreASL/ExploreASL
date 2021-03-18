@@ -1,20 +1,26 @@
 function x = xASL_adm_DefineASLResolution(x)
-%xASL_adm_DefineASLResolution ...
+%xASL_adm_DefineASLResolution Estimates the resoluton of the ASL
 %
 % FORMAT:       x = xASL_adm_DefineASLResolution(x)
 %
-% INPUT:        ...
+% INPUT:        x - x-structure
 %
-% OUTPUT:       ...
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  ...
+% OUTPUT:       x - updated x-structure with the resolution information
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% DESCRIPTION:  If the parameters x.ResolutionEstimation == 1, it initializes the resolution with expected values
+%               per sequence type and then runs the procedure xASL_im_ResolutionEstim to estimate the resolution from the 
+%               mismatch between ASL and structural data. For x.ResolutionEstimation == 0, xASL_init_DefaultEffectiveResolution
+%               the educated guess is used for the estimated resolution using previous data and analyzis.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: x = xASL_adm_DefineASLResolution(x)
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
+if nargin < 1 || isempty(x)
+	error('X-structure needs to be provided on the input');
+end
 
 if ~isfield(x,'ResolutionEstimation')
     x.ResolutionEstimation    = 0; % default: use default resolutions based on the acquisition resolution
@@ -23,6 +29,7 @@ end
 %% If ResolutionEstimation is requested, run this here
 if x.ResolutionEstimation
 
+	% Loads the ASL image
     tIM = xASL_io_ReadNifti(x.P.Path_PWI);
     NativeRes = tIM.hdr.pixdim(2:4);
 
@@ -39,7 +46,6 @@ if x.ResolutionEstimation
     end
 
     x.S.ExpectedFWHM_res = NativeRes.*relPSF;
-
 
     x = xASL_im_ResolutionEstim(x); % estimate effective spatial resolution
 
@@ -149,8 +155,6 @@ function x = xASL_im_ResolutionEstim(x)
     x.S.optimFWHM_Res_mm            = x.S.optimFWHM_Res_vox.*1.5; % assuming 1.5 mm voxel-size in ExploreASL
 
     % this is what we need to smooth the pGM & pWM with, to get the pseudo-CBF map in correct effective resolution
-
     fprintf('%s\n',['Spatial effective resolution estimated as FWHM = [' num2str(x.S.optimFWHM_Res_mm(1),3) ' ' num2str(x.S.optimFWHM_Res_mm(2),3) ' ' num2str(x.S.optimFWHM_Res_mm(3),3) '] mm']);
-
 
 end
