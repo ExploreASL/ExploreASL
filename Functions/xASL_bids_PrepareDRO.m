@@ -11,7 +11,13 @@ function xASL_bids_PrepareDRO(droTestPatient,droSubject)
 %   n/a
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  Prepare DRO test patient for BIDS2Legacy conversion.
+% DESCRIPTION:  Prepare DRO test patient for BIDS2RAW conversion.
+%               This script uses the output of the asldro python script and
+%               converts it into a bids structure that can be read by our
+%               xASL_bids_BIDS2Legacy script.
+%               An exemplary usage is shown in the unit test called
+%               xASL_ut_UnitTest_function_BIDS2Legacy.
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      droSubject = 'sub-Sub1';
 %               droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient');
@@ -73,6 +79,9 @@ end
 %% Create dataset_description.json template
 function [json] = createDatasetDescriptionTemplate(name)
 
+    % Get default BIDS configuration
+    bidsPar = xASL_bids_Config();
+
     % Create dummy dataset_description.json
     json = struct;
     if nargin > 0
@@ -80,7 +89,7 @@ function [json] = createDatasetDescriptionTemplate(name)
     else
         json.Name = "RandomText";
     end
-    json.BIDSVersion = "1.5.0";
+    json.BIDSVersion = bidsPar.BIDSVersion;
     json.DatasetType = "raw";
     json.License = "RandomText";
     json.Authors = "RandomText";
