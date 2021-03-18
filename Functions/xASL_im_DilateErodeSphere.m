@@ -1,19 +1,24 @@
 function el = xASL_im_DilateErodeSphere(R)
-%xASL_im_DilateErodeSphere 3D structuring element (binary) sphere
+%xASL_im_DilateErodeSphere Return a 3D structuring element (binary) sphere of a given diameter
 %
 % FORMAT:       el = xASL_im_DilateErodeSphere(R)
 % 
-% INPUT:        ...
+% INPUT:        R - diameter of the sphere (OPTIONAL, DEFAULT = 1)
 %
-% OUTPUT:       ...
+% OUTPUT:       el - the structural element
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  3D structuring element (binary) sphere.
+% DESCRIPTION:  Creates a 3D structuring element (binary) sphere with the given diameter (R) and size 2*R+1
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:  el = xASL_im_DilateErodeSphere(2)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+
+%% Admin
+if nargin < 1 || isempty(R)
+	R = 1;
+end
 
 % Size of the element
 N=2*R+1;
@@ -27,4 +32,4 @@ d=sqrt((a-C).^2 + (b-C).^2 + (c-C).^2);
 
 el = d<=R;
 
-return;
+end

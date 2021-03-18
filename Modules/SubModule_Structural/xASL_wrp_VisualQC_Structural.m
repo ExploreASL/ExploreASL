@@ -299,7 +299,7 @@ function xASL_adm_VisualCheckLesionRemoval(x, Lesion_list)
             for iO=1:length(OUTname)
                 if ~xASL_exist(OUTname{iO})
                     for iLesion=1:length(INname)
-                        xASL_im_dilateROI(INname{iLesion});
+                        xASL_im_dilateROI(INname{iLesion},40);
                     end
                     xASL_spm_deformations(x,INname,OUTname,1);
                 end

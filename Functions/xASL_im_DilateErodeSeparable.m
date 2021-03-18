@@ -1,70 +1,76 @@
-function new_mask = xASL_im_DilateErodeSeparable(mask,type,kernel_x,kernel_y,kernel_z)
-%xASL_im_DilateErodeSeparable ...
+function imOut = xASL_im_DilateErodeSeparable(imIn, type, kernel_x, kernel_y, kernel_z)
+%xASL_im_DilateErodeSeparable Dilation or erosion of a binary imIn using three separable kernels
 %
-% FORMAT:       new_mask = xASL_im_DilateErodeSeparable(mask,type,kernel_x,kernel_y,kernel_z)
+% FORMAT: imOut = xASL_im_DilateErodeSeparable(imIn, type, kernel_x, kernel_y, kernel_z)
 % 
-% INPUT:        mask = binary mask
-%               type == 'dilate' or 'erode'
-%               kernel_x,y,z - 1D vectors Nx1 containing the separable erosion kernel - can have different sizes.
+% INPUT:  imIn - binary input image (REQUIRED)
+%         type - a string indicating the operation type 'dilate' or 'erode' (REQUIRED)
+%         kernel_x,y,z - 1D binary vectors Nx1 containing the separable kernel 
+%                        all three can have different sizes (REQUIRED)
 %
-% OUTPUT:       ...
+% OUTPUT: imOut - binary image after erosion/dilation
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  Runs dilation or erosion on a binary mask separably in three dimensions
-%               It uses its own dilate_erode function and crops the image so that it
-%               contains only the mask.
-%
+% DESCRIPTION:  Runs dilation or erosion on a binary imIn separably in three dimensions. Dilation/erosion
+%               in each dimension is done by using the specified kernels. It uses its own dilate_erode function 
+%               and crops the image so that it contains only the mask.
 %               Works only with odd sized kernels
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE: xASL_im_DilateErodeSeparable(imIn,'erode',[1 1 1],[1 1 1 0 0],[1])
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-% 
 
-new_mask = mask;
 
-if (mod(length(kernel_x),2)+mod(length(kernel_y),2)+mod(length(kernel_z),2))<3
+%% Admin
+if nargin < 1
+	error('Input image needed');
+end
+
+if nargin < 2 || (~strcmpi(type,'dilate') && (~strcmpi(type,'erode')))
+	error('Operation type has to be defined as dilate or erode');
+end
+
+if nargin < 5 || (mod(length(kernel_x),2)+mod(length(kernel_y),2)+mod(length(kernel_z),2))<3
     error('Only odd kernel sizes accepted');
 end
 
+imOut = imIn;
+
 % If the input mask is empty then return an empty mask
-if ~any(mask(:))
+if ~any(imIn(:))
     return;
 end
 
+%% Preparing the kernels
 kernel_radius(1) = floor(length(kernel_x)/2);
 kernel_radius(2) = floor(length(kernel_y)/2);
 kernel_radius(3) = floor(length(kernel_z)/2);
 
 % Sums around one of the dimension to discover the non-zero values 
-vec1 = (1:size(mask,1))';
-sum1 = squeeze(sum(mask,1)>0);
+vec1 = (1:size(imIn,1))';
+sum1 = squeeze(sum(imIn,1)>0);
 
-vec2 = (1:size(mask,2))';
-vec3 = (1:size(mask,3))';
-sum3 = sum(mask,3)>0;
+vec2 = (1:size(imIn,2))';
+vec3 = (1:size(imIn,3))';
+sum3 = sum(imIn,3)>0;
 
-% 3D version
-[vecX,vecOrigX,vecBackX,vecY,vecOrigY,vecBackY,vecZ,vecOrigZ,vecBackZ,nonzero] = check_max3d((sum(sum3,2)>0).*vec1,(sum(sum1,2)>0).*vec2,(sum(sum1,1)>0).*vec3',size(mask,1),size(mask,2),size(mask,3),kernel_radius);
+%% Prepares the cropping by finding what regions have to be processed based on the ROI and the size of the kernels
+% Input image that is more far from the ROI than the kernel length can be skipped
+[vecX,vecOrigX,vecBackX,vecY,vecOrigY,vecBackY,vecZ,vecOrigZ,vecBackZ,nonzero] = check_max3d((sum(sum3,2)>0).*vec1,(sum(sum1,2)>0).*vec2,(sum(sum1,1)>0).*vec3',size(imIn,1),size(imIn,2),size(imIn,3),kernel_radius);
+
 if nonzero
-    % Do the padding there and back - only once for all dimensions
-    % Run the separable dilation - specify the vector - always Nx1 and
-    % specify the dimension - all three will have separate code because the
-    % for will run across different voxels
-    
     % Cropping or padding of the mask
-    mask_cropped = mask(vecX,vecY,vecZ);
+    mask_cropped = imIn(vecX,vecY,vecZ);
     
-    % Run the dilation/erosion through mex files - separably in all three
-    % dimension
+    % Run the dilation/erosion through mex files - separably in all three dimension
     mask_cropped = xASL_mex_dilate_erode_single(mask_cropped,kernel_x(:),kernel_y(:),kernel_z(:),type);
     
     % Bring the processed image to the original space 
-    new_mask(vecOrigX,vecOrigY,vecOrigZ) = mask_cropped(vecBackX,vecBackY,vecBackZ);
-    
+    imOut(vecOrigX,vecOrigY,vecOrigZ) = mask_cropped(vecBackX,vecBackY,vecBackZ);
 end
-return;
+
+end
 
 % Calculate for the given mask the cropped or enlarged image
 % The advantage is that we enlarge the image so that we run the kernel in
@@ -122,5 +128,5 @@ else
     nonzero = 0;
 end
 
-return
+end
 

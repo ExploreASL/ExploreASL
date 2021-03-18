@@ -68,7 +68,7 @@ if ~isempty(INname) && ~isempty(OUTname)
     fprintf('Dilating lesions:   ')
     for iLesion=1:length(INname)
         xASL_TrackProgress(iLesion, length(INname));
-        xASL_im_dilateROI(INname{iLesion});
+        xASL_im_dilateROI(INname{iLesion},40);
     end
     fprintf('\n');
     xASL_spm_deformations(x,INname, OUTname,1);

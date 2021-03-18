@@ -1,69 +1,71 @@
-function new_mask = xASL_im_DilateErodeFull(mask,type,kernel)
-%xASL_im_DilateErodeFull ...
+function imOut = xASL_im_DilateErodeFull(imIn, type, kernel)
+%xASL_im_DilateErodeFull Dilation or erosion of a binary imIn using a 3D kernel
 %
-% FORMAT:       new_mask = xASL_im_DilateErodeFull(mask,type,kernel)
+% FORMAT: imOut = xASL_im_DilateErodeFull(imIn, type, kernel)
 % 
-% INPUT:        mask = binary mask
-%               type == 'dilate' or 'erode'
-%               kernel - 3D vectors NxMxO containing the separable erosion kernel - can have different sizes.
+% INPUT:  imIn   - binary input image (REQUIRED)
+%         type   - a string indicating the operation type 'dilate' or 'erode' (REQUIRED)
+%         kernel - 3D vector NxMxO containing 3D kernel
 %
-% OUTPUT:       ...
+% OUTPUT: imOut - binary image after erosion/dilation
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  Runs dilation or erosion on a binary mask in full three dimensions
+% DESCRIPTION:  Runs dilation or erosion on a binary imIn in full three dimensions.
 %               It uses its own dilate_erode function and crops the image so that it
-%               contains only the mask.
-%
-% Works only with odd sized kernels.
+%               contains only the mask. The size of all three dimensions of the kernel needs to be an odd number.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE: imOut = xASL_im_DilateErodeFull(imIn, 'erode', [1 1 1;0 1 0; 1 1 1])
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
+%% Admin
+if nargin < 1
+	error('Input image needed');
+end
 
-new_mask = mask;
+if nargin < 2 || (~strcmpi(type,'dilate') && (~strcmpi(type,'erode')))
+	error('Operation type has to be defined as dilate or erode');
+end
 
-if (mod(size(kernel,1),2)+mod(size(kernel,2),2)+mod(size(kernel,3),2))<3
+if nargin < 3 || (mod(size(kernel,1),2)+mod(size(kernel,2),2)+mod(size(kernel,3),2))<3
     error('Only odd kernel sizes accepted');
 end
 
+imOut = imIn;
+
 % If the input mask is empty then return an empty mask
-if ~any(mask(:))
+if ~any(imIn(:))
     return;
 end
 
+%% Prepares the cropping
 kernel_radius = floor(size(kernel)/2);
 if length(kernel_radius) == 2
     kernel_radius(3) = 0;
 end
 
 % Sums around one of the dimension to discover the non-zero values 
-vec1 = (1:size(mask,1))';
-sum1 = squeeze(sum(mask,1)>0);
+vec1 = (1:size(imIn,1))';
+sum1 = squeeze(sum(imIn,1)>0);
 
-vec2 = (1:size(mask,2))';
-vec3 = (1:size(mask,3))';
-sum3 = sum(mask,3)>0;
+vec2 = (1:size(imIn,2))';
+vec3 = (1:size(imIn,3))';
+sum3 = sum(imIn,3)>0;
 
 % 3D version
-[vecX,vecOrigX,vecBackX,vecY,vecOrigY,vecBackY,vecZ,vecOrigZ,vecBackZ,nonzero] = check_max3d((sum(sum3,2)>0).*vec1,(sum(sum1,2)>0).*vec2,(sum(sum1,1)>0).*vec3',size(mask,1),size(mask,2),size(mask,3),kernel_radius);
+[vecX,vecOrigX,vecBackX,vecY,vecOrigY,vecBackY,vecZ,vecOrigZ,vecBackZ,nonzero] = check_max3d((sum(sum3,2)>0).*vec1,(sum(sum1,2)>0).*vec2,(sum(sum1,1)>0).*vec3',size(imIn,1),size(imIn,2),size(imIn,3),kernel_radius);
+
 if nonzero
-    % Do the padding there and back - only once for all dimensions
-    % Run the separable dilation - specify the vector - always Nx1 and
-    % specify the dimension - all three will have separate code because the
-    % for will run across different voxels
-    
     % Cropping or padding of the mask
-    mask_cropped = mask(vecX,vecY,vecZ);
+    mask_cropped = imIn(vecX,vecY,vecZ);
     
     % Run the dilation/erosion through mex files - separably in all three
     % dimension
     mask_cropped = xASL_mex_dilate_erode_3D(double(mask_cropped),double(kernel),type);
     
     % Bring the processed image to the original space 
-    new_mask(vecOrigX,vecOrigY,vecOrigZ) = mask_cropped(vecBackX,vecBackY,vecBackZ);
-    
+    imOut(vecOrigX,vecOrigY,vecOrigZ) = mask_cropped(vecBackX,vecBackY,vecBackZ);
 end
 
 end
@@ -124,5 +126,5 @@ else
     nonzero = 0;
 end
 
-
 end
+

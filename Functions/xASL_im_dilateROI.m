@@ -1,39 +1,48 @@
-function xASL_im_dilateROI(PathIn, PathTemp)
-%xASL_im_dilateROI ...
+function xASL_im_dilateROI(PathIn, PathOut, minVolume)
+%xASL_im_dilateROI Dilates a binary ROI with a 3x3 sphere until reaching a defined minimal volume
 %
-% FORMAT:       xASL_im_dilateROI(PathIn, PathTemp)
+% FORMAT:       xASL_im_dilateROI(PathIn, PathOut)
 % 
-% INPUT:        PathIn   - ...
-%               PathTemp - ...
-%
-% OUTPUT:       ...
+% INPUT:        PathIn    - Path to input NIfTI image (REQUIRED)
+%               PathOut   - Path to output NIfTI image (OPTIONAL, DEFAULT = PathIn)
+%               minVolume - The ROI is dilated until reaching this volume in ml (OPTIONAL, DEFAULT 40ml)
+% OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  ...
+% DESCRIPTION:  The function loads a binary image from PathIn and if smaller than the defined volume (40 mL by default) it 
+%               dilates it with a 3x3 sphere element until a minimal volume is reached. When it is small enough, it is saved to PathOut.
+%               40 mm^3 is equal to 3 voxels in all directions in DARTEL space, or around the highest obtainable ASL effective resolution (3x3x4 mm).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:      xASL_im_dilateROI('test.nii', [], 40)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-if nargin<2
-    PathTemp = PathIn;
+%% Admin
+if nargin<2 || isempty(PathOut)
+    PathOut = PathIn;
 end
 
+if nargin<3 || isempty(minVolume)
+	minVolume = 40;
+end
+
+%% Loads the image and converts to a binary mask
 IM      = xASL_io_Nifti2Im(PathIn);
 IM      = xASL_im_ConvertMap2Mask(IM);
+
+%% Obtains the voxel volume
 HDR     = xASL_io_ReadNifti(PathIn);
 pixdim  = prod(HDR.hdr.pixdim(2:4));
 IMvol   = sum(IM(:)).*pixdim;
-while  IMvol<40
+
+%% Iteratively dilate until the minimal volume value is reached
+while  IMvol<minVolume
        IM = xASL_im_DilateErodeFull(IM,'dilate',xASL_im_DilateErodeSphere(2));
        IMvol   = sum(IM(:)).*pixdim;
 end
 
-xASL_io_SaveNifti(PathIn, PathTemp, IM, [], false);
-
-% For all regions smaller than 40 mm^3, dilate it until it is at least 40 mm^3.
-% 40 mm^3 is 3 voxels in all directions in DARTEL space, or around the highest obtainable ASL effective resolution
-% (3x3x4)
+%% Saves the dilated ROI
+xASL_io_SaveNifti(PathIn, PathOut, IM, [], false);
 
 end

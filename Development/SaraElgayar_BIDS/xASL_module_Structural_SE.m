@@ -665,7 +665,7 @@ if ~x.mutex.HasState('090_reslice2DARTEL')  % tracks progress through lock/ *.st
             % First dilate ROIs, if they were e.g. used for annotation (single voxel only)
             % Do linear interpolation to avoid negative edge effects
             for iL=1:length(INname)
-                xASL_im_dilateROI(INname{iL});
+                xASL_im_dilateROI(INname{iL},40);
             end
 
             xASL_spm_deformations(x,INname,OUTname,1);
