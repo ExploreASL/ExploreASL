@@ -1,7 +1,7 @@
 function xASL_bids_PrepareDRO(droTestPatient,droSubject)
 %xASL_bids_PrepareDRO Prepare DRO test patient for BIDS2Legacy conversion.
 %
-% FORMAT: xASL_bids_PrepareDRO(droTestPatient,droSubject)
+% FORMAT: xASL_bids_PrepareDRO(droTestPatient,[droSubject])
 % 
 % INPUT:
 %   droTestPatient      - Path to the DRO (CHAR ARRAY, REQUIRED)
