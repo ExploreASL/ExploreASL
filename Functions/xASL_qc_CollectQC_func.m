@@ -100,7 +100,7 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject)
     end    
 
     % Orientation check
-    func = xASL_qc_ComputeNiftiOrientation(x, x.P.Path_func_bold, func);
+    func = xASL_qc_ComputeNiftiOrientation(x.P.Path_func_bold, func);
     
     %% Set func fields to 4 decimals
     FieldNames = fields(func);

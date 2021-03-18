@@ -143,7 +143,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
     end
 
     % compute orientation stuff
-    ASL = xASL_qc_ComputeNiftiOrientation(x, x.P.Path_ASL4D, ASL);
+    ASL = xASL_qc_ComputeNiftiOrientation(x.P.Path_ASL4D, ASL);
     
     %% RMS, AI, etc of ASL data
     if strcmp(SessionID(1:3), 'ASL')
