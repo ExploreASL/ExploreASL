@@ -62,6 +62,10 @@ function [x] = ExploreASL_Initialize(varargin)
         end
     end
     
+    % Check if DataParPath is a file or a folder
+    [~,~,extension] = fileparts(x.DataParPath);
+    isFile = ~isempty(extension);
+    
     % Check if pipeline should be run, but there is no DataParFile
     if x.ProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
         x.DataParPath = input('Please insert the path to your DataParFile: ');
@@ -73,7 +77,7 @@ function [x] = ExploreASL_Initialize(varargin)
         x.ProcessData = 0;
         x.ProcessArray = [0 0 0];
     else % DataPar file/folder exists
-        if exist(x.DataParPath,'file') % It is a file, so do not run the BIDS import workflow
+        if isFile % It is a file, so do not run the BIDS import workflow
             if x.ProcessData==0 || x.ProcessData==2
                 x.ProcessData = 2; % Initialize & load but do not process
             end
