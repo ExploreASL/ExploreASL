@@ -95,7 +95,7 @@ function [x] = ExploreASL_Initialize(varargin)
     
     % Give some feedback
     reportProcess = 'UNEXPECTED'; % Fallback
-    if x.ProcessData==0,        reportProcess = 'only run initialization';
+    if x.ProcessData==0,        reportProcess = 'only run the initialization';
     elseif x.ProcessData==1,    reportProcess = 'run the processing pipeline';
     elseif x.ProcessData==2,    reportProcess = 'only load the dataset';
     end
