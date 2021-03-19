@@ -1,4 +1,4 @@
-function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bComparison)
+function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bComparison,bInitialize)
 %xASL_bids_TestBidsConversion Runs the conversion for the DICOM flavors to ASL-BIDS and compares the results with reference data
 %
 % FORMAT: xASL_bids_TestBidsConversion(baseDirImport[,baseDirReference,bImport,bComparison])
@@ -8,6 +8,7 @@ function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bCo
 %   baseDirReference - Reference directory with correct ASL-BIDS data (OPTIONAL)
 %   bImport          - Specify if import should be performed (OPTIONAL, DEFAULT=TRUE)
 %   bComparison      - Specify if comparison should be performed (OPTIONAL, DEFAULT=FALSE)
+%   bInitialize      - Run ExploreASL_Initialize (OPTIONAL, DEFAULT=TRUE)
 %
 % OUTPUT: n/a        - Outputs the converted data and comparison results are printed on screen
 %         
@@ -35,13 +36,19 @@ if nargin<4 || isempty(bComparison)
 	bComparison = false;
 end
 
+if nargin<4 || isempty(bInitialize)
+	bInitialize = true;
+end
+
 if isempty(baseDirReference) && bComparison
 	error('Cannot compare to reference if the reference directory is not specified.');
 end
 
 %% Initialization
 % Initialize ExploreASL 
-ExploreASL_Initialize([],false);
+if bInitialize
+    ExploreASL_Initialize([],false);
+end
 
 % Load the list of the directories
 fList = xASL_adm_GetFileList(baseDirImport,[],false,[],true);

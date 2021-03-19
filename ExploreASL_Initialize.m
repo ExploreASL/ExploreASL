@@ -27,229 +27,230 @@ function [x] = ExploreASL_Initialize(varargin)
 % Copyright 2015-2021 ExploreASL
 
 
+    %% Admin
 
-%% Admin
+    % Define input parser
+    p = inputParsing(varargin{:});
 
-% Define input parser
-p = inputParsing(varargin{:});
+    % Convert parsed input
+    parameters = convertParsedInput(p.Results);
 
-% Convert parsed input
-parameters = convertParsedInput(p.Results);
+    % Store parsed input
+    x = storeParsedInput(parameters);
 
-% Store parsed input
-x = storeParsedInput(parameters);
+    % Check if the DataParPath is a file or a directory
+    if isempty(x.DataParPath)
+        SelectParFile = true;
+    elseif exist(x.DataParPath,'dir')
+        if ~(sum(x.ImportArray)>0) % For BIDS import we expect a folder
+            warning('Data parameter file was inputted as a folder, but should point to a file instead');
+            SelectParFile = true;
+        end
+    else
+        SelectParFile = false;
+    end
 
-% Check if the DataParPath is a file or a directory
-if isempty(x.DataParPath)
-    SelectParFile = true;
-elseif exist(x.DataParPath,'dir')
-    SelectParFile = true;
-    warning('Data parameter file was inputted as a folder, but should point to a file instead');
-else
-    SelectParFile = false;
-end
+    % Initialize S substruct
+    x.S = struct;
 
-% Initialize S substruct
-x.S = struct;
+    % Check if the ExploreASL pipeline should be run or not
+    if sum(x.ProcessArray)>0
+        x.ProcessData = 1; % Loading & processing dataset
+    else
+        warning('The ExploreASL pipeline will not be executed, since the ProcessArray argument is set to 0');
+        x.ProcessData = 0; % Only initialize ExploreASL functionality
+    end
 
-% Check if the ExploreASL pipeline should be run or not
-if sum(x.ProcessArray)>0
-    x.ProcessData = 1; % Loading & processing dataset
-else
-    warning('The ExploreASL pipeline will not be executed, since the ProcessArray argument is set to 0');
-    x.ProcessData = 0; % Only initialize ExploreASL functionality
-end
+    % Check if pipeline should be run, but there is no DataParFile
+    if sum(x.ProcessArray)>0 && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
+        x.DataParPath = input('Please insert the path to your DataParFile: ');
+    end
 
-% Check if pipeline should be run, but there is no DataParFile
-if sum(x.ProcessArray)>0 && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
-    x.DataParPath = input('Please insert the path to your DataParFile: ');
-end
+    % Recheck the DataParFile, which is possibly not a file or does not exist
+    if ~exist(x.DataParPath,'file') || ~exist(x.DataParPath,'dir') % file = without BIDS Import, dir = BIDS import 
+        warning('DataPar file does not exist, ExploreASL will only be initialized');
+        x.ProcessData = 0;
+        x.ProcessArray = [0 0 0];
+        SelectParFile = false;
+    else % DataParFile exists, check if Processing is turned off
+        warning('DataPar file does exist, processing is turned off, ExploreASL will only be initialized & dataset will be loaded');
+        if ~(sum(x.ProcessArray)>0)
+            x.ProcessData = 2; % Initialize & load but do not process
+        end
+    end
 
-% Recheck the DataParFile, which is possibly not a file or does not exist
-if ~exist(x.DataParPath,'file')
-    warning('DataPar file does not exist, ExploreASL will only be initialized');
-    x.ProcessData = 0;
-    x.ProcessArray = [0 0 0];
-    SelectParFile = false;
-end
+    % Check output
+    if x.ProcessData>0 && nargout==0
+        warning('Data loading requested but no output structure defined');
+        fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
+    end
 
-% Check output
-if x.ProcessData>0 && nargout==0
-    warning('Data loading requested but no output structure defined');
-    fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
-end
+    % Check if GUI options are available
+    if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
+        bUseGUI = false;
+    else
+        bUseGUI = true;
+    end
 
-% Check if GUI options are available
-if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
-    bUseGUI = false;
-else
-    bUseGUI = true;
-end
+    %% -----------------------------------------------------------------------------
+    %% Get ExploreASL path
 
-%% -----------------------------------------------------------------------------
-%% Get ExploreASL path
+    % Check if the current directory is the ExploreASL directory
+    CurrCD = pwd;
+    if exist(fullfile(CurrCD, 'ExploreASL_Master.m'), 'file')
+        x.MyPath = CurrCD;
+    end
 
-% Check if the current directory is the ExploreASL directory
-CurrCD = pwd;
-if exist(fullfile(CurrCD, 'ExploreASL_Master.m'), 'file')
-    x.MyPath = CurrCD;
-end
+    % Check whether MyPath is correct, otherwise obtain correct folder
+    if ~isfield(x, 'MyPath')
+        x.MyPath = '/DummyPath';
+    end
 
-% Check whether MyPath is correct, otherwise obtain correct folder
-if ~isfield(x, 'MyPath')
-    x.MyPath = '/DummyPath';
-end
+    MasterScriptPath = fullfile(x.MyPath, 'ExploreASL_Master.m');
 
-MasterScriptPath = fullfile(x.MyPath, 'ExploreASL_Master.m');
-
-if ~isdeployed
-    if ~exist(MasterScriptPath,'file')
-        if bUseGUI
-            if ismac % somehow macOS doesnt show the title of the question dialogue
-                fprintf('Select folder where ExploreASL is installed\n');
+    if ~isdeployed
+        if ~exist(MasterScriptPath,'file')
+            if bUseGUI
+                if ismac % somehow macOS doesnt show the title of the question dialogue
+                    fprintf('Select folder where ExploreASL is installed\n');
+                end
+                pathstr = uigetdir(CurrCD, 'Select folder where ExploreASL is installed');
+            else
+                pathstr = input('Provide foldername where ExploreASL is installed, including ": ');
             end
-            pathstr = uigetdir(CurrCD, 'Select folder where ExploreASL is installed');
+            if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL_Master.m'),'file')
+                return
+            end
+            x.MyPath = pathstr;
+        end
+    else
+        % In deployed mode set the ExploreASL directory in the ctf archive
+        [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL_Master*'); % Find the path of the master files within the ctf archive
+        curPathCTF = fileparts(files(1,:)); % Get the path
+        x.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
+
+        BreakString = '==============================================================================================\n';
+        fprintf(BreakString);
+        fprintf('ctfroot:  %s\n', ctfroot);
+        fprintf('x.MyPath: %s\n', x.MyPath);
+        fprintf(BreakString);
+
+    end
+
+    % Go to ExploreASL folder
+    cd(x.MyPath);
+
+
+    %% Add ExploreASL paths
+    if ~isdeployed
+        addExploreASLDirectory(x.MyPath)
+    end
+    
+
+    %% Import
+
+    if sum(x.ImportArray)>0
+        if ~isempty(DataParPath)
+            if exist(x.DataParPath,'dir')
+                % DICOM TO NII
+                if x.ImportArray(1)==1
+                    warning('Running DCM2BIDS, not DCM2NII...');
+                    xASL_bids_TestBidsConversion(x.DataParPath, [], 1, 0, 0);
+                end
+                % NII TO BIDS
+                if x.ImportArray(2)==1
+                    warning('Not yet implemented...');
+                end
+                % BIDS TO LEGACY
+                if x.ImportArray(2)==1
+                    warning('Not yet implemented...');
+                end
+            else
+                warning('ImportArray was set to 1, but the DataParPath does not point to a directory');
+            end
         else
-            pathstr = input('Provide foldername where ExploreASL is installed, including ": ');
+            warning('ImportArray was set to 1, but there is not DataParPath, Import will not be executed');
         end
-        if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL_Master.m'),'file')
-            return
-        end
-        x.MyPath = pathstr;
     end
-else
-    % In deployed mode set the ExploreASL directory in the ctf archive
-    [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL_Master*'); % Find the path of the master files within the ctf archive
-    curPathCTF = fileparts(files(1,:)); % Get the path
-    x.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
-    
+
+
+    %% Proceed with Initialization
+
+    % Go to ExploreASL folder
+    cd(x.MyPath);
+
+    % Check if DataParFile needs to be loaded
+    if x.ProcessData>0
+        x = xASL_init_LoadDataParameterFile(x, x.DataParPath, SelectParFile);
+    end
+
+
+    %% Initialize general parameters
+    x = xASL_init_DefineIndependentSettings(x); % these settings are data-independent
+
+    x = xASL_init_DefineDataDependentSettings(x); % these settings depend on the data (e.g. which template to use)
+
+
+    %% --------------------------------------------------------------------------------------------------------------------
+    % Print logo
     BreakString = '==============================================================================================\n';
-    fprintf(BreakString);
-    fprintf('ctfroot:  %s\n', ctfroot);
-    fprintf('x.MyPath: %s\n', x.MyPath);
-    fprintf(BreakString);
 
-end
+    LogoString = [...
+    ' ________                      __                                 ______    ______   __        \n'...
+    '/        |                    /  |                               /      \\  /      \\ /  |      \n'...
+    '########/  __    __   ______  ## |  ______    ______    ______  /######  |/######  |## |      \n'...
+    '## |__    /  \\  /  | /      \\ ## | /      \\  /      \\  /      \\ ## |__## |## \\__##/ ## |      \n'...
+    '##    |   ##  \\/##/ /######  |## |/######  |/######  |/######  |##    ## |##      \\ ## |      \n'...
+    '#####/     ##  ##<  ## |  ## |## |## |  ## |## |  ##/ ##    ## |######## | ######  |## |      \n'...
+    '## |_____  /####  \\ ## |__## |## |## \\__## |## |      ########/ ## |  ## |/  \\__## |## |_____ \n'...
+    '##       |/##/ ##  |##    ##/ ## |##    ##/ ## |      ##       |## |  ## |##    ##/ ##       |\n'...
+    '########/ ##/   ##/ #######/  ##/  ######/  ##/        #######/ ##/   ##/  ######/  ########/ \n'...
+    '                    ## |                                                                      \n'...
+    '                    ## |                                                                      \n'...
+    '                    ##/  \n'];
 
-% Go to ExploreASL folder
-cd(x.MyPath);
+    fprintf(['\n\n' BreakString LogoString '\n']);
 
-
-%% Add ExploreASL paths
-if ~isdeployed
-% Define paths (should be equal when loading data or only initializing
-% ExploreASL
-    addpath(x.MyPath);
-
-	%fullfile('Development','dicomtools'), ...
-    subfolders_to_add = {'Functions', 'mex', 'Modules', 'Testing',...
-                            fullfile('Modules', 'SubModule_Structural'), ...
-                            fullfile('Modules', 'SubModule_ASL'), ...
-                            fullfile('Modules', 'SubModule_Population'), ...
-                            'Development', 'External', ...
-                            fullfile('External','isnear'), ...
-                            fullfile('External','DCMTK'), ...
-                            fullfile('Testing', 'UnitTests'), ...
-                            fullfile('External','ExploreQC'), ...
-							fullfile('External','SPMmodified'), ...
-                            fullfile('External','SPMmodified','matlabbatch'),...                            
-                            fullfile('External','SPMmodified','xASL'),...
-                            fullfile('External','SPMmodified','toolbox','cat12'), ...
-							fullfile('External','SPMmodified','toolbox','LST'), ...
-							fullfile('External','SPMmodified','toolbox','OldNorm') ...
-							genpath(fullfile('External','bids-matlab'))};
-
-    for ii=1:length(subfolders_to_add)
-        addpath(fullfile(x.MyPath,subfolders_to_add{ii}));
-    end
-end
-
-%% Import
-
-if sum(x.ImportArray)>0
-    warning('Call import scripts here? But then we should make sure not to call ExploreASL_Initialize within the import sripts of Jan!!!');
-end
+    %% Print chosen settings
+    printSettings(x);
 
 
-%% Proceed with Initialization
-
-% Go to ExploreASL folder
-cd(x.MyPath);
+    %% Check permissions
+    %xASL_adm_CheckPermissions(x.MyPath, false);
 
 
-if x.ProcessData>0
-    x = xASL_init_LoadDataParameterFile(x, x.DataParPath, SelectParFile);
-end
+    %% Data-specific initialization
+    fprintf('ExploreASL v%s initialized ... \n', x.Version);
+
+    if x.ProcessData>0
+        % Check if a root directory was defined
+        if isempty(x.D.ROOT)
+            error('No root/analysis/study folder defined');
+        end
+
+        % Fix a relative path
+        if strcmp(x.D.ROOT(1), '.')
+            cd(x.D.ROOT);
+            x.D.ROOT = pwd;
+        end
+
+        % Define study subjects/parameters for this pipeline run
+        x = xASL_init_DefineStudyData(x);
 
 
-%% Initialize general parameters
-x = xASL_init_DefineIndependentSettings(x); % these settings are data-independent
+        % Remove lock dirs from previous runs, if ExploreASL is not running in parallel
+        if x.nWorkers==1
+            x = xASL_init_RemoveLockDirs(x);
+        end
 
-x = xASL_init_DefineDataDependentSettings(x); % these settings depend on the data (e.g. which template to use)
-
-
-%% --------------------------------------------------------------------------------------------------------------------
-%% Print logo
-BreakString = '==============================================================================================\n';
-
-LogoString = [...
-' ________                      __                                 ______    ______   __        \n'...
-'/        |                    /  |                               /      \\  /      \\ /  |      \n'...
-'########/  __    __   ______  ## |  ______    ______    ______  /######  |/######  |## |      \n'...
-'## |__    /  \\  /  | /      \\ ## | /      \\  /      \\  /      \\ ## |__## |## \\__##/ ## |      \n'...
-'##    |   ##  \\/##/ /######  |## |/######  |/######  |/######  |##    ## |##      \\ ## |      \n'...
-'#####/     ##  ##<  ## |  ## |## |## |  ## |## |  ##/ ##    ## |######## | ######  |## |      \n'...
-'## |_____  /####  \\ ## |__## |## |## \\__## |## |      ########/ ## |  ## |/  \\__## |## |_____ \n'...
-'##       |/##/ ##  |##    ##/ ## |##    ##/ ## |      ##       |## |  ## |##    ##/ ##       |\n'...
-'########/ ##/   ##/ #######/  ##/  ######/  ##/        #######/ ##/   ##/  ######/  ########/ \n'...
-'                    ## |                                                                      \n'...
-'                    ## |                                                                      \n'...
-'                    ##/  \n'];
-
-fprintf(['\n\n' BreakString LogoString '\n']);
-
-%% Print chosen settings
-printSettings(x);
-
-
-%% Check permissions
-%xASL_adm_CheckPermissions(x.MyPath, false);
-
-
-%% Data-specific initialization
-fprintf('ExploreASL v%s initialized ... \n', x.Version);
-
-if x.ProcessData>0
-    if isempty(x.D.ROOT)
-        error('No root/analysis/study folder defined');
+        % Define & print settings
+        x = xASL_init_PrintCheckSettings(x);
+        x = xASL_init_FileSystem(x);
     end
 
-    % Fix a relative path
-    if strcmp(x.D.ROOT(1), '.')
-        cd(x.D.ROOT);
-        x.D.ROOT = pwd;
-    end
-
-    %% Define study subjects/parameters for this pipeline run
-    x = xASL_init_DefineStudyData(x);
-
-    
-    %% Remove lock dirs from previous runs, if ExploreASL is not running in parallel
-    if x.nWorkers==1
-        x = xASL_init_RemoveLockDirs(x);
-    end
-
-
-    %% Define & print settings
-    x = xASL_init_PrintCheckSettings(x);
-    x = xASL_init_FileSystem(x);
 end
 
 
-end
-
-
-%% ==================================================================================
 %% ==================================================================================
 function x  = xASL_init_Toolboxes(x)
 %xASL_init_Toolboxes Check & load ancillary toolboxes, versions and paths.
@@ -280,7 +281,7 @@ function [x] = xASL_init_RemoveLockDirs(x)
     LockDir = fullfile(x.D.ROOT, 'lock');
 
     if exist(LockDir, 'dir')
-%             fprintf('%s\n','Searching for locked previous ExploreASL image processing');
+        % fprintf('%s\n','Searching for locked previous ExploreASL image processing');
         LockDirFound = 0;
         LockDir = xASL_adm_FindByRegExp(fullfile(x.D.ROOT, 'lock'), {'(ASL|Structural|LongReg_T1)', x.subject_regexp, '.*module.*','^(locked)$'}, 'Match', 'Directories');
         if ~isempty(LockDir)
@@ -306,21 +307,19 @@ function [x] = xASL_init_RemoveLockDirs(x)
         end
 
         if LockDirFound==0
-%                 fprintf('%s\n', 'No locked folders found from previous ExploreASL image processing');
+            % fprintf('%s\n', 'No locked folders found from previous ExploreASL image processing');
         end
     end
 
 end
 
-
-%% ==================================================================================
 %% ==================================================================================
 function [x] = xASL_init_DefinePaths(x)
 %xASL_init_DefinePaths Define paths used by ExploreASL
 
 %% General
 
-%% Prefixes standard space
+% Prefixes standard space
 x.D.CBFPreFix_Resliced  = 'qCBF';
 x.D.c_PreFix{1} = 'rc1T1';
 x.D.c_PreFix{2} = 'rc2T1';
@@ -464,19 +463,19 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile)
             x.(FieldsAre{iField}) = xBackup.(FieldsAre{iField});
         end
     end
-
+    
     if ~isfield(x,'D')
         x.D = struct;
-	end
-
-    if ~isfield(x.D,'ROOT')
-		if isfield(x,'ROOT')
-			x.D.ROOT = x.ROOT;
-		else
-			x.D.ROOT = pathstr; % default
-		end
     end
-
+    
+    if ~isfield(x.D,'ROOT')
+        if isfield(x,'ROOT')
+            x.D.ROOT = x.ROOT;
+        else
+            x.D.ROOT = pathstr; % default
+        end
+    end
+    
     if ~exist(x.D.ROOT, 'dir')
         warning([x.D.ROOT ' didnt exist as folder, trying path of DataPar file']);
         x.D.ROOT = pathstr;
@@ -540,7 +539,6 @@ x = xASL_init_VisualizationSettings(x); % visual settings
 end
 
 
-%% ==================================================================================
 %% ==================================================================================
 function [x] = xASL_init_DefineDataDependentSettings(x)
 %xASL_init_DefineDataDependentSettings Define ExploreASL environment
@@ -628,115 +626,140 @@ end
 end
 
 
-
-%% ==================================================================================
 %% ==================================================================================
 function x = xASL_init_PrintCheckSettings(x)
-%xASL_init_PrintCheckSettings Check whether pre-defined settings existed in DATA_PAR.m
-% Prints these on the screen as the start of the pipeline.
-% Runs following steps:
-% 1) Set default settings if not defined
-% 2) Print data/study specific settings
-% 3) Print warnings
+    %xASL_init_PrintCheckSettings Check whether pre-defined settings existed in DATA_PAR.m
+    % Prints these on the screen as the start of the pipeline.
+    % Runs following steps:
+    % 1) Set default settings if not defined
+    % 2) Print data/study specific settings
+    % 3) Print warnings
 
-%% -----------------------------------------------------------------------
-%% 1) Set default settings if not defined
-if ~isfield(x,'Quality') || (x.Quality~=0 && x.Quality~=1)
-    x.Quality = 1;
-    fprintf('%s\n', 'Default Quality=1 used (optimal quality)');
-end
-if ~isfield(x,'DELETETEMP') || (x.DELETETEMP~=0 && x.DELETETEMP~=1)
-    x.DELETETEMP = 1;
-%     fprintf('%s\n','Default x.DELETETEMP=1 used (delete files temporarily used for processing)');
-end
+    %% -----------------------------------------------------------------------
+    %% 1) Set default settings if not defined
+    if ~isfield(x,'Quality') || (x.Quality~=0 && x.Quality~=1)
+        x.Quality = 1;
+        fprintf('%s\n', 'Default Quality=1 used (optimal quality)');
+    end
+    if ~isfield(x,'DELETETEMP') || (x.DELETETEMP~=0 && x.DELETETEMP~=1)
+        x.DELETETEMP = 1;
+    %     fprintf('%s\n','Default x.DELETETEMP=1 used (delete files temporarily used for processing)');
+    end
 
-%% -----------------------------------------------------------------------
-%% 2) Print data/study specific settings
-fprintf('%s\n','-------------------------------------------');
-fprintf('%s\n\n','ExploreASL will run with following settings:');
-fprintf('%s\n\n',['Root folder = ' x.D.ROOT]);
+    %% -----------------------------------------------------------------------
+    %% 2) Print data/study specific settings
+    fprintf('==================================== Additional Settings =====================================\n');
+    
+    if x.nWorkers>1
+        fprintf(['I am worker ' num2str(x.iWorker) '/' num2str(x.nWorkers) '\n']);
+        fprintf('Note that the resulting number of scans mentioned below applies only to this worker\n');
+    end
 
-if x.nWorkers>1
-    fprintf(['I am worker ' num2str(x.iWorker) '/' num2str(x.nWorkers) '\n']);
-    fprintf('Note that the resulting number of scans mentioned below applies only to this worker\n');
-end
+    fprintf('%s\n',[num2str(x.nTotalSubjects) ' scans - ' num2str(x.nExcluded) ' exclusions, resulting in ' num2str(x.nSubjects) ' scans of: ']);
 
-fprintf('%s\n',[num2str(x.nTotalSubjects) ' scans - ' num2str(x.nExcluded) ' exclusions, resulting in ' num2str(x.nSubjects) ' scans of: ']);
+    for iT=1:x.nTimePointsTotal
+        fprintf('%s\n',['Longitudinal timePoint ' num2str(iT) ' = ' num2str(x.nTimePointTotalSubjects(iT)) ' scans - ' num2str(x.nTimePointExcluded(iT)) ' exclusions = ' num2str(x.nTimePointSubjects(iT)) ' scans']);
+    end
 
-for iT=1:x.nTimePointsTotal
-    fprintf('%s\n',['Longitudinal timePoint ' num2str(iT) ' = ' num2str(x.nTimePointTotalSubjects(iT)) ' scans - ' num2str(x.nTimePointExcluded(iT)) ' exclusions = ' num2str(x.nTimePointSubjects(iT)) ' scans']);
-end
+    fprintf('%s\n',['ASL sessions: ' num2str(x.nSessions)]);
 
-fprintf('%s\n',['ASL sessions: ' num2str(x.nSessions)]);
+    fprintf('\n%s','Ancillary data, sets: ');
+    if isfield(x.S,'SetsID')
+            fprintf('%s\n',[num2str(size(x.S.SetsID,2)) ' sets are defined for ' num2str(size(x.S.SetsID,1)) ' "SubjectsSessions"']);
 
-fprintf('\n%s\n','Ancillary data, sets:');
-if isfield(x.S,'SetsID')
-        fprintf('%s\n',[num2str(size(x.S.SetsID,2)) ' sets are defined for ' num2str(size(x.S.SetsID,1)) ' "SubjectsSessions":']);
-
-        for iSet=1:size(x.S.SetsID,2)
-            fprintf(['Set ' num2str(iSet) ' = "' x.S.SetsName{iSet} '" options ']);
-            for iOption=1:size(x.S.SetsOptions{iSet},2)
-                fprintf(['"' x.S.SetsOptions{iSet}{iOption} '"']);
-                if iOption~= size(x.S.SetsOptions{iSet},2)
-                    fprintf(' & ');
+            for iSet=1:size(x.S.SetsID,2)
+                fprintf(['Set ' num2str(iSet) ' = "' x.S.SetsName{iSet} '" options ']);
+                for iOption=1:size(x.S.SetsOptions{iSet},2)
+                    fprintf(['"' x.S.SetsOptions{iSet}{iOption} '"']);
+                    if iOption~= size(x.S.SetsOptions{iSet},2)
+                        fprintf(' & ');
+                    end
                 end
+                if      x.S.Sets1_2Sample(iSet)==1
+                        fprintf(', codes for paired data');
+                elseif  x.S.Sets1_2Sample(iSet)==2
+                        fprintf(', codes for two-sample data');
+                elseif  x.S.Sets1_2Sample(iSet)==3
+                        fprintf([', continuous variate (with ' num2str(length(unique(x.S.SetsID(:,iSet)))) ' unique values)']);
+                end                    
+
+                fprintf('\n');
             end
-            if      x.S.Sets1_2Sample(iSet)==1
-                    fprintf(', codes for paired data');
-            elseif  x.S.Sets1_2Sample(iSet)==2
-                    fprintf(', codes for two-sample data');
-            elseif  x.S.Sets1_2Sample(iSet)==3
-                    fprintf([', continuous variate (with ' num2str(length(unique(x.S.SetsID(:,iSet)))) ' unique values)']);
-            end                    
+    else    
+        fprintf('%s\n','No sets are defined');
+    end
 
-            fprintf('\n');
+    if ~isfield(x,'M0')
+    %     warning('M0 option missing!');
+    else
+        fprintf('\n%s\n',['M0 option selected is "' num2str(x.M0) '"']);
+    end
+
+    fprintf('\nx.D.ROOT\t\t\t\t%s\n',x.D.ROOT);
+    fprintf('x.DELETETEMP\t\t\t%s\n',[num2str(x.DELETETEMP) ' (delete temporary files)']);
+    fprintf('x.Quality\t\t\t\t%s\n',[num2str(x.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
+
+
+    %% -----------------------------------------------------------------------
+    %% 3) Print warnings
+    fprintf('\n%s\n\n','==============================================================================================');
+    field_symbol = {'subject_regexp'};
+
+    for iField=1:length(field_symbol)
+        if ~isfield(x,field_symbol{iField})
+            warning(['x.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
         end
-else    
-    fprintf('%s\n','No sets are defined');
+    end
+
+    if ~isfield(x,'D')
+        warning('x.D didn''nt exist');
+    else
+        field_symbol = {'ROOT'};
+        for iField=1:length(field_symbol)
+            if ~isfield(x.D,field_symbol{iField})
+                warning(['x.D.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
+            end
+        end
+    end
+
+    if ~isempty(regexp(x.subject_regexp, '^(\^|)\.\*(\$|)$'))
+        warning('Subject regexp not specific! Check that no wrong folders are included as subjects');
+    end
+
+    fprintf('\n');
+
 end
-
-if ~isfield(x,'M0')
-%     warning('M0 option missing!');
-else
-    fprintf('\n%s\n',['M0 option selected is "' num2str(x.M0) '"']);
-end
-
-fprintf('%s\n',['x.DELETETEMP = ' num2str(x.DELETETEMP) ' (delete temporary files)']);
-fprintf('%s\n',['x.Quality    = ' num2str(x.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
-
 
 %% -----------------------------------------------------------------------
-%% 3) Print warnings
-fprintf('\n%s\n\n','---------------------------------------------');
+%% Add ExploreASL Directory
+function addExploreASLDirectory(MyPath)
 
-field_symbol = {'subject_regexp'};
-
-for iField=1:length(field_symbol)
-    if ~isfield(x,field_symbol{iField})
-        warning(['x.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
+    % Define paths (should be equal when loading data or only initializing)
+    addpath(MyPath); % ExploreASL
+    subfolders_to_add = {'Functions', 'mex', 'Modules', 'Testing',...
+        fullfile('Modules', 'SubModule_Structural'), ...
+        fullfile('Modules', 'SubModule_ASL'), ...
+        fullfile('Modules', 'SubModule_Population'), ...
+        'Development', 'External', ...
+        fullfile('External','isnear'), ...
+        fullfile('External','DCMTK'), ...
+        fullfile('Testing', 'UnitTests'), ...
+        fullfile('External','ExploreQC'), ...
+        fullfile('External','SPMmodified'), ...
+        fullfile('External','SPMmodified','matlabbatch'),...
+        fullfile('External','SPMmodified','xASL'),...
+        fullfile('External','SPMmodified','toolbox','cat12'), ...
+        fullfile('External','SPMmodified','toolbox','LST'), ...
+        fullfile('External','SPMmodified','toolbox','OldNorm') ...
+        genpath(fullfile('External','bids-matlab'))};
+    % Iterate over subfolders which should be added
+    for ii=1:length(subfolders_to_add)
+        addpath(fullfile(MyPath,subfolders_to_add{ii}));
     end
+    
 end
 
-if ~isfield(x,'D')
-    warning('x.D didn''nt exist');
-else
-    field_symbol = {'ROOT'};
-    for iField=1:length(field_symbol)
-        if ~isfield(x.D,field_symbol{iField})
-            warning(['x.D.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
-        end
-    end
-end
-
-if ~isempty(regexp(x.subject_regexp, '^(\^|)\.\*(\$|)$'))
-    warning('Subject regexp not specific! Check that no wrong folders are included as subjects');
-end
-
-fprintf('\n');
-
-end
-
-
+%% -----------------------------------------------------------------------
 %% Define input parser
 function p = inputParsing(varargin)
 
@@ -772,6 +795,7 @@ function p = inputParsing(varargin)
 
 end
 
+%% -----------------------------------------------------------------------
 %% Convert parsed input
 function parameters = convertParsedInput(parameters)
 
@@ -803,6 +827,7 @@ function parameters = convertParsedInput(parameters)
 
 end
 
+%% -----------------------------------------------------------------------
 %% Store parsed input
 function x = storeParsedInput(parameters)
 
@@ -816,6 +841,7 @@ function x = storeParsedInput(parameters)
     
 end
 
+%% -----------------------------------------------------------------------
 %% Print chosen settings
 function printSettings(x)
 
