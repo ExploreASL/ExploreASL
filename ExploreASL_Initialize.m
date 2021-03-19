@@ -171,20 +171,16 @@ function [x] = ExploreASL_Initialize(varargin)
                 if x.ImportArray(1)==1
                     warning('Running DCM2BIDS, not DCM2NII...');
                     xASL_bids_TestBidsConversion(x.DataParPath, [], 1, 0, 0, x);
-                    
-                    % Loading does not work right now, if the following steps are not yet implemented...
-                    x.ProcessData = 0;
                 end
                 % NII TO BIDS
                 if x.ImportArray(2)==1
                     warning('Not yet implemented...');
                 end
                 % BIDS TO LEGACY
-                if x.ImportArray(2)==1
-                    warning('Not yet implemented...');
+                if x.ImportArray(3)==1
+                    x = xASL_Import_BIDS2LEGACY(x);
                 end
                 
-                warning('We still have to get the DataParFile somehow, right now we can just set SelectParFile to true for manual mode');
                 if sum(x.ProcessArray)>0
                     SelectParFile = true;
                 else
@@ -785,6 +781,60 @@ function addExploreASLDirectory(MyPath)
     
 end
 
+
+%% -----------------------------------------------------------------------
+%% Add ExploreASL Directory
+function [x] = xASL_Import_BIDS2LEGACY(x)
+
+    % Go through all studies
+    ListFolders = xASL_adm_GetFileList(x.DataParPath, '^.+$', 'FPListRec', [0 Inf], 1);
+    for iList=1:numel(ListFolders)
+        % Convert only those containing raw data
+        if exist(fullfile(ListFolders{iList},'rawdata'),'dir')
+            
+            % Currently, we clean the old data for unix only
+            if isunix
+                if exist(fullfile(ListFolders{iList}, 'derivatives'), 'dir')
+                    diary('off');
+                    fclose('all'); % ensure that no file is locked
+                    system(['rm -rf ' fullfile(ListFolders{iList}, 'derivatives')]);
+                end
+            else
+                warning('Here we expect a unix-ish system');
+                diary('off');
+                fclose('all'); % ensure that no file is locked
+                xASL_delete(fullfile(ListFolders{iList}, 'derivatives'),true);
+            end
+            
+            % Default dataPar.json for the testing that is fast to run
+            x.subject_regexp = '^sub-.*$';
+            x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
+            x.Quality = 0; % speed up testing
+            x.DELETETEMP = 1;
+            
+            warning('Overwrite default DataPar settings later?');
+
+            % Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
+            fListDataPar = xASL_adm_GetFileList(ListFolders{iList},'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+            if length(fListDataPar) < 1
+                % Fill the dataPars with default parameters
+                xASL_bids_BIDS2Legacy(ListFolders{iList}, 1, x);
+            else
+                % Fill the dataPars with the provided parameters
+                dataPar = spm_jsonread(fListDataPar{1});
+                xASL_bids_BIDS2Legacy(ListFolders{iList}, 1, dataPar);
+            end
+        end
+    end
+    
+    % Overwrite DataParPath in x structure
+    warning('Overwriting x.DataParPath...');
+    ListDataParFiles = xASL_adm_GetFileList(x.DataParPath, '^DataPar.+$', 'FPListRec', [0 Inf]);
+    x.DataParPath = ListDataParFiles{1,1};
+    
+end
+
+
 %% -----------------------------------------------------------------------
 %% Define input parser
 function p = inputParsing(varargin)
@@ -872,7 +922,8 @@ end
 function printSettings(x)
 
     fprintf('==================================== ExploreASL Settings =====================================\n');
-    fprintf('DataParPath\t\t\t\t%s\n', x.DataParPath);
+    if length(x.DataParPath)>66,    fprintf('DataParPath\t\t\t\t...%s\n', x.DataParPath(end-66:end));
+    else,                           fprintf('DataParPath\t\t\t\t%s\n', x.DataParPath); end
     fprintf('Run DCM2NII\t\t\t\t%d\n', x.ImportArray(1));
     fprintf('Run NII2BIDS\t\t\t%d\n', x.ImportArray(2));
     fprintf('Run BIDS2LEGACY\t\t\t%d\n', x.ImportArray(3));
