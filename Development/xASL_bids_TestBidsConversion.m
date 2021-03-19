@@ -1,4 +1,4 @@
-function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bComparison,bInitialize)
+function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bComparison,bInitialize,x)
 %xASL_bids_TestBidsConversion Runs the conversion for the DICOM flavors to ASL-BIDS and compares the results with reference data
 %
 % FORMAT: xASL_bids_TestBidsConversion(baseDirImport[,baseDirReference,bImport,bComparison])
@@ -9,6 +9,7 @@ function xASL_bids_TestBidsConversion(baseDirImport,baseDirReference,bImport,bCo
 %   bImport          - Specify if import should be performed (OPTIONAL, DEFAULT=TRUE)
 %   bComparison      - Specify if comparison should be performed (OPTIONAL, DEFAULT=FALSE)
 %   bInitialize      - Run ExploreASL_Initialize (OPTIONAL, DEFAULT=TRUE)
+%   x                - x structure (OPTIONAL, DEFAULT=undefined)
 %
 % OUTPUT: n/a        - Outputs the converted data and comparison results are printed on screen
 %         
@@ -121,7 +122,11 @@ if bImport
 				
 			otherwise
 				% But in normal case, no special manipulation is needed
-				ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [1 1 0], false, true, false, false);
+                if exist('x','var')
+                    ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [1 1 0], false, true, false, false, x); % Necessary to skip second initialization
+                else
+                    ExploreASL_ImportBIDS(fullfile(baseDirImport,fList{ii}), [],[], [1 1 0], false, true, false, false);
+                end
 		end
 	end
 end

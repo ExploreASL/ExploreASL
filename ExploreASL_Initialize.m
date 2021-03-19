@@ -37,45 +37,46 @@ function [x] = ExploreASL_Initialize(varargin)
 
     % Store parsed input
     x = storeParsedInput(parameters);
-
-    % Check if the DataParPath is a file or a directory
-    if isempty(x.DataParPath)
-        SelectParFile = true;
-    elseif exist(x.DataParPath,'dir')
-        if ~(sum(x.ImportArray)>0) % For BIDS import we expect a folder
-            warning('Data parameter file was inputted as a folder, but should point to a file instead');
-            SelectParFile = true;
-        end
-    else
-        SelectParFile = false;
-    end
-
+    
     % Initialize S substruct
     x.S = struct;
-
+    
     % Check if the ExploreASL pipeline should be run or not
+    if sum(x.ImportArray)>0
+        x.ImportData = 1; % Importing data
+    else
+        x.ImportData = 0; % Importing data
+    end
     if sum(x.ProcessArray)>0
         x.ProcessData = 1; % Loading & processing dataset
     else
-        warning('The ExploreASL pipeline will not be executed, since the ProcessArray argument is set to 0');
         x.ProcessData = 0; % Only initialize ExploreASL functionality
     end
 
+    % Check if the DataParPath is a file or a directory
+    SelectParFile = false; % Fallback
+    if x.ProcessData
+        % Checkout the "Proceed with Initialization" section
+        if (isempty(x.DataParPath) || ~exist(x.DataParPath,'file') || ~exist(x.DataParPath,'dir'))
+            SelectParFile = true; % If the DataParPath is either empty OR the file does not exist OR the folder does not exist, we have to select it later on (if processing is turned on)
+        end
+    end
+    
     % Check if pipeline should be run, but there is no DataParFile
-    if sum(x.ProcessArray)>0 && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
+    if x.ProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
         x.DataParPath = input('Please insert the path to your DataParFile: ');
     end
 
-    % Recheck the DataParFile, which is possibly not a file or does not exist
-    if ~exist(x.DataParPath,'file') || ~exist(x.DataParPath,'dir') % file = without BIDS Import, dir = BIDS import 
-        warning('DataPar file does not exist, ExploreASL will only be initialized');
+    % Recheck the DataParFile, which is possibly not a file/folder or does not exist
+    if ~exist(x.DataParPath,'file') && ~exist(x.DataParPath,'dir') % file = without BIDS Import, dir = BIDS import 
+        fprintf('DataPar file/folder does not exist, ExploreASL will only be initialized...\n');
         x.ProcessData = 0;
         x.ProcessArray = [0 0 0];
-        SelectParFile = false;
-    else % DataParFile exists, check if Processing is turned off
-        warning('DataPar file does exist, processing is turned off, ExploreASL will only be initialized & dataset will be loaded');
-        if ~(sum(x.ProcessArray)>0)
-            x.ProcessData = 2; % Initialize & load but do not process
+    else % DataPar file/folder exists
+        if exist(x.DataParPath,'file') % It is a file, so do not run the BIDS import workflow
+            if x.ProcessData==0 || x.ProcessData==2
+                x.ProcessData = 2; % Initialize & load but do not process
+            end
         end
     end
 
@@ -91,6 +92,20 @@ function [x] = ExploreASL_Initialize(varargin)
     else
         bUseGUI = true;
     end
+    
+    % Give some feedback
+    reportProcess = 'UNEXPECTED'; % Fallback
+    if x.ProcessData==0,        reportProcess = 'only run initialization';
+    elseif x.ProcessData==1,    reportProcess = 'run the processing pipeline';
+    elseif x.ProcessData==2,    reportProcess = 'only load the dataset';
+    end
+    reportImport = 'UNEXPECTED'; % Fallback
+    if x.ImportData==0,        reportImport = 'not run the import workflow';
+    elseif x.ImportData==1,    reportImport = 'run the import workflow';
+    end
+    
+    % Print feedback
+    fprintf('ExploreASL will %s and will %s...\n',reportImport,reportProcess);
 
     %% -----------------------------------------------------------------------------
     %% Get ExploreASL path
@@ -150,12 +165,15 @@ function [x] = ExploreASL_Initialize(varargin)
     %% Import
 
     if sum(x.ImportArray)>0
-        if ~isempty(DataParPath)
+        if ~isempty(x.DataParPath)
             if exist(x.DataParPath,'dir')
                 % DICOM TO NII
                 if x.ImportArray(1)==1
                     warning('Running DCM2BIDS, not DCM2NII...');
-                    xASL_bids_TestBidsConversion(x.DataParPath, [], 1, 0, 0);
+                    xASL_bids_TestBidsConversion(x.DataParPath, [], 1, 0, 0, x);
+                    
+                    % Loading does not work right now, if the following steps are not yet implemented...
+                    x.ProcessData = 0;
                 end
                 % NII TO BIDS
                 if x.ImportArray(2)==1
@@ -165,6 +183,14 @@ function [x] = ExploreASL_Initialize(varargin)
                 if x.ImportArray(2)==1
                     warning('Not yet implemented...');
                 end
+                
+                warning('We still have to get the DataParFile somehow, right now we can just set SelectParFile to true for manual mode');
+                if sum(x.ProcessArray)>0
+                    SelectParFile = true;
+                else
+                    SelectParFile = false;
+                end
+                
             else
                 warning('ImportArray was set to 1, but the DataParPath does not point to a directory');
             end
@@ -221,7 +247,7 @@ function [x] = ExploreASL_Initialize(varargin)
 
     %% Data-specific initialization
     fprintf('ExploreASL v%s initialized ... \n', x.Version);
-
+    
     if x.ProcessData>0
         % Check if a root directory was defined
         if isempty(x.D.ROOT)
