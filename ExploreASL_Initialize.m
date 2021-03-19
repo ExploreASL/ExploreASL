@@ -184,13 +184,6 @@ function [x] = ExploreASL_Initialize(varargin)
                 if x.ImportArray(3)==1
                     x = xASL_Import_BIDS2LEGACY(x);
                 end
-                
-                if sum(x.ProcessArray)>0
-                    SelectParFile = true;
-                else
-                    SelectParFile = false;
-                end
-                
             else
                 warning('ImportArray was set to 1, but the DataParPath does not point to a directory');
             end

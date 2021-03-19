@@ -108,7 +108,7 @@ function [x] = ExploreASL_Master(varargin)
             [~, x] = xASL_Iteration(x,'xASL_module_DARTEL');
         end
         % Now only check the availability of files when not running parallel
-        if nWorkers==1; xASL_adm_CreateFileReport(x); end        
+        if x.nWorkers==1; xASL_adm_CreateFileReport(x); end        
     end
 
     % Optional modules
@@ -136,7 +136,7 @@ function [x] = ExploreASL_Master(varargin)
     if x.ProcessArray(2)==1
         [~, x] = xASL_Iteration(x,'xASL_module_ASL');
         % Now only check the availability of files when not running parallel
-        if nWorkers==1; xASL_adm_CreateFileReport(x); end    
+        if x.nWorkers==1; xASL_adm_CreateFileReport(x); end    
     end
 
 
