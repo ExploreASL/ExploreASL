@@ -89,6 +89,12 @@ function [x] = ExploreASL_Initialize(varargin)
         warning('Data loading requested but no output structure defined');
         fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
     end
+    
+    % Try to catch unexpected inputs
+    if ~isFile && x.ProcessData>0 && x.ImportData==0
+        fprintf('You are trying to process a dataset, without providing a DataPar file or running the import workflow...\n');
+        x.ProcessData = 0;
+    end
 
     % Check if GUI options are available
     if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
