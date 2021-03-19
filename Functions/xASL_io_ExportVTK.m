@@ -59,7 +59,9 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
                 % Get mask
                 imageMask = xASL_io_Nifti2Im(mask);
                 % Resample mask to image
-                [maskResampled] = xASL_im_ResampleLinearFair(imageMask,size(image));
+                % [maskResampled] = xASL_im_ResampleLinearFair(imageMask,size(image)); % Old
+                [maskResampled] = xASL_im_ResampleIM(imageMask, [1 0 0 0;0 1 0 0;0 0 1 0; 0 0 0 1], [1 0 0 0;0 1 0 0;0 0 1 0; 0 0 0 1], size(image)); % New
+                fprintf('We assume that image and mask have the same orientation...\n');
                 % Apply mask
                 image = image.*maskResampled;
             end
