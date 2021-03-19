@@ -39,7 +39,7 @@ workingDirectory = fullfile(TestRepository,'UnitTesting','working_directory');
 [x] = ExploreASL_Initialize([],0);
 
 % Test NIFTIs
-testNiftiVTK = fullfile(x.MyPath,'External','TestDataSet','analysis','Sub-001','ASL_1','M0.nii.gz');
+testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templates_volumes','brainmask.nii');
 
 % Run test
 xASL_Copy(testNiftiVTK,fullfile(workingDirectory,'image.nii'),true);
@@ -80,7 +80,7 @@ workingDirectory = fullfile(TestRepository,'UnitTesting','working_directory');
 [x] = ExploreASL_Initialize([],0);
 
 % Test NIFTIs
-testNiftiVTK = fullfile(x.MyPath,'External','TestDataSet','analysis','Sub-001','ASL_1','M0.nii.gz');
+testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templates_volumes','brainmask.nii');
 
 % Run test
 xASL_Copy(testNiftiVTK,fullfile(workingDirectory,'image.nii'),true);
@@ -122,7 +122,7 @@ workingDirectory = fullfile(TestRepository,'UnitTesting','working_directory');
 [x] = ExploreASL_Initialize([],0);
 
 % Test NIFTIs
-testNiftiVTK = fullfile(x.MyPath,'External','TestDataSet','analysis','Sub-001','ASL_1','M0.nii.gz');
+testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templates_volumes','brainmask.nii');
 
 % Run test
 xASL_Copy(testNiftiVTK,fullfile(workingDirectory,'image.nii'),true);
@@ -163,7 +163,7 @@ workingDirectory = fullfile(TestRepository,'UnitTesting','working_directory');
 [x] = ExploreASL_Initialize([],0);
 
 % Test NIFTIs
-testNiftiVTK = fullfile(x.MyPath,'External','TestDataSet','analysis','Sub-001','ASL_1','M0.nii.gz');
+testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templates_volumes','brainmask.nii');
 testMask = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templates_volumes','brainmask.nii');
 
 % Run test
