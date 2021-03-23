@@ -1,3 +1,12 @@
+# ExploreASL v1.5.1
+
+----
+
+## Bug Fixes
+* #439 Fix population module error by correctly renaming MNI_Structural.* files
+
+---
+
 # ExploreASL v1.5.0
 
 ----
