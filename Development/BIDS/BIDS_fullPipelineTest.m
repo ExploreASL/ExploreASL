@@ -36,9 +36,9 @@ if strcmp(username,'matlab')
 end
 
 %% Preparation for Beatriz
-if strcmp(username,'beatriz')
-    pathExploreASL = '/s4ever/radG/home_ubu1804/b.padrela/ExploreASL/ExploreASL';
-    pathTest = '/s4ever/radG/home_ubu1804/b.padrela/ExploreASL/TestBIDS';
+if strcmp(username, 'bestevespadrela')
+    pathExploreASL = '/home/bestevespadrela/ExploreASL/';
+    pathTest = '/home/bestevespadrela/lood_storage/divi/Projects/ExploreASL/TestBIDS';
     cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
 end
 
