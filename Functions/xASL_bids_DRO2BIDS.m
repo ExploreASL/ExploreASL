@@ -59,16 +59,16 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
 
     % Read ASL JSON file and add the M0Type field
     jsonASL = spm_jsonread(fullfile(perfDirectory,[droSubject,'_asl.json']));
-    jsonASL.M0Type = "Separate";
+    jsonASL.M0Type = 'Separate';
     spm_jsonwrite(fullfile(perfDirectory,[droSubject,'_asl.json']),jsonASL);
 
     % Read M0 JSON file and add the IntendedFor field
     jsonM0 = spm_jsonread(fullfile(perfDirectory,[droSubject,'_m0scan.json']));
-    jsonM0.IntendedFor = "perf/sub-Sub1_asl.nii.gz";
+    jsonM0.IntendedFor = 'perf/sub-Sub1_asl.nii.gz';
     spm_jsonwrite(fullfile(perfDirectory,[droSubject,'_m0scan.json']),jsonM0);
 
-    nameDRO = "DRO_Digital_Reference_Object";
-    [jsonDescription] = createDatasetDescriptionTemplate(nameDRO);
+    nameDRO = 'DRO_Digital_Reference_Object';
+    [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(nameDRO);
 
     % Write file
     spm_jsonwrite(fullfile(droTestPatient,'rawdata','dataset_description.json'),jsonDescription);
@@ -76,30 +76,5 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
 
 end
 
-%% Create dataset_description.json template
-function [json] = createDatasetDescriptionTemplate(name)
-
-    % Get default BIDS configuration
-    bidsPar = xASL_bids_Config();
-
-    % Create dummy dataset_description.json
-    json = struct;
-    if nargin > 0
-        json.Name = name;
-    else
-        json.Name = "RandomText";
-    end
-    json.BIDSVersion = bidsPar.BIDSVersion;
-    json.DatasetType = "raw";
-    json.License = "RandomText";
-    json.Authors = "RandomText";
-    json.Acknowledgements = "RandomText";
-    json.HowToAcknowledge = "Please cite this paper: https://www.ncbi.nlm.nih.gov/pubmed/001012092119281";
-    json.Funding = "RandomText";
-    json.EthicsApprovals = "RandomText";
-    json.ReferencesAndLinks = "RandomText";
-    json.DatasetDOI = "RandomText";
-
-end
 
 
