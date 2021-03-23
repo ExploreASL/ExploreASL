@@ -84,17 +84,17 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
     
     ASLlist = xASL_adm_GetFileList(Fpath, ['^' Ffile '(|_.)'  '(|_\d)' '\.nii$'], 'FPList', [0 Inf]);
   
-    if isempty(ASLlist) && xASL_exist(BackupName)
-        fprintf('ASL4D.nii didnt exist but can restore from ASL4D_Source.nii\n');
+    if xASL_exist(BackupName)
+        fprintf('Restoring ASL4D.nii from backup in ASL4D_Source.nii\n');
         ASLlist{1} = ASLname;
         xASL_Move(BackupName, ASLlist{1}, true);
         % Restore json as well
         if exist(ASLJSONPath,'file') && exist(BackupJSONPath,'file')
             xASL_Move(BackupJSONPath, ASLJSONPath, true);
         end
-        % Delete M0, allowing to restore this from the backup
-        if xASL_exist(Path_M0,'file')
-            warning('Deleting M0 to restore it from ASL4D');
+        % Delete M0, allowing to restore this from the backup in case M0 is in the ASL timeseries
+        if xASL_exist(Path_M0,'file') && ~isempty(iM0)
+            fprintf('Deleting M0 to restore it from ASL4D\n');
             xASL_delete(Path_M0);
             xASL_delete(M0JSONPath);
         end
