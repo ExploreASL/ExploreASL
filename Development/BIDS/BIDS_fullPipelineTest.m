@@ -35,6 +35,20 @@ if strcmp(username,'matlab')
     cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
 end
 
+%% Preparation for Beatriz
+if strcmp(username, 'bestevespadrela')
+    pathExploreASL = '/home/bestevespadrela/ExploreASL/';
+    pathTest = '/home/bestevespadrela/lood_storage/divi/Projects/ExploreASL/TestBIDS';
+    cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
+end
+
+%% Preparation for Mathijs
+if strcmp(username,'mathijs')
+    pathExploreASL = '/home/mdijsselhof/ExploreASL/';
+    pathTest = '/home/mdijsselhof/Test_BIDS';
+    cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
+end
+
 %% Clone the flavors database if necessary
 if ~exist(fullfile(pathTest,'FlavorDatabase'), 'dir')
     cd(pathTest);
