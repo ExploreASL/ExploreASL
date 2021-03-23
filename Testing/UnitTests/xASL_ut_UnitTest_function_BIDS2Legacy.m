@@ -43,7 +43,7 @@ droSubject = 'sub-Sub1';
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject));
 
 % Prepare DRO
-xASL_bids_PrepareDRO(droTestPatient);
+xASL_bids_DRO2BIDS(droTestPatient);
 
 % Run BIDS2Legacy
 xASL_bids_BIDS2Legacy(droTestPatient);
@@ -106,7 +106,7 @@ droSubject = 'sub-Sub1';
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject));
 
 % Prepare DRO
-xASL_bids_PrepareDRO(droTestPatient);
+xASL_bids_DRO2BIDS(droTestPatient);
 
 % Run BIDS2Legacy
 xASL_bids_BIDS2Legacy(droTestPatient);
