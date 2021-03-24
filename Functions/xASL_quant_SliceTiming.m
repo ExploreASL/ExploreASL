@@ -20,10 +20,11 @@ function SliceTiming = xASL_quant_SliceTiming(x, inputIm)
 %
 % 0. Admin
 % 1. ShortestTR
-% 2. Assign the vector value
-% 3. Check for vector consistency
+% 2. Assign the vector value and check for vector consistency
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
 % EXAMPLE: SliceTiming = xASL_quant_SliceTiming(x, 32)
+%
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
