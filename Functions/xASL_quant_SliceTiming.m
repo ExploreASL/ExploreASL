@@ -21,6 +21,7 @@ function SliceTiming = xASL_quant_SliceTiming(x, inputIm)
 % 0. Admin
 % 1. ShortestTR
 % 2. Assign the vector value
+% 3. Check for vector consistency
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: SliceTiming = xASL_quant_SliceTiming(x, 32)
 % __________________________________
@@ -111,6 +112,43 @@ if length(x.Q.SliceReadoutTime) == 1
 	SliceTiming = (0:1:(nSlices-1)) * x.Q.SliceReadoutTime;
 elseif length(x.Q.SliceReadoutTime) == nSlices
 	SliceTiming = x.Q.SliceReadoutTime;
+	
+	% Check for SliceTiming consistency between slices if a vector was provided
+	if nSlices > 1
+		SliceTimingDiff = SliceTiming(2:end) - SliceTiming(1:(end-1));
+		% See if the slice-timing difference between slices is equal for all slices
+		[SliceTimingDiffUnique,SliceTimingDiffIndex] = uniquetol(SliceTimingDiff,0.01);
+		
+		% Make sure that the positive values are listed first
+		[SliceTimingDiffUnique,SliceTimingDiffIndexSort] = sort(SliceTimingDiffUnique,'descend');
+		SliceTimingDiffIndex = SliceTimingDiffIndex(SliceTimingDiffIndexSort);
+		
+		if length(SliceTimingDiffUnique) > 2
+			fprintf('Warning: Inconsistent SliceTiming between slices\n');
+		elseif length(SliceTimingDiffUnique) == 2
+			% This could be multi-band
+			bIsMB = false;
+			if SliceTimingDiffUnique(1) > 0 && SliceTimingDiffUnique(2) < 0
+				% Multi-band should have a distinct pattern in SliceTiming [0 X 2*X 3*X .. 0 X 2*X 3*X .. 0]
+				MBfactor = SliceTimingDiffIndex(2);
+				if mod(length(SliceTiming),MBfactor) == 0
+					% Try to reconstruct the pattern of MB and check if that is really the case
+					SliceTimingPattern = (0:(MBfactor-1))*SliceTimingDiffUnique(1);
+					SliceTimingPattern = repmat(SliceTimingPattern,[1 length(SliceTiming)/MBfactor])';
+					if ~sum(isnear(SliceTiming',SliceTimingPattern',5)==0)
+						bIsMB = true;
+					end
+				end
+			end
+			if bIsMB
+				fprintf('Warning: Multi-band pattern detected in SliceTiming\n');
+			else
+				fprintf('Warning: Inconsistent SliceTiming between slices\n');
+			end
+		end
+	end
+	
+	
 else
 	error('x.Q.SliceReadoutTime has to be a scalar or match the number of slices');
 end
