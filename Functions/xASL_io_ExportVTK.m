@@ -15,6 +15,7 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:      Export a VTK image file based on a 3D NIFTI or a 3D/4D image matrix.
 %                   4D images will be exported as a VTK time series (export-1.vtk, export-2.vtk, etc.).
+%                   This script uses vtkwrite (MIT License, Copyright 2016, Joe Yeh).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:          To export the "test" NIFTI to structured points in VTK format, you can run the following lines.
@@ -92,7 +93,7 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
     fprintf('Export vtk as structured points...\n');
     
     % Export to vtk (MIT-License) % https://www.mathworks.com/matlabcentral/fileexchange/47814-vtkwrite-exports-various-2d-3d-data-to-paraview-in-vtk-file-format
-    readAndPrintTextFile(fullfile(pathExploreASL,'External','vtkwrite','MIT_License.txt'));
+    fprintf('Running vtkwrite (MIT License, Copyright 2016, Joe Yeh)...\n');
     if numel(size(image))==3 % 3D
         image = squeeze(image);
         vtkwrite(exportPath, 'structured_points', 'image', image)
@@ -108,26 +109,5 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
 
 end
 
-
-%% Read text file into cell array and print it
-function readAndPrintTextFile(filePath)
-
-    % Display which license is being printed
-    fprintf('================================================================================\n')
-    folderStructure=regexp(filePath,filesep,'split');
-    fprintf('%s\n',folderStructure{end-1},1);
-
-    % Read file
-    fileStr = fileread(filePath);
-    fileLines = regexp(fileStr, '\r\n|\r|\n', 'split');
-    fileLines = fileLines';
-    
-    % Print file
-    for thisLine=1:numel(fileLines)
-        fprintf('%s\n',fileLines{thisLine,1});
-    end
-    fprintf('================================================================================\n')
-
-end
 
 
