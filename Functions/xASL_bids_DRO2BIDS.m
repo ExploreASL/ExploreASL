@@ -67,8 +67,11 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
     jsonM0.IntendedFor = 'perf/sub-Sub1_asl.nii.gz';
     spm_jsonwrite(fullfile(perfDirectory,[droSubject,'_m0scan.json']),jsonM0);
 
-    nameDRO = 'DRO_Digital_Reference_Object';
-    [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(nameDRO);
+    % Define required fields
+    jsonTemplate.Name = 'DRO_Digital_Reference_Object';
+    
+    % Call script to fix missing fields
+    [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(jsonTemplate);
 
     % Write file
     spm_jsonwrite(fullfile(droTestPatient,'rawdata','dataset_description.json'),jsonDescription);
