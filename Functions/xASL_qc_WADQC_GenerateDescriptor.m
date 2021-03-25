@@ -134,7 +134,7 @@ for iScan=Indices
     WAD_Path = fullfile(x.D.ROOT, SubPath{iScan}, ['qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScan} '.json']);
     fclose all;
     xASL_delete(WAD_Path);
-    xASL_adm_SaveJSON(wadqc, WAD_Path);
+    spm_jsonwrite(WAD_Path, wadqc);
         
 end
 

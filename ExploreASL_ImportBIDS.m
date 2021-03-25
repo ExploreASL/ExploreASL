@@ -1578,7 +1578,7 @@ end
 		xASL_delete(SavePath);
 		xASL_delete(SaveJSON);
 		save(SavePath,'dcm2niiCatchedErrors');
-		xASL_adm_SaveJSON(dcm2niiCatchedErrors, SaveJSON);
+		spm_jsonwrite(SaveJSON, dcm2niiCatchedErrors);
 	end
 	
 	fprintf('\n');
