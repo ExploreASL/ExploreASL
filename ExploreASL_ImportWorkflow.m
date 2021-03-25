@@ -43,7 +43,7 @@ function [x] = ExploreASL_ImportWorkflow(x)
                     x = xASL_Import_BIDS2LEGACY(x);
                 end
             else
-                warning('ImportArray was set to 1, but the DataParPath does not point to a directory');
+                warning('ImportArray was set to 1, but the sourceStructure file does not exist');
             end
         else
             warning('ImportArray was set to 1, but there is not DataParPath, Import will not be executed');
@@ -63,7 +63,7 @@ function [x] = xASL_Import_BIDS2LEGACY(x)
         [thisRootFolder,thisFolderName,~] = xASL_fileparts(ListFolders{iList});
         if strcmp(thisFolderName,'rawdata') && exist(ListFolders{iList},'dir')
             
-            % Currently, we clean the old data for unix only
+            % Clean the old data
             if isunix
                 if exist(fullfile(ListFolders{iList}, 'derivatives'), 'dir')
                     diary('off');
@@ -71,10 +71,12 @@ function [x] = xASL_Import_BIDS2LEGACY(x)
                     system(['rm -rf ' fullfile(ListFolders{iList}, 'derivatives')]);
                 end
             else
-                fprintf('Delete existing derivatives folders...\n');
-                diary('off');
-                fclose('all'); % ensure that no file is locked
-                xASL_delete(fullfile(ListFolders{iList}, 'derivatives'),true);
+            	if exist(fullfile(ListFolders{iList}, 'derivatives'), 'dir')
+	                fprintf('Delete existing derivatives folders...\n');
+	                diary('off');
+	                fclose('all'); % ensure that no file is locked
+	                xASL_delete(fullfile(ListFolders{iList}, 'derivatives'),true);
+	            end
             end
             
             % Default dataPar.json for the testing that is fast to run
