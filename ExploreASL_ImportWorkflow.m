@@ -46,7 +46,7 @@ function [x] = ExploreASL_ImportWorkflow(x)
                 warning('ImportArray was set to 1, but the sourceStructure file does not exist');
             end
         else
-            warning('ImportArray was set to 1, but there is not DataParPath, Import will not be executed');
+            warning('ImportArray was set to 1, but there is no DataParPath, Import will not be executed');
         end
     end
     
