@@ -6,7 +6,7 @@ function [x] = ExploreASL_Master(varargin)
 % INPUT:
 %   DataParPath  - Path to data parameter file (OPTIONAL, DEFAULT = [])
 %
-%   ImportArray  - [DCM2NII, NII2BIDS, BIDS2LEGACY] (OPTIONAL, BOOLEAN ARRAY)
+%   ImportArray  - [DCM2NII, NII2BIDS, ANONYMIZE, BIDS2LEGACY] (OPTIONAL, BOOLEAN ARRAY)
 %                - DCM2NII = Run the DICOM to NIFTI conversion (BOOLEAN, DEFAULT = 0)
 %                - NII2BIDS = Run the NIFTI to BIDS conversion (BOOLEAN, DEFAULT = 0)
 %                - ANONYMIZE = Run the defacing and full anonymization (BOOLEAN, DEFAULT = 0)
@@ -44,8 +44,8 @@ function [x] = ExploreASL_Master(varargin)
 % EXAMPLES:
 %
 % [x] = ExploreASL_Master('MY_PATH',1,1,1,1,1);
-% [x] = ExploreASL_Master('MY_PATH',[1 1 1],[1 1 1],1,1,1);
-% [x] = ExploreASL_Master('MY_PATH','[1 1 1]','[1 1 1]','1','1','1');
+% [x] = ExploreASL_Master('MY_PATH',[1 1 1 1],[1 1 1],1,1,1);
+% [x] = ExploreASL_Master('MY_PATH','[1 1 1 1]','[1 1 1]','1','1','1');
 %
 % OUTDATED EXAMPLES:
 %
