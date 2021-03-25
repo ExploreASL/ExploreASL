@@ -474,7 +474,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
     elseif strcmp(Dext,'.json')
         % JSON import
         try
-            x = xASL_import_json(DataParPath);
+            x = xASL_io_ReadDataPar(DataParPath);
         catch ME1
             % if this fails, try to recreate the json file from an .m file,
             % if it exists
@@ -486,7 +486,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
                 try
                     PathJSON = xASL_init_ConvertM2JSON(DataParPath);
                     DataParPath = PathJSON;
-                    x = xASL_import_json(DataParPath);
+                    x = spm_jsonread(DataParPath);
                 catch ME2
                     fprintf('%s\n', ME1.message);
                     fprintf('%s\n', ME2.message);
@@ -504,7 +504,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
         try
             %% Backward compatibility
             PathJSON = xASL_init_ConvertM2JSON(DataParPath); % convert .m to .json
-            x = xASL_import_json(PathJSON);
+            x = spm_jsonread(PathJSON);
         catch ME1
             try
                 % Bypass eval error stuff with long names, spaces etc

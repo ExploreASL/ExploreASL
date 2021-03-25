@@ -26,7 +26,7 @@ PathJSON = fullfile(Fpath, [Ffile '.json']);
 
 %% Parse & process M0 options
 
-JSON = xASL_import_json(PathJSON);
+JSON = spm_jsonread(PathJSON);
 if isfield(JSON, 'M0Type')
     switch JSON.M0Type
         %% Option 1. Included

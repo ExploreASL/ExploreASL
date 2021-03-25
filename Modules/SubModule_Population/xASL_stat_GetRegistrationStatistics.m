@@ -71,7 +71,7 @@ for iSubject=1:x.nSubjects
 
 		if exist(PathJSON, 'file')
 			% Load the file
-            Parms = xASL_import_json(PathJSON);
+            Parms = spm_jsonread(PathJSON);
             Parms = Parms.ASL;
 
 			% print all fields for subject_session into the TSV array

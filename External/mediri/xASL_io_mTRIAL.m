@@ -63,7 +63,7 @@ data.x.Q = struct;
 data.x.M0 = 'UseControlAsM0';
 
 % Read docker interface file
-x_temporary = xASL_import_json(dockerInterfaceFile);
+x_temporary = spm_jsonread(dockerInterfaceFile);
 
 % Reassign fields
 if isfield(x_temporary,'Sequence'),                             data.x.Sequence = x_temporary.Sequence; end

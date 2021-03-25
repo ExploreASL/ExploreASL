@@ -1,7 +1,7 @@
-function [x] = xASL_import_json(DataParFile)
-% xASL_import_json This function reads in a DATA_PAR file and creates the x structure.
+function [x] = xASL_io_ReadDataPar(DataParFile)
+% xASL_io_ReadDataPar This function reads in a DATA_PAR file and creates the x structure.
 %
-% FORMAT:   [x] = xASL_import_json(DataParFile)
+% FORMAT:   [x] = xASL_io_ReadDataPar(DataParFile)
 %
 % INPUT:
 %   DataParFile     - Filename of the DATA_PAR file
@@ -19,7 +19,7 @@ function [x] = xASL_import_json(DataParFile)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% EXAMPLE:      xASL_import_json('DataParFile.json')
+% EXAMPLE:      xASL_io_ReadDataPar('DataParFile.json')
 %
 % EXAMPLE 2:    JSON FILE
 %

@@ -289,8 +289,7 @@ if bRunSubmodules(2)
 		warning('Study-par file is not provided.');
 		studyPar = struct;
 	else
-		%studyParPath = xASL_init_ConvertM2JSON(studyParPath); % convert .m to .json - outdated import from an m-file
-		studyPar = xASL_import_json(studyParPath);
+		studyPar = xASL_io_ReadDataPar(studyParPath);
 	end
 	
 	% The Name has to be always assigned

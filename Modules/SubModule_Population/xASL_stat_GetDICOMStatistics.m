@@ -65,27 +65,18 @@ for iSubject=1:x.nSubjects
         x.S.par(iSubjSess,1:nFields) = NaN;
         
         % Define paths
-        if HasSessions
-            PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '_Parms.mat']);
-            PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '.json']);
+		if HasSessions
+            PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '_Parms.mat']);% Legacy
+            %PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '.json']);
         else
-            PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, [ScanType '_Parms.mat']);
-            PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, [ScanType '.json']);
-        end
-
-        if exist(PathMAT, 'file')
-            Parms = load(PathMAT, '-mat');
-            if isfield(Parms, 'parms')
-                Parms = Parms.parms;
-            else
-                fprintf('%s\n', ['Warning: parameter-file without parameters, skipping: ' PathMAT]);
-                continue;
-            end
-        elseif exist(PathJSON, 'file')
-            Parms = xASL_import_json(PathJSON);
-        else
-            continue; % skip this iSujectSession as its missing
-        end
+            PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, [ScanType '_Parms.mat']); % Legacy
+            %PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, [ScanType '.json']); 
+		end
+		Parms = xASL_adm_LoadParms(PathMAT);
+		% Parms = spm_jsonread(PathJSON);
+		if isempty(Parms)
+			continue; % skip this iSujectSession as its missing
+		end
         
         % print all fields for subject_session & load them into x.S.par variabele for later calculations
         for iField=1:nFields

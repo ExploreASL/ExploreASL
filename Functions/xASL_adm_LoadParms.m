@@ -42,7 +42,14 @@ if nargin<1 || isempty(ParmsPath)
     ParmsPath = '';
     Parms = struct;
 end
-if nargin<2 || isempty(x)
+
+bMissingX = false;
+if nargin<2
+	x = struct;
+	x.Q = [];
+	bMissingX = true; % x was not provided, so we do not expect it
+elseif isempty(x)
+	% But if x was provided and is missing report it as a problem
     warning('No x struct fields available, can be missing some information for quantification');
     x = struct; % dummy variable
 	x.Q = [];
@@ -79,7 +86,7 @@ end
 % First try defining from input (parms.mat)
 if ~isempty(ParmsPath)
     [Fpath, Ffile] = xASL_fileparts(ParmsPath);
-	if ~isempty(strfind(Ffile(3:end),'_parms'))
+	if ~isempty(regexpi(Ffile(3:end),'_parms'))
 		Ffile = Ffile(1:end-6);
 	end
     JSONPath = fullfile(Fpath, [Ffile '.json']);
@@ -163,7 +170,9 @@ if isfield(x, 'SUBJECTS')
         end
     end
 else
-    warning('x.SUBJECTS field missing, skipping parsing x.S.Sets*');
+	if ~bMissingX
+		warning('x.SUBJECTS field missing, skipping parsing x.S.Sets*');
+	end
 end
 
 

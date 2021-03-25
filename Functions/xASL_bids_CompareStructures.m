@@ -303,8 +303,8 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
 			% Compare JSON files on field basis
 			if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
 				% Import JSON files
-				jsonA = xASL_import_json(char(currentFileA));
-				jsonB = xASL_import_json(char(currentFileB));
+				jsonA = spm_jsonread(char(currentFileA));
+				jsonB = spm_jsonread(char(currentFileB));
 				
 				% Get JSON field names
 				fieldNamesA = fieldnames(jsonA);

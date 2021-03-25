@@ -48,23 +48,11 @@ function x = xASL_stat_GetAcquisitionTime(x)
 
             % Define paths
             PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D_parms.mat'); % legacy
-            PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D.json');
-
-            % Load the file & field
-            if exist(PathMAT ,'file') % legacy
-                Parms = load(PathMAT, '-mat');
-                if isfield(Parms, 'parms')
-                    Parms = Parms.parms;
-                else
-                    fprintf('%s\n', ['Warning: parameter-file without parameters, skipping: ' PathMAT]);
-                    continue;
-                end
-            elseif exist(PathJSON, 'file')
-                Parms = xASL_import_json(PathJSON);
-            else
-                Parms = struct; % dummy
-            end
-                    
+            Parms = xASL_adm_LoadParms(PathMAT);
+			
+			%PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D.json');
+			%Parms = spm_jsonread(PathJSON);
+		           
             if isfield(Parms,'AcquisitionTime')
                 AcquisitionTime{iSubjSess,3} = min(Parms.AcquisitionTime);
                 AcquisitionTimeN(iSubjSess,1) = min(Parms.AcquisitionTime); % for histogram below

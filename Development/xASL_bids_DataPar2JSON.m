@@ -31,7 +31,7 @@ if nargin<1 || isempty(DataParPath) || ~exist(DataParPath, 'file')
     error('Invalid input argument or non-existing DataPar file');
 end
 
-DataPar = xASL_import_json(DataParPath);
+DataPar = xASL_io_ReadDataPar(DataParPath);
 
 %% 2) Get list of NIfTIs
 AnalysisDir = fileparts(DataParPath);
@@ -50,7 +50,7 @@ for iList=1:length(FileList)
     
     %% 3) Load & add JSON child if exist
     if exist(PathJSON, 'file')
-        JSON = xASL_import_json(PathJSON);
+        JSON = xASL_io_ReadDataPar(PathJSON);
     else
         JSON = struct;
     end
