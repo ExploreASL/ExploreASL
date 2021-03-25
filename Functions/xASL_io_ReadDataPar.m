@@ -1,5 +1,5 @@
 function [x] = xASL_io_ReadDataPar(DataParFile)
-% xASL_io_ReadDataPar This function reads in a DATA_PAR file and creates the x structure.
+% xASL_io_ReadDataPar This function reads DATA_PAR .json or .m file and creates the x structure.
 %
 % FORMAT:   [x] = xASL_io_ReadDataPar(DataParFile)
 %
@@ -10,7 +10,7 @@ function [x] = xASL_io_ReadDataPar(DataParFile)
 %   x               - x structure
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  This function reads in a DATA_PAR file and creates the x
+% DESCRIPTION:  This function reads in a DATA_PAR .json or .m file and creates the x
 %               structure. The name of the DATA_PAR file is given as a string or
 %               character array. The output is the x structure.
 %
@@ -28,27 +28,14 @@ function [x] = xASL_io_ReadDataPar(DataParFile)
 % 			"name": 				"ExampleDataSet",
 % 			"subject_regexp": 		"^Sub-\\d{3}$",
 % 			"M0": 					"separate_scan",
-% 			"BackgroundSuppressionNumberPulses":	"2",
+% 			"BackgroundSuppressionNumberPulses": 2,
 % 			"readout_dim": 			"2D",
-% 			"QUALITY": 				"0",
+% 			"QUALITY": 				false,
 % 			"Vendor": 				"Philips",
-% 			"LabelingType": 		"CASL",
-% 			"qnt_init_PLD": 		"1525",
-% 			"qnt_labdur": 			"1650",
-% 			"qnt_PLDslicereadout": 	"43.7647"
 % 		}]
 % }
 %
 % Don't forget to escape the backslashes!
-%
-% OR:
-%
-% {
-% 	"Name":         "...",
-% 	"BIDSVersion":  "1.0.2",
-% 	"License":      "...",
-% 	"Authors":      ["..."]
-% }
 %
 % EXAMPLE 3: To define cell arrays, use the official JSON array notation:
 %

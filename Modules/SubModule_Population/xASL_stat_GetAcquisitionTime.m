@@ -48,7 +48,7 @@ function x = xASL_stat_GetAcquisitionTime(x)
 
             % Define paths
             PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D_parms.mat'); % legacy
-            Parms = xASL_adm_LoadParms(PathMAT);
+            Parms = xASL_adm_LoadParms(PathMAT,[],0);
 			
 			%PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D.json');
 			%Parms = spm_jsonread(PathJSON);

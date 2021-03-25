@@ -67,14 +67,15 @@ for iSubject=1:x.nSubjects
         % Define paths
 		if HasSessions
             PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '_Parms.mat']);% Legacy
-            %PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '.json']);
+            PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '.json']);
         else
             PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, [ScanType '_Parms.mat']); % Legacy
-            %PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, [ScanType '.json']); 
+            PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, [ScanType '.json']); 
 		end
-		Parms = xASL_adm_LoadParms(PathMAT);
-		% Parms = spm_jsonread(PathJSON);
-		if isempty(Parms)
+		if exist(PathMAT,'file') || exist(PathJSON,'file')
+			Parms = xASL_adm_LoadParms(PathMAT,[],0);
+			% Parms = spm_jsonread(PathJSON);
+		else
 			continue; % skip this iSujectSession as its missing
 		end
         

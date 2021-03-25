@@ -43,17 +43,11 @@ if nargin<1 || isempty(ParmsPath)
     Parms = struct;
 end
 
-bMissingX = false;
-if nargin<2
+if nargin<2 || isempty(x)
 	x = struct;
 	x.Q = [];
-	bMissingX = true; % x was not provided, so we do not expect it
-elseif isempty(x)
-	% But if x was provided and is missing report it as a problem
-    warning('No x struct fields available, can be missing some information for quantification');
-    x = struct; % dummy variable
-	x.Q = [];
 end
+
 if nargin<3 || isempty(bVerbose)
     bVerbose = true;
 end
@@ -170,7 +164,7 @@ if isfield(x, 'SUBJECTS')
         end
     end
 else
-	if ~bMissingX
+	if bVerbose
 		warning('x.SUBJECTS field missing, skipping parsing x.S.Sets*');
 	end
 end
