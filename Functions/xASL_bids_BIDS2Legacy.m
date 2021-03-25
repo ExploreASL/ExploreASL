@@ -72,15 +72,15 @@ if nargin < 3 || isempty(dataPar)
 end
 
 % Fills in important information in the dataPar if missing
-if ~isfield(dataPar,'x.subject_regexp')
+if ~isfield(dataPar.x,'subject_regexp')
 	dataPar.x.subject_regexp = '^sub-.*$';
 end
 
-if ~isfield(dataPar,'x.Quality')
+if ~isfield(dataPar.x,'Quality')
 	dataPar.x.Quality = 1;
 end
 
-if ~isfield(dataPar,'x.DELETETEMP')
+if ~isfield(dataPar.x,'DELETETEMP')
 	dataPar.x.DELETETEMP = 1;
 end
 
