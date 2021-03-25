@@ -330,8 +330,7 @@ function [bAborted, x] = runIteration(db)
         % Some feedback about this iteration (after opening diary log)
         if ~AlreadyProcessed
             fprintf('\n%s\n',repmat('+',1,72)); % just draw a separator line
-            fprintf('%s\n',['Running ' x.SUBJECT ' at ' x.SESSIONS{1}]);
-            fprintf('%s\n',['Starting ' x.MUTEXID ' at ' datestr(now)]);
+            fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Session: ' x.SESSIONS{iIter} ', Module: ' datestr(now) ' ===']);
             fprintf('\n');
         end
         if ischar(job)
