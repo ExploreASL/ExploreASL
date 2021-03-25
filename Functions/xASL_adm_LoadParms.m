@@ -1,7 +1,7 @@
-function [Parms, x, Oldx] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
-%xASL_adm_LoadParmsMat Loads parameters from .mat or .json sidecar
+function [Parms, x] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
+%xASL_adm_LoadParmsMat Loads parameters from a legacy .mat or .json sidecar
 %
-% FORMAT: [Parms, x, Oldx] = xASL_adm_LoadParms(ParmsPath[, x, bVerbose])
+% FORMAT: [Parms, x] = xASL_adm_LoadParms(ParmsPath[, x, bVerbose])
 %
 % INPUT:
 %   ParmsPath   - path to sidecar (*.mat, *.json, OPTIONAL, DEFAULT=skip this)
@@ -34,7 +34,7 @@ function [Parms, x, Oldx] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
 
 
 %% ------------------------------------------------------------------------
-% 0) Admin
+% 0. Admin
 Parms = struct; % default
 
 if nargin<1 || isempty(ParmsPath)
@@ -57,26 +57,24 @@ end
 Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'Lambda'...
            'T2art' 'BloodT1' 'TissueT1' 'nCompartments' 'NumberOfAverages' 'LabelingEfficiency' 'ATT' ...
 		   'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses'};
-
+	   
 % Names of files for data sets and older names for backwards compatibility
-namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff' 'LabelingEfficiency'...
-    'Hematocrit' 'BackGrSupprPulses'};
-namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency'...
-    'Hematocrit' 'BackgroundSuppressionNumberPulses'};
+namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'        'LabelingEfficiency' 'Hematocrit' 'BackGrSupprPulses'};
+namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency' 'Hematocrit' 'BackgroundSuppressionNumberPulses'};
 
 %% ------------------------------------------------------------------------
-%% 1) Load .mat parameter file (if exists)
+%% 1. Load .mat parameter file (if exists)
 if exist(ParmsPath, 'file') && strcmp(Fext,'.mat')
     Parms = load(ParmsPath,'-mat');
     if  isfield(Parms,'parms')
         Parms = Parms.parms;
     else
-		warning(['Couldnt read parameter files from ' ParmsPath]);
+		warning(['Could not read parameter files from ' ParmsPath]);
     end
 end
 
 %% ------------------------------------------------------------------------
-%% 2) Load JSON file (if exists)
+%% 2. Load JSON file (if exists)
 % Define JSON path
 % First try defining from input (parms.mat)
 if ~isempty(ParmsPath)
@@ -117,19 +115,14 @@ end
 
 
 %% ------------------------------------------------------------------------
-%% 3) Deal with warnings
+%% 3. Deal with warnings
 if isempty(fields(Parms))
     warning('parms seem missing, something wrong with parmsfile?');
 end
 
-% if VendorRestore
-%     x.Vendor = VendorBackup;
-%     Parms.Vendor = VendorBackup;
-% end
-
 
 %% ------------------------------------------------------------------------
-%% 4) Find fields with scan-specific data in x.S.Sets, and use this if possible (per BIDS inheritance)
+%% 4. Find fields with scan-specific data in x.S.Sets, and use this if possible (per BIDS inheritance)
 % Note that x.S.Sets is filled with data from participants.tsv or e.g. qnt_T1a.mat in the analysis root folder
 
 if isfield(x, 'SUBJECTS')
@@ -175,7 +168,7 @@ end
 
 
 %% ------------------------------------------------------------------------
-%% 5) Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
+%% 5. Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
 % Input all fields from the Parms into the x structure, backup those that were already existing (inheritance principle)
 % & backward compatibility
 
@@ -201,7 +194,7 @@ end
 
 
 %% ------------------------------------------------------------------------
-%% 6) Fix M0 parameter
+%% 6. Fix M0 parameter
 if isfield(x, 'M0') && strcmpi(x.M0, 'no_background_suppression')
     warning('Legacy option x.M0=no_background_suppression detected, replacing this by UseControlAsM0');
     x.M0 = 'UseControlAsM0';
