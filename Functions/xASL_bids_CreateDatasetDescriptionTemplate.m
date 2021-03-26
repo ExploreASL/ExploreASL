@@ -13,8 +13,8 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This script creates a JSON structure which can be saved
 %               using spm_jsonwrite to get a dataset_description.json template.
-%               Missing fields that are required are added.
-%               Remaining fields will be validated.
+%               Missing fields that are required are added. BIDSVersion checked against the current configured version.
+%               Remaining fields will be validated. Other fields not belonging to dataset_description.json are ignored.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      draft.Name = 'DRO_Digital_Reference_Object';
@@ -28,55 +28,45 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft)
     % Get default BIDS configuration
     bidsPar = xASL_bids_Config();
 
-    % Create dummy dataset_description.json
-    validFields = struct;
+    % Create the output dataset_description.json
+    json = struct;
     
-    % Required fields
+	% Add missing required fields
     for iCell = 1:numel(bidsPar.datasetDescription.Required)
-         validFields.(bidsPar.datasetDescription.Required{1,iCell}) = 'Undefined';
+		% Checks if the provided version field matches with the currently configured version
+		if strcmp(bidsPar.datasetDescription.Required{1,iCell},'BIDSVersion')
+			if isfield(draft,'BIDSVersion')
+				if ~strcmp(draft.BIDSVersion,bidsPar.BIDSVersion)
+					warning('Difference between the provided and current BIDSVersion');
+				end
+				json.BIDSVersion = draft.BIDSVersion;
+			else
+				json.BIDSVersion = bidsPar.BIDSVersion;
+			end
+		else
+			% Other required fields - just copy or label as Undefined
+			if isfield(draft,bidsPar.datasetDescription.Required{1,iCell})
+				json.(bidsPar.datasetDescription.Required{1,iCell}) = draft.(bidsPar.datasetDescription.Required{1,iCell});
+			else
+				fprintf('Warning: Add undefined required field %s\n',bidsPar.datasetDescription.Required{1,iCell});
+				json.(bidsPar.datasetDescription.Required{1,iCell}) = 'Undefined';
+			end
+		end
     end
-    % Recommended fields
-    for iCell = 1:numel(bidsPar.datasetDescription.Recommended)
-         validFields.(bidsPar.datasetDescription.Recommended{1,iCell}) = 'Undefined';
-    end
+	
+	% Recommended fields
+	for iCell = 1:numel(bidsPar.datasetDescription.Recommended)
+		% Only copy if defined
+		if isfield(draft,bidsPar.datasetDescription.Recommended{1,iCell})
+			json.(bidsPar.datasetDescription.Recommended{1,iCell}) = draft.(bidsPar.datasetDescription.Recommended{1,iCell});
+		end
+	end
+	
     % Optional fields
-    for iCell = 1:numel(bidsPar.datasetDescription.Required)
-         validFields.(bidsPar.datasetDescription.Optional{1,iCell}) = 'Undefined';
+    for iCell = 1:numel(bidsPar.datasetDescription.Optional)
+		% Only copy if defined
+		if isfield(draft,bidsPar.datasetDescription.Optional{1,iCell})
+			json.(bidsPar.datasetDescription.Optional{1,iCell}) = draft.(bidsPar.datasetDescription.Optional{1,iCell});
+		end
     end
-    
-    % Check the draft fieldnames
-    fieldsDraft = fieldnames(draft);
-    
-    % Validate the fields
-    for iField = 1:size(fieldsDraft,1)
-        % Check if fieldname is valid, otherwise remove it
-        if ~isfield(validFields,fieldsDraft{iField})
-            fprintf('Remove invalid field %s...\n',fieldsDraft{iField});
-            draft = rmfield(draft,fieldsDraft{iField});
-        end
-    end
-    
-    % Add missing required fields
-    for iCell = 1:numel(bidsPar.datasetDescription.Required)
-        % Check required field
-        if ~isfield(draft,bidsPar.datasetDescription.Required{1,iCell})
-            fprintf('Add required field %s...\n',bidsPar.datasetDescription.Required{1,iCell});
-            if strcmp(bidsPar.datasetDescription.Required{1,iCell},'BIDSVersion')
-                % Add correct BIDS version
-                draft.(bidsPar.datasetDescription.Required{1,iCell}) = bidsPar.BIDSVersion;
-            else
-                % Add undefined field
-                draft.(bidsPar.datasetDescription.Required{1,iCell}) = 'Undefined';
-            end
-        end
-    end
-    
-    % Export valid JSON struct
-    json = draft;
-    
-    
 end
-
-
-
-
