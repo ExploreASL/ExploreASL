@@ -187,7 +187,7 @@ for iFile=1:length(NiftiPaths)
 	end
 		
 	% If GE is not identified or ImageType field doesn't exist, then exits
-	if ~regexpi(varManufacturer,'GE') || ~isfield(jsonPar,'ImageType')
+	if isempty(regexpi(varManufacturer,'GE')) || ~isfield(jsonPar,'ImageType')
 		return;
 	end
 	
