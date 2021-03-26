@@ -75,8 +75,10 @@ function [x] = ExploreASL_Master(varargin)
     % Import
     x = ExploreASL_ImportWorkflow(x);
     
-    % Re-Initialize for potential data loading
-    x = ExploreASL_Initialize(x.DataParPath, x.ImportArray, x.ProcessArray, x.SkipPause, x.iWorker, x.nWorkers);
+    % Re-Initialize for potential data loading/processing
+    if x.ProcessData > 0
+        x = ExploreASL_Initialize(x.DataParPath, x.ImportArray, x.ProcessArray, x.SkipPause, x.iWorker, x.nWorkers);
+    end
     
     if x.ProcessData==0 || x.ProcessData==2
         if x.ProcessData==2 && nargout==0
