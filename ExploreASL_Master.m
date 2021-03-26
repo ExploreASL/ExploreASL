@@ -75,6 +75,9 @@ function [x] = ExploreASL_Master(varargin)
     % Import
     x = ExploreASL_ImportWorkflow(x);
     
+    % Re-Initialize for potential data loading
+    x = ExploreASL_Initialize(x.DataParPath, x.ImportArray, x.ProcessArray, x.SkipPause, x.iWorker, x.nWorkers);
+    
     if x.ProcessData==0 || x.ProcessData==2
         if x.ProcessData==2 && nargout==0
             warning('Data loading requested but no output structure defined');

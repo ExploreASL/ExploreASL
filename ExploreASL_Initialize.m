@@ -234,7 +234,7 @@ function [x] = ExploreASL_Initialize(varargin)
     %% Data-specific initialization
     fprintf('ExploreASL v%s initialized ... \n', x.Version);
     
-    if x.ProcessData>0
+    if x.ProcessData>0 && ~x.ImportData % Skip this step if we still need to run the import (first initialization)
         % Check if a root directory was defined
         if isempty(x.D.ROOT)
             error('No root/analysis/study folder defined');

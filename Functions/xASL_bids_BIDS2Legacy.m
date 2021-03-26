@@ -1,4 +1,4 @@
-function xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
+function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
 %xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
 % FORMAT: xASL_bids_BIDS2Legacy(pathStudy[, bOverwrite, dataPar])
@@ -250,17 +250,27 @@ fprintf('\n');
 
 %% 9. Parse M0
 ListASL4D = xASL_adm_GetFileList(pathLegacy, '^ASL4D\.nii$', 'FPListRec');
-if ~isempty(ListASL4D)
-    for iList=1:numel(ListASL4D)
-        xASL_bids_parseM0(ListASL4D{iList});
+try
+    if ~isempty(ListASL4D)
+        for iList=1:numel(ListASL4D)
+            xASL_bids_parseM0(ListASL4D{iList});
+        end
+        fprintf('%s\n', ['M0 parsed for ' ListASL4D{iList}]);
+    else
+        warning(['No ASL4D file found in ' pathLegacy]);
     end
-    fprintf('%s\n', ['M0 parsed for ' ListASL4D{iList}]);
-else
-    warning(['No ASL4D file found in ' pathLegacy]);
+catch
+    warning('Something seems to be wrong here (why do we expect a path in ASL BIDS format here if we already renamed it above?)...');
 end
 
 %% 10. Create DataPar.json
-spm_jsonwrite(fullfile(pathLegacy, 'DataPar.json'), dataPar);
+
+% Overwrite DataParPath in x structure
+fprintf('Overwriting x.DataParPath...\n');
+dataPar.x.DataParPath = fullfile(pathLegacy, 'DataPar.json');
+
+% Write DataParFile
+spm_jsonwrite(dataPar.x.DataParPath, dataPar);
 
 end
 
@@ -282,3 +292,6 @@ function xASL_bids_BIDS2xASL_CopyFile(pathOrig, pathDest, bOverwrite)
     end
     
 end
+
+
+
