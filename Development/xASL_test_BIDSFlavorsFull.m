@@ -79,7 +79,7 @@ if bTest(1)
 		xASL_adm_CreateDir(fullfile(conversionPath,fList{iList}, 'sourcedata'));
 		
 		SourceDir = fullfile(flavorsPath, fList{iList}, 'sourcedata');
-        DestinationDir = fullfile(conversionPath, fList{iList}, 'sourcedata');
+        DestinationDir = fullfile(conversionPath, fList{iList});
         xASL_Copy(SourceDir, DestinationDir, 1);
 		
 		xASL_Copy(fullfile(flavorsPath,fList{iList},'sourceStructure.json'), fullfile(conversionPath,fList{iList},'sourceStructure.json'), 1);
@@ -98,7 +98,7 @@ if bTest(1)
 		xASL_adm_CreateDir(fullfile(referencePath,fList{iList}));
 		xASL_adm_CreateDir(fullfile(referencePath,fList{iList}, 'rawdata'));
 
-        xASL_Copy(fullfile(flavorsPath,fList{iList}, 'rawdata'), fullfile(referencePath,fList{iList},'rawdata'), 1); 
+        xASL_Copy(fullfile(flavorsPath,fList{iList}, 'rawdata'), fullfile(referencePath,fList{iList}), 1); 
 	end
 end
 
