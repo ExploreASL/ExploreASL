@@ -155,30 +155,38 @@ listFields = fields(StructIn);
 % Iterate over fields
 for iField=1:length(listFields)
 	
-	% Convert string to num
-	TempField = xASL_str2num(StructIn.(listFields{iField}));
-	
-	% Check if we got an imaginary number
-	if max(isnumeric(TempField))
-		if imag(TempField)~=0
-			TempField = StructIn.(listFields{iField}); % Do not convert complex numbers
+	% Checks if conversion should be attempted. This check is done also inside the xASL_str2num, however,
+	% it is good to do it also beforehand, because you avoid unnecessary processing of numeric strings which
+	% can result in false-warnings about numeric being given inside a string. 
+	% i.e. this check avoids extra processing and warnings eventhough functionally not necessary
+	if ~isempty(StructIn.(listFields{iField})) && ~isnumeric(StructIn.(listFields{iField}))
+		% Convert string to num
+		TempField = xASL_str2num(StructIn.(listFields{iField}));
+		
+		% Check if we got an imaginary number
+		if max(isnumeric(TempField))
+			if imag(TempField)~=0
+				TempField = StructIn.(listFields{iField}); % Do not convert complex numbers
+			end
 		end
-	end
-	
-	% Check if conversion was correct
-	if min(isnumeric(TempField)) && size(TempField,1)>size(TempField,2)
-		% Enforce a horizontal vector if numerical
-		TempField = TempField';
-	end
-	
-	% Check if there is a numerical vector inside the string
-	if min(isnumeric(TempField)) && min(~isnan(TempField))
-		StructOut.(listFields{iField}) = TempField;
-		if ~isequal(TempField,StructIn.(listFields{iField}))
-			fprintf('Warning: A numerical field provided as a string (%s). Please avoid this.\n', StructIn.(listFields{iField}));
+		
+		% Check if conversion was correct
+		if min(isnumeric(TempField)) && size(TempField,1)>size(TempField,2)
+			% Enforce a horizontal vector if numerical
+			TempField = TempField';
+		end
+		
+		% Check if there is a numerical vector inside the string
+		if min(isnumeric(TempField)) && min(~isnan(TempField))
+			StructOut.(listFields{iField}) = TempField;
+			if ~isequal(TempField,StructIn.(listFields{iField}))
+				fprintf('Warning: A numerical field provided as a string (%s). Please avoid this.\n', StructIn.(listFields{iField}));
+			end
+		else
+			% Otherwise keep the string
+			StructOut.(listFields{iField}) = StructIn.(listFields{iField});
 		end
 	else
-		% Otherwise keep the string
 		StructOut.(listFields{iField}) = StructIn.(listFields{iField});
 	end
 end
