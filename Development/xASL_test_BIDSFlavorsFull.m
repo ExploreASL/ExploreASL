@@ -104,12 +104,12 @@ end
 
 %% 2. Run the conversion of source data to BIDS
 if bTest(2)
-	xASL_bids_TestBidsConversion(conversionPath, referencePath, 1, 0);
+	xASL_test_BIDSConversion(conversionPath, referencePath, 1, 0);
 end
 
 %% 3. Run the comparison of converted BIDS with the reference data
 if bTest(3)
-	xASL_bids_TestBidsConversion(conversionPath, referencePath, 0, 1);
+	xASL_test_BIDSConversion(conversionPath, referencePath, 0, 1);
 end
 
 %% 4. Run the BIDS to Legacy conversion
