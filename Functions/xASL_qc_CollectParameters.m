@@ -16,7 +16,7 @@ function x = xASL_qc_CollectParameters(x, iSubject, ScanType)
 % 
 % EXAMPLE: x = xASL_qc_CollectParameters_Structural(x, 10, 'ASL');
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------------------

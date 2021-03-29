@@ -73,14 +73,10 @@ function xASL_adm_SaveJSON(data, jsonFileName)
     end
 
     fclose all;
+    % Create directory if it does not exist already
     xASL_adm_CreateDir(fileparts(jsonFileName));
-    fid = fopen(jsonFileName,'w');
-    %fid=1;
-    for iD=1:length(data)
-        writeElement(fid, data(iD),'');
-    end
-    fprintf(fid,'\n');
-    fclose(fid);
+    % Write JSON fields to file
+    spm_jsonwrite(jsonFileName,data);
 end
 
 function writeElement(fid, data,tabs)
