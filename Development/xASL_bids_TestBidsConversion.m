@@ -54,7 +54,7 @@ end
 
 %% 1. Initialization
 % Initialize ExploreASL 
-x = ExploreASL_Initialize([], false);
+x = ExploreASL_Initialize;
 
 % Load the list of the directories
 flavorList = xASL_adm_GetFileList(baseDirImport, [], false, [], true);

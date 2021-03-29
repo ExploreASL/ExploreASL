@@ -21,7 +21,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     %% Workflow
 
     % Initialize ExploreASL
-    x = ExploreASL_Initialize([],0);
+    x = ExploreASL_Initialize;
     
     % Reminder
     fprintf('============================================= REMINDER =============================================\n');

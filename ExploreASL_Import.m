@@ -126,7 +126,7 @@ if nargin<6 || isempty(bClone2Source)
     bClone2Source = false;
 end
 if nargin<7 || isempty(x)
-    x = ExploreASL_Initialize('',0); % only initialize ExploreASL if this wasnt initialized before
+    x = ExploreASL_Initialize; % only initialize ExploreASL if this wasnt initialized before
 end
 if nargin<1 || ~isfield(imPar,'studyID')
     error('ExploreASL_Import: Please provide studyID (name of the study folder) as input parameter');

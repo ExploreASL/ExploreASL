@@ -182,7 +182,7 @@ if nargin<8 || isempty(bClone2Source)
 end
 
 if nargin<9 || isempty(x)
-    x = ExploreASL_Initialize('',0); % only initialize ExploreASL if this wasnt initialized before
+    x = ExploreASL_Initialize; % only initialize ExploreASL if this wasnt initialized before
 end
 
 %% 2. Initialize the setup of the dicom2nii conversion
