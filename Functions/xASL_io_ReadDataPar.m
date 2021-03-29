@@ -136,18 +136,29 @@ elseif strcmp(Fext, '.json')
 	end
 
 	% Convert strings containing numbers to number
-	x = ConvertNumericalFields(x);
-	if isfield(x,'Q')
-		x.Q = ConvertNumericalFields(x.Q);
-	end
+	x = xASL_io_ReadDataPar_FixFields(x);
 else
 	error('Unknown file extension');
 end
 
 end
 
+%% Goes through the JSON fields and make sure that incorrect entries are corrected
+function [StructOut] = xASL_io_ReadDataPar_FixFields(StructIn)
+
+% First fixes the numerical fields in the root structure and x.Q substructure
+StructOut = xASL_io_ReadDataPar_ConvertNumericalFields(StructIn);
+if isfield(StructIn,'Q')
+	StructOut.Q = xASL_io_ReadDataPar_ConvertNumericalFields(StructIn.Q);
+end
+
+% Looks for fields with a specific cell array structure entered as a string, which is incorrect by new JSON standards, and fixes this
+StructOut = xASL_io_ReadDataPar_ConvertCellArrays(StructOut);
+
+end
+
 %% ConvertNumericalFields (Convert strings which contain numbers to numbers, remove invalid fields)
-function [StructOut] = ConvertNumericalFields(StructIn)   
+function [StructOut] = xASL_io_ReadDataPar_ConvertNumericalFields(StructIn)   
 
 % Get fields
 listFields = fields(StructIn);
@@ -180,7 +191,7 @@ for iField=1:length(listFields)
 		if min(isnumeric(TempField)) && min(~isnan(TempField))
 			StructOut.(listFields{iField}) = TempField;
 			if ~isequal(TempField,StructIn.(listFields{iField}))
-				fprintf('Warning: A numerical field provided as a string (%s). Please avoid this.\n', StructIn.(listFields{iField}));
+				fprintf('Warning: A numerical field provided as a string (%s). Converted, but should be avoided.\n', StructIn.(listFields{iField}));
 			end
 		else
 			% Otherwise keep the string
@@ -191,4 +202,49 @@ for iField=1:length(listFields)
 	end
 end
 
+end
+
+%%xASL_io_ReadDataPar_ConvertCellArrays finds all the cell arrays entered as strings and fixes them
+function StructOut = xASL_io_ReadDataPar_ConvertCellArrays(StructIn)
+
+% Get fields
+listFields = fields(StructIn);
+
+% Iterate over fields
+for iField=1:length(listFields)
+	
+	% Finds the incorrect fields
+	if isstruct(StructIn.(listFields{iField}))
+		% Calls recursively the function for structs
+		StructOut.(listFields{iField}) = xASL_io_ReadDataPar_ConvertCellArrays(StructIn.(listFields{iField}));
+		
+	elseif ischar(StructIn.(listFields{iField})) && ~isempty(StructIn.(listFields{iField})) && ...
+			StructIn.(listFields{iField})(1) == '{' && StructIn.(listFields{iField})(end) == '}'
+		% For chars entered in {} brackets, brakes the entries in '' to individuals arrays with a cell array
+		iFirst = 2;
+		iApostrophe = strfind(StructIn.(listFields{iField}),39);
+		StructOut.(listFields{iField}) = cell(1,0);
+		iCurrent = 1;
+		while(length(iApostrophe) >= iCurrent)
+			% Sets the string start to after the next apostrophe
+			iFirst = iApostrophe(iCurrent)+1;
+			
+			% If a ending apostrophe is present to the current one, then write up the string to the cell and move on
+			if length(iApostrophe) > iCurrent
+				StructOut.(listFields{iField}){1,length(StructOut.(listFields{iField}))+1} = StructIn.(listFields{iField})(iFirst:(iApostrophe(iCurrent+1)-1));
+				% Else we just end a let the remains be written
+				iFirst = iApostrophe(iCurrent+1)+1;
+			end
+			iCurrent = iCurrent + 2;
+		end
+		% If some opened strings remain, write them to a last array field
+		if iFirst<=length(StructIn.(listFields{iField}))-1
+			StructOut.(listFields{iField}){1,length(StructOut.(listFields{iField}))+1} = StructIn.(listFields{iField})(iFirst:(length(StructIn.(listFields{iField}))-1));
+		end
+		fprintf('Warning: An incorrect format of a cell array provided (%s). Converted, but should be avoided.\n', StructIn.(listFields{iField}));
+	else
+		% Otherwise keep the string
+		StructOut.(listFields{iField}) = StructIn.(listFields{iField});
+	end
+end
 end
