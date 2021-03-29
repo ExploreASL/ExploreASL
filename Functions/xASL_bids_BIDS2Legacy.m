@@ -250,17 +250,13 @@ fprintf('\n');
 
 %% 9. Parse M0
 ListASL4D = xASL_adm_GetFileList(pathLegacy, '^ASL4D\.nii$', 'FPListRec');
-try
-    if ~isempty(ListASL4D)
-        for iList=1:numel(ListASL4D)
-            xASL_bids_parseM0(ListASL4D{iList});
-        end
-        fprintf('%s\n', ['M0 parsed for ' ListASL4D{iList}]);
-    else
-        warning(['No ASL4D file found in ' pathLegacy]);
+if ~isempty(ListASL4D)
+    for iList=1:numel(ListASL4D)
+        xASL_bids_parseM0(ListASL4D{iList});
     end
-catch
-    warning('Something seems to be wrong here (why do we expect a path in ASL BIDS format here if we already renamed it above?)...');
+    fprintf('%s\n', ['M0 parsed for ' ListASL4D{iList}]);
+else
+    warning(['No ASL4D file found in ' pathLegacy]);
 end
 
 %% 10. Create DataPar.json
