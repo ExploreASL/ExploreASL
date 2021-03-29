@@ -52,16 +52,28 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft)
 				json.(bidsPar.datasetDescription.Required{1,iCell}) = 'Undefined';
 			end
 		end
-    end
+	end
+	
+	listMissingFiles = [];
 	
 	% Recommended fields
 	for iCell = 1:numel(bidsPar.datasetDescription.Recommended)
 		% Only copy if defined
 		if isfield(draft,bidsPar.datasetDescription.Recommended{1,iCell})
 			json.(bidsPar.datasetDescription.Recommended{1,iCell}) = draft.(bidsPar.datasetDescription.Recommended{1,iCell});
+		else
+			if length(listMissingFiles)>1
+				listMissingFiles = [listMissingFiles ', '];
+			end
+			listMissingFiles = [listMissingFiles bidsPar.datasetDescription.Recommended{1,iCell}];
 		end
 	end
 	
+	if length(listMissingFiles)>1
+		% Report the missing fields
+		fprintf('dataset_description.json is missing the following RECOMMENDED fields: \n%s\n',listMissingFiles);
+	end
+		
     % Optional fields
     for iCell = 1:numel(bidsPar.datasetDescription.Optional)
 		% Only copy if defined
