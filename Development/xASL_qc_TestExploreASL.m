@@ -121,7 +121,7 @@ if bPull
 	Answer = system('git pull','-echo');
 end
 
-x = ExploreASL_Master('',0);
+x = ExploreASL_Master;
 
 clc;
 
@@ -278,7 +278,7 @@ end
 
 % ============================================================
 %% 5) Test ExploreASL itself
-x = ExploreASL_Master('',0); % here we return the ExploreASL paths, which we removed above for testing SPM
+x = ExploreASL_Master; % here we return the ExploreASL paths, which we removed above for testing SPM
 
 % Remove lock folders, useful for rerun when debugging
 LockFolders = xASL_adm_GetFileList(TestDirDest, '^locked$', 'FPListRec', [0 Inf], true);
@@ -322,14 +322,14 @@ for iList=1:length(Dlist)
             
             switch RunMethod
                 case 1 % run ExploreASL serially
-                    ExploreASL_Master(DataParFile{iList}{1}, true, true); % can we run screen from here? or run matlab in background, linux easy
+                    ExploreASL_Master(DataParFile{iList}{1}, 0, 1, true); % can we run screen from here? or run matlab in background, linux easy
                 case 2 % run ExploreASl parallel (start new MATLAB instances)
                     if isunix
                         ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
-                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',1,1);system([''screen -SX ' ScreenName ' kill'']);"'];
+                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',0,1,1);system([''screen -SX ' ScreenName ' kill'']);"'];
                     else
                         ScreenString = [MatlabPath ' -nodesktop -nosplash -r '];
-                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',1,1);system([''exit'']);"'];
+                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',0,1,1);system([''exit'']);"'];
                     end
                     system([ScreenString RunExploreASLString ' &']);
                 case 3 % run ExploreASL compilation serially

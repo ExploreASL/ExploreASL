@@ -52,7 +52,7 @@ end
 %% Clone the flavors database if necessary
 if ~exist(fullfile(pathTest,'FlavorDatabase'), 'dir')
     cd(pathExploreASL);
-    ExploreASL_Master('',0); % initialize ExploreASL
+    ExploreASL_Master; % initialize ExploreASL
     xASL_adm_CreateDir(pathTest);
     cd(pathTest);
     system(cmdCloneFlavors);

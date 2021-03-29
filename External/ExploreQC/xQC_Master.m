@@ -10,7 +10,7 @@ ExploreQC = pwd;
 % Also add the paths to external tools(dti denoising)
 
 cd (xASLDir);
-x = ExploreASL_Master('', 0);
+x = ExploreASL_Master;
 cd(ExploreQC)
 
 % TEMPORARY : Add the path to scripts in development to test them

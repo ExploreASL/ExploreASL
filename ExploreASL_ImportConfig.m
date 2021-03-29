@@ -34,7 +34,7 @@ imPar.RawRoot = fpath;
 %end
 
 % ExploreASL does not need to be initialized here
-% ExploreASL_Master('',0);
+% ExploreASL_Master;
 
 % fprintf('\n%s\n\n',['Found ' RawDir ' folder...']);
 
