@@ -36,7 +36,7 @@ testTime = tic;
 workingDirectory = fullfile(TestRepository,'UnitTesting','working_directory');
 
 % Initialization
-[x] = ExploreASL_Initialize([],0);
+[x] = ExploreASL_Initialize;
 
 % Test NIFTIs
 testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templates_volumes','brainmask.nii');
@@ -77,7 +77,7 @@ testTime = tic;
 workingDirectory = fullfile(TestRepository,'UnitTesting','working_directory');
 
 % Initialization
-[x] = ExploreASL_Initialize([],0);
+[x] = ExploreASL_Initialize;
 
 % Test NIFTIs
 testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templates_volumes','brainmask.nii');
@@ -119,7 +119,7 @@ testTime = tic;
 workingDirectory = fullfile(TestRepository,'UnitTesting','working_directory');
 
 % Initialization
-[x] = ExploreASL_Initialize([],0);
+[x] = ExploreASL_Initialize;
 
 % Test NIFTIs
 testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templates_volumes','brainmask.nii');
@@ -160,7 +160,7 @@ testTime = tic;
 workingDirectory = fullfile(TestRepository,'UnitTesting','working_directory');
 
 % Initialization
-[x] = ExploreASL_Initialize([],0);
+[x] = ExploreASL_Initialize;
 
 % Test NIFTIs
 testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templates_volumes','brainmask.nii');
@@ -199,7 +199,7 @@ UnitTest.tests(5).testname = 'No input arguments';
 testTime = tic;
 
 % Run test
-[x] = ExploreASL_Initialize([],0);
+[x] = ExploreASL_Initialize;
 xASL_io_ExportVTK();
 [warnMessage, ~] = lastwarn();
 
