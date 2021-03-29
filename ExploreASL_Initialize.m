@@ -4,7 +4,7 @@ function [x] = ExploreASL_Initialize(varargin)
 % FORMAT: [x] = ExploreASL_Initialize([DataParPath, ImportArray, ProcessArray, SkipPause, iWorker, nWorkers])
 %
 % INPUT:
-%   This script can accept the same arguments as ExploreASL_Master. Check out the definitions there.
+%   This script accepts the same arguments as ExploreASL_Master. Check out the definitions there.
 %
 % OUTPUT:
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
