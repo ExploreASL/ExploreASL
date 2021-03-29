@@ -146,34 +146,34 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     if bPrintReport
         if detailedOutput
             fprintf(strcat(repmat('=',100,1)','\n'));
-		end
-		if detailedOutput || ~isempty(results.(datasetA).missingFolders) || ~isempty(results.(datasetA).missingFiles)
-			fprintf('Dataset:\t\t%s\n',datasetA)
-		end
+        end
+        if detailedOutput || ~isempty(results.(datasetA).missingFolders) || ~isempty(results.(datasetA).missingFiles)
+            fprintf('Dataset:\t\t%s\n',datasetA)
+        end
         printList(results.(datasetA).missingFolders)
         printList(results.(datasetA).missingFiles)
-		
+        
         if detailedOutput
             if isempty(results.(datasetA).missingFolders) && isempty(results.(datasetA).missingFiles)
                 fprintf('\t\t\t\t%s\n','No missing files');
             end
         end
-
+        
         if detailedOutput
             fprintf(strcat(repmat('=',100,1)','\n'));
-		end
-		if detailedOutput || ~isempty(results.(datasetB).missingFolders) || ~isempty(results.(datasetB).missingFiles)
-			fprintf('Dataset:\t\t%s\n',datasetB)
-		end
+        end
+        if detailedOutput || ~isempty(results.(datasetB).missingFolders) || ~isempty(results.(datasetB).missingFiles)
+            fprintf('Dataset:\t\t%s\n',datasetB)
+        end
         printList(results.(datasetB).missingFolders)
         printList(results.(datasetB).missingFiles)
-		
+        
         if detailedOutput
             if isempty(results.(datasetB).missingFolders) && isempty(results.(datasetB).missingFiles)
                 fprintf('\t\t\t\t%s\n','No missing files');
             end
         end
-
+        
         % End of report
         if detailedOutput
             fprintf(strcat(repmat('=',100,1)','\n'));
@@ -185,7 +185,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     [identical,results.differences] = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,bPrintReport,threshRmseNii);
     
     % Print differences as warnings
-    if printWarnings && bPrintReport
+    if printWarnings
         printMissingAsWarnings(results);
         printDifferencesAsWarnings(results.differences);
     end
@@ -198,7 +198,8 @@ function printDifferencesAsWarnings(differences)
     % Iterate over differences
     if ~isempty(differences{1,1})
         for iT = 1:size(differences,1)
-            fprintf('Warning: %s\n', differences{iT,1});
+            warning([differences{iT,1} '  ']);
+            fprintf('\n');
         end
     end
     
@@ -213,13 +214,15 @@ function printMissingAsWarnings(results)
             % Folders
             if ~isempty(results.(fieldNames{iT}).missingFolders)
                 for thisWarning = 1:size(results.(fieldNames{iT}).missingFolders,1)
-                    fprintf('Warning: Missing folder %s\n', results.(fieldNames{iT}).missingFolders{thisWarning,1});
+                    warning('Missing folder %s  ', results.(fieldNames{iT}).missingFolders{thisWarning,1});
+                    fprintf('\n');
                 end                
             end
             % Files
             if ~isempty(results.(fieldNames{iT}).missingFiles)
                 for thisWarning = 1:size(results.(fieldNames{iT}).missingFiles,1)
-                    fprintf('Warning: Missing file %s\n', results.(fieldNames{iT}).missingFiles{thisWarning,1});
+                    warning('Missing file %s  ', results.(fieldNames{iT}).missingFiles{thisWarning,1});
+                    fprintf('\n');
                 end  
             end            
         end
@@ -326,12 +329,14 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
 				% Now we can compare these fields like in the part above
 				jsonErrorReport = [jsonErrorReport, compareFieldLists(jsonA,jsonB,sharedFieldsAB)];
 				
-				if bPrintReport && ~isempty(jsonErrorReport)
-					fprintf('File:\t\t\t%s\n',allFiles{iFile});
-					fprintf('%s',jsonErrorReport);
+				if ~isempty(jsonErrorReport)
+                    if bPrintReport
+                        fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                        fprintf('%s',jsonErrorReport);
+                    end
                     
                     % Save difference
-                    differences{dn,1} = ['Different file content: ', allFiles{iFile}];
+                    differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
                     dn = dn+1;
                 end
                 
@@ -342,16 +347,17 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                 % Compare text files content directly
                 currentFileTextA = fileread(currentFileA);
                 currentFileTextB = fileread(currentFileB);
-                if bPrintReport
-                    if ~strcmp(currentFileTextA,currentFileTextB)
-						fprintf('%s:\t\t\n',allFiles{iFile});
+                if ~strcmp(currentFileTextA,currentFileTextB)
+                    if bPrintReport
+                        fprintf('%s:\t\t\n',allFiles{iFile});
                         fprintf('\t\t\t\tDifferent file content.\n');
-                        identical = false;
-                        
-                        % Save difference
-                        differences{dn,1} = ['Different file content: ', allFiles{iFile}];
-                        dn = dn+1;
                     end
+                    identical = false;
+                    
+                    % Save difference
+                    differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
+                    dn = dn+1;
+                    
                 end
             end
         elseif strcmp(extension,'.nii') || contains(allFiles{iFile},'.nii.gz') % Warning: This unzips your NIFTIs right now!
@@ -362,7 +368,7 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                 tmpFileB = dir(currentFileB);
                 sizeA = tmpFileA.bytes;
                 sizeB = tmpFileB.bytes;
-
+                
                 % Check file size (images with a file size lower than 1 byte are corrupt)
                 if (sizeA>1 && sizeB>1)
                     if contains(allFiles{iFile},'.nii.gz')
@@ -379,51 +385,55 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                         imageA = xASL_io_Nifti2Im(char(currentFileA));
                         imageB = xASL_io_Nifti2Im(char(currentFileB));
                     end
-                    % Report function which prints to the console
-                    if bPrintReport
-                        % Check that matrix dimensions agree first
-                        sizeA = size(imageA);
-                        sizeB = size(imageB);
-                        if length(sizeA)==length(sizeB)
-                            if sum(sizeA==sizeB)==length(sizeA)
-                                RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
-                                if (RMSE>threshRmseNii)
+                    
+                    % Check that matrix dimensions agree first
+                    sizeA = size(imageA);
+                    sizeB = size(imageB);
+                    if length(sizeA)==length(sizeB)
+                        if sum(sizeA==sizeB)==length(sizeA)
+                            RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
+                            if (RMSE>threshRmseNii)
+                                % Report function which prints to the console
+                                if bPrintReport
                                     fprintf('File:\t\t\t%s\n',allFiles{iFile});
                                     fprintf('\t\t\t\tRMSE (%d) of NIFTIs above threshold.\n',RMSE);
-                                    identical = false;
-                                    
-                                    % Save difference
-                                    differences{dn,1} = ['RMSE of NIFTIs above threshold: ', allFiles{iFile}];
-                                    dn = dn+1;
                                 end
-                            else
-                                fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                                fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
                                 identical = false;
                                 
                                 % Save difference
-                                differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}];
+                                differences{dn,1} = ['RMSE of NIFTIs above threshold: ', allFiles{iFile}, ' '];
                                 dn = dn+1;
                             end
                         else
-                            fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                            fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                            if bPrintReport
+                                fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                                fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                            end
                             identical = false;
                             
                             % Save difference
-                            differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}];
+                            differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
                             dn = dn+1;
                         end
+                    else
+                        if bPrintReport
+                            fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                            fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                        end
+                        identical = false;
+                        
+                        % Save difference
+                        differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
+                        dn = dn+1;
                     end
                 else
                     if bPrintReport
-						fprintf('%s:\t\t\n',allFiles{iFile});
+                        fprintf('%s:\t\t\n',allFiles{iFile});
                         fprintf('\t\t\t\tFile is too small to be a real image.\n');
-                        
-                        % Save difference
-                        differences{dn,1} = ['File is too small to be a real image: ', allFiles{iFile}];
-                        dn = dn+1;
                     end
+                    % Save difference
+                    differences{dn,1} = ['File is too small to be a real image: ', allFiles{iFile}, ' '];
+                    dn = dn+1;
                 end
             end
         end
