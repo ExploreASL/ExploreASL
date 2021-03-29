@@ -182,6 +182,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     
     % Print differences as warnings
     if printWarnings
+        printMissingAsWarnings(results);
         printDifferencesAsWarnings(results.differences);
     end
 
@@ -190,13 +191,38 @@ end
 %% Print differences as warnings
 function printDifferencesAsWarnings(differences)
 
-    fprintf('Warnings: \n\n');
-
     % Iterate over differences
     if ~isempty(differences{1,1})
         for iT = 1:size(differences,1)
             warning(differences{iT,1});
             fprintf('\n\n');
+        end
+    end
+    
+end
+
+%% Print missing files and folders as warnings
+function printMissingAsWarnings(results)
+
+    fprintf('Warnings: \n\n');
+
+    fieldNames = fieldnames(results);
+    for iT = 1:(length(fieldNames)-1)
+        if ~strcmp(fieldNames(iT),'differences')
+            % Folders
+            if ~isempty(results.(fieldNames{iT}).missingFolders)
+                for thisWarning = 1:size(results.(fieldNames{iT}).missingFolders,1)
+                    warning(['Missing folder: ', results.(fieldNames{iT}).missingFolders{thisWarning,1}])
+                    fprintf('\n\n');
+                end                
+            end
+            % Files
+            if ~isempty(results.(fieldNames{iT}).missingFiles)
+                for thisWarning = 1:size(results.(fieldNames{iT}).missingFiles,1)
+                    warning(['Missing file: ', results.(fieldNames{iT}).missingFiles{thisWarning,1}])
+                    fprintf('\n\n');
+                end  
+            end            
         end
     end
     
@@ -306,7 +332,7 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
 					fprintf('%s',jsonErrorReport);
                     
                     % Save difference
-                    differences{dn,1} = [allFiles{iFile}, ': Different file content.'];
+                    differences{dn,1} = ['Different file content: ', allFiles{iFile}];
                     dn = dn+1;
                 end
                 
@@ -324,7 +350,7 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                         identical = false;
                         
                         % Save difference
-                        differences{dn,1} = [allFiles{iFile}, ': Different file content.'];
+                        differences{dn,1} = ['Different file content: ', allFiles{iFile}];
                         dn = dn+1;
                     end
                 end
@@ -368,7 +394,7 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                                     identical = false;
                                     
                                     % Save difference
-                                    differences{dn,1} = [allFiles{iFile}, ': RMSE of NIFTIs above threshold.'];
+                                    differences{dn,1} = ['RMSE of NIFTIs above threshold: ', allFiles{iFile}];
                                     dn = dn+1;
                                 end
                             else
@@ -377,7 +403,7 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                                 identical = false;
                                 
                                 % Save difference
-                                differences{dn,1} = [allFiles{iFile}, ': Matrix dimensions do not agree.'];
+                                differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}];
                                 dn = dn+1;
                             end
                         else
@@ -386,7 +412,7 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                             identical = false;
                             
                             % Save difference
-                            differences{dn,1} = [allFiles{iFile}, ': Matrix dimensions do not agree.'];
+                            differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}];
                             dn = dn+1;
                         end
                     end
@@ -396,7 +422,7 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                         fprintf('\t\t\t\tFile is too small to be a real image.\n');
                         
                         % Save difference
-                        differences{dn,1} = [allFiles{iFile}, ': File is too small to be a real image.'];
+                        differences{dn,1} = ['File is too small to be a real image: ', allFiles{iFile}];
                         dn = dn+1;
                     end
                 end
