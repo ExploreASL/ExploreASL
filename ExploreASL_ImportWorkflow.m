@@ -67,19 +67,11 @@ function [x] = xASL_Import_BIDS2LEGACY(x)
         if strcmp(thisFolderName,'rawdata') && exist(ListFolders{iList},'dir')
             
             % Clean the old data
-            if isunix
-                if exist(fullfile(ListFolders{iList}, 'derivatives'), 'dir')
-                    diary('off');
-                    fclose('all'); % ensure that no file is locked
-                    system(['rm -rf ' fullfile(ListFolders{iList}, 'derivatives')]);
-                end
-            else
-            	if exist(fullfile(ListFolders{iList}, 'derivatives'), 'dir')
-	                fprintf('Delete existing derivatives folders...\n');
-	                diary('off');
-	                fclose('all'); % ensure that no file is locked
-	                xASL_delete(fullfile(ListFolders{iList}, 'derivatives'),true);
-	            end
+            if exist(fullfile(ListFolders{iList}, 'derivatives'), 'dir')
+                fprintf('Delete existing derivatives folders...\n');
+                diary('off');
+                fclose('all'); % ensure that no file is locked
+                xASL_delete(fullfile(ListFolders{iList}, 'derivatives'),true);
             end
             
             % Default dataPar.json for the testing
