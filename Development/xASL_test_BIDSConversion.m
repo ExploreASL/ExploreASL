@@ -1,7 +1,7 @@
-function xASL_bids_TestBidsConversion(baseDirImport, baseDirReference, bImport, bComparison)
-%xASL_bids_TestBidsConversion Convert ASL flavors from DICOM to BIDS, comparing the results with reference data
+function xASL_test_BIDSConversion(baseDirImport, baseDirReference, bImport, bComparison)
+%xASL_test_BIDSConversion Convert ASL flavors from DICOM to BIDS, comparing the results with reference data
 %
-% FORMAT: xASL_bids_TestBidsConversion(baseDirImport[, baseDirReference, bImport, bComparison])
+% FORMAT: xASL_test_BIDSConversion(baseDirImport[, baseDirReference, bImport, bComparison])
 %
 % INPUT:
 %   baseDirImport    - Directory for import - sourcedata files are in the 'sourcedata' folder (REQUIRED)
@@ -29,8 +29,8 @@ function xASL_bids_TestBidsConversion(baseDirImport, baseDirReference, bImport, 
 % 4. Convert NII+JSON -> BIDS
 % 5. Run the comparison with the reference directory
 %
-% EXAMPLE: xASL_bids_TestBidsConversion('mydir/testImport');
-%          xASL_bids_TestBidsConversion('mydir/testImport', 'mydir/testReference',0,1);
+% EXAMPLE: xASL_test_BIDSConversion('mydir/testImport');
+%          xASL_test_BIDSConversion('mydir/testImport', 'mydir/testReference',0,1);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
