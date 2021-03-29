@@ -43,7 +43,7 @@ testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','tem
 
 % Run test
 xASL_Copy(testNiftiVTK,fullfile(workingDirectory,'image.nii'),true);
-xASL_io_ExportVTK(x.MyPath,fullfile(workingDirectory,'image.nii'));
+xASL_io_ExportVTK(fullfile(workingDirectory,'image.nii'));
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -85,7 +85,7 @@ testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','tem
 % Run test
 xASL_Copy(testNiftiVTK,fullfile(workingDirectory,'image.nii'),true);
 image = xASL_io_Nifti2Im(fullfile(workingDirectory,'image.nii'));
-xASL_io_ExportVTK(x.MyPath,image,[],fullfile(workingDirectory,'image.vtk'));
+xASL_io_ExportVTK(image,[],fullfile(workingDirectory,'image.vtk'));
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -127,7 +127,7 @@ testNiftiVTK = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','tem
 % Run test
 xASL_Copy(testNiftiVTK,fullfile(workingDirectory,'image.nii'),true);
 image = xASL_io_Nifti2Im(fullfile(workingDirectory,'image.nii'));
-xASL_io_ExportVTK(x.MyPath,image);
+xASL_io_ExportVTK(image);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -168,7 +168,7 @@ testMask = fullfile(x.MyPath,'External','SPMmodified','toolbox','cat12','templat
 
 % Run test
 xASL_Copy(testNiftiVTK,fullfile(workingDirectory,'image.nii'),true);
-xASL_io_ExportVTK(x.MyPath,fullfile(workingDirectory,'image.nii'),testMask);
+xASL_io_ExportVTK(fullfile(workingDirectory,'image.nii'),testMask);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -200,7 +200,7 @@ testTime = tic;
 
 % Run test
 [x] = ExploreASL_Initialize([],0);
-xASL_io_ExportVTK(x.MyPath);
+xASL_io_ExportVTK();
 [warnMessage, ~] = lastwarn();
 
 % Define one or multiple test conditions here

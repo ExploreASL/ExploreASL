@@ -56,7 +56,7 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
     end
 
     %% Test Workflow
-
+    
     % Get unit tests
     addpath(fullfile(scriptPath,'UnitTests'));
     fileList = dir(fullfile(scriptPath,'UnitTests','*.m'));
@@ -68,8 +68,6 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
         testHandle = str2func(testScript);
         UnitTests(test) = testHandle(TestRepository);
     end
-    
-    
     
     
     

@@ -1,10 +1,9 @@
-function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
+function xASL_io_ExportVTK(nifti,mask,exportPath)
 %xASL_io_ExportVTK Export VTK image file.
 %
 % FORMAT: xASL_io_ExportVTK(pathExploreASL, nifti, [mask, exportPath])
 %
 % INPUT:
-%   pathExploreASL - Path to ExploreASL (REQUIRED, CHAR ARRAY)
 %   nifti          - Path to NIFTI image or image matrix (REQUIRED, CHAR ARRAY or 3D/4D IMAGE)
 %   mask           - Path to NIFTI mask (OPTIONAL, CHAR ARRAY, DEFAULT = [])
 %   exportPath     - Path of the exported VTK file (OPTIONAL, DEFAULT = nifti path -> export.vtk)
@@ -19,20 +18,14 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:          To export the "test" NIFTI to structured points in VTK format, you can run the following lines.
-%                   [x] = ExploreASL_Initialize('',0);
+%                   [x] = ExploreASL_Initialize;
 %                   nifti = '.\test.nii';
-%                   xASL_io_ExportVTK(x.MyPath,nifti);
+%                   xASL_io_ExportVTK(nifti);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    %% Check ExploreASL
-    if nargin < 1
-        warning('Could not find ExploreASL...');
-        return 
-    end
-
     %% Load image
-    if nargin < 2
+    if nargin < 1
        warning('Neither input image path nor matrix given...');
        return 
     end
@@ -55,7 +48,7 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
 
     % Apply mask (Only supported for 3D images right now)
     if numel(size(image))==3
-        if nargin > 2 && exist('mask','var')
+        if nargin > 1 && exist('mask','var')
             if ~isempty(mask)
                 % Get mask
                 imageMask = xASL_io_Nifti2Im(mask);
@@ -70,7 +63,7 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
     end
     
     % Check export path
-    if nargin < 4 && ~exist('exportPath','var')
+    if nargin < 3 && ~exist('exportPath','var')
         if ischar(nifti)
             % Define export file
             folder = fileparts(nifti);
@@ -96,14 +89,14 @@ function xASL_io_ExportVTK(pathExploreASL,nifti,mask,exportPath)
     fprintf('Running vtkwrite (MIT License, Copyright 2016, Joe Yeh)...\n');
     if numel(size(image))==3 % 3D
         image = squeeze(image);
-        vtkwrite(exportPath, 'structured_points', 'image', image)
+        vtkwrite(exportPath, 'structured_points', 'image', image);
     end
     if numel(size(image))==4 % 4D
         % Iterate over fourth dimension
         for frame3D = 1:size(image,4)
             exportPath3D = char(strrep(exportPath,'NUM',string(frame3D)));
             image3D = image(:,:,:,frame3D);
-            vtkwrite(exportPath3D, 'structured_points', 'image', image3D)
+            vtkwrite(exportPath3D, 'structured_points', 'image', image3D);
         end
     end
 
