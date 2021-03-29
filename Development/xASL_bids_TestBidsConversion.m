@@ -146,7 +146,7 @@ if bComparison
 		% Compare the imported data in the 'rawdata' subdirectory with the counterpart
 		fprintf('%s\n', ['Dataset: '  filenameCompare{iCompare}]);
 		xASL_bids_CompareStructures(fullfile(baseDirImport, filenameCompare{iCompare}, 'rawdata'),...
-            fullfile(baseDirReference, filenameCompare{iCompare}, 'rawdata'));
+            fullfile(baseDirReference, filenameCompare{iCompare}, 'rawdata'),[],[],0,1);
 	end
 end
 

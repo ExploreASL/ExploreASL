@@ -49,22 +49,22 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     end
 	
     % Default value for bPrintReport
-	if nargin < 3 || ~exist('bPrintReport','var')
+	if nargin < 3 || isempty(bPrintReport)
 		bPrintReport = true;
 	end
     
     % Default value for RMSE threshold
-    if nargin < 4 || ~exist('threshRmseNii','var')
+    if nargin < 4 || isempty(threshRmseNii)
        threshRmseNii = 1e-5;
     end
     
     % Detailed output
-    if nargin < 5 || ~exist('detailedOutput','var')
+    if nargin < 5 || isempty(detailedOutput)
        detailedOutput = false;
     end
     
     % Print differences as warnings
-    if nargin < 5 || ~exist('printWarnings','var')
+    if nargin < 6 || isempty(printWarnings)
        printWarnings = true;
     end
 
@@ -146,8 +146,10 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     if bPrintReport
         if detailedOutput
             fprintf(strcat(repmat('=',100,1)','\n'));
-        end
-        fprintf('Dataset:\t\t%s\n',datasetA)
+		end
+		if detailedOutput || ~isempty(results.(datasetA).missingFolders) || ~isempty(results.(datasetA).missingFiles)
+			fprintf('Dataset:\t\t%s\n',datasetA)
+		end
         printList(results.(datasetA).missingFolders)
         printList(results.(datasetA).missingFiles)
 		
@@ -159,8 +161,10 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 
         if detailedOutput
             fprintf(strcat(repmat('=',100,1)','\n'));
-        end
-        fprintf('Dataset:\t\t%s\n',datasetB)
+		end
+		if detailedOutput || ~isempty(results.(datasetB).missingFolders) || ~isempty(results.(datasetB).missingFiles)
+			fprintf('Dataset:\t\t%s\n',datasetB)
+		end
         printList(results.(datasetB).missingFolders)
         printList(results.(datasetB).missingFiles)
 		
@@ -181,7 +185,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     [identical,results.differences] = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,bPrintReport,threshRmseNii);
     
     % Print differences as warnings
-    if printWarnings
+    if printWarnings && bPrintReport
         printMissingAsWarnings(results);
         printDifferencesAsWarnings(results.differences);
     end
@@ -194,8 +198,7 @@ function printDifferencesAsWarnings(differences)
     % Iterate over differences
     if ~isempty(differences{1,1})
         for iT = 1:size(differences,1)
-            warning(differences{iT,1});
-            fprintf('\n\n');
+            fprintf('Warning: %s\n', differences{iT,1});
         end
     end
     
@@ -204,23 +207,19 @@ end
 %% Print missing files and folders as warnings
 function printMissingAsWarnings(results)
 
-    fprintf('Warnings: \n\n');
-
     fieldNames = fieldnames(results);
     for iT = 1:(length(fieldNames)-1)
         if ~strcmp(fieldNames(iT),'differences')
             % Folders
             if ~isempty(results.(fieldNames{iT}).missingFolders)
                 for thisWarning = 1:size(results.(fieldNames{iT}).missingFolders,1)
-                    warning(['Missing folder: ', results.(fieldNames{iT}).missingFolders{thisWarning,1}])
-                    fprintf('\n\n');
+                    fprintf('Warning: Missing folder %s\n', results.(fieldNames{iT}).missingFolders{thisWarning,1});
                 end                
             end
             % Files
             if ~isempty(results.(fieldNames{iT}).missingFiles)
                 for thisWarning = 1:size(results.(fieldNames{iT}).missingFiles,1)
-                    warning(['Missing file: ', results.(fieldNames{iT}).missingFiles{thisWarning,1}])
-                    fprintf('\n\n');
+                    fprintf('Warning: Missing file %s\n', results.(fieldNames{iT}).missingFiles{thisWarning,1});
                 end  
             end            
         end
