@@ -116,6 +116,8 @@ elseif isequal(x.S.bMasking, 0)
     x.S.bMasking = [0 0 0 0];
 end
 
+    x.S.bMasking = [1 1 1 1]; % test for low CBF values #184
+
 if ~x.S.IsASL
     x.S.bMasking(3) = 0; % disable tissue masking
 end
