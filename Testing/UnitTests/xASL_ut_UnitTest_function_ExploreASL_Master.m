@@ -43,24 +43,12 @@ testCondition = true; % Fallback
 if ~isstruct(x)
     testCondition = false;
 end
-if ~isfield(x,'DataParPath') 
-    testCondition = false;
-end
-if ~isfield(x,'ImportArray')
-    testCondition = false;
-end
-if ~isfield(x,'ProcessArray')
-    testCondition = false;
-end
-if ~isfield(x,'SkipPause')
-    testCondition = false;
-end
-if ~isfield(x,'iWorker')
-    testCondition = false;
-end
-if ~isfield(x,'nWorkers')
-    testCondition = false;
-end
+if ~isfield(x,'DataParPath'),   testCondition = false;      end
+if ~isfield(x,'ImportArray'),   testCondition = false;      end
+if ~isfield(x,'ProcessArray'),  testCondition = false;      end
+if ~isfield(x,'SkipPause'),     testCondition = false;      end
+if ~isfield(x,'iWorker'),       testCondition = false;      end
+if ~isfield(x,'nWorkers'),      testCondition = false;      end
 
 % Now let's check the values
 if isfield(x,'DataParPath')
@@ -99,6 +87,177 @@ UnitTest.tests(1).duration = toc(testTime);
 
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
+
+
+%% Test run 2
+
+% Give your individual subtest a name
+UnitTest.tests(2).testname = 'Initialize (with arguments)';
+
+% Start the test
+testTime = tic;
+
+% Read test files
+[x] = ExploreASL_Master('',0,0,1,1,1);
+
+% Define one or multiple test conditions here
+testCondition = true; % Fallback
+
+% Check the basic fields first
+if ~isstruct(x)
+    testCondition = false;
+end
+if ~isfield(x,'DataParPath'),   testCondition = false;      end
+if ~isfield(x,'ImportArray'),   testCondition = false;      end
+if ~isfield(x,'ProcessArray'),  testCondition = false;      end
+if ~isfield(x,'SkipPause'),     testCondition = false;      end
+if ~isfield(x,'iWorker'),       testCondition = false;      end
+if ~isfield(x,'nWorkers'),      testCondition = false;      end
+
+% Now let's check the values
+if isfield(x,'DataParPath')
+    if ~isempty(x.DataParPath) || ~ischar(x.DataParPath)
+        testCondition = false;
+    end
+end
+if isfield(x,'ImportArray')
+    if length(x.ImportArray)<4 || sum(x.ImportArray)>0 || ~isnumeric(x.ImportArray)
+        testCondition = false;
+    end
+end
+if isfield(x,'ProcessArray')
+    if length(x.ProcessArray)<3 || sum(x.ProcessArray)>0 || ~isnumeric(x.ProcessArray)
+        testCondition = false;
+    end
+end
+if isfield(x,'SkipPause')
+    if length(x.SkipPause)>1 || x.SkipPause~=1 || ~isnumeric(x.SkipPause)
+        testCondition = false;
+    end
+end
+if isfield(x,'iWorker')
+    if length(x.iWorker)>1 || x.iWorker~=1 || ~isnumeric(x.iWorker)
+        testCondition = false;
+    end
+end
+if isfield(x,'nWorkers')
+    if length(x.nWorkers)>1 || x.nWorkers~=1 || ~isnumeric(x.nWorkers)
+        testCondition = false;
+    end
+end
+
+% Get test duration
+UnitTest.tests(2).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(2).passed = testCondition;
+
+
+%% Test run 3
+
+% Give your individual subtest a name
+UnitTest.tests(3).testname = 'Initialize (with arrays)';
+
+% Start the test
+testTime = tic;
+
+% Read test files
+[x] = ExploreASL_Master('',[0 0 0 0],[0 0 0 0],1,1,1);
+
+% Define one or multiple test conditions here
+testCondition = true; % Fallback
+
+% Check the basic fields first
+if ~isstruct(x)
+    testCondition = false;
+end
+if ~isfield(x,'DataParPath'),   testCondition = false;      end
+if ~isfield(x,'ImportArray'),   testCondition = false;      end
+if ~isfield(x,'ProcessArray'),  testCondition = false;      end
+if ~isfield(x,'SkipPause'),     testCondition = false;      end
+if ~isfield(x,'iWorker'),       testCondition = false;      end
+if ~isfield(x,'nWorkers'),      testCondition = false;      end
+
+% Now let's check the values
+if isfield(x,'DataParPath')
+    if ~isempty(x.DataParPath) || ~ischar(x.DataParPath)
+        testCondition = false;
+    end
+end
+if isfield(x,'ImportArray')
+    if length(x.ImportArray)<4 || sum(x.ImportArray)>0 || ~isnumeric(x.ImportArray)
+        testCondition = false;
+    end
+end
+if isfield(x,'ProcessArray')
+    if length(x.ProcessArray)<3 || sum(x.ProcessArray)>0 || ~isnumeric(x.ProcessArray)
+        testCondition = false;
+    end
+end
+if isfield(x,'SkipPause')
+    if length(x.SkipPause)>1 || x.SkipPause~=1 || ~isnumeric(x.SkipPause)
+        testCondition = false;
+    end
+end
+if isfield(x,'iWorker')
+    if length(x.iWorker)>1 || x.iWorker~=1 || ~isnumeric(x.iWorker)
+        testCondition = false;
+    end
+end
+if isfield(x,'nWorkers')
+    if length(x.nWorkers)>1 || x.nWorkers~=1 || ~isnumeric(x.nWorkers)
+        testCondition = false;
+    end
+end
+
+% Get test duration
+UnitTest.tests(3).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(3).passed = testCondition;
+
+
+%% Test run 4
+
+% Give your individual subtest a name
+% UnitTest.tests(4).testname = 'Initialize (import workflow test)';
+
+% Start the test
+% testTime = tic;
+
+% Read test files
+% [x] = ExploreASL_Master('sourceStructure.json',1,0,1,1,1);
+
+% Define one or multiple test conditions here
+% testCondition = true; % Fallback
+
+% Get test duration
+% UnitTest.tests(4).duration = toc(testTime);
+
+% Evaluate your test
+% UnitTest.tests(4).passed = testCondition;
+
+
+%% Test run 5
+
+% Give your individual subtest a name
+% UnitTest.tests(5).testname = 'Initialize (full pipeline test)';
+
+% Start the test
+% testTime = tic;
+
+% Read test files
+% [x] = ExploreASL_Master('sourceStructure.json',1,1,1,1,1);
+
+% Define one or multiple test conditions here
+% testCondition = true; % Fallback
+
+% Get test duration
+% UnitTest.tests(5).duration = toc(testTime);
+
+% Evaluate your test
+% UnitTest.tests(5).passed = testCondition;
+
 
 
 %% End of testing
