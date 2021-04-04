@@ -220,44 +220,45 @@ UnitTest.tests(3).passed = testCondition;
 %% Test run 4
 
 % Give your individual subtest a name
-% UnitTest.tests(4).testname = 'Initialize (import workflow test)';
+UnitTest.tests(4).testname = 'Initialize (DCM2NIFTI)';
 
 % Start the test
-% testTime = tic;
+testTime = tic;
+
+% Copy test patient
+testPatientSource = fullfile(TestRepository,'UnitTesting','synthetic_dcm','test_patient'); 
+testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient');
+xASL_Copy(testPatientSource, testPatientDestination);
 
 % Read test files
-% [x] = ExploreASL_Master('sourceStructure.json',1,0,1,1,1);
+[x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[1 0 0 0],0,1,1,1);
 
 % Define one or multiple test conditions here
-% testCondition = true; % Fallback
+testCondition = true; % Fallback
+if ~exist(fullfile(testPatientDestination,'analysis'),'dir'),                   testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,'analysis','Sub1'),'dir'),            testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,'analysis','Sub1','ASL_1'),'dir'),    testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,'analysis','Sub1','T1w_1'),'dir'),    testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,'analysis','Sub1','ASL_1','ASL4D.json'),'file'),      testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,'analysis','Sub1','ASL_1','ASL4D.nii'),'file'),       testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,'analysis','Sub1','ASL_1','M0.json'),'file'),         testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,'analysis','Sub1','ASL_1','M0.nii'),'file'),          testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,'analysis','Sub1','T1w_1','T1w.json'),'file'),        testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,'analysis','Sub1','T1w_1','T1w.nii'),'file'),         testCondition = false;          end
+
+% Delete test data
+xASL_delete(testPatientDestination,true)
 
 % Get test duration
-% UnitTest.tests(4).duration = toc(testTime);
+UnitTest.tests(4).duration = toc(testTime);
 
 % Evaluate your test
-% UnitTest.tests(4).passed = testCondition;
+UnitTest.tests(4).passed = testCondition;
 
 
 %% Test run 5
 
-% Give your individual subtest a name
-% UnitTest.tests(5).testname = 'Initialize (full pipeline test)';
-
-% Start the test
-% testTime = tic;
-
-% Read test files
-% [x] = ExploreASL_Master('sourceStructure.json',1,1,1,1,1);
-
-% Define one or multiple test conditions here
-% testCondition = true; % Fallback
-
-% Get test duration
-% UnitTest.tests(5).duration = toc(testTime);
-
-% Evaluate your test
-% UnitTest.tests(5).passed = testCondition;
-
+% ...
 
 
 %% End of testing
