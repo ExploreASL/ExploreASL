@@ -1,18 +1,18 @@
 function [x] = xASL_io_ReadDataPar(DataParFile)
-% xASL_io_ReadDataPar This function reads DATA_PAR .json or .m file and creates the x structure.
+% xASL_io_ReadDataPar This function reads data-parameter .json or .m file, which contains data and processing settings, and creates the x structure.
 %
 % FORMAT:   [x] = xASL_io_ReadDataPar(DataParFile)
 %
 % INPUT:
-%   DataParFile     - Filename of the DATA_PAR file with either .m or .json extension
+%   DataParFile     - Filename of the input parameter file with either .m or .json extension
 %
 % OUTPUT:
 %   x               - x structure
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  This function reads in a DATA_PAR .json or .m file and creates the x
-%               structure. The name of the DATA_PAR file is given as a string or
-%               character array. The output is the x structure. It only loads the data, removes the x-prefixes, 
+% DESCRIPTION:  This function reads the data-parameter file, which is a file containing settings specific to processing a certain dataset or study 
+%               (abbreviated as DataPar) and creates the x-structure out of it. The file can be in .json or .m format.
+%               The input file name DataParFile is given as a string or character array. The output is the x structure. It only loads the data, removes the x-prefixes, 
 %               but keeps all the field names and units. It doesn't do any conversions to or from BIDS. The 
 %               only added value to normal json-read is that it detects invalid entries (numbers in strings, and 
 %               weird arrays), converts them correctly and reports this incorrect entries so that they can be manually 
@@ -25,7 +25,7 @@ function [x] = xASL_io_ReadDataPar(DataParFile)
 %
 % EXAMPLE 2:    xASL_io_ReadDataPar('DataParFile.m')
 %
-% EXAMPLE 2:    JSON FILE
+% EXAMPLE 3:    JSON FILE
 %
 % {
 % 	"x": [{
@@ -41,7 +41,7 @@ function [x] = xASL_io_ReadDataPar(DataParFile)
 %
 % Don't forget to escape the backslashes!
 %
-% EXAMPLE 3: To define cell arrays, use the official JSON array notation:
+% EXAMPLE 4: To define cell arrays, use the official JSON array notation:
 %
 %   ...
 %   "S":
@@ -54,15 +54,15 @@ function [x] = xASL_io_ReadDataPar(DataParFile)
 
 %% Input Check
 if nargin < 1 || isempty(DataParFile) || ~exist(DataParFile, 'file')
-    error('DataParFile does not exist...');
+    error('Data-parameter file does not exist...');
 end
 
 % Input has to be a character array
 DataParFile = char(DataParFile);
 [Fpath, Ffile, Fext] = fileparts(DataParFile);
 
-%% Read an m-file
 if strcmp(Fext, '.m')
+	%% In case an m-file is provided, it reads it, checks it and saves a converted copy to JSON as m-files are deprecated
 	% Read the m-file by executing it
 	CurrentFolder = pwd;
 	if ~isempty(Fpath)
@@ -95,14 +95,15 @@ if strcmp(Fext, '.m')
 	end
 	% Write the JSON if it doesn't exist
 	if exist(PathJSON, 'file')
-		fprintf('Warning: m-files are deprecated, but cannot convert to json-file because a file with json extension exists in the same directory');
+		fprintf('Warning: m-files are deprecated. Cannot convert to JSON because a file with json extension exists in the same directory');
 	else
-		fprintf('Warning: m-files are deprecated, converted and saved to json-file. Please delete the original m-file');
+		fprintf('Warning: m-files are deprecated. Converted to a JSON file. Please delete the original m-file');
 		spm_jsonwrite(PathJSON, x);
 	end
 
 elseif strcmp(Fext, '.json')
-	%% Read a JSON file	
+	%% In case a JSON file is provided, it reads it, checks it and just give it to the output, no need for conversion or saving
+	% Read a JSON file	
 	jsonData = spm_jsonread(DataParFile);
 
 	% Remove x field if it exists
@@ -191,7 +192,7 @@ for iField=1:length(listFields)
 		if min(isnumeric(TempField)) && min(~isnan(TempField))
 			StructOut.(listFields{iField}) = TempField;
 			if ~isequal(TempField,StructIn.(listFields{iField}))
-				fprintf('Warning: A numerical field provided as a string (%s). Converted, but should be avoided.\n', StructIn.(listFields{iField}));
+				fprintf('Warning: A numerical field provided as a string (%s).  It was correctly converted, but should be avoided next time.\n', StructIn.(listFields{iField}));
 			end
 		else
 			% Otherwise keep the string
@@ -206,6 +207,10 @@ end
 
 %%xASL_io_ReadDataPar_ConvertCellArrays finds all the cell arrays entered as strings and fixes them
 function StructOut = xASL_io_ReadDataPar_ConvertCellArrays(StructIn)
+% Go through the whole StructIn iteratively at all levels. Find all character arrays entered as a single character array
+% {'text','text2','text3'} and breaks it down to cell array of characters. 
+% Note that the Matlab notation '{'text','text2','text3'}' shouldn't be used in JSON and the correct JSON notation
+% ["text","text2","text3"] should be used in JSON instead. 
 
 % Get fields
 listFields = fields(StructIn);
@@ -222,9 +227,11 @@ for iField=1:length(listFields)
 			StructIn.(listFields{iField})(1) == '{' && StructIn.(listFields{iField})(end) == '}'
 		% For chars entered in {} brackets, brakes the entries in '' to individuals arrays with a cell array
 		iFirst = 2;
-		iApostrophe = strfind(StructIn.(listFields{iField}),39);
+		iApostrophe = strfind(StructIn.(listFields{iField}),39);% Finds all position of the ' characters = code 39 in ASCII
 		StructOut.(listFields{iField}) = cell(1,0);
 		iCurrent = 1;
+		% Goes through the whole character array, with iApostrophe being the list of all positions of iApostrophe and
+		% iCurrent indexing in the iApostrophe list
 		while(length(iApostrophe) >= iCurrent)
 			% Sets the string start to after the next apostrophe
 			iFirst = iApostrophe(iCurrent)+1;
@@ -241,7 +248,7 @@ for iField=1:length(listFields)
 		if iFirst<=length(StructIn.(listFields{iField}))-1
 			StructOut.(listFields{iField}){1,length(StructOut.(listFields{iField}))+1} = StructIn.(listFields{iField})(iFirst:(length(StructIn.(listFields{iField}))-1));
 		end
-		fprintf('Warning: An incorrect format of a cell array provided (%s). Converted, but should be avoided.\n', StructIn.(listFields{iField}));
+		fprintf('Warning: An incorrect format of a cell array provided (%s). It was correctly converted, but should be avoided next time.\n', StructIn.(listFields{iField}));
 	else
 		% Otherwise keep the string
 		StructOut.(listFields{iField}) = StructIn.(listFields{iField});
