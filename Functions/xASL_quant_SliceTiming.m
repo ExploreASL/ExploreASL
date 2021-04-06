@@ -11,14 +11,20 @@ function SliceTiming = xASL_quant_SliceTiming(x, inputIm)
 %   SliceTiming  - a vector of slice times defining the start of readout per slices with respect to the start of the readout of the first slices
 %                  with the length corresponding to the third dimension in inputIm
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function takes the x.Q.SliceReadoutTime, which can be:
-%              i) a vector of slice readout-timings relative to the start of readout of the first slice or (i.e. the BIDS definition of SliceTiming)
-%              ii) a scalar with difference in readout times between the consecutives slices (i.e. the xASL legacy definition of SliceTiming)
-%              The function creates a vector (of the relatives timings for each slices) out of it with the correct length corresponding to the number of slices in the inputIm 
+% DESCRIPTION: This function takes the x.Q.SliceReadoutTime and returns the SliceTiming parameter.              
+%              The function creates a vector (of the relatives timings for each slices) out of it with the correct 
+%              length corresponding to the number of slices in the inputIm 
 %              corresponding to the BIDS definition. It also checks the x.readout_dim, and for 3D readouts it returns 0.
 %              It loads the image from inputIm and calculates the SliceTiming according to the number of slices in the third dimension
 %              If a path is given, it also checks if it can find a JSON sidecar, then it loads the JSON sidecar, and looks for SliceTiming inside it. If
 %              SliceTiming/SliceReadoutTime is found in the JSON sidecar, it prioritize it over the value in the x-struct
+%              For reference, we use these terms:
+%
+%              SliceTiming (the BIDS parameter) - it is a vector with the same length as the number of slices and contains the timing of the start
+%                   of the readout of each slice relative to the first slice
+%              SliceReadoutTime - Legacy xASL parameter that will be phased out. It contains either a vector matching the BIDS definition of SliceTiming
+%                   or a scalar with difference in readout times between the consecutives slices (i.e. the xASL legacy definition of SliceTiming)
+%              SliceTimingDiff - Internal parameter in this function for calculating the time difference between consecutive slices.
 %
 % 0. Admin
 % 1. ShortestTR
