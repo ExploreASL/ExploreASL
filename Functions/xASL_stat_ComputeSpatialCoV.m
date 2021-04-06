@@ -65,6 +65,8 @@ end
 %% Only compute in real data
 imMask = (imMask>0) & isfinite(imCBF);
 
+imMask = imMask & (imCBF~=0); % Exclude zero values as well
+
 %% Constrain calculation to the mask and to finite values
 imCBF = imCBF(imMask);
 
