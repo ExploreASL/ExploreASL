@@ -1,10 +1,10 @@
-function [x] = xASL_io_ReadDataPar(DataParFile)
+function [x] = xASL_io_ReadDataPar(pathDataPar)
 % xASL_io_ReadDataPar This function reads data-parameter .json or .m file, which contains data and processing settings, and creates the x structure.
 %
-% FORMAT:   [x] = xASL_io_ReadDataPar(DataParFile)
+% FORMAT:   [x] = xASL_io_ReadDataPar(pathDataPar)
 %
 % INPUT:
-%   DataParFile     - Filename of the input parameter file with either .m or .json extension
+%   pathDataPar     - Filename of the input parameter file with either .m or .json extension
 %
 % OUTPUT:
 %   x               - x structure
@@ -12,7 +12,7 @@ function [x] = xASL_io_ReadDataPar(DataParFile)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This function reads the data-parameter file, which is a file containing settings specific to processing a certain dataset or study 
 %               (abbreviated as DataPar) and creates the x-structure out of it. The file can be in .json or .m format.
-%               The input file name DataParFile is given as a string or character array. The output is the x structure. It only loads the data, removes the x-prefixes, 
+%               The input file name pathDataPar is given as a string or character array. The output is the x structure. It only loads the data, removes the x-prefixes, 
 %               but keeps all the field names and units. It doesn't do any conversions to or from BIDS. The 
 %               only added value to normal json-read is that it detects invalid entries (numbers in strings, and 
 %               weird arrays), converts them correctly and reports this incorrect entries so that they can be manually 
@@ -53,15 +53,15 @@ function [x] = xASL_io_ReadDataPar(DataParFile)
 % Copyright 2015-2021 ExploreASL
 
 %% Input Check
-if nargin < 1 || isempty(DataParFile) || ~exist(DataParFile, 'file')
+if nargin < 1 || isempty(pathDataPar) || ~exist(pathDataPar, 'file')
     error('Data-parameter file does not exist...');
 end
 
 % Input has to be a character array
-DataParFile = char(DataParFile);
-[Fpath, Ffile, Fext] = fileparts(DataParFile);
+pathDataPar = char(pathDataPar);
+[Fpath, Ffile, Fext] = fileparts(pathDataPar);
 
-if strcmp(Fext, '.m')
+if strcmpi(Fext, '.m')
 	%% In case an m-file is provided, it reads it, checks it and saves a converted copy to JSON as m-files are deprecated
 	% Read the m-file by executing it
 	CurrentFolder = pwd;
@@ -101,10 +101,10 @@ if strcmp(Fext, '.m')
 		spm_jsonwrite(PathJSON, x);
 	end
 
-elseif strcmp(Fext, '.json')
+elseif strcmpi(Fext, '.json')
 	%% In case a JSON file is provided, it reads it, checks it and just give it to the output, no need for conversion or saving
 	% Read a JSON file	
-	jsonData = spm_jsonread(DataParFile);
+	jsonData = spm_jsonread(pathDataPar);
 
 	% Remove x field if it exists
 	if isfield(jsonData,'x')
@@ -120,12 +120,12 @@ elseif strcmp(Fext, '.json')
 			fprintf('\n%s\n',char(sFields{n}));
 			warning('JSON field type could be invalid...');
 		end
-		if strcmp(sFields{n},'group') % Convert group fields to correct Matlab cell arrays
+		if strcmpi(sFields{n},'group') % Convert group fields to correct Matlab cell arrays
 			% Generate new Matlab cell array
 			x.group{str2num(strrep(sFields{n},'group',''))} = x.(sFields{n});
 			% Remove old field
 			x = rmfield(x,sFields{n});
-		elseif strcmp(sFields{n},'LOAD') % Handle load commands
+		elseif strcmpi(sFields{n},'LOAD') % Handle load commands
 			loadPaths = fieldnames(x.(sFields{n}));
 			for m=1:size(loadPaths,1)
 				% Don't forget to use \\ instead of \ in your paths
