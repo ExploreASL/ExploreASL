@@ -45,7 +45,7 @@ function [x] = xASL_io_ReadDataPar(pathDataPar)
 %
 %   ...
 %   "S":
-%	{"Atlases": ["TotalGM","DeepWM","Hammers","HOcort_CONN","HOsub_CONN","Mindboggle_OASIS_DKT31_CMA"]}
+%	{"Atlases": ["TotalGM","TotalWM","DeepWM","Hammers","HOcort_CONN","HOsub_CONN","Mindboggle_OASIS_DKT31_CMA"]}
 %   ...
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
