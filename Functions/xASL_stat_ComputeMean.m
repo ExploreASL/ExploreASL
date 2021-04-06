@@ -82,9 +82,9 @@ end
 
 % only compute in real data
 imMask = imMask>0 & isfinite(imCBF);
-
 % Constrain calculation to the mask and to finite values
 imCBF = imCBF(imMask);
+imCBF(imCBF == 0 ) = NaN; %%%% testing for #184
 
 % Limits imGM and imWM to imMask, if provided
 if ~isempty(imGM)
