@@ -5,7 +5,7 @@ function xASL_adm_GzipAllFiles(ROOT, EXTERNAL, bFolder, bUseLinux)
 %
 % INPUT:
 %   ROOT        - the root study directory (REQUIRED)
-%   EXTERNAL    - the path to the ExploreASL/External
+%   EXTERNAL    - the path to the ExploreASL/External (OPTIONAL)
 %   bFolder     - boolean, true for zipping complete folders rather than
 %                 individual files (Unix only, OPTIONAL, DEFAULT=false)
 %   bUseLinux   - boolean, true for using Unix's own filesystem and Gzip functionality.
@@ -20,11 +20,14 @@ function xASL_adm_GzipAllFiles(ROOT, EXTERNAL, bFolder, bUseLinux)
 %
 % EXAMPLE: xASL_adm_GzipAllFiles('/MyStudy');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
     %% ----------------------------------------------------
     %% 0) Admin
+    if nargin<2 || isempty(EXTERNAL)
+        EXTERNAL = '';
+    end
     if nargin<3 || isempty(bFolder)
         bFolder = false;
     end
@@ -45,11 +48,15 @@ function xASL_adm_GzipAllFiles(ROOT, EXTERNAL, bFolder, bUseLinux)
         PathList = xASL_adm_GetFileList(ROOT, '^.*\.(nii)$', 'FPListRec', [0 Inf], false);
         fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
         n_THREADS = min([str2num(getenv('NUMBER_OF_PROCESSORS')) length(PathList)]);
-        PathToSuperGzip = fullfile(EXTERNAL, 'SuperGZip', 'SuperGZip_Windows.exe');
-        command = [PathToSuperGzip ' -p 0 -n ' num2str(n_THREADS) ' -v 1 ' ROOT ' *.nii'];
-        exit_code = system(command);
+        if ~isempty(EXTERNAL)
+            PathToSuperGzip = fullfile(EXTERNAL, 'SuperGZip', 'SuperGZip_Windows.exe');
+            command = [PathToSuperGzip ' -p 0 -n ' num2str(n_THREADS) ' -v 1 ' ROOT ' *.nii'];
+            exit_code = system(command);
+        else
+            exit_code = 1;
+        end
         if exit_code == 0
-            fprintf('Gzipping Niftis Successful')
+            fprintf('Gzipping Niftis Successful...\n')
         else
             warning('An error occurred while using SuperGzip')
         end
