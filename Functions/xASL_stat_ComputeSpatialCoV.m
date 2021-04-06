@@ -22,6 +22,10 @@ function sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,nMinSize,bPVC,imGM,imWM
 %              ROIs of size < NMINSIZE are ignored, and PVC is done for bPVC==2 using imGM and imWM masks and constructing
 %              pseudoCoV from pseudoCBF image. For bPVC~=2, imGM and imWM are ignored
 %
+% 1. Admin
+% 2. Create masks
+% 3. sCoV computation
+%
 % EXAMPLE: sCov = xASL_stat_ComputeSpatialCoV(imCBF)
 %          sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,[])
 %          sCov = xASL_stat_ComputeSpatialCoV(imCBF,[],[],0)
@@ -29,16 +33,14 @@ function sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,nMinSize,bPVC,imGM,imWM
 %          sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,[],2,imGM,imWM)
 %          sCov = xASL_stat_ComputeSpatialCoV(imCBF,[],[],2,imGM,imWM)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% REFERENCES: Mutsaerts HJ, Petr J, V??clav?? L, van Dalen JW, Robertson AD, Caan MW, Masellis M, Nederveen AJ, Richard E, MacIntosh BJ. The spatial 
+% REFERENCES: Mutsaerts HJ, Petr J, Vaclavu L, van Dalen JW, Robertson AD, Caan MW, Masellis M, Nederveen AJ, Richard E, MacIntosh BJ. The spatial 
 %             coefficient of variation in arterial spin labeling cerebral blood flow images. Journal of Cerebral Blood Flow & Metabolism. 
 %             2017 Sep;37(9):3184-92.
 % __________________________________
-% Copyright ?? 2015-2019 ExploreASL
-%
-% 2017-00-00 HJ
+% Copyright (C) 2015-2021 ExploreASL
 
 
-%% Admin
+%% 1. Admin
 if nargin < 2 || isempty(imMask)
 	imMask = ones(size(imCBF));
 end
@@ -58,16 +60,17 @@ end
 if bPVC == 2
 	% If running PVC, then need imGM and imWM of the same size as imCBF
 	if ~isequal(size(imCBF),size(imGM)) || ~isequal(size(imCBF),size(imWM))
-		warning('xASL_stat_ComputeSpatialCoV: When running PVC, need imGM and imWM of the same size as imCBF');
+		warning('When running PVC, need imGM and imWM of the same size as imCBF');
 	end
 end
 
-%% Only compute in real data
+%% 2. Create masks
+% Only compute in real data
 imMask = (imMask>0) & isfinite(imCBF);
 
 imMask = imMask & (imCBF~=0); % Exclude zero values as well
 
-%% Constrain calculation to the mask and to finite values
+% Constrain calculation to the mask and to finite values
 imCBF = imCBF(imMask);
 
 if ~isempty(imGM)
@@ -82,7 +85,7 @@ if sum(imMask(:))<nMinSize
     return;
 end
 
-%% Computation
+%% 3. sCoV computation
 
 sCov = std(imCBF(:)) / mean(imCBF(:));
 

@@ -22,6 +22,14 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,nMinSize,bPVC,imG
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It behaves in a similar way as VAR.
 %
+% 1. Admin
+% 2. Mask calculations
+% 3. Calculate the ROI statistics
+% 3a. No PVC and simple mean
+% 3b. No PVC and median
+% 3c. Simple PVC
+% 3d. Full PVC on a region
+%
 % EXAMPLE: CBF_GM = xASL_stat_ComputeMean(imCBF)
 %          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,[])
 %          CBF_GM = xASL_stat_ComputeMean(imCBF,[],[],0)
@@ -39,13 +47,9 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,nMinSize,bPVC,imG
 %             volume errors on the estimation of gray matter cerebral blood flow with arterial spin labeling MRI. Magnetic Resonance Materials in 
 %             Physics, Biology and Medicine. 2018 Dec 1;31(6):725-34.
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
-%
-% 2017-00-00 HJ+JP
+% Copyright (C) 2015-2021 ExploreASL
 
-% ------------------------------------------------------------------------------
-% Admin
-% ------------------------------------------------------------------------------
+%% 1. Admin
 
 if nargin<2 || isempty(imMask)
 	imMask = ones(size(imCBF));
@@ -76,11 +80,9 @@ if sum(isfinite(imCBF(:)))==0
     return;
 end
 
-% ------------------------------------------------------------------------------
-% Mask calculations
-% ------------------------------------------------------------------------------
+%% 2. Mask calculations
 
-% only compute in real data
+% Only compute in real data
 imMask = imMask>0 & isfinite(imCBF);
 
 imMask = imMask & (imCBF~=0); % Exclude zero values as well
@@ -88,7 +90,7 @@ imMask = imMask & (imCBF~=0); % Exclude zero values as well
 % Constrain calculation to the mask and to finite values
 imCBF = imCBF(imMask);
 
-% Limits imGM and imWM to imMask, if provided
+% Limit imGM and imWM to imMask, if provided
 if ~isempty(imGM)
 	imGM = imGM(imMask); 
 end
@@ -103,9 +105,10 @@ if sum(imMask(:))<nMinSize
     return;
 end
 
+%% 3. Calculate the ROI statistics
 switch (bPVC)
     case -1
-    % No PVC and mean
+    %% 3a. No PVC and simple mean
 	if isempty(imGM)
 		CBF_GM = xASL_stat_MeanNan(imCBF); 
 	else
@@ -115,7 +118,7 @@ switch (bPVC)
 		CBF_WM = xASL_stat_MeanNan(imCBF(imWM>0.7));
 	end
     case 0
-    % No PVC
+    %% 3b. No PVC and median
 	if isempty(imGM)
 		CBF_GM = xASL_stat_MedianNan(imCBF); % this is non-parametric
 	else
@@ -125,7 +128,7 @@ switch (bPVC)
 		CBF_WM = xASL_stat_MedianNan(imCBF(imWM>0.7)); % this is non-parametric
 	end
  case 1
-    % Simple PVC
+    %% 3c. Simple PVC
 	if isempty(imGM)
 		error('imGM needs to be provided for bPVC == 1');
 	end
@@ -135,6 +138,7 @@ switch (bPVC)
 		error('Only CBF_GM can be provided for bPVC == 1');
 	end
 case 2
+	%% 3d. Full PVC on a region
     % although assuming that CBF in CSF = 0, that maps are optimally resampled (cave
     % smoothing of c1T1 & c2T1 to ASL smoothness!) and that TotalVolume-GM-WM = CSF
     % The current absence of modulation here will not change a lot according to Jan Petr
