@@ -136,8 +136,14 @@ function [x] = ExploreASL_Initialize(varargin)
     
     %% Check DataParFile
     
+    % Check if pipeline should be run, but there is no DataParFile
+    if x.ProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
+        x.DataParPath = input('Please insert the path to your DataParFile: ');
+    end
+    
     % Read file
     if exist(x.DataParPath,'file')
+        SelectParFile = false; % Does not need to be inserted a second time
         jsonContent = spm_jsonread(x.DataParPath);
         if isfield(jsonContent,'x')
             x.dataParType = 'dataParFile';
@@ -146,11 +152,6 @@ function [x] = ExploreASL_Initialize(varargin)
         end
     else
         x.dataParType = 'unknown';
-    end
-    
-    % Check if pipeline should be run, but there is no DataParFile
-    if x.ProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
-        x.DataParPath = input('Please insert the path to your DataParFile: ');
     end
 
     % Recheck the DataPar/sourceStructure file, which is possibly not a file or does not exist
