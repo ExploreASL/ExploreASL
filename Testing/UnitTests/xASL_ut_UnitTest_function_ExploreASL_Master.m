@@ -43,12 +43,12 @@ testCondition = true; % Fallback
 if ~isstruct(x)
     testCondition = false;
 end
-if ~isfield(x,'DataParPath'),   testCondition = false;      end
-if ~isfield(x,'ImportArray'),   testCondition = false;      end
-if ~isfield(x,'ProcessArray'),  testCondition = false;      end
-if ~isfield(x,'SkipPause'),     testCondition = false;      end
-if ~isfield(x,'iWorker'),       testCondition = false;      end
-if ~isfield(x,'nWorkers'),      testCondition = false;      end
+if ~isfield(x,'DataParPath'),     testCondition = false;      end
+if ~isfield(x,'ImportModules'),   testCondition = false;      end
+if ~isfield(x,'ProcessModules'),  testCondition = false;      end
+if ~isfield(x,'SkipPause'),       testCondition = false;      end
+if ~isfield(x,'iWorker'),         testCondition = false;      end
+if ~isfield(x,'nWorkers'),        testCondition = false;      end
 
 % Now let's check the values
 if isfield(x,'DataParPath')
@@ -56,13 +56,13 @@ if isfield(x,'DataParPath')
         testCondition = false;
     end
 end
-if isfield(x,'ImportArray')
-    if length(x.ImportArray)<4 || sum(x.ImportArray)>0 || ~isnumeric(x.ImportArray)
+if isfield(x,'ImportModules')
+    if length(x.ImportModules)<4 || sum(x.ImportModules)>0 || ~isnumeric(x.ImportModules)
         testCondition = false;
     end
 end
-if isfield(x,'ProcessArray')
-    if length(x.ProcessArray)<3 || sum(x.ProcessArray)>0 || ~isnumeric(x.ProcessArray)
+if isfield(x,'ProcessModules')
+    if length(x.ProcessModules)<3 || sum(x.ProcessModules)>0 || ~isnumeric(x.ProcessModules)
         testCondition = false;
     end
 end
@@ -107,12 +107,12 @@ testCondition = true; % Fallback
 if ~isstruct(x)
     testCondition = false;
 end
-if ~isfield(x,'DataParPath'),   testCondition = false;      end
-if ~isfield(x,'ImportArray'),   testCondition = false;      end
-if ~isfield(x,'ProcessArray'),  testCondition = false;      end
-if ~isfield(x,'SkipPause'),     testCondition = false;      end
-if ~isfield(x,'iWorker'),       testCondition = false;      end
-if ~isfield(x,'nWorkers'),      testCondition = false;      end
+if ~isfield(x,'DataParPath'),     testCondition = false;      end
+if ~isfield(x,'ImportModules'),   testCondition = false;      end
+if ~isfield(x,'ProcessModules'),  testCondition = false;      end
+if ~isfield(x,'SkipPause'),       testCondition = false;      end
+if ~isfield(x,'iWorker'),         testCondition = false;      end
+if ~isfield(x,'nWorkers'),        testCondition = false;      end
 
 % Now let's check the values
 if isfield(x,'DataParPath')
@@ -120,13 +120,13 @@ if isfield(x,'DataParPath')
         testCondition = false;
     end
 end
-if isfield(x,'ImportArray')
-    if length(x.ImportArray)<4 || sum(x.ImportArray)>0 || ~isnumeric(x.ImportArray)
+if isfield(x,'ImportModules')
+    if length(x.ImportModules)<4 || sum(x.ImportModules)>0 || ~isnumeric(x.ImportModules)
         testCondition = false;
     end
 end
-if isfield(x,'ProcessArray')
-    if length(x.ProcessArray)<3 || sum(x.ProcessArray)>0 || ~isnumeric(x.ProcessArray)
+if isfield(x,'ProcessModules')
+    if length(x.ProcessModules)<3 || sum(x.ProcessModules)>0 || ~isnumeric(x.ProcessModules)
         testCondition = false;
     end
 end
@@ -171,12 +171,12 @@ testCondition = true; % Fallback
 if ~isstruct(x)
     testCondition = false;
 end
-if ~isfield(x,'DataParPath'),   testCondition = false;      end
-if ~isfield(x,'ImportArray'),   testCondition = false;      end
-if ~isfield(x,'ProcessArray'),  testCondition = false;      end
-if ~isfield(x,'SkipPause'),     testCondition = false;      end
-if ~isfield(x,'iWorker'),       testCondition = false;      end
-if ~isfield(x,'nWorkers'),      testCondition = false;      end
+if ~isfield(x,'DataParPath'),     testCondition = false;      end
+if ~isfield(x,'ImportModules'),   testCondition = false;      end
+if ~isfield(x,'ProcessModules'),  testCondition = false;      end
+if ~isfield(x,'SkipPause'),       testCondition = false;      end
+if ~isfield(x,'iWorker'),         testCondition = false;      end
+if ~isfield(x,'nWorkers'),        testCondition = false;      end
 
 % Now let's check the values
 if isfield(x,'DataParPath')
@@ -184,13 +184,13 @@ if isfield(x,'DataParPath')
         testCondition = false;
     end
 end
-if isfield(x,'ImportArray')
-    if length(x.ImportArray)<4 || sum(x.ImportArray)>0 || ~isnumeric(x.ImportArray)
+if isfield(x,'ImportModules')
+    if length(x.ImportModules)<4 || sum(x.ImportModules)>0 || ~isnumeric(x.ImportModules)
         testCondition = false;
     end
 end
-if isfield(x,'ProcessArray')
-    if length(x.ProcessArray)<3 || sum(x.ProcessArray)>0 || ~isnumeric(x.ProcessArray)
+if isfield(x,'ProcessModules')
+    if length(x.ProcessModules)<3 || sum(x.ProcessModules)>0 || ~isnumeric(x.ProcessModules)
         testCondition = false;
     end
 end
