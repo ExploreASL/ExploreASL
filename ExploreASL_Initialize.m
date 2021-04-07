@@ -69,13 +69,6 @@ function [x] = ExploreASL_Initialize(varargin)
         end
     end
     
-    % Check if GUI options are available
-    if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
-        bUseGUI = false;
-    else
-        bUseGUI = true;
-    end
-    
 
     %% -----------------------------------------------------------------------------
     %% Get ExploreASL path
@@ -97,17 +90,8 @@ function [x] = ExploreASL_Initialize(varargin)
     % Select the ExploreASL folder manually, if the script is not run in deployed mode
     if ~isdeployed
         if ~exist(MasterScriptPath,'file')
-            if bUseGUI
-                if ismac % somehow macOS doesnt show the title of the question dialogue
-                    fprintf('Select folder where ExploreASL is installed\n');
-                end
-                pathstr = uigetdir(CurrCD, 'Select folder where ExploreASL is installed');
-            else
-                pathstr = input('Provide foldername where ExploreASL is installed, including ": ');
-            end
-            if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL_Master.m'),'file')
-                return
-            end
+            pathstr = input('Provide foldername where ExploreASL is installed (format: \''PathExploreASL\''): ');
+            if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL_Master.m'),'file'), return; end
             x.MyPath = pathstr;
         end
     else
