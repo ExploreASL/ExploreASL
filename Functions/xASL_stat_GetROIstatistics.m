@@ -631,7 +631,6 @@ for iSubject=1:x.nSubjects
                     %% CoV
                     x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
 					if ~bSkipPVC
-						% x.S.DAT_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
 						x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 					end
 

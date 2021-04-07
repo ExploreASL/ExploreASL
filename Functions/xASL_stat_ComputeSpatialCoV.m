@@ -1,20 +1,18 @@
 function sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,nMinSize,bPVC,imGM,imWM)
-% Calculates spatial coefficient of variation (sCoV) in the image with optional partial volume correction.
+%xASL_stat_ComputeSpatialCoV calculates spatial coefficient of variation (sCoV) in the image with optional partial volume correction.
 %
-% FORMAT: sCov = xASL_stat_ComputeSpatialCoV(imCBF)
-%         sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask)
-%         sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,nMinSize)
-%         sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,nMinSize,bPVC,imGM,imWM)
+% FORMAT: sCov = xASL_stat_ComputeSpatialCoV(imCBF[,imMask,nMinSize,bPVC,imGM,imWM])
 %
 % INPUT:
-%   imCBF  - input CBF volume
-%   imMask - mask for the calculation (DEFAULT finite part of imCBF)
-%   nMinSize - minimal size of the ROI in voxels (DEFAULT 0), if not big enough, then return NaN
-%   bPVC   - perform PV-correction (DEFAULT 0)
-%            0 - don't do partial volume correction
+%   imCBF  - input CBF volume (REQUIRED)
+%   imMask - mask for the calculation (OPTIONAL, DEFAULT finite part of imCBF)
+%   nMinSize - minimal size of the ROI in voxels, if not big enough, then return NaN (OPTIONAL, DEFAULT 0)
+%   bPVC   - perform PV-correction (OPTIONAL, DEFAULT 0)
+%            0 - do not do partial volume correction
 %            2 - partial volume correction by using pseudoCov calculated from imGM, imWM
-%   imGM   - GM partial volume map with the same size as imCBF, mandatory for bPVC==2
-%   imWM   - WM partial volume map with the same size as imCBF, mandatory for bPVC==2
+%   imGM   - GM partial volume map with the same size as imCBF (OPTIONAL, but REQUIRED for bPVC==2)
+%   imWM   - WM partial volume map with the same size as imCBF (OPTIONAL, but REQUIRED for bPVC==2)
+%
 % OUTPUT:
 %   sCov   - calculated spatial coefficient of variation
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -41,15 +39,22 @@ function sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,nMinSize,bPVC,imGM,imWM
 
 
 %% 1. Admin
+if nargin < 1
+	error('imCBF is a required parameter');
+end
+
 if nargin < 2 || isempty(imMask)
 	imMask = ones(size(imCBF));
 end
+
 if nargin < 3 || isempty(nMinSize)
 	nMinSize = 0;
 end
+
 if nargin < 4 || isempty(bPVC)
 	bPVC = 0;
 end
+
 if nargin < 5
 	imGM = [];
 end
