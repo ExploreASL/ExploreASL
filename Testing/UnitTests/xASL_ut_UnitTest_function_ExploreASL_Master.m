@@ -46,7 +46,7 @@ end
 if ~isfield(x,'DataParPath'),     testCondition = false;      end
 if ~isfield(x,'ImportModules'),   testCondition = false;      end
 if ~isfield(x,'ProcessModules'),  testCondition = false;      end
-if ~isfield(x,'SkipPause'),       testCondition = false;      end
+if ~isfield(x,'bPause'),          testCondition = false;      end
 if ~isfield(x,'iWorker'),         testCondition = false;      end
 if ~isfield(x,'nWorkers'),        testCondition = false;      end
 
@@ -66,8 +66,8 @@ if isfield(x,'ProcessModules')
         testCondition = false;
     end
 end
-if isfield(x,'SkipPause')
-    if length(x.SkipPause)>1 || sum(x.SkipPause)>0 || ~isnumeric(x.SkipPause)
+if isfield(x,'bPause')
+    if length(x.bPause)>1 || sum(x.bPause)>0 || ~isnumeric(x.bPause)
         testCondition = false;
     end
 end
@@ -98,7 +98,7 @@ UnitTest.tests(2).testname = 'Initialize (with arguments)';
 testTime = tic;
 
 % Read test files
-[x] = ExploreASL_Master('',0,0,1,1,1);
+[x] = ExploreASL_Master('',0,0,0,1,1);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -110,7 +110,7 @@ end
 if ~isfield(x,'DataParPath'),     testCondition = false;      end
 if ~isfield(x,'ImportModules'),   testCondition = false;      end
 if ~isfield(x,'ProcessModules'),  testCondition = false;      end
-if ~isfield(x,'SkipPause'),       testCondition = false;      end
+if ~isfield(x,'bPause'),          testCondition = false;      end
 if ~isfield(x,'iWorker'),         testCondition = false;      end
 if ~isfield(x,'nWorkers'),        testCondition = false;      end
 
@@ -130,8 +130,8 @@ if isfield(x,'ProcessModules')
         testCondition = false;
     end
 end
-if isfield(x,'SkipPause')
-    if length(x.SkipPause)>1 || x.SkipPause~=1 || ~isnumeric(x.SkipPause)
+if isfield(x,'bPause')
+    if length(x.bPause)>1 || x.bPause~=0 || ~isnumeric(x.bPause)
         testCondition = false;
     end
 end
@@ -162,7 +162,7 @@ UnitTest.tests(3).testname = 'Initialize (with arrays)';
 testTime = tic;
 
 % Read test files
-[x] = ExploreASL_Master('',[0 0 0 0],[0 0 0 0],1,1,1);
+[x] = ExploreASL_Master('',[0 0 0 0],[0 0 0 0],0,1,1);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -174,7 +174,7 @@ end
 if ~isfield(x,'DataParPath'),     testCondition = false;      end
 if ~isfield(x,'ImportModules'),   testCondition = false;      end
 if ~isfield(x,'ProcessModules'),  testCondition = false;      end
-if ~isfield(x,'SkipPause'),       testCondition = false;      end
+if ~isfield(x,'bPause'),          testCondition = false;      end
 if ~isfield(x,'iWorker'),         testCondition = false;      end
 if ~isfield(x,'nWorkers'),        testCondition = false;      end
 
@@ -194,8 +194,8 @@ if isfield(x,'ProcessModules')
         testCondition = false;
     end
 end
-if isfield(x,'SkipPause')
-    if length(x.SkipPause)>1 || x.SkipPause~=1 || ~isnumeric(x.SkipPause)
+if isfield(x,'bPause')
+    if length(x.bPause)>1 || x.bPause~=0 || ~isnumeric(x.bPause)
         testCondition = false;
     end
 end
@@ -231,7 +231,7 @@ testPatientDestination = fullfile(TestRepository,'UnitTesting','working_director
 xASL_Copy(testPatientSource, testPatientDestination);
 
 % Read test files
-[x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[1 0 0 0],0,1,1,1);
+[x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[1 0 0 0],0,0,1,1);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback

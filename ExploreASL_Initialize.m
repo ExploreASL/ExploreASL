@@ -2,7 +2,7 @@ function [x] = ExploreASL_Initialize(varargin)
 %ExploreASL_Initialize Initializes ExploreASL
 %
 % FORMAT: 
-%   [x] = ExploreASL_Initialize([DataParPath, ImportModules, ProcessModules, SkipPause, iWorker, nWorkers])
+%   [x] = ExploreASL_Initialize([DataParPath, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
 %
 % INPUT:
 %   varargin    - This script accepts the same arguments as ExploreASL_Master. Check out the definitions there.
@@ -770,7 +770,7 @@ function p = inputParsing(varargin)
     validDataParPath = @(variable) ischar(variable) || isempty(variable);
     validImportModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     validProcessModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
-    validSkipPause = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
+    validbPause = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     validiWorker = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     validnWorkers = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     
@@ -778,7 +778,7 @@ function p = inputParsing(varargin)
     defaultDataParPath = [];
     defaultImportModules = [0 0 0 0];
     defaultProcessModules = [0 0 0];
-    defaultSkipPause = 0;
+    defaultbPause = 0;
     defaultiWorker = 1;
     defaultnWorkers = 1;
     
@@ -786,7 +786,7 @@ function p = inputParsing(varargin)
     addOptional(p, 'DataParPath', defaultDataParPath, validDataParPath);
     addOptional(p, 'ImportModules', defaultImportModules, validImportModules);
     addOptional(p, 'ProcessModules', defaultProcessModules, validProcessModules);
-    addOptional(p, 'SkipPause', defaultSkipPause, validSkipPause);
+    addOptional(p, 'bPause', defaultbPause, validbPause);
     addOptional(p, 'iWorker', defaultiWorker, validiWorker);
     addOptional(p, 'nWorkers', defaultnWorkers, validnWorkers);
     
@@ -803,7 +803,7 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
     if isempty(parameters.DataParPath),     parameters.DataParPath = '';                                    end
     if ischar(parameters.ImportModules),    parameters.ImportModules = str2num(parameters.ImportModules);   end
     if ischar(parameters.ProcessModules),   parameters.ProcessModules = str2num(parameters.ProcessModules); end
-    if ischar(parameters.SkipPause),        parameters.SkipPause = str2num(parameters.SkipPause);           end
+    if ischar(parameters.bPause),           parameters.bPause = str2num(parameters.bPause);                 end
     if ischar(parameters.iWorker),          parameters.iWorker = str2num(parameters.iWorker);               end
     if ischar(parameters.nWorkers),         parameters.nWorkers = str2num(parameters.nWorkers);             end
     
@@ -820,9 +820,9 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
                                      parameters.ProcessModules(1)];
     end
     
-    % Different default for deployed mode
+    % Make it impossible to set bPause to true in deployed mode
     if isdeployed
-        parameters.SkipPause = 1;
+        parameters.bPause = 0;
     end
 
 
@@ -836,7 +836,7 @@ function x = ExploreASL_Initialize_storeParsedInput(parameters)
     x.DataParPath = parameters.DataParPath;
     x.ImportModules = parameters.ImportModules;
     x.ProcessModules = parameters.ProcessModules;
-    x.SkipPause = parameters.SkipPause;
+    x.bPause = parameters.bPause;
     x.iWorker = parameters.iWorker;
     x.nWorkers = parameters.nWorkers;
     
@@ -856,7 +856,7 @@ function ExploreASL_Initialize_printSettings(x)
     fprintf('Run Structural Module\t%d\n', x.ProcessModules(1));
     fprintf('Run ASL Module\t\t\t%d\n', x.ProcessModules(2));
     fprintf('Run Population Module\t%d\n', x.ProcessModules(3));
-    fprintf('SkipPause\t\t\t\t%d\n', x.SkipPause);
+    fprintf('bPause\t\t\t\t\t%d\n', x.bPause);
     fprintf('iWorker\t\t\t\t\t%d\n', x.iWorker);
     fprintf('nWorkers\t\t\t\t%d\n', x.nWorkers);
     fprintf('==============================================================================================\n');

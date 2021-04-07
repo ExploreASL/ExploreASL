@@ -17,7 +17,7 @@ function [x] = ExploreASL_Master(varargin)
 %                  - ASL = Run the ASL Module (BOOLEAN, DEFAULT = 0)
 %                  - POPULATION = Run the Population Module (BOOLEAN, DEFAULT = 0)
 %
-%   SkipPause      - FALSE = Pause workflow before ExploreASL pipeline (OPTIONAL, DEFAULT = FALSE)
+%   bPause         - TRUE = Pause workflow before ExploreASL pipeline (OPTIONAL, DEFAULT = FALSE)
 %
 %   iWorker        - Allows parallelization when called externally. 
 %                    iWorker defines which of the parallel ExploreASL calls we are (OPTIONAL, DEFAULT=1)
@@ -76,7 +76,7 @@ function [x] = ExploreASL_Master(varargin)
     % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
     if x.ProcessData > 0
-        x = ExploreASL_Initialize(x.DataParPath, x.ImportModules, x.ProcessModules, x.SkipPause, x.iWorker, x.nWorkers);
+        x = ExploreASL_Initialize(x.DataParPath, x.ImportModules, x.ProcessModules, x.bPause, x.iWorker, x.nWorkers);
     end
     
     % -----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ function [x] = ExploreASL_Master(varargin)
             fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
         end
         return; % skip processing
-    elseif ~isdeployed && ~x.SkipPause % if this is true, we skip the break here
+    elseif ~isdeployed && x.bPause % if this is true, we skip the break here
         fprintf('%s\n','Press any key to start processing & analyzing');
         fprintf('Please ensure you have a read-only copy of your original data as they may be overwritten\n');
         fprintf('%s\n','Or press CTRL/command-C to cancel...  ');
