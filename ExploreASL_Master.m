@@ -87,7 +87,7 @@ function [x] = ExploreASL_Master(varargin)
             fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
         end
         return; % skip processing
-    elseif ~isdeployed && ~x.SkipPause % if this exists, we skip the break here
+    elseif ~isdeployed && ~x.SkipPause % if this is true, we skip the break here
         fprintf('%s\n','Press any key to start processing & analyzing');
         fprintf('Please ensure you have a read-only copy of your original data as they may be overwritten\n');
         fprintf('%s\n','Or press CTRL/command-C to cancel...  ');
