@@ -40,10 +40,10 @@ function [x] = ExploreASL_Initialize(varargin)
     p = inputParsing(varargin{:});
 
     % Convert parsed input
-    parameters = convertParsedInput(p.Results);
+    parameters = ExploreASL_Initialize_convertParsedInput(p.Results);
 
     % Store parsed input
-    x = storeParsedInput(parameters);
+    x = ExploreASL_Initialize_storeParsedInput(parameters);
     
     % Initialize S substruct
     x.S = struct;
@@ -231,7 +231,7 @@ function [x] = ExploreASL_Initialize(varargin)
     fprintf(['\n\n' BreakString LogoString '\n']);
 
     %% Print chosen settings
-    printSettings(x);
+    ExploreASL_Initialize_printSettings(x);
 
 
     %% Check permissions
@@ -813,7 +813,7 @@ end
 
 %% -----------------------------------------------------------------------
 %% Convert parsed input
-function parameters = convertParsedInput(parameters)
+function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
 
     % Check if inputs are empty or chars
     if isempty(parameters.DataParPath),     parameters.DataParPath = '';                                    end
@@ -846,7 +846,7 @@ end
 
 %% -----------------------------------------------------------------------
 %% Store parsed input
-function x = storeParsedInput(parameters)
+function x = ExploreASL_Initialize_storeParsedInput(parameters)
 
     % Store input
     x.DataParPath = parameters.DataParPath;
@@ -860,7 +860,7 @@ end
 
 %% -----------------------------------------------------------------------
 %% Print chosen settings
-function printSettings(x)
+function ExploreASL_Initialize_printSettings(x)
 
     fprintf('==================================== ExploreASL Settings =====================================\n');
     if length(x.DataParPath)>66,    fprintf('DataParPath\t\t\t\t...%s\n', x.DataParPath(end-66:end));
