@@ -153,8 +153,8 @@ function [x] = ExploreASL_Initialize(varargin)
         x.DataParPath = input('Please insert the path to your DataParFile: ');
     end
 
-    % Recheck the DataParFile, which is possibly not a file or does not exist
-    if ~exist(x.DataParPath,'file') && ~exist(x.DataParPath,'dir') % file = without BIDS Import, dir = BIDS import 
+    % Recheck the DataPar/sourceStructure file, which is possibly not a file or does not exist
+    if ~exist(x.DataParPath,'file')
         fprintf('DataPar file does not exist, ExploreASL will only be initialized...\n');
         x.ProcessData = 0;
         x.ProcessArray = [0 0 0];
@@ -180,18 +180,21 @@ function [x] = ExploreASL_Initialize(varargin)
     
     
     % Give some feedback
-    reportProcess = 'UNEXPECTED'; % Fallback
-    if x.ProcessData==0,        reportProcess = 'only run the initialization';
-    elseif x.ProcessData==1,    reportProcess = 'run the processing pipeline';
-    elseif x.ProcessData==2,    reportProcess = 'only load the dataset';
+    debugFeedback = false;
+    if debugFeedback
+        % Get report string
+        reportProcess = 'UNEXPECTED'; % Fallback
+        if x.ProcessData==0,        reportProcess = 'only run the initialization';
+        elseif x.ProcessData==1,    reportProcess = 'run the processing pipeline';
+        elseif x.ProcessData==2,    reportProcess = 'only load the dataset';
+        end
+        reportImport = 'UNEXPECTED'; % Fallback
+        if x.ImportData==0,        reportImport = 'not run the import workflow';
+        elseif x.ImportData==1,    reportImport = 'run the import workflow';
+        end
+        % Print feedback
+        fprintf('ExploreASL will %s and will %s...\n',reportImport,reportProcess);
     end
-    reportImport = 'UNEXPECTED'; % Fallback
-    if x.ImportData==0,        reportImport = 'not run the import workflow';
-    elseif x.ImportData==1,    reportImport = 'run the import workflow';
-    end
-    
-    % Print feedback
-    fprintf('ExploreASL will %s and will %s...\n',reportImport,reportProcess);
     
     
     %% Proceed with Initialization
