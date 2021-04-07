@@ -155,7 +155,9 @@ function [x] = ExploreASL_Initialize(varargin)
 
     % Recheck the DataPar/sourceStructure file, which is possibly not a file or does not exist
     if ~exist(x.DataParPath,'file')
-        fprintf('DataPar file does not exist, ExploreASL will only be initialized...\n');
+        if x.ImportData || x.ProcessData
+            fprintf('DataPar file does not exist, ExploreASL will only be initialized...\n');
+        end
         x.ProcessData = 0;
         x.ProcessModules = [0 0 0];
     else % DataPar file/folder exists
