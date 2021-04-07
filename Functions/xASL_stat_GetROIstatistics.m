@@ -73,7 +73,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      x = xASL_stat_GetROIstatistics(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------------------
@@ -552,12 +552,6 @@ for iSubject=1:x.nSubjects
             end
         end
         
-        % Initialize matrices with NaNs
-		FieldsAre = {'DAT_mean_PVC0' 'DAT_median_PVC0'}; % update this with fields filled below!
-        for iField = 1:length(FieldsAre)
-            x.S.(FieldsAre{iField})(SubjSess, 1:size(SubjectSpecificMasks,2)) = NaN;
-        end
-		
         % Now fill with data
 		for iROI=1:size(SubjectSpecificMasks,2)
 			% Swap tissue compartments if needed (this is easier scripting-wise)
@@ -597,14 +591,13 @@ for iSubject=1:x.nSubjects
 					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, 0, 0);
 				end
             else
-                
                 % Provide some feedback for debugging                
                 if xASL_stat_SumNan(DataIm(:)) == 0
                     % Check for empty CBF map first
                     warning(['Empty image for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
-                end
+				end
 
-                if x.S.bMasking(3)==0 % no tissue-masking
+				if x.S.bMasking(3)==0 % no tissue-masking
                     pGM_here = ones(size(DataIm));
                     pWM_here = ones(size(DataIm));
 					bSkipPVC = 1;
@@ -615,7 +608,8 @@ for iSubject=1:x.nSubjects
                     CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
 				end
 				
-				% Start with defaults
+				
+				% Initialize output data matrix [subject/session ROI-statistics] with NaNs
                 x.S.DAT_mean_PVC0(SubjSess,iROI) = NaN;
                 x.S.DAT_median_PVC0(SubjSess,iROI) = NaN;
                 x.S.DAT_CoV_PVC0(SubjSess,iROI) = NaN;
