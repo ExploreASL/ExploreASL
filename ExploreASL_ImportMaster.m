@@ -1,7 +1,7 @@
-function [x] = ExploreASL_ImportWorkflow(x)
-%ExploreASL_ImportWorkflow Multi-step import workflow for DCM2NII, NII2BIDS & BIDS2LEGACY.
+function [x] = ExploreASL_ImportMaster(x)
+%ExploreASL_ImportMaster Multi-step import workflow for DCM2NII, NII2BIDS & BIDS2LEGACY.
 %
-% FORMAT: [x] = ExploreASL_ImportWorkflow(x)
+% FORMAT: [x] = ExploreASL_ImportMaster(x)
 %
 % INPUT:
 %   x             - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging

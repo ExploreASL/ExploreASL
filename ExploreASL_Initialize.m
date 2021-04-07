@@ -1,17 +1,21 @@
 function [x] = ExploreASL_Initialize(varargin)
 %ExploreASL_Initialize Initializes ExploreASL
 %
-% FORMAT: [x] = ExploreASL_Initialize([DataParPath, ImportArray, ProcessArray, SkipPause, iWorker, nWorkers])
+% FORMAT: 
+%   [x] = ExploreASL_Initialize([DataParPath, ImportArray, ProcessArray, SkipPause, iWorker, nWorkers])
 %
 % INPUT:
-%   This script accepts the same arguments as ExploreASL_Master. Check out the definitions there.
+%   varargin    - This script accepts the same arguments as ExploreASL_Master. Check out the definitions there.
 %
 % OUTPUT:
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This initialization wrapper initializes ExploreASL: managing paths, deployment, etc.
+% DESCRIPTION: 
+%
+% This initialization wrapper initializes ExploreASL: managing paths, deployment, etc.
 % Using the following initialization functions functions:
+%
 % xASL_init_DefinePaths            - manages folders for ExploreASL, and sets and creates study/data-folders
 % xASL_init_Toolboxes              - initialization third-party toolboxes, e.g. SPM, dip_image (soon to be removed)
 % xASL_init_VisualizationSettings  - defines visualization settings for
@@ -19,10 +23,13 @@ function [x] = ExploreASL_Initialize(varargin)
 % xASL_init_DefineSets             - Define study subjects/parameters for this pipeline run
 % xASL_init_PrintCheckSettings     - prints summarized data parameters and warnings
 % xASL_init_FileSystem             - dirty initialization of common filenames used throughout the pipeline
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE for GUI: ExploreASL_Initialize
-% EXAMPLE for calling externally: ExploreASL_Initialize('//MyDisk/MyStudy/DataPar.m');
-% EXAMPLE for debugging/initialization only: [x] = ExploreASL_Initialize('',0,0);
+% EXAMPLE:
+%
+% Calling externally:             [x] = ExploreASL_Initialize('/MyDisk/MyStudy/DataPar.json');
+% Debugging/initialization only:  [x] = ExploreASL_Initialize;
+%
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

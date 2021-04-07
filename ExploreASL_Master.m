@@ -71,7 +71,7 @@ function [x] = ExploreASL_Master(varargin)
     
     % -----------------------------------------------------------------------------
     % Import Master
-    x = ExploreASL_ImportWorkflow(x);
+    x = ExploreASL_ImportMaster(x);
     
     % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
