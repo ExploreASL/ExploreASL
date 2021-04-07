@@ -263,10 +263,12 @@ end
 
 % Overwrite DataParPath in x structure
 fprintf('Overwriting x.DataParPath...\n');
-dataPar.x.DataParPath = fullfile(pathLegacy, 'DataPar.json');
 
 % Write DataParFile
 spm_jsonwrite(dataPar.x.DataParPath, dataPar);
+
+% Add the path to the dataPar.x struct that we return to the Master script
+dataPar.x.DataParPath = fullfile(pathLegacy, 'DataPar.json');
 
 end
 
