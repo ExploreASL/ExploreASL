@@ -43,17 +43,11 @@ function [x] = ExploreASL_Master(varargin)
 %
 % EXAMPLES:
 %
-% [x] = ExploreASL_Master('MY_PATH',1,1,1,1,1);
-% [x] = ExploreASL_Master('MY_PATH',[1 1 1 1],[1 1 1],1,1,1);
-% [x] = ExploreASL_Master('MY_PATH','[1 1 1 1]','[1 1 1]','1','1','1');
+% [x] = ExploreASL_Master('/MyDisk/MyStudy/DataPar.json', 1, 1, 1, 1, 1);
+% [x] = ExploreASL_Master('/MyDisk/MyStudy/DataPar.json', [1 1 1 1], [1 1 1], 1, 1, 1);
+% [x] = ExploreASL_Master('/MyDisk/MyStudy/DataPar.json', '[1 1 1 1]', '[1 1 1]', '1', '1', '1');
 %
-% OUTDATED EXAMPLES:
-%
-% EXAMPLE for GUI: ExploreASL
-% EXAMPLE for calling externally: ExploreASL('//MyDisk/MyStudy/DataPar.m', true, true);
-% EXAMPLE for calling externally to run the Structural module only: ExploreASL('//MyDisk/MyStudy/DataPar.m', true, true, [], [], 1);
-% EXAMPLE for calling externally to run the ASL & Population modules: ExploreASL('//MyDisk/MyStudy/DataPar.m', true, true, [], [], [2 3]);
-% EXAMPLE for debugging/initialization only: [x] = ExploreASL('',0);
+% For additional examples we recommend to check out the tutorial section: https://exploreasl.github.io/Documentation/site/Tutorials/
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
