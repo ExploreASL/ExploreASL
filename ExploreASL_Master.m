@@ -4,7 +4,7 @@ function [x] = ExploreASL_Master(varargin)
 % FORMAT: [x] = ExploreASL([DataParPath, ImportArray, ProcessArray, SkipPause, iWorker, nWorkers])
 % 
 % INPUT:
-%   DataParPath  - Path to data parameter file (OPTIONAL, DEFAULT = [])
+%   DataParPath  - Path to data parameter file (OPTIONAL, DEFAULT = prompting user input)
 %
 %   ImportArray  - [DCM2NII, NII2BIDS, ANONYMIZE, BIDS2LEGACY] (OPTIONAL, BOOLEAN ARRAY)
 %                - DCM2NII = Run the DICOM to NIFTI conversion (BOOLEAN, DEFAULT = 0)
@@ -33,11 +33,14 @@ function [x] = ExploreASL_Master(varargin)
 %                 then running xASL_Module_Structure, xASL_module_ASL and xASL_module_Population.
 %                 When ProcessArray is set to 0, the ExploreASL pipeline is not started but only  
 %                 initialized for debugging. This pipeline can be run from CLI or using the python GUI.
-%
-% xASL_Module_Structure  - processes structural data, i.e. high-resolution
-%                          T1w and FLAIR scans, type help xASL_module_Structural for more information
-% xASL_Module_ASL        - processes ASL data, i.e. ASL scans and M0, type help xASL_module_ASL for more information 
-% xASL_Module_Population - processes data on population basis, mostly QC, but also template/parametric maps creation, etc. Type help xASL_module_Population for more information 
+% 
+% ExploreASL_Initialize    - This wrapper initializes ExploreASL: managing paths, deployment, etc.
+% ExploreASL_ImportMaster  - Multi-step import workflow for DCM2NII, NII2BIDS & BIDS2LEGACY.
+% xASL_Module_Structure    - Processes structural data, i.e. high-resolution T1w and FLAIR scans, 
+%                            type help xASL_module_Structural for more information.
+% xASL_Module_ASL          - Processes ASL data, i.e. ASL scans and M0, type help xASL_module_ASL for more information. 
+% xASL_Module_Population   - Processes data on population basis, mostly QC, but also template/parametric maps creation, 
+%                            etc. Type help xASL_module_Population for more information. 
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
@@ -53,7 +56,6 @@ function [x] = ExploreASL_Master(varargin)
 
     % -----------------------------------------------------------------------------
     %% 1 Initialization when calling this function
-    % -----------------------------------------------------------------------------
 
     % NB: *.mat files that contain statistics in data-root folder
     % (e.g.\analysis) should contain the following format:
@@ -63,17 +65,22 @@ function [x] = ExploreASL_Master(varargin)
     % or 2nd column is session-id (e.g. 'ASL_1'), then
     % 3rd column contains parameter values
     
+    % -----------------------------------------------------------------------------
     % Initialization
     x = ExploreASL_Initialize(varargin{:});
     
-    % Import
+    % -----------------------------------------------------------------------------
+    % Import Master
     x = ExploreASL_ImportWorkflow(x);
     
+    % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
     if x.ProcessData > 0
         x = ExploreASL_Initialize(x.DataParPath, x.ImportArray, x.ProcessArray, x.SkipPause, x.iWorker, x.nWorkers);
     end
     
+    % -----------------------------------------------------------------------------
+    % Print user feedback
     if x.ProcessData==0 || x.ProcessData==2
         if x.ProcessData==2 && nargout==0
             warning('Data loading requested but no output structure defined');
@@ -85,7 +92,6 @@ function [x] = ExploreASL_Master(varargin)
         fprintf('Please ensure you have a read-only copy of your original data as they may be overwritten\n');
         fprintf('%s\n','Or press CTRL/command-C to cancel...  ');
         pause;
-    else % continue
     end
 
     
