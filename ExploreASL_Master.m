@@ -17,7 +17,7 @@ function [x] = ExploreASL_Master(varargin)
 %                - ASL = Run the ASL Module (BOOLEAN, DEFAULT = 0)
 %                - POPULATION = Run the Population Module (BOOLEAN, DEFAULT = 0)
 %
-%   SkipPause    - TRUE = Pause workflow before ExploreASL pipeline (OPTIONAL, DEFAULT = FALSE)
+%   SkipPause    - FALSE = Pause workflow before ExploreASL pipeline (OPTIONAL, DEFAULT = FALSE)
 %
 %   iWorker      - Allows parallelization when called externally. 
 %                  iWorker defines which of the parallel ExploreASL calls we are (OPTIONAL, DEFAULT=1)

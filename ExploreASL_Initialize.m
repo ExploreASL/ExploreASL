@@ -831,7 +831,7 @@ function parameters = convertParsedInput(parameters)
     
     % Different default for deployed mode
     if isdeployed
-        parameters.SkipPause = 0;
+        parameters.SkipPause = 1;
     end
 
 
