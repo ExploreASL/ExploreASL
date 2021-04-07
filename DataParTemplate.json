@@ -3,14 +3,13 @@
 			"name": "ExampleDataSet",
 			"subject_regexp": "^\\d{3}$",
 			"exclusion": "",
-			"SESSION": "{'ASL_1','ASL_2'}",
-			"nSessions": "length(x.SESSIONS)",
+			"SESSIONS": ["ASL_1","ASL_2"],
 			"session":
 			{
-				"options": "{'baseline' 'drug'}"
+				"options": ["baseline","drug"]
 			},
 			"M0": "UseControlAsM0",
-			"M0PositionInASL4D": "[1 2]",
+			"M0PositionInASL4D": [1 2],
 			"Q":
 			{
 				"BackgroundSuppressionNumberPulses": 2,

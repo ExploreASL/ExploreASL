@@ -61,6 +61,21 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
 		DstPath = fullfile(DstPath,[SrcFile, SrcExt]);
     end
 	
+    %% Manage copying of folders
+    % If SrcDir and DstDir are both folders
+    if exist(SrcPath, 'dir') && exist(DstPath, 'dir')
+        % Check if DstDir is empty
+        bDestDirIsEmpty = length(xASL_adm_GetFileList(DstPath, '.*', 'FPListRec'))<1;
+        
+        if bDestDirIsEmpty
+            % allow copying, since we don't overwrite in this case
+            bOverwrite = true;
+        elseif ~bOverwrite
+            % if DstDir is not empty, and we didnt want to overwrite, then issue a warning
+            warning('DestPath is not empty, enable bOverwrite if you want to merge folders');
+        end
+    end
+    
     %% Start copying
     
     % Checks if the destination file exists (as .nii or .nii.gz)

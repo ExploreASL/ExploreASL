@@ -1,4 +1,4 @@
-function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,bPrintReport,threshRmseNii)
+function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,bPrintReport,threshRmseNii,detailedOutput,printWarnings)
 %xASL_bids_CompareStructures Function that compares two BIDS folders with several subfolders and studies and prints the differences.
 %
 % FORMAT: [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,[bPrintReport,threshRmseNii]);
@@ -8,6 +8,8 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 %        pathDatasetB       - path to second BIDS structure [char array] (REQUIRED)
 %        bPrintReport       - true or false to print console report (OPTIONAL, DEFAULT = true)
 %        threshRmseNii      - normalized RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 1e-5)
+%        detailedOutput     - additional text ouput (also print that there are no missing files etc.) (OPTIONAL, DEFAULT = false)
+%        printWarnings      - print differences as warnings (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -25,24 +27,24 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 %
 % REFERENCES:       ...
 % __________________________________
-% Copyright @ 2015-2020 ExploreASL
+% Copyright @ 2015-2021 ExploreASL
 
 
     %% Input Check
 
     % Check if both root folders are valid char arrays or strings
     if ~ischar(pathDatasetA)
-        error('The path of structure A is not a char array.');
+        error('The path of structure A is not a char array');
     end
     if ~ischar(pathDatasetB)
-        error('The path of structure B is not a char array.');
+        error('The path of structure B is not a char array');
     end
 
     % Check if both root folders exists
-    if ~(xASL_exist(pathDatasetA)==7)
+    if ~xASL_exist(pathDatasetA, 'dir')
         error('The root folder of structure A does not exist: %s',pathDatasetA);
     end
-    if ~(xASL_exist(pathDatasetB)==7)
+    if ~xASL_exist(pathDatasetB, 'dir')
         error('The root folder of structure B does not exist: %s',pathDatasetB);
     end
 	
@@ -52,8 +54,18 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 	end
     
     % Default value for RMSE threshold
-    if nargin < 4
+    if nargin < 4 || isempty(threshRmseNii)
        threshRmseNii = 1e-5;
+    end
+    
+    % Detailed output
+    if nargin < 5 || isempty(detailedOutput)
+       detailedOutput = false;
+    end
+    
+    % Print differences as warnings
+    if nargin < 6 || isempty(printWarnings)
+       printWarnings = true;
     end
 
 
@@ -80,8 +92,8 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     pathDatasetB = fullfile(pathDatasetB);
 
     % Get dataset names
-    [~,datasetA,~] = fileparts(pathDatasetA);
-    [~,datasetB,~] = fileparts(pathDatasetB);
+    [~, datasetA] = fileparts(pathDatasetA);
+    [~, datasetB] = fileparts(pathDatasetB);
 
     % Make sure you have valid identifiers for the field names
     datasetA = matlab.lang.makeValidName(datasetA,'ReplacementStyle','delete');
@@ -97,13 +109,19 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     filesA = modifyFileList(filesA,pathDatasetA);
     filesB = modifyFileList(filesB,pathDatasetB);
     
+    % Get lists
+    fileListA = getListWithout('folders', filesA);
+    fileListB = getListWithout('folders', filesB);
+    folderListA = getListWithout('files', filesA);
+    folderListB = getListWithout('files', filesB);
+    
     % Get folder lists
-    folderListA = unique(string({filesA.folder}'));
-    folderListB = unique(string({filesB.folder}'));
+    folderListA = unique({folderListA.folder}');
+    folderListB = unique({folderListB.folder}');
     
     % Get real file lists
-    fileListA = unique(string({filesA.name}'));
-    fileListB = unique(string({filesB.name}'));
+    fileListA = unique({fileListA.name}');
+    fileListB = unique({fileListB.name}');
     
     % Missing Folders
     results.(datasetA).missingFolders = setdiff(folderListB,folderListA);
@@ -123,35 +141,114 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
         identical = false;
     end
     
+    
     % Full Report
     if bPrintReport
-        fprintf(strcat(repmat('=',100,1)','\n'));
-        fprintf('Dataset:\t\t%s\n',datasetA)
+        if detailedOutput
+            fprintf(strcat(repmat('=',100,1)','\n'));
+        end
+        if detailedOutput || ~isempty(results.(datasetA).missingFolders) || ~isempty(results.(datasetA).missingFiles)
+            fprintf('Dataset:\t\t%s\n',datasetA)
+        end
         printList(results.(datasetA).missingFolders)
         printList(results.(datasetA).missingFiles)
-		
-		if isempty(results.(datasetA).missingFolders) && isempty(results.(datasetA).missingFiles)
-			fprintf('\t\t\t\t%s\n','No missing files');
-		end
-
-        fprintf(strcat(repmat('=',100,1)','\n'));
-        fprintf('Dataset:\t\t%s\n',datasetB)
+        
+        if detailedOutput
+            if isempty(results.(datasetA).missingFolders) && isempty(results.(datasetA).missingFiles)
+                fprintf('\t\t\t\t%s\n','No missing files');
+            end
+        end
+        
+        if detailedOutput
+            fprintf(strcat(repmat('=',100,1)','\n'));
+        end
+        if detailedOutput || ~isempty(results.(datasetB).missingFolders) || ~isempty(results.(datasetB).missingFiles)
+            fprintf('Dataset:\t\t%s\n',datasetB)
+        end
         printList(results.(datasetB).missingFolders)
         printList(results.(datasetB).missingFiles)
-		
-		if isempty(results.(datasetB).missingFolders) && isempty(results.(datasetB).missingFiles)
-			fprintf('\t\t\t\t%s\n','No missing files');
-		end
-
+        
+        if detailedOutput
+            if isempty(results.(datasetB).missingFolders) && isempty(results.(datasetB).missingFiles)
+                fprintf('\t\t\t\t%s\n','No missing files');
+            end
+        end
+        
         % End of report
-        fprintf(strcat(repmat('=',100,1)','\n'));
+        if detailedOutput
+            fprintf(strcat(repmat('=',100,1)','\n'));
+        end
     end
     
+    
     % Compare file content
-    identical = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,bPrintReport,threshRmseNii);
+    [identical,results.differences] = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,bPrintReport,threshRmseNii);
+    
+    % Print differences as warnings
+    if printWarnings
+        printMissingAsWarnings(results);
+        printDifferencesAsWarnings(results.differences);
+    end
 
+end
+
+%% Print differences as warnings
+function printDifferencesAsWarnings(differences)
+
+    % Iterate over differences
+    if ~isempty(differences{1,1})
+        for iT = 1:size(differences,1)
+            warning([differences{iT,1} '  ']);
+            fprintf('\n');
+        end
+    end
     
+end
+
+%% Print missing files and folders as warnings
+function printMissingAsWarnings(results)
+
+    fieldNames = fieldnames(results);
+    for iT = 1:(length(fieldNames)-1)
+        if ~strcmp(fieldNames(iT),'differences')
+            % Folders
+            if ~isempty(results.(fieldNames{iT}).missingFolders)
+                for thisWarning = 1:size(results.(fieldNames{iT}).missingFolders,1)
+                    warning('Missing folder %s  ', results.(fieldNames{iT}).missingFolders{thisWarning,1});
+                    fprintf('\n');
+                end                
+            end
+            % Files
+            if ~isempty(results.(fieldNames{iT}).missingFiles)
+                for thisWarning = 1:size(results.(fieldNames{iT}).missingFiles,1)
+                    warning('Missing file %s  ', results.(fieldNames{iT}).missingFiles{thisWarning,1});
+                    fprintf('\n');
+                end  
+            end            
+        end
+    end
     
+end
+
+%% Get list without files/folders
+function returnList = getListWithout(thisType,List)
+
+    element = 1;
+    for iT = 1:size(List,1)
+        if strcmp(thisType,'folders')
+            if ~List(iT,1).isdir
+                returnList(element,1) = List(iT,1);
+                element = element+1;
+            end
+        end
+        if strcmp(thisType,'files')
+            if List(iT,1).isdir
+                returnList(element,1) = List(iT,1);
+                element = element+1;
+            end
+        end
+    end
+
 
 end
 
@@ -175,24 +272,30 @@ function printList(currentList)
     % Iterate over list
     if ~isempty(currentList)
         for iFile=1:length(currentList)
-            fprintf('Missing:\t\t%s\n',currentList(iFile))
+            fprintf('Missing:\t\t%s\n',currentList{iFile})
         end
     end
 end
 
 %% Check file contents
-function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,pathDatasetB,identical,bPrintReport,threshRmseNii)
+function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,pathDatasetB,identical,bPrintReport,threshRmseNii)
     
     % All files
     allFiles = unique([filesDatasetA',filesDatasetB']');
     
+    % Differences
+    differences = cell(1,1);
+    
+    % Difference number
+    dn = 1;
+    
     % Iterate over list
     for iFile=1:length(allFiles)
         % Assign root directory of dataset A
-        currentFileA = fullfile(pathDatasetA,allFiles(iFile));
-        currentFileB = fullfile(pathDatasetB,allFiles(iFile));
+        currentFileA = fullfile(pathDatasetA,allFiles{iFile});
+        currentFileB = fullfile(pathDatasetB,allFiles{iFile});
         % Get extension
-        [~,~,extension] = fileparts(allFiles(iFile));
+        [~,~,extension] = fileparts(allFiles{iFile});
         % Check extension
         if strcmp(extension,'.json')
 			jsonErrorReport='';
@@ -200,8 +303,8 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
 			% Compare JSON files on field basis
 			if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
 				% Import JSON files
-				jsonA = xASL_import_json(char(currentFileA));
-				jsonB = xASL_import_json(char(currentFileB));
+				jsonA = spm_jsonread(char(currentFileA));
+				jsonB = spm_jsonread(char(currentFileB));
 				
 				% Get JSON field names
 				fieldNamesA = fieldnames(jsonA);
@@ -214,22 +317,29 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
 				missingFields = setdiff(fieldNamesB,fieldNamesA);
 				% Print out missing fields
 				for iField=1:numel(missingFields)
-					jsonErrorReport = sprintf('%s\t\t\t\tMissing field: %s\n',jsonErrorReport,string(missingFields{iField}));
+					jsonErrorReport = sprintf('%s\t\t\t\tMissing field: %s\n',jsonErrorReport,missingFields{iField});
 				end
 				
 				extraFields = setdiff(fieldNamesA,fieldNamesB);
 				% Print out missing fields
 				for iField=1:numel(extraFields)
-					jsonErrorReport = sprintf('%s\t\t\t\tExtra field: %s\n',jsonErrorReport,string(extraFields{iField}));
+					jsonErrorReport = sprintf('%s\t\t\t\tExtra field: %s\n',jsonErrorReport,extraFields{iField});
 				end
 				
 				% Now we can compare these fields like in the part above
 				jsonErrorReport = [jsonErrorReport, compareFieldLists(jsonA,jsonB,sharedFieldsAB)];
 				
-				if bPrintReport && ~isempty(jsonErrorReport)
-					fprintf('File:\t\t\t%s\n',allFiles(iFile));
-					fprintf('%s',jsonErrorReport);
-				end
+				if ~isempty(jsonErrorReport)
+                    if bPrintReport
+                        fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                        fprintf('%s',jsonErrorReport);
+                    end
+                    
+                    % Save difference
+                    differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
+                    dn = dn+1;
+                end
+                
 			end
         elseif strcmp(extension,'.tsv') || strcmp(extension,'.txt') || strcmp(extension,'.csv')
             % Read files if they exist
@@ -237,15 +347,20 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                 % Compare text files content directly
                 currentFileTextA = fileread(currentFileA);
                 currentFileTextB = fileread(currentFileB);
-                if bPrintReport
-                    if ~strcmp(currentFileTextA,currentFileTextB)
-						fprintf('%s:\t\t\n',allFiles(iFile));
+                if ~strcmp(currentFileTextA,currentFileTextB)
+                    if bPrintReport
+                        fprintf('%s:\t\t\n',allFiles{iFile});
                         fprintf('\t\t\t\tDifferent file content.\n');
-                        identical = false;
                     end
+                    identical = false;
+                    
+                    % Save difference
+                    differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
+                    dn = dn+1;
+                    
                 end
             end
-        elseif strcmp(extension,'.nii') || contains(allFiles(iFile),'.nii.gz') % Warning: This unzips your NIFTIs right now!
+        elseif strcmp(extension,'.nii') || contains(allFiles{iFile},'.nii.gz') % Warning: This unzips your NIFTIs right now!
             % Read files if they exist
             if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
                 % Check file size (there were some 0KB images in the bids-examples)
@@ -253,10 +368,10 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                 tmpFileB = dir(currentFileB);
                 sizeA = tmpFileA.bytes;
                 sizeB = tmpFileB.bytes;
-
+                
                 % Check file size (images with a file size lower than 1 byte are corrupt)
                 if (sizeA>1 && sizeB>1)
-                    if contains(allFiles(iFile),'.nii.gz')
+                    if contains(allFiles{iFile},'.nii.gz')
                         % Unzip first
                         tmpPathImageA = xASL_adm_UnzipNifti(char(currentFileA));
                         tmpPathImageB = xASL_adm_UnzipNifti(char(currentFileB));
@@ -270,35 +385,55 @@ function identical = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,
                         imageA = xASL_io_Nifti2Im(char(currentFileA));
                         imageB = xASL_io_Nifti2Im(char(currentFileB));
                     end
-                    % Report function which prints to the console
-                    if bPrintReport
-                        % Check that matrix dimensions agree first
-                        sizeA = size(imageA);
-                        sizeB = size(imageB);
-                        if length(sizeA)==length(sizeB)
-                            if sum(sizeA==sizeB)==length(sizeA)
-                                RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
-                                if (RMSE>threshRmseNii)
-                                    fprintf('File:\t\t\t%s\n',allFiles(iFile));
+                    
+                    % Check that matrix dimensions agree first
+                    sizeA = size(imageA);
+                    sizeB = size(imageB);
+                    if length(sizeA)==length(sizeB)
+                        if sum(sizeA==sizeB)==length(sizeA)
+                            RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
+                            if (RMSE>threshRmseNii)
+                                % Report function which prints to the console
+                                if bPrintReport
+                                    fprintf('File:\t\t\t%s\n',allFiles{iFile});
                                     fprintf('\t\t\t\tRMSE (%d) of NIFTIs above threshold.\n',RMSE);
-                                    identical = false;
                                 end
-                            else
-                                fprintf('File:\t\t\t%s\n',allFiles(iFile));
-                                fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
                                 identical = false;
+                                
+                                % Save difference
+                                differences{dn,1} = ['RMSE of NIFTIs above threshold: ', allFiles{iFile}, ' '];
+                                dn = dn+1;
                             end
                         else
-                            fprintf('File:\t\t\t%s\n',allFiles(iFile));
-                            fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                            if bPrintReport
+                                fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                                fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                            end
                             identical = false;
+                            
+                            % Save difference
+                            differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
+                            dn = dn+1;
                         end
+                    else
+                        if bPrintReport
+                            fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                            fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                        end
+                        identical = false;
+                        
+                        % Save difference
+                        differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
+                        dn = dn+1;
                     end
                 else
                     if bPrintReport
-						fprintf('%s:\t\t\n',allFiles(iFile));
+                        fprintf('%s:\t\t\n',allFiles{iFile});
                         fprintf('\t\t\t\tFile is too small to be a real image.\n');
                     end
+                    % Save difference
+                    differences{dn,1} = ['File is too small to be a real image: ', allFiles{iFile}, ' '];
+                    dn = dn+1;
                 end
             end
         end
@@ -314,7 +449,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
 
     % Iterate over fields
     for iField=1:numel(fieldList)
-        curFieldName = string(fieldList(iField));
+        curFieldName = fieldList{iField};
         fieldContentA = jsonStructA.(fieldList{iField});
         fieldContentB = jsonStructB.(fieldList{iField});
         if isnumeric(fieldContentA) && isnumeric(fieldContentB)

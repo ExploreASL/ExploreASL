@@ -51,7 +51,7 @@ elseif ~isstruct(ParentJSON) && ischar(ParentJSON)
     
     if strcmp(Fext, '.json')
         % load the JSON
-        ParentJSON = xASL_import_json(PathParent);
+        ParentJSON = xASL_io_ReadDataPar(PathParent);
     elseif strcmp(Fext, '.mat') && strcmp(Ffile(6:end), '_parms')
         % Assume this is a parms.mat (legacy)
         mat = load(PathParent, '-mat');
@@ -75,7 +75,7 @@ elseif ~isstruct(ChildJSON) && ischar(ChildJSON)
     PathChild = ChildJSON;
     % load the JSON, or initiate one
     if exist(PathChild, 'file')
-        ChildJSON = xASL_import_json(PathChild);
+        ChildJSON = xASL_io_ReadDataPar(PathChild);
     else
         ChildJSON = struct;
     end

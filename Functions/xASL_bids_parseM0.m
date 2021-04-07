@@ -1,32 +1,31 @@
 function xASL_bids_parseM0(pathASLNifti)
-%xASL_bids_parseM0 Check the ASL file in BIDS format for its M0 possibilities and 
-% convert the ASL NIFTI in ExploreASL legacy format
+%xASL_bids_parseM0 Check the ASL file in Legacy format, but with BIDS sidecars for its M0 possibilities and 
+% finish the conversion of the ASL NIFTI to the ExploreASL legacy format
 %
 % FORMAT:      xASL_bids_parseM0(pathASLNifti)
 %
-% INPUT:       pathASLNifti - Path to a ASL NIFTI file in BIDS format (CHAR ARRAY, REQUIRED)
+% INPUT:       pathASLNifti - Path to a ASL NIFTI file in legacy filename and BIDS sidecars (CHAR ARRAY, REQUIRED)
 % 
 % OUTPUT:      n/a
 %
 % DESCRIPTION: Check the .JSON and aslContext.tsv sidecards of an ASL file in BIDS format and find the 
 %              specified M0 possibilities. Then it converts the ASL file to ExploreASL legacy format including 
-%              splitting of ASL and M0 NIFTIes if needed.
+%              splitting of ASL and M0 NIFTIes if needed. Note that the sidecars are in BIDS, but the file-structure
+%              is already expected to be in Legacy format
 %
-% EXAMPLE:     xASL_bids_parseM0('/test/sub-001_asl.nii')
+% EXAMPLE:     xASL_bids_parseM0('/test/ASL4D.nii')
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
 % Verify that pathASLNifti leads to ASL Nifti
 [Fpath, Ffile] = xASL_fileparts(pathASLNifti);
-if isempty(regexpi(Ffile,'_asl$'))
-	error('The provided path is not ASL in BIDS format');
-end
+
 PathJSON = fullfile(Fpath, [Ffile '.json']);
 
 %% Parse & process M0 options
 
-JSON = xASL_import_json(PathJSON);
+JSON = spm_jsonread(PathJSON);
 if isfield(JSON, 'M0Type')
     switch JSON.M0Type
         %% Option 1. Included

@@ -56,34 +56,29 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
     end
 
     %% Test Workflow
-
-    % Unit test: xASL_tsvRead
-    UnitTests(1) = xASL_ut_UnitTest_function_tsvRead(TestRepository);
-
-    % Unit test: xASL_tsvWrite
-    UnitTests(2) = xASL_ut_UnitTest_function_tsvWrite(TestRepository);
-
-    % Unit test: xASL_io_Nifti2Im
-    UnitTests(3) = xASL_ut_UnitTest_function_Nifti2Im(TestRepository);
     
-    % Unit test: xASL_test_GetLogContent
-    UnitTests(4) = xASL_ut_UnitTest_function_GetLogContent(TestRepository);
-
-    %% Print test results
-    % clc
-    fprintf('================================= TEST RESULTS =================================\n')
-    for it = 1:numel(UnitTests)
-        fprintf('TEST:\t\t%s\n',UnitTests(it).name)
-        if UnitTests(it).passed
-            fprintf('RESULTS:\t%s\n','Passed')
-        else
-            fprintf('RESULTS:\t%s\n','Failed')
-        end
+    % Get unit tests
+    addpath(fullfile(scriptPath,'UnitTests'));
+    fileList = dir(fullfile(scriptPath,'UnitTests','*.m'));
+    
+    % Iterate over tests
+    for test = 1:size(fileList,1)
+        testScript = fileList(test).name;
+        [~,testScript,~] = fileparts(testScript);
+        testHandle = str2func(testScript);
+        UnitTests(test) = testHandle(TestRepository);
     end
-    fprintf('================================================================================\n')
+    
+    
     
     %% Export table as well
     UnitTestsTable = struct2table(UnitTests);
+    
+    %% Print test results
+    clc
+    fprintf('================================= TEST RESULTS =================================\n\n')
+    disp(UnitTestsTable);
+    fprintf('================================================================================\n')
 
 end
 

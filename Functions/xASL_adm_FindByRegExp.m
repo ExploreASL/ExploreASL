@@ -32,7 +32,7 @@ function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin
 %
 % EXAMPLE: ...
 % __________________________________
-% Copyright © 2015-2020 ExploreASL
+% Copyright @ 2015-2021 ExploreASL
 
     % Setup argument parse for variable arguments
     p = inputParser;

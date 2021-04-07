@@ -309,16 +309,33 @@ function x = DataParTemplate(x)
 %                       (OPTIONAL, DEFAULT=1)
 %
 % x.S.Atlases         - vector specifying the atlases which should be used within the population module.
-%                       Check out the available atlases in ExploreASL/External/Atlases.
 %                       Default definition within the Population Module:
 %                       x.S.Atlases = {'TotalGM','DeepWM'};
 %                       Exemplary notation within the JSON parameter file:
 %                       "x": [{
 %                       ...
-%                       "S": {"Atlases": ["TotalGM","DeepWM","Hammers","HOcort_CONN","HOsub_CONN","Mindboggle_OASIS_DKT31_CMA"]}
+%                       "S": {"Atlases": ["TotalGM","TotalWM","DeepWM","Hammers","HOcort_CONN","HOsub_CONN","Mindboggle_OASIS_DKT31_CMA"]}
 %                       ...
 %                       }]
 %                       (OPTIONAL, DEFAULT={'TotalGM','DeepWM'})
+%                       Available atlases (please check the atlas NIfTI and accompanying files for more information):
+%                       Free atlases: 
+%                            TotalGM: Mask of the entire GM './External/SPMmodified/MapsAdded/TotalGM.nii'
+%                            TotalWM: Mask of the entire WM './External/SPMmodified/MapsAdded/TotalWM.nii'
+%                            DeepWM: Mask of the deep WM './External/SPMmodified/MapsAdded/DeepWM.nii'
+%                            WholeBrain: Mask of the entire brain './External/SPMmodified/MapsAdded/WholeBrain.nii'
+%                            MNI_Structural: MNI cortical atlas './External/SPMmodified/MapsAdded/MNI_Structural.nii'
+%                            Tatu_ACA_MCA_PCA: Original vascular territories by Tatu et al. './External/SPMmodified/MapsAdded/VascularTerritories/CortVascTerritoriesTatu.nii.nii'
+%                            Tatu_ICA_PCA: Tatu - only ICA and PCA './External/SPMmodified/MapsAdded/VascularTerritories/TatuICA_PCA.nii'
+%                            Tatu_ICA_L_ICA_R_PCA: './External/SPMmodified/MapsAdded/VascularTerritories/LabelingTerritories.nii'
+%                            Tatu_ACA_MCA_PCA_Prox_Med_Dist: Tatu separated to distal/medial/proximal of ACA/MCA/PCA'./External/SPMmodified/MapsAdded/VascularTerritories/ATTbasedFlowTerritories.nii.nii'
+%                            Mindboggle_OASIS_DKT31_CMA: Mindboggle-101 cortical atlas './External/Atlases/Mindboggle_OASIS_DKT31_CMA.nii.gz'
+%                       Free for non-commercial use only:
+%                            HOcort_CONN: Harvard-Oxford cortical atlas './External/Atlases/HOcort_CONN.nii.gz'
+%                            HOsub_CONN: Harvard-Oxford subcortical atlas './External/Atlases/HOsub_CONN.nii.gz'
+%                            Hammers: Alexander Hammers's brain atlas './External/Atlases/Hammers.nii.gz'
+%                            HammersCAT12: Hammers atlas adapted to DARTEL template of IXI550 space './External/Atlases/HammersCAT12.nii'
+%                            Thalamus: Harvad-Oxford thalamus atlas './External/Atlases/Thalamus.nii.gz'
 %
 %
 x.name = ExampleDataSet;

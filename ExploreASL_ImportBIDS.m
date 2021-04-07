@@ -289,8 +289,7 @@ if bRunSubmodules(2)
 		warning('Study-par file is not provided.');
 		studyPar = struct;
 	else
-		%studyParPath = xASL_init_ConvertM2JSON(studyParPath); % convert .m to .json - outdated import from an m-file
-		studyPar = xASL_import_json(studyParPath);
+		studyPar = xASL_io_ReadDataPar(studyParPath);
 	end
 	
 	% The Name has to be always assigned
@@ -300,7 +299,7 @@ if bRunSubmodules(2)
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% Create the study description output and verify that all is there
-	datasetDescription = ExploreASL_ImportBIDS_datasetDescription(studyPar,bidsPar.BIDSVersion,bidsPar.datasetDescription);
+	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyPar);
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% Make the output directory and save the description
@@ -1578,68 +1577,8 @@ end
 		xASL_delete(SavePath);
 		xASL_delete(SaveJSON);
 		save(SavePath,'dcm2niiCatchedErrors');
-		xASL_adm_SaveJSON(dcm2niiCatchedErrors, SaveJSON);
+		spm_jsonwrite(SaveJSON, dcm2niiCatchedErrors);
 	end
 	
 	fprintf('\n');
-end
-
-%-----------------------------------------------------------------
-% Create the study description output and verify that all is there
-%-----------------------------------------------------------------
-function datasetDescription = ExploreASL_ImportBIDS_datasetDescription(studyPar,BIDSVersion,datasetDescriptionConfig)
-
-% Check and assign the REQUIRED fields
-for iList = 1:length(datasetDescriptionConfig.Required)
-	% Skip name and BIDSVersion as these were treated previously
-	if isfield(studyPar,datasetDescriptionConfig.Required{iList})
-		datasetDescription.(datasetDescriptionConfig.Required{iList}) = studyPar.(datasetDescriptionConfig.Required{iList});
-		if strcmp(datasetDescriptionConfig.Required{iList},'BIDSVersion') && ~strcmp(BIDSVersion,studyPar.BIDSVersion)
-			warning('Provided BIDS version is not consistent with the current BIDS-version-config.');
-		end
-	else
-		% The BIDS version can be provided separately
-		if strcmp(datasetDescriptionConfig.Required{iList},'BIDSVersion')
-			datasetDescription.BIDSVersion = BIDSVersion;
-		else
-			error(['Missing a required field for datasetDescription: ' datasetDescriptionConfig.Required{iList}]);
-		end
-	end
-end
-		
-% Browse through the recommended fields and report missing ones
-listMissingFiles = '';
-for iList = 1:length(datasetDescriptionConfig.Recommended)
-	if isfield(studyPar,datasetDescriptionConfig.Recommended{iList})
-		datasetDescription.(datasetDescriptionConfig.Recommended{iList}) = studyPar.(datasetDescriptionConfig.Recommended{iList});
-	else
-		if length(listMissingFiles)>1
-			listMissingFiles = [listMissingFiles ', '];
-		end
-		listMissingFiles = [listMissingFiles datasetDescriptionConfig.Recommended{iList}];
-	end
-end
-if length(listMissingFiles)>1
-	% Report the missing fields
-	fprintf('dataset_description.json is missing the following RECOMMENDED fields: \n%s\n',listMissingFiles);
-end
-	
-% Browse through the optional fields and report missing ones
-listMissingFiles = '';
-for iList = 1:length(datasetDescriptionConfig.Optional)
-	if isfield(studyPar,datasetDescriptionConfig.Optional{iList})
-		datasetDescription.(datasetDescriptionConfig.Optional{iList}) = studyPar.(datasetDescriptionConfig.Optional{iList});
-	else
-		if length(listMissingFiles)>1
-			listMissingFiles = [listMissingFiles ', '];
-		end
-		listMissingFiles = [listMissingFiles datasetDescriptionConfig.Optional{iList}];
-	end
-end
-
-if length(listMissingFiles)>1
-	% Report the missing fields
-	fprintf('dataset_description.json is missing the following OPTIONAL fields: \n%s\n',listMissingFiles);
-end
-
 end

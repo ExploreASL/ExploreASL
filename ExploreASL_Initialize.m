@@ -223,6 +223,7 @@ if ~isdeployed
                             fullfile('External','SPMmodified','toolbox','cat12'), ...
 							fullfile('External','SPMmodified','toolbox','LST'), ...
 							fullfile('External','SPMmodified','toolbox','OldNorm') ...
+                            fullfile('External','vtkwrite') ...
 							genpath(fullfile('External','bids-matlab'))};
 
     for ii=1:length(subfolders_to_add)
@@ -473,7 +474,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
     elseif strcmp(Dext,'.json')
         % JSON import
         try
-            x = xASL_import_json(DataParPath);
+            x = xASL_io_ReadDataPar(DataParPath);
         catch ME1
             % if this fails, try to recreate the json file from an .m file,
             % if it exists
@@ -483,9 +484,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
                 warning('Invalid DataPar JSON file, trying to repair from detected .m file');
                 fprintf('A common issue is needing escaping e.g. "\\d" instead of "\d"\n');
                 try
-                    PathJSON = xASL_init_ConvertM2JSON(DataParPath);
-                    DataParPath = PathJSON;
-                    x = xASL_import_json(DataParPath);
+                    x = xASL_io_ReadDataPar(DataParPath);
                 catch ME2
                     fprintf('%s\n', ME1.message);
                     fprintf('%s\n', ME2.message);
@@ -502,8 +501,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile, bU
     elseif strcmp(Dext,'.m')
         try
             %% Backward compatibility
-            PathJSON = xASL_init_ConvertM2JSON(DataParPath); % convert .m to .json
-            x = xASL_import_json(PathJSON);
+            x = xASL_io_ReadDataPar(DataParPath); % convert .m to .json and read it
         catch ME1
             try
                 % Bypass eval error stuff with long names, spaces etc
