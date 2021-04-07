@@ -23,36 +23,36 @@ function [x] = ExploreASL_ImportMaster(x)
     [x.StudyRoot,~,~] = xASL_fileparts(x.DataParPath);
     
     % Check if at least one of the three steps should be performed
-    if sum(x.ImportArray)>0
+    if sum(x.ImportModules)>0
         if ~isempty(x.DataParPath)
             if exist(x.DataParPath,'file')
                 % DICOM TO NII
-                if x.ImportArray(1)==1
+                if x.ImportModules(1)==1
                     ExploreASL_ImportBIDS(x.StudyRoot, x.DataParPath, [], [1 0 0], false, true, false, false, x);
                 end
                 % NII TO BIDS
-                if x.ImportArray(2)==1
+                if x.ImportModules(2)==1
                     ExploreASL_ImportBIDS(x.StudyRoot, x.DataParPath, [], [0 1 0], false, true, false, false, x);
                 end
                 % ANONYMIZE
-                if x.ImportArray(3)==1
+                if x.ImportModules(3)==1
                     ExploreASL_ImportBIDS(x.StudyRoot, x.DataParPath, [], [0 0 1], false, true, false, false, x);
                 end
                 % BIDS TO LEGACY
-                if x.ImportArray(4)==1
+                if x.ImportModules(4)==1
                     x = xASL_Import_BIDS2LEGACY(x);
                 end
             else
-                warning('ImportArray was set to 1, but the sourceStructure file does not exist');
+                warning('ImportModules was set to 1, but the sourceStructure file does not exist');
             end
         else
-            warning('ImportArray was set to 1, but there is no DataParPath, Import will not be executed');
+            warning('ImportModules was set to 1, but there is no DataParPath, Import will not be executed');
         end
     end
     
     % Reset the import parameter (for the second initialization including the loading of the dataset)
     x.ImportData = 0;
-    x.ImportArray = [0 0 0 0];
+    x.ImportModules = [0 0 0 0];
     
 end
 

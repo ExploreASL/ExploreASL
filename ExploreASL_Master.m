@@ -1,37 +1,37 @@
 function [x] = ExploreASL_Master(varargin)
 %ExploreASL_Master ExploreASL pipeline master wrapper calling the individual import & pipeline modules
 %
-% FORMAT: [x] = ExploreASL([DataParPath, ImportArray, ProcessArray, SkipPause, iWorker, nWorkers])
+% FORMAT: [x] = ExploreASL([DataParPath, ImportModules, ProcessModules, SkipPause, iWorker, nWorkers])
 % 
 % INPUT:
-%   DataParPath  - Path to data parameter file (OPTIONAL, DEFAULT = prompting user input)
+%   DataParPath    - Path to data parameter file (OPTIONAL, DEFAULT = prompting user input)
 %
-%   ImportArray  - [DCM2NII, NII2BIDS, ANONYMIZE, BIDS2LEGACY] (OPTIONAL, BOOLEAN ARRAY)
-%                - DCM2NII = Run the DICOM to NIFTI conversion (BOOLEAN, DEFAULT = 0)
-%                - NII2BIDS = Run the NIFTI to BIDS conversion (BOOLEAN, DEFAULT = 0)
-%                - ANONYMIZE = Run the defacing and full anonymization (BOOLEAN, DEFAULT = 0)
-%                - BIDS2LEGACY = Run the BIDS to LEGACY conversion (BOOLEAN, DEFAULT = 0)
+%   ImportModules  - [DCM2NII, NII2BIDS, ANONYMIZE, BIDS2LEGACY] (OPTIONAL, BOOLEAN ARRAY)
+%                  - DCM2NII = Run the DICOM to NIFTI conversion (BOOLEAN, DEFAULT = 0)
+%                  - NII2BIDS = Run the NIFTI to BIDS conversion (BOOLEAN, DEFAULT = 0)
+%                  - ANONYMIZE = Run the defacing and full anonymization (BOOLEAN, DEFAULT = 0)
+%                  - BIDS2LEGACY = Run the BIDS to LEGACY conversion (BOOLEAN, DEFAULT = 0)
 %
-%   ProcessArray - [STRUCTURAL, ASL, POPULATION] (OPTIONAL, BOOLEAN ARRAY) 
-%                - STRUCTURAL = Run the Structural Module (BOOLEAN, DEFAULT = 0)
-%                - ASL = Run the ASL Module (BOOLEAN, DEFAULT = 0)
-%                - POPULATION = Run the Population Module (BOOLEAN, DEFAULT = 0)
+%   ProcessModules - [STRUCTURAL, ASL, POPULATION] (OPTIONAL, BOOLEAN ARRAY) 
+%                  - STRUCTURAL = Run the Structural Module (BOOLEAN, DEFAULT = 0)
+%                  - ASL = Run the ASL Module (BOOLEAN, DEFAULT = 0)
+%                  - POPULATION = Run the Population Module (BOOLEAN, DEFAULT = 0)
 %
-%   SkipPause    - FALSE = Pause workflow before ExploreASL pipeline (OPTIONAL, DEFAULT = FALSE)
+%   SkipPause      - FALSE = Pause workflow before ExploreASL pipeline (OPTIONAL, DEFAULT = FALSE)
 %
-%   iWorker      - Allows parallelization when called externally. 
-%                  iWorker defines which of the parallel ExploreASL calls we are (OPTIONAL, DEFAULT=1)
+%   iWorker        - Allows parallelization when called externally. 
+%                    iWorker defines which of the parallel ExploreASL calls we are (OPTIONAL, DEFAULT=1)
 %
-%   nWorkers     - Allows parallelization when called externally. 
-%                  nWorkers defines how many ExploreASL calls are made in parallel (OPTIONAL, DEFAULT=1)
+%   nWorkers       - Allows parallelization when called externally. 
+%                    nWorkers defines how many ExploreASL calls are made in parallel (OPTIONAL, DEFAULT=1)
 %
 % OUTPUT:
-%   x           - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%   x              - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    This masterscript starts ExploreASL by first calling ExploreASL_Initialize, 
 %                 then running xASL_Module_Structure, xASL_module_ASL and xASL_module_Population.
-%                 When ProcessArray is set to 0, the ExploreASL pipeline is not started but only  
+%                 When ProcessModules is set to 0, the ExploreASL pipeline is not started but only  
 %                 initialized for debugging. This pipeline can be run from CLI or using the python GUI.
 % 
 % ExploreASL_Initialize    - This wrapper initializes ExploreASL: managing paths, deployment, etc.
@@ -76,7 +76,7 @@ function [x] = ExploreASL_Master(varargin)
     % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
     if x.ProcessData > 0
-        x = ExploreASL_Initialize(x.DataParPath, x.ImportArray, x.ProcessArray, x.SkipPause, x.iWorker, x.nWorkers);
+        x = ExploreASL_Initialize(x.DataParPath, x.ImportModules, x.ProcessModules, x.SkipPause, x.iWorker, x.nWorkers);
     end
     
     % -----------------------------------------------------------------------------
@@ -108,7 +108,7 @@ function [x] = ExploreASL_Master(varargin)
     %  9) Get tissue volumes (incl WMH if available)
     % 10) Visual & automatic QC
 
-    if x.ProcessArray(1)==1
+    if x.ProcessModules(1)==1
         [~, x] = xASL_Iteration(x,'xASL_module_Structural');
         % The following DARTEL module is an optional extension of the structural module
         % to create population-specific templates
@@ -143,7 +143,7 @@ function [x] = ExploreASL_Master(varargin)
     %  9    Visual check
     % 10    WAD-QC
     
-    if x.ProcessArray(2)==1
+    if x.ProcessModules(2)==1
         [~, x] = xASL_Iteration(x,'xASL_module_ASL');
         % Now only check the availability of files when not running parallel
         if x.nWorkers==1; xASL_adm_CreateFileReport(x); end    
@@ -154,7 +154,7 @@ function [x] = ExploreASL_Master(varargin)
     %% 3    xASL_module_Population
     % Performs all group-level processing & QC
 
-    if x.ProcessArray(3)==1
+    if x.ProcessModules(3)==1
         [~, x] = xASL_Iteration(x,'xASL_module_Population');
     end
 

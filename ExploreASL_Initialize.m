@@ -2,7 +2,7 @@ function [x] = ExploreASL_Initialize(varargin)
 %ExploreASL_Initialize Initializes ExploreASL
 %
 % FORMAT: 
-%   [x] = ExploreASL_Initialize([DataParPath, ImportArray, ProcessArray, SkipPause, iWorker, nWorkers])
+%   [x] = ExploreASL_Initialize([DataParPath, ImportModules, ProcessModules, SkipPause, iWorker, nWorkers])
 %
 % INPUT:
 %   varargin    - This script accepts the same arguments as ExploreASL_Master. Check out the definitions there.
@@ -49,12 +49,12 @@ function [x] = ExploreASL_Initialize(varargin)
     x.S = struct;
     
     % Check if the ExploreASL pipeline should be run or not
-    if sum(x.ImportArray)>0
+    if sum(x.ImportModules)>0
         x.ImportData = 1; % Importing data
     else
         x.ImportData = 0; % Importing data
     end
-    if sum(x.ProcessArray)>0
+    if sum(x.ProcessModules)>0
         x.ProcessData = 1; % Loading & processing dataset
     else
         x.ProcessData = 0; % Only initialize ExploreASL functionality
@@ -157,7 +157,7 @@ function [x] = ExploreASL_Initialize(varargin)
     if ~exist(x.DataParPath,'file')
         fprintf('DataPar file does not exist, ExploreASL will only be initialized...\n');
         x.ProcessData = 0;
-        x.ProcessArray = [0 0 0];
+        x.ProcessModules = [0 0 0];
     else % DataPar file/folder exists
         if strcmp(x.dataParType,'dataParFile') % It is a dataParFile, so do not run the BIDS import workflow
             if x.ProcessData==0 || x.ProcessData==2
@@ -787,24 +787,24 @@ function p = inputParsing(varargin)
     
     % Define valid input variables
     validDataParPath = @(variable) ischar(variable) || isempty(variable);
-    validImportArray = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
-    validProcessArray = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
+    validImportModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
+    validProcessModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     validSkipPause = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     validiWorker = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     validnWorkers = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     
     % Define defaults
     defaultDataParPath = [];
-    defaultImportArray = [0 0 0 0];
-    defaultProcessArray = [0 0 0];
+    defaultImportModules = [0 0 0 0];
+    defaultProcessModules = [0 0 0];
     defaultSkipPause = 0;
     defaultiWorker = 1;
     defaultnWorkers = 1;
     
     % Add definitions to the input parser
     addOptional(p, 'DataParPath', defaultDataParPath, validDataParPath);
-    addOptional(p, 'ImportArray', defaultImportArray, validImportArray);
-    addOptional(p, 'ProcessArray', defaultProcessArray, validProcessArray);
+    addOptional(p, 'ImportModules', defaultImportModules, validImportModules);
+    addOptional(p, 'ProcessModules', defaultProcessModules, validProcessModules);
     addOptional(p, 'SkipPause', defaultSkipPause, validSkipPause);
     addOptional(p, 'iWorker', defaultiWorker, validiWorker);
     addOptional(p, 'nWorkers', defaultnWorkers, validnWorkers);
@@ -820,23 +820,23 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
 
     % Check if inputs are empty or chars
     if isempty(parameters.DataParPath),     parameters.DataParPath = '';                                    end
-    if ischar(parameters.ImportArray),      parameters.ImportArray = str2num(parameters.ImportArray);       end
-    if ischar(parameters.ProcessArray),     parameters.ProcessArray = str2num(parameters.ProcessArray);     end
+    if ischar(parameters.ImportModules),    parameters.ImportModules = str2num(parameters.ImportModules);   end
+    if ischar(parameters.ProcessModules),   parameters.ProcessModules = str2num(parameters.ProcessModules); end
     if ischar(parameters.SkipPause),        parameters.SkipPause = str2num(parameters.SkipPause);           end
     if ischar(parameters.iWorker),          parameters.iWorker = str2num(parameters.iWorker);               end
     if ischar(parameters.nWorkers),         parameters.nWorkers = str2num(parameters.nWorkers);             end
     
     % Check length of arrays (single digit input)
-    if length(parameters.ImportArray)<4
-        parameters.ImportArray = [parameters.ImportArray(1),...
-                                  parameters.ImportArray(1),...
-                                  parameters.ImportArray(1),...
-                                  parameters.ImportArray(1)];
+    if length(parameters.ImportModules)<4
+        parameters.ImportModules = [parameters.ImportModules(1),...
+                                    parameters.ImportModules(1),...
+                                    parameters.ImportModules(1),...
+                                    parameters.ImportModules(1)];
     end
-    if length(parameters.ProcessArray)<3
-        parameters.ProcessArray = [parameters.ProcessArray(1),...
-                                   parameters.ProcessArray(1),...
-                                   parameters.ProcessArray(1)];
+    if length(parameters.ProcessModules)<3
+        parameters.ProcessModules = [parameters.ProcessModules(1),...
+                                     parameters.ProcessModules(1),...
+                                     parameters.ProcessModules(1)];
     end
     
     % Different default for deployed mode
@@ -853,8 +853,8 @@ function x = ExploreASL_Initialize_storeParsedInput(parameters)
 
     % Store input
     x.DataParPath = parameters.DataParPath;
-    x.ImportArray = parameters.ImportArray;
-    x.ProcessArray = parameters.ProcessArray;
+    x.ImportModules = parameters.ImportModules;
+    x.ProcessModules = parameters.ProcessModules;
     x.SkipPause = parameters.SkipPause;
     x.iWorker = parameters.iWorker;
     x.nWorkers = parameters.nWorkers;
@@ -868,13 +868,13 @@ function ExploreASL_Initialize_printSettings(x)
     fprintf('==================================== ExploreASL Settings =====================================\n');
     if length(x.DataParPath)>66,    fprintf('DataParPath\t\t\t\t...%s\n', x.DataParPath(end-66:end));
     else,                           fprintf('DataParPath\t\t\t\t%s\n', x.DataParPath); end
-    fprintf('Run DCM2NII\t\t\t\t%d\n', x.ImportArray(1));
-    fprintf('Run NII2BIDS\t\t\t%d\n', x.ImportArray(2));
-    fprintf('Run ANONYMIZE\t\t\t%d\n', x.ImportArray(3));
-    fprintf('Run BIDS2LEGACY\t\t\t%d\n', x.ImportArray(4));
-    fprintf('Run Structural Module\t%d\n', x.ProcessArray(1));
-    fprintf('Run ASL Module\t\t\t%d\n', x.ProcessArray(2));
-    fprintf('Run Population Module\t%d\n', x.ProcessArray(3));
+    fprintf('Run DCM2NII\t\t\t\t%d\n', x.ImportModules(1));
+    fprintf('Run NII2BIDS\t\t\t%d\n', x.ImportModules(2));
+    fprintf('Run ANONYMIZE\t\t\t%d\n', x.ImportModules(3));
+    fprintf('Run BIDS2LEGACY\t\t\t%d\n', x.ImportModules(4));
+    fprintf('Run Structural Module\t%d\n', x.ProcessModules(1));
+    fprintf('Run ASL Module\t\t\t%d\n', x.ProcessModules(2));
+    fprintf('Run Population Module\t%d\n', x.ProcessModules(3));
     fprintf('SkipPause\t\t\t\t%d\n', x.SkipPause);
     fprintf('iWorker\t\t\t\t\t%d\n', x.iWorker);
     fprintf('nWorkers\t\t\t\t%d\n', x.nWorkers);
