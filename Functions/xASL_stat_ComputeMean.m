@@ -1,26 +1,28 @@
 function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,nMinSize,bPVC,imGM,imWM)
-%Calculates mean CBF in the image with optional partial volume correction.
+%xASL_stat_ComputeMean calculates mean CBF in the image with optional partial volume correction.
 %
 % FORMAT:  [CBF_GM CBF_WM] = xASL_stat_ComputeMean(imCBF [,imMask,nMinSize,bPVC,imGM,imWM])
 %
 % INPUT:
 %   imCBF  - input CBF volume (REQUIRED)
-%   imMask - mask for the calculation (OPTIONAL, default = finite part of imCBF)
+%   imMask - mask for the calculation (OPTIONAL, DEFAULT = finite part of imCBF)
 %   nMinSize - minimal size of the ROI in voxels, if not big enough, then return NaN
 %            - ignore when 0 (OPTIONAL, default = 0)
-%   bPVC   - perform PV-correction (OPTIONAL, default = 0)
-%            0 - don't do partial volume correction, just calculate a median on imMask (+imGM and imWM)
+%   bPVC   - perform PV-correction (OPTIONAL, DEFAULT = 0)
+%            0 - don't do partial volume correction, just calculate a median on imMask
 %            1 - simple partial volume correction by dividing by the GM mask
 %            2 - partial volume correction using linear regression and imGM, imWM masks
 %   imGM   - GM partial volume map with the same size as imCBF
-%            (OPTIONAL, mandatory for bPVC==2 and bPVC==1)
+%            (OPTIONAL, REQUIRED for bPVC==2 and bPVC==1)
 %   imWM   - WM partial volume map with the same size as imCBF
-%            (OPTIONAL, mandatory for bPVC==2, if provided for bPVC=0 gives also CBF_WM)
+%            (OPTIONAL, REQUIRED for bPVC==2)
 % OUTPUT:
 %   CBF_GM - calculated CBF for options bPVC==0:2
-%   CBF_WM - calculated WM CBF for bPVC==2, and for ==0 if imWM provided
+%   CBF_WM - calculated WM CBF for bPVC==2
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: It behaves in a similar way as VAR.
+% DESCRIPTION: It calculates mean CBF over the mask imMask if the mask volume exceeds nMinSize. It calculates either
+%              a mean, a median, or a mean after PVC, depending on the settings of bPVC. For the PVC options, it needs also imGM and imWM and returns the
+%              separate PV-corrected values calculated over the entire ROI.
 %
 % 1. Admin
 % 2. Mask calculations
@@ -34,8 +36,6 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,nMinSize,bPVC,imG
 %          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,[])
 %          CBF_GM = xASL_stat_ComputeMean(imCBF,[],[],0)
 %          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,290,0)
-%          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,290,0,imGM)
-% [CBF_GM CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,290,0,imGM,imWM)
 %          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,[],1,imGM)
 %          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,[],2,imGM,imWM)
 % [CBF_GM CBF_WM] = xASL_stat_ComputeMean(imCBF,[],[],2,imGM,imWM)
@@ -50,13 +50,18 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,nMinSize,bPVC,imG
 % Copyright (C) 2015-2021 ExploreASL
 
 %% 1. Admin
+if nargin<1
+	error('imCBF is a required input parameter');
+end
 
 if nargin<2 || isempty(imMask)
 	imMask = ones(size(imCBF));
 end
+
 if nargin<3 || isempty(nMinSize)
 	nMinSize = 0;
 end
+
 if nargin<4 || isempty(bPVC)
 	bPVC = 0;
 end
@@ -69,6 +74,10 @@ if nargin<6
 	imWM = [];
 end
 
+if nargout>1 && bPVC~=2
+	warning('Calculates CBF_WM only for PVC==2 option');
+end
+
 if (nargout>1) && isempty(imWM)
 	warning('Cannot calculate CBF_WM when imWM is not provided');
 end
@@ -78,6 +87,13 @@ if sum(isfinite(imCBF(:)))==0
     CBF_GM = NaN;
     CBF_WM = NaN;
     return;
+end
+
+if bPVC == 2
+	% If running PVC, then need imGM and imWM of the same size as imCBF
+	if ~isequal(size(imCBF),size(imGM)) || ~isequal(size(imCBF),size(imWM))
+		warning('When running PVC, need imGM and imWM of the same size as imCBF');
+	end
 end
 
 %% 2. Mask calculations
@@ -107,63 +123,42 @@ end
 
 %% 3. Calculate the ROI statistics
 switch (bPVC)
-    case -1
-    %% 3a. No PVC and simple mean
-	if isempty(imGM)
-		CBF_GM = xASL_stat_MeanNan(imCBF); 
-	else
-		CBF_GM = xASL_stat_MeanNan(imCBF(imGM>0.7)); 
-	end
-	if ~isempty(imWM)
-		CBF_WM = xASL_stat_MeanNan(imCBF(imWM>0.7));
-	end
-    case 0
-    %% 3b. No PVC and median
-	if isempty(imGM)
+	case -1
+		%% 3a. No PVC and simple mean
+		CBF_GM = xASL_stat_MeanNan(imCBF);
+		
+	case 0
+		%% 3b. No PVC and median
 		CBF_GM = xASL_stat_MedianNan(imCBF); % this is non-parametric
-	else
-		CBF_GM = xASL_stat_MedianNan(imCBF(imGM>0.7)); % this is non-parametric
-	end
-	if ~isempty(imWM)
-		CBF_WM = xASL_stat_MedianNan(imCBF(imWM>0.7)); % this is non-parametric
-	end
- case 1
-    %% 3c. Simple PVC
-	if isempty(imGM)
-		error('imGM needs to be provided for bPVC == 1');
-	end
-    CBF_GM = xASL_stat_SumNan(imCBF)/xASL_stat_SumNan(imGM);
-	
-	if nargout > 1
-		error('Only CBF_GM can be provided for bPVC == 1');
-	end
-case 2
-	%% 3d. Full PVC on a region
-    % although assuming that CBF in CSF = 0, that maps are optimally resampled (cave
-    % smoothing of c1T1 & c2T1 to ASL smoothness!) and that TotalVolume-GM-WM = CSF
-    % The current absence of modulation here will not change a lot according to Jan Petr
 
-    % Real original Partial Volume Error Correction (PVEC)
-    % Normal matrix inverse solves a system of linear equations.
-    % If the matrix is not square = more equations than unknowns, then the pseudo-inverse gives solution in the least-square sense - meaning the sum of squares
-    % of the error (CBF-CBF*inv(PV)) is minimized.
-    %
-    % you can see how close you get:
-    % gwcbf*gwpv'
-    % gwcbf*gwpv' - cbf'
-
-    % When we assume a GM ROI, we want to include some more voxels with a bit of WM content
-	if isempty(imGM) || isempty(imWM)
-		error('imGM and imWM need to be provided for bPVC == 2');
-	end
+	case 1
+		%% 3c. Simple PVC
+		if isempty(imGM)
+			error('imGM needs to be provided for bPVC == 1');
+		end
+		CBF_GM = xASL_stat_SumNan(imCBF)/xASL_stat_SumNan(imGM);
 	
-    gwpv                       = imGM;
-    gwpv(:,2)                  = imWM;
-    gwcbf                      = (imCBF')*pinv(gwpv');
-    CBF_GM                     = gwcbf(1);
-    CBF_WM                     = gwcbf(2);
+	case 2
+		%% 3d. Full PVC on a region
+		% although assuming that CBF in CSF = 0, that maps are optimally resampled (cave
+		% smoothing of c1T1 & c2T1 to ASL smoothness!) and that TotalVolume-GM-WM = CSF
+		% The current absence of modulation here will not change a lot according to Jan Petr
+
+		% Real original Partial Volume Error Correction (PVEC)
+		% Normal matrix inverse solves a system of linear equations.
+		% If the matrix is not square = more equations than unknowns, then the pseudo-inverse gives solution in the least-square sense - meaning the sum of squares
+		% of the error (CBF-CBF*inv(PV)) is minimized.
+		%
+		% you can see how close you get:
+		% gwcbf*gwpv'
+		% gwcbf*gwpv' - cbf'
+
+		gwpv                       = imGM;
+		gwpv(:,2)                  = imWM;
+		gwcbf                      = (imCBF')*pinv(gwpv');
+		CBF_GM                     = gwcbf(1);
+		CBF_WM                     = gwcbf(2);
 end
-
 
     % % Print histograms to check validity
     % IMPLEMENT THIS LATER ON GROUP LEVEL FOR EACH ROI                            
@@ -190,9 +185,5 @@ end
     % OutputFile      = fullfile(OutputDir,[x.S.Measurements{iMeas} '_' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession} '.jpg']);
     % print(gcf,'-djpeg','-r200', OutputFile);
     % close    
-
-
-
-
 end
 
