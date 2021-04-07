@@ -40,7 +40,7 @@ droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test
 droSubject = 'sub-Sub1';
 
 % Copy test data to working directory
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject));
+xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
 
 % Prepare DRO
 xASL_bids_DRO2BIDS(droTestPatient);
