@@ -84,17 +84,17 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
     
     ASLlist = xASL_adm_GetFileList(Fpath, ['^' Ffile '(|_.)'  '(|_\d)' '\.nii$'], 'FPList', [0 Inf]);
   
-    if isempty(ASLlist) && xASL_exist(BackupName)
-        fprintf('ASL4D.nii didnt exist but can restore from ASL4D_Source.nii\n');
+    if xASL_exist(BackupName,'file')
+        fprintf('Restoring ASL4D.nii from backup NIfTI ASL4D_Source.nii\n');
         ASLlist{1} = ASLname;
         xASL_Move(BackupName, ASLlist{1}, true);
         % Restore json as well
         if exist(ASLJSONPath,'file') && exist(BackupJSONPath,'file')
             xASL_Move(BackupJSONPath, ASLJSONPath, true);
         end
-        % Delete M0, allowing to restore this from the backup
-        if xASL_exist(Path_M0,'file')
-            warning('Deleting M0 to restore it from ASL4D');
+        % Delete M0, allowing to restore this from the backup in case M0 is in the ASL timeseries
+        if xASL_exist(Path_M0,'file') && ~isempty(iM0)
+            fprintf('Deleting M0 to restore it from ASL4D\n');
             xASL_delete(Path_M0);
             xASL_delete(M0JSONPath);
         end
@@ -102,12 +102,10 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         error([ASLname ' didnt exist, skipping']);
     end
     
-    if ~xASL_exist(BackupName) % otherwise was already split
-
-        [Fpath, Ffile] = xASL_fileparts(ASLlist{1});
+    if ~xASL_exist(BackupName,'file') % otherwise was already split
 
         %% First concatenate NIfTIs
-        if length(ASLlist)>1
+		if length(ASLlist)>1
             % Reconstruct the ASL4D first
             for iNii=1:length(ASLlist)
                 tnii = xASL_io_ReadNifti(ASLlist{iNii});
@@ -143,6 +141,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
                     JSON2Delete = fullfile(Fpath, [Ffile '.json']);
                     MAT2Delete = fullfile(Fpath, [Ffile '_parms.mat']);
                     xASL_delete(JSON2Delete);
+					xASL_delete(MAT2Delete);
                 end
             end
             

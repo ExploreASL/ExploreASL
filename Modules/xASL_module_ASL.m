@@ -81,7 +81,6 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
     end
 end
 
-%% Manage an M0 within time series
 % Initialize the DummyScan and M0 position fields - by default empty
 if ~isfield(x,'DummyScanPositionInASL4D') 
 	x.DummyScanPositionInASL4D = [];
@@ -90,21 +89,6 @@ end
 if ~isfield(x,'M0PositionInASL4D') 
 	x.M0PositionInASL4D = [];
 end
-
-% Split the M0 and dummy scans from the ASL time-series
-xASL_io_SplitASL(x.P.Path_ASL4D, x.M0PositionInASL4D, x.DummyScanPositionInASL4D);
-
-% Do the same for the ancillary files
-FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat','FPList',[0 Inf]);
-if ~isempty(FileList)
-    xASL_Move(FileList{1}, x.P.Path_ASL4D_parms_mat);
-end
-FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)\.json','FPList',[0 Inf]);
-if ~isempty(FileList)
-    xASL_Move(FileList{1}, fullfile(x.SESSIONDIR, 'ASL4D.json'));
-end
-
-%% Input
 
 x = xASL_init_FileSystem(x); % do this only here, to save time when skipping this module
 
@@ -119,12 +103,40 @@ if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSup
     x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
 end
 
+%% Define the state names and numbers
+StateName{ 1} = '010_TopUp';
+StateName{ 2} = '020_RealignASL';
+StateName{ 3} = '030_RegisterASL';
+StateName{ 4} = '040_ResampleASL';
+StateName{ 5} = '050_PreparePV';
+StateName{ 6} = '060_ProcessM0';
+StateName{ 7} = '070_CreateAnalysisMask';
+StateName{ 8} = '080_Quantification';
+StateName{ 9} = '090_VisualQC_ASL';
+StateName{10} = '100_WADQC';
 
 %% Change working directory to make sure that unspecified output will go there...
 oldFolder = cd(x.SESSIONDIR);
 
+%% Split ASL and M0 within the ASL time series
+% Run this when the data hasn't been touched yet
+% The first three states are here, because the first two are run only conditionally
+if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
+	% Split the M0 and dummy scans from the ASL time-series
+	xASL_io_SplitASL(x.P.Path_ASL4D, x.M0PositionInASL4D, x.DummyScanPositionInASL4D);
+	
+	% Do the same for the ancillary files
+	FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat','FPList',[0 Inf]);
+	if ~isempty(FileList)
+		xASL_Move(FileList{1}, x.P.Path_ASL4D_parms_mat);
+	end
+	FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)\.json','FPList',[0 Inf]);
+	if ~isempty(FileList)
+		xASL_Move(FileList{1}, fullfile(x.SESSIONDIR, 'ASL4D.json'));
+	end
+end
 
-%% Import fixes
+%% Import fixes for M0
 
 if ~xASL_exist(x.P.Path_M0, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
@@ -142,19 +154,6 @@ FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.json',
 if ~isempty(FileList)
     xASL_Move(FileList{1}, fullfile(x.SESSIONDIR, 'M0.json'));
 end
-
-
-StateName{ 1} = '010_TopUp';
-StateName{ 2} = '020_RealignASL';
-StateName{ 3} = '030_RegisterASL';
-StateName{ 4} = '040_ResampleASL';
-StateName{ 5} = '050_PreparePV';
-StateName{ 6} = '060_ProcessM0';
-StateName{ 7} = '070_CreateAnalysisMask';
-StateName{ 8} = '080_Quantification';
-StateName{ 9} = '090_VisualQC_ASL';
-StateName{10} = '100_WADQC';
-
 
 %% Delete old files
 if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
