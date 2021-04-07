@@ -752,7 +752,7 @@ function addExploreASLDirectory(MyPath)
 
     % Define paths (should be equal when loading data or only initializing)
     addpath(MyPath); % ExploreASL
-    subfolders_to_add = {...
+    subfoldersToAdd = {...
         'Development', 'External', 'Functions', 'mex', 'Modules', 'Testing',...
         fullfile('Modules', 'SubModule_Structural'), ...
         fullfile('Modules', 'SubModule_ASL'), ...
@@ -769,8 +769,8 @@ function addExploreASLDirectory(MyPath)
         fullfile('External','SPMmodified','toolbox','OldNorm') ...
         genpath(fullfile('External','bids-matlab'))};
     % Iterate over subfolders which should be added
-    for ii=1:length(subfolders_to_add)
-        addpath(fullfile(MyPath,subfolders_to_add{ii}));
+    for ii=1:length(subfoldersToAdd)
+        addpath(fullfile(MyPath,subfoldersToAdd{ii}));
     end
     
 end
