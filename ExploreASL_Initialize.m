@@ -846,16 +846,30 @@ end
 %% Print chosen settings
 function ExploreASL_Initialize_printSettings(x)
 
+    % Fallbacks
+    dcm2nii = '';
+    nii2bids = '';
+    anonymize = '';
+    bids2legacy = '';
+    Structural = '';
+    ASL = '';
+    Population = '';
+    
+    % Texts
+    if x.ImportModules(1)==1,   dcm2nii = 'DCM2NII';            end
+    if x.ImportModules(2)==1,   nii2bids = 'NII2BIDS';          end
+    if x.ImportModules(3)==1,   anonymize = 'ANONYMIZE';        end
+    if x.ImportModules(4)==1,   bids2legacy = 'BIDS2LEGACY';    end
+    if x.ProcessModules(1)==1,  Structural = 'Structural';      end
+    if x.ProcessModules(2)==1,  ASL = 'ASL';                    end
+    if x.ProcessModules(3)==1,  Population = 'Population';      end
+    
+    % Printing
     fprintf('==================================== ExploreASL Settings =====================================\n');
     if length(x.DataParPath)>66,    fprintf('DataParPath\t\t\t\t...%s\n', x.DataParPath(end-66:end));
     else,                           fprintf('DataParPath\t\t\t\t%s\n', x.DataParPath); end
-    fprintf('Run DCM2NII\t\t\t\t%d\n', x.ImportModules(1));
-    fprintf('Run NII2BIDS\t\t\t%d\n', x.ImportModules(2));
-    fprintf('Run ANONYMIZE\t\t\t%d\n', x.ImportModules(3));
-    fprintf('Run BIDS2LEGACY\t\t\t%d\n', x.ImportModules(4));
-    fprintf('Run Structural Module\t%d\n', x.ProcessModules(1));
-    fprintf('Run ASL Module\t\t\t%d\n', x.ProcessModules(2));
-    fprintf('Run Population Module\t%d\n', x.ProcessModules(3));
+    fprintf('Import Modules\t\t\t%s %s %s %s\n', dcm2nii, nii2bids, anonymize, bids2legacy);
+    fprintf('Process Modules\t\t\t%s %s %s\n', Structural, ASL, Population);
     fprintf('bPause\t\t\t\t\t%d\n', x.bPause);
     fprintf('iWorker\t\t\t\t\t%d\n', x.iWorker);
     fprintf('nWorkers\t\t\t\t%d\n', x.nWorkers);
