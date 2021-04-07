@@ -1,6 +1,6 @@
 %% Zeroing out imaging data for BIDS example datasets
 
-ExploreASL_Master;
+ExploreASL_Initialize;
 
 Rdir = 'C:\Users\henkj\Google Drive\WorkGeneral\StudiesProjects\BIDS_ASL\TestDataSet_ImportBIDS\raw';
 Flist = xASL_adm_GetFileList(Rdir, '.*\.(nii|nii\.gz)$', 'FPListRec', [0 Inf], false);

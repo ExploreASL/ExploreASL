@@ -121,7 +121,7 @@ if bPull
 	Answer = system('git pull','-echo');
 end
 
-x = ExploreASL_Master;
+x = ExploreASL_Initialize;
 
 clc;
 
@@ -278,7 +278,7 @@ end
 
 % ============================================================
 %% 5) Test ExploreASL itself
-x = ExploreASL_Master; % here we return the ExploreASL paths, which we removed above for testing SPM
+x = ExploreASL_Initialize; % here we return the ExploreASL paths, which we removed above for testing SPM
 
 % Remove lock folders, useful for rerun when debugging
 LockFolders = xASL_adm_GetFileList(TestDirDest, '^locked$', 'FPListRec', [0 Inf], true);
