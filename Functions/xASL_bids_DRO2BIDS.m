@@ -46,10 +46,6 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
     xASL_Move(fullfile(perfDirectory,'001_asl.nii.gz'),fullfile(perfDirectory,[droSubject,'_asl.nii.gz']));
     xASL_Move(fullfile(perfDirectory,'001_aslcontext.tsv'),fullfile(perfDirectory,[droSubject,'_aslcontext.tsv']));
 
-    % Add M0 from ground_truh
-    xASL_Move(fullfile(groundTruthDirectory,'002_ground_truth_m0.json'),fullfile(perfDirectory,[droSubject,'_m0scan.json']));
-    xASL_Move(fullfile(groundTruthDirectory,'002_ground_truth_m0.nii.gz'),fullfile(perfDirectory,[droSubject,'_m0scan.nii.gz']));
-
     % Rename T1w
     xASL_Move(fullfile(anatDirectory,'003_anat.json'),fullfile(anatDirectory,[droSubject,'_T1w.json']));
     xASL_Move(fullfile(anatDirectory,'003_anat.nii.gz'),fullfile(anatDirectory,[droSubject,'_T1w.nii.gz']));
@@ -57,15 +53,28 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
     % Remove the ground truth files
     xASL_delete(groundTruthDirectory,true);
 
-    % Read ASL JSON file and add the M0Type field
+    % Read ASL JSON file
     jsonASL = spm_jsonread(fullfile(perfDirectory,[droSubject,'_asl.json']));
+    
+    % Change field name from LabelingType to ArterialSpinLabelingType
+    jsonASL.ArterialSpinLabelingType = jsonASL.LabelingType;
+    jsonASL = rmfield(jsonASL,'LabelingType');
+    
+    % Change field name from RepetitionTime to RepetitionTimePreparation
+    jsonASL.RepetitionTimePreparation = jsonASL.RepetitionTime;
+    jsonASL = rmfield(jsonASL,'RepetitionTime');
+    
+    % Change field name from MrAcquisitionType to MRAcquisitionType
+    jsonASL.MRAcquisitionType = jsonASL.MrAcquisitionType;
+    jsonASL = rmfield(jsonASL,'MrAcquisitionType');
+    
+    % Add necessary fields
     jsonASL.M0Type = 'Separate';
+    jsonASL.BackgroundSuppression = false;
+    jsonASL.TotalAcquiredPairs = 1;
+    
+    % Write JSON file
     spm_jsonwrite(fullfile(perfDirectory,[droSubject,'_asl.json']),jsonASL);
-
-    % Read M0 JSON file and add the IntendedFor field
-    jsonM0 = spm_jsonread(fullfile(perfDirectory,[droSubject,'_m0scan.json']));
-    jsonM0.IntendedFor = 'perf/sub-Sub1_asl.nii.gz';
-    spm_jsonwrite(fullfile(perfDirectory,[droSubject,'_m0scan.json']),jsonM0);
 
     % Define required fields
     jsonTemplate.Name = 'DRO_Digital_Reference_Object';
