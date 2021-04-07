@@ -231,7 +231,7 @@ function [x] = ExploreASL_Initialize(varargin)
     '                    ## |                                                                      \n'...
     '                    ##/  \n'];
 
-    fprintf(['\n\n' BreakString LogoString '\n']);
+    fprintf([BreakString LogoString '\n']);
 
     %% Print chosen settings
     ExploreASL_Initialize_printSettings(x);
