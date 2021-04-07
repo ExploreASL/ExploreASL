@@ -167,22 +167,16 @@ function [x] = ExploreASL_Initialize(varargin)
     
     
     % Give some feedback
-    debugFeedback = false;
-    if debugFeedback
-        % Get report string
-        reportProcess = 'UNEXPECTED'; % Fallback
-        if x.ProcessData==0,        reportProcess = 'only run the initialization';
-        elseif x.ProcessData==1,    reportProcess = 'run the processing pipeline';
-        elseif x.ProcessData==2,    reportProcess = 'only load the dataset';
-        end
-        reportImport = 'UNEXPECTED'; % Fallback
-        if x.ImportData==0,        reportImport = 'not run the import workflow';
-        elseif x.ImportData==1,    reportImport = 'run the import workflow';
-        end
-        % Print feedback
-        fprintf('ExploreASL will %s and will %s...\n',reportImport,reportProcess);
+    reportProcess = '';
+    if x.ProcessData==0,        reportProcess = 'run the initialization';
+    elseif x.ProcessData==1,    reportProcess = 'run the processing pipeline';
+    elseif x.ProcessData==2,    reportProcess = 'load the dataset';
     end
-    
+    if x.ImportData==1,         reportImport = 'will run the import workflow and ';
+    else,                       reportImport = '';
+    end
+    % Print feedback
+    fprintf('ExploreASL %swill %s...\n',reportImport,reportProcess);
     
     %% Proceed with Initialization
 
