@@ -51,7 +51,7 @@ function [x] = ExploreASL_ImportMaster(x)
     end
     
     % Reset the import parameter (for the second initialization including the loading of the dataset)
-    x.ImportData = 0;
+    x.bImportData = 0;
     x.ImportModules = [0 0 0 0];
     
 end

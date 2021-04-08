@@ -50,19 +50,19 @@ function [x] = ExploreASL_Initialize(varargin)
     
     % Check if the ExploreASL pipeline should be run or not
     if sum(x.ImportModules)>0
-        x.ImportData = 1; % Importing data
+        x.bImportData = 1; % Importing data
     else
-        x.ImportData = 0; % Importing data
+        x.bImportData = 0; % Importing data
     end
     if sum(x.ProcessModules)>0
-        x.ProcessData = 1; % Loading & processing dataset
+        x.bProcessData = 1; % Loading & processing dataset
     else
-        x.ProcessData = 0; % Only initialize ExploreASL functionality
+        x.bProcessData = 0; % Only initialize ExploreASL functionality
     end
 
     % Check if the DataParPath is a file or a directory
     SelectParFile = false; % Fallback
-    if x.ProcessData
+    if x.bProcessData
         % Checkout the "Proceed with Initialization" section
         if (isempty(x.DataParPath) || ~exist(x.DataParPath,'file'))
             SelectParFile = true; % If the DataParPath is either empty OR the file does not exist, we have to select it later on (if processing is turned on)
@@ -121,7 +121,7 @@ function [x] = ExploreASL_Initialize(varargin)
     %% Check DataParFile
     
     % Check if pipeline should be run, but there is no DataParFile
-    if x.ProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
+    if x.bProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
         x.DataParPath = input('Please insert the path to your DataParFile: ');
     end
     
@@ -140,39 +140,39 @@ function [x] = ExploreASL_Initialize(varargin)
 
     % Recheck the DataPar/sourceStructure file, which is possibly not a file or does not exist
     if ~exist(x.DataParPath,'file')
-        if x.ImportData || x.ProcessData
+        if x.bImportData || x.bProcessData
             fprintf('DataPar file does not exist, ExploreASL will only be initialized...\n');
         end
-        x.ProcessData = 0;
+        x.bProcessData = 0;
         x.ProcessModules = [0 0 0];
     else % DataPar file/folder exists
         if strcmp(x.dataParType,'dataParFile') % It is a dataParFile, so do not run the BIDS import workflow
-            if x.ProcessData==0 || x.ProcessData==2
-                x.ProcessData = 2; % Initialize & load but do not process
+            if x.bProcessData==0 || x.bProcessData==2
+                x.bProcessData = 2; % Initialize & load but do not process
             end
         end
     end
 
     % Check output
-    if x.ProcessData>0 && nargout==0
+    if x.bProcessData>0 && nargout==0
         warning('Data loading requested but no output structure defined');
         fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
     end
     
     % Try to catch unexpected inputs
-    if strcmp(x.dataParType,'unknown') && x.ProcessData>0 && x.ImportData==0
+    if strcmp(x.dataParType,'unknown') && x.bProcessData>0 && x.bImportData==0
         fprintf('You are trying to process a dataset, without providing a DataPar file or running the import workflow...\n');
-        x.ProcessData = 0;
+        x.bProcessData = 0;
     end
     
     
     % Give some feedback
     reportProcess = '';
-    if x.ProcessData==0,        reportProcess = 'run the initialization';
-    elseif x.ProcessData==1,    reportProcess = 'run the processing pipeline';
-    elseif x.ProcessData==2,    reportProcess = 'load the dataset';
+    if x.bProcessData==0,        reportProcess = 'run the initialization';
+    elseif x.bProcessData==1,    reportProcess = 'run the processing pipeline';
+    elseif x.bProcessData==2,    reportProcess = 'load the dataset';
     end
-    if x.ImportData==1,         reportImport = 'will run the import workflow and ';
+    if x.bImportData==1,         reportImport = 'will run the import workflow and ';
     else,                       reportImport = '';
     end
     % Print feedback
@@ -184,8 +184,9 @@ function [x] = ExploreASL_Initialize(varargin)
     cd(x.MyPath);
 
     % Check if DataParFile needs to be loaded
-    if x.ProcessData>0
-        x = xASL_init_LoadDataParameterFile(x, x.DataParPath, SelectParFile);    end
+    if x.bProcessData>0
+        x = xASL_init_LoadDataParameterFile(x, x.DataParPath, SelectParFile);
+    end
 
 
     %% Initialize general parameters
@@ -225,7 +226,7 @@ function [x] = ExploreASL_Initialize(varargin)
     %% Data-specific initialization
     fprintf('ExploreASL v%s initialized ... \n', x.Version);
     
-    if x.ProcessData>0 && ~x.ImportData % Skip this step if we still need to run the import (first initialization)
+    if x.bProcessData>0 && ~x.bImportData % Skip this step if we still need to run the import (first initialization)
         % Check if a root directory was defined
         if isempty(x.D.ROOT)
             error('No root/analysis/study folder defined');
@@ -341,7 +342,7 @@ end
 
 %% Study-specific
 if and(isfield(x.D, 'ROOT'), isfield(x, 'ProcessData'))
-    if x.ProcessData
+    if x.bProcessData
         x.D.PopDir = fullfile(x.D.ROOT,'Population');
 
         % Structural module
