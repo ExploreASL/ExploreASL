@@ -45,7 +45,7 @@ end
 % Checks if the pathIn was given as an absolute path or if as a file-name only
 if isempty(pathstr)
 	% If a file-name only, then add the full current path to avoid ambiguity
-	pathstr = xASL_adm_UnixPath(pwd());
+	pathstr = pwd();
 end
 
 % Gets the correct paths for the NII and NII.GZ files

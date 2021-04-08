@@ -55,13 +55,13 @@ end
 [pathstr, name0, ext0] = fileparts(pathNewNifti);
 if isempty(pathstr)
 	% If a file-name only, then add the full current path to avoid ambiguity
-	pathNewNifti = fullfile(xASL_adm_UnixPath(pwd()),[name0 ext0]);
+	pathNewNifti = fullfile(pwd(),[name0 ext0]);
 end
 
 [pathstr, name0, ext0] = fileparts(pathOrigNifti);
 if isempty(pathstr)
 	% If a file-name only, then add the full current path to avoid ambiguity
-	pathOrigNifti = fullfile(xASL_adm_UnixPath(pwd()),[name0 ext0]);
+	pathOrigNifti = fullfile(pwd(),[name0 ext0]);
 end
 
 % Create temporary name for new NIFTI, since if pathOrigNifti & pathNewNifti

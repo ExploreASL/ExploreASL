@@ -951,17 +951,15 @@ function [res,job,VT,VT0,pth,nam,vx_vol,d] = cat_main_updatepara(res,tpm,job)
   clear def; 
 
   % EXPLOREASL HACK
-    CurrDir=pwd;
-    if exist('./mri','dir')
-        cd('mri');
-    end
-    if xASL_exist('nT1.nii')
-        tIM = xASL_io_Nifti2Im('nT1.nii');
-        tIM(isnan(tIM)) = 0;
-        xASL_io_SaveNifti('nT1.nii', 'nT1.nii', tIM, [], false);
-    end
-    cd(CurrDir);
-  
+  CurrDir=pwd;
+  if exist(fullfile(CurrDir,'mri'), 'dir')
+	  if xASL_exist(fullfile(CurrDir, 'mri', 'nT1.nii'), 'file')
+		  tIM = xASL_io_Nifti2Im(fullfile(CurrDir, 'mri', 'nT1.nii'));
+		  tIM(isnan(tIM)) = 0;
+		  xASL_io_SaveNifti(fullfile(CurrDir, 'mri', 'nT1.nii'), fullfile(CurrDir, 'mri', 'nT1.nii'), tIM, [], false);
+	  end
+  end
+
   % complete job structure
   defr.ppe = struct(); 
   res = cat_io_checkinopt(res,defr);
