@@ -5,11 +5,11 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
 % FORMAT: xASL_Copy(SrxASL_SysCopyath, DstPath[, bOverwrite, bVerbose)])
 %
 % INPUT:
-%   SrcPath    - Source file or folder
-%   DstPath    - Destination file or folder
+%   SrcPath    - Source file or folder (REQUIRED)
+%   DstPath    - Destination file or folder (REQUIRED)
 %   bOverwrite - When true, overwrite if destination exists
-%                When false, do nothing in that case (DEFAULT)
-%   bVerbose   - If true then verbose output (DEFAULT=false);
+%                When false, do nothing in that case (OPTIONAL, DEFAULT = false)
+%   bVerbose   - If true then verbose output (OPTIONAL, DEFAULT = false)
 %   
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Copies a file to a file or a directory to a directory. For a file, it zips it in the end if the destination path contains nii.gz. 
@@ -27,15 +27,15 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
 %          xASL_Copy('c:\User\path', 'c:\User\path2');                               Copying directories
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
     %% Check input parameters
 	if nargin<3 || isempty(bOverwrite)
 		bOverwrite = false;
-    end
+	end
 	if nargin<4 || isempty(bVerbose)
 		bVerbose = false;
-    end
+	end
     if strcmp(SrcPath,DstPath)
         return; % skip copying
     end
@@ -47,13 +47,13 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
     %% Manage .nii|.nii.gz
     
 	% If the destination is .nii.gz and source .nii, then zip the file in the end
-    if ~exist(SrcPath,'dir') % does it only for file
-        ZipInTheEnd = strcmp(DstExt, '.nii.gz') && strcmp(SrcExt, '.nii');
+	if ~exist(SrcPath,'dir') % does it only for file
+        bZipInTheEnd = strcmp(DstExt, '.nii.gz') && strcmp(SrcExt, '.nii');
 
         % .gz compatibility ExploreASL
         [SrcPath, DstPath] = xASL_adm_ZipFileNameHandling(SrcPath, DstPath);
 	else % not for whole directories
-        ZipInTheEnd = false;
+        bZipInTheEnd = false;
 	end
 	
 	% If src is a file and destination a dir, then add the filename to the dir
@@ -79,7 +79,7 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
     %% Start copying
     
     % Checks if the destination file exists (as .nii or .nii.gz)
-    if xASL_exist(DstPath,'file') 
+	if xASL_exist(DstPath,'file')
         if bOverwrite && exist(DstPath,'dir')
 			% Destination is a folder
             xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose); 
@@ -92,23 +92,21 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
             xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose); 
         else
             if bVerbose; fprintf(2,'xASL_Copy: Skipping, destination exists: %s\n', DstPath); end
+			bZipInTheEnd = false;
         end
 	else
 		% Destination folder or path does not exist - simply copy with given overwrite preferences
         xASL_adm_CreateDir(fileparts(DstPath)); % Create folder if doesnt exist
         xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose); 
-        
-		% Zip the destination file
-        if ZipInTheEnd
-            xASL_adm_GzipNifti(DstPath);
-
-            if exist(DstPath,'file') && exist([DstPath '.gz'],'file')
-                delete(DstPath);
-            end
-        end        
-    end
+	end
+	
+	% Zip the destination file
+	if bZipInTheEnd
+		xASL_adm_GzipNifti(DstPath);
+		
+		if exist(DstPath,'file') && exist([DstPath '.gz'],'file')
+			delete(DstPath);
+		end
+	end
 
 end
-
-
-

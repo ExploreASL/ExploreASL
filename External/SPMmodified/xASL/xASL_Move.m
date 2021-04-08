@@ -4,8 +4,8 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 % FORMAT: xASL_Move(SrcPath, DstPath[, bOverwrite, bVerbose])
 %
 % INPUT:
-%   SrcPath    - Source file or folder
-%   DstPath    - Destination file or folder
+%   SrcPath    - Source file or folder (REQUIRED)
+%   DstPath    - Destination file or folder (REQUIRED)
 %   bOverwrite - When true, overwrite if destination exists
 %                When false, do nothing in that case (OPTIONAL, DEFAULT = FALSE)
 %   bVerbose   - Verbose mode (OPTIONAL, DEFAULT = TRUE)
@@ -22,10 +22,10 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 % EXAMPLE: xASL_Move('c:\User\path\file.nii', 'c:\User\path2\file.nii');             No overwriting
 %          xASL_Move('c:\User\path\file.nii.gz', 'c:\User\path2\file.nii.gz',true);  Overwriting and simple copying
 %          xASL_Move('c:\User\path\file.nii', 'c:\User\path2\file.nii.gz',true);     Overwriting and zipping
-%          xASL_Move('c:\User\path', 'c:\User\path2',[],false);                       Moving directories, no overwrite, verbose off
+%          xASL_Move('c:\User\path', 'c:\User\path2',[],false);                      Moving directories, no overwrite, verbose off
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
     %% Manage input arguments
 	if nargin<4 || isempty(bVerbose)
@@ -46,17 +46,26 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 	% Check if source exists
 	if ~xASL_exist(SrcPath,'file')
 		error(['Source doesnt exist: ' SrcPath]);
-    end
+	end
+	
+	% Obtains the paths and filenames of src and dest
+    [~, SrcFile, SrcExt] = xASL_fileparts(SrcPath);
+    [~, ~, DstExt] = xASL_fileparts(DstPath);
 	
     %% Manage .nii|.nii.gz
     
-	% Remove the difference in extensions
-    % .gz compatibility ExploreASL
-    [SrcPath, DstPath] = xASL_adm_ZipFileNameHandling(SrcPath, DstPath);
-    
+	% If the destination is .nii.gz and source .nii, then zip the file in the end
+	if ~exist(SrcPath,'dir') % does it only for file
+        bZipInTheEnd = strcmp(DstExt, '.nii.gz') && strcmp(SrcExt, '.nii');
+
+        % .gz compatibility ExploreASL
+        [SrcPath, DstPath] = xASL_adm_ZipFileNameHandling(SrcPath, DstPath);
+	else % not for whole directories
+        bZipInTheEnd = false;
+	end
+	
     % If src is a file and destination a dir, then add the filename to the dir
 	if exist(DstPath,'dir') && ~exist(SrcPath,'dir')
-		[~, SrcFile, SrcExt] = fileparts(SrcPath);
 		DstPath = fullfile(DstPath, [SrcFile, SrcExt]);
 	end
 	
@@ -78,10 +87,20 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 			xASL_SysMove(SrcPath, DstPath, bOverwrite);
 		else
 			if bVerbose; fprintf(2,'xASL_Move: skip: destination exists: %s\n', DstPath); end
+			bZipInTheEnd = false;
 		end
     else
         xASL_adm_CreateDir(fileparts(DstPath)); % Create folder if doesnt exist
 		xASL_SysMove(SrcPath, DstPath, bOverwrite);
-    end
+	end
     
+	% Zip the destination file
+	if bZipInTheEnd
+		xASL_adm_GzipNifti(DstPath);
+		
+		if exist(DstPath,'file') && exist([DstPath '.gz'],'file')
+			delete(DstPath);
+		end
+	end
+	
 end
