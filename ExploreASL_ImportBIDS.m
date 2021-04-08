@@ -348,9 +348,9 @@ if bRunSubmodules(2)
 					mkdir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'));
 				end
 				
-				% Copy the NiFTI file
-				xASL_Copy([anatPath '.nii'],fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat',...
-					['sub-' subjectLabel '_' iAnatType{1} '.nii.gz']));
+				% Move the NiFTI file
+				xASL_Move([anatPath '.nii'],fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat',...
+					['sub-' subjectLabel '_' iAnatType{1} '.nii.gz']),1);
 				
 				% Load the JSON
 				jsonAnat = spm_jsonread([anatPath,'.json']);
@@ -439,9 +439,11 @@ if bRunSubmodules(2)
 					% Scaling changed, so we have to save again OR
 					% The fourth dimension is 1, so we have to write the file again, to make sure the
 					xASL_io_SaveNifti(fullfile(inSessionPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],imNii,[],1,[]);
+                    % Delete original Nifti
+                    xASL_delete(fullfile(inSessionPath,[aslLabel '.nii']));
 				else
-					% Copy the ASL
-					xASL_Copy(fullfile(inSessionPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz']);
+					% Move the ASL
+					xASL_Move(fullfile(inSessionPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],1);
 				end
 				
 				% Take all the manually predefined fields from studyPar
@@ -849,21 +851,25 @@ if bRunSubmodules(2)
 								mkdir(fullfile(outSessionPath,'fmap'));
 							end
 							
-							% if scaling modified then save instead of copy
+							% if scaling modified then save instead of move
 							if scaleFactor || size(imM0,4) == 1
 								if nn == 1
 									xASL_io_SaveNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii']),fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']),imM0,[],1,[]);
+                                    % Delete original Nifti
+                                    xASL_delete(fullfile(inSessionPath,['M0' nnStrIn '.nii']));
 								else
 									xASL_io_SaveNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii']),fullfile(outSessionPath,'fmap',['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']),imM0,[],1,[]);
+                                    % Delete original Nifti
+                                    xASL_delete(fullfile(inSessionPath,['M0' nnStrIn '.nii']));
 								end
 							else
-								% Copy the M0
+								% Move the M0
 								if nn == 1
-									xASL_Copy(fullfile(inSessionPath,['M0' nnStrIn '.nii']),...
-										fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']));
+									xASL_Move(fullfile(inSessionPath,['M0' nnStrIn '.nii']),...
+										fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']),1);
 								else
-									xASL_Copy(fullfile(inSessionPath,['M0' nnStrIn '.nii']),...
-										fullfile(outSessionPath,'fmap',['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']));
+									xASL_Move(fullfile(inSessionPath,['M0' nnStrIn '.nii']),...
+										fullfile(outSessionPath,'fmap',['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']),1);
 								end
 							end
 							% Save JSON to new dir
@@ -888,7 +894,10 @@ if bRunSubmodules(2)
 				
 			end
 		end
-	end
+    end
+    
+    % Delete analysis folder
+    xASL_delete(imPar.AnalysisRoot, true);
 end
 
 
