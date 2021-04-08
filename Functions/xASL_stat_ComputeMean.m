@@ -1,7 +1,7 @@
-function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,nMinSize,bPVC,imGM,imWM)
+function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bPVC, bParametric, imGM, imWM)
 %xASL_stat_ComputeMean calculates mean CBF in the image with optional partial volume correction.
 %
-% FORMAT:  [CBF_GM CBF_WM] = xASL_stat_ComputeMean(imCBF [,imMask,nMinSize,bPVC,imGM,imWM])
+% FORMAT:  [CBF_GM CBF_WM] = xASL_stat_ComputeMean(imCBF[, imMask, nMinSize, bPVC, bParametric, imGM, imWM])
 %
 % INPUT:
 %   imCBF  - input CBF volume (REQUIRED)
@@ -12,6 +12,7 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,nMinSize,bPVC,imG
 %            0 - don't do partial volume correction, just calculate a median on imMask
 %            1 - simple partial volume correction by dividing by the GM mask
 %            2 - partial volume correction using linear regression and imGM, imWM masks
+%   bParametric - performs parametric statistics (1 mean) or non-parametric when turned off (0 median) (OPTIONAL, DEFAULT 1) 
 %   imGM   - GM partial volume map with the same size as imCBF
 %            (OPTIONAL, REQUIRED for bPVC==2 and bPVC==1)
 %   imWM   - WM partial volume map with the same size as imCBF
@@ -34,11 +35,11 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF,imMask,nMinSize,bPVC,imG
 %
 % EXAMPLE: CBF_GM = xASL_stat_ComputeMean(imCBF)
 %          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,[])
-%          CBF_GM = xASL_stat_ComputeMean(imCBF,[],[],0)
-%          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,290,0)
-%          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,[],1,imGM)
-%          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,[],2,imGM,imWM)
-% [CBF_GM CBF_WM] = xASL_stat_ComputeMean(imCBF,[],[],2,imGM,imWM)
+%          CBF_GM = xASL_stat_ComputeMean(imCBF,[],[],0,0)
+%          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,290,0,1)
+%          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,[],1,1,imGM)
+%          CBF_GM = xASL_stat_ComputeMean(imCBF,imMask,[],2,1,imGM,imWM)
+% [CBF_GM CBF_WM] = xASL_stat_ComputeMean(imCBF,[],[],2,1,imGM,imWM)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES: Asllani I, Borogovac A, Brown TR. Regression algorithm correcting for partial volume effects in arterial spin labeling MRI. Magnetic 
 %             Resonance in Medicine: An Official Journal of the International Society for Magnetic Resonance in Medicine. 2008 Dec;60(6):1362-71.
@@ -66,20 +67,30 @@ if nargin<4 || isempty(bPVC)
 	bPVC = 0;
 end
 
-if nargin<5 
-	imGM = [];
+if nargin<5 || isempty(bParametric)
+	bParametric = 1;
+end
+
+if bPVC>0 && bParametric == 0
+	error('Non-parametric PVC is not implemented yet')
 end
 
 if nargin<6 
+	imGM = [];
+end
+
+if nargin<7 
 	imWM = [];
 end
 
 if nargout>1 && bPVC~=2
 	warning('Calculates CBF_WM only for PVC==2 option');
+	CBF_WM = NaN;
 end
 
 if (nargout>1) && isempty(imWM)
 	warning('Cannot calculate CBF_WM when imWM is not provided');
+	CBF_WM = NaN;
 end
 
 if sum(isfinite(imCBF(:)))==0
@@ -123,13 +134,15 @@ end
 
 %% 3. Calculate the ROI statistics
 switch (bPVC)
-	case -1
-		%% 3a. No PVC and simple mean
-		CBF_GM = xASL_stat_MeanNan(imCBF);
-		
 	case 0
-		%% 3b. No PVC and median
-		CBF_GM = xASL_stat_MedianNan(imCBF); % this is non-parametric
+		if bParametric
+			%% 3a. No PVC and simple mean
+			CBF_GM = xASL_stat_MeanNan(imCBF);
+		
+		else
+			%% 3b. No PVC and median
+			CBF_GM = xASL_stat_MedianNan(imCBF); % this is non-parametric
+		end
 
 	case 1
 		%% 3c. Simple PVC

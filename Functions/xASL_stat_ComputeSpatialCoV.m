@@ -1,7 +1,7 @@
-function sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,nMinSize,bPVC,imGM,imWM)
+function sCov = xASL_stat_ComputeSpatialCoV(imCBF, imMask, nMinSize, bPVC, imGM, imWM)
 %xASL_stat_ComputeSpatialCoV calculates spatial coefficient of variation (sCoV) in the image with optional partial volume correction.
 %
-% FORMAT: sCov = xASL_stat_ComputeSpatialCoV(imCBF[,imMask,nMinSize,bPVC,imGM,imWM])
+% FORMAT: sCov = xASL_stat_ComputeSpatialCoV(imCBF[, imMask, nMinSize, bPVC, imGM, imWM])
 %
 % INPUT:
 %   imCBF  - input CBF volume (REQUIRED)
@@ -25,11 +25,11 @@ function sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,nMinSize,bPVC,imGM,imWM
 % 3. sCoV computation
 %
 % EXAMPLE: sCov = xASL_stat_ComputeSpatialCoV(imCBF)
-%          sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,[])
-%          sCov = xASL_stat_ComputeSpatialCoV(imCBF,[],[],0)
-%          sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,290,0)
-%          sCov = xASL_stat_ComputeSpatialCoV(imCBF,imMask,[],2,imGM,imWM)
-%          sCov = xASL_stat_ComputeSpatialCoV(imCBF,[],[],2,imGM,imWM)
+%          sCov = xASL_stat_ComputeSpatialCoV(imCBF, imMask, [])
+%          sCov = xASL_stat_ComputeSpatialCoV(imCBF, [], [], 0)
+%          sCov = xASL_stat_ComputeSpatialCoV(imCBF, imMask, 290, 0)
+%          sCov = xASL_stat_ComputeSpatialCoV(imCBF, imMask, [], 2, imGM, imWM)
+%          sCov = xASL_stat_ComputeSpatialCoV(imCBF, [], [], 2, imGM, imWM)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES: Mutsaerts HJ, Petr J, Vaclavu L, van Dalen JW, Robertson AD, Caan MW, Masellis M, Nederveen AJ, Richard E, MacIntosh BJ. The spatial 
 %             coefficient of variation in arterial spin labeling cerebral blood flow images. Journal of Cerebral Blood Flow & Metabolism. 

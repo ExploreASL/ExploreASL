@@ -65,7 +65,7 @@ else
                     %GM{ii}                      = IM{ii}(MaskIM);
                     %ParaM{1}(iSubjSess,ii)      = mean(GM{ii}); % CBF
                     %ParaM{2}(iSubjSess,ii)      = 100*( ParaM{1}(iSubjSess,ii)/std(GM{ii}) ); % spatial CoV
-					ParaM{1}(iSubjSess,ii)      = xASL_stat_ComputeMean(IM{ii},MaskIM); % CBF
+					ParaM{1}(iSubjSess,ii)      = xASL_stat_ComputeMean(IM{ii},MaskIM,[],0,0); % CBF
                     ParaM{2}(iSubjSess,ii)      = 100*xASL_stat_ComputeSpatialCoV(IM{ii},MaskIM); % spatial CoV
                 end
             else

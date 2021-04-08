@@ -120,8 +120,8 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
     WMmasked = pWM(imMask);
 
     % Excluding vascular signal
-    ASL.CBF_GM_Median_mL100gmin = xASL_stat_ComputeMean(CBFmasked,GMmasked>0.5,[],0);
-    [ASL.CBF_GM_PVC2_mL100gmin, ASL.CBF_WM_PVC2_mL100gmin] = xASL_stat_ComputeMean(CBFmasked,(GMmasked+WMmasked)>0.5,[],2, GMmasked, WMmasked);
+    ASL.CBF_GM_Median_mL100gmin = xASL_stat_ComputeMean(CBFmasked, GMmasked>0.5,[], 0, 0);
+    [ASL.CBF_GM_PVC2_mL100gmin, ASL.CBF_WM_PVC2_mL100gmin] = xASL_stat_ComputeMean(CBFmasked, (GMmasked+WMmasked)>0.5,[],2, 1, GMmasked, WMmasked);
     ASL.CBF_GM_WM_Ratio = ASL.CBF_GM_PVC2_mL100gmin/ASL.CBF_WM_PVC2_mL100gmin;
 
 
