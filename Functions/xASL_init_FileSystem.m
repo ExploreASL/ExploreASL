@@ -195,10 +195,10 @@ x.P.Atlas.TotalWM                           = fullfile(x.D.MapsSPMmodifiedDir, '
 x.P.Atlas.DeepWM                            = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
 x.P.Atlas.WholeBrain                        = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
 x.P.Atlas.MNI_Structural                    = fullfile(x.D.MapsSPMmodifiedDir, 'MNI_Structural.nii');
-x.P.Atlas.Tatu_ACA_MCA_PCA                  = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'CortVascTerritoriesTatu.nii.nii');
-x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii');
-x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii');
-x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.nii');
+x.P.Atlas.Tatu_ACA_MCA_PCA                  = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'CortVascTerritoriesTatu.nii.gz');
+x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'TatuICA_PCA.nii.gz');
+x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii.gz');
+x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.gz');
 
 % Add atlases from atlasDir
 x = xASL_init_AtlasList(x,x.D.AtlasDir);
