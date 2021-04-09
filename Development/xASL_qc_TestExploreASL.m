@@ -457,7 +457,7 @@ save(SaveFile, 'ResultsTable');
 try
     % Find all result tables in directory
     AllResultTables = xASL_adm_GetFsList(fullfile(TestDirOrig),'^.+\_ResultsTable.mat$',false)';
-    IndexCurrentTable = find(contains(AllResultTables, ResultTableFile));
+    IndexCurrentTable = find(~isempty(strfind(AllResultTables, ResultTableFile)));
     if ~isempty(IndexCurrentTable)
         AllResultTables(IndexCurrentTable) = [];
     end
