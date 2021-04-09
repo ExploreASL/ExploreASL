@@ -769,9 +769,9 @@ function p = inputParsing(varargin)
     
     % Define valid input variables
     validDataParPath = @(variable) ischar(variable) || isempty(variable);
-    validImportModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
-    validProcessModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
-    validbPause = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
+    validImportModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
+    validProcessModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
+    validbPause = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
     validiWorker = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     validnWorkers = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     

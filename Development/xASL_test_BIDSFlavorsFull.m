@@ -47,7 +47,7 @@ end
 
 % Initialize ExploreASL
 cd(pathExploreASL);
-ExploreASL_Master;
+ExploreASL_Initialize;
 
 % Initialize the working paths
 flavorsPath  = fullfile(pathTest, 'FlavorDatabase');
