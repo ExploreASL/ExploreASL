@@ -375,7 +375,7 @@ function [bAborted, x] = runIteration(db)
             nString2Remove = length(String2Remove);
             IndexString2Remove = regexpi(ModuleString, String2Remove);
             
-            if ~isempty(IndexXASL) && length(ModuleString)>nString2Remove
+            if ~isempty(IndexString2Remove) && length(ModuleString)>nString2Remove
                 ModuleString = ModuleString(nString2Remove+2:end);
             end
             
