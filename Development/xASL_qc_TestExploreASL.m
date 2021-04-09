@@ -326,10 +326,10 @@ for iList=1:length(Dlist)
                 case 2 % run ExploreASl parallel (start new MATLAB instances)
                     if isunix
                         ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
-                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',0,1,1);system([''screen -SX ' ScreenName ' kill'']);"'];
+                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',0,1,0);system([''screen -SX ' ScreenName ' kill'']);"'];
                     else
                         ScreenString = [MatlabPath ' -nodesktop -nosplash -r '];
-                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',0,1,1);system([''exit'']);"'];
+                        RunExploreASLString = ['"cd(''' x.MyPath ''');ExploreASL_Master(''' DataParFile{iList}{1} ''',0,1,0);system([''exit'']);"'];
                     end
                     system([ScreenString RunExploreASLString ' &']);
                 case 3 % run ExploreASL compilation serially

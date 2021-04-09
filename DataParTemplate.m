@@ -23,7 +23,7 @@ function x = DataParTemplate(x)
 % vectors of strings, e.g. ["optionA" "optionB"] instead of ['optionA', 'optionB'].
 % This is to allow for valid JSONs. The conversion is carried out internally.
 %
-% EXAMPLE: ExploreASL_Master('//StudyFolder/analysis/DataPar_HiQ.json');
+% EXAMPLE: ExploreASL_Master('/StudyFolder/analysis/DataPar_HiQ.json');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 

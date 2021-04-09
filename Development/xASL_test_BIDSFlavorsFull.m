@@ -164,7 +164,7 @@ if bTest(6)
 		if exist(pathDerivatives,'dir')
 			pathDerivatives = fullfile(pathDerivatives,'ExploreASL');
 			if exist(pathDerivatives,'dir')
-				ExploreASL_Master(fullfile(pathDerivatives,'DataPar.json'), 1, 1, [], [], [1 2]); % don't run population module
+				ExploreASL_Master(fullfile(pathDerivatives,'DataPar.json'), 0, 1, 0); % don't run population module
 			end
 		end
 	end

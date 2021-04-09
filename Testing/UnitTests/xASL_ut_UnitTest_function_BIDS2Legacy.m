@@ -113,7 +113,7 @@ xASL_bids_BIDS2Legacy(droTestPatient);
 
 % Initialize dataset
 try
-    [x] = ExploreASL_Master(fullfile(droTestPatient,'derivates','ExploreASL','DataPar.json'), '0', '1', '1', '1', '[1 2 3]');
+    [x] = ExploreASL_Master(fullfile(droTestPatient,'derivates','ExploreASL','DataPar.json'), 0, 1, 0);
 catch
     x = false;
 end
