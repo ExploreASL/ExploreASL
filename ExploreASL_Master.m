@@ -1,7 +1,7 @@
 function [x] = ExploreASL_Master(varargin)
 %ExploreASL_Master ExploreASL pipeline master wrapper calling the individual import & pipeline modules
 %
-% FORMAT: [x] = ExploreASL([DataParPath, ImportModules, ProcessModules, SkipPause, iWorker, nWorkers])
+% FORMAT: [x] = ExploreASL([DataParPath, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
 % 
 % INPUT:
 %   DataParPath    - Path to data parameter file (OPTIONAL, DEFAULT = prompting user input)
@@ -75,14 +75,14 @@ function [x] = ExploreASL_Master(varargin)
     
     % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
-    if x.ProcessData > 0
+    if x.bProcessData > 0
         x = ExploreASL_Initialize(x.DataParPath, x.ImportModules, x.ProcessModules, x.bPause, x.iWorker, x.nWorkers);
     end
     
     % -----------------------------------------------------------------------------
     % Print user feedback
-    if x.ProcessData==0 || x.ProcessData==2
-        if x.ProcessData==2 && nargout==0
+    if x.bProcessData==0 || x.bProcessData==2
+        if x.bProcessData==2 && nargout==0
             warning('Data loading requested but no output structure defined');
             fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
         end

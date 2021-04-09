@@ -341,7 +341,7 @@ else
 end
 
 %% Study-specific
-if and(isfield(x.D, 'ROOT'), isfield(x, 'ProcessData'))
+if and(isfield(x.D, 'ROOT'), isfield(x, 'bProcessData'))
     if x.bProcessData
         x.D.PopDir = fullfile(x.D.ROOT,'Population');
 

@@ -322,7 +322,7 @@ for iList=1:length(Dlist)
             
             switch RunMethod
                 case 1 % run ExploreASL serially
-                    ExploreASL_Master(DataParFile{iList}{1}, 0, 1, true); % can we run screen from here? or run matlab in background, linux easy
+                    ExploreASL_Master(DataParFile{iList}{1}, 0, 1, false); % can we run screen from here? or run matlab in background, linux easy
                 case 2 % run ExploreASl parallel (start new MATLAB instances)
                     if isunix
                         ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
