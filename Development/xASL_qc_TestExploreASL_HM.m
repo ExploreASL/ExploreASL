@@ -22,8 +22,8 @@ elseif ispc
     TestDirDest = 'S:\gifmi\Projects\ExploreASL\ExploreASL_TestCases\ProcessedCases';
 else
     % linux
-     TestDirOrig = '/home/henk/ExploreASL/TestDataSets';
-     TestDirDest = '/home/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed';
+     TestDirOrig = '/scratch/hjmutsaerts/TestDataSets';
+     TestDirDest = '/scratch/hjmutsaerts/ExploreASL_TestCasesProcessed';
 end
 
 if bCompiled
