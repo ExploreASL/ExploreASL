@@ -150,6 +150,15 @@ spm_get_defaults('cmdline',true);
 if ~exist('TestDirDest','var'), TestDirDest = uigetdir(pwd, 'Select testing directory...'); end
 if ~exist('TestDirOrig','var'), TestDirOrig = uigetdir(pwd, 'Select datasets for testing...'); end
 
+% Clone testdataset repository if not detected
+if ~exist(TestDirOrig, 'dir')
+    TestDirRoot = fileparts(TestDirOrig);
+    TestDataSetRepository = 'https://github.com/ExploreASL/TestDataSets.git';
+    fprintf('%s\n', ['TestDataSet repository not found in: ' TestDirRoot]);
+    fprintf('%s\n', ['Attempting to clone: ' TestDataSetRepository]);
+    system(['cd ' TestDirRoot '; git clone ' TestDataSetRepository], '-echo');
+end
+
 % Remove previous results
 if bOverwrite && exist(TestDirDest,'dir')
     fprintf('Deleting previous results...\n');
