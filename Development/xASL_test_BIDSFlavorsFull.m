@@ -84,6 +84,7 @@ if bTest(1)
 		
 		xASL_Copy(fullfile(flavorsPath,fList{iList},'sourceStructure.json'), fullfile(conversionPath,fList{iList},'sourceStructure.json'), 1);
 		xASL_Copy(fullfile(flavorsPath,fList{iList},'studyPar.json'), fullfile(conversionPath,fList{iList},'studyPar.json'), 1);
+		xASL_Copy(fullfile(flavorsPath,fList{iList},'dataPar.json'), fullfile(conversionPath,fList{iList},'dataPar.json'), 1);
 	end
 	fprintf('\n');
 	
