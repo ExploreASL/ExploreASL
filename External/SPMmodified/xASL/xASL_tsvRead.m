@@ -46,24 +46,28 @@ if bStruct
     CellContents = ReadCell;
 else
     % Parse struct and convert to cell array
-    FieldsAre = fields(ReadCell);
-    for iField=1:length(FieldsAre)
-        % Header
-        CellContents{1, iField} = FieldsAre{iField};
-
-        % Content
-        CurrentContents = ReadCell.(FieldsAre{iField});
-
-        if ~iscell(CurrentContents)
-            for iRow=1:length(CurrentContents)
-                NewContents{iRow, 1} = CurrentContents(iRow, 1);
-            end
-        else
-            NewContents = CurrentContents;
-        end
-
-        CellContents(2:length(NewContents)+1, iField) = NewContents;
-    end
+	if isstruct(ReadCell)
+		FieldsAre = fields(ReadCell);
+		for iField=1:length(FieldsAre)
+			% Header
+			CellContents{1, iField} = FieldsAre{iField};
+			
+			% Content
+			CurrentContents = ReadCell.(FieldsAre{iField});
+			
+			if ~iscell(CurrentContents)
+				for iRow=1:length(CurrentContents)
+					NewContents{iRow, 1} = CurrentContents(iRow, 1);
+				end
+			else
+				NewContents = CurrentContents;
+			end
+			
+			CellContents(2:length(NewContents)+1, iField) = NewContents;
+		end
+	else
+		CellContents = num2cell(ReadCell);
+	end
 end
     
     
