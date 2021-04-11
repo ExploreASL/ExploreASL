@@ -86,7 +86,7 @@ if bTest(1)
 		
         % Copy the sourcedata to the temporary conversion folder
 		SourceDir = fullfile(flavorsPath, fList{iList}, 'sourcedata');
-        DestinationDir = fullfile(conversionPath, fList{iList}, 'sourcedata'); % Copy to sourcedata?
+        DestinationDir = fullfile(conversionPath, fList{iList}, 'sourcedata');
         xASL_Copy(SourceDir, DestinationDir, 1); 
 		
         % Copy the JSON meta files to the temporary conversion folder

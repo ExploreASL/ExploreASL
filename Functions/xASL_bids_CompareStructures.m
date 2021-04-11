@@ -233,6 +233,8 @@ end
 %% Get list without files/folders
 function returnList = getListWithout(thisType,List)
 
+    % Initialize list
+    returnList = [];
     element = 1;
     for iT = 1:size(List,1)
         if strcmp(thisType,'folders')
