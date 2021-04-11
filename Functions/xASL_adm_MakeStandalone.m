@@ -1,4 +1,4 @@
-function xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLatest)
+function xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 %xASL_adm_MakeStandalone This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
 %
@@ -7,7 +7,6 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLates
 % INPUT:
 %   outputPath      - Folder where the compiled version should be saved (REQUIRED)
 %   bCompileSPM     - Boolean specifying whether SPM is compiled first (OPTIONAL, DEFAULT = true)
-%   importDCM       - Generate a separate standalone import for DICOM2BIDS (OPTIONAL, DEFAULT = true)
 %   markAsLatest    - Option to mark the generated compiled versions as "latest" instead, to simplify 
 %                     the docker integration for example (OPTIONAL, DEFAULT = true)
 %
@@ -32,16 +31,19 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLates
 % 8. Copy .bat file for Windows compilation
 % 9. Save Log-file
 %
-% EXAMPLE: xASL_adm_MakeStandalone('/Path2/Compilation')
+% EXAMPLE: 
+%
+% 1. Compilation marked as latest including compiled SPM: xASL_adm_MakeStandalone('M:\SoftwareDevelopment\MATLAB\m.stritt\',true,true);
+% 2. Compilation marked with version number including compiled SPM: xASL_adm_MakeStandalone('M:\SoftwareDevelopment\MATLAB\m.stritt\',true,false);
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 %% 1) Manage ExploreASL and compiler code folders
-if nargin<1 || isempty(outputPath);     error('OutputPath input missing');  end
+if nargin<1 || isempty(outputPath);     error('OutputPath missing...');     end
 if nargin<2 || isempty(bCompileSPM);    bCompileSPM = true;                 end
-if nargin<3 || isempty(importDCM);      importDCM = true;                   end
-if nargin<4 || isempty(markAsLatest);   markAsLatest = true;                end
+if nargin<3 || isempty(markAsLatest);   markAsLatest = true;                end
 
 % Initialize Explore ASL
 x = ExploreASL_Initialize;
@@ -64,14 +66,6 @@ end
 % Define file name (add version)
 Version = xASL_adm_CorrectName(['xASL_' xASLVersion]);
 
-% Version name of standalone DICOM import
-if importDCM
-    VersionImport = xASL_adm_CorrectName(['xASL_' xASLVersion '_Import']);
-    % Output folder
-    outputPathImport = fullfile(outputPath,VersionImport);
-    xASL_adm_CreateDir(outputPathImport); % this function creates folders only if they don't exist, including different layers
-end
-
 %% 3) File management output folder & starting diary
 outputPath = fullfile(outputPath,Version);
 if ~exist(outputPath, 'dir')
@@ -85,8 +79,6 @@ else
 end
 diary(fullfile(outputPath,'compilationLog.txt'));
 diary on
-
-
 
 %% 4) Handle SPM Specific Options
 % Static listing of batch application initialisation files
@@ -117,8 +109,6 @@ warning('on','MATLAB:rmpath:DirNotFound');
 
 opts = {'-p',fullfile(matlabroot,'toolbox','signal')};
 if ~exist(opts{2},'dir'); opts = {}; end
-
-
 
 %% 6) Run SPM compilation
 if bCompileSPM
@@ -154,30 +144,11 @@ mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.m
     '-a', fullfile(ExploreASLPath,'Modules', 'SubModule_Structural'),...
     '-a', fullfile(ExploreASLPath,'Modules', 'SubModule_ASL'),...
     '-a', fullfile(ExploreASLPath,'Modules', 'SubModule_Population'),...
-    '-a', fullfile(ExploreASLPath,'External','isnear'),...
-    '-a', fullfile(ExploreASLPath,'External','Atlases'));
+    '-a', fullfile(ExploreASLPath,'External', 'isnear'),...
+    '-a', fullfile(ExploreASLPath,'External', 'Atlases'));
 
 % Copy version file to compilation folder
 xASL_Copy(AddExploreASLversion, fullfile(outputPath, VersionPath{1}), 1);
-
-% Compilation DICOM import (Work in progress -> Meant to be used for docker integration)
-if importDCM
-    mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
-    fullfile(ExploreASLPath,'External','mediri','xASL_io_mTRIAL'),...
-    '-d', fullfile(outputPathImport),...
-    '-o', VersionImport,...
-    '-N', opts{:},...
-    '-a', spm('Dir'),... % For SPM support
-    '-a', AddExploreASLversion,...
-    '-a', fullfile(ExploreASLPath,'ExploreASL_Master.m'),...
-    '-a', fullfile(ExploreASLPath,'ExploreASL_Initialize.m'),...
-    '-a', fullfile(ExploreASLPath,'ExploreASL_Import.m'),...
-    '-a', fullfile(ExploreASLPath,'ExploreASL_ImportConfig.m'),...
-    '-a', fullfile(ExploreASLPath,'Functions'),...
-    '-a', fullfile(ExploreASLPath,'mex'),...
-    '-a', fullfile(ExploreASLPath,'Modules'),...
-    '-a', fullfile(ExploreASLPath,'External','MRIcron')); % DICOM import
-end
 
 %% 8) Copy .bat file for Windows compilation
 createBat = false;
@@ -186,62 +157,11 @@ if ispc && createBat
     xASL_Copy(outputPath, NewPath, true);
 end
 
-%% Restore cfg file
-% if exist(BackupCfgPath, 'file')
-%     xASL_Move(BackupCfgPath, CfgPath, true);
-% end
-% if exist(BackupCfgPath2, 'file')
-%     xASL_Move(BackupCfgPath2, CfgPath2, true);
-% end
-
 %% 9) Save Log-file
 fprintf('Done\n');
 diary(fullfile(outputPath,'compilationLog.txt'));
 diary off
 
-
 end
 
-% Back up function
-function backUpConfigFile(outputPath)
-
-    % First back up the cfg file
-    CfgPath = fullfile(spm('Dir'), 'matlabbatch', 'private', 'cfg_mlbatch_appcfg_master.m');
-    CfgPath2 = fullfile(spm('Dir'), 'matlabbatch', 'private', 'cfg_mlbatch_appcfg_1.m');
-    BackupCfgPath = fullfile(outputPath, 'cfg_mlbatch_appcfg_master.m');
-    BackupCfgPath2 = fullfile(outputPath, 'cfg_mlbatch_appcfg_1.m');
-    if exist(CfgPath, 'file')
-        xASL_Copy(CfgPath, BackupCfgPath, true);
-    end
-    if exist(CfgPath2, 'file')
-        xASL_Copy(CfgPath2, BackupCfgPath2, true);
-    end
-
-    % Static listing of SPM toolboxes
-    fid = fopen(fullfile(spm('Dir'),'config','spm_cfg_static_tools.m'),'wt');
-    fprintf(fid,'function values = spm_cfg_static_tools\n');
-    fprintf(fid,...
-        '%% Static listing of all batch configuration files in the SPM toolbox folder\n');
-    % Get the list of toolbox directories
-    tbxdir = fullfile(spm('Dir'),'toolbox');
-    d = [tbxdir; cellstr(spm_select('FPList',tbxdir,'dir'))];
-    ft = {};
-    % Look for '*_cfg_*.m' files in these directories
-    for i=1:numel(d)
-        fi = spm_select('List',d{i},'.*_cfg_.*\.m$');
-        if ~isempty(fi) && isempty(regexp(fi,'cfg_(fieldmap|render)')) % remove fieldmap & render, we don't use these, to avoid conflicts
-            ft = [ft(:); cellstr(fi)];
-        end
-    end
-    % Create code to insert toolbox config
-    if isempty(ft)
-        ftstr = '';
-    else
-        ft = spm_file(ft,'basename');
-        ftstr = sprintf('%s ', ft{:});
-    end
-    fprintf(fid,'values = {%s};\n', ftstr);
-    fclose(fid);
-
-end
 
