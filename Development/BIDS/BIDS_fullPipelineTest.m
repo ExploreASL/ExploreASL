@@ -50,36 +50,36 @@ if strcmp(username,'mathijs')
 end
 
 %% Clone the flavors database if necessary
+cd(pathExploreASL);
+[x] = ExploreASL_Initialize; % Initialize ExploreASL
+cd(pathTest);
 if ~exist(fullfile(pathTest,'FlavorDatabase'), 'dir')
-    cd(pathExploreASL);
-    ExploreASL_Initialize; % Initialize ExploreASL
     xASL_adm_CreateDir(pathTest);
-    cd(pathTest);
     system(cmdCloneFlavors);
 end
 
 %% Test execution
 
 % Prepare the data
-xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[1 0 0 0 0 0 0]);
+xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [1 0 0 0 0 0 0], x);
 
 % Convert to BIDS
-xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 1 0 0 0 0 0]);
+xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 1 0 0 0 0 0], x);
 
 % Check the BIDS conversion
-xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 1 0 0 0 0]);
+xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 1 0 0 0 0], x);
 
 % Convert BIDS to Legacy
-xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 1 0 0 0]);
+xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 1 0 0 0], x);
 
 % Check the Legacy conversion
-%xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 1 0 0]);
+%xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 0 1 0 0], x);
 
 % Run the pipeline
-xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 0 1 0]);
+xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 0 0 1 0], x);
 
 % Check the pipeline results
-%xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,[0 0 0 0 0 0 1]);
+%xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 0 0 0 1], x);
 
 [logContent] = xASL_test_GetLogContent(pathTest,0,1,2);
 

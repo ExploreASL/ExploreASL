@@ -1,4 +1,4 @@
-function xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,bTest)
+function xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,bTest,x)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Runs the complete testing of BIDS flavors including import, processing and comparison
 %
@@ -18,6 +18,7 @@ function xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,bTest)
 %                    6. Run the ExploreASL on all datasets
 %                    7. Checks the ExploreASL processing results
 %                    (OPTIONAL, DEFAULT = [1 1 1 1 1 1 1])
+%   x              - x structure (OPTIONAL, DEFAULT = run Initialization)
 %
 % OUTPUT: 
 % 
@@ -45,9 +46,13 @@ if length(bTest) < 7
 	bTest(end+1:7) = 1;
 end
 
-% Initialize ExploreASL
+% Change directory to ExploreASL root folder
 cd(pathExploreASL);
-ExploreASL_Initialize;
+
+if nargin < 4 || isempty(x)
+    % Initialize ExploreASL
+    ExploreASL_Initialize;
+end
 
 % Initialize the working paths
 flavorsPath  = fullfile(pathTest, 'FlavorDatabase');
@@ -74,14 +79,17 @@ if bTest(1)
     end
     fprintf('  '); % Make empty spaces for xASL_TrackProgress
 	for iList = 1:length(fList)
+        % Display the overall progress and create the conversion directories
 		xASL_TrackProgress(iList, length(fList));
 		xASL_adm_CreateDir(fullfile(conversionPath,fList{iList}));
 		xASL_adm_CreateDir(fullfile(conversionPath,fList{iList}, 'sourcedata'));
 		
+        % Copy the sourcedata to the temporary conversion folder
 		SourceDir = fullfile(flavorsPath, fList{iList}, 'sourcedata');
         DestinationDir = fullfile(conversionPath, fList{iList});
-        xASL_Copy(SourceDir, DestinationDir, 1);
+        xASL_Copy(SourceDir, DestinationDir, 1); 
 		
+        % Copy the JSON meta files to the temporary conversion folder
 		xASL_Copy(fullfile(flavorsPath,fList{iList},'sourceStructure.json'), fullfile(conversionPath,fList{iList},'sourceStructure.json'), 1);
 		xASL_Copy(fullfile(flavorsPath,fList{iList},'studyPar.json'), fullfile(conversionPath,fList{iList},'studyPar.json'), 1);
 		xASL_Copy(fullfile(flavorsPath,fList{iList},'dataPar.json'), fullfile(conversionPath,fList{iList},'dataPar.json'), 1);
