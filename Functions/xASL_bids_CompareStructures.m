@@ -39,6 +39,9 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     if ~ischar(pathDatasetB)
         error('The path of structure B is not a char array');
     end
+    if strcmp(pathDatasetA,pathDatasetB)
+        warning('The path of dataset A is equal to the path of dataset B...');
+    end
 
     % Check if both root folders exists
     if ~xASL_exist(pathDatasetA, 'dir')
@@ -369,7 +372,7 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                     
                 end
             end
-        elseif strcmp(extension,'.nii') || contains(allFiles{iFile},'.nii.gz') % Warning: This unzips your NIFTIs right now!
+        elseif strcmp(extension,'.nii') || ~isempty(strfind(allFiles{iFile},'.nii.gz')) % Warning: This unzips your NIFTIs right now!
             % Read files if they exist
             if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
                 % Check file size (there were some 0KB images in the bids-examples)
@@ -380,20 +383,16 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                 
                 % Check file size (images with a file size lower than 1 byte are corrupt)
                 if (sizeA>1 && sizeB>1)
-                    if contains(allFiles{iFile},'.nii.gz')
-                        % Unzip first
-                        tmpPathImageA = xASL_adm_UnzipNifti(char(currentFileA));
-                        tmpPathImageB = xASL_adm_UnzipNifti(char(currentFileB));
-                        % Read in image
-                        imageA = xASL_io_Nifti2Im(tmpPathImageA);
-                        imageB = xASL_io_Nifti2Im(tmpPathImageB);
-                        % GZIP Niftis afterwards
-                        xASL_adm_GzipNifti(tmpPathImageA);
-                        xASL_adm_GzipNifti(tmpPathImageB);
-                    else
-                        imageA = xASL_io_Nifti2Im(char(currentFileA));
-                        imageB = xASL_io_Nifti2Im(char(currentFileB));
-                    end
+                    
+                    % Work on copy (untouch behavior)
+                    [~,nameNiftiA,~] = xASL_fileparts(char(currentFileA));
+                    [~,nameNiftiB,~] = xASL_fileparts(char(currentFileB));
+                    pathCopyA = strrep(char(currentFileA),nameNiftiA,[nameNiftiA '_tmp_copy']);
+                    pathCopyB = strrep(char(currentFileB),nameNiftiB,[nameNiftiB '_tmp_copy']);
+                    xASL_Copy(char(currentFileA),pathCopyA);
+                    xASL_Copy(char(currentFileB),pathCopyB);
+                    imageA = xASL_io_Nifti2Im(pathCopyA);
+                    imageB = xASL_io_Nifti2Im(pathCopyB);
                     
                     % Check that matrix dimensions agree first
                     sizeA = size(imageA);
@@ -435,6 +434,10 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
                         differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
                         dn = dn+1;
                     end
+                    
+                    % Delete copies
+                    xASL_delete(pathCopyA);
+                    xASL_delete(pathCopyB);
                 else
                     if bPrintReport
                         fprintf('%s:\t\t\n',allFiles{iFile});
