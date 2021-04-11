@@ -107,7 +107,8 @@ if bTest(1)
 		xASL_adm_CreateDir(fullfile(referencePath,fList{iList}));
 		xASL_adm_CreateDir(fullfile(referencePath,fList{iList}, 'rawdata'));
 
-        xASL_Copy(fullfile(flavorsPath,fList{iList}, 'rawdata'), fullfile(referencePath,fList{iList}), 1); 
+        % Copy rawdata folder for comparison
+        xASL_Copy(fullfile(flavorsPath,fList{iList}, 'rawdata'), fullfile(referencePath,fList{iList}, 'rawdata'), 1); 
 	end
 end
 
@@ -173,7 +174,7 @@ if bTest(6)
 		if exist(pathDerivatives,'dir')
 			pathDerivatives = fullfile(pathDerivatives,'ExploreASL');
 			if exist(pathDerivatives,'dir')
-				ExploreASL_Master(fullfile(pathDerivatives,'DataPar.json'), 0, 1, 0); % don't run population module
+				ExploreASL_Master(fullfile(pathDerivatives,'DataPar.json'), 0, [1 1 0], 0); % Don't run population module
 			end
 		end
 	end
