@@ -249,7 +249,7 @@ function returnList = getListWithout(thisType,List)
         end
     end
     
-    % Make sure there is a list to retunr
+    % Make sure there is a list to return
     if ~exist('returnList','var')
         returnList.name = '';
         returnList.folder = '';

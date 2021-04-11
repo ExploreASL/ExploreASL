@@ -81,6 +81,7 @@ xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 0 0 1 0], x);
 % Check the pipeline results
 %xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 0 0 0 1], x);
 
+% Get warnings & errors from log files
 [logContent] = xASL_test_GetLogContent(pathTest,0,1,2);
 
 % TODO
