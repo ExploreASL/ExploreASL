@@ -33,8 +33,8 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 %
 % EXAMPLE: 
 %
-% 1. Compilation marked as latest including compiled SPM: xASL_adm_MakeStandalone('M:\SoftwareDevelopment\MATLAB\m.stritt\',true,true);
-% 2. Compilation marked with version number including compiled SPM: xASL_adm_MakeStandalone('M:\SoftwareDevelopment\MATLAB\m.stritt\',true,false);
+% 1. Compilation marked as latest including compiled SPM: xASL_adm_MakeStandalone('Drive/User/Folder/',true,true);
+% 2. Compilation marked with version number including compiled SPM: xASL_adm_MakeStandalone('Drive/User/Folder/',true,false);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
