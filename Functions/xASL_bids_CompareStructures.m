@@ -232,9 +232,7 @@ end
 
 %% Get list without files/folders
 function returnList = getListWithout(thisType,List)
-
-    % Initialize list
-    returnList = [];
+    
     element = 1;
     for iT = 1:size(List,1)
         if strcmp(thisType,'folders')
@@ -250,7 +248,16 @@ function returnList = getListWithout(thisType,List)
             end
         end
     end
-
+    
+    % Make sure there is a list to retunr
+    if ~exist('returnList','var')
+        returnList.name = '';
+        returnList.folder = '';
+        returnList.date = '';
+        returnList.bytes = '';
+        returnList.isdir = 0;
+        returnList.datenum = 0;
+    end
 
 end
 
