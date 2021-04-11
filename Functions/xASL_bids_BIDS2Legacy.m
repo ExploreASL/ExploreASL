@@ -1,4 +1,4 @@
-function xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
+function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
 %xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
 % FORMAT: xASL_bids_BIDS2Legacy(pathStudy[, bOverwrite, dataPar])
@@ -72,15 +72,15 @@ if nargin < 3 || isempty(dataPar)
 end
 
 % Fills in important information in the dataPar if missing
-if ~isfield(dataPar,'x.subject_regexp')
+if ~isfield(dataPar.x,'subject_regexp')
 	dataPar.x.subject_regexp = '^sub-.*$';
 end
 
-if ~isfield(dataPar,'x.Quality')
+if ~isfield(dataPar.x,'Quality')
 	dataPar.x.Quality = 1;
 end
 
-if ~isfield(dataPar,'x.DELETETEMP')
+if ~isfield(dataPar.x,'DELETETEMP')
 	dataPar.x.DELETETEMP = 1;
 end
 
@@ -260,7 +260,15 @@ else
 end
 
 %% 10. Create DataPar.json
-spm_jsonwrite(fullfile(pathLegacy, 'DataPar.json'), dataPar);
+
+% Overwrite DataParPath in x structure
+fprintf('Overwriting x.DataParPath...\n');
+
+% Write DataParFile
+spm_jsonwrite(dataPar.x.DataParPath, dataPar);
+
+% Add the path to the dataPar.x struct that we return to the Master script
+dataPar.x.DataParPath = fullfile(pathLegacy, 'DataPar.json');
 
 end
 
@@ -282,3 +290,6 @@ function xASL_bids_BIDS2xASL_CopyFile(pathOrig, pathDest, bOverwrite)
     end
     
 end
+
+
+

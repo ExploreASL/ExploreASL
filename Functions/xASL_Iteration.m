@@ -364,7 +364,23 @@ function [bAborted, x] = runIteration(db)
                 end
             end
         catch ME
-            fprintf('\nERROR: Job iteration terminated!\n');
+            
+            % Obtain current subject ID from subject dir
+            [~, SubjectID] = fileparts(x.SUBJECTDIR);
+            iSubject = find(strcmp(x.SUBJECTS, SubjectID));
+            
+            % Obtain current module
+            ModuleString = func2str(jobfn);
+            String2Remove = 'xASL_module';
+            nString2Remove = length(String2Remove);
+            IndexString2Remove = regexpi(ModuleString, String2Remove);
+            
+            if ~isempty(IndexXASL) && length(ModuleString)>nString2Remove
+                ModuleString = ModuleString(nString2Remove+2:end);
+            end
+            
+            fprintf('\n%s\n',['ERROR: ' ModuleString ' module terminated for subject ' xASL_num2str(iSubject) ': ' SubjectID]);
+            
             ME.getReport()
             CountErrors     = CountErrors+1;
             if stopAfterErrors>0

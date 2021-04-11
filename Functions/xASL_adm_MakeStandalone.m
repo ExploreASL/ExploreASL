@@ -44,7 +44,7 @@ if nargin<3 || isempty(importDCM);      importDCM = true;                   end
 if nargin<4 || isempty(markAsLatest);   markAsLatest = true;                end
 
 % Initialize Explore ASL
-x = ExploreASL_Initialize([],0);
+x = ExploreASL_Initialize;
 
 % Get current directory
 ExploreASLPath = x.MyPath;

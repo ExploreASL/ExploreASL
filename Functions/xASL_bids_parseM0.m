@@ -20,7 +20,6 @@ function xASL_bids_parseM0(pathASLNifti)
 
 % Verify that pathASLNifti leads to ASL Nifti
 [Fpath, Ffile] = xASL_fileparts(pathASLNifti);
-
 PathJSON = fullfile(Fpath, [Ffile '.json']);
 
 %% Parse & process M0 options

@@ -1,5 +1,5 @@
 %% Compress NIfTI masks for compilation
-x = ExploreASL_Master('',0);
+x = ExploreASL_Initialize;
 
 %% Convert to .nii.mat, keep .nii.gz for visualization (uint8 for masks)
 Flist = {'C:\ExploreASL\Maps\WBmaskASL.nii';'C:\ExploreASL\Maps\WBmaskASLnarrow.nii';'C:\ExploreASL\Maps\Atlases\DeepWM.nii';'C:\ExploreASL\Maps\Atlases\HOcort_CONN.nii';'C:\ExploreASL\Maps\Atlases\HOsub_CONN.nii';'C:\ExploreASL\Maps\Atlases\Hammers.nii';'C:\ExploreASL\Maps\Atlases\LeftRight.nii';'C:\ExploreASL\Maps\Atlases\MNI_Structural.nii';'C:\ExploreASL\Maps\Atlases\Thalamus.nii';'C:\ExploreASL\Maps\Atlases\TotalGM.nii';'C:\ExploreASL\Maps\Atlases\TotalWM.nii';'C:\ExploreASL\Maps\Atlases\WholeBrain.nii';'C:\ExploreASL\Maps\Atlases\VascularTerritories\ATTbasedFlowTerritories.nii';'C:\ExploreASL\Maps\Atlases\VascularTerritories\BorderzoneMNI_Hartkamp2017JCBFM_3mmDilated.nii';'C:\ExploreASL\Maps\Atlases\VascularTerritories\BorderzoneMNI_Hartkamp2017JCBFM_Original.nii';'C:\ExploreASL\Maps\Atlases\VascularTerritories\CortVascTerritoriesTatu.nii';'C:\ExploreASL\Maps\Atlases\VascularTerritories\LabelingTerritories.nii';'C:\ExploreASL\Maps\Atlases\VascularTerritories\TatuICA_PCA.nii';'C:\ExploreASL\Maps\Atlases\VascularTerritories\Watershed_Conventional.nii';'C:\ExploreASL\Maps\Atlases\VascularTerritories\vascRegionsAlternative.nii'};

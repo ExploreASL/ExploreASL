@@ -171,7 +171,7 @@ if strcmpi(x.M0, 'UseControlAsM0')
 
         % First backup any pre-existing M0, if it is not already performed in previous run
         if xASL_exist(x.P.Path_M0, 'file')
-            fprintf('%s\n\', ['Pre-existing M0 NIfTI detected: ' x.P.Path_M0]);
+            fprintf('%s\n', ['Pre-existing M0 NIfTI detected: ' x.P.Path_M0]);
 
             if ~xASL_exist(x.P.Path_M0_backup, 'file')
                 fprintf('%s\n', ['Backing up ' x.P.Path_M0 ' to ' x.P.Path_M0_backup]);
