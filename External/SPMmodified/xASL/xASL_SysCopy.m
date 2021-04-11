@@ -41,11 +41,19 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
     if isunix || ismac
         SrcPath = xASL_adm_UnixPath(SrcPath);
         DstPath = xASL_adm_UnixPath(DstPath);
-        if bOverwrite
-            system(['cp -r -f ' SrcPath ' ' DstPath]); % -n is short for --noclober
-        else
-            system(['cp -r ' SrcPath ' ' DstPath]);
-        end
+		if exist(SrcPath, 'dir') && exist(DstPath, 'dir')
+			if bOverwrite
+				system(['cp -r -f ' SrcPath '/* ' DstPath]); % -n is short for --noclober
+			else
+				system(['cp -r ' SrcPath '/* ' DstPath]);
+			end
+		else
+			if bOverwrite
+				system(['cp -r -f ' SrcPath ' ' DstPath]); % -n is short for --noclober
+			else
+				system(['cp -r ' SrcPath ' ' DstPath]);
+			end
+		end
     else
         if exist(SrcPath, 'file') || exist(SrcPath, 'dir') % Check if source file exists
             if bOverwrite

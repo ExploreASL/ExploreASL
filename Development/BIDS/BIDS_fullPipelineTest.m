@@ -59,7 +59,7 @@ if ~exist(fullfile(pathTest,'FlavorDatabase'), 'dir')
 end
 
 %% Test execution
-
+x = ExploreASL_Initialize;
 % Prepare the data
 xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [1 0 0 0 0 0 0], x);
 

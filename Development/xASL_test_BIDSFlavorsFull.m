@@ -92,7 +92,9 @@ if bTest(1)
         % Copy the JSON meta files to the temporary conversion folder
 		xASL_Copy(fullfile(flavorsPath,fList{iList},'sourceStructure.json'), fullfile(conversionPath,fList{iList},'sourceStructure.json'), 1);
 		xASL_Copy(fullfile(flavorsPath,fList{iList},'studyPar.json'), fullfile(conversionPath,fList{iList},'studyPar.json'), 1);
-		xASL_Copy(fullfile(flavorsPath,fList{iList},'dataPar.json'), fullfile(conversionPath,fList{iList},'dataPar.json'), 1);
+		if exist(fullfile(flavorsPath,fList{iList},'dataPar.json'),'file')
+			xASL_Copy(fullfile(flavorsPath,fList{iList},'dataPar.json'), fullfile(conversionPath,fList{iList},'dataPar.json'), 1);
+		end
 	end
 	fprintf('\n');
 	
