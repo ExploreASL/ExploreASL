@@ -1,5 +1,5 @@
 function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bPVC, bParametric, imGM, imWM)
-%xASL_stat_ComputeMean calculates mean CBF in the image with optional partial volume correction.
+%xASL_stat_ComputeMean calculates mean or median of CBF in the image across a mask with an optional partial volume correction.
 %
 % FORMAT:  [CBF_GM CBF_WM] = xASL_stat_ComputeMean(imCBF[, imMask, nMinSize, bPVC, bParametric, imGM, imWM])
 %
@@ -9,9 +9,9 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bPVC,
 %   nMinSize - minimal size of the ROI in voxels, if not big enough, then return NaN
 %            - ignore when 0 (OPTIONAL, default = 0)
 %   bPVC   - perform PV-correction (OPTIONAL, DEFAULT = 0)
-%            0 - don't do partial volume correction, just calculate a median on imMask
-%            1 - simple partial volume correction by dividing by the GM mask
-%            2 - partial volume correction using linear regression and imGM, imWM masks
+%            0 - don't do partial volume correction, just calculate a mean or median on imMask
+%            1 - simple partial volume correction by normalizaton by the GM volume - see Petr et al. 2018
+%            2 - partial volume correction using linear regression and imGM, imWM maps according to Asllani et al. 2008
 %   bParametric - performs parametric statistics (1 mean) or non-parametric when turned off (0 median) (OPTIONAL, DEFAULT 1) 
 %   imGM   - GM partial volume map with the same size as imCBF
 %            (OPTIONAL, REQUIRED for bPVC==2 and bPVC==1)
@@ -21,7 +21,7 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bPVC,
 %   CBF_GM - calculated CBF for options bPVC==0:2
 %   CBF_WM - calculated WM CBF for bPVC==2
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: It calculates mean CBF over the mask imMask if the mask volume exceeds nMinSize. It calculates either
+% DESCRIPTION: It calculates mean or median of CBF over the mask imMask if the mask volume exceeds nMinSize. It calculates either
 %              a mean, a median, or a mean after PVC, depending on the settings of bPVC. For the PVC options, it needs also imGM and imWM and returns the
 %              separate PV-corrected values calculated over the entire ROI.
 %
