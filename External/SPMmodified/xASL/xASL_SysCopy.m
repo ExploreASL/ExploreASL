@@ -49,7 +49,13 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
 			else
 				system(['cp -r ' SrcPath '/* ' DstPath]);
 			end
-		else
+        elseif exist(SrcPath, 'file') && exist(DstPath, 'dir')
+            % If Srcpath is a file but DstPath is a folder, this goes
+            % wrong, we would delete a folder when bOverwrite, so we throw
+            % a warning and return
+            warning('Trying to copy a file but the destination already exists as folder');
+            fprintf('%s\n', 'Either delete the folder or append a file name, if the file should be copied into the folder');
+        else
 			% If one of SrcPath and DstPath is a file, then we copy normally
 			if bOverwrite
 				system(['cp -r -f ' SrcPath ' ' DstPath]); % -n is short for --noclober
