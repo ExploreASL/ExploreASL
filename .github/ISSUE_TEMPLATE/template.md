@@ -1,6 +1,6 @@
 ---
 name: Template
-about: Describe this issue template's purpose here.
+about: Template for feature and bug related issues.
 title: ''
 labels: ''
 assignees: ''
