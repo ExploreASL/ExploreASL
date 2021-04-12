@@ -328,9 +328,12 @@ function [bAborted, x] = runIteration(db)
         end
         
         % Some feedback about this iteration (after opening diary log)
+        [StartI, EndI] = regexp(diaryFileEx, 'ASL_\d','ONCE'); %to find the name of the session inside diaryFileEx: ASL_with any digit after
+        session= diaryFileEx(StartI:EndI); %isolate "ASL_1 or ASL_2 etc
+        
         if ~AlreadyProcessed
             fprintf('\n%s\n',repmat('+',1,72)); % just draw a separator line
-            fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Session: ' x.SESSIONS{x.nSessions} ', Module: ' x.MUTEXID ',  ' datestr(now) ' ===']);
+            fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Session: ' session ', Module: ' x.MUTEXID ',  ' datestr(now) ' ===']);
             fprintf('\n');
         end
         if ischar(job)
