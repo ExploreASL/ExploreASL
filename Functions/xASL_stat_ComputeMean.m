@@ -83,20 +83,20 @@ if nargin<7
 	imWM = [];
 end
 
+% Initialize the output
+CBF_GM = NaN;
+CBF_WM = NaN;
+
 if nargout>1 && bPVC~=2
 	warning('Calculates CBF_WM only for PVC==2 option');
-	CBF_WM = NaN;
 end
 
 if (nargout>1) && isempty(imWM)
 	warning('Cannot calculate CBF_WM when imWM is not provided');
-	CBF_WM = NaN;
 end
 
 if sum(isfinite(imCBF(:)))==0
     warning('CBF image is empty, skipping');
-    CBF_GM = NaN;
-    CBF_WM = NaN;
     return;
 end
 
