@@ -896,6 +896,13 @@ if bRunSubmodules(2)
 		end
     end
     
+    % Copy log files
+    importMetaFiles = xASL_adm_GetFileList(imPar.AnalysisRoot,'^import.+$');
+    for importFile=1:size(importMetaFiles,1)
+        [~,thisFileMeta,thisExtensionMeta] = xASL_fileparts(importMetaFiles{importFile,1});
+        xASL_Copy(importMetaFiles{importFile,1},fullfile(studyPath,[thisFileMeta thisExtensionMeta]));
+    end
+    
     % Delete analysis folder
     xASL_delete(imPar.AnalysisRoot, true);
 end
