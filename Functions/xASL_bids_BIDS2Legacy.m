@@ -72,8 +72,13 @@ if nargin < 3 || isempty(dataPar)
 end
 
 % Fills in important information in the dataPar if missing
+if ~isfield(dataPar,'x')
+    % Add x field
+    dataPar.x = struct;
+end
+% Add default subject regular expression
 if ~isfield(dataPar.x,'subject_regexp')
-	dataPar.x.subject_regexp = '^sub-.*$';
+    dataPar.x.subject_regexp = '^sub-.*$';
 end
 
 if ~isfield(dataPar.x,'Quality')
@@ -265,7 +270,7 @@ end
 fprintf('Overwriting x.DataParPath...\n');
 
 % Write DataParFile
-spm_jsonwrite(dataPar.x.DataParPath, dataPar);
+spm_jsonwrite(fullfile(pathLegacy, 'DataPar.json'), dataPar);
 
 % Add the path to the dataPar.x struct that we return to the Master script
 dataPar.x.DataParPath = fullfile(pathLegacy, 'DataPar.json');

@@ -702,7 +702,7 @@ if bRunSubmodules(2)
 						if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
 							error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
 						else
-							jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat}),[1 size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat}))]);
+							jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat})(:),[size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat})) 1]);
 						end
 					end
 				end

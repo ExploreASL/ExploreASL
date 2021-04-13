@@ -163,6 +163,24 @@ if ~isempty(inBids)
 	
 	% When the output is in XASL we need to convert from BIDS to XASL
 	if bOutBids ~= 1
+		% Convert M0Type and M0Estimate to xASL Legacy
+		if isfield(inBids,'M0Type')
+			switch(inBids.M0Type)
+				case 'Estimate'
+					inBids.M0 = inBids.M0Estimate;
+					inBids = rmfield(inBids,'M0Estimate');
+				case 'Separate'
+					inBids.M0 = 'separate_scan';
+				case 'Included'
+					inBids.M0 = 'separate_scan';
+				case 'Absent'
+					inBids.M0 = 'UseControlAsM0';
+			end
+			
+			% Remove the old field
+			inBids = rmfield(inBids,'M0Type');
+		end
+		
 		% Preconvert certain names upfront - so that the values can be converted s-ms in the step below
 		if isfield(inBids,'ArterialSpinLabelingType') && strcmpi(inBids.ArterialSpinLabelingType,'PASL') && isfield(inBids,'BolusCutOffDelayTime')
 			inBids.LabelingDuration = inBids.BolusCutOffDelayTime(1);

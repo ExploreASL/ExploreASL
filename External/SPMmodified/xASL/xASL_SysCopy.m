@@ -41,11 +41,28 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
     if isunix || ismac
         SrcPath = xASL_adm_UnixPath(SrcPath);
         DstPath = xASL_adm_UnixPath(DstPath);
-        if bOverwrite
-            system(['cp -r -f ' SrcPath ' ' DstPath]); % -n is short for --noclober
+		if exist(SrcPath, 'dir') && exist(DstPath, 'dir')
+			% If we copy a directory to a directory in Linux, then this has to be done carefully, we want to copy the contents of SrcPath inside the 
+			% DstPath. This has to be done using /*. Otherwise, it would have copied the entire SrcPath and put it inside DstPath
+			if bOverwrite
+				system(['cp -r -f ' SrcPath '/* ' DstPath]); % -n is short for --noclober
+			else
+				system(['cp -r ' SrcPath '/* ' DstPath]);
+			end
+        elseif exist(SrcPath, 'file') && exist(DstPath, 'dir')
+            % If Srcpath is a file but DstPath is a folder, this goes
+            % wrong, we would delete a folder when bOverwrite, so we throw
+            % a warning and return
+            warning('Trying to copy a file but the destination already exists as folder');
+            fprintf('%s\n', 'Either delete the folder or append a file name, if the file should be copied into the folder');
         else
-            system(['cp -r ' SrcPath ' ' DstPath]);
-        end
+			% If one of SrcPath and DstPath is a file, then we copy normally
+			if bOverwrite
+				system(['cp -r -f ' SrcPath ' ' DstPath]); % -n is short for --noclober
+			else
+				system(['cp -r ' SrcPath ' ' DstPath]);
+			end
+		end
     else
         if exist(SrcPath, 'file') || exist(SrcPath, 'dir') % Check if source file exists
             if bOverwrite

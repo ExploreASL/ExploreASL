@@ -1,7 +1,7 @@
 function xASL_im_dilateROI(PathIn, PathOut, minVolume)
 %xASL_im_dilateROI Dilates a binary ROI with a 3x3 sphere until reaching a defined minimal volume
 %
-% FORMAT:       xASL_im_dilateROI(PathIn, PathOut)
+% FORMAT:       xASL_im_dilateROI(PathIn, [PathOut, minVolume])
 % 
 % INPUT:        PathIn    - Path to input NIfTI image (REQUIRED)
 %               PathOut   - Path to output NIfTI image (OPTIONAL, DEFAULT = PathIn)
@@ -16,7 +16,7 @@ function xASL_im_dilateROI(PathIn, PathOut, minVolume)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_im_dilateROI('test.nii', [], 40)
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 %% Admin
 if nargin<2 || isempty(PathOut)

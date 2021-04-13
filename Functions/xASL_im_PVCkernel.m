@@ -1,4 +1,4 @@
-function [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV,kernel,mode)
+function [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV, kernel, mode)
 %xASL_im_PVCkernel Partial volume correction (PVC) of ASL data using GM-,WM-partial volume maps using linear regression
 %
 % FORMAT: [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV [,kernel,mode])
@@ -140,96 +140,96 @@ for z=1:size(imCBF,3)
 	zVecLoc = zVecLoc((z+zVecLoc)<=size(imCBF,3));
 	numElLoc = length(xVec) * length(yVec) * length(zVecLoc);
 	
-	for y = (winWidth(2)+1):(size(imCBF,2)-winWidth(2))
-		for x = (winWidth(1)+1):(size(imCBF,1)-winWidth(1))
-			imPVC(x,y,z,1:2) = [0,0];
-		
-			if imMask(x,y,z)
-				% Create the empty vectors
-				PMat = zeros(numElLoc,2);
-				
-				if doGauss
-					% Gaussian kernel
-					kernelLoc = imGaussKernel(xVec + winWidth(1) + 1, yVec + winWidth(2) + 1, zVecLoc + winWidth(3) + 1);
-					
-					% Create the PV matrix
-					PMat(:,1) = reshape(imPV(x + xVec, y + yVec, z + zVecLoc,1).*kernelLoc,[numElLoc,1]);
-					PMat(:,2) = reshape(imPV(x + xVec, y + yVec, z + zVecLoc,2).*kernelLoc,[numElLoc,1]);
-					
-					% And CBF vector
-					ASLMat = reshape(imCBF(x + xVec, y + yVec, z + zVecLoc,1).*kernelLoc,[numElLoc,1]);
-				else 
-					% Flat kernel
-					% Create the PV matrix
-					PMat(:,1) = reshape(imPV(x + xVec, y + yVec, z + zVecLoc,1),[numElLoc,1]);
-					PMat(:,2) = reshape(imPV(x + xVec, y + yVec, z + zVecLoc,2),[numElLoc,1]);
-					
-					% And CBF vector
-					ASLMat = reshape(imCBF(x + xVec, y + yVec, z + zVecLoc,1),[numElLoc,1]);
-				end
-				% Remove the parts with low pvGM+pvWM
-				ind = (sum(PMat,2) > opt.pvTh) & (ASLMat~=0);
-				PMat = PMat(ind,:);
-				ASLMat = ASLMat(ind,:);
-				
-				% There has to be a minimum amount of tissue
-				if (sum(PMat(:)) > opt.pvTotTh)
-					
-					% Calculate if there is voxels for both tissue
-					isPV1 = (sum(PMat(:,1) > opt.rankTh) >= 1);
-					isPV2 = (sum(PMat(:,2) > opt.rankTh) >= 1);
-					
-					if ( isPV1 && isPV2 )
-						% Compute the Matrix rank of PMat
-						[PMatu,PMats,PMatv] = svd(PMat,0);
-						PMatds = diag(PMats);
-						PMattol = max(size(PMat)) * eps(max(PMatds));
-						PMatr = sum(PMatds > PMattol);
-						
-						% The matrix is not ill-conditioned
-						if PMatr >= 2
-							% Calculates the pseudo inversion and the
-							% solution
-							PMatds = 1./PMatds(:);
-							%res = ((PMatv.*PMatds.')*(PMatu'))*ASLMat;
-							res = (PMatv*diag(PMatds)*PMatu')*ASLMat;
-							
-							imPVC(x,y,z,1:2) = res;
-							
-							% In case that the result for one or both
-							% tissue is below minimal allowed value, we set
-							% the smaller to the minimum and recalculate
-							
-							% One of the values is smaller than the MIN
-							if sum(res<opt.resMin)
-								% Find out the index of the bigger one and
-								% the smaller one
-								[~,indMax] = max(res);
-								[~,indMin] = min(res);
-								% Set one value to the min and subtract it
-								ASLMatUp = ASLMat - PMat(:,indMin)*opt.resMin;
-								
-								% Set the results for the smaller value to
-								% the minimum
-								imPVC(x,y,z,indMin) = opt.resMin;
-								
-								% Calculate the result for the other value
-								imPVC(x,y,z,indMax) = sum(ASLMatUp.*PMat(:,indMax))/sum(PMat(:,indMax).^2);
-							end
-						end
-					else
-						% Not enough voxels of both tissue
-						if (isPV1 || isPV2)
-							% But one tissue has enough, so
-							% calculate for the first of second tissue
-							if (isPV1)
-								ind = 1;
-							else
-								ind = 2;
-							end
-							
-							imPVC(x,y,z,ind) = sum(ASLMat.*PMat(:,ind))/sum(PMat(:,ind).^2);
-						end
+    for y = (winWidth(2)+1):(size(imCBF,2)-winWidth(2))
+        for x = (winWidth(1)+1):(size(imCBF,1)-winWidth(1))
+            imPVC(x,y,z,1:2) = [0,0];
+            
+            if imMask(x,y,z)
+                % Create the empty vectors
+                PMat = zeros(numElLoc,2);
+                
+                if doGauss
+                    % Gaussian kernel
+                    kernelLoc = imGaussKernel(xVec + winWidth(1) + 1, yVec + winWidth(2) + 1, zVecLoc + winWidth(3) + 1);
+                    
+                    % Create the PV matrix
+                    PMat(:,1) = reshape(imPV(x + xVec, y + yVec, z + zVecLoc,1).*kernelLoc,[numElLoc,1]);
+                    PMat(:,2) = reshape(imPV(x + xVec, y + yVec, z + zVecLoc,2).*kernelLoc,[numElLoc,1]);
+                    
+                    % And CBF vector
+                    ASLMat = reshape(imCBF(x + xVec, y + yVec, z + zVecLoc,1).*kernelLoc,[numElLoc,1]);
+                else
+                    % Flat kernel
+                    % Create the PV matrix
+                    PMat(:,1) = reshape(imPV(x + xVec, y + yVec, z + zVecLoc,1),[numElLoc,1]);
+                    PMat(:,2) = reshape(imPV(x + xVec, y + yVec, z + zVecLoc,2),[numElLoc,1]);
+                    
+                    % And CBF vector
+                    ASLMat = reshape(imCBF(x + xVec, y + yVec, z + zVecLoc,1),[numElLoc,1]);
+                end
+                % Remove the parts with low pvGM+pvWM
+                ind = (sum(PMat,2) > opt.pvTh) & (ASLMat~=0);
+                PMat = PMat(ind,:);
+                ASLMat = ASLMat(ind,:);
+                
+                % There has to be a minimum amount of tissue
+                if (sum(PMat(:)) > opt.pvTotTh)
+                    
+                    % Calculate if there is voxels for both tissue
+                    isPV1 = (sum(PMat(:,1) > opt.rankTh) >= 1);
+                    isPV2 = (sum(PMat(:,2) > opt.rankTh) >= 1);
+                    
+                    if ( isPV1 && isPV2 )
+                        % Compute the Matrix rank of PMat
+                        [PMatu,PMats,PMatv] = svd(PMat,0);
+                        PMatds = diag(PMats);
+                        PMattol = max(size(PMat)) * eps(max(PMatds));
+                        PMatr = sum(PMatds > PMattol);
+                        
+                        % The matrix is not ill-conditioned
+                        if PMatr >= 2
+                            % Calculates the pseudo inversion and the
+                            % solution
+                            PMatds = 1./PMatds(:);
+                            %res = ((PMatv.*PMatds.')*(PMatu'))*ASLMat;
+                            res = (PMatv*diag(PMatds)*PMatu')*ASLMat;
+                            
+                            imPVC(x,y,z,1:2) = res;
+                            
+                            % In case that the result for one or both
+                            % tissue is below minimal allowed value, we set
+                            % the smaller to the minimum and recalculate
+                            
+                            % One of the values is smaller than the MIN
+                            if sum(res<opt.resMin)
+                                % Find out the index of the bigger one and
+                                % the smaller one
+                                [~,indMax] = max(res);
+                                [~,indMin] = min(res);
+                                % Set one value to the min and subtract it
+                                ASLMatUp = ASLMat - PMat(:,indMin)*opt.resMin;
+                                
+                                % Set the results for the smaller value to
+                                % the minimum
+                                imPVC(x,y,z,indMin) = opt.resMin;
+                                
+                                % Calculate the result for the other value
+                                imPVC(x,y,z,indMax) = sum(ASLMatUp.*PMat(:,indMax))/sum(PMat(:,indMax).^2);
+                            end
+                        end
+                    else
+                        % Not enough voxels of both tissue
+                        if (isPV1 || isPV2)
+                            % But one tissue has enough, so
+                            % calculate for the first of second tissue
+                            if (isPV1)
+                                ind = 1;
+                            else
+                                ind = 2;
+                            end
+                            
+                            imPVC(x,y,z,ind) = sum(ASLMat.*PMat(:,ind))/sum(PMat(:,ind).^2);
+                        end
                     end % if ( isPV1 && isPV2 )
                 end % if (sum(PMat(:)) > opt.pvTotTh)
             end % if imMask(x,y,z)
