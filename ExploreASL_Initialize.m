@@ -867,13 +867,17 @@ function ExploreASL_Initialize_printSettings(x)
     
     % Printing
     fprintf('==================================== ExploreASL Settings =====================================\n');
-    if length(x.DataParPath)>71,    fprintf('DataParPath        ...%s\n', x.DataParPath(end-71:end));
-    else,                           fprintf('DataParPath        %s\n', x.DataParPath); end
-    fprintf('Import Modules     %s %s %s %s\n', dcm2nii, nii2bids, anonymize, bids2legacy);
-    fprintf('Process Modules    %s %s %s\n', Structural, ASL, Population);
-    fprintf('bPause             %d\n', x.bPause);
-    fprintf('iWorker            %d\n', x.iWorker);
-    fprintf('nWorkers           %d\n', x.nWorkers);
+    if length(x.DataParPath)>70,    fprintf('DataParPath         ...%s\n', x.DataParPath(end-70:end));
+    else,                           fprintf('DataParPath         %s\n', x.DataParPath); end
+    fprintf('Import Modules      %s %s %s %s\n', dcm2nii, nii2bids, anonymize, bids2legacy);
+    fprintf('Process Modules     %s %s %s\n', Structural, ASL, Population);
+    if x.bPause==1
+        fprintf('bPause              %s\n', 'True');
+    else
+        fprintf('bPause              %s\n', 'False');
+    end
+    fprintf('iWorker             %d\n', x.iWorker);
+    fprintf('nWorkers            %d\n', x.nWorkers);
     fprintf('==============================================================================================\n');
 
 end
