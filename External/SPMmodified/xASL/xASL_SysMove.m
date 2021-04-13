@@ -63,7 +63,7 @@ function xASL_SysMove(SrcPath, DstPath, bForce,bSourceCheck)
             else
                 strforce = [];
             end
-            [status,result] = system(['move ' strforce ' ' SrcPath ' ' DstPath]);
+            [status,result] = system(['move ' strforce ' "' SrcPath '" "' DstPath '"']);
             if bSourceCheck && status~=0
                 error('Error moving %s to %s: %s', SrcPath, DstPath, result);
             end
