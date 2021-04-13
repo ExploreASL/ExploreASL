@@ -126,7 +126,7 @@ function [x] = ExploreASL_Initialize(varargin)
     end
     
     % Read file
-    if exist(x.DataParPath,'file')
+    if exist(x.DataParPath,'file')==2
         SelectParFile = false; % Does not need to be inserted a second time
         jsonContent = spm_jsonread(x.DataParPath);
         if isfield(jsonContent,'x')
@@ -867,13 +867,13 @@ function ExploreASL_Initialize_printSettings(x)
     
     % Printing
     fprintf('==================================== ExploreASL Settings =====================================\n');
-    if length(x.DataParPath)>66,    fprintf('DataParPath\t\t\t\t...%s\n', x.DataParPath(end-66:end));
-    else,                           fprintf('DataParPath\t\t\t\t%s\n', x.DataParPath); end
-    fprintf('Import Modules\t\t\t%s %s %s %s\n', dcm2nii, nii2bids, anonymize, bids2legacy);
-    fprintf('Process Modules\t\t\t%s %s %s\n', Structural, ASL, Population);
-    fprintf('bPause\t\t\t\t\t%d\n', x.bPause);
-    fprintf('iWorker\t\t\t\t\t%d\n', x.iWorker);
-    fprintf('nWorkers\t\t\t\t%d\n', x.nWorkers);
+    if length(x.DataParPath)>71,    fprintf('DataParPath        ...%s\n', x.DataParPath(end-71:end));
+    else,                           fprintf('DataParPath        %s\n', x.DataParPath); end
+    fprintf('Import Modules     %s %s %s %s\n', dcm2nii, nii2bids, anonymize, bids2legacy);
+    fprintf('Process Modules    %s %s %s\n', Structural, ASL, Population);
+    fprintf('bPause             %d\n', x.bPause);
+    fprintf('iWorker            %d\n', x.iWorker);
+    fprintf('nWorkers           %d\n', x.nWorkers);
     fprintf('==============================================================================================\n');
 
 end
