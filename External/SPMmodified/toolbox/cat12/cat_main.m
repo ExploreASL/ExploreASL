@@ -952,11 +952,13 @@ function [res,job,VT,VT0,pth,nam,vx_vol,d] = cat_main_updatepara(res,tpm,job)
 
   % EXPLOREASL HACK
   CurrDir=pwd;
-  if exist(fullfile(CurrDir,'mri'), 'dir')
-	  if xASL_exist(fullfile(CurrDir, 'mri', 'nT1.nii'), 'file')
-		  tIM = xASL_io_Nifti2Im(fullfile(CurrDir, 'mri', 'nT1.nii'));
+  pathMRI = fullfile(CurrDir,'mri');
+  if exist(pathMRI, 'dir')
+	  pathNT1 = fullfile(pathMRI, 'nT1.nii');
+	  if xASL_exist(pathNT1, 'file')
+		  tIM = xASL_io_Nifti2Im(pathNT1);
 		  tIM(isnan(tIM)) = 0;
-		  xASL_io_SaveNifti(fullfile(CurrDir, 'mri', 'nT1.nii'), fullfile(CurrDir, 'mri', 'nT1.nii'), tIM, [], false);
+		  xASL_io_SaveNifti(pathNT1, pathNT1, tIM, [], false);
 	  end
   end
 
