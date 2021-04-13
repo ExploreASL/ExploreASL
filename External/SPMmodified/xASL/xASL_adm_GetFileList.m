@@ -17,7 +17,7 @@ function filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequire
 %   mode           true to return full paths with path+name (OPTIONAL, DEFAULT = 'FPList')
 %                  false to return only the name (= 'List')
 %                  Or directly assign the spm_select compatible mode 'List' (only filenames), 'FPList' (fullpath),
-%                  or 'FPListRec' (full path and recursively).
+%                  or 'FPListRec' (full path and recursively - it goes inside every subfolder of strDirectory).
 %   nRequired      Set to a value or range [a b] to define a minimum/maximum number of required files. (OPTIONAL)
 %                  An exception will be thrown if this requirement is not met. Use [n Inf] to accept at least n.
 %                  Default is to accept any count. You can also provide a scalar [a] requiring to accept exactly 'a' matches
