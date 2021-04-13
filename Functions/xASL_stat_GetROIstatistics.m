@@ -666,12 +666,14 @@ for iSubject=1:x.nSubjects
 			end
 		end % for iROI=1:size(SubjectSpecificMasks,2)
         
-        % Create last row if missing
+        % Create last rows if missing
+		FieldsAre = {'DAT_mean_PVC0' 'DAT_median_PVC0' 'DAT_mean_PVC2' 'DAT_mean_PVC2' 'DAT_CoV_PVC2'};
         for iField = 1:length(FieldsAre)
             if isfield(x.S, FieldsAre{iField})
-                if size(x.S.(FieldsAre{iField}), 1) < TotalRows
-                    x.S.(FieldsAre{iField})(TotalRows, 1:end) = NaN;
-                end
+				% Go through all the missing rows
+				for iRow = (size(x.S.(FieldsAre{iField}),1)+1):TotalRows
+					x.S.(FieldsAre{iField})(iRow, 1:end) = NaN;
+				end
             end
         end
         
