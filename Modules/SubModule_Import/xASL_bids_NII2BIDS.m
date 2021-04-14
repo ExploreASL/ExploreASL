@@ -17,6 +17,9 @@ function xASL_bids_NII2BIDS(studyParPath, imPar)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+
+    %% Run the NII2BIDS conversion
+
     % Loads the general configuration necessary for the conversion and BIDS saving
 	bidsPar = xASL_bids_Config();
 	
