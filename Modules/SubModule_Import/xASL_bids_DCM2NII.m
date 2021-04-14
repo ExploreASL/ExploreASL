@@ -1,5 +1,5 @@
 function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
-%xASL_bids_DCM2NII Run the import dcm2nii part of the import.
+%xASL_bids_DCM2NII Run the dcm2nii part of the import.
 %
 % FORMAT: xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
 % 
@@ -15,7 +15,7 @@ function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %   n/a
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Run the import dcm2nii part of the import.
+% DESCRIPTION: Run the dcm2nii part of the import.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
 % __________________________________
