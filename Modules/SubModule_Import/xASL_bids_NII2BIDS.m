@@ -4,8 +4,8 @@ function xASL_bids_NII2BIDS(studyParPath, imPar)
 % FORMAT: xASL_bids_NII2BIDS(studyParPath, imPar)
 % 
 % INPUT:
-%   studyParPath    - path to the JSON file with the BIDS parameters relevant for the whole study
-%   imPar           - JSON file with structure with import parameters
+%   studyParPath    - path to the JSON file with the BIDS parameters relevant for the whole study (REQUIRED, CHAR ARRAY)
+%   imPar           - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   n/a

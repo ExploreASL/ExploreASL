@@ -275,7 +275,7 @@ end
 
 %% 3. Run the DCM2NIIX
 if bRunSubmodules(1)
-	ExploreASL_ImportBIDS_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
+	xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
 end
 
 %% 4. Run the NIIX to ASL-BIDS

@@ -1,10 +1,26 @@
+function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
+%xASL_bids_DCM2NII Run the import dcm2nii part of the import.
+%
+% FORMAT: xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
+% 
+% INPUT:
+%   imPar              - JSON file with structure with import parameters (REQUIRED, CHAR ARRAY)
+%   bCopySingleDicoms  - Copy Single Dicoms (REQUIRED, BOOLEAN)
+%   bUseDCMTK          - Use DCMTK for DCM2NII import (REQUIRED, BOOLEAN)
+%   bCheckPermissions  - Check user access rights (REQUIRED, BOOLEAN)
+%   bClone2Source      - Clone to source (REQUIRED, BOOLEAN)
+%   x                  - ExploreASL x structure (REQUIRED, STRUCT)
+%
+% OUTPUT:
+%   n/a
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Run the import dcm2nii part of the import.
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Run the import dcm2nii part of the import
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function ExploreASL_ImportBIDS_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialize defaults of dcm2nii
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -584,4 +600,6 @@ end
 	
 	fprintf('\n');
 end
+
+
 

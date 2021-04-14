@@ -4,11 +4,11 @@ function xASL_bids_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSub
 % FORMAT: xASL_bids_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject)
 % 
 % INPUT:
-%   imPar           - JSON file with structure with import parameter
-%   bidsPar         - Output of xASL_bids_Config
-%   studyPar        - JSON file with the BIDS parameters relevant for the whole study
-%   listSubjects    - List of subjects
-%   iSubject        - Current subject number
+%   imPar           - JSON file with structure with import parameter (REQUIRED, STRUCT)
+%   bidsPar         - Output of xASL_bids_Config (REQUIRED, STRUCT)
+%   studyPar        - JSON file with the BIDS parameters relevant for the whole study (REQUIRED, STRUCT)
+%   listSubjects    - List of subjects (REQUIRED, LIST)
+%   iSubject        - Current subject number (REQUIRED, INTEGER)
 %
 % OUTPUT:
 %   n/a
