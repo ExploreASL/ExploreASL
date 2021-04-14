@@ -4,7 +4,7 @@ function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 % FORMAT: xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
 % 
 % INPUT:
-%   imPar              - JSON file with structure with import parameters (REQUIRED, CHAR ARRAY)
+%   imPar              - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %   bCopySingleDicoms  - Copy Single Dicoms (REQUIRED, BOOLEAN)
 %   bUseDCMTK          - Use DCMTK for DCM2NII import (REQUIRED, BOOLEAN)
 %   bCheckPermissions  - Check user access rights (REQUIRED, BOOLEAN)
