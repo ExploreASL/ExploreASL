@@ -189,7 +189,7 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
     end
 
     %% 2. Initialize the setup of the dicom2nii conversion
-    imPar = xASL_bids_DCM2NII_Initialize(studyPath);
+    imPar = xASL_bids_DCM2NII_Initialize(studyPath, imParPath);
 
 
     %% 3. Run the DCM2NIIX

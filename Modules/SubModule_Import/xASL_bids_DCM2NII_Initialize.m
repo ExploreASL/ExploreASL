@@ -1,10 +1,11 @@
-function imPar = xASL_bids_DCM2NII_Initialize(studyPath)
+function imPar = xASL_bids_DCM2NII_Initialize(studyPath, imParPath)
 %xASL_bids_DCM2NII_Initialize Initialize DCM2NII.
 %
-% FORMAT: imPar = xASL_bids_DCM2NII_Initialize(studyPath)
+% FORMAT: imPar = xASL_bids_DCM2NII_Initialize(studyPath, imParPath)
 % 
 % INPUT:
 %   studyPath  - Path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED, CHAR ARRAY)
+%   imParPath  - Path to the JSON file with structure with import parameters (REQUIRED, CHAR ARRAY)
 %
 % OUTPUT:
 %   imPar      - JSON file with structure with import parameters (REQUIRED, STRUCT)
@@ -12,7 +13,7 @@ function imPar = xASL_bids_DCM2NII_Initialize(studyPath)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Initialize DCM2NII.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     imPar = xASL_bids_DCM2NII_Initialize(studyPath);
+% EXAMPLE:     imPar = xASL_bids_DCM2NII_Initialize(studyPath, imParPath);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
