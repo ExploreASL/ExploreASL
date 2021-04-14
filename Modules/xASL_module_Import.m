@@ -317,7 +317,7 @@ if bRunSubmodules(2)
 	% Go through all subjects
 	listSubjects = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)
-        ExploreASL_ImportBIDS_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjects,iSubject);
+        xASL_bids_SubjectImportNII2BIDS(imPar,bidsPar,studyPar,listSubjects,iSubject);
     end
     
     % Copy log files

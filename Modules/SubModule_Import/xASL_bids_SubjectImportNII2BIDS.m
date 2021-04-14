@@ -1,10 +1,24 @@
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Run NII to ASL-BIDS for one individual subject
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function ExploreASL_ImportBIDS_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjects,iSubject)
+function xASL_bids_SubjectImportNII2BIDS(imPar, bidsPar, studyPar, listSubjects, iSubject)
+%xASL_bids_SubjectImportNII2BIDS Run NII to ASL-BIDS for one individual subject.
+%
+% FORMAT: xASL_bids_SubjectImportNII2BIDS(imPar, bidsPar, studyPar, listSubjects, iSubject)
+% 
+% INPUT:
+%   imPar           - JSON file with structure with import parameter
+%   bidsPar         - Output of xASL_bids_Config
+%   studyPar        - JSON file with the BIDS parameters relevant for the whole study
+%   listSubjects    - List of subjects
+%   iSubject        - Current subject number
+%
+% OUTPUT:
+%   n/a
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Run NII to ASL-BIDS for one individual subject.
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     xASL_bids_SubjectImportNII2BIDS(imPar, bidsPar, studyPar, listSubjects, iSubject);
+% __________________________________
+% Copyright 2015-2021 ExploreASL
     
     subjectLabel = xASL_adm_CorrectName(listSubjects{iSubject},2);
 
