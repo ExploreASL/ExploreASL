@@ -1,7 +1,7 @@
-function xASL_bids_SubjectImportNII2BIDS(imPar, bidsPar, studyPar, listSubjects, iSubject)
-%xASL_bids_SubjectImportNII2BIDS Run NII to ASL-BIDS for one individual subject.
+function xASL_bids_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject)
+%xASL_bids_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
 %
-% FORMAT: xASL_bids_SubjectImportNII2BIDS(imPar, bidsPar, studyPar, listSubjects, iSubject)
+% FORMAT: xASL_bids_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject)
 % 
 % INPUT:
 %   imPar           - JSON file with structure with import parameter
@@ -16,7 +16,7 @@ function xASL_bids_SubjectImportNII2BIDS(imPar, bidsPar, studyPar, listSubjects,
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run NII to ASL-BIDS for one individual subject.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_bids_SubjectImportNII2BIDS(imPar, bidsPar, studyPar, listSubjects, iSubject);
+% EXAMPLE:     xASL_bids_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
     
