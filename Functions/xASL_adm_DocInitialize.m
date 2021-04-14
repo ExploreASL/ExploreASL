@@ -91,7 +91,6 @@ function xASL_adm_DocInitialize(baseOutputFolder)
                         fullfile(outputFolder,'Modules.md'),'Modules');
     
     % Use documentation crawler for submodules
-    xASL_adm_DocCrawler(fullfile(x.MyPath,'ExploreASL_ImportConfig.m'), fullfile(outputFolder,'Import_Module_old.md'),'oldImport');
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Import'), fullfile(outputFolder,'Import_Module.md'),'ImportModule');
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_Structural'), fullfile(outputFolder,'Structural_Module.md'),'StructuralModule');
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Modules','SubModule_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
