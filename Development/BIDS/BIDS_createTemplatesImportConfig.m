@@ -109,11 +109,14 @@ listOfConfigFlavors = { ...
                        'incoming',...
                         };
 
+% Select CustomScripts directory
+customScripts = uigetdir(x.MyPath,'Please select the CustomScripts directory...');
+
 % Create JSON files
 for iFlavor=1:length(listOfConfigFlavors)
     fprintf('%s\n', listOfConfigFlavors{iFlavor});
     imPar = ExploreASL_ImportConfig(listOfConfigFlavors{iFlavor});
     validFileName = [genvarname(listOfConfigFlavors{iFlavor}) '.json'];
-    spm_jsonwrite(fullfile(x.MyPath, 'Development', 'ConfigFiles', validFileName), imPar);
+    spm_jsonwrite(fullfile(customScripts, 'ConfigFiles', validFileName), imPar);
 end
 
