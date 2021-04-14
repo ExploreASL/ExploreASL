@@ -1,10 +1,32 @@
-
-
-% -----------------------------------------------------------------------------
-% Catch Errors
-% -----------------------------------------------------------------------------
 function [dcm2niiCatchedErrors] = xASL_bids_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
-% Catch reported warnings/errors, print them if verbose, & add them to a structure of warnings/errors to be stored for later QC
+%xASL_bids_CatchErrors Catch Errors.
+%
+% FORMAT: [dcm2niiCatchedErrors] = xASL_bids_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
+% 
+% INPUT:
+%   WarningID            - Warning ID
+%   WarningMessage       - Warning message
+%   WarningLine          - Warning line
+%   WarningFileName      - Warning file name
+%   WarningPath          - Warning path
+%   scan_name            - Scan name
+%   scanpath             - scan path
+%   destdir              - Destination directory
+%   dcm2niiCatchedErrors - DCM2NII catched errors
+%   imPar                - imPar struct
+%   StackIn              - Stack In
+%
+% OUTPUT:
+%   dcm2niiCatchedErrors - DCM2NII catched errors
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Catch reported warnings/errors, print them if verbose, & add them to a structure of warnings/errors to be stored for later QC.
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     [dcm2niiCatchedErrors] = xASL_bids_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn);
+% __________________________________
+% Copyright 2015-2021 ExploreASL
+
+    %% Catch Errors
 
     if imPar.bVerbose % print warning if we want verbose
         warning(WarningMessage);
