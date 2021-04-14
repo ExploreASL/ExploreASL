@@ -1,4 +1,4 @@
-function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(imPar, vSubjectIDs, vVisitIDs, bUseVisits, nVisits, nSessions, subjectIDs, visitIDs, sessionIDs, scanIDs, iSubject, summary_lines, matches)
+function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(imPar, vSubjectIDs, vVisitIDs, bUseVisits, nVisits, nSessions, subjectIDs, visitIDs, sessionIDs, scanIDs, iSubject, summary_lines, matches, bCopySingleDicoms, bClone2Source)
 %xASL_bids_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
 % FORMAT: n/a
