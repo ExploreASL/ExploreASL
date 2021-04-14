@@ -127,7 +127,7 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
                 cS = cS+1; 
             end
             
-            if strcmp(fileName,'ExploreASL_Import')
+            if strcmp(fileName,'xASL_module_Import')
                 TEXT{it,1} = '----';  it = it+1;
                 TEXT{it,1} = '## 1. Import Module';  it = it+1;
                 TEXT{it,1} = ' ';  it = it+1;
