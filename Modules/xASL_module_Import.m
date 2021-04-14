@@ -109,123 +109,104 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-%% 1. Initialize the parameters
+    %% 1. Initialize the parameters
 
-% First do the basic parameter admin and initialize the default values
-if nargin < 1 ||  isempty(studyPath)
-	error('The studyPath needs to be defined');
-end
-
-if strcmp(studyPath(end),'\') || strcmp(studyPath(end),'/')
-    studyPath = studyPath(1:end-1); % bugfix
-end
-
-% Check the imagePar input file
-if nargin < 2 || isempty(imParPath)
-	% If the path is empty, then try to find sourceStructure.json or sourcestruct.json
-	fListImPar = xASL_adm_GetFileList(studyPath,'^(source|Source)(Structure|Struct|structure|struct).json$', 'List', [], 0);
-	if length(fListImPar) < 1
-		error('Could not find the sourceStructure.json file');
-	end
-	imParPath = fullfile(studyPath,fListImPar{1});
-else
-	[fpath, ~, ~] = fileparts(imParPath);
-	if isempty(fpath)
-		imParPath = fullfile(studyPath,imParPath);
-	end
-end
-
-% Find the studyPar input file
-if nargin < 3 || isempty(studyParPath)
-	% If the path is empty, then try to find studyPar.json
-	fListStudyPar = xASL_adm_GetFileList(studyPath,'^(study|Study)(Par|par).json$', 'List', [], 0);
-	if length(fListStudyPar) < 1
-		warning('Could not find the StudyPar.json file');
-	else
-		studyParPath = fullfile(studyPath,fListStudyPar{1});
-	end
-else
-	[fpath, ~, ~] = fileparts(studyParPath);
-	if isempty(fpath)
-		studyParPath = fullfile(studyPath,studyParPath);
-	end
-end
-
-if nargin<4 || isempty(bRunSubmodules)
-	bRunSubmodules = [1 1 0];
-else
-	if length(bRunSubmodules) ~= 3
-		error('bRunSubmodules must have length 3');
-	end
-end
-
-if nargin<5 || isempty(bCopySingleDicoms)
-    bCopySingleDicoms = false; % by default don't copy dicoms for anonymization reasons
-end
-
-if nargin<6 || isempty(bUseDCMTK)
-    bUseDCMTK = true; % default set to using DCM-TK
-elseif ~bUseDCMTK && isempty(which('dicomdict'))
-    error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
-end
-
-if nargin<7 || isempty(bCheckPermissions)
-    if isunix
-        bCheckPermissions = true;
-    else
-        bCheckPermissions = false;
+    % First do the basic parameter admin and initialize the default values
+    if nargin < 1 ||  isempty(studyPath)
+        error('The studyPath needs to be defined');
     end
-end
 
-if nargin<8 || isempty(bClone2Source)
-    bClone2Source = false;
-end
+    if strcmp(studyPath(end),'\') || strcmp(studyPath(end),'/')
+        studyPath = studyPath(1:end-1); % bugfix
+    end
 
-if nargin<9 || isempty(x)
-    x = ExploreASL_Initialize; % only initialize ExploreASL if this wasnt initialized before
-end
+    % Check the imagePar input file
+    if nargin < 2 || isempty(imParPath)
+        % If the path is empty, then try to find sourceStructure.json or sourcestruct.json
+        fListImPar = xASL_adm_GetFileList(studyPath,'^(source|Source)(Structure|Struct|structure|struct).json$', 'List', [], 0);
+        if length(fListImPar) < 1
+            error('Could not find the sourceStructure.json file');
+        end
+        imParPath = fullfile(studyPath,fListImPar{1});
+    else
+        [fpath, ~, ~] = fileparts(imParPath);
+        if isempty(fpath)
+            imParPath = fullfile(studyPath,imParPath);
+        end
+    end
 
-%% 2. Initialize the setup of the dicom2nii conversion
-imPar = xASL_bids_DCM2NII_Initialize(studyPath);
+    % Find the studyPar input file
+    if nargin < 3 || isempty(studyParPath)
+        % If the path is empty, then try to find studyPar.json
+        fListStudyPar = xASL_adm_GetFileList(studyPath,'^(study|Study)(Par|par).json$', 'List', [], 0);
+        if length(fListStudyPar) < 1
+            warning('Could not find the StudyPar.json file');
+        else
+            studyParPath = fullfile(studyPath,fListStudyPar{1});
+        end
+    else
+        [fpath, ~, ~] = fileparts(studyParPath);
+        if isempty(fpath)
+            studyParPath = fullfile(studyPath,studyParPath);
+        end
+    end
+
+    if nargin<4 || isempty(bRunSubmodules)
+        bRunSubmodules = [1 1 0];
+    else
+        if length(bRunSubmodules) ~= 3
+            error('bRunSubmodules must have length 3');
+        end
+    end
+
+    if nargin<5 || isempty(bCopySingleDicoms)
+        bCopySingleDicoms = false; % by default don't copy dicoms for anonymization reasons
+    end
+
+    if nargin<6 || isempty(bUseDCMTK)
+        bUseDCMTK = true; % default set to using DCM-TK
+    elseif ~bUseDCMTK && isempty(which('dicomdict'))
+        error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
+    end
+
+    if nargin<7 || isempty(bCheckPermissions)
+        if isunix
+            bCheckPermissions = true;
+        else
+            bCheckPermissions = false;
+        end
+    end
+
+    if nargin<8 || isempty(bClone2Source)
+        bClone2Source = false;
+    end
+
+    if nargin<9 || isempty(x)
+        x = ExploreASL_Initialize; % only initialize ExploreASL if this wasnt initialized before
+    end
+
+    %% 2. Initialize the setup of the dicom2nii conversion
+    imPar = xASL_bids_DCM2NII_Initialize(studyPath);
 
 
-%% 3. Run the DCM2NIIX
-if bRunSubmodules(1)
-	xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
-end
+    %% 3. Run the DCM2NIIX
+    if bRunSubmodules(1)
+        xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
+    end
 
 
-%% 4. Run the NIIX to ASL-BIDS
-if bRunSubmodules(2)
-    xASL_bids_NII2BIDS(studyParPath, imPar);
-end
+    %% 4. Run the NIIX to ASL-BIDS
+    if bRunSubmodules(2)
+        xASL_bids_NII2BIDS(studyParPath, imPar);
+    end
 
 
-%% 5. Run defacing
-if bRunSubmodules(3)
-	listSubjects = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
-	for iSubject = 1:length(listSubjects)
-		
-		subjectLabel = xASL_adm_CorrectName(listSubjects{iSubject},2);
-		
-		% Check if the anatomical directory exists
-		if exist(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'dir')
-			% Process all anatomical files
-			fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'^.+\.nii',false,[]);
-			for iAnat = 1:length(fAnat)
-				%Unzip the file for SPM
-				pathUnzipped = xASL_adm_UnzipNifti(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat',fAnat{iAnat}));
-				% Remove the face
-				xASL_spm_deface(pathUnzipped,true);
-				% Zip again
-				gzip(pathUnzipped);
-				delete(pathUnzipped);
-			end
-		end
-	end
-end % End of defacing
+    %% 5. Run defacing
+    if bRunSubmodules(3)
+        xASL_bids_ANONYMIZE(imPar);
+    end
 
-% end of import
+
 end
 
 

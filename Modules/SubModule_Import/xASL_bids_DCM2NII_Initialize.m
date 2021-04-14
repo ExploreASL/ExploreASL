@@ -1,5 +1,5 @@
 function imPar = xASL_bids_DCM2NII_Initialize(studyPath)
-%xASL_bids_DCM2NII_Initialize 
+%xASL_bids_DCM2NII_Initialize Initialize DCM2NII.
 %
 % FORMAT: imPar = xASL_bids_DCM2NII_Initialize(studyPath)
 % 
@@ -10,7 +10,7 @@ function imPar = xASL_bids_DCM2NII_Initialize(studyPath)
 %   imPar      - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: 
+% DESCRIPTION: Initialize DCM2NII.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     imPar = xASL_bids_DCM2NII_Initialize(studyPath);
 % __________________________________
