@@ -845,7 +845,7 @@ switch imPar.studyID
         imPar.folderHierarchy = {'^(\d{3}_S_\d{4}).*', '^(ASL_PERFUSION)$', '^(\d{4}.*)$', '^S.*'}; % Test with ADNI data
         imPar.tokenOrdering = [1 3 0 2]; % subject visit session scantype
         imPar.tokenScanAliases = {'^ASL_PERFUSION$','ASL4D';'^MPRAGE$', 'T1'};
-        imPar.tokenVisitAliases = {'^2010$','ASL4D';'^1$'};
+        % imPar.tokenVisitAliases = {'^2010$','ASL4D';'^1$'};
         imPar.bMatchDirectories = true;
     
     case 'incoming' % Default single participant
