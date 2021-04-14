@@ -7,6 +7,7 @@ function SliceTiming = xASL_quant_SliceTiming(x, inputIm)
 % INPUT:
 %   x            - struct containing pipeline environment parameters (REQUIRED)
 %   inputIm      - path to the image or an image matrix used to calculated the number of slices to calculate the SliceTiming for (REQUIRED)
+%
 % OUTPUT:
 %   SliceTiming  - a vector of slice times defining the start of readout per slices with respect to the start of the readout of the first slices
 %                  with the length corresponding to the third dimension in inputIm
@@ -30,13 +31,14 @@ function SliceTiming = xASL_quant_SliceTiming(x, inputIm)
 % 1. ShortestTR
 % 2. Assign the vector value and check for vector consistency
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:
 %
-% EXAMPLE 1: SliceTiming = xASL_quant_SliceTiming(x, 'ASL4D.nii')
+% 1.         SliceTiming = xASL_quant_SliceTiming(x, 'ASL4D.nii')
 %
-% EXAMPLE 2: x.Q.SliceReadoutTime = [0 30 60 90 120]
+% 2.         x.Q.SliceReadoutTime = [0 30 60 90 120]
 %            SliceTiming = xASL_quant_SliceTiming(x, 'ASL4D.nii')
 %
-% EXAMPLE 3: x.Q.SliceReadoutTime = [30]
+% 3.         x.Q.SliceReadoutTime = [30]
 %            SliceTiming = xASL_quant_SliceTiming(x, 'ASL4D.nii')
 % __________________________________
 % Copyright 2015-2021 ExploreASL
