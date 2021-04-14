@@ -48,7 +48,8 @@ function x = DataParTemplate(x)
 % x.exclusion - cell with list of subjects to exclude (OPTIONAL, DEFAULT = empty)
 %             - example: {'005' '018'}
 % x.SESSIONS  - use this to define sessions (OPTIONAL, DEFAULT = {'ASL_1'})
-%             - example: {'ASL_1' 'ASL_2'}
+%             - example ('.json' file): ["ASL_1","ASL_2"]
+%             - example ('.m' file):    {'ASL_1' 'ASL_2'}
 %             - Specific options: for FEAST: 1=crushed, 2=not crushed. This used to be other way around, 
 %               but the crushed image registers better with the pGM image
 % x.session.options - this is how the sessions will be called (OPTIONAL)
