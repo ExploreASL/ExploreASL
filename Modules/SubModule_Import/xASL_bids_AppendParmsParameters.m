@@ -3,7 +3,7 @@
 % -----------------------------------------------------------------------------
 % Append Parms Parameters
 % -----------------------------------------------------------------------------
-function [s, FieldNames] = AppendParmsParameters(parms)
+function [s, FieldNames] = xASL_bids_AppendParmsParameters(parms)
 % This function outputs s=fields of _parms.mat
 s = [];
 

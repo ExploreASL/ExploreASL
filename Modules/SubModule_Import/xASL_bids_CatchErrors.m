@@ -3,7 +3,7 @@
 % -----------------------------------------------------------------------------
 % Catch Errors
 % -----------------------------------------------------------------------------
-function [dcm2niiCatchedErrors] = CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
+function [dcm2niiCatchedErrors] = xASL_bids_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
 % Catch reported warnings/errors, print them if verbose, & add them to a structure of warnings/errors to be stored for later QC
 
     if imPar.bVerbose % print warning if we want verbose

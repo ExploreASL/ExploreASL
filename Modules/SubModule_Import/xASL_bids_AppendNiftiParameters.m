@@ -3,7 +3,7 @@
 % -----------------------------------------------------------------------------
 % Append Nifti Parameters
 % -----------------------------------------------------------------------------
-function s = AppendNiftiParameters(nii_files)
+function s = xASL_bids_AppendNiftiParameters(nii_files)
 % This function outputs s=[FileName voxel size XYZ matrix size XYZ]
 s = [];
 

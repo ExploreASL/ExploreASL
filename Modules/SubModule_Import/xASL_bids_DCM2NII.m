@@ -300,7 +300,7 @@ end
 						else
 							% keep the original name
 							WarningMessage = ['ExploreASL_Import: Unknown scan ID ' scanID ' found, don"t know what this is'];
-							dcm2niiCatchedErrors = CatchErrors('isempty(iAlias)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
+							dcm2niiCatchedErrors = xASL_bids_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
 						end
 					end
 					scan_name = scanNames{iScan};
@@ -393,11 +393,11 @@ end
 								
 								% If dcm2nii produced a warning or error, catch this & store it
 								if ~isempty(MsgDcm2nii) && ~isempty(regexpi(MsgDcm2nii,'.*(error).*')) % if it contains a warning/error
-									dcm2niiCatchedErrors = CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ['dcm2nii_' imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
+									dcm2niiCatchedErrors = xASL_bids_CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ['dcm2nii_' imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
 								end
 								
 							catch ME
-								dcm2niiCatchedErrors = CatchErrors(ME.identifier, ME.message, [], [], [], scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, ME.stack);
+								dcm2niiCatchedErrors = xASL_bids_CatchErrors(ME.identifier, ME.message, [], [], [], scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, ME.stack);
 								
 								if imPar.bVerbose; warning(['dcm2nii ' scanpath ' crashed, skipping']); end
 								if imPar.bVerbose; warning('Check whether the scan is complete'); end
@@ -431,7 +431,7 @@ end
 						end
 						
 						% Extract relevant parameters from nifti header and append to summary file
-						summary_line = AppendNiftiParameters(nii_files);
+						summary_line = xASL_bids_AppendNiftiParameters(nii_files);
 						converted_scans(iSubject, iSession, iScan) = 1;
 					end
 					
@@ -473,7 +473,7 @@ end
 					% dcm2niiX
 					
 					if ~isempty(nii_files) && exist('parms','var')
-						[TempLine, PrintDICOMFields] = AppendParmsParameters(parms);
+						[TempLine, PrintDICOMFields] = xASL_bids_AppendParmsParameters(parms);
 						summary_line = [summary_line TempLine];
 					end
 					
