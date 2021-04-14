@@ -159,12 +159,14 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
         end
     end
 
+    % By default don't copy DICOMs for anonymization reasons
     if nargin<5 || isempty(bCopySingleDicoms)
-        bCopySingleDicoms = false; % by default don't copy dicoms for anonymization reasons
+        bCopySingleDicoms = false;
     end
 
     if nargin<6 || isempty(bUseDCMTK)
-        bUseDCMTK = true; % default set to using DCM-TK
+        % Default set to using DCM-TK
+        bUseDCMTK = true;
     elseif ~bUseDCMTK && isempty(which('dicomdict'))
         error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
     end
@@ -181,8 +183,9 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
         bClone2Source = false;
     end
 
+    % Only initialize ExploreASL if this wasn't initialized before
     if nargin<9 || isempty(x)
-        x = ExploreASL_Initialize; % only initialize ExploreASL if this wasnt initialized before
+        x = ExploreASL_Initialize;
     end
 
     %% 2. Initialize the setup of the dicom2nii conversion
@@ -208,87 +211,6 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
 
 
 end
-
-
-% -----------------------------------------------------------------------------
-% Append Nifti Parameters
-% -----------------------------------------------------------------------------
-function s = AppendNiftiParameters(nii_files)
-% This function outputs s=[FileName voxel size XYZ matrix size XYZ]
-s = [];
-
-if ischar(nii_files)
-    nii_files = {nii_files};
-end
-
-for iNii=1:length(nii_files)
-    [~, Ffile, Fext] = fileparts(nii_files{iNii});
-    s = sprintf(',"%s"', [Ffile Fext]); % filename
-
-    tempnii = xASL_io_ReadNifti(nii_files{iNii});
-    s = [s sprintf(',%g', tempnii.hdr.pixdim(2:5) )]; % voxel size XYZ
-    s = [s sprintf(',%g', tempnii.hdr.dim(2:5) )]; % matrix size XYZ
-end
-end
-
-% -----------------------------------------------------------------------------
-% Append Parms Parameters
-% -----------------------------------------------------------------------------
-function [s, FieldNames] = AppendParmsParameters(parms)
-% This function outputs s=fields of _parms.mat
-s = [];
-
-FieldNames = {'RepetitionTimePreparation' 'RepetitionTime' 'EchoTime' 'NumberOfAverages' 'RescaleSlope' 'RescaleSlopeOriginal'...
-    'MRScaleSlope' 'RescaleIntercept' 'AcquisitionTime' 'AcquisitionMatrix' 'TotalReadoutTime'...
-    'EffectiveEchoSpacing'};
-
-if ~isempty(parms)
-    for iField=1:length(FieldNames)
-        if isfield(parms,FieldNames{iField})
-            s = [s ',' xASL_num2str(parms.(FieldNames{iField}))];
-        else
-            s = [s ',n/a'];
-        end
-    end
-end
-    
-end
-
-% -----------------------------------------------------------------------------
-% Catch Errors
-% -----------------------------------------------------------------------------
-function [dcm2niiCatchedErrors] = CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
-% Catch reported warnings/errors, print them if verbose, & add them to a structure of warnings/errors to be stored for later QC
-
-    if imPar.bVerbose % print warning if we want verbose
-        warning(WarningMessage);
-    end
-
-    % Find index of the warning to store
-    if isempty(fields(dcm2niiCatchedErrors))
-        IndexN = 1;
-    else
-        IndexN = length(dcm2niiCatchedErrors)+1;
-    end
-
-    % store the warning/error
-    dcm2niiCatchedErrors(IndexN).scan_name = scan_name;
-    dcm2niiCatchedErrors(IndexN).scanpath = scanpath;
-    dcm2niiCatchedErrors(IndexN).destdir = destdir;
-    dcm2niiCatchedErrors(IndexN).identifier = WarningID;
-    dcm2niiCatchedErrors(IndexN).message = WarningMessage;
-    dcm2niiCatchedErrors(IndexN).cause = 'n/a';
-
-    if exist('StackIn', 'var')
-        dcm2niiCatchedErrors(IndexN).stack = StackIn;
-    else
-        dcm2niiCatchedErrors(IndexN).stack.file = fullfile(WarningPath, [WarningFileName '.m']);
-        dcm2niiCatchedErrors(IndexN).stack.name = WarningFileName;
-        dcm2niiCatchedErrors(IndexN).stack.line = WarningLine(end).line;
-    end
-
-end
-
 
 
 
