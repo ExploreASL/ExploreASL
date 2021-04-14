@@ -1,7 +1,7 @@
-function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
-%ExploreASL_ImportBIDS Imports the DICOM or PAR/REC source data to NIFTIs in ASL-BIDS format
+function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
+%xASL_module_Import Imports the DICOM or PAR/REC source data to NIFTIs in ASL-BIDS format
 %
-% FORMAT: ExploreASL_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
+% FORMAT: xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
 %
 % INPUT:
 %   studyPath           - path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED)
@@ -42,20 +42,20 @@ function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodule
 % This function takes any folder input, but the folder input should be
 % specified in the imPar definition. Follow the steps below, for study "MyStudy" located on "//MyDisk":
 %
-% 1) Make sure you have your DICOM data. Export them from XNAT, download them, or whatsoever
+% 1. Make sure you have your DICOM data. Export them from XNAT, download them, or whatsoever
 %    Create a root folder with study ID name, and put the DICOMs in any structure in the sourcedata folder within the study ID root folder
 %    Example:
 %    imPar.StudyID: MyStudy
 %    StudyRoot folder: //MyDisk/MyStudy
 %    sourcedata folder containing DICOMs: //MyDisk/MyStudy/sourcedata
-% 2) Make sure that your DICOM data has any structure that can be retrieved
+% 2. Make sure that your DICOM data has any structure that can be retrieved
 %    from the folder and/or file names. This function doesn't yet read the DICOM headers
 %    For a quick and dirty (but actually slow) function that converts a
 %    DICOM folder/file structure into readable format, first run
 %    ConvertDicomFolderStructure_CarefulSlow.m. This will read each DICOM
 %    individually, and put it in a folder with the name identical to the
 %    DICOMs SeriesName/ProtocolName.
-% 3) Once you have all DICOMs in folderstructure with identifyable names
+% 3. Once you have all DICOMs in folderstructure with identifyable names
 %    inside //MyDisk/MyStudy/sourcedata, set up the folderstructure in
 %    ExploreASL_ImportConfig.m. This setup uses the SPM form of regular
 %    expressions, which can be daunting at first, but are very flexible.
@@ -104,10 +104,10 @@ function ExploreASL_ImportBIDS(studyPath, imParPath, studyParPath, bRunSubmodule
 %                              imPar.tokenSessionAliases = {}; as we don't have sessions
 %    imPar.bMatchDirectories - true if the last layer is a folder, false if the last layer is a filename (as e.g. with PAR/REC, enhanced DICOMs)
 %
-% EXAMPLE: ExploreASL_ImportBIDS('//MyDisk/MyStudy');
-%          ExploreASL_ImportBIDS('//MyDisk/MyStudy','sourceStructure.json','studyHiQ.json');
+% EXAMPLE: xASL_module_Import('//MyDisk/MyStudy');
+%          xASL_module_Import('//MyDisk/MyStudy','sourceStructure.json','studyHiQ.json');
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 %% 1. Initialize the parameters
 
