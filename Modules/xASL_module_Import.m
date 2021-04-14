@@ -44,7 +44,7 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
 %
 % 1. Make sure you have your DICOM data. Export them from XNAT, download them, or whatsoever
 %    Create a root folder with study ID name, and put the DICOMs in any structure in the sourcedata folder within the study ID root folder
-%    Example:
+%    Examples:
 %    imPar.StudyID: MyStudy
 %    StudyRoot folder: //MyDisk/MyStudy
 %    sourcedata folder containing DICOMs: //MyDisk/MyStudy/sourcedata
@@ -72,14 +72,14 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
 %
 %    imPar.folderHierarchy   - contains a a cell array of regular expressions, with each cell specifying a directory layer/level
 %                              the parts within brackets () tell the script that this is a token (i.e. subject, session, ScanType)
-%                              Example:
+%                              Examples:
 %                              imPar.folderHierarchy = {'^(3D_FLAIR|T1w|PCASL).*', '^(Sub-\d{3})$'};
 %                              here we say that there are two folder layers '', separated by comma ,
 %                              where the names between brackets are used to define what is what.
 %                              ^ means that the foldername has to start with the following, $ means that the previous has to be the end of the foldername
 %                              .* means anything, anylength, \d{3} means three digits
 %    imPar.tokenOrdering     - defines which tokens are captured by the brackets () in imPar.folderHierarchy: position 1==subject, 2==visit, 3==session, 4==ScanType
-%                              Example:
+%                              Examples:
 %                              imPar.tokenOrdering = [2 3 0 1]; stating that subject is the 2nd token, visit is the 3rd token, session has no token (i.e. no session) and ScanType is the 1st token
 %    imPar.tokenVisitAliases - cell array that defines the aliases for the Visits, i.e. it tells the script which scans are which timepoint/visit.
 %                              Similar as explained below for ScanAliases.
@@ -87,7 +87,7 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
 %                              recognized in sourcedata DICOM folders for visits,
 %                              second column how it is named in NIfTI
 %                              structure (should be _1 _2 _3 etc).
-%                              Example:
+%                              Examples:
 %                              imPar.tokenVisitAliases = {'Screening','_1'; 'Month_12','_2'; 'Month_24','_3'; 'Month_36','_4'; 'Month_48','_5'};
 %                              Note that if you specify tokenVisitAliases, the folders will receive
 %                              the indices (e.g. _1 _2 _3), or even _1 only with a single Visit). If you don't specify
@@ -97,10 +97,10 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
 %                              whereas the second column contains the
 %                              alias. Following valid aliases exist:
 %                              'T1' 'FLAIR' 'ASL4D' 'M0' 'ASL4D_RevPE' 'func' 'func_NormPE' 'func_RevPE' 'dwi' 'dwi_RevPE' 'DSC4D'
-%                              Example:
+%                              Examples:
 %                              imPar.tokenScanAliases = {'^3D_FLAIR$', 'FLAIR'; '^T1w$', 'T1'; '^PCASL$', 'ASL4D'};
 %    imPar.tokenSessionAliases-same as tokenScanAliases but for sessions
-%                              Example:
+%                              Examples:
 %                              imPar.tokenSessionAliases = {}; as we don't have sessions
 %    imPar.bMatchDirectories - true if the last layer is a folder, false if the last layer is a filename (as e.g. with PAR/REC, enhanced DICOMs)
 %
