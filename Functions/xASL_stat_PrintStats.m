@@ -109,12 +109,12 @@ end
 %% 3) Define number of sessions, force to 1 in case of TT or volume metrics
 SingleSessions = {'volume' 'TT' 'PV_pGM' 'PV_pWM' 'pGM' 'pWM' 'mrc1T1' 'mrc2T1'};
 
-HasSingleSessionOnly = sum(cellfun(@(y) ~isempty(findstr(y,x.S.output_ID)), SingleSessions));
+HasSingleSessionOnly = sum(cellfun(@(y) ~isempty(regexp(y,['^' x.S.output_ID])), SingleSessions));
 
 if HasSingleSessionOnly
     nSessions = 1;
 else
-    FileList = xASL_adm_GetFileList(x.D.PopDir,'.*ASL_\d\.nii$');
+    FileList = xASL_adm_GetFileList(x.D.PopDir,'.*ASL_\d*\.nii$');
     [~, Ffile] = cellfun(@(x) xASL_fileparts(x),FileList, 'UniformOutput',false);
     SessionsN = unique(cellfun(@(x) x(end-4:end),Ffile, 'UniformOutput',false));
     nSessions = length(SessionsN);
