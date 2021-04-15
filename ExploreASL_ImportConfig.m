@@ -36,15 +36,11 @@ imPar.tokenVisitAliases = [];
 imPar.tokenSessionAliases = [];
 imPar.bMatchDirectories  = false;
 
-% Select CustomScripts directory
-if usejava('desktop')
-    customScripts = uigetdir(x.MyPath,'Please select the CustomScripts directory...');
-else
-    customScripts = input('Please insert the CustomScripts directory: ');
-end
+% Define configFiles folder
+configFiles = fullfile(x.MyPath, 'Development', 'ConfigFiles')
 
 % Load imPar file
-imPar = spm_jsonread(fullfile(customScripts, 'ConfigFiles', [StudyRoot '.json']));
+imPar = spm_jsonread(fullfile(configFiles, [StudyRoot '.json']));
 
 
 end
