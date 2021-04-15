@@ -71,8 +71,10 @@ function xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
         fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
     end
     
-    fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
-    fprintf('Progress:   ');
+    if ~isempty(PathList)
+        fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+        fprintf('Progress:   ');
+    end
 
     for iList=1:length(PathList)
         xASL_TrackProgress(iList,length(PathList));
