@@ -177,16 +177,12 @@ else
 end
 
 %% Define number of sessions to use
-nSessions = 0;
 NoSessions = 0;
-SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*_ASL_' num2str(nSessions+1) '\.nii'], 'FPList', [0 Inf]);
+SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*_ASL_\d*\.nii'], 'FPList', [0 Inf]);
+MaskedSessions = cellfun('isempty',strfind(SessionList,'masked')); % find qCBF_masked
+SessionList_qCBF = SessionList(MaskedSessions,:); % include only qCBF
 
-while ~isempty(SessionList)
-       nSessions = nSessions+1;
-       SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*_ASL_' num2str(nSessions+1) '\.nii'], 'FPList', [0 Inf]);
-end
-
-if nSessions==0 % check if there are "subject-files"
+if isempty(SessionList_qCBF) % search for subjects instead of sessions
     if isempty(xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*\.nii'], 'FPList', [0 Inf]))
         fprintf('%s\n','No session or subject files found');
         return;
@@ -194,6 +190,8 @@ if nSessions==0 % check if there are "subject-files"
     nSessions = 1;
     NoSessions = 1;
 end
+
+nSessions = numel(SessionList_qCBF); % define number of sessions
 
 %% Determine whether group mask exists
 if x.S.InputNativeSpace
