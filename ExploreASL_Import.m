@@ -463,7 +463,7 @@ for iSubject=1:nSubjects
                     else
                         % keep the original name
                         WarningMessage = ['ExploreASL_Import: Unknown scan ID ' scanID ' found, don"t know what this is'];
-                        dcm2niiCatchedErrors = CatchErrors('isempty(iAlias)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
+                        dcm2niiCatchedErrors = xASL_imp_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
                     end
                 end
                 scan_name = scanNames{iScan};
@@ -557,11 +557,11 @@ for iSubject=1:nSubjects
 
                                 % If dcm2nii produced a warning or error, catch this & store it
                                 if ~isempty(MsgDcm2nii) && ~isempty(regexpi(MsgDcm2nii,'.*(error).*')) % if it contains a warning/error
-                                    dcm2niiCatchedErrors = CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ['dcm2nii_' imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
+                                    dcm2niiCatchedErrors = xASL_imp_CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ['dcm2nii_' imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
                                 end
 
                             catch ME
-                                dcm2niiCatchedErrors = CatchErrors(ME.identifier, ME.message, [], [], [], scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, ME.stack);
+                                dcm2niiCatchedErrors = xASL_imp_CatchErrors(ME.identifier, ME.message, [], [], [], scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, ME.stack);
 
                                 if imPar.bVerbose; warning(['dcm2nii ' scanpath ' crashed, skipping']); end
                                 if imPar.bVerbose; warning('Check whether the scan is complete'); end
@@ -599,7 +599,7 @@ for iSubject=1:nSubjects
 					end
 					
                     % Extract relevant parameters from nifti header and append to summary file
-                    summary_line = AppendNiftiParameters(nii_files);
+                    summary_line = xASL_imp_AppendNiftiParameters(nii_files);
                     converted_scans(iSubject, iSession, iScan) = 1;
                 end
 
@@ -641,7 +641,7 @@ for iSubject=1:nSubjects
                 % dcm2niiX
 
                 if ~isempty(nii_files) && exist('parms','var')
-                    [TempLine, PrintDICOMFields] = AppendParmsParameters(parms);
+                    [TempLine, PrintDICOMFields] = xASL_imp_AppendParmsParameters(parms);
                     summary_line = [summary_line TempLine];
                 end
 
@@ -770,83 +770,5 @@ fprintf('\n');
 
 end
 
-% -----------------------------------------------------------------------------
-%
-% -----------------------------------------------------------------------------
-function s = AppendNiftiParameters(nii_files)
-% This function outputs s=[FileName voxel size XYZ matrix size XYZ]
-s = [];
-
-if ischar(nii_files)
-    nii_files = {nii_files};
-end
-
-for iNii=1:length(nii_files)
-    [~, Ffile, Fext] = fileparts(nii_files{iNii});
-    s = sprintf(',"%s"', [Ffile Fext]); % filename
-
-    tempnii = xASL_io_ReadNifti(nii_files{iNii});
-    s = [s sprintf(',%g', tempnii.hdr.pixdim(2:5) )]; % voxel size XYZ
-    s = [s sprintf(',%g', tempnii.hdr.dim(2:5) )]; % matrix size XYZ
-end
-end
-
-% -----------------------------------------------------------------------------
-%
-% -----------------------------------------------------------------------------
-function [s, FieldNames] = AppendParmsParameters(parms)
-% This function outputs s=fields of _parms.mat
-s = [];
-
-FieldNames = {'RepetitionTime' 'EchoTime' 'NumberOfAverages' 'RescaleSlope' 'RescaleSlopeOriginal'...
-    'MRScaleSlope' 'RescaleIntercept' 'AcquisitionTime' 'AcquisitionMatrix' 'TotalReadoutTime'...
-    'EffectiveEchoSpacing'};
-
-if ~isempty(parms)
-    for iField=1:length(FieldNames)
-        if isfield(parms,FieldNames{iField})
-            s = [s ',' xASL_num2str(parms.(FieldNames{iField}))];
-        else
-            s = [s ',n/a'];
-        end
-    end
-end
-    
-end
 
 
-
-% -----------------------------------------------------------------------------
-%
-% -----------------------------------------------------------------------------
-function [dcm2niiCatchedErrors] = CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
-% Catch reported warnings/errors, print them if verbose, & add them to a structure of warnings/errors to be stored for later QC
-
-    if imPar.bVerbose % print warning if we want verbose
-        warning(WarningMessage);
-    end
-
-    % Find index of the warning to store
-    if isempty(fields(dcm2niiCatchedErrors))
-        IndexN = 1;
-    else
-        IndexN = length(dcm2niiCatchedErrors)+1;
-    end
-
-    % store the warning/error
-    dcm2niiCatchedErrors(IndexN).scan_name = scan_name;
-    dcm2niiCatchedErrors(IndexN).scanpath = scanpath;
-    dcm2niiCatchedErrors(IndexN).destdir = destdir;
-    dcm2niiCatchedErrors(IndexN).identifier = WarningID;
-    dcm2niiCatchedErrors(IndexN).message = WarningMessage;
-    dcm2niiCatchedErrors(IndexN).cause = 'n/a';
-
-    if exist('StackIn', 'var')
-        dcm2niiCatchedErrors(IndexN).stack = StackIn;
-    else
-        dcm2niiCatchedErrors(IndexN).stack.file = fullfile(WarningPath, [WarningFileName '.m']);
-        dcm2niiCatchedErrors(IndexN).stack.name = WarningFileName;
-        dcm2niiCatchedErrors(IndexN).stack.line = WarningLine(end).line;
-    end
-
-end
