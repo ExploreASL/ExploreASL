@@ -1,7 +1,7 @@
-function xASL_bids_ANONYMIZE(imPar)
-%xASL_bids_ANONYMIZE Run defacing.
+function xASL_imp_ANONYMIZE(imPar)
+%xASL_imp_ANONYMIZE Run defacing.
 %
-% FORMAT: xASL_bids_ANONYMIZE(imPar)
+% FORMAT: xASL_imp_ANONYMIZE(imPar)
 % 
 % INPUT:
 %   imPar      - JSON file with structure with import parameters (REQUIRED, STRUCT)
@@ -12,7 +12,7 @@ function xASL_bids_ANONYMIZE(imPar)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run defacing.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_bids_ANONYMIZE(imPar);
+% EXAMPLE:     xASL_imp_ANONYMIZE(imPar);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

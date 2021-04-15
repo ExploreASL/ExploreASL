@@ -1,7 +1,7 @@
-function [s, FieldNames] = xASL_bids_AppendParmsParameters(parms)
-%xASL_bids_AppendParmsParameters Append Parms Parameters.
+function [s, FieldNames] = xASL_imp_AppendParmsParameters(parms)
+%xASL_imp_AppendParmsParameters Append Parms Parameters.
 %
-% FORMAT: [s, FieldNames] = xASL_bids_AppendParmsParameters(parms)
+% FORMAT: [s, FieldNames] = xASL_imp_AppendParmsParameters(parms)
 % 
 % INPUT:
 %   parms      - Parameters
@@ -13,7 +13,7 @@ function [s, FieldNames] = xASL_bids_AppendParmsParameters(parms)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Append Parms Parameters.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     [s, FieldNames] = xASL_bids_AppendParmsParameters(parms);
+% EXAMPLE:     [s, FieldNames] = xASL_imp_AppendParmsParameters(parms);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

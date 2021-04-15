@@ -1,7 +1,7 @@
-function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
-%xASL_bids_DCM2NII Run the dcm2nii part of the import.
+function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
+%xASL_imp_DCM2NII Run the dcm2nii part of the import.
 %
-% FORMAT: xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
+% FORMAT: xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
 % 
 % INPUT:
 %   imPar              - JSON file with structure with import parameters (REQUIRED, STRUCT)
@@ -17,7 +17,7 @@ function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run the dcm2nii part of the import.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
+% EXAMPLE:     xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -255,11 +255,11 @@ function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
     % Iterate over subjects
     for iSubject=1:nSubjects
         [imPar, summary_lines, PrintDICOMFields] ...
-            = xASL_bids_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+            = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
     end
 	
     % Create summary file
-    xASL_bids_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, scanNames, summary_lines, fid_summary);
+    xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, scanNames, summary_lines, fid_summary);
     
 	% cleanup
 	if ~bUseDCMTK || isempty(pathDcmDict)

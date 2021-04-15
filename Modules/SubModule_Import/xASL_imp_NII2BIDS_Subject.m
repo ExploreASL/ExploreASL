@@ -1,11 +1,11 @@
-function xASL_bids_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject)
-%xASL_bids_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
+function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject)
+%xASL_imp_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
 %
-% FORMAT: xASL_bids_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject)
+% FORMAT: xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject)
 % 
 % INPUT:
 %   imPar           - JSON file with structure with import parameter (REQUIRED, STRUCT)
-%   bidsPar         - Output of xASL_bids_Config (REQUIRED, STRUCT)
+%   bidsPar         - Output of xASL_imp_Config (REQUIRED, STRUCT)
 %   studyPar        - JSON file with the BIDS parameters relevant for the whole study (REQUIRED, STRUCT)
 %   listSubjects    - List of subjects (REQUIRED, LIST)
 %   iSubject        - Current subject number (REQUIRED, INTEGER)
@@ -16,7 +16,7 @@ function xASL_bids_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSub
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run NII to ASL-BIDS for one individual subject.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_bids_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject);
+% EXAMPLE:     xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
     

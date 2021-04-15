@@ -1,7 +1,7 @@
-function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
-%xASL_bids_DCM2NII_Subject Run DCM2NII for one individual subject.
+function [imPar, summary_lines, PrintDICOMFields] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+%xASL_imp_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
-% FORMAT: [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+% FORMAT: [imPar, summary_lines, PrintDICOMFields] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -23,7 +23,7 @@ function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x,
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual subject.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+% EXAMPLE:     [imPar, summary_lines, PrintDICOMFields] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -120,7 +120,7 @@ function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x,
                     else
                         % keep the original name
                         WarningMessage = ['ExploreASL_Import: Unknown scan ID ' scanID ' found, don"t know what this is'];
-                        dcm2niiCatchedErrors = xASL_bids_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
+                        dcm2niiCatchedErrors = xASL_imp_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
                     end
                 end
                 scan_name = scanNames{iScan};
@@ -213,11 +213,11 @@ function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x,
 
                             % If dcm2nii produced a warning or error, catch this & store it
                             if ~isempty(MsgDcm2nii) && ~isempty(regexpi(MsgDcm2nii,'.*(error).*')) % if it contains a warning/error
-                                dcm2niiCatchedErrors = xASL_bids_CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ['dcm2nii_' imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
+                                dcm2niiCatchedErrors = xASL_imp_CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ['dcm2nii_' imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
                             end
 
                         catch ME
-                            dcm2niiCatchedErrors = xASL_bids_CatchErrors(ME.identifier, ME.message, [], [], [], scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, ME.stack);
+                            dcm2niiCatchedErrors = xASL_imp_CatchErrors(ME.identifier, ME.message, [], [], [], scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, ME.stack);
 
                             if imPar.bVerbose; warning(['dcm2nii ' scanpath ' crashed, skipping']); end
                             if imPar.bVerbose; warning('Check whether the scan is complete'); end
@@ -251,7 +251,7 @@ function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x,
                     end
 
                     % Extract relevant parameters from nifti header and append to summary file
-                    summary_line = xASL_bids_AppendNiftiParameters(nii_files);
+                    summary_line = xASL_imp_AppendNiftiParameters(nii_files);
                     converted_scans(iSubject, iSession, iScan) = 1;
                 end
 
@@ -293,7 +293,7 @@ function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x,
                 % dcm2niiX
 
                 if ~isempty(nii_files) && exist('parms','var')
-                    [TempLine, PrintDICOMFields] = xASL_bids_AppendParmsParameters(parms);
+                    [TempLine, PrintDICOMFields] = xASL_imp_AppendParmsParameters(parms);
                     summary_line = [summary_line TempLine];
                 else
                     PrintDICOMFields = [];

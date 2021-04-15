@@ -1,7 +1,7 @@
-function s = xASL_bids_AppendNiftiParameters(nii_files)
-%xASL_bids_AppendNiftiParameters Append Nifti Parameters.
+function s = xASL_imp_AppendNiftiParameters(nii_files)
+%xASL_imp_AppendNiftiParameters Append Nifti Parameters.
 %
-% FORMAT: s = xASL_bids_AppendNiftiParameters(nii_files)
+% FORMAT: s = xASL_imp_AppendNiftiParameters(nii_files)
 % 
 % INPUT:
 %   nii_files  - List of NIFTI files.
@@ -12,7 +12,7 @@ function s = xASL_bids_AppendNiftiParameters(nii_files)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Append Nifti Parameters.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     s = xASL_bids_AppendNiftiParameters(nii_files);
+% EXAMPLE:     s = xASL_imp_AppendNiftiParameters(nii_files);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

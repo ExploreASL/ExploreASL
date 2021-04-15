@@ -1,7 +1,7 @@
-function xASL_bids_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, scanNames, summary_lines, fid_summary)
-%xASL_bids_CreateSummaryFile Create summary file.
+function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, scanNames, summary_lines, fid_summary)
+%xASL_imp_CreateSummaryFile Create summary file.
 %
-% FORMAT: xASL_bids_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, subjectIDs, visitIDs, scanNames, summary_lines, nSubjects, nVisits, nSessions, fid_summary)
+% FORMAT: xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, subjectIDs, visitIDs, scanNames, summary_lines, nSubjects, nVisits, nSessions, fid_summary)
 % 
 % INPUT:
 %   imPar             - JSON file with structure with import parameters (REQUIRED, STRUCT)
@@ -21,7 +21,7 @@ function xASL_bids_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, c
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Create summary file.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_bids_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, subjectIDs, visitIDs, scanNames, summary_lines, nSubjects, nVisits, nSessions, fid_summary);
+% EXAMPLE:     xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, subjectIDs, visitIDs, scanNames, summary_lines, nSubjects, nVisits, nSessions, fid_summary);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

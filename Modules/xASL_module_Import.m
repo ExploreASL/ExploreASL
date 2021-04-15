@@ -188,24 +188,24 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
     end
 
     %% 2. Initialize the setup of the dicom2nii conversion
-    imPar = xASL_bids_DCM2NII_Initialize(studyPath, imParPath);
+    imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath);
 
 
     %% 3. Run the DCM2NIIX
     if bRunSubmodules(1)
-        xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
+        xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
     end
 
 
     %% 4. Run the NIIX to ASL-BIDS
     if bRunSubmodules(2)
-        xASL_bids_NII2BIDS(studyParPath, imPar);
+        xASL_imp_NII2BIDS(imPar, studyPath, studyParPath);
     end
 
 
     %% 5. Run defacing
     if bRunSubmodules(3)
-        xASL_bids_ANONYMIZE(imPar);
+        xASL_imp_ANONYMIZE(imPar);
     end
 
 

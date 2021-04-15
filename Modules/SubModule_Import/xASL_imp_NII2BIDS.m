@@ -1,11 +1,12 @@
-function xASL_bids_NII2BIDS(studyParPath, imPar)
-%xASL_bids_NII2BIDS Run the NII2BIDS conversion.
+function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
+%xASL_imp_NII2BIDS Run the NII2BIDS conversion.
 %
-% FORMAT: xASL_bids_NII2BIDS(studyParPath, imPar)
+% FORMAT: xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 % 
 % INPUT:
-%   studyParPath    - path to the JSON file with the BIDS parameters relevant for the whole study (REQUIRED, CHAR ARRAY)
 %   imPar           - JSON file with structure with import parameters (REQUIRED, STRUCT)
+%   studyPath       - Path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED, CHAR ARRAY)
+%   studyParPath    - Path to the JSON file with the BIDS parameters relevant for the whole study (REQUIRED, CHAR ARRAY)
 %
 % OUTPUT:
 %   n/a
@@ -13,7 +14,7 @@ function xASL_bids_NII2BIDS(studyParPath, imPar)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run the NII2BIDS conversion.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_bids_NII2BIDS(studyParPath, imPar);
+% EXAMPLE:     xASL_imp_NII2BIDS(imPar, studyPath, studyParPath);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -57,7 +58,7 @@ function xASL_bids_NII2BIDS(studyParPath, imPar)
 	% Go through all subjects
 	listSubjects = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)
-        xASL_bids_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjects,iSubject);
+        xASL_imp_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjects,iSubject);
     end
     
     % Copy log files

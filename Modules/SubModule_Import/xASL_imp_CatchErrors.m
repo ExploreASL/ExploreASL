@@ -1,7 +1,7 @@
-function [dcm2niiCatchedErrors] = xASL_bids_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
-%xASL_bids_CatchErrors Catch Errors.
+function [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
+%xASL_imp_CatchErrors Catch Errors.
 %
-% FORMAT: [dcm2niiCatchedErrors] = xASL_bids_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
+% FORMAT: [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn)
 % 
 % INPUT:
 %   WarningID            - Warning ID
@@ -22,7 +22,7 @@ function [dcm2niiCatchedErrors] = xASL_bids_CatchErrors(WarningID, WarningMessag
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Catch reported warnings/errors, print them if verbose, & add them to a structure of warnings/errors to be stored for later QC.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     [dcm2niiCatchedErrors] = xASL_bids_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn);
+% EXAMPLE:     [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
