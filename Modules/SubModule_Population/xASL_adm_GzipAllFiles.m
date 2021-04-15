@@ -46,11 +46,11 @@ function xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
         %% 2) Otherwise use the multithreaded SuperGzip for Windows
         PathList = xASL_adm_GetFileList(x.D.ROOT, '^.*\.(nii)$', 'FPListRec', [0 Inf], false);
         fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
-        n_THREADS = min([str2num(getenv('NUMBER_OF_PROCESSORS')) length(PathList)]);
+        numCores = feature('numcores');
         % Get SuperGzip path
         PathToSuperGzip = fullfile(fullfile(x.MyPath,'External'), 'SuperGZip', 'SuperGZip_Windows.exe');
         % Define SuperGzip command
-        command = [PathToSuperGzip ' -p 0 -n ' num2str(n_THREADS) ' -v 1 ' x.D.ROOT ' *.nii'];
+        command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' x.D.ROOT ' *.nii'];
         % Run script
         [exit_code,system_result] = system(command);
         % Check if SuperGzip was successful
