@@ -17,7 +17,7 @@ function xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
 % DESCRIPTION: This function zips NIfTI files or folders recursively and deletes
 % the original file/folder after zipping.
 %
-% EXAMPLE: xASL_adm_GzipAllFiles(x, '/MyStudy');
+% EXAMPLE: xASL_adm_GzipAllFiles(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
@@ -35,9 +35,6 @@ function xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
     elseif nargin<3 || isempty(bUseLinux)
         bUseLinux = false;
     end
-    
-    % Fallback
-    exit_code = 0;
 
     %% ----------------------------------------------------
     %% 1) Faster unix version, using OS file system
