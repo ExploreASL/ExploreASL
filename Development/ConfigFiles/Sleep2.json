@@ -1,0 +1,9 @@
+{"studyID":"Sleep2",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(\\d{3})_(1|2|3)$","^(ASL)$"],
+"tokenOrdering":[1,2,3],
+"tokenScanAliases":["^ASL$","^M0$","^T1$","ASL4D","M0","T1"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["^1$","^2$","^3$","ASL_1","ASL_2","ASL_3"],
+"bMatchDirectories":true}

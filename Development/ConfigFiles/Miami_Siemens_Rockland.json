@@ -1,0 +1,9 @@
+{"studyID":"Miami_Siemens_Rockland",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(Sub-\\d{3})$",".*(MPRAGE|pCASL).*"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^MPRAGE$","^pCASL$","T1","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[],
+"bMatchDirectories":true}

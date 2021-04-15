@@ -1,0 +1,9 @@
+{"studyID":"ExploreASLtest",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(\\d{3}).*","^Session0([12])$","^(EP2D|M0|T1).*$"],
+"tokenOrdering":[1,2,3],
+"tokenScanAliases":["^EP2D*$","^M0$","^T1_*$","ASL4D","M0","T1"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["^1$","^2$","ASL_1","ASL_2"],
+"bMatchDirectories":true}

@@ -1,0 +1,10 @@
+{"studyID":"Nijmegen_RunDMC_Serial_Imaging2",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(Test1)$","^(LONGPLDLONGBD)$","^(1|2|3|4)$"],
+"tokenOrdering":[1,3,2],
+"tokenScanAliases":["^LONGPLDLONGBD$","^003_t1_mprage$","^M0$","ASL4D","T1","M0"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["1","2","3","4","ASL_1","ASL_2","ASL_3","ASL_4"],
+"bMatchDirectories":true,
+"dcmwildcard":"*.IMA"}

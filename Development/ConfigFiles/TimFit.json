@@ -1,0 +1,9 @@
+{"studyID":"TimFit",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(SUB\\d{3})_(1|2)$","(T1_MPRAGE|T2.*FL|SS.*TI5000_0005|PERFUSION_WEIGHTED).*"],
+"tokenOrdering":[1,2,0,3],
+"tokenScanAliases":["^T1_MPRAGE$","^T2.*FL$","^SS.*TI5000_0005$","PERFUSION_WEIGHTED","T1","FLAIR","M0","ASL_1"],
+"tokenVisitAliases":["1","2","_1","_2"],
+"tokenSessionAliases":[],
+"bMatchDirectories":true}

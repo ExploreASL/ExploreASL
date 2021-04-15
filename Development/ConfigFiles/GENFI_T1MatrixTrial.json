@@ -1,0 +1,9 @@
+{"studyID":"GENFI_T1MatrixTrial",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(GRN018|GRN037|GRN078)$","^GENFI_(t1)$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^t1$","T1"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["1","ASL_1"],
+"bMatchDirectories":true}

@@ -1,0 +1,9 @@
+{"studyID":"Iris4Jan_LongASL",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(Subj-\\d{3})$","^.*(3DT1|WIP_SOURCE).*(1000PLD|1800PLD|2200PLD).*\\.PAR$"],
+"tokenOrdering":[1,3,2],
+"tokenScanAliases":["^3DT1$","^WIP_SOURCE$","T1","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["^1000PLD$","^1800PLD$","^2200PLD$","ASL_1","ASL_2","ASL_3"],
+"bMatchDirectories":false}

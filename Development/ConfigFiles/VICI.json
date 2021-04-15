@@ -1,0 +1,9 @@
+{"studyID":"VICI",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^.*$","^(.*)_WIP_.*(pcasl|T1|M0).*\\.PAR$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^pcasl$","^T1$","^M0$","ASL4D","T1","M0"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["",""],
+"bMatchDirectories":false}

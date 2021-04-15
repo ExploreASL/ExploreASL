@@ -1,0 +1,9 @@
+{"studyID":"RunDMC_inTENse",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(Sub-001)$","^(ASL|T1)$","^.*$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^ASL$","^T1$","^T2$","^M0$","ASL4D","T1","FLAIR","M0"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[],
+"bMatchDirectories":true}

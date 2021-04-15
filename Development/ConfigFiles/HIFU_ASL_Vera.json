@@ -1,0 +1,9 @@
+{"studyID":"HIFU_ASL_Vera",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(Sub-\\d{3})$","^(ASL|T1w)$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^T1w$","^ASL$","T1","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[""],
+"bMatchDirectories":true}

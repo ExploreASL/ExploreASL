@@ -1,0 +1,9 @@
+{"studyID":"Iris_unilateral_sclerosis2",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^PAR_REC_(\\d{3})$","^BFC_\\d{3}.?_WIP_(MPRAGE|AXIAL_FLAIR).*\\.PAR$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^AXIAL_FLAIR$","^O$","^MPRAGE$","^Axial_T2-Star$","FLAIR","ASL4D","T1","M0"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["",""],
+"bMatchDirectories":false}

@@ -1,0 +1,9 @@
+{"studyID":"Dent",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^.*(MCI-\\d{4}).*$","DICOM",".*(FLAIR|T1W|SOURCE.*pCASL).*"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^FLAIR$","^T1W$","^SOURCE.*pCASL$","FLAIR","T1","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[],
+"bMatchDirectories":true}

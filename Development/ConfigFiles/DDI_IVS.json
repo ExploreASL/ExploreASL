@@ -1,0 +1,9 @@
+{"studyID":"DDI_IVS",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(D.*-1)_.*\\d{8}$","^\\D.*(T1|PCASL|M0).*$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^PCASL$","^T1$","^M0$","ASL4D","T1","M0"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["",""],
+"bMatchDirectories":true}

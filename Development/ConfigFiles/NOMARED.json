@@ -1,0 +1,9 @@
+{"studyID":"NOMARED",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(NMRD026)$","^.*(dASL_restSS)-(ns|ss)$"],
+"tokenOrdering":[1,3,2],
+"tokenScanAliases":["^dASL_restSS$","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["^ns$","^ss$","ASL_1","ASL_2"],
+"bMatchDirectories":true}

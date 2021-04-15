@@ -1,0 +1,9 @@
+{"studyID":"Insight46",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^dthomas-(\\d*_\\d*)","(t1_mprage|t2.*fl.*|pgrs.*4000|pgrs.*1s)"],
+"tokenOrdering":[1,0,0,2],
+"tokenScanAliases":["^pgrs.*4000$","^pgrs.*1s$","^t1_mprage$","^t2.*fl.*$","ASL4D","M0","T1","FLAIR"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[],
+"bMatchDirectories":true}

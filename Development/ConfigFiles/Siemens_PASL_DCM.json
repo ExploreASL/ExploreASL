@@ -1,0 +1,9 @@
+{"studyID":"Siemens_PASL_DCM",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(Subject1)_(ASL)$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^ASL$","^t1$","ASL4D","T1"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["",""],
+"bMatchDirectories":true}

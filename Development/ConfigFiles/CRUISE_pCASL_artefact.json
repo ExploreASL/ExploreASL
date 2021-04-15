@@ -1,0 +1,9 @@
+{"studyID":"CRUISE_pCASL_artefact",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(01303)_(ASL)$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^ASL$","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[""],
+"bMatchDirectories":true}

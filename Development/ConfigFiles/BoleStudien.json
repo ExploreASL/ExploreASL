@@ -1,0 +1,9 @@
+{"studyID":"BoleStudien",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(\\d{3})$","^.*(FLAIR)$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^FLAIR$","^M0$","^T1$","FLAIR","M0","T1"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[],
+"bMatchDirectories":true}

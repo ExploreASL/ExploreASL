@@ -1,0 +1,9 @@
+{"studyID":"QSMSC",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^.*(Sub-\\d{3}).*$",".*(3D_FLAIR|3D_T1|SOURCE.*pCASL)"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^3D_FLAIR$","^3D_T1$","^SOURCE.*pCASL$","FLAIR","T1","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[],
+"bMatchDirectories":true}

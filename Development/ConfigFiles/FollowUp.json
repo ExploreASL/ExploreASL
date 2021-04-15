@@ -1,0 +1,9 @@
+{"studyID":"FollowUp",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^\\d{8}_(\\d{6})$","^(noC|C)(rush)$"],
+"tokenOrdering":[1,2,3],
+"tokenScanAliases":["^rush$","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["^noC$","^C$","ASL_1","ASL_2"],
+"bMatchDirectories":true}

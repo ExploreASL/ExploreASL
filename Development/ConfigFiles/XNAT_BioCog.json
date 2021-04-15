@@ -1,0 +1,9 @@
+{"studyID":"XNAT_BioCog",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(BIM\\d{3}_\\d{1})$","^scans$","^(ASL|M0|FLAIR)$","^DICOM$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^ASL$","^FLAIR$","^T1$","^M0$","ASL4D","FLAIR","T1","M0"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[""],
+"bMatchDirectories":true}

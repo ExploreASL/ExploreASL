@@ -1,0 +1,9 @@
+{"studyID":"CP_Tavi",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^.*_\\d{2}$","^(.*_\\d{2}_\\d)$","^scans$","^\\d*1$","^.*(ASL|MPRAGE_ADNI|3DFLAIR|M0).*$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^MPRAGE_ADNI$","^ASL$","^3DFLAIR$","^M0$","T1","ASL4D","FLAIR","M0"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[""],
+"bMatchDirectories":true}

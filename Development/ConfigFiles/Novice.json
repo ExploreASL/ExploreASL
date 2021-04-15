@@ -1,0 +1,9 @@
+{"studyID":"NOVICE",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(session1)$","^(NOV\\d{3})$","^(ASL)$","^\\d+$"],
+"tokenOrdering":[2,1,3],
+"tokenScanAliases":["^ASL$","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["^session1$","ASL_1"],
+"bMatchDirectories":true}

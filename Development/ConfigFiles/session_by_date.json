@@ -1,0 +1,10 @@
+{"studyID":"session_by_date",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(\\d{3}).*","^(\\d+)$","(PSEUDO_10_min|T1W3D|M0).*\\.PAR$"],
+"tokenOrdering":[1,-2,3],
+"tokenScanAliases":["^PSEUDO_10_min$","^T1W3D$","ASL4D","T1"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[],
+"bMatchDirectories":false,
+"nMaxSessions":2}

@@ -1,0 +1,9 @@
+{"studyID":"Chile",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(Sub-\\d{4})$","^(ASL)$","^DICOM","pCASL"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^ASL$","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[""],
+"bMatchDirectories":true}

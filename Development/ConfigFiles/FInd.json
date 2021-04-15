@@ -1,0 +1,9 @@
+{"studyID":"FInd",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(\\d{3})_1186_FIND$","^20$","^MR$","^(\\d{4})_(pseudo)_(nocrush)$"],
+"tokenOrdering":[1,3,2],
+"tokenScanAliases":["^pseudo$","ASL4D"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["^nocrush$","ASL_1"],
+"bMatchDirectories":true}

@@ -1,0 +1,9 @@
+{"studyID":"BioCog",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(BCU\\d{3}_\\d)$","^.*(T1W|FLAIR|pCASL|M0_17).*$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^T1W$","^FLAIR$","^pCASL$","^M0_17$","T1","FLAIR","ASL4D","M0"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":[""],
+"bMatchDirectories":true}

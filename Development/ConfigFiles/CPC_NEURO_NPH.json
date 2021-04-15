@@ -1,0 +1,10 @@
+{"studyID":"CPC_NEURO_NPH",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(S\\d{5})$","^S(8|9)010$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^8$","^9$","ASL4D","M0"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["",""],
+"bMatchDirectories":true,
+"dcmwildcard":"*."}

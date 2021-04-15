@@ -1,0 +1,9 @@
+{"studyID":"22q11",
+"AnalysisRoot":"",
+"RawRoot":"",
+"folderHierarchy":["^(11)$","^(ASL|T1w)$"],
+"tokenOrdering":[1,0,2],
+"tokenScanAliases":["^ASL$","^T1w$","ASL4D","T1"],
+"tokenVisitAliases":[],
+"tokenSessionAliases":["",""],
+"bMatchDirectories":true}
