@@ -65,10 +65,14 @@ function xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
     %% 2) Slower Matlab version
     if bFolder
         PathList = xASL_adm_GetFileList(x.D.ROOT, '^.*$', 'FPList', [0 Inf], true);
-        fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' folders']);
+        if ~isempty(PathList)
+            fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' folders']);
+        end
     else
         PathList = xASL_adm_GetFileList(x.D.ROOT, '^.*\.(nii|wav|bmp)$', 'FPListRec', [0 Inf], false);
-        fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+        if ~isempty(PathList)
+            fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+        end
     end
     
     if ~isempty(PathList)
