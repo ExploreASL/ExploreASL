@@ -30,8 +30,8 @@ end
 
 %% Preparation for Michael
 if strcmp(username,'matlab')
-    pathExploreASL = 'M:\SoftwareDevelopment\MATLAB\m.stritt\ExploreASL';
-    pathTest = 'M:\SoftwareDevelopment\MATLAB\m.stritt\TestBIDS';
+    pathExploreASL = 'M:\SoftwareDevelopment\MATLAB\m.stritt\Server_xASL\ExploreASL';
+    pathTest = 'M:\SoftwareDevelopment\MATLAB\m.stritt\Server_xASL\FlavorTests';
     cmdCloneFlavors = 'git clone git@github.com:ExploreASL/FlavorDatabase.git';
 end
 
@@ -59,7 +59,7 @@ if ~exist(fullfile(pathTest,'FlavorDatabase'), 'dir')
 end
 
 %% Test execution
-x = ExploreASL_Initialize;
+
 % Prepare the data
 xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [1 0 0 0 0 0 0], x);
 

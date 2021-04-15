@@ -1,20 +1,55 @@
-function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(imPar, vSubjectIDs, vVisitIDs, bUseVisits, nVisits, nSessions, subjectIDs, visitIDs, sessionIDs, scanIDs, iSubject, summary_lines, matches, bCopySingleDicoms, bClone2Source)
+function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
 %xASL_bids_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
-% FORMAT: n/a
+% FORMAT: [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
 % 
 % INPUT:
-%   n/a
+%   x                      - ExploreASL x structure (REQUIRED, STRUCT)
+%   imPar                  - Structure with import parameters (REQUIRED, STRUCT)
+%   listsIDs               - Lists of IDs (REQUIRED, STRUCT)
+%   numOf                  - Number of visits, sessions, scans etc. (REQUIRED, STRUCT)
+%   settings               - Boolean settings (REQUIRED, STRUCT)
+%   iSubject               - Current subject (REQUIRED, INTEGER)
+%   summary_lines          - Summary lines
+%   matches                - Matches
+%   dcm2niiCatchedErrors   - DCM2NII catched errors
+%   pathDcmDict            - Path to DCM dictionary
 %
 % OUTPUT:
-%   n/a
+%   imPar                  - Structure with import parameters 
+%   summary_lines          - Summary lines
+%   PrintDICOMFields       - Print DICOM fields
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual subject.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     n/a
+% EXAMPLE:     [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+
+
+    %% Extract structs
+    
+    % Extract ID struct
+    vSubjectIDs = listsIDs.vSubjectIDs;
+    vVisitIDs = listsIDs.vVisitIDs;
+    vSessionIDs = listsIDs.vSessionIDs;
+    vScanIDs = listsIDs.vScanIDs;
+    subjectIDs = listsIDs.subjectIDs;
+    visitIDs = listsIDs.visitIDs;
+    sessionIDs = listsIDs.sessionIDs;
+    scanIDs = listsIDs.scanIDs;
+    
+    % Extract number of struct
+    nVisits = numOf.nVisits;
+    nSessions = numOf.nSessions;
+    nScans = numOf.nScans;
+    
+    % Extract settings struct
+    bUseVisits = settings.bUseVisits;
+    bClone2Source = settings.bClone2Source;
+    bUseDCMTK = settings.bUseDCMTK;
+    bCopySingleDicoms = settings.bCopySingleDicoms;
 
 
     %% Run DCM2NII for one individual subject
@@ -260,6 +295,8 @@ function [imPar, summary_lines, PrintDICOMFields] = xASL_bids_DCM2NII_Subject(im
                 if ~isempty(nii_files) && exist('parms','var')
                     [TempLine, PrintDICOMFields] = xASL_bids_AppendParmsParameters(parms);
                     summary_line = [summary_line TempLine];
+                else
+                    PrintDICOMFields = [];
                 end
 
                 if bClone2Source % make a copy of analysisdir in sourcedir

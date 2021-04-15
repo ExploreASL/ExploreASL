@@ -1,4 +1,4 @@
-function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
+function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
 %xASL_bids_DCM2NII Run the dcm2nii part of the import.
 %
 % FORMAT: xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
@@ -229,24 +229,37 @@ function xASL_bids_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
     
 	%% Import subject by subject, visit by visit, session by session, scan by scan
 	fprintf('%s\n', 'Running import (i.e. dcm2niiX)');
+    
+    % Create ID struct
+    listsIDs.vSubjectIDs = vSubjectIDs;
+    listsIDs.vVisitIDs = vVisitIDs;
+    listsIDs.vSessionIDs = vSessionIDs;
+    listsIDs.vScanIDs = vScanIDs;
+    listsIDs.subjectIDs = subjectIDs;
+    listsIDs.visitIDs = visitIDs;
+    listsIDs.sessionIDs = sessionIDs;
+    listsIDs.scanIDs = scanIDs;
+    
+    % Create number of struct
+    numOf.nSubjects = nSubjects;
+    numOf.nVisits = nVisits;
+    numOf.nSessions = nSessions;
+    numOf.nScans = nScans;
+    
+    % Create settings struct
+    settings.bUseVisits = bUseVisits;
+    settings.bClone2Source = bClone2Source;
+    settings.bUseDCMTK = bUseDCMTK;
+    settings.bCopySingleDicoms = bCopySingleDicoms;
+    
+    % Iterate over subjects
     for iSubject=1:nSubjects
         [imPar, summary_lines, PrintDICOMFields] ...
-            = xASL_bids_DCM2NII_Subject(imPar, ...
-              vSubjectIDs, vVisitIDs, bUseVisits, ...
-              nVisits, nSessions, ...
-              subjectIDs, visitIDs, sessionIDs, scanIDs, ...
-              iSubject, summary_lines, matches, ...
-              bCopySingleDicoms, bClone2Source);
+            = xASL_bids_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
     end
 	
     % Create summary file
-    xASL_bids_CreateSummaryFile(imPar, PrintDICOMFields, ...
-                                converted_scans, ...
-                                skipped_scans, ...
-                                missing_scans, ...
-                                subjectIDs, visitIDs, scanNames, ...
-                                summary_lines, ...
-                                nSubjects, nVisits, nSessions, fid_summary);
+    xASL_bids_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, scanNames, summary_lines, fid_summary);
     
 	% cleanup
 	if ~bUseDCMTK || isempty(pathDcmDict)

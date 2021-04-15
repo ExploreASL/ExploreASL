@@ -1,21 +1,18 @@
-function xASL_bids_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, subjectIDs, visitIDs, scanNames, summary_lines, nSubjects, nVisits, nSessions, fid_summary)
+function xASL_bids_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, scanNames, summary_lines, fid_summary)
 %xASL_bids_CreateSummaryFile Create summary file.
 %
 % FORMAT: xASL_bids_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, subjectIDs, visitIDs, scanNames, summary_lines, nSubjects, nVisits, nSessions, fid_summary)
 % 
 % INPUT:
 %   imPar             - JSON file with structure with import parameters (REQUIRED, STRUCT)
+%   numOf             - Struct defining the number of subjects, visists, sessions, scans etc. (REQUIRED, STRUCT)
+%   listsIDs          - Struct defining different ID lists (REQUIRED, STRUCT)
 %   PrintDICOMFields  - Print DICOM fields
 %   converted_scans   - Converted scans
 %   skipped_scans     - Skipped scans
 %   missing_scans     - Missing scans
-%   subjectIDs        - Subject IDs
-%   visitIDs          - Visit IDs
 %   scanNames         - Scan names
 %   summary_lines     - Summary lines
-%   nSubjects         - Number of subjects
-%   nVisits           - Number of visits
-%   nSessions         - Number of sessions
 %   fid_summary       - File ID summary
 %
 % OUTPUT:
@@ -27,6 +24,19 @@ function xASL_bids_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, s
 % EXAMPLE:     xASL_bids_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, subjectIDs, visitIDs, scanNames, summary_lines, nSubjects, nVisits, nSessions, fid_summary);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+
+
+    %% Extract structs
+    
+    % Extract ID struct
+    subjectIDs = listsIDs.subjectIDs;
+    visitIDs = listsIDs.visitIDs;
+    
+    % Extract number of struct
+    nSubjects = numOf.nSubjects;
+    nVisits = numOf.nVisits;
+    nSessions = numOf.nSessions;
+    nScans = numOf.nScans;
 
     
     %% Create summary file
