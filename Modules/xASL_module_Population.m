@@ -290,7 +290,7 @@ if ~x.mutex.HasState(StateName{10})
     % This way, temporary files that take up a lot of data, will take up have
     % the disc space. These files may be re-used in the event of a
     % re-processing, which is why we zip them instead of deleting them.
-    xASL_adm_GzipAllFiles(x.D.ROOT, x.D.ExternalDir);
+    xASL_adm_GzipAllFiles(x);
     x.mutex.AddState(StateName{10});
     fprintf('%s\n',[StateName{10} ' was performed']);
 else
