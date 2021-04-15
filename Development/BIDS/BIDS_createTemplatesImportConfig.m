@@ -1,5 +1,7 @@
 %% Create JSON files from ExploreASL_ImportConfig 
 
+fprintf('This script can be deletet, if the new version of the ExploreASL_ImportConfig was accepted...\n');
+
 % Initialize ExploreASL
 [x] = ExploreASL_Initialize;
 
