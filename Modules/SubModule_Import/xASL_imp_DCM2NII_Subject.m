@@ -1,7 +1,7 @@
-function [imPar, summary_lines, PrintDICOMFields] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
 %xASL_imp_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
-% FORMAT: [imPar, summary_lines, PrintDICOMFields] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+% FORMAT: [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -10,20 +10,21 @@ function [imPar, summary_lines, PrintDICOMFields] = xASL_imp_DCM2NII_Subject(x, 
 %   numOf                  - Number of visits, sessions, scans etc. (REQUIRED, STRUCT)
 %   settings               - Boolean settings (REQUIRED, STRUCT)
 %   iSubject               - Current subject (REQUIRED, INTEGER)
-%   summary_lines          - Summary lines
-%   matches                - Matches
-%   dcm2niiCatchedErrors   - DCM2NII catched errors
-%   pathDcmDict            - Path to DCM dictionary
+%   summary_lines          - Summary lines (REQUIRED, CELL ARRAY)
+%   matches                - Matches (REQUIRED, CELL ARRAY)
+%   dcm2niiCatchedErrors   - DCM2NII catched errors (REQUIRED, STRUCT)
+%   pathDcmDict            - Path to DCM dictionary (REQUIRED, CHAR ARRAY)
 %
 % OUTPUT:
 %   imPar                  - Structure with import parameters 
 %   summary_lines          - Summary lines
 %   PrintDICOMFields       - Print DICOM fields
+%   converted_scans        - Converted scans
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual subject.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     [imPar, summary_lines, PrintDICOMFields] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+% EXAMPLE:     [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

@@ -7,13 +7,13 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, co
 %   imPar             - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %   numOf             - Struct defining the number of subjects, visists, sessions, scans etc. (REQUIRED, STRUCT)
 %   listsIDs          - Struct defining different ID lists (REQUIRED, STRUCT)
-%   PrintDICOMFields  - Print DICOM fields
-%   converted_scans   - Converted scans
-%   skipped_scans     - Skipped scans
-%   missing_scans     - Missing scans
-%   scanNames         - Scan names
-%   summary_lines     - Summary lines
-%   fid_summary       - File ID summary
+%   PrintDICOMFields  - Print DICOM fields (REQUIRED, CELL ARRAY)
+%   converted_scans   - Converted scans (REQUIRED)
+%   skipped_scans     - Skipped scans (REQUIRED)
+%   missing_scans     - Missing scans (REQUIRED)
+%   scanNames         - Scan names (REQUIRED, CELL ARRAY)
+%   summary_lines     - Summary lines (REQUIRED, CELL ARRAY)
+%   fid_summary       - File ID summary (REQUIRED, INTEGER)
 %
 % OUTPUT:
 %   n/a

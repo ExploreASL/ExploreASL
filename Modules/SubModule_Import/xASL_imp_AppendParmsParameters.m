@@ -4,7 +4,7 @@ function [s, FieldNames] = xASL_imp_AppendParmsParameters(parms)
 % FORMAT: [s, FieldNames] = xASL_imp_AppendParmsParameters(parms)
 % 
 % INPUT:
-%   parms      - Parameters
+%   parms      - Parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   s          - String

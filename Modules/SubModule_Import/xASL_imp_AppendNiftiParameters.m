@@ -4,7 +4,7 @@ function s = xASL_imp_AppendNiftiParameters(nii_files)
 % FORMAT: s = xASL_imp_AppendNiftiParameters(nii_files)
 % 
 % INPUT:
-%   nii_files  - List of NIFTI files.
+%   nii_files  - List of NIFTI files (REQUIRED, CELL ARRAY)
 %
 % OUTPUT:
 %   s          - String
