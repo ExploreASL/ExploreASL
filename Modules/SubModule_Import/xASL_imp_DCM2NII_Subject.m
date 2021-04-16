@@ -33,15 +33,6 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
 % Copyright 2015-2021 ExploreASL
 
 
-    %% Extract structs
-    
-    % Extract settings struct
-    bUseVisits = settings.bUseVisits;
-    bClone2Source = settings.bClone2Source;
-    bUseDCMTK = settings.bUseDCMTK;
-    bCopySingleDicoms = settings.bCopySingleDicoms;
-
-
     %% Run DCM2NII for one individual subject
     
     separatorline = repmat(char('+'),1,80);
@@ -58,7 +49,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
             end
         end
 
-        if bUseVisits % only pad VisitID _1 _2 _3 etc if there are visits specified
+        if settings.bUseVisits % only pad VisitID _1 _2 _3 etc if there are visits specified
             % Multiple visits is defined by the tokenVisitAliases.
             % If this is non-existing, it is set to 1, and if it does exist,
             % it will put the _1 _2 _3 etc in the folder
@@ -237,7 +228,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
                 end
                 
                 % Store JSON files
-                [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, bUseDCMTK, pathDcmDict);
+                [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, settings.bUseDCMTK, pathDcmDict);
 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of
@@ -253,10 +244,10 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
                 end
 
                 % Make a copy of analysisdir in sourcedir
-                xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
+                xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, settings.bClone2Source)
 
                 % Copy single dicom as QC placeholder
-                if bCopySingleDicoms && ~isempty(first_match)
+                if settings.bCopySingleDicoms && ~isempty(first_match)
                     xASL_Copy(first_match, fullfile(destdir, ['DummyDicom_' scan_name '.dcm']), imPar.bOverwrite, imPar.bVerbose);
                 end
 
@@ -271,7 +262,7 @@ end
 
 
 %% Store JSON files
-function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, bUseDCMTK, pathDcmDict)
+function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, settings.bUseDCMTK, pathDcmDict)
 
     for iPath=1:length(SavePathJSON)
         if exist(SavePathJSON{iPath}, 'file') && ~isempty(first_match)
@@ -282,10 +273,10 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
                 parms = [];
             elseif imPar.bMatchDirectories
                 Fpath  = fileparts(first_match);
-                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON{iPath}, imPar.dcmExtFilter, settings.bUseDCMTK, pathDcmDict);
                 clear Fpath Ffile Fext
             else
-                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON{iPath}, imPar.dcmExtFilter, settings.bUseDCMTK, pathDcmDict);
             end
         end
     end
@@ -293,9 +284,9 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
 end
 
 %% Make a copy of analysisdir in sourcedir
-function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
+function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, settings.bClone2Source)
 
-    if bClone2Source
+    if settings.bClone2Source
         if ~isempty(nii_files)
             for iFile=1:length(nii_files)
                 % replace 'analysis' by 'source'
