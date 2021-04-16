@@ -310,144 +310,13 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
         [~,~,extension] = fileparts(allFiles{iFile});
         % Check extension
         if strcmp(extension,'.json')
-			jsonErrorReport='';
-
-			% Compare JSON files on field basis
-			if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
-				% Import JSON files
-				jsonA = spm_jsonread(char(currentFileA));
-				jsonB = spm_jsonread(char(currentFileB));
-				
-				% Get JSON field names
-				fieldNamesA = fieldnames(jsonA);
-				fieldNamesB = fieldnames(jsonB);
-				
-				% Check which fields are shared and which different
-				sharedFieldsAB = intersect(fieldNamesB,fieldNamesA);
-
-				% Fields that are in B, but missing in A
-				missingFields = setdiff(fieldNamesB,fieldNamesA);
-				% Print out missing fields
-				for iField=1:numel(missingFields)
-					jsonErrorReport = sprintf('%s\t\t\t\tMissing field: %s\n',jsonErrorReport,missingFields{iField});
-				end
-				
-				extraFields = setdiff(fieldNamesA,fieldNamesB);
-				% Print out missing fields
-				for iField=1:numel(extraFields)
-					jsonErrorReport = sprintf('%s\t\t\t\tExtra field: %s\n',jsonErrorReport,extraFields{iField});
-				end
-				
-				% Now we can compare these fields like in the part above
-				jsonErrorReport = [jsonErrorReport, compareFieldLists(jsonA,jsonB,sharedFieldsAB)];
-				
-				if ~isempty(jsonErrorReport)
-                    if bPrintReport
-                        fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                        fprintf('%s',jsonErrorReport);
-                    end
-                    
-                    % Save difference
-                    differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
-                    dn = dn+1;
-                end
-                
-			end
-        elseif strcmp(extension,'.tsv') || strcmp(extension,'.txt') || strcmp(extension,'.csv')
-            % Read files if they exist
-            if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
-                % Compare text files content directly
-                currentFileTextA = fileread(currentFileA);
-                currentFileTextB = fileread(currentFileB);
-                if ~strcmp(currentFileTextA,currentFileTextB)
-                    if bPrintReport
-                        fprintf('%s:\t\t\n',allFiles{iFile});
-                        fprintf('\t\t\t\tDifferent file content.\n');
-                    end
-                    identical = false;
-                    
-                    % Save difference
-                    differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
-                    dn = dn+1;
-                    
-                end
-            end
-        elseif strcmp(extension,'.nii') || ~isempty(strfind(allFiles{iFile},'.nii.gz')) % Warning: This unzips your NIFTIs right now!
-            % Read files if they exist
-            if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
-                % Check file size (there were some 0KB images in the bids-examples)
-                tmpFileA = dir(currentFileA);
-                tmpFileB = dir(currentFileB);
-                sizeA = tmpFileA.bytes;
-                sizeB = tmpFileB.bytes;
-                
-                % Check file size (images with a file size lower than 1 byte are corrupt)
-                if (sizeA>1 && sizeB>1)
-                    
-                    % Work on copy (untouch behavior)
-                    [~,nameNiftiA,~] = xASL_fileparts(char(currentFileA));
-                    [~,nameNiftiB,~] = xASL_fileparts(char(currentFileB));
-                    pathCopyA = strrep(char(currentFileA),nameNiftiA,[nameNiftiA '_tmp_copy']);
-                    pathCopyB = strrep(char(currentFileB),nameNiftiB,[nameNiftiB '_tmp_copy']);
-                    xASL_Copy(char(currentFileA),pathCopyA);
-                    xASL_Copy(char(currentFileB),pathCopyB);
-                    imageA = xASL_io_Nifti2Im(pathCopyA);
-                    imageB = xASL_io_Nifti2Im(pathCopyB);
-                    
-                    % Check that matrix dimensions agree first
-                    sizeA = size(imageA);
-                    sizeB = size(imageB);
-                    if length(sizeA)==length(sizeB)
-                        if sum(sizeA==sizeB)==length(sizeA)
-                            RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
-                            if (RMSE>threshRmseNii)
-                                % Report function which prints to the console
-                                if bPrintReport
-                                    fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                                    fprintf('\t\t\t\tRMSE (%d) of NIFTIs above threshold.\n',RMSE);
-                                end
-                                identical = false;
-                                
-                                % Save difference
-                                differences{dn,1} = ['RMSE of NIFTIs above threshold: ', allFiles{iFile}, ' '];
-                                dn = dn+1;
-                            end
-                        else
-                            if bPrintReport
-                                fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                                fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
-                            end
-                            identical = false;
-                            
-                            % Save difference
-                            differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
-                            dn = dn+1;
-                        end
-                    else
-                        if bPrintReport
-                            fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                            fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
-                        end
-                        identical = false;
-                        
-                        % Save difference
-                        differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
-                        dn = dn+1;
-                    end
-                    
-                    % Delete copies
-                    xASL_delete(pathCopyA);
-                    xASL_delete(pathCopyB);
-                else
-                    if bPrintReport
-                        fprintf('%s:\t\t\n',allFiles{iFile});
-                        fprintf('\t\t\t\tFile is too small to be a real image.\n');
-                    end
-                    % Save difference
-                    differences{dn,1} = ['File is too small to be a real image: ', allFiles{iFile}, ' '];
-                    dn = dn+1;
-                end
-            end
+			[differences,identical,dn] = compareJSON(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB);
+        elseif strcmp(extension,'.tsv')
+            [differences,identical,dn] = compareTSV(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB);
+        elseif strcmp(extension,'.txt') || strcmp(extension,'.csv')
+            [differences,identical,dn] = compareTEXT(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB);
+        elseif strcmp(extension,'.nii') || ~isempty(strfind(allFiles{iFile},'.nii.gz'))
+            [differences,identical,dn] = compareNIFTI(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii);
         end
     end
 end
@@ -556,3 +425,190 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
     end
     
 end
+
+
+%% Compare TEXT files
+function [differences,identical,dn] = compareTEXT(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB)
+
+    % Read files if they exist
+    if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+        % Compare text files content directly
+        currentFileTextA = fileread(currentFileA);
+        currentFileTextB = fileread(currentFileB);
+        if ~strcmp(currentFileTextA,currentFileTextB)
+            if bPrintReport
+                fprintf('%s:\t\t\n',allFiles{iFile});
+                fprintf('\t\t\t\tDifferent file content.\n');
+            end
+            identical = false;
+
+            % Save difference
+            differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
+            dn = dn+1;
+
+        end
+    end
+
+end
+
+
+%% Compare JSON files
+function [differences,identical,dn] = compareJSON(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB)
+
+    jsonErrorReport='';
+
+    % Compare JSON files on field basis
+    if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+        % Import JSON files
+        jsonA = spm_jsonread(char(currentFileA));
+        jsonB = spm_jsonread(char(currentFileB));
+
+        % Get JSON field names
+        fieldNamesA = fieldnames(jsonA);
+        fieldNamesB = fieldnames(jsonB);
+
+        % Check which fields are shared and which different
+        sharedFieldsAB = intersect(fieldNamesB,fieldNamesA);
+
+        % Fields that are in B, but missing in A
+        missingFields = setdiff(fieldNamesB,fieldNamesA);
+        % Print out missing fields
+        for iField=1:numel(missingFields)
+            jsonErrorReport = sprintf('%s\t\t\t\tMissing field: %s\n',jsonErrorReport,missingFields{iField});
+        end
+
+        extraFields = setdiff(fieldNamesA,fieldNamesB);
+        % Print out missing fields
+        for iField=1:numel(extraFields)
+            jsonErrorReport = sprintf('%s\t\t\t\tExtra field: %s\n',jsonErrorReport,extraFields{iField});
+        end
+
+        % Now we can compare these fields like in the part above
+        jsonErrorReport = [jsonErrorReport, compareFieldLists(jsonA,jsonB,sharedFieldsAB)];
+
+        if ~isempty(jsonErrorReport)
+            if bPrintReport
+                fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                fprintf('%s',jsonErrorReport);
+            end
+
+            % Save difference
+            differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
+            dn = dn+1;
+        end
+
+    end
+
+end
+
+
+
+%% Compare TSV files
+function [differences,identical,dn] = compareTSV(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB)
+
+    % Read files if they exist
+    if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+        % Compare text files content directly
+        currentTsvA = xASL_tsvRead(currentFileA);
+        currentTsvB = xASL_tsvRead(currentFileB);
+        if ~isempty(setdiff(currentTsvA,currentTsvB))
+            if bPrintReport
+                fprintf('%s:\t\t\n',allFiles{iFile});
+                fprintf('\t\t\t\tDifferent file content.\n');
+            end
+            identical = false;
+
+            % Save difference
+            differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
+            dn = dn+1;
+
+        end
+    end
+
+end
+
+
+%% Compare NIFTI files
+function [differences,identical,dn] = compareNIFTI(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii)
+
+    % Read files if they exist
+    if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+        % Check file size (there were some 0KB images in the bids-examples)
+        tmpFileA = dir(currentFileA);
+        tmpFileB = dir(currentFileB);
+        sizeA = tmpFileA.bytes;
+        sizeB = tmpFileB.bytes;
+
+        % Check file size (images with a file size lower than 1 byte are corrupt)
+        if (sizeA>1 && sizeB>1)
+
+            % Work on copy (untouch behavior)
+            [~,nameNiftiA,~] = xASL_fileparts(char(currentFileA));
+            [~,nameNiftiB,~] = xASL_fileparts(char(currentFileB));
+            pathCopyA = strrep(char(currentFileA),nameNiftiA,[nameNiftiA '_tmp_copy']);
+            pathCopyB = strrep(char(currentFileB),nameNiftiB,[nameNiftiB '_tmp_copy']);
+            xASL_Copy(char(currentFileA),pathCopyA);
+            xASL_Copy(char(currentFileB),pathCopyB);
+            imageA = xASL_io_Nifti2Im(pathCopyA);
+            imageB = xASL_io_Nifti2Im(pathCopyB);
+
+            % Check that matrix dimensions agree first
+            sizeA = size(imageA);
+            sizeB = size(imageB);
+            if length(sizeA)==length(sizeB)
+                if sum(sizeA==sizeB)==length(sizeA)
+                    RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
+                    if (RMSE>threshRmseNii)
+                        % Report function which prints to the console
+                        if bPrintReport
+                            fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                            fprintf('\t\t\t\tRMSE (%d) of NIFTIs above threshold.\n',RMSE);
+                        end
+                        identical = false;
+
+                        % Save difference
+                        differences{dn,1} = ['RMSE of NIFTIs above threshold: ', allFiles{iFile}, ' '];
+                        dn = dn+1;
+                    end
+                else
+                    if bPrintReport
+                        fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                        fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                    end
+                    identical = false;
+
+                    % Save difference
+                    differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
+                    dn = dn+1;
+                end
+            else
+                if bPrintReport
+                    fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                    fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                end
+                identical = false;
+
+                % Save difference
+                differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
+                dn = dn+1;
+            end
+
+            % Delete copies
+            xASL_delete(pathCopyA);
+            xASL_delete(pathCopyB);
+        else
+            if bPrintReport
+                fprintf('%s:\t\t\n',allFiles{iFile});
+                fprintf('\t\t\t\tFile is too small to be a real image.\n');
+            end
+            % Save difference
+            differences{dn,1} = ['File is too small to be a real image: ', allFiles{iFile}, ' '];
+            dn = dn+1;
+        end
+    end
+
+end
+
+
+
+
