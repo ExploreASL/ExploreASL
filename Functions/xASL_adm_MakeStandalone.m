@@ -28,8 +28,7 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 % 5. Manage compilation paths
 % 6. Run SPM compilation
 % 7. Run ExploreASL compilation
-% 8. Copy .bat file for Windows compilation
-% 9. Save Log-file
+% 8. Print done
 %
 % EXAMPLE: 
 %
@@ -67,6 +66,7 @@ end
 Version = xASL_adm_CorrectName(['xASL_' xASLVersion]);
 
 %% 3) File management output folder & starting diary
+pathLogFile = fullfile(outputPath,'compilationLog.txt');
 outputPath = fullfile(outputPath,Version);
 if ~exist(outputPath, 'dir')
     xASL_adm_CreateDir(outputPath);
@@ -77,7 +77,7 @@ else
     pause;
     xASL_adm_DeleteFileList(outputPath, '.*', true, [0 Inf]);
 end
-diary(fullfile(outputPath,'compilationLog.txt'));
+diary(pathLogFile);
 diary on
 
 %% 4) Handle SPM Specific Options
@@ -153,19 +153,16 @@ xASL_Copy(AddExploreASLversion, fullfile(outputPath, VersionPath{1}), 1);
 
 % Zip the compilation
 zip([fullfile(outputPath) '.zip'],fullfile(outputPath));
+
+% Close diary
+diary(pathLogFile);
+diary off
+
+% Delete unzipped folder
 xASL_delete(outputPath, true);
 
-%% 8) Copy .bat file for Windows compilation
-createBat = false;
-if ispc && createBat
-    NewPath = fullfile(outputPath, 'RunExploreASL.bat');
-    xASL_Copy(outputPath, NewPath, true);
-end
-
-%% 9) Save Log-file
+%% 8) Print done
 fprintf('Done\n');
-diary(fullfile(outputPath,'compilationLog.txt'));
-diary off
 
 end
 
