@@ -218,9 +218,9 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
 	end
 	
 	% preallocate space for (global) counts
-	converted_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
-	skipped_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
-	missing_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
+	globalCounts.converted_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
+	globalCounts.skipped_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
+	globalCounts.missing_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
 	
 	% define a cell array for storing info for parameter summary file
 	xASL_adm_CreateDir(imPar.AnalysisRoot);
@@ -254,12 +254,12 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
     
     % Iterate over subjects
     for iSubject=1:nSubjects
-        [imPar, summary_lines, PrintDICOMFields, converted_scans] = ...
-            xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+        [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedErrors, pathDcmDict] = ...
+            xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
     end
 	
     % Create summary file
-    xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, scanNames, summary_lines, fid_summary);
+    xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary);
     
 	% cleanup
 	if ~bUseDCMTK || isempty(pathDcmDict)

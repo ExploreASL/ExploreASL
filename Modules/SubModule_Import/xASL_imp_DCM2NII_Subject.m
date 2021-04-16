@@ -1,7 +1,7 @@
-function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
 %xASL_imp_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
-% FORMAT: [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+% FORMAT: [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -9,6 +9,7 @@ function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DC
 %   listsIDs               - Lists of IDs (REQUIRED, STRUCT)
 %   numOf                  - Number of visits, sessions, scans etc. (REQUIRED, STRUCT)
 %   settings               - Boolean settings (REQUIRED, STRUCT)
+%   globalCounts           - Converted, skipped & missing scans (REQUIRED, STRUCT)
 %   iSubject               - Current subject (REQUIRED, INTEGER)
 %   summary_lines          - Summary lines (REQUIRED, CELL ARRAY)
 %   matches                - Matches (REQUIRED, CELL ARRAY)
@@ -19,12 +20,15 @@ function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DC
 %   imPar                  - Structure with import parameters 
 %   summary_lines          - Summary lines
 %   PrintDICOMFields       - Print DICOM fields
-%   converted_scans        - Converted scans
+%   globalCounts           - Converted, skipped & missing scans
+%   dcm2niiCatchedErrors   - DCM2NII catched errors
+%   pathDcmDict            - Path to DCM dictionary
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual subject.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+% EXAMPLE:     [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedErrors, pathDcmDict] = ...
+%               xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -146,10 +150,10 @@ function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DC
                 iMatch = find(strcmp(vSubjectIDs,subjectID) & strcmp(vVisitIDs, xASL_adm_CorrectName(visitID,2,'_')) & strcmp(vSessionIDs,sessionID) & strcmpi(vScanIDs,scanID) ); % only get the matching session
                 if isempty(iMatch)
                     % only report as missing if we need a scan for each session (i.e. ASL)
-                    if sum(converted_scans(iSubject,iVisit,:,iScan))==0
+                    if sum(globalCounts.converted_scans(iSubject,iVisit,:,iScan))==0
                         WarningMessage = ['Missing scan: ' [subjectID imPar.visitNames{iVisit}] ', ' num2str(iSession) ', ' scan_name];
                         if imPar.bVerbose; warning(WarningMessage); end
-                        missing_scans(iSubject, iVisit, iSession, iScan) = 1;
+                        globalCounts.missing_scans(iSubject, iVisit, iSession, iScan) = 1;
                     end
 
                     summary_lines{iSubject, iVisit, iSession, iScan} = summary_line;
@@ -176,7 +180,7 @@ function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DC
                     destdir = SubjDir;
                 end
 
-                if bOneScanIsEnough && sum(converted_scans(iSubject,iVisit,:,iScan))~=0
+                if bOneScanIsEnough && sum(globalCounts.converted_scans(iSubject,iVisit,:,iScan))~=0
                     % one scan is enough, so skip this one if there was already a scan converted of this type (i.e. T1)
                     if imPar.bVerbose; fprintf('Skipping scan: %s, %s, %s\n',[subjectID imPar.visitNames{iVisit}],session_name,scan_name); end
                     bSkipThisOne = true;
@@ -186,7 +190,7 @@ function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DC
                 % start the conversion if this scan should not be skipped
                 if bSkipThisOne
                     summary_line = sprintf(',"skipped",,,,,,,,');
-                    skipped_scans(iSubject, iVisit, iSession, iScan) = 1;
+                    globalCounts.skipped_scans(iSubject, iVisit, iSession, iScan) = 1;
                 else
                     nii_files = {};
                     xASL_adm_CreateDir(destdir);
@@ -228,32 +232,9 @@ function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DC
                     end
 
                     %% In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
-                    [~,~,scanExtension] = xASL_fileparts(scanpath);
-                    if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
-                        % For a PAR/REC files that produces a single ASL4D NIFTI
-                        imASL = xASL_io_Nifti2Im(nii_files{1});
-                        % If multiple dynamics
-                        if size(imASL,4) > 1
-                            % Then reshuffle them
-                            imASLreordered = zeros(size(imASL));
-                            imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
-                            imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
-                            xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASLreordered);
-                        end
-                    end
-                    % Merge NIfTIs if there are multiples
-                    % For ASL or M0, merge multiple files
-                    if length(nii_files)>1
-                        if ~isempty(strfind(scan_name,'ASL4D'))
-                            nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
-                        elseif  ~isempty(strfind(scan_name,'M0'))
-                            nii_files = xASL_bids_MergeNifti(nii_files, 'M0');
-                        end
-                    end
-
-                    % Extract relevant parameters from nifti header and append to summary file
-                    summary_line = xASL_imp_AppendNiftiParameters(nii_files);
-                    converted_scans(iSubject, iSession, iScan) = 1;
+                    [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files);
+                    
+                    
                 end
 
                 % extract relevant parameters from dicom header, if not
@@ -269,23 +250,9 @@ function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DC
                         SavePathJSON{end+1} = tmpNewPath;
                     end
                 end
-
-                for iPath=1:length(SavePathJSON)
-                    if exist(SavePathJSON{iPath}, 'file') && ~isempty(first_match)
-                        [~, ~, fext] = fileparts(first_match);
-                        if  strcmpi(fext,'.PAR')
-                            parms = xASL_bids_Par2JSON(first_match, SavePathJSON{iPath});
-                        elseif strcmpi(fext,'.nii')
-                            parms = [];
-                        elseif imPar.bMatchDirectories
-                            Fpath  = fileparts(first_match);
-                            [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-                            clear Fpath Ffile Fext
-                        else
-                            [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-                        end
-                    end
-                end
+                
+                % Store JSON files
+                [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, bUseDCMTK, pathDcmDict);
 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of
@@ -300,27 +267,8 @@ function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DC
                     PrintDICOMFields = [];
                 end
 
-                if bClone2Source % make a copy of analysisdir in sourcedir
-                    if ~isempty(nii_files)
-                        for iFile=1:length(nii_files)
-                            % replace 'analysis' by 'source'
-                            [iStart, iEnd] = regexp(nii_files{iFile}, 'analysis');
-                            DestPath = [nii_files{iFile}(1:iStart-1) 'source' nii_files{iFile}(iEnd+1:end)];
-                            xASL_Copy(nii_files{iFile}, DestPath, true);
-                            % do the same for other extensions
-                            Extensions = {'.json' '_parms.json'};
-                            for iExt=1:length(Extensions)
-                                [Fpath, Ffile] = xASL_fileparts(nii_files{iFile});
-                                CopyPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
-                                [Fpath, Ffile] = xASL_fileparts(DestPath);
-                                DestPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
-                                if xASL_exist(CopyPath)
-                                    xASL_Copy(CopyPath, DestPath, true);
-                                end
-                            end
-                        end
-                    end
-                end
+                % Make a copy of analysisdir in sourcedir
+                xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
 
                 % Copy single dicom as QC placeholder
                 if bCopySingleDicoms && ~isempty(first_match)
@@ -334,6 +282,90 @@ function [imPar, summary_lines, PrintDICOMFields, converted_scans] = xASL_imp_DC
     end % visitIDs
 
         
+end
+
+
+%% Store JSON files
+function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, bUseDCMTK, pathDcmDict)
+
+    for iPath=1:length(SavePathJSON)
+        if exist(SavePathJSON{iPath}, 'file') && ~isempty(first_match)
+            [~, ~, fext] = fileparts(first_match);
+            if  strcmpi(fext,'.PAR')
+                parms = xASL_bids_Par2JSON(first_match, SavePathJSON{iPath});
+            elseif strcmpi(fext,'.nii')
+                parms = [];
+            elseif imPar.bMatchDirectories
+                Fpath  = fileparts(first_match);
+                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+                clear Fpath Ffile Fext
+            else
+                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+            end
+        end
+    end
+
+end
+
+%% Make a copy of analysisdir in sourcedir
+function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
+
+    if bClone2Source
+        if ~isempty(nii_files)
+            for iFile=1:length(nii_files)
+                % replace 'analysis' by 'source'
+                [iStart, iEnd] = regexp(nii_files{iFile}, 'analysis');
+                DestPath = [nii_files{iFile}(1:iStart-1) 'source' nii_files{iFile}(iEnd+1:end)];
+                xASL_Copy(nii_files{iFile}, DestPath, true);
+                % do the same for other extensions
+                Extensions = {'.json' '_parms.json'};
+                for iExt=1:length(Extensions)
+                    [Fpath, Ffile] = xASL_fileparts(nii_files{iFile});
+                    CopyPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
+                    [Fpath, Ffile] = xASL_fileparts(DestPath);
+                    DestPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
+                    if xASL_exist(CopyPath)
+                        xASL_Copy(CopyPath, DestPath, true);
+                    end
+                end
+            end
+        end
+    end
+
+end
+
+
+%% Shuffle the dynamics
+function [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files
+
+    [~,~,scanExtension] = xASL_fileparts(scanpath);
+    if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
+        % For a PAR/REC files that produces a single ASL4D NIFTI
+        imASL = xASL_io_Nifti2Im(nii_files{1});
+        % If multiple dynamics
+        if size(imASL,4) > 1
+            % Then reshuffle them
+            imASLreordered = zeros(size(imASL));
+            imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
+            imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
+            xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASLreordered);
+        end
+    end
+    
+    % Merge NIfTIs if there are multiples
+    % For ASL or M0, merge multiple files
+    if length(nii_files)>1
+        if ~isempty(strfind(scan_name,'ASL4D'))
+            nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
+        elseif  ~isempty(strfind(scan_name,'M0'))
+            nii_files = xASL_bids_MergeNifti(nii_files, 'M0');
+        end
+    end
+    
+    % Extract relevant parameters from nifti header and append to summary file
+    summary_line = xASL_imp_AppendNiftiParameters(nii_files);
+    globalCounts.converted_scans(iSubject, iSession, iScan) = 1;
+
 end
 
 

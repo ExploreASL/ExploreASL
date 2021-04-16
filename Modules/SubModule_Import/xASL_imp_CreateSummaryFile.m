@@ -1,16 +1,14 @@
-function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, scanNames, summary_lines, fid_summary)
+function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary)
 %xASL_imp_CreateSummaryFile Create summary file.
 %
-% FORMAT: xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, subjectIDs, visitIDs, scanNames, summary_lines, nSubjects, nVisits, nSessions, fid_summary)
+% FORMAT: xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary)
 % 
 % INPUT:
 %   imPar             - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %   numOf             - Struct defining the number of subjects, visists, sessions, scans etc. (REQUIRED, STRUCT)
 %   listsIDs          - Struct defining different ID lists (REQUIRED, STRUCT)
 %   PrintDICOMFields  - Print DICOM fields (REQUIRED, CELL ARRAY)
-%   converted_scans   - Converted scans (REQUIRED)
-%   skipped_scans     - Skipped scans (REQUIRED)
-%   missing_scans     - Missing scans (REQUIRED)
+%   globalCounts      - Converted, skipped & missing scans (REQUIRED, STRUCT)
 %   scanNames         - Scan names (REQUIRED, CELL ARRAY)
 %   summary_lines     - Summary lines (REQUIRED, CELL ARRAY)
 %   fid_summary       - File ID summary (REQUIRED, INTEGER)
@@ -21,7 +19,7 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, co
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Create summary file.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, converted_scans, skipped_scans, missing_scans, subjectIDs, visitIDs, scanNames, summary_lines, nSubjects, nVisits, nSessions, fid_summary);
+% EXAMPLE:     xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -58,7 +56,7 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, co
 		for iSubject=1:nSubjects
 			for iVisit=1:nVisits
 				for iSession=1:nSessions
-					if converted_scans(iSubject, iVisit, iSession, iScan) || skipped_scans(iSubject, iVisit, iSession, iScan) || missing_scans(iSubject, iVisit, iSession, iScan)
+					if globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) || globalCounts.skipped_scans(iSubject, iVisit, iSession, iScan) || globalCounts.missing_scans(iSubject, iVisit, iSession, iScan)
 						fprintf(fid_summary,'"%s","%s","%s","%s"%s,\n', subjectIDs{iSubject}, visitIDs{iVisit}, imPar.sessionNames{iSession}, scanNames{iScan}, summary_lines{iSubject, iVisit, iSession, iScan});
 					end
 				end
@@ -67,8 +65,8 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, co
 	end
 	fprintf(fid_summary,'\n');
 	
-	nMissing = sum(missing_scans(:));
-	nSkipped = sum(skipped_scans(:));
+	nMissing = sum(globalCounts.missing_scans(:));
+	nSkipped = sum(globalCounts.skipped_scans(:));
 	
 	%% Report totals
     
@@ -82,17 +80,17 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, co
 	for iSubject=1:nSubjects
 		for iVisit=1:nVisits
 			fprintf(fid_summary,'"%s"', [subjectIDs{iSubject} visitIDs{iVisit}]);
-			fprintf(fid_summary,',%d',sum(converted_scans(iSubject,:,:,:)));
+			fprintf(fid_summary,',%d',sum(globalCounts.converted_scans(iSubject,:,:,:)));
 			
 			for iSession=1:nSessions
 				fprintf(fid_summary,',"');
-				fprintf(fid_summary,'%s ',scanNames{logical(missing_scans(iSubject, iVisit, iSession,:))});
+				fprintf(fid_summary,'%s ',scanNames{logical(globalCounts.missing_scans(iSubject, iVisit, iSession,:))});
 				fprintf(fid_summary,'"');
 			end
 			
 			for iSession=1:nSessions
 				fprintf(fid_summary,',"');
-				fprintf(fid_summary,'%s ',scanNames{logical(skipped_scans(iSubject, iVisit, iSession,:))});
+				fprintf(fid_summary,'%s ',scanNames{logical(globalCounts.skipped_scans(iSubject, iVisit, iSession,:))});
 				fprintf(fid_summary,'"');
 			end
 			
