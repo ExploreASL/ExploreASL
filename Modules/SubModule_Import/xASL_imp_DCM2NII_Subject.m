@@ -35,16 +35,6 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
 
     %% Extract structs
     
-    % Extract ID struct
-    vSubjectIDs = listsIDs.vSubjectIDs;
-    vVisitIDs = listsIDs.vVisitIDs;
-    vSessionIDs = listsIDs.vSessionIDs;
-    vScanIDs = listsIDs.vScanIDs;
-    subjectIDs = listsIDs.subjectIDs;
-    visitIDs = listsIDs.visitIDs;
-    sessionIDs = listsIDs.sessionIDs;
-    scanIDs = listsIDs.scanIDs;
-    
     % Extract number of struct
     nVisits = numOf.nVisits;
     nSessions = numOf.nSessions;
@@ -60,14 +50,14 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
     %% Run DCM2NII for one individual subject
     
     separatorline = repmat(char('+'),1,80);
-    subjectID = subjectIDs{iSubject};
+    subjectID = listsIDs.subjectIDs{iSubject};
 
     for iVisit=1:nVisits
-        visitID = visitIDs{iVisit};
+        visitID = listsIDs.visitIDs{iVisit};
 
         % convert visit ID to a suitable name
         if size(imPar.tokenVisitAliases,2)==2
-            iAlias = find(~cellfun(@isempty,regexp(visitIDs{iVisit},imPar.tokenVisitAliases(:,1),'once')));
+            iAlias = find(~cellfun(@isempty,regexp(listsIDs.visitIDs{iVisit},imPar.tokenVisitAliases(:,1),'once')));
             if ~isempty(iAlias)
                 imPar.visitNames{iVisit} = imPar.tokenVisitAliases{iAlias,2};
             end
@@ -95,7 +85,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
 
         % loop through all sessions
         for iSession=1:nSessions
-            sessionID = sessionIDs{iSession};
+            sessionID = listsIDs.sessionIDs{iSession};
 
             % convert session ID to a suitable name
             if size(imPar.tokenSessionAliases,2)==2
@@ -106,7 +96,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
             end
 
             for iScan=1:nScans
-                scanID = scanIDs{iScan};
+                scanID = listsIDs.scanIDs{iScan};
                 summary_line = [];
                 first_match = [];
                 summary_lines{iSubject,iVisit,iSession,iScan} = 'n/a';
@@ -147,7 +137,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
                 end
 
                 % now pick the matching one from the folder list
-                iMatch = find(strcmp(vSubjectIDs,subjectID) & strcmp(vVisitIDs, xASL_adm_CorrectName(visitID,2,'_')) & strcmp(vSessionIDs,sessionID) & strcmpi(vScanIDs,scanID) ); % only get the matching session
+                iMatch = find(strcmp(listsIDs.vSubjectIDs,subjectID) & strcmp(listsIDs.vVisitIDs, xASL_adm_CorrectName(visitID,2,'_')) & strcmp(listsIDs.vSessionIDs,sessionID) & strcmpi(listsIDs.vScanIDs,scanID) ); % only get the matching session
                 if isempty(iMatch)
                     % only report as missing if we need a scan for each session (i.e. ASL)
                     if sum(globalCounts.converted_scans(iSubject,iVisit,:,iScan))==0
