@@ -232,7 +232,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
                     end
 
                     %% In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
-                    [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files);
+                    [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
                     
                     
                 end
@@ -336,7 +336,7 @@ end
 
 
 %% Shuffle the dynamics
-function [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files
+function [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
 
     [~,~,scanExtension] = xASL_fileparts(scanpath);
     if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
