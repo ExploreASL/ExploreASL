@@ -45,6 +45,9 @@ if nargin<1 || isempty(outputPath);     error('OutputPath missing...');     end
 if nargin<2 || isempty(bCompileSPM);    bCompileSPM = true;                 end
 if nargin<3 || isempty(markAsLatest);   markAsLatest = true;                end
 
+% Mana file handle issues
+close all
+
 % Initialize Explore ASL
 x = ExploreASL_Initialize;
 
@@ -149,6 +152,9 @@ mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.m
 
 % Copy version file to compilation folder
 xASL_Copy(AddExploreASLversion, fullfile(outputPath, VersionPath{1}), 1);
+
+% Zip the compilation
+zip([AddExploreASLversion '.zip'],AddExploreASLversion);
 
 %% 8) Copy .bat file for Windows compilation
 createBat = false;
