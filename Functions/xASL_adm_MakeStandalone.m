@@ -51,11 +51,8 @@ close all
 % Initialize Explore ASL
 x = ExploreASL_Initialize;
 
-% Get current directory
-ExploreASLPath = x.MyPath;
-
 %% 2) Define Versioning
-VersionPath = xASL_adm_GetFileList(ExploreASLPath, '^VERSION_.*', 'List', [0 Inf]);
+VersionPath = xASL_adm_GetFileList(x.MyPath, '^VERSION_.*', 'List', [0 Inf]);
 if ~isempty(VersionPath)
     xASLVersion = VersionPath{1}(9:end);
 else
@@ -106,7 +103,7 @@ warning('off','MATLAB:rmpath:DirNotFound');
 FoldersNot2Deploy = {'CustomScripts','Development','GitHub','TestDataSet',fullfile('External','DIP'),...
     fullfile(spm('Dir'),'toolbox', 'FieldMap'),fullfile(spm('Dir'),'toolbox', 'SRender')};
 for iFolder=1:length(FoldersNot2Deploy)
-    rmpath(genpath(fullfile(ExploreASLPath, FoldersNot2Deploy{iFolder})));
+    rmpath(genpath(fullfile(x.MyPath, FoldersNot2Deploy{iFolder})));
 end
 warning('on','MATLAB:rmpath:DirNotFound');
 
@@ -120,41 +117,43 @@ if bCompileSPM
     DummyDir = fullfile(fileparts(outputPath), spmCompilationName);
     xASL_adm_CreateDir(DummyDir);
     spm_make_standalone(DummyDir);
+    zip([fullfile(DummyDir) '.zip'],fullfile(DummyDir));
+    xASL_delete(DummyDir, true);
 end
-
-if ~isempty(VersionPath)
-    AddExploreASLversion = fullfile(ExploreASLPath,VersionPath{1});
-else
-    AddExploreASLversion = '';
-end
-
 
 %% 7) Run ExploreASL compilation
 fprintf('Compiling ExploreASL\n');
 
+if ~isempty(VersionPath)
+    AddExploreASLversion = fullfile(x.MyPath,VersionPath{1});
+else
+    AddExploreASLversion = '';
+end
+
 % Compilation
 mcc('-m', '-C', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
-    fullfile(ExploreASLPath,'ExploreASL_Master.m'),...
+    fullfile(x.MyPath,'ExploreASL_Master.m'),...
     '-d', fullfile(outputPath),...
     '-o', Version,...
     '-N', opts{:},...
     '-a', spm('Dir'),... % For SPM support
     '-a', AddExploreASLversion,...
-    '-a', fullfile(ExploreASLPath,'Functions'),...
-    '-a', fullfile(ExploreASLPath,'mex'),...
-    '-a', fullfile(ExploreASLPath,'Maps'),...
-    '-a', fullfile(ExploreASLPath,'Modules'),...
-    '-a', fullfile(ExploreASLPath,'Modules', 'SubModule_Structural'),...
-    '-a', fullfile(ExploreASLPath,'Modules', 'SubModule_ASL'),...
-    '-a', fullfile(ExploreASLPath,'Modules', 'SubModule_Population'),...
-    '-a', fullfile(ExploreASLPath,'External', 'isnear'),...
-    '-a', fullfile(ExploreASLPath,'External', 'Atlases'));
+    '-a', fullfile(x.MyPath,'Functions'),...
+    '-a', fullfile(x.MyPath,'mex'),...
+    '-a', fullfile(x.MyPath,'Maps'),...
+    '-a', fullfile(x.MyPath,'Modules'),...
+    '-a', fullfile(x.MyPath,'Modules', 'SubModule_Structural'),...
+    '-a', fullfile(x.MyPath,'Modules', 'SubModule_ASL'),...
+    '-a', fullfile(x.MyPath,'Modules', 'SubModule_Population'),...
+    '-a', fullfile(x.MyPath,'External', 'isnear'),...
+    '-a', fullfile(x.MyPath,'External', 'Atlases'));
 
 % Copy version file to compilation folder
 xASL_Copy(AddExploreASLversion, fullfile(outputPath, VersionPath{1}), 1);
 
 % Zip the compilation
-zip([AddExploreASLversion '.zip'],AddExploreASLversion);
+zip([fullfile(outputPath) '.zip'],fullfile(outputPath));
+xASL_delete(outputPath, true);
 
 %% 8) Copy .bat file for Windows compilation
 createBat = false;
