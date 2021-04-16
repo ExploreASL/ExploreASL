@@ -35,11 +35,6 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
 
     %% Extract structs
     
-    % Extract number of struct
-    nVisits = numOf.nVisits;
-    nSessions = numOf.nSessions;
-    nScans = numOf.nScans;
-    
     % Extract settings struct
     bUseVisits = settings.bUseVisits;
     bClone2Source = settings.bClone2Source;
@@ -52,7 +47,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
     separatorline = repmat(char('+'),1,80);
     subjectID = listsIDs.subjectIDs{iSubject};
 
-    for iVisit=1:nVisits
+    for iVisit=1:numOf.nVisits
         visitID = listsIDs.visitIDs{iVisit};
 
         % convert visit ID to a suitable name
@@ -84,7 +79,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
         fprintf('%s\nImporting subject=%s:   \n',separatorline,[subjectID imPar.visitNames{iVisit}]); % display subject-visit ID
 
         % loop through all sessions
-        for iSession=1:nSessions
+        for iSession=1:numOf.nSessions
             sessionID = listsIDs.sessionIDs{iSession};
 
             % convert session ID to a suitable name
@@ -95,15 +90,15 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
                 end
             end
 
-            for iScan=1:nScans
+            for iScan=1:numOf.nScans
                 scanID = listsIDs.scanIDs{iScan};
                 summary_line = [];
                 first_match = [];
                 summary_lines{iSubject,iVisit,iSession,iScan} = 'n/a';
 
                 if ~imPar.bVerbose % if not verbose, track % progress
-                    CounterN = (iSession-1)*nScans+iScan;
-                    CounterT = nSessions*nScans;
+                    CounterN = (iSession-1)*numOf.nScans+iScan;
+                    CounterT = numOf.nSessions*numOf.nScans;
                     xASL_TrackProgress(CounterN, CounterT);
                 end
 
