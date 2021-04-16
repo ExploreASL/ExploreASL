@@ -140,7 +140,7 @@ if bTest(4)
 					system(['rm -rf ' fullfile(ListFolders{iList}, 'derivatives')]);
 				end
 			else
-				warning('Here we expect a unix-ish system');
+				% Use xASL_delete on windows
                 diary('off');
                 fclose('all'); % ensure that no file is locked
                 xASL_delete(fullfile(ListFolders{iList}, 'derivatives'),true);
