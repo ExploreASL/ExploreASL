@@ -23,19 +23,6 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, gl
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-
-    %% Extract structs
-    
-    % Extract ID struct
-    subjectIDs = listsIDs.subjectIDs;
-    visitIDs = listsIDs.visitIDs;
-    
-    % Extract number of struct
-    nSubjects = numOf.nSubjects;
-    nVisits = numOf.nVisits;
-    nSessions = numOf.nSessions;
-    nScans = numOf.nScans;
-
     
     %% Create summary file
 	summary_filepath = fullfile(imPar.AnalysisRoot, 'import_summary.csv');
@@ -52,12 +39,12 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, gl
 	end
 	fprintf(fid_summary,'\n');
 	
-	for iScan=1:nScans
-		for iSubject=1:nSubjects
-			for iVisit=1:nVisits
-				for iSession=1:nSessions
+	for iScan=1:numOf.nScans
+		for iSubject=1:numOf.nSubjects
+			for iVisit=1:numOf.nVisits
+				for iSession=1:numOf.nSessions
 					if globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) || globalCounts.skipped_scans(iSubject, iVisit, iSession, iScan) || globalCounts.missing_scans(iSubject, iVisit, iSession, iScan)
-						fprintf(fid_summary,'"%s","%s","%s","%s"%s,\n', subjectIDs{iSubject}, visitIDs{iVisit}, imPar.sessionNames{iSession}, scanNames{iScan}, summary_lines{iSubject, iVisit, iSession, iScan});
+						fprintf(fid_summary,'"%s","%s","%s","%s"%s,\n', listsIDs.subjectIDs{iSubject}, listsIDs.visitIDs{iVisit}, imPar.sessionNames{iSession}, scanNames{iScan}, summary_lines{iSubject, iVisit, iSession, iScan});
 					end
 				end
 			end
@@ -77,18 +64,18 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, gl
 	fprintf(fid_summary,[',SkippedScans (n=' num2str(nSkipped) ')\n']);
     
 	% then subjects row-by-row
-	for iSubject=1:nSubjects
-		for iVisit=1:nVisits
-			fprintf(fid_summary,'"%s"', [subjectIDs{iSubject} visitIDs{iVisit}]);
+	for iSubject=1:numOf.nSubjects
+		for iVisit=1:numOf.nVisits
+			fprintf(fid_summary,'"%s"', [listsIDs.subjectIDs{iSubject} listsIDs.visitIDs{iVisit}]);
 			fprintf(fid_summary,',%d',sum(globalCounts.converted_scans(iSubject,:,:,:)));
 			
-			for iSession=1:nSessions
+			for iSession=1:numOf.nSessions
 				fprintf(fid_summary,',"');
 				fprintf(fid_summary,'%s ',scanNames{logical(globalCounts.missing_scans(iSubject, iVisit, iSession,:))});
 				fprintf(fid_summary,'"');
 			end
 			
-			for iSession=1:nSessions
+			for iSession=1:numOf.nSessions
 				fprintf(fid_summary,',"');
 				fprintf(fid_summary,'%s ',scanNames{logical(globalCounts.skipped_scans(iSubject, iVisit, iSession,:))});
 				fprintf(fid_summary,'"');

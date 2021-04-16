@@ -262,7 +262,7 @@ end
 
 
 %% Store JSON files
-function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, settings.bUseDCMTK, pathDcmDict)
+function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, bUseDCMTK, pathDcmDict)
 
     for iPath=1:length(SavePathJSON)
         if exist(SavePathJSON{iPath}, 'file') && ~isempty(first_match)
@@ -273,10 +273,10 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
                 parms = [];
             elseif imPar.bMatchDirectories
                 Fpath  = fileparts(first_match);
-                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON{iPath}, imPar.dcmExtFilter, settings.bUseDCMTK, pathDcmDict);
+                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
                 clear Fpath Ffile Fext
             else
-                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON{iPath}, imPar.dcmExtFilter, settings.bUseDCMTK, pathDcmDict);
+                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
             end
         end
     end
@@ -284,9 +284,9 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
 end
 
 %% Make a copy of analysisdir in sourcedir
-function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, settings.bClone2Source)
+function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
 
-    if settings.bClone2Source
+    if bClone2Source
         if ~isempty(nii_files)
             for iFile=1:length(nii_files)
                 % replace 'analysis' by 'source'
