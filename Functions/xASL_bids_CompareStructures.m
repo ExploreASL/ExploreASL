@@ -557,12 +557,32 @@ function [differences,identical,dn] = compareNIFTI(differences,identical,bPrintR
             sizeB = size(imageB);
             if length(sizeA)==length(sizeB)
                 if sum(sizeA==sizeB)==length(sizeA)
+                    % Get RMSE
                     RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
+                    % Get MIN
+                    if length(size(imageA))>=3
+                        minA = min(min(min(min(imageA))));
+                        maxA = max(max(max(max(imageA))));
+                    else
+                        minA = NaN;
+                        maxA = NaN;
+                    end
+                    % Get MAX
+                    if length(size(imageB))>=3
+                        minB = min(min(min(min(imageB))));
+                        maxB = max(max(max(max(imageB))));
+                    else
+                        minB = NaN;
+                        maxB = NaN;
+                    end
+                    
                     if (RMSE>threshRmseNii)
                         % Report function which prints to the console
                         if bPrintReport
                             fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                            fprintf('\t\t\t\tRMSE (%d) of NIFTIs above threshold.\n',RMSE);
+                            fprintf('\t\t\t\tRMSE     (%d)\n',RMSE);
+                            fprintf('\t\t\t\tMIN-DIFF (%d)\n',minA-minB);
+                            fprintf('\t\t\t\tMAX-DIFF (%d)\n',maxA-maxB);
                         end
                         identical = false;
 
