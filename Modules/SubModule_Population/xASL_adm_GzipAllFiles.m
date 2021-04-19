@@ -1,17 +1,19 @@
-function xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
+function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, EXTERNAL)
 %xASL_adm_GzipAllFiles Zip files or folders
 %
 % FORMAT: xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
 %
 % INPUT:
-%   x           - x structure containing all input parameters (REQUIRED)
-%   bFolder     - boolean, true for zipping complete folders rather than
+%   ROOT        - Root path of the folder structure you want to gzip recursively (REQUIRED)
+%   bFolder     - Boolean, true for zipping complete folders rather than
 %                 individual files (Unix only, OPTIONAL, DEFAULT=false)
-%   bUseLinux   - boolean, true for using Unix's own filesystem and Gzip functionality.
+%   bUseLinux   - Boolean, true for using Unix's own filesystem and Gzip functionality.
 %                 Has a much faster i/o than Matlab's i/o. Assumes that
 %                 gzip is installed on Linux/MacOS (which is a fair
 %                 assumption). (OPTIONAL, DEFAULT = true for Unix (Linux/Mac) and false
 %                 otherwise (e.g. pc/Windows)
+%   EXTERNAL    - Path to external Gzip tools like SuperGzip (.../ExploreASL/External) 
+%                 (OPTIONAL, DEFAULT = [])
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function zips NIfTI files or folders recursively and deletes
@@ -24,8 +26,8 @@ function xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
 
     %% ----------------------------------------------------
     %% 0) Admin
-    if nargin<1 || isempty(x)
-        error('Please insert an x struct...');
+    if nargin<1 || isempty(ROOT)
+        error('Please insert an root path...');
     end
     if nargin<2 || isempty(bFolder)
         bFolder = false;
@@ -35,48 +37,53 @@ function xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
     elseif nargin<3 || isempty(bUseLinux)
         bUseLinux = false;
     end
+    if nargin<4 || isempty(EXTERNAL)
+        EXTERNAL = [];
+    end
 
     %% ----------------------------------------------------
     %% 1) Faster unix version, using OS file system
     if bUseLinux
-        PathToSearch = xASL_adm_UnixPath(x.D.ROOT);
+        PathToSearch = xASL_adm_UnixPath(ROOT);
         system(['for i in `find ' PathToSearch '/* | grep -E \.nii$`; do gzip -1 -f -q -v "$i"; done'], '-echo');
         return;
     else
         %% 2) Otherwise use the multithreaded SuperGzip for Windows
-        PathList = xASL_adm_GetFileList(x.D.ROOT, '^.*\.(nii)$', 'FPListRec', [0 Inf], false);
-        fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
-        numCores = feature('numcores');
-        % Get SuperGzip path
-        PathToSuperGzip = fullfile(fullfile(x.MyPath,'External'), 'SuperGZip', 'SuperGZip_Windows.exe');
-        % Define SuperGzip command
-        command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' x.D.ROOT ' *.nii'];
-        % Run script
-        [exit_code,system_result] = system(command);
-        % Check if SuperGzip was successful
-        if exit_code == 0
-            fprintf('Gzipping Niftis Successful...\n')
-        else
-            warning('An error occurred while using SuperGzip: %s', system_result)
+        if ~isempty(EXTERNAL)
+            PathList = xASL_adm_GetFileList(ROOT, '^.*\.(nii)$', 'FPListRec', [0 Inf], false);
+            fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+            numCores = feature('numcores');
+            % Get SuperGzip path
+            PathToSuperGzip = fullfile(EXTERNAL, 'SuperGZip', 'SuperGZip_Windows.exe');
+            % Define SuperGzip command
+            command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' ROOT ' *.nii'];
+            % Run script
+            [exit_code,system_result] = system(command);
+            % Check if SuperGzip was successful
+            if exit_code == 0
+                fprintf('Gzipping Niftis Successful...\n')
+            else
+                warning('An error occurred while using SuperGzip: %s', system_result)
+            end
         end
     end
 
     %% ----------------------------------------------------
     %% 2) Slower Matlab version
     if bFolder
-        PathList = xASL_adm_GetFileList(x.D.ROOT, '^.*$', 'FPList', [0 Inf], true);
+        PathList = xASL_adm_GetFileList(ROOT, '^.*$', 'FPList', [0 Inf], true);
         if ~isempty(PathList)
-            fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' folders']);
+            fprintf('%s\n',['G-zZzZipping ' num2str(length(PathList)) ' folders']);
         end
     else
-        PathList = xASL_adm_GetFileList(x.D.ROOT, '^.*\.(nii|wav|bmp)$', 'FPListRec', [0 Inf], false);
+        PathList = xASL_adm_GetFileList(ROOT, '^.*\.(nii|wav|bmp)$', 'FPListRec', [0 Inf], false);
         if ~isempty(PathList)
-            fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+            fprintf('%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
         end
     end
     
     if ~isempty(PathList)
-        fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+        fprintf('%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
         fprintf('Progress:   ');
     end
 
