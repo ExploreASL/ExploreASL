@@ -314,6 +314,17 @@ end
 %% Shuffle the dynamics
 function [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
 
+    % Set to true if you want to print information for debug purposes
+    bVerbose = true;
+    
+    % Print NIFTI files
+    if bVerbose
+        fprintf('Shuffle the dynamics...\n');
+        for iNifti = 1:size(nii_files,2)
+            fprintf('%s\n',nii_files{1,iNifti});
+        end
+    end
+
     [~,~,scanExtension] = xASL_fileparts(scanpath);
     if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
         % For a PAR/REC files that produces a single ASL4D NIFTI
