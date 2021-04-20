@@ -25,9 +25,9 @@ xASL_spm_deformations([], PathToTemplate, fullfile(SubjFold, 'Tmp_ghost_resample
 
 
 %Load Images
-GhostTemplate = xASL_io_Nifti2Im('Tmp_ghost_resampled.nii');
+GhostTemplate = xASL_io_Nifti2Im(fullfile(SubjFold,'Tmp_ghost_resampled.nii'));
 Im4D = xASL_io_Nifti2Im(Im4DPath);
-xASL_delete('Tmp_ghost_resampled.nii' );
+xASL_delete(fullfile(SubjFold,'Tmp_ghost_resampled.nii') );
 
 %Create Rois Mask
 SignalMask = GhostTemplate == 1;

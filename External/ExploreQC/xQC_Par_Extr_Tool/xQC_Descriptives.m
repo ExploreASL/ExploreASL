@@ -1,5 +1,5 @@
 
-function [Stats] = xQC_Stats(InputPath, bWM2MAX, C1Path, C2Path, C3Path)
+function [Descriptives] = xQC_Descriptives(InputPath, bWM2MAX, C1Path, C2Path, C3Path)
 % xASL_qc_Stats computes several summary statistics 
 %
 % FORMAT: [Stats] = xASL_qc_Stats(InputPath, C1Path, C2Path, C3Path, WM2MAX)
@@ -76,7 +76,7 @@ MaskNames{end+1} = 'WholeBrain';
 
     
 % Extract summary statistics 
-Stats = struct();
+Descriptives = struct();
 
 % Loop across Segmentations
 for iMask = 1:length(Masks)
@@ -85,26 +85,27 @@ for iMask = 1:length(Masks)
     if ndims(InputImage)==4
         SegmentedImage = bsxfun(@times,InputImage,Masks{iMask}); 
         SortedIm = nonzeros(sort(SegmentedImage(:)));
+
     else 
         SegmentedImage = InputImage(Masks{iMask});
         SortedIm = sort(SegmentedImage(:)); 
         
         % Skewness and kurtosis just on 3D Images
-        Stats.(MaskNames{iMask}).Skewness = (xASL_stat_SumNan((SegmentedImage-xASL_stat_MeanNan(SortedIm)).^3)./length(SortedIm)) ./ (xASL_stat_VarNan(SortedIm).^1.5);
-        Stats.(MaskNames{iMask}).Kurtosis = (xASL_stat_SumNan((SegmentedImage-xASL_stat_MeanNan(SortedIm)).^4)./length(SortedIm)) ./ (xASL_stat_VarNan(SortedIm).^2);
+        Descriptives.(MaskNames{iMask}).Skewness = (xASL_stat_SumNan((SegmentedImage-xASL_stat_MeanNan(SortedIm)).^3)./length(SortedIm)) ./ (xASL_stat_VarNan(SortedIm).^1.5);
+        Descriptives.(MaskNames{iMask}).Kurtosis = (xASL_stat_SumNan((SegmentedImage-xASL_stat_MeanNan(SortedIm)).^4)./length(SortedIm)) ./ (xASL_stat_VarNan(SortedIm).^2);
    
     end 
     % Stats
-    Stats.(MaskNames{iMask}).Mean = xASL_stat_MeanNan(SortedIm);
-    Stats.(MaskNames{iMask}).Median = xASL_stat_MedianNan(SortedIm); 
-    Stats.(MaskNames{iMask}).SD = xASL_stat_StdNan(SortedIm);
-    Stats.(MaskNames{iMask}).Value5 = SortedIm(round(0.05*length(SortedIm)));
-    Stats.(MaskNames{iMask}).Value95 = SortedIm(round(0.95*length(SortedIm)));
+    Descriptives.(MaskNames{iMask}).Mean = xASL_stat_MeanNan(SortedIm);
+    Descriptives.(MaskNames{iMask}).Median = xASL_stat_MedianNan(SortedIm); 
+    Descriptives.(MaskNames{iMask}).SD = xASL_stat_StdNan(SortedIm);
+    Descriptives.(MaskNames{iMask}).Value5 = SortedIm(round(0.05*length(SortedIm)));
+    Descriptives.(MaskNames{iMask}).Value95 = SortedIm(round(0.95*length(SortedIm)));
     
 end 
 % if bWM2MAX is true, compute 
 if bWM2MAX
-    Stats.WM2MAX = Stats.WM.Median/Stats.WholeBrain.Value95;
+    Descriptives.WM2MAX = Descriptives.WM.Median/Descriptives.WholeBrain.Value95;
 end 
 
 

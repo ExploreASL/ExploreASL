@@ -1,0 +1,4 @@
+*.html
+_templates
+_static
+build

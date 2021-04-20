@@ -5,7 +5,7 @@ function [BI_mean, BI_SD] = xQC_BiasIndex(SubjDir, SPMdir, ScanType)
 % INPUT:
 %   SubjDir     - Path to subject directory (REQUIRED)
 %   SPMdir      - Path to directory where SPM is stored (REQUIRED)
-%   ScanType    - Either 'FLAIR' or 'T1w' (REQUIRED)
+%   ScanType    - Either 'FLAIR' or 'T1' (REQUIRED)
 % 
 % OUTPUT:
 %   BI_mean   - Mean Bias Index 

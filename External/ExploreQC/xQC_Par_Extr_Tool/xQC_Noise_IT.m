@@ -5,8 +5,19 @@ function [QC] = XQC_Noise_IT(NiftiPath, Pathc1T1, Pathc2T1, SubjDir, AtlasDir, x
 % Load all the files
 NiftiHDR = xASL_io_ReadNifti(NiftiPath);
 Im = xASL_io_Nifti2Im(NiftiPath);
-pGM = xASL_io_Nifti2Im(Pathc1T1);
-pWM = xASL_io_Nifti2Im(Pathc2T1);
+
+%Reslice GM and WM to Nifti
+xASL_spm_reslice(NiftiPath,Pathc1T1 , [], [], [], fullfile(SubjDir, 'tmp_GM_mask.nii'), 0)
+xASL_spm_reslice(NiftiPath,Pathc2T1 , [], [], [], fullfile(SubjDir, 'tmp_WM_mask.nii'), 0)
+
+%Load GM and WM
+pGM = xASL_io_Nifti2Im(fullfile(SubjDir, 'tmp_GM_mask.nii'));
+pWM = xASL_io_Nifti2Im(fullfile(SubjDir, 'tmp_WM_mask.nii'));
+
+%Delete temporary resliced files
+xASL_delete(fullfile(SubjDir, 'tmp_GM_mask.nii'))
+xASL_delete(fullfile(SubjDir, 'tmp_GM_mask.nii'))
+
 
 %Manage dimensionality, average over the 4Th dimension to handle 4D data
 Im = xASL_stat_MeanNan(Im, 4);
@@ -30,6 +41,11 @@ Im(Im<eps) = eps;
 % make gray/white mutually exclusive
 GMmask = logical(pGM>pWM & pGM>pCSF) & BrainMask;
 WMmask = logical(pWM>pGM & pWM>pCSF) & BrainMask;
+
+
+
+
+
 
 
 
