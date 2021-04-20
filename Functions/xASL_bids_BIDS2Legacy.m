@@ -266,11 +266,13 @@ end
 
 %% 10. Create DataPar.json
 
+% Write DataParFile if it does not exist already
+if (~xASL_exist(fullfile(pathLegacy, 'dataPar.json'),'file'))==2
+    spm_jsonwrite(fullfile(pathLegacy, 'dataPar.json'), dataPar);
+end
+
 % Overwrite DataParPath in x structure
 fprintf('Overwriting x.DataParPath...\n');
-
-% Write DataParFile
-spm_jsonwrite(fullfile(pathLegacy, 'DataPar.json'), dataPar);
 
 % Add the path to the dataPar.x struct that we return to the Master script
 dataPar.x.DataParPath = fullfile(pathLegacy, 'DataPar.json');
