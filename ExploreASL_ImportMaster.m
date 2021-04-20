@@ -73,30 +73,13 @@ function [x] = xASL_Import_BIDS2LEGACY(x)
                 fclose('all'); % ensure that no file is locked
                 xASL_delete(fullfile(ListFolders{iList}, 'derivatives'),true);
             end
-            
-            % Default dataPar.json for the testing
-            warning('Are we supposed to write more fields to the DataPar file here?');
-            if isfield(x,'DataParPath')
-                dataPar.x.DataParPath = x.DataParPath;
-            else
-                dataPar.x.DataParPath = '';
-            end
-            if isfield(x,'subject_regexp')
-                dataPar.x.subject_regexp = x.subject_regexp;
-            else
-                dataPar.x.subject_regexp = '^sub-.*$';
-            end
-            if isfield(x,'DELETETEMP')
-                dataPar.x.DELETETEMP = x.DELETETEMP;
-            else
-                dataPar.x.DELETETEMP = 1;
-            end
 
             % Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
             fListDataPar = xASL_adm_GetFileList(ListFolders{iList},'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
             if length(fListDataPar) < 1
+                fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
                 % Fill the dataPars with default parameters
-                dataPar = xASL_bids_BIDS2Legacy(thisRootFolder, 1, dataPar);
+                dataPar = xASL_bids_BIDS2Legacy(thisRootFolder, 1, []);
             else
                 % Fill the dataPars with the provided parameters
                 dataPar = spm_jsonread(fListDataPar{1});
