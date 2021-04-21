@@ -108,7 +108,6 @@ if ~isfield(x.S,'NamesROI')
 	return;
 end
 
-
 %% Manage masking
 if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
     x.S.bMasking = [1 1 1 1]; % default
@@ -177,21 +176,30 @@ else
 end
 
 %% Define number of sessions to use
-NoSessions = 0;
 SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*_ASL_\d*\.nii'], 'FPList', [0 Inf]);
-MaskedSessions = cellfun('isempty',strfind(SessionList,'masked')); % find qCBF_masked
-SessionList_qCBF = SessionList(MaskedSessions,:); % include only qCBF
 
-if isempty(SessionList_qCBF) % search for subjects instead of sessions
+if isempty(SessionList) % search for subjects instead of sessions
     if isempty(xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*\.nii'], 'FPList', [0 Inf]))
         fprintf('%s\n','No session or subject files found');
         return;
     end
     nSessions = 1;
     NoSessions = 1;
+else % continu with defining sessions from SessionList
+    MaskedSessions = cellfun('isempty',strfind(SessionList,[ x.S.InputDataStr '_masked'])); % find qCBF_masked to exclude from SessionList
+    SessionListSUBJECTS_qCBF = SessionList(MaskedSessions,:); % include only qCBF in SessionList
+    for n = 1:size(x.SUBJECTS,2)
+        SessionsSingleSUBJECT = ~cellfun('isempty',strfind(SessionListSUBJECTS_qCBF,[x.SUBJECTS{n}])); % Check how many qCBF files are present of each subject
+        Sessions(n,1) = sum(SessionsSingleSUBJECT); % Define number of sessions as amount of qCBF files per subject
+    end
+    nSessions = min(Sessions); % Use minimum amount of sessions for processing
+    NoSessions = 0;
+    
+    CompareSessions = ones(size(x.SUBJECTS,2),1) .* nSessions; % Create array to check if amount of sessions is similar for each subject
+    if ~isequal(Sessions,CompareSessions) % Check if amount of sessions is similar for each subject
+        warning('Amount of Sessions per Subject different, using minimum Sessions for processing')
+    end
 end
-
-nSessions = numel(SessionList_qCBF); % define number of sessions
 
 %% Determine whether group mask exists
 if x.S.InputNativeSpace
@@ -241,13 +249,14 @@ bDoOnceROILR    = 1;
 bDoOnceROIStart = 1;
 
 for iSubject=1:x.nSubjects
+    
 	for iSess=1:nSessions
         
 		% ID (which name, group etc), all for identification
 		% Subject_session definition
 		DataIm = NaN;
 		SubjSess = (iSubject-1)* nSessions +iSess;
-		if NoSessions
+		if NoSessions == 1
 			x.S.SUBJECTID{SubjSess,1} = x.SUBJECTS{iSubject};
             TotalRows = x.nSubjects;
 		else
