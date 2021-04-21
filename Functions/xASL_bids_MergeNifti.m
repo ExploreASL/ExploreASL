@@ -1,4 +1,4 @@
-function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
+function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %xASL_bids_MergeNifti Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible
 %
 % FORMAT: NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
@@ -9,6 +9,7 @@ function NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %
 % OUTPUT:
 % NiftiPaths   - return either the same list of files if nothing was done or the path to the newly created file
+% ASLContext   - ASL context, for example [deltam,m0] (CHAR ARRAY)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function takes a list of M0 or ASL4D files and concatenates them together in a longer 4D volume if possible
@@ -54,6 +55,9 @@ else
 	end
 end
 
+% Fallback
+ASLContext = '';
+
 if length(NiftiPaths)>1
 	switch (seqType)
     case 'M0'
@@ -62,7 +66,7 @@ if length(NiftiPaths)>1
 
     case 'ASL'
 		% Run the GE merging procedure first, that returns an empty path if not all conditions are met
-		pathOut = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths);
+		[pathOut,ASLContext] = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths);
 		
         % Merges Siemens ASL file if they have the known pattern of filenames
 		if isempty(pathOut)
@@ -153,7 +157,7 @@ end
 
 %% ==========================================================================
 %% ==========================================================================
-function pathOut = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths)
+function [pathOut,ASLContext] = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths)
 %xASL_bids_MergeNifti_GEASLFiles merge any ASL files in alphabetical order, but also load and use the GE ASL 
 % tags and save them to a correct ASL context
 %
@@ -192,31 +196,7 @@ for iFile=1:length(NiftiPaths)
 	end
 	
 	% Starts looking for the correct image type
-	imageType = '';
-
-	% ["ImageType": ["DERIVED", "PRIMARY", "ASL", "PERFUSION", "ASL"] - deltaM
-	if length(jsonPar.ImageType) == 5 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
-			strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION') && strcmpi(jsonPar.ImageType{5},'ASL')
-		imageType = 'deltam';
-	end
-	
-	% ["DERIVED", "PRIMARY", "ASL", "PERFUSION_ASL"] - deltaM
-	if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
-			strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION_ASL')
-		imageType = 'deltam';
-	end
-	
-	% ["ORIGINAL", "PRIMARY", "ASL"] - M0
-	if length(jsonPar.ImageType) == 3 && strcmpi(jsonPar.ImageType{1},'ORIGINAL') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
-			strcmpi(jsonPar.ImageType{3},'ASL')
-		imageType = 'm0scan';
-	end
-	
-	% ["DERIVED", "PRIMARY", "CBF", "CBF"] - CBF
-	if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
-			strcmpi(jsonPar.ImageType{3},'CBF') && strcmpi(jsonPar.ImageType{4},'CBF')
-		imageType = 'cbf';
-	end
+	imageType = xASL_bids_determineImageTypeGE(jsonPar);
 
 	% If imageType is not identified for all scans, then skip this one
 	if isempty(imageType)

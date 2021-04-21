@@ -343,18 +343,19 @@ function [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_Shuf
     % For ASL or M0, merge multiple files
     if length(nii_files)>1
         if ~isempty(strfind(scan_name,'ASL4D'))
-            nii_files = xASL_bids_MergeNifti(nii_files, 'ASL');
+            [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'ASL');
         elseif  ~isempty(strfind(scan_name,'M0'))
-            nii_files = xASL_bids_MergeNifti(nii_files, 'M0');
+            [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0');
         end
     end
     
-    % Sort M0 & ASL within ASL4D NIfTIs based on Instance number
-    [tableImTypeInNum, sortNIfTIs] = xASL_imp_DCM2NII_Subject_ImageTypeVsInstanceNumber(scanpath); % Requires InstanceNumber from dcmtk
+    % Sort M0 & ASL within ASL4D NIfTIs based on Instance number (only applies to GE scans right now)
+    [~, sortNIfTIs, realASLContext] = xASL_imp_DCM2NII_Subject_ImageTypeVsInstanceNumber(scanpath); % Requires InstanceNumber from dcmtk
     if sortNIfTIs
-        % Modify NIfTI here ?
-        
-        % Work with ASLContext & imageType from xASL_bids_MergeNifti ?
+        if ~strcmp(ASLContext,realASLContext)
+            fprintf('Something could be wrong with the ASL context...\n');
+        end
+        % Fix NIfTI here...
         
     end
     
@@ -367,7 +368,10 @@ end
 
 
 %% Get a sorted table of the image type and instance numbers
-function [tableImTypeInNum, sortNIfTIs] = xASL_imp_DCM2NII_Subject_ImageTypeVsInstanceNumber(scanpath)
+function [tableImTypeInNum, sortNIfTIs, ASLContext] = xASL_imp_DCM2NII_Subject_ImageTypeVsInstanceNumber(scanpath)
+
+    % Fallback
+    ASLContext = '';
 
     % Get all files in directory (we expect a directory of DCM files)
     tableImTypeInNum = xASL_adm_GetFileList(scanpath,'',false);
@@ -398,21 +402,37 @@ function [tableImTypeInNum, sortNIfTIs] = xASL_imp_DCM2NII_Subject_ImageTypeVsIn
             else
                 tableImTypeInNum{iDCM,3} = [];
             end
+            % Determine simplified image type
+            if ~isempty(tableImTypeInNum{iDCM,2})
+                tableImTypeInNum{iDCM,4} = xASL_bids_determineImageTypeGE(iHeader);
+            else
+                tableImTypeInNum{iDCM,4} = [];
+            end
         end
     end
     
     % Sort rows
     if sortNIfTIs && (length(size(tableImTypeInNum))>1)
         emptyFields = cellfun(@isempty,tableImTypeInNum);
+        % Sort the table
         if sum(emptyFields(:,3))<1
             tableImTypeInNum = sortrows(tableImTypeInNum,2);
+            % Determine the ASLContext
+            ASLContextCell = unique([tableImTypeInNum(:,4)]);
+            for iContext = 1:size(ASLContextCell,1)
+                ASLContext = [ASLContext ',' ASLContextCell{iContext,1}];
+            end
+            ASLContext = ASLContext(2:end);
         else
             fprintf('Can not sort DICOMs, because at least one Instance Number is missing...\n');
             sortNIfTIs = false;
         end
     end
+    
+    
 
 end
+
 
 
 
