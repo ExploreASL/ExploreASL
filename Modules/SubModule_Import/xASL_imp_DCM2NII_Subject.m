@@ -349,9 +349,68 @@ function [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_Shuf
         end
     end
     
+    % Sort M0 & ASL within ASL4D NIfTIs based on Instance number
+    [tableImTypeInNum, sortNIfTIs] = xASL_imp_DCM2NII_Subject_ImageTypeVsInstanceNumber(scanpath); % Requires InstanceNumber from dcmtk
+    if sortNIfTIs
+        % Modify NIfTI here ?
+        
+        % Work with ASLContext & imageType from xASL_bids_MergeNifti ?
+        
+    end
+    
+    
     % Extract relevant parameters from nifti header and append to summary file
     summary_line = xASL_imp_AppendNiftiParameters(nii_files);
     globalCounts.converted_scans(iSubject, iSession, iScan) = 1;
+
+end
+
+
+%% Get a sorted table of the image type and instance numbers
+function [tableImTypeInNum, sortNIfTIs] = xASL_imp_DCM2NII_Subject_ImageTypeVsInstanceNumber(scanpath)
+
+    % Get all files in directory (we expect a directory of DCM files)
+    tableImTypeInNum = xASL_adm_GetFileList(scanpath,'',false);
+    
+    % Check if we can sort the NIfTIs
+    if ~isempty(tableImTypeInNum)
+        sortNIfTIs = true;
+    else
+        sortNIfTIs = false;
+    end
+
+    % Get instance numbers
+    if sortNIfTIs
+        for iDCM = 1:size(tableImTypeInNum,1)
+            % Get current file
+            iFile = fullfile(scanpath,tableImTypeInNum{iDCM,1});
+            % Get current header
+            iHeader = xASL_io_DcmtkRead(iFile);
+            % Get image type
+            if isfield(iHeader,'ImageType')
+                tableImTypeInNum{iDCM,2} = iHeader.ImageType;
+            else
+                tableImTypeInNum{iDCM,2} = [];
+            end
+            % Get instance number (0x20,0x13)
+            if isfield(iHeader,'InstanceNumber')
+                tableImTypeInNum{iDCM,3} = iHeader.InstanceNumber;
+            else
+                tableImTypeInNum{iDCM,3} = [];
+            end
+        end
+    end
+    
+    % Sort rows
+    if sortNIfTIs && (length(size(tableImTypeInNum))>1)
+        emptyFields = cellfun(@isempty,tableImTypeInNum);
+        if sum(emptyFields(:,3))<1
+            tableImTypeInNum = sortrows(tableImTypeInNum,2);
+        else
+            fprintf('Can not sort DICOMs, because at least one Instance Number is missing...\n');
+            sortNIfTIs = false;
+        end
+    end
 
 end
 
