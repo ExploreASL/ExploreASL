@@ -184,20 +184,20 @@ if isempty(SessionList) % search for subjects instead of sessions
         return;
     end
     nSessions = 1;
-    NoSessions = 1;
+    bSessionsMissing = 1;
 else % continu with defining sessions from SessionList
     MaskedSessions = cellfun('isempty',strfind(SessionList,[ x.S.InputDataStr '_masked'])); % find qCBF_masked to exclude from SessionList
     SessionListSUBJECTS_qCBF = SessionList(MaskedSessions,:); % include only qCBF in SessionList
     for n = 1:size(x.SUBJECTS,2)
         SessionsSingleSUBJECT = ~cellfun('isempty',strfind(SessionListSUBJECTS_qCBF,[x.SUBJECTS{n}])); % Check how many qCBF files are present of each subject
-        Sessions(n,1) = sum(SessionsSingleSUBJECT); % Define number of sessions as amount of qCBF files per subject
+        SessionsPerSubject(n,1) = sum(SessionsSingleSUBJECT); % Define number of sessions as amount of qCBF files per subject
     end
-    nSessions = min(Sessions); % Use minimum amount of sessions for processing
-    NoSessions = 0;
+    nSessions = min(SessionsPerSubject); % Use minimum amount of sessions for processing
+    bSessionsMissing = 0;
     
     CompareSessions = ones(size(x.SUBJECTS,2),1) .* nSessions; % Create array to check if amount of sessions is similar for each subject
-    if ~isequal(Sessions,CompareSessions) % Check if amount of sessions is similar for each subject
-        warning('Amount of Sessions per Subject different, using minimum Sessions for processing')
+    if ~isequal(SessionsPerSubject,CompareSessions) % Check if amount of sessions is similar for each subject
+        warning('Amount of Sessions per Subject different, using minimum Sessions for statistics')
     end
 end
 
@@ -256,7 +256,7 @@ for iSubject=1:x.nSubjects
 		% Subject_session definition
 		DataIm = NaN;
 		SubjSess = (iSubject-1)* nSessions +iSess;
-		if NoSessions == 1
+		if bSessionsMissing == 1
 			x.S.SUBJECTID{SubjSess,1} = x.SUBJECTS{iSubject};
             TotalRows = x.nSubjects;
 		else

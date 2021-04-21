@@ -114,10 +114,20 @@ HasSingleSessionOnly = sum(cellfun(@(y) ~isempty(regexp(y,['^' x.S.output_ID])),
 if HasSingleSessionOnly
     nSessions = 1;
 else
-    FileList = xASL_adm_GetFileList(x.D.PopDir,'.*ASL_\d*\.nii$');
-    [~, Ffile] = cellfun(@(x) xASL_fileparts(x),FileList, 'UniformOutput',false);
-    SessionsN = unique(cellfun(@(x) x(end-4:end),Ffile, 'UniformOutput',false));
-    nSessions = length(SessionsN);
+    SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*_ASL_\d*\.nii'], 'FPList', [0 Inf]);
+    MaskedSessions = cellfun('isempty',strfind(SessionList,[ x.S.InputDataStr '_masked'])); % find qCBF_masked to exclude from SessionList
+    SessionListSUBJECTS_qCBF = SessionList(MaskedSessions,:); % include only qCBF in SessionList
+    for n = 1:size(x.SUBJECTS,2)
+        SessionsSingleSUBJECT = ~cellfun('isempty',strfind(SessionListSUBJECTS_qCBF,[x.SUBJECTS{n}])); % Check how many qCBF files are present of each subject
+        SessionsPerSubject(n,1) = sum(SessionsSingleSUBJECT); % Define number of sessions as amount of qCBF files per subject
+    end
+    nSessions = min(SessionsPerSubject); % Use minimum amount of sessions for processing
+    bSessionsMissing = 0;
+    
+    CompareSessions = ones(size(x.SUBJECTS,2),1) .* nSessions; % Create array to check if amount of sessions is similar for each subject
+    if ~isequal(SessionsPerSubject,CompareSessions) % Check if amount of sessions is similar for each subject
+        warning('Amount of Sessions per Subject different, using minimum Sessions for statistics')
+    end
 end
 
 
