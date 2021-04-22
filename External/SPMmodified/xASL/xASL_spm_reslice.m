@@ -271,8 +271,10 @@ function xASL_spm_reslice(refPath, srcPath, srcAffinePath, bInvAffine, bQuality,
             xASL_delete(fullfile(Fpath, [Ffile '.mat']));
 		end
 		rFileName{1,1} = TempName;
-	end
+    end
 
+    if length(Sz)>3; fprintf('\n'); end
+    
 	% ------------------------------------------------------------------------------------------
 	% Rename temporary SPM file(s) into output file(s)
 	% ------------------------------------------------------------------------------------------
