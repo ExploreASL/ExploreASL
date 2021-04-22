@@ -492,40 +492,46 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
     //mxSetField( pmxOutput, 0, "PatientID",       MXAGetString         ( DCM_PatientID      ) );  
 	
 	// Obtain these parameters always from normal DICOM
-	mxSetField( pmxOutput, 0, "AcquisitionTime"          , MXAGetStringArray( dataset,        DCM_AcquisitionTime   ) );
-	mxSetField( pmxOutput, 0, "Manufacturer"             , MXAGetString( dataset,             DCM_Manufacturer      ) );
-	mxSetField( pmxOutput, 0, "SeriesDescription"        , MXAGetString( dataset,             DCM_SeriesDescription ) );
-	mxSetField( pmxOutput, 0, "ProtocolName"             , MXAGetString( dataset,             DCM_ProtocolName      ) );
-	mxSetField( pmxOutput, 0, "SeriesTime"               , MXAGetStringArray( dataset,        DCM_SeriesTime        ) );
-	mxSetField( pmxOutput, 0, "StudyInstanceUID"         , MXAGetString( dataset,             DCM_StudyInstanceUID  ) );	
-	mxSetField( pmxOutput, 0, "SeriesInstanceUID"        , MXAGetString( dataset,             DCM_SeriesInstanceUID ) );	
-	mxSetField( pmxOutput, 0, "StudyDate"                , MXAGetStringArray( dataset,        DCM_StudyDate         ) );
-	mxSetField( pmxOutput, 0, "ImageType"                , MXAGetStringArray( dataset,        DCM_ImageType         ) );	
+	mxSetField( pmxOutput, 0, "AcquisitionTime"          , MXAGetStringArray( dataset,        DCM_AcquisitionTime         ) );
+	mxSetField( pmxOutput, 0, "Manufacturer"             , MXAGetString( dataset,             DCM_Manufacturer            ) );
+	mxSetField( pmxOutput, 0, "SeriesDescription"        , MXAGetString( dataset,             DCM_SeriesDescription       ) );
+	mxSetField( pmxOutput, 0, "ProtocolName"             , MXAGetString( dataset,             DCM_ProtocolName            ) );
+	mxSetField( pmxOutput, 0, "SeriesTime"               , MXAGetStringArray( dataset,        DCM_SeriesTime              ) );
+	mxSetField( pmxOutput, 0, "StudyInstanceUID"         , MXAGetString( dataset,             DCM_StudyInstanceUID        ) );	
+	mxSetField( pmxOutput, 0, "SeriesInstanceUID"        , MXAGetString( dataset,             DCM_SeriesInstanceUID       ) );	
+	mxSetField( pmxOutput, 0, "StudyDate"                , MXAGetStringArray( dataset,        DCM_StudyDate               ) );
+	mxSetField( pmxOutput, 0, "ImageType"                , MXAGetStringArray( dataset,        DCM_ImageType               ) );	
 	mxSetField( pmxOutput, 0, "MediaStorageSOPClassUID"  , MXAGetString( metaInfo,            DCM_MediaStorageSOPClassUID ) );	
-	mxSetField( pmxOutput, 0, "AcquisitionDate"          , MXAGetStringArray( dataset,        DCM_AcquisitionDate   ) );
-	mxSetField( pmxOutput, 0, "SeriesDate"               , MXAGetStringArray( dataset,        DCM_SeriesDate        ) );
-	mxSetField( pmxOutput, 0, "Rows"                     , MXAGetInt16Array(  dataset,        DCM_Rows    ));
-	mxSetField( pmxOutput, 0, "Columns"                  , MXAGetInt16Array(  dataset,        DCM_Columns ));
-	mxSetField( pmxOutput, 0, "AcquisitionContrast"      , MXAGetString( dataset,             DCM_AcquisitionContrast ) );	
-	mxSetField( pmxOutput, 0, "ComplexImageComponent"    , MXAGetString( dataset,             DCM_ComplexImageComponent ) );	
-	mxSetField( pmxOutput, 0, "PulseSequenceName"        , MXAGetString( dataset,             DCM_PulseSequenceName ) );	
-	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetFloat64AsDouble( dataset,    DCM_InversionTime       ) );
+	mxSetField( pmxOutput, 0, "AcquisitionDate"          , MXAGetStringArray( dataset,        DCM_AcquisitionDate         ) );
+	mxSetField( pmxOutput, 0, "SeriesDate"               , MXAGetStringArray( dataset,        DCM_SeriesDate              ) );
+	mxSetField( pmxOutput, 0, "Rows"                     , MXAGetInt16Array(  dataset,        DCM_Rows                    ) );
+	mxSetField( pmxOutput, 0, "Columns"                  , MXAGetInt16Array(  dataset,        DCM_Columns                 ) );
+	mxSetField( pmxOutput, 0, "AcquisitionContrast"      , MXAGetString( dataset,             DCM_AcquisitionContrast     ) );	
+	mxSetField( pmxOutput, 0, "ComplexImageComponent"    , MXAGetString( dataset,             DCM_ComplexImageComponent   ) );	
+	mxSetField( pmxOutput, 0, "PulseSequenceName"        , MXAGetString( dataset,             DCM_PulseSequenceName       ) );	
+	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetFloat64AsDouble( dataset,    DCM_InversionTime           ) );
 	mxSetField( pmxOutput, 0, "SoftwareVersions"         , MXAGetStringArray( dataset,        DCM_SoftwareVersions        ) );
+
+
+	mxSetField( pmxOutput, 0, "StudyID"                  , MXAGetLongIntAsDouble( dataset,    DcmTagKey(0x0020, 0x0010)   ) );
+	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetLongIntAsDouble( dataset,    DcmTagKey(0x0020, 0x0011)   ) );
+	mxSetField( pmxOutput, 0, "AcquisitionNumber"        , MXAGetLongIntAsDouble( dataset,    DcmTagKey(0x0020, 0x0012)   ) );
+	mxSetField( pmxOutput, 0, "InstanceNumber"           , MXAGetLongIntAsDouble( dataset,    DcmTagKey(0x0020, 0x0013)   ) );
 	
 	
 	// Parameters for EPI readout needed for TopUp
-	mxSetField( pmxOutput, 0, "AssetRFactor"                , MXAGetStringArray(dataset, DcmTagKey(0x0043, 0x1083)));
-	mxSetField( pmxOutput, 0, "EffectiveEchoSpacing"        , MXAGetStringArray(dataset, DcmTagKey(0x0043, 0x192c)));
-	mxSetField( pmxOutput, 0, "AcquisitionMatrix"           , MXAGetInt16Array(     dataset, DCM_AcquisitionMatrix    ));
-	mxSetField( pmxOutput, 0, "MRSeriesWaterFatShift"       , MXAGetStringArray(dataset, DcmTagKey(0x2001, 0x1022)));
-	mxSetField( pmxOutput, 0, "MRSeriesEPIFactor"           , MXAGetStringArray(dataset, DcmTagKey(0x2001, 0x1013)));
-	mxSetField( pmxOutput, 0, "BandwidthPerPixelPhaseEncode", MXAGetStringArray(dataset, DcmTagKey(0x0019, 0x1028)));
-	mxSetField( pmxOutput, 0, "InPlanePhaseEncodingDirection", MXAGetStringArray(dataset, DCM_InPlanePhaseEncodingDirection));
+	mxSetField( pmxOutput, 0, "AssetRFactor"                , MXAGetStringArray(dataset,      DcmTagKey(0x0043, 0x1083)   ) );
+	mxSetField( pmxOutput, 0, "EffectiveEchoSpacing"        , MXAGetStringArray(dataset,      DcmTagKey(0x0043, 0x192c)   ) );
+	mxSetField( pmxOutput, 0, "AcquisitionMatrix"           , MXAGetInt16Array(dataset,       DCM_AcquisitionMatrix       ) );
+	mxSetField( pmxOutput, 0, "MRSeriesWaterFatShift"       , MXAGetStringArray(dataset,      DcmTagKey(0x2001, 0x1022)   ) );
+	mxSetField( pmxOutput, 0, "MRSeriesEPIFactor"           , MXAGetStringArray(dataset,      DcmTagKey(0x2001, 0x1013)   ) );
+	mxSetField( pmxOutput, 0, "BandwidthPerPixelPhaseEncode", MXAGetStringArray(dataset,      DcmTagKey(0x0019, 0x1028)   ) );
+	mxSetField( pmxOutput, 0, "InPlanePhaseEncodingDirection", MXAGetStringArray(dataset,     DCM_InPlanePhaseEncodingDirection));
 	 
 	// Extra GE and Siemens parameters
-	mxSetField( pmxOutput, 0, "GELabelingType"             , MXAGetString( dataset,       DcmTagKey(0x0019, 0x109C) ) );
-	mxSetField( pmxOutput, 0, "GELabelingDuration"         , MXAGetLongIntAsDouble( dataset, DcmTagKey(0x0043, 0x10a5)     ) );
-	mxSetField( pmxOutput, 0, "PhoenixProtocol"            , MXAGetStringArray(dataset, DcmTagKey(0x0029, 0x1020)));
+	mxSetField( pmxOutput, 0, "GELabelingType"             , MXAGetString( dataset,           DcmTagKey(0x0019, 0x109C)   ) );
+	mxSetField( pmxOutput, 0, "GELabelingDuration"         , MXAGetLongIntAsDouble( dataset,  DcmTagKey(0x0043, 0x10a5)   ) );
+	mxSetField( pmxOutput, 0, "PhoenixProtocol"            , MXAGetStringArray(dataset,       DcmTagKey(0x0029, 0x1020)   ) );
 	mxSetField( pmxOutput, 0, "SiemensSliceTime"           , MXAGetFloat64ArrayAsDouble( dataset,    DcmTagKey(0x0019, 0x1029)  ) );
 			
 	if ((rwItem) && (rwItem->tagExistsWithValue(DCM_RealWorldValueIntercept) == OFTrue))
@@ -628,6 +634,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
     //mxSetField( pmxOutput, 0, "ReceiveCoilName", MXAGetString         ( DCM_ReceiveCoilName) );
     //mxSetField( pmxOutput, 0, "SeriesNumber",    MXAGetLongIntAsDouble( DCM_SeriesNumber   ) );
     //mxSetField( pmxOutput, 0, "InstanceNumber",  MXAGetLongIntAsDouble( DCM_InstanceNumber ) );
+	
     // Note: inconsistent naming between Matlab and DCMTK: rows / columns without capital...?
     //mxSetField( pmxOutput, 0, "rows",            MXAGetLongIntAsDouble( DCM_Rows           ) );
     //mxSetField( pmxOutput, 0, "columns",         MXAGetLongIntAsDouble( DCM_Columns        ) );
@@ -676,7 +683,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	    "AcquisitionContrast", "ComplexImageComponent", "GELabelingType", "PulseSequenceName", \
 		"InversionTime", "GELabelingDuration", "PhilipsNumberTemporalScans", \
 		"PhilipsLabelControl", "TemporalPositionIdentifier", "PhoenixProtocol", "SoftwareVersions", \
-		"SiemensSliceTime"
+		"SiemensSliceTime", "StudyID", "SeriesNumber", "AcquisitionNumber", "InstanceNumber"
     };
 
     const int inFields = 44;
