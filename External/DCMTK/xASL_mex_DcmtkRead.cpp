@@ -16,10 +16,10 @@
  *    Provides a limited interface to read the DICOM files in Matlab using the DCMTK library.
  *    Currently, it reads the following parameters from normal/enhanced DICOM (it uses the DCMTK tag definition for that):
  *    RepetitionTime, EchoTime, RescaleSlope, RescaleIntercept, NumberOfTemporalPositions, NumberOfAverages, AcquisitionTime, 
- *    MediaStorageSOPClassUID, Manufacturer, SeriesDescription, ProtocolName, StudyDate, SeriesTime, StudyInstanceUID, 
+ *    MediaStorageSOPClassUID, Manufacturer, ManufacturersModelName, SeriesDescription, ProtocolName, StudyDate, SeriesTime, StudyInstanceUID, 
  *    SeriesInstanceUID, ImageType, AcquisitionDate, SeriesDate, Rows, Columns, AcquisitionMatrix, InPlanePhaseEncodingDirection,
  *    AcquisitionContrast, ComplexImageComponent, PulseSequenceName, InversionTime, TemporalPositionIdentifier, SoftwareVersions,
- *    RWVIntercept, RWVSlope
+ *    RWVIntercept, RWVSlope, StudyID, SeriesNumber, AcquisitionNumber, InstanceNumber
  *    
  *    The image data are stored in:
  *    PixelData
@@ -494,6 +494,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	// Obtain these parameters always from normal DICOM
 	mxSetField( pmxOutput, 0, "AcquisitionTime"          , MXAGetStringArray( dataset,        DCM_AcquisitionTime         ) );
 	mxSetField( pmxOutput, 0, "Manufacturer"             , MXAGetString( dataset,             DCM_Manufacturer            ) );
+	mxSetField( pmxOutput, 0, "ManufacturersModelName"   , MXAGetString( dataset,             DcmTagKey(0x0008, 0x1090)   ) );
 	mxSetField( pmxOutput, 0, "SeriesDescription"        , MXAGetString( dataset,             DCM_SeriesDescription       ) );
 	mxSetField( pmxOutput, 0, "ProtocolName"             , MXAGetString( dataset,             DCM_ProtocolName            ) );
 	mxSetField( pmxOutput, 0, "SeriesTime"               , MXAGetStringArray( dataset,        DCM_SeriesTime              ) );
@@ -511,12 +512,10 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "PulseSequenceName"        , MXAGetString( dataset,             DCM_PulseSequenceName       ) );	
 	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetFloat64AsDouble( dataset,    DCM_InversionTime           ) );
 	mxSetField( pmxOutput, 0, "SoftwareVersions"         , MXAGetStringArray( dataset,        DCM_SoftwareVersions        ) );
-
-
-	mxSetField( pmxOutput, 0, "StudyID"                  , MXAGetLongIntAsDouble( dataset,    DcmTagKey(0x0020, 0x0010)   ) );
-	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetLongIntAsDouble( dataset,    DcmTagKey(0x0020, 0x0011)   ) );
-	mxSetField( pmxOutput, 0, "AcquisitionNumber"        , MXAGetLongIntAsDouble( dataset,    DcmTagKey(0x0020, 0x0012)   ) );
-	mxSetField( pmxOutput, 0, "InstanceNumber"           , MXAGetLongIntAsDouble( dataset,    DcmTagKey(0x0020, 0x0013)   ) );
+	mxSetField( pmxOutput, 0, "StudyID"                  , MXAGetString( dataset,             DCM_StudyID                 ) ); // Short string
+	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetLongIntAsDouble( dataset,    DCM_SeriesNumber            ) ); // Integer string
+	mxSetField( pmxOutput, 0, "AcquisitionNumber"        , MXAGetLongIntAsDouble( dataset,    DCM_AcquisitionNumber       ) ); // Integer string
+	mxSetField( pmxOutput, 0, "InstanceNumber"           , MXAGetLongIntAsDouble( dataset,    DCM_InstanceNumber          ) ); // Integer string
 	
 	
 	// Parameters for EPI readout needed for TopUp
@@ -674,7 +673,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     { \
         "RepetitionTime", "EchoTime", "RescaleSlope", "RescaleIntercept", \
         "NumberOfTemporalPositions", "NumberOfAverages", "AcquisitionTime", \
-        "PixelData", "MediaStorageSOPClassUID", "Manufacturer",  "MRScaleSlope", \
+        "PixelData", "MediaStorageSOPClassUID", "Manufacturer",  "ManufacturersModelName", "MRScaleSlope", \
 		"StudyDate", "StudyInstanceUID", "SeriesInstanceUID", "ImageType", \
 	    "SeriesDescription", "ProtocolName", "SeriesTime", "AcquisitionDate", "SeriesDate", \
 		"AssetRFactor", "EffectiveEchoSpacing", "AcquisitionMatrix", "MRSeriesWaterFatShift", \
@@ -686,7 +685,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		"SiemensSliceTime", "StudyID", "SeriesNumber", "AcquisitionNumber", "InstanceNumber"
     };
 
-    const int inFields = 44;
+    const int inFields = 49;
 	int readPixel;
 	double *tmp;
 
