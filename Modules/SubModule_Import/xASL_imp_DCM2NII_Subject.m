@@ -235,7 +235,8 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
                 
                 % Check Context
                 if ~strcmp(ASLContext,realASLContext)
-                    fprintf('Context mismatch...\n');
+                    fprintf('Context mismatch, will switch NIFTI ordering...\n');
+                    xASL_imp_DCM2NII_Subject_SwitchNIIs(nii_files);
                 end
 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
@@ -394,6 +395,20 @@ function realASLContext = xASL_imp_DCM2NII_Subject_RealASLContext(parms)
 end
 
 
+%% Get real ASL Context
+function xASL_imp_DCM2NII_Subject_SwitchNIIs(nii_files)
 
+    % Load image
+    imASL = xASL_io_Nifti2Im(nii_files{1});
+
+    % Then reshuffle them
+    imASLreordered = zeros(size(imASL));
+    imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
+    imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
+
+    % Save image
+    xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASLreordered);
+
+end
 
 
