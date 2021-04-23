@@ -16,13 +16,22 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run the dcm2nii part of the import.
+%
+% 1. Initialize defaults of dcm2nii
+% 2. Create the basic folder structure for sourcedata & derivative data
+% 3. Here we try to fix backwards compatibility, but this may break
+% 4. Redirect output to a log file
+% 5. Start with defining the subjects, visits, sessions (i.e. BIDS runs) and scans (i.e. ScanTypes) by listing or typing
+% 6. Sanity check for missing elements
+% 7. Import subject by subject, visit by visit, session by session, scan by scan
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
     
-    %% Initialize defaults of dcm2nii
+    %% 1. Initialize defaults of dcm2nii
     dcm2niiCatchedErrors = struct; % initialization
     if bCheckPermissions
         dcm2niiDir = fullfile(x.MyPath, 'External', 'MRIcron');
@@ -44,7 +53,7 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
 		fprintf('If you want to overwrite, first remove the full subject folder');
 	end
 	
-	%% Create the basic folder structure for sourcedata & derivative data
+	%% 2. Create the basic folder structure for sourcedata & derivative data
 	if ~exist(imPar.RawRoot, 'dir')
 		warning(['Couldnt find ' imPar.RawRoot ', trying to find a different folder instead...']);
 		
@@ -69,7 +78,7 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
 		xASL_adm_CheckPermissions(imPar.AnalysisRoot, false);  % don"t need execution permisions
 	end
 	
-	%% Here we try to fix backwards compatibility, but this may break
+	%% 3. Here we try to fix backwards compatibility, but this may break
 	if length(imPar.tokenOrdering)==3 % backwards compatibility Visits
 		if size(imPar.tokenOrdering,1) > 1
 			% Vertical vector
@@ -97,7 +106,7 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
 		imPar.dcm2nii_version = '20101105';
 	end
 	
-	%% Redirect output to a log file
+	%% 4. Redirect output to a log file
 	diary_filepath = fullfile(imPar.AnalysisRoot, ['import_log_' imPar.studyID '_' datestr(now,'yyyymmdd_HHMMSS') '.txt']);
 	diary(diary_filepath);
 	
@@ -108,7 +117,7 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
 	end
 	
 	
-	%% Start with defining the subjects, visits, sessions (i.e. BIDS runs) and scans (i.e. ScanTypes) by listing or typing
+	%% 5. Start with defining the subjects, visits, sessions (i.e. BIDS runs) and scans (i.e. ScanTypes) by listing or typing
 	
 	% Recursively scan the directory tree using regular exspressions at each directory level. Use ()-brackets to extract tokens
 	% that will be used to identify subjects, sessions and scans. In the loop below it is possible to translate the tokens
@@ -203,7 +212,7 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
 	%% SCAN NAMES
 	scanNames = scanIDs;
 	
-	%% sanity check for missing elements
+	%% 6. Sanity check for missing elements
 	if nSubjects==0
 		error('No subjects')
 	end
@@ -227,7 +236,7 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
 	summary_lines = cell(nSubjects,nVisits,nSessions,nScans);
 	
     
-	%% Import subject by subject, visit by visit, session by session, scan by scan
+	%% 7. Import subject by subject, visit by visit, session by session, scan by scan
 	fprintf('%s\n', 'Running import (i.e. dcm2niiX)');
     
     % Create ID struct

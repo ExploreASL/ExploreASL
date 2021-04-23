@@ -13,8 +13,14 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run the NII2BIDS conversion.
+%
+% 1. Load the study parameters + dataset description
+% 2. Create the study description output and verify that all is there
+% 3. Go through all subjects and check all the M0 and ASLs and modify the JSONs
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_imp_NII2BIDS(imPar, studyPath, studyParPath);
+%
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -25,7 +31,7 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 	bidsPar = xASL_bids_Config();
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	% Load the study parameters + dataset description
+	%% 1. Load the study parameters + dataset description
 	if ~exist(studyParPath,'file')
 		warning('Study-par file is not provided.');
 		studyPar = struct;
@@ -39,7 +45,7 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 	end
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	% Create the study description output and verify that all is there
+	%% 2. Create the study description output and verify that all is there
 	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyPar);
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,7 +58,7 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 	spm_jsonwrite(fullfile(imPar.BidsRoot,[bidsPar.datasetDescription.filename '.json']),datasetDescription);
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	% Go through all subjects and check all the M0 and ASLs and modify the JSONs
+	%% 3. Go through all subjects and check all the M0 and ASLs and modify the JSONs
 	% This step should be completely automatic, just taking the info filled above and using it to convert to full BIDS.
 	
 	% Go through all subjects

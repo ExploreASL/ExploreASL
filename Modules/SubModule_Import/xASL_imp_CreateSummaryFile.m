@@ -18,13 +18,17 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, gl
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Create summary file.
+%
+% 1. Create summary file
+% 2. Report totals
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
     
-    %% Create summary file
+    %% 1. Create summary file
 	summary_filepath = fullfile(imPar.AnalysisRoot, 'import_summary.csv');
 	fid_summary = fopen(summary_filepath,'wt');
 	
@@ -55,7 +59,7 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, gl
 	nMissing = sum(globalCounts.missing_scans(:));
 	nSkipped = sum(globalCounts.skipped_scans(:));
 	
-	%% Report totals
+	%% 2. Report totals
     
 	% header first
 	fprintf(fid_summary,'\n');

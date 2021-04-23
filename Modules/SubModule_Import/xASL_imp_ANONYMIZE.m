@@ -11,21 +11,28 @@ function xASL_imp_ANONYMIZE(imPar)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run defacing.
+%
+% 1. Iterate over list of subjects
+% 2. Get subject labels
+% 3. Process all anatomical files (`xASL_spm_deface`)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_imp_ANONYMIZE(imPar);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
     %% Anonymize
+    
+    % 1. Iterate over list of subjects
     listSubjects = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)
 
-        % Get subject labels
+        % 2. Get subject labels
         subjectLabel = xASL_adm_CorrectName(listSubjects{iSubject},2);
 
         % Check if the anatomical directory exists
         if exist(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'dir')
-            % Process all anatomical files
+            % 3. Process all anatomical files
             fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'^.+\.nii',false,[]);
             for iAnat = 1:length(fAnat)
                 %Unzip the file for SPM

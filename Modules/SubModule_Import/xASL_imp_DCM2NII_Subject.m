@@ -395,7 +395,7 @@ function realASLContext = xASL_imp_DCM2NII_Subject_RealASLContext(parms)
 end
 
 
-%% Get real ASL Context
+%% Switch NIfTIs
 function xASL_imp_DCM2NII_Subject_SwitchNIIs(nii_files)
 
     % Load image

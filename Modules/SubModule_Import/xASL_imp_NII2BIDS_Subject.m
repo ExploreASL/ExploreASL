@@ -15,10 +15,18 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run NII to ASL-BIDS for one individual subject.
+%
+% 1. Initialize
+% 2. Process all the anatomical files
+% 3. Process the perfusion files
+% 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% 1. Initialize
     
     subjectLabel = xASL_adm_CorrectName(listSubjects{iSubject},2);
 
@@ -28,7 +36,7 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 	end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Process all the anatomical files
+    %% 2. Process all the anatomical files
     % Go throught the list of anat files
     for iAnatType = bidsPar.listAnatTypes
 
@@ -65,7 +73,7 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Process the perfusion files
+    %% 3. Process the perfusion files
     fSes = xASL_adm_GetFileList(fullfile(imPar.AnalysisRoot,listSubjects{iSubject}),'^ASL.+$',false,[],true);
 
     % Go through all sessions

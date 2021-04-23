@@ -21,6 +21,7 @@ function [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Catch reported warnings/errors, print them if verbose, & add them to a structure of warnings/errors to be stored for later QC.
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn);
 % __________________________________

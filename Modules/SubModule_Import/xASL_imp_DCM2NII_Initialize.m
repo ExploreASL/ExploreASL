@@ -12,12 +12,19 @@ function imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Initialize DCM2NII.
+%
+% 1. Read study file
+% 2. Specify paths
+% 3. Finalize the directories
+% 4. Specify the tokens
+% 5. Specify the additional details of the conversion
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    %% Read study file
+    %% 1. Read study file
 
     % Initialize the imPar field
     [fpath, fname, fext] = fileparts(studyPath);
@@ -25,7 +32,7 @@ function imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath)
     % Load the imPar from the file
     imPar = spm_jsonread(imParPath);
 
-    %% Specify paths
+    %% 2. Specify paths
     if ~isfield(imPar,'studyID') || isempty(imPar.studyID)
         imPar.studyID = [fname fext];
     end
@@ -39,12 +46,12 @@ function imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath)
         imPar.BidsRoot = fpath;
     end
 
-    %% Finalize the directories
+    %% 3. Finalize the directories
     imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID, 'sourcedata'); % default name
     imPar.AnalysisRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'analysis');
     imPar.BidsRoot = fullfile(imPar.BidsRoot,imPar.studyID,'rawdata');
 
-    %% Specify the tokens
+    %% 4. Specify the tokens
     if ~isfield(imPar,'folderHierarchy')
         imPar.folderHierarchy = {}; % must define this per study; use a cell array of regular expressions. One cell per directory level.
     end
@@ -84,7 +91,7 @@ function imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath)
         imPar.bMatchDirectories  = false;
     end
 
-    %% Specify the additional details of the conversion
+    %% 5. Specify the additional details of the conversion
     if ~isfield(imPar,'bVerbose') || isempty(imPar.bVerbose)
         imPar.bVerbose = true;
     end
