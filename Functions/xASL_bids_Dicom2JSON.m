@@ -4,21 +4,23 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 % FORMAT: [parms pathDcmDictOut] = xASL_bids_Dicom2Parms(imPar, pathIn[, pathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
 %
 % INPUT:
-%        imPar              - struct with import parameters (REQUIRED)
-%        pathIn (PATH)         - path to the RAW files (REQUIRED)
-%        pathJSON (PATH)    - path to the JSON file for saving parameters (OPTIONAL, DEFAULT = don't save)
-%        dcmExtFilter (STR) - wildcards specifying the allowed extensions for the RAW files
-%        bUseDCMTK (BOOL)   - if yes, then use DCMTK instead of dicominfo
-%        pathDcmDictIn (STR)- path to the dicom dictionary in case DCMTK fails and DICOMINFO is used
+%        imPar               - struct with import parameters (REQUIRED)
+%        pathIn (PATH)       - path to the RAW files (REQUIRED)
+%        pathJSON (PATH)     - path to the JSON file for saving parameters (OPTIONAL, DEFAULT = don't save)
+%        dcmExtFilter (STR)  - wildcards specifying the allowed extensions for the RAW files
+%        bUseDCMTK (BOOL)    - if yes, then use DCMTK instead of dicominfo
+%        pathDcmDictIn (STR) - path to the dicom dictionary in case DCMTK fails and DICOMINFO is used
 %
 % OUTPUT:
-%        parms              - structure containing the parsed parameters
-%        pathDcmDictOut     - if dicom dict for dicominfo is initialized then clear this path, otherwise return unchanged pathDcmDictIn
+%        parms               - structure containing the parsed parameters
+%        pathDcmDictOut      - if dicom dict for dicominfo is initialized then clear this path, otherwise return unchanged pathDcmDictIn
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      The function goes through the pathIn files, reads the DICOM or PAR/REC files and parses their headers.
-%                   It extracts the DICOM parameters important for ASL, makes sure they are in the correct format, if missing then 
-%                   replaces with default value, it also checks if the parameters are consistent across DICOM files for a single sequence.
+% DESCRIPTION:      The function goes through the pathIn files, reads the DICOM or PAR/REC files 
+%                   and parses their headers. It extracts the DICOM parameters important for ASL, 
+%                   makes sure they are in the correct format, if missing then replaces with default 
+%                   value, it also checks if the parameters are consistent across DICOM files for a 
+%                   single sequence.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
@@ -26,7 +28,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 %
 % REFERENCES:
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
     %% ----------------------------------------------------------------------------------
 	% Admin
@@ -53,41 +55,44 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	% Set up the default values
 	% ----------------------------------------------------------------------------------
 	
-	DcmParDefaults.RepetitionTime            = NaN;
-	DcmParDefaults.EchoTime                  = NaN;
-	DcmParDefaults.NumberOfAverages          = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
-	DcmParDefaults.NumberOfTemporalPositions = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
-	DcmParDefaults.RescaleSlope              = 1;   % RescaleSlope; added by Paul to get rid of misleading RescaleSlopeOriginal
-	DcmParDefaults.RescaleSlopeOriginal      = NaN; % RescaleSlopeOriginal; will be set to RescaleSlope if missing
-	DcmParDefaults.MRScaleSlope              = 1;   % MRScaleSlope
-	DcmParDefaults.RescaleIntercept          = 0;   % RescaleIntercept (although this one is standard dicom)
-	DcmParDefaults.AcquisitionTime           = 0;   % AcquisitionTime
+	DcmParDefaults.RepetitionTime               = NaN;
+	DcmParDefaults.EchoTime                     = NaN;
+	DcmParDefaults.NumberOfAverages             = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
+	DcmParDefaults.NumberOfTemporalPositions    = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
+	DcmParDefaults.RescaleSlope                 = 1;   % RescaleSlope; added by Paul to get rid of misleading RescaleSlopeOriginal
+	DcmParDefaults.RescaleSlopeOriginal         = NaN; % RescaleSlopeOriginal; will be set to RescaleSlope if missing
+	DcmParDefaults.MRScaleSlope                 = 1;   % MRScaleSlope
+	DcmParDefaults.RescaleIntercept             = 0;   % RescaleIntercept (although this one is standard dicom)
+	DcmParDefaults.AcquisitionTime              = 0;   % AcquisitionTime
+    
 	% TopUp parameters
-	DcmParDefaults.AcquisitionMatrix         = NaN;
-	DcmParDefaults.EffectiveEchoSpacing      = NaN;
-	DcmParDefaults.AssetRFactor  = NaN;
-	DcmParDefaults.MRSeriesWaterFatShift = NaN;
-	DcmParDefaults.MRSeriesEPIFactor = NaN;
+	DcmParDefaults.AcquisitionMatrix            = NaN;
+	DcmParDefaults.EffectiveEchoSpacing         = NaN;
+	DcmParDefaults.AssetRFactor                 = NaN;
+	DcmParDefaults.MRSeriesWaterFatShift        = NaN;
+	DcmParDefaults.MRSeriesEPIFactor            = NaN;
 	DcmParDefaults.BandwidthPerPixelPhaseEncode = NaN;
-	DcmParDefaults.RWVIntercept   = NaN;
-	DcmParDefaults.RWVSlope   = NaN;
+	DcmParDefaults.RWVIntercept                 = NaN;
+	DcmParDefaults.RWVSlope                     = NaN;
 	
-	DcmParDefaults.Rows = NaN;
-	DcmParDefaults.Columns = NaN;
-	DcmParDefaults.TemporalPositionIdentifier = NaN;
-	DcmParDefaults.PhilipsNumberTemporalScans = NaN;
-	DcmParDefaults.GELabelingDuration = NaN;
-	DcmParDefaults.InversionTime = NaN;
+    % Image parameters
+	DcmParDefaults.Rows                         = NaN;
+	DcmParDefaults.Columns                      = NaN;
+	DcmParDefaults.TemporalPositionIdentifier   = NaN;
+	DcmParDefaults.PhilipsNumberTemporalScans   = NaN;
+	DcmParDefaults.GELabelingDuration           = NaN;
+	DcmParDefaults.InversionTime                = NaN;
 	
 	DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
-		'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
+		          'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
 	
 	DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
 	DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
 	
 	DcmFieldList = {'RepetitionTime', 'EchoTime', 'NumberOfAverages', 'RescaleSlope', ...
 					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
-					'AcquisitionMatrix' 'Rows' 'Columns' 'NumberOfAverages' 'NumberOfTemporalPositions' 'RWVIntercept' 'RWVSlope'};
+					'AcquisitionMatrix', 'Rows', 'Columns', 'NumberOfAverages', 'NumberOfTemporalPositions', ...
+                    'RWVIntercept', 'RWVSlope', 'InstanceNumber', 'ImageType'}; % ImageType -> ImageTypes array
 	
 	bVendor = 'Unknown';
 	
@@ -112,13 +117,13 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	
     TryDicominfo = true; % this is only set to false below upon succesful DcmtkRead
     
-	if ~isempty(FileList)
-		iMrFile = 0;
-		
-		% Check All dicom files throughout the sequence to validate that they are the same - because we are fast now!
-		nFiles  = length(FileList);
-		
-		for iFile = 1:nFiles
+    if ~isempty(FileList)
+        iMrFile = 0;
+        
+        % Check All dicom files throughout the sequence to validate that they are the same - because we are fast now!
+        nFiles  = length(FileList);
+        
+        for iFile = 1:nFiles
             if TryDicominfo && iFile>1
                 continue;
                 % with dicominfo, reading is very slow, so we only read 1 dicom
@@ -283,22 +288,28 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			for iField=1:length(dcmfields)
 				fieldname = dcmfields{iField};
 				
-				if  isfield(temp, fieldname)
-					thevalue = temp.(fieldname);
-					thevalue = thevalue(~isnan(thevalue));
-				else
-					thevalue = [];
-				end
+                % Extract value of current field
+                if  isfield(temp, fieldname)
+                    thevalue = temp.(fieldname);
+                    thevalue = thevalue(~isnan(thevalue));
+                else
+                    thevalue = [];
+                end
 				
+                % Convert string-numbers to numbers if necessary
 				if ~isempty(thevalue)
 					if length(xASL_str2num(thevalue))>1
 						tmpTheValue = nonzeros(thevalue);
 						tmpTheValue = tmpTheValue(1);
 					else
 						tmpTheValue = thevalue;
-					end
+                    end
 					
-					t_parms.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
+                    if ~strcmp(fieldname,'ImageType')
+                        t_parms.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
+                    else
+                        t_parms.(fieldname){iMrFile} = tmpTheValue;
+                    end
 				else
 					if imPar.bVerbose
 						if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
@@ -354,24 +365,34 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			for iField=1:length(dcmfields)
 				fieldname = dcmfields{iField};
 				if  isfield(t_parms,fieldname)
-					parms.(fieldname) = unique(t_parms.(fieldname));
-					
-					% Remove (set to NaN) also those that differ only minimally
-					if length(parms.(fieldname))>1 && isnumeric(parms.(fieldname))
-						iDiff = abs(parms.(fieldname) - parms.(fieldname)(1))./parms.(fieldname)(1);
-						iDiff(1) = 1;
-						parms.(fieldname)(iDiff<0.001) = NaN;
-					end
-					% There's one or more NaNs
-					nNaN = sum(isnan(parms.(fieldname)));
-					if nNaN > 0
-						% Only NaNs
-						if nNaN == length(parms.(fieldname))
-							parms.(fieldname) = NaN;
-						else
-							parms.(fieldname) = parms.(fieldname)(~isnan(parms.(fieldname)));
-						end
-					end
+                    if ~iscell(t_parms.(fieldname))
+                        if ~strcmp(fieldname,'InstanceNumber')
+                            parms.(fieldname) = unique(t_parms.(fieldname));
+                        else
+                            parms.(fieldname) = t_parms.(fieldname);
+                        end
+
+                        % Remove (set to NaN) also those that differ only minimally
+                        if length(parms.(fieldname))>1 && isnumeric(parms.(fieldname))
+                            iDiff = abs(parms.(fieldname) - parms.(fieldname)(1))./parms.(fieldname)(1);
+                            iDiff(1) = 1;
+                            parms.(fieldname)(iDiff<0.001) = NaN;
+                        end
+                        % There's one or more NaNs
+                        nNaN = sum(isnan(parms.(fieldname)));
+                        if nNaN > 0
+                            % Only NaNs
+                            if nNaN == length(parms.(fieldname))
+                                parms.(fieldname) = NaN;
+                            else
+                                parms.(fieldname) = parms.(fieldname)(~isnan(parms.(fieldname)));
+                            end
+                        end
+                    else
+                        % ImageType(s) array for sequence analysis
+                        parms.(fieldname) = t_parms.(fieldname){1};          % ImageType
+                        parms.([fieldname 's']) = t_parms.(fieldname);       % ImageTypes
+                    end
 				end
 			end
 		end
@@ -529,9 +550,17 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 		
 		% Merges them with parms
 		parms = xASL_bids_parms2BIDS(parms, JSONParms, 1, 0);
+        
+        % Remove InstanceNumbers & ImageTypes from JSON file, we only need them for reordering purposes
+        if isfield(parms,'InstanceNumber')
+            parmsJSON = rmfield(parms, 'InstanceNumber');
+        end
+        if isfield(parmsJSON,'ImageTypes')
+            parmsJSON = rmfield(parmsJSON, 'ImageTypes');
+        end
 		
 		% Saves the JSON file
-		spm_jsonwrite(pathJSON, parms);
+		spm_jsonwrite(pathJSON, parmsJSON);
 		
     end
 

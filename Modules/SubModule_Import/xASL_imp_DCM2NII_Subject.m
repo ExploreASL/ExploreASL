@@ -208,7 +208,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
                     end
 
                     %% In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
-                    [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
+                    [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
                     
                     
                 end
@@ -229,6 +229,14 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
                 
                 % Store JSON files
                 [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, settings.bUseDCMTK, pathDcmDict);
+                
+                % Get real ASLContext
+                realASLContext = xASL_imp_DCM2NII_Subject_RealASLContext(parms);
+                
+                % Check Context
+                if ~strcmp(ASLContext,realASLContext)
+                    fprintf('Context mismatch...\n');
+                end
 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of
@@ -312,7 +320,7 @@ end
 
 
 %% Shuffle the dynamics
-function [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
+function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
 
     % Set to true if you want to print information for debug purposes
     bVerbose = true;
@@ -347,18 +355,7 @@ function [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_Shuf
         elseif  ~isempty(strfind(scan_name,'M0'))
             [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0');
         end
-    end
-    
-    % Sort M0 & ASL within ASL4D NIfTIs based on Instance number (only applies to GE scans right now)
-    [~, sortNIfTIs, realASLContext] = xASL_imp_DCM2NII_Subject_ImageTypeVsInstanceNumber(scanpath); % Requires InstanceNumber from dcmtk
-    if sortNIfTIs
-        if ~strcmp(ASLContext,realASLContext)
-            fprintf('Something could be wrong with the ASL context...\n');
-        end
-        % Fix NIfTI here...
-        
-    end
-    
+    end    
     
     % Extract relevant parameters from nifti header and append to summary file
     summary_line = xASL_imp_AppendNiftiParameters(nii_files);
@@ -367,69 +364,32 @@ function [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_Shuf
 end
 
 
-%% Get a sorted table of the image type and instance numbers
-function [tableImTypeInNum, sortNIfTIs, ASLContext] = xASL_imp_DCM2NII_Subject_ImageTypeVsInstanceNumber(scanpath)
+%% Get real ASL Context
+function realASLContext = xASL_imp_DCM2NII_Subject_RealASLContext(parms)
 
     % Fallback
-    ASLContext = '';
+    realASLContext = '';
 
-    % Get all files in directory (we expect a directory of DCM files)
-    tableImTypeInNum = xASL_adm_GetFileList(scanpath,'',false);
-    
-    % Check if we can sort the NIfTIs
-    if ~isempty(tableImTypeInNum)
-        sortNIfTIs = true;
-    else
-        sortNIfTIs = false;
-    end
-
-    % Get instance numbers
-    if sortNIfTIs
-        for iDCM = 1:size(tableImTypeInNum,1)
-            % Get current file
-            iFile = fullfile(scanpath,tableImTypeInNum{iDCM,1});
-            % Get current header
-            iHeader = xASL_io_DcmtkRead(iFile);
-            % Get image type
-            if isfield(iHeader,'ImageType')
-                tableImTypeInNum{iDCM,2} = iHeader.ImageType;
-            else
-                tableImTypeInNum{iDCM,2} = [];
+    if isfield(parms,'InstanceNumber') && isfield(parms,'ImageTypes')
+        if size(parms.InstanceNumber,2)==size(parms.ImageTypes,2)
+            % Get table
+            for iNum = 1:size(parms.InstanceNumber,2)
+                tableInNumImType{iNum,1} = parms.InstanceNumber(1,iNum);
+                tableInNumImType{iNum,2} = parms.ImageTypes(1,iNum);
             end
-            % Get instance number (0x20,0x13)
-            if isfield(iHeader,'InstanceNumber')
-                tableImTypeInNum{iDCM,3} = iHeader.InstanceNumber;
-            else
-                tableImTypeInNum{iDCM,3} = [];
+            % Sort rows
+            tableInNumImType = sortrows(tableInNumImType,1);
+            % Get ASL context
+            realASLContextCell = unique([tableInNumImType{:,2}]);
+            for iContext = 1:size(realASLContextCell,2)
+                parStruct.ImageType = realASLContextCell{1,iContext};
+                thisContext = xASL_bids_determineImageTypeGE(parStruct);
+                realASLContext = [realASLContext ',' thisContext];
             end
-            % Determine simplified image type
-            if ~isempty(tableImTypeInNum{iDCM,2})
-                tableImTypeInNum{iDCM,4} = xASL_bids_determineImageTypeGE(iHeader);
-            else
-                tableImTypeInNum{iDCM,4} = [];
-            end
+            realASLContext = realASLContext(2:end);
         end
     end
-    
-    % Sort rows
-    if sortNIfTIs && (length(size(tableImTypeInNum))>1)
-        emptyFields = cellfun(@isempty,tableImTypeInNum);
-        % Sort the table
-        if sum(emptyFields(:,3))<1
-            tableImTypeInNum = sortrows(tableImTypeInNum,2);
-            % Determine the ASLContext
-            ASLContextCell = unique([tableImTypeInNum(:,4)]);
-            for iContext = 1:size(ASLContextCell,1)
-                ASLContext = [ASLContext ',' ASLContextCell{iContext,1}];
-            end
-            ASLContext = ASLContext(2:end);
-        else
-            fprintf('Can not sort DICOMs, because at least one Instance Number is missing...\n');
-            sortNIfTIs = false;
-        end
-    end
-    
-    
+
 
 end
 
