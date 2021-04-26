@@ -267,7 +267,8 @@ end
 %% 10. Create DataPar.json
 
 % Write DataParFile if it does not exist already
-if (~xASL_exist(fullfile(pathLegacy, 'dataPar.json'),'file'))==2
+if ~(xASL_exist(fullfile(pathLegacy, 'dataPar.json'),'file')==2)
+    fprintf('Creating default dataPar.json since file was not found...\n');
     spm_jsonwrite(fullfile(pathLegacy, 'dataPar.json'), dataPar);
 end
 
