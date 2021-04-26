@@ -82,6 +82,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	DcmParDefaults.PhilipsNumberTemporalScans   = NaN;
 	DcmParDefaults.GELabelingDuration           = NaN;
 	DcmParDefaults.InversionTime                = NaN;
+    DcmParDefaults.ImageType                    = NaN;
 	
 	DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
 		          'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
@@ -297,26 +298,36 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                 end
 				
                 % Convert string-numbers to numbers if necessary
-				if ~isempty(thevalue)
-					if length(xASL_str2num(thevalue))>1
-						tmpTheValue = nonzeros(thevalue);
-						tmpTheValue = tmpTheValue(1);
-					else
-						tmpTheValue = thevalue;
+                if ~isempty(thevalue)
+                    if length(xASL_str2num(thevalue))>1
+                        tmpTheValue = nonzeros(thevalue);
+                        tmpTheValue = tmpTheValue(1);
+                    else
+                        tmpTheValue = thevalue;
                     end
-					
+                    
                     if ~strcmp(fieldname,'ImageType')
                         t_parms.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
                     else
                         t_parms.(fieldname){iMrFile} = tmpTheValue;
                     end
-				else
-					if imPar.bVerbose
-						if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
-					end
-					t_parms.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
-				end
-			end
+                else
+                    if imPar.bVerbose
+                        if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
+                    end
+                    if isfield(t_parms,fieldname)
+                        % Handle complex array type fields like ImageTypes robustly
+                        if length(size(t_parms.(fieldname)))>1
+                            if size(t_parms.(fieldname),2)>=iMrFile
+                                t_parms.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
+                            end
+                        end
+                    else
+                        % Default/Fallback
+                        t_parms.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
+                    end
+                end
+            end
 			
 			c_all_parms = struct;
 			% The more complex fields - strings and arrays are saved in cell

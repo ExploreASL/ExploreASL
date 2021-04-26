@@ -365,24 +365,32 @@ function realASLContext = xASL_imp_DCM2NII_Subject_RealASLContext(parms)
     % Fallback
     realASLContext = '';
 
-    if isfield(parms,'InstanceNumber') && isfield(parms,'ImageTypes')
-        if size(parms.InstanceNumber,2)==size(parms.ImageTypes,2)
-            % Get table
-            for iNum = 1:size(parms.InstanceNumber,2)
-                tableInNumImType{iNum,1} = parms.InstanceNumber(1,iNum);
-                tableInNumImType{iNum,2} = parms.ImageTypes(1,iNum);
+    try
+        if isfield(parms,'InstanceNumber') && isfield(parms,'ImageTypes')
+            if size(parms.InstanceNumber,2)==size(parms.ImageTypes,2)
+                % Get table
+                for iNum = 1:size(parms.InstanceNumber,2)
+                    tableInNumImType{iNum,1} = parms.InstanceNumber(1,iNum);
+                    if ~isempty(parms.ImageTypes{1,iNum})
+                        tableInNumImType{iNum,2} = parms.ImageTypes(1,iNum);
+                    else
+                        tableInNumImType{iNum,2} = '';
+                    end
+                end
+                % Sort rows
+                tableInNumImType = sortrows(tableInNumImType,1);
+                % Get ASL context
+                realASLContextCell = unique([tableInNumImType{:,2}]);
+                for iContext = 1:size(realASLContextCell,2)
+                    parStruct.ImageType = realASLContextCell{1,iContext};
+                    thisContext = xASL_bids_determineImageTypeGE(parStruct);
+                    realASLContext = [realASLContext ',' thisContext];
+                end
+                realASLContext = realASLContext(2:end);
             end
-            % Sort rows
-            tableInNumImType = sortrows(tableInNumImType,1);
-            % Get ASL context
-            realASLContextCell = unique([tableInNumImType{:,2}]);
-            for iContext = 1:size(realASLContextCell,2)
-                parStruct.ImageType = realASLContextCell{1,iContext};
-                thisContext = xASL_bids_determineImageTypeGE(parStruct);
-                realASLContext = [realASLContext ',' thisContext];
-            end
-            realASLContext = realASLContext(2:end);
         end
+    catch ME
+        warning('Extraction of real ASL context failed: %s', ME.message);
     end
 
 
