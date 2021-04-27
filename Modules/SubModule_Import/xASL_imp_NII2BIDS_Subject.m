@@ -478,6 +478,35 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 				end
 			end
 			
+			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			% Verify that TotalAcquiredPairs is a reasonable number
+			
+			% First count the number of controls, labels, and deltaMs
+			ASLContextControlIndex = cellfun(@(x)~isempty(x),regexp(ASLContextCell,'^control')); % Create a vector out of it
+			ASLContextControlIndex = ASLContextControlIndex(1:size(imNii,4)); % Remove the last empty field
+			ASLContextLabelIndex = cellfun(@(x)~isempty(x),regexp(ASLContextCell,'^label')); % Create a vector out of it
+			ASLContextLabelIndex = ASLContextLabelIndex(1:size(imNii,4)); % Remove the last empty field
+			ASLContextDeltaMIndex = cellfun(@(x)~isempty(x),regexp(ASLContextCell,'^deltaM')); % Create a vector out of it
+			ASLContextDeltaMIndex = ASLContextDeltaMIndex(1:size(imNii,4)); % Remove the last empty field
+			
+			% If TotalAcquiredPairs is 1, but more control/label pairs od deltaMs are present, then set this to the correct
+			% number
+			if ~isfield(jsonLocal,'TotalAcquiredPairs') || jsonLocal.TotalAcquiredPairs == 1
+				if sum(ASLContextDeltaMIndex) > 0
+					if sum(ASLContextControlIndex) == 0 && sum(ASLContextControlIndex) == 0
+						jsonLocal.TotalAcquiredPairs = sum(ASLContextDeltaMIndex);
+					else
+						warning('Cannot calculate TotalAcquiredPairs when both controls and deltaMs are present');
+					end
+				elseif sum(ASLContextControlIndex) > 0
+					if sum(ASLContextControlIndex) == sum(ASLContextLabelIndex)
+						jsonLocal.TotalAcquiredPairs = sum(ASLContextControlIndex);
+					else
+						warning('Cannot calculte TotalAcquiredPairs when control and label numbers differ');
+					end
+				end
+			end
+			
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Remove the AslContext field and save it as a separate file
             fContext = fopen([aslOutLabel '_' bidsPar.strAslContext '.tsv'],'w+');
