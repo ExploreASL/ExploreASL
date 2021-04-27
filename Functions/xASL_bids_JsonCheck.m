@@ -45,13 +45,19 @@ for iField = 1:length(bidsPar.listFieldsRemoveGeneral)
     end
 end
 
-% Remove non-ASL-BIDS fields
+% Remove non-ASL-BIDS fields from ASL sequences
 if strcmpi(fileType,'ASL') || strcmpi(fileType,'M0')
     for iField = 1:length(bidsPar.listFieldsRemoveASL)
         if isfield(jsonIn,bidsPar.listFieldsRemoveASL{iField})
             jsonRemove.(bidsPar.listFieldsRemoveASL{iField}) = '';
         end
     end
+else % And remove certain fields only from non-ASL sequences
+	for iField = 1:length(bidsPar.listFieldsRemoveNonASL)
+		if isfield(jsonIn,bidsPar.listFieldsRemoveNonASL{iField})
+			jsonRemove.(bidsPar.listFieldsRemoveNonASL{iField}) = '';
+		end
+	end
 end
 
 % Remove fields belonging to dataset_description
