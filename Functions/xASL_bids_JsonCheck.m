@@ -51,7 +51,15 @@ if strcmpi(fileType,'ASL') || strcmpi(fileType,'M0')
         if isfield(jsonIn,bidsPar.listFieldsRemoveASL{iField})
             jsonRemove.(bidsPar.listFieldsRemoveASL{iField}) = '';
         end
-    end
+	end
+	% And remove those additionally from M0s
+	if strcmpi(fileType,'M0')
+		for iField = 1:length(bidsPar.listFieldsRemoveM0)
+			if isfield(jsonIn,bidsPar.listFieldsRemoveM0{iField})
+				jsonRemove.(bidsPar.listFieldsRemoveM0{iField}) = '';
+			end
+		end
+	end
 else % And remove certain fields only from non-ASL sequences
 	for iField = 1:length(bidsPar.listFieldsRemoveNonASL)
 		if isfield(jsonIn,bidsPar.listFieldsRemoveNonASL{iField})
