@@ -115,8 +115,9 @@ if HasSingleSessionOnly
     nSessions = 1;
 else
     SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*_ASL_\d*\.nii'], 'FPList', [0 Inf]);
-    MaskedSessions = cellfun('isempty',strfind(SessionList,[ x.S.InputDataStr '_masked'])); % find qCBF_masked to exclude from SessionList
-    SessionListSUBJECTS_qCBF = SessionList(MaskedSessions,:); % include only qCBF in SessionList
+	% find sessions that don't have qCBF_masked, so that _masked can be excluded from SessionList
+    nonMaskedSessions = cellfun('isempty',strfind(SessionList,[ x.S.InputDataStr '_masked'])); 
+    SessionListSUBJECTS_qCBF = SessionList(nonMaskedSessions,:); % include only qCBF in SessionList and exclude _masked
     for n = 1:size(x.SUBJECTS,2)
         SessionsSingleSUBJECT = ~cellfun('isempty',strfind(SessionListSUBJECTS_qCBF,[x.SUBJECTS{n}])); % Check how many qCBF files are present of each subject
         SessionsPerSubject(n,1) = sum(SessionsSingleSUBJECT); % Define number of sessions as amount of qCBF files per subject
