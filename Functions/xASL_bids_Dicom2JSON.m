@@ -133,8 +133,14 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                 % xASL_io_DmtkRead for macOS, so we also only read one file
                 % for macOS
                 continue;
-            else
-                xASL_TrackProgress(iFile, nFiles);
+			else
+				if nFiles > 300
+					if mod(iFile,50) == 0
+						xASL_TrackProgress(iFile, nFiles);
+					end
+				else
+					xASL_TrackProgress(iFile, nFiles);
+				end
             end
             
 			ifname = FileList{iFile};
