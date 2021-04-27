@@ -447,6 +447,32 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
             end
             jsonLocal.ASLContext = sprintf('%s\n',jsonLocal.ASLContext);
 
+			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % If Post-labeling delay or labeling duration is longer than 1 then we need to verify this against
+			% the ASLContext - these fields should be 0 for m0scans
+            listFieldsZero = {'PostLabelingDelay', 'LabelingDuration'};
+			
+			% Find m0scans indices in ASLContext
+			ASLContextCell = strsplit(jsonLocal.ASLContext,'\n'); % Split to cells by line-end
+			ASLContextM0Index = regexp(ASLContextCell,'^m0scan'); % Find m0scans
+			ASLContextM0Index = cellfun(@(x)~isempty(x),ASLContextM0Index); % Create a vector out of it
+			ASLContextM0Index = ASLContextM0Index(1:size(imNii,4)); % Remove the last empty field
+			
+			% Go through all variables, check those that have length bigger than 1
+			for iRepeat = 1:length(listFieldsZero)
+				if isfield(jsonLocal,listFieldsZero{iRepeat}) && length(jsonLocal.(listFieldsZero{iRepeat})) > 1
+					% Make sure the vector is a row vector
+					jsonLocal.(listFieldsZero{iRepeat}) = jsonLocal.(listFieldsZero{iRepeat})(:)';
+					% Check the all m0scans have zeros
+					if ~isequal(ASLContextM0Index,jsonLocal.(listFieldsZero{iRepeat})==0)
+						% If not, then set to zeros and report a warning
+						jsonLocal.(listFieldsZero{iRepeat})(ASLContextM0Index) = 0;
+						warning(['Had to set non-zero values for m0scan to zero in ' listFieldsZero{iRepeat}]);
+					end
+				end
+			end
+			
+			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Remove the AslContext field and save it as a separate file
             fContext = fopen([aslOutLabel '_' bidsPar.strAslContext '.tsv'],'w+');
             fwrite(fContext,sprintf('volume_type\n'));
