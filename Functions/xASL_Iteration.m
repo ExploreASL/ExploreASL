@@ -333,9 +333,9 @@ function [bAborted, x] = runIteration(db)
             fprintf('\n%s\n',repmat('+',1,72)); % just draw a separator line
             [StartI, EndI] = regexp(diaryFileEx, 'ASL_\d','ONCE'); %to find the name of the session inside diaryFileEx: ASL_with any digit after
             session= diaryFileEx(StartI:EndI); %isolate "ASL_1 or ASL_2 etc
-            if ~isempty (session) %writes the session only for ASL module
+             if ~isempty (StartI) %writes the session only for ASL module
                 fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Session: ' session ', Module: ' x.MUTEXID ',  ' datestr(now) ' ===']);
-            else
+            else % Structural or Population module
                 fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Module: ' x.MUTEXID ',  ' datestr(now) ' ===']);
             end
             fprintf('\n');
