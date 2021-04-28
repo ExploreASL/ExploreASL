@@ -1,7 +1,7 @@
-function xASL_imp_ANONYMIZE(imPar)
-%xASL_imp_ANONYMIZE Run defacing.
+function xASL_imp_Anonymize(imPar)
+%xASL_imp_Anonymize Run defacing.
 %
-% FORMAT: xASL_imp_ANONYMIZE(imPar)
+% FORMAT: xASL_imp_Anonymize(imPar)
 % 
 % INPUT:
 %   imPar      - JSON file with structure with import parameters (REQUIRED, STRUCT)
@@ -17,7 +17,7 @@ function xASL_imp_ANONYMIZE(imPar)
 % 3. Process all anatomical files (`xASL_spm_deface`)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_ANONYMIZE(imPar);
+% EXAMPLE:     xASL_imp_Anonymize(imPar);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

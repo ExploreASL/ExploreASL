@@ -205,7 +205,7 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
 
     %% 5. Run defacing
     if bRunSubmodules(3)
-        xASL_imp_ANONYMIZE(imPar);
+        xASL_imp_Anonymize(imPar);
     end
 
 
