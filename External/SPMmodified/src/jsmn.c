@@ -262,13 +262,18 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 			case ':':
 				parser->toksuper = parser->toknext - 1;
 				break;
+			case '=':
+			    /* ExploreASL fix AMW 21-04-2021 to 'understand' use of = not : */
+			    mexPrintf( "jsmn.c:: Warning. Found '=' where ':' expected\n" );
+				parser->toksuper = parser->toknext - 1;
+				break;
 			case ',':
 				if (tokens != NULL && parser->toksuper != -1 &&
-						tokens[parser->toksuper].type != JSMN_ARRAY &&
-						tokens[parser->toksuper].type != JSMN_OBJECT) {
-					/* Jumping to next line without finding really any token
-					 ExploreASL fix JP 2019-25-10 to work with empty values*/
-					if (parser->toksuper == (parser->toknext - 1))
+				    tokens[parser->toksuper].type != JSMN_ARRAY &&
+				    tokens[parser->toksuper].type != JSMN_OBJECT) {	
+					/* Jumping to next line without finding really any token                                                                         
+					   ExploreASL fix JP 2019-25-10 to work with empty values */
+				        if (parser->toksuper == (parser->toknext - 1)) /* nothing assigned yet */
 					{
 						mexPrintf("jsmn.c:: Warning. Empty value found: %.*s, assigning NaN.\n",tokens[parser->toksuper].end-tokens[parser->toksuper].start,js+tokens[parser->toksuper].start);
 						
@@ -283,8 +288,9 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 						count++;
 						if (parser->toksuper != -1 && tokens != NULL)
 							tokens[parser->toksuper].size++;
-					}	
-					
+					}					
+					/* mexPrintf("parser ksuper %d, parser next %d, parser pos %d\n", parser->toksuper, parser->toknext, parser->pos );  */
+
 #ifdef JSMN_PARENT_LINKS
 					parser->toksuper = tokens[parser->toksuper].parent;
 #else
@@ -293,11 +299,11 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 							if (tokens[i].start != -1 && tokens[i].end == -1) {
 								parser->toksuper = i;
 								break;
-							}
-						}
-					}
+							} /* if (tokens[i].start */
+						} /* if (tokens[i].type */ 
+					} /* for i */ 
 #endif
-				}
+				}				
 				break;
 #ifdef JSMN_STRICT
 			/* In strict mode primitives are: numbers and booleans */

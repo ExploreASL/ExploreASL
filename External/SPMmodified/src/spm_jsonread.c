@@ -342,7 +342,7 @@ static int array(char *js, jsmntok_t *tok, mxArray **mx) {
     mxArray *array[1], *parray[2];
     mwSize d;
     int perm, sts;
-    
+
     *mx = mxCreateCellMatrix(tok->size, 1);
     for (i = 0, j = 0; i < tok->size; i++) {
         j += create_struct(js, tok+1+j, &ma);
@@ -587,7 +587,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     /* Parse JSON data */
     tok = parse(js, jslen);
-
+   
     /* Create output structure */
     create_struct(js, tok, &plhs[0]);
 

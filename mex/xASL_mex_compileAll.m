@@ -60,4 +60,8 @@ else
     end
 end
 
+% Compute the special SPM functions we use and modify
+cd(fullfile(pathXASL,'External','SPMmodified','src'))
+mex -O -largeArrayDims spm_jsonread.c jsmn.c -DJSMN_PARENT_LINKS
+
 end
