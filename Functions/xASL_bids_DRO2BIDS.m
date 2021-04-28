@@ -115,7 +115,7 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
     studyPar.EthicsApprovals = {'ASPIRE Project'};
     studyPar.ReferencesAndLinks = {'https://github.com/gold-standard-phantoms/asldro', 'https://pypi.org/project/asldro/', 'https://asldro.readthedocs.io/'};
     studyPar.DatasetDOI = 'https://pypi.org/project/asldro/';
-    studyPar.LabelingType = 'PCASL';
+    studyPar.LabelingType = jsonASL.ArterialSpinLabelingType;
     studyPar.ASLContext = 'm0scan,control,label';
     
     % Write sourceStructure file
