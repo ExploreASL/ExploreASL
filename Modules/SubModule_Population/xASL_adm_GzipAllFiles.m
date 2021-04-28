@@ -1,19 +1,19 @@
-function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, EXTERNAL)
+function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 %xASL_adm_GzipAllFiles Zip files or folders
 %
-% FORMAT: xASL_adm_GzipAllFiles(x, bFolder, bUseLinux)
+% FORMAT: xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 %
 % INPUT:
-%   ROOT        - Root path of the folder structure you want to gzip recursively (REQUIRED)
-%   bFolder     - Boolean, true for zipping complete folders rather than
-%                 individual files (Unix only, OPTIONAL, DEFAULT=false)
-%   bUseLinux   - Boolean, true for using Unix's own filesystem and Gzip functionality.
-%                 Has a much faster i/o than Matlab's i/o. Assumes that
-%                 gzip is installed on Linux/MacOS (which is a fair
-%                 assumption). (OPTIONAL, DEFAULT = true for Unix (Linux/Mac) and false
-%                 otherwise (e.g. pc/Windows)
-%   EXTERNAL    - Path to external Gzip tools like SuperGzip (.../ExploreASL/External) 
-%                 (OPTIONAL, DEFAULT = [])
+%   ROOT         - Root path of the folder structure you want to gzip recursively (REQUIRED)
+%   bFolder      - Boolean, true for zipping complete folders rather than
+%                  individual files (Unix only, OPTIONAL, DEFAULT=false)
+%   bUseLinux    - Boolean, true for using Unix's own filesystem and Gzip functionality.
+%                  Has a much faster i/o than Matlab's i/o. Assumes that
+%                  gzip is installed on Linux/MacOS (which is a fair
+%                  assumption). (OPTIONAL, DEFAULT = true for Unix (Linux/Mac) and false
+%                  otherwise (e.g. pc/Windows)
+%   pathExternal - Path to external Gzip tools like SuperGzip (.../ExploreASL/External) 
+%                  (OPTIONAL, DEFAULT = [])
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function zips NIfTI files or folders recursively and deletes
@@ -37,8 +37,8 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, EXTERNAL)
     elseif nargin<3 || isempty(bUseLinux)
         bUseLinux = false;
     end
-    if nargin<4 || isempty(EXTERNAL)
-        EXTERNAL = [];
+    if nargin<4 || isempty(pathExternal)
+        pathExternal = [];
     end
 
     %% ----------------------------------------------------
@@ -49,12 +49,12 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, EXTERNAL)
         return;
     else
         %% 2) Otherwise use the multithreaded SuperGzip for Windows
-        if ~isempty(EXTERNAL)
+        if ~isempty(pathExternal)
             PathList = xASL_adm_GetFileList(ROOT, '^.*\.(nii)$', 'FPListRec', [0 Inf], false);
             fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
             numCores = feature('numcores');
             % Get SuperGzip path
-            PathToSuperGzip = fullfile(EXTERNAL, 'SuperGZip', 'SuperGZip_Windows.exe');
+            PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'SuperGZip_Windows.exe');
             % Define SuperGzip command
             command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' ROOT ' *.nii'];
             % Run script
