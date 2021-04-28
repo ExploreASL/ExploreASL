@@ -462,6 +462,10 @@ function [differences,identical,dn] = compareJSON(differences,identical,bPrintRe
         % Import JSON files
         jsonA = spm_jsonread(char(currentFileA));
         jsonB = spm_jsonread(char(currentFileB));
+        
+        % Make all paths to paths of THIS os
+        jsonA = fixPathFields(jsonA);
+        jsonB = fixPathFields(jsonB);
 
         % Get JSON field names
         fieldNamesA = fieldnames(jsonA);
@@ -497,6 +501,26 @@ function [differences,identical,dn] = compareJSON(differences,identical,bPrintRe
             dn = dn+1;
         end
 
+    end
+
+end
+
+
+%% Fix path fields
+function jsonStruct = fixPathFields(jsonStruct)
+
+    fieldNames = fieldnames(jsonStruct);
+    numOfField = size(fieldNames,1);
+    
+    % Check number of fields
+    if numOfField > 0
+        for iField = 1:numOfField
+            currentValue = jsonStruct.(fieldNames{iField,1});
+            if ischar(currentValue)
+                % Convert all paths to unix paths
+                jsonStruct.(fieldNames{iField,1}) = strrep(currentValue,'\','/');
+            end
+        end
     end
 
 end
