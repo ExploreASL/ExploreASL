@@ -216,8 +216,14 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
                     jsonLocal.RepetitionTimePreparation = max(jsonLocal.RepetitionTimePreparation);
                     warning('TR was a vector. Taking the maximum only.');
                 end
-            end
+			end
 
+			% Check echo time, for vectors
+			if isfield(jsonLocal,'EchoTime') && length(jsonLocal.EchoTime)>1
+				% Remove zero entries
+				jsonLocal.EchoTime = jsonLocal.EchoTime(jsonLocal.EchoTime ~= 0);
+			end
+			
             % Convert the field name of the old LabelingType
             if isfield(jsonLocal,'LabelingType')
                 if isfield(jsonLocal,'ArterialSpinLabelingType') && ~isequal(jsonLocal.LabelingType,jsonLocal.ArterialSpinLabelingType)
@@ -482,11 +488,11 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 			% Verify that TotalAcquiredPairs is a reasonable number
 			
 			% First count the number of controls, labels, and deltaMs
-			ASLContextControlIndex = cellfun(@(x)~isempty(x),regexp(ASLContextCell,'^control')); % Create a vector out of it
+			ASLContextControlIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^control')); % Create a vector out of it
 			ASLContextControlIndex = ASLContextControlIndex(1:size(imNii,4)); % Remove the last empty field
-			ASLContextLabelIndex = cellfun(@(x)~isempty(x),regexp(ASLContextCell,'^label')); % Create a vector out of it
+			ASLContextLabelIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^label')); % Create a vector out of it
 			ASLContextLabelIndex = ASLContextLabelIndex(1:size(imNii,4)); % Remove the last empty field
-			ASLContextDeltaMIndex = cellfun(@(x)~isempty(x),regexp(ASLContextCell,'^deltaM')); % Create a vector out of it
+			ASLContextDeltaMIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^deltam')); % Create a vector out of it
 			ASLContextDeltaMIndex = ASLContextDeltaMIndex(1:size(imNii,4)); % Remove the last empty field
 			
 			% If TotalAcquiredPairs is 1, but more control/label pairs od deltaMs are present, then set this to the correct
@@ -574,8 +580,14 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 
                         if scaleFactor
                             imM0 = imM0 .* scaleFactor;
-                        end
+						end
 
+						% Check echo time, for vectors
+						if isfield(jsonM0,'EchoTime') && length(jsonM0.EchoTime)>1
+							% Remove zero entries
+							jsonM0.EchoTime = jsonM0.EchoTime(jsonM0.EchoTime ~= 0);
+						end
+						
                         jsonM0Write = jsonM0;
 
                         if isfield(jsonLocal,'SliceTiming')
