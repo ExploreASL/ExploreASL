@@ -105,6 +105,9 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                         fprintf('No matching scan aliases found, keeping the original name...\n');
                         WarningMessage = ['ExploreASL_Import: Unknown scan ID ' scanID ' found, don"t know what this is'];
                         scan_name = scanNames{iScan};
+                        branch = matches{1}; % Fallback (possibly not correct)
+                        scanpath = fullfile(imPar.RawRoot,branch);
+                        destdir = fullfile(SubjDir, [scanNames{iScan} '_' num2str(iSession)]); % Fallback (possibly not correct)
                         dcm2niiCatchedErrors = xASL_imp_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
                     end
                 end
