@@ -28,6 +28,8 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+    %% DRO 2 BIDS
+
     % Check input arguments
     if nargin<2
         droSubject = 'sub-Sub1'; % DEFAULT
@@ -52,6 +54,8 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
 
     % Remove the ground truth files
     xASL_delete(groundTruthDirectory,true);
+    
+    %% sub-Sub1_asl.json
 
     % Read ASL JSON file
     jsonASL = spm_jsonread(fullfile(perfDirectory,[droSubject,'_asl.json']));
@@ -75,15 +79,47 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
     
     % Write JSON file
     spm_jsonwrite(fullfile(perfDirectory,[droSubject,'_asl.json']),jsonASL);
+    
+    %% dataset_description.json
 
     % Define required fields
     jsonTemplate.Name = 'DRO_Digital_Reference_Object';
     
     % Call script to fix missing fields
     [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(jsonTemplate);
-
-    % Write file
+    
+    % Write dataset_description file
     spm_jsonwrite(fullfile(droTestPatient,'rawdata','dataset_description.json'),jsonDescription);
+    
+    %% sourceStructure.json
+    
+    % Define sourceStructure
+    sourceStructure.folderHierarchy = {'^(.)+$','^(ASL|T1w|M0|T2|FLAIR)$'};
+    sourceStructure.tokenOrdering = [1,0,2];
+    sourceStructure.tokenSessionAliases = {'',''};
+    sourceStructure.tokenScanAliases = {'^ASL$','ASL4D','^T1w$','T1w','^M0$','M0','^T2$','T2w','^FLAIR$','FLAIR'};
+    sourceStructure.bMatchDirectories = true;
+    
+    % Write sourceStructure file
+    spm_jsonwrite(fullfile(droTestPatient,'sourceStructure.json'),sourceStructure);
+    
+    %% studyPar.json
+    
+    % Define studyPar
+    studyPar.DatasetType = 'raw';
+    studyPar.License = 'license';
+    studyPar.Authors = {'ASPIRE Project: Gold Standard Phantoms'};
+    studyPar.Acknowledgements = 'acknowledgements';
+    studyPar.HowToAcknowledge = 'Gold Standard Phantoms';
+    studyPar.Funding = {'ASPIRE Project'};
+    studyPar.EthicsApprovals = {'ASPIRE Project'};
+    studyPar.ReferencesAndLinks = {'https://github.com/gold-standard-phantoms/asldro', 'https://pypi.org/project/asldro/', 'https://asldro.readthedocs.io/'};
+    studyPar.DatasetDOI = 'https://pypi.org/project/asldro/';
+    studyPar.LabelingType = 'PCASL';
+    studyPar.ASLContext = 'm0scan,control,label';
+    
+    % Write sourceStructure file
+    spm_jsonwrite(fullfile(droTestPatient,'studyPar.json'),studyPar);
 
 
 end
