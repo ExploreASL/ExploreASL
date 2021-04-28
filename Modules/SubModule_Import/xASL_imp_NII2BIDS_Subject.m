@@ -67,7 +67,7 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 
 			% If RepetitionTimePreparation is equal to RepetitionTime, then remove RepetitionTimePreparation
 			if isfield(jsonAnat,'RepetitionTime') && isfield(jsonAnat,'RepetitionTimePreparation') &&...
-					isequal(jsonAnat.RepetitionTime,jsonAnat.RepetitionTimePreparation)
+					isnear(jsonAnat.RepetitionTime,jsonAnat.RepetitionTimePreparation)
 				jsonAnat = rmfield(jsonAnat,'RepetitionTimePreparation');
 			end
 			

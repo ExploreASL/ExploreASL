@@ -51,7 +51,10 @@ parms.RescaleIntercept              = unique([hdr.SliceInformation(:).RescaleInt
 
 % Converts parameters from the legacy to the BIDS format
 parms = xASL_bids_parms2BIDS(parms, [], 1, 0);
-		
+
+% To make sure that this is not removed for non-ASL sequences
+parms.RepetitionTime                = hdr.RepetitionTime/1000;		
+
 % Saves the JSON sidecar
 spm_jsonwrite(pathJSON, parms);
 
