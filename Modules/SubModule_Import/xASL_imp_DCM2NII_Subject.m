@@ -1,4 +1,4 @@
-function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
 %xASL_imp_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
 % FORMAT: [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
@@ -10,6 +10,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
 %   numOf                  - Number of visits, sessions, scans etc. (REQUIRED, STRUCT)
 %   settings               - Boolean settings (REQUIRED, STRUCT)
 %   globalCounts           - Converted, skipped & missing scans (REQUIRED, STRUCT)
+%   scanNames              - Scan names
 %   iSubject               - Current subject (REQUIRED, INTEGER)
 %   summary_lines          - Summary lines (REQUIRED, CELL ARRAY)
 %   matches                - Matches (REQUIRED, CELL ARRAY)
@@ -21,6 +22,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
 %   summary_lines          - Summary lines
 %   PrintDICOMFields       - Print DICOM fields
 %   globalCounts           - Converted, skipped & missing scans
+%   scanNames              - Scan names
 %   dcm2niiCatchedErrors   - DCM2NII catched errors
 %   pathDcmDict            - Path to DCM dictionary
 %                         
@@ -100,7 +102,9 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedEr
                         scanNames{iScan} = imPar.tokenScanAliases{iAlias,2};
                     else
                         % keep the original name
+                        fprintf('No matching scan aliases found, keeping the original name...\n');
                         WarningMessage = ['ExploreASL_Import: Unknown scan ID ' scanID ' found, don"t know what this is'];
+                        scan_name = scanNames{iScan};
                         dcm2niiCatchedErrors = xASL_imp_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
                     end
                 end
