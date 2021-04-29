@@ -31,6 +31,10 @@ function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x)
 %              future this could go to different stages, e.g. dcm2niiX or
 %              PWI stage)
 %
+%              Note that BASIL is also implemented, but it doesn't allow a
+%              standard space quantification yet (it would need to use
+%              imSliceNumber)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x);
 % __________________________________
@@ -44,6 +48,7 @@ if  xASL_stat_SumNan(M0_im(:))==0
     error('Empty M0 image, something went wrong in M0 processing');
 end
 
+%% Single PLD part, remove for multi-PLD
 x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
 if numel(x.Q.Initial_PLD)>1
     warning('Multiple PLDs detected, selecting maximal value');
@@ -62,14 +67,20 @@ M0_im = double(M0_im);
 if ~x.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 else
-	% Calculate the vector of SliceReadoutTime
-	SliceReadoutTime = xASL_quant_SliceTiming(x,x.P.Path_ASL4D);
-	
+    % Calculate the vector of SliceReadoutTime
+    SliceReadoutTime = xASL_quant_SliceTiming(x,x.P.Path_ASL4D);
+    
     %% 1    PLD scalefactor (gradient if 2D multi-slice)
+    % For BASIL the x.Q.SliceReadoutTime is used internally, otherwise
+    % x.Q.SliceReadoutTime is added to ScaleImage
+    
     switch lower(x.readout_dim)
         case '3d'
             fprintf('%s\n','3D sequence, not accounting for SliceReadoutTime (homogeneous PLD for complete volume)');
-            ScaleImage = ScaleImage.*x.Q.Initial_PLD;
+            x.Q.SliceReadoutTime = 0;
+            if ~x.bUseBasilQuantification
+                ScaleImage = ScaleImage.*x.Q.Initial_PLD;
+            end
 
         case '2d' % Load slice gradient
             fprintf('%s\n','2D sequence, accounting for SliceReadoutTime');
@@ -87,7 +98,26 @@ else
 			imSliceNumber = round(imSliceNumber);
 			imSliceNumber(imSliceNumber<1) = 1;
 			imSliceNumber(imSliceNumber>length(SliceReadoutTime)) = length(SliceReadoutTime);
-			ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD
+			ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD            
+            
+            %% >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    
+            %% >>> BASIL CAN THIS BE DELETED/REPLACED BY THE PREVIOUS NEW CODE BY JP?
+            %% TAKING INTO ACCOUNT THAT BASIL USES x.Q.SliceReadoutTime instead of ScaleImage
+            if x.bUseBasilQuantification
+                if ~isnumeric(x.Q.SliceReadoutTime)
+                    if strcmp(x.Q.SliceReadoutTime,'shortestTR')
+                        ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
+                        if  isfield(ASL_parms,'RepetitionTime')
+                            %  Load original file to get nSlices
+                            nSlices = size(xASL_io_Nifti2Im(x.P.Path_ASL4D),3);
+                            x.Q.SliceReadoutTime = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
+                        else
+                            error('ASL_parms.RepetitionTime was expected but did not exist!');
+                        end
+                    end
+                end
+            end
+            
         otherwise
             error('Wrong x.readout_dim value!');
     end
@@ -248,11 +278,18 @@ if x.ApplyQuantification(3)
         case 'casl'
             fprintf('%s',['LabelingDuration = ' num2str(x.Q.LabelingDuration) ' ms, ']);
             fprintf('%s',['PLD (ms) = ' num2str(x.Q.Initial_PLD)]);
-	end
+    end
 
 	if max(SliceReadoutTime)>0 && strcmpi(x.readout_dim,'2D')
 		fprintf('%s',[' + ' num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1)']);
 	end
+%% >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    
+%     % CAN PROBABLY BE DELETED >>> BASIL
+%     if isfield(x.Q,'SliceReadoutTime')
+%         if x.Q.SliceReadoutTime>0 && strcmpi(x.readout_dim,'2D')
+%             fprintf('%s',[' + ' num2str(x.Q.SliceReadoutTime) ' ms*(slice-1)']);
+%         end
+%     end
 
     fprintf('\n%s',['labeling efficiency (neck*Bsup) = ' num2str(x.Q.LabEff_Orig) ' * ' num2str(x.Q.LabEff_Bsup) ', ']);
     fprintf('\n%s','assuming ');
