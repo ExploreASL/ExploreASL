@@ -82,7 +82,6 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	DcmParDefaults.PhilipsNumberTemporalScans   = NaN;
 	DcmParDefaults.GELabelingDuration           = NaN;
 	DcmParDefaults.InversionTime                = NaN;
-    DcmParDefaults.ImageType                    = NaN;
 	
 	DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
 		          'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
@@ -93,7 +92,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	DcmFieldList = {'RepetitionTime', 'EchoTime', 'NumberOfAverages', 'RescaleSlope', ...
 					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
 					'AcquisitionMatrix', 'Rows', 'Columns', 'NumberOfAverages', 'NumberOfTemporalPositions', ...
-                    'RWVIntercept', 'RWVSlope', 'InstanceNumber', 'ImageType'}; % ImageType -> ImageTypes array
+                    'RWVIntercept', 'RWVSlope'};
 	
 	bVendor = 'Unknown';
 	
@@ -311,27 +310,12 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                     else
                         tmpTheValue = thevalue;
                     end
-                    
-                    if ~strcmp(fieldname,'ImageType')
-                        t_parms.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
-                    else
-                        t_parms.(fieldname){iMrFile} = tmpTheValue;
-                    end
+                    t_parms.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
                 else
-                    if imPar.bVerbose
-                        if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
-                    end
-                    if isfield(t_parms,fieldname)
-                        % Handle complex array type fields like ImageTypes robustly
-                        if length(size(t_parms.(fieldname)))>1
-                            if size(t_parms.(fieldname),2)>=iMrFile
-                                t_parms.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
-                            end
-                        end
-                    else
-                        % Default/Fallback
-                        t_parms.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
-                    end
+					if imPar.bVerbose
+						if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
+					end
+					t_parms.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
                 end
             end
 			
@@ -381,36 +365,25 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			% Checks if the field values were the same for all dicoms and keep only one from the same value
 			for iField=1:length(dcmfields)
 				fieldname = dcmfields{iField};
-				if  isfield(t_parms,fieldname)
-                    if ~iscell(t_parms.(fieldname))
-                        if ~strcmp(fieldname,'InstanceNumber')
-                            parms.(fieldname) = unique(t_parms.(fieldname));
-                        else
-                            parms.(fieldname) = t_parms.(fieldname);
-                        end
-
-                        % Remove (set to NaN) also those that differ only minimally
-                        if length(parms.(fieldname))>1 && isnumeric(parms.(fieldname))
-                            iDiff = abs(parms.(fieldname) - parms.(fieldname)(1))./parms.(fieldname)(1);
-                            iDiff(1) = 1;
-                            parms.(fieldname)(iDiff<0.001) = NaN;
-                        end
-                        % There's one or more NaNs
-                        nNaN = sum(isnan(parms.(fieldname)));
-                        if nNaN > 0
-                            % Only NaNs
-                            if nNaN == length(parms.(fieldname))
-                                parms.(fieldname) = NaN;
-                            else
-                                parms.(fieldname) = parms.(fieldname)(~isnan(parms.(fieldname)));
-                            end
-                        end
-                    else
-                        % ImageType(s) array for sequence analysis
-                        parms.(fieldname) = t_parms.(fieldname){1};          % ImageType
-                        parms.([fieldname 's']) = t_parms.(fieldname);       % ImageTypes
+                if  isfield(t_parms,fieldname)
+                    parms.(fieldname) = t_parms.(fieldname);
+                    % Remove (set to NaN) also those that differ only minimally
+                    if length(parms.(fieldname))>1 && isnumeric(parms.(fieldname))
+                        iDiff = abs(parms.(fieldname) - parms.(fieldname)(1))./parms.(fieldname)(1);
+                        iDiff(1) = 1;
+                        parms.(fieldname)(iDiff<0.001) = NaN;
                     end
-				end
+                    % There's one or more NaNs
+                    nNaN = sum(isnan(parms.(fieldname)));
+                    if nNaN > 0
+                        % Only NaNs
+                        if nNaN == length(parms.(fieldname))
+                            parms.(fieldname) = NaN;
+                        else
+                            parms.(fieldname) = parms.(fieldname)(~isnan(parms.(fieldname)));
+                        end
+                    end
+                end
 			end
 		end
 		
@@ -567,17 +540,9 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 		
 		% Merges them with parms
 		parms = xASL_bids_parms2BIDS(parms, JSONParms, 1, 0);
-        
-        % Remove InstanceNumbers & ImageTypes from JSON file, we only need them for reordering purposes
-        if isfield(parms,'InstanceNumber')
-            parmsJSON = rmfield(parms, 'InstanceNumber');
-        end
-        if isfield(parmsJSON,'ImageTypes')
-            parmsJSON = rmfield(parmsJSON, 'ImageTypes');
-        end
 		
 		% Saves the JSON file
-		spm_jsonwrite(pathJSON, parmsJSON);
+		spm_jsonwrite(pathJSON, parms);
 		
     end
 
