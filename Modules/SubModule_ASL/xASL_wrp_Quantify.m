@@ -276,7 +276,11 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-[~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x);
+if isfield(x, 'bUseBasilQuantification') && x.bUseBasilQuantification
+    [~, CBF] = xASL_quant_Basil(PWI, M0_im, SliceGradient, x);
+else
+    [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x);
+end
 
 if x.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
