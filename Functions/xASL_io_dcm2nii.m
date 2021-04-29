@@ -361,7 +361,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                 % EQUAL FOR THE dcm2niiX OUTPUT AND THE JSON THAT WE CREATE
                 % WITH DCMTK
                 % ALSO BIDS REQUIRES TO KEEP '-' IN
-
+                
                 dest_file = fullfile(destdir,[DestFileName '.nii']);
 				
 				% Check for suspicious illegal characters
@@ -405,8 +405,15 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     temp_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
                     [Gpath, Gfile] = xASL_fileparts(dest_file);
                     dest_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
+                    % Move JSON file
                     if xASL_exist(temp_BIDS, 'file')
                         xASL_Move(temp_BIDS, dest_BIDS, parms.Overwrite, parms.Verbose);
+                        % Add InstanceNumber if possible
+                        if ~isempty(niiInstanceNumber)
+                            tmpJSON = spm_jsonread(dest_BIDS);
+                            tmpJSON.InstanceNumber = niiInstanceNumber;
+                            spm_jsonwrite(dest_BIDS,tmpJSON);
+                        end
                     end
                 end
             end

@@ -329,58 +329,34 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     % Fallback
     ASLContext = '';
     
-    % Fallback InstanceNumbers
-    niiInstanceNumbers = zeros(size(nii_files));
+    % Fallback niiTable
+    niiTable = cell(size(nii_files,2),size(nii_files,1)*3);
     
-    % Get InstanceNumbers
-    expression = '_(\d+)$';
-    for iNii = 1:length(niiInstanceNumbers)
+    % Fill niiTable
+    for iNii = 1:size(niiTable,1)
         filePath = nii_files{1,iNii};
-        [~, fileName, ~] = xASL_fileparts(filePath);
-        startIndex = regexp(fileName,expression);
-        if ~isempty(startIndex)
-            niiInstanceNumbers(1,iNii) = xASL_str2num(fileName(startIndex+1:end));
-        else
-            niiInstanceNumbers(1,iNii) = NaN;
-        end
-    end
-    
-    % Warning
-    if sum(isnan(niiInstanceNumbers))~=0
-        warning('Something went wrong trying to determine the InstanceNumbers...');
-    end
-    
-    % Fallback ImageTypes
-    niiImageTypes = cell(size(nii_files));
-    
-    % Get ImageTypes
-    for iNii = 1:length(niiImageTypes)
-        try
-            filePath = nii_files{1,iNii};
-            [rootName, fileName, ~] = xASL_fileparts(filePath);
-            tmpJson = spm_jsonread(fullfile(rootName,[fileName '.json']));
-            % Get individual imageType
-            if isfield(tmpJson, 'Manufacturer')
-                if strcmp(tmpJson.Manufacturer, 'GE')
-                    niiImageTypes{1,iNii} = xASL_bids_determineImageTypeGE(tmpJson);
-                else
-                    niiImageTypes{1,iNii} = NaN;
-                end
+        [rootName, fileName, ~] = xASL_fileparts(filePath);
+        niiTable{iNii,1} = fileName;
+        % Open JSON file
+        tmpJSON = spm_jsonread(fullfile(rootName,[fileName '.json']));
+        niiTable{iNii,2} = xASL_str2num(tmpJSON.InstanceNumber);
+        if isfield(tmpJSON, 'Manufacturer')
+            if ~isempty(strfind(tmpJSON.Manufacturer, 'GE'))
+                niiTable{iNii,3} = xASL_bids_determineImageTypeGE(tmpJSON);
             else
-                niiImageTypes{1,iNii} = NaN;
+                niiTable{iNii,3} = NaN;
             end
-        catch
-            warning('Something went wrong trying to determine the ImageTypes...');
+        else
+            niiTable{iNii,3} = NaN;
         end
     end
     
-    % Check if niiImageTypes does not contain NaNs and the InstanceNumbers are not both zero
-    if sum(cellfun(@isnumeric, niiImageTypes))==0 && sum(isnan(niiInstanceNumbers))==0
-        imageTypeTable = vertcat(num2cell(niiInstanceNumbers),niiImageTypes)';
-        imageTypeTable = sortrows(imageTypeTable,1);
+    % Get ASL context if possible
+    if sum(cellfun(@isnumeric, niiTable(:,3)))==0 
+        niiTable = sortrows(niiTable,2);
         ASLContext = '';
-        for iImageType = 1:length(imageTypeTable(:,2)')
-            ASLContext = [ASLContext ',' imageTypeTable{iImageType,2}];
+        for iImageType = 1:length(niiTable(:,3)')
+            ASLContext = [ASLContext ',' niiTable{iImageType,3}];
         end
         ASLContext = ASLContext(2:end);
         fprintf('ASL context: %s\n', ASLContext);
