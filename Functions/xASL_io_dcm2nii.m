@@ -210,7 +210,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         if parms.Verbose
             fprintf('executing: [%s]\n',cmdline);
             [status, msg] = system(cmdline, '-echo');
-            separatorline = repmat(char('-'),1,80);
+            separatorline = '==============================================================================================';
             fprintf('%s\n%s%s\nstatus: %d\n',separatorline,msg,separatorline,status);
         else
             [status, msg] = system(cmdline);
@@ -286,7 +286,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
             [niiPaths, niiNames, niiExt] = cellfun(@(y) xASL_fileparts(y), niiEntries, 'UniformOutput',false);
         end
 
-        nNifties = length(niiNames);
+        nNifties = length(niiNames); % Number of NIfTIs
         if nNifties==0
             error('Conversion failed: No nifti output files available');
         else
@@ -340,15 +340,27 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                 if iVolume==min(parms.Keep)
                     ScanNameOut = DestFileName;
                 end
+                
+                % Determine InstanceNumbers from fileNames
+                expression = '_(\d+)$'; % Get last number after last _ symbol
+                [~, fileName, ~] = xASL_fileparts(temp_file);
+                startIndex = regexp(fileName,expression);
+                niiInstanceNumber = fileName(startIndex+1:end);
 
                 if length(parms.Keep)>1 % add iVolume suffix (if there are multiple)
-                    DestFileName = [DestFileName '_' int2str(iVolume)];
+                    try
+                        DestFileName = [DestFileName '_' niiInstanceNumber];
+                    catch
+                        fprintf('Something went wrong while trying to get the InstanceNumber...\n');
+                        DestFileName = [DestFileName '_' int2str(iVolume)];
+                    end
                 end
-%                 DestFileName = xASL_adm_CorrectName(DestFileName); %
-%                 TAKING THIS OUT HERE, IF WE WANT THIS THIS NEEDS TO BE
-%                 EQUAL FOR THE dcm2niiX OUTPUT AND THE JSON THAT WE CREATE
-%                 WITH DCMTK
-%                 ALSO BIDS REQUIRES TO KEEP '-' IN
+                
+                % DestFileName = xASL_adm_CorrectName(DestFileName); %
+                % TAKING THIS OUT HERE, IF WE WANT THIS THIS NEEDS TO BE
+                % EQUAL FOR THE dcm2niiX OUTPUT AND THE JSON THAT WE CREATE
+                % WITH DCMTK
+                % ALSO BIDS REQUIRES TO KEEP '-' IN
 
                 dest_file = fullfile(destdir,[DestFileName '.nii']);
 				

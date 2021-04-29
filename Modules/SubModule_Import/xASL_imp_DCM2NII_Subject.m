@@ -37,7 +37,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
 
     %% Run DCM2NII for one individual subject
     
-    separatorline = repmat(char('+'),1,80);
+    separatorline = '==============================================================================================';
     subjectID = listsIDs.subjectIDs{iSubject};
 
     for iVisit=1:numOf.nVisits
@@ -196,24 +196,6 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                         % -----------------------------------------------------------------------------
                         % start the conversion. Note that the dicom filter is only in effect when a directory is specified as input.
                         % -----------------------------------------------------------------------------
-                        
-                        % extract relevant parameters from dicom header, if not
-                        % already exists
-                        % Find JSONpath that is there already
-                        SavePathJSON = {};
-                        SavePathJSON{1} = fullfile(destdir, [scan_name '.json']);
-                        SavePathJSON{2} = fullfile(destdir, [session_name '.json']);
-                        for iPath=1:length(nii_files)
-                            % now we add the path only if it didnt exist already in this list
-                            tmpNewPath = [nii_files{iPath}(1:end-4) '.json'];
-                            if ~max(cellfun(@(y) strcmp(y, tmpNewPath), SavePathJSON))
-                                SavePathJSON{end+1} = tmpNewPath;
-                            end
-                        end
-
-                        % Store JSON files
-                        [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, settings.bUseDCMTK, pathDcmDict);
-                        
                         try
                             [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, 'DicomFilter', imPar.dcmExtFilter, 'Verbose', imPar.bVerbose, 'Overwrite', imPar.bOverwrite, 'Version', imPar.dcm2nii_version, 'x', x);
 
@@ -237,6 +219,23 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                     
                     
                 end
+                
+                % extract relevant parameters from dicom header, if not
+                % already exists
+                % Find JSONpath that is there already
+                SavePathJSON = {};
+                SavePathJSON{1} = fullfile(destdir, [scan_name '.json']);
+                SavePathJSON{2} = fullfile(destdir, [session_name '.json']);
+                for iPath=1:length(nii_files)
+                    % now we add the path only if it didnt exist already in this list
+                    tmpNewPath = [nii_files{iPath}(1:end-4) '.json'];
+                    if ~max(cellfun(@(y) strcmp(y, tmpNewPath), SavePathJSON))
+                        SavePathJSON{end+1} = tmpNewPath;
+                    end
+                end
+                
+                % Store JSON files
+                [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, settings.bUseDCMTK, pathDcmDict);
                 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of
@@ -329,6 +328,65 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
 
     % Fallback
     ASLContext = '';
+    
+    % Fallback InstanceNumbers
+    niiInstanceNumbers = zeros(size(nii_files));
+    
+    % Get InstanceNumbers
+    expression = '_(\d+)$';
+    for iNii = 1:length(niiInstanceNumbers)
+        filePath = nii_files{1,iNii};
+        [~, fileName, ~] = xASL_fileparts(filePath);
+        startIndex = regexp(fileName,expression);
+        if ~isempty(startIndex)
+            niiInstanceNumbers(1,iNii) = xASL_str2num(fileName(startIndex+1:end));
+        else
+            niiInstanceNumbers(1,iNii) = NaN;
+        end
+    end
+    
+    % Warning
+    if sum(isnan(niiInstanceNumbers))~=0
+        warning('Something went wrong trying to determine the InstanceNumbers...');
+    end
+    
+    % Fallback ImageTypes
+    niiImageTypes = cell(size(nii_files));
+    
+    % Get ImageTypes
+    for iNii = 1:length(niiImageTypes)
+        try
+            filePath = nii_files{1,iNii};
+            [rootName, fileName, ~] = xASL_fileparts(filePath);
+            tmpJson = spm_jsonread(fullfile(rootName,[fileName '.json']));
+            % Get individual imageType
+            if isfield(tmpJson, 'Manufacturer')
+                if strcmp(tmpJson.Manufacturer, 'GE')
+                    niiImageTypes{1,iNii} = xASL_bids_determineImageTypeGE(tmpJson);
+                else
+                    niiImageTypes{1,iNii} = NaN;
+                end
+            else
+                niiImageTypes{1,iNii} = NaN;
+            end
+        catch
+            warning('Something went wrong trying to determine the ImageTypes...');
+        end
+    end
+    
+    % Check if niiImageTypes does not contain NaNs and the InstanceNumbers are not both zero
+    if sum(cellfun(@isnumeric, niiImageTypes))==0 && sum(isnan(niiInstanceNumbers))==0
+        imageTypeTable = vertcat(num2cell(niiInstanceNumbers),niiImageTypes)';
+        imageTypeTable = sortrows(imageTypeTable,1);
+        ASLContext = '';
+        for iImageType = 1:length(imageTypeTable(:,2)')
+            ASLContext = [ASLContext ',' imageTypeTable{iImageType,2}];
+        end
+        ASLContext = ASLContext(2:end);
+        fprintf('ASL context: %s\n', ASLContext);
+    end
+    
+    warning('For GE it should work up to this point...');
 
     [~,~,scanExtension] = xASL_fileparts(scanpath);
     if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
