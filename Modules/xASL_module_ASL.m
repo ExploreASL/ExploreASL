@@ -412,7 +412,21 @@ iState = 8;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
     fprintf('%s\n','Quantifying ASL:   ');
-
+    if isfield(x, 'bUseBasilQuantification') && x.bUseBasilQuantification
+        % Quantification in standard space:
+        if ~xASL_exist(x.P.Pop_Path_PWI4D,'file')
+            warning(['Skipped standard space quantification: ' x.P.Pop_Path_PWI4D ' missing']);
+        else
+            xASL_wrp_Quantify(x);
+        end
+        % Quantification in native space:
+        if ~xASL_exist(x.P.Path_PWI4D,'file')
+            warning('Skipped native space quantification: files missing');
+        else
+            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
+        end        
+    
+    
     % Quantification in standard space:
     if ~xASL_exist(x.P.Pop_Path_PWI,'file')
         warning(['Skipped standard space quantification: ' x.P.Pop_Path_PWI ' missing']);
