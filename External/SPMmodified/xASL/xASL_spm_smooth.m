@@ -1,13 +1,13 @@
 function xASL_spm_smooth(pathIn, fwhmSmooth, pathNew)
 % ExploreASL SPM wrapper for SPM smooth function to smooth a volume with a given Gaussian kernel
 %
-% FORMAT: xASL_spm_smooth(pathIn, fwhmSmooth[, pathNew])
+% FORMAT: xASL_spm_smooth(pathIn, fwhmSmooth, pathNew])
 %
 % INPUT:
 %   pathIn     - path to NifTI image you want to smooth. Must be a single file, but NIfTI file can contain multiple volumes (REQUIRED)
 %                can be a .NII or NII.GZ
 %   fwhmSmooth - Full-Width-Half-Maximum (FWHM, mm) of 1x3 Gaussian kernel you want to smooth by  (REQUIRED)
-%   pathNew    - the output file name, by default SPM smooth prefixes a 's' to the input path (OPTIONAL)
+%   pathNew    - the output path/file name, by default SPM smooth prefixes a 's' to the input path (OPTIONAL)
 %
 % OUTPUT: n/a
 %
@@ -117,15 +117,20 @@ end
 % ------------------------------------------------------------------------------------------
 % Rename temporary SPM file into output file
 % ------------------------------------------------------------------------------------------
+
 if ~isempty(pathNew) % otherwise don't rename, keep prefix "s" for smoothed
 
     TempName = fullfile(Fpath, ['s' Ffile Fext]);
-
+    
     if ~strcmp(pathNew,TempName)
-        pathDest=fullfile(Fpath, pathNew);
-        xASL_Move(TempName,pathDest,1);
+        [FpathN, ~, ~] = xASL_fileparts(pathNew);
+        if isempty(FpathN) % This means that the user didn't choose a fullpath, only a file name, so FpathN = ' '.
+            pathDest=fullfile(Fpath, pathNew);
+            xASL_Move(TempName,pathDest,1);
+        else
+            xASL_Move(TempName,pathNew,1);
+        end
     end
 end
-
 
 end
