@@ -129,7 +129,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     if str2num(parms.Version(1:4))<2014
         dcm2nii_args = sprintf('-b "%s"', parms.IniPath);
     else
-        dcm2nii_args = ''; % -z y
+        dcm2nii_args = '-f "%f_%p_%t_%s_%r"';
     end
 
     %% Check if we are reading a DICOM folder
