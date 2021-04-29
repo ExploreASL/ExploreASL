@@ -48,6 +48,9 @@ function [x] = ExploreASL_Initialize(varargin)
     % Initialize S substruct
     x.S = struct;
     
+    % Fallback
+    x.bReinitialize = true;
+    
     % Check if the ExploreASL pipeline should be run or not
     if sum(x.ImportModules)>0
         x.bImportData = 1; % Importing data
@@ -58,6 +61,9 @@ function [x] = ExploreASL_Initialize(varargin)
         x.bProcessData = 1; % Loading & processing dataset
     else
         x.bProcessData = 0; % Only initialize ExploreASL functionality
+    end
+    if ~x.bProcessData && ~x.bImportData
+        x.bReinitialize = false;
     end
 
     % Check if the DataParPath is a file or a directory
@@ -149,6 +155,7 @@ function [x] = ExploreASL_Initialize(varargin)
         if strcmp(x.dataParType,'dataParFile') % It is a dataParFile, so do not run the BIDS import workflow
             if x.bProcessData==0 || x.bProcessData==2
                 x.bProcessData = 2; % Initialize & load but do not process
+                x.bReinitialize = false; % Do not reinitialize if we only load the data
             end
         end
     end
@@ -696,9 +703,10 @@ function x = xASL_init_PrintCheckSettings(x)
         fprintf('\n%s\n',['M0 option selected is "' num2str(x.M0) '"']);
     end
 
-    fprintf('\nx.D.ROOT\t\t\t\t%s\n',x.D.ROOT);
-    fprintf('x.DELETETEMP\t\t\t%s\n',[num2str(x.DELETETEMP) ' (delete temporary files)']);
-    fprintf('x.Quality\t\t\t\t%s\n',[num2str(x.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
+    if length(x.D.ROOT)>70,         fprintf('x.D.ROOT            ...%s\n', x.D.ROOT(end-70:end));
+    else,                           fprintf('x.D.ROOT            %s\n', x.D.ROOT); end
+    fprintf('x.DELETETEMP        %s\n',[num2str(x.DELETETEMP) ' (delete temporary files)']);
+    fprintf('x.Quality           %s\n',[num2str(x.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
 
 
     %% -----------------------------------------------------------------------

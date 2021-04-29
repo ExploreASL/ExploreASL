@@ -75,7 +75,7 @@ function [x] = ExploreASL_Master(varargin)
     
     % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
-    if x.bProcessData > 0
+    if x.bReinitialize > 0
         x = ExploreASL_Initialize(x.DataParPath, x.ImportModules, x.ProcessModules, x.bPause, x.iWorker, x.nWorkers);
     end
     
