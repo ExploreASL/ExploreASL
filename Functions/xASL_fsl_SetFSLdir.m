@@ -39,7 +39,7 @@ end
 
 FSLdir = NaN;
 RootWSLdir = NaN;
-RootFSLDir = {};
+RootFSLDir = '';
 
 if isfield(x,'FSLdir') && isfield(x,'RootFSLDir') && ~isempty(x.FSLdir) && ~isempty(x.RootFSLDir)
     % if we already have an FSL dir, skip this function
@@ -62,9 +62,6 @@ elseif ispc
     end
 end
 
-%% Initialize RootFSLDir
-RootFSLDir = '';
-% 
 %% 1) Check if FSL is initialized by system
 if ispc 
     [bSuccess, result2] = system('wsl which fsl');
@@ -166,11 +163,14 @@ elseif length(FSLdir)>1
 else
     % dont say anything
 end
-FSLdir = FSLdir{end};
+
+FSLdir = FSLdir{end}; % default to most recent version (and convert from cell to char array
 
 if ispc
-    FSLdirWin = FSLdir;
-    FSLdir = FSLdirWin(length(RootFSLDir)+1:end);
+    if ~isnan(RootWSLDir)
+        RootWSLDir = RootWSLdir{end}; % default to most recent version
+    end
+    FSLdir = FSLdir(length(RootWSLDir)+1:end);
 end
 FSLdir = strrep(FSLdir,'\','/');
 
@@ -208,5 +208,6 @@ end
 %% Add to x
 x.FSLdir = FSLdir;
 x.RootFSLDir = RootWSLdir;
+
 
 end
