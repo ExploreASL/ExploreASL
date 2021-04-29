@@ -46,6 +46,9 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     % args.bAutomaticallyDetectFSL=1;
     xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' BasilOptions], x);
 
+    fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
+    fprintf('%s\n', '/.../fsl/bin/basil: line 124: imcp: command not found');
+    
     pathBasilMean = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
     pathBasilMean = pathBasilMean{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
     
