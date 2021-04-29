@@ -122,7 +122,8 @@ if ~isempty(pathNew) % otherwise don't rename, keep prefix "s" for smoothed
     TempName = fullfile(Fpath, ['s' Ffile Fext]);
 
     if ~strcmp(pathNew,TempName)
-        xASL_Move(TempName,pathNew,1);
+        pathDest=fullfile(Fpath, pathNew);
+        xASL_Move(TempName,pathDest,1);
     end
 end
 
