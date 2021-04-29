@@ -78,7 +78,7 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
             jsonASL = rmfield(jsonASL,'MrAcquisitionType');
 
             % Add necessary fields
-            jsonASL.M0Type = 'Separate';
+            jsonASL.M0Type = 'Included';
             jsonASL.BackgroundSuppression = false;
             jsonASL.TotalAcquiredPairs = 1;
 
