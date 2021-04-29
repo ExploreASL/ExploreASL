@@ -123,8 +123,9 @@ if ~isempty(pathNew) % otherwise don't rename, keep prefix "s" for smoothed
     TempName = fullfile(Fpath, ['s' Ffile Fext]);
     
     if ~strcmp(pathNew,TempName)
-        [FpathN, ~, ~] = xASL_fileparts(pathNew);
+        [FpathN] = xASL_fileparts(pathNew);
         if isempty(FpathN) % This means that the user didn't choose a fullpath, only a file name, so FpathN = ' '.
+            xASL_adm_CreateDir(Fpath);
             pathDest=fullfile(Fpath, pathNew);
             xASL_Move(TempName,pathDest,1);
         else
