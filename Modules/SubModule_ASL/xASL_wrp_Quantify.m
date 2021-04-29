@@ -276,11 +276,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-if isfield(x, 'bUseBasilQuantification') && x.bUseBasilQuantification
-    [~, CBF] = xASL_quant_Basil(PWI, M0_im, SliceGradient, x);
-else
-    [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x);
-end
+[~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x); % also runs BASIL, but only in native space!
 
 if x.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
@@ -300,6 +296,11 @@ end
 fprintf('%s\n','Saving PWI & CBF niftis');
 
 % Unmasked CBF
+if isfield(x, 'bUseBasilQuantification') && x.bUseBasilQuantification
+    [Fpath, Ffile, Fext] = xASL_fileparts(OutputPath);
+    OutputPath = fullfile(Fpath, [Ffile '_Basil' Fext]);
+end
+
 xASL_io_SaveNifti(PWI_Path, OutputPath, CBF, 32, 0);
 
 
