@@ -5,5 +5,5 @@
 "tokenOrdering":[1,3,2],
 "tokenScanAliases":["^GENFI_asl$","ASL4D"],
 "tokenVisitAliases":[],
-"tokenSessionAliases":["^tag$","^control$","^tag_2$","^control_2$","^tag_3$","^control_3$","^tag_4$","^control_4$","^tag_5$","^control_5$","ASL_1","ASL_2","ASL_3","ASL_4","ASL_5","ASL_6","ASL_7","ASL_8","ASL_9","ASL_10"],
+"tokenSessionAliases":["^tag$","ASL_1","^control$","ASL_2","^tag_2$","ASL_3","^control_2$","ASL_4","^tag_3$","ASL_5","^control_3$","ASL_6","^tag_4$","ASL_7","^control_4$","ASL_8","^tag_5$","ASL_9","^control_5$","ASL_10"],
 "bMatchDirectories":true}

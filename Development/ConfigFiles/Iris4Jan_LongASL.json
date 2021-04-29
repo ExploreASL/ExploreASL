@@ -5,5 +5,5 @@
 "tokenOrdering":[1,3,2],
 "tokenScanAliases":["^3DT1$","T1","^WIP_SOURCE$","ASL4D"],
 "tokenVisitAliases":[],
-"tokenSessionAliases":["^1000PLD$","^1800PLD$","^2200PLD$","ASL_1","ASL_2","ASL_3"],
+"tokenSessionAliases":["^1000PLD$","ASL_1","^1800PLD$","ASL_2","^2200PLD$","ASL_3"],
 "bMatchDirectories":false}

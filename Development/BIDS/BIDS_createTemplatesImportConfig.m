@@ -120,22 +120,73 @@ for iFlavor=1:length(listOfConfigFlavors)
     imPar = ExploreASL_ImportConfig(listOfConfigFlavors{iFlavor});
     % Fix tokenScanAliases
     if isfield(imPar,'tokenScanAliases')
-        % Update imPar by creating a backup version
-        imParOld = imPar;
-        imPar.tokenScanAliases = {};
-        % Iterate over token pairs
-        if size(imParOld.tokenScanAliases,2)==2
-            it = 1;
-            for iPair=1:size(imParOld.tokenScanAliases,1)
-                imPar.tokenScanAliases{it} = imParOld.tokenScanAliases{iPair,1};
-                it = it+1;
-                imPar.tokenScanAliases{it} = imParOld.tokenScanAliases{iPair,2};
-                it = it+1;
+        if ~isempty(imPar.tokenScanAliases)
+        if ~isempty(imPar.tokenScanAliases{1})
+            % Update imPar by creating a backup version
+            imParOld = imPar;
+            imPar.tokenScanAliases = {};
+            % Iterate over token pairs
+            if size(imParOld.tokenScanAliases,2)==2
+                it = 1;
+                for iPair=1:size(imParOld.tokenScanAliases,1)
+                    imPar.tokenScanAliases{it} = imParOld.tokenScanAliases{iPair,1};
+                    it = it+1;
+                    imPar.tokenScanAliases{it} = imParOld.tokenScanAliases{iPair,2};
+                    it = it+1;
+                end
+            else
+                warning('There seems to be something wrong with the tokenScanAliases...');
             end
-        else
-            warning('There seems to be something wrong with the tokenScanAliases...');
+        end
         end
     end
+    
+    % Fix tokenScanAliases
+    if isfield(imPar,'tokenVisitAliases')
+        if ~isempty(imPar.tokenVisitAliases)
+        if ~isempty(imPar.tokenVisitAliases{1})
+            % Update imPar by creating a backup version
+            imParOld = imPar;
+            imPar.tokenVisitAliases = {};
+            % Iterate over token pairs
+            if size(imParOld.tokenVisitAliases,2)==2
+                it = 1;
+                for iPair=1:size(imParOld.tokenVisitAliases,1)
+                    imPar.tokenVisitAliases{it} = imParOld.tokenVisitAliases{iPair,1};
+                    it = it+1;
+                    imPar.tokenVisitAliases{it} = imParOld.tokenVisitAliases{iPair,2};
+                    it = it+1;
+                end
+            else
+                warning('There seems to be something wrong with the tokenVisitAliases...');
+            end
+        end
+        end
+    end
+    
+    % Fix tokenScanAliases
+    if isfield(imPar,'tokenSessionAliases')
+        if ~isempty(imPar.tokenSessionAliases)
+        if ~isempty(imPar.tokenSessionAliases{1})
+            % Update imPar by creating a backup version
+            imParOld = imPar;
+            imPar.tokenSessionAliases = {};
+            % Iterate over token pairs
+            if size(imParOld.tokenSessionAliases,2)==2
+                it = 1;
+                for iPair=1:size(imParOld.tokenSessionAliases,1)
+                    imPar.tokenSessionAliases{it} = imParOld.tokenSessionAliases{iPair,1};
+                    it = it+1;
+                    imPar.tokenSessionAliases{it} = imParOld.tokenSessionAliases{iPair,2};
+                    it = it+1;
+                end
+            else
+                warning('There seems to be something wrong with the tokenScanAliases...');
+            end
+        end
+        end
+    end
+
     % Write file
     validFileName = [genvarname(listOfConfigFlavors{iFlavor}) '.json'];
     spm_jsonwrite(fullfile(customScripts, 'ConfigFiles', validFileName), imPar);

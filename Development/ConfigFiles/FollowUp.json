@@ -5,5 +5,5 @@
 "tokenOrdering":[1,2,3],
 "tokenScanAliases":["^rush$","ASL4D"],
 "tokenVisitAliases":[],
-"tokenSessionAliases":["^noC$","^C$","ASL_1","ASL_2"],
+"tokenSessionAliases":["^noC$","ASL_1","^C$","ASL_2"],
 "bMatchDirectories":true}

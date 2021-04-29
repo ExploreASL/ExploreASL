@@ -5,5 +5,5 @@
 "tokenOrdering":[1,3,2],
 "tokenScanAliases":["^3D_FLAIR$","FLAIR","^3D_T1$","T1","^SOURCE$","ASL4D"],
 "tokenVisitAliases":[],
-"tokenSessionAliases":["^pCASL$","^MultiPhase$","ASL_1","ASL_2"],
+"tokenSessionAliases":["^pCASL$","ASL_1","^MultiPhase$","ASL_2"],
 "bMatchDirectories":true}

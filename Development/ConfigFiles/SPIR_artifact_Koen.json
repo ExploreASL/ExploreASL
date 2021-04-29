@@ -5,5 +5,5 @@
 "tokenOrdering":[1,0,2],
 "tokenScanAliases":["^SOURCE_-_ASL-PSEUDO$","ASL4D"],
 "tokenVisitAliases":[],
-"tokenSessionAliases":["^_1800$","^_1800_FrOff_135Hz$","^_1800_FrOff_220Hz$","ASL_1","ASL_2","ASL_3"],
+"tokenSessionAliases":["^_1800$","ASL_1","^_1800_FrOff_135Hz$","ASL_2","^_1800_FrOff_220Hz$","ASL_3"],
 "bMatchDirectories":true}
