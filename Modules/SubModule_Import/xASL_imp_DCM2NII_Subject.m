@@ -196,6 +196,24 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                         % -----------------------------------------------------------------------------
                         % start the conversion. Note that the dicom filter is only in effect when a directory is specified as input.
                         % -----------------------------------------------------------------------------
+                        
+                        % extract relevant parameters from dicom header, if not
+                        % already exists
+                        % Find JSONpath that is there already
+                        SavePathJSON = {};
+                        SavePathJSON{1} = fullfile(destdir, [scan_name '.json']);
+                        SavePathJSON{2} = fullfile(destdir, [session_name '.json']);
+                        for iPath=1:length(nii_files)
+                            % now we add the path only if it didnt exist already in this list
+                            tmpNewPath = [nii_files{iPath}(1:end-4) '.json'];
+                            if ~max(cellfun(@(y) strcmp(y, tmpNewPath), SavePathJSON))
+                                SavePathJSON{end+1} = tmpNewPath;
+                            end
+                        end
+
+                        % Store JSON files
+                        [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, settings.bUseDCMTK, pathDcmDict);
+                        
                         try
                             [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, 'DicomFilter', imPar.dcmExtFilter, 'Verbose', imPar.bVerbose, 'Overwrite', imPar.bOverwrite, 'Version', imPar.dcm2nii_version, 'x', x);
 
@@ -219,35 +237,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                     
                     
                 end
-
-                % extract relevant parameters from dicom header, if not
-                % already exists
-                % Find JSONpath that is there already
-                SavePathJSON = {};
-                SavePathJSON{1} = fullfile(destdir, [scan_name '.json']);
-                SavePathJSON{2} = fullfile(destdir, [session_name '.json']);
-                for iPath=1:length(nii_files)
-                    % now we add the path only if it didnt exist already in this list
-                    tmpNewPath = [nii_files{iPath}(1:end-4) '.json'];
-                    if ~max(cellfun(@(y) strcmp(y, tmpNewPath), SavePathJSON))
-                        SavePathJSON{end+1} = tmpNewPath;
-                    end
-                end
                 
-                % Store JSON files
-                [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, settings.bUseDCMTK, pathDcmDict);
-                
-                % Get real ASLContext
-                realASLContext = xASL_imp_DCM2NII_Subject_RealASLContext(parms);
-                
-                % Check Context
-                if ~isempty(ASLContext)
-                    if ~strcmp(ASLContext,realASLContext)
-                        fprintf('Context mismatch, will switch NIFTI ordering...\n');
-                        xASL_imp_DCM2NII_Subject_SwitchNIIs(nii_files);
-                    end
-                end
-
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of
                 % hidden scale slopes in private Philips header,
@@ -405,23 +395,6 @@ function realASLContext = xASL_imp_DCM2NII_Subject_RealASLContext(parms)
         warning('Extraction of real ASL context failed: %s', ME.message);
     end
 
-
-end
-
-
-%% Switch NIfTIs
-function xASL_imp_DCM2NII_Subject_SwitchNIIs(nii_files)
-
-    % Load image
-    imASL = xASL_io_Nifti2Im(nii_files{1});
-
-    % Then reshuffle them
-    imASLreordered = zeros(size(imASL));
-    imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
-    imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
-
-    % Save image
-    xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASLreordered);
 
 end
 
