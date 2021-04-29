@@ -22,8 +22,7 @@ function [ScaleImage, CBF] = xASL_quant_Basil(PWI, M0_im, SliceGradient, x)
 fprintf('%s\n','Quantification CBF using FSL Basil:');
 
 %
-% For now we think ExploreASL is only handling single PLD data
-%
+%% For now we think ExploreASL is only handling single PLD data
 SinglePLD = 1;
 
 if  xASL_stat_SumNan(M0_im(:))==0
@@ -66,20 +65,22 @@ else
             error('Wrong x.readout_dim value!');
     end
 
-
+    %% Define paths
+    % NEEDS TO BE MADE A RELATIVE PATH TO BE SPACE-INDEPENDENT
+    pathBasilInput = fullfile(x.SESSIONDIR, 'PWI4D_BasilInput.nii');
+    pathBasilOptions = fullfile(x.SESSIONDIR, 'Basil_ModelOptions.txt');
+    dirBasilOutput = fullfile(x.SESSIONDIR, 'BasilOutput');
+    
     %% Write the PWI as Nifti file for Basil to read as input
     % FIXME would be good to have a brain mask too at this point
     
-    
-    
-    
-    xASL_io_CreateNifti('basil_input_data.nii', PWI);
+    xASL_io_SaveNifti(x.P.Path_PWI4D, pathBasilInput, PWI, [], 0);
 
-    %
-    % option_file contains options which are passed to Fabber
+
+    %% Create option_file that contains options which are passed to Fabber
     % basil_options is a character array containing CLI args for the Basil command
     %
-    optionFile = fopen('model_options.txt', 'w+');
+    optionFile = fopen(pathBasilOptions, 'w+');
     basil_options = '';
 
     % Basic acquisition and tissue parameters
@@ -237,17 +238,18 @@ else
     
     %% Run Basil and retrieve CBF output
     % FIXME might not be step1 if using spatial mode
-    %
-    args.bAutomaticallyDetectFSL=1;
-    xASL_fsl_RunFSL(['basil -i basil_input_data -@ model_options.txt -o basil_out' basil_options], args);
+    
+    % args.bAutomaticallyDetectFSL=1;
+    xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' basil_options], x);
 
-    ftiss = xASL_io_ReadNifti(fullfile(x.SESSIONDIR, 'basil_out', 'step1', 'mean_ftiss.nii'));
-    CBF_nocalib = ftiss.dat(:, :, :);
-
-    %
-    % Scaling to physiological units
+    pathBasilMean = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
+    pathBasilMean = pathBasilMean{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+    
+    CBF_nocalib = xASL_io_Nifti2Im(pathBasilMean);
+    
+    %% Scaling to physiological units
     % Note different to xASL_quant_SinglePLD since Fabber has T1 in seconds
-    % and does not take into account labelling efficiency
+    % and does not take into account labeling efficiency
     %
     CBF_nocalib = CBF_nocalib .* 6000 .* x.Q.Lambda ./ x.Q.LabelingEfficiency;
     % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
