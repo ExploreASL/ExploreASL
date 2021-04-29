@@ -330,7 +330,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     ASLContext = '';
     
     % Fallback niiTable
-    niiTable = cell(size(nii_files,2),size(nii_files,1)*3);
+    niiTable = cell(size(nii_files,2),size(nii_files,1)*4);
     
     % Fill niiTable
     for iNii = 1:size(niiTable,1)
@@ -349,6 +349,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         else
             niiTable{iNii,3} = NaN;
         end
+        niiTable{iNii,4} = filePath;
     end
     
     % Get ASL context if possible
@@ -360,21 +361,25 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         end
         ASLContext = ASLContext(2:end);
         fprintf('ASL context: %s\n', ASLContext);
+        % Sort nii_files based on ASLContext/InstanceNumbers
+        nii_files = niiTable(:,4)';
+        fprintf('Sorted NIfTIs based on InstanceNumbers...\n');
     end
     
-    warning('For GE it should work up to this point...');
-
-    [~,~,scanExtension] = xASL_fileparts(scanpath);
-    if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
-        % For a PAR/REC files that produces a single ASL4D NIFTI
-        imASL = xASL_io_Nifti2Im(nii_files{1});
-        % If multiple dynamics
-        if size(imASL,4) > 1
-            % Then reshuffle them
-            imASLreordered = zeros(size(imASL));
-            imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
-            imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
-            xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASLreordered);
+    % Only try shuffling if you dont know the ASL context already
+    if isempty(ASLContext)
+        [~,~,scanExtension] = xASL_fileparts(scanpath);
+        if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
+            % For a PAR/REC files that produces a single ASL4D NIFTI
+            imASL = xASL_io_Nifti2Im(nii_files{1});
+            % If multiple dynamics
+            if size(imASL,4) > 1
+                % Then reshuffle them
+                imASLreordered = zeros(size(imASL));
+                imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
+                imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
+                xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASLreordered);
+            end
         end
     end
     
