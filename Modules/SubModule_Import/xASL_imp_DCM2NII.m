@@ -260,6 +260,7 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
     settings.bClone2Source = bClone2Source;
     settings.bUseDCMTK = bUseDCMTK;
     settings.bCopySingleDicoms = bCopySingleDicoms;
+    settings.bUseSessions = bUseSessions;
     
     % Iterate over subjects
     for iSubject=1:nSubjects
