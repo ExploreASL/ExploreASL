@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^PAR_REC_(\\d{3})$","^BFC_\\d{3}.?_.*(O)(FF1|FF2|FF3|FF4|N1|N2|N3|N4).*\\.PAR$"],
 "tokenOrdering":[1,3,2],
-"tokenScanAliases":["^FLAIR$","^O$","^MPRAGE$","^M0$","FLAIR","ASL4D","T1","M0"],
+"tokenScanAliases":["^FLAIR$","FLAIR","^O$","ASL4D","^MPRAGE$","T1","^M0$","M0"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["N1","FF1","N2","FF2","N3","FF3","N4","FF4","ASL_1","ASL_2","ASL_3","ASL_4","ASL_5","ASL_6","ASL_7","ASL_8"],
 "bMatchDirectories":false}

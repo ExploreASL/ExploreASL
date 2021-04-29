@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(A80\\d{3}_1)$","^(PASL|T1|T2_FLAIR|T2_tse)$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^T2_FLAIR$","^T1$","^PASL$","^T2_tse$","FLAIR","T1","ASL4D","T2"],
+"tokenScanAliases":["^T2_FLAIR$","FLAIR","^T1$","T1","^PASL$","ASL4D","^T2_tse$","T2"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[""],
 "bMatchDirectories":true}

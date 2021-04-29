@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(RMCI_HIM_\\d{3}).*$",".*(FLAIR|T1w|ASL).*"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^FLAIR$","^T1w$","^ASL$","FLAIR","T1","ASL4D"],
+"tokenScanAliases":["^FLAIR$","FLAIR","^T1w$","T1","^ASL$","ASL4D"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[],
 "bMatchDirectories":true}

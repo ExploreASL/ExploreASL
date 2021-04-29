@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(wsu-\\w{3}-\\d{4}-01)$","^(T1_dicoms|asl_dicoms)"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^asl_dicoms","^T1_dicoms","ASL4D","T1"],
+"tokenScanAliases":["^asl_dicoms","ASL4D","^T1_dicoms","T1"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[],
 "bMatchDirectories":true}

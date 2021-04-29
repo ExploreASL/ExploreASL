@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["(CNS_\\d{3}_...).*$","^(wnu|lesprob_thr_90_wnu).*\\.nii\\.gz$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^wnu$","^lesprob_thr_90_wnu$","FLAIR","WMH_SEGM"],
+"tokenScanAliases":["^wnu$","FLAIR","^lesprob_thr_90_wnu$","WMH_SEGM"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
 "bMatchDirectories":false}

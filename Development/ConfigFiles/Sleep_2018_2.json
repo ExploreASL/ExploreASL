@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(\\d{3})_(1|2)$","^(ASL|T1|M0)$"],
 "tokenOrdering":[1,2,3],
-"tokenScanAliases":["^ASL$","^M0$","^T1$","ASL4D","M0","T1"],
+"tokenScanAliases":["^ASL$","ASL4D","^M0$","M0","^T1$","T1"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["^1$","^2$","ASL_1","ASL_2"],
 "bMatchDirectories":true}

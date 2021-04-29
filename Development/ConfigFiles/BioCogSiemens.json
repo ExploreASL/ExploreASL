@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^BioCog_(BIM\\d{3}_pre_\\d{6})$","^.*$","^MRI$","^BIM\\d{3}_.*$","^(003_t1_mprage|_.*|014_ep2d_pcasl_3x3x7|012_ep2d_pcasl_3x3x7_M0).*$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^014_ep2d_pcasl_3x3x7$","^003_t1_mprage$","^012_ep2d_pcasl_3x3x7_M0$","ASL4D","T1","M0"],
+"tokenScanAliases":["^014_ep2d_pcasl_3x3x7$","ASL4D","^003_t1_mprage$","T1","^012_ep2d_pcasl_3x3x7_M0$","M0"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
 "bMatchDirectories":true}

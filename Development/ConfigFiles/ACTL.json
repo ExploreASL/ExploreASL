@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(ACTL\\d{3})$","^(3D bs ASL Mo|3D bs ASL turboz|T1W_3d|PhaseImageASL).*$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^3D bs ASL Mo$","^3D bs ASL turboz$","^T1W_3d$","PhaseImageASL","M0","ASL4D","T1","Phase4D"],
+"tokenScanAliases":["^3D bs ASL Mo$","M0","^3D bs ASL turboz$","ASL4D","^T1W_3d$","T1","PhaseImageASL","Phase4D"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
 "bMatchDirectories":true}

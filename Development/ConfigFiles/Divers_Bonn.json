@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(Patient\\d{1})$","^(ASL)_(Session1|Session2|Session3|Session4|Session5|Session6|Session7)$","^.*$","^.*$"],
 "tokenOrdering":[1,3,2],
-"tokenScanAliases":["^ASL$","^t1$","ASL4D","T1"],
+"tokenScanAliases":["^ASL$","ASL4D","^t1$","T1"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["Session1","Session2","Session3","Session4","Session5","Session6","Session7","ASL_1","ASL_2","ASL_3","ASL_4","ASL_5","ASL_6","ASL_7"],
 "bMatchDirectories":true,

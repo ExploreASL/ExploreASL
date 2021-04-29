@@ -111,13 +111,32 @@ listOfConfigFlavors = { ...
                        'incoming',...
                         };
 
-% Select CustomScripts directory
-customScripts = uigetdir(x.MyPath,'Please select the CustomScripts directory...');
+% Select Development directory
+customScripts = uigetdir(x.MyPath,'Please select the Development directory...');
 
 % Create JSON files
 for iFlavor=1:length(listOfConfigFlavors)
     fprintf('%s\n', listOfConfigFlavors{iFlavor});
     imPar = ExploreASL_ImportConfig(listOfConfigFlavors{iFlavor});
+    % Fix tokenScanAliases
+    if isfield(imPar,'tokenScanAliases')
+        % Update imPar by creating a backup version
+        imParOld = imPar;
+        imPar.tokenScanAliases = {};
+        % Iterate over token pairs
+        if size(imParOld.tokenScanAliases,2)==2
+            it = 1;
+            for iPair=1:size(imParOld.tokenScanAliases,1)
+                imPar.tokenScanAliases{it} = imParOld.tokenScanAliases{iPair,1};
+                it = it+1;
+                imPar.tokenScanAliases{it} = imParOld.tokenScanAliases{iPair,2};
+                it = it+1;
+            end
+        else
+            warning('There seems to be something wrong with the tokenScanAliases...');
+        end
+    end
+    % Write file
     validFileName = [genvarname(listOfConfigFlavors{iFlavor}) '.json'];
     spm_jsonwrite(fullfile(customScripts, 'ConfigFiles', validFileName), imPar);
 end

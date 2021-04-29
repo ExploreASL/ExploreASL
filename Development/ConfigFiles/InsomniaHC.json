@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["(.*_\\d{4})$",".*(T1_MPR|pcasl|M0).*\\.PAR$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^T1_MPR$","^pcasl$","^M0$","T1","ASL4D","M0"],
+"tokenScanAliases":["^T1_MPR$","T1","^pcasl$","ASL4D","^M0$","M0"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[],
 "bMatchDirectories":false}

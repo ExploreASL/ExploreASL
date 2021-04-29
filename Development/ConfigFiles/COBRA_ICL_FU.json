@@ -3,7 +3,7 @@
 "RawRoot":"\\home\\pfcgroot\\lood_storage\\divi\\Projects\\ageiv\\MRI\\raw\\COBRA\\ICL_followup\\DICOM",
 "folderHierarchy":["^COB_I(\\d{3})_v2$","^scans$","^.*(MPRAGE|pasl).*$","^resources$","^DICOM$","^files$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^pasl$","^MPRAGE$","ASL4D","T1"],
+"tokenScanAliases":["^pasl$","ASL4D","^MPRAGE$","T1"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
 "bMatchDirectories":true}

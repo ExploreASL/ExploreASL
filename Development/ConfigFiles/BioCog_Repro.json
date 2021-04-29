@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(MRU\\d{3})_MRI$","^(ASL|T1w|M0|FLAIR)\\.dcm$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^ASL$","^T1$","^M0$","^FLAIR$","ASL4D","T1","M0","FLAIR"],
+"tokenScanAliases":["^ASL$","ASL4D","^T1$","T1","^M0$","M0","^FLAIR$","FLAIR"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
 "bMatchDirectories":false}

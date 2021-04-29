@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^Antipsychotics_Sorted_for_Analysis$","^(\\d{3})_([0|S])","^(ASL|M0|T1)$"],
 "tokenOrdering":[1,2,3],
-"tokenScanAliases":["^ASL$","^M0$","^T1$","ASL4D","M0","T1"],
+"tokenScanAliases":["^ASL$","ASL4D","^M0$","M0","^T1$","T1"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["^0$","^S$","ASL_1","ASL_2"],
 "bMatchDirectories":true}

@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(MPRAGE)$","^SCORE_(\\d{3})$","^scans$","^\\d*$","^DICOM$"],
 "tokenOrdering":[2,0,1],
-"tokenScanAliases":["^ASL$","^MPRAGE$","ASL4D","T1"],
+"tokenScanAliases":["^ASL$","ASL4D","^MPRAGE$","T1"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[""],
 "bMatchDirectories":true}

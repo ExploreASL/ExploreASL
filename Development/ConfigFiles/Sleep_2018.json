@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(Sub-\\d{5}_\\d)$","^(ASL|MEMPRAGE RMS)$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^MEMPRAGE RMS$","^ASL$","T1","ASL4D"],
+"tokenScanAliases":["^MEMPRAGE RMS$","T1","^ASL$","ASL4D"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[""],
 "bMatchDirectories":true}

@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(\\d{3}_S_\\d{4}).*","^(ASL_PERFUSION)$","^(\\d{4}.*)$","^S.*"],
 "tokenOrdering":[1,3,0,2],
-"tokenScanAliases":["^ASL_PERFUSION$","^MPRAGE$","ASL4D","T1"],
+"tokenScanAliases":["^ASL_PERFUSION$","ASL4D","^MPRAGE$","T1"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[],
 "bMatchDirectories":true}

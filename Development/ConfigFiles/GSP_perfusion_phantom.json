@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(Scan8)$","^(ASL3D_4sh_multiTI350-2600_3dyn_.*|t1_fl2d_ax_2mm_.*)$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^ASL3D_4sh_multiTI350$","^t1_fl2d_ax_2mm_$","ASL4D","T1"],
+"tokenScanAliases":["^ASL3D_4sh_multiTI350$","ASL4D","^t1_fl2d_ax_2mm_$","T1"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["1","2","3","4","ASL_1","ASL_2","ASL_3","ASL_4"],
 "bMatchDirectories":true,

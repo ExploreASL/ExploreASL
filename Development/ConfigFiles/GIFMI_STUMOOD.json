@@ -3,7 +3,7 @@
 "RawRoot":"",
 "folderHierarchy":["^(SUB\\d{3})$","^SUB\\d{3}$","^(T1_MPRAGE|SS_TE00_TI5000)_.*$"],
 "tokenOrdering":[1,0,2],
-"tokenScanAliases":["^T1_MPRAGE$","^SS_TE00_TI5000$","T1","M0"],
+"tokenScanAliases":["^T1_MPRAGE$","T1","^SS_TE00_TI5000$","M0"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[],
 "bMatchDirectories":true,
