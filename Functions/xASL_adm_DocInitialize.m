@@ -15,7 +15,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_adm_DocInitialize(fullfile(x.MyPath,'Development','Documentation_GitHub'),true);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
     %% Workflow
@@ -24,10 +24,10 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     x = ExploreASL_Initialize;
     
     % Reminder
-    fprintf('============================================= REMINDER =============================================\n');
+    fprintf('============================================= REMINDER =======================================\n');
     fprintf('A correct ExploreASL header should include the following tags in the correct order:\n');
     fprintf('"FORMAT:", "INPUT:", "OUTPUT:", "DESCRIPTION:" and "EXAMPLE:"\n');
-    fprintf('====================================================================================================\n');
+    fprintf('==============================================================================================\n');
     
     % Try to find the ExploreASL/Documentation repository on the same folder level
     [scriptPath,~,~] = fileparts(mfilename('fullpath'));
@@ -54,16 +54,12 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     copyfile(fullfile(x.MyPath,'README.md'),fullfile(outputFolder,'index.md'));
     % Logo
     swapTextInFile(fullfile(outputFolder,'index.md'),...
-                  '(https://github.com/ExploreASL/ExploreASL/blob/develop/ExploreASL_logoSmall.png)',...
-                  '(./img/title.png "ExploreASL")');
+                  '(Design/ExploreASL_logoHeader.png)',...
+                  '(./img/ExploreASL_logoHeader.png)');
     % Workflow
     swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(https://www.researchgate.net/profile/Andrew_Robertson7/publication/337328693/figure/fig1/AS:826578854481921@1574083164220/Schematic-diagram-of-ExploreASL-processing-steps-Steps-marked-with-a-are-optional.ppm "Workflow of ExploreASL")',...
                   '(./img/ExploreASL_Workflow.jpg "Workflow ExploreASL")');
-    % Add an up-to-date version information
-    swapTextInFile(fullfile(outputFolder,'index.md'),...
-                  '# ExploreASL',...
-                  ['# ExploreASL v',x.Version],true);
               
     % Copy the REQUIREMENTS file
     copyfile(fullfile(templatesDir,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
@@ -71,8 +67,10 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     % Copy the ABOUT file
     copyfile(fullfile(templatesDir,'ABOUT.md'),fullfile(outputFolder,'About.md'));
     
-    % Copy the TUTORIALS file
-    copyfile(fullfile(templatesDir,'TUTORIALS.md'),fullfile(outputFolder,'Tutorials.md'));
+    % Copy the TUTORIALS files
+    copyfile(fullfile(templatesDir,'TUTORIALS-ASL-BIDS.md'),fullfile(outputFolder,'Tutorials-ASL-BIDS.md'));
+    copyfile(fullfile(templatesDir,'TUTORIALS-BASICS.md'),fullfile(outputFolder,'Tutorials-Basics.md'));
+    copyfile(fullfile(templatesDir,'TUTORIALS-ADVANCED.md'),fullfile(outputFolder,'Tutorials-Advanced.md'));
     
     % Create the functions markdown file
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');

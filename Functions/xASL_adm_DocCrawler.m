@@ -163,7 +163,7 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
             TEXT{it,1} = ''; it = it+1;
 
             % Create format description
-            TEXT{it,1} = '#### Format'; it = it+1; 
+            TEXT{it,1} = '**Format:**'; it = it+1; 
             TEXT{it,1} = ''; it = it+1;
             TEXT{it,1} = '```matlab'; it = it+1;
             for iter=1:lF
@@ -177,8 +177,8 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
             TEXT{it,1} = ''; it = it+1;
 
             % Create description
-            TEXT{it,1} = '#### Description';
-            it = it+1;
+            TEXT{it,1} = '**Description:**';it = it+1;
+            TEXT{it,1} = ''; it = it+1;
             for iter=1:lD
                 TEXT{it,1} = descriptionText(iter,:);
                 % WITH THIS SYNTAX WE CANT USE STAR SYMBOLS AND BOLD TEXT IN ONE LINE
