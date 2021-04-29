@@ -48,14 +48,13 @@ function [x] = ExploreASL_Initialize(varargin)
     % Initialize S substruct
     x.S = struct;
     
-    % Fallback
-    x.bReinitialize = true;
-    
     % Check if the ExploreASL pipeline should be run or not
     if sum(x.ImportModules)>0
         x.bImportData = 1; % Importing data
+        x.bReinitialize = true;
     else
         x.bImportData = 0; % Importing data
+        x.bReinitialize = false;
     end
     if sum(x.ProcessModules)>0
         x.bProcessData = 1; % Loading & processing dataset
