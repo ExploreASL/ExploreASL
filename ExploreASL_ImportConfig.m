@@ -54,7 +54,18 @@ imParUpdate = spm_jsonread(fullfile(configFiles, [imPar.studyID '.json']));
 imParUpdateFieldNames = fieldnames(imParUpdate);
 for iField = 1:size(imParUpdateFieldNames,1)
     if ~isempty(imParUpdate.(imParUpdateFieldNames{iField}))
-        imPar.(imParUpdateFieldNames{iField}) = imParUpdate.(imParUpdateFieldNames{iField});
+        if ~isempty(strfind(imParUpdateFieldNames{iField},'Aliases'))
+            % Retrieve pairs
+            it = 1;
+            for iPair = 1:round(length(imParUpdate.(imParUpdateFieldNames{iField}))/2)
+                imPar.(imParUpdateFieldNames{iField}){iPair,1} = imParUpdate.(imParUpdateFieldNames{iField}){it};
+                it = it+1;
+                imPar.(imParUpdateFieldNames{iField}){iPair,2} = imParUpdate.(imParUpdateFieldNames{iField}){it};
+                it = it+1;
+            end
+        else
+            imPar.(imParUpdateFieldNames{iField}) = imParUpdate.(imParUpdateFieldNames{iField});
+        end
     end
 end
 
