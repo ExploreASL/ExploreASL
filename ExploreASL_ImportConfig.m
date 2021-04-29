@@ -48,12 +48,14 @@ imPar.bMatchDirectories  = false;
 configFiles = fullfile(x.MyPath, 'Development', 'ConfigFiles');
 
 % Load imPar file
-imParUpdate = spm_jsonread(fullfile(configFiles, [StudyRoot '.json']));
+imParUpdate = spm_jsonread(fullfile(configFiles, [imPar.studyID '.json']));
 
 % Update imPar template with fields from imParUpdate
 imParUpdateFieldNames = fieldnames(imParUpdate);
 for iField = 1:size(imParUpdateFieldNames,1)
-    imPar.(imParUpdateFieldNames{iField}) = imParUpdate.(imParUpdateFieldNames{iField});
+    if ~isempty(imParUpdate.(imParUpdateFieldNames{iField}))
+        imPar.(imParUpdateFieldNames{iField}) = imParUpdate.(imParUpdateFieldNames{iField});
+    end
 end
 
 

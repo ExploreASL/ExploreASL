@@ -298,6 +298,11 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
             end
         end
     end
+    
+    % Fallback
+    if ~exist('parms','var')
+        parms = cell(1,1);
+    end
 
 end
 
