@@ -198,30 +198,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         xASL_io_SaveNifti(BackupName,ASLname,tIM(:,:,:,ASLindices),[],false);
         
         %% 7. Split relevant JSON parameters/arrays
-        if exist(BackupJSONPath,'file')
-            % Load backup JSON
-            jsonStruct = spm_jsonread(BackupJSONPath);
-            
-            % Define M0 & ASL fallback JSONs
-            jsonM0 = jsonStruct;
-            jsonASL = jsonStruct;
-            
-            % Fields which should be split
-            splitFields = {'EchoTime', 'FlipAngle', 'RepetitionTimePreparation', 'PostLabelingDelay', 'VascularCrushingVENC', 'LabelingDuration'}';
-            
-            % Iterate over JSON fields
-            jsonFields = fieldnames(jsonStruct);
-            for iField = 1:numel(jsonFields)
-                % Check fieldname
-                if ismember(jsonFields{iField,1},splitFields)
-                    % Add correct field value to M0 json
-                    jsonM0.(jsonFields{iField,1}) = 'I_WAS_SPLIT_IN_HALF_:)';
-                    % Add correct field value to ASL json
-                    jsonASL.(jsonFields{iField,1}) = 'I_WAS_SPLIT_IN_HALF_:)';
-                end
-            end
-            
-        end
+        [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath);
 
         %% 8. Copy sidecars
         if exist(BackupMATPath,'file') && bCreateM0
@@ -230,13 +207,55 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         if exist(BackupMATPath,'file') && ~strcmp(BackupMATPath, ASLMATPath)
             xASL_Copy(BackupMATPath, ASLMATPath);
         end
-        if exist('jsonStruct','var') && bCreateM0
+        if exist('jsonM0','var') && bCreateM0
             spm_jsonwrite(M0JSONPath, jsonM0);
         end
-        if exist('jsonStruct','var') && ~strcmp(BackupJSONPath, ASLJSONPath)
+        if exist('jsonASL','var') && ~strcmp(BackupJSONPath, ASLJSONPath)
             spm_jsonwrite(ASLJSONPath, jsonASL);
         end
         
     end
 
 end
+
+
+%% xASL_io_SplitASL_SplitJSON
+function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath)
+
+    % Load backup JSON
+    if exist(BackupJSONPath,'file')
+        jsonStruct = spm_jsonread(BackupJSONPath);
+        
+        % Define M0 & ASL fallback JSONs
+        jsonM0 = jsonStruct;
+        jsonASL = jsonStruct;
+        
+        % Fields which should be split
+        splitFields = {'EchoTime', 'FlipAngle', 'RepetitionTimePreparation', 'PostLabelingDelay', 'VascularCrushingVENC', 'LabelingDuration'}';
+        
+        % Iterate over JSON fields
+        jsonFields = fieldnames(jsonStruct);
+        for iField = 1:numel(jsonFields)
+            % Check if fieldname is in splitFields list
+            if ismember(jsonFields{iField,1},splitFields)
+                % Check if field has to be split
+                if numel(jsonStruct.(jsonFields{iField,1}))>1
+                    % Add correct field value to M0 json
+                    jsonM0.(jsonFields{iField,1}) = 'I_WAS_SPLIT_IN_HALF_:)';
+                    % Add correct field value to ASL json
+                    jsonASL.(jsonFields{iField,1}) = 'I_WAS_SPLIT_IN_HALF_:)';
+                end
+            end
+        end
+        
+    else
+        % Fallback
+        jsonM0 = struct;
+        jsonASL = struct;
+    end
+
+end
+
+
+
+
