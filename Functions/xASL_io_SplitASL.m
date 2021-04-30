@@ -198,7 +198,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         xASL_io_SaveNifti(BackupName,ASLname,tIM(:,:,:,ASLindices),[],false);
         
         %% 7. Split relevant JSON parameters/arrays
-        [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, iM0, ASLindices);
+        [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, iM0, ASLindices, iDummy);
         
         %% 8. Copy sidecars
         if exist(BackupMATPath,'file') && bCreateM0
@@ -220,7 +220,7 @@ end
 
 
 %% xASL_io_SplitASL_SplitJSON
-function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM0, indicesASL)
+function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM0, indicesASL, indicesDummy)
 
     % Make sure that we have column arrays
     if size(indicesM0,2)>size(indicesM0,1)
@@ -228,6 +228,9 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM
     end
     if size(indicesASL,2)>size(indicesASL,1)
         indicesASL = indicesASL';
+    end
+    if size(indicesDummy,2)>size(indicesDummy,1)
+        indicesDummy = indicesDummy';
     end
 
     % Load backup JSON
@@ -249,7 +252,7 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM
                 % Check if field has to be split
                 if numel(jsonStruct.(jsonFields{iField,1}))>1
                     % Compare array length
-                    if (numel(indicesM0)+numel(indicesASL))==numel(jsonStruct.(jsonFields{iField,1}))
+                    if (numel(indicesM0)+numel(indicesASL)+numel(indicesDummy))==numel(jsonStruct.(jsonFields{iField,1}))
                         % Get current array
                         currentArray = jsonStruct.(jsonFields{iField,1});
                         % Add correct field value to M0 json
