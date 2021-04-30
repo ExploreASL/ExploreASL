@@ -90,6 +90,10 @@ if ~isfield(x,'M0PositionInASL4D')
 	x.M0PositionInASL4D = [];
 end
 
+if ~isfield(x, 'bUseBasilQuantification') || isempty(x.bUseBasilQuantification)
+	x.bUseBasilQuantification = false;
+end
+
 x = xASL_init_FileSystem(x); % do this only here, to save time when skipping this module
 
 if ~isfield(x,'Q')
