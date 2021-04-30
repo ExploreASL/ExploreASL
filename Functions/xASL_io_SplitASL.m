@@ -21,6 +21,16 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 %              Philips 3D GRASE puts the M0 as control-label volume pair -> iM0 = [1 2];
 %              Siemens 3D GRASE puts the M0 as the first volume -> iM0 = 1;
 %              Some Siemens 3D GRASE puts a second Dummy control image -> iDummy = 2;
+%
+% 1. Input parameter admin 
+% 2. Prepare paths
+% 3. First concatenate NIfTIs
+% 4. Save M0 NIfTI
+% 5. Determine ASL indices
+% 6. Save ASL4D NIfTI
+% 7. Split relevant JSON parameters/arrays
+% 8. Copy sidecars
+% 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: for moving the first two volumes to M0.nii:
 % xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [1 2]);
@@ -36,7 +46,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 % Copyright 2015-2021 ExploreASL
 
     %% -----------------------------------------------------------------------------------------------------------------------------------------------------
-    %% Input parameter admin
+    %% 1. Input parameter admin
 	% Can be char or number on input, output should be a horizontal vector
 
 	if nargin < 2 || isempty(iM0)
@@ -64,7 +74,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 		return;
 	end
 	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
-	%% Prepare paths
+	%% 2. Prepare paths
     [Fpath, Ffile] = xASL_fileparts(inPath);
 
     % Split_ASL_M0
@@ -104,7 +114,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
     
     if ~xASL_exist(BackupName,'file') % otherwise was already split
 
-        %% First concatenate NIfTIs
+        %% 3. First concatenate NIfTIs
 		if length(ASLlist)>1
             % Reconstruct the ASL4D first
             for iNii=1:length(ASLlist)
@@ -158,7 +168,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 		% Load the backup-file
 		tIM = xASL_io_Nifti2Im(BackupName);
 		
-        %% Save M0 NIfTI
+        %% 4. Save M0 NIfTI
         if ~xASL_exist(Path_M0,'file') && ~isempty(iM0) % don't overwrite, and skip if no M0
             xASL_io_SaveNifti(BackupName,Path_M0 ,tIM(:,:,:,iM0),[],0);
             bCreateM0 = true;
@@ -166,7 +176,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             bCreateM0 = false;
         end
 
-        %% Determine ASL indices
+        %% 5. Determine ASL indices
         ASLindices = 1:1:size(tIM,4);
         IndexASL   = ones(1,size(tIM,4));
 		if ~isempty(iM0)
@@ -184,10 +194,10 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             warning('After removing M0 volume and Dummy scans, no even number of volumes (control-label)');
         end
 
-        %% Save ASL4D NIfTI
+        %% 6. Save ASL4D NIfTI
         xASL_io_SaveNifti(BackupName,ASLname,tIM(:,:,:,ASLindices),[],false);
         
-        %% Split relevant JSON parameters/arrays
+        %% 7. Split relevant JSON parameters/arrays
         if exist(BackupJSONPath,'file')
             % Load backup JSON
             jsonStruct = spm_jsonread(BackupJSONPath);
@@ -198,7 +208,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             
         end
 
-        %% Copy sidecars
+        %% 8. Copy sidecars
         if exist(BackupMATPath,'file') && bCreateM0
             xASL_Copy(BackupMATPath, M0MATPath);
         end
@@ -212,7 +222,6 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             spm_jsonwrite(ASLJSONPath, jsonASL);
         end
         
-        %%
     end
 
 end
