@@ -198,8 +198,8 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         xASL_io_SaveNifti(BackupName,ASLname,tIM(:,:,:,ASLindices),[],false);
         
         %% 7. Split relevant JSON parameters/arrays
-        [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath);
-
+        [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, iM0, ASLindices);
+        
         %% 8. Copy sidecars
         if exist(BackupMATPath,'file') && bCreateM0
             xASL_Copy(BackupMATPath, M0MATPath);
@@ -220,7 +220,15 @@ end
 
 
 %% xASL_io_SplitASL_SplitJSON
-function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath)
+function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM0, indicesASL)
+
+    % Make sure that we have column arrays
+    if size(indicesM0,2)>size(indicesM0,1)
+        indicesM0 = indicesM0';
+    end
+    if size(indicesASL,2)>size(indicesASL,1)
+        indicesASL = indicesASL';
+    end
 
     % Load backup JSON
     if exist(BackupJSONPath,'file')
@@ -240,10 +248,15 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath)
             if ismember(jsonFields{iField,1},splitFields)
                 % Check if field has to be split
                 if numel(jsonStruct.(jsonFields{iField,1}))>1
-                    % Add correct field value to M0 json
-                    jsonM0.(jsonFields{iField,1}) = 'I_WAS_SPLIT_IN_HALF_:)';
-                    % Add correct field value to ASL json
-                    jsonASL.(jsonFields{iField,1}) = 'I_WAS_SPLIT_IN_HALF_:)';
+                    % Compare array length
+                    if (numel(indicesM0)+numel(indicesASL))==numel(jsonStruct.(jsonFields{iField,1}))
+                        % Get current array
+                        currentArray = jsonStruct.(jsonFields{iField,1});
+                        % Add correct field value to M0 json
+                        jsonM0.(jsonFields{iField,1}) = currentArray(indicesM0);
+                        % Add correct field value to ASL json
+                        jsonASL.(jsonFields{iField,1}) = currentArray(indicesASL);
+                    end
                 end
             end
         end
