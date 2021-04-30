@@ -21,6 +21,13 @@ function imPar = ExploreASL_ImportConfig(StudyRoot)
 % Initialize ExploreASL
 [x] = ExploreASL_Initialize;
 
+% Print warning
+fprintf('\n========================================== WARNING ===========================================\n');
+fprintf(['\nThe support for this ExploreASL functionality will expire with a future release.\n'...
+         'If you want to be able to use this function within a future release, please pull\n'...
+         'the public <a href="https://github.com/ExploreASL/CustomScripts" rel="nofollow">CustomScripts</a> repository.\n']);
+fprintf('\n==============================================================================================\n\n');
+
 if strcmp(StudyRoot(end),'\') || strcmp(StudyRoot(end),'/')
     StudyRoot = StudyRoot(1:end-1); % bugfix
 end
