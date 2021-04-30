@@ -160,7 +160,8 @@ function [x] = ExploreASL_Master(varargin)
 
     % -----------------------------------------------------------------------------    
     %% Finishing touch
-    fprintf('Many thanks for using <a href="https://github.com/ExploreASL" rel="nofollow">ExploreASL</a>, please don''t forget to cite https://pubmed.ncbi.nlm.nih.gov/32526385/\n');
+    fprintf('Many thanks for using <a href="https://github.com/ExploreASL" rel="nofollow">ExploreASL</a>, ');
+    fprintf('please don''t forget to cite <a href="https://pubmed.ncbi.nlm.nih.gov/32526385/" rel="nofollow">https://pubmed.ncbi.nlm.nih.gov/32526385/</a>.\n');
     fprintf('Note that ExploreASL is a collaborative effort.\n');
     fprintf('Therefore, please don''t hesitate to contribute by feedback, adding code snippets, or clinical experience!\n');
     
