@@ -1,0 +1,147 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "gllmflndn",
+      "name": "Guillaume",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/5950855?v=4",
+      "profile": "https://github.com/gllmflndn",
+      "contributions": [
+        "code",
+        "design",
+        "doc",
+        "example",
+        "ideas",
+        "infra",
+        "maintenance",
+        "question",
+        "review",
+        "test"
+      ]
+    },
+    {
+      "login": "Remi-Gau",
+      "name": "Remi Gau",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/6961185?v=4",
+      "profile": "https://remi-gau.github.io/",
+      "contributions": [
+        "code",
+        "design",
+        "doc",
+        "example",
+        "ideas",
+        "maintenance",
+        "question",
+        "review",
+        "test"
+      ]
+    },
+    {
+      "login": "apjanke",
+      "name": "Andrew Janke",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/2618447?v=4",
+      "profile": "http://apjanke.net",
+      "contributions": [
+        "code",
+        "design",
+        "doc",
+        "ideas",
+        "review",
+        "infra"
+      ]
+    },
+    {
+      "login": "tanguyduval",
+      "name": "tanguyduval",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/7785316?v=4",
+      "profile": "https://github.com/tanguyduval",
+      "contributions": [
+        "code",
+        "doc",
+        "ideas"
+      ]
+    },
+    {
+      "login": "robertoostenveld",
+      "name": "Robert Oostenveld",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/899043?v=4",
+      "profile": "https://github.com/robertoostenveld",
+      "contributions": [
+        "code",
+        "doc",
+        "ideas",
+        "review"
+      ]
+    },
+    {
+      "login": "cMadan",
+      "name": "Christopher Madan",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6385051?v=4",
+      "profile": "http://www.cmadan.com",
+      "contributions": [
+        "content"
+      ]
+    },
+    {
+      "login": "guiomar",
+      "name": "Julia Guiomar Niso Galán",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/4451818?v=4",
+      "profile": "http://guiomarniso.com",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "mslw",
+      "name": "Michał Szczepanik",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11985212?v=4",
+      "profile": "https://github.com/mslw",
+      "contributions": [
+        "infra",
+        "ideas",
+        "code"
+      ]
+    },
+    {
+      "login": "HenkMutsaerts",
+      "name": "Henk Mutsaerts",
+      "avatar_url": "https://avatars.githubusercontent.com/u/27774254?v=4",
+      "profile": "http://www.ExploreASL.org",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
+      "login": "nbeliy",
+      "name": "Nikita Beliy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/44231332?v=4",
+      "profile": "https://github.com/nbeliy",
+      "contributions": [
+        "code",
+        "ideas",
+        "review"
+      ]
+    },
+    {
+      "login": "mnoergaard",
+      "name": "Martin Norgaard",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12412821?v=4",
+      "profile": "https://profiles.stanford.edu/martin-noergaard",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "bids-matlab",
+  "projectOwner": "bids-standard",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}

@@ -1,0 +1,28 @@
+repos:
+
+-   repo: local
+
+    hooks:
+
+    - id: mh_style
+      name: mh_style
+      entry: mh_style
+      args: [--process-slx, --fix]
+      files: ^(.*\.(m|slx))$
+      language: python
+      additional_dependencies: [miss_hit_core]
+
+    - id: mh_metric
+      name: mh_metric
+      entry: mh_metric
+      args: [--ci]
+      files: ^(.*\.(m|slx))$
+      language: python
+      additional_dependencies: [miss_hit_core]
+
+    - id: mh_lint
+      name: mh_lint
+      entry: mh_lint
+      files: ^(.*\.(m|slx))$
+      language: python
+      additional_dependencies: [miss_hit]

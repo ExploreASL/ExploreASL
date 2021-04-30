@@ -1,0 +1,134 @@
+{
+  "subject": {
+    "name": "Subject",
+    "entity": "sub",
+    "description": "A person or animal participating in the study.\n",
+    "format": "label"
+  },
+  "session": {
+    "name": "Session",
+    "entity": "ses",
+    "description": "A logical grouping of neuroimaging and behavioral data consistent across\nsubjects.\nSession can (but doesn't have to) be synonymous to a visit in a\nlongitudinal study.\nIn general, subjects will stay in the scanner during one session.\nHowever, for example, if a subject has to leave the scanner room and then\nbe re-positioned on the scanner bed, the set of MRI acquisitions will still\nbe considered as a session and match sessions acquired in other subjects.\nSimilarly, in situations where different data types are obtained over\nseveral visits (for example fMRI on one day followed by DWI the day after)\nthose can be grouped in one session.\nDefining multiple sessions is appropriate when several identical or similar\ndata acquisitions are planned and performed on all -or most- subjects,\noften in the case of some intervention between sessions\n(for example, training).\n",
+    "format": "label"
+  },
+  "task": {
+    "name": "Task",
+    "entity": "task",
+    "format": "label",
+    "description": "Each task has a unique label that MUST only consist of letters and/or\nnumbers (other characters, including spaces and underscores, are not\nallowed).\nThose labels MUST be consistent across subjects and sessions.\n"
+  },
+  "acquisition": {
+    "name": "Acquisition",
+    "entity": "acq",
+    "description": "The `acq-<label>` key/value pair corresponds to a custom label the\nuser MAY use to distinguish a different set of parameters used for\nacquiring the same modality.\nFor example this should be used when a study includes two T1w images - one\nfull brain low resolution and and one restricted field of view but high\nresolution.\nIn such case two files could have the following names:\n`sub-01_acq-highres_T1w.nii.gz` and `sub-01_acq-lowres_T1w.nii.gz`, however\nthe user is free to choose any other label than highres and lowres as long\nas they are consistent across subjects and sessions.\nIn case different sequences are used to record the same modality\n(for example, RARE and FLASH for T1w)\nthis field can also be used to make that distinction.\nAt what level of detail to make the distinction (for example,\njust between RARE and FLASH, or between RARE, FLASH, and FLASHsubsampled)\nremains at the discretion of the researcher.\n",
+    "format": "label"
+  },
+  "ceagent": {
+    "name": "Contrast Enhancing Agent",
+    "entity": "ce",
+    "description": "The `ce-<label>` key/value can be used to distinguish\nsequences using different contrast enhanced images.\nThe label is the name of the contrast agent.\nThe key `ContrastBolusIngredient` MAY be also be added in the JSON file,\nwith the same label.\n",
+    "format": "label"
+  },
+  "reconstruction": {
+    "name": "Reconstruction",
+    "entity": "rec",
+    "description": "The `rec-<label>` key/value can be used to distinguish\ndifferent reconstruction algorithms (for example ones using motion\ncorrection).\n",
+    "format": "label"
+  },
+  "direction": {
+    "name": "Phase-Encoding Direction",
+    "entity": "dir",
+    "description": "The `dir-<label>` key/value can be set to an arbitrary alphanumeric label\n(for example, `dir-LR` or `dir-AP`) to distinguish different phase-encoding\ndirections.\n",
+    "format": "label"
+  },
+  "run": {
+    "name": "Run",
+    "entity": "run",
+    "description": "If several scans of the same modality are acquired they MUST be indexed\nwith a key-value pair: `_run-1`, `_run-2`, ..., `_run-<index>`\n(only nonnegative integers are allowed for the `<index>`).\nWhen there is only one scan of a given type the run key MAY be omitted.\n",
+    "format": "index"
+  },
+  "modality": {
+    "name": "Corresponding Modality",
+    "entity": "mod",
+    "description": "The `mod-<label>` key/value pair corresponds to modality label for defacing\nmasks, for example, T1w, inplaneT1, referenced by a defacemask image.\nFor example, `sub-01_mod-T1w_defacemask.nii.gz`.\n",
+    "format": "label"
+  },
+  "echo": {
+    "name": "Echo",
+    "entity": "echo",
+    "description": "If files belonging to an entity-linked file collection are acquired at different\necho times, the `_echo-<index>` key/value pair MUST be used to distinguish\nindividual files.\nThis entity represents the `EchoTime` metadata field. Please note that the `<index>`\ndenotes the number/index (in the form of a nonnegative integer), not the\n`EchoTime` value which needs to be stored in the field `EchoTime` of the separate\nJSON file.\n",
+    "format": "index"
+  },
+  "flip": {
+    "name": "Flip Angle",
+    "entity": "flip",
+    "description": "If files belonging to an entity-linked file collection are acquired at different\nflip angles, the `_flip-<index>` key/value pair MUST be used to distinguish\nindividual files.\nThis entity represents the `FlipAngle` metadata field. Please note that the `<index>`\ndenotes the number/index (in the form of a nonnegative integer), not the `FlipAngle`\nvalue which needs to be stored in the field `FlipAngle` of the separate JSON file.\n",
+    "format": "index"
+  },
+  "inv": {
+    "name": "Inversion Time",
+    "entity": "inv",
+    "description": "If files belonging to an entity-linked file collection are acquired at different\ninversion times, the `_inv-<index>` key/value pair MUST be used to distinguish\nindividual files.\nThis entity represents the `InversionTime` metadata field. Please note that the `<index>`\ndenotes the number/index (in the form of a nonnegative integer), not the `InversionTime`\nvalue which needs to be stored in the field `InversionTime` of the separate JSON file.\n",
+    "format": "index"
+  },
+  "mt": {
+    "name": "Magnetization Transfer",
+    "entity": "mt",
+    "description": "If files belonging to an entity-linked file collection are acquired at different\nmagnetization transfer (MT) states, the `_mt-<label>` key/value pair MUST be used to\ndistinguish individual files.\nThis entity represents the `MTState` metadata field. Allowed label values for this\nentity are `on` and `off`, for images acquired in presence and absence of an MT pulse,\nrespectively.\n",
+    "format": "label"
+  },
+  "part": {
+    "name": "Part",
+    "entity": "part",
+    "description": "This entity is used to indicate which component of the complex\nrepresentation of the MRI signal is represented in voxel data.\nThe `part-<label>` key/value pair is associated with the DICOM tag\n`0008,9208`.\nAllowed label values for this entity are `phase`, `mag`, `real` and `imag`,\nwhich are typically used in `part-mag`/`part-phase` or\n`part-real`/`part-imag` pairs of files.\n\nPhase images MAY be in radians or in arbitrary units.\nThe sidecar JSON file MUST include the units of the `phase` image.\nThe possible options are `rad` or `arbitrary`.\n\nWhen there is only a magnitude image of a given type, the `part` key MAY be\nomitted.\n",
+    "format": "label"
+  },
+  "recording": {
+    "name": "Recording",
+    "entity": "recording",
+    "description": "More than one continuous recording file can be included (with different\nsampling frequencies).\nIn such case use different labels.\nFor example: `_recording-contrast`, `_recording-saturation`.\n",
+    "format": "label"
+  },
+  "processing": {
+    "name": "Processed (on device)",
+    "entity": "proc",
+    "description": "The proc label is analogous to rec for MR and denotes a variant of a file\nthat was a result of particular processing performed on the device.\nThis is useful for files produced in particular by Elekta\u2019s MaxFilter\n(for example, sss, tsss, trans, quat or mc),\nwhich some installations impose to be run on raw data because of active\nshielding software corrections before the MEG data can actually be\nexploited.\n",
+    "format": "label"
+  },
+  "space": {
+    "name": "Space",
+    "entity": "space",
+    "description": "The space entity can be used to indicate\nthe way in which electrode positions are interpreted\n(for EEG/MEG/iEEG data) or\nthe spatial reference to which a file has been aligned (for MRI data).\nThe space label needs to be taken from the list in Appendix VIII.\n\nFor EEG/MEG/iEEG data, this entity can be applied to raw data, but\nfor other data types, it is restricted to derivative data.\n",
+    "format": "label"
+  },
+  "split": {
+    "name": "Split",
+    "entity": "split",
+    "description": "In the case of long data recordings that exceed a file size of 2Gb, the\n.fif files are conventionally split into multiple parts.\nEach of these files has an internal pointer to the next file.\nThis is important when renaming these split recordings to the BIDS\nconvention.\n\nInstead of a simple renaming, files should be read in and saved under their\nnew names with dedicated tools like MNE, which will ensure that not only\nthe file names, but also the internal file pointers will be updated.\nIt is RECOMMENDED that .fif files with multiple parts use the\n`split-<index>` entity to indicate each part.\n",
+    "format": "index"
+  },
+  "res": {
+    "name": "Resolution",
+    "entity": "res",
+    "description": "Resolution of regularly sampled N-dimensional data.\nMUST have a corresponding `Resolution` metadata field to provide\ninterpretation.\n\nThis entity is only applicable to derivative data.\n",
+    "format": "label"
+  },
+  "den": {
+    "name": "Density",
+    "entity": "den",
+    "description": "Density of non-parametric surfaces.\nMUST have a corresponding `Density` metadata field to provide\ninterpretation.\n\nThis entity is only applicable to derivative data.\n",
+    "format": "label"
+  },
+  "label": {
+    "name": "Label",
+    "entity": "label",
+    "description": "Tissue-type label, following a prescribed vocabulary.\nApplies to binary masks and probabilistic/partial volume segmentations\nthat describe a single tissue type.\n\nThis entity is only applicable to derivative data.\n",
+    "format": "label"
+  },
+  "desc": {
+    "name": "Description",
+    "entity": "desc",
+    "description": "When necessary to distinguish two files that do not otherwise have a\ndistinguishing entity, the `_desc-<label>` keyword-value SHOULD be used.\n\nThis entity is only applicable to derivative data.\n",
+    "format": "label"
+  }
+}

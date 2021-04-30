@@ -1,0 +1,73 @@
+{
+	"bids.layout": {
+		"inputs": [
+			{
+				"name": "root",
+				"kind": "required",
+				"type": "folder"
+			}
+		]
+	},
+	"bids.query": {
+		"inputs": [
+			{
+				"name": "BIDS",
+				"kind": "required",
+				"type": "struct"
+			},
+			{
+				"name": "query",
+				"kind": "required",
+				"type": [
+					"char",
+					"choices={'data','metadata','sessions','subjects','runs','tasks','types','modalities'}"
+				]
+			}
+		]
+	},
+	"bids.validate": {
+		"inputs": [
+			{
+				"name": "root",
+				"kind": "required",
+				"type": "folder"
+			}
+		]
+	},
+	"bids.report": {
+		"inputs": [
+			{
+				"name": "BIDS",
+				"kind": "positional",
+				"type": [
+					[
+						"folder"
+					],
+					[
+						"struct"
+					]
+				]
+			},
+			{
+				"name": "Subj",
+				"kind": "positional",
+				"type": "numeric"
+			},
+			{
+				"name": "Ses",
+				"kind": "positional",
+				"type": "numeric"
+			},
+			{
+				"name": "Run",
+				"kind": "positional",
+				"type": "numeric"
+			},
+			{
+				"name": "ReadNII",
+				"kind": "positional",
+				"type": "boolean"
+			}
+		]
+	}
+}

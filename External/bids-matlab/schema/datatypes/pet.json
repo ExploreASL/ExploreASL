@@ -1,0 +1,55 @@
+[
+  {
+    "suffixes": [
+      "pet"
+    ],
+    "extensions": [
+      ".nii.gz",
+      ".nii",
+      ".json"
+    ],
+    "entities": {
+      "subject": "required",
+      "session": "optional",
+      "task": "optional",
+      "tracer": "optional",
+      "reconstruction": "optional",
+      "run": "optional"
+    }
+  },
+  {
+    "suffixes": [
+      "blood"
+    ],
+    "extensions": [
+      ".tsv",
+      ".json"
+    ],
+    "entities": {
+      "subject": "required",
+      "session": "optional",
+      "task": "optional",
+      "tracer": "optional",
+      "reconstruction": "optional",
+      "run": "optional",
+      "recording": "required"
+    }
+  },
+  {
+    "suffixes": [
+      "events"
+    ],
+    "extensions": [
+      ".tsv",
+      ".json"
+    ],
+    "entities": {
+      "subject": "required",
+      "session": "optional",
+      "task": "required",
+      "tracer": "optional",
+      "reconstruction": "optional",
+      "run": "optional"
+    }
+  }
+]

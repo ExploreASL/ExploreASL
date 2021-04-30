@@ -1,0 +1,20 @@
+[
+  {
+    "datatypes": [
+      "meg",
+      "eeg",
+      "ieeg"
+    ],
+    "suffixes": [
+      "photo"
+    ],
+    "extensions": [
+      ".jpg"
+    ],
+    "entities": {
+      "sub": "required",
+      "ses": "optional",
+      "acq": "optional"
+    }
+  }
+]

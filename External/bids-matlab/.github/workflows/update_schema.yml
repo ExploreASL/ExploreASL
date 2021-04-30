@@ -1,0 +1,64 @@
+
+name: update schema
+
+# This action fetches the latest version of the BIDS specification and converts
+# the YAML based schema into a JSON format. If there are any changes compared to 
+# the version currently in the repo, it will open a pull request to submit 
+# the changes.
+
+
+# Uses the cron schedule for github actions
+# 
+# https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#scheduled-events
+# 
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+# │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+# │ │ │ │ │                                   
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * *
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+  schedule:
+    - cron: "* * * * 1" # every monday
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: python -m pip install -r requirements.txt
+
+    - name: Convert BIDS schema
+      run: |
+        git clone git://github.com/bids-standard/bids-specification.git --depth 1
+        python convert_schema.py
+        rm -Rf bids-specification
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v3
+      with:
+        commit-message: BIDS schema update
+        assignees: Remi-Gau, gllmflndn
+        base: dev
+        delete-branch: true
+
+    - name: Check outputs
+      run: |
+        echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+        echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"

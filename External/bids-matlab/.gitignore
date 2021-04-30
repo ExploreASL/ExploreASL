@@ -1,0 +1,15 @@
+*.asv
+*.*~
+*.swp
+
+# ignore virtual env
+env/*
+
+# ignore bids-specification repo (necessary for convert_schema.py)
+bids-specification/*
+
+# ignore input and output data involved in tests
+data/*
+derivatives/*
+
+.prettierrc

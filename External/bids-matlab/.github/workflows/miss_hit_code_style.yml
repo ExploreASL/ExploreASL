@@ -1,0 +1,38 @@
+name: code style
+# runs the miss hit linter on the code base
+# https://github.com/florianschanda/miss_hit/
+# see CONTRIBUTING.md for more information
+
+on:
+  push:
+    branches: [master, main, dev]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    if: github.event.pull_request.base.ref == 'master' || github.event.pull_request.base.ref == 'main'
+
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        fetch-depth: 1
+
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools
+        pip3 install -r requirements.txt
+
+    - name: MISS_HIT Code style
+      run: |
+        mh_style --process-slx
