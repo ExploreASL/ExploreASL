@@ -100,22 +100,13 @@ else
 			imSliceNumber(imSliceNumber>length(SliceReadoutTime)) = length(SliceReadoutTime);
 			ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD            
             
-            %% >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    
-            %% >>> BASIL CAN THIS BE DELETED/REPLACED BY THE PREVIOUS NEW CODE BY JP?
-            %% TAKING INTO ACCOUNT THAT BASIL USES x.Q.SliceReadoutTime instead of ScaleImage
+            % BASIL doesn't use a vector but a difference between slices
             if x.bUseBasilQuantification
-                if ~isnumeric(x.Q.SliceReadoutTime)
-                    if strcmp(x.Q.SliceReadoutTime,'shortestTR')
-                        ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
-                        if  isfield(ASL_parms,'RepetitionTime')
-                            %  Load original file to get nSlices
-                            nSlices = size(xASL_io_Nifti2Im(x.P.Path_ASL4D),3);
-                            x.Q.SliceReadoutTime = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
-                        else
-                            error('ASL_parms.RepetitionTime was expected but did not exist!');
-                        end
-                    end
-                end
+				if max(SliceReadoutTime)>0 && strcmpi(x.readout_dim,'2D') && length(SliceReadoutTime) > 1
+					x.Q.BasilSliceReadoutTime = SliceReadoutTime(2)-SliceReadoutTime(1);
+				else
+					x.Q.BasilSliceReadoutTime = 0;
+				end
             end
             
         otherwise
@@ -283,13 +274,6 @@ if x.ApplyQuantification(3)
 	if max(SliceReadoutTime)>0 && strcmpi(x.readout_dim,'2D')
 		fprintf('%s',[' + ' num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1)']);
 	end
-%% >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    
-%     % CAN PROBABLY BE DELETED >>> BASIL
-%     if isfield(x.Q,'SliceReadoutTime')
-%         if x.Q.SliceReadoutTime>0 && strcmpi(x.readout_dim,'2D')
-%             fprintf('%s',[' + ' num2str(x.Q.SliceReadoutTime) ' ms*(slice-1)']);
-%         end
-%     end
 
     fprintf('\n%s',['labeling efficiency (neck*Bsup) = ' num2str(x.Q.LabEff_Orig) ' * ' num2str(x.Q.LabEff_Bsup) ', ']);
     fprintf('\n%s','assuming ');

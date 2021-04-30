@@ -87,7 +87,7 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMu
     fprintf(FIDoptionFile, '--ti1=%f\n', (x.Q.LabelingDuration + x.Q.Initial_PLD)/1000);
     fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
     fprintf(FIDoptionFile, '--tau=%f\n', x.Q.LabelingDuration/1000); % FIXME tau could be list
-    fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.SliceReadoutTime/1000);
+    fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.BasilSliceReadoutTime/1000);
     fprintf(FIDoptionFile, '--save-model-fit\n');
 
 
