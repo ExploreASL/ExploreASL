@@ -172,7 +172,8 @@ if ~isfield(imPar,'tokenScanAliases')
 else
 	if (size(imPar.tokenScanAliases,2) > 2) || (size(imPar.tokenScanAliases,2) == 1)
 		tokenScanAliasesOld = imPar.tokenScanAliases;
-		imPar.tokenScanAliases = tokenScanAliasesOld(1:2:end);
+		imPar = rmfield(imPar,'tokenScanAliases');
+		imPar.tokenScanAliases(:,1) = tokenScanAliasesOld(1:2:end);
 		imPar.tokenScanAliases(:,2) = tokenScanAliasesOld(2:2:end);
 	end
 end
@@ -181,7 +182,8 @@ if ~isfield(imPar,'tokenVisitAliases')
 else
 	if (size(imPar.tokenVisitAliases,2) > 2) || (size(imPar.tokenVisitAliases,2) == 1)
 		tokenVisitAliasesOld = imPar.tokenVisitAliases;
-		imPar.tokenVisitAliases = tokenVisitAliasesOld(1:2:end);
+		imPar = rmfield(imPar,'tokenVisitAliases');
+		imPar.tokenVisitAliases(:,1) = tokenVisitAliasesOld(1:2:end);
 		imPar.tokenVisitAliases(:,2) = tokenVisitAliasesOld(2:2:end);
 	end
 end
@@ -190,7 +192,8 @@ if ~isfield(imPar,'tokenSessionAliases')
 else
 	if (size(imPar.tokenSessionAliases,2) > 2) || (size(imPar.tokenSessionAliases,2) == 1)
 		tokenSessionAliasesOld = imPar.tokenSessionAliases;
-		imPar.tokenSessionAliases =tokenSessionAliasesOld(1:2:end);
+		imPar = rmfield(imPar,'tokenSessionAliases');
+		imPar.tokenSessionAliases(:,1) = tokenSessionAliasesOld(1:2:end);
 		imPar.tokenSessionAliases(:,2) = tokenSessionAliasesOld(2:2:end);
 	end
 end
