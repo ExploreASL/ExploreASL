@@ -213,30 +213,22 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                             if  ~isempty(first_match); first_match = first_match{1}; end
                         end
                     end
-
-                    %% In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
-                    [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
-                    
-                    
-                end
+				end
                 
-                % extract relevant parameters from dicom header, if not
-                % already exists
-                % Find JSONpath that is there already
-                SavePathJSON = {};
-                SavePathJSON{1} = fullfile(destdir, [scan_name '.json']);
-                SavePathJSON{2} = fullfile(destdir, [session_name '.json']);
-                for iPath=1:length(nii_files)
-                    % now we add the path only if it didnt exist already in this list
-                    tmpNewPath = [nii_files{iPath}(1:end-4) '.json'];
-                    if ~max(cellfun(@(y) strcmp(y, tmpNewPath), SavePathJSON))
-                        SavePathJSON{end+1} = tmpNewPath;
-                    end
-                end
+				% Store JSON files
+				if ~isempty(nii_files)
+					jsonFiles = nii_files;
+					for iFile = 1:length(nii_files)
+						[Fpath, Ffile, ~] = fileparts(nii_files{iFile});
+						 newFile = xASL_adm_GetFileList(Fpath,['^' Ffile '.json$'],'FPList');
+						 jsonFiles{iFile} = newFile{1};
+					end
+					[parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, jsonFiles, first_match, settings.bUseDCMTK, pathDcmDict);
+				end   
                 
-                % Store JSON files
-                [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, settings.bUseDCMTK, pathDcmDict);
-                
+				%% In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
+				[nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
+				
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of
                 % hidden scale slopes in private Philips header,
@@ -271,22 +263,23 @@ end
 %% Store JSON files
 function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, bUseDCMTK, pathDcmDict)
 
-    for iPath=1:length(SavePathJSON)
-        if exist(SavePathJSON{iPath}, 'file') && ~isempty(first_match)
-            [~, ~, fext] = fileparts(first_match);
-            if  strcmpi(fext,'.PAR')
-                parms = xASL_bids_Par2JSON(first_match, SavePathJSON{iPath});
-            elseif strcmpi(fext,'.nii')
-                parms = [];
-            elseif imPar.bMatchDirectories
-                Fpath  = fileparts(first_match);
-                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-                clear Fpath Ffile Fext
-            else
-                [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON{iPath}, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-            end
-        end
-    end
+    if exist(SavePathJSON{1}, 'file') && ~isempty(first_match)
+		[~, ~, fext] = fileparts(first_match);
+		if  strcmpi(fext,'.PAR')
+			if length(SavePathJSON) > 1
+				warning('xASL_bids_Par2JSON only works with a single file');
+			end
+			parms = xASL_bids_Par2JSON(first_match, SavePathJSON{1});
+		elseif strcmpi(fext,'.nii')
+			parms = [];
+		elseif imPar.bMatchDirectories
+			Fpath  = fileparts(first_match);
+			[parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+			clear Fpath Ffile Fext
+		else
+			[parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
+		end
+	end
     
     % Fallback
     if ~exist('parms','var')
@@ -339,7 +332,11 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         niiTable{iNii,1} = fileName;
         % Open JSON file
         tmpJSON = spm_jsonread(fullfile(rootName,[fileName '.json']));
-        niiTable{iNii,2} = xASL_str2num(tmpJSON.InstanceNumber);
+		if isfield(tmpJSON,'InstanceNumber')
+			niiTable{iNii,2} = xASL_str2num(tmpJSON.InstanceNumber);
+		else
+			niiTable{iNii,2} = 0;
+		end
         if isfield(tmpJSON, 'Manufacturer')
             if ~isempty(strfind(tmpJSON.Manufacturer, 'GE'))
                 niiTable{iNii,3} = xASL_bids_determineImageTypeGE(tmpJSON);
