@@ -206,6 +206,21 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             jsonM0 = jsonStruct;
             jsonASL = jsonStruct;
             
+            % Fields which should be split
+            splitFields = {'EchoTime', 'FlipAngle', 'RepetitionTimePreparation', 'PostLabelingDelay', 'VascularCrushingVENC', 'LabelingDuration'}';
+            
+            % Iterate over JSON fields
+            jsonFields = fieldnames(jsonStruct);
+            for iField = 1:numel(jsonFields)
+                % Check fieldname
+                if ismember(jsonFields{iField,1},splitFields)
+                    % Add correct field value to M0 json
+                    jsonM0.(jsonFields{iField,1}) = 'I_WAS_SPLIT_IN_HALF_:)';
+                    % Add correct field value to ASL json
+                    jsonASL.(jsonFields{iField,1}) = 'I_WAS_SPLIT_IN_HALF_:)';
+                end
+            end
+            
         end
 
         %% 8. Copy sidecars
