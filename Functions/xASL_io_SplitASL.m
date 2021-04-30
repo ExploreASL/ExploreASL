@@ -186,6 +186,17 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 
         %% Save ASL4D NIfTI
         xASL_io_SaveNifti(BackupName,ASLname,tIM(:,:,:,ASLindices),[],false);
+        
+        %% Split relevant JSON parameters/arrays
+        if exist(BackupJSONPath,'file')
+            % Load backup JSON
+            jsonStruct = spm_jsonread(BackupJSONPath);
+            
+            % Define M0 & ASL fallback JSONs
+            jsonM0 = jsonStruct;
+            jsonASL = jsonStruct;
+            
+        end
 
         %% Copy sidecars
         if exist(BackupMATPath,'file') && bCreateM0
@@ -194,12 +205,14 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         if exist(BackupMATPath,'file') && ~strcmp(BackupMATPath, ASLMATPath)
             xASL_Copy(BackupMATPath, ASLMATPath);
         end
-        if exist(BackupJSONPath,'file') && bCreateM0
-            xASL_Copy(BackupJSONPath, M0JSONPath);
+        if exist('jsonStruct','var') && bCreateM0
+            spm_jsonwrite(M0JSONPath, jsonM0);
         end
-        if exist(BackupJSONPath,'file') && ~strcmp(BackupJSONPath, ASLJSONPath)
-            xASL_Copy(BackupJSONPath, ASLJSONPath);
+        if exist('jsonStruct','var') && ~strcmp(BackupJSONPath, ASLJSONPath)
+            spm_jsonwrite(ASLJSONPath, jsonASL);
         end
+        
+        %%
     end
 
 end
