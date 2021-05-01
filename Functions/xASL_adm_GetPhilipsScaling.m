@@ -44,17 +44,21 @@ if isfield(parms,'RWVSlope')
 		if isfield(parms,'MRScaleSlope') && length(parms.MRScaleSlope)>1
 			parms.MRScaleSlope = parms.MRScaleSlope(idx);
 		end
-	end
+    end
 	
-	if ~isnear(parms.RWVSlope,rescaleSlopeNifti,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
-		fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and NIfTI slope (' xASL_num2str(rescaleSlopeNifti) ') differ, using RWVSlope']);
-	end
-	if isfield(parms,'RescaleSlopeOriginal') && ~isnear(parms.RWVSlope,parms.RescaleSlopeOriginal,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
-		fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ') differ, using RWVSlope']);
-	end
-	if isfield(parms,'RescaleSlope') && ~isnear(parms.RWVSlope,parms.RescaleSlope,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
-		fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') differ, using RWVSlope']);
-	end
+    if ~isempty(parms.RWVSlope)
+        if ~isnear(parms.RWVSlope,rescaleSlopeNifti,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
+            fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and NIfTI slope (' xASL_num2str(rescaleSlopeNifti) ') differ, using RWVSlope']);
+        end
+        if isfield(parms,'RescaleSlopeOriginal') && ~isnear(parms.RWVSlope,parms.RescaleSlopeOriginal,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
+            fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ') differ, using RWVSlope']);
+        end
+        if isfield(parms,'RescaleSlope') && ~isnear(parms.RWVSlope,parms.RescaleSlope,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
+            fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') differ, using RWVSlope']);
+        end
+    else
+        fprintf('Warning: RWVSlope value is empty...\n');
+    end
 			
 	if parms.RWVSlope == 1
 		warning('RWVSlope was 1, could be a scale slope issue');
@@ -136,5 +140,10 @@ if scaleFactor
 	scaleFactor = 1./(scaleFactor .* MRScaleSlope);
 end
 
+% Set scaleFactor to zero if xASL_adm_GetPhilipsScaling failed?
+if isempty(scaleFactor)
+    warning('xASL_adm_GetPhilipsScaling failed, scaleFactor will be set to 0...');
+    scaleFactor = 0;
+end
 
 end

@@ -27,6 +27,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
 % 4. Only try shuffling if you dont know the ASL context already
 % 5. Merge NIfTIs if there are multiples for ASL or M0, merge multiple files
 % 6. Extract relevant parameters from nifti header and append to summary file
+% 7. Check for specific sequences (Hadamard etc.)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     n/a
