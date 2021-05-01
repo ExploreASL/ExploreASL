@@ -22,6 +22,10 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 %                   value, it also checks if the parameters are consistent across DICOM files for a 
 %                   single sequence.
 %
+% 1. Admin
+% 2. Set up the default values
+% 3. Recreate the parameter file from raw data
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          ...
@@ -31,7 +35,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 % Copyright 2015-2021 ExploreASL
 
     %% ----------------------------------------------------------------------------------
-	% Admin
+	% 1. Admin
 	% ----------------------------------------------------------------------------------
 	
 	if nargin<2 || isempty(pathJSON)
@@ -52,7 +56,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	pathDcmDictOut = pathDcmDictIn;
     
 	%% ----------------------------------------------------------------------------------
-	% Set up the default values
+	% 2. Set up the default values
 	% ----------------------------------------------------------------------------------
 	
 	DcmParDefaults.RepetitionTime               = NaN;
@@ -97,7 +101,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	bVendor = 'Unknown';
 	
 	%% ----------------------------------------------------------------------------------
-	% Recreate the parameter file from raw data
+	% 3. Recreate the parameter file from raw data
 	% ----------------------------------------------------------------------------------
 	for iJSON = 1:length(pathJSON)
 		if ~isempty(pathJSON{iJSON})
@@ -322,13 +326,13 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				end
 			end
 			
-			%% -----------------------------------------------------------------------------
-			% Obtain the selected DICOM parameters from the header
-			% Write the new parameter to the list (or put the default value)
-			% -----------------------------------------------------------------------------
-			for iField=1:length(dcmfields)
-				fieldname = dcmfields{iField};
-				
+            %% -----------------------------------------------------------------------------
+            % Obtain the selected DICOM parameters from the header
+            % Write the new parameter to the list (or put the default value)
+            % -----------------------------------------------------------------------------
+            for iField=1:length(dcmfields)
+                fieldname = dcmfields{iField};
+                
                 % Extract value of current field
                 if  isfield(temp, fieldname)
                     thevalue = temp.(fieldname);
@@ -336,7 +340,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                 else
                     thevalue = [];
                 end
-				
+                
                 % Convert string-numbers to numbers if necessary
                 if ~isempty(thevalue)
                     if length(xASL_str2num(thevalue))>1
@@ -347,10 +351,10 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                     end
                     t_parms{parmsIndex}.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
                 else
-					if imPar.bVerbose
-						if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
-					end
-					t_parms{parmsIndex}.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
+                    if imPar.bVerbose
+                        if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
+                    end
+                    t_parms{parmsIndex}.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
                 end
             end
 			
