@@ -40,7 +40,7 @@ function [x] = ExploreASL_ImportMaster(x)
                 end
                 % BIDS TO LEGACY
                 if x.ImportModules(4)==1
-                    x = xASL_Import_BIDS2LEGACY(x);
+                    x = xASL_imp_BIDS2Legacy(x);
                 end
             else
                 warning('ImportModules was set to 1, but the sourceStructure file does not exist');

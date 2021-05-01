@@ -1,7 +1,7 @@
-function [x] = xASL_Import_BIDS2LEGACY(x)
-%xASL_Import_BIDS2LEGACY BIDS2LEGACY conversion script which calls xASL_bids_BIDS2Legacy.
+function [x] = xASL_imp_BIDS2Legacy(x)
+%xASL_imp_BIDS2Legacy BIDS2LEGACY conversion script which calls xASL_bids_BIDS2Legacy.
 %
-% FORMAT: [x] = xASL_Import_BIDS2LEGACY(x);
+% FORMAT: [x] = xASL_imp_BIDS2Legacy(x);
 %
 % INPUT:
 %   x             - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -10,7 +10,7 @@ function [x] = xASL_Import_BIDS2LEGACY(x)
 %   x             - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    BIDS2LEGACY conversion script which calls xASL_bids_BIDS2Legacy.
+% DESCRIPTION:    BIDS to Legacy conversion script which calls xASL_bids_BIDS2Legacy.
 %
 % 1. Go through all studies
 % 2. Convert only those containing raw data
