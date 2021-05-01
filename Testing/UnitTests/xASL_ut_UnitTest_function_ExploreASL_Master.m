@@ -383,7 +383,7 @@ UnitTest.tests(6).passed = testCondition;
 %% Test run 7
 
 % Give your individual subtest a name
-UnitTest.tests(7).testname = 'DRO 2.2.0 (BIDS2Legacy & Processing)';
+UnitTest.tests(7).testname = 'DRO 2.2.0 (full pipeline, NII->Results)';
 
 % Start the test
 testTime = tic;
@@ -393,7 +393,7 @@ droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_p
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
 droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+xASL_bids_DRO2BIDS(droTestPatient,droSubject,false); % Prepare DRO, keep ground truth data for comparison
 
 % Fallback
 testCondition = true;
@@ -409,12 +409,40 @@ end
 
 % Define one or multiple test conditions here
 
-% Check ASL files
+% Check files and folders
 if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject),'dir')
     testCondition = false; % Test failed
 end
+if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'file')
+    testCondition = false; % Test failed
+end
 
-% Add additional conditions here ...
+% ...
+
+% Compare image data
+groundTruthM0File = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','002_ground_truth_m0.nii');
+groundTruthPerfusionFile = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','002_ground_truth_perfusion_rate.nii');
+derivedM0File = fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','M0.nii');
+derivedCBFFile = fullfile(droTestPatient,'derivatives','ExploreASL','Population','qCBF_sub-Sub1_ASL_1.nii');
+
+try
+    % Load images
+    imRefM0 = xASL_io_Nifti2Im(groundTruthM0File);
+    imRefPerf = xASL_io_Nifti2Im(groundTruthPerfusionFile);
+    imDerM0 = xASL_io_Nifti2Im(derivedM0File);
+    imDerCBF = xASL_io_Nifti2Im(derivedCBFFile);
+    
+    % Test comparisons ... (not finished, work in progress)
+    RMSE.M0 = xASL_ut_GetRMSE(imRefM0, imDerM0);
+    RMSE.CBF = xASL_ut_GetRMSE(imRefPerf, imDerCBF);
+    
+    % ...
+    
+catch ME
+    warning('%s', ME.message);
+    testCondition = false;
+end
+
 
 % Delete test data
 xASL_delete(testPatientDestination,true)
@@ -431,4 +459,18 @@ UnitTest = xASL_ut_CheckSubtests(UnitTest);
 
 end
 
+
+%% Determine RMSE of two images
+function RMSE = xASL_ut_GetRMSE(imageA, imageB)
+    
+    if isequal(size(imageA),size(imageB))
+        % Calculate
+        RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
+    else
+        % Resample A to B
+        [imageA] = xASL_im_ResampleIM(imageA, [1 0 0 0;0 1 0 0;0 0 1 0; 0 0 0 1], [1 0 0 0;0 1 0 0;0 0 1 0; 0 0 0 1], size(imageB));
+        % Calculate
+        RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
+    end
+end
 

@@ -1,4 +1,4 @@
-function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
+function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth)
 %xASL_bids_DRO2BIDS Prepare DRO test patient for BIDS2Legacy conversion.
 %
 % FORMAT: xASL_bids_DRO2BIDS(droTestPatient,[droSubject])
@@ -6,6 +6,7 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
 % INPUT:
 %   droTestPatient      - Path to the DRO (CHAR ARRAY, REQUIRED)
 %   droSubject          - Subject name (CHAR ARRAY, OPTIONAL, DEFAULT = 'sub-Sub1')
+%   deleteGroundTruth   - Delete DRO ground truth (BOOLEAN, OPTIONAL, DEFAULT = True)
 %
 % OUTPUT:
 %   n/a
@@ -34,6 +35,9 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
     if nargin<2
         droSubject = 'sub-Sub1'; % DEFAULT
     end
+    if nargin<3
+        deleteGroundTruth = true; % DEFAULT
+    end
 
     % Directory definitions
     perfDirectory = fullfile(droTestPatient,'rawdata',droSubject,'perf');
@@ -53,7 +57,9 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject)
     xASL_Move(fullfile(anatDirectory,'003_anat.nii.gz'),fullfile(anatDirectory,[droSubject,'_T1w.nii.gz']),1);
 
     % Remove the ground truth files
-    xASL_delete(groundTruthDirectory,true);
+    if deleteGroundTruth
+        xASL_delete(groundTruthDirectory,true);
+    end
     
     % Read ASL JSON file
     jsonASL = spm_jsonread(fullfile(perfDirectory,[droSubject,'_asl.json']));
