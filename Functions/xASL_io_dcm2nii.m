@@ -346,6 +346,15 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                 [~, fileName, ~] = xASL_fileparts(temp_file);
                 startIndex = regexp(fileName,expression);
                 niiInstanceNumber = fileName(startIndex+1:end);
+                
+                % Check for files that are formatted like ..._InstanceNumber_eNumber instead of ..._InstanceNumber
+                if isempty(niiInstanceNumber)
+                    expression = '_(\d+)_e.$';
+                    [~, fileName, ~] = xASL_fileparts(temp_file);
+                    startIndex = regexp(fileName,expression);
+                    niiInstanceNumber = fileName(startIndex+1:end);
+                    niiInstanceNumber = niiInstanceNumber(1:strfind(niiInstanceNumber,'_')-1);
+                end
 
                 if length(parms.Keep)>1 % add iVolume suffix (if there are multiple)
                     try

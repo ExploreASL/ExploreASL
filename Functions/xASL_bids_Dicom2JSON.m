@@ -398,9 +398,14 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 						t_parms{parmsIndex} = rmfield(t_parms{parmsIndex},'AcquisitionTime');
 						t_parms{parmsIndex}(1).AcquisitionTime = tempAcquisitionTime;
 					end
-				end
+                end
 				
-				t_parms{parmsIndex}(1).AcquisitionTime = xASL_adm_ConvertNr2Time(t_parms{parmsIndex}(1).AcquisitionTime);
+                % Convert number to time format (check that current struct exists / is not empty)
+                if ~isempty(t_parms{parmsIndex})
+                    t_parms{parmsIndex}(1).AcquisitionTime = xASL_adm_ConvertNr2Time(t_parms{parmsIndex}(1).AcquisitionTime);
+                else
+                    fprintf('\nWarning: t_parms{parmsIndex} is empty...\n');
+                end
 				
 				% Checks if the field values were the same for all dicoms and keep only one from the same value
 				for iField=1:length(dcmfields)
@@ -527,17 +532,18 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			end
 			
 			%% First remove non-finite values
-			parms{parmsIndex}.EchoTime              = parms{parmsIndex}.EchoTime(isfinite(parms{parmsIndex}.EchoTime));
-			parms{parmsIndex}.RepetitionTime        = parms{parmsIndex}.RepetitionTime(isfinite(parms{parmsIndex}.RepetitionTime));
-			
+            if  isfield(parms{parmsIndex},'EchoTime')
+                parms{parmsIndex}.EchoTime              = parms{parmsIndex}.EchoTime(isfinite(parms{parmsIndex}.EchoTime));
+            end
+            if  isfield(parms{parmsIndex},'RepetitionTime')
+                parms{parmsIndex}.RepetitionTime        = parms{parmsIndex}.RepetitionTime(isfinite(parms{parmsIndex}.RepetitionTime));
+            end
 			if  isfield(parms{parmsIndex},'MRScaleSlope')
 				parms{parmsIndex}.MRScaleSlope          = parms{parmsIndex}.MRScaleSlope(isfinite(parms{parmsIndex}.MRScaleSlope));
-			end
-			
+            end
 			if  isfield(parms{parmsIndex},'RescaleSlopeOriginal')
 				parms{parmsIndex}.RescaleSlopeOriginal  = parms{parmsIndex}.RescaleSlopeOriginal(isfinite(parms{parmsIndex}.RescaleSlopeOriginal));
-			end
-			
+            end
 			if  isfield(parms{parmsIndex},'RescaleIntercept')
 				parms{parmsIndex}.RescaleIntercept      = parms{parmsIndex}.RescaleIntercept(isfinite(parms{parmsIndex}.RescaleIntercept));
 			end
@@ -559,15 +565,19 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			end
 			
 			% In case multiple different scale slopes are given, report a warning
-			if length(parms{parmsIndex}.MRScaleSlope)>1  || length(parms{parmsIndex}.RescaleSlopeOriginal)>1 || length(parms{parmsIndex}.RescaleSlope)>1 ||...
-					(isfield(parms{parmsIndex},'RWVSlope') && length(parms{parmsIndex}.RWVSlope)>1)
-				warning('xASL_adm_Dicom2JSON: Multiple scale slopes exist for a single scan!');
-				%parms{parmsIndex} = rmfield(parms{parmsIndex},'MRScaleSlope');
-				%parms{parmsIndex} = rmfield(parms{parmsIndex},'RescaleSlope');
-				%parms{parmsIndex} = rmfield(parms{parmsIndex},'RescaleSlopeOriginal');
-				%parms{parmsIndex} = rmfield(parms{parmsIndex},'RescaleIntercept');
-				%parms{parmsIndex} = rmfield(parms{parmsIndex},'RWVSlope');
-			end
+            if isfield(parms{parmsIndex},'MRScaleSlope') && isfield(parms{parmsIndex},'RescaleSlopeOriginal') && isfield(parms{parmsIndex},'RescaleSlope')
+                if length(parms{parmsIndex}.MRScaleSlope)>1  || length(parms{parmsIndex}.RescaleSlopeOriginal)>1 || length(parms{parmsIndex}.RescaleSlope)>1 ||...
+                        (isfield(parms{parmsIndex},'RWVSlope') && length(parms{parmsIndex}.RWVSlope)>1)
+                    warning('xASL_adm_Dicom2JSON: Multiple scale slopes exist for a single scan!');
+                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'MRScaleSlope');
+                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'RescaleSlope');
+                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'RescaleSlopeOriginal');
+                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'RescaleIntercept');
+                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'RWVSlope');
+                end
+            else
+                fprintf('Warning: MRScaleSlope, RescaleSlopeOriginal or RescaleSlope not found...\n');
+            end
 			
 			%% Save the info in JSON file
 			

@@ -114,7 +114,16 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     globalCounts.converted_scans(iSubject, iSession, iScan) = 1;
     
     %% 7. Check for specific sequences (Hadamard etc.)
-    specificSequenceNames = {''}';
+    specificSequenceNames = {'fme_asl3d'}';
+    if exist('tmpJSON','var')
+        if isfield(tmpJSON,'SequenceName')
+            for iSpecificSequence=1:numel(specificSequenceNames)
+                if ~isempty(strfind(tmpJSON.SequenceName,specificSequenceNames{iSpecificSequence,1}))
+                    fprintf('Sequence %s found...\n',specificSequenceNames{iSpecificSequence,1});
+                end
+            end
+        end
+    end
 
 end
 
