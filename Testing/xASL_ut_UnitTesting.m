@@ -69,8 +69,6 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
         UnitTests(test) = testHandle(TestRepository);
     end
     
-    
-    
     %% Export table as well
     UnitTestsTable = struct2table(UnitTests);
     

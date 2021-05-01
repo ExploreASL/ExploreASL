@@ -220,21 +220,29 @@ UnitTest.tests(3).passed = testCondition;
 %% Test run 4
 
 % Give your individual subtest a name
-UnitTest.tests(4).testname = 'Initialize (DCM2NIFTI)';
+UnitTest.tests(4).testname = 'DRO 2.2.0 (DCM2NIFTI)';
 
 % Start the test
 testTime = tic;
 
 % Copy test patient
-testPatientSource = fullfile(TestRepository,'UnitTesting','synthetic_dcm','test_patient'); 
-testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient');
+testPatientSource = fullfile(TestRepository,'UnitTesting','synthetic_dcm','test_patient_2_2_0'); 
+testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
 xASL_Copy(testPatientSource, testPatientDestination);
 
+% Fallback
+testCondition = true;
+
 % Read test files
-[x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[1 0 0 0],0,0,1,1);
+try
+    [x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[1 0 0 0],0,0,1,1);
+catch ME
+    warning('%s', ME.message);
+    testCondition = false;
+    diary off;
+end
 
 % Define one or multiple test conditions here
-testCondition = true; % Fallback
 if ~exist(fullfile(testPatientDestination,'analysis'),'dir'),                   testCondition = false;          end
 if ~exist(fullfile(testPatientDestination,'analysis','Sub1'),'dir'),            testCondition = false;          end
 if ~exist(fullfile(testPatientDestination,'analysis','Sub1','ASL_1'),'dir'),    testCondition = false;          end
@@ -258,7 +266,118 @@ UnitTest.tests(4).passed = testCondition;
 
 %% Test run 5
 
-% ...
+% Give your individual subtest a name
+UnitTest.tests(5).testname = 'DRO 2.2.0 (NII2BIDS)';
+
+% Start the test
+testTime = tic;
+
+% Set-up DRO
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droSubject = 'sub-Sub1'; % DRO subject
+xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
+xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+
+% Fallback
+testCondition = true;
+
+% Read test files
+try
+    [x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[0 1 0 0],0,0,1,1);
+catch ME
+    warning('%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Define one or multiple test conditions here
+
+% Check ASL files
+if ~exist(fullfile(droTestPatient,'rawdata',droSubject,'perf','sub-Sub1_asl.json'),'file') ...
+    || ~exist(fullfile(droTestPatient,'rawdata',droSubject,'perf','sub-Sub1_aslcontext.tsv'),'file')
+    testCondition = false; % Test failed
+end
+if ~exist(fullfile(droTestPatient,'rawdata',droSubject,'perf','sub-Sub1_asl.nii'),'file') ...
+    && ~exist(fullfile(droTestPatient,'rawdata',droSubject,'perf','sub-Sub1_asl.nii.gz'),'file')
+    testCondition = false; % Test failed
+end
+
+% Check T1w files
+if ~exist(fullfile(droTestPatient,'rawdata',droSubject,'anat','sub-Sub1_T1w.json'),'file')
+    testCondition = false; % Test failed
+end
+if ~exist(fullfile(droTestPatient,'rawdata',droSubject,'anat','sub-Sub1_T1w.nii'),'file') ...
+    && ~exist(fullfile(droTestPatient,'rawdata',droSubject,'anat','sub-Sub1_T1w.nii.gz'),'file')
+    testCondition = false; % Test failed
+end
+
+% Delete test data
+xASL_delete(testPatientDestination,true)
+
+% Get test duration
+UnitTest.tests(5).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(5).passed = testCondition;
+
+
+%% Test run 6
+
+% Give your individual subtest a name
+UnitTest.tests(6).testname = 'DRO 2.2.0 (ANONYMIZE, BIDS2Legacy)';
+
+% Start the test
+testTime = tic;
+
+% Set-up DRO
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droSubject = 'sub-Sub1'; % DRO subject
+xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
+xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+
+% Fallback
+testCondition = true;
+
+% Read test files
+try
+    [x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[0 1 1 1],0,0,1,1);
+catch ME
+    warning('%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Define one or multiple test conditions here
+
+% Check ASL files
+if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','ASL4D.json'),'file') ...
+    || ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','ASL4D_aslcontext.tsv'),'file')
+    testCondition = false; % Test failed
+end
+if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','ASL4D.nii'),'file') ...
+    && ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','ASL4D.nii.gz'),'file')
+    testCondition = false; % Test failed
+end
+
+% Check T1w files
+if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'T1.json'),'file')
+    testCondition = false; % Test failed
+end
+if  ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'T1.nii'),'file') ...
+    &&  ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'T1.nii.gz'),'file')
+    testCondition = false; % Test failed
+end
+
+% Delete test data
+xASL_delete(testPatientDestination,true)
+
+% Get test duration
+UnitTest.tests(6).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(6).passed = testCondition;
 
 
 %% End of testing

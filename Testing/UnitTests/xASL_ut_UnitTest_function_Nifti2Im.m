@@ -33,7 +33,7 @@ UnitTest.tests(1).testname = 'Load DRO image matrix (default options)';
 testTime = tic;
 
 % Run your test here
-aslFile = fullfile(TestRepository,'UnitTesting','dro_files','test_patient','asl','001_asl.nii.gz');
+aslFile = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0','asl','001_asl.nii.gz');
 testFile = fullfile(TestRepository,'UnitTesting','working_directory','001_asl.nii.gz');
 unzippedTestFile = fullfile(TestRepository,'UnitTesting','working_directory','001_asl.nii');
 
