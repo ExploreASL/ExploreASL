@@ -260,59 +260,6 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
 end
 
 
-%% Store JSON files
-function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePathJSON, first_match, bUseDCMTK, pathDcmDict)
 
-    if exist(SavePathJSON{1}, 'file') && ~isempty(first_match)
-		[~, ~, fext] = fileparts(first_match);
-		if  strcmpi(fext,'.PAR')
-			if length(SavePathJSON) > 1
-				warning('xASL_bids_Par2JSON only works with a single file');
-			end
-			parms = xASL_bids_Par2JSON(first_match, SavePathJSON{1});
-		elseif strcmpi(fext,'.nii')
-			parms = [];
-		elseif imPar.bMatchDirectories
-			Fpath  = fileparts(first_match);
-			[parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, Fpath, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-			clear Fpath Ffile Fext
-		else
-			[parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
-		end
-	end
-    
-    % Fallback
-    if ~exist('parms','var')
-        parms = cell(1,1);
-    end
-
-end
-
-%% Make a copy of analysisdir in sourcedir
-function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
-
-    if bClone2Source
-        if ~isempty(nii_files)
-            for iFile=1:length(nii_files)
-                % replace 'analysis' by 'source'
-                [iStart, iEnd] = regexp(nii_files{iFile}, 'analysis');
-                DestPath = [nii_files{iFile}(1:iStart-1) 'source' nii_files{iFile}(iEnd+1:end)];
-                xASL_Copy(nii_files{iFile}, DestPath, true);
-                % do the same for other extensions
-                Extensions = {'.json' '_parms.json'};
-                for iExt=1:length(Extensions)
-                    [Fpath, Ffile] = xASL_fileparts(nii_files{iFile});
-                    CopyPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
-                    [Fpath, Ffile] = xASL_fileparts(DestPath);
-                    DestPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
-                    if xASL_exist(CopyPath)
-                        xASL_Copy(CopyPath, DestPath, true);
-                    end
-                end
-            end
-        end
-    end
-
-end
 
 

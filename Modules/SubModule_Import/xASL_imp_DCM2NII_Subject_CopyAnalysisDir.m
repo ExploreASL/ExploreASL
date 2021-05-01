@@ -1,0 +1,46 @@
+function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
+%xASL_imp_DCM2NII_Subject_CopyAnalysisDir Make a copy of analysisdir in sourcedir.
+%
+% FORMAT: xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
+% 
+% INPUT:
+%   nii_files     - List of NIfTI files (CELL ARRAY, REQUIRED)
+%   bClone2Source - Clone to source (BOOLEAN, REQUIRED)
+%
+% OUTPUT:
+%   n/a
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Make a copy of analysisdir in sourcedir.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
+
+    %% Make a copy of analysisdir in sourcedir.
+    if bClone2Source
+        if ~isempty(nii_files)
+            for iFile=1:length(nii_files)
+                % replace 'analysis' by 'source'
+                [iStart, iEnd] = regexp(nii_files{iFile}, 'analysis');
+                DestPath = [nii_files{iFile}(1:iStart-1) 'source' nii_files{iFile}(iEnd+1:end)];
+                xASL_Copy(nii_files{iFile}, DestPath, true);
+                % do the same for other extensions
+                Extensions = {'.json' '_parms.json'};
+                for iExt=1:length(Extensions)
+                    [Fpath, Ffile] = xASL_fileparts(nii_files{iFile});
+                    CopyPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
+                    [Fpath, Ffile] = xASL_fileparts(DestPath);
+                    DestPath = fullfile(Fpath, [Ffile Extensions{iExt}]);
+                    if xASL_exist(CopyPath)
+                        xASL_Copy(CopyPath, DestPath, true);
+                    end
+                end
+            end
+        end
+    end
+
+end
+
