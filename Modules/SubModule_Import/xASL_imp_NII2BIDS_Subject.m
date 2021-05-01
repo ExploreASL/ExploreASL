@@ -374,49 +374,11 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
                     end
                 end
             end
-
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Define the M0 type
-            % Type of an M0 image
-            bJsonLocalM0isFile = 0;
-            if ~isfield(studyPar,'M0') || isempty(studyPar.M0) || strcmpi(studyPar.M0,'separate_scan')
-                if isfield(studyPar,'M0PositionInASL4D') && (max(studyPar.M0PositionInASL4D(:))>0)
-                    jsonLocal.M0 = true;
-                    jsonLocal.M0Type = bidsPar.strM0Included;
-                elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
-                    jsonLocal.M0 = fullfile(bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel]);
-                    jsonLocal.M0Type = bidsPar.strM0Separate;
-                    bJsonLocalM0isFile = 1;
-                else
-                    if ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
-                        jsonLocal.M0 = true;
-                        jsonLocal.M0Type = bidsPar.strM0Included;
-                    else
-                        jsonLocal.M0 = false;
-                        jsonLocal.M0Type = bidsPar.strM0Absent;
-                    end
-                end
-            else
-                if strcmpi(studyPar.M0,'UseControlAsM0')
-                    jsonLocal.M0 = bidsPar.strM0Absent;
-                else
-                    if strcmpi(studyPar.M0,'no_background_suppression')
-                        jsonLocal.M0 = bidsPar.strM0Absent;
-                    else
-                        jsonLocal.M0 = studyPar.M0;
-                        if isnumeric(studyPar.M0)
-                            jsonLocal.M0Type = bidsPar.strM0Estimate;
-                            jsonLocal.M0Estimate = studyPar.M0;
-                        elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
-                            jsonLocal.M0Type = bidsPar.strM0Separate;
-                        elseif ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
-                            jsonLocal.M0Type = bidsPar.strM0Included;
-                        else
-                            jsonLocal.M0Type = bidsPar.strM0Absent;
-                        end
-                    end
-                end
-            end
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %% Define the M0 type
+            [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel, bJsonLocalM0isFile] = ...
+                xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel);
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % If Post-labeling delay or labeling duration is longer than 1, but shorter then number of volumes then repeat it
@@ -678,5 +640,54 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
         end
     end
 end
+
+
+
+%% xASL_imp_NII2BIDS_Subject_DefineM0Type
+function [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel)
+
+    % Type of an M0 image
+    bJsonLocalM0isFile = 0;
+    if ~isfield(studyPar,'M0') || isempty(studyPar.M0) || strcmpi(studyPar.M0,'separate_scan')
+        if isfield(studyPar,'M0PositionInASL4D') && (max(studyPar.M0PositionInASL4D(:))>0)
+            jsonLocal.M0 = true;
+            jsonLocal.M0Type = bidsPar.strM0Included;
+        elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
+            jsonLocal.M0 = fullfile(bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel]);
+            jsonLocal.M0Type = bidsPar.strM0Separate;
+            bJsonLocalM0isFile = 1;
+        else
+            if ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
+                jsonLocal.M0 = true;
+                jsonLocal.M0Type = bidsPar.strM0Included;
+            else
+                jsonLocal.M0 = false;
+                jsonLocal.M0Type = bidsPar.strM0Absent;
+            end
+        end
+    else
+        if strcmpi(studyPar.M0,'UseControlAsM0')
+            jsonLocal.M0 = bidsPar.strM0Absent;
+        else
+            if strcmpi(studyPar.M0,'no_background_suppression')
+                jsonLocal.M0 = bidsPar.strM0Absent;
+            else
+                jsonLocal.M0 = studyPar.M0;
+                if isnumeric(studyPar.M0)
+                    jsonLocal.M0Type = bidsPar.strM0Estimate;
+                    jsonLocal.M0Estimate = studyPar.M0;
+                elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
+                    jsonLocal.M0Type = bidsPar.strM0Separate;
+                elseif ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
+                    jsonLocal.M0Type = bidsPar.strM0Included;
+                else
+                    jsonLocal.M0Type = bidsPar.strM0Absent;
+                end
+            end
+        end
+    end
+    
+end
+
 
 
