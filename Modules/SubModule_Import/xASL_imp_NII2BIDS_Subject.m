@@ -18,7 +18,9 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 %
 % 1. Initialize
 % 2. Process all the anatomical files
-% 3. Process the perfusion files
+% 3. Process the perfusion files (iterate over sessions)
+% - 1. Make a subject directory
+% - 2. Iterate over runs
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubject);
@@ -84,8 +86,8 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 
     % Go through all sessions
     for kk = 1:length(fSes)
-
-        % Make a subject directory
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %% 3.1 Make a subject directory
         if length(fSes)>1
             sessionLabel = ['ses-' fSes{kk}(5:end)];
 
@@ -115,6 +117,8 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
         fRuns = xASL_adm_GetFileList(inSessionPath,'^ASL4D_\d.nii+$',false,[],false);
         nSes = length(fRuns);
 
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %% 3.2 Iterate over runs
         for mm = 1:(max(nSes,1))
             if nSes
                 aslLabel = ['ASL4D_' num2str(mm)];
