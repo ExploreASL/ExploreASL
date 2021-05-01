@@ -67,6 +67,11 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         niiTable{iNii,4} = filePath;
     end
     
+    % Fallback
+    if ~exist('tmpJSON','var')
+        tmpJSON = struct;
+    end
+    
     %% 3. Get ASL context if possible
     
     if sum(cellfun(@isnumeric, niiTable(:,3)))==0 
@@ -114,18 +119,39 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     globalCounts.converted_scans(iSubject, iSession, iScan) = 1;
     
     %% 7. Check for specific sequences (Hadamard etc.)
+    xASL_imp_CheckSpecificSequences(tmpJSON);
+    
+
+end
+
+
+%% Check specific sequences
+function xASL_imp_CheckSpecificSequences(tmpJSON)
+
+    % Define lists
     specificSequenceNames = {'fme_asl3d'}';
+    knownFMEcollections = {'fme_ASL_Collection_002E'}';
+    
+    % Check if JSON struct exists
     if exist('tmpJSON','var')
         if isfield(tmpJSON,'SequenceName')
             for iSpecificSequence=1:numel(specificSequenceNames)
                 if ~isempty(strfind(tmpJSON.SequenceName,specificSequenceNames{iSpecificSequence,1}))
+                    fprintf('==============================================================================================\n');
                     fprintf('Sequence %s found...\n',specificSequenceNames{iSpecificSequence,1});
+                    if isfield(tmpJSON,'ProtocolName')
+                        for iCollection=1:numel(knownFMEcollections)
+                            if ~isempty(strfind(tmpJSON.ProtocolName,knownFMEcollections{iCollection,1}))
+                                fprintf('Protocol %s found...\n',knownFMEcollections{iCollection,1});
+                            end
+                        end
+                    end
+                    fprintf('==============================================================================================\n');
                 end
             end
         end
     end
 
 end
-
 
 
