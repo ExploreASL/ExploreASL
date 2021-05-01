@@ -112,6 +112,9 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     %% 6. Extract relevant parameters from nifti header and append to summary file
     summary_line = xASL_imp_AppendNiftiParameters(nii_files);
     globalCounts.converted_scans(iSubject, iSession, iScan) = 1;
+    
+    %% 7. Check for specific sequences (Hadamard etc.)
+    specificSequenceNames = {''}';
 
 end
 

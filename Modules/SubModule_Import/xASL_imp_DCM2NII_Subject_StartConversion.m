@@ -1,7 +1,7 @@
-function [imPar, globalCounts, x, nii_files, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, dbstack, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(imPar, globalCounts, x, nii_files, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, dbstack)
+function [imPar, globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(imPar, globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors)
 %xASL_imp_DCM2NII_Subject_StartConversion Start of DCM2NII subject conversion.
 %
-% FORMAT: [imPar, globalCounts, x, nii_files, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, dbstack, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(imPar, globalCounts, x, nii_files, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, dbstack)
+% FORMAT: [imPar, globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(imPar, globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors)
 %
 % INPUT:
 %   imPar                 - Structure with import parameters (REQUIRED, STRUCT)
@@ -14,10 +14,9 @@ function [imPar, globalCounts, x, nii_files, bSkipThisOne, summary_line, destdir
 %   scanpath              - Scan path
 %   scan_name             - Scan name
 %   dcm2niiCatchedErrors  - DCM2NII catched errors
-%   dbstack               - DB stack
 %
 % OUTPUT:
-%   Same as input + first_match
+%   Almost the same as input + nii_files & first_match
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Start of DCM2NII subject conversion.
