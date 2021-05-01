@@ -191,7 +191,8 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                 end
                 
                 %% 4.6 Start the conversion if this scan should not be skipped
-                [] = xASL_imp_DCM2NII_Subject_StartConversion();
+                [imPar, globalCounts, x, nii_files, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, dbstack, first_match] = ...
+                    xASL_imp_DCM2NII_Subject_StartConversion(imPar, globalCounts, x, nii_files, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, dbstack);
                 
                 
                 %% 4.7 Store JSON files
