@@ -385,7 +385,10 @@ if and(isfield(x.D, 'ROOT'), isfield(x, 'bProcessData'))
         x.HistogramDir          = fullfile(x.D.PopDir, 'Histograms');
         x.StatsMaps             = fullfile(x.D.PopDir, 'StatsMaps');
 
-        xASL_adm_CreateDir(x.D.PopDir);
+        % Create Population directory for processing pipeline
+        if strcmp(x.dataParType, 'dataParFile')
+            xASL_adm_CreateDir(x.D.PopDir);
+        end
     end
 end
 
