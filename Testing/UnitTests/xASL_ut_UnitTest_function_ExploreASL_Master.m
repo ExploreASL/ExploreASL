@@ -380,6 +380,52 @@ UnitTest.tests(6).duration = toc(testTime);
 UnitTest.tests(6).passed = testCondition;
 
 
+%% Test run 7
+
+% Give your individual subtest a name
+UnitTest.tests(7).testname = 'DRO 2.2.0 (BIDS2Legacy & Processing)';
+
+% Start the test
+testTime = tic;
+
+% Set-up DRO
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droSubject = 'sub-Sub1'; % DRO subject
+xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
+xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+
+% Fallback
+testCondition = true;
+
+% Read test files
+try
+    [x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[0 1 1 1],1,0,1,1);
+catch ME
+    warning('%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Define one or multiple test conditions here
+
+% Check ASL files
+if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject),'dir')
+    testCondition = false; % Test failed
+end
+
+% Add additional conditions here ...
+
+% Delete test data
+xASL_delete(testPatientDestination,true)
+
+% Get test duration
+UnitTest.tests(7).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(7).passed = testCondition;
+
+
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
 
