@@ -137,7 +137,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
     TryDicominfo = true; % this is only set to false below upon succesful DcmtkRead
     
     if ~isempty(FileList)
-        iMrFileAll = zeros(length(parms));
+        iMrFileAll = zeros(length(parms),1);
         
         % Check all dicom files throughout the sequence to validate that they are the same - because we are fast now!
         nFiles  = length(FileList);
@@ -228,7 +228,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			
 			parmsIndex = 1;
 			for iInst = 1:length(instanceNumberList)
-				if currentInstanceNumber > instanceNumberList(iInst)
+				if (currentInstanceNumber >= instanceNumberList(iInst)) && currentInstanceNumber>0
 					parmsIndex = iInst;
 				end
 			end
@@ -375,10 +375,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 		end
 		for indexInstance = 1:length(parms)
 			parmsIndex = 1;
-			for iInst = 1:length(instanceNumberList)
-				if instanceNumberList(indexInstance) > 0
-					parmsIndex = iInst;
-				end
+			if instanceNumberList(indexInstance) > 0
+				parmsIndex = indexInstance;
 			end
 			%% If no files were found previously (just directories etc.) then the manufacturer won't be identified and
 			% dcmfields won't be assigned
@@ -586,17 +584,17 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			%% Save the info in JSON file
 			
 			% Loads the JSON parms
-			if exist(pathJSON{parmsIndex},'file')
-				JSONParms = spm_jsonread(pathJSON{parmsIndex});
+			if exist(pathJSON{indexInstance},'file')
+				JSONParms = spm_jsonread(pathJSON{indexInstance});
 			else
 				JSONParms = [];
 			end
-						
+									
 			% Merges them with parms
 			parms{parmsIndex} = xASL_bids_parms2BIDS(parms{parmsIndex}, JSONParms, 1, 0);
 			
 			% Saves the JSON file
-			spm_jsonwrite(pathJSON{parmsIndex}, parms{parmsIndex});
+			spm_jsonwrite(pathJSON{indexInstance}, parms{parmsIndex});
 		end
     end
 
