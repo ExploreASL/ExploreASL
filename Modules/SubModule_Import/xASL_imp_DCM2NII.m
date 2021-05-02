@@ -87,12 +87,12 @@ function xASL_imp_DCM2NII(imPar, x)
 	
 	% Path to the dictionary to initialize - we need to keep track if the dictionary has been set, because
 	% Dicominfo can be used despite bUSEDCMTK==1 when DCMTK fails
-	pathDcmDict = fullfile(x.MyPath,'External','xASL_DICOMLibrary.txt');
+	x.modules.import.pathDcmDict = fullfile(x.MyPath,'External','xASL_DICOMLibrary.txt');
 	if ~x.modules.import.settings.bUseDCMTK
 		% -----------------------------------------------------------------------------
 		% Initialize dicom dictionary by appending private philips stuff to a temporary copy
 		% -----------------------------------------------------------------------------
-		dicomdict('set', pathDcmDict);
+		dicomdict('set', x.modules.import.pathDcmDict);
 	end
 	
 	fid_summary = -1; % initialize to be able to catch errors and close if valid
@@ -257,8 +257,8 @@ function xASL_imp_DCM2NII(imPar, x)
     
     % Iterate over subjects
     for iSubject=1:nSubjects
-        [imPar, summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, pathDcmDict] = ...
-            xASL_imp_DCM2NII_Subject(x, imPar, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+        [imPar, summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, x.modules.import.pathDcmDict] = ...
+            xASL_imp_DCM2NII_Subject(x, imPar, iSubject, summary_lines, matches, dcm2niiCatchedErrors);
     end
 	
     % Create summary file

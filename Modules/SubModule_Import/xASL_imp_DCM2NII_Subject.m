@@ -1,4 +1,4 @@
-function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, summary_lines, matches, dcm2niiCatchedErrors)
 %xASL_imp_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
 % FORMAT: [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
@@ -10,7 +10,6 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
 %   summary_lines          - Summary lines (REQUIRED, CELL ARRAY)
 %   matches                - Matches (REQUIRED, CELL ARRAY)
 %   dcm2niiCatchedErrors   - DCM2NII catched errors (REQUIRED, STRUCT)
-%   pathDcmDict            - Path to DCM dictionary (REQUIRED, CHAR ARRAY)
 %
 % OUTPUT:
 %   imPar                  - Structure with import parameters 
@@ -49,6 +48,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
     %% 1. Run DCM2NII for one individual subject
     
     separatorline = '==============================================================================================';
+    pathDcmDict = x.modules.import.pathDcmDict;
     scanNames = x.modules.import.scanNames;
     globalCounts = x.modules.import.globalCounts;
     numOf = x.modules.import.numOf;
