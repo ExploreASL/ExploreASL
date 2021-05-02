@@ -236,14 +236,14 @@ function xASL_imp_DCM2NII(imPar, x)
 	fprintf('%s\n', 'Running import (i.e. dcm2niiX)');
     
     % Create ID struct
-    listsIDs.vSubjectIDs = vSubjectIDs;
-    listsIDs.vVisitIDs = vVisitIDs;
-    listsIDs.vSessionIDs = vSessionIDs;
-    listsIDs.vScanIDs = vScanIDs;
-    listsIDs.subjectIDs = subjectIDs;
-    listsIDs.visitIDs = visitIDs;
-    listsIDs.sessionIDs = sessionIDs;
-    listsIDs.scanIDs = scanIDs;
+    x.modules.import.listsIDs.vSubjectIDs = vSubjectIDs;
+    x.modules.import.listsIDs.vVisitIDs = vVisitIDs;
+    x.modules.import.listsIDs.vSessionIDs = vSessionIDs;
+    x.modules.import.listsIDs.vScanIDs = vScanIDs;
+    x.modules.import.listsIDs.subjectIDs = subjectIDs;
+    x.modules.import.listsIDs.visitIDs = visitIDs;
+    x.modules.import.listsIDs.sessionIDs = sessionIDs;
+    x.modules.import.listsIDs.scanIDs = scanIDs;
     
     % Create number of struct
     numOf.nSubjects = nSubjects;
@@ -261,11 +261,11 @@ function xASL_imp_DCM2NII(imPar, x)
     % Iterate over subjects
     for iSubject=1:nSubjects
         [imPar, summary_lines, PrintDICOMFields, x.modules.import.globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = ...
-            xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+            xASL_imp_DCM2NII_Subject(x, imPar, x.modules.import.listsIDs, numOf, settings, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
     end
 	
     % Create summary file
-    xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, x, scanNames, summary_lines, fid_summary);
+    xASL_imp_CreateSummaryFile(imPar, numOf, x.modules.import.listsIDs, PrintDICOMFields, x, scanNames, summary_lines, fid_summary);
     
 	% cleanup
 	if ~x.modules.import.settings.bUseDCMTK || isempty(pathDcmDict)
