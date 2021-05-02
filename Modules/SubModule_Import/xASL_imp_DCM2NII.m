@@ -261,11 +261,11 @@ function xASL_imp_DCM2NII(imPar, x)
     % Iterate over subjects
     for iSubject=1:nSubjects
         [imPar, summary_lines, PrintDICOMFields, x.modules.import.globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = ...
-            xASL_imp_DCM2NII_Subject(x, imPar, x.modules.import.listsIDs, numOf, settings, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+            xASL_imp_DCM2NII_Subject(x, imPar, numOf, settings, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
     end
 	
     % Create summary file
-    xASL_imp_CreateSummaryFile(imPar, numOf, x.modules.import.listsIDs, PrintDICOMFields, x, scanNames, summary_lines, fid_summary);
+    xASL_imp_CreateSummaryFile(imPar, numOf, PrintDICOMFields, x, scanNames, summary_lines, fid_summary);
     
 	% cleanup
 	if ~x.modules.import.settings.bUseDCMTK || isempty(pathDcmDict)
