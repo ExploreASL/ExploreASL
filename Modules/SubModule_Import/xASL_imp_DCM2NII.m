@@ -251,17 +251,14 @@ function xASL_imp_DCM2NII(imPar, x)
     numOf.nSessions = nSessions;
     numOf.nScans = nScans;
     
-    % Create settings struct
-    settings.bUseVisits = bUseVisits;
-    settings.bClone2Source = x.modules.import.settings.bClone2Source;
-    settings.bUseDCMTK = x.modules.import.settings.bUseDCMTK;
-    settings.bCopySingleDicoms = x.modules.import.settings.bCopySingleDicoms;
-    settings.bUseSessions = bUseSessions;
+    % Add fields to settings substruct
+    x.modules.import.settings.bUseVisits = bUseVisits;
+    x.modules.import.settings.bUseSessions = bUseSessions;
     
     % Iterate over subjects
     for iSubject=1:nSubjects
         [imPar, summary_lines, PrintDICOMFields, x.modules.import.globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = ...
-            xASL_imp_DCM2NII_Subject(x, imPar, numOf, settings, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+            xASL_imp_DCM2NII_Subject(x, imPar, numOf, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
     end
 	
     % Create summary file
