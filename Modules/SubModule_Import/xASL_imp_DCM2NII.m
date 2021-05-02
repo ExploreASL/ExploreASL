@@ -88,7 +88,7 @@ function xASL_imp_DCM2NII(imPar, x)
 	% Path to the dictionary to initialize - we need to keep track if the dictionary has been set, because
 	% Dicominfo can be used despite bUSEDCMTK==1 when DCMTK fails
 	pathDcmDict = fullfile(x.MyPath,'External','xASL_DICOMLibrary.txt');
-	if ~x.modules.import.settings.bUseDCMTK;
+	if ~x.modules.import.settings.bUseDCMTK
 		% -----------------------------------------------------------------------------
 		% Initialize dicom dictionary by appending private philips stuff to a temporary copy
 		% -----------------------------------------------------------------------------
@@ -223,9 +223,9 @@ function xASL_imp_DCM2NII(imPar, x)
 	end
 	
 	% preallocate space for (global) counts
-	globalCounts.converted_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
-	globalCounts.skipped_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
-	globalCounts.missing_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
+	x.modules.import.globalCounts.converted_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
+	x.modules.import.globalCounts.skipped_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
+	x.modules.import.globalCounts.missing_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
 	
 	% define a cell array for storing info for parameter summary file
 	xASL_adm_CreateDir(imPar.AnalysisRoot);
@@ -260,12 +260,12 @@ function xASL_imp_DCM2NII(imPar, x)
     
     % Iterate over subjects
     for iSubject=1:nSubjects
-        [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = ...
-            xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+        [imPar, summary_lines, PrintDICOMFields, x.modules.import.globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = ...
+            xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
     end
 	
     % Create summary file
-    xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary);
+    xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, x, scanNames, summary_lines, fid_summary);
     
 	% cleanup
 	if ~x.modules.import.settings.bUseDCMTK || isempty(pathDcmDict)

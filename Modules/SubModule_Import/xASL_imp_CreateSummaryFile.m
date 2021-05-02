@@ -1,4 +1,4 @@
-function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary)
+function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, x, scanNames, summary_lines, fid_summary)
 %xASL_imp_CreateSummaryFile Create summary file.
 %
 % FORMAT: xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary)
@@ -29,6 +29,9 @@ function xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, gl
 
     
     %% 1. Create summary file
+    
+    globalCounts = x.modules.import.globalCounts;
+    
 	summary_filepath = fullfile(imPar.AnalysisRoot, 'import_summary.csv');
 	fid_summary = fopen(summary_filepath,'wt');
 	
