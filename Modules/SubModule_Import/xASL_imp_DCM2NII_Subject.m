@@ -50,6 +50,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
     %% 1. Run DCM2NII for one individual subject
     
     separatorline = '==============================================================================================';
+    globalCounts = x.modules.import.globalCounts;
     numOf = x.modules.import.numOf;
     settings = x.modules.import.settings;
     listsIDs = x.modules.import.listsIDs;
