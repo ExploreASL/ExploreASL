@@ -133,80 +133,80 @@ function xASL_imp_DCM2NII(imPar, x)
 	% Define Subjects
 	
 	% SUBJECTS
-	vSubjectIDs = tokens(:,imPar.tokenOrdering(1)); % cell vector with extracted subject IDs (for all sessions and scans)
+	x.modules.import.listsIDs.vSubjectIDs = tokens(:,imPar.tokenOrdering(1)); % cell vector with extracted subject IDs (for all sessions and scans)
 	
 	%% VISITS
 	if imPar.tokenOrdering(2)==0
 		% a zero means: no visits applicable
 		bUseVisits = false;
-		vVisitIDs = cellfun(@(y) '1', vSubjectIDs, 'UniformOutput', false); % each subject has a single visit
+		x.modules.import.listsIDs.vVisitIDs = cellfun(@(y) '1', x.modules.import.listsIDs.vSubjectIDs, 'UniformOutput', false); % each subject has a single visit
 		imPar.tokenVisitAliases = {'^1$', '_1'};
 	else
 		bUseVisits = true;
-		vVisitIDs = tokens(:,imPar.tokenOrdering(2)); % cell vector with extracted session IDs (for all subjects and scans)
+		x.modules.import.listsIDs.vVisitIDs = tokens(:,imPar.tokenOrdering(2)); % cell vector with extracted session IDs (for all subjects and scans)
 	end
 	
 	%% SESSIONS
 	if imPar.tokenOrdering(3)==0
 		% a zero means: no sessions applicable
 		bUseSessions = false;
-		vSessionIDs = cellfun(@(y) '1', vSubjectIDs, 'UniformOutput', false); % each subject-visit has a single session
+		x.modules.import.listsIDs.vSessionIDs = cellfun(@(y) '1', x.modules.import.listsIDs.vSubjectIDs, 'UniformOutput', false); % each subject-visit has a single session
 		imPar.tokenSessionAliases = {'^1$', 'ASL_1'};
 	else
 		bUseSessions = true;
-		vSessionIDs = tokens(:,imPar.tokenOrdering(3)); % cell vector with extracted session IDs (for all subjects and scans)
+		x.modules.import.listsIDs.vSessionIDs = tokens(:,imPar.tokenOrdering(3)); % cell vector with extracted session IDs (for all subjects and scans)
 	end
 	
 	%% SCANTYPES
-	vScanIDs = tokens(:,imPar.tokenOrdering(4)); % cell vector with extracted scan IDs (for all subjects and sessions)
+	x.modules.import.listsIDs.vScanIDs = tokens(:,imPar.tokenOrdering(4)); % cell vector with extracted scan IDs (for all subjects and sessions)
 	
 	% Convert the vectors to unique & sort sets by the output aliases
-	subjectIDs  = sort(unique(vSubjectIDs));
-	nSubjects = length(subjectIDs);
+	x.modules.import.listsIDs.subjectIDs  = sort(unique(x.modules.import.listsIDs.vSubjectIDs));
+	nSubjects = length(x.modules.import.listsIDs.subjectIDs);
 	
-	visitIDs  = unique(vVisitIDs);
+	x.modules.import.listsIDs.visitIDs  = unique(x.modules.import.listsIDs.vVisitIDs);
 	% sort by output
-	if length(visitIDs)>1
-		for iV=1:length(visitIDs)
-			IDrow(iV) = find(cellfun(@(y) strcmp(y,visitIDs{iV}), imPar.tokenVisitAliases(:,1)));
+	if length(x.modules.import.listsIDs.visitIDs)>1
+		for iV=1:length(x.modules.import.listsIDs.visitIDs)
+			IDrow(iV) = find(cellfun(@(y) strcmp(y,x.modules.import.listsIDs.visitIDs{iV}), imPar.tokenVisitAliases(:,1)));
 		end
-		visitIDs = visitIDs(IDrow);
+		x.modules.import.listsIDs.visitIDs = x.modules.import.listsIDs.visitIDs(IDrow);
 	end
-	nVisits = length(visitIDs);
+	nVisits = length(x.modules.import.listsIDs.visitIDs);
 	
-	sessionIDs  = sort(unique(vSessionIDs));
-	nSessions = length(sessionIDs);
+	x.modules.import.listsIDs.sessionIDs  = sort(unique(x.modules.import.listsIDs.vSessionIDs));
+	nSessions = length(x.modules.import.listsIDs.sessionIDs);
 	
-	scanIDs = sort(unique(lower(vScanIDs)));
-	nScans = length(scanIDs);
+	x.modules.import.listsIDs.scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs)));
+	nScans = length(x.modules.import.listsIDs.scanIDs);
 	
 	%% VISIT NAMES
 	if isempty(imPar.visitNames)
-		if isempty(visitIDs)
+		if isempty(x.modules.import.listsIDs.visitIDs)
 			imPar.visitNames = cell(nVisits,1);
 			for kk=1:nVisits
 				imPar.visitNames{kk}=sprintf('ASL_%g',kk);
 			end
 		else
-			imPar.visitNames = visitIDs;
+			imPar.visitNames = x.modules.import.listsIDs.visitIDs;
 		end
 	end
 	
 	%% SESSION NAMES
 	% optionaly we can have human readble session names; by default they are the same as the original tokens in the path
 	if isempty(imPar.sessionNames)
-		if isempty(sessionIDs)
+		if isempty(x.modules.import.listsIDs.sessionIDs)
 			imPar.sessionNames = cell(nSessions,1);
 			for kk=1:nSessions
 				imPar.sessionNames{kk}=sprintf('ASL_%g',kk);
 			end
 		else
-			imPar.sessionNames = sessionIDs;
+			imPar.sessionNames = x.modules.import.listsIDs.sessionIDs;
 		end
 	end
 	
 	%% SCAN NAMES
-	x.modules.import.scanNames = scanIDs;
+	x.modules.import.scanNames = x.modules.import.listsIDs.scanIDs;
 	
 	%% 6. Sanity check for missing elements
 	if nSubjects==0
@@ -234,16 +234,6 @@ function xASL_imp_DCM2NII(imPar, x)
     
 	%% 7. Import subject by subject, visit by visit, session by session, scan by scan
 	fprintf('%s\n', 'Running import (i.e. dcm2niiX)');
-    
-    % Create ID struct
-    x.modules.import.listsIDs.vSubjectIDs = vSubjectIDs;
-    x.modules.import.listsIDs.vVisitIDs = vVisitIDs;
-    x.modules.import.listsIDs.vSessionIDs = vSessionIDs;
-    x.modules.import.listsIDs.vScanIDs = vScanIDs;
-    x.modules.import.listsIDs.subjectIDs = subjectIDs;
-    x.modules.import.listsIDs.visitIDs = visitIDs;
-    x.modules.import.listsIDs.sessionIDs = sessionIDs;
-    x.modules.import.listsIDs.scanIDs = scanIDs;
     
     % Create number of struct
     x.modules.import.numOf.nSubjects = nSubjects;
