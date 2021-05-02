@@ -124,11 +124,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	pathJSON = pathJSON(sortInstance);
 	
 	if exist(pathIn, 'dir')
-		FileList            = xASL_adm_GetFileList(pathIn, dcmExtFilter, 'FPList', [0 Inf]); % we assume all the dicoms are in the same folder
-		for iF=1:length(FileList)
-			[~, fname, ext] = fileparts(FileList{iF});
-			FileList{iF}        = [fname ext];
-		end
+		FileList            = xASL_adm_GetFileList(pathIn, dcmExtFilter, 'List', [0 Inf]); % we assume all the dicoms are in the same folder
 	else
 		[pathIn, fname, ext] = fileparts(pathIn);
 		FileList = {[fname ext]};
@@ -436,8 +432,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			
 			% Remove fields that are NaN
 			for iField=1:length(DcmSkipNan)
-				if isfield(parms,DcmSkipNan{iField}) && sum(isnan(parms{parmsIndex}.(DcmSkipNan{iField})))
-					parms{parmsIndex} = rmfield(parms,DcmSkipNan{iField});
+				if isfield(parms{parmsIndex},DcmSkipNan{iField}) && sum(isnan(parms{parmsIndex}.(DcmSkipNan{iField})))
+					parms{parmsIndex} = rmfield(parms{parmsIndex},DcmSkipNan{iField});
 				end
 			end
 			
@@ -554,7 +550,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope','RWVSlope'};
 			for parmNameInd = 1:length(parmNameToCheck)
 				parmName = parmNameToCheck{parmNameInd};
-				if  isfield(parms,parmName) && (length(parms{parmsIndex}.(parmName))>1)
+				if  isfield(parms{parmsIndex},parmName) && (length(parms{parmsIndex}.(parmName))>1)
 					
 					indNonOne = find(parms{parmsIndex}.(parmName)~=1);
 					if isempty(indNonOne)
