@@ -1,7 +1,7 @@
 function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors)
 %xASL_imp_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
-% FORMAT: [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+% FORMAT: [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -38,8 +38,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
 % - 10. Store the summary info so it can be sorted and printed below
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     [imPar, summary_lines, PrintDICOMFields, globalCounts, dcm2niiCatchedErrors, pathDcmDict] = ...
-%               xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict)
+% EXAMPLE:     [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
