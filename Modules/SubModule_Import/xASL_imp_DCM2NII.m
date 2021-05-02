@@ -162,7 +162,7 @@ function xASL_imp_DCM2NII(imPar, x)
 	
 	% Convert the vectors to unique & sort sets by the output aliases
 	x.modules.import.listsIDs.subjectIDs  = sort(unique(x.modules.import.listsIDs.vSubjectIDs));
-	nSubjects = length(x.modules.import.listsIDs.subjectIDs);
+	x.modules.import.numOf.nSubjects = length(x.modules.import.listsIDs.subjectIDs);
 	
 	x.modules.import.listsIDs.visitIDs  = unique(x.modules.import.listsIDs.vVisitIDs);
 	% sort by output
@@ -172,19 +172,19 @@ function xASL_imp_DCM2NII(imPar, x)
 		end
 		x.modules.import.listsIDs.visitIDs = x.modules.import.listsIDs.visitIDs(IDrow);
 	end
-	nVisits = length(x.modules.import.listsIDs.visitIDs);
+	x.modules.import.numOf.nVisits = length(x.modules.import.listsIDs.visitIDs);
 	
 	x.modules.import.listsIDs.sessionIDs  = sort(unique(x.modules.import.listsIDs.vSessionIDs));
-	nSessions = length(x.modules.import.listsIDs.sessionIDs);
+	x.modules.import.numOf.nSessions = length(x.modules.import.listsIDs.sessionIDs);
 	
 	x.modules.import.listsIDs.scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs)));
-	nScans = length(x.modules.import.listsIDs.scanIDs);
+	x.modules.import.numOf.nScans = length(x.modules.import.listsIDs.scanIDs);
 	
 	%% VISIT NAMES
 	if isempty(imPar.visitNames)
 		if isempty(x.modules.import.listsIDs.visitIDs)
-			imPar.visitNames = cell(nVisits,1);
-			for kk=1:nVisits
+			imPar.visitNames = cell(x.modules.import.numOf.nVisits,1);
+			for kk=1:x.modules.import.numOf.nVisits
 				imPar.visitNames{kk}=sprintf('ASL_%g',kk);
 			end
 		else
@@ -196,8 +196,8 @@ function xASL_imp_DCM2NII(imPar, x)
 	% optionaly we can have human readble session names; by default they are the same as the original tokens in the path
 	if isempty(imPar.sessionNames)
 		if isempty(x.modules.import.listsIDs.sessionIDs)
-			imPar.sessionNames = cell(nSessions,1);
-			for kk=1:nSessions
+			imPar.sessionNames = cell(x.modules.import.numOf.nSessions,1);
+			for kk=1:x.modules.import.numOf.nSessions
 				imPar.sessionNames{kk}=sprintf('ASL_%g',kk);
 			end
 		else
@@ -209,44 +209,38 @@ function xASL_imp_DCM2NII(imPar, x)
 	x.modules.import.scanNames = x.modules.import.listsIDs.scanIDs;
 	
 	%% 6. Sanity check for missing elements
-	if nSubjects==0
+	if x.modules.import.numOf.nSubjects==0
 		error('No subjects')
 	end
-	if nVisits==0
+	if x.modules.import.numOf.nVisits==0
 		error('No visits')
 	end
-	if nSessions==0
+	if x.modules.import.numOf.nSessions==0
 		error('No sessions')
 	end
-	if nScans==0
+	if x.modules.import.numOf.nScans==0
 		error('No scans')
 	end
 	
 	% preallocate space for (global) counts
-	x.modules.import.globalCounts.converted_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
-	x.modules.import.globalCounts.skipped_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
-	x.modules.import.globalCounts.missing_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
+	x.modules.import.globalCounts.converted_scans = zeros(x.modules.import.numOf.nSubjects,x.modules.import.numOf.nVisits,x.modules.import.numOf.nSessions,x.modules.import.numOf.nScans,'uint8'); % keep a count of all individual scans
+	x.modules.import.globalCounts.skipped_scans = zeros(x.modules.import.numOf.nSubjects,x.modules.import.numOf.nVisits,x.modules.import.numOf.nSessions,x.modules.import.numOf.nScans,'uint8'); % keep a count of all individual scans
+	x.modules.import.globalCounts.missing_scans = zeros(x.modules.import.numOf.nSubjects,x.modules.import.numOf.nVisits,x.modules.import.numOf.nSessions,x.modules.import.numOf.nScans,'uint8'); % keep a count of all individual scans
 	
 	% define a cell array for storing info for parameter summary file
 	xASL_adm_CreateDir(imPar.AnalysisRoot);
-	x.modules.import.summary_lines = cell(nSubjects,nVisits,nSessions,nScans);
+	x.modules.import.summary_lines = cell(x.modules.import.numOf.nSubjects,x.modules.import.numOf.nVisits,x.modules.import.numOf.nSessions,x.modules.import.numOf.nScans);
 	
     
 	%% 7. Import subject by subject, visit by visit, session by session, scan by scan
 	fprintf('%s\n', 'Running import (i.e. dcm2niiX)');
-    
-    % Create number of struct
-    x.modules.import.numOf.nSubjects = nSubjects;
-    x.modules.import.numOf.nVisits = nVisits;
-    x.modules.import.numOf.nSessions = nSessions;
-    x.modules.import.numOf.nScans = nScans;
     
     % Add fields to settings substruct
     x.modules.import.settings.bUseVisits = bUseVisits;
     x.modules.import.settings.bUseSessions = bUseSessions;
     
     % Iterate over subjects
-    for iSubject=1:nSubjects
+    for iSubject=1:x.modules.import.numOf.nSubjects
         [imPar, x.modules.import.summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, x.modules.import.pathDcmDict] = ...
             xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors);
     end
