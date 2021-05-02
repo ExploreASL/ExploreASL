@@ -229,7 +229,7 @@ function xASL_imp_DCM2NII(imPar, x)
 	
 	% define a cell array for storing info for parameter summary file
 	xASL_adm_CreateDir(imPar.AnalysisRoot);
-	summary_lines = cell(nSubjects,nVisits,nSessions,nScans);
+	x.modules.import.summary_lines = cell(nSubjects,nVisits,nSessions,nScans);
 	
     
 	%% 7. Import subject by subject, visit by visit, session by session, scan by scan
@@ -257,12 +257,12 @@ function xASL_imp_DCM2NII(imPar, x)
     
     % Iterate over subjects
     for iSubject=1:nSubjects
-        [imPar, summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, x.modules.import.pathDcmDict] = ...
-            xASL_imp_DCM2NII_Subject(x, imPar, iSubject, summary_lines, matches, dcm2niiCatchedErrors);
+        [imPar, x.modules.import.summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, x.modules.import.pathDcmDict] = ...
+            xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors);
     end
 	
     % Create summary file
-    xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, summary_lines, fid_summary);
+    xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary);
     
 	% cleanup
 	if ~x.modules.import.settings.bUseDCMTK || isempty(pathDcmDict)
