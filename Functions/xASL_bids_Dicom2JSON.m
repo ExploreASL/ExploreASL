@@ -496,6 +496,9 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 						parms{parmsIndex}.MRSeriesWaterFatShift = double(parms{parmsIndex}.MRSeriesWaterFatShift);
 						parms{parmsIndex}.MRSeriesEPIFactor = double(parms{parmsIndex}.MRSeriesEPIFactor);
 						parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix);
+						if parms{parmsIndex}.AcquisitionMatrix == 0
+							warning('Acquisition matrix is zero, cannot calculate EffectiveEchoSpacing');
+						end
 						
 						EffectiveEchoSpacingPhilips = parms{parmsIndex}.MRSeriesWaterFatShift/(434.215 * (parms{parmsIndex}.MRSeriesEPIFactor+1));
 						parms{parmsIndex}.TotalReadoutTime = EffectiveEchoSpacingPhilips*(parms{parmsIndex}.MRSeriesEPIFactor-1);
