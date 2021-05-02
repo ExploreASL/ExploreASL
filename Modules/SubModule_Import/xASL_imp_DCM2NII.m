@@ -257,7 +257,7 @@ function xASL_imp_DCM2NII(imPar, x)
     xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary);
     
 	% cleanup
-	if ~x.modules.import.settings.bUseDCMTK || isempty(pathDcmDict)
+	if ~x.modules.import.settings.bUseDCMTK || isempty(x.modules.import.pathDcmDict)
 		dicomdict('factory');
 	end
 	diary('off');
