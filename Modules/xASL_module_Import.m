@@ -186,6 +186,13 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
     if nargin<9 || isempty(x)
         x = ExploreASL_Initialize;
     end
+    
+    % Write import settings to modules field of x structure
+    x.modules.import.settings.bCopySingleDicoms = bCopySingleDicoms;
+    x.modules.import.settings.bUseDCMTK = bUseDCMTK;
+    x.modules.import.settings.bCheckPermissions = bCheckPermissions;
+    x.modules.import.settings.bClone2Source = bClone2Source;
+    
 
     %% 2. Initialize the setup of the dicom2nii conversion
     imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath);
@@ -193,7 +200,7 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
 
     %% 3. Run the DCM2NIIX
     if bRunSubmodules(1)
-        xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
+        xASL_imp_DCM2NII(imPar, x);
     end
 
 

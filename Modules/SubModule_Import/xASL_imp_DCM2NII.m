@@ -1,14 +1,10 @@
-function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
+function xASL_imp_DCM2NII(imPar, x)
 %xASL_imp_DCM2NII Run the dcm2nii part of the import.
 %
 % FORMAT: xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
 % 
 % INPUT:
 %   imPar              - JSON file with structure with import parameters (REQUIRED, STRUCT)
-%   bCopySingleDicoms  - Copy Single Dicoms (REQUIRED, BOOLEAN)
-%   bUseDCMTK          - Use DCMTK for DCM2NII import (REQUIRED, BOOLEAN)
-%   bCheckPermissions  - Check user access rights (REQUIRED, BOOLEAN)
-%   bClone2Source      - Clone to source (REQUIRED, BOOLEAN)
 %   x                  - ExploreASL x structure (REQUIRED, STRUCT)
 %
 % OUTPUT:
@@ -32,6 +28,14 @@ function xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions
 
     
     %% 1. Initialize defaults of dcm2nii
+    
+    % Unpack settings
+    bCopySingleDicoms = x.modules.import.settings.bCopySingleDicoms;
+    bUseDCMTK = x.modules.import.settings.bUseDCMTK;
+    bCheckPermissions = x.modules.import.settings.bCheckPermissions;
+    bClone2Source = x.modules.import.settings.bClone2Source;
+    
+    % Initialize defaults
     dcm2niiCatchedErrors = struct; % initialization
     if bCheckPermissions
         dcm2niiDir = fullfile(x.MyPath, 'External', 'MRIcron');
