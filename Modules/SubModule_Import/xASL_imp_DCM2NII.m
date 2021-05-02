@@ -28,16 +28,8 @@ function xASL_imp_DCM2NII(imPar, x)
 
     
     %% 1. Initialize defaults of dcm2nii
-    
-    % Unpack settings
-    bCopySingleDicoms = x.modules.import.settings.bCopySingleDicoms;
-    bUseDCMTK = x.modules.import.settings.bUseDCMTK;
-    bCheckPermissions = x.modules.import.settings.bCheckPermissions;
-    bClone2Source = x.modules.import.settings.bClone2Source;
-    
-    % Initialize defaults
     dcm2niiCatchedErrors = struct; % initialization
-    if bCheckPermissions
+    if x.modules.import.settings.bCheckPermissions
         dcm2niiDir = fullfile(x.MyPath, 'External', 'MRIcron');
         xASL_adm_CheckPermissions(dcm2niiDir, true); % dcm2nii needs to be executable
     end
@@ -77,7 +69,7 @@ function xASL_imp_DCM2NII(imPar, x)
 	
 	xASL_adm_CreateDir(imPar.AnalysisRoot);
 	
-	if bCheckPermissions
+	if x.modules.import.settings.bCheckPermissions
 		xASL_adm_CheckPermissions(imPar.RawRoot, false); % don"t need execution permisions
 		xASL_adm_CheckPermissions(imPar.AnalysisRoot, false);  % don"t need execution permisions
 	end
@@ -96,7 +88,7 @@ function xASL_imp_DCM2NII(imPar, x)
 	% Path to the dictionary to initialize - we need to keep track if the dictionary has been set, because
 	% Dicominfo can be used despite bUSEDCMTK==1 when DCMTK fails
 	pathDcmDict = fullfile(x.MyPath,'External','xASL_DICOMLibrary.txt');
-	if ~bUseDCMTK
+	if ~x.modules.import.settings.bUseDCMTK;
 		% -----------------------------------------------------------------------------
 		% Initialize dicom dictionary by appending private philips stuff to a temporary copy
 		% -----------------------------------------------------------------------------
@@ -261,9 +253,9 @@ function xASL_imp_DCM2NII(imPar, x)
     
     % Create settings struct
     settings.bUseVisits = bUseVisits;
-    settings.bClone2Source = bClone2Source;
-    settings.bUseDCMTK = bUseDCMTK;
-    settings.bCopySingleDicoms = bCopySingleDicoms;
+    settings.bClone2Source = x.modules.import.settings.bClone2Source;
+    settings.bUseDCMTK = x.modules.import.settings.bUseDCMTK;
+    settings.bCopySingleDicoms = x.modules.import.settings.bCopySingleDicoms;
     settings.bUseSessions = bUseSessions;
     
     % Iterate over subjects
@@ -276,7 +268,7 @@ function xASL_imp_DCM2NII(imPar, x)
     xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary);
     
 	% cleanup
-	if ~bUseDCMTK || isempty(pathDcmDict)
+	if ~x.modules.import.settings.bUseDCMTK || isempty(pathDcmDict)
 		dicomdict('factory');
 	end
 	diary('off');
