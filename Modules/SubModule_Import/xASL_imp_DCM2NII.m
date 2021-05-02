@@ -206,7 +206,7 @@ function xASL_imp_DCM2NII(imPar, x)
 	end
 	
 	%% SCAN NAMES
-	scanNames = scanIDs;
+	x.modules.import.scanNames = scanIDs;
 	
 	%% 6. Sanity check for missing elements
 	if nSubjects==0
@@ -257,12 +257,12 @@ function xASL_imp_DCM2NII(imPar, x)
     
     % Iterate over subjects
     for iSubject=1:nSubjects
-        [imPar, summary_lines, PrintDICOMFields, x.modules.import.globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = ...
-            xASL_imp_DCM2NII_Subject(x, imPar, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+        [imPar, summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, pathDcmDict] = ...
+            xASL_imp_DCM2NII_Subject(x, imPar, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
     end
 	
     % Create summary file
-    xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, scanNames, summary_lines, fid_summary);
+    xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, summary_lines, fid_summary);
     
 	% cleanup
 	if ~x.modules.import.settings.bUseDCMTK || isempty(pathDcmDict)

@@ -1,4 +1,4 @@
-function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, scanNames, summary_lines, fid_summary)
+function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, summary_lines, fid_summary)
 %xASL_imp_CreateSummaryFile Create summary file.
 %
 % FORMAT: xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary)
@@ -7,7 +7,6 @@ function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, scanNames, summa
 %   imPar             - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %   PrintDICOMFields  - Print DICOM fields (REQUIRED, CELL ARRAY)
 %   globalCounts      - Converted, skipped & missing scans (REQUIRED, STRUCT)
-%   scanNames         - Scan names (REQUIRED, CELL ARRAY)
 %   summary_lines     - Summary lines (REQUIRED, CELL ARRAY)
 %   fid_summary       - File ID summary (REQUIRED, INTEGER)
 %
@@ -28,6 +27,7 @@ function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, scanNames, summa
     
     %% 1. Create summary file
     
+    scanNames = x.modules.import.scanNames;
     numOf = x.modules.import.numOf;
     listsIDs = x.modules.import.listsIDs;
     globalCounts = x.modules.import.globalCounts;
