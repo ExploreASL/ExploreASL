@@ -138,22 +138,22 @@ function xASL_imp_DCM2NII(imPar, x)
 	%% VISITS
 	if imPar.tokenOrdering(2)==0
 		% a zero means: no visits applicable
-		bUseVisits = false;
+		x.modules.import.settings.bUseVisits = false;
 		x.modules.import.listsIDs.vVisitIDs = cellfun(@(y) '1', x.modules.import.listsIDs.vSubjectIDs, 'UniformOutput', false); % each subject has a single visit
 		imPar.tokenVisitAliases = {'^1$', '_1'};
 	else
-		bUseVisits = true;
+		x.modules.import.settings.bUseVisits = true;
 		x.modules.import.listsIDs.vVisitIDs = tokens(:,imPar.tokenOrdering(2)); % cell vector with extracted session IDs (for all subjects and scans)
 	end
 	
 	%% SESSIONS
 	if imPar.tokenOrdering(3)==0
 		% a zero means: no sessions applicable
-		bUseSessions = false;
+		x.modules.import.settings.bUseSessions = false;
 		x.modules.import.listsIDs.vSessionIDs = cellfun(@(y) '1', x.modules.import.listsIDs.vSubjectIDs, 'UniformOutput', false); % each subject-visit has a single session
 		imPar.tokenSessionAliases = {'^1$', 'ASL_1'};
 	else
-		bUseSessions = true;
+		x.modules.import.settings.bUseSessions = true;
 		x.modules.import.listsIDs.vSessionIDs = tokens(:,imPar.tokenOrdering(3)); % cell vector with extracted session IDs (for all subjects and scans)
 	end
 	
@@ -234,10 +234,6 @@ function xASL_imp_DCM2NII(imPar, x)
     
 	%% 7. Import subject by subject, visit by visit, session by session, scan by scan
 	fprintf('%s\n', 'Running import (i.e. dcm2niiX)');
-    
-    % Add fields to settings substruct
-    x.modules.import.settings.bUseVisits = bUseVisits;
-    x.modules.import.settings.bUseSessions = bUseSessions;
     
     % Iterate over subjects
     for iSubject=1:x.modules.import.numOf.nSubjects
