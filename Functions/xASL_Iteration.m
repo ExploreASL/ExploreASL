@@ -335,9 +335,13 @@ function [bAborted, x] = runIteration(db)
              if ~isempty(StartI) %writes the session only for ASL module
                 session = diaryFileEx(StartI:EndI); %isolate "ASL_1 or ASL_2 etc
                 fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Session: ' session ', Module: ' x.MUTEXID ',  ' datestr(now) ' ===']);
-            else % Structural or Population module
-                fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Module: ' x.MUTEXID ',  ' datestr(now) ' ===']);
-            end
+             else % Structural or Population module
+                 if isfield(x,'SUBJECT') 
+                     fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Module: ' x.MUTEXID ',  ' datestr(now) ' ===']);
+                 else
+                     fprintf('%s\n',['=== Module: ' x.MUTEXID ',  ' datestr(now) ' ===']); %some datasets don't have any field that specifies the current subject
+                 end
+             end
             fprintf('\n');
          end
         if ischar(job)
