@@ -1,7 +1,6 @@
 {
 	"x": [{
 			"name": "ExampleDataSet",
-			"D": {"ROOT": ".\\derivatives\\ExploreASL"},
 			"subject_regexp": "^Sub-\\d{3}$",
 			"Quality": 1
 		}]
