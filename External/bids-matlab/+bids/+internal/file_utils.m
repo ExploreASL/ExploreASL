@@ -153,9 +153,6 @@ function t = canonicalise_path(t, d)
 
   % Go up one level for '..' folders, don't remove drive letter/server name from PC path
   ptstart = 1;
-  if ispc
-    ptstart = 2;
-  end
 
   for cp = 1:numel(pt)
 
@@ -170,9 +167,6 @@ function t = canonicalise_path(t, d)
     end
 
     pt{cp} = tmppt;
-    if ispc
-      pt{cp} = [pt{cp}(1) tmppt];
-    end
 
   end
 
