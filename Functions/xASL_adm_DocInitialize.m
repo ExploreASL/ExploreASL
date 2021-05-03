@@ -70,6 +70,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     % Copy the TUTORIALS files
     copyfile(fullfile(templatesDir,'TUTORIALS-ASL-BIDS.md'),fullfile(outputFolder,'Tutorials-ASL-BIDS.md'));
     copyfile(fullfile(templatesDir,'TUTORIALS-BASICS.md'),fullfile(outputFolder,'Tutorials-Basics.md'));
+    copyfile(fullfile(templatesDir,'TUTORIALS-QC.md'),fullfile(outputFolder,'Tutorials-QC.md'));
     copyfile(fullfile(templatesDir,'TUTORIALS-ADVANCED.md'),fullfile(outputFolder,'Tutorials-Advanced.md'));
     
     % Create the functions markdown file
