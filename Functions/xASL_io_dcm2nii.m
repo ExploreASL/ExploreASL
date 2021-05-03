@@ -284,9 +284,9 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                         numSlashes = sum(niiEntriesAlt{iEntry}((indexStart+3):(indexEnd-1)) == '\');
 
                         % Replace by ? and move files to a normal name
-                        temp_file_subs = [niiEntriesAlt{iEntry}(1:(indexStart-1)), repmat('?',[1 numSlashes]), niiEntriesAlt{iEntry}((indexEnd+2):end)];
-                        temp_file_fixed = niiEntriesAlt{iEntry}([1:(indexStart-1),(indexEnd+2):end]);
-                        xASL_SysMove(temp_file_subs,temp_file_fixed,[],false);
+                        fTempNiiSubstitute = [niiEntriesAlt{iEntry}(1:(indexStart-1)), repmat('?',[1 numSlashes]), niiEntriesAlt{iEntry}((indexEnd+2):end)];
+                        fTempNiiFixed = niiEntriesAlt{iEntry}([1:(indexStart-1),(indexEnd+2):end]);
+                        xASL_SysMove(fTempNiiSubstitute,fTempNiiFixed,[],false);
                     end
                 end
                 % Read the files again
@@ -338,8 +338,8 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 
             %% Iterate over volumes
             for iVolume=sort(parms.Keep)
-                temp_file = niiEntries{iVolume};
-
+                fTempNii = niiEntries{iVolume};
+				
                 % Make BIDS compatible dest_file here
                 DestFileName = series_name;
 
@@ -354,18 +354,32 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 
                 if iVolume==min(parms.Keep)
                     ScanNameOut = DestFileName;
-                end
-                
+				end
+				
+				if length(parms.Keep)>1 % add iVolume suffix for SeriesNumber (if there are multiple)
+					% Obtain the SeriesNumber from JSON
+					[Gpath, Gfile] = xASL_fileparts(fTempNii);
+					tempJSON = fullfile(Gpath,[Gfile '.json']);
+					if exist(tempJSON,'file')
+						tempJSON = spm_jsonread(tempJSON);
+						if isfield(tempJSON,'SeriesNumber')
+							DestFileName = [DestFileName '_' num2str(tempJSON.SeriesNumber)];
+						end
+					else
+						warning('JSON sidecar missing after dcm2nii conversion');
+					end
+				end
+				
                 % Determine InstanceNumbers from fileNames
                 expression = '_(\d+)$'; % Get last number after last _ symbol
-                [~, fileName, ~] = xASL_fileparts(temp_file);
+                [~, fileName, ~] = xASL_fileparts(fTempNii);
                 startIndex = regexp(fileName,expression);
                 niiInstanceNumber = fileName(startIndex+1:end);
                 
                 % Check for files that are formatted like ..._InstanceNumber_eNumber instead of ..._InstanceNumber
                 if isempty(niiInstanceNumber)
                     expression = '_(\d+)_e.$';
-                    [~, fileName, ~] = xASL_fileparts(temp_file);
+                    [~, fileName, ~] = xASL_fileparts(fTempNii);
                     startIndex = regexp(fileName,expression);
                     niiInstanceNumber = fileName(startIndex+1:end);
                     niiInstanceNumber = niiInstanceNumber(1:strfind(niiInstanceNumber,'_')-1);
@@ -389,43 +403,43 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                 dest_file = fullfile(destdir,[DestFileName '.nii']);
 				
 				% Check for suspicious illegal characters
-                indIchar = find((temp_file < 32) | (temp_file > 126));
+                indIchar = find((fTempNii < 32) | (fTempNii > 126));
                 if ~isempty(indIchar)
                     % If these characters are present in the file name, we
                     % will not be able to move it in the following step
                    
                     % We therefore replace the illegal characters by ? to
                     % allow moving
-                    temp_file_subs = temp_file;
-                    temp_file_subs(indIchar) = '?';
-                    temp_file_fixed = temp_file;
-                    temp_file_fixed(indIchar) = '_';
+                    fTempNiiSubstitute = fTempNii;
+                    fTempNiiSubstitute(indIchar) = '?';
+                    fTempNiiFixed = fTempNii;
+                    fTempNiiFixed(indIchar) = '_';
                     
                     % And we then move to a file with a similar name, but
                     % illegal characters replaced by a
-                    xASL_SysMove(temp_file_subs,temp_file_fixed,[],false);
+                    xASL_SysMove(fTempNiiSubstitute,fTempNiiFixed,[],false);
                     
                     % From then on, work with the corrected file name
-                    temp_file = temp_file_fixed;
+                    fTempNii = fTempNiiFixed;
                     
                     % Apply the same to other BIDS files
                     BIDSext = {'.json' '.bval' '.bvec'};
                     for iB=1:length(BIDSext)
-                        [Gpath, Gfile] = xASL_fileparts(temp_file_subs);
+                        [Gpath, Gfile] = xASL_fileparts(fTempNiiSubstitute);
                         temp_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
-                        [Gpath, Gfile] = xASL_fileparts(temp_file_fixed);
+                        [Gpath, Gfile] = xASL_fileparts(fTempNiiFixed);
                         dest_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
                         xASL_SysMove(temp_BIDS, dest_BIDS, [],false);
                     end
                 end
 				
-                xASL_Move(temp_file, dest_file, parms.Overwrite, parms.Verbose);
+                xASL_Move(fTempNii, dest_file, parms.Overwrite, parms.Verbose);
                 niifiles{end+1} = dest_file; %#ok<AGROW>
 
                 % Do the same for the BIDS files
                 BIDSext = {'.json' '.bval' '.bvec'};
                 for iB=1:length(BIDSext)
-                    [Gpath, Gfile] = xASL_fileparts(temp_file);
+                    [Gpath, Gfile] = xASL_fileparts(fTempNii);
                     temp_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
                     [Gpath, Gfile] = xASL_fileparts(dest_file);
                     dest_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);

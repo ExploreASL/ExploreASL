@@ -114,14 +114,28 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			else
 				instanceNumberList(iJSON) = 0;
 			end
+			if isfield(tmpJSON,'SeriesNumber')
+				seriesNumberList(iJSON) = xASL_str2num(tmpJSON.SeriesNumber);
+			else
+				seriesNumberList(iJSON) = 0;
+			end
 		end
 		% Create a cell of parms
 		parms{iJSON} = struct();
 	end
 	
-	% Reoder JSONs by increasing instanceNumber to allow easy categorizing to the correct range.
-	[instanceNumberList,sortInstance] = sort(instanceNumberList,'ascend');
+	% Reoder JSONs by increasing seriesNumber and instanceNumber to allow easy categorizing to the correct range.
+	% First sort by seriesNumber
+	[seriesNumberList,sortInstance] = sort(seriesNumberList,'ascend');
+	instanceNumberList = instanceNumberList(sortInstance);
 	pathJSON = pathJSON(sortInstance);
+	
+	% Than sort by instance number but within the same series number
+	for iInstance = 1:length(instanceNumberList)
+		sameSeriesList = find(seriesNumberList == seriesNumberList(iInstance)); % Find the same instances
+		[instanceNumberList(sameSeriesList),sortInstance] = sort(instanceNumberList(sameSeriesList),'ascend');
+		pathJSON(sameSeriesList) = pathJSON(sameSeriesList(sortInstance));
+	end
 	
 	if exist(pathIn, 'dir')
 		FileList            = xASL_adm_GetFileList(pathIn, dcmExtFilter, 'List', [0 Inf]); % we assume all the dicoms are in the same folder
@@ -221,10 +235,23 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			else
 				currentInstanceNumber = 0;
 			end
+			if isfield(temp,'SeriesNumber') && ~isempty(temp.SeriesNumber)
+				currentSeriesNumber = temp.SeriesNumber;
+			else
+				currentSeriesNumber = 0;
+			end
 			
-			parmsIndex = 1;
+			% First find the first matching seriesNumber
+			parmsIndex = length(instanceNumberList);
+			for iInst = length(instanceNumberList):-1:1
+				if (currentSeriesNumber == seriesNumberList(iInst))
+					parmsIndex = iInst;
+				end
+			end
+			
+			% And then the last matching instanceNumber with the correct seriesNumber
 			for iInst = 1:length(instanceNumberList)
-				if (currentInstanceNumber >= instanceNumberList(iInst)) && currentInstanceNumber>0
+				if (currentInstanceNumber >= instanceNumberList(iInst)) && currentInstanceNumber>0 && currentSeriesNumber==seriesNumberList(iInst)
 					parmsIndex = iInst;
 				end
 			end
@@ -370,7 +397,6 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			end
 		end
 		for indexInstance = 1:length(parms)
-			parmsIndex = 1;
 			if instanceNumberList(indexInstance) > 0
 				parmsIndex = indexInstance;
 			end
