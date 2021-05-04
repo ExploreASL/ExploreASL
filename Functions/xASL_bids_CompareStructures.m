@@ -101,12 +101,20 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     % Make sure you have valid identifiers for the field names
     datasetA = matlab.lang.makeValidName(datasetA,'ReplacementStyle','delete');
     datasetB = matlab.lang.makeValidName(datasetB,'ReplacementStyle','delete');
+
+    % Make sure that datasetA and datasetB are not exactly the same
+    if strcmp(datasetA, datasetB)
+    	sameName = datasetA;
+    	datasetA = [sameName '_A'];
+    	datasetB = [sameName '_B'];
+    end
+
     results.(datasetA) = struct;
     results.(datasetB) = struct;
     
     % Get files and folders of datasets A and B
     [~, dateVersion] = version;
-    if ispc && (xASL_str2num(dateVersion(end-4:end))>2016) % dir does not work recursively in older versions
+    if xASL_str2num(dateVersion(end-4:end))>2016 % dir does not work recursively in older versions
         filesA = dir(fullfile(pathDatasetA, '**','*.*'));
         filesB = dir(fullfile(pathDatasetB, '**','*.*'));
     else
