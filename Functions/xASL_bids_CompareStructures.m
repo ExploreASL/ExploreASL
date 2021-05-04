@@ -105,8 +105,29 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     results.(datasetB) = struct;
     
     % Get files and folders of datasets A and B
-    filesA = dir(fullfile(pathDatasetA, '**','*.*'));
-    filesB = dir(fullfile(pathDatasetB, '**','*.*'));
+    [~, dateVersion] = version;
+    if ispc && (xASL_str2num(dateVersion(end-4:end))>2016) % dir does not work recursively in older versions
+        filesA = dir(fullfile(pathDatasetA, '**','*.*'));
+        filesB = dir(fullfile(pathDatasetB, '**','*.*'));
+    else
+        onlyFilesA = xASL_adm_GetFileList(pathDatasetA,'^.+$','FPListRec');
+        onlyFilesB = xASL_adm_GetFileList(pathDatasetB,'^.+$','FPListRec');
+        filesA = struct;
+        for iFile = 1:numel(onlyFilesA)
+            [thisFolder, thisFile, thisExtension] = xASL_fileparts(onlyFilesA(iFile,1));
+            filesA(iFile).name = [thisFile thisExtension];
+            filesA(iFile).isdir = 0;
+            filesA(iFile).folder = thisFolder;
+        end
+        filesB = struct;
+        for iFile = 1:numel(onlyFilesB)
+            [thisFolder, thisFile, thisExtension] = xASL_fileparts(onlyFilesB(iFile,1));
+            filesB(iFile).name = [thisFile thisExtension];
+            filesB(iFile).isdir = 0;
+            filesB(iFile).folder = thisFolder;
+
+        end
+    end
     
     % Remove root path
     filesA = modifyFileList(filesA,pathDatasetA);
