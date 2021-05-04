@@ -110,23 +110,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
         filesA = dir(fullfile(pathDatasetA, '**','*.*'));
         filesB = dir(fullfile(pathDatasetB, '**','*.*'));
     else
-        onlyFilesA = xASL_adm_GetFileList(pathDatasetA,'^.+$','FPListRec');
-        onlyFilesB = xASL_adm_GetFileList(pathDatasetB,'^.+$','FPListRec');
-        filesA = struct;
-        for iFile = 1:numel(onlyFilesA)
-            [thisFolder, thisFile, thisExtension] = xASL_fileparts(onlyFilesA(iFile,1));
-            filesA(iFile).name = [thisFile thisExtension];
-            filesA(iFile).isdir = 0;
-            filesA(iFile).folder = thisFolder;
-        end
-        filesB = struct;
-        for iFile = 1:numel(onlyFilesB)
-            [thisFolder, thisFile, thisExtension] = xASL_fileparts(onlyFilesB(iFile,1));
-            filesB(iFile).name = [thisFile thisExtension];
-            filesB(iFile).isdir = 0;
-            filesB(iFile).folder = thisFolder;
-
-        end
+        [filesA, filesB] = xASL_bids_CompareStructures_GetFileListsUnix(pathDatasetA,pathDatasetB);
     end
     
     % Remove root path
@@ -452,7 +436,7 @@ end
 function [differences,identical,dn] = compareTEXT(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB)
 
     % Read files if they exist
-    if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+    if (exist(currentFileA,'file') && exist(currentFileB,'file')) % xASL_exist somehow didn't work here (again)
         % Compare text files content directly
         currentFileTextA = fileread(currentFileA);
         currentFileTextB = fileread(currentFileB);
@@ -479,7 +463,7 @@ function [differences,identical,dn] = compareJSON(differences,identical,bPrintRe
     jsonErrorReport='';
 
     % Compare JSON files on field basis
-    if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+    if (exist(currentFileA,'file') && exist(currentFileB,'file')) % xASL_exist somehow didn't work here (again)
         % Import JSON files
         jsonA = spm_jsonread(char(currentFileA));
         jsonB = spm_jsonread(char(currentFileB));
@@ -577,7 +561,7 @@ end
 function [differences,identical,dn] = compareNIFTI(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii)
 
     % Read files if they exist
-    if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+    if (exist(currentFileA,'file') && exist(currentFileB,'file')) % xASL_exist somehow didn't work here (again)
         % Check file size (there were some 0KB images in the bids-examples)
         tmpFileA = dir(currentFileA);
         tmpFileB = dir(currentFileB);
@@ -675,5 +659,60 @@ function [differences,identical,dn] = compareNIFTI(differences,identical,bPrintR
 end
 
 
+%% xASL_bids_CompareStructures_GetFileListsUnix
+function [filesA, filesB] = xASL_bids_CompareStructures_GetFileListsUnix(pathDatasetA,pathDatasetB)
+
+    fprintf('This method is not able to find empty directories right now...\n');
+
+    % Get file lists
+    onlyFilesA = xASL_adm_GetFileList(pathDatasetA,'^.+$','FPListRec');
+    onlyFilesB = xASL_adm_GetFileList(pathDatasetB,'^.+$','FPListRec');
+    
+    % Create structure
+    filesA = struct;
+    
+    % Iterate over file lists
+    for iFile = 1:numel(onlyFilesA)
+        [thisFolder, thisFile, thisExtension] = xASL_fileparts(onlyFilesA(iFile,1));
+        filesA(iFile).name = [thisFile thisExtension];
+        filesA(iFile).isdir = 0;
+        filesA(iFile).folder = thisFolder;
+    end
+    filesB = struct;
+    for iFile = 1:numel(onlyFilesB)
+        [thisFolder, thisFile, thisExtension] = xASL_fileparts(onlyFilesB(iFile,1));
+        filesB(iFile).name = [thisFile thisExtension];
+        filesB(iFile).isdir = 0;
+        filesB(iFile).folder = thisFolder;
+
+    end
+    
+    % Add folder list
+    addId = size(filesA,2)+1;
+    for iFile = 1:size(filesA,2)
+        relativeFolder = strrep(filesA(iFile).folder,pathDatasetA,'');
+        if ~isempty(relativeFolder)
+            filesA(addId).name = relativeFolder;
+            filesA(addId).isdir = 1;
+            filesA(addId).folder = relativeFolder;
+            addId = addId+1;
+        end
+    end
+    addId = size(filesB,2)+1;
+    for iFile = 1:size(filesB,2)
+        relativeFolder = strrep(filesB(iFile).folder,pathDatasetB,'');
+        if ~isempty(relativeFolder)
+            filesB(addId).name = relativeFolder;
+            filesB(addId).isdir = 1;
+            filesB(addId).folder = relativeFolder;
+            addId = addId+1;
+        end
+    end
+    
+    % Transpose
+    filesA = filesA';
+    filesB = filesB';
+
+end
 
 
