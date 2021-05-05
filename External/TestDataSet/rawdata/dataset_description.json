@@ -1,0 +1,13 @@
+{
+	"Name":"EPAD-based_Philips_2DEPI_PCASL_ReferenceDataset",
+	"BIDSVersion":"1.5.0",
+	"DatasetType":"raw",
+	"License":"ExploreASL",
+	"Authors":["EPAD", "ExploreASL"],
+	"Acknowledgements":["EPAD", "ExploreASL"],
+	"HowToAcknowledge":"See here: https://github.com/ExploreASL/ExploreASL#acknowledgments",
+	"Funding":"See here: https://github.com/ExploreASL/ExploreASL#acknowledgments",
+	"EthicsApprovals":"See here: https://github.com/ExploreASL/ExploreASL#acknowledgments",
+	"ReferencesAndLinks":"See here: https://github.com/ExploreASL/ExploreASL#acknowledgments",
+	"DatasetDOI":"See here: https://github.com/ExploreASL/ExploreASL#acknowledgments"
+}
