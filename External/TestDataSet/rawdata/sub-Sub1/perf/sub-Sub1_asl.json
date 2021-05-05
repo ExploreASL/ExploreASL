@@ -5,6 +5,7 @@
 "ManufacturersModelName":"Ingenuity",
 "SoftwareVersions":"3.2.2_3.2.2.1",
 "MRAcquisitionType":"2D",
+"PulseSequenceDetails":"v3.2.2 Product Sequence",
 "ScanningSequence":"GR",
 "SequenceVariant":"SK",
 "ScanOptions":"FS",
@@ -12,6 +13,7 @@
 "SeriesNumber":1901,
 "AcquisitionTime":[14,18,22,26,30,34,38,42,46],
 "AcquisitionNumber":19,
+"AcquisitionVoxelSize":[3.4,3.4,4.5],
 "SliceThickness":4.5,
 "SpacingBetweenSlices":4.5,
 "SAR":0.102452,
@@ -23,6 +25,7 @@
 "PercentPhaseFOV":100,
 "EchoTrainLength":27,
 "PhaseEncodingSteps":62,
+"PostLabelingDelay":2.025,
 "AcquisitionMatrixPE":62,
 "ReconMatrixPE":64,
 "PixelBandwidth":3054,
@@ -35,8 +38,11 @@
 "readout_dim":"2D",
 "Vendor":"Philips",
 "bReproTesting":0,
+"VascularCrushing":false,
+"BackgroundSuppression":true,
 "Q":{"BackgroundSuppressionNumberPulses":2,
-"LabelingType":"CASL",
+"ArterialSpinLabelingType":"CASL",
 "InitialPostLabelDelay":2.025,
 "LabelingDuration":1.650,
-"SliceReadoutTime":0.0437647}}
+"SliceReadoutTime":0.0437647}
+"SliceTiming":[0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647]}
