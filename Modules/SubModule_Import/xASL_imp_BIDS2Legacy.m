@@ -39,7 +39,7 @@ function [x] = xASL_imp_BIDS2Legacy(x)
             end
 
             %% 2.2 Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
-            fListDataPar = xASL_adm_GetFileList(ListFolders{iList},'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+            fListDataPar = xASL_adm_GetFileList(x.StudyRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
             if length(fListDataPar) < 1
                 fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
                 % Fill the dataPars with default parameters

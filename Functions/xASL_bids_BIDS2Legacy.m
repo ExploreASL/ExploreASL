@@ -276,7 +276,7 @@ end
 fprintf('Overwriting x.DataParPath...\n');
 
 % Add the path to the dataPar.x struct that we return to the Master script
-dataPar.x.DataParPath = fullfile(pathLegacy, 'DataPar.json');
+dataPar.x.DataParPath = fullfile(pathLegacy, 'dataPar.json');
 
 end
 
