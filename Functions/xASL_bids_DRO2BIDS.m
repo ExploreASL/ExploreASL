@@ -53,8 +53,8 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth)
     xASL_Move(fullfile(perfDirectory,'001_aslcontext.tsv'),fullfile(perfDirectory,[droSubject,'_aslcontext.tsv']),1);
 
     % Rename T1w
-    xASL_Move(fullfile(anatDirectory,'003_anat.json'),fullfile(anatDirectory,[droSubject,'_T1w.json']),1);
-    xASL_Move(fullfile(anatDirectory,'003_anat.nii.gz'),fullfile(anatDirectory,[droSubject,'_T1w.nii.gz']),1);
+    xASL_Move(fullfile(anatDirectory,'002_anat.json'),fullfile(anatDirectory,[droSubject,'_T1w.json']),1);
+    xASL_Move(fullfile(anatDirectory,'002_anat.nii.gz'),fullfile(anatDirectory,[droSubject,'_T1w.nii.gz']),1);
 
     % Remove the ground truth files
     if deleteGroundTruth
