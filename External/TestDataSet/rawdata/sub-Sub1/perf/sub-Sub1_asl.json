@@ -31,7 +31,7 @@
 "InPlanePhaseEncodingDirectionDICOM":"COL",
 "ConversionSoftware":"dcm2niix",
 "ConversionSoftwareVersion":"v1.0.20181125  (JP2:OpenJPEG) (JP-LS:CharLS) GCC5.5.0",
-"M0":"separate_scan",
+"M0Type":"Separate",
 "readout_dim":"2D",
 "Vendor":"Philips",
 "bReproTesting":0,

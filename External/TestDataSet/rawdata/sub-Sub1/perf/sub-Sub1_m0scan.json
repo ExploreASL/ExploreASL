@@ -39,4 +39,5 @@
 "Vendor":"Philips",
 "bReproTesting":0,
 "Q":{"BackgroundSuppressionNumberPulses":2,
-"SliceReadoutTime":0.0437647}}
+"SliceReadoutTime":0.0437647},
+"IntendedFor":"perf/sub-Sub1_asl.nii.gz"}
