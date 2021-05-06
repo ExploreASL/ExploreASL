@@ -75,15 +75,19 @@ if isnumeric(DataIn)
             [~, dateString] = version();
             if str2num(dateString(end-3:end))>2016
                 DataOut = strip(DataOut,'right','0');
-			else
-				% Find out trailing zeros
-				indZeros = regexp(DataOut,'0*$');
-				% If the string ends with zeros only
-				if ~isempty(indZeros)
-					% Remove the trailing zeros
-					DataOut = DataOut(1:(indZeros(1)-1));
-				end
-			end
+            else
+                % Find out trailing zeros
+                indZeros = regexp(DataOut,'0*$');
+                % If the string ends with zeros only
+                if ~isempty(indZeros)
+                    % Remove the trailing zeros
+                    DataOut = DataOut(1:(indZeros(1)-1));
+                end
+            end
+            % Fix perfect integers (previously 2.0000 was converted to 2. instead of 2.0)
+            if strcmp(DataOut,'.')
+                DataOut = [DataOut '0'];
+            end
         end
 	else
 		DataOut = num2str(DataIn, f);
