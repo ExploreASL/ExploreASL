@@ -98,9 +98,15 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %
 % EXAMPLE: ExploreASL_Import(ExploreASL_ImportConfig('//MyDisk/MyStudy'));
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
-
+%% Print warning
+fprintf('\n========================================== WARNING ===========================================\n');
+fprintf(['\nYou are using the legacy import workflow right now. With a future release,\n' ...
+            'ExploreASL will adapt to the <a href="https://bids-specification.readthedocs.io/en/latest/" rel="nofollow">ASL-BIDS</a> standard, which is why this import\n' ...
+            'option will become outdated. Please check out the <a href="https://bids-specification.readthedocs.io/en/latest/" rel="nofollow">ASL-BIDS</a> documentation.\n' ...
+            'Also notice that we will move this script to a subfolder starting v1.7.0.\n']);
+fprintf('\n==============================================================================================\n\n');
 
 %% Check input parameters
 dcm2niiCatchedErrors = struct; % initialization
