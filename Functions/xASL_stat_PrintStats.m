@@ -109,26 +109,12 @@ end
 %% 3) Define number of sessions, force to 1 in case of TT or volume metrics
 SingleSessions = {'volume' 'TT' 'PV_pGM' 'PV_pWM' 'pGM' 'pWM' 'mrc1T1' 'mrc2T1'};
 
-HasSingleSessionOnly = sum(cellfun(@(y) ~isempty(regexp(y,['^' x.S.output_ID])), SingleSessions));
+HasSingleSessionOnly = sum(cellfun(@(y) ~isempty(regexpi(y,['^' x.S.output_ID])), SingleSessions));
 
 if HasSingleSessionOnly
     nSessions = 1;
 else
-    SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*_ASL_\d*\.nii'], 'FPList', [0 Inf]);
-	% find sessions that don't have qCBF_masked, so that _masked can be excluded from SessionList
-    nonMaskedSessions = cellfun('isempty',strfind(SessionList,[ x.S.InputDataStr '_masked'])); 
-    SessionListSUBJECTS_qCBF = SessionList(nonMaskedSessions,:); % include only qCBF in SessionList and exclude _masked
-    for n = 1:size(x.SUBJECTS,2)
-        SessionsSingleSUBJECT = ~cellfun('isempty',strfind(SessionListSUBJECTS_qCBF,[x.SUBJECTS{n}])); % Check how many qCBF files are present of each subject
-        SessionsPerSubject(n,1) = sum(SessionsSingleSUBJECT); % Define number of sessions as amount of qCBF files per subject
-    end
-    nSessions = min(SessionsPerSubject); % Use minimum amount of sessions for processing
-    bSessionsMissing = 0;
-    
-    CompareSessions = ones(size(x.SUBJECTS,2),1) .* nSessions; % Create array to check if amount of sessions is similar for each subject
-    if ~isequal(SessionsPerSubject,CompareSessions) % Check if amount of sessions is similar for each subject
-        warning('Amount of Sessions per Subject different, using minimum Sessions for statistics')
-    end
+    [nSessions, ~] = xASL_adm_GetnSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
 end
 
 

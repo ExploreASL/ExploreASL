@@ -176,31 +176,8 @@ else
 end
 
 %% Define number of sessions to use
-SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*_ASL_\d*\.nii'], 'FPList', [0 Inf]);
 
-if isempty(SessionList) % search for subjects instead of sessions
-    if isempty(xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '.*\.nii'], 'FPList', [0 Inf]))
-        fprintf('%s\n','No session or subject files found');
-        return;
-    end
-    nSessions = 1;
-    bSessionsMissing = 1;
-else % continu with defining sessions from SessionList
-	% find sessions that don't have qCBF_masked, so that _masked can be excluded from SessionList
-    nonMaskedSessions = cellfun('isempty',strfind(SessionList,[ x.S.InputDataStr '_masked'])); 
-    SessionListSUBJECTS_qCBF = SessionList(nonMaskedSessions,:); % include only qCBF in SessionList and exclude _masked
-    for n = 1:size(x.SUBJECTS,2)
-        SessionsSingleSUBJECT = ~cellfun('isempty',strfind(SessionListSUBJECTS_qCBF,[x.SUBJECTS{n}])); % Check how many qCBF files are present of each subject
-        SessionsPerSubject(n,1) = sum(SessionsSingleSUBJECT); % Define number of sessions as amount of qCBF files per subject
-    end
-    nSessions = min(SessionsPerSubject); % Use minimum amount of sessions for processing
-    bSessionsMissing = 0;
-    
-    CompareSessions = ones(size(x.SUBJECTS,2),1) .* nSessions; % Create array to check if amount of sessions is similar for each subject
-    if ~isequal(SessionsPerSubject,CompareSessions) % Check if amount of sessions is similar for each subject
-        warning('Amount of Sessions per Subject different, using minimum Sessions for statistics')
-    end
-end
+[nSessions, bSessionsMissing] = xASL_adm_GetnSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
 
 %% Determine whether group mask exists
 if x.S.InputNativeSpace
