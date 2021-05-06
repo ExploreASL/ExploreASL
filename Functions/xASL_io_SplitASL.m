@@ -87,6 +87,8 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 
     ASLMATPath = fullfile(Fpath, 'ASL4D_parms.mat');
     ASLJSONPath = fullfile(Fpath, 'ASL4D.json');
+    ASLTSVContextPath = fullfile(Fpath, 'ASL4D_aslcontext.tsv');
+    
     M0MATPath = fullfile(Fpath, 'M0_parms.mat');
     M0JSONPath = fullfile(Fpath, 'M0.json');
     BackupMATPath = fullfile(Fpath, 'ASL4D_Source_parms.mat');
@@ -202,9 +204,15 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, iM0, ASLindices, iDummy);
 
         %% 8. Split ASL4D_aslContext.tsv
-        % Add code here...?
+        if xASL_exist(ASLTSVContextPath,'file') && (~isempty(iM0) || ~isempty(iDummy))
+            ASLTSVContextPathSource = strrep(ASLTSVContextPath, 'aslcontext', 'aslcontext_Source');
+            xASL_Move(ASLTSVContextPath, ASLTSVContextPathSource);
+        end
         
-        %% 9. Copy sidecars
+        %% 9. Modify JSON fields
+        [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(jsonM0, jsonASL, iM0, iDummy);
+        
+        %% 10. Copy sidecars
         if exist(BackupMATPath,'file') && bCreateM0
             xASL_Copy(BackupMATPath, M0MATPath);
         end
@@ -218,6 +226,26 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             spm_jsonwrite(ASLJSONPath, jsonASL);
         end
         
+    end
+
+end
+
+%% xASL_io_SplitASL_PostModify
+function [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(jsonM0, jsonASL, iM0, iDummy)
+
+    % Check that both structs are not empty dummy structs
+    if ~isempty(fieldnames(jsonASL)) && ~isempty(fieldnames(jsonM0))
+        
+        % Remove M0Type field of M0 JSON if it still exists
+        if isfield(jsonM0, 'M0Type')
+            jsonM0 = rmfield(jsonM0, 'M0Type');
+        end
+
+        % Change M0Type field of ASL JSON to Separate
+        if isfield(jsonASL, 'M0Type') && (~isempty(iM0) || ~isempty(iDummy))
+            jsonASL.M0Type = 'Separate';
+        end
+
     end
 
 end
