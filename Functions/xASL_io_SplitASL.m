@@ -30,7 +30,8 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 % 6. Save ASL4D NIfTI
 % 7. Split relevant JSON parameters/arrays
 % 8. Split ASL4D_aslContext.tsv
-% 9. Copy sidecars
+% 9. Modify JSON fields
+% 10. Copy sidecars
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: for moving the first two volumes to M0.nii:
@@ -210,7 +211,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         end
         
         %% 9. Modify JSON fields
-        [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(jsonM0, jsonASL, iM0, iDummy);
+        [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(ASLname, jsonM0, jsonASL, iM0, iDummy);
         
         %% 10. Copy sidecars
         if exist(BackupMATPath,'file') && bCreateM0
@@ -220,6 +221,10 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             xASL_Copy(BackupMATPath, ASLMATPath);
         end
         if exist('jsonM0','var') && bCreateM0
+            % BIDS validation
+            jsonM0 = xASL_bids_VendorFieldCheck(jsonM0);
+            jsonM0 = xASL_bids_JsonCheck(jsonM0,'M0');
+            % Write file
             spm_jsonwrite(M0JSONPath, jsonM0);
         end
         if exist('jsonASL','var') && ~strcmp(BackupJSONPath, ASLJSONPath)
@@ -231,10 +236,14 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 end
 
 %% xASL_io_SplitASL_PostModify
-function [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(jsonM0, jsonASL, iM0, iDummy)
+function [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(ASLname, jsonM0, jsonASL, iM0, iDummy)
 
     % Check that both structs are not empty dummy structs
     if ~isempty(fieldnames(jsonASL)) && ~isempty(fieldnames(jsonM0))
+        
+        % Add IntendedFor field
+        [~, file, extension] = xASL_fileparts(ASLname);
+        jsonM0.IntendedFor = ['perf/' file extension];
         
         % Remove M0Type field of M0 JSON if it still exists
         if isfield(jsonM0, 'M0Type')
