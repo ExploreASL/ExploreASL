@@ -425,15 +425,15 @@ settings.bUseSessions = bUseSessions;
 
 % Iterate over subjects
 for iSubject=1:nSubjects
-    [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = ...
-        xASL_imp_DCM2NII_Subject(x, imPar, listsIDs, numOf, settings, globalCounts, scanNames, iSubject, summary_lines, matches, dcm2niiCatchedErrors, pathDcmDict);
+    [imPar, x.modules.import.summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, x.modules.import.pathDcmDict] = ...
+            xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors);
 end
 
 
 %% -----------------------------------------------------------------------------
 % create summary file
 % -----------------------------------------------------------------------------
-xASL_imp_CreateSummaryFile(imPar, numOf, listsIDs, PrintDICOMFields, globalCounts, scanNames, summary_lines, fid_summary);
+xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary);
 
 % cleanup
 if ~bUseDCMTK || isempty(pathDcmDict)
