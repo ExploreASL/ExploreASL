@@ -249,12 +249,12 @@ end
 
 % Path to the dictionary to initialize - we need to keep track if the dictionary has been set, because
 % Dicominfo can be used despite bUSEDCMTK==1 when DCMTK fails
-pathDcmDict = fullfile(x.MyPath,'External','xASL_DICOMLibrary.txt');
+x.modules.import.pathDcmDict = fullfile(x.MyPath,'External','xASL_DICOMLibrary.txt');
 if ~bUseDCMTK
     % -----------------------------------------------------------------------------
     % Initialize dicom dictionary by appending private philips stuff to a temporary copy
     % -----------------------------------------------------------------------------
-    dicomdict('set', pathDcmDict);
+    dicomdict('set', x.modules.import.pathDcmDict);
 end
 
 fid_summary = -1; % initialize to be able to catch errors and close if valid
@@ -297,134 +297,129 @@ end
 % Define Subjects
 
 % SUBJECTS
-vSubjectIDs = tokens(:,imPar.tokenOrdering(1)); % cell vector with extracted subject IDs (for all sessions and scans)
+x.modules.import.listsIDs.vSubjectIDs = tokens(:,imPar.tokenOrdering(1)); % cell vector with extracted subject IDs (for all sessions and scans)
 
 % VISITS
 if imPar.tokenOrdering(2)==0
     % a zero means: no visits applicable
-    bUseVisits = false;
-    vVisitIDs = cellfun(@(y) '1', vSubjectIDs, 'UniformOutput', false); % each subject has a single visit
+    x.modules.import.settings.bUseVisits = false;
+    x.modules.import.listsIDs.vVisitIDs = cellfun(@(y) '1', x.modules.import.listsIDs.vSubjectIDs, 'UniformOutput', false); % each subject has a single visit
     imPar.tokenVisitAliases = {'^1$', '_1'};
 else
-    bUseVisits = true;
-    vVisitIDs = tokens(:,imPar.tokenOrdering(2)); % cell vector with extracted session IDs (for all subjects and scans)
+    x.modules.import.settings.bUseVisits = true;
+    x.modules.import.listsIDs.vVisitIDs = tokens(:,imPar.tokenOrdering(2)); % cell vector with extracted session IDs (for all subjects and scans)
 end
 
 % SESSIONS
 if imPar.tokenOrdering(3)==0
     % a zero means: no sessions applicable
-    bUseSessions = false;
-    vSessionIDs = cellfun(@(y) '1', vSubjectIDs, 'UniformOutput', false); % each subject-visit has a single session
+    x.modules.import.settings.bUseSessions = false;
+    x.modules.import.listsIDs.vSessionIDs = cellfun(@(y) '1', x.modules.import.listsIDs.vSubjectIDs, 'UniformOutput', false); % each subject-visit has a single session
     imPar.tokenSessionAliases = {'^1$', 'ASL_1'};
 else
-    bUseSessions = true;
-    vSessionIDs = tokens(:,imPar.tokenOrdering(3)); % cell vector with extracted session IDs (for all subjects and scans)
+    x.modules.import.settings.bUseSessions = true;
+    x.modules.import.listsIDs.vSessionIDs = tokens(:,imPar.tokenOrdering(3)); % cell vector with extracted session IDs (for all subjects and scans)
 end
 
 % SCANTYPES
-vScanIDs = tokens(:,imPar.tokenOrdering(4)); % cell vector with extracted scan IDs (for all subjects and sessions)
+x.modules.import.listsIDs.vScanIDs = tokens(:,imPar.tokenOrdering(4)); % cell vector with extracted scan IDs (for all subjects and sessions)
 
 % Convert the vectors to unique & sort sets by the output aliases
-subjectIDs  = sort(unique(vSubjectIDs));
-nSubjects = length(subjectIDs);
+x.modules.import.listsIDs.subjectIDs  = sort(unique(x.modules.import.listsIDs.vSubjectIDs));
+x.modules.import.numOf.nSubjects = length(x.modules.import.listsIDs.subjectIDs);
 
-visitIDs  = unique(vVisitIDs);
+x.modules.import.listsIDs.visitIDs  = unique(x.modules.import.listsIDs.vVisitIDs);
 % sort by output
-if length(visitIDs)>1
-    for iV=1:length(visitIDs)
-        IDrow(iV) = find(cellfun(@(y) strcmp(y,visitIDs{iV}), imPar.tokenVisitAliases(:,1)));
+if length(x.modules.import.listsIDs.visitIDs)>1
+    for iV=1:length(x.modules.import.listsIDs.visitIDs)
+        IDrow(iV) = find(cellfun(@(y) strcmp(y,x.modules.import.listsIDs.visitIDs{iV}), imPar.tokenVisitAliases(:,1)));
     end
-    visitIDs = visitIDs(IDrow);
+    x.modules.import.listsIDs.visitIDs = x.modules.import.listsIDs.visitIDs(IDrow);
 end
-nVisits = length(visitIDs);
+x.modules.import.numOf.nVisits = length(x.modules.import.listsIDs.visitIDs);
 
-sessionIDs  = sort(unique(vSessionIDs));
-nSessions = length(sessionIDs);
+x.modules.import.listsIDs.sessionIDs  = sort(unique(x.modules.import.listsIDs.vSessionIDs));
+x.modules.import.numOf.nSessions = length(x.modules.import.listsIDs.sessionIDs);
 
-scanIDs = sort(unique(lower(vScanIDs)));
-nScans = length(scanIDs);
+x.modules.import.listsIDs.scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs)));
+x.modules.import.numOf.nScans = length(x.modules.import.listsIDs.scanIDs);
 
 % VISIT NAMES
 if isempty(imPar.visitNames)
-    if isempty(visitIDs)
-        imPar.visitNames = cell(nVisits,1);
-        for kk=1:nVisits
+    if isempty(x.modules.import.listsIDs.visitIDs)
+        imPar.visitNames = cell(x.modules.import.numOf.nVisits,1);
+        for kk=1:x.modules.import.numOf.nVisits
             imPar.visitNames{kk}=sprintf('ASL_%g',kk);
         end
     else
-        imPar.visitNames = visitIDs;
+        imPar.visitNames = x.modules.import.listsIDs.visitIDs;
     end
 end
 
 % SESSION NAMES
 % optionaly we can have human readble session names; by default they are the same as the original tokens in the path
 if isempty(imPar.sessionNames)
-    if isempty(sessionIDs)
-        imPar.sessionNames = cell(nSessions,1);
-        for kk=1:nSessions
+    if isempty(x.modules.import.listsIDs.sessionIDs)
+        imPar.sessionNames = cell(x.modules.import.numOf.nSessions,1);
+        for kk=1:x.modules.import.numOf.nSessions
             imPar.sessionNames{kk}=sprintf('ASL_%g',kk);
         end
     else
-        imPar.sessionNames = sessionIDs;
+        imPar.sessionNames = x.modules.import.listsIDs.sessionIDs;
     end
 end
 
 % SCAN NAMES
-scanNames = scanIDs;
+x.modules.import.scanNames = x.modules.import.listsIDs.scanIDs;
 
 % sanity check for missing elements
-if nSubjects==0
+if x.modules.import.numOf.nSubjects==0
     error('No subjects')
 end
-if nVisits==0
+if x.modules.import.numOf.nVisits==0
     error('No visits')
 end
-if nSessions==0
+if x.modules.import.numOf.nSessions==0
     error('No sessions')
 end
-if nScans==0
+if x.modules.import.numOf.nScans==0
     error('No scans')
 end
 
 % preallocate space for (global) counts
-globalCounts.converted_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
-globalCounts.skipped_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
-globalCounts.missing_scans = zeros(nSubjects,nVisits,nSessions,nScans,'uint8'); % keep a count of all individual scans
+x.modules.import.globalCounts.converted_scans = zeros(  x.modules.import.numOf.nSubjects,...
+                                                        x.modules.import.numOf.nVisits,...
+                                                        x.modules.import.numOf.nSessions,...
+                                                        x.modules.import.numOf.nScans,'uint8'); % keep a count of all individual scans
+x.modules.import.globalCounts.skipped_scans = zeros(x.modules.import.numOf.nSubjects,...
+                                                    x.modules.import.numOf.nVisits,...
+                                                    x.modules.import.numOf.nSessions,...
+                                                    x.modules.import.numOf.nScans,'uint8'); % keep a count of all individual scans
+x.modules.import.globalCounts.missing_scans = zeros(x.modules.import.numOf.nSubjects,...
+                                                    x.modules.import.numOf.nVisits,...
+                                                    x.modules.import.numOf.nSessions,...
+                                                    x.modules.import.numOf.nScans,'uint8'); % keep a count of all individual scans
 
 % define a cell array for storing info for parameter summary file
 xASL_adm_CreateDir(imPar.AnalysisRoot);
-summary_lines = cell(nSubjects,nVisits,nSessions,nScans);
+x.modules.import.summary_lines = cell(    x.modules.import.numOf.nSubjects,...
+                                          x.modules.import.numOf.nVisits,...
+                                          x.modules.import.numOf.nSessions,...
+                                          x.modules.import.numOf.nScans);
 
 %% -----------------------------------------------------------------------------
 % import subject by subject, visit by visit, session by session, scan by scan
 % -----------------------------------------------------------------------------
 fprintf('%s\n', 'Running import (i.e. dcm2niiX)');
 
-% Create ID struct
-listsIDs.vSubjectIDs = vSubjectIDs;
-listsIDs.vVisitIDs = vVisitIDs;
-listsIDs.vSessionIDs = vSessionIDs;
-listsIDs.vScanIDs = vScanIDs;
-listsIDs.subjectIDs = subjectIDs;
-listsIDs.visitIDs = visitIDs;
-listsIDs.sessionIDs = sessionIDs;
-listsIDs.scanIDs = scanIDs;
-
-% Create number of struct
-numOf.nSubjects = nSubjects;
-numOf.nVisits = nVisits;
-numOf.nSessions = nSessions;
-numOf.nScans = nScans;
-
-% Create settings struct
-settings.bUseVisits = bUseVisits;
-settings.bClone2Source = bClone2Source;
-settings.bUseDCMTK = bUseDCMTK;
-settings.bCopySingleDicoms = bCopySingleDicoms;
-settings.bUseSessions = bUseSessions;
+% Write import settings to modules field of x structure
+x.modules.import.settings.bCopySingleDicoms = bCopySingleDicoms;
+x.modules.import.settings.bUseDCMTK = bUseDCMTK;
+x.modules.import.settings.bCheckPermissions = bCheckPermissions;
+x.modules.import.settings.bClone2Source = bClone2Source;
 
 % Iterate over subjects
-for iSubject=1:nSubjects
+for iSubject=1:x.modules.import.numOf.nSubjects
     [imPar, x.modules.import.summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, x.modules.import.pathDcmDict] = ...
             xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors);
 end
@@ -436,7 +431,7 @@ end
 xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary);
 
 % cleanup
-if ~bUseDCMTK || isempty(pathDcmDict)
+if ~x.modules.import.settings.bUseDCMTK || isempty(x.modules.import.pathDcmDict)
     dicomdict('factory');
 end
 diary('off');

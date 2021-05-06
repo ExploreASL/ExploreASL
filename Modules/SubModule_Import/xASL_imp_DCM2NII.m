@@ -1,7 +1,7 @@
 function xASL_imp_DCM2NII(imPar, x)
 %xASL_imp_DCM2NII Run the dcm2nii part of the import.
 %
-% FORMAT: xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x)
+% FORMAT: xASL_imp_DCM2NII(imPar, x)
 % 
 % INPUT:
 %   imPar              - JSON file with structure with import parameters (REQUIRED, STRUCT)
@@ -22,7 +22,7 @@ function xASL_imp_DCM2NII(imPar, x)
 % 7. Import subject by subject, visit by visit, session by session, scan by scan
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_DCM2NII(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source,x);
+% EXAMPLE:     xASL_imp_DCM2NII(imPar, x);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
