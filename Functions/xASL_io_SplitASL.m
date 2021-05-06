@@ -29,7 +29,8 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 % 5. Determine ASL indices
 % 6. Save ASL4D NIfTI
 % 7. Split relevant JSON parameters/arrays
-% 8. Copy sidecars
+% 8. Split ASL4D_aslContext.tsv
+% 9. Copy sidecars
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: for moving the first two volumes to M0.nii:
@@ -199,8 +200,11 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         
         %% 7. Split relevant JSON parameters/arrays
         [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, iM0, ASLindices, iDummy);
+
+        %% 8. Split ASL4D_aslContext.tsv
+        % Add code here...?
         
-        %% 8. Copy sidecars
+        %% 9. Copy sidecars
         if exist(BackupMATPath,'file') && bCreateM0
             xASL_Copy(BackupMATPath, M0MATPath);
         end
