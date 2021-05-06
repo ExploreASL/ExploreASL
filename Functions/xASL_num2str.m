@@ -85,7 +85,7 @@ if isnumeric(DataIn)
                 end
             end
             % Fix perfect integers (previously 2.0000 was converted to 2. instead of 2.0)
-            if strcmp(DataOut,'.')
+            if strcmp(DataOut(end),'.')
                 DataOut = [DataOut '0'];
             end
         end
