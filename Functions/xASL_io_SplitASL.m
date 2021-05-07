@@ -80,26 +80,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 	%% 2. Prepare paths
     [Fpath, Ffile] = xASL_fileparts(inPath);
     [paths] = xASL_io_SplitASL_GetPaths(Fpath, Ffile);
-    
-    ASLlist = xASL_adm_GetFileList(Fpath, ['^' Ffile '(|_.)'  '(|_\d)' '\.nii$'], 'FPList', [0 Inf]);
-  
-    if xASL_exist(paths.ASL_Source,'file')
-        fprintf('Restoring ASL4D.nii from backup NIfTI ASL4D_Source.nii\n');
-        ASLlist{1} = paths.ASL;
-        xASL_Move(paths.ASL_Source, ASLlist{1}, true);
-        % Restore json as well
-        if exist(paths.ASLJSON,'file') && exist(paths.ASL_Source_JSON,'file')
-            xASL_Move(paths.ASL_Source_JSON, paths.ASLJSON, true);
-        end
-        % Delete M0, allowing to restore this from the backup in case M0 is in the ASL timeseries
-        if xASL_exist(paths.M0,'file') && ~isempty(iM0)
-            fprintf('Deleting M0 to restore it from ASL4D\n');
-            xASL_delete(paths.M0);
-            xASL_delete(paths.M0JSON);
-        end
-    elseif isempty(ASLlist)
-        error([paths.ASL ' didnt exist, skipping']);
-    end
+    [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(paths);
     
     if ~xASL_exist(paths.ASL_Source,'file') % otherwise was already split
 
@@ -216,6 +197,32 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             spm_jsonwrite(paths.ASLJSON, jsonASL);
         end
         
+    end
+
+end
+
+
+%% xASL_io_SplitASL_RestoringFromBackup
+function [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(paths)
+
+    ASLlist = xASL_adm_GetFileList(Fpath, ['^' Ffile '(|_.)'  '(|_\d)' '\.nii$'], 'FPList', [0 Inf]);
+  
+    if xASL_exist(paths.ASL_Source,'file')
+        fprintf('Restoring ASL4D.nii from backup NIfTI ASL4D_Source.nii\n');
+        ASLlist{1} = paths.ASL;
+        xASL_Move(paths.ASL_Source, ASLlist{1}, true);
+        % Restore json as well
+        if exist(paths.ASLJSON,'file') && exist(paths.ASL_Source_JSON,'file')
+            xASL_Move(paths.ASL_Source_JSON, paths.ASLJSON, true);
+        end
+        % Delete M0, allowing to restore this from the backup in case M0 is in the ASL timeseries
+        if xASL_exist(paths.M0,'file') && ~isempty(iM0)
+            fprintf('Deleting M0 to restore it from ASL4D\n');
+            xASL_delete(paths.M0);
+            xASL_delete(paths.M0JSON);
+        end
+    elseif isempty(ASLlist)
+        error([paths.ASL ' didnt exist, skipping']);
     end
 
 end
