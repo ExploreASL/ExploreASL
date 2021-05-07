@@ -71,9 +71,9 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 		iDummy = iDummy(:)';
 	end
 	
-	% Only run the splitting if indexes are provided
-	if isempty(iM0) && isempty(iDummy)
-		return;
+    % Only run the splitting if indexes are provided
+    if isempty(iM0) && isempty(iDummy)
+        return;
     end
     
 	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -124,8 +124,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 
         %% 8. Split ASL4D_aslContext.tsv
         if xASL_exist(paths.ASLTSV,'file') && (~isempty(iM0) || ~isempty(iDummy))
-            paths.ASLTSVContext_Source = strrep(paths.ASLTSV, 'ASL4D', 'ASL4D_Source');
-            xASL_Move(paths.ASLTSV, paths.ASLTSVContext_Source);
+            xASL_Move(paths.ASLTSV, paths.ASL_Source_TSV);
         end
         
         %% 9. Modify JSON fields
@@ -215,6 +214,7 @@ function [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(paths)
 
     ASLlist = xASL_adm_GetFileList(Fpath, ['^' Ffile '(|_.)'  '(|_\d)' '\.nii$'], 'FPList', [0 Inf]);
   
+    % Restore NIFTIs & JSONs from backup
     if xASL_exist(paths.ASL_Source,'file')
         fprintf('Restoring ASL4D.nii from backup NIfTI ASL4D_Source.nii\n');
         ASLlist{1} = paths.ASL;
@@ -222,6 +222,10 @@ function [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(paths)
         % Restore json as well
         if exist(paths.ASLJSON,'file') && exist(paths.ASL_Source_JSON,'file')
             xASL_Move(paths.ASL_Source_JSON, paths.ASLJSON, true);
+        end
+        % Restore TSV from backup
+        if xASL_exist(paths.ASL_Source_TSV,'file')
+            xASL_Move(paths.ASL_Source_TSV, paths.ASLTSV, true);
         end
         % Delete M0, allowing to restore this from the backup in case M0 is in the ASL timeseries
         if xASL_exist(paths.M0,'file') && ~isempty(iM0)
@@ -259,7 +263,8 @@ function [paths] = xASL_io_SplitASL_GetPaths(Fpath, Ffile)
     % Source files
     paths.ASL_Source = fullfile(Fpath,'ASL4D_Source.nii.gz');
     paths.ASL_Source_MAT = fullfile(Fpath, 'ASL4D_Source_parms.mat');
-    paths.ASL_Source_JSON = fullfile(Fpath, 'ASL4D_Source.json');  
+    paths.ASL_Source_JSON = fullfile(Fpath, 'ASL4D_Source.json');
+    paths.ASL_Source_TSV = strrep(paths.ASLTSV, 'ASL4D', 'ASL4D_Source');
 
 end
 
