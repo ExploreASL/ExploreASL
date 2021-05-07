@@ -80,7 +80,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 	%% 2. Prepare paths
     [Fpath, Ffile] = xASL_fileparts(inPath);
     [paths] = xASL_io_SplitASL_GetPaths(Fpath, Ffile);
-    [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(paths);
+    [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(Fpath, Ffile, paths);
     
     if ~xASL_exist(paths.ASL_Source,'file') % otherwise was already split
 
@@ -210,7 +210,7 @@ end
 
 
 %% xASL_io_SplitASL_RestoringFromBackup
-function [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(paths)
+function [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(Fpath, Ffile, paths)
 
     ASLlist = xASL_adm_GetFileList(Fpath, ['^' Ffile '(|_.)'  '(|_\d)' '\.nii$'], 'FPList', [0 Inf]);
   
