@@ -85,56 +85,8 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
     if ~xASL_exist(paths.ASL_Source,'file') % otherwise was already split
 
         %% 3. First concatenate NIfTIs
-		if length(ASLlist)>1
-            % Reconstruct the ASL4D first
-            for iNii=1:length(ASLlist)
-                tnii = xASL_io_ReadNifti(ASLlist{iNii});
-                RescaleSlope(iNii) = tnii.dat.scl_slope;
-                
-                tIM = xASL_io_Nifti2Im(tnii.dat(:,:,:,:,:,:,:));
-                Dim4 = size(tIM,4);
-                if iNii==1
-                    TotIm = tIM;
-                else
-                    TotIm(:,:,:,CDim4+1:CDim4+Dim4) = tIM;
-                end
-                CDim4 = size(TotIm,4);
-            end
-            
-            if length(unique(RescaleSlope))>1
-                warning('Rescaleslopes were not the same between concatenated NIfTIs, skipping...');
-                return;
-            else
-                % Save concatenated ASL series as backup ASL
-                xASL_io_SaveNifti(ASLlist{1}, paths.ASL_Source, TotIm, [], false);
-                % 
-                if exist(paths.originalMAT,'file') && ~strcmp(paths.originalMAT, paths.ASL_Source_MAT)
-                    xASL_Move(paths.originalMAT, paths.ASL_Source_MAT);
-                end
-                if exist(paths.originalJSON,'file') && ~strcmp(paths.originalJSON, paths.ASL_Source_JSON)
-                    xASL_Move(paths.originalJSON, paths.ASL_Source_JSON);
-                end
-                
-                for iNii=1:length(ASLlist)
-                    xASL_delete(ASLlist{iNii});
-                    [Fpath, Ffile] = xASL_fileparts(ASLlist{iNii});
-                    JSON2Delete = fullfile(Fpath, [Ffile '.json']);
-                    MAT2Delete = fullfile(Fpath, [Ffile '_parms.mat']);
-                    xASL_delete(JSON2Delete);
-					xASL_delete(MAT2Delete);
-                end
-            end
-            
-        else % backup the ASL4D.nii & sidecars
-            xASL_Move(ASLlist{1}, paths.ASL_Source, true); 
-            if exist(paths.originalMAT,'file') && ~strcmp(paths.originalMAT, paths.ASL_Source_MAT)
-                xASL_Move(paths.originalMAT, paths.ASL_Source_MAT);
-            end
-            if exist(paths.originalJSON,'file') && ~strcmp(paths.originalJSON, paths.ASL_Source_JSON)
-                xASL_Move(paths.originalJSON, paths.ASL_Source_JSON);
-            end
-		end
-
+        xASL_io_SplitASL_ConcatNiftis(paths, ASLlist);
+        
 		% Load the backup-file
 		tIM = xASL_io_Nifti2Im(paths.ASL_Source);
 		
@@ -172,8 +124,8 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 
         %% 8. Split ASL4D_aslContext.tsv
         if xASL_exist(paths.ASLTSV,'file') && (~isempty(iM0) || ~isempty(iDummy))
-            ASLTSVContextPathSource = strrep(paths.ASLTSV, 'ASL4D', 'ASL4D_Source');
-            xASL_Move(paths.ASLTSV, ASLTSVContextPathSource);
+            paths.ASLTSVContext_Source = strrep(paths.ASLTSV, 'ASL4D', 'ASL4D_Source');
+            xASL_Move(paths.ASLTSV, paths.ASLTSVContext_Source);
         end
         
         %% 9. Modify JSON fields
@@ -197,6 +149,62 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             spm_jsonwrite(paths.ASLJSON, jsonASL);
         end
         
+    end
+
+end
+
+
+%% xASL_io_SplitASL_ConcatNiftis
+function xASL_io_SplitASL_ConcatNiftis(paths, ASLlist)
+
+    if length(ASLlist)>1
+        % Reconstruct the ASL4D first
+        for iNii=1:length(ASLlist)
+            tnii = xASL_io_ReadNifti(ASLlist{iNii});
+            RescaleSlope(iNii) = tnii.dat.scl_slope;
+
+            tIM = xASL_io_Nifti2Im(tnii.dat(:,:,:,:,:,:,:));
+            Dim4 = size(tIM,4);
+            if iNii==1
+                TotIm = tIM;
+            else
+                TotIm(:,:,:,CDim4+1:CDim4+Dim4) = tIM;
+            end
+            CDim4 = size(TotIm,4);
+        end
+
+        if length(unique(RescaleSlope))>1
+            warning('Rescaleslopes were not the same between concatenated NIfTIs, skipping...');
+            return;
+        else
+            % Save concatenated ASL series as backup ASL
+            xASL_io_SaveNifti(ASLlist{1}, paths.ASL_Source, TotIm, [], false);
+            %
+            if exist(paths.originalMAT,'file') && ~strcmp(paths.originalMAT, paths.ASL_Source_MAT)
+                xASL_Move(paths.originalMAT, paths.ASL_Source_MAT);
+            end
+            if exist(paths.originalJSON,'file') && ~strcmp(paths.originalJSON, paths.ASL_Source_JSON)
+                xASL_Move(paths.originalJSON, paths.ASL_Source_JSON);
+            end
+
+            for iNii=1:length(ASLlist)
+                xASL_delete(ASLlist{iNii});
+                [Fpath, Ffile] = xASL_fileparts(ASLlist{iNii});
+                JSON2Delete = fullfile(Fpath, [Ffile '.json']);
+                MAT2Delete = fullfile(Fpath, [Ffile '_parms.mat']);
+                xASL_delete(JSON2Delete);
+                xASL_delete(MAT2Delete);
+            end
+        end
+
+    else % backup the ASL4D.nii & sidecars
+        xASL_Move(ASLlist{1}, paths.ASL_Source, true);
+        if exist(paths.originalMAT,'file') && ~strcmp(paths.originalMAT, paths.ASL_Source_MAT)
+            xASL_Move(paths.originalMAT, paths.ASL_Source_MAT);
+        end
+        if exist(paths.originalJSON,'file') && ~strcmp(paths.originalJSON, paths.ASL_Source_JSON)
+            xASL_Move(paths.originalJSON, paths.ASL_Source_JSON);
+        end
     end
 
 end
