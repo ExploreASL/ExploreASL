@@ -40,6 +40,7 @@
 	"bReproTesting":0,
 	"VascularCrushing":false,
 	"BackgroundSuppression":true,
+    "BackgroundSuppressionPulseTime":[1710,3142],
 	"Q":{
 		"BackgroundSuppressionNumberPulses":2,
 		"ArterialSpinLabelingType":"CASL",
