@@ -298,6 +298,25 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
             end
         end
     end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Check for FME Hadamard sequences
+    if isfield(jsonLocal,'SeriesDescription')
+        isHadamardFME = ~isempty(regexp(char(jsonLocal.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
+        if isHadamardFME
+            startDetails = regexp(char(jsonLocal.SeriesDescription),'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
+            hadamard.type = xASL_str2num(jsonLocal.SeriesDescription(startDetails:startDetails+1),'auto');
+            hadamard.numOfTIs = xASL_str2num(jsonLocal.SeriesDescription(startDetails+3:startDetails+4),'auto');
+            hadamard.numOfTEs = xASL_str2num(jsonLocal.SeriesDescription(startDetails+10:startDetails+11),'auto');
+            fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs...\n', hadamard.type, hadamard.numOfTIs, hadamard.numOfTEs);
+            % Store data in ASL JSON
+            jsonLocal.Hadamard = hadamard;
+        end
+    else
+        isHadamardFME = false;
+    end
+    
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Define the M0 type
@@ -309,10 +328,14 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
     listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVENC','FlipAngle','RepetitionTimePreparation'};
     for iRepeat = 1:length(listFieldsRepeat)
         if isfield(jsonLocal,(listFieldsRepeat{iRepeat})) && (length(jsonLocal.(listFieldsRepeat{iRepeat})) > 1) && (size(imNii,4) ~= length(jsonLocal.(listFieldsRepeat{iRepeat})))
-            if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
-                error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
+            if ~isHadamardFME % This section does not work for FME Hadamard encoded images right now
+                if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
+                    error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
+                else
+                    jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat})(:),[size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat})) 1]);
+                end
             else
-                jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat})(:),[size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat})) 1]);
+                warning('Something seems wrong with the NIFTI dimensions...\n');
             end
         end
     end
