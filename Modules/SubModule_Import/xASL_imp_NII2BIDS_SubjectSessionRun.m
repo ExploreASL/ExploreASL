@@ -306,12 +306,14 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
         isHadamardFME = ~isempty(regexp(char(jsonLocal.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
         if isHadamardFME
             startDetails = regexp(char(jsonLocal.SeriesDescription),'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
-            hadamard.type = xASL_str2num(jsonLocal.SeriesDescription(startDetails:startDetails+1),'auto');
-            hadamard.numOfTIs = xASL_str2num(jsonLocal.SeriesDescription(startDetails+3:startDetails+4),'auto');
-            hadamard.numOfTEs = xASL_str2num(jsonLocal.SeriesDescription(startDetails+10:startDetails+11),'auto');
-            fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs...\n', hadamard.type, hadamard.numOfTIs, hadamard.numOfTEs);
+            HadamardType = xASL_str2num(jsonLocal.SeriesDescription(startDetails:startDetails+1),'auto');
+            HadamardNumberTI = xASL_str2num(jsonLocal.SeriesDescription(startDetails+3:startDetails+4),'auto');
+            HadamardNumberTE = xASL_str2num(jsonLocal.SeriesDescription(startDetails+10:startDetails+11),'auto');
+            fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs...\n', HadamardType, HadamardNumberTI, HadamardNumberTE);
             % Store data in ASL JSON
-            jsonLocal.Hadamard = hadamard;
+            jsonLocal.HadamardType = HadamardType;
+            jsonLocal.HadamardNumberTI = HadamardNumberTI;
+            jsonLocal.HadamardNumberTE = HadamardNumberTE;
         end
     else
         isHadamardFME = false;
