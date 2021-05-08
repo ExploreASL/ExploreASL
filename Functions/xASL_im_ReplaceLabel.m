@@ -57,15 +57,15 @@ elseif ~xASL_exist(pathNifti)
 end
 
 if nargin<4 || isempty(pathNewNifti)
-    warning(['Overwriting ' pathNifti]);
+    frpintf('%s\n', ['Overwriting ' pathNifti]);
     pathNewNifti = pathNifti;
 end
 
-if size(LabelNumbersOld, 1)~=1
-    error('LabelNumbersOld should be a row, not a column');
-elseif size(LabelNumbersNew, 1)~=1
-    error('LabelNumbersNew should be a row, not a column');
-elseif ~isequal(size(LabelNumbersOld), size(LabelNumbersNew))
+% Enforce horizontal vector
+LabelNumbersOld = LabelNumbersOld(:)';
+LabelNumbersNew = LabelNumbersNew(:)';
+
+if ~isequal(size(LabelNumbersOld), size(LabelNumbersNew))
     LengthOld = length(LabelNumbersOld);
     LengthNew = length(LabelNumbersNew);
     fprintf('%s\n', ['LabelNumbersOld has size ' num2str(LengthOld)]);
