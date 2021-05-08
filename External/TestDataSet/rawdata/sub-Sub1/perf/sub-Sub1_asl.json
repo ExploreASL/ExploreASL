@@ -41,12 +41,9 @@
 	"VascularCrushing":false,
 	"BackgroundSuppression":true,
 	"BackgroundSuppressionPulseTime":[1.710,3.142],
-	"Q":{
-		"BackgroundSuppressionNumberPulses":2,
-		"ArterialSpinLabelingType":"CASL",
-		"InitialPostLabelDelay":2.025,
-		"LabelingDuration":1.650,
-		"SliceReadoutTime":0.0437647
-	},
+	"BackgroundSuppressionNumberPulses":2,
+	"ArterialSpinLabelingType":"PCASL",
+	"InitialPostLabelDelay":2.025,
+	"LabelingDuration":1.650,
 	"SliceTiming":[0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647,0.0437647]
 }
