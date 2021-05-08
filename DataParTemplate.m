@@ -292,6 +292,13 @@ function x = DataParTemplate(x)
 %                    - 1 = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel
 %                    - 0 = disabled, use 'flat' kernel with voxels given in PVCNativeSpaceKernel
 %
+% x.MakeNIfTI4DICOM - if set to true, an additional CBF image will be
+%                     created with modifications that allow it to be easily
+%                     implemented back into a DICOM for e.g. PACS:
+%                     1. Remove peak & valley signal, remove NaNs, rescale
+%                     to 12 bit integers, apply original orientation
+%                     (2 copies saved, with original ASL and T1w orientation)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % MASKING & ATLAS PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
