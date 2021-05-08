@@ -77,24 +77,24 @@ end
 
 %% -------------------
 %% 1. Load NIfTI
-Image = xASL_io_Nifti2Im(pathNifti);
-
+ImageOld = xASL_io_Nifti2Im(pathNifti);
+ImageNew = ImageOld;
 
 
 %% -------------------
 %% 2. Replace numbers
 for iNumber=1:length(LabelNumbersOld)
-    if sum(Image==LabelNumbersOld(iNumber))==0
+    if sum(ImageOld==LabelNumbersOld(iNumber))==0
         warning(['Number ' LabelNumbersOld(iNumber) ' could not be found, skipping!'])
     else
-        Image(Image==LabelNumbersOld(iNumber)) = LabelNumbersNew(iNumber);
+        ImageNew(ImageOld==LabelNumbersOld(iNumber)) = LabelNumbersNew(iNumber);
     end
 end
 
 
 %% -------------------
 %% 3. Save NIfTI
-xASL_io_SaveNifti(pathNifti, pathNewNifti, Image);
+xASL_io_SaveNifti(pathNifti, pathNewNifti, ImageNew, 8);
 
 
 end
