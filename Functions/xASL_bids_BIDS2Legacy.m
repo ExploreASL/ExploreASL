@@ -150,8 +150,11 @@ for iSubject=1:nSubjects % iterate over subjects
                 
                 %% -----------------------------------------------
                 %% 5. Parse scantype
-                for iType=1:length(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 1)) % iterate scantypes in this Subject/Visit/Modality
-                    TypeIs = bidsPar.BIDS2LegacyFolderConfiguration{iType+1,1};
+                modalityIndices = find(strcmp(bidsPar.BIDS2LegacyFolderConfiguration(2:end,2), ModalityIs));
+                modalityConfiguration = bidsPar.BIDS2LegacyFolderConfiguration(1+modalityIndices, :);
+                
+                for iType=1:size(modalityConfiguration, 1) % iterate scantypes in this Subject/Visit/Modality
+                    TypeIs = modalityConfiguration{iType,1};
                     TypeIndices = cellfun(@(y) strcmp(y, TypeIs), Reference(2:end, 2)); % this are the indices for this ScanType
 
                     if ~isempty(TypeIndices)
@@ -202,6 +205,9 @@ for iSubject=1:nSubjects % iterate over subjects
                                         FolderIs = [FolderIs '_' xASL_num2str(RunIs)];
                                     end
                                 end
+                                
+                                pathOrig = '';
+                                pathDest = '';
                                 
                                 pathOrig{1} = fullfile(BIDS.subjects(iSubject).path, ModalityIs, ModalityFields(TypeRunIndex).filename);
                                 [~, ~, Fext] = xASL_fileparts(ModalityFields(TypeRunIndex).filename);
