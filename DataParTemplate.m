@@ -152,6 +152,8 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % QUANTIFICATION PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+% x.bUseBasilQuantification - true for using BASIL quantification in addition to ExploreASL's quantification
+%
 % x.Q.Lambda - Brain/blood water coefficient (mL 1H/ mL blood), (OPTIONAL, DEFAULT = 0.9) 
 %            - example: 0.32 (for GSP phantom)
 % x.Q.T2art - T2* of arterial blood at 3T, only used when no M0 image (ms) (OPTIONAL, DEFAULT = 50)
