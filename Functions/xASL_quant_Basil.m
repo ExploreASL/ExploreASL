@@ -10,7 +10,15 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
 % CBF_nocalib       - Quantified CBF image
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs quantification of the PWI using the FSL Basil pipeline. Final calibration to
-%              physiological units is performed by dividing the quantified PWI by the M0 image/value
+%              physiological units is performed by dividing the quantified PWI by the M0 image/value.
+%              This function performs the following steps:
+% 1. Define paths
+% 2. Delete previous BASIL output
+% 3. Write the PWI as Nifti file for Basil to read as input
+% 4. Create option_file that contains options which are passed to Fabber
+% 5. Run Basil and retrieve CBF output
+% 6. Scaling to physiological units
+% 7. Householding
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: CBF_nocalib = xASL_quant_Basil(PWI, x);
 % __________________________________
@@ -22,13 +30,14 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     fprintf('%s\n','Quantification CBF using FSL Basil:');
     
     
-    %% Define paths
+    %% 1. Define paths
     % NEEDS TO BE MADE A RELATIVE PATH TO BE SPACE-INDEPENDENT
     pathBasilInput = fullfile(x.SESSIONDIR, 'PWI4D_BasilInput.nii');
     pathBasilOptions = fullfile(x.SESSIONDIR, 'Basil_ModelOptions.txt');
     dirBasilOutput = fullfile(x.SESSIONDIR, 'BasilOutput');
     
-    %% Delete previous BASIL output
+    
+    %% 2. Delete previous BASIL output
     xASL_adm_DeleteFileList(x.SESSIONDIR, '^BasilOutput.*$', 1, [0 Inf]);
     FolderList = xASL_adm_GetFileList(x.SESSIONDIR, '^BasilOutput.*$', 'FPList', [0 Inf], 1);
     for iFolder=1:numel(FolderList)
@@ -36,22 +45,27 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     end
     fprintf('%s\n', 'Note that any file not found warnings can be ignored, this pertains to the use of symbolic links by BASIL');
     
+    xASL_delete(pathBasilOptions);
+    xASL_delete(pathBasilInput);
     
-    %% Write the PWI as Nifti file for Basil to read as input
+    
+    %% 3. Write the PWI as Nifti file for Basil to read as input
     % FIXME would be good to have a brain mask at this point
+    % PM: if this would be a brainmask as well, we can skip creating a
+    % dummy input image here
     PWI(isnan(PWI)) = 0;
     
     xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0);
 
 
-    %% Create option_file that contains options which are passed to Fabber
+    %% 4. Create option_file that contains options which are passed to Fabber
     % basil_options is a character array containing CLI args for the Basil command
     bMultiPLD = false; % for now
     
     BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMultiPLD);
 
     
-    %% Run Basil and retrieve CBF output
+    %% 5. Run Basil and retrieve CBF output
     
     % args.bAutomaticallyDetectFSL=1;
     xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' BasilOptions], x);
@@ -64,7 +78,8 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     
     CBF_nocalib = xASL_io_Nifti2Im(pathBasilMean);
     
-    %% Scaling to physiological units
+    
+    %% 6. Scaling to physiological units
     % Note different to xASL_quant_SinglePLD since Fabber has T1 in seconds
     % and does not take into account labeling efficiency
     %
@@ -72,7 +87,9 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
     % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
 
-
+    
+    %% 7. Householding
+    xASL_delete(pathBasilInput);
 
 end
 
