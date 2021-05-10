@@ -705,9 +705,9 @@ function x = xASL_init_PrintCheckSettings(x)
         fprintf('\n%s\n',['M0 option selected is "' num2str(x.M0) '"']);
     end
 
-    if length(x.D.ROOT)>70
+    if length(x.D.ROOT)>71
         fprintf('x.D.ROOT            %s ...\n', x.D.ROOT(1:70));
-        fprintf('                    ... %s\n', x.D.ROOT(70:end));
+        fprintf('                    ... %s\n', x.D.ROOT(71:end));
     else
         fprintf('x.D.ROOT            %s\n', x.D.ROOT);
     end
