@@ -28,8 +28,18 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     pathBasilOptions = fullfile(x.SESSIONDIR, 'Basil_ModelOptions.txt');
     dirBasilOutput = fullfile(x.SESSIONDIR, 'BasilOutput');
     
+    %% Delete previous BASIL output
+    xASL_adm_DeleteFileList(x.SESSIONDIR, '^BasilOutput.*$', 1, [0 Inf]);
+    FolderList = xASL_adm_GetFileList(x.SESSIONDIR, '^BasilOutput.*$', 'FPList', [0 Inf], 1);
+    for iFolder=1:numel(FolderList)
+        xASL_delete(FolderList{iFolder}, 1);
+    end
+    fprintf('%s\n', 'Note that any file not found warnings can be ignored, this pertains to the use of symbolic links by BASIL');
+    
+    
     %% Write the PWI as Nifti file for Basil to read as input
-    % FIXME would be good to have a brain mask too at this point
+    % FIXME would be good to have a brain mask at this point
+    PWI(isnan(PWI)) = 0;
     
     xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0);
 
