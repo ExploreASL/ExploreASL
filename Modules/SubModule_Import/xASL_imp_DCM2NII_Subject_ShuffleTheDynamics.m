@@ -131,6 +131,8 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
                     end
                     % Repeat Echo Times
                     resultJSON.EchoTime = repmat(resultJSON.EchoTime,numOfTimePoints,1);
+                    fprintf('FME sequence: repeat echo times...\n');
+                    spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
                 end
             end
         end
