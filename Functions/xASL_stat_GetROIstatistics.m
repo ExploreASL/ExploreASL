@@ -234,7 +234,7 @@ for iSubject=1:x.nSubjects
 		% Subject_session definition
 		DataIm = NaN;
 		SubjSess = (iSubject-1)* nSessions +iSess;
-		if bSessionsMissing == 1
+		if bSessionsMissing
 			x.S.SUBJECTID{SubjSess,1} = x.SUBJECTS{iSubject};
             TotalRows = x.nSubjects;
 		else
