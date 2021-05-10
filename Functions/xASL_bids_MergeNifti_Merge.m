@@ -126,7 +126,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,nameMer
             if ~issorted(cell2mat(EchoTimes))
                 fprintf('Warning: echo times do not increase, resorting will be applied...\n');
                 try
-                    EchoTimes = sortrows(EchoTimes',1)';
+                    EchoTimes = sortrows(EchoTimes,1);
                 catch
                     fprintf('Sorting failed...\n');
                 end
