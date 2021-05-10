@@ -101,7 +101,10 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,nameMer
                 tmpCheckJSON = spm_jsonread(fullfile(jsonPathX, [jsonNameX '.json']));
                 % Check EchoTimes
                 if isfield(tmpCheckJSON,'SeriesDescription')
-                    isHadamardFME = ~isempty(regexp(char(tmpCheckJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
+                    isHadamardFME = ~isempty(regexp(char(tmpCheckJSON.SeriesDescription),...
+                                    '(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once')) ... % ASL format
+                                 || ~isempty(regexp(char(tmpCheckJSON.SeriesDescription),...
+                                    '(ss_TE)\d\d(_TI)\d\d\d\d', 'once'));                            % M0 format
                     if isHadamardFME
                         if isfield(tmpCheckJSON,'EchoTime')
                             EchoTimes{iFileCheck,1} = tmpCheckJSON.EchoTime;
