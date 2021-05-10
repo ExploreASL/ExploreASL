@@ -72,7 +72,7 @@ if bImport
             % 3a. 'Siemens_PCASL_3DGRASE_vascular'
 			case 'Siemens_PCASL_3DGRASE_vascular'
                 
-                xASL_adm_DeleteFileList(DirASL, '^ASL4D_(32|33|34|35)_1.*$', 1);
+                xASL_adm_DeleteFileList(DirASL, '^ASL4D_(32|33|34|35)_00001.*$', 1);
 
 				nii_files = xASL_adm_GetFileList(DirASL, '^.*\.nii$', 'FPList', [], false);
 				xASL_bids_MergeNifti(nii_files, 'ASL');
@@ -81,10 +81,10 @@ if bImport
 			case 'Philips_PCASL_3DGRASE_R5.4_TopUp'
                 DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
                 
-				xASL_Move(fullfile(DirASL, 'M0_601_1.nii'), fullfile(DirASL, 'M0.nii'), 1);
-				xASL_Move(fullfile(DirASL, 'M0_601_1.json'), fullfile(DirASL, 'M0.json'), 1);
-				xASL_Move(fullfile(DirASL, 'M0_701_1.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
-				xASL_Move(fullfile(DirASL, 'M0_701_1.json'), fullfile(DirASL, 'M0PERev.json'), 1);
+				xASL_Move(fullfile(DirASL, 'M0_601_00001.nii'), fullfile(DirASL, 'M0.nii'), 1);
+				xASL_Move(fullfile(DirASL, 'M0_601_00001.json'), fullfile(DirASL, 'M0.json'), 1);
+				xASL_Move(fullfile(DirASL, 'M0_701_00001.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
+				xASL_Move(fullfile(DirASL, 'M0_701_00001.json'), fullfile(DirASL, 'M0PERev.json'), 1);
 				
             % 3c. 'Siemens_PCASL_volunteer'
 			case 'Siemens_PCASL_volunteer'
