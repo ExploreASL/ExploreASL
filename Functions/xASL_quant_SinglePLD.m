@@ -264,6 +264,9 @@ end
 %% 6    Apply quantification
 CBF = PWI.*ScaleImage;
 
+if bUseBasilQuantification
+    CBF = xASL_stat_MeanNan(CBF, 4);
+end
 
 %% 6    Print parameters used
 fprintf('%s\n',' model with parameters:');
