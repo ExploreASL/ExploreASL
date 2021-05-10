@@ -312,6 +312,9 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     error('Invalid index: the requested volume (%d) exceeds the actual number of files (%d)',max(parms.Keep),nNifties);
                 end
             end
+            
+            % Fix NIFTI file names
+            [niiEntries, niiNames] = xASL_io_dcm2nii_FixFormat(niiEntries, niiPaths, niiNames);
 
             % Check if dcm2nii added some contrast information at the end of the FileName
             if length(parms.Keep)==1
@@ -368,21 +371,28 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 					else
 						warning('JSON sidecar missing after dcm2nii conversion');
 					end
-				end
-				
-                % Determine InstanceNumbers from fileNames
-                expression = '_(\d+)$'; % Get last number after last _ symbol
-                [~, fileName, ~] = xASL_fileparts(fTempNii);
-                startIndex = regexp(fileName,expression);
-                niiInstanceNumber = fileName(startIndex+1:end);
+                end
+                
+                % Fallback
+                niiInstanceNumber = [];
                 
                 % Check for files that are formatted like ..._InstanceNumber_eNumber instead of ..._InstanceNumber
                 if isempty(niiInstanceNumber)
-                    expression = '_(\d+)_e.$';
+                    expression = '_(\d+)_e.+$';
+                    [~, fileName, ~] = xASL_fileparts(fTempNii);
+                    startIndex = regexp(fileName,expression);
+                    if ~isempty(startIndex)
+                        niiInstanceNumber = fileName(startIndex+1:end);
+                        niiInstanceNumber = niiInstanceNumber(1:strfind(niiInstanceNumber,'_')-1);
+                    end
+                end
+				
+                % Determine InstanceNumbers from fileNames
+                if isempty(niiInstanceNumber)
+                    expression = '_(\d+)$'; % Get last number after last _ symbol
                     [~, fileName, ~] = xASL_fileparts(fTempNii);
                     startIndex = regexp(fileName,expression);
                     niiInstanceNumber = fileName(startIndex+1:end);
-                    niiInstanceNumber = niiInstanceNumber(1:strfind(niiInstanceNumber,'_')-1);
                 end
 
                 if length(parms.Keep)>1 % add iVolume suffix (if there are multiple)
@@ -469,3 +479,57 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         usedinput = inpath; % could be the original input or the dicom file used
     end
 end
+
+
+%% Fix NIfTI and JSON file names (uneven length etc.)
+function [niiEntriesDest, niiNamesDest] = xASL_io_dcm2nii_FixFormat(niiEntries, niiPaths, niiNames)
+
+    % Fallback
+    instanceNumber = '';
+    echoNumber = '';
+    niiNamesDest = niiNames;
+    niiEntriesDest = niiEntries;
+
+    % Possible expressions
+    expressionA = '_(\d+)_e.$';
+    expressionB = '_(\d+)$';
+
+    % Iterate over files
+    for iFile = 1:size(niiNames,1)
+        
+        % Check possible formats (try B if A does not work)
+        startIndexA = regexp(niiNames{iFile},expressionA);
+        startIndexB = regexp(niiNames{iFile},expressionB);
+        
+        % Try different formats
+        if ~isempty(startIndexA)
+            elements = strsplit(niiNames{iFile}(startIndexA+1:end),'_');
+            instanceNumber = elements{1};
+            echoNumber = elements{2}(2:end);
+        elseif ~isempty(startIndexB)
+            instanceNumber = niiNames{iFile}(startIndexB+1:end);
+        end
+        
+        % Use zero padding
+        instanceNumber = sprintf('%05s', instanceNumber);
+        echoNumber = sprintf('%05s', echoNumber);
+        
+        % Rename file
+        if ~isempty(startIndexA)
+            niiNamesDest{iFile} = [niiNames{iFile}(1:startIndexA) instanceNumber '_e' echoNumber];
+        elseif ~isempty(startIndexB)
+            niiNamesDest{iFile} = [niiNames{iFile}(1:startIndexB) instanceNumber '_e' echoNumber];
+        else
+            niiNamesDest{iFile} = [niiNames{iFile} instanceNumber '_e' echoNumber];
+        end
+        
+        % Actual rename
+        niiEntriesDest{iFile} = fullfile(niiPaths{iFile},[niiNamesDest{iFile} '.nii']);
+        xASL_Move(fullfile(niiPaths{iFile},[niiNames{iFile} '.nii']),fullfile(niiPaths{iFile},[niiNamesDest{iFile} '.nii']));
+        xASL_Move(fullfile(niiPaths{iFile},[niiNames{iFile} '.json']),fullfile(niiPaths{iFile},[niiNamesDest{iFile} '.json']));
+        
+    end
+
+end
+
+
