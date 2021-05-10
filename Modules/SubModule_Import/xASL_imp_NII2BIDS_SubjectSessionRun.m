@@ -337,7 +337,7 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
                     jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat})(:),[size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat})) 1]);
                 end
             else
-                warning('Something seems wrong with the NIFTI dimensions...\n');
+                fprintf('Work in progress: Hadamard encoded data import...\n');
             end
         end
     end

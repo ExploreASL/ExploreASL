@@ -55,6 +55,7 @@ function [x] = xASL_imp_BIDS2Legacy(x)
     %% 3. Overwrite DataParPath
     x.DataParPath = dataPar.x.DataParPath;
     
+    
 end
 
 

@@ -31,6 +31,7 @@ function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
 % 8. Copy files
 % 9. Parse M0
 % 10. Create DataPar.json
+% 11. Clean up
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_BIDS2xASL('pathMyStudy')
@@ -283,6 +284,21 @@ fprintf('Overwriting x.DataParPath...\n');
 
 % Add the path to the dataPar.x struct that we return to the Master script
 dataPar.x.DataParPath = fullfile(pathLegacy, 'dataPar.json');
+
+%% 11. Clean up
+try
+    filesCleanUp = xASL_adm_GetFileList(pathStudy,'^import_.+$');
+    if ~isempty(filesCleanUp)
+        for iFile = 1:size(filesCleanUp,1)
+            sourceCleanUp = filesCleanUp{iFile};
+            [~, fileCleanUp, extCleanUp] = xASL_fileparts(sourceCleanUp);
+            destCleanUp = fullfile(pathStudy, 'derivatives', 'ExploreASL', [fileCleanUp extCleanUp]);
+            xASL_Move(sourceCleanUp,destCleanUp);
+        end
+    end
+catch
+    fprintf('Clean up failed...\n');
+end
 
 end
 
