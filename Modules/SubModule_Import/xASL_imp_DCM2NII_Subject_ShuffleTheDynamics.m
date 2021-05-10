@@ -50,11 +50,11 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         niiTable{iNii,1} = fileName;
         % Open JSON file
         tmpJSON = spm_jsonread(fullfile(rootName,[fileName '.json']));
-		if isfield(tmpJSON,'InstanceNumber')
-			niiTable{iNii,2} = xASL_str2num(tmpJSON.InstanceNumber);
-		else
-			niiTable{iNii,2} = 0;
-		end
+        if isfield(tmpJSON,'InstanceNumber')
+            niiTable{iNii,2} = xASL_str2num(tmpJSON.InstanceNumber);
+        else
+            niiTable{iNii,2} = 0;
+        end
         if isfield(tmpJSON, 'Manufacturer')
             if ~isempty(strfind(tmpJSON.Manufacturer, 'GE'))
                 niiTable{iNii,3} = xASL_bids_determineImageTypeGE(tmpJSON);
