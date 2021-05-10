@@ -1,4 +1,4 @@
-function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x)
+function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
 %xASL_quant_SinglePLD % Perform a multi-step quantification
 % FORMAT: [ScaleImage[, CBF]] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x)
 %
@@ -7,6 +7,9 @@ function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x)
 %   M0_im           - M0 image (can be a single number or image matrix) (REQUIRED)
 %   imSliceNumber   - image matrix showing slice number in current ASL space (REQUIRED for 2D multi-slice)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
+%   bUseBasilQuantification - boolean, true for using FSL BASIL for
+%                             quantification, false for using ExploreASL's
+%                             own quantification (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 % ScaleImage        - image matrix containing net/effective quantification scale factor
@@ -48,6 +51,10 @@ if  xASL_stat_SumNan(M0_im(:))==0
     error('Empty M0 image, something went wrong in M0 processing');
 end
 
+if nargin<5 || isempty(bUseBasilQuantification)
+    bUseBasilQuantification = false;
+end
+
 %% Single PLD part, remove for multi-PLD
 x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
 if numel(x.Q.Initial_PLD)>1
@@ -78,7 +85,9 @@ else
         case '3d'
             fprintf('%s\n','3D sequence, not accounting for SliceReadoutTime (homogeneous PLD for complete volume)');
             x.Q.SliceReadoutTime = 0;
-            if ~x.bUseBasilQuantification
+            if bUseBasilQuantification
+                x.Q.BasilSliceReadoutTime = 0;
+            else
                 ScaleImage = ScaleImage.*x.Q.Initial_PLD;
             end
 
@@ -101,11 +110,9 @@ else
 			ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD            
             
             % BASIL doesn't use a vector but a difference between slices
-            if x.bUseBasilQuantification
-				if max(SliceReadoutTime)>0 && strcmpi(x.readout_dim,'2D') && length(SliceReadoutTime) > 1
+            if bUseBasilQuantification
+				if max(SliceReadoutTime)>0 && length(SliceReadoutTime) > 1
 					x.Q.BasilSliceReadoutTime = SliceReadoutTime(2)-SliceReadoutTime(1);
-				else
-					x.Q.BasilSliceReadoutTime = 0;
 				end
             end
             
@@ -118,7 +125,7 @@ else
     end
 
 
-    if x.bUseBasilQuantification
+    if bUseBasilQuantification
         PWI = xASL_quant_Basil(PWI, x);
     else
         %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
