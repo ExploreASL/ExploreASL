@@ -288,7 +288,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-[~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x); % also runs BASIL, but only in native space!
+[~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, bUseBasilQuantification); % also runs BASIL, but only in native space!
 
 if x.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
