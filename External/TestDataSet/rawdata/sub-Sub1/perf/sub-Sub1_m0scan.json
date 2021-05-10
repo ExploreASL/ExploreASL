@@ -14,7 +14,4 @@
 "FlipAngle":90,
 "RepetitionTimePreparation":10,
 "AcquisitionVoxelSize":[3.4,3.4,4.5],
-"readout_dim":"2D",
-"Vendor":"Philips",
-"bReproTesting":0,
 "IntendedFor":"perf/sub-Sub1_asl.nii.gz"}

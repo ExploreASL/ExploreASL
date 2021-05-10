@@ -10,7 +10,8 @@
 "MRAcquisitionType":"3D",
 "EchoTime":0.003086,
 "FlipAngle":9,
+"SliceEncodingDirection":"i",
 "InstitutionName":"De-Identified",
 "InstitutionalDepartmentName":"De-Identified",
 "RepetitionTime":0.0067654,
-"CoilString":"SENSE-Head-8"}
+"ReceiveCoilName":"SENSE-Head-8"}

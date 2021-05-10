@@ -11,7 +11,8 @@
 "EchoTime":0.278876,
 "InversionTime":1.65,
 "FlipAngle":90,
+"SliceEncodingDirection":"i",
 "InstitutionName":"De-Identified",
 "InstitutionalDepartmentName":"De-Identified",
 "RepetitionTime":4.8,
-"CoilString":"SENSE-Head-8"}
+"ReceiveCoilName":"SENSE-Head-8"}
