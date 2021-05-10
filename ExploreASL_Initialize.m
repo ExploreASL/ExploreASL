@@ -705,8 +705,12 @@ function x = xASL_init_PrintCheckSettings(x)
         fprintf('\n%s\n',['M0 option selected is "' num2str(x.M0) '"']);
     end
 
-    if length(x.D.ROOT)>70,         fprintf('x.D.ROOT            ...%s\n', x.D.ROOT(end-70:end));
-    else,                           fprintf('x.D.ROOT            %s\n', x.D.ROOT); end
+    if length(x.D.ROOT)>70
+        fprintf('x.D.ROOT            %s ...\n', x.D.ROOT(1:70));
+        fprintf('                    ... %s\n', x.D.ROOT(70:end));
+    else
+        fprintf('x.D.ROOT            %s\n', x.D.ROOT);
+    end
     fprintf('x.DELETETEMP        %s\n',[num2str(x.DELETETEMP) ' (delete temporary files)']);
     fprintf('x.Quality           %s\n',[num2str(x.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
 
