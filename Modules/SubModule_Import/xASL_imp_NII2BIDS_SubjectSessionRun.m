@@ -202,6 +202,14 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
             jsonLocal.PulseSequenceType = '3D_GRASE';
         end
     end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % FME sequence check
+    if isfield(jsonDicom,'SeriesDescription')
+        isHadamardFME = ~isempty(regexp(char(jsonDicom.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
+    else
+        isHadamardFME = false;
+    end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Overwrite differing fields with those from the Phoenix protocol, but report all differences
@@ -220,7 +228,9 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
                 end
             end
             % Prioritize the Phoenix field values in the general case
-            jsonLocal.(fn{1}) = jsonDicom.PhoenixAnalyzed.(fn{1});
+            if ~(strcmp(fn{1},'EchoTime') && isHadamardFME)
+                jsonLocal.(fn{1}) = jsonDicom.PhoenixAnalyzed.(fn{1});
+            end
         end
         % Report if certain fields were different as a warning
         if ~isempty(strDifferentFields)
