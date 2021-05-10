@@ -487,9 +487,15 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile)
     end
     
     if ~exist(x.D.ROOT, 'dir')
-        warning([x.D.ROOT ' didnt exist as folder, trying path of DataPar file']);
-        x.D.ROOT = pathstr;
-        x.ROOT = pathstr;
+        % Check if x.D.ROOT was defined as a relative path
+        if exist(fullfile(pathstr,x.D.ROOT), 'dir')
+            x.D.ROOT = fullfile(pathstr,x.D.ROOT);
+            x.ROOT = x.D.ROOT;
+        else
+            warning([x.D.ROOT ' didnt exist as folder, trying path of DataPar file']);
+            x.D.ROOT = pathstr;
+            x.ROOT = pathstr;
+        end
     end
 
 end

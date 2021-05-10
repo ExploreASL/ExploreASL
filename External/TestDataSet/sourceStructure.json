@@ -1,0 +1,5 @@
+{"folderHierarchy":["^(.)+$","^(ASL|T1w|M0|T2|FLAIR)$"],
+"tokenOrdering":[1,0,2],
+"tokenSessionAliases":["",""],
+"tokenScanAliases":["^ASL$","ASL4D","^T1w$","T1w","^M0$","M0","^T2$","T2w","^FLAIR$","FLAIR"],
+"bMatchDirectories":true}

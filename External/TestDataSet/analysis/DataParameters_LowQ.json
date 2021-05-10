@@ -1,7 +1,0 @@
-{
-	"x": [{
-			"name": "ExampleDataSet",
-			"subject_regexp": "^Sub-\\d{3}$",
-			"Quality": 0
-		}]
-}
