@@ -210,6 +210,15 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
     else
         isHadamardFME = false;
     end
+    if isHadamardFME
+        if isfield(jsonLocal,'EchoTime') && isfield(jsonLocal,'PostLabelingDelay')
+            if length(jsonLocal.EchoTime)~=length(jsonLocal.PostLabelingDelay)
+                % Repeat PLD according to EchoTime
+                nRepeats = int32(length(jsonLocal.EchoTime)/length(jsonLocal.PostLabelingDelay));
+                jsonLocal.PostLabelingDelay = repmat(jsonLocal.PostLabelingDelay,nRepeats,1);
+            end
+        end
+    end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Overwrite differing fields with those from the Phoenix protocol, but report all differences

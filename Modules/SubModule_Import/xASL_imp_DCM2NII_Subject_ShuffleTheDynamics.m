@@ -125,7 +125,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
                     % Check image
                     if exist(nii_files{1} ,'file')
                         imASL = xASL_io_Nifti2Im(nii_files{1});
-                        numOfTimePoints = size(imASL,4)/length(resultJSON.EchoTime);
+                        numOfTimePoints = int32(size(imASL,4)/length(resultJSON.EchoTime));
                     else
                         numOfTimePoints = 1;
                     end
