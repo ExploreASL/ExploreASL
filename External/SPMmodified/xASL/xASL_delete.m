@@ -34,7 +34,7 @@ elseif iscell(InputPath) && ischar(InputPath{1}) && xASL_exist(InputPath{1})
 end
     
 
-if  xASL_exist(InputPath,'file')
+if xASL_exist(InputPath, 'file') || exist(InputPath, 'dir')
 	
 	[Fpath, Ffile, Fext] = xASL_fileparts(InputPath);
 	
