@@ -17,7 +17,7 @@ function pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL, JP
+% Copyright 2015-2021 ExploreASL
 
 
     %% xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
