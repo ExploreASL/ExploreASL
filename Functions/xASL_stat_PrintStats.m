@@ -114,7 +114,7 @@ HasSingleSessionOnly = sum(cellfun(@(y) ~isempty(regexpi(y,['^' x.S.output_ID]))
 if HasSingleSessionOnly
     nSessions = 1;
 else
-    [nSessions, ~] = xASL_adm_GetnSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
+    nSessions = xASL_adm_GetPopulationSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
 end
 
 

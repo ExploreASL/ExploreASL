@@ -1,6 +1,6 @@
 function [nSessions, bSessionsMissing] = xASL_adm_GetPopulationSessions(x)
-%xASL_adm_GetnSessions(x) obtain number of Sessions by determining amount of input files present in the Population folder
-% FORMAT: [nSessions, bSessionsMissing] = xASL_adm_GetnSessions(x)
+% xASL_adm_GetPopulationSessions(x) obtain number of Sessions by determining amount of input files present in the Population folder
+% FORMAT: [nSessions, bSessionsMissing] = xASL_adm_GetPopulationSessions(x)
 %
 % INPUT:
 %   x                   - struct containing statistical pipeline environment parameters (REQUIRED)
@@ -10,9 +10,15 @@ function [nSessions, bSessionsMissing] = xASL_adm_GetPopulationSessions(x)
 %   bSessionsMissing    - Boolean to show if no sessions can be found in the Population folder
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function looks for the maximum amount of sessions that
-% are present in the dataset.
+% are present in selected processed files present in the Population folder.
+%
+%   1. Determine which files to look for in the Population folder
+%   2. Obtain list of session files in the Population folder
+%   3. Determine unique amount of session numbers present in list
+%   4. Set nSessions as highest unique session number 
+%   5. Check and provide warning of number of sesssions differs per subject
 
-% Determine which files to look in the Population folder
+%% 1. Administration
 currentSubjectRegExp = x.subject_regexp;
 if strcmp(currentSubjectRegExp(1), '^')
     currentSubjectRegExp = currentSubjectRegExp(2:end);
@@ -20,9 +26,10 @@ end
 if strcmp(currentSubjectRegExp(end), '$')
     currentSubjectRegExp = currentSubjectRegExp(1:end-1);
 end
-% Look for processed files from which to determine the amount of sessions present
+% 2. Look for processed files from which to determine the amount of sessions present
 SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentSubjectRegExp '_ASL_\d*\.nii$'], 'FPList', [0 Inf]);
 
+%% 3. Obtain nSessions
 if isempty(SessionList) % If no files found, search for subject files instead of session files
     if isempty(xASL_adm_GetFileList(x.D.PopDir,'^qCBF.*\.nii', 'FPList', [0 Inf]))
         fprintf('%s\n','No session or subject files found');
@@ -39,15 +46,16 @@ else % If files found, continue with defining sessions from SessionList
     end
     
     UniqueSessions = unique(cell2mat(NewList),'rows'); % determine unique session numbers
-    nSessions = size(UniqueSessions,1); % define nSessions as maximum amount of unique session numbers
+    % 4. define nSessions as highest unique session number
+    nSessions = size(UniqueSessions,1); 
     bSessionsMissing = 0;
     NewList = cellstr(NewList);
-    for oSessions = 1:nSessions
-        CountSessionNumbers(oSessions)= sum(~cellfun('isempty',strfind(NewList,num2str(oSessions)))); % Counts amount of individual session numbers
+    for oSession = 1:nSessions
+        CountSessionNumbers(oSession)= sum(~cellfun('isempty',strfind(NewList,num2str(oSession)))); % Counts amount of individual session numbers
     end
     
+    % 5. Check and provide warning of number of sesssions differs per subject
     CompareSessions = ones(1,size(CountSessionNumbers,2)) .* nSessions; % create an array to check differences in sessions per subject with maximum amount of sessions
-    
     if ~isequal(CountSessionNumbers,CompareSessions) % Check if amount of sessions is similar for each subject and provide warning if not
         warning('Amount of Sessions differs between Subjects');
     end

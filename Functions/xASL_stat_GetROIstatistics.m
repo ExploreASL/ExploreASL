@@ -177,7 +177,7 @@ end
 
 %% Define number of sessions to use
 
-[nSessions, bSessionsMissing] = xASL_adm_GetnSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
+[nSessions, bSessionsMissing] = xASL_adm_GetPopulationSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
 
 %% Determine whether group mask exists
 if x.S.InputNativeSpace
