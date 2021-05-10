@@ -112,7 +112,30 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         elseif  ~isempty(strfind(scan_name,'M0'))
             [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0');
         end
-    end    
+    end
+    
+    %% FME (Hadamard) Check
+    if numel(nii_files)>=1
+        [resultPath, resultFile] = xASL_fileparts(nii_files{1});
+        if exist(fullfile(resultPath, [resultFile '.json']), 'file')
+            resultJSON = spm_jsonread(fullfile(resultPath, [resultFile '.json']));
+            if isfield(resultJSON,'SeriesDescription')
+                isHadamardFME = ~isempty(regexp(char(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
+                if isHadamardFME
+                    % Check image
+                    if exist(nii_files{1} ,'file')
+                        imASL = xASL_io_Nifti2Im(nii_files{1});
+                        numOfTimePoints = size(imASL,4)/length(resultJSON.EchoTime);
+                    else
+                        numOfTimePoints = 1;
+                    end
+                    % Repeat Echo Times
+                    resultJSON.EchoTime = repmat(resultJSON.EchoTime,numOfTimePoints,1);
+                end
+            end
+        end
+    end
+    
     
     %% 6. Extract relevant parameters from nifti header and append to summary file
     summary_line = xASL_imp_AppendNiftiParameters(nii_files);
