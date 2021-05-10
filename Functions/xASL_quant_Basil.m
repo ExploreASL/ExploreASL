@@ -31,7 +31,7 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     %% Write the PWI as Nifti file for Basil to read as input
     % FIXME would be good to have a brain mask too at this point
     
-    xASL_io_SaveNifti(x.P.Path_PWI4D, pathBasilInput, PWI, [], 0);
+    xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0);
 
 
     %% Create option_file that contains options which are passed to Fabber
@@ -189,7 +189,7 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMu
             fprintf('Basil: Using SNR of %f to set noise std dev\n', x.Q.BasilSNR);
             % Estimate signal magntiude FIXME brain mask assume half of voxels
             mag_max = max(PWI, [], 4);
-            brain_mag = 2*mean(mag_max, 'all');
+            brain_mag = 2*xASL_stat_MeanNan(mag_max(:));
             fprintf('Basil: Mean maximum signal across brain: %f\n', brain_mag);
             % This will correspond to whole brain CBF (roughly) - about 0.5 of GM
             x.Q.BasilNoiseSD = sqrt(brain_mag * 2 / x.Q.BasilSNR);
