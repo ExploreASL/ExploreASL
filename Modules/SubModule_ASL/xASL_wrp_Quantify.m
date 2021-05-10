@@ -1,4 +1,4 @@
-function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
+function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath, bUseBasilQuantification)
 %xASL_wrp_Quantify Submodule of ExploreASL ASL Module, that performs quantfication
 %
 % FORMAT: xASL_wrp_Quantify(x)
@@ -9,6 +9,9 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 %   OutputPath          - path to NifTI to create, with the quantified CBF map
 %   M0Path              - path to NifTI containing M0 image (OPTIONAL, default = x.Pop_Path_M0)
 %   SliceGradientPath   - path to Slice gradient NIfTI (OPTIONAL, default = x.P.Pop_Path_SliceGradient_extrapolated)
+%   bUseBasilQuantification - boolean, true for using FSL BASIL for
+%                             quantification, false for using ExploreASL's
+%                             own quantification (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT: n/a
 % OUTPUT FILES: NIfTI containing quantified CBF map in native or standard space (depending on input NIfTI),
@@ -59,6 +62,9 @@ end
 if nargin<5 || isempty(SliceGradientPath)
     SliceGradientPath = x.P.Pop_Path_SliceGradient_extrapolated;
 end
+if nargin<6 || isempty(bUseBasilQuantification)
+    bUseBasilQuantification = false;
+end
 if ~isfield(x,'Q')
     x.Q = struct;
 end
@@ -67,6 +73,12 @@ if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
 end
 if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
     x.Q.T2 = 180; % default for 3T (ref Jean Chen, MRM 2009)
+end
+
+if ~xASL_exist(PWI_Path, 'file')
+    warning('Skipped xASL_wrp_Quantify: files missing, please rerun step 4: xASL_wrp_ResampleASL');
+    fprintf('%s\n', ['Missing: ' PWI_Path]);
+    return;
 end
 
 %% ------------------------------------------------------------------------------------------------
@@ -296,7 +308,7 @@ end
 fprintf('%s\n','Saving PWI & CBF niftis');
 
 % Unmasked CBF
-if isfield(x, 'bUseBasilQuantification') && x.bUseBasilQuantification
+if bUseBasilQuantification
     [Fpath, Ffile, Fext] = xASL_fileparts(OutputPath);
     OutputPath = fullfile(Fpath, [Ffile '_Basil' Fext]);
 end

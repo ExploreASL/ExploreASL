@@ -418,40 +418,32 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     fprintf('%s\n','Quantifying ASL:   ');
     if isfield(x, 'bUseBasilQuantification') && x.bUseBasilQuantification
         % Quantification in native space:
-        if ~xASL_exist(x.P.Path_PWI4D,'file')
-            warning('Skipped BASIL native space quantification: files missing, please rerun step 4: xASL_wrp_ResampleASL');
+        nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
+        
+        if nVolumes>1
+            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient, 1);
         else
-            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
+            xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient, 1);
         end        
     end
     
     % Quantification in standard space:
-    if ~xASL_exist(x.P.Pop_Path_PWI,'file')
-        warning(['Skipped standard space quantification: ' x.P.Pop_Path_PWI ' missing']);
-    else
-        xASL_wrp_Quantify(x);
-    end
+    xASL_wrp_Quantify(x);
     % Quantification in native space:
-    if ~xASL_exist(x.P.Path_PWI,'file')
-        warning('Skipped native space quantification: files missing');
-    else
-        xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
-    end
+    xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
 
 	% allow 4D quantification as well
 	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D==1
-		if ~xASL_exist(x.P.Path_PWI4D,'file')
-			fprintf('%s\n','Skipping, native space PWI4D missing');
-		else
-			fprintf('%s\n','Quantifying ASL timeseries in native space');
-			xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
-		end
-		if ~xASL_exist(x.P.Pop_Path_PWI4D,'file')
-			fprintf('%s\n','Skipping, standard space PWI4D missing');
-		else
-			fprintf('%s\n','Quantifying ASL timeseries in standard space');
-			xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D, x.P.Pop_Path_qCBF4D);
-		end
+        nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
+        if nVolumes==1
+            warning('x.Q.SaveCBF4D was requested but only one volume exists, skipping');
+        else
+            fprintf('%s\n','Quantifying ASL timeseries in native space');
+            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
+
+            fprintf('%s\n','Quantifying ASL timeseries in standard space');
+            xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D, x.P.Pop_Path_qCBF4D);
+        end
 	end
 	
 	if x.bPVCNativeSpace
