@@ -37,9 +37,10 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     dirBasilOutput = fullfile(x.SESSIONDIR, 'BasilOutput');
     
     
+    
     %% 2. Delete previous BASIL output
-    xASL_adm_DeleteFileList(x.SESSIONDIR, '^BasilOutput.*$', 1, [0 Inf]);
-    FolderList = xASL_adm_GetFileList(x.SESSIONDIR, '^BasilOutput.*$', 'FPList', [0 Inf], 1);
+    xASL_adm_DeleteFileList(x.SESSIONDIR, '(?i)^basilOutput.*$', 1, [0 Inf]);
+    FolderList = xASL_adm_GetFileList(x.SESSIONDIR, '(?i)^basilOutput.*$', 'FPList', [0 Inf], 1);
     for iFolder=1:numel(FolderList)
         xASL_delete(FolderList{iFolder}, 1);
     end
@@ -47,7 +48,7 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     
     xASL_delete(pathBasilOptions);
     xASL_delete(pathBasilInput);
-    
+    xASL_adm_DeleteFileList(x.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]); % remove residual BASIL-related files
     
     %% 3. Write the PWI as Nifti file for Basil to read as input
     % FIXME would be good to have a brain mask at this point
