@@ -107,14 +107,17 @@ else
 			imSliceNumber = round(imSliceNumber);
 			imSliceNumber(imSliceNumber<1) = 1;
 			imSliceNumber(imSliceNumber>length(SliceReadoutTime)) = length(SliceReadoutTime);
-			ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD            
             
             % BASIL doesn't use a vector but a difference between slices
-            if bUseBasilQuantification
+			if bUseBasilQuantification
 				if max(SliceReadoutTime)>0 && length(SliceReadoutTime) > 1
 					x.Q.BasilSliceReadoutTime = SliceReadoutTime(2)-SliceReadoutTime(1);
+				else
+					x.Q.BasilSliceReadoutTime = 0;
 				end
-            end
+			else
+				ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD            
+			end
             
         otherwise
             error('Wrong x.readout_dim value!');
