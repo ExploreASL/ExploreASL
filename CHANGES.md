@@ -1,3 +1,109 @@
+# ExploreASL v1.6.0
+
+----
+## Versions included software
+Versions included & used third-party tools (see /External/README_SPM.txt):
+
+SPM12 7219 
+CAT12 r1615 
+LST 2.0.15 
+
+----
+## Feature improvements (still backward compatible)
+* #62, #266, #449: JSON i/o unify and use spm_jsonread and spm_jsonwrite for all operations
+* #349: Improve screenprint of the current subjects/sessions/modules by xASL_Iteration
+* #384: Add method to export image matrices as structured points in VTK format
+* #523: Update ExploreASL_ImportConfig to work with JSONs and add alert for users
+* #538: Function to user-replace label values in atlas NIfTI, written for the CICERO study
+* #559: Add option x.MakeNIfTI4DICOM to create CBF optimized for DICOM creation/PACS export
+
+----
+## Work in progress
+
+### BASIL
+* #20: Data pre-processing prepared for BASIL
+* #391: Add single-PLD model for BASIL
+
+### ASL-BIDS
+* #290,#483,#484: Initial version of the ASL-BIDS import workflow
+* #353: Correct conversion BIDS->Legacy for M0 with reversed PE direction
+* #394,#514,#545: Improve modularity of the ASL-BIDS import module
+* #411: Delete temporary folders in DICOM->BIDS conversion
+* #421: Use ImageType DICOM field to detect scan order in GE in DICOM->BIDS import
+* #426: Reading PLD from DICOM for GE in import to BIDS
+* #479: ASL-BIDS import for Hadamard encoded FME sequences
+
+### DRO and QASPER
+* #361,#443: Import and import test of DRO
+* #467: Improve script to generate ASL-BIDS version of ASL DRO v2.2.0
+
+### Compilation/stand-alone version
+* #
+
+----
+
+## Bug Fixes
+
+* #184: Skip PVC in Population statistics, when this does not make sense for a given ROI
+* #262: Improve GZIP on windows
+* #341: Reduce extensive usage of ExploreASL CLI progress tracker
+* #368: Fix problem with writing trailing zeros in real numbers in spm_jsonwrite
+* #387: Remove graphical waitbar interface from xASL_im_ResampleLinearFair
+* #415: xASL_Copy: Allow recursive copying of directories
+* #418: Verifies the SliceTiming parameter if timing difference is consistent between slices
+* #424,#454: Remove `string` and `contains` functions to ensure Matlab compatibility for R2016
+* #430: Fix xASL_adm_ReplaceSymbols crash when trying to replace sub-strings in PhoenixProtocol field
+* #433,#474,#542: Splitting of ASL and M0 - fix on rerun, split metadata, backup aslcontext.tsv
+* #451: Clean unused code and cleaned the development directory
+* #466: Warning if the equal sign is used in JSON files instead of colon
+* #475: Fix error with studies that have a special character in their name
+* #477: Change vascular territory atlases file extensions to .nii.gz
+* #496: Fixed session numbers in population module
+* #502: Fix smoothing of 4D NIfTIs
+* #505: Allow Token Aliases in import to be row vectors in import
+* #518: ExploreASL logo and verbose overview shown only once in a single pipeline run
+* #520: Stop import workflow from creating Population folder in root directory
+* #543: Minor fix of xASL_num2str behavior
+* #563: Minor design fix for ExploreASL dataset initialization
+
+----
+
+## Documentation
+* #403,#423,#457: Improved inline comments and headers
+* #452: Provide descriptions of available atlas options
+* #463: Remove remaining markdown file to a separate Documentation repository
+* #486,#489: Introduce document templates for GitHub QC Workflow
+* #499: Make heading in documentation work in dark mode as well
+* #515: Added tutorials to documentation
+* #536: Create a first version of the QC walkthrough document in markdown
+
+## Testing
+* #156: Make internal error messages more specific by providing subject information
+* #352: Improve parsing of errors and warnings from log files
+* #395,#416: Improve testing of BIDS import
+* #517: Improve unit testing scripts
+* #529: TestDataSet is in BIDS derivatives format
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ExploreASL v1.5.1
 
 ----
