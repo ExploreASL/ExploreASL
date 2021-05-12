@@ -340,6 +340,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
     
     % Threshold for the difference of numeric values
     threshNumeric = 1e-5;
+    threshNumericArray = 1e-2;
 
     % Iterate over fields
     for iField=1:numel(fieldList)
@@ -357,7 +358,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
                 else
                     % Compare arrays (check sum of absolute differences)
                     sumDiff = sum(abs(fieldContentA-fieldContentB));
-                    if sumDiff>threshNumeric
+                    if sumDiff>threshNumericArray
                         strError = sprintf('%s\t\t\t\tDifferent value: %s (check arrays)\n', strError,curFieldName);
                         % Set max number of elements to display
                         maxNumElements = 10;
