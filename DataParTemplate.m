@@ -108,7 +108,7 @@ function x = DataParTemplate(x)
 %                         - 2 = labeling efficiency factor 0.83 (e.g. Philips 2D EPI & Siemens 3D GRASE)
 %                         - 4 = labeling efficiency factor 0.81 (e.g. Philips 3D GRASE)
 %                         - 5 = labeling efficiency factor 0.75 (e.g. GE 3D spiral)
-% x.Q.BackgroundSuppressionPulseTime - Vector containing timing, in seconds, 
+% x.Q.BackgroundSuppressionPulseTime - Vector containing timing, in ms, 
 %                                      of the background suppression pulses
 %                                      before the start of the readout (per
 %                                      BIDS) (REQUIRED when
