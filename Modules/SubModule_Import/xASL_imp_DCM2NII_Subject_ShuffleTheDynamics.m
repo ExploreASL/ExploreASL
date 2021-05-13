@@ -43,19 +43,26 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     niiTable = cell(size(nii_files,2),size(nii_files,1)*4);
     
     %% 2. Fill NIfTI Table
-    
+    % The idea is to sort the NIfTIs based on the InstanceNumbers, to make sure that we have the same
+    % ASL context on every OS. Before doing this part, there were some differences between Linux & Windows.
+
+    % Iterate over NIfTI files
     for iNii = 1:size(niiTable,1)
+    	% Get current NIfTI path
         filePath = nii_files{1,iNii};
         [rootName, fileName] = xASL_fileparts(filePath);
         niiTable{iNii,1} = fileName;
-        % Open JSON file
+        % Open corresponding JSON file
         tmpJSON = spm_jsonread(fullfile(rootName,[fileName '.json']));
+        % Try to extract the InstanceNumber field from the JSON file
         if isfield(tmpJSON,'InstanceNumber')
             niiTable{iNii,2} = xASL_str2num(tmpJSON.InstanceNumber);
         else
             niiTable{iNii,2} = 0;
         end
+        % Check the Manufacturer/Vendor
         if isfield(tmpJSON, 'Manufacturer')
+        	% If we have GE scans, we use the xASL_bids_determineImageTypeGE script to determine the ImageType
             if ~isempty(strfind(tmpJSON.Manufacturer, 'GE'))
                 niiTable{iNii,3} = xASL_bids_determineImageTypeGE(tmpJSON);
                 if isempty(niiTable{iNii,3})
@@ -67,6 +74,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         else
             niiTable{iNii,3} = NaN;
         end
+        % Add the corresponding file path to the Table
         niiTable{iNii,4} = filePath;
     end
     
@@ -77,12 +85,16 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     
     %% 3. Get ASL context if possible
     
+    % Check if we can sort by validating that we have InstanceNumbers
     if sum(cellfun(@isnumeric, niiTable(:,3)))==0 
+    	% Sort table based on InstanceNumbers
         niiTable = sortrows(niiTable,2);
         ASLContext = '';
+        % Build the ASL context string
         for iImageType = 1:length(niiTable(:,3)')
             ASLContext = [ASLContext ',' niiTable{iImageType,3}];
         end
+        % Remove one comma
         ASLContext = ASLContext(2:end);
         fprintf('ASL context: %s\n', ASLContext);
         % Sort nii_files based on ASLContext/InstanceNumbers
@@ -92,6 +104,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     
     %% 4. Only try shuffling if you dont know the ASL context already
     
+    % Check if it was not possible to determine the ASL context before
     if isempty(ASLContext)
         [~,~,scanExtension] = xASL_fileparts(scanpath);
         if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
@@ -120,21 +133,28 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     %% FME (Hadamard) Check
     if numel(nii_files)>=1
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
+        % Check if we have the corresponding JSON file
         if exist(fullfile(resultPath, [resultFile '.json']), 'file')
+        	% Load the JSON
             resultJSON = spm_jsonread(fullfile(resultPath, [resultFile '.json']));
+            % Check if we have the SeriesDescription field
             if isfield(resultJSON,'SeriesDescription')
+            	% Determine if we have a Hadamard encoded ASL scan
                 isHadamardFME = ~isempty(regexp(char(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
                 if isHadamardFME
                     % Check image
                     if exist(nii_files{1} ,'file')
+                    	% Determine the number of time points within each NIfTI
                         imASL = xASL_io_Nifti2Im(nii_files{1});
                         numOfTimePoints = int32(size(imASL,4)/length(resultJSON.EchoTime));
                     else
+                    	% Fallback (something went wrong)
                         numOfTimePoints = 1;
                     end
                     % Repeat Echo Times
                     resultJSON.EchoTime = repmat(resultJSON.EchoTime,numOfTimePoints,1);
                     fprintf('FME sequence: repeat echo times...\n');
+                    % Save the JSON with the updated echo times
                     spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
                 end
             end
