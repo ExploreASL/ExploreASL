@@ -23,6 +23,14 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
     
     % Check ImageType field
     if isfield(jsonPar, 'ImageType')
+        if iscell(jsonPar.ImageType) && length(jsonPar.ImageType)>1
+            warning('jsonPar.ImageType had a wrong format of multiple cells');
+        elseif iscell(jsonPar.ImageType) && length(jsonPar.ImageType)==0
+            warning('jsonPar.ImageType was an empty cell');
+        elseif iscell(jsonPar.ImageType)
+            jsonPar.ImageType = jsonPar.ImageType{1};
+        end
+            
         if ~iscell(jsonPar.ImageType)
             jsonPar.ImageType = strsplit(jsonPar.ImageType,'\')';
         end
@@ -55,4 +63,3 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
     end
 
 end
-
