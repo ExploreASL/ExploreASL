@@ -16,7 +16,7 @@ end
 
 %% Preparation for Henk
 if strcmp(username,'henk')
-    pathExploreASL = '/Users/henk/ExploreASL/ExploreASL';
+    pathExploreASL = '/Users/henk/ExploreASL/ExploreASL_TestIt/ExploreASL';
     pathTest = '/Users/henk/ExploreASL/ASL/TestBIDS';
     cmdCloneFlavors = 'git clone https://github.com/ExploreASL/FlavorDatabase.git';
 end
