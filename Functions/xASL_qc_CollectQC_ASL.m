@@ -52,7 +52,11 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
     % The determinant of the current matrix and old matrix should be the same,
     % otherwise this is suspicious of a left-right flip.
     PathOrientationResults = fullfile(x.dir.SESSIONDIR,'xASL_qc_PrintOrientation_RigidRegASL.tsv');
-    ASL.LR_flip_YesNo = uint8(xASL_im_DetermineFlip(x, iSubject, PathOrientationResults));
+    ASL.LR_flip_YesNo = uint8(xASL_im_DetermineFlip(PathOrientationResults));
+
+    if ASL.LR_flip_YesNo>0
+        fprintf(['LR flip found for ' SubjectID '_' SessionID]);
+    end
 
     %% ASL motion
     PathMoCo = fullfile(x.D.MotionDir,['motion_correction_NDV_' ASL_ID '.mat']);
