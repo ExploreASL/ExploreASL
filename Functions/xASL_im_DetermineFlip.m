@@ -1,9 +1,9 @@
-function [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct)
+function [LR_flip_YesNo] = xASL_im_DetermineFlip(x, iSubject, PathOrientationResults)
 %xASL_im_DetermineFlip Check determinants, should be the same
 % before & after registration, otherwise a left-right flip is applied
 % This is not visible, but detrimental for image analysis/stats
 %
-% FORMAT:       [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct)
+% FORMAT:       [LR_flip_YesNo] = xASL_im_DetermineFlip(x, iS, PathOrientationResults)
 % 
 % INPUT:        x                      - ExploreASL x structure (STRUCT, REQUIRED)
 %               iS                     - Subject number (INTEGER, REQUIRED)
@@ -22,7 +22,16 @@ function [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    QCstruct.LR_flip_YesNo = NaN; % default
+if nargin<3 || isempty(PathOrientationResults)
+    error('PathOrientationResults missing');
+end
+if nargin<2 || isempty(iSubject)
+    bSingleNifti = false;
+else
+    bSingleNifti = true;
+end
+
+    LR_flip_YesNo = NaN; % default
 
     if exist(PathOrientationResults,'file')
         [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathOrientationResults);
@@ -41,14 +50,21 @@ function [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct
         warning(['File missing: ' PathOrientationResults]);
         return;
     end
-
-    Det_Ori = xASL_str2num(CellTSV{iRow,13});
-    Det_New = xASL_str2num(CellTSV{iRow,26});
-    QCstruct.LR_flip_YesNo = uint8(~min((Det_Ori.*Det_New)>0));
-
-    if QCstruct.LR_flip_YesNo>0
-        fprintf(['LR flip found for ' x.SUBJECTS{iS}]);
-        QCstruct.LR_flip_YesNo = 1;
+    
+    DeterminantOri = xASL_str2num(CellTSV(firstRow:end, columnDetOri));
+    DeterminantNew = xASL_str2num(CellTSV(firstRow:end, columnDetNew));
+    
+    if bSingleNifti
+        % standard ExploreASL behavior is to do this per subject in
+        % xASL_wrp_VisualQC* -> xASL_qc_CollectQC*        
+        LR_flip_YesNo = max((DeterminantOri.*DeterminantNew)<0);
+        
+        if LR_flip_YesNo>0
+            fprintf(['LR flip found for ' x.SUBJECTS{iSubject}]);
+            LR_flip_YesNo = 1;
+        end        
+    else
+        LR_flip_YesNo = find((DeterminantOri.*DeterminantNew)<0);
     end
     
 end
