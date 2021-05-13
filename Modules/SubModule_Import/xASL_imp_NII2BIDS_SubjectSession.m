@@ -4,14 +4,14 @@ function [imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel] 
 % FORMAT: [imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel] = xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel, kk)
 % 
 % INPUT:
-%   imPar          - imPar struct
-%   bidsPar        - bidsPar struct
-%   studyPar       - studyPar struct
-%   iSubject       - Subject ID
-%   fSes           - f sessions
-%   listSubjects   - list of subjects
-%   subjectLabel   - subject label
-%   kk             - Session number
+%   imPar          - imPar struct (STRUCT, REQUIRED)
+%   bidsPar        - bidsPar struct (STRUCT, REQUIRED)
+%   studyPar       - studyPar struct (STRUCT, REQUIRED)
+%   iSubject       - Subject ID (INTEGER, REQUIRED)
+%   fSes           - f sessions (CELL ARRAY, REQUIRED, e.g.: {'ASL_1'})
+%   listSubjects   - list of subjects (CELL ARRAY, REQUIRED)
+%   subjectLabel   - subject label (CHAR ARRAY, REQUIRED)
+%   kk             - Session number (INTEGER, REQUIRED)
 %
 % OUTPUT:
 %   imPar          - imPar struct

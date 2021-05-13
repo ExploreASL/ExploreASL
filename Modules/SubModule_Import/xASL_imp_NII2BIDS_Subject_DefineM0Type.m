@@ -7,9 +7,9 @@ function [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabe
 %   studyPar       - studyPar struct (STRUCT, REQUIRED)
 %   bidsPar        - bidsPar struct (STRUCT, REQUIRED)
 %   jsonLocal      - jsonLocal struct (STRUCT, REQUIRED)
-%   inSessionPath  - inSession path (REQUIRED)
-%   subjectLabel   - subject label (REQUIRED)
-%   sessionLabel   - session label (REQUIRED)
+%   inSessionPath  - inSession path (CHAR ARRAY, PATH, REQUIRED)
+%   subjectLabel   - subject label (CHAR ARRAY, REQUIRED)
+%   sessionLabel   - session label (CHAR ARRAY, REQUIRED)
 %
 % OUTPUT:
 %   studyPar       - studyPar struct (STRUCT, REQUIRED)

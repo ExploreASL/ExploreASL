@@ -4,19 +4,19 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
 % FORMAT: [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject] = xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject, kk, mm)
 % 
 % INPUT:
-% imPar            - imPar struct
-% bidsPar          - bidsPar struct
-% studyPar         - studyPar struct
-% subjectLabel     - subject label
-% sessionLabel     - session label
-% listSubjects     - list of subjects
-% fSes             - f session
-% inSessionPath    - input session path
-% outSessionPath   - output session path
-% nSes             - Number of sessions
-% iSubject         - Subject ID
-% kk               - session number
-% mm               - run number
+% imPar            - imPar struct (STRUCT, REQUIRED)
+% bidsPar          - bidsPar struct (STRUCT, REQUIRED)
+% studyPar         - studyPar struct (STRUCT, REQUIRED)
+% subjectLabel     - subject label (CHAR ARRAY, REQUIRED)
+% sessionLabel     - session label (CHAR ARRAY, REQUIRED)
+% listSubjects     - list of subjects (CELL ARRAY, REQUIRED)
+% fSes             - f session (CELL ARRAY, REQUIRED)
+% inSessionPath    - input session path (CHAR ARRAY, PATH, REQUIRED)
+% outSessionPath   - output session path (CHAR ARRAY, PATH, REQUIRED)
+% nSes             - Number of sessions (INTEGER, REQUIRED)
+% iSubject         - Subject ID (INTEGER, REQUIRED)
+% kk               - session number (INTEGER, REQUIRED)
+% mm               - run number (INTEGER, REQUIRED)
 %
 % OUTPUT:
 % imPar            - imPar struct

@@ -5,10 +5,10 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
 % 
 % INPUT:
 %   imPar        - Structure with import parameters (REQUIRED, STRUCT)
-%   SavePathJSON - Save path JSON
-%   first_match  - First match
+%   SavePathJSON - Save path(s) JSON (CELL ARRAY, REQUIRED)
+%   first_match  - First match (CHAR ARRAY, PATH, REQUIRED)
 %   bUseDCMTK    - Use DCMTK (BOOLEAN, REQUIRED)
-%   pathDcmDict  - Path to Dicom dictionary
+%   pathDcmDict  - Path to Dicom dictionary (CHAR ARRAY, PATH, REQUIRED)
 %
 % OUTPUT:
 %   parms       - Parameters cell array

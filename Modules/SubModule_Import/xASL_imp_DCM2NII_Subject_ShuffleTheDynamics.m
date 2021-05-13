@@ -5,8 +5,8 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
 % 
 % INPUT:
 %   globalCounts    - Converted, skipped & missing scans (REQUIRED, STRUCT)
-%   scanpath        - Scan path
-%   scan_name       - Scan name
+%   scanpath        - Scan path (CHAR ARRAY, PATH, REQUIRED)
+%   scan_name       - Scan name (CHAR ARRAY, REQUIRED)
 %   nii_files       - List of NIfTI files (CELL ARRAY, REQUIRED)
 %   iSubject        - Subject ID (INTEGER, REQUIRED)
 %   iSession        - Session ID (INTEGER, REQUIRED)

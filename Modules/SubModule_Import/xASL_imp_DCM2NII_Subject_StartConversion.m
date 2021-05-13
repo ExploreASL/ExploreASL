@@ -7,13 +7,12 @@ function [imPar, globalCounts, x, summary_line, destdir, scanpath, scan_name, dc
 %   imPar                 - Structure with import parameters (REQUIRED, STRUCT)
 %   globalCounts          - Converted, skipped & missing scans (REQUIRED, STRUCT)
 %   x                     - ExploreASL x structure (REQUIRED, STRUCT)
-%   nii_files             - NIfTI files
 %   bSkipThisOne          - Skip this one (BOOLEAN, REQUIRED)
-%   summary_line          - Summary line
-%   destdir               - Destination directory
-%   scanpath              - Scan path
-%   scan_name             - Scan name
-%   dcm2niiCatchedErrors  - DCM2NII catched errors
+%   summary_line          - Summary line (REQUIRED)
+%   destdir               - Destination directory (CHAR ARRAY, PATH, REQUIRED)
+%   scanpath              - Scan path (CHAR ARRAY, PATH, REQUIRED)
+%   scan_name             - Scan name (CHAR ARRAY, REQUIRED)
+%   dcm2niiCatchedErrors  - DCM2NII catched errors (STRUCT, REQUIRED)
 %
 % OUTPUT:
 %   Almost the same as input + nii_files & first_match
