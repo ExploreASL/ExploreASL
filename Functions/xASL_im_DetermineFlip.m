@@ -1,9 +1,9 @@
-function [QCstruct] = xASL_im_DetermineFlip(x, iSubject, PathOrientationResults, QCstruct)
+function [LR_flip_YesNo] = xASL_im_DetermineFlip(x, iSubject, PathOrientationResults)
 %xASL_im_DetermineFlip Check determinants, should be the same
 % before & after registration, otherwise a left-right flip is applied
 % This is not visible, but detrimental for image analysis/stats
 %
-% FORMAT:       [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct)
+% FORMAT:       [LR_flip_YesNo] = xASL_im_DetermineFlip(x, iS, PathOrientationResults)
 % 
 % INPUT:        iSubject -> OPTIONAL, DEFAULT = check all
 %
@@ -20,9 +20,6 @@ function [QCstruct] = xASL_im_DetermineFlip(x, iSubject, PathOrientationResults,
 % Copyright 2015-2020 ExploreASL
 
 
-if nargin<4 || isempty(QCstruct)
-    QCstruct = struct;
-end
 if nargin<3 || isempty(PathOrientationResults)
     error('PathOrientationResults missing');
 end
@@ -32,7 +29,7 @@ else
     bSingleNifti = true;
 end
 
-    QCstruct.LR_flip_YesNo = NaN; % default
+    LR_flip_YesNo = NaN; % default
 
     if ~exist(PathOrientationResults, 'file')
         warning(['File missing: ' PathOrientationResults]);
@@ -71,14 +68,14 @@ end
     if bSingleNifti
         % standard ExploreASL behavior is to do this per subject in
         % xASL_wrp_VisualQC* -> xASL_qc_CollectQC*        
-        QCstruct.LR_flip_YesNo = uint8(max((DeterminantOri.*DeterminantNew)<0));
+        LR_flip_YesNo = max((DeterminantOri.*DeterminantNew)<0);
         
-        if QCstruct.LR_flip_YesNo>0
+        if LR_flip_YesNo>0
             fprintf(['LR flip found for ' x.SUBJECTS{iSubject}]);
-            QCstruct.LR_flip_YesNo = 1;
+            LR_flip_YesNo = 1;
         end        
     else
-        QCstruct.LR_flip_YesNo = find((DeterminantOri.*DeterminantNew)<0);
+        LR_flip_YesNo = find((DeterminantOri.*DeterminantNew)<0);
     end
     
 end
