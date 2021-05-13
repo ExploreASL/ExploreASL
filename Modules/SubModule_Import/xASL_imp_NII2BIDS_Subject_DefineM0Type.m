@@ -61,6 +61,8 @@ function [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabe
                     jsonLocal.M0Estimate = studyPar.M0;
                 elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
                     jsonLocal.M0Type = bidsPar.strM0Separate;
+                elseif ~isfield(jsonLocal, 'ASLContext')
+                    warning('jsonLocal.ASLContext missing, this may crash');
                 elseif ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
                     jsonLocal.M0Type = bidsPar.strM0Included;
                 else
