@@ -46,7 +46,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     
     for iNii = 1:size(niiTable,1)
         filePath = nii_files{1,iNii};
-        [rootName, fileName, ~] = xASL_fileparts(filePath);
+        [rootName, fileName] = xASL_fileparts(filePath);
         niiTable{iNii,1} = fileName;
         % Open JSON file
         tmpJSON = spm_jsonread(fullfile(rootName,[fileName '.json']));
@@ -58,6 +58,9 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         if isfield(tmpJSON, 'Manufacturer')
             if ~isempty(strfind(tmpJSON.Manufacturer, 'GE'))
                 niiTable{iNii,3} = xASL_bids_determineImageTypeGE(tmpJSON);
+                if isempty(niiTable{iNii,3})
+                    niiTable{iNii,3} = NaN;
+                end
             else
                 niiTable{iNii,3} = NaN;
             end
@@ -145,7 +148,3 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
     
 
 end
-
-
-
-
