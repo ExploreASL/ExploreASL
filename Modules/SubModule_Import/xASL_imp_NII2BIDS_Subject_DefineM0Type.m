@@ -4,8 +4,8 @@ function [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabe
 % FORMAT: [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel)
 % 
 % INPUT:
-%   studyPar       - studyPar struct (STRUCT, REQUIRED)
-%   bidsPar        - bidsPar struct (STRUCT, REQUIRED)
+%   studyPar       - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
+%   bidsPar        - Output of xASL_imp_Config (STRUCT, REQUIRED)
 %   jsonLocal      - jsonLocal struct (STRUCT, REQUIRED)
 %   inSessionPath  - inSession path (CHAR ARRAY, PATH, REQUIRED)
 %   subjectLabel   - subject label (CHAR ARRAY, REQUIRED)

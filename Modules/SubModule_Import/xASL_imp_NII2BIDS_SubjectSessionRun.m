@@ -4,9 +4,9 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
 % FORMAT: [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject] = xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject, kk, mm)
 % 
 % INPUT:
-% imPar            - imPar struct (STRUCT, REQUIRED)
-% bidsPar          - bidsPar struct (STRUCT, REQUIRED)
-% studyPar         - studyPar struct (STRUCT, REQUIRED)
+% imPar            - JSON file with structure with import parameter (STRUCT, REQUIRED)
+% bidsPar          - Output of xASL_imp_Config (STRUCT, REQUIRED)
+% studyPar         - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
 % subjectLabel     - subject label (CHAR ARRAY, REQUIRED)
 % sessionLabel     - session label (CHAR ARRAY, REQUIRED)
 % listSubjects     - list of subjects (CELL ARRAY, REQUIRED)
