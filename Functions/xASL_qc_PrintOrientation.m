@@ -1,41 +1,56 @@
-function xASL_qc_PrintOrientation(DIR, reg_exp_INPUT,OUTPUT_DIR,Name)
-% xASL_qc_PrintOrientation Check orientation of niftis, useful to detect
-% accidental left-right flips (all other flips will be visible).
-% translations, rotations or shears are not to be worried about,
-% only negative zooms. This can be detected by negative determinants.
+function xASL_qc_PrintOrientation(niftiList, outputDir, outputFile)
+% xASL_qc_PrintOrientation List NifTI orientation matrix
+%
+% FORMAT:       xASL_qc_PrintOrientation(niftiList, outputDir, outputFile);
+% 
+% INPUT:
+% niftiList     - cell array with paths to NIfTI files. Can be .nii or
+%                 .nii.gz. (REQUIRED)
+% outputDir     - folder where the output TSV file will be saved (REQUIRED)
+% outputFile    - filename as suffix to output TSV file (REQUIRED)
+%
+% OUTPUT:       n/a
+% OUTPUT FILE:
+%               - xASL_qc_PrintOrientation*.tsv containing several orientation
+%               parameters
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  This function lists NifTI orientation matrices before and after
+% image processing, respectively nii.mat0 and nii.mat. In ExploreASL this
+% is used for QC to detect accidental left-right flips, as these can occur
+% unnoticed as the brain structure appears relatively symmetrical.
+% This can be detected by negative determinants.
+% Also, this can be used to detect any significant differences in
+% acquisition or image processing.
+% 
 % So orientation parameters and determinants should be similar across
 % all scans from single scanner/coil, and registration should not
-% give negative determinant.
+% give a relatively negative determinant.
+% Results are saved in a TSV file
 %
-% CAVE: will search recursively through directories for niftis that fullfill reg_exp_INPUT!
-%
-% FORMAT:       xASL_qc_PrintOrientation(DIR, reg_exp_INPUT,OUTPUT_DIR,Name);
-% 
-% INPUT:        ...
-%
-% OUTPUT:       ...
-% 
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  Check orientation of niftis, useful to detect
-%               accidental left-right flips (all other flips will be visible).
-%               translations, rotations or shears are not to be worried about,
-%               only negative zooms. This can be detected by negative determinants.
-%               So orientation parameters and determinants should be similar across
-%               all scans from single scanner/coil, and registration should not
-%               give negative determinant.
+% This functions performs the following steps:
+% 1. Print the header
+% 2. Load the data
+% 3. Print original orientation matrix
+% 4. Print current orientation matrix
+% 5. Print registration transformation matrix
+% 6. Print FileName
+% 7. Get statistics (mean & SD)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:      xASL_qc_PrintOrientation(niftiList, outputDir, outputFile)
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
-%% Administration CSV
+%% Administration TSV
+savePath = fullfile(outputDir,['xASL_qc_PrintOrientation_' outputFile '.tsv']);
+
 fclose all;
-xASL_adm_DeleteFileList(OUTPUT_DIR, ['xASL_qc_PrintOrientation_' Name '\.(csv|tsv)'],[],[0 Inf]);
-SaveFile = fullfile(OUTPUT_DIR,['xASL_qc_PrintOrientation_' Name '.tsv']);
-Summary_fid = fopen(SaveFile,'wt');
+xASL_delete(savePath);
 
-%% Header
+Summary_fid = fopen(savePath,'wt');
+
+%% 1. Print the header
 HeaderPrint = {'Transl_X' 'Transl_Y' 'Transl_Z' 'Rot_X' 'Rot_Y' 'Rot_Z' 'Scale_X' 'Scale_Y' 'Scale_Z' 'Shear_X' 'Shear_Y' 'Shear_Z'};
 EndPrint = {'DetOrigin' 'DetCurrent' 'DetTransform'};
 
@@ -47,53 +62,57 @@ for iE=1:length(EndPrint)
 end
 fprintf(Summary_fid,'%s','FileName');
 
-%% Get data
-% FList = xASL_adm_GetFileList(DIR, reg_exp_INPUT, 'FPListRec', [0 Inf]);
+%% 2. Load the data
+if ~iscell(niftiList)
+    niftiList = {niftiList}; % temporary fix for individual files rather than lists of files= {reg_exp_INPUT}; % temporary fix for individual files rather than lists of files
+end
 
-FList = {reg_exp_INPUT}; % temporary fix for individual files rather than lists of files
-
-if ~isempty(FList)
-
-    for iF=1:length(FList)
-        tNII = xASL_io_ReadNifti(FList{iF});
+if ~isempty(niftiList)
+    fprintf('%s', 'Summarizing orientation parameters:   ');
+    
+    for iNifti=1:numel(niftiList)
+        xASL_TrackProgress(iNifti, numel(niftiList));
+        tNII = xASL_io_ReadNifti(niftiList{iNifti});
 
         fprintf( Summary_fid, '\n');
 
-        % Print original orientation matrix
+        %% 3. Print original orientation matrix
         TempVec         = spm_imatrix(tNII.mat0);
         for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*TempVec(iI))/100) );end
-        matrix2(:,iF)   = TempVec;
-        det2(iF)        = det(tNII.mat0(1:3,1:3));
-        fprintf(Summary_fid,'%s\t', num2str( det2(iF) ) );
+        matrix2(:,iNifti)   = TempVec;
+        det2(iNifti)        = det(tNII.mat0(1:3,1:3));
+        fprintf(Summary_fid,'%s\t', num2str( det2(iNifti) ) );
 
-        % Print current orientation matrix
+        %% 4. Print current orientation matrix
         TempVec         = spm_imatrix(tNII.mat);
         for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*TempVec(iI))/100) );end
-        matrix1(:,iF)   = TempVec;
-        det1(iF)        = det(tNII.mat(1:3,1:3));
-        fprintf(Summary_fid,'%s\t', num2str( det1(iF) ) );
+        matrix1(:,iNifti)   = TempVec;
+        det1(iNifti)        = det(tNII.mat(1:3,1:3));
+        fprintf(Summary_fid,'%s\t', num2str( det1(iNifti) ) );
 
-        % Print registration transformation matrix
+        %% 5. Print registration transformation matrix
         TempReg         = tNII.mat/tNII.mat0;
         TempVec         = spm_imatrix(TempReg);
         for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*TempVec(iI))/100) );end
-        matrix0(:,iF)   = TempVec;
-        det0(iF)        = det(TempReg(1:3,1:3));
-        fprintf(Summary_fid,'%s\t', num2str( det0(iF) ) );
+        matrix0(:,iNifti)   = TempVec;
+        det0(iNifti)        = det(TempReg(1:3,1:3));
+        fprintf(Summary_fid,'%s\t', num2str( det0(iNifti) ) );
 
-        % Print FileName
-        fprintf(Summary_fid,'%s\t', FList{iF} );
+        %% 6. Print FileName
+        fprintf(Summary_fid,'%s\t', niftiList{iNifti} );
 
     end
+    
+    fprintf('\n%s\n', ['into: ' savePath]);
 
     %% ----------------------------------------------------------------------------
-    %% Get statistics
+    %% 7. Get statistics (mean & SD)
 
     fprintf(Summary_fid,'\n\n');
 
-    TotalOri        = matrix2';
-    TotalCur        = matrix1';
-    TotalTra        = matrix0';
+    TotalOri = matrix2';
+    TotalCur = matrix1';
+    TotalTra = matrix0';
 
 
     % Print means
@@ -125,5 +144,6 @@ if ~isempty(FList)
 
 end
 fclose all;
+
 
 end

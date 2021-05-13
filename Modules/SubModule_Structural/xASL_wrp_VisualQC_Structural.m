@@ -105,7 +105,7 @@ end
 
 %% -----------------------------------------------------------------------------------
 %% 5) Final QCs
-xASL_qc_PrintOrientation(x.dir.SUBJECTDIR, x.P.Path_T1, x.dir.SUBJECTDIR, 'RigidRegT1');
+xASL_qc_PrintOrientation(x.P.Path_T1, x.dir.SUBJECTDIR, 'RigidRegT1');
 % This function summarizes the T1w orientation. Especially check the determinant, for left-right flips
 
 x = xASL_qc_CollectParameters(x, iSubject, 'Structural');
