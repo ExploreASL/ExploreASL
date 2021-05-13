@@ -57,7 +57,8 @@ function [LR_flip_YesNo] = xASL_im_DetermineFlip(PathOrientationResults)
         return;
     end
     
-    % if units are printed as second row, the data starts on the third row
+    %% ============================================================    
+    %% 2. If units are printed as second row, the data starts on the third row
     if isempty(CellTSV{2,13})
         firstRow = 3;
     else
