@@ -206,8 +206,8 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                     [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, jsonFiles, first_match, settings.bUseDCMTK, pathDcmDict);
                 end
                 
-                %% 4.8 In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
-                [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
+                %% 4.8 In case of GE or PARREC/a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
+                [nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
                 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of
