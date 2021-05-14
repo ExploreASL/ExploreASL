@@ -83,6 +83,7 @@ LST 2.0.15
 * #395,#416: Improve testing of BIDS import
 * #517: Improve unit testing scripts
 * #529: TestDataSet is in BIDS derivatives format
+* #570: Release testing and minor documentation improvements
 
 
 
