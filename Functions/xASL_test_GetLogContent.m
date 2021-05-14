@@ -105,7 +105,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
         warningsInFile = getLastFileWarning(warningsInFile,'in <');
         
         % Errors
-        errorsInFile = extractWarnings(curFile,'ERROR: Job iteration terminated!','CONT: but continue with next iteration!');
+        errorsInFile = extractWarnings(curFile,'ERROR: ','CONT: but continue with next iteration!');
         errorsInFile = getLastFileError(errorsInFile,'error using <','error in <');
         
         % Relative file name without root directory in string
@@ -369,6 +369,9 @@ function content = getLastFileError(content,identifierA,identifierB)
                     startMessage = strfind(contentMessage,'DocCallback(');
                     contentMessageUpdate = contentMessage(startMessage+length('DocCallback(')+1:end);
                     endMessage = strfind(contentMessageUpdate,',');
+                    if isempty(endMessage)
+                        endMessage = length(contentMessageUpdate);
+                    end
                     contentMessageUpdate = contentMessageUpdate(1:endMessage(1)-2);
                     % Line message
                     startLine = strfind(contentMessage,'">line');
