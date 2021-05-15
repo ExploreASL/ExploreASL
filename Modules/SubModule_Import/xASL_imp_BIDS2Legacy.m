@@ -41,19 +41,18 @@ function [x] = xASL_imp_BIDS2Legacy(x)
     
     % Also the cleaning of old data is done properly in xASL_bids_BIDS2Legacy
 
-            %% 2.2 Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
-            fListDataPar = xASL_adm_GetFileList(x.StudyRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-            if isempty(fListDataPar)
-                fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
-                % Fill the dataPars with default parameters
-                dataPar = xASL_bids_BIDS2Legacy(x.StudyRoot, 1, []);
-            else
-                % Fill the dataPars with the provided parameters
-                dataPar = spm_jsonread(fListDataPar{1});
-                dataPar = xASL_bids_BIDS2Legacy(thisRootFolder, 1, dataPar);
-            end
-        end
+    %% 2.2 Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
+    fListDataPar = xASL_adm_GetFileList(x.StudyRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+    if isempty(fListDataPar)
+        fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
+        % Fill the dataPars with default parameters
+        dataPar = xASL_bids_BIDS2Legacy(x.StudyRoot, 1, []);
+    else
+        % Fill the dataPars with the provided parameters
+        dataPar = spm_jsonread(fListDataPar{1});
+        dataPar = xASL_bids_BIDS2Legacy(thisRootFolder, 1, dataPar);
     end
+
     
     %% 3. Overwrite DataParPath
     x.DataParPath = dataPar.x.DataParPath;
