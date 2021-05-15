@@ -51,14 +51,6 @@ function [LR_flip_YesNo] = xASL_im_DetermineFlip(PathOrientationResults)
     
     %% ============================================================    
     %% 2. If units are printed as second row, the data starts on the third row
-    % Determine correct row, differs between Matlab versions
-    if size(CellTSV,1)<3 || size(CellTSV,2)<26
-        warning(['Missing data in: ' PathOrientationResults]);
-        return;
-    end
-    
-    %% ============================================================    
-    %% 2. If units are printed as second row, the data starts on the third row
     if isempty(CellTSV{2,13})
         firstRow = 3;
     else
