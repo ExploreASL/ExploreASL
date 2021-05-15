@@ -1,3 +1,14 @@
+# ExploreASL v1.6.1
+
+----
+
+## Bug Fixes
+* #578 Fix incorrect path searching by providing error if no .json-file is inputted
+
+---
+
+
+
 # ExploreASL v1.6.0
 
 ----
@@ -84,20 +95,6 @@ LST 2.0.15
 * #517: Improve unit testing scripts
 * #529: TestDataSet is in BIDS derivatives format
 * #570: Release testing and minor documentation improvements
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
