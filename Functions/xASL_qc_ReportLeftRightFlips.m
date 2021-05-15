@@ -42,13 +42,22 @@ function xASL_qc_ReportLeftRightFlips(dirRoot, bZip)
 
     LR_flip_YesNo = xASL_im_DetermineFlip(PathOrientationResults);
 
+    savePath = fullfile(dirRoot, 'ReportLeftRightFlips.tsv');
+    
     if ~isempty(LR_flip_YesNo)
-        fprintf('%s\n', 'Left-right flip(s) detected in:');
-
+        
+        fclose('all');
+        xASL_delete(savePath);
+        fID = fopen(savePath, 'wt');
+        
+        fprintf('%s\n', ['Left-right flip(s) detected: ' savePath]);
+        
         for iFlip=1:numel(LR_flip_YesNo)
-            fprintf('%s\n', niftiList{LR_flip_YesNo(iFlip)});
+            fprintf(fID, '%s\n', niftiList{LR_flip_YesNo(iFlip)});
         end
         fprintf('\n');
+        
+        fclose('all');
     end
     
     if bZip
