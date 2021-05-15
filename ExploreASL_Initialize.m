@@ -847,7 +847,15 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
         parameters.bPause = 0;
     end
 
-
+    if sum(parameters.ImportModules)~=0 || sum(parameters.ProcessModules)~=0
+        % If import or processing is requested,
+        % Do not allow continuing without a valid JSON path as input
+        [~, ~, Fext] = fileparts(parameters.DataParPath);
+        if isempty(Fext) || ~strcmpi(Fext, '.json')
+            error('Invalid path, first argument should be a path to a JSON-file');
+        end
+    end
+    
 end
 
 %% -----------------------------------------------------------------------
