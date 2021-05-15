@@ -23,6 +23,16 @@ function [x] = xASL_adm_DefineASLSequence(x)
 
 
 
+if ~isfield(x, 'readout_dim')
+    warning('x.readout_dim parameter missing, cannot deduce if this is a 2D or 3D ASL NifTI');
+end
+if isempty(regexpi(x.Vendor, 'Gold Standard Phantoms|GE|Philips|Siemens'))
+    warning('Unknown vendor specified in x.Vendor');
+end
+if ~isempty(regexpi(x.Vendor, 'Gold Standard Phantoms'))
+    fprintf('%s\n', 'Digital Reference Object ASL-DRO detected');
+end
+
 
 % Obtain ASL sequence
 if ~isfield(x,'Sequence') && isfield(x,'readout_dim')
@@ -32,8 +42,18 @@ if ~isfield(x,'Sequence') && isfield(x,'readout_dim')
            x.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
     elseif strcmpi(x.readout_dim,'3D') && ~isempty(regexpi(x.Vendor,'GE'))
            x.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
+    elseif strcmpi(x.readout_dim,'3D') && ~isempty(regexpi(x.Vendor,'Gold Standard Phantoms'))
+        x.Sequence = '3D_GRASE'; % assume that this is simulated 3D GRASE by the DRO
+        fprintf('%s\n', 'Processing as if this is a 3D GRASE sequence');
+        fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of a single 3D volume');
+        fprintf('%s\n', 'and intermediate amount of geometric distortion and smoothness');
+    elseif strcmpi(x.readout_dim,'2D') && ~isempty(regexpi(x.Vendor,'Gold Standard Phantoms'))
+        fprintf('%s\n', 'Processing as if this is a 2D EPI sequence');
+        fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of multi-slice 2D acquisitions');
+        fprintf('%s\n', 'and heavy geometric distortion and minimal smoothness');
     end
-elseif ~isfield(x,'Sequence') && ~isfield(x,'readout_dim')
+end
+if ~isfield(x,'Sequence')
     warning('No x.Sequence defined');
     fprintf('If there are multiple sequence types, this needs to be implemented yet here\n');
     fprintf('Otherwise, please define x.Sequence\n');
@@ -42,9 +62,9 @@ elseif ~isfield(x,'Sequence') && ~isfield(x,'readout_dim')
     fprintf('Note that this disables any masking of susceptibility signal dropout areas\n');
     x.Sequence = '3D_spiral';
     x.readout_dim = '3D';
+else
+    fprintf('%s\n', [x.Sequence ' sequence detected']);
 end
-
-
 
 
 end
