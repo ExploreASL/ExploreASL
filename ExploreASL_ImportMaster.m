@@ -20,12 +20,12 @@ function [x] = ExploreASL_ImportMaster(x)
     %% Import Workflow
     
     % We expect x.DataParPath to be the sourceStructure.json file, so the root directory should be the study directory
-    [x.StudyRoot,~,~] = xASL_fileparts(x.DataParPath);
-    
+	[x.StudyRoot,~,~] = xASL_fileparts(x.DataParPath);
+	
     % Check if at least one of the three steps should be performed
     if sum(x.ImportModules)>0
         if ~isempty(x.DataParPath)
-            if exist(x.DataParPath,'file')
+            if exist(x.DataParPath,'file') && ~exist(x.DataParPath,'dir')
                 % DICOM TO NII
                 if x.ImportModules(1)==1
                     xASL_module_Import(x.StudyRoot, x.DataParPath, [], [1 0 0], false, true, false, false, x);
