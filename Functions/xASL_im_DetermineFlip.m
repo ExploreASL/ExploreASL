@@ -40,8 +40,8 @@ function [LR_flip_YesNo] = xASL_im_DetermineFlip(PathOrientationResults)
     %% ============================================================    
     %% 1. Determine correct row, differs between Matlab versions
     if size(CellTSV,1)<3 || size(CellTSV,2)<26
-            warning(['Missing data in: ' PathOrientationResults]);
-            return;
+        warning(['Missing data in: ' PathOrientationResults]);
+        return;
     end
     
     %% ============================================================    

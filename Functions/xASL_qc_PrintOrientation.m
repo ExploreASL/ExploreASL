@@ -105,41 +105,41 @@ if ~isempty(niftiList)
     
     fprintf('\n%s\n', ['into: ' savePath]);
 
-    %% ----------------------------------------------------------------------------
-    %% 7. Get statistics (mean & SD)
-
-    fprintf(Summary_fid,'\n\n');
-
-    TotalOri = matrix2';
-    TotalCur = matrix1';
-    TotalTra = matrix0';
-
-
-    % Print means
-    for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*mean(TotalOri(:,iI)))/100) );end
-    fprintf(Summary_fid,'%s\t', num2str(round(100*mean(det2)/100)) );
-
-    for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*mean(TotalCur(:,iI)))/100) );end
-    fprintf(Summary_fid,'%s\t', num2str(round(100*mean(det1)/100)) );
-
-    for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*mean(TotalTra(:,iI)))/100) );end
-    fprintf(Summary_fid,'%s\t', num2str(round(100*mean(det0)/100)) );
-
-    fprintf(Summary_fid,'%s\t', 'Mean' );
-    fprintf(Summary_fid,'\n');
-
-    % Print SD
-    for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*std(TotalOri(:,iI)))/100) );end
-    fprintf(Summary_fid,'%s\t', num2str(round(100*std(det2)/100)) );
-
-    for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*std(TotalCur(:,iI)))/100) );end
-    fprintf(Summary_fid,'%s\t', num2str(round(100*std(det1)/100)) );
-
-    for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*std(TotalTra(:,iI)))/100) );end
-    fprintf(Summary_fid,'%s\t', num2str(round(100*std(det0)/100)) );
-
-    fprintf(Summary_fid,'%s\t', 'StDev' );
-    fprintf(Summary_fid,'\n');
+%     %% ----------------------------------------------------------------------------
+%     %% 7. Get statistics (mean & SD)
+% 
+%     fprintf(Summary_fid,'\n\n');
+% 
+%     TotalOri = matrix2';
+%     TotalCur = matrix1';
+%     TotalTra = matrix0';
+% 
+% 
+%     % Print means
+%     for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*mean(TotalOri(:,iI)))/100) );end
+%     fprintf(Summary_fid,'%s\t', num2str(round(100*mean(det2)/100)) );
+% 
+%     for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*mean(TotalCur(:,iI)))/100) );end
+%     fprintf(Summary_fid,'%s\t', num2str(round(100*mean(det1)/100)) );
+% 
+%     for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*mean(TotalTra(:,iI)))/100) );end
+%     fprintf(Summary_fid,'%s\t', num2str(round(100*mean(det0)/100)) );
+% 
+%     fprintf(Summary_fid,'%s\t', 'Mean' );
+%     fprintf(Summary_fid,'\n');
+% 
+%     % Print SD
+%     for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*std(TotalOri(:,iI)))/100) );end
+%     fprintf(Summary_fid,'%s\t', num2str(round(100*std(det2)/100)) );
+% 
+%     for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*std(TotalCur(:,iI)))/100) );end
+%     fprintf(Summary_fid,'%s\t', num2str(round(100*std(det1)/100)) );
+% 
+%     for iI=1:12;    fprintf(Summary_fid,'%s\t', num2str(round(100*std(TotalTra(:,iI)))/100) );end
+%     fprintf(Summary_fid,'%s\t', num2str(round(100*std(det0)/100)) );
+% 
+%     fprintf(Summary_fid,'%s\t', 'StDev' );
+%     fprintf(Summary_fid,'\n');
 
 
 end
