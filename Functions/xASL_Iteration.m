@@ -377,9 +377,13 @@ function [bAborted, x] = runIteration(db)
         catch ME
             
             % Obtain current subject ID from subject dir
-            [~, SubjectID] = fileparts(x.SUBJECTDIR);
-            iSubject = find(strcmp(x.SUBJECTS, SubjectID));
-            
+            if isfield(x,'SUBJECT') && isfield(x, 'SUBJECTS')
+                iSubject = find(strcmp(x.SUBJECTS, x.SUBJECT));
+                subjectString = ['for subject ' xASL_num2str(iSubject) ': ' x.SUBJECT];
+            else
+                subjectString = '';
+            end
+                
             % Obtain current module
             ModuleString = func2str(jobfn);
             String2Remove = 'xASL_module';
@@ -390,7 +394,7 @@ function [bAborted, x] = runIteration(db)
                 ModuleString = ModuleString(nString2Remove+2:end);
             end
             
-            fprintf('\n%s\n',['ERROR: ' ModuleString ' module terminated for subject ' xASL_num2str(iSubject) ': ' SubjectID]);
+            fprintf('\n%s\n',['ERROR: ' ModuleString ' module terminated ' subjectString]);
             
             ME.getReport()
             CountErrors     = CountErrors+1;
