@@ -31,12 +31,10 @@ SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentS
 
 %% 3. Obtain nSessions
 if isempty(SessionList) % If no files found, search for subject files instead of session files
-    if isempty(xASL_adm_GetFileList(x.D.PopDir,'^qCBF.*\.nii', 'FPList', [0 Inf]))
-        fprintf('%s\n','No session or subject files found');
-        return;
-    end
     nSessions = 1;
     bSessionsMissing = 1;
+    fprintf('%s\n','No session files found');
+    return;
 else % If files found, continue with defining sessions from SessionList
     IndexStart = cellfun(@(y) regexp(y,'ASL_\d+\.(nii|nii\.gz)'), SessionList);
     
@@ -60,5 +58,6 @@ else % If files found, continue with defining sessions from SessionList
         warning('Amount of Sessions differs between Subjects');
     end
 end
+
 
 end
