@@ -391,7 +391,10 @@ function [x] = ExploreASL_Initialize_checkDataParPath(x)
 		x.StudyRoot = x.DataParPath;
 	elseif exist(x.DataParPath,'file'))
 		% Input is either a sourceStructure.json, dataset_description.json or dataPar.json
-		
+		fileListSourceStructure = xASL_adm_GetFileList(x.StudyRoot, 'sourceStructure*.json');
+		fileListStudyPar = xASL_adm_GetFileList(x.StudyRoot, 'studyPar*.json');
+		fileListDataPar = xASL_adm_GetFileList(x.StudyRoot, 'dataPar*.json');
+		% ...
 	end
 
 
