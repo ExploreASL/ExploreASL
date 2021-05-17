@@ -23,7 +23,7 @@ function [x] = xASL_imp_Import_UpdateDataParPath(x, studyPath)
     if isempty(foundFiles)
         warning('No valid dataset_description.json found within the rawdata directory...');
     else
-        x.DataParPath = foundFiles{1};
+        x.dir.dataset_description = foundFiles{1};
     end
 
 end

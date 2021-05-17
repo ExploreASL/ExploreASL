@@ -75,8 +75,15 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 	end
 
 	%% 4. Overwrite DataParPath
-	x.DataParPath = dataPar.x.DataParPath;
-    
+    fieldsDataPar = fieldnames(dataPar.x);
+    % Add fields that are in dataPar.x but missing in x
+    for iField = 1:numel(fieldsDataPar)
+        if ~isfield(x,fieldsDataPar{iField,1}) && ~strcmp('DataParPath',fieldsDataPar{iField,1})
+            x.(fieldsDataPar{iField,1}) = dataPar.x.(fieldsDataPar{iField,1});
+        end
+    end
+    % Update dataPar path
+	x.dir.dataPar = dataPar.x.DataParPath;
     
 end
 

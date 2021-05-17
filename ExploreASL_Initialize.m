@@ -122,7 +122,11 @@ function [x] = ExploreASL_Initialize(varargin)
 
     % Check if DataParFile needs to be loaded
     if x.opts.bProcessData>0
-        x = xASL_init_LoadDataParameterFile(x, x.opts.DataParPath, SelectParFile);
+        if ~isempty(x.dir.dataPar)
+            x = xASL_init_LoadDataParameterFile(x, x.dir.dataPar, SelectParFile);
+        else
+            fprintf('No dataPar.json provided...\n');
+        end
     end
 
     %% Initialize general parameters
@@ -359,7 +363,12 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectPa
             fileListSourceStructure = xASL_adm_GetFileList(x.dir.StudyRoot, 'sourceStructure*.json');
             fileListStudyPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'studyPar*.json');
             fileListDataDescription = xASL_adm_GetFileList(fullfile(x.dir.StudyRoot, 'rawdata'), 'dataset_description.json');
-            fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar*.json');
+            % First try the derivatives folder
+            fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.StudyRoot, 'derivatives', 'ExploreASL'), 'dataPar*.json');
+            if isempty(fileListDataPar)
+                % Derivatives maybe does not exist already, we'll try study root
+                fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar*.json');
+            end
             % Assign fields
             if ~isempty(fileListSourceStructure)
                 x.dir.sourceStructure = fileListSourceStructure{1};
