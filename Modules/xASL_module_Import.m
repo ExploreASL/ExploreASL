@@ -1,4 +1,4 @@
-function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
+function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
 %xASL_module_Import Imports the DICOM or PAR/REC source data to NIFTIs in ASL-BIDS format
 %
 % FORMAT: xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
@@ -206,7 +206,10 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
 
     %% 4. Run the NIIX to ASL-BIDS
     if bRunSubmodules(2)
+        % Run NII to BIDS
         xASL_imp_NII2BIDS(imPar, studyPath, studyParPath);
+        % Update x.DataParPath
+        [x] = xASL_imp_Import_UpdateDataParPath(x, studyPath);
     end
 
 
@@ -215,6 +218,22 @@ function xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, 
         xASL_imp_Anonymize(imPar);
     end
 
+
+end
+
+
+% Update x.DataParPath to dataset_description.json after NII2BIDS conversion
+function [x] = xASL_imp_Import_UpdateDataParPath(x, studyPath)
+
+    % Search for dataset_description.json within the rawdata subfolder
+    foundFiles = xASL_adm_GetFileList(fullfile(studyPath,'rawdata'),'dataset_description.json');
+    
+    % Check if valid dataset_description.json exists within the rawdata folder
+    if isempty(foundFiles)
+        warning('No valid dataset_description.json found within the rawdata directory...');
+    else
+        x.DataParPath = foundFiles{1};
+    end
 
 end
 

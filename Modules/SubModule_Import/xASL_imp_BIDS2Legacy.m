@@ -50,7 +50,7 @@ function [x] = xASL_imp_BIDS2Legacy(x)
     else
         % Fill the dataPars with the provided parameters
         dataPar = spm_jsonread(fListDataPar{1});
-        dataPar = xASL_bids_BIDS2Legacy(thisRootFolder, 1, dataPar);
+        dataPar = xASL_bids_BIDS2Legacy(x.StudyRoot, 1, dataPar);
     end
 
     

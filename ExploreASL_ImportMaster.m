@@ -32,11 +32,11 @@ function [x] = ExploreASL_ImportMaster(x)
                 end
                 % NII TO BIDS
                 if x.ImportModules(2)==1
-                    xASL_module_Import(x.StudyRoot, x.DataParPath, [], [0 1 0], false, true, false, false, x);
+                    [x] = xASL_module_Import(x.StudyRoot, x.DataParPath, [], [0 1 0], false, true, false, false, x);
                 end
                 % ANONYMIZE
                 if x.ImportModules(3)==1
-                    xASL_module_Import(x.StudyRoot, x.DataParPath, [], [0 0 1], false, true, false, false, x);
+                    [x] = xASL_module_Import(x.StudyRoot, x.DataParPath, [], [0 0 1], false, true, false, false, x);
                 end
                 % BIDS TO LEGACY
                 if x.ImportModules(4)==1
