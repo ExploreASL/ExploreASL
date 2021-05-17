@@ -377,17 +377,30 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectPa
 
 
 	% Check if the DataParPath is a directory (NEW - ASL BIDS)
+	if ~isfield(x, 'dir')
+		x.dir = struct;
+	end
 	if exist(x.DataParPath,'dir'))
 		% ASL-BIDS studyRoot directory
 		x.dir.StudyRoot = x.DataParPath;
 		% Search for descriptive JSON files
 		fileListSourceStructure = xASL_adm_GetFileList(x.dir.StudyRoot, 'sourceStructure*.json');
 		fileListStudyPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'studyPar*.json');
+		fileListDataDescription = xASL_adm_GetFileList(x.dir.StudyRoot, 'rawdata', 'dataset_description.json');
 		fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar*.json');
 		% Assign fields
-		x.dir.sourceStructure = 
-		x.dir.studyPar =
-		x.dir.dataPar =
+		if ~isempty(fileListSourceStructure)
+			x.dir.sourceStructure = fileListSourceStructure{1};
+		end
+		if ~isempty(fileListStudyPar)
+			x.dir.studyPar = fileListStudyPar{1};
+		end
+		if ~isempty(fileListDataDescription)
+			x.dir.dataset_description = fileListDataDescription{1};
+		end
+		if ~isempty(fileListDataPar)
+			x.dir.dataPar = fileListDataPar{1};
+		end
 	elseif exist(x.DataParPath,'file'))
 		% Input is either a sourceStructure.json, dataset_description.json or dataPar.json
 		warning('You provided a descriptive JSON file. We recommend to use the study root folder instead...');
@@ -399,7 +412,8 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectPa
 	    		x.dataParType = 'sourceStructure';
 	    		x.dir.sourceStructure = x.DataParPath;
 	    	elseif regexp(x.DataParPath, 'dataset_description')
-
+	    		x.dataParType = 'dataset_description';
+	    		x.dir.dataset_description = x.DataParPath;
 	    	elseif regexp(x.DataParPath, 'dataPar')
 	    		x.dataParType = 'dataParFile';
 	    		x.dir.dataPar = x.DataParPath;
@@ -412,6 +426,20 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectPa
 		if x.bProcessData
 			x.DataParPath = input('Please insert the correct path to your study directory: ');
 		end
+	end
+
+	% Try to find "dir" fields that were not found above
+	if ~isfield(x.dir,'sourceStructure')
+
+	end
+	if ~isfield(x.dir,'studyPar')
+
+	end
+	if ~isfield(x.dir,'dataset_description')
+
+	end
+	if ~isfield(x.dir,'dataPar')
+
 	end
 
 
