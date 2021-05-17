@@ -318,6 +318,12 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
         parameters.bPause = 0;
     end
     
+    % Check nWorkers
+    if numel(parameters.nWorkers)>1
+        warning('nWorkers is supposed to be an integer number, resetting to 1...');
+        parameters.nWorkers = 1;
+    end
+    
 end
 
 %% -----------------------------------------------------------------------
@@ -373,6 +379,15 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectPa
         else
             if x.opts.bProcessData
                 x.opts.DataParPath = input('Please insert the path to your study directory: ');
+                % Immediately check the input
+                if ~exist(x.opts.DataParPath, 'dir')
+                    warning('This study directory does not exist, ExploreASL will only be initialized...');
+                    x.opts.bProcessData = 0;
+                    x.opts.bImportData = 0;
+                    x.opts.bReinitialize = 0;
+                    x.opts.ProcessModules = [0 0 0];
+                    x.opts.ImportModules = [0 0 0 0];
+                end
             end
         end
 
