@@ -49,27 +49,13 @@ function [x] = ExploreASL_Initialize(varargin)
     x.S = struct;
     
     % Check if the ExploreASL pipeline should be run or not
-    if sum(x.ImportModules)>0
-        x.bImportData = 1; % Importing data
-        x.bReinitialize = true;
-    else
-        x.bImportData = 0; % Importing data
-        x.bReinitialize = false;
-    end
-    if sum(x.ProcessModules)>0
-        x.bProcessData = 1; % Loading & processing dataset
-    else
-        x.bProcessData = 0; % Only initialize ExploreASL functionality
-    end
-    if ~x.bProcessData && ~x.bImportData
-        x.bReinitialize = false;
-    end
+    x = ExploreASL_Initialize_GetBooleansImportProcess(x);
 
     % Check if the DataParPath is a file or a directory
     SelectParFile = false; % Fallback
-    if x.bProcessData
+    if x.opts.bProcessData
         % Checkout the "Proceed with Initialization" section
-        if (isempty(x.DataParPath) || ~exist(x.DataParPath,'file'))
+        if (isempty(x.opts.DataParPath) || (~exist(x.opts.DataParPath,'file') && ~exist(x.opts.DataParPath,'dir')))
             SelectParFile = true; % If the DataParPath is either empty OR the file does not exist, we have to select it later on (if processing is turned on)
         end
     end
@@ -126,18 +112,8 @@ function [x] = ExploreASL_Initialize(varargin)
     %% Check DataParPath
     [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectParFile);
     
-    
     % Give some feedback
-    reportProcess = '';
-    if x.bProcessData==0,        reportProcess = 'run the initialization';
-    elseif x.bProcessData==1,    reportProcess = 'run the processing pipeline';
-    elseif x.bProcessData==2,    reportProcess = 'load the dataset';
-    end
-    if x.bImportData==1,         reportImport = 'will run the import workflow and ';
-    else,                       reportImport = '';
-    end
-    % Print feedback
-    fprintf('ExploreASL %swill %s...\n',reportImport,reportProcess);
+    ExploreASL_Initialize_basicFeedback(x);
     
     %% Proceed with Initialization
 
@@ -145,10 +121,9 @@ function [x] = ExploreASL_Initialize(varargin)
     cd(x.MyPath);
 
     % Check if DataParFile needs to be loaded
-    if x.bProcessData>0
-        x = xASL_init_LoadDataParameterFile(x, x.DataParPath, SelectParFile);
+    if x.opts.bProcessData>0
+        x = xASL_init_LoadDataParameterFile(x, x.opts.DataParPath, SelectParFile);
     end
-
 
     %% Initialize general parameters
     x = xASL_init_DefineIndependentSettings(x); % these settings are data-independent
@@ -187,7 +162,7 @@ function [x] = ExploreASL_Initialize(varargin)
     %% Data-specific initialization
     fprintf('ExploreASL v%s initialized ... \n', x.Version);
     
-    if x.bProcessData>0 && ~x.bImportData % Skip this step if we still need to run the import (first initialization)
+    if x.opts.bProcessData>0 && ~x.opts.bImportData % Skip this step if we still need to run the import (first initialization)
         % Check if a root directory was defined
         if isempty(x.D.ROOT)
             error('No root/analysis/study folder defined');
@@ -204,7 +179,7 @@ function [x] = ExploreASL_Initialize(varargin)
 
 
         % Remove lock dirs from previous runs, if ExploreASL is not running in parallel
-        if x.nWorkers==1
+        if x.opts.nWorkers==1
             x = xASL_init_RemoveLockDirs(x);
         end
 
@@ -231,24 +206,12 @@ function [x] = xASL_init_RemoveLockDirs(x)
         LockDir = xASL_adm_FindByRegExp(fullfile(x.D.ROOT, 'lock'), {'(ASL|Structural|LongReg_T1)', x.subject_regexp, '.*module.*','^(locked)$'}, 'Match', 'Directories');
         if ~isempty(LockDir)
             warning('Locked folders were found, consider removing them before proceeding');
-%                 for iL=1:length(LockDir)
-%                     if isdir(LockDir{1})
-%                         fprintf('%s\n',[LockDir{1} ' detected, removing']);
-%                         rmdir(LockDir{1},'s');
-%                     end
-%                 end
-%                 LockDirFound = 1;
         end
 
         % LockDir within 2 directories (e.g. DARTEL)
         LockDir = xASL_adm_FindByRegExp(fullfile(x.D.ROOT, 'lock'), {'(Population|DARTEL_T1)', '.*module.*','^(locked)$'}, 'Match','Directories');
         if ~isempty(LockDir)
             warning('Locked folders were found, consider removing them before proceeding');
-%                 for iL=1:length(LockDir)
-%                     fprintf('%s\n',[LockDir{1} ' detected, removing']);
-%                     rmdir(LockDir{1},'s');
-%                 end
-%                 LockDirFound = 1;
         end
 
         if LockDirFound==0
@@ -361,13 +324,13 @@ end
 %% Store parsed input
 function x = ExploreASL_Initialize_storeParsedInput(parameters)
 
-    % Store input
-    x.DataParPath = parameters.DataParPath;
-    x.ImportModules = parameters.ImportModules;
-    x.ProcessModules = parameters.ProcessModules;
-    x.bPause = parameters.bPause;
-    x.iWorker = parameters.iWorker;
-    x.nWorkers = parameters.nWorkers;
+    % Store input options
+    x.opts.DataParPath = parameters.DataParPath;
+    x.opts.ImportModules = parameters.ImportModules;
+    x.opts.ProcessModules = parameters.ProcessModules;
+    x.opts.bPause = parameters.bPause;
+    x.opts.iWorker = parameters.iWorker;
+    x.opts.nWorkers = parameters.nWorkers;
     
 end
 
@@ -375,104 +338,198 @@ end
 %% -----------------------------------------------------------------------
 function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectParFile)
 
-
-	% Check if the DataParPath is a directory (NEW - ASL BIDS)
-	if ~isfield(x, 'dir')
-		x.dir = struct;
-	end
-	if exist(x.DataParPath,'dir'))
-		% ASL-BIDS studyRoot directory
-		x.dir.StudyRoot = x.DataParPath;
-		% Search for descriptive JSON files
-		fileListSourceStructure = xASL_adm_GetFileList(x.dir.StudyRoot, 'sourceStructure*.json');
-		fileListStudyPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'studyPar*.json');
-		fileListDataDescription = xASL_adm_GetFileList(x.dir.StudyRoot, 'rawdata', 'dataset_description.json');
-		fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar*.json');
-		% Assign fields
-		if ~isempty(fileListSourceStructure)
-			x.dir.sourceStructure = fileListSourceStructure{1};
-		end
-		if ~isempty(fileListStudyPar)
-			x.dir.studyPar = fileListStudyPar{1};
-		end
-		if ~isempty(fileListDataDescription)
-			x.dir.dataset_description = fileListDataDescription{1};
-		end
-		if ~isempty(fileListDataPar)
-			x.dir.dataPar = fileListDataPar{1};
-		end
-	elseif exist(x.DataParPath,'file'))
-		% Input is either a sourceStructure.json, dataset_description.json or dataPar.json
-		warning('You provided a descriptive JSON file. We recommend to use the study root folder instead...');
-	    SelectParFile = false; % Does not need to be inserted a second time
-	    [~, ~, extensionJSON] = fileparts(x.DataParPath)
-	    if strcmp(extensionJSON,'.JSON')
-	    	% Try to find out type by name
-	    	if regexp(x.DataParPath, 'sourceStructure')
-	    		x.dataParType = 'sourceStructure';
-	    		x.dir.sourceStructure = x.DataParPath;
-	    	elseif regexp(x.DataParPath, 'dataset_description')
-	    		x.dataParType = 'dataset_description';
-	    		x.dir.dataset_description = x.DataParPath;
-	    	elseif regexp(x.DataParPath, 'dataPar')
-	    		x.dataParType = 'dataParFile';
-	    		x.dir.dataPar = x.DataParPath;
-	    	else
-	    		% No files with correct names found
-	    		error('No matching JSON files found...');
-	    	end
-		end
-	else
-		if x.bProcessData
-			x.DataParPath = input('Please insert the correct path to your study directory: ');
-		end
-	end
-
-	% Try to find "dir" fields that were not found above
-	if ~isfield(x.dir,'sourceStructure')
-
-	end
-	if ~isfield(x.dir,'studyPar')
-
-	end
-	if ~isfield(x.dir,'dataset_description')
-
-	end
-	if ~isfield(x.dir,'dataPar')
-
-	end
-
-
-	
-
-    % Recheck the DataPar/sourceStructure file, which is possibly not a file or does not exist
-    if ~exist(x.DataParPath,'file')
-        if x.bImportData || x.bProcessData
-            fprintf('DataPar file does not exist, ExploreASL will only be initialized...\n');
+    % Check if the DataParPath is a directory (NEW - ASL BIDS)
+    x.dataParType = 'unknown'; % Fallback
+    if x.opts.bImportData || x.opts.bProcessData
+        % Create directory field if it doesn't exist already
+        if ~isfield(x, 'dir')
+            x.dir = struct;
         end
-        x.bProcessData = 0;
-        x.ProcessModules = [0 0 0];
-    else % DataPar file/folder exists
-        if strcmp(x.dataParType,'dataParFile') % It is a dataParFile, so do not run the BIDS import workflow
-            if x.bProcessData==0 || x.bProcessData==2
-                x.bProcessData = 2; % Initialize & load but do not process
-                x.bReinitialize = false; % Do not reinitialize if we only load the data
+        if exist(x.opts.DataParPath,'dir')
+            % ASL-BIDS studyRoot directory
+            x.dir.StudyRoot = x.opts.DataParPath;
+            x.dataParType = 'directory';
+            % Search for descriptive JSON files
+            fileListSourceStructure = xASL_adm_GetFileList(x.dir.StudyRoot, 'sourceStructure*.json');
+            fileListStudyPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'studyPar*.json');
+            fileListDataDescription = xASL_adm_GetFileList(fullfile(x.dir.StudyRoot, 'rawdata'), 'dataset_description.json');
+            fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar*.json');
+            % Assign fields
+            if ~isempty(fileListSourceStructure)
+                x.dir.sourceStructure = fileListSourceStructure{1};
             end
+            if ~isempty(fileListStudyPar)
+                x.dir.studyPar = fileListStudyPar{1};
+            end
+            if ~isempty(fileListDataDescription)
+                x.dir.dataset_description = fileListDataDescription{1};
+            end
+            if ~isempty(fileListDataPar)
+                x.dir.dataPar = fileListDataPar{1};
+            end
+        elseif exist(x.opts.DataParPath,'file')
+            % Temporary functionality, this will lead to an error starting v2.0.0
+            [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath_invalid_starting_2_0(x);
+        else
+            if x.opts.bProcessData
+                x.opts.DataParPath = input('Please insert the path to your study directory: ');
+            end
+        end
+
+        % Try to find "dir" fields that were not found above
+        if ~isfield(x.dir,'sourceStructure')
+            x.dir.sourceStructure = '';
+        end
+        if ~isfield(x.dir,'studyPar')
+            x.dir.studyPar = '';
+        end
+        if ~isfield(x.dir,'dataset_description')
+            x.dir.dataset_description = '';
+        end
+        if ~isfield(x.dir,'dataPar')
+            x.dir.dataPar = '';
         end
     end
 
+    % Recheck the JSON files (do they exist and which ones do)
+    if isfield(x,'dir')
+        bSourceStructure = exist(x.dir.sourceStructure,'file');
+        bDatasetDescription = exist(x.dir.dataset_description,'file');
+        bDataPar = exist(x.dir.dataPar,'file');
+    else
+        bSourceStructure = false;
+        bDatasetDescription = false;
+        bDataPar = false;
+    end
+    
+    if ~bSourceStructure && ~bDatasetDescription && ~bDataPar
+        if x.opts.bImportData || x.opts.bProcessData
+            fprintf('Neither the sourceStructure.json, dataset_description.json nor dataPar.json exist, ExploreASL will only be initialized...\n');
+        end
+        x.opts.bProcessData = 0;
+        x.opts.ProcessModules = [0 0 0];
+    else
+        % At least one of the JSON files exists
+        
+        if strcmp(x.dataParType,'dataParFile')
+            % It is a dataPar.json, so do not run the BIDS import workflow
+            if x.opts.bProcessData==0 || x.opts.bProcessData==2
+                x.opts.bProcessData = 2; % Initialize & load but do not process
+                x.bReinitialize = false; % Do not reinitialize if we only load the data
+            end
+        end
+        
+        if strcmp(x.dataParType,'sourceStructure') || strcmp(x.dataParType,'dataset_description')
+            % It is a sourceStructure.json or dataset_description.json, so we run the import workflow
+            if x.opts.bProcessData==0 || x.opts.bProcessData==2
+                x.opts.bProcessData = 2; % Initialize & load but do not process
+                x.bReinitialize = true; % Do not reinitialize if we only load the data
+            end
+        end
+        
+    end
+
     % Check output
-    if x.bProcessData>0 && nargout==0
+    if x.opts.bProcessData>0 && nargout==0
         warning('Data loading requested but no output structure defined');
         fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
     end
     
     % Try to catch unexpected inputs
-    if strcmp(x.dataParType,'unknown') && x.bProcessData>0 && x.bImportData==0
-        fprintf('You are trying to process a dataset, without providing a DataPar file or running the import workflow...\n');
-        x.bProcessData = 0;
+    if strcmp(x.dataParType,'unknown') && x.opts.bProcessData>0 && x.opts.bImportData==0
+        fprintf('You are trying to process a dataset, without providing a dataPar.json file or running the import workflow...\n');
+        x.opts.bProcessData = 0;
     end
 
+
+end
+
+
+%% -----------------------------------------------------------------------
+% Check if the ExploreASL pipeline should be run or not
+function [x] = ExploreASL_Initialize_GetBooleansImportProcess(x)
+
+    if sum(x.opts.ImportModules)>0
+        x.opts.bImportData = 1; % Importing data
+        x.opts.bReinitialize = true;
+    else
+        x.opts.bImportData = 0; % Importing data
+        x.opts.bReinitialize = false;
+    end
+    if sum(x.opts.ProcessModules)>0
+        x.opts.bProcessData = 1; % Loading & processing dataset
+    else
+        x.opts.bProcessData = 0; % Only initialize ExploreASL functionality
+    end
+    if ~x.opts.bProcessData && ~x.opts.bImportData
+        x.opts.bReinitialize = false;
+    end
+
+end
+
+
+%% -----------------------------------------------------------------------
+% Give some feedback
+function ExploreASL_Initialize_basicFeedback(x)
+
+    % Report string
+    reportProcess = '';
+    if x.opts.bProcessData==0
+        reportProcess = 'run the initialization';
+    elseif x.opts.bProcessData==1
+        reportProcess = 'run the processing pipeline';
+    elseif x.opts.bProcessData==2
+        reportProcess = 'load the dataset';
+    end
+    if x.opts.bImportData==1
+        reportImport = 'will run the import workflow and ';
+    else
+        reportImport = '';
+    end
+    % Print feedback
+    fprintf('ExploreASL %swill %s...\n',reportImport,reportProcess);
+
+end
+
+
+%% -----------------------------------------------------------------------
+function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath_invalid_starting_2_0(x)
+
+    % Input is either a sourceStructure.json, dataset_description.json or dataPar.json
+    warning('You provided a descriptive JSON file. We recommend to use the study root folder instead...');
+    SelectParFile = false; % Does not need to be inserted a second time
+    [~, ~, extensionJSON] = fileparts(x.opts.DataParPath);
+    if strcmp(extensionJSON,'.json') || strcmp(extensionJSON,'.JSON')
+        % Try to find out type by name
+        if ~isempty(regexp(x.opts.DataParPath, 'sourceStructure', 'once'))
+            x.dataParType = 'sourceStructure';
+            x.dir.sourceStructure = x.opts.DataParPath;
+        elseif ~isempty(regexp(x.opts.DataParPath, 'dataset_description', 'once'))
+            x.dataParType = 'dataset_description';
+            x.dir.dataset_description = x.opts.DataParPath;
+        elseif ~isempty(regexp(x.opts.DataParPath, 'dataPar', 'once'))
+            x.dataParType = 'dataParFile';
+            x.dir.dataPar = x.opts.DataParPath;
+        else
+            % No files with correct names found
+            error('No matching JSON files found...');
+        end
+    end
+    
+    % Try to find study root from existing files
+    if isfield(x.dir,'sourceStructure')
+        % We expect the sourceStructure.json to be within the study root folder
+        [x.dir.StudyRoot, ~] = fileparts(x.dir.sourceStructure);
+    end
+    if isfield(x.dir,'dataset_description')
+        % We expect the dataset_description.json to be within the rawdata folder
+        [rawdataFolder, ~] = fileparts(x.dir.dataset_description);
+        x.dir.StudyRoot = fileparts(rawdataFolder);
+    end
+    if isfield(x.dir,'dataParFile')
+        % We expect the dataPar.json to be within the study root folder
+        [x.dir.StudyRoot, ~] = fileparts(x.dir.dataParFile);
+    end
 
 end
 

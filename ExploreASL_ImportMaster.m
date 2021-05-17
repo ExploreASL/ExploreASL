@@ -19,40 +19,53 @@ function [x] = ExploreASL_ImportMaster(x)
 
     %% Import Workflow
     
-    % We expect x.DataParPath to be the sourceStructure.json file, so the root directory should be the study directory
-	[x.StudyRoot,~,~] = xASL_fileparts(x.DataParPath);
+    % We expect x.opts.DataParPath to be the sourceStructure.json file, so the root directory should be the study directory
+	[x.dir.StudyRoot,~,~] = xASL_fileparts(x.opts.DataParPath);
 	
     % Check if at least one of the three steps should be performed
-    if sum(x.ImportModules)>0
-        if ~isempty(x.DataParPath)
-            if exist(x.DataParPath,'file') && ~exist(x.DataParPath,'dir')
-                % DICOM TO NII
-                if x.ImportModules(1)==1
-                    xASL_module_Import(x.StudyRoot, x.DataParPath, [], [1 0 0], false, true, false, false, x);
-                end
-                % NII TO BIDS
-                if x.ImportModules(2)==1
-                    [x] = xASL_module_Import(x.StudyRoot, x.DataParPath, [], [0 1 0], false, true, false, false, x);
-                end
-                % ANONYMIZE
-                if x.ImportModules(3)==1
-                    [x] = xASL_module_Import(x.StudyRoot, x.DataParPath, [], [0 0 1], false, true, false, false, x);
-                end
-                % BIDS TO LEGACY
-                if x.ImportModules(4)==1
-                    x = xASL_imp_BIDS2Legacy(x);
-                end
+    missingFields = false; % Fallback
+    if sum(x.opts.ImportModules)>0
+        % DICOM TO NII
+        if x.opts.ImportModules(1)==1
+            if ~isempty(x.dir.sourceStructure)
+                xASL_module_Import(x.dir.StudyRoot, x.opts.DataParPath, [], [1 0 0], false, true, false, false, x);
             else
-                warning('ImportModules was set to 1, but the sourceStructure file does not exist');
+                missingFields = true;
             end
-        else
-            warning('ImportModules was set to 1, but there is no DataParPath, Import will not be executed');
         end
+        % NII TO BIDS
+        if x.opts.ImportModules(2)==1
+            if ~isempty(x.dir.sourceStructure)
+                [x] = xASL_module_Import(x.dir.StudyRoot, x.opts.DataParPath, [], [0 1 0], false, true, false, false, x);
+            else
+                missingFields = true;
+            end
+        end
+        % ANONYMIZE
+        if x.opts.ImportModules(3)==1
+            if ~isempty(x.dir.StudyRoot)
+                [x] = xASL_module_Import(x.dir.StudyRoot, x.opts.DataParPath, [], [0 0 1], false, true, false, false, x);
+            else
+                missingFields = true;
+            end
+        end
+        % BIDS TO LEGACY
+        if x.opts.ImportModules(4)==1
+            if ~isempty(x.dir.dataset_description)
+                x = xASL_imp_BIDS2Legacy(x);
+            else
+                missingFields = true;
+            end
+        end
+    end
+
+    if missingFields
+        warning('Import workflow is turned on, but at least one required JSON file is missing...');
     end
     
     % Reset the import parameter (for the second initialization including the loading of the dataset)
-    x.bImportData = 0;
-    x.ImportModules = [0 0 0 0];
+    x.opts.bImportData = 0;
+    x.opts.ImportModules = [0 0 0 0];
     
 end
 

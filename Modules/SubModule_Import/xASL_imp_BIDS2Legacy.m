@@ -37,14 +37,14 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 		end
 	else
 		%% 1.2 The input is dataPar.json or sourceStructure.json - have to look for a rawdata folder
-		pathRawData = fullfile(x.StudyRoot,'rawdata');
+		pathRawData = fullfile(x.dir.StudyRoot,'rawdata');
 		% Check the if the correct BIDS structure is in place
 		if ~exist(pathRawData,'dir')
 			error('Path rawdata does not exist');
 		elseif ~exist(fullfile(pathRawData,'dataset_description.json'),'file')
 			error('File dataset_description.json is not found');
 		else
-			localStudyRoot = x.StudyRoot;
+			localStudyRoot = x.dir.StudyRoot;
 		end
 	end
 

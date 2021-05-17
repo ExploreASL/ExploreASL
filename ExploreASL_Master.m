@@ -71,23 +71,25 @@ function [x] = ExploreASL_Master(varargin)
     
     % -----------------------------------------------------------------------------
     % Import Master
-    x = ExploreASL_ImportMaster(x);
+    if x.opts.bImportData
+        x = ExploreASL_ImportMaster(x);
+    end
     
     % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
-    if x.bReinitialize > 0
-        x = ExploreASL_Initialize(x.DataParPath, x.ImportModules, x.ProcessModules, x.bPause, x.iWorker, x.nWorkers);
+    if x.opts.bReinitialize > 0
+        x = ExploreASL_Initialize(x.opts.DataParPath, x.opts.ImportModules, x.opts.ProcessModules, x.opts.bPause, x.opts.iWorker, x.opts.nWorkers);
     end
     
     % -----------------------------------------------------------------------------
     % Print user feedback
-    if x.bProcessData==0 || x.bProcessData==2
-        if x.bProcessData==2 && nargout==0
+    if x.opts.bProcessData==0 || x.opts.bProcessData==2
+        if x.opts.bProcessData==2 && nargout==0
             warning('Data loading requested but no output structure defined');
             fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
         end
         return; % skip processing
-    elseif ~isdeployed && x.bPause % if this is true, we skip the break here
+    elseif ~isdeployed && x.opts.bPause % if this is true, we skip the break here
         fprintf('%s\n','Press any key to start processing & analyzing');
         fprintf('Please ensure you have a read-only copy of your original data as they may be overwritten\n');
         fprintf('%s\n','Or press CTRL/command-C to cancel...  ');
@@ -108,7 +110,7 @@ function [x] = ExploreASL_Master(varargin)
     %  9) Get tissue volumes (incl WMH if available)
     % 10) Visual & automatic QC
 
-    if x.ProcessModules(1)==1
+    if x.opts.ProcessModules(1)==1
         [~, x] = xASL_Iteration(x,'xASL_module_Structural');
         % The following DARTEL module is an optional extension of the structural module
         % to create population-specific templates
@@ -118,7 +120,7 @@ function [x] = ExploreASL_Master(varargin)
             [~, x] = xASL_Iteration(x,'xASL_module_DARTEL');
         end
         % Now only check the availability of files when not running parallel
-        if x.nWorkers==1; xASL_adm_CreateFileReport(x); end        
+        if x.opts.nWorkers==1; xASL_adm_CreateFileReport(x); end        
     end
 
     % Optional modules
@@ -143,7 +145,7 @@ function [x] = ExploreASL_Master(varargin)
     %  9    Visual check
     % 10    WAD-QC
     
-    if x.ProcessModules(2)==1
+    if x.opts.ProcessModules(2)==1
         [~, x] = xASL_Iteration(x,'xASL_module_ASL');
         % Now only check the availability of files when not running parallel
         if x.nWorkers==1; xASL_adm_CreateFileReport(x); end    
@@ -154,7 +156,7 @@ function [x] = ExploreASL_Master(varargin)
     %% 3    xASL_module_Population
     % Performs all group-level processing & QC
 
-    if x.ProcessModules(3)==1
+    if x.opts.ProcessModules(3)==1
         [~, x] = xASL_Iteration(x,'xASL_module_Population');
     end
 
