@@ -51,7 +51,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     templatesDir = fullfile(baseOutputFolder,'templates');
     
     % Copy and modify the index README
-    xASL_Copy(fullfile(x.MyPath,'README.md'),fullfile(outputFolder,'index.md'));
+    xASL_Copy(fullfile(x.MyPath,'README.md'),fullfile(outputFolder,'index.md'),1);
     % Logo
     swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(Design/ExploreASL_logoHeader.png)',...
@@ -62,16 +62,16 @@ function xASL_adm_DocInitialize(baseOutputFolder)
                   '(./img/ExploreASL_Workflow.jpg "Workflow ExploreASL")');
               
     % Copy the REQUIREMENTS file
-    xASL_Copy(fullfile(templatesDir,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'));
+    xASL_Copy(fullfile(templatesDir,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'),1);
     
     % Copy the ABOUT file
-    xASL_Copy(fullfile(templatesDir,'ABOUT.md'),fullfile(outputFolder,'About.md'));
+    xASL_Copy(fullfile(templatesDir,'ABOUT.md'),fullfile(outputFolder,'About.md'),1);
     
     % Copy the TUTORIALS files
-    xASL_Copy(fullfile(templatesDir,'TUTORIALS-ASL-BIDS.md'),fullfile(outputFolder,'Tutorials-ASL-BIDS.md'));
-    xASL_Copy(fullfile(templatesDir,'TUTORIALS-BASICS.md'),fullfile(outputFolder,'Tutorials-Basics.md'));
-    xASL_Copy(fullfile(templatesDir,'TUTORIALS-QC.md'),fullfile(outputFolder,'Tutorials-QC.md'));
-    xASL_Copy(fullfile(templatesDir,'TUTORIALS-ADVANCED.md'),fullfile(outputFolder,'Tutorials-Advanced.md'));
+    xASL_Copy(fullfile(templatesDir,'TUTORIALS-ASL-BIDS.md'),fullfile(outputFolder,'Tutorials-ASL-BIDS.md'),1);
+    xASL_Copy(fullfile(templatesDir,'TUTORIALS-BASICS.md'),fullfile(outputFolder,'Tutorials-Basics.md'),1);
+    xASL_Copy(fullfile(templatesDir,'TUTORIALS-QC.md'),fullfile(outputFolder,'Tutorials-QC.md'),1);
+    xASL_Copy(fullfile(templatesDir,'TUTORIALS-ADVANCED.md'),fullfile(outputFolder,'Tutorials-Advanced.md'),1);
     
     % Create the functions markdown file
     xASL_adm_DocCrawler(fullfile(x.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
