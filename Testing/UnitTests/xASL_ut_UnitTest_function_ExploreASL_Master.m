@@ -420,8 +420,8 @@ end
 % ...
 
 % Compare image data
-groundTruthM0File = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','002_ground_truth_m0.nii');
-groundTruthPerfusionFile = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','002_ground_truth_perfusion_rate.nii');
+groundTruthM0File = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','003_ground_truth_m0.nii');
+groundTruthPerfusionFile = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','003_ground_truth_perfusion_rate.nii');
 derivedM0File = fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','M0.nii');
 derivedCBFFile = fullfile(droTestPatient,'derivatives','ExploreASL','Population','qCBF_sub-Sub1_ASL_1.nii');
 
