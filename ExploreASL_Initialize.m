@@ -385,6 +385,16 @@ end
 function [x] = ExploreASL_Initialize_checkDataParPath(x)
 
 
+	% Check if the DataParPath is a directory (NEW - ASL BIDS)
+	if exist(x.DataParPath,'dir'))
+		% ASL-BIDS studyRoot directory
+		x.StudyRoot = x.DataParPath;
+	elseif exist(x.DataParPath,'file'))
+		% Input is either a sourceStructure.json, dataset_description.json or dataPar.json
+		
+	end
+
+
 	% Check if pipeline should be run, but there is no DataParPath
     if x.bProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
         x.DataParPath = input('Please insert the path to your DataParFile: ');
