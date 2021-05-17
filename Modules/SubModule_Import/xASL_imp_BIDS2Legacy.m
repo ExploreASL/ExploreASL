@@ -12,10 +12,10 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    BIDS to Legacy conversion script which calls xASL_bids_BIDS2Legacy.
 %
-% 1. Go through all studies
-% 2. Convert only those containing raw data
-% - 1. Clean the old data
-% - 2. Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
+% 1. Start with checking dataset_description.json & rawdata
+% - 1. The input is dataset_description.json in the rawdata folder
+% - 2. The input is dataPar.json or sourceStructure.json - have to look for a rawdata folder
+% 2. Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
 % 3. Overwrite DataParPath
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -25,70 +25,43 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 
 
     %% 1. Start with checking dataset_description.json & rawdata
-    [Fpath, Ffile, Fext] = fileparts(x.DataParPath);
-    if ~strcmp([Ffile Fext], 'dataset_description.json')
-        error('Input argument should be dataset_description.json, invalid input');
-    end
-    [x.StudyRoot, Ffile] = fileparts(Fpath);
-    if ~strcmp(Ffile, 'rawdata')
-        error('Invalid folder in which dataset_description.json was found, should be /rawdata');
-    end
-    
-    %% 2.1 Clean the old data
-    dirDerivatives = fullfile(x.StudyRoot, 'derivatives');
-    % Note that we cannot remove derivatives here! This can potentially
-    % contain output from other pipelines...
-    
-    % Also the cleaning of old data is done properly in xASL_bids_BIDS2Legacy
+    % Either the rawdata/dataset_description.json was provided
+	% Or the dataPar.json was provided and we have to search was dataset_description.json
 
-    %% 2.2 Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
-    fListDataPar = xASL_adm_GetFileList(x.StudyRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-    if isempty(fListDataPar)
-        fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
-        % Fill the dataPars with default parameters
-        dataPar = xASL_bids_BIDS2Legacy(x.StudyRoot, 1, []);
-    else
-        % Fill the dataPars with the provided parameters
-        dataPar = spm_jsonread(fListDataPar{1});
-        dataPar = xASL_bids_BIDS2Legacy(x.StudyRoot, 1, dataPar);
-    end
+	[Fpath, Ffile, Fext] = fileparts(x.DataParPath);
+	if strcmp([Ffile Fext], 'dataset_description.json')
+		%% 1.1 The input is dataset_description.json in the rawdata folder
+		[localStudyRoot, Ffile] = fileparts(Fpath);
+		if ~strcmp(Ffile, 'rawdata')
+			error('Invalid folder in which dataset_description.json was found, should be /rawdata');
+		end
+	else
+		%% 1.2 The input is dataPar.json or sourceStructure.json - have to look for a rawdata folder
+		pathRawData = fullfile(x.StudyRoot,'rawdata');
+		% Check the if the correct BIDS structure is in place
+		if ~exist(pathRawData,'dir')
+			error('Path rawdata does not exist');
+		elseif ~exist(fullfile(pathRawData,'dataset_description.json'),'file')
+			error('File dataset_description.json is not found');
+		else
+			localStudyRoot = x.StudyRoot;
+		end
+	end
 
-    
-    %% 3. Overwrite DataParPath
-    x.DataParPath = dataPar.x.DataParPath;
+	%% 2. Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
+	fListDataPar = xASL_adm_GetFileList(localStudyRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+	if length(fListDataPar) < 1
+		fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
+		% Fill the dataPars with default parameters
+		dataPar = xASL_bids_BIDS2Legacy(localStudyRoot, 1, []);
+	else
+		% Fill the dataPars with the provided parameters
+		dataPar = spm_jsonread(fListDataPar{1});
+		dataPar = xASL_bids_BIDS2Legacy(localStudyRoot, 1, dataPar);
+	end
 
-
-%     %% 1. Go through all studies
-%     ListFolders = xASL_adm_GetFileList(x.StudyRoot, '^.+$', 'FPListRec', [0 Inf], 1);
-%     for iList=1:numel(ListFolders)
-%         %% 2. Convert only those containing raw data
-%         [thisRootFolder,thisFolderName,~] = xASL_fileparts(ListFolders{iList});
-%         if strcmp(thisFolderName,'rawdata') && exist(ListFolders{iList},'dir')
-%             
-%             %% 2.1 Clean the old data
-%             if exist(fullfile(ListFolders{iList}, 'derivatives'), 'dir')
-%                 fprintf('Delete existing derivatives folders...\n');
-%                 diary('off');
-%                 fclose('all'); % ensure that no file is locked
-%                 xASL_delete(fullfile(ListFolders{iList}, 'derivatives'),true);
-%             end
-% 
-%             %% 2.2 Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
-%             fListDataPar = xASL_adm_GetFileList(x.StudyRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-%             if length(fListDataPar) < 1
-%                 fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
-%                 % Fill the dataPars with default parameters
-%                 dataPar = xASL_bids_BIDS2Legacy(thisRootFolder, 1, []);
-%             else
-%                 % Fill the dataPars with the provided parameters
-%                 dataPar = spm_jsonread(fListDataPar{1});
-%                 dataPar = xASL_bids_BIDS2Legacy(thisRootFolder, 1, dataPar);
-%             end
-%         end
-%     end
-%     
-%     %% 3. Overwrite DataParPath
-%     x.DataParPath = dataPar.x.DataParPath;
+	%% 3. Overwrite DataParPath
+	x.DataParPath = dataPar.x.DataParPath;
     
     
 end
