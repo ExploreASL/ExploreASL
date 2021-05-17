@@ -123,53 +123,8 @@ function [x] = ExploreASL_Initialize(varargin)
     end
     
     
-    %% Check DataParFile
-    
-    % Check if pipeline should be run, but there is no DataParFile
-    if x.bProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
-        x.DataParPath = input('Please insert the path to your DataParFile: ');
-    end
-    
-    % Read file
-    if exist(x.DataParPath,'file')==2
-        SelectParFile = false; % Does not need to be inserted a second time
-        jsonContent = spm_jsonread(x.DataParPath);
-        if isfield(jsonContent,'x')
-            x.dataParType = 'dataParFile';
-        else
-            x.dataParType = 'sourceStructure';
-        end
-    else
-        x.dataParType = 'unknown';
-    end
-
-    % Recheck the DataPar/sourceStructure file, which is possibly not a file or does not exist
-    if ~exist(x.DataParPath,'file')
-        if x.bImportData || x.bProcessData
-            fprintf('DataPar file does not exist, ExploreASL will only be initialized...\n');
-        end
-        x.bProcessData = 0;
-        x.ProcessModules = [0 0 0];
-    else % DataPar file/folder exists
-        if strcmp(x.dataParType,'dataParFile') % It is a dataParFile, so do not run the BIDS import workflow
-            if x.bProcessData==0 || x.bProcessData==2
-                x.bProcessData = 2; % Initialize & load but do not process
-                x.bReinitialize = false; % Do not reinitialize if we only load the data
-            end
-        end
-    end
-
-    % Check output
-    if x.bProcessData>0 && nargout==0
-        warning('Data loading requested but no output structure defined');
-        fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
-    end
-    
-    % Try to catch unexpected inputs
-    if strcmp(x.dataParType,'unknown') && x.bProcessData>0 && x.bImportData==0
-        fprintf('You are trying to process a dataset, without providing a DataPar file or running the import workflow...\n');
-        x.bProcessData = 0;
-    end
+    %% Check DataParPath
+    [x] = ExploreASL_Initialize_checkDataParPath(x);
     
     
     % Give some feedback
@@ -423,6 +378,60 @@ function x = ExploreASL_Initialize_storeParsedInput(parameters)
     x.iWorker = parameters.iWorker;
     x.nWorkers = parameters.nWorkers;
     
+end
+
+
+%% -----------------------------------------------------------------------
+function [x] = ExploreASL_Initialize_checkDataParPath(x)
+
+
+	% Check if pipeline should be run, but there is no DataParPath
+    if x.bProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
+        x.DataParPath = input('Please insert the path to your DataParFile: ');
+    end
+    
+    % Read file
+    if exist(x.DataParPath,'file')==2
+        SelectParFile = false; % Does not need to be inserted a second time
+        jsonContent = spm_jsonread(x.DataParPath);
+        if isfield(jsonContent,'x')
+            x.dataParType = 'dataParFile';
+        else
+            x.dataParType = 'sourceStructure';
+        end
+    else
+        x.dataParType = 'unknown';
+    end
+
+    % Recheck the DataPar/sourceStructure file, which is possibly not a file or does not exist
+    if ~exist(x.DataParPath,'file')
+        if x.bImportData || x.bProcessData
+            fprintf('DataPar file does not exist, ExploreASL will only be initialized...\n');
+        end
+        x.bProcessData = 0;
+        x.ProcessModules = [0 0 0];
+    else % DataPar file/folder exists
+        if strcmp(x.dataParType,'dataParFile') % It is a dataParFile, so do not run the BIDS import workflow
+            if x.bProcessData==0 || x.bProcessData==2
+                x.bProcessData = 2; % Initialize & load but do not process
+                x.bReinitialize = false; % Do not reinitialize if we only load the data
+            end
+        end
+    end
+
+    % Check output
+    if x.bProcessData>0 && nargout==0
+        warning('Data loading requested but no output structure defined');
+        fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
+    end
+    
+    % Try to catch unexpected inputs
+    if strcmp(x.dataParType,'unknown') && x.bProcessData>0 && x.bImportData==0
+        fprintf('You are trying to process a dataset, without providing a DataPar file or running the import workflow...\n');
+        x.bProcessData = 0;
+    end
+
+
 end
 
 
