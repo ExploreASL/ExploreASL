@@ -28,7 +28,8 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 %   x                   - if x is provided, initialization of ExploreASL is skipped
 %
 %
-% OUTPUT: n/a
+% OUTPUT: 
+%   x                   - ExploreASL x structure
 %
 % OUTPUT FILES:
 %   //AnalysisDir/dcm2niiCatchedErrors.(mat|json) - overview of catched dcm2nii errors, or other errors in this function
@@ -220,22 +221,5 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 
 
 end
-
-
-% Update x.DataParPath to dataset_description.json after NII2BIDS conversion
-function [x] = xASL_imp_Import_UpdateDataParPath(x, studyPath)
-
-    % Search for dataset_description.json within the rawdata subfolder
-    foundFiles = xASL_adm_GetFileList(fullfile(studyPath,'rawdata'),'dataset_description.json');
-    
-    % Check if valid dataset_description.json exists within the rawdata folder
-    if isempty(foundFiles)
-        warning('No valid dataset_description.json found within the rawdata directory...');
-    else
-        x.DataParPath = foundFiles{1};
-    end
-
-end
-
 
 
