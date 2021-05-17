@@ -340,11 +340,11 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectPa
 
     % Check if the DataParPath is a directory (NEW - ASL BIDS)
     x.dataParType = 'unknown'; % Fallback
+    % Create directory field if it doesn't exist already
+    if ~isfield(x, 'dir')
+        x.dir = struct;
+    end
     if x.opts.bImportData || x.opts.bProcessData
-        % Create directory field if it doesn't exist already
-        if ~isfield(x, 'dir')
-            x.dir = struct;
-        end
         if exist(x.opts.DataParPath,'dir')
             % ASL-BIDS studyRoot directory
             x.dir.StudyRoot = x.opts.DataParPath;
@@ -392,14 +392,23 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectPa
     end
 
     % Recheck the JSON files (do they exist and which ones do)
+    
+    % Fallbacks
+    bSourceStructure = false;
+    bDatasetDescription = false;
+    bDataPar = false;
+    
+    % Check if files exist
     if isfield(x,'dir')
-        bSourceStructure = exist(x.dir.sourceStructure,'file');
-        bDatasetDescription = exist(x.dir.dataset_description,'file');
-        bDataPar = exist(x.dir.dataPar,'file');
-    else
-        bSourceStructure = false;
-        bDatasetDescription = false;
-        bDataPar = false;
+        if isfield(x.dir,'sourceStructure')
+            bSourceStructure = exist(x.dir.sourceStructure,'file');
+        end
+        if isfield(x.dir,'dataset_description')
+            bDatasetDescription = exist(x.dir.dataset_description,'file');
+        end
+        if isfield(x.dir,'dataPar')
+            bDataPar = exist(x.dir.dataPar,'file');
+        end
     end
     
     if ~bSourceStructure && ~bDatasetDescription && ~bDataPar

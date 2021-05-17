@@ -20,7 +20,11 @@ function [x] = ExploreASL_ImportMaster(x)
     %% Import Workflow
     
     % We expect x.opts.DataParPath to be the sourceStructure.json file, so the root directory should be the study directory
-	[x.dir.StudyRoot,~,~] = xASL_fileparts(x.opts.DataParPath);
+    if isfield(x, 'dir')
+        if isempty(x.dir.StudyRoot)
+            [x.dir.StudyRoot,~,~] = xASL_fileparts(x.opts.DataParPath);
+        end
+    end
 	
     % Check if at least one of the three steps should be performed
     missingFields = false; % Fallback
@@ -28,7 +32,7 @@ function [x] = ExploreASL_ImportMaster(x)
         % DICOM TO NII
         if x.opts.ImportModules(1)==1
             if ~isempty(x.dir.sourceStructure)
-                xASL_module_Import(x.dir.StudyRoot, x.opts.DataParPath, [], [1 0 0], false, true, false, false, x);
+                xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, false, x);
             else
                 missingFields = true;
             end
@@ -36,7 +40,7 @@ function [x] = ExploreASL_ImportMaster(x)
         % NII TO BIDS
         if x.opts.ImportModules(2)==1
             if ~isempty(x.dir.sourceStructure)
-                [x] = xASL_module_Import(x.dir.StudyRoot, x.opts.DataParPath, [], [0 1 0], false, true, false, false, x);
+                [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, false, x);
             else
                 missingFields = true;
             end
@@ -44,7 +48,7 @@ function [x] = ExploreASL_ImportMaster(x)
         % ANONYMIZE
         if x.opts.ImportModules(3)==1
             if ~isempty(x.dir.StudyRoot)
-                [x] = xASL_module_Import(x.dir.StudyRoot, x.opts.DataParPath, [], [0 0 1], false, true, false, false, x);
+                [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, false, x);
             else
                 missingFields = true;
             end

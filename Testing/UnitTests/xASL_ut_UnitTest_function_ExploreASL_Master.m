@@ -43,43 +43,51 @@ testCondition = true; % Fallback
 if ~isstruct(x)
     testCondition = false;
 end
-if ~isfield(x,'DataParPath'),     testCondition = false;      end
-if ~isfield(x,'ImportModules'),   testCondition = false;      end
-if ~isfield(x,'ProcessModules'),  testCondition = false;      end
-if ~isfield(x,'bPause'),          testCondition = false;      end
-if ~isfield(x,'iWorker'),         testCondition = false;      end
-if ~isfield(x,'nWorkers'),        testCondition = false;      end
+if isfield(x, 'opts')
+    if ~isfield(x.opts,'DataParPath'),     testCondition = false;      end
+    if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
+    if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
+    if ~isfield(x.opts,'bPause'),          testCondition = false;      end
+    if ~isfield(x.opts,'iWorker'),         testCondition = false;      end
+    if ~isfield(x.opts,'nWorkers'),        testCondition = false;      end
+else
+    testCondition = false;
+end
 
 % Now let's check the values
-if isfield(x,'DataParPath')
-    if ~isempty(x.DataParPath) || ~ischar(x.DataParPath)
-        testCondition = false;
+if isfield(x, 'opts')
+    if isfield(x.opts,'DataParPath')
+        if ~isempty(x.opts.DataParPath) || ~ischar(x.opts.DataParPath)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'ImportModules')
-    if length(x.ImportModules)<4 || sum(x.ImportModules)>0 || ~isnumeric(x.ImportModules)
-        testCondition = false;
+    if isfield(x.opts,'ImportModules')
+        if length(x.opts.ImportModules)<4 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'ProcessModules')
-    if length(x.ProcessModules)<3 || sum(x.ProcessModules)>0 || ~isnumeric(x.ProcessModules)
-        testCondition = false;
+    if isfield(x.opts,'ProcessModules')
+        if length(x.opts.ProcessModules)<3 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'bPause')
-    if length(x.bPause)>1 || sum(x.bPause)>0 || ~isnumeric(x.bPause)
-        testCondition = false;
+    if isfield(x.opts,'bPause')
+        if length(x.opts.bPause)>1 || sum(x.opts.bPause)>0 || ~isnumeric(x.opts.bPause)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'iWorker')
-    if length(x.iWorker)>1 || sum(x.iWorker)>1 || ~isnumeric(x.iWorker)
-        testCondition = false;
+    if isfield(x.opts,'iWorker')
+        if length(x.opts.iWorker)>1 || sum(x.opts.iWorker)>1 || ~isnumeric(x.opts.iWorker)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'nWorkers')
-    if length(x.nWorkers)>1 || sum(x.nWorkers)>1 || ~isnumeric(x.nWorkers)
-        testCondition = false;
+    if isfield(x.opts,'nWorkers')
+        if length(x.opts.nWorkers)>1 || sum(x.opts.nWorkers)>1 || ~isnumeric(x.opts.nWorkers)
+            testCondition = false;
+        end
     end
+else
+    testCondition = false;
 end
 
 % Get test duration
@@ -107,43 +115,51 @@ testCondition = true; % Fallback
 if ~isstruct(x)
     testCondition = false;
 end
-if ~isfield(x,'DataParPath'),     testCondition = false;      end
-if ~isfield(x,'ImportModules'),   testCondition = false;      end
-if ~isfield(x,'ProcessModules'),  testCondition = false;      end
-if ~isfield(x,'bPause'),          testCondition = false;      end
-if ~isfield(x,'iWorker'),         testCondition = false;      end
-if ~isfield(x,'nWorkers'),        testCondition = false;      end
+if isfield(x, 'opts')
+    if ~isfield(x.opts,'DataParPath'),     testCondition = false;      end
+    if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
+    if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
+    if ~isfield(x.opts,'bPause'),          testCondition = false;      end
+    if ~isfield(x.opts,'iWorker'),         testCondition = false;      end
+    if ~isfield(x.opts,'nWorkers'),        testCondition = false;      end
+else
+    testCondition = false;
+end
 
 % Now let's check the values
-if isfield(x,'DataParPath')
-    if ~isempty(x.DataParPath) || ~ischar(x.DataParPath)
-        testCondition = false;
+if isfield(x, 'opts')
+    if isfield(x.opts,'DataParPath')
+        if ~isempty(x.opts.DataParPath) || ~ischar(x.opts.DataParPath)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'ImportModules')
-    if length(x.ImportModules)<4 || sum(x.ImportModules)>0 || ~isnumeric(x.ImportModules)
-        testCondition = false;
+    if isfield(x.opts,'ImportModules')
+        if length(x.opts.ImportModules)<4 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'ProcessModules')
-    if length(x.ProcessModules)<3 || sum(x.ProcessModules)>0 || ~isnumeric(x.ProcessModules)
-        testCondition = false;
+    if isfield(x.opts,'ProcessModules')
+        if length(x.opts.ProcessModules)<3 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'bPause')
-    if length(x.bPause)>1 || x.bPause~=0 || ~isnumeric(x.bPause)
-        testCondition = false;
+    if isfield(x.opts,'bPause')
+        if length(x.opts.bPause)>1 || sum(x.opts.bPause)>0 || ~isnumeric(x.opts.bPause)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'iWorker')
-    if length(x.iWorker)>1 || x.iWorker~=1 || ~isnumeric(x.iWorker)
-        testCondition = false;
+    if isfield(x.opts,'iWorker')
+        if length(x.opts.iWorker)>1 || sum(x.opts.iWorker)>1 || ~isnumeric(x.opts.iWorker)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'nWorkers')
-    if length(x.nWorkers)>1 || x.nWorkers~=1 || ~isnumeric(x.nWorkers)
-        testCondition = false;
+    if isfield(x.opts,'nWorkers')
+        if length(x.opts.nWorkers)>1 || sum(x.opts.nWorkers)>1 || ~isnumeric(x.opts.nWorkers)
+            testCondition = false;
+        end
     end
+else
+    testCondition = false;
 end
 
 % Get test duration
@@ -171,43 +187,51 @@ testCondition = true; % Fallback
 if ~isstruct(x)
     testCondition = false;
 end
-if ~isfield(x,'DataParPath'),     testCondition = false;      end
-if ~isfield(x,'ImportModules'),   testCondition = false;      end
-if ~isfield(x,'ProcessModules'),  testCondition = false;      end
-if ~isfield(x,'bPause'),          testCondition = false;      end
-if ~isfield(x,'iWorker'),         testCondition = false;      end
-if ~isfield(x,'nWorkers'),        testCondition = false;      end
+if isfield(x, 'opts')
+    if ~isfield(x.opts,'DataParPath'),     testCondition = false;      end
+    if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
+    if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
+    if ~isfield(x.opts,'bPause'),          testCondition = false;      end
+    if ~isfield(x.opts,'iWorker'),         testCondition = false;      end
+    if ~isfield(x.opts,'nWorkers'),        testCondition = false;      end
+else
+    testCondition = false;
+end
 
 % Now let's check the values
-if isfield(x,'DataParPath')
-    if ~isempty(x.DataParPath) || ~ischar(x.DataParPath)
-        testCondition = false;
+if isfield(x, 'opts')
+    if isfield(x.opts,'DataParPath')
+        if ~isempty(x.opts.DataParPath) || ~ischar(x.opts.DataParPath)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'ImportModules')
-    if length(x.ImportModules)<4 || sum(x.ImportModules)>0 || ~isnumeric(x.ImportModules)
-        testCondition = false;
+    if isfield(x.opts,'ImportModules')
+        if length(x.opts.ImportModules)<4 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'ProcessModules')
-    if length(x.ProcessModules)<3 || sum(x.ProcessModules)>0 || ~isnumeric(x.ProcessModules)
-        testCondition = false;
+    if isfield(x.opts,'ProcessModules')
+        if length(x.opts.ProcessModules)<3 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'bPause')
-    if length(x.bPause)>1 || x.bPause~=0 || ~isnumeric(x.bPause)
-        testCondition = false;
+    if isfield(x.opts,'bPause')
+        if length(x.opts.bPause)>1 || sum(x.opts.bPause)>0 || ~isnumeric(x.opts.bPause)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'iWorker')
-    if length(x.iWorker)>1 || x.iWorker~=1 || ~isnumeric(x.iWorker)
-        testCondition = false;
+    if isfield(x.opts,'iWorker')
+        if length(x.opts.iWorker)>1 || sum(x.opts.iWorker)>1 || ~isnumeric(x.opts.iWorker)
+            testCondition = false;
+        end
     end
-end
-if isfield(x,'nWorkers')
-    if length(x.nWorkers)>1 || x.nWorkers~=1 || ~isnumeric(x.nWorkers)
-        testCondition = false;
+    if isfield(x.opts,'nWorkers')
+        if length(x.opts.nWorkers)>1 || sum(x.opts.nWorkers)>1 || ~isnumeric(x.opts.nWorkers)
+            testCondition = false;
+        end
     end
+else
+    testCondition = false;
 end
 
 % Get test duration
@@ -228,14 +252,14 @@ testTime = tic;
 % Copy test patient
 testPatientSource = fullfile(TestRepository,'UnitTesting','synthetic_dcm','test_patient_2_2_0'); 
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-xASL_Copy(testPatientSource, testPatientDestination);
+xASL_Copy(testPatientSource, testPatientDestination, 1);
 
 % Fallback
 testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[1 0 0 0],0,0,1,1);
+    [x] = ExploreASL_Master(testPatientDestination,[1 0 0 0],0,0,1,1);
 catch ME
     warning('%s', ME.message);
     testCondition = false;
@@ -284,7 +308,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[0 1 0 0],0,0,1,1);
+    [x] = ExploreASL_Master(testPatientDestination,[0 1 0 0],0,0,1,1);
 catch ME
     warning('%s', ME.message);
     testCondition = false;
@@ -342,7 +366,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[0 1 1 1],0,0,1,1);
+    [x] = ExploreASL_Master(testPatientDestination,[0 1 1 1],0,0,1,1);
 catch ME
     warning('%s', ME.message);
     testCondition = false;
@@ -400,7 +424,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL_Master(fullfile(testPatientDestination,'sourceStructure.json'),[0 1 1 1],1,0,1,1);
+    [x] = ExploreASL_Master(testPatientDestination,[0 1 1 1],1,0,1,1);
 catch ME
     warning('%s', ME.message);
     testCondition = false;
