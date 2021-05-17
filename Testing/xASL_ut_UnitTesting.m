@@ -37,7 +37,7 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
     % Try to find the ExploreASL/Testing repository on the same folder level
     [scriptPath,~,~] = fileparts(mfilename('fullpath'));
     potentialTestingDirectory = strrep(scriptPath,fullfile('ExploreASL','Testing'),'Testing');
-    if isfolder(potentialTestingDirectory)
+    if exist(potentialTestingDirectory,'dir')
         fprintf('Testing repository found...\n');
         TestRepository = potentialTestingDirectory;
     else    
