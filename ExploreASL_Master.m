@@ -148,7 +148,7 @@ function [x] = ExploreASL_Master(varargin)
     if x.opts.ProcessModules(2)==1
         [~, x] = xASL_Iteration(x,'xASL_module_ASL');
         % Now only check the availability of files when not running parallel
-        if x.nWorkers==1; xASL_adm_CreateFileReport(x); end    
+        if x.opts.nWorkers==1; xASL_adm_CreateFileReport(x); end    
     end
 
 

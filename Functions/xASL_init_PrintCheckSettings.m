@@ -22,8 +22,8 @@ function x = xASL_init_PrintCheckSettings(x)
     %% 2) Print data/study specific settings
     fprintf('==================================== Additional Settings =====================================\n');
     
-    if x.nWorkers>1
-        fprintf(['I am worker ' num2str(x.iWorker) '/' num2str(x.nWorkers) '\n']);
+    if x.opts.nWorkers>1
+        fprintf(['I am worker ' num2str(x.opts.iWorker) '/' num2str(x.opts.nWorkers) '\n']);
         fprintf('Note that the resulting number of scans mentioned below applies only to this worker\n');
     end
 

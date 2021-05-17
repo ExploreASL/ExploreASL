@@ -245,7 +245,7 @@ end
 
 % ------------------------------------------------------------------------------------------------
 %% 7) Parallelization: If running parallel, select cases for this worker
-if x.nWorkers>1
+if x.opts.nWorkers>1
     nSubjPerWorker = ceil(x.nSubjects/x.nWorkers); % ceil to make sure all subjects are processed
     nSubjSessPerWorker = nSubjPerWorker*x.nSessions;
     iStartSubject = (x.iWorker-1)*nSubjPerWorker+1;

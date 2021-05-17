@@ -22,8 +22,8 @@ else
 end
 
 %% Study-specific
-if and(isfield(x.D, 'ROOT'), isfield(x, 'bProcessData'))
-    if x.bProcessData
+if and(isfield(x.D, 'ROOT'), isfield(x.opts, 'bProcessData'))
+    if x.opts.bProcessData
         x.D.PopDir = fullfile(x.D.ROOT,'Population');
 
         % Structural module
