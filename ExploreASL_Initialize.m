@@ -124,7 +124,7 @@ function [x] = ExploreASL_Initialize(varargin)
     
     
     %% Check DataParPath
-    [x] = ExploreASL_Initialize_checkDataParPath(x);
+    [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectParFile);
     
     
     % Give some feedback
@@ -354,15 +354,6 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
     if isdeployed
         parameters.bPause = 0;
     end
-
-    if sum(parameters.ImportModules)~=0 || sum(parameters.ProcessModules)~=0
-        % If import or processing is requested,
-        % Do not allow continuing without a valid JSON path as input
-        [~, ~, Fext] = fileparts(parameters.DataParPath);
-        if isempty(Fext) || ~strcmpi(Fext, '.json')
-            error('Invalid path, first argument should be a path to a JSON-file');
-        end
-    end
     
 end
 
@@ -382,39 +373,49 @@ end
 
 
 %% -----------------------------------------------------------------------
-function [x] = ExploreASL_Initialize_checkDataParPath(x)
+function [x, SelectParFile] = ExploreASL_Initialize_checkDataParPath(x, SelectParFile)
 
 
 	% Check if the DataParPath is a directory (NEW - ASL BIDS)
 	if exist(x.DataParPath,'dir'))
 		% ASL-BIDS studyRoot directory
-		x.StudyRoot = x.DataParPath;
+		x.dir.StudyRoot = x.DataParPath;
+		% Search for descriptive JSON files
+		fileListSourceStructure = xASL_adm_GetFileList(x.dir.StudyRoot, 'sourceStructure*.json');
+		fileListStudyPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'studyPar*.json');
+		fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar*.json');
+		% Assign fields
+		x.dir.sourceStructure = 
+		x.dir.studyPar =
+		x.dir.dataPar =
 	elseif exist(x.DataParPath,'file'))
 		% Input is either a sourceStructure.json, dataset_description.json or dataPar.json
-		fileListSourceStructure = xASL_adm_GetFileList(x.StudyRoot, 'sourceStructure*.json');
-		fileListStudyPar = xASL_adm_GetFileList(x.StudyRoot, 'studyPar*.json');
-		fileListDataPar = xASL_adm_GetFileList(x.StudyRoot, 'dataPar*.json');
-		% ...
+		warning('You provided a descriptive JSON file. We recommend to use the study root folder instead...');
+	    SelectParFile = false; % Does not need to be inserted a second time
+	    [~, ~, extensionJSON] = fileparts(x.DataParPath)
+	    if strcmp(extensionJSON,'.JSON')
+	    	% Try to find out type by name
+	    	if regexp(x.DataParPath, 'sourceStructure')
+	    		x.dataParType = 'sourceStructure';
+	    		x.dir.sourceStructure = x.DataParPath;
+	    	elseif regexp(x.DataParPath, 'dataset_description')
+
+	    	elseif regexp(x.DataParPath, 'dataPar')
+	    		x.dataParType = 'dataParFile';
+	    		x.dir.dataPar = x.DataParPath;
+	    	else
+	    		% No files with correct names found
+	    		error('No matching JSON files found...');
+	    	end
+		end
+	else
+		if x.bProcessData
+			x.DataParPath = input('Please insert the correct path to your study directory: ');
+		end
 	end
 
 
-	% Check if pipeline should be run, but there is no DataParPath
-    if x.bProcessData && (~isfield(x,'DataParPath') || ~exist(x.DataParPath,'file'))
-        x.DataParPath = input('Please insert the path to your DataParFile: ');
-    end
-    
-    % Read file
-    if exist(x.DataParPath,'file')==2
-        SelectParFile = false; % Does not need to be inserted a second time
-        jsonContent = spm_jsonread(x.DataParPath);
-        if isfield(jsonContent,'x')
-            x.dataParType = 'dataParFile';
-        else
-            x.dataParType = 'sourceStructure';
-        end
-    else
-        x.dataParType = 'unknown';
-    end
+	
 
     % Recheck the DataPar/sourceStructure file, which is possibly not a file or does not exist
     if ~exist(x.DataParPath,'file')
