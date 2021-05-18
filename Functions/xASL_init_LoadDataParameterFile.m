@@ -1,7 +1,26 @@
-%% ==================================================================================
-%% ==================================================================================
 function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile)
-%xASL_init_LoadDataParameterFile
+%xASL_init_LoadDataParameterFile Load data parameter file
+%
+% FORMAT: [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile)
+%
+% INPUT:
+%   x             - ExploreASL x structure (STRUCT, REQUIRED)
+%   DataParPath   - Path to the data parameter file (CHAR ARRAY, PATH, REQUIRED)
+%   SelectParFile - Variable which tells the import workflow if we have to ask the user for the study root directory a second time (BOOLEAN, REQUIRED)
+%
+% OUTPUT:
+%   x       - ExploreASL x structure (STRUCT)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Load data parameter file.
+%
+% EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% REFERENCES:  n/a
+%
+% Copyright 2015-2021 ExploreASL
+
 
     if SelectParFile
         fprintf('ExploreASL requires a data parameter file, which can be either a .m or .json file\n');

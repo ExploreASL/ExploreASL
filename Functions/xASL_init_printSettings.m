@@ -1,8 +1,26 @@
-%% -----------------------------------------------------------------------
-%% Print chosen settings
 function xASL_init_printSettings(x)
+%xASL_init_printSettings Print chosen settings
+%
+% FORMAT: xASL_init_printSettings(x)
+%
+% INPUT:
+%   x       - ExploreASL x structure (STRUCT, REQUIRED)
+%
+% OUTPUT:
+%   n/a
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Print chosen settings.
+%
+% EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% REFERENCES:  n/a
+%
+% Copyright 2015-2021 ExploreASL
 
-    % Fallbacks
+
+    %% Fallbacks
     dcm2nii = '';
     nii2bids = '';
     anonymize = '';
@@ -11,7 +29,7 @@ function xASL_init_printSettings(x)
     ASL = '';
     Population = '';
     
-    % Texts
+    %% Texts
     if x.opts.ImportModules(1)==1,   dcm2nii = 'DCM2NII ';            end
     if x.opts.ImportModules(2)==1,   nii2bids = 'NII2BIDS ';          end
     if x.opts.ImportModules(3)==1,   anonymize = 'ANONYMIZE ';        end
@@ -20,7 +38,7 @@ function xASL_init_printSettings(x)
     if x.opts.ProcessModules(2)==1,  ASL = 'ASL ';                    end
     if x.opts.ProcessModules(3)==1,  Population = 'Population ';      end
     
-    % Printing
+    %% Printing
     fprintf('==================================== ExploreASL Settings =====================================\n');
     if length(x.opts.DataParPath)>70
         fprintf('DataParPath         ...%s\n', x.opts.DataParPath(end-70:end));

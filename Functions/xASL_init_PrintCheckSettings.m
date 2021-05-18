@@ -1,11 +1,31 @@
-%% ==================================================================================
 function x = xASL_init_PrintCheckSettings(x)
-    %xASL_init_PrintCheckSettings Check whether pre-defined settings existed in DATA_PAR.m
-    % Prints these on the screen as the start of the pipeline.
-    % Runs following steps:
-    % 1) Set default settings if not defined
-    % 2) Print data/study specific settings
-    % 3) Print warnings
+%xASL_init_PrintCheckSettings Check whether pre-defined settings existed in dataPar.json
+%
+% FORMAT: x = xASL_init_PrintCheckSettings(x)
+%
+% INPUT:
+%   x       - ExploreASL x structure (STRUCT, REQUIRED)
+%
+% OUTPUT:
+%   x       - ExploreASL x structure (STRUCT)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Check whether pre-defined settings existed in `dataPar.json`.
+%
+% Prints these on the screen as the start of the pipeline.
+% Runs following steps:
+%
+% 1. Set default settings if not defined
+% 2. Print data/study specific settings
+% 3. Print warnings
+%
+% EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% REFERENCES:  n/a
+%
+% Copyright 2015-2021 ExploreASL
+    
 
     %% -----------------------------------------------------------------------
     %% 1) Set default settings if not defined

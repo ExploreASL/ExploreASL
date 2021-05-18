@@ -1,9 +1,23 @@
-%% ==================================================================================
-%% ==================================================================================
 function [x] = xASL_init_DefineIndependentSettings(x)
-%xASL_init_DefineIndependentSettings Define ExploreASL environment
-%parameters, independent of loaded data
-
+%xASL_init_DefineIndependentSettings Define ExploreASL environment parameters, independent of loaded data
+%
+% FORMAT: [x] = xASL_init_DefineIndependentSettings(x)
+%
+% INPUT:
+%   x       - ExploreASL x structure (STRUCT, REQUIRED)
+%
+% OUTPUT:
+%   x       - ExploreASL x structure (STRUCT)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Define ExploreASL environment parameters, independent of loaded data.
+%
+% EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% REFERENCES:  n/a
+%
+% Copyright 2015-2021 ExploreASL
 
 
 %% --------------------------------------------------------------------------------------------------------------------

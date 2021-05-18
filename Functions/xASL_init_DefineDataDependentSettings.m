@@ -1,7 +1,23 @@
-%% ==================================================================================
 function [x] = xASL_init_DefineDataDependentSettings(x)
-%xASL_init_DefineDataDependentSettings Define ExploreASL environment
-%parameters, dependent of loaded data
+%xASL_init_DefineDataDependentSettings Define ExploreASL environment parameters, dependent of loaded data
+%
+% FORMAT: [x] = xASL_init_DefineDataDependentSettings(x)
+%
+% INPUT:
+%   x       - ExploreASL x structure (STRUCT, REQUIRED)
+%
+% OUTPUT:
+%   x       - ExploreASL x structure (STRUCT)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Define ExploreASL environment parameters, dependent of loaded data.
+%
+% EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% REFERENCES:  n/a
+%
+% Copyright 2015-2021 ExploreASL
 
 
 %% --------------------------------------------------------------------------
