@@ -72,7 +72,13 @@ function [x] = ExploreASL_Initialize(varargin)
 
     % Check whether MyPath is correct, otherwise obtain correct folder
     if ~isfield(x, 'MyPath')
-        x.MyPath = '/DummyPath';
+        % Check if we can get the path from the ExploreASL_Initialize path
+        initializePath = fileparts(mfilename('fullpath'));
+        if ~isempty(regexp(initializePath,'ExploreASL$', 'once'))
+            x.MyPath = initializePath;
+        else
+            x.MyPath = '/DummyPath';
+        end
     end
 
     % Get the master script path

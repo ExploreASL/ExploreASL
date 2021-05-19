@@ -105,7 +105,12 @@ function xFlavor = xASL_test_thisFlavor(testingRoot, databaseRoot, flavorName)
     xASL_delete(fullfile(testingRoot,'FlavorDatabaseTest',flavorName,'rawdata'),1);
 
     % Run test
-    [xFlavor] = ExploreASL_Master(fullfile(testingRoot,'FlavorDatabaseTest',flavorName),1,1);
+    try
+        [xFlavor] = ExploreASL_Master(fullfile(testingRoot,'FlavorDatabaseTest',flavorName),1,1);
+    catch ME
+        fprintf('%s\n', flavorName);
+        fprintf('Error: %s\n', ME.message);
+    end
     
     % Fallback
     if ~exist('xFlavor','var')
