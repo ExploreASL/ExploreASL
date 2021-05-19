@@ -83,7 +83,7 @@ function [x] = xASL_imp_BIDS2Legacy(x)
         end
     end
     % Update dataPar path
-	x.dir.dataPar = dataPar.x.DataParPath;
+	x.dir.dataPar = dataPar.x.dir.dataPar;
     
 end
 

@@ -120,10 +120,14 @@ function xFlavor = xASL_test_thisFlavor(testingRoot, databaseRoot, flavorName)
 
     % Run test
     try
-        [xFlavor] = ExploreASL_Master(fullfile(testingRoot,'FlavorDatabaseTest',flavorName),1,1);
+        [xFlavor] = ExploreASL_Master(fullfile(testingRoot,'FlavorDatabaseTest',flavorName),1,[1 1 0]);
     catch ME
-        fprintf('%s\n', flavorName);
-        fprintf('Error: %s\n', ME.message);
+        fprintf(2,'%s\n', flavorName);
+        fprintf(2,'Error: %s\n', ME.message);
+        if size(ME.stack,1)>=1
+            fprintf(2,'File: %s\n', ME.stack(1).name);
+            fprintf(2,'Line: %d\n', ME.stack(1).line);
+        end
     end
     
     % Fallback
