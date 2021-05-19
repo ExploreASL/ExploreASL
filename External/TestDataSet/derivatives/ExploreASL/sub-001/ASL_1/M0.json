@@ -9,12 +9,6 @@
 "SequenceVariant":"SK",
 "ScanOptions":"FS",
 "AcquisitionTime":[14,17],
-"PhilipsRWVSlope":1.25543,
-"PhilipsRWVIntercept":0,
-"PhilipsRescaleSlope":1.25543,
-"PhilipsRescaleIntercept":0,
-"PhilipsScaleSlope":0.000267712,
-"UsePhilipsFloatNotDisplayScaling":1,
 "SliceThickness":4.5,
 "SpacingBetweenSlices":4.5,
 "SAR":0.0145759,
@@ -40,3 +34,4 @@
 "bReproTesting":0,
 "Q":{"BackgroundSuppressionNumberPulses":2,
 "SliceReadoutTime":0.0437647}}
+
