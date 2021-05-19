@@ -10,3 +10,4 @@ __pycache__
 /venv/
 xASL_GUI_run.sh
 *Thumbs.db
+Testing/testConfig.json

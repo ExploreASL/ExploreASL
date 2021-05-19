@@ -1,5 +1,5 @@
-function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
-%xASL_qc_UnitTesting Main script to run all individual unit tests
+function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
+%xASL_test_UnitTesting Main script to run all individual unit tests
 %
 % INPUT:        n/a
 %
@@ -14,7 +14,7 @@ function [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting
 % 				This means you, as a developer, should not use/add ExploreASL
 % 				functions within this script!
 %
-% EXAMPLE:      [UnitTests,UnitTestsTable] = xASL_ut_UnitTesting;
+% EXAMPLE:      [UnitTests,UnitTestsTable] = xASL_test_UnitTesting;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
