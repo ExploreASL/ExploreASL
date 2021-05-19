@@ -82,6 +82,14 @@ function [TestResults] = xASL_test_IntegrationTesting
                                                     fullfile(testConfig.pathTest,'FlavorDatabase'), ...
                                                     flavorList{iFlavor});
     end
+    
+    %% Compare rawdata
+    for iFlavor = 1:numel(flavorList)
+        % Compare rawdata of individual flavor
+        CheckResults(iFlavor) = xASL_test_thisFlavorCheckRawdata(testConfig.pathTest, ...
+                                                    fullfile(testConfig.pathTest,'FlavorDatabase'), ...
+                                                    flavorList{iFlavor});
+    end
 
     % Fallback
     if ~exist('TestResults','var')
@@ -117,6 +125,31 @@ function xFlavor = xASL_test_thisFlavor(testingRoot, databaseRoot, flavorName)
         xFlavor = struct;
     end
     
+
+end
+
+
+%% Check rawdata of individual flavor dataset
+function checkResults = xASL_test_thisFlavorCheckRawdata(testingRoot, databaseRoot, flavorName)
+
+    % Compare rawdata
+    fprintf('Compare rawdata of %s...\n', flavorName);
+    
+    % Get paths
+    pathDataA = fullfile(databaseRoot,flavorName,'rawdata');
+    pathDataB = fullfile(testingRoot,'FlavorDatabaseTest',flavorName,'rawdata');
+    
+    % Copy based comparison
+    if exist(pathDataA,'dir') && exist(pathDataB,'dir')
+        [identical,results] = xASL_bids_CompareStructures(pathDataA,pathDataB,1,[],[],1);
+    else
+        identical = 0;
+        results = struct;
+    end
+    
+    % Return results
+    checkResults.results = results;
+    checkResults.identical = identical;
 
 end
 
