@@ -17,7 +17,7 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 % - 1. The input is dataset_description.json in the rawdata folder
 % - 2. The input is dataPar.json or sourceStructure.json - have to look for a rawdata folder
 % 3. Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
-% 4. Overwrite DataParPath
+% 4. Overwrite StudyRoot
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
@@ -74,11 +74,11 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 		dataPar = xASL_bids_BIDS2Legacy(localStudyRoot, 1, dataPar);
 	end
 
-	%% 4. Overwrite DataParPath
+	%% 4. Overwrite StudyRoot
     fieldsDataPar = fieldnames(dataPar.x);
     % Add fields that are in dataPar.x but missing in x
     for iField = 1:numel(fieldsDataPar)
-        if ~isfield(x,fieldsDataPar{iField,1}) && ~strcmp('DataParPath',fieldsDataPar{iField,1})
+        if ~isfield(x,fieldsDataPar{iField,1}) && ~strcmp('dir',fieldsDataPar{iField,1})
             x.(fieldsDataPar{iField,1}) = dataPar.x.(fieldsDataPar{iField,1});
         end
     end

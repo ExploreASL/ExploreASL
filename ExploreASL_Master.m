@@ -1,10 +1,10 @@
 function [x] = ExploreASL_Master(varargin)
 %ExploreASL_Master ExploreASL pipeline master wrapper calling the individual import & pipeline modules
 %
-% FORMAT: [x] = ExploreASL([DataParPath, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
+% FORMAT: [x] = ExploreASL([StudyRoot, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
 % 
 % INPUT:
-%   DataParPath    - Path to data parameter file (OPTIONAL, DEFAULT = prompting user input)
+%   StudyRoot      - Path to the ASL-BIDS study root directory (OPTIONAL, DEFAULT = prompting user input)
 %
 %   ImportModules  - [DCM2NII, NII2BIDS, ANONYMIZE, BIDS2LEGACY] (OPTIONAL, BOOLEAN ARRAY)
 %                  - DCM2NII = Run the DICOM to NIFTI conversion (BOOLEAN, DEFAULT = 0)
@@ -78,7 +78,7 @@ function [x] = ExploreASL_Master(varargin)
     % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
     if x.opts.bReinitialize > 0
-        x = ExploreASL_Initialize(x.opts.DataParPath, x.opts.ImportModules, x.opts.ProcessModules, x.opts.bPause, x.opts.iWorker, x.opts.nWorkers);
+        x = ExploreASL_Initialize(x.opts.StudyRoot, x.opts.ImportModules, x.opts.ProcessModules, x.opts.bPause, x.opts.iWorker, x.opts.nWorkers);
     end
     
     % -----------------------------------------------------------------------------

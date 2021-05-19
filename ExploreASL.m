@@ -1,7 +1,7 @@
 function [x] = ExploreASL(varargin)
 %ExploreASL Alias to ExploreASL_Master
 %
-% FORMAT: [x] = ExploreASL([DataParPath, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
+% FORMAT: [x] = ExploreASL([StudyRoot, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function calls the masterscript ExploreASL_Master.

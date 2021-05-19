@@ -4,10 +4,7 @@ function [x] = xASL_init_FileSystem(x)
 % FORMAT: [x] = xASL_init_FileSystem(x)
 %
 % INPUT:
-%   DataParPath - path to data parameter file (OPTIONAL, required when ProcessData=true, will then be prompted if omitted)
-%   ProcessData - true if running pipeline on data, false if only initializing ExploreASL (e.g. path management etc, REQUIRED, will be prompted if omitted)
-%   iWorker     - allows parallelization when called externally. iWorker defines which of the parallel ExploreASL calls we are (OPTIONAL, DEFAULT=1)
-%   nWorkers    - allows parallelization when called externally. nWorkers defines how many ExploreASL calls are made in parallel (OPTIONAL, DEFAULT=1)
+%   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % OUTPUT:
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging

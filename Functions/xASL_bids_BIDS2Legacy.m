@@ -279,7 +279,7 @@ if ~(xASL_exist(fullfile(pathLegacy, 'dataPar.json'),'file')==2)
     spm_jsonwrite(fullfile(pathLegacy, 'dataPar.json'), dataPar);
 end
 
-% Overwrite DataParPath in x structure
+% Overwrite dataPar.json in x structure
 fprintf('Overwriting x.dir.dataPar...\n');
 
 % Add the path to the dataPar.x struct that we return to the Master script

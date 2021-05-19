@@ -19,10 +19,10 @@ function [x] = ExploreASL_ImportMaster(x)
 
     %% Import Workflow
     
-    % We expect x.opts.DataParPath to be the sourceStructure.json file, so the root directory should be the study directory
+    % We expect x.opts.StudyRoot to be the sourceStructure.json file, so the root directory should be the study directory
     if isfield(x, 'dir')
         if isempty(x.dir.StudyRoot)
-            [x.dir.StudyRoot,~,~] = xASL_fileparts(x.opts.DataParPath);
+            [x.dir.StudyRoot,~,~] = xASL_fileparts(x.opts.StudyRoot);
         end
     end
 	

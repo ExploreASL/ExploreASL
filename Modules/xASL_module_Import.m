@@ -209,8 +209,8 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     if bRunSubmodules(2)
         % Run NII to BIDS
         xASL_imp_NII2BIDS(imPar, studyPath, studyParPath);
-        % Update x.opts.DataParPath
-        [x] = xASL_imp_Import_UpdateDataParPath(x, studyPath);
+        % Update x.opts.StudyRoot
+        [x] = xASL_imp_Import_UpdateStudyRoot(x, studyPath);
     end
 
 

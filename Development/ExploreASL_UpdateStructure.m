@@ -1,10 +1,10 @@
-function ExploreASL_UpdateStructure(DataParPath, x)
+function ExploreASL_UpdateStructure(StudyRoot, x)
 %ExploreASL_UpdateStructure Updates the structure of the analysis & lock folder from old formats to the current format
 %
-% FORMAT: ExploreASL_UpdateStructure(DataParPath, x)
+% FORMAT: ExploreASL_UpdateStructure(StudyRoot, x)
 %
-% INPUT: (either DataParPath or x is REQUIRED, the other OPTIONAL)
-%   DataParPath - path to data parameter file
+% INPUT: (either StudyRoot or x is REQUIRED, the other OPTIONAL)
+%   StudyRoot   - root directory of asl-bids
 %   x           - struct containing pipeline environment parameters, useful
 %                 when only initializing ExploreASL/debugging
 %
@@ -25,10 +25,10 @@ function ExploreASL_UpdateStructure(DataParPath, x)
 %% Check if we need to initialize ExploreASL
 if nargin>1 && ~isempty(x) && isfield(x,'D') && isfield(x.D,'ROOT')
     % skip initialization
-elseif ~isempty(DataParPath) && exist(DataParPath,'file')
-    x = ExploreASL_Initialize(DataParPath);
+elseif ~isempty(StudyRoot) && exist(StudyRoot,'dir')
+    x = ExploreASL_Initialize(StudyRoot);
 else
-    error(['DataParPath ' DataParPath ' is invalid/doesnt exist']);
+    error(['StudyRoot ' StudyRoot ' is invalid/doesnt exist']);
 end
 
 %% Rename the directory dartel to Population
