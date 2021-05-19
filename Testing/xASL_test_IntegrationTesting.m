@@ -1,4 +1,4 @@
-function [TestResults] = xASL_test_IntegrationTesting
+function [TestResults, CheckResults] = xASL_test_IntegrationTesting
 %xASL_test_IntegrationTesting Main integration testing script
 %
 % INPUT:        n/a
@@ -8,7 +8,7 @@ function [TestResults] = xASL_test_IntegrationTesting
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Integration testing script. Run the full pipeline on the flavor datasets using ExploreASL_Master.
 %
-% EXAMPLE:      [TestResults] = xASL_test_IntegrationTesting;
+% EXAMPLE:      [TestResults, CheckResults] = xASL_test_IntegrationTesting;
 %
 % Your testConfig.json could look like this e.g.:
 %
@@ -95,9 +95,15 @@ function [TestResults] = xASL_test_IntegrationTesting
     if ~exist('TestResults','var')
         TestResults = struct;
     end
+    % Fallback
+    if ~exist('CheckResults','var')
+        CheckResults = struct;
+    end
     
-    % Go back to ExploreASL directory
+    % Go back to ExploreASL directory and reset everything
     cd(testConfig.pathExploreASL);
+    close all
+    diary off
 
 end
 
@@ -148,6 +154,7 @@ function checkResults = xASL_test_thisFlavorCheckRawdata(testingRoot, databaseRo
     end
     
     % Return results
+    checkResults.name = flavorName;
     checkResults.results = results;
     checkResults.identical = identical;
 
