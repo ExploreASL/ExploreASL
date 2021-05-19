@@ -9,6 +9,15 @@ function [TestResults] = xASL_test_IntegrationTesting
 % DESCRIPTION:  Integration testing script. Run the full pipeline on the flavor datasets using ExploreASL_Master.
 %
 % EXAMPLE:      [TestResults] = xASL_test_IntegrationTesting;
+%
+% Your testConfig.json could look like this e.g.:
+%
+% {
+%    "pathExploreASL": "...\\ExploreASL",
+%    "pathTest": "...\\FlavorTests",
+%    "cmdCloneFlavors": "git clone git@github.com:ExploreASL/FlavorDatabase.git"
+% }
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
