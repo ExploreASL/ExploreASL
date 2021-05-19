@@ -41,9 +41,9 @@ function xASL_init_printSettings(x)
     %% Printing
     fprintf('==================================== ExploreASL Settings =====================================\n');
     if length(x.opts.StudyRoot)>70
-        fprintf('StudyRoot         ...%s\n', x.opts.StudyRoot(end-70:end));
+        fprintf('StudyRoot           ...%s\n', x.opts.StudyRoot(end-70:end));
     else
-        fprintf('StudyRoot         %s\n', x.opts.StudyRoot); 
+        fprintf('StudyRoot           %s\n', x.opts.StudyRoot); 
     end
     fprintf('Import Modules      %s%s%s%s\n', dcm2nii, nii2bids, anonymize, bids2legacy);
     fprintf('Process Modules     %s%s%s\n', Structural, ASL, Population);

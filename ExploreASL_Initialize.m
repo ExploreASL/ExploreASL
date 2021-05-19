@@ -559,6 +559,7 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkStudyRoot_invalid_start
     if isfield(x.dir,'sourceStructure')
         % We expect the sourceStructure.json to be within the study root folder
         [x.dir.StudyRoot, ~] = fileparts(x.dir.sourceStructure);
+        x.opts.StudyRoot = x.dir.StudyRoot;
     end
     if isfield(x.dir,'dataset_description')
         % We expect the dataset_description.json to be within the rawdata folder
@@ -568,6 +569,28 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkStudyRoot_invalid_start
     if isfield(x.dir,'dataParFile')
         % We expect the dataPar.json to be within the study root folder
         [x.dir.StudyRoot, ~] = fileparts(x.dir.dataParFile);
+    end
+    
+    % Recheck for other files if studyRoot is known now
+    if isfield(x, 'dir')
+        if isfield(x.dir, 'StudyRoot')
+            fileListStudyPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'studyPar*.json');
+            fileListDataDescription = xASL_adm_GetFileList(fullfile(x.dir.StudyRoot, 'rawdata'), 'dataset_description.json');
+            fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.StudyRoot, 'derivatives', 'ExploreASL'), 'dataPar*.json');
+            if isempty(fileListDataPar)
+                % Derivatives maybe does not exist already, we'll try study root
+                fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar*.json');
+            end
+            if ~isempty(fileListStudyPar)
+                x.dir.studyPar = fileListStudyPar{1};
+            end
+            if ~isempty(fileListDataDescription)
+                x.dir.dataset_description = fileListDataDescription{1};
+            end
+            if ~isempty(fileListDataPar)
+                x.dir.dataPar = fileListDataPar{1};
+            end
+        end
     end
 
 end
