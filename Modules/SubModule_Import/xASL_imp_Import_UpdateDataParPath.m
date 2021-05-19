@@ -1,5 +1,5 @@
 function [x] = xASL_imp_Import_UpdateDataParPath(x, studyPath)
-%xASL_imp_Import_UpdateDataParPath Update x.DataParPath to dataset_description.json after NII2BIDS conversion
+%xASL_imp_Import_UpdateDataParPath Update x.opts.DataParPath to dataset_description.json after NII2BIDS conversion
 %
 % FORMAT: [x] = xASL_imp_Import_UpdateDataParPath(x, studyPath)
 %
@@ -11,7 +11,7 @@ function [x] = xASL_imp_Import_UpdateDataParPath(x, studyPath)
 %   x                   - ExploreASL x structure
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Update x.DataParPath to dataset_description.json after NII2BIDS conversion
+% DESCRIPTION: Update x.opts.DataParPath to dataset_description.json after NII2BIDS conversion
 % EXAMPLE:     n/a
 % __________________________________
 % Copyright 2015-2021 ExploreASL

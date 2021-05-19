@@ -280,10 +280,10 @@ if ~(xASL_exist(fullfile(pathLegacy, 'dataPar.json'),'file')==2)
 end
 
 % Overwrite DataParPath in x structure
-fprintf('Overwriting x.DataParPath...\n');
+fprintf('Overwriting x.dir.dataPar...\n');
 
 % Add the path to the dataPar.x struct that we return to the Master script
-dataPar.x.DataParPath = fullfile(pathLegacy, 'dataPar.json');
+dataPar.x.dir.dataPar = fullfile(pathLegacy, 'dataPar.json');
 
 %% 11. Clean up
 try

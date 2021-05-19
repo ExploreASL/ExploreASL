@@ -246,12 +246,12 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 7) Parallelization: If running parallel, select cases for this worker
 if x.opts.nWorkers>1
-    nSubjPerWorker = ceil(x.nSubjects/x.nWorkers); % ceil to make sure all subjects are processed
+    nSubjPerWorker = ceil(x.nSubjects/x.opts.nWorkers); % ceil to make sure all subjects are processed
     nSubjSessPerWorker = nSubjPerWorker*x.nSessions;
-    iStartSubject = (x.iWorker-1)*nSubjPerWorker+1;
-    iEndSubject = min(x.iWorker*nSubjPerWorker, x.nSubjects);
-    iStartSubjectSession = (x.iWorker-1)*nSubjSessPerWorker+1;
-    iEndSubjectSession = min(x.iWorker*nSubjSessPerWorker, x.nSubjectsSessions);
+    iStartSubject = (x.opts.iWorker-1)*nSubjPerWorker+1;
+    iEndSubject = min(x.opts.iWorker*nSubjPerWorker, x.nSubjects);
+    iStartSubjectSession = (x.opts.iWorker-1)*nSubjSessPerWorker+1;
+    iEndSubjectSession = min(x.opts.iWorker*nSubjSessPerWorker, x.nSubjectsSessions);
     
     if iStartSubject>x.nSubjects
         fprintf('Closing down this worker, had too many workers');
@@ -268,7 +268,7 @@ if x.opts.nWorkers>1
         x.S.SetsID = x.S.SetsID(iStartSubjectSession:iEndSubjectSession, :);
     end
     
-    fprintf(['I am worker ' num2str(x.iWorker) '/' num2str(x.nWorkers) '\n']);
+    fprintf(['I am worker ' num2str(x.opts.iWorker) '/' num2str(x.opts.nWorkers) '\n']);
     fprintf(['I will process subjects ' num2str(iStartSubject) '-' num2str(iEndSubject) '\n']);
 end
 
