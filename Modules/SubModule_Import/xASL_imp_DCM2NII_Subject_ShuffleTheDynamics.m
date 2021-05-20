@@ -146,16 +146,24 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
                     if exist(nii_files{1} ,'file')
                     	% Determine the number of time points within each NIfTI
                         imASL = xASL_io_Nifti2Im(nii_files{1});
-                        numOfTimePoints = int32(size(imASL,4)/length(resultJSON.EchoTime));
+						numberTEs = length(resultJSON.EchoTime);
+                        numberPLDs = int32(size(imASL,4)/numberTEs);
+						
+						% Reorder TEs and PLDs - first cycle TE afterwards PLD
+						vectorOldOrder = zeros(size(imASL,4),1);
+						for iPLD = 1:(double(numberPLDs))
+							vectorOldOrder((1:numberTEs)+(iPLD-1)*numberTEs) = (iPLD-1)+1:numberPLDs:size(imASL,4);
+						end
+						imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
+						xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
+						% Repeat Echo Times
+						resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
+						% Save the JSON with the updated echo times
+						spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
                     else
                     	% Fallback (something went wrong)
-                        numOfTimePoints = 1;
+						warning('FME Hadamard sequence with 1 PLD only');
                     end
-                    % Repeat Echo Times
-                    resultJSON.EchoTime = repmat(resultJSON.EchoTime,numOfTimePoints,1);
-                    fprintf('FME sequence: repeat echo times...\n');
-                    % Save the JSON with the updated echo times
-                    spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
                 end
             end
         end

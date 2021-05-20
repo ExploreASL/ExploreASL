@@ -212,10 +212,17 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
     end
     if isHadamardFME
         if isfield(jsonLocal,'EchoTime') && isfield(jsonLocal,'PostLabelingDelay')
+			% From the import, the length of EchoTime should correspond to the number of volumes
             if length(jsonLocal.EchoTime)~=length(jsonLocal.PostLabelingDelay)
-                % Repeat PLD according to EchoTime
-                nRepeats = int32(length(jsonLocal.EchoTime)/length(jsonLocal.PostLabelingDelay));
-                jsonLocal.PostLabelingDelay = repmat(jsonLocal.PostLabelingDelay,nRepeats,1);
+                % So here, we first make sure that each PLD is repeated for the whole block of echo-times
+				numberTEs = length(uniquetol(jsonLocal.EchoTime,0.001)); % Obtain the number of echo times
+				repeatedPLDs = repmat(jsonLocal.PostLabelingDelay(:),numberTEs,1);
+                
+				if length(repeatedPLDs) > length(jsonLocal.EchoTime) || mod(length(jsonLocal.EchoTime),length(repeatedPLDs)) ~= 0
+					warning('Did not succeed in repeating PLDs for each TE for Hadamard sequence import');
+				end
+				% Make sure that number of volumes can be divided by the repeated PLDs
+                jsonLocal.PostLabelingDelay = repeatedPLDs;
             end
         end
     end
@@ -249,26 +256,31 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % BSup sanity check
-    if jsonLocal.BackgroundSuppression == false
-        % remove pulsenumbers and timings if BSup is OFF
-        if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
-            jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionNumberPulses');
-        end
-        if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
-            jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionPulseTime');
-        end
-    else
-        % If times are given, but not the number of pulses, then assign the length
-        if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
-            if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
-                if jsonLocal.BackgroundSuppressionNumberPulses ~= length(jsonLocal.BackgroundSuppressionPulseTime)
-                    fprintf('Warning: Number of pulses and their timings do not match.');
-                end
-            else
-                jsonLocal.BackgroundSuppressionNumberPulses = length(jsonLocal.BackgroundSuppressionPulseTime);
-            end
-        end
-    end
+	if ~isfield(jsonLocal,'BackgroundSuppression')
+		warning('BackgroundSuppression field should be define in BIDS, setting the default to false');
+		jsonLocal.BackgroundSuppression = false;
+	end
+	
+	if jsonLocal.BackgroundSuppression == false
+		% remove pulsenumbers and timings if BSup is OFF
+		if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
+			jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionNumberPulses');
+		end
+		if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
+			jsonLocal = rmfield(jsonLocal,'BackgroundSuppressionPulseTime');
+		end
+	else
+		% If times are given, but not the number of pulses, then assign the length
+		if isfield(jsonLocal,'BackgroundSuppressionPulseTime')
+			if isfield(jsonLocal,'BackgroundSuppressionNumberPulses')
+				if jsonLocal.BackgroundSuppressionNumberPulses ~= length(jsonLocal.BackgroundSuppressionPulseTime)
+					fprintf('Warning: Number of pulses and their timings do not match.');
+				end
+			else
+				jsonLocal.BackgroundSuppressionNumberPulses = length(jsonLocal.BackgroundSuppressionPulseTime);
+			end
+		end
+	end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % SliceReadoutTime from the manual entry is prioritized
@@ -325,14 +337,10 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
         isHadamardFME = ~isempty(regexp(char(jsonLocal.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
         if isHadamardFME
             startDetails = regexp(char(jsonLocal.SeriesDescription),'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
-            HadamardType = xASL_str2num(jsonLocal.SeriesDescription(startDetails:startDetails+1),'auto');
-            HadamardNumberTI = xASL_str2num(jsonLocal.SeriesDescription(startDetails+3:startDetails+4),'auto');
-            HadamardNumberTE = xASL_str2num(jsonLocal.SeriesDescription(startDetails+10:startDetails+11),'auto');
-            fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs...\n', HadamardType, HadamardNumberTI, HadamardNumberTE);
-            % Store data in ASL JSON
-            jsonLocal.HadamardType = HadamardType;
-            jsonLocal.HadamardNumberTI = HadamardNumberTI;
-            jsonLocal.HadamardNumberTE = HadamardNumberTE;
+			jsonLocal.HadamardType = xASL_str2num(jsonLocal.SeriesDescription(startDetails:startDetails+1),'auto');
+			jsonLocal.HadamardNumberPLD = xASL_str2num(jsonLocal.SeriesDescription(startDetails+3:startDetails+4),'auto');
+            jsonLocal.HadamardNumberTE = xASL_str2num(jsonLocal.SeriesDescription(startDetails+10:startDetails+11),'auto');
+            fprintf('FME sequence, Hadamard-%d encoded images, %d PLDs, %d TEs\n', jsonLocal.HadamardType, jsonLocal.HadamardNumberPLD, jsonLocal.HadamardNumberTE);
         end
     else
         isHadamardFME = false;
@@ -349,15 +357,11 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
     listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVENC','FlipAngle','RepetitionTimePreparation'};
     for iRepeat = 1:length(listFieldsRepeat)
         if isfield(jsonLocal,(listFieldsRepeat{iRepeat})) && (length(jsonLocal.(listFieldsRepeat{iRepeat})) > 1) && (size(imNii,4) ~= length(jsonLocal.(listFieldsRepeat{iRepeat})))
-            if ~isHadamardFME % This section does not work for FME Hadamard encoded images right now
-                if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
-                    error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
-                else
-                    jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat})(:),[size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat})) 1]);
-                end
-            else
-                fprintf('Work in progress: Hadamard encoded data import...\n');
-            end
+			if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
+				error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
+			else
+				jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat})(:),[size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat})) 1]);
+			end
         end
     end
 
