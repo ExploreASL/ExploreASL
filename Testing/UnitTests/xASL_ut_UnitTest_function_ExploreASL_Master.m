@@ -13,6 +13,17 @@ function UnitTest = xASL_ut_UnitTest_function_ExploreASL_Master(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
+% 1. Initialize (without arguments)
+% 2. Initialize (with arguments)
+% 3. Initialize (with arrays)
+% 4. DRO 2.2.0 (DCM2NIFTI)
+% 5. DRO 2.2.0 (NII2BIDS)
+% 6. DRO 2.2.0 (ANONYMIZE, BIDS2Legacy)
+% 7. DRO 2.2.0 (ANONYMIZE, BIDS2Legacy with dataPar.json)
+% 8. 
+% 9. 
+% 10. DRO 2.2.0 (full pipeline, rawdata->results)
+%
 % EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_ExploreASL_Master(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
@@ -291,7 +302,7 @@ UnitTest.tests(4).passed = testCondition;
 %% Test run 5
 
 % Give your individual subtest a name
-UnitTest.tests(5).testname = 'DRO 2.2.0 (NII2BIDS on rawdata)';
+UnitTest.tests(5).testname = 'DRO 2.2.0 (NII2BIDS)';
 
 % Start the test
 testTime = tic;
@@ -302,6 +313,18 @@ droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test
 droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
 xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+
+% Convert BIDS back to analysis for the testing
+xASL_Move(fullfile(droTestPatient,'rawdata'),fullfile(droTestPatient,'analysis'))
+xASL_Move(fullfile(droTestPatient,'analysis',droSubject),fullfile(droTestPatient,'analysis','Sub1'))
+xASL_Move(fullfile(droTestPatient,'analysis','Sub1','anat'),fullfile(droTestPatient,'analysis','Sub1','T1w_1'))
+xASL_Move(fullfile(droTestPatient,'analysis','Sub1','perf'),fullfile(droTestPatient,'analysis','Sub1','ASL_1'))
+xASL_delete(fullfile(droTestPatient,'analysis','dataset_description.json'))
+xASL_Move(fullfile(droTestPatient,'analysis','Sub1','T1w_1','sub-Sub1_T1w.json'),fullfile(droTestPatient,'analysis','Sub1','T1w_1','T1w.json'))
+xASL_Move(fullfile(droTestPatient,'analysis','Sub1','T1w_1','sub-Sub1_T1w.nii.gz'),fullfile(droTestPatient,'analysis','Sub1','T1w_1','T1w.nii.gz'))
+xASL_delete(fullfile(droTestPatient,'analysis','Sub1','ASL_1','sub-Sub1_aslcontext.tsv'))
+xASL_Move(fullfile(droTestPatient,'analysis','Sub1','ASL_1','sub-Sub1_asl.json'),fullfile(droTestPatient,'analysis','Sub1','ASL_1','ASL4D.json'))
+xASL_Move(fullfile(droTestPatient,'analysis','Sub1','ASL_1','sub-Sub1_asl.nii.gz'),fullfile(droTestPatient,'analysis','Sub1','ASL_1','ASL4D.nii.gz'))
 
 % Fallback
 testCondition = true;
@@ -366,7 +389,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL_Master(testPatientDestination,[0 1 1 1],0,0,1,1);
+    [x] = ExploreASL_Master(testPatientDestination,[0 0 1 1],0,0,1,1);
 catch ME
     warning('%s', ME.message);
     testCondition = false;
@@ -491,7 +514,117 @@ UnitTest.tests(7).passed = testCondition;
 %% Test run 8
 
 % Give your individual subtest a name
-UnitTest.tests(8).testname = 'DRO 2.2.0 (full pipeline, NII->Results)';
+UnitTest.tests(8).testname = 'Run processing starting from derivatives with directory input';
+
+% Start the test
+testTime = tic;
+
+% Give your individual subtest a name
+UnitTest.tests(8).testname = 'DRO 2.2.0 (ANONYMIZE, BIDS2Legacy with specific dataPar.json)';
+
+% Start the test
+testTime = tic;
+
+% Set-up DRO
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droSubject = 'sub-Sub1'; % DRO subject
+xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
+xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+% Create dataPar.json
+dataParStruct.x.Quality = 0;
+dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
+spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
+
+% Fallback
+testCondition = true;
+
+% Prepare the derivatives data
+try
+    [x] = ExploreASL_Master(testPatientDestination,[0 0 1 1],0,0,1,1);
+catch ME
+    warning('%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Actual test: run processing starting from derivatives with directory input
+try
+    [x] = ExploreASL_Master(testPatientDestination,0,1,0,1,1);
+catch ME
+    warning('%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Add test conditions here ...
+
+% Delete test data
+xASL_delete(testPatientDestination,true)
+
+% Get test duration
+UnitTest.tests(8).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(8).passed = testCondition;
+
+
+%% Test run 9
+
+% Give your individual subtest a name
+UnitTest.tests(9).testname = 'Run processing starting from derivatives with dataPar.json input (outdated)';
+
+% Start the test
+testTime = tic;
+
+% Set-up DRO
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droSubject = 'sub-Sub1'; % DRO subject
+xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
+xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+% Create dataPar.json
+dataParStruct.x.Quality = 0;
+dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Mindboggle_OASIS_DKT31_CMA'};
+spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
+
+% Fallback
+testCondition = true;
+
+% Prepare the derivatives data
+try
+    [x] = ExploreASL_Master(testPatientDestination,[0 0 1 1],0,0,1,1);
+catch ME
+    warning('%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Actual test: run processing starting from derivatives with dataPar.json input (outdated)
+try
+    [x] = ExploreASL_Master(fullfile(testPatientDestination,'derivatives','ExploreASL','dataPar.json'),0,1,0,1,1);
+catch ME
+    warning('%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Add test conditions here ...
+
+% Delete test data
+xASL_delete(testPatientDestination,true)
+
+% Get test duration
+UnitTest.tests(9).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(9).passed = testCondition;
+
+
+%% Test run 10
+
+% Give your individual subtest a name
+UnitTest.tests(10).testname = 'DRO 2.2.0 (full pipeline, rawdata->results)';
 
 % Start the test
 testTime = tic;
@@ -508,7 +641,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL_Master(testPatientDestination,[0 1 1 1],1,0,1,1);
+    [x] = ExploreASL_Master(testPatientDestination,[0 0 1 1],1,0,1,1);
 catch ME
     warning('%s', ME.message);
     testCondition = false;
@@ -556,10 +689,10 @@ end
 xASL_delete(testPatientDestination,true)
 
 % Get test duration
-UnitTest.tests(8).duration = toc(testTime);
+UnitTest.tests(10).duration = toc(testTime);
 
 % Evaluate your test
-UnitTest.tests(8).passed = testCondition;
+UnitTest.tests(10).passed = testCondition;
 
 
 %% End of testing

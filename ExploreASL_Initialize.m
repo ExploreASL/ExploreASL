@@ -392,8 +392,12 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkStudyRoot(x, SelectParF
             % Temporary functionality, this will lead to an error starting v2.0.0
             [x, SelectParFile] = ExploreASL_Initialize_checkStudyRoot_invalid_starting_2_0(x);
         else
-            if x.opts.bProcessData
-                x.opts.StudyRoot = input('Please insert the path to your study directory: ');
+            if x.opts.bProcessData || x.opts.bImportData
+                if ~isdeployed
+                    x.opts.StudyRoot = input('Please insert the path to your study directory: ');
+                else
+                    error('Study directory does not exist...');
+                end
                 % Immediately check the input
                 if ~exist(x.opts.StudyRoot, 'dir')
                     warning('This study directory does not exist, ExploreASL will only be initialized...');
