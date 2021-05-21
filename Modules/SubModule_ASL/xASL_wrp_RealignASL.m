@@ -1,4 +1,4 @@
-function xASL_wrp_RealignASL(x,bSubtraction)
+ function xASL_wrp_RealignASL(x,bSubtraction)
 %xASL_wrp_RealignASL Submodule of ExploreASL ASL Module, that realigns
 %volumes
 %
@@ -94,7 +94,20 @@ flags.graphics = 0;
 xASL_delete(rpfile);
 
 % Run SPM
-if nFrames>2 && bSubtraction
+
+ASLjson = fullfile(Fpath,[Ffile '.json']); %.../ASL4D.json file
+Json = spm_jsonread(ASLjson);
+
+if nFrames>2 && bSubtraction && length(x.EchoTime)>2 %Multi TE 
+    TE_uni=uniquetol(x.EchoTime); %gives the number of TE, and their value
+    minTE=min(TE_uni); 
+    minTEposi=find(x.EchoTime == minTE); %positions that have the min TE
+    a=spm_vol(InputPath);
+    b=a(minTEposi);
+    spm_realign(b,flags,false);
+    %where is the motion parameters to apply them to the rest of the echos?
+    
+elseif nFrames>2 && bSubtraction
     spm_realign(spm_vol(InputPath),flags,true);
 elseif nFrames>1
     spm_realign(spm_vol(InputPath),flags,false);
