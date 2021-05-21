@@ -66,16 +66,12 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 
             % Load the JSON
             jsonAnat = spm_jsonread([anatPath,'.json']);
-
-			% If RepetitionTimePreparation is equal to RepetitionTime, then remove RepetitionTimePreparation
-			if isfield(jsonAnat,'RepetitionTime') && isfield(jsonAnat,'RepetitionTimePreparation') &&...
-					isnear(jsonAnat.RepetitionTime,jsonAnat.RepetitionTimePreparation)
-				jsonAnat = rmfield(jsonAnat,'RepetitionTimePreparation');
-			end
 			
             % Save the JSON
+			jsonAnat = xASL_bids_JsonBIDSify(jsonAnat);
             jsonAnat = xASL_bids_VendorFieldCheck(jsonAnat);
             jsonAnat = xASL_bids_JsonCheck(jsonAnat,'');
+			
             spm_jsonwrite(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat',['sub-' subjectLabel '_' iAnatType{1} '.json']),jsonAnat);
         end
     end
