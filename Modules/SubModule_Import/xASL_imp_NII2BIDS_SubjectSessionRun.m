@@ -216,7 +216,8 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
             if length(jsonLocal.EchoTime)~=length(jsonLocal.PostLabelingDelay)
                 % So here, we first make sure that each PLD is repeated for the whole block of echo-times
 				numberTEs = length(uniquetol(jsonLocal.EchoTime,0.001)); % Obtain the number of echo times
-				repeatedPLDs = repmat(jsonLocal.PostLabelingDelay(:),numberTEs,1);
+				repeatedPLDs = repmat(jsonLocal.PostLabelingDelay(:),1,numberTEs)';
+				repeatedPLDs = repeatedPLDs(:);
                 
 				if length(repeatedPLDs) > length(jsonLocal.EchoTime) || mod(length(jsonLocal.EchoTime),length(repeatedPLDs)) ~= 0
 					warning('Did not succeed in repeating PLDs for each TE for Hadamard sequence import');
