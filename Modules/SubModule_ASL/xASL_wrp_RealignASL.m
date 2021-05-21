@@ -1,4 +1,4 @@
- function xASL_wrp_RealignASL(x,bSubtraction)
+function xASL_wrp_RealignASL(x,bSubtraction)
 %xASL_wrp_RealignASL Submodule of ExploreASL ASL Module, that realigns
 %volumes
 %
@@ -94,9 +94,6 @@ flags.graphics = 0;
 xASL_delete(rpfile);
 
 % Run SPM
-
-ASLjson = fullfile(Fpath,[Ffile '.json']); %.../ASL4D.json file
-Json = spm_jsonread(ASLjson);
 
 if nFrames>2 && bSubtraction && length(x.EchoTime)>2 %Multi TE 
     TE_uni=uniquetol(x.EchoTime); %gives the number of TE, and their value
