@@ -366,14 +366,14 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkStudyRoot(x, SelectParF
             x.dir.StudyRoot = x.opts.StudyRoot;
             x.dataParType = 'directory';
             % Search for descriptive JSON files
-            fileListSourceStructure = xASL_adm_GetFileList(x.dir.StudyRoot, 'sourceStructure*.json');
-            fileListStudyPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'studyPar*.json');
+            fileListSourceStructure = xASL_adm_GetFileList(x.dir.StudyRoot, 'sourceStructure.*.json');
+            fileListStudyPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'studyPar.*.json');
             fileListDataDescription = xASL_adm_GetFileList(fullfile(x.dir.StudyRoot, 'rawdata'), 'dataset_description.json');
             % First try the derivatives folder
             fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.StudyRoot, 'derivatives', 'ExploreASL'), 'dataPar*.json');
             if isempty(fileListDataPar)
                 % Derivatives maybe does not exist already, we'll try study root
-                fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar*.json');
+                fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar.*.json');
             end
             % Assign fields
             if ~isempty(fileListSourceStructure)
