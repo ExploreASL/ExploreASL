@@ -1,4 +1,4 @@
-function [x] = xASL_stat_PrintStats(x)
+function [x] = xASL_stat_PrintStats(x, bFollowSubjectSessions)
 %xASL_stat_PrintStats Print overview of (ROI-) data from all subjects/sessions in
 %TSV file
 %
@@ -13,6 +13,11 @@ function [x] = xASL_stat_PrintStats(x)
 %                         if not all subjects had data)
 %   x.S.SetsID          - values of the sets
 %   x.S.SetsOptions     - options for sets (if the sets are ordinal)
+%   bFollowSubjectSessions - boolean specifying which source determines the
+%                            subjects/sessions that we process:
+%                            TRUE: follow x.SUBJECTS & x.SESSIONS
+%                            FALSE: follow data in x.S.DAT
+%                            (OPTIONAL, DEFAULT: FALSE)
 %                         
 % OUTPUT:
 %   x                   - same as input
@@ -44,6 +49,11 @@ function [x] = xASL_stat_PrintStats(x)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
+
+%% Admin
+if nargin<2 || isempty(bFollowSubjectSessions)
+    bFollowSubjectSessions = false;
+end
 
 
 %% -----------------------------------------------------------------------------------------------
@@ -120,46 +130,106 @@ end
 
 %% -----------------------------------------------------------------------------------------------
 %% 4) Print overview
-for iSubject=1:x.nSubjects
-    for iSession=1:nSessions
-        iSubjectSession = (iSubject-1)* nSessions +iSession;
-        
-        % check first if this SubjectSession has data, otherwise skip &
-        % issue a warning
-        if length(x.S.SUBJECTID)<iSubjectSession || size(x.S.DAT, 1)<iSubjectSession
-            warning(['Missing data, skipping printing data for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}]);
-        else
-            
-            % print subject name
-            fprintf(x.S.FID,'%s\t', x.S.SUBJECTID{iSubjectSession, 1});
 
-            % print values for other covariates
-            % here we always have nSubjects*nSessions values
-            % so use "SubjectSession"
-            if isfield(x.S,'SetsID')
-                for iPrint=1:size(x.S.SetsID,2)
-                    String2Print = x.S.SetsID(iSubjectSession,iPrint);
-                    if length(x.S.SetsOptions{iPrint})>1 % we need options
-                        if length(x.S.SetsOptions{iPrint}) >= length(unique(x.S.SetsID(:,iPrint)))-2 % allow for zeros & NaNs
-                            if isnumeric(String2Print) && (int16(String2Print) == String2Print) && String2Print>0 && x.S.Sets1_2Sample(iPrint)~=3
-                                String2Print = x.S.SetsOptions{iPrint}{String2Print};
+if bFollowSubjectSessions
+    
+    for iSubject=1:x.nSubjects
+        for iSession=1:nSessions
+            iSubjectSession = (iSubject-1)* nSessions +iSession;
+
+            % check first if this SubjectSession has data, otherwise skip &
+            % issue a warning
+            if length(x.S.SUBJECTID)<iSubjectSession || size(x.S.DAT, 1)<iSubjectSession || size(x.S.SetsID,1)<iSubjectSession
+                warning(['Missing data, skipping printing data for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}]);
+            else
+                % print subject name
+                fprintf(x.S.FID,'%s\t', x.S.SUBJECTID{iSubjectSession, 1});
+
+                %% Print the covariates and data
+                iSubjectSession_SetsID = iSubjectSession;
+                iSubjectSession_DAT = iSubjectSession;
+                bPrintSessions = true;
+                xASL_stat_PrintStats_PrintValues(x, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);
+
+            end
+        end
+    end
+
+else
+    
+    % Get Subject regular expression
+    SubjectExpression = x.subject_regexp;
+    if strcmp(SubjectExpression(1), '^' )
+        SubjectExpression = SubjectExpression(2:end);
+    end
+    if strcmp(SubjectExpression(end), '$')
+        SubjectExpression = SubjectExpression(1:end-1);
+    end
+
+    printedSessionN = 0;
+    
+    for iSubjSess=1:length(x.S.SUBJECTID)
+        % x.S.SUBJECTID == subject/session IDs created in xASL_stat_GetROIStatistics
+
+        % Get subject ID
+        [startIndex, endIndex] = regexp(x.S.SUBJECTID{iSubjSess}, SubjectExpression);
+        if isempty(startIndex) || isempty(endIndex)
+            warning(['Could not find subject for ' x.S.SUBJECTID{iSubjSess}]);
+        else
+            SubjectID = x.S.SUBJECTID{iSubjSess}(startIndex:endIndex);
+            % Get session ID
+            SessionID = x.S.SUBJECTID{iSubjSess}(endIndex+1:end);
+            [startIndex, endIndex] = regexp(SessionID, 'ASL_\d');
+            if isempty(startIndex) || isempty(endIndex)
+                warning(['Could not find session for ' x.S.SUBJECTID{iSubjSess}]);
+            else
+                SessionID = SessionID(startIndex:endIndex);
+
+                % print subject name
+                fprintf(x.S.FID,'%s\t', SubjectID);
+                % print session name
+                fprintf(x.S.FID,'%s\t', SessionID);
+
+                %% print values for other covariates
+                if isfield(x.S,'SetsID')
+                    % Ensure to match subject/session
+                    SubjectIndex = find(strcmp(x.SUBJECTS, SubjectID));
+
+                    if isempty(SubjectIndex)
+                        warning(['Could not find subject ' SubjectID ', skipping']);
+                        fprintf(x.S.FID,'\n');
+                    else
+                        SessionColumn = find(strcmpi(x.S.SetsName, 'session'));
+                        if isempty(SessionColumn) || length(SessionColumn)>1
+                            warning('Could not find session data');
+                            fprintf(x.S.FID,'\n');
+                        else
+                            SessionN = xASL_str2num(SessionID(end));
+                            if isempty(SessionN) || ~isnumeric(SessionN)
+                                warning(['Something wrong with session ' SessionID]);
+                                fprintf(x.S.FID,'\n');
+                            elseif SessionN>x.nSessions
+                                if ~max(printedSessionN==SessionN)
+                                    warning('Could not find values for other covariates');
+                                end
+                                printedSessionN = [printedSessionN SessionN];
+                                fprintf(x.S.FID,'\n');
+                            else
+
+                                %% Print the covariates and data
+                                iSubjectSession_SetsID = x.nSessions*(SubjectIndex-1)+SessionN;
+                                iSubjectSession_DAT = iSubjSess;
+                                bPrintSessions = false;
+                                xASL_stat_PrintStats_PrintValues(x, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);                      
                             end
                         end
                     end
-                    fprintf(x.S.FID,'%s\t', xASL_num2str(String2Print));
                 end
             end
-
-            % This part is different for volume or TT, since there will
-            % be only 1 value per subject (this will be done by the above in which nSessions is set to 1
-            for iPrint=1:size(x.S.DAT,2) % print actual data
-                fprintf(x.S.FID,'%s\t', xASL_num2str(x.S.DAT(iSubjectSession, iPrint)));
-            end
-            fprintf(x.S.FID,'\n');
         end
     end
-end
-
+end                  
+                
 fclose(x.S.FID);
 x.S = rmfield(x.S,'SaveFile');
 
@@ -167,7 +237,50 @@ x.S = rmfield(x.S,'SaveFile');
 end
 
 
+function xASL_stat_PrintStats_PrintValues(x, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions)
+%xASL_stat_PrintStats_PrintValues Print the covariates and data
 
+    %% 1. print values for other covariates
+    % here we always have nSubjects*nSessions values
+    % so use "SubjectSession"
+    
+    if bPrintSessions
+        printMatrix = x.S.SetsID;
+        optionsMatrix = x.S.SetsOptions;
+        sampleMatrix = x.S.Sets1_2Sample;
+    else
+        SessionColumn = find(strcmpi(x.S.SetsName, 'session'));
+        vector2Print = [1:size(x.S.SetsName,2)];
+        vector2Print = vector2Print(vector2Print~=SessionColumn);
+        
+        printMatrix = x.S.SetsID(:, vector2Print);
+        optionsMatrix = x.S.SetsOptions(:, vector2Print);
+        sampleMatrix = x.S.Sets1_2Sample(:, vector2Print);
+    end
+    
+    for iPrint=1:size(printMatrix,2)
+        String2Print = printMatrix(iSubjectSession_SetsID, iPrint);
+
+        if length(optionsMatrix{iPrint})>1 % we need options
+            if length(optionsMatrix{iPrint}) >= length(unique(printMatrix(:,iPrint)))-2 % allow for zeros & NaNs
+                if isnumeric(String2Print) && (int16(String2Print) == String2Print) && String2Print>0 && x.S.Sets1_2Sample(iPrint)~=3
+                    String2Print = optionsMatrix{iPrint}{String2Print};
+                end
+            end
+        end
+        fprintf(x.S.FID,'%s\t', xASL_num2str(String2Print));
+    end
+
+    %% 2. Print data in x.S.DAT
+    % This part is different for volume or TT, since there will
+    % be only 1 value per subject (this will be done by the above in which nSessions is set to 1
+    for iPrint=1:size(x.S.DAT,2) % print actual data
+        fprintf(x.S.FID,'%s\t', xASL_num2str(x.S.DAT(iSubjectSession_DAT, iPrint)));
+    end
+    fprintf(x.S.FID,'\n');
+    
+    
+end
 
 
 
