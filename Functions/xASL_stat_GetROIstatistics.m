@@ -177,7 +177,7 @@ end
 
 %% Define number of sessions to use
 
-[nSessions, bSessionsMissing] = xASL_adm_GetPopulationSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
+[nSessions, bSessionsMissing, x.SESSIONS] = xASL_adm_GetPopulationSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
 
 %% Determine whether group mask exists
 if x.S.InputNativeSpace
@@ -396,7 +396,7 @@ for iSubject=1:x.nSubjects
 					%% a) Load partial volume maps
 					PathGM = fullfile(x.D.PopDir, ['PV_pGM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(PathGM,'file')
-						pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathGM),x.WBmask);
+                        pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathGM),x.WBmask);
 					else
 						fprintf('%s\n',[PathGM ' missing...']);
 						continue;
@@ -404,7 +404,7 @@ for iSubject=1:x.nSubjects
 
 					PathWM = fullfile(x.D.PopDir, ['PV_pWM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(PathWM,'file')
-						pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathWM),x.WBmask);
+                        pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathWM),x.WBmask);
 					else
 						fprintf('%s\n',[PathWM ' missing...']);
 						continue;
@@ -579,7 +579,7 @@ for iSubject=1:x.nSubjects
                 % Provide some feedback for debugging                
                 if xASL_stat_SumNan(DataIm(:)) == 0
                     % Check for empty CBF map first
-                    warning(['Empty image for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                    fprintf('%s\n', ['Warning: Empty image for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
 				end
 
 				if x.S.bMasking(3)==0 % no tissue-masking
@@ -606,11 +606,11 @@ for iSubject=1:x.nSubjects
 
                 % Now check for empty masks
                 if xASL_stat_SumNan(CurrentMask(:)) == 0
-                    fprintf('%s\n', ['Empty mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                    fprintf('%s\n', ['Empty mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
                 elseif xASL_stat_SumNan(pGM_here(:)) == 0
-                    fprintf('%s\n', ['Empty pGM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                    fprintf('%s\n', ['Empty pGM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
                 elseif xASL_stat_SumNan(pWM_here(:)) == 0
-                    fprintf('%s\n', ['Empty pWM for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
+                    fprintf('%s\n', ['Empty pWM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]);
                 else                    
 
                     %% CoV
