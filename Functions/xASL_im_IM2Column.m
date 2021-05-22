@@ -52,7 +52,12 @@ if size(ImageIn,3)>1 && min(SizeIM(1:3)==[121 145 121]) % here we apply iteratio
         end
     end
 else
-    ColumnOut = ImageIn(logical(BrainMask));
+    try
+        ColumnOut = ImageIn(logical(BrainMask));
+    catch ME
+        warning(['Image with matrix size [' xASL_num2str(size(ImageIn)) '] instead of [121 145 121]']);
+        error('%s\n', ME.message);
+    end
 end
 
 if ApplyShiftDim
