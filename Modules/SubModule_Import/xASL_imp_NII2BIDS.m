@@ -62,20 +62,20 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 	% This step should be completely automatic, just taking the info filled above and using it to convert to full BIDS.
 	
 	% Go through all subjects
-	listSubjects = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
+	listSubjects = xASL_adm_GetFileList(imPar.TempRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)
         xASL_imp_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjects,iSubject);
     end
     
     % Copy log files
-    importMetaFiles = xASL_adm_GetFileList(imPar.AnalysisRoot,'^import.+$');
+    importMetaFiles = xASL_adm_GetFileList(imPar.TempRoot,'^import.+$');
     for importFile=1:size(importMetaFiles,1)
         [~,thisFileMeta,thisExtensionMeta] = xASL_fileparts(importMetaFiles{importFile,1});
         xASL_Copy(importMetaFiles{importFile,1},fullfile(studyPath,[thisFileMeta thisExtensionMeta]));
     end
     
-    % Delete analysis folder
-    xASL_delete(imPar.AnalysisRoot, true);
+    % Delete temp folder
+    xASL_delete(imPar.TempRoot, true);
 
 end
 

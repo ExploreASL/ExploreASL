@@ -44,12 +44,12 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 
         % Check if it exists
         anatPath = '';
-        if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},[iAnatType{1},'.nii']),'file')
-            anatPath = fullfile(imPar.AnalysisRoot,listSubjects{iSubject},iAnatType{1});
+        if xASL_exist(fullfile(imPar.TempRoot,listSubjects{iSubject},[iAnatType{1},'.nii']),'file')
+            anatPath = fullfile(imPar.TempRoot,listSubjects{iSubject},iAnatType{1});
         end
 
-        if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},[iAnatType{1} '_1'],[iAnatType{1},'.nii']),'file')
-            anatPath = fullfile(imPar.AnalysisRoot,listSubjects{iSubject},[iAnatType{1} '_1'],iAnatType{1});
+        if xASL_exist(fullfile(imPar.TempRoot,listSubjects{iSubject},[iAnatType{1} '_1'],[iAnatType{1},'.nii']),'file')
+            anatPath = fullfile(imPar.TempRoot,listSubjects{iSubject},[iAnatType{1} '_1'],iAnatType{1});
         end
 
         % If anatomical file of this type exist, then BIDSify its structure
@@ -82,7 +82,7 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% 3. Process the perfusion files
-    fSes = xASL_adm_GetFileList(fullfile(imPar.AnalysisRoot,listSubjects{iSubject}),'^ASL.+$',false,[],true);
+    fSes = xASL_adm_GetFileList(fullfile(imPar.TempRoot,listSubjects{iSubject}),'^ASL.+$',false,[],true);
 
     % Go through all sessions
     for kk = 1:length(fSes)

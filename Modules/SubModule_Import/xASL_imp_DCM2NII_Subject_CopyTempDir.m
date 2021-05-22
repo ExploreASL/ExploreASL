@@ -1,7 +1,7 @@
-function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
-%xASL_imp_DCM2NII_Subject_CopyAnalysisDir Make a copy of analysisdir in sourcedir.
+function xASL_imp_DCM2NII_Subject_CopyTempDir(nii_files, bClone2Source)
+%xASL_imp_DCM2NII_Subject_CopyTempDir Make a copy of analysisdir in sourcedir.
 %
-% FORMAT: xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
+% FORMAT: xASL_imp_DCM2NII_Subject_CopyTempDir(nii_files, bClone2Source)
 % 
 % INPUT:
 %   nii_files     - List of NIfTI files (CELL ARRAY, REQUIRED)
@@ -11,7 +11,7 @@ function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
 %   n/a
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Make a copy of analysisdir in sourcedir.
+% DESCRIPTION: Make a copy of temp dir in source dir.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     n/a
@@ -19,12 +19,12 @@ function xASL_imp_DCM2NII_Subject_CopyAnalysisDir(nii_files, bClone2Source)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    %% Make a copy of analysisdir in sourcedir.
+    %% Make a copy of temp dir in source dir
     if bClone2Source
         if ~isempty(nii_files)
             for iFile=1:length(nii_files)
-                % replace 'analysis' by 'source'
-                [iStart, iEnd] = regexp(nii_files{iFile}, 'analysis');
+                % replace 'temp' by 'source'
+                [iStart, iEnd] = regexp(nii_files{iFile}, 'temp');
                 DestPath = [nii_files{iFile}(1:iStart-1) 'source' nii_files{iFile}(iEnd+1:end)];
                 xASL_Copy(nii_files{iFile}, DestPath, true);
                 % do the same for other extensions

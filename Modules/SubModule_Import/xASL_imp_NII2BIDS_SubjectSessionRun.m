@@ -469,7 +469,7 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
         for nn = 1:2
             if nn == 1
                 nnStrIn = '';
-                if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk},'M0PERev.nii'))
+                if xASL_exist(fullfile(imPar.TempRoot,listSubjects{iSubject},fSes{kk},'M0PERev.nii'))
                     nnStrOut = '_dir-ap';
 
                     tagPhaseEncodingDirection = 'j-';
@@ -503,7 +503,7 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
             end
 
             % If M0, then copy M0 and add ASL path to the IntendedFor
-            if xASL_exist(fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk},['M0' nnStrIn '.nii']))
+            if xASL_exist(fullfile(imPar.TempRoot,listSubjects{iSubject},fSes{kk},['M0' nnStrIn '.nii']))
                 jsonM0 = spm_jsonread(fullfile(inSessionPath,['M0' nnStrIn '.json']));
                 imM0   = xASL_io_Nifti2Im(fullfile(inSessionPath,['M0' nnStrIn '.json']));
 

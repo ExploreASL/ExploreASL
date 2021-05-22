@@ -39,7 +39,7 @@ function [imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel] 
             mkdir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel));
             mkdir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel,'asl'));
         end
-        inSessionPath = fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk});
+        inSessionPath = fullfile(imPar.TempRoot,listSubjects{iSubject},fSes{kk});
         outSessionPath = fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel);
 
         % Need to add the underscore so that it doesn't need to be added automatically and can be skipped for empty session
@@ -53,7 +53,7 @@ function [imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel] 
             mkdir(fullfile(imPar.BidsRoot,['sub-' subjectLabel]));
             mkdir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],bidsPar.strPerfusion));
         end
-        inSessionPath = fullfile(imPar.AnalysisRoot,listSubjects{iSubject},fSes{kk});
+        inSessionPath = fullfile(imPar.TempRoot,listSubjects{iSubject},fSes{kk});
         outSessionPath = fullfile(imPar.BidsRoot,['sub-' subjectLabel]);
     end
 

@@ -24,7 +24,7 @@ function xASL_imp_Anonymize(imPar)
     %% Anonymize
     
     % 1. Iterate over list of subjects
-    listSubjects = xASL_adm_GetFileList(imPar.AnalysisRoot,[],false,[],true);
+    listSubjects = xASL_adm_GetFileList(imPar.TempRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)
 
         % 2. Get subject labels

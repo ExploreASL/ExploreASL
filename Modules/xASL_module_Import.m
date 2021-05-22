@@ -24,7 +24,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 %   Clone2Source        - if true, then makes a copy of everything it converted to NIfTI.
 %                         Can be useful to have a separate source BIDS structure to store
 %                         all source NIfTIs, and to keep the derivatives in the
-%                         analysisfolder (OPTIONAL, DEFAULT=false)
+%                         tempfolder (OPTIONAL, DEFAULT=false)
 %   x                   - if x is provided, initialization of ExploreASL is skipped
 %
 %
@@ -32,9 +32,9 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 %   x                   - ExploreASL x structure
 %
 % OUTPUT FILES:
-%   //AnalysisDir/dcm2niiCatchedErrors.(mat|json) - overview of catched dcm2nii errors, or other errors in this function
-%   //AnalysisDir/import_log_StudyID_yyyymmdd_hhmmss.txt - diary log of this function
-%   //AnalysisDir/import_summary.csv - hence the name
+%   //temp/dcm2niiCatchedErrors.(mat|json) - overview of catched dcm2nii errors, or other errors in this function
+%   //temp/import_log_StudyID_yyyymmdd_hhmmss.txt - diary log of this function
+%   //temp/import_summary.csv - hence the name
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:
 % Import batch `T1`, `T2`, `FLAIR`, `DWI`, `fMRI`, `M0`, `ASL` data from dicom 2 NIfTI in ASL-BIDS format and structure.

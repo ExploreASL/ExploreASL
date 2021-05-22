@@ -35,7 +35,7 @@ function [x] = ExploreASL_ImportMaster(x)
                 try
                     xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, false, x);
                 catch loggingEntry
-                    fprintf('DICOM to NII module failed...\n');
+                    fprintf(2,'DICOM to NII module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else
@@ -47,8 +47,8 @@ function [x] = ExploreASL_ImportMaster(x)
             if ~isempty(x.dir.sourceStructure)
                 try
                     [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, false, x);
-                catch
-                    fprintf('NII to BIDS module failed...\n');
+                catch loggingEntry
+                    fprintf(2,'NII to BIDS module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else
@@ -60,8 +60,8 @@ function [x] = ExploreASL_ImportMaster(x)
             if ~isempty(x.dir.StudyRoot)
                 try
                     [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, false, x);
-                catch
-                    fprintf('Anonymize module failed...\n');
+                catch loggingEntry
+                    fprintf(2,'Anonymize module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else
@@ -73,8 +73,8 @@ function [x] = ExploreASL_ImportMaster(x)
             if ~isempty(x.dir.dataset_description)
                 try
                     x = xASL_imp_BIDS2Legacy(x);
-                catch
-                    fprintf('BIDS to legacy module failed...\n');
+                catch loggingEntry
+                    fprintf(2,'BIDS to legacy module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else

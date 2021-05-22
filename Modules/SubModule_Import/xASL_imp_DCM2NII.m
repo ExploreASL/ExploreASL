@@ -41,11 +41,11 @@ function xASL_imp_DCM2NII(imPar, x)
     end
 	
 	if ~isfield(imPar,'SkipSubjectIfExists') || isempty(imPar.SkipSubjectIfExists)
-		% allows to skip existing subject folders in the analysis folder, when this is set to true,
+		% allows to skip existing subject folders in the temp folder, when this is set to true,
 		% avoiding partly re-importing/converting dcm2niiX when processing has been partly done
 		imPar.SkipSubjectIfExists = false;
 	else
-		warning('Skipping existing subjects in analysis folder');
+		warning('Skipping existing subjects in temp folder');
 		fprintf('If you want to overwrite, first remove the full subject folder');
 	end
 	
@@ -53,11 +53,11 @@ function xASL_imp_DCM2NII(imPar, x)
 	if ~exist(imPar.RawRoot, 'dir')
 		warning(['Couldnt find ' imPar.RawRoot ', trying to find a different folder instead...']);
 		
-		% find any folder except for analysis, source, raw, derivatives
+		% find any folder except for temp, source, raw, derivatives
 		% xASL_adm_GetFileList uses regular expressions, to create a nice list of foldernames,
 		% with/without FullPath (FPList), with/without recursive (FPListRec)
 		% very powerful once you know how these work
-		FolderNames = xASL_adm_GetFileList(fullfile(imPar.RawRoot, imPar.studyID), '^(?!(analysis|derivatives|source|sourcedata)).*$', 'FPList', [0 Inf], true);
+		FolderNames = xASL_adm_GetFileList(fullfile(imPar.RawRoot, imPar.studyID), '^(?!(temp|derivatives|source|sourcedata)).*$', 'FPList', [0 Inf], true);
 		
 		if length(FolderNames)==1
 			imPar.RawRoot = FolderNames{1};
@@ -67,11 +67,11 @@ function xASL_imp_DCM2NII(imPar, x)
 		end
 	end
 	
-	xASL_adm_CreateDir(imPar.AnalysisRoot);
+	xASL_adm_CreateDir(imPar.TempRoot);
 	
 	if x.modules.import.settings.bCheckPermissions
 		xASL_adm_CheckPermissions(imPar.RawRoot, false); % don"t need execution permisions
-		xASL_adm_CheckPermissions(imPar.AnalysisRoot, false);  % don"t need execution permisions
+		xASL_adm_CheckPermissions(imPar.TempRoot, false);  % don"t need execution permisions
 	end
 	
 	%% 3. Here we try to fix backwards compatibility, but this may break
@@ -103,7 +103,7 @@ function xASL_imp_DCM2NII(imPar, x)
 	end
 	
 	%% 4. Redirect output to a log file
-	diary_filepath = fullfile(imPar.AnalysisRoot, ['import_log_' imPar.studyID '_' datestr(now,'yyyymmdd_HHMMSS') '.txt']);
+	diary_filepath = fullfile(imPar.TempRoot, ['import_log_' imPar.studyID '_' datestr(now,'yyyymmdd_HHMMSS') '.txt']);
 	diary(diary_filepath);
 	
 	if imPar.bMatchDirectories
@@ -237,7 +237,7 @@ function xASL_imp_DCM2NII(imPar, x)
                                                         x.modules.import.numOf.nScans,'uint8'); % keep a count of all individual scans
 	
 	% define a cell array for storing info for parameter summary file
-	xASL_adm_CreateDir(imPar.AnalysisRoot);
+	xASL_adm_CreateDir(imPar.TempRoot);
 	x.modules.import.summary_lines = cell(x.modules.import.numOf.nSubjects,...
                                           x.modules.import.numOf.nVisits,...
                                           x.modules.import.numOf.nSessions,...
@@ -264,8 +264,8 @@ function xASL_imp_DCM2NII(imPar, x)
 	
 	if ~isempty(fields(dcm2niiCatchedErrors))
 		fclose all;
-		SavePath = fullfile(imPar.AnalysisRoot, 'dcm2niiCatchedErrors.mat');
-		SaveJSON = fullfile(imPar.AnalysisRoot, 'dcm2niiCatchedErrors.json');
+		SavePath = fullfile(imPar.TempRoot, 'dcm2niiCatchedErrors.mat');
+		SaveJSON = fullfile(imPar.TempRoot, 'dcm2niiCatchedErrors.json');
 		xASL_delete(SavePath);
 		xASL_delete(SaveJSON);
 		save(SavePath,'dcm2niiCatchedErrors');

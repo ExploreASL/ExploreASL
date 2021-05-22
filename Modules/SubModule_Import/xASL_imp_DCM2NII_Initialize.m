@@ -36,8 +36,8 @@ function imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath)
     if ~isfield(imPar,'studyID') || isempty(imPar.studyID)
         imPar.studyID = [fname fext];
     end
-    if ~isfield(imPar,'AnalysisRoot') || isempty(imPar.AnalysisRoot) 
-        imPar.AnalysisRoot = fpath;
+    if ~isfield(imPar,'TempRoot') || isempty(imPar.TempRoot) 
+        imPar.TempRoot = fpath;
     end
     if ~isfield(imPar,'RawRoot') || isempty(imPar.RawRoot)
         imPar.RawRoot = fpath;
@@ -48,7 +48,7 @@ function imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath)
 
     %% 3. Finalize the directories
     imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID, 'sourcedata'); % default name
-    imPar.AnalysisRoot = fullfile(imPar.AnalysisRoot,imPar.studyID,'analysis');
+    imPar.TempRoot = fullfile(imPar.TempRoot,imPar.studyID,'temp');
     imPar.BidsRoot = fullfile(imPar.BidsRoot,imPar.studyID,'rawdata');
 
     %% 4. Specify the tokens

@@ -31,7 +31,7 @@ function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary)
     listsIDs = x.modules.import.listsIDs;
     globalCounts = x.modules.import.globalCounts;
     
-	summary_filepath = fullfile(imPar.AnalysisRoot, 'import_summary.csv');
+	summary_filepath = fullfile(imPar.TempRoot, 'import_summary.csv');
 	fid_summary = fopen(summary_filepath,'wt');
 	
     % Print headers for parameters obtained from NIfTI file
