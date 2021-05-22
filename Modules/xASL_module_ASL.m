@@ -21,7 +21,7 @@ function [result, x] = xASL_module_ASL(x)
 % - `010_TopUpASL`           - FSL TopUp geometric distortion correction (if M0 images with reversed phase-encoding are present)
 % - `020_RealignASL`         - If time-series are present, motion correction and outlier exclusion (ENABLE)
 % - `030_RegisterASL`        - Registration of ASL to T1w anatomical images (if lacking, to MNI images)
-% - `040_ResliceASL`         - Resample ASL images to standard space
+% - `040_ResampleASL`        - Resample ASL images to standard space
 % - `050_PreparePV`          - Create partial volume images in ASL space with ASL resolution
 % - `060_ProcessM0`          - M0 image processing
 % - `070_CreateAnalysisMask` - Create mask using FoV, vascular outliers & susceptibility atlas
