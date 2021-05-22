@@ -32,7 +32,12 @@ function [x] = ExploreASL_ImportMaster(x)
         % DICOM TO NII
         if x.opts.ImportModules(1)==1
             if ~isempty(x.dir.sourceStructure)
-                xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, false, x);
+                try
+                    xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, false, x);
+                catch loggingEntry
+                    fprintf('DICOM to NII module failed...\n');
+                    [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+                end
             else
                 missingFields = true;
             end
@@ -40,7 +45,12 @@ function [x] = ExploreASL_ImportMaster(x)
         % NII TO BIDS
         if x.opts.ImportModules(2)==1
             if ~isempty(x.dir.sourceStructure)
-                [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, false, x);
+                try
+                    [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, false, x);
+                catch
+                    fprintf('NII to BIDS module failed...\n');
+                    [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+                end
             else
                 missingFields = true;
             end
@@ -48,7 +58,12 @@ function [x] = ExploreASL_ImportMaster(x)
         % ANONYMIZE
         if x.opts.ImportModules(3)==1
             if ~isempty(x.dir.StudyRoot)
-                [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, false, x);
+                try
+                    [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, false, x);
+                catch
+                    fprintf('Anonymize module failed...\n');
+                    [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+                end
             else
                 missingFields = true;
             end
@@ -56,7 +71,12 @@ function [x] = ExploreASL_ImportMaster(x)
         % BIDS TO LEGACY
         if x.opts.ImportModules(4)==1
             if ~isempty(x.dir.dataset_description)
-                x = xASL_imp_BIDS2Legacy(x);
+                try
+                    x = xASL_imp_BIDS2Legacy(x);
+                catch
+                    fprintf('BIDS to legacy module failed...\n');
+                    [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+                end
             else
                 missingFields = true;
             end
@@ -72,5 +92,4 @@ function [x] = ExploreASL_ImportMaster(x)
     x.opts.ImportModules = [0 0 0 0];
     
 end
-
 
