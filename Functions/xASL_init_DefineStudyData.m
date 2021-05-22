@@ -100,7 +100,7 @@ if isfield(x,'SESSIONS') && isstruct(x.SESSIONS)
     x = rmfield(x,'SESSIONS');
 end
 
-if ~isfield(x,'SESSIONS') % can also be defined in DataPar.mat
+if ~isfield(x,'SESSIONS')
     x.SESSIONS = '';
     SessionPathList = xASL_adm_GetFileList(x.D.ROOT, '^(ASL|func)_\d*$', 'FPListRec', [0 Inf],1);
     for iSess=1:length(SessionPathList)
