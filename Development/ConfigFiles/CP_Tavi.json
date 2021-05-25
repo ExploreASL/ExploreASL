@@ -6,4 +6,5 @@
 "tokenScanAliases":["^MPRAGE_ADNI$","T1","^ASL$","ASL4D","^3DFLAIR$","FLAIR","^M0$","M0"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[""],
-"bMatchDirectories":true}
+"bMatchDirectories":true,
+"TempRoot":""}

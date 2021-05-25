@@ -6,4 +6,5 @@
 "tokenScanAliases":["^T1_MPRAGE$","T1","^T2.*FL$","FLAIR","^SS.*TI5000_0005$","M0","PERFUSION_WEIGHTED","ASL_1"],
 "tokenVisitAliases":["1","_1","2","_2"],
 "tokenSessionAliases":[],
-"bMatchDirectories":true}
+"bMatchDirectories":true,
+"TempRoot":""}

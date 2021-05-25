@@ -6,4 +6,5 @@
 "tokenScanAliases":["^t1$","T1"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["1","ASL_1"],
-"bMatchDirectories":true}
+"bMatchDirectories":true,
+"TempRoot":""}

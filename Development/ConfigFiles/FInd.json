@@ -6,4 +6,5 @@
 "tokenScanAliases":["^pseudo$","ASL4D"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["^nocrush$","ASL_1"],
-"bMatchDirectories":true}
+"bMatchDirectories":true,
+"TempRoot":""}

@@ -7,4 +7,5 @@
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
 "bMatchDirectories":false,
-"dcm2nii_version":"20101105"}
+"dcm2nii_version":"20101105",
+"TempRoot":""}

@@ -7,4 +7,5 @@
 "tokenVisitAliases":[],
 "tokenSessionAliases":["^ASL_1$","ASL_1","^ASL_2$","ASL_2","^ASL_3$","ASL_3","^ASL_4$","ASL_4"],
 "bMatchDirectories":true,
-"dcmwildcard":"*.IMA"}
+"dcmwildcard":"*.IMA",
+"TempRoot":""}

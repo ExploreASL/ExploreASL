@@ -118,6 +118,7 @@ customScripts = uigetdir(x.MyPath,'Please select the Development directory...');
 for iFlavor=1:length(listOfConfigFlavors)
     fprintf('%s\n', listOfConfigFlavors{iFlavor});
     imPar = ExploreASL_ImportConfig(listOfConfigFlavors{iFlavor});
+    imPar.TempRoot = imPar.AnalysisRoot;
     % Fix tokenScanAliases
     if isfield(imPar,'tokenScanAliases')
         if ~isempty(imPar.tokenScanAliases)

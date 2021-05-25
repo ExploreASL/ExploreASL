@@ -7,4 +7,5 @@
 "tokenVisitAliases":[],
 "tokenSessionAliases":[],
 "bMatchDirectories":false,
-"nMaxSessions":2}
+"nMaxSessions":2,
+"TempRoot":""}

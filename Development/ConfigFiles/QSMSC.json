@@ -6,4 +6,5 @@
 "tokenScanAliases":["^3D_FLAIR$","FLAIR","^3D_T1$","T1","^SOURCE.*pCASL$","ASL4D"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":[],
-"bMatchDirectories":true}
+"bMatchDirectories":true,
+"TempRoot":""}

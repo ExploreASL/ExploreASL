@@ -6,4 +6,5 @@
 "tokenScanAliases":["^CrushM0$","M0"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["^no$","ASL_1"],
-"bMatchDirectories":true}
+"bMatchDirectories":true,
+"TempRoot":""}
