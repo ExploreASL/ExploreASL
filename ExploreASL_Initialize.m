@@ -174,7 +174,7 @@ function [x] = ExploreASL_Initialize(varargin)
     
     if x.opts.bProcessData>0 && ~x.opts.bImportData % Skip this step if we still need to run the import (first initialization)
         % Check if a root directory was defined
-        if isempty(x.D.ROOT)
+        if ~isfield(x.D,'ROOT') || isempty(x.D.ROOT)
             error('No root/analysis/study folder defined');
         end
 
