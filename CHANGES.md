@@ -1,3 +1,13 @@
+# ExploreASL v1.6.2
+
+----
+
+## Bug Fixes
+* #589 Fix scaling issues in JSONs in TestDataSet/derivatives
+
+---
+
+
 # ExploreASL v1.6.1
 
 ----
@@ -6,7 +16,6 @@
 * #578 Fix incorrect path searching by providing error if no .json-file is inputted
 
 ---
-
 
 
 # ExploreASL v1.6.0
