@@ -448,6 +448,10 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkStudyRoot(x, SelectParF
     if ~bSourceStructure && ~bDatasetDescription && ~bDataPar
         if x.opts.bImportData || x.opts.bProcessData
             fprintf('Neither the sourceStructure.json, dataset_description.json nor dataPar.json exist, ExploreASL will only be initialized...\n');
+            % Check for really wrong input
+            if ~isempty(regexp(x.opts.StudyRoot, 'derivatives', 'once')) || ~isempty(regexp(x.opts.StudyRoot, 'ExploreASL', 'once'))
+                warning('Please do not provide the derivatives or ExploreASL folder. Use the study root directory instead...');
+            end
         end
         x.opts.bProcessData = 0;
         x.opts.ProcessModules = [0 0 0];
