@@ -1,7 +1,7 @@
-function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject] = xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject, kk, mm)
+function xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject, kk, mm)
 %xASL_imp_NII2BIDS_SubjectSessionRun NII2BIDS conversion for a single sessions, single run.
 %
-% FORMAT: [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject] = xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject, kk, mm)
+% FORMAT: xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject, kk, mm)
 % 
 % INPUT:
 % imPar            - JSON file with structure with import parameter (STRUCT, REQUIRED)
@@ -19,17 +19,7 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
 % mm               - run number (INTEGER, REQUIRED)
 %
 % OUTPUT:
-% imPar            - imPar struct
-% bidsPar          - bidsPar struct
-% studyPar         - studyPar struct
-% subjectLabel     - subject label
-% sessionLabel     - session label
-% listSubjects     - list of subjects
-% fSes             - f session
-% inSessionPath    - input session path
-% outSessionPath   - output session path
-% nSes             - Number of sessions
-% iSubject         - Subject ID
+% n/a
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: NII2BIDS conversion for a single sessions, single run.
@@ -51,13 +41,16 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
     end
 
     % Load the JSON
-    jsonDicom = spm_jsonread(fullfile(inSessionPath,[aslLabel '.json']));
-    imNii = xASL_io_Nifti2Im(fullfile(inSessionPath,[aslLabel '.nii']));
-
+    jsonDicom = spm_jsonread(fullfile(inSessionPath, [aslLabel '.json']));
+	headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
+	
+	% Take all the manually predefined fields from studyPar
+    jsonLocal = studyPar;
+	
     if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
-        scaleFactor = xASL_adm_GetPhilipsScaling(jsonDicom,xASL_io_ReadNifti(fullfile(inSessionPath,[aslLabel '.nii'])));
+        jsonLocal.scaleFactor = xASL_adm_GetPhilipsScaling(jsonDicom, headerASL);
     else
-        scaleFactor = 0;
+        jsonLocal.scaleFactor = 0;
     end
 
     % Check if the Phoenix protocol is present and parse it
@@ -67,27 +60,9 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
     end
 
     % TotalAcquiredPairs - use only the maximum values from DICOM
-    if isfield(jsonDicom,'TotalAcquiredPairs') && ~isempty(jsonDicom.TotalAcquiredPairs) && length(jsonDicom.TotalAcquiredPairs)>1
+	if isfield(jsonDicom,'TotalAcquiredPairs') && ~isempty(jsonDicom.TotalAcquiredPairs) && length(jsonDicom.TotalAcquiredPairs)>1
         jsonDicom.TotalAcquiredPairs = max(jsonDicom.TotalAcquiredPairs);
-    end
-
-    if scaleFactor
-        imNii = imNii .* scaleFactor;
-    end
-
-    if scaleFactor || (size(imNii,4) == 1)
-        % Scaling changed, so we have to save again OR
-        % The fourth dimension is 1, so we have to write the file again, to make sure the
-        xASL_io_SaveNifti(fullfile(inSessionPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],imNii,[],1,[]);
-        % Delete original Nifti
-        xASL_delete(fullfile(inSessionPath,[aslLabel '.nii']));
-    else
-        % Move the ASL
-        xASL_Move(fullfile(inSessionPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],1);
-    end
-
-    % Take all the manually predefined fields from studyPar
-    jsonLocal = studyPar;
+	end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % In case of LookLocker and manually defined multiple flip angle, use this as a priority
@@ -305,14 +280,14 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
         end
 
         % If the length of SliceTiming fits to the number of slices, do nothing
-        if length(jsonLocal.SliceTiming) ~= size(imNii,3)
+        if length(jsonLocal.SliceTiming) ~= headerASL.dat.dim(3)
             % if the length of studyPar.sliceTiming is higher than 1 and the difference non-zero then use this
             if length(jsonLocal.SliceTiming) > 1 && abs(jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1)) > 0
                 jsonLocal.SliceTiming = jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1);
             end
 
             if abs(jsonLocal.SliceTiming) > 0
-                jsonLocal.SliceTiming = ((0:(size(imNii,3)-1))')*jsonLocal.SliceTiming;
+                jsonLocal.SliceTiming = ((0:(headerASL.dat.dim(3)-1))')*jsonLocal.SliceTiming;
             end
         end
     else
@@ -347,21 +322,19 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
         isHadamardFME = false;
     end
     
-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Define the M0 type
-    [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel, bJsonLocalM0isFile] = ...
-        xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel);
+    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % If Post-labeling delay or labeling duration is longer than 1, but shorter then number of volumes then repeat it
     listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVENC','FlipAngle','RepetitionTimePreparation'};
     for iRepeat = 1:length(listFieldsRepeat)
-        if isfield(jsonLocal,(listFieldsRepeat{iRepeat})) && (length(jsonLocal.(listFieldsRepeat{iRepeat})) > 1) && (size(imNii,4) ~= length(jsonLocal.(listFieldsRepeat{iRepeat})))
-			if mod(size(imNii,4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
+		if isfield(jsonLocal,(listFieldsRepeat{iRepeat})) && (length(jsonLocal.(listFieldsRepeat{iRepeat})) > 1) && (headerASL.dat.dim(4) ~= length(jsonLocal.(listFieldsRepeat{iRepeat})))
+			if mod(headerASL.dat.dim(4),length(jsonLocal.(listFieldsRepeat{iRepeat})))
 				error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
 			else
-				jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat})(:),[size(imNii,4)/length(jsonLocal.(listFieldsRepeat{iRepeat})) 1]);
+				jsonLocal.(listFieldsRepeat{iRepeat}) = repmat(jsonLocal.(listFieldsRepeat{iRepeat})(:),[headerASL.dat.dim(4)/length(jsonLocal.(listFieldsRepeat{iRepeat})) 1]);
 			end
         end
     end
@@ -380,12 +353,12 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
     jsonLocal.ASLContext = strrep(jsonLocal.ASLContext, ',',sprintf('\n'));
 
     % Check if the length is the same
-    if size(imNii,4) ~= lengthASLContext
+    if headerASL.dat.dim(4) ~= lengthASLContext
         % Check if we can simply repeat it
-        if mod(size(imNii,4),lengthASLContext)
+        if mod(headerASL.dat.dim(4),lengthASLContext)
             error('Cannot find a match between the ASLContext and the 4th dimension of the NIFTI');
         else
-            numRepeat = size(imNii,4)/lengthASLContext;
+            numRepeat = headerASL.dat.dim(4)/lengthASLContext;
             tmpStr = jsonLocal.ASLContext;
             for iRepeat = 2:numRepeat
                 jsonLocal.ASLContext = sprintf('%s\n%s',jsonLocal.ASLContext,tmpStr);
@@ -403,7 +376,7 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
     ASLContextCell = strsplit(jsonLocal.ASLContext,'\n'); % Split to cells by line-end
     ASLContextM0Index = regexp(ASLContextCell,'^m0scan'); % Find m0scans
     ASLContextM0Index = cellfun(@(x)~isempty(x),ASLContextM0Index); % Create a vector out of it
-    ASLContextM0Index = ASLContextM0Index(1:size(imNii,4)); % Remove the last empty field
+    ASLContextM0Index = ASLContextM0Index(1:headerASL.dat.dim(4)); % Remove the last empty field
 
     % Go through all variables, check those that have length bigger than 1
     for iRepeat = 1:length(listFieldsZero)
@@ -424,11 +397,11 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
 
     % First count the number of controls, labels, and deltaMs
     ASLContextControlIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^control')); % Create a vector out of it
-    ASLContextControlIndex = ASLContextControlIndex(1:size(imNii,4)); % Remove the last empty field
+    ASLContextControlIndex = ASLContextControlIndex(1:headerASL.dat.dim(4)); % Remove the last empty field
     ASLContextLabelIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^label')); % Create a vector out of it
-    ASLContextLabelIndex = ASLContextLabelIndex(1:size(imNii,4)); % Remove the last empty field
+    ASLContextLabelIndex = ASLContextLabelIndex(1:headerASL.dat.dim(4)); % Remove the last empty field
     ASLContextDeltaMIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^deltam')); % Create a vector out of it
-    ASLContextDeltaMIndex = ASLContextDeltaMIndex(1:size(imNii,4)); % Remove the last empty field
+    ASLContextDeltaMIndex = ASLContextDeltaMIndex(1:headerASL.dat.dim(4)); % Remove the last empty field
 
     % If TotalAcquiredPairs is 1, but more control/label pairs od deltaMs are present, then set this to the correct
     % number
@@ -450,7 +423,12 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Remove the AslContext field and save it as a separate file
-    fContext = fopen([aslOutLabel '_' bidsPar.strAslContext '.tsv'],'w+');
+	filenameTSV = [aslOutLabel '_' bidsPar.strAslContext '.tsv'];
+	[pathTSV,~,~] = fileparts(filenameTSV);
+	if ~exist(pathTSV,'dir')
+		mkdir(pathTSV);
+	end
+    fContext = fopen(filenameTSV,'w+');
     fwrite(fContext,sprintf('volume_type\n'));
     fwrite(fContext,jsonLocal.ASLContext);
     fclose(fContext);
@@ -463,9 +441,9 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
                 warning('Q2TIPS BolusCutOff has to have 2 values defined');
             end
         end
-    end
+	end
 
-    if mm == 1
+	if mm == 1
         for nn = 1:2
             if nn == 1
                 nnStrIn = '';
@@ -508,13 +486,13 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
                 imM0   = xASL_io_Nifti2Im(fullfile(inSessionPath,['M0' nnStrIn '.json']));
 
                 if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
-                    scaleFactor = xASL_adm_GetPhilipsScaling(jsonM0,xASL_io_ReadNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii'])));
+                    jsonM0.scaleFactor = xASL_adm_GetPhilipsScaling(jsonM0,xASL_io_ReadNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii'])));
                 else
-                    scaleFactor = 0;
+                    jsonM0.scaleFactor = 0;
                 end
 
-                if scaleFactor
-                    imM0 = imM0 .* scaleFactor;
+                if jsonM0.scaleFactor
+                    imM0 = imM0 .* jsonM0.scaleFactor;
                 end
 
                 % Check echo time, for vectors
@@ -531,7 +509,7 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
                         warning('SliceTiming already existed for M0, overwriting with ASL');
                     end
 
-                    if size(imNii,3) == size(imM0,3)
+                    if headerASL.dat.dim(3) == size(imM0,3)
                         % Either copy if the save number of slices in M0 as in ASL
                         jsonM0Write.SliceTiming = jsonLocal.SliceTiming;
                     else
@@ -570,7 +548,7 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
                 end
 
                 % if scaling modified then save instead of move
-                if scaleFactor || size(imM0,4) == 1
+                if jsonM0.scaleFactor || size(imM0,4) == 1
                     if nn == 1
                         xASL_io_SaveNifti(fullfile(inSessionPath,['M0' nnStrIn '.nii']),fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectLabel sessionLabel nnStrOut '_' bidsPar.strM0scan '.nii.gz']),imM0,[],1,[]);
                         % Delete original Nifti
@@ -604,7 +582,26 @@ function [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fS
         if bJsonLocalM0isFile
             jsonLocal.M0 = [jsonLocal.M0 '.nii.gz'];
         end
-    end
+	end
+	
+	%% Save the JSON and NII to final location for ASL
+	if jsonLocal.scaleFactor || (headerASL.dat.dim(4) == 1)
+		imNii = xASL_io_Nifti2Im(fullfile(inSessionPath,[aslLabel '.nii']));
+		
+		if jsonLocal.scaleFactor
+			imNii = imNii .* jsonLocal.scaleFactor;
+		end
+		
+		% Scaling changed, so we have to save again OR
+		% The fourth dimension is 1, so we have to write the file again, to make sure the
+		xASL_io_SaveNifti(fullfile(inSessionPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],imNii,[],1,[]);
+		% Delete original Nifti
+		xASL_delete(fullfile(inSessionPath,[aslLabel '.nii']));
+	else
+		% Move the ASL
+		xASL_Move(fullfile(inSessionPath,[aslLabel '.nii']),[aslOutLabel '_asl.nii.gz'],1);
+	end
+	
     % Save JSON to new dir
     jsonLocal = xASL_bids_VendorFieldCheck(jsonLocal);
     jsonLocal = xASL_bids_JsonCheck(jsonLocal,'ASL');

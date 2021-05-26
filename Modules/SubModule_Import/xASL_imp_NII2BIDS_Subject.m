@@ -68,7 +68,7 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
             jsonAnat = spm_jsonread([anatPath,'.json']);
 			
             % Save the JSON
-			jsonAnat = xASL_bids_JsonBIDSify(jsonAnat);
+			jsonAnat = xASL_bids_JsonBIDSifyAnat(jsonAnat);
             jsonAnat = xASL_bids_VendorFieldCheck(jsonAnat);
             jsonAnat = xASL_bids_JsonCheck(jsonAnat,'');
 			
@@ -82,11 +82,6 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, listSubjects, iSubj
 
     % Go through all sessions
     for kk = 1:length(fSes)
-        [imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel] = ...
-            xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel, kk);
+        xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel, kk);
     end
 end
-
-
-
-

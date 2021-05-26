@@ -1,7 +1,7 @@
-function [imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel] = xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel, kk)
+function xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel, kk)
 %xASL_imp_NII2BIDS_SubjectSession NII2BIDS conversion for a single sessions.
 %
-% FORMAT: [imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel] = xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel, kk)
+% FORMAT: xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel, kk)
 % 
 % INPUT:
 %   imPar          - JSON file with structure with import parameter (STRUCT, REQUIRED)
@@ -14,13 +14,7 @@ function [imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel] 
 %   kk             - Session number (INTEGER, REQUIRED)
 %
 % OUTPUT:
-%   imPar          - imPar struct
-%   bidsPar        - bidsPar struct
-%   studyPar       - studyPar struct
-%   iSubject       - Subject ID
-%   fSes           - f sessions
-%   listSubjects   - list of subjects
-%   subjectLabel   - subject label
+%  n/a
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: NII2BIDS conversion for a single sessions.
@@ -64,9 +58,7 @@ function [imPar, bidsPar, studyPar, iSubject, fSes, listSubjects, subjectLabel] 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% 3.2 Iterate over runs
     for mm = 1:(max(nSes,1))
-        [imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject] = ...
-            xASL_imp_NII2BIDS_SubjectSessionRun(...
-            imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject, kk, mm);
+        xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectLabel, sessionLabel, listSubjects, fSes, inSessionPath, outSessionPath, nSes, iSubject, kk, mm);
     end
 
 end

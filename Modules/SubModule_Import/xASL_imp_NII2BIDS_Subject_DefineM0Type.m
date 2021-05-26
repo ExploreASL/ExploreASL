@@ -1,7 +1,7 @@
-function [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel)
+function [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel)
 %xASL_imp_NII2BIDS_Subject_DefineM0Type Define M0 Type.
 %
-% FORMAT: [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel)
+% FORMAT: [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel)
 % 
 % INPUT:
 %   studyPar       - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
@@ -12,20 +12,14 @@ function [studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabe
 %   sessionLabel   - session label (CHAR ARRAY, REQUIRED)
 %
 % OUTPUT:
-%   studyPar       - studyPar struct (STRUCT, REQUIRED)
-%   bidsPar        - bidsPar struct (STRUCT, REQUIRED)
 %   jsonLocal      - jsonLocal struct (STRUCT, REQUIRED)
-%   inSessionPath  - inSession path (REQUIRED)
-%   subjectLabel   - subject label (REQUIRED)
-%   sessionLabel   - session label (REQUIRED)
 %   bJsonLocalM0isFile    - JSON local M0 is file (BOOLEAN)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Define M0 Type.
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x[studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel, bJsonLocalM0isFile] = ...
-%               xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel);
+% EXAMPLE:     [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectLabel, sessionLabel);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
