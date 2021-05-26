@@ -85,7 +85,7 @@ function [x] = ExploreASL_Master(varargin)
         x = ExploreASL_Initialize(x.opts.StudyRoot, x.opts.ImportModules, x.opts.ProcessModules, x.opts.bPause, x.opts.iWorker, x.opts.nWorkers);
     end
     % Retrieve logging information about errors/warnings from backup variable
-    if exist(loggingBackUp, 'var')
+    if exist('loggingBackUp', 'var')
     	x.logging = loggingBackUp;
     end
     
