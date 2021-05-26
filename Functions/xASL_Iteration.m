@@ -395,6 +395,9 @@ function [bAborted, x] = runIteration(db)
             end
             
             fprintf('\n%s\n',['ERROR: ' ModuleString ' module terminated ' subjectString]);
+
+            % Catch error in logging field
+            [x] = xASL_qc_AddLoggingInfo(x, ME);
             
             ME.getReport()
             CountErrors     = CountErrors+1;

@@ -74,11 +74,19 @@ function [x] = ExploreASL_Master(varargin)
     if x.opts.bImportData
         x = ExploreASL_ImportMaster(x);
     end
+    % Store logging information about errors/warnings in backup variable
+    if isfield(x,'logging')
+    	loggingBackUp = x.logging;
+    end
     
     % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
     if x.opts.bReinitialize > 0
         x = ExploreASL_Initialize(x.opts.StudyRoot, x.opts.ImportModules, x.opts.ProcessModules, x.opts.bPause, x.opts.iWorker, x.opts.nWorkers);
+    end
+    % Retrieve logging information about errors/warnings from backup variable
+    if exist(loggingBackUp, 'var')
+    	x.logging = loggingBackUp;
     end
     
     % -----------------------------------------------------------------------------
