@@ -547,6 +547,10 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkStudyRoot_invalid_start
         if ~isempty(regexp(x.opts.StudyRoot, 'sourceStructure', 'once'))
             x.dataParType = 'sourceStructure';
             x.dir.sourceStructure = x.opts.StudyRoot;
+        elseif ~isempty(regexp(x.opts.StudyRoot, 'studyPar', 'once'))
+            x.dataParType = 'studyPar';
+            x.dir.studyPar = x.opts.StudyRoot;
+            warning('You provided the studyPar.json, which should never be the input...');
         elseif ~isempty(regexp(x.opts.StudyRoot, 'dataset_description', 'once'))
             x.dataParType = 'dataset_description';
             x.dir.dataset_description = x.opts.StudyRoot;
@@ -565,6 +569,11 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkStudyRoot_invalid_start
         [x.dir.StudyRoot, ~] = fileparts(x.dir.sourceStructure);
         x.opts.StudyRoot = x.dir.StudyRoot;
     end
+    if isfield(x.dir,'studyPar')
+        % We expect the sourceStructure.json to be within the study root folder
+        [x.dir.StudyRoot, ~] = fileparts(x.dir.studyPar);
+        x.opts.StudyRoot = x.dir.StudyRoot;
+    end
     if isfield(x.dir,'dataset_description')
         % We expect the dataset_description.json to be within the rawdata folder
         [rawdataFolder, ~] = fileparts(x.dir.dataset_description);
@@ -578,12 +587,16 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkStudyRoot_invalid_start
     % Recheck for other files if studyRoot is known now
     if isfield(x, 'dir')
         if isfield(x.dir, 'StudyRoot')
+            fileListSourceStructure = xASL_adm_GetFileList(x.dir.StudyRoot, 'sourceStructure*.json');
             fileListStudyPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'studyPar*.json');
             fileListDataDescription = xASL_adm_GetFileList(fullfile(x.dir.StudyRoot, 'rawdata'), 'dataset_description.json');
             fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.StudyRoot, 'derivatives', 'ExploreASL'), 'dataPar*.json');
             if isempty(fileListDataPar)
                 % Derivatives maybe does not exist already, we'll try study root
                 fileListDataPar = xASL_adm_GetFileList(x.dir.StudyRoot, 'dataPar*.json');
+            end
+            if ~isempty(fileListSourceStructure)
+                x.dir.sourceStructure = fileListSourceStructure{1};
             end
             if ~isempty(fileListStudyPar)
                 x.dir.studyPar = fileListStudyPar{1};
