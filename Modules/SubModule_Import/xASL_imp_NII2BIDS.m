@@ -26,6 +26,12 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 
 
     %% Run the NII2BIDS conversion
+    
+    % Check if the temp folder exists
+    existTempRoot = xASL_exist(fullfile(studyPath,'temp'),'dir');
+    if ~existTempRoot
+        error('The temp directory does not exist. Please run DICOM to NIfTI on your sourcedata first...');
+    end
 
     % Loads the general configuration necessary for the conversion and BIDS saving
 	bidsPar = xASL_bids_Config();
