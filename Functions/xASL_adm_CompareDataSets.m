@@ -38,7 +38,7 @@ end
 %% If in ExploreASL, skip reproducibility testing (this function) when not specifically asked
 if  bxASL
     if  isfield(x,'bReproTesting')
-        if ~x.bReproTesting || isdeployed
+        if ~x.settings.bReproTesting || isdeployed
             return;
         end
     else

@@ -23,12 +23,12 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
 %% --------------------------------------------------------------------------
 %% Reproducibility testing
 if ~isfield(x,'bReproTesting')
-    x.bReproTesting = false;
+    x.settings.bReproTesting = false;
 end
 
 % If the reproducibility is on, then delete the old RMS file
 if isfield(x, 'bReproTesting')
-    if x.bReproTesting
+    if x.settings.bReproTesting
         xASL_delete(fullfile(x.D.ROOT, 'RMS_Reproducibility.mat'))
     end
 end

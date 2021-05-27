@@ -150,7 +150,7 @@ if x.DELETETEMP
     xASL_delete(x.P.Path_mrFLAIR); % LPA
     xASL_delete(x.P.Path_rmrFLAIR); % LGA
 
-    if ~x.bReproTesting
+    if ~x.settings.bReproTesting
         xASL_delete(x.P.Path_rFLAIR);
     end
 end
