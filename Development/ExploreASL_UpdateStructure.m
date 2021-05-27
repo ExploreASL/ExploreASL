@@ -1,12 +1,10 @@
-function ExploreASL_UpdateStructure(StudyRoot, x)
+function ExploreASL_UpdateStructure(datasetRoot)
 %ExploreASL_UpdateStructure Updates the structure of the temp & lock folder from old formats to the current format
 %
-% FORMAT: ExploreASL_UpdateStructure(StudyRoot, x)
+% FORMAT: ExploreASL_UpdateStructure(datasetRoot)
 %
-% INPUT: (either StudyRoot or x is REQUIRED, the other OPTIONAL)
-%   StudyRoot   - root directory of asl-bids
-%   x           - struct containing pipeline environment parameters, useful
-%                 when only initializing ExploreASL/debugging
+% INPUT: (either datasetRoot or x is REQUIRED, the other OPTIONAL)
+%   datasetRoot   - root directory of your BIDS dataset
 %
 % OUTPUT:
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -23,12 +21,10 @@ function ExploreASL_UpdateStructure(StudyRoot, x)
 
 
 %% Check if we need to initialize ExploreASL
-if nargin>1 && ~isempty(x) && isfield(x,'D') && isfield(x.D,'ROOT')
-    % skip initialization
-elseif ~isempty(StudyRoot) && exist(StudyRoot,'dir')
-    x = ExploreASL_Initialize(StudyRoot);
+if ~isempty(datasetRoot) && exist(datasetRoot,'dir')
+    x = ExploreASL_Initialize(datasetRoot);
 else
-    error(['StudyRoot ' StudyRoot ' is invalid/doesnt exist']);
+    error(['Dataset root ' datasetRoot ' is invalid/doesnt exist']);
 end
 
 %% Rename the directory dartel to Population

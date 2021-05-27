@@ -19,10 +19,10 @@ function [x] = ExploreASL_ImportMaster(x)
 
     %% Import Workflow
     
-    % We expect x.opts.StudyRoot to be the study root directory, but if it is not defined, 
+    % We expect x.opts.DatasetRoot to be the study root directory, but if it is not defined, 
     % then the user probably used a path to a descriptive JSON file instead
-    if isfield(x, 'dir') && isfield(x.dir, 'StudyRoot') && isempty(x.dir.StudyRoot)
-        x.dir.StudyRoot = xASL_fileparts(x.opts.StudyRoot);
+    if isfield(x, 'dir') && isfield(x.dir, 'DatasetRoot') && isempty(x.dir.DatasetRoot)
+        x.dir.DatasetRoot = xASL_fileparts(x.opts.DatasetRoot);
     end
 	
     % Check if at least one of the three steps should be performed
@@ -32,7 +32,7 @@ function [x] = ExploreASL_ImportMaster(x)
         if x.opts.ImportModules(1)==1
             if ~isempty(x.dir.sourceStructure)
                 try
-                    xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, false, x);
+                    xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, false, x);
                 catch loggingEntry
                     fprintf(2,'DICOM to NIfTI module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
@@ -45,7 +45,7 @@ function [x] = ExploreASL_ImportMaster(x)
         if x.opts.ImportModules(2)==1
             if ~isempty(x.dir.sourceStructure)
                 try
-                    [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, false, x);
+                    [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, false, x);
                 catch loggingEntry
                     fprintf(2,'NIfTI to BIDS module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
@@ -56,9 +56,9 @@ function [x] = ExploreASL_ImportMaster(x)
         end
         % ANONYMIZE
         if x.opts.ImportModules(3)==1
-            if ~isempty(x.dir.StudyRoot)
+            if ~isempty(x.dir.DatasetRoot)
                 try
-                    [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, false, x);
+                    [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, false, x);
                 catch loggingEntry
                     fprintf(2,'Anonymize module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);

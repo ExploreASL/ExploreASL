@@ -1,7 +1,7 @@
-function [x] = xASL_imp_Import_UpdateStudyRoot(x, studyPath)
-%xASL_imp_Import_UpdateStudyRoot Update x.opts.StudyRoot to dataset_description.json after NII2BIDS conversion
+function [x] = xASL_imp_Import_UpdateDatasetRoot(x, studyPath)
+%xASL_imp_Import_UpdateDatasetRoot Update x.opts.DatasetRoot to dataset_description.json after NII2BIDS conversion
 %
-% FORMAT: [x] = xASL_imp_Import_UpdateStudyRoot(x, studyPath)
+% FORMAT: [x] = xASL_imp_Import_UpdateDatasetRoot(x, studyPath)
 %
 % INPUT:
 %   x                   - ExploreASL x structure (STRUCT, REQUIRED)
@@ -11,7 +11,7 @@ function [x] = xASL_imp_Import_UpdateStudyRoot(x, studyPath)
 %   x                   - ExploreASL x structure
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Update x.opts.StudyRoot to dataset_description.json after NII2BIDS conversion
+% DESCRIPTION: Update x.opts.DatasetRoot to dataset_description.json after NII2BIDS conversion
 % EXAMPLE:     n/a
 % __________________________________
 % Copyright 2015-2021 ExploreASL

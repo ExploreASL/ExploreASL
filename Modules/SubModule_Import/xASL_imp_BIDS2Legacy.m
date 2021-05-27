@@ -17,7 +17,7 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 % - 1. The input is dataset_description.json in the rawdata folder
 % - 2. The input is dataPar.json or sourceStructure.json - have to look for a rawdata folder
 % 3. Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
-% 4. Overwrite StudyRoot
+% 4. Overwrite DatasetRoot
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
@@ -48,33 +48,33 @@ function [x] = xASL_imp_BIDS2Legacy(x)
         if ~strcmp(rawdataFolderName, 'rawdata')
             error('Invalid folder in which dataset_description.json was found, should be /rawdata');
         end
-        localStudyRoot = x.dir.StudyRoot;
+        localDatasetRoot = x.dir.DatasetRoot;
     else
         %% 2.2 The input is dataPar.json or sourceStructure.json - have to look for a rawdata folder
-        pathRawData = fullfile(x.dir.StudyRoot,'rawdata');
+        pathRawData = fullfile(x.dir.DatasetRoot,'rawdata');
         % Check the if the correct BIDS structure is in place
         if ~exist(pathRawData,'dir')
             error('Path rawdata does not exist');
         elseif ~exist(fullfile(pathRawData,'dataset_description.json'),'file')
             error('File dataset_description.json is not found');
         else
-            localStudyRoot = x.dir.StudyRoot;
+            localDatasetRoot = x.dir.DatasetRoot;
         end
     end
 
 	%% 3. Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
-	fListDataPar = xASL_adm_GetFileList(localStudyRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+	fListDataPar = xASL_adm_GetFileList(localDatasetRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
 	if length(fListDataPar) < 1
 		fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
 		% Fill the dataPars with default parameters
-		dataPar = xASL_bids_BIDS2Legacy(localStudyRoot, 1, []);
+		dataPar = xASL_bids_BIDS2Legacy(localDatasetRoot, 1, []);
 	else
 		% Fill the dataPars with the provided parameters
 		dataPar = spm_jsonread(fListDataPar{1});
-		dataPar = xASL_bids_BIDS2Legacy(localStudyRoot, 1, dataPar);
+		dataPar = xASL_bids_BIDS2Legacy(localDatasetRoot, 1, dataPar);
 	end
 
-	%% 4. Overwrite StudyRoot
+	%% 4. Overwrite DatasetRoot
     fieldsDataPar = fieldnames(dataPar.x);
     % Add fields that are in dataPar.x but missing in x
     for iField = 1:numel(fieldsDataPar)

@@ -1,7 +1,7 @@
-function imPar = ExploreASL_ImportConfig(StudyRoot)
+function imPar = ExploreASL_ImportConfig(DatasetRoot)
 %ExploreASL_ImportConfig Configures the import parameters used by ExploreASL_Import
 %
-% FORMAT:      imPar = ExploreASL_ImportConfig(StudyRoot)
+% FORMAT:      imPar = ExploreASL_ImportConfig(DatasetRoot)
 % 
 % INPUT:       root of study folder containing DICOMs, e.g. '//MyDisk/MyStudy'
 %
@@ -32,12 +32,12 @@ fprintf(['\nThe support for this ExploreASL functionality will expire with a fut
          'Starting release v1.8.0 you will be asked to provide the path to your ConfigFiles folder.\n']);
 fprintf('\n==============================================================================================\n\n');
 
-if strcmp(StudyRoot(end),'\') || strcmp(StudyRoot(end),'/')
-    StudyRoot = StudyRoot(1:end-1); % bugfix
+if strcmp(DatasetRoot(end),'\') || strcmp(DatasetRoot(end),'/')
+    DatasetRoot = DatasetRoot(1:end-1); % bugfix
 end
 
 % Get file path, name and extension
-[fpath, fname, fext] = fileparts(StudyRoot);
+[fpath, fname, fext] = fileparts(DatasetRoot);
 
 % Set imPar fields accordingly
 imPar.studyID = [fname fext];

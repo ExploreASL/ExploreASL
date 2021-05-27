@@ -38,7 +38,7 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %    Create a root folder with study ID name, and put the DICOMs in any structure in the raw folder within the study ID root folder
 %    Examples:
 %    imPar.StudyID: MyStudy
-%    StudyRoot folder: //MyDisk/MyStudy
+%    Dataset root folder: //MyDisk/MyStudy
 %    Raw folder containing DICOMs: //MyDisk/MyStudy/raw
 % 2. Make sure that your DICOM data has any structure that can be retrieved
 %    from the folder and/or file names. This function doesn't yet read the DICOM headers

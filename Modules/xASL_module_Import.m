@@ -47,7 +47,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 %    Create a root folder with study ID name, and put the DICOMs in any structure in the sourcedata folder within the study ID root folder
 %    Examples:
 %    imPar.StudyID: MyStudy
-%    StudyRoot folder: `//MyDisk/MyStudy`
+%    Dataset Root folder: `//MyDisk/MyStudy`
 %    sourcedata folder containing DICOMs: `//MyDisk/MyStudy/sourcedata`
 % 2. Make sure that your DICOM data has any structure that can be retrieved
 %    from the folder and/or file names. This function doesn't yet read the DICOM headers
@@ -209,8 +209,8 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     if bRunSubmodules(2)
         % Run NII to BIDS
         xASL_imp_NII2BIDS(imPar, studyPath, studyParPath);
-        % Update x.opts.StudyRoot
-        [x] = xASL_imp_Import_UpdateStudyRoot(x, studyPath);
+        % Update x.opts.DatasetRoot
+        [x] = xASL_imp_Import_UpdateDatasetRoot(x, studyPath);
     end
 
 

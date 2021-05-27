@@ -55,7 +55,7 @@ if ~isstruct(x)
     testCondition = false;
 end
 if isfield(x, 'opts')
-    if ~isfield(x.opts,'StudyRoot'),     testCondition = false;      end
+    if ~isfield(x.opts,'DatasetRoot'),     testCondition = false;      end
     if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
     if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
     if ~isfield(x.opts,'bPause'),          testCondition = false;      end
@@ -67,8 +67,8 @@ end
 
 % Now let's check the values
 if isfield(x, 'opts')
-    if isfield(x.opts,'StudyRoot')
-        if ~isempty(x.opts.StudyRoot) || ~ischar(x.opts.StudyRoot)
+    if isfield(x.opts,'DatasetRoot')
+        if ~isempty(x.opts.DatasetRoot) || ~ischar(x.opts.DatasetRoot)
             testCondition = false;
         end
     end
@@ -127,7 +127,7 @@ if ~isstruct(x)
     testCondition = false;
 end
 if isfield(x, 'opts')
-    if ~isfield(x.opts,'StudyRoot'),     testCondition = false;      end
+    if ~isfield(x.opts,'DatasetRoot'),     testCondition = false;      end
     if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
     if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
     if ~isfield(x.opts,'bPause'),          testCondition = false;      end
@@ -139,8 +139,8 @@ end
 
 % Now let's check the values
 if isfield(x, 'opts')
-    if isfield(x.opts,'StudyRoot')
-        if ~isempty(x.opts.StudyRoot) || ~ischar(x.opts.StudyRoot)
+    if isfield(x.opts,'DatasetRoot')
+        if ~isempty(x.opts.DatasetRoot) || ~ischar(x.opts.DatasetRoot)
             testCondition = false;
         end
     end
@@ -199,7 +199,7 @@ if ~isstruct(x)
     testCondition = false;
 end
 if isfield(x, 'opts')
-    if ~isfield(x.opts,'StudyRoot'),     testCondition = false;      end
+    if ~isfield(x.opts,'DatasetRoot'),     testCondition = false;      end
     if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
     if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
     if ~isfield(x.opts,'bPause'),          testCondition = false;      end
@@ -211,8 +211,8 @@ end
 
 % Now let's check the values
 if isfield(x, 'opts')
-    if isfield(x.opts,'StudyRoot')
-        if ~isempty(x.opts.StudyRoot) || ~ischar(x.opts.StudyRoot)
+    if isfield(x.opts,'DatasetRoot')
+        if ~isempty(x.opts.DatasetRoot) || ~ischar(x.opts.DatasetRoot)
             testCondition = false;
         end
     end
