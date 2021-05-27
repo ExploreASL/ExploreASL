@@ -30,7 +30,7 @@ if ~isfield(x,'LabEffNorm')
     x.LabEffNorm        = 0;
 end
 
-xASL_adm_CreateDir( x.StatsMaps);
+xASL_adm_CreateDir( x.D.StatsMaps);
 
 if ~exist('AsymIndex','var')
     AsymIndex       = 0;
@@ -208,7 +208,7 @@ x.S.SagSlices                 = [15+([1:nIms+1]-1).*round((110-15)/nIms+1)]; % 1
 
 %% ------------------------------------------------------------------------------
 %% Initiation parameters for the GLM stats permutation over sets
-x.S.StatsMaps         = fullfile( x.StatsMaps, x.S.OutputID);
+x.S.StatsMaps         = fullfile( x.D.StatsMaps, x.S.OutputID);
 x.S.oriDIR            = x.S.StatsMaps;
 x.S.function2call     = @xASL_spm_GLM;
 x.S.unit              = 'mL/100g/min';
