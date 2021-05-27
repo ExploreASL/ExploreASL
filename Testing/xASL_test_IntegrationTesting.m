@@ -31,6 +31,9 @@ function [TestResults, CheckResults] = xASL_test_IntegrationTesting
     warning('off','all')                    % Turn of warnings (only add path related)
     addpath(genpath(xASL_dir))              % Add all scripts to path (including testing directory)
     warning('on','all')
+    
+    % Logging table
+    loggingTable = array2table(zeros(0,2), 'VariableNames',{'message','stack'});
 
     %% Get paths
     if exist(fullfile(filepath,'testConfig.json'),'file')
@@ -81,7 +84,14 @@ function [TestResults, CheckResults] = xASL_test_IntegrationTesting
         TestResults(iFlavor) = xASL_test_thisFlavor(testConfig.pathTest, ...
                                                     fullfile(testConfig.pathTest,'FlavorDatabase'), ...
                                                     flavorList{iFlavor});
+        % Check logging
+        if isfield(TestResults(iFlavor),'logging')
+            loggingTable = xASL_test_AddLoggingEntryToTable(loggingTable,TestResults(iFlavor).logging);
+        end
     end
+    
+    %% Write logging table
+    xASL_test_writeLoggingTable(fullfile(testConfig.pathTest,'FlavorDatabaseTest','log.xlsx'), loggingTable);
     
     %% Compare rawdata
     for iFlavor = 1:numel(flavorList)
@@ -117,6 +127,15 @@ function xFlavor = xASL_test_thisFlavor(testingRoot, databaseRoot, flavorName)
     
     % Remove rawdata folder from testing dataset
     xASL_delete(fullfile(testingRoot,'FlavorDatabaseTest',flavorName,'rawdata'),1);
+    
+    % Create default dataPar.json
+    defaultDataPar.x.subject_regexp = '^sub-.*$';
+    defaultDataPar.x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
+    defaultDataPar.x.Quality = 0; % speed up testing
+    defaultDataPar.x.DELETETEMP = 1;
+    
+    % Save JSON
+    spm_jsonwrite(fullfile(testingRoot,'FlavorDatabaseTest',flavorName,'dataPar.json'),defaultDataPar);
 
     % Run test
     try
@@ -161,6 +180,60 @@ function checkResults = xASL_test_thisFlavorCheckRawdata(testingRoot, databaseRo
     checkResults.name = flavorName;
     checkResults.results = results;
     checkResults.identical = identical;
+
+end
+
+
+%% Add entry to log table
+function logTable = xASL_test_AddLoggingEntryToTable(logTable,logStruct)
+
+    % Get number of log entries
+    numLogEntries = size(logStruct,2);
+    
+    % Iterate over log entries
+    for iEntry=1:numLogEntries
+        thisStruct = logStruct(iEntry);
+        thisStruct.stack = xASL_test_StackToString(thisStruct.stack);
+        thisStruct.message = cellstr(thisStruct.message);
+        thisStruct.stack = cellstr(thisStruct.stack);
+        thisRow = struct2table(thisStruct);
+        logTable = [logTable;thisRow];
+    end
+
+end
+
+
+%% Stack to string
+function stackText = xASL_test_StackToString(stack)
+
+    % Fallback
+    stackText = '';
+    
+    % Iterate over elements
+    for iElement = 1:size(stack,1)
+        thisFile = stack(iElement).file;
+        thisName = stack(iElement).name;
+        thisLine = stack(iElement).line;
+        stackText = [stackText ', ' thisName ': line ' num2str(thisLine)];
+    end
+    
+    % Remove initial ' ,'
+    if ~isempty(stackText) && length(stackText>3)
+        stackText = stackText(3:end);
+    end
+
+end
+
+
+%% Write logging information to XLSX table
+function xASL_test_writeLoggingTable(filePath,logTable)
+
+    % Write file
+    try
+        writetable(logTable,filePath,'WriteVariableNames',true);
+    catch ME
+        fprintf(2,'Writing log.xlsx failed: %s\n', ME.message);
+    end
 
 end
 
