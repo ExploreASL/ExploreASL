@@ -26,7 +26,7 @@ function [x] = ExploreASL_ImportMaster(x)
     end
 	
     % Check if at least one of the three steps should be performed
-    missingFields = false; % Fallback
+    missingJSON = false; % Fallback
     if sum(x.opts.ImportModules)>0
         % DICOM TO NII
         if x.opts.ImportModules(1)==1
@@ -34,11 +34,11 @@ function [x] = ExploreASL_ImportMaster(x)
                 try
                     xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, false, x);
                 catch loggingEntry
-                    fprintf(2,'DICOM to NII module failed...\n');
+                    fprintf(2,'DICOM to NIfTI module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else
-                missingFields = true;
+                missingJSON = true;
             end
         end
         % NII TO BIDS
@@ -47,11 +47,11 @@ function [x] = ExploreASL_ImportMaster(x)
                 try
                     [x] = xASL_module_Import(x.dir.StudyRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, false, x);
                 catch loggingEntry
-                    fprintf(2,'NII to BIDS module failed...\n');
+                    fprintf(2,'NIfTI to BIDS module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else
-                missingFields = true;
+                missingJSON = true;
             end
         end
         % ANONYMIZE
@@ -64,7 +64,7 @@ function [x] = ExploreASL_ImportMaster(x)
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else
-                missingFields = true;
+                missingJSON = true;
             end
         end
         % BIDS TO LEGACY
@@ -77,12 +77,13 @@ function [x] = ExploreASL_ImportMaster(x)
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else
-                missingFields = true;
+                missingJSON = true;
             end
         end
     end
 
-    if missingFields
+    % Print warning about missing JSON files
+    if missingJSON
         warning('Import workflow is turned on, but at least one required JSON file is missing...');
     end
     
