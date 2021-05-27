@@ -1,5 +1,5 @@
 function ExploreASL_UpdateStructure(StudyRoot, x)
-%ExploreASL_UpdateStructure Updates the structure of the analysis & lock folder from old formats to the current format
+%ExploreASL_UpdateStructure Updates the structure of the temp & lock folder from old formats to the current format
 %
 % FORMAT: ExploreASL_UpdateStructure(StudyRoot, x)
 %
@@ -18,7 +18,7 @@ function ExploreASL_UpdateStructure(StudyRoot, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: ExploreASL_UpdateStructure([], x);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 
