@@ -68,7 +68,7 @@ IM1MASK(~Erosion2)                  = MaxN;
 
 % IM1MASK             = background_mask .* x.GradualSkull; % with black background
 
-%         IM1_outside         = background_mask.*~x.skull;
+%         IM1_outside         = background_mask.*~x.utils.skull;
 %
 %         sort_IM1            = sort(nonzeros(IM1_outside));
 %         Value9              = sort_IM1(round(0.999*length(sort_IM1)));

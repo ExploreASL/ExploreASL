@@ -78,11 +78,11 @@ else
     %         mean(mean(mean(CBFgm(logical(MaskpGM)))))
     %         mean(mean(mean(CBFwm(logical(MaskpWM)))))
     %
-    %         figure(1);imshow(xASL_im_rotate(double(imPVEC(:,:,53,1))./3.19.*double(x.skull(:,:,53)),90),[0 400/3.19],'colormap',jet,'InitialMagnification',250)
-    %         figure(2);imshow(xASL_im_rotate(double(imPVEC(:,:,53,2))./3.19.*double(x.skull(:,:,53)),90),[0 60],'colormap',jet,'InitialMagnification',250)
+    %         figure(1);imshow(xASL_im_rotate(double(imPVEC(:,:,53,1))./3.19.*double(x.utils.skull(:,:,53)),90),[0 400/3.19],'colormap',jet,'InitialMagnification',250)
+    %         figure(2);imshow(xASL_im_rotate(double(imPVEC(:,:,53,2))./3.19.*double(x.utils.skull(:,:,53)),90),[0 60],'colormap',jet,'InitialMagnification',250)
     %
-    %         figure(1);imshow(xASL_im_rotate(double(CBFgm(:,:,53))./3.19.*double(x.skull(:,:,53)),90),[0 120],'colormap',jet,'InitialMagnification',250)
-    %         figure(2);imshow(xASL_im_rotate(double(CBFwm(:,:,53))./3.19.*double(x.skull(:,:,53)),90),[0 50],'colormap',jet,'InitialMagnification',250)
+    %         figure(1);imshow(xASL_im_rotate(double(CBFgm(:,:,53))./3.19.*double(x.utils.skull(:,:,53)),90),[0 120],'colormap',jet,'InitialMagnification',250)
+    %         figure(2);imshow(xASL_im_rotate(double(CBFwm(:,:,53))./3.19.*double(x.utils.skull(:,:,53)),90),[0 50],'colormap',jet,'InitialMagnification',250)
 
         end
     end
