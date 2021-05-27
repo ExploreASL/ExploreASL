@@ -75,7 +75,7 @@ function [x] = xASL_init_DefinePaths(x)
             % POPULATION module
             x.D.SpaghettiDir        = fullfile(x.D.PopDir, 'SpaghettiPlots');
             x.S.StatsDir            = fullfile(x.D.PopDir, 'Stats');
-            x.HistogramDir          = fullfile(x.D.PopDir, 'Histograms');
+            x.D.HistogramDir          = fullfile(x.D.PopDir, 'Histograms');
             x.StatsMaps             = fullfile(x.D.PopDir, 'StatsMaps');
 
             % Create Population directory for processing pipeline

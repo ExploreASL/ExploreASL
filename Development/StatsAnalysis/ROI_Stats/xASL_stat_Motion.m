@@ -34,9 +34,9 @@ x.S.KISS = 1; % keep it simple
 
 xASL_wrp_PermuteSets1(x);
 
-%     x.S.HistogramDir      = fullfile( x.HistogramDir,S.output_ID);
-%     xASL_adm_CreateDir(x.S.HistogramDir);
-%     x.S.oriDIR            = x.S.HistogramDir;
+%     x.D.HistogramDir      = fullfile( x.D.HistogramDir,S.output_ID);
+%     xASL_adm_CreateDir(x.D.HistogramDir);
+%     x.S.oriDIR            = x.D.HistogramDir;
 %     x.S.function2call     = @xASL_stat_CreateHistograms;
 %     fprintf('%s\n',['Creating ' x.S.output_ID ' histograms']);
 end
