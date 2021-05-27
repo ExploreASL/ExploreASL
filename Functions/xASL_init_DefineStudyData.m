@@ -380,9 +380,9 @@ for iT=1:x.nTimePoints
         % if an excluded later volume led to different composition
         % of TotalSubjects (i.e. before exclusion) & Subjects (i.e. after
         % exclusion)
-        x.nTimePointSubjects(iT) = 0; 
+        x.dataset.nTimePointSubjects(iT) = 0; 
     else
-        x.nTimePointSubjects(iT) = length(x.TimePointSubjects{iT});
+        x.dataset.nTimePointSubjects(iT) = length(x.TimePointSubjects{iT});
     end
 end
 

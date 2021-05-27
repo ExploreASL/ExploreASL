@@ -47,17 +47,23 @@ function x = xASL_init_PrintCheckSettings(x)
         fprintf('Note that the resulting number of scans mentioned below applies only to this worker\n');
     end
 
-    fprintf('%s\n',[num2str(x.nTotalSubjects) ' scans - ' num2str(x.dataset.nExcluded) ' exclusions, resulting in ' num2str(x.nSubjects) ' scans of: ']);
+    fprintf('%s\n',[num2str(x.nTotalSubjects) ' scans - ' ...
+        num2str(x.dataset.nExcluded) ' exclusions, resulting in ' ...
+        num2str(x.nSubjects) ' scans of: ']);
 
     for iT=1:x.dataset.nTimePointsTotal
-        fprintf('%s\n',['Longitudinal timePoint ' num2str(iT) ' = ' num2str(x.dataset.nTimePointTotalSubjects(iT)) ' scans - ' num2str(x.dataset.nTimePointExcluded(iT)) ' exclusions = ' num2str(x.nTimePointSubjects(iT)) ' scans']);
+        fprintf('%s\n',['Longitudinal timePoint ' num2str(iT) ' = ' ...
+            num2str(x.dataset.nTimePointTotalSubjects(iT)) ' scans - ' ...
+            num2str(x.dataset.nTimePointExcluded(iT)) ' exclusions = ' ...
+            num2str(x.dataset.nTimePointSubjects(iT)) ' scans']);
     end
 
     fprintf('%s\n',['ASL sessions: ' num2str(x.nSessions)]);
 
     fprintf('\n%s','Ancillary data, sets: ');
     if isfield(x.S,'SetsID')
-            fprintf('%s\n',[num2str(size(x.S.SetsID,2)) ' sets are defined for ' num2str(size(x.S.SetsID,1)) ' "SubjectsSessions"']);
+            fprintf('%s\n',[num2str(size(x.S.SetsID,2)) ' sets are defined for ' ...
+                num2str(size(x.S.SetsID,1)) ' "SubjectsSessions"']);
 
             for iSet=1:size(x.S.SetsID,2)
                 fprintf(['Set ' num2str(iSet) ' = "' x.S.SetsName{iSet} '" options ']);
@@ -72,7 +78,8 @@ function x = xASL_init_PrintCheckSettings(x)
                 elseif  x.S.Sets1_2Sample(iSet)==2
                         fprintf(', codes for two-sample data');
                 elseif  x.S.Sets1_2Sample(iSet)==3
-                        fprintf([', continuous variate (with ' num2str(length(unique(x.S.SetsID(:,iSet)))) ' unique values)']);
+                        fprintf([', continuous variate (with ' ...
+                            num2str(length(unique(x.S.SetsID(:,iSet)))) ' unique values)']);
                 end                    
 
                 fprintf('\n');
