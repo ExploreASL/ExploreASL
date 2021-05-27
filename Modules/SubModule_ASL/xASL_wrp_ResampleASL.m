@@ -106,13 +106,13 @@ end
 
 %% ------------------------------------------------------------------------------------------
 % 5. Bilateral filter (currently disabled)
-    if x.BILAT_FILTER>0
+    if x.settings.BILAT_FILTER>0
         warning('The bilateral filter is currently disabled, as it needs more testing');
     end
 %     %% ------------------------------------------------------------------------------------------
 %     %% Bilateral filter to remove smooth artifacts
 %     if ~isdeployed % skip this part for compilation, to avoid DIP image issues
-%         if  x.BILAT_FILTER>0 && nVolumes>9
+%         if  x.settings.BILAT_FILTER>0 && nVolumes>9
 %             volIM = xASL_io_ReadNifti(x.P.Path_rtemp_despiked_ASL4D); % load resliced time-series
 %             VoxelSize = double(volIM.hdr.pixdim(2:4));
 %             volIM = single(volIM.dat(:,:,:,:,:,:,:,:));

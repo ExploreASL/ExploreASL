@@ -24,7 +24,7 @@ if  size(volIM,4)<10
     fprintf('%s\n',['Filtering skipped because of only ' num2str(size(volIM,4)) 'averages/dynamics/subtractions']);
     ovol    = volIM;
 
-elseif  x.BILAT_FILTER>0
+elseif  x.settings.BILAT_FILTER>0
 
         %% Get label order
         zerolabel   = zeros(1,size(volIM,4)/2);
@@ -50,7 +50,7 @@ elseif  x.BILAT_FILTER>0
 
         %% Run filter
         if ~deployed % skip this for compilation, to avoid DIP image issues
-            if      x.BILAT_FILTER==1
+            if      x.settings.BILAT_FILTER==1
                     % original bilateral filter by Matthan Caan that filters raw
                     % images/timeseries
                     % Temporarily disabled
@@ -60,7 +60,7 @@ elseif  x.BILAT_FILTER>0
                     %ovol    = bilateralFilterASL_HJM_LV(volIM,VoxelSize,double(squeeze(label')),double(mask) );
                     % Temporarily use this filter
 
-            elseif  x.BILAT_FILTER==2
+            elseif  x.settings.BILAT_FILTER==2
                     % more recent bilateral filter by Matthan Caan that filters subtracted
                     % images/timeseries (==n/2)
                     % Temporarily disabled

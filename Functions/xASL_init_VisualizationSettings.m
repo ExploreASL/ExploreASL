@@ -132,7 +132,7 @@ function [x] = xASL_init_VisualizationSettings(x)
         % The artifact for which this filter is intended doesn't
         % occur frequently, so don't produce an error when user has not
         % specified whether or not to run this filter.
-        x.BILAT_FILTER = false;
+        x.settings.BILAT_FILTER = false;
     end
 
     ImageWB = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii'));

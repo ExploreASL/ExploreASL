@@ -51,7 +51,7 @@ function xASL_wrp_FilterDeprecated(InputFile, OutputFile, x, MaskingOption )
 
     %% ------------------------------------------------------------------------------------------
     %% If we need to run filter first, to remove artifact, if we have sufficient number of averages
-    if  x.BILAT_FILTER>0 && size(tNII.dat(:,:,:,:),4)>9
+    if  x.settings.BILAT_FILTER>0 && size(tNII.dat(:,:,:,:),4)>9
         % First reslice time-series
 
 
