@@ -43,7 +43,7 @@ if isfield(x,'RERUN')
             fprintf(2,['ERROR in module_' x.ModuleName ': could not remove lock folder:\n%s\n'], message);
             return; % exit with an error
         end
-        x.bOverwrite = true; % re-running makes no sense if you're not overwriting existing files...
+        x.settings.bOverwrite = true; % re-running makes no sense if you're not overwriting existing files...
     end
 else
     error('RERUN field of x structure not defined...');

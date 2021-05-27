@@ -24,7 +24,7 @@ function [x] = xASL_init_DefineIndependentSettings(x)
 %% Default parameters
 x.stopaftererrors = Inf; % set to a high number (or Inf) when running a complete batch overnight
 x.dryrun = false; % set to true to skip all real processing & just print all parameters
-x.bOverwrite = true;
+x.settings.bOverwrite = true;
 
 if ~exist('groot','builtin')
     % before R2012b
