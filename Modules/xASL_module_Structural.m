@@ -199,7 +199,7 @@ end
 iState = 1;
 if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status files, & locks current run
 
-    xASL_wrp_LinearReg_T1w2MNI(x, x.bAutoACPC);
+    xASL_wrp_LinearReg_T1w2MNI(x, x.settings.bAutoACPC);
 
     x.mutex.AddState(StateName{iState});
     xASL_adm_CompareDataSets([], [], x); % unit testing
@@ -220,9 +220,9 @@ iState = 2;
 if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status files, & locks current run
     if xASL_exist(x.P.Path_FLAIR, 'file') || xASL_exist(x.P.Path_T1c, 'file') || xASL_exist(x.P.Path_T2, 'file')
 		
-		xASL_wrp_LinearReg_FLAIR2T1w(x, x.bAutoACPC);
+		xASL_wrp_LinearReg_FLAIR2T1w(x, x.settings.bAutoACPC);
 
-		xASL_wrp_LinearReg_Others2T1w(x, x.bAutoACPC);
+		xASL_wrp_LinearReg_Others2T1w(x, x.settings.bAutoACPC);
 			
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
@@ -309,7 +309,7 @@ end
 %% -----------------------------------------------------------------------------
 %% 5    Lesion filling
 iState = 5;
-if ~x.mutex.HasState(StateName{iState}) && x.bLesionFilling  % tracks progress through lock/*.status files, & locks current run
+if ~x.mutex.HasState(StateName{iState}) && x.settings.bLesionFilling  % tracks progress through lock/*.status files, & locks current run
 
     if xASL_exist(rWMHPath,'file')
         % check if the FLAIR segmentation exists from LST
@@ -345,7 +345,7 @@ iState = 6;
 % CAT12 outperforms SPM12. Therefore, always run CAT12, unless this crashes, then we try SPM12
 
 if ~isfield(x,'SegmentSPM12')
-    x.SegmentSPM12 = false; % by default, use CAT12, not SPM12 for segmentation
+    x.settings.SegmentSPM12 = false; % by default, use CAT12, not SPM12 for segmentation
 end
 if ~isfield(x,'bFixResolution')
     x.bFixResolution = false; % by default, keep the original resolution
@@ -375,7 +375,7 @@ if x.mutex.HasState(StateName{iState}) && Reprocessing
 end
 if ~x.mutex.HasState(StateName{iState}) || Reprocessing
 
-    x = xASL_wrp_SegmentT1w(x, x.SegmentSPM12);
+    x = xASL_wrp_SegmentT1w(x, x.settings.SegmentSPM12);
 
     x.mutex.AddState(StateName{iState});  % tracks progress through lock/*.status files, & locks current run
     xASL_adm_CompareDataSets([], [], x); % unit testing

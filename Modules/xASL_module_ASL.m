@@ -270,7 +270,7 @@ elseif ~x.mutex.HasState(StateName{iState})
         PathUnwarped = fullfile(x.SESSIONDIR, 'Unwarped.nii');
         
         OtherList = {x.P.Path_M0, PathB0, PathRevPE, PathField, PathFieldCoeff, PathUnwarped, x.P.Path_ASL4D_ORI}; % all other files will be created
-        if x.bAutoACPC
+        if x.settings.bAutoACPC
             xASL_im_CenterOfMass(x.P.Path_ASL4D, OtherList, 10); % set CenterOfMass to lower accepted distance for when rerunning wrong registration
         end
 

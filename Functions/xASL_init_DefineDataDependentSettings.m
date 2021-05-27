@@ -81,18 +81,18 @@ Fields = {'bLesionFilling' 'bAutoACPC' 'SegmentSPM12' 'M0_conventionalProcessing
 Defaults = [true true false false true];
 
 for iL=1:length(Fields)
-    if ~isfield(x,Fields{iL})
-        x.(Fields{iL}) = Defaults(iL);
-    elseif isempty(x.(Fields{iL}))
-        x.(Fields{iL}) = Defaults(iL);
-    elseif ~islogical(x.(Fields{iL}))
-        if x.(Fields{iL})==1
-            x.(Fields{iL}) = true;
-        elseif x.(Fields{iL})==0
-            x.(Fields{iL}) = false;
+    if ~isfield(x.settings,Fields{iL})
+        x.settings.(Fields{iL}) = Defaults(iL);
+    elseif isempty(x.settings.(Fields{iL}))
+        x.settings.(Fields{iL}) = Defaults(iL);
+    elseif ~islogical(x.settings.(Fields{iL}))
+        if x.settings.(Fields{iL})==1
+            x.settings.(Fields{iL}) = true;
+        elseif x.settings.(Fields{iL})==0
+            x.settings.(Fields{iL}) = false;
         else
             warning([Fields{iL} ' was not true or false, set to default:' num2str(Defaults(iL))]);
-            x.(Fields{iL}) = Defaults(iL);
+            x.settings.(Fields{iL}) = Defaults(iL);
         end
     end
 end

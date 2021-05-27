@@ -316,7 +316,7 @@ TanimotoPerc = xASL_im_GetSpatialOverlapASL(x);
 %% 1.   Registration CenterOfMass
 % We now assume the structural module hasn't run, and we simply want to run the ASL module to quickly check how the images look like
 % So we only run the automatic Center of Mass ACPC alignment
-if x.bAutoACPC
+if x.settings.bAutoACPC
     OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_despiked_ASL4D}); % x.P.Path_despiked_ASL4D is padded to the end of the list
 
     xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList

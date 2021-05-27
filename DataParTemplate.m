@@ -62,7 +62,7 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % M0 PARAMETERS and OPTIONS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.M0_conventionalProcessing - boolean - use the conventional M0 processing (per consensus paper) (OPTIONAL, DEFAULT = 0)
+% x.settings.M0_conventionalProcessing - boolean - use the conventional M0 processing (per consensus paper) (OPTIONAL, DEFAULT = 0)
 %                             - options: 
 %                               - 1 = standard processing
 %                               - 0 = new image processing (improved masking & smoothing)
@@ -209,7 +209,7 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % x.bRunModule_LongReg - run longitudinal registration (OPTIONAL, DEFAULT = 0)
 % x.bRunModule_DARTEL - run between-subject registration/create templates (OPTIONAL, DEFAULT = 0)
-% x.SegmentSPM12 - boolean to specify if SPM12 segmentation is run instead of CAT12 (OPTIONAL, DEFAULT = 0)
+% x.settings.SegmentSPM12 - boolean to specify if SPM12 segmentation is run instead of CAT12 (OPTIONAL, DEFAULT = 0)
 %                - options:
 %                  - 1 = run SPM12
 %                  - 0 = run CAT12

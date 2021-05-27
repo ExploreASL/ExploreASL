@@ -81,10 +81,10 @@ if strcmpi(x.M0,'no_background_suppression')
     x.M0 = 'UseControlAsM0'; % backward compatibility
 end
 if ~isfield(x,'M0_conventionalProcessing')
-       x.M0_conventionalProcessing   = 0;
+       x.settings.M0_conventionalProcessing   = 0;
        % by default, conventional processing is off, since our new method outperforms in most cases
-elseif x.M0_conventionalProcessing == 1 && strcmpi(x.readout_dim,'3D')
-       x.M0_conventionalProcessing = 0;
+elseif x.settings.M0_conventionalProcessing == 1 && strcmpi(x.readout_dim,'3D')
+       x.settings.M0_conventionalProcessing = 0;
        warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end
 
@@ -139,7 +139,7 @@ elseif ~strcmpi(x.M0,'UseControlAsM0') && isempty(regexpi(x.Sequence, 'spiral'))
     %     xASL_im_EqualizeContrastImages( x.P.Path_rrM0, refIM );
 
     % First do the center of mass alignment
-    if x.bAutoACPC
+    if x.settings.bAutoACPC
         xASL_im_CenterOfMass(x.P.Path_rM0, {x.P.Path_M0} );
     end
 
@@ -163,7 +163,7 @@ M0_im = xASL_quant_M0(x.P.Path_rM0, x);
 
 %% -----------------------------------------------------------------------------------------------
 %% 3A) Conventional M0 masking & minor smoothing (doesnt work with smooth ASL images)
-if x.M0_conventionalProcessing
+if x.settings.M0_conventionalProcessing
     % Conventional M0 processing, should be performed in native space
     % We
     % 1) perform the processing & masking in native space
