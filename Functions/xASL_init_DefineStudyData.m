@@ -361,28 +361,28 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 13) Create list of baseline & follow-up subjects (i.e. after exclusion)
 for iCell=1:length(x.dataset.TimePointTotalSubjects)
-    x.TimePointSubjects{iCell} = '';
+    x.dataset.TimePointSubjects{iCell} = '';
 end
     
 for iS=1:x.nSubjects
     iSession = 1; % append to accommodate sessions in SetsID
     iSubjSess = ((iS-1)*x.nSessions)+iSession;
     CurrentTimePoint = x.S.SetsID(iSubjSess,x.S.iSetLong_TP);
-    if length(x.TimePointSubjects)<CurrentTimePoint % if this cell didn't exist yet
-        x.TimePointSubjects{CurrentTimePoint} = ''; 
+    if length(x.dataset.TimePointSubjects)<CurrentTimePoint % if this cell didn't exist yet
+        x.dataset.TimePointSubjects{CurrentTimePoint} = ''; 
     end    
-    x.TimePointSubjects{CurrentTimePoint}{end+1} = x.SUBJECTS{iS};
+    x.dataset.TimePointSubjects{CurrentTimePoint}{end+1} = x.SUBJECTS{iS};
 end
     
-x.nTimePoints = length(x.TimePointSubjects);
+x.nTimePoints = length(x.dataset.TimePointSubjects);
 for iT=1:x.nTimePoints
-    if  length(x.TimePointSubjects)<iT
+    if  length(x.dataset.TimePointSubjects)<iT
         % if an excluded later volume led to different composition
         % of TotalSubjects (i.e. before exclusion) & Subjects (i.e. after
         % exclusion)
         x.dataset.nTimePointSubjects(iT) = 0; 
     else
-        x.dataset.nTimePointSubjects(iT) = length(x.TimePointSubjects{iT});
+        x.dataset.nTimePointSubjects(iT) = length(x.dataset.TimePointSubjects{iT});
     end
 end
 

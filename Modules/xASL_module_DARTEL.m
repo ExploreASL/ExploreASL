@@ -353,7 +353,7 @@ function [warp, TotalnEstimate] = GetWarpList(x, SubjectList)
 % Throws error when a subject in subject_list cannot be found in DARTEL path for all required filetypes (DARTEL_create & DARTEL_warp)
 
     if nargin<2
-        SubjectList = x.TimePointSubjects{1};
+        SubjectList = x.dataset.TimePointSubjects{1};
     end
 
     TotalnEstimate = 0;
