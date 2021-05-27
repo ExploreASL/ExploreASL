@@ -543,7 +543,7 @@ end
 function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot_invalid_starting_2_0(x)
 
     % Input is either a sourceStructure.json, dataset_description.json or dataPar.json
-    warning('You provided a descriptive JSON file. We recommend to use the study root folder instead...');
+    warning('You provided a descriptive JSON file. We recommend to use the dataset root folder instead...');
     SelectParFile = false; % Does not need to be inserted a second time
     [~, ~, extensionJSON] = fileparts(x.opts.DatasetRoot);
     if strcmp(extensionJSON,'.json') || strcmp(extensionJSON,'.JSON')
