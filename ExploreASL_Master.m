@@ -81,7 +81,7 @@ function [x] = ExploreASL_Master(varargin)
     
     % -----------------------------------------------------------------------------
     % Re-Initialize for potential data loading/processing
-    if x.opts.bReinitialize > 0
+    if x.opts.bReinitialize
         x = ExploreASL_Initialize(x.opts.StudyRoot, x.opts.ImportModules, x.opts.ProcessModules, x.opts.bPause, x.opts.iWorker, x.opts.nWorkers);
     end
     % Retrieve logging information about errors/warnings from backup variable
