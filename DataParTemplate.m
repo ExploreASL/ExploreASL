@@ -45,7 +45,7 @@ function x = DataParTemplate(x)
 %          - example: '/home/hjmutsaerts/TestDataSet'
 % x.subject_regexp - string with regular expression for ExploreASL to find subjects by foldername (REQUIRED)
 %                  - example: '^\d{3}$' for three digits
-% x.exclusion - cell with list of subjects to exclude (OPTIONAL, DEFAULT = empty)
+% x.dataset.exclusion - cell with list of subjects to exclude (OPTIONAL, DEFAULT = empty)
 %             - example: {'005' '018'}
 % x.SESSIONS  - use this to define sessions (OPTIONAL, DEFAULT = {'ASL_1'})
 %             - example ('.json' file): ["ASL_1","ASL_2"]

@@ -91,7 +91,7 @@ x.nTotalSubjects = length(x.TotalSubjects);
 %% 2) Create dummy defaults (exclusion list, ASL sessions)
 fprintf('Automatically defining sessions...\n');
 if ~isfield(x,'exclusion') % default no exclusions
-    x.exclusion = {''};
+    x.dataset.exclusion = {''};
 end
 
 if isfield(x,'SESSIONS') && isstruct(x.SESSIONS)
@@ -146,20 +146,20 @@ x = rmfield(x,'nSubjects');
 % ------------------------------------------------------------------------------------------------
 %% 5) Manage exclusions
 if     ~isfield(x,'exclusion')
-        x.exclusion = {''};
+        x.dataset.exclusion = {''};
         nExclusion = 0;
-elseif  isempty(x.exclusion)
-        x.exclusion = {''};    
+elseif  isempty(x.dataset.exclusion)
+        x.dataset.exclusion = {''};    
         nExclusion = 0;
 else
-        nExclusion = length(x.exclusion);
+        nExclusion = length(x.dataset.exclusion);
 end
 
-if ~iscell(x.exclusion)
-    x.exclusion = {x.exclusion};
+if ~iscell(x.dataset.exclusion)
+    x.dataset.exclusion = {x.dataset.exclusion};
 end
 
-if  nExclusion==1 && isempty(x.exclusion{1})
+if  nExclusion==1 && isempty(x.dataset.exclusion{1})
     nExclusion = 0;
 end
 
@@ -168,7 +168,7 @@ x.SUBJECTS = '';
 for iSubject=1:x.nTotalSubjects
     excl=0;
     for j=1:nExclusion % Check if subject should be excluded
-        if  strcmp(x.TotalSubjects{iSubject},x.exclusion{j})
+        if  strcmp(x.TotalSubjects{iSubject},x.dataset.exclusion{j})
             excl=1;
             x.dataset.ExcludedSubjects{end+1} = x.TotalSubjects{iSubject};
         end
@@ -374,8 +374,8 @@ for iS=1:x.nSubjects
     x.dataset.TimePointSubjects{CurrentTimePoint}{end+1} = x.SUBJECTS{iS};
 end
     
-x.nTimePoints = length(x.dataset.TimePointSubjects);
-for iT=1:x.nTimePoints
+x.dataset.nTimePoints = length(x.dataset.TimePointSubjects);
+for iT=1:x.dataset.nTimePoints
     if  length(x.dataset.TimePointSubjects)<iT
         % if an excluded later volume led to different composition
         % of TotalSubjects (i.e. before exclusion) & Subjects (i.e. after
@@ -388,7 +388,7 @@ end
 
 % ------------------------------------------------------------------------------------------------
 %% 14) Check what excluded from which TimePoints
-for iT=1:x.nTimePoints
+for iT=1:x.dataset.nTimePoints
     x.dataset.TimePointExcluded{iT} = '';
 end
 
@@ -406,7 +406,7 @@ for iE=1:x.dataset.nExcluded
     end
 end
 
-for iT=1:x.nTimePoints
+for iT=1:x.dataset.nTimePoints
     x.dataset.nTimePointExcluded(iT) = length(x.dataset.TimePointExcluded{iT});
 end
 
