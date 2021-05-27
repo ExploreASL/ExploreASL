@@ -1,5 +1,5 @@
 function xASL_imp_DCM2NII_Subject_CopyTempDir(nii_files, bClone2Source)
-%xASL_imp_DCM2NII_Subject_CopyTempDir Make a copy of analysisdir in sourcedir.
+%xASL_imp_DCM2NII_Subject_CopyTempDir Make a copy of the temp directory in the source directory.
 %
 % FORMAT: xASL_imp_DCM2NII_Subject_CopyTempDir(nii_files, bClone2Source)
 % 
@@ -11,7 +11,11 @@ function xASL_imp_DCM2NII_Subject_CopyTempDir(nii_files, bClone2Source)
 %   n/a
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Make a copy of temp dir in source dir.
+% DESCRIPTION: Make a copy of the temp directory in the source directory.
+%
+% 1. Iterate over the NIfTI files
+% 2. Copy the NIfTIs
+% 3. Copy the JSONs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     n/a
@@ -21,12 +25,18 @@ function xASL_imp_DCM2NII_Subject_CopyTempDir(nii_files, bClone2Source)
 
     %% Make a copy of temp dir in source dir
     if bClone2Source
+
+        % Check if the NIfTI list is not empty
         if ~isempty(nii_files)
+
+            % Iterate over NIfTI files
             for iFile=1:length(nii_files)
+
                 % replace 'temp' by 'source'
                 [iStart, iEnd] = regexp(nii_files{iFile}, 'temp');
                 DestPath = [nii_files{iFile}(1:iStart-1) 'source' nii_files{iFile}(iEnd+1:end)];
                 xASL_Copy(nii_files{iFile}, DestPath, true);
+
                 % do the same for other extensions
                 Extensions = {'.json' '_parms.json'};
                 for iExt=1:length(Extensions)
@@ -38,6 +48,7 @@ function xASL_imp_DCM2NII_Subject_CopyTempDir(nii_files, bClone2Source)
                         xASL_Copy(CopyPath, DestPath, true);
                     end
                 end
+
             end
         end
     end
