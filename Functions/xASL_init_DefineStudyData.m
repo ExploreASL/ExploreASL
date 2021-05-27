@@ -181,10 +181,10 @@ for iSubject=1:x.nTotalSubjects
          % include subject if not to be excluded, and if it doesn't have
          % same name as pipeline directories     
          x.SUBJECTS{end+1}  = x.TotalSubjects{iSubject};
-         x.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1) = 1;
+         x.dataset.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1) = 1;
          ListNoPipelineDir(iSubject) = 1;
     else
-        x.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1) = 0;
+        x.dataset.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1) = 0;
         ListNoPipelineDir(iSubject) = 1;
     end
 end
