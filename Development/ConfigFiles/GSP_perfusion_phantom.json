@@ -7,5 +7,4 @@
 "tokenVisitAliases":[],
 "tokenSessionAliases":["1","ASL_1","2","ASL_2","3","ASL_3","4","ASL_4"],
 "bMatchDirectories":true,
-"dcmwildcard":"*.",
-"TempRoot":""}
+"dcmwildcard":"*."}

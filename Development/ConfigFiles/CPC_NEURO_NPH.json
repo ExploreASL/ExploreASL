@@ -7,5 +7,4 @@
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
 "bMatchDirectories":true,
-"dcmwildcard":"*.",
-"TempRoot":""}
+"dcmwildcard":"*."}

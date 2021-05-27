@@ -6,5 +6,4 @@
 "tokenScanAliases":["^3D bs ASL Mo$","M0","^3D bs ASL turboz$","ASL4D","^T1W_3d$","T1","PhaseImageASL","Phase4D"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
-"bMatchDirectories":true,
-"TempRoot":""}
+"bMatchDirectories":true}

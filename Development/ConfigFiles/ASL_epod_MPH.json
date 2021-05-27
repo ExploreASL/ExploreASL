@@ -7,5 +7,4 @@
 "tokenVisitAliases":[],
 "tokenSessionAliases":["^1$","ASL_1","^2$","ASL_2"],
 "bMatchDirectories":false,
-"dcm2nii_version":"20101105",
-"TempRoot":"/scratch/pfgroot/ASL_epod_MPH/pt"}
+"dcm2nii_version":"20101105"}

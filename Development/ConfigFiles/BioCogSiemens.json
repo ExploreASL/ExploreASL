@@ -6,5 +6,4 @@
 "tokenScanAliases":["^014_ep2d_pcasl_3x3x7$","ASL4D","^003_t1_mprage$","T1","^012_ep2d_pcasl_3x3x7_M0$","M0"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
-"bMatchDirectories":true,
-"TempRoot":""}
+"bMatchDirectories":true}

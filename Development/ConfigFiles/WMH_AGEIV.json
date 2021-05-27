@@ -6,5 +6,4 @@
 "tokenScanAliases":["^wnu$","FLAIR","^lesprob_thr_90_wnu$","WMH_SEGM"],
 "tokenVisitAliases":[],
 "tokenSessionAliases":["",""],
-"bMatchDirectories":false,
-"TempRoot":""}
+"bMatchDirectories":false}
