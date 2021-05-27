@@ -163,14 +163,14 @@ if  nExclusion==1 && isempty(x.exclusion{1})
     nExclusion = 0;
 end
 
-x.ExcludedSubjects = '';
+x.dataset.ExcludedSubjects = '';
 x.SUBJECTS = '';
 for iSubject=1:x.nTotalSubjects
     excl=0;
     for j=1:nExclusion % Check if subject should be excluded
         if  strcmp(x.TotalSubjects{iSubject},x.exclusion{j})
             excl=1;
-            x.ExcludedSubjects{end+1} = x.TotalSubjects{iSubject};
+            x.dataset.ExcludedSubjects{end+1} = x.TotalSubjects{iSubject};
         end
     end
     
@@ -398,7 +398,7 @@ for iE=1:x.dataset.nExcluded
     while ~FoundE % excluded subject not found in previous TimePoint
         iT=iT+1;  % go to next TimePoint
         
-        iS  = find(strcmp(x.dataset.TimePointTotalSubjects{iT}, x.ExcludedSubjects{iE}));
+        iS  = find(strcmp(x.dataset.TimePointTotalSubjects{iT}, x.dataset.ExcludedSubjects{iE}));
         if ~isempty(iS)
             x.dataset.TimePointExcluded{iT}{end+1} = x.dataset.TimePointTotalSubjects{iT}{iS};
             FoundE = 1;
