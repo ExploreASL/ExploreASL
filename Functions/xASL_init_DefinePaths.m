@@ -73,7 +73,7 @@ function [x] = xASL_init_DefinePaths(x)
             x.D.TemplatesStudyDir   = fullfile(x.D.PopDir, 'Templates');
 
             % POPULATION module
-            x.SpaghettiDir          = fullfile(x.D.PopDir, 'SpaghettiPlots');
+            x.D.SpaghettiDir        = fullfile(x.D.PopDir, 'SpaghettiPlots');
             x.S.StatsDir            = fullfile(x.D.PopDir, 'Stats');
             x.HistogramDir          = fullfile(x.D.PopDir, 'Histograms');
             x.StatsMaps             = fullfile(x.D.PopDir, 'StatsMaps');
