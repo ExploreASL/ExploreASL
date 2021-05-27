@@ -21,10 +21,8 @@ function [x] = ExploreASL_ImportMaster(x)
     
     % We expect x.opts.StudyRoot to be the study root directory, but if it is not defined, 
     % then the user probably used a path to a descriptive JSON file instead
-    if isfield(x, 'dir')
-        if isempty(x.dir.StudyRoot)
-            [x.dir.StudyRoot,~,~] = xASL_fileparts(x.opts.StudyRoot);
-        end
+    if isfield(x, 'dir') && isfield(x.dir, 'StudyRoot') && isempty(x.dir.StudyRoot)
+        x.dir.StudyRoot = xASL_fileparts(x.opts.StudyRoot);
     end
 	
     % Check if at least one of the three steps should be performed
