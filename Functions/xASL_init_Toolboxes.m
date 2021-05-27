@@ -23,7 +23,7 @@ function x  = xASL_init_Toolboxes(x)
 
     x.D.SPMDIR = fullfile(x.MyPath, 'External', 'SPMmodified');
     x.D.SPMpath = x.D.SPMDIR;
-    x.SPMVERSION = 'SPM12';
+    x.tools.SPMVERSION = 'SPM12';
 
     if isdeployed
         spm('asciiwelcome');
