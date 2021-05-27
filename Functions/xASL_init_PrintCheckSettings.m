@@ -49,7 +49,7 @@ function x = xASL_init_PrintCheckSettings(x)
 
     fprintf('%s\n',[num2str(x.nTotalSubjects) ' scans - ' num2str(x.dataset.nExcluded) ' exclusions, resulting in ' num2str(x.nSubjects) ' scans of: ']);
 
-    for iT=1:x.nTimePointsTotal
+    for iT=1:x.dataset.nTimePointsTotal
         fprintf('%s\n',['Longitudinal timePoint ' num2str(iT) ' = ' num2str(x.nTimePointTotalSubjects(iT)) ' scans - ' num2str(x.nTimePointExcluded(iT)) ' exclusions = ' num2str(x.nTimePointSubjects(iT)) ' scans']);
     end
 

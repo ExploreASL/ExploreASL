@@ -205,8 +205,8 @@ x.dataset.nExcluded = x.nTotalSubjects - x.nSubjects;
 x.nSessions = length( x.SESSIONS );
 x.nSubjectsSessions = x.nSubjects .* x.nSessions;
 
-x.nTimePointsTotal = length(x.TimePointTotalSubjects);
-for iT=1:x.nTimePointsTotal
+x.dataset.nTimePointsTotal = length(x.TimePointTotalSubjects);
+for iT=1:x.dataset.nTimePointsTotal
     x.nTimePointTotalSubjects(iT) = length(x.TimePointTotalSubjects{iT});
 end
 
