@@ -4,7 +4,7 @@ function [x] = ExploreASL_Master(varargin)
 % FORMAT: [x] = ExploreASL([StudyRoot, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
 % 
 % INPUT:
-%   StudyRoot      - Path to the ASL-BIDS study root directory (OPTIONAL, DEFAULT = prompting user input)
+%   StudyRoot      - Path to the BIDS study root directory (OPTIONAL, DEFAULT = EMPTY)
 %
 %   ImportModules  - [DCM2NII, NII2BIDS, ANONYMIZE, BIDS2LEGACY] (OPTIONAL, BOOLEAN ARRAY)
 %                  - DCM2NII = Run the DICOM to NIFTI conversion (BOOLEAN, DEFAULT = 0)
