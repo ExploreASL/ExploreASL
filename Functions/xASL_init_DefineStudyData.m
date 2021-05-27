@@ -389,7 +389,7 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 14) Check what excluded from which TimePoints
 for iT=1:x.nTimePoints
-    x.TimePointExcluded{iT} = '';
+    x.dataset.TimePointExcluded{iT} = '';
 end
 
 for iE=1:x.dataset.nExcluded
@@ -400,14 +400,14 @@ for iE=1:x.dataset.nExcluded
         
         iS  = find(strcmp(x.TimePointTotalSubjects{iT}, x.ExcludedSubjects{iE}));
         if ~isempty(iS)
-            x.TimePointExcluded{iT}{end+1} = x.TimePointTotalSubjects{iT}{iS};
+            x.dataset.TimePointExcluded{iT}{end+1} = x.TimePointTotalSubjects{iT}{iS};
             FoundE = 1;
         end
     end
 end
 
 for iT=1:x.nTimePoints
-    x.nTimePointExcluded(iT) = length(x.TimePointExcluded{iT});
+    x.nTimePointExcluded(iT) = length(x.dataset.TimePointExcluded{iT});
 end
 
 
