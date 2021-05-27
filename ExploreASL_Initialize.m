@@ -127,11 +127,15 @@ function [x] = ExploreASL_Initialize(varargin)
     cd(x.MyPath);
 
     % Check if DataParFile needs to be loaded
-    if x.opts.bProcessData>0
+    if x.opts.bProcessData || x.opts.bOnlyLoad
         if ~isempty(x.dir.dataPar)
             x = xASL_init_LoadDataParameterFile(x, x.dir.dataPar, SelectParFile);
         else
             fprintf('No dataPar.json provided...\n');
+            if x.opts.bOnlyLoad
+                fprintf('Dataset can not be loaded...\n');
+                x.opts.bOnlyLoad = 0;
+            end
         end
     end
 
@@ -172,10 +176,10 @@ function [x] = ExploreASL_Initialize(varargin)
     %% Data-specific initialization
     fprintf('ExploreASL v%s initialized ... \n', x.Version);
     
-    if x.opts.bProcessData>0 && ~x.opts.bImportData % Skip this step if we still need to run the import (first initialization)
+    if (x.opts.bProcessData || x.opts.bOnlyLoad) && ~x.opts.bImportData % Skip this step if we still need to run the import (first initialization)
         % Check if a root directory was defined
         if ~isfield(x.D,'ROOT') || isempty(x.D.ROOT)
-            error('No root/analysis/study folder defined');
+            error('No root folder defined');
         end
 
         % Fix a relative path
@@ -363,69 +367,44 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectPa
     if ~isfield(x, 'dir')
         x.dir = struct;
     end
-    if x.opts.bImportData || x.opts.bProcessData
-        if exist(x.opts.DatasetRoot,'dir')
-            % ASL-BIDS DatasetRoot directory
-            x.dir.DatasetRoot = x.opts.DatasetRoot;
-            x.dataParType = 'directory';
-            % Search for descriptive JSON files
-            fileListSourceStructure = xASL_adm_GetFileList(x.dir.DatasetRoot, 'sourceStructure.*.json');
-            fileListStudyPar = xASL_adm_GetFileList(x.dir.DatasetRoot, 'studyPar.*.json');
-            fileListDataDescription = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'rawdata'), 'dataset_description.json');
-            % First try the derivatives folder
-            fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL'), 'dataPar*.json');
-            if isempty(fileListDataPar)
-                % Derivatives maybe does not exist already, we'll try study root
-                fileListDataPar = xASL_adm_GetFileList(x.dir.DatasetRoot, 'dataPar.*.json');
-            end
-            % Assign fields
-            if ~isempty(fileListSourceStructure)
-                x.dir.sourceStructure = fileListSourceStructure{1};
-            end
-            if ~isempty(fileListStudyPar)
-                x.dir.studyPar = fileListStudyPar{1};
-            end
-            if ~isempty(fileListDataDescription)
-                x.dir.dataset_description = fileListDataDescription{1};
-            end
-            if ~isempty(fileListDataPar)
-                x.dir.dataPar = fileListDataPar{1};
-            end
-        elseif exist(x.opts.DatasetRoot,'file')
-            % Temporary functionality, this will lead to an error starting v2.0.0
-            [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot_invalid_starting_2_0(x);
-        else
-            if x.opts.bProcessData || x.opts.bImportData
-                if ~isdeployed
-                    x.opts.DatasetRoot = input('Please insert the path to your study directory: ');
-                else
-                    error('Study directory does not exist...');
-                end
-                % Immediately check the input
-                if ~exist(x.opts.DatasetRoot, 'dir')
-                    warning('This study directory does not exist, ExploreASL will only be initialized...');
-                    x.opts.bProcessData = 0;
-                    x.opts.bImportData = 0;
-                    x.opts.bReinitialize = 0;
-                    x.opts.ProcessModules = [0 0 0];
-                    x.opts.ImportModules = [0 0 0 0];
-                end
-            end
-        end
 
-        % Try to find "dir" fields that were not found above
-        if ~isfield(x.dir,'sourceStructure')
-            x.dir.sourceStructure = '';
+    % Check if user correctly inserted a dataset root directory
+    if exist(x.opts.DatasetRoot,'dir')
+        [x] = ExploreASL_Initialize_DetermineRequiredPaths(x);
+    elseif exist(x.opts.DatasetRoot,'file')
+        % Temporary functionality, this will lead to an error starting v2.0.0
+        [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot_invalid_starting_2_0(x);
+    else
+        if x.opts.bProcessData || x.opts.bImportData
+            if ~isdeployed
+                x.opts.DatasetRoot = input('Please insert the path to your study directory: ');
+            else
+                error('Study directory does not exist...');
+            end
+            % Immediately check the input
+            if ~exist(x.opts.DatasetRoot, 'dir')
+                warning('This study directory does not exist, ExploreASL will only be initialized...');
+                x.opts.bProcessData = 0;
+                x.opts.bImportData = 0;
+                x.opts.bReinitialize = 0;
+                x.opts.ProcessModules = [0 0 0];
+                x.opts.ImportModules = [0 0 0 0];
+            end
         end
-        if ~isfield(x.dir,'studyPar')
-            x.dir.studyPar = '';
-        end
-        if ~isfield(x.dir,'dataset_description')
-            x.dir.dataset_description = '';
-        end
-        if ~isfield(x.dir,'dataPar')
-            x.dir.dataPar = '';
-        end
+    end
+    
+    % Try to find "dir" fields that were not found above
+    if ~isfield(x.dir,'sourceStructure')
+        x.dir.sourceStructure = '';
+    end
+    if ~isfield(x.dir,'studyPar')
+        x.dir.studyPar = '';
+    end
+    if ~isfield(x.dir,'dataset_description')
+        x.dir.dataset_description = '';
+    end
+    if ~isfield(x.dir,'dataPar')
+        x.dir.dataPar = '';
     end
 
     % Recheck the JSON files (do they exist and which ones do)
@@ -461,19 +440,29 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectPa
     else
         % At least one of the JSON files exists
         
+        % dataset directory
+        if strcmp(x.dataParType,'directory')
+            if x.opts.bProcessData==0
+                x.opts.bOnlyLoad = 1;
+            end
+        end
+        
+        % dataPar.json
         if strcmp(x.dataParType,'dataParFile')
             % It is a dataPar.json, so do not run the BIDS import workflow
-            if x.opts.bProcessData==0 || x.opts.bProcessData==2
+            if x.opts.bProcessData==0
                 x.opts.bProcessData = 0; % Initialize & load but do not process
                 x.opts.bOnlyLoad = 1;
                 x.bReinitialize = false; % Do not reinitialize if we only load the data
             end
         end
         
+        % sourceStructure.json
         if strcmp(x.dataParType,'sourceStructure') || strcmp(x.dataParType,'dataset_description')
             % It is a sourceStructure.json or dataset_description.json, so we run the import workflow
-            if x.opts.bProcessData==0 || x.opts.bProcessData==2
-                x.opts.bProcessData = 2; % Initialize & load but do not process
+            if x.opts.bProcessData==0
+                x.opts.bProcessData = 0; % Initialize & load but do not process
+                x.opts.bOnlyLoad = 1;
                 x.bReinitialize = true; % Do not reinitialize if we only load the data
             end
         end
@@ -490,6 +479,17 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectPa
     if strcmp(x.dataParType,'unknown') && x.opts.bProcessData>0 && x.opts.bImportData==0
         fprintf('You are trying to process a dataset, without providing a dataPar.json file or running the import workflow...\n');
         x.opts.bProcessData = 0;
+    end
+    
+    % Make sure that the dataPar.json definitely exists if we "only load" the dataset
+    if x.opts.bOnlyLoad
+        if isfield(x,'dir') && isfield(x.dir,'dataPar')
+            if isempty(x.dir.dataPar)
+                x.opts.bOnlyLoad = 0;
+            end
+        else
+            x.opts.bOnlyLoad = 0;
+        end
     end
 
 
@@ -525,14 +525,15 @@ function ExploreASL_Initialize_basicFeedback(x)
 
     % Report string
     reportProcess = '';
-    if x.opts.bProcessData==0
+    if ~x.opts.bProcessData
         reportProcess = 'run the initialization';
-    elseif x.opts.bProcessData==1
+        if x.opts.bOnlyLoad
+            reportProcess = 'load the dataset';
+        end
+    elseif x.opts.bProcessData
         reportProcess = 'run the processing pipeline';
-    elseif x.opts.bProcessData==2
-        reportProcess = 'load the dataset';
     end
-    if x.opts.bImportData==1
+    if x.opts.bImportData
         reportImport = 'will run the import workflow and ';
     else
         reportImport = '';
@@ -616,6 +617,43 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot_invalid_sta
                 x.dir.dataPar = fileListDataPar{1};
             end
         end
+    end
+
+end
+
+
+%% -----------------------------------------------------------------------
+function [x] = ExploreASL_Initialize_DetermineRequiredPaths(x)
+
+    % BIDS DatasetRoot directory
+    x.dir.DatasetRoot = x.opts.DatasetRoot;
+    x.dataParType = 'directory';
+    % Search for descriptive JSON files
+    fileListSourceStructure = xASL_adm_GetFileList(x.dir.DatasetRoot, 'sourceStructure.*.json');
+    fileListStudyPar = xASL_adm_GetFileList(x.dir.DatasetRoot, 'studyPar.*.json');
+    fileListDataDescription = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'rawdata'), 'dataset_description.json');
+    % First try the derivatives folder
+    fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL'), 'dataPar*.json');
+    % Check for x.D.ROOT
+    if exist(fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL'),'dir')
+        x.D.ROOT = fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL');
+    end
+    if isempty(fileListDataPar)
+        % Derivatives maybe does not exist already, we'll try study root
+        fileListDataPar = xASL_adm_GetFileList(x.dir.DatasetRoot, 'dataPar.*.json');
+    end
+    % Assign fields
+    if ~isempty(fileListSourceStructure)
+        x.dir.sourceStructure = fileListSourceStructure{1};
+    end
+    if ~isempty(fileListStudyPar)
+        x.dir.studyPar = fileListStudyPar{1};
+    end
+    if ~isempty(fileListDataDescription)
+        x.dir.dataset_description = fileListDataDescription{1};
+    end
+    if ~isempty(fileListDataPar)
+        x.dir.dataPar = fileListDataPar{1};
     end
 
 end
