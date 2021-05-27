@@ -43,10 +43,10 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
 	
 	% Set the stopAfterErrors field
 	if nargin < 4 || isempty(stopAfterErrors)
-		if ~isfield(x,'stopAfterErrors') || isempty(x.settings.stopaftererrors)
+		if ~isfield(x,'stopAfterErrors') || isempty(x.settings.stopAfterErrors)
 			dbSettings.stopAfterErrors = Inf;
 		else
-			dbSettings.stopAfterErrors = x.settings.stopaftererrors;
+			dbSettings.stopAfterErrors = x.settings.stopAfterErrors;
 		end
 	else
 		dbSettings.stopAfterErrors = stopAfterErrors;
