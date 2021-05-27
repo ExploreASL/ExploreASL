@@ -207,7 +207,7 @@ x.nSubjectsSessions = x.nSubjects .* x.nSessions;
 
 x.dataset.nTimePointsTotal = length(x.TimePointTotalSubjects);
 for iT=1:x.dataset.nTimePointsTotal
-    x.nTimePointTotalSubjects(iT) = length(x.TimePointTotalSubjects{iT});
+    x.dataset.nTimePointTotalSubjects(iT) = length(x.TimePointTotalSubjects{iT});
 end
 
 % ------------------------------------------------------------------------------------------------
