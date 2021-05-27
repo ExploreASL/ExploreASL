@@ -131,13 +131,13 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 4) Create TimePoint data-lists
 for iT=unique(TimePoint)'
-    x.TimePointTotalSubjects{iT} = '';
+    x.dataset.TimePointTotalSubjects{iT} = '';
 end
 
 for iSubj=1:x.nTotalSubjects
     iSess=1;
     iSubjSess = (iSubj-1)*x.nSessions + iSess;
-    x.TimePointTotalSubjects{TimePoint(iSubjSess)}{end+1} = x.TotalSubjects{iSubj};
+    x.dataset.TimePointTotalSubjects{TimePoint(iSubjSess)}{end+1} = x.TotalSubjects{iSubj};
 end
     
 x = rmfield(x,'SUBJECTS');
@@ -205,9 +205,9 @@ x.dataset.nExcluded = x.nTotalSubjects - x.nSubjects;
 x.nSessions = length( x.SESSIONS );
 x.nSubjectsSessions = x.nSubjects .* x.nSessions;
 
-x.dataset.nTimePointsTotal = length(x.TimePointTotalSubjects);
+x.dataset.nTimePointsTotal = length(x.dataset.TimePointTotalSubjects);
 for iT=1:x.dataset.nTimePointsTotal
-    x.dataset.nTimePointTotalSubjects(iT) = length(x.TimePointTotalSubjects{iT});
+    x.dataset.nTimePointTotalSubjects(iT) = length(x.dataset.TimePointTotalSubjects{iT});
 end
 
 % ------------------------------------------------------------------------------------------------
@@ -360,7 +360,7 @@ end
 
 % ------------------------------------------------------------------------------------------------
 %% 13) Create list of baseline & follow-up subjects (i.e. after exclusion)
-for iCell=1:length(x.TimePointTotalSubjects)
+for iCell=1:length(x.dataset.TimePointTotalSubjects)
     x.TimePointSubjects{iCell} = '';
 end
     
@@ -398,9 +398,9 @@ for iE=1:x.dataset.nExcluded
     while ~FoundE % excluded subject not found in previous TimePoint
         iT=iT+1;  % go to next TimePoint
         
-        iS  = find(strcmp(x.TimePointTotalSubjects{iT}, x.ExcludedSubjects{iE}));
+        iS  = find(strcmp(x.dataset.TimePointTotalSubjects{iT}, x.ExcludedSubjects{iE}));
         if ~isempty(iS)
-            x.dataset.TimePointExcluded{iT}{end+1} = x.TimePointTotalSubjects{iT}{iS};
+            x.dataset.TimePointExcluded{iT}{end+1} = x.dataset.TimePointTotalSubjects{iT}{iS};
             FoundE = 1;
         end
     end
