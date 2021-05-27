@@ -13,8 +13,8 @@ function [TestResults, CheckResults] = xASL_test_IntegrationTesting
 % Your testConfig.json could look like this e.g.:
 %
 % {
-%    "pathExploreASL": "...\\ExploreASL",
-%    "pathTest": "...\\FlavorTests",
+%    "pathExploreASL": "...//ExploreASL",
+%    "pathTest": "...//FlavorTests",
 %    "cmdCloneFlavors": "git clone git@github.com:ExploreASL/FlavorDatabase.git"
 % }
 %
