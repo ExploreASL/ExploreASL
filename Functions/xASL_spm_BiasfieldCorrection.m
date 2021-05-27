@@ -5,7 +5,7 @@ function xASL_spm_BiasfieldCorrection(PathIn, SPMdir, Quality, PathMask, PathOut
 %
 % INPUT:
 %   PathIn      - path to the NIfTI from which to compute the biasfield
-%   SPMdir      - path to the SPM installation (REQUIRED, in ExploreASL use x.SPMdir)
+%   SPMdir      - path to the SPM installation (REQUIRED, in ExploreASL use x.D.SPMDIR)
 %   Quality     - boolean specifying smoothness of the biasfield, with 1 for high and 0 for low quality (OPTIONAL, DEFAULT=high quality)
 %   MaskName    - legacy (unused) parameter
 %   PathOut     - path to output NIfTI (OPTIONAL, DEFAULT = PathIn prefixed by 'm'
@@ -23,7 +23,7 @@ function xASL_spm_BiasfieldCorrection(PathIn, SPMdir, Quality, PathMask, PathOut
 % 5. Rename temporary SPM file into output file
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_spm_BiasfieldCorrection('/MyStudy/sub-001/T1.nii', x.SPMdir);
+% EXAMPLE: xASL_spm_BiasfieldCorrection('/MyStudy/sub-001/T1.nii', x.D.SPMDIR);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 

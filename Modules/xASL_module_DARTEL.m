@@ -253,7 +253,7 @@ if str2double(catVer) > 1500
 else
 	catTempDir = 'templates_1.50mm';
 end
-PathMNI = fullfile(x.SPMDIR,'toolbox','cat12',catTempDir,'Template_6_IXI555_MNI152.nii');
+PathMNI = fullfile(x.D.SPMDIR,'toolbox','cat12',catTempDir,'Template_6_IXI555_MNI152.nii');
 
 xASL_delete(PathDARTEL_snMat); % make sure that this is always repeated for new DARTEL flow fields
 

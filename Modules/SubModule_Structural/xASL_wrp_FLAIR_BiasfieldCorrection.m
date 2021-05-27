@@ -29,7 +29,7 @@ function xASL_wrp_FLAIR_BiasfieldCorrection(x)
 
 %% ---------------------------------------------------------------------------------------------------
 %% 1) Perform biasfield correction on T1w
-xASL_spm_BiasfieldCorrection(x.P.Path_T1, x.SPMDIR, x.Quality);
+xASL_spm_BiasfieldCorrection(x.P.Path_T1, x.D.SPMDIR, x.Quality);
 
 
 %% ---------------------------------------------------------------------------------------------------

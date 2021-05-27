@@ -124,7 +124,7 @@ end
 %% ------------------------------------------------------------------------------------------
 function xASL_im_RegisterSkullMask(Fpath,x, OutputFile)
 
-    ICVName     = fullfile( x.SPMDIR,'tpm','mask_ICV.nii'); % this is the mask it has been tested with
+    ICVName     = fullfile( x.D.SPMDIR,'tpm','mask_ICV.nii'); % this is the mask it has been tested with
     GMName      = fullfile( x.D.MapsDir, 'rgrey.nii'   );
 
     xASL_Copy( ICVName, fullfile(Fpath, 'mask_ICV.nii') ,1);

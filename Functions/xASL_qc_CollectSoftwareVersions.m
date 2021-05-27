@@ -40,7 +40,7 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
 
     
     %% Get LST version
-    TxtPath = fullfile(x.SPMDIR,'toolbox','LST','lst-version.txt');
+    TxtPath = fullfile(x.D.SPMDIR,'toolbox','LST','lst-version.txt');
     FID = fopen(TxtPath);
     LSTversion = textscan(FID,'%s');
     Software.LST = LSTversion{1}{1};

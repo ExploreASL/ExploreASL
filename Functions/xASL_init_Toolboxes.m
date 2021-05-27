@@ -21,8 +21,8 @@ function x  = xASL_init_Toolboxes(x)
 % Copyright 2015-2021 ExploreASL
 
 
-    x.SPMDIR = fullfile(x.MyPath, 'External', 'SPMmodified');
-    x.SPMpath = x.SPMDIR;
+    x.D.SPMDIR = fullfile(x.MyPath, 'External', 'SPMmodified');
+    x.SPMpath = x.D.SPMDIR;
     x.SPMVERSION = 'SPM12';
 
     if isdeployed

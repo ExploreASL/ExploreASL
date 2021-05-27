@@ -50,7 +50,7 @@ elseif exist(MatFile, 'file') % for SPM12 segmentation
     clear tpm image Affine lkp MT Twarp Tbias mg mn vr wp ll volumes
     load(MatFile, '-mat');
     for ii=1:6
-        tpm(ii).fname = fullfile(x.SPMDIR, 'tpm', 'TPM.nii');
+        tpm(ii).fname = fullfile(x.D.SPMDIR, 'tpm', 'TPM.nii');
     end
     image.fname = fullfile(x.SUBJECTDIR, [x.P.STRUCT '.nii']);
 
@@ -58,7 +58,7 @@ elseif exist(MatFile, 'file') % for SPM12 segmentation
 
     matlabbatch{1}.spm.util.tvol.matfiles = {MatFile};
     matlabbatch{1}.spm.util.tvol.tmax = 6;
-    matlabbatch{1}.spm.util.tvol.mask = {fullfile(x.SPMDIR, 'tpm', 'mask_ICV.nii,1')};
+    matlabbatch{1}.spm.util.tvol.mask = {fullfile(x.D.SPMDIR, 'tpm', 'mask_ICV.nii,1')};
     matlabbatch{1}.spm.util.tvol.outf = SaveFile;
 
     xASL_adm_UnzipNifti(image.fname, 1); % unzip the NIfTI if needed

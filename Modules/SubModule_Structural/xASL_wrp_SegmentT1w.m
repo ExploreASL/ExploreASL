@@ -416,11 +416,11 @@ function xASL_wrp_SPM12Segmentation(x)
     %% Fill the templates used for segmentation
 	if x.Pediatric_Template
 		for iDim=1:6
-			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.SPMDIR, 'MapsAdded', 'templates_pediatric', [x.Pediatric_Type '-TPM.nii,' num2str(iDim)])};
+			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.D.SPMDIR, 'MapsAdded', 'templates_pediatric', [x.Pediatric_Type '-TPM.nii,' num2str(iDim)])};
 		end
 	else
 		for iDim=1:6
-			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.SPMDIR, 'tpm', ['TPM.nii,' num2str(iDim)])};
+			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.D.SPMDIR, 'tpm', ['TPM.nii,' num2str(iDim)])};
 		end
 	end
 
@@ -483,19 +483,19 @@ SegmentSPM12 = true; % by default, run SPM12 when CAT12 crashes
 
 %% --------------------------------------------------------------------
 %% CAT12 template & registration settings
-SPMTemplateNII    = fullfile(x.SPMDIR, 'tpm', 'TPM.nii');
+SPMTemplateNII    = fullfile(x.D.SPMDIR, 'tpm', 'TPM.nii');
 [~,catVer] = cat_version();
 if str2double(catVer) > 1500
 	catTempDir = 'templates_volumes';
 else
 	catTempDir = 'templates_1.50mm';
 end
-DartelTemplateNII = fullfile(x.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_1_IXI555_MNI152.nii');
-GSTemplateNII     = fullfile(x.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_0_IXI555_MNI152_GS.nii');
+DartelTemplateNII = fullfile(x.D.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_1_IXI555_MNI152.nii');
+GSTemplateNII     = fullfile(x.D.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_0_IXI555_MNI152_GS.nii');
 
 if x.Pediatric_Template
-	DartelTemplateNII = fullfile(x.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_1_' x.Pediatric_Type '_DARTEL.nii']);
-	GSTemplateNII     = fullfile(x.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_0_' x.Pediatric_Type '_CAT.nii']);
+	DartelTemplateNII = fullfile(x.D.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_1_' x.Pediatric_Type '_DARTEL.nii']);
+	GSTemplateNII     = fullfile(x.D.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_0_' x.Pediatric_Type '_CAT.nii']);
 	x.Seg.Method = 'DARTEL';
 end
 

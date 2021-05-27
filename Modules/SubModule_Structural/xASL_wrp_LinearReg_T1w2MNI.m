@@ -44,7 +44,7 @@ Lesion_ROI_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^(Lesion|ROI)_(' x.P.STRU
 %% ---------------------------------------------------------------------------------------------------
 %% 2)Obtain lists of paths
 
-refPath = fullfile(x.SPMDIR, 'toolbox','OldNorm','T1.nii'); % = SPM8 T1 template, to make sure it is always the same
+refPath = fullfile(x.D.SPMDIR, 'toolbox','OldNorm','T1.nii'); % = SPM8 T1 template, to make sure it is always the same
 % This T1 reference image, is a blurred one. In SPM12 there are new reference images, but less blurry.
 % This one empirically works fine
 OtherList{1,1} = x.P.Path_FLAIR;

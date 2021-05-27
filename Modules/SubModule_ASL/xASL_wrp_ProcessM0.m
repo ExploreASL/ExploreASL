@@ -144,8 +144,8 @@ elseif ~strcmpi(x.M0,'UseControlAsM0') && isempty(regexpi(x.Sequence, 'spiral'))
     end
 
     %% 2B) remove biasfields
-    xASL_spm_BiasfieldCorrection(x.P.Path_rM0, x.SPMDIR, x.Quality, [], x.P.Path_rrM0);
-    xASL_spm_BiasfieldCorrection(refPath, x.SPMDIR, x.Quality, [], refPath);
+    xASL_spm_BiasfieldCorrection(x.P.Path_rM0, x.D.SPMDIR, x.Quality, [], x.P.Path_rrM0);
+    xASL_spm_BiasfieldCorrection(refPath, x.D.SPMDIR, x.Quality, [], refPath);
 
 
     %% 3C) Rigid-body registration
