@@ -201,7 +201,7 @@ end
 
 x.nSubjects = length(x.SUBJECTS);
 x.nTotalSubjects = length(x.TotalSubjects);
-x.nExcluded = x.nTotalSubjects - x.nSubjects;
+x.dataset.nExcluded = x.nTotalSubjects - x.nSubjects;
 x.nSessions = length( x.SESSIONS );
 x.nSubjectsSessions = x.nSubjects .* x.nSessions;
 
@@ -392,7 +392,7 @@ for iT=1:x.nTimePoints
     x.TimePointExcluded{iT} = '';
 end
 
-for iE=1:x.nExcluded
+for iE=1:x.dataset.nExcluded
     FoundE = 0;
     iT = 0;
     while ~FoundE % excluded subject not found in previous TimePoint
