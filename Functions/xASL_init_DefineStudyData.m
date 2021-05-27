@@ -407,7 +407,7 @@ for iE=1:x.dataset.nExcluded
 end
 
 for iT=1:x.nTimePoints
-    x.nTimePointExcluded(iT) = length(x.dataset.TimePointExcluded{iT});
+    x.dataset.nTimePointExcluded(iT) = length(x.dataset.TimePointExcluded{iT});
 end
 
 
