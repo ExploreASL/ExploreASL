@@ -354,6 +354,9 @@ end
 %% -----------------------------------------------------------------------
 function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectParFile)
 
+    % Default
+    x.opts.bOnlyLoad = 0;
+
     % Check if the DatasetRoot is a directory (NEW - ASL BIDS)
     x.dataParType = 'unknown'; % Fallback
     % Create directory field if it doesn't exist already
@@ -461,7 +464,8 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectPa
         if strcmp(x.dataParType,'dataParFile')
             % It is a dataPar.json, so do not run the BIDS import workflow
             if x.opts.bProcessData==0 || x.opts.bProcessData==2
-                x.opts.bProcessData = 2; % Initialize & load but do not process
+                x.opts.bProcessData = 0; % Initialize & load but do not process
+                x.opts.bOnlyLoad = 1;
                 x.bReinitialize = false; % Do not reinitialize if we only load the data
             end
         end

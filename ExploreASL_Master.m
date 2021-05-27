@@ -87,8 +87,8 @@ function [x] = ExploreASL_Master(varargin)
     
     % -----------------------------------------------------------------------------
     %% Print user feedback
-    if x.opts.bProcessData==0 || x.opts.bProcessData==2
-        if x.opts.bProcessData==2 && nargout==0
+    if ~x.opts.bProcessData || x.opts.bOnlyLoad
+        if x.opts.bOnlyLoad && nargout==0
             warning('Data loading requested but no output structure defined');
             fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
         end
