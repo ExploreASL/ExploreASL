@@ -41,7 +41,7 @@ end
 
 % Set imPar fields accordingly
 imPar.studyID = [fname fext];
-imPar.AnalysisRoot = fpath;
+imPar.TempRoot = fpath;
 imPar.RawRoot = fpath;
 
 %% -----------------------------------------------------------------------------
@@ -74,6 +74,9 @@ for iField = 1:size(imParUpdateFieldNames,1)
                 imPar.(imParUpdateFieldNames{iField}){iPair,2} = imParUpdate.(imParUpdateFieldNames{iField}){it};
                 it = it+1;
             end
+        elseif ~isempty(strfind(imParUpdateFieldNames{iField},'AnalysisRoot'))
+            fprintf('We renamed AnalysisRoot to TempRoot...\n');
+            imPar.TempRoot = imParUpdate.AnalysisRoot;
         else
             imPar.(imParUpdateFieldNames{iField}) = imParUpdate.(imParUpdateFieldNames{iField});
         end
