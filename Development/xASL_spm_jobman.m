@@ -6,7 +6,7 @@ if isdeployed
     % First save matlabbatch in m-file
     PathJob = fullfile(pwd, 'Matlabbatch.mat');
     save(PathJob,'matlabbatch');
-    system([x.SPMpath ' batch ' PathJob]);
+    system([x.D.SPMpath ' batch ' PathJob]);
     xASL_delete(PathJob);
 else
     spm('defaults','PET');

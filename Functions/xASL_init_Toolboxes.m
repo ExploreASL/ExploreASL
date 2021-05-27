@@ -22,7 +22,7 @@ function x  = xASL_init_Toolboxes(x)
 
 
     x.D.SPMDIR = fullfile(x.MyPath, 'External', 'SPMmodified');
-    x.SPMpath = x.D.SPMDIR;
+    x.D.SPMpath = x.D.SPMDIR;
     x.SPMVERSION = 'SPM12';
 
     if isdeployed
@@ -30,7 +30,7 @@ function x  = xASL_init_Toolboxes(x)
         spm('defaults','pet');
         spm_jobman('initcfg');
     else
-        addpath(fullfile(x.SPMpath ,'compat'));
+        addpath(fullfile(x.D.SPMpath ,'compat'));
     end
 
     spm_get_defaults('cmd_line',true);
