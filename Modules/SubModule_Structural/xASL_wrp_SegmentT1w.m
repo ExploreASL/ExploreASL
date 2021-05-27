@@ -8,7 +8,7 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 %   x.P     - paths with NIfTIs for which this function should be applied to (REQUIRED)
 %   SegmentSPM12 - Whether to run SPM12 (true) or CAT12 (false) (OPTIONAL, DEFAULT = false)
 %   x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
-%   x.Pediatric_Template - boolean specifying if we use a pediatric
+%   x.settings.Pediatric_Template - boolean specifying if we use a pediatric
 %             template instead of adult one (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT: n/a
@@ -414,7 +414,7 @@ function xASL_wrp_SPM12Segmentation(x)
     end
 
     %% Fill the templates used for segmentation
-	if x.Pediatric_Template
+	if x.settings.Pediatric_Template
 		for iDim=1:6
 			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.D.SPMDIR, 'MapsAdded', 'templates_pediatric', [x.Pediatric_Type '-TPM.nii,' num2str(iDim)])};
 		end
@@ -493,7 +493,7 @@ end
 DartelTemplateNII = fullfile(x.D.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_1_IXI555_MNI152.nii');
 GSTemplateNII     = fullfile(x.D.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_0_IXI555_MNI152_GS.nii');
 
-if x.Pediatric_Template
+if x.settings.Pediatric_Template
 	DartelTemplateNII = fullfile(x.D.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_1_' x.Pediatric_Type '_DARTEL.nii']);
 	GSTemplateNII     = fullfile(x.D.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_0_' x.Pediatric_Type '_CAT.nii']);
 	x.Seg.Method = 'DARTEL';

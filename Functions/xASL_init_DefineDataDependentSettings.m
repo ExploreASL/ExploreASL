@@ -36,12 +36,12 @@ end
 %% --------------------------------------------------------------------------
 %% Setting the option for pediatric template (this is normally set only for specific dataset and general xASL initialization does not have it)
 % Set if the pediatric template field is set correctly
-if ~isfield(x,'Pediatric_Template') || isempty(x.Pediatric_Template)
-    x.Pediatric_Template = false;
+if ~isfield(x,'Pediatric_Template') || isempty(x.settings.Pediatric_Template)
+    x.settings.Pediatric_Template = false;
 end
 
 % We need to define which of the pediatric templates to use
-if x.Pediatric_Template
+if x.settings.Pediatric_Template
 	% Set the default
 	if ~isfield(x,'Pediatric_Type') || isempty(x.Pediatric_Type)
 		x.Pediatric_Type = 'infant-1yr';
@@ -60,7 +60,7 @@ end
 
 %% --------------------------------------------------------------------------
 %% Atlases and templates in pediatric version
-if x.Pediatric_Template
+if x.settings.Pediatric_Template
 	x.D.MapsDir             = fullfile(x.MyPath,'Maps', x.Pediatric_Type);
 	x.D.MapsSPMmodifiedDir  = fullfile(x.MyPath,'External', 'SPMmodified', 'MapsAdded', x.Pediatric_Type);
 	x.D.ResliceRef          = fullfile(x.MyPath,'External', 'SPMmodified', 'MapsAdded', x.Pediatric_Type,'rgrey.nii');
