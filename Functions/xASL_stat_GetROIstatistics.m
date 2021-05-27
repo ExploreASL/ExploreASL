@@ -6,7 +6,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 % INPUT:
 %   x                            - struct containing statistical pipeline environment parameters (REQUIRED)
 %   x.S.InputMasks               - ROI masks to compute statistics for (REQUIRED)
-%   x.WBmask                     - WholeBrain mask used to convert image to column &
+%   x.utils.WBmask               - WholeBrain mask used to convert image to column &
 %                                  vice versa (ExploreASL compression method) (REQUIRED)
 %   x.S.InputDataStr             - prefix of data files (i.e. before SubjectSession
 %                                  name), to specify which data to compute ROI
@@ -81,17 +81,17 @@ function [x] = xASL_stat_GetROIstatistics(x)
 
 if x.S.InputNativeSpace
 	% Native space
-	x.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},[x.S.InputAtlasNativeName '.nii']));
-	x.WBmask = sum(x.WBmask,4) > 0;
+	x.utils.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},[x.S.InputAtlasNativeName '.nii']));
+	x.utils.WBmask = sum(x.utils.WBmask,4) > 0;
 	[~,tmpNameLeftRight] = xASL_fileparts(x.P.Path_LeftRightPop);
 	x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},[tmpNameLeftRight '.nii']));
-	x.LeftMask = (x.WBmask .* (x.LeftMask == 1)) > 0;
+	x.LeftMask = (x.utils.WBmask .* (x.LeftMask == 1)) > 0;
 else
 	% Standard space
-	x.LeftMask = x.WBmask;
+	x.LeftMask = x.utils.WBmask;
 	x.LeftMask(1:60,:,:) = 0;
 end
-x.LeftMask = xASL_im_IM2Column(x.LeftMask,x.WBmask);
+x.LeftMask = xASL_im_IM2Column(x.LeftMask,x.utils.WBmask);
 
 if iscell(x.S.InputDataStr)
     x.S.InputDataStr = x.S.InputDataStr{1};
@@ -153,7 +153,7 @@ if x.S.InputNativeSpace
 	atlasN = max(inputAtlasTmp(:));
 	x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
 	for kk = 1:atlasN
-		x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.WBmask);
+		x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.utils.WBmask);
 	end
 
 	if ~isempty(strfind(x.S.InputAtlasNativeName,'Hammers'))
@@ -183,7 +183,7 @@ end
 if x.S.InputNativeSpace
 	x.S.bMasking(1) = 0; % disable susceptibility masking
 else
-	if isfield(x.S,'MaskSusceptibility') && ~min(x.S.MaskSusceptibility == xASL_im_IM2Column(ones(121,145,121),x.WBmask))
+	if isfield(x.S,'MaskSusceptibility') && ~min(x.S.MaskSusceptibility == xASL_im_IM2Column(ones(121,145,121),x.utils.WBmask))
 		HasGroupSusceptMask = true;
 	else
 		HasGroupSusceptMask = false;
@@ -258,19 +258,19 @@ for iSubject=1:x.nSubjects
 					continue;
 				end
 
-				x.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[x.S.InputAtlasNativeName '.nii']));
-				x.WBmask = sum(x.WBmask,4) > 0;
+				x.utils.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[x.S.InputAtlasNativeName '.nii']));
+				x.utils.WBmask = sum(x.utils.WBmask,4) > 0;
 				[~,tmpNameLeftRight] = xASL_fileparts(x.P.Path_LeftRightPop);
 				x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[tmpNameLeftRight '.nii']));
-				x.LeftMask = (x.WBmask .* (x.LeftMask == 1)) > 0;
+				x.LeftMask = (x.utils.WBmask .* (x.LeftMask == 1)) > 0;
 
-				x.LeftMask = xASL_im_IM2Column(x.LeftMask, x.WBmask);
+				x.LeftMask = xASL_im_IM2Column(x.LeftMask, x.utils.WBmask);
 
 				inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[x.S.InputAtlasNativeName '.nii']));
 				atlasN = max(inputAtlasTmp(:));
 				x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
 				for kk = 1:atlasN
-					x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.WBmask);
+					x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.utils.WBmask);
 				end
 
 				for rr = 1:length(namesROIs2Merge)
@@ -363,14 +363,14 @@ for iSubject=1:x.nSubjects
 			if x.S.IsASL
 				%% a) Load partial volume maps
 				if xASL_exist(x.P.Path_PVgm,'file')
-					pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVgm),x.WBmask);
+					pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVgm),x.utils.WBmask);
 				else
 					fprintf('%s\n',[x.P.Path_PVgm ' missing...']);
 					continue;
 				end
 
 				if xASL_exist(x.P.Path_PVwm,'file')
-					pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVgm),x.WBmask);
+					pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVgm),x.utils.WBmask);
 				else
 					fprintf('%s\n',[x.P.Path_PVgm ' missing...']);
 					continue;
@@ -378,7 +378,7 @@ for iSubject=1:x.nSubjects
 
 				%% b) Correct for WMH SEGM -> IS THIS STILL REQUIRED???
 				if xASL_exist(x.P.Path_PVwmh, 'file')
-					pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVwmh), x.WBmask);
+					pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVwmh), x.utils.WBmask);
 					% we take sqrt(pWMH) to mimic the effective resolution of ASL (instead of smoothing)
 					pWMH(pWMH<0) = 0;
 					pGM = max(0, pGM - pWMH);
@@ -396,7 +396,7 @@ for iSubject=1:x.nSubjects
 					%% a) Load partial volume maps
 					PathGM = fullfile(x.D.PopDir, ['PV_pGM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(PathGM,'file')
-                        pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathGM),x.S.masks.WBmask);
+						pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathGM),x.utils.WBmask);
 					else
 						fprintf('%s\n',[PathGM ' missing...']);
 						continue;
@@ -404,7 +404,7 @@ for iSubject=1:x.nSubjects
 
 					PathWM = fullfile(x.D.PopDir, ['PV_pWM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(PathWM,'file')
-                        pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathWM),x.S.masks.WBmask);
+						pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathWM),x.utils.WBmask);
 					else
 						fprintf('%s\n',[PathWM ' missing...']);
 						continue;
@@ -414,7 +414,7 @@ for iSubject=1:x.nSubjects
 					WMHfile = fullfile(x.D.PopDir, ['PV_WMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(WMHfile,'file')
 						% The newer version with PV_WMH already pre-calculated
-						pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(WMHfile), x.WBmask);
+						pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(WMHfile), x.utils.WBmask);
 						% we take sqrt(pWMH) to mimic the effective resolution of ASL (instead of smoothing)
 						pWMH(pWMH<0) = 0;
 						pGM = max(0, pGM - pWMH);
@@ -426,7 +426,7 @@ for iSubject=1:x.nSubjects
 						if xASL_exist(WMHfile, 'file')
 							if ~bWarnedPVWMH; warning(['pvWMH didnt exist, using the old non-PV version instead: ' WMHfile]); end
                             bWarnedPVWMH = true; % we don't want to re-issue this warning for each iteration
-							pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(WMHfile), x.WBmask);
+							pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(WMHfile), x.utils.WBmask);
 							% we take sqrt(pWMH) to mimic the effective resolution of ASL (instead of smoothing)
 							pWMH(pWMH<0) = 0;
 							pGM = max(0, pGM - pWMH.^0.67);
@@ -451,38 +451,38 @@ for iSubject=1:x.nSubjects
 			FilePath = fullfile(x.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
 			if xASL_exist(FilePath,'file')
 				Data3D = xASL_io_Nifti2Im(FilePath);
-				DataIm = xASL_im_IM2Column(Data3D,x.WBmask);
+				DataIm = xASL_im_IM2Column(Data3D,x.utils.WBmask);
             end
 
             if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
                 FilePath = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
                 if xASL_exist(FilePath,'file')
-                    VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.WBmask);
+                    VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.utils.WBmask);
                 end
             else
-                VascularMask = xASL_im_IM2Column(ones(size(x.WBmask)), x.WBmask);
+                VascularMask = xASL_im_IM2Column(ones(size(x.utils.WBmask)), x.utils.WBmask);
             end
 		else
 			FilePath = fullfile(x.D.PopDir, [x.S.InputDataStr '_' x.S.SUBJECTID{SubjSess,1} '.nii']);
 			if xASL_exist(FilePath,'file')
 				Data3D = xASL_io_Nifti2Im(FilePath,[121 145 121]);
-				DataIm = xASL_im_IM2Column(Data3D,x.WBmask);
+				DataIm = xASL_im_IM2Column(Data3D,x.utils.WBmask);
             end
 
             if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
                 FilePath = fullfile(x.D.PopDir, ['MaskVascular_' x.S.SUBJECTID{SubjSess,1} '.nii']);
                 if xASL_exist(FilePath,'file')
-                    VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.WBmask);
+                    VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.utils.WBmask);
                 end
             else
-                VascularMask = xASL_im_IM2Column(ones(size(x.WBmask)), x.WBmask);
+                VascularMask = xASL_im_IM2Column(ones(size(x.utils.WBmask)), x.utils.WBmask);
             end
 		end
 
 		if numel(DataIm)==1
-			DataIm = zeros([sum(x.WBmask(:)) 1],'single');
+			DataIm = zeros([sum(x.utils.WBmask(:)) 1],'single');
 			VascularMask = logical(DataIm);
 			DataIm(:) = NaN;
 		end
@@ -494,7 +494,7 @@ for iSubject=1:x.nSubjects
 			x.S.CorSlices = [110 90 x.S.slices(1:2)];
 			x.S.SagSlices = x.S.slices;
 
-			LabelIM = xASL_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:,[1:3:end]), x.WBmask));
+			LabelIM = xASL_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:,[1:3:end]), x.utils.WBmask));
 			LabelIM = xASL_vis_TransformData2View(LabelIM);
 			DataIM = xASL_vis_TransformData2View(Data3D);
 			CombiIM = xASL_im_ProjectLabelsOverData(DataIM, LabelIM, x);
@@ -508,11 +508,11 @@ for iSubject=1:x.nSubjects
 
 		%% e) Actual data computations
 
-		SusceptibilityMask = xASL_im_IM2Column(x.WBmask, x.WBmask); % default = no susceptibility mask
+		SusceptibilityMask = xASL_im_IM2Column(x.utils.WBmask, x.utils.WBmask); % default = no susceptibility mask
         if x.S.bMasking(1)==1
             if x.S.InputNativeSpace
                 if xASL_exist(x.P.Path_MaskSusceptibilityPop)
-                    SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_MaskSusceptibilityPop),x.WBmask);
+                    SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_MaskSusceptibilityPop),x.utils.WBmask);
                 end
             else
                 if HasGroupSusceptMask % use population-based susceptibility mask
@@ -522,7 +522,7 @@ for iSubject=1:x.nSubjects
                 else % fall back to try subject-wise Susceptibility Masks
                     FilePath = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.S.SUBJECTID{SubjSess,1} '.nii']);
                     if xASL_exist(FilePath,'file')
-                        SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(FilePath), x.WBmask);
+                        SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(FilePath), x.utils.WBmask);
                     else
                         if x.S.IsASL
                             fprintf('%s\n',[FilePath ' missing...']);
@@ -745,14 +745,14 @@ function [ROI] = xASL_im_CreatePVEcROI(x, ROI, pGM, pWM)
 
 ROI = ROI>0;
 
-ROI = xASL_im_Column2IM(ROI, x.WBmask); % convert to image, decompress
+ROI = xASL_im_Column2IM(ROI, x.utils.WBmask); % convert to image, decompress
 
 ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17); % Dilate ROI
 pCSF = max(0,1-pGM-pWM);
 ROI(pCSF>0.35) = 0; % Remove pCSF from the mask
 ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17); % Dilate ROI
 
-ROI = xASL_im_IM2Column(ROI, x.WBmask); % convert back to column, compress
+ROI = xASL_im_IM2Column(ROI, x.utils.WBmask); % convert back to column, compress
 
 
 

@@ -138,7 +138,7 @@ for iSet=1:length(TempData)
     DimData = size(TempData{iSet});
     % First accommodate compressed columns
     if  DimData(3)==1 
-        TempData{iSet} = xASL_im_Column2IM(TempData{iSet}, x.WBmask);
+        TempData{iSet} = xASL_im_Column2IM(TempData{iSet}, x.utils.WBmask);
     end
 
     % Then accommodate both single & multiple subjects.

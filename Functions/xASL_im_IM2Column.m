@@ -20,7 +20,7 @@ function [ColumnOut] = xASL_im_IM2Column(ImageIn, BrainMask, ApplyShiftDim)
 %              column back to an image matrix!
 %              See also: xASL_im_Column2IM.m
 % 
-%              The mask mostly used for xASL_im_IM2Column is x.WBmask, which completely
+%              The mask mostly used for xASL_im_IM2Column is x.utils.WBmask, which completely
 %              engulfes pGM, pWM & pCSF
 %
 % EXAMPLE: ColumnOut = xASL_im_IM2Column(ImageIn, BrainMask);
