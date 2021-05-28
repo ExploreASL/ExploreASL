@@ -138,12 +138,12 @@ end
 %% ----------------------------------------------------------
 %% 5. File management
 % Delete the LST folder & its contents
-CleanUpDir = xASL_adm_GetFileList(x.SUBJECTDIR,'^LST_tmp_.*$','List',[0 Inf], true);
+CleanUpDir = xASL_adm_GetFileList(x.dir.SUBJECTDIR,'^LST_tmp_.*$','List',[0 Inf], true);
 nList = length(CleanUpDir);
 for iD=1:nList
-    xASL_adm_DeleteFileList(fullfile(x.SUBJECTDIR,CleanUpDir{iD}), '^.*\.(nii|nii\.gz)$', [], [0 Inf]);
-    xASL_adm_DeleteFileList(fullfile(x.SUBJECTDIR,CleanUpDir{iD}), '^.*\.mat$', [], [0 Inf]);
-    rmdir( fullfile(x.SUBJECTDIR,CleanUpDir{iD}),'s' );
+    xASL_adm_DeleteFileList(fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}), '^.*\.(nii|nii\.gz)$', [], [0 Inf]);
+    xASL_adm_DeleteFileList(fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}), '^.*\.mat$', [], [0 Inf]);
+    rmdir( fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}),'s' );
 end
 
 if x.DELETETEMP
@@ -170,7 +170,7 @@ for iFile=1:length(FilePathsAre)
         %% 7. Remove lesion masks from WMH_SEGM
         % Here we ensure that WMH_SEGM & Lesion*.nii are mutually exclusive
 
-		LesionList = xASL_adm_GetFileList(x.SUBJECTDIR, '^Lesion_(FLAIR|T1)_\d*\.nii$', 'FPList', [0 Inf]);
+		LesionList = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '^Lesion_(FLAIR|T1)_\d*\.nii$', 'FPList', [0 Inf]);
 		for iLesion=1:length(LesionList)
 			[Fpath, Ffile] = xASL_fileparts(LesionList{iLesion});
 			LesionIM = xASL_io_Nifti2Im(LesionList{iLesion});

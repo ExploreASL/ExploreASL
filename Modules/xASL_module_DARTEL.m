@@ -5,7 +5,7 @@ function [result, x] = xASL_module_DARTEL(x)
 %
 % INPUT:
 %   x  - x structure containing all input parameters (REQUIRED)
-%   x.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
+%   x.dir.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
 %
 %
 % OUTPUT:
@@ -319,7 +319,7 @@ for iS=1:x.nSubjects
         xASL_delete(u_file);
 
         x.P.SubjectID = x.SUBJECTS{iS};
-        x.SUBJECTDIR = fullfile(x.D.ROOT, x.SUBJECTS{iS});
+        x.dir.SUBJECTDIR = fullfile(x.D.ROOT, x.SUBJECTS{iS});
         x = xASL_init_FileSystem(x);
 
         xASL_wrp_Resample2StandardSpace(x);

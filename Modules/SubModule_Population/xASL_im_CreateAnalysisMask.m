@@ -167,7 +167,7 @@ if x.bNativeSpaceAnalysis
 		for iSubject = 1:x.nSubjects
 			SubjSess = (iSubject-1)*x.nSessions + iSession;
 
-			x.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
+			x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 			x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
 

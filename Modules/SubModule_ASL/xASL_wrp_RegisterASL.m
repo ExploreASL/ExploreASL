@@ -231,7 +231,7 @@ elseif ~StructuralRawExist && ~StructuralDerivativesExist
 
         % Dummy files
         catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
-        MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
+        MatFile   = fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
         dummyVar = [];
         save(catVolFile,'dummyVar');
         save(MatFile,'dummyVar');

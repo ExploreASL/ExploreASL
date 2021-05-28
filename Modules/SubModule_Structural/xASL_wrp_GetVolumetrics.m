@@ -24,7 +24,7 @@ function xASL_wrp_GetVolumetrics(x)
 %% ------------------------------------------------------------------------------------------------
 %% 1) File management & store tissue volumes
 catVolFile = fullfile(x.D.TissueVolumeDir, ['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']); % CAT12 results
-MatFile = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']); % SPM12 results
+MatFile = fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']); % SPM12 results
 SaveFile = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.csv']); % ExploreASL results
 
 if xASL_exist(catVolFile, 'file') % for CAT12 segmentation
@@ -52,7 +52,7 @@ elseif exist(MatFile, 'file') % for SPM12 segmentation
     for ii=1:6
         tpm(ii).fname = fullfile(x.D.SPMDIR, 'tpm', 'TPM.nii');
     end
-    image.fname = fullfile(x.SUBJECTDIR, [x.P.STRUCT '.nii']);
+    image.fname = fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '.nii']);
 
     save(MatFile, 'image', 'tpm', 'Affine', 'lkp', 'MT', 'Twarp', 'Tbias', 'mg', 'mn', 'vr', 'wp', 'll');
 
@@ -89,7 +89,7 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     MinimalLesionVolume = 0.015; % default (mL), determines the minimal size of each detected lesion
     
     % Delete any previous volume files:
-    xASL_adm_DeleteFileList(x.SUBJECTDIR, '^LST_tlv_.*\.(csv|tsv)$', [], [0 Inf]);
+    xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, '^LST_tlv_.*\.(csv|tsv)$', [], [0 Inf]);
     xASL_adm_DeleteFileList(x.D.TissueVolumeDir, '^LST_tlv_.*\.(csv|tsv)$', [], [0 Inf]);
     xASL_adm_DeleteFileList(x.D.TissueVolumeDir, ['WMH_LST_(LGA|LPA)_' x.P.SubjectID '.(csv|tsv)'], [], [0 Inf]);
     

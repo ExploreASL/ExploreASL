@@ -39,7 +39,7 @@ end
 
 %% ---------------------------------------------------------------------------------------------------
 %% 1) Restore the orientation matrix of all images, in case we perform a re-run: but only when we don't have lesion maps
-Lesion_ROI_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^(Lesion|ROI)_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
+Lesion_ROI_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^(Lesion|ROI)_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
 
 %% ---------------------------------------------------------------------------------------------------
 %% 2)Obtain lists of paths
@@ -66,7 +66,7 @@ for iSess = 1:x.nSessions
     % Check for other ScanTypes
     OtherScanTypes = {'dwi' 'func'};
     for iOther=1:length(OtherScanTypes)
-        DirOther = fullfile(x.SUBJECTDIR, OtherScanTypes{iOther});
+        DirOther = fullfile(x.dir.SUBJECTDIR, OtherScanTypes{iOther});
         if exist(DirOther,'dir')
             Path_Other = xASL_adm_GetFileList(DirOther, '^(?!y_).*\.nii$', 'FPList', [0 Inf]); % any DWI or func NIfTI (quick & dirty)
             for iScan=1:length(Path_Other)

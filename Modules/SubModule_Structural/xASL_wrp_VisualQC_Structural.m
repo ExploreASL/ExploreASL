@@ -30,7 +30,7 @@ function xASL_wrp_VisualQC_Structural(x)
 
 %% -----------------------------------------------------------------------------------
 %% 1) Admin
-PathX = fullfile(x.SUBJECTDIR,'x.mat');
+PathX = fullfile(x.dir.SUBJECTDIR,'x.mat');
 iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID)); % Find current subject index
 x = xASL_adm_LoadX(x, PathX, true); % assume x.mat is newer than x
 
@@ -50,8 +50,8 @@ end
 % T1w, below.
 
 % First, delete any from a previous run
-Path_NativeDeepWM = fullfile(x.SUBJECTDIR,'CentralWM_QC.nii');
-Path_NativeLRMask = fullfile(x.SUBJECTDIR,'LeftRight.nii');
+Path_NativeDeepWM = fullfile(x.dir.SUBJECTDIR,'CentralWM_QC.nii');
+Path_NativeLRMask = fullfile(x.dir.SUBJECTDIR,'LeftRight.nii');
 Path_MNI_DeepWM = fullfile(x.D.PopDir,['CentralWM_QC_' x.P.SubjectID '.nii']);
 xASL_delete(Path_NativeDeepWM);
 xASL_delete(Path_NativeLRMask);
@@ -82,8 +82,8 @@ x = xASL_wrp_VisualCheckCollective_Structural(x);
 
 %% -----------------------------------------------------------------------------------
 %% 4) Visualize lesions
-Lesion_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^Lesion_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
-ROI_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^ROI_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
+Lesion_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^Lesion_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
+ROI_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^ROI_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
 
 xASL_adm_VisualCheckLesionRemoval(x, Lesion_list);
 xASL_vis_VisualizeROIs(x, ROI_list);
@@ -105,7 +105,7 @@ end
 
 %% -----------------------------------------------------------------------------------
 %% 5) Final QCs
-xASL_qc_PrintOrientation(x.SUBJECTDIR, x.P.Path_T1, x.SUBJECTDIR, 'RigidRegT1');
+xASL_qc_PrintOrientation(x.dir.SUBJECTDIR, x.P.Path_T1, x.dir.SUBJECTDIR, 'RigidRegT1');
 % This function summarizes the T1w orientation. Especially check the determinant, for left-right flips
 
 x = xASL_qc_CollectParameters(x, iSubject, 'Structural');

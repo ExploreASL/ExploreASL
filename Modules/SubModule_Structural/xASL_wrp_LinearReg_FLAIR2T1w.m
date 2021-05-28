@@ -41,7 +41,7 @@ fprintf('%s\n','FLAIR.nii detected, processing...');
 
 OtherList = {x.P.Path_WMH_SEGM};
 
-Lesion_FLAIR_list = xASL_adm_GetFileList(x.SUBJECTDIR, ['^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
+Lesion_FLAIR_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
 for iS=1:length(Lesion_FLAIR_list)
     OtherList{end+1,1} = Lesion_FLAIR_list{iS};
 end

@@ -46,7 +46,7 @@ function [CoveragePerc] = xASL_qc_ComputeFoVCoverage(InputPath, x)
     ImRes = nii.hdr.pixdim(2:4);
     MatSize = size(nii.dat);
     
-    PathBrainmask = fullfile(x.SUBJECTDIR, 'Brainmask.nii');
+    PathBrainmask = fullfile(x.dir.SUBJECTDIR, 'Brainmask.nii');
     BrainMask = xASL_io_Nifti2Im(x.P.Path_c1T1)+xASL_io_Nifti2Im(x.P.Path_c2T1)+xASL_io_Nifti2Im(x.P.Path_c3T1)>0.5;
     % Save
     xASL_io_SaveNifti(x.P.Path_c1T1, PathBrainmask, logical(BrainMask), 8, 0);

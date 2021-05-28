@@ -5,7 +5,7 @@ function xASL_adm_SaveX(x, Path_xASL, bOverwrite)
 %
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
-%   Path_xASL   - path to the x.mat that contains the QC output (OPTIONAL, DEFAULT = x.SUBJECTDIR/x.mat)
+%   Path_xASL   - path to the x.mat that contains the QC output (OPTIONAL, DEFAULT = x.dir.SUBJECTDIR/x.mat)
 %   bOverwite   - boolean specifying if we overwrite (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:
@@ -26,10 +26,10 @@ function xASL_adm_SaveX(x, Path_xASL, bOverwrite)
 %% -------------------------------------
 %  Admin
 if nargin<2 || isempty(Path_xASL)
-	if ~isfield(x,'SUBJECTDIR')
-		error('Path_xASL not provided and x.SUBJECTDIR not defined.');
+	if ~isfield(x.dir,'SUBJECTDIR')
+		error('Path_xASL not provided and x.dir.SUBJECTDIR not defined.');
 	end
-	Path_xASL = fullfile(x.SUBJECTDIR,'x.mat');
+	Path_xASL = fullfile(x.dir.SUBJECTDIR,'x.mat');
 end
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = true;

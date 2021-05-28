@@ -79,7 +79,7 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     
 	if ~isempty(regexp(ModName,'(Struct|ASL|func|LongReg|dwi)'))
 		dbSettings.sets.SUBJECT      = SelectedSubjects; % x.SUBJECTS
-		dbSettings.x.SUBJECTDIR      = '<ROOT>/<SUBJECT>';
+		dbSettings.x.dir.SUBJECTDIR  = '<ROOT>/<SUBJECT>';
 		dbSettings.x.dir.LockDir     = [dbSettings.x.dir.LockDir '/<SUBJECT>'];
 	end
 	

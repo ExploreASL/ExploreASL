@@ -5,7 +5,7 @@ function [result, x] = xASL_module_Structural(x)
 %
 % INPUT:
 %   x  - x structure containing all input parameters (REQUIRED)
-%   x.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
+%   x.dir.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
 %
 %
 % OUTPUT:
@@ -42,7 +42,7 @@ function [result, x] = xASL_module_Structural(x)
 
 x = xASL_init_InitializeMutex(x, 'T1'); % starts mutex locking process to ensure that everything will run only once
 x = xASL_init_FileSystem(x); % initialize FileSystem, quick & dirty
-oldFolder = cd(x.SUBJECTDIR); % make sure that unspecified output will go here
+oldFolder = cd(x.dir.SUBJECTDIR); % make sure that unspecified output will go here
 
 if x.mutex.HasState('999_ready')
     bO = false; % no Output, as everything has been done already
@@ -57,11 +57,11 @@ end
 % Start with throwing a warning if the current subject doesn"t have a structural image
 if ~xASL_exist(x.P.Path_T1,'file') && ~xASL_exist(x.P.Path_T1_ORI,'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    Flist = xASL_adm_GetFileList(x.SUBJECTDIR, '(.*T1.*run.*|.*run.*T1.*)\.(nii|nii\.gz)', 'FPList', [0 Inf]);
+    Flist = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '(.*T1.*run.*|.*run.*T1.*)\.(nii|nii\.gz)', 'FPList', [0 Inf]);
     if ~isempty(Flist)
         xASL_Move(Flist{1}, x.P.Path_T1);
     else
-        warning([x.SUBJECTDIR ' didnt contain a T1w structural image, skipping...']);
+        warning([x.dir.SUBJECTDIR ' didnt contain a T1w structural image, skipping...']);
         result = true;
 
 		% Unlocks the patient as this wouldn't be done in the iteration for the last subject
@@ -72,7 +72,7 @@ end
 
 if ~xASL_exist(x.P.Path_FLAIR,'file') && ~xASL_exist(x.P.Path_FLAIR_ORI,'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    Flist = xASL_adm_GetFileList(x.SUBJECTDIR, '(.*FLAIR.*run.*|.*run.*FLAIR.*)\.(nii|nii\.gz)', 'FPList', [0 Inf]);
+    Flist = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '(.*FLAIR.*run.*|.*run.*FLAIR.*)\.(nii|nii\.gz)', 'FPList', [0 Inf]);
     if ~isempty(Flist)
         xASL_Move(Flist{1}, x.P.Path_FLAIR);
     end
@@ -84,8 +84,8 @@ end
 %    faster, and will be overwritten later by the pre-existing WMH_SEGM
 % 2) default is 'LPA' unless LGA was chosen
 
-rWMHPathLPA = fullfile(x.SUBJECTDIR, ['ples_lpa_mr' x.P.FLAIR '.nii']);
-rWMHPathLGA = fullfile(x.SUBJECTDIR, ['ples_lga_0.3_rmr' x.P.FLAIR '.nii']);
+rWMHPathLPA = fullfile(x.dir.SUBJECTDIR, ['ples_lpa_mr' x.P.FLAIR '.nii']);
+rWMHPathLGA = fullfile(x.dir.SUBJECTDIR, ['ples_lga_0.3_rmr' x.P.FLAIR '.nii']);
 
 WMHexist = xASL_exist(x.P.Path_WMH_SEGM, 'file') || xASL_exist(x.P.Path_WMH_SEGM_ORI, 'file');
 if WMHexist && bO
@@ -354,7 +354,7 @@ end
 % Now check if the segmentation results exist
 catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']); % CAT12 result
 TissueVolFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.tsv']); % ExploreASL naming
-MatFile   = fullfile(x.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']); % SPM12 result
+MatFile   = fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']); % SPM12 result
 VolumetricResultsMissing = ~xASL_exist(catVolFile, 'file') && ~xASL_exist(MatFile, 'file') && ~xASL_exist(TissueVolFile, 'file');
 % we check all 3 here, as the results can come from CAT12 or from SPM12
 SegmentationsMissing = ~xASL_exist(x.P.Path_c1T1, 'file') || ~xASL_exist(x.P.Path_c2T1, 'file');

@@ -55,9 +55,9 @@ pWM = xASL_io_Nifti2Im(Pathc2T1);
 
 % Load all the general masks
 Path_DeepWMmask = fullfile(x.D.MapsSPMmodifiedDir,'CentralWM_QC.nii');
-Path_NativeDeepWM = fullfile(x.SUBJECTDIR,'CentralWM_QC.nii');
+Path_NativeDeepWM = fullfile(x.dir.SUBJECTDIR,'CentralWM_QC.nii');
 Path_LRMask = fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii');
-Path_NativeLRMask = fullfile(x.SUBJECTDIR,'LeftRight.nii');
+Path_NativeLRMask = fullfile(x.dir.SUBJECTDIR,'LeftRight.nii');
 Path_MNI_DeepWM = fullfile(x.D.PopDir,['CentralWM_QC_' x.P.SubjectID '.nii']);
 
 fprintf('%s\n','Computing anatomical QC parameters from the Preprocessed Connectome Project (PCP) QA Protocol');

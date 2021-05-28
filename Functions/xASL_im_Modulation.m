@@ -49,10 +49,10 @@ end
 xASL_adm_UnzipNifti(x.P.Path_y_T1);
 matlabbatch{1}.spm.util.defs.comp{1}.def = {x.P.Path_y_T1};
 matlabbatch{1}.spm.util.defs.out{1}.savejac.ofname = 'T1.nii';
-matlabbatch{1}.spm.util.defs.out{1}.savejac.savedir.saveusr = {x.SUBJECTDIR};
+matlabbatch{1}.spm.util.defs.out{1}.savejac.savedir.saveusr = {x.dir.SUBJECTDIR};
 % For testing create also the transfile
 %matlabbatch{2}.spm.util.defs.out{1}.pull.fnames = {tNii.dat.fname};
-%matlabbatch{2}.spm.util.defs.out{1}.pull.savedir.saveusr = {x.SUBJECTDIR};
+%matlabbatch{2}.spm.util.defs.out{1}.pull.savedir.saveusr = {x.dir.SUBJECTDIR};
 %matlabbatch{2}.spm.util.defs.out{1}.pull.interp = 4;
 %matlabbatch{2}.spm.util.defs.out{1}.pull.mask = 1;
 %matlabbatch{2}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];

@@ -5,7 +5,7 @@ function [result, x] = xASL_module_LongReg(x)
 %
 % INPUT:
 %   x  - x structure containing all input parameters (REQUIRED)
-%   x.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
+%   x.dir.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
 %   x.WhichLongReg  - (OPTIONAL, DEFAULT = 'LongReg'), when this is set to 'DARTEL', DARTEL is performed instead of SPM12 Longitudinal Registration
 %
 %
@@ -50,19 +50,19 @@ function [result, x] = xASL_module_LongReg(x)
 x = xASL_init_InitializeMutex(x, 'LongReg' ); % starts mutex locking process to ensure that everything will run only once
 
 % 0.9 change working directory to make sure that unspecified output will go there...
-oldFolder = cd(x.SUBJECTDIR);
+oldFolder = cd(x.dir.SUBJECTDIR);
 
 % Check T1 presence
 
-structList = xASL_adm_GetFileList(x.SUBJECTDIR, ['^' x.P.STRUCT '\.(nii|nii\.gz)$'],'List');
+structList = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^' x.P.STRUCT '\.(nii|nii\.gz)$'],'List');
 
 if isempty(structList)
-    error('AslPipeline:missingFile', 'No file found that matches "%s" in "%s"', x.P.STRUCT, x.SUBJECTDIR);
+    error('AslPipeline:missingFile', 'No file found that matches "%s" in "%s"', x.P.STRUCT, x.dir.SUBJECTDIR);
 elseif length(structList)>2
     error('AslPipeline:incorrectNrOfFiles', 'Expected exactly one nifti file "%s", but found %d', x.P.STRUCT, length(structList));
 end
 
-[~, x.P.SubjectID] = fileparts(x.SUBJECTDIR);
+[~, x.P.SubjectID] = fileparts(x.dir.SUBJECTDIR);
 [~, ~, ~, ~, VolumeList, VolumeN] = xASL_init_LongitudinalRegistration(x);
 
 VolumeList = logical(VolumeList(x.nSessions:x.nSessions:end,1));
@@ -125,7 +125,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             fprintf('%s\n','Running longitudinal registration');
 
 			% Unzip & remove redundant files
-            xASL_io_ReadNifti(fullfile(x.SUBJECTDIR, [x.P.STRUCT '.nii']));
+            xASL_io_ReadNifti(fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '.nii']));
 
 
 
@@ -453,7 +453,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
         for iS=2:length(CurrentSub)
             x.P.SubjectID = CurrentSub{iS};
-            x.SUBJECTDIR = fullfile(x.D.ROOT, CurrentSub{iS});
+            x.dir.SUBJECTDIR = fullfile(x.D.ROOT, CurrentSub{iS});
             x = xASL_init_FileSystem(x);
 
             xASL_wrp_Resample2StandardSpace(x);

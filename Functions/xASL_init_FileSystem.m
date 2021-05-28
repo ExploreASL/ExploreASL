@@ -57,8 +57,8 @@ xASL_adm_CreateDir(x.D.M0regASLdir);
 
 %% ------------------------------------------------------------------------------------
 %% 2) Subject/session definitions
-if isfield(x,'SUBJECTDIR')
-    [~, x.P.SubjectID] = xASL_fileparts(x.SUBJECTDIR);
+if isfield(x.dir,'SUBJECTDIR')
+    [~, x.P.SubjectID] = xASL_fileparts(x.dir.SUBJECTDIR);
     x.iSubject = find(cellfun(@(y) strcmp(y, x.P.SubjectID), x.SUBJECTS));
 end
 if isfield(x,'SESSIONDIR')
@@ -122,7 +122,7 @@ if isfield(x.P,'SubjectID')
 
     %% ------------------------------------------------------------------------------------
     %% File definitions
-    Path{1} = x.SUBJECTDIR;
+    Path{1} = x.dir.SUBJECTDIR;
     Path{2} = fullfile(x.D.ROOT,x.P.SubjectID,x.P.SessionID);
 
     for iFD=1:length(FileDef)

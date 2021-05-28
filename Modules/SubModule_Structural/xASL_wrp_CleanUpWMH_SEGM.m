@@ -48,8 +48,8 @@ function xASL_wrp_CleanUpWMH_SEGM(x)
 %% -------------------------------------------------------------------------------
 %% 0) File & paths management
 CleanUpFile = [x.P.Path_WMH_SEGM(1:end-4) '_CleanUp.nii'];
-PreMaskFile = fullfile(x.SUBJECTDIR, 'Ones.nii');
-MaskFile = fullfile(x.SUBJECTDIR, 'mask_Ones.nii');
+PreMaskFile = fullfile(x.dir.SUBJECTDIR, 'Ones.nii');
+MaskFile = fullfile(x.dir.SUBJECTDIR, 'mask_Ones.nii');
 PathMNIMask = fullfile(x.D.MapsSPMmodifiedDir, 'brainmask_supratentorial.nii');
 
 if xASL_exist(x.P.Path_rWMH_SEGM, 'file')

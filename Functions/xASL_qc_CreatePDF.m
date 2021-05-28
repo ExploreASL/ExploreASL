@@ -48,7 +48,7 @@ if length(DoSubject)~=1
     warning('Too many indices provided for PDF creation! Using first subject only');
 end
 
-PathX = fullfile(x.SUBJECTDIR,'x.mat');
+PathX = fullfile(x.dir.SUBJECTDIR,'x.mat');
 
 if ~exist(PathX, 'file')
     warning([PathX ' didnt exist, skipping xASL_qc_CreateOutputPDF']);

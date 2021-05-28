@@ -285,7 +285,7 @@ for iSubject=1:x.nSubjects
 					end
 				end
 
-				x.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
+				x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 				x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess});
 				x = xASL_init_FileSystem(x);
 				pGM_MNI = xASL_io_Nifti2Im(x.P.Path_PVgm);

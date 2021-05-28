@@ -5,7 +5,7 @@ function [result, x] = xASL_module_ASL(x)
 %
 % INPUT:
 %   x  - x structure containing all input parameters (REQUIRED)
-%   x.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
+%   x.dir.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
 %   x.SESSIONDIR  -  ASL directory, containing the derivatives of perfusion images (REQUIRED)
 %
 %

@@ -75,10 +75,10 @@ end
 
 % Study file management
 xASL_io_ReadNifti(x.P.Path_T1); % unzip if necessary
-xASL_adm_DeleteFileList(x.SUBJECTDIR, ['^c[1-3]' x.P.STRUCT '\.(nii|nii\.gz)$']); % make sure no old files are left when job fails
-xASL_adm_DeleteFileList(x.SUBJECTDIR, ['^' x.P.STRUCT '_seg8\.mat$']);
-xASL_adm_DeleteFileList(x.SUBJECTDIR, ['^y_' x.P.STRUCT '\.nii$']);
-xASL_adm_DeleteFileList(x.SUBJECTDIR, '^catreport.*\.pdf$');
+xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^c[1-3]' x.P.STRUCT '\.(nii|nii\.gz)$']); % make sure no old files are left when job fails
+xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^' x.P.STRUCT '_seg8\.mat$']);
+xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^y_' x.P.STRUCT '\.nii$']);
+xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, '^catreport.*\.pdf$');
 
 xASL_adm_RemoveTempFilesCAT12(x, true); % remove previous temporary CAT12 files
 
@@ -203,23 +203,23 @@ close all;
 
 %% ----------------------------------------------------------------------------------------
 %% 5) File management CAT12 names
-InFile{1} = fullfile(x.SUBJECTDIR,'mri',['p1' x.P.STRUCT '.nii']);
-InFile{2} = fullfile(x.SUBJECTDIR,'mri',['p2' x.P.STRUCT '.nii']);
-InFile{3} = fullfile(x.SUBJECTDIR,'mri',['p3' x.P.STRUCT '.nii']);
-InFile{4} = fullfile(x.SUBJECTDIR,'mri',['y_' x.P.STRUCT '.nii']);
-InFile{5} = fullfile(x.SUBJECTDIR,'label',['catROI_' x.P.STRUCT '.tsv']);
-InFile{6} = fullfile(x.SUBJECTDIR,'report',['catreport_' x.P.STRUCT '.pdf']);
-InFile{7} = fullfile(x.SUBJECTDIR,'report',['cat_' x.P.STRUCT '.mat']);
-InFile{8} = fullfile(x.SUBJECTDIR,'mri',['n' x.P.STRUCT '.nii']);
+InFile{1} = fullfile(x.dir.SUBJECTDIR,'mri',['p1' x.P.STRUCT '.nii']);
+InFile{2} = fullfile(x.dir.SUBJECTDIR,'mri',['p2' x.P.STRUCT '.nii']);
+InFile{3} = fullfile(x.dir.SUBJECTDIR,'mri',['p3' x.P.STRUCT '.nii']);
+InFile{4} = fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '.nii']);
+InFile{5} = fullfile(x.dir.SUBJECTDIR,'label',['catROI_' x.P.STRUCT '.tsv']);
+InFile{6} = fullfile(x.dir.SUBJECTDIR,'report',['catreport_' x.P.STRUCT '.pdf']);
+InFile{7} = fullfile(x.dir.SUBJECTDIR,'report',['cat_' x.P.STRUCT '.mat']);
+InFile{8} = fullfile(x.dir.SUBJECTDIR,'mri',['n' x.P.STRUCT '.nii']);
 
 OutFile{1} = x.P.Path_c1T1; % GM segmentation
 OutFile{2} = x.P.Path_c2T1; % WM segmentation
 OutFile{3} = x.P.Path_c3T1; % CSF segmentation
 OutFile{4} = x.P.Path_y_T1; % deformation field to common space
 OutFile{5} = fullfile(x.D.TissueVolumeDir,['catROI_' x.P.STRUCT '_' x.P.SubjectID '.tsv']);
-OutFile{6} = fullfile(x.SUBJECTDIR,['catreport_' x.P.STRUCT '.pdf']);
+OutFile{6} = fullfile(x.dir.SUBJECTDIR,['catreport_' x.P.STRUCT '.pdf']);
 OutFile{7} = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
-OutFile{8} = fullfile(x.SUBJECTDIR,[x.P.STRUCT '_BiasFieldCorrected.nii.gz']); % GM segmentation
+OutFile{8} = fullfile(x.dir.SUBJECTDIR,[x.P.STRUCT '_BiasFieldCorrected.nii.gz']); % GM segmentation
 
 % If saving separate files - copy the intermediate steps
 if x.Seg.SaveIntermedFlowField
@@ -230,9 +230,9 @@ if x.Seg.SaveIntermedFlowField
             nSteps = 6;
     end
     for iStep = 1:nSteps
-        if xASL_exist(fullfile(x.SUBJECTDIR, 'mri', ['y_' x.P.STRUCT '_' num2str(iStep) '.nii']), 'file')
-            xASL_Move(fullfile(x.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_' num2str(iStep) '.nii']),...
-            fullfile(x.SUBJECTDIR, ['y_' x.P.STRUCT '_' num2str(iStep) '.nii']), true, false);
+        if xASL_exist(fullfile(x.dir.SUBJECTDIR, 'mri', ['y_' x.P.STRUCT '_' num2str(iStep) '.nii']), 'file')
+            xASL_Move(fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_' num2str(iStep) '.nii']),...
+            fullfile(x.dir.SUBJECTDIR, ['y_' x.P.STRUCT '_' num2str(iStep) '.nii']), true, false);
         end
     end
 end
@@ -247,11 +247,11 @@ end
 %% ----------------------------------------------------------------------------------------
 %% 6) File management lesion segmentations
 %  Obtain paths of lesion files if they exist, to correct flowfields for
-Lesion_T1_list     = xASL_adm_GetFileList(x.SUBJECTDIR,['^Lesion_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
-Lesion_FLAIR_list  = xASL_adm_GetFileList(x.SUBJECTDIR,['^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
-Path_Transf_SPM      = fullfile(x.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withoutDARTEL.nii']);
-%         Path_Transf_SPM_subj = fullfile(x.SUBJECTDIR,['y_' x.P.STRUCT '_withoutDARTEL.nii']);
-Path_Transf_DARTEL   = fullfile(x.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withDARTEL.nii']);
+Lesion_T1_list     = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_FLAIR_list  = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Path_Transf_SPM      = fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withoutDARTEL.nii']);
+%         Path_Transf_SPM_subj = fullfile(x.dir.SUBJECTDIR,['y_' x.P.STRUCT '_withoutDARTEL.nii']);
+Path_Transf_DARTEL   = fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withDARTEL.nii']);
 
 % 1) Resample all lesion masks to standard space (avoids differences T1 & FLAIR spaces)
 % 2) Combine all lesions into single Total_Lesion.nii, save this, remove the others
@@ -364,10 +364,10 @@ end
 % delete previous error files
 % Remove residual files in mri directory
 if bForce
-    DirList{1} = fullfile(x.SUBJECTDIR,'mri');
-    DirList{2} = fullfile(x.SUBJECTDIR,'label');
-    DirList{3} = fullfile(x.SUBJECTDIR,'report');
-    ErrDir     = fullfile(x.SUBJECTDIR,'err');
+    DirList{1} = fullfile(x.dir.SUBJECTDIR,'mri');
+    DirList{2} = fullfile(x.dir.SUBJECTDIR,'label');
+    DirList{3} = fullfile(x.dir.SUBJECTDIR,'report');
+    ErrDir     = fullfile(x.dir.SUBJECTDIR,'err');
     if exist(ErrDir, 'dir')
         TL = xASL_adm_GetFileList(ErrDir,'^cat.*$','List',[0 Inf], true); % find dirs
         if ~isempty(TL)

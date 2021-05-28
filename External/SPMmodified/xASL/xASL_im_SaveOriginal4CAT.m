@@ -19,12 +19,12 @@ function xASL_im_SaveOriginal4CAT(Ycls, PathIn)
 
 %%%   If there are no lesions found, the images are untouched
 
-[x.SUBJECTDIR, x.P.STRUCT , ~]     = xASL_fileparts(PathIn);
+[x.dir.SUBJECTDIR, x.P.STRUCT , ~]     = xASL_fileparts(PathIn);
 x.P.STRUCT    = 'T1';
 x.P.FLAIR     = 'FLAIR';
 
-Lesion_T1_list      = xASL_adm_GetFileList(x.SUBJECTDIR,['^Lesion_' x.P.STRUCT '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
-Lesion_FLAIR_list   = xASL_adm_GetFileList(x.SUBJECTDIR,['^Lesion_' x.P.FLAIR  '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_T1_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.STRUCT '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_FLAIR_list   = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.FLAIR  '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
 
 if  isempty(Lesion_T1_list) && isempty(Lesion_FLAIR_list)
 	fprintf('%s\n','No Lesion*.nii specified, not saving the segmentation before masking');
@@ -32,13 +32,13 @@ else
 
 	%%% ---------------------------------------------------------------------
 	%%% Save probability maps before DARTEL & before lesion masking
-	cPathOri{1}   = fullfile( x.SUBJECTDIR, ['c1' x.P.STRUCT '_ORI.nii']);
-	cPathOri{2}   = fullfile( x.SUBJECTDIR, ['c2' x.P.STRUCT '_ORI.nii']);
+	cPathOri{1}   = fullfile( x.dir.SUBJECTDIR, ['c1' x.P.STRUCT '_ORI.nii']);
+	cPathOri{2}   = fullfile( x.dir.SUBJECTDIR, ['c2' x.P.STRUCT '_ORI.nii']);
 
 	fprintf('%s','Saving segmentations before DARTEL (and/or cost function masking if Lesion_*.nii exist):   ')
 
 	% First checking if they are the same size, or were resampled
-	T1Path      = fullfile( x.SUBJECTDIR, [x.P.STRUCT '.nii']);
+	T1Path      = fullfile( x.dir.SUBJECTDIR, [x.P.STRUCT '.nii']);
 	T1im        = xASL_io_Nifti2Im(T1Path);
 
 	%%% Second, we calculate the volumes (dimension, transformation matrix in the CAT12 space and original space)

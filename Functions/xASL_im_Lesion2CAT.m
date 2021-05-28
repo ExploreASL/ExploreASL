@@ -20,17 +20,17 @@ function LesionPathOut = xASL_im_Lesion2CAT(PathIn)
 
 
 % Parse the directory names
-[x.SUBJECTDIR, x.P.STRUCT , ~]     = xASL_fileparts(PathIn);
+[x.dir.SUBJECTDIR, x.P.STRUCT , ~]     = xASL_fileparts(PathIn);
 x.P.STRUCT    = 'T1';
 x.P.FLAIR     = 'FLAIR';
 
 % Create the directory and specify the path to the merged lesion file
-if ~exist(fullfile(x.SUBJECTDIR,'mri'),'dir'),mkdir(fullfile(x.SUBJECTDIR,'mri'));end
-LesionPathOut = fullfile(x.SUBJECTDIR,'mri','LesionCAT.nii');
+if ~exist(fullfile(x.dir.SUBJECTDIR,'mri'),'dir'),mkdir(fullfile(x.dir.SUBJECTDIR,'mri'));end
+LesionPathOut = fullfile(x.dir.SUBJECTDIR,'mri','LesionCAT.nii');
 
 % Load the lesion names
-Lesion_T1_list      = xASL_adm_GetFileList(x.SUBJECTDIR,['^Lesion_' x.P.STRUCT '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
-Lesion_FLAIR_list   = xASL_adm_GetFileList(x.SUBJECTDIR,['^Lesion_' x.P.FLAIR  '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_T1_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.STRUCT '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_FLAIR_list   = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.FLAIR  '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
 
 % Initialize the rLesion list to have the same size as the original (or empty)
 rLesion_FLAIR_list  = Lesion_FLAIR_list;

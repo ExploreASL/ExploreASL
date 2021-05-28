@@ -34,7 +34,7 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
 
     Struct.ID = x.SUBJECTS{iSubject};
 
-    PathOrientationResults = fullfile(x.SUBJECTDIR,'xASL_qc_PrintOrientation_RigidRegT1.tsv');
+    PathOrientationResults = fullfile(x.dir.SUBJECTDIR,'xASL_qc_PrintOrientation_RigidRegT1.tsv');
     TempS = xASL_im_DetermineFlip(x, iSubject, PathOrientationResults, Struct);
     Struct.T1w_LR_flip_YesNo = TempS.LR_flip_YesNo;
     % Whether left-right orientation has been flipped through registrations yes/no
