@@ -203,7 +203,7 @@ x.nSubjects = length(x.SUBJECTS);
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 x.dataset.nExcluded = x.dataset.nTotalSubjects - x.nSubjects;
 x.nSessions = length( x.SESSIONS );
-x.nSubjectsSessions = x.nSubjects .* x.nSessions;
+x.dataset.nSubjectsSessions = x.nSubjects .* x.nSessions;
 
 x.dataset.nTimePointsTotal = length(x.dataset.TimePointTotalSubjects);
 for iT=1:x.dataset.nTimePointsTotal
@@ -251,7 +251,7 @@ if x.opts.nWorkers>1
     iStartSubject = (x.opts.iWorker-1)*nSubjPerWorker+1;
     iEndSubject = min(x.opts.iWorker*nSubjPerWorker, x.nSubjects);
     iStartSubjectSession = (x.opts.iWorker-1)*nSubjSessPerWorker+1;
-    iEndSubjectSession = min(x.opts.iWorker*nSubjSessPerWorker, x.nSubjectsSessions);
+    iEndSubjectSession = min(x.opts.iWorker*nSubjSessPerWorker, x.dataset.nSubjectsSessions);
     
     if iStartSubject>x.nSubjects
         fprintf('Closing down this worker, had too many workers');
@@ -261,7 +261,7 @@ if x.opts.nWorkers>1
     % Adapt SUBJECTS
     x.SUBJECTS = x.SUBJECTS(iStartSubject:iEndSubject);
     x.nSubjects = length(x.SUBJECTS);
-    x.nSubjectsSessions = x.nSubjects*x.nSessions;
+    x.dataset.nSubjectsSessions = x.nSubjects*x.nSessions;
 
     % Adapt SETSID (covariants)
     if isfield(x.S,'SetsID') && ~isempty(x.S.SetsID)

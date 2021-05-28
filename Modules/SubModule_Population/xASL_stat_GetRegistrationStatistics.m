@@ -57,7 +57,7 @@ for iSubject=1:x.nSubjects
         iSubjSess = (iSubject-1)*x.nSessions+iSession;
 		
 		% Track progress
-        xASL_TrackProgress(iSubjSess,x.nSubjectsSessions);        
+        xASL_TrackProgress(iSubjSess,x.dataset.nSubjectsSessions);        
         
         % Write the subject and session name in the TSV table
         TSV{1+iSubjSess,1} = x.SUBJECTS{iSubject};

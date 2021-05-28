@@ -45,12 +45,12 @@ if nargin<2 || isempty(Threshold)
     Threshold = 0.95; % default threshold
 end
 
-PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList');
+PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList');
 
 bSkipStandard = 0;
 
-if x.nSubjectsSessions<16
-    fprintf('%s\n', ['Too few subjects (' num2str(x.nSubjectsSessions) ') to create population-based analysis mask']);
+if x.dataset.nSubjectsSessions<16
+    fprintf('%s\n', ['Too few subjects (' num2str(x.dataset.nSubjectsSessions) ') to create population-based analysis mask']);
     x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.utils.WBmask);
     x.S.VBAmask = x.S.MaskSusceptibility;
     bSkipStandard = 1;
@@ -74,8 +74,8 @@ MaskSusceptibilityPath = fullfile(x.S.StatsDir,'MaskSusceptibility.nii');
 
 % Define pre-existing paths, including warning when less or more than 1 are found
 % First for SubjectsSessions (e.g. ASL)
-PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
-PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular_n' xASL_num2str(x.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
 % Then for Subjects (e.g. structural)
 PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pGM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
 PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);

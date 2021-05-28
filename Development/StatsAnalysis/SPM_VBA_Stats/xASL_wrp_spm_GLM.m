@@ -46,11 +46,11 @@ SmoothASL_LoadFile  = fullfile(x.D.PopDir,['Smooth' InputDataStr '.dat']);
 
 if  exist(SmoothASL_LoadFile,'file') % load the already smoothed data
     try
-        InputData       = memmapfile(SmoothASL_LoadFile,'Format',{'single' double([x.nSubjectsSessions sum(x.S.VBAmask(:))]) 'data'});
+        InputData       = memmapfile(SmoothASL_LoadFile,'Format',{'single' double([x.dataset.nSubjectsSessions sum(x.S.VBAmask(:))]) 'data'});
         x.S.DAT         = InputData.Data.data;
     catch % if not compressed yet
-        InputData       = memmapfile(SmoothASL_LoadFile,'Format',{'single' double([x.nSubjectsSessions size(x.S.VBAmask)]) 'data'});
-        for iS=1:x.nSubjectsSessions
+        InputData       = memmapfile(SmoothASL_LoadFile,'Format',{'single' double([x.dataset.nSubjectsSessions size(x.S.VBAmask)]) 'data'});
+        for iS=1:x.dataset.nSubjectsSessions
             x.S.DAT(iS,:)   = xASL_im_IM2Column(squeeze(InputData.Data.data(iS,:,:,:)),x.S.VBAmask);
         end
     end
@@ -59,7 +59,7 @@ if  exist(SmoothASL_LoadFile,'file') % load the already smoothed data
 else % do memory mapping first
     LoadFile        = xASL_adm_Load4DMemMapping( x, InputDataStr, 'Image');
     % Smoothing is performed spatially, so we need images instead of columns here
-    InputData       = memmapfile(LoadFile,'Format',{'single' [x.nSubjectsSessions 121 145 121] 'data'});
+    InputData       = memmapfile(LoadFile,'Format',{'single' [x.dataset.nSubjectsSessions 121 145 121] 'data'});
 
 
     % Skip smoothing for 3D sequence:
@@ -276,7 +276,7 @@ if  exist( LoadFile ,'file' )
     if  NoSession(iM)
         RequiredN   = x.nSubjects;
     else
-        RequiredN   = x.nSubjectsSessions;
+        RequiredN   = x.dataset.nSubjectsSessions;
     end
 
     if  x.S.bytes ~= RequiredN * AssumedSizeColumns * 4
@@ -296,7 +296,7 @@ else
             nNeeded         = x.nSubjects;
             nSessions       = 1;
     elseif  NoSession(iM)==0
-            nNeeded         = x.nSubjectsSessions;
+            nNeeded         = x.dataset.nSubjectsSessions;
             nSessions       = x.nSessions;
     else    error('Wrong NoSession definition');
     end

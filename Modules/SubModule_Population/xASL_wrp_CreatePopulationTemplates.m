@@ -153,9 +153,9 @@ if ~isfield(x,'GradualSkull')
     x.GradualSkull = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'));
 end
 
-if x.nSubjectsSessions<6
+if x.dataset.nSubjectsSessions<6
     % With too small datasets, created templated won't be reliable
-    fprintf('%s\n',['Too few images (' num2str(x.nSubjectsSessions) ') for creating templates/parametric images, skipping...']);
+    fprintf('%s\n',['Too few images (' num2str(x.dataset.nSubjectsSessions) ') for creating templates/parametric images, skipping...']);
     return;
 end
 
@@ -311,8 +311,8 @@ for iScanType=1:length(PreFixList)
             NoImageN = 1;
             % Searching for available images
             
-            if size(x.S.SetsID, 1)~=x.nSubjectsSessions
-                error('Mismatch between x.S.SetsID & x.nSubjectsSessions');
+            if size(x.S.SetsID, 1)~=x.dataset.nSubjectsSessions
+                error('Mismatch between x.S.SetsID & x.dataset.nSubjectsSessions');
             end
             
             LoadSetsID = logical(zeros(size(x.S.SetsID, 1), 1));
@@ -376,7 +376,7 @@ for iScanType=1:length(PreFixList)
                 % determine whether we load one image per subject or one
                 % image per session (== multiple per subject)
                 if SessionsExist(iScanType)
-                    nSize = x.nSubjectsSessions;
+                    nSize = x.dataset.nSubjectsSessions;
                 else
                     nSize = x.nSubjects;
                 end
@@ -694,10 +694,10 @@ for iU=1:length(UniqueSet)
         try
             WithinGroup = SetID==UniqueSet(iU);
 
-            if ~SessionsExist(iScanType) && length(WithinGroup)==x.nSubjectsSessions
+            if ~SessionsExist(iScanType) && length(WithinGroup)==x.dataset.nSubjectsSessions
                 % if no sessions exist, but "WithinGroup" definition was
                 % based on all subject/sessions, then correct this
-                CurrSess = [1:x.nSessions:x.nSubjectsSessions]' + (iSession-1);
+                CurrSess = [1:x.nSessions:x.dataset.nSubjectsSessions]' + (iSession-1);
                 WithinGroup = WithinGroup(CurrSess);
             end
 

@@ -77,7 +77,7 @@ for iSubject=1:x.nSubjects
     for iSession=1:x.nSessions
         iSubjSess = (iSubject-1)*x.nSessions+iSession;
         NameSubjSess = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}];
-        xASL_TrackProgress(iSubjSess, x.nSubjectsSessions);
+        xASL_TrackProgress(iSubjSess, x.dataset.nSubjectsSessions);
     
         % find current JPG
         JPGList = xASL_adm_GetFileList(x.D.ASLCheckDir, ['^Tra_qCBF_' NameSubjSess '.*'],'List', [0 Inf]);

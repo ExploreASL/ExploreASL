@@ -55,7 +55,7 @@ for iSubject=1:x.nSubjects
 
         % Track progress
         iSubjSess = (iSubject-1)*x.nSessions+iSession;
-        xASL_TrackProgress(iSubjSess,x.nSubjectsSessions);        
+        xASL_TrackProgress(iSubjSess,x.dataset.nSubjectsSessions);        
         
         % Default parameters
         TSV{1+iSubjSess,1} = x.SUBJECTS{iSubject};

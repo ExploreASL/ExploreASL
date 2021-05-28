@@ -12,7 +12,7 @@ for iSubject=1:x.nSubjects
         % Track progress
         iSubjectSession = (iSubject-1)* x.nSessions +iSession;
         x.S.SUBJECTID{iSubjectSession,1} = x.SUBJECTS{iSubject};
-        xASL_TrackProgress(iSubjectSession,x.nSubjectsSessions);
+        xASL_TrackProgress(iSubjectSession,x.dataset.nSubjectsSessions);
 
         % Collect motion
         for iMeas = 1:length(x.S.NamesROI)

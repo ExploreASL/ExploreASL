@@ -127,7 +127,7 @@ function [x] = xASL_init_LoadMetadata(x)
         
     if bCreateParticipantsTsv
         for iSession=1:x.nSessions
-            VarDataOri([iSession:x.nSessions:x.nSubjectsSessions-x.nSessions+iSession], 1) = x.SUBJECTS(:);
+            VarDataOri([iSession:x.nSessions:x.dataset.nSubjectsSessions-x.nSessions+iSession], 1) = x.SUBJECTS(:);
         end
         VarDataOri(:,2) = repmat(x.SESSIONS(:), [x.nSubjects 1]);
 

@@ -132,7 +132,7 @@ if isfield(x, 'SUBJECTS')
     iSession = find(strcmp(x.SESSIONS, x.P.SessionID));
     iSubjSess = (iSubject-1)*x.nSessions + iSession;
 
-    if size(x.S.SetsID,1)~=x.nSubjectsSessions
+    if size(x.S.SetsID,1)~=x.dataset.nSubjectsSessions
         warning('Inheritance x.S.SetsID data was not equal to numbers of Subjects/Sessions, skipping');
         return;
     end
