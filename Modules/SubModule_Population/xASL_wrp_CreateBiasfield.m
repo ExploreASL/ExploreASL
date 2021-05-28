@@ -99,8 +99,8 @@ function xASL_wrp_CreateBiasfield(x)
                 xASL_TrackProgress(iScan,nScans);
                 clear iSubSess iSub iSess FileName tNII tIM
                 iSubSess = SiteScans(iScan);
-                iSub = ceil(iSubSess/x.nSessions);
-                iSess = iSubSess- ((iSub-1)*x.nSessions);
+                iSub = ceil(iSubSess/x.dataset.nSessions);
+                iSess = iSubSess- ((iSub-1)*x.dataset.nSessions);
                 FileName = fullfile(x.D.PopDir,[CBF_prefix '_' x.SUBJECTS{iSub} '_' x.SESSIONS{iSess} '.nii']);
                 if xASL_exist(FileName,'file')
                     IM(:,:,:,ScanN) = xASL_io_Nifti2Im(FileName);
@@ -233,7 +233,7 @@ function xASL_wrp_CreateBiasfield(x)
     fprintf('%s','Backing up CBF maps:   ');
     for iSub=1:x.nSubjects
         xASL_TrackProgress(iSub,x.nSubjects);
-        for iSess=1:x.nSessions
+        for iSess=1:x.dataset.nSessions
 
             FilePath = fullfile(x.D.PopDir,[CBF_prefix '_' x.SUBJECTS{iSub} '_' x.SESSIONS{iSess} '.nii']);
             if xASL_exist(FilePath,'file')
@@ -261,8 +261,8 @@ function xASL_wrp_CreateBiasfield(x)
             xASL_TrackProgress(iScan,nScans);
             clear iSubSess iSub iSess FileName tNII tIM
             iSubSess = SiteScans(iScan);
-            iSub = ceil(iSubSess/x.nSessions);
-            iSess = iSubSess- ((iSub-1)*x.nSessions);
+            iSub = ceil(iSubSess/x.dataset.nSessions);
+            iSess = iSubSess- ((iSub-1)*x.dataset.nSessions);
 
             FileName = fullfile(x.D.PopDir,[CBF_prefix '_' x.SUBJECTS{iSub} '_' x.SESSIONS{iSess} '.nii']);
             if xASL_exist(FileName,'file')
@@ -288,8 +288,8 @@ for iSite=1:nSites
     for iScan=1:nScans
         xASL_TrackProgress(iScan,nScans);
         iSubSess = SiteScans(iScan);
-        iSub = ceil(iSubSess/x.nSessions);
-        iSess = iSubSess- ((iSub-1)*x.nSessions);
+        iSub = ceil(iSubSess/x.dataset.nSessions);
+        iSess = iSubSess- ((iSub-1)*x.dataset.nSessions);
         FileName = fullfile(x.D.PopDir,[CBF_prefix '_' x.SUBJECTS{iSub} '_' x.SESSIONS{iSess} '.nii']);
         if xASL_exist(FileName,'file')
             IM{iSite}(:,iNext(iSite)) = xASL_im_IM2Column(xASL_io_Nifti2Im(FileName),x.utils.WBmask);

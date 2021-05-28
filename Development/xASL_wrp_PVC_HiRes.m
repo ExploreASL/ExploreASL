@@ -10,7 +10,7 @@ else
     fprintf('%s\n','Creating PV-corrected CBF images using B-splines...')
 
     for iS=1:x.nSubjects % iterate over subjects
-        for iSess=1:x.nSessions % iterate over sessions
+        for iSess=1:x.dataset.nSessions % iterate over sessions
             clear CBFname pGMname CBFim pGMim CBFim pGMim CBFgmName CBFwmName
 
             CBFgmName   = fullfile( x.D.PopDir, ['q' x.P.CBF '_GM_PVEC_' x.SUBJECTS{iS} '_' x.SESSIONS{iSess} '.nii']);

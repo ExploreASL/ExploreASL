@@ -43,9 +43,9 @@ x.S.unit = 'mm';
 fprintf('%s\n',['Collecting motion metadata with ' x.S.output_ID ' statistics:  ']);
 
 for iSubject=1:x.nSubjects
-    for iSession=1:x.nSessions
+    for iSession=1:x.dataset.nSessions
         % Keeping track
-        iSubjSess = ((iSubject-1)*x.nSessions)+iSession;
+        iSubjSess = ((iSubject-1)*x.dataset.nSessions)+iSession;
         xASL_TrackProgress(iSubjSess, x.dataset.nSubjectsSessions);
 
         PathMAT = fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession} '.mat'] );

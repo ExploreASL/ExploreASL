@@ -160,18 +160,18 @@ if ~bSkipStandard
 end
 %% B2) Save FOV mask for each subject
 if x.bNativeSpaceAnalysis
-	for iSession=1:x.nSessions
+	for iSession=1:x.dataset.nSessions
 		%x.SESSIONS{iSession}
 
 		% Searching for available images
 		for iSubject = 1:x.nSubjects
-			SubjSess = (iSubject-1)*x.nSessions + iSession;
+			SubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
 
 			x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 			x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
 
-			xASL_TrackProgress(SubjSess,x.nSubjects*x.nSessions);
+			xASL_TrackProgress(SubjSess,x.nSubjects*x.dataset.nSessions);
 			if xASL_exist(x.P.Path_PWI)
 				x = xASL_adm_DefineASLResolution(x);
 				listMasks = {MaskSusceptibilityPath fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...

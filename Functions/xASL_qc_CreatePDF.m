@@ -57,7 +57,7 @@ end
 x = xASL_adm_LoadX(x, PathX, false); % assume memory x is newer than x.mat
 
 SuSeID = [x.SUBJECTS{DoSubject(1)} '_' x.SESSIONS{1}];
-iSubjSess = (DoSubject(1)-1)*x.nSessions+1;
+iSubjSess = (DoSubject(1)-1)*x.dataset.nSessions+1;
 
 PrintDir = fullfile(x.D.ROOT, x.SUBJECTS{DoSubject(1)});
 xASL_adm_CreateDir(PrintDir);

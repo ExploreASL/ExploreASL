@@ -65,12 +65,12 @@ end
 [~, x.P.SubjectID] = fileparts(x.dir.SUBJECTDIR);
 [~, ~, ~, ~, VolumeList, VolumeN] = xASL_init_LongitudinalRegistration(x);
 
-VolumeList = logical(VolumeList(x.nSessions:x.nSessions:end,1));
+VolumeList = logical(VolumeList(x.dataset.nSessions:x.dataset.nSessions:end,1));
 CurrentSub = x.SUBJECTS(VolumeList);
 
 iSubject = find(strcmp(x.SUBJECTS,x.P.SubjectID));
 iSession = 1; % append sessions to accommodate sessions in x.S.SetsID
-iSubjSess = ((iSubject-1)*x.nSessions)+iSession;
+iSubjSess = ((iSubject-1)*x.dataset.nSessions)+iSession;
 
 if ~isfield(x,'WhichLongReg') || isempty(x.WhichLongReg) || ~strcmpi(x.WhichLongReg,'DARTEL')
     x.WhichLongReg = 'LongReg'; % default
@@ -184,7 +184,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 				OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.T1c '.nii']);
 				OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.T2 '.nii']);
 
-                for iSess = 1:x.nSessions
+                for iSess = 1:x.dataset.nSessions
                     SessionDir = fullfile(x.D.ROOT,CurrentSub{iV},x.SESSIONS{iSess});
                     OtherList{end+1,1} = fullfile(SessionDir, [x.P.ASL4D '.nii']);
                     OtherList{end+1,1} = fullfile(SessionDir, [x.P.M0 '.nii']);
@@ -220,7 +220,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             % This is an optimum for modeling deformations & computation time spent
 
             if  isfield(x, 'iSetAge')
-                IndicesN    = [iSubjSess:x.nSessions:iSubjSess+x.nSessions*(length(CurrentSub)-1)];
+                IndicesN    = [iSubjSess:x.dataset.nSessions:iSubjSess+x.dataset.nSessions*(length(CurrentSub)-1)];
                 AgeN        = x.S.SetsID( IndicesN ,x.iSetAge);
             else
                 AgeN        = [50:4.5:(50+4.5*(length(CurrentSub)-1))];

@@ -34,10 +34,10 @@ function x = xASL_stat_GetAcquisitionTime(x)
     %% 1) Collect times
     fprintf('%s\n','Loading AcquisitionTimes:  ');
     for iSubject=1:x.nSubjects
-        for iSession=1:x.nSessions
+        for iSession=1:x.dataset.nSessions
             
             % Track progress
-            iSubjSess = ((iSubject-1)*x.nSessions)+iSession;
+            iSubjSess = ((iSubject-1)*x.dataset.nSessions)+iSession;
             xASL_TrackProgress(iSubjSess,x.dataset.nSubjectsSessions);
 
             % Initialize defaults

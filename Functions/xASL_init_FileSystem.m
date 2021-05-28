@@ -66,7 +66,7 @@ if isfield(x,'SESSIONDIR')
     x.iSession = find(cellfun(@(y) strcmp(y, x.P.SessionID), x.SESSIONS));
 end
 if isfield(x,'iSubject') && isfield(x,'iSession')
-    x.iSubjectSession = (x.iSubject-1)*x.nSessions + x.iSession; % It goes Sub1Sess1, Sub1Sess2, Sub2Sess1, Sub2Sess2, Sub3Sess1...
+    x.iSubjectSession = (x.iSubject-1)*x.dataset.nSessions + x.iSession; % It goes Sub1Sess1, Sub1Sess2, Sub2Sess1, Sub2Sess2, Sub3Sess1...
 end
 
 

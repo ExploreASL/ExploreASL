@@ -38,10 +38,10 @@ end
 if nargin<3 || isempty(iSubjectSession)
     fprintf('Creating QC parameters:   ');
     iSubject = 1:x.nSubjects;
-    iSession = 1:x.nSessions;
-    iSubjectSession = ((iSubject-1)*x.nSessions)+iSession;
+    iSession = 1:x.dataset.nSessions;
+    iSubjectSession = ((iSubject-1)*x.dataset.nSessions)+iSession;
 else % when running for all scans
-    [iSubject(1), iSession(1)] = xASL_adm_ConvertSubjSess2Subj_Sess(x.nSessions, iSubjectSession);
+    [iSubject(1), iSession(1)] = xASL_adm_ConvertSubjSess2Subj_Sess(x.dataset.nSessions, iSubjectSession);
 end
 
 TemplateIM(~x.utils.skull) = NaN;

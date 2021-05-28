@@ -297,7 +297,7 @@ else
             nSessions       = 1;
     elseif  NoSession(iM)==0
             nNeeded         = x.dataset.nSubjectsSessions;
-            nSessions       = x.nSessions;
+            nSessions       = x.dataset.nSessions;
     else    error('Wrong NoSession definition');
     end
 

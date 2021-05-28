@@ -49,8 +49,8 @@ else
 
     for iS=1:x.nSubjects
         xASL_TrackProgress(iS,x.nSubjects);
-        for iSess=1:x.nSessions
-            iSubjSess   = (iS-1)*x.nSessions+iSess;
+        for iSess=1:x.dataset.nSessions
+            iSubjSess   = (iS-1)*x.dataset.nSessions+iSess;
 
             FileN{1}   = xASL_adm_GetFileList(x.D.PopDir,['^PWI_part1_' x.SUBJECTS{iS} '_' x.SESSIONS{iSess} '\.(nii|nii\.gz)$'],'FPListRec',[0 Inf]);
             FileN{2}   = xASL_adm_GetFileList(x.D.PopDir,['^PWI_part2_' x.SUBJECTS{iS} '_' x.SESSIONS{iSess} '\.(nii|nii\.gz)$'],'FPListRec',[0 Inf]);

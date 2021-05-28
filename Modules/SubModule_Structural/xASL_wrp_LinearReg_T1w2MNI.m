@@ -57,7 +57,7 @@ for iS=1:length(Lesion_ROI_list)
     OtherList{end+1,1} = Lesion_ROI_list{iS};
 end
 % Add ASL images to the registration list
-for iSess = 1:x.nSessions
+for iSess = 1:x.dataset.nSessions
     OtherList{end+1,1} = x.P.Path_ASL4D;
     OtherList{end+1,1} = x.P.Path_M0;
     OtherList{end+1,1} = x.P.Path_ASL4D_RevPE;

@@ -10,14 +10,14 @@ if  isfield(x.S,'SetsID')
         TempID  = x.S.SetsID;
         x.S = rmfield(x.S,'SetsID');
         for iSubject=1:x.nSubjects
-             x.S.SetsID(iSubject,:) = TempID( ((iSubject-1)*x.nSessions)+1,:);
+             x.S.SetsID(iSubject,:) = TempID( ((iSubject-1)*x.dataset.nSessions)+1,:);
         end
     end
 end
 
 % Initiation parameters for xASL_wrp_PermuteSets1
 
-x.nSessions = 1;
+x.dataset.nSessions = 1;
 x.S.KISS = 1; % keeps it simple
 x.S.StatsDir = x.S.StatsDir;
 x.S.function2call = @xASL_stat_PrintBasicStats;

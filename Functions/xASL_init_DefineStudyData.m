@@ -114,7 +114,7 @@ end
 
 % ------------------------------------------------------------------------------------------------
 %% 3) Create list of total baseline & follow-up subjects, before exclusions
-x.nSessions = length(x.SESSIONS);
+x.dataset.nSessions = length(x.SESSIONS);
 x.SUBJECTS = x.dataset.TotalSubjects; % temporarily for xASL_init_LongitudinalRegistration
 x.nSubjects = length(x.SUBJECTS);
 
@@ -136,7 +136,7 @@ end
 
 for iSubj=1:x.dataset.nTotalSubjects
     iSess=1;
-    iSubjSess = (iSubj-1)*x.nSessions + iSess;
+    iSubjSess = (iSubj-1)*x.dataset.nSessions + iSess;
     x.dataset.TimePointTotalSubjects{TimePoint(iSubjSess)}{end+1} = x.dataset.TotalSubjects{iSubj};
 end
     
@@ -181,10 +181,10 @@ for iSubject=1:x.dataset.nTotalSubjects
          % include subject if not to be excluded, and if it doesn't have
          % same name as pipeline directories     
          x.SUBJECTS{end+1}  = x.dataset.TotalSubjects{iSubject};
-         x.dataset.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1) = 1;
+         x.dataset.TotalInclusionList( (iSubject-1)*x.dataset.nSessions+1:iSubject*x.dataset.nSessions,1) = 1;
          ListNoPipelineDir(iSubject) = 1;
     else
-        x.dataset.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1) = 0;
+        x.dataset.TotalInclusionList( (iSubject-1)*x.dataset.nSessions+1:iSubject*x.dataset.nSessions,1) = 0;
         ListNoPipelineDir(iSubject) = 1;
     end
 end
@@ -202,8 +202,8 @@ end
 x.nSubjects = length(x.SUBJECTS);
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 x.dataset.nExcluded = x.dataset.nTotalSubjects - x.nSubjects;
-x.nSessions = length( x.SESSIONS );
-x.dataset.nSubjectsSessions = x.nSubjects .* x.nSessions;
+x.dataset.nSessions = length( x.SESSIONS );
+x.dataset.nSubjectsSessions = x.nSubjects .* x.dataset.nSessions;
 
 x.dataset.nTimePointsTotal = length(x.dataset.TimePointTotalSubjects);
 for iT=1:x.dataset.nTimePointsTotal
@@ -212,7 +212,7 @@ end
 
 % ------------------------------------------------------------------------------------------------
 %% 6) Add sessions as statistical variable, if they exist
-if x.nSessions>1  % if there are sessions (more than 1 session), then sessions=1st set
+if x.dataset.nSessions>1  % if there are sessions (more than 1 session), then sessions=1st set
 
     % Predefine SETS to avoid empty SETS & import predefined session settings as set settings
     x.S.SetsName{1} = 'session';
@@ -228,15 +228,15 @@ if x.nSessions>1  % if there are sessions (more than 1 session), then sessions=1
     if  isfield(x.session,'options')
         x.S.SetsOptions{1} = x.session.options; % with session options (e.g. morning, evening 2nd morning)
     else
-        for iS=1:x.nSessions
+        for iS=1:x.dataset.nSessions
             x.S.SetsOptions{1}{iS} = ['ASL_' num2str(iS)];
         end
     end        
     
     % Create ID/data for session numbers
     for iSubj=1:x.nSubjects
-        for iSess=1:x.nSessions
-            iSubjSess = (iSubj-1)*x.nSessions+iSess;
+        for iSess=1:x.dataset.nSessions
+            iSubjSess = (iSubj-1)*x.dataset.nSessions+iSess;
             
             x.S.SetsID(iSubjSess,1) = iSess;
         end
@@ -247,7 +247,7 @@ end
 %% 7) Parallelization: If running parallel, select cases for this worker
 if x.opts.nWorkers>1
     nSubjPerWorker = ceil(x.nSubjects/x.opts.nWorkers); % ceil to make sure all subjects are processed
-    nSubjSessPerWorker = nSubjPerWorker*x.nSessions;
+    nSubjSessPerWorker = nSubjPerWorker*x.dataset.nSessions;
     iStartSubject = (x.opts.iWorker-1)*nSubjPerWorker+1;
     iEndSubject = min(x.opts.iWorker*nSubjPerWorker, x.nSubjects);
     iStartSubjectSession = (x.opts.iWorker-1)*nSubjSessPerWorker+1;
@@ -261,7 +261,7 @@ if x.opts.nWorkers>1
     % Adapt SUBJECTS
     x.SUBJECTS = x.SUBJECTS(iStartSubject:iEndSubject);
     x.nSubjects = length(x.SUBJECTS);
-    x.dataset.nSubjectsSessions = x.nSubjects*x.nSessions;
+    x.dataset.nSubjectsSessions = x.nSubjects*x.dataset.nSessions;
 
     % Adapt SETSID (covariants)
     if isfield(x.S,'SetsID') && ~isempty(x.S.SetsID)
@@ -366,7 +366,7 @@ end
     
 for iS=1:x.nSubjects
     iSession = 1; % append to accommodate sessions in SetsID
-    iSubjSess = ((iS-1)*x.nSessions)+iSession;
+    iSubjSess = ((iS-1)*x.dataset.nSessions)+iSession;
     CurrentTimePoint = x.S.SetsID(iSubjSess,x.S.iSetLong_TP);
     if length(x.dataset.TimePointSubjects)<CurrentTimePoint % if this cell didn't exist yet
         x.dataset.TimePointSubjects{CurrentTimePoint} = ''; 

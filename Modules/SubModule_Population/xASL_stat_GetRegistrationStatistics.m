@@ -51,10 +51,10 @@ TSV(1,3:2+nFields) = jsonFields(1:nFields);
 fprintf('%s\n','Loading & saving individual parameter files...  ');
 
 for iSubject=1:x.nSubjects
-    for iSession=1:x.nSessions
+    for iSession=1:x.dataset.nSessions
 
         % Joint index for subject and session
-        iSubjSess = (iSubject-1)*x.nSessions+iSession;
+        iSubjSess = (iSubject-1)*x.dataset.nSessions+iSession;
 		
 		% Track progress
         xASL_TrackProgress(iSubjSess,x.dataset.nSubjectsSessions);        

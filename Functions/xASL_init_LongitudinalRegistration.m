@@ -42,8 +42,8 @@ function [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume] = xASL_init
 
 %% Administration
 % if no sessions are defined yet, assume one session only
-if ~isfield(x,'nSessions')
-    x.nSessions = length(x.SESSIONS);
+if ~isfield(x.dataset,'nSessions')
+    x.dataset.nSessions = length(x.SESSIONS);
 end
 
 %%  1) Get TimePoint-list (list of visits)
@@ -77,8 +77,8 @@ else
             % if no index suffix, then assume first TimePoint (default)
         end
 
-        iSubjSessAll = [(iS-1)*x.nSessions+1:iS*x.nSessions];
-        PreviousSubjSess =  (iS-1)*x.nSessions;
+        iSubjSessAll = [(iS-1)*x.dataset.nSessions+1:iS*x.dataset.nSessions];
+        PreviousSubjSess =  (iS-1)*x.dataset.nSessions;
         SubjectNameList(iSubjSessAll,1) = {CurrentSubjName};
 
         if ~exist('SubjectNlist','var')
@@ -109,7 +109,7 @@ if isfield(x, 'P')
     if isfield(x.P, 'SubjectID')
         iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID));
         % Subject session id number for the first session,, to accommodate that x.S.SetsID can contain sessions
-        iSubjSess = (iSubject-1) * x.nSessions+1;  
+        iSubjSess = (iSubject-1) * x.dataset.nSessions+1;  
 
         Indices = find(x.P.SubjectID=='_');
         if ~isempty(Indices)
@@ -135,7 +135,7 @@ if isfield(x, 'P')
 
         % find first volume/time point
         IndexFirstSubject = find(VolumeList(:,2)==min(VolumeN));
-        iSubj = xASL_adm_ConvertSubjSess2Subj_Sess(x.nSessions, IndexFirstSubject);
+        iSubj = xASL_adm_ConvertSubjSess2Subj_Sess(x.dataset.nSessions, IndexFirstSubject);
         SubjectID_FirstVolume = x.SUBJECTS{iSubj};
     end
 end

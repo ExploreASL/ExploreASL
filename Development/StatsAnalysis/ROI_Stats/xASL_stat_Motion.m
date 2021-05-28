@@ -7,10 +7,10 @@ function [x] = xASL_stat_Motion(x)
 % Restructure DATA per ROI/measurement
 fprintf('%s\n','Restructure DATA per ROI/measurement');
 for iSubject=1:x.nSubjects
-    for iSession=1:x.nSessions
+    for iSession=1:x.dataset.nSessions
 
         % Track progress
-        iSubjectSession = (iSubject-1)* x.nSessions +iSession;
+        iSubjectSession = (iSubject-1)* x.dataset.nSessions +iSession;
         x.S.SUBJECTID{iSubjectSession,1} = x.SUBJECTS{iSubject};
         xASL_TrackProgress(iSubjectSession,x.dataset.nSubjectsSessions);
 

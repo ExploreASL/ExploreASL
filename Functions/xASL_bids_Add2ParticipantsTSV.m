@@ -127,8 +127,8 @@ if exist(PathTSV, 'file')
 else
     % 3C) Create required columns subjects & sessions from x.SUBJECTS & x.SESSIONS
 
-    for iSession=1:x.nSessions
-        CellArray(1+iSession:x.nSessions:x.dataset.nSubjectsSessions+1, 1) = x.SUBJECTS;
+    for iSession=1:x.dataset.nSessions
+        CellArray(1+iSession:x.dataset.nSessions:x.dataset.nSubjectsSessions+1, 1) = x.SUBJECTS;
     end
     CellArray(2:x.dataset.nSubjectsSessions+1, 2) = repmat(x.SESSIONS(:),[x.nSubjects, 1]);
 end

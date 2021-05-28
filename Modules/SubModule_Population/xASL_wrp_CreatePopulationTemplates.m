@@ -284,7 +284,7 @@ for iScanType=1:length(PreFixList)
     UnAvailable = 0;
     
     fprintf('%s\n', ['Searching ' TemplateNameList{iScanType} ' images:']);
-    for iSession=1:x.nSessions % iterate over sessions
+    for iSession=1:x.dataset.nSessions % iterate over sessions
 
         if iSession==1 && ~SessionsExist(iScanType)
                 % For structural scans, there is no session appendix
@@ -323,8 +323,8 @@ for iScanType=1:length(PreFixList)
             % ----------------------------------------------------------------------------------------------------
             %% 3. Check availability images          
             for iSubject = 1:x.nSubjects
-                SubjSess = (iSubject-1)*x.nSessions + iSession;
-                xASL_TrackProgress(SubjSess,x.nSubjects*x.nSessions);
+                SubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
+                xASL_TrackProgress(SubjSess,x.nSubjects*x.dataset.nSessions);
                 PathNII = fullfile(x.D.PopDir,[PreFixList{iScanType} '_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Left = fullfile(x.D.PopDir,[PreFixList{iScanType} '-L_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Right = fullfile(x.D.PopDir,[PreFixList{iScanType} '-R_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
@@ -472,7 +472,7 @@ for iScanType=1:length(PreFixList)
                 end % bSkipWhenMissingScans && UnAvailable>0.10*nSize
             end % bSkipWhenMissingScans && isempty(LoadFiles)
         end % if bProceedThisSession
-    end % for iSession=1:x.nSessions
+    end % for iSession=1:x.dataset.nSessions
     fprintf('\n');
     if UnAvailable>0
         fprintf('%s\n',[num2str(UnAvailable) ' ' PreFixList{iScanType} ' files missing']);
@@ -697,7 +697,7 @@ for iU=1:length(UniqueSet)
             if ~SessionsExist(iScanType) && length(WithinGroup)==x.dataset.nSubjectsSessions
                 % if no sessions exist, but "WithinGroup" definition was
                 % based on all subject/sessions, then correct this
-                CurrSess = [1:x.nSessions:x.dataset.nSubjectsSessions]' + (iSession-1);
+                CurrSess = [1:x.dataset.nSessions:x.dataset.nSubjectsSessions]' + (iSession-1);
                 WithinGroup = WithinGroup(CurrSess);
             end
 

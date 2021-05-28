@@ -135,7 +135,7 @@ bContinue = true;
 if x.SkipIfNoFlair && ~xASL_exist(x.P.Path_FLAIR,'file')
     bContinue = false;
 end
-for iSess=1:x.nSessions % need to define various ASL4D_session files still
+for iSess=1:x.dataset.nSessions % need to define various ASL4D_session files still
     if ~xASL_exist(x.P.Path_ASL4D,'file') && x.SkipIfNoASL
        bContinue = false;
     elseif ~xASL_exist(x.P.Path_M0,'file') && x.SkipIfNoM0

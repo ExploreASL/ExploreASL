@@ -130,7 +130,7 @@ if isfield(x, 'SUBJECTS')
     % Find current index
     iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID));
     iSession = find(strcmp(x.SESSIONS, x.P.SessionID));
-    iSubjSess = (iSubject-1)*x.nSessions + iSession;
+    iSubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
 
     if size(x.S.SetsID,1)~=x.dataset.nSubjectsSessions
         warning('Inheritance x.S.SetsID data was not equal to numbers of Subjects/Sessions, skipping');

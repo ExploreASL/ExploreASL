@@ -72,7 +72,7 @@ if nargin<3 || isempty(bHasMoCo)
     iSubject = 1;
     while iSubject<=x.nSubjects && ~bHasMoCo % speeds up instead of for-loop
         CurrentSubject = iSubject;
-        for iSession=1:x.nSessions
+        for iSession=1:x.dataset.nSessions
             if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'ASL4D.mat'))
                 bHasMoCo = true;
             else
@@ -91,7 +91,7 @@ if nargin<4 || isempty(bHasM0)
     iSubject = 1;
     while iSubject<=x.nSubjects && ~bHasM0 % speeds up instead of for-loop
         CurrentSubject = iSubject;        
-        for iSession=1:x.nSessions
+        for iSession=1:x.dataset.nSessions
             if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'M0.nii'))
                 bHasM0 = true;
             else
@@ -286,8 +286,8 @@ fprintf('ASL files:   ');
 for iExp=1:length(NativeRegExp_SessionLevel)
     xASL_TrackProgress(iExp,length(NativeRegExp_SessionLevel));
     for iSubject=1:x.nSubjects
-        for iSession=1:x.nSessions
-            iSubjectSession = (iSubject-1)*x.nSessions+iSession;
+        for iSession=1:x.dataset.nSessions
+            iSubjectSession = (iSubject-1)*x.dataset.nSessions+iSession;
             FilePathNii    = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, NativeRegExp_SessionLevel{iExp});
 
             if ~xASL_exist(FilePathNii,'file')
@@ -337,8 +337,8 @@ fprintf('ASL files:   ');
 for iPrefix=1:length(MNI_session_prefix)
     xASL_TrackProgress(iPrefix,length(MNI_session_prefix));
     for iSubject=1:x.nSubjects
-        for iSession=1:x.nSessions
-            iSubjectSession = (iSubject-1)*x.nSessions+iSession;
+        for iSession=1:x.dataset.nSessions
+            iSubjectSession = (iSubject-1)*x.dataset.nSessions+iSession;
             if NativeSessionExist(iSubjectSession,1)
                 FilePathNii    = fullfile(x.D.PopDir, [MNI_session_prefix{iPrefix} '_' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession} '.nii']);
 
@@ -378,7 +378,7 @@ for iDIR=1:length(lockDIRS)
         else % status file for each Subject/Session
             for iSubject=1:x.nSubjects
                 if  strcmp(lockDIRS{iDIR},'xASL_module_ASL')
-                    for iSession=1:x.nSessions % check sessions
+                    for iSession=1:x.dataset.nSessions % check sessions
                         FilePath = fullfile(LockDir, lockDIRS{iDIR}, x.SUBJECTS{iSubject}, [lockDIRS{iDIR} '_' x.SESSIONS{iSession}],[lockPrefix{iDIR}{iP} '.status']);
                         if ~exist(FilePath,'file')
                             fprintf(SummaryFid_{5},'%s\n', FilePath);
@@ -426,7 +426,7 @@ fprintf('\n');
 %             else
 % 
 %                 for iSubject=1:x.nSubjects
-%                     for iSession=1:x.nSessions
+%                     for iSession=1:x.dataset.nSessions
 % 
 %                         if  iT==2 % if it concerns sessions
 %                             SearchFile  = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}];

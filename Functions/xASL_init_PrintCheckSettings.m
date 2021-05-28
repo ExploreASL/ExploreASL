@@ -58,7 +58,7 @@ function x = xASL_init_PrintCheckSettings(x)
             num2str(x.dataset.nTimePointSubjects(iT)) ' scans']);
     end
 
-    fprintf('%s\n',['ASL sessions: ' num2str(x.nSessions)]);
+    fprintf('%s\n',['ASL sessions: ' num2str(x.dataset.nSessions)]);
 
     fprintf('\n%s','Ancillary data, sets: ');
     if isfield(x.S,'SetsID')

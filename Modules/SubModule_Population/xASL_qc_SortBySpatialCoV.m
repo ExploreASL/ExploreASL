@@ -74,8 +74,8 @@ xASL_delete(DirUnknown_sCoV, true);
 %% Move the images
 fprintf('Sorting ASLCheck QC images for spatial CoV:   ');
 for iSubject=1:x.nSubjects
-    for iSession=1:x.nSessions
-        iSubjSess = (iSubject-1)*x.nSessions+iSession;
+    for iSession=1:x.dataset.nSessions
+        iSubjSess = (iSubject-1)*x.dataset.nSessions+iSession;
         NameSubjSess = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}];
         xASL_TrackProgress(iSubjSess, x.dataset.nSubjectsSessions);
     

@@ -126,8 +126,8 @@ function [x] = xASL_init_LoadMetadata(x)
     end
         
     if bCreateParticipantsTsv
-        for iSession=1:x.nSessions
-            VarDataOri([iSession:x.nSessions:x.dataset.nSubjectsSessions-x.nSessions+iSession], 1) = x.SUBJECTS(:);
+        for iSession=1:x.dataset.nSessions
+            VarDataOri([iSession:x.dataset.nSessions:x.dataset.nSubjectsSessions-x.dataset.nSessions+iSession], 1) = x.SUBJECTS(:);
         end
         VarDataOri(:,2) = repmat(x.SESSIONS(:), [x.nSubjects 1]);
 
@@ -391,7 +391,7 @@ for iS=1:x.nSubjects
     end
     
     
-    for iSess=1:x.nSessions
+    for iSess=1:x.dataset.nSessions
         if DataColumn==3 && length(SubjectIndex)>1
             % if there are sessions, account for them
             iG = find(strcmp(VarContent(SubjectIndex,2),x.SESSIONS{iSess}));
@@ -613,10 +613,10 @@ end
 CountAbsent = 0;
 
 for iSubject=1:x.nSubjects
-    for iSess=1:x.nSessions
+    for iSess=1:x.dataset.nSessions
 
         % ID (which name, group etc), all for identification
-        iSubjSess = (iSubject-1)* x.nSessions +iSess;
+        iSubjSess = (iSubject-1)* x.dataset.nSessions +iSess;
 
         % For each group, create an additional set
         % NB: at least all subjects/sessions that are used should be 
@@ -670,7 +670,7 @@ for iSubject=1:x.nSubjects
                 end % if isempty(index2) | index2==0
             end % if ~ContainsSessions
         end % if  max(isempty(index1) | index1==0
-    end % for iSess=1:x.nSessions
+    end % for iSess=1:x.dataset.nSessions
 end % for iSubj=1:x.nSubjects
 
 
