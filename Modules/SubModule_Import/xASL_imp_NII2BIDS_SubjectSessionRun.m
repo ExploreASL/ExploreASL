@@ -40,6 +40,9 @@ function xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectSe
     % Load the JSON
     jsonDicom = spm_jsonread(fullfile(inSessionPath, [aslLabel '.json']));
 	headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
+	
+	%jsonLocal = xASL_bids_JsonBIDSifyASL(jsonDicom, studyPar, headerASL);
+	
 	dimASL = headerASL.dat.dim;
 	if length(dimASL) < 4
 		dimASL(4) = 1;
@@ -324,10 +327,6 @@ function xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectSe
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Define the M0 type
-    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectSessionLabel);
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % If Post-labeling delay or labeling duration is longer than 1, but shorter then number of volumes then repeat it
     listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVENC','FlipAngle','RepetitionTimePreparation'};
     for iRepeat = 1:length(listFieldsRepeat)
@@ -391,8 +390,8 @@ function xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectSe
                 warning(['Had to set non-zero values for m0scan to zero in ' listFieldsZero{iRepeat}]);
             end
         end
-    end
-
+	end
+	
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Verify that TotalAcquiredPairs is a reasonable number
 
@@ -420,23 +419,9 @@ function xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectSe
                 warning('Cannot calculte TotalAcquiredPairs when control and label numbers differ');
             end
         end
-    end
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Remove the AslContext field and save it as a separate file
-	filenameTSV = [aslOutLabel '_' bidsPar.strAslContext '.tsv'];
-	[pathTSV,~,~] = fileparts(filenameTSV);
-	if ~exist(pathTSV,'dir')
-		mkdir(pathTSV);
 	end
-    fContext = fopen(filenameTSV,'w+');
-    fwrite(fContext,sprintf('volume_type\n'));
-    fwrite(fContext,jsonLocal.ASLContext);
-    fclose(fContext);
 
-    jsonLocal = rmfield(jsonLocal,'ASLContext');
-
-    if isfield(jsonLocal,'BolusCutOffFlag') && jsonLocal.BolusCutOffFlag
+	if isfield(jsonLocal,'BolusCutOffFlag') && jsonLocal.BolusCutOffFlag
         if isfield(jsonLocal,'BolusCutOffTechnique') && strcmpi(jsonLocal.BolusCutOffTechnique,'Q2TIPS')
             if ~isfield(jsonLocal,'BolusCutOffDelayTime') || length(jsonLocal.BolusCutOffDelayTime)~=2
                 warning('Q2TIPS BolusCutOff has to have 2 values defined');
@@ -444,6 +429,10 @@ function xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectSe
         end
 	end
 
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% Define the M0 type
+    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectSessionLabel);
+		
 	if iRun == 1
         for nn = 1:2
             if nn == 1
@@ -585,6 +574,20 @@ function xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectSe
         end
 	end
 	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Remove the AslContext field and save it as a separate file
+	filenameTSV = [aslOutLabel '_' bidsPar.strAslContext '.tsv'];
+	[pathTSV,~,~] = fileparts(filenameTSV);
+	if ~exist(pathTSV,'dir')
+		mkdir(pathTSV);
+	end
+    fContext = fopen(filenameTSV,'w+');
+    fwrite(fContext,sprintf('volume_type\n'));
+    fwrite(fContext,jsonLocal.ASLContext);
+    fclose(fContext);
+
+    jsonLocal = rmfield(jsonLocal,'ASLContext');
+	
 	%% Save the JSON and NII to final location for ASL
 	if jsonLocal.scaleFactor || (dimASL(4) == 1)
 		imNii = xASL_io_Nifti2Im(fullfile(inSessionPath,[aslLabel '.nii']));
@@ -608,8 +611,4 @@ function xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectSe
     jsonLocal = xASL_bids_JsonCheck(jsonLocal,'ASL');
     spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
 
-
 end
-
-
-
