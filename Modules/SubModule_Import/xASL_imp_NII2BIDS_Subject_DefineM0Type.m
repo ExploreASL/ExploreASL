@@ -1,24 +1,24 @@
-function [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectSessionLabel)
+function [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, pathM0, linkM0prefix)
 %xASL_imp_NII2BIDS_Subject_DefineM0Type Define M0 Type.
 %
-% FORMAT: [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectSessionLabel)
+% FORMAT: [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, pathM0, linkM0prefix)
 % 
 % INPUT:
 %   studyPar            - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
 %   bidsPar             - Output of xASL_imp_Config (STRUCT, REQUIRED)
 %   jsonLocal           - jsonLocal struct (STRUCT, REQUIRED)
-%   inSessionPath       - inSession path (CHAR ARRAY, PATH, REQUIRED)
-%   subjectSessionLabel - subject-session label (CHAR ARRAY, REQUIRED)
+%   pathM0              - path to the M0 file (CHAR ARRAY, PATH, REQUIRED)
+%   linkM0prefix        - part of the link to M0 for the intendedFor field, containing the 'perf/subject_session' (CHAR ARRAY, REQUIRED)
 %
 % OUTPUT:
 %   jsonLocal      - jsonLocal struct (STRUCT, REQUIRED)
 %   bJsonLocalM0isFile    - JSON local M0 is file (BOOLEAN)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Define M0 Type.
+% DESCRIPTION: Define M0 Type
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, inSessionPath, subjectSessionLabel);
+% EXAMPLE:     [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, pathM0, linkM0prefix);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -28,8 +28,8 @@ function [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Typ
         if isfield(studyPar,'M0PositionInASL4D') && (max(studyPar.M0PositionInASL4D(:))>0)
             jsonLocal.M0 = true;
             jsonLocal.M0Type = bidsPar.strM0Included;
-        elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
-            jsonLocal.M0 = fullfile(bidsPar.strPerfusion,['sub-' subjectSessionLabel]);
+        elseif xASL_exist(pathM0)
+            jsonLocal.M0 = linkM0prefix;
             jsonLocal.M0Type = bidsPar.strM0Separate;
             bJsonLocalM0isFile = 1;
         else
@@ -52,7 +52,7 @@ function [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Typ
                 if isnumeric(studyPar.M0)
                     jsonLocal.M0Type = bidsPar.strM0Estimate;
                     jsonLocal.M0Estimate = studyPar.M0;
-                elseif xASL_exist(fullfile(inSessionPath,'M0.nii'))
+                elseif xASL_exist(pathM0)
                     jsonLocal.M0Type = bidsPar.strM0Separate;
                 elseif ~isfield(jsonLocal, 'ASLContext')
                     warning('jsonLocal.ASLContext missing, this may crash');

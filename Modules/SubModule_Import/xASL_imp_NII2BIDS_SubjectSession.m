@@ -18,13 +18,15 @@ function xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, listSessions
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: NII2BIDS conversion for a single sessions.
 % 
+% 1. Make a subject directory
+% 2. Iterate over runs
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     n/a
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% 3.1 Make a subject directory
+    %% 1. Make a subject directory
     if length(listSessions)>1
         sessionLabel = ['ses-' listSessions{iSession}(5:end)];
 
@@ -53,12 +55,9 @@ function xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, listSessions
     % Check if there are multiple runs per session
     listRuns = xASL_adm_GetFileList(inSessionPath,'^ASL4D_\d.nii+$',false,[],false);
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% 3.2 Iterate over runs
+    %% 2. Iterate over runs
     for iRun = 1:(max(length(listRuns),1))
-        xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, [subjectLabel sessionLabel], nameSubject, listSessions{iSession}, inSessionPath, outSessionPath, listRuns, iRun);
+        xASL_imp_NII2BIDS_SubjectSessionRun(bidsPar, studyPar, [subjectLabel sessionLabel], inSessionPath, outSessionPath, listRuns, iRun);
     end
 
 end
-
-

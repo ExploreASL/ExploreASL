@@ -91,6 +91,7 @@ bidsPar.strM0Included = 'Included';
 bidsPar.strM0Estimate = 'Estimate';
 bidsPar.strM0Absent   = 'Absent';
 bidsPar.strPerfusion = 'perf';
+bidsPar.strFmap = 'fmap';
 
 bidsPar.sidecarName = {'.json' '_aslcontext.tsv' '_labeling.jpg'};
 bidsPar.sidecarRequired =[1 0 0];

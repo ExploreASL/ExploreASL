@@ -26,7 +26,6 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubject)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% 1. Initialize
     
     subjectLabel = xASL_adm_CorrectName(nameSubject,2);
@@ -36,7 +35,6 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubject)
 		mkdir(fullfile(imPar.BidsRoot,['sub-' subjectLabel]));
 	end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% 2. Process all the anatomical files
     % Go throught the list of anat files
     for iAnatType = bidsPar.listAnatTypes
@@ -75,7 +73,6 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubject)
         end
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% 3. Process the perfusion files
     listSessions = xASL_adm_GetFileList(fullfile(imPar.TempRoot,nameSubject),'^ASL.+$',false,[],true);
 

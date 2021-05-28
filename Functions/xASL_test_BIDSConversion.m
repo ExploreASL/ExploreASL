@@ -15,7 +15,7 @@ function xASL_test_BIDSConversion(baseDirImport, baseDirReference, bImport, bCom
 % DESCRIPTION:
 % Runs the DICOM to ASL-BIDS import for all data in the baseDirImport directory. Study directories are supposed to be in, containing a 'sourcedata' folder - this folder
 % can contain subject directories and also sourceStructure.json and studyPar.json specifying the directory structure and the additional study parameters, respectively.
-% The import creates first the 'analysis' subfolder with data after dcm2nii and with all tags read and saved to JSON. Then it assembles everything with the
+% The import creates first the 'temp' subfolder with data after dcm2nii and with all tags read and saved to JSON. Then it assembles everything with the
 % studyParameters and makes sure all is in BIDS format and saves it correctly in the 'rawdata' subdirectory.
 %
 % This function runs the following sections:
@@ -64,7 +64,7 @@ if bImport
         
         %% 2. DICOM -> NII+JSON (i.e. dcm2niiX)
         xASL_module_Import(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [1 0 0], false, true, false, false, x);
-        DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
+        DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
         
         %% 3. Manual curation for certain flavors
 		switch (flavorList{iFlavor})
@@ -79,7 +79,7 @@ if bImport
 				
             % 3b. 'Philips_PCASL_3DGRASE_R5.4_TopUp'
 			case 'Philips_PCASL_3DGRASE_R5.4_TopUp'
-                DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'analysis', 'Sub1', 'ASL_1');
+                DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
                 
 				xASL_Move(fullfile(DirASL, 'M0_601_00001.nii'), fullfile(DirASL, 'M0.nii'), 1);
 				xASL_Move(fullfile(DirASL, 'M0_601_00001.json'), fullfile(DirASL, 'M0.json'), 1);
