@@ -101,60 +101,7 @@ if iRun == 1 % For first run process also M0, for the second run, only reference
 		
 		% If M0, then copy M0 and add ASL path to the IntendedFor
 		if xASL_exist([pathM0In '.nii'])
-			if ~isempty(regexpi(jsonDicom.Manufacturer,'Philips'))
-				jsonM0.scaleFactor = xASL_adm_GetPhilipsScaling(jsonM0,xASL_io_ReadNifti([pathM0In '.nii']));
-			else
-				jsonM0.scaleFactor = 0;
-			end
-
-			imM0   = xASL_io_Nifti2Im([pathM0In '.nii']);
-			if jsonM0.scaleFactor
-				imM0 = imM0 .* jsonM0.scaleFactor;
-			end
-
-			% Check echo time, for vectors
-			if isfield(jsonM0,'EchoTime') && length(jsonM0.EchoTime)>1
-				% Remove zero entries
-				jsonM0.EchoTime = jsonM0.EchoTime(jsonM0.EchoTime ~= 0);
-			end
-
-			if isfield(studyPar,'TotalReadoutTime')
-				jsonM0.TotalReadoutTime = studyPar.TotalReadoutTime;
-			end
-				
-			if isfield(jsonLocal,'SliceTiming')
-				% Issue a warning if the SliceTiming was already existing for M0, but still overwrite with ASL one
-				if isfield(jsonM0,'SliceTiming')
-					warning('SliceTiming already existed for M0, overwriting with ASL');
-				end
-
-				if headerASL.dat.dim(3) == size(imM0,3)
-					% Either copy if the save number of slices in M0 as in ASL
-					jsonM0.SliceTiming = jsonLocal.SliceTiming;
-				else
-					% Or recalculate for M0 if the number of slices differ
-					jsonM0.SliceTiming = ((0:(size(imM0,3)-1))')*(jsonLocal.SliceTiming(2)-jsonLocal.SliceTiming(1));
-				end
-			else
-				if isfield(jsonM0,'SliceTiming')
-					jsonM0 = rmfield(jsonM0,'SliceTiming');
-					warning('Removing pre-existing SliceTiming from M0, as there was no SliceTiming for ASL');
-				end
-			end
-
-			jsonM0.RepetitionTimePreparation = jsonM0.RepetitionTime;
-
-			% if scaling modified then save instead of move
-			if jsonM0.scaleFactor || size(imM0,4) == 1
-				xASL_io_SaveNifti([pathM0In '.nii'],[pathM0Out '.nii.gz'],imM0,[],1,[]);
-				% Delete original Nifti if not the same file
-				if ~strcmp(pathM0In, pathM0Out)
-					xASL_delete([pathM0In '.nii']);
-				end
-			else
-				% Move the M0
-				xASL_Move([pathM0In '.nii'],[pathM0Out '.nii.gz'],1);
-			end
+			jsonM0 = xASL_bids_BIDSifyM0(jsonM0, jsonLocal, studyPar, pathM0In, pathM0Out, headerASL);
 			
 			% Save JSON to new dir
 			jsonM0 = xASL_bids_VendorFieldCheck(jsonM0);
