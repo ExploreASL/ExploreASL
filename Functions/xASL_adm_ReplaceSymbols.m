@@ -65,6 +65,8 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
                     symbolValue = symbolTable.D.(symbolName);
             elseif  isfield(symbolTable.P,symbolName) % paths
                     symbolValue = symbolTable.P.(symbolName);
+            elseif  isfield(symbolTable,'dir') && isfield(symbolTable.dir,symbolName) % paths (x.dir.SUBJECTDIR)
+                    symbolValue = symbolTable.dir.(symbolName);
             else
                     warning('Symbol not defined: %s',symbolName);
 					strOut = strIn;
