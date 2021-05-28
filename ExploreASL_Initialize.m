@@ -362,7 +362,7 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectPa
     x.opts.bOnlyLoad = 0;
 
     % Check if the DatasetRoot is a directory (NEW - ASL BIDS)
-    x.dataParType = 'unknown'; % Fallback
+    x.opts.dataParType = 'unknown'; % Fallback
     % Create directory field if it doesn't exist already
     if ~isfield(x, 'dir')
         x.dir = struct;
@@ -441,14 +441,14 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectPa
         % At least one of the JSON files exists
         
         % dataset directory
-        if strcmp(x.dataParType,'directory')
+        if strcmp(x.opts.dataParType,'directory')
             if x.opts.bProcessData==0
                 x.opts.bOnlyLoad = 1;
             end
         end
         
         % dataPar.json
-        if strcmp(x.dataParType,'dataParFile')
+        if strcmp(x.opts.dataParType,'dataParFile')
             % It is a dataPar.json, so do not run the BIDS import workflow
             if x.opts.bProcessData==0
                 x.opts.bProcessData = 0; % Initialize & load but do not process
@@ -458,7 +458,7 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectPa
         end
         
         % sourceStructure.json
-        if strcmp(x.dataParType,'sourceStructure') || strcmp(x.dataParType,'dataset_description')
+        if strcmp(x.opts.dataParType,'sourceStructure') || strcmp(x.opts.dataParType,'dataset_description')
             % It is a sourceStructure.json or dataset_description.json, so we run the import workflow
             if x.opts.bProcessData==0
                 x.opts.bProcessData = 0; % Initialize & load but do not process
@@ -476,7 +476,7 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectPa
     end
     
     % Try to catch unexpected inputs
-    if strcmp(x.dataParType,'unknown') && x.opts.bProcessData>0 && x.opts.bImportData==0
+    if strcmp(x.opts.dataParType,'unknown') && x.opts.bProcessData>0 && x.opts.bImportData==0
         fprintf('You are trying to process a dataset, without providing a dataPar.json file or running the import workflow...\n');
         x.opts.bProcessData = 0;
     end
@@ -554,17 +554,17 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot_invalid_sta
     if strcmp(extensionJSON,'.json') || strcmp(extensionJSON,'.JSON')
         % Try to find out type by name
         if ~isempty(regexp(x.opts.DatasetRoot, 'sourceStructure', 'once'))
-            x.dataParType = 'sourceStructure';
+            x.opts.dataParType = 'sourceStructure';
             x.dir.sourceStructure = x.opts.DatasetRoot;
         elseif ~isempty(regexp(x.opts.DatasetRoot, 'studyPar', 'once'))
-            x.dataParType = 'studyPar';
+            x.opts.dataParType = 'studyPar';
             x.dir.studyPar = x.opts.DatasetRoot;
             warning('You provided the studyPar.json, which should never be the input...');
         elseif ~isempty(regexp(x.opts.DatasetRoot, 'dataset_description', 'once'))
-            x.dataParType = 'dataset_description';
+            x.opts.dataParType = 'dataset_description';
             x.dir.dataset_description = x.opts.DatasetRoot;
         elseif ~isempty(regexp(x.opts.DatasetRoot, 'dataPar', 'once'))
-            x.dataParType = 'dataParFile';
+            x.opts.dataParType = 'dataParFile';
             x.dir.dataPar = x.opts.DatasetRoot;
         else
             % No files with correct names found
@@ -627,7 +627,7 @@ function [x] = ExploreASL_Initialize_DetermineRequiredPaths(x)
 
     % BIDS DatasetRoot directory
     x.dir.DatasetRoot = x.opts.DatasetRoot;
-    x.dataParType = 'directory';
+    x.opts.dataParType = 'directory';
     % Search for descriptive JSON files
     fileListSourceStructure = xASL_adm_GetFileList(x.dir.DatasetRoot, 'sourceStructure.*.json');
     fileListStudyPar = xASL_adm_GetFileList(x.dir.DatasetRoot, 'studyPar.*.json');

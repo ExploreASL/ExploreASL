@@ -79,7 +79,7 @@ function [x] = xASL_init_DefinePaths(x)
             x.D.StatsMaps           = fullfile(x.D.PopDir, 'StatsMaps');
 
             % Create Population directory for processing pipeline
-            if strcmp(x.dataParType, 'dataParFile')
+            if strcmp(x.opts.dataParType, 'dataParFile')
                 xASL_adm_CreateDir(x.D.PopDir);
             end
         end
