@@ -74,7 +74,7 @@ end
 if isfield(x,'ForceInclusionList')
     % This is an option if you want to select subjects yourself,
     % instead of using all the subjects that comply with the regular expression
-    x.TotalSubjects = x.ForceInclusionList';
+    x.dataset.TotalSubjects = x.ForceInclusionList';
 else
     % First escape double escaping
     x.subject_regexp = strrep(x.subject_regexp,'\\','\');
@@ -82,10 +82,10 @@ else
     x.subject_regexp = strrep(x.subject_regexp,'$','');
     x.subject_regexp = [x.subject_regexp '(|_\d*)$'];
     % Then load subjects
-    x.TotalSubjects = sort(xASL_adm_GetFileList(x.D.ROOT, x.subject_regexp, 'List', [0 Inf], true)); % find dirs
+    x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(x.D.ROOT, x.subject_regexp, 'List', [0 Inf], true)); % find dirs
 end
 
-x.nTotalSubjects = length(x.TotalSubjects);
+x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 
 % ------------------------------------------------------------------------------------------------
 %% 2) Create dummy defaults (exclusion list, ASL sessions)
@@ -115,7 +115,7 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 3) Create list of total baseline & follow-up subjects, before exclusions
 x.nSessions = length(x.SESSIONS);
-x.SUBJECTS = x.TotalSubjects; % temporarily for xASL_init_LongitudinalRegistration
+x.SUBJECTS = x.dataset.TotalSubjects; % temporarily for xASL_init_LongitudinalRegistration
 x.nSubjects = length(x.SUBJECTS);
 
 if isempty(x.SUBJECTS)
@@ -134,10 +134,10 @@ for iT=unique(TimePoint)'
     x.dataset.TimePointTotalSubjects{iT} = '';
 end
 
-for iSubj=1:x.nTotalSubjects
+for iSubj=1:x.dataset.nTotalSubjects
     iSess=1;
     iSubjSess = (iSubj-1)*x.nSessions + iSess;
-    x.dataset.TimePointTotalSubjects{TimePoint(iSubjSess)}{end+1} = x.TotalSubjects{iSubj};
+    x.dataset.TimePointTotalSubjects{TimePoint(iSubjSess)}{end+1} = x.dataset.TotalSubjects{iSubj};
 end
     
 x = rmfield(x,'SUBJECTS');
@@ -165,22 +165,22 @@ end
 
 x.dataset.ExcludedSubjects = '';
 x.SUBJECTS = '';
-for iSubject=1:x.nTotalSubjects
+for iSubject=1:x.dataset.nTotalSubjects
     excl=0;
     for j=1:nExclusion % Check if subject should be excluded
-        if  strcmp(x.TotalSubjects{iSubject},x.dataset.exclusion{j})
+        if  strcmp(x.dataset.TotalSubjects{iSubject},x.dataset.exclusion{j})
             excl=1;
-            x.dataset.ExcludedSubjects{end+1} = x.TotalSubjects{iSubject};
+            x.dataset.ExcludedSubjects{end+1} = x.dataset.TotalSubjects{iSubject};
         end
     end
     
-    if ~isempty(regexp(x.TotalSubjects{iSubject},'^(dartel|lock|Population)$'))
+    if ~isempty(regexp(x.dataset.TotalSubjects{iSubject},'^(dartel|lock|Population)$'))
          % This is not a subject but a pipeline folder
          ListNoPipelineDir(iSubject) = 0;
     elseif ~excl
          % include subject if not to be excluded, and if it doesn't have
          % same name as pipeline directories     
-         x.SUBJECTS{end+1}  = x.TotalSubjects{iSubject};
+         x.SUBJECTS{end+1}  = x.dataset.TotalSubjects{iSubject};
          x.dataset.TotalInclusionList( (iSubject-1)*x.nSessions+1:iSubject*x.nSessions,1) = 1;
          ListNoPipelineDir(iSubject) = 1;
     else
@@ -191,7 +191,7 @@ end
 
 % Remove pipeline dirs from list
 if sum(ListNoPipelineDir)>0 % if there are any subjects
-    x.TotalSubjects = x.TotalSubjects(logical(ListNoPipelineDir));
+    x.dataset.TotalSubjects = x.dataset.TotalSubjects(logical(ListNoPipelineDir));
 end
 
 if ~isfield(x,'SUBJECTS')
@@ -200,8 +200,8 @@ if ~isfield(x,'SUBJECTS')
 end
 
 x.nSubjects = length(x.SUBJECTS);
-x.nTotalSubjects = length(x.TotalSubjects);
-x.dataset.nExcluded = x.nTotalSubjects - x.nSubjects;
+x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
+x.dataset.nExcluded = x.dataset.nTotalSubjects - x.nSubjects;
 x.nSessions = length( x.SESSIONS );
 x.nSubjectsSessions = x.nSubjects .* x.nSessions;
 
