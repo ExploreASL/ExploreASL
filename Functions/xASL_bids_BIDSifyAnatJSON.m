@@ -1,7 +1,7 @@
-function jsonOut = xASL_bids_JsonBIDSifyAnat(jsonIn)
-%xASL_bids_JsonBIDSifyAnat Goes through the JSON structure of an anatomical file and makes sure that all the necessary conversions and checks to BIDS format are applied
+function jsonOut = xASL_bids_BIDSifyAnatJSON(jsonIn)
+%xASL_bids_BIDSifyAnatJSON Goes through the JSON structure of an anatomical file and makes sure that all the necessary conversions and checks to BIDS format are applied
 %
-% FORMAT: jsonOut = xASL_bids_JsonBIDSifyAnat(jsonIn)
+% FORMAT: jsonOut = xASL_bids_BIDSifyAnatJSON(jsonIn)
 %
 % INPUT:
 %   jsonIn  - JSON with the input fields (REQUIRED)
