@@ -95,14 +95,18 @@ xASL_delete(rpfile);
 
 % Run SPM
 
-if nFrames>2 && bSubtraction && length(x.EchoTime)>2 %Multi TE 
-    TE_uni=uniquetol(x.EchoTime); %gives the number of TE, and their value
-    minTE=min(TE_uni); 
-    minTEposi=find(x.EchoTime == minTE); %positions that have the min TE
-    a=spm_vol(InputPath);
-    b=a(minTEposi);
-    spm_realign(b,flags,false);
+if nFrames>2 && bSubtraction && length(x.EchoTime)>2 %Multi TE Hadamard
+    uniqueTE=uniquetol(x.EchoTime); %gives the number of unique TEs
+    NumTEs=numel(uniqueTE);
+    minTE=min(uniqueTE); 
+    positionMinTE=find(x.EchoTime == minTE); %positions that have the min TE
+    ImInfo=spm_vol(InputPath);
+    ImInfoFirstTEs=ImInfo(positionMinTE);
+    spm_realign(ImInfoFirstTEs,flags,false);
     %where is the motion parameters to apply them to the rest of the echos?
+    MotionFirstTEs=load(rpfile);
+    MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); %repeats each row NumTEs times
+    save('rp_ASL4D.txt','MotionAllTEs','-ascii') %saves the rpfile again into .txt
     
 elseif nFrames>2 && bSubtraction
     spm_realign(spm_vol(InputPath),flags,true);
@@ -120,7 +124,11 @@ MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al.
 % PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
 
 % FD = frame displacement
-FD{1} = rp;       % position (absolute displacement)
+if length(x.EchoTime)>2
+    FD{1} = rp(1:8:end,:); %gives back the normal rp for the plots
+else
+    FD{1}=rp; % position (absolute displacement)
+end
 FD{2} = diff(rp); % motion (relative displacement)
 
 if max(rp(:))==0
