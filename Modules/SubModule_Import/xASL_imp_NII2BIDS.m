@@ -70,7 +70,7 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 	% Go through all subjects
 	listSubjects = xASL_adm_GetFileList(imPar.TempRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)
-        xASL_imp_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjects,iSubject);
+        xASL_imp_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjects{iSubject});
     end
     
     % Copy log files
