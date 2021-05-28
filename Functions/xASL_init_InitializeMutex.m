@@ -28,7 +28,7 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 % Copyright 2015-2020 ExploreASL
 
 % Check inputs
-if ~isfield(x,'RERUN') || ~isfield(x,'MUTEXID') || ~isfield(x,'LockDir')
+if ~isfield(x.settings,'RERUN') || ~isfield(x.settings,'MUTEXID') || ~isfield(x,'LockDir')
     warning(['Seemingly you are using xASL_module_' ModuleName ' without initialized dbSettings, consider running xASL_Iteration instead...']);
 end
 
@@ -36,8 +36,8 @@ end
 %% 1) Lock folder management
 x.ModuleName  = ModuleName;
 x.result = false;
-if isfield(x,'RERUN')
-    if x.RERUN
+if isfield(x.settings,'RERUN')
+    if x.settings.RERUN
         [status, message] = rmdir(x.LockDir,'s');
         if status~=1 && exist(x.LockDir,'dir') % backwards compatibility
             fprintf(2,['ERROR in module_' x.ModuleName ': could not remove lock folder:\n%s\n'], message);
@@ -65,7 +65,7 @@ end
 %% --------------------------------------------------------
 %% 2) Initialize mutex object
 x.mutex = xASL_GoNoGo(x.LockDir);
-if ~x.mutex.Lock(x.MUTEXID)
+if ~x.mutex.Lock(x.settings.MUTEXID)
     fprintf('Also, check that there is no filesystem permission issue\n');
 	fprintf(2,['ERROR in module_' x.ModuleName ': mutex is locked: %s in %s\n'], x.MUTEXID, x.LockDir);
 	fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');

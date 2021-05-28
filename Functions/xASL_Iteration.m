@@ -26,8 +26,8 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
 
     % General settings
     dbSettings.x                     = x;
-    dbSettings.x.RERUN               = false;
-    dbSettings.x.MUTEXID             = moduleName;
+    dbSettings.x.settings.RERUN      = false;
+    dbSettings.x.settings.MUTEXID    = moduleName;
     dbSettings.x.LockDir             = ['<ROOT>/lock/' moduleName];
     
 	% Set the dryRun field
@@ -84,9 +84,9 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
 	end
 	
 	if ~isempty(regexp(ModName,'(ASL|func|dwi)'))
-		dbSettings.sets.SESSION      = x.SESSIONS;
-		dbSettings.x.MUTEXID         = [dbSettings.x.MUTEXID '_<SESSION>'];
-		dbSettings.x.SESSIONDIR      = '<ROOT>/<SUBJECT>/<SESSION>';
+		dbSettings.sets.SESSION       = x.SESSIONS;
+		dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID '_<SESSION>'];
+		dbSettings.x.SESSIONDIR       = '<ROOT>/<SUBJECT>/<SESSION>';
 	end
 	
 	if ~isempty(regexp(ModName, '(DARTEL|Population|Analyze)'))
@@ -305,7 +305,7 @@ function [bAborted, x] = runIteration(db)
         end
         
         % First check if this iteration has been fully processed, then we will skip the logging for this iteration
-        if  exist(xASL_adm_ReplaceSymbols(fullfile(x.LockDir,x.MUTEXID,'999_ready.status'),x),'file')
+        if  exist(xASL_adm_ReplaceSymbols(fullfile(x.LockDir,x.settings.MUTEXID,'999_ready.status'),x),'file')
             AlreadyProcessed    = 1;
         else
             AlreadyProcessed    = 0;
@@ -334,12 +334,12 @@ function [bAborted, x] = runIteration(db)
             [StartI, EndI] = regexp(diaryFileEx, 'ASL_\d','ONCE'); %to find the name of the session inside diaryFileEx: ASL_with any digit after
              if ~isempty(StartI) %writes the session only for ASL module
                 session = diaryFileEx(StartI:EndI); %isolate "ASL_1 or ASL_2 etc
-                fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Session: ' session ', Module: ' x.MUTEXID ',  ' datestr(now) ' ===']);
+                fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Session: ' session ', Module: ' x.settings.MUTEXID ',  ' datestr(now) ' ===']);
              else % Structural or Population module
                  if isfield(x,'SUBJECT') 
-                     fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Module: ' x.MUTEXID ',  ' datestr(now) ' ===']);
+                     fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Module: ' x.settings.MUTEXID ',  ' datestr(now) ' ===']);
                  else
-                     fprintf('%s\n',['=== Module: ' x.MUTEXID ',  ' datestr(now) ' ===']); %some datasets don't have any field that specifies the current subject
+                     fprintf('%s\n',['=== Module: ' x.settings.MUTEXID ',  ' datestr(now) ' ===']); %some datasets don't have any field that specifies the current subject
                  end
              end
             fprintf('\n');
@@ -426,7 +426,7 @@ function [bAborted, x] = runIteration(db)
         end
         xASL_TrackProgress(I,N);
     end % next DB iteration
-    fprintf('\n%s\n',[x.MUTEXID ' completed']);
+    fprintf('\n%s\n',[x.settings.MUTEXID ' completed']);
 %     if  CountErrors>0 
 %         bAborted = true; % don't start other modules, this shouldn"t involve the inner DB loop in this script, 
 %         % but should avoid running other modules
