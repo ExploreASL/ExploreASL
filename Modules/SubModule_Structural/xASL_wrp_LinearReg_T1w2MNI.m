@@ -31,7 +31,7 @@ if nargin<2 || isempty(bAutoACPC)
 end
 
 % Check paths
-necessaryPaths = isfield(x,'SPMDIR') && isfield(x.P,'Path_FLAIR') && isfield(x.P,'Path_WMH_SEGM') && ...
+necessaryPaths = isfield(x.D,'SPMDIR') && isfield(x.P,'Path_FLAIR') && isfield(x.P,'Path_WMH_SEGM') && ...
                  isfield(x.P,'Path_ASL4D') && isfield(x.P,'Path_M0') && isfield(x.P,'Path_ASL4D_RevPE');
 if ~necessaryPaths
     warning('Seemingly you are using xASL_wrp_LinearReg_T1w2MNI without defining all necessary paths...');

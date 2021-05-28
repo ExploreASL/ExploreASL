@@ -67,7 +67,7 @@ end
 x.mutex = xASL_GoNoGo(x.dir.LockDir);
 if ~x.mutex.Lock(x.settings.MUTEXID)
     fprintf('Also, check that there is no filesystem permission issue\n');
-	fprintf(2,['ERROR in module_' x.ModuleName ': mutex is locked: %s in %s\n'], x.MUTEXID, x.dir.LockDir);
+	fprintf(2,['ERROR in module_' x.ModuleName ': mutex is locked: %s in %s\n'], x.settings.MUTEXID, x.dir.LockDir);
 	fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');
 	fprintf('If this is not the case, the locked folder needs to be removed before proceeding\n');
 	fprintf('Also, check that there is no filesystem permission issue\n');

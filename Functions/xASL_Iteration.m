@@ -361,7 +361,19 @@ function [bAborted, x] = runIteration(db)
 			if ischar(symbol_value_org)
 				x.(symbol_name) = xASL_adm_ReplaceSymbols(symbol_value_org, x);
 			end
-		end
+        end
+        % Also check the symbols that are now in x.dir
+        symbol_names_xdir = fieldnames(x.dir);
+        symbol_count_xdir = length(symbol_names_xdir);
+        for iSymbol=1:symbol_count_xdir
+            symbol_name = symbol_names_xdir{iSymbol};
+			symbol_value_org = x.dir.(symbol_name);
+            if ischar(symbol_value_org)
+				x.dir.(symbol_name) = xASL_adm_ReplaceSymbols(symbol_value_org, x);
+            end
+            % Make sure all paths have a correct format
+            x.dir.(symbol_name) = fullfile(x.dir.(symbol_name));
+        end
         
         % Start the job with all expanded x
         pwd_org = pwd; % remember the current working dir, so it can be restored if job fails
