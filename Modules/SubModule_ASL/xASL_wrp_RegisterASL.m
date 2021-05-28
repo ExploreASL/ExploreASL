@@ -244,11 +244,11 @@ elseif ~StructuralRawExist && ~StructuralDerivativesExist
 
         % To lock in the structural part
         % Save the ASL lock and unlock
-        jj = strfind(x.LockDir,'xASL_module_ASL');
+        jj = strfind(x.dir.LockDir,'xASL_module_ASL');
         jj = jj(1);
         oldRoot = x.mutex.Root;
         oldID = x.mutex.ID;
-        newRoot = fullfile(x.LockDir(1:(jj-1)),'xASL_module_Structural',x.LockDir((jj+16):end));
+        newRoot = fullfile(x.dir.LockDir(1:(jj-1)),'xASL_module_Structural',x.dir.LockDir((jj+16):end));
         x.mutex.Unlock();
 
         % Look the structural part

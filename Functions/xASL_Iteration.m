@@ -28,7 +28,7 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     dbSettings.x                     = x;
     dbSettings.x.settings.RERUN      = false;
     dbSettings.x.settings.MUTEXID    = moduleName;
-    dbSettings.x.LockDir             = ['<ROOT>/lock/' moduleName];
+    dbSettings.x.dir.LockDir         = ['<ROOT>/lock/' moduleName];
     
 	% Set the dryRun field
 	if nargin < 3 || isempty(dryRun)
@@ -74,13 +74,13 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
 
     % Specific settings
     if  strcmp(ModName,'DARTEL') || strcmp(ModName,'LongReg')
-        dbSettings.x.LockDir         = [dbSettings.x.LockDir '_' x.P.STRUCT ];
+        dbSettings.x.dir.LockDir         = [dbSettings.x.dir.LockDir '_' x.P.STRUCT ];
 	end
     
 	if ~isempty(regexp(ModName,'(Struct|ASL|func|LongReg|dwi)'))
 		dbSettings.sets.SUBJECT      = SelectedSubjects; % x.SUBJECTS
 		dbSettings.x.SUBJECTDIR      = '<ROOT>/<SUBJECT>';
-		dbSettings.x.LockDir         = [dbSettings.x.LockDir '/<SUBJECT>'];
+		dbSettings.x.dir.LockDir     = [dbSettings.x.dir.LockDir '/<SUBJECT>'];
 	end
 	
 	if ~isempty(regexp(ModName,'(ASL|func|dwi)'))
@@ -305,7 +305,7 @@ function [bAborted, x] = runIteration(db)
         end
         
         % First check if this iteration has been fully processed, then we will skip the logging for this iteration
-        if  exist(xASL_adm_ReplaceSymbols(fullfile(x.LockDir,x.settings.MUTEXID,'999_ready.status'),x),'file')
+        if  exist(xASL_adm_ReplaceSymbols(fullfile(x.dir.LockDir,x.settings.MUTEXID,'999_ready.status'),x),'file')
             AlreadyProcessed    = 1;
         else
             AlreadyProcessed    = 0;

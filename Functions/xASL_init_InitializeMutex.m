@@ -28,7 +28,7 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 % Copyright 2015-2020 ExploreASL
 
 % Check inputs
-if ~isfield(x.settings,'RERUN') || ~isfield(x.settings,'MUTEXID') || ~isfield(x,'LockDir')
+if ~isfield(x.settings,'RERUN') || ~isfield(x.settings,'MUTEXID') || ~isfield(x.dir,'LockDir')
     warning(['Seemingly you are using xASL_module_' ModuleName ' without initialized dbSettings, consider running xASL_Iteration instead...']);
 end
 
@@ -38,8 +38,8 @@ x.ModuleName  = ModuleName;
 x.result = false;
 if isfield(x.settings,'RERUN')
     if x.settings.RERUN
-        [status, message] = rmdir(x.LockDir,'s');
-        if status~=1 && exist(x.LockDir,'dir') % backwards compatibility
+        [status, message] = rmdir(x.dir.LockDir,'s');
+        if status~=1 && exist(x.dir.LockDir,'dir') % backwards compatibility
             fprintf(2,['ERROR in module_' x.ModuleName ': could not remove lock folder:\n%s\n'], message);
             return; % exit with an error
         end
@@ -49,13 +49,13 @@ else
     error('RERUN field of x structure not defined...');
 end
 
-if isfield(x,'LockDir')
-    if xASL_adm_CreateDir(x.LockDir,3)<0
-        fprintf(2,['ERROR in module_' x.ModuleName ': could not create lock folder: \n%s\n'],x.LockDir);
+if isfield(x.dir,'LockDir')
+    if xASL_adm_CreateDir(x.dir.LockDir,3)<0
+        fprintf(2,['ERROR in module_' x.ModuleName ': could not create lock folder: \n%s\n'],x.dir.LockDir);
         return; % exit with an error
     end
 
-    if ~exist(x.LockDir,'dir')
+    if ~exist(x.dir.LockDir,'dir')
         fprintf(['ERROR in module_' x.ModuleName ': wrong LockDir assigned\n']);
     end
 else
@@ -64,10 +64,10 @@ end
 
 %% --------------------------------------------------------
 %% 2) Initialize mutex object
-x.mutex = xASL_GoNoGo(x.LockDir);
+x.mutex = xASL_GoNoGo(x.dir.LockDir);
 if ~x.mutex.Lock(x.settings.MUTEXID)
     fprintf('Also, check that there is no filesystem permission issue\n');
-	fprintf(2,['ERROR in module_' x.ModuleName ': mutex is locked: %s in %s\n'], x.MUTEXID, x.LockDir);
+	fprintf(2,['ERROR in module_' x.ModuleName ': mutex is locked: %s in %s\n'], x.MUTEXID, x.dir.LockDir);
 	fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');
 	fprintf('If this is not the case, the locked folder needs to be removed before proceeding\n');
 	fprintf('Also, check that there is no filesystem permission issue\n');
