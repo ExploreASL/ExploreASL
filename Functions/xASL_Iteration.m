@@ -374,6 +374,16 @@ function [bAborted, x] = runIteration(db)
             % Make sure all paths have a correct format
             x.dir.(symbol_name) = fullfile(x.dir.(symbol_name));
         end
+        % Also check the MUTEXID within x.settings
+        symbol_names_xsettings = fieldnames(x.settings);
+        symbol_count_xsettings = length(symbol_names_xsettings);
+        for iSymbol=1:symbol_count_xsettings
+            symbol_name = symbol_names_xsettings{iSymbol};
+			symbol_value_org = x.settings.(symbol_name);
+            if ischar(symbol_value_org)
+				x.settings.(symbol_name) = xASL_adm_ReplaceSymbols(symbol_value_org, x);
+            end
+        end
         
         % Start the job with all expanded x
         pwd_org = pwd; % remember the current working dir, so it can be restored if job fails
