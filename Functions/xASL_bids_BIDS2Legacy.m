@@ -290,7 +290,9 @@ dataPar.x.dir.dataPar = fullfile(pathLegacy, 'dataPar.json');
 
 % Check if participants.tsv exists
 if xASL_exist(fullfile(pathStudy, 'participants.tsv'),'file')==2
-    xASL_Copy(fullfile(pathStudy, 'participants.tsv'),fullfile(pathLegacy, 'participants.tsv'));
+    xASL_Copy(fullfile(pathStudy, 'participants.tsv'),fullfile(pathLegacy, 'Participants.tsv'));
+elseif xASL_exist(fullfile(pathStudy, 'Participants.tsv'),'file')==2
+    xASL_Copy(fullfile(pathStudy, 'Participants.tsv'),fullfile(pathLegacy, 'Participants.tsv'));
 end
 
 %% 12. Clean up
