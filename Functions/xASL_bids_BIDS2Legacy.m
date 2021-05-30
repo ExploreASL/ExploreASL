@@ -297,22 +297,24 @@ elseif xASL_exist(fullfile(pathStudy, 'Participants.tsv'),'file')==2
     xASL_Copy(fullfile(pathStudy, 'Participants.tsv'),fullfile(pathLegacy, 'Participants.tsv'));
 end
 
-%% 12. Add dataset_description.json
+%% 12. Add "GeneratedBy" fields
+try
+    % Copy dataset_description JSON file
+    xASL_Copy(fullfile(pathStudy, 'rawdata', 'dataset_description.json'), fullfile(pathLegacy, 'dataset_description.json'));
 
-% Check rawdata directory
-if xASL_exist(fullfile(pathStudy, 'rawdata'),'dir')==7
-    % Check dataset_description.json
-    if xASL_exist(fullfile(pathStudy, 'rawdata', 'dataset_description.json'),'file')==2
-        % Load dataset_description.json
-        datasetDescription = spm_jsonread(fullfile(pathStudy, 'rawdata', 'dataset_description.json'));
-        % Add "GeneratedBy" field
-        datasetDescription.GeneratedBy = struct;
-        datasetDescription.GeneratedBy.Name = 'xASL-BIDS';
-        datasetDescription.GeneratedBy.Version = x.Version;
-        spm_jsonwrite(fullfile(pathLegacy, 'dataset_description.json'),datasetDescription);
-    else
-        warning('The dataset_description.json does not exist...');
+    % Get all JSON files in derivatives and add the "GeneratedBy" field
+    jsonFiles = xASL_adm_GetFileList(pathLegacy, '.json$', 'FPListRec');
+
+    % Check file list
+    if size(jsonFiles,1)>0
+        % Iterate over files
+        for iFile = 1:size(jsonFiles,1)
+            thisPath = jsonFiles{iFile};
+            xASL_bids_AddGeneratedByField(x, thisPath);
+        end
     end
+catch
+    warning('Adding the GeneratedBy fields failed...\n');
 end
 
 %% 13. Clean up
@@ -327,7 +329,7 @@ try
         end
     end
 catch
-    fprintf('Clean up failed...\n');
+    warning('Clean up failed...\n');
 end
 
 end
@@ -351,5 +353,28 @@ function xASL_bids_BIDS2xASL_CopyFile(pathOrig, pathDest, bOverwrite)
     
 end
 
+
+%% ===========================================================================
+function xASL_bids_AddGeneratedByField(x, pathJSONin, pathJSONout)
+
+    % If only one path is provided, then overwrite original file
+    if nargin<3
+        pathJSONout = pathJSONin;
+    end
+
+    % Check if input JSON exists
+    if xASL_exist(pathJSONin,'file')==2
+        % Load JSON file
+        thisJSON = spm_jsonread(pathJSONin);
+        % Add "GeneratedBy" field
+        thisJSON.GeneratedBy = struct;
+        thisJSON.GeneratedBy.Name = 'ExploreASL';
+        thisJSON.GeneratedBy.Version = x.Version;
+        spm_jsonwrite(pathJSONout, thisJSON);
+    else
+        warning('Adding the "GeneratedBy" JSON field failed...');
+    end
+
+end
 
 
