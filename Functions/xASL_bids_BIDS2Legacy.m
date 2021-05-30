@@ -31,7 +31,8 @@ function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
 % 8. Copy files
 % 9. Parse M0
 % 10. Create DataPar.json
-% 11. Clean up
+% 11. Copy participants.tsv
+% 12. Clean up
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_BIDS2xASL('pathMyStudy')
@@ -285,7 +286,14 @@ fprintf('Overwriting x.dir.dataPar...\n');
 % Add the path to the dataPar.x struct that we return to the Master script
 dataPar.x.dir.dataPar = fullfile(pathLegacy, 'dataPar.json');
 
-%% 11. Clean up
+%% 11. Copy participants.tsv
+
+% Check if participants.tsv exists
+if xASL_exist(fullfile(pathStudy, 'participants.tsv'),'file')==2
+    xASL_Copy(fullfile(pathStudy, 'participants.tsv'),fullfile(pathLegacy, 'participants.tsv'));
+end
+
+%% 12. Clean up
 try
     filesCleanUp = xASL_adm_GetFileList(pathStudy,'^import_.+$');
     if ~isempty(filesCleanUp)
