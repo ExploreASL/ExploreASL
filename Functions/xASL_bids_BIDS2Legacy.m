@@ -1,10 +1,11 @@
-function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
+function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
 %xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
 % FORMAT: xASL_bids_BIDS2Legacy(pathStudy[, bOverwrite, dataPar])
 % 
 % INPUT:
 %   pathStudy  - path to the study folder containing the BIDS data in rawdata subfolder (REQUIRED)
+%   x          - ExploreASL x structure (REQUIRED, STRUCT)
 %   bOverwrite - boolean, true for overwriting files (OPTIONAL, DEFAULT = true)
 %   dataPar    - dataPar values to be filled in a basic dataPar created with the conversion to legacy 
 %                (OPTIONAL, DEFAULT = basic dataPar settings)
@@ -32,7 +33,8 @@ function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, bOverwrite, dataPar)
 % 9. Parse M0
 % 10. Create DataPar.json
 % 11. Copy participants.tsv
-% 12. Clean up
+% 12. Add dataset_description.json
+% 13. Clean up
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_BIDS2xASL('pathMyStudy')
@@ -295,7 +297,25 @@ elseif xASL_exist(fullfile(pathStudy, 'Participants.tsv'),'file')==2
     xASL_Copy(fullfile(pathStudy, 'Participants.tsv'),fullfile(pathLegacy, 'Participants.tsv'));
 end
 
-%% 12. Clean up
+%% 12. Add dataset_description.json
+
+% Check rawdata directory
+if xASL_exist(fullfile(pathStudy, 'rawdata'),'dir')==7
+    % Check dataset_description.json
+    if xASL_exist(fullfile(pathStudy, 'rawdata', 'dataset_description.json'),'file')==2
+        % Load dataset_description.json
+        datasetDescription = spm_jsonread(fullfile(pathStudy, 'rawdata', 'dataset_description.json'));
+        % Add "GeneratedBy" field
+        datasetDescription.GeneratedBy = struct;
+        datasetDescription.GeneratedBy.Name = 'xASL-BIDS';
+        datasetDescription.GeneratedBy.Version = x.Version;
+        spm_jsonwrite(fullfile(pathLegacy, 'dataset_description.json'),datasetDescription);
+    else
+        warning('The dataset_description.json does not exist...');
+    end
+end
+
+%% 13. Clean up
 try
     filesCleanUp = xASL_adm_GetFileList(pathStudy,'^import_.+$');
     if ~isempty(filesCleanUp)
