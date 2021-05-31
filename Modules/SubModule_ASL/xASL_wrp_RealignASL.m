@@ -69,6 +69,9 @@ fprintf('SPM motion estimation');
 % Define realignment settings
 tempnii = xASL_io_ReadNifti(InputPath);
 nFrames = double(tempnii.hdr.dim(5));
+if length(x.EchoTime)>2
+    nFrames=nFrames/numel(unique(x.EchoTime));
+end
 minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 
 % Issue warning if empty image
