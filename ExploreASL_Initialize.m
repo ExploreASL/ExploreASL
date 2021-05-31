@@ -588,9 +588,9 @@ function [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot_invalid_sta
         [rawdataFolder, ~] = fileparts(x.dir.dataset_description);
         x.dir.DatasetRoot = fileparts(rawdataFolder);
     end
-    if isfield(x.dir,'dataParFile')
+    if isfield(x.dir,'dataPar')
         % We expect the dataPar.json to be within the study root folder
-        [x.dir.DatasetRoot, ~] = fileparts(x.dir.dataParFile);
+        [x.dir.DatasetRoot, ~] = fileparts(x.dir.dataPar);
     end
     
     % Recheck for other files if DatasetRoot is known now
