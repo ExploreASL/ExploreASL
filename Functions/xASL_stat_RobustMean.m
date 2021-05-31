@@ -50,7 +50,7 @@ end
 %     IM = shiftdim(IM.Data.data,1);
 % end
 % 
-% IM2 = xASL_im_IM2Column(IM,x.utils.WBmask); % Make sure to convert to column if too large
+% IM2 = xASL_im_IM2Column(IM,x.S.WBmask); % Make sure to convert to column if too large
 
 %% Compute median, MAD, & deviations
 

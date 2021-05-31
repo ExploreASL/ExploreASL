@@ -159,7 +159,7 @@ if x.dataset.nSubjectsSessions<6
     return;
 end
 
-Size1 = sum(x.utils.WBmask(:));
+Size1 = sum(x.S.WBmask(:));
 
 x.D.TemplatesStudyDir = fullfile(x.D.PopDir, 'Templates');
 xASL_adm_CreateDir(x.D.TemplatesStudyDir);
@@ -402,7 +402,7 @@ for iScanType=1:length(PreFixList)
                             for iLoad=1:nLoad % add images
                                 xASL_TrackProgress(iLoad, nLoad);
                                 tempIM = xASL_io_Nifti2Im(LoadFiles{iCell}{iLoad, 1});
-                                tempImColumn = xASL_im_IM2Column(tempIM, x.utils.WBmask);
+                                tempImColumn = xASL_im_IM2Column(tempIM, x.S.WBmask);
 
                                 if iLoad>1 && ~(size(tempImColumn,1)==size(IM{iCell},1))
                                     warning(['Wrong size:' LoadFiles{iCell}{iLoad,1}]);
@@ -653,8 +653,8 @@ if bFlipHemisphere
             else
                 tIM = IM{1}(:,iImage); % flip bilateral image (right-left direction)
             end
-            tIM = flip(xASL_im_Column2IM(tIM, x.utils.WBmask), 1);
-            IM{1}(:,iImage) = xASL_im_IM2Column(tIM, x.utils.WBmask);
+            tIM = flip(xASL_im_Column2IM(tIM, x.S.WBmask), 1);
+            IM{1}(:,iImage) = xASL_im_IM2Column(tIM, x.S.WBmask);
 
             if bSaveUnmasked && bUnilateralImages
                 IM2noMask{1}(:,:,:,iImage) = flip(IM2noMask{2}(:,:,:,iImage), 1); % flip right image (to left)
@@ -812,7 +812,7 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
         % ----------------------------------------------------------------------------------------------------
         %% 3. Compute the map
         if bMask
-            ImageIs = xASL_im_Column2IM(FunctionHandle(IM, 2), x.utils.WBmask).* x.GradualSkull;
+            ImageIs = xASL_im_Column2IM(FunctionHandle(IM, 2), x.S.WBmask).* x.GradualSkull;
             PathSave = fullfile(x.D.TemplatesStudyDir, [NameIM '_bs-' FunctionsAre{2}{iFunction} '.nii']);
         else
             ImageIs = FunctionHandle(IM, 4);
@@ -835,7 +835,7 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
         if bMask && iFunction==1 && x.S.bSaveMasks4QC
             % only recommended for checking masks, otherwise this will take
             % up a lot of disk space
-            Masks4D = xASL_im_Column2IM(uint8(IM), x.utils.WBmask);
+            Masks4D = xASL_im_Column2IM(uint8(IM), x.S.WBmask);
             PathSave = fullfile(x.D.TemplatesStudyDir, ['Masks4D_' NameIM '.nii']);
             xASL_io_SaveNifti(x.D.ResliceRef, PathSave, Masks4D);
         end
