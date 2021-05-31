@@ -95,23 +95,31 @@ xASL_delete(rpfile);
 
 % Run SPM
 
-if nFrames>2 && bSubtraction && length(x.EchoTime)>2 %Multi TE Hadamard
+if nFrames>2 && bSubtraction && length(x.EchoTime)>2  %Multi TE 
     uniqueTE=uniquetol(x.EchoTime); %gives the number of unique TEs
     NumTEs=numel(uniqueTE);
     minTE=min(uniqueTE); 
     positionMinTE=find(x.EchoTime == minTE); %positions that have the min TE
     ImInfo=spm_vol(InputPath);
     ImInfoFirstTEs=ImInfo(positionMinTE);
-    spm_realign(ImInfoFirstTEs,flags,false);
-    %where is the motion parameters to apply them to the rest of the echos?
-    MotionFirstTEs=load(rpfile);
-    MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); %repeats each row NumTEs times
-    save('rp_ASL4D.txt','MotionAllTEs','-ascii') %saves the rpfile again into .txt
+    
+    if numel(unique(x.Q.Initial_PLD))==1 %multiTE + single PLD
+        spm_realign(ImInfoFirstTEs,flags,true);
+        MotionFirstTEs=load(rpfile);
+        MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); %repeats each row NumTEs times
+        save('rp_ASL4D.txt','MotionAllTEs','-ascii') %saves the rpfile again into .txt
+        
+    elseif numel(unique(x.Q.Initial_PLD))>1 % multiTE + multiPLD=Hadamard
+        spm_realign(ImInfoFirstTEs,flags,false);
+        MotionFirstTEs=load(rpfile);
+        MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); 
+        save('rp_ASL4D.txt','MotionAllTEs','-ascii') 
+    end  
     
 elseif nFrames>2 && bSubtraction
     spm_realign(spm_vol(InputPath),flags,true);
 elseif nFrames>1
-    spm_realign(spm_vol(InputPath),flags,false);
+    spm_realign(spm_vol(InputPath),flags,false);  %option for multi PLD with single TE (zigzag=false)
 end
 
 %% ----------------------------------------------------------------------------------------
