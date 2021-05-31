@@ -6,7 +6,7 @@ function [x] = xASL_stat_AtlasForStats(x)
 % INPUT:
 %   x                   - struct containing statistical pipeline environment parameters (REQUIRED)
 %   x.S.InputAtlasPath  - path to NIfTI file containing atlas to load (REQUIRED)
-%   x.S.WBmask          - WholeBrain mask used to convert image to column &
+%   x.S.masks.WBmask    - WholeBrain mask used to convert image to column &
 %                         vice versa (ExploreASL compression method) (REQUIRED)
 %   x.S.ROInamesPath    - path to TSV file containing ROI names for atlas.
 %                         This TSV file should contain 1 row, with each
@@ -61,7 +61,7 @@ elseif ~xASL_exist(x.S.InputAtlasPath, 'file')
      return;
 end
 
-SumMask = sum(x.S.WBmask(:));
+SumMask = sum(x.S.masks.WBmask(:));
 
 if strcmp(x.S.InputAtlasPath(end-2:end),'.gz')
     x.S.InputAtlasPath = x.S.InputAtlasPath(1:end-3); % allow .gz or .nii input
@@ -191,10 +191,10 @@ if ~AtlasIsColumns
 
     %% 5) Convert/compress masks into Columns
     fprintf('%s\n','Converting masks:   ');
-    x.S.InputMasks = zeros(sum(x.S.WBmask(:)),size(InputAtlasIM,4),'uint8'); % memory pre-allocation
+    x.S.InputMasks = zeros(sum(x.S.masks.WBmask(:)),size(InputAtlasIM,4),'uint8'); % memory pre-allocation
     for iL=1:size(InputAtlasIM,4)
         xASL_TrackProgress(iL,size(InputAtlasIM,4));
-        x.S.InputMasks(:,iL,:) = xASL_im_IM2Column(InputAtlasIM(:,:,:,iL,[1:size(InputAtlasIM,5)]),x.S.WBmask);
+        x.S.InputMasks(:,iL,:) = xASL_im_IM2Column(InputAtlasIM(:,:,:,iL,[1:size(InputAtlasIM,5)]),x.S.masks.WBmask);
     end
     fprintf('\n');
 else
@@ -220,7 +220,7 @@ if x.S.SubjectWiseVisualization
     % can be improved later)
     for iSub=1:size(x.S.InputMasks,3)
         xASL_TrackProgress(iSub,size(x.S.InputMasks,3));
-        LabelIM = xASL_vis_TransformData2View(xASL_Convert4D_3D_atlas(xASL_im_Column2IM(x.S.InputMasks(:,:,iSub),x.S.WBmask)),x);
+        LabelIM = xASL_vis_TransformData2View(xASL_Convert4D_3D_atlas(xASL_im_Column2IM(x.S.InputMasks(:,:,iSub),x.S.masks.WBmask)),x);
         DataIM = xASL_vis_TransformData2View(x.vis.skull.*xASL_io_Nifti2Im(fullfile(x.D.TemplateDir,'rT1.nii')),x);
         CombiIM = xASL_im_ProjectLabelsOverData(DataIM,LabelIM,x);
         xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir,[Ffile '_Subj_' num2str(iSub) '.jpg']));

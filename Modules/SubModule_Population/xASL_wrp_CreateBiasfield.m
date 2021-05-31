@@ -110,7 +110,7 @@ function xASL_wrp_CreateBiasfield(x)
             end
 
             NoOutliers = xASL_stat_RobustMean(IM); % use SoS function
-            RobustMean(:,:,:,iSite) = xASL_im_Column2IM(xASL_stat_MeanNan(IM(:,NoOutliers), 2),x.S.WBmask);
+            RobustMean(:,:,:,iSite) = xASL_im_Column2IM(xASL_stat_MeanNan(IM(:,NoOutliers), 2),x.S.masks.WBmask);
         end
     end
 
@@ -292,7 +292,7 @@ for iSite=1:nSites
         iSess = iSubSess- ((iSub-1)*x.dataset.nSessions);
         FileName = fullfile(x.D.PopDir,[CBF_prefix '_' x.SUBJECTS{iSub} '_' x.SESSIONS{iSess} '.nii']);
         if xASL_exist(FileName,'file')
-            IM{iSite}(:,iNext(iSite)) = xASL_im_IM2Column(xASL_io_Nifti2Im(FileName),x.S.WBmask);
+            IM{iSite}(:,iNext(iSite)) = xASL_im_IM2Column(xASL_io_Nifti2Im(FileName),x.S.masks.WBmask);
             NameList{iNext(iSite),iSite} = [x.SUBJECTS{iSub} '_' x.SESSIONS{iSess}];
             iNext(iSite) = iNext(iSite)+1;
         end
@@ -327,7 +327,7 @@ for iSite=1:nSites
     for iScan=1:size(IM{iSite},2)
         xASL_TrackProgress(iScan,nScans);
         FilePath = fullfile(x.D.PopDir,[CBF_prefix '_' NameList{iScan,iSite} '.nii']);
-        xASL_io_SaveNifti(FilePath,FilePath,xASL_im_Column2IM(IM{iSite}(:,iScan),x.S.WBmask),[],0);
+        xASL_io_SaveNifti(FilePath,FilePath,xASL_im_Column2IM(IM{iSite}(:,iScan),x.S.masks.WBmask),[],0);
     end
 end
 

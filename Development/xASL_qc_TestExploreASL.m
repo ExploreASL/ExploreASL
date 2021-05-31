@@ -446,10 +446,10 @@ for iList=1:length(Dlist) % iterate over example datasets
     PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
     PathM0 = xASL_adm_GetFileList(PopulationDir,'^(noSmooth_M0|mean_control).*\.nii$', 'FPList');
     if ~isempty(PathCBF)
-        ResultsTable{1+iList,5+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.S.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+        ResultsTable{1+iList,5+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
     end
     if ~isempty(PathM0)
-        ResultsTable{1+iList,6+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathM0{1}, PathTemplateM0, x.S.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+        ResultsTable{1+iList,6+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathM0{1}, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
     end
 end
 fprintf('\n');

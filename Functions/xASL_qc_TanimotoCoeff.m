@@ -41,7 +41,7 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
 %              will be overestimated when smoothing, but this may lead to more stable artifact detection.
 %
 % GENERAL EXAMPLE: TC = xASL_qc_TanimotoCoeff([0,1],[0,0],[1,1],1);
-% ExploreQC EXAMPLE: TC = xASL_qc_TanimotoCoeff(CBFpath, TemplatePath, x.S.WBmask, 3, 0.975, [4 0]);
+% ExploreQC EXAMPLE: TC = xASL_qc_TanimotoCoeff(CBFpath, TemplatePath, x.S.masks.WBmask, 3, 0.975, [4 0]);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:
 %    Tanimoto, Taffee T. (17 Nov 1958). "An Elementary Mathematical theory of Classification and Prediction".

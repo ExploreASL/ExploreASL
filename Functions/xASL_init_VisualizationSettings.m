@@ -137,9 +137,9 @@ function [x] = xASL_init_VisualizationSettings(x)
 
     ImageWB = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii'));
     if x.S.bMasking(4)==0
-        x.S.WBmask = true(size(ImageWB));
+        x.S.masks.WBmask = true(size(ImageWB));
     else
-        x.S.WBmask = logical(ImageWB);
+        x.S.masks.WBmask = logical(ImageWB);
     end
 
     if ~isfield(x,'Quality') && isfield(x,'QUALITY')

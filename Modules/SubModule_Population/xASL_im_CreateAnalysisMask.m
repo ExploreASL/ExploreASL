@@ -51,7 +51,7 @@ bSkipStandard = 0;
 
 if x.dataset.nSubjectsSessions<16
     fprintf('%s\n', ['Too few subjects (' num2str(x.dataset.nSubjectsSessions) ') to create population-based analysis mask']);
-    x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.WBmask);
+    x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
     x.S.VBAmask = x.S.MaskSusceptibility;
     bSkipStandard = 1;
 elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Sequence,'3d_spiral')
@@ -156,7 +156,7 @@ if ~bSkipStandard
 	xASL_io_SaveNifti(PathFoV, MaskVascularPath, MaskVascular, 8, true);
 	xASL_io_SaveNifti(PathFoV, MaskSusceptibilityPath, MaskSusceptibility, 8, true);
 	% this is used in stats:
-	x.S.MaskSusceptibility = xASL_im_IM2Column(MaskSusceptibility,x.S.WBmask);
+	x.S.MaskSusceptibility = xASL_im_IM2Column(MaskSusceptibility,x.S.masks.WBmask);
 end
 %% B2) Save FOV mask for each subject
 if x.bNativeSpaceAnalysis

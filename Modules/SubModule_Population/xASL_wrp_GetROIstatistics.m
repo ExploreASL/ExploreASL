@@ -5,7 +5,7 @@ function xASL_wrp_GetROIstatistics(x)
 % 
 % INPUT:
 %   x                            - struct containing statistical pipeline environment parameters (REQUIRED)
-%   x.S.WBmask                   - WholeBrain mask used to convert image to column &
+%   x.S.masks.WBmask             - WholeBrain mask used to convert image to column &
 %                                  vice versa (ExploreASL compression method) (REQUIRED)
 %   x.S.InputDataStr             - prefix of data files (i.e. before SubjectSession
 %                                  name), to specify which data to compute ROI

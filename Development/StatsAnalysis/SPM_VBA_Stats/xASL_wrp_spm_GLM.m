@@ -264,7 +264,7 @@ if  strcmp(PreFix(end),'_')
     PreFix      = PreFix(1:end-1);
 end
 
-AssumedSizeColumns  = sum(x.S.WBmask(:));
+AssumedSizeColumns  = sum(x.S.masks.WBmask(:));
 
 %% Load ASL, create 4D memory mapping file
 % Create single 4D-file for memory mapping, if doesn't exist yet
@@ -325,7 +325,7 @@ else
 
                     iSubjSess                   = ((iSubject-1)*nSessions)+iSession;
                     tDat                        = xASL_io_Nifti2Im( load_file );
-                    tempData(iSubjSess,:,:,:)   = xASL_im_IM2Column(tDat(:,:,:,1),x.S.WBmask);
+                    tempData(iSubjSess,:,:,:)   = xASL_im_IM2Column(tDat(:,:,:,1),x.S.masks.WBmask);
                 end
             end
         end
