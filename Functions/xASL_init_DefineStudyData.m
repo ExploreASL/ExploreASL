@@ -90,7 +90,10 @@ x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 % ------------------------------------------------------------------------------------------------
 %% 2) Create dummy defaults (exclusion list, ASL sessions)
 fprintf('Automatically defining sessions...\n');
-if ~isfield(x,'exclusion') % default no exclusions
+if ~isfield(x,'dataset')
+    x.dataset = struct;
+end
+if ~isfield(x.dataset,'exclusion') % default no exclusions
     x.dataset.exclusion = {''};
 end
 
@@ -145,7 +148,7 @@ x = rmfield(x,'nSubjects');
 
 % ------------------------------------------------------------------------------------------------
 %% 5) Manage exclusions
-if     ~isfield(x,'exclusion')
+if     ~isfield(x.dataset,'exclusion')
         x.dataset.exclusion = {''};
         nExclusion = 0;
 elseif  isempty(x.dataset.exclusion)

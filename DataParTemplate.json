@@ -2,7 +2,9 @@
 	"x": [{
 			"name": "ExampleDataSet",
 			"subject_regexp": "^\\d{3}$",
-			"exclusion": "",
+            "dataset": {
+                "exclusion": ""
+            },
 			"SESSIONS": ["ASL_1","ASL_2"],
 			"session":
 			{
