@@ -1,7 +1,7 @@
-function xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, bTest, x)
-%xASL_test_BIDSFlavorsFull Runs the complete testing of BIDS flavors including import, processing and comparison
+function xASL_test_Flavors(pathExploreASL, pathTest, bTest, x)
+%xASL_test_Flavors Runs the complete testing of Flavors including import from DICOM to BIDS, processing and comparison
 %
-% FORMAT: xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest[, bTest, x])
+% FORMAT: xASL_test_Flavors(pathExploreASL, pathTest[, bTest, x])
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % 
@@ -29,7 +29,7 @@ function xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, bTest, x)
 %              directory.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_test_BIDSFlavorsFull('/home/user/ExploreASL', '/home/user/tmp', [0 1 1 0 1], x)
+% EXAMPLE:     xASL_test_Flavors('/home/user/ExploreASL', '/home/user/tmp', [0 1 1 0 1], x)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -116,7 +116,7 @@ end
 
 %% 2. Run the conversion of source data to BIDS
 if bTest(2)
-	xASL_test_BIDSConversion(conversionPath);
+	xASL_test_Flavors_DCM2BIDS(conversionPath, x);
 end
 
 %% 3. Run the comparison of converted BIDS with the reference data
@@ -185,7 +185,7 @@ if bTest(6)
 		if exist(pathDerivatives,'dir')
 			pathDerivatives = fullfile(pathDerivatives,'ExploreASL');
 			if exist(pathDerivatives,'dir')
-				ExploreASL(fullfile(pathDerivatives,'dataPar.json'), 0, [1 1 0], 0); % Don't run population module
+				ExploreASL(pathDerivatives, 0, [1 1 0], 0); % Don't run population module
 			end
 		end
 	end

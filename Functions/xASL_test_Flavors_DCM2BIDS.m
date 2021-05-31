@@ -1,7 +1,7 @@
-function xASL_test_BIDSConversion(baseDirImport)
-%xASL_test_BIDSConversion Convert ASL flavors from DICOM to BIDS
+function xASL_test_Flavors_DCM2BIDS(baseDirImport, x)
+%xASL_test_Flavors_DCM2BIDS Convert ASL flavors from DICOM to BIDS
 %
-% FORMAT: xASL_test_BIDSConversion(baseDirImport)
+% FORMAT: xASL_test_Flavors_DCM2BIDS(baseDirImport)
 %
 % INPUT:
 %   baseDirImport    - Directory for import - sourcedata files are in the 'sourcedata' folder (REQUIRED)
@@ -25,13 +25,15 @@ function xASL_test_BIDSConversion(baseDirImport)
 % 3d. Siemens_PCASL_multiTI
 % 4. Convert NII+JSON -> BIDS
 %
-% EXAMPLE: xASL_test_BIDSConversion('mydir/testImport');
+% EXAMPLE: xASL_test_Flavors_DCM2BIDS('mydir/testImport');
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
 %% 1. Initialization
 % Initialize ExploreASL 
-x = ExploreASL_Initialize;
+if nargin < 2 || isempty(x)
+	x = ExploreASL_Initialize;
+end
 
 % Load the list of the directories
 flavorList = xASL_adm_GetFileList(baseDirImport, [], false, [], true);

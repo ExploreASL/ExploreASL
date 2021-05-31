@@ -61,25 +61,25 @@ end
 %% Test execution
 
 % Prepare the data
-xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [1 0 0 0 0 0 0], x);
+xASL_test_Flavors(pathExploreASL, pathTest, [1 0 0 0 0 0 0], x);
 
 % Convert to BIDS
-xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 1 0 0 0 0 0], x);
+xASL_test_Flavors(pathExploreASL, pathTest, [0 1 0 0 0 0 0], x);
 
 % Check the BIDS conversion
-xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 1 0 0 0 0], x);
+xASL_test_Flavors(pathExploreASL, pathTest, [0 0 1 0 0 0 0], x);
 
 % Convert BIDS to Legacy
-xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 1 0 0 0], x);
+xASL_test_Flavors(pathExploreASL, pathTest, [0 0 0 1 0 0 0], x);
 
 % Check the Legacy conversion
-%xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 0 1 0 0], x);
+%xASL_test_Flavors(pathExploreASL, pathTest, [0 0 0 0 1 0 0], x);
 
 % Run the pipeline
-xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 0 0 1 0], x);
+xASL_test_Flavors(pathExploreASL, pathTest, [0 0 0 0 0 1 0], x);
 
 % Check the pipeline results
-%xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, [0 0 0 0 0 0 1], x);
+%xASL_test_Flavors(pathExploreASL, pathTest, [0 0 0 0 0 0 1], x);
 
 % Get warnings & errors from log files
 [logContent] = xASL_test_GetLogContent(pathTest,0,1,2);
