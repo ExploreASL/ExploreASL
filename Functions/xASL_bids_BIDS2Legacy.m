@@ -311,7 +311,7 @@ try
         for iFile = 1:size(jsonFiles,1)
             % Check if file should be excluded first (exclude participants.json)
             [~,fileName] = xASL_fileparts(jsonFiles{iFile});
-            if ~strcmp(fileName,'participants')
+            if ~strcmpi(fileName,'participants')
                 thisPath = jsonFiles{iFile};
                 xASL_bids_AddGeneratedByField(x, thisPath);
             end
