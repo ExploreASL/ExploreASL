@@ -22,12 +22,15 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
 
 %% --------------------------------------------------------------------------
 %% Reproducibility testing
-if ~isfield(x,'bReproTesting')
+if ~isfield(x,'settings')
+    x.settings = struct;
+end
+if ~isfield(x.settings,'bReproTesting')
     x.settings.bReproTesting = false;
 end
 
 % If the reproducibility is on, then delete the old RMS file
-if isfield(x, 'bReproTesting')
+if isfield(x.settings, 'bReproTesting')
     if x.settings.bReproTesting
         xASL_delete(fullfile(x.D.ROOT, 'RMS_Reproducibility.mat'))
     end
@@ -36,7 +39,7 @@ end
 %% --------------------------------------------------------------------------
 %% Setting the option for pediatric template (this is normally set only for specific dataset and general xASL initialization does not have it)
 % Set if the pediatric template field is set correctly
-if ~isfield(x,'Pediatric_Template') || isempty(x.settings.Pediatric_Template)
+if ~isfield(x.settings,'Pediatric_Template') || isempty(x.settings.Pediatric_Template)
     x.settings.Pediatric_Template = false;
 end
 
