@@ -120,7 +120,14 @@ end
 
 %% 3. Run the comparison of converted BIDS with the reference data
 if bTest(3)
-	xASL_test_BIDSConversion(conversionPath, referencePath, 0, 1);
+	% List all studies in the import directory
+	filenameCompare = xASL_adm_GetFileList(conversionPath, '^.+$', 'List', [], true);
+	for iCompare = 1:length(filenameCompare)
+		% Compare the imported data in the 'rawdata' subdirectory with the counterpart
+		fprintf('%s\n', ['Dataset: '  filenameCompare{iCompare}]);
+		xASL_bids_CompareStructures(fullfile(conversionPath, filenameCompare{iCompare}, 'rawdata'),...
+            fullfile(referencePath, filenameCompare{iCompare}, 'rawdata'),[],[],0,1);
+	end
 end
 
 %% 4. Run the BIDS to Legacy conversion

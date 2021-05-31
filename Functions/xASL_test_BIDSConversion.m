@@ -1,13 +1,12 @@
-function xASL_test_BIDSConversion(baseDirImport, baseDirReference, bImport, bComparison)
+function xASL_test_BIDSConversion(baseDirImport, baseDirReference, bImport)
 %xASL_test_BIDSConversion Convert ASL flavors from DICOM to BIDS, comparing the results with reference data
 %
-% FORMAT: xASL_test_BIDSConversion(baseDirImport[, baseDirReference, bImport, bComparison])
+% FORMAT: xASL_test_BIDSConversion(baseDirImport[, baseDirReference, bImport])
 %
 % INPUT:
 %   baseDirImport    - Directory for import - sourcedata files are in the 'sourcedata' folder (REQUIRED)
 %   baseDirReference - Reference directory with correct ASL-BIDS data (OPTIONAL)
 %   bImport          - Specify if import should be performed (OPTIONAL, DEFAULT=TRUE)
-%   bComparison      - Specify if comparison should be performed (OPTIONAL, DEFAULT=FALSE)
 %
 % OUTPUT: n/a        - Outputs the converted data and comparison results are printed on screen
 %         
@@ -27,7 +26,6 @@ function xASL_test_BIDSConversion(baseDirImport, baseDirReference, bImport, bCom
 % 3c. Siemens_PCASL_volunteer
 % 3d. Siemens_PCASL_multiTI
 % 4. Convert NII+JSON -> BIDS
-% 5. Run the comparison with the reference directory
 %
 % EXAMPLE: xASL_test_BIDSConversion('mydir/testImport');
 %          xASL_test_BIDSConversion('mydir/testImport', 'mydir/testReference',0,1);
@@ -42,14 +40,6 @@ end
 
 if nargin<3 || isempty(bImport)
 	bImport = true;
-end
-
-if nargin<4 || isempty(bComparison)
-	bComparison = false;
-end
-
-if bComparison && isempty(baseDirReference)
-	error('Cannot compare to a reference if the reference directory missing');
 end
 
 %% 1. Initialization
@@ -136,19 +126,5 @@ if bImport
         xASL_module_Import(fullfile(baseDirImport, flavorList{iFlavor}), [],[], [0 1 0], false, true, false, false, x);
 	end % for iFlavor
 end % if bImport
-
-
-%% 5. Run the comparison with the reference directory
-if bComparison
-	% List all studies in the import directory
-	filenameCompare = xASL_adm_GetFileList(baseDirImport, '^.+$', 'List', [], true);
-	for iCompare = 1:length(filenameCompare)
-		% Compare the imported data in the 'rawdata' subdirectory with the counterpart
-		fprintf('%s\n', ['Dataset: '  filenameCompare{iCompare}]);
-		xASL_bids_CompareStructures(fullfile(baseDirImport, filenameCompare{iCompare}, 'rawdata'),...
-            fullfile(baseDirReference, filenameCompare{iCompare}, 'rawdata'),[],[],0,1);
-	end
-end
-
 
 end
