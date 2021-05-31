@@ -1,6 +1,5 @@
 function xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,bTest,x)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Runs the complete testing of BIDS flavors including import, processing and comparison
+%xASL_test_BIDSFlavorsFull Runs the complete testing of BIDS flavors including import, processing and comparison
 %
 % FORMAT: xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest)
 %
@@ -151,11 +150,13 @@ if bTest(4)
 			fListDataPar = xASL_adm_GetFileList(ListFolders{iList},'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
 			if length(fListDataPar) < 1
 				% Fill the dataPars with default parameters
-				xASL_bids_BIDS2Legacy(ListFolders{iList}, 1, defaultDataPar);
+				pathDefaultDataPar = fullfile(ListFolders{iList},'dataPar.json');
+				spm_jsonwrite(pathDefaultDataPar,defaultDataPar);
+				ExploreASL(ListFolders{iList}, [0 0 0 1], 0, 0);
+				xASL_delete(pathDefaultDataPar);
 			else
 				% Fill the dataPars with the provided parameters
-				dataPar = spm_jsonread(fListDataPar{1});
-				xASL_bids_BIDS2Legacy(ListFolders{iList}, 1, dataPar);
+				ExploreASL(ListFolders{iList}, [0 0 0 1], 0, 0);
 			end
 			
 		end
@@ -176,7 +177,7 @@ if bTest(6)
 		if exist(pathDerivatives,'dir')
 			pathDerivatives = fullfile(pathDerivatives,'ExploreASL');
 			if exist(pathDerivatives,'dir')
-				ExploreASL_Master(fullfile(pathDerivatives,'dataPar.json'), 0, [1 1 0], 0); % Don't run population module
+				ExploreASL(fullfile(pathDerivatives,'dataPar.json'), 0, [1 1 0], 0); % Don't run population module
 			end
 		end
 	end
