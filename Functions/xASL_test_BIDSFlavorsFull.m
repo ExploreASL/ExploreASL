@@ -1,7 +1,7 @@
-function xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,bTest,x)
+function xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest, bTest, x)
 %xASL_test_BIDSFlavorsFull Runs the complete testing of BIDS flavors including import, processing and comparison
 %
-% FORMAT: xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest)
+% FORMAT: xASL_test_BIDSFlavorsFull(pathExploreASL, pathTest[, bTest, x])
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % 
@@ -20,6 +20,7 @@ function xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,bTest,x)
 %   x              - x structure (OPTIONAL, DEFAULT = run Initialization)
 %
 % OUTPUT: 
+%  n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Runs the full testing on import and processing of the FlavorsDatabase. The testing directory
@@ -28,7 +29,7 @@ function xASL_test_BIDSFlavorsFull(pathExploreASL,pathTest,bTest,x)
 %              directory.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_test_BIDSFlavorsFull('/home/user/ExploreASL','/home/user/tmp',[0 1 1 0 1])
+% EXAMPLE:     xASL_test_BIDSFlavorsFull('/home/user/ExploreASL', '/home/user/tmp', [0 1 1 0 1], x)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -115,7 +116,7 @@ end
 
 %% 2. Run the conversion of source data to BIDS
 if bTest(2)
-	xASL_test_BIDSConversion(conversionPath, referencePath, 1, 0);
+	xASL_test_BIDSConversion(conversionPath);
 end
 
 %% 3. Run the comparison of converted BIDS with the reference data
