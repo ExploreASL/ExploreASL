@@ -366,8 +366,7 @@ try
                     end
 
                     % Always remove previous paths, irrespective of iModule
-                    PathFields = {'MyPath', 'P', 'D', ...
-                        'STRUCT_TEMPLATE_IM', 'LOCKDIR', 'SUBJECTDIR',...
+                    PathFields = {'MyPath', 'P', 'D', 'STRUCT_TEMPLATE_IM', 'LOCKDIR', ...
                         'SESSIONDIR', 'PathPop_MaskSusceptibility' 'StudyAtlasDir'};
 
                     for iField=1:length(PathFields)
@@ -375,6 +374,11 @@ try
                             x = rmfield(x, PathFields{iField});
                         end
                     end
+                    
+                    if isfield(x.dir,'SUBJECTDIR')
+                        x = rmfield(x.dir, 'SUBJECTDIR');
+                    end
+                    
                     % Store the new x.mat
                     xASL_delete(ListXmat{iX});
                     save(ListXmat{iX}, 'x');
