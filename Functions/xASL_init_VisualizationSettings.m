@@ -117,7 +117,7 @@ function [x] = xASL_init_VisualizationSettings(x)
     if ~isfield(x.D,'TemplateDir') || isempty(x.D.TemplateDir)
         warning('No x.D.TemplateDir field found, not defining brainmask');
     else
-        x.vis.skull = logical(xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'brainmask.nii')));
+        x.S.masks.skull = logical(xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'brainmask.nii')));
     end
 
     if ~isfield(x,'S') % Make dummy variable "S", if it doesn't exist

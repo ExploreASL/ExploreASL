@@ -44,8 +44,8 @@ else % when running for all scans
     [iSubject(1), iSession(1)] = xASL_adm_ConvertSubjSess2Subj_Sess(x.dataset.nSessions, iSubjectSession);
 end
 
-TemplateIM(~x.vis.skull) = NaN;
-TemplateColumnAll = xASL_im_IM2Column(TemplateIM,x.vis.skull);
+TemplateIM(~x.S.masks.skull) = NaN;
+TemplateColumnAll = xASL_im_IM2Column(TemplateIM,x.S.masks.skull);
 % PM: we can add different vendors templates, or use the 4D template from spatial CoV
 
 
@@ -69,10 +69,10 @@ for iImage=1:length(iSubjectSession)
     if xASL_exist(PathIM,'file')
 
         ASLim                   = xASL_io_Nifti2Im(PathIM);
-        ASLim(~x.vis.skull)         = NaN;
+        ASLim(~x.S.masks.skull)         = NaN;
 
         ASLim                   = xASL_im_ndnanfilter(ASLim,'gauss',[8 8 8]./[1.5 1.5 1.5]);
-        ASLcolumn               = xASL_im_IM2Column(ASLim,x.vis.skull);
+        ASLcolumn               = xASL_im_IM2Column(ASLim,x.S.masks.skull);
 
         % Mask out non-finite values
         FiniteMask              = isfinite(ASLcolumn) & isfinite(TemplateColumnAll);

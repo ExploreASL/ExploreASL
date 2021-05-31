@@ -117,7 +117,7 @@ end
 %             VoxelSize = double(volIM.hdr.pixdim(2:4));
 %             volIM = single(volIM.dat(:,:,:,:,:,:,:,:));
 % 
-%             mask = x.vis.skull; % get standard space mask
+%             mask = x.S.masks.skull; % get standard space mask
 %             mask(isnan(mean(volIM,4))) = 0; % remove outside FoV voxels
 %             ovol = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x); % run filter
 % 
