@@ -80,7 +80,7 @@ nVolumes = double(tempnii.hdr.dim(5));
 if strcmpi(x.M0,'no_background_suppression')
     x.M0 = 'UseControlAsM0'; % backward compatibility
 end
-if ~isfield(x,'M0_conventionalProcessing')
+if ~isfield(x.settings,'M0_conventionalProcessing')
        x.settings.M0_conventionalProcessing   = 0;
        % by default, conventional processing is off, since our new method outperforms in most cases
 elseif x.settings.M0_conventionalProcessing == 1 && strcmpi(x.readout_dim,'3D')

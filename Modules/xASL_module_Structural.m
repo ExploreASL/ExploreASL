@@ -344,7 +344,7 @@ end
 iState = 6;
 % CAT12 outperforms SPM12. Therefore, always run CAT12, unless this crashes, then we try SPM12
 
-if ~isfield(x,'SegmentSPM12')
+if ~isfield(x.settings,'SegmentSPM12')
     x.settings.SegmentSPM12 = false; % by default, use CAT12, not SPM12 for segmentation
 end
 if ~isfield(x,'bFixResolution')
