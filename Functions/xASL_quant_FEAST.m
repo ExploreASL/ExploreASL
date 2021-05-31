@@ -73,7 +73,7 @@ PLD_combined= (PLD{1}+PLD{2})./2;
 %% 4. Smooth and clip CBF maps & FEAST ratio
 for iSession=1:2
     % Masking
-    CBF{iSession}(~x.utils.skull) = NaN; % this is not masked for WM or GM, we could do that
+    CBF{iSession}(~x.vis.skull) = NaN; % this is not masked for WM or GM, we could do that
     % smooth maps, ignoring NaNs
     % CAVE: NaNs are interpolated with data, hence the maps should be masked later!
 
