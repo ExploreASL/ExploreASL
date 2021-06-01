@@ -50,8 +50,12 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     outputFolder = fullfile(baseOutputFolder,'docs');
     templatesDir = fullfile(baseOutputFolder,'templates');
     
+    % Copy CHANGES.md
+    xASL_Copy(fullfile(x.MyPath,'CHANGES.md'),fullfile(outputFolder,'Changes.md'),1);
+    
     % Copy and modify the index README
     xASL_Copy(fullfile(x.MyPath,'README.md'),fullfile(outputFolder,'index.md'),1);
+    
     % Logo
     swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(Design/ExploreASL_logoHeader.png)',...
