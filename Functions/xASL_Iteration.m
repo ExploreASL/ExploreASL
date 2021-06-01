@@ -114,7 +114,7 @@ function [bAborted, x] = runIteration(db)
 %                   db.job          optional; Name of spm job template file or user defined for non-spm batches
 %                   db.jobfn        optional; A user defined function that will be called on each dataset iteration
 %                   db.diaryFile    optional; logfile
-%                   db.stopAfterErrors - optional: number of allowed errors before job iteration is stopped
+%                   db.settings.stopAfterErrors - optional: number of allowed errors before job iteration is stopped
 % OUTPUT:
 %   bAborted        - Report if the run was aborted
 %   xOut            - x-struct on the output
@@ -196,7 +196,7 @@ function [bAborted, x] = runIteration(db)
 		diaryFile = db.diaryFile;
 	end
 	
-	stopAfterErrors = db.stopAfterErrors;
+	stopAfterErrors = db.settings.stopAfterErrors;
    
     % Which parameters sets should be iterated?
     setNames = fieldnames(db.sets);
@@ -388,7 +388,7 @@ function [bAborted, x] = runIteration(db)
         % Start the job with all expanded x
         pwd_org = pwd; % remember the current working dir, so it can be restored if job fails
         try
-            if  db.dryRun
+            if  db.settings.dryRun
                 fprintf('\nDRYRUN: skipping %s\n',func2str(jobfn));
             else 
 				[result, x] = jobfn(x); % [result, x] = jobfn(x, job_ex);
