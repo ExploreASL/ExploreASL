@@ -26,15 +26,15 @@ function xASL_imp_Deface(imPar)
     for iSubject = 1:length(listSubjects)
 
         %% 2. Get subject labels
-        subjectLabel = xASL_adm_CorrectName(listSubjects{iSubject},2);
+        subjectLabel = listSubjects{iSubject};
 
         % Check if the anatomical directory exists
-        if exist(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'dir')
+        if exist(fullfile(imPar.BidsRoot,subjectLabel,'anat'),'dir')
             %% 3. Process all anatomical files
-            fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'^.+\.nii',false,[]);
+            fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,subjectLabel,'anat'),'^.+\.nii',false,[]);
             for iAnat = 1:length(fAnat)
                 %Unzip the file for SPM
-                pathUnzipped = xASL_adm_UnzipNifti(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat',fAnat{iAnat}));
+                pathUnzipped = xASL_adm_UnzipNifti(fullfile(imPar.BidsRoot,subjectLabel,'anat',fAnat{iAnat}));
                 % Remove the face
                 xASL_spm_deface(pathUnzipped,true);
                 % Zip again
