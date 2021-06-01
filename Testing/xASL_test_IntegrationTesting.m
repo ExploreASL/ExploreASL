@@ -1,9 +1,11 @@
-function [TestResults, CheckResults] = xASL_test_IntegrationTesting
+function [TestResults, CheckResults, loggingTable] = xASL_test_IntegrationTesting
 %xASL_test_IntegrationTesting Main integration testing script
 %
 % INPUT:        n/a
 %
 % OUTPUT:       TestResults  - Test results struct
+%               CheckResults - Results from rawdata comparison
+%               loggingTable - Combined logging results from ExploreASL runs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Integration testing script. Run the full pipeline on the flavor datasets using ExploreASL_Master.
