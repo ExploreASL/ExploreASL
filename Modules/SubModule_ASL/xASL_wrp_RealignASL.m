@@ -217,8 +217,8 @@ bExecutedENABLE = 0;
 
 if bSubtraction && nFrames<=10
     fprintf('Too few control-label pairs for ENABLE, skipping\n');
-    % multiTE and multiPLD / skip ENABLE and make a warning that it is
-    % skipped
+elseif nFrames>2 && bSubtraction && length(x.EchoTime)>2 && numel(unique(x.Q.Initial_PLD))>1 %MultiTE + multiPLD
+    fprintf('MultiTE + multiPLD data, skipping ENABLE\n');
 elseif bSubtraction && nFrames>10 % == more than 5 pairs
     bExecutedENABLE = 1;
     % Sort motion of control-label pairs
