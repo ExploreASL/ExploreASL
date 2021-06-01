@@ -45,7 +45,7 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
     %% 1) Faster unix version, using OS file system
     if bUseLinux
         PathToSearch = xASL_adm_UnixPath(ROOT);
-        system(['for i in `find ' PathToSearch '/* | grep -E \.nii$`; do gzip -1 -f -q -v "$i"; done'], '-echo');
+        system(['cd ' PathToSearch '; for i in `find * | grep -E \.nii$`; do gzip -1 -f -q -v "$i"; done'], '-echo');
         return;
     else
         %% 2) Otherwise use the multithreaded SuperGzip for Windows
