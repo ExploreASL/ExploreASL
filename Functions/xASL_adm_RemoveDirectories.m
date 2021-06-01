@@ -22,9 +22,9 @@ function xASL_adm_RemoveDirectories(root)
     
     % ExploreASL
     try
-        warning('off', 'all');
+        warning('off', 'MATLAB:rmpath:DirNotFound');
         rmpath(genpath(root));
-        warning('on', 'all');
+        warning('on', 'MATLAB:rmpath:DirNotFound');
     catch ME
         fprintf('%s\n', ME.message);
     end
