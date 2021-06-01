@@ -32,10 +32,10 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     
 	% Set the dryRun field
 	if nargin < 3 || isempty(dryRun)
-		if ~isfield(x.settings,'dryRun') || isempty(x.settings.dryrun)
+		if ~isfield(x.settings,'dryRun') || isempty(x.settings.dryRun)
 			dbSettings.settings.dryRun = 0;
 		else
-			dbSettings.settings.dryRun = x.settings.dryrun;
+			dbSettings.settings.dryRun = x.settings.dryRun;
 		end
 	else
 		dbSettings.settings.dryRun = dryRun;
