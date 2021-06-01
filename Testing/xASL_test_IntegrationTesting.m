@@ -130,10 +130,8 @@ function xFlavor = xASL_test_thisFlavor(testConfig, flavorName)
     xASL_delete(fullfile(testingRoot,'FlavorDatabaseTest',flavorName,'rawdata'),1);
     
     % Create default dataPar.json
-    defaultDataPar.x.subject_regexp = '^sub-.*$';
     defaultDataPar.x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
     defaultDataPar.x.Quality = 0; % speed up testing
-    defaultDataPar.x.DELETETEMP = 1;
     
     % Save JSON
     spm_jsonwrite(fullfile(testingRoot,'FlavorDatabaseTest',flavorName,'dataPar.json'),defaultDataPar);
