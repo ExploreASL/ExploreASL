@@ -119,10 +119,14 @@ if nFrames>2 && bSubtraction && length(x.EchoTime)>2  %Multi TE
         save('rp_ASL4D.txt','MotionAllTEs','-ascii') 
     end  
     
+elseif nFrames>2 && bSubtraction && numel(unique(x.Q.Initial_PLD))>1 %multiPLD
+    spm_realign(spm_vol(InputPath),flags,false);
+    
 elseif nFrames>2 && bSubtraction
     spm_realign(spm_vol(InputPath),flags,true);
+    
 elseif nFrames>1
-    spm_realign(spm_vol(InputPath),flags,false);  %option for multi PLD with single TE (zigzag=false)
+    spm_realign(spm_vol(InputPath),flags,false);
 end
 
 %% ----------------------------------------------------------------------------------------
@@ -136,11 +140,13 @@ MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al.
 
 % FD = frame displacement
 if length(x.EchoTime)>2
-    FD{1} = rp(1:8:end,:); %gives back the normal rp for the plots
+    FD{1} = rp(1:NumTEs:end,:); %multiTE -> gives back the normal rp for the plots
+    FD{2} = diff(rp(1:NumTEs:end,:));
 else
     FD{1}=rp; % position (absolute displacement)
+    FD{2} = diff(rp); % motion (relative displacement)
 end
-FD{2} = diff(rp); % motion (relative displacement)
+
 
 if max(rp(:))==0
     warning('Something wrong with motion parameters, skipping');
@@ -206,10 +212,15 @@ end
 
 %% ----------------------------------------------------------------------------------------
 %% 3) Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
+
+bExecutedENABLE = 0;
+
 if bSubtraction && nFrames<=10
     fprintf('Too few control-label pairs for ENABLE, skipping\n');
+    % multiTE and multiPLD / skip ENABLE and make a warning that it is
+    % skipped
 elseif bSubtraction && nFrames>10 % == more than 5 pairs
-
+    bExecutedENABLE = 1;
     % Sort motion of control-label pairs
     MotionTime = NDV{2}; % motion
     MotionTime = MotionTime(1:2:end-1)+MotionTime(2:2:end); % additive motion for each control-label pair
@@ -319,94 +330,97 @@ if usejava('jvm') % only if JVM loaded
     clear fig;
 end
 
-if bSubtraction && nFrames>10 % if we performed outlier exclusion
-    tValue(1:3) = tValue(4); % for nicer plotting
-
-    if usejava('jvm') % only if JVM loaded
-        fig = figure('Visible','off');
-        plot([1:length(tValue)],tValue,'b',[1:length(tValue)],mintValuePlot,'r');
-        xlabel('control-label pairs sorted by motion');
-        ylabel('mean voxel-wise 1-sample t-test p-value');
-        PercExcl    = round((sum(exclusion)/length(exclusion)*100)*10)/10;
-        title(['Threshold free motion spike exclusion (red, ' num2str(PercExcl) '%) for ' x.P.SubjectID '_' x.P.SessionID]);
-        jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_threshold_free_spike_detection.jpg']);
+%only run if ENABLE is on
+if bExecutedENABLE == 1;
+    if bSubtraction && nFrames>10 % if we performed outlier exclusion
+        tValue(1:3) = tValue(4); % for nicer plotting
+        
+        if usejava('jvm') % only if JVM loaded
+            fig = figure('Visible','off');
+            plot([1:length(tValue)],tValue,'b',[1:length(tValue)],mintValuePlot,'r');
+            xlabel('control-label pairs sorted by motion');
+            ylabel('mean voxel-wise 1-sample t-test p-value');
+            PercExcl    = round((sum(exclusion)/length(exclusion)*100)*10)/10;
+            title(['Threshold free motion spike exclusion (red, ' num2str(PercExcl) '%) for ' x.P.SubjectID '_' x.P.SessionID]);
+            jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_threshold_free_spike_detection.jpg']);
+            fprintf('Saving motion plot to %s\n',jpgfile);
+            saveas(fig,jpgfile,'jpg');
+            close all;
+            clear fig;
+        end
+        
+        % Save 7 images, 3 before & 3 after exclusion
+        IndexIs = [1 round(mintValue/3)  round(mintValue/2) mintValue];
+        diffIndex = (length(tValue)-mintValue)/3;
+        IndexIs(5:7) = [mintValue+diffIndex mintValue+2*diffIndex length(tValue)];
+        IndexIs = round(IndexIs);
+        Slice2Show = floor(size(IM,3)*0.67); % e.g. slice 11/17
+        % pre-allocation for more efficient memory usage
+        ExampleIM = zeros(size(SortIM,1), size(SortIM,2), length(IndexIs));
+        ExampleIM = single(ExampleIM);
+        for iVolume=1:length(IndexIs)
+            ExampleIM(:,:,iVolume) = xASL_stat_MeanNan(SortIM(:,:,Slice2Show,1:IndexIs(iVolume)), 4);
+        end
+        TotalCheck = xASL_vis_TileImages(xASL_im_rotate(ExampleIM,90), 4);
+        
+        % Find intensities
+        SortValues = sort(TotalCheck(isfinite(TotalCheck)));
+        MinValue = SortValues(max(1,round(0.001*length(SortValues))));
+        MaxValue = SortValues(round(0.999*length(SortValues)));
+        
+        TotalCheck(TotalCheck<MinValue) = MinValue;
+        TotalCheck(TotalCheck>MaxValue) = MaxValue;
+        
+        jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_PWI_motion_sorted.jpg']);
         fprintf('Saving motion plot to %s\n',jpgfile);
-        saveas(fig,jpgfile,'jpg');
-        close all;
-        clear fig;
-    end
-
-    % Save 7 images, 3 before & 3 after exclusion
-    IndexIs = [1 round(mintValue/3)  round(mintValue/2) mintValue];
-    diffIndex = (length(tValue)-mintValue)/3;
-    IndexIs(5:7) = [mintValue+diffIndex mintValue+2*diffIndex length(tValue)];
-    IndexIs = round(IndexIs);
-    Slice2Show = floor(size(IM,3)*0.67); % e.g. slice 11/17
-    % pre-allocation for more efficient memory usage
-    ExampleIM = zeros(size(SortIM,1), size(SortIM,2), length(IndexIs));
-    ExampleIM = single(ExampleIM);
-    for iVolume=1:length(IndexIs)
-        ExampleIM(:,:,iVolume) = xASL_stat_MeanNan(SortIM(:,:,Slice2Show,1:IndexIs(iVolume)), 4);
-    end
-    TotalCheck = xASL_vis_TileImages(xASL_im_rotate(ExampleIM,90), 4);
-
-    % Find intensities
-    SortValues = sort(TotalCheck(isfinite(TotalCheck)));
-    MinValue = SortValues(max(1,round(0.001*length(SortValues))));
-    MaxValue = SortValues(round(0.999*length(SortValues)));
-
-    TotalCheck(TotalCheck<MinValue) = MinValue;
-    TotalCheck(TotalCheck>MaxValue) = MaxValue;
-
-    jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_PWI_motion_sorted.jpg']);
-    fprintf('Saving motion plot to %s\n',jpgfile);
-    xASL_vis_Imwrite(TotalCheck, jpgfile);
-
-    %% ----------------------------------------------------------------------------------------
-    %% 4 Remove spike frames from nifti
-
-    fprintf('Remove spike frames from nifti\n');
-
-    if sum(exclusion)>0 % only if spikes have been detected
-
-        % Load nifti
-        TempIm = xASL_io_Nifti2Im(InputPath);
-
-        % Remove spikes
-        nextFrame = 1;
-        for iFrame=1:nFrames
-            if ~(exclusion(iFrame))
-                NewIm(:,:,:,nextFrame)  = TempIm(:,:,:,iFrame);
-                nextFrame = nextFrame+1;
+        xASL_vis_Imwrite(TotalCheck, jpgfile);
+        
+        %% ----------------------------------------------------------------------------------------
+        %% 4 Remove spike frames from nifti
+        
+        fprintf('Remove spike frames from nifti\n');
+        
+        if sum(exclusion)>0 % only if spikes have been detected
+            
+            % Load nifti
+            TempIm = xASL_io_Nifti2Im(InputPath);
+            
+            % Remove spikes
+            nextFrame = 1;
+            for iFrame=1:nFrames
+                if ~(exclusion(iFrame))
+                    NewIm(:,:,:,nextFrame)  = TempIm(:,:,:,iFrame);
+                    nextFrame = nextFrame+1;
+                end
             end
-        end
-
-        % skip this for fMRI, which is more complicated
-        % due to tissue T1 effects (incomplete saturation, so temporal relation between volumes)
-        % Save in single precision, since conversion back to INT16 would
-        % otherwise loose precious precision
-        % PM: can this be simplified to same format as original??
-        xASL_io_SaveNifti(x.P.Path_ASL4D,x.P.Path_despiked_ASL4D,NewIm,32,0);
-
-        % Do same for *.mat
-        LoadParms = load(x.P.Path_ASL4D_mat, '-mat');
-        mat = LoadParms.mat;
-
-        Incl = [];
-        for iExcl=1:length(exclusion)
-            if ~exclusion(iExcl)
-                Incl(end+1) = iExcl;
+            
+            % skip this for fMRI, which is more complicated
+            % due to tissue T1 effects (incomplete saturation, so temporal relation between volumes)
+            % Save in single precision, since conversion back to INT16 would
+            % otherwise loose precious precision
+            % PM: can this be simplified to same format as original??
+            xASL_io_SaveNifti(x.P.Path_ASL4D,x.P.Path_despiked_ASL4D,NewIm,32,0);
+            
+            % Do same for *.mat
+            LoadParms = load(x.P.Path_ASL4D_mat, '-mat');
+            mat = LoadParms.mat;
+            
+            Incl = [];
+            for iExcl=1:length(exclusion)
+                if ~exclusion(iExcl)
+                    Incl(end+1) = iExcl;
+                end
             end
+            mat = mat(:,:,Incl);
+            save(x.P.Path_despiked_ASL4D_mat, 'mat');
         end
-        mat = mat(:,:,Incl);
-        save(x.P.Path_despiked_ASL4D_mat, 'mat');
+        
+    else
+        exclusion = 0;
+        PercExcl = 0;
+        MinimumtValue = 0;
     end
-
-else
-    exclusion = 0;
-    PercExcl = 0;
-    MinimumtValue = 0;
-end
+end %closes bExecutedENABLE==1 if loop
 
 xASL_delete(rInputPath); % delete temporary image
 
