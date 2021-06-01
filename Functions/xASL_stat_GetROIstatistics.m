@@ -396,7 +396,7 @@ for iSubject=1:x.nSubjects
 					%% a) Load partial volume maps
 					PathGM = fullfile(x.D.PopDir, ['PV_pGM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(PathGM,'file')
-                        pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathGM),x.WBmask);
+                        pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathGM),x.S.masks.WBmask);
 					else
 						fprintf('%s\n',[PathGM ' missing...']);
 						continue;
@@ -404,7 +404,7 @@ for iSubject=1:x.nSubjects
 
 					PathWM = fullfile(x.D.PopDir, ['PV_pWM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(PathWM,'file')
-                        pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathWM),x.WBmask);
+                        pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathWM),x.S.masks.WBmask);
 					else
 						fprintf('%s\n',[PathWM ' missing...']);
 						continue;

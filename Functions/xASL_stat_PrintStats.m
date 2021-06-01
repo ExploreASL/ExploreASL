@@ -208,7 +208,7 @@ else
                             if isempty(SessionN) || ~isnumeric(SessionN)
                                 warning(['Something wrong with session ' SessionID]);
                                 fprintf(x.S.FID,'\n');
-                            elseif SessionN>x.nSessions
+                            elseif SessionN>x.dataset.nSessions
                                 if ~max(printedSessionN==SessionN)
                                     warning('Could not find values for other covariates');
                                 end
@@ -217,7 +217,7 @@ else
                             else
 
                                 %% Print the covariates and data
-                                iSubjectSession_SetsID = x.nSessions*(SubjectIndex-1)+SessionN;
+                                iSubjectSession_SetsID = x.dataset.nSessions*(SubjectIndex-1)+SessionN;
                                 iSubjectSession_DAT = iSubjSess;
                                 bPrintSessions = false;
                                 xASL_stat_PrintStats_PrintValues(x, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);                      
