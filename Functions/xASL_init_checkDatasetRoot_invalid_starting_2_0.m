@@ -39,12 +39,12 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
         elseif ~isempty(regexp(x.opts.DatasetRoot, 'dataset_description', 'once'))
             x.opts.dataParType = 'dataset_description';
             x.dir.dataset_description = x.opts.DatasetRoot;
-        elseif ~isempty(regexp(x.opts.DatasetRoot, 'dataPar', 'once'))
+        elseif ~isempty(regexpi(x.opts.DatasetRoot, 'dataPar', 'once'))
             x.opts.dataParType = 'dataParFile';
             x.dir.dataPar = x.opts.DatasetRoot;
         else
-            % No files with correct names found
-            error('No matching JSON files found...');
+            % No files with correct prefix in the filename found
+            error('Could not identify the type of the provided JSON file:\n %s\n The name should start with sourceStructure, studyPar, dataset_description or dataPar',x.opts.DatasetRoot);
         end
     end
     

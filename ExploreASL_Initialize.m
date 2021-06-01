@@ -420,7 +420,6 @@ end
 
 %% -----------------------------------------------------------------------
 function [x] = ExploreASL_Initialize_SubStructs(x)
-
     x.S = struct; % Statistics
     x.D = struct; % Directories
     x.P = struct; % Paths
