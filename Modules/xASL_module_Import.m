@@ -1,7 +1,7 @@
-function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
+function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, x)
 %xASL_module_Import Imports the DICOM or PAR/REC source data to NIFTIs in ASL-BIDS format
 %
-% FORMAT: xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bClone2Source, x)
+% FORMAT: xASL_module_Import(studyPath[, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, x])
 %
 % INPUT:
 %   studyPath           - path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED)
@@ -21,10 +21,6 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 %                         the DICOM header, or as dummy DICOM to dump embed data into (e.g. WAD-QC) (DEFAULT=false)
 %   bUseDCMTK           - if true, then use DCMTK, otherwise use DICOMINFO from Matlab (DEFAULT=false)
 %   bCheckPermissions   - if true, check whether data permissions are set correctly, before trying to read/copy the files (DEFAULT=false)
-%   Clone2Source        - if true, then makes a copy of everything it converted to NIfTI.
-%                         Can be useful to have a separate source BIDS structure to store
-%                         all source NIfTIs, and to keep the derivatives in the
-%                         tempfolder (OPTIONAL, DEFAULT=false)
 %   x                   - if x is provided, initialization of ExploreASL is skipped
 %
 %
@@ -179,12 +175,8 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
         end
     end
 
-    if nargin<8 || isempty(bClone2Source)
-        bClone2Source = false;
-    end
-
     % Only initialize ExploreASL if this wasn't initialized before
-    if nargin<9 || isempty(x)
+    if nargin<8 || isempty(x)
         x = ExploreASL_Initialize;
     end
     
@@ -192,18 +184,14 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     x.modules.import.settings.bCopySingleDicoms = bCopySingleDicoms;
     x.modules.import.settings.bUseDCMTK = bUseDCMTK;
     x.modules.import.settings.bCheckPermissions = bCheckPermissions;
-    x.modules.import.settings.bClone2Source = bClone2Source;
-    
 
     %% 2. Initialize the setup of the dicom2nii conversion
     imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath);
-
 
     %% 3. Run the DCM2NIIX
     if bRunSubmodules(1)
         xASL_imp_DCM2NII(imPar, x);
     end
-
 
     %% 4. Run the NIIX to ASL-BIDS
     if bRunSubmodules(2)
@@ -213,13 +201,9 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
         [x] = xASL_imp_Import_UpdateDatasetRoot(x, studyPath);
     end
 
-
     %% 5. Run defacing
     if bRunSubmodules(3)
         xASL_imp_Anonymize(imPar);
     end
 
-
 end
-
-

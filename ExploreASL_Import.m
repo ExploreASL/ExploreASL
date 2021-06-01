@@ -1,7 +1,7 @@
-function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bRunDCM2NII, bClone2Source, x)
+function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bRunDCM2NII, x)
 %ExploreASL_Import Imports the DICOM or PAR/REC raw data to NIFTIs
 %
-% FORMAT: ExploreASL_Import(imPar[, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bRunDCM2NII, bClone2Source])
+% FORMAT: ExploreASL_Import(imPar[, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bRunDCM2NII, x])
 %
 % INPUT:
 %   imPar               - structure with import parameters, output of ExploreASL_ImportConfig.m
@@ -12,10 +12,6 @@ function ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermission
 %   bUseDCMTK           - if true, then use DCMTK, otherwise use DICOMINFO from Matlab (DEFAULT=false)
 %   bCheckPermissions   - if true, check whether data permissions are set correctly, before trying to read/copy the files (DEFAULT=false)
 %   bRunDCM2NII         - if true, run dcm2niiX. Setting this to false allows to skip dcm2niiX and only create .mat files (DEFAULT=true)
-%   Clone2Source        - if true, then makes a copy of everything it converted to NIfTI.
-%                         Can be useful to have a separate source BIDS structure to store
-%                         all source NIfTIs, and to keep the derivatives in the
-%                         analysisfolder (OPTIONAL, DEFAULT=false)
 %   x                   - if x is provided, initialization of ExploreASL is skipped
 %
 %
@@ -128,10 +124,7 @@ if nargin<4 || isempty(bCheckPermissions)
         bCheckPermissions = false;
     end
 end
-if nargin<6 || isempty(bClone2Source)
-    bClone2Source = false;
-end
-if nargin<7 || isempty(x)
+if nargin<6 || isempty(x)
     x = ExploreASL_Initialize; % only initialize ExploreASL if this wasnt initialized before
 end
 if nargin<1 || ~isfield(imPar,'studyID')
@@ -422,7 +415,6 @@ fprintf('%s\n', 'Running import (i.e. dcm2niiX)');
 x.modules.import.settings.bCopySingleDicoms = bCopySingleDicoms;
 x.modules.import.settings.bUseDCMTK = bUseDCMTK;
 x.modules.import.settings.bCheckPermissions = bCheckPermissions;
-x.modules.import.settings.bClone2Source = bClone2Source;
 
 % Iterate over subjects
 for iSubject=1:x.modules.import.numOf.nSubjects

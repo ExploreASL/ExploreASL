@@ -32,7 +32,7 @@ function [x] = ExploreASL_ImportMaster(x)
         if x.opts.ImportModules(1)==1
             if ~isempty(x.dir.sourceStructure)
                 try
-                    xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, false, x);
+                    xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, x);
                 catch loggingEntry
                     fprintf(2,'DICOM to NIfTI module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
@@ -45,7 +45,7 @@ function [x] = ExploreASL_ImportMaster(x)
         if x.opts.ImportModules(2)==1
             if ~isempty(x.dir.sourceStructure)
                 try
-                    [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, false, x);
+                    [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, x);
                 catch loggingEntry
                     fprintf(2,'NIfTI to BIDS module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
@@ -58,7 +58,7 @@ function [x] = ExploreASL_ImportMaster(x)
         if x.opts.ImportModules(3)==1
             if ~isempty(x.dir.DatasetRoot)
                 try
-                    [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, false, x);
+                    [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, x);
                 catch loggingEntry
                     fprintf(2,'Anonymize module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);

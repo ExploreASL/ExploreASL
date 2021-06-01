@@ -26,15 +26,15 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
 % 2. Iterate over visits
 % 3. Loop through all sessions
 % 4. Iterate over scans
-% - 1. Initialize variables (scanID, summary_line, first_match)
-% - 2. Convert scan ID to a suitable name and set scan-specific parameters
-% - 3. Minimalistic feedback of where we are
-% - 4. Now pick the matching one from the folder list
-% - 5. Determine input and output paths
-% - 6. Start the conversion if this scan should not be skipped
-% - 7. Store JSON files
-% - 8. In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
-% - 9. Make a copy of analysisdir in sourcedir
+% -  1. Initialize variables (scanID, summary_line, first_match)
+% -  2. Convert scan ID to a suitable name and set scan-specific parameters
+% -  3. Minimalistic feedback of where we are
+% -  4. Now pick the matching one from the folder list
+% -  5. Determine input and output paths
+% -  6. Start the conversion if this scan should not be skipped
+% -  7. Store JSON files
+% -  8. In case of a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
+% -  9  Copy single dicom as QC placeholder
 % - 10. Store the summary info so it can be sorted and printed below
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -222,10 +222,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                     PrintDICOMFields = [];
                 end
                 
-                %% 4.9 Make a copy of Tempdir in sourcedir
-                xASL_imp_DCM2NII_Subject_CopyTempDir(nii_files, settings.bClone2Source)
-                
-                % Copy single dicom as QC placeholder
+                %% 4.9 Copy single dicom as QC placeholder
                 if settings.bCopySingleDicoms && ~isempty(first_match)
                     xASL_Copy(first_match, fullfile(destdir, ['DummyDicom_' scan_name '.dcm']), imPar.bOverwrite, imPar.bVerbose);
                 end

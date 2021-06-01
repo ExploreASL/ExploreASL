@@ -5,7 +5,6 @@ InputFolder = '/Users/henk/ExploreASL/ASL/Dent_MCI';
 RawFolder = fullfile(InputFolder, 'raw');
 bUseDCMTK = 0;
 bCheckPermissions = 0;
-bClone2Source = 0;
 bRunDCM2NII = 1;
 bCopySingleDicoms = 0;
 
@@ -49,7 +48,7 @@ imPar.tokenScanAliases = {'^t1_mprage$', 'T1'; '^asl$', 'ASL4D'};
 
 
 %% run import script
-ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bRunDCM2NII, bClone2Source);
+ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bRunDCM2NII);
 
 
 %% Step 4) Create data par with:
