@@ -88,7 +88,7 @@ function [TestResults, CheckResults] = xASL_test_IntegrationTesting
     end
     
     %% Write logging table
-    xASL_test_writeLoggingTable(fullfile(testConfig.pathTest,'FlavorDatabaseTest','log.xlsx'), loggingTable);
+    xASL_test_writeLoggingTable(fullfile(testConfig.pathTest,'FlavorDatabaseTest','log'), loggingTable);
     
     %% Compare rawdata
     for iFlavor = 1:numel(flavorList)
@@ -232,12 +232,19 @@ end
 %% Write logging information to XLSX table
 function xASL_test_writeLoggingTable(filePath,logTable)
 
-    % Write file
+    % Write XLSX file
     try
-        writetable(logTable,filePath,'WriteVariableNames',true);
+        writetable(logTable,[filePath '.xlsx'],'WriteVariableNames',true);
     catch ME
         fprintf(2,'Writing log.xlsx failed: %s\n', ME.message);
     end
+    % Write TSV file
+    try
+        xASL_tsvWrite(table2cell(logTable),[filePath '.tsv']);
+    catch ME
+        fprintf(2,'Writing log.tsv failed: %s\n', ME.message);
+    end
+    
 
 end
 
