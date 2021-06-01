@@ -18,40 +18,53 @@ function xASL_init_printSettings(x)
 % REFERENCES:  n/a
 %
 % Copyright 2015-2021 ExploreASL
-
-
-    %% Fallbacks
-    dcm2nii = '';
-    nii2bids = '';
-    deface = '';
-    bids2legacy = '';
-    Structural = '';
-    ASL = '';
-    Population = '';
-    
-    %% Texts
-    if x.opts.ImportModules(1)==1,   dcm2nii = 'DCM2NII ';            end
-    if x.opts.ImportModules(2)==1,   nii2bids = 'NII2BIDS ';          end
-    if x.opts.ImportModules(3)==1,   deface = 'DEFACE ';              end
-    if x.opts.ImportModules(4)==1,   bids2legacy = 'BIDS2LEGACY ';    end
-    if x.opts.ProcessModules(1)==1,  Structural = 'Structural ';      end
-    if x.opts.ProcessModules(2)==1,  ASL = 'ASL ';                    end
-    if x.opts.ProcessModules(3)==1,  Population = 'Population ';      end
     
     %% Printing
     fprintf('==================================== ExploreASL Settings =====================================\n');
+	% Dataset root
     if length(x.opts.DatasetRoot)>70
         fprintf('Dataset Root        ...%s\n', x.opts.DatasetRoot(end-70:end));
     else
         fprintf('Dataset Root        %s\n', x.opts.DatasetRoot); 
-    end
-    fprintf('Import Modules      %s%s%s%s\n', dcm2nii, nii2bids, deface, bids2legacy);
-    fprintf('Process Modules     %s%s%s\n', Structural, ASL, Population);
-    if x.opts.bPause==1
+	end
+	
+	% Import modules
+	textPrint = 'Import Modules      ';
+	if x.opts.ImportModules(1)==1
+		textPrint = [textPrint 'DCM2NII '];
+	end
+	if x.opts.ImportModules(2)==1
+		textPrint = [textPrint 'NII2BIDS '];
+	end
+	if x.opts.ImportModules(3)==1
+		textPrint = [textPrint 'DEFACE '];
+	end
+	if x.opts.ImportModules(4)==1
+		textPrint = [textPrint 'BIDS2LEGACY'];
+	end
+	fprintf([textPrint '\n']);
+	
+    % Process modules
+	textPrint = 'Process Modules     ';
+	if x.opts.ProcessModules(1)==1
+		textPrint = [textPrint 'STRUCTURAL '];
+	end
+	if x.opts.ProcessModules(2)==1
+		textPrint = [textPrint 'ASL '];
+	end
+	if x.opts.ProcessModules(3)==1
+		textPrint = [textPrint 'POPULATION '];
+	end
+	fprintf([textPrint '\n']);
+	
+	% Pause before processing
+	if x.opts.bPause==1
         fprintf('bPause              %s\n', 'True');
     else
         fprintf('bPause              %s\n', 'False');
-    end
+	end
+	
+	% Worker numbers
     fprintf('iWorker             %d\n', x.opts.iWorker);
     fprintf('nWorkers            %d\n', x.opts.nWorkers);
     fprintf('==============================================================================================\n');
