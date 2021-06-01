@@ -15,7 +15,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 %   bRunSubmodules      - Specify which of the parts should be run (OPTIONAL, DEFAULT [1 1 0])
 %                         [1 0 0] - Run the DICOM to NIFTI conversion
 %                         [0 1 0] - Run the NIFTI transformation to the proper ASL-BIDS
-%                         [0 0 1] - Run the defacing and full anonymization
+%                         [0 0 1] - Run the defacing
 %   bCopySingleDicoms   - if true, copies a single DICOM with each NIfTI
 %                         dataset/ScanType, that can be used to retrieve missing parameters from
 %                         the DICOM header, or as dummy DICOM to dump embed data into (e.g. WAD-QC) (DEFAULT=false)
@@ -203,7 +203,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 
     %% 5. Run defacing
     if bRunSubmodules(3)
-        xASL_imp_Anonymize(imPar);
+        xASL_imp_Deface(imPar);
     end
 
 end

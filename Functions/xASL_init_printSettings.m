@@ -23,7 +23,7 @@ function xASL_init_printSettings(x)
     %% Fallbacks
     dcm2nii = '';
     nii2bids = '';
-    anonymize = '';
+    deface = '';
     bids2legacy = '';
     Structural = '';
     ASL = '';
@@ -32,7 +32,7 @@ function xASL_init_printSettings(x)
     %% Texts
     if x.opts.ImportModules(1)==1,   dcm2nii = 'DCM2NII ';            end
     if x.opts.ImportModules(2)==1,   nii2bids = 'NII2BIDS ';          end
-    if x.opts.ImportModules(3)==1,   anonymize = 'ANONYMIZE ';        end
+    if x.opts.ImportModules(3)==1,   deface = 'DEFACE ';              end
     if x.opts.ImportModules(4)==1,   bids2legacy = 'BIDS2LEGACY ';    end
     if x.opts.ProcessModules(1)==1,  Structural = 'Structural ';      end
     if x.opts.ProcessModules(2)==1,  ASL = 'ASL ';                    end
@@ -45,7 +45,7 @@ function xASL_init_printSettings(x)
     else
         fprintf('Dataset Root        %s\n', x.opts.DatasetRoot); 
     end
-    fprintf('Import Modules      %s%s%s%s\n', dcm2nii, nii2bids, anonymize, bids2legacy);
+    fprintf('Import Modules      %s%s%s%s\n', dcm2nii, nii2bids, deface, bids2legacy);
     fprintf('Process Modules     %s%s%s\n', Structural, ASL, Population);
     if x.opts.bPause==1
         fprintf('bPause              %s\n', 'True');

@@ -54,13 +54,13 @@ function [x] = ExploreASL_ImportMaster(x)
                 missingJSON = true;
             end
         end
-        % ANONYMIZE
+        % DEFACE
         if x.opts.ImportModules(3)==1
             if ~isempty(x.dir.DatasetRoot)
                 try
                     [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, x);
                 catch loggingEntry
-                    fprintf(2,'Anonymize module failed...\n');
+                    fprintf(2,'Deface module failed...\n');
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else

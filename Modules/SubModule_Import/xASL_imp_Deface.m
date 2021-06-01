@@ -1,7 +1,7 @@
-function xASL_imp_Anonymize(imPar)
-%xASL_imp_Anonymize Run defacing.
+function xASL_imp_Deface(imPar)
+%xASL_imp_Deface Run defacing.
 %
-% FORMAT: xASL_imp_Anonymize(imPar)
+% FORMAT: xASL_imp_Deface(imPar)
 % 
 % INPUT:
 %   imPar      - JSON file with structure with import parameters (REQUIRED, STRUCT)
@@ -17,22 +17,20 @@ function xASL_imp_Anonymize(imPar)
 % 3. Process all anatomical files (`xASL_spm_deface`)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_Anonymize(imPar);
+% EXAMPLE:     xASL_imp_Deface(imPar);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    %% Anonymize
-    
-    % 1. Iterate over list of subjects
+    %% 1. Iterate over list of subjects
     listSubjects = xASL_adm_GetFileList(imPar.TempRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)
 
-        % 2. Get subject labels
+        %% 2. Get subject labels
         subjectLabel = xASL_adm_CorrectName(listSubjects{iSubject},2);
 
         % Check if the anatomical directory exists
         if exist(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'dir')
-            % 3. Process all anatomical files
+            %% 3. Process all anatomical files
             fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,['sub-' subjectLabel],'anat'),'^.+\.nii',false,[]);
             for iAnat = 1:length(fAnat)
                 %Unzip the file for SPM

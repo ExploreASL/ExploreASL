@@ -6,10 +6,10 @@ function [x] = ExploreASL_Master(varargin)
 % INPUT:
 %   DatasetRoot    - Path to the BIDS dataset root directory (OPTIONAL, DEFAULT = EMPTY)
 %
-%   ImportModules  - [DCM2NII, NII2BIDS, ANONYMIZE, BIDS2LEGACY] (OPTIONAL, BOOLEAN ARRAY)
+%   ImportModules  - [DCM2NII, NII2BIDS, DEFACE, BIDS2LEGACY] (OPTIONAL, BOOLEAN ARRAY)
 %                  - DCM2NII = Run the DICOM to NIFTI conversion (BOOLEAN, DEFAULT = 0)
 %                  - NII2BIDS = Run the NIFTI to BIDS conversion (BOOLEAN, DEFAULT = 0)
-%                  - ANONYMIZE = Run the defacing and full anonymization (BOOLEAN, DEFAULT = 0)
+%                  - DEFACE = Run the defacing (BOOLEAN, DEFAULT = 0)
 %                  - BIDS2LEGACY = Run the BIDS to LEGACY conversion (BOOLEAN, DEFAULT = 0)
 %
 %   ProcessModules - [STRUCTURAL, ASL, POPULATION] (OPTIONAL, BOOLEAN ARRAY) 
