@@ -59,7 +59,6 @@ function [TestResults, CheckResults] = xASL_test_IntegrationTesting
 
     % Initialize ExploreASL
     [x] = ExploreASL_Initialize;
-    cd(testConfig.pathTest);
     
     % Clean Up
     clc
@@ -81,12 +80,10 @@ function [TestResults, CheckResults] = xASL_test_IntegrationTesting
     %% Iterate over flavors
     for iFlavor = 1:numel(flavorList)
         % Run individual flavor
-        TestResults(iFlavor) = xASL_test_thisFlavor(testConfig.pathTest, ...
-                                                    fullfile(testConfig.pathTest,'FlavorDatabase'), ...
-                                                    flavorList{iFlavor});
+        TestResults = xASL_test_thisFlavor(testConfig, flavorList{iFlavor});
         % Check logging
-        if isfield(TestResults(iFlavor),'logging')
-            loggingTable = xASL_test_AddLoggingEntryToTable(loggingTable,TestResults(iFlavor).logging);
+        if isfield(TestResults,'logging')
+            loggingTable = xASL_test_AddLoggingEntryToTable(loggingTable,TestResults.logging);
         end
     end
     
@@ -119,8 +116,12 @@ end
 
 
 %% Run individual flavor dataset
-function xFlavor = xASL_test_thisFlavor(testingRoot, databaseRoot, flavorName)
+function xFlavor = xASL_test_thisFlavor(testConfig, flavorName)
 
+    % Get paths
+    testingRoot = testConfig.pathTest;
+    databaseRoot = fullfile(testConfig.pathTest,'FlavorDatabase');
+    
     % Copy flavor
     fprintf('Copy %s...\n', flavorName);
     xASL_Copy(fullfile(databaseRoot,flavorName),fullfile(testingRoot,'FlavorDatabaseTest',flavorName),1);
@@ -136,6 +137,9 @@ function xFlavor = xASL_test_thisFlavor(testingRoot, databaseRoot, flavorName)
     
     % Save JSON
     spm_jsonwrite(fullfile(testingRoot,'FlavorDatabaseTest',flavorName,'dataPar.json'),defaultDataPar);
+    
+    % Remove Matlab paths (independent initialization)
+    xASL_adm_RemoveDirectories(testConfig.pathExploreASL);
 
     % Run test
     try
@@ -218,7 +222,7 @@ function stackText = xASL_test_StackToString(stack)
     end
     
     % Remove initial ' ,'
-    if ~isempty(stackText) && length(stackText>3)
+    if ~isempty(stackText) && length(stackText)>3
         stackText = stackText(3:end);
     end
 

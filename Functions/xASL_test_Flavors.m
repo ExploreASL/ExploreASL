@@ -50,8 +50,15 @@ end
 cd(pathExploreASL);
 
 if nargin < 4 || isempty(x)
+    % Remove existing paths
+    thisDirectory = pwd;
+    if ~isempty(pathExploreASL)
+        xASL_adm_RemoveDirectories(pathExploreASL);
+        cd(pathExploreASL);
+    end
     % Initialize ExploreASL
     ExploreASL_Initialize;
+    cd(thisDirectory);
 end
 
 % Initialize the working paths
