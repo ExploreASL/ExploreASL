@@ -22,7 +22,7 @@ function xASL_imp_Deface(imPar)
 % Copyright 2015-2021 ExploreASL
 
     %% 1. Iterate over list of subjects
-    listSubjects = xASL_adm_GetFileList(imPar.TempRoot,[],false,[],true);
+    listSubjects = xASL_adm_GetFileList(imPar.BidsRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)
 
         %% 2. Get subject labels
