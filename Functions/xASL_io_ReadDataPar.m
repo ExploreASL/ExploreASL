@@ -138,6 +138,32 @@ elseif strcmpi(Fext, '.json')
 
 	% Convert strings containing numbers to number
 	x = xASL_io_ReadDataPar_FixFields(x);
+	
+	%% Check deprecated fields
+	if isfield(x,'SegmentSPM12')
+		warning('Deprecated field. Please use x.settings.SegmentSPM12 instead of x.SegmentSPM12');
+		if ~isfield(x,'settings') || ~isfield(x.settings,'SegmentSPM12')
+			x.settings.SegmentSPM12 = x.SegmentSPM12;
+		end
+		x = rmfield(x,'SegmentSPM12');
+	end
+	
+	if isfield(x,'M0_conventionalProcessing')
+		warning('Deprecated field. Please use x.settings.M0_conventionalProcessing instead of x.M0_conventionalProcessing');
+		if ~isfield(x,'settings') || ~isfield(x.settings,'M0_conventionalProcessing')
+			x.settings.M0_conventionalProcessing = x.M0_conventionalProcessing;
+		end
+		x = rmfield(x,'M0_conventionalProcessing');
+	end
+	
+	if isfield(x,'exclusion')
+		warning('Deprecated field. Please use x.dataset.exclusion instead of x.exclusion');
+		if ~isfield(x,'dataset') || ~isfield(x.dataset,'exclusion')
+			x.dataset.exclusion = x.exclusion;
+		end
+		x = rmfield(x,'exclusion');
+	end
+	
 else
 	error('Unknown file extension');
 end
