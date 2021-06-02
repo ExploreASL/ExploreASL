@@ -13,28 +13,43 @@ function [x] = ExploreASL_Initialize(varargin)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: 
 %
-% This initialization wrapper initializes ExploreASL: managing paths, deployment, etc.
-% Using the following initialization functions functions:
+% This initialization workflow initializes ExploreASL. The overall workflow is shown below:
+% 
+% 1. Admin
+% - Input parsing (inputParsing, ExploreASL_Initialize_convertParsedInput, ExploreASL_Initialize_storeParsedInput)
+% - Initialize substructs of the ExploreASL x structure (ExploreASL_Initialize_SubStructs)
+% - Check input parameters and determine pipeline related booleans (ExploreASL_Initialize_GetBooleansImportProcess)
 %
-% xASL_init_DefinePaths            - manages folders for ExploreASL, and sets and creates study/data-folders
-% xASL_init_Toolboxes              - initialization third-party toolboxes, e.g. SPM, dip_image (soon to be removed)
-% xASL_init_VisualizationSettings  - defines visualization settings for
-%                                    visual QC figure printing (type help xASL_init_VisualizationSettings for more information)
-% xASL_init_DefineSets             - Define study subjects/parameters for this pipeline run
-% xASL_init_PrintCheckSettings     - prints summarized data parameters and warnings
-% xASL_init_FileSystem             - dirty initialization of common filenames used throughout the pipeline
+% 2. Get ExploreASL path
+% - Check if the current directory is the ExploreASL directory
+% - Check whether MyPath is correct, otherwise obtain correct folder
+% - If something went wrong, select the ExploreASL folder manually
+%
+% 3. Add ExploreASL paths
+%
+% 4. Check DatasetRoot
+% - Check the provided DatasetRoot parameter (is it a path? does it exist? is it a directory?)
+% - Print some basic feedback regarding the chosen ExploreASL settings
+%
+% 5. Check ExploreASL parameter file & general settings
+% - Check if the dataPar.json exists and if it can be loaded or not
+% - Initialize the data independent & dependent settings
+%
+% 6. Print logo & settings
+%
+% 7. Data-specific initialization
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
 %
-% Calling externally:             [x] = ExploreASL_Initialize('/MyDisk/MyStudy/DataPar.json');
+% Calling externally:             [x] = ExploreASL_Initialize('/MyDisk/MyStudy');
 % Debugging/initialization only:  [x] = ExploreASL_Initialize;
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
 
-    %% Admin
+    %% 1. Admin
 
     % Define input parser
     p = inputParsing(varargin{:});
@@ -45,8 +60,8 @@ function [x] = ExploreASL_Initialize(varargin)
     % Store parsed input
     x = ExploreASL_Initialize_storeParsedInput(parameters);
     
-    % Initialize S substruct
-    x.S = struct;
+    % Initialize substructs
+    x = ExploreASL_Initialize_SubStructs(x);
     
     % Check if the ExploreASL pipeline should be run or not
     x = ExploreASL_Initialize_GetBooleansImportProcess(x);
@@ -60,9 +75,8 @@ function [x] = ExploreASL_Initialize(varargin)
         end
     end
     
-
-    %% -----------------------------------------------------------------------------
-    %% Get ExploreASL path
+    
+    %% 2. Get ExploreASL path
 
     % Check if the current directory is the ExploreASL directory
     CurrCD = pwd;
@@ -109,19 +123,19 @@ function [x] = ExploreASL_Initialize(varargin)
     cd(x.MyPath);
 
 
-    %% Add ExploreASL paths
+    %% 3. Add ExploreASL paths
     if ~isdeployed
         addExploreASLDirectory(x.MyPath)
     end
     
     
-    %% Check DatasetRoot
+    %% 4. Check DatasetRoot
     [x, SelectParFile] = ExploreASL_Initialize_checkDatasetRoot(x, SelectParFile);
     
     % Give some feedback
     ExploreASL_Initialize_basicFeedback(x);
     
-    %% Proceed with Initialization
+    %% 5. Check ExploreASL parameter file & general settings
 
     % Go to ExploreASL folder
     cd(x.MyPath);
@@ -139,13 +153,14 @@ function [x] = ExploreASL_Initialize(varargin)
         end
     end
 
-    %% Initialize general parameters
+    % Initialize general settings
     x = xASL_init_DefineIndependentSettings(x); % these settings are data-independent
 
     x = xASL_init_DefineDataDependentSettings(x); % these settings depend on the data (e.g. which template to use)
 
 
-    %% --------------------------------------------------------------------------------------------------------------------
+    %% 6. Print logo & settings
+    
     % Print logo
     BreakString = '==============================================================================================\n';
 
@@ -165,7 +180,7 @@ function [x] = ExploreASL_Initialize(varargin)
 
     fprintf([BreakString LogoString '\n']);
 
-    %% Print chosen settings
+    % Print chosen settings
     xASL_init_printSettings(x);
 
 
@@ -173,7 +188,7 @@ function [x] = ExploreASL_Initialize(varargin)
     %xASL_adm_CheckPermissions(x.MyPath, false);
 
 
-    %% Data-specific initialization
+    %% 7. Data-specific initialization
     fprintf('ExploreASL v%s initialized ... \n', x.Version);
     
     if (x.opts.bProcessData || x.opts.bOnlyLoad) && ~x.opts.bImportData % Skip this step if we still need to run the import (first initialization)
@@ -205,7 +220,6 @@ function [x] = ExploreASL_Initialize(varargin)
 end
 
 
-%% ==================================================================================
 %% ==================================================================================
 function [x] = xASL_init_RemoveLockDirs(x)
 %xASL_init_RemoveLockDirs Remove 'lock-dir' if present from aborted previous run, for current subjects only
@@ -339,6 +353,7 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
     end
     
 end
+
 
 %% -----------------------------------------------------------------------
 %% Store parsed input
@@ -655,6 +670,22 @@ function [x] = ExploreASL_Initialize_DetermineRequiredPaths(x)
     if ~isempty(fileListDataPar)
         x.dir.dataPar = fileListDataPar{1};
     end
+
+end
+
+
+%% -----------------------------------------------------------------------
+function [x] = ExploreASL_Initialize_SubStructs(x)
+
+    x.S = struct; % Statistics
+    x.D = struct; % Directories
+    x.P = struct; % Paths
+    x.Q = struct; % Quality
+    
+    x.settings = struct;    % Workflow settings
+    x.dataset = struct;     % Dataset related fields
+    x.external = struct;    % Toolbox related fields (SPM, CAT, etc.)
+    x.dir = struct;         % BIDS related directories (sourceStructure, studyPar, dataset_description, etc.)
 
 end
 
