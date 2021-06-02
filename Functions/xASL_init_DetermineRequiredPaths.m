@@ -1,5 +1,25 @@
-%% -----------------------------------------------------------------------
 function [x] = xASL_init_DetermineRequiredPaths(x)
+%xASL_init_DetermineRequiredPaths Check the BIDS dataset root for the metadata JSON files
+%
+% FORMAT: 
+%   [x] = xASL_init_DetermineRequiredPaths(x)
+%
+% INPUT:
+%   x             - ExploreASL x structure (REQUIRED, STRUCT)
+%
+% OUTPUT:
+%   x             - ExploreASL x structure
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Check the BIDS dataset root for the metadata JSON files.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
+
+    %% Check the BIDS dataset root for the metadata JSON files
 
     % BIDS DatasetRoot directory
     x.dir.DatasetRoot = x.opts.DatasetRoot;

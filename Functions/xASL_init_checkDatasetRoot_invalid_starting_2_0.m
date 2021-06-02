@@ -1,5 +1,27 @@
-%% -----------------------------------------------------------------------
 function [x, SelectParFile] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
+%xASL_init_checkDatasetRoot_invalid_starting_2_0 Script for backwards compatibility. 
+% This functionality allows loading JSON files instead of the BIDS dataset root.
+%
+% FORMAT: 
+%   [x, SelectParFile] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
+%
+% INPUT:
+%   x             - ExploreASL x structure (REQUIRED, STRUCT)
+%
+% OUTPUT:
+%   x             - ExploreASL x structure
+%   SelectParFile - Variable to determine if we need to ask the user another time for the DatasetRoot
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Script for backwards compatibility. This functionality allows loading JSON files instead of the BIDS dataset root.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
+
+    %% Find out which descriptive JSON file was provided, then try set up ExploreASL using it
 
     % Input is either a sourceStructure.json, dataset_description.json or dataPar.json
     warning('You provided a descriptive JSON file. We recommend to use the dataset root folder instead...');

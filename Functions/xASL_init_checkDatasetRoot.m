@@ -1,5 +1,26 @@
-%% -----------------------------------------------------------------------
 function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
+%xASL_init_checkDatasetRoot Check the ExploreASL parameter "DatasetRoot"
+%
+% FORMAT: 
+%   [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
+%
+% INPUT:
+%   x             - ExploreASL x structure (REQUIRED, STRUCT)
+%   SelectParFile - Variable to determine if we need to ask the user another time for the DatasetRoot (REQUIRED, INTEGER)
+%
+% OUTPUT:
+%   x             - ExploreASL x structure
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Check the ExploreASL parameter "DatasetRoot".
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
+
+    %% Check the ExploreASL parameter "DatasetRoot"
 
     % Default
     x.opts.bOnlyLoad = 0;
