@@ -195,9 +195,9 @@ T.IntScale{8}   = [0.75 0.65];
 T.ColorMapIs{10}= x.S.jet256;
 T.ColorMapIs{11}= {x.S.jet256};
 
-T.NameExt       = {[] [] 'Reg_pWM' []};
-T.NameExt( 5:8) = {[] [] 'Reg_pGM' []};
-T.NameExt(9:11) = {[] 'Reg_pWM' 'AnalysisMask'};
+T.NameExt       = {[] [] 'Reg' []};
+T.NameExt( 5:8) = {[] [] 'Reg' []};
+T.NameExt(9:11) = {[] 'Reg' 'AnalysisMask'};
 
 % Fill missing cells
 Pars = {'ImIn' 'DirOut' 'ClipZero' 'IntScale' 'NameExt' 'ColorMapIs'}; % default pars
@@ -239,8 +239,8 @@ for iN=1:nRows
     T2.CorSlices(nRow1)     = {'n/a'};
     T2.CorSlices(nRow2)     = {[]};
 
-    T2.NameExt(nRow1)       = cellfun(@(x) ['Tra_' x], T.NameExt(ImsI), 'UniformOutput',false);
-    T2.NameExt(nRow2)       = cellfun(@(x) ['Cor_' x], T.NameExt(ImsI), 'UniformOutput',false);
+    T2.NameExt(nRow1)       = cellfun(@(x) ['Tra' x], T.NameExt(ImsI), 'UniformOutput',false);
+    T2.NameExt(nRow2)       = cellfun(@(x) ['Cor' x], T.NameExt(ImsI), 'UniformOutput',false);
     T2.ImIn                 = [T.ImIn(ImsI) T.ImIn(ImsI)];
     T2.DirOut               = [T.DirOut(ImsI) T.DirOut(ImsI)];
     T2.IntScale             = [T.IntScale(ImsI) T.IntScale(ImsI)];
