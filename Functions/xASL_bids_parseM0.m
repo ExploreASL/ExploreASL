@@ -78,9 +78,6 @@ if isfield(JSON, 'M0Type')
         % which happens in xASL_wrp_Resample
         case {'use_control_as_m0', 'Absent'}
             if isfield(JSON, 'BackgroundSuppression')
-                if JSON.BackgroundSuppression
-                    warning('Using mean control as M0 but background suppression was present');
-                end
                 JSON.M0 = 'UseControlAsM0';
 				JSON = rmfield(JSON,'M0Type');
                 spm_jsonwrite(PathJSON, JSON);
