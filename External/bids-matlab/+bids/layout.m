@@ -46,6 +46,8 @@ function BIDS = layout(root, tolerant)
   % BIDS.sess         -- for sub-<participants_label>_sessions.tsv (should go within subjects)
   % BIDS.participants -- for participants.tsv
   % BIDS.subjects'    -- structure array of subjects
+  % BIDS.subjectName  -- cellstr of subject names
+  % BIDS.sessionName  -- cellstr of session names
 
   BIDS = struct( ...
                 'dir', root, ...
@@ -154,6 +156,9 @@ function BIDS = layout(root, tolerant)
       end
     end
   end
+  
+  BIDS.subjectName = sub;
+  BIDS.sessionName = sess;
 
 end
 
