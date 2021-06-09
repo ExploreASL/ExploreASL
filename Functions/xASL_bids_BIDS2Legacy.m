@@ -99,29 +99,34 @@ bidsPar = xASL_bids_Config();
 %% ------------------------------------------------------------------------------------
 %% 1. Parse a folder using bids-matlab
 BIDS = bids.layout(fullfile(pathStudy,'rawdata'));
+nSubjects = numel(BIDS.subjectName);
+nVisits = numel(BIDS.sessionName); % this is called sessions in BIDS
+% we use this below to see if the legacy subjectname gets _1 as visit suffix or not
 
 fprintf('%s\n', ['Converting from BIDS to Legacy: ' pathStudy]);
 
 %% -----------------------------------------------
 %% 2. Define Subject
-nSubjects = length(BIDS.subjects);
-for iSubject=1:nSubjects % iterate over subjects
-    xASL_TrackProgress(iSubject, nSubjects);
-    SubjectID = BIDS.subjects(iSubject).name;
+for iSubjSess=1:numel(BIDS.subjects) % iterate over BIDS.subjects (indices that include both subjects & sessions)
+    % so  1 subject  6 session/visits, will give numel(BIDS.subjects)=6
+    % and 6 subjects 1 session/visits, will give numel(BIDS.subjects)=6
+    xASL_TrackProgress(iSubjSess, nSubjects);
+    SubjectID = BIDS.subjects(iSubjSess).name;
+    SessionID = BIDS.subjects(iSubjSess).session;
     % Currently, ExploreASL concatenates subject_visit/timepoint in the
     % same folder layer, so we only use SubjectSession
 
     %% -----------------------------------------------
     %% 3. Define SubjectVisit
-    nVisits = max([1 length(BIDS.subjects(iSubject).session)]); % minimal 1 visit
-    for iVisit=1:nVisits % iterate visits in this Subject
+    iVisit = find(strcmp(BIDS.sessionName, SessionID));
+    % remove iteration for iVisit=1 % iterate visit/session in this "BIDS.subjects" (always 1 session per BIDS.subjects)
         % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
         if nVisits==1
             pathLegacy_SubjectVisit = fullfile(pathLegacy, SubjectID);
             VisitString = '';
         else
             pathLegacy_SubjectVisit = fullfile(pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
-            VisitString = [' visit ' BIDS.subjects(iSubject).session];
+            VisitString = [' visit ' SessionID];
         end
         SubjectVisit = [SubjectID VisitString];
         xASL_adm_CreateDir(pathLegacy_SubjectVisit);
@@ -133,8 +138,8 @@ for iSubject=1:nSubjects % iterate over subjects
         nModalities = length(ModalitiesUnique);
         for iModality=1:nModalities % iterate modalities in this Subject/Visit
             ModalityIs = ModalitiesUnique{iModality};
-            if isfield(BIDS.subjects(iSubject), ModalityIs) && ~isempty(BIDS.subjects(iSubject).(ModalityIs))
-                ModalityFields = BIDS.subjects(iSubject).(ModalityIs);
+            if isfield(BIDS.subjects(iSubjSess), ModalityIs) && ~isempty(BIDS.subjects(iSubjSess).(ModalityIs))
+                ModalityFields = BIDS.subjects(iSubjSess).(ModalityIs);
                 nScans = length(ModalityFields);
 
                 % Parse fields of this modality for combinations ScanType & Run, in a reference table
@@ -213,7 +218,7 @@ for iSubject=1:nSubjects % iterate over subjects
                                 pathOrig = '';
                                 pathDest = '';
                                 
-                                pathOrig{1} = fullfile(BIDS.subjects(iSubject).path, ModalityIs, ModalityFields(TypeRunIndex).filename);
+                                pathOrig{1} = fullfile(BIDS.subjects(iSubjSess).path, ModalityIs, ModalityFields(TypeRunIndex).filename);
                                 [~, ~, Fext] = xASL_fileparts(ModalityFields(TypeRunIndex).filename);
                                 pathDest{1} = fullfile(pathLegacy_SubjectVisit, FolderIs, [FileIs Fext]);
                                 
@@ -258,7 +263,7 @@ for iSubject=1:nSubjects % iterate over subjects
                 end
             end
         end
-    end
+    % end
 end
 
 fprintf('\n');
