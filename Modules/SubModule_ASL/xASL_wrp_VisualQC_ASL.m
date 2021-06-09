@@ -239,8 +239,8 @@ for iN=1:nRows
     T2.CorSlices(nRow1)     = {'n/a'};
     T2.CorSlices(nRow2)     = {[]};
 
-    T2.NameExt(nRow1)       = cellfun(@(x) ['Tra' x], T.NameExt(ImsI), 'UniformOutput',false);
-    T2.NameExt(nRow2)       = cellfun(@(x) ['Cor' x], T.NameExt(ImsI), 'UniformOutput',false);
+    T2.NameExt(nRow1)       = cellfun(@(x) ['Tra_' x], T.NameExt(ImsI), 'UniformOutput',false);
+    T2.NameExt(nRow2)       = cellfun(@(x) ['Cor_' x], T.NameExt(ImsI), 'UniformOutput',false);
     T2.ImIn                 = [T.ImIn(ImsI) T.ImIn(ImsI)];
     T2.DirOut               = [T.DirOut(ImsI) T.DirOut(ImsI)];
     T2.IntScale             = [T.IntScale(ImsI) T.IntScale(ImsI)];

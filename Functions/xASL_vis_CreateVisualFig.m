@@ -345,7 +345,13 @@ if numel(DirOut)>1 && numel(ImOut)>1 % when DirOut or ImOut==NaN, skip this
     xASL_adm_CreateDir(DirOut);
 	FileName = NamePrefix;
     for iC=1:length(Ffile)
-        FileName = [FileName '_' Ffile{iC}];
+		if isempty(FileName)
+			FileName = Ffile{iC};
+		elseif FileName(end) == '_'
+			FileName = [FileName Ffile{iC}];
+		else
+			FileName = [FileName '_' Ffile{iC}];
+		end
     end
     OutputFile = fullfile(DirOut,[FileName '.jpg']);
     xASL_vis_Imwrite(ImOut, OutputFile);
