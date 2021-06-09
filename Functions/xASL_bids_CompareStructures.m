@@ -570,99 +570,33 @@ end
 function [differences,identical,dn] = compareNIFTI(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii)
 
     % Read files if they exist
-    if (exist(currentFileA,'file') && exist(currentFileB,'file')) % xASL_exist somehow didn't work here (again)
-        % Check file size (there were some 0KB images in the bids-examples)
-        tmpFileA = dir(currentFileA);
-        tmpFileB = dir(currentFileB);
-        sizeA = tmpFileA.bytes;
-        sizeB = tmpFileB.bytes;
-
-        % Check file size (images with a file size lower than 1 byte are corrupt)
-        if (sizeA>1 && sizeB>1)
-
-            % Work on copy (untouch behavior)
-            [~,nameNiftiA,~] = xASL_fileparts(char(currentFileA));
-            [~,nameNiftiB,~] = xASL_fileparts(char(currentFileB));
-            pathCopyA = strrep(char(currentFileA),nameNiftiA,[nameNiftiA '_tmp_copy']);
-            pathCopyB = strrep(char(currentFileB),nameNiftiB,[nameNiftiB '_tmp_copy']);
-            xASL_Copy(char(currentFileA),pathCopyA);
-            xASL_Copy(char(currentFileB),pathCopyB);
-            imageA = xASL_io_Nifti2Im(pathCopyA);
-            imageB = xASL_io_Nifti2Im(pathCopyB);
-
-            % Check that matrix dimensions agree first
-            sizeA = size(imageA);
-            sizeB = size(imageB);
-            if length(sizeA)==length(sizeB)
-                if sum(sizeA==sizeB)==length(sizeA)
-                    % Get RMSE
-                    RMSE = sqrt(mean((imageA(:) - imageB(:)).^2))*2/sqrt(mean(abs(imageA(:)) + abs(imageB(:))).^2);
-                    % Get MIN
-                    if length(size(imageA))>=3
-                        minA = min(min(min(min(imageA))));
-                        maxA = max(max(max(max(imageA))));
-                    else
-                        minA = NaN;
-                        maxA = NaN;
-                    end
-                    % Get MAX
-                    if length(size(imageB))>=3
-                        minB = min(min(min(min(imageB))));
-                        maxB = max(max(max(max(imageB))));
-                    else
-                        minB = NaN;
-                        maxB = NaN;
-                    end
-                    
-                    if (RMSE>threshRmseNii)
-                        % Report function which prints to the console
-                        if bPrintReport
-                            fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                            fprintf('\t\t\t\tRMSE     (%d)\n',RMSE);
-                            fprintf('\t\t\t\tMIN-DIFF (%d)\n',minA-minB);
-                            fprintf('\t\t\t\tMAX-DIFF (%d)\n',maxA-maxB);
-                        end
-                        identical = false;
-
-                        % Save difference
-                        differences{dn,1} = ['RMSE of NIFTIs above threshold: ', allFiles{iFile}, ' '];
-                        dn = dn+1;
-                    end
-                else
-                    if bPrintReport
-                        fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                        fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
-                    end
-                    identical = false;
-
-                    % Save difference
-                    differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
-                    dn = dn+1;
-                end
-            else
-                if bPrintReport
-                    fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                    fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
-                end
-                identical = false;
-
-                % Save difference
-                differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
-                dn = dn+1;
-            end
-
-            % Delete copies
-            xASL_delete(pathCopyA);
-            xASL_delete(pathCopyB);
-        else
+    if (exist(currentFileA,'file') && exist(currentFileB,'file'))
+        [~,RMSE,~,~,dimCheck] = xASL_im_CompareNiftis(currentFileA,currentFileB,bPrintReport);
+        
+        % Check RMSE
+        if (RMSE>threshRmseNii)
             if bPrintReport
-                fprintf('%s:\t\t\n',allFiles{iFile});
-                fprintf('\t\t\t\tFile is too small to be a real image.\n');
+                fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                fprintf('\t\t\t\tRMSE of NIFTIs above threshold.\n');
             end
-            % Save difference
-            differences{dn,1} = ['File is too small to be a real image: ', allFiles{iFile}, ' '];
+            identical = false;
+            differences{dn,1} = ['RMSE of NIFTIs above threshold: ', allFiles{iFile}, ' '];
             dn = dn+1;
         end
+        
+        % Check image dimensions
+        if ~dimCheck
+            if bPrintReport
+                fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+            end
+            identical = false;
+            
+            % Save difference
+            differences{dn,1} = ['Matrix dimensions do not agree: ', allFiles{iFile}, ' '];
+            dn = dn+1;
+        end
+                
     end
 
 end
