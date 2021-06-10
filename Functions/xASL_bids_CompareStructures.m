@@ -198,7 +198,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     
     
     % Compare file content
-    [identical,results.differences] = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,bPrintReport,threshRmseNii);
+    [identical,results.differences] = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,bPrintReport,detailedOutput,threshRmseNii);
     
     % Print differences as warnings
     if printWarnings
@@ -303,7 +303,7 @@ function printList(currentList)
 end
 
 %% Check file contents
-function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,pathDatasetB,identical,bPrintReport,threshRmseNii)
+function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB,pathDatasetA,pathDatasetB,identical,bPrintReport,detailedOutput,threshRmseNii)
     
     % All files
     allFiles = unique([filesDatasetA',filesDatasetB']');
@@ -329,7 +329,7 @@ function [identical,differences] = checkFileContents(filesDatasetA,filesDatasetB
         elseif strcmp(extension,'.txt') || strcmp(extension,'.csv')
             [differences,identical,dn] = compareTEXT(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB);
         elseif strcmp(extension,'.nii') || ~isempty(strfind(allFiles{iFile},'.nii.gz'))
-            [differences,identical,dn] = compareNIFTI(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii);
+            [differences,identical,dn] = compareNIFTI(differences,identical,bPrintReport,detailedOutput,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii);
         end
     end
 end
@@ -567,11 +567,11 @@ end
 
 
 %% Compare NIFTI files
-function [differences,identical,dn] = compareNIFTI(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii)
+function [differences,identical,dn] = compareNIFTI(differences,identical,bPrintReport,detailedOutput,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii)
 
     % Read files if they exist
     if (exist(currentFileA,'file') && exist(currentFileB,'file'))
-        [~,RMSE,~,~,dimCheck] = xASL_im_CompareNiftis(currentFileA,currentFileB,bPrintReport);
+        [~,RMSE,~,~,dimCheck] = xASL_im_CompareNiftis(currentFileA,currentFileB,detailedOutput);
         
         % Check RMSE
         if (RMSE>threshRmseNii)
