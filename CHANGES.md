@@ -12,7 +12,7 @@
 ---
 ## ExploreASL v1.6.1
 
-## Bug Fixes
+### Bug Fixes
 
 * #578 Fix incorrect path searching by providing error if no .json-file is inputted
 
