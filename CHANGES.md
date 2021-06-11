@@ -21,7 +21,7 @@
 
 ### Versions included software
 
-Versions included & used third-party tools (see /External/README_SPM.txt):
+Versions included & used third-party tools (see `/External/README_SPM.txt`):
 
 * SPM12 7219 
 * CAT12 r1615 
@@ -29,12 +29,12 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 
 ### Feature improvements (still backward compatible)
 
-* Issues #62, #266, #449: JSON i/o unify and use spm_jsonread and spm_jsonwrite for all operations
+* Issues #62, #266, #449: JSON i/o unify and use `spm_jsonread` and `spm_jsonwrite` for all operations
 * Issue #349: Improve screenprint of the current subjects/sessions/modules by xASL_Iteration
 * Issue #384: Add method to export image matrices as structured points in VTK format
 * Issue #523: Update ExploreASL_ImportConfig to work with JSONs and add alert for users
 * Issue #538: Function to user-replace label values in atlas NIfTI, written for the CICERO study
-* Issue #559: Add option x.MakeNIfTI4DICOM to create CBF optimized for DICOM creation/PACS export
+* Issue #559: Add option `x.MakeNIfTI4DICOM` to create CBF optimized for DICOM creation/PACS export
 
 ### Work in progress
 
@@ -48,7 +48,7 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 * Issue #353: Correct conversion BIDS->Legacy for M0 with reversed PE direction
 * Issues #394,#514,#545: Improve modularity of the ASL-BIDS import module
 * Issue #411: Delete temporary folders in DICOM->BIDS conversion
-* Issue #421: Use ImageType DICOM field to detect scan order in GE in DICOM->BIDS import
+* Issue #421: Use `ImageType` DICOM field to detect scan order in GE in DICOM->BIDS import
 * Issue #426: Reading PLD from DICOM for GE in import to BIDS
 * Issue #479: ASL-BIDS import for Hadamard encoded FME sequences
 
@@ -68,7 +68,7 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 * Issue #415: xASL_Copy: Allow recursive copying of directories
 * Issue #418: Verifies the SliceTiming parameter if timing difference is consistent between slices
 * Issue #424,#454: Remove `string` and `contains` functions to ensure Matlab compatibility for R2016
-* Issue #430: Fix xASL_adm_ReplaceSymbols crash when trying to replace sub-strings in PhoenixProtocol field
+* Issue #430: Fix `xASL_adm_ReplaceSymbols` crash when trying to replace sub-strings in PhoenixProtocol field
 * Issues #433,#474,#542: Splitting of ASL and M0 - fix on rerun, split metadata, backup aslcontext.tsv
 * Issue #451: Clean unused code and cleaned the development directory
 * Issue #466: Warning if the equal sign is used in JSON files instead of colon
@@ -105,14 +105,14 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 
 ### Bug Fixes
 
-* Issue #439 Fix population module error by correctly renaming MNI_Structural.* files
+* Issue #439 Fix population module error by correctly renaming `MNI_Structural.*` files
 
 ----
 ## ExploreASL v1.5.0
 
 ### Versions included software
 
-Versions included & used third-party tools (see /External/README_SPM.txt):
+Versions included & used third-party tools (see `/External/README_SPM.txt`):
 
 * SPM12 7219 
 * CAT12 r1615 
@@ -168,11 +168,11 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 * Issue #355: Documentation improvements regarding input parameters
 
 ### Testing
-* #193,#350,#398: Testing DICOM to BIDS conversion against a reference
-* #294: Implement initial unit testing framework
-* #326: Parse warnings/errors from all log in all subdirectories
-* #369: Unit testing of `xASL_test_getLogContent`
-* #371,#376,#404: Testing script for the DICOM->BIDS->Legacy conversion and processing
+* Issues #193,#350,#398: Testing DICOM to BIDS conversion against a reference
+* Issue #294: Implement initial unit testing framework
+* Issue #326: Parse warnings/errors from all log in all subdirectories
+* Issue #369: Unit testing of `xASL_test_getLogContent`
+* Issues #371,#376,#404: Testing script for the DICOM->BIDS->Legacy conversion and processing
 
 ----
 ## ExploreASL v1.4.0
@@ -188,7 +188,7 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 
 * Issue #20 Implement BASIL -> changed order quantification/masking, and always save resampled PWI4D for quantification, facilitating BASIL
 * Issue #35 Calculation background suppression efficiency for pseudo-M0 -> in case of missing separate M0 images but still using background suppressed mean control as pseudo-M0, a single correction value (3D) or slice-wise correction value (2D) are applied to the pseudo-M0 image/slices
-* Issue #131 ExploreASL_GUI beta-testing enhancements set 1 -> Aesthetic improvements in certain modules, fixed incorrect removal of Philips-related json-sidecar fields in DCM2BIDS / Import module. Correction of ASL image flickering bug and ability for the user to subset without having to reload the data. Added ability to clarify data type of variables without the need to reload data. Added auto-select / auto-complete functionality in the ParmsMaker module as soon as the user indicates an analysis directory (i.e auto-completion of SliceReadoutTime for pCASL)
+* Issue #131 ExploreASL_GUI beta-testing enhancements set 1 -> Aesthetic improvements in certain modules, fixed incorrect removal of Philips-related json-sidecar fields in DCM2BIDS / Import module. Correction of ASL image flickering bug and ability for the user to subset without having to reload the data. Added ability to clarify data type of variables without the need to reload data. Added auto-select / auto-complete functionality in the ParmsMaker module as soon as the user indicates an analysis directory (i.e auto-completion of `SliceReadoutTime` for pCASL)
 * Issue #166 Update ADNI import in ExploreASL_Import
 * Issue #179 Finish creation average maps for CICERO -> improvements xASL_wrp_CreatePopulationTemplates
 * Issue #190 Hammers atlas option CAT12 -> restored the original Hammers atlas option for a colleague (note it's license though!)
@@ -232,7 +232,7 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 * Issue #76: Improve functionality of ExploreASL through Command Line Interface (CLI), i.e. without using the Graphical User Interface (GUI) of Matlab
 * Issue #123 Create status files also for skipped processing parts: this is mainly the case for running the structural module without a FLAIR scan. Having all status files helps third-party tools such as the Python ExploreASL GUI to know that processing has succesfully completed (duplicate issues #137 and #129)
 * The same was done for the ASL realignment status file, in case realignment is skipped for a 3D scan
-* Issue #145: Improve .nii(.gz) management in xASL_spm_deformations: allow either .nii or .nii.gz as input, treat them equally, and when .nii.gz is provided as output path, zip the resulting deformed image
+* Issue #145: Improve `.nii(.gz)` management in `xASL_spm_deformations`: allow either .nii or .nii.gz as input, treat them equally, and when `.nii.gz` is provided as output path, zip the resulting deformed image
 
 
 ### Work in progress
@@ -298,13 +298,13 @@ This is part of a continuous development on creating average flow territory temp
 ### Bug Fixes
 
 * xASL_qc_TestExploreASL: Remove locked folders if rerun
-* Issue #90 xASL_io_Nifti2Im: manage the detection of odd scaling
-* Issue #93 xASL_SysMove: diz illegal symbols Windows
-* Issue #102 xASL_wrp_CreatePopulationTemplates: minor bugfix
+* Issue #90 `xASL_io_Nifti2Im`: manage the detection of odd scaling
+* Issue #93 `xASL_SysMove`: diz illegal symbols Windows
+* Issue #102 `xASL_wrp_CreatePopulationTemplates`: minor bugfix
 * Issue #104 Fix creation ResultsTable for TestCases (also #86)
 * Issue #114 Acquiring Matlab version doesn't crash anymore in deployed mode
 * Issue #115 Fixing NaNs problem in M0 mask computation
-* Issue #118 xASL_adm_GzipAllFiles doesn't crash anymore in Windows
+* Issue #118 `xASL_adm_GzipAllFiles` doesn't crash anymore in Windows
 
 * Issue #116 ExploreASL testing fixes:
     * Edit header of saved .tsv-file
@@ -317,7 +317,7 @@ This is part of a continuous development on creating average flow territory temp
 
 * Issue #96 Fix order of magnitude in JSON sidecars
 * Issue #109 No warning if SliceReadoutTime not provided in DataPar
-* Issue #110 xASL_bids_parms2BIDS.m now deals correctly with vectors and SliceReadoutTime = 'shortestTR': created function for this: xASL_quant_SliceReadoutTime_Shortest_TR
+* Issue #110 `xASL_bids_parms2BIDS.m` now deals correctly with vectors and `SliceReadoutTime = 'shortestTR'`: created function for this: `xASL_quant_SliceReadoutTime_Shortest_TR`
 
 ----
 ## ExploreASL v1.2.0
@@ -334,7 +334,7 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 
 * Add user flexibility for creating average maps, allowing flipping
 * Provide a lesion or ROI mask, to be used not only for cost function masking but also as standard space ROI for ROI-analysis
-  This use is now easier, by simply adding Lesion_FLAIR_1.nii or Lesion_T1_2.nii etc, and visualization improved. These masks are now automatically created   (where lesion can be any other ROI):
+  This use is now easier, by simply adding `Lesion_FLAIR_1.nii` or `Lesion_T1_2.nii` etc, and visualization improved. These masks are now automatically created   (where lesion can be any other ROI):
 
 1. Intralesional
 2. Perilesional, pGM+pWM
@@ -347,7 +347,7 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 
 1. bSusceptibilityMask
 2. bVascularMask
-3. subject-wise bGMMask (e.g. the pGM>0.7)
+3. subject-wise bGMMask (e.g. the `pGM>0.7`)
 4. brainmasking when loading for lower memory usage
 
 * Affine registration improved & Discrete Cosine Transform (DCT) non-linear registration option added, including an option with partial volume correction built-in for improved DCT-based registration
@@ -381,7 +381,7 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 
 ### Documentation
  
-* create new prefix for visualization functions (_xASL_vis\_\*_ instead of _xASL_im\_\*_)
+* create new prefix for visualization functions (`xASL_vis\_\*` instead of `xASL_im\_\*`)
 * revamp quantification functions for better headers, comments etc
 
 ----
@@ -411,7 +411,7 @@ Versions included & used third-party tools (see /External/README_SPM.txt):
 ## ExploreASL v1.1.0
 
 ### Versions included software
-Versions included & used third-party tools (see /External/README_SPM.txt):
+Versions included & used third-party tools (see `/External/README_SPM.txt`):
 
 * SPM12 7219 
 * CAT12 r1615 
