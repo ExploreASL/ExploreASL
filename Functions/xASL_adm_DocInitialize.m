@@ -72,6 +72,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     xASL_Copy(fullfile(templatesDir,'ABOUT.md'),fullfile(outputFolder,'About.md'),1);
     
     % Copy the TUTORIALS files
+    xASL_Copy(fullfile(templatesDir,'FAQ.md'),fullfile(outputFolder,'FAQ.md'),1);
     xASL_Copy(fullfile(templatesDir,'TUTORIALS-ASL-BIDS.md'),fullfile(outputFolder,'Tutorials-ASL-BIDS.md'),1);
     xASL_Copy(fullfile(templatesDir,'TUTORIALS-BASICS.md'),fullfile(outputFolder,'Tutorials-Basics.md'),1);
     xASL_Copy(fullfile(templatesDir,'TUTORIALS-QC.md'),fullfile(outputFolder,'Tutorials-QC.md'),1);
