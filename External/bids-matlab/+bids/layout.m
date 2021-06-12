@@ -143,19 +143,22 @@ function BIDS = layout(root, tolerant)
     error('No subjects found in BIDS directory.');
   end
 
+  fprintf('Parsing BIDS scans:    ');
   for iSub = 1:numel(sub)
-    sess = cellstr(bids.internal.file_utils('List', ...
-                                            fullfile(BIDS.dir, sub{iSub}), ...
-                                            'dir', ...
-                                            '^ses-.*$'));
-    for iSess = 1:numel(sess)
-      if isempty(BIDS.subjects)
-        BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
-      else
-        BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
+      xASL_TrackProgress(iSub, numel(sub));
+      sess = cellstr(bids.internal.file_utils('List', ...
+                                              fullfile(BIDS.dir, sub{iSub}), ...
+                                              'dir', ...
+                                              '^ses-.*$'));
+      for iSess = 1:numel(sess)
+          if isempty(BIDS.subjects)
+             BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
+          else
+             BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
       end
     end
   end
+  fprintf('\n');
   
   BIDS.subjectName = sub;
   BIDS.sessionName = sess;
@@ -220,12 +223,9 @@ function subject = parse_anat(subject)
     file_list = return_file_list('anat', subject);
 
     for i = 1:numel(file_list)
-
       subject = append_to_structure(file_list{i}, entities, subject, 'anat');
-
     end
   end
-
 end
 
 function subject = parse_func(subject)
