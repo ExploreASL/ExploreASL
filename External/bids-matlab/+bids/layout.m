@@ -159,6 +159,8 @@ function BIDS = layout(root, tolerant)
     end
   end
   fprintf('\n');
+  fprintf('Note that any warnings may have only printed once if they were repeated for multiple scans\n');
+  fprintf('Always run your rawdata folder through the BIDS validator first and aim to avoid warnings\n');
   
   BIDS.subjectName = sub;
   BIDS.sessionName = sess;
@@ -330,7 +332,9 @@ function subject = parse_perf(subject)
                     subject.perf(j).json_sidecar_filename = [Ffile '.json'];
                     subject.perf(j).meta = bids.util.jsondecode(metafile);
                 else
-                    warning(['Missing: ' metafile]);
+                    WarningID = ['BIDSLAYOUT:Missing' metafile];
+                    warning(WarningID, ['Missing: ' metafile]); % will print this warning unless WarningID has been set OFF
+                    warning('OFF', WarningID); % to print this warning only once
                 end
                 
                 % Manage ASLCONTEXT-sidecar metadata (REQUIRED)
@@ -342,7 +346,9 @@ function subject = parse_perf(subject)
                     subject.perf(j).context_sidecar_filename = [Ffile '.tsv'];
                     subject.perf(j).context = bids.util.tsvread(metafile);
                 else
-                    warning(['Missing: ' metafile]);
+                    WarningID = ['BIDSLAYOUT:Missing' metafile];
+                    warning(WarningID, ['Missing: ' metafile]); % will print this warning unless WarningID has been set OFF
+                    warning('OFF', WarningID); % to print this warning only once
                 end                
                 
                 % Manage M0 (REQUIRED)
@@ -350,8 +356,9 @@ function subject = parse_perf(subject)
                 % M0 field is flexible:
                 
                 if ~isfield(subject.perf(j).meta, 'M0Type')
-                    warning(['M0Type field missing in ' subject.perf(j).json_sidecar_filename]);
-                    
+                    WarningID = 'BIDSLAYOUT:MissingM0TypeField';
+                    warning(WarningID, ['M0Type field missing in ' subject.perf(j).json_sidecar_filename]); % will print this warning unless WarningID has been set OFF
+                    warning('OFF', WarningID); % to print this warning only once
                 else
                     switch subject.perf(j).meta.M0Type
                         case 'Separate'
@@ -366,7 +373,9 @@ function subject = parse_perf(subject)
                             m0_basename = bids.internal.file_utils(bids.internal.file_utils(m0_filename, 'basename'), 'basename'); % remove the extension
                             
                             if isempty(m0_filename)
-                                warning(['Missing: ' m0_filename]);
+                                WarningID = ['BIDSLAYOUT:Missing' m0_filename'];
+                                warning(WarningID, ['Missing: ' m0_filename]); % will print this warning unless WarningID has been set OFF
+                                warning('OFF', WarningID); % to print this warning only once
                             else
                                 % subject.perf(j).m0_filename = m0_filename;
                                 % -> this is included in the same structure for the m0scan.nii
@@ -375,7 +384,9 @@ function subject = parse_perf(subject)
                             % M0 sidecar filename
                             m0_json_sidecar_filename = [m0_basename '.json'];
                             if ~exist(fullfile(pth, m0_json_sidecar_filename), 'file')
-                                warning(['Missing: ' m0_json_sidecar_filename]);
+                                WarningID = ['BIDSLAYOUT:Missing' m0_json_sidecar_filename'];
+                                warning(WarningID, ['Missing: ' m0_json_sidecar_filename]); % will print this warning unless WarningID has been set OFF
+                                warning('OFF', WarningID); % to print this warning only once
                             else
                                 % subject.perf(j).m0_json_sidecar_filename = m0_json_sidecar_filename;
                                  % -> this is included in the same structure for the m0scan.nii
@@ -388,7 +399,9 @@ function subject = parse_perf(subject)
                             else
                                 m0indices = find(cellfun(@(x) strcmp(x, 'm0scan'), subject.perf(j).context.volume_type)==true);
                                 if isempty(m0indices)
-                                    warning('No M0 volume found in aslcontext');
+                                    WarningID = 'BIDSLAYOUT:MissingM0InASLcontext';
+                                    warning(WarningID, 'No M0 volume found in aslcontext'); % will print this warning unless WarningID has been set OFF
+                                    warning('OFF', WarningID); % to print this warning only once
                                 else
                                     subject.perf(j).m0type = 'within_timeseries';
                                     subject.perf(j).m0explanation = 'M0 is one or more image(s) in the *asl.nii[.gz] timeseries';
@@ -411,11 +424,15 @@ function subject = parse_perf(subject)
                             subject.perf(j).m0explanation = 'M0 is absent, so we can use the (average) control volume as pseudo-M0 (if no background suppression was used)';
                             % which is a safe option if no background suppression was used
                             if subject.perf(j).meta.BackgroundSuppression==true
-                                warning('Caution when using control as M0, background suppression was applied');
+                                WarningID = 'BIDSLAYOUT:CautionControlAsM0Bsup';
+                                warning(WarningID, 'Caution when using control as M0, background suppression was applied'); % will print this warning unless WarningID has been set OFF
+                                warning('OFF', WarningID); % to print this warning only once
                             end
                             
                         otherwise
-                            warning(['Unknown M0Type:' subject.perf(j).meta.M0Type ' in ' subject.perf(j).json_sidecar_filename]);
+                            WarningID = 'BIDSLAYOUT:M0TypeUnknown';
+                            warning(WarningID, ['Unknown M0Type:' subject.perf(j).meta.M0Type ' in ' subject.perf(j).json_sidecar_filename]); % will print this warning unless WarningID has been set OFF
+                            warning('OFF', WarningID); % to print this warning only once
                     end
                 end
                     
@@ -476,7 +493,9 @@ function subject = parse_perf(subject)
                 metafile = fullfile(pth, bids.internal.file_utils(fb, 'ext', 'json'));
                 
                 if ~exist(metafile, 'file')
-                    warning(['Missing: ' metafile]);
+                    WarningID = ['BIDSLAYOUT:Missing' metafile];
+                    warning(WarningID, ['Missing: ' metafile]); % will print this warning unless WarningID has been set OFF
+                    warning('OFF', WarningID); % to print this warning only once
                 else
                     [~, Ffile] = fileparts(metafile);
                     subject.perf(j).json_sidecar_filename = [Ffile '.json'];
@@ -499,13 +518,17 @@ function subject = parse_perf(subject)
                     for iPath=1:length(path_intended_for)
                         % check if this NIfTI is not missing
                         if ~exist(fullfile(fileparts(pth), path_intended_for{iPath}), 'file')
-                            warning(['Missing: ' fullfile(fileparts(pth), path_intended_for{iPath})]);
+                            WarningID = 'BIDSLAYOUT:MissingIntendedForField';
+                            warning(WarningID, ['Missing: ' fullfile(fileparts(pth), path_intended_for{iPath})]);  % will print this warning unless WarningID has been set OFF
+                            warning('OFF', WarningID); % to print this warning only once
                         else
                             % also check that this NIfTI aims to the same m0scan
                             [~, path2check, ext2check] = fileparts(path_intended_for{iPath});
                             filename_found = max(arrayfun(@(x) strcmp(x.filename, [path2check ext2check]), subject.perf));
                             if ~filename_found
-                                warning(['Did not find NIfTI for which is intended: ' subject.perf(j).filename]);
+                                WarningID = 'BIDSLAYOUT:MissingIntendedForNifTIFile';
+                                warning(WarningID, ['Did not find NIfTI for which is intended: ' subject.perf(j).filename]); % will print this warning unless WarningID has been set OFF
+                                warning('OFF', WarningID); % to print this warning only once
                             else
                                 subject.perf(j).intended_for = path_intended_for{iPath};
                             end
