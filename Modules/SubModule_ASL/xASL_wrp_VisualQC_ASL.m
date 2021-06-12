@@ -46,6 +46,10 @@ fprintf('%s\n','print visual quality assurance checks');
 Parms.ModuleName = 'ASL';
 close all % close all Figures to avoid capturing & saving the wrong Figure
 
+if ~isfield(, 'vis')
+    x.vis = struct;
+end
+
 x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 
 %% -----------------------------------------------------------------------------------
@@ -183,7 +187,7 @@ x = xASL_adm_ResetVisualizationSlices(x);
 
 % Path to the WM map used for the QC here
 % This can be either the individual map or the template WM map - based on the input parameters
-if isfield(x,'bVisualQCCBFvsGMWMTemplate') && ~isempty(x.bVisualQCCBFvsGMWMTemplate) && x.bVisualQCCBFvsGMWMTemplate == 1
+if isfield(x.vis,'bVisualQCCBFvsGMWMTemplate') && ~isempty(x.vis.bVisualQCCBFvsGMWMTemplate) && x.vis.bVisualQCCBFvsGMWMTemplate
 	% Use the template version for visualization and not the individual one
 	PathpWM = fullfile(x.D.MapsSPMmodifiedDir,'rc2T1_ASL_res.nii');
 	PathpGM = fullfile(x.D.MapsSPMmodifiedDir,'rc1T1_ASL_res.nii');
@@ -193,7 +197,7 @@ else
 	PathpWM = x.P.Pop_Path_PV_pWM;
 	PathpGM = x.P.Pop_Path_PV_pGM;
 
-	if isfield(x,'bVisualQCCBFvsGMWMContour') && ~isempty(x.bVisualQCCBFvsGMWMContour) && x.bVisualQCCBFvsGMWMContour == 1
+	if isfield(x.vis,'bVisualQCCBFvsGMWMContour') && ~isempty(x.vis.bVisualQCCBFvsGMWMContour) && x.vis.bVisualQCCBFvsGMWMContour
 		TextpWM = ['Reg_' x.SUBJECTS{x.iSubject}];
 		TextpGM = ['Reg_' x.SUBJECTS{x.iSubject}];
 	else
@@ -203,7 +207,7 @@ else
 end
 
 % If this option is defined, then do not use the full maps, but rather their contours
-if isfield(x,'bVisualQCCBFvsGMWMContour') && ~isempty(x.bVisualQCCBFvsGMWMContour) && x.bVisualQCCBFvsGMWMContour == 1
+if isfield(x.vis,'bVisualQCCBFvsGMWMContour') && ~isempty(x.vis.bVisualQCCBFvsGMWMContour) && x.vis.bVisualQCCBFvsGMWMContour
 	% Load the map
 	imGM = xASL_io_Nifti2Im(PathpGM);
 	imWM = xASL_io_Nifti2Im(PathpWM);

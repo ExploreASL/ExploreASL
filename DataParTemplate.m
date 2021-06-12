@@ -301,10 +301,10 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % VISUALIZATION PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.bVisualQCCBFvsGMWMTemplate - if == 1, uses the template GM and WM to make visualization overlays with CBF and other derived maps
+% x.vis.bVisualQCCBFvsGMWMTemplate - if == 1, uses the template GM and WM to make visualization overlays with CBF and other derived maps
 %                              if == 0, uses the individual GM and WM maps of the subject to make visualizations
 %                              (OPTIONAL, DEFAULT = 0)
-% x.bVisualQCCBFvsGMWMContour -  if == 1, then produces the GM and WM as a contour in the overlay with CBF and derived maps, not a full ROI - 1 pixel thickness (contour calculated per slice basis).
+% x.vis.bVisualQCCBFvsGMWMContour -  if == 1, then produces the GM and WM as a contour in the overlay with CBF and derived maps, not a full ROI - 1 pixel thickness (contour calculated per slice basis).
 %                              if == 0, then a standard full GM or WM ROI is used
 %                              (OPTIONAL, DEFAULT = 0)
 %   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
