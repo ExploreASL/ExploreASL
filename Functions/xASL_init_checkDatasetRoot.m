@@ -26,7 +26,7 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
     x.opts.bOnlyLoad = 0;
 
     % Check if the DatasetRoot is a directory (NEW - ASL BIDS)
-    x.opts.dataParType = 'unknown'; % Fallback
+    x.opts.dataParType = 'unknown'; % default
     % Create directory field if it doesn't exist already
     if ~isfield(x, 'dir')
         x.dir = struct;
