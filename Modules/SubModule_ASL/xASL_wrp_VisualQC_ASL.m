@@ -179,7 +179,7 @@ function x = xASL_qc_VisualCheckCollective_ASL(x)
 % M0 NoSmoothM0 NoSmoothM0 with overlay c1T1
 % TT TT with overlay c2T1
 
-x               = xASL_adm_ResetVisualizationSlices(x);
+x = xASL_adm_ResetVisualizationSlices(x);
 
 % Path to the WM map used for the QC here
 % This can be either the individual map or the template WM map - based on the input parameters
@@ -277,7 +277,7 @@ nIms = length(T.(Pars{1}));
 nRows = ceil( nIms/4);
 
 for iN=1:nRows
-    clear T2
+    T2 = struct;
     ImsI                    = (iN-1)*4+1:min(nIms,iN*4);
     nImsRow                 = length(ImsI);
     nRow1                   = 1:nImsRow;
@@ -307,17 +307,17 @@ for iN=1:nRows
         % Sagittal
         x.S.SagSlices   = []; % show no sagittal slices
         % Transversal
-        if      isempty(T2.TraSlices{iM})
+        if isempty(T2.TraSlices{iM})
                 x.S.TraSlices   = x.S.slicesLarge;
-        elseif  strcmp(T2.TraSlices{iM},'n/a')
+        elseif strcmp(T2.TraSlices{iM},'n/a')
                 x.S.TraSlices   = [];
         else
                 warning('Wrong slice choice');
         end
         % Coronal
-        if      isempty(T2.CorSlices{iM})
+        if isempty(T2.CorSlices{iM})
                 x.S.CorSlices   = x.S.slicesLarge+7;
-        elseif  strcmp(T2.CorSlices{iM},'n/a')
+        elseif strcmp(T2.CorSlices{iM},'n/a')
                 x.S.CorSlices   = [];
         else
                 warning('Wrong slice choice');
@@ -333,12 +333,8 @@ for iN=1:nRows
 end
 
 % Delete the temporary contours if they exist
-if exist(fullfile(x.SESSIONDIR,'pGMC.nii'),'file')
-	xASL_delete(fullfile(x.SESSIONDIR,'pGMC.nii'));
-end
-if exist(fullfile(x.SESSIONDIR,'pWMC.nii'),'file')
-	xASL_delete(fullfile(x.SESSIONDIR,'pWMC.nii'));
-end
+xASL_delete(fullfile(x.SESSIONDIR,'pGMC.nii'));
+xASL_delete(fullfile(x.SESSIONDIR,'pWMC.nii'));
 
 fprintf('\n');
    
