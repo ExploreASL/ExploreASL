@@ -22,7 +22,7 @@ function [x] = xASL_init_FileSystem(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_init_FileSystem(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------
@@ -30,27 +30,18 @@ function [x] = xASL_init_FileSystem(x)
 x.P = struct; % (re-)initiate P (otherwise the looping below gets too much)
 
 
-
-
 %% 1) Create folders
-xASL_adm_CreateDir(x.D.T1CheckDir); 
 % Put this dir creation in separate scripts
 % Create derivative dir as subfolder in each subject folder, where to put output,
 % keeping original files
-% /dartel -> /Population folder, 
-% standardize naming creation
+% /dartel -> /Population folder, standardize naming creation
 
+xASL_adm_CreateDir(x.D.PopDir);
+xASL_adm_CreateDir(x.D.T1CheckDir); 
 xASL_adm_CreateDir(x.D.TissueVolumeDir);
-% xASL_adm_CreateDir(x.D.CoregDir);
-% xASL_adm_CreateDir(x.D.FlowFieldCheck);
-
 xASL_adm_CreateDir(x.D.FLAIR_CheckDir);
-% xASL_adm_CreateDir(x.D.FLAIR_REGDIR);
-
 xASL_adm_CreateDir(x.D.ASLCheckDir);
 xASL_adm_CreateDir(x.D.MotionDir);
-% xASL_adm_CreateDir(x.D.RawEPIdir);
-
 xASL_adm_CreateDir(x.D.M0CheckDir);  
 xASL_adm_CreateDir(x.D.M0regASLdir);
 
