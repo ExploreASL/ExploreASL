@@ -35,6 +35,12 @@ function [result, x] = xASL_module_Population(x)
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin
 
+% Create population directory
+if ~xASL_exist(x.D.PopDir)
+    xASL_adm_CreateDir(x.D.PopDir);
+end
+
+% Input check
 if x.opts.iWorker>1 % run population module only once when ExploreASL is called multiple times in parallel
     warning(['I am worker ' xASL_num2str(x.opts.iWorker) ', population module should not run in parallel, skipping']);
     result = true;

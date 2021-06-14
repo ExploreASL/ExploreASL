@@ -77,11 +77,7 @@ function [x] = xASL_init_DefinePaths(x)
             x.S.StatsDir            = fullfile(x.D.PopDir, 'Stats');
             x.D.HistogramDir        = fullfile(x.D.PopDir, 'Histograms');
             x.D.StatsMaps           = fullfile(x.D.PopDir, 'StatsMaps');
-
-            % Create Population directory for processing pipeline
-            if strcmp(x.opts.dataParType, 'dataParFile')
-                xASL_adm_CreateDir(x.D.PopDir);
-            end
+            
         end
     end
 
