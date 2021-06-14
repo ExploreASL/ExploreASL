@@ -322,8 +322,9 @@ try
             end
         end
     end
-catch
-    warning('Adding the GeneratedBy fields failed...\n');
+catch ME
+    warning('Adding the GeneratedBy fields failed...');
+    fprintf('%s\n', ME.message);
 end
 
 %% 13. Clean up
@@ -337,8 +338,9 @@ try
             xASL_Move(sourceCleanUp,destCleanUp);
         end
     end
-catch
-    warning('Clean up failed...\n');
+catch ME
+    warning('Clean up failed...');
+    fprintf('%s\n', ME.message);
 end
 
 end
