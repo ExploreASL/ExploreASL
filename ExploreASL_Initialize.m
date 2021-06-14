@@ -214,7 +214,7 @@ function [x] = ExploreASL_Initialize(varargin)
 
         % Define & print settings
         x = xASL_init_PrintCheckSettings(x);
-        x = xASL_init_FileSystem(x);
+        %x = xASL_init_FileSystem(x);
     end
 
 end
