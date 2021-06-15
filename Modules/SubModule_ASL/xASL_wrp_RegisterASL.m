@@ -584,17 +584,17 @@ PathMaskTemplate = fullfile(x.SESSIONDIR, 'Mask_Template.nii');
 PathTemplate = fullfile(x.SESSIONDIR, 'Mean_CBF_Template.nii');
 [Fpath, Ffile] = xASL_fileparts(x.D.PathMask);
 x.D.PathMask2 = fullfile(Fpath, [Ffile '2.nii']);
-x.PathCBF = fullfile(x.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii');
+x.D.PathCBF = fullfile(x.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii');
 if ~xASL_exist(x.D.PathMask,'file')
     xASL_Copy(PathMaskTemplate, x.D.PathMask);
 end
 PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
 
 xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathMask, 0);
-xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathCBF, 1);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathCBF, 1);
 
 MaskFromTemplate = xASL_io_Nifti2Im(x.D.PathMask)>0.5;
-TemplateIm = xASL_io_Nifti2Im(x.PathCBF);
+TemplateIm = xASL_io_Nifti2Im(x.D.PathCBF);
 
 
 %% Compute wholebrain Tanimoto coefficient
@@ -624,7 +624,7 @@ if x.ComputeDiceCoeff
     DiceCoeff = xASL_im_ComputeDice(maskPWI,MaskFromTemplate);
     fprintf('%s\n',['Joint brainmask Dice= ' num2str(100*DiceCoeff,3) '%']);
 end
-xASL_delete(x.PathCBF);
+xASL_delete(x.D.PathCBF);
 
 
 end
