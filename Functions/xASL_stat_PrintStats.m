@@ -159,10 +159,7 @@ else
     
     % Get Subject regular expression
     SubjectExpression = x.subject_regexp;
-    if strcmp(SubjectExpression(1), '^' )
-        SubjectExpression = SubjectExpression(2:end);
-    end
-    if strcmp(SubjectExpression(end), '$')
+    if strcmp(SubjectExpression(end), '$') % remove this for allowing an ASL suffix
         SubjectExpression = SubjectExpression(1:end-1);
     end
 
@@ -177,21 +174,18 @@ else
             warning(['Could not find subject for ' x.S.SUBJECTID{iSubjSess}]);
 		else
 			% Look also for the session ID including the ASL_\d substring
-			[startSessIndex, endSessIndex] = regexp(x.S.SUBJECTID{iSubjSess}, 'ASL_\d*$');
+			[startSessionIndex, endSessionIndex] = regexp(x.S.SUBJECTID{iSubjSess}, 'ASL_\d*$');
             
-            if isempty(startSessIndex) || isempty(endSessIndex)
+            if isempty(startSessionIndex) || isempty(endSessionIndex)
 				% If the sessionID was not found, then report a warning and use the entire expression for subjectID
 				SubjectID = x.S.SUBJECTID{iSubjSess}(startIndex:endIndex);
                 warning(['Could not find session for ' x.S.SUBJECTID{iSubjSess}]);
 			else
 				% If session ID was identified, we have to double-check that session ID is not part of subject ID and exclude if necessary
-				SubjectID = x.S.SUBJECTID{iSubjSess}(startIndex:min(endIndex,startSessIndex-1));
-				if SubjectID(end) == '_'
-					SubjectID = SubjectID(1:end-1);
-				end
+				SubjectID = x.S.SUBJECTID{iSubjSess}(startIndex:min(endIndex, startSessionIndex-2));
 				
 				% Get session ID
-                SessionID = x.S.SUBJECTID{iSubjSess}(startSessIndex:endSessIndex);
+                SessionID = x.S.SUBJECTID{iSubjSess}(startSessionIndex:endSessionIndex);
 
                 % print subject name
                 fprintf(x.S.FID,'%s\t', SubjectID);
