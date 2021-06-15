@@ -113,7 +113,7 @@ try
         xASL_Move(DARTELdir, PopulationDir);
     elseif exist(DARTELdir,'dir') && exist(PopulationDir, 'dir')
         error('Please first merge or delete old DARTEL dir with PopulationDir, before continuing');
-    elseif ~exist(PopulationDir,'dir')
+	else
         xASL_adm_CreateDir(PopulationDir);
     end
 
