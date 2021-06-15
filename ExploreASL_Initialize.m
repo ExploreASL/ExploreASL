@@ -205,6 +205,8 @@ function [x] = ExploreASL_Initialize(varargin)
         
         % Make sure that the derivatives folder exists (otherwise we can not load a dataset)
         if ~xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'))
+            % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
+            % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
             warning('Dataset can not be loaded, there is no derivatives directory, try to run the import first...');
         end
 
