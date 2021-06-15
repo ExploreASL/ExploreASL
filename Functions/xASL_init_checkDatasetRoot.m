@@ -39,6 +39,9 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
         % Temporary functionality, this will lead to an error starting v2.0.0
         [x, SelectParFile] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x);
     else
+        if ~isempty(x.opts.DatasetRoot) % The user inserted a directory or file which does not exist
+            warning('Dataset root directory does not exist...');
+        end
         if x.opts.bProcessData || x.opts.bImportData
             if ~isdeployed
                 x.opts.DatasetRoot = input('Please insert the path to your study directory: ');
@@ -149,6 +152,9 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
     if x.opts.bOnlyLoad
         if isfield(x,'dir') && isfield(x.dir,'dataPar')
             if isempty(x.dir.dataPar)
+                if ~x.opts.bImportData
+                    warning('You are trying to load a dataset but there is no dataPar JSON file...');
+                end
                 x.opts.bOnlyLoad = 0;
             end
         else

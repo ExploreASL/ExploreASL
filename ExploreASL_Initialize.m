@@ -202,6 +202,11 @@ function [x] = ExploreASL_Initialize(varargin)
             cd(x.D.ROOT);
             x.D.ROOT = pwd;
         end
+        
+        % Make sure that the derivatives folder exists (otherwise we can not load a dataset)
+        if ~xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'))
+            warning('Dataset can not be loaded, there is no derivatives directory, try to run the import first...');
+        end
 
         % Define study subjects/parameters for this pipeline run
         x = xASL_init_DefineStudyData(x);
