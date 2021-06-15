@@ -33,6 +33,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %                       (OPTIONAL, DEFAULT=1)
 % OUTPUT:
 %   x                            - same as input
+%   x.S.SubjectSessionID 		 - %   x.S.SubjectSessionID       - names of the Subject/Sessions in the order of x.S.SetsID/x.S.DAT
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function computes mean and spatial CoV for each ROI,
 %              in a [1.5 1.5 1.5] mm MNI space,

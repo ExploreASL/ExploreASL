@@ -9,8 +9,7 @@ function [x] = xASL_stat_PrintStats(x, bFollowSubjectSessions)
 %   x.S.SaveFile        - name of the TSV output file
 %   x.S.SetsName        - names of the covariates/sets
 %   x.S.NamesROI        - names of the ROIs
-%   x.S.SubjectSessionID       - names of the subjects (can differ from x.SUBJECTS
-%                         if not all subjects had data)
+%   x.S.SubjectSessionID       - names of the Subject/Sessions in the order of x.S.SetsID/x.S.DAT (as specified by bFollowSubjectSessions)
 %   x.S.SetsID          - values of the sets
 %   x.S.SetsOptions     - options for sets (if the sets are ordinal)
 %   bFollowSubjectSessions - boolean specifying which source determines the

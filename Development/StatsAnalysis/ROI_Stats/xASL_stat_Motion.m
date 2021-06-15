@@ -3,6 +3,7 @@ function [x] = xASL_stat_Motion(x)
 
 %% -----------------------------------------------------------------------------------------------
 %% Run basic statistical comparisons
+%   x.S.SubjectSessionID       - names of the Subject/Sessions in the order of x.S.SetsID/x.S.DAT
 
 % Restructure DATA per ROI/measurement
 fprintf('%s\n','Restructure DATA per ROI/measurement');
