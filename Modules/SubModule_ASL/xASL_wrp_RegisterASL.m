@@ -137,32 +137,32 @@ end
 
 %% C. Define paths to the ASL templates
 % Same for all sequences
-x.Bias_Native = fullfile(x.SESSIONDIR,'ATT_BiasField.nii');
-x.Bias_MNI = fullfile(x.D.TemplateDir,'ATT_BiasField.nii');
-x.Vasc_Native = fullfile(x.SESSIONDIR,'VascularArtifact_Template.nii');
-x.Vasc_MNI = fullfile(x.D.TemplateDir,'MaxVesselTemplate.nii');
+x.D.Bias_Native = fullfile(x.SESSIONDIR,'ATT_BiasField.nii');
+x.D.Bias_MNI = fullfile(x.D.TemplateDir,'ATT_BiasField.nii');
+x.D.Vasc_Native = fullfile(x.SESSIONDIR,'VascularArtifact_Template.nii');
+x.D.Vasc_MNI = fullfile(x.D.TemplateDir,'MaxVesselTemplate.nii');
 
-x.Mean_Native = fullfile(x.SESSIONDIR,'Mean_CBF_Template.nii');
-x.Mask_Native = fullfile(x.SESSIONDIR,'Mask_Template.nii');
-x.raw_Native = fullfile(x.SESSIONDIR,'RawTemplate.nii');
+x.D.Mean_Native = fullfile(x.SESSIONDIR,'Mean_CBF_Template.nii');
+x.D.Mask_Native = fullfile(x.SESSIONDIR,'Mask_Template.nii');
+x.D.raw_Native = fullfile(x.SESSIONDIR,'RawTemplate.nii');
 
-x.PathMask = fullfile(x.SESSIONDIR, 'MaskASL.nii');
-x.Path_PseudoTissue = fullfile(x.SESSIONDIR, 'PseudoTissue.nii');
+x.D.PathMask = fullfile(x.SESSIONDIR, 'MaskASL.nii');
+x.D.Path_PseudoTissue = fullfile(x.SESSIONDIR, 'PseudoTissue.nii');
 
 % Differs between sequences
 if      strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'Philips'))
-        x.Mean_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_CBF.nii');
-        x.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
-        x.raw_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii');
+        x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_CBF.nii');
+        x.D.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
+        x.D.raw_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii');
 
 elseif  strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'(Siemens|GE)'))
         %% PM: quicky & dirty fix to run GE 2D EPI with the Siemens 2D EPI template
         % though the template choice may not have a significant effect, as
         % opposed to the inter-individual differences in geometric
         % distortion
-        x.Mean_MNI = fullfile(x.D.TemplateDir,'Siemens_2DEPI_PCASL_noBsup_CBF.nii');
-        x.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
-        x.raw_MNI = fullfile(x.D.TemplateDir,'Siemens_2DEPI_PCASL_noBsup_Control.nii');
+        x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Siemens_2DEPI_PCASL_noBsup_CBF.nii');
+        x.D.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
+        x.D.raw_MNI = fullfile(x.D.TemplateDir,'Siemens_2DEPI_PCASL_noBsup_Control.nii');
 
         % in 3D readouts, background suppression is on by default, but this
         % doesn't matter for the average unsubtracted image, because there
@@ -176,12 +176,12 @@ elseif  strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'(Siemens|GE)'
         % control-label images
 
 elseif  strcmpi(x.Sequence,'3D_GRASE')
-        x.raw_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PCASL_Control_BiasfieldCorr_MoodStudy.nii');
-        x.Mean_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PASL_CBF.nii');
-        x.Mask_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PASL_QC_mask.nii');
+        x.D.raw_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PCASL_Control_BiasfieldCorr_MoodStudy.nii');
+        x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PASL_CBF.nii');
+        x.D.Mask_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PASL_QC_mask.nii');
 elseif  strcmpi(x.Sequence,'3D_spiral')
-        x.Mean_MNI = fullfile(x.D.TemplateDir,'GE_3Dspiral_Product_CBF.nii');
-        x.Mask_MNI = fullfile(x.D.MapsSPMmodifiedDir,'ParenchymNarrow.nii');
+        x.D.Mean_MNI = fullfile(x.D.TemplateDir,'GE_3Dspiral_Product_CBF.nii');
+        x.D.Mask_MNI = fullfile(x.D.MapsSPMmodifiedDir,'ParenchymNarrow.nii');
 else
         error('Unknown sequence/readout');
 end
@@ -192,12 +192,12 @@ xASL_delete(x.P.Path_mean_PWI_Clipped_sn_mat);
 xASL_delete(x.P.Path_mean_PWI_Clipped);
 xASL_delete(x.P.Path_mean_control);
 if strcmp(x.P.SessionID,'ASL_1') || x.dataset.nSessions==1
-    xASL_delete(x.Path_PseudoTissue);
-    xASL_delete(x.Bias_Native);
-    xASL_delete(x.Vasc_Native);
-    xASL_delete(x.Mask_Native);
-    xASL_delete(x.Mean_Native);
-    xASL_delete(x.raw_Native);
+    xASL_delete(x.D.Path_PseudoTissue);
+    xASL_delete(x.D.Bias_Native);
+    xASL_delete(x.D.Vasc_Native);
+    xASL_delete(x.D.Mask_Native);
+    xASL_delete(x.D.Mean_Native);
+    xASL_delete(x.D.raw_Native);
     xASL_delete(x.P.Path_PseudoCBF);
     xASL_delete(fullfile(x.SESSIONDIR,'MaskASL.nii'));
 end
@@ -529,8 +529,8 @@ x.Output.ASL.TC_ASL2T1w_Perc = TanimotoPerc(end);
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
 if x.DELETETEMP
-    File2Del = {x.Mean_Native, x.Bias_Native, x.Vasc_Native, x.Mask_Native, x.raw_Native, x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_DCT,...
-        x.P.Path_mean_control, x.P.Path_PseudoCBF, x.PathMask, x.Path_PseudoTissue, x.PathMask, x.P.Path_mean_PWI_Clipped_ORI};
+    File2Del = {x.D.Mean_Native, x.D.Bias_Native, x.D.Vasc_Native, x.D.Mask_Native, x.D.raw_Native, x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_DCT,...
+        x.P.Path_mean_control, x.P.Path_PseudoCBF, x.D.PathMask, x.D.Path_PseudoTissue, x.D.PathMask, x.P.Path_mean_PWI_Clipped_ORI};
     for iL=1:length(File2Del)
         xASL_delete(File2Del{iL});
     end
@@ -582,18 +582,18 @@ end
 %% Admin
 PathMaskTemplate = fullfile(x.SESSIONDIR, 'Mask_Template.nii');
 PathTemplate = fullfile(x.SESSIONDIR, 'Mean_CBF_Template.nii');
-[Fpath, Ffile] = xASL_fileparts(x.PathMask);
-x.PathMask2 = fullfile(Fpath, [Ffile '2.nii']);
+[Fpath, Ffile] = xASL_fileparts(x.D.PathMask);
+x.D.PathMask2 = fullfile(Fpath, [Ffile '2.nii']);
 x.PathCBF = fullfile(x.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii');
-if ~xASL_exist(x.PathMask,'file')
-    xASL_Copy(PathMaskTemplate, x.PathMask);
+if ~xASL_exist(x.D.PathMask,'file')
+    xASL_Copy(PathMaskTemplate, x.D.PathMask);
 end
 PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
 
-xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathMask, 0);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathMask, 0);
 xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathCBF, 1);
 
-MaskFromTemplate = xASL_io_Nifti2Im(x.PathMask)>0.5;
+MaskFromTemplate = xASL_io_Nifti2Im(x.D.PathMask)>0.5;
 TemplateIm = xASL_io_Nifti2Im(x.PathCBF);
 
 
@@ -602,10 +602,10 @@ TanimotoCoeff = xASL_qc_TanimotoCoeff(PWIim, TemplateIm, MaskFromTemplate, 3, 0.
 fprintf('%s\n',['Tanimoto Coeff=' num2str(100*TanimotoCoeff,3)]);
 
 if x.ComputeDiceCoeff
-    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.PathMask2 ,0);
+    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.D.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathMask2 ,0);
 
-    GMIM = xASL_io_Nifti2Im(x.PathMask2);
-    xASL_delete(x.PathMask2);
+    GMIM = xASL_io_Nifti2Im(x.D.PathMask2);
+    xASL_delete(x.D.PathMask2);
 
     %% Compute Dice coefficient
     % Mask the GMIM
@@ -639,7 +639,7 @@ function [spatCoV] = xASL_im_GetSpatialCovNativePWI(x)
 JointMasks = xASL_im_GetSpatialOverlapASL(x);
 
 PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
-MaskIM = xASL_io_Nifti2Im(x.PathMask)>0.5;
+MaskIM = xASL_io_Nifti2Im(x.D.PathMask)>0.5;
 
 if JointMasks<0.5
     warning('Registration off, spatial CoV detection unreliable');

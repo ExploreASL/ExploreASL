@@ -70,7 +70,7 @@ end
 
 %% ----------------------------------------------------------------------------------------
 % 1) Create the pseudoTissue CBF reference image, if it doesnt exist already
-if ~xASL_exist(x.Path_PseudoTissue,'file') || bPVC
+if ~xASL_exist(x.D.Path_PseudoTissue,'file') || bPVC
 	% Obtain the ASL VoxelSize (although the effective spatial resolution can
     % be lower). For isotropy and simplicity we take the highest resolution of
     % the 3 dimensions (smallest VoxelSize)
@@ -92,7 +92,7 @@ if ~xASL_exist(x.Path_PseudoTissue,'file') || bPVC
 	PseudoTissue = xASL_io_Nifti2Im(x.P.Path_rc1T1).*80 + xASL_io_Nifti2Im(x.P.Path_rc2T1).*26.7;
 
 	% Save this PseudoTissue NIfTI
-	xASL_io_SaveNifti(x.P.Path_rc1T1, x.Path_PseudoTissue, PseudoTissue, [], false);
+	xASL_io_SaveNifti(x.P.Path_rc1T1, x.D.Path_PseudoTissue, PseudoTissue, [], false);
 
 	% The rc1T1 can be deleted, unless you do PVC and it is used later in the code - it is then also deleted later
 	if ~bPVC
@@ -105,9 +105,9 @@ end
 if bPVC
 	% Prepare the PWI image in the same space as the PseudoTissue
 	if exist(x.P.Path_mean_PWI_Clipped_sn_mat,'file')
-		xASL_spm_reslice(x.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_mean_PWI_Clipped_DCT);
+		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_mean_PWI_Clipped_DCT);
 	else
-		xASL_spm_reslice(x.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, [], 0, x.Quality, x.P.Path_mean_PWI_Clipped_DCT);
+		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, [], 0, x.Quality, x.P.Path_mean_PWI_Clipped_DCT);
 	end
 end
 
@@ -131,7 +131,7 @@ if bPVC
 	% Create a pseudoCBF image that has the local contrast variation based on the estimated PVEC
 	PseudoTissue = imGM.*imPVEC(:,:,:,1) + imWM.*imPVEC(:,:,:,2);
 	PseudoTissue(PseudoTissue<0) = 0;
-	xASL_io_SaveNifti(x.P.Path_rc1T1, x.Path_PseudoTissue, PseudoTissue, [], false);
+	xASL_io_SaveNifti(x.P.Path_rc1T1, x.D.Path_PseudoTissue, PseudoTissue, [], false);
 
 	% Delete the temporary files
 	xASL_delete(x.P.Path_rc1T1);
@@ -140,10 +140,10 @@ end
 
 %% ----------------------------------------------------------------------------------------
 %% 2) Create the native space copies of ASL templates, if they dont exist already
-if ~xASL_exist(x.Mean_Native,'file') || ~xASL_exist(x.Mask_Native,'file') || ~xASL_exist(x.Vasc_Native,'file')
+if ~xASL_exist(x.D.Mean_Native,'file') || ~xASL_exist(x.D.Mask_Native,'file') || ~xASL_exist(x.D.Vasc_Native,'file')
     % We assume the same structural reference for all ASL sessions, so only have to warp these templates to native space once
     % Trilinear interpolation is fine for smooth template
-    xASL_spm_deformations(x,{x.Mean_MNI;x.Bias_MNI;x.Vasc_MNI;x.Mask_MNI},{x.Mean_Native;x.Bias_Native;x.Vasc_Native;x.Mask_Native}, 1, x.Path_PseudoTissue, [], x.P.Path_y_ASL);
+    xASL_spm_deformations(x,{x.D.Mean_MNI;x.D.Bias_MNI;x.D.Vasc_MNI;x.D.Mask_MNI},{x.D.Mean_Native;x.D.Bias_Native;x.D.Vasc_Native;x.D.Mask_Native}, 1, x.D.Path_PseudoTissue, [], x.P.Path_y_ASL);
 end
 
 %% ----------------------------------------------------------------------------------------
@@ -159,13 +159,13 @@ end
 
 %% ----------------------------------------------------------------------------------------
 %% 4) Load native space copies of templates
-Mean_IM = xASL_io_Nifti2Im(x.Mean_Native);
-Bias_IM = xASL_io_Nifti2Im(x.Bias_Native);
+Mean_IM = xASL_io_Nifti2Im(x.D.Mean_Native);
+Bias_IM = xASL_io_Nifti2Im(x.D.Bias_Native);
 PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
 
 %% ----------------------------------------------------------------------------------------
 %% 5) Create pseudoTissue from segmentations, mix this with the mean CBF template depending on spatial CoV
-PseudoTissue = xASL_io_Nifti2Im(x.Path_PseudoTissue);
+PseudoTissue = xASL_io_Nifti2Im(x.D.Path_PseudoTissue);
 
 % Here we mix the template-based (Mean_IM) and the tissue-based (PseudoProper)
 % For spatial CoV 0.4 we can do 60% tissue-based, for spatial CoV 0 we can
@@ -184,12 +184,12 @@ PseudoCBFim = PseudoCBFim+Mean_IM./25;
 if ~strcmpi(x.Sequence,'3D_spiral')
 	% With 3D spiral, we nearly see no vascular artifacts because of low
 	% effective spatial resolution
-	Vasc_IM = xASL_io_Nifti2Im(x.Vasc_Native);
+	Vasc_IM = xASL_io_Nifti2Im(x.D.Vasc_Native);
 	PseudoCBFim = PseudoCBFim + Vasc_IM./5.*spatialCoV.^2;
 end
 
 % Save the reference NIfTI
-xASL_io_SaveNifti(x.Mean_Native, x.P.Path_PseudoCBF, PseudoCBFim, [], 0);
+xASL_io_SaveNifti(x.D.Mean_Native, x.P.Path_PseudoCBF, PseudoCBFim, [], 0);
 
 
 %% ----------------------------------------------------------------------------------------
