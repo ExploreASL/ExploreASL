@@ -9,7 +9,7 @@ function [x] = xASL_stat_PrintStats(x, bFollowSubjectSessions)
 %   x.S.SaveFile        - name of the TSV output file
 %   x.S.SetsName        - names of the covariates/sets
 %   x.S.NamesROI        - names of the ROIs
-%   x.S.SUBJECTID       - names of the subjects (can differ from x.SUBJECTS
+%   x.S.SubjectSessionID       - names of the subjects (can differ from x.SUBJECTS
 %                         if not all subjects had data)
 %   x.S.SetsID          - values of the sets
 %   x.S.SetsOptions     - options for sets (if the sets are ordinal)
@@ -139,11 +139,11 @@ if bFollowSubjectSessions
 
             % check first if this SubjectSession has data, otherwise skip &
             % issue a warning
-            if length(x.S.SUBJECTID)<iSubjectSession || size(x.S.DAT, 1)<iSubjectSession || size(x.S.SetsID,1)<iSubjectSession
+            if length(x.S.SubjectSessionID)<iSubjectSession || size(x.S.DAT, 1)<iSubjectSession || size(x.S.SetsID,1)<iSubjectSession
                 warning(['Missing data, skipping printing data for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}]);
             else
                 % print subject name
-                fprintf(x.S.FID,'%s\t', x.S.SUBJECTID{iSubjectSession, 1});
+                fprintf(x.S.FID,'%s\t', x.S.SubjectSessionID{iSubjectSession, 1});
 
                 %% Print the covariates and data
                 iSubjectSession_SetsID = iSubjectSession;
@@ -165,27 +165,27 @@ else
 
     printedSessionN = 0;
     
-    for iSubjSess=1:length(x.S.SUBJECTID)
-        % x.S.SUBJECTID == subject/session IDs created in xASL_stat_GetROIStatistics
+    for iSubjSess=1:length(x.S.SubjectSessionID)
+        % x.S.SubjectSessionID == subject/session IDs created in xASL_stat_GetROIStatistics
 
         % Get subject ID
-        [startIndex, endIndex] = regexp(x.S.SUBJECTID{iSubjSess}, SubjectExpression);
+        [startIndex, endIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, SubjectExpression);
         if isempty(startIndex) || isempty(endIndex)
-            warning(['Could not find subject for ' x.S.SUBJECTID{iSubjSess}]);
+            warning(['Could not find subject for ' x.S.SubjectSessionID{iSubjSess}]);
 		else
 			% Look also for the session ID including the ASL_\d substring
-			[startSessionIndex, endSessionIndex] = regexp(x.S.SUBJECTID{iSubjSess}, 'ASL_\d*$');
+			[startSessionIndex, endSessionIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, 'ASL_\d*$');
             
             if isempty(startSessionIndex) || isempty(endSessionIndex)
 				% If the sessionID was not found, then report a warning and use the entire expression for subjectID
-				SubjectID = x.S.SUBJECTID{iSubjSess}(startIndex:endIndex);
-                warning(['Could not find session for ' x.S.SUBJECTID{iSubjSess}]);
+				SubjectID = x.S.SubjectSessionID{iSubjSess}(startIndex:endIndex);
+                warning(['Could not find session for ' x.S.SubjectSessionID{iSubjSess}]);
 			else
 				% If session ID was identified, we have to double-check that session ID is not part of subject ID and exclude if necessary
-				SubjectID = x.S.SUBJECTID{iSubjSess}(startIndex:min(endIndex, startSessionIndex-2));
+				SubjectID = x.S.SubjectSessionID{iSubjSess}(startIndex:min(endIndex, startSessionIndex-2));
 				
 				% Get session ID
-                SessionID = x.S.SUBJECTID{iSubjSess}(startSessionIndex:endSessionIndex);
+                SessionID = x.S.SubjectSessionID{iSubjSess}(startSessionIndex:endSessionIndex);
 
                 % print subject name
                 fprintf(x.S.FID,'%s\t', SubjectID);

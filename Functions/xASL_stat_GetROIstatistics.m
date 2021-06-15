@@ -235,10 +235,10 @@ for iSubject=1:x.nSubjects
 		DataIm = NaN;
 		SubjSess = (iSubject-1)* nSessions +iSess;
 		if bSessionsMissing
-			x.S.SUBJECTID{SubjSess,1} = x.SUBJECTS{iSubject};
+			x.S.SubjectSessionID{SubjSess,1} = x.SUBJECTS{iSubject};
             TotalRows = x.nSubjects;
 		else
-			x.S.SUBJECTID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSess}];
+			x.S.SubjectSessionID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSess}];
             TotalRows = x.dataset.nSubjectsSessions;
         end
         
@@ -464,7 +464,7 @@ for iSubject=1:x.nSubjects
                 VascularMask = xASL_im_IM2Column(ones(size(x.S.masks.WBmask)), x.S.masks.WBmask);
             end
 		else
-			FilePath = fullfile(x.D.PopDir, [x.S.InputDataStr '_' x.S.SUBJECTID{SubjSess,1} '.nii']);
+			FilePath = fullfile(x.D.PopDir, [x.S.InputDataStr '_' x.S.SubjectSessionID{SubjSess,1} '.nii']);
 			if xASL_exist(FilePath,'file')
 				Data3D = xASL_io_Nifti2Im(FilePath,[121 145 121]);
 				DataIm = xASL_im_IM2Column(Data3D,x.S.masks.WBmask);
@@ -472,7 +472,7 @@ for iSubject=1:x.nSubjects
 
             if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
-                FilePath = fullfile(x.D.PopDir, ['MaskVascular_' x.S.SUBJECTID{SubjSess,1} '.nii']);
+                FilePath = fullfile(x.D.PopDir, ['MaskVascular_' x.S.SubjectSessionID{SubjSess,1} '.nii']);
                 if xASL_exist(FilePath,'file')
                     VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.S.masks.WBmask);
                 end
@@ -500,7 +500,7 @@ for iSubject=1:x.nSubjects
 			CombiIM = xASL_im_ProjectLabelsOverData(DataIM, LabelIM, x);
 
 			xASL_adm_CreateDir(x.S.CheckMasksDir);
-			xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir,[x.S.output_ID(1:end-16) '_' x.S.SUBJECTID{SubjSess,1} '.jpg']));
+			xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir,[x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1} '.jpg']));
 		end
 
 		%         % Labeling efficiency normalization
@@ -520,7 +520,7 @@ for iSubject=1:x.nSubjects
                 elseif strcmpi(x.Sequence,'3D_spiral')
                     % if 3D spiral, then we dont need a susceptibility mask
                 else % fall back to try subject-wise Susceptibility Masks
-                    FilePath = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.S.SUBJECTID{SubjSess,1} '.nii']);
+                    FilePath = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.S.SubjectSessionID{SubjSess,1} '.nii']);
                     if xASL_exist(FilePath,'file')
                         SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(FilePath), x.S.masks.WBmask);
                     else

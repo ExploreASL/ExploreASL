@@ -121,7 +121,7 @@ function [x] = xASL_init_VisualizationSettings(x)
     end
 
     if ~isfield(x,'S') % Make dummy variable "S", if it doesn't exist
-        x.S.SUBJECTID = '';
+        x.S.SubjectSessionID = '';
         x.S.SetsID = [];
         x.S.SetsName = '';
         x.S.SetsOptions = '';
