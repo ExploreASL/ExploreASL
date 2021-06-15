@@ -214,35 +214,34 @@ for iT=1:x.dataset.nTimePointsTotal
 end
 
 % ------------------------------------------------------------------------------------------------
-%% 6) Add sessions as statistical variable, if they exist
-if x.dataset.nSessions>1  % if there are sessions (more than 1 session), then sessions=1st set
+%% 6) Add sessions as statistical variable
 
-    % Predefine SETS to avoid empty SETS & import predefined session settings as set settings
-    x.S.SetsName{1} = 'session';
-    x.S.SetsOptions = '';
-    x.S.SetsID = 0;
-    x.S.Sets1_2Sample(1) = 1; % sessions are always paired observations (e.g. belonging to same individual, looking at intra-individual changes)
-    
-    % Define SetsOptions for sessions
-    if ~isfield(x,'session')
-        x.session = '';
+% Predefine SETS to avoid empty SETS & import predefined session settings as set settings
+x.S.SetsName{1} = 'session';
+x.S.SetsOptions = '';
+x.S.SetsID = 0;
+x.S.Sets1_2Sample(1) = 1; % sessions are always paired observations (e.g. belonging to same individual, looking at intra-individual changes)
+
+% NOT SURE IF WE STILL USE THIS, WE MAY PHASE THIS OUT
+% Define SetsOptions for sessions
+if ~isfield(x,'session')
+    x.session = '';
+end
+
+if  isfield(x.session,'options')
+    x.S.SetsOptions{1} = x.session.options; % with session options (e.g. morning, evening 2nd morning)
+else
+    for iS=1:x.dataset.nSessions
+        x.S.SetsOptions{1}{iS} = ['ASL_' num2str(iS)];
     end
-        
-    if  isfield(x.session,'options')
-        x.S.SetsOptions{1} = x.session.options; % with session options (e.g. morning, evening 2nd morning)
-    else
-        for iS=1:x.dataset.nSessions
-            x.S.SetsOptions{1}{iS} = ['ASL_' num2str(iS)];
-        end
-    end        
-    
-    % Create ID/data for session numbers
-    for iSubj=1:x.nSubjects
-        for iSess=1:x.dataset.nSessions
-            iSubjSess = (iSubj-1)*x.dataset.nSessions+iSess;
-            
-            x.S.SetsID(iSubjSess,1) = iSess;
-        end
+end        
+
+% Create ID/data for session numbers
+for iSubj=1:x.nSubjects
+    for iSess=1:x.dataset.nSessions
+        iSubjSess = (iSubj-1)*x.dataset.nSessions+iSess;
+
+        x.S.SetsID(iSubjSess,1) = iSess;
     end
 end
 
