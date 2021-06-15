@@ -146,9 +146,9 @@ end
 
 %% ------------------------------------------------------------------------
 %% 2. Process image layers
-for iIm=1:length(ImIn)
+for iIm=1:numel(ImIn)
     IM{iIm} = xASL_io_Nifti2Im(ImIn{iIm}); % load if NIfTI, pass through if matrix (IM)
-
+    
     if length(MaskIn)<iIm
         MaskIn{iIm} = ones(121,145,121); % default=no masking
     end
@@ -167,111 +167,117 @@ for iIm=1:length(ImIn)
         return;
     end
 
-    %% 0. Masking & shifting to zero
-    MaskIn{iIm}(isnan(MaskIn{iIm})) = 0; % Remove NaNs
-    IM{iIm}(~logical(MaskIn{iIm})) = 0;
+    if xASL_stat_SumNan(IM{iIm}(:))==0 && iIm>1
+        fprintf('Minor warning, xASL_vis_CreateVisualFig: overly image is empty\n');
+        IM{iIm} = zeros(size(IM{1}));
+    else
 
-    %% First clipping
-    if bClip(iIm)
-        IM{iIm}(IM{iIm}<0) = 0;
-    end
-    
-    % Shift to zero on histogram
-    MinIntIm = min(IM{iIm}(:));
-    if MinIntIm>0
-        IM{iIm} = IM{iIm}-MinIntIm;
-    end
+        %% 0. Masking & shifting to zero
+        MaskIn{iIm}(isnan(MaskIn{iIm})) = 0; % Remove NaNs
+        IM{iIm}(~logical(MaskIn{iIm})) = 0;
 
-    %% a. transforms the input images to a visualization format
-    % first do this for the mask
-    if bWhite
-        % do the same for the mask, allowing to switch background to white
-        if xASL_stat_SumNan(MaskIn{iIm}(:)==0)==0 % in case there is no mask
-            % create a mask from the data
-            CornerMask = logical(zeros(size(IM{iIm})));
-            CornerMask(1,1,1) = 1;
-            CornerMask(end,1,1) = 1;
-            CornerMask(1,end,1) = 1;
-            CornerMask(end,end,1) = 1;
-            CornerMask(1,1,end) = 1;
-            CornerMask(end,1,end) = 1;
-            CornerMask(1,end,end) = 1;
-            CornerMask(end,end,end) = 1;
+        %% First clipping
+        if bClip(iIm)
+            IM{iIm}(IM{iIm}<0) = 0;
+        end
 
-            Regions = spm_bwlabel(double(IM{iIm}==0));
-            if sum(Regions(:))>0
-                % get the largest region
-                for iR=1:length(Regions)
-                    SizeRegion(iR,1)=sum(sum(sum(Regions==iR)));
-                end
-                IndexLargestRegion = find(SizeRegion==max(SizeRegion(:)));
-                % if all corners lie in this region, make this the mask
-                if sum(sum(sum(Regions==IndexLargestRegion & CornerMask)))==8
-                    MaskIn{iIm} = Regions~=IndexLargestRegion;
+        % Shift to zero on histogram
+        MinIntIm = min(IM{iIm}(:));
+        if MinIntIm>0
+            IM{iIm} = IM{iIm}-MinIntIm;
+        end
+
+        %% a. transforms the input images to a visualization format
+        % first do this for the mask
+        if bWhite
+            % do the same for the mask, allowing to switch background to white
+            if xASL_stat_SumNan(MaskIn{iIm}(:)==0)==0 % in case there is no mask
+                % create a mask from the data
+                CornerMask = logical(zeros(size(IM{iIm})));
+                CornerMask(1,1,1) = 1;
+                CornerMask(end,1,1) = 1;
+                CornerMask(1,end,1) = 1;
+                CornerMask(end,end,1) = 1;
+                CornerMask(1,1,end) = 1;
+                CornerMask(end,1,end) = 1;
+                CornerMask(1,end,end) = 1;
+                CornerMask(end,end,end) = 1;
+
+                Regions = spm_bwlabel(double(IM{iIm}==0));
+                if sum(Regions(:))>0
+                    % get the largest region
+                    for iR=1:length(Regions)
+                        SizeRegion(iR,1)=sum(sum(sum(Regions==iR)));
+                    end
+                    IndexLargestRegion = find(SizeRegion==max(SizeRegion(:)));
+                    % if all corners lie in this region, make this the mask
+                    if sum(sum(sum(Regions==IndexLargestRegion & CornerMask)))==8
+                        MaskIn{iIm} = Regions~=IndexLargestRegion;
+                    else
+                        MaskIn{iIm} = logical(ones(121,145,121));
+                        % keep the mask full, we cannot mask
+                    end
                 else
                     MaskIn{iIm} = logical(ones(121,145,121));
                     % keep the mask full, we cannot mask
                 end
-            else
-                MaskIn{iIm} = logical(ones(121,145,121));
-                % keep the mask full, we cannot mask
             end
+            MaskWhite{iIm} = xASL_vis_TransformData2View(MaskIn{iIm}(:,:,:,1), x);
         end
-        MaskWhite{iIm} = xASL_vis_TransformData2View(MaskIn{iIm}(:,:,:,1), x);
+
+        % now do this for the data
+        IM{iIm}(isnan(IM{iIm})) = 0; % Remove NaNs
+        IM{iIm} = xASL_vis_TransformData2View(IM{iIm}(:,:,:,1), x);
+
+        %% b. Clipping image intensities for image layer
+        if MaxWindow{iIm}~=0
+            MaxInt1 = MaxWindow{iIm};
+            MaxInt2 = MaxWindow{iIm};
+        else
+            MaxInt1 = 0.99; % default
+            MaxInt2 = 0.975;
+        end
+
+        if bClip(iIm)
+            IM{iIm} = xASL_im_ClipExtremes(IM{iIm}, MaxInt1, 0, 0);
+            % this function clips the image, to avoid a too large viewing window
+        end
+
+        Um = unique(IM{iIm}(:));
+        if length(Um)==1 && Um==0
+            warning('This image cannot be sorted, skipping');
+            return;
+        end
+
+        SortInt = sort(IM{iIm}(:));
+        MaxInt2 = SortInt(round(MaxInt2*length(SortInt)));
+
+        if bVerbose && iIm==1
+            fprintf('%s\n', ['Min & max value were [' xASL_num2str(min(IM{iIm}(:))) ' ' xASL_num2str(MaxInt2) '] for background image']);
+        elseif bVerbose
+            fprintf('%s\n', ['Min & max value were [' xASL_num2str(min(IM{iIm}(:))) ' ' xASL_num2str(MaxInt2) '] for overlay image ' xASL_num2str(iIm-1)]);
+        end
+
+        if bClip(iIm)
+            IM{iIm}(IM{iIm}>MaxInt2) = MaxInt2;
+            IM{iIm} = IM{iIm} ./MaxInt2;
+            % Here we set the 5th upper percentile as maximum intensity,
+            % this is an arbitrary windowing level setting that often works
+        end
+
+        %% c) Convert image layer to colors
+        SzC = size(ColorMap{iIm},1);
+        if SzC<250 || SzC>260
+            warning(['Colormap expects 256 indices, but had only ' num2str(SzC)]);
+            fprintf('This can lead to image clipping artifacts\n');
+            % PM: here we can resample the input colormap into 256 if it is a power of
+            % e.g. 32/64
+        end
+
+        IM{iIm} = IM{iIm}./max(IM{iIm}(:)); % divide image by max to avoid color clipping
+        IM{iIm} = ind2rgb(round(IM{iIm}.*255), ColorMap{iIm}); % convert the image to a RGB false colored-image
+        IM{iIm} = IM{iIm} .* IntScale(iIm); % scale the image, if requested
     end
-
-    % now do this for the data
-    IM{iIm}(isnan(IM{iIm})) = 0; % Remove NaNs
-    IM{iIm} = xASL_vis_TransformData2View(IM{iIm}(:,:,:,1), x);
-
-    %% b. Clipping image intensities for image layer
-    if MaxWindow{iIm}~=0
-        MaxInt1 = MaxWindow{iIm};
-        MaxInt2 = MaxWindow{iIm};
-    else
-        MaxInt1 = 0.99; % default
-        MaxInt2 = 0.975;
-    end
-
-    if bClip(iIm)
-        IM{iIm} = xASL_im_ClipExtremes(IM{iIm}, MaxInt1, 0, 0);
-        % this function clips the image, to avoid a too large viewing window
-    end
-
-    Um = unique(IM{iIm}(:));
-    if length(Um)==1 && Um==0
-        warning('This image cannot be sorted, skipping');
-        return;
-    end
-        
-    SortInt = sort(IM{iIm}(:));
-    MaxInt2 = SortInt(round(MaxInt2*length(SortInt)));
-
-    if bVerbose && iIm==1
-        fprintf('%s\n', ['Min & max value were [' xASL_num2str(min(IM{iIm}(:))) ' ' xASL_num2str(MaxInt2) '] for background image']);
-    elseif bVerbose
-        fprintf('%s\n', ['Min & max value were [' xASL_num2str(min(IM{iIm}(:))) ' ' xASL_num2str(MaxInt2) '] for overlay image ' xASL_num2str(iIm-1)]);
-    end
-
-    if bClip(iIm)
-        IM{iIm}(IM{iIm}>MaxInt2) = MaxInt2;
-        IM{iIm} = IM{iIm} ./MaxInt2;
-        % Here we set the 5th upper percentile as maximum intensity,
-        % this is an arbitrary windowing level setting that often works
-    end
-
-    %% c) Convert image layer to colors
-    SzC = size(ColorMap{iIm},1);
-    if SzC<250 || SzC>260
-        warning(['Colormap expects 256 indices, but had only ' num2str(SzC)]);
-        fprintf('This can lead to image clipping artifacts\n');
-        % PM: here we can resample the input colormap into 256 if it is a power of
-        % e.g. 32/64
-    end
-
-    IM{iIm} = IM{iIm}./max(IM{iIm}(:)); % divide image by max to avoid color clipping
-    IM{iIm} = ind2rgb(round(IM{iIm}.*255), ColorMap{iIm}); % convert the image to a RGB false colored-image
-    IM{iIm} = IM{iIm} .* IntScale(iIm); % scale the image, if requested
 end
 
 %% 3. Combine image layers
