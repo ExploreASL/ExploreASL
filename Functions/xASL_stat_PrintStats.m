@@ -175,15 +175,23 @@ else
         [startIndex, endIndex] = regexp(x.S.SUBJECTID{iSubjSess}, SubjectExpression);
         if isempty(startIndex) || isempty(endIndex)
             warning(['Could not find subject for ' x.S.SUBJECTID{iSubjSess}]);
-        else
-            SubjectID = x.S.SUBJECTID{iSubjSess}(startIndex:endIndex);
-            % Get session ID
-            SessionID = x.S.SUBJECTID{iSubjSess}(endIndex+1:end);
-            [startIndex, endIndex] = regexp(SessionID, 'ASL_\d');
-            if isempty(startIndex) || isempty(endIndex)
+		else
+			% Look also for the session ID including the ASL_\d substring
+			[startSessIndex, endSessIndex] = regexp(x.S.SUBJECTID{iSubjSess}, 'ASL_\d*$');
+            
+            if isempty(startSessIndex) || isempty(endSessIndex)
+				% If the sessionID was not found, then report a warning and use the entire expression for subjectID
+				SubjectID = x.S.SUBJECTID{iSubjSess}(startIndex:endIndex);
                 warning(['Could not find session for ' x.S.SUBJECTID{iSubjSess}]);
-            else
-                SessionID = SessionID(startIndex:endIndex);
+			else
+				% If session ID was identified, we have to double-check that session ID is not part of subject ID and exclude if necessary
+				SubjectID = x.S.SUBJECTID{iSubjSess}(startIndex:min(endIndex,startSessIndex-1));
+				if SubjectID(end) == '_'
+					SubjectID = SubjectID(1:end-1);
+				end
+				
+				% Get session ID
+                SessionID = x.S.SUBJECTID{iSubjSess}(startSessIndex:endSessIndex);
 
                 % print subject name
                 fprintf(x.S.FID,'%s\t', SubjectID);
