@@ -1,4 +1,3 @@
-%% ==================================================================================
 function x  = xASL_init_Toolboxes(x)
 %xASL_init_Toolboxes Check & load ancillary toolboxes, versions and paths
 %

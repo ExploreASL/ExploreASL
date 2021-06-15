@@ -1,5 +1,6 @@
 function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSessions(x)
 % xASL_adm_GetPopulationSessions(x) obtain number of Sessions by determining amount of input files present in the Population folder
+%
 % FORMAT: [nSessions, bSessionsMissing] = xASL_adm_GetPopulationSessions(x)
 %
 % INPUT:
@@ -9,6 +10,7 @@ function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSession
 %   nSessions           - Maximum amount of sessions present in Population folder
 %   bSessionsMissing    - Boolean to show if no sessions can be found in the Population folder
 %   SESSIONS            - x.SESSIONS
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function looks for the maximum amount of sessions that
 % are present in selected processed files present in the Population folder.
@@ -18,6 +20,12 @@ function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSession
 %   3. Determine unique amount of session numbers present in list
 %   4. Set nSessions as highest unique session number 
 %   5. Check and provide warning of number of sesssions differs per subject
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: n/a
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
 %% 1. Administration
 if ~isfield(x, 'SESSIONS')
