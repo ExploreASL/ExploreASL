@@ -121,7 +121,11 @@ if bPull
 	Answer = system('git pull','-echo');
 end
 
+% Initialize ExploreASL
 x = ExploreASL_Initialize;
+
+% Load reference data
+refData = xASL_tsvRead(fullfile(x.MyPath,'Testing','Reference','ReferenceValues.tsv'));
 
 clc;
 
