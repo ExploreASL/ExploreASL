@@ -24,18 +24,19 @@ function [x] = xASL_adm_DefineASLSequence(x)
 
 
 if ~isfield(x, 'readout_dim')
-    warning('x.readout_dim parameter missing, cannot deduce if this is a 2D or 3D ASL NifTI');
+    warning('x.readout_dim parameter missing, skipping determining ASL sequence');
 end
-if isempty(regexpi(x.Vendor, 'Gold Standard Phantoms|GE|Philips|Siemens'))
+if ~isfield(x, 'Vendor')
+    warning('x.Vendor missing, skipping determining ASL sequence');
+elseif  isempty(regexpi(x.Vendor, 'Gold Standard Phantoms|GE|Philips|Siemens'))
     warning('Unknown vendor specified in x.Vendor');
-end
-if ~isempty(regexpi(x.Vendor, 'Gold Standard Phantoms'))
+elseif ~isempty(regexpi(x.Vendor, 'Gold Standard Phantoms'))
     fprintf('%s\n', 'Digital Reference Object ASL-DRO detected');
 end
 
 
 % Obtain ASL sequence
-if ~isfield(x,'Sequence') && isfield(x,'readout_dim')
+if ~isfield(x,'Sequence') && isfield(x,'readout_dim') && isfield(x, 'Vendor')
     if strcmpi(x.readout_dim,'2D')
        x.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of vendor
     elseif strcmpi(x.readout_dim,'3D') && ( ~isempty(regexpi(x.Vendor,'Philips')) || ~isempty(regexpi(x.Vendor,'Siemens')) )
