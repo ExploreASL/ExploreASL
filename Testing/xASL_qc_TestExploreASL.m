@@ -467,9 +467,7 @@ save(SaveFile, 'ResultsTable');
 
 % Comparison with tsv file
 [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(fullfile(x.MyPath,'Testing','Reference','ReferenceValues.tsv'));
-availableVersions = fieldnames(ReferenceTable);
-upToDateReferenceTable = ReferenceTable.(availableVersions{end});
-ResultsComparison = xASL_qc_CompareTables(upToDateReferenceTable,ResultsTable);
+ResultsComparison = xASL_qc_CompareTables(ReferenceTable,ResultsTable);
 save(SaveFile, 'ResultsTable', 'ReferenceTables', 'ReferenceTable', 'ResultsComparison');
 
 % Comparison with mat file
@@ -575,24 +573,57 @@ function ResultsComparison = xASL_qc_CompareTables(ReferenceTable,ResultsTable)
 
     % Compare tables (skip first row)
     ResultsComparison = ReferenceTable;
-    for iRow = 2:size(ReferenceTable,1)
-        ResultsComparison(iRow,2:end) = {NaN};
-        if strcmp(ReferenceTable{iRow,1},ResultsTable{iRow,1})
-            % Iterate over results
-            for iColumn = 2:size(ReferenceTable,2)
-                refValue = xASL_str2num(ReferenceTable{iRow,iColumn});
-                resValue = xASL_str2num(ResultsTable{iRow,iColumn});
-                % Check if difference is smaller than 0.1% of reference value
-                if abs(refValue-resValue)<(abs(refValue)*0.001)
-                    ResultsComparison(iRow,iColumn) = {true};
-                else
-                    ResultsComparison(iRow,iColumn) = {false};
+    
+    % Iterate over versions
+    versionsXASL = fieldnames(ResultsComparison);
+    for iVersion = 1:size(versionsXASL,1)
+        % Get current reference table
+        currentReferenceTable = ReferenceTable.(versionsXASL{iVersion});
+        
+        for iRow = 2:size(currentReferenceTable,1)
+            ResultsComparison.(versionsXASL{iVersion})(iRow,2:end) = {NaN};
+            if strcmp(currentReferenceTable{iRow,1},ResultsTable{iRow,1})
+                % Iterate over results
+                for iColumn = 2:size(currentReferenceTable,2)
+                    refValue = xASL_str2num(currentReferenceTable{iRow,iColumn});
+                    resValue = xASL_str2num(ResultsTable{iRow,iColumn});
+                    % Check if difference is smaller than 0.1% of reference value
+                    if abs(refValue-resValue)<(abs(refValue)*0.001)
+                        ResultsComparison.(versionsXASL{iVersion})(iRow,iColumn) = {true};
+                    else
+                        ResultsComparison.(versionsXASL{iVersion})(iRow,iColumn) = {false};
+                    end
+                end
+            else
+                fprintf('Dataset names do not match...\n');
+                fprintf('Reference: %s\n', currentReferenceTable{iRow,1});
+                fprintf('Results:   %s\n', ResultsTable{iRow,1});
+            end
+        end
+    end
+    
+    % Check: single value passed/failed
+    versionsXASL = fieldnames(ResultsComparison);
+    for iVersion = 1:size(versionsXASL,1)
+        % Get current reference table
+        currentResults = ResultsComparison.(versionsXASL{iVersion});
+        resultValues = currentResults(2:end,2:end);
+        % Check if there are "failed" values
+        passed = true;
+        for iRow=1:size(resultValues,1)
+            for iColumn=1:size(resultValues,2)
+                %fprintf('%d\n', resultValues{iRow,iColumn});
+                if resultValues{iRow,iColumn}==0
+                    passed = false; % At least one value is "failed"
                 end
             end
+        end
+        % Store value
+        ResultsComparison.([versionsXASL{iVersion} '_Passed']) = passed;
+        if passed
+            fprintf('Version: %s\nPassed:  %s\n', versionsXASL{iVersion}, 'true');
         else
-            fprintf('Dataset names do not match...\n');
-            fprintf('Reference: %s\n', ReferenceTable{iRow,1});
-            fprintf('Results:   %s\n', ResultsTable{iRow,1});
+            fprintf('Version: %s\nPassed:  %s\n', versionsXASL{iVersion}, 'false');
         end
     end
 
