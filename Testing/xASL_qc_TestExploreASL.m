@@ -466,9 +466,11 @@ save(SaveFile, 'ResultsTable');
 %% 8) Compare table with reference table
 
 % Comparison with tsv file
-ReferenceTable = xASL_qc_LoadRefTable(fullfile(x.MyPath,'Testing','Reference','ReferenceValues.tsv'));
-ResultsComparison = xASL_qc_LoadRefTable(ReferenceTable,ResultsTable);
-save(SaveFile, 'ResultsTable', 'ReferenceTable', 'ResultsComparison');
+[ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(fullfile(x.MyPath,'Testing','Reference','ReferenceValues.tsv'));
+availableVersions = fieldnames(ReferenceTable);
+upToDateReferenceTable = ReferenceTable.(availableVersions{end});
+ResultsComparison = xASL_qc_CompareTables(upToDateReferenceTable,ResultsTable);
+save(SaveFile, 'ResultsTable', 'ReferenceTables', 'ReferenceTable', 'ResultsComparison');
 
 % Comparison with mat file
 try
@@ -547,20 +549,21 @@ end
 end
 
 % Load Reference Table
-function ReferenceTable = xASL_qc_LoadRefTable(pathRefTable)
+function [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(pathRefTable)
 
     % Load TSV file
-    ReferenceTable = xASL_tsvRead(pathRefTable);
+    ReferenceTables = xASL_tsvRead(pathRefTable);
     
     iRow = 1;
-    while iRow<=size(ReferenceTable,1)
-        if ~isempty(regexp(ReferenceTable{iRow,1},'^xASL_', 'once'))
-            versionXASL = ReferenceTable{iRow,1};
-            operatingSystem = ReferenceTable{iRow+1,1};
+    while iRow<=size(ReferenceTables,1)
+        if ~isempty(regexp(ReferenceTables{iRow,1},'^xASL_', 'once'))
+            versionXASL = ReferenceTables{iRow,1};
+            operatingSystem = ReferenceTables{iRow+1,1};
             fprintf('Version: %s\n', versionXASL);
             fprintf('OS:      %s\n', operatingSystem);
-            ReferenceTable(iRow,:) = []; % Remove row 1
-            ReferenceTable(iRow,:) = []; % Remove row 2
+            ReferenceTables(iRow,:) = []; % Remove row 1
+            ReferenceTables(iRow,:) = []; % Remove row 2
+            ReferenceTable.(versionXASL) = ReferenceTables(iRow:iRow+10,:);
         end
         iRow=iRow+1;
     end
@@ -568,7 +571,7 @@ function ReferenceTable = xASL_qc_LoadRefTable(pathRefTable)
 end
 
 % Compare Results and Reference Tables
-function ResultsComparison = xASL_qc_LoadRefTable(ReferenceTable,ResultsTable)
+function ResultsComparison = xASL_qc_CompareTables(ReferenceTable,ResultsTable)
 
     % Compare tables (skip first row)
     ResultsComparison = ReferenceTable;
