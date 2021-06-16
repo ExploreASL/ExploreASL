@@ -587,12 +587,17 @@ function ResultsComparison = xASL_qc_CompareTables(ReferenceTable,ResultsTable)
                 for iColumn = 2:size(currentReferenceTable,2)
                     refValue = xASL_str2num(currentReferenceTable{iRow,iColumn});
                     resValue = xASL_str2num(ResultsTable{iRow,iColumn});
-                    % Check if difference is smaller than 0.1% of reference value
-                    if abs(refValue-resValue)<(abs(refValue)*0.001)
-                        ResultsComparison.(versionsXASL{iVersion})(iRow,iColumn) = {true};
-                    else
-                        ResultsComparison.(versionsXASL{iVersion})(iRow,iColumn) = {false};
-                    end
+					if isnan(refValue) && isnan(resValue)
+						% NaNs are assigned to strings, if both are strings or NaNs then the comparison is fine
+						ResultsComparison.(versionsXASL{iVersion})(iRow,iColumn) = {true};
+					else
+						% Check if difference is smaller than 0.1% of reference value
+						if abs(refValue-resValue)<(abs(refValue)*0.01)
+							ResultsComparison.(versionsXASL{iVersion})(iRow,iColumn) = {true};
+						else
+							ResultsComparison.(versionsXASL{iVersion})(iRow,iColumn) = {false};
+						end
+					end
                 end
             else
                 fprintf('Dataset names do not match...\n');
