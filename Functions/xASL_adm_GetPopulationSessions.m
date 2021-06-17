@@ -34,7 +34,7 @@ if strcmp(currentSubjectRegExp(end), '$')
     currentSubjectRegExp = currentSubjectRegExp(1:end-1);
 end
 % 2. Look for processed files from which to determine the amount of sessions present
-SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentSubjectRegExp '_ASL_\d+\.nii$'], 'FPList', [0 Inf]);
+SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentSubjectRegExp '_ASL_\d+(\.nii|\.nii\.gz)$'], 'FPList', [0 Inf]);
 
 %% 3. Obtain nSessions
 if isempty(SessionList) % If no files found, search for subject files instead of session files
