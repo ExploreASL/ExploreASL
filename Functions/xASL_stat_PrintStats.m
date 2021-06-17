@@ -168,21 +168,31 @@ else
         % x.S.SubjectSessionID == subject/session IDs created in xASL_stat_GetROIStatistics
 
         % Get subject ID
-        [startIndex, endIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, SubjectExpression);
-        if isempty(startIndex) || isempty(endIndex)
+        [startSubjectIndex, endSubjectIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, SubjectExpression);
+        
+        if isempty(startSubjectIndex) || isempty(endSubjectIndex)
             warning(['Could not find subject for ' x.S.SubjectSessionID{iSubjSess}]);
 		else
 			% Look also for the session ID including the ASL_\d substring
-			[startSessionIndex, endSessionIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, 'ASL_\d*$');
+			[startSessionIndex, endSessionIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, 'ASL_\d+');
             
             if isempty(startSessionIndex) || isempty(endSessionIndex)
 				% If the sessionID was not found, then report a warning and use the entire expression for subjectID
-				SubjectID = x.S.SubjectSessionID{iSubjSess}(startIndex:endIndex);
+				SubjectID = x.S.SubjectSessionID{iSubjSess}(startSubjectIndex:endSubjectIndex);
                 warning(['Could not find session for ' x.S.SubjectSessionID{iSubjSess}]);
 			else
 				% If session ID was identified, we have to double-check that session ID is not part of subject ID and exclude if necessary
-				SubjectID = x.S.SubjectSessionID{iSubjSess}(startIndex:min(endIndex, startSessionIndex-2));
+				SubjectID = x.S.SubjectSessionID{iSubjSess}(startSubjectIndex:min(endSubjectIndex, startSessionIndex-2));
 				
+                % Fix visit suffix
+                [StartIndexTemp, EndIndexTemp] = find(regexp(SubjectID, '_\d+'));
+                if isempty(StartIndexTemp) && isempty(EndIndexTemp)
+                    [StartIndexTemp, EndIndexTemp] = regexp(x.S.SubjectSessionID{iSubjSess}(endSubjectIndex+1:startSessionIndex-2), '_\d+');
+                    if ~isempty(StartIndexTemp)
+                        SubjectID = [SubjectID x.S.SubjectSessionID{iSubjSess}(endSubjectIndex+StartIndexTemp:endSubjectIndex+EndIndexTemp)];
+                    end
+                end
+                
 				% Get session ID
                 SessionID = x.S.SubjectSessionID{iSubjSess}(startSessionIndex:endSessionIndex);
 
