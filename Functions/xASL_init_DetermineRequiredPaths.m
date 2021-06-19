@@ -50,15 +50,24 @@ function [x] = xASL_init_DetermineRequiredPaths(x)
     end
     % Assign fields
     if ~isempty(fileListSourceStructure)
+		if length(fileListSourceStructure) > 1
+			warning('Multiple sourcestructure*.jsons exist. Using the first: %s\n',fileListSourceStructure{1});
+		end
         x.dir.sourceStructure = fileListSourceStructure{1};
     end
     if ~isempty(fileListStudyPar)
+		if length(fileListStudyPar) > 1
+			warning('Multiple studyPar*.jsons exist. Using the first: %s\n',fileListStudyPar{1});
+		end
         x.dir.studyPar = fileListStudyPar{1};
     end
     if ~isempty(fileListDataDescription)
         x.dir.dataset_description = fileListDataDescription{1};
     end
     if ~isempty(fileListDataPar)
+		if length(fileListDataPar) > 1
+			warning('Multiple dataPar*.jsons exist. Using the first: %s\n',fileListDataPar{1});
+		end
         x.dir.dataPar = fileListDataPar{1};
     end
 

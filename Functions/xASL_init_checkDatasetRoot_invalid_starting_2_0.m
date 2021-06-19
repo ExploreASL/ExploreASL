@@ -90,6 +90,9 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
                 x.dir.dataset_description = fileListDataDescription{1};
             end
             if ~isempty(fileListDataPar)
+				if length(fileListDataPar) > 1
+					warning('Multiple dataPar*.jsons exist. Using the first: %s\n',fileListDataPar{1});
+				end
                 x.dir.dataPar = fileListDataPar{1};
             end
         end
