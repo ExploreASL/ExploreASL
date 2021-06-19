@@ -302,7 +302,7 @@ else
     end
 
 
-    if  length(xASL_adm_GetFileList(x.D.PopDir,['^' PreFix '_.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]))==0
+    if  length(xASL_adm_GetFileList(x.D.PopDir,['^' PreFix '_.*\.nii$'],'FPList',[0 Inf]))==0
         fprintf('%s\n',['Memory mapping ' WhichModality ' skipped, no images exist']);
     else
         fprintf('\n');

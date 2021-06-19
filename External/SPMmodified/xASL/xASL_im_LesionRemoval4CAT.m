@@ -26,8 +26,8 @@ function [Ycls, LesionImOut] = xASL_im_LesionRemoval4CAT(Ycls, PathIn)
 x.P.STRUCT    = 'T1';
 x.P.FLAIR     = 'FLAIR';
 
-Lesion_T1_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.STRUCT '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
-Lesion_FLAIR_list   = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.FLAIR  '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_T1_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.STRUCT '.*\.nii$'],'FPList',[0 Inf]);
+Lesion_FLAIR_list   = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.FLAIR  '.*\.nii$'],'FPList',[0 Inf]);
 
 % Initialize the rLesion list to have the same size as the original (or empty)
 rLesion_FLAIR_list  = Lesion_FLAIR_list;

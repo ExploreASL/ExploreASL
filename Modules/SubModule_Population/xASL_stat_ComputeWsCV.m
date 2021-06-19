@@ -27,8 +27,8 @@ if ~usejava('jvm')
     return;
 end
 
-CheckList1                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part1_.*\.(nii|nii\.gz)$','FPListRec',[0 Inf]);
-CheckList2                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part2_.*\.(nii|nii\.gz)$','FPListRec',[0 Inf]);
+CheckList1                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part1_.*\.nii$','FPListRec',[0 Inf]);
+CheckList2                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part2_.*\.nii$','FPListRec',[0 Inf]);
 
 if   isempty(CheckList1) || isempty(CheckList2)
      fprintf('%s\n','Skipping intra-scan reproducibility calculation, since there are no splitted ASL images available');
@@ -52,8 +52,8 @@ else
         for iSess=1:x.dataset.nSessions
             iSubjSess   = (iS-1)*x.dataset.nSessions+iSess;
 
-            FileN{1}   = xASL_adm_GetFileList(x.D.PopDir,['^PWI_part1_' x.SUBJECTS{iS} '_' x.SESSIONS{iSess} '\.(nii|nii\.gz)$'],'FPListRec',[0 Inf]);
-            FileN{2}   = xASL_adm_GetFileList(x.D.PopDir,['^PWI_part2_' x.SUBJECTS{iS} '_' x.SESSIONS{iSess} '\.(nii|nii\.gz)$'],'FPListRec',[0 Inf]);
+            FileN{1}   = xASL_adm_GetFileList(x.D.PopDir,['^PWI_part1_' x.SUBJECTS{iS} '_' x.SESSIONS{iSess} '\.nii$'],'FPListRec',[0 Inf]);
+            FileN{2}   = xASL_adm_GetFileList(x.D.PopDir,['^PWI_part2_' x.SUBJECTS{iS} '_' x.SESSIONS{iSess} '\.nii$'],'FPListRec',[0 Inf]);
 
             if ~isempty(FileN{1}) && ~isempty(FileN{2})
                 %% Calculate CBF & spatial CoV within GM for each ASL scan

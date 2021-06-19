@@ -54,7 +54,7 @@ oldFolder = cd(x.dir.SUBJECTDIR);
 
 % Check T1 presence
 
-structList = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^' x.P.STRUCT '\.(nii|nii\.gz)$'],'List');
+structList = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^' x.P.STRUCT '\.nii$'],'List');
 
 if isempty(structList)
     error('AslPipeline:missingFile', 'No file found that matches "%s" in "%s"', x.P.STRUCT, x.dir.SUBJECTDIR);

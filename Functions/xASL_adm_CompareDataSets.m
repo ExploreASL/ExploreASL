@@ -97,7 +97,7 @@ for iR=1:length(Root) % iR==1 == reference dataset, iR==2 = Source dataset
 
     for iMod=1:length(ModuleDir) % find NIfTI files
         % This finds NIfTI files that don't start with a number '\D' (those are reserved for the multi-versioning below)
-        ModuleList{iMod}{iR} = xASL_adm_GetFileList(ModuleDir{iMod}{iR},'^\D.*\.(nii|nii\.gz)$','FPList',[0 Inf]);
+        ModuleList{iMod}{iR} = xASL_adm_GetFileList(ModuleDir{iMod}{iR},'^\D.*\.nii$','FPList',[0 Inf]);
     end
 end
 

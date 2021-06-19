@@ -75,7 +75,7 @@ end
 
 % Study file management
 xASL_io_ReadNifti(x.P.Path_T1); % unzip if necessary
-xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^c[1-3]' x.P.STRUCT '\.(nii|nii\.gz)$']); % make sure no old files are left when job fails
+xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^c[1-3]' x.P.STRUCT '\.nii$']); % make sure no old files are left when job fails
 xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^' x.P.STRUCT '_seg8\.mat$']);
 xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^y_' x.P.STRUCT '\.nii$']);
 xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, '^catreport.*\.pdf$');
@@ -247,8 +247,8 @@ end
 %% ----------------------------------------------------------------------------------------
 %% 6) File management lesion segmentations
 %  Obtain paths of lesion files if they exist, to correct flowfields for
-Lesion_T1_list     = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['(?i)^Lesion_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
-Lesion_FLAIR_list  = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['(?i)^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_T1_list     = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['(?i)^Lesion_' x.P.STRUCT '_\d*\.nii$'],'FPList',[0 Inf]);
+Lesion_FLAIR_list  = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['(?i)^Lesion_' x.P.FLAIR '_\d*\.nii$'],'FPList',[0 Inf]);
 Path_Transf_SPM      = fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withoutDARTEL.nii']);
 %         Path_Transf_SPM_subj = fullfile(x.dir.SUBJECTDIR,['y_' x.P.STRUCT '_withoutDARTEL.nii']);
 Path_Transf_DARTEL   = fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withDARTEL.nii']);
@@ -267,7 +267,7 @@ if xASL_exist(Path_Transf_SPM,'file')
 end
 
 % Delete existing zipped lesion masks
-xASL_adm_DeleteFileList(x.D.PopDir, ['^rLesion.*' x.P.SubjectID '\.nii\.gz'], 0, [0 Inf]);
+xASL_adm_DeleteFileList(x.D.PopDir, ['^rLesion.*' x.P.SubjectID '\.nii'], 0, [0 Inf]);
 
 
 

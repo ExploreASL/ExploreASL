@@ -59,7 +59,7 @@ x.P.Path_ASL4D_parms_mat = fullfile(x.SESSIONDIR, 'ASL4D_parms.mat');
 
 if ~xASL_exist(x.P.Path_ASL4D, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(?i)ASL4D.*\.(nii|nii\.gz)');
+    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(?i)ASL4D.*\.nii');
 
     if ~isempty(FileList) && isfield(x,'M0PositionInASL4D')
         % skip, managed below
@@ -149,7 +149,7 @@ end
 
 if ~xASL_exist(x.P.Path_M0, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.(nii|nii\.gz)','FPList',[0 Inf]);
+    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.nii','FPList',[0 Inf]);
     if ~isempty(FileList)
         xASL_Move(FileList{1}, x.P.Path_M0);
     end

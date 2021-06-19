@@ -261,7 +261,7 @@ for iExp=1:length(NativeRegExp_SubjectLevel)
         FilePathNii    = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, NativeRegExp_SubjectLevel{iExp});
         if ~xASL_exist(FilePathNii,'file')
             [Fpath, Ffile] = xASL_fileparts(FilePathNii);
-            RegExpBIDS = ['(.*' Ffile '.*run.*|.*run.*' Ffile '.*)\.(nii|nii\.gz)'];
+            RegExpBIDS = ['(.*' Ffile '.*run.*|.*run.*' Ffile '.*)\.nii'];
             RegExpBIDS = xASL_adm_GetFileList(Fpath, RegExpBIDS, 'FPList', [0 Inf], false);
             
             if isempty(RegExpBIDS)
@@ -292,7 +292,7 @@ for iExp=1:length(NativeRegExp_SessionLevel)
 
             if ~xASL_exist(FilePathNii,'file')
                 [Fpath, Ffile] = xASL_fileparts(FilePathNii);
-                RegExpBIDS = ['(.*' Ffile '.*run.*|.*run.*' Ffile '.*)\.(nii|nii\.gz)'];
+                RegExpBIDS = ['(.*' Ffile '.*run.*|.*run.*' Ffile '.*)\.nii'];
                 RegExpBIDS = xASL_adm_GetFileList(Fpath, RegExpBIDS, 'FPList', [0 Inf], false);
 
                 if isempty(RegExpBIDS)                

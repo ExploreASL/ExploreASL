@@ -23,8 +23,8 @@ function xASL_im_SaveOriginal4CAT(Ycls, PathIn)
 x.P.STRUCT    = 'T1';
 x.P.FLAIR     = 'FLAIR';
 
-Lesion_T1_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.STRUCT '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
-Lesion_FLAIR_list   = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.FLAIR  '.*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_T1_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.STRUCT '.*\.nii$'],'FPList',[0 Inf]);
+Lesion_FLAIR_list   = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.FLAIR  '.*\.nii$'],'FPList',[0 Inf]);
 
 if  isempty(Lesion_T1_list) && isempty(Lesion_FLAIR_list)
 	fprintf('%s\n','No Lesion*.nii specified, not saving the segmentation before masking');

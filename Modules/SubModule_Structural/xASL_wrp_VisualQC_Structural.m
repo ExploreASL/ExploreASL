@@ -82,8 +82,8 @@ x = xASL_wrp_VisualCheckCollective_Structural(x);
 
 %% -----------------------------------------------------------------------------------
 %% 4) Visualize lesions
-Lesion_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^Lesion_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
-ROI_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^ROI_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
+Lesion_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^Lesion_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
+ROI_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^ROI_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
 
 xASL_adm_VisualCheckLesionRemoval(x, Lesion_list);
 xASL_vis_VisualizeROIs(x, ROI_list);

@@ -57,7 +57,7 @@ end
 % Start with throwing a warning if the current subject doesn"t have a structural image
 if ~xASL_exist(x.P.Path_T1,'file') && ~xASL_exist(x.P.Path_T1_ORI,'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    Flist = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '(?i)(.*T1.*run.*|.*run.*T1.*)\.(nii|nii\.gz)', 'FPList', [0 Inf]);
+    Flist = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '(?i)(.*T1.*run.*|.*run.*T1.*)\.nii', 'FPList', [0 Inf]);
     if ~isempty(Flist)
         xASL_Move(Flist{1}, x.P.Path_T1);
     else
@@ -72,7 +72,7 @@ end
 
 if ~xASL_exist(x.P.Path_FLAIR,'file') && ~xASL_exist(x.P.Path_FLAIR_ORI,'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    Flist = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '(?i)(.*FLAIR.*run.*|.*run.*FLAIR.*)\.(nii|nii\.gz)', 'FPList', [0 Inf]);
+    Flist = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '(?i)(.*FLAIR.*run.*|.*run.*FLAIR.*)\.nii', 'FPList', [0 Inf]);
     if ~isempty(Flist)
         xASL_Move(Flist{1}, x.P.Path_FLAIR);
     end

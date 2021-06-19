@@ -141,7 +141,7 @@ end
 CleanUpDir = xASL_adm_GetFileList(x.dir.SUBJECTDIR,'^LST_tmp_.*$','List',[0 Inf], true);
 nList = length(CleanUpDir);
 for iD=1:nList
-    xASL_adm_DeleteFileList(fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}), '^.*\.(nii|nii\.gz)$', [], [0 Inf]);
+    xASL_adm_DeleteFileList(fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}), '^.*\.nii$', [], [0 Inf]);
     xASL_adm_DeleteFileList(fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}), '^.*\.mat$', [], [0 Inf]);
     rmdir( fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}),'s' );
 end

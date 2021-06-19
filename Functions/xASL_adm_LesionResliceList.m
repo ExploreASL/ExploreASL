@@ -38,25 +38,25 @@ OUTname     = '';
 
 % Load those lists that are asked
 if bLesion_T1
-	Lesion_T1_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^Lesion_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
+	Lesion_T1_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^Lesion_' x.P.STRUCT '_\d*\.nii$'], 'FPList', [0 Inf]);
 else
 	Lesion_T1_list = '';
 end
 
 if bLesion_FLAIR
-	Lesion_FLAIR_list   = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
+	Lesion_FLAIR_list   = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^Lesion_' x.P.FLAIR '_\d*\.nii$'], 'FPList', [0 Inf]);
 else
 	Lesion_FLAIR_list = '';
 end
 
 if bROI_T1
-	ROI_T1_list         = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^ROI_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
+	ROI_T1_list         = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^ROI_' x.P.STRUCT '_\d*\.nii$'], 'FPList', [0 Inf]);
 else
 	ROI_T1_list = '';
 end
 
 if bROI_FLAIR
-	ROI_FLAIR_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^ROI_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'], 'FPList', [0 Inf]);
+	ROI_FLAIR_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^ROI_' x.P.FLAIR '_\d*\.nii$'], 'FPList', [0 Inf]);
 else
 	ROI_FLAIR_list = '';
 end

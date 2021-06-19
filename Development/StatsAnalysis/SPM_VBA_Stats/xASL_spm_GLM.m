@@ -51,14 +51,14 @@ ReCreateNII         = 0;
 for iSet=1:x.S.nSets
     clear ExpectedNIIcount FoundNIIcount
     ExpectedNIIcount    = size(x.S.DATASETS{iSet},1);
-    FoundNIIcount       = length(xASL_adm_GetFileList(x.S.SPMdir, ['^Set' num2str(iSet) 'subject\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]));
+    FoundNIIcount       = length(xASL_adm_GetFileList(x.S.SPMdir, ['^Set' num2str(iSet) 'subject\d*\.nii$'],'FPList',[0 Inf]));
     if  ExpectedNIIcount~=FoundNIIcount
         ReCreateNII     = 1;
     end
 end
 
 if  ReCreateNII
-    xASL_adm_DeleteFileList(x.S.SPMdir,'^.*\.(nii|nii\.gz)$');
+    xASL_adm_DeleteFileList(x.S.SPMdir,'^.*\.nii$');
     fprintf('%s\n','Creating images...  ');
     for iSet=1:x.S.nSets
         for iSubject=1:size(x.S.DATASETS{iSet},1)

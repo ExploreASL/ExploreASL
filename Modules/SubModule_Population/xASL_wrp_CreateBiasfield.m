@@ -60,7 +60,7 @@ function xASL_wrp_CreateBiasfield(x)
     SiteNames = x.S.SetsOptions{SiteSet};
     nSites = length(AllSites);
 
-    if ~(nSites>1 && isempty(xASL_adm_GetFileList(x.D.PopDir,'(?i)^Biasfield_.*_Site_\d*.*\.nii|nii\.gz)$', 'FPList',[0 Inf])))
+    if ~(nSites>1 && isempty(xASL_adm_GetFileList(x.D.PopDir,'(?i)^Biasfield_.*_Site_\d*.*\.nii$', 'FPList',[0 Inf])))
         fprintf('%s\n','No multiple sites found, BiasField creation and normalization skipped');
         return;
     end
