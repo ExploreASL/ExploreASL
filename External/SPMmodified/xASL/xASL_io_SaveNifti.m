@@ -20,6 +20,13 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It loads the pathOrigNifti, takes all the parameters from it, and creates a new Nifti file with
 %              these parameters, but new image matrix from imNew. It saves the result in pathNewNifti.
+%              It runs the following steps:
+% 
+%              1. Unzipping and manage name input file
+%              2. Determine the bit precision
+%              3. Create new NIfTI
+%              4. Remove redundant .mat orientation files
+%              5. Delete any pre-existing NIfTI files with the same name
 %
 % EXAMPLE: xASL_io_SaveNifti('c:\User\path\old.nii', 'c:\User\path\new.nii', im)
 %          xASL_io_SaveNifti('c:\User\path\old.nii', 'c:\User\path\new.nii', im, [], 0)
@@ -29,7 +36,8 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
-% Admin
+%% ----------------------------------------------------------------------------
+%% Admin
 if nargin < 3
 	error('Needs at least three input parameters.');
 end
@@ -74,23 +82,22 @@ newMat = [pathNewNifti(1:end-4) '.mat'];
 if xASL_exist(tempName)
     warning(['Temporary file already existed, removing: ' tempName]);
     xASL_delete(tempName);
-end
-if xASL_exist(tempMat)
-    warning(['Temporary file already existed, removing: ' tempMat]);
     xASL_delete(tempMat);
 end
 
+%% 1. Unzipping and manage name input file
 % First unzip original Nifti if needed
 xASL_io_ReadNifti(pathOrigNifti);
 
 % Then change name if needed
 pathOrigNifti = xASL_adm_ZipFileNameHandling(pathOrigNifti);
 
-% this will make sure that the newly created nifti file has the correct name (otherwise it may complain that it wants to read .nii.gz which doesn't exist anymore
+% This will make sure that the newly created nifti file has the correct name (otherwise it may complain that it wants to read .nii.gz which doesn't exist anymore
 newNifti = xASL_io_ReadNifti(pathOrigNifti);
 newNifti.dat.fname = tempName;
 
-% Determine the bit precision
+
+%% 2. Determine the bit precision
 bInteger8 = min(min(min(min(min(min(min(uint8(imNew)==imNew)))))));
 bInteger16 = min(min(min(min(min(min(min(int16(imNew)==imNew)))))));
 
@@ -152,9 +159,10 @@ switch nBits
         end
 
     otherwise
-        error('xASL_io_SaveNifti: Unknown bit-choice.');
+        error('Unknown bit-choice.');
 end
 
+%% 3. Create new NIfTI
 if ~isempty(changeMat)
 	newNifti.mat = changeMat;
 end
@@ -169,12 +177,12 @@ create(newNifti);
 
 newNifti.dat(:,:,:,:,:) = imNew;
 
-if  exist('ScaleSlope16','var')
+if exist('ScaleSlope16', 'var')
     newNifti = xASL_io_ReadNifti(tempName);
     newNifti.dat.scl_slope = ScaleSlope16;
     create(newNifti);
 end
-if  exist('InterceptN','var')
+if exist('InterceptN', 'var')
     newNifti = xASL_io_ReadNifti(tempName);
     newNifti.dat.scl_inter = InterceptN;
     create(newNifti);
@@ -182,17 +190,17 @@ end
 
 xASL_Move(tempName,pathNewNifti,1,0);
 
-if  exist(tempMat,'file')
+if exist(tempMat, 'file')
     xASL_Move(tempMat,newMat,1,0);
 end
 
 
-%% Remove redundant .mat orientation files
+%% 4. Remove redundant .mat orientation files
 if size(imNew,4)==1
     xASL_delete(newMat);
 end
 
-if exist(newMat,'file')
+if exist(newMat, 'file')
 	tmpMat = load(newMat);
 	% Remove .mat if dimensions do not fit
 	if size(newNifti.dat,4) ~= size(tmpMat.mat,3)
@@ -201,18 +209,23 @@ if exist(newMat,'file')
 end
 
 
-%% Always avoid having two of the same files, of which one copy is zipped
+%% 5. Delete any pre-existing NIfTI files with the same name
+% Always avoid having two of the same files, of which one copy is zipped
 % E.g. in a rerun
-if  exist([pathNewNifti '.gz'],'file')
+
+% PM: this can be replaced by removing the output path if exists, at the
+% start of this function, when we remove the first input argument
+if exist([pathNewNifti '.gz'], 'file')
     delete([pathNewNifti '.gz']);
 end
 
-if  bGZip
+if bGZip
     xASL_adm_GzipNifti(pathNewNifti);
 end
 
-if  strcmp(pathNewNifti(end-3:end),'.nii') && exist(pathNewNifti,'file') && exist([pathNewNifti '.gz'],'file')
+if strcmp(pathNewNifti(end-3:end),'.nii') && exist(pathNewNifti,'file') && exist([pathNewNifti '.gz'],'file')
     delete([pathNewNifti '.gz']);
 end
+
 
 end
