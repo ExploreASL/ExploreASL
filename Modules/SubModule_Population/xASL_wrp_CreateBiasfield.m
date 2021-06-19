@@ -4,7 +4,7 @@ function xASL_wrp_CreateBiasfield(x)
 % FORMAT: xASL_wrp_CreateBiasfield(x)
 %
 % INPUT:
-%   x           - struct containing pipeline environment parameters%
+%   x           - struct containing pipeline environment parameters
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function creates a smooth biasfield as intensity map to
@@ -33,40 +33,30 @@ function xASL_wrp_CreateBiasfield(x)
 
     % Select the set that contains the variable Site.mat
     if isfield(x.S,'SetsName')
-        for iSet=1:length(x.S.SetsName)
-            if strcmp(x.S.SetsName{iSet},'Site')
-                SiteSet = iSet;
-            end
-        end
+        iSiteSet = find(strcmp(x.S.SetsName,'Site'));
     end
 
     x.WBmaskNarrow = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,'ParenchymNarrow.nii'));
 
     %% ------------------------------------------------------------------------------------------------------------
     %% Admin
-    pGMname = fullfile(x.D.TemplateDir, 'rc1T1.nii');
-%     pWMname = fullfile(x.D.TemplateDir, 'rc2T1.nii');
-%     pGMim   = xASL_io_Nifti2Im(pGMname);
-%     pWMim   = xASL_io_Nifti2Im(pWMname);
-%     Bmask   = (pGMim+pWMim)>0.5;
+    pGMname = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii');
 
-    if ~exist('SiteSet','var')
+    if ~exist('iSiteSet','var')
         fprintf('%s\n','No multiple sites found, BiasField creation and normalization skipped');
         return;
     end
 
     % Define sites
-    AllSites = unique( x.S.SetsID(:,SiteSet) );
-    SiteNames = x.S.SetsOptions{SiteSet};
-    nSites = length(AllSites);
+    AllSites = unique(x.S.SetsID(:,iSiteSet));
+    SiteNames = x.S.SetsOptions{iSiteSet};
+    nSites = numel(AllSites);
 
-    if ~(nSites>1 && isempty(xASL_adm_GetFileList(x.D.PopDir,'(?i)^Biasfield_.*_Site_\d*.*\.nii$', 'FPList',[0 Inf])))
+	% only run this function if there are multiple sites defined, & hasn't been run before    
+    if ~(nSites>1 && isempty(xASL_adm_GetFileList(x.D.PopDir,'(?i)^Biasfield_.*_Site_\d*.*\.nii$')))
         fprintf('%s\n','No multiple sites found, BiasField creation and normalization skipped');
         return;
     end
-
-    % only run this function if there are multiple sites defined, &
-    % hasn't been run before
 
     pGM = xASL_io_Nifti2Im(pGMname)>0.5;
 
@@ -84,34 +74,27 @@ function xASL_wrp_CreateBiasfield(x)
 
     %% Import average site-CBF images
     for iSite=1:nSites
-        SiteAveragePath = fullfile(x.D.TemplatesStudyDir, [CBF_prefix '_Site_' SiteNames{iSite} '_bs-mean.nii']);
+        IM = single.empty(0);
+        SiteScans = find(x.S.SetsID(:,iSiteSet)==AllSites(iSite));
+        nScans = numel(SiteScans);
 
-        if xASL_exist(SiteAveragePath,'file')
-            RobustMean(:,:,:,iSite) = xASL_io_Nifti2Im(SiteAveragePath);
-        else
-            clear SiteScans nScans IM
-            SiteScans = find(x.S.SetsID(:,SiteSet)==AllSites(iSite));
-            nScans = length(SiteScans);
-
-            ScanN = 1;
-            fprintf('%s', ['Loading scans for site ' num2str(iSite) '...  ']);
-            for iScan=1:nScans
-                xASL_TrackProgress(iScan,nScans);
-                clear iSubSess iSub iSess FileName tNII tIM
-                iSubSess = SiteScans(iScan);
-                iSub = ceil(iSubSess/x.dataset.nSessions);
-                iSess = iSubSess- ((iSub-1)*x.dataset.nSessions);
-                FileName = fullfile(x.D.PopDir,[CBF_prefix '_' x.SUBJECTS{iSub} '_' x.SESSIONS{iSess} '.nii']);
-                if xASL_exist(FileName,'file')
-                    IM(:,:,:,ScanN) = xASL_io_Nifti2Im(FileName);
-                    ScanN = ScanN+1;
-                    NameList{ScanN,iSite} = [x.SUBJECTS{iSub} '_' x.SESSIONS{iSess}];
-                end
+        ScanN = 1;
+        fprintf('%s', ['Loading scans for site ' num2str(iSite) ':    ']);
+        for iScan=1:nScans
+            xASL_TrackProgress(iScan,nScans);
+            iSubSess = SiteScans(iScan);
+            iSub = ceil(iSubSess/x.dataset.nSessions);
+            iSess = iSubSess- ((iSub-1)*x.dataset.nSessions);
+            FileName = fullfile(x.D.PopDir,[CBF_prefix '_' x.SUBJECTS{iSub} '_' x.SESSIONS{iSess} '.nii']);
+            if xASL_exist(FileName, 'file')
+                IM(:,ScanN) = xASL_im_IM2Column(xASL_io_Nifti2Im(FileName),x.S.masks.WBmask);
+                ScanN = ScanN+1;
+                NameList{ScanN,iSite} = [x.SUBJECTS{iSub} '_' x.SESSIONS{iSess}];
             end
-
-            NoOutliers = xASL_stat_RobustMean(IM); % use SoS function
-            RobustMean(:,:,:,iSite) = xASL_im_Column2IM(xASL_stat_MeanNan(IM(:,NoOutliers), 2),x.S.masks.WBmask);
         end
+
+        NoOutliers = xASL_stat_RobustMean(IM); % use SoS function
+        RobustMean(:,:,:,iSite) = xASL_im_Column2IM(xASL_stat_MeanNan(IM(:,NoOutliers), 2), x.S.masks.WBmask);
     end
 
 
@@ -215,7 +198,7 @@ function xASL_wrp_CreateBiasfield(x)
     %% ------------------------------------------------------------------------------------------------------------
     %% Save biasfields
     for iSite=1:nSites
-        FieldFileName = fullfile(x.D.PopDir,['Biasfield_Multipl_Site_' num2str(iSite) '_' x.S.SetsOptions{SiteSet}{iSite} '.nii']);
+        FieldFileName = fullfile(x.D.PopDir,['Biasfield_Multipl_Site_' num2str(iSite) '_' x.S.SetsOptions{iSiteSet}{iSite} '.nii']);
         xASL_io_SaveNifti(pGMname,FieldFileName,BiasFieldMultipl(:,:,:,iSite));
     end
 
@@ -225,7 +208,7 @@ function xASL_wrp_CreateBiasfield(x)
     %% First create backup
     TryN = 1;
     BackupDir = fullfile(x.D.PopDir, 'BackupBeforeSiteRescale_1');
-    while isdir(BackupDir)
+    while exist(BackupDir, 'dir')
           TryN = TryN+1;
           BackupDir = fullfile(x.D.PopDir, ['BackupBeforeSiteRescale_' num2str(TryN)]);
     end
@@ -239,7 +222,7 @@ function xASL_wrp_CreateBiasfield(x)
             if xASL_exist(FilePath,'file')
                 [~, File, Ext] = xASL_fileparts(FilePath);
                 NewPath = fullfile(BackupDir,[File Ext]);
-                xASL_Copy( FilePath, NewPath);
+                xASL_Copy(FilePath, NewPath);
             end
         end
     end
@@ -253,7 +236,7 @@ function xASL_wrp_CreateBiasfield(x)
     %% Rescale CBF images
     for iSite=1:nSites
         clear SiteScans nScans
-        SiteScans = find(x.S.SetsID(:,SiteSet)==AllSites(iSite));
+        SiteScans = find(x.S.SetsID(:,iSiteSet)==AllSites(iSite));
         nScans = length(SiteScans);
 
         fprintf('\n%s',['Rescaling CBF images for intensity biasfield, site ' SiteNames{iSite} ':   ']);
@@ -279,10 +262,11 @@ function xASL_wrp_CreateBiasfield(x)
 
 %% ------------------------------------------------------------------------------------------------------------
 %% Import site-CBF images
-clear IM
+IM = cell.empty(0);
+
 iNext = [1 1 1];
 for iSite=1:nSites
-    SiteScans = find(x.S.SetsID(:,SiteSet)==AllSites(iSite));
+    SiteScans = find(x.S.SetsID(:,iSiteSet)==AllSites(iSite));
     nScans = length(SiteScans);
     fprintf('\n%s',['Loading CBF images for site ' SiteNames{iSite} ':   ']);
     for iScan=1:nScans
@@ -330,5 +314,6 @@ for iSite=1:nSites
         xASL_io_SaveNifti(FilePath,FilePath,xASL_im_Column2IM(IM{iSite}(:,iScan),x.S.masks.WBmask),[],0);
     end
 end
+
 
 end
