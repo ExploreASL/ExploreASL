@@ -47,7 +47,7 @@ if nargin<3 || isempty(Threshold2)
 end
 
 %% Find spatial CoV stats
-FileList = xASL_adm_GetFileList(x.S.StatsDir, ['.*CoV_qCBF.*TotalGM_n=' num2str(x.nSubjects) '_.*PVC0\.tsv$'], 'List',[0 Inf]);
+FileList = xASL_adm_GetFileList(x.S.StatsDir, ['(?i).*CoV_qCBF.*TotalGM_n=' num2str(x.nSubjects) '_.*PVC0\.tsv$'], 'List',[0 Inf]);
 
 if isempty(FileList)
     warning('Couldnt find spatial CoV information! File missing, skipping...');
@@ -80,7 +80,7 @@ for iSubject=1:x.nSubjects
         xASL_TrackProgress(iSubjSess, x.dataset.nSubjectsSessions);
     
         % find current JPG
-        JPGList = xASL_adm_GetFileList(x.D.ASLCheckDir, ['^Tra_qCBF_' NameSubjSess '.*'],'List', [0 Inf]);
+        JPGList = xASL_adm_GetFileList(x.D.ASLCheckDir, ['(?i)^Tra_qCBF_' NameSubjSess '.*'],'List', [0 Inf]);
         % find current sCoV
         Index = find(cellfun(@(x) strcmp(x,NameSubjSess), SubjectList));
         

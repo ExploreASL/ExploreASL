@@ -39,7 +39,7 @@ end
 
 %% ---------------------------------------------------------------------------------------------------
 %% 1) Restore the orientation matrix of all images, in case we perform a re-run: but only when we don't have lesion maps
-Lesion_ROI_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^(Lesion|ROI)_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
+Lesion_ROI_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^(Lesion|ROI)_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
 
 %% ---------------------------------------------------------------------------------------------------
 %% 2)Obtain lists of paths
