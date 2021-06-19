@@ -245,7 +245,7 @@ if ~x.mutex.HasState(StateName{8})
     
     % Check if we should do the same for Lesion or ROI masks (i.e.
     % individual "atlases") -> NB not yet developed/tested in native space
-    LesionROIList = xASL_adm_GetFileList(x.D.PopDir, 'r(Lesion|ROI).*\.nii$', 'FPList', [0 Inf]);
+    LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI).*\.nii$', 'FPList', [0 Inf]);
     x.S.InputNativeSpace = 0;
     for iAtlas = 1:length(LesionROIList)
         x.S.InputAtlasPath = LesionROIList{iAtlas};

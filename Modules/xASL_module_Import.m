@@ -119,7 +119,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     % Check the imagePar input file
     if nargin < 2 || isempty(imParPath)
         % If the path is empty, then try to find sourceStructure.json or sourcestruct.json
-        fListImPar = xASL_adm_GetFileList(studyPath,'^(source|Source)(Structure|Struct|structure|struct).json$', 'List', [], 0);
+        fListImPar = xASL_adm_GetFileList(studyPath,'(?i)^source(struct(ure|)\.json$', 'List', [], 0);
         if length(fListImPar) < 1
             error('Could not find the sourceStructure.json file');
         end
@@ -134,7 +134,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     % Find the studyPar input file
     if nargin < 3 || isempty(studyParPath)
         % If the path is empty, then try to find studyPar.json
-        fListStudyPar = xASL_adm_GetFileList(studyPath,'^(study|Study)(Par|par).json$', 'List', [], 0);
+        fListStudyPar = xASL_adm_GetFileList(studyPath,'(?i)^studypar\.json$', 'List', [], 0);
         if length(fListStudyPar) < 1
             warning('Could not find the StudyPar.json file');
         else

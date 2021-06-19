@@ -296,7 +296,7 @@ end
 x = ExploreASL; % here we return the ExploreASL paths, which we removed above for testing SPM
 
 % Remove lock folders, useful for rerun when debugging
-LockFolders = xASL_adm_GetFileList(TestDirDest, '^locked$', 'FPListRec', [0 Inf], true);
+LockFolders = xASL_adm_GetFileList(TestDirDest, '(?i)^locked$', 'FPListRec', [0 Inf], true);
 if ~isempty(LockFolders)
     cellfun(@(y) xASL_delete(y), LockFolders, 'UniformOutput', false);
 end
@@ -317,7 +317,7 @@ LogFiles = cellfun(@(y) fullfile(TestDirDest,y,'Population','xASL_module_Populat
 
 for iList=1:length(Dlist)
     AnalysisDir = fullfile(TestDirDest,Dlist{iList});
-    DataParFile{iList} = xASL_adm_GetFileList(AnalysisDir,'(DAT|dat|Dat).*\.(m|json)');
+    DataParFile{iList} = xASL_adm_GetFileList(AnalysisDir,'(?i)dat.*\.(m|json)');
     xASL_delete(LogFiles{iList}); % useful for rerun when debugging
     ScreenName = ['TestxASL_' num2str(iList)];
     
@@ -401,11 +401,11 @@ for iList=1:length(Dlist) % iterate over example datasets
 	VolumeDir = fullfile(PopulationDir, 'TissueVolume');
     
     clear ResultsFile
-    ResultFile{1} = xASL_adm_GetFileList(StatsDir,'^mean_qCBF.*TotalGM.*PVC2\.tsv','FPList');
-    ResultFile{2} = xASL_adm_GetFileList(StatsDir,'^median_qCBF.*TotalGM.*PVC0\.tsv','FPList');
-    ResultFile{3} = xASL_adm_GetFileList(StatsDir,'^median_qCBF.*DeepWM.*PVC0\.tsv','FPList');
-    ResultFile{4} = xASL_adm_GetFileList(StatsDir,'^CoV_qCBF.*TotalGM.*PVC0\.tsv','FPList');
-    ResultFile{5} = xASL_adm_GetFileList(VolumeDir,'^TissueVolume.*\.tsv','FPList');
+    ResultFile{1} = xASL_adm_GetFileList(StatsDir,'(?i)^mean_qCBF.*TotalGM.*PVC2\.tsv','FPList');
+    ResultFile{2} = xASL_adm_GetFileList(StatsDir,'(?i)^median_qCBF.*TotalGM.*PVC0\.tsv','FPList');
+    ResultFile{3} = xASL_adm_GetFileList(StatsDir,'(?i)^median_qCBF.*DeepWM.*PVC0\.tsv','FPList');
+    ResultFile{4} = xASL_adm_GetFileList(StatsDir,'(?i)^CoV_qCBF.*TotalGM.*PVC0\.tsv','FPList');
+    ResultFile{5} = xASL_adm_GetFileList(VolumeDir,'(?i)^TissueVolume.*\.tsv','FPList');
 
 	for iFile=1:length(ResultFile) % iterate over ROI results
 		if length(ResultFile{iFile})<1
@@ -451,8 +451,8 @@ for iList=1:length(Dlist) % iterate over example datasets
     if isfield(x,'D') && isfield(x.D,'TemplateDir')
         PathTemplateASL = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
         PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
-        PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
-        PathM0 = xASL_adm_GetFileList(PopulationDir,'^(noSmooth_M0|mean_control).*\.nii$', 'FPList');
+        PathCBF = xASL_adm_GetFileList(PopulationDir,'(?i)^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
+		PathM0 = xASL_adm_GetFileList(PopulationDir,'(?i)^(noSmooth_M0|mean_control).*\.nii$', 'FPList');
         if ~isempty(PathCBF)
             ResultsTable{1+iList,5+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
         end

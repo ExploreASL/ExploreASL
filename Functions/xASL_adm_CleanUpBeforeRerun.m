@@ -196,14 +196,14 @@ try
     fprintf('Restoring backupped _ORI (original) files:   ');
 
     if bAllSubjects
-        OriList = [OriList;xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPListRec', [0 Inf])]; % for all subjects/sessions
+        OriList = [OriList;xASL_adm_GetFileList(SubjectDir, '(?i).*_ORI\.nii$', 'FPListRec', [0 Inf])]; % for all subjects/sessions
     elseif ~isempty(find(iModule==1)) % if we remove the structural data
-        OriList = [OriList;xASL_adm_GetFileList(SubjectDir, '.*_ORI\.nii$', 'FPList', [0 Inf])]; % within the native space SubjectDir
-        OriList = [OriList;xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '(?!_ASL_\d+)\.nii$'], 'FPListRec', [0 Inf])]; % within the standard space PopulationDir
+        OriList = [OriList;xASL_adm_GetFileList(SubjectDir, '(?i).*_ORI\.nii$', 'FPList', [0 Inf])]; % within the native space SubjectDir
+        OriList = [OriList;xASL_adm_GetFileList(PopulationDir, ['(?i).*_ORI_' SubjectID '(?!_ASL_\d+)\.nii$'], 'FPListRec', [0 Inf])]; % within the standard space PopulationDir
     elseif ~isempty(find(iModule==2)) % if we remove the ASL data
         for iSession=1:nSessions
-            OriList = [OriList;xASL_adm_GetFileList(SessionDir{iSession}, '.*_ORI\.nii$', 'FPList', [0 Inf])]; % within the native space SessionDir
-            OriList = [OriList;xASL_adm_GetFileList(PopulationDir, ['.*_ORI_' SubjectID '_' SessionID{iSession} '\.nii$'], 'FPListRec', [0 Inf])]; % within the standard space PopulationDir
+            OriList = [OriList;xASL_adm_GetFileList(SessionDir{iSession}, '(?i).*_ORI\.nii$', 'FPList', [0 Inf])]; % within the native space SessionDir
+            OriList = [OriList;xASL_adm_GetFileList(PopulationDir, ['(?i).*_ORI_' SubjectID '_' SessionID{iSession} '\.nii$'], 'FPListRec', [0 Inf])]; % within the standard space PopulationDir
         end
     end
 
@@ -320,7 +320,7 @@ try
         xASL_adm_DeleteFileList(SubjectDir, ['^QC_collection_' SubjectID '\.json$'], true, [0 Inf]);
     else
         ListXmat = xASL_adm_GetFileList(SubjectDir, '^x\.mat$', 'FPListRec', [0 Inf]);
-        ListQCjson = xASL_adm_GetFileList(SubjectDir, ['^QC_collection_' SubjectID '\.json$'], 'FPListRec', [0 Inf]);
+        ListQCjson = xASL_adm_GetFileList(SubjectDir, ['(?i)^QC_collection_' SubjectID '\.json$'], 'FPListRec', [0 Inf]);
 
         RemoveFields = {'Structural' 'ASL'};
         if ~isempty(find(iModule==1)) % if we remove the structural provenance

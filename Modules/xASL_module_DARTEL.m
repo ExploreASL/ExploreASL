@@ -116,7 +116,7 @@ end
 %% -------------------------------------------------------------------------------------------------------
 %% 2 ReRun DARTEL if additional T1 scans are found
 % This should now be re-pogrammed, on the basis of lock files
-FList_FlowField = xASL_adm_GetFileList(x.D.PopDir, ['^u_rc1T1_.*_Template\.nii$']);
+FList_FlowField = xASL_adm_GetFileList(x.D.PopDir, ['(?i)^u_rc1T1_.*_Template\.nii$']);
 
 % Create list
 ToWarpList = '';

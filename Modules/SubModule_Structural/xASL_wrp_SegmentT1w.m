@@ -247,8 +247,8 @@ end
 %% ----------------------------------------------------------------------------------------
 %% 6) File management lesion segmentations
 %  Obtain paths of lesion files if they exist, to correct flowfields for
-Lesion_T1_list     = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
-Lesion_FLAIR_list  = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_T1_list     = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['(?i)^Lesion_' x.P.STRUCT '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
+Lesion_FLAIR_list  = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['(?i)^Lesion_' x.P.FLAIR '_\d*\.(nii|nii\.gz)$'],'FPList',[0 Inf]);
 Path_Transf_SPM      = fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withoutDARTEL.nii']);
 %         Path_Transf_SPM_subj = fullfile(x.dir.SUBJECTDIR,['y_' x.P.STRUCT '_withoutDARTEL.nii']);
 Path_Transf_DARTEL   = fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withDARTEL.nii']);
@@ -284,7 +284,7 @@ end
 xASL_Move(x.P.Path_y_T1, Path_Transf_SPM, true); % move the flow field back
 
 % Combine all lesions
-rLesionList = xASL_adm_GetFileList(x.D.PopDir, ['^rLesion.*' x.P.SubjectID '\.nii'], 'FPList', [0 Inf]);
+rLesionList = xASL_adm_GetFileList(x.D.PopDir, ['(?i)^rLesion.*' x.P.SubjectID '\.nii'], 'FPList', [0 Inf]);
 LesionIM = zeros([121 145 121]); % assuming 1.5 mm MNI
 for iL=1:length(rLesionList)
     LesionIM(xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(rLesionList{iL}))) = 1;
@@ -377,7 +377,7 @@ if bForce
     end
 
     for iL=1:length(DirList)
-        DelList = xASL_adm_GetFileList(DirList{iL},'^.*\.(pdf|nii|xml|mat|ini|db|DS_Store)$','FPlist',[0 Inf]);
+        DelList = xASL_adm_GetFileList(DirList{iL},'(?i)^.*\.(pdf|nii|xml|mat|ini|db|DS_Store)$','FPlist',[0 Inf]);
         for iD=1:length(DelList)
             xASL_delete(DelList{iD});
         end
