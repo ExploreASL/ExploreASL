@@ -92,6 +92,18 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     %% 7. Householding
     xASL_delete(pathBasilInput);
 
+    %% Output of BASIL
+    % Basils Output is in the subfolder '/BasilOutput' which contains
+    % multiple steps if there are multiple iterations, and always contains
+    % a symbolic link (symlink) to the foldername of the latest
+    % iteration/step ('stepX_latest').
+    %
+    % When we know what we want with this output, we can remove this
+    % symbolic link or some folders/output, using xASL_delete.
+    % 
+    % delete, xASL_delete & xASL_adm_DeleteFileList are able to delete symbolic
+    % links as well (in Unix-systems)
+    
 end
 
 
