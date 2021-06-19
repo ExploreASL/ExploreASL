@@ -59,6 +59,32 @@ function filepaths = xASL_adm_DeleteFileList(strDirectory, strRegEx, bRecurse, n
 	
     % check if any file was found and then delete them
     if ~isempty(filepaths)
-        delete(filepaths{:});
+        % first disable warnings for double files (in case of symbolic links)
+        warning('off', 'MATLAB:DELETE:FileNotFound');
+        
+        try
+            delete(filepaths{:});
+            filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
+        catch ME
+            % try deleting residual paths file-by-file
+            % this can help in cases of symbolic links
+            filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
+            for iPath=1:numel(filepaths)
+                xASL_delete(filepaths{iPath});
+            end
+            % then check if really everything was deleted, otherwise throw the
+            % warning
+            filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
+            if ~isempty(filepaths)
+                fprintf('%s\n', ME);
+            end
+        end
+        
+        if ~isempty(filepaths)
+            warning('Something went wrong deleting files');
+        end
+        
+        warning('on', 'MATLAB:DELETE:FileNotFound');
     end
+
 end
