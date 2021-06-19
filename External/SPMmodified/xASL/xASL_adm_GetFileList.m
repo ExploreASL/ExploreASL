@@ -7,6 +7,20 @@ function filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequire
 %   strDirectory   Directory to search (REQUIRED)
 %                  Optionally use wildcards to be more specific (i.e. 'C:\data\*.img')
 %   strRegEx       Regular expression that will be used to filter the returned list (OPTIONAL, DEFAULT = '^.+$')
+%                  Explanations of regular expressions:
+%                  ^ = expression must start with this
+%                  $ = expression must end with this
+%                  (?i) expression becomes case insensitive
+%                  \ = escaping
+%                  . = any character
+%                  * = previous repeated 0-Inf times
+%                  + = previous repeated 1-Inf times
+%                  .* = any character repeated 0-Inf times
+%                  \. extension delimiter/period
+%                  (?! ) is a lookahead (do not match the symbols in the space here that are to the RIGHT)
+%                  (?<! ) is a negative lookahead (do not match the symbols in the space here that are to the LEFT)
+%
+%
 %                  Examples: 
 %                            '^.+$'       - matches all files
 %                            '^\d+$'      - matches names that contains only digits
@@ -14,6 +28,11 @@ function filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequire
 %                            '^\d{3}$'    - matches names that exist of exactly 3 digits
 %                            '^\d{3}_.+$' - matches names that start with 3 digits, followed by an underscore and other characters
 %                            '^PP\d+$'    - matches names that start with PP, followed by a number
+%                            '^dataPar.*\.json$' - matches names that start
+%                            with dataPar, ends with .json, and allows anything in between
+%                            '(?i)^datapar.*\.json$' - the same as above, but case insensitive
+%                            
+%
 %   mode           true to return full paths with path+name (OPTIONAL, DEFAULT = 'FPList')
 %                  false to return only the name (= 'List')
 %                  Or directly assign the spm_select compatible mode 'List' (only filenames), 'FPList' (fullpath),
