@@ -100,7 +100,21 @@ end
 % SPM opens to double precision data format by default, which takes up
 % unnecessary large memory
 if exist('imOut','var') && ~isa(imOut,'single') && ~niiMat
-    imOut = single(imOut);
+    bUint8 = uint8(imOut)==imOut;
+    bUint8 = min(bUint8(:));
+    
+    if bUint8
+        imOut = uint8(imOut);
+    else
+        bInt16 = int16(imOut)==imOut;
+        bInt16 = min(bInt16(:));
+        
+        if bInt16
+            imOut = int16(imOut);
+        else
+            imOut = single(imOut);
+        end
+    end
 elseif ~exist('imOut','var') && ~niiMat
     imOut = [];
     fprintf('Something went wrong opening NifTI\n');
