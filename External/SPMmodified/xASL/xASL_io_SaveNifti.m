@@ -9,8 +9,8 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %   imNew          Image matrix to save (REQUIRED)
 %                  The dimension must correspond to the dimension of pathOrigNifti
 %   nBits           Number of bits to save the result in - 8,16,32
-%                  (OPTIONAL, by DEFAULT it checks if 16 bits representation is enough or 32 are needed not to
-%                  loose the precition of imNew
+%                  (OPTIONAL, by DEFAULT it checks which bits
+%                  representation is enough.
 %                  For bit conversion, 32 is best precision for sensitive data, 16 is still
 %                  OK and saves some space, 8 is most economic but should only be used for
 %                  masks, since it cannot contain a large data range
@@ -90,12 +90,15 @@ pathOrigNifti = xASL_adm_ZipFileNameHandling(pathOrigNifti);
 newNifti = xASL_io_ReadNifti(pathOrigNifti);
 newNifti.dat.fname = tempName;
 
-% Determines the bit precision
-if nargin < 4 || isempty(nBits)
-    bImInt16 = int16(imNew)==imNew;
+% Determine the bit precision
+bInteger8 = min(min(min(min(min(min(min(uint8(imNew)==imNew)))))));
+bInteger16 = min(min(min(min(min(min(min(int16(imNew)==imNew)))))));
 
-    if  min(bImInt16(:))==1 && newNifti.dat.scl_slope==1
-        % this image is integer16 already, doesn't need FLOAT32
+if nargin < 4 || isempty(nBits)
+    % Automatically adapt according to data input bitdepth
+    if bInteger8
+        nBits = 8;
+    elseif bInteger16
         nBits = 16;
     else
         % this image had more precision, save as single precision
@@ -115,9 +118,8 @@ switch nBits
         % Leads to minimal/negligible rounding errors, if original
         % image wasn't 16 bit
         newNifti.dat.dtype = 'INT16-LE';
-        bImInt16 = int16(imNew)==imNew;
 
-        if  min(bImInt16(:))==1
+        if bInteger16
             % this image is integer16 already, doesn't need scale slope
             imNew = int16(imNew);
         else
@@ -132,9 +134,8 @@ switch nBits
         % Leads to minimal/negligible rounding errors, if original
         % image wasn't 16 bit
         newNifti.dat.dtype = 'UINT8-LE';
-        bImInt8 = uint8(imNew)==imNew;
 
-        if  min(bImInt8(:))==1
+        if bInteger8
             % this image is UINT8 already, doesn't need scale slope
             imNew = uint8(imNew);
         else
