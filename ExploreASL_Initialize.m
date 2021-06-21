@@ -337,31 +337,26 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
     
     % Check length of arrays (single digit input)
     if length(parameters.ImportModules)==1
-		% If a single value is given, then copy it to all submodules
-		parameters.ImportModules(1:4) = parameters.ImportModules(1);
-	elseif length(parameters.ImportModules)<4
-		% Convert to a row vector
-		parameters.ImportModules = parameters.ImportModules(:)';
-		
-		% Fill in the missing fields with zeros
-		parameters.ImportModules(length(parameters.ImportModules)+1:4) = 0;
-		
-		% Issue a warning
-		warning('Incorrect length of the ImportModules parameter, missing submodules set to zero: %s\n',num2str(parameters.ImportModules));
-        
+        % If a single value is given, then copy it to all submodules
+        parameters.ImportModules(1:4) = parameters.ImportModules(1);
+    elseif length(parameters.ImportModules)<4
+        % Convert to a row vector
+        parameters.ImportModules = parameters.ImportModules(:)';
+        % Fill in the missing fields with zeros
+        parameters.ImportModules(length(parameters.ImportModules)+1:4) = 0;
+        % Issue a warning
+        warning('Incorrect length of the ImportModules parameter, missing submodules set to zero: %s\n',num2str(parameters.ImportModules));
     end
     if length(parameters.ProcessModules)==1
-		% If a single value is given, then copy it to all submodules
-		parameters.ProcessModules(1:3) = parameters.ProcessModules(1);
-	elseif length(parameters.ProcessModules)<3
-		% Convert to a row vector
-		parameters.ProcessModules = parameters.ProcessModules(:)';
-		
-		% Fill in the missing fields with zeros
-		parameters.ProcessModules(length(parameters.ProcessModules)+1:3) = 0;
-		
-		% Issue a warning
-		warning('Incorrect length of the ProcessModules parameter, missing submodules set to zero: %s\n',num2str(parameters.ProcessModules));
+        % If a single value is given, then copy it to all submodules
+        parameters.ProcessModules(1:3) = parameters.ProcessModules(1);
+    elseif length(parameters.ProcessModules)<3
+        % Convert to a row vector
+        parameters.ProcessModules = parameters.ProcessModules(:)';
+        % Fill in the missing fields with zeros
+        parameters.ProcessModules(length(parameters.ProcessModules)+1:3) = 0;
+        % Issue a warning
+        warning('Incorrect length of the ProcessModules parameter, missing submodules set to zero: %s\n',num2str(parameters.ProcessModules));
     end
     
     % Make it impossible to set bPause to true in deployed mode
