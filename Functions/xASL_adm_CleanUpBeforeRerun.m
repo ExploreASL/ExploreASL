@@ -350,7 +350,7 @@ try
                     end
                     x = xStruct.x;
 
-                    % What happens here?
+                    % Optional: Remove Output and Output_im fields
                     for iMod=iModule
                         if iMod~=3 % if not a Population module
                             if isfield(x,'Output')
@@ -376,9 +376,9 @@ try
                         end
                     end
                     
-                    % The bug is here!!!
+                    % Remove symbolic path of SUBJECTDIR
                     if isfield(x.dir,'SUBJECTDIR')
-                        x = rmfield(x.dir, 'SUBJECTDIR');
+                        x.dir = rmfield(x.dir, 'SUBJECTDIR');
                     end
                     
                     % Store the new x.mat
