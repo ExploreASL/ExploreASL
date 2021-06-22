@@ -18,6 +18,10 @@ function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSession
 %   3. Determine unique amount of session numbers present in list
 %   4. Set nSessions as highest unique session number 
 %   5. Check and provide warning of number of sesssions differs per subject
+%
+% EXAMPLE: n/a
+% __________________________________
+% Copyright (C) 2015-2021 ExploreASL
 
 %% 1. Administration
 if ~isfield(x, 'SESSIONS')
