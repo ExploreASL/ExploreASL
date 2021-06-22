@@ -110,7 +110,7 @@ xASL_qc_PrintOrientation(x.dir.SUBJECTDIR, x.P.Path_T1, x.dir.SUBJECTDIR, 'Rigid
 
 x = xASL_qc_CollectParameters(x, iSubject, 'Structural');
 xASL_delete(PathX);
-save(PathX,'x'); % future: do this in each xWrapper
+xASL_adm_SaveX(x);
 
 xASL_qc_CreatePDF(x, iSubject);
 
