@@ -338,7 +338,7 @@ try
                 xASL_TrackProgress(iX, length(ListXmat));
                 if exist(ListXmat{iX}, 'file')
                     % Load the x structure
-                    xStruct = load(ListXmat{iX},'-mat','x');
+                    xStruct = load(ListXmat{iX},'-mat','x'); % We should use xASL_adm_LoadX here!
                     % delete any mutex folder that was accidentally created
                     if isfield(xStruct.x,'mutex')
                         NewMutexFolder = fullfile(pwd,xStruct.x.mutex.Root);
@@ -350,6 +350,7 @@ try
                     end
                     x = xStruct.x;
 
+                    % What happens here?
                     for iMod=iModule
                         if iMod~=3 % if not a Population module
                             if isfield(x,'Output')
@@ -375,6 +376,7 @@ try
                         end
                     end
                     
+                    % The bug is here!!!
                     if isfield(x.dir,'SUBJECTDIR')
                         x = rmfield(x.dir, 'SUBJECTDIR');
                     end
