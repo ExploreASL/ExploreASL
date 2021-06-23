@@ -107,9 +107,10 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
     else
         % At least one of the JSON files exists
         
-        % dataset directory
+        % Dataset directory
         if strcmp(x.opts.dataParType,'directory')
-            if x.opts.bProcessData==0
+            % Check if processing is turned off & there is a derivatives directory to be loaded
+            if x.opts.bProcessData==0 && xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'))
                 x.opts.bOnlyLoad = 1;
             end
         end
