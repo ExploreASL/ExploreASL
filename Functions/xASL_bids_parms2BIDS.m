@@ -25,7 +25,7 @@ function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids
 % EXAMPLE: outParms = xASL_bids_parms2BIDS(inXasl, inBids);
 %          outParms = xASL_bids_parms2BIDS(inXasl, [], 1, 0);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 %% Admin
@@ -325,6 +325,13 @@ if bOutBids ~= 1
 			outParms = rmfield(outParms, xASLqFields{iL});
 		end
 	end
+end
+
+% Revamp: Move fields
+if isfield(outParms,'bReproTesting')
+	% Move to x.settings
+	outParms.settings.bReproTesting = outParms.bReproTesting;
+	outParms = rmfield(outParms,'bReproTesting');
 end
 
 end
