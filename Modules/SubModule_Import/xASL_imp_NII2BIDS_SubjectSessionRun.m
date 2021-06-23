@@ -83,16 +83,14 @@ if iRun == 1 % For first run process also M0, for the second run, only reference
 			if bJsonLocalM0isFile
 				jsonLocal.M0 = [jsonLocal.M0 strPEDirection '_' bidsPar.strM0scan '.nii.gz'];
 			end
+			% Define the path to the respective ASL
+			jsonM0.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
 			pathM0Out = fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectSessionLabel strPEDirection '_' bidsPar.strM0scan]);
 		else
-			strPEDirection = '_dir-pa';
 			jsonM0.PhaseEncodingDirection = 'j';
-			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,['sub-' subjectSessionLabel strPEDirection '_' bidsPar.strM0scan '.nii.gz']);
-			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,['sub-' subjectSessionLabel strPEDirection '_' bidsPar.strM0scan]);
+			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,['sub-' subjectSessionLabel '_dir-ap' '_' bidsPar.strM0scan '.nii.gz']);
+			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,['sub-' subjectSessionLabel '_dir-pa' '_' bidsPar.strM0scan]);
 		end
-		
-		% Define the path to the respective ASL
-		jsonM0.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
 		
 		% Create the directory for the reversed PE if needed
 		if iReversedPE == 2 && xASL_exist([pathM0In '.nii']) && ~exist(fullfile(outSessionPath,bidsPar.strFmap),'dir')
