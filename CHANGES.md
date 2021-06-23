@@ -14,46 +14,44 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 
 ### Feature improvements
 
-* Issues #588 & #612: `ExploreASL` can read folders now and automatically searches for **sourceStructure**, **studyPar** and **dataPar** JSON files.
-* Issue #580: Adding parsing of Gold Standard Phantoms **ASL-DRO**.
-* Issue #600: Put participants.tsv to the derivatives folder during import to legacy ExploreASL format.
-* Issue #603: ExploreASL version specified in JSON files after BIDS to Legacy conversion.
-* Issue #572: Restructured JSON handling during NiFTI to BIDS import.
-* Issues #480, #623, #649, #661: Restructure `x` fields: `x.opts` (input arguments and their derivatives), `x.dir` (directories), `x.settings` (mostly booleans for pipeline settings), `x.dataset` (dataset related fields), `x.external`, ...
-* Issue #602: Remove option for cloning the NIfTI output after import as BIDS directory fulfills the function of a read-only archive.
-* Issue #632: Added comparison script for untouched NIfTI comparison.
-* Issue #631: Remove repeated warnings.
-* Issue #643: `bids.layout`: avoid printing the same warning repetitively, in case multiple scans in a data set have the same issue.
-* Issue #455: Automatically compare results of TestDataSets with a saved reference results.
-* Issue #656: Improve warnings (data loading).
+* Issue #455: Automatically compare results of TestDataSets with a saved reference results
+* Issues #480, #623, #649, #661: Restructure `x`: `x.opts` (input arguments and their derivatives), `x.dir` (directories), `x.settings` (mostly booleans for pipeline settings), `x.dataset` (dataset related fields), `x.external`, ...
+* Issue #572: Restructure JSON handling during NiFTI to BIDS import
+* Issue #580: Add parsing of Gold Standard Phantoms **ASL-DRO**
+* Issues #588, #612: `ExploreASL` reads folders and automatically searches for **sourceStructure**, **studyPar** and **dataPar** JSON files
+* Issue #600: Put participants.tsv to the derivatives folder during import to legacy ExploreASL format
+* Issue #602: Remove option for cloning the NIfTI output after import as BIDS directory is a read-only archive
+* Issue #603: Give ExploreASL version in JSON files after BIDS to Legacy conversion
+* Issue #631: Remove repeated warnings
+* Issue #632: Add comparison script for untouched NIfTI comparison
+* Issue #643: `bids.layout`: avoid printing the same warning repetitively in case multiple scans in a data set have the same issue
+* Issue #656: Improve warnings (data loading)
 
 
 ### Bug fixes
 
-* Issue #584: Make printing the subject name conditional on the existence of its definition in `x.SUBJECT` to avoid crashes for error reporting in the population module.
-* Issue #589: Fix issue with low GM CBF in TestDataSet.
-* Issue #591: **MultiTE** import puts TE before PLD in the time series and corrects the JSON output.
-* Issue #586: Minor bugfix for `xASL_adm_GetPopulationSessions` to avoid crashing if no sessions are found.
-* Issue #620: `xASL_adm_GzipAllFiles`: Allowing spaces in an input path for macOS/Linux.
-* Issue #583: Proper testing of flavors using ExploreASL_Master.
-* Issue #628: Fix parsing sessions and runs for converting rawdata to derivatives.
-* Issue #618: Add session name to all M0Check and ASLCheck QC files in the Population folder.
-* Issue #646: Improve BIDS warnings.
-* Issue #627: Remove a BIDS fiels and BIDS2Legacy should crash and show you why it crashed.
-* Issue #652: `xASL_vis_CreateVisualFig`: allow empty overlays.
-* Issue #630: Move creation of population folder.
-* Issue #625: Fix bug related to session format.
-* Issue #659: `xASL_stat_PrintStats`: Fixes visits bug (legacy format).
-* Issue #655: `xASL_adm_GetPopulationSessions` gave incorrect warnings.
-* Issue #670: Fix warnings and behavior of `ExploreASL_Initialize`.
-* Issue #666: Issue a warning when multiple `dataPar*.json` or `studyPar*.json` or `sourcestructure*.json` are present.
+* Issue #583: Proper testing of flavors using ExploreASL_Master
+* Issue #584: Print the subject name depending on the existence of its definition in `x.SUBJECT` to avoid crashes for error reporting in the population module
+* Issue #586: Avoid crashing `xASL_adm_GetPopulationSessions` if no sessions are found
+* Issue #591: **MultiTE** import puts TE before PLD in the time series and corrects the JSON output
+* Issue #618: Add session name to all M0Check and ASLCheck QC files in the Population folder
+* Issue #620: `xASL_adm_GzipAllFiles`: Allow spaces in an input path for macOS/Linux
+* Issue #625: Fix bug related to session format
+* Issue #627: Remove a BIDS fiels and BIDS2Legacy should crash and show you why it crashed
+* Issue #628: Fix parsing sessions and runs for converting rawdata to derivatives
+* Issue #630: Move creation of population folder
+* Issue #646: Improve BIDS warnings
+* Issue #652: `xASL_vis_CreateVisualFig`: allow empty overlays
+* Issue #659: `xASL_stat_PrintStats`: Fix visits bug (legacy format)
+* Issue #655: `xASL_adm_GetPopulationSessions` gave incorrect warnings
+* Issue #666: Warning when multiple `dataPar*.json` or `studyPar*.json` or `sourcestructure*.json` are present
+* Issue #670: Fix warnings and behavior of `ExploreASL_Initialize`
 
 ### Other improvements
 
-* Issue #465: Add projects to acknowledgments.
-* Issue #615: Add change log to documentation.
-* Issue #637: Restyle ExploreASL change log.
-
+* Issue #465: Add projects to acknowledgments
+* Issue #615: Add change log to documentation
+* Issue #637: Restyle ExploreASL change log
 
 ----
 ## ExploreASL v1.6.2
@@ -61,14 +59,14 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 
 ### Bug Fixes
 
-* Issues #589 Fix scaling issues in JSONs in TestDataSet/derivatives
+* Issue #589 Fix scaling issues in JSONs in TestDataSet/derivatives
 
 ---
 ## ExploreASL v1.6.1
 
 ### Bug Fixes
 
-* Issues #578 Fix incorrect path searching by providing error if no .json-file is inputted
+* Issue #578 Fix incorrect path searching by providing error if no .json-file is inputted
 
 ---
 ## ExploreASL v1.6.0
