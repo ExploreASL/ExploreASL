@@ -192,7 +192,7 @@ if bTest(6)
 		if exist(pathDerivatives,'dir')
 			pathDerivatives = fullfile(pathDerivatives,'ExploreASL');
 			if exist(pathDerivatives,'dir')
-				ExploreASL(pathDerivatives, 0, [1 1 0], 0); % Don't run population module
+				ExploreASL(ListFolders{iList}, 0, [1 1 0], 0); % Don't run population module
 			end
 		end
 	end
