@@ -75,6 +75,9 @@ for iFlavor = 1:length(flavorList)
 			xASL_delete(fullfile(DirASL, 'ASL4D_NS.nii'));
 			xASL_delete(fullfile(DirASL, 'ASL4D_SS.nii'));
 			
+			xASL_delete(fullfile(DirASL, 'ASL4D_NS.json'));
+			xASL_Move(fullfile(DirASL, 'ASL4D_SS.json'), fullfile(DirASL, 'ASL4D.json'), 1);
+			
 			xASL_Move(fullfile(DirASL, 'M0_2.json'), fullfile(DirASL, 'M0PERev.json'), 1);
 			xASL_Move(fullfile(DirASL, 'M0_2.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
 			

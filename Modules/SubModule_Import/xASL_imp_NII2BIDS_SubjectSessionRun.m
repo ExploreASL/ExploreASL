@@ -42,8 +42,16 @@ else
 end
 
 %% 2. Load the JSONs and NIfTI information
-jsonDicom = spm_jsonread(fullfile(inSessionPath, [aslLabel '.json']));
-headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
+if exist(fullfile(inSessionPath, [aslLabel '.json']),'file')
+	jsonDicom = spm_jsonread(fullfile(inSessionPath, [aslLabel '.json']));
+else
+	error('Missing file: %s\n',fullfile(inSessionPath, [aslLabel '.json']));
+end
+if xASL_exist(fullfile(inSessionPath, [aslLabel '.nii']),'file')
+	headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
+else
+	error('Missing file: %s\n\',fullfile(inSessionPath, [aslLabel '.nii']));
+end
 	
 %% 3. BIDSify ASL
 % Merge the information from DICOM, manually entered parameters and BIDSify

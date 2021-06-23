@@ -47,7 +47,7 @@ function [x] = ExploreASL_ImportMaster(x)
                 try
                     [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, x);
                 catch loggingEntry
-                    fprintf(2,'NIfTI to BIDS module failed...\n');
+                    fprintf(2,'NIfTI to BIDS module failed:\n%s\n',loggingEntry.message);
                     [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                 end
             else
