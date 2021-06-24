@@ -235,7 +235,7 @@ function x = DataParTemplate(x)
 %                           - 3 = option 2 & force CBF->pseudoCBF irrespective of sCoV
 % x.bAffineRegistration - specifies if the ASL-T1w rigid-body
 %                         registration is followed up by an affine
-%                         registration (OPTIONAL, DEFAULT = 2)
+%                         registration (OPTIONAL, DEFAULT = 0)
 %                  - 0 = affine registration disabled
 %                  - 1 = affine registration enabled
 %                  - 2 = affine registration automatically chosen based on
