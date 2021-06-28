@@ -18,6 +18,9 @@ function LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 % 2. Perilesional (15 mm rim around the lesion)
 % 3. Hemisphere (ipsilateral to lesion)
 % 4. Contralateral version of 1
+% 4a First create separate masks
+% 4b Check if they are mutually exclusive
+% 4c Save NIfTI file
 % 5. Contralateral version of 2
 % 6. Contralateral version of 3
 %
@@ -40,8 +43,8 @@ function LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 
 %% --------------------------------------------------------
 %% Admin
-if nargin<1
-    error('Missing input arguments');
+if nargin<1 || isempty(LesionPath)
+    error('Missing input argument LesionPath');
 elseif ~xASL_exist(LesionPath,'file')
     fprintf('%s\n',['Skipped because mask didnt exist: ' LesionPath]);
 	return;
@@ -107,22 +110,81 @@ end
 
 
 %% 4. Save mutually exclusive masks
-% 1) Intratumoral
-LesionIM = uint8(LesionIM);
-% 2) Peri, pGM+pWM
-LesionIM(logical(PeriMask)) = 2;
-% 3) Hemisphere
-Hemisphere(logical(LesionIM)) = 0;
-LesionIM(Hemisphere) = 3;
-% 4) Contralateral intratumoral
-LesionIM(logical(ContraMask)) = 4;
-% 5) Contralateral peritumoral
-LesionIM(logical(ContraPeri)) = 5;
-% 6) Contralateral hemisphere
-ContraLateral(logical(ContraMask) | logical(ContraPeri)) = 0;
-LesionIM(logical(ContraLateral)) = 6;
+%% 4a First create separate masks
+for iMask=1:6
+    LesionImage{iMask} = uint8(zeros(size(LesionIM)));
+end
 
-xASL_io_SaveNifti(LesionPath, LesionPath, LesionIM, 8);
+% 1) Intratumoral
+LesionImage{1} = uint8(LesionIM);
+
+% 2) Peri, pGM+pWM
+LesionImage{2}(logical(PeriMask)) = 1;
+
+% 3) Hemisphere
+LesionImage{3}(logical(Hemisphere) & ~logical(LesionIM)) = 1;
+
+% 4) Contralateral intratumoral
+LesionImage{4}(logical(ContraMask)) = 1;
+
+% 5) Contralateral peritumoral
+LesionImage{5}(logical(ContraPeri)) = 1;
+
+% 6) Contralateral hemisphere
+LesionImage{6}(logical(ContraLateral) & ~logical(ContraMask) & ~logical(ContraPeri)) = 1;
+
+%% 4b Check if they are mutually exclusive
+AnyMaskLesion = LesionImage{1} | LesionImage{4};
+SumMaskLesion = LesionImage{1} + LesionImage{4};
+bMutualExclusiveLesion = sum(AnyMaskLesion(:))==sum(SumMaskLesion(:));
+
+AnyMaskPeri = LesionImage{2} | LesionImage{5};
+SumMaskPeri = LesionImage{2} + LesionImage{5};
+bMutualExclusivePeri = sum(AnyMaskPeri(:))==sum(SumMaskPeri(:));
+
+AnyMaskHemisphere = LesionImage{3} | LesionImage{6};
+SumMaskHemisphere = LesionImage{3} + LesionImage{6};
+bMutualExclusiveHemisphere = sum(AnyMaskHemisphere(:))==sum(SumMaskHemisphere(:));
+
+AnyMaskAll = LesionImage{1} | LesionImage{2} | LesionImage{3} | LesionImage{4} | LesionImage{5} | LesionImage{6};
+SumMaskAll = LesionImage{1} + LesionImage{2} + LesionImage{3} + LesionImage{4} + LesionImage{5} + LesionImage{6};
+bMutualExclusive = sum(AnyMaskAll(:))==sum(SumMaskAll(:));
+
+if bMutualExclusive
+    fprintf('%s\n', 'Masks were mutually exclusive, so joined in 3D NIfTI');
+else
+    
+    warning('Lesion masks were not mutually exclusive');
+    if ~bMutualExclusiveLesion
+        fprintf('%s\n', 'Overlap found between ipsilateral and contralateral lesion masks');
+    end
+    if ~bMutualExclusivePeri
+        fprintf('%s\n', 'Overlap found between ipsilateral and contralateral perilesional masks');
+    end
+    if ~bMutualExclusiveHemisphere
+        fprintf('%s\n', 'Overlap found between ipsilateral and contralateral hemisphere masks');
+    end
+    if bMutualExclusiveLesion && bMutualExclusivePeri && bMutualExclusiveHemisphere
+        fprintf('%s\n', 'Though no overlap found between ipsilateral and contralateral masks');
+    end
+    fprintf('%s\n', 'Masks are stored separately in 4D NIfTI');
+end
+    
+%% 4c Save NIfTI file
+LesionIM = uint8(zeros(size(LesionIM)));
+VisualizeImage = uint8(zeros(size(LesionIM)));
+
+for iMask=1:6
+    if bMutualExclusive
+        LesionIM(logical(LesionImage{iMask})) = iMask;
+    else
+        LesionIM(:,:,:,iMask) = LesionImage{iMask};
+    end
+    
+    VisualizeImage(logical(LesionImage{iMask})) = iMask;
+end
+    
+xASL_io_SaveNifti(LesionPath, LesionPath, LesionIM);
 
 
 %% 5. Create tsv-sidecar containing the names of the ROIs
@@ -134,7 +196,7 @@ xASL_tsvWrite(ROInames, PathTSV, 1);
 %% 6. Visual QC
 % First create the individual mask overlays with different colors
 for iIm=1:6
-    OutIm{iIm} = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rT1 LesionIM==iIm}, [], [0.75 0.35], [], {x.S.gray x.S.colors_ROI{iIm}});
+    OutIm{iIm} = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rT1 VisualizeImage==iIm}, [], [0.75 0.35], [], {x.S.gray x.S.colors_ROI{iIm}});
 end
 
 % Initialize final image
