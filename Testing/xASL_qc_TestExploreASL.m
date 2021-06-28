@@ -117,8 +117,8 @@ end
 %% 1) Pull latest GitHub version
 % assuming we are in ExploreASL folder
 if bPull
-	Answer = system('git fetch','-echo');
-	Answer = system('git pull','-echo');
+	Answer = system('source ~.bashrc;git fetch','-echo');
+	Answer = system('source ~.bashrc;git pull','-echo');
 end
 
 % Initialize ExploreASL
@@ -157,7 +157,7 @@ if ~exist(TestDirOrig, 'dir')
     TestDataSetRepository = 'https://github.com/ExploreASL/TestDataSets.git';
     fprintf('%s\n', ['TestDataSet repository not found in: ' TestDirRoot]);
     fprintf('%s\n', ['Attempting to clone: ' TestDataSetRepository]);
-    system(['cd ' TestDirRoot '; git clone ' TestDataSetRepository], '-echo');
+    system(['source ~.bashrc;cd ' TestDirRoot '; git clone ' TestDataSetRepository], '-echo');
 end
 
 % Remove previous results
