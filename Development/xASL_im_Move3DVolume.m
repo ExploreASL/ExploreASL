@@ -1,7 +1,7 @@
 function xASL_im_Move3DVolume(pathNifti, pathResult, dim, volNum, numVoxel)
 %xASL_im_MoveImage Move zero padded image in spatial direction.
 %
-% FORMAT:       xASL_im_Move3DVolume(pathNifti, pathResult, dim, numVoxel)
+% FORMAT:       xASL_im_Move3DVolume(pathNifti, pathResult, dim, volNum, numVoxel)
 % 
 % INPUT:        pathNifti (CHAR ARRAY, REQUIRED)
 %               pathResult (CHAR ARRAY, REQUIRED)
@@ -40,11 +40,11 @@ function xASL_im_Move3DVolume(pathNifti, pathResult, dim, volNum, numVoxel)
     %% Move 3D volume
     switch dim
         case 'x'
-            newVolume(1:numVoxel,:,:) = originalVolume(1:dimX-numVoxel,:,:);
+            newVolume(1+numVoxel:dimX,:,:) = originalVolume(1:dimX-numVoxel,:,:);
         case 'y'
-            newVolume(:,1:numVoxel,:) = originalVolume(:,1:dimX-numVoxel,:);
+            newVolume(:,1+numVoxel:dimY,:) = originalVolume(:,1:dimY-numVoxel,:);
         case 'z'
-            newVolume(:,:,1:numVoxel) = originalVolume(:,:,1:dimX-numVoxel);
+            newVolume(:,:,1+numVoxel:dimZ) = originalVolume(:,:,1:dimZ-numVoxel);
         otherwise
             error('Unknown dimension...');
     end
