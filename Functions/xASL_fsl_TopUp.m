@@ -171,8 +171,8 @@ for iRegExp=1:length(RegExpStr)-1 % assuming the last one is the output file
     %% Copy the NIfTIs & make sure they have a single volume
     TopUpNIIPath{iRegExp} = fullfile(InDir,['TopUp' num2str(iRegExp) '.nii']);
     xASL_Copy(PathNII{iRegExp}, TopUpNIIPath{iRegExp}, true);
-    tIM = xASL_io_Nifti2Im(TopUpNIIPath{iRegExp});
-    xASL_io_SaveNifti(TopUpNIIPath{iRegExp}, TopUpNIIPath{iRegExp}, tIM(:,:,:,1,1,1,1,1,1,1), [], false);
+    tempIM = xASL_io_Nifti2Im(TopUpNIIPath{iRegExp});
+    xASL_io_SaveNifti(TopUpNIIPath{iRegExp}, TopUpNIIPath{iRegExp}, tempIM(:,:,:,1,1,1,1,1,1,1), [], false);
 end
 
 fclose(FID);
