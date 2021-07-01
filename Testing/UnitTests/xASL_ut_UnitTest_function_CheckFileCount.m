@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_CatchNumbersFromString(TestRepository)
-%xASL_ut_UnitTest_function_CatchNumbersFromString Individual unit test for xASL_adm_CatchNumbersFromString
+function UnitTest = xASL_ut_UnitTest_function_CheckFileCount(TestRepository)
+%xASL_ut_UnitTest_function_CheckFileCount Individual unit test for xASL_adm_CheckFileCount
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,7 +12,7 @@ function UnitTest = xASL_ut_UnitTest_function_CatchNumbersFromString(TestReposit
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_CatchNumbersFromString(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_CheckFileCount(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
@@ -27,24 +27,37 @@ UnitTest.unit = 'Function';
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Extract integer example';
+UnitTest.tests(1).testname = 'Find three files';
 
 % Start the test
 testTime = tic;
 
+% Create three test files in test directory
+fid = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_1.txt'), 'wt');
+fclose(fid);
+fid = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_2.txt'), 'wt');
+fclose(fid);
+fid = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_3.txt'), 'wt');
+fclose(fid);
+
 % Run your test here
-[number] = xASL_adm_CatchNumbersFromString('abc123def');
+[result, files] = xASL_adm_CheckFileCount(fullfile(TestRepository,'UnitTesting','working_directory'),'test*',3,0);
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~isnumeric(number)
+if ~result
     testCondition = false;
 end
-if isnumeric(number) && ~number==123
+if ~(numel(files)==3)
     testCondition = false; 
 end
+
+% Delete test files
+xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test_1.txt'))
+xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test_2.txt'))
+xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test_3.txt'))
 
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
@@ -56,22 +69,22 @@ UnitTest.tests(1).passed = testCondition;
 %% Test run 2
 
 % Give your individual subtest a name
-UnitTest.tests(2).testname = 'Extract double example';
+UnitTest.tests(2).testname = 'No matching files';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-[number] = xASL_adm_CatchNumbersFromString('abc123.456def');
+[result, files] = xASL_adm_CheckFileCount(fullfile(TestRepository,'UnitTesting','working_directory'),'test*',3,0);
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~isnumeric(number)
+if result
     testCondition = false;
 end
-if isnumeric(number) && ~(number(1)==123 && number(2)==456)
+if ~(numel(files)==0)
     testCondition = false; 
 end
 
@@ -81,34 +94,6 @@ UnitTest.tests(2).duration = toc(testTime);
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
 
-
-%% Test run 3
-
-% Give your individual subtest a name
-UnitTest.tests(3).testname = 'No number example';
-
-% Start the test
-testTime = tic;
-
-% Run your test here
-[number] = xASL_adm_CatchNumbersFromString('abcdef');
-
-% Define one or multiple test conditions here
-testCondition = true;
-
-% Define one or multiple test conditions here
-if ~isnumeric(number)
-    testCondition = false;
-end
-if isnumeric(number) && ~isnan(number)
-    testCondition = false;
-end
-
-% Get test duration
-UnitTest.tests(3).duration = toc(testTime);
-
-% Evaluate your test
-UnitTest.tests(3).passed = testCondition;
 
 
 %% End of testing
