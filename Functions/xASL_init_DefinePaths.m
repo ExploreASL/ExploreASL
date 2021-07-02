@@ -41,7 +41,7 @@ function [x] = xASL_init_DefinePaths(x)
 
     %% Study-specific
     if and(isfield(x.D, 'ROOT'), isfield(x.opts, 'bProcessData'))
-        if x.opts.bProcessData || x.opts.bOnlyLoad
+        if x.opts.bProcessData || x.opts.bLoadData
             x.D.PopDir = fullfile(x.D.ROOT,'Population');
 
             % Structural module

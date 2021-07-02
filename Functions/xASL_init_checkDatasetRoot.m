@@ -23,7 +23,7 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
     %% Check the ExploreASL parameter "DatasetRoot"
 
     % Default
-    x.opts.bOnlyLoad = 0;
+    x.opts.bLoadData = 0;
 
     % Check if the DatasetRoot is a directory (NEW - ASL BIDS)
     x.opts.dataParType = 'unknown'; % default
@@ -53,7 +53,7 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
                 warning('This study directory does not exist, ExploreASL will only be initialized...');
                 x.opts.bProcessData = 0;
                 x.opts.bImportData = 0;
-                x.opts.bReinitialize = 0;
+                x.opts.bLoadData = 0;
                 x.opts.ProcessModules = [0 0 0];
                 x.opts.ImportModules = [0 0 0 0];
             end
@@ -111,7 +111,7 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
         if strcmp(x.opts.dataParType,'directory')
             % Check if processing is turned off & there is a derivatives directory to be loaded
             if x.opts.bProcessData==0 && xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'))
-                x.opts.bOnlyLoad = 1;
+                x.opts.bLoadData = 1;
             end
         end
         
@@ -120,8 +120,7 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
             % It is a dataPar.json, so do not run the BIDS import workflow
             if x.opts.bProcessData==0
                 x.opts.bProcessData = 0; % Initialize & load but do not process
-                x.opts.bOnlyLoad = 1;
-                x.bReinitialize = false; % Do not reinitialize if we only load the data
+                x.opts.bLoadData = 1;
             end
         end
         
@@ -130,8 +129,7 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
             % It is a sourceStructure.json or dataset_description.json, so we run the import workflow
             if x.opts.bProcessData==0
                 x.opts.bProcessData = 0; % Initialize & load but do not process
-                x.opts.bOnlyLoad = 1;
-                x.bReinitialize = true; % Do not reinitialize if we only load the data
+                x.opts.bLoadData = 1;
             end
         end
         
@@ -149,17 +147,17 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
         x.opts.bProcessData = 0;
     end
     
-    % Make sure that the dataPar.json definitely exists if we "only load" the dataset
-    if x.opts.bOnlyLoad
+    % Make sure that the dataPar.json definitely exists if we load the dataset
+    if x.opts.bLoadData
         if isfield(x,'dir') && isfield(x.dir,'dataPar')
             if isempty(x.dir.dataPar)
                 if ~x.opts.bImportData
                     warning('You are trying to load a dataset but there is no dataPar JSON file...');
                 end
-                x.opts.bOnlyLoad = 0;
+                x.opts.bLoadData = 0;
             end
         else
-            x.opts.bOnlyLoad = 0;
+            x.opts.bLoadData = 0;
         end
     end
 
