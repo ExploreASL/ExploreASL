@@ -141,14 +141,14 @@ function [x] = ExploreASL_Initialize(varargin)
     cd(x.MyPath);
 
     % Check if DataParFile needs to be loaded
-    if x.opts.bProcessData || x.opts.bOnlyLoad
+    if x.opts.bProcessData || x.opts.bLoadData
         if ~isempty(x.dir.dataPar)
             x = xASL_init_LoadDataParameterFile(x, x.dir.dataPar, SelectParFile);
         else
             fprintf('No dataPar.json provided...\n');
-            if x.opts.bOnlyLoad
+            if x.opts.bLoadData
                 fprintf('Dataset can not be loaded...\n');
-                x.opts.bOnlyLoad = 0;
+                x.opts.bLoadData = 0;
             end
         end
     end
@@ -402,7 +402,7 @@ function ExploreASL_Initialize_basicFeedback(x)
     reportProcess = '';
     if ~x.opts.bProcessData
         reportProcess = 'run the initialization';
-        if x.opts.bOnlyLoad
+        if x.opts.bLoadData
             reportProcess = 'load the dataset';
         end
     elseif x.opts.bProcessData
