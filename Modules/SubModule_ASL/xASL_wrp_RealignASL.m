@@ -122,7 +122,7 @@ xASL_delete(rpfile);
 %         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
 %     end  
     
-if nFrames>2 && bSubtraction && (numel(unique(x.Q.Initial_PLD))>1 || numel(unique(x.EchoTime))>1 || HadamardType~=0) %multiPLD or multiTE or Hadamard
+if nFrames>2 && bSubtraction && (numel(unique(x.Q.Initial_PLD))>1 || numel(unique(x.EchoTime))>1 || x.HadamardType~=0) %multiPLD or multiTE or Hadamard
     spm_realign(spm_vol(InputPath),flags,false);
     
 elseif nFrames>2 && bSubtraction

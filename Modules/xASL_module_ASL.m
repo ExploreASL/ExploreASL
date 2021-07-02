@@ -81,11 +81,9 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
     end
 end
 
-% Check if Hadamard data
-if isfield(x,'HadamardType') 
-    HadamardType=x.HadamardType;
-else
-    HadamardType=0;
+% Check if HadamardType is defined, if not set to 0
+if ~isfield(x,'HadamardType') 
+    x.HadamardType=0;
 end
 
 % Initialize the DummyScan and M0 position fields - by default empty
