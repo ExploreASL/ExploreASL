@@ -20,8 +20,8 @@ function [x] = xASL_init_DataLoading(x)
 
     %% Data loading
     
-    % Skip this step if we still need to run the import (first initialization)
-    if (x.opts.bProcessData || x.opts.bOnlyLoad) && ~x.opts.bImportData
+    % Check if data loading should be executed first
+    if x.opts.bLoadData
         % Check if a root directory was defined
         if ~isfield(x.D,'ROOT') || isempty(x.D.ROOT)
             error('No root folder defined');
@@ -42,7 +42,6 @@ function [x] = xASL_init_DataLoading(x)
 
         % Define study subjects/parameters for this pipeline run
         x = xASL_init_DefineStudyData(x);
-
 
         % Remove lock dirs from previous runs, if ExploreASL is not running in parallel
         if x.opts.nWorkers==1

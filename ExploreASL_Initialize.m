@@ -365,20 +365,30 @@ end
 % Check if the ExploreASL pipeline should be run or not
 function [x] = ExploreASL_Initialize_GetBooleansImportProcess(x)
 
+    % Check if data is being imported
     if sum(x.opts.ImportModules)>0
-        x.opts.bImportData = 1; % Importing data
-        x.opts.bReinitialize = true;
+        x.opts.bImportData = 1;
     else
-        x.opts.bImportData = 0; % Importing data
-        x.opts.bReinitialize = false;
+        x.opts.bImportData = 0;
     end
+    
+    % Check if data is being processed
     if sum(x.opts.ProcessModules)>0
-        x.opts.bProcessData = 1; % Loading & processing dataset
+        x.opts.bProcessData = 1;
     else
-        x.opts.bProcessData = 0; % Only initialize ExploreASL functionality
+        x.opts.bProcessData = 0;
     end
-    if ~x.opts.bProcessData && ~x.opts.bImportData
-        x.opts.bReinitialize = false;
+    
+    % On default we do not load the data
+    x.opts.bLoadData = false;
+
+    % If the data it converted from BIDS to Legacy, we want to load the data afterwards
+    if x.opts.ImportModules(end)
+        x.opts.bLoadData = true;
+    end
+    % If we process a dataset, we need to load the data
+    if x.opts.bProcessData
+        x.opts.bLoadData = true;
     end
 
 end
