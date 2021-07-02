@@ -69,7 +69,7 @@ fprintf('SPM motion estimation');
 % Define realignment settings
 tempnii = xASL_io_ReadNifti(InputPath);
 nFrames = double(tempnii.hdr.dim(5));
-if length(x.EchoTime)>2
+if length(x.EchoTime)>1
     nFrames=nFrames/numel(unique(x.EchoTime));
 end
 minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
@@ -98,28 +98,31 @@ xASL_delete(rpfile);
 
 % Run SPM
 
-if nFrames>2 && bSubtraction && length(x.EchoTime)>2  %Multi TE 
-    uniqueTE=uniquetol(x.EchoTime); %gives the number of unique TEs
-    NumTEs=numel(uniqueTE);
-    minTE=min(uniqueTE); 
-    positionMinTE=find(x.EchoTime == minTE); %positions that have the min TE
-    ImInfo=spm_vol(InputPath);
-    ImInfoFirstTEs=ImInfo(positionMinTE);
+%####### Calculating the motion for every first TE of each PLD and
+% considering it the same for the other TEs from that PLD.
+%
+% if nFrames>2 && bSubtraction && length(x.EchoTime)>1  %Multi TE 
+%     uniqueTE=uniquetol(x.EchoTime); %gives the number of unique TEs
+%     NumTEs=numel(uniqueTE);
+%     minTE=min(uniqueTE); 
+%     positionMinTE=find(x.EchoTime == minTE); %positions that have the min TE
+%     ImInfo=spm_vol(InputPath);
+%     ImInfoFirstTEs=ImInfo(positionMinTE);
+%     
+%     if numel(unique(x.Q.Initial_PLD))==1 %multiTE + single PLD
+%         spm_realign(ImInfoFirstTEs,flags,true);
+%         MotionFirstTEs=load(rpfile);
+%         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); %repeats each row NumTEs times
+%         save('rp_ASL4D.txt','MotionAllTEs','-ascii') %saves the rpfile again into .txt
+%         
+%     elseif numel(unique(x.Q.Initial_PLD))>1 % multiTE + multiPLD=Hadamard
+%         spm_realign(ImInfoFirstTEs,flags,false);
+%         MotionFirstTEs=load(rpfile);
+%         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); 
+%         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
+%     end  
     
-    if numel(unique(x.Q.Initial_PLD))==1 %multiTE + single PLD
-        spm_realign(ImInfoFirstTEs,flags,true);
-        MotionFirstTEs=load(rpfile);
-        MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); %repeats each row NumTEs times
-        save('rp_ASL4D.txt','MotionAllTEs','-ascii') %saves the rpfile again into .txt
-        
-    elseif numel(unique(x.Q.Initial_PLD))>1 % multiTE + multiPLD=Hadamard
-        spm_realign(ImInfoFirstTEs,flags,false);
-        MotionFirstTEs=load(rpfile);
-        MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); 
-        save('rp_ASL4D.txt','MotionAllTEs','-ascii') 
-    end  
-    
-elseif nFrames>2 && bSubtraction && numel(unique(x.Q.Initial_PLD))>1 %multiPLD
+if nFrames>2 && bSubtraction && (numel(unique(x.Q.Initial_PLD))>1 || numel(unique(x.EchoTime))>1 || HadamardType~=0) %multiPLD or multiTE or Hadamard
     spm_realign(spm_vol(InputPath),flags,false);
     
 elseif nFrames>2 && bSubtraction
@@ -138,14 +141,14 @@ rp = load(rpfile, '-ascii'); % load the 3 translation and 3 rotation values
 MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al., NeuroImage 2012)
 % PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
 
-% FD = frame displacement
-if length(x.EchoTime)>2
-    FD{1} = rp(1:NumTEs:end,:); %multiTE -> gives back the normal rp for the plots
-    FD{2} = diff(rp(1:NumTEs:end,:));
-else
-    FD{1}=rp; % position (absolute displacement)
-    FD{2} = diff(rp); % motion (relative displacement)
-end
+% % FD = frame displacement
+% if length(x.EchoTime)>2
+%     FD{1} = rp(1:NumTEs:end,:); %multiTE -> gives back the normal rp for the plots
+%     FD{2} = diff(rp(1:NumTEs:end,:));
+% else
+FD{1}=rp; % position (absolute displacement)
+FD{2} = diff(rp); % motion (relative displacement)
+% end
 
 
 if max(rp(:))==0
