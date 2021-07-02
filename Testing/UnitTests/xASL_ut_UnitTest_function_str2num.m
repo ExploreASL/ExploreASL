@@ -63,7 +63,7 @@ UnitTest.tests(1).passed = testCondition;
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(2).testname = 'Number types: integer, double, positive and negative';
+UnitTest.tests(2).testname = 'List of numbers';
 
 % Start the test
 testTime = tic;
