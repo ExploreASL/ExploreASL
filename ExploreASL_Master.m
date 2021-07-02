@@ -67,7 +67,7 @@ function [x] = ExploreASL_Master(varargin)
     
     % -----------------------------------------------------------------------------
     % Print user feedback (before pipeline)
-    xASL_init_PrintUserFeedback(x, 0);
+    xASL_init_PrintUserFeedback(x, nargout, 0);
 
     % -----------------------------------------------------------------------------
     % Processing Master
@@ -75,7 +75,7 @@ function [x] = ExploreASL_Master(varargin)
 
     % -----------------------------------------------------------------------------    
     % Print user feedback (after pipeline)
-    xASL_init_PrintUserFeedback(x, 1);
+    xASL_init_PrintUserFeedback(x, nargout, 1);
     
 
 end

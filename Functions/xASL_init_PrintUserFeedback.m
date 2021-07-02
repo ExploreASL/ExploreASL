@@ -1,11 +1,12 @@
-function xASL_init_PrintUserFeedback(x,currentState)
+function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
 %xASL_init_PrintUserFeedback Print user feedback
 %
 % FORMAT: xASL_init_PrintUserFeedback(x)
 % 
 % INPUT:
-%   x            - ExploreASL x structure (STRUCT, REQUIRED)
-%   currentState - State before/after processing (before = 0, after = 1, INTEGER, REQUIRED)
+%   x               - ExploreASL x structure (STRUCT, REQUIRED)
+%   outputArguments - nargout of ExploreASL_Master (INTEGER, REQUIRED)
+%   currentState    - State before/after processing (before = 0, after = 1, INTEGER, REQUIRED)
 %
 % OUTPUT:        n/a
 %                         
@@ -21,7 +22,7 @@ function xASL_init_PrintUserFeedback(x,currentState)
     %% Print user feedback
     if currentState==0
         if ~x.opts.bProcessData || x.opts.bLoadData
-            if x.opts.bLoadData && nargout==0
+            if x.opts.bLoadData && outputArguments==0
                 warning('Data loading requested but no output structure defined');
                 fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
             end

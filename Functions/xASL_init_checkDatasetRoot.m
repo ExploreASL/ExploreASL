@@ -23,7 +23,9 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
     %% Check the ExploreASL parameter "DatasetRoot"
 
     % Default
-    x.opts.bLoadData = 0;
+    if ~isfield(x.opts,'bLoadData')
+        x.opts.bLoadData = false;
+    end
 
     % Check if the DatasetRoot is a directory (NEW - ASL BIDS)
     x.opts.dataParType = 'unknown'; % default
