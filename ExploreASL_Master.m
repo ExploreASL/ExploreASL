@@ -50,62 +50,31 @@ function [x] = ExploreASL_Master(varargin)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    % -----------------------------------------------------------------------------
-    %% Initialization when calling this function
 
-    % NB: *.mat files that contain statistics in data-root folder
-    % (e.g.\analysis) should contain the following format:
-
-    % 1st column should be subject-id column
-    % 2nd column should be parameter values
-    % or 2nd column is session-id (e.g. 'ASL_1'), then
-    % 3rd column contains parameter values
+    %% ExploreASL_Master Workflow
     
     % -----------------------------------------------------------------------------
-    %% Initialization
+    % Initialization
     x = ExploreASL_Initialize(varargin{:});
     
     % -----------------------------------------------------------------------------
-    %% Import Master
-    if x.opts.bImportData
-        x = ExploreASL_ImportMaster(x);
-    end
-    % Store logging information about errors/warnings in backup variable
-    if isfield(x,'logging')
-    	loggingBackUp = x.logging;
-    end
+    % Import Master
+    x = ExploreASL_ImportMaster(x);
     
     % -----------------------------------------------------------------------------
-    %% Re-Initialize for potential data loading/processing
-    if x.opts.bReinitialize
-        x = ExploreASL_Initialize(x.opts.DatasetRoot, x.opts.ImportModules, x.opts.ProcessModules, x.opts.bPause, x.opts.iWorker, x.opts.nWorkers);
-    end
-    % Retrieve logging information about errors/warnings from backup variable
-    if exist('loggingBackUp', 'var')
-    	x.logging = loggingBackUp;
-    end
+    % Data loading
+    x = xASL_init_DataLoading(x);
     
     % -----------------------------------------------------------------------------
-    %% Print user feedback
-    if ~x.opts.bProcessData || x.opts.bOnlyLoad
-        if x.opts.bOnlyLoad && nargout==0
-            warning('Data loading requested but no output structure defined');
-            fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
-        end
-        return; % skip processing
-    elseif ~isdeployed && x.opts.bPause % if this is true, we skip the break here
-        fprintf('%s\n','Press any key to start processing & analyzing');
-        fprintf('Please ensure you have a read-only copy of your original data as they may be overwritten\n');
-        fprintf('%s\n','Or press CTRL/command-C to cancel...  ');
-        pause;
-    end
+    % Print user feedback
+    xASL_init_PrintUserFeedback(x);
 
     % -----------------------------------------------------------------------------
-    %% Processing Master
-    [x] = ExploreASL_ProcessMaster(x);
+    % Processing Master
+    x = ExploreASL_ProcessMaster(x);
 
     % -----------------------------------------------------------------------------    
-    %% Finishing touch
+    % Finishing touch
     fprintf('Many thanks for using <a href="https://github.com/ExploreASL" rel="nofollow">ExploreASL</a>, ');
     fprintf('please don''t forget to cite <a href="https://pubmed.ncbi.nlm.nih.gov/32526385/" rel="nofollow">https://pubmed.ncbi.nlm.nih.gov/32526385/</a>.\n');
     fprintf('Note that ExploreASL is a collaborative effort.\n');

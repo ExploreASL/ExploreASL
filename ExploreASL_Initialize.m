@@ -160,8 +160,26 @@ function [x] = ExploreASL_Initialize(varargin)
 
 
     %% 6. Print logo & settings
-    
-    % Print logo
+    [LogoString, BreakString] = xASL_init_GetLogoAndBreakString;
+    fprintf([BreakString LogoString]);
+
+    % Print chosen settings
+    xASL_init_printSettings(x);
+
+
+    %% Check permissions
+    % xASL_adm_CheckPermissions(x.MyPath, false);
+
+
+    %% 7. Data-specific initialization
+    fprintf('ExploreASL v%s initialized ... \n', x.Version);
+
+end
+
+
+%% ==================================================================================
+function [LogoString, BreakString] = xASL_init_GetLogoAndBreakString
+
     BreakString = '==============================================================================================\n';
 
     LogoString = [...
@@ -176,53 +194,8 @@ function [x] = ExploreASL_Initialize(varargin)
     '########/ ##/   ##/ #######/  ##/  ######/  ##/        #######/ ##/   ##/  ######/  ########/ \n'...
     '                    ## |                                                                      \n'...
     '                    ## |                                                                      \n'...
-    '                    ##/  \n'];
+    '                    ##/  \n\n'];
 
-    fprintf([BreakString LogoString '\n']);
-
-    % Print chosen settings
-    xASL_init_printSettings(x);
-
-
-    %% Check permissions
-    %xASL_adm_CheckPermissions(x.MyPath, false);
-
-
-    %% 7. Data-specific initialization
-    fprintf('ExploreASL v%s initialized ... \n', x.Version);
-    
-    if (x.opts.bProcessData || x.opts.bOnlyLoad) && ~x.opts.bImportData % Skip this step if we still need to run the import (first initialization)
-        % Check if a root directory was defined
-        if ~isfield(x.D,'ROOT') || isempty(x.D.ROOT)
-            error('No root folder defined');
-        end
-
-        % Fix a relative path
-        if strcmp(x.D.ROOT(1), '.')
-            cd(x.D.ROOT);
-            x.D.ROOT = pwd;
-        end
-        
-        % Make sure that the derivatives folder exists (otherwise we can not load a dataset)
-        if ~xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'))
-            % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
-            % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
-            warning('Dataset can not be loaded, there is no derivatives directory, try to run the import first...');
-        end
-
-        % Define study subjects/parameters for this pipeline run
-        x = xASL_init_DefineStudyData(x);
-
-
-        % Remove lock dirs from previous runs, if ExploreASL is not running in parallel
-        if x.opts.nWorkers==1
-            x = xASL_init_RemoveLockDirs(x);
-        end
-
-        % Define & print settings
-        x = xASL_init_PrintCheckSettings(x);
-        %x = xASL_init_FileSystem(x);
-    end
 
 end
 
