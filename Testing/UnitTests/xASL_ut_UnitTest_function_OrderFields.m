@@ -19,7 +19,7 @@ function UnitTest = xASL_ut_UnitTest_function_OrderFields(TestRepository)
 %% Initialize test structure
 
 % Insert test name here
-UnitTest.name = 'xASL_adm_CatchNumbersFromString';
+UnitTest.name = 'xASL_adm_OrderFields';
 
 % Define whether you are testing a module, submodule or function
 UnitTest.unit = 'Function';
