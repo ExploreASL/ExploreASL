@@ -2,9 +2,10 @@ function LesionPathOut = xASL_im_Lesion2CAT(PathIn)
 % xASL_im_Lesion2CAT For all lesion masks in the anatomical directory, load them, merge them and save them
 % for the CAT segmentation
 %
-% FORMAT:       LesionPathOut = xASL_im_Lesion2CAT(PathIn)
+% FORMAT:       LesionPathOut = xASL_im_Lesion2CAT (PathIn)
 % 
-% INPUT:        PathIn - the name of the T1w file or another file in the same directory as the lesions
+% INPUT:        PathIn - the name of the T1w file or another file in the
+%                        same directory as the lesions (CHAR ARRAY, REQUIRED)
 %
 % OUTPUT:       LesionPathOut - the name and full path to the merged lesion file
 % 
@@ -16,7 +17,7 @@ function LesionPathOut = xASL_im_Lesion2CAT(PathIn)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      ...
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
 % Parse the directory names

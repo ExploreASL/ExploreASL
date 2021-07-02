@@ -3,9 +3,9 @@ function xASL_im_CreateSliceGradient(x)
 %
 % FORMAT:       xASL_im_CreateSliceGradient(x)
 % 
-% INPUT:        ...
+% INPUT:        x - ExploreASL x structure (STRUCT, REQUIRED)
 %
-% OUTPUT:       ...
+% OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  1. Create slice gradient in same space as input file
@@ -30,7 +30,7 @@ function xASL_im_CreateSliceGradient(x)
 % HJ Mutsaerts, ExploreASL 2016
 %
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 %% Administration

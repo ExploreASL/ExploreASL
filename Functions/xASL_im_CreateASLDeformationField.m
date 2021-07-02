@@ -11,7 +11,7 @@ function xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, P
 %                         DEFAULT = obtain this automaticall)
 %   PathLowResNIfTI     - path to the NIfTI file that deformations will be
 %                         applied to (OPTIONAL, default=ASL4D)
-% OUTPUT: n/a %
+% OUTPUT:                 n/a
 % --------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function smooths a transformation flow field to a lower
 %              resolution. Usually, we use a high resolution anatomical
@@ -34,7 +34,7 @@ function xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, P
 % EXAMPLE:      xASL_im_CreateASLDeformationField(x);
 %               xASL_im_CreateASLDeformationField(x, 1, [3 3 7]);
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 
 %% Admin

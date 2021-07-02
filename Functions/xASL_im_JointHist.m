@@ -4,14 +4,14 @@ function imHist = xASL_im_JointHist(imA,imB,imMask,minA,maxA,minB,maxB,nBins)
 % FORMAT: imHist = xASL_im_JointHist(imA,imB[,imMask,minA,maxA,minB,maxB,nBins])
 %
 % INPUT:
-%   imA    - First input image (REQUIRED).
-%   imB    - Second input image, needs to have the same dimensions (REQUIRED).
-%   imMask - Binary mask to calculate the joint histogram (OPTIONAL, DEFAULT whole image).
-%   minA   - Minimal value to be counted for image A (OPTIONAL, DEFAULT imA minimum).
-%   maxA   - Maximal value to be counted for image A (OPTIONAL, DEFAULT imA maximum).
-%   minB   - Minimal value to be counted for image B (OPTIONAL, DEFAULT imB minimum).
-%   minB   - Maximal value to be counted for image B (OPTIONAL, DEFAULT imB maximum).
-%   nBins  - Number of bins (OPTIONAL, DEFAULT 20).
+%   imA    - First input image (REQUIRED)
+%   imB    - Second input image, needs to have the same dimensions (REQUIRED)
+%   imMask - Binary mask to calculate the joint histogram (OPTIONAL, DEFAULT whole image)
+%   minA   - Minimal value to be counted for image A (OPTIONAL, DEFAULT imA minimum)
+%   maxA   - Maximal value to be counted for image A (OPTIONAL, DEFAULT imA maximum)
+%   minB   - Minimal value to be counted for image B (OPTIONAL, DEFAULT imB minimum)
+%   minB   - Maximal value to be counted for image B (OPTIONAL, DEFAULT imB maximum)
+%   nBins  - Number of bins (OPTIONAL, DEFAULT 20)
 %
 % OUTPUT:
 %   imHist - Resulting joint histogram of size nBins x nBins.
@@ -24,9 +24,10 @@ function imHist = xASL_im_JointHist(imA,imB,imMask,minA,maxA,minB,maxB,nBins)
 %     imHist = xASL_im_JointHist(imA,imB)
 %     imHist = xASL_im_JointHist(imA,imB,[],0,200,-50,[])
 %     imHist = xASL_im_JointHist(imA,imB,imMask,[],200,0,[],50)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright © 2015-2019 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 %
 % 2019-06-26 JP
 

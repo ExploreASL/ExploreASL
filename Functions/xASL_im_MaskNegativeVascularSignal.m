@@ -23,11 +23,11 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
 %              significant median negative value, whereas noise will be
 %              regions with relatively small negative signal.
 %              Negative signal from wrong background suppression timing
-%              (e.g. in the first slice with 2D EPI) can be masked out with
+%              (e.g. in the first slice with **2D EPI**) can be masked out with
 %              this as well.
 %              The procedure works as follows:
 %
-%              1. Obtain mask of negative voxels within pGM>0.5 mask
+%              1. Obtain mask of negative voxels within `pGM>0.5` mask
 %              2. Obtain distribution of subzero clusters
 %              3. Define the negative threshold
 %              4. Create mask by thresholding whole image
@@ -38,10 +38,11 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
 %              Note that instead of the PWI path input, a CBF image should
 %              work equally well, as we don't expect a smooth M0 biasfield
 %              to change the distribution of negative clusters
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: NegativeMask = xASL_im_MaskNegativeVascularSignal(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
  
     if nargin<2 || isempty(IsSpace)
         warning('Didnt know space to calculate negative mask in, skipping');

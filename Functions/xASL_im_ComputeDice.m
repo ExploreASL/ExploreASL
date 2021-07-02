@@ -4,20 +4,20 @@ function [DiceCoeff] = xASL_im_ComputeDice(imA, imB)
 % FORMAT:       [DiceCoeff] = xASL_im_ComputeDice(imA, imB)
 % 
 % INPUT:
-%   imA         - image matrix A (numerical or logical; REQUIRED)
-%   imB         - image matrix B (numerical or logical; REQUIRED)
+%   imA         - Image matrix A (numerical or logical, REQUIRED)
+%   imB         - Image matrix B (numerical or logical, REQUIRED)
 %
 % OUTPUT:
-%    DiceCoeff  - Dice coefficient, 0 = no image overlap, 1 = perfect image
-%                 overlap.
+%    DiceCoeff  - Dice coefficient, 0 = no image overlap, 1 = perfect image overlap.
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This function calculates the Dice coefficient of image overlap.
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: DiceCoeff = xASL_im_ComputeDice([1 0 1], [1 1 0]); % mask has
-% two voxels, of which 1 voxel overlaps, so DiceCoeff=0.5
+%          two voxels, of which 1 voxel overlaps, so DiceCoeff=0.5
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 %% 0. Admin

@@ -5,8 +5,8 @@ function [ColumnOut] = xASL_im_IM2Column(ImageIn, BrainMask, ApplyShiftDim)
 % FORMAT: [ColumnOut] = xASL_im_IM2Column(ImageIn, BrainMask[, ApplyShiftDim])
 %
 % INPUT:
-%   ImageIn         - image matrix (REQUIRED)
-%   BrainMask       - image matrix containing mask (REQUIRED)
+%   ImageIn         - image matrix (MATRIX, REQUIRED)
+%   BrainMask       - image matrix containing mask (MATRIX, REQUIRED)
 %   ApplyShiftDim   - false to avoid dimension shifting (OPTIONAL, DEFAULT=true)
 %   
 % OUTPUT:
@@ -18,14 +18,14 @@ function [ColumnOut] = xASL_im_IM2Column(ImageIn, BrainMask, ApplyShiftDim)
 %              zero-information voxels from computations and memory use.
 %              NB: Important to use the same BrainMask for converting the
 %              column back to an image matrix!
-%              See also: xASL_im_Column2IM.m
+%              See also: `xASL_im_Column2IM.m`
 % 
-%              The mask mostly used for xASL_im_IM2Column is x.S.masks.WBmask, which completely
+%              The mask mostly used for xASL_im_IM2Column is `x.S.masks.WBmask`, which completely
 %              engulfes pGM, pWM & pCSF
 %
 % EXAMPLE: ColumnOut = xASL_im_IM2Column(ImageIn, BrainMask);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 
 %%  ------------------------------------------------------------

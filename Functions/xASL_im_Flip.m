@@ -4,9 +4,10 @@ function [MatrixOut] = xASL_im_Flip(MatrixIn, varargin)
 %
 % FORMAT:       [MatrixOut] = xASL_im_Flip(MatrixIn, varargin)
 % 
-% INPUT:        ...
+% INPUT:        MatrixIn    - Input matrix (MATRIX, REQUIRED)
+%               varargin    - Second argument can be the dimension (OPTIONAL)
 %
-% OUTPUT:       ...
+% OUTPUT:       MatrixOut   - Output matrix (MATRIX)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Backwards compatibility for flipping left-right in standard
@@ -15,7 +16,7 @@ function [MatrixOut] = xASL_im_Flip(MatrixIn, varargin)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      [MatrixOut] = xASL_im_Flip(MatrixIn, [dim])
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 if nargin < 2

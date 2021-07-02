@@ -28,8 +28,8 @@ function [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
 %               7. Scale back to the GM M0
 %               8. Print visual QC figure
 %
-%               A visual QC figure is created, showing the M0 image processing steps for a single transversal slice (slice 53 in 1.5 mm MNI standard space)
-%               OutputFile = fullfile(x.D.M0regASLdir,['M0_im_proc_' x.P.SubjectID '.jpg']);
+%               A visual QC figure is created, showing the M0 image processing steps for a single transversal slice (slice 53 in `1.5 mm` MNI standard space)
+%               `OutputFile = fullfile(x.D.M0regASLdir,['M0_im_proc_' x.P.SubjectID '.jpg']);`
 %               The original M0 image (a) is masked with a (pGM+pWM)>50% mask (b)
 %               eroded with a two-voxel sphere to limit the influence of the ventricular and extracranial signal (c)
 %               and thresholded to exclude significantly high (i.e. median + 3*mean absolute deviation (MAD)) border region values (d)
@@ -39,10 +39,7 @@ function [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
 %
 % EXAMPLE: [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
-
-
-
+% Copyright (C) 2015-2021 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------

@@ -5,7 +5,7 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 % FORMAT: xASL_im_CreatePseudoCBF(x, spatialCoV[, bPVC])
 %
 % INPUT:
-%   x             - structure containing fields with all information required to run this submodule (REQUIRED)
+%   x             - structure containing fields with all information required to run this submodule (STRUCT, REQUIRED)
 %   spatialCoV    - estimated spatialCoV of CBF image, that determines the mix
 %                   of mean CBF, ATT biasfield and vascular artifacts
 %                   (REQUIRED). When this parameter is set to 0 or lower, this
@@ -62,7 +62,7 @@ function xASL_im_CreatePseudoCBF(x, spatialCoV, bPVC)
 %
 % EXAMPLE: xASL_im_CreatePseudoCBF(x, 0.4);
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 if nargin < 3 || isempty(bPVC)
 	bPVC = false;

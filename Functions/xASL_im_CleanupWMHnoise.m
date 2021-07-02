@@ -7,9 +7,12 @@ function xASL_im_CleanupWMHnoise(InputPath, OutputPath, MinLesionVolume, pThresh
 %
 % FORMAT:       xASL_im_CleanupWMHnoise(InputPath, OutputPath, MinLesionVolume, pThresh)
 % 
-% INPUT:        ...
+% INPUT:        InputPath           - Input path (CHAR ARRAY, REQUIRED)
+%               OutputPath          - Output path (CHAR ARRAY, REQUIRED)
+%               MinLesionVolume     - Minimum lesion volume (REQUIRED)
+%               pThresh             - p threshold (REQUIRED)
 %
-% OUTPUT:       ...
+% OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Threshold white matter lesions,

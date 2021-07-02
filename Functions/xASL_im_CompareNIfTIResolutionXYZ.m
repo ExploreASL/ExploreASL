@@ -4,11 +4,12 @@ function [IsEqualResolution] = xASL_im_CompareNIfTIResolutionXYZ(PathNIfTI1, Pat
 % FORMAT: [IsEqualResolution] = xASL_im_CompareNIfTIResolutionXYZ(PathNIfTI1, PathNIfTI2)
 %
 % INPUT:
-%   PathNIfTI1  - Path to first NIfTI file (REQUIRED)
-%   PathNIfTI2  - Path to second NIfTI file (REQUIRED)%
+%   PathNIfTI1  - Path to first NIfTI file (CHAR ARRAY, REQUIRED)
+%   PathNIfTI2  - Path to second NIfTI file (CHAR ARRAY, REQUIRED)
 %
 % OUTPUT:
 %   IsEqualResolution  - true if the 3D resolution is identical
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function checks whether the X, Y and Z resolution of a
 %              NIfTI with any number of dimensions is equal. It rounds for 2 floating
@@ -16,7 +17,7 @@ function [IsEqualResolution] = xASL_im_CompareNIfTIResolutionXYZ(PathNIfTI1, Pat
 %
 % EXAMPLE: IsEqualResolution = xASL_im_CompareNIfTIResolutionXYZ('/ASL/MyStudyName/Sub-001/c1T1.nii', '/ASL/MyStudyName/Sub-001/c1T1.nii');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 nii1 = xASL_io_ReadNifti(PathNIfTI1);

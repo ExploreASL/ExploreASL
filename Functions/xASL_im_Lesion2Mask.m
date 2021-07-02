@@ -24,7 +24,7 @@ function LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 % 5. Contralateral version of 2
 % 6. Contralateral version of 3
 %
-% All these masks are masked by a brainmask (pGM+pWM)>0.5
+% All these masks are masked by a brainmask `(pGM+pWM)>0.5`
 % 
 % This function performs the following steps:
 %
@@ -38,7 +38,7 @@ function LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_im_Lesion2Mask('/MyStudy/sub-001/Lesion_T1_1.nii.gz', x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 %% --------------------------------------------------------

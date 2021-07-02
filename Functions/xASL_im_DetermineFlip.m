@@ -5,9 +5,12 @@ function [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct
 %
 % FORMAT:       [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct)
 % 
-% INPUT:        ...
+% INPUT:        x                      - ExploreASL x structure (STRUCT, REQUIRED)
+%               iS                     - Subject number (INTEGER, REQUIRED)
+%               PathOrientationResults - Path orientation results (CHAR ARRAY, REQUIRED)
+%               QCstruct               - QC struct (STRUCT, REQUIRED)
 %
-% OUTPUT:       ...
+% OUTPUT:       QCstruct               - QC struct (STRUCT)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Check determinants, should be the same
@@ -17,7 +20,7 @@ function [QCstruct] = xASL_im_DetermineFlip(x,iS,PathOrientationResults,QCstruct
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      ...
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
     QCstruct.LR_flip_YesNo = NaN; % default
 

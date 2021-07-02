@@ -5,9 +5,12 @@ function [ovol] = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x)
 %
 % FORMAT:       [ovol] = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x)
 % 
-% INPUT:        ...
+% INPUT:        volIM      - Image volume (REQUIRED)
+%               mask       - Mask (REQUIRED)
+%               VoxelSize  - Voxel size (REQUIRED)
+%               x          - ExploreASL x structure (STRUCT, REQUIRED)
 %
-% OUTPUT:       ...
+% OUTPUT:       ovol       - Output volume
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This function runs a spatial lowpass temporally
@@ -17,7 +20,7 @@ function [ovol] = xASL_im_BilateralFilter(volIM, mask, VoxelSize, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      ...
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 if  size(volIM,4)<10
     % skip filtering, for no time-series
