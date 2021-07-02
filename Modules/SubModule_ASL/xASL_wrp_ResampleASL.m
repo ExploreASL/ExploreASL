@@ -130,11 +130,16 @@ end
 %% ------------------------------------------------------------------------------------------
 % 6. Create mean control image, if available, in native & standard space
 if  nVolumes>1    
-    % Create mean control in native space
-    ControlIm = xASL_quant_GetControlLabelOrder(xASL_io_Nifti2Im(x.P.Path_rdespiked_ASL4D));
-    IM_mean = xASL_stat_MeanNan(ControlIm, 4);
-    xASL_io_SaveNifti(x.P.Path_rdespiked_ASL4D, x.P.Path_mean_control, IM_mean, [], 0);
-
+    if x.HadamardType~=0
+        [sec] = xASL_im_HadamardCaseByCase(x.HadamardMatrix);
+        [Decoded_ASL] = xASL_im_HadamardDecoding(x.HadamardType, sec);
+    else
+        % Create mean control in native space
+        ControlIm = xASL_quant_GetControlLabelOrder(xASL_io_Nifti2Im(x.P.Path_rdespiked_ASL4D));
+        IM_mean = xASL_stat_MeanNan(ControlIm, 4);
+        xASL_io_SaveNifti(x.P.Path_rdespiked_ASL4D, x.P.Path_mean_control, IM_mean, [], 0);
+        
+    end
     % Transform mean control to standard space
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;

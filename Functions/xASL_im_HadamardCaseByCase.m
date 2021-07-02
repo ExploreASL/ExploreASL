@@ -1,11 +1,11 @@
-function [sec] = xASL_im_HadamardCaseByCase(hadamard_type)
+function [sec] = xASL_im_HadamardCaseByCase(hadamard_matrix)
 %xASL_im_HadamardCaseByCase Case by case function for determining hadamard type and respective decoding scheme
 %
 % FORMAT:       [sec] = xASL_im_HadamardCaseByCase(hadamard_type)
 % 
-% INPUT:        hadamard_type - ...
+% INPUT:        hadamard_matrix - should be a string, either 'Natural' or % 'Walsh'
 %
-% OUTPUT:       sec           - ...
+% OUTPUT:       sec           - defines the section to continue, either % 1(for Natural) or 2(for Walsh)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Case by case function for determining hadamard type and respective decoding scheme.
@@ -15,13 +15,22 @@ function [sec] = xASL_im_HadamardCaseByCase(hadamard_type)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    % Important feedback from Beatriz:
-    % Add warning if it is a string or not and also if it is emplty or not
-
-    if ( hadamard_type == natural)
-        sec = 1;
-    else
-        sec = 2;
+  
+    if ~ischar(hadamard_matrix) || isempty(hadamard_matrix) 
+        warning('Hadamard matrix is not a string or is empty')
+        
+    elseif ~strcmpi(hadamard_matrix,'natural') || ~strcmpi(hadamard_matrix,'walsh')
+        warning('Hadamard matrix is not defined')
+    
+    elseif %HadamatrixMatrix is correctlydefined
+        if strcmpi(hadamard_matrix,'natural')
+            sec = 1;
+        else
+            sec = 2;
+        end
     end
+     
+
+   
 
 end
