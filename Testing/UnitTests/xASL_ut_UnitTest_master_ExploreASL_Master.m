@@ -34,7 +34,7 @@ function UnitTest = xASL_ut_UnitTest_function_ExploreASL_Master(TestRepository)
 UnitTest.name = 'ExploreASL_Master';
 
 % Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Function';
+UnitTest.unit = 'Master';
 
 %% Test run 1
 

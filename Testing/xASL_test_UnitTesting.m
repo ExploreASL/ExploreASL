@@ -30,7 +30,7 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
 
     %% Clean Up
     clc
-    clear
+    clearvars -except xASL_dir
 
     %% Get Test Repository
     
@@ -43,6 +43,12 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
     else    
         TestRepository = [];
     end
+	
+	% Update test repository
+	cd(TestRepository); % Go to test repository
+	system('git fetch','-echo');
+	system('git pull','-echo');
+	cd(xASL_dir) % Go back to ExploreASL
     
     if isempty(TestRepository)
         if usejava('desktop')
@@ -68,6 +74,13 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
         testHandle = str2func(testScript);
         UnitTests(test) = testHandle(TestRepository);
     end
+    
+    %% Export TSV
+    for iTest = 1:size(UnitTests,2)
+        UnitTestsCells{iTest,1} = UnitTests(iTest).name;
+        UnitTestsCells{iTest,2} = num2str(UnitTests(iTest).passed);
+    end
+    xASL_tsvWrite(UnitTestsCells,fullfile(TestRepository,'results.tsv'),1);
     
     %% Export table as well
     UnitTestsTable = struct2table(UnitTests);
