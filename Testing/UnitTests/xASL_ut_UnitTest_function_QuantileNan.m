@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_StdNan(TestRepository)
-%xASL_ut_UnitTest_function_StdNan Individual unit test for xASL_adm_CheckFileCount
+function UnitTest = xASL_ut_UnitTest_function_QuantileNan(TestRepository)
+%xASL_ut_UnitTest_function_QuantileNan Individual unit test for xASL_adm_CheckFileCount
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,14 +12,14 @@ function UnitTest = xASL_ut_UnitTest_function_StdNan(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_StdNan(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_QuantileNan(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
 %% Initialize test structure
 
 % Insert test name here
-UnitTest.name = 'xASL_stat_StdNan';
+UnitTest.name = 'xASL_stat_QuantileNan';
 
 % Define whether you are testing a module, submodule or function
 UnitTest.unit = 'Function';
@@ -27,15 +27,18 @@ UnitTest.unit = 'Function';
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Multiple test calls with different arrays';
+UnitTest.tests(1).testname = 'Three basic examples';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-y1 = xASL_stat_StdNan([0, 0, 0, 0, 0]);
-y2 = xASL_stat_StdNan([0, 1, 2, 3, 4]);
-y3 = xASL_stat_StdNan([0, NaN, 0, NaN, 0]);
+x1 = [0, 0, 0, 0, 0, 0, 0];
+x2 = [1, 2, 3, 4, 5, 6, 7];
+x3 = [NaN, 1, NaN, 2, NaN, 3, NaN, 4, NaN, 5, NaN, 6, NaN, 7];
+y1 = xASL_stat_QuantileNan(x1,0.5);
+y2 = xASL_stat_QuantileNan(x2,0.5);
+y3 = xASL_stat_QuantileNan(x3,0.5);
 
 % Define one or multiple test conditions here
 testCondition = true;
@@ -44,10 +47,10 @@ testCondition = true;
 if ~(y1==0)
     testCondition = false;
 end
-if ~(y2==std([0, 1, 2, 3, 4]))
+if ~(y2==4) % Reference from wolfram alpha
     testCondition = false;
 end
-if ~(y3==0)
+if ~(y3==4) % Reference from wolfram alpha
     testCondition = false;
 end
 

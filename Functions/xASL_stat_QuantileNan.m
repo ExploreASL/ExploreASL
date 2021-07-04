@@ -19,19 +19,21 @@ function y = xASL_stat_QuantileNan(x,quant,dim)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright © 2015-2019 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 %
 % 2017-00-00 JP
+
+%% Check input arguments
+if nargin < 2 || isempty(quant)
+	quant = 0.5;
+end
 
 % quant needs to be between 0 and 1 if outside this range, then throw and error
 if (quant < 0) || (quant > 1)
 	error('xASL_stat_QuantileNan: the value needs to be between 0 and 1');
 end
 
-if nargin < 2 || isempty(quant)
-	quant = 0.5;
-end
-
+%% Determine result
 if isempty(x)
 	if nargin < 3
 		
