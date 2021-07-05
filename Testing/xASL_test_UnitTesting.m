@@ -72,7 +72,9 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
         testScript = fileList(test).name;
         [~,testScript,~] = fileparts(testScript);
         testHandle = str2func(testScript);
-        UnitTests(test) = testHandle(TestRepository);
+        UnitTest = testHandle(TestRepository);
+        UnitTest = xASL_ut_InitUnitTest(UnitTest,testHandle);
+        UnitTests(test) = UnitTest;
     end
     
     %% Export TSV
@@ -90,6 +92,21 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
     fprintf('================================= TEST RESULTS =================================\n\n')
     disp(UnitTestsTable);
     fprintf('================================================================================\n')
+
+end
+
+
+%% Initialize unit test
+function UnitTest = xASL_ut_InitUnitTest(UnitTest,testHandle)
+
+    % Get name of script
+    testObject = functions(testHandle);
+
+    % Insert test name here
+    UnitTest.name = testObject.function(regexp(testObject.function,'_xASL_')+1:end);
+
+    % Define whether you are testing a module, submodule or function
+    UnitTest.unit = testObject.function(regexp(testObject.function,'xASL_ut_')+8:regexp(testObject.function,'_xASL_')-1);
 
 end
 

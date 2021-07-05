@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_BidsConfig(TestRepository)
-%xASL_ut_UnitTest_function_BidsConfig Individual unit test for xASL_bids_Config
+function UnitTest = xASL_ut_function_xASL_bids_Config(TestRepository)
+%xASL_ut_function_xASL_bids_Config Individual unit test for xASL_bids_Config
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,17 +12,10 @@ function UnitTest = xASL_ut_UnitTest_function_BidsConfig(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_BidsConfig(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_bids_Config(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_bids_Config';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Function';
 
 %% Test run 1
 

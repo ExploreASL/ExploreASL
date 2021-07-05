@@ -1,6 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_ExploreASL_Master(TestRepository)
-%xASL_ut_UnitTest_function_ExploreASL_Master Individual unit test for
-%ExploreASL_Master
+function UnitTest = xASL_ut_master_xASL_ExploreASL_Master(TestRepository)
+%xASL_ut_master_xASL_ExploreASL_Master Individual unit test for ExploreASL_Master
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -20,21 +19,14 @@ function UnitTest = xASL_ut_UnitTest_function_ExploreASL_Master(TestRepository)
 % 5. DRO 2.2.0 (NII2BIDS)
 % 6. DRO 2.2.0 (ANONYMIZE, BIDS2Legacy)
 % 7. DRO 2.2.0 (ANONYMIZE, BIDS2Legacy with dataPar.json)
-% 8. 
-% 9. 
+% 8. Run processing starting from derivatives with directory input
+% 9. Run processing starting from derivatives with dataPar.json input (outdated)
 % 10. DRO 2.2.0 (full pipeline, rawdata->results)
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_ExploreASL_Master(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_master_xASL_ExploreASL_Master(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'ExploreASL_Master';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Master';
 
 %% Test run 1
 

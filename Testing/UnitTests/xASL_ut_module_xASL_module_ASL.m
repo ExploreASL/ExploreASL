@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_module_ASL(TestRepository)
-%xASL_ut_UnitTest_module_ASL Individual unit test for xASL_module_ASL
+function UnitTest = xASL_ut_module_xASL_module_ASL(TestRepository)
+%xASL_ut_module_xASL_module_ASL Individual unit test for xASL_module_ASL
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,17 +12,10 @@ function UnitTest = xASL_ut_UnitTest_module_ASL(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_module_ASL(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_module_xASL_module_ASL(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_module_ASL';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Module';
 
 %% Test run 1
 

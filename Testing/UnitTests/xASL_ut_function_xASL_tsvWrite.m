@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_tsvWrite(TestRepository)
-%xASL_ut_UnitTest_function_tsvWrite Individual unit test for xASL_tsvWrite
+function UnitTest = xASL_ut_function_xASL_tsvWrite(TestRepository)
+%xASL_ut_function_xASL_tsvWrite Individual unit test for xASL_tsvWrite
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,17 +12,10 @@ function UnitTest = xASL_ut_UnitTest_function_tsvWrite(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_tsvWrite(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_tsvWrite(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_tsvWrite';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Function';
 
 %% Test run 1
 

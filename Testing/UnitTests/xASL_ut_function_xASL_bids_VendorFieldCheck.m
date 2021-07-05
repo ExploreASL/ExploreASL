@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_BidsVendorFieldCheck(TestRepository)
-%xASL_ut_UnitTest_function_BidsVendorFieldCheck Individual unit test for xASL_bids_VendorFieldCheck
+function UnitTest = xASL_ut_function_xASL_bids_VendorFieldCheck(TestRepository)
+%xASL_ut_function_xASL_bids_VendorFieldCheck Individual unit test for xASL_bids_VendorFieldCheck
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,17 +12,10 @@ function UnitTest = xASL_ut_UnitTest_function_BidsVendorFieldCheck(TestRepositor
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_BidsVendorFieldCheck(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_bids_VendorFieldCheck(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_bids_VendorFieldCheck';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Function';
 
 %% Test run 1
 

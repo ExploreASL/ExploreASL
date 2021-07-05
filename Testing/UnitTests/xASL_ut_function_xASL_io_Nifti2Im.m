@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_module_Structural(TestRepository)
-%xASL_ut_UnitTest_module_Structural Individual unit test for xASL_module_Structural
+function UnitTest = xASL_ut_function_xASL_io_Nifti2Im(TestRepository)
+%xASL_ut_function_xASL_io_Nifti2Im Individual unit test for xASL_Nifti2Im
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,45 +12,44 @@ function UnitTest = xASL_ut_UnitTest_module_Structural(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_module_Structural(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_io_Nifti2Im(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_module_Structural';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Module';
 
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Default settings';
+UnitTest.tests(1).testname = 'Load DRO image matrix (default options)';
 
 % Start the test
 testTime = tic;
 
-% Prepare the test data
-pathTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','Patient');
-xASL_Copy(fullfile(TestRepository,'UnitTesting','dro_files','0_01_Derivatives_Data','Patient'), pathTestPatient);
-
 % Run your test here
-x = ExploreASL(pathTestPatient,0,[1 0 0]);
+aslFile = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0','asl','001_asl.nii.gz');
+testFile = fullfile(TestRepository,'UnitTesting','working_directory','001_asl.nii.gz');
+unzippedTestFile = fullfile(TestRepository,'UnitTesting','working_directory','001_asl.nii');
+
+% Copy test NIFTI
+copyfile(aslFile,testFile);
+
+% Run function
+imTest = xASL_io_Nifti2Im(testFile);
 
 % Define one or multiple test conditions here
-testCondition = true;
-
-% Define one or multiple test conditions here
-if ~isstruct(x)
-    testCondition = false;
+testCondition = true; % Fallback
+if ~exist(unzippedTestFile,'file')
+    testCondition = false; % Test failed
+end
+if ~isa(imTest,'single')
+    testCondition = false; % Test failed
+end
+if numel(imTest)~=(64*64*12*3) % Matrix size: [64, 64, 12, 3]
+    testCondition = false; % Test failed
 end
 
-% Add more conditions here ... (compare data with reference patient dataset 1_00_Structural_Module)
-
-% Delete test data
-xASL_delete(pathTestPatient,true)
+% Remove file after test
+delete(unzippedTestFile);
 
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);

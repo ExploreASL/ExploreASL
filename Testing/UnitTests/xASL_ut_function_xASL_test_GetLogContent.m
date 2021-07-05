@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_tsvRead(TestRepository)
-%xASL_ut_UnitTest_function_tsvRead Individual unit test for xASL_tsvRead
+function UnitTest = xASL_ut_function_xASL_test_GetLogContent(TestRepository)
+%xASL_ut_function_xASL_test_GetLogContent Individual unit test for xASL_test_GetLogContent
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,42 +12,43 @@ function UnitTest = xASL_ut_UnitTest_function_tsvRead(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_tsvRead(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_test_GetLogContent(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_tsvRead';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Function';
 
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Read test file (default options)';
+UnitTest.tests(1).testname = 'Read in log files (no ouput file)';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-testFile = fullfile(TestRepository,'UnitTesting','io_files','TestFile.tsv');
-CellContents = xASL_tsvRead(testFile);
+testDirectory = fullfile(TestRepository,'UnitTesting','io_files');
+
+% Read test files
+[logContent] = xASL_test_GetLogContent(testDirectory,0,1,0);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
-if ~iscell(CellContents)
-	testCondition = false; % Test failed
-end
-if ~(size(CellContents,1)==5 && size(CellContents,2)==3)
+if ~istable(logContent)
     testCondition = false; % Test failed
 end
-if ~(strcmp(CellContents{1,1},'Parameter') && strcmp(CellContents{1,2},'Description') && strcmp(CellContents{1,3},'Value'))
+if ~ischar(logContent.Module{1})
     testCondition = false; % Test failed
 end
-if ~(ischar(CellContents{2,1}) && ischar(CellContents{2,2}) && isa(CellContents{2,3},'double'))
+if ~ischar(logContent.Subject{1})
+    testCondition = false; % Test failed
+end
+if ~ischar(logContent.Message{1})
+    testCondition = false; % Test failed
+end
+if ~ischar(logContent.File{1})
+    testCondition = false; % Test failed
+end
+if ~ischar(logContent.Line{1})
     testCondition = false; % Test failed
 end
 
@@ -58,38 +59,57 @@ UnitTest.tests(1).duration = toc(testTime);
 UnitTest.tests(1).passed = testCondition;
 
 
+
 %% Test run 2
 
 % Give your individual subtest a name
-UnitTest.tests(2).testname = 'Read test file (bStruct option)';
+UnitTest.tests(2).testname = 'Read in log files (ouput tsv file)';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-testFile = fullfile(TestRepository,'UnitTesting','io_files','TestFile.tsv');
-CellContents = xASL_tsvRead(testFile,true);
+testDirectory = fullfile(TestRepository,'UnitTesting','io_files');
+
+% Output file
+outputFile = fullfile(TestRepository,'UnitTesting','io_files','logContent.tsv');
+
+% Read test files
+[logContent] = xASL_test_GetLogContent(testDirectory,0,1,1);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
-if ~isstruct(CellContents)
-	testCondition = false; % Test failed
-end
-if ~(numel(CellContents.Parameter)==4 && numel(CellContents.Description)==4)
+if ~istable(logContent)
     testCondition = false; % Test failed
 end
-if ~(strcmp(CellContents.Parameter{1,1},'Height') && strcmp(CellContents.Parameter{2,1},'Width') && strcmp(CellContents.Parameter{3,1},'Length') && strcmp(CellContents.Parameter{4,1},'Depth'))
+if ~ischar(logContent.Module{1})
     testCondition = false; % Test failed
 end
-if ~(ischar(CellContents.Parameter{1,1}) && ischar(CellContents.Description{1,1}) && isa(CellContents.Value(1),'double'))
+if ~ischar(logContent.Subject{1})
     testCondition = false; % Test failed
 end
+if ~ischar(logContent.Message{1})
+    testCondition = false; % Test failed
+end
+if ~ischar(logContent.File{1})
+    testCondition = false; % Test failed
+end
+if ~ischar(logContent.Line{1})
+    testCondition = false; % Test failed
+end
+if ~isfile(outputFile)
+    testCondition = false; % Test failed
+end
+
+% Remove file after test
+delete(outputFile);
 
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);
 
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
+
 
 
 %% End of testing

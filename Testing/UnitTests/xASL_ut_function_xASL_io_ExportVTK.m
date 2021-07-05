@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_ExportVTK(TestRepository)
-%xASL_ut_UnitTest_function_ExportVTK Individual unit test for xASL_io_ExportVTK
+function UnitTest = xASL_ut_function_xASL_io_ExportVTK(TestRepository)
+%xASL_ut_function_xASL_io_ExportVTK Individual unit test for xASL_io_ExportVTK
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,17 +12,10 @@ function UnitTest = xASL_ut_UnitTest_function_ExportVTK(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_ExportVTK(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_io_ExportVTK(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_io_ExportVTK';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Function';
 
 %% Test run 1
 

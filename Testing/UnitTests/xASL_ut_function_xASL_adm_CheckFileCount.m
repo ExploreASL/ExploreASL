@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_CompareLists(TestRepository)
-%xASL_ut_UnitTest_function_CompareLists Individual unit test for xASL_adm_CompareLists
+function UnitTest = xASL_ut_function_xASL_adm_CheckFileCount(TestRepository)
+%xASL_ut_function_xASL_adm_CheckFileCount Individual unit test for xASL_adm_CheckFileCount
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,42 +12,45 @@ function UnitTest = xASL_ut_UnitTest_function_CompareLists(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_CompareLists(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_adm_CheckFileCount(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_adm_CompareLists';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Function';
 
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Simple list example';
+UnitTest.tests(1).testname = 'Find three files';
 
 % Start the test
 testTime = tic;
 
+% Create three test files in test directory
+fid = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_1.txt'), 'wt');
+fclose(fid);
+fid = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_2.txt'), 'wt');
+fclose(fid);
+fid = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_3.txt'), 'wt');
+fclose(fid);
+
 % Run your test here
-testListA = {1, 2, 3, 'A', 'B', 'C'}';
-testListB = {4, 5, 6, 'A', 'B', 'C'}';
-[newList] = xASL_adm_CompareLists(testListA, testListB);
+[result, files] = xASL_adm_CheckFileCount(fullfile(TestRepository,'UnitTesting','working_directory'),'test*',3,0);
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~isempty(newList{1,1}) || ~isempty(newList{2,1}) || ~isempty(newList{3,1}) || ...
-   ~isempty(newList{1,2}) || ~isempty(newList{2,2}) || ~isempty(newList{3,2})
+if ~result
     testCondition = false;
 end
-if ~strcmp(newList{4,1},'A') || ~strcmp(newList{5,1},'B') || ~strcmp(newList{6,1},'C') || ...
-   ~newList{4,2} || ~newList{5,2} || ~newList{6,2}
+if ~(numel(files)==3)
+    testCondition = false; 
 end
+
+% Delete test files
+xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test_1.txt'))
+xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test_2.txt'))
+xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test_3.txt'))
 
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
@@ -59,26 +62,23 @@ UnitTest.tests(1).passed = testCondition;
 %% Test run 2
 
 % Give your individual subtest a name
-UnitTest.tests(2).testname = 'Different list length example';
+UnitTest.tests(2).testname = 'No matching files';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-testListA = {1, 2, 3, 'A', 'B', 'C'}';
-testListB = {4, 5, 6, 'A', 'B'}';
-[newList] = xASL_adm_CompareLists(testListA, testListB);
+[result, files] = xASL_adm_CheckFileCount(fullfile(TestRepository,'UnitTesting','working_directory'),'test*',3,0);
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~isempty(newList{1,1}) || ~isempty(newList{2,1}) || ~isempty(newList{3,1}) || ...
-   ~isempty(newList{1,2}) || ~isempty(newList{2,2}) || ~isempty(newList{3,2})
+if result
     testCondition = false;
 end
-if ~strcmp(newList{4,1},'A') || ~strcmp(newList{5,1},'B') || ~strcmp(newList{6,1},'C') || ...
-   ~newList{4,2} || ~newList{5,2} || newList{6,2}
+if ~(numel(files)==0)
+    testCondition = false; 
 end
 
 % Get test duration
@@ -86,6 +86,7 @@ UnitTest.tests(2).duration = toc(testTime);
 
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
+
 
 
 %% End of testing

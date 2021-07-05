@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_str2num(TestRepository)
-%xASL_ut_UnitTest_function_str2num Individual unit test for xASL_str2num
+function UnitTest = xASL_ut_function_xASL_bids_CreateDatasetDescriptionTemplate(TestRepository)
+%xASL_ut_function_xASL_bids_CreateDatasetDescriptionTemplate Individual unit test for xASL_bids_CreateDatasetDescriptionTemplate
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,47 +12,35 @@ function UnitTest = xASL_ut_UnitTest_function_str2num(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_str2num(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_bids_CreateDatasetDescriptionTemplate(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_str2num';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Function';
 
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Number types: integer, double, positive and negative';
+UnitTest.tests(1).testname = 'Empty draft';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-numOutA = xASL_str2num('123');
-numOutB = xASL_str2num('-123');
-numOutC = xASL_str2num('123.456');
-numOutD = xASL_str2num('-123.456');
+draft = struct;
+[json] = xASL_bids_CreateDatasetDescriptionTemplate(draft);
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~isnumeric(numOutA) || ~isnumeric(numOutB) || ~isnumeric(numOutC) || ~isnumeric(numOutD)
+if ~isstruct(draft)
     testCondition = false;
 end
-if isnumeric(numOutA) && isnumeric(numOutB) && isnumeric(numOutC) && isnumeric(numOutD)
-    if ~(numOutA==123) || ~(numOutB==-123) || ~(numOutC==123.456) || ~(numOutD==-123.456)
-        testCondition = false;
-    end
+% Check required fields
+if ~isfield(json,'Name') || ...
+   ~isfield(json,'BIDSVersion')
+    testCondition = false;
 end
-
-% Clean up
-clear numOutA numOutB numOutC numOutD
 
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
@@ -60,32 +48,36 @@ UnitTest.tests(1).duration = toc(testTime);
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
 
-%% Test run 1
+
+%% Test run 2
 
 % Give your individual subtest a name
-UnitTest.tests(2).testname = 'List of numbers';
+UnitTest.tests(2).testname = 'Draft with fields that are not allowed';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-testArr = xASL_str2num({'1','2','3'},0);
+draft = struct;
+draft.NotAllowed = 'Test';
+[json] = xASL_bids_CreateDatasetDescriptionTemplate(draft);
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~isnumeric(testArr)
+if ~isstruct(draft)
     testCondition = false;
 end
-if isnumeric(testArr) && numel(testArr)==3
-    if ~(testArr(1)==1) || ~(testArr(2)==2) || ~(testArr(3)==3)
-        testCondition = false;
-    end
+% Check required fields
+if ~isfield(json,'Name') || ...
+   ~isfield(json,'BIDSVersion')
+    testCondition = false;
 end
-
-% Clean up
-clear testArr
+% Make sure that not allowed field was removed
+if isfield(json,'NotAllowed')
+    testCondition = false;
+end
 
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);

@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_function_OrderFields(TestRepository)
-%xASL_ut_UnitTest_function_OrderFields Individual unit test for xASL_adm_OrderFields
+function UnitTest = xASL_ut_function_xASL_stat_StdNan(TestRepository)
+%xASL_ut_function_xASL_stat_StdNan Individual unit test for xASL_adm_CheckFileCount
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,46 +12,35 @@ function UnitTest = xASL_ut_UnitTest_function_OrderFields(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_function_OrderFields(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_stat_StdNan(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'xASL_adm_OrderFields';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Function';
 
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Extract integer example';
+UnitTest.tests(1).testname = 'Multiple test calls with different arrays';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-inStruct.A = 'test';
-inStruct.D = 'test';
-inStruct.C = 'test';
-inStruct.B = 'test';
-orderStruct.A = 'test';
-orderStruct.B = 'test';
-orderStruct.C = 'test';
-orderStruct.D = 'test';
-outStruct = xASL_adm_OrderFields(inStruct,orderStruct);
-fieldNamesOutStruct = fieldnames(outStruct);
+y1 = xASL_stat_StdNan([0, 0, 0, 0, 0]);
+y2 = xASL_stat_StdNan([0, 1, 2, 3, 4]);
+y3 = xASL_stat_StdNan([0, NaN, 0, NaN, 0]);
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~strcmp(fieldNamesOutStruct(1),'A') || ...
-   ~strcmp(fieldNamesOutStruct(2),'B') || ...
-   ~strcmp(fieldNamesOutStruct(3),'C') || ...
-   ~strcmp(fieldNamesOutStruct(4),'D')
+if ~(y1==0)
+    testCondition = false;
+end
+if ~(y2==std([0, 1, 2, 3, 4]))
+    testCondition = false;
+end
+if ~(y3==0)
     testCondition = false;
 end
 

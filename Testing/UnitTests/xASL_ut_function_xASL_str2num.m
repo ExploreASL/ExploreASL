@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_UnitTest_Template(TestRepository)
-%xASL_ut_UnitTest_Template Individual unit test template
+function UnitTest = xASL_ut_function_xASL_str2num(TestRepository)
+%xASL_ut_function_xASL_str2num Individual unit test for xASL_str2num
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -10,44 +10,42 @@ function UnitTest = xASL_ut_UnitTest_Template(TestRepository)
 %               test      - Structure with individual subtest results
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  To improve quality control, each developer can define unit
-%               tests using this template. Please save the individual unit
-%               test in the "Tests" directory.
-%               Only modify the UnitTest.name, UnitTest.unit and the
-%               individual UnitTest.tests(x).testname fields.
-%               Insert your test code/functions in the "Run your test here ..."
-%               areas.
-%               Naming conventions: please name your individual unit test
-%               according to the following scheme:
-%               xASL_qc_UnitTest_[name of the module/submodule/function]
-%               For example: the unit test of the xASL_module_ASL would be called:
-%               xASL_ut_UnitTest_module_ASL
+% DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_UnitTest_Template(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_str2num(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
-%% Initialize test structure
-
-% Insert test name here
-UnitTest.name = 'Template Test';
-
-% Define whether you are testing a module, submodule or function
-UnitTest.unit = 'Module';
 
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Check A';
+UnitTest.tests(1).testname = 'Number types: integer, double, positive and negative';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-% ...
+numOutA = xASL_str2num('123');
+numOutB = xASL_str2num('-123');
+numOutC = xASL_str2num('123.456');
+numOutD = xASL_str2num('-123.456');
 
 % Define one or multiple test conditions here
 testCondition = true;
+
+% Define one or multiple test conditions here
+if ~isnumeric(numOutA) || ~isnumeric(numOutB) || ~isnumeric(numOutC) || ~isnumeric(numOutD)
+    testCondition = false;
+end
+if isnumeric(numOutA) && isnumeric(numOutB) && isnumeric(numOutC) && isnumeric(numOutD)
+    if ~(numOutA==123) || ~(numOutB==-123) || ~(numOutC==123.456) || ~(numOutD==-123.456)
+        testCondition = false;
+    end
+end
+
+% Clean up
+clear numOutA numOutB numOutC numOutD
 
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
@@ -55,22 +53,32 @@ UnitTest.tests(1).duration = toc(testTime);
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
 
-
-
-
-%% Test run 2
+%% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(2).testname = 'Check B';
+UnitTest.tests(2).testname = 'List of numbers';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-% ...
+testArr = xASL_str2num({'1','2','3'},0);
 
 % Define one or multiple test conditions here
 testCondition = true;
+
+% Define one or multiple test conditions here
+if ~isnumeric(testArr)
+    testCondition = false;
+end
+if isnumeric(testArr) && numel(testArr)==3
+    if ~(testArr(1)==1) || ~(testArr(2)==2) || ~(testArr(3)==3)
+        testCondition = false;
+    end
+end
+
+% Clean up
+clear testArr
 
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);
@@ -78,12 +86,10 @@ UnitTest.tests(2).duration = toc(testTime);
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
 
+
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
 
 end
-
-
-
 
 
