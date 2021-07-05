@@ -63,6 +63,12 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
 
     %% Test Workflow
     
+    % Unit test template
+    UnitTestTemplate.name = 'Template';
+    UnitTestTemplate.unit = 'Function';
+    UnitTestTemplate.tests = struct;
+    UnitTestTemplate.passed = true;
+    
     % Get unit tests
     addpath(fullfile(scriptPath,'UnitTests'));
     fileList = dir(fullfile(scriptPath,'UnitTests','*.m'));
@@ -77,10 +83,14 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
         UnitTests(test) = UnitTest;
     end
     
+    % Order struct fields
+    UnitTests = orderfields(UnitTests, UnitTestTemplate);
+    
     %% Export TSV
     for iTest = 1:size(UnitTests,2)
         UnitTestsCells{iTest,1} = UnitTests(iTest).name;
-        UnitTestsCells{iTest,2} = num2str(UnitTests(iTest).passed);
+        UnitTestsCells{iTest,2} = UnitTests(iTest).unit;
+        UnitTestsCells{iTest,3} = num2str(UnitTests(iTest).passed);
     end
     xASL_tsvWrite(UnitTestsCells,fullfile(TestRepository,'results.tsv'),1);
     
@@ -89,9 +99,9 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
     
     %% Print test results
     clc
-    fprintf('================================= TEST RESULTS =================================\n\n')
+    fprintf('====================================== TEST RESULTS ======================================\n\n')
     disp(UnitTestsTable);
-    fprintf('================================================================================\n')
+    fprintf('==========================================================================================\n')
 
 end
 
