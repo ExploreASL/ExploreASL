@@ -35,7 +35,7 @@ function [x] = ExploreASL_Initialize(varargin)
 % - Check if the dataPar.json exists and if it can be loaded or not
 % - Initialize the data independent & dependent settings
 %
-% 6. Print logo & settings
+% 6. Print logo & settings, check permissions
 %
 % 7. Data-specific initialization
 %
@@ -153,23 +153,17 @@ function [x] = ExploreASL_Initialize(varargin)
         end
     end
 
-    % Initialize general settings
-    x = xASL_init_DefineIndependentSettings(x); % these settings are data-independent
+    % These settings are data-independent
+    x = xASL_init_DefineIndependentSettings(x);
 
-    x = xASL_init_DefineDataDependentSettings(x); % these settings depend on the data (e.g. which template to use)
-
-
-    %% 6. Print logo & settings
+    %% 6. Print logo & settings, check permissions
     xASL_init_PrintLogo;
-    
 
     % Print chosen settings
     xASL_init_printSettings(x);
 
-
-    %% Check permissions
+    % Check permissions
     % xASL_adm_CheckPermissions(x.MyPath, false);
-
 
     %% 7. Data-specific initialization
     fprintf('ExploreASL v%s initialized ... \n', x.Version);

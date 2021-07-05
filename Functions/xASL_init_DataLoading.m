@@ -20,6 +20,9 @@ function [x] = xASL_init_DataLoading(x)
 
     %% Data loading
     
+    % These settings depend on the data (e.g. which template to use)
+    x = xASL_init_DefineDataDependentSettings(x);
+    
     % Check if data loading should be executed first
     if x.opts.bLoadData
         % Check if a root directory was defined
