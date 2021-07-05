@@ -29,14 +29,22 @@ function [x] = ExploreASL_Master(varargin)
 %   x              - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    This masterscript starts ExploreASL by first calling ExploreASL_Initialize, 
-%                 then running xASL_Module_Structure, xASL_module_ASL and xASL_module_Population.
-%                 When ProcessModules is set to 0, the ExploreASL pipeline is not started but only  
-%                 initialized for debugging. This pipeline can be run from CLI or using the python GUI.
+% DESCRIPTION:               This master script runs the following six modular workflows:
 % 
-% ExploreASL_Initialize    - This wrapper initializes ExploreASL: managing paths, deployment, etc.
-% ExploreASL_ImportMaster  - Multi-step import workflow for DCM2NII, NII2BIDS & BIDS2LEGACY.
-% ExploreASL_ProcessMaster - Multi-step processing workflow for the STRUCTURAL, ASL and POPULATION module.
+% I. Initialization:         ExploreASL_Initialize
+%                            This wrapper initializes ExploreASL: managing paths, deployment, etc.
+% II. Import Master:         ExploreASL_ImportMaster
+%                            Multi-step import workflow for DCM2NII, NII2BIDS & BIDS2LEGACY.
+% III. Data loading:         xASL_init_DataLoading
+%                            This wrapper loads the dataset
+% IV. Print user feedback:   xASL_init_PrintUserFeedback
+%                            This wrapper prints some basic feedback before the processing pipeline
+% V. Processing Master:      ExploreASL_ProcessMaster
+%                            Multi-step processing workflow for the STRUCTURAL, ASL and POPULATION module.
+% VI. Print user feedback:   xASL_init_PrintUserFeedback
+%                            This wrapper prints a final feedback after the processing pipeline
+%
+% This pipeline can be run from CLI or using the python GUI.
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
@@ -54,27 +62,27 @@ function [x] = ExploreASL_Master(varargin)
     %% ExploreASL_Master Workflow
     
     % -----------------------------------------------------------------------------
-    % Initialization
+    % I. Initialization
     x = ExploreASL_Initialize(varargin{:});
     
     % -----------------------------------------------------------------------------
-    % Import Master
+    % II. Import Master
     x = ExploreASL_ImportMaster(x);
     
     % -----------------------------------------------------------------------------
-    % Data loading
+    % III. Data loading
     x = xASL_init_DataLoading(x);
     
     % -----------------------------------------------------------------------------
-    % Print user feedback (before pipeline)
+    % IV. Print user feedback (before pipeline)
     xASL_init_PrintUserFeedback(x, nargout, 0);
 
     % -----------------------------------------------------------------------------
-    % Processing Master
+    % V. Processing Master
     x = ExploreASL_ProcessMaster(x);
 
     % -----------------------------------------------------------------------------    
-    % Print user feedback (after pipeline)
+    % VI. Print user feedback (after pipeline)
     xASL_init_PrintUserFeedback(x, nargout, 1);
     
 
