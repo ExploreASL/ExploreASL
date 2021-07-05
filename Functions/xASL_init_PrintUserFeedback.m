@@ -31,7 +31,7 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
         % Tell user to add output argument
         if ~x.opts.bProcessData || x.opts.bLoadData
             if x.opts.bLoadData && outputArguments==0
-                fprintf('Data loading requested but no output structure defined');
+                fprintf('Data loading requested but no output structure defined...\n');
                 fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
             end
         end
