@@ -352,11 +352,7 @@ function [x] = ExploreASL_Initialize_GetBooleansImportProcess(x)
     
     % On default we do not load the data
     x.opts.bLoadData = false;
-
-    % If the data it converted from BIDS to Legacy, we want to load the data afterwards
-    if x.opts.ImportModules(end)
-        x.opts.bLoadData = true;
-    end
+    
     % If we process a dataset, we need to load the data
     if x.opts.bProcessData
         x.opts.bLoadData = true;
