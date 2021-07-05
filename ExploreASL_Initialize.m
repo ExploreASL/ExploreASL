@@ -130,7 +130,7 @@ function [x] = ExploreASL_Initialize(varargin)
     
     
     %% 4. Check DatasetRoot
-    [x, x.settings.SelectParFile] = xASL_init_checkDatasetRoot(x, x.settings.SelectParFile);
+    [x] = xASL_init_checkDatasetRoot(x);
     
     % Give some feedback
     ExploreASL_Initialize_basicFeedback(x);

@@ -1,16 +1,15 @@
-function [x, SelectParFile] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
+function [x] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
 %xASL_init_checkDatasetRoot_invalid_starting_2_0 Script for backwards compatibility. 
 % This functionality allows loading JSON files instead of the BIDS dataset root.
 %
 % FORMAT: 
-%   [x, SelectParFile] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
+%   [x] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
 %
 % INPUT:
 %   x             - ExploreASL x structure (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   x             - ExploreASL x structure
-%   SelectParFile - Variable to determine if we need to ask the user another time for the DatasetRoot
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Script for backwards compatibility. This functionality allows loading JSON files instead of the BIDS dataset root.
@@ -25,7 +24,7 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
 
     % Input is either a sourceStructure.json, dataset_description.json or dataPar.json
     warning('You provided a descriptive JSON file. We recommend to use the dataset root folder instead...');
-    SelectParFile = false; % Does not need to be inserted a second time
+    x.settings.SelectParFile = false; % Does not need to be inserted a second time
     [~, ~, extensionJSON] = fileparts(x.opts.DatasetRoot);
     if strcmp(extensionJSON,'.json') || strcmp(extensionJSON,'.JSON')
         % Try to find out type by name

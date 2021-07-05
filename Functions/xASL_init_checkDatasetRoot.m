@@ -1,12 +1,11 @@
-function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
+function [x] = xASL_init_checkDatasetRoot(x)
 %xASL_init_checkDatasetRoot Check the ExploreASL parameter "DatasetRoot"
 %
 % FORMAT: 
-%   [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
+%   [x] = xASL_init_checkDatasetRoot(x)
 %
 % INPUT:
 %   x             - ExploreASL x structure (REQUIRED, STRUCT)
-%   SelectParFile - Variable to determine if we need to ask the user another time for the DatasetRoot (REQUIRED, INTEGER)
 %
 % OUTPUT:
 %   x             - ExploreASL x structure
@@ -39,7 +38,7 @@ function [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile)
         [x] = xASL_init_DetermineRequiredPaths(x);
     elseif exist(x.opts.DatasetRoot,'file')
         % Temporary functionality, this will lead to an error starting v2.0.0
-        [x, SelectParFile] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x);
+        [x] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x);
     else
         if ~isempty(x.opts.DatasetRoot) % The user inserted a directory or file which does not exist
             warning('Dataset root directory does not exist...');
