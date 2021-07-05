@@ -160,8 +160,8 @@ function [x] = ExploreASL_Initialize(varargin)
 
 
     %% 6. Print logo & settings
-    [LogoString, BreakString] = xASL_init_GetLogoAndBreakString;
-    fprintf([BreakString LogoString]);
+    xASL_init_PrintLogo;
+    
 
     % Print chosen settings
     xASL_init_printSettings(x);
@@ -178,7 +178,7 @@ end
 
 
 %% ==================================================================================
-function [LogoString, BreakString] = xASL_init_GetLogoAndBreakString
+function xASL_init_PrintLogo
 
     BreakString = '==============================================================================================\n';
 
@@ -196,6 +196,7 @@ function [LogoString, BreakString] = xASL_init_GetLogoAndBreakString
     '                    ## |                                                                      \n'...
     '                    ##/  \n\n'];
 
+    fprintf([BreakString LogoString]);
 
 end
 
