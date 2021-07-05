@@ -88,7 +88,7 @@ function [x] = ExploreASL_ImportMaster(x)
             warning('Import workflow is turned on, but at least one required JSON file is missing...');
         end
 
-        % Reset the import parameter (for the second initialization including the loading of the dataset)
+        % Reset the import parameters
         x.opts.bImportData = 0;
         x.opts.ImportModules = [0 0 0 0];
     end
