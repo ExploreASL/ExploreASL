@@ -31,7 +31,7 @@ function [x] = ExploreASL_Initialize(varargin)
 % - Check the provided DatasetRoot parameter (is it a path? does it exist? is it a directory?)
 % - Print some basic feedback regarding the chosen ExploreASL settings
 %
-% 5. Check ExploreASL parameter file & general settings
+% 5. General settings
 % - Check if the dataPar.json exists and if it can be loaded or not
 % - Initialize the data independent & dependent settings
 %
@@ -67,11 +67,11 @@ function [x] = ExploreASL_Initialize(varargin)
     x = ExploreASL_Initialize_GetBooleansImportProcess(x);
 
     % Check if the DatasetRoot is a file or a directory
-    SelectParFile = false; % Fallback
+    x.settings.SelectParFile = false; % Fallback
     if x.opts.bProcessData
         % Checkout the "Proceed with Initialization" section
         if (isempty(x.opts.DatasetRoot) || (~exist(x.opts.DatasetRoot,'file') && ~exist(x.opts.DatasetRoot,'dir')))
-            SelectParFile = true; % If the DatasetRoot is either empty OR the file does not exist, we have to select it later on (if processing is turned on)
+            x.settings.SelectParFile = true; % If the DatasetRoot is either empty OR the file does not exist, we have to select it later on (if processing is turned on)
         end
     end
     
@@ -130,28 +130,15 @@ function [x] = ExploreASL_Initialize(varargin)
     
     
     %% 4. Check DatasetRoot
-    [x, SelectParFile] = xASL_init_checkDatasetRoot(x, SelectParFile);
+    [x, x.settings.SelectParFile] = xASL_init_checkDatasetRoot(x, x.settings.SelectParFile);
     
     % Give some feedback
     ExploreASL_Initialize_basicFeedback(x);
     
-    %% 5. Check ExploreASL parameter file & general settings
+    %% 5. General settings
 
     % Go to ExploreASL folder
     cd(x.MyPath);
-
-    % Check if DataParFile needs to be loaded
-    if x.opts.bProcessData || x.opts.bLoadData
-        if ~isempty(x.dir.dataPar)
-            x = xASL_init_LoadDataParameterFile(x, x.dir.dataPar, SelectParFile);
-        else
-            fprintf('No dataPar.json provided...\n');
-            if x.opts.bLoadData
-                fprintf('Dataset can not be loaded...\n');
-                x.opts.bLoadData = 0;
-            end
-        end
-    end
 
     % These settings are data-independent
     x = xASL_init_DefineIndependentSettings(x);

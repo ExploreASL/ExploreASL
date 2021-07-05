@@ -23,6 +23,22 @@ function [x] = xASL_init_DataLoading(x)
     % These settings depend on the data (e.g. which template to use)
     x = xASL_init_DefineDataDependentSettings(x);
     
+    % Go to ExploreASL folder
+    cd(x.MyPath);
+
+    % Check if DataParFile needs to be loaded
+    if x.opts.bProcessData || x.opts.bLoadData
+        if ~isempty(x.dir.dataPar)
+            x = xASL_init_LoadDataParameterFile(x, x.dir.dataPar, x.settings.SelectParFile);
+        else
+            fprintf('No dataPar.json provided...\n');
+            if x.opts.bLoadData
+                fprintf('Dataset can not be loaded...\n');
+                x.opts.bLoadData = 0;
+            end
+        end
+    end
+    
     % Check if data loading should be executed first
     if x.opts.bLoadData
         % Check if a root directory was defined
