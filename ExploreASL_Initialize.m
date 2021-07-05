@@ -125,7 +125,7 @@ function [x] = ExploreASL_Initialize(varargin)
 
     %% 3. Add ExploreASL paths
     if ~isdeployed
-        addExploreASLDirectory(x.MyPath)
+        addExploreASLDirectory(x.MyPath);
     end
     
     
