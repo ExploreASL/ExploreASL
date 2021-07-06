@@ -36,7 +36,7 @@ OutputCell = xASL_tsvRead(testFileWrite);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
-if ~isfile(testFileWrite)
+if ~exist(testFileWrite,'file')
     testCondition = false; % Test failed
 end
 if ~iscell(OutputCell)
@@ -82,7 +82,7 @@ OutputCell = xASL_tsvRead(testFileWrite);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
-if ~isfile(testFileWrite)
+if ~exist(testFileWrite,'file')
     testCondition = false; % Test failed
 end
 if ~iscell(OutputCell)
