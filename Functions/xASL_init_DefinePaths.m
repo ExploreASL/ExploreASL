@@ -35,6 +35,7 @@ function [x] = xASL_init_DefinePaths(x)
         x.D.IdentityTransfRef   = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
         x.D.TemplateDir         = fullfile(x.MyPath, 'Maps', 'Templates');
         x.D.AtlasDir            = fullfile(x.MyPath, 'External', 'Atlases');
+        x.D.CustomAtlasDir      = fullfile(x.MyPath, 'External', 'CustomAtlases');
     else
         warning('MyPath field not defined...');
     end

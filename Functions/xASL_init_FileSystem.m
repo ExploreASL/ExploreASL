@@ -188,8 +188,9 @@ x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, '
 x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'LabelingTerritories.nii.gz');
 x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'ATTbasedFlowTerritories.nii.gz');
 
-% Add atlases from atlasDir
+% Add atlases from AtlasDir & CustomAtlasDir
 x = xASL_init_AtlasList(x,x.D.AtlasDir);
+x = xASL_init_AtlasList(x,x.D.CustomAtlasDir);
 
 end
 
