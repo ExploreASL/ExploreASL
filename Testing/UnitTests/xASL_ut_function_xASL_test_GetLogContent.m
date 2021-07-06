@@ -97,7 +97,7 @@ end
 if ~ischar(logContent.Line{1})
     testCondition = false; % Test failed
 end
-if ~isfile(outputFile)
+if ~exist(outputFile,'file')
     testCondition = false; % Test failed
 end
 
