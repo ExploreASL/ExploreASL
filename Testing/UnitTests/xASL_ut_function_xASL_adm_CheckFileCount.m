@@ -30,6 +30,12 @@ fid1 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_1.t
 fid2 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_2.txt'), 'wt');
 fid3 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_3.txt'), 'wt');
 
+try
+    fclose('all');
+catch
+    warning('Closing file handles failed...');
+end
+
 % Run your test here
 [result, files] = xASL_adm_CheckFileCount(fullfile(TestRepository,'UnitTesting','working_directory'),'test*',3,0);
 
