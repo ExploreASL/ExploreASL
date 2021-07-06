@@ -26,12 +26,9 @@ UnitTest.tests(1).testname = 'Find three files';
 testTime = tic;
 
 % Create three test files in test directory
-fid = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_1.txt'), 'wt');
-fclose(fid);
-fid = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_2.txt'), 'wt');
-fclose(fid);
-fid = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_3.txt'), 'wt');
-fclose(fid);
+fid1 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_1.txt'), 'wt');
+fid2 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_2.txt'), 'wt');
+fid3 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','test_3.txt'), 'wt');
 
 % Run your test here
 [result, files] = xASL_adm_CheckFileCount(fullfile(TestRepository,'UnitTesting','working_directory'),'test*',3,0);
