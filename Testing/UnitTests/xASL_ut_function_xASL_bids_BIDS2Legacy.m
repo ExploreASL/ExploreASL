@@ -44,7 +44,7 @@ testCondition = true; % Fallback
 if ~exist(fullfile(droTestPatient,'derivatives'),'dir')
     testCondition = false; % Test failed
 end
-if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL','DataPar.json'),'file')
+if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'file')
     testCondition = false; % Test failed
 end
 
@@ -113,7 +113,7 @@ xASL_bids_BIDS2Legacy(droTestPatient);
 
 % Initialize dataset
 try
-    [x] = ExploreASL_Master(fullfile(droTestPatient,'derivates','ExploreASL','DataPar.json'), 0, 0);
+    [x] = ExploreASL_Master(droTestPatient, 0, 0);
 catch
     x = false;
 end
