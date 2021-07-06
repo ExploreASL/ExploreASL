@@ -32,7 +32,7 @@
 		MACOSX_DEPLOYMENT_TARGET="10.13" 
 		CFLAGS="-fno-common -arch x86_64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -fexceptions -v -isysroot $ISYSROOT" 
 		CXXFLAGS="$CFLAGS -fobjc-arc -std=c++11 -stdlib=libc++ " 
-		INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;/Users/janpetr/dcmtk/include/&quot; -I&quot;$MATLABROOT/simulink/include&quot;" 
+		INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;/opt/local/include/&quot; -I&quot;$MATLABROOT/simulink/include&quot;" 
 		CXXOPTIMFLAGS="-O2 -fwrapv -DNDEBUG" 
 		CXXDEBUGFLAGS="-g" 
 		LD="$CC" 
@@ -43,7 +43,7 @@
 		LINKEXPORT="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maci64/mexFunction.map&quot;" 
 		LINKEXPORTVER="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maci64/c_exportsmexfileversion.map&quot;" 
 		LINKEXPORTCPP="-Wl,-U,_mexCreateMexFunction -Wl,-U,_mexDestroyMexFunction -Wl,-U,_mexFunctionAdapter -Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maci64/cppMexFunction.map&quot;" 
-		LINKLIBS="-L&quot;$MATLABROOT/bin/maci64&quot; -L&quot;/Users/janpetr/dcmtk/lib/&quot; -ldcmdata -lofstd -lm -lz  -lxml2 -lpthread -lmx -lmex -Bstatic -lmat -lstdc++ -loflog  -L&quot;$MATLABROOT/extern/bin/$ARCH&quot;  -lMatlabDataArray -lMatlabEngine" 
+		LINKLIBS="-L&quot;$MATLABROOT/bin/maci64&quot; /opt/local/lib/libdcmdata.a /opt/local/lib/libofstd.a /opt/local/lib/liboflog.a /opt/local/lib/libiconv.a -lm /opt/local/lib/libz.a /opt/local/lib/libxml2.a -lpthread -lmx -lmex -Bstatic -lmat -lstdc++ -L&quot;$MATLABROOT/extern/bin/$ARCH&quot;  -lMatlabDataArray -lMatlabEngine" 
 		LDOPTIMFLAGS="-O" 
 		LDDEBUGFLAGS="-g" 
 		OBJEXT=".o" 
@@ -69,7 +69,7 @@
 		CLANG_VERSION="9.1.0"/>
 	<client>
 		<engine 
-			LINKLIBS="$LINKLIBS -leng -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -L&quot;/Users/janpetr/dcmtk/lib/&quot; -ldcmdata -lMatlabDataArray -lMatlabEngine" 
+			LINKLIBS="$LINKLIBS -leng -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -L&quot;/opt/local/lib/&quot; /opt/local/lib/libdcmdata.a -lMatlabDataArray -lMatlabEngine" 
 			LDBUNDLE="" 
 			LINKEXPORT="" 
 			LINKEXPORTVER="" 
