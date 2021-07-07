@@ -10,6 +10,13 @@ we have added new maps (//External/SPMmodified/MapsAdded/README_Maps.txt)
 as well as new code (//External/SPMmodified/xASL/README_Functions.txt)
 
 *********************************************************************************************************
+MAP CHANGES
+DATE+Name: 2021-07-07 HM
+DESCRIPTION:
+/External/SPMmodified/toolbox/cat12/templates_volumes/cat_wmh_miccai2017.nii
+Was cleaned up (lower slices contained some messy low probabilities)
+
+*********************************************************************************************************
 ASL-SPECIFIC HACKS
 
 DATE+Name: 2019-11-25 JP
