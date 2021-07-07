@@ -60,17 +60,14 @@ for iFlavor = 1:length(flavorList)
 		case 'Philips_PCASL_3DGRASE_R5.4_TopUp'
 			DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
 			
-			if ismac
-				xASL_Move(fullfile(DirASL, 'M0_601_00601.nii'), fullfile(DirASL, 'M0.nii'), 1);
-				xASL_Move(fullfile(DirASL, 'M0_601_00601.json'), fullfile(DirASL, 'M0.json'), 1);
-				xASL_Move(fullfile(DirASL, 'M0_701_00701.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
-				xASL_Move(fullfile(DirASL, 'M0_701_00701.json'), fullfile(DirASL, 'M0PERev.json'), 1);
-			else
-				xASL_Move(fullfile(DirASL, 'M0_601_00001.nii'), fullfile(DirASL, 'M0.nii'), 1);
-				xASL_Move(fullfile(DirASL, 'M0_601_00001.json'), fullfile(DirASL, 'M0.json'), 1);
-				xASL_Move(fullfile(DirASL, 'M0_701_00001.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
-				xASL_Move(fullfile(DirASL, 'M0_701_00001.json'), fullfile(DirASL, 'M0PERev.json'), 1);
-			end
+			% xASL_Move(fullfile(DirASL, 'M0_601_00601.nii'), fullfile(DirASL, 'M0.nii'), 1);
+			% xASL_Move(fullfile(DirASL, 'M0_601_00601.json'), fullfile(DirASL, 'M0.json'), 1);
+			% xASL_Move(fullfile(DirASL, 'M0_701_00701.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
+			% xASL_Move(fullfile(DirASL, 'M0_701_00701.json'), fullfile(DirASL, 'M0PERev.json'), 1);
+			xASL_Move(fullfile(DirASL, 'M0_601_00001.nii'), fullfile(DirASL, 'M0.nii'), 1);
+			xASL_Move(fullfile(DirASL, 'M0_601_00001.json'), fullfile(DirASL, 'M0.json'), 1);
+			xASL_Move(fullfile(DirASL, 'M0_701_00001.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
+			xASL_Move(fullfile(DirASL, 'M0_701_00001.json'), fullfile(DirASL, 'M0PERev.json'), 1);
 			
 			% 3c. 'Siemens_PCASL_volunteer'
 		case 'Siemens_PCASL_volunteer'

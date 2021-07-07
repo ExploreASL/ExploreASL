@@ -156,11 +156,6 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
             if TryDicominfo && iFile>1
                 continue;
                 % with dicominfo, reading is very slow, so we only read 1 dicom
-            elseif ismac() && iFile>1
-                % spm_jsonread is very slow, which is used in
-                % xASL_io_DmtkRead for macOS, so we also only read one file
-                % for macOS
-                continue;
 			else
 				if nFiles > 300
 					if mod(iFile,50) == 0

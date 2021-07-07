@@ -31,13 +31,13 @@ if nargin == 1
 	bPixel = 0;
 end
 
-if ismac()
+try
+	% Read using DCMTK
+	header = xASL_mex_DcmtkRead(filepath, bPixel);
+catch
 	% Read using SPM routines
 	header = spm_dicom_headers(filepath);
 	header = xASL_io_DcmtkRead_TrimSPM(header{1});
-else
-	% Read using DCMTK
-	header = xASL_mex_DcmtkRead(filepath, bPixel);
 end
 
 % Correct the acquisition time formatting from string to seconds
