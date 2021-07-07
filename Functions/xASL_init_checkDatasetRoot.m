@@ -98,8 +98,9 @@ function [x] = xASL_init_checkDatasetRoot(x)
     if ~bSourceStructure && ~bDatasetDescription && ~bDataPar
         if x.opts.bImportData || x.opts.bProcessData
             fprintf('Neither the sourceStructure.json, dataset_description.json nor dataPar.json exist, ExploreASL will only be initialized...\n');
-            % Check for really wrong input
-            if ~isempty(regexp(x.opts.DatasetRoot, 'derivatives', 'once')) || ~isempty(regexp(x.opts.DatasetRoot, 'ExploreASL', 'once'))
+            % Check for wrong input
+            [~, DatasetDir1] = fileparts(x.opts.DatasetRoot);
+            if strcmpi(DatasetDir1, 'derivatives') || strcmpi(x.opts.DatasetRoot, 'ExploreASL')
                 warning('Please do not provide the derivatives or ExploreASL folder. Use the study root directory instead...');
             end
         end
