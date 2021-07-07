@@ -64,13 +64,24 @@ if ~exist(fullfile(pathTest,'FlavorDatabase'), 'dir')
 	system(cmdCloneFlavors);
 end
 
+%% Remove old testing data
+% If these folders contain anything more than only the designated tests,
+% this confuses the comparisons, so these have to be deleted first.
+
+% Initialize the working paths
+flavorsPath  = fullfile(pathTest, 'FlavorDatabase');
+conversionPath = fullfile(pathTest, 'TmpConversion');
+referencePath = fullfile(pathTest, 'TmpReference');
+
+xASL_delete(conversionPath, true);
+xASL_delete(referencePath, true);
+
 %% Test execution
 
 % Prepare the data
 xASL_test_Flavors(pathExploreASL, pathTest, [1 0 0 0 0 0 0], x);
 
 % Convert to BIDS
-
 xASL_test_Flavors(pathExploreASL, pathTest, [0 1 0 0 0 0 0], x);
 
 % Check the BIDS conversion
