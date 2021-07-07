@@ -283,6 +283,8 @@ end
 
 % Fill in extra parameters based on the JSON from the data
 if jsonOut.MRAcquisitionType(1) == '2'
+    % Parse slicetiming for 2D acquisitions
+    
 	% Take the studyPar as a prior source of SliceTiming since this is mostly wrong in DICOM otherwise
 	if isfield(studyPar,'SliceTiming')
 		jsonOut.SliceTiming = studyPar.SliceTiming;
@@ -326,6 +328,13 @@ end
 
 %% 12. Reformat ASLcontext field
 % Remove ',' and ';' at the end
+if ~isfield(jsonOut, 'ASLContext')
+    error('Missing JSON field: ASLContext');
+    % Providing info here, if ASLContext doesn't exist then the script
+    % would crash below anyway. PM: would it be good to verify the
+    % existence of a few obligatory fields?
+end
+
 if (jsonOut.ASLContext(end) == ';') || (jsonOut.ASLContext(end) == ',')
 	jsonOut.ASLContext = jsonOut.ASLContext(1:(end-1));
 end
