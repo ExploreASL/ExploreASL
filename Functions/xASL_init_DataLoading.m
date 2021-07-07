@@ -34,7 +34,7 @@ function [x] = xASL_init_DataLoading(x)
             fprintf('No dataPar.json provided...\n');
             if x.opts.bLoadData
                 fprintf('Dataset can not be loaded...\n');
-                x.opts.bLoadData = 0;
+                x.opts.bLoadData = false;
             end
         end
     end

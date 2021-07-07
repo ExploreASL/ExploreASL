@@ -54,7 +54,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
                 warning('This study directory does not exist, ExploreASL will only be initialized...');
                 x.opts.bProcessData = 0;
                 x.opts.bImportData = 0;
-                x.opts.bLoadData = 0;
+                x.opts.bLoadData = false;
                 x.opts.ProcessModules = [0 0 0];
                 x.opts.ImportModules = [0 0 0 0];
             end
@@ -112,7 +112,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
         if strcmp(x.opts.dataParType,'directory')
             % Check if processing is turned off & there is a derivatives directory to be loaded
             if x.opts.bProcessData==0 && xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'))
-                x.opts.bLoadData = 1;
+                x.opts.bLoadData = true;
             end
         end
         
@@ -121,7 +121,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
             % It is a dataPar.json, so do not run the BIDS import workflow
             if x.opts.bProcessData==0
                 x.opts.bProcessData = 0; % Initialize & load but do not process
-                x.opts.bLoadData = 1;
+                x.opts.bLoadData = true;
             end
         end
         
@@ -130,7 +130,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
             % It is a sourceStructure.json or dataset_description.json, so we run the import workflow
             if x.opts.bProcessData==0
                 x.opts.bProcessData = 0; % Initialize & load but do not process
-                x.opts.bLoadData = 1;
+                x.opts.bLoadData = true;
             end
         end
         
@@ -155,10 +155,10 @@ function [x] = xASL_init_checkDatasetRoot(x)
                 if ~x.opts.bImportData
                     warning('You are trying to load a dataset but there is no dataPar JSON file...');
                 end
-                x.opts.bLoadData = 0;
+                x.opts.bLoadData = false;
             end
         else
-            x.opts.bLoadData = 0;
+            x.opts.bLoadData = false;
         end
     end
 
