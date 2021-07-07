@@ -75,10 +75,14 @@ function [x] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x)
             fileListStudyPar = xASL_adm_GetFileList(x.dir.DatasetRoot, 'studyPar*.json');
             fileListDataDescription = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'rawdata'), 'dataset_description.json');
             fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL'), 'dataPar*.json');
-            if isempty(fileListDataPar)
+			if isempty(fileListDataPar)
                 % Derivatives maybe does not exist already, we'll try study root
                 fileListDataPar = xASL_adm_GetFileList(x.dir.DatasetRoot, 'dataPar*.json');
-            end
+				x.D.ROOT = fullfile(x.dir.DatasetRoot);
+			else
+				% The derivatives folder with ExploreASL subfolder exists
+				x.D.ROOT = fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL');
+			end
             if ~isempty(fileListSourceStructure)
                 x.dir.sourceStructure = fileListSourceStructure{1};
             end
