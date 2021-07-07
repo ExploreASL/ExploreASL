@@ -61,6 +61,10 @@ function [x] = ExploreASL_Master(varargin)
 
     %% ExploreASL_Master Workflow
     
+    warning('If ExploreASL crashes along the road please use the main version instead, or checkout this older version of the develop branch:');
+    fprintf('\n\n%s\n', 'git reset --hard f3edc56095ee48ce0b4d14b762ec6a8a1c1270dc');
+    fprintf('We are working on a fix shortly\n');
+    
     % -----------------------------------------------------------------------------
     % I. Initialization
     x = ExploreASL_Initialize(varargin{:});
