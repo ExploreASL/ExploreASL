@@ -118,7 +118,8 @@ if bTest(1)
 
         % Copy rawdata folder for comparison
         xASL_Copy(fullfile(flavorsPath,fList{iList}, 'rawdata'), fullfile(referencePath,fList{iList}, 'rawdata'), 1); 
-	end
+    end
+    fprintf('\n');
 end
 
 %% 2. Run the conversion of source data to BIDS
