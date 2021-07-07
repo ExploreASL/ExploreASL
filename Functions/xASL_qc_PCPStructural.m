@@ -90,7 +90,7 @@ else
     IM_DeepWM = xASL_io_Nifti2Im(Path_NativeDeepWM);
 
     % 2) Multiply native space DeepWM template mask by subject-wise pWM=100%, & need real data (isfinite)
-    WMeroded = (pWM==1) .* IM_DeepWM .* BrainMask;
+    WMeroded = (pWM==1) .* (IM_DeepWM>0) .* (BrainMask>0);
     xASL_io_SaveNifti(Path_NativeDeepWM, Path_NativeDeepWM, WMeroded, [], false);
     % save mask for later use, & for visualization in standard space
 end
