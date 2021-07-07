@@ -203,7 +203,7 @@ end
 % xASL_fsl_RunFSL(['/bin/fslmerge -t ' xASL_adm_UnixPath(PathB0)...
 %     ' ' xASL_adm_UnixPath(TopUpNIIPath{1}) ' ' xASL_adm_UnixPath(TopUpNIIPath{2})], x); % direction to concatenate over, t = time, a = auto
 
-tIM(:,:,:,1) = xASL_io_Nifti2Im(TopUpNIIPath{1});
+tIM          = xASL_io_Nifti2Im(TopUpNIIPath{1});
 tIM(:,:,:,2) = xASL_io_Nifti2Im(TopUpNIIPath{2});
 tIM(isnan(tIM)) = 0; % Remove NaNs, TopUp cannot deal with NaNs
 
