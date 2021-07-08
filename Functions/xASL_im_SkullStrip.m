@@ -34,7 +34,7 @@ function xASL_im_SkullStrip(InPath, PathMNIMask, x, OutPath)
     xASL_spm_deformations(x, PathMNIMask, TempPath, 1, InPath); % trilinear interpolation & inverse
 
     %% Image arithmetics (masking)
-    Image = xASL_io_Nifti2Im(InPath).*(xASL_io_Nifti2Im(TempPath)>0);
+    Image = double(xASL_io_Nifti2Im(InPath)).*(xASL_io_Nifti2Im(TempPath)>0);
 
     %% Save the masked image
     xASL_io_SaveNifti(InPath, OutPath, Image,[],0);
