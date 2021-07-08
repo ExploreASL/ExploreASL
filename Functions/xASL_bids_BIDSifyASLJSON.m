@@ -175,14 +175,38 @@ else
 	end
 end
     
-%% 7. Check for Hadamard sequence
+%% 7. Check for MultiPLD/MultiTE/Hadamard sequence
+
+%MultiPLD Check
+if isfield(jsonOut,'MultiPLD') && ~isempty(jsonOut,'MultiPLD') %jsonOut is the studyPar
+    isMultiPLD = true; 
+else 
+    isMultiPLD = false; 
+end
+
+%MultiTE Check
+if isfield(jsonOut,'MultiTE') && ~isempty(jsonOut,'MultiTE')
+    isMultiTE = true; 
+else 
+    isMultiTE = false; 
+end
+
+%Hadamard Check
+if isfield(jsonOut,'HadamardType') && ~isempty(jsonOut,'HadamardType') %should be 4,8 or 12
+    isHadamard = true; 
+else 
+    isHadamard = false; 
+end
+
+
 % FME sequence check
 if isfield(jsonIn,'SeriesDescription')
 	isHadamardFME = ~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
 else
 	isHadamardFME = false;
 end
-if isHadamardFME
+
+if isHadamardFME || isHadamard %are we keepint the isHadamardFME part?
 	if isfield(jsonOut,'EchoTime') && isfield(jsonOut,'PostLabelingDelay')
 		% From the import, the length of EchoTime should correspond to the number of volumes
 		if length(jsonOut.EchoTime)~=length(jsonOut.PostLabelingDelay)
@@ -195,7 +219,7 @@ if isHadamardFME
 				warning('Did not succeed in repeating PLDs for each TE for Hadamard sequence import');
 			end
 			% Make sure that number of volumes can be divided by the repeated PLDs
-			jsonOut.PostLabelingDelay = repeatedPLDs;
+			jsonOut.PostLabelingDelay = repeatedPLDs; %do we want to repeat the PLDs??
 		end
 	end
 end
