@@ -89,12 +89,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile)
         end
     end
     % Put x fields back from backup
-    FieldsAre = fields(xBackup);
-    for iField=1:length(FieldsAre)
-        if ~isfield(x,(FieldsAre{iField}))
-            x.(FieldsAre{iField}) = xBackup.(FieldsAre{iField});
-        end
-    end
+	x = xASL_adm_MergeStructs(x,xBackup);
     
     if ~isfield(x,'D')
         x.D = struct;
