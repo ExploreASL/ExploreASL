@@ -447,15 +447,17 @@ for iList=1:length(Dlist) % iterate over example datasets
 	end
 	
     % Get registration performance
-    PathTemplateASL = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
-    PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
-    PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
-    PathM0 = xASL_adm_GetFileList(PopulationDir,'^(noSmooth_M0|mean_control).*\.nii$', 'FPList');
-    if ~isempty(PathCBF)
-        ResultsTable{1+iList,5+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
-    end
-    if ~isempty(PathM0)
-        ResultsTable{1+iList,6+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathM0{1}, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+    if isfield(x,'D') && isfield(x.D,'TemplateDir') && isfield(x.D,'PopulationDir')
+        PathTemplateASL = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
+        PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
+        PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
+        PathM0 = xASL_adm_GetFileList(PopulationDir,'^(noSmooth_M0|mean_control).*\.nii$', 'FPList');
+        if ~isempty(PathCBF)
+            ResultsTable{1+iList,5+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+        end
+        if ~isempty(PathM0)
+            ResultsTable{1+iList,6+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathM0{1}, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+        end
     end
 end
 fprintf('\n');
