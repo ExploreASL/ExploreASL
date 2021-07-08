@@ -117,8 +117,13 @@ end
 %% 1) Pull latest GitHub version
 % assuming we are in ExploreASL folder
 if bPull
-	Answer = system('source ~.bashrc;git fetch','-echo');
-	Answer = system('source ~.bashrc;git pull','-echo');
+    if isunix
+        Answer = system('source ~.bashrc;git fetch','-echo');
+        Answer = system('source ~.bashrc;git pull','-echo');
+    else
+        Answer = system('git fetch','-echo');
+        Answer = system('git pull','-echo');
+    end
 end
 
 % Initialize ExploreASL
