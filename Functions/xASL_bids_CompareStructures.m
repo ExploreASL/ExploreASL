@@ -545,7 +545,7 @@ end
 function [differences,identical,dn] = compareTSV(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB)
 
     % Read files if they exist
-    if (isfile(currentFileA) && isfile(currentFileB)) % xASL_exist somehow didn't work here (again)
+    if (xASL_exist(currentFileA) && xASL_exist(currentFileB)) % xASL_exist somehow didn't work here (again)
         % Compare text files content directly
         currentTsvA = xASL_tsvRead(currentFileA);
         currentTsvB = xASL_tsvRead(currentFileB);
