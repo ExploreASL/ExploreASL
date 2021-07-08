@@ -1,16 +1,19 @@
-function imOut = xASL_io_Nifti2Im(niftiIn, ImageSize)
+function imOut = xASL_io_Nifti2Im(niftiIn, ImageSize, loadAsSingle)
 % Load image matrix from NIfTI given as a file path or preloaded
 %
 % FORMAT: imOut = xASL_io_Nifti2Im(niftiIn [, ImageSize])
 %
 % INPUT:
-%   niftiIn   - can be one of the following (REQUIRED):
-%                 1) path to NIfTIfile to load image matrix from
-%                 2) NIfTI object to load image matrix from
-%                 3) image matrix (to simply pass through)
-%   ImageSize - if NIfTI doesnt exist or is corrupt,
-%               will create a dummy image matrix with this size
-%               (OPTIONAL, DEFAULT=none)
+%   niftiIn      - can be one of the following (REQUIRED):
+%                  1) path to NIfTIfile to load image matrix from
+%                  2) NIfTI object to load image matrix from
+%                  3) image matrix (to simply pass through)
+%   ImageSize    - if NIfTI doesnt exist or is corrupt,
+%                  will create a dummy image matrix with this size
+%                  (OPTIONAL, DEFAULT=none)
+%   loadAsSingle - Load image as single (DEFAULT=true)
+%                  If set to false, the image can be loaded as uint8
+%                  as well to save memory
 %
 % OUTPUT:
 %   imOut     - image matrix with single precision
@@ -38,6 +41,9 @@ if nargin<2
 end
 if iscell(niftiIn)
     niftiIn = niftiIn{1};
+end
+if nargin<3
+    loadAsSingle = true;
 end
 
 niiMat = false; % default
@@ -100,21 +106,27 @@ end
 % SPM opens to double precision data format by default, which takes up
 % unnecessary large memory
 if exist('imOut','var') && ~isa(imOut,'single') && ~niiMat
-    bUint8 = uint8(imOut)==imOut;
-    bUint8 = min(bUint8(:));
     
-    if bUint8
-        imOut = uint8(imOut);
+    if loadAsSingle
+        imOut = single(imOut);
     else
-        bInt16 = int16(imOut)==imOut;
-        bInt16 = min(bInt16(:));
+        bUint8 = uint8(imOut)==imOut;
+        bUint8 = min(bUint8(:));
         
-        if bInt16
-            imOut = int16(imOut);
+        if bUint8
+            imOut = uint8(imOut);
         else
-            imOut = single(imOut);
+            bInt16 = int16(imOut)==imOut;
+            bInt16 = min(bInt16(:));
+            
+            if bInt16
+                imOut = int16(imOut);
+            else
+                imOut = single(imOut);
+            end
         end
     end
+    
 elseif ~exist('imOut','var') && ~niiMat
     imOut = [];
     fprintf('Something went wrong opening NifTI\n');
