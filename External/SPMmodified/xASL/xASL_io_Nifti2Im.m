@@ -1,19 +1,19 @@
-function imOut = xASL_io_Nifti2Im(niftiIn, ImageSize, loadAsSingle)
+function imOut = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle)
 % Load image matrix from NIfTI given as a file path or preloaded
 %
 % FORMAT: imOut = xASL_io_Nifti2Im(niftiIn [, ImageSize])
 %
 % INPUT:
-%   niftiIn      - can be one of the following (REQUIRED):
-%                  1) path to NIfTIfile to load image matrix from
-%                  2) NIfTI object to load image matrix from
-%                  3) image matrix (to simply pass through)
-%   ImageSize    - if NIfTI doesnt exist or is corrupt,
-%                  will create a dummy image matrix with this size
-%                  (OPTIONAL, DEFAULT=none)
-%   loadAsSingle - Load image as single (DEFAULT=true)
-%                  If set to false, the image can be loaded as uint8
-%                  as well to save memory
+%   niftiIn       - can be one of the following (REQUIRED):
+%                   1) path to NIfTIfile to load image matrix from
+%                   2) NIfTI object to load image matrix from
+%                   3) image matrix (to simply pass through)
+%   ImageSize     - if NIfTI doesnt exist or is corrupt,
+%                   will create a dummy image matrix with this size
+%                   (OPTIONAL, DEFAULT=none)
+%   bLoadAsSingle - Load image as single (DEFAULT=true)
+%                   If set to false, the image can be loaded as uint8
+%                   as well to save memory
 %
 % OUTPUT:
 %   imOut     - image matrix with single precision
@@ -33,17 +33,17 @@ function imOut = xASL_io_Nifti2Im(niftiIn, ImageSize, loadAsSingle)
 % Copyright 2015-2019 ExploreASL
 
 % Admin
-if nargin < 1
+if nargin < 1 || isempty(niftiIn)
 	error('xASL_io_Nifti2Im: Needs at least one input.');
 end
-if nargin<2
+if nargin<2 || isempty(ImageSize)
 	ImageSize = [];
 end
 if iscell(niftiIn)
     niftiIn = niftiIn{1};
 end
-if nargin<3
-    loadAsSingle = true;
+if nargin<3 || isempty(bLoadAsSingle)
+    bLoadAsSingle = true;
 end
 
 niiMat = false; % default
@@ -107,7 +107,7 @@ end
 % unnecessary large memory
 if exist('imOut','var') && ~isa(imOut,'single') && ~niiMat
     
-    if loadAsSingle
+    if bLoadAsSingle
         imOut = single(imOut);
     else
         bUint8 = uint8(imOut)==imOut;
