@@ -59,7 +59,7 @@ x.P.Path_ASL4D_parms_mat = fullfile(x.SESSIONDIR, 'ASL4D_parms.mat');
 
 if ~xASL_exist(x.P.Path_ASL4D, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(?i)ASL4D.*\.nii');
+    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(?i)ASL4D.*\.nii$');
 
     if ~isempty(FileList) && isfield(x,'M0PositionInASL4D')
         % skip, managed below
@@ -135,11 +135,11 @@ if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mute
 	xASL_io_SplitASL(x.P.Path_ASL4D, x.M0PositionInASL4D, x.DummyScanPositionInASL4D);
 	
 	% Do the same for the ancillary files
-	FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat','FPList',[0 Inf]);
+	FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat$','FPList',[0 Inf]);
 	if ~isempty(FileList)
 		xASL_Move(FileList{1}, x.P.Path_ASL4D_parms_mat);
 	end
-	FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)\.json','FPList',[0 Inf]);
+	FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)\.json$','FPList',[0 Inf]);
 	if ~isempty(FileList)
 		xASL_Move(FileList{1}, fullfile(x.SESSIONDIR, 'ASL4D.json'));
 	end
@@ -149,17 +149,17 @@ end
 
 if ~xASL_exist(x.P.Path_M0, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.nii','FPList',[0 Inf]);
+    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.nii$','FPList',[0 Inf]);
     if ~isempty(FileList)
         xASL_Move(FileList{1}, x.P.Path_M0);
     end
 end
 % Do the same for the ancillary files
-FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)_parms\.mat','FPList',[0 Inf]);
+FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)_parms\.mat$','FPList',[0 Inf]);
 if ~isempty(FileList)
     xASL_Move(FileList{1}, x.P.Path_M0_parms_mat);
 end
-FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.json','FPList',[0 Inf]);
+FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.json$','FPList',[0 Inf]);
 if ~isempty(FileList)
     xASL_Move(FileList{1}, fullfile(x.SESSIONDIR, 'M0.json'));
 end

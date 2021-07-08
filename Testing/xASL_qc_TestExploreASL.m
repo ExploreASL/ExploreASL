@@ -401,11 +401,11 @@ for iList=1:length(Dlist) % iterate over example datasets
 	VolumeDir = fullfile(PopulationDir, 'TissueVolume');
     
     clear ResultsFile
-    ResultFile{1} = xASL_adm_GetFileList(StatsDir,'(?i)^mean_qCBF.*TotalGM.*PVC2\.tsv','FPList');
-    ResultFile{2} = xASL_adm_GetFileList(StatsDir,'(?i)^median_qCBF.*TotalGM.*PVC0\.tsv','FPList');
-    ResultFile{3} = xASL_adm_GetFileList(StatsDir,'(?i)^median_qCBF.*DeepWM.*PVC0\.tsv','FPList');
-    ResultFile{4} = xASL_adm_GetFileList(StatsDir,'(?i)^CoV_qCBF.*TotalGM.*PVC0\.tsv','FPList');
-    ResultFile{5} = xASL_adm_GetFileList(VolumeDir,'(?i)^TissueVolume.*\.tsv','FPList');
+    ResultFile{1} = xASL_adm_GetFileList(StatsDir,'(?i)^mean_qCBF.*TotalGM.*PVC2\.tsv$','FPList');
+    ResultFile{2} = xASL_adm_GetFileList(StatsDir,'(?i)^median_qCBF.*TotalGM.*PVC0\.tsv$','FPList');
+    ResultFile{3} = xASL_adm_GetFileList(StatsDir,'(?i)^median_qCBF.*DeepWM.*PVC0\.tsv$','FPList');
+    ResultFile{4} = xASL_adm_GetFileList(StatsDir,'(?i)^CoV_qCBF.*TotalGM.*PVC0\.tsv$','FPList');
+    ResultFile{5} = xASL_adm_GetFileList(VolumeDir,'(?i)^TissueVolume.*\.tsv$','FPList');
 
 	for iFile=1:length(ResultFile) % iterate over ROI results
 		if length(ResultFile{iFile})<1
