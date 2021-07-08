@@ -20,8 +20,19 @@ function [x] = xASL_init_DataLoading(x)
 
     %% Data loading
     
-    % These settings depend on the data (e.g. which template to use)
-    x = xASL_init_DefineDataDependentSettings(x);
+    % Make sure that the dataPar.json definitely exists if we load the dataset
+    if x.opts.bLoadData
+        if isfield(x,'dir') && isfield(x.dir,'dataPar')
+            if isempty(x.dir.dataPar)
+                if ~x.opts.bImportData
+                    warning('You are trying to load a dataset but there is no dataPar JSON file...');
+                end
+                x.opts.bLoadData = false;
+            end
+        else
+            x.opts.bLoadData = false;
+        end
+    end
     
     % Go to ExploreASL folder
     cd(x.MyPath);
@@ -38,6 +49,9 @@ function [x] = xASL_init_DataLoading(x)
             end
         end
     end
+    
+    % These settings depend on the data (e.g. which template to use)
+    x = xASL_init_DefineDataDependentSettings(x);
     
     % Check if data loading should be executed first
     if x.opts.bLoadData

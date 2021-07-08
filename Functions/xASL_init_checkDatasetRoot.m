@@ -147,21 +147,6 @@ function [x] = xASL_init_checkDatasetRoot(x)
         fprintf('You are trying to process a dataset, without providing a dataPar.json file or running the import workflow...\n');
         x.opts.bProcessData = 0;
     end
-    
-    % Make sure that the dataPar.json definitely exists if we load the dataset
-    if x.opts.bLoadData
-        if isfield(x,'dir') && isfield(x.dir,'dataPar')
-            if isempty(x.dir.dataPar)
-                if ~x.opts.bImportData
-                    warning('You are trying to load a dataset but there is no dataPar JSON file...');
-                end
-                x.opts.bLoadData = false;
-            end
-        else
-            x.opts.bLoadData = false;
-        end
-    end
-
 
 end
 

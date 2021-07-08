@@ -20,6 +20,11 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
 % Copyright 2015-2021 ExploreASL
 
 
+x = xASL_init_DefinePaths(x);
+x = xASL_init_Toolboxes(x); % Initialize toolboxes
+x = xASL_init_VisualizationSettings(x); % visual settings
+
+
 %% --------------------------------------------------------------------------
 %% Reproducibility testing
 if ~isfield(x,'settings')

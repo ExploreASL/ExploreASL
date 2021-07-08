@@ -58,11 +58,6 @@ if ~isfield(x,'Q')
     x.Q = struct;
 end
 
-x = xASL_init_DefinePaths(x);
-x = xASL_init_Toolboxes(x); % Initialize toolboxes
-x = xASL_init_VisualizationSettings(x); % visual settings
-
-
 
 end
 
