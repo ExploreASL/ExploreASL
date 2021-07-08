@@ -141,6 +141,9 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
             if isfield(resultJSON,'SeriesDescription')
             	% Determine if we have a Hadamard encoded ASL scan
                 isHadamardFME = ~isempty(regexp(char(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
+                %######## what about isHadamard =
+                %~isempty(studyPar.HadamardType) ? But we don't have access to the studyPar fields here
+                
                 if isHadamardFME
                     % Check image
                     if exist(nii_files{1} ,'file')
@@ -148,7 +151,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
                         imASL = xASL_io_Nifti2Im(nii_files{1});
 						numberTEs = length(resultJSON.EchoTime);
                         numberPLDs = int32(size(imASL,4)/numberTEs);
-						
+                        
 						% Reorder TEs and PLDs - first cycle TE afterwards PLD
 						vectorOldOrder = zeros(size(imASL,4),1);
 						for iPLD = 1:(double(numberPLDs))
