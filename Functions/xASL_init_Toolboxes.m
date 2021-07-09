@@ -20,7 +20,7 @@ function x  = xASL_init_Toolboxes(x)
 % Copyright 2015-2021 ExploreASL
 
 
-    x.D.SPMDIR = fullfile(x.MyPath, 'External', 'SPMmodified');
+    x.D.SPMDIR = fullfile(x.opts.MyPath, 'External', 'SPMmodified');
     x.D.SPMpath = x.D.SPMDIR;
     x.external.SPMVERSION = 'SPM12';
 

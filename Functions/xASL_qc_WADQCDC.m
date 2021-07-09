@@ -90,9 +90,9 @@ for iScanType=1:length(ScanTypes)
 %         end
 
     %% a) Define Gaspare's script (QCDC)
-    QCDC_Path = fullfile(x.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'qc_data_collector.py');
-    QCDC_sh1 = fullfile(x.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'bash', 'create_dcm_only_wadqc.sh');
-    QCDC_sh2 = fullfile(x.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'bash', 'sendwadqc.sh');
+    QCDC_Path = fullfile(x.opts.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'qc_data_collector.py');
+    QCDC_sh1 = fullfile(x.opts.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'bash', 'create_dcm_only_wadqc.sh');
+    QCDC_sh2 = fullfile(x.opts.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'bash', 'sendwadqc.sh');
 
     %% b) Check for Python installation
     [StatusPython, dummy] = system('ls -d /data/usr/local/anaconda2/bin'); % Victory VUmc cloud

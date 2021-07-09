@@ -376,9 +376,12 @@ try
                         end
                     end
                     
-                    % Remove symbolic path of SUBJECTDIR
+                    % Remove symbolic path of SUBJECTDIR & MyPath
                     if isfield(x.dir,'SUBJECTDIR')
                         x.dir = rmfield(x.dir, 'SUBJECTDIR');
+                    end
+                    if isfield(x.opts,'MyPath')
+                        x.opts = rmfield(x.opts, 'MyPath');
                     end
                     
                     % Store the new x.mat
