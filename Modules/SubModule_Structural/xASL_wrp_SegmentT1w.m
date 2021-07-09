@@ -173,8 +173,8 @@ end
 
 %% -------------------------------------------------------------------------------------------
 %% 3) Segmentation using CAT12
-%  This runs by default (default = x.settings.SegmentSPM12 == 0)
-%  When it fails, it will pass x.settings.SegmentSPM12 == 1
+%  This runs by default (default = x.modules.structural.SegmentSPM12 == 0)
+%  When it fails, it will pass x.modules.structural.SegmentSPM12 == 1
 if ~SegmentSPM12
     SegmentSPM12 = xASL_wrp_CAT12Segmentation(x);
 end
