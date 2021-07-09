@@ -287,7 +287,7 @@ for iSubject=1:x.nSubjects
 				end
 
 				x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
-				x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess});
+				x.dir.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess});
 				x = xASL_init_FileSystem(x);
 				pGM_MNI = xASL_io_Nifti2Im(x.P.Path_PVgm);
 				pWM_MNI = xASL_io_Nifti2Im(x.P.Path_PVwm);
@@ -449,7 +449,7 @@ for iSubject=1:x.nSubjects
 
 		%% c) Load data
 		if x.S.InputNativeSpace %% PM: we repeat same code here twice
-			FilePath = fullfile(x.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
+			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
 			if xASL_exist(FilePath,'file')
 				Data3D = xASL_io_Nifti2Im(FilePath);
 				DataIm = xASL_im_IM2Column(Data3D,x.S.masks.WBmask);
@@ -457,7 +457,7 @@ for iSubject=1:x.nSubjects
 
             if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
-                FilePath = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
+                FilePath = fullfile(x.dir.SESSIONDIR, 'MaskVascular.nii');
                 if xASL_exist(FilePath,'file')
                     VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.S.masks.WBmask);
                 end

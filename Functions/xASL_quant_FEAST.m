@@ -32,7 +32,7 @@ function xASL_quant_FEAST(x)
 %% 1. Skip this function if no FEAST data available
 if ~(x.dataset.nSessions>1 && isfield(x,'session') && isfield(x.session,'options') && strcmp(x.session.options{1},'crushed') && strcmp(x.session.options{2},'non-crushed'))
     return;
-elseif ~(strcmp(x.SESSIONDIR(length(x.dir.SUBJECTDIR)+2:end),'ASL_2')) % Computation is performed if CurrentSession=session 2
+elseif ~(strcmp(x.dir.SESSIONDIR(length(x.dir.SUBJECTDIR)+2:end),'ASL_2')) % Computation is performed if CurrentSession=session 2
     return;
 end
 

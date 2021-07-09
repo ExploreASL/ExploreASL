@@ -86,7 +86,7 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
 	if ~isempty(regexp(ModName,'(ASL|func|dwi)'))
 		dbSettings.sets.SESSION       = x.SESSIONS;
 		dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID '_<SESSION>'];
-		dbSettings.x.SESSIONDIR       = '<ROOT>/<SUBJECT>/<SESSION>';
+		dbSettings.x.dir.SESSIONDIR       = '<ROOT>/<SUBJECT>/<SESSION>';
 	end
 	
 	if ~isempty(regexp(ModName, '(DARTEL|Population|Analyze)'))

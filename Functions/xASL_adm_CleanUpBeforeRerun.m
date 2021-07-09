@@ -367,8 +367,7 @@ try
                     end
 
                     % Always remove previous paths, irrespective of iModule
-                    PathFields = {'MyPath', 'P', 'D', 'STRUCT_TEMPLATE_IM', 'LOCKDIR', ...
-                        'SESSIONDIR', 'PathPop_MaskSusceptibility' 'StudyAtlasDir'};
+                    PathFields = {'P', 'D', 'STRUCT_TEMPLATE_IM', 'LOCKDIR', 'PathPop_MaskSusceptibility' 'StudyAtlasDir'};
 
                     for iField=1:length(PathFields)
                         if isfield(x, PathFields{iField})
@@ -379,6 +378,9 @@ try
                     % Remove symbolic path of SUBJECTDIR & MyPath
                     if isfield(x.dir,'SUBJECTDIR')
                         x.dir = rmfield(x.dir, 'SUBJECTDIR');
+                    end
+                    if isfield(x.dir,'SESSIONDIR')
+                        x.dir = rmfield(x.dir, 'SESSIONDIR');
                     end
                     if isfield(x.opts,'MyPath')
                         x.opts = rmfield(x.opts, 'MyPath');

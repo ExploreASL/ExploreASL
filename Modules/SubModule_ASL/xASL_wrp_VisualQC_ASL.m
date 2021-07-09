@@ -166,7 +166,7 @@ end
 
 
 %% 8) Summarize ASL orientation & check for left-right flips
-xASL_qc_PrintOrientation(x.SESSIONDIR, x.P.Path_ASL4D, x.SESSIONDIR, 'RigidRegASL');
+xASL_qc_PrintOrientation(x.dir.SESSIONDIR, x.P.Path_ASL4D, x.dir.SESSIONDIR, 'RigidRegASL');
 
 %% 9) Collect several other parameters & store all in PDF overview
 x = xASL_qc_CollectParameters(x, x.iSubject, 'ASL'); % Quick & Dirty solution, 0 == skip structural part
