@@ -11,7 +11,7 @@ function xASL_adm_RemoveDirectories(root)
 % DESCRIPTION:  Script to remove all ExploreASL related paths.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_adm_RemoveDirectories(x.MyPath);
+% EXAMPLE:      xASL_adm_RemoveDirectories(x.opts.MyPath);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

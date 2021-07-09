@@ -35,7 +35,7 @@ function [x] = xASL_init_DataLoading(x)
     end
     
     % Go to ExploreASL folder
-    cd(x.MyPath);
+    cd(x.opts.MyPath);
 
     % Check if DataParFile needs to be loaded
     if x.opts.bProcessData || x.opts.bLoadData

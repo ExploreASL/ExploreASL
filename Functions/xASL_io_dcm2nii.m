@@ -66,7 +66,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         warning('Cannot retrieve ExploreASL folder from x-structure, using current path instead');
         MyPath = pwd;
     else
-        MyPath = parms.x.MyPath;
+        MyPath = parms.x.opts.MyPath;
     end
 
     mricron_path = fullfile(MyPath,'External','MRIcron');

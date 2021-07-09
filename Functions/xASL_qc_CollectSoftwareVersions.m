@@ -67,7 +67,7 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
     %% Get ExploreASL version
     % PM: make similar function as spm('Ver')/cat_version
 
-    VersionPath = xASL_adm_GetFileList(x.MyPath, '^VERSION.*$', 'FPList', [0 Inf]);
+    VersionPath = xASL_adm_GetFileList(x.opts.MyPath, '^VERSION.*$', 'FPList', [0 Inf]);
     if isempty(VersionPath)
         warning('Could not obtain ExploreASL version, version file missing');
     else

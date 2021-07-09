@@ -112,7 +112,7 @@ listOfConfigFlavors = { ...
                         };
 
 % Select Development directory
-customScripts = uigetdir(x.MyPath,'Please select the Development directory...');
+customScripts = uigetdir(x.opts.MyPath,'Please select the Development directory...');
 
 % Create JSON files
 for iFlavor=1:length(listOfConfigFlavors)
