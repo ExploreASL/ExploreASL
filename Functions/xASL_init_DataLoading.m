@@ -19,6 +19,9 @@ function [x] = xASL_init_DataLoading(x)
 
 
     %% Data loading
+    if ~isfield(x,'dataset')
+        x.dataset = struct;
+    end
     
     % Make sure that the dataPar.json definitely exists if we load the dataset
     if x.opts.bLoadData
