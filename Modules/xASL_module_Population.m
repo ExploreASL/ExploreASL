@@ -44,8 +44,8 @@ if x.opts.iWorker>1 % run population module only once when ExploreASL is called 
     result = true;
 end
 
-if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.bNativeSpaceAnalysis)
-    x.bNativeSpaceAnalysis = 0;
+if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.modules.population.bNativeSpaceAnalysis)
+    x.modules.population.bNativeSpaceAnalysis = 0;
 end
 
 % Check if we have ASL or not, to know if we need to run ASL-specific stuff/warnings
@@ -234,7 +234,7 @@ if ~x.mutex.HasState(StateName{8})
         x.S.InputNativeSpace = 0;
         xASL_wrp_GetROIstatistics(x);
         % ROI statistics (optional: native space)
-        if x.bNativeSpaceAnalysis
+        if x.modules.population.bNativeSpaceAnalysis
             x.S.InputNativeSpace = 1;
             x.S.InputAtlasNativeName = x.S.Atlases{iAtlas};
             xASL_wrp_GetROIstatistics(x);

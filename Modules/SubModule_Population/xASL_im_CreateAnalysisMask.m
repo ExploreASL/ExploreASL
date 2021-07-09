@@ -59,7 +59,7 @@ elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Sequence,'3d_spiral')
     bSkipStandard = 1;
 end
 
-if bSkipStandard && ~x.bNativeSpaceAnalysis
+if bSkipStandard && ~x.modules.population.bNativeSpaceAnalysis
     return;
     % we skip creating a group mask if we have fewer images than specified
     % above.
@@ -159,7 +159,7 @@ if ~bSkipStandard
 	x.S.MaskSusceptibility = xASL_im_IM2Column(MaskSusceptibility,x.S.masks.WBmask);
 end
 %% B2) Save FOV mask for each subject
-if x.bNativeSpaceAnalysis
+if x.modules.population.bNativeSpaceAnalysis
 	for iSession=1:x.dataset.nSessions
 		%x.SESSIONS{iSession}
 
