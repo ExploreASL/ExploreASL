@@ -44,7 +44,7 @@ if x.opts.iWorker>1 % run population module only once when ExploreASL is called 
     result = true;
 end
 
-if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.modules.population.bNativeSpaceAnalysis)
+if ~isfield(x.modules.population,'bNativeSpaceAnalysis') || isempty(x.modules.population.bNativeSpaceAnalysis)
     x.modules.population.bNativeSpaceAnalysis = 0;
 end
 
