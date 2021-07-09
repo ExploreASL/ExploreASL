@@ -82,11 +82,11 @@ switch lower(ScanType)
 end
 
 %% Admin: set paths
-if ~isfield(x,'bAutomaticallyDetectFSL')
-    x.bAutomaticallyDetectFSL = 0;
+if ~isfield(x.external,'bAutomaticallyDetectFSL')
+    x.external.bAutomaticallyDetectFSL = 0;
 end
 
-[FSLdir, x] = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL); % Find the FSL directory
+[FSLdir, x] = xASL_fsl_SetFSLdir(x, x.external.bAutomaticallyDetectFSL); % Find the FSL directory
 % Pathb0cfg = fullfile(FSLdir, 'etc', 'flirtsch', 'b02b0.cnf');
 Pathb0cfg = fullfile(x.opts.MyPath, 'CustomScripts', 'EPAD', 'b02b0.cnf'); % use our own one for reproducibility
 PathB0 = fullfile(InDir, 'B0.nii');
