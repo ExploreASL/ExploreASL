@@ -8,7 +8,7 @@ function x = DataParTemplate(x)
 % which is very specific to the study to be processed.
 % Most of it is ASL quantification-related, some of it are image processing
 % parameters also applicable to the structural module.
-% It allows only for minimal pipeline modifications (e.g. x.settings.Quality, x.DELETETEMP)
+% It allows only for minimal pipeline modifications (e.g. x.settings.Quality, x.settings.DELETETEMP)
 % as most of the ExploreASL environment parameters are loaded through ExploreASL_Initialize.m
 %
 % Here we list potential data parameters. Most are optional, and are ignored if not provided.
@@ -185,14 +185,14 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % GENERAL PROCESSING PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.settings.Quality - boolean specifying on which quality the pipeline should be run (OPTIONAL, DEFAULT = 1)
-%                    - options:
-%                    - 1 = normal quality 
-%                    - 0 = lower quality, fewer iterations and lower resolution of processing for a fast try-out
-% x.DELETETEMP - boolean for removing the temporary files (OPTIONAL, DEFAULT = 1)
-%              - options:
-%                - 0 = keeping all files
-%                - 1 = delete temporary files created by the pipeline
+% x.settings.Quality    - boolean specifying on which quality the pipeline should be run (OPTIONAL, DEFAULT = 1)
+%                       - options:
+%                       - 1 = normal quality 
+%                       - 0 = lower quality, fewer iterations and lower resolution of processing for a fast try-out
+% x.settings.DELETETEMP - boolean for removing the temporary files (OPTIONAL, DEFAULT = 1)
+%                       - options:
+%                       - 0 = keeping all files
+%                       - 1 = delete temporary files created by the pipeline
 % x.SkipIfNoFlair - boolean to skip processing of subjects that do not have a FLAIR image (OPTIONAL, DEFAULT = 0)
 %                   These parameters can be useful when some data is still complete, but one
 %                   would like to start image processing already.
@@ -359,7 +359,7 @@ x.M0PositionInASL4D = '[1 2]';
 x.DummyScanPositionInASL4D = [];
 x.readout_dim = '2D';
 x.settings.Quality = 0;
-x.DELETETEMP = 1;
+x.settings.DELETETEMP = 1;
 x.Vendor = 'Philips';
 x.Q.BackgroundSuppressionNumberPulses = 2;
 x.LabelingType = 'CASL';

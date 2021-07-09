@@ -33,9 +33,9 @@ function x = xASL_init_PrintCheckSettings(x)
         x.settings.Quality = 1;
         fprintf('%s\n', 'Default Quality=1 used (optimal quality)');
     end
-    if ~isfield(x,'DELETETEMP') || (x.DELETETEMP~=0 && x.DELETETEMP~=1)
-        x.DELETETEMP = 1;
-    %     fprintf('%s\n','Default x.DELETETEMP=1 used (delete files temporarily used for processing)');
+    if ~isfield(x.settings,'DELETETEMP') || (x.settings.DELETETEMP~=0 && x.settings.DELETETEMP~=1)
+        x.settings.DELETETEMP = 1;
+    %     fprintf('%s\n','Default x.settings.DELETETEMP=1 used (delete files temporarily used for processing)');
     end
 
     %% -----------------------------------------------------------------------
@@ -100,8 +100,8 @@ function x = xASL_init_PrintCheckSettings(x)
     else
         fprintf('x.D.ROOT            %s\n', x.D.ROOT);
     end
-    fprintf('x.DELETETEMP        %s\n',[num2str(x.DELETETEMP) ' (delete temporary files)']);
-    fprintf('x.settings.Quality  %s\n',[num2str(x.settings.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
+    fprintf('x.settings.DELETETEMP %s\n',[num2str(x.settings.DELETETEMP) ' (delete temporary files)']);
+    fprintf('x.settings.Quality    %s\n',[num2str(x.settings.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
 
 
     %% -----------------------------------------------------------------------

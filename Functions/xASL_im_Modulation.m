@@ -121,7 +121,7 @@ for iL=1:length(StandardList)
     end
 end
 
-if x.DELETETEMP
+if x.settings.DELETETEMP
     xASL_delete(x.P.Path_j_T1);
 end
 
