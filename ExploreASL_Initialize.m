@@ -394,7 +394,7 @@ function [x] = ExploreASL_Initialize_SubStructs(x)
     
     x.settings = struct;    % Workflow settings
     x.dataset = struct;     % Dataset related fields
-    x.external = struct;    % Toolbox related fields (SPM, CAT, etc.)
+    x.external = struct;    % Toolbox related fields (SPM, CAT, FSL, etc.)
     x.dir = struct;         % BIDS related directories (sourceStructure, studyPar, dataset_description, etc.)
 
 end
