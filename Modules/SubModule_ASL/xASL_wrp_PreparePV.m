@@ -157,7 +157,7 @@ end
 
 if xASL_exist(x.P.Path_WMH_SEGM) 
 	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_WMH_SEGM, x.P.Path_PVwmh,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwmh, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVwmh);
+	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwmh, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwmh);
 end
 
 
