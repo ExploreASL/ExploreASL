@@ -65,7 +65,7 @@ if ~isfield(x, 'bHammersCAT12')
 end
 
 % Check whether we should do normal or strong biasfield correction
-x.T1BiasFieldRegularization = true; % default
+x.modules.structural.T1BiasFieldRegularization = true; % default
 if isfield(x,'Vendor') && ~isempty(regexpi(x.Vendor,'GE'))
     x.T1BiasFieldRegularization = false; % SPM12
     % GE has wider bore scanners, resulting in a wide biasfield
