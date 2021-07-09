@@ -71,10 +71,10 @@ if ~isfield(x,'subject_regexp')
     fprintf('Check if the correct DataPar file was loaded\n');
 end
 
-if isfield(x,'ForceInclusionList')
+if isfield(x.dataset,'ForceInclusionList')
     % This is an option if you want to select subjects yourself,
     % instead of using all the subjects that comply with the regular expression
-    x.dataset.TotalSubjects = x.ForceInclusionList';
+    x.dataset.TotalSubjects = x.dataset.ForceInclusionList';
 else
     % First escape double escaping
     x.subject_regexp = strrep(x.subject_regexp,'\\','\');
