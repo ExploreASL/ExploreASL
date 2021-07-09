@@ -213,10 +213,9 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % x.bRunModule_LongReg - run longitudinal registration (OPTIONAL, DEFAULT = 0)
 % x.bRunModule_DARTEL - run between-subject registration/create templates (OPTIONAL, DEFAULT = 0)
-% x.settings.SegmentSPM12 - boolean to specify if SPM12 segmentation is run instead of CAT12 (OPTIONAL, DEFAULT = 0)
-%                - options:
-%                  - 1 = run SPM12
-%                  - 0 = run CAT12
+% x.modules.structural.SegmentSPM12   - boolean to specify if SPM12 segmentation is run instead 
+%                                       of CAT12 (OPTIONAL, DEFAULT = 0)
+%                                       -> options: 1 = run SPM12, 0 = run CAT12
 % x.modules.structural.bHammersCAT12  - boolean specifying if CAT12 should provide Hammers 
 %                                       volumetric ROI results (OPTIONAL, DEFAULT = 0)
 % x.modules.structural.bFixResolution - resample to a resolution that CAT12 accepts 

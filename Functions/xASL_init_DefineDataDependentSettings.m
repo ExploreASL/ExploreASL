@@ -77,10 +77,10 @@ if x.settings.Pediatric_Template
 	x.D.AtlasDir            = fullfile(x.opts.MyPath,'External', 'AtlasesNonCommercial', x.Pediatric_Type);
 end
 
-if ~isfield(x.settings, 'SegmentSPM12') && isfield(x.settings, 'Segment_SPM12')
-    warning('Please use input parameter SegmentSPM12 instead of Segment_SPM12 (legacy)');
+if ~isfield(x.modules.structural, 'SegmentSPM12') && isfield(x, 'Segment_SPM12')
+    warning('Please use input parameter x.modules.structural.SegmentSPM12 instead of Segment_SPM12 (legacy)');
     fprintf(['Using legacy option: x.Segment_SPM12 = ' xASL_num2str(x.Segment_SPM12) '\n']);
-    x.settings.SegmentSPM12 = x.Segment_SPM12;
+    x.modules.structural.SegmentSPM12 = x.Segment_SPM12;
 end
 
 %% --------------------------------------------------------------------------

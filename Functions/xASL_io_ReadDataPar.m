@@ -141,9 +141,9 @@ elseif strcmpi(Fext, '.json')
 	
 	%% Check deprecated fields
 	if isfield(x,'SegmentSPM12')
-		warning('Deprecated field. Please use x.settings.SegmentSPM12 instead of x.SegmentSPM12');
-		if ~isfield(x,'settings') || ~isfield(x.settings,'SegmentSPM12')
-			x.settings.SegmentSPM12 = x.SegmentSPM12;
+		warning('Deprecated field. Please use x.modules.structural.SegmentSPM12 instead of x.SegmentSPM12');
+		if ~isfield(x,'modules') || ~isfield(x.modules,'structural') || ~isfield(x.modules,'SegmentSPM12')
+			x.modules.structural.SegmentSPM12 = x.SegmentSPM12;
 		end
 		x = rmfield(x,'SegmentSPM12');
 	end
