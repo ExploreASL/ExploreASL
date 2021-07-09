@@ -104,7 +104,7 @@ end
 if isfield(x.P,'SubjectID')
     
     for iSess=1:length(x.SESSIONS)
-        x.dir.SESSIONDIR{iSess} = fullfile(x.D.ROOT,x.P.SubjectID,x.SESSIONS{iSess});
+        x.P.SessionDir{iSess} = fullfile(x.D.ROOT,x.P.SubjectID,x.SESSIONS{iSess});
     end
 
     if ~isfield(x.P,'SessionID')
