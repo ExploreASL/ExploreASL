@@ -375,6 +375,23 @@ function [x] = ExploreASL_Initialize_SubStructs(x)
     x.P = struct; % Paths
     x.Q = struct; % Quality
     
+    % Workflow fields
+    if ~isfield(x,'modules')
+        x.modules = struct;
+    end
+    if ~isfield(x.modules,'import')
+        x.modules.import = struct;
+    end
+    if ~isfield(x.modules,'structural')
+        x.modules.structural = struct;
+    end
+    if ~isfield(x.modules,'asl')
+        x.modules.asl = struct;
+    end
+    if ~isfield(x.modules,'population')
+        x.modules.population = struct;
+    end
+    
     x.settings = struct;    % Workflow settings
     x.dataset = struct;     % Dataset related fields
     x.external = struct;    % Toolbox related fields (SPM, CAT, etc.)
