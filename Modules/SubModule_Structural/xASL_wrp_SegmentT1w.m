@@ -7,7 +7,7 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 %   x 	    - structure containing fields with all information required to run this submodule (REQUIRED)
 %   x.P     - paths with NIfTIs for which this function should be applied to (REQUIRED)
 %   SegmentSPM12 - Whether to run SPM12 (true) or CAT12 (false) (OPTIONAL, DEFAULT = false)
-%   x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
+%   x.modules.structural.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
 %   x.settings.Pediatric_Template - boolean specifying if we use a pediatric
 %             template instead of adult one (OPTIONAL, DEFAULT = false)
 %
@@ -46,8 +46,8 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 if nargin<2 || isempty(SegmentSPM12)
     SegmentSPM12 = false; % by default use CAT12, not SPM12 to segment
 end
-if ~isfield(x,'bFixResolution') || isempty(x.bFixResolution)
-    x.bFixResolution = false;
+if ~isfield(x.modules.structural,'bFixResolution') || isempty(x.modules.structural.bFixResolution)
+    x.modules.structural.bFixResolution = false;
 end
 
 
@@ -86,7 +86,7 @@ xASL_adm_RemoveTempFilesCAT12(x, true); % remove previous temporary CAT12 files
 %% 1.5 Fix resolution for CAT12 % if we would activate this, we should also
 %     fix the FLAIR resolution, otherwise this crashes when cleaning up the
 %     FLAIR WMH segmentation
-if x.bFixResolution % if we use CAT12 to segment
+if x.modules.structural.bFixResolution % if we use CAT12 to segment
     % we force sufficient isotropy, otherwise CAT12 will crash
     tNii = xASL_io_ReadNifti(x.P.Path_T1);
     CurrentVoxelSize = tNii.hdr.pixdim(2:4);
@@ -590,7 +590,7 @@ end
 matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
 %matlabbatch{1}.spm.tools.cat.estwrite.output.labelnative = 1;
 
-if ~x.bFixResolution
+if ~x.modules.structural.bFixResolution
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
 else
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.best = [0.5 0.1]; % process everything on best resolution (is probably lower as we forced this to be 1.5 mm)
