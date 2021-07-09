@@ -57,7 +57,7 @@ function [x] = ExploreASL_ProcessMaster(x)
     if isfield(x, 'bRunModule_LongReg') && x.bRunModule_LongReg
         [~, x] = xASL_Iteration(x,'xASL_module_LongReg'); % use this module for longitudinal registration
     end
-    if isfield(x, 'bRunModule_DARTEL') && x.bRunModule_DARTEL
+    if isfield(x.modules.structural, 'bRunDARTEL') && x.modules.structural.bRunDARTEL
         [~, x] = xASL_Iteration(x,'xASL_module_DARTEL'); % use this module for additional additional -subject registration/creating templates
     end
     
