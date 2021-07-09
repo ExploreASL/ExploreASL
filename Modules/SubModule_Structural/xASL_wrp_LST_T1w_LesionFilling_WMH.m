@@ -96,7 +96,7 @@ end
 
 %% ----------------------------------------------------------------------------------
 %% 5) File management
-if x.DELETETEMP
+if x.settings.DELETETEMP
     xASL_delete(rWMHPath);
     xASL_adm_DeleteFileList(Fpath, '^LST_.*FLAIR\.mat$', false, [0 Inf]); % LST mat-file
 end

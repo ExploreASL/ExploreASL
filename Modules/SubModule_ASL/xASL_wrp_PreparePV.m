@@ -133,10 +133,10 @@ if bStandardSpace
 		List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI};
 	end
 	
-	if x.DELETETEMP
-		for iL=1:length(List2Del)
-			xASL_delete(List2Del{iL});
-		end
+    if x.settings.DELETETEMP
+        for iL=1:length(List2Del)
+            xASL_delete(List2Del{iL});
+        end
     end
 else
     x = xASL_adm_DefineASLResolution(x); % use default effective spatial resolution

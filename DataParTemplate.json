@@ -23,9 +23,9 @@
 			"readout_dim": "2D",
 			"settings":
 			{
-				"Quality": 1
+				"Quality": 1,
+				"DELETETEMP": 1
 			},
-			"DELETETEMP": 1,
 			"Vendor": "Philips"
 		}]
 }

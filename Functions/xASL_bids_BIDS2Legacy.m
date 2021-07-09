@@ -96,7 +96,7 @@ else
 end
 
 if ~isfield(dataPar.x,'DELETETEMP')
-	dataPar.x.DELETETEMP = 1;
+	dataPar.x.settings.DELETETEMP = 1;
 end
 
 % Loads the configuration for file renaming from the BIDS configuration file

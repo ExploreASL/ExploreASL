@@ -354,7 +354,7 @@ function xASL_adm_RemoveTempFilesCAT12(x, bForce)
 %xASL_adm_RemoveTempFilesCAT12 Removes residual/temporal files in mri directory
 
 if nargin<2 || isempty(bForce)
-    if ~x.DELETETEMP
+    if ~x.settings.DELETETEMP
         bForce = false;
     else
         bForce = true; % default

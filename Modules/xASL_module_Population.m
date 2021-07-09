@@ -286,7 +286,7 @@ end
 %% -----------------------------------------------------------------------------
 %% 9    Reduce data size
 if ~x.mutex.HasState(StateName{10})
-    if ~x.settings.bReproTesting && x.DELETETEMP
+    if ~x.settings.bReproTesting && x.settings.DELETETEMP
         xASL_adm_DeleteManyTempFiles(x);
     end
 

@@ -146,7 +146,7 @@ for iD=1:nList
     rmdir( fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}),'s' );
 end
 
-if x.DELETETEMP
+if x.settings.DELETETEMP
     xASL_delete(x.P.Path_mrFLAIR); % LPA
     xASL_delete(x.P.Path_rmrFLAIR); % LGA
 

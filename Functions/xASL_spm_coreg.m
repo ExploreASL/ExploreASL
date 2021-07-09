@@ -42,7 +42,7 @@ srcFile = [srcFile srcExt];
 
 if nargin<4 || isempty(x) || ~isfield(x,'Quality') || isempty(x.settings.Quality)
     x.settings.Quality = true; % default quality is high
-    x.DELETETEMP = true;
+    x.settings.DELETETEMP = true;
 end
 if nargin<3 || isempty(OtherList)
     OtherList = {''};
@@ -128,7 +128,7 @@ fprintf('%s\n',['Rigid-body registering ' srcFile ' to ' refFile]);
 spm_jobman('run',matlabbatch);
 close all
 
-if x.DELETETEMP
+if x.settings.DELETETEMP
     srcPath = xASL_spm_admin(srcPath);
     xASL_adm_DeleteFileList(fileparts(srcPath{1}), '^spm_.*\.ps$', false, [0 Inf]);
 

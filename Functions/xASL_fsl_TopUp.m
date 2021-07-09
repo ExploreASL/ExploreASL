@@ -361,7 +361,7 @@ else
 end
 
 %% Householding
-if x.DELETETEMP
+if x.settings.DELETETEMP
     for iP=1:length(TopUpNIIPath)
         xASL_delete(TopUpNIIPath{iP});
     end

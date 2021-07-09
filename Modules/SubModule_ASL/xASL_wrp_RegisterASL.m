@@ -528,7 +528,7 @@ x.Output.ASL.TC_ASL2T1w_Perc = TanimotoPerc(end);
 
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
-if x.DELETETEMP
+if x.settings.DELETETEMP
     File2Del = {x.D.Mean_Native, x.D.Bias_Native, x.D.Vasc_Native, x.D.Mask_Native, x.D.raw_Native, x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_DCT,...
         x.P.Path_mean_control, x.P.Path_PseudoCBF, x.D.PathMask, x.D.Path_PseudoTissue, x.D.PathMask, x.P.Path_mean_PWI_Clipped_ORI};
     for iL=1:length(File2Del)

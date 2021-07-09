@@ -284,7 +284,7 @@ end
 
 %% ------------------------------------------------------------------------------------------
 % 10. Delete temporary files
-if x.DELETETEMP
+if x.settings.DELETETEMP
     if ~strcmp(x.P.Path_ASL4D, x.P.Path_rdespiked_ASL4D)
         % in case of single volumes, these can be set to the same NIfTI
         xASL_adm_DeleteFilePair(x.P.Path_rdespiked_ASL4D, 'mat');
