@@ -127,18 +127,18 @@ end
 % FLAIR or M0, or this differs between subjects). This is useful when the
 % data is incomplete, but one wants to start image processing nevertheless
 
-if ~isfield(x,'SkipIfNoFlair'); x.SkipIfNoFlair = 0; end
-if ~isfield(x,'SkipIfNoASL');   x.SkipIfNoASL   = 0; end
-if ~isfield(x,'SkipIfNoM0');    x.SkipIfNoM0    = 0; end
+if ~isfield(x.settings,'SkipIfNoFlair'); x.settings.SkipIfNoFlair = 0; end
+if ~isfield(x.settings,'SkipIfNoASL');   x.settings.SkipIfNoASL   = 0; end
+if ~isfield(x.settings,'SkipIfNoM0');    x.settings.SkipIfNoM0    = 0; end
 
 bContinue = true;
-if x.SkipIfNoFlair && ~xASL_exist(x.P.Path_FLAIR,'file')
+if x.settings.SkipIfNoFlair && ~xASL_exist(x.P.Path_FLAIR,'file')
     bContinue = false;
 end
 for iSess=1:x.dataset.nSessions % need to define various ASL4D_session files still
-    if ~xASL_exist(x.P.Path_ASL4D,'file') && x.SkipIfNoASL
+    if ~xASL_exist(x.P.Path_ASL4D,'file') && x.settings.SkipIfNoASL
        bContinue = false;
-    elseif ~xASL_exist(x.P.Path_M0,'file') && x.SkipIfNoM0
+    elseif ~xASL_exist(x.P.Path_M0,'file') && x.settings.SkipIfNoM0
        bContinue = false;
     end
 end
