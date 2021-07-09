@@ -97,10 +97,10 @@ if bStandardSpace
 	%% 2) Reslice pGM & pWM to hi-res ASL
 	% We just put it to the ASL grid, but we don't apply the non-linear transformation to the ASL,
 	% because we then go directly to standard space and only apply the T1->MNI and not ASL->T1 nonlinear transformation
-	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], [],[], x.Quality);
-	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], [],[], x.Quality);
+	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], [],[], x.settings.Quality);
+	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], [],[], x.settings.Quality);
 	if xASL_exist(x.P.Path_WMH_SEGM)
-		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_WMH_SEGM ',1'], [],[], x.Quality);
+		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_WMH_SEGM ',1'], [],[], x.settings.Quality);
 	end
 	
     %% ------------------------------------------------------------------------------------------
@@ -147,12 +147,12 @@ end
 % by presmoothing before downsampling to ASL space
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c1T1, x.P.Path_PVgm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c2T1, x.P.Path_PVwm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVgm);
-xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVwm);
+xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVgm);
+xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
 
 if xASL_exist(x.P.Path_c3T1) % for backward compatibility, where c3T1 wasnt always available
 	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c3T1,x.P.Path_PVcsf,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_PVcsf);
+	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVcsf);
 end
 
 if xASL_exist(x.P.Path_WMH_SEGM) 

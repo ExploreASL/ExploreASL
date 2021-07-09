@@ -144,8 +144,8 @@ elseif ~strcmpi(x.M0,'UseControlAsM0') && isempty(regexpi(x.Sequence, 'spiral'))
     end
 
     %% 2B) remove biasfields
-    xASL_spm_BiasfieldCorrection(x.P.Path_rM0, x.D.SPMDIR, x.Quality, [], x.P.Path_rrM0);
-    xASL_spm_BiasfieldCorrection(refPath, x.D.SPMDIR, x.Quality, [], refPath);
+    xASL_spm_BiasfieldCorrection(x.P.Path_rM0, x.D.SPMDIR, x.settings.Quality, [], x.P.Path_rrM0);
+    xASL_spm_BiasfieldCorrection(refPath, x.D.SPMDIR, x.settings.Quality, [], refPath);
 
 
     %% 3C) Rigid-body registration
@@ -174,7 +174,7 @@ if x.settings.M0_conventionalProcessing
 
     fprintf('%s\n','Running conventional M0 processing method');
 
-    xASL_spm_reslice( x.P.Path_ASL4D, x.P.Path_rM0, [], [], x.Quality, x.P.Path_rM0, 1 ); % make sure M0 is in ASL space
+    xASL_spm_reslice( x.P.Path_ASL4D, x.P.Path_rM0, [], [], x.settings.Quality, x.P.Path_rM0, 1 ); % make sure M0 is in ASL space
     M0_nii          = xASL_io_ReadNifti( x.P.Path_rM0);
     x.VoxelSize     = M0_nii.hdr.pixdim(2:4);
     M0_im           = xASL_im_ProcessM0Conventional(M0_im, x); % also masks in native space

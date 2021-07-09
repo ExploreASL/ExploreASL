@@ -29,7 +29,7 @@ function xASL_wrp_FLAIR_BiasfieldCorrection(x)
 
 %% ---------------------------------------------------------------------------------------------------
 %% 1) Perform biasfield correction on T1w
-xASL_spm_BiasfieldCorrection(x.P.Path_T1, x.D.SPMDIR, x.Quality);
+xASL_spm_BiasfieldCorrection(x.P.Path_T1, x.D.SPMDIR, x.settings.Quality);
 
 
 %% ---------------------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ if xASL_exist(x.P.Path_FLAIR, 'file')
     xASL_io_SaveNifti(x.P.Path_mT1, x.P.Path_BiasField_T1, BiasfieldIM, [], false);
 
     % First resample to FLAIR space
-    xASL_spm_reslice(x.P.Path_FLAIR, x.P.Path_BiasField_T1, [], [], x.Quality, x.P.Path_BiasField_FLAIR);
+    xASL_spm_reslice(x.P.Path_FLAIR, x.P.Path_BiasField_T1, [], [], x.settings.Quality, x.P.Path_BiasField_FLAIR);
 
     % Open FLAIR & biasfield & multiply
     IM1 = xASL_io_Nifti2Im(x.P.Path_FLAIR);

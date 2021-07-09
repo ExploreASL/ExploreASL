@@ -3,8 +3,8 @@ function [ x ] = xASL_init_PopulationSettings( x )
 % ExploreASL 2018
 
 
-if ~isfield(x,'Quality')
-    x.Quality=1;
+if ~isfield(x.settings,'Quality')
+    x.settings.Quality=1;
 end
 
 % xASL_adm_CreateDir( x.D.T1_ASLREGDIR);

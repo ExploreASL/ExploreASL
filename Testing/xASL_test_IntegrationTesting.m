@@ -133,7 +133,7 @@ function xFlavor = xASL_test_thisFlavor(testConfig, flavorName)
     
     % Create default dataPar.json
     defaultDataPar.x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
-    defaultDataPar.x.Quality = 0; % speed up testing
+    defaultDataPar.x.settings.Quality = 0; % speed up testing
     
     % Save JSON
     spm_jsonwrite(fullfile(testingRoot,'FlavorDatabaseTest',flavorName,'dataPar.json'),defaultDataPar);

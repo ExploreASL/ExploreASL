@@ -80,7 +80,7 @@ if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
     return;
 end
 
-switch x.Quality
+switch x.settings.Quality
 	case 1 % normal quality
     flags.quality = 1;
     flags.sep = minVoxelSize;

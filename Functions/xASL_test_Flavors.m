@@ -69,7 +69,7 @@ referencePath = fullfile(pathTest, 'TmpReference');
 % Default dataPar.json for the testing that is fast to run
 defaultDataPar.x.subject_regexp = '^sub-.*$';
 defaultDataPar.x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
-defaultDataPar.x.Quality = 0; % speed up testing
+defaultDataPar.x.settings.Quality = 0; % speed up testing
 defaultDataPar.x.DELETETEMP = 1;
 
 %% 1. Make a temporary copy of the Flavors data

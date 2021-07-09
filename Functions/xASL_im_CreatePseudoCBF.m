@@ -105,9 +105,9 @@ end
 if bPVC
 	% Prepare the PWI image in the same space as the PseudoTissue
 	if exist(x.P.Path_mean_PWI_Clipped_sn_mat,'file')
-		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_mean_PWI_Clipped_DCT);
+		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.settings.Quality, x.P.Path_mean_PWI_Clipped_DCT);
 	else
-		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, [], 0, x.Quality, x.P.Path_mean_PWI_Clipped_DCT);
+		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, [], 0, x.settings.Quality, x.P.Path_mean_PWI_Clipped_DCT);
 	end
 end
 

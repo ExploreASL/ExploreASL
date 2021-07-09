@@ -29,8 +29,8 @@ function x = xASL_init_PrintCheckSettings(x)
 
     %% -----------------------------------------------------------------------
     %% 1) Set default settings if not defined
-    if ~isfield(x,'Quality') || (x.Quality~=0 && x.Quality~=1)
-        x.Quality = 1;
+    if ~isfield(x,'Quality') || (x.settings.Quality~=0 && x.settings.Quality~=1)
+        x.settings.Quality = 1;
         fprintf('%s\n', 'Default Quality=1 used (optimal quality)');
     end
     if ~isfield(x,'DELETETEMP') || (x.DELETETEMP~=0 && x.DELETETEMP~=1)
@@ -101,7 +101,7 @@ function x = xASL_init_PrintCheckSettings(x)
         fprintf('x.D.ROOT            %s\n', x.D.ROOT);
     end
     fprintf('x.DELETETEMP        %s\n',[num2str(x.DELETETEMP) ' (delete temporary files)']);
-    fprintf('x.Quality           %s\n',[num2str(x.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
+    fprintf('x.settings.Quality  %s\n',[num2str(x.settings.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
 
 
     %% -----------------------------------------------------------------------

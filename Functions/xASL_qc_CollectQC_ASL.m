@@ -83,8 +83,8 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
         xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc1T1_ASL_res.nii'),x.P.Path_rc1T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
         xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc2T1_ASL_res.nii'),x.P.Path_rc2T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 	
-		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc1T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_rc1T1);
-		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc2T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_rc2T1);
+		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc1T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_rc1T1);
+		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc2T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_rc2T1);
 		
 		Path_pGM = x.P.Path_rc1T1;
 		Path_pWM = x.P.Path_rc2T1;

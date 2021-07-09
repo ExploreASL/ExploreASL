@@ -98,7 +98,7 @@ PathDataParOld = fullfile(RootDir,'DataParameters_HiQ.json');
 PathDataParNew = fullfile(NewAnalysisDir,'DataParameters_HiQ.json');
 
 x = ExploreASL_Initialize();
-x.Quality = 1;
+x.settings.Quality = 1;
 xASL_adm_CreateDir(NewAnalysisDir);
 SubjectDir = fullfile(x.D.ROOT,'Sub-001');
 NewSubjectDir = fullfile(NewAnalysisDir,'Sub-001');

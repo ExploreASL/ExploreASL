@@ -9,7 +9,7 @@ function xASL_spm_coreg(refPath, srcPath, OtherList, x, sep, FastReg)
 %   OtherList           - cell list with paths to NIfTI images that you want to apply the calculated transformation to (OPTIONAL)
 %                         the srcPath NIfTI orientation header is always adapted with the calculated transformation
 %   x                   - ExploreASL structure containing fields with global information about the pipeline environment
-%                         and settings (e.g. x.Quality), useful when you want this script to copy the options of an ExploreASL pipeline run (OPTIONAL)
+%                         and settings (e.g. x.settings.Quality), useful when you want this script to copy the options of an ExploreASL pipeline run (OPTIONAL)
 %   sep                 - separation setting used by SPM coregistration, that defines the average distance between sampled points (in mm)
 %                         can also have a vector of multiple values to allow a coarse registration with increasingly finer ones (OPTIONAL, DEFAULT=[4 2])
 %   FastReg             - New experimental feature to speed up registration of low resolution images.
@@ -40,15 +40,15 @@ function xASL_spm_coreg(refPath, srcPath, OtherList, x, sep, FastReg)
 refFile = [refFile refExt];
 srcFile = [srcFile srcExt];
 
-if nargin<4 || isempty(x) || ~isfield(x,'Quality') || isempty(x.Quality)
-    x.Quality = true; % default quality is high
+if nargin<4 || isempty(x) || ~isfield(x,'Quality') || isempty(x.settings.Quality)
+    x.settings.Quality = true; % default quality is high
     x.DELETETEMP = true;
 end
 if nargin<3 || isempty(OtherList)
     OtherList = {''};
 end
 if nargin<5 || isempty(sep)
-    if x.Quality
+    if x.settings.Quality
         sep = [4 2];
     else
         sep = 6;
