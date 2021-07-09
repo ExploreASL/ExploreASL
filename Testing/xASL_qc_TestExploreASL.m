@@ -127,7 +127,7 @@ if bPull
 end
 
 % Initialize ExploreASL
-x = ExploreASL_Initialize;
+x = ExploreASL;
 
 clc;
 
@@ -293,7 +293,7 @@ end
 
 % ============================================================
 %% 5) Test ExploreASL itself
-x = ExploreASL_Initialize; % here we return the ExploreASL paths, which we removed above for testing SPM
+x = ExploreASL; % here we return the ExploreASL paths, which we removed above for testing SPM
 
 % Remove lock folders, useful for rerun when debugging
 LockFolders = xASL_adm_GetFileList(TestDirDest, '^locked$', 'FPListRec', [0 Inf], true);
@@ -389,6 +389,7 @@ end
 
 % ============================================================
 %% 7) Compile results table
+x = ExploreASL; % Initialize again to make sure that the TemplateDir exists
 ResultsTable = {'Data', 'mean_qCBF_TotalGM' 'median_qCBF_TotalGM' 'median_qCBF_DeepWM' 'CoV_qCBF_TotalGM' 'GMvol' 'WMvol' 'CSFvol' 'PipelineCompleted' 'TC_ASL_Registration' 'TC_M0_Registration'};
 fprintf('Reading & parsing results:   ');
 for iList=1:length(Dlist) % iterate over example datasets
@@ -447,7 +448,7 @@ for iList=1:length(Dlist) % iterate over example datasets
 	end
 	
     % Get registration performance
-    if isfield(x,'D') && isfield(x.D,'TemplateDir') && isfield(x.D,'PopulationDir')
+    if isfield(x,'D') && isfield(x.D,'TemplateDir')
         PathTemplateASL = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
         PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
         PathCBF = xASL_adm_GetFileList(PopulationDir,'^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
