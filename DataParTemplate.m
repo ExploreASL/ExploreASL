@@ -49,19 +49,20 @@ function x = DataParTemplate(x)
 %          - example: '/home/hjmutsaerts/TestDataSet'
 % x.subject_regexp - string with regular expression for ExploreASL to find subjects by foldername (REQUIRED)
 %                  - example: '^\d{3}$' for three digits
-% x.dataset.exclusion - cell with list of subjects to exclude (OPTIONAL, DEFAULT = empty)
-%             - example: {'005' '018'}
+% x.dataset.exclusion          - cell with list of subjects to exclude (OPTIONAL, DEFAULT = empty)
+%                              - example: {'005' '018'}
 % x.SESSIONS  - use this to define sessions (OPTIONAL, DEFAULT = {'ASL_1'})
 %             - example ('.json' file): ["ASL_1","ASL_2"]
 %             - example ('.m' file):    {'ASL_1' 'ASL_2'}
 %             - Specific options: for FEAST: 1=crushed, 2=not crushed. This used to be other way around, 
 %               but the crushed image registers better with the pGM image
-% x.session.options - this is how the sessions will be called (OPTIONAL)
-%                   - example: {'baseline' 'drug'}
-%                   - For FEAST, this should be {'non-crushed' 'crushed'}
-% x.ForceInclusionList - Use this field if you want to use a selection of subjects rather than taking all available subjects
-%                        from directories (OPTIONAL, DEFAULT = use all subjects)
-%                      - example: load(fullfile(x.D.ROOT,'LongitudinalList.mat'))
+% x.session.options            - this is how the sessions will be called (OPTIONAL)
+%                              - example: {'baseline' 'drug'}
+%                              - For FEAST, this should be {'non-crushed' 'crushed'}
+% x.dataset.ForceInclusionList - Use this field if you want to use a selection of 
+%                                subjects rather than taking all available subjects
+%                                from directories (OPTIONAL, DEFAULT = use all subjects)
+%                              - example: load(fullfile(x.D.ROOT,'LongitudinalList.mat'))
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % M0 PARAMETERS and OPTIONS
