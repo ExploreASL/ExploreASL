@@ -54,7 +54,7 @@ function [x] = ExploreASL_ProcessMaster(x)
 
     % Optional modules
     % The following are optional extensions of the structural module and not required to run, normally they can be ignored:
-    if isfield(x, 'bRunModule_LongReg') && x.bRunModule_LongReg
+    if isfield(x.modules.structural, 'bRunLongReg') && x.modules.structural.bRunLongReg
         [~, x] = xASL_Iteration(x,'xASL_module_LongReg'); % use this module for longitudinal registration
     end
     if isfield(x.modules.structural, 'bRunDARTEL') && x.modules.structural.bRunDARTEL
