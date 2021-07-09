@@ -10,7 +10,7 @@ function xASL_spm_deformations(x, PathIn, PathOut, Interpolation, InverseSpace, 
 %   PathOut             - path to cell containing list of paths of output names. Needs to be same numel as PathIn (REQUIRED)
 %                         can be either .nii or .nii.gz
 %   x                   - ExploreASL structure containing fields with global information about the pipeline environment
-%                         and settings (e.g. x.Quality), useful when you want this script to copy the options of an ExploreASL pipeline run (OPTIONAL)
+%                         and settings (e.g. x.settings.Quality), useful when you want this script to copy the options of an ExploreASL pipeline run (OPTIONAL)
 %   Interpolation       - interpolation setting used by warping, options:
 %                         0) Nearest Neighbor, 1) Trilinear, 2-7) 2nd-7th degree B-spline (OPTIONAL, DEFAULT=2)
 %   InverseSpace        - path to space that you want to warp to, inversily applying the transformation field (e.g. when warping an MNI map to
@@ -50,9 +50,9 @@ if (iscell(PathIn) && ~iscell(PathOut)) || (~iscell(PathIn) && iscell(PathOut))
 end
 
 if nargin<1 || isempty(x)
-    x.Quality = true; % default quality
+    x.settings.Quality = true; % default quality
 elseif ~isfield(x,'Quality')
-    x.Quality = true;
+    x.settings.Quality = true;
 end
 if ~isfield(x,'P')
     x.P = struct;
@@ -135,7 +135,7 @@ xASL_adm_UnzipNifti(DeformationPath); % always within data folder, can be unzipp
 if nargin<4 || isempty(Interpolation)
     Interpolation = 2; % default interpolation
 end
-if ~x.Quality && Interpolation~=0
+if ~x.settings.Quality && Interpolation~=0
     Interpolation = 1; % faster, for lower quality (unless this was 0 before)
 elseif Interpolation<0 || Interpolation>7
     error(['Wrong interpolation set: ' num2str(Interpolation)]);
@@ -212,13 +212,13 @@ fprintf('%s\n','Combining transformations:');
 matlabbatch{1}.spm.util.defs.comp  = ''; % initialize transformation combination
 
 
-%% 5. If inverse transformation and x.Quality==0, then invert the transformation on lowest resolution
+%% 5. If inverse transformation and x.settings.Quality==0, then invert the transformation on lowest resolution
 %  This means we will reslice the InverseSpaceFile to the y_Transformation
 %  resolution, if the y_Transformation resolution is lower than the destination
 %  resolution
 
 bRevertResolution = false;
-if AddInverse && (Interpolation==0 || x.Quality==0)
+if AddInverse && (Interpolation==0 || x.settings.Quality==0)
     TransformationResolution = xASL_io_ReadNifti(DeformationPath);
     TransformationResolution = TransformationResolution.hdr.pixdim(2:4);
     InverseSpaceResolution = xASL_io_ReadNifti(InverseSpace);
@@ -304,7 +304,7 @@ end
 
 if bRevertResolution
     for iS=1:length(PathOut)
-        xASL_spm_reslice(InverseSpaceOriginal, PathOut{iS}, [], [], x.Quality, PathOut{iS}, Interpolation);
+        xASL_spm_reslice(InverseSpaceOriginal, PathOut{iS}, [], [], x.settings.Quality, PathOut{iS}, Interpolation);
     end
 end
 

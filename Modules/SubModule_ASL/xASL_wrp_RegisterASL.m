@@ -335,7 +335,7 @@ end
 %% 2.    Registration Control->T1w
 % Here we first create a mask
 % First check the initial alignment, otherwise first register with template
-% xASL_spm_reslice(Mask_Native, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_rmean_PWI_Clipped, 1);
+% xASL_spm_reslice(Mask_Native, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.settings.Quality, x.P.Path_rmean_PWI_Clipped, 1);
 % MaskASL = xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(x.P.Path_rmean_PWI_Clipped));
 % MaskTemplate= logical(xASL_io_Nifti2Im(Mask_Native));
 % xASL_delete(x.P.Path_rmean_PWI_Clipped);
@@ -366,7 +366,7 @@ if bRegistrationControl
         xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
 
         % then register
-        if ~x.Quality
+        if ~x.settings.Quality
             xASL_spm_coreg(x.P.Path_T1, SourcePath, OtherList, x, [9 6]);
         else
             xASL_spm_coreg(x.P.Path_T1, SourcePath, OtherList, x);
@@ -396,7 +396,7 @@ if bRegistrationCBF
     elseif spatCoVit>0.667
         nIT = 0;
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
-    elseif ~x.Quality
+    elseif ~x.settings.Quality
         nIT = 1; % speed up for low quality
     else
         nIT = 2;
@@ -487,13 +487,13 @@ if bRegistrationCBF
 					xASL_im_CreatePseudoCBF(x, spatCoVit(end));
 
 					% Use Affine with DCT registration as well
-					xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.Quality);
+					xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.settings.Quality);
 				else
 					% Use Affine with DCT registration with PVC to prepare the contrast
 					% Iterate two times to best use the PVC feature
 					for iTDCT = 1:2
 						xASL_im_CreatePseudoCBF(x, spatCoVit(end),1);
-						xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.Quality);
+						xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.settings.Quality);
 					end
 				end
 
@@ -590,8 +590,8 @@ if ~xASL_exist(x.D.PathMask,'file')
 end
 PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
 
-xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathMask, 0);
-xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathCBF, 1);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.D.PathMask, 0);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.D.PathCBF, 1);
 
 MaskFromTemplate = xASL_io_Nifti2Im(x.D.PathMask)>0.5;
 TemplateIm = xASL_io_Nifti2Im(x.D.PathCBF);
@@ -602,7 +602,7 @@ TanimotoCoeff = xASL_qc_TanimotoCoeff(PWIim, TemplateIm, MaskFromTemplate, 3, 0.
 fprintf('%s\n',['Tanimoto Coeff=' num2str(100*TanimotoCoeff,3)]);
 
 if x.ComputeDiceCoeff
-    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.D.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathMask2 ,0);
+    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.D.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.D.PathMask2 ,0);
 
     GMIM = xASL_io_Nifti2Im(x.D.PathMask2);
     xASL_delete(x.D.PathMask2);

@@ -23,7 +23,7 @@ function [bSuccess] = xASL_fsl_TopUp(InDir, ScanType, x, OutputPath)
 %                 (registration between blip up/down images is performed by
 %                 TopUp)
 %              2. Run TopUp estimate (i.e. estimate the geometric distortion field from B0 NIfTI &
-%                 parameters file), this takes quite long. Also has a x.Quality=0 option that is very fast
+%                 parameters file), this takes quite long. Also has a x.settings.Quality=0 option that is very fast
 %                 but inaccurate, to try out this pipeline part. Before
 %                 TopUp, NaNs (e.g. from resampling) are removed from the images
 %                 TopUp is run with default settings
@@ -246,7 +246,7 @@ else
         ' --fout=' xASL_adm_UnixPath(PathField, 1) ' --iout=' xASL_adm_UnixPath(PathUnwarped, 1)...
         ' --config=' xASL_adm_UnixPath(Pathb0cfg, 1) ' --verbose=true'];
 
-    if x.Quality
+    if x.settings.Quality
         ActualCommand = TopUpCommand;
         % keep default settings (which are pretty extensive, many iterations)
     else

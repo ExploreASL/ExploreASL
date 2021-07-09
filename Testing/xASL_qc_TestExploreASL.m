@@ -29,7 +29,7 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 % DESCRIPTION: This function will run ExploreASL on several different
 %              datasets, do perform a full and thorough test of ExploreASL.
 %              Different environment variables include:
-%              x.Quality 0 and 1
+%              x.settings.Quality 0 and 1
 %              
 %              Different data setups include:
 %              ASL readouts (3D spiral, 3D GRASE, 2D EPI)
@@ -183,7 +183,7 @@ xASL_Copy(TestDirOrig, TestDirDest);
 %% 4) Test standalone SPM on low quality
 if bTestSPM
 
-    x.Quality = false;
+    x.settings.Quality = false;
     % Find the first directory and copy out the first T1 and ASL just for SPM testing
 
     Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);

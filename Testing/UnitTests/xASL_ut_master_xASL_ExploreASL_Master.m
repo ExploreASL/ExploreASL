@@ -434,7 +434,7 @@ droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
 xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
 % Create dataPar.json
-dataParStruct.x.Quality = 0;
+dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
 spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
@@ -524,7 +524,7 @@ droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
 xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
 % Create dataPar.json
-dataParStruct.x.Quality = 0;
+dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
 spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
@@ -576,7 +576,7 @@ droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
 xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
 % Create dataPar.json
-dataParStruct.x.Quality = 0;
+dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Mindboggle_OASIS_DKT31_CMA'};
 spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 

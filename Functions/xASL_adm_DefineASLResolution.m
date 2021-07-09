@@ -107,13 +107,13 @@ function x = xASL_im_ResolutionEstim(x)
 
     %% Define maximal n iterations
     if ~exist('x', 'var')
-        x.Quality     = 1;
-    elseif ~isfield(x,'Quality')
-        x.Quality     = 1;
+        x.settings.Quality     = 1;
+    elseif ~isfield(x.settings,'Quality')
+        x.settings.Quality     = 1;
     end
 
     if ~isfield(x.S,'MaxIter')
-        if  x.Quality
+        if  x.settings.Quality
             MaxIter   = 20;
         else
             MaxIter   = 5;

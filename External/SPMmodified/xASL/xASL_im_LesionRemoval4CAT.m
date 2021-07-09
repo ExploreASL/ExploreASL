@@ -36,7 +36,7 @@ rLesion_FLAIR_list  = Lesion_FLAIR_list;
 for iL=1:length(Lesion_FLAIR_list)
 	[Fpath, Ffile, Fext]        = xASL_fileparts(Lesion_FLAIR_list{iL});
 	rLesion_FLAIR_list{iL}      = fullfile(Fpath,['r' Ffile Fext]);
-	xASL_spm_reslice( PathIn, Lesion_FLAIR_list{iL}, [], [], x.Quality,'Lesion_FLAIR 2 T1 space', rLesion_FLAIR_list{iL}, 2 );
+	xASL_spm_reslice( PathIn, Lesion_FLAIR_list{iL}, [], [], x.settings.Quality,'Lesion_FLAIR 2 T1 space', rLesion_FLAIR_list{iL}, 2 );
 end
 
 %%% ---------------------------------------------------------------------

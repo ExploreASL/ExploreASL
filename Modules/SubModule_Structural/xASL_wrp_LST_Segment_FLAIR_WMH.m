@@ -54,7 +54,7 @@ end
 %% ----------------------------------------------------------
 %% 1. Reslice FLAIR (& WMH_SEGM, if exists) to T1w
 xASL_io_SaveNifti(x.P.Path_FLAIR, x.P.Path_FLAIR, xASL_io_Nifti2Im(x.P.Path_FLAIR), 16, false); % convert to 16 bit
-xASL_spm_reslice(x.P.Path_T1, x.P.Path_FLAIR, [], [], x.Quality);
+xASL_spm_reslice(x.P.Path_T1, x.P.Path_FLAIR, [], [], x.settings.Quality);
 
 if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     % first backup externally provided WMH_SEGM
@@ -64,7 +64,7 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 
     % if an externally provided WMH_SEGM exists, resample it to the T1w space
     % use linear resampling, to avoid B-spline edge effects
-    xASL_spm_reslice(x.P.Path_T1, x.P.Path_WMH_SEGM, [], [], x.Quality, x.P.Path_WMH_SEGM, 1);
+    xASL_spm_reslice(x.P.Path_T1, x.P.Path_WMH_SEGM, [], [], x.settings.Quality, x.P.Path_WMH_SEGM, 1);
 end
 
 
@@ -85,7 +85,7 @@ switch lower(WMHsegmAlg)
         if xASL_exist(x.P.Path_WMH_SEGM, 'file')
             matlabbatch{1}.spm.tools.LST.lpa.xasl_quality   = 2; % ultralow quality
         else
-            matlabbatch{1}.spm.tools.LST.lpa.xasl_quality   = x.Quality;
+            matlabbatch{1}.spm.tools.LST.lpa.xasl_quality   = x.settings.Quality;
         end
 
     case 'lga'
@@ -98,9 +98,9 @@ switch lower(WMHsegmAlg)
         matlabbatch{1}.spm.tools.LST.lga.opts_lga.initial   = InitialParm;
         matlabbatch{1}.spm.tools.LST.lga.opts_lga.mrf       = 1; % default
         matlabbatch{1}.spm.tools.LST.lga.html_report        = 0; % no HTML report generation, takes too long
-        matlabbatch{1}.spm.tools.LST.lga.xasl_quality       = x.Quality;
+        matlabbatch{1}.spm.tools.LST.lga.xasl_quality       = x.settings.Quality;
 
-        if x.Quality
+        if x.settings.Quality
             matlabbatch{1}.spm.tools.LST.lga.opts_lga.maxiter = 100; % default=50
         else
             matlabbatch{1}.spm.tools.LST.lga.opts_lga.maxiter = 3;
@@ -183,7 +183,7 @@ for iFile=1:length(FilePathsAre)
 				% Resample if needed
 				if ~isequal(size(LesionIM), size(WMHim))
 					PathTemp = fullfile(Fpath, [Ffile '_temp.nii']);
-					xASL_spm_reslice(FilePathsAre{iFile}, LesionList{iLesion}, [], [], x.Quality, PathTemp, 0);
+					xASL_spm_reslice(FilePathsAre{iFile}, LesionList{iLesion}, [], [], x.settings.Quality, PathTemp, 0);
 					LesionIM = xASL_io_Nifti2Im(PathTemp);
 				else
 					PathTemp = [];

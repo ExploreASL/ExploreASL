@@ -169,7 +169,7 @@ if ~AtlasIsColumns
             fprintf('%s\n','Detected that atlas has different MNI dimensions, resampling to 1.5 mm');
             [Fpath, Ffile, Fext] = xASL_fileparts(x.S.InputAtlasPath);
             Atlas15Path = fullfile(Fpath,[Ffile '1.5mm' Fext]);
-            xASL_spm_reslice( x.D.ResliceRef, x.S.InputAtlasPath, [], [], x.Quality, Atlas15Path, 0 );
+            xASL_spm_reslice( x.D.ResliceRef, x.S.InputAtlasPath, [], [], x.settings.Quality, Atlas15Path, 0 );
         end
         InputAtlasIM = xASL_io_Nifti2Im(Atlas15Path);
     end

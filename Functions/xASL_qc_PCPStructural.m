@@ -80,8 +80,8 @@ WMmask = logical(pWM>pGM & pWM>pCSF) & BrainMask;
 % the mask identical for the T1w & FLAIR
 
 if xASL_exist(Path_NativeDeepWM,'file') && xASL_exist(Path_NativeLRMask,'file')
-    xASL_spm_reslice(PathT1, Path_NativeDeepWM, [], [], x.Quality, Path_NativeDeepWM, 0);
-    xASL_spm_reslice(PathT1, Path_NativeLRMask, [], [], x.Quality, Path_NativeLRMask, 0);
+    xASL_spm_reslice(PathT1, Path_NativeDeepWM, [], [], x.settings.Quality, Path_NativeDeepWM, 0);
+    xASL_spm_reslice(PathT1, Path_NativeLRMask, [], [], x.settings.Quality, Path_NativeLRMask, 0);
     WMeroded = xASL_io_Nifti2Im(Path_NativeDeepWM);
 else
     % compute inverse transformation & put the MNI ROIs in native space

@@ -157,7 +157,7 @@ if ~isempty(ResamplePath)
         nii.mat = nii.mat0;
         create(nii);
         
-        xASL_spm_reslice(TempPath, PathNew, [], [], x.Quality, PathNew);
+        xASL_spm_reslice(TempPath, PathNew, [], [], x.settings.Quality, PathNew);
         xASL_delete(TempPath);
     end
 end        

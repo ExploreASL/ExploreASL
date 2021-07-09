@@ -61,7 +61,7 @@ if ~x.mutex.HasState('999_ready')
 
         fprintf('\n\n');
 
-        if  x.Quality==1
+        if  x.settings.Quality==1
             slam = [ 8 4 2 1 0.5 0.25];
             % with CAT12 segmentation, we can achieve less blurry end-results
             % and need a less blurry start
@@ -288,7 +288,7 @@ for iS=1:x.nSubjects
     if xASL_exist(y_file, 'file')
 
 		xASL_adm_UnzipNifti(y_file, 1);
-        xASL_im_FillNaNs(y_file, 3, x.Quality, [], x);
+        xASL_im_FillNaNs(y_file, 3, x.settings.Quality, [], x);
 
         clear matlabbatch
         matlabbatch{1}.spm.util.defs.comp{1}.def = {y_file};
@@ -391,7 +391,7 @@ function [warp] = GeneralDARTELsettings(x,warp,iIT)
     warp.settings.optim.lmreg = 0.01;
     warp.settings.optim.cyc = 3;
 
-    if  x.Quality==1
+    if  x.settings.Quality==1
         rparam1 = [2   1    0.5   0.25   0.25  0.125];
         rparam2 = [1   0.5  0.25  0.125  0.125 0.0625];
         K       = [0   2    4     6      8     16];

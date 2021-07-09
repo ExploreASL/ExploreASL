@@ -52,12 +52,12 @@ function [CoveragePerc] = xASL_qc_ComputeFoVCoverage(InputPath, x)
     xASL_io_SaveNifti(x.P.Path_c1T1, PathBrainmask, logical(BrainMask), 8, 0);
     
     % Reslice: get partial brainmask in low resolution space
-    xASL_spm_reslice(InputPath, PathBrainmask, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, InputPathMask, 0);    
+    xASL_spm_reslice(InputPath, PathBrainmask, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, InputPathMask, 0);    
 
     % Add voxels to this space
     xASL_im_Upsample(InputPathMask, InputPathMask, ImRes,[],MatSize);
     % Reslice: get full brainmask in low resolution space
-    xASL_spm_reslice(InputPathMask, PathBrainmask, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, InputPathMaskFull, 0);     
+    xASL_spm_reslice(InputPathMask, PathBrainmask, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, InputPathMaskFull, 0);     
     
     
     % Compute DICE coefficient

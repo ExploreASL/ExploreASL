@@ -21,7 +21,10 @@
 				"SliceReadoutTime": 30
 			},
 			"readout_dim": "2D",
-			"Quality": 1,
+			"settings":
+			{
+				"Quality": 1
+			},
 			"DELETETEMP": 1,
 			"Vendor": "Philips"
 		}]

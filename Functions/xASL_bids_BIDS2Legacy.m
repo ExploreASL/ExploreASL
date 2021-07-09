@@ -85,8 +85,14 @@ if ~isfield(dataPar.x,'subject_regexp')
     dataPar.x.subject_regexp = '^sub-.*$';
 end
 
-if ~isfield(dataPar.x,'Quality')
-	dataPar.x.Quality = 1;
+% Check for settings fields
+if isfield(dataPar.x,'settings')
+    if ~isfield(dataPar.x.settings,'Quality')
+        dataPar.x.settings.Quality = 1;
+    end
+else
+    % Default
+    dataPar.x.settings.Quality = 1;
 end
 
 if ~isfield(dataPar.x,'DELETETEMP')

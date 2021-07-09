@@ -149,11 +149,11 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 %                 Path_Bmask{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'rBrainMask.nii');
 
                 % Reslice
-                xASL_spm_reslice(x.D.ResliceRef, Path_T1{iV}, [], [], x.Quality);
-%                 xASL_spm_reslice(x.D.ResliceRef, Path_c1T1{iV}, [], [], x.Quality, [], 1);
-%                 xASL_spm_reslice(x.D.ResliceRef, Path_c2T1{iV}, [], [], x.Quality, [], 1);
+                xASL_spm_reslice(x.D.ResliceRef, Path_T1{iV}, [], [], x.settings.Quality);
+%                 xASL_spm_reslice(x.D.ResliceRef, Path_c1T1{iV}, [], [], x.settings.Quality, [], 1);
+%                 xASL_spm_reslice(x.D.ResliceRef, Path_c2T1{iV}, [], [], x.settings.Quality, [], 1);
 %                 if xASL_exist(Path_c3T1{iV},'file')
-%                     xASL_spm_reslice(x.D.ResliceRef, Path_c3T1{iV}, [], [], x.Quality, [], 1);
+%                     xASL_spm_reslice(x.D.ResliceRef, Path_c3T1{iV}, [], [], x.settings.Quality, [], 1);
 %                 end
 
 %                 % Create brainmask
@@ -273,10 +273,10 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                 xASL_delete(Path_rT1);
 
                 if strcmpi(x.WhichLongReg,'DARTEL')
-                    xASL_spm_reslice(x.D.ResliceRef, Path_c1T1, [], [], x.Quality, [], 1);
-                    xASL_spm_reslice(x.D.ResliceRef, Path_c2T1, [], [], x.Quality, [], 1);
+                    xASL_spm_reslice(x.D.ResliceRef, Path_c1T1, [], [], x.settings.Quality, [], 1);
+                    xASL_spm_reslice(x.D.ResliceRef, Path_c2T1, [], [], x.settings.Quality, [], 1);
                     if exist(Path_c3T1,'file')
-                        xASL_spm_reslice(x.D.ResliceRef, Path_c3T1, [], [], x.Quality, [], 1);
+                        xASL_spm_reslice(x.D.ResliceRef, Path_c3T1, [], [], x.settings.Quality, [], 1);
                     end
 
                     % Remove NaNs for DARTEL
@@ -287,7 +287,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                         xASL_io_SaveNifti(Files2{iL}, Files2{iL}, tIM, [], false);
                     end
                 else
-                    xASL_spm_reslice(x.D.ResliceRef, Path_T1, [], [], x.Quality);
+                    xASL_spm_reslice(x.D.ResliceRef, Path_T1, [], [], x.settings.Quality);
                     xASL_im_SkullStrip(Path_rT1, fullfile(x.D.MapsDir, 'rbrainmask_prob.nii'), x, Path_rT1); % skullstrip
                     tIM = xASL_io_Nifti2Im(Path_rT1);
                     tIM(tIM<=0) = NaN;
@@ -420,7 +420,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
                     xASL_delete(LongRegFile2);
 
-                    xASL_im_FillNaNs(y_File2, 3, x.Quality, [], x);
+                    xASL_im_FillNaNs(y_File2, 3, x.settings.Quality, [], x);
                 end
 
                 OUTPUT2name      = fullfile( x.D.ROOT, CurrentSub{iS}, ['r2' x.P.STRUCT '.nii']);

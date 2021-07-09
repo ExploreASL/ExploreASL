@@ -53,7 +53,7 @@ end
 
 %% --------------------------------------------------------------------------------
 %% 1) Administration
-if x.Quality~=0 && x.Quality~=1
+if x.settings.Quality~=0 && x.settings.Quality~=1
     error('Wrong quality definition');
 end
 
@@ -190,9 +190,9 @@ end
 if SegmentSPM12
     xASL_wrp_SPM12Segmentation(x);
 
-    if ~x.Quality % With low quality, registration was performed on lower resolution,
+    if ~x.settings.Quality % With low quality, registration was performed on lower resolution,
         % & transformation needs to be upsampled to correct resolution
-        xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.Quality, x.P.Path_y_T1, 1);
+        xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.settings.Quality, x.P.Path_y_T1, 1);
     end
     return; % rest of the function is housekeeping for CAT12
 end
@@ -311,13 +311,13 @@ else % if no lesion existed, keep the non-linear flowfield (if it exists, otherw
     end
 end
 
-if ~x.Quality % With low quality, registration was performed on lower resolution,
+if ~x.settings.Quality % With low quality, registration was performed on lower resolution,
               % & transformation needs to be upsampled to correct resolution
-    xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.Quality, x.P.Path_y_T1, 1);
+    xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.settings.Quality, x.P.Path_y_T1, 1);
 end
 
 % Fill NaNs with identity for smooth edges of flow fields
-xASL_im_FillNaNs(x.P.Path_y_T1, 3, x.Quality, [], x);
+xASL_im_FillNaNs(x.P.Path_y_T1, 3, x.settings.Quality, [], x);
 
 
 
@@ -455,7 +455,7 @@ function xASL_wrp_SPM12Segmentation(x)
     matlabbatch{1}.spm.spatial.preproc.warp.fwhm            = 0;
     matlabbatch{1}.spm.spatial.preproc.warp.write           = [0 1];
 
-    if x.Quality
+    if x.settings.Quality
         matlabbatch{1}.spm.spatial.preproc.warp.samp        = 3;
     else
         matlabbatch{1}.spm.spatial.preproc.warp.samp        = 9;
@@ -507,7 +507,7 @@ end
 
 matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm                         = {SPMTemplateNII};
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_savesteps           = x.Seg.SaveIntermedFlowField;
-matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_quality             = x.Quality;
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_quality             = x.settings.Quality;
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_disabledartel       = x.Seg.DisableDARTEL;
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_lesion              = {xASL_im_Lesion2CAT(x.P.Path_T1)};
 if str2double(catVer) > 1500
@@ -555,7 +555,7 @@ if x.T1BiasFieldRegularization
     matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
 end
 
-if ~x.Quality
+if ~x.settings.Quality
 	matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 0; % light cleanup
 	matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0; % strength local adaptive segmentation
 	matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % default SPM approach
@@ -610,8 +610,8 @@ try % 1) First attempt CAT12
     close all;
     SegmentSPM12 = false;
 catch
-    if ~x.Quality
-        warning('CAT12 failed with x.Quality==0, try x.Quality==1 instead!');
+    if ~x.settings.Quality
+        warning('CAT12 failed with x.settings.Quality==0, try x.settings.Quality==1 instead!');
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % 0.5; % strength local adaptive segmentation
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 2; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
@@ -690,7 +690,7 @@ if x.Seg.SaveOriginalFlowField
 end
 
 %% Save the improved mixing
-if x.Seg.SaveMixedFlowField && x.Quality
+if x.Seg.SaveMixedFlowField && x.settings.Quality
     % Looks at border points of the lesion
     pointsWithin = (distInLesion == 1);
     % Calculate the difference in transformation movement between the SPM and DARTEL/GS
@@ -727,7 +727,7 @@ end
 % Deprecated function. In case of a large deformation - the IM_spm field will be completely off, pointing to
 % a wrong location, because it will not manage to find the tumor. It might be more nicely regularized, but
 % it will point to a wrong location, because the deformation will not be captured.
-if x.Quality
+if x.settings.Quality
     IM_dartel = dist.*IM_spm + (1-dist).*IM_dartel;
 end
 %IM_dartel_old       = dist.*IM_spm + (1-dist).*IM_dartel;
