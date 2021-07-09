@@ -217,7 +217,7 @@ function x = DataParTemplate(x)
 %                - options:
 %                  - 1 = run SPM12
 %                  - 0 = run CAT12
-% x.bHammersCAT12 - boolean specifying if CAT12 should provide Hammers volumetric ROI results (OPTIONAL, DEFAULT = 0)
+% x.modules.structural.bHammersCAT12 - boolean specifying if CAT12 should provide Hammers volumetric ROI results (OPTIONAL, DEFAULT = 0)
 % x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------

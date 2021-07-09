@@ -60,8 +60,8 @@ end
 if ~isfield(x,'Seg')
 	x.Seg = {};
 end
-if ~isfield(x, 'bHammersCAT12')
-    x.bHammersCAT12 = false;
+if ~isfield(x.modules.structural, 'bHammersCAT12')
+    x.modules.structural.bHammersCAT12 = false;
 end
 
 % Check whether we should do normal or strong biasfield correction
@@ -581,7 +581,7 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel      = 0;   % don't save 
 matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
 
-if x.bHammersCAT12
+if x.modules.structural.bHammersCAT12
     matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {fullfile(x.opts.MyPath, 'External', 'AtlasesNonCommercial', 'HammersCAT12.nii')};
 else
     matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
