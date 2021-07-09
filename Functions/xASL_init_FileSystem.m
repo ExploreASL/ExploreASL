@@ -53,7 +53,7 @@ if isfield(x.dir,'SUBJECTDIR')
     x.iSubject = find(cellfun(@(y) strcmp(y, x.P.SubjectID), x.SUBJECTS));
 end
 if isfield(x,'SESSIONDIR')
-    [~, x.P.SessionID] = xASL_fileparts(x.SESSIONDIR);
+    [~, x.P.SessionID] = xASL_fileparts(x.dir.SESSIONDIR);
     x.iSession = find(cellfun(@(y) strcmp(y, x.P.SessionID), x.SESSIONS));
 end
 if isfield(x,'iSubject') && isfield(x,'iSession')
@@ -104,7 +104,7 @@ end
 if isfield(x.P,'SubjectID')
     
     for iSess=1:length(x.SESSIONS)
-        x.P.SessionDir{iSess} = fullfile(x.D.ROOT,x.P.SubjectID,x.SESSIONS{iSess});
+        x.dir.SESSIONDIR{iSess} = fullfile(x.D.ROOT,x.P.SubjectID,x.SESSIONS{iSess});
     end
 
     if ~isfield(x.P,'SessionID')
@@ -155,7 +155,7 @@ if isfield(x.P,'SubjectID')
     %% ------------------------------------------------------------------------------------------
     %% Add custom cases
     if isfield(x, 'SESSIONDIR')
-        x.P.Path_MaskVascular = fullfile(x.SESSIONDIR, 'MaskVascular.nii');
+        x.P.Path_MaskVascular = fullfile(x.dir.SESSIONDIR, 'MaskVascular.nii');
     end
     x.P.Pop_Path_MaskVascular = fullfile(x.D.PopDir, ['MaskVascular_' x.P.SubjectID '_' x.P.SessionID '.nii']);
     x.P.Path_Pop_MaskSusceptibility = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.P.SubjectID '_' x.P.SessionID '.nii']);    

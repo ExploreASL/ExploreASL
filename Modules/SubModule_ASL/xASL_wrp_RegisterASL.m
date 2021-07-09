@@ -129,7 +129,7 @@ end
 % registration estimation.
 BaseOtherList = {x.P.Path_despiked_ASL4D, x.P.Path_mean_control, x.P.Path_M0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped, x.P.Path_ASL4D_RevPE,...
 	x.P.Path_mean_PWI_Clipped_DCT,x.P.Path_mean_PWI_Clipped_ORI,...
-    x.P.Path_ASL4D_ORI, fullfile(x.SESSIONDIR, 'B0.nii'), fullfile(x.SESSIONDIR, 'Unwarped.nii'), fullfile(x.SESSIONDIR, 'Field.nii'), fullfile(x.SESSIONDIR, 'TopUp_fieldcoef.nii')};
+    x.P.Path_ASL4D_ORI, fullfile(x.dir.SESSIONDIR, 'B0.nii'), fullfile(x.dir.SESSIONDIR, 'Unwarped.nii'), fullfile(x.dir.SESSIONDIR, 'Field.nii'), fullfile(x.dir.SESSIONDIR, 'TopUp_fieldcoef.nii')};
 
 if ~strcmp(x.P.Path_despiked_ASL4D, x.P.Path_ASL4D)
     BaseOtherList{end+1} = x.P.Path_ASL4D; % keep original ASL4D aligned as well
@@ -137,17 +137,17 @@ end
 
 %% C. Define paths to the ASL templates
 % Same for all sequences
-x.D.Bias_Native = fullfile(x.SESSIONDIR,'ATT_BiasField.nii');
+x.D.Bias_Native = fullfile(x.dir.SESSIONDIR,'ATT_BiasField.nii');
 x.D.Bias_MNI = fullfile(x.D.TemplateDir,'ATT_BiasField.nii');
-x.D.Vasc_Native = fullfile(x.SESSIONDIR,'VascularArtifact_Template.nii');
+x.D.Vasc_Native = fullfile(x.dir.SESSIONDIR,'VascularArtifact_Template.nii');
 x.D.Vasc_MNI = fullfile(x.D.TemplateDir,'MaxVesselTemplate.nii');
 
-x.D.Mean_Native = fullfile(x.SESSIONDIR,'Mean_CBF_Template.nii');
-x.D.Mask_Native = fullfile(x.SESSIONDIR,'Mask_Template.nii');
-x.D.raw_Native = fullfile(x.SESSIONDIR,'RawTemplate.nii');
+x.D.Mean_Native = fullfile(x.dir.SESSIONDIR,'Mean_CBF_Template.nii');
+x.D.Mask_Native = fullfile(x.dir.SESSIONDIR,'Mask_Template.nii');
+x.D.raw_Native = fullfile(x.dir.SESSIONDIR,'RawTemplate.nii');
 
-x.D.PathMask = fullfile(x.SESSIONDIR, 'MaskASL.nii');
-x.D.Path_PseudoTissue = fullfile(x.SESSIONDIR, 'PseudoTissue.nii');
+x.D.PathMask = fullfile(x.dir.SESSIONDIR, 'MaskASL.nii');
+x.D.Path_PseudoTissue = fullfile(x.dir.SESSIONDIR, 'PseudoTissue.nii');
 
 % Differs between sequences
 if      strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'Philips'))
@@ -199,7 +199,7 @@ if strcmp(x.P.SessionID,'ASL_1') || x.dataset.nSessions==1
     xASL_delete(x.D.Mean_Native);
     xASL_delete(x.D.raw_Native);
     xASL_delete(x.P.Path_PseudoCBF);
-    xASL_delete(fullfile(x.SESSIONDIR,'MaskASL.nii'));
+    xASL_delete(fullfile(x.dir.SESSIONDIR,'MaskASL.nii'));
 end
 
 
@@ -580,11 +580,11 @@ if ~isfield(x,'ComputeDiceCoeff')
 end
 
 %% Admin
-PathMaskTemplate = fullfile(x.SESSIONDIR, 'Mask_Template.nii');
-PathTemplate = fullfile(x.SESSIONDIR, 'Mean_CBF_Template.nii');
+PathMaskTemplate = fullfile(x.dir.SESSIONDIR, 'Mask_Template.nii');
+PathTemplate = fullfile(x.dir.SESSIONDIR, 'Mean_CBF_Template.nii');
 [Fpath, Ffile] = xASL_fileparts(x.D.PathMask);
 x.D.PathMask2 = fullfile(Fpath, [Ffile '2.nii']);
-x.D.PathCBF = fullfile(x.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii');
+x.D.PathCBF = fullfile(x.dir.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii');
 if ~xASL_exist(x.D.PathMask,'file')
     xASL_Copy(PathMaskTemplate, x.D.PathMask);
 end

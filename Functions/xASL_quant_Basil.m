@@ -32,15 +32,15 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     
     %% 1. Define paths
     % NEEDS TO BE MADE A RELATIVE PATH TO BE SPACE-INDEPENDENT
-    pathBasilInput = fullfile(x.SESSIONDIR, 'PWI4D_BasilInput.nii');
-    pathBasilOptions = fullfile(x.SESSIONDIR, 'Basil_ModelOptions.txt');
-    dirBasilOutput = fullfile(x.SESSIONDIR, 'BasilOutput');
+    pathBasilInput = fullfile(x.dir.SESSIONDIR, 'PWI4D_BasilInput.nii');
+    pathBasilOptions = fullfile(x.dir.SESSIONDIR, 'Basil_ModelOptions.txt');
+    dirBasilOutput = fullfile(x.dir.SESSIONDIR, 'BasilOutput');
     
     
     
     %% 2. Delete previous BASIL output
-    xASL_adm_DeleteFileList(x.SESSIONDIR, '(?i)^basilOutput.*$', 1, [0 Inf]);
-    FolderList = xASL_adm_GetFileList(x.SESSIONDIR, '(?i)^basilOutput.*$', 'FPList', [0 Inf], 1);
+    xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^basilOutput.*$', 1, [0 Inf]);
+    FolderList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)^basilOutput.*$', 'FPList', [0 Inf], 1);
     for iFolder=1:numel(FolderList)
         xASL_delete(FolderList{iFolder}, 1);
     end
@@ -48,7 +48,7 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     
     xASL_delete(pathBasilOptions);
     xASL_delete(pathBasilInput);
-    xASL_adm_DeleteFileList(x.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]); % remove residual BASIL-related files
+    xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]); % remove residual BASIL-related files
     
     %% 3. Write the PWI as Nifti file for Basil to read as input
     % FIXME would be good to have a brain mask at this point

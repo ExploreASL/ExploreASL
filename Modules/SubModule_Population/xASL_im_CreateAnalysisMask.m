@@ -168,7 +168,7 @@ if x.bNativeSpaceAnalysis
 			SubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
 
 			x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
-			x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
+			x.dir.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
 
 			xASL_TrackProgress(SubjSess,x.nSubjects*x.dataset.nSessions);

@@ -51,8 +51,8 @@ xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field 
 
 %% ------------------------------------------------------------------------------------------
 % 1. Warp TopUp QC files
-PathB0 = fullfile(x.SESSIONDIR ,'B0.nii');
-PathUnwarped = fullfile(x.SESSIONDIR ,'Unwarped.nii');
+PathB0 = fullfile(x.dir.SESSIONDIR ,'B0.nii');
+PathUnwarped = fullfile(x.dir.SESSIONDIR ,'Unwarped.nii');
 PathPopB0 = fullfile(x.D.PopDir, ['rASL_B0_' x.P.SubjectID '_' x.P.SessionID '.nii']);
 PathPopUnwarped = fullfile(x.D.PopDir, ['rASL_Unwarped_' x.P.SubjectID '_' x.P.SessionID '.nii']);
 
