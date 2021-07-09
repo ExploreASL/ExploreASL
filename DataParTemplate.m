@@ -185,28 +185,29 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % GENERAL PROCESSING PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.settings.Quality    - boolean specifying on which quality the pipeline should be run (OPTIONAL, DEFAULT = 1)
-%                       - options:
-%                       - 1 = normal quality 
-%                       - 0 = lower quality, fewer iterations and lower resolution of processing for a fast try-out
-% x.settings.DELETETEMP - boolean for removing the temporary files (OPTIONAL, DEFAULT = 1)
-%                       - options:
-%                       - 0 = keeping all files
-%                       - 1 = delete temporary files created by the pipeline
-% x.SkipIfNoFlair - boolean to skip processing of subjects that do not have a FLAIR image (OPTIONAL, DEFAULT = 0)
-%                   These parameters can be useful when some data is still complete, but one
-%                   would like to start image processing already.
-%                 - options:
-%                   - 1 = skip processing of a subject that does not have a FLAIR image
-%                   - 0 = do not skip anything
-% x.SkipIfNoASL   - boolean to skip processing of subjects that do not have a ASL image (OPTIONAL, DEFAULT = 0)
-%                 - options:
-%                   - 1 = skip processing of a subject that does not have a ASL image
-%                   - 0 = do not skip anything
-% x.SkipIfNoM0    - boolean to skip processing of subjects that do not have a M0 image (OPTIONAL, DEFAULT = 0)
-%                 - options:
-%                   - 1 = skip processing of a subject that does not have a M0 image
-%                   - 0 = do not skip anything
+% x.settings.Quality       - boolean specifying on which quality the pipeline should 
+%                            be run (OPTIONAL, DEFAULT = 1), options:
+%                          - 1 = normal quality 
+%                          - 0 = lower quality, fewer iterations and lower resolution 
+%                            of processing for a fast try-out
+% x.settings.DELETETEMP    - boolean for removing the temporary files (OPTIONAL, DEFAULT = 1)
+%                          - options:
+%                          - 0 = keeping all files
+%                          - 1 = delete temporary files created by the pipeline
+% x.settings.SkipIfNoFlair - boolean to skip processing of subjects that do not have a 
+%                            FLAIR image (OPTIONAL, DEFAULT = 0)
+%                            These parameters can be useful when some data is still complete, 
+%                            but one would like to start image processing already.
+%                            -> options: 1 = skip processing of a subject that does not have a FLAIR image
+%                                        0 = do not skip anything
+% x.settings.SkipIfNoASL   - boolean to skip processing of subjects that do not have a ASL image 
+%                            (OPTIONAL, DEFAULT = 0)
+%                             -> options: 1 = skip processing of a subject that does not have a ASL image
+%                                         0 = do not skip anything
+% x.settings.SkipIfNoM0    - boolean to skip processing of subjects that do not have a M0 image 
+%                            (OPTIONAL, DEFAULT = 0)
+%                            -> options:  1 = skip processing of a subject that does not have a M0 image
+%                                         0 = do not skip anything
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % STRUCTURAL PROCESSING PARAMETERS
