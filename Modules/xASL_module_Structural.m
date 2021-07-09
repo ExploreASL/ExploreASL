@@ -347,8 +347,8 @@ iState = 6;
 if ~isfield(x.settings,'SegmentSPM12')
     x.settings.SegmentSPM12 = false; % by default, use CAT12, not SPM12 for segmentation
 end
-if ~isfield(x,'bFixResolution')
-    x.bFixResolution = false; % by default, keep the original resolution
+if ~isfield(x.modules.structural,'bFixResolution')
+    x.modules.structural.bFixResolution = false; % by default, keep the original resolution
 end
 
 % Now check if the segmentation results exist
