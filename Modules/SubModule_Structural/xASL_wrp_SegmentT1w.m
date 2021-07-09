@@ -67,7 +67,7 @@ end
 % Check whether we should do normal or strong biasfield correction
 x.modules.structural.T1BiasFieldRegularization = true; % default
 if isfield(x,'Vendor') && ~isempty(regexpi(x.Vendor,'GE'))
-    x.T1BiasFieldRegularization = false; % SPM12
+    x.modules.structural.T1BiasFieldRegularization = false; % SPM12
     % GE has wider bore scanners, resulting in a wide biasfield
 end
 
@@ -407,7 +407,7 @@ function xASL_wrp_SPM12Segmentation(x)
 
     matlabbatch{1}.spm.spatial.preproc.channel.vols = {x.P.Path_T1};
 
-    if x.T1BiasFieldRegularization
+    if x.modules.structural.T1BiasFieldRegularization
         matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0;
     else
         matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.01;
@@ -550,7 +550,7 @@ matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize o
 matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
 matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
 
-if x.T1BiasFieldRegularization
+if x.modules.structural.T1BiasFieldRegularization
     % decrease biasfield regularization for large biasfields (e.g. GE wide bore scanner)
     matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
 end
