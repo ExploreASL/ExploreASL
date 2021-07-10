@@ -156,13 +156,29 @@ elseif strcmpi(Fext, '.json')
 		x = rmfield(x,'M0_conventionalProcessing');
 	end
 	
-	if isfield(x,'exclusion')
-		warning('Deprecated field. Please use x.dataset.exclusion instead of x.exclusion');
-		if ~isfield(x,'dataset') || ~isfield(x.dataset,'exclusion')
-			x.dataset.exclusion = x.exclusion;
-		end
-		x = rmfield(x,'exclusion');
-	end
+    if isfield(x,'exclusion')
+        warning('Deprecated field. Please use x.dataset.exclusion instead of x.exclusion');
+        if ~isfield(x,'dataset') || ~isfield(x.dataset,'exclusion')
+            x.dataset.exclusion = x.exclusion;
+        end
+        x = rmfield(x,'exclusion');
+    end
+    
+    if isfield(x,'subject_regexp')
+        warning('Deprecated field. Please use x.dataset.subjectRegexp instead of x.subject_regexp');
+        if ~isfield(x,'dataset') || ~isfield(x.dataset,'subjectRegexp')
+            x.dataset.subjectRegexp = x.subject_regexp;
+        end
+        x = rmfield(x,'subject_regexp');
+    end
+    
+    if isfield(x,'Quality')
+        warning('Deprecated field. Please use x.settings.Quality instead of x.Quality');
+        if ~isfield(x,'settings') || ~isfield(x.dataset,'Quality')
+            x.settings.Quality = x.Quality;
+        end
+        x = rmfield(x,'Quality');
+    end
 	
 else
 	error('Unknown file extension');
