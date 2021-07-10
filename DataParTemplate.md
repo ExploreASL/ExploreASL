@@ -50,59 +50,30 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 | x.settings.M0_conventionalProcessing | Boolean - use the conventional M0 processing (per consensus paper), options: 1 = standard processing, 0 = new image processing (improved masking & smoothing). | OPTIONAL, DEFAULT = 0 |
 | x.M0                                 | Choose which M0 option to use: `'separate_scan'` = for a separate M0 NIfTI (needs to be in the same folder called `M0.nii`), `3.7394*10^6` = single M0 value to use, `'UseControlAsM0'` = will copy the mean control image as M0.nii and process as if it was a separately acquired M0 image (taking TR etc from the `ASL4D.nii`). Make sure that no background suppression was used, otherwise this option is invalid. | REQUIRED |
 | x.M0_GMScaleFactor                   | Add additional scale factor to multiply the M0 image by This can be useful when you have background suppression but no control/M0 image without background suppression. If you then know the M0 scalefactor for the GM, you can use the control image as M0 and use this parameter to scale back what was suppressed by background suppression. Note that there is no option for separate tissue scaling (e.g. WM & GM), because ExploreASL pragmatically smooths the M0 a lot, assuming that head motion and registration between M0 & ASL4D will differ between patients and controls. | OPTIONAL, default = 1 |
-| x.M0PositionInASL4D                  | A vector of integers that indicates the position of M0 in TimeSeries, if it is integrated by the Manufacturer in the 
-DICOM export. Will move this from ASL4D.nii to M0.nii Note that the x.M0PositionInASL4D parameter is independent from the x.M0 parameter choice. Example for Philips 3D GRASE = '[1 2]' (first control-label pair). Example for Siemens 3D GRASE = 1 first image. Example for GE 3D spiral = 2 where first image is PWI & last = M0. Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed. | OPTIONAL, DEFAULT = `[] (no M0 in timeseries)` |
+| x.M0PositionInASL4D                  | A vector of integers that indicates the position of M0 in TimeSeries, if it is integrated by the Manufacturer in the DICOM export. Will move this from ASL4D.nii to M0.nii Note that the x.M0PositionInASL4D parameter is independent from the x.M0 parameter choice. Example for Philips 3D GRASE = '[1 2]' (first control-label pair). Example for Siemens 3D GRASE = 1 first image. Example for GE 3D spiral = 2 where first image is PWI & last = M0. Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed. | OPTIONAL, DEFAULT = `[] (no M0 in timeseries)` |
 | x.DummyScanPositionInASL4D           | A vector of integers that indicates the position of Dummy scans in TimeSeries if they are integrated by the Manufacturer in the DICOM export. This allows to remove the dummy scans or noise scans that are part of the Timeseries. A new ASL4D.nii is saved with dummy scans removed and the original is backed-up. Works in a similar way as M0PositionInASL4D, both can be entered at the same time and both indicate the original position in the Timeseries independend of each other. Example for Siemens 2D EPI = `[79 80]` Skip the control-label pair used for noise measurements. Example for certain Siemens 3D GRASE = 2 Skip the first dummy control image. Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed. | OPTIONAL, DEFAULT = `[] (no M0 in timeseries)` |
 
-
-# WORK IN PROGRESS
 
 
 ## SEQUENCE PARAMETERS
 
 |                                       | Description                                   | Defaults           |
 | ------------------------------------- |:---------------------------------------------:|:------------------:|
-| x.Q.BackgroundSuppressionNumberPulses |  |  |
-| x.Q.BackgroundSuppressionPulseTime    |  |  |
-| x.Q.PresaturationTime                 |  |  |
-| x.Q.readoutDim                        |  |  |
-| x.Q.Manufacturer                      |  |  |
-| x.Q.Sequence                          |  |  |
-| x.Q.LabelingType                      |  |  |
-| x.Q.Initial_PLD                       |  |  |
-| x.Q.LabelingDuration                  |  |  |
-| x.Q.SliceReadoutTime                  |  |  |
+| x.Q.BackgroundSuppressionNumberPulses | Used to estimate decrease of labeling efficiency. Options: 0 = (no background suppression), 2 = labeling efficiency factor `0.83` (e.g. Philips 2D EPI & Siemens 3D GRASE), 4 = labeling efficiency factor `0.81` (e.g. Philips 3D GRASE), 5 = labeling efficiency factor `0.75` (e.g. GE 3D spiral). | REQUIRED |
+| x.Q.BackgroundSuppressionPulseTime    | Vector containing timing, in ms, of the background suppression pulses before the start of the readout (per BIDS) (REQUIRED when x.Q.UseControlAsM0 & x.Q.BackgroundSuppressionNumberPulses>0). |  |
+| x.Q.PresaturationTime                 | Time in ms before the start of the readout, scalar, when the slice has been saturated (90 degree flip) this has to come before all the bSup pulses, but doesn't need to be always specified. | OPTIONAL, defaults to PLD (PASL) or PLD+LabDur ((P)CASL) |
+| x.Q.readoutDim                        | String specifying the readout type. Options: `'2D'` for slice-wise readout, `'3D'` for volumetric readout. | REQUIRED |
+| x.Q.Manufacturer                      | String containing the Manufacturer used. This parameter is used to apply the Manufacturer-specific scale factors (REQUIRED for ASL), options: 'GE_product', 'GE_WIP', 'Philips', 'Siemens'. |  |
+| x.Q.Sequence                          | String containing the sequence used. Options: `'3D_spiral', '3D_GRASE', '2D_EPI'`. | REQUIRED for ASL |
+| x.Q.LabelingType                      | String containing the labeling strategy used. Options: `'PASL'` (pulsed Q2-TIPS), `'CASL'` (CASL/PCASL). Note: pulsed without Q2TIPS cannot be reliably quantified because the bolus width cannot be identified CASL & PCASL are both continuous ASL methods, identical quantification. | REQUIRED for ASL |
+| x.Q.Initial_PLD                       | Value of PLD (ms), for 3D this is fixed for whole brain, for 2D this is the PLD of first acquired slice, example: 1800. | REQUIRED for ASL |
+| x.Q.LabelingDuration                  | Value of labeling duration (ms), example: 1800. | REQUIRED for ASL |
+| x.Q.SliceReadoutTime                  | Value (ms) of time added to the PLD after reading out each slice, example: 31. Other option = `'shortestTR'`; shortest TR enabled gives each sequence the minimal TR. This enables calculating slice delay per subject. | REQUIRED for 2D ASL sequences |
 
-x.Q.BackgroundSuppressionNumberPulses - used to estimate decrease of labeling efficiency (REQUIRED)
-- options:
-  - 0 = (no background suppression)
-  - 2 = labeling efficiency factor `0.83` (e.g. Philips 2D EPI & Siemens 3D GRASE)
-  - 4 = labeling efficiency factor `0.81` (e.g. Philips 3D GRASE)
-  - 5 = labeling efficiency factor `0.75` (e.g. GE 3D spiral)
-x.Q.BackgroundSuppressionPulseTime - Vector containing timing, in ms, of the background suppression pulses
-               before the start of the readout (per BIDS) (REQUIRED when x.Q.UseControlAsM0 &
-               x.Q.BackgroundSuppressionNumberPulses>0)
-x.Q.PresaturationTime - time in ms before the start of the readout, scalar, when the slice has been saturated (90 degree flip)
-  this has to come before all the bSup pulses, but doesn't need to be always specified 
-  (OPTIONAL, defaults to PLD (PASL) or PLD+LabDur ((P)CASL)
-x.Q.readoutDim        - string specifying the readout type (REQUIRED)
-- options: `'2D'` for slice-wise readout, `'3D'` for volumetric readout
-x.Q.Manufacturer      - string containing the Manufacturer used. This parameter is used to apply the Manufacturer-specific 
-  scale factors (REQUIRED for ASL), options: 'GE_product', 'GE_WIP', 'Philips', 'Siemens'
-x.Q.Sequence          - string containing the sequence used (REQUIRED for ASL)
-- options: `'3D_spiral', '3D_GRASE', '2D_EPI'`
-x.Q.LabelingType      - string containing the labeling strategy used (REQUIRED for ASL)
-- options: `'PASL'` (pulsed Q2-TIPS), `'CASL'` (CASL/PCASL)
-- note: pulsed without Q2TIPS cannot be reliably quantified because the bolus width 
-  cannot be identified CASL & PCASL are both continuous ASL methods, identical quantification
-x.Q.Initial_PLD       - value of PLD (ms), for 3D this is fixed for whole brain, for 2D this is the PLD of first 
-  acquired slice (REQUIRED for ASL), example: 1800
-x.Q.LabelingDuration  - value of labeling duration (ms) (REQUIRED for ASL)
-- example: 1800
-x.Q.SliceReadoutTime  - value (ms) of time added to the PLD after reading out each slice (REQUIRED for 2D ASL sequences)
-- example: 31
-- Other option = `'shortestTR'`; shortest TR enabled gives each sequence the minimal TR. 
-  This enables calculating slice delay per subject
+
+
+# WORK IN PROGRESS
+
 
 
 ## QUANTIFICATION PARAMETERS
