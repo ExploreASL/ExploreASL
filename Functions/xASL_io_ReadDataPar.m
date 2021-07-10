@@ -196,6 +196,14 @@ elseif strcmpi(Fext, '.json')
         x = rmfield(x,'Vendor');
     end
     
+    if isfield(x,'Sequence')
+        warning('Deprecated field. Please use x.Q.Sequence instead of x.Sequence');
+        if ~isfield(x,'Q') || ~isfield(x.Q,'Sequence')
+            x.Q.Sequence = x.Sequence;
+        end
+        x = rmfield(x,'Sequence');
+    end
+    
     if isfield(x,'readout_dim')
         warning('Deprecated field. Please use x.Q.readoutDim instead of x.readout_dim');
         if ~isfield(x,'Q') || ~isfield(x.Q,'readoutDim')
