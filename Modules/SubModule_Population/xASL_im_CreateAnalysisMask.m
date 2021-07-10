@@ -54,7 +54,7 @@ if x.dataset.nSubjectsSessions<16
     x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
     x.S.VBAmask = x.S.MaskSusceptibility;
     bSkipStandard = 1;
-elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Sequence,'3d_spiral')
+elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Q.Sequence,'3d_spiral')
     warning('Missing susceptibility maps, skipping...');
     bSkipStandard = 1;
 end
@@ -119,11 +119,11 @@ if ~bSkipStandard
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
 	
 	DoSusceptibility = true;
-	if ~isfield(x,'Sequence')
-		error('x.Sequence parameter missing!');
-	elseif strcmpi(x.Sequence,'2D_EPI')
+	if ~isfield(x.Q,'Sequence')
+		error('x.Q.Sequence parameter missing!');
+	elseif strcmpi(x.Q.Sequence,'2D_EPI')
 		Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
-	elseif strcmpi(x.Sequence,'3D_GRASE')
+	elseif strcmpi(x.Q.Sequence,'3D_GRASE')
 		Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
 	else
 		% don't mask susceptibility artifacts

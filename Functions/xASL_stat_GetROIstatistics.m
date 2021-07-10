@@ -194,7 +194,7 @@ end
 if x.S.bMasking(1)==1
     if HasGroupSusceptMask
         fprintf('%s\n', 'Using population-based susceptibility mask');
-    elseif ~strcmpi(x.Sequence,'3D_spiral') % for 3D spiral we dont need a susceptibility mask
+    elseif ~strcmpi(x.Q.Sequence,'3D_spiral') % for 3D spiral we dont need a susceptibility mask
         fprintf('%s\n', 'Using subject-specific susceptibility mask');
     else
         warning('No group susceptibility mask found, trying to use subject-wise');
@@ -518,7 +518,7 @@ for iSubject=1:x.nSubjects
             else
                 if HasGroupSusceptMask % use population-based susceptibility mask
                     SusceptibilityMask = x.S.MaskSusceptibility;
-                elseif strcmpi(x.Sequence,'3D_spiral')
+                elseif strcmpi(x.Q.Sequence,'3D_spiral')
                     % if 3D spiral, then we dont need a susceptibility mask
                 else % fall back to try subject-wise Susceptibility Masks
                     FilePath = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.S.SubjectSessionID{SubjSess,1} '.nii']);
