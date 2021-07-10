@@ -12,7 +12,7 @@ AtlasPath{5} = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
 AtlasPath{6} = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
 
 x.Sequence = '3D_spiral'; % to fool the Population module for pooling sequences
-x.readout_dim = '3D';
+x.Q.readoutDim = '3D';
 
 
 % 1) For the reproducibility study

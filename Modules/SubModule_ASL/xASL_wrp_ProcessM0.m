@@ -83,7 +83,7 @@ end
 if ~isfield(x.settings,'M0_conventionalProcessing')
        x.settings.M0_conventionalProcessing   = 0;
        % by default, conventional processing is off, since our new method outperforms in most cases
-elseif x.settings.M0_conventionalProcessing == 1 && strcmpi(x.readout_dim,'3D')
+elseif x.settings.M0_conventionalProcessing == 1 && strcmpi(x.Q.readoutDim,'3D')
        x.settings.M0_conventionalProcessing = 0;
        warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end
