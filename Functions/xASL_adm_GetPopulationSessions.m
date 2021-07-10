@@ -30,7 +30,7 @@ else
     SESSIONS = x.SESSIONS;
 end
 
-currentSubjectRegExp = x.subject_regexp;
+currentSubjectRegExp = x.dataset.subjectRegexp;
 if strcmp(currentSubjectRegExp(1), '^')
     currentSubjectRegExp = currentSubjectRegExp(2:end);
 end

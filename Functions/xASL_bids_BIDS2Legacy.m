@@ -80,9 +80,13 @@ if ~isfield(dataPar,'x')
     % Add x field
     dataPar.x = struct;
 end
+% Dataset fields
+if ~isfield(dataPar.x,'dataset')
+    dataPar.x.dataset = struct;
+end
 % Add default subject regular expression
-if ~isfield(dataPar.x,'subject_regexp')
-    dataPar.x.subject_regexp = '^sub-.*$';
+if ~isfield(dataPar.x.dataset,'subjectRegexp')
+    dataPar.x.dataset.subjectRegexp = '^sub-.*$';
 end
 
 % Check for settings fields

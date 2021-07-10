@@ -24,7 +24,7 @@ function [x] = xASL_init_RemoveLockDirs(x)
     if exist(LockDir, 'dir')
         % fprintf('%s\n','Searching for locked previous ExploreASL image processing');
         LockDirFound = 0;
-        LockDir = xASL_adm_FindByRegExp(fullfile(x.D.ROOT, 'lock'), {'(ASL|Structural|LongReg_T1)', x.subject_regexp, '.*module.*','^(locked)$'}, 'Match', 'Directories');
+        LockDir = xASL_adm_FindByRegExp(fullfile(x.D.ROOT, 'lock'), {'(ASL|Structural|LongReg_T1)', x.dataset.subjectRegexp, '.*module.*','^(locked)$'}, 'Match', 'Directories');
         if ~isempty(LockDir)
             warning('Locked folders were found, consider removing them before proceeding');
         end

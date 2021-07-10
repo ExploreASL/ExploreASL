@@ -53,4 +53,4 @@ ExploreASL_Import(imPar, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, bRunDC
 
 %% Step 4) Create data par with:
 
-subject_regexp = '^sub-.*$';
+subjectRegexp = '^sub-.*$';

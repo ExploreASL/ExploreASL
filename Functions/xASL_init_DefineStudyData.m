@@ -66,7 +66,7 @@ end
 %% 1) Manage included & excluded subjects
 % Get a list of subject ID's by querying the folder names, excluding exclusions
 
-if ~isfield(x,'subject_regexp')
+if ~isfield(x.dataset,'subjectRegexp')
     warning('No subject regular expression detected');
     fprintf('Check if the correct DataPar file was loaded\n');
 end
@@ -77,12 +77,12 @@ if isfield(x.dataset,'ForceInclusionList')
     x.dataset.TotalSubjects = x.dataset.ForceInclusionList';
 else
     % First escape double escaping
-    x.subject_regexp = strrep(x.subject_regexp,'\\','\');
+    x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'\\','\');
     % add the visit-postfix as option
-    x.subject_regexp = strrep(x.subject_regexp,'$','');
-    x.subject_regexp = [x.subject_regexp '(|_\d*)$'];
+    x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'$','');
+    x.dataset.subjectRegexp = [x.dataset.subjectRegexp '(|_\d*)$'];
     % Then load subjects
-    x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(x.D.ROOT, x.subject_regexp, 'List', [0 Inf], true)); % find dirs
+    x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(x.D.ROOT, x.dataset.subjectRegexp, 'List', [0 Inf], true)); % find dirs
 end
 
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);

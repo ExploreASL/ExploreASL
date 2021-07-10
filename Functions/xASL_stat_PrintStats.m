@@ -157,7 +157,7 @@ if bFollowSubjectSessions
 else
     
     % Get Subject regular expression
-    SubjectExpression = x.subject_regexp;
+    SubjectExpression = x.dataset.subjectRegexp;
     if strcmp(SubjectExpression(end), '$') % remove this for allowing an ASL suffix
         SubjectExpression = SubjectExpression(1:end-1);
     end

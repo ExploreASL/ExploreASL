@@ -107,7 +107,7 @@ function x = xASL_init_PrintCheckSettings(x)
     %% -----------------------------------------------------------------------
     %% 3) Print warnings
     fprintf('\n%s\n\n','==============================================================================================');
-    field_symbol = {'subject_regexp'};
+    field_symbol = {'subjectRegexp'};
 
     for iField=1:length(field_symbol)
         if ~isfield(x,field_symbol{iField})
@@ -126,8 +126,12 @@ function x = xASL_init_PrintCheckSettings(x)
         end
     end
 
-    if ~isempty(regexp(x.subject_regexp, '^(\^|)\.\*(\$|)$'))
-        warning('Subject regexp not specific! Check that no wrong folders are included as subjects');
+    if ~isfield(x,'dataset')
+        warning('x.dataset didn''nt exist');
+    else
+        if ~isempty(regexp(x.dataset.subjectRegexp, '^(\^|)\.\*(\$|)$'))
+            warning('Subject regexp not specific! Check that no wrong folders are included as subjects');
+        end
     end
 
     fprintf('\n');
