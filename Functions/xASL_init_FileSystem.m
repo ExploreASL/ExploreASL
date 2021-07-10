@@ -154,7 +154,7 @@ if isfield(x.P,'SubjectID')
     
     %% ------------------------------------------------------------------------------------------
     %% Add custom cases
-    if isfield(x, 'SESSIONDIR')
+    if isfield(x.dir, 'SESSIONDIR')
         x.P.Path_MaskVascular = fullfile(x.dir.SESSIONDIR, 'MaskVascular.nii');
     end
     x.P.Pop_Path_MaskVascular = fullfile(x.D.PopDir, ['MaskVascular_' x.P.SubjectID '_' x.P.SessionID '.nii']);
