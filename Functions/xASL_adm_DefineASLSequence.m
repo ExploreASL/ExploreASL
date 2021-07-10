@@ -10,10 +10,10 @@ function [x] = xASL_adm_DefineASLSequence(x)
 %   x.Q.Manufacturer - Either 'GE', 'Philips', 'Siemens'
 % OUTPUT:
 %   x               - x structure containing all output parameters
-%   x.Sequence      - sequence type (readout)
+%   x.Q.Sequence    - sequence type (readout)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This ExploreASL function tries to check what ASL sequence is
-% being processed, if this was not already defined in x.Sequence.
+% being processed, if this was not already defined in x.Q.Sequence.
 % It does so by checking known combinations of readout dimensionality
 % (x.Q.readoutDim) and Manufacturer, knowing the product sequences of the Manufacturers.
 %
@@ -38,13 +38,13 @@ end
 % Obtain ASL sequence
 if ~isfield(x,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Manufacturer')
     if strcmpi(x.Q.readoutDim,'2D')
-       x.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of Manufacturer
+       x.Q.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of Manufacturer
     elseif strcmpi(x.Q.readoutDim,'3D') && ( ~isempty(regexpi(x.Q.Manufacturer,'Philips')) || ~isempty(regexpi(x.Q.Manufacturer,'Siemens')) )
-           x.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
+           x.Q.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
     elseif strcmpi(x.Q.readoutDim,'3D') && ~isempty(regexpi(x.Q.Manufacturer,'GE'))
-           x.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
+           x.Q.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
     elseif strcmpi(x.Q.readoutDim,'3D') && ~isempty(regexpi(x.Q.Manufacturer,'Gold Standard Phantoms'))
-        x.Sequence = '3D_GRASE'; % assume that this is simulated 3D GRASE by the DRO
+        x.Q.Sequence = '3D_GRASE'; % assume that this is simulated 3D GRASE by the DRO
         fprintf('%s\n', 'Processing as if this is a 3D GRASE sequence');
         fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of a single 3D volume');
         fprintf('%s\n', 'and intermediate amount of geometric distortion and smoothness');
@@ -55,16 +55,16 @@ if ~isfield(x,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Manufact
     end
 end
 if ~isfield(x,'Sequence')
-    warning('No x.Sequence defined');
+    warning('No x.Q.Sequence defined');
     fprintf('If there are multiple sequence types, this needs to be implemented yet here\n');
-    fprintf('Otherwise, please define x.Sequence\n');
-    fprintf('Setting x.Sequence=3D spiral to fool the pipeline here\n');
+    fprintf('Otherwise, please define x.Q.Sequence\n');
+    fprintf('Setting x.Q.Sequence=3D spiral to fool the pipeline here\n');
     fprintf('As this sequence doesnt have any susceptibility masks\n');
     fprintf('Note that this disables any masking of susceptibility signal dropout areas\n');
-    x.Sequence = '3D_spiral';
+    x.Q.Sequence = '3D_spiral';
     x.Q.readoutDim = '3D';
 else
-    fprintf('%s\n', [x.Sequence ' sequence detected']);
+    fprintf('%s\n', [x.Q.Sequence ' sequence detected']);
 end
 
 

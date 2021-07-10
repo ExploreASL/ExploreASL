@@ -121,26 +121,20 @@ function x = DataParTemplate(x)
 %                       - options: '2D' for slice-wise readout, '3D' for volumetric readout
 % x.Q.Manufacturer      - string containing the Manufacturer used. This parameter is used to apply the Manufacturer-specific 
 %                         scale factors (REQUIRED for ASL), options: 'GE_product', 'GE_WIP', 'Philips', 'Siemens'
-% x.Sequence - string containing the sequence used (REQUIRED for ASL)
-%            - options:
-%              - '3D_spiral'
-%              - '3D_GRASE'
-%              - '2D_EPI'
-% x.Q.LabelingType - string containing the labeling strategy used (REQUIRED for ASL)
-%                  - options:
-%                    - 'PASL' (pulsed Q2-TIPS)
-%                    - 'CASL' (CASL/PCASL)
-%                  - note: pulsed without Q2TIPS cannot be reliably quantified because the bolus width 
-%                    cannot be identified CASL & PCASL are both continuous ASL methods, identical quantification
-% x.Q.Initial_PLD - value of PLD (ms), for 3D this is fixed for whole brain, for 2D this is the PLD of first 
-%                   acquired slice (REQUIRED for ASL)
-%                 - example: 1800
-% x.Q.LabelingDuration - value of labeling duration (ms) (REQUIRED for ASL)
-%                      - example: 1800
-% x.Q.SliceReadoutTime - value (ms) of time added to the PLD after reading out each slice (REQUIRED for 2D ASL sequences)
-%                      - example: 31
-%                      - Other option = 'shortestTR'; % shortest TR enabled gives each sequence the minimal TR. 
-%                        This enables calculating slice delay per subject
+% x.Q.Sequence          - string containing the sequence used (REQUIRED for ASL)
+%                       - options: '3D_spiral', '3D_GRASE', '2D_EPI'
+% x.Q.LabelingType      - string containing the labeling strategy used (REQUIRED for ASL)
+%                       - options: 'PASL' (pulsed Q2-TIPS), 'CASL' (CASL/PCASL)
+%                       - note: pulsed without Q2TIPS cannot be reliably quantified because the bolus width 
+%                         cannot be identified CASL & PCASL are both continuous ASL methods, identical quantification
+% x.Q.Initial_PLD       - value of PLD (ms), for 3D this is fixed for whole brain, for 2D this is the PLD of first 
+%                         acquired slice (REQUIRED for ASL), example: 1800
+% x.Q.LabelingDuration  - value of labeling duration (ms) (REQUIRED for ASL)
+%                       - example: 1800
+% x.Q.SliceReadoutTime  - value (ms) of time added to the PLD after reading out each slice (REQUIRED for 2D ASL sequences)
+%                       - example: 31
+%                       - Other option = 'shortestTR'; % shortest TR enabled gives each sequence the minimal TR. 
+%                         This enables calculating slice delay per subject
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % QUANTIFICATION PARAMETERS

@@ -181,7 +181,7 @@ PseudoCBFim = max(PseudoCBFim, 0);
 % add residual, for if no signal is left
 PseudoCBFim = PseudoCBFim+Mean_IM./25;
 
-if ~strcmpi(x.Sequence,'3D_spiral')
+if ~strcmpi(x.Q.Sequence,'3D_spiral')
 	% With 3D spiral, we nearly see no vascular artifacts because of low
 	% effective spatial resolution
 	Vasc_IM = xASL_io_Nifti2Im(x.D.Vasc_Native);

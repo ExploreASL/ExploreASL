@@ -56,7 +56,7 @@ end
 xASL_spm_deformations(x, x.P.Path_FoV, x.P.Pop_Path_FoV, 0, [], AffineTransfPath, x.P.Path_y_ASL);
 
 %% Deal with different readouts
-switch lower(x.Sequence)
+switch lower(x.Q.Sequence)
     case '2d_epi'
         Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
         ClipThresholdValue = 3; % 3 MAD above median
@@ -136,7 +136,7 @@ if DoSusceptibility
      
      % Change pTemplate based on sequence (thanks to Khazar for checking
      % this for 3D GRASE in the BioFinder study)
-     switch lower(x.Sequence)
+     switch lower(x.Q.Sequence)
          case '2d_epi'
              SusceptibilityThreshold = 0.95;
          case '3d_grase'

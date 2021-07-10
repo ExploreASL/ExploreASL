@@ -186,7 +186,7 @@ if strcmpi(x.M0,'separate_scan')
             warning('TE of ASL and M0 were unequal! Check geometric distortion');
         end
 
-        if strcmpi(x.Sequence,'3D_spiral')
+        if strcmpi(x.Q.Sequence,'3D_spiral')
            CorrFactor = x.Q.T2;
            CorrName = 'T2';
         else % assume T2* signal decay 2D_EPI or 3D GRASE
@@ -199,7 +199,7 @@ if strcmpi(x.M0,'separate_scan')
             ScalingASL = exp(ASL_parms.EchoTime/CorrFactor);
             ScalingM0 = exp(M0_parms.EchoTime/CorrFactor);
             M0_im = M0_im.*ScalingM0./ScalingASL;
-            fprintf('%s\n', ['Delta TE between ASL ' num2str(ASL_parms.EchoTime) 'ms & M0 ' num2str(M0_parms.EchoTime) 'ms, for ' x.Sequence ', assuming ' CorrName ' decay of arterial blood, factor applied to M0: ' num2str(ScalingM0/ScalingASL)]);
+            fprintf('%s\n', ['Delta TE between ASL ' num2str(ASL_parms.EchoTime) 'ms & M0 ' num2str(M0_parms.EchoTime) 'ms, for ' x.Q.Sequence ', assuming ' CorrName ' decay of arterial blood, factor applied to M0: ' num2str(ScalingM0/ScalingASL)]);
         end
     else
         warning('Could not compare TEs from ASL & M0, JSON fields missing!');
@@ -335,7 +335,7 @@ if strcmp(OutputPath, x.P.Pop_Path_qCBF)
     MaskedCBF(~MaskVascularMNI) = NaN;
     
     % Mask susceptibility voxels (i.e. set them to NaN)
-    if strcmpi(x.Sequence, '2d_epi') || strcmpi(x.Sequence, '3d_grase')
+    if strcmpi(x.Q.Sequence, '2d_epi') || strcmpi(x.Q.Sequence, '3d_grase')
         if ~xASL_exist(x.P.Path_Pop_MaskSusceptibility)
             warning([x.P.Path_Pop_MaskSusceptibility ' missing, cannot create ' x.P.Pop_Path_qCBF_masked]);
             return;
