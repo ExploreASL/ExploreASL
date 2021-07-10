@@ -210,9 +210,11 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             % Specify biasfield regularization (if GE, no regularization, otherwise
             % keep default)
             LongRegBatch{1}.spm.tools.longit{1}.series.bparam    = 1000000;
-            if isfield(x,'Vendor')
-                if ~isempty(regexpi(x.Vendor,'GE'))
-                    LongRegBatch{1}.spm.tools.longit{1}.series.bparam    = 0;
+            if isfield(x,'Q')
+                if isfield(x.Q,'Manufacturer')
+                    if ~isempty(regexpi(x.Q.Manufacturer,'GE'))
+                        LongRegBatch{1}.spm.tools.longit{1}.series.bparam    = 0;
+                    end
                 end
             end
 

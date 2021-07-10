@@ -150,12 +150,12 @@ x.D.PathMask = fullfile(x.dir.SESSIONDIR, 'MaskASL.nii');
 x.D.Path_PseudoTissue = fullfile(x.dir.SESSIONDIR, 'PseudoTissue.nii');
 
 % Differs between sequences
-if      strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'Philips'))
+if      strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Q.Manufacturer,'Philips'))
         x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_CBF.nii');
         x.D.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
         x.D.raw_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii');
 
-elseif  strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'(Siemens|GE)'))
+elseif  strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Q.Manufacturer,'(Siemens|GE)'))
         %% PM: quicky & dirty fix to run GE 2D EPI with the Siemens 2D EPI template
         % though the template choice may not have a significant effect, as
         % opposed to the inter-individual differences in geometric
