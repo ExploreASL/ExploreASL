@@ -5,7 +5,7 @@ Template for study-specific parameter tables
 
 This template provides an overview of the table of parameters used by ExploreASL, which is very specific to the study to be processed.
 Most of it is ASL quantification-related, some of it are image processing parameters also applicable to the structural module.
-It allows only for minimal pipeline modifications (e.g. x.settings.Quality, x.settings.DELETETEMP) as most of the ExploreASL environment parameters are loaded through `ExploreASL_Initialize.m`.
+It allows only for minimal pipeline modifications (e.g. `x.settings.Quality`, `x.settings.DELETETEMP`) as most of the ExploreASL environment parameters are loaded through `ExploreASL_Initialize.m`.
 
 Here we list potential data parameters. Most are optional, and are ignored if not provided.
 For an example, see the `DataPar*.json` file(s) in the TestDataSet.
@@ -122,36 +122,11 @@ x.Q.SaveCBF4D - boolean, true to also save 4D CBF timeseries, if ASL4D had times
 
 |                                       | Description                                   | Defaults           |
 | ------------------------------------- |:---------------------------------------------:|:------------------:|
-| x.settings.Quality                    |  |  |
-| x.settings.DELETETEMP                 |  |  |
-| x.settings.SkipIfNoFlair              |  |  |
-| x.settings.SkipIfNoASL                |  |  |
-| x.settings.SkipIfNoM0                 |  |  |
-
-
-x.settings.Quality       - boolean specifying on which quality the pipeline should 
-     be run (OPTIONAL, DEFAULT = 1), options:
-   - `1` = normal quality 
-   - `0` = lower quality, fewer iterations and lower resolution 
-     of processing for a fast try-out
-x.settings.DELETETEMP    - boolean for removing the temporary files (OPTIONAL, DEFAULT = 1)
-   - options:
-   - `0` = keeping all files
-   - `1` = delete temporary files created by the pipeline
-x.settings.SkipIfNoFlair - boolean to skip processing of subjects that do not have a 
-     FLAIR image (OPTIONAL, DEFAULT = 0)
-     These parameters can be useful when some data is still complete, 
-     but one would like to start image processing already.
-     -> options: `1` = skip processing of a subject that does not have a FLAIR image
-                 `0` = do not skip anything
-x.settings.SkipIfNoASL   - boolean to skip processing of subjects that do not have a ASL image 
-     (OPTIONAL, DEFAULT = 0)
-      -> options: `1` = skip processing of a subject that does not have a ASL image
-                  `0` = do not skip anything
-x.settings.SkipIfNoM0    - boolean to skip processing of subjects that do not have a M0 image 
-     (OPTIONAL, DEFAULT = 0)
-     -> options:  `1` = skip processing of a subject that does not have a M0 image
-                  `0` = do not skip anything
+| x.settings.Quality                    | Boolean specifying on which quality the pipeline should be run, options: `1` = normal quality, `0` = lower quality, fewer iterations and lower resolution of processing for a fast try-out. | OPTIONAL, DEFAULT = 1 |
+| x.settings.DELETETEMP                 | Boolean for removing the temporary files. Options: `0` = keeping all files, `1` = delete temporary files created by the pipeline. | OPTIONAL, DEFAULT = 1 |
+| x.settings.SkipIfNoFlair              | Boolean to skip processing of subjects that do not have a FLAIR image. These parameters can be useful when some data is still complete, but one would like to start image processing already. Options: `1` = skip processing of a subject that does not have a FLAIR image `0` = do not skip anything. | OPTIONAL, DEFAULT = 0 |
+| x.settings.SkipIfNoASL                | Boolean to skip processing of subjects that do not have a ASL image. Options: `1` = skip processing of a subject that does not have a ASL image, `0` = do not skip anything. | OPTIONAL, DEFAULT = 0 |
+| x.settings.SkipIfNoM0                 | Boolean to skip processing of subjects that do not have a M0 image. Options:  `1` = skip processing of a subject that does not have a M0 image, `0` = do not skip anything. | OPTIONAL, DEFAULT = 0 |
 
 
 
@@ -160,24 +135,11 @@ x.settings.SkipIfNoM0    - boolean to skip processing of subjects that do not ha
 
 |                                       | Description                                   | Defaults           |
 | ------------------------------------- |:---------------------------------------------:|:------------------:|
-| x.modules.structural.bRunLongReg      |  |  |
-| x.modules.structural.bRunDARTEL       |  |  |
-| x.modules.structural.SegmentSPM12     |  |  |
-| x.modules.structural.bHammersCAT12    |  |  |
-| x.modules.structural.bFixResolution   |  |  |
-
-
-x.modules.structural.bRunLongReg    - run longitudinal registration (OPTIONAL, DEFAULT = 0)
-x.modules.structural.bRunDARTEL     - run between-subject registration/create templates 
-                (OPTIONAL, DEFAULT = 0)
-x.modules.structural.SegmentSPM12   - boolean to specify if SPM12 segmentation is run instead 
-                of CAT12 (OPTIONAL, DEFAULT = 0)
-                -> options: 1 = run SPM12, 0 = run CAT12
-x.modules.structural.bHammersCAT12  - boolean specifying if CAT12 should provide Hammers 
-                volumetric ROI results (OPTIONAL, DEFAULT = 0)
-x.modules.structural.bFixResolution - resample to a resolution that CAT12 accepts 
-                (OPTIONAL, DEFAULT=false)
-
+| x.modules.structural.bRunLongReg      | Run longitudinal registration. | OPTIONAL, DEFAULT = 0 |
+| x.modules.structural.bRunDARTEL       | Run between-subject registration/create templates. | OPTIONAL, DEFAULT = 0 |
+| x.modules.structural.SegmentSPM12     | Boolean to specify if SPM12 segmentation is run instead of CAT12. Options: 1 = run SPM12, 0 = run CAT12. | OPTIONAL, DEFAULT = 0 |
+| x.modules.structural.bHammersCAT12    | Boolean specifying if CAT12 should provide Hammers volumetric ROI results. | OPTIONAL, DEFAULT = 0 |
+| x.modules.structural.bFixResolution   | Resample to a resolution that CAT12 accepts. | OPTIONAL, DEFAULT=false |
 
 
 
