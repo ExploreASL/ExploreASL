@@ -370,32 +370,25 @@ end
 
 %% -----------------------------------------------------------------------
 function [x] = ExploreASL_Initialize_SubStructs(x)
-    x.S = struct; % Statistics
-    x.D = struct; % Directories
-    x.P = struct; % Paths
-    x.Q = struct; % Quality
     
-    % Workflow fields
-    if ~isfield(x,'modules')
-        x.modules = struct;
-    end
-    if ~isfield(x.modules,'import')
-        x.modules.import = struct;
-    end
-    if ~isfield(x.modules,'structural')
-        x.modules.structural = struct;
-    end
-    if ~isfield(x.modules,'asl')
-        x.modules.asl = struct;
-    end
-    if ~isfield(x.modules,'population')
-        x.modules.population = struct;
-    end
+    % Statistics, directories, paths, and sequence related fields
+    if ~isfield(x,'S'),                     x.S = struct;                   end
+    if ~isfield(x,'D'),                     x.D = struct;                   end
+    if ~isfield(x,'P'),                     x.P = struct;                   end
+    if ~isfield(x,'Q'),                     x.Q = struct;                   end
     
-    x.settings = struct;    % Workflow settings
-    x.dataset = struct;     % Dataset related fields
-    x.external = struct;    % Toolbox related fields (SPM, CAT, FSL, etc.)
-    x.dir = struct;         % BIDS related directories (sourceStructure, studyPar, dataset_description, etc.)
+    % Module subfields (import, structural, asl, & population)
+    if ~isfield(x,'modules'),               x.modules = struct;             end
+    if ~isfield(x.modules,'import'),        x.modules.import = struct;      end
+    if ~isfield(x.modules,'structural'),    x.modules.structural = struct;  end
+    if ~isfield(x.modules,'asl'),           x.modules.asl = struct;         end
+    if ~isfield(x.modules,'population'),    x.modules.population = struct;  end
+    
+    % Dataset related fields, workflow settings, toolbox/external (SPM, CAT, FSL, etc.) fields, general directories
+    if ~isfield(x,'dataset'),               x.dataset = struct;             end
+    if ~isfield(x,'settings'),              x.settings = struct;            end
+    if ~isfield(x,'external'),              x.external = struct;            end
+    if ~isfield(x,'dir'),                   x.dir = struct;                 end     
 
 end
 
