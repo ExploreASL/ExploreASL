@@ -42,56 +42,20 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 | x.dataset.ForceInclusionList | Use this field if you want to use a selection of subjects rather than taking all available subjects from directories (OPTIONAL, DEFAULT = use all subjects). Example: `load(fullfile(x.D.ROOT,'LongitudinalList.mat')`). | n/a |
 
 
-# WORK IN PROGRESS
-
 
 ## M0 PARAMETERS and OPTIONS
 
 |                                      | Description                                   | Defaults           |
 | ------------------------------------ |:---------------------------------------------:|:------------------:|
-| x.settings.M0_conventionalProcessing |  |  |
-| x.M0                                 |  |  |
-| x.M0_GMScaleFactor                   |  |  |
-| x.M0PositionInASL4D                  |  |  |
-| x.DummyScanPositionInASL4D           |  |  |
+| x.settings.M0_conventionalProcessing | Boolean - use the conventional M0 processing (per consensus paper), options: 1 = standard processing, 0 = new image processing (improved masking & smoothing). | OPTIONAL, DEFAULT = 0 |
+| x.M0                                 | Choose which M0 option to use: `'separate_scan'` = for a separate M0 NIfTI (needs to be in the same folder called `M0.nii`), `3.7394*10^6` = single M0 value to use, `'UseControlAsM0'` = will copy the mean control image as M0.nii and process as if it was a separately acquired M0 image (taking TR etc from the `ASL4D.nii`). Make sure that no background suppression was used, otherwise this option is invalid. | REQUIRED |
+| x.M0_GMScaleFactor                   | Add additional scale factor to multiply the M0 image by This can be useful when you have background suppression but no control/M0 image without background suppression. If you then know the M0 scalefactor for the GM, you can use the control image as M0 and use this parameter to scale back what was suppressed by background suppression. Note that there is no option for separate tissue scaling (e.g. WM & GM), because ExploreASL pragmatically smooths the M0 a lot, assuming that head motion and registration between M0 & ASL4D will differ between patients and controls. | OPTIONAL, default = 1 |
+| x.M0PositionInASL4D                  | A vector of integers that indicates the position of M0 in TimeSeries, if it is integrated by the Manufacturer in the 
+DICOM export. Will move this from ASL4D.nii to M0.nii Note that the x.M0PositionInASL4D parameter is independent from the x.M0 parameter choice. Example for Philips 3D GRASE = '[1 2]' (first control-label pair). Example for Siemens 3D GRASE = 1 first image. Example for GE 3D spiral = 2 where first image is PWI & last = M0. Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed. | OPTIONAL, DEFAULT = `[] (no M0 in timeseries)` |
+| x.DummyScanPositionInASL4D           | A vector of integers that indicates the position of Dummy scans in TimeSeries if they are integrated by the Manufacturer in the DICOM export. This allows to remove the dummy scans or noise scans that are part of the Timeseries. A new ASL4D.nii is saved with dummy scans removed and the original is backed-up. Works in a similar way as M0PositionInASL4D, both can be entered at the same time and both indicate the original position in the Timeseries independend of each other. Example for Siemens 2D EPI = `[79 80]` Skip the control-label pair used for noise measurements. Example for certain Siemens 3D GRASE = 2 Skip the first dummy control image. Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed. | OPTIONAL, DEFAULT = `[] (no M0 in timeseries)` |
 
 
-x.settings.M0_conventionalProcessing - boolean - use the conventional M0 processing (per consensus paper) (OPTIONAL, DEFAULT = 0)
-      - options: 
-        - 1 = standard processing
-        - 0 = new image processing (improved masking & smoothing)
-x.M0 - choose which M0 option to use (REQUIRED)
-     - options:
-       - `'separate_scan'` = for a separate M0 NIfTI (needs to be in the same folder called `M0.nii`)
-       - `3.7394*10^6` = single M0 value to use 
-       - `'UseControlAsM0'` = will copy the mean control image as M0.nii and process
-      as if it was a separately acquired M0 image (taking TR etc from the
-      `ASL4D.nii`). Make sure that no background suppression was used, otherwise
-      this option is invalid
-x.M0_GMScaleFactor - add additional scale factor to multiply the M0 image by (OPTIONAL, default = 1)
-                     This can be useful when you have background suppression but no control/M0
-                     image without background suppression. If you then know the M0 scalefactor
-                     for the GM, you can use the control image as M0 and use this parameter to
-                     scale back what was suppressed by background suppression.
-                     Note that there is no option for separate tissue scaling (e.g. WM & GM),
-                     because ExploreASL pragmatically smooths the M0 a lot, assuming that
-                     head motion and registration between M0 & ASL4D will differ between
-                     patients and controls. 
-x.M0PositionInASL4D - A vector of integers that indicates the position of M0 in TimeSeries, if it is integrated by the Manufacturer in the 
-DICOM export. Will move this from ASL4D.nii to M0.nii(OPTIONAL, DEFAULT = `[] (no M0 in timeseries)`)
-                    - Note that the x.M0PositionInASL4D parameter is independent from the x.M0 parameter choice.
-                    - example for Philips 3D GRASE = '[1 2]' (first control-label pair)
-                    - example for Siemens 3D GRASE = 1 first image
-                    - example for GE 3D spiral = 2 where first image is PWI & last = M0
-                    - Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed
-x.DummyScanPositionInASL4D - A vector of integers that indicates the position of Dummy scans in TimeSeries if they are integrated by the Manufacturer in the 
-       DICOM export. This allows to remove the dummy scans or noise scans that are part of the Timeseries.
-       A new ASL4D.nii is saved with dummy scans removed and the original is backed-up. Works in a similar way 
-       as M0PositionInASL4D, both can be entered at the same time and both indicate the original position 
-       in the Timeseries independend of each other. (OPTIONAL, DEFAULT = `[] (no M0 in timeseries)`)
-     - example for Siemens 2D EPI = `[79 80]` Skip the control-label pair used for noise measurements
-     - example for certain Siemens 3D GRASE = 2 Skip the first dummy control image
-     - Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed
+# WORK IN PROGRESS
 
 
 ## SEQUENCE PARAMETERS
