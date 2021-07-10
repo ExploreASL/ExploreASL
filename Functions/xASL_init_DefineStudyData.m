@@ -57,8 +57,11 @@ function [x] = xASL_init_DefineStudyData(x)
 
 % ------------------------------------------------------------------------------------------------
 %% Admin
-if ~isfield(x,'name')
-    x.name = ''; 
+if ~isfield(x,'dataset')
+    x.dataset = struct; 
+end
+if ~isfield(x.dataset,'name')
+    x.dataset.name = ''; 
 end
 
 

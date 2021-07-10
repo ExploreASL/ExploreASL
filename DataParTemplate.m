@@ -41,10 +41,10 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % STUDY PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.name   - string for the name of the study (OPTIONAL)
-%          - example: 'AD-study'
-% x.D.ROOT - path to analysis root folder where data is stored (OPTIONAL, DEFAULT = pwd) 
-%          - example: '/home/hjmutsaerts/TestDataSet'
+% x.dataset.name               - string for the name of the study (OPTIONAL)
+%                              - example: 'AD-study'
+% x.D.ROOT                     - path to analysis root folder where data is stored (OPTIONAL, DEFAULT = pwd) 
+%                              - example: '/home/hjmutsaerts/TestDataSet'
 % x.dataset.subjectRegexp      - string with regular expression for ExploreASL to find subjects by foldername (REQUIRED)
 %                              - example: '^\d{3}$' for three digits
 % x.dataset.exclusion          - cell with list of subjects to exclude (OPTIONAL, DEFAULT = empty)
@@ -345,7 +345,7 @@ function x = DataParTemplate(x)
 %                            Thalamus: Harvad-Oxford thalamus atlas './External/Atlases/Thalamus.nii.gz'
 %
 %
-x.name = ExampleDataSet;
+x.dataset.name = ExampleDataSet;
 x.dataset.subjectRegexp = '^Sub-\d{3}$';
 x.M0 = 'separate_scan';
 x.M0PositionInASL4D = '[1 2]';

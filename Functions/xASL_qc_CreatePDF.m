@@ -85,7 +85,7 @@ try
 
     %% Print the title
     ax=axes('Position',[0.01 0.75 1 0.24],'Visible','off','Parent',fg);
-    text(0,1,  ['xASL report: ' x.name ', ' SuSeID],...
+    text(0,1,  ['xASL report: ' x.dataset.name ', ' SuSeID],...
       'FontSize',fontsize+1,'FontWeight','bold','Interpreter','none','Parent',ax);
 
   %% -----------------------------------------------------------------------------------------------
