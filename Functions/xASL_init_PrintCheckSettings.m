@@ -110,8 +110,8 @@ function x = xASL_init_PrintCheckSettings(x)
     field_symbol = {'subjectRegexp'};
 
     for iField=1:length(field_symbol)
-        if ~isfield(x,field_symbol{iField})
-            warning(['x.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
+        if ~isfield(x.dataset,field_symbol{iField})
+            warning(['x.dataset' field_symbol{iField} ' was not defined in dataPar.json!'])
         end
     end
 
