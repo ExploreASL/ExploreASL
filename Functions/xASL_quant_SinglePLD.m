@@ -25,7 +25,7 @@ function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x, 
 %                    Dual-compartment model: Wang MRM 2002: Gevers JMRI 2012 (if x.ApplyQuantification(3))
 %              3.    {{Scaling to physiological units}} [ml/gr/ms =>ml/100gr/min =>(60,000 ms=>min)(1 gr=>100gr)]
 %                    (if x.ApplyQuantification(3))
-%              4.    {{Vendor-specific scalefactor}} (if x.ApplyQuantification(1) -> future move to dcm2niiX stage)
+%              4.    {{Manufacturer-specific scalefactor}} (if x.ApplyQuantification(1) -> future move to dcm2niiX stage)
 %              Finally, we:
 %              5.    Divide PWI/M0 (if x.ApplyQuantification(5))
 %              6.    Print parameters used
@@ -170,9 +170,9 @@ else
 end
 
 
-%% 4    Vendor-specific scalefactor
+%% 4    Manufacturer-specific scalefactor
 if ~x.ApplyQuantification(1)
-    fprintf('%s\n','We skip the vendor-specific scalefactors');
+    fprintf('%s\n','We skip the Manufacturer-specific scalefactors');
 else
     % Load the stored parameters
 	ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);

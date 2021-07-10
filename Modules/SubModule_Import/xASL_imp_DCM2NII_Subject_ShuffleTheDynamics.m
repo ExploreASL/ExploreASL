@@ -60,7 +60,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         else
             niiTable{iNii,2} = 0;
         end
-        % Check the Manufacturer/Vendor
+        % Check the Manufacturer
         if isfield(tmpJSON, 'Manufacturer')
         	% If we have GE scans, we use the xASL_bids_determineImageTypeGE script to determine the ImageType
             if ~isempty(strfind(tmpJSON.Manufacturer, 'GE'))

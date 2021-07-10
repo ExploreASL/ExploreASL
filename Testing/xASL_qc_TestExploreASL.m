@@ -33,7 +33,7 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %              
 %              Different data setups include:
 %              ASL readouts (3D spiral, 3D GRASE, 2D EPI)
-%              ASL vendors (GE, Philips, Siemens)
+%              ASL Manufacturers (GE, Philips, Siemens)
 %              With/without background suppression
 %              With/without FLAIR processing (LST LGA or LPA)
 %              With/without lesion masking from tumor

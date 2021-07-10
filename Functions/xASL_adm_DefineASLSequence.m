@@ -15,7 +15,7 @@ function [x] = xASL_adm_DefineASLSequence(x)
 % DESCRIPTION: This ExploreASL function tries to check what ASL sequence is
 % being processed, if this was not already defined in x.Sequence.
 % It does so by checking known combinations of readout dimensionality
-% (x.readout_dim) and vendor, knowing the product sequences of the vendors.
+% (x.readout_dim) and Manufacturer, knowing the product sequences of the Manufacturers.
 %
 % EXAMPLE: x = xASL_adm_DefineASLSequence(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -29,16 +29,16 @@ end
 if ~isfield(x.Q, 'Manufacturer')
     warning('x.Q.Manufacturer missing, skipping determining ASL sequence');
 elseif  isempty(regexpi(x.Q.Manufacturer, 'Gold Standard Phantoms|GE|Philips|Siemens'))
-    warning('Unknown vendor specified in x.Q.Manufacturer');
+    warning('Unknown Manufacturer specified in x.Q.Manufacturer');
 elseif ~isempty(regexpi(x.Q.Manufacturer, 'Gold Standard Phantoms'))
     fprintf('%s\n', 'Digital Reference Object ASL-DRO detected');
 end
 
 
 % Obtain ASL sequence
-if ~isfield(x,'Sequence') && isfield(x,'readout_dim') && isfield(x, 'Vendor')
+if ~isfield(x,'Sequence') && isfield(x,'readout_dim') && isfield(x.Q, 'Manufacturer')
     if strcmpi(x.readout_dim,'2D')
-       x.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of vendor
+       x.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of Manufacturer
     elseif strcmpi(x.readout_dim,'3D') && ( ~isempty(regexpi(x.Q.Manufacturer,'Philips')) || ~isempty(regexpi(x.Q.Manufacturer,'Siemens')) )
            x.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
     elseif strcmpi(x.readout_dim,'3D') && ~isempty(regexpi(x.Q.Manufacturer,'GE'))

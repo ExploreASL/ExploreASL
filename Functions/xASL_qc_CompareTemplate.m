@@ -46,7 +46,7 @@ end
 
 TemplateIM(~x.S.masks.skull) = NaN;
 TemplateColumnAll = xASL_im_IM2Column(TemplateIM,x.S.masks.skull);
-% PM: we can add different vendors templates, or use the 4D template from spatial CoV
+% PM: we can add different Manufacturers templates, or use the 4D template from spatial CoV
 
 
 %% ---------------------------------------------------------

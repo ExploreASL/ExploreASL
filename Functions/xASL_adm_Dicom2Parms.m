@@ -67,7 +67,7 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 	DcmParDefaults.MRSeriesEPIFactor = NaN;
 	DcmParDefaults.BandwidthPerPixelPhaseEncode = NaN;
 	
-	bVendor = 'Unknown';
+	bManufacturer = 'Unknown';
 	
 	%% ----------------------------------------------------------------------------------
 	% Recreate the parameter file from raw data
@@ -209,16 +209,16 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 			% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
 			if ~exist('dcmfields','var')
 				%% -----------------------------------------------------------------------------
-				% Identify vendor and select the important header parameters to read
+				% Identify Manufacturer and select the important header parameters to read
 				% -----------------------------------------------------------------------------
 				if  isfield(temp, 'Manufacturer')
 					manufacturer    = lower(temp.Manufacturer);
 					if ~isempty(strfind(manufacturer,'ge'))
-						bVendor = 'GE';
+						bManufacturer = 'GE';
 					elseif ~isempty(strfind(manufacturer,'philips'))
-						bVendor = 'Philips';
+						bManufacturer = 'Philips';
 					elseif ~isempty(strfind(manufacturer,'siemens'))
-						bVendor = 'Siemens';
+						bManufacturer = 'Siemens';
 					else
 						warning('Manufacturer unknown for %s', filepath);
 					end
@@ -230,7 +230,7 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
 					'AcquisitionMatrix'};
 				
-				switch bVendor
+				switch bManufacturer
 					case 'GE'
 						dcmfields(end+1:end+2) = {'AssetRFactor', 'EffectiveEchoSpacing'}; % (0043,1083) (0043,102c)
 					case 'Philips'
@@ -337,7 +337,7 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
             parms.AcquisitionMatrix = double(parms.AcquisitionMatrix(1));
         end
 
-        switch bVendor
+        switch bManufacturer
             case 'GE'
                 if isfield(parms,'AssetRFactor') && isfield(parms,'EffectiveEchoSpacing') && isfield(parms,'AcquisitionMatrix')
                     parms.EffectiveEchoSpacing = double(parms.EffectiveEchoSpacing);

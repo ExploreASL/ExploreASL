@@ -98,7 +98,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 					'AcquisitionMatrix', 'Rows', 'Columns', 'NumberOfAverages', 'NumberOfTemporalPositions', ...
                     'RWVIntercept', 'RWVSlope'};
 	
-	bVendor = 'Unknown';
+	bManufacturer = 'Unknown';
 	
 	%% ----------------------------------------------------------------------------------
 	% 3. Recreate the parameter file from raw data
@@ -311,16 +311,16 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
 			if ~exist('dcmfields','var')
 				%% -----------------------------------------------------------------------------
-				% Identify vendor and select the important header parameters to read
+				% Identify Manufacturer and select the important header parameters to read
 				% -----------------------------------------------------------------------------
 				if  isfield(temp, 'Manufacturer')
 					manufacturer    = lower(temp.Manufacturer);
 					if ~isempty(strfind(manufacturer,'ge'))
-						bVendor = 'GE';
+						bManufacturer = 'GE';
 					elseif ~isempty(strfind(manufacturer,'philips'))
-						bVendor = 'Philips';
+						bManufacturer = 'Philips';
 					elseif ~isempty(strfind(manufacturer,'siemens'))
-						bVendor = 'Siemens';
+						bManufacturer = 'Siemens';
 					else
 						warning('xASL_adm_Dicom2JSON: Manufacturer unknown for %s', filepath);
 					end
@@ -330,7 +330,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				
 				dcmfields = DcmFieldList;
 				
-				switch bVendor
+				switch bManufacturer
 					case 'GE'
 						dcmfields(end+1:end+4) = {'AssetRFactor', 'EffectiveEchoSpacing'...
 							'GELabelingDuration' 'InversionTime' }; % (0043,1083) (0043,102c)
@@ -501,7 +501,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix(1));
 			end
 			
-			switch bVendor
+			switch bManufacturer
 				case 'GE'
 					if isfield(parms{parmsIndex},'AssetRFactor') && isfield(parms{parmsIndex},'EffectiveEchoSpacing') && isfield(parms{parmsIndex},'AcquisitionMatrix')
 						parms{parmsIndex}.EffectiveEchoSpacing = double(parms{parmsIndex}.EffectiveEchoSpacing);
