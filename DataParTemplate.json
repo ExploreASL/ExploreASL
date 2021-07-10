@@ -1,8 +1,8 @@
 {
 	"x": [{
 			"name": "ExampleDataSet",
-			"subject_regexp": "^\\d{3}$",
             "dataset": {
+				"subjectRegexp": "^\\d{3}$",
                 "exclusion": ""
             },
 			"SESSIONS": ["ASL_1","ASL_2"],
@@ -11,7 +11,7 @@
 				"options": ["baseline","drug"]
 			},
 			"M0": "UseControlAsM0",
-			"M0PositionInASL4D": [1 2],
+			"M0PositionInASL4D": [1, 2],
 			"Q":
 			{
 				"BackgroundSuppressionNumberPulses": 2,
