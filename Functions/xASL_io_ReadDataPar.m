@@ -187,6 +187,14 @@ elseif strcmpi(Fext, '.json')
         end
         x = rmfield(x,'Vendor');
     end
+    
+    if isfield(x,'readout_dim')
+        warning('Deprecated field. Please use x.Q.readoutDim instead of x.readout_dim');
+        if ~isfield(x,'Q') || ~isfield(x.Q,'readoutDim')
+            x.Q.readoutDim = x.readout_dim;
+        end
+        x = rmfield(x,'readout_dim');
+    end
 	
 else
 	error('Unknown file extension');

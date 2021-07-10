@@ -214,7 +214,7 @@ else
 
     %% ------------------------------------------------------------------------------------------------
     %% 5    Load SliceGradient
-    if  strcmpi(x.readout_dim,'2D')
+    if  strcmpi(x.Q.readoutDim,'2D')
         SliceGradient = xASL_io_Nifti2Im(SliceGradientPath);
     else
         SliceGradient = [];
