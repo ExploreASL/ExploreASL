@@ -341,17 +341,17 @@ function x = DataParTemplate(x)
 %
 x.dataset.name = ExampleDataSet;
 x.dataset.subjectRegexp = '^Sub-\d{3}$';
+x.Q.readoutDim = '2D';
+x.Q.Manufacturer = 'Philips';
+x.Q.BackgroundSuppressionNumberPulses = 2;
+x.Q.LabelingType = 'CASL';
+x.Q.Initial_PLD = 1525;
+x.Q.LabelingDuration = 1650;
+x.Q.SliceReadoutTime = 43.7647;
+x.settings.Quality = 0;
+x.settings.DELETETEMP = 1;
 x.M0 = 'separate_scan';
 x.M0PositionInASL4D = '[1 2]';
 x.DummyScanPositionInASL4D = [];
-x.Q.readoutDim = '2D';
-x.settings.Quality = 0;
-x.settings.DELETETEMP = 1;
-x.Q.Manufacturer = 'Philips';
-x.Q.BackgroundSuppressionNumberPulses = 2;
-x.LabelingType = 'CASL';
-x.Initial_PLD = 1525;
-x.LabelingDuration = 1650;
-x.SliceReadoutTime = 43.7647;
 
 end
