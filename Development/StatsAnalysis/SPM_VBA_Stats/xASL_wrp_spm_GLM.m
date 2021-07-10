@@ -84,17 +84,19 @@ else % do memory mapping first
 
 
         bSmooth     = 1; % default
-        if isfield(x,'Vendor')
-            if  strcmpi(x.Vendor,'GE_product')
-                % don't smooth, image is already smooth
-                bSmooth     = 0;
-            elseif exist('SeqID','var') % multi-sequence study that has a "sequence" variable
-                   if  strcmp(x.S.SetsOptions{SeqID}{x.S.SetsID(iSS,SeqID)},'3D_spiral')
-                       % don't smooth, image is already smooth
-                       bSmooth  = 0;
-                   else
-                       bSmooth  = 1;
-                   end
+        if isfield(x,'Q')
+            if isfield(x.Q,'Manufacturer')
+                if  strcmpi(x.Q.Manufacturer,'GE_product')
+                    % don't smooth, image is already smooth
+                    bSmooth     = 0;
+                elseif exist('SeqID','var') % multi-sequence study that has a "sequence" variable
+                       if  strcmp(x.S.SetsOptions{SeqID}{x.S.SetsID(iSS,SeqID)},'3D_spiral')
+                           % don't smooth, image is already smooth
+                           bSmooth  = 0;
+                       else
+                           bSmooth  = 1;
+                       end
+                end
             end
         end
 
