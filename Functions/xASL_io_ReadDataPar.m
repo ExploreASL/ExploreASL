@@ -172,6 +172,14 @@ elseif strcmpi(Fext, '.json')
         x = rmfield(x,'subject_regexp');
     end
     
+    if isfield(x,'name')
+        warning('Deprecated field. Please use x.dataset.name instead of x.name');
+        if ~isfield(x,'name') || ~isfield(x.dataset,'name')
+            x.dataset.name = x.name;
+        end
+        x = rmfield(x,'name');
+    end
+    
     if isfield(x,'Quality')
         warning('Deprecated field. Please use x.settings.Quality instead of x.Quality');
         if ~isfield(x,'settings') || ~isfield(x.dataset,'Quality')
