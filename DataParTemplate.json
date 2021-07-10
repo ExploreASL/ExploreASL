@@ -1,7 +1,7 @@
 {
 	"x": [{
-			"name": "ExampleDataSet",
             "dataset": {
+				"name": "ExampleDataSet",
 				"subjectRegexp": "^\\d{3}$",
                 "exclusion": ""
             },
