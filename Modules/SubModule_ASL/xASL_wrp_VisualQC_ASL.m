@@ -46,7 +46,7 @@ fprintf('%s\n','print visual quality assurance checks');
 Parms.ModuleName = 'ASL';
 close all % close all Figures to avoid capturing & saving the wrong Figure
 
-if ~isfield(, 'vis')
+if ~isfield(x, 'vis')
     x.vis = struct;
 end
 
