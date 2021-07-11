@@ -39,7 +39,7 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 | x.dataset.exclusion                  | Cell with list of subjects to exclude, example: `{'005' '018'}`| OPTIONAL, DEFAULT = empty |
 | x.SESSIONS                           | Use this to define sessions. Specific options: for FEAST: `1=crushed`, `2=not crushed`. This used to be other way around, but the crushed image registers better with the pGM image. Example (`'.json' file): ["ASL_1","ASL_2"]` | OPTIONAL, DEFAULT = `{'ASL_1'}` |
 | x.session.options                    | This is how the sessions will be called, example: `{'baseline' 'drug'}`. For FEAST, this should be `{'non-crushed' 'crushed'}`. | OPTIONAL |
-| x.dataset.ForceInclusionList | Use this field if you want to use a selection of subjects rather than taking all available subjects from directories (OPTIONAL, DEFAULT = use all subjects). Example: `load(fullfile(x.D.ROOT,'LongitudinalList.mat')`). | n/a |
+| x.dataset.ForceInclusionList | Use this field if you want to use a selection of subjects rather than taking all available subjects from directories. Example: `load(fullfile(x.D.ROOT,'LongitudinalList.mat')`). | OPTIONAL, DEFAULT = use all subjects |
 
 
 
