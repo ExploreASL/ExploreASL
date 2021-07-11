@@ -36,7 +36,7 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 %% Admin
 tIM = xASL_io_ReadNifti(PathASL);
 NativeResolution = tIM.hdr.pixdim(2:4);
-if ~isfield(x,'Sequence')
+if ~isfield(x.Q,'Sequence')
     warning(['Setting x.Q.Sequence missing, skipping']);
     return;
 end

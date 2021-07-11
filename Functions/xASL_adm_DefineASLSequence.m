@@ -54,7 +54,7 @@ if ~isfield(x,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Manufact
         fprintf('%s\n', 'and heavy geometric distortion and minimal smoothness');
     end
 end
-if ~isfield(x,'Sequence')
+if ~isfield(x.Q,'Sequence')
     warning('No x.Q.Sequence defined');
     fprintf('If there are multiple sequence types, this needs to be implemented yet here\n');
     fprintf('Otherwise, please define x.Q.Sequence\n');
