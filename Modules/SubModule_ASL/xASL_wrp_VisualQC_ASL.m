@@ -205,38 +205,17 @@ else
 		TextpGM = 'Reg';
 	end
 end
-
-% If this option is defined, then do not use the full maps, but rather their contours
-if isfield(x.vis,'bVisualQCCBFvsGMWMContour') && ~isempty(x.vis.bVisualQCCBFvsGMWMContour) && x.vis.bVisualQCCBFvsGMWMContour
-	% Load the map
-	imGM = xASL_io_Nifti2Im(PathpGM);
-	imWM = xASL_io_Nifti2Im(PathpWM);
-	
-	% Threshold at 50%
-	imGM = imGM>0.5;
-	imWM = imWM>0.5;
-	
-	% Distance to the inversion == 1 is the inner border
-	imGM = (xASL_im_DistanceTransform(1-imGM)==1);
-	imWM = (xASL_im_DistanceTransform(1-imWM)==1);
-	
-	% Distance to the original mask == 1 is the outer border
-	% imGM = (xASL_im_DistanceTransform(imGM)==1);
-	% imWM = (xASL_im_DistanceTransform(imWM)==1);
-		
-	% Save the temporary map with a contour
-	xASL_io_SaveNifti(PathpGM,fullfile(x.SESSIONDIR,'pGM_Contour.nii'),imGM,[],0);
-	xASL_io_SaveNifti(PathpWM,fullfile(x.SESSIONDIR,'pWM_Contour.nii'),imWM,[],0);
-
-	% In the later - use the contour instead of the mask
-	PathpGM = fullfile(x.SESSIONDIR,'pGM_Contour.nii');
-	PathpWM = fullfile(x.SESSIONDIR,'pWM_Contour.nii');
-end
 	
 T.ImIn          = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF PathpWM} x.P.Pop_Path_SNR};
 T.ImIn(5:8)     = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Path_noSmooth_M0 PathpGM} x.P.Pop_Path_M0};
 T.ImIn(9:10)    = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT PathpWM}};
 
+T.bContour(1:11) = 0;
+% If the contour option is activated then draw contour for the GM and WM maps
+if isfield(x.vis,'bVisualQCCBFvsGMWMContour') && ~isempty(x.vis.bVisualQCCBFvsGMWMContour) && x.vis.bVisualQCCBFvsGMWMContour
+	T.bContour([3,7,10]) = 1;
+end
+	
 T.DirOut        = {x.D.ASLCheckDir x.D.SNRdir      x.D.ASLCheckDir       x.D.SNRdir};
 T.DirOut(5:8)   = {x.D.RawDir      x.D.M0CheckDir  x.D.M0regASLdir       x.D.M0CheckDir};
 T.DirOut(9:11)  = {x.D.TTCheckDir  x.D.TTCheckDir  x.D.ASLCheckDir};
@@ -298,6 +277,8 @@ for iN=1:nRows
     T2.IntScale             = [T.IntScale(ImsI) T.IntScale(ImsI)];
     T2.ColorMapIs           = [T.ColorMapIs(ImsI) T.ColorMapIs(ImsI)];
     T2.ModuleName           = 'ASL';
+	T2.bContour(nRow1)      = T.bContour(ImsI);
+	T2.bContour(nRow2)      = T.bContour(ImsI);
 
 %%  Perform the visualization
 % Perhaps at the end of the row we need to generate empty images, as transversal & coronal have different sizes
@@ -328,17 +309,13 @@ for iN=1:nRows
         end    
 
         % Create the image
-        T2.IM = xASL_vis_CreateVisualFig( x, T2.ImIn{iM}, T2.DirOut{iM}, T2.IntScale{iM}, T2.NameExt{iM}, T2.ColorMapIs{iM});
+        T2.IM = xASL_vis_CreateVisualFig( x, T2.ImIn{iM}, T2.DirOut{iM}, T2.IntScale{iM}, T2.NameExt{iM}, T2.ColorMapIs{iM},[],[],[],[],[],[],T2.bContour(iM));
         % add single slice to QC collection
         if sum(~isnan(T2.IM(:)))>0 % if image is not empty
             x = xASL_vis_AddIM2QC(x,T2);
         end
     end
 end
-
-% Delete the temporary contours if they exist
-xASL_delete(fullfile(x.SESSIONDIR,'pGM_Contour.nii'));
-xASL_delete(fullfile(x.SESSIONDIR,'pWM_Contour.nii'));
 
 fprintf('\n');
    

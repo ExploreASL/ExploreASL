@@ -1,8 +1,8 @@
-function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale, NamePrefix, ColorMap, bClip, MaskIn, bWhite, MaxWindow, bTransparancy, bVerbose)
+function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale, NamePrefix, ColorMap, bClip, MaskIn, bWhite, MaxWindow, bTransparancy, bVerbose, bContour)
 % xASL_vis_CreateVisualFig Flexible tool to create figure for visualization
 % of standard space images
 %
-% FORMAT: [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale, NamePrefix, ColorMap, bClip)
+% FORMAT: [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn[, DirOut, IntScale, NamePrefix, ColorMap, bClip, MaskIn, bWhite, MaxWindow, bTransparancy, bVerbose, bContour])
 %
 % INPUT:
 %   x            - structure containing fields with information when this function is called from ExploreASL toolbox (OPTIONAL)
@@ -22,6 +22,7 @@ function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale,
 %   MaxWindow    - cell structure containing 2 maximal values (ceiling clipping) (OPTIONAL, DEFAULT=automatic window-leveling)
 %   bTransparancy - true for transparant results when overlaying a mask (OPTIONAL, DEFAULT=false)
 %   bVerbose      - true for feedback on what this function does (OPTIONAL, DEFAULT=false)
+%   bContour      - true draw multiple overlay images as contours instead of full ROIs (OPTIONAL, DEFAULT=false)
 %
 % INPUT FIELDS IN x, USED BY xASL_vis_TransformData2View:
 %              ORIENTATION SETTINGS:
@@ -62,7 +63,7 @@ function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale,
 %          or for printing to file:
 %          xASL_vis_CreateVisualFig(x, {'//AnalysisDir/Population/T1_Sub-001.nii' '//AnalysisDir/Population/rc1T1_Sub-001.nii', '//AnalysisDir/Population/T1w_Check', [1 0.5], 'pGM', {x.S.gray x.S.red});
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 
@@ -118,8 +119,13 @@ end
 if nargin<11 || isempty(bTransparancy)
     bTransparancy = false;
 end
+
 if nargin<12 || isempty(bVerbose)
     bVerbose = false;
+end
+
+if nargin<13 || isempty(bContour)
+	bContour = false;
 end
 
 if isempty(ImIn)
@@ -149,6 +155,23 @@ end
 for iIm=1:numel(ImIn)
     IM{iIm} = xASL_io_Nifti2Im(ImIn{iIm}); % load if NIfTI, pass through if matrix (IM)
     
+	% For multiple images, and bContour option TRUE, turn the second and all the following images to contours
+	if bContour && iIm>1
+		tempIm = IM{iIm};
+		
+		% Threshold at 50%
+		tempIm = tempIm>0.5;
+		
+		% Distance to the inversion == 1 is the inner border
+		tempIm = (xASL_im_DistanceTransform(1-tempIm)==1);
+		
+		% Distance to the original mask == 1 is the outer border
+		% tempIm = (xASL_im_DistanceTransform(tempIm)==1);
+		
+		% replace the original image by the newly computed contour
+		IM{iIm} = tempIm;
+	end
+	
     if length(MaskIn)<iIm
         MaskIn{iIm} = ones(121,145,121); % default=no masking
     end
