@@ -225,12 +225,12 @@ if isfield(x.vis,'bVisualQCCBFvsGMWMContour') && ~isempty(x.vis.bVisualQCCBFvsGM
 	% imWM = (xASL_im_DistanceTransform(imWM)==1);
 		
 	% Save the temporary map with a contour
-	xASL_io_SaveNifti(PathpGM,fullfile(x.SESSIONDIR,'pGMC.nii'),imGM,[],0);
-	xASL_io_SaveNifti(PathpWM,fullfile(x.SESSIONDIR,'pWMC.nii'),imWM,[],0);
+	xASL_io_SaveNifti(PathpGM,fullfile(x.SESSIONDIR,'pGM_Contour.nii'),imGM,[],0);
+	xASL_io_SaveNifti(PathpWM,fullfile(x.SESSIONDIR,'pWM_Contour.nii'),imWM,[],0);
 
 	% In the later - use the contour instead of the mask
-	PathpGM = fullfile(x.SESSIONDIR,'pGMC.nii');
-	PathpWM = fullfile(x.SESSIONDIR,'pWMC.nii');
+	PathpGM = fullfile(x.SESSIONDIR,'pGM_Contour.nii');
+	PathpWM = fullfile(x.SESSIONDIR,'pWM_Contour.nii');
 end
 	
 T.ImIn          = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF PathpWM} x.P.Pop_Path_SNR};
@@ -337,8 +337,8 @@ for iN=1:nRows
 end
 
 % Delete the temporary contours if they exist
-xASL_delete(fullfile(x.SESSIONDIR,'pGMC.nii'));
-xASL_delete(fullfile(x.SESSIONDIR,'pWMC.nii'));
+xASL_delete(fullfile(x.SESSIONDIR,'pGM_Contour.nii'));
+xASL_delete(fullfile(x.SESSIONDIR,'pWM_Contour.nii'));
 
 fprintf('\n');
    
