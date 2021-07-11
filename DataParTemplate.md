@@ -80,42 +80,14 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 
 |                                       | Description                                   | Defaults           |
 | ------------------------------------- |:---------------------------------------------:|:------------------:|
-| x.bUseBasilQuantification             |  |  |
-| x.Q.Lambda                            |  |  |
-| x.Q.T2art                             |  |  |
-| x.Q.BloodT1                           |  |  |
-| x.Q.TissueT1                          |  |  |
-| x.Q.nCompartments                     |  |  |
-| x.ApplyQuantification                 |  |  |
-| x.Q.SaveCBF4D                         |  |  |
-
-
-x.bUseBasilQuantification - true for using BASIL quantification in addition to ExploreASL's quantification
-x.Q.Lambda - Brain/blood water coefficient (mL 1H/ mL blood), (OPTIONAL, DEFAULT = 0.9) 
-           - example: 0.32 (for GSP phantom)
-x.Q.T2art - T2* of arterial blood at 3T, only used when no M0 image (ms) (OPTIONAL, DEFAULT = 50)
-x.Q.BloodT1 - T1 relaxation time of arterial blood (ms) 
-            - (OPTIONAL, DEFAULT = 1650 @ 3T, 1350 @ 1.5 T, (Alsop MRM 2014), 1800 for GSP phantom)
-x.Q.TissueT1 - T1 relaxation time of GM tissue (ms) (OPTIONAL, DEFAULT=1240 @ 3T, 920 @ 1.5 T (Alsop MRM 2014))
-x.Q.nCompartments - number of modeled compartments for quantification (OPTIONAL, DEFAULT = 1)
-                  - options:
-                    - 1 = a single-compartment quantification model (default by concensus paper)
-                    - 2 = a dual-compartment quantification model 
-x.ApplyQuantification - a vector of 1x5 logical values specifying which types on quantified images should be
-  calculated and saved (OPTIONAL, DEFAULT = '[1 1 1 1 1]' = all enabled)
-- fields:
-  - 1) Apply ScaleSlopes ASL4D (xASL_wrp_Quantify, future at dcm2niiX stage)
-  - 2) Apply ScaleSlopes M0 (xASL_quant_M0, future at dcm2niiX stage)
-  - 3) Convert PWI a.u. to label (xASL_wrp_Quantify, future at xASL_wrp_Reslice?)
-  - 4) Quantify M0 a.u. (xASL_quant_M0, corrects for incomplete T1 relaxation)
-  - 5) Perform division by M0
-- examples: 
-  - ASL4D is an already quantified CBF image, disable all quantification `'[0 0 0 0 0]'`
-  - To compare label but not CBF (e.g. label in vessels or sinus vs tissue): `[1 1 1 1 0]'`
-- Note that the output always goes to CBF.nii
-x.Q.SaveCBF4D - boolean, true to also save 4D CBF timeseries, if ASL4D had timeseries (OPTIONAL, DEFAULT=false)
-
-
+| x.bUseBasilQuantification             | True for using BASIL quantification in addition to ExploreASL's quantification. |  |
+| x.Q.Lambda                            | Brain/blood water coefficient (mL 1H/ mL blood). Example: `0.32` (for GSP phantom). | OPTIONAL, DEFAULT = 0.9 |
+| x.Q.T2art                             | `T2*` of arterial blood at 3T, only used when no M0 image (ms). | OPTIONAL, DEFAULT = 50 |
+| x.Q.BloodT1                           | T1 relaxation time of arterial blood (ms). Defaults (Alsop MRM 2014), 1800 for GSP phantom. | OPTIONAL, DEFAULT = 1650 @ 3T, 1350 @ 1.5 T |
+| x.Q.TissueT1                          | T1 relaxation time of GM tissue (ms). Defaults (Alsop MRM 2014). | OPTIONAL, DEFAULT=1240 @ 3T, 920 @ 1.5 T |
+| x.Q.nCompartments                     | Number of modeled compartments for quantification. Options: 1 = a single-compartment quantification model (default by concensus paper), 2 = a dual-compartment quantification model. | OPTIONAL, DEFAULT = 1) |
+| x.ApplyQuantification                 | A vector of 1x5 logical values specifying which types on quantified images should be calculated and saved. Fields: **1)** Apply ScaleSlopes ASL4D (xASL_wrp_Quantify, future at dcm2niiX stage), **2)** Apply ScaleSlopes M0 (xASL_quant_M0, future at dcm2niiX stage), **3)** Convert PWI a.u. to label (xASL_wrp_Quantify, future at xASL_wrp_Reslice?), **4)** Quantify M0 a.u. (xASL_quant_M0, corrects for incomplete T1 relaxation), **5)** Perform division by M0. Examples: ASL4D is an already quantified CBF image, disable all quantification `'[0 0 0 0 0]'`. To compare label but not CBF (e.g. label in vessels or sinus vs tissue): `[1 1 1 1 0]'`. Note that the output always goes to CBF.nii. | OPTIONAL, DEFAULT = `'[1 1 1 1 1]'` = all enabled |
+| x.Q.SaveCBF4D                         | Boolean, true to also save 4D CBF timeseries, if ASL4D had timeseries. | OPTIONAL, DEFAULT=false |
 
 
 ## GENERAL PROCESSING PARAMETERS
