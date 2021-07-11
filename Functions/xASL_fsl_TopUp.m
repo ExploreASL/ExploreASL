@@ -218,7 +218,7 @@ end
 
 % If this NIfTI has multiple volumes, we assume that the first is the B0/M0
 tempImage = xASL_io_Nifti2Im(TopUpNIIPath{1});
-tIM(:,:,:,1) = tempImage(:,:,:,1);
+tIM = tempImage(:,:,:,1);
 % If this NIfTI has multiple volumes, we assume that the first is the B0/M0
 tempImage = xASL_io_Nifti2Im(TopUpNIIPath{2});
 tIM(:,:,:,2) = tempImage(:,:,:,1);
