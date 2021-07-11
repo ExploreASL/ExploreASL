@@ -123,15 +123,10 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 | x.bRegisterM02ASL                     | Boolean specifying whether M0 is registered to mean_control image (or T1w if no control image exists). It can be useful to disable M0 registration if the ASL registration is done based on the M0, and little motion is expected between the M0 and ASL acquisition. If no separate M0 image is available, this parameter will have no effect. This option is disabled automatically for 3D spiral: `0` = M0 registration disabled, `1` = M0 registration enabled (DEFAULT). | OPTIONAL, DEFAULT = 0 |
 | x.bUseMNIasDummyStructural            | When structural (e.g. T1w) data is missing, copy population-average MNI templates as dummy structural templates. With this option, the ASL module copies the structural templates to fool the pipeline, resulting in ASL registration to these templates. While the rigid-body parameters might still be found somewhat correctly, with this option it is advised to enable affine registration for ASL as well, since ASL and these dummy structural images will differ geometrically. When disabled, an error will be issued instead when the structural image are missing. `1` = enabled, `0` = disabled. | OPTIONAL, DEFAULT = 0 |
 | x.bPVCNativeSpace                     | Performs partial volume correction (PVC) in ASL native space using the GM and WM maps obtained from previously segmented T1-weighted images. Skipped with warning when those maps do not exist and are not resampled to the ASL space. PVC can take several minutes for larger scans (e.g. 128x128x30), so it is deactivated by default. `1` = enabled, `0` = disabled. | OPTIONAL, DEFAULT = 0 |
-| x.PVCNativeSpaceKernel                | Kernel size for the ASL native space PVC. This is ignored when x.bPVCNativeSpace is 
-   set to 0. Equal weighting of all voxels within the kernel is assumed. 3D kernel can 
-   be used, but any of the dimension can be also set to 1. Only odd number of voxels 
-   can be used in each dimension (e.g. `[3 7 5]` not `[2 3 1]`). | OPTIONAL, DEFAULT = `[5 5 1]` for bPVCGaussianMM==0, `[10 10 4]` for bPVCGaussianMM==1 |
+| x.PVCNativeSpaceKernel                | Kernel size for the ASL native space PVC. This is ignored when x.bPVCNativeSpace is set to 0. Equal weighting of all voxels within the kernel is assumed. 3D kernel can be used, but any of the dimension can be also set to 1. Only odd number of voxels can be used in each dimension (e.g. `[3 7 5]` not `[2 3 1]`). | OPTIONAL, DEFAULT = `[5 5 1]` for bPVCGaussianMM==0, `[10 10 4]` for bPVCGaussianMM==1 |
 | x.bPVCGaussianMM                      | If set to 1, PV-correction with a Gaussian weighting is used instead of the equal weights of all voxels in the kernel ('flat' kernel) as per Asllani's original method. Ignored when x.bPVCNativeSpace is set to 0. Unlike with the flat kernel when the size is defined in voxels, here the FWHM of the Gaussian in mm is defined in each dimension. The advantage is twofold - continuous values can be added and a single value can be entered which is valid for datasets with different voxel-sizes without having a kernel of different effective size.`1` = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel, `0` = disabled, use 'flat' kernel with voxels given in PVCNativeSpaceKernel. | OPTIONAL, DEFAULT = 0 |
 | x.MakeNIfTI4DICOM                     | If set to true, an additional CBF image will be created with modifications that allow it to be easily implemented back into a DICOM for e.g. PACS: 1. Remove peak & valley signal, remove NaNs, rescale to 12 bit integers, apply original orientation (2 copies saved, with original ASL and T1w orientation). |  |
 
-
-# WORK IN PROGRESS
 
 
 ## MASKING & ATLAS PARAMETERS
@@ -139,56 +134,9 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 
 |                                       | Description                                   | Defaults           |
 | ------------------------------------- |:---------------------------------------------:|:------------------:|
-| x.S.bMasking                          |  |  |
-| x.S.Atlases                           |  |  |
+| x.S.bMasking                          | Vector specifying if we should mask a ROI with a subject-specific mask (1 = yes, 0 = no): `[1 0 0 0]` = susceptibility mask (either population-or subject-wise), `[0 1 0 0]` = vascular mask (only subject-wise), `[0 0 1 0]` = subject-specific tissue-masking (e.g. pGM>0.5), `[0 0 0 1]` = WholeBrain masking (used as memory compression) `[0 0 0 0]` = no masking at all, `[1 1 1 1]` = apply all masks, Can also be used as boolean, where 1 = `[1 1 1 1]`, 0 = `[0 0 0 0]`. Can be useful for e.g. loading lesion masks outside the GM. | OPTIONAL, DEFAULT=1 |
+| x.S.Atlases                           | Vector specifying the atlases which should be used within the population module. Default definition within the Population Module: `x.S.Atlases = {'TotalGM','DeepWM'}`. Available atlases (please check the atlas NIfTI and accompanying files for more information): **Free atlases**: `TotalGM`: Mask of the entire GM `'./External/SPMmodified/MapsAdded/TotalGM.nii'`, `TotalWM`: Mask of the entire WM `'./External/SPMmodified/MapsAdded/TotalWM.nii'`, `DeepWM`: Mask of the deep WM `'./External/SPMmodified/MapsAdded/DeepWM.nii'`, `WholeBrain`: Mask of the entire brain `'./External/SPMmodified/MapsAdded/WholeBrain.nii'`, `MNI_Structural`: MNI cortical atlas '`./External/SPMmodified/MapsAdded/MNI_Structural.nii'`, `Tatu_ACA_MCA_PCA`: Original vascular territories by Tatu et al. `'./External/SPMmodified/MapsAdded/VascularTerritories/CortVascTerritoriesTatu.nii.nii'`, `Tatu_ICA_PCA`: Tatu - only ICA and PCA `'./External/SPMmodified/MapsAdded/VascularTerritories/TatuICA_PCA.nii'`, `Tatu_ICA_L_ICA_R_PCA`: `'./External/SPMmodified/MapsAdded/VascularTerritories/LabelingTerritories.nii'`, `Tatu_ACA_MCA_PCA_Prox_Med_Dist`: Tatu separated to distal/medial/proximal of ACA/MCA/PCA `'./External/SPMmodified/MapsAdded/VascularTerritories/ATTbasedFlowTerritories.nii.nii'`, `Mindboggle_OASIS_DKT31_CMA`: Mindboggle-101 cortical atlas `'./External/Atlases/Mindboggle_OASIS_DKT31_CMA.nii.gz'`. **Free for non-commercial use only**: `HOcort_CONN`: Harvard-Oxford cortical atlas `'./External/Atlases/HOcort_CONN.nii.gz'`, `HOsub_CONN`: Harvard-Oxford subcortical atlas `'./External/Atlases/HOsub_CONN.nii.gz'`, `Hammers`: Alexander Hammers's brain atlas `'./External/Atlases/Hammers.nii.gz'`, `HammersCAT12`: Hammers atlas adapted to DARTEL template of IXI550 space `'./External/Atlases/HammersCAT12.nii'`, `Thalamus`: Harvad-Oxford thalamus atlas `'./External/Atlases/Thalamus.nii.gz'`. | OPTIONAL, DEFAULT=`{'TotalGM','DeepWM'}` |
 
-
-
-x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
-(1 = yes, 0 = no)
-`[1 0 0 0]` = susceptibility mask (either population-or subject-wise)
-`[0 1 0 0]` = vascular mask (only subject-wise)
-`[0 0 1 0]` = subject-specific tissue-masking (e.g. pGM>0.5)
-`[0 0 0 1]` = WholeBrain masking (used as memory compression)
-`[0 0 0 0]` = no masking at all
-`[1 1 1 1]` = apply all masks
-Can also be used as boolean, where 
-1 = `[1 1 1 1]`
-0 = `[0 0 0 0]`
-Can be useful for e.g. loading lesion masks outside the GM
-(OPTIONAL, DEFAULT=1)
-x.S.Atlases         - vector specifying the atlases which should be used within the population module.
-Default definition within the Population Module:
-x.S.Atlases = {'TotalGM','DeepWM'};
-Exemplary notation within the JSON parameter file:
-
-```json
-"x": [{
-...
-"S": {"Atlases": ["TotalGM","TotalWM","DeepWM","Hammers","HOcort_CONN","HOsub_CONN","Mindboggle_OASIS_DKT31_CMA"]}
-...
-}]
-```
-
-(OPTIONAL, DEFAULT=`{'TotalGM','DeepWM'}`)
-Available atlases (please check the atlas NIfTI and accompanying files for more information):
-Free atlases: 
-     `TotalGM`: Mask of the entire GM `'./External/SPMmodified/MapsAdded/TotalGM.nii'`
-     `TotalWM`: Mask of the entire WM `'./External/SPMmodified/MapsAdded/TotalWM.nii'`
-     `DeepWM`: Mask of the deep WM `'./External/SPMmodified/MapsAdded/DeepWM.nii'`
-     `WholeBrain`: Mask of the entire brain `'./External/SPMmodified/MapsAdded/WholeBrain.nii'`
-     `MNI_Structural`: MNI cortical atlas '`./External/SPMmodified/MapsAdded/MNI_Structural.nii'`
-     `Tatu_ACA_MCA_PCA`: Original vascular territories by Tatu et al. `'./External/SPMmodified/MapsAdded/VascularTerritories/CortVascTerritoriesTatu.nii.nii'`
-     `Tatu_ICA_PCA`: Tatu - only ICA and PCA `'./External/SPMmodified/MapsAdded/VascularTerritories/TatuICA_PCA.nii'`
-     `Tatu_ICA_L_ICA_R_PCA`: `'./External/SPMmodified/MapsAdded/VascularTerritories/LabelingTerritories.nii'`
-     `Tatu_ACA_MCA_PCA_Prox_Med_Dist`: Tatu separated to distal/medial/proximal of ACA/MCA/PCA `'./External/SPMmodified/MapsAdded/VascularTerritories/ATTbasedFlowTerritories.nii.nii'`
-     `Mindboggle_OASIS_DKT31_CMA`: Mindboggle-101 cortical atlas `'./External/Atlases/Mindboggle_OASIS_DKT31_CMA.nii.gz'`
-Free for non-commercial use only:
-     `HOcort_CONN`: Harvard-Oxford cortical atlas `'./External/Atlases/HOcort_CONN.nii.gz'`
-     `HOsub_CONN`: Harvard-Oxford subcortical atlas `'./External/Atlases/HOsub_CONN.nii.gz'`
-     `Hammers`: Alexander Hammers's brain atlas `'./External/Atlases/Hammers.nii.gz'`
-     `HammersCAT12`: Hammers atlas adapted to DARTEL template of IXI550 space `'./External/Atlases/HammersCAT12.nii'`
-     `Thalamus`: Harvad-Oxford thalamus atlas `'./External/Atlases/Thalamus.nii.gz'`
 
 
 ### Matlab structure example
