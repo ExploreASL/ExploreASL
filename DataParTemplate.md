@@ -72,10 +72,6 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 
 
 
-# WORK IN PROGRESS
-
-
-
 ## QUANTIFICATION PARAMETERS
 
 |                                       | Description                                   | Defaults           |
@@ -119,99 +115,23 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 
 |                                       | Description                                   | Defaults           |
 | ------------------------------------- |:---------------------------------------------:|:------------------:|
-| x.motion_correction                   |  |  |
-| x.SpikeRemovalThreshold               |  |  |
-| x.bRegistrationContrast               |  |  |
-| x.bAffineRegistration                 |  |  |
-| x.bDCTRegistration                    |  |  |
-| x.bRegisterM02ASL                     |  |  |
-| x.bUseMNIasDummyStructural            |  |  |
-| x.bPVCNativeSpace                     |  |  |
-| x.PVCNativeSpaceKernel                |  |  |
-| x.bPVCGaussianMM                      |  |  |
-| x.MakeNIfTI4DICOM                     |  |  |
-
-x.motion_correction - boolean to perform motion correction in case of timeseries (OPTIONAL, DEFAULT = 1)
-- options:
-- `1` = on
-- `0` = off
-x.SpikeRemovalThreshold - minimal t-stat improval needed to remove motion spikes (OPTIONAL, DEFAULT = 0.01) 
-  - examples:
-    - `1` = effectively disabling spike removal
-x.bRegistrationContrast - specifies the image contrast used for
-          registration (OPTIONAL, DEFAULT = 2):
-    - `0` = Control->T1w
-    - `1` = CBF->pseudoCBF from template/pGM+pWM
-          (skip if sCoV>0.667)
-    - `2` = automatic (mix of both)
-    - `3` = option 2 & force CBF->pseudoCBF irrespective of sCoV
-x.bAffineRegistration - specifies if the ASL-T1w rigid-body
-  registration is followed up by an affine
-  registration (OPTIONAL, DEFAULT = 0)
-                 - `0` = affine registration disabled
-                 - `1` = affine registration enabled
-                 - `2` = affine registration automatically chosen based on
- spatial CoV of PWI
-x.bDCTRegistration -  Specifies if to include the DCT registration on top of Affine, all other 
-     requirements for affine are thus also taken into account (OPTIONAL, DEFAULT = 0)
-     the x.bAffineRegistration must be >0 for DCT to run
-   - `0` = DCT registration disabled
-   - `1` = DCT registration enabled if affine enabled and conditions for affine passed
-   - `2` = DCT enabled as above, but use PVC on top of it to get the local intensity scaling right
-x.bRegisterM02ASL - boolean specifying whether M0 is registered to
-                    mean_control image (or T1w if no control image exists)
-                    It can be useful to disable M0 registration if the
-                    ASL registration is done based on the M0, and little
-                    motion is expected between the M0 and ASL
-                    acquisition.
-                    If no separate M0 image is available, this parameter
-                    will have no effect. This option is disabled
-                    automatically for 3D spiral
-                    (OPTIONAL, DEFAULT = 0)
-                    - `0` = M0 registration disabled
-                    - `1` = M0 registration enabled (DEFAULT)
-x.bUseMNIasDummyStructural - When structural (e.g. T1w) data is missing, copy population-average
- 							   MNI templates as dummy structural templates. With this option, the
-							   ASL module copies the structural templates to fool the pipeline,
-							   resulting in ASL registration to these templates. While the rigid-body
-							   parameters might still be found somewhat correctly, with this option
-							   it is advised to enable affine registration for ASL as well, since ASL
-							   and these dummy structural images will differ geometrically.
-							   When disabled, an error will be issued instead when the structural images
-							   are missing.
-							   (OPTIONAL, DEFAULT = 0).
-							   - `1` = enabled
-							   - `0` = disabled
-x.bPVCNativeSpace - Performs partial volume correction (PVC) in ASL native space using the GM and WM maps
-                    obtained from previously segmented T1-weighted images. Skipped with warning when those 
-                    maps do not exist and are not resampled to the ASL space. PVC can take several minutes 
-                    for larger scans (e.g. 128x128x30), so it is deactivated by default
-                    (OPTIONAL, DEFAULT = 0).
-                    - `1` = enabled
-                    - `0` = disabled
-x.PVCNativeSpaceKernel - Kernel size for the ASL native space PVC. This is ignored when x.bPVCNativeSpace is 
+| x.motion_correction                   | Boolean to perform motion correction in case of timeseries. Options: `1` = on, `0` = off. | OPTIONAL, DEFAULT = 1 |
+| x.SpikeRemovalThreshold               | Minimal t-stat improval needed to remove motion spikes. Examples: `1` = effectively disabling spike removal. | OPTIONAL, DEFAULT = 0.01 |
+| x.bRegistrationContrast               | Specifies the image contrast used for registration: `0` = Control->T1w, `1` = CBF->pseudoCBF from template/pGM+pWM (skip if sCoV>0.667), `2` = automatic (mix of both), `3` = option 2 & force CBF->pseudoCBF irrespective of sCoV. | OPTIONAL, DEFAULT = 2 |
+| x.bAffineRegistration                 | Specifies if the ASL-T1w rigid-body registration is followed up by an affine registration: `0` = affine registration disabled, `1` = affine registration enabled, `2` = affine registration automatically chosen based on spatial CoV of PWI. | OPTIONAL, DEFAULT = 0 |
+| x.bDCTRegistration                    | Specifies if to include the DCT registration on top of Affine, all other requirements for affine are thus also taken into account the x.bAffineRegistration must be >0 for DCT to run: `0` = DCT registration disabled `1` = DCT registration enabled if affine enabled and conditions for affine passed, `2` = DCT enabled as above, but use PVC on top of it to get the local intensity scaling right. | OPTIONAL, DEFAULT = 0 |
+| x.bRegisterM02ASL                     | Boolean specifying whether M0 is registered to mean_control image (or T1w if no control image exists). It can be useful to disable M0 registration if the ASL registration is done based on the M0, and little motion is expected between the M0 and ASL acquisition. If no separate M0 image is available, this parameter will have no effect. This option is disabled automatically for 3D spiral: `0` = M0 registration disabled, `1` = M0 registration enabled (DEFAULT). | OPTIONAL, DEFAULT = 0 |
+| x.bUseMNIasDummyStructural            | When structural (e.g. T1w) data is missing, copy population-average MNI templates as dummy structural templates. With this option, the ASL module copies the structural templates to fool the pipeline, resulting in ASL registration to these templates. While the rigid-body parameters might still be found somewhat correctly, with this option it is advised to enable affine registration for ASL as well, since ASL and these dummy structural images will differ geometrically. When disabled, an error will be issued instead when the structural image are missing. `1` = enabled, `0` = disabled. | OPTIONAL, DEFAULT = 0 |
+| x.bPVCNativeSpace                     | Performs partial volume correction (PVC) in ASL native space using the GM and WM maps obtained from previously segmented T1-weighted images. Skipped with warning when those maps do not exist and are not resampled to the ASL space. PVC can take several minutes for larger scans (e.g. 128x128x30), so it is deactivated by default. `1` = enabled, `0` = disabled. | OPTIONAL, DEFAULT = 0 |
+| x.PVCNativeSpaceKernel                | Kernel size for the ASL native space PVC. This is ignored when x.bPVCNativeSpace is 
    set to 0. Equal weighting of all voxels within the kernel is assumed. 3D kernel can 
    be used, but any of the dimension can be also set to 1. Only odd number of voxels 
-   can be used in each dimension (e.g. [3 7 5] not [2 3 1]).
-   (OPTIONAL, 
-    DEFAULT = `[5 5 1]` for bPVCGaussianMM==0,
-    DEFAULT = `[10 10 4]` for bPVCGaussianMM==1).
-x.bPVCGaussianMM - If set to 1, PV-correction with a Gaussian weighting is used instead of the equal weights 
-                   of all voxels in the kernel ('flat' kernel) as per Asllani's original method. Ignored when 
-                   x.bPVCNativeSpace is set to 0. Unlike with the flat kernel when the size is defined in 
-                   voxels, here the FWHM of the Gaussian in mm is defined in each dimension. The advantage 
-                   is twofold - continuous values can be added and a single value can be entered which is 
-                   valid for datasets with different voxel-sizes without having a kernel of different effective size.
-                   (OPTIONAL, DEFAULT = 0)
-                   - `1` = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel
-                   - `0` = disabled, use 'flat' kernel with voxels given in PVCNativeSpaceKernel
-x.MakeNIfTI4DICOM - if set to true, an additional CBF image will be
-                    created with modifications that allow it to be easily
-                    implemented back into a DICOM for e.g. PACS:
-                    1. Remove peak & valley signal, remove NaNs, rescale
-                    to 12 bit integers, apply original orientation
-                    (2 copies saved, with original ASL and T1w orientation)
+   can be used in each dimension (e.g. `[3 7 5]` not `[2 3 1]`). | OPTIONAL, DEFAULT = `[5 5 1]` for bPVCGaussianMM==0, `[10 10 4]` for bPVCGaussianMM==1 |
+| x.bPVCGaussianMM                      | If set to 1, PV-correction with a Gaussian weighting is used instead of the equal weights of all voxels in the kernel ('flat' kernel) as per Asllani's original method. Ignored when x.bPVCNativeSpace is set to 0. Unlike with the flat kernel when the size is defined in voxels, here the FWHM of the Gaussian in mm is defined in each dimension. The advantage is twofold - continuous values can be added and a single value can be entered which is valid for datasets with different voxel-sizes without having a kernel of different effective size.`1` = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel, `0` = disabled, use 'flat' kernel with voxels given in PVCNativeSpaceKernel. | OPTIONAL, DEFAULT = 0 |
+| x.MakeNIfTI4DICOM                     | If set to true, an additional CBF image will be created with modifications that allow it to be easily implemented back into a DICOM for e.g. PACS: 1. Remove peak & valley signal, remove NaNs, rescale to 12 bit integers, apply original orientation (2 copies saved, with original ASL and T1w orientation). |  |
 
+
+# WORK IN PROGRESS
 
 
 ## MASKING & ATLAS PARAMETERS
