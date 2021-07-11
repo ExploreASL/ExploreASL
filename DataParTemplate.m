@@ -301,12 +301,13 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % VISUALIZATION PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.vis.bVisualQCCBFvsGMWMTemplate - if == 1, uses the template GM and WM to make visualization overlays with CBF and other derived maps
-%                              if == 0, uses the individual GM and WM maps of the subject to make visualizations
-%                              (OPTIONAL, DEFAULT = 0)
-% x.vis.bVisualQCCBFvsGMWMContour -  if == 1, then produces the GM and WM as a contour in the overlay with CBF and derived maps, not a full ROI - 1 pixel thickness (contour calculated per slice basis).
-%                              if == 0, then a standard full GM or WM ROI is used
-%                              (OPTIONAL, DEFAULT = 0)
+% x.vis.bVisualQCCBFvsGMWMTemplate - Visualization of the QC of CBF vs T1w alignment uses the individual masks or templates (OPTIONAL, DEFAULT = 0)
+%                                  - 1 - Use the GM and WM template for the visualization of the overlays with CBF and other derived maps
+%                                  - 0 - Use the individual GM and WM maps of the subject to make visualizations
+% x.vis.bVisualQCCBFvsGMWMContour - Visualization of the QC of CBF vs T1w alignment by using a full mask, or a contour (OPTIONAL, DEFAULT = 0)
+%                                 - 1 - Produces GM and WM as a 1-pixel thick contour in the overlay with CBF and derived maps. The 
+%                                       contour is calculated one individual slice basis
+%                                 - 0 - The complete ROI is visualized, not just a contour
 %   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
 %                       (1 = yes, 0 = no)
 %                       [1 0 0 0] = susceptibility mask (either population-or subject-wise)
