@@ -10,8 +10,6 @@
 			{
 				"options": ["baseline","drug"]
 			},
-			"M0": "UseControlAsM0",
-			"M0PositionInASL4D": [1, 2],
 			"Q":
 			{
 				"BackgroundSuppressionNumberPulses": 2,
@@ -25,7 +23,15 @@
 			"settings":
 			{
 				"Quality": 1,
-				"DELETETEMP": 1
+				"DELETETEMP": 1,
+                "M0": "UseControlAsM0"
+			},
+            "modules":
+			{
+				"asl":
+                {
+                    "M0PositionInASL4D": [1, 2]
+                }
 			}
 		}]
 }

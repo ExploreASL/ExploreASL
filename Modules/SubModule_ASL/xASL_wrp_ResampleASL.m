@@ -23,7 +23,7 @@ function xASL_wrp_ResampleASL(x)
 %               4. Resample to native space (applying any motion correction or registration)
 %               5. Bilateral filter (currently disabled)
 %               6. Create mean control image, if available, in native & standard space
-%               7. Clone mean control image to be used as pseudo-M0 (if x.M0==UseControlAsM0)
+%               7. Clone mean control image to be used as pseudo-M0 (if x.settings.M0==UseControlAsM0)
 %               8. Pair-wise subtraction & saving PWI & PWI4D in both spaces
 %               9. Save PWI NIfTI & time-series-related maps (SD, SNR)
 %               10. Delete temporary files
@@ -152,11 +152,11 @@ end
 
 
 %% ------------------------------------------------------------------------------------------
-% 7. Clone mean control image to be used as pseudo-M0 (if x.M0==UseControlAsM0)
+% 7. Clone mean control image to be used as pseudo-M0 (if x.settings.M0==UseControlAsM0)
 
-% If x.M0 is set as UseControlAsM0, this mean control NIfTI will be
+% If x.settings.M0 is set as UseControlAsM0, this mean control NIfTI will be
 % cloned to an M0 NIfTI (and processed in the M0 submodule)
-if strcmpi(x.M0, 'UseControlAsM0')
+if strcmpi(x.settings.M0, 'UseControlAsM0')
     if nVolumes==1
         warning('Cant clone mean control NIfTI as M0.nii, timeseries missing');
         % we assume that a single ASL image is already subtracted, so does not
