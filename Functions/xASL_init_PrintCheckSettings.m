@@ -88,7 +88,7 @@ function x = xASL_init_PrintCheckSettings(x)
         fprintf('%s\n','No sets are defined');
     end
 
-    if ~isfield(x,'M0')
+    if ~isfield(x.settings,'M0')
     %     warning('M0 option missing!');
     else
         fprintf('\n%s\n',['M0 option selected is "' num2str(x.settings.M0) '"']);

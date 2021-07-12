@@ -203,7 +203,7 @@ if isfield(x.settings, 'M0') && strcmpi(x.settings.M0, 'no_background_suppressio
     x.settings.M0 = 'UseControlAsM0';
 end
 
-if ~isfield(x,'M0')
+if ~isfield(x.settings,'M0')
     if xASL_exist(fullfile(Fpath, 'M0.nii'),'file') && (exist(fullfile(Fpath, 'M0.json'),'file') || exist(fullfile(Fpath, 'M0_parms.mat'),'file') )
         x.settings.M0 = 'separate_scan';
         if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.settings.M0]); end
