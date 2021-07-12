@@ -195,9 +195,9 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % STRUCTURAL PROCESSING PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.modules.structural.bRunLongReg    - run longitudinal registration 
+% x.modules.bRunLongReg               - run longitudinal registration 
 %                                       (OPTIONAL, DEFAULT = 0)
-% x.modules.structural.bRunDARTEL     - run between-subject registration/create templates 
+% x.modules.bRunDARTEL                - run between-subject registration/create templates 
 %                                       (OPTIONAL, DEFAULT = 0)
 % x.modules.structural.bSegmentSPM12  - boolean to specify if SPM12 segmentation is run instead 
 %                                       of CAT12 (OPTIONAL, DEFAULT = 0)
