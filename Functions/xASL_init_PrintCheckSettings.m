@@ -91,7 +91,7 @@ function x = xASL_init_PrintCheckSettings(x)
     if ~isfield(x,'M0')
     %     warning('M0 option missing!');
     else
-        fprintf('\n%s\n',['M0 option selected is "' num2str(x.M0) '"']);
+        fprintf('\n%s\n',['M0 option selected is "' num2str(x.settings.M0) '"']);
     end
 
     if length(x.D.ROOT)>71

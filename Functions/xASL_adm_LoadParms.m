@@ -198,18 +198,18 @@ end
 
 %% ------------------------------------------------------------------------
 %% 6. Fix M0 parameter
-if isfield(x, 'M0') && strcmpi(x.M0, 'no_background_suppression')
-    warning('Legacy option x.M0=no_background_suppression detected, replacing this by UseControlAsM0');
-    x.M0 = 'UseControlAsM0';
+if isfield(x.settings, 'M0') && strcmpi(x.settings.M0, 'no_background_suppression')
+    warning('Legacy option x.settings.M0=no_background_suppression detected, replacing this by UseControlAsM0');
+    x.settings.M0 = 'UseControlAsM0';
 end
 
 if ~isfield(x,'M0')
     if xASL_exist(fullfile(Fpath, 'M0.nii'),'file') && (exist(fullfile(Fpath, 'M0.json'),'file') || exist(fullfile(Fpath, 'M0_parms.mat'),'file') )
-        x.M0 = 'separate_scan';
-        if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.M0]); end
+        x.settings.M0 = 'separate_scan';
+        if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.settings.M0]); end
     elseif isfield(Parms,'BackgroundSuppressionNumberPulses') && Parms.BackgroundSuppressionNumberPulses==0
-        x.M0 = 'UseControlAsM0';
-        if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.M0]); end
+        x.settings.M0 = 'UseControlAsM0';
+        if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.settings.M0]); end
     else
         if bVerbose; fprintf('%s\n','M0 parameter was missing, OR didnt find M0 scan, AND BackgroundSuppressionNumberPulses wasnt set to 0...'); end
     end
