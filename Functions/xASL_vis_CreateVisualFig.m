@@ -381,6 +381,9 @@ if numel(DirOut)>1 && numel(ImOut)>1 % when DirOut or ImOut==NaN, skip this
 		else
 			FileName = [FileName '_' Ffile{iC}];
 		end
+		if iC>1 && bContour
+			FileName = [FileName '_Contour'];
+		end
     end
     OutputFile = fullfile(DirOut,[FileName '.jpg']);
     xASL_vis_Imwrite(ImOut, OutputFile);

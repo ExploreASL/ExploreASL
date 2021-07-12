@@ -303,11 +303,11 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % x.vis.bVisualQCCBFvsGMWMTemplate - Visualization of the QC of CBF vs T1w alignment uses the individual masks or templates (OPTIONAL, DEFAULT = 0)
 %                                  - 1 - Use the GM and WM template for the visualization of the overlays with CBF and other derived maps
-%                                  - 0 - Use the individual GM and WM maps of the subject to make visualizations
+%                                  - 0 - Use the individual GM and WM maps of the subject for the overlays
 % x.vis.bVisualQCCBFvsGMWMContour - Visualization of the QC of CBF vs T1w alignment by using a full mask, or a contour (OPTIONAL, DEFAULT = 0)
-%                                 - 1 - Produces GM and WM as a 1-pixel thick contour in the overlay with CBF and derived maps. The 
-%                                       contour is calculated one individual slice basis
-%                                 - 0 - The complete ROI is visualized, not just a contour
+%                                 - 1 - Produces GM and WM as a 1-voxel thick contour in the overlay with CBF and derived maps. The 
+%                                       contour is calculated in 3D
+%                                 - 0 - The complete GM or WM ROI is overlaid, not just a contour
 %   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
 %                       (1 = yes, 0 = no)
 %                       [1 0 0 0] = susceptibility mask (either population-or subject-wise)

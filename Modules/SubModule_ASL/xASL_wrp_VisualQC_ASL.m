@@ -191,8 +191,8 @@ if isfield(x.vis,'bVisualQCCBFvsGMWMTemplate') && ~isempty(x.vis.bVisualQCCBFvsG
 	% Use the template version for visualization and not the individual one
 	PathpWM = fullfile(x.D.MapsSPMmodifiedDir,'rc2T1_ASL_res.nii');
 	PathpGM = fullfile(x.D.MapsSPMmodifiedDir,'rc1T1_ASL_res.nii');
-	TextpWM = 'Temp';
-	TextpGM = 'Temp';
+	TextpWM = 'TemplateReg';
+	TextpGM = 'TemplateReg';
 else
 	PathpWM = x.P.Pop_Path_PV_pWM;
 	PathpGM = x.P.Pop_Path_PV_pGM;
