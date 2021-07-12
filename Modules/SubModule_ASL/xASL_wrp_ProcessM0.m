@@ -1,3 +1,4 @@
+
 function xASL_wrp_ProcessM0(x)
 %xASL_wrp_ProcessM0 Submodule of ExploreASL ASL Module, for M0 image processing
 %
@@ -5,7 +6,7 @@ function xASL_wrp_ProcessM0(x)
 %
 % INPUT:
 %   x       - structure containing fields with all information required to run this submodule (REQUIRED)
-%   x.bRegisterM02ASL - boolean specifying whether M0 is registered to
+%   x.modules.asl.bRegisterM02ASL - boolean specifying whether M0 is registered to
 %                     mean_control image (or T1w if no control image exists)
 %                     It can be useful to disable M0 registration if the
 %                     ASL registration is done based on the M0, and little
@@ -112,7 +113,7 @@ xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field 
 % inequality of image contrast for ASL & M0, and because they usually
 % are already in decent registration.
 
-if isfield(x, 'bRegisterM02ASL') && ~x.bRegisterM02ASL
+if isfield(x.modules.asl, 'bRegisterM02ASL') && ~x.modules.asl.bRegisterM02ASL
     fprintf('M0 registration (to ASL or T1w) is skipped upon request\n');
 elseif ~strcmpi(x.M0,'UseControlAsM0') && isempty(regexpi(x.Q.Sequence, 'spiral'))
     % only register if the M0 and mean control are not identical
