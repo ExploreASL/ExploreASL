@@ -18,7 +18,7 @@
 				"LabelingDuration": 1800,
 				"SliceReadoutTime": 30,
 				"Vendor": "Philips",
-				"readout_dim": "2D"
+				"readoutDim": "2D"
 			},
 			"settings":
 			{
