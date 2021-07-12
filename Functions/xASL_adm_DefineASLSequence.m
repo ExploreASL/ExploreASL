@@ -36,7 +36,7 @@ end
 
 
 % Obtain ASL sequence
-if ~isfield(x,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Vendor')
+if ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Vendor')
     if strcmpi(x.Q.readoutDim,'2D')
        x.Q.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of Vendor
     elseif strcmpi(x.Q.readoutDim,'3D') && ( ~isempty(regexpi(x.Q.Vendor,'Philips')) || ~isempty(regexpi(x.Q.Vendor,'Siemens')) )
