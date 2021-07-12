@@ -87,8 +87,8 @@ if ~isfield(x,'HadamardType')
 end
 
 % Initialize the DummyScan and M0 position fields - by default empty
-if ~isfield(x,'DummyScanPositionInASL4D') 
-	x.DummyScanPositionInASL4D = [];
+if ~isfield(x.modules.asl,'DummyScanPositionInASL4D') 
+	x.modules.asl.DummyScanPositionInASL4D = [];
 end
 
 if ~isfield(x.modules.asl,'M0PositionInASL4D') 
@@ -132,7 +132,7 @@ oldFolder = cd(x.dir.SESSIONDIR);
 % The first three states are here, because the first two are run only conditionally
 if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
 	% Split the M0 and dummy scans from the ASL time-series
-	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.DummyScanPositionInASL4D);
+	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.modules.asl.DummyScanPositionInASL4D);
 	
 	% Do the same for the ancillary files
 	FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat$','FPList',[0 Inf]);
