@@ -25,7 +25,7 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 |                                      | Description                                   | Defaults           |
 | ------------------------------------ |:---------------------------------------------:|:------------------:|
 | x.external.bAutomaticallyDetectFSL   | Boolean to automatically detect the FSL version if disabled, this function will try to use the system-initialized FSL and throw an error if FSL is not initialized. | OPTIONAL, DEFAULT = disabled |
-| x.settings.MakeNIfTI4DICOM           | Boolean to output CBF native space maps resampled and/or registered to the original T1w/ASL, and contrast adapted and in 12 bit range allowing to convert the NIfTI to a DICOM file, e.g. for implementation in PACS or other DICOM archives. | n/a |
+| x.settings.bMakeNIfTI4DICOM          | Boolean to output CBF native space maps resampled and/or registered to the original T1w/ASL, and contrast adapted and in 12 bit range allowing to convert the NIfTI to a DICOM file, e.g. for implementation in PACS or other DICOM archives. | n/a |
 
 
 
@@ -50,8 +50,8 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 | x.settings.M0_conventionalProcessing | Boolean - use the conventional M0 processing (per consensus paper), options: 1 = standard processing, 0 = new image processing (improved masking & smoothing). | OPTIONAL, DEFAULT = 0 |
 | x.M0                                 | Choose which M0 option to use: `'separate_scan'` = for a separate M0 NIfTI (needs to be in the same folder called `M0.nii`), `3.7394*10^6` = single M0 value to use, `'UseControlAsM0'` = will copy the mean control image as M0.nii and process as if it was a separately acquired M0 image (taking TR etc from the `ASL4D.nii`). Make sure that no background suppression was used, otherwise this option is invalid. | REQUIRED |
 | x.M0_GMScaleFactor                   | Add additional scale factor to multiply the M0 image by This can be useful when you have background suppression but no control/M0 image without background suppression. If you then know the M0 scalefactor for the GM, you can use the control image as M0 and use this parameter to scale back what was suppressed by background suppression. Note that there is no option for separate tissue scaling (e.g. WM & GM), because ExploreASL pragmatically smooths the M0 a lot, assuming that head motion and registration between M0 & ASL4D will differ between patients and controls. | OPTIONAL, default = 1 |
-| x.M0PositionInASL4D                  | A vector of integers that indicates the position of M0 in TimeSeries, if it is integrated by the Manufacturer in the DICOM export. Will move this from ASL4D.nii to M0.nii Note that the x.M0PositionInASL4D parameter is independent from the x.M0 parameter choice. Example for Philips 3D GRASE = '[1 2]' (first control-label pair). Example for Siemens 3D GRASE = 1 first image. Example for GE 3D spiral = 2 where first image is PWI & last = M0. Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed. | OPTIONAL, DEFAULT = `[] (no M0 in timeseries)` |
-| x.DummyScanPositionInASL4D           | A vector of integers that indicates the position of Dummy scans in TimeSeries if they are integrated by the Manufacturer in the DICOM export. This allows to remove the dummy scans or noise scans that are part of the Timeseries. A new ASL4D.nii is saved with dummy scans removed and the original is backed-up. Works in a similar way as M0PositionInASL4D, both can be entered at the same time and both indicate the original position in the Timeseries independend of each other. Example for Siemens 2D EPI = `[79 80]` Skip the control-label pair used for noise measurements. Example for certain Siemens 3D GRASE = 2 Skip the first dummy control image. Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed. | OPTIONAL, DEFAULT = `[] (no M0 in timeseries)` |
+| x.M0PositionInASL4D                  | A vector of integers that indicates the position of M0 in TimeSeries, if it is integrated by the Vendor in the DICOM export. Will move this from ASL4D.nii to M0.nii Note that the x.M0PositionInASL4D parameter is independent from the x.M0 parameter choice. Example for Philips 3D GRASE = '[1 2]' (first control-label pair). Example for Siemens 3D GRASE = 1 first image. Example for GE 3D spiral = 2 where first image is PWI & last = M0. Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed. | OPTIONAL, DEFAULT = `[] (no M0 in timeseries)` |
+| x.DummyScanPositionInASL4D           | A vector of integers that indicates the position of Dummy scans in TimeSeries if they are integrated by the Vendor in the DICOM export. This allows to remove the dummy scans or noise scans that are part of the Timeseries. A new ASL4D.nii is saved with dummy scans removed and the original is backed-up. Works in a similar way as M0PositionInASL4D, both can be entered at the same time and both indicate the original position in the Timeseries independend of each other. Example for Siemens 2D EPI = `[79 80]` Skip the control-label pair used for noise measurements. Example for certain Siemens 3D GRASE = 2 Skip the first dummy control image. Empty vector should be given (= [] or = null (in JSON)) if no action is to be taken and nothing is removed. | OPTIONAL, DEFAULT = `[] (no M0 in timeseries)` |
 
 
 
@@ -63,7 +63,7 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 | x.Q.BackgroundSuppressionPulseTime    | Vector containing timing, in ms, of the background suppression pulses before the start of the readout (per BIDS). | REQUIRED when x.Q.UseControlAsM0 & x.Q.BackgroundSuppressionNumberPulses>0 |
 | x.Q.PresaturationTime                 | Time in ms before the start of the readout, scalar, when the slice has been saturated (90 degree flip) this has to come before all the bSup pulses, but doesn't need to be always specified. | OPTIONAL, defaults to PLD (PASL) or PLD+LabDur ((P)CASL) |
 | x.Q.readoutDim                        | String specifying the readout type. Options: `'2D'` for slice-wise readout, `'3D'` for volumetric readout. | REQUIRED |
-| x.Q.Manufacturer                      | String containing the Manufacturer used. This parameter is used to apply the Manufacturer-specific scale factors, options: 'GE_product', 'GE_WIP', 'Philips', 'Siemens'. | REQUIRED for ASL |
+| x.Q.Vendor                            | String containing the Vendor used. This parameter is used to apply the Vendor-specific scale factors, options: 'GE_product', 'GE_WIP', 'Philips', 'Siemens'. | REQUIRED for ASL |
 | x.Q.Sequence                          | String containing the sequence used. Options: `'3D_spiral', '3D_GRASE', '2D_EPI'`. | REQUIRED for ASL |
 | x.Q.LabelingType                      | String containing the labeling strategy used. Options: `'PASL'` (pulsed Q2-TIPS), `'CASL'` (CASL/PCASL). Note: pulsed without Q2TIPS cannot be reliably quantified because the bolus width cannot be identified CASL & PCASL are both continuous ASL methods, identical quantification. | REQUIRED for ASL |
 | x.Q.Initial_PLD                       | Value of PLD (ms), for 3D this is fixed for whole brain, for 2D this is the PLD of first acquired slice, example: 1800. | REQUIRED for ASL |
@@ -103,9 +103,9 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 
 |                                       | Description                                   | Defaults           |
 | ------------------------------------- |:---------------------------------------------:|:------------------:|
-| x.modules.structural.bRunLongReg      | Run longitudinal registration. | OPTIONAL, DEFAULT = 0 |
-| x.modules.structural.bRunDARTEL       | Run between-subject registration/create templates. | OPTIONAL, DEFAULT = 0 |
-| x.modules.structural.SegmentSPM12     | Boolean to specify if SPM12 segmentation is run instead of CAT12. Options: 1 = run SPM12, 0 = run CAT12. | OPTIONAL, DEFAULT = 0 |
+| x.modules.bRunLongReg                 | Run longitudinal registration. | OPTIONAL, DEFAULT = 0 |
+| x.modules.bRunDARTEL                  | Run between-subject registration/create templates. | OPTIONAL, DEFAULT = 0 |
+| x.modules.structural.bSegmentSPM12    | Boolean to specify if SPM12 segmentation is run instead of CAT12. Options: 1 = run SPM12, 0 = run CAT12. | OPTIONAL, DEFAULT = 0 |
 | x.modules.structural.bHammersCAT12    | Boolean specifying if CAT12 should provide Hammers volumetric ROI results. | OPTIONAL, DEFAULT = 0 |
 | x.modules.structural.bFixResolution   | Resample to a resolution that CAT12 accepts. | OPTIONAL, DEFAULT=false |
 
@@ -125,7 +125,7 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 | x.bPVCNativeSpace                     | Performs partial volume correction (PVC) in ASL native space using the GM and WM maps obtained from previously segmented T1-weighted images. Skipped with warning when those maps do not exist and are not resampled to the ASL space. PVC can take several minutes for larger scans (e.g. 128x128x30), so it is deactivated by default. `1` = enabled, `0` = disabled. | OPTIONAL, DEFAULT = 0 |
 | x.PVCNativeSpaceKernel                | Kernel size for the ASL native space PVC. This is ignored when x.bPVCNativeSpace is set to 0. Equal weighting of all voxels within the kernel is assumed. 3D kernel can be used, but any of the dimension can be also set to 1. Only odd number of voxels can be used in each dimension (e.g. `[3 7 5]` not `[2 3 1]`). | OPTIONAL, DEFAULT = `[5 5 1]` for bPVCGaussianMM==0, `[10 10 4]` for bPVCGaussianMM==1 |
 | x.bPVCGaussianMM                      | If set to 1, PV-correction with a Gaussian weighting is used instead of the equal weights of all voxels in the kernel ('flat' kernel) as per Asllani's original method. Ignored when x.bPVCNativeSpace is set to 0. Unlike with the flat kernel when the size is defined in voxels, here the FWHM of the Gaussian in mm is defined in each dimension. The advantage is twofold - continuous values can be added and a single value can be entered which is valid for datasets with different voxel-sizes without having a kernel of different effective size.`1` = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel, `0` = disabled, use 'flat' kernel with voxels given in PVCNativeSpaceKernel. | OPTIONAL, DEFAULT = 0 |
-| x.MakeNIfTI4DICOM                     | If set to true, an additional CBF image will be created with modifications that allow it to be easily implemented back into a DICOM for e.g. PACS: 1. Remove peak & valley signal, remove NaNs, rescale to 12 bit integers, apply original orientation (2 copies saved, with original ASL and T1w orientation). |  |
+| x.bMakeNIfTI4DICOM                     | If set to true, an additional CBF image will be created with modifications that allow it to be easily implemented back into a DICOM for e.g. PACS: 1. Remove peak & valley signal, remove NaNs, rescale to 12 bit integers, apply original orientation (2 copies saved, with original ASL and T1w orientation). |  |
 
 
 
@@ -147,7 +147,7 @@ To create the **JSON** file of this matlab structure, you can use `spm_jsonwrite
 x.dataset.name = ExampleDataSet;
 x.dataset.subjectRegexp = '^Sub-\d{3}$';
 x.Q.readoutDim = '2D';
-x.Q.Manufacturer = 'Philips';
+x.Q.Vendor = 'Philips';
 x.Q.BackgroundSuppressionNumberPulses = 2;
 x.Q.LabelingType = 'CASL';
 x.Q.Initial_PLD = 1525;
