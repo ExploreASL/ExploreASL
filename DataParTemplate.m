@@ -304,9 +304,9 @@ function x = DataParTemplate(x)
 % x.vis.bVisualQCCBFvsGMWMTemplate - Visualization of the QC of CBF vs T1w alignment uses the individual masks or templates (OPTIONAL, DEFAULT = 0)
 %                                  - 1 - Use the GM and WM template for the visualization of the overlays with CBF and other derived maps
 %                                  - 0 - Use the individual GM and WM maps of the subject for the overlays
-% x.vis.bVisualQCCBFvsGMWMContour - Visualization of the QC of CBF vs T1w alignment by using a full mask, or a contour (OPTIONAL, DEFAULT = 0)
+% x.vis.bVisualQCCBFvsGMWMContour - Visualization of the QC of CBF vs T1w alignment by using a full mask, or a contour (OPTIONAL, DEFAULT = 1)
 %                                 - 1 - Produces GM and WM as a 1-voxel thick contour in the overlay with CBF and derived maps. The 
-%                                       contour is calculated in 3D
+%                                       contour is calculated in 3D. It creates two outputs - both with a contour and with the full ROI
 %                                 - 0 - The complete GM or WM ROI is overlaid, not just a contour
 %   x.S.bMasking        - vector specifying if we should mask a ROI with a subject-specific mask
 %                       (1 = yes, 0 = no)

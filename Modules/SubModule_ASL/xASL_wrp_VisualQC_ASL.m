@@ -52,6 +52,15 @@ end
 
 x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 
+% Set the defaults
+if ~isfield(x.vis, 'bVisualQCCBFvsGMWMTemplate') || ~isempty(x.vis.bVisualQCCBFvsGMWMTemplate)
+	x.vis.bVisualQCCBFvsGMWMTemplate = 0;
+end
+
+if ~isfield(x.vis,'bVisualQCCBFvsGMWMContour') || ~isempty(x.vis.bVisualQCCBFvsGMWMContour)
+	x.vis.bVisualQCCBFvsGMWMContour = 1;
+end
+
 %% -----------------------------------------------------------------------------------
 %% 2) Make ASL NIfTIs ready for visualization & conversion to DICOM
 if isfield(x,'MakeNIfTI4DICOM') && x.MakeNIfTI4DICOM
@@ -187,7 +196,7 @@ x = xASL_adm_ResetVisualizationSlices(x);
 
 % Path to the WM map used for the QC here
 % This can be either the individual map or the template WM map - based on the input parameters
-if isfield(x.vis,'bVisualQCCBFvsGMWMTemplate') && ~isempty(x.vis.bVisualQCCBFvsGMWMTemplate) && x.vis.bVisualQCCBFvsGMWMTemplate
+if x.vis.bVisualQCCBFvsGMWMTemplate
 	% Use the template version for visualization and not the individual one
 	PathpWM = fullfile(x.D.MapsSPMmodifiedDir,'rc2T1_ASL_res.nii');
 	PathpGM = fullfile(x.D.MapsSPMmodifiedDir,'rc1T1_ASL_res.nii');
@@ -207,7 +216,7 @@ T.ImIn(9:10)    = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT PathpWM}};
 
 T.bContour(1:11) = 0;
 % If the contour option is activated then draw contour for the GM and WM maps
-if isfield(x.vis,'bVisualQCCBFvsGMWMContour') && ~isempty(x.vis.bVisualQCCBFvsGMWMContour) && x.vis.bVisualQCCBFvsGMWMContour
+if x.vis.bVisualQCCBFvsGMWMContour
 	T.bContour([3,7,10]) = 1;
 end
 	
@@ -304,7 +313,12 @@ for iN=1:nRows
         end    
 
         % Create the image
-        T2.IM = xASL_vis_CreateVisualFig( x, T2.ImIn{iM}, T2.DirOut{iM}, T2.IntScale{iM}, T2.NameExt{iM}, T2.ColorMapIs{iM},[],[],[],[],[],[],T2.bContour(iM));
+		% If the contour option is activated, then create both full-ROI overlay and the contour one, but only pass the full-ROI to the PDF report
+		if T2.bContour(iM) > 0
+			xASL_vis_CreateVisualFig( x, T2.ImIn{iM}, T2.DirOut{iM}, T2.IntScale{iM}, T2.NameExt{iM}, T2.ColorMapIs{iM},[],[],[],[],[],[],T2.bContour(iM));
+		end
+		T2.IM = xASL_vis_CreateVisualFig( x, T2.ImIn{iM}, T2.DirOut{iM}, T2.IntScale{iM}, T2.NameExt{iM}, T2.ColorMapIs{iM},[],[],[],[],[],[],0);
+
         % add single slice to QC collection
         if sum(~isnan(T2.IM(:)))>0 % if image is not empty
             x = xASL_vis_AddIM2QC(x,T2);
