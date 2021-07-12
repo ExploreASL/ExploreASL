@@ -6,7 +6,7 @@ function xASL_wrp_VisualQC_ASL(x)
 % INPUT:
 %   x                          - structure containing fields with all information required to run this submodule (REQUIRED)
 %   x.P                        - paths with NIfTIs for which this function should be applied to (REQUIRED)
-%   x.settings.bMakeNIfTI4DICOM - Boolean, true for resampling CBF native space to
+%   x.modules.asl.bMakeNIfTI4DICOM - Boolean, true for resampling CBF native space to
 %                                original T1w & ASL spaces, and other processing for use in
 %                                DICOM image/server (OPTIONAL, DEFAULT=false);
 %
@@ -63,7 +63,7 @@ end
 
 %% -----------------------------------------------------------------------------------
 %% 2) Make ASL NIfTIs ready for visualization & conversion to DICOM
-if isfield(x.settings,'bMakeNIfTI4DICOM') && x.settings.bMakeNIfTI4DICOM
+if isfield(x.modules.asl,'bMakeNIfTI4DICOM') && x.modules.asl.bMakeNIfTI4DICOM
     if xASL_exist(x.P.Path_T1_ORI, 'file')
         InputT1Oripath = x.P.Path_T1_ORI;
     else
