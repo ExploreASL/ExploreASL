@@ -189,9 +189,9 @@ elseif strcmpi(Fext, '.json')
     end
     
     if isfield(x,'Vendor')
-        warning('Deprecated field. Please use x.Q.Manufacturer instead of x.Quality');
-        if ~isfield(x,'Q') || ~isfield(x.Q,'Manufacturer')
-            x.Q.Manufacturer = x.Vendor;
+        warning('Deprecated field. Please use x.Q.Vendor instead of x.Vendor');
+        if ~isfield(x,'Q') || ~isfield(x.Q,'Vendor')
+            x.Q.Vendor = x.Vendor;
         end
         x = rmfield(x,'Vendor');
     end

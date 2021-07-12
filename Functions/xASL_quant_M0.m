@@ -65,7 +65,7 @@ M0IM = xASL_io_Nifti2Im(inputM0);
 if ~x.ApplyQuantification(2)
     fprintf('%s\n','M0 ScaleSlopes skipped');
 else
-    if ~isempty(regexpi(x.Q.Manufacturer,'Philips'))
+    if ~isempty(regexpi(x.Q.Vendor,'Philips'))
 
 		scaleFactor = xASL_adm_GetPhilipsScaling(xASL_adm_LoadParms(M0ParmsMat, x),xASL_io_ReadNifti(x.P.Path_M0));
 
@@ -111,7 +111,7 @@ else
 
     %% ------------------------------------------------------------------------------------------------------
     % 4. Set TR specifically for GE
-    if ~isempty(regexpi(x.Q.Manufacturer,'GE')) && isempty(regexpi(x.Q.Manufacturer,'Siemens')) &&  isempty(regexpi(x.Q.Manufacturer,'Philips'))
+    if ~isempty(regexpi(x.Q.Vendor,'GE')) && isempty(regexpi(x.Q.Vendor,'Siemens')) &&  isempty(regexpi(x.Q.Vendor,'Philips'))
         TR = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
     else
