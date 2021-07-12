@@ -95,8 +95,8 @@ if ~isfield(x,'M0PositionInASL4D')
 	x.M0PositionInASL4D = [];
 end
 
-if ~isfield(x, 'bUseBasilQuantification') || isempty(x.bUseBasilQuantification)
-	x.bUseBasilQuantification = false;
+if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
+	x.Q.bUseBasilQuantification = false;
 end
 
 x = xASL_init_FileSystem(x); % do this only here, to save time when skipping this module
@@ -421,7 +421,7 @@ iState = 8;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
     fprintf('%s\n','Quantifying ASL:   ');
-    if isfield(x, 'bUseBasilQuantification') && x.bUseBasilQuantification
+    if isfield(x, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification
         % Quantification in native space:
         nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
         

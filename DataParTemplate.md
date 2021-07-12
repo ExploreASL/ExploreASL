@@ -76,7 +76,7 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 
 |                                       | Description                                   | Defaults           |
 | ------------------------------------- |:---------------------------------------------:|:------------------:|
-| x.bUseBasilQuantification             | True for using BASIL quantification in addition to ExploreASL's quantification. |  |
+| x.Q.bUseBasilQuantification           | True for using BASIL quantification in addition to ExploreASL's quantification. |  |
 | x.Q.Lambda                            | Brain/blood water coefficient (mL 1H/ mL blood). Example: `0.32` (for GSP phantom). | OPTIONAL, DEFAULT = 0.9 |
 | x.Q.T2art                             | `T2*` of arterial blood at 3T, only used when no M0 image (ms). | OPTIONAL, DEFAULT = 50 |
 | x.Q.BloodT1                           | T1 relaxation time of arterial blood (ms). Defaults (Alsop MRM 2014), 1800 for GSP phantom. | OPTIONAL, DEFAULT = 1650 @ 3T, 1350 @ 1.5 T |
