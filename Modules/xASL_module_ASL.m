@@ -48,8 +48,8 @@ elseif length(x.Q.ApplyQuantification)<5
     x.Q.ApplyQuantification(length(x.Q.ApplyQuantification)+1:5) = 1;
 end
 
-if ~isfield(x,'bPVCNativeSpace') || isempty(x.bPVCNativeSpace)
-	x.bPVCNativeSpace = 0;
+if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNativeSpace)
+	x.modules.asl.bPVCNativeSpace = 0;
 end
 
 % Only continue if ASL exists
@@ -451,7 +451,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
         end
 	end
 	
-	if x.bPVCNativeSpace
+	if x.modules.asl.bPVCNativeSpace
 		fprintf('%s\n','Partial volume correcting ASL in native space:   ');
 		if xASL_exist(x.P.Path_PVgm,'file') && xASL_exist(x.P.Path_PVwm,'file')
 			xASL_wrp_PVC(x);
