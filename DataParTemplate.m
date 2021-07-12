@@ -151,7 +151,7 @@ function x = DataParTemplate(x)
 %                   - options:
 %                     - 1 = a single-compartment quantification model (default by concensus paper)
 %                     - 2 = a dual-compartment quantification model 
-% x.ApplyQuantification - a vector of 1x5 logical values specifying which types on quantified images should be
+% x.Q.ApplyQuantification - a vector of 1x5 logical values specifying which types on quantified images should be
 %                         calculated and saved (OPTIONAL, DEFAULT = '[1 1 1 1 1]' = all enabled)
 %                       - fields:
 %                         - 1) Apply ScaleSlopes ASL4D (xASL_wrp_Quantify, future at dcm2niiX stage)

@@ -120,7 +120,7 @@ if isnumeric(x.M0)
         M0_im = x.M0;
         fprintf('%s\n',['Single M0 value ' num2str(M0_im) ' used']);
 
-        if x.ApplyQuantification(4)
+        if x.Q.ApplyQuantification(4)
             % in case of separate M0, or M0 because of no background suppression,
             % T2* effect is similar in both images and hence removed by division
             T2_star_factor = exp(ASL_parms.EchoTime/x.Q.T2star);
@@ -195,7 +195,7 @@ if strcmpi(x.M0,'separate_scan')
         end
 
         % Correct M0 for any EchoTime differences between ASL & M0
-        if x.ApplyQuantification(4)
+        if x.Q.ApplyQuantification(4)
             ScalingASL = exp(ASL_parms.EchoTime/CorrFactor);
             ScalingM0 = exp(M0_parms.EchoTime/CorrFactor);
             M0_im = M0_im.*ScalingM0./ScalingASL;
@@ -208,7 +208,7 @@ end
 
 
 
-if ~x.ApplyQuantification(3) % if conversion PWI for label units is not requested
+if ~x.Q.ApplyQuantification(3) % if conversion PWI for label units is not requested
     SliceGradient = [];
 else
 
@@ -293,7 +293,7 @@ end
 %% 8.   Perform Quantification
 [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, bUseBasilQuantification); % also runs BASIL, but only in native space!
 
-if x.ApplyQuantification(5)==0
+if x.Q.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
     if MeanCBF>666 % this is the average including air
         CBF = CBF .* (10./MeanCBF);

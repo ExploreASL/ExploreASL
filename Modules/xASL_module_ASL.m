@@ -38,14 +38,14 @@ function [result, x] = xASL_module_ASL(x)
 x = xASL_init_InitializeMutex(x, 'ASL'); % starts mutex locking process to ensure that everything will run only once
 result = false;
 
-if ~isfield(x,'ApplyQuantification') || isempty(x.ApplyQuantification)
-    x.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
-elseif length(x.ApplyQuantification)>5
-    warning('x.ApplyQuantification had too many parameters');
-    x.ApplyQuantification = x.ApplyQuantification(1:5);
-elseif length(x.ApplyQuantification)<5
-    warning('x.ApplyQuantification had too few parameters, using default 1');
-    x.ApplyQuantification(length(x.ApplyQuantification)+1:5) = 1;
+if ~isfield(x.Q,'ApplyQuantification') || isempty(x.Q.ApplyQuantification)
+    x.Q.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
+elseif length(x.Q.ApplyQuantification)>5
+    warning('x.Q.ApplyQuantification had too many parameters');
+    x.Q.ApplyQuantification = x.Q.ApplyQuantification(1:5);
+elseif length(x.Q.ApplyQuantification)<5
+    warning('x.Q.ApplyQuantification had too few parameters, using default 1');
+    x.Q.ApplyQuantification(length(x.Q.ApplyQuantification)+1:5) = 1;
 end
 
 if ~isfield(x,'bPVCNativeSpace') || isempty(x.bPVCNativeSpace)
