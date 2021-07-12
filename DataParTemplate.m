@@ -214,7 +214,7 @@ function x = DataParTemplate(x)
 %                     - options:
 %                       - 1 = on
 %                       - 0 = off
-% x.SpikeRemovalThreshold - minimal t-stat improval needed to remove motion spikes (OPTIONAL, DEFAULT = 0.01) 
+% x.modules.asl.SpikeRemovalThreshold - minimal t-stat improval needed to remove motion spikes (OPTIONAL, DEFAULT = 0.01) 
 %                         - examples:
 %                           - 1 = effectively disabling spike removal
 % x.bRegistrationContrast - specifies the image contrast used for
