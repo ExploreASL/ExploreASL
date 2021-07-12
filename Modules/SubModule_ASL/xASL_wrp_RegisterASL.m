@@ -74,7 +74,7 @@ function x = xASL_wrp_RegisterASL(x)
 %                          - 1 = affine registration enabled
 %                          - 2 = affine registration automatically chosen based on
 %                                spatial CoV of PWI
-%       x.bDCTRegistration - Specifies if to include the DCT registration on top of Affine, all other requirements for
+%       x.modules.asl.bDCTRegistration - Specifies if to include the DCT registration on top of Affine, all other requirements for
 %                            affine are thus also taken into account (OPTIONAL, DEFAULT = 0)
 %                          - 0 = DCT registration disabled
 %                          - 1 = DCT registration enabled if affine enabled and conditions for affine passed
@@ -103,17 +103,17 @@ if ~isfield(x.modules.asl,'bAffineRegistration') || isempty(x.modules.asl.bAffin
 end
 
 % DCT off by default
-if ~isfield(x,'bDCTRegistration') || isempty(x.bDCTRegistration)
-	x.bDCTRegistration = 0;
+if ~isfield(x.modules.asl,'bDCTRegistration') || isempty(x.modules.asl.bDCTRegistration)
+	x.modules.asl.bDCTRegistration = 0;
 end
 
 % DCT runs only with affine, switching DCT on and affine off thus produces a warning
-if x.bDCTRegistration && ~x.modules.asl.bAffineRegistration
+if x.modules.asl.bDCTRegistration && ~x.modules.asl.bAffineRegistration
 	warning('DCT registration cannot run if affine is disabled');
 end
 
 % For DCT, force CBF<->pseudoCBF registration
-if x.bDCTRegistration
+if x.modules.asl.bDCTRegistration
 	x.modules.asl.bRegistrationContrast = 3;
 end
 
@@ -456,7 +456,7 @@ if bRegistrationCBF
 
         if bAffineRegistration % perform affine or affine+DCT registration
 
-			if x.bDCTRegistration == 0
+			if x.modules.asl.bDCTRegistration == 0
 				% The affine registration option
 				fprintf('%s\n','Performing affine registration');
 
@@ -483,7 +483,7 @@ if bRegistrationCBF
 
 				% Affine+DCT option does not need a backup because no function is modified, but rather a _sn.mat file
 				% is created and can be simply deleted if needed
-				if x.bDCTRegistration == 1
+				if x.modules.asl.bDCTRegistration == 1
 					xASL_im_CreatePseudoCBF(x, spatCoVit(end));
 
 					% Use Affine with DCT registration as well
