@@ -210,7 +210,7 @@ function x = DataParTemplate(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % ASL PROCESSING PARAMETERS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% x.motion_correction - boolean to perform motion correction in case of timeseries (OPTIONAL, DEFAULT = 1)
+% x.modules.asl.motionCorrection - boolean to perform motion correction in case of timeseries (OPTIONAL, DEFAULT = 1)
 %                     - options:
 %                       - 1 = on
 %                       - 0 = off

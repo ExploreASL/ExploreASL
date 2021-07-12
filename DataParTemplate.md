@@ -115,7 +115,7 @@ This is to allow for valid JSONs. The conversion is carried out internally.
 
 |                                       | Description                                   | Defaults           |
 | ------------------------------------- |:---------------------------------------------:|:------------------:|
-| x.motion_correction                   | Boolean to perform motion correction in case of timeseries. Options: `1` = on, `0` = off. | OPTIONAL, DEFAULT = 1 |
+| x.modules.asl.motionCorrection        | Boolean to perform motion correction in case of timeseries. Options: `1` = on, `0` = off. | OPTIONAL, DEFAULT = 1 |
 | x.SpikeRemovalThreshold               | Minimal t-stat improval needed to remove motion spikes. Examples: `1` = effectively disabling spike removal. | OPTIONAL, DEFAULT = 0.01 |
 | x.bRegistrationContrast               | Specifies the image contrast used for registration: `0` = Control->T1w, `1` = CBF->pseudoCBF from template/pGM+pWM (skip if sCoV>0.667), `2` = automatic (mix of both), `3` = option 2 & force CBF->pseudoCBF irrespective of sCoV. | OPTIONAL, DEFAULT = 2 |
 | x.bAffineRegistration                 | Specifies if the ASL-T1w rigid-body registration is followed up by an affine registration: `0` = affine registration disabled, `1` = affine registration enabled, `2` = affine registration automatically chosen based on spatial CoV of PWI. | OPTIONAL, DEFAULT = 0 |

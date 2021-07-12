@@ -186,8 +186,8 @@ if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
 	xASL_adm_SaveX(x);
 end
 
-if ~isfield(x,'motion_correction')
-    x.motion_correction = 1;
+if ~isfield(x.modules.asl,'motionCorrection')
+    x.modules.asl.motionCorrection = 1;
 end
 
 % Backward compatibility
@@ -246,7 +246,7 @@ end
 %% -----------------------------------------------------------------------------
 %% 2    Motion correction ASL (& center of mass registration)
 iState = 2;
-if ~x.motion_correction
+if ~x.modules.asl.motionCorrection
     if bO; fprintf('%s\n','Motion correction was disabled, skipping'); end
     x.mutex.AddState(StateName{iState});
 elseif ~x.mutex.HasState(StateName{iState})
