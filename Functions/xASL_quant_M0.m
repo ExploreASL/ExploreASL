@@ -13,7 +13,7 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 %                                    - is 0 when the start of M0 readout is set to TR-slice*SliceReadoutTime for 2D
 %                                    - set to 1 for M0 within ASL, 0 for standalone
 %                 x.Q.TissueT1 - is set to 800 when missing
-%                 x.M0_GMScaleFactor - is set to 1 when missing
+%                 x.modules.asl.M0_GMScaleFactor - is set to 1 when missing
 %                 x.Q.PresaturationTime - when Bsup-M0 correction is on, and PreSat missing, then set to the start of the sequence
 %                 x.Q.ApplyQuantification(4) - is set to 0 when BSup-M0 correction is done, because no further T1-relaxation compensation of M0 is necessary
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 % 4. Set TR specifically for GE
 % 5. Check for correct TR values
 % 6. Quantify the M0, either for single 3D volume or slice-wise
-% 7. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
+% 7. Apply custom scalefactor if requested (x.modules.asl.M0_GMScaleFactor)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: M0IM = xASL_quant_M0('MyStudy/sub-001/ASL_1/rM0.nii', x);
@@ -178,15 +178,15 @@ else
 end
 
 %% ------------------------------------------------------------------------------------------------------
-% 7. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
-if ~isfield(x,'M0_GMScaleFactor') || isempty(x.M0_GMScaleFactor)
-    x.M0_GMScaleFactor = 1; % no scaling
+% 7. Apply custom scalefactor if requested (x.modules.asl.M0_GMScaleFactor)
+if ~isfield(x.modules.asl,'M0_GMScaleFactor') || isempty(x.modules.asl.M0_GMScaleFactor)
+    x.modules.asl.M0_GMScaleFactor = 1; % no scaling
 else
-    fprintf('%s\n',['M0 scaling corrected by GMScaleFactor ' xASL_num2str(x.M0_GMScaleFactor)]);
-    M0IM = M0IM.*x.M0_GMScaleFactor;
+    fprintf('%s\n',['M0 scaling corrected by GMScaleFactor ' xASL_num2str(x.modules.asl.M0_GMScaleFactor)]);
+    M0IM = M0IM.*x.modules.asl.M0_GMScaleFactor;
 end
 
-% x.M0_GMScaleFactor - add additional scale factor to multiply the M0 image by (OPTIONAL, default = 1)
+% x.modules.asl.M0_GMScaleFactor - add additional scale factor to multiply the M0 image by (OPTIONAL, default = 1)
 % This can be useful when you have background suppression but no control/M0
 % image without background suppression. If you then know the M0 scalefactor
 % for the GM, you can use the control image as M0 and use this parameter to
