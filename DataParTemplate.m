@@ -217,7 +217,7 @@ function x = DataParTemplate(x)
 % x.modules.asl.SpikeRemovalThreshold - minimal t-stat improval needed to remove motion spikes (OPTIONAL, DEFAULT = 0.01) 
 %                         - examples:
 %                           - 1 = effectively disabling spike removal
-% x.bRegistrationContrast - specifies the image contrast used for
+% x.modules.asl.bRegistrationContrast - specifies the image contrast used for
 %                                 registration (OPTIONAL, DEFAULT = 2):
 %                           - 0 = Control->T1w
 %                           - 1 = CBF->pseudoCBF from template/pGM+pWM
