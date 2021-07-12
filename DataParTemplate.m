@@ -34,7 +34,7 @@ function x = DataParTemplate(x)
 %                                      if disabled, this function will try to use the system-initialized FSL 
 %                                      and throw an error if FSL is not initialized
 %                                      (OPTIONAL, DEFAULT = disabled)
-% x.settings.MakeNIfTI4DICOM         - Boolean to output CBF native space maps resampled and/or registered 
+% x.settings.bMakeNIfTI4DICOM         - Boolean to output CBF native space maps resampled and/or registered 
 %                                      to the original T1w/ASL, and contrast adapted and in 12 bit
 % 					                   range allowing to convert the NIfTI to a DICOM file, e.g. for implementation 
 %                                      in PACS or other DICOM archives
@@ -285,7 +285,7 @@ function x = DataParTemplate(x)
 %                    - 1 = enabled, use Gaussian kernel with FWHM in mm given in PVCNativeSpaceKernel
 %                    - 0 = disabled, use 'flat' kernel with voxels given in PVCNativeSpaceKernel
 %
-% x.MakeNIfTI4DICOM - if set to true, an additional CBF image will be
+% x.bMakeNIfTI4DICOM - if set to true, an additional CBF image will be
 %                     created with modifications that allow it to be easily
 %                     implemented back into a DICOM for e.g. PACS:
 %                     1. Remove peak & valley signal, remove NaNs, rescale
