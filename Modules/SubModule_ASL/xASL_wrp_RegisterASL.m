@@ -68,7 +68,7 @@ function x = xASL_wrp_RegisterASL(x)
 %       applied if the spatial CoV<0.67. Note that this is usually the case
 %       for 3D scans because of their lower effective spatial resolution.
 %
-%       x.bAffineRegistration - specifies the ASL-T1w rigid-body registration is followed up by an affine
+%       x.modules.asl.bAffineRegistration - specifies the ASL-T1w rigid-body registration is followed up by an affine
 %                                 registration (OPTIONAL, DEFAULT = 0)
 %                          - 0 = affine registration disabled
 %                          - 1 = affine registration enabled
@@ -98,8 +98,8 @@ if ~isfield(x.modules.asl,'bRegistrationContrast') || isempty(x.modules.asl.bReg
     x.modules.asl.bRegistrationContrast = 2; % register M0-T1w first, then CBF-pGM if sCoV<0.667
 end
 
-if ~isfield(x,'bAffineRegistration') || isempty(x.bAffineRegistration)
-	x.bAffineRegistration = 0; % Default - affine disabled
+if ~isfield(x.modules.asl,'bAffineRegistration') || isempty(x.modules.asl.bAffineRegistration)
+	x.modules.asl.bAffineRegistration = 0; % Default - affine disabled
 end
 
 % DCT off by default
@@ -108,7 +108,7 @@ if ~isfield(x,'bDCTRegistration') || isempty(x.bDCTRegistration)
 end
 
 % DCT runs only with affine, switching DCT on and affine off thus produces a warning
-if x.bDCTRegistration && ~x.bAffineRegistration
+if x.bDCTRegistration && ~x.modules.asl.bAffineRegistration
 	warning('DCT registration cannot run if affine is disabled');
 end
 
@@ -403,7 +403,7 @@ if bRegistrationCBF
 	end
 
 	% Create a local instance of the bAffineRegistration (so that any changes in it are not reflected in the x-struct for outside
-	bAffineRegistration = x.bAffineRegistration;
+	bAffineRegistration = x.modules.asl.bAffineRegistration;
 
     % 2) Repeat CBF registrations, with iteratively better estimate of the
     % vascular/tissue perfusion ratio of the template
@@ -444,7 +444,7 @@ if bRegistrationCBF
 		end
 
         %% Affine registration
-		% Note that this is only done upon request (x.bAffineRegistration, advanced option),
+		% Note that this is only done upon request (x.modules.asl.bAffineRegistration, advanced option),
         % hence this doesn't have the automatic backup & restore,
         % as the CBF->pseudoCBF registration has above
 		if bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
