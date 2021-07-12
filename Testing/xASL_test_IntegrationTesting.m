@@ -132,7 +132,7 @@ function xFlavor = xASL_test_thisFlavor(testConfig, flavorName)
     xASL_delete(fullfile(testingRoot,'FlavorDatabaseTest',flavorName,'rawdata'),1);
     
     % Create default dataPar.json
-    defaultDataPar.x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
+    defaultDataPar.x.modules.asl.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
     defaultDataPar.x.settings.Quality = 0; % speed up testing
     
     % Save JSON

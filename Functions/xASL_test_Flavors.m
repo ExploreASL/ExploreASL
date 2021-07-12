@@ -68,7 +68,7 @@ referencePath = fullfile(pathTest, 'TmpReference');
 
 % Default dataPar.json for the testing that is fast to run
 defaultDataPar.x.dataset.subjectRegexp = '^sub-.*$';
-defaultDataPar.x.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
+defaultDataPar.x.modules.asl.bUseMNIasDummyStructural = 1; % when no structural data, use ASL-MNI registration
 defaultDataPar.x.settings.Quality = 0; % speed up testing
 defaultDataPar.x.settings.DELETETEMP = 1;
 

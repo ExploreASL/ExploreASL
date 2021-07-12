@@ -118,8 +118,8 @@ if x.modules.asl.bDCTRegistration
 end
 
 % By default, don't use dummy structural even if the structural image is missing
-if ~isfield(x,'bUseMNIasDummyStructural') || isempty(x.bUseMNIasDummyStructural)
-	x.bUseMNIasDummyStructural = false;
+if ~isfield(x.modules.asl,'bUseMNIasDummyStructural') || isempty(x.modules.asl.bUseMNIasDummyStructural)
+	x.modules.asl.bUseMNIasDummyStructural = false;
 end
 
 %% B. Manage OtherList
@@ -211,7 +211,7 @@ StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_O
 if StructuralRawExist && ~StructuralDerivativesExist
     error('Please run structural module first');
 elseif ~StructuralRawExist && ~StructuralDerivativesExist
-    if x.bUseMNIasDummyStructural
+    if x.modules.asl.bUseMNIasDummyStructural
 
         fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
         IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
@@ -268,7 +268,7 @@ elseif ~StructuralRawExist && ~StructuralDerivativesExist
         x.mutex.Root = oldRoot;
         x.mutex.Lock(oldID);
     else
-        error('Structural data missing, skipping ASL module; if this is undesired, set x.bUseMNIasDummyStructural=1');
+        error('Structural data missing, skipping ASL module; if this is undesired, set x.modules.asl.bUseMNIasDummyStructural=1');
     end
 end
 
