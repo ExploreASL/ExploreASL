@@ -15,7 +15,7 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 %                 x.Q.TissueT1 - is set to 800 when missing
 %                 x.M0_GMScaleFactor - is set to 1 when missing
 %                 x.Q.PresaturationTime - when Bsup-M0 correction is on, and PreSat missing, then set to the start of the sequence
-%                 x.ApplyQuantification(4) - is set to 0 when BSup-M0 correction is done, because no further T1-relaxation compensation of M0 is necessary
+%                 x.Q.ApplyQuantification(4) - is set to 0 when BSup-M0 correction is done, because no further T1-relaxation compensation of M0 is necessary
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function quantifies the M0, except for the difference in voxel size
 % between the M0 and ASL source data (which is scaled in
@@ -23,7 +23,7 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 %
 % 1. Correct scale slopes, if Philips
 % 2. Convert control image with background suppression to pseudo-M0
-% 3. Skip M0 quantification if ~x.ApplyQuantification(4)
+% 3. Skip M0 quantification if ~x.Q.ApplyQuantification(4)
 % 4. Set TR specifically for GE
 % 5. Check for correct TR values
 % 6. Quantify the M0, either for single 3D volume or slice-wise
@@ -62,7 +62,7 @@ M0IM = xASL_io_Nifti2Im(inputM0);
 
 %% ------------------------------------------------------------------------------------------------------
 % 1. Correct scale slopes, if Philips
-if ~x.ApplyQuantification(2)
+if ~x.Q.ApplyQuantification(2)
     fprintf('%s\n','M0 ScaleSlopes skipped');
 else
     if ~isempty(regexpi(x.Q.Vendor,'Philips'))
@@ -85,8 +85,8 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------------
-% 3. Skip M0 quantification if ~x.ApplyQuantification(4)
-if ~x.ApplyQuantification(4)
+% 3. Skip M0 quantification if ~x.Q.ApplyQuantification(4)
+if ~x.Q.ApplyQuantification(4)
     fprintf('%s\n','M0 quantification for incomplete T1 relaxation skipped');
     % M0 quantification here is only for the incomplete T1 recovery
     % One potential reason of skipping this, is when a pseudo-M0 is used
@@ -377,9 +377,9 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     fprintf('%s\n\n', ['And SliceReadoutTime=' xASL_num2str(SliceReadoutTime(:)')]);
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
     
-    if x.ApplyQuantification(4)==1
+    if x.Q.ApplyQuantification(4)==1
         fprintf('Correction of the Background suppression of the pseudo-M0 signal has been done, no need for correcting the incomplete T1 relaxation\n');
-        x.ApplyQuantification(4) = 0;
+        x.Q.ApplyQuantification(4) = 0;
     end
     
 end
