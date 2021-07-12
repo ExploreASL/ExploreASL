@@ -48,7 +48,7 @@ function x = xASL_wrp_RegisterASL(x)
 %     - F. native->MNI transformation flow field y_T1.nii is smoothed to the
 %          effective ASL resolution y_ASL.nii
 %     - G. Registration contrasts are dealth with:
-%       x.bRegistrationContrast - specifies the image contrast used for
+%       x.modules.asl.bRegistrationContrast - specifies the image contrast used for
 %                                 registration (OPTIONAL, DEFAULT = 2):
 %                           - 0 = Control->T1w
 %                           - 1 = CBF->pseudoCBF from template/pGM+pWM
@@ -94,8 +94,8 @@ if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 
-if ~isfield(x,'bRegistrationContrast') || isempty(x.bRegistrationContrast)
-    x.bRegistrationContrast = 2; % register M0-T1w first, then CBF-pGM if sCoV<0.667
+if ~isfield(x.modules.asl,'bRegistrationContrast') || isempty(x.modules.asl.bRegistrationContrast)
+    x.modules.asl.bRegistrationContrast = 2; % register M0-T1w first, then CBF-pGM if sCoV<0.667
 end
 
 if ~isfield(x,'bAffineRegistration') || isempty(x.bAffineRegistration)
@@ -114,7 +114,7 @@ end
 
 % For DCT, force CBF<->pseudoCBF registration
 if x.bDCTRegistration
-	x.bRegistrationContrast = 3;
+	x.modules.asl.bRegistrationContrast = 3;
 end
 
 % By default, don't use dummy structural even if the structural image is missing
@@ -282,10 +282,10 @@ end
 
 
 %% G. Manage registration contrasts that we will use
-if x.bRegistrationContrast==0
+if x.modules.asl.bRegistrationContrast==0
     bRegistrationControl = true;
     bRegistrationCBF = false;
-elseif x.bRegistrationContrast==1
+elseif x.modules.asl.bRegistrationContrast==1
     bRegistrationControl = false;
     bRegistrationCBF = true;
 else
@@ -390,9 +390,9 @@ end
 if bRegistrationCBF
 
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
-    if x.bRegistrationContrast==3
+    if x.modules.asl.bRegistrationContrast==3
         nIT = 2; % force CBF-pGM
-        fprintf('\n%s\n\n','x.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
+        fprintf('\n%s\n\n','x.modules.asl.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
     elseif spatCoVit>0.667
         nIT = 0;
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
@@ -423,7 +423,7 @@ if bRegistrationCBF
 				% and check for improvement
 				TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
 
-				if x.bRegistrationContrast~=3 % if we don't don't force CBF-pGM registration
+				if x.modules.asl.bRegistrationContrast~=3 % if we don't don't force CBF-pGM registration
 					if TanimotoPerc(end)>=TanimotoPerc(end-1)
 						% if alignment improved or remained more or less the same
 						xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
