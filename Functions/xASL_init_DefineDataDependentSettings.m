@@ -77,15 +77,15 @@ if x.settings.Pediatric_Template
 	x.D.AtlasDir            = fullfile(x.opts.MyPath,'External', 'AtlasesNonCommercial', x.Pediatric_Type);
 end
 
-if ~isfield(x.modules.structural, 'SegmentSPM12') && isfield(x, 'Segment_SPM12')
-    warning('Please use input parameter x.modules.structural.SegmentSPM12 instead of Segment_SPM12 (legacy)');
+if ~isfield(x.modules.structural, 'bSegmentSPM12') && isfield(x, 'Segment_SPM12')
+    warning('Please use input parameter x.modules.structural.bSegmentSPM12 instead of Segment_SPM12 (legacy)');
     fprintf(['Using legacy option: x.Segment_SPM12 = ' xASL_num2str(x.Segment_SPM12) '\n']);
-    x.modules.structural.SegmentSPM12 = x.Segment_SPM12;
+    x.modules.structural.bSegmentSPM12 = x.Segment_SPM12;
 end
 
 %% --------------------------------------------------------------------------
 %% Manage input parameters ExploreASL course
-Fields = {'bLesionFilling' 'bAutoACPC' 'SegmentSPM12' 'M0_conventionalProcessing' 'bGetControlLabelOrder'};
+Fields = {'bLesionFilling' 'bAutoACPC' 'bSegmentSPM12' 'M0_conventionalProcessing' 'bGetControlLabelOrder'};
 Defaults = [true true false false true];
 
 for iL=1:length(Fields)

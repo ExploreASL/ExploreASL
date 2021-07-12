@@ -199,7 +199,7 @@ function x = DataParTemplate(x)
 %                                       (OPTIONAL, DEFAULT = 0)
 % x.modules.structural.bRunDARTEL     - run between-subject registration/create templates 
 %                                       (OPTIONAL, DEFAULT = 0)
-% x.modules.structural.SegmentSPM12   - boolean to specify if SPM12 segmentation is run instead 
+% x.modules.structural.bSegmentSPM12  - boolean to specify if SPM12 segmentation is run instead 
 %                                       of CAT12 (OPTIONAL, DEFAULT = 0)
 %                                       -> options: 1 = run SPM12, 0 = run CAT12
 % x.modules.structural.bHammersCAT12  - boolean specifying if CAT12 should provide Hammers 

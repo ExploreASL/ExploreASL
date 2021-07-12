@@ -79,7 +79,7 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
         curr = load(PathIQRresults);
         Struct.T1w_IQR_Perc = min(100,max(0,105 - curr.S.qualityratings.IQR*10));
         Struct.T1w_IQR_Perc = xASL_round(Struct.T1w_IQR_Perc,3);
-    elseif xASL_exist(x.P.Path_T1,'file') && ~x.modules.structural.SegmentSPM12
+    elseif xASL_exist(x.P.Path_T1,'file') && ~x.modules.structural.bSegmentSPM12
         warning('Didnt find any CAT12 volumetric results');
         Struct.T1w_IQR_Perc = NaN;
     end
