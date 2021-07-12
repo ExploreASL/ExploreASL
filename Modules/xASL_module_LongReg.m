@@ -211,8 +211,8 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             % keep default)
             LongRegBatch{1}.spm.tools.longit{1}.series.bparam    = 1000000;
             if isfield(x,'Q')
-                if isfield(x.Q,'Manufacturer')
-                    if ~isempty(regexpi(x.Q.Manufacturer,'GE'))
+                if isfield(x.Q,'Vendor')
+                    if ~isempty(regexpi(x.Q.Vendor,'GE'))
                         LongRegBatch{1}.spm.tools.longit{1}.series.bparam    = 0;
                     end
                 end

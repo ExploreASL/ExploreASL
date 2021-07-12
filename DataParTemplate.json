@@ -19,7 +19,7 @@
 				"Initial_PLD": 1800,
 				"LabelingDuration": 1800,
 				"SliceReadoutTime": 30,
-				"Manufacturer": "Philips",
+				"Vendor": "Philips",
 				"readout_dim": "2D"
 			},
 			"settings":

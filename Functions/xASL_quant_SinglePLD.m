@@ -178,7 +178,7 @@ else
 	ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
 	% Throw warning if no Philips scans, but some of the scale slopes are not 1:
-	if isempty(regexpi(x.Q.Manufacturer,'Philips'))
+	if isempty(regexpi(x.Q.Vendor,'Philips'))
 		if isfield(ASL_parms,'RescaleSlopeOriginal') && ASL_parms.RescaleSlopeOriginal~=1
 			warning('We detected a RescaleSlopeOriginal~=1, verify that this is not a Philips scan!!!');
 		end
@@ -191,7 +191,7 @@ else
 	end
 
 	% Set GE specific scalings
-	if ~isempty(regexpi(x.Q.Manufacturer,'GE'))
+	if ~isempty(regexpi(x.Q.Vendor,'GE'))
 		if ~isfield(x.Q,'NumberOfAverages')
 			% GE accumulates signal instead of averaging by NEX, therefore division by NEX is required
 			error('GE-data expected, "NumberOfAverages" should be a dicom-field, but was not found!!!')
@@ -199,7 +199,7 @@ else
 			x.Q.NumberOfAverages = max(x.Q.NumberOfAverages); % fix for combination of M0 & PWI in same nifti, for GE quantification
 		end
 
-		switch lower(x.Q.Manufacturer)
+		switch lower(x.Q.Vendor)
 			% For some reason the older GE Alsop Work in Progress (WIP) version
 			% has a different scale factor than the current GE product sequence
 
@@ -217,14 +217,14 @@ else
 				% or should this be 6000/45.24?
 				qnt_GEscaleFactor = qnt_RGcorr*x.Q.NumberOfAverages;
 			otherwise
-				error('Please set x.Q.Manufacturer to GE_product or GE_WIP');
+				error('Please set x.Q.Vendor to GE_product or GE_WIP');
 		end
 
 		ScaleImage = ScaleImage./qnt_GEscaleFactor;
 		fprintf('%s\n',['Quantification corrected for GE scale factor ' num2str(qnt_GEscaleFactor) ' for NSA=' num2str(x.Q.NumberOfAverages)]);
 
 		% Set Philips specific scaling
-	elseif ~isempty(regexpi(x.Q.Manufacturer,'Philips'))
+	elseif ~isempty(regexpi(x.Q.Vendor,'Philips'))
 		% Philips has specific scale & rescale slopes
 		% If these are not corrected for, only relative CBF quantification can be performed,
 		% i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
@@ -236,8 +236,8 @@ else
 		end
 
 		% Siemens specific scalings
-	elseif strcmpi(x.Q.Manufacturer,'Siemens')
-		if ~strcmpi(x.Q.Manufacturer,'Siemens_JJ_Wang') && strcmpi(x.M0,'separate_scan')
+	elseif strcmpi(x.Q.Vendor,'Siemens')
+		if ~strcmpi(x.Q.Vendor,'Siemens_JJ_Wang') && strcmpi(x.M0,'separate_scan')
 			% Some Siemens readouts divide M0 by 10, others don't
 			ScaleImage = ScaleImage./10;
 			fprintf('%s\n','M0 corrected for Siemens scale factor 10')
