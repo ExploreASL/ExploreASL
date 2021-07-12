@@ -191,19 +191,14 @@ if isfield(x.vis,'bVisualQCCBFvsGMWMTemplate') && ~isempty(x.vis.bVisualQCCBFvsG
 	% Use the template version for visualization and not the individual one
 	PathpWM = fullfile(x.D.MapsSPMmodifiedDir,'rc2T1_ASL_res.nii');
 	PathpGM = fullfile(x.D.MapsSPMmodifiedDir,'rc1T1_ASL_res.nii');
-	TextpWM = ['Temp_' x.SUBJECTS{x.iSubject}];
-	TextpGM = ['Temp_' x.SUBJECTS{x.iSubject}];
+	TextpWM = 'Temp';
+	TextpGM = 'Temp';
 else
 	PathpWM = x.P.Pop_Path_PV_pWM;
 	PathpGM = x.P.Pop_Path_PV_pGM;
 
-	if isfield(x.vis,'bVisualQCCBFvsGMWMContour') && ~isempty(x.vis.bVisualQCCBFvsGMWMContour) && x.vis.bVisualQCCBFvsGMWMContour
-		TextpWM = ['Reg_' x.SUBJECTS{x.iSubject}];
-		TextpGM = ['Reg_' x.SUBJECTS{x.iSubject}];
-	else
-		TextpWM = 'Reg';
-		TextpGM = 'Reg';
-	end
+	TextpWM = 'Reg';
+	TextpGM = 'Reg';
 end
 	
 T.ImIn          = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF PathpWM} x.P.Pop_Path_SNR};
@@ -231,7 +226,7 @@ T.NameExt( 5:8) = {[] [] TextpGM []};
 T.NameExt(9:11) = {[] TextpWM 'AnalysisMask'};
 
 % Fill missing cells
-Pars = {'ImIn' 'DirOut' 'ClipZero' 'IntScale' 'NameExt' 'ColorMapIs'}; % default pars
+Pars = {'ImIn' 'DirOut' 'ClipZero' 'IntScale' 'NameExt' 'ColorMapIs' 'bContour'}; % default pars
 for iM=1:length(T.ImIn)
     for iP=1:length(Pars)
         if ~isfield(T,Pars{iP})
