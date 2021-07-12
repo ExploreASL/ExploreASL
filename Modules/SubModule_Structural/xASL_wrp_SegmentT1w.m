@@ -1,12 +1,12 @@
-function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
+function [x] = xASL_wrp_SegmentT1w(x, bSegmentSPM12)
 %xASL_wrp_SegmentT1w Submodule of ExploreASL Structural Module, that segments 3D T1 (or T2) scan
 %
-% FORMAT: [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
+% FORMAT: [x] = xASL_wrp_SegmentT1w(x, bSegmentSPM12)
 %
 % INPUT:
 %   x 	    - structure containing fields with all information required to run this submodule (REQUIRED)
 %   x.P     - paths with NIfTIs for which this function should be applied to (REQUIRED)
-%   SegmentSPM12 - Whether to run SPM12 (true) or CAT12 (false) (OPTIONAL, DEFAULT = false)
+%   bSegmentSPM12 - Whether to run SPM12 (true) or CAT12 (false) (OPTIONAL, DEFAULT = false)
 %   x.modules.structural.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
 %   x.settings.Pediatric_Template - boolean specifying if we use a pediatric
 %             template instead of adult one (OPTIONAL, DEFAULT = false)
@@ -43,8 +43,8 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
-if nargin<2 || isempty(SegmentSPM12)
-    SegmentSPM12 = false; % by default use CAT12, not SPM12 to segment
+if nargin<2 || isempty(bSegmentSPM12)
+    bSegmentSPM12 = false; % by default use CAT12, not SPM12 to segment
 end
 if ~isfield(x.modules.structural,'bFixResolution') || isempty(x.modules.structural.bFixResolution)
     x.modules.structural.bFixResolution = false;
@@ -173,10 +173,10 @@ end
 
 %% -------------------------------------------------------------------------------------------
 %% 3) Segmentation using CAT12
-%  This runs by default (default = x.modules.structural.SegmentSPM12 == 0)
-%  When it fails, it will pass x.modules.structural.SegmentSPM12 == 1
-if ~SegmentSPM12
-    SegmentSPM12 = xASL_wrp_CAT12Segmentation(x);
+%  This runs by default (default = x.modules.structural.bSegmentSPM12 == 0)
+%  When it fails, it will pass x.modules.structural.bSegmentSPM12 == 1
+if ~bSegmentSPM12
+    bSegmentSPM12 = xASL_wrp_CAT12Segmentation(x);
 end
 
 
@@ -187,7 +187,7 @@ end
 %% -------------------------------------------------------------------------------------------
 %% 4) Segmentation using SPM12
 %  This usually gives poorer results than CAT12, but can be chosen if CAT12 doesnt work
-if SegmentSPM12
+if bSegmentSPM12
     xASL_wrp_SPM12Segmentation(x);
 
     if ~x.settings.Quality % With low quality, registration was performed on lower resolution,
@@ -475,10 +475,10 @@ end
 
 %% ===================================================================================================================
 %% ===================================================================================================================
-function [SegmentSPM12] = xASL_wrp_CAT12Segmentation(x)
+function [bSegmentSPM12] = xASL_wrp_CAT12Segmentation(x)
 %xASL_wrp_CAT12Segmentation Run the CAT12 segmentation
 
-SegmentSPM12 = true; % by default, run SPM12 when CAT12 crashes
+bSegmentSPM12 = true; % by default, run SPM12 when CAT12 crashes
 
 
 %% --------------------------------------------------------------------
@@ -608,7 +608,7 @@ end
 try % 1) First attempt CAT12
     spm_jobman('run',matlabbatch); % Run CAT12
     close all;
-    SegmentSPM12 = false;
+    bSegmentSPM12 = false;
 catch
     if ~x.settings.Quality
         warning('CAT12 failed with x.settings.Quality==0, try x.settings.Quality==1 instead!');
@@ -640,10 +640,10 @@ catch
         xASL_adm_RemoveTempFilesCAT12(x); % Delete previous CAT12 derivatives
         spm_jobman('run', matlabbatch); % Run CAT12
         close all;
-        SegmentSPM12 = false;
+        bSegmentSPM12 = false;
     catch % 3) Return to run SPM12 segmentation
         xASL_adm_RemoveTempFilesCAT12(x); % Delete previous CAT12 derivatives
-        SegmentSPM12 = true;
+        bSegmentSPM12 = true;
     end
 end
 
