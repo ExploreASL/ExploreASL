@@ -29,7 +29,7 @@ function x = xASL_init_PrintCheckSettings(x)
 
     %% -----------------------------------------------------------------------
     %% 1) Set default settings if not defined
-    if ~isfield(x,'Quality') || (x.settings.Quality~=0 && x.settings.Quality~=1)
+    if ~isfield(x.settings,'Quality') || (x.settings.Quality~=0 && x.settings.Quality~=1)
         x.settings.Quality = 1;
         fprintf('%s\n', 'Default Quality=1 used (optimal quality)');
     end
