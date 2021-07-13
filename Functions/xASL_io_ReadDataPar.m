@@ -155,7 +155,7 @@ function x = xASL_io_ReadDataParCheckDeprecatedFields(x)
 
     if isfield(x,'SegmentSPM12')
         warning('Deprecated field. Please use x.modules.structural.bSegmentSPM12 instead of x.SegmentSPM12');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'structural') || ~isfield(x.modules,'SegmentSPM12')
+        if ~isfield(x,'modules') || ~isfield(x.modules,'structural') || ~isfield(x.modules.structural,'bSegmentSPM12')
             x.modules.structural.bSegmentSPM12 = x.SegmentSPM12;
         end
         x = rmfield(x,'SegmentSPM12');
