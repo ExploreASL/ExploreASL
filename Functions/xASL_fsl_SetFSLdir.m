@@ -34,7 +34,11 @@ if nargin<1
     x = struct;
 end
 if nargin<2 || isempty(bAutomaticallyDetectFSL)
-    bAutomaticallyDetectFSL = false;
+    if isfield(x,'external') && isfield(x.external,'bAutomaticallyDetectFSL')
+        bAutomaticallyDetectFSL = x.external.bAutomaticallyDetectFSL;
+    else
+        bAutomaticallyDetectFSL = false;
+    end
 end
 
 FSLdir = NaN;

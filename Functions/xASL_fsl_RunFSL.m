@@ -55,7 +55,7 @@ if ~isfield(x.external,'bAutomaticallyDetectFSL')
     x.external.bAutomaticallyDetectFSL = 0;
 end
 
-[FSLdir, x, RootFSLdir] = xASL_fsl_SetFSLdir(x, x.external.bAutomaticallyDetectFSL);
+[FSLdir, x, RootFSLdir] = xASL_fsl_SetFSLdir(x);
 
 if min(isnan(FSLdir))
     warning('No FSL installation found, skipping FSL function');
