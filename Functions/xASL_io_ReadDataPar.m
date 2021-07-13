@@ -29,13 +29,39 @@ function [x] = xASL_io_ReadDataPar(pathDataPar)
 %
 % {
 % 	"x": [{
-% 			"name": 				"ExampleDataSet",
-% 			"subject_regexp": 		"^Sub-\\d{3}$",
-% 			"M0": 					"separate_scan",
-% 			"BackgroundSuppressionNumberPulses": 2,
-% 			"readout_dim": 			"2D",
-% 			"QUALITY": 				false,
-% 			"Vendor": 				"Philips",
+%           "dataset": {
+% 				"name": "ExampleDataSet",
+% 				"subjectRegexp": "^\\d{3}$",
+%           	"exclusion": ""
+%             },
+% 			"SESSIONS": ["ASL_1","ASL_2"],
+% 			"session":
+% 			{
+% 				"options": ["baseline","drug"]
+% 			},
+% 			"Q":
+% 			{
+% 				"BackgroundSuppressionNumberPulses": 2,
+% 				"LabelingType": "CASL",
+% 				"Initial_PLD": 1800,
+% 				"LabelingDuration": 1800,
+% 				"SliceReadoutTime": 30,
+% 				"Vendor": "Philips",
+% 				"readoutDim": "2D"
+% 			},
+% 			"settings":
+% 			{
+% 				"Quality": 1,
+% 				"DELETETEMP": 1,
+%           	"M0": "UseControlAsM0"
+% 			},
+%             "modules":
+% 			{
+% 				"asl":
+%                 {
+%                     "M0PositionInASL4D": [1, 2]
+%                 }
+% 			}
 % 		}]
 % }
 %
