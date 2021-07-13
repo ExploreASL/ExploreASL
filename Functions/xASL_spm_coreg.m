@@ -40,7 +40,7 @@ function xASL_spm_coreg(refPath, srcPath, OtherList, x, sep, FastReg)
 refFile = [refFile refExt];
 srcFile = [srcFile srcExt];
 
-if nargin<4 || isempty(x) || ~isfield(x,'Quality') || isempty(x.settings.Quality)
+if nargin<4 || isempty(x) || ~isfield(x,'settings') || ~isfield(x.settings,'Quality') || isempty(x.settings.Quality)
     x.settings.Quality = true; % default quality is high
     x.settings.DELETETEMP = true;
 end
