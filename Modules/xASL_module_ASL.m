@@ -61,7 +61,7 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
     FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)ASL4D.*\.nii$');
 
-    if ~isempty(FileList) && isfield(x,'M0PositionInASL4D')
+    if ~isempty(FileList) && isfield(x.modules.asl,'M0PositionInASL4D')
         % skip, managed below
     elseif ~isempty(FileList)
         xASL_Move(FileList{1}, x.P.Path_ASL4D);
