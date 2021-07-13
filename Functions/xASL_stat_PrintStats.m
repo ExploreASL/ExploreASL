@@ -215,7 +215,6 @@ else
                             warning('Could not find session data');
                             fprintf(x.S.FID,'\n');
                         else
-%                             SessionN = xASL_str2num(SessionID(end));
                                SessionN = iSubjSess;
                             if isempty(SessionN) || ~isnumeric(SessionN)
                                 warning(['Something wrong with session ' SessionID]);
