@@ -90,16 +90,17 @@ if ~isfield(dataPar.x.dataset,'subjectRegexp')
 end
 
 % Check for settings fields
-if isfield(dataPar.x,'settings')
-    if ~isfield(dataPar.x.settings,'Quality')
-        dataPar.x.settings.Quality = 1;
-    end
-else
-    % Default
+if ~isfield(dataPar.x,'settings')
+    dataPar.x.settings = struct;
+end
+
+% Check for quality field
+if ~isfield(dataPar.x.settings,'Quality')
     dataPar.x.settings.Quality = 1;
 end
 
-if ~isfield(dataPar.x,'DELETETEMP')
+% Check for DELETETEMP field
+if ~isfield(dataPar.x.settings,'DELETETEMP')
 	dataPar.x.settings.DELETETEMP = 1;
 end
 
