@@ -179,150 +179,45 @@ end
 %% Check deprecated fields
 function x = xASL_io_ReadDataParCheckDeprecatedFields(x)
 
-    if isfield(x,'SegmentSPM12')
-        warning('Deprecated field. Please use x.modules.structural.bSegmentSPM12 instead of x.SegmentSPM12');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'structural') || ~isfield(x.modules.structural,'bSegmentSPM12')
-            x.modules.structural.bSegmentSPM12 = x.SegmentSPM12;
+    % Get conversion table
+    conversionTable = xASL_adm_GetDeprecatedFields();
+    
+    nOutdatedParameter = 0;
+    bOldFieldsDetected = 0;
+    for iField = 1:size(conversionTable,1)
+        if isfield(x,conversionTable{iField,1})
+            bOldFieldsDetected = 1;
+            if ~isfield(x,conversionTable{iField,2}) || ...
+                    ~isfield(x.(conversionTable{iField,2}),conversionTable{iField,3}) || ...
+                    ~isfield(x.(conversionTable{iField,2}),conversionTable{iField,4})
+                % Deprecated field detected
+                nOutdatedParameter = nOutdatedParameter+1;
+                detectedFields{nOutdatedParameter,1} = conversionTable{iField,1};
+                % Basic field does not exist
+                if ~isfield(x,conversionTable{iField,2})
+                    x.(conversionTable{iField,2}) = struct;
+                end
+                % Actual deprecated field
+                if ~isfield(x.(conversionTable{iField,2}),conversionTable{iField,3})
+                    % Sub-Structure (x.FIELD -> x.STRUCT.FIELD)
+                    x.(conversionTable{iField,2}).(conversionTable{iField,3}) = x.(conversionTable{iField,1});
+                else
+                    % Sub-Sub-Structure (x.FIELD -> x.STRUCT.STRUCT.FIELD)
+                    x.(conversionTable{iField,2}).(conversionTable{iField,3}).(conversionTable{iField,4}) = x.(conversionTable{iField,1});
+                end
+            end
+            % Remove old field
+            x = rmfield(x,conversionTable{iField,1});
         end
-        x = rmfield(x,'SegmentSPM12');
-    end
-
-    if isfield(x,'M0_conventionalProcessing')
-        warning('Deprecated field. Please use x.settings.M0_conventionalProcessing instead of x.M0_conventionalProcessing');
-        if ~isfield(x,'settings') || ~isfield(x.settings,'M0_conventionalProcessing')
-            x.settings.M0_conventionalProcessing = x.M0_conventionalProcessing;
-        end
-        x = rmfield(x,'M0_conventionalProcessing');
-    end
-
-    if isfield(x,'exclusion')
-        warning('Deprecated field. Please use x.dataset.exclusion instead of x.exclusion');
-        if ~isfield(x,'dataset') || ~isfield(x.dataset,'exclusion')
-            x.dataset.exclusion = x.exclusion;
-        end
-        x = rmfield(x,'exclusion');
-    end
-
-    if isfield(x,'subject_regexp')
-        warning('Deprecated field. Please use x.dataset.subjectRegexp instead of x.subject_regexp');
-        if ~isfield(x,'dataset') || ~isfield(x.dataset,'subjectRegexp')
-            x.dataset.subjectRegexp = x.subject_regexp;
-        end
-        x = rmfield(x,'subject_regexp');
-    end
-
-    if isfield(x,'name')
-        warning('Deprecated field. Please use x.dataset.name instead of x.name');
-        if ~isfield(x,'name') || ~isfield(x.dataset,'name')
-            x.dataset.name = x.name;
-        end
-        x = rmfield(x,'name');
-    end
-
-    if isfield(x,'Quality')
-        warning('Deprecated field. Please use x.settings.Quality instead of x.Quality');
-        if ~isfield(x,'settings') || ~isfield(x.dataset,'Quality')
-            x.settings.Quality = x.Quality;
-        end
-        x = rmfield(x,'Quality');
-    end
-
-    if isfield(x,'Vendor')
-        warning('Deprecated field. Please use x.Q.Vendor instead of x.Vendor');
-        if ~isfield(x,'Q') || ~isfield(x.Q,'Vendor')
-            x.Q.Vendor = x.Vendor;
-        end
-        x = rmfield(x,'Vendor');
-    end
-
-    if isfield(x,'Sequence')
-        warning('Deprecated field. Please use x.Q.Sequence instead of x.Sequence');
-        if ~isfield(x,'Q') || ~isfield(x.Q,'Sequence')
-            x.Q.Sequence = x.Sequence;
-        end
-        x = rmfield(x,'Sequence');
-    end
-
-    if isfield(x,'readout_dim')
-        warning('Deprecated field. Please use x.Q.readoutDim instead of x.readout_dim');
-        if ~isfield(x,'Q') || ~isfield(x.Q,'readoutDim')
-            x.Q.readoutDim = x.readout_dim;
-        end
-        x = rmfield(x,'readout_dim');
     end
     
-    if isfield(x,'M0')
-        warning('Deprecated field. Please use x.settings.M0 instead of x.M0');
-        if ~isfield(x,'settings') || ~isfield(x.settings,'M0')
-            x.settings.M0 = x.M0;
+    if bOldFieldsDetected
+        % Print warning and individual fields
+        fprintf('Detected deprecated fields in dataPar.json ...\n');
+        for iField = 1:size(detectedFields,1)
+            fprintf('Deprecated field: %s\n', detectedFields{iField,1});
         end
-        x = rmfield(x,'M0');
     end
-    
-    if isfield(x,'DummyScanPositionInASL4D')
-        warning('Deprecated field. Please use x.modules.asl.DummyScanPositionInASL4D instead of x.DummyScanPositionInASL4D');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'asl') || ~isfield(x.modules.asl,'DummyScanPositionInASL4D')
-            x.modules.asl.DummyScanPositionInASL4D = x.DummyScanPositionInASL4D;
-        end
-        x = rmfield(x,'DummyScanPositionInASL4D');
-    end
-    
-    if isfield(x,'M0PositionInASL4D')
-        warning('Deprecated field. Please use x.modules.asl.M0PositionInASL4D instead of x.M0PositionInASL4D');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'asl') || ~isfield(x.modules.asl,'M0PositionInASL4D')
-            x.modules.asl.M0PositionInASL4D = x.M0PositionInASL4D;
-        end
-        x = rmfield(x,'M0PositionInASL4D');
-    end
-    
-    if isfield(x,'M0_GMScaleFactor')
-        warning('Deprecated field. Please use x.modules.asl.M0_GMScaleFactor instead of x.M0_GMScaleFactor');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'asl') || ~isfield(x.modules.asl,'M0_GMScaleFactor')
-            x.modules.asl.M0_GMScaleFactor = x.M0_GMScaleFactor;
-        end
-        x = rmfield(x,'M0_GMScaleFactor');
-    end
-    
-    if isfield(x,'bMakeNIfTI4DICOM')
-        warning('Deprecated field. Please use x.modules.asl.bMakeNIfTI4DICOM instead of x.bMakeNIfTI4DICOM');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'asl') || ~isfield(x.modules.asl,'bMakeNIfTI4DICOM')
-            x.modules.asl.bMakeNIfTI4DICOM = x.bMakeNIfTI4DICOM;
-        end
-        x = rmfield(x,'bMakeNIfTI4DICOM');
-    end
-    
-    if isfield(x,'PVCNativeSpaceKernel')
-        warning('Deprecated field. Please use x.modules.asl.PVCNativeSpaceKernel instead of x.PVCNativeSpaceKernel');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'asl') || ~isfield(x.modules.asl,'PVCNativeSpaceKernel')
-            x.modules.asl.PVCNativeSpaceKernel = x.PVCNativeSpaceKernel;
-        end
-        x = rmfield(x,'PVCNativeSpaceKernel');
-    end
-    
-    if isfield(x,'bUseMNIasDummyStructural')
-        warning('Deprecated field. Please use x.modules.asl.bUseMNIasDummyStructural instead of x.bUseMNIasDummyStructural');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'asl') || ~isfield(x.modules.asl,'bUseMNIasDummyStructural')
-            x.modules.asl.bUseMNIasDummyStructural = x.bUseMNIasDummyStructural;
-        end
-        x = rmfield(x,'bUseMNIasDummyStructural');
-    end
-    
-    if isfield(x,'bDCTRegistration')
-        warning('Deprecated field. Please use x.modules.asl.bDCTRegistration instead of x.bDCTRegistration');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'asl') || ~isfield(x.modules.asl,'bDCTRegistration')
-            x.modules.asl.bDCTRegistration = x.bDCTRegistration;
-        end
-        x = rmfield(x,'bDCTRegistration');
-    end
-    
-    if isfield(x,'bAffineRegistration')
-        warning('Deprecated field. Please use x.modules.asl.bAffineRegistration instead of x.bAffineRegistration');
-        if ~isfield(x,'modules') || ~isfield(x.modules,'asl') || ~isfield(x.modules.asl,'bAffineRegistration')
-            x.modules.asl.bAffineRegistration = x.bAffineRegistration;
-        end
-        x = rmfield(x,'bAffineRegistration');
-    end
-    
 
 end
 
