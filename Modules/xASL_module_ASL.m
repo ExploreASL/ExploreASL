@@ -421,7 +421,7 @@ iState = 8;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
     fprintf('%s\n','Quantifying ASL:   ');
-    if isfield(x, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification
+    if isfield(x.Q, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification
         % Quantification in native space:
         nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
         
