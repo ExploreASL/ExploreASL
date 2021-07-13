@@ -85,7 +85,7 @@ function [x] = ExploreASL_Initialize(varargin)
     end
 
     % Check whether MyPath is correct, otherwise obtain correct folder
-    if ~isfield(x, 'MyPath')
+    if ~isfield(x.opts, 'MyPath')
         % Check if we can get the path from the ExploreASL_Initialize path
         initializePath = fileparts(mfilename('fullpath'));
         if ~isempty(regexp(initializePath,'ExploreASL$', 'once'))
