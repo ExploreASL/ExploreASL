@@ -52,7 +52,7 @@ if isfield(x.dir,'SUBJECTDIR')
     [~, x.P.SubjectID] = xASL_fileparts(x.dir.SUBJECTDIR);
     x.iSubject = find(cellfun(@(y) strcmp(y, x.P.SubjectID), x.SUBJECTS));
 end
-if isfield(x,'SESSIONDIR')
+if isfield(x.dir,'SESSIONDIR')
     [~, x.P.SessionID] = xASL_fileparts(x.dir.SESSIONDIR);
     x.iSession = find(cellfun(@(y) strcmp(y, x.P.SessionID), x.SESSIONS));
 end
