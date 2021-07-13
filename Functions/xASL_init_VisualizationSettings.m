@@ -142,10 +142,9 @@ function [x] = xASL_init_VisualizationSettings(x)
         x.S.masks.WBmask = logical(ImageWB);
     end
 
-    if ~isfield(x.settings,'Quality') && ~isfield(x,'Quality') && isfield(x,'QUALITY')
-        x.settings.Quality = x.QUALITY; % backward compatibility
-    elseif ~isfield(x.settings,'Quality')
-        x.settings.Quality = 1; % default is normal quality
+    % Default is high quality
+    if ~isfield(x.settings,'Quality')
+        x.settings.Quality = 1; 
     end
 
     warning('off','images:initSize:adjustingMag'); % warning about scaling if an image doesnt fit screen, disable
