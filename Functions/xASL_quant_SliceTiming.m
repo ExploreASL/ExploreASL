@@ -90,7 +90,7 @@ else
 	nSlices = size(inputIm, 3);
 end
 
-% The readout_dim needs to be provided
+% The readoutDim needs to be provided
 if ~isfield(x.Q, 'readoutDim')
 	error('x.Q.readoutDim field is missing');
 end
