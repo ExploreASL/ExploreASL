@@ -65,45 +65,7 @@ else
 end
 
 %% 3. Look for and update deprecated fields
-conversionTable = xASL_adm_GetDeprecatedFields();
-
-nOutdatedParameter = 0;
-bOldFieldsDetected = 0;
-for iField = 1:size(conversionTable,1)
-    if isfield(OldX.x,conversionTable{iField,1})
-        bOldFieldsDetected = 1;
-        if ~isfield(OldX.x,conversionTable{iField,2}) || ...
-                ~isfield(OldX.x.(conversionTable{iField,2}),conversionTable{iField,3}) || ...
-                ~isfield(OldX.x.(conversionTable{iField,2}),conversionTable{iField,4})
-            % Deprecated field detected
-            nOutdatedParameter = nOutdatedParameter+1;
-            detectedFields{nOutdatedParameter,1} = conversionTable{iField,1};
-            % Basic field does not exist
-            if ~isfield(x,conversionTable{iField,2})
-                OldX.x.(conversionTable{iField,2}) = struct;
-            end
-            if ~isfield(OldX.x.(conversionTable{iField,2}),conversionTable{iField,3})
-                % Sub-Structure (x.FIELD -> x.STRUCT.FIELD)
-                OldX.x.(conversionTable{iField,2}).(conversionTable{iField,3}) = OldX.x.(conversionTable{iField,1});
-            else
-                % Sub-Sub-Structure (x.FIELD -> x.STRUCT.STRUCT.FIELD)
-                OldX.x.(conversionTable{iField,2}).(conversionTable{iField,3}).(conversionTable{iField,4}) = OldX.x.(conversionTable{iField,1});
-            end
-        end
-        % Remove old field
-        OldX.x = rmfield(OldX.x,conversionTable{iField,1});
-    end
-end
-
-if bOldFieldsDetected
-    % Write fields back
-    x = OldX.x;
-    % Print individual fields
-    warning('Detected deprecated fields in x.mat. Older version of ExploreASL was used to process this data previously. Field names fixed.');
-    for iField = 1:size(detectedFields,1)
-        fprintf('Deprecated field: %s\n', detectedFields{iField,1});
-    end
-end
+x = xASL_io_CheckDeprecatedFieldsX(OldX.x,true);
 
 %% 4. Add fields from disc to the current x-struct
 for iField=1:length(FieldNames)
