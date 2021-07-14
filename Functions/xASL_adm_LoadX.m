@@ -65,12 +65,14 @@ else
 end
 
 %% 3. Look for and update deprecated fields
-x = xASL_io_CheckDeprecatedFieldsX(OldX.x,true);
+OldX.x = xASL_io_CheckDeprecatedFieldsX(OldX.x,true);
 
 %% 4. Add fields from disc to the current x-struct
 for iField=1:length(FieldNames)
-    if isfield(OldX.x,FieldNames{iField}) % if x.mat contained the field
-        if ~isfield(x, FieldNames{iField}) || bOverwrite % if x not contained the field OR overwrite
+    % Check if x.mat contained the field
+    if isfield(OldX.x,FieldNames{iField})
+        % Check if x does not contain the field OR overwrite
+        if ~isfield(x, FieldNames{iField}) || bOverwrite
             x.(FieldNames{iField}) = OldX.x.(FieldNames{iField});
         end
     else
