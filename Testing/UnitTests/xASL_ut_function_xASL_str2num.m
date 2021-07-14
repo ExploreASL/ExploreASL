@@ -53,7 +53,8 @@ UnitTest.tests(1).duration = toc(testTime);
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
 
-%% Test run 1
+
+%% Test run 2
 
 % Give your individual subtest a name
 UnitTest.tests(2).testname = 'List of numbers';
@@ -85,6 +86,47 @@ UnitTest.tests(2).duration = toc(testTime);
 
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
+
+
+%% Test run 3
+
+% Give your individual subtest a name
+UnitTest.tests(3).testname = 'Number types: integer, double, positive and negative';
+
+% Start the test
+testTime = tic;
+
+% Run your test here
+numOutA = xASL_str2num('1.1e6');
+numOutB = xASL_str2num('1.2e-6');
+numOutC = xASL_str2num('1.3e12');
+numOutD = xASL_str2num('1.4e-12');
+numOutE = xASL_str2num('I_AM_NOT_A_NUMBER');
+
+% Define one or multiple test conditions here
+testCondition = true;
+
+% Define one or multiple test conditions here
+if ~isnumeric(numOutA) || ~isnumeric(numOutB) || ~isnumeric(numOutC) || ~isnumeric(numOutD)
+    testCondition = false;
+end
+if isnumeric(numOutA) && isnumeric(numOutB) && isnumeric(numOutC) && isnumeric(numOutD)
+    if ~(numOutA==1.1e6) || ~(numOutB==1.2e-6) || ~(numOutC==1.3e12) || ~(numOutD==1.4e-12)
+        testCondition = false;
+    end
+end
+if ~isnan(numOutE)
+    testCondition = false;
+end
+
+% Clean up
+clear numOutA numOutB numOutC numOutD
+
+% Get test duration
+UnitTest.tests(3).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(3).passed = testCondition;
 
 
 %% End of testing
