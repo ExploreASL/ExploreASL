@@ -53,11 +53,6 @@ if nargin<3 || isempty(bVerbose)
 end
 
 [Fpath, Ffile, Fext] = fileparts(ParmsPath);
-
-% List of fields that are transfered to the x.Q
-Qfields = {'BackGrSupprPulses' 'LabelingType' 'Initial_PLD' 'LabelingDuration' 'SliceReadoutTime' 'Lambda'...
-           'T2art' 'BloodT1' 'TissueT1' 'nCompartments' 'NumberOfAverages' 'LabelingEfficiency' 'ATT' ...
-		   'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses'};
 	   
 % Names of files for data sets and older names for backwards compatibility
 namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'        'LabelingEfficiency' 'Hematocrit' 'BackGrSupprPulses'};
@@ -177,23 +172,8 @@ end
 
 [x] = xASL_adm_SyncParmsX(Parms, x);
 
-% Move quantification parameters to the Q (quantification) subfield, for
-% backward compatibility
-
-for iField=1:length(Qfields)
-    if isfield(x,Qfields{iField})
-		if isfield(x.Q,(Qfields{iField})) && ~min((x.Q.(Qfields{iField})==x.(Qfields{iField})))
-			if bVerbose
-				warning(['Overwriting x.Q.' Qfields{iField} '=' xASL_num2str(x.Q.(Qfields{iField}),[],1) ', with x.' Qfields{iField} '=' xASL_num2str(x.(Qfields{iField}),[],1)]);
-			end
-		end
-
-        x.Q.(Qfields{iField}) = x.(Qfields{iField});
-%         x = rmfield(x, Qfields{iField}); % For now lets keep the
-%         parameter both in x and x.Q for backwards compatibility, we fix
-%         this later
-    end
-end
+% Fix x structure fields
+x = xASL_io_CheckDeprecatedFieldsX(x);
 
 
 %% ------------------------------------------------------------------------
@@ -263,3 +243,4 @@ for iPar=1:length(ParmsNames)
 end
 
 end
+
