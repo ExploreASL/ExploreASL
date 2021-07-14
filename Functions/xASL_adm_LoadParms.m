@@ -178,6 +178,9 @@ x = xASL_io_CheckDeprecatedFieldsX(x);
 
 %% ------------------------------------------------------------------------
 %% 6. Fix M0 parameter
+if ~isfield(x,'settings')
+    x.settings = struct;
+end
 if isfield(x.settings, 'M0') && strcmpi(x.settings.M0, 'no_background_suppression')
     warning('Legacy option x.settings.M0=no_background_suppression detected, replacing this by UseControlAsM0');
     x.settings.M0 = 'UseControlAsM0';
