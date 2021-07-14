@@ -66,35 +66,63 @@ C = randi([0 1],100,100,100,100,'double');
 stdA = std(A(:));
 stdB = std(B(:));
 stdC = std(C(:));
-nanA = NaN(100,100);
-nanB = NaN(100,100,100);
-nanC = NaN(100,100,100,100);
-concatA = [A, nanA];
-concatB = [B, nanB];
-concatC = [C, nanC];
-y1 = xASL_stat_StdNan(concatA);
-y2 = xASL_stat_StdNan(concatB);
-y3 = xASL_stat_StdNan(concatC);
+y1 = xASL_stat_StdNan(A);
+y2 = xASL_stat_StdNan(B);
+y3 = xASL_stat_StdNan(C);
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~(y1==stdA)
+if ~(mean(y1)-stdA<0.0001)
     testCondition = false;
 end
-if ~(y2==stdB)
+if ~(mean(mean(y2))-stdB<0.0001)
     testCondition = false;
 end
-if ~(y3==stdC)
+if ~(mean(mean(mean(y3)))-stdC<0.0001)
     testCondition = false;
 end
+
+% Clean-Up
+clear A B C stdA stdB stdC y1 y2 y3
 
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);
 
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
+
+
+%% Test run 3
+
+% Give your individual subtest a name
+UnitTest.tests(3).testname = 'Multidimensional test with NaN values (2D)';
+
+% Start the test
+testTime = tic;
+
+% Run your test here
+A = zeros(300,100);
+B = ones(300,100);
+C = NaN(300,100);
+Z = [A,B,C];
+Z = Z'; % => Z(:,1) = (0,...,0,1,...,1,NaN,...,NaN)
+y = xASL_stat_StdNan(Z);
+
+% Define one or multiple test conditions here
+testCondition = true;
+
+% Define one or multiple test conditions here
+if ~((mean(y)-0.5)<0.01)
+    testCondition = false;
+end
+
+% Get test duration
+UnitTest.tests(3).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(3).passed = testCondition;
 
 
 %% End of testing

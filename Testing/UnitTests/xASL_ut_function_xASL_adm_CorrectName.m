@@ -65,22 +65,29 @@ if ~strcmp(strOut,'_abc_def')
     testCondition = false; 
 end
 
+% Get test duration
+UnitTest.tests(2).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(2).passed = testCondition;
+
+
 %% Test run 3
 
 % Give your individual subtest a name
-UnitTest.tests(3).testname = 'Test these symbols: Ã„Ã–ÃœÃ¤Ã¶Ã¼/\';
+UnitTest.tests(3).testname = 'Test these symbols: ÄÖÜäöü/\';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-strOut = xASL_adm_CorrectName('abcÃ„Ã–ÃœÃ¤Ã¶Ã¼/\/\/\def');
+strOut = xASL_adm_CorrectName('abcÄÖÜäöü/\/\/\def');
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~strcmp(strOut,'abc_def')
+if ~strcmp(strOut,'abcÄÖÜäöü_def')
     testCondition = false; 
 end
 
