@@ -20,7 +20,7 @@ function UnitTest = xASL_ut_function_xASL_adm_CorrectName(TestRepository)
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Simple text example';
+UnitTest.tests(1).testname = 'Test these symbols: $%&';
 
 % Start the test
 testTime = tic;
@@ -46,10 +46,10 @@ UnitTest.tests(1).duration = toc(testTime);
 UnitTest.tests(1).passed = testCondition;
 
 
-%% Test run 1
+%% Test run 2
 
 % Give your individual subtest a name
-UnitTest.tests(2).testname = 'Another text example';
+UnitTest.tests(2).testname = 'Test these symbols: []()?!$%&';
 
 % Start the test
 testTime = tic;
@@ -65,11 +65,30 @@ if ~strcmp(strOut,'_abc_def')
     testCondition = false; 
 end
 
+%% Test run 3
+
+% Give your individual subtest a name
+UnitTest.tests(3).testname = 'Test these symbols: ÄÖÜäöü/\';
+
+% Start the test
+testTime = tic;
+
+% Run your test here
+strOut = xASL_adm_CorrectName('abcÄÖÜäöü/\/\/\def');
+
+% Define one or multiple test conditions here
+testCondition = true;
+
+% Define one or multiple test conditions here
+if ~strcmp(strOut,'abc_def')
+    testCondition = false; 
+end
+
 % Get test duration
-UnitTest.tests(2).duration = toc(testTime);
+UnitTest.tests(3).duration = toc(testTime);
 
 % Evaluate your test
-UnitTest.tests(2).passed = testCondition;
+UnitTest.tests(3).passed = testCondition;
 
 
 %% End of testing
