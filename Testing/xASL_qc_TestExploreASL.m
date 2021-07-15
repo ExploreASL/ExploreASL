@@ -413,8 +413,8 @@ for iList=1:length(Dlist) % iterate over example datasets
     ResultFile{3} = xASL_adm_GetFileList(StatsDir,'(?i)^median_qCBF.*DeepWM.*PVC0\.tsv$','FPList');
     ResultFile{4} = xASL_adm_GetFileList(StatsDir,'(?i)^CoV_qCBF.*TotalGM.*PVC0\.tsv$','FPList');
     ResultFile{5} = xASL_adm_GetFileList(VolumeDir,'(?i)^TissueVolume.*\.tsv$','FPList');
-
-	for iFile=1:length(ResultFile) % iterate over ROI results
+    
+    for iFile=1:length(ResultFile) % iterate over ROI results
         % Make sure one individual file does not crash the table generation
         try
             if length(ResultFile{iFile})<1
@@ -445,13 +445,17 @@ for iList=1:length(Dlist) % iterate over example datasets
                 if ~isempty(IndexCSF)
                     ResultsTable{1+iList,3+iFile} = TempTable{2, IndexCSF};
                 else
-                    ResultsTable{1+iList,2+iFile} = 'n/a';
+                    ResultsTable{1+iList,3+iFile} = 'n/a';
                 end
             end
         catch ME
+            % Something went wrong, we set all values to n/a
             fprintf('%s\n', ME.message);
+            ResultsTable{1+iList,1+iFile} = 'n/a';
+            ResultsTable{1+iList,2+iFile} = 'n/a';
+            ResultsTable{1+iList,3+iFile} = 'n/a';
         end
-	end
+    end
 	% check if there are missing lock files
 	if exist(fullfile(AnalysisDir,'Missing_Lock_files.csv'),'file')
 		ResultsTable{1+iList,4+length(ResultFile)} = 0; % pipeline not completed
