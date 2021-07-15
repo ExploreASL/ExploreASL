@@ -28,13 +28,13 @@ function [x] = xASL_init_DefinePaths(x)
     x.D.c_PreFix{2} = 'rc2T1';
 
     % Atlases and templates
-    if isfield(x, 'MyPath')
-        x.D.MapsDir             = fullfile(x.MyPath, 'Maps');
-        x.D.MapsSPMmodifiedDir  = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded');
-        x.D.ResliceRef          = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'rgrey.nii');
-        x.D.IdentityTransfRef   = fullfile(x.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
-        x.D.TemplateDir         = fullfile(x.MyPath, 'Maps', 'Templates');
-        x.D.AtlasDir            = fullfile(x.MyPath, 'External', 'Atlases');
+    if isfield(x.opts, 'MyPath')
+        x.D.MapsDir             = fullfile(x.opts.MyPath, 'Maps');
+        x.D.MapsSPMmodifiedDir  = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded');
+        x.D.ResliceRef          = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'rgrey.nii');
+        x.D.IdentityTransfRef   = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
+        x.D.TemplateDir         = fullfile(x.opts.MyPath, 'Maps', 'Templates');
+        x.D.AtlasDir            = fullfile(x.opts.MyPath, 'External', 'Atlases');
     else
         warning('MyPath field not defined...');
     end

@@ -19,6 +19,9 @@ function [x] = xASL_init_DataLoading(x)
 
 
     %% Data loading
+    if ~isfield(x,'dataset')
+        x.dataset = struct;
+    end
     
     % Make sure that the dataPar.json definitely exists if we load the dataset
     if x.opts.bLoadData
@@ -35,7 +38,7 @@ function [x] = xASL_init_DataLoading(x)
     end
     
     % Go to ExploreASL folder
-    cd(x.MyPath);
+    cd(x.opts.MyPath);
 
     % Check if DataParFile needs to be loaded
     if x.opts.bProcessData || x.opts.bLoadData

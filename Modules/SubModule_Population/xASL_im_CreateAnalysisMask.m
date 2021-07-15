@@ -54,12 +54,12 @@ if x.dataset.nSubjectsSessions<16
     x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
     x.S.VBAmask = x.S.MaskSusceptibility;
     bSkipStandard = 1;
-elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Sequence,'3d_spiral')
+elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Q.Sequence,'3d_spiral')
     warning('Missing susceptibility maps, skipping...');
     bSkipStandard = 1;
 end
 
-if bSkipStandard && ~x.bNativeSpaceAnalysis
+if bSkipStandard && ~x.modules.population.bNativeSpaceAnalysis
     return;
     % we skip creating a group mask if we have fewer images than specified
     % above.
@@ -119,11 +119,11 @@ if ~bSkipStandard
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
 	
 	DoSusceptibility = true;
-	if ~isfield(x,'Sequence')
-		error('x.Sequence parameter missing!');
-	elseif strcmpi(x.Sequence,'2D_EPI')
+	if ~isfield(x.Q,'Sequence')
+		error('x.Q.Sequence parameter missing!');
+	elseif strcmpi(x.Q.Sequence,'2D_EPI')
 		Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
-	elseif strcmpi(x.Sequence,'3D_GRASE')
+	elseif strcmpi(x.Q.Sequence,'3D_GRASE')
 		Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
 	else
 		% don't mask susceptibility artifacts
@@ -159,7 +159,7 @@ if ~bSkipStandard
 	x.S.MaskSusceptibility = xASL_im_IM2Column(MaskSusceptibility,x.S.masks.WBmask);
 end
 %% B2) Save FOV mask for each subject
-if x.bNativeSpaceAnalysis
+if x.modules.population.bNativeSpaceAnalysis
 	for iSession=1:x.dataset.nSessions
 		%x.SESSIONS{iSession}
 
@@ -168,7 +168,7 @@ if x.bNativeSpaceAnalysis
 			SubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
 
 			x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
-			x.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
+			x.dir.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
 
 			xASL_TrackProgress(SubjSess,x.nSubjects*x.dataset.nSessions);

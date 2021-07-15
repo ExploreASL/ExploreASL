@@ -18,7 +18,7 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 %                     should be saved. If empty, resampling is skipped. (OPTIONAL, DEFAULT = empty)
 %   SubRegExp       - regular expression of subject name/ID inside the
 %                     filepath, used when resampling to standard space
-%                     e.g. x.subject_regexp (OPTIONAL, DEFAULT = empty).
+%                     e.g. x.dataset.subjectRegexp (OPTIONAL, DEFAULT = empty).
 %
 % OUTPUT: 
 %  variables        - n/a
@@ -36,8 +36,10 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 %              1. Load TSV file
 %              2. Process images
 %
-% EXAMPLE: LabelTable as separate TSV-file: xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.PopDir,'^4V_(?!MAP).*\.nii$', 'FPList'), '/ExampleTerritoryLabels.tsv', x.D.PopDir);
-%          LabelTable as cell: xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.ROOT,'^4V\.nii$', 'FPListRec'), {1, 'ICA-L'; 2 'ICA-R'; 3, 'POS-L'; 4, 'POS-R'}, [], 1, x.D.PopDir, x.subject_regexp);
+% EXAMPLE: LabelTable as separate TSV-file: 
+%          xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.PopDir,'^4V_(?!MAP).*\.nii$', 'FPList'), '/ExampleTerritoryLabels.tsv', x.D.PopDir);
+%          LabelTable as cell: 
+%          xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.ROOT,'^4V\.nii$', 'FPListRec'), {1, 'ICA-L'; 2 'ICA-R'; 3, 'POS-L'; 4, 'POS-R'}, [], 1, x.D.PopDir, x.dataset.subjectRegexp);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %

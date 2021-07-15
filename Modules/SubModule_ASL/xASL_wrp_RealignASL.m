@@ -50,9 +50,9 @@ end
 rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
 rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
 
-if ~isfield(x,'SpikeRemovalThreshold')
-    fprintf('%s\n','x.SpikeRemovalThreshold was not defined yet, default setting = 0.01 used');
-    x.SpikeRemovalThreshold   = 0.01; % default threshold, decreased this from 0.05 to 0.01,
+if ~isfield(x.modules.asl,'SpikeRemovalThreshold')
+    fprintf('%s\n','x.modules.asl.SpikeRemovalThreshold was not defined yet, default setting = 0.01 used');
+    x.modules.asl.SpikeRemovalThreshold   = 0.01; % default threshold, decreased this from 0.05 to 0.01,
     % since we want to remove Spikes, perhaps except very small spikes
 end
 
@@ -80,7 +80,7 @@ if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
     return;
 end
 
-switch x.Quality
+switch x.settings.Quality
 	case 1 % normal quality
     flags.quality = 1;
     flags.sep = minVoxelSize;
@@ -122,7 +122,7 @@ xASL_delete(rpfile);
 %         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
 %     end  
     
-if nFrames>2 && bSubtraction && (numel(unique(x.Q.Initial_PLD))>1 || numel(unique(x.EchoTime))>1 || x.HadamardType~=0) %multiPLD or multiTE or Hadamard
+if nFrames>2 && bSubtraction && (numel(unique(x.Q.Initial_PLD))>1 || numel(unique(x.EchoTime))>1 || x.modules.asl.HadamardType~=0) %multiPLD or multiTE or Hadamard
     spm_realign(spm_vol(InputPath),flags,false);
     
 elseif nFrames>2 && bSubtraction
@@ -283,10 +283,10 @@ elseif bSubtraction && nFrames>10 % == more than 5 pairs
     % max() is added here in coincidental case where there are 2 identical t-values, max() errs on the conservative side
     MinimumtValue = max(tValue(INDEXn:end));
 
-    if tValue(end)>(1-x.SpikeRemovalThreshold)*MinimumtValue
+    if tValue(end)>(1-x.modules.asl.SpikeRemovalThreshold)*MinimumtValue
         % only exclude frames if the optimal t-value
         % is more than x% higher than including all frames (default
-        % x.SpikeRemovalThreshold= 0.01;
+        % x.modules.asl.SpikeRemovalThreshold= 0.01;
         mintValue = length(tValue);
     end
 

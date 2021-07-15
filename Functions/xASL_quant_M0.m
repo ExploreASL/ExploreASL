@@ -13,9 +13,9 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 %                                    - is 0 when the start of M0 readout is set to TR-slice*SliceReadoutTime for 2D
 %                                    - set to 1 for M0 within ASL, 0 for standalone
 %                 x.Q.TissueT1 - is set to 800 when missing
-%                 x.M0_GMScaleFactor - is set to 1 when missing
+%                 x.modules.asl.M0_GMScaleFactor - is set to 1 when missing
 %                 x.Q.PresaturationTime - when Bsup-M0 correction is on, and PreSat missing, then set to the start of the sequence
-%                 x.ApplyQuantification(4) - is set to 0 when BSup-M0 correction is done, because no further T1-relaxation compensation of M0 is necessary
+%                 x.Q.ApplyQuantification(4) - is set to 0 when BSup-M0 correction is done, because no further T1-relaxation compensation of M0 is necessary
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function quantifies the M0, except for the difference in voxel size
 % between the M0 and ASL source data (which is scaled in
@@ -23,11 +23,11 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 %
 % 1. Correct scale slopes, if Philips
 % 2. Convert control image with background suppression to pseudo-M0
-% 3. Skip M0 quantification if ~x.ApplyQuantification(4)
+% 3. Skip M0 quantification if ~x.Q.ApplyQuantification(4)
 % 4. Set TR specifically for GE
 % 5. Check for correct TR values
 % 6. Quantify the M0, either for single 3D volume or slice-wise
-% 7. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
+% 7. Apply custom scalefactor if requested (x.modules.asl.M0_GMScaleFactor)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: M0IM = xASL_quant_M0('MyStudy/sub-001/ASL_1/rM0.nii', x);
@@ -43,12 +43,12 @@ elseif isempty(inputM0) || sum(isfinite(inputM0(:)))==0
     warning('Invalid M0 image loaded, skipping');
 end
 
-if strcmpi(x.M0,'no_background_suppression')
+if strcmpi(x.Q.M0,'no_background_suppression')
     warning('This option will be obsolete in the future, please use M0=UseControlAsM0 instead');
-    x.M0 = 'UseControlAsM0'; % backward compatibility
+    x.Q.M0 = 'UseControlAsM0'; % backward compatibility
 end
 
-if strcmpi(x.M0, 'UseControlAsM0')
+if strcmpi(x.Q.M0, 'UseControlAsM0')
     fprintf('%s\n','x.M0_usesASLtiming didnt exist, set to 1, because of absence background suppression, same timing in mean control (used as M0) as in ASL');
     x.M0_usesASLtiming = 1;
     M0ParmsMat  = x.P.Path_ASL4D_parms_mat;
@@ -62,10 +62,10 @@ M0IM = xASL_io_Nifti2Im(inputM0);
 
 %% ------------------------------------------------------------------------------------------------------
 % 1. Correct scale slopes, if Philips
-if ~x.ApplyQuantification(2)
+if ~x.Q.ApplyQuantification(2)
     fprintf('%s\n','M0 ScaleSlopes skipped');
 else
-    if ~isempty(regexpi(x.Vendor,'Philips'))
+    if ~isempty(regexpi(x.Q.Vendor,'Philips'))
 
 		scaleFactor = xASL_adm_GetPhilipsScaling(xASL_adm_LoadParms(M0ParmsMat, x),xASL_io_ReadNifti(x.P.Path_M0));
 
@@ -78,15 +78,15 @@ end
 %% ------------------------------------------------------------------------------------------------------
 % 2. Convert control image with background suppression to pseudo-M0
 % for the GM
-if strcmp(x.M0, 'UseControlAsM0') && x.Q.BackgroundSuppressionNumberPulses>0
+if strcmp(x.Q.M0, 'UseControlAsM0') && x.Q.BackgroundSuppressionNumberPulses>0
     % we only run this part if there is background suppression, but no M0 image
     [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x);
 end
 
 
 %% ------------------------------------------------------------------------------------------------------
-% 3. Skip M0 quantification if ~x.ApplyQuantification(4)
-if ~x.ApplyQuantification(4)
+% 3. Skip M0 quantification if ~x.Q.ApplyQuantification(4)
+if ~x.Q.ApplyQuantification(4)
     fprintf('%s\n','M0 quantification for incomplete T1 relaxation skipped');
     % M0 quantification here is only for the incomplete T1 recovery
     % One potential reason of skipping this, is when a pseudo-M0 is used
@@ -111,7 +111,7 @@ else
 
     %% ------------------------------------------------------------------------------------------------------
     % 4. Set TR specifically for GE
-    if ~isempty(regexpi(x.Vendor,'GE')) && isempty(regexpi(x.Vendor,'Siemens')) &&  isempty(regexpi(x.Vendor,'Philips'))
+    if ~isempty(regexpi(x.Q.Vendor,'GE')) && isempty(regexpi(x.Q.Vendor,'Siemens')) &&  isempty(regexpi(x.Q.Vendor,'Philips'))
         TR = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
     else
@@ -132,10 +132,10 @@ else
 
     %% ------------------------------------------------------------------------------------------------------
     % 6. Quantify the M0, either for single 3D volume or slice-wise
-    if strcmpi(x.readout_dim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
+    if strcmpi(x.Q.readoutDim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
 		NetTR = TR;
 		fprintf('%s\n','Single 3D M0 readout assumed');
-    elseif  strcmpi(x.readout_dim,'2D') % for 2D readouts, there are slice timing differences
+    elseif  strcmpi(x.Q.readoutDim,'2D') % for 2D readouts, there are slice timing differences
 
 		% Calculate SliceReadoutTime as a vector
 		SliceReadoutTime = xASL_quant_SliceTiming(x,inputM0);
@@ -163,7 +163,7 @@ else
 		end
 
     else
-        error('Unknown x.readout_dim specified');
+        error('Unknown x.Q.readoutDim specified');
     end
 
     corr_T1 = 1 ./ (1-exp(-NetTR/x.Q.TissueT1));
@@ -178,15 +178,15 @@ else
 end
 
 %% ------------------------------------------------------------------------------------------------------
-% 7. Apply custom scalefactor if requested (x.M0_GMScaleFactor)
-if ~isfield(x,'M0_GMScaleFactor') || isempty(x.M0_GMScaleFactor)
-    x.M0_GMScaleFactor = 1; % no scaling
+% 7. Apply custom scalefactor if requested (x.modules.asl.M0_GMScaleFactor)
+if ~isfield(x.modules.asl,'M0_GMScaleFactor') || isempty(x.modules.asl.M0_GMScaleFactor)
+    x.modules.asl.M0_GMScaleFactor = 1; % no scaling
 else
-    fprintf('%s\n',['M0 scaling corrected by GMScaleFactor ' xASL_num2str(x.M0_GMScaleFactor)]);
-    M0IM = M0IM.*x.M0_GMScaleFactor;
+    fprintf('%s\n',['M0 scaling corrected by GMScaleFactor ' xASL_num2str(x.modules.asl.M0_GMScaleFactor)]);
+    M0IM = M0IM.*x.modules.asl.M0_GMScaleFactor;
 end
 
-% x.M0_GMScaleFactor - add additional scale factor to multiply the M0 image by (OPTIONAL, default = 1)
+% x.modules.asl.M0_GMScaleFactor - add additional scale factor to multiply the M0 image by (OPTIONAL, default = 1)
 % This can be useful when you have background suppression but no control/M0
 % image without background suppression. If you then know the M0 scalefactor
 % for the GM, you can use the control image as M0 and use this parameter to
@@ -265,7 +265,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 % Copyright 2015-2021 ExploreASL
 
     if size(M0IM, 3)<2
-		error('M0 is not an image, but expected as image because of x.M0=UseControlAsM0');
+		error('M0 is not an image, but expected as image because of x.Q.M0=UseControlAsM0');
 	end
 	
     SliceReadoutTime = xASL_quant_SliceTiming(x,M0IM);
@@ -367,7 +367,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     close(FigureHandle);
     
     fprintf('\n');
-    if strcmp(x.readout_dim, '2D')
+    if strcmp(x.Q.readoutDim, '2D')
         fprintf('For the average slice: ');
     end
     fprintf('Control image divided by ');
@@ -377,9 +377,9 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     fprintf('%s\n\n', ['And SliceReadoutTime=' xASL_num2str(SliceReadoutTime(:)')]);
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
     
-    if x.ApplyQuantification(4)==1
+    if x.Q.ApplyQuantification(4)==1
         fprintf('Correction of the Background suppression of the pseudo-M0 signal has been done, no need for correcting the incomplete T1 relaxation\n');
-        x.ApplyQuantification(4) = 0;
+        x.Q.ApplyQuantification(4) = 0;
     end
     
 end

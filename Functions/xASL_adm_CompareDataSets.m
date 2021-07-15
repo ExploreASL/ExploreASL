@@ -56,7 +56,7 @@ else
 end
 
 if ~ExistVars && bxASL
-    RefAnalysisRoot    = fullfile(x.MyPath,'TestDataSet_Processed');
+    RefAnalysisRoot    = fullfile(x.opts.MyPath,'TestDataSet_Processed');
     SourceAnalysisRoot      = x.D.ROOT;
     bSaveRMS                = true;
     RMSPath                 = fullfile(x.D.ROOT,'RMS_Reproducibility.mat');

@@ -61,8 +61,8 @@ PCP_T1w = xASL_qc_PCPStructural(x.P.Path_T1, x.P.Path_c1T1, x.P.Path_c2T1, x, x.
 x = xASL_adm_AddToQC(x, PCP_T1w, 'T1w');
 
 if xASL_exist(x.P.Path_FLAIR,'file') % do the same for FLAIR
-    xASL_spm_reslice(x.P.Path_FLAIR, x.P.Path_c1T1, [], [], x.Quality, [], 1);
-    xASL_spm_reslice(x.P.Path_FLAIR, x.P.Path_c2T1, [], [], x.Quality, [], 1);
+    xASL_spm_reslice(x.P.Path_FLAIR, x.P.Path_c1T1, [], [], x.settings.Quality, [], 1);
+    xASL_spm_reslice(x.P.Path_FLAIR, x.P.Path_c2T1, [], [], x.settings.Quality, [], 1);
 
     PCP_FLAIR = xASL_qc_PCPStructural(x.P.Path_FLAIR, x.P.Path_rc1T1, x.P.Path_rc2T1, x, x.P.Pop_Path_rFLAIR);
     x = xASL_adm_AddToQC(x, PCP_FLAIR, 'FLAIR');

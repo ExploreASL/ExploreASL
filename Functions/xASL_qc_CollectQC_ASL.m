@@ -51,7 +51,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
     %% ASL determinant
     % The determinant of the current matrix and old matrix should be the same,
     % otherwise this is suspicious of a left-right flip.
-    PathOrientationResults = fullfile(x.SESSIONDIR,'xASL_qc_PrintOrientation_RigidRegASL.tsv');
+    PathOrientationResults = fullfile(x.dir.SESSIONDIR,'xASL_qc_PrintOrientation_RigidRegASL.tsv');
     ASL = xASL_im_DetermineFlip(x, iSubject, PathOrientationResults, ASL);
 
     %% ASL motion
@@ -83,8 +83,8 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
         xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc1T1_ASL_res.nii'),x.P.Path_rc1T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
         xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc2T1_ASL_res.nii'),x.P.Path_rc2T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 	
-		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc1T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_rc1T1);
-		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc2T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.P.Path_rc2T1);
+		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc1T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_rc1T1);
+		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc2T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_rc2T1);
 		
 		Path_pGM = x.P.Path_rc1T1;
 		Path_pWM = x.P.Path_rc2T1;

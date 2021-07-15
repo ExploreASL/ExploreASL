@@ -29,13 +29,39 @@ function [x] = xASL_io_ReadDataPar(pathDataPar)
 %
 % {
 % 	"x": [{
-% 			"name": 				"ExampleDataSet",
-% 			"subject_regexp": 		"^Sub-\\d{3}$",
-% 			"M0": 					"separate_scan",
-% 			"BackgroundSuppressionNumberPulses": 2,
-% 			"readout_dim": 			"2D",
-% 			"QUALITY": 				false,
-% 			"Vendor": 				"Philips",
+%           "dataset": {
+% 				"name": "ExampleDataSet",
+% 				"subjectRegexp": "^\\d{3}$",
+%           	"exclusion": ""
+%             },
+% 			"SESSIONS": ["ASL_1","ASL_2"],
+% 			"session":
+% 			{
+% 				"options": ["baseline","drug"]
+% 			},
+% 			"Q":
+% 			{
+% 				"BackgroundSuppressionNumberPulses": 2,
+% 				"LabelingType": "CASL",
+% 				"Initial_PLD": 1800,
+% 				"LabelingDuration": 1800,
+% 				"SliceReadoutTime": 30,
+% 				"Vendor": "Philips",
+% 				"readoutDim": "2D",
+% 				"M0": "UseControlAsM0"
+% 			},
+% 			"settings":
+% 			{
+% 				"Quality": 1,
+% 				"DELETETEMP": 1
+% 			},
+%             "modules":
+% 			{
+% 				"asl":
+%                 {
+%                     "M0PositionInASL4D": [1, 2]
+%                 }
+% 			}
 % 		}]
 % }
 %
@@ -140,35 +166,15 @@ elseif strcmpi(Fext, '.json')
 	x = xASL_io_ReadDataPar_FixFields(x);
 	
 	%% Check deprecated fields
-	if isfield(x,'SegmentSPM12')
-		warning('Deprecated field. Please use x.settings.SegmentSPM12 instead of x.SegmentSPM12');
-		if ~isfield(x,'settings') || ~isfield(x.settings,'SegmentSPM12')
-			x.settings.SegmentSPM12 = x.SegmentSPM12;
-		end
-		x = rmfield(x,'SegmentSPM12');
-	end
+    x = xASL_io_CheckDeprecatedFieldsX(x,true);
 	
-	if isfield(x,'M0_conventionalProcessing')
-		warning('Deprecated field. Please use x.settings.M0_conventionalProcessing instead of x.M0_conventionalProcessing');
-		if ~isfield(x,'settings') || ~isfield(x.settings,'M0_conventionalProcessing')
-			x.settings.M0_conventionalProcessing = x.M0_conventionalProcessing;
-		end
-		x = rmfield(x,'M0_conventionalProcessing');
-	end
-	
-	if isfield(x,'exclusion')
-		warning('Deprecated field. Please use x.dataset.exclusion instead of x.exclusion');
-		if ~isfield(x,'dataset') || ~isfield(x.dataset,'exclusion')
-			x.dataset.exclusion = x.exclusion;
-		end
-		x = rmfield(x,'exclusion');
-	end
 	
 else
 	error('Unknown file extension');
 end
 
 end
+
 
 %% Goes through the JSON fields and make sure that incorrect entries are corrected
 function [StructOut] = xASL_io_ReadDataPar_FixFields(StructIn)
@@ -183,6 +189,7 @@ end
 StructOut = xASL_io_ReadDataPar_ConvertCellArrays(StructOut);
 
 end
+
 
 %% ConvertNumericalFields (Convert strings which contain numbers to numbers, remove invalid fields)
 function [StructOut] = xASL_io_ReadDataPar_ConvertNumericalFields(StructIn)   
@@ -281,3 +288,5 @@ for iField=1:length(listFields)
 	end
 end
 end
+
+

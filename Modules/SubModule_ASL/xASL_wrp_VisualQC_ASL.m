@@ -4,11 +4,11 @@ function xASL_wrp_VisualQC_ASL(x)
 % FORMAT: xASL_wrp_VisualQC_ASL(x)
 %
 % INPUT:
-%   x                 - structure containing fields with all information required to run this submodule (REQUIRED)
-%   x.P               - paths with NIfTIs for which this function should be applied to (REQUIRED)
-%   x.MakeNIfTI4DICOM - Boolean, true for resampling CBF native space to
-%                       original T1w & ASL spaces, and other processing for use in
-%                       DICOM image/server (OPTIONAL, DEFAULT=false);
+%   x                          - structure containing fields with all information required to run this submodule (REQUIRED)
+%   x.P                        - paths with NIfTIs for which this function should be applied to (REQUIRED)
+%   x.modules.asl.bMakeNIfTI4DICOM - Boolean, true for resampling CBF native space to
+%                                original T1w & ASL spaces, and other processing for use in
+%                                DICOM image/server (OPTIONAL, DEFAULT=false);
 %
 % OUTPUT: n/a
 %
@@ -63,7 +63,7 @@ end
 
 %% -----------------------------------------------------------------------------------
 %% 2) Make ASL NIfTIs ready for visualization & conversion to DICOM
-if isfield(x,'MakeNIfTI4DICOM') && x.MakeNIfTI4DICOM
+if isfield(x.modules.asl,'bMakeNIfTI4DICOM') && x.modules.asl.bMakeNIfTI4DICOM
     if xASL_exist(x.P.Path_T1_ORI, 'file')
         InputT1Oripath = x.P.Path_T1_ORI;
     else
@@ -166,7 +166,7 @@ end
 
 
 %% 8) Summarize ASL orientation & check for left-right flips
-xASL_qc_PrintOrientation(x.SESSIONDIR, x.P.Path_ASL4D, x.SESSIONDIR, 'RigidRegASL');
+xASL_qc_PrintOrientation(x.dir.SESSIONDIR, x.P.Path_ASL4D, x.dir.SESSIONDIR, 'RigidRegASL');
 
 %% 9) Collect several other parameters & store all in PDF overview
 x = xASL_qc_CollectParameters(x, x.iSubject, 'ASL'); % Quick & Dirty solution, 0 == skip structural part

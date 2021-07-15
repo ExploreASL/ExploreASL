@@ -105,9 +105,9 @@ end
 if bPVC
 	% Prepare the PWI image in the same space as the PseudoTissue
 	if exist(x.P.Path_mean_PWI_Clipped_sn_mat,'file')
-		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_mean_PWI_Clipped_DCT);
+		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.settings.Quality, x.P.Path_mean_PWI_Clipped_DCT);
 	else
-		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, [], 0, x.Quality, x.P.Path_mean_PWI_Clipped_DCT);
+		xASL_spm_reslice(x.D.Path_PseudoTissue, x.P.Path_mean_PWI_Clipped, [], 0, x.settings.Quality, x.P.Path_mean_PWI_Clipped_DCT);
 	end
 end
 
@@ -181,7 +181,7 @@ PseudoCBFim = max(PseudoCBFim, 0);
 % add residual, for if no signal is left
 PseudoCBFim = PseudoCBFim+Mean_IM./25;
 
-if ~strcmpi(x.Sequence,'3D_spiral')
+if ~strcmpi(x.Q.Sequence,'3D_spiral')
 	% With 3D spiral, we nearly see no vascular artifacts because of low
 	% effective spatial resolution
 	Vasc_IM = xASL_io_Nifti2Im(x.D.Vasc_Native);

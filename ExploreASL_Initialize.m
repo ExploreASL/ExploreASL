@@ -81,51 +81,51 @@ function [x] = ExploreASL_Initialize(varargin)
     % Check if the current directory is the ExploreASL directory
     CurrCD = pwd;
     if exist(fullfile(CurrCD, 'ExploreASL_Master.m'), 'file')
-        x.MyPath = CurrCD;
+        x.opts.MyPath = CurrCD;
     end
 
     % Check whether MyPath is correct, otherwise obtain correct folder
-    if ~isfield(x, 'MyPath')
+    if ~isfield(x.opts, 'MyPath')
         % Check if we can get the path from the ExploreASL_Initialize path
         initializePath = fileparts(mfilename('fullpath'));
         if ~isempty(regexp(initializePath,'ExploreASL$', 'once'))
-            x.MyPath = initializePath;
+            x.opts.MyPath = initializePath;
         else
-            x.MyPath = '/DummyPath';
+            x.opts.MyPath = '/DummyPath';
         end
     end
 
     % Get the master script path
-    MasterScriptPath = fullfile(x.MyPath, 'ExploreASL_Master.m');
+    MasterScriptPath = fullfile(x.opts.MyPath, 'ExploreASL_Master.m');
 
     % Select the ExploreASL folder manually, if the script is not run in deployed mode
     if ~isdeployed
         if ~exist(MasterScriptPath,'file')
             pathstr = input('Provide foldername where ExploreASL is installed (format: \''PathExploreASL\''): ');
             if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL_Master.m'),'file'), return; end
-            x.MyPath = pathstr;
+            x.opts.MyPath = pathstr;
         end
     else
         % In deployed mode set the ExploreASL directory in the ctf archive
         [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL_Master*'); % Find the path of the master files within the ctf archive
         curPathCTF = fileparts(files(1,:)); % Get the path
-        x.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
+        x.opts.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
 
         BreakString = '==============================================================================================\n';
         fprintf(BreakString);
         fprintf('ctfroot:  %s\n', ctfroot);
-        fprintf('x.MyPath: %s\n', x.MyPath);
+        fprintf('x.opts.MyPath: %s\n', x.opts.MyPath);
         fprintf(BreakString);
 
     end
 
     % Go to ExploreASL folder
-    cd(x.MyPath);
+    cd(x.opts.MyPath);
 
 
     %% 3. Add ExploreASL paths
     if ~isdeployed
-        addExploreASLDirectory(x.MyPath);
+        addExploreASLDirectory(x.opts.MyPath);
     end
     
     
@@ -138,7 +138,7 @@ function [x] = ExploreASL_Initialize(varargin)
     %% 5. General settings
 
     % Go to ExploreASL folder
-    cd(x.MyPath);
+    cd(x.opts.MyPath);
 
     % These settings are data-independent
     x = xASL_init_DefineIndependentSettings(x);
@@ -150,7 +150,7 @@ function [x] = ExploreASL_Initialize(varargin)
     xASL_init_printSettings(x);
 
     % Check permissions
-    % xASL_adm_CheckPermissions(x.MyPath, false);
+    % xASL_adm_CheckPermissions(x.opts.MyPath, false);
 
     %% 7. Data-specific initialization
     fprintf('ExploreASL v%s initialized ... \n', x.Version);
@@ -370,15 +370,25 @@ end
 
 %% -----------------------------------------------------------------------
 function [x] = ExploreASL_Initialize_SubStructs(x)
-    x.S = struct; % Statistics
-    x.D = struct; % Directories
-    x.P = struct; % Paths
-    x.Q = struct; % Quality
     
-    x.settings = struct;    % Workflow settings
-    x.dataset = struct;     % Dataset related fields
-    x.external = struct;    % Toolbox related fields (SPM, CAT, etc.)
-    x.dir = struct;         % BIDS related directories (sourceStructure, studyPar, dataset_description, etc.)
+    % Statistics, directories, paths, and sequence related fields
+    if ~isfield(x,'S'),                     x.S = struct;                   end
+    if ~isfield(x,'D'),                     x.D = struct;                   end
+    if ~isfield(x,'P'),                     x.P = struct;                   end
+    if ~isfield(x,'Q'),                     x.Q = struct;                   end
+    
+    % Module subfields (import, structural, asl, & population)
+    if ~isfield(x,'modules'),               x.modules = struct;             end
+    if ~isfield(x.modules,'import'),        x.modules.import = struct;      end
+    if ~isfield(x.modules,'structural'),    x.modules.structural = struct;  end
+    if ~isfield(x.modules,'asl'),           x.modules.asl = struct;         end
+    if ~isfield(x.modules,'population'),    x.modules.population = struct;  end
+    
+    % Dataset related fields, workflow settings, toolbox/external (SPM, CAT, FSL, etc.) fields, general directories
+    if ~isfield(x,'dataset'),               x.dataset = struct;             end
+    if ~isfield(x,'settings'),              x.settings = struct;            end
+    if ~isfield(x,'external'),              x.external = struct;            end
+    if ~isfield(x,'dir'),                   x.dir = struct;                 end     
 
 end
 

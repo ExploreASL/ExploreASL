@@ -56,7 +56,7 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject)
     % The determinant of the current matrix and old matrix should be the same,
     % otherwise this is suspicious of a left-right flip.
 
-    PathOrientationResults = fullfile(x.SESSIONDIR,'xASL_qc_PrintOrientation_RigidRegfunc.tsv');
+    PathOrientationResults = fullfile(x.dir.SESSIONDIR,'xASL_qc_PrintOrientation_RigidRegfunc.tsv');
     func = xASL_im_DetermineFlip(x, iSubject, PathOrientationResults, func);
 
     %% func motion

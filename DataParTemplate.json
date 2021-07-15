@@ -1,8 +1,8 @@
 {
 	"x": [{
-			"name": "ExampleDataSet",
-			"subject_regexp": "^\\d{3}$",
             "dataset": {
+				"name": "ExampleDataSet",
+				"subjectRegexp": "^\\d{3}$",
                 "exclusion": ""
             },
 			"SESSIONS": ["ASL_1","ASL_2"],
@@ -10,20 +10,29 @@
 			{
 				"options": ["baseline","drug"]
 			},
-			"M0": "UseControlAsM0",
-			"M0PositionInASL4D": [1 2],
 			"Q":
 			{
 				"BackgroundSuppressionNumberPulses": 2,
 				"LabelingType": "CASL",
 				"Initial_PLD": 1800,
 				"LabelingDuration": 1800,
-				"SliceReadoutTime": 30
+				"SliceReadoutTime": 30,
+				"Vendor": "Philips",
+				"readoutDim": "2D",
+				"M0": "UseControlAsM0"
 			},
-			"readout_dim": "2D",
-			"Quality": 1,
-			"DELETETEMP": 1,
-			"Vendor": "Philips"
+			"settings":
+			{
+				"Quality": 1,
+				"DELETETEMP": 1
+			},
+            "modules":
+			{
+				"asl":
+                {
+                    "M0PositionInASL4D": [1, 2]
+                }
+			}
 		}]
 }
 

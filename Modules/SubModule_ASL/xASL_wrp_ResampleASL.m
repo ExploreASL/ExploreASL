@@ -23,7 +23,7 @@ function xASL_wrp_ResampleASL(x)
 %               4. Resample to native space (applying any motion correction or registration)
 %               5. Bilateral filter (currently disabled)
 %               6. Create mean control image, if available, in native & standard space
-%               7. Clone mean control image to be used as pseudo-M0 (if x.M0==UseControlAsM0)
+%               7. Clone mean control image to be used as pseudo-M0 (if x.Q.M0==UseControlAsM0)
 %               8. Pair-wise subtraction & saving PWI & PWI4D in both spaces
 %               9. Save PWI NIfTI & time-series-related maps (SD, SNR)
 %               10. Delete temporary files
@@ -51,8 +51,8 @@ xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field 
 
 %% ------------------------------------------------------------------------------------------
 % 1. Warp TopUp QC files
-PathB0 = fullfile(x.SESSIONDIR ,'B0.nii');
-PathUnwarped = fullfile(x.SESSIONDIR ,'Unwarped.nii');
+PathB0 = fullfile(x.dir.SESSIONDIR ,'B0.nii');
+PathUnwarped = fullfile(x.dir.SESSIONDIR ,'Unwarped.nii');
 PathPopB0 = fullfile(x.D.PopDir, ['rASL_B0_' x.P.SubjectID '_' x.P.SessionID '.nii']);
 PathPopUnwarped = fullfile(x.D.PopDir, ['rASL_Unwarped_' x.P.SubjectID '_' x.P.SessionID '.nii']);
 
@@ -152,11 +152,11 @@ end
 
 
 %% ------------------------------------------------------------------------------------------
-% 7. Clone mean control image to be used as pseudo-M0 (if x.M0==UseControlAsM0)
+% 7. Clone mean control image to be used as pseudo-M0 (if x.Q.M0==UseControlAsM0)
 
-% If x.M0 is set as UseControlAsM0, this mean control NIfTI will be
+% If x.Q.M0 is set as UseControlAsM0, this mean control NIfTI will be
 % cloned to an M0 NIfTI (and processed in the M0 submodule)
-if strcmpi(x.M0, 'UseControlAsM0')
+if strcmpi(x.Q.M0, 'UseControlAsM0')
     if nVolumes==1
         warning('Cant clone mean control NIfTI as M0.nii, timeseries missing');
         % we assume that a single ASL image is already subtracted, so does not
@@ -284,7 +284,7 @@ end
 
 %% ------------------------------------------------------------------------------------------
 % 10. Delete temporary files
-if x.DELETETEMP
+if x.settings.DELETETEMP
     if ~strcmp(x.P.Path_ASL4D, x.P.Path_rdespiked_ASL4D)
         % in case of single volumes, these can be set to the same NIfTI
         xASL_adm_DeleteFilePair(x.P.Path_rdespiked_ASL4D, 'mat');

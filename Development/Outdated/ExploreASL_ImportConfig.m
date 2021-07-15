@@ -56,7 +56,7 @@ imPar.tokenSessionAliases = [];
 imPar.bMatchDirectories  = false;
 
 % Define configFiles folder
-configFiles = fullfile(x.MyPath, 'Development', 'ConfigFiles');
+configFiles = fullfile(x.opts.MyPath, 'Development', 'ConfigFiles');
 
 % Load imPar file
 imParUpdate = spm_jsonread(fullfile(configFiles, [imPar.studyID '.json']));

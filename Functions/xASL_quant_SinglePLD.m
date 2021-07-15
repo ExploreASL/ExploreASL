@@ -19,15 +19,15 @@ function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x, 
 %              initializing a ScaleImage that travels through this script & gets changed by the following quantification
 %              factors:
 %
-%              1.    {{PLD scalefactor}} (gradient if 2D multi-slice) (if x.ApplyQuantification(3))
+%              1.    {{PLD scalefactor}} (gradient if 2D multi-slice) (if x.Q.ApplyQuantification(3))
 %              2.    {{Label decay scale factor}} for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
 %                    Single-compartment model: Alsop MRM 2014
-%                    Dual-compartment model: Wang MRM 2002: Gevers JMRI 2012 (if x.ApplyQuantification(3))
+%                    Dual-compartment model: Wang MRM 2002: Gevers JMRI 2012 (if x.Q.ApplyQuantification(3))
 %              3.    {{Scaling to physiological units}} [ml/gr/ms =>ml/100gr/min =>(60,000 ms=>min)(1 gr=>100gr)]
-%                    (if x.ApplyQuantification(3))
-%              4.    {{Vendor-specific scalefactor}} (if x.ApplyQuantification(1) -> future move to dcm2niiX stage)
+%                    (if x.Q.ApplyQuantification(3))
+%              4.    {{Manufacturer-specific scalefactor}} (if x.Q.ApplyQuantification(1) -> future move to dcm2niiX stage)
 %              Finally, we:
-%              5.    Divide PWI/M0 (if x.ApplyQuantification(5))
+%              5.    Divide PWI/M0 (if x.Q.ApplyQuantification(5))
 %              6.    Print parameters used
 %
 %              Note that the output always goes to the CBF image (in the
@@ -71,7 +71,7 @@ ScaleImage = 1; % initializing (double data format by default in Matlab)
 PWI = double(PWI);
 M0_im = double(M0_im);
 
-if ~x.ApplyQuantification(3)
+if ~x.Q.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 else
     % Calculate the vector of SliceReadoutTime
@@ -81,7 +81,7 @@ else
     % For BASIL the x.Q.SliceReadoutTime is used internally, otherwise
     % x.Q.SliceReadoutTime is added to ScaleImage
     
-    switch lower(x.readout_dim)
+    switch lower(x.Q.readoutDim)
         case '3d'
             fprintf('%s\n','3D sequence, not accounting for SliceReadoutTime (homogeneous PLD for complete volume)');
             x.Q.SliceReadoutTime = 0;
@@ -120,7 +120,7 @@ else
 			end
             
         otherwise
-            error('Wrong x.readout_dim value!');
+            error('Wrong x.Q.readoutDim value!');
     end
 
     if xASL_stat_SumNan(ScaleImage(:))==0
@@ -170,15 +170,15 @@ else
 end
 
 
-%% 4    Vendor-specific scalefactor
-if ~x.ApplyQuantification(1)
-    fprintf('%s\n','We skip the vendor-specific scalefactors');
+%% 4    Manufacturer-specific scalefactor
+if ~x.Q.ApplyQuantification(1)
+    fprintf('%s\n','We skip the Manufacturer-specific scalefactors');
 else
     % Load the stored parameters
 	ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
 	% Throw warning if no Philips scans, but some of the scale slopes are not 1:
-	if isempty(regexpi(x.Vendor,'Philips'))
+	if isempty(regexpi(x.Q.Vendor,'Philips'))
 		if isfield(ASL_parms,'RescaleSlopeOriginal') && ASL_parms.RescaleSlopeOriginal~=1
 			warning('We detected a RescaleSlopeOriginal~=1, verify that this is not a Philips scan!!!');
 		end
@@ -191,7 +191,7 @@ else
 	end
 
 	% Set GE specific scalings
-	if ~isempty(regexpi(x.Vendor,'GE'))
+	if ~isempty(regexpi(x.Q.Vendor,'GE'))
 		if ~isfield(x.Q,'NumberOfAverages')
 			% GE accumulates signal instead of averaging by NEX, therefore division by NEX is required
 			error('GE-data expected, "NumberOfAverages" should be a dicom-field, but was not found!!!')
@@ -199,7 +199,7 @@ else
 			x.Q.NumberOfAverages = max(x.Q.NumberOfAverages); % fix for combination of M0 & PWI in same nifti, for GE quantification
 		end
 
-		switch lower(x.Vendor)
+		switch lower(x.Q.Vendor)
 			% For some reason the older GE Alsop Work in Progress (WIP) version
 			% has a different scale factor than the current GE product sequence
 
@@ -217,14 +217,14 @@ else
 				% or should this be 6000/45.24?
 				qnt_GEscaleFactor = qnt_RGcorr*x.Q.NumberOfAverages;
 			otherwise
-				error('Please set x.Vendor to GE_product or GE_WIP');
+				error('Please set x.Q.Vendor to GE_product or GE_WIP');
 		end
 
 		ScaleImage = ScaleImage./qnt_GEscaleFactor;
 		fprintf('%s\n',['Quantification corrected for GE scale factor ' num2str(qnt_GEscaleFactor) ' for NSA=' num2str(x.Q.NumberOfAverages)]);
 
 		% Set Philips specific scaling
-	elseif ~isempty(regexpi(x.Vendor,'Philips'))
+	elseif ~isempty(regexpi(x.Q.Vendor,'Philips'))
 		% Philips has specific scale & rescale slopes
 		% If these are not corrected for, only relative CBF quantification can be performed,
 		% i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
@@ -236,8 +236,8 @@ else
 		end
 
 		% Siemens specific scalings
-	elseif strcmpi(x.Vendor,'Siemens')
-		if ~strcmpi(x.Vendor,'Siemens_JJ_Wang') && strcmpi(x.M0,'separate_scan')
+	elseif strcmpi(x.Q.Vendor,'Siemens')
+		if ~strcmpi(x.Q.Vendor,'Siemens_JJ_Wang') && strcmpi(x.Q.M0,'separate_scan')
 			% Some Siemens readouts divide M0 by 10, others don't
 			ScaleImage = ScaleImage./10;
 			fprintf('%s\n','M0 corrected for Siemens scale factor 10')
@@ -258,7 +258,7 @@ end
 M0_im = repmat(M0_im,MatchSizeM0);
 ScaleImage = repmat(ScaleImage,MatchSizeSI);
 
-if ~x.ApplyQuantification(5)
+if ~x.Q.ApplyQuantification(5)
     fprintf('%s\n','We skip the PWI/M0 division');
 else
     ScaleImage = ScaleImage./M0_im;
@@ -274,7 +274,7 @@ end
 %% 6    Print parameters used
 fprintf('%s\n',' model with parameters:');
 
-if x.ApplyQuantification(3)
+if x.Q.ApplyQuantification(3)
     switch lower(x.Q.LabelingType)
         case 'pasl'
             fprintf('%s',['TI1 = ' num2str(x.Q.LabelingDuration) ' ms, ']);
@@ -284,7 +284,7 @@ if x.ApplyQuantification(3)
             fprintf('%s',['PLD (ms) = ' num2str(x.Q.Initial_PLD)]);
     end
 
-	if max(SliceReadoutTime)>0 && strcmpi(x.readout_dim,'2D')
+	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')
 		fprintf('%s',[' + ' num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1)']);
 	end
 

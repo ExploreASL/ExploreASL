@@ -80,17 +80,28 @@ if ~isfield(dataPar,'x')
     % Add x field
     dataPar.x = struct;
 end
+% Dataset fields
+if ~isfield(dataPar.x,'dataset')
+    dataPar.x.dataset = struct;
+end
 % Add default subject regular expression
-if ~isfield(dataPar.x,'subject_regexp')
-    dataPar.x.subject_regexp = '^sub-.*$';
+if ~isfield(dataPar.x.dataset,'subjectRegexp')
+    dataPar.x.dataset.subjectRegexp = '^sub-.*$';
 end
 
-if ~isfield(dataPar.x,'Quality')
-	dataPar.x.Quality = 1;
+% Check for settings fields
+if ~isfield(dataPar.x,'settings')
+    dataPar.x.settings = struct;
 end
 
-if ~isfield(dataPar.x,'DELETETEMP')
-	dataPar.x.DELETETEMP = 1;
+% Check for quality field
+if ~isfield(dataPar.x.settings,'Quality')
+    dataPar.x.settings.Quality = 1;
+end
+
+% Check for DELETETEMP field
+if ~isfield(dataPar.x.settings,'DELETETEMP')
+	dataPar.x.settings.DELETETEMP = 1;
 end
 
 % Loads the configuration for file renaming from the BIDS configuration file

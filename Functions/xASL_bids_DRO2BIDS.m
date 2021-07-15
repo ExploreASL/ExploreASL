@@ -84,7 +84,7 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth)
             jsonASL = rmfield(jsonASL,'MrAcquisitionType');
 
             % Add necessary fields
-            jsonASL.Manufacturer = 'Philips'; % ExploreASL expects a vendor, so we use GE as our dummy vendor here
+            jsonASL.Manufacturer = 'Philips'; % ExploreASL expects a Manufacturer, so we use GE as our dummy Manufacturer here
             jsonASL.M0Type = 'Included';
             jsonASL.BackgroundSuppression = false;
             jsonASL.TotalAcquiredPairs = 1;

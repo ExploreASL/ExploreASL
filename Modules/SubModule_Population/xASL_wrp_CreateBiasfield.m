@@ -272,7 +272,7 @@ function xASL_wrp_CreateBiasfield(x)
     end
 
 %%
-%% Now normalize the SD for the vendors (i.e. spatial CoV)
+%% Now normalize the SD for the Manufacturers (i.e. spatial CoV)
 
 
 

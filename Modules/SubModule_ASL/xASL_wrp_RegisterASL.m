@@ -48,7 +48,7 @@ function x = xASL_wrp_RegisterASL(x)
 %     - F. native->MNI transformation flow field y_T1.nii is smoothed to the
 %          effective ASL resolution y_ASL.nii
 %     - G. Registration contrasts are dealth with:
-%       x.bRegistrationContrast - specifies the image contrast used for
+%       x.modules.asl.bRegistrationContrast - specifies the image contrast used for
 %                                 registration (OPTIONAL, DEFAULT = 2):
 %                           - 0 = Control->T1w
 %                           - 1 = CBF->pseudoCBF from template/pGM+pWM
@@ -68,13 +68,13 @@ function x = xASL_wrp_RegisterASL(x)
 %       applied if the spatial CoV<0.67. Note that this is usually the case
 %       for 3D scans because of their lower effective spatial resolution.
 %
-%       x.bAffineRegistration - specifies the ASL-T1w rigid-body registration is followed up by an affine
+%       x.modules.asl.bAffineRegistration - specifies the ASL-T1w rigid-body registration is followed up by an affine
 %                                 registration (OPTIONAL, DEFAULT = 0)
 %                          - 0 = affine registration disabled
 %                          - 1 = affine registration enabled
 %                          - 2 = affine registration automatically chosen based on
 %                                spatial CoV of PWI
-%       x.bDCTRegistration - Specifies if to include the DCT registration on top of Affine, all other requirements for
+%       x.modules.asl.bDCTRegistration - Specifies if to include the DCT registration on top of Affine, all other requirements for
 %                            affine are thus also taken into account (OPTIONAL, DEFAULT = 0)
 %                          - 0 = DCT registration disabled
 %                          - 1 = DCT registration enabled if affine enabled and conditions for affine passed
@@ -94,32 +94,32 @@ if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 
-if ~isfield(x,'bRegistrationContrast') || isempty(x.bRegistrationContrast)
-    x.bRegistrationContrast = 2; % register M0-T1w first, then CBF-pGM if sCoV<0.667
+if ~isfield(x.modules.asl,'bRegistrationContrast') || isempty(x.modules.asl.bRegistrationContrast)
+    x.modules.asl.bRegistrationContrast = 2; % register M0-T1w first, then CBF-pGM if sCoV<0.667
 end
 
-if ~isfield(x,'bAffineRegistration') || isempty(x.bAffineRegistration)
-	x.bAffineRegistration = 0; % Default - affine disabled
+if ~isfield(x.modules.asl,'bAffineRegistration') || isempty(x.modules.asl.bAffineRegistration)
+	x.modules.asl.bAffineRegistration = 0; % Default - affine disabled
 end
 
 % DCT off by default
-if ~isfield(x,'bDCTRegistration') || isempty(x.bDCTRegistration)
-	x.bDCTRegistration = 0;
+if ~isfield(x.modules.asl,'bDCTRegistration') || isempty(x.modules.asl.bDCTRegistration)
+	x.modules.asl.bDCTRegistration = 0;
 end
 
 % DCT runs only with affine, switching DCT on and affine off thus produces a warning
-if x.bDCTRegistration && ~x.bAffineRegistration
+if x.modules.asl.bDCTRegistration && ~x.modules.asl.bAffineRegistration
 	warning('DCT registration cannot run if affine is disabled');
 end
 
 % For DCT, force CBF<->pseudoCBF registration
-if x.bDCTRegistration
-	x.bRegistrationContrast = 3;
+if x.modules.asl.bDCTRegistration
+	x.modules.asl.bRegistrationContrast = 3;
 end
 
 % By default, don't use dummy structural even if the structural image is missing
-if ~isfield(x,'bUseMNIasDummyStructural') || isempty(x.bUseMNIasDummyStructural)
-	x.bUseMNIasDummyStructural = false;
+if ~isfield(x.modules.asl,'bUseMNIasDummyStructural') || isempty(x.modules.asl.bUseMNIasDummyStructural)
+	x.modules.asl.bUseMNIasDummyStructural = false;
 end
 
 %% B. Manage OtherList
@@ -129,7 +129,7 @@ end
 % registration estimation.
 BaseOtherList = {x.P.Path_despiked_ASL4D, x.P.Path_mean_control, x.P.Path_M0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped, x.P.Path_ASL4D_RevPE,...
 	x.P.Path_mean_PWI_Clipped_DCT,x.P.Path_mean_PWI_Clipped_ORI,...
-    x.P.Path_ASL4D_ORI, fullfile(x.SESSIONDIR, 'B0.nii'), fullfile(x.SESSIONDIR, 'Unwarped.nii'), fullfile(x.SESSIONDIR, 'Field.nii'), fullfile(x.SESSIONDIR, 'TopUp_fieldcoef.nii')};
+    x.P.Path_ASL4D_ORI, fullfile(x.dir.SESSIONDIR, 'B0.nii'), fullfile(x.dir.SESSIONDIR, 'Unwarped.nii'), fullfile(x.dir.SESSIONDIR, 'Field.nii'), fullfile(x.dir.SESSIONDIR, 'TopUp_fieldcoef.nii')};
 
 if ~strcmp(x.P.Path_despiked_ASL4D, x.P.Path_ASL4D)
     BaseOtherList{end+1} = x.P.Path_ASL4D; % keep original ASL4D aligned as well
@@ -137,25 +137,25 @@ end
 
 %% C. Define paths to the ASL templates
 % Same for all sequences
-x.D.Bias_Native = fullfile(x.SESSIONDIR,'ATT_BiasField.nii');
+x.D.Bias_Native = fullfile(x.dir.SESSIONDIR,'ATT_BiasField.nii');
 x.D.Bias_MNI = fullfile(x.D.TemplateDir,'ATT_BiasField.nii');
-x.D.Vasc_Native = fullfile(x.SESSIONDIR,'VascularArtifact_Template.nii');
+x.D.Vasc_Native = fullfile(x.dir.SESSIONDIR,'VascularArtifact_Template.nii');
 x.D.Vasc_MNI = fullfile(x.D.TemplateDir,'MaxVesselTemplate.nii');
 
-x.D.Mean_Native = fullfile(x.SESSIONDIR,'Mean_CBF_Template.nii');
-x.D.Mask_Native = fullfile(x.SESSIONDIR,'Mask_Template.nii');
-x.D.raw_Native = fullfile(x.SESSIONDIR,'RawTemplate.nii');
+x.D.Mean_Native = fullfile(x.dir.SESSIONDIR,'Mean_CBF_Template.nii');
+x.D.Mask_Native = fullfile(x.dir.SESSIONDIR,'Mask_Template.nii');
+x.D.raw_Native = fullfile(x.dir.SESSIONDIR,'RawTemplate.nii');
 
-x.D.PathMask = fullfile(x.SESSIONDIR, 'MaskASL.nii');
-x.D.Path_PseudoTissue = fullfile(x.SESSIONDIR, 'PseudoTissue.nii');
+x.D.PathMask = fullfile(x.dir.SESSIONDIR, 'MaskASL.nii');
+x.D.Path_PseudoTissue = fullfile(x.dir.SESSIONDIR, 'PseudoTissue.nii');
 
 % Differs between sequences
-if      strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'Philips'))
+if      strcmpi(x.Q.Sequence,'2D_EPI') && ~isempty(regexpi(x.Q.Vendor,'Philips'))
         x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_CBF.nii');
         x.D.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
         x.D.raw_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii');
 
-elseif  strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'(Siemens|GE)'))
+elseif  strcmpi(x.Q.Sequence,'2D_EPI') && ~isempty(regexpi(x.Q.Vendor,'(Siemens|GE)'))
         %% PM: quicky & dirty fix to run GE 2D EPI with the Siemens 2D EPI template
         % though the template choice may not have a significant effect, as
         % opposed to the inter-individual differences in geometric
@@ -175,11 +175,11 @@ elseif  strcmpi(x.Sequence,'2D_EPI') && ~isempty(regexpi(x.Vendor,'(Siemens|GE)'
         % this GE sequence usually is provided without separate
         % control-label images
 
-elseif  strcmpi(x.Sequence,'3D_GRASE')
+elseif  strcmpi(x.Q.Sequence,'3D_GRASE')
         x.D.raw_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PCASL_Control_BiasfieldCorr_MoodStudy.nii');
         x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PASL_CBF.nii');
         x.D.Mask_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PASL_QC_mask.nii');
-elseif  strcmpi(x.Sequence,'3D_spiral')
+elseif  strcmpi(x.Q.Sequence,'3D_spiral')
         x.D.Mean_MNI = fullfile(x.D.TemplateDir,'GE_3Dspiral_Product_CBF.nii');
         x.D.Mask_MNI = fullfile(x.D.MapsSPMmodifiedDir,'ParenchymNarrow.nii');
 else
@@ -199,7 +199,7 @@ if strcmp(x.P.SessionID,'ASL_1') || x.dataset.nSessions==1
     xASL_delete(x.D.Mean_Native);
     xASL_delete(x.D.raw_Native);
     xASL_delete(x.P.Path_PseudoCBF);
-    xASL_delete(fullfile(x.SESSIONDIR,'MaskASL.nii'));
+    xASL_delete(fullfile(x.dir.SESSIONDIR,'MaskASL.nii'));
 end
 
 
@@ -211,7 +211,7 @@ StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_O
 if StructuralRawExist && ~StructuralDerivativesExist
     error('Please run structural module first');
 elseif ~StructuralRawExist && ~StructuralDerivativesExist
-    if x.bUseMNIasDummyStructural
+    if x.modules.asl.bUseMNIasDummyStructural
 
         fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
         IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
@@ -268,7 +268,7 @@ elseif ~StructuralRawExist && ~StructuralDerivativesExist
         x.mutex.Root = oldRoot;
         x.mutex.Lock(oldID);
     else
-        error('Structural data missing, skipping ASL module; if this is undesired, set x.bUseMNIasDummyStructural=1');
+        error('Structural data missing, skipping ASL module; if this is undesired, set x.modules.asl.bUseMNIasDummyStructural=1');
     end
 end
 
@@ -282,10 +282,10 @@ end
 
 
 %% G. Manage registration contrasts that we will use
-if x.bRegistrationContrast==0
+if x.modules.asl.bRegistrationContrast==0
     bRegistrationControl = true;
     bRegistrationCBF = false;
-elseif x.bRegistrationContrast==1
+elseif x.modules.asl.bRegistrationContrast==1
     bRegistrationControl = false;
     bRegistrationCBF = true;
 else
@@ -335,7 +335,7 @@ end
 %% 2.    Registration Control->T1w
 % Here we first create a mask
 % First check the initial alignment, otherwise first register with template
-% xASL_spm_reslice(Mask_Native, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.Quality, x.P.Path_rmean_PWI_Clipped, 1);
+% xASL_spm_reslice(Mask_Native, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_sn_mat, 0, x.settings.Quality, x.P.Path_rmean_PWI_Clipped, 1);
 % MaskASL = xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(x.P.Path_rmean_PWI_Clipped));
 % MaskTemplate= logical(xASL_io_Nifti2Im(Mask_Native));
 % xASL_delete(x.P.Path_rmean_PWI_Clipped);
@@ -366,7 +366,7 @@ if bRegistrationControl
         xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
 
         % then register
-        if ~x.Quality
+        if ~x.settings.Quality
             xASL_spm_coreg(x.P.Path_T1, SourcePath, OtherList, x, [9 6]);
         else
             xASL_spm_coreg(x.P.Path_T1, SourcePath, OtherList, x);
@@ -390,20 +390,20 @@ end
 if bRegistrationCBF
 
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
-    if x.bRegistrationContrast==3
+    if x.modules.asl.bRegistrationContrast==3
         nIT = 2; % force CBF-pGM
-        fprintf('\n%s\n\n','x.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
+        fprintf('\n%s\n\n','x.modules.asl.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
     elseif spatCoVit>0.667
         nIT = 0;
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
-    elseif ~x.Quality
+    elseif ~x.settings.Quality
         nIT = 1; % speed up for low quality
     else
         nIT = 2;
 	end
 
 	% Create a local instance of the bAffineRegistration (so that any changes in it are not reflected in the x-struct for outside
-	bAffineRegistration = x.bAffineRegistration;
+	bAffineRegistration = x.modules.asl.bAffineRegistration;
 
     % 2) Repeat CBF registrations, with iteratively better estimate of the
     % vascular/tissue perfusion ratio of the template
@@ -423,7 +423,7 @@ if bRegistrationCBF
 				% and check for improvement
 				TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
 
-				if x.bRegistrationContrast~=3 % if we don't don't force CBF-pGM registration
+				if x.modules.asl.bRegistrationContrast~=3 % if we don't don't force CBF-pGM registration
 					if TanimotoPerc(end)>=TanimotoPerc(end-1)
 						% if alignment improved or remained more or less the same
 						xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
@@ -444,7 +444,7 @@ if bRegistrationCBF
 		end
 
         %% Affine registration
-		% Note that this is only done upon request (x.bAffineRegistration, advanced option),
+		% Note that this is only done upon request (x.modules.asl.bAffineRegistration, advanced option),
         % hence this doesn't have the automatic backup & restore,
         % as the CBF->pseudoCBF registration has above
 		if bAffineRegistration==2 % only do affine for high quality processing & low spatial CoV
@@ -456,7 +456,7 @@ if bRegistrationCBF
 
         if bAffineRegistration % perform affine or affine+DCT registration
 
-			if x.bDCTRegistration == 0
+			if x.modules.asl.bDCTRegistration == 0
 				% The affine registration option
 				fprintf('%s\n','Performing affine registration');
 
@@ -483,17 +483,17 @@ if bRegistrationCBF
 
 				% Affine+DCT option does not need a backup because no function is modified, but rather a _sn.mat file
 				% is created and can be simply deleted if needed
-				if x.bDCTRegistration == 1
+				if x.modules.asl.bDCTRegistration == 1
 					xASL_im_CreatePseudoCBF(x, spatCoVit(end));
 
 					% Use Affine with DCT registration as well
-					xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.Quality);
+					xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.settings.Quality);
 				else
 					% Use Affine with DCT registration with PVC to prepare the contrast
 					% Iterate two times to best use the PVC feature
 					for iTDCT = 1:2
 						xASL_im_CreatePseudoCBF(x, spatCoVit(end),1);
-						xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.Quality);
+						xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5,5, [], 1, x.settings.Quality);
 					end
 				end
 
@@ -528,7 +528,7 @@ x.Output.ASL.TC_ASL2T1w_Perc = TanimotoPerc(end);
 
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
-if x.DELETETEMP
+if x.settings.DELETETEMP
     File2Del = {x.D.Mean_Native, x.D.Bias_Native, x.D.Vasc_Native, x.D.Mask_Native, x.D.raw_Native, x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_DCT,...
         x.P.Path_mean_control, x.P.Path_PseudoCBF, x.D.PathMask, x.D.Path_PseudoTissue, x.D.PathMask, x.P.Path_mean_PWI_Clipped_ORI};
     for iL=1:length(File2Del)
@@ -580,18 +580,18 @@ if ~isfield(x,'ComputeDiceCoeff')
 end
 
 %% Admin
-PathMaskTemplate = fullfile(x.SESSIONDIR, 'Mask_Template.nii');
-PathTemplate = fullfile(x.SESSIONDIR, 'Mean_CBF_Template.nii');
+PathMaskTemplate = fullfile(x.dir.SESSIONDIR, 'Mask_Template.nii');
+PathTemplate = fullfile(x.dir.SESSIONDIR, 'Mean_CBF_Template.nii');
 [Fpath, Ffile] = xASL_fileparts(x.D.PathMask);
 x.D.PathMask2 = fullfile(Fpath, [Ffile '2.nii']);
-x.D.PathCBF = fullfile(x.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii');
+x.D.PathCBF = fullfile(x.dir.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii');
 if ~xASL_exist(x.D.PathMask,'file')
     xASL_Copy(PathMaskTemplate, x.D.PathMask);
 end
 PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
 
-xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathMask, 0);
-xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathCBF, 1);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.D.PathMask, 0);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.D.PathCBF, 1);
 
 MaskFromTemplate = xASL_io_Nifti2Im(x.D.PathMask)>0.5;
 TemplateIm = xASL_io_Nifti2Im(x.D.PathCBF);
@@ -602,7 +602,7 @@ TanimotoCoeff = xASL_qc_TanimotoCoeff(PWIim, TemplateIm, MaskFromTemplate, 3, 0.
 fprintf('%s\n',['Tanimoto Coeff=' num2str(100*TanimotoCoeff,3)]);
 
 if x.ComputeDiceCoeff
-    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.D.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.Quality, x.D.PathMask2 ,0);
+    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.D.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.D.PathMask2 ,0);
 
     GMIM = xASL_io_Nifti2Im(x.D.PathMask2);
     xASL_delete(x.D.PathMask2);

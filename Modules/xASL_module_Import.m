@@ -106,6 +106,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 % Copyright 2015-2021 ExploreASL
 
     %% 1. Initialize the parameters
+    [x] = xASL_init_SubStructs(x);
 
     % First do the basic parameter admin and initialize the default values
     if nargin < 1 ||  isempty(studyPath)

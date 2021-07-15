@@ -36,7 +36,7 @@ end
 
 % Get version
 if ~isdeployed
-    VersionPath = xASL_adm_GetFileList(x.MyPath, '^VERSION.*$', 'FPList', [0 Inf]);
+    VersionPath = xASL_adm_GetFileList(x.opts.MyPath, '^VERSION.*$', 'FPList', [0 Inf]);
     if isempty(VersionPath)
         warning('Could not obtain ExploreASL version, version file missing');
     else
@@ -46,7 +46,7 @@ if ~isdeployed
 else
     % Output of compiled ExploreASL version
     try
-        versionFile = dir(fullfile(x.MyPath, 'VERSION*'));
+        versionFile = dir(fullfile(x.opts.MyPath, 'VERSION*'));
         versionFile = versionFile.name;
         x.Version = versionFile(9:end);
     catch

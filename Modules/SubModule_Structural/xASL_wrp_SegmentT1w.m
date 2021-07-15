@@ -1,13 +1,13 @@
-function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
+function [x] = xASL_wrp_SegmentT1w(x, bSegmentSPM12)
 %xASL_wrp_SegmentT1w Submodule of ExploreASL Structural Module, that segments 3D T1 (or T2) scan
 %
-% FORMAT: [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
+% FORMAT: [x] = xASL_wrp_SegmentT1w(x, bSegmentSPM12)
 %
 % INPUT:
 %   x 	    - structure containing fields with all information required to run this submodule (REQUIRED)
 %   x.P     - paths with NIfTIs for which this function should be applied to (REQUIRED)
-%   SegmentSPM12 - Whether to run SPM12 (true) or CAT12 (false) (OPTIONAL, DEFAULT = false)
-%   x.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
+%   bSegmentSPM12 - Whether to run SPM12 (true) or CAT12 (false) (OPTIONAL, DEFAULT = false)
+%   x.modules.structural.bFixResolution - resample to a resolution that CAT12 accepts (OPTIONAL, DEFAULT=false)
 %   x.settings.Pediatric_Template - boolean specifying if we use a pediatric
 %             template instead of adult one (OPTIONAL, DEFAULT = false)
 %
@@ -43,31 +43,31 @@ function [x] = xASL_wrp_SegmentT1w(x, SegmentSPM12)
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
-if nargin<2 || isempty(SegmentSPM12)
-    SegmentSPM12 = false; % by default use CAT12, not SPM12 to segment
+if nargin<2 || isempty(bSegmentSPM12)
+    bSegmentSPM12 = false; % by default use CAT12, not SPM12 to segment
 end
-if ~isfield(x,'bFixResolution') || isempty(x.bFixResolution)
-    x.bFixResolution = false;
+if ~isfield(x.modules.structural,'bFixResolution') || isempty(x.modules.structural.bFixResolution)
+    x.modules.structural.bFixResolution = false;
 end
 
 
 %% --------------------------------------------------------------------------------
 %% 1) Administration
-if x.Quality~=0 && x.Quality~=1
+if x.settings.Quality~=0 && x.settings.Quality~=1
     error('Wrong quality definition');
 end
 
 if ~isfield(x,'Seg')
 	x.Seg = {};
 end
-if ~isfield(x, 'bHammersCAT12')
-    x.bHammersCAT12 = false;
+if ~isfield(x.modules.structural, 'bHammersCAT12')
+    x.modules.structural.bHammersCAT12 = false;
 end
 
 % Check whether we should do normal or strong biasfield correction
-x.T1BiasFieldRegularization = true; % default
-if isfield(x,'Vendor') && ~isempty(regexpi(x.Vendor,'GE'))
-    x.T1BiasFieldRegularization = false; % SPM12
+x.modules.structural.T1BiasFieldRegularization = true; % default
+if isfield(x,'Q') && isfield(x.Q,'Vendor') && ~isempty(regexpi(x.Q.Vendor,'GE'))
+    x.modules.structural.T1BiasFieldRegularization = false; % SPM12
     % GE has wider bore scanners, resulting in a wide biasfield
 end
 
@@ -86,7 +86,7 @@ xASL_adm_RemoveTempFilesCAT12(x, true); % remove previous temporary CAT12 files
 %% 1.5 Fix resolution for CAT12 % if we would activate this, we should also
 %     fix the FLAIR resolution, otherwise this crashes when cleaning up the
 %     FLAIR WMH segmentation
-if x.bFixResolution % if we use CAT12 to segment
+if x.modules.structural.bFixResolution % if we use CAT12 to segment
     % we force sufficient isotropy, otherwise CAT12 will crash
     tNii = xASL_io_ReadNifti(x.P.Path_T1);
     CurrentVoxelSize = tNii.hdr.pixdim(2:4);
@@ -173,10 +173,10 @@ end
 
 %% -------------------------------------------------------------------------------------------
 %% 3) Segmentation using CAT12
-%  This runs by default (default = x.settings.SegmentSPM12 == 0)
-%  When it fails, it will pass x.settings.SegmentSPM12 == 1
-if ~SegmentSPM12
-    SegmentSPM12 = xASL_wrp_CAT12Segmentation(x);
+%  This runs by default (default = x.modules.structural.bSegmentSPM12 == 0)
+%  When it fails, it will pass x.modules.structural.bSegmentSPM12 == 1
+if ~bSegmentSPM12
+    bSegmentSPM12 = xASL_wrp_CAT12Segmentation(x);
 end
 
 
@@ -187,12 +187,12 @@ end
 %% -------------------------------------------------------------------------------------------
 %% 4) Segmentation using SPM12
 %  This usually gives poorer results than CAT12, but can be chosen if CAT12 doesnt work
-if SegmentSPM12
+if bSegmentSPM12
     xASL_wrp_SPM12Segmentation(x);
 
-    if ~x.Quality % With low quality, registration was performed on lower resolution,
+    if ~x.settings.Quality % With low quality, registration was performed on lower resolution,
         % & transformation needs to be upsampled to correct resolution
-        xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.Quality, x.P.Path_y_T1, 1);
+        xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.settings.Quality, x.P.Path_y_T1, 1);
     end
     return; % rest of the function is housekeeping for CAT12
 end
@@ -311,13 +311,13 @@ else % if no lesion existed, keep the non-linear flowfield (if it exists, otherw
     end
 end
 
-if ~x.Quality % With low quality, registration was performed on lower resolution,
+if ~x.settings.Quality % With low quality, registration was performed on lower resolution,
               % & transformation needs to be upsampled to correct resolution
-    xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.Quality, x.P.Path_y_T1, 1);
+    xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.settings.Quality, x.P.Path_y_T1, 1);
 end
 
 % Fill NaNs with identity for smooth edges of flow fields
-xASL_im_FillNaNs(x.P.Path_y_T1, 3, x.Quality, [], x);
+xASL_im_FillNaNs(x.P.Path_y_T1, 3, x.settings.Quality, [], x);
 
 
 
@@ -354,7 +354,7 @@ function xASL_adm_RemoveTempFilesCAT12(x, bForce)
 %xASL_adm_RemoveTempFilesCAT12 Removes residual/temporal files in mri directory
 
 if nargin<2 || isempty(bForce)
-    if ~x.DELETETEMP
+    if ~x.settings.DELETETEMP
         bForce = false;
     else
         bForce = true; % default
@@ -407,7 +407,7 @@ function xASL_wrp_SPM12Segmentation(x)
 
     matlabbatch{1}.spm.spatial.preproc.channel.vols = {x.P.Path_T1};
 
-    if x.T1BiasFieldRegularization
+    if x.modules.structural.T1BiasFieldRegularization
         matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0;
     else
         matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.01;
@@ -455,7 +455,7 @@ function xASL_wrp_SPM12Segmentation(x)
     matlabbatch{1}.spm.spatial.preproc.warp.fwhm            = 0;
     matlabbatch{1}.spm.spatial.preproc.warp.write           = [0 1];
 
-    if x.Quality
+    if x.settings.Quality
         matlabbatch{1}.spm.spatial.preproc.warp.samp        = 3;
     else
         matlabbatch{1}.spm.spatial.preproc.warp.samp        = 9;
@@ -475,10 +475,10 @@ end
 
 %% ===================================================================================================================
 %% ===================================================================================================================
-function [SegmentSPM12] = xASL_wrp_CAT12Segmentation(x)
+function [bSegmentSPM12] = xASL_wrp_CAT12Segmentation(x)
 %xASL_wrp_CAT12Segmentation Run the CAT12 segmentation
 
-SegmentSPM12 = true; % by default, run SPM12 when CAT12 crashes
+bSegmentSPM12 = true; % by default, run SPM12 when CAT12 crashes
 
 
 %% --------------------------------------------------------------------
@@ -507,7 +507,7 @@ end
 
 matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm                         = {SPMTemplateNII};
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_savesteps           = x.Seg.SaveIntermedFlowField;
-matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_quality             = x.Quality;
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_quality             = x.settings.Quality;
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_disabledartel       = x.Seg.DisableDARTEL;
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_lesion              = {xASL_im_Lesion2CAT(x.P.Path_T1)};
 if str2double(catVer) > 1500
@@ -550,12 +550,12 @@ matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize o
 matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
 matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
 
-if x.T1BiasFieldRegularization
+if x.modules.structural.T1BiasFieldRegularization
     % decrease biasfield regularization for large biasfields (e.g. GE wide bore scanner)
     matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
 end
 
-if ~x.Quality
+if ~x.settings.Quality
 	matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 0; % light cleanup
 	matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0; % strength local adaptive segmentation
 	matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % default SPM approach
@@ -581,8 +581,8 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel      = 0;   % don't save 
 matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
 
-if x.bHammersCAT12
-    matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {fullfile(x.MyPath, 'External', 'AtlasesNonCommercial', 'HammersCAT12.nii')};
+if x.modules.structural.bHammersCAT12
+    matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {fullfile(x.opts.MyPath, 'External', 'AtlasesNonCommercial', 'HammersCAT12.nii')};
 else
     matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
 end
@@ -590,7 +590,7 @@ end
 matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
 %matlabbatch{1}.spm.tools.cat.estwrite.output.labelnative = 1;
 
-if ~x.bFixResolution
+if ~x.modules.structural.bFixResolution
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
 else
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.best = [0.5 0.1]; % process everything on best resolution (is probably lower as we forced this to be 1.5 mm)
@@ -608,10 +608,10 @@ end
 try % 1) First attempt CAT12
     spm_jobman('run',matlabbatch); % Run CAT12
     close all;
-    SegmentSPM12 = false;
+    bSegmentSPM12 = false;
 catch
-    if ~x.Quality
-        warning('CAT12 failed with x.Quality==0, try x.Quality==1 instead!');
+    if ~x.settings.Quality
+        warning('CAT12 failed with x.settings.Quality==0, try x.settings.Quality==1 instead!');
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % 0.5; % strength local adaptive segmentation
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 2; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
@@ -640,10 +640,10 @@ catch
         xASL_adm_RemoveTempFilesCAT12(x); % Delete previous CAT12 derivatives
         spm_jobman('run', matlabbatch); % Run CAT12
         close all;
-        SegmentSPM12 = false;
+        bSegmentSPM12 = false;
     catch % 3) Return to run SPM12 segmentation
         xASL_adm_RemoveTempFilesCAT12(x); % Delete previous CAT12 derivatives
-        SegmentSPM12 = true;
+        bSegmentSPM12 = true;
     end
 end
 
@@ -690,7 +690,7 @@ if x.Seg.SaveOriginalFlowField
 end
 
 %% Save the improved mixing
-if x.Seg.SaveMixedFlowField && x.Quality
+if x.Seg.SaveMixedFlowField && x.settings.Quality
     % Looks at border points of the lesion
     pointsWithin = (distInLesion == 1);
     % Calculate the difference in transformation movement between the SPM and DARTEL/GS
@@ -727,7 +727,7 @@ end
 % Deprecated function. In case of a large deformation - the IM_spm field will be completely off, pointing to
 % a wrong location, because it will not manage to find the tumor. It might be more nicely regularized, but
 % it will point to a wrong location, because the deformation will not be captured.
-if x.Quality
+if x.settings.Quality
     IM_dartel = dist.*IM_spm + (1-dist).*IM_dartel;
 end
 %IM_dartel_old       = dist.*IM_spm + (1-dist).*IM_dartel;

@@ -131,7 +131,7 @@ if nargin<1 || ~isfield(imPar,'studyID')
     error('ExploreASL_Import: Please provide studyID (name of the study folder) as input parameter');
 end
 
-dcm2niiDir = fullfile(x.MyPath, 'External', 'MRIcron');
+dcm2niiDir = fullfile(x.opts.MyPath, 'External', 'MRIcron');
 xASL_adm_CheckPermissions(dcm2niiDir, true); % dcm2nii needs to be executable
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -248,7 +248,7 @@ end
 
 % Path to the dictionary to initialize - we need to keep track if the dictionary has been set, because
 % Dicominfo can be used despite bUSEDCMTK==1 when DCMTK fails
-x.modules.import.pathDcmDict = fullfile(x.MyPath,'External','xASL_DICOMLibrary.txt');
+x.modules.import.pathDcmDict = fullfile(x.opts.MyPath,'External','xASL_DICOMLibrary.txt');
 if ~bUseDCMTK
     % -----------------------------------------------------------------------------
     % Initialize dicom dictionary by appending private philips stuff to a temporary copy

@@ -1,3 +1,4 @@
+
 function xASL_wrp_ProcessM0(x)
 %xASL_wrp_ProcessM0 Submodule of ExploreASL ASL Module, for M0 image processing
 %
@@ -5,7 +6,7 @@ function xASL_wrp_ProcessM0(x)
 %
 % INPUT:
 %   x       - structure containing fields with all information required to run this submodule (REQUIRED)
-%   x.bRegisterM02ASL - boolean specifying whether M0 is registered to
+%   x.modules.asl.bRegisterM02ASL - boolean specifying whether M0 is registered to
 %                     mean_control image (or T1w if no control image exists)
 %                     It can be useful to disable M0 registration if the
 %                     ASL registration is done based on the M0, and little
@@ -77,14 +78,14 @@ end
 tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
 nVolumes = double(tempnii.hdr.dim(5));
 
-if strcmpi(x.M0,'no_background_suppression')
-    x.M0 = 'UseControlAsM0'; % backward compatibility
+if strcmpi(x.Q.M0,'no_background_suppression')
+    x.Q.M0 = 'UseControlAsM0'; % backward compatibility
 end
-if ~isfield(x.settings,'M0_conventionalProcessing')
-       x.settings.M0_conventionalProcessing   = 0;
+if ~isfield(x.modules.asl,'M0_conventionalProcessing')
+       x.modules.asl.M0_conventionalProcessing   = 0;
        % by default, conventional processing is off, since our new method outperforms in most cases
-elseif x.settings.M0_conventionalProcessing == 1 && strcmpi(x.readout_dim,'3D')
-       x.settings.M0_conventionalProcessing = 0;
+elseif x.modules.asl.M0_conventionalProcessing == 1 && strcmpi(x.Q.readoutDim,'3D')
+       x.modules.asl.M0_conventionalProcessing = 0;
        warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end
 
@@ -112,9 +113,9 @@ xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field 
 % inequality of image contrast for ASL & M0, and because they usually
 % are already in decent registration.
 
-if isfield(x, 'bRegisterM02ASL') && ~x.bRegisterM02ASL
+if isfield(x.modules.asl, 'bRegisterM02ASL') && ~x.modules.asl.bRegisterM02ASL
     fprintf('M0 registration (to ASL or T1w) is skipped upon request\n');
-elseif ~strcmpi(x.M0,'UseControlAsM0') && isempty(regexpi(x.Sequence, 'spiral'))
+elseif ~strcmpi(x.Q.M0,'UseControlAsM0') && isempty(regexpi(x.Q.Sequence, 'spiral'))
     % only register if the M0 and mean control are not identical
     % Which they are when there is no separate M0, but ASL was
     % acquired without background suppression & the mean control image
@@ -144,8 +145,8 @@ elseif ~strcmpi(x.M0,'UseControlAsM0') && isempty(regexpi(x.Sequence, 'spiral'))
     end
 
     %% 2B) remove biasfields
-    xASL_spm_BiasfieldCorrection(x.P.Path_rM0, x.D.SPMDIR, x.Quality, [], x.P.Path_rrM0);
-    xASL_spm_BiasfieldCorrection(refPath, x.D.SPMDIR, x.Quality, [], refPath);
+    xASL_spm_BiasfieldCorrection(x.P.Path_rM0, x.D.SPMDIR, x.settings.Quality, [], x.P.Path_rrM0);
+    xASL_spm_BiasfieldCorrection(refPath, x.D.SPMDIR, x.settings.Quality, [], refPath);
 
 
     %% 3C) Rigid-body registration
@@ -163,7 +164,7 @@ M0_im = xASL_quant_M0(x.P.Path_rM0, x);
 
 %% -----------------------------------------------------------------------------------------------
 %% 3A) Conventional M0 masking & minor smoothing (doesnt work with smooth ASL images)
-if x.settings.M0_conventionalProcessing
+if x.modules.asl.M0_conventionalProcessing
     % Conventional M0 processing, should be performed in native space
     % We
     % 1) perform the processing & masking in native space
@@ -174,7 +175,7 @@ if x.settings.M0_conventionalProcessing
 
     fprintf('%s\n','Running conventional M0 processing method');
 
-    xASL_spm_reslice( x.P.Path_ASL4D, x.P.Path_rM0, [], [], x.Quality, x.P.Path_rM0, 1 ); % make sure M0 is in ASL space
+    xASL_spm_reslice( x.P.Path_ASL4D, x.P.Path_rM0, [], [], x.settings.Quality, x.P.Path_rM0, 1 ); % make sure M0 is in ASL space
     M0_nii          = xASL_io_ReadNifti( x.P.Path_rM0);
     x.VoxelSize     = M0_nii.hdr.pixdim(2:4);
     M0_im           = xASL_im_ProcessM0Conventional(M0_im, x); % also masks in native space

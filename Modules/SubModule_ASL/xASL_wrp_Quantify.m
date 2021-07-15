@@ -109,15 +109,15 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Prepare M0
-if isnumeric(x.M0)
+if isnumeric(x.Q.M0)
         % Single value per scanner
         % In this case we assume that this nifti value has been properly acquired,
         % does not need any corrections, and whole ASL PWI will be divided by this single value.
 
-        M0_im = x.M0;
+        M0_im = x.Q.M0;
         fprintf('%s\n',['Single M0 value ' num2str(M0_im) ' used']);
 
-        if x.ApplyQuantification(4)
+        if x.Q.ApplyQuantification(4)
             % in case of separate M0, or M0 because of no background suppression,
             % T2* effect is similar in both images and hence removed by division
             T2_star_factor = exp(ASL_parms.EchoTime/x.Q.T2star);
@@ -175,7 +175,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
-if strcmpi(x.M0,'separate_scan')
+if strcmpi(x.Q.M0,'separate_scan')
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
         % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
         if  ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.05)
@@ -183,7 +183,7 @@ if strcmpi(x.M0,'separate_scan')
             warning('TE of ASL and M0 were unequal! Check geometric distortion');
         end
 
-        if strcmpi(x.Sequence,'3D_spiral')
+        if strcmpi(x.Q.Sequence,'3D_spiral')
            CorrFactor = x.Q.T2;
            CorrName = 'T2';
         else % assume T2* signal decay 2D_EPI or 3D GRASE
@@ -192,11 +192,11 @@ if strcmpi(x.M0,'separate_scan')
         end
 
         % Correct M0 for any EchoTime differences between ASL & M0
-        if x.ApplyQuantification(4)
+        if x.Q.ApplyQuantification(4)
             ScalingASL = exp(ASL_parms.EchoTime/CorrFactor);
             ScalingM0 = exp(M0_parms.EchoTime/CorrFactor);
             M0_im = M0_im.*ScalingM0./ScalingASL;
-            fprintf('%s\n', ['Delta TE between ASL ' num2str(ASL_parms.EchoTime) 'ms & M0 ' num2str(M0_parms.EchoTime) 'ms, for ' x.Sequence ', assuming ' CorrName ' decay of arterial blood, factor applied to M0: ' num2str(ScalingM0/ScalingASL)]);
+            fprintf('%s\n', ['Delta TE between ASL ' num2str(ASL_parms.EchoTime) 'ms & M0 ' num2str(M0_parms.EchoTime) 'ms, for ' x.Q.Sequence ', assuming ' CorrName ' decay of arterial blood, factor applied to M0: ' num2str(ScalingM0/ScalingASL)]);
         end
     else
         warning('Could not compare TEs from ASL & M0, JSON fields missing!');
@@ -205,13 +205,13 @@ end
 
 
 
-if ~x.ApplyQuantification(3) % if conversion PWI for label units is not requested
+if ~x.Q.ApplyQuantification(3) % if conversion PWI for label units is not requested
     SliceGradient = [];
 else
 
     %% ------------------------------------------------------------------------------------------------
     %% 5    Load SliceGradient
-    if  strcmpi(x.readout_dim,'2D')
+    if  strcmpi(x.Q.readoutDim,'2D')
         SliceGradient = xASL_io_Nifti2Im(SliceGradientPath);
     else
         SliceGradient = [];
@@ -290,7 +290,7 @@ end
 %% 8.   Perform Quantification
 [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, bUseBasilQuantification); % also runs BASIL, but only in native space!
 
-if x.ApplyQuantification(5)==0
+if x.Q.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
     if MeanCBF>666 % this is the average including air
         CBF = CBF .* (10./MeanCBF);
@@ -332,7 +332,7 @@ if strcmp(OutputPath, x.P.Pop_Path_qCBF)
     MaskedCBF(~MaskVascularMNI) = NaN;
     
     % Mask susceptibility voxels (i.e. set them to NaN)
-    if strcmpi(x.Sequence, '2d_epi') || strcmpi(x.Sequence, '3d_grase')
+    if strcmpi(x.Q.Sequence, '2d_epi') || strcmpi(x.Q.Sequence, '3d_grase')
         if ~xASL_exist(x.P.Path_Pop_MaskSusceptibility)
             warning([x.P.Path_Pop_MaskSusceptibility ' missing, cannot create ' x.P.Pop_Path_qCBF_masked]);
             return;

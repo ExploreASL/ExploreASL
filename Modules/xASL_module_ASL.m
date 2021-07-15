@@ -6,7 +6,7 @@ function [result, x] = xASL_module_ASL(x)
 % INPUT:
 %   x  - x structure containing all input parameters (REQUIRED)
 %   x.dir.SUBJECTDIR  -  anatomical directory, containing the derivatives of anatomical images (REQUIRED)
-%   x.SESSIONDIR  -  ASL directory, containing the derivatives of perfusion images (REQUIRED)
+%   x.dir.SESSIONDIR  -  ASL directory, containing the derivatives of perfusion images (REQUIRED)
 %
 %
 % OUTPUT:
@@ -31,37 +31,38 @@ function [result, x] = xASL_module_ASL(x)
 %
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 %% Admin
+[x] = xASL_init_SubStructs(x);
 x = xASL_init_InitializeMutex(x, 'ASL'); % starts mutex locking process to ensure that everything will run only once
 result = false;
 
-if ~isfield(x,'ApplyQuantification') || isempty(x.ApplyQuantification)
-    x.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
-elseif length(x.ApplyQuantification)>5
-    warning('x.ApplyQuantification had too many parameters');
-    x.ApplyQuantification = x.ApplyQuantification(1:5);
-elseif length(x.ApplyQuantification)<5
-    warning('x.ApplyQuantification had too few parameters, using default 1');
-    x.ApplyQuantification(length(x.ApplyQuantification)+1:5) = 1;
+if ~isfield(x.Q,'ApplyQuantification') || isempty(x.Q.ApplyQuantification)
+    x.Q.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
+elseif length(x.Q.ApplyQuantification)>5
+    warning('x.Q.ApplyQuantification had too many parameters');
+    x.Q.ApplyQuantification = x.Q.ApplyQuantification(1:5);
+elseif length(x.Q.ApplyQuantification)<5
+    warning('x.Q.ApplyQuantification had too few parameters, using default 1');
+    x.Q.ApplyQuantification(length(x.Q.ApplyQuantification)+1:5) = 1;
 end
 
-if ~isfield(x,'bPVCNativeSpace') || isempty(x.bPVCNativeSpace)
-	x.bPVCNativeSpace = 0;
+if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNativeSpace)
+	x.modules.asl.bPVCNativeSpace = 0;
 end
 
 % Only continue if ASL exists
-x.P.Path_ASL4D = fullfile(x.SESSIONDIR, 'ASL4D.nii');
-x.P.Path_ASL4D_json = fullfile(x.SESSIONDIR, 'ASL4D.json');
-x.P.Path_ASL4D_parms_mat = fullfile(x.SESSIONDIR, 'ASL4D_parms.mat');
+x.P.Path_ASL4D = fullfile(x.dir.SESSIONDIR, 'ASL4D.nii');
+x.P.Path_ASL4D_json = fullfile(x.dir.SESSIONDIR, 'ASL4D.json');
+x.P.Path_ASL4D_parms_mat = fullfile(x.dir.SESSIONDIR, 'ASL4D_parms.mat');
 
 if ~xASL_exist(x.P.Path_ASL4D, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(?i)ASL4D.*\.nii$');
+    FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)ASL4D.*\.nii$');
 
-    if ~isempty(FileList) && isfield(x,'M0PositionInASL4D')
+    if ~isempty(FileList) && isfield(x.modules.asl,'M0PositionInASL4D')
         % skip, managed below
     elseif ~isempty(FileList)
         xASL_Move(FileList{1}, x.P.Path_ASL4D);
@@ -75,28 +76,28 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
             xASL_Move(parmsPath, x.P.Path_ASL4D_parms_mat);
         end
     else
-        fprintf('%s\n',['No ASL found, skipping: ' x.SESSIONDIR]);
+        fprintf('%s\n',['No ASL found, skipping: ' x.dir.SESSIONDIR]);
         result = true;
         return;
     end
 end
 
 % Check if HadamardType is defined, if not set to 0
-if ~isfield(x,'HadamardType') 
-    x.HadamardType=0;
+if ~isfield(x.modules.asl,'HadamardType') 
+    x.modules.asl.HadamardType=0;
 end
 
 % Initialize the DummyScan and M0 position fields - by default empty
-if ~isfield(x,'DummyScanPositionInASL4D') 
-	x.DummyScanPositionInASL4D = [];
+if ~isfield(x.modules.asl,'DummyScanPositionInASL4D') 
+	x.modules.asl.DummyScanPositionInASL4D = [];
 end
 
-if ~isfield(x,'M0PositionInASL4D') 
-	x.M0PositionInASL4D = [];
+if ~isfield(x.modules.asl,'M0PositionInASL4D') 
+	x.modules.asl.M0PositionInASL4D = [];
 end
 
-if ~isfield(x, 'bUseBasilQuantification') || isempty(x.bUseBasilQuantification)
-	x.bUseBasilQuantification = false;
+if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
+	x.Q.bUseBasilQuantification = false;
 end
 
 x = xASL_init_FileSystem(x); % do this only here, to save time when skipping this module
@@ -125,23 +126,23 @@ StateName{ 9} = '090_VisualQC_ASL';
 StateName{10} = '100_WADQC';
 
 %% Change working directory to make sure that unspecified output will go there...
-oldFolder = cd(x.SESSIONDIR);
+oldFolder = cd(x.dir.SESSIONDIR);
 
 %% Split ASL and M0 within the ASL time series
 % Run this when the data hasn't been touched yet
 % The first three states are here, because the first two are run only conditionally
 if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
 	% Split the M0 and dummy scans from the ASL time-series
-	xASL_io_SplitASL(x.P.Path_ASL4D, x.M0PositionInASL4D, x.DummyScanPositionInASL4D);
+	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.modules.asl.DummyScanPositionInASL4D);
 	
 	% Do the same for the ancillary files
-	FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat$','FPList',[0 Inf]);
+	FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat$','FPList',[0 Inf]);
 	if ~isempty(FileList)
 		xASL_Move(FileList{1}, x.P.Path_ASL4D_parms_mat);
 	end
-	FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)\.json$','FPList',[0 Inf]);
+	FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)\.json$','FPList',[0 Inf]);
 	if ~isempty(FileList)
-		xASL_Move(FileList{1}, fullfile(x.SESSIONDIR, 'ASL4D.json'));
+		xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'ASL4D.json'));
 	end
 end
 
@@ -149,19 +150,19 @@ end
 
 if ~xASL_exist(x.P.Path_M0, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.nii$','FPList',[0 Inf]);
+    FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.nii$','FPList',[0 Inf]);
     if ~isempty(FileList)
         xASL_Move(FileList{1}, x.P.Path_M0);
     end
 end
 % Do the same for the ancillary files
-FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)_parms\.mat$','FPList',[0 Inf]);
+FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)_parms\.mat$','FPList',[0 Inf]);
 if ~isempty(FileList)
     xASL_Move(FileList{1}, x.P.Path_M0_parms_mat);
 end
-FileList = xASL_adm_GetFileList(x.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.json$','FPList',[0 Inf]);
+FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.json$','FPList',[0 Inf]);
 if ~isempty(FileList)
-    xASL_Move(FileList{1}, fullfile(x.SESSIONDIR, 'M0.json'));
+    xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'M0.json'));
 end
 
 %% Delete old files
@@ -186,8 +187,8 @@ if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
 	xASL_adm_SaveX(x);
 end
 
-if ~isfield(x,'motion_correction')
-    x.motion_correction = 1;
+if ~isfield(x.modules.asl,'motionCorrection')
+    x.modules.asl.motionCorrection = 1;
 end
 
 % Backward compatibility
@@ -223,14 +224,14 @@ end
 
 %% -----------------------------------------------------------------------------
 %% 1 TopUp (WIP, only supported if FSL installed)
-Path_RevPE = xASL_adm_GetFileList(x.SESSIONDIR, '^(ASL4D|M0).*RevPE\.nii$', 'FPList', [0 Inf]);
+Path_RevPE = xASL_adm_GetFileList(x.dir.SESSIONDIR, '^(ASL4D|M0).*RevPE\.nii$', 'FPList', [0 Inf]);
 
 iState = 1;
 if xASL_exist(x.P.Path_M0,'file') && ~isempty(Path_RevPE)
-    if ~x.mutex.HasState(StateName{iState}) || ~xASL_exist(fullfile(x.SESSIONDIR, 'TopUp_fieldcoef.nii'),'file')
+    if ~x.mutex.HasState(StateName{iState}) || ~xASL_exist(fullfile(x.dir.SESSIONDIR, 'TopUp_fieldcoef.nii'),'file')
 
-        xASL_adm_DeleteFileList(x.SESSIONDIR,'^(B0|Field|TopUp|Unwarped).*$',[],[0 Inf]); % delete previous TopUp stuff first
-        bSuccess = xASL_fsl_TopUp(x.SESSIONDIR, 'asl', x, x.P.Path_ASL4D);
+        xASL_adm_DeleteFileList(x.dir.SESSIONDIR,'^(B0|Field|TopUp|Unwarped).*$',[],[0 Inf]); % delete previous TopUp stuff first
+        bSuccess = xASL_fsl_TopUp(x.dir.SESSIONDIR, 'asl', x, x.P.Path_ASL4D);
 
         if bSuccess
             x.mutex.AddState(StateName{iState});
@@ -246,7 +247,7 @@ end
 %% -----------------------------------------------------------------------------
 %% 2    Motion correction ASL (& center of mass registration)
 iState = 2;
-if ~x.motion_correction
+if ~x.modules.asl.motionCorrection
     if bO; fprintf('%s\n','Motion correction was disabled, skipping'); end
     x.mutex.AddState(StateName{iState});
 elseif ~x.mutex.HasState(StateName{iState})
@@ -254,7 +255,7 @@ elseif ~x.mutex.HasState(StateName{iState})
         % Remove previous files
         DelList = {x.P.Path_mean_PWI_Clipped_sn_mat, x.P.File_ASL4D_mat, x.P.File_despiked_ASL4D, x.P.File_despiked_ASL4D_mat, 'rp_ASL4D.txt'};
         for iD=1:length(DelList)
-            FileName = fullfile(x.SESSIONDIR, DelList{iD});
+            FileName = fullfile(x.dir.SESSIONDIR, DelList{iD});
             xASL_delete(FileName);
         end
 
@@ -268,11 +269,11 @@ elseif ~x.mutex.HasState(StateName{iState})
         end
 
         % Before motion correction, we align the images with ACPC
-        PathB0 = fullfile(x.SESSIONDIR, 'B0.nii');
-        PathRevPE = fullfile(x.SESSIONDIR, 'ASL4D_RevPE.nii');
-        PathField = fullfile(x.SESSIONDIR, 'Field.nii');
-        PathFieldCoeff = fullfile(x.SESSIONDIR, 'TopUp_fieldcoef.nii');
-        PathUnwarped = fullfile(x.SESSIONDIR, 'Unwarped.nii');
+        PathB0 = fullfile(x.dir.SESSIONDIR, 'B0.nii');
+        PathRevPE = fullfile(x.dir.SESSIONDIR, 'ASL4D_RevPE.nii');
+        PathField = fullfile(x.dir.SESSIONDIR, 'Field.nii');
+        PathFieldCoeff = fullfile(x.dir.SESSIONDIR, 'TopUp_fieldcoef.nii');
+        PathUnwarped = fullfile(x.dir.SESSIONDIR, 'Unwarped.nii');
         
         OtherList = {x.P.Path_M0, PathB0, PathRevPE, PathField, PathFieldCoeff, PathUnwarped, x.P.Path_ASL4D_ORI}; % all other files will be created
         if x.settings.bAutoACPC
@@ -421,7 +422,7 @@ iState = 8;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
     fprintf('%s\n','Quantifying ASL:   ');
-    if isfield(x, 'bUseBasilQuantification') && x.bUseBasilQuantification
+    if isfield(x.Q, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification
         % Quantification in native space:
         nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
         
@@ -451,7 +452,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
         end
 	end
 	
-	if x.bPVCNativeSpace
+	if x.modules.asl.bPVCNativeSpace
 		fprintf('%s\n','Partial volume correcting ASL in native space:   ');
 		if xASL_exist(x.P.Path_PVgm,'file') && xASL_exist(x.P.Path_PVwm,'file')
 			xASL_wrp_PVC(x);

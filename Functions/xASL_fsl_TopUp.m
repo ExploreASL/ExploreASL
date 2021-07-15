@@ -23,7 +23,7 @@ function [bSuccess] = xASL_fsl_TopUp(InDir, ScanType, x, OutputPath)
 %                 (registration between blip up/down images is performed by
 %                 TopUp)
 %              2. Run TopUp estimate (i.e. estimate the geometric distortion field from B0 NIfTI &
-%                 parameters file), this takes quite long. Also has a x.Quality=0 option that is very fast
+%                 parameters file), this takes quite long. Also has a x.settings.Quality=0 option that is very fast
 %                 but inaccurate, to try out this pipeline part. Before
 %                 TopUp, NaNs (e.g. from resampling) are removed from the images
 %                 TopUp is run with default settings
@@ -82,13 +82,13 @@ switch lower(ScanType)
 end
 
 %% Admin: set paths
-if ~isfield(x,'bAutomaticallyDetectFSL')
-    x.bAutomaticallyDetectFSL = 0;
+if ~isfield(x.external,'bAutomaticallyDetectFSL')
+    x.external.bAutomaticallyDetectFSL = 0;
 end
 
-[FSLdir, x] = xASL_fsl_SetFSLdir(x, x.bAutomaticallyDetectFSL); % Find the FSL directory
+[FSLdir, x] = xASL_fsl_SetFSLdir(x, x.external.bAutomaticallyDetectFSL); % Find the FSL directory
 % Pathb0cfg = fullfile(FSLdir, 'etc', 'flirtsch', 'b02b0.cnf');
-Pathb0cfg = fullfile(x.MyPath, 'CustomScripts', 'EPAD', 'b02b0.cnf'); % use our own one for reproducibility
+Pathb0cfg = fullfile(x.opts.MyPath, 'CustomScripts', 'EPAD', 'b02b0.cnf'); % use our own one for reproducibility
 PathB0 = fullfile(InDir, 'B0.nii');
 PathLog = fullfile(InDir, 'B0.topup_log'); % path & file must be same as PathB0
 PathResults = fullfile(InDir, 'TopUp');
@@ -246,7 +246,7 @@ else
         ' --fout=' xASL_adm_UnixPath(PathField, 1) ' --iout=' xASL_adm_UnixPath(PathUnwarped, 1)...
         ' --config=' xASL_adm_UnixPath(Pathb0cfg, 1) ' --verbose=true'];
 
-    if x.Quality
+    if x.settings.Quality
         ActualCommand = TopUpCommand;
         % keep default settings (which are pretty extensive, many iterations)
     else
@@ -361,7 +361,7 @@ else
 end
 
 %% Householding
-if x.DELETETEMP
+if x.settings.DELETETEMP
     for iP=1:length(TopUpNIIPath)
         xASL_delete(TopUpNIIPath{iP});
     end

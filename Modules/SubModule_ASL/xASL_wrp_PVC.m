@@ -5,14 +5,14 @@ function xASL_wrp_PVC(x)
 %
 % INPUT:
 %   x - structure containing fields with all information required to run this submodule (REQUIRED)
-%       x.PVCNativeSpaceKernel - Window size for the ASL native space PV correction. Equal weighting 
+%       x.modules.asl.PVCNativeSpaceKernel - Window size for the ASL native space PV correction. Equal weighting 
 %                                         of all voxels within the kernel is assumed. 3D kernel can be used, 
 %                                         but any of the dimension can be also set to 1. Only odd number of 
 %                                         voxels can be used in each dimension (e.g. [3 7 5] not [2 3 1]).
 %                                         (OPTIONAL, 
 %                                         DEFAULT = [5 5 1] for bPVCGaussianMM==0,
 %                                         DEFAULT = [10 10 4] for bPVCGaussianMM==1).
-%       x.bPVCGaussianMM - PV-correction with a Gaussian instead of square kernel. It uses Gaussian 
+%       x.modules.asl.bPVCGaussianMM - PV-correction with a Gaussian instead of square kernel. It uses Gaussian 
 %                                   weighting of the PV kernel instead of equal weights as per Asllani's 
 %                                   original method. Unlike with the square kernel when the size is defined in 
 %                                   voxels, here the FWHM of the Gaussian in mm is defined in each dimension. 
@@ -42,28 +42,28 @@ function xASL_wrp_PVC(x)
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 0. Admin and checking values and files
-if ~isfield(x,'bPVCGaussianMM') || isempty(x.bPVCGaussianMM)
-	x.bPVCGaussianMM = 0;
+if ~isfield(x.modules.asl,'bPVCGaussianMM') || isempty(x.modules.asl.bPVCGaussianMM)
+	x.modules.asl.bPVCGaussianMM = 0;
 end
 
 % If the kernel is non-existent or empty then initialize it
-if ~isfield(x,'PVCNativeSpaceKernel') || isempty(x.PVCNativeSpaceKernel)
-	if x.bPVCGaussianMM
-		x.PVCNativeSpaceKernel = [10 10 4];
+if ~isfield(x.modules.asl,'PVCNativeSpaceKernel') || isempty(x.modules.asl.PVCNativeSpaceKernel)
+	if x.modules.asl.bPVCGaussianMM
+		x.modules.asl.PVCNativeSpaceKernel = [10 10 4];
 	else
-		x.PVCNativeSpaceKernel = [5 5 1];
+		x.modules.asl.PVCNativeSpaceKernel = [5 5 1];
 	end
 end
 
 % If the size of the kernel was under 3, then add the remaining dimensions from the default
-dimKernel = length(x.PVCNativeSpaceKernel);
+dimKernel = length(x.modules.asl.PVCNativeSpaceKernel);
 if dimKernel < 3
-	if x.bPVCGaussianMM
+	if x.modules.asl.bPVCGaussianMM
 		defaultKernel = [10 10 4];
 	else
 		defaultKernel = [5 5 1];
 	end
-	x.PVCNativeSpaceKernel(dimKernel:3) = defaultKernel(dimKernel:3);
+	x.modules.asl.PVCNativeSpaceKernel(dimKernel:3) = defaultKernel(dimKernel:3);
 end
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -94,20 +94,20 @@ end
 imPV = imGM;
 imPV(:,:,:,2) = imWM;
 
-if x.bPVCGaussianMM
+if x.modules.asl.bPVCGaussianMM
 	% Prepare the kernel size. Convert the FWHM from voxels to MM
 	voxelSize = xASL_io_ReadNifti(x.P.Path_CBF);
 	voxelSize = [norm(voxelSize.mat(:,1)), norm(voxelSize.mat(:,2)), norm(voxelSize.mat(:,3))];
 	
-	kernelPVC = x.PVCNativeSpaceKernel./voxelSize;
+	kernelPVC = x.modules.asl.PVCNativeSpaceKernel./voxelSize;
 else
-	kernelPVC = x.PVCNativeSpaceKernel;
+	kernelPVC = x.modules.asl.PVCNativeSpaceKernel;
 end
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 2. Running PV-correction
 
-if x.bPVCGaussianMM
+if x.modules.asl.bPVCGaussianMM
 	[imPVC,~,~] = xASL_im_PVCkernel(imCBF, imPV, kernelPVC, 'gauss');
 else
 	[imPVC,~,~] = xASL_im_PVCkernel(imCBF, imPV, kernelPVC, 'flat');

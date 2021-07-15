@@ -34,6 +34,7 @@ function [result, x] = xASL_module_Population(x)
 
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin
+[x] = xASL_init_SubStructs(x);
 
 % Create population directory
 xASL_adm_CreateDir(x.D.PopDir);
@@ -44,8 +45,8 @@ if x.opts.iWorker>1 % run population module only once when ExploreASL is called 
     result = true;
 end
 
-if ~isfield(x,'bNativeSpaceAnalysis') || isempty(x.bNativeSpaceAnalysis)
-    x.bNativeSpaceAnalysis = 0;
+if ~isfield(x.modules.population,'bNativeSpaceAnalysis') || isempty(x.modules.population.bNativeSpaceAnalysis)
+    x.modules.population.bNativeSpaceAnalysis = 0;
 end
 
 % Check if we have ASL or not, to know if we need to run ASL-specific stuff/warnings
@@ -85,7 +86,7 @@ if ~x.mutex.HasState(StateName{1})
     FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean_Unmasked\.nii$'], 'FPList');
     SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean.nii']);
 
-    if strcmpi(x.Sequence,'3d_spiral') && ~isempty(FoVPath)
+    if strcmpi(x.Q.Sequence,'3d_spiral') && ~isempty(FoVPath)
         xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}), [], false);
     end
 
@@ -234,7 +235,7 @@ if ~x.mutex.HasState(StateName{8})
         x.S.InputNativeSpace = 0;
         xASL_wrp_GetROIstatistics(x);
         % ROI statistics (optional: native space)
-        if x.bNativeSpaceAnalysis
+        if x.modules.population.bNativeSpaceAnalysis
             x.S.InputNativeSpace = 1;
             x.S.InputAtlasNativeName = x.S.Atlases{iAtlas};
             xASL_wrp_GetROIstatistics(x);
@@ -286,7 +287,7 @@ end
 %% -----------------------------------------------------------------------------
 %% 9    Reduce data size
 if ~x.mutex.HasState(StateName{10})
-    if ~x.settings.bReproTesting && x.DELETETEMP
+    if ~x.settings.bReproTesting && x.settings.DELETETEMP
         xASL_adm_DeleteManyTempFiles(x);
     end
 
@@ -294,7 +295,7 @@ if ~x.mutex.HasState(StateName{10})
     % This way, temporary files that take up a lot of data, will take up have
     % the disc space. These files may be re-used in the event of a
     % re-processing, which is why we zip them instead of deleting them.
-    xASL_adm_GzipAllFiles(x.D.ROOT,[],[],fullfile(x.MyPath,'External'));
+    xASL_adm_GzipAllFiles(x.D.ROOT,[],[],fullfile(x.opts.MyPath,'External'));
     x.mutex.AddState(StateName{10});
     fprintf('%s\n',[StateName{10} ' was performed']);
 else

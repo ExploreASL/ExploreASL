@@ -29,13 +29,13 @@ function x = xASL_init_PrintCheckSettings(x)
 
     %% -----------------------------------------------------------------------
     %% 1) Set default settings if not defined
-    if ~isfield(x,'Quality') || (x.Quality~=0 && x.Quality~=1)
-        x.Quality = 1;
+    if ~isfield(x.settings,'Quality') || (x.settings.Quality~=0 && x.settings.Quality~=1)
+        x.settings.Quality = 1;
         fprintf('%s\n', 'Default Quality=1 used (optimal quality)');
     end
-    if ~isfield(x,'DELETETEMP') || (x.DELETETEMP~=0 && x.DELETETEMP~=1)
-        x.DELETETEMP = 1;
-    %     fprintf('%s\n','Default x.DELETETEMP=1 used (delete files temporarily used for processing)');
+    if ~isfield(x.settings,'DELETETEMP') || (x.settings.DELETETEMP~=0 && x.settings.DELETETEMP~=1)
+        x.settings.DELETETEMP = 1;
+    %     fprintf('%s\n','Default x.settings.DELETETEMP=1 used (delete files temporarily used for processing)');
     end
 
     %% -----------------------------------------------------------------------
@@ -88,10 +88,10 @@ function x = xASL_init_PrintCheckSettings(x)
         fprintf('%s\n','No sets are defined');
     end
 
-    if ~isfield(x,'M0')
+    if ~isfield(x.Q,'M0')
     %     warning('M0 option missing!');
     else
-        fprintf('\n%s\n',['M0 option selected is "' num2str(x.M0) '"']);
+        fprintf('\n%s\n',['M0 option selected is "' num2str(x.Q.M0) '"']);
     end
 
     if length(x.D.ROOT)>71
@@ -100,18 +100,18 @@ function x = xASL_init_PrintCheckSettings(x)
     else
         fprintf('x.D.ROOT            %s\n', x.D.ROOT);
     end
-    fprintf('x.DELETETEMP        %s\n',[num2str(x.DELETETEMP) ' (delete temporary files)']);
-    fprintf('x.Quality           %s\n',[num2str(x.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
+    fprintf('x.settings.DELETETEMP %s\n',[num2str(x.settings.DELETETEMP) ' (delete temporary files)']);
+    fprintf('x.settings.Quality    %s\n',[num2str(x.settings.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
 
 
     %% -----------------------------------------------------------------------
     %% 3) Print warnings
     fprintf('\n%s\n\n','==============================================================================================');
-    field_symbol = {'subject_regexp'};
+    field_symbol = {'subjectRegexp'};
 
     for iField=1:length(field_symbol)
-        if ~isfield(x,field_symbol{iField})
-            warning(['x.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
+        if ~isfield(x.dataset,field_symbol{iField})
+            warning(['x.dataset' field_symbol{iField} ' was not defined in dataPar.json!'])
         end
     end
 
@@ -126,8 +126,12 @@ function x = xASL_init_PrintCheckSettings(x)
         end
     end
 
-    if ~isempty(regexp(x.subject_regexp, '^(\^|)\.\*(\$|)$'))
-        warning('Subject regexp not specific! Check that no wrong folders are included as subjects');
+    if ~isfield(x,'dataset')
+        warning('x.dataset didn''nt exist');
+    else
+        if ~isempty(regexp(x.dataset.subjectRegexp, '^(\^|)\.\*(\$|)$'))
+            warning('Subject regexp not specific! Check that no wrong folders are included as subjects');
+        end
     end
 
     fprintf('\n');
