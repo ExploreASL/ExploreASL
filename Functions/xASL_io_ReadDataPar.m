@@ -47,13 +47,13 @@ function [x] = xASL_io_ReadDataPar(pathDataPar)
 % 				"LabelingDuration": 1800,
 % 				"SliceReadoutTime": 30,
 % 				"Vendor": "Philips",
-% 				"readoutDim": "2D"
+% 				"readoutDim": "2D",
+% 				"M0": "UseControlAsM0"
 % 			},
 % 			"settings":
 % 			{
 % 				"Quality": 1,
-% 				"DELETETEMP": 1,
-%           	"M0": "UseControlAsM0"
+% 				"DELETETEMP": 1
 % 			},
 %             "modules":
 % 			{
