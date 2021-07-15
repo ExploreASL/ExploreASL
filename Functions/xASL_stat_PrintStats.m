@@ -77,42 +77,17 @@ end
 %% 2) Print overview of sets to TSV
 try
     xASL_adm_CreateDir(fileparts(x.S.SaveFile));
-    x.S.FID = fopen(x.S.SaveFile,'wt');
 catch ME
     warning(['Couldnt delete ' x.S.SaveFile ', if it was opened, please close this file first']);
     fprintf('%s\n',['Message: ' ME.message]);
     return;    
 end
 
-if x.S.FID<0
-    fprintf(['x.S.SaveFile is ' x.S.SaveFile '\n']);
-    warning('Is something wrong with the path we try to save the file, perhaps it is too long?');
-end
-
-% Print header
-fprintf(x.S.FID,'%s\t', 'SUBJECT');
-
-if isfield(x.S,'SetsName')
-    for iSet=1:length(x.S.SetsName)
-        fprintf(x.S.FID,'%s\t', x.S.SetsName{iSet});
-    end
-end
-
-for ii=1:length(x.S.NamesROI)
-    fprintf(x.S.FID,'%s\t', x.S.NamesROI{ii});
-end
-fprintf(x.S.FID,'\n');
-
-x.S.Legend = xASL_stat_CreateLegend(x);
-
-if isfield(x.S,'Legend')
-    for ii=1:length(x.S.Legend)
-        fprintf(x.S.FID,'%s\t', x.S.Legend{ii});
-    end
-    fprintf(x.S.FID,'\n');
-end
-
-
+% Build cell array 'SUBJECT' & x.S.SetsName{iSet} & x.S.NamesROI{ii}
+[~, thisFileName] = fileparts(x.S.SaveFile);
+thisFile = genvarname(thisFileName);
+[x, statCell] = xASL_stat_PrintStats_GetStatCellArray(x);
+x.modules.population.(thisFile) = statCell;
 
 %% -----------------------------------------------------------------------------------------------
 %% 3) Define number of sessions, force to 1 in case of TT or volume metrics
@@ -142,13 +117,13 @@ if bFollowSubjectSessions
                 warning(['Missing data, skipping printing data for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}]);
             else
                 % print subject name
-                fprintf(x.S.FID,'%s\t', x.S.SubjectSessionID{iSubjectSession, 1});
+                x.modules.population.(thisFile){iSubjectSession+2,1} = x.S.SubjectSessionID{iSubjectSession, 1}; % I'm not 100% sure this is correct, how do I test this?
 
                 %% Print the covariates and data
                 iSubjectSession_SetsID = iSubjectSession;
                 iSubjectSession_DAT = iSubjectSession;
                 bPrintSessions = true;
-                xASL_stat_PrintStats_PrintValues(x, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);
+                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x,x.modules.population.(thisFile),iSubjectSession,iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);
 
             end
         end
@@ -195,11 +170,14 @@ else
                 
 				% Get session ID
                 SessionID = x.S.SubjectSessionID{iSubjSess}(startSessionIndex:endSessionIndex);
-
-                % print subject name
-                fprintf(x.S.FID,'%s\t', SubjectID);
-                % print session name
-                fprintf(x.S.FID,'%s\t', SessionID);
+                
+                % Write fields to dataset
+                x.dataset.currentSubjectID = SubjectID;
+                x.dataset.currentSessionID = SessionID;
+                
+                % Fill stat cell array
+                x.modules.population.(thisFile) = xASL_stat_PrintStats_AddSubjectSessionStatCellArray(x,x.modules.population.(thisFile),iSubjSess);
+                
 
                 %% print values for other covariates
                 if isfield(x.S,'SetsID')
@@ -208,30 +186,28 @@ else
 
                     if isempty(SubjectIndex)
                         warning(['Could not find subject ' SubjectID ', skipping']);
-                        fprintf(x.S.FID,'\n');
                     else
                         SessionColumn = find(strcmpi(x.S.SetsName, 'session'));
                         if isempty(SessionColumn) || length(SessionColumn)>1
                             warning('Could not find session data');
-                            fprintf(x.S.FID,'\n');
                         else
                                SessionN = iSubjSess;
                             if isempty(SessionN) || ~isnumeric(SessionN)
                                 warning(['Something wrong with session ' SessionID]);
-                                fprintf(x.S.FID,'\n');
                             elseif SessionN>x.dataset.nSessions
                                 if ~max(printedSessionN==SessionN)
                                     warning('Could not find values for other covariates');
                                 end
                                 printedSessionN = [printedSessionN SessionN];
-                                fprintf(x.S.FID,'\n');
                             else
 
                                 %% Print the covariates and data
                                 iSubjectSession_SetsID = x.dataset.nSessions*(SubjectIndex-1)+SessionN;
                                 iSubjectSession_DAT = iSubjSess;
                                 bPrintSessions = false;
-                                xASL_stat_PrintStats_PrintValues(x, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);                      
+                                
+                                % Write it to the cell array instead
+                                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x,x.modules.population.(thisFile),iSubjSess,iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);
                             end
                         end
                     end
@@ -239,62 +215,18 @@ else
             end
         end
     end
-end                  
-                
-fclose(x.S.FID);
+end
+
+% Write table to cell array
+fprintf('Saving %s...\n', thisFile);
+xASL_tsvWrite(x.modules.population.(thisFile),x.S.SaveFile,1);
 x.S = rmfield(x.S,'SaveFile');
 
 
 end
 
 
-function xASL_stat_PrintStats_PrintValues(x, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions)
-%xASL_stat_PrintStats_PrintValues Print the covariates and data
-
-    %% 1. print values for other covariates
-    % here we always have nSubjects*nSessions values
-    % so use "SubjectSession"
-    
-    if bPrintSessions
-        printMatrix = x.S.SetsID;
-        optionsMatrix = x.S.SetsOptions;
-        sampleMatrix = x.S.Sets1_2Sample;
-    else
-        SessionColumn = find(strcmpi(x.S.SetsName, 'session'));
-        vector2Print = [1:size(x.S.SetsName,2)];
-        vector2Print = vector2Print(vector2Print~=SessionColumn);
-        
-        printMatrix = x.S.SetsID(:, vector2Print);
-        optionsMatrix = x.S.SetsOptions(:, vector2Print);
-        sampleMatrix = x.S.Sets1_2Sample(:, vector2Print);
-    end
-    
-    for iPrint=1:size(printMatrix,2)
-        String2Print = printMatrix(iSubjectSession_SetsID, iPrint);
-
-        if length(optionsMatrix{iPrint})>1 % we need options
-            if length(optionsMatrix{iPrint}) >= length(unique(printMatrix(:,iPrint)))-2 % allow for zeros & NaNs
-                if isnumeric(String2Print) && (int16(String2Print) == String2Print) && String2Print>0 && x.S.Sets1_2Sample(iPrint)~=3
-                    String2Print = optionsMatrix{iPrint}{String2Print};
-                end
-            end
-        end
-        fprintf(x.S.FID,'%s\t', xASL_num2str(String2Print));
-    end
-
-    %% 2. Print data in x.S.DAT
-    % This part is different for volume or TT, since there will
-    % be only 1 value per subject (this will be done by the above in which nSessions is set to 1
-    for iPrint=1:size(x.S.DAT,2) % print actual data
-        fprintf(x.S.FID,'%s\t', xASL_num2str(x.S.DAT(iSubjectSession_DAT, iPrint)));
-    end
-    fprintf(x.S.FID,'\n');
-    
-    
-end
-
-
-
+%% Legend
 function [Legend] = xASL_stat_CreateLegend(x)
 %xASL_stat_CreateLegend Create a row with legends to be printed in the TSV file
 %containing ASL analysis stats
@@ -357,5 +289,106 @@ function [Legend] = xASL_stat_CreateLegend(x)
     else
         warning('Could not find ROI names or filename to save, tsv header may be invalid');
     end
+
+end
+
+%% Function to write statistics to cell array so that we can use xASL_tsvWrite later on
+function [x, statCell] = xASL_stat_PrintStats_GetStatCellArray(x)
+
+    x.S.Legend = xASL_stat_CreateLegend(x);
+
+    % Columns
+    iCell = 1;
+    iCell2 = 1;
+    
+    % First row
+    statCell{iCell,1} = 'SUBJECT';
+    iCell = iCell+1;
+    
+    % Sets
+    if isfield(x.S,'SetsName')
+        for iSet=1:length(x.S.SetsName)
+            statCell{1,iCell} = x.S.SetsName{iSet};
+            iCell = iCell+1;
+        end
+    end
+
+    % ROIs
+    if isfield(x.S,'NamesROI')
+        for ii=1:length(x.S.NamesROI)
+            statCell{1,iCell} = x.S.NamesROI{ii};
+            iCell = iCell+1;
+        end
+    end
+    
+    % Second row
+    
+    % Legend
+    if isfield(x.S,'Legend')
+        for ii=1:length(x.S.Legend)
+            statCell{2,iCell2} = x.S.Legend{ii};
+            iCell2 = iCell2+1;
+        end
+    end
+
+end
+
+%% Fill the stat cell array with all subjects and sessions xASL_tsvWrite later on
+function statCell = xASL_stat_PrintStats_AddSubjectSessionStatCellArray(x,statCell,rowNum)
+
+    % Skip the first two rows (Labels & Legend)
+    rowNum = rowNum+2;
+    
+    % Add subject and session of current row
+    statCell{rowNum,1} = x.dataset.currentSubjectID;
+    statCell{rowNum,2} = x.dataset.currentSubjectID;
+
+end
+
+%% Fill the stat cell array with all subjects and sessions xASL_tsvWrite later on
+function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions)
+
+    % Skip the first two rows and columns (Labels & Legend, Subjects & Sessions)
+    rowNum = rowNum+2;
+    iCell = 3;
+    
+    % 1. print values for other covariates
+    % here we always have nSubjects*nSessions values so use "SubjectSession"
+    
+    if bPrintSessions
+        printMatrix = x.S.SetsID;
+        optionsMatrix = x.S.SetsOptions;
+        sampleMatrix = x.S.Sets1_2Sample;
+    else
+        SessionColumn = find(strcmpi(x.S.SetsName, 'session'));
+        vector2Print = [1:size(x.S.SetsName,2)];
+        vector2Print = vector2Print(vector2Print~=SessionColumn);
+        
+        printMatrix = x.S.SetsID(:, vector2Print);
+        optionsMatrix = x.S.SetsOptions(:, vector2Print);
+        sampleMatrix = x.S.Sets1_2Sample(:, vector2Print);
+    end
+    
+    for iPrint=1:size(printMatrix,2)
+        String2Print = printMatrix(iSubjectSession_SetsID, iPrint);
+
+        if length(optionsMatrix{iPrint})>1 % we need options
+            if length(optionsMatrix{iPrint}) >= length(unique(printMatrix(:,iPrint)))-2 % allow for zeros & NaNs
+                if isnumeric(String2Print) && (int16(String2Print) == String2Print) && String2Print>0 && x.S.Sets1_2Sample(iPrint)~=3
+                    String2Print = optionsMatrix{iPrint}{String2Print};
+                end
+            end
+        end
+        statCell{rowNum,iCell} = xASL_num2str(String2Print);
+        iCell = iCell+1;
+    end
+
+    % 2. Print data in x.S.DAT
+    % This part is different for volume or TT, since there will be only 1 value per subject (this will be done by the above in which nSessions is set to 1
+    for iPrint=1:size(x.S.DAT,2) % print actual data
+        statCell{rowNum,iCell} = xASL_num2str(x.S.DAT(iSubjectSession_DAT, iPrint));
+        iCell = iCell+1;
+    end
+
 
 end
