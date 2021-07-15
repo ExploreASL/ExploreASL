@@ -43,12 +43,12 @@ elseif isempty(inputM0) || sum(isfinite(inputM0(:)))==0
     warning('Invalid M0 image loaded, skipping');
 end
 
-if strcmpi(x.settings.M0,'no_background_suppression')
+if strcmpi(x.Q.M0,'no_background_suppression')
     warning('This option will be obsolete in the future, please use M0=UseControlAsM0 instead');
-    x.settings.M0 = 'UseControlAsM0'; % backward compatibility
+    x.Q.M0 = 'UseControlAsM0'; % backward compatibility
 end
 
-if strcmpi(x.settings.M0, 'UseControlAsM0')
+if strcmpi(x.Q.M0, 'UseControlAsM0')
     fprintf('%s\n','x.M0_usesASLtiming didnt exist, set to 1, because of absence background suppression, same timing in mean control (used as M0) as in ASL');
     x.M0_usesASLtiming = 1;
     M0ParmsMat  = x.P.Path_ASL4D_parms_mat;
@@ -78,7 +78,7 @@ end
 %% ------------------------------------------------------------------------------------------------------
 % 2. Convert control image with background suppression to pseudo-M0
 % for the GM
-if strcmp(x.settings.M0, 'UseControlAsM0') && x.Q.BackgroundSuppressionNumberPulses>0
+if strcmp(x.Q.M0, 'UseControlAsM0') && x.Q.BackgroundSuppressionNumberPulses>0
     % we only run this part if there is background suppression, but no M0 image
     [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x);
 end
@@ -265,7 +265,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 % Copyright 2015-2021 ExploreASL
 
     if size(M0IM, 3)<2
-		error('M0 is not an image, but expected as image because of x.settings.M0=UseControlAsM0');
+		error('M0 is not an image, but expected as image because of x.Q.M0=UseControlAsM0');
 	end
 	
     SliceReadoutTime = xASL_quant_SliceTiming(x,M0IM);

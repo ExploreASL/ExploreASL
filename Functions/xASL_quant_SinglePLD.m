@@ -237,7 +237,7 @@ else
 
 		% Siemens specific scalings
 	elseif strcmpi(x.Q.Vendor,'Siemens')
-		if ~strcmpi(x.Q.Vendor,'Siemens_JJ_Wang') && strcmpi(x.settings.M0,'separate_scan')
+		if ~strcmpi(x.Q.Vendor,'Siemens_JJ_Wang') && strcmpi(x.Q.M0,'separate_scan')
 			% Some Siemens readouts divide M0 by 10, others don't
 			ScaleImage = ScaleImage./10;
 			fprintf('%s\n','M0 corrected for Siemens scale factor 10')

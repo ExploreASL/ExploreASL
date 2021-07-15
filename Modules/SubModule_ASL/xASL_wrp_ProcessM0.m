@@ -78,8 +78,8 @@ end
 tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
 nVolumes = double(tempnii.hdr.dim(5));
 
-if strcmpi(x.settings.M0,'no_background_suppression')
-    x.settings.M0 = 'UseControlAsM0'; % backward compatibility
+if strcmpi(x.Q.M0,'no_background_suppression')
+    x.Q.M0 = 'UseControlAsM0'; % backward compatibility
 end
 if ~isfield(x.settings,'M0_conventionalProcessing')
        x.settings.M0_conventionalProcessing   = 0;
@@ -115,7 +115,7 @@ xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field 
 
 if isfield(x.modules.asl, 'bRegisterM02ASL') && ~x.modules.asl.bRegisterM02ASL
     fprintf('M0 registration (to ASL or T1w) is skipped upon request\n');
-elseif ~strcmpi(x.settings.M0,'UseControlAsM0') && isempty(regexpi(x.Q.Sequence, 'spiral'))
+elseif ~strcmpi(x.Q.M0,'UseControlAsM0') && isempty(regexpi(x.Q.Sequence, 'spiral'))
     % only register if the M0 and mean control are not identical
     % Which they are when there is no separate M0, but ASL was
     % acquired without background suppression & the mean control image

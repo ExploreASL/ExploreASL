@@ -112,12 +112,12 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Prepare M0
-if isnumeric(x.settings.M0)
+if isnumeric(x.Q.M0)
         % Single value per scanner
         % In this case we assume that this nifti value has been properly acquired,
         % does not need any corrections, and whole ASL PWI will be divided by this single value.
 
-        M0_im = x.settings.M0;
+        M0_im = x.Q.M0;
         fprintf('%s\n',['Single M0 value ' num2str(M0_im) ' used']);
 
         if x.Q.ApplyQuantification(4)
@@ -178,7 +178,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
-if strcmpi(x.settings.M0,'separate_scan')
+if strcmpi(x.Q.M0,'separate_scan')
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
         % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
         if  ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.05)
