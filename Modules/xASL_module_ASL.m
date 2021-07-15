@@ -31,7 +31,7 @@ function [result, x] = xASL_module_ASL(x)
 %
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 %% Admin
@@ -83,8 +83,8 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
 end
 
 % Check if HadamardType is defined, if not set to 0
-if ~isfield(x,'HadamardType') 
-    x.HadamardType=0;
+if ~isfield(x.modules.asl,'HadamardType') 
+    x.modules.asl.HadamardType=0;
 end
 
 % Initialize the DummyScan and M0 position fields - by default empty
