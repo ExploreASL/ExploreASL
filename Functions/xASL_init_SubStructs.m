@@ -1,7 +1,7 @@
 function [x] = xASL_init_SubStructs(x)
-%ExploreASL_init_SubStructs Initialize ExploreASL x structure substructs.
+%xASL_init_SubStructs Initialize ExploreASL x structure substructs.
 %
-% FORMAT: [x] = ExploreASL_init_SubStructs(x)
+% FORMAT: [x] = xASL_init_SubStructs(x)
 %
 % INPUT:
 %   x       - ExploreASL x struct (STRUCT, REQUIRED)
