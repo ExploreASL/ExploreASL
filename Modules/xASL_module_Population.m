@@ -34,6 +34,7 @@ function [result, x] = xASL_module_Population(x)
 
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin
+[x] = xASL_init_SubStructs(x);
 
 % Create population directory
 xASL_adm_CreateDir(x.D.PopDir);
