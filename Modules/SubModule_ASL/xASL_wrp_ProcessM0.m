@@ -81,11 +81,11 @@ nVolumes = double(tempnii.hdr.dim(5));
 if strcmpi(x.Q.M0,'no_background_suppression')
     x.Q.M0 = 'UseControlAsM0'; % backward compatibility
 end
-if ~isfield(x.settings,'M0_conventionalProcessing')
-       x.settings.M0_conventionalProcessing   = 0;
+if ~isfield(x.modules.asl,'M0_conventionalProcessing')
+       x.modules.asl.M0_conventionalProcessing   = 0;
        % by default, conventional processing is off, since our new method outperforms in most cases
-elseif x.settings.M0_conventionalProcessing == 1 && strcmpi(x.Q.readoutDim,'3D')
-       x.settings.M0_conventionalProcessing = 0;
+elseif x.modules.asl.M0_conventionalProcessing == 1 && strcmpi(x.Q.readoutDim,'3D')
+       x.modules.asl.M0_conventionalProcessing = 0;
        warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end
 
@@ -164,7 +164,7 @@ M0_im = xASL_quant_M0(x.P.Path_rM0, x);
 
 %% -----------------------------------------------------------------------------------------------
 %% 3A) Conventional M0 masking & minor smoothing (doesnt work with smooth ASL images)
-if x.settings.M0_conventionalProcessing
+if x.modules.asl.M0_conventionalProcessing
     % Conventional M0 processing, should be performed in native space
     % We
     % 1) perform the processing & masking in native space
