@@ -22,7 +22,7 @@ function [x] = xASL_init_SubStructs(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright © 2015-2019 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
     
     % Statistics, directories, paths, and sequence related fields
@@ -43,5 +43,7 @@ function [x] = xASL_init_SubStructs(x)
     if ~isfield(x,'settings'),              x.settings = struct;            end
     if ~isfield(x,'external'),              x.external = struct;            end
     if ~isfield(x,'dir'),                   x.dir = struct;                 end     
+    if ~isfield(x,'opts'),                  x.opts = struct;                 end     
 
 end
+
