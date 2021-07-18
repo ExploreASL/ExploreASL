@@ -85,7 +85,7 @@ end
 
 % Build cell array 'SUBJECT' & x.S.SetsName{iSet} & x.S.NamesROI{ii}
 [~, thisFileName] = fileparts(x.S.SaveFile);
-thisFile = genvarname(thisFileName);
+thisFile = matlab.lang.makeValidName(thisFileName);
 [x, statCell] = xASL_stat_PrintStats_GetStatCellArray(x);
 x.modules.population.(thisFile) = statCell;
 
@@ -139,7 +139,14 @@ else
 
     printedSessionN = 0;
     
-    for iSubjSess=1:length(x.S.SubjectSessionID)
+    % Initialize empty table
+    numElements = size(x.modules.population.(thisFile),2);
+    numSubjectsSessions = length(x.S.SubjectSessionID);
+    for iSubjSess=1:numSubjectsSessions
+        x.modules.population.(thisFile)(2+iSubjSess,:) = repmat({nan(1, 1)}, 1, numElements);
+    end
+    
+    for iSubjSess=1:numSubjectsSessions
         % x.S.SubjectSessionID == subject/session IDs created in xASL_stat_GetROIStatistics
 
         % Get subject ID
@@ -183,6 +190,7 @@ else
                 if isfield(x.S,'SetsID')
                     % Ensure to match subject/session
                     SubjectIndex = find(strcmp(x.SUBJECTS, SubjectID));
+                    SessionIndex = find(strcmp(x.SESSIONS, SessionID));
 
                     if isempty(SubjectIndex)
                         warning(['Could not find subject ' SubjectID ', skipping']);
@@ -191,16 +199,16 @@ else
                         if isempty(SessionColumn) || length(SessionColumn)>1
                             warning('Could not find session data');
                         else
-                               SessionN = iSubjSess;
+                            SessionN = iSubjSess;
                             if isempty(SessionN) || ~isnumeric(SessionN)
                                 warning(['Something wrong with session ' SessionID]);
-                            elseif SessionN>x.dataset.nSessions
+                            elseif SessionIndex>x.dataset.nSessions
                                 if ~max(printedSessionN==SessionN)
                                     warning('Could not find values for other covariates');
                                 end
                                 printedSessionN = [printedSessionN SessionN];
                             else
-
+                                
                                 %% Print the covariates and data
                                 iSubjectSession_SetsID = x.dataset.nSessions*(SubjectIndex-1)+SessionN;
                                 iSubjectSession_DAT = iSubjSess;
@@ -341,7 +349,7 @@ function statCell = xASL_stat_PrintStats_AddSubjectSessionStatCellArray(x,statCe
     
     % Add subject and session of current row
     statCell{rowNum,1} = x.dataset.currentSubjectID;
-    statCell{rowNum,2} = x.dataset.currentSubjectID;
+    statCell{rowNum,2} = x.dataset.currentSessionID;
 
 end
 
@@ -370,7 +378,7 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, i
     end
     
     for iPrint=1:size(printMatrix,2)
-        String2Print = printMatrix(iSubjectSession_SetsID, iPrint);
+        String2Print = printMatrix(iSubjectSession_DAT, iPrint); % Previously we used iSubjectSession_SetsID
 
         if length(optionsMatrix{iPrint})>1 % we need options
             if length(optionsMatrix{iPrint}) >= length(unique(printMatrix(:,iPrint)))-2 % allow for zeros & NaNs

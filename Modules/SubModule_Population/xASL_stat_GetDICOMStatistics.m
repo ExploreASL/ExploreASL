@@ -46,6 +46,12 @@ PathTSV = fullfile(x.D.DICOMparameterDir, ['QuantificationParameters_' ScanType 
 TSV = {'participant_id' 'session'};
 TSV(1,3:2+nFields) = matFields(1:nFields);
 
+% Initialize empty table
+numElements = size(TSV,2);
+numSubjectsSessions = x.nSubjects*x.dataset.nSessions;
+for iSubjSess=1:numSubjectsSessions
+    TSV(1+iSubjSess,:) = repmat({' '},1, numElements);
+end
 
 %% 1) Load & save individual parameter files
 fprintf('%s\n','Loading & saving individual parameter files...  ');
@@ -84,14 +90,14 @@ for iSubject=1:x.nSubjects
             if isfield(Parms,matFields{iField}) && ~isempty(Parms.(matFields{iField}))
 
                 TSV{1+iSubjSess, 2+iField} = xASL_num2str(Parms.(matFields{iField}));
-                if isnumeric( Parms.(matFields{iField}) )
+                if isnumeric(Parms.(matFields{iField}))
                     TempData = Parms.(matFields{iField});
                     if length(TempData)>1
                         warning(['Parms.' matFields{iField} ' had multiple values']);
                     end
                     x.S.par(iSubjSess,iField) = min(TempData);
                 else
-                    x.S.par(iSubjSess,iField) = NaN; % fill empties with NaNs, not zeros!
+                    x.S.par(iSubjSess,iField) = 'n/a'; % fill empties with NaNs, not zeros!
                 end
             end
         end
@@ -109,7 +115,7 @@ end
 SummaryStats = {'mean' 'SD' '"CV (coeff var, %)"' 'up_threshold (mean+3SD)' 'lo_threshold (mean-3SD)'};
 
 fprintf('%s\n',['Printing summary of ' ScanType ' DICOM values']);
-TSV(end+1, :) = repmat({''},[1 size(TSV,2)]);
+TSV(end+1, :) = repmat({'_'},1, numElements);
 
 for iField=1:size(x.S.par,2)
     temp_data = x.S.par(:,iField);
@@ -129,6 +135,14 @@ end
 
 
 %% 3) Write TSV file
+
+% Remove empty elements
+TSV(cellfun('isempty',TSV)) = {'_'};
+
+% Remove nan elements
+TSV(cell2mat(cellfun(@(x)any(isnan(x)),TSV,'UniformOutput',false))) = {'n/a'};
+
+% Write TSV
 xASL_tsvWrite(TSV, PathTSV, bOverwrite);
 
 

@@ -36,10 +36,6 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
             if ~isfield(x,conversionTable{iField,2}) || ...
                     ~isfield(x.(conversionTable{iField,2}),conversionTable{iField,3}) || ...
                     ~isfield(x.(conversionTable{iField,2}),conversionTable{iField,4})
-                % Debugging
-                if bVerbose
-                    fprintf('%s %s %s\n',conversionTable{iField,2},conversionTable{iField,3},conversionTable{iField,4});
-                end
                 % Deprecated field detected
                 nOutdatedParameter = nOutdatedParameter+1;
                 detectedFields{nOutdatedParameter,1} = conversionTable{iField,1};
