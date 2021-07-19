@@ -97,7 +97,7 @@ for iSubject=1:x.nSubjects
                     end
                     x.S.par(iSubjSess,iField) = min(TempData);
                 else
-                    x.S.par(iSubjSess,iField) = 'n/a'; % fill empties with NaNs, not zeros!
+                    x.S.par(iSubjSess,iField) = NaN; % fill empties with NaNs, not zeros!
                 end
             end
         end
@@ -122,8 +122,8 @@ for iField=1:size(x.S.par,2)
     statField{1}(iField) = xASL_stat_MeanNan( temp_data );
     statField{2}(iField) = xASL_stat_StdNan( temp_data);
     statField{3}(iField) = 100 * statField{2}(iField) / statField{1}(iField) ;
-    statField{4}(iField) = statField{1}(iField) + (3 * statField{2}(iField) );
-    statField{5}(iField) = statField{1}(iField) - (3 * statField{2}(iField) );
+    statField{4}(iField) = statField{1}(iField) + (3 * statField{2}(iField));
+    statField{5}(iField) = statField{1}(iField) - (3 * statField{2}(iField));
 end
 
 for iStat=1:length(SummaryStats)
