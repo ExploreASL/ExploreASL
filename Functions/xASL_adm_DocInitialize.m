@@ -55,6 +55,9 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     
     % Copy and modify the index README
     xASL_Copy(fullfile(x.MyPath,'README.md'),fullfile(outputFolder,'index.md'),1);
+
+    % Copy the DataParTemplate.md
+    xASL_Copy(fullfile(x.MyPath,'DataParTemplate.md'),fullfile(outputFolder,'ParameterDescriptions.md'),1);
     
     % Logo
     swapTextInFile(fullfile(outputFolder,'index.md'),...
