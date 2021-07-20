@@ -108,6 +108,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     %% 1. Initialize the parameters
 
     % First do the basic parameter admin and initialize the default values
+    x = xASL_init_SubStructs(x);
     if nargin < 1 ||  isempty(studyPath)
         error('The studyPath needs to be defined');
     end

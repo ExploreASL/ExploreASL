@@ -36,6 +36,7 @@ function [result, x] = xASL_module_Population(x)
 %% Admin
 
 % Create population directory
+x = xASL_init_SubStructs(x);
 xASL_adm_CreateDir(x.D.PopDir);
 
 % Input check
