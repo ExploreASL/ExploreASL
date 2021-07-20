@@ -33,7 +33,7 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %              
 %              Different data setups include:
 %              ASL readouts (3D spiral, 3D GRASE, 2D EPI)
-%              ASL vendors (GE, Philips, Siemens)
+%              ASL Manufacturers (GE, Philips, Siemens)
 %              With/without background suppression
 %              With/without FLAIR processing (LST LGA or LPA)
 %              With/without lesion masking from tumor
@@ -389,8 +389,15 @@ end
 
 % ============================================================
 %% 7) Compile results table
-x = ExploreASL; % Initialize again to make sure that the TemplateDir exists
+
+% Define results table name & fields
+ResultTableName = datestr(now,'yyyy-mm-dd_HH_MM');
+ResultTableName(end-2) = 'h';
 ResultsTable = {'Data', 'mean_qCBF_TotalGM' 'median_qCBF_TotalGM' 'median_qCBF_DeepWM' 'CoV_qCBF_TotalGM' 'GMvol' 'WMvol' 'CSFvol' 'PipelineCompleted' 'TC_ASL_Registration' 'TC_M0_Registration'};
+
+% Initialize again to make sure that the TemplateDir exists
+x = ExploreASL;
+
 fprintf('Reading & parsing results:   ');
 for iList=1:length(Dlist) % iterate over example datasets
     xASL_TrackProgress(iList, length(Dlist));
@@ -406,40 +413,49 @@ for iList=1:length(Dlist) % iterate over example datasets
     ResultFile{3} = xASL_adm_GetFileList(StatsDir,'(?i)^median_qCBF.*DeepWM.*PVC0\.tsv$','FPList');
     ResultFile{4} = xASL_adm_GetFileList(StatsDir,'(?i)^CoV_qCBF.*TotalGM.*PVC0\.tsv$','FPList');
     ResultFile{5} = xASL_adm_GetFileList(VolumeDir,'(?i)^TissueVolume.*\.tsv$','FPList');
-
-	for iFile=1:length(ResultFile) % iterate over ROI results
-		if length(ResultFile{iFile})<1
-            ResultsTable{1+iList,1+iFile} = 'empty';
-            ResultsTable{1+iList,2+iFile} = 'empty';
-            ResultsTable{1+iList,3+iFile} = 'empty';
-		elseif iFile<5 % check the ASL parameters
-            [~, TempTable] = xASL_bids_csv2tsvReadWrite(ResultFile{iFile}{end});
-            ResultsTable{1+iList,1+iFile} = TempTable{3,end-2};
-		else % check the volumetric parameters
-			[~, TempTable] = xASL_bids_csv2tsvReadWrite(ResultFile{iFile}{end});
-			% Backward compatibility:
-			% Volumetrics used to be saved as '_(L)', but this is converted by spm_jsonread to its HEX counterpart '_0x28L0x29'
-			% Now we always save to _L to avoid this. For backward compatibility we still check the old options here
-            IndexGM = find(cellfun(@(y) ~isempty(regexpi(y,'(GM_volume_L|GM_volume_(L)|GM_volume_0x28L0x29)')), TempTable(1,:)));
-            IndexWM = find(cellfun(@(y) ~isempty(regexpi(y,'(WM_volume_L|WM_volume_(L)|WM_volume_0x28L0x29)')), TempTable(1,:)));
-            IndexCSF = find(cellfun(@(y) ~isempty(regexpi(y,'(CSF_volume_L|CSF_volume_(L)|CSF_volume_0x28L0x29)')), TempTable(1,:)));
-			if ~isempty(IndexGM)
-				ResultsTable{1+iList,1+iFile} = TempTable{2, IndexGM};
-			else
-				ResultsTable{1+iList,1+iFile} = 'n/a';
-			end
-			if ~isempty(IndexWM)
-				ResultsTable{1+iList,2+iFile} = TempTable{2, IndexWM};
-			else
-				ResultsTable{1+iList,2+iFile} = 'n/a';
-			end
-			if ~isempty(IndexCSF)
-				ResultsTable{1+iList,3+iFile} = TempTable{2, IndexCSF};
-			else
-				ResultsTable{1+iList,2+iFile} = 'n/a';
-			end
-		end
-	end
+    
+    for iFile=1:length(ResultFile) % iterate over ROI results
+        % Make sure one individual file does not crash the table generation
+        try
+            if length(ResultFile{iFile})<1
+                ResultsTable{1+iList,1+iFile} = 'empty';
+                ResultsTable{1+iList,2+iFile} = 'empty';
+                ResultsTable{1+iList,3+iFile} = 'empty';
+            elseif iFile<5 % check the ASL parameters
+                [~, TempTable] = xASL_bids_csv2tsvReadWrite(ResultFile{iFile}{end});
+                ResultsTable{1+iList,1+iFile} = TempTable{3,end-2};
+            else % check the volumetric parameters
+                [~, TempTable] = xASL_bids_csv2tsvReadWrite(ResultFile{iFile}{end});
+                % Backward compatibility:
+                % Volumetrics used to be saved as '_(L)', but this is converted by spm_jsonread to its HEX counterpart '_0x28L0x29'
+                % Now we always save to _L to avoid this. For backward compatibility we still check the old options here
+                IndexGM = find(cellfun(@(y) ~isempty(regexpi(y,'(GM_volume_L|GM_volume_(L)|GM_volume_0x28L0x29)')), TempTable(1,:)));
+                IndexWM = find(cellfun(@(y) ~isempty(regexpi(y,'(WM_volume_L|WM_volume_(L)|WM_volume_0x28L0x29)')), TempTable(1,:)));
+                IndexCSF = find(cellfun(@(y) ~isempty(regexpi(y,'(CSF_volume_L|CSF_volume_(L)|CSF_volume_0x28L0x29)')), TempTable(1,:)));
+                if ~isempty(IndexGM)
+                    ResultsTable{1+iList,1+iFile} = TempTable{2, IndexGM};
+                else
+                    ResultsTable{1+iList,1+iFile} = 'n/a';
+                end
+                if ~isempty(IndexWM)
+                    ResultsTable{1+iList,2+iFile} = TempTable{2, IndexWM};
+                else
+                    ResultsTable{1+iList,2+iFile} = 'n/a';
+                end
+                if ~isempty(IndexCSF)
+                    ResultsTable{1+iList,3+iFile} = TempTable{2, IndexCSF};
+                else
+                    ResultsTable{1+iList,3+iFile} = 'n/a';
+                end
+            end
+        catch ME
+            % Something went wrong, we set all values to n/a
+            fprintf('%s\n', ME.message);
+            ResultsTable{1+iList,1+iFile} = 'n/a';
+            ResultsTable{1+iList,2+iFile} = 'n/a';
+            ResultsTable{1+iList,3+iFile} = 'n/a';
+        end
+    end
 	% check if there are missing lock files
 	if exist(fullfile(AnalysisDir,'Missing_Lock_files.csv'),'file')
 		ResultsTable{1+iList,4+length(ResultFile)} = 0; % pipeline not completed
@@ -464,8 +480,6 @@ end
 fprintf('\n');
 
 % Save results
-ResultTableName = datestr(now,'yyyy-mm-dd_HH_MM');
-ResultTableName(end-2) = 'h';
 ResultTableFile = [ResultTableName,'_ResultsTable.mat'];
 SaveFile = fullfile(TestDirOrig, ResultTableFile);
 save(SaveFile, 'ResultsTable');
