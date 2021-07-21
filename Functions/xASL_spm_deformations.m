@@ -51,7 +51,7 @@ end
 
 if nargin<1 || isempty(x)
     x.settings.Quality = true; % default quality
-elseif ~isfield(x,'Quality')
+elseif ~isfield(x,'settings') || ~isfield(x.settings,'Quality')
     x.settings.Quality = true;
 end
 if ~isfield(x,'P')
