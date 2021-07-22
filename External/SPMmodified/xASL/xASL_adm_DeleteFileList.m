@@ -1,4 +1,4 @@
-function filepaths = xASL_adm_DeleteFileList(strDirectory, strRegEx, bRecurse, nRequired)
+function [filepaths, pathsNotDeleted] = xASL_adm_DeleteFileList(strDirectory, strRegEx, bRecurse, nRequired)
 % Deletes files in the specified directory that match the regular expression.
 %
 % FORMAT: filepaths = xASL_adm_DeleteFileList(strDirectory, strRegEx[, bRecurse, nRequired])
@@ -21,7 +21,10 @@ function filepaths = xASL_adm_DeleteFileList(strDirectory, strRegEx, bRecurse, n
 %                  An exception will be thrown if this requirement is not met. Use [n Inf] to accept at least n.
 %                  Default is to accept any count. You can also provide a scalar [a] requiring to accept exactly 'a' matches
 % OUTPUT:
-%   filepaths - list of the deleted files
+%   filepaths           - list of the deleted files
+%   pathsNotDeleted     - list of the not deleted files (if they existed but could not be deleted)
+%                         note that unexisting files are neither listed in
+%                         filepaths or pathsNotDeleted
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Delete the files that match regular expression STRREGEXP in the given directory STRDIRECTORY.
 %              Deletes recursively if specified in BRECURSE. Deletes all files unless the number is specified
@@ -54,6 +57,9 @@ function filepaths = xASL_adm_DeleteFileList(strDirectory, strRegEx, bRecurse, n
         nRequired = [0 Inf]; 
     end
     
+    % initialize pathsNotDeleted
+    pathsNotDeleted = cell(0);
+    
     % return the list as cell array of strings because SPM cfg_files structure requires this.
     filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
 	
@@ -64,24 +70,33 @@ function filepaths = xASL_adm_DeleteFileList(strDirectory, strRegEx, bRecurse, n
         
         try
             delete(filepaths{:});
-            filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
+            pathsNotDeleted = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
         catch ME
             % try deleting residual paths file-by-file
             % this can help in cases of symbolic links
-            filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
+            pathsNotDeleted = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
             for iPath=1:numel(filepaths)
                 xASL_delete(filepaths{iPath});
             end
             % then check if really everything was deleted, otherwise throw the
             % warning
-            filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
-            if ~isempty(filepaths)
+            pathsNotDeleted = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequired, false);
+            if ~isempty(pathsNotDeleted)
                 fprintf('%s\n', ME);
             end
         end
         
-        if ~isempty(filepaths)
+        if ~isempty(pathsNotDeleted)
             warning('Something went wrong deleting files');
+            for iPath=1:numel(pathsNotDeleted)
+                listNotDeleted(:,iPath) = strcmp(filepaths, pathsNotDeleted{iPath});
+            end
+            listDeleted = ~sum(listNotDeleted, 2);
+            if ~isempty(listDeleted) && sum(listDeleted)>0
+                filepaths = filepaths(listDeleted);
+            else
+                filepaths = cell(0); % no files deleted, create empty list
+            end
         end
         
         warning('on', 'MATLAB:DELETE:FileNotFound');
