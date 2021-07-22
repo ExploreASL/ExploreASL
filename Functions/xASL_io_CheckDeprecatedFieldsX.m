@@ -21,6 +21,9 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+    % Add default substructs
+    [x] = xASL_init_SubStructs(x);
+
     if nargin<2 || isempty(bVerbose)
         bVerbose = false;
     end
