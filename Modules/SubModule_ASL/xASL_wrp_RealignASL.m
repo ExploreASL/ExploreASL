@@ -98,7 +98,7 @@ xASL_delete(rpfile);
 
 % Run SPM
 
-%####### Calculating the motion for every first TE of each PLD and
+% Calculating the motion for every first TE of each PLD and
 % considering it the same for the other TEs from that PLD.
 %
 % if nFrames>2 && bSubtraction && length(x.EchoTime)>1  %Multi TE 
