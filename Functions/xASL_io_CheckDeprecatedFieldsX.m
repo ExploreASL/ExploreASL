@@ -12,6 +12,21 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Check deprecated fields of x and fix them based on a conversion table.
+%               This table is used within:
+%
+%                - xASL_bids_parms2BIDS
+%                - xASL_io_ReadDataPar
+%                - xASL_adm_LoadParms
+%                - xASL_adm_LoadX
+%
+%               It is not only used to convert deprecated x structure
+%               fields to fields within up-to-date substructures of x, but
+%               also to rename fields and to move them back and forwards
+%               for the comparison with BIDS parameters within
+%               xASL_bids_parms2BIDS e.g., which is why it is important to
+%               make sure that if a row within the table is used to move &
+%               rename, that there is also another row where the new
+%               fieldname is moved to the same substructure.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
