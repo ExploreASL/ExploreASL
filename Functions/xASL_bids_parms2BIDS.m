@@ -72,14 +72,8 @@ changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'PostLabelingDelay'   'Art
 
 % Goes through all XASL fields
 if ~isempty(inXasl)
-	% Move all fields from Q to the main structure
-	if isfield(inXasl,'Q')
-		FieldsQ = fields(inXasl.Q);
-		for iQ=1:length(FieldsQ)
-			inXasl.(FieldsQ{iQ}) = inXasl.Q.(FieldsQ{iQ});
-		end
-		inXasl = rmfield(inXasl,'Q');
-	end
+    % Flatten inXasl structure (include x.Q, x.settings, x.dataset, x.modules, x.modules.structural, x.modules.asl, x.modules.population parameters)
+	inXasl = xASL_wrp_Quantify_FlattenX(inXasl);
 	
 	% If output is in BIDS, then XASL fields need to be converted
 	if bOutBids
@@ -334,3 +328,46 @@ end
 
 
 end
+
+
+% Flatten the x structure to a single level
+function inXasl = xASL_wrp_Quantify_FlattenX(inXasl)
+
+    % Flatten inXasl structure
+    
+    % Move x.Q, x.settings, x.dataset, x.modules, x.modules.structural,
+    % x.modules.asl, and x.modules.population parameters to main level of x
+    
+    firstLevelStructs = {'Q', 'settings', 'dataset', 'modules'};
+    secondLevelStructs = {'structural', 'asl', 'population'};
+    
+    % Iterate over first level structs
+    for iStruct = 1:numel(firstLevelStructs)
+        if isfield(inXasl,firstLevelStructs{iStruct})
+            FieldsQ = fields(inXasl.(firstLevelStructs{iStruct}));
+            for iField=1:length(FieldsQ)
+                inXasl.(FieldsQ{iField}) = inXasl.(firstLevelStructs{iStruct}).(FieldsQ{iField});
+            end
+            inXasl = rmfield(inXasl,firstLevelStructs{iStruct});
+        end
+    end
+    
+    % Iterate over second level structs
+    if isfield(inXasl,'modules')
+        for iStruct = 1:numel(secondLevelStructs)
+            if isfield(inXasl.modules,secondLevelStructs{iStruct})
+                FieldsQ = fields(inXasl.modules.(secondLevelStructs{iStruct}));
+                for iField=1:length(FieldsQ)
+                    inXasl.(FieldsQ{iField}) = inXasl.modules.(secondLevelStructs{iStruct}).(FieldsQ{iField});
+                end
+                inXasl = rmfield(inXasl.modules,secondLevelStructs{iStruct});
+            end
+        end
+    end
+
+
+end
+
+
+
+
