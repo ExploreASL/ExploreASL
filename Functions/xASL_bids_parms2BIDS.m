@@ -327,8 +327,10 @@ if bOutBids ~= 1
 	end
 end
 
-% Move fields to correct position in x structure
-outParms = xASL_io_CheckDeprecatedFieldsX(outParms);
+% If we convert to xASL format, we have to move fields to correct position in the x structure
+if ~bOutBids
+    outParms = xASL_io_CheckDeprecatedFieldsX(outParms);
+end
 
 
 end
