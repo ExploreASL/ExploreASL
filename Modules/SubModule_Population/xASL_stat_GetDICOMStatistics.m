@@ -38,6 +38,7 @@ end
 
 xASL_adm_CreateDir(x.D.DICOMparameterDir);
 
+% Mat fields that will be printed (some are in x.(field) and some in x.Q.(field))
 matFields = {'RepetitionTime' 'EchoTime' 'NumberOfTemporalPositions' 'MRScaleSlope' 'RescaleSlopeOriginal' 'RescaleIntercept' 'Scanner' 'SliceReadoutTime'};
 nFields = length(matFields);
 PathTSV = fullfile(x.D.DICOMparameterDir, ['QuantificationParameters_' ScanType '.tsv']);
@@ -87,8 +88,9 @@ for iSubject=1:x.nSubjects
         
         % print all fields for subject_session & load them into x.S.par variabele for later calculations
         for iField=1:nFields
+            % Parms.(field)
             if isfield(Parms,matFields{iField}) && ~isempty(Parms.(matFields{iField}))
-
+                % Get field from parameters
                 TSV{1+iSubjSess, 2+iField} = xASL_num2str(Parms.(matFields{iField}));
                 if isnumeric(Parms.(matFields{iField}))
                     TempData = Parms.(matFields{iField});
@@ -98,6 +100,22 @@ for iSubject=1:x.nSubjects
                     x.S.par(iSubjSess,iField) = min(TempData);
                 else
                     x.S.par(iSubjSess,iField) = NaN; % fill empties with NaNs, not zeros!
+                end
+            end
+            % Parms.Q.(field)
+            if isfield(Parms,'Q')
+                if isfield(Parms.Q,matFields{iField}) && ~isempty(Parms.Q.(matFields{iField}))
+                    % Get field from parameters.Q
+                    TSV{1+iSubjSess, 2+iField} = xASL_num2str(Parms.Q.(matFields{iField}));
+                    if isnumeric(Parms.Q.(matFields{iField}))
+                        TempData = Parms.Q.(matFields{iField});
+                        if length(TempData)>1
+                            warning(['Parms.Q.' matFields{iField} ' had multiple values']);
+                        end
+                        x.S.par(iSubjSess,iField) = min(TempData);
+                    else
+                        x.S.par(iSubjSess,iField) = NaN; % fill empties with NaNs, not zeros!
+                    end
                 end
             end
         end
