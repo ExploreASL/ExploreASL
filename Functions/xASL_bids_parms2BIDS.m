@@ -327,11 +327,8 @@ if bOutBids ~= 1
 	end
 end
 
-% Revamp: Move fields
-if isfield(outParms,'bReproTesting')
-	% Move to x.settings
-	outParms.settings.bReproTesting = outParms.bReproTesting;
-	outParms = rmfield(outParms,'bReproTesting');
-end
+% Move fields to correct position in x structure
+outParms = xASL_io_CheckDeprecatedFieldsX(outParms);
+
 
 end
