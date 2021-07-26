@@ -44,6 +44,9 @@ end
 	
 %% 2. Take all the manually predefined fields from studyPar
 jsonOut = studyPar;
+
+% Check if required fields exist in studyPar but not in jsonIn
+jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,'asl')
 	
 %% 3. Extract the scaling factors from the JSON header
 if ~isempty(regexpi(jsonIn.Manufacturer,'Philips'))
@@ -296,7 +299,7 @@ if jsonOut.MRAcquisitionType(1) == '2'
 	end
 	
 	% If the length of SliceTiming fits to the number of slices, do nothing
-	if length(jsonOut.SliceTiming) ~= dimASL(3)
+	if isfield(jsonOut,'SiemensSliceTime') && (length(jsonOut.SliceTiming) ~= dimASL(3))
 		% if the length of studyPar.sliceTiming is higher than 1 and the difference non-zero then use this
 		if length(jsonOut.SliceTiming) > 1 && abs(jsonOut.SliceTiming(2)-jsonOut.SliceTiming(1)) > 0
 			jsonOut.SliceTiming = jsonOut.SliceTiming(2)-jsonOut.SliceTiming(1);
@@ -430,3 +433,5 @@ if isfield(jsonOut,'BolusCutOffFlag') && jsonOut.BolusCutOffFlag
 end
 
 end
+
+

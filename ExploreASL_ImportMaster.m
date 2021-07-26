@@ -35,7 +35,7 @@ function [x] = ExploreASL_ImportMaster(x)
                     try
                         xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, x);
                     catch loggingEntry
-                        fprintf(2,'DICOM to NIfTI module failed...\n');
+                        ExploreASL_ImportMaster_PrintLoggingEntry('DICOM to NIfTI',loggingEntry);
                         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                     end
                 else
@@ -48,7 +48,7 @@ function [x] = ExploreASL_ImportMaster(x)
                     try
                         [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, x);
                     catch loggingEntry
-                        fprintf(2,'NIfTI to BIDS module failed:\n%s\n',loggingEntry.message);
+                        ExploreASL_ImportMaster_PrintLoggingEntry('NIfTI to BIDS',loggingEntry);
                         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                     end
                 else
@@ -61,7 +61,7 @@ function [x] = ExploreASL_ImportMaster(x)
                     try
                         [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, x);
                     catch loggingEntry
-                        fprintf(2,'Deface module failed...\n');
+                        ExploreASL_ImportMaster_PrintLoggingEntry('Deface',loggingEntry);
                         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                     end
                 else
@@ -74,7 +74,7 @@ function [x] = ExploreASL_ImportMaster(x)
                     try
                         x = xASL_imp_BIDS2Legacy(x);
                     catch loggingEntry
-                        fprintf(2,'BIDS to legacy module failed...\n');
+                        ExploreASL_ImportMaster_PrintLoggingEntry('BIDS to legacy',loggingEntry);
                         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
                     end
                 else
@@ -93,5 +93,18 @@ function [x] = ExploreASL_ImportMaster(x)
         x.opts.ImportModules = [0 0 0 0];
     end
     
+end
+
+
+%% Print logging information
+function ExploreASL_ImportMaster_PrintLoggingEntry(moduleName,loggingEntry)
+
+    fprintf(2,'%s module failed...\n',moduleName);
+
+    % Check loggingEntry
+    if size(loggingEntry.stack,1)>0
+        fprintf(2,'%s: line %d...\n',loggingEntry.stack(1).name,loggingEntry.stack(1).line);
+    end
+
 end
 

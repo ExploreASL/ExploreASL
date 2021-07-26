@@ -28,6 +28,10 @@ function jsonOut = xASL_bids_BIDSifyM0(jsonIn, jsonInASL, studyPar, pathM0In, pa
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+% Check if required fields exist in studyPar but not in jsonIn
+jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,'m0');
+
+% Create default output
 jsonOut = jsonIn;
 
 %% 1. Check the scaling in DICOMs

@@ -65,7 +65,7 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubject)
             jsonAnat = spm_jsonread([anatPath,'.json']);
 			
             % Save the JSON
-			jsonAnat = xASL_bids_BIDSifyAnatJSON(jsonAnat);
+			jsonAnat = xASL_bids_BIDSifyAnatJSON(jsonAnat,studyPar);
             jsonAnat = xASL_bids_VendorFieldCheck(jsonAnat);
             jsonAnat = xASL_bids_JsonCheck(jsonAnat,'');
 			

@@ -18,10 +18,19 @@ function jsonOut = xASL_bids_VendorFieldCheck(jsonIn)
 %
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+
+
+% Basic structs
 jsonOut = struct;
 jsonRemove = struct;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Check required fields
+if ~isfield(jsonIn,'Manufacturer')
+	warning('Missing vendor information...');
+	jsonOut = jsonIn;
+	return
+end
+
 % Rename certain fields from the vendor-name to BIDS name
 
 % Rename the coil names for different manufacturers

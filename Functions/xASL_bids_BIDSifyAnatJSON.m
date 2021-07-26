@@ -1,10 +1,11 @@
-function jsonOut = xASL_bids_BIDSifyAnatJSON(jsonIn)
+function jsonOut = xASL_bids_BIDSifyAnatJSON(jsonIn,studyPar)
 %xASL_bids_BIDSifyAnatJSON Goes through the JSON structure of an anatomical file and makes sure that all the necessary conversions and checks to BIDS format are applied
 %
 % FORMAT: jsonOut = xASL_bids_BIDSifyAnatJSON(jsonIn)
 %
 % INPUT:
-%   jsonIn  - JSON with the input fields (REQUIRED)
+%   jsonIn    - JSON with the input fields (REQUIRED)
+%   studyPar  - JSON with the BIDS studyPar infos (REQUIRED)
 %
 % OUTPUT: 
 %   jsonOut - ordered and checked JSON structure
@@ -19,11 +20,15 @@ function jsonOut = xASL_bids_BIDSifyAnatJSON(jsonIn)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-jsonOut = jsonIn;
-% If RepetitionTimePreparation is equal to RepetitionTime, then remove RepetitionTimePreparation
-if isfield(jsonIn,'RepetitionTime') && isfield(jsonIn,'RepetitionTimePreparation') &&...
-		isnear(jsonIn.RepetitionTime,jsonIn.RepetitionTimePreparation)
-	jsonOut = rmfield(jsonOut,'RepetitionTimePreparation');
-end
+
+	% Fix jsonIn based on studyPar
+	jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,'anat');
+
+	jsonOut = jsonIn;
+	% If RepetitionTimePreparation is equal to RepetitionTime, then remove RepetitionTimePreparation
+	if isfield(jsonIn,'RepetitionTime') && isfield(jsonIn,'RepetitionTimePreparation') &&...
+			isnear(jsonIn.RepetitionTime,jsonIn.RepetitionTimePreparation)
+		jsonOut = rmfield(jsonOut,'RepetitionTimePreparation');
+	end
 
 end
