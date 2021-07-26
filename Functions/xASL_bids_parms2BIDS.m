@@ -254,16 +254,18 @@ if bPriorityBids
 				outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
 			else
 				% If the field is already there, then check if the field to overwrite is not contain NaN or full of zeros or empty strings
-				% Do this separately for cell and non-cell arrays
-				if iscell(inBids.(FieldsA{iA}))
-					if sum(~cellfun(@isempty, inBids.(FieldsA{iA})))>0
-						outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
-					end
-				else
-					if (sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) ~= 0) > 0) && (sum(~isinf(inBids.(FieldsA{iA})))>0) && (~isempty(inBids.(FieldsA{iA})))
-						outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
-					end
-				end
+                % Do this separately for cell and non-cell arrays
+                if iscell(inBids.(FieldsA{iA}))
+                    if sum(~cellfun(@isempty, inBids.(FieldsA{iA})))>0
+                        outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+                    end
+                elseif isstruct(inBids.(FieldsA{iA}))
+                    % Ignore structs within BIDS metadata for now
+                else
+                    if (sum(isnan(inBids.(FieldsA{iA})))==0) && (sum(inBids.(FieldsA{iA}) ~= 0) > 0) && (sum(~isinf(inBids.(FieldsA{iA})))>0) && (~isempty(inBids.(FieldsA{iA})))
+                        outParms.(FieldsA{iA}) = inBids.(FieldsA{iA});
+                    end
+                end
 			end
 		end
 	end
