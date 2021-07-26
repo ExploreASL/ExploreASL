@@ -77,6 +77,9 @@ end
 
 if ~xASL_exist(PWI_Path, 'file')
     warning('Skipped xASL_wrp_Quantify: files missing, please rerun step 4: xASL_wrp_ResampleASL');
+	if bUseBasilQuantification
+		fprintf('%s\n', 'Note the PWI4D.nii used in BASIL is deleted after quantification');
+	end
     fprintf('%s\n', ['Missing: ' PWI_Path]);
     return;
 end
