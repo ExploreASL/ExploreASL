@@ -6,6 +6,8 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 %
 % INPUT:
 %   x            - structure containing fields with all information required to run the population module (REQUIRED)
+%   x.bForceTemplates - boolean to force creation templates, even with a very
+%                       low number of subjects
 %   bSaveUnmasked - allows saving the same images without masking (OPTIONAL, DEFAULT=true)
 %   bCompute4Sets - creates the same parametric images for subsets of the
 %                  data (e.g. cohorts, sites, etc)
@@ -153,7 +155,13 @@ if ~isfield(x,'GradualSkull')
     x.GradualSkull = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'));
 end
 
-if x.dataset.nSubjectsSessions<6
+if ~isfield(x, 'bForceTemplates') || isempty(x.bForceTemplates)
+    x.bForceTemplates = false;
+elseif x.bForceTemplates==1
+    bSkipWhenMissingScans = false;
+end
+
+if ~x.bForceTemplates && x.dataset.nSubjectsSessions<6
     % With too small datasets, created templated won't be reliable
     fprintf('%s\n',['Too few images (' num2str(x.dataset.nSubjectsSessions) ') for creating templates/parametric images, skipping...']);
     return;
