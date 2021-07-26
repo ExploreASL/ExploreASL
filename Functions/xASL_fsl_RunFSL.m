@@ -74,6 +74,7 @@ end
 %     ExistCUDA = false;
 % end
 
+
 %% Define FSL environment script (only declares variables, OK to repeat)
 FSLinit0 = ['FSLDIR=' FSLdir ';'];
 if exist(fullfile(RootFSLdir,'etc','fslconf','fsl.sh'),'file')
@@ -96,6 +97,20 @@ else
     FSLoutput = 'FSLOUTPUTTYPE=NIFTI; export FSLOUTPUTTYPE; ';
     OutputString = '.nii';
 end
+
+
+%% Check FSL version
+pathVersion = fullfile(RootFSLdir, 'etc', 'fslversion');
+if ~exist(pathVersion, 'file')
+    warning('Couldnt detect FSL version');
+else
+    FSLversion = xASL_str2num(load(pathVersion));
+    if FSLversion<6
+        warning('FSL version lower than 6 detected, this has not been tested yet');
+        fprintf('Consider updating your FSL version\n');
+    end
+end
+
 
 %% Prepend the correct FSL directory if missing
 if length(FSLCommand)>5 && strcmp(FSLCommand(1:5),'/bin/')
