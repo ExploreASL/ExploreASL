@@ -20,7 +20,7 @@ function UnitTest = xASL_ut_function_xASL_adm_DeleteFileList(TestRepository)
 %% Test run 1
 
 % Give your individual subtest a name
-UnitTest.tests(1).testname = 'Delete file lists (basic test)';
+UnitTest.tests(1).testname = 'Delete file lists (paths with spaces)';
 
 % Start the test
 testTime = tic;
@@ -28,7 +28,7 @@ testTime = tic;
 % Prepare tests
 
 % Create six test files in test directory
-mkdir(fullfile(TestRepository,'UnitTesting','working_directory'),'dir with spaces');
+xASL_adm_CreateDir(fullfile(TestRepository,'UnitTesting','working_directory','dir with spaces'));
 fid01 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','dir with spaces','test_1.txt'), 'wt');
 fid02 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','dir with spaces','test_2.txt'), 'wt');
 fid03 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','dir with spaces','test_3.txt'), 'wt');
@@ -37,8 +37,48 @@ fid05 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','dir wit
 fid06 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','dir with spaces','dont_3.json'), 'wt');
 fclose('all');
 
+% Run your test here
+pathWithSpaces = fullfile(TestRepository,'UnitTesting','working_directory','dir with spaces');
+[deletedFilesA,NotDeletedFilesA] = xASL_adm_DeleteFileList(pathWithSpaces, '^.+.txt$');
+
+rmdir(fullfile(TestRepository,'UnitTesting','working_directory','dir with spaces'), 's');
+
+% Define one or multiple test conditions here
+testCondition = true;
+
+% Define one or multiple test conditions here
+if isempty(deletedFilesA)
+    testCondition = false;
+end
+if ~isempty(NotDeletedFilesA)
+    testCondition = false; 
+end
+if ~(numel(deletedFilesA)==3)
+    testCondition = false;
+end
+if ~(numel(NotDeletedFilesA)==0)
+    testCondition = false;
+end
+
+% Get test duration
+UnitTest.tests(1).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(1).passed = testCondition;
+
+
+%% Test run 2
+
+% Give your individual subtest a name
+UnitTest.tests(2).testname = 'Delete file lists (paths without spaces)';
+
+% Start the test
+testTime = tic;
+
+% Prepare tests
+
 % Create six test files in test directory
-mkdir(fullfile(TestRepository,'UnitTesting','working_directory'),'dir_without_spaces');
+xASL_adm_CreateDir(fullfile(TestRepository,'UnitTesting','working_directory','dir_without_spaces'));
 fid07 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','dir_without_spaces','test_1.txt'), 'wt');
 fid08 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','dir_without_spaces','test_2.txt'), 'wt');
 fid09 = fopen(fullfile(TestRepository,'UnitTesting','working_directory','dir_without_spaces','test_3.txt'), 'wt');
@@ -49,36 +89,35 @@ fclose('all');
 
 
 % Run your test here
-pathWithSpaces = fullfile(TestRepository,'UnitTesting','working_directory','dir with spaces');
 pathWithoutSpaces = fullfile(TestRepository,'UnitTesting','working_directory','dir_without_spaces');
-[deletedFilesA,NotDeletedFilesA] = xASL_adm_DeleteFileList(pathWithSpaces, '^.+.txt$');
 [deletedFilesB,NotDeletedFilesB] = xASL_adm_DeleteFileList(pathWithoutSpaces, '^.+.txt$');
 
-rmdir(fullfile(TestRepository,'UnitTesting','working_directory','dir with spaces'), 's');
 rmdir(fullfile(TestRepository,'UnitTesting','working_directory','dir_without_spaces'), 's');
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if isempty(deletedFilesA) || isempty(deletedFilesB)
+if isempty(deletedFilesB)
     testCondition = false;
 end
-if isempty(NotDeletedFilesA) || isempty(NotDeletedFilesB)
+if ~isempty(NotDeletedFilesB)
     testCondition = false; 
 end
-if ~(numel(deletedFilesA)==3 && numel(deletedFilesB)==3)
+if ~(numel(deletedFilesB)==3)
     testCondition = false;
 end
-if ~(numel(NotDeletedFilesA)==3 && numel(NotDeletedFilesB)==3)
+if ~(numel(NotDeletedFilesB)==0)
     testCondition = false;
 end
 
 % Get test duration
-UnitTest.tests(1).duration = toc(testTime);
+UnitTest.tests(2).duration = toc(testTime);
 
 % Evaluate your test
-UnitTest.tests(1).passed = testCondition;
+UnitTest.tests(2).passed = testCondition;
+
+
 
 
 %% End of testing
