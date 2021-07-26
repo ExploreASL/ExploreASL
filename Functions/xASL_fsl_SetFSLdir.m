@@ -17,7 +17,7 @@ function [FSLdir, x, RootWSLdir] = xASL_fsl_SetFSLdir(x, bAutomaticallyDetectFSL
 % DESCRIPTION: This function finds the FSLdir & puts it out, also in
 %              x.FSLdir to allow repeating this function without having to repeat
 %              searching.
-%              If the FSLdir & RootFSLDir are already defined in x.FSLdir & x.RootFSLDir, this function
+%              If the FSLdir & RootFSLdir are already defined in x.FSLdir & x.RootFSLdir, this function
 %              is skipped.
 %              Supports Linux, MacOS & Windows (WSL), & several different
 %              default installation folders for different Linux
@@ -39,12 +39,12 @@ end
 
 FSLdir = NaN;
 RootWSLdir = NaN;
-RootFSLDir = '';
+RootFSLdir = '';
 
-if isfield(x,'FSLdir') && isfield(x,'RootFSLDir') && ~isempty(x.FSLdir) && ~isempty(x.RootFSLDir)
+if isfield(x,'FSLdir') && isfield(x,'RootFSLdir') && ~isempty(x.FSLdir) && ~isempty(x.RootFSLdir)
     % if we already have an FSL dir, skip this function
     FSLdir = x.FSLdir;
-    RootWSLdir = x.RootFSLDir;
+    RootWSLdir = x.RootFSLdir;
     return;
 end
 
@@ -71,7 +71,7 @@ end
 bSuccess = bSuccess==0;
 
 if bSuccess
-    RootFSLDir{end+1} = fileparts(result2);
+    RootFSLdir{end+1} = fileparts(result2);
 end
 
 if bAutomaticallyDetectFSL
@@ -108,12 +108,12 @@ if bAutomaticallyDetectFSL
         TempDir = xASL_adm_GetFileList(lower(PathApps{iP}), '^(fsl|FSL).*', 'FPList', [0 Inf], true); % we can set this to recursive to be sure, but this will take a long time
         if ~isempty(TempDir)
             for iDir=1:length(TempDir)
-                RootFSLDir{end+1} = TempDir{iDir};
+                RootFSLdir{end+1} = TempDir{iDir};
                 % Also search for second subfolder
-                TempDir2 = xASL_adm_GetFileList(RootFSLDir, '^(fsl|FSL).*', 'FPList', [0 Inf], true);
+                TempDir2 = xASL_adm_GetFileList(RootFSLdir, '^(fsl|FSL).*', 'FPList', [0 Inf], true);
                 if ~isempty(TempDir2)
                     for iDir2=1:length(TempDir2)
-                        RootFSLDir{end+1} = TempDir2{iDir2};
+                        RootFSLdir{end+1} = TempDir2{iDir2};
                     end
                 end
             end
@@ -123,28 +123,28 @@ end
 
 %% Create new list with valid FSL folders
 FSLdir = '';
-if isempty(RootFSLDir) || isempty(RootFSLDir{end})
-    RootFSLDir = NaN;
+if isempty(RootFSLdir) || isempty(RootFSLdir{end})
+    RootFSLdir = NaN;
     FSLdir = NaN;
     RootWSLdir = NaN;
     fprintf('Warning, FSL folder not found!\n');
     return;
 end
     
-for iDir=1:length(RootFSLDir)
+for iDir=1:length(RootFSLdir)
     % First remove 'bin'
-    if strcmp(RootFSLDir{iDir}(end-2:end), 'bin')
-        RootFSLDir{iDir} = fileparts(RootFSLDir{iDir});
+    if strcmp(RootFSLdir{iDir}(end-2:end), 'bin')
+        RootFSLdir{iDir} = fileparts(RootFSLdir{iDir});
     end
-    BinDir = fullfile(RootFSLDir{iDir}, 'bin');
+    BinDir = fullfile(RootFSLdir{iDir}, 'bin');
     % Check if root-dir & bin-dir exist
-    if exist(RootFSLDir{iDir}, 'dir') && exist(BinDir, 'dir')
+    if exist(RootFSLdir{iDir}, 'dir') && exist(BinDir, 'dir')
         PathBET = fullfile(BinDir, 'bet');
         PathFSL = fullfile(BinDir, 'fsl');
         PathFIT = fullfile(BinDir, 'dtifit');
         % check if few fsl-scripts exist
         if exist(PathBET, 'file') && exist(PathFSL, 'file') && exist(PathFIT, 'file')
-            FSLdir{end+1} = RootFSLDir{iDir};
+            FSLdir{end+1} = RootFSLdir{iDir};
         end
     end
 end
@@ -198,7 +198,7 @@ FSLdir = strrep(FSLdir,'\','/');
 % end        
 
 
-%% Manage RootFSLDir
+%% Manage RootFSLdir
 if ~exist('RootWSLdir','var') || isnan(RootWSLdir)
     RootWSLdir = FSLdir; % default
 else
@@ -207,7 +207,7 @@ end
 
 %% Add to x
 x.FSLdir = FSLdir;
-x.RootFSLDir = RootWSLdir;
+x.RootFSLdir = RootWSLdir;
 
 
 end
