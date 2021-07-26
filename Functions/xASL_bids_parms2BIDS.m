@@ -333,35 +333,20 @@ end
 % Flatten the x structure to a single level
 function inXasl = xASL_wrp_Quantify_FlattenX(inXasl)
 
-    % Flatten inXasl structure
-    
-    % Move x.Q, x.settings, x.dataset, x.modules, x.modules.structural,
-    % x.modules.asl, and x.modules.population parameters to main level of x
-    
-    firstLevelStructs = {'Q', 'settings', 'dataset', 'modules'};
-    secondLevelStructs = {'structural', 'asl', 'population'};
+    % Flatten inXasl structure: move x.Q, x.settings, & x.dataset main level of x
+    firstLevelStructs = {'Q', 'settings', 'dataset'};
     
     % Iterate over first level structs
     for iStruct = 1:numel(firstLevelStructs)
         if isfield(inXasl,firstLevelStructs{iStruct})
-            FieldsQ = fields(inXasl.(firstLevelStructs{iStruct}));
-            for iField=1:length(FieldsQ)
-                inXasl.(FieldsQ{iField}) = inXasl.(firstLevelStructs{iStruct}).(FieldsQ{iField});
+            % Get the current fields
+            subFields = fields(inXasl.(firstLevelStructs{iStruct}));
+            % Move fields to main level of x
+            for iField=1:length(subFields)
+                inXasl.(subFields{iField}) = inXasl.(firstLevelStructs{iStruct}).(subFields{iField});
             end
+            % Remove current substruct
             inXasl = rmfield(inXasl,firstLevelStructs{iStruct});
-        end
-    end
-    
-    % Iterate over second level structs
-    if isfield(inXasl,'modules')
-        for iStruct = 1:numel(secondLevelStructs)
-            if isfield(inXasl.modules,secondLevelStructs{iStruct})
-                FieldsQ = fields(inXasl.modules.(secondLevelStructs{iStruct}));
-                for iField=1:length(FieldsQ)
-                    inXasl.(FieldsQ{iField}) = inXasl.modules.(secondLevelStructs{iStruct}).(FieldsQ{iField});
-                end
-                inXasl = rmfield(inXasl.modules,secondLevelStructs{iStruct});
-            end
         end
     end
 
