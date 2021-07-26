@@ -105,12 +105,12 @@ if bAutomaticallyDetectFSL
 
     %% Search for first & second-layer subfolder
     for iP=1:length(PathApps)
-        TempDir = xASL_adm_GetFileList(lower(PathApps{iP}), '^(fsl|FSL).*', 'FPList', [0 Inf], true); % we can set this to recursive to be sure, but this will take a long time
+        TempDir = xASL_adm_GetFileList(lower(PathApps{iP}), '(?i)^fsl.*', 'FPList', [0 Inf], true); % we can set this to recursive to be sure, but this will take a long time
         if ~isempty(TempDir)
             for iDir=1:length(TempDir)
                 RootFSLdir{end+1} = TempDir{iDir};
                 % Also search for second subfolder
-                TempDir2 = xASL_adm_GetFileList(RootFSLdir, '^(fsl|FSL).*', 'FPList', [0 Inf], true);
+                TempDir2 = xASL_adm_GetFileList(RootFSLdir, '(?i)^fsl.*', 'FPList', [0 Inf], true);
                 if ~isempty(TempDir2)
                     for iDir2=1:length(TempDir2)
                         RootFSLdir{end+1} = TempDir2{iDir2};
