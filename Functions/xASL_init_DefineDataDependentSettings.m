@@ -77,12 +77,6 @@ if x.settings.Pediatric_Template
 	x.D.AtlasDir            = fullfile(x.opts.MyPath,'External', 'AtlasesNonCommercial', x.Pediatric_Type);
 end
 
-% This backwards compatibility feature is kind of unnecessary, because of the conversion based on xASL_adm_GetDeprecatedFields
-if ~isfield(x.modules.structural, 'bSegmentSPM12') && isfield(x, 'Segment_SPM12')
-    warning('Please use input parameter x.modules.structural.bSegmentSPM12 instead of Segment_SPM12 (legacy)');
-    fprintf(['Using legacy option: x.Segment_SPM12 = ' xASL_num2str(x.Segment_SPM12) '\n']);
-    x.modules.structural.bSegmentSPM12 = x.Segment_SPM12;
-end
 
 %% --------------------------------------------------------------------------
 %% Manage input parameters ExploreASL course
@@ -106,13 +100,17 @@ for iL=1:length(Fields)
     end
 end
 
+% In a future release we could set all defaults based on a JSON here
 if ~isfield(x.modules.structural, 'bSegmentSPM12')
 	x.modules.structural.bSegmentSPM12 = false;
 end
-
 if ~isfield(x.modules.asl, 'M0_conventionalProcessing')
 	x.modules.asl.M0_conventionalProcessing = false;
 end
+
+% Check deprecated fields
+x = xASL_io_CheckDeprecatedFieldsX(x, 0);
+
 
 end
 
