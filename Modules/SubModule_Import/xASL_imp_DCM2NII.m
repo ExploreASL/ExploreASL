@@ -65,9 +65,14 @@ function xASL_imp_DCM2NII(imPar, x)
 		else
 			error('Couldnt find a sourcedata folder, please rename one, or move other folders');
 		end
-	end
+    end
 	
-	xASL_adm_CreateDir(imPar.TempRoot);
+    % Create temp directory
+	statusTempDir = xASL_adm_CreateDir(imPar.TempRoot);
+    if ~statusTempDir
+        warning('There already is a temp directory in your BIDS study root, skipping DICOM to NIfTI conversion...');
+        return
+    end
 	
 	if x.modules.import.settings.bCheckPermissions
 		xASL_adm_CheckPermissions(imPar.RawRoot, false); % don"t need execution permisions

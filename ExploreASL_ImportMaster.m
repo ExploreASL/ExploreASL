@@ -103,7 +103,7 @@ function ExploreASL_ImportMaster_PrintLoggingEntry(moduleName,loggingEntry)
 
     % Check loggingEntry
     if size(loggingEntry.stack,1)>0
-        fprintf(2,'%s: line %d...\n',loggingEntry.stack(1).name,loggingEntry.stack(1).line);
+        fprintf(2,'%s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
     end
 
 end

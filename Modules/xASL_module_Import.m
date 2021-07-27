@@ -110,11 +110,12 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 
     % First do the basic parameter admin and initialize the default values
     if nargin < 1 ||  isempty(studyPath)
-        error('The studyPath needs to be defined');
+        error('The studyPath needs to be defined...');
     end
 
+    % Fix studyPath if the last character is a forward or backward slash
     if strcmp(studyPath(end),'\') || strcmp(studyPath(end),'/')
-        studyPath = studyPath(1:end-1); % bugfix
+        studyPath = studyPath(1:end-1);
     end
 
     % Check the imagePar input file
