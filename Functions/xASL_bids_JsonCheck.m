@@ -94,6 +94,9 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Check field requirements and dependencies
+if strcmpi(fileType,'ASL')
+    fprintf('================================== BIDS JSON Check Results ===================================\n');
+end
 
 % Check required ASL fields
 if strcmpi(fileType,'ASL')
@@ -108,7 +111,7 @@ if strcmpi(fileType,'ASL')
         end
     end
     if ~isempty(strReport)
-        fprintf('%s\n\n',['Missing required ASL fields: ' strReport]);
+        fprintf(2,'Missing required ASL fields:          %s\n',strReport);
     end
     
     strReport = '';
@@ -122,7 +125,7 @@ if strcmpi(fileType,'ASL')
         end
     end
     if ~isempty(strReport)
-        fprintf('%s\n\n',['Missing Recommended ASL fields: ' strReport]);
+        fprintf('Missing recommended ASL fields:       %s\n',strReport);
     end
 end
 
@@ -139,13 +142,12 @@ if strcmpi(fileType,'M0')
         end
     end
     if ~isempty(strReport)
-        fprintf('%s\n\n',['Missing required M0 fields: ' strReport]);
+        fprintf('Missing required M0 fields:           %s\n',strReport);
     end
 end
 
 % Check ASL dependencies
 if strcmpi(fileType,'ASL')
-    fprintf('================================== BIDS JSON Check Results ===================================\n');
     for iCond = 1:length(bidsPar.ASLCondition)
         % First check if the field is present
         if isfield(jsonOut,bidsPar.ASLCondition{iCond}.field)
