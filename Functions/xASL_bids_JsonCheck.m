@@ -18,7 +18,7 @@ function jsonOut = xASL_bids_JsonCheck(jsonIn,fileType)
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 % Create an empty output structure and a structure with fields to delete
 jsonOut = struct;
@@ -145,6 +145,7 @@ end
 
 % Check ASL dependencies
 if strcmpi(fileType,'ASL')
+    fprintf('================================== BIDS JSON Check Results ===================================\n');
     for iCond = 1:length(bidsPar.ASLCondition)
         % First check if the field is present
         if isfield(jsonOut,bidsPar.ASLCondition{iCond}.field)
@@ -219,19 +220,19 @@ if strcmpi(fileType,'ASL')
                     
                     % Report the incorrect dependencies
                     if ~isempty(strReportFilled)
-                        fprintf('The required fields are missing: %s\n',strReportFilled);
+                        fprintf(2,'The required fields are missing:      %s\n',strReportFilled);
                     end
                     if ~isempty(strReportEmpty)
                         fprintf('The following fields should be empty: %s\n',strReportEmpty);
                     end
                     if ~isempty(strReportRecommended)
-                        fprintf('The recommended fields are missing: %s\n',strReportRecommended);
+                        fprintf('The recommended fields are missing:   %s\n',strReportRecommended);
                     end
-                    fprintf('\n');
                 end
             end
         end
     end
+    fprintf('==============================================================================================\n');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -246,3 +247,6 @@ end
 % And sort the fields
 jsonOut = xASL_adm_OrderFields(jsonOut,fieldOrderStruct);
 end
+
+
+
