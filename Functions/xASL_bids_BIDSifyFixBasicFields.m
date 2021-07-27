@@ -13,10 +13,22 @@ function jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,bidsModality)
 %   jsonIn    - ordered and checked JSON structure
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Check if required fields exist in studyPar but not in jsonIn 
-%              or if we can find them out in other ways.
-%
-% EXAMPLE:     n/a
+% DESCRIPTION: Check if required fields exist in studyPar but not in jsonIn or if we can find them in other ways.
+%              
+%              The BIDSification of JSON metadata requires at least some basic fields. If dcm2niix can't extract
+%              fields like Manufacturer from the DICOM data (strict anonymization), we need to be able to read them
+%              from the studyPar JSON (manually inserted). Alternatively we can check other DICOM tags for information.
+%              
+%              This function can potentially be enhanced in future release to fix other fields besides the Manufacturer as well.
+%              To enable this functionality for different modalities, we introduced the bidsModality parameter.
+%              
+%              This function is called by:
+%              
+%              - `xASL_bids_BIDSifyM0`
+%              - `xASL_bids_BIDSifyASLJSON`
+%              - `xASL_bids_BIDSifyAnatJSON`
+%              
+% EXAMPLE:     jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,'asl');
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
@@ -47,6 +59,7 @@ function jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,bidsModality)
     if ~isfield(jsonIn,'Manufacturer') && isfield(jsonIn,'ManufacturersModelName')
         modelList = xASL_bids_BIDSifyFixBasicFields_GetModelList();
         for iModel = 1:size(modelList,1)
+            % Determine Manufacturer based on ManufacturersModelName
             if ~isempty(regexpi(jsonIn.ManufacturersModelName,modelList{iModel,1}))
                 jsonIn.Manufacturer = modelList{iModel,2};
             end
@@ -56,7 +69,7 @@ function jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,bidsModality)
 end
 
 
-%% ManufacturerModel list
+%% ManufacturerModel list: if the Manufacturer DICOM tag was deleted (strict anonymization), we can try to check the ManufacturersModelName tag instead.
 function modelList = xASL_bids_BIDSifyFixBasicFields_GetModelList()
 
     modelList = {
