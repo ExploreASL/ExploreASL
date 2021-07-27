@@ -1,4 +1,4 @@
-function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
+function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(x,globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
 %xASL_imp_DCM2NII_Subject_ShuffleTheDynamics Shuffle the dynamics.
 %
 % FORMAT: [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
@@ -130,21 +130,32 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
         end
     end
     
+    %% Hadamard Check
+    
+    x.modules.asl.bHadamard = false;
+    
+    if xASL_exist(x.dir.studyPar,'file') == 2
+        studyPar = spm_jsonread(x.dir.studyPar);
+        if isfield(studyPar,'HadamardMatrixType')
+            x.modules.asl.bHadamard = true; %this will ensure that "hadamard==true" in the next if loops
+        end
+    end
+    
+    
     %% FME (Hadamard) Check
-    if numel(nii_files)>=1
+    if numel(nii_files)>=1 
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
         % Check if we have the corresponding JSON file
-        if exist(fullfile(resultPath, [resultFile '.json']), 'file')
+        if exist(fullfile(resultPath, [resultFile '.json']), 'file') 
         	% Load the JSON
             resultJSON = spm_jsonread(fullfile(resultPath, [resultFile '.json']));
             % Check if we have the SeriesDescription field
-            if isfield(resultJSON,'SeriesDescription')
+            
+            if isfield(resultJSON,'SeriesDescription') || hadamard == true %x.modules.asl.bHadamard == true gives an error here, but hadamard=true doesn't
             	% Determine if we have a Hadamard encoded ASL scan
                 isHadamardFME = ~isempty(regexp(char(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
-                %######## what about isHadamard =
-                %~isempty(studyPar.HadamardType) ? But we don't have access to the studyPar fields here
                 
-                if isHadamardFME
+                if isHadamardFME || hadamard == true
                     % Check image
                     if exist(nii_files{1} ,'file')
                     	% Determine the number of time points within each NIfTI
@@ -165,7 +176,7 @@ function [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_
 						spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
                     else
                     	% Fallback (something went wrong)
-						warning('FME Hadamard sequence with 1 PLD only');
+						warning('Hadamard sequence with 1 PLD only');
                     end
                 end
             end

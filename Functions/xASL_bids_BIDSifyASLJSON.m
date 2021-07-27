@@ -175,24 +175,10 @@ else
 	end
 end
     
-%% 7. Check for MultiPLD/MultiTE/Hadamard sequence
-
-%MultiPLD Check
-if isfield(jsonOut,'MultiPLD') && ~isempty(jsonOut,'MultiPLD') %jsonOut is the studyPar
-    isMultiPLD = true; 
-else 
-    isMultiPLD = false; 
-end
-
-%MultiTE Check
-if isfield(jsonOut,'MultiTE') && ~isempty(jsonOut,'MultiTE')
-    isMultiTE = true; 
-else 
-    isMultiTE = false; 
-end
+%% 7. Check for Hadamard sequence
 
 %Hadamard Check
-if isfield(jsonOut,'HadamardType') && ~isempty(jsonOut,'HadamardType') %should be 4,8 or 12
+if isfield(jsonOut,'TimeEncodedMatrix') && ~isempty(jsonOut,'TimeEncodedMatrix') %should be 4,8 or 12
     isHadamard = true; 
 else 
     isHadamard = false; 
