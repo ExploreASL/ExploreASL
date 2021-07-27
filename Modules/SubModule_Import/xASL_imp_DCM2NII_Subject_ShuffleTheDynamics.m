@@ -157,7 +157,9 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
             	% Determine if we have the specific FME Hadamard sequence from Bremen
                 isHadamardFME = ~isempty(regexp(char(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
                 % If the FME sequence was detected we can always set the general bHadamard to true as well
-                x.modules.asl.bHadamard = isHadamardFME;
+                if isHadamardFME
+                    x.modules.asl.bHadamard = true;
+                end
             end
             % Check if we the current sequence is a Hadamard or not
             if x.modules.asl.bHadamard || isHadamardFME
