@@ -207,10 +207,8 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                 end
                 
                 %% 4.8 In case of GE or PARREC/a single NII ASL file loaded from PAR/REC, we need to shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order
-                
-                %Adding x struct to the next function will allow the recognition of Hadamard data using the studyPar (sometimes there's no info in the SeriesDescription)
-
-                [x,nii_files, summary_line, globalCounts] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(x,globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
+                [x,nii_files, summary_line, globalCounts] = ...
+                    xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(x, globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
 
                 % correct nifti rescale slope if parms.RescaleSlopeOriginal =~1
                 % but nii.dat.scl_slope==1 (this can happen in case of

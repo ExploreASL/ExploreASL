@@ -4,6 +4,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 % FORMAT: [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
 % 
 % INPUT:
+%   x               - ExploreASL x struct (STRUCT, REQUIRED)
 %   globalCounts    - Converted, skipped & missing scans (REQUIRED, STRUCT)
 %   scanpath        - Scan path (CHAR ARRAY, PATH, REQUIRED)
 %   scan_name       - Scan name (CHAR ARRAY, REQUIRED)
@@ -13,6 +14,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 %   iScan           - Scan ID (INTEGER, REQUIRED)
 %
 % OUTPUT:
+%   x               - ExploreASL x struct (STRUCT)
 %   nii_files       - List of NIfTI files (CELL ARRAY)
 %   summary_line    - Summary line
 %   globalCounts    - Converted, skipped & missing scans (REQUIRED, STRUCT)
@@ -131,18 +133,19 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     end
     
     %% Hadamard Check
-    
     x.modules.asl.bHadamard = false;
+    isHadamardFME = false;
     
-    if xASL_exist(x.dir.studyPar,'file') == 2
+    % Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
+    if xASL_exist(x.dir.studyPar,'file')
         studyPar = spm_jsonread(x.dir.studyPar);
         if isfield(studyPar,'HadamardMatrixType')
-            x.modules.asl.bHadamard = true; %this will ensure that "hadamard==true" in the next if loops
+            x.modules.asl.bHadamard = true;
         end
     end
     
     
-    %% FME (Hadamard) Check
+    %% Check for specific Hadamard sequences and reorder the NIfTI volumes if necessary
     if numel(nii_files)>=1 
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
         % Check if we have the corresponding JSON file
@@ -150,34 +153,35 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
         	% Load the JSON
             resultJSON = spm_jsonread(fullfile(resultPath, [resultFile '.json']));
             % Check if we have the SeriesDescription field
-            
-            if isfield(resultJSON,'SeriesDescription') || hadamard == true %x.modules.asl.bHadamard == true gives an error here, but hadamard=true doesn't
-            	% Determine if we have a Hadamard encoded ASL scan
+            if isfield(resultJSON,'SeriesDescription') || x.modules.asl.bHadamard
+            	% Determine if we have the specific FME Hadamard sequence from Bremen
                 isHadamardFME = ~isempty(regexp(char(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
-                
-                if isHadamardFME || hadamard == true
-                    % Check image
-                    if exist(nii_files{1} ,'file')
-                    	% Determine the number of time points within each NIfTI
-                        imASL = xASL_io_Nifti2Im(nii_files{1});
-						numberTEs = length(resultJSON.EchoTime);
-                        numberPLDs = int32(size(imASL,4)/numberTEs);
-                        
-						% Reorder TEs and PLDs - first cycle TE afterwards PLD
-						vectorOldOrder = zeros(size(imASL,4),1);
-						for iPLD = 1:(double(numberPLDs))
-							vectorOldOrder((1:numberTEs)+(iPLD-1)*numberTEs) = (iPLD-1)+1:numberPLDs:size(imASL,4);
-						end
-						imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
-						xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
-						% Repeat Echo Times
-						resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
-						% Save the JSON with the updated echo times
-						spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
-                    else
-                    	% Fallback (something went wrong)
-						warning('Hadamard sequence with 1 PLD only');
+                % If the FME sequence was detected we can always set the general bHadamard to true as well
+                x.modules.asl.bHadamard = isHadamardFME;
+            end
+            % Check if we the current sequence is a Hadamard or not
+            if x.modules.asl.bHadamard || isHadamardFME
+                % Check image
+                if xASL_exist(nii_files{1},'file')
+                    % Determine the number of time points within each NIfTI
+                    imASL = xASL_io_Nifti2Im(nii_files{1});
+                    numberTEs = length(resultJSON.EchoTime);
+                    numberPLDs = int32(size(imASL,4)/numberTEs);
+                    
+                    % Reorder TEs and PLDs - first cycle TE afterwards PLD
+                    vectorOldOrder = zeros(size(imASL,4),1);
+                    for iPLD = 1:(double(numberPLDs))
+                        vectorOldOrder((1:numberTEs)+(iPLD-1)*numberTEs) = (iPLD-1)+1:numberPLDs:size(imASL,4);
                     end
+                    imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
+                    xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
+                    % Repeat Echo Times
+                    resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
+                    % Save the JSON with the updated echo times
+                    spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
+                else
+                    % Fallback (something went wrong)
+                    warning('Hadamard sequence with 1 PLD only');
                 end
             end
         end
