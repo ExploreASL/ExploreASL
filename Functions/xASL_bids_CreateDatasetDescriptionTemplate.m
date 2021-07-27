@@ -71,7 +71,8 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft)
 	
 	if length(listMissingFiles)>1
 		% Report the missing fields
-		fprintf('dataset_description.json is missing the following RECOMMENDED fields: \n%s\n',listMissingFiles);
+        fprintf('================================== dataset_description.json ==================================\n');
+		fprintf('Missing recommended fields:           %s\n',listMissingFiles);
 	end
 		
     % Optional fields
@@ -80,5 +81,10 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft)
 		if isfield(draft,bidsPar.datasetDescription.Optional{1,iCell})
 			json.(bidsPar.datasetDescription.Optional{1,iCell}) = draft.(bidsPar.datasetDescription.Optional{1,iCell});
 		end
+    end
+    
+    % Add linebreak after printing
+    if length(listMissingFiles)>1
+        fprintf('\n');
     end
 end

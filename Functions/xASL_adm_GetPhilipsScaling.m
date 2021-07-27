@@ -30,6 +30,7 @@ rescaleSlopeNifti = header.dat.scl_slope;
 
 if isfield(parms,'RWVSlope')
 	% If the RealWorldValue is present, then dcm2nii scales to them and ignores everything else
+    fprintf('=========================================== Scaling ==========================================\n');
 	if length(parms.RWVSlope)>1
 		[~,idx] = min(abs(parms.RWVSlope - rescaleSlopeNifti));
 		parms.RWVSlope = parms.RWVSlope(idx);
@@ -109,7 +110,7 @@ else
 		
 	if scaleFactor == 1
 		warning('Scale slope was 1, could be a scale slope issue');
-	end
+    end
 end
 		
 % Apply the correct scaling
@@ -145,5 +146,8 @@ if isempty(scaleFactor)
     warning('xASL_adm_GetPhilipsScaling failed, scaleFactor will be set to 0...');
     scaleFactor = 0;
 end
+
+% Linebreak after printing of user feedback
+fprintf('\n');
 
 end
