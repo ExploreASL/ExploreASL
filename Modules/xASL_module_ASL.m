@@ -82,23 +82,6 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
     end
 end
 
-%##################### MULTI PLD & MULTI TE #############
-% if %detect multiPLD
-%     bMultiPLD = true; 
-% else 
-%     bMultiPLD = false; 
-% end
-% 
-% %MultiTE Check
-% if %detect multiTE
-%     bMultiTE = true; 
-% else 
-%     bMultiTE = false; 
-% end
-
-%#######################################################
-
-
 % Check if HadamardType is defined, if not set to 0
 if ~isfield(x.modules.asl,'HadamardType') 
     x.modules.asl.HadamardType=0;
