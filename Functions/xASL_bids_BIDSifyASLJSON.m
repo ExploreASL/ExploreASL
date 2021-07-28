@@ -178,8 +178,8 @@ end
 %% 7. Check for Hadamard sequence
 
 %Hadamard Check
-if isfield(jsonOut,'TimeEncodedMatrix') && ~isempty(jsonOut,'TimeEncodedMatrix') %should be 4,8 or 12
-    isHadamard = true; 
+if isfield(jsonOut,'HadamardMatrixType') && ~isempty(jsonOut,'HadamardMatrixType') %should be 4,8 or 12
+    isHadamard = true; %we dont have the x struct here, so only for this script we cna use isHadamard.
 else 
     isHadamard = false; 
 end
