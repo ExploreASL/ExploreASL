@@ -61,7 +61,7 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
             [exit_code,system_result] = system(command);
             % Check if SuperGzip was successful
             if exit_code == 0
-                fprintf('Gzipping Niftis Successful...\n')
+                fprintf('Gzipping of NIfTIs successful...\n')
             else
                 warning('An error occurred while using SuperGzip: %s', system_result)
             end
@@ -108,7 +108,7 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
                 end
             end
         catch ME
-            warning('Something went wrong, continuing with next one');
+            warning('Something went wrong, continuing with next one...');
             fprintf('%s\n',ME.message);
         end
     end

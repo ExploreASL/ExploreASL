@@ -24,11 +24,11 @@ function [result, x] = xASL_module_Population(x)
 % - `065_GetRegistrationStatistics` - Create TSV file with overview of the registration statistics
 % - `070_GetROIstatistics`          - Create TSV file with overview of regional values (e.g. qCBF, mean control, pGM etc)
 % - `080_SortBySpatialCoV`          - Sort ASL_Check QC images by their spatial CoV in quality bins
-% - `090_DeleteAndZip`              - Delete temporary files and gzip all NIfTIs
+% - `090_DeleteTempFiles`           - Delete temporary files
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 
@@ -71,7 +71,7 @@ StateName{6}  = '060_GetMotionStatistics';
 StateName{7}  = '065_GetRegistrationStatistics';
 StateName{8}  = '070_GetROIstatistics';
 StateName{9}  = '080_SortBySpatialCoV';
-StateName{10} = '090_DeleteAndZip';
+StateName{10} = '090_DeleteTempFiles';
 
 
 
@@ -290,12 +290,6 @@ if ~x.mutex.HasState(StateName{10})
     if ~x.settings.bReproTesting && x.settings.DELETETEMP
         xASL_adm_DeleteManyTempFiles(x);
     end
-
-    % Zip temporary files
-    % This way, temporary files that take up a lot of data, will take up have
-    % the disc space. These files may be re-used in the event of a
-    % re-processing, which is why we zip them instead of deleting them.
-    xASL_adm_GzipAllFiles(x.D.ROOT,[],[],fullfile(x.opts.MyPath,'External'));
     x.mutex.AddState(StateName{10});
     fprintf('%s\n',[StateName{10} ' was performed']);
 else
