@@ -2,7 +2,7 @@ function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
 %xASL_bids_MergeStudyPar Check if required fields exist in studyPar but not in jsonIn 
 % or if we can find them out in other ways
 %
-% FORMAT: jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar);
+% FORMAT: jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality);
 %
 % INPUT:
 %   jsonIn       - JSON with the input fields - from DICOMs (REQUIRED)
