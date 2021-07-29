@@ -22,7 +22,7 @@ function jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 % 4. Convert certain DICOM fields
 % 5. Prioritize DICOM fields over the manually provided studyPar fields
 % 6. Field check and name conversion
-% 7. Check for Hadamard sequence
+% 7. Check for time encoded sequence
 % 8. Merge data from the Phoenix protocol
 % 9. Background suppression check
 % 10. SliceTiming check
