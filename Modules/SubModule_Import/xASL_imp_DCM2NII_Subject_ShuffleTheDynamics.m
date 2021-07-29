@@ -1,7 +1,7 @@
 function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(x,globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
 %xASL_imp_DCM2NII_Subject_ShuffleTheDynamics Shuffle the dynamics.
 %
-% FORMAT: [nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
+% FORMAT: [x, nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(x, globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
 % 
 % INPUT:
 %   x               - ExploreASL x struct (STRUCT, REQUIRED)
@@ -146,7 +146,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     end
     
     
-    %% Check for specific Hadamard sequences and reorder the NIfTI volumes if necessary
+    %% Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
     if numel(nii_files)>=1 
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
         % Check if we have the corresponding JSON file
@@ -162,30 +162,35 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
                     bHadamard = true;
                 end
             end
-            % Check if we the current sequence is a Hadamard or not
-            if bHadamard
-                % Check image
-                if xASL_exist(nii_files{1},'file')
-                    % Determine the number of time points within each NIfTI
-                    imASL = xASL_io_Nifti2Im(nii_files{1});
-                    numberTEs = length(resultJSON.EchoTime);
-                    numberPLDs = int32(size(imASL,4)/numberTEs);
-                    
-                    % Reorder TEs and PLDs - first cycle TE afterwards PLD
-                    vectorOldOrder = zeros(size(imASL,4),1);
-                    for iPLD = 1:(double(numberPLDs))
-                        vectorOldOrder((1:numberTEs)+(iPLD-1)*numberTEs) = (iPLD-1)+1:numberPLDs:size(imASL,4);
-                    end
-                    imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
-                    xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
-                    % Repeat Echo Times
-                    resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
-                    % Save the JSON with the updated echo times
-                    spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
-                else
-                    % Fallback (something went wrong)
-                    warning('Hadamard sequence with 1 PLD only');
+        end
+    end
+    
+    %% Reorder TEs and PLDs accordingly for time encoded sequences
+    if numel(nii_files)>=1
+        [resultPath, resultFile] = xASL_fileparts(nii_files{1});
+        % Check if we the current sequence is a Hadamard or not
+        if bHadamard
+            % Check image
+            if xASL_exist(nii_files{1},'file')
+                % Determine the number of time points within each NIfTI
+                imASL = xASL_io_Nifti2Im(nii_files{1});
+                numberTEs = length(resultJSON.EchoTime);
+                numberPLDs = int32(size(imASL,4)/numberTEs);
+                
+                % Reorder TEs and PLDs - first cycle TE afterwards PLD
+                vectorOldOrder = zeros(size(imASL,4),1);
+                for iPLD = 1:(double(numberPLDs))
+                    vectorOldOrder((1:numberTEs)+(iPLD-1)*numberTEs) = (iPLD-1)+1:numberPLDs:size(imASL,4);
                 end
+                imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
+                xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
+                % Repeat Echo Times
+                resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
+                % Save the JSON with the updated echo times
+                spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
+            else
+                % Fallback (something went wrong)
+                warning('Hadamard sequence with 1 PLD only');
             end
         end
     end
@@ -197,3 +202,4 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     
 
 end
+
