@@ -147,15 +147,36 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     
     
     %% Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
-    if numel(nii_files)>=1 
+    [resultJSON, bTimeEncoded, ~] = xASL_imp_DCM2NII_checkIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
+    
+    
+    %% Reorder TEs and PLDs accordingly for time encoded sequences
+    xASL_imp_DCM2NII_reorderTimeEncoded(nii_files, bTimeEncoded, resultJSON);
+     
+    
+    %% 6. Extract relevant parameters from nifti header and append to summary file
+    summary_line = xASL_imp_AppendNiftiParameters(nii_files);
+    globalCounts.converted_scans(iSubject, iSession, iScan) = 1;
+    
+
+end
+
+
+%% Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
+function [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_checkIfFME(nii_files, bTimeEncoded, bTimeEncodedFME)
+
+    % Initialize JSON struct
+    resultJSON = struct;
+
+    if numel(nii_files)>=1
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
         % Check if we have the corresponding JSON file
-        if exist(fullfile(resultPath, [resultFile '.json']), 'file') 
-        	% Load the JSON
+        if exist(fullfile(resultPath, [resultFile '.json']), 'file')
+            % Load the JSON
             resultJSON = spm_jsonread(fullfile(resultPath, [resultFile '.json']));
             % Check if we have the SeriesDescription field
             if isfield(resultJSON,'SeriesDescription') || bTimeEncoded
-            	% Determine if we have the specific FME Hadamard sequence from Bremen
+                % Determine if we have the specific FME Hadamard sequence from Bremen
                 bTimeEncodedFME = ~isempty(regexp(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
                 % If the FME sequence was detected we can always set the general bTimeEncoded to true as well
                 if bTimeEncodedFME
@@ -164,8 +185,13 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
             end
         end
     end
-    
-    %% Reorder TEs and PLDs accordingly for time encoded sequences
+
+end
+
+
+%% Reorder TEs and PLDs accordingly for time encoded sequences
+function xASL_imp_DCM2NII_reorderTimeEncoded(nii_files, bTimeEncoded, resultJSON)
+
     if numel(nii_files)>=1
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
         % Check if we the current sequence is a Hadamard or not
@@ -189,17 +215,11 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
                 % Save the JSON with the updated echo times
                 spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
             else
-                % Fallback (something went wrong)
-                warning('Hadamard sequence with 1 PLD only');
+                % Feedback about sequence
+                warning('Time encoded sequence with one PLD only...');
             end
         end
     end
-    
-    
-    %% 6. Extract relevant parameters from nifti header and append to summary file
-    summary_line = xASL_imp_AppendNiftiParameters(nii_files);
-    globalCounts.converted_scans(iSubject, iSession, iScan) = 1;
-    
 
 end
 
