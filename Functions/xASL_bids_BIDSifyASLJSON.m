@@ -299,7 +299,7 @@ if jsonOut.MRAcquisitionType(1) == '2'
 	end
 	
 	% If the length of SliceTiming fits to the number of slices, do nothing
-	if isfield(jsonOut,'SliceTiming') && isfield(jsonOut,'SiemensSliceTime') && (length(jsonOut.SliceTiming) ~= dimASL(3))
+	if isfield(jsonOut,'SliceTiming') && (length(jsonOut.SliceTiming) ~= dimASL(3))
 		% if the length of studyPar.sliceTiming is higher than 1 and the difference non-zero then use this
 		if length(jsonOut.SliceTiming) > 1 && abs(jsonOut.SliceTiming(2)-jsonOut.SliceTiming(1)) > 0
 			jsonOut.SliceTiming = jsonOut.SliceTiming(2)-jsonOut.SliceTiming(1);
