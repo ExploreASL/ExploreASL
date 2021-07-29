@@ -216,9 +216,9 @@ if isfield(jsonOut,'SeriesDescription')
 	bHadamardFME = ~isempty(regexp(char(jsonOut.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
 	if bHadamardFME
 		startDetails = regexp(char(jsonOut.SeriesDescription),'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
-		jsonOut.HadamardType = xASL_str2num(jsonOut.SeriesDescription(startDetails:startDetails+1),'auto');
-		jsonOut.HadamardNumberPLD = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4),'auto');
-		jsonOut.HadamardNumberTE = xASL_str2num(jsonOut.SeriesDescription(startDetails+10:startDetails+11),'auto');
+		jsonOut.HadamardType = xASL_str2num(jsonOut.SeriesDescription(startDetails:startDetails+1));
+		jsonOut.HadamardNumberPLD = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
+		jsonOut.HadamardNumberTE = xASL_str2num(jsonOut.SeriesDescription(startDetails+10:startDetails+11));
 		fprintf('FME sequence, Hadamard-%d encoded images, %d PLDs, %d TEs\n', jsonOut.HadamardType, jsonOut.HadamardNumberPLD, jsonOut.HadamardNumberTE);
 	end
 else
