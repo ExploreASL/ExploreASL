@@ -132,16 +132,16 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
         end
     end
     
-    %% Hadamard Check
-    bHadamard = false;
-    bHadamardFME = false;
+    %% Hadamard Check  
+    bTimeEncoded = false;
+    bTimeEncodedFME = false;
     
     % Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
     if xASL_exist(x.dir.studyPar,'file')
         studyPar = spm_jsonread(x.dir.studyPar);
         if isfield(studyPar,'TimeEncodedMatrixSize') && ~isempty(studyPar,'TimeEncodedMatrixSize') || ... % Should be 4, 8 or 12
                 isfield(studyPar,'TimeEncodedMatrixType') % Natural or walsh
-            bHadamard = true;
+            bTimeEncoded = true;
         end
     end
     
@@ -154,12 +154,12 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
         	% Load the JSON
             resultJSON = spm_jsonread(fullfile(resultPath, [resultFile '.json']));
             % Check if we have the SeriesDescription field
-            if isfield(resultJSON,'SeriesDescription') || bHadamard
+            if isfield(resultJSON,'SeriesDescription') || bTimeEncoded
             	% Determine if we have the specific FME Hadamard sequence from Bremen
-                bHadamardFME = ~isempty(regexp(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
-                % If the FME sequence was detected we can always set the general bHadamard to true as well
-                if bHadamardFME
-                    bHadamard = true;
+                bTimeEncodedFME = ~isempty(regexp(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
+                % If the FME sequence was detected we can always set the general bTimeEncoded to true as well
+                if bTimeEncodedFME
+                    bTimeEncoded = true;
                 end
             end
         end
@@ -169,7 +169,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     if numel(nii_files)>=1
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
         % Check if we the current sequence is a Hadamard or not
-        if bHadamard
+        if bTimeEncoded
             % Check image
             if xASL_exist(nii_files{1},'file')
                 % Determine the number of time points within each NIfTI
