@@ -170,10 +170,20 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
 %xASL_bids_LoadParticipantTSV 
 
     %% Load participants.tsv
-    PathTSV = fullfile(x.D.ROOT, 'Participants.tsv');
+    PathTSV = fullfile(x.D.ROOT, 'participants.tsv');
+    PathTSVold = fullfile(x.D.ROOT, 'Participants.tsv');
+    bParticipantsTSV = false;
+
     if exist(PathTSV, 'file')
-        fprintf('Participants.tsv (BIDS) detected, loading...\n');
         CellArray = xASL_tsvRead(PathTSV);
+        bParticipantsTSV = true;
+    elseif exist(PathTSVold, 'file')
+        CellArray = xASL_tsvRead(PathTSV);
+        bParticipantsTSV = true;
+    end
+
+    if bParticipantsTSV
+        fprintf('participants.tsv (BIDS) detected, loading...\n');
         
         % Check if the TSV has empty cells, because this can cause crashes & is illegal (per BIDS)
         HasEmptyCells = false;
@@ -185,7 +195,7 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
             end
         end
         if HasEmptyCells
-            warning('Participants.tsv contains empty cells, missing data should be filled by n/a (per BIDS)');
+            warning('participants.tsv contains empty cells, missing data should be filled by n/a (per BIDS)');
         end           
             
         

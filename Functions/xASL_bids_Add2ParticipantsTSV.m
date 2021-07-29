@@ -34,12 +34,14 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 % 6. Sort rows on subjects
 % 7. Fill empty cells
 % 8. Write data to participants.tsv
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_Add2ParticipantsTSV(MeanMotion, 'MeanMotion', x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
+% Get path to particiapnts TSV file
 PathTSV = fullfile(x.D.ROOT, 'participants.tsv');
 
 

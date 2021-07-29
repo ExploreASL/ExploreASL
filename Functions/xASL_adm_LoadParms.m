@@ -29,7 +29,7 @@ function [Parms, x] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [~, x] = xASL_adm_LoadParms('/MyStudy/sub-001/ASL_1/ASL4D.json', x, bO);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
 

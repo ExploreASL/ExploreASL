@@ -307,10 +307,14 @@ dataPar.x.dir.dataPar = fullfile(pathLegacy, 'dataPar.json');
 %% 11. Copy participants.tsv
 
 % Check if participants.tsv exists
-if xASL_exist(fullfile(pathStudy, 'participants.tsv'),'file')==2
-    xASL_Copy(fullfile(pathStudy, 'participants.tsv'),fullfile(pathLegacy, 'Participants.tsv'));
-elseif xASL_exist(fullfile(pathStudy, 'Participants.tsv'),'file')==2
-    xASL_Copy(fullfile(pathStudy, 'Participants.tsv'),fullfile(pathLegacy, 'Participants.tsv'));
+pathParticipantsTSV = fullfile(pathStudy, 'participants.tsv');
+pathParticipantsTSVold = fullfile(pathStudy, 'Participants.tsv');
+pathParticipantsTSVxASL = fullfile(pathLegacy, 'Participants.tsv'); % This needs to be changed as well
+
+if xASL_exist(pathParticipantsTSV,'file')
+    xASL_Copy(pathParticipantsTSV,pathParticipantsTSVxASL);
+elseif xASL_exist(pathParticipantsTSVold,'file')
+    xASL_Copy(pathParticipantsTSVold,pathParticipantsTSVxASL);
 end
 
 %% 12. Add "GeneratedBy" fields
