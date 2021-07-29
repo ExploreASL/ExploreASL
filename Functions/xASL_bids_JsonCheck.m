@@ -144,7 +144,7 @@ if strcmpi(fileType,'M0')
         end
     end
     if ~isempty(strReport)
-        fprintf('Missing required M0 fields:           %s\n',strReport);
+        fprintf(2,'Missing required M0 fields:           %s\n',strReport);
     end
 end
 
