@@ -22,7 +22,7 @@ function jsonOut = xASL_bids_BIDSifyAnatJSON(jsonIn,studyPar)
 
 
 	% Fix jsonIn based on studyPar
-	jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,'anat');
+	jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'anat');
 
 	jsonOut = jsonIn;
 	% If RepetitionTimePreparation is equal to RepetitionTime, then remove RepetitionTimePreparation

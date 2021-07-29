@@ -46,7 +46,7 @@ end
 jsonOut = studyPar;
 
 % Check if required fields exist in studyPar but not in jsonIn
-jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,'asl');
+jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'asl');
 	
 %% 3. Extract the scaling factors from the JSON header
 if ~isempty(regexpi(jsonIn.Manufacturer,'Philips'))

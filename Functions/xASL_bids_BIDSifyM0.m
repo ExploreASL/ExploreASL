@@ -29,7 +29,7 @@ function jsonOut = xASL_bids_BIDSifyM0(jsonIn, jsonInASL, studyPar, pathM0In, pa
 % Copyright 2015-2021 ExploreASL
 
 % Check if required fields exist in studyPar but not in jsonIn
-jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,'m0');
+jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'m0');
 
 % Create default output
 jsonOut = jsonIn;

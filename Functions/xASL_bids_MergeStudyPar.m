@@ -1,8 +1,8 @@
-function jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,bidsModality)
-%xASL_bids_BIDSifyFixBasicFields Check if required fields exist in studyPar but not in jsonIn 
+function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
+%xASL_bids_MergeStudyPar Check if required fields exist in studyPar but not in jsonIn 
 % or if we can find them out in other ways
 %
-% FORMAT: jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar);
+% FORMAT: jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar);
 %
 % INPUT:
 %   jsonIn       - JSON with the input fields - from DICOMs (REQUIRED)
@@ -28,7 +28,7 @@ function jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,bidsModality)
 %              - `xASL_bids_BIDSifyASLJSON`
 %              - `xASL_bids_BIDSifyAnatJSON`
 %              
-% EXAMPLE:     jsonIn = xASL_bids_BIDSifyFixBasicFields(jsonIn,studyPar,'asl');
+% EXAMPLE:     jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'asl');
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
