@@ -1,9 +1,10 @@
-function xASL_imp_NII2BIDS_SubjectSessionRun(bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
+function xASL_imp_NII2BIDS_SubjectSessionRun(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
 %xASL_imp_NII2BIDS_SubjectSessionRun NII2BIDS conversion for a single sessions, single run.
 %
 % FORMAT: xASL_imp_NII2BIDS_SubjectSessionRun(bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
 % 
 % INPUT:
+% imPar          - JSON file with structure with import parameter (STRUCT, REQUIRED)
 % bidsPar             - Output of xASL_imp_Config (STRUCT, REQUIRED)
 % studyPar            - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
 % subjectSessionLabel - subject-session label (CHAR ARRAY, REQUIRED)
@@ -128,7 +129,14 @@ end
 %% 6. Save all ASL files (JSON, NIFTI, CONTEXT) to the BIDS directory
 jsonLocal = xASL_bids_BIDSifyASLNII(jsonLocal, bidsPar, fullfile(inSessionPath,[aslLabel '.nii']), aslOutLabel);
 jsonLocal = xASL_bids_VendorFieldCheck(jsonLocal);
-jsonLocal = xASL_bids_JsonCheck(jsonLocal,'ASL');
+[jsonLocal,bidsReport] = xASL_bids_JsonCheck(jsonLocal,'ASL');
 spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
+
+% Export report file for ASL dependencies
+if exist('bidsReport','var')
+    if ~isempty(fieldnames(bidsReport))
+        spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot),'bidsReportASL.json'),bidsReport);
+    end
+end
 
 end

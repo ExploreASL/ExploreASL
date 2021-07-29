@@ -1,14 +1,15 @@
-function jsonOut = xASL_bids_JsonCheck(jsonIn,fileType)
+function [jsonOut,reportOut] = xASL_bids_JsonCheck(jsonIn,fileType)
 %xASL_bids_JsonCheck Goes through the JSON structure before saving it and ensures that it fits the ASL-BIDS format
 %
 % FORMAT: jsonOut = xASL_bids_JsonCheck(jsonIn,fileType)
 %
 % INPUT:
-%   jsonIn  - JSON with the input fields (REQUIRED)
+%   jsonIn     - JSON with the input fields (REQUIRED)
 %   fileType   - 'ASL' or 'M0' when the input and output is ASL-BIDS, empty for normal BIDS (REQUIRED)
 %
 % OUTPUT: 
-%   jsonOut - ordered and checked JSON structure
+%   jsonOut   - ordered and checked JSON structure
+%   reportOut - struct to report about bids depdency related issues
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:
@@ -23,6 +24,7 @@ function jsonOut = xASL_bids_JsonCheck(jsonIn,fileType)
 % Create an empty output structure and a structure with fields to delete
 jsonOut = struct;
 jsonRemove = struct;
+reportOut = struct;
 
 bidsPar = xASL_bids_Config();
 
@@ -148,6 +150,7 @@ end
 
 % Check ASL dependencies
 if strcmpi(fileType,'ASL')
+    % Iterate over bidsPar and check conditions for ASL JSON file
     for iCond = 1:length(bidsPar.ASLCondition)
         % First check if the field is present
         if isfield(jsonOut,bidsPar.ASLCondition{iCond}.field)
@@ -178,6 +181,8 @@ if strcmpi(fileType,'ASL')
                         else
                             strReportFilled = [strReportFilled ', ' bidsPar.ASLCondition{iCond}.RequiredFilled{iField}];
                         end
+                        % Export JSON file with information about missing required filled fields / dependencies
+                        reportOut.(bidsPar.ASLCondition{iCond}.field).requiredFilled = strReportFilled;
                     end
                 end
                 
@@ -190,6 +195,8 @@ if strcmpi(fileType,'ASL')
                         else
                             strReportEmpty = [strReportEmpty ', ' bidsPar.ASLCondition{iCond}.RequiredEmpty{iField}];
                         end
+                        % Export JSON file with information about missing required empty fields / dependencies
+                        reportOut.(bidsPar.ASLCondition{iCond}.field).requiredEmpty = strReportEmpty;
                     end
                 end
                 
@@ -202,6 +209,8 @@ if strcmpi(fileType,'ASL')
                         else
                             strReportRecommended = [strReportRecommended ', ' bidsPar.ASLCondition{iCond}.RecommendedFilled{iField}];
                         end
+                        % Export JSON file with information about missing required empty fields / dependencies
+                        reportOut.(bidsPar.ASLCondition{iCond}.field).recommendedFilled = strReportRecommended;
                     end
                 end
                 
@@ -248,6 +257,8 @@ end
 
 % And sort the fields
 jsonOut = xASL_adm_OrderFields(jsonOut,fieldOrderStruct);
+
+    
 end
 
 
