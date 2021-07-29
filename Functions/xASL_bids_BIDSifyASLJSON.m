@@ -357,7 +357,7 @@ end
 if isfield(jsonOut,'NumberOfAverages') && (max(jsonOut.NumberOfAverages) > 1)
 	if isfield(studyPar,'TotalAcquiredPairs')
 		if max(jsonOut.NumberOfAverages) ~= studyPar.TotalAcquiredPairs
-			warning('Discrepancy in the number of averages');
+			warning('Discrepancy in the number of averages...');
 		end
 	end
 end
@@ -377,13 +377,13 @@ if ~isfield(jsonOut,'TotalAcquiredPairs') || jsonOut.TotalAcquiredPairs == 1
 		if sum(ASLContextControlIndex) == 0 && sum(ASLContextControlIndex) == 0
 			jsonOut.TotalAcquiredPairs = sum(ASLContextDeltaMIndex);
 		else
-			warning('Cannot calculate TotalAcquiredPairs when both controls and deltaMs are present');
+			warning('Cannot calculate TotalAcquiredPairs when both controls and deltaMs are present...');
 		end
 	elseif sum(ASLContextControlIndex) > 0
 		if sum(ASLContextControlIndex) == sum(ASLContextLabelIndex)
 			jsonOut.TotalAcquiredPairs = sum(ASLContextControlIndex);
 		else
-			warning('Cannot calculte TotalAcquiredPairs when control and label numbers differ');
+			warning('Cannot calculte TotalAcquiredPairs when control and label numbers differ...');
 		end
 	end
 end
