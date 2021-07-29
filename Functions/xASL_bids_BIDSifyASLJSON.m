@@ -180,24 +180,24 @@ end
 % Hadamard Check
 if isfield(jsonOut,'TimeEncodedMatrixSize') && ~isempty(jsonOut,'TimeEncodedMatrixSize') || ... % Should be 4, 8 or 12
     isfield(jsonOut,'TimeEncodedMatrixType') % Natural or walsh
-    bHadamard = true; 
+    bTimeEncoded = true; 
 else 
-    bHadamard = false; 
+    bTimeEncoded = false; 
 end
 
 
 % FME sequence check
 if isfield(jsonIn,'SeriesDescription')
-	bHadamardFME = ~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
+	bTimeEncodedFME = ~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
 else
-	bHadamardFME = false;
+	bTimeEncodedFME = false;
 end
 
-if bHadamardFME
-    bHadamard = true;    
+if bTimeEncodedFME
+    bTimeEncoded = true;    
 end
 
-if bHadamard
+if bTimeEncoded
 	if isfield(jsonOut,'EchoTime') && isfield(jsonOut,'PostLabelingDelay')
 		% From the import, the length of EchoTime should correspond to the number of volumes
 		if length(jsonOut.EchoTime)~=length(jsonOut.PostLabelingDelay)
@@ -217,8 +217,8 @@ end
 
 % Check for FME Hadamard sequences
 if isfield(jsonOut,'SeriesDescription')
-	bHadamardFME = ~isempty(regexp(char(jsonOut.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
-	if bHadamardFME
+	bTimeEncodedFME = ~isempty(regexp(char(jsonOut.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
+	if bTimeEncodedFME
 		startDetails = regexp(char(jsonOut.SeriesDescription),'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
 		jsonOut.HadamardType = xASL_str2num(jsonOut.SeriesDescription(startDetails:startDetails+1));
 		jsonOut.HadamardNumberPLD = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
@@ -226,7 +226,7 @@ if isfield(jsonOut,'SeriesDescription')
 		fprintf('FME sequence, Hadamard-%d encoded images, %d PLDs, %d TEs\n', jsonOut.HadamardType, jsonOut.HadamardNumberPLD, jsonOut.HadamardNumberTE);
 	end
 else
-	bHadamardFME = false;
+	bTimeEncodedFME = false;
 end
 	
 %% 8. Merge data from the Phoenix protocol
@@ -252,7 +252,7 @@ if isfield(jsonIn,'PhoenixAnalyzed') && ~isempty(jsonIn.PhoenixAnalyzed)
 			end
 		end
 		% Prioritize the Phoenix field values in the general case
-		if ~(strcmp(fn{1},'EchoTime') && bHadamardFME)
+		if ~(strcmp(fn{1},'EchoTime') && bTimeEncodedFME)
 			jsonOut.(fn{1}) = jsonIn.PhoenixAnalyzed.(fn{1});
 		end
 	end
