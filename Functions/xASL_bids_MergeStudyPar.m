@@ -10,7 +10,7 @@ function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
 %   bidsModality - Modality (CHAR ARRAY, OPTIONAL, DEFAULT = 'asl')
 %
 % OUTPUT: 
-%   jsonIn    - ordered and checked JSON structure
+%   jsonIn    - Merged JSON structure
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Check if required fields exist in studyPar but not in jsonIn or if we can find them in other ways.
