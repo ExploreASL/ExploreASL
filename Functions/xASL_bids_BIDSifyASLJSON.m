@@ -188,7 +188,7 @@ end
 
 % FME sequence check
 if isfield(jsonIn,'SeriesDescription')
-	bTimeEncodedFME = ~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
+	bTimeEncodedFME = ~isempty(regexp(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
 else
 	bTimeEncodedFME = false;
 end
@@ -217,9 +217,9 @@ end
 
 % Check for FME Hadamard sequences
 if isfield(jsonOut,'SeriesDescription')
-	bTimeEncodedFME = ~isempty(regexp(char(jsonOut.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
+	bTimeEncodedFME = ~isempty(regexp(jsonOut.SeriesDescription,'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
 	if bTimeEncodedFME
-		startDetails = regexp(char(jsonOut.SeriesDescription),'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
+		startDetails = regexp(jsonOut.SeriesDescription,'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
 		jsonOut.HadamardType = xASL_str2num(jsonOut.SeriesDescription(startDetails:startDetails+1));
 		jsonOut.HadamardNumberPLD = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
 		jsonOut.HadamardNumberTE = xASL_str2num(jsonOut.SeriesDescription(startDetails+10:startDetails+11));
