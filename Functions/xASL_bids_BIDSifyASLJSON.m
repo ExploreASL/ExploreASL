@@ -178,8 +178,8 @@ end
 %% 7. Check for Hadamard sequence
 
 % Hadamard Check
-if isfield(jsonOut,'TimeEncodedMatrix') && ~isempty(jsonOut,'TimeEncodedMatrix') || ... % Should be 4, 8 or 12
-    isfield(jsonOut,'HadamardMatrixType') % Natural or walsh
+if isfield(jsonOut,'TimeEncodedMatrixSize') && ~isempty(jsonOut,'TimeEncodedMatrixSize') || ... % Should be 4, 8 or 12
+    isfield(jsonOut,'TimeEncodedMatrixType') % Natural or walsh
     bHadamard = true; 
 else 
     bHadamard = false; 
@@ -193,7 +193,11 @@ else
 	bHadamardFME = false;
 end
 
-if bHadamardFME || bHadamard
+if bHadamardFME
+    bHadamard = true;    
+end
+
+if bHadamard
 	if isfield(jsonOut,'EchoTime') && isfield(jsonOut,'PostLabelingDelay')
 		% From the import, the length of EchoTime should correspond to the number of volumes
 		if length(jsonOut.EchoTime)~=length(jsonOut.PostLabelingDelay)
