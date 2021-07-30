@@ -171,12 +171,15 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
 
     %% Load participants.tsv
     PathTSV = fullfile(x.D.ROOT, 'participants.tsv');
-    PathTSVold = fullfile(x.D.ROOT, 'Participants.tsv');
     bParticipantsTSV = false;
 
-    % Backwards compatibility: rename participants file
-    if exist(PathTSVold, 'file')
-        xASL_Move(PathTSVold,PathTSV);
+    % Backwards compatibility: rename to lowercase
+    fileListParticipantsTSVold = xASL_adm_GetFileList(x.D.ROOT,'^Participants.tsv$',false);
+    if ~isempty(fileListParticipantsTSVold)
+        pathParticipantsTSVold = fullfile(x.D.ROOT, 'Participants.tsv');
+        pathParticipantsTSVoldTemp = fullfile(x.D.ROOT, 'Participants_temp.tsv');
+        xASL_Move(pathParticipantsTSVold,pathParticipantsTSVoldTemp);
+        xASL_Move(pathParticipantsTSVoldTemp,PathTSV);
     end
 
     % Read in cell array

@@ -311,9 +311,12 @@ pathParticipantsTSV = fullfile(pathStudy, 'participants.tsv');
 pathParticipantsTSVxASL = fullfile(pathLegacy, 'participants.tsv');
 
 % Backwards compatibility: rename to lowercase
-pathParticipantsTSVold = fullfile(pathStudy, 'Participants.tsv');
-if exist(pathParticipantsTSVold, 'file')
-    xASL_Move(pathParticipantsTSVold,pathParticipantsTSV);
+fileListParticipantsTSVold = xASL_adm_GetFileList(pathStudy,'^Participants.tsv$',false);
+if ~isempty(fileListParticipantsTSVold)
+    pathParticipantsTSVold = fullfile(pathStudy, 'Participants.tsv');
+    pathParticipantsTSVoldTemp = fullfile(pathStudy, 'Participants_temp.tsv');
+    xASL_Move(pathParticipantsTSVold,pathParticipantsTSVoldTemp);
+    xASL_Move(pathParticipantsTSVoldTemp,pathParticipantsTSV);
 end
 
 % Check if participants.tsv exists & copy it to the derivatives
