@@ -42,6 +42,7 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
 
     % Default
     numberTEs = 1;
+    numberTIs = 1;
     
     if bTimeEncoded
         if isfield(jsonOut,'EchoTime') && isfield(jsonOut,'PostLabelingDelay')
@@ -67,19 +68,19 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
         if bTimeEncodedFME
             startDetails = regexp(jsonOut.SeriesDescription,'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
             jsonOut.TimeEncodedMatrixSize = xASL_str2num(jsonOut.SeriesDescription(startDetails:startDetails+1));
-            jsonOut.TimeEncodedNumberTI = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
+            numberTIs = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
             numberTEs = xASL_str2num(jsonOut.SeriesDescription(startDetails+10:startDetails+11));
-            fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs\n', jsonOut.TimeEncodedMatrixSize, jsonOut.TimeEncodedNumberTI, numberTEs);
+            fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs\n', jsonOut.TimeEncodedMatrixSize, numberTIs, numberTEs);
         end
     end
     
     % Check total acquired pairs for time encoded sequences
     if bTimeEncoded
-        if (numberTEs>1) && isfield(jsonOut,'TimeEncodedNumberTI')
+        if (numberTEs>1) && (numberTIs>1)
             % At this stage, jsonOut.PostLabelingDelay has the repeated PLDs already.
-            NumberPLDs = jsonOut.TimeEncodedNumberTI + 1;
+            numberPLDs = numberTIs + 1;
             % Determine the TotalAcquiredPairs
-            NumberRepetitions = jsonOut.AcquisitionMatrix / (numberTEs * NumberPLDs);
+            NumberRepetitions = jsonOut.AcquisitionMatrix / (numberTEs * numberPLDs);
             jsonOut.TotalAcquiredPairs = jsonOut.TimeEncodedMatrixSize * NumberRepetitions;
         end
     end
