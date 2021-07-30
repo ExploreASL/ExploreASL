@@ -357,7 +357,7 @@ end
 if isfield(jsonOut,'NumberOfAverages') && (max(jsonOut.NumberOfAverages) > 1)
 	if isfield(studyPar,'TotalAcquiredPairs')
 		if max(jsonOut.NumberOfAverages) ~= studyPar.TotalAcquiredPairs
-			warning('Discrepancy in the number of averages...');
+			warning('Discrepancy in the number of averages from DICOM and TotalAcquiredPairs specified in studyPar.json...');
 		end
 	end
 end
