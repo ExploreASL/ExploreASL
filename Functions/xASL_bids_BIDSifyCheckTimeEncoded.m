@@ -5,11 +5,11 @@ function [jsonIn,jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckT
 %
 % INPUT:
 %   jsonIn    - JSON with the input fields - from DICOMs (REQUIRED)
-%   jsonOut   - ordered and checked JSON structure
+%   jsonOut   - Output JSON in progress from the parent function xASL_bids_BIDSifyASLJSON (REQUIRED)
 %
 % OUTPUT: 
 %   jsonIn          - JSON with the input fields - from DICOMs
-%   jsonOut         - JSON output structure
+%   jsonOut   - Output JSON in progress from the parent function xASL_bids_BIDSifyASLJSON
 %   bTimeEncoded    - Boolean describing if the current sequence is a time encoded sequence
 %   bTimeEncodedFME - Boolean describing if the current sequence is a specific FME time encoded sequence
 %
