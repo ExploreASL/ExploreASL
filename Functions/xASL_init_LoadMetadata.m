@@ -174,10 +174,13 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
     PathTSVold = fullfile(x.D.ROOT, 'Participants.tsv');
     bParticipantsTSV = false;
 
+    % Backwards compatibility: rename participants file
+    if exist(PathTSVold, 'file')
+        xASL_Move(PathTSVold,PathTSV);
+    end
+
+    % Read in cell array
     if exist(PathTSV, 'file')
-        CellArray = xASL_tsvRead(PathTSV);
-        bParticipantsTSV = true;
-    elseif exist(PathTSVold, 'file')
         CellArray = xASL_tsvRead(PathTSV);
         bParticipantsTSV = true;
     end
