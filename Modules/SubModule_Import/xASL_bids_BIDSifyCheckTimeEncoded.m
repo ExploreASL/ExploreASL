@@ -20,7 +20,7 @@ function [jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
 % Copyright 2015-2021 ExploreASL
 
     % Check for time encoded sequences
-    if isfield(jsonOut,'TimeEncodedMatrixSize') && ~isempty(jsonOut,'TimeEncodedMatrixSize') || ... % Should be 4, 8 or 12
+    if isfield(jsonOut,'TimeEncodedMatrixSize') && ~isempty(jsonOut.TimeEncodedMatrixSize) || ... % Should be 4, 8 or 12
         isfield(jsonOut,'TimeEncodedMatrixType') % Natural or walsh
         bTimeEncoded = true; 
     else 
@@ -30,7 +30,7 @@ function [jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
 
     % Check for specific time encoded sequence of FME (Fraunhofer Mevis)
     if isfield(jsonIn,'SeriesDescription')
-        bTimeEncodedFME = ~isempty(regexp(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
+        bTimeEncodedFME = ~isempty(regexp(jsonIn.SeriesDescription,'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
     else
         bTimeEncodedFME = false;
     end
@@ -63,27 +63,21 @@ function [jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
         if bTimeEncodedFME
             startDetails = regexp(jsonOut.SeriesDescription,'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
             jsonOut.TimeEncodedMatrixSize = xASL_str2num(jsonOut.SeriesDescription(startDetails:startDetails+1));
-            jsonOut.TimeEncodedNumberPLD = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
+            jsonOut.TimeEncodedNumberTI = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
             jsonOut.TimeEncodedNumberTE = xASL_str2num(jsonOut.SeriesDescription(startDetails+10:startDetails+11));
-            fprintf('FME sequence, Hadamard-%d encoded images, %d PLDs, %d TEs\n', jsonOut.HadamardType, jsonOut.HadamardNumberPLD, jsonOut.HadamardNumberTE);
+            fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs\n', jsonOut.TimeEncodedMatrixSize, jsonOut.TimeEncodedNumberTI, jsonOut.TimeEncodedNumberTE);
         end
-    else
-        bTimeEncodedFME = false;
     end
     
     % Check total acquired pairs for time encoded sequences
-    if ~isfield(jsonOut,'TotalAcquiredPairs')
+    if bTimeEncoded
         
-        % Hadamard-4: 1 control / 3 label = 1 pair
-        % Hadamard-8: 1 control / 7 label = 1 pair
-        % etc.
+        NumberTEs = jsonOut.TimeEncodedNumberTE;
+        NumberPLDs = jsonOut.TimeEncodedNumberTI + 1; % At this stage, jsonOut.PostLabelingDelay has the repeated PLDs already.
         
-        % Determine number of acquired pairs from image size and number of TE/TI
-        jsonOut.TotalAcquiredPairs = '?';
-        
+        NumberRepetitions = jsonOut.AcquisitionMatrix / (NumberTEs * NumberPLDs);
+        jsonOut.TotalAcquiredPairs = jsonOut.TimeEncodedMatrixSize * NumberRepetitions;
     end
-
-
 
 end
 
