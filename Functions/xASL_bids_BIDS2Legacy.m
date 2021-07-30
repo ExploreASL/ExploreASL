@@ -312,7 +312,7 @@ pathParticipantsTSVxASL = fullfile(pathLegacy, 'participants.tsv');
 
 % Backwards compatibility: rename to lowercase
 fileListParticipantsTSVold = xASL_adm_GetFileList(pathStudy,'^Participants.tsv$',false);
-if ~isempty(fileListParticipantsTSVold)
+if ~isempty(fileListParticipantsTSVold) % We added the _temp copy step so that the code works on case insensitive systems like windows as well. Please don't remove that step for backwards compatibility (at least not until release 2.0.0).
     pathParticipantsTSVold = fullfile(pathStudy, 'Participants.tsv');
     pathParticipantsTSVoldTemp = fullfile(pathStudy, 'Participants_temp.tsv');
     xASL_Move(pathParticipantsTSVold,pathParticipantsTSVoldTemp);

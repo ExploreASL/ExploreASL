@@ -175,7 +175,7 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
 
     % Backwards compatibility: rename to lowercase
     fileListParticipantsTSVold = xASL_adm_GetFileList(x.D.ROOT,'^Participants.tsv$',false);
-    if ~isempty(fileListParticipantsTSVold)
+    if ~isempty(fileListParticipantsTSVold) % We added the _temp copy step so that the code works on case insensitive systems like windows as well. Please don't remove that step for backwards compatibility (at least not until release 2.0.0).
         pathParticipantsTSVold = fullfile(x.D.ROOT, 'Participants.tsv');
         pathParticipantsTSVoldTemp = fullfile(x.D.ROOT, 'Participants_temp.tsv');
         xASL_Move(pathParticipantsTSVold,pathParticipantsTSVoldTemp);
