@@ -1,4 +1,4 @@
-function [jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
+function [jsonIn,jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
 %xASL_bids_BIDSifyCheckTimeEncoded Check for time encoded sequence
 %
 % FORMAT: [jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
@@ -8,13 +8,15 @@ function [jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
 %   jsonOut   - ordered and checked JSON structure
 %
 % OUTPUT: 
-%   jsonIn    - JSON with the input fields - from DICOMs
-%   jsonOut   - ordered and checked JSON structure
+%   jsonIn          - JSON with the input fields - from DICOMs
+%   jsonOut         - JSON output structure
+%   bTimeEncoded    - Boolean describing if the current sequence is a time encoded sequence
+%   bTimeEncodedFME - Boolean describing if the current sequence is a specific FME time encoded sequence
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Check for time encoded sequence.
 %
-% EXAMPLE:     [jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut);
+% EXAMPLE:     [jsonIn,jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut);
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
@@ -71,12 +73,14 @@ function [jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
     
     % Check total acquired pairs for time encoded sequences
     if bTimeEncoded
-        
-        NumberTEs = jsonOut.TimeEncodedNumberTE;
-        NumberPLDs = jsonOut.TimeEncodedNumberTI + 1; % At this stage, jsonOut.PostLabelingDelay has the repeated PLDs already.
-        
-        NumberRepetitions = jsonOut.AcquisitionMatrix / (NumberTEs * NumberPLDs);
-        jsonOut.TotalAcquiredPairs = jsonOut.TimeEncodedMatrixSize * NumberRepetitions;
+        if isfield(jsonOut,'TimeEncodedNumberTE') && isfield(jsonOut,'TimeEncodedNumberTI')
+            % At this stage, jsonOut.PostLabelingDelay has the repeated PLDs already.
+            NumberTEs = jsonOut.TimeEncodedNumberTE;
+            NumberPLDs = jsonOut.TimeEncodedNumberTI + 1;
+            % Determine the TotalAcquiredPairs
+            NumberRepetitions = jsonOut.AcquisitionMatrix / (NumberTEs * NumberPLDs);
+            jsonOut.TotalAcquiredPairs = jsonOut.TimeEncodedMatrixSize * NumberRepetitions;
+        end
     end
 
 end

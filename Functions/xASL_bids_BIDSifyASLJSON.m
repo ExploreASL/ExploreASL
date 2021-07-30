@@ -176,7 +176,7 @@ else
 end
     
 %% 7. Check for time encoded sequence
-[jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut);
+[jsonIn,jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut);
 
 	
 %% 8. Merge data from the Phoenix protocol

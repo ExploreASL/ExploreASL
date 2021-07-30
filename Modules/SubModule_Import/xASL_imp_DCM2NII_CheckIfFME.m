@@ -34,7 +34,7 @@ function [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfF
             % Check if we have the SeriesDescription field
             if isfield(resultJSON,'SeriesDescription')
                 % Determine if we have the specific FME Hadamard sequence from Bremen
-                bTimeEncodedFME = ~isempty(regexp(resultJSON.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
+                bTimeEncodedFME = ~isempty(regexp(resultJSON.SeriesDescription,'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
                 % If the FME sequence was detected we can always set the general bTimeEncoded to true as well
                 if bTimeEncodedFME
                     bTimeEncoded = true;
