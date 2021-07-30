@@ -1,14 +1,13 @@
-function [jsonIn,jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
+function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
 %xASL_bids_BIDSifyCheckTimeEncoded Check for time encoded sequence
 %
-% FORMAT: [jsonIn,jsonOut] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
+% FORMAT: [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
 %
 % INPUT:
 %   jsonIn    - JSON with the input fields - from DICOMs (REQUIRED)
 %   jsonOut   - Output JSON in progress from the parent function xASL_bids_BIDSifyASLJSON (REQUIRED)
 %
 % OUTPUT: 
-%   jsonIn          - JSON with the input fields - from DICOMs
 %   jsonOut   - Output JSON in progress from the parent function xASL_bids_BIDSifyASLJSON
 %   bTimeEncoded    - Boolean describing if the current sequence is a time encoded sequence
 %   bTimeEncodedFME - Boolean describing if the current sequence is a specific FME time encoded sequence
@@ -16,7 +15,7 @@ function [jsonIn,jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckT
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Check for time encoded sequence.
 %
-% EXAMPLE:     [jsonIn,jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut);
+% EXAMPLE:     [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut);
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
