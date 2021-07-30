@@ -312,7 +312,7 @@ pathParticipantsTSVxASL = fullfile(pathLegacy, 'participants.tsv');
 
 % Backwards compatibility: rename to lowercase
 pathParticipantsTSVold = fullfile(pathStudy, 'Participants.tsv');
-if exist(PathTSVold, 'file')
+if exist(pathParticipantsTSVold, 'file')
     xASL_Move(pathParticipantsTSVold,pathParticipantsTSV);
 end
 
