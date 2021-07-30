@@ -39,7 +39,10 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
     if bTimeEncodedFME
         bTimeEncoded = true;    
     end
-    numberTEs
+
+    % Default
+    numberTEs = 1;
+    
     if bTimeEncoded
         if isfield(jsonOut,'EchoTime') && isfield(jsonOut,'PostLabelingDelay')
             % From the import, the length of EchoTime should correspond to the number of volumes
