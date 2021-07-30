@@ -35,7 +35,7 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 %                       string)
 %   bUpdateMetadata   - boolean specifying if we reload the metadata, e.g.
 %                       for potentially other defined cohorts etc in the
-%                       participants.tsv. This can some time though.  Only relevant when computing multiple sets. 
+%                       participants.tsv. This can take some time though.  Only relevant when computing multiple sets. 
 %                       (OPTIONAL, DEFAULT = false);
 %   SmoothingFWHM     - Full-Width-Half-Maximum in [X Y Z] voxels for smoothing of the output image
 %                       (OPTIONAL, DEFAULT = [0 0 0] (i.e. no smoothing)
