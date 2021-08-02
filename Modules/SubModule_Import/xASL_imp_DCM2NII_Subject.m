@@ -73,7 +73,7 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
             % it will put the _1 _2 _3 etc in the folder
             % this fix allows to import a single visit from a range of
             % specified visits
-            SubjDir = fullfile(imPar.TempRoot, [subjectID imPar.visitNames{iVisit}]);
+            SubjDir = fullfile(imPar.TempRoot, [subjectID '_' imPar.visitNames{iVisit}]);
             % if strcmp(imPar.visitNames{iVisit},'_1') % only pad the visitID _1 _2 _3 etc if there are multiple visits
         else
             SubjDir = fullfile(imPar.TempRoot, subjectID);

@@ -185,20 +185,21 @@ function xASL_imp_DCM2NII(imPar, x)
 	x.modules.import.listsIDs.scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs)));
 	x.modules.import.numOf.nScans = length(x.modules.import.listsIDs.scanIDs);
 	
-	%% VISIT NAMES
+	%% VISIT NAMES (== session in BIDS)
 	if isempty(imPar.visitNames)
 		if isempty(x.modules.import.listsIDs.visitIDs)
 			imPar.visitNames = cell(x.modules.import.numOf.nVisits,1);
 			for kk=1:x.modules.import.numOf.nVisits
 				imPar.visitNames{kk}=sprintf('ASL_%g',kk);
+                %% JAN PETR WHAT HAPPENS HERE, INCORRECT NAME ASL_
 			end
 		else
 			imPar.visitNames = x.modules.import.listsIDs.visitIDs;
 		end
 	end
 	
-	%% SESSION NAMES
-	% optionaly we can have human readble session names; by default they are the same as the original tokens in the path
+	%% SESSION NAMES (== run in BIDS)
+	% optionally we can have human readble session names; by default they are the same as the original tokens in the path
 	if isempty(imPar.sessionNames)
 		if isempty(x.modules.import.listsIDs.sessionIDs)
 			imPar.sessionNames = cell(x.modules.import.numOf.nSessions,1);
