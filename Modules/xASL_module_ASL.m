@@ -82,10 +82,6 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
     end
 end
 
-% Check if HadamardType is defined, if not set to 0
-if ~isfield(x.modules.asl,'HadamardType') 
-    x.modules.asl.HadamardType=0;
-end
 
 % Initialize the DummyScan and M0 position fields - by default empty
 if ~isfield(x.modules.asl,'DummyScanPositionInASL4D') 
@@ -209,6 +205,28 @@ if ~isfield(x,'Q')
     x.Q = struct;
     warning('x.Q didnt exist, are quantification parameters lacking?');
 end
+
+%% Multi-PLD parsing
+
+
+%% TimeEncoded parsing
+
+% Check if TimeEncoded is defined
+if isfield(x,'TimeEncodedMatrixType') || ~isempty(x.TimeEncodedMatrixType)
+    x.modules.asl.TimeEncodedType = x.TimeEncodedMatrixType;
+end
+
+% Check if TimeEncodedMatrixSize
+if isfield(x,'TimeEncodedMatrixSize') || ~isempty(x.TimeEncodedMatrixSize)
+    x.modules.asl.TimeEncodedSize = x.TimeEncodedMatrixSize;
+end
+
+% Check if there is Decoding Matrix as input
+%(some datasets will have a decoding matrix that we can use directly in the decoding part)
+
+
+%% Multi-TE parsing
+
 
 %% Define sequence (educated guess)
 x = xASL_adm_DefineASLSequence(x);
