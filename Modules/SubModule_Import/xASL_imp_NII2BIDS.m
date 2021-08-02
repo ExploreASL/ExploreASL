@@ -36,7 +36,6 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
     % Loads the general configuration necessary for the conversion and BIDS saving
 	bidsPar = xASL_bids_Config();
 	
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%% 1. Load the study parameters + dataset description
 	if ~exist(studyParPath,'file')
 		warning('Study-par file is not provided.');
@@ -50,7 +49,6 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 		studyPar.Name = imPar.studyID;
 	end
 	
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%% 2. Create the study description output and verify that all is there
 	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyPar);
 	
@@ -63,14 +61,13 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 	
 	spm_jsonwrite(fullfile(imPar.BidsRoot,[bidsPar.datasetDescription.filename '.json']),datasetDescription);
 	
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%% 3. Go through all subjects and check all the M0 and ASLs and modify the JSONs
 	% This step should be completely automatic, just taking the info filled above and using it to convert to full BIDS.
 	
 	% Go through all subjects
-	listSubjects = xASL_adm_GetFileList(imPar.TempRoot,[],false,[],true);
-    for iSubject = 1:length(listSubjects)
-        xASL_imp_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjects{iSubject});
+	listSubjectsSessions = xASL_adm_GetFileList(imPar.TempRoot,[],false,[],true);
+    for iSubjectSession = 1:length(listSubjectsSessions)
+        xASL_imp_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjectsSessions{iSubjectSession});
     end
     
     % Copy log files
