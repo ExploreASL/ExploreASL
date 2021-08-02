@@ -1,10 +1,12 @@
-function [x] = xASL_io_ReadDataPar(pathDataPar)
+function [x] = xASL_io_ReadDataPar(pathDataPar,bDataPar)
 % xASL_io_ReadDataPar This function reads data-parameter .json or .m file, which contains data and processing settings, and creates the x structure.
 %
 % FORMAT:   [x] = xASL_io_ReadDataPar(pathDataPar)
 %
 % INPUT:
 %   pathDataPar     - Filename of the input parameter file with either .m or .json extension
+%   bDataPar        - Read JSON as dataPar.json (BOOLEAN, OPTIONAL, DEFAULT = true)
+%                     (set this to false for the studyPar.json reading)
 %
 % OUTPUT:
 %   x               - x structure
@@ -81,6 +83,9 @@ function [x] = xASL_io_ReadDataPar(pathDataPar)
 %% Input Check
 if nargin < 1 || isempty(pathDataPar) || ~exist(pathDataPar, 'file')
     error('Data-parameter file does not exist...');
+end
+if nargin < 2 || isempty(bDataPar)
+    bDataPar = true;
 end
 
 % Input has to be a character array
@@ -166,7 +171,9 @@ elseif strcmpi(Fext, '.json')
 	x = xASL_io_ReadDataPar_FixFields(x);
 	
 	%% Check deprecated fields
-    x = xASL_io_CheckDeprecatedFieldsX(x,true);
+    if bDataPar
+        x = xASL_io_CheckDeprecatedFieldsX(x,true);
+    end
 	
 	
 else
