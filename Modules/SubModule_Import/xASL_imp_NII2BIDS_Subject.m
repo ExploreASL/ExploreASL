@@ -49,7 +49,11 @@ end
 function bidsLabel = xASL_imp_CheckForAliasInVisit(imPar,nameSubjectSession)
 
     % Get visitAliases from imPar
-    visitAliases = imPar.tokenVisitAliases(:,2);
+    if isfield(imPar,'tokenVisitAliases') && ~isempty(imPar.tokenVisitAliases) && size(imPar.tokenVisitAliases,2)>1
+        visitAliases = imPar.tokenVisitAliases(:,2);
+    else
+        visitAliases = [];
+    end
     
     % Separator subject/visit
     separator = '_';
@@ -59,11 +63,13 @@ function bidsLabel = xASL_imp_CheckForAliasInVisit(imPar,nameSubjectSession)
     visitName = '';
 
     % Iterate over aliases
-    for iAlias = 1:numel(visitAliases)
-        checkExpression = regexp(nameSubjectSession, [separator visitAliases{iAlias,1} '$'], 'once');
-        if ~isempty(checkExpression) % nameSubject should end in the visit alias
-            visitName = nameSubjectSession(checkExpression:end);
-            subjectName = nameSubjectSession(1:checkExpression-1);
+    if ~isempty(visitAliases)
+        for iAlias = 1:numel(visitAliases)
+            checkExpression = regexp(nameSubjectSession, [separator visitAliases{iAlias,1} '$'], 'once');
+            if ~isempty(checkExpression) % nameSubject should end in the visit alias
+                visitName = nameSubjectSession(checkExpression:end);
+                subjectName = nameSubjectSession(1:checkExpression-1);
+            end
         end
     end
     
