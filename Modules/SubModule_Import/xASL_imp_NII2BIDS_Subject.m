@@ -7,7 +7,7 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubjectSession)
 %   imPar               - JSON file with structure with import parameter (REQUIRED, STRUCT)
 %   bidsPar             - Output of xASL_imp_Config (REQUIRED, STRUCT)
 %   studyPar            - JSON file with the BIDS parameters relevant for the whole study (REQUIRED, STRUCT)
-%   nameSubjectSession  - name of the subject (REQUIRED, LIST)
+%   nameSubjectSession  - name of the subject (REQUIRED, CELL STRUCT)
 %
 % OUTPUT:
 %   n/a
@@ -30,9 +30,8 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubjectSession)
     bidsLabel = xASL_imp_CheckForAliasInVisit(imPar,nameSubjectSession);
     
     % Make a subject directory
-    if ~exist(fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]),'dir')
-        xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]));
-    end
+    xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]));
+    
     
     %% 2. Process the anat & perfusion files
     listSessions = xASL_adm_GetFileList(fullfile(imPar.TempRoot,nameSubjectSession),'^ASL.+$',false,[],true);
