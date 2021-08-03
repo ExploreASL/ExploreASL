@@ -1,7 +1,7 @@
 function xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession)
-%xASL_imp_NII2BIDS_SubjectSession NII2BIDS conversion for a single sessions.
+%xASL_imp_NII2BIDS_Session NII2BIDS conversion for a single session.
 %
-% FORMAT: xASL_imp_NII2BIDS_SubjectSession(imPar, bidsPar, studyPar, listSessions, nameSubjectSession, subjectLabel, iSession)
+% FORMAT: xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameSubjectSession, subjectLabel, iSession)
 % 
 % INPUT:
 %   imPar                 - JSON file with structure with import parameter (STRUCT, REQUIRED)
@@ -37,11 +37,10 @@ function xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameS
         else
             sessionLabel = ['ses-' listSessions{iSession}(5:end)];
         end
-
-        if ~exist(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel),'dir')
-            xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel));
-            xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel,'perf'));
-        end
+        
+        xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel));
+        xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel,'perf'));
+        
         inSessionPath = fullfile(imPar.TempRoot,nameSubjectSession,listSessions{iSession});
         outSessionPath = fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel);
 
