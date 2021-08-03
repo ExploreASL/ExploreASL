@@ -113,8 +113,8 @@ BIDS = bids.layout(fullfile(pathStudy,'rawdata'));
 nSubjects = numel(BIDS.subjectName);
 nVisits = numel(BIDS.sessionName); % this is called sessions in BIDS
 % we use this below to see if the legacy subjectname gets _1 as visit suffix or not
-
-fprintf('%s\n', ['Converting from BIDS to Legacy: ' pathStudy]);
+[~, studyName] = fileparts(pathStudy);
+fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
 
 %% -----------------------------------------------
 %% 2. Define Subject
@@ -284,13 +284,14 @@ ListASL4D = xASL_adm_GetFileList(pathLegacy, '^ASL4D\.nii$', 'FPListRec');
 if ~isempty(ListASL4D)
     for iList=1:numel(ListASL4D)
         xASL_bids_parseM0(ListASL4D{iList});
+        [~, currentNifti] = fileparts(ListASL4D{iList});
+        fprintf('M0 parsed for %s %s ...\n', studyName, currentNifti);
     end
-    fprintf('%s\n', ['M0 parsed for ' ListASL4D{iList}]);
 else
     warning(['No ASL4D file found in ' pathLegacy]);
 end
 
-%% 10. Create DataPar.json
+%% 10. Create dataPar.json
 
 % Write DataParFile if it does not exist already
 if ~(xASL_exist(fullfile(pathLegacy, 'dataPar.json'),'file')==2)

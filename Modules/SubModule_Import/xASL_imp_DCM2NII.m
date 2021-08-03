@@ -28,6 +28,7 @@ function xASL_imp_DCM2NII(imPar, x)
 
     
     %% 1. Initialize defaults of dcm2nii
+    fprintf('================================== DICOM to NIFTI CONVERSION =================================\n');
     dcm2niiCatchedErrors = struct; % initialization
     if x.modules.import.settings.bCheckPermissions
         dcm2niiDir = fullfile(x.opts.MyPath, 'External', 'MRIcron');

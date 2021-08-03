@@ -26,6 +26,7 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 
 
     %% Run the NII2BIDS conversion
+    fprintf('================================== NIFTI to BIDS CONVERSION ==================================\n');
     
     % Check if the temp folder exists
     existTempRoot = xASL_exist(fullfile(studyPath,'temp'),'dir');
