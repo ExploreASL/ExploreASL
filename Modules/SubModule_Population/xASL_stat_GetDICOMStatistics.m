@@ -154,11 +154,27 @@ end
 
 %% 3) Write TSV file
 
-% Remove empty elements
-TSV(cellfun('isempty',TSV)) = {'_'};
-
-% Remove nan elements
-TSV(cell2mat(cellfun(@(x)any(isnan(x)),TSV,'UniformOutput',false))) = {'n/a'};
+% Ensure all elements of the TSV cell array have the correct format
+for iRow=1:size(TSV,1)
+    for iColumn=1:size(TSV,2)
+        % Remove lists (we had a problem where it was tried to insert SliceTiming arrays into the table)
+        if size(TSV{iRow,iColumn},1)>1
+            TSV{iRow,iColumn} = 'n/a';
+        end
+        % Remove empty elements (Empty cells in the TSV can lead to reading errors)
+        if isempty(TSV{iRow,iColumn})
+            TSV{iRow,iColumn} = '_';
+        end
+        % Convert numeric NaNs to text n/a's (NaN can be exported as empty cells into the TSV, which can lead to reading errors)
+        if isnumeric(TSV{iRow,iColumn})
+            if isnan(TSV{iRow,iColumn})
+                TSV{iRow,iColumn} = 'n/a';
+            else
+                TSV{iRow,iColumn} = xASL_num2str(TSV{iRow,iColumn});
+            end
+        end
+    end
+end
 
 % Write TSV
 xASL_tsvWrite(TSV, PathTSV, bOverwrite);
