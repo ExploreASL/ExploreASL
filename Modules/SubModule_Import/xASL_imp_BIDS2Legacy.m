@@ -26,7 +26,7 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 
 
     %% 1. Input check
-    fprintf('================================== BIDS to LEGACY CONVERSION =================================\n');
+    fprintf('============================ BIDS to ExploreASL LEGACY CONVERSION ============================\n');
     if ~isfield(x,'dir')
         error('Missing directories field...');
     end
