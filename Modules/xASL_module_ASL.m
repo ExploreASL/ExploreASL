@@ -108,8 +108,6 @@ if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
 	xASL_adm_SaveX(x);
 end
 
-
-
 %% D1. Load ASL parameters (inheritance principle)
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
 
@@ -225,6 +223,59 @@ if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mute
 	if ~isempty(FileList)
 		xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'ASL4D.json'));
 	end
+end
+
+%% Define sequence (educated guess)
+x = xASL_adm_DefineASLSequence(x);
+
+%% MultiPLD parsing
+
+if length(x.Q.Initial_PLD)>1  % 2 because the PLD is being repeated for control and label -> check this: 1 or 2?
+    x.modules.asl.bMultiPLD = 1;
+    fprintf('%s\n','Multiple PLDs detected. Make sure that this is a valid multiPLD dataset');
+else
+    x.modules.asl.bMultiPLD = 0;
+end
+
+%% TimeEncoded parsing
+% Check if TimeEncoded is defined
+if isfield(x,'TimeEncodedMatrixType') && ~isempty(x.TimeEncodedMatrixType)
+    x.modules.asl.TimeEncodedType = x.TimeEncodedMatrixType;
+end
+
+% Check if TimeEncodedMatrixSize
+if isfield(x,'TimeEncodedMatrixSize') && ~isempty(x.TimeEncodedMatrixSize)
+    x.modules.asl.TimeEncodedSize = x.TimeEncodedMatrixSize;
+end
+
+if isfield(x.modules.asl,'TimeEncodedSize') || isfield(x.modules.asl,'TimeEncodedType')
+    x.modules.asl.bTimeEncoded = 1;
+    
+%     if ~isfield(x.modules.asl,'TimeEncodedSize')
+%         fprintf('field missing
+%     elseif isempty(...timeencodedsize
+%             fprintf Timeencoded empty
+        
+        
+    fprintf('Dataset with Time Encoded data of Type %s and size %d', x.modules.asl.TimeEncodedType, x.modules.asl.TimeEncodedSize);
+    
+elseif isfield(x.modules.asl,'TimeEncodedSize') && ~isfield(x.modules.asl,'TimeEncodedType')
+    warning('Time Encoded type not specified: should be Hadamard or Walsh')
+    
+elseif ~isfield(x.modules.asl,'TimeEncodedSize') && isfield(x.modules.asl,'TimeEncodedType')
+    warning('Time Encoded size not specified: should be a multiple of 4')
+    
+else
+    x.modules.asl.bTimeEncoded = 0;
+end
+
+%% MultiTE parsing
+
+if length(x.EchoTime)>1
+    x.modules.asl.bMultiTE = 1;
+    fprintf('%s\n','Multiple echo times detected. Make sure that this is a valid multiTE dataset');
+else
+    x.modules.asl.bMultiTE = 0;
 end
 
 
