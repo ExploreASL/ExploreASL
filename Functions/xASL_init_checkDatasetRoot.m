@@ -94,7 +94,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
             % Check for wrong input
             [~, DatasetDir] = fileparts(x.opts.DatasetRoot);
             if strcmp(DatasetDir, 'derivatives') || strcmp(DatasetDir, 'ExploreASL')
-                warning('Please do not provide the derivatives or ExploreASL folder. Use the study root directory instead...');
+                warning('Please do not provide the derivatives or ExploreASL folder. Use the dataset root directory instead...');
             end
         end
         x.opts.bProcessData = 0;
