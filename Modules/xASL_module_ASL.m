@@ -215,9 +215,8 @@ x = xASL_adm_DefineASLSequence(x);
 
 
 %% Skip processing if invalid image
-
 tempASL = xASL_io_Nifti2Im(x.P.Path_ASL4D);
-if max(tempASL(:))==0 || numel(unique(tempASL(:)))==1
+if isempty(tempASL) || (max(tempASL(:))==0 || numel(unique(tempASL(:)))==1)
     error('Invalid ASL image');
 end
 
