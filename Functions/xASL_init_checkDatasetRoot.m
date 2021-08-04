@@ -44,20 +44,13 @@ function [x] = xASL_init_checkDatasetRoot(x)
             warning('Dataset root directory does not exist...');
         end
         if x.opts.bProcessData || x.opts.bImportData
-            if ~isdeployed
-                x.opts.DatasetRoot = input('Please insert the path to your study directory: ');
-            else
-                error('Study directory does not exist...');
-            end
-            % Immediately check the input
-            if ~exist(x.opts.DatasetRoot, 'dir')
-                warning('This study directory does not exist, ExploreASL will only be initialized...');
-                x.opts.bProcessData = 0;
-                x.opts.bImportData = 0;
-                x.opts.bLoadData = false;
-                x.opts.ProcessModules = [0 0 0];
-                x.opts.ImportModules = [0 0 0 0];
-            end
+            % Give back a warning that the user tried to import or process but neither a correct dataset root nor a dataPar.json that exists was used
+            warning('You are trying to import or process a dataset, but the input parameters are not correct. ExploreASL will only be initialized...');
+            x.opts.bProcessData = 0;
+            x.opts.bImportData = 0;
+            x.opts.bLoadData = false;
+            x.opts.ProcessModules = [0 0 0];
+            x.opts.ImportModules = [0 0 0 0];
         end
     end
     
