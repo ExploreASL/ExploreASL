@@ -248,22 +248,15 @@ if isfield(x,'TimeEncodedMatrixSize') && ~isempty(x.TimeEncodedMatrixSize)
     x.modules.asl.TimeEncodedSize = x.TimeEncodedMatrixSize;
 end
 
-if isfield(x.modules.asl,'TimeEncodedSize') || isfield(x.modules.asl,'TimeEncodedType')
+if isfield(x.modules.asl,'TimeEncodedType') || isfield(x.modules.asl,'TimeEncodedSize')
     x.modules.asl.bTimeEncoded = 1;
-    
-%     if ~isfield(x.modules.asl,'TimeEncodedSize')
-%         fprintf('field missing
-%     elseif isempty(...timeencodedsize
-%             fprintf Timeencoded empty
+
+    if ~isfield(x.modules.asl,'TimeEncodedType') || isempty(x.TimeEncodedMatrixType)
+        fprintf('TimeEncodedType field missing. It should be a Hadamard or Walsh')
         
-        
-    fprintf('Dataset with Time Encoded data of Type %s and size %d', x.modules.asl.TimeEncodedType, x.modules.asl.TimeEncodedSize);
-    
-elseif isfield(x.modules.asl,'TimeEncodedSize') && ~isfield(x.modules.asl,'TimeEncodedType')
-    warning('Time Encoded type not specified: should be Hadamard or Walsh')
-    
-elseif ~isfield(x.modules.asl,'TimeEncodedSize') && isfield(x.modules.asl,'TimeEncodedType')
-    warning('Time Encoded size not specified: should be a multiple of 4')
+    elseif ~isfield(x.modules.asl,'TimeEncodedSize') || isempty(x.TimeEncodedMatrixSize)
+        fprintf('TimeEncodedSize field missing. It should be a multiple of 4')
+    end
     
 else
     x.modules.asl.bTimeEncoded = 0;
