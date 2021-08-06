@@ -130,8 +130,10 @@ end
 %% ------------------------------------------------------------------------------------------
 % 6. Create mean control image, if available, in native & standard space
 if  nVolumes>1    
-    if x.HadamardType~=0
-        [Decoded_ASL] = xASL_im_HadamardDecoding(x.modules.asl.TimeEncodedMatrixType, x.modules.asl.TimeEncodedMatrixSize, x.modules.asl.DecodingMatrix);
+    if x.modules.asl.bTimeEncoded
+            xASL_quant_HadamardDecoding(x.P.Path_rdespiked_ASL4D, x.modules.asl, x.TimeEncodedEchoTimes);
+            % x.modules.asl contain TimeEncodedMatrixType,TimeEncodedMatrixSize and maybe a DecodingMatrix provided by the dataset
+            % Note: There's no output for the function because we save the nifti inside
     else
         % Create mean control in native space
         ControlIm = xASL_quant_GetControlLabelOrder(xASL_io_Nifti2Im(x.P.Path_rdespiked_ASL4D));

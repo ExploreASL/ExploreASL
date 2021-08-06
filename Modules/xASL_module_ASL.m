@@ -213,12 +213,16 @@ end
 
 % Check if TimeEncoded is defined
 if isfield(x,'TimeEncodedMatrixType') || ~isempty(x.TimeEncodedMatrixType)
-    x.modules.asl.TimeEncodedType = x.TimeEncodedMatrixType;
+    x.modules.asl.TimeEncodedMatrixType = x.TimeEncodedMatrixType;
 end
 
 % Check if TimeEncodedMatrixSize
 if isfield(x,'TimeEncodedMatrixSize') || ~isempty(x.TimeEncodedMatrixSize)
-    x.modules.asl.TimeEncodedSize = x.TimeEncodedMatrixSize;
+    x.modules.asl.TimeEncodedMatrixSize = x.TimeEncodedMatrixSize;
+end
+
+if isfield(x.modules.asl,'TimeEncodedMatrixType') || isfield(x.modules.asl,'TimeEncodedMatrixSize')
+    x.modules.asl.bTimeEncoded = 1;
 end
 
 % Check if there is Decoding Matrix as input

@@ -71,6 +71,7 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
             numberTIs = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
             numberTEs = xASL_str2num(jsonOut.SeriesDescription(startDetails+10:startDetails+11));
             fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs\n', jsonOut.TimeEncodedMatrixSize, numberTIs, numberTEs);
+            jsonOut.TimeEncodedEchoTimes = numberTEs;
         end
     end
     
