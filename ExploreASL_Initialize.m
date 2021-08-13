@@ -332,12 +332,11 @@ function [x] = ExploreASL_Initialize_GetBooleansImportProcess(x)
         x.opts.bProcessData = 0;
     end
     
-    % On default we do not load the data
-    x.opts.bLoadData = false;
-    
-    % If we process a dataset, we need to load the data
-    if x.opts.bProcessData
+    % We only load data when a DatasetRoot is provided
+    if ~isempty(x.opts.DatasetRoot)
         x.opts.bLoadData = true;
+    else
+        x.opts.bLoadData = false;
     end
 
 end
