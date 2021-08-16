@@ -77,23 +77,25 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
     end
     
     %% Start moving
-    if xASL_exist(DstPath,'file') % this will also check .gz
-		if bOverwrite
-			if bVerbose; fprintf('xASL_Move: overwriting %s\n', DstPath); end
-
-			% When destination is a file, then remove both .nii and .nii.gz
-			if ~exist(DstPath,'dir') && xASL_exist(DstPath,'file')
-				xASL_delete(DstPath);
-            end
-            xASL_adm_CreateDir(fileparts(DstPath)); % Create folder if doesnt exist
-			xASL_SysMove(SrcPath, DstPath, bOverwrite);
+	if ~strcmp(SrcPath,DstPath) % if files are equal after managing extension, then skip moving to unzipping
+		if xASL_exist(DstPath,'file') % this will also check .gz
+			if bOverwrite
+				if bVerbose; fprintf('xASL_Move: overwriting %s\n', DstPath); end
+				
+				% When destination is a file, then remove both .nii and .nii.gz
+				if ~exist(DstPath,'dir') && xASL_exist(DstPath,'file')
+					xASL_delete(DstPath);
+				end
+				xASL_adm_CreateDir(fileparts(DstPath)); % Create folder if doesnt exist
+				xASL_SysMove(SrcPath, DstPath, bOverwrite);
+			else
+				if bVerbose; fprintf(2,'xASL_Move: skip: destination exists: %s\n', DstPath); end
+				bZipInTheEnd = false;
+			end
 		else
-			if bVerbose; fprintf(2,'xASL_Move: skip: destination exists: %s\n', DstPath); end
-			bZipInTheEnd = false;
+			xASL_adm_CreateDir(fileparts(DstPath)); % Create folder if doesnt exist
+			xASL_SysMove(SrcPath, DstPath, bOverwrite);
 		end
-    else
-        xASL_adm_CreateDir(fileparts(DstPath)); % Create folder if doesnt exist
-		xASL_SysMove(SrcPath, DstPath, bOverwrite);
 	end
     
 	% Zip the destination file
