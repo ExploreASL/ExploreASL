@@ -119,13 +119,16 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     end
 
     % Check the imagePar input file
-    if nargin < 2 || isempty(imParPath)
+    if (nargin < 2 || isempty(imParPath)) && ~bRunSubmodules(4)
         % If the path is empty, then try to find sourceStructure.json or sourcestruct.json
         fListImPar = xASL_adm_GetFileList(studyPath,'(?i)^source(struct(ure|)\.json$', 'List', [], 0);
         if length(fListImPar) < 1
             error('Could not find the sourceStructure.json file');
         end
         imParPath = fullfile(studyPath,fListImPar{1});
+    elseif (nargin < 2 || isempty(imParPath)) && bRunSubmodules(4)
+        % For BIDS to Legacy we do not need the imPar struct
+        imParPath = [];
     else
         [fpath, ~, ~] = fileparts(imParPath);
         if isempty(fpath)
@@ -150,10 +153,10 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     end
 
     if nargin<4 || isempty(bRunSubmodules)
-        bRunSubmodules = [1 1 0];
+        bRunSubmodules = [1 1 0 0];
     else
-        if length(bRunSubmodules) ~= 3
-            error('bRunSubmodules must have length 3');
+        if length(bRunSubmodules) ~= 4
+            error('bRunSubmodules must have length 4');
         end
     end
 
@@ -190,7 +193,9 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     %% 2. Initialize the import setup
     
     % Load the sourceStructure.json and initialize the corresponding struct
-    imPar = xASL_imp_Initialize(studyPath, imParPath);
+    if bRunSubmodules(1) || bRunSubmodules(2) || bRunSubmodules(3)
+        imPar = xASL_imp_Initialize(studyPath, imParPath);
+    end
 
     %% 3. Run the DCM2NIIX
     if bRunSubmodules(1)
@@ -208,6 +213,11 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     %% 5. Run defacing
     if bRunSubmodules(3)
         xASL_imp_Deface(imPar);
+    end
+    
+    %% 6. Run BIDS to Legacy
+    if bRunSubmodules(4)
+        x = xASL_imp_BIDS2Legacy(x);
     end
 
 end

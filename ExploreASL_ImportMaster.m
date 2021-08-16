@@ -33,7 +33,7 @@ function [x] = ExploreASL_ImportMaster(x)
             if x.opts.ImportModules(1)==1
                 if ~isempty(x.dir.sourceStructure)
                     try
-                        xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0], false, true, false, x);
+                        xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0 0], false, true, false, x);
                     catch loggingEntry
                         ExploreASL_ImportMaster_PrintLoggingEntry('DICOM to NIfTI',loggingEntry);
                         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
@@ -46,7 +46,7 @@ function [x] = ExploreASL_ImportMaster(x)
             if x.opts.ImportModules(2)==1
                 if ~isempty(x.dir.sourceStructure)
                     try
-                        [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0], false, true, false, x);
+                        [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0 0], false, true, false, x);
                     catch loggingEntry
                         ExploreASL_ImportMaster_PrintLoggingEntry('NIfTI to BIDS',loggingEntry);
                         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
@@ -59,7 +59,7 @@ function [x] = ExploreASL_ImportMaster(x)
             if x.opts.ImportModules(3)==1
                 if ~isempty(x.dir.DatasetRoot)
                     try
-                        [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1], false, true, false, x);
+                        [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1 0], false, true, false, x);
                     catch loggingEntry
                         ExploreASL_ImportMaster_PrintLoggingEntry('Deface',loggingEntry);
                         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
@@ -72,7 +72,7 @@ function [x] = ExploreASL_ImportMaster(x)
             if x.opts.ImportModules(4)==1
                 if ~isempty(x.dir.dataset_description)
                     try
-                        x = xASL_imp_BIDS2Legacy(x);
+                        [x] = xASL_module_Import(x.dir.DatasetRoot, [], [], [0 0 0 1], [], [], [], x);
                     catch loggingEntry
                         ExploreASL_ImportMaster_PrintLoggingEntry('BIDS to legacy',loggingEntry);
                         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
