@@ -1,9 +1,10 @@
-function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
+function xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 %xASL_imp_NII2BIDS Run the NII2BIDS conversion.
 %
 % FORMAT: xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 % 
 % INPUT:
+%   x               - ExploreASL x structure (REQUIRED, STRUCT)
 %   imPar           - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %   studyPath       - Path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED, CHAR ARRAY)
 %   studyParPath    - Path to the JSON file with the BIDS parameters relevant for the whole study (REQUIRED, CHAR ARRAY)
@@ -51,14 +52,7 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 	end
 	
 	%% 2. Create the study description output and verify that all is there
-	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyPar);
-
-	% Add version which was used for the import to the Acknowledge field (Imported with xASL v1.x.x)
-	if isfield(datasetDescription,'Acknowledgements')
-		datasetDescription.Acknowledgements = '';
-	else
-		datasetDescription.Acknowledgements = '';
-	end
+	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyPar, x.Version);
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% Make the output directory and save the description

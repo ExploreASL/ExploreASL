@@ -1,11 +1,12 @@
-function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft)
+function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExploreASL)
 %xASL_bids_CreateDatasetDescriptionTemplate This script creates a JSON structure which can be saved
 % using spm_jsonwrite to get a dataset_description.json template.
 %
 % FORMAT: [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft)
 % 
 % INPUT:
-%   draft       - Structure which defines the dataset_description fields (STRUCT, REQUIRED)
+%   draft             - Structure which defines the dataset_description fields (STRUCT, REQUIRED)
+%   versionExploreASL - ExploreASL version (STRING, REQUIRED)
 %
 % OUTPUT:
 %   json        - JSON structure which can be saved using spm_jsonwrite (dataset_description.json template)
@@ -77,14 +78,19 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft)
 		
     % Optional fields
     for iCell = 1:numel(bidsPar.datasetDescription.Optional)
-		% Only copy if defined
-		if isfield(draft,bidsPar.datasetDescription.Optional{1,iCell})
-			json.(bidsPar.datasetDescription.Optional{1,iCell}) = draft.(bidsPar.datasetDescription.Optional{1,iCell});
-		end
+        % Only copy if defined
+        if isfield(draft,bidsPar.datasetDescription.Optional{1,iCell})
+            json.(bidsPar.datasetDescription.Optional{1,iCell}) = draft.(bidsPar.datasetDescription.Optional{1,iCell});
+        end
+        % Add version which was used for the import to the Acknowledge field (Imported with xASL v1.x.x)
+        if strcmp(bidsPar.datasetDescription.Optional{1,iCell},'Acknowledgements')
+            json.Acknowledgements = ['Imported with xASL ' versionExploreASL];
+        end
     end
     
     % Add linebreak after printing
     if length(listMissingFiles)>1
         fprintf('\n');
     end
+    
 end
