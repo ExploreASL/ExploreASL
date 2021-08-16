@@ -26,15 +26,15 @@ function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
 % 2. Define Subject
 % 3. Define SubjectVisit
 % 4. Parse modality
-% 5. Parse scantype
-% 6. Compile paths for copying
-% 7. Manage sidecars to copy
-% 8. Copy files
-% 9. Parse M0
-% 10. Create DataPar.json
-% 11. Copy participants.tsv
-% 12. Add dataset_description.json
-% 13. Clean up
+% 4.1. Parse scantype
+% 4.2. Compile paths for copying
+% 4.3. Manage sidecars to copy
+% 4.4. Copy files
+% 5. Parse M0
+% 6. Create DataPar.json
+% 7. Copy participants.tsv
+% 8. Add dataset_description.json
+% 9. Clean up
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_BIDS2xASL('pathMyStudy')
@@ -131,155 +131,29 @@ for iSubjSess=1:numel(BIDS.subjects) % iterate over BIDS.subjects (indices that 
     %% 3. Define SubjectVisit
     iVisit = find(strcmp(BIDS.sessionName, SessionID));
     % remove iteration for iVisit=1 % iterate visit/session in this "BIDS.subjects" (always 1 session per BIDS.subjects)
-        % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
-        if nVisits==1
-            pathLegacy_SubjectVisit = fullfile(pathLegacy, SubjectID);
-            VisitString = '';
-        else
-            pathLegacy_SubjectVisit = fullfile(pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
-            VisitString = [' visit ' SessionID];
-        end
-        SubjectVisit = [SubjectID VisitString];
-        xASL_adm_CreateDir(pathLegacy_SubjectVisit);
-
-        %% -----------------------------------------------
-        %% 4. Parse modality
-		% Modalities - the BIDS domains of scantypes
-        ModalitiesUnique = unique(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
-        nModalities = length(ModalitiesUnique);
-        for iModality=1:nModalities % iterate modalities in this Subject/Visit
-            ModalityIs = ModalitiesUnique{iModality};
-            if isfield(BIDS.subjects(iSubjSess), ModalityIs) && ~isempty(BIDS.subjects(iSubjSess).(ModalityIs))
-                ModalityFields = BIDS.subjects(iSubjSess).(ModalityIs);
-                nScans = length(ModalityFields);
-
-                % Parse fields of this modality for combinations ScanType & Run, in a reference table
-                Reference = {'index' 'ScanType' 'run'};
-                for iScan=1:nScans % iterate NIfTIs in this Subject/Visit/Modality
-                    Reference{iScan+1, 1} = iScan; % index
-                    Reference{iScan+1, 2} = ModalityFields(iScan).type; % ScanType
-                    Reference{iScan+1, 3} = xASL_str2num(ModalityFields(iScan).run); % run
-                    if isempty(Reference{iScan+1, 3}) || isnan(Reference{iScan+1, 3})
-                        Reference{iScan+1, 3} = 1; % default to 1st run
-                    end
-                end
-                Reference(2:end,:) = sortrows(Reference(2:end,:), [2, 3]); % first sort for ScanType then run
-
-                RunsAre = cellfun(@(y) y, Reference(2:end, 3));
-                RunsUnique = unique(RunsAre);
-                
-                %% -----------------------------------------------
-                %% 5. Parse scantype
-                modalityIndices = find(strcmp(bidsPar.BIDS2LegacyFolderConfiguration(2:end,2), ModalityIs));
-                modalityConfiguration = bidsPar.BIDS2LegacyFolderConfiguration(1+modalityIndices, :);
-                
-                for iType=1:size(modalityConfiguration, 1) % iterate scantypes in this Subject/Visit/Modality
-                    TypeIs = modalityConfiguration{iType,1};
-                    TypeIndices = cellfun(@(y) strcmp(y, TypeIs), Reference(2:end, 2)); % this are the indices for this ScanType
-
-                    if ~isempty(TypeIndices)
-                        for iRun=1:length(RunsUnique) % iterate runs in this Subject/Visit/Modality
-                            RunIs = RunsUnique(iRun);
-                            RunIndices = RunsAre==RunsUnique(iRun);
-                            TypeRunIndex = find(RunIndices & TypeIndices);
-                            if length(TypeRunIndex)>1
-                                warning(['Multiple NIfTIs found for ' SubjectVisit '_run-' xASL_num2str(RunIs) '_' TypeIs ', using first only']);
-                                TypeRunIndex = TypeRunIndex(1);
-                            end
-
-                            %% -----------------------------------------------
-                            %% 6. Compile paths for copying                          
-                            if length(TypeRunIndex)==1 % if this scantype-run combination exists
-
-                                % ModalityIs = current modality (e.g. 'anat' 'perf')
-                                % TypeIs = current scantype, e.g. 'asl' 'm0' 't1w'
-                                % RunIs = current run (e.g. 1, 2, 3)
-                                % TypeRunIndex = index of current scantype & run inside the above created Reference Table
-                                
-                                % Define folder & filename
-                                ConfigIndex = cellfun(@(y) strcmp(TypeIs, y), bidsPar.BIDS2LegacyFolderConfiguration(2:end, 1)); % find scantype index
-                                ConfigIndex2 = cellfun(@(y) strcmp(ModalityIs, y), bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2)); % find modality index
-                                ConfigIndex = find(ConfigIndex & ConfigIndex2); % Combine them & convert to index
-                                
-								% xASL legacy subfolder name (empty means no subfolder)
-                                FolderIs = bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,3};
-								
-								% xASL legacy filename
-                                FileIs = bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,4};
-                                
-                                % Manage runs
-                                PrintRun = false;
-								% if xASL legacy requires to specify the first run (e.g. T1.nii.gz vs ASL_1/ASL4D.nii.gz)
-                                if RunIs==1 && bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1, 6}==1
-                                    % if we need to print first run
-                                    PrintRun = true;
-                                elseif RunIs>1
-                                    PrintRun = true;
-                                end
-                                
-                                if PrintRun==1
-									% xASL legacy location of run specification (e.g. T1_2.nii.gz vs ASL_2/ASL4D.nii.gz for file vs folder location)
-                                    if strcmp(bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,5}, 'file')
-                                        FileIs = [FileIs '_' xASL_num2str(RunIs)];
-                                    elseif strcmp(bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,5}, 'folder')
-                                        FolderIs = [FolderIs '_' xASL_num2str(RunIs)];
-                                    end
-                                end
-                                
-                                pathOrig = '';
-                                pathDest = '';
-                                
-                                pathOrig{1} = fullfile(BIDS.subjects(iSubjSess).path, ModalityIs, ModalityFields(TypeRunIndex).filename);
-                                [~, ~, Fext] = xASL_fileparts(ModalityFields(TypeRunIndex).filename);
-                                pathDest{1} = fullfile(pathLegacy_SubjectVisit, FolderIs, [FileIs Fext]);
-                                
-                                %% -----------------------------------------------
-                                %% 7. Manage sidecars to copy
-								% Sidecars definitions are loaded by xASL_bids_Config at function start
-
-                                % Assuming that each .nii has a .json sidecar, do the same for .json (and for
-                                % other sidecars only if they exist per bidsPar.sidecarRequired)
-                                
-                                iCount = 1;
-                                for iCar=1:length(bidsPar.sidecarName)
-                                    [Fpath, Ffile] = xASL_fileparts(pathOrig{1});
-                                    
-                                    if ~bidsPar.sidecarSuffixType(iCar)
-                                        Ffile = Ffile(1:end-length(TypeIs)-1);
-                                    end
-                                    TempSidecar = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
-                                    
-                                    if ~strcmp(bidsPar.sidecarTypeSpecific{iCar}, 'no') && ~strcmp(bidsPar.sidecarTypeSpecific{iCar}, TypeIs)
-                                        % skip this sidecar (e.g. some asl-specific sidecars for non-asl NIfTIs)
-                                    elseif ~exist(TempSidecar, 'file') && bidsPar.sidecarRequired(iCar)
-                                            warning([TempSidecar ' missing']);
-                                    elseif exist(TempSidecar, 'file')
-                                        pathOrig{iCount+1} = TempSidecar;
-
-                                        [Fpath, Ffile] = xASL_fileparts(pathDest{1});
-                                        pathDest{iCount+1} = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
-                                        iCount = iCount+1;
-                                    end
-                                end
-                                    
-                                %% -----------------------------------------------
-                                %% 8. Copy files
-                                for iFile=1:length(pathOrig)
-                                    xASL_bids_BIDS2xASL_CopyFile(pathOrig{iFile}, pathDest{iFile}, bOverwrite);
-                                end
-
-                            end
-                        end % iterate runs in this Subject/Visit/Modality
-                    end
-                end
-            end
-        end
-    % end
+    % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
+    if nVisits==1
+        pathLegacy_SubjectVisit = fullfile(pathLegacy, SubjectID);
+        VisitString = '';
+    else
+        pathLegacy_SubjectVisit = fullfile(pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
+        VisitString = [' visit ' SessionID];
+    end
+    SubjectVisit = [SubjectID VisitString];
+    xASL_adm_CreateDir(pathLegacy_SubjectVisit);
+    
+    
+    %% 4. Parse modality
+    % Modalities - the BIDS domains of scantypes
+    ModalitiesUnique = unique(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
+    nModalities = length(ModalitiesUnique);
+    xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite);
+        
 end
 
 fprintf('\n');
 
-%% 9. Parse M0
+%% 5. Parse M0
 ListASL4D = xASL_adm_GetFileList(pathLegacy, '^ASL4D\.nii$', 'FPListRec');
 if ~isempty(ListASL4D)
     for iList=1:numel(ListASL4D)
@@ -291,7 +165,7 @@ else
     warning(['No ASL4D file found in ' pathLegacy]);
 end
 
-%% 10. Create dataPar.json
+%% 6. Create dataPar.json
 
 % Write DataParFile if it does not exist already
 if ~xASL_exist(fullfile(pathLegacy, 'dataPar.json'),'file')
@@ -305,7 +179,7 @@ fprintf('Overwriting x.dir.dataPar...\n');
 % Add the path to the dataPar.x struct that we return to the Master script
 dataPar.x.dir.dataPar = fullfile(pathLegacy, 'dataPar.json');
 
-%% 11. Copy participants.tsv
+%% 7. Copy participants.tsv
 
 % Define file names
 pathParticipantsTSV = fullfile(pathStudy, 'participants.tsv');
@@ -325,7 +199,7 @@ if xASL_exist(pathParticipantsTSV,'file')
     xASL_Copy(pathParticipantsTSV,pathParticipantsTSVxASL);
 end
 
-%% 12. Add "GeneratedBy" fields
+%% 8. Add "GeneratedBy" fields
 try
     % Copy dataset_description JSON file
     xASL_Copy(fullfile(pathStudy, 'rawdata', 'dataset_description.json'), fullfile(pathLegacy, 'dataset_description.json'));
@@ -350,7 +224,7 @@ catch ME
     fprintf('%s\n', ME.message);
 end
 
-%% 13. Clean up
+%% 9. Clean up
 try
     filesCleanUp = xASL_adm_GetFileList(pathStudy,'^import_.+$');
     reportFiles = xASL_adm_GetFileList(pathStudy,'^bidsReport.+$');
@@ -414,5 +288,166 @@ function xASL_bids_AddGeneratedByField(x, pathJSONin, pathJSONout)
     end
 
 end
+
+
+%% ===========================================================================
+function [bidsPar, pathOrig, pathDest, TypeIs] = xASL_bids_BIDS2Legacy_ManageSidecars(bidsPar, pathOrig, pathDest, TypeIs)
+
+    iCount = 1;
+    for iCar=1:length(bidsPar.sidecarName)
+        [Fpath, Ffile] = xASL_fileparts(pathOrig{1});
+
+        if ~bidsPar.sidecarSuffixType(iCar)
+            Ffile = Ffile(1:end-length(TypeIs)-1);
+        end
+        TempSidecar = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
+
+        if ~strcmp(bidsPar.sidecarTypeSpecific{iCar}, 'no') && ~strcmp(bidsPar.sidecarTypeSpecific{iCar}, TypeIs)
+            % skip this sidecar (e.g. some asl-specific sidecars for non-asl NIfTIs)
+        elseif ~exist(TempSidecar, 'file') && bidsPar.sidecarRequired(iCar)
+            warning([TempSidecar ' missing']);
+        elseif exist(TempSidecar, 'file')
+            pathOrig{iCount+1} = TempSidecar;
+
+            [Fpath, Ffile] = xASL_fileparts(pathDest{1});
+            pathDest{iCount+1} = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
+            iCount = iCount+1;
+        end
+    end
+
+end
+
+
+%% ===========================================================================
+function [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs)
+
+    % ModalityIs = current modality (e.g. 'anat' 'perf')
+    % TypeIs = current scantype, e.g. 'asl' 'm0' 't1w'
+    % RunIs = current run (e.g. 1, 2, 3)
+    % TypeRunIndex = index of current scantype & run inside the above created Reference Table
+
+    % Define folder & filename
+    ConfigIndex = cellfun(@(y) strcmp(TypeIs, y), bidsPar.BIDS2LegacyFolderConfiguration(2:end, 1)); % find scantype index
+    ConfigIndex2 = cellfun(@(y) strcmp(ModalityIs, y), bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2)); % find modality index
+    ConfigIndex = find(ConfigIndex & ConfigIndex2); % Combine them & convert to index
+
+    % xASL legacy subfolder name (empty means no subfolder)
+    FolderIs = bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,3};
+
+    % xASL legacy filename
+    FileIs = bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,4};
+
+    % Manage runs
+    PrintRun = false;
+    % if xASL legacy requires to specify the first run (e.g. T1.nii.gz vs ASL_1/ASL4D.nii.gz)
+    if RunIs==1 && bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1, 6}==1
+        % if we need to print first run
+        PrintRun = true;
+    elseif RunIs>1
+        PrintRun = true;
+    end
+
+    if PrintRun==1
+        % xASL legacy location of run specification (e.g. T1_2.nii.gz vs ASL_2/ASL4D.nii.gz for file vs folder location)
+        if strcmp(bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,5}, 'file')
+            FileIs = [FileIs '_' xASL_num2str(RunIs)];
+        elseif strcmp(bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,5}, 'folder')
+            FolderIs = [FolderIs '_' xASL_num2str(RunIs)];
+        end
+    end
+
+    pathOrig = '';
+    pathDest = '';
+
+    pathOrig{1} = fullfile(BIDS.subjects(iSubjSess).path, ModalityIs, ModalityFields(TypeRunIndex).filename);
+    [~, ~, Fext] = xASL_fileparts(ModalityFields(TypeRunIndex).filename);
+    pathDest{1} = fullfile(pathLegacy_SubjectVisit, FolderIs, [FileIs Fext]);
+
+
+end
+
+
+%% ===========================================================================
+function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite)
+
+    for iType=1:size(modalityConfiguration, 1) % iterate scantypes in this Subject/Visit/Modality
+        TypeIs = modalityConfiguration{iType,1};
+        TypeIndices = cellfun(@(y) strcmp(y, TypeIs), Reference(2:end, 2)); % this are the indices for this ScanType
+
+        if ~isempty(TypeIndices)
+            for iRun=1:length(RunsUnique) % iterate runs in this Subject/Visit/Modality
+                RunIs = RunsUnique(iRun);
+                RunIndices = RunsAre==RunsUnique(iRun);
+                TypeRunIndex = find(RunIndices & TypeIndices);
+                if length(TypeRunIndex)>1
+                    warning(['Multiple NIfTIs found for ' SubjectVisit '_run-' xASL_num2str(RunIs) '_' TypeIs ', using first only']);
+                    TypeRunIndex = TypeRunIndex(1);
+                end
+
+                %% 4.2. Compile paths for copying
+                if length(TypeRunIndex)==1 % if this scantype-run combination exists
+                    [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs);
+
+                    %% 4.3. Manage sidecars to copy
+                    % Sidecars definitions are loaded by xASL_bids_Config at function start
+
+                    % Assuming that each .nii has a .json sidecar, do the same for .json (and for
+                    % other sidecars only if they exist per bidsPar.sidecarRequired)
+                    [bidsPar, pathOrig, pathDest, TypeIs] = xASL_bids_BIDS2Legacy_ManageSidecars(bidsPar, pathOrig, pathDest, TypeIs);
+
+
+                    %% 4.4. Copy files
+                    for iFile=1:length(pathOrig)
+                        xASL_bids_BIDS2xASL_CopyFile(pathOrig{iFile}, pathDest{iFile}, bOverwrite);
+                    end
+
+                end
+            end % iterate runs in this Subject/Visit/Modality
+        end
+    end
+
+
+end
+
+
+%% ===========================================================================
+function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite)
+
+    for iModality=1:nModalities % iterate modalities in this Subject/Visit
+        ModalityIs = ModalitiesUnique{iModality};
+        if isfield(BIDS.subjects(iSubjSess), ModalityIs) && ~isempty(BIDS.subjects(iSubjSess).(ModalityIs))
+            ModalityFields = BIDS.subjects(iSubjSess).(ModalityIs);
+            nScans = length(ModalityFields);
+
+            % Parse fields of this modality for combinations ScanType & Run, in a reference table
+            Reference = {'index' 'ScanType' 'run'};
+            for iScan=1:nScans % iterate NIfTIs in this Subject/Visit/Modality
+                Reference{iScan+1, 1} = iScan; % index
+                Reference{iScan+1, 2} = ModalityFields(iScan).type; % ScanType
+                Reference{iScan+1, 3} = xASL_str2num(ModalityFields(iScan).run); % run
+                if isempty(Reference{iScan+1, 3}) || isnan(Reference{iScan+1, 3})
+                    Reference{iScan+1, 3} = 1; % default to 1st run
+                end
+            end
+            Reference(2:end,:) = sortrows(Reference(2:end,:), [2, 3]); % first sort for ScanType then run
+
+            RunsAre = cellfun(@(y) y, Reference(2:end, 3));
+            RunsUnique = unique(RunsAre);
+
+
+            %% 4.1. Parse scantype
+            modalityIndices = find(strcmp(bidsPar.BIDS2LegacyFolderConfiguration(2:end,2), ModalityIs));
+            modalityConfiguration = bidsPar.BIDS2LegacyFolderConfiguration(1+modalityIndices, :);
+            xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite);
+
+
+        end
+    end
+
+
+end
+
+
+
 
 
