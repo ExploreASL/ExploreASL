@@ -52,6 +52,13 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 	
 	%% 2. Create the study description output and verify that all is there
 	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyPar);
+
+	% Add version which was used for the import to the Acknowledge field (Imported with xASL v1.x.x)
+	if isfield(datasetDescription,'Acknowledgements')
+		datasetDescription.Acknowledgements = '';
+	else
+		datasetDescription.Acknowledgements = '';
+	end
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% Make the output directory and save the description
