@@ -42,7 +42,7 @@ function xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
 		warning('Study-par file is not provided.');
 		studyPar = struct;
 	else
-		studyPar = xASL_io_ReadDataPar(studyParPath,1);
+		studyPar = xASL_io_ReadDataPar(studyParPath, true);
 	end
 	
 	% The Name has to be always assigned

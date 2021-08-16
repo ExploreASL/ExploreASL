@@ -38,7 +38,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile)
     elseif strcmp(Dext,'.json')
         % JSON import
         try
-            x = xASL_io_ReadDataPar(DataParPath);
+            x = xASL_io_ReadDataPar(DataParPath, false);
         catch ME1
             % if this fails, try to recreate the json file from an .m file,
             % if it exists
@@ -48,7 +48,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile)
                 warning('Invalid DataPar JSON file, trying to repair from detected .m file');
                 fprintf('A common issue is needing escaping e.g. "\\d" instead of "\d"\n');
                 try
-                    x = xASL_io_ReadDataPar(DataParPath);
+                    x = xASL_io_ReadDataPar(DataParPath, false);
                 catch ME2
                     fprintf('%s\n', ME1.message);
                     fprintf('%s\n', ME2.message);
@@ -65,7 +65,7 @@ function [x] = xASL_init_LoadDataParameterFile(x, DataParPath, SelectParFile)
     elseif strcmp(Dext,'.m')
         try
             %% Backward compatibility
-            x = xASL_io_ReadDataPar(DataParPath); % convert .m to .json and read it
+            x = xASL_io_ReadDataPar(DataParPath, false); % convert .m to .json and read it
         catch ME1
             try
                 % Bypass eval error stuff with long names, spaces etc

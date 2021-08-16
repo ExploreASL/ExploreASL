@@ -1,7 +1,7 @@
 function [x] = xASL_io_ReadDataPar(pathDataPar,bStudyPar)
 % xASL_io_ReadDataPar This function reads data-parameter .json or .m file, which contains data and processing settings, and creates the x structure.
 %
-% FORMAT:   [x] = xASL_io_ReadDataPar(pathDataPar)
+% FORMAT:   [x] = xASL_io_ReadDataPar(pathDataPar[,bStudyPar])
 %
 % INPUT:
 %   pathDataPar     - Filename of the input parameter file with either .m or .json extension
@@ -25,7 +25,7 @@ function [x] = xASL_io_ReadDataPar(pathDataPar,bStudyPar)
 %
 % EXAMPLE:      xASL_io_ReadDataPar('DataParFile.json')
 %
-% EXAMPLE 2:    xASL_io_ReadDataPar('DataParFile.m')
+% EXAMPLE 2:    xASL_io_ReadDataPar('DataParFile.m', false)
 %
 % EXAMPLE 3:    JSON FILE
 %
