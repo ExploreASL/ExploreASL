@@ -38,7 +38,7 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
     Struct.T1w_LR_flip_YesNo = uint8(xASL_im_DetermineFlip(PathOrientationResults));
     % Whether left-right orientation has been flipped through registrations yes/no
 
-    if Struct.LR_flip_YesNo>0
+    if Struct.T1w_LR_flip_YesNo>0
         fprintf(['LR flip found for ' Struct.ID]);
     end
 
