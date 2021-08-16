@@ -83,7 +83,7 @@ function [x] = xASL_init_DataLoading(x)
 
         % Define & print settings
         x = xASL_init_PrintCheckSettings(x);
-    elseif ~loadableDataset
+    elseif x.opts.bLoadData && ~loadableDataset
         % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
         % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
         warning('Dataset can not be loaded, there is no derivatives directory, try to run the import first...');
