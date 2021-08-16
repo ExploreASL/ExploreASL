@@ -207,7 +207,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
         % Run NII to BIDS
         xASL_imp_NII2BIDS(imPar, studyPath, studyParPath);
         % Update x.opts.DatasetRoot
-        [x] = xASL_imp_Import_UpdateDatasetRoot(x, studyPath);
+        [x] = xASL_imp_UpdateDatasetRoot(x, studyPath);
     end
 
     %% 5. Run defacing
