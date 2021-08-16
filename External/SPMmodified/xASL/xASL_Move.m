@@ -10,9 +10,9 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 %                When false, do nothing in that case (OPTIONAL, DEFAULT = FALSE)
 %   bVerbose   - Verbose mode (OPTIONAL, DEFAULT = TRUE)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Moves a file to a file, a file to a directory, or a directory to a directory. It keeps the initial extensions, no unzipping or zipping
-%              after the move. But it makes sure that only one of .nii and .nii.gz exists in the destination directory.
-%              Bypass inefficient matlab stuff on linux and windows, but
+% DESCRIPTION: Moves a file to a file, a file to a directory, or a directory to a directory. It manages the unzipping or zipping according to the extension
+%              after the move. And it makes sure that only one of .nii and .nii.gz exists in the destination directory.
+%              Bypass inefficient Matlab stuff on Linux and Windows, but
 %              can only move on the same file system.
 % 
 %              NB: This function calls xASL_SysMove for the actual moving.
@@ -57,11 +57,13 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 	% If the destination is .nii.gz and source .nii, then zip the file in the end
 	if ~exist(SrcPath,'dir') % does it only for file
         bZipInTheEnd = strcmp(DstExt, '.nii.gz') && strcmp(SrcExt, '.nii');
+		bUnzipInTheEnd = strcmp(DstExt, '.nii') && strcmp(SrcExt, '.nii.gz');
 
         % .gz compatibility ExploreASL
         [SrcPath, DstPath] = xASL_adm_ZipFileNameHandling(SrcPath, DstPath);
 	else % not for whole directories
         bZipInTheEnd = false;
+		bUnzipInTheEnd = false;
 	end
 	
     % If src is a file and destination a dir, then add the filename to the dir
@@ -97,10 +99,8 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 	% Zip the destination file
 	if bZipInTheEnd
 		xASL_adm_GzipNifti(DstPath);
-		
-		if exist(DstPath,'file') && exist([DstPath '.gz'],'file')
-			delete(DstPath);
-		end
+	elseif bUnzipInTheEnd
+		xASL_adm_UnzipNifti(DstPath);
 	end
 	
 end
