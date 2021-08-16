@@ -1,7 +1,7 @@
 function xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 %xASL_imp_NII2BIDS Run the NII2BIDS conversion.
 %
-% FORMAT: xASL_imp_NII2BIDS(imPar, studyPath, studyParPath)
+% FORMAT: xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 % 
 % INPUT:
 %   x               - ExploreASL x structure (REQUIRED, STRUCT)
@@ -20,7 +20,7 @@ function xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 % 3. Go through all subjects and check all the M0 and ASLs and modify the JSONs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_NII2BIDS(imPar, studyPath, studyParPath);
+% EXAMPLE:     xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath);
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL

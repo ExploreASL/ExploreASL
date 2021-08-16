@@ -2,7 +2,7 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExplo
 %xASL_bids_CreateDatasetDescriptionTemplate This script creates a JSON structure which can be saved
 % using spm_jsonwrite to get a dataset_description.json template.
 %
-% FORMAT: [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft)
+% FORMAT: [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExploreASL)
 % 
 % INPUT:
 %   draft             - Structure which defines the dataset_description fields (STRUCT, REQUIRED)
@@ -21,7 +21,7 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExplo
 % EXAMPLE:      draft.Name = 'DRO_Digital_Reference_Object';
 %               draft.Test = 'Test';
 %               draft.License = 'Test_License';
-%               [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft);
+%               [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft,'1.8.0');
 %               
 % __________________________________
 % Copyright 2015-2021 ExploreASL
@@ -84,7 +84,7 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExplo
         end
         % Add version which was used for the import to the Acknowledge field (Imported with xASL v1.x.x)
         if strcmp(bidsPar.datasetDescription.Optional{1,iCell},'Acknowledgements')
-            json.Acknowledgements = ['Imported with xASL ' versionExploreASL];
+            json.Acknowledgements = ['Imported with ExploreASL ' versionExploreASL];
         end
     end
     
