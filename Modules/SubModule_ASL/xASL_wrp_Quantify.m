@@ -68,11 +68,25 @@ end
 if ~isfield(x,'Q')
     x.Q = struct;
 end
+
+if ~isfield(x,'MagneticFieldStrength') || isempty(x.MagneticFieldStrength)
+	fprintf('%s\n','Warning: Unknown fieldstrength - setting to default of 3T');
+	x.MagneticFieldStrength = 3;
+end
+	
 if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
-    x.Q.T2star = 48; % default for 3T
+	if x.MagneticFieldStrength == 3
+		x.Q.T2star = 48; % default for 3T
+	else
+		fprintf('%s\n','Warning: Unknown T2star for non-3T scanners');
+	end
 end
 if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
-    x.Q.T2 = 180; % default for 3T (ref Jean Chen, MRM 2009)
+	if x.MagneticFieldStrength == 3
+		x.Q.T2 = 180; % default for 3T (ref Jean Chen, MRM 2009)
+	else
+		fprintf('%s\n','Warning: Unknown T2 for non-3T scanners');
+	end
 end
 
 if ~xASL_exist(PWI_Path, 'file')
@@ -168,9 +182,9 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 3.   Hematocrit & blood T1 correction
 if isfield(x,'Hematocrit')
-        x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit);
+        x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit, [], x.MagneticFieldStrength);
 elseif isfield(x,'hematocrit')
-        x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.hematocrit);
+        x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.hematocrit, [], x.MagneticFieldStrength);
 end
 
 
@@ -225,19 +239,42 @@ else
     %% 6.   Initialize quantification parameters
     if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments) || x.Q.nCompartments>2
         x.Q.nCompartments = 1; % by default, we use a single-compartment model, as proposed by the Alsop et al. MRM 2014 concensus paper
-    end
+	end
 
-    if ~isfield(x.Q,'ATT')
+	if ~isfield(x.Q,'ATT')
         x.Q.ATT = 1800; % ms as default micro-vascular ATT
-    end
-    if ~isfield(x.Q,'TissueT1')
-        x.Q.TissueT1 = 1240; % T1 GM tissue @ 3T
-    end
-    if ~isfield(x.Q,'BloodT1')
-        x.Q.BloodT1  = 1650; % T1 relaxation time of arterial blood DEFAULT=1650 @ 3T
-    end
+	end
+	if ~isfield(x.Q,'TissueT1')
+		switch(x.MagneticFieldStrength)
+			case 3
+				x.Q.TissueT1 = 1240; % T1 GM tissue @ 3T
+			case 1
+				x.Q.TissueT1 = 1000; 
+			case 4
+				x.Q.TissueT1 = 1350;
+			otherwise
+				x.Q.TissueT1 = 1240;
+				fprintf('%s\n',['Warning: Unknown T1 GM for ' num2str(x.MagneticFieldStrength) 'T scanners']);
+		end
+	end
+	if ~isfield(x.Q,'BloodT1')
+		switch(x.MagneticFieldStrength)
+			case 3
+				x.Q.BloodT1 = 1650; % T1 relaxation time of arterial blood DEFAULT=1650 @ 3T
+			case 1.5
+				x.Q.BloodT1 = 1350;
+			case 7
+				x.Q.BloodT1 = 2100;
+			otherwise
+				fprintf('%s\n',['Warning: Unknown T1-blood for ' num2str(x.MagneticFieldStrength) 'T scanners']);
+		end
+	end
     if ~isfield(x.Q,'T2art')
-        x.Q.T2art = 50; % T2* of arterial blood, only used when no M0 image
+		if x.MagneticFieldStrength == 3
+			x.Q.T2art = 50; % T2* of arterial blood, only used when no M0 image
+		else
+			fprintf('%s\n','Warning: Unknown T2-art for non-3T scanners');
+		end
     end
     if ~isfield(x.Q,'Lambda')
         x.Q.Lambda = 0.9; % Brain/blood water coefficient (mL 1H/ mL blood)

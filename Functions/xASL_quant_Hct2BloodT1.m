@@ -31,7 +31,7 @@ function BloodT1 = xASL_quant_Hct2BloodT1(Hematocrit, Y, B0, bVerbose)
 
 %% ---------------------------------------------------------
 %% Admin
-if nargin<44 || isempty(bVerbose)
+if nargin<4 || isempty(bVerbose)
     bVerbose = true;
 end
 if nargin<3 || isempty(B0)
