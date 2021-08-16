@@ -1,7 +1,7 @@
-function imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath)
-%xASL_imp_DCM2NII_Initialize Initialize DCM2NII.
+function imPar = xASL_imp_Initialize(studyPath, imParPath)
+%xASL_imp_Initialize Initialize DCM2NII.
 %
-% FORMAT: imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath)
+% FORMAT: imPar = xASL_imp_Initialize(studyPath, imParPath)
 % 
 % INPUT:
 %   studyPath  - Path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED, CHAR ARRAY)
@@ -20,7 +20,7 @@ function imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath)
 % 5. Specify the additional details of the conversion
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath);
+% EXAMPLE:     imPar = xASL_imp_Initialize(studyPath, imParPath);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

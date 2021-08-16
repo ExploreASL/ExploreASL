@@ -187,8 +187,10 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     x.modules.import.settings.bUseDCMTK = bUseDCMTK;
     x.modules.import.settings.bCheckPermissions = bCheckPermissions;
 
-    %% 2. Initialize the setup of the dicom2nii conversion
-    imPar = xASL_imp_DCM2NII_Initialize(studyPath, imParPath);
+    %% 2. Initialize the import setup
+    
+    % Load the sourceStructure.json and initialize the corresponding struct
+    imPar = xASL_imp_Initialize(studyPath, imParPath);
 
     %% 3. Run the DCM2NIIX
     if bRunSubmodules(1)
