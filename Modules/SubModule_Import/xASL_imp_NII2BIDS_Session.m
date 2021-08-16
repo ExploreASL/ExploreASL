@@ -38,7 +38,6 @@ function xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameS
             sessionLabel = ['ses-' listSessions{iSession}(5:end)];
         end
         
-        xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel));
         xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel,'perf'));
         
         inSessionPath = fullfile(imPar.TempRoot,nameSubjectSession,listSessions{iSession});
@@ -52,7 +51,6 @@ function xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameS
 
         % Only one session - no session labeling
         if ~exist(fullfile(imPar.BidsRoot,['sub-' subjectLabel]),'dir')
-            xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel]));
             xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],bidsPar.strPerfusion));
         end
         inSessionPath = fullfile(imPar.TempRoot,nameSubjectSession,listSessions{iSession});
