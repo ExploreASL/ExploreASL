@@ -1,10 +1,17 @@
-function [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs)
+function [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs, ModalityIs, RunIs, iSubjSess, BIDS, TypeRunIndex, ModalityFields, pathLegacy_SubjectVisit)
 %xASL_bids_BIDS2Legacy_CompilePathsForCopying Compile paths for BIDS to Legacy copying.
 %
 % FORMAT:     [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs)
 % 
-% INPUT:      bidsPar  - BIDS par struct (STRUCT, REQUIRED)
-%             TypeIs   - Type (REQUIRED)
+% INPUT:      bidsPar        - BIDS par struct (STRUCT, REQUIRED)
+%             TypeIs         - Type (REQUIRED)
+%             ModalityIs     - Modality (REQUIRED)
+%             RunIs          - Run (REQUIRED)
+%             iSubjSess      - Subject session (INTEGER, REQUIRED)
+%             BIDS           - BIDS struct (STRUCT, REQUIRED)
+%             TypeRunIndex   - Type run index (INTEGER, REQUIRED)
+%             ModalityFields - Modality fields (REQUIRED)
+%             pathLegacy_SubjectVisit - Legacy path for subject visit (STRING, REQUIRED)
 %   
 % OUTPUT:     bidsPar  - BIDS par struct (STRUCT, REQUIRED)
 %             TypeIs   - Type

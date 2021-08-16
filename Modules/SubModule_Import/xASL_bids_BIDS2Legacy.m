@@ -146,7 +146,7 @@ for iSubjSess=1:numel(BIDS.subjects) % iterate over BIDS.subjects (indices that 
     % Modalities - the BIDS domains of scantypes
     ModalitiesUnique = unique(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
     nModalities = length(ModalitiesUnique);
-    xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite);
+    xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
         
 end
 

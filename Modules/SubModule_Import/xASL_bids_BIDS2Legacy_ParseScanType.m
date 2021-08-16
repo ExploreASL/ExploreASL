@@ -1,4 +1,4 @@
-function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite)
+function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite, Reference, bidsPar, ModalityIs, iSubjSess, BIDS, ModalityFields, pathLegacy_SubjectVisit)
 %xASL_bids_BIDS2Legacy_ParseScanType Parse scan type during BIDS to Legacy conversion.
 %
 % FORMAT:     xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite)
@@ -8,6 +8,13 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
 %             RunsUnique               - Runs uniqure (REQUIRED)
 %             RunsAre                  - Runs are (REQUIRED)
 %             bOverwrite               - Overwrite (BOOLEAN, REQUIRED)
+%             Reference                - Reference (REQUIRED)
+%             bidsPar                  - BIDS par struct (REQUIRED)
+%             ModalityIs               - Modality (REQUIRED)
+%             iSubjSess                - Subject session (INTEGER, REQUIRED)
+%             BIDS                     - BIDS struct (STRUCT, REQUIRED)
+%             ModalityFields           - Modality fields (REQUIRED)
+%             pathLegacy_SubjectVisit  - Legacy path for subject visit (STRING, REQUIRED)
 %   
 % OUTPUT:     n/a
 %                         
@@ -36,7 +43,7 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
 
                 %% 4.2. Compile paths for copying
                 if length(TypeRunIndex)==1 % if this scantype-run combination exists
-                    [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs);
+                    [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs, ModalityIs, RunIs, iSubjSess, BIDS, TypeRunIndex, ModalityFields, pathLegacy_SubjectVisit);
 
                     %% 4.3. Manage sidecars to copy
                     % Sidecars definitions are loaded by xASL_bids_Config at function start
