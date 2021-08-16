@@ -56,8 +56,12 @@ function [x] = xASL_init_DataLoading(x)
     % These settings depend on the data (e.g. which template to use)
     x = xASL_init_DefineDataDependentSettings(x);
     
+    % Check if a "loadable" dataset exists (xASL_exist(x.dir.dataPar) is only there for backwards compatibility)
+    loadableDataset = (isfield(x.dir,'DatasetRoot') && xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'),'dir')) ...
+                   || (~isempty(x.dir.dataPar) && xASL_exist(x.dir.dataPar,'file'));
+    
     % Check if data loading should be executed first
-    if x.opts.bLoadData
+    if x.opts.bLoadData && loadableDataset
         % Check if a root directory was defined
         if ~isfield(x.D,'ROOT') || isempty(x.D.ROOT)
             error('No root folder defined');
@@ -67,13 +71,6 @@ function [x] = xASL_init_DataLoading(x)
         if strcmp(x.D.ROOT(1), '.')
             cd(x.D.ROOT);
             x.D.ROOT = pwd;
-        end
-        
-        % Make sure that the derivatives folder exists (otherwise we can not load a dataset)
-        if ~xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'))
-            % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
-            % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
-            warning('Dataset can not be loaded, there is no derivatives directory, try to run the import first...');
         end
 
         % Define study subjects/parameters for this pipeline run
@@ -86,6 +83,10 @@ function [x] = xASL_init_DataLoading(x)
 
         % Define & print settings
         x = xASL_init_PrintCheckSettings(x);
+    elseif ~loadableDataset
+        % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
+        % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
+        warning('Dataset can not be loaded, there is no derivatives directory, try to run the import first...');
     end
 
 

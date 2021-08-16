@@ -91,6 +91,11 @@ function [x] = ExploreASL_ImportMaster(x)
         % Reset the import parameters
         x.opts.bImportData = 0;
         x.opts.ImportModules = [0 0 0 0];
+        
+        % We are running the import here, but if BIDS to Legacy did not run, we can not load the data
+        if ~x.opts.ImportModules(4)
+            x.opts.bLoadData = false;
+        end
     end
     
 end

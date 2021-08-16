@@ -79,6 +79,9 @@ if isfield(x.dataset,'ForceInclusionList')
     % instead of using all the subjects that comply with the regular expression
     x.dataset.TotalSubjects = x.dataset.ForceInclusionList';
 else
+    if ~isfield(x.dataset,'subjectRegexp')
+        error('Please define the subjectRegexp of your dataset...');
+    end
     % First escape double escaping
     x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'\\','\');
     % add the visit-postfix as option
