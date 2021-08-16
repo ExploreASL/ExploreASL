@@ -286,9 +286,9 @@ function [Legend] = xASL_stat_CreateLegend(x)
     
     if isfield(x.S,'NamesROI') && isfield(x.S,'SaveFile')
         for iM=1:length(x.S.NamesROI)
-            if ~isempty(regexp(x.S.SaveFile,[x.D.PopDir '/Stats/' 'CoV*'])) % look for stat filename containing CoV
+            if ~isempty(regexp(x.S.SaveFile,[fullfile(x.D.PopDir,'Stats','CoV.*')], 'once')) % look for stat filename containing CoV
                 Legend{end+1} = 'SD/mean';
-            elseif ~isempty(regexp(x.S.SaveFile,[x.D.PopDir '/Stats/' '.*CBF']))% look for stat filename containing CBF
+            elseif ~isempty(regexp(x.S.SaveFile,[fullfile(x.D.PopDir,'Stats','.*CBF')], 'once'))% look for stat filename containing CBF
                 Legend{end+1} = 'mL/100g/min';
             else
                 Legend{end+1} = '...';
