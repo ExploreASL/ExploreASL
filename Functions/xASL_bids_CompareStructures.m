@@ -341,10 +341,17 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
     % Threshold for the difference of numeric values
     threshNumeric = 1e-5;
     threshNumericArray = 1e-2;
+    
+    % Ignore version in Acknowledgements
+    ignoreAcknowledgements = true;
 
     % Iterate over fields
     for iField=1:numel(fieldList)
         curFieldName = fieldList{iField};
+        % Ignore version in Acknowledgements
+        if ignoreAcknowledgements && strcmp(curFieldName,'Acknowledgements')
+            continue
+        end 
         fieldContentA = jsonStructA.(fieldList{iField});
         fieldContentB = jsonStructB.(fieldList{iField});
         if isnumeric(fieldContentA) && isnumeric(fieldContentB)
