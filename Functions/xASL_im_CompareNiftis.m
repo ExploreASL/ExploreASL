@@ -121,13 +121,13 @@ function [identical,RMSE,minDiff,maxDiff,dimCheck] = xASL_im_CompareNiftis(pathA
     %% Print statements
     if bVerbose
         if identical
-            fprintf('Identical:       true\n');
+            fprintf('Identical: true\n');
         else
-            fprintf('Identical:       false\n');
+            fprintf('Identical: false\n');
         end
-        fprintf('RMSE:            %.2f\n', RMSE);
-        fprintf('Min. difference: %.2f\n', minDiff);
-        fprintf('Max. difference: %.2f\n', maxDiff);
+        fprintf('RMSE:      %.2f\n', RMSE);
+        fprintf('Min.diff.: %.2f\n', minDiff);
+        fprintf('Max.diff.: %.2f\n', maxDiff);
     end
 
 end

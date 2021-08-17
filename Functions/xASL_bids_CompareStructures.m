@@ -164,14 +164,14 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
             fprintf(strcat(repmat('=',100,1)','\n'));
         end
         if detailedOutput || ~isempty(results.(datasetA).missingFolders) || ~isempty(results.(datasetA).missingFiles)
-            fprintf('Dataset:\t\t%s\n',datasetA)
+            fprintf('Dataset:   %s\n',datasetA)
         end
         printList(results.(datasetA).missingFolders)
         printList(results.(datasetA).missingFiles)
         
         if detailedOutput
             if isempty(results.(datasetA).missingFolders) && isempty(results.(datasetA).missingFiles)
-                fprintf('\t\t\t\t%s\n','No missing files');
+                fprintf('           %s\n','No missing files');
             end
         end
         
@@ -179,14 +179,14 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
             fprintf(strcat(repmat('=',100,1)','\n'));
         end
         if detailedOutput || ~isempty(results.(datasetB).missingFolders) || ~isempty(results.(datasetB).missingFiles)
-            fprintf('Dataset:\t\t%s\n',datasetB)
+            fprintf('Dataset:   %s\n',datasetB)
         end
         printList(results.(datasetB).missingFolders)
         printList(results.(datasetB).missingFiles)
         
         if detailedOutput
             if isempty(results.(datasetB).missingFolders) && isempty(results.(datasetB).missingFiles)
-                fprintf('\t\t\t\t%s\n','No missing files');
+                fprintf('           %s\n','No missing files');
             end
         end
         
@@ -297,7 +297,7 @@ function printList(currentList)
     % Iterate over list
     if ~isempty(currentList)
         for iFile=1:length(currentList)
-            fprintf('Missing:\t\t%s\n',currentList{iFile})
+            fprintf('Missing:   %s\n',currentList{iFile})
         end
     end
 end
@@ -353,20 +353,20 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
                 if length(fieldContentA)==1
                     % Compare numbers (check absolute difference)
                     if abs(fieldContentA-fieldContentB)>threshNumeric
-                        strError = sprintf('%s\t\t\t\tDifferent value: %s (%.6f vs %.6f)\n', strError,curFieldName,fieldContentA,fieldContentB);
+                        strError = sprintf('%s           Different value: %s (%.6f vs %.6f)\n', strError,curFieldName,fieldContentA,fieldContentB);
                     end
                 else
                     % Compare arrays (check sum of absolute differences)
                     sumDiff = sum(abs(fieldContentA-fieldContentB));
                     if sumDiff>threshNumericArray
-                        strError = sprintf('%s\t\t\t\tDifferent value: %s (check arrays)\n', strError,curFieldName);
+                        strError = sprintf('%s           Different value: %s (check arrays)\n', strError,curFieldName);
                         % Set max number of elements to display
                         maxNumElements = 10;
                         if length(fieldContentA)<maxNumElements
                             maxNumElements = length(fieldContentA);
                         end
                         % Initialize array view
-                        strError = sprintf('%s\t\t\t\t[',strError);
+                        strError = sprintf('%s           [',strError);
                         % Iterate over individual elements of array A
                         for elField=1:length(fieldContentA)
                             if elField<=maxNumElements
@@ -380,7 +380,7 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
                             end
                         end
                         % Initialize array view
-                        strError = sprintf('%s\t\t\t\t[',strError);
+                        strError = sprintf('%s           [',strError);
                         % Iterate over individual elements of array B
                         for elField=1:length(fieldContentB)
                             if elField<=maxNumElements
@@ -396,22 +396,22 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
                     end
                 end
             else
-                strError = sprintf('%s\t\t\t\tDifferent dimension: %s\n', strError,curFieldName);
+                strError = sprintf('%s           Different dimension: %s\n', strError,curFieldName);
             end
         elseif ischar(fieldContentA) && ischar(fieldContentB)
             % Compare char arrays and strings
             if ~strcmp(fieldContentA,fieldContentB)
-                strError = sprintf('%s\t\t\t\tDifferent value: %s (%s vs %s)\n', strError,curFieldName,fieldContentA,fieldContentB);
+                strError = sprintf('%s           Different value: %s (%s vs %s)\n', strError,curFieldName,fieldContentA,fieldContentB);
             end
         elseif iscell(fieldContentA) && iscell(fieldContentB)
             % Compare cell arrays
             if ~(isempty(setdiff(fieldContentA,fieldContentB)) && isempty(setdiff(fieldContentB,fieldContentA)))
-                strError = sprintf('%s\t\t\t\tDifferent value: %s (array)\n', strError,curFieldName);
+                strError = sprintf('%s           Different value: %s (array)\n', strError,curFieldName);
             end
         elseif isstruct(fieldContentA) && isstruct(fieldContentB)
 			% Compare cell arrays
 			if ~isequal(fieldContentA,fieldContentB)
-				strError = sprintf('%s\t\t\t\tDifferent value: %s (array)\n', strError,curFieldName);
+				strError = sprintf('%s           Different value: %s (array)\n', strError,curFieldName);
 			end
 		elseif islogical(fieldContentA) && islogical(fieldContentB)
             % Compare numbers
@@ -428,12 +428,12 @@ function strError = compareFieldLists(jsonStructA,jsonStructB,fieldList)
 					fieldContentB = 'false';
 				end
 				
-                strError = sprintf('%s\t\t\t\tDifferent value: %s (%s vs %s)\n', strError,curFieldName,fieldContentA,fieldContentB);
+                strError = sprintf('%s           Different value: %s (%s vs %s)\n', strError,curFieldName,fieldContentA,fieldContentB);
             end			
         else
             % Neither number nor text
 			if ~isequal(fieldContentA,fieldContentB)
-				strError = sprintf('%s\t\t\t\tDifferent value: %s (%s vs %s) - unknown or differing types\n', strError,curFieldName,fieldContentA,fieldContentB);
+				strError = sprintf('%s           Different value: %s (%s vs %s) - unknown or differing types\n', strError,curFieldName,fieldContentA,fieldContentB);
 			end
         end
     end
@@ -451,8 +451,8 @@ function [differences,identical,dn] = compareTEXT(differences,identical,bPrintRe
         currentFileTextB = fileread(currentFileB);
         if ~strcmp(currentFileTextA,currentFileTextB)
             if bPrintReport
-                fprintf('%s:\t\t\n',allFiles{iFile});
-                fprintf('\t\t\t\tDifferent file content.\n');
+                fprintf('Text file: %s\n',allFiles{iFile});
+                fprintf('           Different file content.\n');
             end
             identical = false;
 
@@ -492,13 +492,13 @@ function [differences,identical,dn] = compareJSON(differences,identical,bPrintRe
         missingFields = setdiff(fieldNamesB,fieldNamesA);
         % Print out missing fields
         for iField=1:numel(missingFields)
-            jsonErrorReport = sprintf('%s\t\t\t\tMissing field: %s\n',jsonErrorReport,missingFields{iField});
+            jsonErrorReport = sprintf('%s           Missing field: %s\n',jsonErrorReport,missingFields{iField});
         end
 
         extraFields = setdiff(fieldNamesA,fieldNamesB);
         % Print out missing fields
         for iField=1:numel(extraFields)
-            jsonErrorReport = sprintf('%s\t\t\t\tExtra field: %s\n',jsonErrorReport,extraFields{iField});
+            jsonErrorReport = sprintf('%s           Extra field: %s\n',jsonErrorReport,extraFields{iField});
         end
 
         % Now we can compare these fields like in the part above
@@ -506,7 +506,7 @@ function [differences,identical,dn] = compareJSON(differences,identical,bPrintRe
 
         if ~isempty(jsonErrorReport)
             if bPrintReport
-                fprintf('File:\t\t\t%s\n',allFiles{iFile});
+                fprintf('File:      %s\n',allFiles{iFile});
                 fprintf('%s',jsonErrorReport);
             end
 
@@ -552,7 +552,7 @@ function [differences,identical,dn] = compareTSV(differences,identical,bPrintRep
         if ~isempty(setdiff(currentTsvA,currentTsvB))
             if bPrintReport
                 fprintf('%s:\t\t\n',allFiles{iFile});
-                fprintf('\t\t\t\tDifferent file content.\n');
+                fprintf('           Different file content.\n');
             end
             identical = false;
 
@@ -576,8 +576,8 @@ function [differences,identical,dn] = compareNIFTI(differences,identical,bPrintR
         % Check RMSE
         if (RMSE>threshRmseNii)
             if bPrintReport
-                fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                fprintf('\t\t\t\tRMSE of NIFTIs above threshold.\n');
+                fprintf('File:      %s\n',allFiles{iFile});
+                fprintf('           RMSE of NIFTIs above threshold.\n');
             end
             identical = false;
             differences{dn,1} = ['RMSE of NIFTIs above threshold: ', allFiles{iFile}, ' '];
@@ -587,8 +587,8 @@ function [differences,identical,dn] = compareNIFTI(differences,identical,bPrintR
         % Check image dimensions
         if ~dimCheck
             if bPrintReport
-                fprintf('File:\t\t\t%s\n',allFiles{iFile});
-                fprintf('\t\t\t\tMatrix dimensions do not agree.\n');
+                fprintf('File:      %s\n',allFiles{iFile});
+                fprintf('           Matrix dimensions do not agree.\n');
             end
             identical = false;
             
