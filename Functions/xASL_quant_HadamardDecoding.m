@@ -8,7 +8,6 @@ function xASL_quant_HadamardDecoding(Encoded_ASL, xDecodingFields, NumberEchoTim
 %                             - 12 for Hadamard12
 %               sec           - output from xASL_im_HadamardCaseByCase
 %
-% OUTPUT:       Decoded_ASL   - ...
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
