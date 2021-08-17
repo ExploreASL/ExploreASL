@@ -24,10 +24,30 @@ function [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Typ
 
     %% Type of an M0 image
     bJsonLocalM0isFile = 0;
-	if ~isfield(studyPar,'M0') || isempty(studyPar.M0) || strcmpi(studyPar.M0,'separate_scan')
+	if isfield(studyPar,'M0Type') && ~isempty(studyPar.M0Type)
+		% M0Type is defined according to BIDS
+		switch(studyPar.M0Type)
+			case bidsPar.strM0Included
+				jsonLocal.M0 = true;
+			case bidsPar.strM0Separate
+				jsonLocal.M0 = linkM0prefix;
+				bJsonLocalM0isFile = 1;
+			case bidsPar.strM0Absent
+				jsonLocal.M0 = false;
+			case bidsPar.strM0Estimate
+				if ~isfield(studyPar,'M0Estimate') || isempty(studyPar.M0Estimate) || ~isnumeric(studyPar.M0Estimate)
+					error('For M0Type Estimate, the M0Estimate numeric value has to be provided');
+				end
+				jsonLocal.M0Estimate = studyPar.M0Estimate;
+				jsonLocal.M0 = studyPar.M0Estimate;
+			otherwise
+				error('Unknown value in BIDS fields M0Type');
+		end
+		jsonLocal.M0Type = studyPar.M0Type; % Copy the parameter
+	elseif ~isfield(studyPar,'M0') || isempty(studyPar.M0) || strcmpi(studyPar.M0,'separate_scan')
 		% M0-field is not defined or says 'separate_scan'
 		% Look for M0 standalone or inside the sequence
-        if isfield(studyPar,'M0PositionInASL4D') && (max(studyPar.M0PositionInASL4D(:))>0)
+		if isfield(studyPar,'M0PositionInASL4D') && (max(studyPar.M0PositionInASL4D(:))>0)
 			% M0 within main ASL sequence according to parameters
             jsonLocal.M0 = true;
             jsonLocal.M0Type = bidsPar.strM0Included;
