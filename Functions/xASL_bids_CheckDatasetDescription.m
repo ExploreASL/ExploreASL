@@ -1,11 +1,12 @@
-function [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImportedBETA] = xASL_bids_CheckDatasetDescription(datasetDescription,versionExploreASL)
+function [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImportedBETA] = xASL_bids_CheckDatasetDescription(datasetDescription, versionExploreASL)
 %xASL_bids_CheckDatasetDescription Check the dataset_description.json field
-% contents with special regard to the import version.
+% contents with special regard to the import version
 %
-% FORMAT: [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImportedBETA] = xASL_bids_CheckDatasetDescription(datasetDescription,versionExploreASL)
+% FORMAT: [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImportedBETA] = xASL_bids_CheckDatasetDescription(datasetDescription, versionExploreASL)
 % 
 % INPUT:
 %   datasetDescription - Structure which defines the dataset_description fields (STRUCT, REQUIRED)
+%   versionExploreASL  - Version of the current ExploreASL (STRING, REQUIRED)
 %
 % OUTPUT:
 %   bImportedExploreASL   - Was the dataset imported with ExploreASL or not (BOOLEAN)
@@ -17,7 +18,7 @@ function [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImp
 % DESCRIPTION:  Check the dataset_description.json field contents with special regard to the import version.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImportedBETA] = xASL_bids_CheckDatasetDescription(datasetDescription,x.Version);
+% EXAMPLE:      [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImportedBETA] = xASL_bids_CheckDatasetDescription(datasetDescription, x.Version);
 %               
 % __________________________________
 % Copyright 2015-2021 ExploreASL
