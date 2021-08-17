@@ -51,7 +51,15 @@ function [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImp
     % True if the version matches exactly the current version
     if bImportedExploreASL
         indexVersionString = regexp(datasetDescription.Acknowledgements,'Imported with ExploreASL', 'once')+length('Imported with ExploreASL');
-        fileVersion = datasetDescription.Acknowledgements(indexVersionString+1:end);
+        fileVersionToEnd = datasetDescription.Acknowledgements(indexVersionString+1:end);
+        if ~isempty(regexp(fileVersionToEnd,'_BETA', 'once'))
+            lastElement = regexp(fileVersionToEnd,'_BETA')+length('_BETA')-1;
+            fileVersion = fileVersionToEnd(1:lastElement);
+        else
+            versionDots = regexp(fileVersionToEnd,'[.]');
+            lastElement = versionDots(3)-1;
+            fileVersion = fileVersionToEnd(1:lastElement);
+        end
         if strcmp(fileVersion,versionExploreASL)
             bImportedSameVersion = true;
         end
@@ -59,12 +67,7 @@ function [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImp
     
     % Empty (if above == false), or string with version
     if bImportedExploreASL
-        indexUnderscore = regexp(fileVersion,'_');
-        if ~isempty(indexUnderscore)
-            versionExploreASLBIDS = fileVersion(1:indexUnderscore-1);
-        else
-            versionExploreASLBIDS = fileVersion;
-        end
+        versionExploreASLBIDS = fileVersion;
     end
     
     % True if BETA version was used -> see above, otherwise false

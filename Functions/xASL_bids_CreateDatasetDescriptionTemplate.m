@@ -84,7 +84,7 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExplo
         end
         % Add version which was used for the import to the Acknowledge field (Imported with xASL v1.x.x)
         if strcmp(bidsPar.datasetDescription.Optional{1,iCell},'Acknowledgements')
-            json.Acknowledgements = ['Imported with ExploreASL ' versionExploreASL];
+            json.Acknowledgements = ['Imported with ExploreASL ' versionExploreASL '.'];
         end
     end
     
