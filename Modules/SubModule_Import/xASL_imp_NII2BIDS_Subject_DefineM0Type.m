@@ -24,47 +24,51 @@ function [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Typ
 
     %% Type of an M0 image
     bJsonLocalM0isFile = 0;
-    if ~isfield(studyPar,'M0') || isempty(studyPar.M0) || strcmpi(studyPar.M0,'separate_scan')
+	if ~isfield(studyPar,'M0') || isempty(studyPar.M0) || strcmpi(studyPar.M0,'separate_scan')
+		% M0-field is not defined or says 'separate_scan'
+		% Look for M0 standalone or inside the sequence
         if isfield(studyPar,'M0PositionInASL4D') && (max(studyPar.M0PositionInASL4D(:))>0)
+			% M0 within main ASL sequence according to parameters
             jsonLocal.M0 = true;
             jsonLocal.M0Type = bidsPar.strM0Included;
         elseif xASL_exist(pathM0)
+			% Separate M0-file
             jsonLocal.M0 = linkM0prefix;
             jsonLocal.M0Type = bidsPar.strM0Separate;
             bJsonLocalM0isFile = 1;
-        else
-            if ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
-                jsonLocal.M0 = true;
-                jsonLocal.M0Type = bidsPar.strM0Included;
-            else
-                jsonLocal.M0 = false;
-                jsonLocal.M0Type = bidsPar.strM0Absent;
-            end
-        end
-    else
-        if strcmpi(studyPar.M0,'UseControlAsM0')
-            jsonLocal.M0 = bidsPar.strM0Absent;
-        else
-            if strcmpi(studyPar.M0,'no_background_suppression')
-                jsonLocal.M0 = bidsPar.strM0Absent;
-            else
-                jsonLocal.M0 = studyPar.M0;
-                if isnumeric(studyPar.M0)
-                    jsonLocal.M0Type = bidsPar.strM0Estimate;
-                    jsonLocal.M0Estimate = studyPar.M0;
-                elseif xASL_exist(pathM0)
-                    jsonLocal.M0Type = bidsPar.strM0Separate;
-                elseif ~isfield(jsonLocal, 'ASLContext')
-                    warning('jsonLocal.ASLContext missing, this may crash');
-                elseif ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
-                    jsonLocal.M0Type = bidsPar.strM0Included;
-                else
-                    jsonLocal.M0Type = bidsPar.strM0Absent;
-                end
-            end
-        end
-    end
+		elseif ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
+			% M0 within the main ASL sequence according to ASL context
+			jsonLocal.M0 = true;
+			jsonLocal.M0Type = bidsPar.strM0Included;
+		else
+			% M0 completely missing
+			jsonLocal.M0 = false;
+			jsonLocal.M0Type = bidsPar.strM0Absent;
+		end
+	elseif strcmpi(studyPar.M0,'UseControlAsM0')
+		% Defined to use control as M0 -> for BIDS this means M0 is absent
+		jsonLocal.M0 = bidsPar.strM0Absent;
+	elseif strcmpi(studyPar.M0,'no_background_suppression')
+		% Defined that no Bsup is used -> for BIDS this means M0 is absent
+		jsonLocal.M0 = bidsPar.strM0Absent;
+	else
+		jsonLocal.M0 = studyPar.M0;
+		if isnumeric(studyPar.M0)
+			% M0 is numeric, then define M0-estimate
+			jsonLocal.M0Type = bidsPar.strM0Estimate;
+			jsonLocal.M0Estimate = studyPar.M0;
+		elseif xASL_exist(pathM0)
+			% M0 is a path that exist - then define a separate M0-file
+			jsonLocal.M0Type = bidsPar.strM0Separate;
+		elseif ~isfield(jsonLocal, 'ASLContext')
+			warning('jsonLocal.ASLContext missing, this may crash');
+		elseif ~isempty(strfind(jsonLocal.ASLContext,bidsPar.strM0scan))
+			jsonLocal.M0Type = bidsPar.strM0Included;
+		else
+			jsonLocal.M0Type = bidsPar.strM0Absent;
+		end
+	end
+
     
 end
-
 
