@@ -1,7 +1,7 @@
 function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
 %xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
-% FORMAT: xASL_bids_BIDS2Legacy(pathStudy[, bOverwrite, dataPar])
+% FORMAT: [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x[, bOverwrite, dataPar])
 % 
 % INPUT:
 %   pathStudy  - path to the study folder containing the BIDS data in rawdata subfolder (REQUIRED)
@@ -26,10 +26,10 @@ function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
 % 2. Define Subject
 % 3. Define SubjectVisit
 % 4. Parse modality
-% 4.1. Parse scantype
-% 4.2. Compile paths for copying
-% 4.3. Manage sidecars to copy
-% 4.4. Copy files
+% - Parse scantype
+% - Compile paths for copying
+% - Manage sidecars to copy
+% - Copy files
 % 5. Parse M0
 % 6. Create DataPar.json
 % 7. Copy participants.tsv

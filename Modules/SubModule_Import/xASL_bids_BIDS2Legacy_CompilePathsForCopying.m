@@ -1,7 +1,7 @@
 function [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs, ModalityIs, RunIs, iSubjSess, BIDS, TypeRunIndex, ModalityFields, pathLegacy_SubjectVisit)
 %xASL_bids_BIDS2Legacy_CompilePathsForCopying Compile paths for BIDS to Legacy copying.
 %
-% FORMAT:     [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs)
+% FORMAT:     [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs, ModalityIs, RunIs, iSubjSess, BIDS, TypeRunIndex, ModalityFields, pathLegacy_SubjectVisit)
 % 
 % INPUT:      bidsPar        - BIDS par struct (STRUCT, REQUIRED)
 %             TypeIs         - Type (REQUIRED)
@@ -27,6 +27,7 @@ function [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePa
 % Copyright 2015-2021 ExploreASL
 
 
+    %% Compile paths
     % ModalityIs = current modality (e.g. 'anat' 'perf')
     % TypeIs = current scantype, e.g. 'asl' 'm0' 't1w'
     % RunIs = current run (e.g. 1, 2, 3)
@@ -43,7 +44,7 @@ function [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePa
     % xASL legacy filename
     FileIs = bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1,4};
 
-    % Manage runs
+    %% Manage runs
     PrintRun = false;
     % if xASL legacy requires to specify the first run (e.g. T1.nii.gz vs ASL_1/ASL4D.nii.gz)
     if RunIs==1 && bidsPar.BIDS2LegacyFolderConfiguration{ConfigIndex+1, 6}==1
@@ -62,6 +63,7 @@ function [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePa
         end
     end
 
+    %% Manage paths
     pathOrig = '';
     pathDest = '';
 

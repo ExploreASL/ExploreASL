@@ -1,7 +1,7 @@
 function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit)
 %xASL_bids_BIDS2Legacy_ParseModality Parse modality for BIDS to Legacy conversion.
 %
-% FORMAT:     xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite)
+% FORMAT:     xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit)
 % 
 % INPUT:      BIDS             - BIDS struct (STRUCT, REQUIRED)
 %             bidsPar          - BIDS par struct (STRUCT, REQUIRED)
@@ -22,6 +22,8 @@ function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjS
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+
+    %% Iterate over modalities
     for iModality=1:nModalities % iterate modalities in this Subject/Visit
         ModalityIs = ModalitiesUnique{iModality};
         if isfield(BIDS.subjects(iSubjSess), ModalityIs) && ~isempty(BIDS.subjects(iSubjSess).(ModalityIs))
@@ -44,7 +46,7 @@ function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjS
             RunsUnique = unique(RunsAre);
 
 
-            %% 4.1. Parse scantype
+            %% Parse scantype
             modalityIndices = find(strcmp(bidsPar.BIDS2LegacyFolderConfiguration(2:end,2), ModalityIs));
             modalityConfiguration = bidsPar.BIDS2LegacyFolderConfiguration(1+modalityIndices, :);
             xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite, Reference, bidsPar, ModalityIs, iSubjSess, BIDS, ModalityFields, pathLegacy_SubjectVisit);

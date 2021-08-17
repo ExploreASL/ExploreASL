@@ -1,7 +1,7 @@
 function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite, Reference, bidsPar, ModalityIs, iSubjSess, BIDS, ModalityFields, pathLegacy_SubjectVisit)
 %xASL_bids_BIDS2Legacy_ParseScanType Parse scan type during BIDS to Legacy conversion.
 %
-% FORMAT:     xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite)
+% FORMAT:     xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite, Reference, bidsPar, ModalityIs, iSubjSess, BIDS, ModalityFields, pathLegacy_SubjectVisit)
 % 
 % INPUT:      modalityConfiguration    - Modality Configuration (REQUIRED)
 %             SubjectVisit             - Subject visits (REQUIRED)
@@ -26,7 +26,8 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-
+    
+    %% Iterate over Types
     for iType=1:size(modalityConfiguration, 1) % iterate scantypes in this Subject/Visit/Modality
         TypeIs = modalityConfiguration{iType,1};
         TypeIndices = cellfun(@(y) strcmp(y, TypeIs), Reference(2:end, 2)); % this are the indices for this ScanType
@@ -41,11 +42,11 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
                     TypeRunIndex = TypeRunIndex(1);
                 end
 
-                %% 4.2. Compile paths for copying
+                %% Compile paths for copying
                 if length(TypeRunIndex)==1 % if this scantype-run combination exists
                     [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs, ModalityIs, RunIs, iSubjSess, BIDS, TypeRunIndex, ModalityFields, pathLegacy_SubjectVisit);
 
-                    %% 4.3. Manage sidecars to copy
+                    %% Manage sidecars to copy
                     % Sidecars definitions are loaded by xASL_bids_Config at function start
 
                     % Assuming that each .nii has a .json sidecar, do the same for .json (and for
@@ -53,7 +54,7 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
                     [bidsPar, pathOrig, pathDest, TypeIs] = xASL_bids_BIDS2Legacy_ManageSidecars(bidsPar, pathOrig, pathDest, TypeIs);
 
 
-                    %% 4.4. Copy files
+                    %% Copy files
                     for iFile=1:length(pathOrig)
                         xASL_bids_BIDS2xASL_CopyFile(pathOrig{iFile}, pathDest{iFile}, bOverwrite);
                     end
