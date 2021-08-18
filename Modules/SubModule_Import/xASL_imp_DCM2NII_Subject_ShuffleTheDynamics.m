@@ -61,6 +61,11 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
             niiTable{iNii,2} = xASL_str2num(tmpJSON.InstanceNumber);
         else
             niiTable{iNii,2} = 0;
+		end
+		if isfield(tmpJSON,'SeriesNumber')
+            niiTable{iNii,5} = xASL_str2num(tmpJSON.SeriesNumber);
+        else
+            niiTable{iNii,5} = 0;
         end
         % Check the Manufacturer
         if isfield(tmpJSON, 'Manufacturer')
@@ -126,9 +131,9 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     %% 5. Merge NIfTIs if there are multiples for ASL or M0, merge multiple files
     if length(nii_files)>1
         if ~isempty(strfind(scan_name,'ASL4D'))
-            [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'ASL');
+            [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'ASL', niiTable);
         elseif  ~isempty(strfind(scan_name,'M0'))
-            [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0');
+            [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0', niiTable);
         end
     end
     

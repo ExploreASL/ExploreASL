@@ -1,11 +1,12 @@
-function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType)
+function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType, niiTable)
 %xASL_bids_MergeNifti Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible
 %
-% FORMAT: NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType)
+% FORMAT: NiftiPaths = xASL_bids_MergeNifti(NiftiPaths, seqType[, niiTable])
 % 
 % INPUT:
 %   NiftiPaths - cell containing list of strings with full paths of the files (REQUIRED)
 %   seqType    - Type of the file - can be 'M0' or 'ASL' (REQUIRED)
+%   niiTable   - cell containing a table Filename, InstanceNumber, SeriesNumber, FileType, FilePath (OPTIONAL, DEFAULT = EMPTY)
 %
 % OUTPUT:
 % NiftiPaths   - return either the same list of files if nothing was done or the path to the newly created file
@@ -29,17 +30,18 @@ function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType)
 %
 %              1. xASL_bids_MergeNifti_M0Files Generic merging of M0 files
 %              2. xASL_bids_MergeNifti_GEASLFiles Merge GE ASL files and extract scan order from DICOM tags
-%              3. xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
-%              4. xASL_bids_MergeNifti_AllASLFiles Merge any ASL files
-%              5. xASL_bids_MergeNifti_Merge Merge NiftiPaths & save to pathMerged
-%              6. xASL_bids_MergeNifti_Delete Delete NiftiPaths and associated JSONs
-%              7. xASL_bids_MergeNifti_RenameParms Find *_parms.m files in directory and shorten to provided name
+%              3. xASL_bids_MergeNifti_SeriesNumber Merge ASL files by SeriesNumber if different
+%              4. xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
+%              5. xASL_bids_MergeNifti_AllASLFiles Merge any ASL files
+%              6. xASL_bids_MergeNifti_Merge Merge NiftiPaths & save to pathMerged
+%              7. xASL_bids_MergeNifti_Delete Delete NiftiPaths and associated JSONs
+%              8. xASL_bids_MergeNifti_RenameParms Find *_parms.m files in directory and shorten to provided name
 %
 % EXAMPLE:     n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2020 ExploreASL, JP
+% Copyright 2015-2021 ExploreASL
 
 
 %% Admin
@@ -55,6 +57,10 @@ else
 	end
 end
 
+if nargin < 3
+	niiTable = {};
+end
+
 % Fallback
 ASLContext = '';
 
@@ -67,6 +73,11 @@ if length(NiftiPaths)>1
     case 'ASL'
 		% Run the GE merging procedure first, that returns an empty path if not all conditions are met
 		[pathOut,ASLContext] = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths);
+		
+		% Merge ASL files by SeriesNumber if different
+		if isempty(pathOut) && ~isempty(niiTable)
+			pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable);
+		end
 		
         % Merges Siemens ASL file if they have the known pattern of filenames
 		if isempty(pathOut)
