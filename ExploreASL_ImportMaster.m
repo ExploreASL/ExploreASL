@@ -30,72 +30,21 @@ function [x] = ExploreASL_ImportMaster(x)
     if ~x.opts.ImportModules(4)
         x.opts.bLoadData = false;
     end
-    
-    % On default we expect the JSON files to be there
-    missingJSON = false;
 
-    % DICOM TO NII
-    if x.opts.ImportModules(1)==1
-        if ~isempty(x.dir.sourceStructure)
-            try
-                xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0 0], false, true, false, x);
-            catch loggingEntry
-                ExploreASL_ImportMaster_PrintLoggingEntry('DICOM to NIfTI',loggingEntry);
-                [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-            end
-        else
-            missingJSON = true;
+    % Run the import submodules
+    try
+        x = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, x.opts.ImportModules, false, true, false, x);
+    catch loggingEntry
+        % Print user feedback if import crashed        
+        fprintf(2,'ExploreASL Import module failed...\n');
+        % Check loggingEntry
+        if size(loggingEntry.stack,1)>0
+            fprintf(2,'%s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
         end
-    end
-    
-    % NII TO BIDS
-    if x.opts.ImportModules(2)==1
-        if ~isempty(x.dir.sourceStructure)
-            try
-                [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0 0], false, true, false, x);
-            catch loggingEntry
-                ExploreASL_ImportMaster_PrintLoggingEntry('NIfTI to BIDS',loggingEntry);
-                [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-            end
-        else
-            missingJSON = true;
-        end
-    end
-    
-    % DEFACE
-    if x.opts.ImportModules(3)==1
-        if ~isempty(x.dir.DatasetRoot)
-            try
-                [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1 0], false, true, false, x);
-            catch loggingEntry
-                ExploreASL_ImportMaster_PrintLoggingEntry('Deface',loggingEntry);
-                [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-            end
-        else
-            missingJSON = true;
-        end
-    end
-    
-    % BIDS TO LEGACY
-    if x.opts.ImportModules(4)==1
-        if ~isempty(x.dir.dataset_description)
-            try
-                [x] = xASL_module_Import(x.dir.DatasetRoot, [], [], [0 0 0 1], [], [], [], x);
-            catch loggingEntry
-                ExploreASL_ImportMaster_PrintLoggingEntry('BIDS to legacy',loggingEntry);
-                [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-                % Turn off data loading and processing if BIDS to Legacy crashed
-                x.opts.bLoadData = false;
-                x.opts.bProcessData = false;
-            end
-        else
-            missingJSON = true;
-        end
-    end
-    
-    % Print warning about missing JSON files
-    if missingJSON
-        warning('Import workflow is turned on, but at least one required JSON file is missing...');
+        [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+        % Turn off data loading and processing if import crashed
+        x.opts.bLoadData = false;
+        x.opts.bProcessData = false;
     end
     
     % Reset the import parameters
@@ -105,16 +54,4 @@ function [x] = ExploreASL_ImportMaster(x)
     
 end
 
-
-%% Print logging information
-function ExploreASL_ImportMaster_PrintLoggingEntry(moduleName,loggingEntry)
-
-    fprintf(2,'%s module failed...\n',moduleName);
-
-    % Check loggingEntry
-    if size(loggingEntry.stack,1)>0
-        fprintf(2,'%s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
-    end
-
-end
 

@@ -68,14 +68,14 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 	if length(fListDataPar) < 1
 		fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
 		% Fill the dataPars with default parameters
-		dataPar = xASL_bids_BIDS2Legacy(localDatasetRoot, x, 1, []);
+		[dataPar,x] = xASL_bids_BIDS2Legacy(localDatasetRoot, x, 1, []);
 	else
 		if length(fListDataPar) > 1
 			warning('Multiple dataPar*.jsons exist. Using the first: %s\n',fListDataPar{1});
 		end
 		% Fill the dataPars with the provided parameters
 		dataPar = spm_jsonread(fListDataPar{1});
-		dataPar = xASL_bids_BIDS2Legacy(localDatasetRoot, x, 1, dataPar);
+		[dataPar,x] = xASL_bids_BIDS2Legacy(localDatasetRoot, x, 1, dataPar);
 	end
 
 	%% 4. Overwrite DatasetRoot
@@ -86,8 +86,6 @@ function [x] = xASL_imp_BIDS2Legacy(x)
             x.(fieldsDataPar{iField,1}) = dataPar.x.(fieldsDataPar{iField,1});
         end
     end
-    % Update dataPar path
-	x.dir.dataPar = dataPar.x.dir.dataPar;
     
 end
 

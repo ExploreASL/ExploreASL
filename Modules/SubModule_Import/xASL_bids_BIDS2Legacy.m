@@ -1,4 +1,4 @@
-function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
+function [dataPar,x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
 %xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
 % FORMAT: [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x[, bOverwrite, dataPar])
@@ -10,7 +10,9 @@ function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
 %   dataPar    - dataPar values to be filled in a basic dataPar created with the conversion to legacy 
 %                (OPTIONAL, DEFAULT = basic dataPar settings)
 %   
-% OUTPUT: dataPar - dataPar struct (STRUCT)
+% OUTPUT: 
+%   dataPar    - dataPar struct (STRUCT)
+%   x          - ExploreASL x structure (STRUCT)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function converts BIDS rawdata (in pathStudy/rawdata/) 
@@ -37,7 +39,7 @@ function [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
 % 9. Clean up
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar);
+% EXAMPLE: [dataPar,x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -70,7 +72,7 @@ else
 end
 
 % Creates a default dataPar 
-if nargin < 3 || isempty(dataPar)
+if nargin < 4 || isempty(dataPar)
 	dataPar = struct();
 end
 
@@ -167,16 +169,21 @@ end
 %% 6. Create dataPar.json
 
 % Write DataParFile if it does not exist already
-if ~xASL_exist(fullfile(pathLegacy, 'dataPar.json'),'file')
-    fprintf('Creating default dataPar.json since file was not found...\n');
+fListDataPar = xASL_adm_GetFileList(pathLegacy,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+if isempty(fListDataPar)
+    fprintf('Creating dataPar.json since file was not found in derivatives directory...\n');
     spm_jsonwrite(fullfile(pathLegacy, 'dataPar.json'), dataPar);
+end
+
+% Update dataPar path
+fListDataParLegacy = xASL_adm_GetFileList(pathLegacy,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+x.dir.dataPar = fListDataParLegacy{1};
+if length(fListDataParLegacy)>1
+    fprintf('Multiple dataPar.json files within the derivatives directory...\n');
 end
 
 % Overwrite dataPar.json in x structure
 fprintf('Overwriting x.dir.dataPar...\n');
-
-% Add the path to the dataPar.x struct that we return to the Master script
-dataPar.x.dir.dataPar = fullfile(pathLegacy, 'dataPar.json');
 
 %% 7. Copy participants.tsv
 
