@@ -84,6 +84,9 @@ function [x] = ExploreASL_ImportMaster(x)
             catch loggingEntry
                 ExploreASL_ImportMaster_PrintLoggingEntry('BIDS to legacy',loggingEntry);
                 [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+                % Turn off data loading and processing if BIDS to Legacy crashed
+                x.opts.bLoadData = false;
+                x.opts.bProcessData = false;
             end
         else
             missingJSON = true;
