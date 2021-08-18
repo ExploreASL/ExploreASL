@@ -25,6 +25,12 @@ function [x] = ExploreASL_ImportMaster(x)
         x.dir.DatasetRoot = xASL_fileparts(x.opts.DatasetRoot);
     end
     
+    % We are running the import here, but if BIDS to Legacy will not run,
+    % we can not load the data afterwards!
+    if ~x.opts.ImportModules(4)
+        x.opts.bLoadData = false;
+    end
+    
     % On default we expect the JSON files to be there
     missingJSON = false;
 
@@ -92,11 +98,6 @@ function [x] = ExploreASL_ImportMaster(x)
     % Reset the import parameters
     x.opts.bImportData = 0;
     x.opts.ImportModules = [0 0 0 0];
-    
-    % We are running the import here, but if BIDS to Legacy did not run, we can not load the data
-    if ~x.opts.ImportModules(4)
-        x.opts.bLoadData = false;
-    end
 
     
 end
