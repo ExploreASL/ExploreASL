@@ -44,6 +44,14 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath, b
 %     Rooney WD, Lee JH, Li X, Wang GJ, Franceschi D, Springer CS, Volkow ND. 
 %     4.0T water proton T1 relaxation times in normal human brain and during acute ethanol intoxication. 
 %     Alcohol Clin Exp Res 2000; 24: 830–836.
+%   
+%     Voelker MN, Kraff O, Goerke S, Laun FB, Hanspach J, Pine KJ, Ehses P, Zaiss M, Liebert A, Straub S, Eckstein K. 
+%     The traveling heads 2.0: Multicenter reproducibility of quantitative imaging methods at 7 Tesla. 
+%     NeuroImage. 2021 May 15;232:117910.
+%
+%     Marques JP, Kober T, Krueger G, van der Zwaag W, Van de Moortele PF, Gruetter R. 
+%     MP2RAGE, a self bias-field corrected sequence for improved segmentation and T1-mapping at high field. 
+%     Neuroimage. 2010 Jan 15;49(2):1271-81. 
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
 
@@ -86,15 +94,16 @@ end
 if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
 	if x.MagneticFieldStrength == 3
 		x.Q.T2star = 48; % default for 3T
-	else
-		fprintf('%s\n','Warning: Unknown T2star for non-3T scanners');
+	elseif x.MagneticFieldStrength == 7
+		x.Q.T2star = 35.6; % Voelker 2021
+		fprintf('%s\n',['Warning: Unknown T2star for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 	end
 end
 if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
 	if x.MagneticFieldStrength == 3
 		x.Q.T2 = 180; % default for 3T (ref Jean Chen, MRM 2009)
 	else
-		fprintf('%s\n','Warning: Unknown T2 for non-3T scanners');
+		fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 	end
 end
 
@@ -267,7 +276,7 @@ else
 			case 4
 				x.Q.TissueT1 = 1530; % Rooney 2000
 			case 7
-				x.Q.TissueT1 = 2132; % Rooney 2007
+				x.Q.TissueT1 = 1920; % Marques 2010
 			otherwise
 				x.Q.TissueT1 = 1240;
 				fprintf('%s\n',['Warning: Unknown T1 GM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
@@ -285,7 +294,7 @@ else
 			case 3
 				x.Q.BloodT1 = 1650; % Alsop 2015 MRM
 			case 4
-				x.Q.BllodT1 = 1914; % Rooney 2007
+				x.Q.BloodT1 = 1914; % Rooney 2007
 			case 7
 				x.Q.BloodT1 = 2578; % Rooney 2007
 			otherwise
