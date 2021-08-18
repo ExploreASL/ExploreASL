@@ -35,8 +35,17 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath, b
 %          11. Create standard space masked image to visualize masking effect
 %
 % EXAMPLE: xASL_wrp_Quantify(x);
+%
+% REFERENCES: 
+%     Rooney WD, Johnson G, Li X, Cohen ER, Kim SG, Ugurbil K, Springer Jr CS. 
+%     Magnetic field and tissue dependencies of human brain longitudinal 1H2O relaxation in vivo. 
+%     Magnetic Resonance in Medicine. 2007 Feb;57(2):308-18.
+%     
+%     Rooney WD, Lee JH, Li X, Wang GJ, Franceschi D, Springer CS, Volkow ND. 
+%     4.0T water proton T1 relaxation times in normal human brain and during acute ethanol intoxication. 
+%     Alcohol Clin Exp Res 2000; 24: 830–836.
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------
@@ -246,34 +255,50 @@ else
 	end
 	if ~isfield(x.Q,'TissueT1')
 		switch(x.MagneticFieldStrength)
-			case 3
-				x.Q.TissueT1 = 1240; % T1 GM tissue @ 3T
+			% T1 GM tissue
+			case 0.2
+				x.Q.TissueT1 =  635; % Rooney 2007
 			case 1
-				x.Q.TissueT1 = 1000; 
+				x.Q.TissueT1 = 1036; % Rooney 2007
+			case 1.5
+				x.Q.TissueT1 = 1188; % Rooney 2007
+			case 3
+				x.Q.TissueT1 = 1240; % Alsop 2015
 			case 4
-				x.Q.TissueT1 = 1350;
+				x.Q.TissueT1 = 1530; % Rooney 2000
+			case 7
+				x.Q.TissueT1 = 2132; % Rooney 2007
 			otherwise
 				x.Q.TissueT1 = 1240;
-				fprintf('%s\n',['Warning: Unknown T1 GM for ' num2str(x.MagneticFieldStrength) 'T scanners']);
+				fprintf('%s\n',['Warning: Unknown T1 GM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 		end
 	end
 	if ~isfield(x.Q,'BloodT1')
+		% T1 relaxation time of arterial blood
 		switch(x.MagneticFieldStrength)
-			case 3
-				x.Q.BloodT1 = 1650; % T1 relaxation time of arterial blood DEFAULT=1650 @ 3T
+			case 0.2 
+				x.Q.BloodT1 = 776; % Rooney 2007
+			case 1
+				x.Q.BloodT1 = 1350; % Rooney 2007
 			case 1.5
-				x.Q.BloodT1 = 1350;
+				x.Q.BloodT1 = 1540; % Rooney 2007 
+			case 3
+				x.Q.BloodT1 = 1650; % Alsop 2015 MRM
+			case 4
+				x.Q.BllodT1 = 1914; % Rooney 2007
 			case 7
-				x.Q.BloodT1 = 2100;
+				x.Q.BloodT1 = 2578; % Rooney 2007
 			otherwise
-				fprintf('%s\n',['Warning: Unknown T1-blood for ' num2str(x.MagneticFieldStrength) 'T scanners']);
+				x.Q.BloodT1 = 1650; % Alsop 2015 MRM
+				fprintf('%s\n',['Warning: Unknown T1-blood for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 		end
 	end
     if ~isfield(x.Q,'T2art')
 		if x.MagneticFieldStrength == 3
 			x.Q.T2art = 50; % T2* of arterial blood, only used when no M0 image
 		else
-			fprintf('%s\n','Warning: Unknown T2-art for non-3T scanners');
+			x.Q.T2art = 50;
+			%fprintf('%s\n','Warning: Unknown T2-art for non-3T scanners'); % Skip warning as this is never used
 		end
     end
     if ~isfield(x.Q,'Lambda')
