@@ -67,7 +67,9 @@ function [x] = ExploreASL_Master(varargin)
     
     % -----------------------------------------------------------------------------
     % II. Import Master
-    x = ExploreASL_ImportMaster(x);
+    if x.opts.bImportData
+        x = ExploreASL_ImportMaster(x);
+    end
     
     % -----------------------------------------------------------------------------
     % III. Data loading
@@ -79,7 +81,9 @@ function [x] = ExploreASL_Master(varargin)
 
     % -----------------------------------------------------------------------------
     % V. Processing Master
-    x = ExploreASL_ProcessMaster(x);
+    if x.opts.bProcessData
+        x = ExploreASL_ProcessMaster(x);
+    end
 
     % -----------------------------------------------------------------------------    
     % VI. Print user feedback (after pipeline)

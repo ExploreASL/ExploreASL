@@ -19,84 +19,85 @@ function [x] = ExploreASL_ImportMaster(x)
 
     %% Import Workflow
     
-    if x.opts.bImportData
-        % We expect x.opts.DatasetRoot to be the study root directory, but if it is not defined, 
-        % then the user probably used a path to a descriptive JSON file instead
-        if isfield(x, 'dir') && isfield(x.dir, 'DatasetRoot') && isempty(x.dir.DatasetRoot)
-            x.dir.DatasetRoot = xASL_fileparts(x.opts.DatasetRoot);
-        end
+    % We expect x.opts.DatasetRoot to be the study root directory, but if it is not defined,
+    % then the user probably used a path to a descriptive JSON file instead
+    if isfield(x, 'dir') && isfield(x.dir, 'DatasetRoot') && isempty(x.dir.DatasetRoot)
+        x.dir.DatasetRoot = xASL_fileparts(x.opts.DatasetRoot);
+    end
+    
+    % On default we expect the JSON files to be there
+    missingJSON = false;
 
-        % Check if at least one of the three steps should be performed
-        missingJSON = false; % Fallback
-        if sum(x.opts.ImportModules)>0
-            % DICOM TO NII
-            if x.opts.ImportModules(1)==1
-                if ~isempty(x.dir.sourceStructure)
-                    try
-                        xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0 0], false, true, false, x);
-                    catch loggingEntry
-                        ExploreASL_ImportMaster_PrintLoggingEntry('DICOM to NIfTI',loggingEntry);
-                        [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-                    end
-                else
-                    missingJSON = true;
-                end
+    % DICOM TO NII
+    if x.opts.ImportModules(1)==1
+        if ~isempty(x.dir.sourceStructure)
+            try
+                xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, [1 0 0 0], false, true, false, x);
+            catch loggingEntry
+                ExploreASL_ImportMaster_PrintLoggingEntry('DICOM to NIfTI',loggingEntry);
+                [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
             end
-            % NII TO BIDS
-            if x.opts.ImportModules(2)==1
-                if ~isempty(x.dir.sourceStructure)
-                    try
-                        [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0 0], false, true, false, x);
-                    catch loggingEntry
-                        ExploreASL_ImportMaster_PrintLoggingEntry('NIfTI to BIDS',loggingEntry);
-                        [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-                    end
-                else
-                    missingJSON = true;
-                end
-            end
-            % DEFACE
-            if x.opts.ImportModules(3)==1
-                if ~isempty(x.dir.DatasetRoot)
-                    try
-                        [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1 0], false, true, false, x);
-                    catch loggingEntry
-                        ExploreASL_ImportMaster_PrintLoggingEntry('Deface',loggingEntry);
-                        [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-                    end
-                else
-                    missingJSON = true;
-                end
-            end
-            % BIDS TO LEGACY
-            if x.opts.ImportModules(4)==1
-                if ~isempty(x.dir.dataset_description)
-                    try
-                        [x] = xASL_module_Import(x.dir.DatasetRoot, [], [], [0 0 0 1], [], [], [], x);
-                    catch loggingEntry
-                        ExploreASL_ImportMaster_PrintLoggingEntry('BIDS to legacy',loggingEntry);
-                        [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-                    end
-                else
-                    missingJSON = true;
-                end
-            end
-        end
-
-        % Print warning about missing JSON files
-        if missingJSON
-            warning('Import workflow is turned on, but at least one required JSON file is missing...');
-        end
-
-        % Reset the import parameters
-        x.opts.bImportData = 0;
-        x.opts.ImportModules = [0 0 0 0];
-        
-        % We are running the import here, but if BIDS to Legacy did not run, we can not load the data
-        if ~x.opts.ImportModules(4)
-            x.opts.bLoadData = false;
+        else
+            missingJSON = true;
         end
     end
+    
+    % NII TO BIDS
+    if x.opts.ImportModules(2)==1
+        if ~isempty(x.dir.sourceStructure)
+            try
+                [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 1 0 0], false, true, false, x);
+            catch loggingEntry
+                ExploreASL_ImportMaster_PrintLoggingEntry('NIfTI to BIDS',loggingEntry);
+                [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+            end
+        else
+            missingJSON = true;
+        end
+    end
+    
+    % DEFACE
+    if x.opts.ImportModules(3)==1
+        if ~isempty(x.dir.DatasetRoot)
+            try
+                [x] = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, [], [0 0 1 0], false, true, false, x);
+            catch loggingEntry
+                ExploreASL_ImportMaster_PrintLoggingEntry('Deface',loggingEntry);
+                [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+            end
+        else
+            missingJSON = true;
+        end
+    end
+    
+    % BIDS TO LEGACY
+    if x.opts.ImportModules(4)==1
+        if ~isempty(x.dir.dataset_description)
+            try
+                [x] = xASL_module_Import(x.dir.DatasetRoot, [], [], [0 0 0 1], [], [], [], x);
+            catch loggingEntry
+                ExploreASL_ImportMaster_PrintLoggingEntry('BIDS to legacy',loggingEntry);
+                [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+            end
+        else
+            missingJSON = true;
+        end
+    end
+    
+    % Print warning about missing JSON files
+    if missingJSON
+        warning('Import workflow is turned on, but at least one required JSON file is missing...');
+    end
+    
+    % Reset the import parameters
+    x.opts.bImportData = 0;
+    x.opts.ImportModules = [0 0 0 0];
+    
+    % We are running the import here, but if BIDS to Legacy did not run, we can not load the data
+    if ~x.opts.ImportModules(4)
+        x.opts.bLoadData = false;
+    end
+
     
 end
 
