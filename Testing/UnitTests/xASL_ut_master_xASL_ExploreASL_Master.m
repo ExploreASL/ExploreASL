@@ -17,8 +17,8 @@ function UnitTest = xASL_ut_master_xASL_ExploreASL_Master(TestRepository)
 % 3. Initialize (with arrays)
 % 4. DRO 2.2.0 (DCM2NIFTI)
 % 5. DRO 2.2.0 (NII2BIDS)
-% 6. DRO 2.2.0 (ANONYMIZE, BIDS2Legacy)
-% 7. DRO 2.2.0 (ANONYMIZE, BIDS2Legacy with dataPar.json)
+% 6. DRO 2.2.0 (Deface, BIDS2Legacy)
+% 7. DRO 2.2.0 (Deface, BIDS2Legacy with dataPar.json)
 % 8. Run processing starting from derivatives with directory input
 % 9. Run processing starting from derivatives with dataPar.json input (outdated)
 % 10. DRO 2.2.0 (full pipeline, rawdata->results)
@@ -364,7 +364,7 @@ UnitTest.tests(5).passed = testCondition;
 %% Test run 6
 
 % Give your individual subtest a name
-UnitTest.tests(6).testname = 'DRO 2.2.0 (ANONYMIZE, BIDS2Legacy)';
+UnitTest.tests(6).testname = 'DRO 2.2.0 (Deface, BIDS2Legacy)';
 
 % Start the test
 testTime = tic;
@@ -422,7 +422,7 @@ UnitTest.tests(6).passed = testCondition;
 %% Test run 7
 
 % Give your individual subtest a name
-UnitTest.tests(7).testname = 'DRO 2.2.0 (ANONYMIZE, BIDS2Legacy with specific dataPar.json)';
+UnitTest.tests(7).testname = 'DRO 2.2.0 (Deface, BIDS2Legacy with specific dataPar.json)';
 
 % Start the test
 testTime = tic;
@@ -507,12 +507,6 @@ UnitTest.tests(7).passed = testCondition;
 
 % Give your individual subtest a name
 UnitTest.tests(8).testname = 'Run processing starting from derivatives with directory input';
-
-% Start the test
-testTime = tic;
-
-% Give your individual subtest a name
-UnitTest.tests(8).testname = 'DRO 2.2.0 (ANONYMIZE, BIDS2Legacy with specific dataPar.json)';
 
 % Start the test
 testTime = tic;
