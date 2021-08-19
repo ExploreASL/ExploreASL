@@ -476,6 +476,9 @@ end
 %% Compare JSON files
 function [differences,identical,dn] = compareJSON(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB)
 
+    % Ignore Acknowledgements (setting to ignore version differences (ExploreASL v1.x.x) there)
+    ignoreAcknowledgements = true;
+
     jsonErrorReport='';
 
     % Compare JSON files on field basis
@@ -499,12 +502,18 @@ function [differences,identical,dn] = compareJSON(differences,identical,bPrintRe
         missingFields = setdiff(fieldNamesB,fieldNamesA);
         % Print out missing fields
         for iField=1:numel(missingFields)
+            if ignoreAcknowledgements && strcmp(missingFields{iField},'Acknowledgements')
+                continue
+            end
             jsonErrorReport = sprintf('%s           Missing field: %s\n',jsonErrorReport,missingFields{iField});
         end
 
         extraFields = setdiff(fieldNamesA,fieldNamesB);
         % Print out missing fields
         for iField=1:numel(extraFields)
+            if ignoreAcknowledgements && strcmp(extraFields{iField},'Acknowledgements')
+                continue
+            end
             jsonErrorReport = sprintf('%s           Extra field: %s\n',jsonErrorReport,extraFields{iField});
         end
 
