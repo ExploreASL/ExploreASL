@@ -19,7 +19,7 @@ function xASL_qc_ReportLeftRightFlips(dirRoot, bZip)
 %
 % All NifTIs are found recursively (i.e. in the folder and its subfolders),
 % irregardless of them being .nii or .nii.gz.
-
+%
 % EXAMPLE: xASL_qc_ReportLeftRightFlips('/Users/henk/surfdrive/HolidayPics/CICERO_Nolan/analysis');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________

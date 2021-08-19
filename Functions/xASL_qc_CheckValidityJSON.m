@@ -1,9 +1,22 @@
-function [IsValid] = xASL_qc_CheckValidityJSON( PathJSON )
-%xASL_qc_CheckValidityJSON This function loads a QC JSON (simply JSON file, won't
-%take any exotic files) and simply check whether there is any empty value
-%after a key. If this is the case, it will throw a warning, which will skip
-%reading this JSON by the compiled spm_jsonread, avoiding the crash that
-%this may result in.
+function [IsValid] = xASL_qc_CheckValidityJSON(PathJSON)
+%xASL_qc_CheckValidityJSON This function loads a QC JSON and simply check whether there is any empty value after a key
+%
+% FORMAT:       [IsValid] = xASL_qc_CheckValidityJSON(PathJSON)
+%
+% INPUT:        PathJSON - Path to the JSON file (STRING, REQUIRED)
+%
+% OUTPUT:       IsValid  - JSON is valid or not (BOOLEAN)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  This function loads a QC JSON (simply JSON file, won't
+%               take any exotic files) and simply check whether there is any empty value
+%               after a key. If this is the case, it will throw a warning, which will skip
+%               reading this JSON by the compiled spm_jsonread, avoiding the crash that
+%               this may result in.
+%
+% EXAMPLE:      [IsValid] = xASL_qc_CheckValidityJSON(PathJSON);
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% Copyright 2015-2021 ExploreASL
 
 IsValid = true;
 
