@@ -142,7 +142,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     bTimeEncodedFME = false;
     
     % Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
-    [~, bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded);
+    [bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded);
     
     % Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
     [resultJSON, bTimeEncoded, ~] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
@@ -160,13 +160,19 @@ end
 
 
 %% Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
-function [studyPar, bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded)
+function [bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded)
 
-    if xASL_exist(x.dir.studyPar,'file')
-        studyPar = spm_jsonread(x.dir.studyPar);
-        if isfield(studyPar,'TimeEncodedMatrixSize') && ~isempty(studyPar,'TimeEncodedMatrixSize') || ... % Should be 4, 8 or 12
-                isfield(studyPar,'TimeEncodedMatrixType') % Natural or walsh
-            bTimeEncoded = true;
+    if nargin<2 || isempty(bTimeEncoded)
+        bTimeEncoded = false; % default
+    end
+    
+    if isfield(x.dir, 'studyPar') && ~isempty(x.dir.studyPar)
+        if xASL_exist(x.dir.studyPar, 'file')
+            studyPar = spm_jsonread(x.dir.studyPar);
+            if isfield(studyPar,'TimeEncodedMatrixSize') && ~isempty(studyPar,'TimeEncodedMatrixSize') || ... % Should be 4, 8 or 12
+                    isfield(studyPar,'TimeEncodedMatrixType') % Natural or walsh
+                bTimeEncoded = true;
+            end
         end
     end
 
