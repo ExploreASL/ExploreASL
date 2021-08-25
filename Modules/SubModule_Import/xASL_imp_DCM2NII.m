@@ -139,7 +139,8 @@ function xASL_imp_DCM2NII(imPar, x)
 	% Define Subjects
 	
 	% SUBJECTS
-	x.modules.import.listsIDs.vSubjectIDs = tokens(:,imPar.tokenOrdering(1)); % cell vector with extracted subject IDs (for all sessions and scans)
+	x.modules.import.listsIDs.vSubjectIDs = tokens(:,imPar.tokenOrdering(1)); % cell vector with extracted subject IDs (for all visits, sessions and scans; 
+    % so subjects may be repeated here
 	
 	%% VISITS
 	if imPar.tokenOrdering(2)==0
@@ -149,7 +150,7 @@ function xASL_imp_DCM2NII(imPar, x)
 		imPar.tokenVisitAliases = {'^1$', '_1'};
 	else
 		x.modules.import.settings.bUseVisits = true;
-		x.modules.import.listsIDs.vVisitIDs = tokens(:,imPar.tokenOrdering(2)); % cell vector with extracted session IDs (for all subjects and scans)
+		x.modules.import.listsIDs.vVisitIDs = tokens(:,imPar.tokenOrdering(2)); % cell vector with extracted session IDs (for all subjects, sessions and scans)
 	end
 	
 	%% SESSIONS
@@ -164,7 +165,7 @@ function xASL_imp_DCM2NII(imPar, x)
 	end
 	
 	%% SCANTYPES
-	x.modules.import.listsIDs.vScanIDs = tokens(:,imPar.tokenOrdering(4)); % cell vector with extracted scan IDs (for all subjects and sessions)
+	x.modules.import.listsIDs.vScanIDs = tokens(:,imPar.tokenOrdering(4)); % cell vector with extracted scan IDs (for all subjects, visits and sessions)
 	
 	% Convert the vectors to unique & sort sets by the output aliases
 	x.modules.import.listsIDs.subjectIDs  = sort(unique(x.modules.import.listsIDs.vSubjectIDs));
