@@ -57,9 +57,7 @@ function xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% Make the output directory and save the description
 	
-	if ~exist(fullfile(imPar.BidsRoot),'dir')
-		mkdir(fullfile(imPar.BidsRoot));
-	end
+	xASL_adm_CreateDir(imPar.BidsRoot);
 	
 	spm_jsonwrite(fullfile(imPar.BidsRoot,[bidsPar.datasetDescription.filename '.json']),datasetDescription);
 	

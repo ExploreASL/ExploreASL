@@ -47,9 +47,7 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
         anatPath = '';
         if xASL_exist(fullfile(imPar.TempRoot,nameSubjectSession,[iAnatType{1},'.nii']),'file')
             anatPath = fullfile(imPar.TempRoot,nameSubjectSession,iAnatType{1});
-        end
-
-        if xASL_exist(fullfile(imPar.TempRoot,nameSubjectSession,[iAnatType{1} '_1'],[iAnatType{1},'.nii']),'file')
+        elseif xASL_exist(fullfile(imPar.TempRoot,nameSubjectSession,[iAnatType{1} '_1'],[iAnatType{1},'.nii']),'file')
             anatPath = fullfile(imPar.TempRoot,nameSubjectSession,[iAnatType{1} '_1'],iAnatType{1});
         end
 
@@ -57,12 +55,10 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
         if ~isempty(anatPath)
 
             % Create the anatomical directory
-            if ~exist(anatOutDirLabel,'dir')
-                xASL_adm_CreateDir(anatOutDirLabel);
-            end
+            xASL_adm_CreateDir(anatOutDirLabel);
 
             % Move the NiFTI file
-            anatNiiPath = fullfile([anatOutLabel,'_' iAnatType{1} '.nii.gz']);
+            anatNiiPath = [anatOutLabel,'_' iAnatType{1} '.nii.gz'];
             xASL_Move([anatPath '.nii'],anatNiiPath,1);
 
             % Load the JSON
@@ -73,7 +69,7 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
             jsonAnat = xASL_bids_VendorFieldCheck(jsonAnat);
             jsonAnat = xASL_bids_JsonCheck(jsonAnat,'');
             
-            jsonWritePath = fullfile([anatOutLabel,'_' iAnatType{1} '.json']);
+            jsonWritePath = [anatOutLabel,'_' iAnatType{1} '.json'];
             spm_jsonwrite(jsonWritePath,jsonAnat);
         end
     end
