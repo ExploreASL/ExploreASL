@@ -85,6 +85,11 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
             % false (default)
         end
 
+        % Pad missing '_' if needed
+        if ~strcmp(imPar.visitNames{iVisit}(1), '_')
+            imPar.visitNames{iVisit} = ['_' imPar.visitNames{iVisit}];
+        end
+        
         fprintf('%s\nImporting subject=%s:   \n',separatorline,[subjectID imPar.visitNames{iVisit}]); % display subject-visit ID
 
         %% 3. Loop through all sessions
