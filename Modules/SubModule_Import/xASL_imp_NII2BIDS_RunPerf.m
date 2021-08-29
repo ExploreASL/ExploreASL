@@ -46,12 +46,14 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     if exist(fullfile(inSessionPath, [aslLabel '.json']),'file')
         jsonDicom = spm_jsonread(fullfile(inSessionPath, [aslLabel '.json']));
     else
-        error('Missing file: %s\n',fullfile(inSessionPath, [aslLabel '.json']));
+        warning('Missing file: %s\n',fullfile(inSessionPath, [aslLabel '.json']));
+        return;
     end
     if xASL_exist(fullfile(inSessionPath, [aslLabel '.nii']),'file')
         headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
     else
-        error('Missing file: %s\n\',fullfile(inSessionPath, [aslLabel '.nii']));
+        warning('Missing file: %s\n\',fullfile(inSessionPath, [aslLabel '.nii']));
+        return;
     end
 
     %% 3. BIDSify ASL
