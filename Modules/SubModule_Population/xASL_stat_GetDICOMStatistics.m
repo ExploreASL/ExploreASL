@@ -110,7 +110,8 @@ for iSubject=1:x.nSubjects
                     if isnumeric(Parms.Q.(matFields{iField}))
                         TempData = Parms.Q.(matFields{iField});
                         if length(TempData)>1
-                            warning(['Parms.Q.' matFields{iField} ' had multiple values']);
+                            % warning(['Parms.Q.' matFields{iField} ' had multiple values']);
+                            % This warning was useful in the pre-BIDS time
                         end
                         x.S.par(iSubjSess,iField) = min(TempData);
                     else
@@ -157,10 +158,11 @@ end
 % Ensure all elements of the TSV cell array have the correct format
 for iRow=1:size(TSV,1)
     for iColumn=1:size(TSV,2)
-        % Remove lists (we had a problem where it was tried to insert SliceTiming arrays into the table)
         if size(TSV{iRow,iColumn},1)>1
-            warning('It was tried to insert a list of elements into a TSV table element...');
-            TSV{iRow,iColumn} = 'n/a';
+            % We skip lists, as this was introduced with BIDS
+            % This function aims to do DICOM QC, BIDS lists are not necessary
+            % here, as we can now find them in the *asl.json sidecars
+            TSV{iRow,iColumn} = 'ListSkipped';
         end
         % Remove empty elements (Empty cells in the TSV can lead to reading errors)
         if isempty(TSV{iRow,iColumn})
