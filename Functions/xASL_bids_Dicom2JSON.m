@@ -584,19 +584,25 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 					end
 					
 				end
-			end
+            end
 			
-			% In case multiple different scale slopes are given, report a warning
-            if isfield(parms{parmsIndex},'MRScaleSlope') && isfield(parms{parmsIndex},'RescaleSlopeOriginal') && isfield(parms{parmsIndex},'RescaleSlope')
-                if length(parms{parmsIndex}.MRScaleSlope)>1  || length(parms{parmsIndex}.RescaleSlopeOriginal)>1 || length(parms{parmsIndex}.RescaleSlope)>1 ||...
-                        (isfield(parms{parmsIndex},'RWVSlope') && length(parms{parmsIndex}.RWVSlope)>1)
-                    warning('xASL_adm_Dicom2JSON: Multiple scale slopes exist for a single scan!');
-                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'MRScaleSlope');
-                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'RescaleSlope');
-                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'RescaleSlopeOriginal');
-                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'RescaleIntercept');
-                    %parms{parmsIndex} = rmfield(parms{parmsIndex},'RWVSlope');
+            % Debug multiple identical parameters
+            listParameters = {'MRScaleSlope', 'RescaleSlopeOriginal', 'RescaleIntercept', 'RescaleSlope', 'RWVSlope'};
+            
+            for iPar=1:numel(listParameters)
+                if isfield(parms{parmsIndex}, listParameters{iPar}) && numel(parms{parmsIndex}.(listParameters{iPar}))>1
+                    % First fix redundant identical repetitions
+                    if numel(unique(parms{parmsIndex}.(listParameters{iPar}))==1)
+                        parms{parmsIndex}.(listParameters{iPar}) = parms{parmsIndex}.(listParameters{iPar})(1);
+                    else
+                        % If we cannot fix this, issue a warning
+                        warning(['Multiple ' listParameters{iPar} ' exist for a single scan!']);
+                    end
                 end
+            end
+            
+			% In case scale slopes are missing, report a warning
+            if isfield(parms{parmsIndex},'MRScaleSlope') && isfield(parms{parmsIndex},'RescaleSlopeOriginal') && isfield(parms{parmsIndex},'RescaleSlope')
             else
                 fprintf('Warning: MRScaleSlope, RescaleSlopeOriginal or RescaleSlope not found...\n');
             end
