@@ -1,7 +1,9 @@
-function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
+function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
 %xASL_test_UnitTesting Main script to run all individual unit tests
 %
-% INPUT:        n/a
+% FORMAT: [UnitTests,UnitTestsTable] = xASL_test_UnitTesting([bPull])
+%
+% INPUT:        bPull - boolean - pull new testing dataset (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:       UnitTests       - structure containing the unit test results
 %               UnitTestsTable  - table containing the unit test results
@@ -18,6 +20,11 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
+    %% Admin
+	if nargin < 1 || isempty(bPull)
+		bPull = true;
+	end
+	
     %% Initialize Paths
 
     % Add testing directory
@@ -30,7 +37,7 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
 
     %% Clean Up
     clc
-    clearvars -except xASL_dir
+    clearvars -except xASL_dir bPull
 
     %% Get Test Repository
     
@@ -46,8 +53,10 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting
 	
 	% Update test repository
 	cd(TestRepository); % Go to test repository
-	system('git fetch','-echo');
-	system('git pull','-echo');
+	if bPull
+		system('git fetch','-echo');
+		system('git pull','-echo');
+	end
 	cd(xASL_dir) % Go back to ExploreASL
     
     if isempty(TestRepository)
