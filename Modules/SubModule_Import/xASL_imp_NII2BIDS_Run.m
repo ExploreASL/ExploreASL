@@ -30,7 +30,7 @@ function xASL_imp_NII2BIDS_Run(imPar, bidsPar, studyPar, subjectSessionLabel, in
 
 
     %% Anatomical files
-    xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun, nameSubjectSession);
+    xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
 
     
     %% Perfusion files

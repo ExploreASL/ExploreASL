@@ -39,9 +39,9 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubjectSession)
     % unique sessions only. Missing scans will issue a warning, not an
     % error.
     listSessions = xASL_adm_GetFileList(fullfile(imPar.TempRoot,nameSubjectSession),'^(ASL|T1w|FLAIR).+$',false,[],true);
-    ListSessions = cellfun(@(y) y(end), listSessions, 'UniformOutput', false);
-    ListSessions = unique(ListSessions);
-    ListSessions = cellfun(@(y) ['ASL_' y], ListSessions, 'UniformOutput', false);
+    listSessions = cellfun(@(y) y(end), listSessions, 'UniformOutput', false);
+    listSessions = unique(listSessions);
+    listSessions = cellfun(@(y) ['ASL_' y], listSessions, 'UniformOutput', false);
     
     % Go through all (ASL) sessions
     for iSession = 1:length(listSessions)
