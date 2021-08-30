@@ -159,7 +159,8 @@ end
 
 
 %% ------------------------------------------------------------------------------------------
-% 7. Clone mean control image to be used as pseudo-M0 (if x.Q.M0==UseControlAsM0)
+% 7. Clone mean control image to be used as pseudo-M0 (if
+% x.Q.M0==UseControlAsM0) -> %%%%% check if the 4d value doesnt break this
 
 % If x.Q.M0 is set as UseControlAsM0, this mean control NIfTI will be
 % cloned to an M0 NIfTI (and processed in the M0 submodule)
@@ -239,17 +240,28 @@ for iSpace=1:2
         xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
         
     else
+
         % Paired subtraction
         [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
         ASL_im = ControlIm - LabelIm;
-        % Save PWI4D
-        fprintf('%s', [PathPWI4D{iSpace} ', ']);
-        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
-        % Average PWI
-        PWI = xASL_stat_MeanNan(ASL_im, 4);
-        % Save PWI
-        fprintf('%s\n', PathPWI{iSpace});
-        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI, 32, false);
+        
+        if x.modules.asl.bMultiPLD
+            %Check number of repetitions
+            PLDUnique = unique(x.Q.Initial_PLD);
+            NumRep = (length(x.Q.Initial_PLD)/ length(PLDUnique))/2; %dividing per 2 to account for Ctr-Lab pairs
+            
+            ASL_im = repmat(ASL_im,1,1,1,1,NumRep); %Adds a 5th dimension with the number of repetitions, for BASIL
+        else
+            
+            % Save PWI4D
+            fprintf('%s', [PathPWI4D{iSpace} ', ']);
+            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
+            % Average PWI
+            PWI = xASL_stat_MeanNan(ASL_im, 4);
+            % Save PWI
+            fprintf('%s\n', PathPWI{iSpace});
+            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI, 32, false);
+        end
     end
 end
 

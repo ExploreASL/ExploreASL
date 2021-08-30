@@ -296,13 +296,18 @@ end
 %% H. Here we create a temporary dummy ASL image of which the image contrast is curated,
 % for registration only
 xASL_io_PairwiseSubtraction(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
+% MultiPLD: we can keep the PairwiseSubtraction function->because we have controls and labels for each PLD and take average of all PLDs
+% (later on maybe we only need to use the later PLDs)
+
 if bRegistrationCBF
-	xASL_Copy(x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_ORI,1);
+	xASL_Copy(x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_ORI,1); %this clipped_ORI is not used in the rest of the pinpeline
     % Clip & compress the image, deal with contrast used for registration
     tIM = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped, 0.95, 0.6); % careful, this cannot be rerun, once
     tIM(tIM==min(tIM(:))) = 0; % minimal intensities are set to 0
     xASL_io_SaveNifti(x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped, tIM, [], 0);
 end
+
+
 
 %% I. Here we create the reference images, the downsampled pseudoTissue
 % (pGM+pWM) as well as the native space copies of templates for CBF,
