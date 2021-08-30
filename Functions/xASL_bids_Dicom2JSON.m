@@ -592,7 +592,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
             for iPar=1:numel(listParameters)
                 if isfield(parms{parmsIndex}, listParameters{iPar}) && numel(parms{parmsIndex}.(listParameters{iPar}))>1
                     % First fix redundant identical repetitions
-                    if numel(unique(parms{parmsIndex}.(listParameters{iPar}))==1)
+                    if numel(unique(parms{parmsIndex}.(listParameters{iPar})))==1
                         parms{parmsIndex}.(listParameters{iPar}) = parms{parmsIndex}.(listParameters{iPar})(1);
                     else
                         % If we cannot fix this, issue a warning
@@ -602,9 +602,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
             end
             
 			% In case scale slopes are missing, report a warning
-            if isfield(parms{parmsIndex},'MRScaleSlope') && isfield(parms{parmsIndex},'RescaleSlopeOriginal') && isfield(parms{parmsIndex},'RescaleSlope')
-            else
-                fprintf('Warning: MRScaleSlope, RescaleSlopeOriginal or RescaleSlope not found...\n');
+            if ~isfield(parms{parmsIndex},'MRScaleSlope') || ~isfield(parms{parmsIndex},'RescaleSlopeOriginal') || ~isfield(parms{parmsIndex},'RescaleSlope')
+                fprintf('Warning: MRScaleSlope, RescaleSlopeOriginal, or RescaleSlope not found...\n');
             end
 			
 			%% Save the info in JSON file
