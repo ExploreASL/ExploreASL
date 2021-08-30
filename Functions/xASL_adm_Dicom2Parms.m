@@ -266,7 +266,7 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 					
 					t_parms.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
 				else
-					if imPar.bVerbose; if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end; end
+					% if imPar.bVerbose; if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end; end
 					t_parms.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
 				end
 			end

@@ -370,7 +370,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                     t_parms{parmsIndex}.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
                 else
                     if imPar.bVerbose
-                        if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
+                        % if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
                     end
                     t_parms{parmsIndex}.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
                 end
