@@ -1,7 +1,7 @@
 function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession)
 %xASL_imp_NII2BIDS_RunAnat NII2BIDS conversion for a single sessions, single run.
 %
-% FORMAT: xASL_imp_NII2BIDS_RunAnat(bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
+% FORMAT: xASL_imp_NII2BIDS_RunAnat(bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun)
 % 
 % INPUT:
 % imPar               - JSON file with structure with import parameter (STRUCT, REQUIRED)
