@@ -98,7 +98,7 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth)
             jsonTemplate.Name = 'DRO_Digital_Reference_Object';
 
             % Call script to fix missing fields
-            [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(jsonTemplate);
+            [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(jsonTemplate,'1.2.3');
 
             % Write dataset_description file
             spm_jsonwrite(fullfile(droTestPatient,'rawdata','dataset_description.json'),jsonDescription);
