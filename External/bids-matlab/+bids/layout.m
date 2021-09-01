@@ -150,20 +150,31 @@ function BIDS = layout(root, tolerant)
                                               fullfile(BIDS.dir, sub{iSub}), ...
                                               'dir', ...
                                               '^ses-.*$'));
-      for iSess = 1:numel(sess)
-          if isempty(BIDS.subjects)
+  
+      if iSub == 1										  
+		  % Take the list of sessions from the first subject										  
+		  sessAll = sess;
+	  end
+										  
+	  for iSess = 1:numel(sess)
+		  if isempty(BIDS.subjects)
              BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
           else
              BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
-      end
-    end
+		  end
+		  
+		  % Add session name to the list if not there
+		  if sum(cellfun(@(y) ~isempty(strfind(y,sess{iSess})), sessAll)) == 0
+			  sessAll{numel(sess)+1,1} = sess{iSess};
+		  end
+	  end
   end
   fprintf('\n');
   fprintf('Note that any warnings may have only printed once if they were repeated for multiple scans\n');
   fprintf('Always run your rawdata folder through the BIDS validator first and aim to avoid warnings\n');
   
   BIDS.subjectName = sub;
-  BIDS.sessionName = sess;
+  BIDS.sessionName = sort(sessAll);% Order sessions by name
 
 end
 
