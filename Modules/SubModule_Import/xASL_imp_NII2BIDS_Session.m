@@ -1,7 +1,7 @@
 function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession)
 %xASL_imp_NII2BIDS_Session NII2BIDS conversion for a single session.
 %
-% FORMAT: xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameSubjectSession, subjectLabel, iSession)
+% FORMAT: x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, subjectLabel, iSession)
 % 
 % INPUT:
 %   x                     - ExploreASL x structure (REQUIRED, STRUCT)
@@ -23,7 +23,7 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions
 % 2. Iterate over runs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     n/a
+% EXAMPLE:     x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, subjectLabel, iSession);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

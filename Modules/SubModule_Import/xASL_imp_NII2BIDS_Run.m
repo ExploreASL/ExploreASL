@@ -1,7 +1,7 @@
 function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun, nameSubjectSession)
 %xASL_imp_NII2BIDS_Run NII2BIDS conversion for a single sessions, single run.
 %
-% FORMAT: xASL_imp_NII2BIDS_Run(bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
+% FORMAT: x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
 % 
 % INPUT:
 % x                   - ExploreASL x structure (REQUIRED, STRUCT)
@@ -25,7 +25,7 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, subjectSessionLa
 % 2. Convert perf files
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     n/a
+% EXAMPLE:     x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
