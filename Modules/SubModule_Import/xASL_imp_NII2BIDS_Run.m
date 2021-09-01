@@ -1,9 +1,10 @@
-function xASL_imp_NII2BIDS_Run(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun, nameSubjectSession)
+function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun, nameSubjectSession)
 %xASL_imp_NII2BIDS_Run NII2BIDS conversion for a single sessions, single run.
 %
 % FORMAT: xASL_imp_NII2BIDS_Run(bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
 % 
 % INPUT:
+% x                   - ExploreASL x structure (REQUIRED, STRUCT)
 % imPar               - JSON file with structure with import parameter (STRUCT, REQUIRED)
 % bidsPar             - Output of xASL_imp_Config (STRUCT, REQUIRED)
 % studyPar            - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
@@ -15,7 +16,7 @@ function xASL_imp_NII2BIDS_Run(imPar, bidsPar, studyPar, subjectSessionLabel, in
 % nameSubjectSession  - Name of subject & session (REQUIRED)
 %
 % OUTPUT:
-% n/a
+% x                   - ExploreASL x structure (STRUCT)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: NII2BIDS conversion for a single sessions, single runs.
@@ -32,28 +33,32 @@ function xASL_imp_NII2BIDS_Run(imPar, bidsPar, studyPar, subjectSessionLabel, in
     %% Anatomical files
     try
         xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
-    catch ME
-        xASL_imp_NII2BIDS_RunIssueWarning(ME, 'anatomical', subjectSessionLabel, iRun);
+    catch loggingEntry
+        [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+        xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'anatomical', subjectSessionLabel, iRun);
     end
     
     %% Perfusion files
     try
         xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
-    catch ME
-        xASL_imp_NII2BIDS_RunIssueWarning(ME, 'perfusion', subjectSessionLabel, iRun);
+    catch loggingEntry
+        [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+        xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'perfusion', subjectSessionLabel, iRun);
     end
     
 end
 
 
 %% Issue failed run as a warning
-function xASL_imp_NII2BIDS_RunIssueWarning(ME, Scantype, subjectSessionLabel, iRun)
+function xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, Scantype, subjectSessionLabel, iRun)
 
-    fprintf('\n\n\n%s\n', '============================================================================================');
-    warning(['NII2BIDS went wrong for ' Scantype ' ' subjectSessionLabel '_run-' xASL_num2str(iRun)]);
-    fprintf('\n%s\n', 'Error message:');
-    fprintf('%s\n', ME.message);
-    fprintf('\n%s\n', 'Continuing...');
-    fprintf('%s\n\n\n\n', '============================================================================================');
+    fprintf('\n==============================================================================================\n');
+    fprintf(2,'NII2BIDS failed for %s image of %s_run-%s\n',Scantype,subjectSessionLabel,xASL_num2str(iRun));
+    if size(loggingEntry.stack,1)>0
+        fprintf(2,'Message: %s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
+    end
+    fprintf(2,'Continuing...\n');
     
 end
+
+

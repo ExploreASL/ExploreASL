@@ -23,7 +23,7 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
 % EXAMPLE:     n/a
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-
+    
 
     %% 1. Define the pathnames
     if ~isempty(listRuns)

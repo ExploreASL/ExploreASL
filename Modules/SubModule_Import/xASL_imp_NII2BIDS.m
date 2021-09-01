@@ -1,7 +1,7 @@
-function xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
+function x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 %xASL_imp_NII2BIDS Run the NII2BIDS conversion.
 %
-% FORMAT: xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
+% FORMAT: x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 % 
 % INPUT:
 %   x               - ExploreASL x structure (REQUIRED, STRUCT)
@@ -10,7 +10,7 @@ function xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 %   studyParPath    - Path to the JSON file with the BIDS parameters relevant for the whole study (REQUIRED, CHAR ARRAY)
 %
 % OUTPUT:
-%   n/a
+%   x               - ExploreASL x structure (STRUCT)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run the NII2BIDS conversion.
@@ -67,7 +67,7 @@ function xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 	% Go through all subjects
 	listSubjectsSessions = xASL_adm_GetFileList(imPar.TempRoot,[],false,[],true);
     for iSubjectSession = 1:length(listSubjectsSessions)
-        xASL_imp_NII2BIDS_Subject(imPar,bidsPar,studyPar,listSubjectsSessions{iSubjectSession});
+        x = xASL_imp_NII2BIDS_Subject(x,imPar,bidsPar,studyPar,listSubjectsSessions{iSubjectSession});
     end
     
     % Copy log files

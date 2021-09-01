@@ -1,16 +1,17 @@
-function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubjectSession)
+function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectSession)
 %xASL_imp_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
 %
 % FORMAT: xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubject)
 % 
 % INPUT:
+%   x               - ExploreASL x structure (REQUIRED, STRUCT)
 %   imPar               - JSON file with structure with import parameter (REQUIRED, STRUCT)
 %   bidsPar             - Output of xASL_imp_Config (REQUIRED, STRUCT)
 %   studyPar            - JSON file with the BIDS parameters relevant for the whole study (REQUIRED, STRUCT)
 %   nameSubjectSession  - name of the subject (REQUIRED, CELL STRUCT)
 %
 % OUTPUT:
-%   n/a
+%   x               - ExploreASL x structure (STRUCT)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run NII to ASL-BIDS for one individual subject.
@@ -45,7 +46,7 @@ function xASL_imp_NII2BIDS_Subject(imPar, bidsPar, studyPar, nameSubjectSession)
     
     % Go through all (ASL) sessions
     for iSession = 1:length(listSessions)
-        xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession);
+        x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession);
     end
     
 end

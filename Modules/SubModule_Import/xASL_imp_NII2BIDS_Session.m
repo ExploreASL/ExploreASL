@@ -1,9 +1,10 @@
-function xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession)
+function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession)
 %xASL_imp_NII2BIDS_Session NII2BIDS conversion for a single session.
 %
 % FORMAT: xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameSubjectSession, subjectLabel, iSession)
 % 
 % INPUT:
+%   x                     - ExploreASL x structure (REQUIRED, STRUCT)
 %   imPar                 - JSON file with structure with import parameter (STRUCT, REQUIRED)
 %   bidsPar               - Output of xASL_imp_Config (STRUCT, REQUIRED)
 %   studyPar              - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
@@ -13,7 +14,7 @@ function xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameS
 %   iSession              - Session number (INTEGER, REQUIRED)
 %
 % OUTPUT:
-%  n/a
+%   x                     - ExploreASL x structure (STRUCT)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: NII2BIDS conversion for a single sessions.
@@ -62,7 +63,7 @@ function xASL_imp_NII2BIDS_Session(imPar, bidsPar, studyPar, listSessions, nameS
 
     %% 2. Iterate over runs
     for iRun = 1:(max(length(listRuns),1))
-        xASL_imp_NII2BIDS_Run(imPar, bidsPar, studyPar, [subjectLabel sessionLabel], inSessionPath, outSessionPath, listRuns, iRun, nameSubjectSession);
+        x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, [subjectLabel sessionLabel], inSessionPath, outSessionPath, listRuns, iRun, nameSubjectSession);
     end
 
 end

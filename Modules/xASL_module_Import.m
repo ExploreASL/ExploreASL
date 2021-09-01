@@ -205,9 +205,9 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     %% 4. Run the NIIX to ASL-BIDS
     if bRunSubmodules(2)
         % Run NII to BIDS
-        xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath);
+        x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath);
         % Update x.opts.DatasetRoot
-        [x] = xASL_imp_UpdateDatasetRoot(x, studyPath);
+        x = xASL_imp_UpdateDatasetRoot(x, studyPath);
     end
 
     %% 5. Run defacing
