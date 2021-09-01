@@ -264,11 +264,11 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 					iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
 					iMrFile = iMrFileAll(parmsIndex);
 				else
-% 					continue; % THIS SEEMS STRANGE >>>>>>>>>> RESULTS IN EMPTY PARMS, BY TRYING TO READ IMRFILE =0
-                    iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
+					% continue; % THIS SEEMS STRANGE >>>>>>>>>> RESULTS IN EMPTY PARMS, BY TRYING TO READ IMRFILE =0
+					iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
 					iMrFile = iMrFileAll(parmsIndex);
-                    bEnhancedMR = false; % default
-                end
+					bEnhancedMR = false; % default
+				end
 			else
 				bEnhancedMR = false; % default
 				iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
@@ -369,9 +369,9 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                     end
                     t_parms{parmsIndex}.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
                 else
-                    if imPar.bVerbose
+                    % if imPar.bVerbose
                         % if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
-                    end
+                    % end
                     t_parms{parmsIndex}.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
                 end
             end

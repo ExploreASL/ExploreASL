@@ -1,7 +1,7 @@
 function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, dcmExtFilter, bUseDCMTK, pathDcmDictIn)
 % Goes through the DICOM or PAR/REC files, parses the header and saves it in MAT.
 %
-% FORMAT: [parms pathDcmDictOut] = xASL_adm_Dicom2Parms(inp[, parmsfile, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
+% FORMAT: [parms pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp[, parmsfile, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
 %
 % INPUT:
 %        inp (PATH)         - path to the RAW files
@@ -19,11 +19,11 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 %               It extracts the {{DICOM}} parameters important for ASL, makes sure they are in the correct format, if missing then 
 %               replaces with default value, it also checks if the parameters are consistent across {{DICOM}} files for a single sequence.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:  ...
+% EXAMPLE:     [parms pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp);
 %
-% REFERENCES:
+% REFERENCES:  n/a
 % __________________________________
-% Copyright @ 2015-2019 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
     %% ----------------------------------------------------------------------------------
 	% Admin
@@ -59,6 +59,7 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 	DcmParDefaults.MRScaleSlope              = 1;   % MRScaleSlope
 	DcmParDefaults.RescaleIntercept          = 0;   % RescaleIntercept (although this one is standard dicom)
 	DcmParDefaults.AcquisitionTime           = 0;   % AcquisitionTime
+
 	% TopUp parameters
 	DcmParDefaults.AcquisitionMatrix         = NaN;
 	DcmParDefaults.EffectiveEchoSpacing      = NaN;
@@ -164,10 +165,10 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 					bEnhancedMR = false; % default
 					iMrFile = iMrFile+1;
 				else
-% 					continue; % THIS SEEMS STRANGE >>>>>>>>>> RESULTS IN EMPTY PARMS, BY TRYING TO READ IMRFILE =0
-                    iMrFile = iMrFile+1;
-                    bEnhancedMR = false; % default
-                end
+					% continue; % THIS SEEMS STRANGE >>>>>>>>>> RESULTS IN EMPTY PARMS, BY TRYING TO READ IMRFILE =0
+					iMrFile = iMrFile+1;
+					bEnhancedMR = false; % default
+				end
 			else
 				bEnhancedMR = false; % default
 				iMrFile = iMrFile+1;
@@ -287,9 +288,9 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 
                 if length(t_parms)>1
                     if imPar.bVerbose; fprintf('%s\n','Parameter AcquisitionTime has multiple values:'); end
-%                     t_parms.AcquisitionTime
+                    % t_parms.AcquisitionTime
                     if imPar.bVerbose; fprintf('%s\n','using minumum value:'); end
-%                     t_parms.AcquisitionTime = min(t_parms.AcquisitionTime)
+                    % t_parms.AcquisitionTime = min(t_parms.AcquisitionTime)
                     tempAcquisitionTime = t_parms(1).AcquisitionTime;
                     t_parms = rmfield(t_parms,'AcquisitionTime');
                     t_parms(1).AcquisitionTime = tempAcquisitionTime;
