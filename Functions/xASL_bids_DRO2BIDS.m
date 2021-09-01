@@ -1,7 +1,7 @@
-function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth,exploreaslVersion)
+function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, exploreaslVersion)
 %xASL_bids_DRO2BIDS Prepare DRO test patient for BIDS2Legacy conversion.
 %
-% FORMAT: xASL_bids_DRO2BIDS(droTestPatient,[droSubject])
+% FORMAT: xASL_bids_DRO2BIDS(droTestPatient, [droSubject, deleteGroundTruth, exploreaslVersion])
 % 
 % INPUT:
 %   droTestPatient      - Path to the DRO (CHAR ARRAY, REQUIRED)
@@ -25,7 +25,7 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth,explorea
 %               droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient');
 %               droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient');
 %               xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject));
-%               xASL_bids_DRO2BIDS(droTestPatient,droSubject);
+%               xASL_bids_DRO2BIDS(droTestPatient, droSubject, [], '1.2.3');
 %               
 % __________________________________
 % Copyright 2015-2021 ExploreASL
