@@ -1,4 +1,4 @@
-function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth)
+function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth,exploreaslVersion)
 %xASL_bids_DRO2BIDS Prepare DRO test patient for BIDS2Legacy conversion.
 %
 % FORMAT: xASL_bids_DRO2BIDS(droTestPatient,[droSubject])
@@ -7,6 +7,7 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth)
 %   droTestPatient      - Path to the DRO (CHAR ARRAY, REQUIRED)
 %   droSubject          - Subject name (CHAR ARRAY, OPTIONAL, DEFAULT = 'sub-Sub1')
 %   deleteGroundTruth   - Delete DRO ground truth (BOOLEAN, OPTIONAL, DEFAULT = True)
+%   exploreaslVersion   - Version of ExploreASL (STRING, RECOMMENDED)
 %
 % OUTPUT:
 %   n/a
@@ -32,11 +33,15 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth)
     %% DRO 2 BIDS
 
     % Check input arguments
-    if nargin<2
+    if nargin<2 || isempty(droSubject)
         droSubject = 'sub-Sub1'; % DEFAULT
     end
-    if nargin<3
+    if nargin<3 || isempty(deleteGroundTruth)
         deleteGroundTruth = true; % DEFAULT
+    end
+    if nargin<4 || isempty(exploreaslVersion)
+        warning('Using dummy ExploreASL version...');
+        exploreaslVersion = '1.2.3';
     end
 
     % Directory definitions
@@ -98,7 +103,7 @@ function xASL_bids_DRO2BIDS(droTestPatient,droSubject,deleteGroundTruth)
             jsonTemplate.Name = 'DRO_Digital_Reference_Object';
 
             % Call script to fix missing fields
-            [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(jsonTemplate,'1.2.3');
+            [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(jsonTemplate,exploreaslVersion);
 
             % Write dataset_description file
             spm_jsonwrite(fullfile(droTestPatient,'rawdata','dataset_description.json'),jsonDescription);

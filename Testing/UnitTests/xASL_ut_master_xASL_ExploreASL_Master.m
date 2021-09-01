@@ -38,6 +38,7 @@ testTime = tic;
 
 % Read test files
 [x] = ExploreASL_Master();
+testVersion = x.Version;
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -304,7 +305,7 @@ droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_p
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
 droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion); % Prepare DRO
 
 % Convert BIDS back to temp for the testing
 xASL_Move(fullfile(droTestPatient,'rawdata'),fullfile(droTestPatient,'temp'))
@@ -374,7 +375,7 @@ droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_p
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
 droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion); % Prepare DRO
 
 % Fallback
 testCondition = true;
@@ -432,7 +433,7 @@ droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_p
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
 droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient); % Prepare DRO
+xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion); % Prepare DRO
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
