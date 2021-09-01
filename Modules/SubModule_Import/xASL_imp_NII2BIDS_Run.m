@@ -33,22 +33,21 @@ function xASL_imp_NII2BIDS_Run(imPar, bidsPar, studyPar, subjectSessionLabel, in
     try
         xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
     catch ME
-        xASL_imp_NII2BIDS_Run_ISSUE_WARNING(ME, 'anatomical', subjectSessionLabel, iRun);
+        xASL_imp_NII2BIDS_RunIssueWarning(ME, 'anatomical', subjectSessionLabel, iRun);
     end
     
     %% Perfusion files
     try
         xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
     catch ME
-        xASL_imp_NII2BIDS_Run_ISSUE_WARNING(ME, 'perfusion', subjectSessionLabel, iRun);
+        xASL_imp_NII2BIDS_RunIssueWarning(ME, 'perfusion', subjectSessionLabel, iRun);
     end
     
 end
 
 
-%% ============================================================================================'
-
-function xASL_imp_NII2BIDS_Run_ISSUE_WARNING(ME, Scantype, subjectSessionLabel, iRun)
+%% Issue failed run as a warning
+function xASL_imp_NII2BIDS_RunIssueWarning(ME, Scantype, subjectSessionLabel, iRun)
 
     fprintf('\n\n\n%s\n', '============================================================================================');
     warning(['NII2BIDS went wrong for ' Scantype ' ' subjectSessionLabel '_run-' xASL_num2str(iRun)]);
