@@ -27,7 +27,8 @@ testTime = tic;
 
 % Run your test here
 draft = struct;
-[json] = xASL_bids_CreateDatasetDescriptionTemplate(draft);
+testVersion = '1.2.3';
+[json] = xASL_bids_CreateDatasetDescriptionTemplate(draft,testVersion);
 
 % Define one or multiple test conditions here
 testCondition = true;
@@ -60,7 +61,8 @@ testTime = tic;
 % Run your test here
 draft = struct;
 draft.NotAllowed = 'Test';
-[json] = xASL_bids_CreateDatasetDescriptionTemplate(draft);
+testVersion = '1.2.3';
+[json] = xASL_bids_CreateDatasetDescriptionTemplate(draft,testVersion);
 
 % Define one or multiple test conditions here
 testCondition = true;

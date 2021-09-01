@@ -26,6 +26,11 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExplo
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+    % Input check
+    if nargin<2
+        error('Please provide both a draft struct and the ExploreASL version...');
+    end
+
     % Get default BIDS configuration
     bidsPar = xASL_bids_Config();
 

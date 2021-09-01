@@ -3,7 +3,7 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
 %
 % FORMAT: [UnitTests,UnitTestsTable] = xASL_test_UnitTesting([bPull])
 %
-% INPUT:        bPull - boolean - pull new testing dataset (OPTIONAL, DEFAULT = true)
+% INPUT:        bPull           - Pull up-to-date testing repository (BOOLEAN, OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:       UnitTests       - structure containing the unit test results
 %               UnitTestsTable  - table containing the unit test results
@@ -72,6 +72,9 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
 
     %% Test Workflow
     
+    % Get working directory for unit tests
+    workingDirectory = fullfile(TestRepository,'UnitTesting','working_directory');
+    
     % Unit test template
     UnitTestTemplate.name = 'Template';
     UnitTestTemplate.unit = 'Function';
@@ -84,6 +87,10 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
     
     % Iterate over tests
     for test = 1:size(fileList,1)
+        % Make sure the working directory is empty
+        xASL_delete(workingDirectory,true);
+        xASL_adm_CreateDir(workingDirectory);
+        % Run the current test
         testScript = fileList(test).name;
         [~,testScript,~] = fileparts(testScript);
         testHandle = str2func(testScript);
