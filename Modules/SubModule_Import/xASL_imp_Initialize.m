@@ -33,23 +33,23 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     imPar = spm_jsonread(imParPath);
 
     %% 2. Specify paths
-    if ~isfield(imPar,'studyID') || isempty(imPar.studyID)
+    if ~isfield(imPar, 'studyID') || isempty(imPar.studyID)
         imPar.studyID = [fname fext];
     end
-    if ~isfield(imPar,'TempRoot') || isempty(imPar.TempRoot) 
+    if ~isfield(imPar, 'TempRoot') || isempty(imPar.TempRoot) 
         imPar.TempRoot = fpath;
     end
-    if ~isfield(imPar,'RawRoot') || isempty(imPar.RawRoot)
+    if ~isfield(imPar, 'RawRoot') || isempty(imPar.RawRoot)
         imPar.RawRoot = fpath;
     end
-    if ~isfield(imPar,'BidsRoot') || isempty(imPar.BidsRoot)
+    if ~isfield(imPar, 'BidsRoot') || isempty(imPar.BidsRoot)
         imPar.BidsRoot = fpath;
     end
 
     %% 3. Finalize the directories
-    imPar.RawRoot = fullfile(imPar.RawRoot,imPar.studyID, 'sourcedata'); % default name
-    imPar.TempRoot = fullfile(imPar.TempRoot,imPar.studyID,'temp');
-    imPar.BidsRoot = fullfile(imPar.BidsRoot,imPar.studyID,'rawdata');
+    imPar.RawRoot = fullfile(imPar.RawRoot, imPar.studyID, 'sourcedata'); % default name
+    imPar.TempRoot = fullfile(imPar.TempRoot, imPar.studyID, 'temp');
+    imPar.BidsRoot = fullfile(imPar.BidsRoot, imPar.studyID, 'rawdata');
 
     %% 4. Specify the tokens
     
@@ -60,58 +60,62 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     xASL_imp_InitializeCheckTokens(imPar);
 
     %% 5. Specify the additional details of the conversion
-    if ~isfield(imPar,'bVerbose') || isempty(imPar.bVerbose)
+    if ~isfield(imPar, 'bVerbose') || isempty(imPar.bVerbose)
         imPar.bVerbose = true;
     end
-    if ~isfield(imPar,'bOverwrite') || isempty(imPar.bOverwrite)
+    if ~isfield(imPar, 'bOverwrite') || isempty(imPar.bOverwrite)
         imPar.bOverwrite  = false; % NB, the summary file will be recreated anyway and dicom conversion in temp is always done, even if dest. exists
     end
-    if ~isfield(imPar,'visitNames') || isempty(imPar.visitNames)
+    if ~isfield(imPar ,'visitNames') || isempty(imPar.visitNames)
         imPar.visitNames = {};
     end
     if ~isfield(imPar,'sessionNames') || isempty(imPar.sessionNames)
         imPar.sessionNames = {};
     end
+    if ~isfield(imPar, 'sessionNames') || isempty(imPar.sessionNames)
+        imPar.sessionNames = {};
+    end
+
 
 end
 
 %% Specify the imPar struct
 function imPar = xASL_imp_InitializeBuildImPar(imPar)
 
-    if ~isfield(imPar,'folderHierarchy')
+    if ~isfield(imPar, 'folderHierarchy')
         imPar.folderHierarchy = {}; % must define this per study; use a cell array of regular expressions. One cell per directory level.
     end
-    if ~isfield(imPar,'tokenOrdering')
+    if ~isfield(imPar, 'tokenOrdering')
         imPar.tokenOrdering = []; % must match imPar.folderHierarchy: 1==subject, 2=visit, 3==session, 4==scan (if visit or session are omitted, they will be skipped)
     else
         imPar.tokenOrdering = imPar.tokenOrdering(:)';
     end
-    if ~isfield(imPar,'tokenScanAliases')
+    if ~isfield(imPar, 'tokenScanAliases')
         imPar.tokenScanAliases = [];
     else
         if (size(imPar.tokenScanAliases,2) > 2) || (size(imPar.tokenScanAliases,2) == 1)
             tokenScanAliasesOld = imPar.tokenScanAliases;
-			imPar = rmfield(imPar,'tokenScanAliases');
+			imPar = rmfield(imPar, 'tokenScanAliases');
             imPar.tokenScanAliases(:,1) = tokenScanAliasesOld(1:2:end);
             imPar.tokenScanAliases(:,2) = tokenScanAliasesOld(2:2:end);
         end
     end
-    if ~isfield(imPar,'tokenVisitAliases')
+    if ~isfield(imPar, 'tokenVisitAliases')
         imPar.tokenVisitAliases = [];
     else
         if (size(imPar.tokenVisitAliases,2) > 2) || (size(imPar.tokenVisitAliases,2) == 1)
             tokenVisitAliasesOld = imPar.tokenVisitAliases;
-			imPar = rmfield(imPar,'tokenVisitAliases');
+			imPar = rmfield(imPar, 'tokenVisitAliases');
             imPar.tokenVisitAliases(:,1) = tokenVisitAliasesOld(1:2:end);
             imPar.tokenVisitAliases(:,2) = tokenVisitAliasesOld(2:2:end);
         end
     end
-    if ~isfield(imPar,'tokenSessionAliases')
+    if ~isfield(imPar, 'tokenSessionAliases')
         imPar.tokenSessionAliases = [];
     else
         if (size(imPar.tokenSessionAliases,2) > 2) || (size(imPar.tokenSessionAliases,2) == 1)
             tokenSessionAliasesOld = imPar.tokenSessionAliases;
-			imPar = rmfield(imPar,'tokenSessionAliases');
+			imPar = rmfield(imPar, 'tokenSessionAliases');
             imPar.tokenSessionAliases(:,1) = tokenSessionAliasesOld(1:2:end);
             imPar.tokenSessionAliases(:,2) = tokenSessionAliasesOld(2:2:end);
         end
@@ -127,16 +131,16 @@ end
 function xASL_imp_InitializeCheckTokens(imPar)
 
     % Check tokenScanAliases
-    if isfield(imPar,'tokenScanAliases')
+    if isfield(imPar, 'tokenScanAliases')
         if size(imPar.tokenScanAliases,2)==2
             for iToken = 1:size(imPar.tokenScanAliases,1)
                 currentToken = imPar.tokenScanAliases{iToken,2};
                 % Warn if the token contains ASL but is not ASL4D
-                if ~isempty(regexp(currentToken,'ASL', 'once')) && ~strcmp(currentToken,'ASL4D')
+                if ~isempty(regexpi(currentToken,'ASL', 'once')) && ~strcmp(currentToken, 'ASL4D')
                     warning('Please use ASL4D for your ASL tokenScanAlias instead...');
                 end
                 % Warn if the token contains T1 but is not T1w
-                if ~isempty(regexp(currentToken,'T1', 'once')) && ~strcmp(currentToken,'T1w')
+                if ~isempty(regexpi(currentToken, 'T1', 'once')) && ~strcmp(currentToken, 'T1w')
                     warning('Please use T1w for your T1 tokenScanAlias instead...');
                 end
             end
@@ -144,7 +148,4 @@ function xASL_imp_InitializeCheckTokens(imPar)
     end
 
 end
-
-
-
 
