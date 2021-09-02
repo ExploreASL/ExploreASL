@@ -52,6 +52,32 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     imPar.BidsRoot = fullfile(imPar.BidsRoot,imPar.studyID,'rawdata');
 
     %% 4. Specify the tokens
+    
+    % Specify the imPar struct
+    imPar = xASL_imp_InitializeBuildImPar(imPar);
+    
+    % Warn the user if token aliases are invalid according to our pipeline/BIDS
+    xASL_imp_InitializeCheckTokens(imPar);
+
+    %% 5. Specify the additional details of the conversion
+    if ~isfield(imPar,'bVerbose') || isempty(imPar.bVerbose)
+        imPar.bVerbose = true;
+    end
+    if ~isfield(imPar,'bOverwrite') || isempty(imPar.bOverwrite)
+        imPar.bOverwrite  = false; % NB, the summary file will be recreated anyway and dicom conversion in temp is always done, even if dest. exists
+    end
+    if ~isfield(imPar,'visitNames') || isempty(imPar.visitNames)
+        imPar.visitNames = {};
+    end
+    if ~isfield(imPar,'sessionNames') || isempty(imPar.sessionNames)
+        imPar.sessionNames = {};
+    end
+
+end
+
+%% Specify the imPar struct
+function imPar = xASL_imp_InitializeBuildImPar(imPar)
+
     if ~isfield(imPar,'folderHierarchy')
         imPar.folderHierarchy = {}; % must define this per study; use a cell array of regular expressions. One cell per directory level.
     end
@@ -94,18 +120,27 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
         imPar.bMatchDirectories  = false;
     end
 
-    %% 5. Specify the additional details of the conversion
-    if ~isfield(imPar,'bVerbose') || isempty(imPar.bVerbose)
-        imPar.bVerbose = true;
-    end
-    if ~isfield(imPar,'bOverwrite') || isempty(imPar.bOverwrite)
-        imPar.bOverwrite  = false; % NB, the summary file will be recreated anyway and dicom conversion in temp is always done, even if dest. exists
-    end
-    if ~isfield(imPar,'visitNames') || isempty(imPar.visitNames)
-        imPar.visitNames = {};
-    end
-    if ~isfield(imPar,'sessionNames') || isempty(imPar.sessionNames)
-        imPar.sessionNames = {};
+end
+
+
+%% Warn the user if token aliases are invalid according to our pipeline/BIDS
+function xASL_imp_InitializeCheckTokens(imPar)
+
+    % Check tokenScanAliases
+    if isfield(imPar,'tokenScanAliases')
+        if size(imPar.tokenScanAliases,2)==2
+            for iToken = 1:size(imPar.tokenScanAliases,1)
+                currentToken = imPar.tokenScanAliases{iToken,2};
+                % Warn if the token contains ASL but is not ASL4D
+                if ~isempty(regexp(currentToken,'ASL', 'once')) && ~strcmp(currentToken,'ASL4D')
+                    warning('Please use ASL4D for your ASL tokenScanAlias instead...');
+                end
+                % Warn if the token contains T1 but is not T1w
+                if ~isempty(regexp(currentToken,'T1', 'once')) && ~strcmp(currentToken,'T1w')
+                    warning('Please use T1w for your T1 tokenScanAlias instead...');
+                end
+            end
+        end
     end
 
 end
