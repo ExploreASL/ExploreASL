@@ -37,8 +37,7 @@ function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
     %% 2. Process the anat & perfusion files
     % Subsequent code is based on having data per ASL scan, so we "fool" it
     % by renaming all sessions into ASL_1 ASL_2 ASL_n and keeping the
-    % unique sessions only. Missing scans will issue a warning, not an
-    % error.
+    % unique sessions only. Missing scans will issue a warning, not an error.
     listSessions = xASL_adm_GetFileList(fullfile(imPar.TempRoot,nameSubjectSession),'^(ASL|T1w|FLAIR).+$',false,[],true);
     listSessions = cellfun(@(y) y(end), listSessions, 'UniformOutput', false);
     listSessions = unique(listSessions);

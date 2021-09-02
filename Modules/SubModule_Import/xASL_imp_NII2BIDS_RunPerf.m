@@ -41,6 +41,12 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
         aslOutLabel = fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectSessionLabel]);
         aslOutLabelRelative = fullfile(bidsPar.strPerfusion,['sub-' subjectSessionLabel]);
     end
+    
+    % Current scan name
+    [~, scanName] = xASL_fileparts([aslOutLabel '_asl.json']);
+    
+    % Print perfusion name
+    fprintf('Scan %s ...\n', scanName);
 
     %% 2. Load the JSONs and NIfTI information
     if exist(fullfile(inSessionPath, [aslLabel '.json']),'file')

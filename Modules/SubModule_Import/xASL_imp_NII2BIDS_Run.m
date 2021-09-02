@@ -31,6 +31,7 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, subjectSessionLa
 
 
     %% Anatomical files
+    fprintf('run %d ...\n', iRun);
     try
         xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
     catch loggingEntry

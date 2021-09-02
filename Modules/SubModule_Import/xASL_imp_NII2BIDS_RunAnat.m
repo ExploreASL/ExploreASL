@@ -56,6 +56,12 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
             % Create the anatomical directory
             xASL_adm_CreateDir(anatOutDirLabel);
 
+            % Current scan name
+            [~, scanName] = xASL_fileparts([anatOutLabel,'_' iAnatType{1}]);
+            
+            % Print anat name
+            fprintf('Scan %s ...\n', scanName);
+            
             % Move the NiFTI file
             anatNiiPath = [anatOutLabel,'_' iAnatType{1} '.nii.gz'];
             xASL_Move([anatPath '.nii'],anatNiiPath,1);

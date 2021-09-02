@@ -30,6 +30,10 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions
     %% Unpack bidsLabel struct
     subjectLabel = bidsLabel.subject;
     visitLabel = bidsLabel.visit;
+    
+    %% Print current session which is being converted
+    fprintf('\n====================================== CONVERT SESSION =======================================\n');
+    fprintf('Converting subject %s, session %s, ',subjectLabel,visitLabel);
 
     %% 1. Make a subject directory
     if length(listSessions)>1 || ~isempty(visitLabel)
@@ -67,3 +71,4 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions
     end
 
 end
+
