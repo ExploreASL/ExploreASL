@@ -1,7 +1,7 @@
 function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession)
 %xASL_imp_NII2BIDS_Session NII2BIDS conversion for a single session.
 %
-% FORMAT: x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, subjectLabel, iSession)
+% FORMAT: x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession)
 % 
 % INPUT:
 %   x                     - ExploreASL x structure (REQUIRED, STRUCT)
@@ -10,7 +10,7 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions
 %   studyPar              - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
 %   listSessions          - list of sessions (CELL ARRAY, REQUIRED, e.g.: {'ASL_1'})
 %   nameSubjectSession    - name of the subject (CELL ARRAY, REQUIRED)
-%   subjectLabel          - subject label (CHAR ARRAY, REQUIRED)
+%   bidsLabel             - BIDS label (CHAR ARRAY, REQUIRED)
 %   iSession              - Session number (INTEGER, REQUIRED)
 %
 % OUTPUT:
@@ -23,30 +23,26 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions
 % 2. Iterate over runs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, subjectLabel, iSession);
+% EXAMPLE:     x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    %% Unpack bidsLabel struct
-    subjectLabel = bidsLabel.subject;
-    visitLabel = bidsLabel.visit;
-    
-    %% Print current session which is being converted
+    %% Print the session that is being converted
     fprintf('\n====================================== CONVERT SESSION =======================================\n');
-    fprintf('Converting subject %s, session %s, ',subjectLabel,visitLabel);
+    fprintf('Converting subject %s, session %s, ', bidsLabel.subject, bidsLabel.visit);
 
     %% 1. Make a subject directory
-    if length(listSessions)>1 || ~isempty(visitLabel)
-        if ~isempty(visitLabel)
-            sessionLabel = ['ses-' visitLabel];
+    if length(listSessions)>1 || ~isempty(bidsLabel.visit)
+        if ~isempty(bidsLabel.visit)
+            sessionLabel = ['ses-' bidsLabel.visit];
         else
             sessionLabel = ['ses-' listSessions{iSession}(5:end)];
         end
         
-        xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel,'perf'));
+        xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject], sessionLabel,'perf'));
         
-        inSessionPath = fullfile(imPar.TempRoot,nameSubjectSession,listSessions{iSession});
-        outSessionPath = fullfile(imPar.BidsRoot,['sub-' subjectLabel],sessionLabel);
+        inSessionPath = fullfile(imPar.TempRoot, nameSubjectSession, listSessions{iSession});
+        outSessionPath = fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject], sessionLabel);
 
         % Need to add the underscore so that it doesn't need to be added automatically and can be skipped for empty session
         sessionLabel = ['_' sessionLabel];
@@ -55,19 +51,19 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions
         sessionLabel = '';
 
         % Only one session - no session labeling
-        if ~exist(fullfile(imPar.BidsRoot,['sub-' subjectLabel]),'dir')
-            xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' subjectLabel],bidsPar.strPerfusion));
+        if ~exist(fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]),'dir')
+            xASL_adm_CreateDir(fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject], bidsPar.strPerfusion));
         end
-        inSessionPath = fullfile(imPar.TempRoot,nameSubjectSession,listSessions{iSession});
-        outSessionPath = fullfile(imPar.BidsRoot,['sub-' subjectLabel]);
+        inSessionPath = fullfile(imPar.TempRoot, nameSubjectSession, listSessions{iSession});
+        outSessionPath = fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject]);
     end
 
     % Check if there are multiple runs per session
-    listRuns = xASL_adm_GetFileList(inSessionPath,'^ASL4D_\d.nii+$',false,[],false);
+    listRuns = xASL_adm_GetFileList(inSessionPath, '^ASL4D_\d.nii+$', false, [], false);
 
     %% 2. Iterate over runs
     for iRun = 1:(max(length(listRuns),1))
-        x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, [subjectLabel sessionLabel], inSessionPath, outSessionPath, listRuns, iRun, nameSubjectSession);
+        x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, [bidsLabel.subject sessionLabel], inSessionPath, outSessionPath, listRuns, iRun, nameSubjectSession);
     end
 
 end
