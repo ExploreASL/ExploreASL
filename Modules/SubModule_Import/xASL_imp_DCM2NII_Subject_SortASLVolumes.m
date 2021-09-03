@@ -1,7 +1,7 @@
-function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(x,globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
-%xASL_imp_DCM2NII_Subject_ShuffleTheDynamics Shuffle the dynamics.
+function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_SortASLVolumes(x,globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
+%xASL_imp_DCM2NII_Subject_SortASLVolumes Sort ASL Volumes
 %
-% FORMAT: [x, nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_ShuffleTheDynamics(x, globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
+% FORMAT: [x, nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_SortASLVolumes(x, globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
 % 
 % INPUT:
 %   x               - ExploreASL x struct (STRUCT, REQUIRED)
@@ -21,7 +21,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 %   ASLContext      - ASL context text ('deltam,m0scan' e.g.)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Shuffle the dynamics.
+% DESCRIPTION: Sort ASL Volumes.
 %
 % 1. Fallbacks
 % 2. Fill NIfTI Table
