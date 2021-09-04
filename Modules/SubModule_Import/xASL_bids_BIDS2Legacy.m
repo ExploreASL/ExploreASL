@@ -233,9 +233,14 @@ end
 %% 9. Clean up
 try
     filesCleanUp = xASL_adm_GetFileList(pathStudy,'^import_.+$');
+    importLogFile = xASL_adm_GetFileList(pathStudy,'^xASL_module_Import.+$');
     reportFiles = xASL_adm_GetFileList(pathStudy,'^bidsReport.+$');
     if ~isempty(reportFiles)
         filesCleanUp = vertcat(filesCleanUp,reportFiles);
+    end
+    if ~isempty(importLogFile)
+        diary off
+        filesCleanUp = vertcat(filesCleanUp,importLogFile);
     end
     if ~isempty(filesCleanUp)
         for iFile = 1:size(filesCleanUp,1)

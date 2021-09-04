@@ -77,7 +77,7 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExplo
 	
 	if length(listMissingFiles)>1
 		% Report the missing fields
-        fprintf('================================== dataset_description.json ==================================\n');
+        fprintf('Checking dataset_description.json ...\n');
 		fprintf('Missing recommended fields:           %s\n',listMissingFiles);
 	end
 		

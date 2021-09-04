@@ -105,7 +105,8 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    %% 1. Initialize the parameters
+    %% 1. Initialize by starting the logging and initializing the substructs
+    diary(fullfile(studyPath,'xASL_module_Import.log'));
     [x] = xASL_init_SubStructs(x);
 
     % First do the basic parameter admin and initialize the default values
@@ -219,5 +220,8 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     if bRunSubmodules(4)
         x = xASL_imp_BIDS2Legacy(x);
     end
+
+    %% 7. Clean-up (stop logging)
+    diary off
 
 end

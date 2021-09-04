@@ -27,6 +27,7 @@ function x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 
 
     %% Run the NII2BIDS conversion
+    diary(fullfile(studyPath,'xASL_module_Import.log'));
     fprintf('================================== NIFTI to BIDS CONVERSION ==================================\n');
     
     % Check if the temp folder exists
