@@ -15,45 +15,58 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 ### Feature improvements
 
 * Issue #182 & #721: Option to use template WM and contour for alignment QC
-* Issue #187: Load NIfTI as UINT8 or INT16 if not floating point
+* Issue #187: Load **NIfTI** as **UINT8** or **INT16** if not floating point
 * Issue #204: Development version of scripts for cluster testing of **ExploreASL**
-* Issue #311: Generalize TSV writing behavior of ExploreASL
+* Issue #311: Generalize TSV writing behavior of **ExploreASL**
 * Issue #412: Make sure that the regular expressions for files are case insensitive
+* Issue #442: Added default T1-time values for different field- strengths
 * Issue #566: Basic motion correction for Hadamard and multi-TE and multi-PLD
-* Issue #569: Minor fix in setting up FSL, issuing a warning when FSL version<6, and testing `bUseBasilQuantification` in both a 2D and 3D ASL dataset
+* Issue #569: Minor fix in setting up **FSL**, issuing a warning when FSL version<6, and testing `bUseBasilQuantification` in both a **2D** and **3D** ASL dataset
 * Issue #574: Update unit tests regarding backwards compatibility
-* Issue #575 & #754: Simplification/revamp of some scripts that check image flips and report on them
+* Issue #575, #754, #757 & #770: Simplification/revamp of some scripts that check image flips and report on them
 * Issue #595: Save NIfTI as UINT8 or INT16 if the values are integers
+* Issue #611: Adapt `participants.tsv` to **BIDS** format
 * Issue #639: New BIDS fields defined for TimeEncoded and automatic import of TimeEncoded data from FME
 * Issue #680: `xASL_im_Lesion2Mask`: Separate masks in 4D NIfTI if they are not mutually exclusive
 * Issue #683: Modularize data loading of ExploreASL
 * Issue #687: Update reference values for pipeline testing
 * Issue #690: Improved unit testing
 * Issue #696: Run data compression after processing pipeline (not a part of the population module anymore)
-* Issue #700: DCMTK-based DICOM reading compiled for MacOS using static libraries
+* Issue #700: **DCMTK-based DICOM reading** compiled for MacOS using static libraries
 * Issue #717: The **ExploreASL** `x` struct and with that some of the ExploreASL settings were moved to dedicated fields, for backwards compatibility a table was created and automated workflows were implemented
+* Issue #746: Save ExploreASL version in both **BIDS** and legacy-derivatives imported data
+* Issue #778: Optimize import workflow for code simplification and robustness
+* Issue #790: Import ASL ordering by SeriesNumber
+* Issue #796: BIDS import runs without **ASL** scans
 
 
 ### Bug fixes
 
+* Bug #257: Slight revamp of `xASL_wrp_CreateBiasfield`
 * Bug #565: Improved behavior of `xASL_adm_DeleteFileList`, which now understands if the same file is tried to delete twice (e.g., in the case of symbolic links)
 * Bug #692: Fix minor error in `xASL_fsl_TopUp`
 * Bug #707: Improve **ExploreASL** warnings for discontinued input behavior
 * Bug #713: Fixing bugs originated from commits in #683 and #595
-* Bug #725: Printf CBF results in TSV even if first ASL session `ASL_1` is missing
+* Bug #725: Printf CBF results in **TSV** even if first ASL session `ASL_1` is missing
+* Bug #731: Print correct units for sCoV
+* Bug #732: Improve overall subject/visit import behavior for both anatomical and perfusion files
 * Bug #739: Try to automatically derive Manufacturer if missing in DICOM
+* Bug #758: Fix bug related to data loading
 * Bug #761: Stop pipeline from crashing for empty NIfTI files
-
-
-### BIDS related issues
-
-* Issue #611: Adapt `participants.tsv` to BIDS format
+* Bug #762: Fix **TSV** tables: default missing numbers or lists to `n/a` for now, and use `'_'` for placeholder elements
+* Bug #769: Fix data loading of processed datasets
+* Bug #774: Correctly manage zipping when moving identical files
+* Bug #784: Accepting M0Type in studyPar in BIDS form for DCM->BIDS conversion
+* Bug #806: If each slice has a separate scale slope but these are identical, this shouldn't report a warning
+* Bug #808: Import submodules for each run which is being converted include logging feature as well as user feedback now
+* Bug #810: Correctly convert multi-session **BIDS2Legacy** even if not all subjects have multiple sessions
 
 
 ### Other improvements
 
 * Issue #702: Move discontinued code to a dedicated directory
 * Issue #714: Minor clean-up `cat_wmh_miccai2017.nii`
+* Issue #787: Move import & processing checks to the master script
 
 
 ---
