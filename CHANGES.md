@@ -2,6 +2,39 @@
 # ExploreASL Change Log
 
 ---
+## ExploreASL v1.8.0
+
+### Versions included software
+
+Versions included & used third-party tools (see `/External/README_SPM.txt`):
+
+* SPM12 7219 
+* CAT12 r1615 
+* LST 2.0.15 
+
+### Feature improvements
+
+* Issue #187: Load NIfTI as UINT8 or INT16 if not floating point
+* Issue #566: Basic motion correction for Hadamard and multi-TE and multi-PLD
+* Issue #574: Update unit tests regarding backwards compatibility
+* Issue #595: Save NIfTI as UINT8 or INT16 if the values are integers
+* Issue #680: `xASL_im_Lesion2Mask`: Separate masks in 4D NIfTI if they are not mutually exclusive
+* Issue #683: Modularize data loading of ExploreASL
+* Issue #687: Update reference values for pipeline testing
+
+
+### Bug fixes
+
+* Bug #692: Fix minor error in `xASL_fsl_TopUp`
+* Bug #707: Improve **ExploreASL** warnings for discontinued input behavior
+* Bug #713: Fixing bugs originated from commits in #683 and #595
+
+### Other improvements
+
+* Issue #702: Move discontinued code to a dedicated directory
+* Issue #714: Minor clean-up `cat_wmh_miccai2017.nii`
+
+---
 ## ExploreASL v1.7.0
 
 ### Versions included software
