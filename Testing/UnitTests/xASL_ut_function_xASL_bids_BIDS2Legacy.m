@@ -37,8 +37,11 @@ xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
 testVersion = '1.2.3';
 xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion);
 
+% Initialize
+x = ExploreASL;
+
 % Run BIDS2Legacy
-xASL_bids_BIDS2Legacy(droTestPatient);
+xASL_bids_BIDS2Legacy(droTestPatient, x);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -81,6 +84,9 @@ end
 % Remove the test files
 xASL_delete(droTestPatient,true);
 
+% Clean-Up
+clearvars -except testTime TestRepository UnitTest
+
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
 
@@ -110,12 +116,15 @@ xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject));
 testVersion = '1.2.3';
 xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion);
 
+% Initialize
+x = ExploreASL;
+
 % Run BIDS2Legacy
-xASL_bids_BIDS2Legacy(droTestPatient);
+xASL_bids_BIDS2Legacy(droTestPatient, x);
 
 % Initialize dataset
 try
-    [x] = ExploreASL_Master(droTestPatient, 0, 0);
+    x = ExploreASL_Master(droTestPatient, 0, 0);
 catch
     x = false;
 end
@@ -132,6 +141,9 @@ end
 
 % Remove the test files
 xASL_delete(droTestPatient,true);
+
+% Clean-Up
+clearvars -except testTime TestRepository UnitTest
 
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);

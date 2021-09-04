@@ -51,7 +51,7 @@ if nargin<1 || isempty(pathStudy)
 	error('pathStudy is a required parameter.');
 end
 
-if nargin<2 || isempty(bOverwrite)
+if nargin<3 || isempty(bOverwrite)
     bOverwrite = 1;
 end
 
