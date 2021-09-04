@@ -232,28 +232,97 @@ end
 
 %% 9. Clean up
 try
-    filesCleanUp = xASL_adm_GetFileList(pathStudy,'^import_.+$');
+    % Start with empty file list
+    filesCleanUp = {};
+    % Search for dcm2niix summary file & import log
+    summaryFile = xASL_adm_GetFileList(pathStudy,'^import_summary.+$');
+    dcm2niixImportLogFile = xASL_adm_GetFileList(pathStudy,'^import_log.+$');
+    % Search for xASL_module_Import log file
     importLogFile = xASL_adm_GetFileList(pathStudy,'^xASL_module_Import.+$');
+    % Search for bidsReport JSON file
     reportFiles = xASL_adm_GetFileList(pathStudy,'^bidsReport.+$');
+    % Merge log file lists
+    if ~isempty(summaryFile)
+        filesCleanUp = vertcat(filesCleanUp,summaryFile);
+    end
+    if ~isempty(dcm2niixImportLogFile)
+        filesCleanUp = vertcat(filesCleanUp,dcm2niixImportLogFile);
+    end
     if ~isempty(reportFiles)
         filesCleanUp = vertcat(filesCleanUp,reportFiles);
     end
     if ~isempty(importLogFile)
         diary off
         filesCleanUp = vertcat(filesCleanUp,importLogFile);
+        % If dcm2niix import log exists, we merge this and our xASL_module_Import log
+        pathImportLog = importLogFile{1};
+        if ~isempty(dcm2niixImportLogFile) && xASL_exist(dcm2niixImportLogFile{1},'file') && xASL_exist(pathImportLog,'file')
+            xASL_io_MergeTextFiles(dcm2niixImportLogFile{1},pathImportLog,pathImportLog,...
+                '================================== DICOM to NIFTI CONVERSION =================================');
+            xASL_delete(dcm2niixImportLogFile{1});
+        end
     end
+    % Move files to derivatives
     if ~isempty(filesCleanUp)
         for iFile = 1:size(filesCleanUp,1)
             sourceCleanUp = filesCleanUp{iFile};
             [~, fileCleanUp, extCleanUp] = xASL_fileparts(sourceCleanUp);
             destCleanUp = fullfile(pathStudy, 'derivatives', 'ExploreASL', [fileCleanUp extCleanUp]);
-            xASL_Move(sourceCleanUp,destCleanUp);
+            if xASL_exist(sourceCleanUp,'file')
+                xASL_Move(sourceCleanUp,destCleanUp);
+            end
         end
     end
 catch ME
     warning('Clean up failed...');
     fprintf('%s\n', ME.message);
 end
+
+end
+
+
+%% Merge text files A and B and write the output to the pathOut file
+function xASL_io_MergeTextFiles(pathA,pathB,pathOut,headerText)
+
+    % Read text files
+    textA = xASL_io_ReadTextFileLineByLine(pathA);
+    textB = xASL_io_ReadTextFileLineByLine(pathB);
+    
+    % Write text to file
+    fid = fopen(pathOut,'wt');
+    if ~isempty(headerText)
+        fprintf(fid, '%s\n', headerText);
+    end
+    for iLine = 1:size(textA,1)
+        fprintf(fid, '%s\n', textA{iLine,1});
+    end
+    for iLine = 1:size(textB,1)
+        fprintf(fid, '%s\n', textB{iLine,1});
+    end
+    fclose(fid);
+
+
+end
+
+
+%% Read a text file line by line
+function textArray = xASL_io_ReadTextFileLineByLine(pathTextFile)
+
+    % Open text file
+    fid = fopen(pathTextFile);
+    tline = fgetl(fid);
+    iLine = 1;
+    
+    % Read text file line by line
+    while ischar(tline)
+        textArray{iLine,1} = tline;
+        tline = fgetl(fid);
+        iLine = iLine+1;
+    end
+    
+    % Close text file
+    fclose(fid);
+
 
 end
 
