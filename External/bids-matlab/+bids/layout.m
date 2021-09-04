@@ -143,6 +143,10 @@ function BIDS = layout(root, tolerant)
     error('No subjects found in BIDS directory.');
   end
 
+  sessTotal = cell(0);
+  % Because sessions can differ between subjects,
+  % create a separate list for total sessions
+  
   fprintf('Parsing BIDS scans:    ');
   for iSub = 1:numel(sub)
       xASL_TrackProgress(iSub, numel(sub));
@@ -150,12 +154,7 @@ function BIDS = layout(root, tolerant)
                                               fullfile(BIDS.dir, sub{iSub}), ...
                                               'dir', ...
                                               '^ses-.*$'));
-      
-      if iSub == 1										  
-          % Take the list of sessions from the first subject
-          sessAll = sess;
-      end
-										  
+  
 	  for iSess = 1:numel(sess)
 		  if isempty(BIDS.subjects)
              BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
@@ -163,10 +162,10 @@ function BIDS = layout(root, tolerant)
              BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
 		  end
 		  
-		  % Add session name to the list if not there
-		  if ~isempty(sess{iSess}) && sum(cellfun(@(y) ~isempty(strfind(y,sess{iSess})), sessAll)) == 0
-			  sessAll{numel(sess)+1,1} = sess{iSess};
-		  end
+		  % Add session name to the total session list
+          if ~isempty(sess{iSess})
+            sessTotal{end+1,1} = sess{iSess};
+          end
 	  end
   end
   fprintf('\n');
@@ -174,7 +173,7 @@ function BIDS = layout(root, tolerant)
   fprintf('Always run your rawdata folder through the BIDS validator first and aim to avoid warnings\n');
   
   BIDS.subjectName = sub;
-  BIDS.sessionName = sort(sessAll);% Order sessions by name
+  BIDS.sessionName = unique(sessTotal); % Take only unique sessions & sort by name
 
 end
 
