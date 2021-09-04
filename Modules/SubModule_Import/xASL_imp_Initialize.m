@@ -104,14 +104,8 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     if ~isfield(imPar,'visitNames') || isempty(imPar.visitNames)
         imPar.visitNames = {};
     end
-    if ~isfield(imPar,'nMaxVisits') || isempty(imPar.nMaxVisits)
-        imPar.nMaxVisits = 0;
-    end
     if ~isfield(imPar,'sessionNames') || isempty(imPar.sessionNames)
         imPar.sessionNames = {};
-    end
-    if ~isfield(imPar,'nMaxSessions') || isempty(imPar.nMaxSessions)
-        imPar.nMaxSessions = 0;
     end
 
 end
