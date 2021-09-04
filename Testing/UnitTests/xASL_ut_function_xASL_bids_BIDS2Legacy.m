@@ -85,7 +85,7 @@ end
 xASL_delete(droTestPatient,true);
 
 % Clean-Up
-clearvars -except testTime TestRepository UnitTest
+clearvars -except testTime TestRepository UnitTest testCondition
 
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
@@ -143,7 +143,7 @@ end
 xASL_delete(droTestPatient,true);
 
 % Clean-Up
-clearvars -except testTime TestRepository UnitTest
+clearvars -except testTime TestRepository UnitTest testCondition
 
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);

@@ -150,11 +150,11 @@ function BIDS = layout(root, tolerant)
                                               fullfile(BIDS.dir, sub{iSub}), ...
                                               'dir', ...
                                               '^ses-.*$'));
-  
+      
       if iSub == 1										  
-		  % Take the list of sessions from the first subject										  
-		  sessAll = sess;
-	  end
+          % Take the list of sessions from the first subject
+          sessAll = sess;
+      end
 										  
 	  for iSess = 1:numel(sess)
 		  if isempty(BIDS.subjects)
@@ -164,7 +164,7 @@ function BIDS = layout(root, tolerant)
 		  end
 		  
 		  % Add session name to the list if not there
-		  if sum(cellfun(@(y) ~isempty(strfind(y,sess{iSess})), sessAll)) == 0
+		  if ~isempty(sess{iSess}) && sum(cellfun(@(y) ~isempty(strfind(y,sess{iSess})), sessAll)) == 0
 			  sessAll{numel(sess)+1,1} = sess{iSess};
 		  end
 	  end
