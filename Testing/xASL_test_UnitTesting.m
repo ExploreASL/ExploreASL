@@ -90,12 +90,21 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
         % Make sure the working directory is empty
         xASL_delete(workingDirectory,true);
         xASL_adm_CreateDir(workingDirectory);
-        % Run the current test
+        % Get test handle
         testScript = fileList(test).name;
         [~,testScript,~] = fileparts(testScript);
         testHandle = str2func(testScript);
-        UnitTest = testHandle(TestRepository);
+        % Run test
+        try
+            UnitTest = testHandle(TestRepository);
+        catch
+            UnitTest = struct;
+            UnitTest.tests = struct;
+            UnitTest.passed = false;
+        end
+        % Assign unit test name and unit definitions
         UnitTest = xASL_ut_InitUnitTest(UnitTest,testHandle);
+        % Write test to array
         UnitTests(test) = UnitTest;
     end
     
