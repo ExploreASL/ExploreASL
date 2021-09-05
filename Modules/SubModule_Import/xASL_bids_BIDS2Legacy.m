@@ -138,12 +138,12 @@ for iSubjSess=1:numel(BIDS.subjects) % iterate over BIDS.subjects (indices that 
         VisitString = '';
     else
         if ~isempty(iVisit)
-            pathLegacy_SubjectVisit = fullfile(pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
-            VisitString = [' visit ' SessionID];
-        else
-            pathLegacy_SubjectVisit = fullfile(pathLegacy, SubjectID);
-            VisitString = [' visit ' SessionID];
+            warning('Did not define the same number of visits (legacy) as BIDS sessions!');
+            iVisit = 1;
         end
+        
+        pathLegacy_SubjectVisit = fullfile(pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
+        VisitString = [' visit ' SessionID];
     end
     SubjectVisit = [SubjectID VisitString];
     xASL_adm_CreateDir(pathLegacy_SubjectVisit);
