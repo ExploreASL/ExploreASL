@@ -29,6 +29,7 @@ testTime = tic;
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
 droSubject = 'sub-Sub1'; % DRO subject
+sessionNum = '_1';
 
 % Copy test data to working directory
 xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
@@ -52,31 +53,34 @@ if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'fi
     testCondition = false; % Test failed
 end
 
+% Check path
+checkDirSubjSession = fullfile(droTestPatient,'derivatives','ExploreASL',[droSubject sessionNum]);
+
 % Check ASL files
-if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','ASL4D.json'),'file') ...
-    || ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','ASL4D_Source_aslcontext.tsv'),'file')
+if ~exist(fullfile(checkDirSubjSession,'ASL_1','ASL4D.json'),'file') ...
+    || ~exist(fullfile(checkDirSubjSession,'ASL_1','ASL4D_Source_aslcontext.tsv'),'file')
     testCondition = false; % Test failed
 end
-if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','ASL4D.nii'),'file') ...
-    && ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','ASL4D.nii.gz'),'file')
+if ~exist(fullfile(checkDirSubjSession,'ASL_1','ASL4D.nii'),'file') ...
+    && ~exist(fullfile(checkDirSubjSession,'ASL_1','ASL4D.nii.gz'),'file')
     testCondition = false; % Test failed
 end
 
 % Check M0 files
-if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','M0.json'),'file')
+if ~exist(fullfile(checkDirSubjSession,'ASL_1','M0.json'),'file')
     testCondition = false; % Test failed
 end
-if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','M0.nii'),'file') ...
-    && ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'ASL_1','M0.nii.gz'),'file')
+if ~exist(fullfile(checkDirSubjSession,'ASL_1','M0.nii'),'file') ...
+    && ~exist(fullfile(checkDirSubjSession,'ASL_1','M0.nii.gz'),'file')
     testCondition = false; % Test failed
 end
 
 % Check T1w files
-if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'T1.json'),'file')
+if ~exist(fullfile(checkDirSubjSession,'T1.json'),'file')
     testCondition = false; % Test failed
 end
-if  ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'T1.nii'),'file') ...
-    &&  ~exist(fullfile(droTestPatient,'derivatives','ExploreASL',droSubject,'T1.nii.gz'),'file')
+if  ~exist(fullfile(checkDirSubjSession,'T1.nii'),'file') ...
+    &&  ~exist(fullfile(checkDirSubjSession,'T1.nii.gz'),'file')
     testCondition = false; % Test failed
 end
 

@@ -137,8 +137,8 @@ for iSubjSess=1:numel(BIDS.subjects) % iterate over BIDS.subjects (indices that 
         pathLegacy_SubjectVisit = fullfile(pathLegacy, SubjectID);
         VisitString = '';
     else
-        if ~isempty(iVisit)
-            warning('Did not define the same number of visits (legacy) as BIDS sessions!');
+        if isempty(iVisit)
+            fprintf('\nEmpty session number, setting session number to 1...\n');
             iVisit = 1;
         end
         
