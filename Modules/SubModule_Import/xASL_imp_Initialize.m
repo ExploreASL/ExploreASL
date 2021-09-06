@@ -136,7 +136,7 @@ function xASL_imp_InitializeCheckTokens(imPar)
             for iToken = 1:size(imPar.tokenScanAliases,1)
                 currentToken = imPar.tokenScanAliases{iToken,2};
                 % Warn if the token contains ASL but is not ASL4D
-                if ~isempty(regexpi(currentToken,'ASL', 'once')) && ~strcmp(currentToken, 'ASL4D')
+                if ~isempty(regexpi(currentToken,'ASL', 'once')) && isempty(regexp(currentToken, 'ASL4D', 'once'))
                     warning('Please use ASL4D for your ASL tokenScanAlias instead...');
                 end
                 % Warn if the token contains T1 but is not T1w
