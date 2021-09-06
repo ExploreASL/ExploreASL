@@ -169,7 +169,7 @@ function [bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded)
     if isfield(x.dir, 'studyPar') && ~isempty(x.dir.studyPar)
         if xASL_exist(x.dir.studyPar, 'file')
             studyPar = spm_jsonread(x.dir.studyPar);
-            if isfield(studyPar,'TimeEncodedMatrixSize') && ~isempty(studyPar,'TimeEncodedMatrixSize') || ... % Should be 4, 8 or 12
+            if isfield(studyPar,'TimeEncodedMatrixSize') && ~isempty(studyPar.TimeEncodedMatrixSize) || ... % Should be 4, 8 or 12
                     isfield(studyPar,'TimeEncodedMatrixType') % Natural or walsh
                 bTimeEncoded = true;
             end
