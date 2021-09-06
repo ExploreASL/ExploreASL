@@ -56,7 +56,12 @@ function x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyPar, x.Version);
 	
 	% Make the output directory and save the description
-	xASL_adm_CreateDir(imPar.BidsRoot);
+    if xASL_exist(imPar.BidsRoot,'dir')
+        fprintf('The rawdata BIDS directory exists already...\n');
+    else
+        xASL_adm_CreateDir(imPar.BidsRoot);
+    end
+	
 	spm_jsonwrite(fullfile(imPar.BidsRoot,[bidsPar.datasetDescription.filename '.json']),datasetDescription);
 	
 	%% 3. Go through all subjects and check all the M0 and ASLs and modify the JSONs

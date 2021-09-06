@@ -31,7 +31,14 @@ function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
     bidsLabel = xASL_imp_CheckForAliasInVisit(imPar,nameSubjectSession);
     
     % Make a subject directory
-    xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]));
+    subjectDirectory = fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]);
+    if xASL_exist(subjectDirectory,'dir')
+        fprintf('Subject %s exists in the rawdata BIDS directory already...\n', ['sub-' bidsLabel.subject]);
+        fprintf('We do not want to overwrite existing data. Skipping this subject...\n');
+        return
+    else
+        xASL_adm_CreateDir(subjectDirectory);
+    end
     
     
     %% 2. Process the anat & perfusion files
