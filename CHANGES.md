@@ -14,17 +14,17 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 
 ### Feature improvements
 
-* Issue #182 & #721: Option to use template WM and contour for alignment QC
+* Issues #182, #721: Option to use template WM and contour for alignment QC
 * Issue #187: Load **NIfTI** as **UINT8** or **INT16** if not floating point
 * Issue #204: Development version of scripts for cluster testing of **ExploreASL**
 * Issue #311: Generalize TSV writing behavior of **ExploreASL**
 * Issue #412: Make sure that the regular expressions for files are case insensitive
-* Issue #442: Added default T1-time values for different field- strengths
+* Issue #442: Added default T1-time values for different field-strengths than 3T
 * Issue #566: Basic motion correction for Hadamard and multi-TE and multi-PLD
 * Issue #569: Minor fix in setting up **FSL**, issuing a warning when FSL version<6, and testing `bUseBasilQuantification` in both a **2D** and **3D** ASL dataset
 * Issue #574: Update unit tests regarding backwards compatibility
-* Issue #575, #754, #757 & #770: Simplification/revamp of some scripts that check image flips and report on them
-* Issue #595: Save NIfTI as UINT8 or INT16 if the values are integers
+* Issues #575, #754, #757, #770: Simplification/revamp of some scripts that check image flips and report on them
+* Issue #595: Save **NIfTI** as **UINT8** or **INT16** if the values are integers
 * Issue #611: Adapt `participants.tsv` to **BIDS** format
 * Issue #639: New BIDS fields defined for TimeEncoded and automatic import of TimeEncoded data from FME
 * Issue #680: `xASL_im_Lesion2Mask`: Separate masks in 4D NIfTI if they are not mutually exclusive
