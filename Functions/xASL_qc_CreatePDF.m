@@ -31,7 +31,7 @@ function xASL_qc_CreatePDF(x, DoSubject)
 % 
 % EXAMPLE: xASL_qc_CreatePDF(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 
 if ~usejava('jvm') % only if JVM loaded
@@ -48,21 +48,30 @@ if length(DoSubject)~=1
     warning('Too many indices provided for PDF creation! Using first subject only');
 end
 
+% Determine x.mat file
 PathX = fullfile(x.dir.SUBJECTDIR,'x.mat');
 
+% Check if x.mat file exists already
 if ~exist(PathX, 'file')
     warning([PathX ' didnt exist, skipping xASL_qc_CreateOutputPDF']);
     return;
 end
-x = xASL_adm_LoadX(x, PathX, false); % assume memory x is newer than x.mat
+x = xASL_adm_LoadX(x, PathX, false); % Assume memory x is newer than x.mat
 
+% Determine subject and session
 SuSeID = [x.SUBJECTS{DoSubject(1)} '_' x.SESSIONS{1}];
 iSubjSess = (DoSubject(1)-1)*x.dataset.nSessions+1;
 
+% Make sure that the directory exists
 PrintDir = fullfile(x.D.ROOT, x.SUBJECTS{DoSubject(1)});
 xASL_adm_CreateDir(PrintDir);
-PrintFile = ['xASL_Report_' x.SUBJECTS{DoSubject(1)} '.pdf'];
-xASL_delete(PrintFile);
+
+% Delete existing xASL report files
+ExistingPrintFiles = xASL_adm_GetFileList(pwd, '^xASL_Report_.+$');
+if ~isempty(ExistingPrintFiles)
+    xASL_delete(ExistingPrintFiles{1});
+end
+PrintFile = ['xASL_Report_' x.SUBJECTS{DoSubject(1)} '.pdf']; % Here the _1 is missing, who do we get the correct number here?
 PrintPath = fullfile(PrintDir, PrintFile);        
 
 try
