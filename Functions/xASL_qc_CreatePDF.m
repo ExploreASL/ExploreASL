@@ -71,7 +71,7 @@ ExistingPrintFiles = xASL_adm_GetFileList(pwd, '^xASL_Report_.+$');
 if ~isempty(ExistingPrintFiles)
     xASL_delete(ExistingPrintFiles{1});
 end
-PrintFile = ['xASL_Report_' x.SUBJECTS{DoSubject(1)} '.pdf']; % Here the _1 is missing, who do we get the correct number here?
+PrintFile = ['xASL_Report_' x.SUBJECTS{DoSubject(1)} '.pdf'];
 PrintPath = fullfile(PrintDir, PrintFile);        
 
 try
@@ -121,7 +121,7 @@ try
                     Str{iField}(iV).name = StrucFields{iField}{iV};
                 else
                     Str{iField}(iV).name = StrucFields{iField}{iV}; % avoid redundancy
-%                     Str{iField}(iV).name = [OutputFields{iField} '_' StrucFields{iField}{iV}];
+                    % Str{iField}(iV).name = [OutputFields{iField} '_' StrucFields{iField}{iV}];
                 end
             else
                 Str{iField}(iV).name = StrucFields{iField}{iV};
@@ -254,8 +254,9 @@ catch ME
     warning(ME.message);
 end
 
+%% Clean-up (add empty line, close the Matlab figure)
 fprintf('\n');
-close all; % close the Matlab figure
+close all;
 
 
 end
