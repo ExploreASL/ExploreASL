@@ -75,19 +75,19 @@ UnitTest.tests(2).passed = testCondition;
 %% Test run 3
 
 % Give your individual subtest a name
-UnitTest.tests(3).testname = 'Test these symbols: ÄÖÜäöü/\';
+UnitTest.tests(3).testname = 'Test these symbols: Ã„Ã–ÃœÃ¤Ã¶Ã¼/\';
 
 % Start the test
 testTime = tic;
 
 % Run your test here
-strOut = xASL_adm_CorrectName('abcÄÖÜäöü/\/\/\def');
+strOut = xASL_adm_CorrectName('abcÃ„Ã–ÃœÃ¤Ã¶Ã¼/\/\/\def');
 
 % Define one or multiple test conditions here
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~strcmp(strOut,'abcÄÖÜäöü_def')
+if ~strcmp(strOut,'abcÃ„Ã–ÃœÃ¤Ã¶Ã¼_def')
     testCondition = false; 
 end
 
