@@ -74,13 +74,13 @@ y3 = xASL_stat_StdNan(C);
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~(mean(y1)-stdA<0.0001)
+if ~(mean(y1)-stdA<0.001)
     testCondition = false;
 end
-if ~(mean(mean(y2))-stdB<0.0001)
+if ~(mean(mean(y2))-stdB<0.001)
     testCondition = false;
 end
-if ~(mean(mean(mean(y3)))-stdC<0.0001)
+if ~(mean(mean(mean(y3)))-stdC<0.001)
     testCondition = false;
 end
 
