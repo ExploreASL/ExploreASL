@@ -133,7 +133,7 @@ else
     else
         %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
-            [x,ScaleImage] = xASL_quant_SinglePLD_ApplyLabelDecayScaleFactor(x,ScaleImage);
+            ScaleImage = xASL_quant_SinglePLD_ApplyLabelDecayScaleFactor(x, ScaleImage);
         else
             warning('Please define both LabelingType and LabelingDuration of this dataset...');
         end
@@ -282,7 +282,7 @@ end
 
 
 %% Determine Label Decay Scale Factor
-function [x,ScaleImage] = xASL_quant_SinglePLD_ApplyLabelDecayScaleFactor(x,ScaleImage)
+function ScaleImage = xASL_quant_SinglePLD_ApplyLabelDecayScaleFactor(x, ScaleImage)
 
     switch x.Q.nCompartments
         case 1 % single-compartment model
