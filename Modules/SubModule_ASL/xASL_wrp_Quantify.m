@@ -215,32 +215,28 @@ if strcmpi(x.Q.M0,'separate_scan')
     % Check echo times
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
         
-        % Fetch multi-TE sequences
-        x.dataset.nTEofASL = numel(ASL_parms.EchoTime);
-        x.dataset.nTEofM0 = numel(M0_parms.EchoTime);
-        
-        % Print warning if TE numbers do not match
-        if ~isequal(x.dataset.nTEofASL,x.dataset.nTEofM0)
-            warning('Number of TEs of ASL and M0 are unequal...');
-        end
-        
+		% Print warning if TE numbers do not match
+		if numel(ASL_parms.EchoTime) ~= numel(M0_parms.EchoTime)
+			warning('Number of TEs of ASL and M0 are unequal...');
+		end
+		
         % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
-        if (x.dataset.nTEofASL==x.dataset.nTEofM0) && (x.dataset.nTEofASL==1 && x.dataset.nTEofM0==1)
+        if (numel(ASL_parms.EchoTime)==1) && (numel(M0_parms.EchoTime)==1)
             if ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.05)
                 % Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
                 warning('TE of ASL and M0 are unequal. Check geometric distortion...');
             end
-        else
+		else
             fprintf('Warning: multi-TE processing still work in progress...\n');
         end
 
         % Correction factor and name for 3D spiral sequences
         if strcmpi(x.Q.Sequence,'3D_spiral')
-           CorrFactor = x.Q.T2;
-           CorrName = 'T2';
+			CorrFactor = x.Q.T2;
+			CorrName = 'T2';
         else % assume T2* signal decay 2D_EPI or 3D GRASE
-            CorrFactor = x.Q.T2star;
-            CorrName = 'T2star';
+			CorrFactor = x.Q.T2star;
+			CorrName = 'T2star';
         end
 
         % Correct M0 for any EchoTime differences between ASL & M0
@@ -248,7 +244,7 @@ if strcmpi(x.Q.M0,'separate_scan')
             ScalingASL = exp(ASL_parms.EchoTime/CorrFactor);
             ScalingM0 = exp(M0_parms.EchoTime/CorrFactor);
             % Check if TE numbers match
-            if isequal(x.dataset.nTEofASL,x.dataset.nTEofM0) && (x.dataset.nTEofASL==1 && x.dataset.nTEofM0==1)
+            if (numel(ASL_parms.EchoTime)==1) && (numel(M0_parms.EchoTime)==1)
                 M0_im = M0_im.*ScalingM0./ScalingASL;
                 fprintf('Delta TE between ASL %s ms & M0 %s ms, for %s, assuming %s decay of arterial blood, factor applied to M0: %s\n', ...
                     num2str(ASL_parms.EchoTime),num2str(M0_parms.EchoTime),...
