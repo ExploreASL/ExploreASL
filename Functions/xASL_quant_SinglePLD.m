@@ -132,40 +132,18 @@ else
         PWI = xASL_quant_Basil(PWI, x);
     else
         %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
-        switch x.Q.nCompartments
-            case 1 % single-compartment model
-                switch lower(x.Q.LabelingType)
-                    case 'pasl'
-                        DivisionFactor = x.Q.LabelingDuration;
-                        fprintf('%s\n','Using single-compartment PASL');
-                    case 'casl'
-                        DivisionFactor = x.Q.BloodT1 .* (1 - exp(-x.Q.LabelingDuration./x.Q.BloodT1));
-                        fprintf('%s\n','Using single-compartment CASL');
-                end
-
-                ScaleImage = exp((ScaleImage./x.Q.BloodT1)) ./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
-
-            case 2 % dual-compartment model
-                switch lower(x.Q.LabelingType)
-                    case 'pasl'
-                        DivisionFactor = x.Q.LabelingDuration;
-                        ScaleImage = exp((x.Q.ATT./x.Q.BloodT1)).*exp(((ScaleImage-x.Q.ATT)./x.Q.TissueT1))./ (2.*x.Q.LabelingEfficiency.*DivisionFactor);
-                        fprintf('%s\n','Using dual compartment PASL');
-                    case 'casl'
-                        DivisionFactor = x.Q.TissueT1 .* (exp((min(x.Q.ATT-ScaleImage,0))./x.Q.TissueT1) - exp((min(x.Q.ATT-x.Q.LabelingDuration-ScaleImage,0))./x.Q.TissueT1));
-                        ScaleImage = exp((x.Q.ATT./x.Q.BloodT1))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
-                        fprintf('%s\n','Using dual compartment CASL');
-                end
-
-            otherwise
-                error('Unknown x.Q.nCompartments');
+        if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
+            [x,ScaleImage] = xASL_quant_SinglePLD_ApplyLabelDecayScaleFactor(x,ScaleImage);
+        else
+            warning('Please define both LabelingType and LabelingDuration of this dataset...');
         end
 
-
         %% 3    Scaling to physiological units
-        ScaleImage = ScaleImage.*60000.*100.*x.Q.Lambda;
+        
         % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
-        % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
+        % (& old Siemens sequence also didn't need the 1 gr->100 gr conversion)
+        ScaleImage = ScaleImage.*60000.*100.*x.Q.Lambda;
+        
     end
 end
 
@@ -301,3 +279,41 @@ end
 
 
 end
+
+
+%% Determine Label Decay Scale Factor
+function [x,ScaleImage] = xASL_quant_SinglePLD_ApplyLabelDecayScaleFactor(x,ScaleImage)
+
+    switch x.Q.nCompartments
+        case 1 % single-compartment model
+            switch lower(x.Q.LabelingType)
+                case 'pasl'
+                    DivisionFactor = x.Q.LabelingDuration;
+                    fprintf('%s\n','Using single-compartment PASL');
+                case 'casl'
+                    DivisionFactor = x.Q.BloodT1 .* (1 - exp(-x.Q.LabelingDuration./x.Q.BloodT1));
+                    fprintf('%s\n','Using single-compartment CASL');
+            end
+
+            ScaleImage = exp((ScaleImage./x.Q.BloodT1)) ./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
+
+        case 2 % dual-compartment model
+            switch lower(x.Q.LabelingType)
+                case 'pasl'
+                    DivisionFactor = x.Q.LabelingDuration;
+                    ScaleImage = exp((x.Q.ATT./x.Q.BloodT1)).*exp(((ScaleImage-x.Q.ATT)./x.Q.TissueT1))./ (2.*x.Q.LabelingEfficiency.*DivisionFactor);
+                    fprintf('%s\n','Using dual compartment PASL');
+                case 'casl'
+                    DivisionFactor = x.Q.TissueT1 .* (exp((min(x.Q.ATT-ScaleImage,0))./x.Q.TissueT1) - exp((min(x.Q.ATT-x.Q.LabelingDuration-ScaleImage,0))./x.Q.TissueT1));
+                    ScaleImage = exp((x.Q.ATT./x.Q.BloodT1))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
+                    fprintf('%s\n','Using dual compartment CASL');
+            end
+
+        otherwise
+            error('Unknown x.Q.nCompartments');
+    end
+
+end
+
+
+
