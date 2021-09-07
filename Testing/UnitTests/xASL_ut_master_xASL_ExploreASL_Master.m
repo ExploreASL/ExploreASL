@@ -746,30 +746,29 @@ else
 end
 
 % SubjectSession directory
-subjectSessionDir = fullfile(droTestPatient,'derivatives','ExploreASL',[droSubject '_1']);
+pathsTest.xASLdir = fullfile(droTestPatient,'derivatives','ExploreASL');
+pathsTest.subjectSessionDir = fullfile(droTestPatient,'derivatives','ExploreASL',[droSubject '_1']);
 
 % Check files and folders
-if ~exist(subjectSessionDir,'dir')
+if ~exist(pathsTest.subjectSessionDir,'dir')
     testCondition = false; % Test failed
 end
 if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'file')
     testCondition = false; % Test failed
 end
 
-% ...
-
 % Compare image data
-groundTruthM0File = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','003_ground_truth_m0.nii');
-groundTruthPerfusionFile = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','003_ground_truth_perfusion_rate.nii');
-derivedM0File = fullfile(subjectSessionDir,'ASL_1','M0.nii');
-derivedCBFFile = fullfile(droTestPatient,'derivatives','ExploreASL','Population','qCBF_sub-Sub1_ASL_1.nii');
+pathsTest.groundTruthM0File = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','003_ground_truth_m0.nii');
+pathsTest.groundTruthPerfusionFile = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','003_ground_truth_perfusion_rate.nii');
+pathsTest.derivedM0File = fullfile(pathsTest.subjectSessionDir,'ASL_1','M0.nii');
+pathsTest.derivedCBFFile = fullfile(pathsTest.xASLdir,'Population','qCBF_sub-Sub1_1_ASL_1.nii');
 
 try
     % Load images
-    imRefM0 = xASL_io_Nifti2Im(groundTruthM0File);
-    imRefPerf = xASL_io_Nifti2Im(groundTruthPerfusionFile);
-    imDerM0 = xASL_io_Nifti2Im(derivedM0File);
-    imDerCBF = xASL_io_Nifti2Im(derivedCBFFile);
+    imRefM0 = xASL_io_Nifti2Im(pathsTest.groundTruthM0File);
+    imRefPerf = xASL_io_Nifti2Im(pathsTest.groundTruthPerfusionFile);
+    imDerM0 = xASL_io_Nifti2Im(pathsTest.derivedM0File);
+    imDerCBF = xASL_io_Nifti2Im(pathsTest.derivedCBFFile);
     
     % Test comparisons ... (not finished, work in progress)
     RMSE.M0 = xASL_ut_GetRMSE(imRefM0, imDerM0);
