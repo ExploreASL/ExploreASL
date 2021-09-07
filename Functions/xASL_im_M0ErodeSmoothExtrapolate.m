@@ -72,19 +72,7 @@ end
 
 %% ------------------------------------------------------------------------------------------
 %% Mask 2) Create intensity-based mask to remove extracranial signal
-SortInt = sort(ImIn(:));
-SortInt = SortInt(~isnan(SortInt));
-ThresholdN = SortInt(round(0.7*length(SortInt)));
-
-% Remove peak signal as well
-ThresholdN2 = SortInt(round(0.999*length(SortInt)));
-% Combine these masks
-if ExistpGMpWM
-    Mask2 = Mask1 & (ImIn>ThresholdN) & (ImIn<ThresholdN2);
-else
-    Mask2 = (ImIn>ThresholdN) & (ImIn<ThresholdN2);
-    GMmask = ImIn>SortInt(round(0.85*length(SortInt))) & ImIn<SortInt(round(0.95*length(SortInt)));
-end
+[Mask2,GMmask] = xASL_im_M0_CreateIntensityBasedMask(ImIn);
 
 
 %% ------------------------------------------------------------------------------------------
@@ -187,3 +175,37 @@ xASL_vis_Imwrite(IM, OutputFile);
 
 
 end
+
+
+%% Create Intensity-Based Mask
+function [Mask2,GMmask] = xASL_im_M0_CreateIntensityBasedMask(ImIn)
+
+    % Default
+    Mask2 = zeros(size(ImIn));
+    GMmask = zeros(size(ImIn));
+
+    % Get NaNs
+    SortInt = sort(ImIn(:));
+    SortInt = SortInt(~isnan(SortInt));
+    
+    % Create masks
+    if ~isempty(SortInt)
+        ThresholdN = SortInt(round(0.7*length(SortInt)));
+
+        % Remove peak signal as well
+        ThresholdN2 = SortInt(round(0.999*length(SortInt)));
+
+        % Combine these masks
+        if ExistpGMpWM
+            Mask2 = Mask1 & (ImIn>ThresholdN) & (ImIn<ThresholdN2);
+        else
+            Mask2 = (ImIn>ThresholdN) & (ImIn<ThresholdN2);
+            GMmask = ImIn>SortInt(round(0.85*length(SortInt))) & ImIn<SortInt(round(0.95*length(SortInt)));
+        end
+        
+    else
+        warning('M0 image only contains NaN values...');
+    end
+
+end
+
