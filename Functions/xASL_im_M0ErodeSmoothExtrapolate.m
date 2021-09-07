@@ -47,6 +47,10 @@ function [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
 % Also allow path input
 ImIn = xASL_io_Nifti2Im(ImIn);
 
+% Initialize the defaults
+GMmask = zeros(size(ImIn));
+Mask1  = zeros(size(ImIn));
+Mask2  = zeros(size(ImIn));
 
 %% ------------------------------------------------------------------------------------------
 %% Mask 1) Load segmentations, create structural mask
@@ -72,14 +76,32 @@ end
 
 %% ------------------------------------------------------------------------------------------
 %% Mask 2) Create intensity-based mask to remove extracranial signal
-[Mask2,GMmask] = xASL_im_M0_CreateIntensityBasedMask(ImIn);
+% Get NaNs
+SortInt = sort(ImIn(:));
+SortInt = SortInt(~isnan(SortInt));
 
+% Create masks
+if ~isempty(SortInt)
+	ThresholdN = SortInt(round(0.7*length(SortInt)));
+
+	% Remove peak signal as well
+	ThresholdN2 = SortInt(round(0.999*length(SortInt)));
+
+	% Combine these masks
+	if ExistpGMpWM
+		Mask2 = Mask1 & (ImIn>ThresholdN) & (ImIn<ThresholdN2);
+	else
+		Mask2 = (ImIn>ThresholdN) & (ImIn<ThresholdN2);
+		GMmask = ImIn>SortInt(round(0.85*length(SortInt))) & ImIn<SortInt(round(0.95*length(SortInt)));
+	end
+else
+	warning('M0 image only contains NaN values...');
+end
 
 %% ------------------------------------------------------------------------------------------
 %% Mask 3) Erode the combined masks
 fprintf('%s\n','Erode M0 mask with 2-voxel sphere');
 Mask3 = xASL_im_DilateErodeFull(Mask2, 'erode', xASL_im_DilateErodeSphere(2));
-
 
 %% ------------------------------------------------------------------------------------------
 %% Mask 4) Determine any odd borders
@@ -104,7 +126,6 @@ MadN = xASL_stat_MadNan(DiffIMvalues);
 HiThresh = MedianN+4.5*MadN;
 % here we remove too many parts, but this is not bad, as it will be smoothed & extrapolated, anyway.
 Mask4 = Mask3 & ~(DiffIM>HiThresh);
-
 
 %% ------------------------------------------------------------------------------------------
 %% 5) Smoothing
@@ -161,7 +182,6 @@ NewGMM0 = median(NewGMM0);
 RatioN = OldGMM0/NewGMM0;
 ImOut = ImOut.*RatioN;
 
-
 %% ------------------------------------------------------------------------------------------
 %% 8) Print visual QC figure
 
@@ -173,39 +193,4 @@ OutputFile = fullfile(x.D.M0regASLdir,['M0_im_proc_' x.P.SubjectID '.jpg']);
 fprintf('%s\n',['Writing ' OutputFile]);
 xASL_vis_Imwrite(IM, OutputFile);
 
-
 end
-
-
-%% Create Intensity-Based Mask
-function [Mask2,GMmask] = xASL_im_M0_CreateIntensityBasedMask(ImIn)
-
-    % Default
-    Mask2 = zeros(size(ImIn));
-    GMmask = zeros(size(ImIn));
-
-    % Get NaNs
-    SortInt = sort(ImIn(:));
-    SortInt = SortInt(~isnan(SortInt));
-    
-    % Create masks
-    if ~isempty(SortInt)
-        ThresholdN = SortInt(round(0.7*length(SortInt)));
-
-        % Remove peak signal as well
-        ThresholdN2 = SortInt(round(0.999*length(SortInt)));
-
-        % Combine these masks
-        if ExistpGMpWM
-            Mask2 = Mask1 & (ImIn>ThresholdN) & (ImIn<ThresholdN2);
-        else
-            Mask2 = (ImIn>ThresholdN) & (ImIn<ThresholdN2);
-            GMmask = ImIn>SortInt(round(0.85*length(SortInt))) & ImIn<SortInt(round(0.95*length(SortInt)));
-        end
-        
-    else
-        warning('M0 image only contains NaN values...');
-    end
-
-end
-
