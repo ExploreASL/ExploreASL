@@ -229,9 +229,9 @@ if strcmpi(x.Q.M0,'separate_scan')
             if ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.05)
                 % Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
                 warning('TE of ASL and M0 are unequal. Check geometric distortion...');
-            else
-                fprintf('Warning: multi-TE processing still work in progress...\n');
             end
+        else
+            fprintf('Warning: multi-TE processing still work in progress...\n');
         end
 
         % Correction factor and name for 3D spiral sequences
