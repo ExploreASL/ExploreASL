@@ -216,8 +216,8 @@ if strcmpi(x.Q.M0,'separate_scan')
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
         
         % Fetch multi-TE sequences
-        x.dataset.nTEofASL = size(ASL_parms.EchoTime,1);
-        x.dataset.nTEofM0 = size(M0_parms.EchoTime,1);
+        x.dataset.nTEofASL = numel(ASL_parms.EchoTime);
+        x.dataset.nTEofM0 = numel(M0_parms.EchoTime);
         
         % Print warning if TE numbers do not match
         if ~isequal(x.dataset.nTEofASL,x.dataset.nTEofM0)
@@ -225,7 +225,7 @@ if strcmpi(x.Q.M0,'separate_scan')
         end
         
         % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
-        if isequal(x.dataset.nTEofASL,x.dataset.nTEofM0) && (x.dataset.nTEofASL==1 && x.dataset.nTEofM0==1)
+        if (x.dataset.nTEofASL==x.dataset.nTEofM0) && (x.dataset.nTEofASL==1 && x.dataset.nTEofM0==1)
             if ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.05)
                 % Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
                 warning('TE of ASL and M0 are unequal. Check geometric distortion...');
