@@ -211,13 +211,28 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
 if strcmpi(x.Q.M0,'separate_scan')
+    
+    % Check echo times
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
+        
+        % Fetch multi-TE sequences
+        x.dataset.nTEofASL = size(ASL_parms.EchoTime,1);
+        x.dataset.nTEofM0 = size(M0_parms.EchoTime,1);
+        
+        % Print warning if TE numbers do not match
+        if ~isequal(x.dataset.nTEofASL,x.dataset.nTEofM0)
+            warning('Number of TEs of ASL and M0 are unequal...');
+        end
+        
         % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
-        if  ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.05)
+        if isequal(x.dataset.nTEofASL,x.dataset.nTEofM0) && ...
+                (ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ...
+                 ASL_parms.EchoTime>(M0_parms.EchoTime*1.05))
             % Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
-            warning('TE of ASL and M0 were unequal! Check geometric distortion');
+            warning('TE of ASL and M0 are unequal. Check geometric distortion...');
         end
 
+        % Correction factor and name for 3D spiral sequences
         if strcmpi(x.Q.Sequence,'3D_spiral')
            CorrFactor = x.Q.T2;
            CorrName = 'T2';
@@ -230,11 +245,19 @@ if strcmpi(x.Q.M0,'separate_scan')
         if x.Q.ApplyQuantification(4)
             ScalingASL = exp(ASL_parms.EchoTime/CorrFactor);
             ScalingM0 = exp(M0_parms.EchoTime/CorrFactor);
-            M0_im = M0_im.*ScalingM0./ScalingASL;
-            fprintf('%s\n', ['Delta TE between ASL ' num2str(ASL_parms.EchoTime) 'ms & M0 ' num2str(M0_parms.EchoTime) 'ms, for ' x.Q.Sequence ', assuming ' CorrName ' decay of arterial blood, factor applied to M0: ' num2str(ScalingM0/ScalingASL)]);
+            % Check if TE numbers match
+            if isequal(x.dataset.nTEofASL,x.dataset.nTEofM0)
+                M0_im = M0_im.*ScalingM0./ScalingASL;
+                fprintf('Delta TE between ASL %s ms & M0 %s ms, for %s, assuming %s decay of arterial blood, factor applied to M0: %s\n', ...
+                    num2str(ASL_parms.EchoTime),num2str(M0_parms.EchoTime),...
+                    x.Q.Sequence, CorrName, num2str(ScalingM0/ScalingASL));
+            else
+                fprintf('Mismatch of ASL & M0 TEs...\n');
+            end
         end
+        
     else
-        warning('Could not compare TEs from ASL & M0, JSON fields missing!');
+        warning('Could not compare TEs from ASL & M0, JSON fields missing...');
     end
 end
 
