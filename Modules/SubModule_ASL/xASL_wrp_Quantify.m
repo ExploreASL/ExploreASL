@@ -225,11 +225,13 @@ if strcmpi(x.Q.M0,'separate_scan')
         end
         
         % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
-        if isequal(x.dataset.nTEofASL,x.dataset.nTEofM0) && ...
-                (ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ...
-                 ASL_parms.EchoTime>(M0_parms.EchoTime*1.05))
-            % Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
-            warning('TE of ASL and M0 are unequal. Check geometric distortion...');
+        if isequal(x.dataset.nTEofASL,x.dataset.nTEofM0) && (x.dataset.nTEofASL==1 && x.dataset.nTEofM0==1)
+            if ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.05)
+                % Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
+                warning('TE of ASL and M0 are unequal. Check geometric distortion...');
+            else
+                fprintf('Warning: multi-TE processing still work in progress...\n');
+            end
         end
 
         % Correction factor and name for 3D spiral sequences
@@ -246,13 +248,13 @@ if strcmpi(x.Q.M0,'separate_scan')
             ScalingASL = exp(ASL_parms.EchoTime/CorrFactor);
             ScalingM0 = exp(M0_parms.EchoTime/CorrFactor);
             % Check if TE numbers match
-            if isequal(x.dataset.nTEofASL,x.dataset.nTEofM0)
+            if isequal(x.dataset.nTEofASL,x.dataset.nTEofM0) && (x.dataset.nTEofASL==1 && x.dataset.nTEofM0==1)
                 M0_im = M0_im.*ScalingM0./ScalingASL;
                 fprintf('Delta TE between ASL %s ms & M0 %s ms, for %s, assuming %s decay of arterial blood, factor applied to M0: %s\n', ...
                     num2str(ASL_parms.EchoTime),num2str(M0_parms.EchoTime),...
                     x.Q.Sequence, CorrName, num2str(ScalingM0/ScalingASL));
             else
-                fprintf('Mismatch of ASL & M0 TEs...\n');
+                fprintf('Warning: multi-TE processing still work in progress...\n');
             end
         end
         
