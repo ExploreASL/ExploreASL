@@ -130,6 +130,8 @@ else
 
     if bUseBasilQuantification
         [PWI, resultFSL] = xASL_quant_Basil(PWI, x);
+    else
+        resultFSL = NaN;
     end
        
     if ~bUseBasilQuantification || isnan(resultFSL)
