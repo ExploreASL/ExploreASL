@@ -96,6 +96,8 @@ if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
 		x.Q.T2star = 48; % default for 3T
 	elseif x.MagneticFieldStrength == 7
 		x.Q.T2star = 35.6; % Voelker 2021
+	else
+		x.Q.T2star = 48;
 		fprintf('%s\n',['Warning: Unknown T2star for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 	end
 end
@@ -103,6 +105,7 @@ if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
 	if x.MagneticFieldStrength == 3
 		x.Q.T2 = 180; % default for 3T (ref Jean Chen, MRM 2009)
 	else
+		x.Q.T2 = 180;
 		fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 	end
 end
