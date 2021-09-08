@@ -60,6 +60,7 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 * Bug #806: If each slice has a separate scale slope but these are identical, this shouldn't report a warning
 * Bug #808: Import submodules for each run which is being converted include logging feature as well as user feedback now
 * Bug #810: Correctly convert multi-session **BIDS2Legacy** even if not all subjects have multiple sessions
+* Bug #818: Prevent pipeline crashes for FSL/BASIL features where FSL directory can not be found
 
 
 ### Other improvements
