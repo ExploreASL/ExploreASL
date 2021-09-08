@@ -1,4 +1,4 @@
-function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
+function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
 %xASL_quant_Basil Perform quantification using FSL BASIL
 % FORMAT: [CBF_nocalib] = xASL_quant_Basil(PWI, x)
 % 
@@ -8,6 +8,9 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
 %
 % OUTPUT:
 % CBF_nocalib       - Quantified CBF image
+% resultFSL         - describes if the execution was successful
+%                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs quantification of the PWI using the FSL Basil pipeline. Final calibration to
 %              physiological units is performed by dividing the quantified PWI by the M0 image/value.
@@ -22,11 +25,10 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: CBF_nocalib = xASL_quant_Basil(PWI, x);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2021 ExploreASL 
+    
 
-    
-    
-    
+    %% Admin
     fprintf('%s\n','Quantification CBF using FSL Basil:');
     
     
@@ -69,8 +71,14 @@ function [CBF_nocalib] = xASL_quant_Basil(PWI, x)
     %% 5. Run Basil and retrieve CBF output
     
     % args.bAutomaticallyDetectFSL=1;
-    xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' BasilOptions], x);
-
+    [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' BasilOptions], x);
+    
+    % Check if FSL failed
+    if isnan(resultFSL)
+        CBF_nocalib = [];
+        return
+    end
+    
     fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
     fprintf('%s\n', '/.../fsl/bin/basil: line 124: imcp: command not found');
     

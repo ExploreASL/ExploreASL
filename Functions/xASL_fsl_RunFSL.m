@@ -16,6 +16,8 @@ function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessVa
 %                     DEFAULT=10)
 % OUTPUT:
 %   x               - as input, outputting FSL dir (OPTIONAL)
+%   Result1         - Result1 describes if the execution was successful
+%                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function runs an FSL command from ExploreASL:
@@ -29,12 +31,10 @@ function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessVa
 % 
 % EXAMPLE: xASL_fsl_RunFSL(FSLCommand, x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
-
+% Copyright (C) 2015-2021 ExploreASL
 
 
 %% Admin
-
 if nargin<2 || isempty(x)
     x = struct;
 end
@@ -48,7 +48,8 @@ if nargin<5 || isempty(bVerbose)
     bVerbose = true;
 end
 
-Result1 = NaN; % default
+% Defaults
+Result1 = NaN;
 
 %% Find FSL directory
 if ~isfield(x.external,'bAutomaticallyDetectFSL')
@@ -58,6 +59,7 @@ end
 [FSLdir, x, RootFSLdir] = xASL_fsl_SetFSLdir(x);
 
 if min(isnan(FSLdir))
+    % Script will return Result1=NaN to show that there is no FSL
     warning('No FSL installation found, skipping FSL function');
     return;
 end
