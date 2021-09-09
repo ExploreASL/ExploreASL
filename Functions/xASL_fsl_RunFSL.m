@@ -60,6 +60,7 @@ end
 
 if min(isnan(FSLdir))
     % Script will return Result1=NaN to show that there is no FSL
+    % installation found
     warning('No FSL installation found, skipping FSL function');
     return;
 end
