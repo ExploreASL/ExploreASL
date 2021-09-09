@@ -129,12 +129,16 @@ else
 
 
     if bUseBasilQuantification
+        % Here we perform FSL BASIL
         [PWI, resultFSL] = xASL_quant_Basil(PWI, x);
-    else
-        resultFSL = NaN;
+        % If resultFSL is not 0, something went wrong
+        % This will issue a warning inside xASL_quant_Basil
     end
        
-    if ~bUseBasilQuantification || isnan(resultFSL)
+    if ~bUseBasilQuantification || resultFSL~=0
+        % This part should only run when we don't use FSL BASIL
+        % or as a fallback when FSL BASIL crashed
+        
         %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
             ScaleImage = xASL_quant_SinglePLD_ApplyLabelDecayScaleFactor(x, ScaleImage);
