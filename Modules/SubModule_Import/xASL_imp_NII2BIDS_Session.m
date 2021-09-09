@@ -39,7 +39,14 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions
             sessionLabel = ['ses-' listSessions{iSession}(5:end)];
         end
         
-        xASL_adm_CreateDir(fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject], sessionLabel,'perf'));
+        % Create directory if it does not exist already
+        sessionDirectory = fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject], sessionLabel);
+        if xASL_exist(sessionDirectory,'dir')
+            fprintf('The session directory %s of subject %s exists already...\n',sessionLabel,['sub-' bidsLabel.subject]);
+        end
+        
+        sessionPerfusionDirectory = fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject], sessionLabel,'perf');
+        xASL_adm_CreateDir(sessionPerfusionDirectory);
         
         inSessionPath = fullfile(imPar.TempRoot, nameSubjectSession, listSessions{iSession});
         outSessionPath = fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject], sessionLabel);
