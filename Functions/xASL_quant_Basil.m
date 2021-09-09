@@ -75,8 +75,13 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     
     % Check if FSL failed
     if isnan(resultFSL)
+        warning('FSL BASIL was not found, exiting');
         CBF_nocalib = [];
         return
+    elseif resultFSL~=0
+        warning('Something went wrong running FSL BASIL');
+        CBF_nocalib = [];
+        return        
     end
     
     fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
