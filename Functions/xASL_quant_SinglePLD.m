@@ -261,13 +261,17 @@ end
 fprintf('%s\n',' model with parameters:');
 
 if x.Q.ApplyQuantification(3)
-    switch lower(x.Q.LabelingType)
-        case 'pasl'
-            fprintf('%s',['TI1 = ' num2str(x.Q.LabelingDuration) ' ms, ']);
-            fprintf('%s',['TI (ms) = ' num2str(x.Q.Initial_PLD)]);
-        case 'casl'
-            fprintf('%s',['LabelingDuration = ' num2str(x.Q.LabelingDuration) ' ms, ']);
-            fprintf('%s',['PLD (ms) = ' num2str(x.Q.Initial_PLD)]);
+    if isfield(x.Q,'LabelingDuration') && isfield(x.Q,'Initial_PLD')
+        switch lower(x.Q.LabelingType)
+            case 'pasl'
+                fprintf('%s',['TI1 = ' num2str(x.Q.LabelingDuration) ' ms, ']);
+                fprintf('%s',['TI (ms) = ' num2str(x.Q.Initial_PLD)]);
+            case 'casl'
+                fprintf('%s',['LabelingDuration = ' num2str(x.Q.LabelingDuration) ' ms, ']);
+                fprintf('%s',['PLD (ms) = ' num2str(x.Q.Initial_PLD)]);
+        end
+    else
+        fprintf('Labeling duration and initial PLD undefined...\n');
     end
 
 	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')
