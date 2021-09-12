@@ -8,6 +8,7 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
 %
 % OUTPUT:
 % CBF_nocalib       - Quantified CBF image
+%                     (if there is no FSL/BASIL installed, we return the original PWI)
 % resultFSL         - describes if the execution was successful
 %                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
 %
@@ -56,6 +57,7 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     % FIXME would be good to have a brain mask at this point
     % PM: if this would be a brainmask as well, we can skip creating a
     % dummy input image here
+    PWI_backUp = PWI; % If there is no FSL, we return the original PWI for CBF_nocalib
     PWI(isnan(PWI)) = 0;
     
     xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0);
@@ -76,11 +78,11 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     % Check if FSL failed
     if isnan(resultFSL)
         warning('FSL BASIL was not found, exiting');
-        CBF_nocalib = [];
+        CBF_nocalib = PWI_backUp;
         return
     elseif resultFSL~=0
         warning('Something went wrong running FSL BASIL');
-        CBF_nocalib = [];
+        CBF_nocalib = PWI_backUp;
         return        
     end
     
