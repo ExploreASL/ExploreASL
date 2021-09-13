@@ -36,14 +36,15 @@ function [result, x] = xASL_module_Population(x)
 %% Admin
 [x] = xASL_init_SubStructs(x);
 
+% Input check
+if x.opts.nWorkers>1 % don't run population module when ExploreASL is parallelized
+    warning('Population module should not run in parallel, skipping');
+    result = true;
+    return;
+end
+
 % Create population directory
 xASL_adm_CreateDir(x.D.PopDir);
-
-% Input check
-if x.opts.iWorker>1 % run population module only once when ExploreASL is called multiple times in parallel
-    warning(['I am worker ' xASL_num2str(x.opts.iWorker) ', population module should not run in parallel, skipping']);
-    result = true;
-end
 
 if ~isfield(x.modules.population,'bNativeSpaceAnalysis') || isempty(x.modules.population.bNativeSpaceAnalysis)
     x.modules.population.bNativeSpaceAnalysis = 0;
