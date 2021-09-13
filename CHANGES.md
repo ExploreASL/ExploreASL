@@ -14,6 +14,7 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 
 ### Feature improvements
 
+* Release issue #805: xASL_bids_BIDS2Legacy (check for empty visits), ExploreASL_Master (update unit testing), xASL_stat_StdNan (update unit testing), xASL_qc_CreatePDF (minor change related to new PDF filename), xASL_imp_DCM2NII_Subject_SortASLVolumes (minor bugfix), xASL_imp_NII2BIDS (print user feedback for existing subjects/sessions), xASL_imp_Initialize (check scan tokens), xASL_wrp_Quantify & xASL_quant_SinglePLD & xASL_quant_Basil (return error if FSL is missing), xASL_adm_GetDeprecatedFields (add BASIL field), xASL_im_M0ErodeSmoothExtrapolate (use correct defaults for robustness, add warning)
 * Issues #182, #721: Option to use template WM and contour for alignment QC
 * Issue #187: Load **NIfTI** as **UINT8** or **INT16** if not floating point
 * Issue #204: Development version of scripts for cluster testing of **ExploreASL**
