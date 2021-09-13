@@ -29,90 +29,106 @@ function xASL_test_Flavors_DCM2BIDS(baseDirImport, x)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-%% 1. Initialization
-% Initialize ExploreASL 
-if nargin < 2 || isempty(x)
-	x = ExploreASL_Initialize;
+
+    %% 1. Initialization
+    if nargin < 2 || isempty(x)
+        ExploreASL;
+    end
+
+    % Load the list of the directories
+    flavorList = xASL_adm_GetFileList(baseDirImport, [], false, [], true);
+
+    % Iterate over flavors
+    for iFlavor = 1:length(flavorList)
+        
+        % 2. DICOM -> NII+JSON (i.e. dcm2niiX)
+        ExploreASL(fullfile(baseDirImport, flavorList{iFlavor}), [1 0 0 0], 0, 0);
+        DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
+        
+        % 3. Manual curation for certain flavors
+        xASL_test_Flavors_ManualFlavors(flavorList,DirASL,iFlavor);
+        
+        % 4. Convert NII+JSON -> BIDS
+        ExploreASL(fullfile(baseDirImport, flavorList{iFlavor}), [0 1 0 0], 0, 0);
+
+    end
+
 end
 
-% Load the list of the directories
-flavorList = xASL_adm_GetFileList(baseDirImport, [], false, [], true);
+
+%% Manual curation for certain flavors
+function xASL_test_Flavors_ManualFlavors(flavorList,DirASL,iFlavor)
 
 
-for iFlavor = 1:length(flavorList)
-	
-	%% 2. DICOM -> NII+JSON (i.e. dcm2niiX)
-	ExploreASL(fullfile(baseDirImport, flavorList{iFlavor}), [1 0 0 0], 0, 0);
-	DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
-	
-	%% 3. Manual curation for certain flavors
-	switch (flavorList{iFlavor})
-		
-		% 3a. 'Siemens_PCASL_3DGRASE_VD13D_2'
-		case 'Siemens_PCASL_3DGRASE_VD13D_2'
-			
-			xASL_adm_DeleteFileList(DirASL, '^ASL4D_(32|33|34|35)_00001.*$', 1);
-			
-			nii_files = xASL_adm_GetFileList(DirASL, '^.*\.nii$', 'FPList', [], false);
-			xASL_bids_MergeNifti(nii_files, 'ASL');
-			
-			% 3b. 'Philips_PCASL_3DGRASE_5.4.1.0_TopUp_1'
-		case 'Philips_PCASL_3DGRASE_5.4.1.0_TopUp_1'
-			DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
-			
-			% xASL_Move(fullfile(DirASL, 'M0_601_00601.nii'), fullfile(DirASL, 'M0.nii'), 1);
-			% xASL_Move(fullfile(DirASL, 'M0_601_00601.json'), fullfile(DirASL, 'M0.json'), 1);
-			% xASL_Move(fullfile(DirASL, 'M0_701_00701.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
-			% xASL_Move(fullfile(DirASL, 'M0_701_00701.json'), fullfile(DirASL, 'M0PERev.json'), 1);
-			xASL_Move(fullfile(DirASL, 'M0_601_00001.nii'), fullfile(DirASL, 'M0.nii'), 1);
-			xASL_Move(fullfile(DirASL, 'M0_601_00001.json'), fullfile(DirASL, 'M0.json'), 1);
-			xASL_Move(fullfile(DirASL, 'M0_701_00001.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
-			xASL_Move(fullfile(DirASL, 'M0_701_00001.json'), fullfile(DirASL, 'M0PERev.json'), 1);
-			
-			% 3c. 'Siemens_PCASL_3DGRASE_VB17A_TopUp_1'
-		case 'Siemens_PCASL_3DGRASE_VB17A_TopUp_1'
-			imNS = xASL_io_Nifti2Im(fullfile(DirASL, 'ASL4D_NS.nii'));
-			imSS = xASL_io_Nifti2Im(fullfile(DirASL, 'ASL4D_SS.nii'));
-			imNS(:,:,:,2) = imSS;
-			xASL_io_SaveNifti(fullfile(DirASL, 'ASL4D_NS.nii'), fullfile(DirASL, 'ASL4D.nii'), imNS/10, [], 1);
-			
-			xASL_delete(fullfile(DirASL, 'ASL4D_NS.nii'));
-			xASL_delete(fullfile(DirASL, 'ASL4D_SS.nii'));
-			
-			xASL_delete(fullfile(DirASL, 'ASL4D_NS.json'));
-			xASL_Move(fullfile(DirASL, 'ASL4D_SS.json'), fullfile(DirASL, 'ASL4D.json'), 1);
-			
-			xASL_Move(fullfile(DirASL, 'M0_2.json'), fullfile(DirASL, 'M0PERev.json'), 1);
-			xASL_Move(fullfile(DirASL, 'M0_2.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
-			
-			% 3d. 'Siemens_PCASL_3DGRASE_VB17A_multiPLD_1'
-		case 'Siemens_PCASL_3DGRASE_VB17A_multiPLD_1'
-			
-			if xASL_exist(fullfile(DirASL, 'ASL4D_NS_300.nii'))
-				mTIvector = [300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000];
-				for iTI = 1:length(mTIvector)
-					if iTI>1
-						xASL_delete(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.json']));
-						xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.json']));
-						imNSSS(:,:,:,2*(iTI-1)+1) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.nii']));
-						imNSSS(:,:,:,2*(iTI-1)+2) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
-					else
-						xASL_Move(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.json']), fullfile(DirASL, 'ASL4D.json'));
-						xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.json']));
-						imNSSS = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.nii']));
-						imNSSS(:,:,:,2) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
-					end
-				end
-				xASL_io_SaveNifti(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(1)) '.nii']),...
-					fullfile(DirASL, 'ASL4D.nii'), imNSSS/10, [], 1, []);
-				for iTI = 1:length(mTIvector)
-					xASL_delete(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.nii']));
-					xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
-				end
-			end
-	end
-	
-	%% 4. Convert NII+JSON -> BIDS
-	ExploreASL(fullfile(baseDirImport, flavorList{iFlavor}), [0 1 0 0], 0, 0);
-end % for iFlavor
+    switch flavorList{iFlavor}
+
+             % 3a. 'Siemens_PCASL_3DGRASE_VD13D_2'
+        case 'Siemens_PCASL_3DGRASE_VD13D_2'
+
+            xASL_adm_DeleteFileList(DirASL, '^ASL4D_(32|33|34|35)_00001.*$', 1);
+
+            nii_files = xASL_adm_GetFileList(DirASL, '^.*\.nii$', 'FPList', [], false);
+            xASL_bids_MergeNifti(nii_files, 'ASL');
+
+            % 3b. 'Philips_PCASL_3DGRASE_5.4.1.0_TopUp_1'
+        case 'Philips_PCASL_3DGRASE_5.4.1.0_TopUp_1'
+            DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
+
+            % xASL_Move(fullfile(DirASL, 'M0_601_00601.nii'), fullfile(DirASL, 'M0.nii'), 1);
+            % xASL_Move(fullfile(DirASL, 'M0_601_00601.json'), fullfile(DirASL, 'M0.json'), 1);
+            % xASL_Move(fullfile(DirASL, 'M0_701_00701.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
+            % xASL_Move(fullfile(DirASL, 'M0_701_00701.json'), fullfile(DirASL, 'M0PERev.json'), 1);
+            xASL_Move(fullfile(DirASL, 'M0_601_00001.nii'), fullfile(DirASL, 'M0.nii'), 1);
+            xASL_Move(fullfile(DirASL, 'M0_601_00001.json'), fullfile(DirASL, 'M0.json'), 1);
+            xASL_Move(fullfile(DirASL, 'M0_701_00001.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
+            xASL_Move(fullfile(DirASL, 'M0_701_00001.json'), fullfile(DirASL, 'M0PERev.json'), 1);
+
+            % 3c. 'Siemens_PCASL_3DGRASE_VB17A_TopUp_1'
+        case 'Siemens_PCASL_3DGRASE_VB17A_TopUp_1'
+            imNS = xASL_io_Nifti2Im(fullfile(DirASL, 'ASL4D_NS.nii'));
+            imSS = xASL_io_Nifti2Im(fullfile(DirASL, 'ASL4D_SS.nii'));
+            imNS(:,:,:,2) = imSS;
+            xASL_io_SaveNifti(fullfile(DirASL, 'ASL4D_NS.nii'), fullfile(DirASL, 'ASL4D.nii'), imNS/10, [], 1);
+
+            xASL_delete(fullfile(DirASL, 'ASL4D_NS.nii'));
+            xASL_delete(fullfile(DirASL, 'ASL4D_SS.nii'));
+
+            xASL_delete(fullfile(DirASL, 'ASL4D_NS.json'));
+            xASL_Move(fullfile(DirASL, 'ASL4D_SS.json'), fullfile(DirASL, 'ASL4D.json'), 1);
+
+            xASL_Move(fullfile(DirASL, 'M0_2.json'), fullfile(DirASL, 'M0PERev.json'), 1);
+            xASL_Move(fullfile(DirASL, 'M0_2.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
+
+            % 3d. 'Siemens_PCASL_3DGRASE_VB17A_multiPLD_1'
+        case 'Siemens_PCASL_3DGRASE_VB17A_multiPLD_1'
+
+            if xASL_exist(fullfile(DirASL, 'ASL4D_NS_300.nii'))
+                mTIvector = [300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000];
+                for iTI = 1:length(mTIvector)
+                    if iTI>1
+                        xASL_delete(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.json']));
+                        xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.json']));
+                        imNSSS(:,:,:,2*(iTI-1)+1) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.nii']));
+                        imNSSS(:,:,:,2*(iTI-1)+2) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
+                    else
+                        xASL_Move(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.json']), fullfile(DirASL, 'ASL4D.json'));
+                        xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.json']));
+                        imNSSS = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.nii']));
+                        imNSSS(:,:,:,2) = xASL_io_Nifti2Im(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
+                    end
+                end
+                xASL_io_SaveNifti(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(1)) '.nii']),...
+                    fullfile(DirASL, 'ASL4D.nii'), imNSSS/10, [], 1, []);
+                for iTI = 1:length(mTIvector)
+                    xASL_delete(fullfile(DirASL, ['ASL4D_NS_' xASL_num2str(mTIvector(iTI)) '.nii']));
+                    xASL_delete(fullfile(DirASL, ['ASL4D_SS_' xASL_num2str(mTIvector(iTI)) '.nii']));
+                end
+            end
+    end
+
+
+end
+
+
+
 
