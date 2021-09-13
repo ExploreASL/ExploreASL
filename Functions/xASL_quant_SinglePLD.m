@@ -130,12 +130,12 @@ else
 
     if bUseBasilQuantification
         % Here we perform FSL BASIL
-        [PWI, resultFSL] = xASL_quant_Basil(PWI, x);
+        [PWI, ~] = xASL_quant_Basil(PWI, x);
         % If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_Basil
     end
        
-    if ~bUseBasilQuantification || resultFSL~=0
+    if ~bUseBasilQuantification
         % This part should only run when we don't use FSL BASIL
         % or as a fallback when FSL BASIL crashed
         
