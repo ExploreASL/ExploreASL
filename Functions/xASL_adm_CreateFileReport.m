@@ -6,9 +6,13 @@ function x = xASL_adm_CreateFileReport(x, bHasFLAIR, bHasMoCo, bHasM0, bHasLongi
 %
 % FORMAT:       x = xASL_adm_CreateFileReport(x, bHasFLAIR, bHasMoCo, bHasM0, bHasLongitudinal)
 % 
-% INPUT:        ...
+% INPUT:        x                 - x struct (STRUCT, REQUIRED)
+%               bHasFLAIR         - boolean, does a flair exist (BOOLEAN, REQUIRED)
+%               bHasMoCo          - boolean, does a m0co exist (BOOLEAN, REQUIRED)
+%               bHasM0            - boolean, does a m0 exist (BOOLEAN, REQUIRED)
+%               bHasLongitudinal  - boolean, is this a longitudinal dataset (BOOLEAN, REQUIRED)
 %
-% OUTPUT:       ...
+% OUTPUT:       x                 - x struct (STRUCT, REQUIRED)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Prints a summary of created files or the individual modules
@@ -30,18 +34,15 @@ function x = xASL_adm_CreateFileReport(x, bHasFLAIR, bHasMoCo, bHasM0, bHasLongi
 % missing & summarizing count.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:      x = xASL_adm_CreateFileReport(x, bHasFLAIR, bHasMoCo, bHasM0, bHasLongitudinal);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
-
-
-
-
+% Copyright 2015-2021 ExploreASL
 
 fclose all;
 if nargin<1
     error('x missing from input, please input x table');
 end
+
 % Following booleans are to determine which files/locks need to be checked
 % By default, we assume the minimal amount of image processing,
 % to avoid confusion when all data are nicely processed but
@@ -152,15 +153,24 @@ CountMissing = [0 0 0 0 0 0 0];
 
 %% -----------------------------------------------------------------------------
 %% Define where to search for
-% 1) Native space subject level
-NativeRegExp_SubjectLevel = {[x.P.STRUCT '.nii'],['c1' x.P.STRUCT '.nii'],['c2' x.P.STRUCT '.nii']};
-% 2) Native space session level
-NativeRegExp_SessionLevel = {[x.P.ASL4D '.nii']};
-% 3) MNI subject level
-MNI_subject_prefix = {['r' x.P.STRUCT],['rc1' x.P.STRUCT],['rc2' x.P.STRUCT]};
-% 4) MNI session level
-MNI_session_prefix = {['q' x.P.CBF] 'PWI' 'SliceGradient'};
-% 5) LongReg
+
+if isfield(x.P,'STRUCT') && isfield(x.P,'ASL4D') && isfield(x.P,'CBF')
+    % 1) Native space subject level
+    NativeRegExp_SubjectLevel = {[x.P.STRUCT '.nii'],['c1' x.P.STRUCT '.nii'],['c2' x.P.STRUCT '.nii']};
+    % 2) Native space session level
+    NativeRegExp_SessionLevel = {[x.P.ASL4D '.nii']};
+    % 3) MNI subject level
+    MNI_subject_prefix = {['r' x.P.STRUCT],['rc1' x.P.STRUCT],['rc2' x.P.STRUCT]};
+    % 4) MNI session level
+    MNI_session_prefix = {['q' x.P.CBF] 'PWI' 'SliceGradient'};
+    % 5) LongReg
+else
+    % This will probably only be printed, if something went wrong in the
+    % module that was run before. We need this though, because
+    % CreateFileReport is not run within a try-catch statement.
+    warning('Missing path definitions in x.P struct...');
+    return
+end
 
 
 % 5) Lock dirs
