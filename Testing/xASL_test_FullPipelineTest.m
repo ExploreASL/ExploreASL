@@ -1,10 +1,10 @@
-function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest
+function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig)
 %xASL_test_FullPipelineTest BIDS testing script
 %
-% FORMAT: [flavors, testConfig, logContent] = xASL_test_FullPipelineTest
+% FORMAT: [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig)
 % 
 % INPUT:
-%   n/a
+%   testConfig     - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
 %
 % OUTPUT:
 %   flavors        - Struct containing the loggingTable and other fields
@@ -25,6 +25,15 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest
 %    "cmdCloneFlavors":    "git clone git@github.com:ExploreASL/FlavorDatabase.git"
 % }
 %
+% Optionally you can add a list of flavors of intereset to your testConfig.json:
+%
+% {
+%    "pathExploreASL":     "...//ExploreASL",
+%    "pathFlavorDatabase": "...//FlavorDatabase",
+%    "cmdCloneFlavors":    "git clone git@github.com:ExploreASL/FlavorDatabase.git",
+%    "flavorList":         ["flavorA", "flavorB", "flavorC", ...]
+% }
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [flavors, testConfig, logContent] = xASL_test_FullPipelineTest;
 %
@@ -33,18 +42,24 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest
 
 
     %% Check for testConfig
+    
+    % Get testing path
     pathTesting = fileparts(mfilename('fullpath'));
-    if exist(fullfile(pathTesting,'testConfig.json'),'file')
-        testConfig = spm_jsonread(fullfile(pathTesting,'testConfig.json'));
-        if ~(isfield(testConfig,'pathExploreASL') && isfield(testConfig,'pathFlavorDatabase') && isfield(testConfig,'cmdCloneFlavors'))
-            fprintf('Please add the correct fields to your testConfig.json...\n');
+    
+    % Check if testConfig.json needs to be read
+    if nargin<1
+        if exist(fullfile(pathTesting,'testConfig.json'),'file')
+            testConfig = spm_jsonread(fullfile(pathTesting,'testConfig.json'));
+            if ~(isfield(testConfig,'pathExploreASL') && isfield(testConfig,'pathFlavorDatabase') && isfield(testConfig,'cmdCloneFlavors'))
+                fprintf('Please add the correct fields to your testConfig.json...\n');
+                return
+            end
+        else
+            fprintf('Please add a testConfig.json to the Testing directory of ExploreASL...\n');
             return
         end
-    else
-        fprintf('Please add a testConfig.json to the Testing directory of ExploreASL...\n');
-        return
     end
-
+    
     
     %% Clone the flavors database if necessary
     cd(testConfig.pathExploreASL);
@@ -56,6 +71,11 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest
         system(testConfig.cmdCloneFlavors);
     end
     
+    % Check for flavor list
+    if ~isfield(testConfig,'flavorList')
+        testConfig.flavorList = xASL_adm_GetFileList(pathFlavorDatabase, [], false, [], true);
+    end
+    
     
     %% Logging table
     flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
@@ -64,25 +84,25 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest
     %% Test execution
 
     % Remove exiting test data
-    flavors = xASL_test_Flavors(testConfig.pathExploreASL, testConfig.pathFlavorDatabase, [1 0 0 0 0 0 0], x, flavors);
+    flavors = xASL_test_Flavors(testConfig, [1 0 0 0 0 0 0], x, flavors);
 
     % Convert to BIDS
-    flavors = xASL_test_Flavors(testConfig.pathExploreASL, testConfig.pathFlavorDatabase, [0 1 0 0 0 0 0], x, flavors);
+    flavors = xASL_test_Flavors(testConfig, [0 1 0 0 0 0 0], x, flavors);
 
     % Check the BIDS conversion
-    flavors = xASL_test_Flavors(testConfig.pathExploreASL, testConfig.pathFlavorDatabase, [0 0 1 0 0 0 0], x, flavors);
+    flavors = xASL_test_Flavors(testConfig, [0 0 1 0 0 0 0], x, flavors);
 
     % Convert BIDS to Legacy
-    flavors = xASL_test_Flavors(testConfig.pathExploreASL, testConfig.pathFlavorDatabase, [0 0 0 1 0 0 0], x, flavors);
+    flavors = xASL_test_Flavors(testConfig, [0 0 0 1 0 0 0], x, flavors);
 
     % Check the Legacy conversion
-    flavors = xASL_test_Flavors(testConfig.pathExploreASL, testConfig.pathFlavorDatabase, [0 0 0 0 1 0 0], x, flavors);
+    flavors = xASL_test_Flavors(testConfig, [0 0 0 0 1 0 0], x, flavors);
 
     % Run the pipeline
-    flavors = xASL_test_Flavors(testConfig.pathExploreASL, testConfig.pathFlavorDatabase, [0 0 0 0 0 1 0], x, flavors);
+    flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 1 0], x, flavors);
 
     % Check the pipeline results
-    % flavors = xASL_test_Flavors(testConfig.pathExploreASL, testConfig.pathFlavorDatabase, [0 0 0 0 0 0 1], x, flavors);
+    % flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 0 1], x, flavors);
 
     % Get warnings & errors from log files
     [logContent] = xASL_test_GetLogContent(testConfig.pathFlavorDatabase,0,1,2);

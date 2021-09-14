@@ -1,12 +1,14 @@
-function xASL_test_Flavors_DCM2BIDS(baseDirImport, x)
+function xASL_test_Flavors_DCM2BIDS(testConfig, x)
 %xASL_test_Flavors_DCM2BIDS Convert ASL flavors from DICOM to BIDS
 %
 % FORMAT: xASL_test_Flavors_DCM2BIDS(baseDirImport)
 %
 % INPUT:
-%   baseDirImport    - Directory for import - sourcedata files are in the 'sourcedata' folder (REQUIRED)
+%   testConfig         - struct which contains the paths to the ExploreASL
+%                        installation and the testing/flavor repository (REQUIRED)
+%   x                  - ExploreASL x struct (STRUCT, OPTIONAL)
 %
-% OUTPUT: n/a        - Outputs the converted data and comparison results are printed on screen
+% OUTPUT:   n/a        - Outputs the converted data and comparison results are printed on screen
 %         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:
@@ -35,21 +37,18 @@ function xASL_test_Flavors_DCM2BIDS(baseDirImport, x)
         ExploreASL;
     end
 
-    % Load the list of the directories
-    flavorList = xASL_adm_GetFileList(baseDirImport, [], false, [], true);
-
     % Iterate over flavors
-    for iFlavor = 1:length(flavorList)
+    for iFlavor = 1:length(testConfig.flavorList)
         
         % 2. DICOM -> NII+JSON (i.e. dcm2niiX)
-        ExploreASL(fullfile(baseDirImport, flavorList{iFlavor}), [1 0 0 0], 0, 0);
-        DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
+        ExploreASL(fullfile(testConfig.pathFlavorDatabase, testConfig.flavorList{iFlavor}), [1 0 0 0], 0, 0);
+        DirASL = fullfile(testConfig.pathFlavorDatabase, testConfig.flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
         
         % 3. Manual curation for certain flavors
-        xASL_test_Flavors_ManualFlavors(flavorList, baseDirImport, DirASL, iFlavor);
+        xASL_test_Flavors_ManualFlavors(testConfig.flavorList, testConfig.pathFlavorDatabase, DirASL, iFlavor);
         
         % 4. Convert NII+JSON -> BIDS
-        ExploreASL(fullfile(baseDirImport, flavorList{iFlavor}), [0 1 0 0], 0, 0);
+        ExploreASL(fullfile(testConfig.pathFlavorDatabase, testConfig.flavorList{iFlavor}), [0 1 0 0], 0, 0);
 
     end
 
