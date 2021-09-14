@@ -1,4 +1,4 @@
-function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,bPrintReport,threshRmseNii,detailedOutput,printWarnings)
+function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,bPrintReport,threshRmseNii,detailedOutput,printWarnings,ignoreLogs)
 %xASL_bids_CompareStructures Function that compares two BIDS folders with several subfolders and studies and prints the differences.
 %
 % FORMAT: [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,[bPrintReport,threshRmseNii]);
@@ -10,6 +10,7 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
 %        threshRmseNii      - normalized RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 1e-5)
 %        detailedOutput     - additional text ouput (also print that there are no missing files etc.) (OPTIONAL, DEFAULT = false)
 %        printWarnings      - print differences as warnings (OPTIONAL, DEFAULT = true)
+%        ignoreLogs         - ignore log files (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -70,6 +71,11 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     if nargin < 6 || isempty(printWarnings)
        printWarnings = true;
     end
+    
+    % Ignore log files
+    if nargin < 7 || isempty(ignoreLogs)
+        ignoreLogs = true;
+    end
 
 
     %% Defaults
@@ -122,8 +128,8 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     end
     
     % Remove root path
-    filesA = modifyFileList(filesA,pathDatasetA);
-    filesB = modifyFileList(filesB,pathDatasetB);
+    filesA = modifyFileList(filesA,pathDatasetA,ignoreLogs);
+    filesB = modifyFileList(filesB,pathDatasetB,ignoreLogs);
     
     % Get lists
     fileListA = getListWithout('folders', filesA);
@@ -198,7 +204,10 @@ function [identical,results] = xASL_bids_CompareStructures(pathDatasetA,pathData
     
     
     % Compare file content
-    [identical,results.differences] = checkFileContents(fileListA,fileListB,pathDatasetA,pathDatasetB,identical,bPrintReport,detailedOutput,threshRmseNii);
+    [identical,results.differences] = checkFileContents(...
+        fileListA,fileListB,...
+        pathDatasetA,pathDatasetB,...
+        identical,bPrintReport,detailedOutput,threshRmseNii);
     
     % Print differences as warnings
     if printWarnings
@@ -278,11 +287,26 @@ function returnList = getListWithout(thisType,List)
 end
 
 %% Modify file lists
-function fileList = modifyFileList(fileList,root)
+function fileList = modifyFileList(fileList,root,ignoreLogs)
+    
     % Iterate over file list: change folder names
     for iFile=1:numel(fileList)
         fileList(iFile).folder = strrep(fileList(iFile).folder,root,'');
     end
+    
+    % Remove log files from list
+    if ignoreLogs
+        for iFile=1:numel(fileList)
+            [~, ~, extension] = xASL_fileparts(fileList(iFile).name);
+            if strcmp(extension,'.log')
+                % The easiest way to remove them from the list was to make them an empty directory basically
+                fileList(iFile).name = '.';
+                fileList(iFile).folder = '';
+                fileList(iFile).isdir = 1;
+            end
+        end
+    end
+    
     % Iterate over file list: change file names
     for iFile=1:numel(fileList)
         % Check that the current element is not a folder
@@ -290,6 +314,9 @@ function fileList = modifyFileList(fileList,root)
             fileList(iFile).name = fullfile(fileList(iFile).folder,fileList(iFile).name);
         end
     end
+    
+    
+    
 end
 
 %% Print list functions
@@ -457,16 +484,7 @@ function [differences,identical,dn] = compareTEXT(differences,identical,bPrintRe
         currentFileTextA = fileread(currentFileA);
         currentFileTextB = fileread(currentFileB);
         if ~strcmp(currentFileTextA,currentFileTextB)
-            if bPrintReport
-                fprintf('Text file: %s\n',allFiles{iFile});
-                fprintf('           Different file content.\n');
-            end
-            identical = false;
-
-            % Save difference
-            differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
-            dn = dn+1;
-
+            [identical,differences,dn] = rememberDifference(bPrintReport,differences,dn,allFiles,iFile);
         end
     end
 
@@ -565,19 +583,41 @@ function [differences,identical,dn] = compareTSV(differences,identical,bPrintRep
         % Compare text files content directly
         currentTsvA = xASL_tsvRead(currentFileA);
         currentTsvB = xASL_tsvRead(currentFileB);
-        if ~isempty(setdiff(currentTsvA,currentTsvB))
-            if bPrintReport
-                fprintf('%s:\t\t\n',allFiles{iFile});
-                fprintf('           Different file content.\n');
+        if iscellstr(currentTsvA) && iscellstr(currentTsvB)
+            if ~isempty(setdiff(currentTsvA,currentTsvB))
+                [identical,differences,dn] = rememberDifference(bPrintReport,differences,dn,allFiles,iFile);
             end
-            identical = false;
-
-            % Save difference
-            differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
-            dn = dn+1;
-
+        else
+            % These cells contain both strings and other datatypes, we have
+            % to do an iterative comparison if they have the same size
+            if isequal(size(currentTsvA),size(currentTsvB))
+                for iRow=1:size(currentTsvA,1)
+                    for iColumn=1:size(currentTsvA,2)
+                        if ~isequal(currentTsvA{iRow,iColumn},currentTsvB{iRow,iColumn})
+                            [identical,differences,dn] = rememberDifference(bPrintReport,differences,dn,allFiles,iFile);
+                        end
+                    end
+                end
+            else
+                [identical,differences,dn] = rememberDifference(bPrintReport,differences,dn,allFiles,iFile);
+            end
         end
     end
+
+end
+
+
+%% Remember difference that was found
+function [identical,differences,dn] = rememberDifference(bPrintReport,differences,dn,allFiles,iFile)
+
+    if bPrintReport
+        fprintf('%s:\t\t\n',allFiles{iFile});
+        fprintf('           Different file content.\n');
+    end
+    identical = false;
+    % Save difference
+    differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
+    dn = dn+1;
 
 end
 
