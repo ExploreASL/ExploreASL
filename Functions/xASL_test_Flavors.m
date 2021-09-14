@@ -1,4 +1,4 @@
-function xASL_test_Flavors(pathExploreASL, pathFlavorDatabase, bTest, x)
+function flavors = xASL_test_Flavors(pathExploreASL, pathFlavorDatabase, bTest, x, flavors)
 %xASL_test_Flavors Runs the complete testing of Flavors including import from DICOM to BIDS, processing and comparison
 %
 % FORMAT: xASL_test_Flavors(pathExploreASL, pathFlavorDatabase[, bTest, x])
@@ -8,19 +8,20 @@ function xASL_test_Flavors(pathExploreASL, pathFlavorDatabase, bTest, x)
 % INPUT:
 %   pathExploreASL     - full path to the ExploreASL code (REQUIRED)
 %   pathFlavorDatabase - full path to the FlavorDatabase directory with all the data (REQUIRED)
-%   bTest          - an array of booleans specifying which subparts of the test are supposed to be run
-%                    1. Make a copy of the flavors data
-%                    2. Run the DCM->BIDS import
-%                    3. Check the DCM->BIDS import results
-%                    4. Run BIDS->Legacy import
-%                    5. Check the the BIDS->Legacy import results
-%                    6. Run the ExploreASL on all datasets
-%                    7. Checks the ExploreASL processing results
-%                    (OPTIONAL, DEFAULT = [1 1 1 1 1 1 1])
-%   x              - x structure (OPTIONAL, DEFAULT = run Initialization)
+%   bTest              - an array of booleans specifying which subparts of the test are supposed to be run
+%                        1. Make a copy of the flavors data
+%                        2. Run the DCM->BIDS import
+%                        3. Check the DCM->BIDS import results
+%                        4. Run BIDS->Legacy import
+%                        5. Check the the BIDS->Legacy import results
+%                        6. Run the ExploreASL on all datasets
+%                        7. Checks the ExploreASL processing results
+%                        (OPTIONAL, DEFAULT = [1 1 1 1 1 1 1])
+%   x                  - x structure (OPTIONAL, DEFAULT = run Initialization)
+%   flavors            - struct containing flavor related fields
 %
 % OUTPUT: 
-%  n/a
+%   flavors            - struct containing flavor related fields
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Runs the full testing on import and processing of the FlavorsDatabase. The testing directory
@@ -106,7 +107,7 @@ function xASL_test_Flavors(pathExploreASL, pathFlavorDatabase, bTest, x)
 
     %% 6. Run ExploreASL on all Legacy-converted data
     if bTest(6)
-        flavors.loggingTable = xASL_test_Flavors_ExploreASL(pathFlavorDatabase);
+        flavors.loggingTable = xASL_test_Flavors_ExploreASL(pathFlavorDatabase,flavors.loggingTable);
     end
     
 
@@ -229,25 +230,22 @@ end
 
 
 %% Run ExploreASL on all Legacy-converted data
-function loggingTable = xASL_test_Flavors_ExploreASL(pathFlavorDatabase)
-
-    % Logging table
-    loggingTable = array2table(zeros(0,2), 'VariableNames',{'message','stack'});
+function loggingTable = xASL_test_Flavors_ExploreASL(pathFlavorDatabase,loggingTable)
 
     % Get flavor list
-    ListFolders = xASL_adm_GetFileList(pathFlavorDatabase, '^.+$', 'FPListRec', [0 Inf], 1);
+    listFlavors = xASL_adm_GetFileList(pathFlavorDatabase, '^.+$', 'FPListRec', [0 Inf], 1);
     
     % Iterate over flavors
-    for iList=1:numel(ListFolders)
-        pathDerivatives = fullfile(ListFolders{iList},'derivatives');
+    for iList=1:numel(listFlavors)
+        pathDerivatives = fullfile(listFlavors{iList},'derivatives');
         % Process data that were converted to derivatives
         if exist(pathDerivatives,'dir')
             pathDerivatives = fullfile(pathDerivatives,'ExploreASL');
             if exist(pathDerivatives,'dir')
                 % Don't run population module
-                xFlavor = ExploreASL(ListFolders{iList}, 0, [1 1 0], 0);
+                xFlavor = ExploreASL(listFlavors{iList}, 0, [1 1 0], 0);
                 if isfield(xFlavor,'logging')
-                    loggingTable = xASL_test_AddLoggingEntryToTable(loggingTable,xFlavor.logging);
+                    loggingTable = xASL_test_AddLoggingEntryToTable(listFlavors{iList},loggingTable,xFlavor.logging);
                 end
             end
         end
@@ -281,7 +279,7 @@ end
 
 
 %% Add entry to log table
-function logTable = xASL_test_AddLoggingEntryToTable(logTable,logStruct)
+function logTable = xASL_test_AddLoggingEntryToTable(nameFlavor,logTable,logStruct)
 
     % Get number of log entries
     numLogEntries = size(logStruct,2);
@@ -289,11 +287,34 @@ function logTable = xASL_test_AddLoggingEntryToTable(logTable,logStruct)
     % Iterate over log entries
     for iEntry=1:numLogEntries
         thisStruct = logStruct(iEntry);
+        thisStruct.name = cellstr(nameFlavor);
         thisStruct.stack = xASL_test_StackToString(thisStruct.stack);
         thisStruct.message = cellstr(thisStruct.message);
         thisStruct.stack = cellstr(thisStruct.stack);
         thisRow = struct2table(thisStruct);
         logTable = [logTable;thisRow];
+    end
+
+end
+
+
+%% Stack to string
+function stackText = xASL_test_StackToString(stack)
+
+    % Fallback
+    stackText = '';
+    
+    % Iterate over elements
+    for iElement = 1:size(stack,1)
+        thisFile = stack(iElement).file;
+        thisName = stack(iElement).name;
+        thisLine = stack(iElement).line;
+        stackText = [stackText ', ' thisName ': line ' num2str(thisLine)];
+    end
+    
+    % Remove initial ' ,'
+    if ~isempty(stackText) && length(stackText)>3
+        stackText = stackText(3:end);
     end
 
 end
