@@ -2,7 +2,7 @@
 function flavorList = xASL_test_Flavors_Compare(testConfig,folderA,folderB)
 
     % List all studies in the import directory
-    flavorList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, '^.+$', 'List', [], true);
+    flavorList = testConfig.flavorList;
     
     % Iterate over flavors
     for iCompare = 1:length(flavorList)
