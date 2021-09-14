@@ -130,7 +130,8 @@ end
 %% ------------------------------------------------------------------------------------------
 % 6. Create mean control image, if available, in native & standard space
 if  nVolumes>1    
-    if x.modules.asl.bTimeEncoded
+    if x.modules.asl.bTimeEncoded % ===== Here we should just configure the mean control (first volume==== %
+            %The decoding is done in step 8
             xASL_quant_HadamardDecoding(x.P.Path_rdespiked_ASL4D, x.modules.asl, x.TimeEncodedEchoTimes);
             % x.modules.asl contain TimeEncodedMatrixType,TimeEncodedMatrixSize and maybe a DecodingMatrix provided by the dataset
             % Note: There's no output for the function because we save the nifti inside
@@ -227,7 +228,12 @@ for iSpace=1:2
     elseif round(dim4/2)~=dim4/2
         warning('Odd number of control-label pairs, skipping');
         return;
-    else    
+        
+        % Decoding of TimeEncoded data ===================
+    elseif x.modules.asl.bTimeEncoded 
+            xASL_quant_HadamardDecoding(x.P.Path_rdespiked_ASL4D, x.modules.asl, x.TimeEncodedEchoTimes); % Nifti is saved inside the function
+        % =============================================
+    else
         % Paired subtraction
         [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
         ASL_im = ControlIm - LabelIm;
