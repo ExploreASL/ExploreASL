@@ -46,7 +46,7 @@ function xASL_test_Flavors_DCM2BIDS(baseDirImport, x)
         DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
         
         % 3. Manual curation for certain flavors
-        xASL_test_Flavors_ManualFlavors(flavorList,DirASL,iFlavor);
+        xASL_test_Flavors_ManualFlavors(flavorList, baseDirImport, DirASL, iFlavor);
         
         % 4. Convert NII+JSON -> BIDS
         ExploreASL(fullfile(baseDirImport, flavorList{iFlavor}), [0 1 0 0], 0, 0);
@@ -57,7 +57,7 @@ end
 
 
 %% Manual curation for certain flavors
-function xASL_test_Flavors_ManualFlavors(flavorList,DirASL,iFlavor)
+function xASL_test_Flavors_ManualFlavors(flavorList, baseDirImport, DirASL, iFlavor)
 
 
     switch flavorList{iFlavor}
