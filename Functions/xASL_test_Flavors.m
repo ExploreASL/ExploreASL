@@ -71,12 +71,13 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 
     %% 2. Run the conversion of source data to BIDS
     if bTest(2)
-        xASL_test_Flavors_DCM2BIDS(testConfig, x);
+        flavors.loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, flavors.loggingTable);
     end
     
 
     %% 3. Run the comparison of converted BIDS with the reference data
     if bTest(3)
+        fprintf('\n================================== CHECK THE BIDS CONVERSION =================================\n');
         flavors.listNII2BIDS = xASL_test_Flavors_Compare(testConfig,'rawdata','rawdataReference');
     end
     
@@ -89,6 +90,7 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 
     %% 5. Run the comparison of data converted to the legacy format with the reference data
     if bTest(5)
+        fprintf('\n================================= CHECK THE LEGACY CONVERSION ================================\n');
         flavors.listBIDS2LEGACY = xASL_test_Flavors_Compare(testConfig,'derivatives','derivativesReference');
     end
     

@@ -1,10 +1,12 @@
-function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig)
+function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults)
 %xASL_test_FullPipelineTest BIDS testing script
 %
 % FORMAT: [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig)
 % 
 % INPUT:
-%   testConfig     - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
+%   testConfig        - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
+%   onlyRemoveResults - Set to true if you do not want to run test testing, 
+%                       but you want to delete existing test data (BOOLEAN, OPTIONAL) 
 %
 % OUTPUT:
 %   flavors        - Struct containing the loggingTable and other fields
@@ -31,8 +33,12 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
 %    "pathExploreASL":     "...//ExploreASL",
 %    "pathFlavorDatabase": "...//FlavorDatabase",
 %    "cmdCloneFlavors":    "git clone git@github.com:ExploreASL/FlavorDatabase.git",
-%    "flavorList":         ["flavorA", "flavorB", "flavorC", ...]
+%    "flavorList":         ["GE_PCASL_3Dspiral_14.0LX_1", "Philips_PCASL_2DEPI_3.2.1.1_1", "Siemens_PASL_3DGRASE_E11_1"]
 % }
+%
+% To remove test data from the flavor database you can run:
+%
+% [flavors, testConfig, logContent] = xASL_test_FullPipelineTest([],true);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [flavors, testConfig, logContent] = xASL_test_FullPipelineTest;
@@ -41,13 +47,18 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
 % Copyright 2015-2021 ExploreASL
 
 
+    %% Initialization
+    if nargin<2 || isempty(onlyRemoveResults)
+        onlyRemoveResults = false;
+    end
+
     %% Check for testConfig
     
     % Get testing path
     pathTesting = fileparts(mfilename('fullpath'));
     
     % Check if testConfig.json needs to be read
-    if nargin<1
+    if nargin<1 || isempty(testConfig)
         if exist(fullfile(pathTesting,'testConfig.json'),'file')
             testConfig = spm_jsonread(fullfile(pathTesting,'testConfig.json'));
             if ~(isfield(testConfig,'pathExploreASL') && isfield(testConfig,'pathFlavorDatabase') && isfield(testConfig,'cmdCloneFlavors'))
@@ -73,7 +84,7 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
     
     % Check for flavor list
     if ~isfield(testConfig,'flavorList')
-        testConfig.flavorList = xASL_adm_GetFileList(pathFlavorDatabase, [], false, [], true);
+        testConfig.flavorList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
     end
     
     
@@ -85,6 +96,14 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
 
     % Remove exiting test data
     flavors = xASL_test_Flavors(testConfig, [1 0 0 0 0 0 0], x, flavors);
+    
+    % Stop testing pipeline if we only want to remove test data
+    if onlyRemoveResults
+        logContent = struct;
+        fclose('all');
+        diary off;
+        return
+    end
 
     % Convert to BIDS
     flavors = xASL_test_Flavors(testConfig, [0 1 0 0 0 0 0], x, flavors);
