@@ -43,7 +43,7 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath, b
 %     
 %     Rooney WD, Lee JH, Li X, Wang GJ, Franceschi D, Springer CS, Volkow ND. 
 %     4.0T water proton T1 relaxation times in normal human brain and during acute ethanol intoxication. 
-%     Alcohol Clin Exp Res 2000; 24: 830–836.
+%     Alcohol Clin Exp Res 2000; 24: 830???836.
 %   
 %     Voelker MN, Kraff O, Goerke S, Laun FB, Hanspach J, Pine KJ, Ehses P, Zaiss M, Liebert A, Straub S, Eckstein K. 
 %     The traveling heads 2.0: Multicenter reproducibility of quantitative imaging methods at 7 Tesla. 
@@ -430,16 +430,13 @@ if strcmp(OutputPath, x.P.Pop_Path_qCBF)
     MaskedCBF(~MaskVascularMNI) = NaN;
     
     % Mask susceptibility voxels (i.e. set them to NaN)
-    if strcmpi(x.Q.Sequence, '2d_epi') || strcmpi(x.Q.Sequence, '3d_grase')
-        if ~xASL_exist(x.P.Path_Pop_MaskSusceptibility)
-            warning([x.P.Path_Pop_MaskSusceptibility ' missing, cannot create ' x.P.Pop_Path_qCBF_masked]);
-            return;
-        else
-            MaskSusceptibility = xASL_io_Nifti2Im(x.P.Path_Pop_MaskSusceptibility);
-            MaskedCBF(~MaskSusceptibility) = NaN;
-        end
+    if ~xASL_exist(x.P.Path_Pop_MaskSusceptibility)
+        warning([x.P.Path_Pop_MaskSusceptibility ' missing, cannot create ' x.P.Pop_Path_qCBF_masked]);
+        fprintf('%s\n', 'Please rerun xASL_wrp_CreateAnalysisMask (7th step of ASL module');
+        return;
+    else
+        xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_qCBF_masked, MaskedCBF, [], false);
     end
-    xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_qCBF_masked, MaskedCBF, [], false);
 end
 
 
