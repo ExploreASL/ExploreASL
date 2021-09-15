@@ -54,7 +54,7 @@ if x.dataset.nSubjectsSessions<16
     x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
     x.S.VBAmask = x.S.MaskSusceptibility;
     bSkipStandard = 1;
-elseif isempty(PathSusceptibilityMask) && ~strcmpi(x.Q.Sequence,'3d_spiral')
+elseif isempty(PathSusceptibilityMask)
     warning('Missing susceptibility maps, skipping...');
     bSkipStandard = 1;
 end
@@ -117,41 +117,43 @@ if ~bSkipStandard
 	
 	%% B) Create, combine & save vascular, susceptibity & FoV masks
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
-	
-	DoSusceptibility = true;
-	if ~isfield(x.Q,'Sequence')
-		error('x.Q.Sequence parameter missing!');
-	elseif strcmpi(x.Q.Sequence,'2D_EPI')
-		Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
-	elseif strcmpi(x.Q.Sequence,'3D_GRASE')
-		Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
-	else
-		% don't mask susceptibility artifacts
-		DoSusceptibility = false;
-	end
+    MaskFoV = xASL_io_Nifti2Im(PathFoV)>=Threshold;
+	DoSusceptibility = false;
+    MaskSusceptibility = MaskFoV; % if we don't have susceptibility artifacts
+    
+                    %% LEGACY CODE, TO BE REMOVED IN VERSION 2.0.0
+                    if isfield(x, 'Q') && isfield(x.Q, 'Sequence') && strcmpi(x.Q.Sequence, '(2d_epi|3d_grase')
+                        fprintf('%\n', 'Using legacy susceptibility masking');
+                        DoSusceptibility = true;
 
-	MaskFoV = xASL_io_Nifti2Im(PathFoV)>=Threshold;
-	if DoSusceptibility
-        MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);        
+                        if strcmpi(x.Q.Sequence,'2D_EPI')
+                            Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
+                        elseif strcmpi(x.Q.Sequence,'3D_GRASE')
+                            Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
+                        end
+                    end
 
-        TemplateMask = xASL_io_Nifti2Im(Path_Template)~=1; % MaskSusceptibility<0.85 &
-		TemplateMask(:,:,1:10) = 0;
-		TemplateMask = TemplateMask & MaskSusceptibility<0.8;
-		ThrValues = MaskSusceptibility(TemplateMask);
-		ThresholdSuscept = Threshold.*max(ThrValues(:));
+                    if DoSusceptibility
+                        MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);        
 
-		% Remove some extremes using 95% percentile,
-		% as here we aim to obtain the 95% threshold within the probability map
-		% (i.e. excluding the manually created mask to isolate the skull
-		% regions of air cavities)
-		MaskSusceptibility = MaskSusceptibility > ThresholdSuscept;
+                        TemplateMask = xASL_io_Nifti2Im(Path_Template)~=1; % MaskSusceptibility<0.85 &
+                        TemplateMask(:,:,1:10) = 0;
+                        TemplateMask = TemplateMask & MaskSusceptibility<0.8;
+                        ThrValues = MaskSusceptibility(TemplateMask);
+                        ThresholdSuscept = Threshold.*max(ThrValues(:));
 
-		% Combine susceptibility & FoV
-		MaskSusceptibility = MaskSusceptibility & MaskFoV;
-	else
-		MaskSusceptibility = MaskFoV; % if we don't have susceptibility artifacts
-	end
+                        % Remove some extremes using 95% percentile,
+                        % as here we aim to obtain the 95% threshold within the probability map
+                        % (i.e. excluding the manually created mask to isolate the skull
+                        % regions of air cavities)
+                        MaskSusceptibility = MaskSusceptibility > ThresholdSuscept;
 
+                        % Combine susceptibility & FoV
+                        MaskSusceptibility = MaskSusceptibility & MaskFoV;
+                    end
+
+                    
+                    
 	% Save them
 	xASL_io_SaveNifti(PathFoV, MaskVascularPath, MaskVascular, 8, true);
 	xASL_io_SaveNifti(PathFoV, MaskSusceptibilityPath, MaskSusceptibility, 8, true);
