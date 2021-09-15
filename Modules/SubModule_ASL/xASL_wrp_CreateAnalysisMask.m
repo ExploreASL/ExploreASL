@@ -65,9 +65,11 @@ switch lower(x.Q.Sequence)
         Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
         ClipThresholdValue = 3; % 3 MAD above median
         DoSusceptibility = true;
-    otherwise
+    case '3d_spiral'
         DoSusceptibility = false;
-        ClipThresholdValue = 5; % more homogeneous image
+        ClipThresholdValue = 5; % more homogeneous image        
+    otherwise
+        error('Unknown ASL sequence!');
 end
 
 %% 1. Negative vascular signal
@@ -176,9 +178,12 @@ if DoSusceptibility
 
      MaskSusceptibility = BrainMask;
      MaskSusceptibility(MaskSuscept) = FinalMask(MaskSuscept);
-
-     xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Path_Pop_MaskSusceptibility, MaskSusceptibility, [], false);
+else
+    MaskSusceptibility = BrainMask;
+    % for e.g. 3D spiral the susceptibility mask is equal to the brain mask
 end
+
+xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Path_Pop_MaskSusceptibility, MaskSusceptibility, [], false);
 
 
 end
