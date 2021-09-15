@@ -87,8 +87,13 @@ if ~x.mutex.HasState(StateName{1})
     FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean_Unmasked\.nii$'], 'FPList');
     SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean.nii']);
 
-    if strcmpi(x.Q.Sequence,'3d_spiral') && ~isempty(FoVPath)
-        xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}), [], false);
+    if ~xASL_exist(SusceptPath, 'file')
+        warning('Susceptibility mask template was missing');
+        
+        if ~isempty(FoVPath)
+            xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}), [], false);
+            fprintf('%s\n', 'Was replaced by FoV mask');
+        end
     end
 
     x.mutex.AddState(StateName{1});
