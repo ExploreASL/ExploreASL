@@ -1,5 +1,20 @@
-%% Run the BIDS to Legacy conversion
 function xASL_test_Flavors_BIDS2LEGACY(testConfig)
+%xASL_test_Flavors_BIDS2LEGACY Test the BIDS to Legacy conversion
+%
+% FORMAT: xASL_test_Flavors_BIDS2LEGACY(testConfig)
+%
+% INPUT:        testConfig - Struct containing test infos (STRUCT, REQUIRED)
+%
+% OUTPUT:       n/a
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Run the BIDS to Legacy conversion.
+%
+% EXAMPLE:      xASL_test_Flavors_BIDS2LEGACY(testConfig);
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% Copyright 2015-2021 ExploreASL
+
 
     % Default dataPar.json for the testing that is fast to run
     

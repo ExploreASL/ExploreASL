@@ -1,5 +1,20 @@
-%% Remove existing test data
 function xASL_test_Flavors_RemoveExistingTestData(testConfig)
+%xASL_test_Flavors_RemoveExistingTestData Remove existing test data
+%
+% FORMAT: xASL_test_Flavors_RemoveExistingTestData(testConfig)
+%
+% INPUT:        testConfig - Struct containing test infos (REQUIRED)
+%
+% OUTPUT:       n/a
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Remove existing test data.
+%
+% EXAMPLE:      xASL_test_Flavors_RemoveExistingTestData(testConfig);
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% Copyright 2015-2021 ExploreASL
+
 
     fprintf('Remove existing test data...\n');
 
