@@ -52,6 +52,9 @@ function [identical,differences] = xASL_bids_CompareStructuresCheckContent(files
                 xASL_bids_CompareStructuresNIFTI(differences,identical,bPrintReport,detailedOutput,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii);
         end
     end
+    
+    
+    
 end
 
 

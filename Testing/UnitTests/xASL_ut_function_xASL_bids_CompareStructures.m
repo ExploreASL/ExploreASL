@@ -247,12 +247,12 @@ spm_jsonwrite(fullfile(workingDir,'datasetA','test_json_not_identical.txt'),test
 spm_jsonwrite(fullfile(workingDir,'datasetB','test_json_not_identical.txt'),testJSONb);
 
 % Write identical TSV files
-xASL_tsvWrite(testTSVa,fullfile(workingDir,'datasetA','test_json_identical.tsv'));
-xASL_tsvWrite(testTSVa,fullfile(workingDir,'datasetB','test_json_identical.tsv'));
+xASL_tsvWrite(testTSVa,fullfile(workingDir,'datasetA','test_tsv_identical.tsv'));
+xASL_tsvWrite(testTSVa,fullfile(workingDir,'datasetB','test_tsv_identical.tsv'));
 
 % Write not identical TSV files
-xASL_tsvWrite(testTSVa,fullfile(workingDir,'datasetA','test_json_not_identical.tsv'));
-xASL_tsvWrite(testTSVb,fullfile(workingDir,'datasetB','test_json_not_identical.tsv'));
+xASL_tsvWrite(testTSVa,fullfile(workingDir,'datasetA','test_tsv_not_identical.tsv'));
+xASL_tsvWrite(testTSVb,fullfile(workingDir,'datasetB','test_tsv_not_identical.tsv'));
 
 % Run your test here
 [identical,results,reportTable] = xASL_bids_CompareStructures(...

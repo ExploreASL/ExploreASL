@@ -90,6 +90,7 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
     
     %% Logging table
     flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
+    flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dataset','name','message'});
     
 
     %% Test execution
