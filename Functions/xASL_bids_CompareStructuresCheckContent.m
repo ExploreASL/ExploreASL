@@ -4,21 +4,41 @@ function [identical,differences] = xASL_bids_CompareStructuresCheckContent(files
 % FORMAT: [identical,differences] = xASL_bids_CompareStructuresCheckContent(filesDatasetA,filesDatasetB,pathDatasetA,pathDatasetB,identical,bPrintReport,detailedOutput,threshRmseNii)
 %
 % INPUT:
-%         ...
+%         filesDatasetA  - List of files in dataset A (CELL ARRAY, REQUIRED)
+%         filesDatasetB  - List of files in dataset B (CELL ARRAY, REQUIRED)
+%         pathDatasetA   - Path to dataset A (STRING, REQUIRED)
+%         pathDatasetB   - Path to dataset B (STRING, REQUIRED)
+%         identical      - Datasets are identical (BOOLEAN, REQUIRED)
+%         bPrintReport   - Print report to console (BOOLEAN, REQUIRED)
+%         detailedOutput - Print an even more detailed report (BOOLEAN, REQUIRED)
+%         threshRmseNii  - Threshold for NIfTI comparison (DOUBLE, REQUIRED)
 %
 % OUTPUT:
-%         ...
+%         identical   - Datasets are identical (BOOLEAN)
+%         differences - Differences between datasets (CELL ARRAY)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      Check file contents.
+% DESCRIPTION:      This script iterates over the provided files (filesDatasetA,filesDatasetB).
+%                   There are different comparisons implemented for JSON, TSV, TEXT, & NIFTI files.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% EXAMPLE:          ...
+% EXAMPLE:
+%
+%  filesDatasetA = {...};
+%  filesDatasetB = {...};
+%  pathDatasetA = '...';
+%  pathDatasetB = '...';
+%
+%  [identical,differences] = ...
+%                   xASL_bids_CompareStructuresCheckContent(...
+%                   filesDatasetA,filesDatasetB,...
+%                   pathDatasetA,pathDatasetB,...
+%                   1,0,0,1e-3);
 %
 % REFERENCES:       ...
 % __________________________________
-% Copyright @ 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
     % All files

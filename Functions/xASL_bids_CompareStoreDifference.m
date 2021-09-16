@@ -4,17 +4,23 @@ function [identical,differences,dn] = xASL_bids_CompareStoreDifference(bPrintRep
 % FORMAT: [identical,differences,dn] = xASL_bids_CompareStoreDifference(bPrintReport,differences,dn,allFiles,iFile)
 %
 % INPUT:
-%         ...
+%         bPrintReport  - Print difference in file content (BOOLEAN, REQUIRED)
+%         differences   - Array containing the individual differenecs (CELL ARRAY, REQUIRED)
+%         dn            - Difference number for the row within differences (INTEGER, REQUIRED)
+%         allFiles      - Array containing the file names (CELL ARRAY, REQUIRED)
+%         iFile         - File number (INTEGER, REQUIRED)
 %
 % OUTPUT:
-%         ...
+%         identical     - False if datasets are not identical
+%         differences   - Array containing the individual differenecs
+%         dn            - Difference number for the row within differences
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:      Store the difference found in a TEXT file.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% EXAMPLE:          ...
+% EXAMPLE:          [identical,differences,dn] = xASL_bids_CompareStoreDifference(1,differences,1,allFiles,1);
 %
 % REFERENCES:       ...
 % __________________________________

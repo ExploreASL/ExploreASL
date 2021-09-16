@@ -1,7 +1,7 @@
 function loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable)
 %xASL_test_Flavors_DCM2BIDS Convert ASL flavors from DICOM to BIDS
 %
-% FORMAT: xASL_test_Flavors_DCM2BIDS(baseDirImport)
+% FORMAT: loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable)
 %
 % INPUT:
 %   testConfig         - Struct which contains the paths to the ExploreASL
@@ -30,7 +30,7 @@ function loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable)
 % 3d. Siemens_PCASL_3DGRASE_VB17A_multiPLD_1
 % 4. Convert NII+JSON -> BIDS
 %
-% EXAMPLE: xASL_test_Flavors_DCM2BIDS('mydir/testImport');
+% EXAMPLE: loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

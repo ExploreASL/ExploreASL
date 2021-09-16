@@ -1,7 +1,7 @@
 function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,bPrintReport,threshRmseNii,detailedOutput,printWarnings,ignoreLogs)
 %xASL_bids_CompareStructures Function that compares two BIDS folders with several subfolders and studies and prints the differences.
 %
-% FORMAT: [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,[bPrintReport,threshRmseNii]);
+% FORMAT: [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatasetA,pathDatasetB,[bPrintReport,threshRmseNii,detailedOutput,printWarnings,ignoreLogs]);
 %
 % INPUT:
 %        pathDatasetA       - path to first BIDS structure [char array] (REQUIRED)
@@ -29,7 +29,7 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
 %
 % REFERENCES:       ...
 % __________________________________
-% Copyright @ 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
     %% Input Check

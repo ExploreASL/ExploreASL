@@ -4,13 +4,23 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
 % FORMAT: [differences,identical,dn] = xASL_bids_CompareStructuresJSON(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB)
 %
 % INPUT:
-%         ...
+%         differences    - Differences between datasets (CELL ARRAY, REQUIRED)
+%         identical      - Datasets are identical (BOOLEAN, REQUIRED)
+%         bPrintReport   - Print report to console (BOOLEAN, REQUIRED)
+%         allFiles       - Array containing the file names (CELL ARRAY, REQUIRED)
+%         iFile          - File number (INTEGER, REQUIRED)
+%         dn             - Difference number for the row within differences (INTEGER, REQUIRED)
+%         currentFileA   - Name of the current file in dataset A (STRING, REQUIRED) 
+%         currentFileB   - Name of the current file in dataset B (STRING, REQUIRED) 
 %
 % OUTPUT:
-%         ...
+%         differences    - Differences between datasets (CELL ARRAY, REQUIRED)
+%         identical      - Datasets are identical (BOOLEAN, REQUIRED)
+%         dn             - Difference number for the row within differences (INTEGER, REQUIRED)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      ...
+% DESCRIPTION:      This script compares the content of two JSON files for
+%                   the BIDS flavor testing.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %

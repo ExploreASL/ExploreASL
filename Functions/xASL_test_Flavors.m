@@ -1,7 +1,7 @@
 function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 %xASL_test_Flavors Runs the complete testing of Flavors including import from DICOM to BIDS, processing and comparison
 %
-% FORMAT: xASL_test_Flavors(pathExploreASL, pathFlavorDatabase[, bTest, x])
+% FORMAT: flavors = xASL_test_Flavors(pathExploreASL, pathFlavorDatabase[, bTest, x],flavors)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % 
@@ -18,7 +18,7 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 %                        7. Checks the ExploreASL processing results
 %                        (OPTIONAL, DEFAULT = [1 1 1 1 1 1 1])
 %   x                  - x structure (OPTIONAL, DEFAULT = run Initialization)
-%   flavors            - struct containing flavor related fields
+%   flavors            - struct containing flavor related fields (RECOMMENDED, STRUCT)
 %
 % OUTPUT: 
 %   flavors            - struct containing flavor related fields
@@ -45,6 +45,12 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
     end
     if length(bTest) < 7
         bTest(end+1:7) = 1;
+    end
+    if nargin < 4
+        % The flavors struct is normally being defined in xASL_test_FullPipelineTest
+        warning('We recommend to provide the flavors struct based on xASL_test_FullPipelineTest...');
+        flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
+        flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dataset','name','message'});
     end
 
     % Change directory to ExploreASL root folder

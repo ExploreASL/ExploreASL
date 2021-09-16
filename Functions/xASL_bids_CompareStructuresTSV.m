@@ -4,13 +4,23 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresTSV(differences
 % FORMAT: [differences,identical,dn] = xASL_bids_CompareStructuresTSV(differences,identical,bPrintReport,allFiles,iFile,dn,currentFileA,currentFileB)
 %
 % INPUT:
-%         ...
+%         differences    - Differences between datasets (CELL ARRAY, REQUIRED)
+%         identical      - Datasets are identical (BOOLEAN, REQUIRED)
+%         bPrintReport   - Print report to console (BOOLEAN, REQUIRED)
+%         allFiles       - Array containing the file names (CELL ARRAY, REQUIRED)
+%         iFile          - File number (INTEGER, REQUIRED)
+%         dn             - Difference number for the row within differences (INTEGER, REQUIRED)
+%         currentFileA   - Name of the current file in dataset A (STRING, REQUIRED) 
+%         currentFileB   - Name of the current file in dataset B (STRING, REQUIRED) 
 %
 % OUTPUT:
-%         ...
+%         differences    - Differences between datasets (CELL ARRAY, REQUIRED)
+%         identical      - Datasets are identical (BOOLEAN, REQUIRED)
+%         dn             - Difference number for the row within differences (INTEGER, REQUIRED)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      ...
+% DESCRIPTION:      This script compares the content of two TSV files for
+%                   the BIDS flavor testing.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
@@ -18,7 +28,7 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresTSV(differences
 %
 % REFERENCES:       ...
 % __________________________________
-% Copyright @ 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
     % Read files if they exist
