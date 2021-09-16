@@ -1,4 +1,4 @@
-function xASL_quant_HadamardDecoding(Encoded_ASL, xDecodingFields, NumberEchoTimes)
+function [imASL_reorder] = xASL_quant_HadamardDecoding(Encoded_ASL, xDecodingFields, NumberEchoTimes)
 %xASL_im_HadamardDecoding Hadamard-4 & Hadamard-8 Decoding
 %
 % FORMAT:       [Decoded_ASL] = xASL_im_HadamardDecoding(HadamardType, sec)
@@ -154,12 +154,12 @@ end
 imASL_reorder = zeros(size(ASL_im,1),size(ASL_im,2),size(ASL_im,3),size(ASL_im,4));
 imASL_reorder(:,:,:,1:end) = ASL_im(:,:,:,vectorNewOrder);
 
-% Save 4D nifti file
-xASL_io_SaveNifti(Encoded_ASL, Encoded_ASL, imASL_reorder)
+%% ste-4: signal normalization
+% NormalizationFactor = 1/(m_INumSets/2);
+% where m_INumSets is the number of images (e.g. 8 for Hadamard 8x8)
 
-    
-    % For visualization/testing -> remove this afterwards
-%     figure 
-%     image(Decoded_ASL(:,:,12,5));
+NormalizationFactor = 1/(TimeEncodedMatrixSize/2);
+imASL_reorder = imASL_reorder * NormalizationFactor;
+
     
 end
