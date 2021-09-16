@@ -10,7 +10,7 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
 %        threshRmseNii      - normalized RMSE threshold for comparing NIFTI content (OPTIONAL, DEFAULT = 1e-5)
 %        detailedOutput     - additional text ouput (also print that there are no missing files etc.) (OPTIONAL, DEFAULT = false)
 %        printWarnings      - print differences as warnings (OPTIONAL, DEFAULT = true)
-%        ignoreLogs         - ignore log files (OPTIONAL, DEFAULT = true)
+%        ignoreLogs         - ignore log files (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 %        identical          - Returns 1 if both folder structures are identical and 0 if not
@@ -75,7 +75,7 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
     
     % Ignore log files
     if nargin < 7 || isempty(ignoreLogs)
-        ignoreLogs = true;
+        ignoreLogs = false;
     end
 
 

@@ -117,12 +117,15 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
 
     % Check the Legacy conversion
     flavors = xASL_test_Flavors(testConfig, [0 0 0 0 1 0 0], x, flavors);
-
+    
     % Run the pipeline
     flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 1 0], x, flavors);
 
     % Check the pipeline results
     % flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 0 1], x, flavors);
+    
+    % Ignore some files
+    flavors = xALS_test_IgnoreFiles(flavors);
 
     % Get warnings & errors from log files
     [logContent] = xASL_test_GetLogContent(testConfig.pathFlavorDatabase,0,1,2);
