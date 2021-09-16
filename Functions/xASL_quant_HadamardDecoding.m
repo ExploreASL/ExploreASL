@@ -63,11 +63,45 @@ if strcmp(TimeEncodedMatrixType,'Walsh')
     % #### For Hadamard Decoding Matrix ####
 elseif strcmp(TimeEncodedMatrixType,'Hadamard')
     
-    %.... Hadamard (natural) matrices....
+    
+    
+    if TimeEncodedMatrixSize == 4
+        
+        ASL_im = xASL_io_Nifti2Im(Encoded_ASL); % Load time-series nifti
+        
+        if ~isempty(DecodingMatrix_input) %if there's a Decoding Matrix from the data
+            DecodingMatrix = DecodingMatrix_input;
+        else
+            DecodingMatrix = [1 -1  1 -1;
+                              1  1 -1 -1;
+                              1 -1 -1  1];
+        end
+        
+    elseif TimeEncodedMatrixSize == 8
+        
+        ASL_im = xASL_io_Nifti2Im(Encoded_ASL); % Load time-series nifti
+        
+        if ~isempty(DecodingMatrix_input) %if there's a Decoding Matrix from the data
+            DecodingMatrix = DecodingMatrix_input;
+        else
+            DecodingMatrix = [1 -1 -1  1 -1  1  1 -1;
+                              1  1 -1 -1 -1 -1  1  1;
+                              1 -1  1 -1 -1  1 -1  1;
+                              1  1  1  1 -1 -1 -1 -1;
+                              1 -1 -1  1  1 -1 -1  1;
+                              1  1 -1 -1  1  1 -1 -1;
+                              1 -1  1 -1  1 -1  1 -1];
+        end
+    end
     
 end
 
 %% step-1: Reorder data
+% At this point the data is organized like this (in terms of ASL4D.nii volumes):
+% PLD1/TE1,PLD1/TE2,PLD1/TE3,PLD1/TE4...PLD2/TE1,PLD2/TE2,PLD2/TE3... (PLDs first, TEs after)
+%
+% And for decoding we want
+% TE1/PLD1,TE1/PLD2,TE1/PLD3,TE1.PL4...TE2/PLD1,TE2/PLD2,TE2/PLD3,TE2/PLD4 (TEs first, PLDs after)
 
 numberTE = NumberEchoTimes;
 nDecodedTI = TimeEncodedMatrixSize-1;                   % Number of TIs is always MatrixSize -1
@@ -105,6 +139,10 @@ end
 
 
 %% step-3: reorder again for model fitting
+%
+% For model fitting, we want the PLDs-first-TEs-second order (just like the
+% beginning) so we need to reorder it again
+
 ASL_im = Decoded_ASL;
 numberPLDs = int32(size(ASL_im,4)/numberTE); % this now takes size of decoded PLDs
 
