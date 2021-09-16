@@ -68,6 +68,11 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
         cd(thisDirectory);
     end
     
+    % Check for flavor list
+    if ~isfield(testConfig,'flavorList')
+        testConfig.flavorList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
+    end
+    
 
     %% 1. Remove existing test data
     if bTest(1)
