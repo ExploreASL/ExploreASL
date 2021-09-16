@@ -4,13 +4,24 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresNIFTI(differenc
 % FORMAT: [differences,identical,dn] = xASL_bids_CompareStructuresNIFTI(differences,identical,bPrintReport,detailedOutput,allFiles,iFile,dn,currentFileA,currentFileB,threshRmseNii)
 %
 % INPUT:
-%         ...
+%         differences    - Differences between datasets (CELL ARRAY, REQUIRED)
+%         identical      - Datasets are identical (BOOLEAN, REQUIRED)
+%         bPrintReport   - Print report to console (BOOLEAN, REQUIRED)
+%         allFiles       - Array containing the file names (CELL ARRAY, REQUIRED)
+%         iFile          - File number (INTEGER, REQUIRED)
+%         dn             - Difference number for the row within differences (INTEGER, REQUIRED)
+%         currentFileA   - Name of the current file in dataset A (STRING, REQUIRED) 
+%         currentFileB   - Name of the current file in dataset B (STRING, REQUIRED) 
+%         threshRmseNii  - Threshold for NIfTI comparison (DOUBLE, REQUIRED)
 %
 % OUTPUT:
-%         ...
+%         differences    - Differences between datasets (CELL ARRAY, REQUIRED)
+%         identical      - Datasets are identical (BOOLEAN, REQUIRED)
+%         dn             - Difference number for the row within differences (INTEGER, REQUIRED)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      ...
+% DESCRIPTION:      This script compares the content of two NIFTI files for
+%                   the BIDS flavor testing.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
