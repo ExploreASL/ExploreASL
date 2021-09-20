@@ -157,7 +157,8 @@ if ~exist(TestDirOrig, 'dir')
     TestDataSetRepository = 'https://github.com/ExploreASL/TestDataSets.git';
     fprintf('%s\n', ['TestDataSet repository not found in: ' TestDirRoot]);
     fprintf('%s\n', ['Attempting to clone: ' TestDataSetRepository]);
-    xASL_system(['cd ' TestDirRoot ';git clone ' TestDataSetRepository]);
+    xASL_system(['cd ' TestDirRoot]);
+    xASL_system(['git clone ' TestDataSetRepository]);
 end
 
 % Remove previous results
