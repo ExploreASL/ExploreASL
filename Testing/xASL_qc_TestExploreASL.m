@@ -117,7 +117,8 @@ end
 %% 1) Pull latest GitHub version
 % assuming we are in ExploreASL folder
 if bPull
-    xASL_system('git fetch;git pull');
+    xASL_system('git fetch');
+    xASL_system('git pull');
 end
 
 % Initialize ExploreASL

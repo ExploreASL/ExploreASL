@@ -18,16 +18,19 @@ function [result1, result2] = xASL_system(Command, bVerbose)
 %
 % This function allows running a system call from Matlab in an optimized fashion.
 % E.g., it will use user-specific CLI initializations, which are in ~/.bashrc 
-% or ~/.zshrc (depending on the CLI used, Linux by default uses
-% bash, macOS by default uses zsh).
+% or ~/.zshrc (depending on the CLI used, Linux by default uses bash, macOS by default uses zsh).
 %
 % It runs the following steps:
+%
 % 1. Initialize the user-specific startup lines
 % 2. Run the command
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
-% [Result1, Result2] = xASL_system('git fetch;git pull');
-% xASL_system('echo hello');
+%
+% 1. xASL_system('echo hello');
+% 2. [Result1, Result2] = xASL_system('git fetch');
+% 3. [Result1, Result2] = xASL_system('git pull');
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
