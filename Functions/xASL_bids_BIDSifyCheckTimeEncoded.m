@@ -41,16 +41,16 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
     end
 
     % Default
-    numberTEs = 1;
-    numberTIs = 1;
+    TimeEncodedEchoTimes = 1;
+    TimeEncodedInversionTimes = 1;
     
     if bTimeEncoded
         if isfield(jsonOut,'EchoTime') && isfield(jsonOut,'PostLabelingDelay')
             % From the import, the length of EchoTime should correspond to the number of volumes
             if length(jsonOut.EchoTime)~=length(jsonOut.PostLabelingDelay)
                 % So here, we first make sure that each PLD is repeated for the whole block of echo-times
-                numberTEs = length(uniquetol(jsonOut.EchoTime,0.001)); % Obtain the number of echo times
-                repeatedPLDs = repmat(jsonOut.PostLabelingDelay(:),1,numberTEs)';
+                TimeEncodedEchoTimes = length(uniquetol(jsonOut.EchoTime,0.001)); % Obtain the number of echo times
+                repeatedPLDs = repmat(jsonOut.PostLabelingDelay(:),1,TimeEncodedEchoTimes)';
                 repeatedPLDs = repeatedPLDs(:);
 
                 if length(repeatedPLDs) > length(jsonOut.EchoTime) || mod(length(jsonOut.EchoTime),length(repeatedPLDs)) ~= 0
@@ -68,20 +68,20 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
         if bTimeEncodedFME
             startDetails = regexp(jsonOut.SeriesDescription,'\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once');
             jsonOut.TimeEncodedMatrixSize = xASL_str2num(jsonOut.SeriesDescription(startDetails:startDetails+1));
-            numberTIs = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
-            numberTEs = xASL_str2num(jsonOut.SeriesDescription(startDetails+10:startDetails+11));
-            fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs\n', jsonOut.TimeEncodedMatrixSize, numberTIs, numberTEs);
-            jsonOut.TimeEncodedEchoTimes = numberTEs;
+            TimeEncodedInversionTimes = xASL_str2num(jsonOut.SeriesDescription(startDetails+3:startDetails+4));
+            TimeEncodedEchoTimes = xASL_str2num(jsonOut.SeriesDescription(startDetails+10:startDetails+11));
+            fprintf('FME sequence, Hadamard-%d encoded images, %d TIs, %d TEs\n', jsonOut.TimeEncodedMatrixSize, TimeEncodedInversionTimes, TimeEncodedEchoTimes);
+            jsonOut.TimeEncodedEchoTimes = TimeEncodedEchoTimes;
         end
     end
     
     % Check total acquired pairs for time encoded sequences
     if bTimeEncoded
-        if (numberTEs>1) && (numberTIs>1)
+        if (TimeEncodedEchoTimes>1) && (TimeEncodedInversionTimes>1)
             % At this stage, jsonOut.PostLabelingDelay has the repeated PLDs already.
-            numberPLDs = numberTIs + 1;
+            numberPLDs = TimeEncodedInversionTimes + 1;
             % Determine the TotalAcquiredPairs
-            NumberRepetitions = jsonOut.AcquisitionMatrix / (numberTEs * numberPLDs);
+            NumberRepetitions = jsonOut.AcquisitionMatrix / (TimeEncodedEchoTimes * numberPLDs);
             jsonOut.TotalAcquiredPairs = jsonOut.TimeEncodedMatrixSize * NumberRepetitions;
         end
     end

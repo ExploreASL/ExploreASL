@@ -212,12 +212,12 @@ end
 %% TimeEncoded parsing
 
 % Check if TimeEncoded is defined
-if isfield(x,'TimeEncodedMatrixType') || ~isempty(x.TimeEncodedMatrixType)
+if isfield(x,'TimeEncodedMatrixType') && ~isempty(x.TimeEncodedMatrixType)
     x.modules.asl.TimeEncodedMatrixType = x.TimeEncodedMatrixType;
 end
 
 % Check if TimeEncodedMatrixSize
-if isfield(x,'TimeEncodedMatrixSize') || ~isempty(x.TimeEncodedMatrixSize)
+if isfield(x,'TimeEncodedMatrixSize') && ~isempty(x.TimeEncodedMatrixSize)
     x.modules.asl.TimeEncodedMatrixSize = x.TimeEncodedMatrixSize;
 end
 

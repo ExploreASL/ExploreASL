@@ -230,11 +230,11 @@ for iSpace=1:2
         
         % Decoding of TimeEncoded data ===================
     elseif x.modules.asl.bTimeEncoded 
-            ASL_im = xASL_quant_HadamardDecoding(x.P.Path_rdespiked_ASL4D, x.modules.asl, x.TimeEncodedEchoTimes); % Nifti is saved inside the function
+            ASL_im = xASL_im_HadamardDecoding(x.P.Path_rdespiked_ASL4D, x.modules.asl, x.TimeEncodedEchoTimes); % Nifti is saved inside the function
         % =============================================
         
         % Save PWI4D
-        fprintf('%s', [PathPWI4D{iSpace} ', ']);
+        fprintf('%s\n', [PathPWI4D{iSpace} ', ']);
         xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
         
         
