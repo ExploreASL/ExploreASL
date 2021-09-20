@@ -30,15 +30,15 @@ function [imASL_reorder] = xASL_im_HadamardDecoding(Encoded_ASL, xDecodingFields
 
 % Checking if all inputs are present
 
-if nargin<3 && isempty(Encoded_ASL)
+if nargin<1 || isempty(Encoded_ASL)
     warning('Encoded_ASL input is empty');
 end
 
-if nargin<3 && isempty(xDecodingFields)
+if nargin<1 || isempty(xDecodingFields)
     warning('xDecodingFields input is empty');
 end
 
-if nargin<3 && isempty(NumberEchoTimes)
+if nargin<1 || isempty(NumberEchoTimes)
     warning('NumberEchoTimes input is empty');
 end
 
