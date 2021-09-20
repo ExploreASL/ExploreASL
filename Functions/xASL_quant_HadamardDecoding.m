@@ -3,7 +3,7 @@ function [imASL_reorder] = xASL_im_HadamardDecoding(Encoded_ASL, xDecodingFields
 %
 % FORMAT:       [imASL_reorder] = xASL_quant_HadamardDecoding(Encoded_ASL, xDecodingFields, NumberEchoTimes)
 %
-% INPUT:        Encoded_ASL      - ASL4D image we want to decode
+% INPUT:        Encoded_ASL      - ASL4D image we want to decode (REQUIRED)
 %
 %               xDecodingFields  1) TimeEncodedMatrixType (REQUIRED)
 %                                   - Hadamard
@@ -11,8 +11,10 @@ function [imASL_reorder] = xASL_im_HadamardDecoding(Encoded_ASL, xDecodingFields
 %                                2) TimeEncodedMatrixSize (REQUIRED)
 %                                   - '4' for Hadamard-4
 %                                   - '8' for Hadamard-8
+%                                3) DecodingMatrix (OPTIONAL)
+%                                   - Matrix given by the user
 %               
-%               NumberEchoTimes  - Field from x.TimeEncodedEchoTimes
+%               NumberEchoTimes  - Field from x.TimeEncodedEchoTimes (REQUIRED)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
@@ -26,11 +28,21 @@ function [imASL_reorder] = xASL_im_HadamardDecoding(Encoded_ASL, xDecodingFields
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-% Decoding Fields
+% Checking if all inputs are present
 
-if nargin<1 || isempy(Encoded_ASL)
-    
+if nargin<3 && isempty(Encoded_ASL)
+    warning('Encoded_ASL input is empty');
 end
+
+if nargin<3 && isempty(xDecodingFields)
+    warning('xDecodingFields input is empty');
+end
+
+if nargin<3 && isempty(NumberEchoTimes)
+    warning('NumberEchoTimes input is empty');
+end
+
+% Decoding Fields
 
 TimeEncodedMatrixType = xDecodingFields.TimeEncodedMatrixType;
 TimeEncodedMatrixSize = xDecodingFields.TimeEncodedMatrixSize;
