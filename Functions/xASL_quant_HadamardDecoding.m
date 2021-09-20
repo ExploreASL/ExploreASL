@@ -34,11 +34,11 @@ if nargin<1 || isempty(Encoded_ASL)
     warning('Encoded_ASL input is empty');
 end
 
-if nargin<1 || isempty(xDecodingFields)
+if nargin<2 || isempty(xDecodingFields)
     warning('xDecodingFields input is empty');
 end
 
-if nargin<1 || isempty(NumberEchoTimes)
+if nargin<3 || isempty(NumberEchoTimes)
     warning('NumberEchoTimes input is empty');
 end
 
