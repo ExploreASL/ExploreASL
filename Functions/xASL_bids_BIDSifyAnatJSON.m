@@ -24,11 +24,23 @@ function jsonOut = xASL_bids_BIDSifyAnatJSON(jsonIn,studyPar)
 	% Fix jsonIn based on studyPar
 	jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'anat');
 
+	% Default output struct
 	jsonOut = jsonIn;
-	% If RepetitionTimePreparation is equal to RepetitionTime, then remove RepetitionTimePreparation
-	if isfield(jsonIn,'RepetitionTime') && isfield(jsonIn,'RepetitionTimePreparation') &&...
-			isnear(jsonIn.RepetitionTime,jsonIn.RepetitionTimePreparation)
-		jsonOut = rmfield(jsonOut,'RepetitionTimePreparation');
-	end
 
+	% Check fields
+	if isfield(jsonIn,'RepetitionTime') && isfield(jsonIn,'RepetitionTimePreparation')
+
+		% Make sure the size is equal
+		if ~isequal(size(jsonIn.RepetitionTime),size(jsonIn.RepetitionTimePreparation))
+			warning('RepetitionTime and RepetitionTimePreparation dimensions do not match...');
+		else
+		
+			% If RepetitionTimePreparation is equal to RepetitionTime, then remove RepetitionTimePreparation
+			if isnear(jsonIn.RepetitionTime,jsonIn.RepetitionTimePreparation)
+				jsonOut = rmfield(jsonOut,'RepetitionTimePreparation');
+			end
+
+		end
+	end
+	
 end
