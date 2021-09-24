@@ -193,9 +193,9 @@ end
 
 if x.S.bMasking(1)==1
     if HasGroupSusceptMask
-        fprintf('%s\n', 'Using population-based susceptibility mask');
+        fprintf('Using population-based susceptibility mask...\n');
     else
-        fprintf('%s\n', 'Using subject-specific susceptibility mask');
+        fprintf('Using subject-specific susceptibility mask...\n');
     end
 end
 
