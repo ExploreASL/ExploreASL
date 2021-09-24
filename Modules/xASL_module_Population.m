@@ -38,7 +38,7 @@ function [result, x] = xASL_module_Population(x)
 
 % Input check
 if x.opts.nWorkers>1 % don't run population module when ExploreASL is parallelized
-    warning('Population module should not run in parallel, skipping');
+    warning('Population module should not run in parallel, skipping...');
     result = true;
     return;
 end
@@ -88,11 +88,11 @@ if ~x.mutex.HasState(StateName{1})
     SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean.nii']);
 
     if ~xASL_exist(SusceptPath, 'file')
-        warning('Susceptibility mask template was missing');
+        warning('Susceptibility mask template was missing...');
         
         if ~isempty(FoVPath)
             xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}), [], false);
-            fprintf('%s\n', 'Was replaced by FoV mask');
+            fprintf('Was replaced by FoV mask...\n');
         end
     end
 
