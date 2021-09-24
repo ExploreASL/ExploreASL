@@ -121,42 +121,14 @@ if ~bSkipStandard
 	DoSusceptibility = false;
     MaskSusceptibility = MaskFoV; % if we don't have susceptibility artifacts
     
-                    %% LEGACY CODE, TO BE REMOVED IN VERSION 2.0.0
-                    if isfield(x, 'Q') && isfield(x.Q, 'Sequence') && strcmpi(x.Q.Sequence, '(2d_epi|3d_grase')
-                        fprintf('%\n', 'Using legacy susceptibility masking');
-                        DoSusceptibility = true;
-
-                        if strcmpi(x.Q.Sequence,'2D_EPI')
-                            Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
-                        elseif strcmpi(x.Q.Sequence,'3D_GRASE')
-                            Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
-                        end
-                    end
-
-                    if DoSusceptibility
-                        MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);        
-
-                        TemplateMask = xASL_io_Nifti2Im(Path_Template)~=1; % MaskSusceptibility<0.85 &
-                        TemplateMask(:,:,1:10) = 0;
-                        TemplateMask = TemplateMask & MaskSusceptibility<0.8;
-                        ThrValues = MaskSusceptibility(TemplateMask);
-                        ThresholdSuscept = Threshold.*max(ThrValues(:));
-
-                        % Remove some extremes using 95% percentile,
-                        % as here we aim to obtain the 95% threshold within the probability map
-                        % (i.e. excluding the manually created mask to isolate the skull
-                        % regions of air cavities)
-                        MaskSusceptibility = MaskSusceptibility > ThresholdSuscept;
-
-                        % Combine susceptibility & FoV
-                        MaskSusceptibility = MaskSusceptibility & MaskFoV;
-                    end
-
-                    
+    % Legacy Susceptibility Masking
+    [x,DoSusceptibility, TemplateMask, ThresholdSuscept, MaskSusceptibility] = ...
+    xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x, DoSusceptibility, MaskSusceptibility);
                     
 	% Save them
 	xASL_io_SaveNifti(PathFoV, MaskVascularPath, MaskVascular, 8, true);
 	xASL_io_SaveNifti(PathFoV, MaskSusceptibilityPath, MaskSusceptibility, 8, true);
+	
 	% this is used in stats:
 	x.S.MaskSusceptibility = xASL_im_IM2Column(MaskSusceptibility,x.S.masks.WBmask);
 end
@@ -300,3 +272,41 @@ x.S.SagSlices = [];
 
 
 end
+
+
+%% LEGACY CODE, TO BE REMOVED IN VERSION 2.0.0
+function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] = xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x,DoSusceptibility,MaskSusceptibility)
+
+    if isfield(x, 'Q') && isfield(x.Q, 'Sequence') && strcmpi(x.Q.Sequence, '(2d_epi|3d_grase')
+        fprintf('%\n', 'Using legacy susceptibility masking');
+        DoSusceptibility = true;
+
+        if strcmpi(x.Q.Sequence,'2D_EPI')
+            Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
+        elseif strcmpi(x.Q.Sequence,'3D_GRASE')
+            Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
+        end
+    end
+
+    if DoSusceptibility
+        MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);        
+
+        TemplateMask = xASL_io_Nifti2Im(Path_Template)~=1; % MaskSusceptibility<0.85 &
+        TemplateMask(:,:,1:10) = 0;
+        TemplateMask = TemplateMask & MaskSusceptibility<0.8;
+        ThrValues = MaskSusceptibility(TemplateMask);
+        ThresholdSuscept = Threshold.*max(ThrValues(:));
+
+        % Remove some extremes using 95% percentile,
+        % as here we aim to obtain the 95% threshold within the probability map
+        % (i.e. excluding the manually created mask to isolate the skull
+        % regions of air cavities)
+        MaskSusceptibility = MaskSusceptibility > ThresholdSuscept;
+
+        % Combine susceptibility & FoV
+        MaskSusceptibility = MaskSusceptibility & MaskFoV;
+    end
+
+end
+
+
