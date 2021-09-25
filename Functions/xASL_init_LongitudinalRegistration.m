@@ -1,4 +1,4 @@
-function [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume] = xASL_init_LongitudinalRegistration(x)
+function [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume, VolumeList, VolumeN] = xASL_init_LongitudinalRegistration(x)
 %xASL_init_LongitudinalRegistration Initialization of longitudinal registration
 %
 % FORMAT: [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume] = xASL_init_LongitudinalRegistration(x)
