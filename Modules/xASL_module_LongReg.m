@@ -460,7 +460,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             x = xASL_init_FileSystem(x);
 
             xASL_wrp_Resample2StandardSpace(x);
-            xASL_wrp_VisualQC(x);
+            xASL_wrp_VisualQC_Structural(x);
         end
 
         x.mutex.AddState('002_Resample');
