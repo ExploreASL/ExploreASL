@@ -110,7 +110,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
         for iS=1:length(CurrentSub) % count aligned T1w volumes
             LockFile = '';
-            LockFile = fullfile(x.D.ROOT, 'lock', 'xASL_module_Structural',CurrentSub{iS}, 'xASL_module_Structural', '010_LinearReg_T1w-MNI.status');
+            LockFile = fullfile(x.D.ROOT, 'lock', 'xASL_module_Structural',CurrentSub{iS}, 'xASL_module_Structural', '010_LinearReg_T1w2MNI.status');
 
             if ~isempty(LockFile) && xASL_exist(LockFile, 'file')
                 RegLockFileCount = RegLockFileCount+1;
@@ -455,7 +455,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             x = xASL_init_FileSystem(x);
 
             xASL_wrp_Resample2StandardSpace(x);
-            xASL_wrp_VisualQC(x);
+            xASL_wrp_VisualQC_Structural(x);
         end
 
         x.mutex.AddState('002_Resample');
