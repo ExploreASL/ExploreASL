@@ -102,7 +102,7 @@ function [x] = ExploreASL_Master(DataParPath, ProcessData, SkipPause, iWorker, n
         
         %% Optional modules
         % The following are optional extensions of the structural module and not required to run, normally they can be ignored:
-        if isfield(x, 'bRunLongReg') && x.modules.bRunLongReg
+        if isfield(x, 'bRunLongReg') && x.bRunLongReg
             % Use this module for longitudinal registration
             [~, x] = xASL_Iteration(x,'xASL_module_LongReg');
         end
