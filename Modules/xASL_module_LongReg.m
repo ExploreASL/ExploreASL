@@ -169,7 +169,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
                 % Create common brainmask
 
-                xASL_im_SkullStrip(Path_rT1{iV}, fullfile(x.D.MapsDir, 'rbrainmask_prob.nii'), x, Path_rT1{iV}); % skullstrip
+                xASL_im_SkullStrip(Path_rT1{iV}, fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'), x, Path_rT1{iV}); % skullstrip
                 tIM = xASL_io_Nifti2Im(Path_rT1{iV});
                 tIM(tIM<=0) = NaN;
                 xASL_io_SaveNifti(Path_rT1{iV}, Path_rT1{iV}, tIM, [], false);
@@ -286,7 +286,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                     end
                 else
                     xASL_spm_reslice(x.D.ResliceRef, Path_T1, [], [], x.Quality);
-                    xASL_im_SkullStrip(Path_rT1, fullfile(x.D.MapsDir, 'rbrainmask_prob.nii'), x, Path_rT1); % skullstrip
+                    xASL_im_SkullStrip(Path_rT1, fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'), x, Path_rT1); % skullstrip
                     tIM = xASL_io_Nifti2Im(Path_rT1);
                     tIM(tIM<=0) = NaN;
                     xASL_io_SaveNifti(Path_rT1, Path_rT1, tIM, [], false);
