@@ -111,7 +111,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
         for iS=1:length(CurrentSub) % count aligned T1w volumes
             LockFile = '';
-            LockFile = fullfile(x.D.ROOT, 'lock', 'xASL_module_Structural',CurrentSub{iS}, 'xASL_module_Structural', '010_LinearReg_T1w-MNI.status');
+            LockFile = fullfile(x.D.ROOT, 'lock', 'xASL_module_Structural',CurrentSub{iS}, 'xASL_module_Structural', '010_LinearReg_T1w2MNI.status');
 
             if ~isempty(LockFile) && xASL_exist(LockFile, 'file')
                 RegLockFileCount = RegLockFileCount+1;
@@ -170,7 +170,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
                 % Create common brainmask
 
-                xASL_im_SkullStrip(Path_rT1{iV}, fullfile(x.D.MapsDir, 'rbrainmask_prob.nii'), x, Path_rT1{iV}); % skullstrip
+                xASL_im_SkullStrip(Path_rT1{iV}, fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'), x, Path_rT1{iV}); % skullstrip
                 tIM = xASL_io_Nifti2Im(Path_rT1{iV});
                 tIM(tIM<=0) = NaN;
                 xASL_io_SaveNifti(Path_rT1{iV}, Path_rT1{iV}, tIM, [], false);
@@ -291,7 +291,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                     end
                 else
                     xASL_spm_reslice(x.D.ResliceRef, Path_T1, [], [], x.settings.Quality);
-                    xASL_im_SkullStrip(Path_rT1, fullfile(x.D.MapsDir, 'rbrainmask_prob.nii'), x, Path_rT1); % skullstrip
+                    xASL_im_SkullStrip(Path_rT1, fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'), x, Path_rT1); % skullstrip
                     tIM = xASL_io_Nifti2Im(Path_rT1);
                     tIM(tIM<=0) = NaN;
                     xASL_io_SaveNifti(Path_rT1, Path_rT1, tIM, [], false);
