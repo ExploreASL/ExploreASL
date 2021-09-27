@@ -53,10 +53,12 @@ end
 
 % Test: Load data
 try
+    imOriginal = xASL_io_Nifti2Im(testDirsAndFiles.testFile);
     im1 = xASL_io_Nifti2Im(testDirsAndFiles.testFileResult1);
     im2 = xASL_io_Nifti2Im(testDirsAndFiles.testFileResult2);
     im3 = xASL_io_Nifti2Im(testDirsAndFiles.testFileResult3);
 catch ME
+    imOriginal = [];
     im1 = [];
     im2 = [];
     im3 = [];
@@ -66,12 +68,54 @@ catch ME
 end
 
 % Define one or multiple test conditions here
+if isempty(imOriginal) || isempty(im1) || isempty(im2) || isempty(im3)
+    testCondition = false;
+end
 
+% Check image size first
+if isequal(size(imOriginal),size(im1)) && isequal(size(imOriginal),size(im2)) && isequal(size(imOriginal),size(im3))
+
+    % The sum of image values compared to the original image should stay almost the same
+    if abs(sum(im1(:))/sum(imOriginal(:))-1) > 0.01
+        testCondition = false;
+    end
+    if abs(sum(im2(:))/sum(imOriginal(:))-1) > 0.01
+        testCondition = false;
+    end
+    if abs(sum(im3(:))/sum(imOriginal(:))-1) > 0.01
+        testCondition = false;
+    end
+
+    % The RMSE should be pretty small as well
+    if xASL_ut_GetRMSE(imOriginal, im1) > 1.0
+        testCondition = false;
+    end
+    if xASL_ut_GetRMSE(imOriginal, im2) > 1.0
+        testCondition = false;
+    end
+    if xASL_ut_GetRMSE(imOriginal, im3) > 1.0
+        testCondition = false;
+    end
+    
+    % I also expect that the variance decreases for gaussian blurring / smoothing
+    resultValues.varOriginal = var(imOriginal(:));
+    resultValues.varIm1 = var(im1(:));
+    resultValues.varIm2 = var(im2(:));
+    resultValues.varIm3 = var(im3(:));
+    
+    if ~(resultValues.varOriginal>resultValues.varIm1) ...
+        || ~(resultValues.varIm1>resultValues.varIm2) ...
+        || ~(resultValues.varIm2>resultValues.varIm3) 
+        testCondition = false;
+    end
+else
+    testCondition = false;
+end
 
 
 
 % Delete test data
-xASL_delete(testDirsAndFiles.testDestination),true)
+xASL_delete(testDirsAndFiles.testDestination,true);
 
 % Clean-up
 clearvars -except UnitTest TestRepository testCondition testTime 
