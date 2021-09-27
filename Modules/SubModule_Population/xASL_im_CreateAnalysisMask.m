@@ -274,11 +274,11 @@ x.S.SagSlices = [];
 end
 
 
-%% LEGACY CODE, TO BE REMOVED IN VERSION 2.0.0
+%% Legacy Susceptibility Masking
 function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] = xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x,DoSusceptibility,MaskSusceptibility)
 
     if isfield(x, 'Q') && isfield(x.Q, 'Sequence') && strcmpi(x.Q.Sequence, '(2d_epi|3d_grase')
-        fprintf('%\n', 'Using legacy susceptibility masking');
+        fprintf('Using legacy susceptibility masking...\n');
         DoSusceptibility = true;
 
         if strcmpi(x.Q.Sequence,'2D_EPI')
@@ -305,6 +305,8 @@ function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] =
 
         % Combine susceptibility & FoV
         MaskSusceptibility = MaskSusceptibility & MaskFoV;
+    else
+    	fprintf('Susceptibility masking is turned off...\n');
     end
 
 end
