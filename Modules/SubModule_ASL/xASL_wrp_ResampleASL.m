@@ -230,15 +230,13 @@ for iSpace=1:2
         warning('Odd number of control-label pairs, skipping');
         return;
         
-        % Decoding of TimeEncoded data ===================
-    elseif x.modules.asl.bTimeEncoded 
-            ASL_im = xASL_im_HadamardDecoding(x.P.Path_rdespiked_ASL4D, x.modules.asl, x.TimeEncodedEchoTimes); % Nifti is saved inside the function
-        % =============================================
+    elseif isfield(x.modules.asl,'bTimeEncoded') && x.modules.asl.bTimeEncoded
+        % Decoding of TimeEncoded data (Nifti is saved inside the function)
+        ASL_im = xASL_im_HadamardDecoding(x.P.Path_rdespiked_ASL4D, x.modules.asl, x.TimeEncodedEchoTimes);
         
         % Save PWI4D
         fprintf('%s\n', [PathPWI4D{iSpace} ', ']);
         xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
-        
         
     else
         % Paired subtraction
