@@ -14,9 +14,11 @@ function [pathOut] = xASL_spm_admin(pathIn, bPadComma1)
 % DESCRIPTION: This SPM admin function takes a NIfTI path and does a few
 % checks to make this valid to SPM. It accepts both .nii and .nii.gz.
 % It runs the following steps:
+%
 % 1. Unzip .nii.gz
 % 2. Convert char to cell
 % 3. Add ',1' suffix
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_spm_admin('/MyStudy/Subject1/T1.nii.gz');
 % __________________________________
