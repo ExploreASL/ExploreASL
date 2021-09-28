@@ -136,7 +136,9 @@ end
 function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable,results,datasetA,datasetB)
 
     % Go through missing folders
-    if size(results.(datasetA).missingFolders,1)>0 && ~isempty(results.(datasetA).missingFolders{1})
+    if size(results.(datasetA).missingFolders,1)>0 && ...
+       size(results.(datasetA).missingFolders,2)>0 && ...
+            ~isempty(results.(datasetA).missingFolders{1})
         for iElement=1:size(results.(datasetA).missingFolders,1)
             dataset = cellstr(datasetA);
             name = cellstr('Missing folder');
@@ -144,7 +146,9 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
             reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
-    if size(results.(datasetB).missingFolders,1)>0 && ~isempty(results.(datasetB).missingFolders{1})
+    if size(results.(datasetB).missingFolders,1)>0 && ...
+       size(results.(datasetB).missingFolders,2)>0 && ...
+            ~isempty(results.(datasetB).missingFolders{1})
         for iElement=1:size(results.(datasetB).missingFolders,1)
             dataset = cellstr(datasetB);
             name = cellstr('Missing folder');
@@ -154,7 +158,9 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
     end
 
     % Go through missing files
-    if size(results.(datasetA).missingFiles,1)>0 && ~isempty(results.(datasetA).missingFiles{1})
+    if size(results.(datasetA).missingFiles,1)>0 && ...
+       size(results.(datasetA).missingFiles,2)>0 && ...
+            ~isempty(results.(datasetA).missingFiles{1})
         for iElement=1:size(results.(datasetA).missingFiles,1)
             dataset = cellstr(datasetA);
             name = cellstr('Missing file');
@@ -162,7 +168,9 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
             reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
-    if size(results.(datasetB).missingFiles,1)>0 && ~isempty(results.(datasetB).missingFiles{1})
+    if size(results.(datasetB).missingFiles,1)>0 && ...
+       size(results.(datasetB).missingFiles,2)>0 && ...
+            ~isempty(results.(datasetB).missingFiles{1})
         for iElement=1:size(results.(datasetB).missingFiles,1)
             dataset = cellstr(datasetB);
             name = cellstr('Missing file');

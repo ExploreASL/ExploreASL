@@ -276,14 +276,16 @@ end
 
 % Check missing folders
 if isfield(results,'datasetA') && isfield(results.datasetA,'missingFolders')
-    if isempty(regexp(results.datasetA.missingFolders{1},'SubFolder1B', 'once'))
+    if numel(results.datasetA.missingFolders)>0 && ...
+       isempty(regexp(results.datasetA.missingFolders{1},'SubFolder1B', 'once'))
         testCondition = false;
     end
 else
     testCondition = false;
 end
 if isfield(results,'datasetB') && isfield(results.datasetB,'missingFolders')
-    if isempty(regexp(results.datasetB.missingFolders{1},'SubFolder1A', 'once'))
+    if numel(results.datasetB.missingFolders)>0 && ...
+       isempty(regexp(results.datasetB.missingFolders{1},'SubFolder1A', 'once'))
         testCondition = false;
     end
 else
