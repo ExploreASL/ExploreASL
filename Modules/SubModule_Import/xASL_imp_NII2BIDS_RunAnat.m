@@ -41,13 +41,31 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
 
     %% Iterate over files
     for iAnatType = bidsPar.listAnatTypes
+        
+        % Check if multiple anatomical NIfTIs were exported by DCM2NIIX
+        checkAnatListSubfolder = xASL_adm_GetFileList(fullfile(imPar.TempRoot, nameSubjectSession, [iAnatType{1} '_1']),['^' iAnatType{1} '.+\.nii']);
+        checkAnatListMainLevel = xASL_adm_GetFileList(fullfile(imPar.TempRoot, nameSubjectSession),['^' iAnatType{1} '.+\.nii']);
+        
+        % File paths within subfolder or main subject/session level
+        anatFileInSubfolder = fullfile(imPar.TempRoot, nameSubjectSession, [iAnatType{1} '_1'], [iAnatType{1} '.nii']);
+        anatFileInMainLevel = fullfile(imPar.TempRoot, nameSubjectSession, [iAnatType{1} '.nii']);
 
         % Check if it exists
         anatPath = '';
-		if xASL_exist(fullfile(imPar.TempRoot, nameSubjectSession, [iAnatType{1} '_1'], [iAnatType{1} '.nii']), 'file')
+		if xASL_exist(anatFileInSubfolder, 'file')
+            % NIfTIs & JSONs are in a separate subfolder
 			anatPath = fullfile(imPar.TempRoot, nameSubjectSession, [iAnatType{1} '_1'], iAnatType{1});
-		elseif xASL_exist(fullfile(imPar.TempRoot, nameSubjectSession, [iAnatType{1} '.nii']), 'file')
+		elseif xASL_exist(anatFileInMainLevel, 'file')
+            % NIfTIs & JSONs are in the main subject/session directory
 			anatPath = fullfile(imPar.TempRoot, nameSubjectSession, iAnatType{1});
+        elseif ~isempty(checkAnatListSubfolder)
+            fprintf('Multiple anatomical NIfTIs exported by DCM2NIIX, automatically selecting the first one...\n');
+            [baseDir, fileName] = xASL_fileparts(checkAnatListSubfolder{1});
+            anatPath = fullfile(baseDir,fileName);
+        elseif ~isempty(checkAnatListMainLevel)
+            fprintf('Multiple anatomical NIfTIs exported by DCM2NIIX, automatically selecting the first one...\n');
+            [baseDir, fileName] = xASL_fileparts(checkAnatListMainLevel{1});
+            anatPath = fullfile(baseDir,fileName);
 		end
 
         % If anatomical file of this type exist, then BIDSify its structure

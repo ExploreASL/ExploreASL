@@ -235,11 +235,28 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
                 
                 %% 4.10 Store the summary info so it can be sorted and printed below
                 summary_lines{iSubject, iVisit, iSession, iScan} = summary_line;
+                
+                %% 4.11 Check DCM2NIIX output
+                xASL_imp_Check_DCM2NII_Output(nii_files,scanID);
+                
+                    
             end % scansIDs
         end % sessionIDs
     end % visitIDs
 
         
+end
+
+
+%% Check the DCM2NII output
+function xASL_imp_Check_DCM2NII_Output(nii_files,scanID)
+
+    % For some ADNI cases there are multiple anatomical scans in a single session (case 006_S_4485 e.g.).
+    % This can be troublesome for NII2BIDS and BIDS2LEGACY.
+    if (~isempty(regexpi(scanID,'t1w')) ||  ~isempty(regexpi(scanID,'flair'))) && numel(nii_files)>1
+        fprintf('Multiple anatomical NIfTIs for a single session...\n');
+    end
+
 end
 
 
