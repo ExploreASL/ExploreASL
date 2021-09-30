@@ -120,12 +120,15 @@ xASL_delete(rpfile);
 %         MotionFirstTEs=load(rpfile);
 %         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); 
 %         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
-%     end  
-    
-if nFrames>2 && bSubtraction && ...
-    isfield(x.Q,'Initial_PLD') && isfield(x,'EchoTime') && isfield(x.modules.asl,'TimeEncodedMatrixType') && ...
-    (numel(unique(x.Q.Initial_PLD))>1 || numel(unique(x.EchoTime))>1 || x.modules.asl.TimeEncodedMatrixType~=0)
+%     end
 
+% Define conditions for motion correction in multi-PLD, multi-TE and Hadamard subjects
+conditionMultiPLD = isfield(x.Q,'Initial_PLD') && (numel(unique(x.Q.Initial_PLD))>1);
+conditionMultiTE = isfield(x,'EchoTime') && (numel(unique(x.EchoTime))>1);
+conditionHadamard = isfield(x.modules.asl,'TimeEncodedMatrixType') && (x.modules.asl.TimeEncodedMatrixType~=0);
+
+% Run motion correction for corresponding case
+if nFrames>2 && bSubtraction && (conditionMultiPLD  ||  conditionMultiTE  || conditionHadamard)
     % Multi-PLD, Multi-TE or Hadamard
     spm_realign(spm_vol(InputPath),flags,false);
     
