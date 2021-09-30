@@ -1,4 +1,4 @@
-function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath, bUseBasilQuantification)
+function x = xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath, bUseBasilQuantification)
 %xASL_wrp_Quantify Submodule of ExploreASL ASL Module, that performs quantfication
 %
 % FORMAT: xASL_wrp_Quantify(x)
@@ -393,7 +393,15 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-[~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, bUseBasilQuantification); % also runs BASIL, but only in native space!
+if size(PWI,4) == 1 % single PLD quantification
+    fprintf('%s\n',['Performing single PLD quantification']);
+    [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, bUseBasilQuantification); % also runs BASIL, but only in native space!
+elseif size(PWI,4) > 1 && x.Q.bUseBasilQuantification % perform BASIL multi-PLD quantification
+    fprintf('%s\n',['Performing multi PLD quantification using BASIL']);
+    [~, CBF] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
+else size(PWI,4) > 1 && ~x.Q.bUseBasilQuantification % perform BASIL multi-PLD quantification
+     fprintf('%s\n',['Multi PLD quantification without BASIL not implemented yet']);
+end
 
 if x.Q.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
@@ -416,6 +424,7 @@ fprintf('%s\n','Saving PWI & CBF niftis');
 if bUseBasilQuantification
     [Fpath, Ffile, Fext] = xASL_fileparts(OutputPath);
     OutputPath = fullfile(Fpath, [Ffile '_Basil' Fext]);
+    x.P.Path_CBF_Basil = OutputPath;
 end
 
 xASL_io_SaveNifti(PWI_Path, OutputPath, CBF, 32, 0);

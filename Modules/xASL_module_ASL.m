@@ -479,21 +479,25 @@ iState = 8;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
     fprintf('%s\n','Quantifying ASL:   ');
-    if isfield(x.Q, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification
-        % Quantification in native space:
+    if isfield(x.Q, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification % if BASIL quantification will be performed, only native space analysis is possible
+        % Quantification in native space only:
         nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
         
         if nVolumes>1
-            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient, 1);
+            x = xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient, 1); 
         else
-            xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient, 1);
-        end        
-    end
-    
+            x = xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient, 1);
+        end   
+    else
+        
     % Quantification in standard space:
     xASL_wrp_Quantify(x);
     % Quantification in native space:
-    xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
+    xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);   
+    end
+    
+
+
 
 	% allow 4D quantification as well
 	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D==1
@@ -532,8 +536,12 @@ end
 iState = 9;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
 
-    xASL_wrp_VisualQC_ASL(x);
+    if ~x.modules.asl.bMultiPLD
+        xASL_wrp_VisualQC_ASL(x);
     x.mutex.AddState(StateName{iState});
+    else
+        fprintf('%s\n',[StateName{iState} ' is skipped, multiPLD sequence detected.']); 
+    end
 
 else
 	if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end

@@ -96,7 +96,13 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
 	
     pGM = xASL_io_Nifti2Im(Path_pGM);
     pWM = xASL_io_Nifti2Im(Path_pWM);
-    imCBF = xASL_io_Nifti2Im(x.P.Path_CBF);
+    if x.Q.bUseBasilQuantification
+        imCBF = xASL_io_Nifti2Im(x.P.Path_CBF_Basil);
+    else
+        imCBF = xASL_io_Nifti2Im(x.P.Path_CBF);
+    end
+        
+    
 
     if xASL_stat_SumNan(pGM(:))==0
         warning(['Empty image, invalid ' Path_pGM]);

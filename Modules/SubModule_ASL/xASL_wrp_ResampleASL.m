@@ -7,7 +7,7 @@ function xASL_wrp_ResampleASL(x)
 % INPUT:
 %   x  - structure containing fields with all information required to run this submodule (REQUIRED)
 %
-% OUTPUT:
+% OUTPUT:b
 % OUTPUT FILES: NIfTIs in native & standard space
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -22,6 +22,7 @@ function xASL_wrp_ResampleASL(x)
 %               3. Resample ASL time series to MNI space
 %               4. Resample to native space (applying any motion correction or registration)
 %               5. Bilateral filter (currently disabled)
+
 %               6. Create mean control image, if available, in native & standard space
 %               7. Clone mean control image to be used as pseudo-M0 (if x.Q.M0==UseControlAsM0)
 %               8. Pair-wise subtraction & saving PWI & PWI4D in both spaces
@@ -244,24 +245,30 @@ for iSpace=1:2
         % Paired subtraction
         [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
         ASL_im = ControlIm - LabelIm;
-        
-        if x.modules.asl.bMultiPLD
-            %Check number of repetitions
-            PLDUnique = unique(x.Q.Initial_PLD);
-            NumRep = (length(x.Q.Initial_PLD)/ length(PLDUnique))/2; %dividing per 2 to account for Ctr-Lab pairs
+        PWI = zeros(size(ASL_im,1),size(ASL_im,2),size(ASL_im,3)); % preallocate PWI
+        % Average PWI
+        if x.modules.asl.bMultiPLD % multiPLD PWI
+            RepeatsInPLD = size(ASL_im,4)/length(x.Q.Initial_PLD); % we still need to create a single Repeats in X struct
+            for PLDnmbr = 1:length(x.Q.Initial_PLD)
+                RepeatsLocStartPerPLD = 1 + (PLDnmbr-1) * RepeatsInPLD;
+                RepeatsLocEndPerPLD = PLDnmbr * RepeatsInPLD;
+                PWI(:,:,:,PLDnmbr) = xASL_stat_MeanNan(ASL_im(:,:,:,RepeatsLocStartPerPLD:RepeatsLocEndPerPLD), 4);
+            end
+            % Save PWI
+            fprintf('%s\n', PathPWI4D{iSpace});
+            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI, 32, false);
             
-            ASL_im = repmat(ASL_im,1,1,1,1,NumRep); %Adds a 5th dimension with the number of repetitions, for BASIL
+            PWIsingle = xASL_stat_MeanNan(ASL_im, 4); % create single PWI for further steps in ASL module
+            % Save single PWI
+            fprintf('%s\n', PathPWI{iSpace});
+            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);
+            
         else
-            
-            % Save PWI4D
-            fprintf('%s', [PathPWI4D{iSpace} ', ']);
-            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
-            % Average PWI
-            PWI = xASL_stat_MeanNan(ASL_im, 4);
+            PWI = xASL_stat_MeanNan(ASL_im, 4); % singlePLD PWI
             % Save PWI
             fprintf('%s\n', PathPWI{iSpace});
             xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI, 32, false);
-        end
+        end            
     end
 end
 

@@ -59,12 +59,20 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     % dummy input image here
     PWI(isnan(PWI)) = 0;
     
-    xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0);
+    if size(PWI,4) == 1 % singlePLD
+        xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0); % use PWI path
+    elseif size(PWI,4) > 1 %multiPLD
+        xASL_io_SaveNifti(x.P.Path_PWI4D, pathBasilInput, PWI, [], 0); % use PWI4D path
+    end
 
 
     %% 4. Create option_file that contains options which are passed to Fabber
     % basil_options is a character array containing CLI args for the Basil command
-    bMultiPLD = false; % for now
+    if size(PWI,4) < 2
+        bMultiPLD = false; 
+    else
+        bMultiPLD = true;
+    end
     
     BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMultiPLD);
 
@@ -86,7 +94,7 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     
     pathBasilMean = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
     pathBasilMean = pathBasilMean{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
-    
+       
     CBF_nocalib = xASL_io_Nifti2Im(pathBasilMean);
     
     
@@ -132,13 +140,22 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMu
     
     
     %% Basic acquisition and tissue parameters
-    fprintf(FIDoptionFile, '# Basil options written by ExploreASL\n');
-    fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4));
-    fprintf(FIDoptionFile, '--ti1=%f\n', (x.Q.LabelingDuration + x.Q.Initial_PLD)/1000);
-    fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
-    fprintf(FIDoptionFile, '--tau=%f\n', x.Q.LabelingDuration/1000); % FIXME tau could be list
-    fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.BasilSliceReadoutTime/1000);
-    fprintf(FIDoptionFile, '--save-model-fit\n');
+     % create CSV style text for TIs input
+
+     % print parameters
+     fprintf(FIDoptionFile, '# Basil options written by ExploreASL\n');
+     fprintf(FIDoptionFile, '--iaf=diff\n'); % as input is PWI
+     
+     TIs = (x.Q.LabelingDuration + x.Q.Initial_PLD)'/1000;
+     PLDAmount = length(TIs);
+     for TIsingle = 1:PLDAmount
+         fprintf(FIDoptionFile, ['--ti' num2str(TIsingle) '=%.2f\n'], TIs(TIsingle));
+     end
+     fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
+     fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
+     fprintf(FIDoptionFile, '--tau=%f\n', x.Q.LabelingDuration/1000); % FIXME tau could be list
+     fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.BasilSliceReadoutTime/1000);
+     fprintf(FIDoptionFile, '--save-model-fit\n');
 
 
     %% FIXME Aquisition options we might be able to use in the future
