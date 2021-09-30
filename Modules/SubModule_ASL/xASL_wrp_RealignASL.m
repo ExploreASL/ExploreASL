@@ -123,8 +123,8 @@ xASL_delete(rpfile);
 %     end  
     
 if nFrames>2 && bSubtraction && ...
-    isfield(x.Q,'Initial_PLD') && isfield(x,'EchoTime') && isfield(x.modules.asl,'HadamardType') && ...
-    (numel(unique(x.Q.Initial_PLD))>1 || numel(unique(x.EchoTime))>1 || x.modules.asl.HadamardType~=0)
+    isfield(x.Q,'Initial_PLD') && isfield(x,'EchoTime') && isfield(x.modules.asl,'TimeEncodedMatrixType') && ...
+    (numel(unique(x.Q.Initial_PLD))>1 || numel(unique(x.EchoTime))>1 || x.modules.asl.TimeEncodedMatrixType~=0)
 
     % Multi-PLD, Multi-TE or Hadamard
     spm_realign(spm_vol(InputPath),flags,false);
