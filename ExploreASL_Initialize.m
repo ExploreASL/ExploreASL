@@ -153,7 +153,21 @@ function [x] = ExploreASL_Initialize(varargin)
     % xASL_adm_CheckPermissions(x.opts.MyPath, false);
 
     %% 7. Data-specific initialization
-    fprintf('ExploreASL v%s initialized ... \n', x.Version);
+    xASL_init_PrintVersion(x.Version);
+
+end
+
+
+%% ==================================================================================
+function xASL_init_PrintVersion(vExploreASL)
+
+    % For beta versions we print the text in red with an additional comment, to make sure users are aware of it
+    if isempty(regexpi(vExploreASL,'BETA'))
+        fprintf('ExploreASL v%s initialized ... \n', vExploreASL);
+    else
+        vExploreASL = vExploreASL(1:regexpi(vExploreASL,'_BETA')-1);
+        fprintf(2,'ExploreASL v%s initialized (this is a beta version)... \n', vExploreASL);
+    end
 
 end
 
