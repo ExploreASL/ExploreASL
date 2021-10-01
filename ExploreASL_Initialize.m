@@ -166,7 +166,7 @@ function xASL_init_PrintVersion(vExploreASL)
         fprintf('ExploreASL v%s initialized ... \n', vExploreASL);
     else
         vExploreASL = vExploreASL(1:regexpi(vExploreASL,'_BETA')-1);
-        fprintf(2,'ExploreASL v%s initialized (this is a beta version)... \n', vExploreASL);
+        fprintf(2,'ExploreASL v%s (beta) initialized... \n', vExploreASL);
     end
 
 end
