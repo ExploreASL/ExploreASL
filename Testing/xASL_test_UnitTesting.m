@@ -47,8 +47,16 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
     if exist(potentialTestingDirectory,'dir')
         fprintf('Testing repository found...\n');
         TestRepository = potentialTestingDirectory;
-    else    
+    else
         TestRepository = [];
+    end
+    
+    % Give user feedback if repository was not found
+    if isempty(TestRepository)
+        fprintf(2,'ExploreASL was unable to find the Testing repository in your local directory...\n');
+        UnitTests = NaN;
+        UnitTestsTable = NaN;
+        return
     end
 	
 	% Update test repository
