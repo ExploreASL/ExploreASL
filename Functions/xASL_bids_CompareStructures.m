@@ -138,19 +138,19 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
     % Go through missing folders
     if numel(results.(datasetA).missingFolders)>0 && ...
             ~isempty(results.(datasetA).missingFolders{1})
-        for iElement=1:size(results.(datasetA).missingFolders,1)
+        for iElement=1:numel(results.(datasetA).missingFolders)
             dataset = cellstr(datasetA);
             name = cellstr('Missing folder');
-            message = cellstr(results.(datasetA).missingFolders{iElement,1});
+            message = cellstr(results.(datasetA).missingFolders{iElement});
             reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
     if numel(results.(datasetB).missingFolders)>0 && ...
             ~isempty(results.(datasetB).missingFolders{1})
-        for iElement=1:size(results.(datasetB).missingFolders,1)
+        for iElement=1:numel(results.(datasetB).missingFolders)
             dataset = cellstr(datasetB);
             name = cellstr('Missing folder');
-            message = cellstr(results.(datasetB).missingFolders{iElement,1});
+            message = cellstr(results.(datasetB).missingFolders{iElement});
             reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
@@ -158,16 +158,16 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
     % Go through missing files
     if numel(results.(datasetA).missingFiles)>0 && ...
             ~isempty(results.(datasetA).missingFiles{1})
-        for iElement=1:size(results.(datasetA).missingFiles,1)
+        for iElement=1:numel(results.(datasetA).missingFiles)
             dataset = cellstr(datasetA);
             name = cellstr('Missing file');
-            message = cellstr(results.(datasetA).missingFiles{iElement,1});
+            message = cellstr(results.(datasetA).missingFiles{iElement});
             reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
     if numel(results.(datasetB).missingFiles)>0 && ...
             ~isempty(results.(datasetB).missingFiles{1})
-        for iElement=1:size(results.(datasetB).missingFiles,1)
+        for iElement=1:numel(results.(datasetB).missingFiles)
             dataset = cellstr(datasetB);
             name = cellstr('Missing file');
             message = cellstr(results.(datasetB).missingFiles{iElement,1});
@@ -177,10 +177,10 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
 
     % Go through differences
     if ~isempty(results.differences{1})
-        for iElement=1:size(results.differences,1)
+        for iElement=1:numel(results.differences)
             dataset = cellstr('Both');
             name = cellstr('Different file content');
-            message = cellstr(results.differences{iElement,1});
+            message = cellstr(results.differences{iElement});
             reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
