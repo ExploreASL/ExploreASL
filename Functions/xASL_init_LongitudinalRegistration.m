@@ -1,33 +1,36 @@
 function [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume, VolumeList, VolumeN] = xASL_init_LongitudinalRegistration(x)
 %xASL_init_LongitudinalRegistration Initialization of longitudinal registration
 %
-% FORMAT: [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume] = xASL_init_LongitudinalRegistration(x)
+% FORMAT: [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume, VolumeList, VolumeN] = xASL_init_LongitudinalRegistration(x)
 %
 % INPUT:
 %   x       - struct containing pipeline environment parameters (REQUIRED)
 %
 % OUTPUT:
-%   SubjectNlist            - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%   SubjectNlist            - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %   TimePoint               - TimePoint counter (1, 2, etc)
-%   IsSubject               - timepoint index of current subject
-%   SubjectID_FirstVolume   - name/ID of the (first visit/timepoint) of the subject
+%   IsSubject               - Timepoint index of current subject
+%   SubjectID_FirstVolume   - Name/ID of the (first visit/timepoint) of the subject
+%   VolumeList              - List of volumes
+%   VolumeN                 - Volume n
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function initializes the longitudinal registration for ExploreASL,
+% DESCRIPTION:
+%
+% This function initializes the longitudinal registration for ExploreASL,
 % which implements the SPM longitudinal registration.
 %
-% This function recognizes and defines visits (i.e. multiple scans per
-% subject) in the initialization of ExploreASL, based on the suffixes _1 _2
-% _n in the subject names (identified as foldernames).
+% This function recognizes and defines visits (i.e. multiple scans per subject) in the initialization of 
+% ExploreASL, based on the suffixes _1 _2 _n in the subject names (identified as foldernames).
 %
 % Specifically, this function is called in the registration modules LongReg and DARTEL,
 % the first carrying out within-subject registration and 
-% the second between-subject registration, based on the first time point
-% only.
+% the second between-subject registration, based on the first time point only.
+% 
 % For the first function, we specify here a list of visits/timepoints that
 % should be registered longitudinally, for the second function we specify a
 % list of first visits only, as the between-subject registration in
-% ExploreASL is based on the first scan (as opposed to the average
-% subject's scan).
+% ExploreASL is based on the first scan (as opposed to the average subject's scan).
 %
 % This function runs the following steps:
 %
@@ -36,6 +39,7 @@ function [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume, VolumeList,
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [SubjectNlist, TimePoint, IsSubject, SubjectID_FirstVolume] = xASL_init_LongitudinalRegistration(x);
+%
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
