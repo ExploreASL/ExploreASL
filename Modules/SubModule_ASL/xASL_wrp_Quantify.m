@@ -13,7 +13,7 @@ function x = xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPat
 %                             quantification, false for using ExploreASL's
 %                             own quantification (OPTIONAL, DEFAULT = false)
 %
-% OUTPUT: n/a
+% OUTPUT: x             - - structure containing fields with all information required to advance the ASL module
 % OUTPUT FILES: NIfTI containing quantified CBF map in native or standard space (depending on input NIfTI),
 % or other derivatives that need a quantification, e.g. FEAST
 %

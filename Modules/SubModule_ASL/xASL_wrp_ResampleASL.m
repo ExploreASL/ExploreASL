@@ -7,7 +7,7 @@ function xASL_wrp_ResampleASL(x)
 % INPUT:
 %   x  - structure containing fields with all information required to run this submodule (REQUIRED)
 %
-% OUTPUT:b
+% OUTPUT:
 % OUTPUT FILES: NIfTIs in native & standard space
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -22,7 +22,6 @@ function xASL_wrp_ResampleASL(x)
 %               3. Resample ASL time series to MNI space
 %               4. Resample to native space (applying any motion correction or registration)
 %               5. Bilateral filter (currently disabled)
-
 %               6. Create mean control image, if available, in native & standard space
 %               7. Clone mean control image to be used as pseudo-M0 (if x.Q.M0==UseControlAsM0)
 %               8. Pair-wise subtraction & saving PWI & PWI4D in both spaces

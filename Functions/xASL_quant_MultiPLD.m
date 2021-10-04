@@ -1,9 +1,9 @@
 function [ScaleImage, CBF] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
-%xASL_quant_SinglePLD % Perform a multi-step quantification
-% FORMAT: [ScaleImage[, CBF]] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x)
+%xASL_quant_MultiPLD % Perform a multi-step quantification
+% FORMAT: [ScaleImage[, CBF]] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
 %
 % INPUT:
-%   PWI             - image matrix of perfusion-weighted image (REQUIRED)
+%   PWI             - 4D (4th dimension per PLD) image matrix of perfusion-weighted image (REQUIRED)
 %   M0_im           - M0 image (can be a single number or image matrix) (REQUIRED)
 %   imSliceNumber   - image matrix showing slice number in current ASL space (REQUIRED for 2D multi-slice)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
@@ -39,13 +39,13 @@ function [ScaleImage, CBF] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, b
 %              imSliceNumber)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x);
+% EXAMPLE: [ScaleImage, CBF] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
 
 %% Admin
-fprintf('%s\n','Quantification CBF single PLD:');
+fprintf('%s\n','Quantification CBF multi-PLD:');
 
 if  xASL_stat_SumNan(M0_im(:))==0
     error('Empty M0 image, something went wrong in M0 processing');

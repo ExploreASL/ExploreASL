@@ -1,5 +1,6 @@
 function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
 %xASL_quant_Basil Perform quantification using FSL BASIL
+
 % FORMAT: [CBF_nocalib] = xASL_quant_Basil(PWI, x)
 % 
 % INPUT:
@@ -75,10 +76,8 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     end
     
     BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMultiPLD);
-
     
     %% 5. Run Basil and retrieve CBF output
-    
     % args.bAutomaticallyDetectFSL=1;
     [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' BasilOptions], x);
     
@@ -96,8 +95,7 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     pathBasilMean = pathBasilMean{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
        
     CBF_nocalib = xASL_io_Nifti2Im(pathBasilMean);
-    
-    
+        
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_SinglePLD since Fabber has T1 in seconds
     % and does not take into account labeling efficiency
@@ -136,9 +134,6 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMu
     FIDoptionFile = fopen(pathBasilOptions, 'w+');
     BasilOptions = '';
 
-    
-    
-    
     %% Basic acquisition and tissue parameters
      % create CSV style text for TIs input
 
