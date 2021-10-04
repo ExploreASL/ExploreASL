@@ -37,12 +37,11 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
 %
 % EXAMPLE: x = xASL_qc_CollectQC_ASL(x, 10);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
     %% Admin
     ASL = struct;
-
     SubjectID = x.SUBJECTS{iSubject};
     SessionID = x.SESSIONS{1};
     ASL_ID = [SubjectID '_' SessionID];
@@ -84,8 +83,10 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
     else
         x = xASL_adm_DefineASLResolution(x);
 		warning('T1w-related files missing, computing ASL data using MNI templates!!!');
-        xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc1T1_ASL_res.nii'),x.P.Path_rc1T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-        xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc2T1_ASL_res.nii'),x.P.Path_rc2T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+        xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc1T1_ASL_res.nii'),...
+            x.P.Path_rc1T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+        xASL_im_PreSmooth(x.P.Path_CBF,fullfile(x.D.TemplateDir,'rc2T1_ASL_res.nii'),...
+            x.P.Path_rc2T1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 	
 		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc1T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_rc1T1);
 		xASL_spm_reslice(x.P.Path_CBF, x.P.Path_rc2T1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_rc2T1);
@@ -94,12 +95,15 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
 		Path_pWM = x.P.Path_rc2T1;
 	end
 	
+    % Read CBF NIfTI
     pGM = xASL_io_Nifti2Im(Path_pGM);
     pWM = xASL_io_Nifti2Im(Path_pWM);
-    if isfield(x.Q,'bUseBasilQuantification') && x.Q.bUseBasilQuantification == 1 % use BASIL CBF image paths
+    if isfield(x.Q,'bUseBasilQuantification') && x.Q.bUseBasilQuantification==1
+        % use BASIL CBF image paths
         imCBF = xASL_io_Nifti2Im(x.P.Path_CBF_Basil);
     else
-        imCBF = xASL_io_Nifti2Im(x.P.Path_CBF); % use xASL CBF image paths
+        % use xASL CBF image paths
+        imCBF = xASL_io_Nifti2Im(x.P.Path_CBF);
     end
         
     if xASL_stat_SumNan(pGM(:))==0
@@ -195,8 +199,9 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
 
 end
 
+
+%% Fill fields
 function [OutputFields] = xASL_qc_FillFields(OutputFields, InputFields)
-%xASL_qc_FillFields
         
 FieldsI = fields(InputFields);
 
@@ -209,3 +214,4 @@ for iO=1:length(FieldsI)
 end    
 
 end
+

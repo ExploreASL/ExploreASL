@@ -18,6 +18,7 @@ function SignalPercentage = xASL_quant_BSupCalculation(BackgroundSuppressionPuls
 % OUTPUT:
 %   SignalPercentage - signal percentage (0-1) of the remaining signal after background suppression.
 %                      It can be a scalar or a vector of the same dimension as sliceTime
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function computes the tissue signal percentage that
 %              remains after background suppression pulses are played in the ASL
@@ -28,8 +29,9 @@ function SignalPercentage = xASL_quant_BSupCalculation(BackgroundSuppressionPuls
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: signalPercentage = xASL_quant_BSupCalculation([2200 2600], 2700, 1, 1240, [0 30 50 70], '/home/test/graph.jpg')
+%
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
  
 % Admin
 if nargin < 1 || isempty(BackgroundSuppressionPulseTime)
@@ -88,18 +90,16 @@ SignalPercentageInitial = zeros(1, numel(ReadoutTime));
 if PresaturationTime
     % Recovery from 0 to 1 at T1 for the period between PresaturationTime and the first BSup pulse
     SignalPercentageInitial(1) = 1 - (1 - 0)*exp(-(BackgroundSuppressionPulseTime(1)-PresaturationTime)/T1Time);
-    PresaturationTimeDummy = PresaturationTime;
 else
     % Without saturation, full signal is preset
     SignalPercentageInitial(1) = 1;
     % For the purpose of visualization, in the absence of presaturation we set the presaturation time to 1 
-    PresaturationTimeDummy = 1;
 end
  
 % First phase calculation for a graph visual output
 if ~isempty(PathGraph)
-    % Preallocate
-	SignalPercentageVector = zeros(round(sum(ReadoutTime + max(SliceTime))), 1); % sum is required if multiPLD and therefore multiple ReadoutTime is present
+    % Preallocate (sum is required if multiPLD and therefore multiple ReadoutTime is present)
+	SignalPercentageVector = zeros(round(sum(ReadoutTime + max(SliceTime))), 1);
 	
 	if PresaturationTime
 		SignalPercentageVector(1:PresaturationTime,1) = 1;
@@ -219,3 +219,4 @@ end
  
 
 end
+

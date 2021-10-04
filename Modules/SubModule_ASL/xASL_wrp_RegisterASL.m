@@ -82,7 +82,7 @@ function x = xASL_wrp_RegisterASL(x)
 %
 % EXAMPLE: xASL_wrp_RegisterASL(x);
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 
 %% ----------------------------------------------------------------------------------------
@@ -300,7 +300,8 @@ xASL_io_PairwiseSubtraction(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, 
 % (later on maybe we only need to use the later PLDs)
 
 if bRegistrationCBF
-	xASL_Copy(x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_ORI,1); %this clipped_ORI is not used in the rest of the pinpeline
+    % This clipped_ORI is not used in the rest of the pinpeline
+	xASL_Copy(x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_ORI,1);
     % Clip & compress the image, deal with contrast used for registration
     tIM = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped, 0.95, 0.6); % careful, this cannot be rerun, once
     tIM(tIM==min(tIM(:))) = 0; % minimal intensities are set to 0

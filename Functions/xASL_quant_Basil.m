@@ -17,6 +17,7 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
 % DESCRIPTION: This script performs quantification of the PWI using the FSL Basil pipeline. Final calibration to
 %              physiological units is performed by dividing the quantified PWI by the M0 image/value.
 %              This function performs the following steps:
+%
 % 1. Define paths
 % 2. Delete previous BASIL output
 % 3. Write the PWI as Nifti file for Basil to read as input
@@ -24,22 +25,21 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
 % 5. Run Basil and retrieve CBF output
 % 6. Scaling to physiological units
 % 7. Householding
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: CBF_nocalib = xASL_quant_Basil(PWI, x);
+%
 % __________________________________
 % Copyright 2015-2021 ExploreASL 
     
 
     %% Admin
-    fprintf('%s\n','Quantification CBF using FSL Basil:');
-    
+    fprintf('%s\n','Quantification CBF using FSL Basil:');    
     
     %% 1. Define paths
-    % NEEDS TO BE MADE A RELATIVE PATH TO BE SPACE-INDEPENDENT
     pathBasilInput = fullfile(x.dir.SESSIONDIR, 'PWI4D_BasilInput.nii');
     pathBasilOptions = fullfile(x.dir.SESSIONDIR, 'Basil_ModelOptions.txt');
     dirBasilOutput = fullfile(x.dir.SESSIONDIR, 'BasilOutput');
-    
     
     
     %% 2. Delete previous BASIL output
@@ -50,19 +50,18 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     end
     fprintf('%s\n', 'Note that any file not found warnings can be ignored, this pertains to the use of symbolic links by BASIL');
     
+    % Remove residual BASIL-related files
     xASL_delete(pathBasilOptions);
     xASL_delete(pathBasilInput);
-    xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]); % remove residual BASIL-related files
+    xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
     
     %% 3. Write the PWI as Nifti file for Basil to read as input
-    % FIXME would be good to have a brain mask at this point
-    % PM: if this would be a brainmask as well, we can skip creating a
-    % dummy input image here
+    % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
     PWI(isnan(PWI)) = 0;
     
     if size(PWI,4) == 1 % singlePLD
         xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0); % use PWI path
-    elseif size(PWI,4) > 1 %multiPLD
+    elseif size(PWI,4) > 1 % multiPLD
         xASL_io_SaveNifti(x.P.Path_PWI4D, pathBasilInput, PWI, [], 0); % use PWI4D path
     end
 
@@ -99,7 +98,7 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_SinglePLD since Fabber has T1 in seconds
     % and does not take into account labeling efficiency
-    %
+    
     CBF_nocalib = CBF_nocalib .* 6000 .* x.Q.Lambda ./ x.Q.LabelingEfficiency;
     % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
     % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
@@ -233,9 +232,9 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMu
     end
 
 
-    %% Noise specification. For small numbers of time points we need an informative
-    % noise prior. The user can specify an assumed SNR for this, or give noise std.dev
-    % directly.
+    %% Noise specification
+    % For small numbers of time points we need an informative noise prior. 
+    % The user can specify an assumed SNR for this, or give noise standard deviation directly.
     if ~isfield(x.Q,'BasilSNR') || ~x.Q.BasilSNR
         x.Q.BasilSNR = 10;
     end
@@ -291,3 +290,5 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMu
     fclose(FIDoptionFile);
     
 end
+
+

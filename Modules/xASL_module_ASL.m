@@ -230,7 +230,7 @@ x = xASL_adm_DefineASLSequence(x);
 
 %% MultiPLD parsing
 
-if length(x.Q.Initial_PLD)>1  % 2 because the PLD is being repeated for control and label -> check this: 1 or 2?
+if isfield(x.Q,'Initial_PLD') && length(x.Q.Initial_PLD)>1  % 2 because the PLD is being repeated for control and label -> check this: 1 or 2?
     x.modules.asl.bMultiPLD = 1;
     fprintf('%s\n','Multiple PLDs detected. Make sure that this is a valid multiPLD dataset');
 else
@@ -264,7 +264,7 @@ end
 
 %% MultiTE parsing
 
-if length(x.EchoTime)>1
+if isfield(x,'EchoTime') && length(x.EchoTime)>1
     x.modules.asl.bMultiTE = 1;
     fprintf('%s\n','Multiple echo times detected. Make sure that this is a valid multiTE dataset');
 else
@@ -479,7 +479,8 @@ iState = 8;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
     fprintf('%s\n','Quantifying ASL:   ');
-    if isfield(x.Q, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification % if BASIL quantification will be performed, only native space analysis is possible
+    % If BASIL quantification will be performed, only native space analysis is possible
+    if isfield(x.Q, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification
         % Quantification in native space only:
         nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
         
@@ -536,9 +537,9 @@ end
 iState = 9;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
 
-    if ~x.modules.asl.bMultiPLD
+    if isfield(x.modules.asl,'bMultiPLD') && ~x.modules.asl.bMultiPLD
         xASL_wrp_VisualQC_ASL(x);
-    x.mutex.AddState(StateName{iState});
+        x.mutex.AddState(StateName{iState});
     else
         fprintf('%s\n',[StateName{iState} ' is skipped, multiPLD sequence detected.']); 
     end

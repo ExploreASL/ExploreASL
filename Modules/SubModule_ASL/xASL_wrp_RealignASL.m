@@ -30,7 +30,7 @@ function xASL_wrp_RealignASL(x,bSubtraction)
 %
 % EXAMPLE: xASL_wrp_RealignASL(x);
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
 %% ----------------------------------------------------------------------------------------
@@ -61,7 +61,9 @@ exclusion = NaN;
 PercExcl = NaN;
 MinimumtValue = NaN;
 
-if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE % ENABLE is disabled if multiPLD/TE
+if (isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD) || ...
+   (isfield(x.modules.asl,'bMultiTE') && x.modules.asl.bMultiTE)
+    % ENABLE is disabled if multiPLD/TE
     bENABLE = 0;
     bZigZag = 0;
 else
@@ -338,7 +340,7 @@ if bENABLE && bSubtraction && nFrames>10 % == more than 5 pairs
         axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
     end
 else
-    fprintf('%s\n', 'ENABLE was skipped');
+    fprintf('ENABLE was skipped...\n');
 end
 
 if usejava('jvm') % only if JVM loaded
@@ -448,3 +450,5 @@ end
 
 
 end
+
+

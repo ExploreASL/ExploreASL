@@ -31,7 +31,7 @@ function xASL_wrp_ResampleASL(x)
 %
 % EXAMPLE: xASL_wrp_ResampleASL(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
 
 
@@ -244,9 +244,12 @@ for iSpace=1:2
         % Paired subtraction
         [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
         ASL_im = ControlIm - LabelIm;
-        PWI = zeros(size(ASL_im,1),size(ASL_im,2),size(ASL_im,3)); % preallocate PWI
+        % preallocate PWI
+        PWI = zeros(size(ASL_im,1),size(ASL_im,2),size(ASL_im,3));
+        
         % Average PWI
-        if x.modules.asl.bMultiPLD % multiPLD PWI
+        if isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD 
+            % multiPLD PWI
             RepeatsInPLD = size(ASL_im,4)/length(x.Q.Initial_PLD); % we still need to create a single Repeats in X struct
             for PLDnmbr = 1:length(x.Q.Initial_PLD)
                 RepeatsLocStartPerPLD = 1 + (PLDnmbr-1) * RepeatsInPLD;
