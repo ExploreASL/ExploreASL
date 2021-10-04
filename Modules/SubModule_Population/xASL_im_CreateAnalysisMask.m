@@ -306,7 +306,13 @@ function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] =
         % Combine susceptibility & FoV
         MaskSusceptibility = MaskSusceptibility & MaskFoV;
     else
+    	% Print warning
     	fprintf('Susceptibility masking is turned off...\n');
+
+    	% Defaults
+    	TemplateMask = [];
+    	MaskSusceptibility = [];
+    	ThresholdSuscept = NaN;
     end
 
 end

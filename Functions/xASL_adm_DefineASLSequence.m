@@ -19,12 +19,12 @@ function [x] = xASL_adm_DefineASLSequence(x)
 %
 % EXAMPLE: x = xASL_adm_DefineASLSequence(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2021 ExploreASL
 
 
-
+%% Check Quantification fields
 if ~isfield(x.Q, 'readoutDim')
-    warning('x.Q.readoutDim parameter missing, skipping determining ASL sequence');
+    warning('x.Q.readoutDim parameter missing, skipping determining ASL sequence...');
 end
 if ~isfield(x.Q, 'Vendor')
     warning('x.Q.Vendor missing, skipping determining ASL sequence');
