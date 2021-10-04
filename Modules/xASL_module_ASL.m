@@ -230,9 +230,16 @@ x = xASL_adm_DefineASLSequence(x);
 
 %% MultiPLD parsing
 
-if isfield(x.Q,'Initial_PLD') && length(x.Q.Initial_PLD)>1  % 2 because the PLD is being repeated for control and label -> check this: 1 or 2?
+if isfield(x.Q,'Initial_PLD') && numel(unique(x.Q.Initial_PLD))>1  % 2 because the PLD is being repeated for control and label -> check this: 1 or 2?
+    fprintf('Multiple PLDs detected...\nPDLs: ');
+    for iPLD = 1:numel(x.Q.Initial_PLD)
+        if iPLD<numel(x.Q.Initial_PLD)
+            fprintf('%d, ',x.Q.Initial_PLD(iPLD));
+        else
+            fprintf('%d\n',x.Q.Initial_PLD(iPLD));
+        end
+    end
     x.modules.asl.bMultiPLD = 1;
-    fprintf('%s\n','Multiple PLDs detected. Make sure that this is a valid multiPLD dataset');
 else
     x.modules.asl.bMultiPLD = 0;
 end
@@ -264,9 +271,16 @@ end
 
 %% MultiTE parsing
 
-if isfield(x,'EchoTime') && length(x.EchoTime)>1
+if isfield(x,'EchoTime') && numel(unique(x.EchoTime))>1
     x.modules.asl.bMultiTE = 1;
-    fprintf('%s\n','Multiple echo times detected. Make sure that this is a valid multiTE dataset');
+    fprintf('Multiple echo times detected...\nTEs: ');
+    for iTE = 1:numel(x.EchoTime)
+        if iTE<numel(x.EchoTime)
+            fprintf('%d, ',x.EchoTime(iTE));
+        else
+            fprintf('%d\n',x.EchoTime(iTE));
+        end
+    end
 else
     x.modules.asl.bMultiTE = 0;
 end

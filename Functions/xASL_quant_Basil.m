@@ -59,9 +59,11 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
     PWI(isnan(PWI)) = 0;
     
-    if size(PWI,4) == 1 % singlePLD
+    if size(PWI,4) == 1 
+        % singlePLD
         xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0); % use PWI path
-    elseif size(PWI,4) > 1 % multiPLD
+    else
+        % multiPLD
         xASL_io_SaveNifti(x.P.Path_PWI4D, pathBasilInput, PWI, [], 0); % use PWI4D path
     end
 
@@ -143,7 +145,7 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMu
      TIs = (x.Q.LabelingDuration + x.Q.Initial_PLD)'/1000;
      PLDAmount = length(TIs);
      for TIsingle = 1:PLDAmount
-         fprintf(FIDoptionFile, ['--ti' num2str(TIsingle) '=%.2f\n'], TIs(TIsingle));
+         fprintf(FIDoptionFile, ['--ti%d=%.2f\n'], TIsingle, TIs(TIsingle));
      end
      fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
      fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);

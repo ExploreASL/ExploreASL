@@ -130,7 +130,6 @@ xASL_delete(rpfile);
 %         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); 
 %         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
 %     end
-
 % Define conditions for motion correction in multi-PLD, multi-TE and Hadamard subjects
 conditionMultiPLD = isfield(x.Q,'Initial_PLD') && (numel(unique(x.Q.Initial_PLD))>1);
 conditionMultiTE = isfield(x,'EchoTime') && (numel(unique(x.EchoTime))>1);

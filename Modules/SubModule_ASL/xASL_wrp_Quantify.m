@@ -1,19 +1,20 @@
 function x = xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath, bUseBasilQuantification)
 %xASL_wrp_Quantify Submodule of ExploreASL ASL Module, that performs quantfication
 %
-% FORMAT: xASL_wrp_Quantify(x)
+% FORMAT: x = xASL_wrp_Quantify(x [, PWI_Path, OutputPath, M0Path, SliceGradientPath, bUseBasilQuantification])
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
 %   PWI_Path            - path to NIfTI with perfusion-weighted image (PWI) (OPTIONAL, default = x.P.Pop_Path_PWI)
-%   OutputPath          - path to NifTI to create, with the quantified CBF map
+%   OutputPath          - path to NifTI to create, with the quantified CBF map (OPTIONAL, DEFAULT = x.P.Pop_Path_qCBF)
 %   M0Path              - path to NifTI containing M0 image (OPTIONAL, default = x.Pop_Path_M0)
 %   SliceGradientPath   - path to Slice gradient NIfTI (OPTIONAL, default = x.P.Pop_Path_SliceGradient_extrapolated)
 %   bUseBasilQuantification - boolean, true for using FSL BASIL for
 %                             quantification, false for using ExploreASL's
 %                             own quantification (OPTIONAL, DEFAULT = false)
 %
-% OUTPUT: x             - - structure containing fields with all information required to advance the ASL module
+% OUTPUT: x             - structure containing fields with all information required to advance the ASL module
+%
 % OUTPUT FILES: NIfTI containing quantified CBF map in native or standard space (depending on input NIfTI),
 % or other derivatives that need a quantification, e.g. FEAST
 %
@@ -84,7 +85,9 @@ if nargin<5 || isempty(SliceGradientPath)
     SliceGradientPath = x.P.Pop_Path_SliceGradient_extrapolated;
 end
 if nargin<6 || isempty(bUseBasilQuantification)
-    bUseBasilQuantification = false;
+    x.Q.bUseBasilQuantification = false;
+else
+    x.Q.bUseBasilQuantification = bUseBasilQuantification;
 end
 if ~isfield(x,'Q')
     x.Q = struct;
@@ -116,7 +119,7 @@ end
 
 if ~xASL_exist(PWI_Path, 'file')
     warning('Skipped xASL_wrp_Quantify: files missing, please rerun step 4: xASL_wrp_ResampleASL');
-	if bUseBasilQuantification
+	if x.Q.bUseBasilQuantification
 		fprintf('%s\n', 'Note the PWI4D.nii used in BASIL is deleted after quantification');
 	end
     fprintf('%s\n', ['Missing: ' PWI_Path]);
@@ -395,12 +398,14 @@ end
 %% 8.   Perform Quantification
 if size(PWI,4) == 1 % single PLD quantification
     fprintf('%s\n',['Performing single PLD quantification']);
-    [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, bUseBasilQuantification); % also runs BASIL, but only in native space!
-elseif size(PWI,4) > 1 && x.Q.bUseBasilQuantification % perform BASIL multi-PLD quantification
+    [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
+elseif size(PWI,4) > 1 && x.Q.bUseBasilQuantification
+    % perform BASIL multi-PLD quantification
     fprintf('%s\n',['Performing multi PLD quantification using BASIL']);
-    [~, CBF] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
-else size(PWI,4) > 1 && ~x.Q.bUseBasilQuantification % perform BASIL multi-PLD quantification
-     fprintf('%s\n',['Multi PLD quantification without BASIL not implemented yet']);
+    [~, CBF] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
+elseif size(PWI,4) > 1 && ~x.Q.bUseBasilQuantification 
+    % perform BASIL multi-PLD quantification
+    fprintf('%s\n',['Multi PLD quantification without BASIL not implemented yet']);
 end
 
 if x.Q.ApplyQuantification(5)==0
@@ -421,7 +426,7 @@ end
 fprintf('%s\n','Saving PWI & CBF niftis');
 
 % Unmasked CBF
-if bUseBasilQuantification
+if x.Q.bUseBasilQuantification
     [Fpath, Ffile, Fext] = xASL_fileparts(OutputPath);
     OutputPath = fullfile(Fpath, [Ffile '_Basil' Fext]);
     x.P.Path_CBF_Basil = OutputPath;
