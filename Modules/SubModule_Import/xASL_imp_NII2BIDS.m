@@ -31,7 +31,7 @@ function x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
     fprintf('================================== NIFTI to BIDS CONVERSION ==================================\n');
     
     % Check if the temp folder exists
-    existTempRoot = xASL_exist(fullfile(studyPath,'temp'),'dir');
+    existTempRoot = xASL_exist(fullfile(studyPath,'derivatives','ExploreASL','temp'),'dir');
     if ~existTempRoot
         error('The temp directory does not exist. Please run DICOM to NIfTI on your sourcedata first...');
     end

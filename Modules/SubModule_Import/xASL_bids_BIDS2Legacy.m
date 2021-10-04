@@ -64,7 +64,7 @@ end
 % Creates the derivatives directory
 pathLegacy = fullfile(pathStudy, 'derivatives', 'ExploreASL');
 if exist(pathLegacy, 'dir') && bOverwrite
-    warning([pathLegacy ' already exists, overwriting']);
+    fprintf('The derivatives directory already exists, overwriting...\n');
 elseif exist(pathLegacy, 'dir')
     fprintf('%s\n', [pathLegacy ' exists, merging']);
 else

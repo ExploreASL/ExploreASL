@@ -35,7 +35,12 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
     
     %% 1. Initialize defaults of dcm2nii
     fprintf('================================== DICOM to NIFTI CONVERSION =================================\n');
-    dcm2niiCatchedErrors = struct; % initialization
+    
+    % Create the temp directory for DCM2NII
+    xASL_adm_CreateDir(imPar.TempRoot);
+    
+    % Initialization of an empty catched errors struct
+    dcm2niiCatchedErrors = struct;
     if x.modules.import.settings.bCheckPermissions
         dcm2niiDir = fullfile(x.opts.MyPath, 'External', 'MRIcron');
         xASL_adm_CheckPermissions(dcm2niiDir, true); % dcm2nii needs to be executable
@@ -53,19 +58,20 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
 		% avoiding partly re-importing/converting dcm2niiX when processing has been partly done
 		imPar.SkipSubjectIfExists = false;
 	else
-		warning('Skipping existing subjects in temp folder');
-		fprintf('If you want to overwrite, first remove the full subject folder');
+		warning('Skipping existing subjects in temp folder...');
+		fprintf('If you want to overwrite, first remove the full subject folder...');
 	end
 	
 	%% 2. Create the basic folder structure for sourcedata & derivative data
     if ~exist(imPar.RawRoot, 'dir')
-        warning(['Couldnt find ' imPar.RawRoot ', trying to find a different folder instead...']);
+        warning(['Could not find ' imPar.RawRoot ', trying to find a different folder instead...']);
         
         % find any folder except for temp, source, raw, derivatives
         % xASL_adm_GetFileList uses regular expressions, to create a nice list of foldernames,
         % with/without FullPath (FPList), with/without recursive (FPListRec)
         % very powerful once you know how these work
-        FolderNames = xASL_adm_GetFileList(fullfile(imPar.RawRoot, imPar.studyID), '^(?!(temp|derivatives|source|sourcedata)).*$', 'FPList', [0 Inf], true);
+        FolderNames = xASL_adm_GetFileList(fullfile(imPar.RawRoot, imPar.studyID), ...
+            '^(?!(temp|derivatives|source|sourcedata)).*$', 'FPList', [0 Inf], true);
         
         if length(FolderNames)==1
             imPar.RawRoot = FolderNames{1};
@@ -73,13 +79,6 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
         else
             error('Couldnt find a sourcedata folder, please rename one, or move other folders');
         end
-    end
-	
-    % Create temp directory
-	statusTempDir = xASL_adm_CreateDir(imPar.TempRoot);
-    if ~statusTempDir
-        warning('There already is a temp directory in your BIDS study root, skipping DICOM to NIfTI conversion...');
-        return
     end
 	
 	if x.modules.import.settings.bCheckPermissions
@@ -262,7 +261,6 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
         zeros(x.modules.import.numOf.nSubjects, x.modules.import.numOf.nVisits, x.modules.import.numOf.nSessions, x.modules.import.numOf.nScans,'uint8');
 	
 	% define a cell array for storing info for parameter summary file
-	xASL_adm_CreateDir(imPar.TempRoot);
 	x.modules.import.summary_lines = ...
         cell(x.modules.import.numOf.nSubjects, x.modules.import.numOf.nVisits, x.modules.import.numOf.nSessions, x.modules.import.numOf.nScans);
 	
