@@ -30,6 +30,12 @@ function x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
     diary(fullfile(studyPath,'xASL_module_Import.log'));
     fprintf('================================== NIFTI to BIDS CONVERSION ==================================\n');
     
+    % Create lock directory for import if it does not exist already
+    xASL_adm_CreateDir(x.modules.import.dir.lockImport);
+    
+    % Create NII2BIDS sub-directory
+    xASL_adm_CreateDir(x.modules.import.dir.lockNII2BIDS);
+    
     % Check if the temp folder exists
     existTempRoot = xASL_exist(fullfile(studyPath,'derivatives','ExploreASL','temp'),'dir');
     if ~existTempRoot

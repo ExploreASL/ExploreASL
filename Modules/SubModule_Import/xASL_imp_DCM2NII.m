@@ -39,6 +39,12 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
     % Create the temp directory for DCM2NII
     xASL_adm_CreateDir(imPar.TempRoot);
     
+    % Create lock directory for import if it does not exist already
+    xASL_adm_CreateDir(x.modules.import.dir.lockImport);
+    
+    % Create DCM2NII sub-directory
+    xASL_adm_CreateDir(x.modules.import.dir.lockDCM2NII);
+    
     % Initialization of an empty catched errors struct
     dcm2niiCatchedErrors = struct;
     if x.modules.import.settings.bCheckPermissions
@@ -46,10 +52,12 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
         xASL_adm_CheckPermissions(dcm2niiDir, true); % dcm2nii needs to be executable
     end
     if ~isfield(imPar,'dcm2nii_version') || isempty(imPar.dcm2nii_version)
-        imPar.dcm2nii_version = '20190902'; % OR for PARREC imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
+        % OR for PARREC imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
+        imPar.dcm2nii_version = '20190902';
     end
     if ~isfield(imPar,'dcmExtFilter') || isempty(imPar.dcmExtFilter)
-        % dcmExtFilter: the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
+        % dcmExtFilter: the last one is because some convertors save files without extension, 
+        % but there would be a dot/period before a bunch of numbers
         imPar.dcmExtFilter = '^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
     end
 	
@@ -66,7 +74,7 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
     if ~exist(imPar.RawRoot, 'dir')
         warning(['Could not find ' imPar.RawRoot ', trying to find a different folder instead...']);
         
-        % find any folder except for temp, source, raw, derivatives
+        % find any folder except for temp, sourcedata, rawdata, derivatives
         % xASL_adm_GetFileList uses regular expressions, to create a nice list of foldernames,
         % with/without FullPath (FPList), with/without recursive (FPListRec)
         % very powerful once you know how these work
@@ -81,19 +89,22 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
         end
     end
 	
+    % Check access rights of temp and rawdata directories
 	if x.modules.import.settings.bCheckPermissions
-		xASL_adm_CheckPermissions(imPar.RawRoot, false); % don"t need execution permisions
-		xASL_adm_CheckPermissions(imPar.TempRoot, false);  % don"t need execution permisions
+		xASL_adm_CheckPermissions(imPar.RawRoot, false); % don't need execution permisions
+		xASL_adm_CheckPermissions(imPar.TempRoot, false);  % don't need execution permisions
 	end
 	
-	%% 3. Here we try to fix backwards compatibility, but this may break
-	if length(imPar.tokenOrdering)==3 % backwards compatibility Visits
+	%% 3. Here we try to fix backwards compatibility
+	if length(imPar.tokenOrdering)==3
+        % Backwards compatibility visits
 		if size(imPar.tokenOrdering,1) > 1
 			% Vertical vector
 			imPar.tokenOrdering = imPar.tokenOrdering';
 		end
 		imPar.tokenOrdering = [imPar.tokenOrdering(1) 0 imPar.tokenOrdering(2:3)]; % insert Visits(none)
-	elseif length(imPar.tokenOrdering)==2 % backwards compatibility Visits & sessions
+	elseif length(imPar.tokenOrdering)==2 
+        % Backwards compatibility Visits & sessions
 		imPar.tokenOrdering = [imPar.tokenOrdering(1) 0 0 imPar.tokenOrdering(2)]; % insert sessions & visits(none)
 	end
 	

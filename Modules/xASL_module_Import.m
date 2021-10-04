@@ -190,6 +190,9 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     x.modules.import.settings.bCopySingleDicoms = bCopySingleDicoms;
     x.modules.import.settings.bUseDCMTK = bUseDCMTK;
     x.modules.import.settings.bCheckPermissions = bCheckPermissions;
+    
+    % Determine the import lock dir for all modules
+    x = xASL_imp_InitLockDirPaths(x,studyPath);
 
     %% 2. Initialize the import setup
     
@@ -213,7 +216,7 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 
     %% 5. Run defacing
     if bRunSubmodules(3)
-        xASL_imp_Deface(imPar);
+        xASL_imp_Deface(x,imPar);
     end
     
     %% 6. Run BIDS to Legacy
@@ -225,3 +228,19 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
     diary off
 
 end
+
+
+%% Determine the lock dir paths
+function x = xASL_imp_InitLockDirPaths(x,studyPath)
+
+    x.modules.import.dir.lockImport = fullfile(studyPath, 'derivatives', 'ExploreASL', 'lock', 'xASL_module_Import');
+    x.modules.import.dir.lockDCM2NII = fullfile(x.modules.import.dir.lockImport,'xASL_imp_DCM2NII');
+    x.modules.import.dir.lockNII2BIDS = fullfile(x.modules.import.dir.lockImport,'xASL_imp_NII2BIDS');
+    x.modules.import.dir.lockDEFACE = fullfile(x.modules.import.dir.lockImport,'xASL_imp_DEFACE');
+    x.modules.import.dir.lockBIDS2LEGACY = fullfile(x.modules.import.dir.lockImport,'xASL_imp_BIDS2LEGACY');
+
+
+end
+
+
+

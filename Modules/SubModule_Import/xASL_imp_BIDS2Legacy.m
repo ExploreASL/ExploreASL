@@ -29,6 +29,12 @@ function [x] = xASL_imp_BIDS2Legacy(x)
     diary(fullfile(x.opts.DatasetRoot,'xASL_module_Import.log'));
     fprintf('============================ BIDS to ExploreASL LEGACY CONVERSION ============================\n');
     
+    % Create lock directory for import if it does not exist already
+    xASL_adm_CreateDir(x.modules.import.dir.lockImport);
+    
+    % Create BIDS2LEGACY sub-directory
+    xASL_adm_CreateDir(x.modules.import.dir.lockBIDS2LEGACY);
+    
     if ~isfield(x,'dir')
         error('Missing directories field...');
     end

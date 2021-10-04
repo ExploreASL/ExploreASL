@@ -50,6 +50,7 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     imPar.RawRoot = fullfile(imPar.RawRoot, imPar.studyID, 'sourcedata');
     imPar.DerivativesRoot = fullfile(imPar.TempRoot, imPar.studyID, 'derivatives');
     imPar.TempRoot = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'temp');
+    imPar.LockRoot = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'lock');
     imPar.BidsRoot = fullfile(imPar.BidsRoot, imPar.studyID, 'rawdata');
 
     %% 4. Specify the tokens
@@ -79,7 +80,9 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     
     % Create the empty derivatives directory for the general import (we need it for lock and temp files)
     xASL_adm_CreateDir(imPar.DerivativesRoot);
-
+    
+    % Create the lock files directory (especially for the import lock files)
+    xASL_adm_CreateDir(imPar.LockRoot);
 
 end
 
