@@ -41,28 +41,9 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
     
     % Initialization of an empty catched errors struct
     dcm2niiCatchedErrors = struct;
-    if x.modules.import.settings.bCheckPermissions
-        dcm2niiDir = fullfile(x.opts.MyPath, 'External', 'MRIcron');
-        xASL_adm_CheckPermissions(dcm2niiDir, true); % dcm2nii needs to be executable
-    end
-    if ~isfield(imPar,'dcm2nii_version') || isempty(imPar.dcm2nii_version)
-        % OR for PARREC imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
-        imPar.dcm2nii_version = '20190902';
-    end
-    if ~isfield(imPar,'dcmExtFilter') || isempty(imPar.dcmExtFilter)
-        % dcmExtFilter: the last one is because some convertors save files without extension, 
-        % but there would be a dot/period before a bunch of numbers
-        imPar.dcmExtFilter = '^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
-    end
-	
-	if ~isfield(imPar,'SkipSubjectIfExists') || isempty(imPar.SkipSubjectIfExists)
-		% allows to skip existing subject folders in the temp folder, when this is set to true,
-		% avoiding partly re-importing/converting dcm2niiX when processing has been partly done
-		imPar.SkipSubjectIfExists = false;
-	else
-		warning('Skipping existing subjects in temp folder...');
-		fprintf('If you want to overwrite, first remove the full subject folder...');
-	end
+    
+    % Basic import checks before execution
+    [x,imPar] = xASL_imp_CheckImportSettings(x,imPar);
 	
 	%% 2. Create the basic folder structure for sourcedata & derivative data
     if ~exist(imPar.RawRoot, 'dir')
@@ -159,7 +140,87 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
     % vSubjectIDs: cell vector with extracted subject IDs (for all visits, sessions and scans; 
 	x.modules.import.listsIDs.vSubjectIDs = tokens(:,imPar.tokenOrdering(1));
 	
-	%% VISITS
+    
+    %% Determine structure from sourcedata
+    [x,imPar] = xASL_imp_DetermineStructureFromSourcedata(x,imPar,tokens);
+    
+	
+	% 6. Sanity check for missing elements
+    xASL_imp_DCM2NII_SanityChecks(x);
+	
+    
+    % Preallocate space for (global) counts
+    x = xASL_imp_PreallocateGlobalCounts(x);
+	
+    
+	%% 7. Import subject by subject, visit by visit, session by session, scan by scan
+	fprintf('\nRunning DCM2NIIX...\n');
+    
+    % Iterate over subjects
+    for iSubject=1:x.modules.import.numOf.nSubjects
+        [imPar, x.modules.import.summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, x.modules.import.pathDcmDict] = ...
+            xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors);
+    end
+	
+    % Create summary file
+    xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary);
+    
+	% cleanup
+	if ~x.modules.import.settings.bUseDCMTK || isempty(x.modules.import.pathDcmDict)
+		dicomdict('factory');
+	end
+	diary('off');
+	
+	if ~isempty(fields(dcm2niiCatchedErrors))
+		fclose all;
+		SavePath = fullfile(imPar.TempRoot, 'dcm2niiCatchedErrors.mat');
+		SaveJSON = fullfile(imPar.TempRoot, 'dcm2niiCatchedErrors.json');
+		xASL_delete(SavePath);
+		xASL_delete(SaveJSON);
+		save(SavePath,'dcm2niiCatchedErrors');
+		spm_jsonwrite(SaveJSON, dcm2niiCatchedErrors);
+	end
+	
+	fprintf('\n');
+    
+    
+end
+
+
+%% Basic import checks before execution
+function [x,imPar] = xASL_imp_CheckImportSettings(x,imPar)
+
+    if x.modules.import.settings.bCheckPermissions
+        dcm2niiDir = fullfile(x.opts.MyPath, 'External', 'MRIcron');
+        xASL_adm_CheckPermissions(dcm2niiDir, true); % dcm2nii needs to be executable
+    end
+    if ~isfield(imPar,'dcm2nii_version') || isempty(imPar.dcm2nii_version)
+        % OR for PARREC imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
+        imPar.dcm2nii_version = '20190902';
+    end
+    if ~isfield(imPar,'dcmExtFilter') || isempty(imPar.dcmExtFilter)
+        % dcmExtFilter: the last one is because some convertors save files without extension, 
+        % but there would be a dot/period before a bunch of numbers
+        imPar.dcmExtFilter = '^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
+    end
+	
+	if ~isfield(imPar,'SkipSubjectIfExists') || isempty(imPar.SkipSubjectIfExists)
+		% allows to skip existing subject folders in the temp folder, when this is set to true,
+		% avoiding partly re-importing/converting dcm2niiX when processing has been partly done
+		imPar.SkipSubjectIfExists = false;
+	else
+		warning('Skipping existing subjects in temp folder...');
+		fprintf('If you want to overwrite, first remove the full subject folder...');
+	end
+
+end
+
+
+%% Determine structure from sourcedata
+function [x,imPar] = xASL_imp_DetermineStructureFromSourcedata(x,imPar,tokens)
+
+
+    %% VISITS
 	if imPar.tokenOrdering(2)==0
 		% a zero means: no visits applicable
 		x.modules.import.settings.bUseVisits = false;
@@ -216,7 +277,6 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
 			imPar.visitNames = cell(x.modules.import.numOf.nVisits,1);
 			for kk=1:x.modules.import.numOf.nVisits
 				imPar.visitNames{kk} = sprintf('ASL_%g', kk);
-                % JAN PETR WHAT HAPPENS HERE, INCORRECT NAME ASL
 			end
 		else
 			imPar.visitNames = x.modules.import.listsIDs.visitIDs;
@@ -238,23 +298,35 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
 	
 	%% SCAN NAMES
 	x.modules.import.scanNames = x.modules.import.listsIDs.scanIDs;
-	
-	%% 6. Sanity check for missing elements
-	if x.modules.import.numOf.nSubjects==0
-		error('No subjects')
-	end
-	if x.modules.import.numOf.nVisits==0
-		error('No visits')
-	end
-	if x.modules.import.numOf.nSessions==0
-		error('No sessions')
-	end
-	if x.modules.import.numOf.nScans==0
-		error('No scans')
-	end
-	
-    % Preallocate space for (global) counts
-    
+
+
+end
+
+
+
+%% Sanity check for missing elements
+function xASL_imp_DCM2NII_SanityChecks(x)
+
+    if x.modules.import.numOf.nSubjects==0
+        error('No subjects')
+    end
+    if x.modules.import.numOf.nVisits==0
+        error('No visits')
+    end
+    if x.modules.import.numOf.nSessions==0
+        error('No sessions')
+    end
+    if x.modules.import.numOf.nScans==0
+        error('No scans')
+    end
+
+end
+
+
+
+%% Preallocate space for (global) counts
+function x = xASL_imp_PreallocateGlobalCounts(x)
+
     % keep a count of all individual scans
     x.modules.import.globalCounts.converted_scans = ...
         zeros(x.modules.import.numOf.nSubjects, x.modules.import.numOf.nVisits, x.modules.import.numOf.nSessions, x.modules.import.numOf.nScans,'uint8');
@@ -268,37 +340,8 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
 	% define a cell array for storing info for parameter summary file
 	x.modules.import.summary_lines = ...
         cell(x.modules.import.numOf.nSubjects, x.modules.import.numOf.nVisits, x.modules.import.numOf.nSessions, x.modules.import.numOf.nScans);
-	
-    
-	%% 7. Import subject by subject, visit by visit, session by session, scan by scan
-	fprintf('\nRunning DCM2NIIX...\n');
-    
-    % Iterate over subjects
-    for iSubject=1:x.modules.import.numOf.nSubjects
-        [imPar, x.modules.import.summary_lines, PrintDICOMFields, x.modules.import.globalCounts, x.modules.import.scanNames, dcm2niiCatchedErrors, x.modules.import.pathDcmDict] = ...
-            xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors);
-    end
-	
-    % Create summary file
-    xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary);
-    
-	% cleanup
-	if ~x.modules.import.settings.bUseDCMTK || isempty(x.modules.import.pathDcmDict)
-		dicomdict('factory');
-	end
-	diary('off');
-	
-	if ~isempty(fields(dcm2niiCatchedErrors))
-		fclose all;
-		SavePath = fullfile(imPar.TempRoot, 'dcm2niiCatchedErrors.mat');
-		SaveJSON = fullfile(imPar.TempRoot, 'dcm2niiCatchedErrors.json');
-		xASL_delete(SavePath);
-		xASL_delete(SaveJSON);
-		save(SavePath,'dcm2niiCatchedErrors');
-		spm_jsonwrite(SaveJSON, dcm2niiCatchedErrors);
-	end
-	
-	fprintf('\n');
+
+
 end
 
 

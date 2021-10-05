@@ -115,13 +115,13 @@ function [x] = xASL_module_Import(x)
     %% 1. Initialize by starting the logging and initializing the substructs
     diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
     
-    % Initialize x struct
-    [x] = xASL_init_SubStructs(x);
-
     % First do the basic parameter admin and initialize the default values
     if nargin < 1 || isempty(x)
         error('The x struct needs to be defined...');
     end
+    
+    % Initialize x struct
+    x = xASL_init_SubStructs(x);
     
     % Basic parameter checks
     x = xASL_imp_BasicParameterChecks(x);
