@@ -48,7 +48,28 @@ function x = xASL_imp_DetermineSubjectStructure(x)
     elseif x.opts.ImportModules(2)
         %% Import temp data structure
         if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
-
+            % Basic import checks before execution
+            x = xASL_imp_CheckImportSettings(x);
+            
+            % Check directories and permissions
+            x = xASL_imp_CheckDirectoriesAndPermissions(x);
+            
+            % Determine structure from temp data
+            x = xASL_imp_DetermineStructureFromTempdata(x);
+        else
+            error('The imPar struct does not exist...');
+        end
+    elseif x.opts.ImportModules(3) || x.opts.ImportModules(4)
+        %% Import the rawdata structure
+        if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
+            % Basic import checks before execution
+            x = xASL_imp_CheckImportSettings(x);
+            
+            % Check directories and permissions
+            x = xASL_imp_CheckDirectoriesAndPermissions(x);
+            
+            % Determine structure from temp data
+            x = xASL_imp_DetermineStructureFromRawdata(x);
         else
             error('The imPar struct does not exist...');
         end

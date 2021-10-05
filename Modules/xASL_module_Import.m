@@ -117,9 +117,22 @@ function [result, x] = xASL_module_Import(x)
     %% Import Module
     
     % Default for xASL_Iterate
-    result = true;
+    result = false;
+    
+    % Start Mutex
+    x = xASL_init_InitializeMutex(x, 'Import');
+    
+    % Define lock states
+    StateName{1} = '010_Initialization';
+    StateName{2} = '020_DCM2NII';
+    StateName{3} = '030_NII2BIDS';
+    StateName{4} = '040_DEFACE';
+    StateName{5} = '050_BIDS2LEGACY';
+    StateName{5} = '050_BIDS2LEGACY';
+    StateName{6} = '060_CleanUp';
 
     % 1. Initialize by starting the logging and initializing the substructs
+    iState = 1;
     diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
     
     % First do the basic parameter admin and initialize the default values
@@ -133,35 +146,52 @@ function [result, x] = xASL_module_Import(x)
     % Extract the imPar struct
     imPar = x.modules.import.imPar;
     x.modules.import = rmfield(x.modules.import,'imPar');
+    
+    % Update mutex
+    x.mutex.AddState(StateName{iState});
+    x.mutex.DelState(StateName{iState+1});
 
-    % 3. Run the DCM2NIIX
+    % 2. Run the DCM2NIIX
+    iState = 2;
     if x.opts.ImportModules(1)
         xASL_imp_DCM2NII(x, imPar);
     end
+    x.mutex.AddState(StateName{iState});
+    x.mutex.DelState(StateName{iState+1});
 
-    % 4. Run the NIIX to ASL-BIDS
+    % 3. Run the NIIX to ASL-BIDS
+    iState = 3;
     if x.opts.ImportModules(2)
         x = xASL_imp_NII2BIDS(x, imPar);
     end
+    x.mutex.AddState(StateName{iState});
+    x.mutex.DelState(StateName{iState+1});
 
-    % 5. Run defacing
+    % 4. Run defacing
+    iState = 4;
     if x.opts.ImportModules(3)
-        xASL_imp_Deface(imPar);
+        xASL_imp_Deface(x,imPar);
     end
+    x.mutex.AddState(StateName{iState});
+    x.mutex.DelState(StateName{iState+1});
     
-    % 6. Run BIDS to Legacy
+    % 5. Run BIDS to Legacy
+    iState = 5;
     if x.opts.ImportModules(4)
         x = xASL_imp_BIDS2Legacy(x);
     end
+    x.mutex.AddState(StateName{iState});
+    x.mutex.DelState(StateName{iState+1});
 
-    % 7. Clean-up (stop logging)
-    x = xASL_imp_CleanUpImport(x);
+    % 6. Clean-up (stop logging)
+    [x,result] = xASL_imp_CleanUpImport(x);
 
+    
 end
 
 
 %% Clean-Up before processing pipeline
-function x = xASL_imp_CleanUpImport(x)
+function [x,result] = xASL_imp_CleanUpImport(x)
 
     % We want to reload the derivatives data correctly, which is why we delete the following 
     % fields before we run the processing pipeline, we need them for xASL_Iterate though.
@@ -175,6 +205,13 @@ function x = xASL_imp_CleanUpImport(x)
     if isfield(x,'SUBJECTS')
         x = rmfield(x,'SUBJECTS');
     end
+    
+    % We also need to terminate the module correctly
+    x.mutex.AddState('999_ready');
+    x.mutex.Unlock();
+    x.result = true;
+    result = true;
+    close all;
     
 
 end

@@ -27,6 +27,11 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 
 
     %% 1. Input check
+    
+    % We may need to restart the logging
+    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
+    
+    % Print feedback
     fprintf('============================ BIDS to ExploreASL LEGACY CONVERSION ============================\n');
     
     if ~isfield(x,'dir')

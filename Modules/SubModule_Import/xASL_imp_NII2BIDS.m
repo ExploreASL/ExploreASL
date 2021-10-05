@@ -26,15 +26,14 @@ function x = xASL_imp_NII2BIDS(x, imPar)
 
     %% Run the NII2BIDS conversion
     
-    % Extract variables
-    studyPath = x.dir.DatasetRoot;
-    studyParPath = x.dir.studyPar;
+    % We may need to restart the logging
+    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
     
     % Print feedback
     fprintf('================================== NIFTI to BIDS CONVERSION ==================================\n');
     
     % Check if the temp folder exists
-    existTempRoot = xASL_exist(fullfile(studyPath,'derivatives','ExploreASL','temp'),'dir');
+    existTempRoot = xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','temp'),'dir');
     if ~existTempRoot
         error('The temp directory does not exist. Please run DICOM to NIfTI on your sourcedata first...');
     end
@@ -43,14 +42,14 @@ function x = xASL_imp_NII2BIDS(x, imPar)
 	bidsPar = xASL_bids_Config();
 	
 	%% 1. Load the study parameters + dataset description
-	if ~exist(studyParPath,'file')
+	if ~exist(x.dir.studyPar,'file')
 		warning('Study-par file is not provided.');
 		studyPar = struct;
 	else
-		studyPar = xASL_io_ReadDataPar(studyParPath, true);
+		studyPar = xASL_io_ReadDataPar(x.dir.studyPar, true);
 	end
 	
-	% The Name has to be always assigned
+	% The name always has to be assigned
 	if ~isfield(studyPar,'Name')
 		studyPar.Name = imPar.studyID;
 	end
@@ -80,7 +79,7 @@ function x = xASL_imp_NII2BIDS(x, imPar)
     importMetaFiles = xASL_adm_GetFileList(imPar.TempRoot,'^import.+$');
     for importFile=1:size(importMetaFiles,1)
         [~,thisFileMeta,thisExtensionMeta] = xASL_fileparts(importMetaFiles{importFile,1});
-        xASL_Copy(importMetaFiles{importFile,1},fullfile(studyPath,[thisFileMeta thisExtensionMeta]));
+        xASL_Copy(importMetaFiles{importFile,1},fullfile(x.dir.DatasetRoot,[thisFileMeta thisExtensionMeta]));
     end
     
     % Delete temp folder

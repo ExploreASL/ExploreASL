@@ -16,8 +16,10 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
 % OUTPUT:
 %   bAborted        - Report if the run was aborted
 %   xOut            - x-struct on the output
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Parses the settings and runs the DatabaseLoop sub-function.
+%
 % EXAMPLE:  [~,x] = xASL_Iteration(x,'xASL_module_ASL');
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -29,6 +31,11 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     dbSettings.x.settings.RERUN      = false;
     dbSettings.x.settings.MUTEXID    = moduleName;
     dbSettings.x.dir.LockDir         = ['<ROOT>/lock/' moduleName];
+    
+    % Lock dir specifics for Import
+    if strcmp(moduleName,'xASL_module_Import')
+        dbSettings.x.dir.LockDir = ['<ROOT>/derivatives/ExploreASL/lock/' moduleName];
+    end
     
 	% Set the dryRun field
 	if nargin < 3 || isempty(dryRun)

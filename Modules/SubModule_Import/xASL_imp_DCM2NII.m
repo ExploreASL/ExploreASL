@@ -29,6 +29,11 @@ function xASL_imp_DCM2NII(x, imPar)
 
     
     %% Initialize defaults of dcm2nii
+    
+    % We may need to restart the logging
+    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
+    
+    % Print feedback
     fprintf('================================== DICOM to NIFTI CONVERSION =================================\n');
     
     % Print matching files

@@ -1,9 +1,10 @@
-function xASL_imp_Deface(imPar)
+function xASL_imp_Deface(x,imPar)
 %xASL_imp_Deface Run defacing.
 %
 % FORMAT: xASL_imp_Deface(imPar)
 % 
 % INPUT:
+%   x          - ExploreASL x structure (REQUIRED, STRUCT)
 %   imPar      - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
@@ -20,6 +21,9 @@ function xASL_imp_Deface(imPar)
 % EXAMPLE:     xASL_imp_Deface(imPar);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+
+    %% We may need to restart the logging
+    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
 
     %% 1. Iterate over list of subjects
     listSubjects = xASL_adm_GetFileList(imPar.BidsRoot,[],false,[],true);
