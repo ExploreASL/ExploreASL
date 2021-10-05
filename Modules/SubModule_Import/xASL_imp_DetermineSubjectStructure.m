@@ -21,17 +21,22 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 
     if x.opts.ImportModules(1)
         % Import sourcedata structure
-        
+        if ~isnan(x.modules.import.imPar)
+
+        else
+            error('The imPar struct does not exist...');
+        end
     elseif x.opts.ImportModules(2)
         % Import temp data structure
-        
+        if ~isnan(x.modules.import.imPar)
+
+        else
+            error('The imPar struct does not exist...');
+        end
     else
         % Not a valid option
         error('Invalid option of import settings...');
     end
-
-
-
 
 
 

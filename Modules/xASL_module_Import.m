@@ -122,16 +122,9 @@ function [x] = xASL_module_Import(x)
     
     % Initialize x struct
     x = xASL_init_SubStructs(x);
-    
-    % Basic parameter checks
-    x = xASL_imp_BasicParameterChecks(x);
 
-    %% 2. Initialize the import setup
-    
-    % Load the sourceStructure.json and initialize the corresponding struct
-    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.ImportModules(3)
-        imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
-    end
+    % Extract the imPar struct
+    imPar = x.modules.import.imPar;
 
     %% 3. Run the DCM2NIIX
     if x.opts.ImportModules(1)
