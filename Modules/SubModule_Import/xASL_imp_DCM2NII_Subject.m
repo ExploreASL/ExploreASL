@@ -1,4 +1,4 @@
-function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors)
+function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors)
 %xASL_imp_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
 % FORMAT: [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2niiCatchedErrors, pathDcmDict] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors)
@@ -11,13 +11,10 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
 %   dcm2niiCatchedErrors   - DCM2NII catched errors (REQUIRED, STRUCT)
 %
 % OUTPUT:
+%   x                      - ExploreASL x structure (REQUIRED, STRUCT)
 %   imPar                  - Structure with import parameters 
-%   summary_lines          - Summary lines
 %   PrintDICOMFields       - Print DICOM fields
-%   globalCounts           - Converted, skipped & missing scans
-%   scanNames              - Scan names
 %   dcm2niiCatchedErrors   - DCM2NII catched errors
-%   pathDcmDict            - Path to DCM dictionary
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual subject.
@@ -244,6 +241,13 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
             end % scansIDs
         end % sessionIDs
     end % visitIDs
+
+
+    %% Put data back into x structure
+    x.modules.import.summary_lines = summary_lines;
+    x.modules.import.globalCounts = globalCounts;
+    x.modules.import.scanNames = scanNames;
+    x.modules.import.pathDcmDict = pathDcmDict;
         
 end
 
