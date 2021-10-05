@@ -19,14 +19,18 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
 
 
     %% SUBJECTS
-    % x.SUBJECTS = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],false,[],true);
+    x.SUBJECTS = xASL_adm_GetFileList(x.modules.import.imPar.BidsRoot,[],false,[],true);
     
-    %if isempty(x.SUBJECTS)
-    %    warning('Unable to find subjects in temp directory...');
-    %end
+    % Remove 'sub-' from subject name if it exists
+    for iSubject=1:numel(x.SUBJECTS)
+        if regexpi(x.SUBJECTS{iSubject},'sub-')==1
+            x.SUBJECTS{iSubject} = x.SUBJECTS{iSubject}(length('sub-')+1:end);
+        end 
+    end
     
-    error('Implement this...');
-    
+    if isempty(x.SUBJECTS)
+        warning('Unable to find subjects in temp directory...');
+    end
 
 
 end
