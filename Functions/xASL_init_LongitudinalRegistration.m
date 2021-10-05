@@ -60,48 +60,54 @@ if isfield(x,'iSetLong_TP')
     SubjectNameList = x.SubjectNameList;
     SubjectNlist = x.S.SetsID(:,x.iSetLong_TP+1);
 else
-    for iS=1:x.nSubjects
-        % First check whether if there is a TimePoint indication
-        % With a maximum of 99 TimePoints, the underscore should be 
-        % a maximum of 2 indices below the end of the SubjectName
-        clear CurrentTimePoint
-        Indices = find(x.SUBJECTS{iS}=='_');
+    if x.nSubjects>0
+        for iS=1:x.nSubjects
+            % First check whether if there is a TimePoint indication
+            % With a maximum of 99 TimePoints, the underscore should be 
+            % a maximum of 2 indices below the end of the SubjectName
+            clear CurrentTimePoint
+            Indices = find(x.SUBJECTS{iS}=='_');
 
-        if ~isempty(Indices)
-            if Indices(end)>=length(x.SUBJECTS{iS})-2
-                % This is a TimePoint indication
-                CurrentTimePoint = str2num( x.SUBJECTS{iS}(Indices(end)+1:end));
-                CurrentSubjName  = x.SUBJECTS{iS}(1:Indices(end)-1);
+            if ~isempty(Indices)
+                if Indices(end)>=length(x.SUBJECTS{iS})-2
+                    % This is a TimePoint indication
+                    CurrentTimePoint = str2num( x.SUBJECTS{iS}(Indices(end)+1:end));
+                    CurrentSubjName  = x.SUBJECTS{iS}(1:Indices(end)-1);
+                end
+            end
+
+            if ~exist('CurrentTimePoint','var') || isempty(CurrentTimePoint) || ~isnumeric(CurrentTimePoint)
+                CurrentTimePoint = 1;
+                CurrentSubjName = x.SUBJECTS{iS};
+                % if no index suffix, then assume first TimePoint (default)
+            end
+
+            iSubjSessAll = [(iS-1)*x.dataset.nSessions+1:iS*x.dataset.nSessions];
+            PreviousSubjSess =  (iS-1)*x.dataset.nSessions;
+            SubjectNameList(iSubjSessAll,1) = {CurrentSubjName};
+
+            if ~exist('SubjectNlist','var')
+                % for first case
+                SubjectNlist(iSubjSessAll,1) = 1;
+                TimePoint(iSubjSessAll,1) = 1;
+            elseif ~strcmp(CurrentSubjName,SubjectNameList{PreviousSubjSess,1})
+                % if new subject, add to list as first time point
+                TimePoint(iSubjSessAll,1) = 1; % first time point
+                SubjectNlist(iSubjSessAll,1) = SubjectNlist(PreviousSubjSess,1) + 1; % previous subject + 1 == new value
+            else
+                % if same subject, add to list as new time point
+                TimePoint(iSubjSessAll,1) = TimePoint(PreviousSubjSess,1) + 1; % previous subject + 1 == new time point
+                SubjectNlist(iSubjSessAll,1) = SubjectNlist(PreviousSubjSess,1); % same as last time point
+            end
+
+            if ~isnumeric(CurrentTimePoint) || isempty(CurrentTimePoint) % sanity check
+                error(['Subject-name ' x.SUBJECTS{iS} ' contains a underscore which is reserved for longitudinal TimePoints 1 2 3 etc']);
             end
         end
-
-        if ~exist('CurrentTimePoint','var') || isempty(CurrentTimePoint) || ~isnumeric(CurrentTimePoint)
-            CurrentTimePoint = 1;
-            CurrentSubjName = x.SUBJECTS{iS};
-            % if no index suffix, then assume first TimePoint (default)
-        end
-
-        iSubjSessAll = [(iS-1)*x.dataset.nSessions+1:iS*x.dataset.nSessions];
-        PreviousSubjSess =  (iS-1)*x.dataset.nSessions;
-        SubjectNameList(iSubjSessAll,1) = {CurrentSubjName};
-
-        if ~exist('SubjectNlist','var')
-            % for first case
-            SubjectNlist(iSubjSessAll,1) = 1;
-            TimePoint(iSubjSessAll,1) = 1;
-        elseif ~strcmp(CurrentSubjName,SubjectNameList{PreviousSubjSess,1})
-            % if new subject, add to list as first time point
-            TimePoint(iSubjSessAll,1) = 1; % first time point
-            SubjectNlist(iSubjSessAll,1) = SubjectNlist(PreviousSubjSess,1) + 1; % previous subject + 1 == new value
-        else
-            % if same subject, add to list as new time point
-            TimePoint(iSubjSessAll,1) = TimePoint(PreviousSubjSess,1) + 1; % previous subject + 1 == new time point
-            SubjectNlist(iSubjSessAll,1) = SubjectNlist(PreviousSubjSess,1); % same as last time point
-        end
-
-        if ~isnumeric(CurrentTimePoint) || isempty(CurrentTimePoint) % sanity check
-            error(['Subject-name ' x.SUBJECTS{iS} ' contains a underscore which is reserved for longitudinal TimePoints 1 2 3 etc']);
-        end
+    else
+        % Fallback values if condition above is note met
+        SubjectNlist = [];
+        TimePoint = [];
     end
 end
 
@@ -141,6 +147,11 @@ if isfield(x, 'P')
         IndexFirstSubject = find(VolumeList(:,2)==min(VolumeN));
         iSubj = xASL_adm_ConvertSubjSess2Subj_Sess(x.dataset.nSessions, IndexFirstSubject);
         SubjectID_FirstVolume = x.SUBJECTS{iSubj};
+    else
+        % Default values to make sure output does not crash
+        VolumeList = [];
+        VolumeN = NaN;
+        IsSubject = NaN;
     end
 end
     

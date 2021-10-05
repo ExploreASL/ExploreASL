@@ -22,7 +22,7 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright ??? 2015-2020 ExploreASL
+% Copyright (c) 2015-2020 ExploreASL
 
     % Admin
 	if ~ischar(strIn)

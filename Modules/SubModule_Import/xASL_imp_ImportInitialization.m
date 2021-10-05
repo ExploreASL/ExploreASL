@@ -19,7 +19,6 @@ function x = xASL_imp_ImportInitialization(x)
 
 
     %% Initialization
-    fprintf('==================================== IMPORT INITIALIZATION ===================================\n');
 
     % Initialize x struct
     x = xASL_init_SubStructs(x);
@@ -29,6 +28,9 @@ function x = xASL_imp_ImportInitialization(x)
     if isfield(x, 'dir') && isfield(x.dir, 'DatasetRoot') && isempty(x.dir.DatasetRoot)
         x.dir.DatasetRoot = xASL_fileparts(x.opts.DatasetRoot);
     end
+    
+    % For the xASL_Iterate support we need x.D.ROOT as well
+    x.D.ROOT = x.dir.DatasetRoot;
     
     % We are running the import here, but if BIDS to Legacy will not run,
     % we can not load the data afterwards!

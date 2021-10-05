@@ -1,4 +1,4 @@
-function [x] = xASL_module_Import(x)
+function [result, x] = xASL_module_Import(x)
 %xASL_module_Import Imports the DICOM or PAR/REC source data to NIFTIs in ASL-BIDS format
 %
 % FORMAT: x = xASL_module_Import(x)
@@ -30,7 +30,9 @@ function [x] = xASL_module_Import(x)
 %
 %
 % OUTPUT: 
-%   x                     - ExploreASL x structure
+%   x       - ExploreASL x structure
+%   result  - true for successful run of this module, false for insuccessful run
+%   
 %
 % OUTPUT FILES:
 %   //temp/dcm2niiCatchedErrors.(mat|json) - overview of catched dcm2nii errors, or other errors in this function
@@ -113,6 +115,9 @@ function [x] = xASL_module_Import(x)
 
 
     %% Import Module
+    
+    % Default for xASL_Iterate
+    result = true;
 
     % 1. Initialize by starting the logging and initializing the substructs
     diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
@@ -150,9 +155,32 @@ function [x] = xASL_module_Import(x)
     end
 
     % 7. Clean-up (stop logging)
-    diary off
+    x = xASL_imp_CleanUpImport(x);
 
 end
+
+
+%% Clean-Up before processing pipeline
+function x = xASL_imp_CleanUpImport(x)
+
+    % We want to reload the derivatives data correctly, which is why we delete the following 
+    % fields before we run the processing pipeline, we need them for xASL_Iterate though.
+    if isfield(x,'D')
+        x = rmfield(x,'D');
+        x.D = struct;
+    end
+    if isfield(x,'SUBJECT')
+        x = rmfield(x,'SUBJECT');
+    end
+    if isfield(x,'SUBJECTS')
+        x = rmfield(x,'SUBJECTS');
+    end
+    
+
+end
+
+
+
 
 
 

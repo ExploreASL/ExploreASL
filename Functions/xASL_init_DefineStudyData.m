@@ -124,14 +124,20 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 3) Create list of total baseline & follow-up subjects, before exclusions
 x.dataset.nSessions = length(x.SESSIONS);
-x.SUBJECTS = x.dataset.TotalSubjects; % temporarily for xASL_init_LongitudinalRegistration
+if ~isempty(x.dataset.TotalSubjects)
+    % Temporarily fix for xASL_init_LongitudinalRegistration
+    x.SUBJECTS = x.dataset.TotalSubjects;
+end
+if ~isfield(x,'SUBJECTS')
+    x.SUBJECTS = '';
+end
 x.nSubjects = length(x.SUBJECTS);
 
 if isempty(x.SUBJECTS)
-    fprintf('No subjects found\n');
-    fprintf('Please check the sub_regexp in your Data Parameter File\n');
-    fprintf('This should match with the subject folders inside the ROOT folder\n');
-    fprintf(['This was ' x.D.ROOT '\n']);
+    fprintf('No subjects found...\n');
+    fprintf('Please check the sub_regexp in your Data Parameter File.\n');
+    fprintf('This should match with the subject folders inside the ROOT folder.\n');
+    fprintf('This was %s ...\n\n',x.D.ROOT);
     error('No subjects defined, x.SUBJECTS was empty');
 end
 
@@ -196,6 +202,11 @@ for iSubject=1:x.dataset.nTotalSubjects
         x.dataset.TotalInclusionList( (iSubject-1)*x.dataset.nSessions+1:iSubject*x.dataset.nSessions,1) = 0;
         ListNoPipelineDir(iSubject) = 1;
     end
+end
+
+% Fallback definition of ListNoPipelineDir
+if ~exist('ListNoPipelineDir','var')
+    ListNoPipelineDir = [];
 end
 
 % Remove pipeline dirs from list

@@ -21,9 +21,6 @@ function [x] = ExploreASL_ImportMaster(x)
 
     %% Import Workflow
 
-    % Write output to a log file
-    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
-
     % Run the initialization
     try
         x = xASL_imp_ImportInitialization(x);

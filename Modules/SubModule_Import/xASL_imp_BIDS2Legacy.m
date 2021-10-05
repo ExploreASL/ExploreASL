@@ -21,12 +21,12 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
+%
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
 
     %% 1. Input check
-    diary(fullfile(x.opts.DatasetRoot,'xASL_module_Import.log'));
     fprintf('============================ BIDS to ExploreASL LEGACY CONVERSION ============================\n');
     
     if ~isfield(x,'dir')

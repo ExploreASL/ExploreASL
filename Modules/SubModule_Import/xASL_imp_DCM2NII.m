@@ -31,11 +31,16 @@ function xASL_imp_DCM2NII(x, imPar)
     %% Initialize defaults of dcm2nii
     fprintf('================================== DICOM to NIFTI CONVERSION =================================\n');
     
+    % Print matching files
+    if isfield(imPar,'bVerbose') && imPar.bVerbose
+        fprintf('\nMatching files (#=%g):\n',length(x.modules.import.matches));
+        for iMatch=1:size(x.modules.import.matches,1)
+            fprintf('%s\n', x.modules.import.matches{iMatch,1});
+        end
+    end
+    
     % Create the temp directory for DCM2NII
     xASL_adm_CreateDir(imPar.TempRoot);
-
-    % Make sure that the logging is running
-    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
     
     % Initialize to be able to catch errors and close if valid
     fid_summary = -1;
@@ -48,7 +53,7 @@ function xASL_imp_DCM2NII(x, imPar)
     
     % Iterate over subjects
     for iSubject=1:x.modules.import.numOf.nSubjects
-        [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, matches, dcm2niiCatchedErrors);
+        [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, x.modules.import.matches, dcm2niiCatchedErrors);
     end
     
     % Create summary file

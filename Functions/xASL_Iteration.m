@@ -63,7 +63,7 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     
     % Print module name
     dbSettings.jobfn = str2func(moduleName);
-    fprintf(['Running ' moduleName ' ...   ']);
+    fprintf('\nRunning %s...\n', moduleName);
     
     % Get module name string
     if  strcmp(moduleName(1:12),'xASL_module_')
@@ -99,6 +99,8 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
         dbSettings.diaryFile = ['<PopDir>/' moduleName '.log'];
     elseif ~isempty(regexp(ModName,'(ASL|func|dwi)', 'once'))
         dbSettings.diaryFile = ['<SESSIONDIR>/' moduleName '.log'];
+    elseif ~isempty(regexp(ModName,'(Import)', 'once'))
+        dbSettings.diaryFile = ['<ROOT>/' moduleName '.log'];
     else
         dbSettings.diaryFile = ['<SUBJECTDIR>/' moduleName '.log'];
     end
@@ -247,9 +249,11 @@ function [bAborted, x] = runIteration(db)
     bAborted = false;
     iIter = 0; % just count the number of iterations
     CountErrors = 0;
-    while ~bAborted % do not use for iIter=1:prod(N) anymore because we now support dynamic sets with a fluctuating number of values
+    while ~bAborted 
+        % do not use for iIter=1:prod(N) anymore because we now support dynamic sets with a fluctuating number of values
         % Iterate to the next permutation by increment one of the indices (possibly resetting others)
-        Iprev=I; % remember the previous indices because dynamic sets have to be re-eavaluated when the 'parent' set changes
+        % Remember the previous indices (Iprev) because dynamic sets have to be re-eavaluated when the 'parent' set changes
+        Iprev=I;
         I = NextIter(I,N);
         if (sum(I)==0), break; end
         iIter = iIter+1;
@@ -297,7 +301,7 @@ function [bAborted, x] = runIteration(db)
                         db.x.(setName) = S;
                         I(iSet) = 1; % restart dynamic set
                         N(iSet) = length(db.x.(setName)); % set count
-                        fprintf('\n%s\n',repmat('+',1,72)); % just draw a separator line
+                        fprintf('\n==============================================================================================\n');
                         fprintf('new dynamic set %s with %d values: \n',setName,N(iSet)); disp(S);
                         if N(iSet)==0, N(iSet)=1; end % must allow one iteration when set is empty
                     end
@@ -314,21 +318,24 @@ function [bAborted, x] = runIteration(db)
         
         % First check if this iteration has been fully processed, then we will skip the logging for this iteration
         if  exist(xASL_adm_ReplaceSymbols(fullfile(x.dir.LockDir,x.settings.MUTEXID,'999_ready.status'),x),'file')
-            AlreadyProcessed    = 1;
+            AlreadyProcessed = 1;
         else
-            AlreadyProcessed    = 0;
+            AlreadyProcessed = 0;
         end
         
         
-        % optional diary logfile of command window
-
+        % Optional diary logfile of command window
         if ~isempty(diaryFile)
+            % NB. Don't overwrite diaryFile itself because it might be expanded
+            % with different values in the next iteration.
             diaryFileEx = xASL_adm_ReplaceSymbols(diaryFile,x);
-                % NB. Don't overwrite diaryFile itself because it might be expanded
-                % with different values in the next iteration.
-            status = xASL_adm_CreateDir(fileparts(diaryFileEx),2); % make sure folder exists, but limit to 2 missing levels
+            diaryFileEx = fullfile(diaryFileEx);
+                
+            % Make sure folder exists, but limit to 2 missing levels
+            status = xASL_adm_CreateDir(fullfile(fileparts(diaryFileEx)),2);
+            
+            % Write diary file
             if status>=0
-%                 fprintf('Opening diary log %s\n',diaryFileEx);
                 diary(diaryFileEx);
             else
                 error('xASL_Iteration:cannotCreateDirectory', 'Cannot create folder for diary file: %s!',diaryFileEx);
@@ -336,9 +343,9 @@ function [bAborted, x] = runIteration(db)
         end
         
         % Some feedback about this iteration (after opening diary log)
-                
         if ~AlreadyProcessed
-            fprintf('\n%s\n',repmat('+',1,72)); % just draw a separator line
+            % Print the ExploreASL separator line
+            fprintf('\n==============================================================================================\n');
             [StartIndex, EndIndex] = regexp(diaryFileEx, '(?i)\/ASL_\d*\/'); %to find the name of the session inside diaryFileEx: ASL_with any digit after
              if ~isempty(StartIndex) %writes the session only for ASL module
                 session = diaryFileEx(StartIndex(end)+1:EndIndex(end)-1); %isolate "ASL_1 or ASL_2 etc
@@ -447,20 +454,20 @@ function [bAborted, x] = runIteration(db)
         % Print CPU time
         if ~AlreadyProcessed
             fprintf('\nJob-iteration %i stopped at %s and took %u seconds\n',iIter,datestr(now),ceil(toc(tocID)));
-            fprintf('%s\n',repmat('+',1,72)); % just draw a separator line
+            fprintf('==============================================================================================\n');
         end
         
         % Close logfile
         if ~isempty(diaryFile)
             diary off
         end
-        xASL_TrackProgress(I,N);
+        
+        if AlreadyProcessed
+            xASL_TrackProgress(I,N);
+        end
     end % next DB iteration
-    fprintf('\n%s\n',[x.settings.MUTEXID ' completed']);
-%     if  CountErrors>0 
-%         bAborted = true; % don't start other modules, this shouldn"t involve the inner DB loop in this script, 
-%         % but should avoid running other modules
-%     end    
+    fprintf('%s completed 100%s\n',x.settings.MUTEXID,'%');
+   
 end    
 
 % Helper function to increment indices of parameter sets

@@ -97,6 +97,10 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
     
     %% SCAN NAMES
     x.modules.import.scanNames = x.modules.import.listsIDs.scanIDs;
+    
+    
+    %% SUBJECTS
+    x.SUBJECTS = x.modules.import.listsIDs.subjectIDs;
 
 
 end

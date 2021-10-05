@@ -30,9 +30,6 @@ function x = xASL_imp_NII2BIDS(x, imPar)
     studyPath = x.dir.DatasetRoot;
     studyParPath = x.dir.studyPar;
     
-    % Start logging
-    diary(fullfile(studyPath,'xASL_module_Import.log'));
-    
     % Print feedback
     fprintf('================================== NIFTI to BIDS CONVERSION ==================================\n');
     
