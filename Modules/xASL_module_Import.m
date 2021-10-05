@@ -1,36 +1,42 @@
-function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, x)
+function [x] = xASL_module_Import(x)
 %xASL_module_Import Imports the DICOM or PAR/REC source data to NIFTIs in ASL-BIDS format
 %
-% FORMAT: xASL_module_Import(studyPath[, imParPath, studyParPath, bRunSubmodules, bCopySingleDicoms, bUseDCMTK, bCheckPermissions, x])
+% FORMAT: x = xASL_module_Import(x)
 %
 % INPUT:
-%   studyPath           - path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED)
-%   imParPath           - path to the JSON file with structure with import parameters, output of ExploreASL_ImportConfig.m (originally)
-%                         All other input parameters are configured within this function. (OPTIONAL)
-%                         The path is optional, but the file has to be there. Either provided as a full path or a filename in the path,
-%                         or default names (case-insensitive) sourceStructure.json, ImagePar.json are seeked
-%   studyParPath        - path to the JSON file with the BIDS parameters relevant for the whole study. These parameters are used
-%                         if they cannot be extracted from the DICOMs automatically. (OPTIONAL)
-%                         Looking automatically for file studyPar.json
-%   bRunSubmodules      - Specify which of the parts should be run (OPTIONAL, DEFAULT [1 1 0])
-%                         [1 0 0] - Run the DICOM to NIFTI conversion
-%                         [0 1 0] - Run the NIFTI transformation to the proper ASL-BIDS
-%                         [0 0 1] - Run the defacing
-%   bCopySingleDicoms   - if true, copies a single DICOM with each NIfTI
-%                         dataset/ScanType, that can be used to retrieve missing parameters from
-%                         the DICOM header, or as dummy DICOM to dump embed data into (e.g. WAD-QC) (DEFAULT=false)
-%   bUseDCMTK           - if true, then use DCMTK, otherwise use DICOMINFO from Matlab (DEFAULT=false)
-%   bCheckPermissions   - if true, check whether data permissions are set correctly, before trying to read/copy the files (DEFAULT=false)
-%   x                   - if x is provided, initialization of ExploreASL is skipped
+%   x                     - ExploreASL x structure
+%   x.dir.DatasetRoot     - Path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED)
+%   x.dir.sourceStructure - Path to the JSON file with structure with import parameters, output of ExploreASL_ImportConfig.m (originally)
+%                           All other input parameters are configured within this function. (OPTIONAL)
+%                           The path is optional, but the file has to be there. Either provided as a full path or a filename in the path,
+%                           or default names (case-insensitive) sourceStructure.json, ImagePar.json are seeked
+%   x.dir.studyPar        - Path to the JSON file with the BIDS parameters relevant for the whole study. These parameters are used
+%                           if they cannot be extracted from the DICOMs automatically. (OPTIONAL)
+%                           Looking automatically for file studyPar.json
+%   x.opts.ImportModules  - Specify which of the parts should be run (OPTIONAL, DEFAULT [1 1 0 0])
+%                           [1 0 0 0] - Run the DICOM to NIFTI conversion
+%                           [0 1 0 0] - Run the NIFTI transformation to the proper ASL-BIDS
+%                           [0 0 1 0] - Run the defacing
+%                           [0 0 0 1] - Run BIDS2Legacy
+%
+%   x.modules.import.settings.bCopySingleDicoms 
+%                         - If true, copies a single DICOM with each NIfTI
+%                           dataset/ScanType, that can be used to retrieve missing parameters from
+%                           the DICOM header, or as dummy DICOM to dump embed data into (e.g. WAD-QC) (DEFAULT=false)
+%   x.modules.import.settings.bUseDCMTK          
+%                         - If true, then use DCMTK, otherwise use DICOMINFO from Matlab (DEFAULT=false)
+%   x.modules.import.settings.bCheckPermissions     
+%                         - If true, check whether data permissions are set correctly, before trying to read/copy the files (DEFAULT=false)
 %
 %
 % OUTPUT: 
-%   x                   - ExploreASL x structure
+%   x                     - ExploreASL x structure
 %
 % OUTPUT FILES:
 %   //temp/dcm2niiCatchedErrors.(mat|json) - overview of catched dcm2nii errors, or other errors in this function
 %   //temp/import_log_StudyID_yyyymmdd_hhmmss.txt - diary log of this function
 %   //temp/import_summary.csv - hence the name
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:
 % Import batch `T1`, `T2`, `FLAIR`, `DWI`, `fMRI`, `M0`, `ASL` data from dicom 2 NIfTI in ASL-BIDS format and structure.
@@ -105,140 +111,53 @@ function [x] = xASL_module_Import(studyPath, imParPath, studyParPath, bRunSubmod
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+
     %% 1. Initialize by starting the logging and initializing the substructs
-    diary(fullfile(studyPath,'xASL_module_Import.log'));
+    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
+    
+    % Initialize x struct
     [x] = xASL_init_SubStructs(x);
 
     % First do the basic parameter admin and initialize the default values
-    if nargin < 1 ||  isempty(studyPath)
-        error('The studyPath needs to be defined...');
-    end
-
-    % Fix studyPath if the last character is a forward or backward slash
-    if strcmp(studyPath(end),'\') || strcmp(studyPath(end),'/')
-        studyPath = studyPath(1:end-1);
-    end
-
-    % Check the imagePar input file
-    if (nargin < 2 || isempty(imParPath)) && ~bRunSubmodules(4)
-        % If the path is empty, then try to find sourceStructure.json or sourcestruct.json
-        fListImPar = xASL_adm_GetFileList(studyPath,'(?i)^source(struct(ure|)\.json$', 'List', [], 0);
-        if length(fListImPar) < 1
-            error('Could not find the sourceStructure.json file');
-        end
-        imParPath = fullfile(studyPath,fListImPar{1});
-    elseif (nargin < 2 || isempty(imParPath)) && bRunSubmodules(4)
-        % For BIDS to Legacy we do not need the imPar struct
-        imParPath = [];
-    else
-        [fpath, ~, ~] = fileparts(imParPath);
-        if isempty(fpath)
-            imParPath = fullfile(studyPath,imParPath);
-        end
-    end
-
-    % Find the studyPar input file
-    if nargin < 3 || isempty(studyParPath)
-        % If the path is empty, then try to find studyPar.json
-        fListStudyPar = xASL_adm_GetFileList(studyPath,'(?i)^studypar\.json$', 'List', [], 0);
-        if length(fListStudyPar) < 1
-            warning('Could not find the StudyPar.json file');
-        else
-            studyParPath = fullfile(studyPath,fListStudyPar{1});
-        end
-    else
-        [fpath, ~, ~] = fileparts(studyParPath);
-        if isempty(fpath)
-            studyParPath = fullfile(studyPath,studyParPath);
-        end
-    end
-
-    if nargin<4 || isempty(bRunSubmodules)
-        bRunSubmodules = [1 1 0 0];
-    else
-        if length(bRunSubmodules) ~= 4
-            error('bRunSubmodules must have length 4');
-        end
-    end
-
-    % By default don't copy DICOMs for anonymization reasons
-    if nargin<5 || isempty(bCopySingleDicoms)
-        bCopySingleDicoms = false;
-    end
-
-    if nargin<6 || isempty(bUseDCMTK)
-        % Default set to using DCM-TK
-        bUseDCMTK = true;
-    elseif ~bUseDCMTK && isempty(which('dicomdict'))
-        error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
-    end
-
-    if nargin<7 || isempty(bCheckPermissions)
-        if isunix
-            bCheckPermissions = true;
-        else
-            bCheckPermissions = false;
-        end
-    end
-
-    % Only initialize ExploreASL if this wasn't initialized before
-    if nargin<8 || isempty(x)
-        x = ExploreASL_Initialize;
+    if nargin < 1 || isempty(x)
+        error('The x struct needs to be defined...');
     end
     
-    % Write import settings to modules field of x structure
-    x.modules.import.settings.bCopySingleDicoms = bCopySingleDicoms;
-    x.modules.import.settings.bUseDCMTK = bUseDCMTK;
-    x.modules.import.settings.bCheckPermissions = bCheckPermissions;
-    
-    % Determine the import lock dir for all modules
-    x = xASL_imp_InitLockDirPaths(x,studyPath);
+    % Basic parameter checks
+    x = xASL_imp_BasicParameterChecks(x);
 
     %% 2. Initialize the import setup
     
     % Load the sourceStructure.json and initialize the corresponding struct
-    if bRunSubmodules(1) || bRunSubmodules(2) || bRunSubmodules(3)
-        imPar = xASL_imp_Initialize(studyPath, imParPath);
+    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.ImportModules(3)
+        imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
     end
 
     %% 3. Run the DCM2NIIX
-    if bRunSubmodules(1)
+    if x.opts.ImportModules(1)
         xASL_imp_DCM2NII(imPar, x);
     end
 
     %% 4. Run the NIIX to ASL-BIDS
-    if bRunSubmodules(2)
+    if x.opts.ImportModules(2)
         % Run NII to BIDS
-        x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath);
+        x = xASL_imp_NII2BIDS(x, imPar, x.dir.DatasetRoot, x.dir.studyPar);
         % Update x.opts.DatasetRoot
-        x = xASL_imp_UpdateDatasetRoot(x, studyPath);
+        x = xASL_imp_UpdateDatasetRoot(x, x.dir.DatasetRoot);
     end
 
     %% 5. Run defacing
-    if bRunSubmodules(3)
+    if x.opts.ImportModules(3)
         xASL_imp_Deface(x,imPar);
     end
     
     %% 6. Run BIDS to Legacy
-    if bRunSubmodules(4)
+    if x.opts.ImportModules(4)
         x = xASL_imp_BIDS2Legacy(x);
     end
 
     %% 7. Clean-up (stop logging)
     diary off
-
-end
-
-
-%% Determine the lock dir paths
-function x = xASL_imp_InitLockDirPaths(x,studyPath)
-
-    x.modules.import.dir.lockImport = fullfile(studyPath, 'derivatives', 'ExploreASL', 'lock', 'xASL_module_Import');
-    x.modules.import.dir.lockDCM2NII = fullfile(x.modules.import.dir.lockImport,'xASL_imp_DCM2NII');
-    x.modules.import.dir.lockNII2BIDS = fullfile(x.modules.import.dir.lockImport,'xASL_imp_NII2BIDS');
-    x.modules.import.dir.lockDEFACE = fullfile(x.modules.import.dir.lockImport,'xASL_imp_DEFACE');
-    x.modules.import.dir.lockBIDS2LEGACY = fullfile(x.modules.import.dir.lockImport,'xASL_imp_BIDS2LEGACY');
-
 
 end
 

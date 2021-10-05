@@ -92,8 +92,6 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
         
         % Display subject-visit ID and add lock dir
         fprintf('%s\nImporting subject=%s:   \n',separatorline,[subjectID imPar.visitNames{iVisit}]);
-        x.modules.import.dir.lockSubject = fullfile(x.modules.import.dir.lockDCM2NII,[subjectID imPar.visitNames{iVisit}]);
-        xASL_adm_CreateDir(x.modules.import.dir.lockSubject)
 
         %% 3. Loop through all sessions
         for iSession=1:numOf.nSessions
@@ -246,10 +244,6 @@ function [imPar, summary_lines, PrintDICOMFields, globalCounts, scanNames, dcm2n
             end % scansIDs
         end % sessionIDs
     end % visitIDs
-    
-    % Reset lock dir of current subject (just to be safe)
-    x.modules.import.dir.lockSubject = '';
-
         
 end
 

@@ -41,17 +41,18 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
 		dbSettings.settings.dryRun = dryRun;
 	end
 	
-	% Set the stopAfterErrors field
-	if nargin < 4 || isempty(stopAfterErrors)
-		if ~isfield(x.settings,'stopAfterErrors') || isempty(x.settings.stopAfterErrors)
-			dbSettings.settings.stopAfterErrors = Inf;
-		else
-			dbSettings.settings.stopAfterErrors = x.settings.stopAfterErrors;
-		end
-	else
-		dbSettings.settings.stopAfterErrors = stopAfterErrors;
+    % Set the stopAfterErrors field
+    if nargin < 4 || isempty(stopAfterErrors)
+        if ~isfield(x.settings,'stopAfterErrors') || isempty(x.settings.stopAfterErrors)
+            dbSettings.settings.stopAfterErrors = Inf;
+        else
+            dbSettings.settings.stopAfterErrors = x.settings.stopAfterErrors;
+        end
+    else
+        dbSettings.settings.stopAfterErrors = stopAfterErrors;
     end
-	    
+    
+    % Check if it was possible to load the subjects
     if nargin<5 || isempty(SelectedSubjects)
         try
             SelectedSubjects = x.SUBJECTS;
@@ -61,45 +62,53 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
         end
     end
     
-    dbSettings.jobfn                 = str2func(moduleName);
+    % Print module name
+    dbSettings.jobfn = str2func(moduleName);
     fprintf(['Running ' moduleName ' ...   ']);
-
+    
+    % Get module name string
     if  strcmp(moduleName(1:12),'xASL_module_')
-        ModName     = moduleName(13:end);
-    elseif strcmp(moduleName(1:7),'module_') % backward compatibility
-        ModName     = moduleName(8:end);
+        ModName = moduleName(13:end);
+    elseif strcmp(moduleName(1:7),'module_')
+        % backward compatibility
+        ModName = moduleName(8:end);
     else
-        ModName     = moduleName;
+        ModName = moduleName;
     end
-
+    
     % Specific settings
     if  strcmp(ModName,'DARTEL') || strcmp(ModName,'LongReg')
-        dbSettings.x.dir.LockDir         = [dbSettings.x.dir.LockDir '_' x.P.STRUCT ];
-	end
+        dbSettings.x.dir.LockDir = [dbSettings.x.dir.LockDir '_' x.P.STRUCT ];
+    end
     
-	if ~isempty(regexp(ModName,'(Struct|ASL|func|LongReg|dwi)'))
-		dbSettings.sets.SUBJECT      = SelectedSubjects; % x.SUBJECTS
-		dbSettings.x.dir.SUBJECTDIR  = '<ROOT>/<SUBJECT>';
-		dbSettings.x.dir.LockDir     = [dbSettings.x.dir.LockDir '/<SUBJECT>'];
-	end
-	
-	if ~isempty(regexp(ModName,'(ASL|func|dwi)'))
-		dbSettings.sets.SESSION       = x.SESSIONS;
-		dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID '_<SESSION>'];
-		dbSettings.x.dir.SESSIONDIR       = '<ROOT>/<SUBJECT>/<SESSION>';
-	end
-	
-	if ~isempty(regexp(ModName, '(DARTEL|Population|Analyze)'))
-		dbSettings.diaryFile               = ['<PopDir>/' moduleName '.log'];
-	elseif ~isempty(regexp(ModName,'(ASL|func|dwi)'))
-		dbSettings.diaryFile               = ['<SESSIONDIR>/' moduleName '.log'];
-	else
-		dbSettings.diaryFile               = ['<SUBJECTDIR>/' moduleName '.log'];
-	end
-	
-	[bAborted, xOut] = runIteration(dbSettings);
+    % SUBJECT, SUBJECTDIR & LockDir
+    if ~isempty(regexp(ModName,'(Import|Struct|ASL|func|LongReg|dwi)', 'once'))
+        dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
+        dbSettings.x.dir.SUBJECTDIR = '<ROOT>/<SUBJECT>';
+        dbSettings.x.dir.LockDir = [dbSettings.x.dir.LockDir '/<SUBJECT>'];
+    end
+    
+    % SESSION, MUTEXID & SESSIONDIR
+    if ~isempty(regexp(ModName,'(ASL|func|dwi)', 'once'))
+        dbSettings.sets.SESSION = x.SESSIONS;
+        dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID '_<SESSION>'];
+        dbSettings.x.dir.SESSIONDIR = '<ROOT>/<SUBJECT>/<SESSION>';
+    end
+    
+    % Diary file
+    if ~isempty(regexp(ModName, '(DARTEL|Population|Analyze)', 'once'))
+        dbSettings.diaryFile = ['<PopDir>/' moduleName '.log'];
+    elseif ~isempty(regexp(ModName,'(ASL|func|dwi)', 'once'))
+        dbSettings.diaryFile = ['<SESSIONDIR>/' moduleName '.log'];
+    else
+        dbSettings.diaryFile = ['<SUBJECTDIR>/' moduleName '.log'];
+    end
+    
+    [bAborted, xOut] = runIteration(dbSettings);
 end
 
+
+%% Run Iteration
 function [bAborted, x] = runIteration(db)
 % Iterates through all combinations of the parameter sets defined in db and calls a job function for each set.
 %
@@ -172,10 +181,10 @@ function [bAborted, x] = runIteration(db)
     end
 
     % Make sure minimum required input is defined 
-    if     ~isfield(db,'sets') % add a dummy set to be able to run the script using parfor without sets
-            db.sets.DUMMY = { '' };
-    elseif  numel(fieldnames(db.sets))<1
-            db.sets.DUMMY = { '' };
+    if ~isfield(db,'sets') % add a dummy set to be able to run the script using parfor without sets
+        db.sets.DUMMY = { '' };
+    elseif numel(fieldnames(db.sets))<1
+        db.sets.DUMMY = { '' };
     end
     
     % Parse arguments
@@ -238,8 +247,8 @@ function [bAborted, x] = runIteration(db)
     % Then loop through all permutations
     bAborted = false;
     iIter = 0; % just count the number of iterations
-    CountErrors     = 0;
-    while ~bAborted    % do not use for iIter=1:prod(N) anymore because we now support dynamic sets with a fluctuating number of values
+    CountErrors = 0;
+    while ~bAborted % do not use for iIter=1:prod(N) anymore because we now support dynamic sets with a fluctuating number of values
         % Iterate to the next permutation by increment one of the indices (possibly resetting others)
         Iprev=I; % remember the previous indices because dynamic sets have to be re-eavaluated when the 'parent' set changes
         I = NextIter(I,N);
@@ -250,10 +259,10 @@ function [bAborted, x] = runIteration(db)
         tocID = tic;
      
         % copy x-struct from user defined db
-		x     = db.x;
+		x = db.x;
         
         % Backward compatibility
-        Flds    = {'ROOT' 'DARTELDIR'};
+        Flds = {'ROOT' 'DARTELDIR'};
 
         if ~isfield(x,'D')
             x.D = struct;

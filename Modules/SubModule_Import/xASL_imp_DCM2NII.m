@@ -39,12 +39,6 @@ function xASL_imp_DCM2NII(imPar, x, newLogging)
     % Create the temp directory for DCM2NII
     xASL_adm_CreateDir(imPar.TempRoot);
     
-    % Create lock directory for import if it does not exist already
-    xASL_adm_CreateDir(x.modules.import.dir.lockImport);
-    
-    % Create DCM2NII sub-directory
-    xASL_adm_CreateDir(x.modules.import.dir.lockDCM2NII);
-    
     % Initialization of an empty catched errors struct
     dcm2niiCatchedErrors = struct;
     if x.modules.import.settings.bCheckPermissions

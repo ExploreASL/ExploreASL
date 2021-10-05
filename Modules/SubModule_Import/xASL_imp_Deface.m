@@ -22,12 +22,6 @@ function xASL_imp_Deface(x, imPar)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    % Create lock directory for import if it does not exist already
-    xASL_adm_CreateDir(x.modules.import.dir.lockImport);
-    
-    % Create DEFACE sub-directory
-    xASL_adm_CreateDir(x.modules.import.dir.lockDEFACE);
-
     %% 1. Iterate over list of subjects
     listSubjects = xASL_adm_GetFileList(imPar.BidsRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)

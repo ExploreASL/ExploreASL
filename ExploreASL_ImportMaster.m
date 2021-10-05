@@ -30,12 +30,20 @@ function [x] = ExploreASL_ImportMaster(x)
     if ~x.opts.ImportModules(4)
         x.opts.bLoadData = false;
     end
-
+    
+    % Currently fixed import settings
+    x.modules.import.settings.bCopySingleDicoms = false;
+    x.modules.import.settings.bUseDCMTK = true;
+    x.modules.import.settings.bCheckPermissions = false;
+    
+    % Determine subject/session/run structure from sourcedata or temp data
+    x = xASL_imp_DetermineSubjectStructure(x);
+    
     % Run the import submodules
     try
-        x = xASL_module_Import(x.dir.DatasetRoot, x.dir.sourceStructure, x.dir.studyPar, x.opts.ImportModules, false, true, false, x);
+        [~, x] = xASL_Iteration(x,'xASL_module_Import');
     catch loggingEntry
-        % Print user feedback if import crashed        
+        % Print user feedback if import crashed
         fprintf(2,'ExploreASL Import module failed...\n');
         % Check loggingEntry
         if size(loggingEntry.stack,1)>0
