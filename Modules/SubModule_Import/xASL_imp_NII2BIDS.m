@@ -1,4 +1,4 @@
-function x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
+function x = xASL_imp_NII2BIDS(x, imPar)
 %xASL_imp_NII2BIDS Run the NII2BIDS conversion.
 %
 % FORMAT: x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
@@ -6,8 +6,6 @@ function x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 % INPUT:
 %   x               - ExploreASL x structure (REQUIRED, STRUCT)
 %   imPar           - JSON file with structure with import parameters (REQUIRED, STRUCT)
-%   studyPath       - Path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED, CHAR ARRAY)
-%   studyParPath    - Path to the JSON file with the BIDS parameters relevant for the whole study (REQUIRED, CHAR ARRAY)
 %
 % OUTPUT:
 %   x               - ExploreASL x structure (STRUCT)
@@ -27,7 +25,15 @@ function x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
 
 
     %% Run the NII2BIDS conversion
+    
+    % Extract variables
+    studyPath = x.dir.DatasetRoot;
+    studyParPath = x.dir.studyPar;
+    
+    % Start logging
     diary(fullfile(studyPath,'xASL_module_Import.log'));
+    
+    % Print feedback
     fprintf('================================== NIFTI to BIDS CONVERSION ==================================\n');
     
     % Check if the temp folder exists
@@ -82,6 +88,9 @@ function x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
     
     % Delete temp folder
     xASL_delete(imPar.TempRoot, true);
+    
+    % Update x.opts.DatasetRoot
+    x = xASL_imp_UpdateDatasetRoot(x);
 
 end
 

@@ -1,15 +1,13 @@
-function [x, imPar] = xASL_imp_CheckImportSettings(x, imPar)
+function [x] = xASL_imp_CheckImportSettings(x)
 %xASL_imp_CheckImportSettings Basic import checks before execution
 %
-% FORMAT: [x, imPar, fid_summary] = xASL_imp_CheckImportSettings(x, imPar)
+% FORMAT: [x] = xASL_imp_CheckImportSettings(x)
 %
 % INPUT:
 %   x            - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
-%   imPar        - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
-%   imPar        - JSON file with structure with import parameters
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Basic import checks before execution.
@@ -25,21 +23,21 @@ function [x, imPar] = xASL_imp_CheckImportSettings(x, imPar)
         dcm2niiDir = fullfile(x.opts.MyPath, 'External', 'MRIcron');
         xASL_adm_CheckPermissions(dcm2niiDir, true); % dcm2nii needs to be executable
     end
-    if ~isfield(imPar,'dcm2nii_version') || isempty(imPar.dcm2nii_version)
-        % OR for PARREC imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
-        imPar.dcm2nii_version = '20190902';
+    if ~isfield(x.modules.import.imPar,'dcm2nii_version') || isempty(x.modules.import.imPar.dcm2nii_version)
+        % OR for PARREC x.modules.import.imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
+        x.modules.import.imPar.dcm2nii_version = '20190902';
     end
-    if ~isfield(imPar,'dcmExtFilter') || isempty(imPar.dcmExtFilter)
+    if ~isfield(x.modules.import.imPar,'dcmExtFilter') || isempty(x.modules.import.imPar.dcmExtFilter)
         % dcmExtFilter: the last one is because some convertors save files without extension, 
         % but there would be a dot/period before a bunch of numbers
-        imPar.dcmExtFilter = '^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
+        x.modules.import.imPar.dcmExtFilter = '^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
     end
     
     % Check SkipSubjectIfExists
-    if ~isfield(imPar,'SkipSubjectIfExists') || isempty(imPar.SkipSubjectIfExists)
+    if ~isfield(x.modules.import.imPar,'SkipSubjectIfExists') || isempty(x.modules.import.imPar.SkipSubjectIfExists)
         % allows to skip existing subject folders in the temp folder, when this is set to true,
         % avoiding partly re-importing/converting dcm2niiX when processing has been partly done
-        imPar.SkipSubjectIfExists = false;
+        x.modules.import.imPar.SkipSubjectIfExists = false;
     else
         warning('Skipping existing subjects in temp folder...');
         fprintf('If you want to overwrite, first remove the full subject folder...');

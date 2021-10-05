@@ -1,15 +1,13 @@
-function [x,imPar] = xASL_imp_CheckDirectoriesAndPermissions(x,imPar)
+function [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
 %xASL_imp_CheckDirectoriesAndPermissions Check directories and permissions
 %
-% FORMAT: [x,imPar] = xASL_imp_CheckDirectoriesAndPermissions(x,imPar)
+% FORMAT: [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
 %
 % INPUT:
 %   x            - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
-%   imPar        - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
-%   imPar        - JSON file with structure with import parameters
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Check directories and permissions.
@@ -21,19 +19,19 @@ function [x,imPar] = xASL_imp_CheckDirectoriesAndPermissions(x,imPar)
 
 
     % Create the basic folder structure for sourcedata & derivative data
-    if ~exist(imPar.RawRoot, 'dir')
-        warning(['Could not find ' imPar.RawRoot ', trying to find a different folder instead...']);
+    if ~exist(x.modules.import.imPar.RawRoot, 'dir')
+        warning(['Could not find ' x.modules.import.imPar.RawRoot ', trying to find a different folder instead...']);
         
         % find any folder except for temp, sourcedata, rawdata, derivatives
         % xASL_adm_GetFileList uses regular expressions, to create a nice list of foldernames,
         % with/without FullPath (FPList), with/without recursive (FPListRec)
         % very powerful once you know how these work
-        FolderNames = xASL_adm_GetFileList(fullfile(imPar.RawRoot, imPar.studyID), ...
+        FolderNames = xASL_adm_GetFileList(fullfile(x.modules.import.imPar.RawRoot, x.modules.import.imPar.studyID), ...
             '^(?!(temp|derivatives|source|sourcedata)).*$', 'FPList', [0 Inf], true);
         
         if length(FolderNames)==1
-            imPar.RawRoot = FolderNames{1};
-            fprintf('%s\n', ['Found ' imPar.RawRoot ' as sourcedata folder']);
+            x.modules.import.imPar.RawRoot = FolderNames{1};
+            fprintf('%s\n', ['Found ' x.modules.import.imPar.RawRoot ' as sourcedata folder']);
         else
             error('Couldnt find a sourcedata folder, please rename one, or move other folders');
         end
@@ -41,8 +39,8 @@ function [x,imPar] = xASL_imp_CheckDirectoriesAndPermissions(x,imPar)
     
     % Check access rights of temp and rawdata directories
     if x.modules.import.settings.bCheckPermissions
-        xASL_adm_CheckPermissions(imPar.RawRoot, false); % don't need execution permisions
-        xASL_adm_CheckPermissions(imPar.TempRoot, false);  % don't need execution permisions
+        xASL_adm_CheckPermissions(x.modules.import.imPar.RawRoot, false); % don't need execution permisions
+        xASL_adm_CheckPermissions(x.modules.import.imPar.TempRoot, false);  % don't need execution permisions
     end
 
     % Path to the dictionary to initialize - we need to keep track if the dictionary has been set, 

@@ -21,21 +21,21 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 
     if x.opts.ImportModules(1)
         %% Import sourcedata structure
-        if ~isnan(x.modules.import.imPar)
+        if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
             % Basic import checks before execution
-            [x, imPar] = xASL_imp_CheckImportSettings(x, imPar);
+            x = xASL_imp_CheckImportSettings(x);
             
             % Check directories and permissions
-            [x, imPar] = xASL_imp_CheckDirectoriesAndPermissions(x, imPar);
+            x = xASL_imp_CheckDirectoriesAndPermissions(x);
             
-            %% Here we try to fix backwards compatibility
-            imPar = xASL_imp_TokenBackwardsCompatibility(imPar);
+            % Here we try to fix backwards compatibility
+            x.modules.import.imPar = xASL_imp_TokenBackwardsCompatibility(x.modules.import.imPar);
 
-            %% Read sourcedata
-            [x, matches, tokens] = xASL_imp_ReadSourceData(x, imPar);
+            % Read sourcedata
+            x = xASL_imp_ReadSourceData(x);
             
             % Determine structure from sourcedata
-            [x, imPar] = xASL_imp_DetermineStructureFromSourcedata(x, imPar, tokens);
+            x = xASL_imp_DetermineStructureFromSourcedata(x);
             
             % Sanity check for missing elements
             xASL_imp_DCM2NII_SanityChecks(x);
@@ -47,7 +47,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         end
     elseif x.opts.ImportModules(2)
         %% Import temp data structure
-        if ~isnan(x.modules.import.imPar)
+        if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
 
         else
             error('The imPar struct does not exist...');

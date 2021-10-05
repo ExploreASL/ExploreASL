@@ -1,10 +1,9 @@
-function xASL_imp_Deface(x, imPar)
+function xASL_imp_Deface(imPar)
 %xASL_imp_Deface Run defacing.
 %
 % FORMAT: xASL_imp_Deface(imPar)
 % 
 % INPUT:
-%   x          - ExploreASL x struct (STRUCT, REQUIRED)
 %   imPar      - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:

@@ -1,11 +1,11 @@
-function xASL_imp_DCM2NII(imPar, x)
+function xASL_imp_DCM2NII(x, imPar)
 %xASL_imp_DCM2NII Run the dcm2nii part of the import.
 %
 % FORMAT: xASL_imp_DCM2NII(imPar, x)
 % 
 % INPUT:
-%   imPar              - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %   x                  - ExploreASL x structure (REQUIRED, STRUCT)
+%   imPar              - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   n/a

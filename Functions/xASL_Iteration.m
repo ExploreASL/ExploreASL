@@ -19,10 +19,10 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Parses the settings and runs the DatabaseLoop sub-function.
 % EXAMPLE:  [~,x] = xASL_Iteration(x,'xASL_module_ASL');
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2021 ExploreASL
 
     % General settings
     dbSettings.x                     = x;
@@ -54,11 +54,10 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     
     % Check if it was possible to load the subjects
     if nargin<5 || isempty(SelectedSubjects)
-        try
+        if isfield(x,'SUBJECTS')
             SelectedSubjects = x.SUBJECTS;
-        catch ME
-            warning('Loading subjects didnt work, verify that ExploreASL was correctly initialized with the correct DataParameter file');
-            fprintf('%s\n', ME.message);
+        else
+            warning('Loading subjects didnt work, verify that ExploreASL was correctly initialized with the correct DataParameter file...');
         end
     end
     

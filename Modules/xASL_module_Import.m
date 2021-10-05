@@ -112,7 +112,9 @@ function [x] = xASL_module_Import(x)
 % Copyright 2015-2021 ExploreASL
 
 
-    %% 1. Initialize by starting the logging and initializing the substructs
+    %% Import Module
+
+    % 1. Initialize by starting the logging and initializing the substructs
     diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
     
     % First do the basic parameter admin and initialize the default values
@@ -125,31 +127,29 @@ function [x] = xASL_module_Import(x)
 
     % Extract the imPar struct
     imPar = x.modules.import.imPar;
+    x.modules.import = rmfield(x.modules.import,'imPar');
 
-    %% 3. Run the DCM2NIIX
+    % 3. Run the DCM2NIIX
     if x.opts.ImportModules(1)
-        xASL_imp_DCM2NII(imPar, x);
+        xASL_imp_DCM2NII(x, imPar);
     end
 
-    %% 4. Run the NIIX to ASL-BIDS
+    % 4. Run the NIIX to ASL-BIDS
     if x.opts.ImportModules(2)
-        % Run NII to BIDS
-        x = xASL_imp_NII2BIDS(x, imPar, x.dir.DatasetRoot, x.dir.studyPar);
-        % Update x.opts.DatasetRoot
-        x = xASL_imp_UpdateDatasetRoot(x, x.dir.DatasetRoot);
+        x = xASL_imp_NII2BIDS(x, imPar);
     end
 
-    %% 5. Run defacing
+    % 5. Run defacing
     if x.opts.ImportModules(3)
-        xASL_imp_Deface(x,imPar);
+        xASL_imp_Deface(imPar);
     end
     
-    %% 6. Run BIDS to Legacy
+    % 6. Run BIDS to Legacy
     if x.opts.ImportModules(4)
         x = xASL_imp_BIDS2Legacy(x);
     end
 
-    %% 7. Clean-up (stop logging)
+    % 7. Clean-up (stop logging)
     diary off
 
 end
