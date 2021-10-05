@@ -1,4 +1,4 @@
-function [x, imPar, fid_summary] = xASL_imp_CheckImportSettings(x, imPar)
+function [x, imPar] = xASL_imp_CheckImportSettings(x, imPar)
 %xASL_imp_CheckImportSettings Basic import checks before execution
 %
 % FORMAT: [x, imPar, fid_summary] = xASL_imp_CheckImportSettings(x, imPar)
@@ -10,7 +10,6 @@ function [x, imPar, fid_summary] = xASL_imp_CheckImportSettings(x, imPar)
 % OUTPUT:
 %   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %   imPar        - JSON file with structure with import parameters
-%   fid_summary  - Variable to catch errors and close if valid
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Basic import checks before execution.
@@ -45,9 +44,6 @@ function [x, imPar, fid_summary] = xASL_imp_CheckImportSettings(x, imPar)
         warning('Skipping existing subjects in temp folder...');
         fprintf('If you want to overwrite, first remove the full subject folder...');
     end
-
-    % Initialize to be able to catch errors and close if valid
-    fid_summary = -1;
 
 end
 
