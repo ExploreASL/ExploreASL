@@ -114,7 +114,7 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 
     %% 7. Run the comparison of processed legacy-format data with the reference data
     if bTest(7)
-        error('Not yet implemented...');
+        fprintf(2,'Comparison of processing results not yet implemented...\n');
     end
     
 

@@ -118,22 +118,44 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
     % Check the Legacy conversion
     flavors = xASL_test_Flavors(testConfig, [0 0 0 0 1 0 0], x, flavors);
     
+    % Already save conversion results and ignore some files before processing
+    flavors = xASL_test_FlavorsSaveResults(flavors, testConfig);
+    
     % Run the pipeline
     flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 1 0], x, flavors);
 
     % Check the pipeline results
-    % flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 0 1], x, flavors);
-    
-    % Ignore some files
-    flavors = xALS_test_IgnoreFiles(flavors);
+    flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 0 1], x, flavors);
 
     % Get warnings & errors from log files
     [logContent] = xASL_test_GetLogContent(testConfig.pathFlavorDatabase,0,1,2);
+    
+    % Save all testing results
+    flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent);
     
     % Clean-up (file handles etc.)
     fclose('all');
     diary off;
 
+
+end
+
+
+%% Save the test results in a .mat file and ignore log files
+function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
+
+    % Ignore some files
+    flavors = xALS_test_IgnoreFiles(flavors);
+    
+    % Save path
+    savePath = fullfile(testConfig.pathExploreASL,'Testing','results.mat');
+    
+    % Check if there is a logContent
+    if nargin < 3
+        save(savePath,'flavors','testConfig');
+    else
+        save(savePath,'flavors','testConfig','logContent');
+    end
 
 end
 

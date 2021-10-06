@@ -31,7 +31,7 @@ function [flavors,flavorList] = xASL_test_Flavors_Compare(testConfig,flavors,fol
         
         % Run comparison script
         [flavorList{iCompare,2},flavorList{iCompare,3},reportTable] = ...
-            xASL_bids_CompareStructures(referenceData,convertedData,[],[],0,1);
+            xASL_bids_CompareStructures(referenceData,convertedData,[],[],0,0);
         % Add current flavor to reportTable
         % ... cellstr(flavorList{iCompare});
         numOfRows = size(reportTable,1);
