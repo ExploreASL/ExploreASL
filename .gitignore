@@ -1,13 +1,24 @@
-# ignore macOS files:
+# Mac related files
 .DS_Store
-# ignore temporary Matlab files:
+
+# Windows related files
+*Thumbs.db
+
+# Testing related files
+Testing/testConfig*.json
+Testing/results*.mat
+
+# Temporary Matlab files
 *.asv
 *.m~
-JSON_LOGIC/ExploreASL_GUI_masterconfig.json
-.idea
+
+# Python cache files
 __pycache__
+
+# Other files
 *MRI_viewer.mp4
 /venv/
 xASL_GUI_run.sh
-*Thumbs.db
-Testing/testConfig*.json
+.idea
+JSON_LOGIC/ExploreASL_GUI_masterconfig.json
+

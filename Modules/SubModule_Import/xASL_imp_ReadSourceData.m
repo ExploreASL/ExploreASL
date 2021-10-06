@@ -20,6 +20,10 @@ function x = xASL_imp_ReadSourceData(x)
 % Copyright 2015-2021 ExploreASL
 
 
+    %% Here we try to fix backwards compatibility
+    x.modules.import.imPar = xASL_imp_TokenBackwardsCompatibility(x.modules.import.imPar);
+
+
     %% Check if directories are files are supposed to be matched
     if x.modules.import.imPar.bMatchDirectories
         strLookFor = 'Directories';

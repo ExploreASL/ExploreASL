@@ -18,68 +18,44 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 % Copyright 2015-2021 ExploreASL
 
 
-
-    if x.opts.ImportModules(1)
-        %% Import sourcedata structure
+    %% Shared imPar related initialization
+    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.ImportModules(3) || x.opts.ImportModules(4)
         if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
             % Basic import checks before execution
             x = xASL_imp_CheckImportSettings(x);
-            
             % Check directories and permissions
             x = xASL_imp_CheckDirectoriesAndPermissions(x);
-            
-            % Here we try to fix backwards compatibility
-            x.modules.import.imPar = xASL_imp_TokenBackwardsCompatibility(x.modules.import.imPar);
-
-            % Read sourcedata
-            x = xASL_imp_ReadSourceData(x);
-            
-            % Determine structure from sourcedata
-            x = xASL_imp_DetermineStructureFromSourcedata(x);
-            
-            % Sanity check for missing elements
-            xASL_imp_DCM2NII_SanityChecks(x);
-            
-            % Preallocate space for (global) counts
-            x = xASL_imp_PreallocateGlobalCounts(x);
-        else
-            error('The imPar struct does not exist...');
-        end
-    elseif x.opts.ImportModules(2)
-        %% Import temp data structure
-        if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
-            % Basic import checks before execution
-            x = xASL_imp_CheckImportSettings(x);
-            
-            % Check directories and permissions
-            x = xASL_imp_CheckDirectoriesAndPermissions(x);
-            
-            % Determine structure from temp data
-            x = xASL_imp_DetermineStructureFromTempdata(x);
-        else
-            error('The imPar struct does not exist...');
-        end
-    elseif x.opts.ImportModules(3) || x.opts.ImportModules(4)
-        %% Import the rawdata structure
-        if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
-            % Basic import checks before execution
-            x = xASL_imp_CheckImportSettings(x);
-            
-            % Check directories and permissions
-            x = xASL_imp_CheckDirectoriesAndPermissions(x);
-            
-            % Determine structure from temp data
-            x = xASL_imp_DetermineStructureFromRawdata(x);
         else
             error('The imPar struct does not exist...');
         end
     else
-        %% Not a valid option
+        % Not a valid option
         error('Invalid option of import settings...');
+    end
+
+
+    %% Specific initialization for sourcedata, temp data, and rawdata
+    if x.opts.ImportModules(1) && ...
+            isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
+        % Determine structure from sourcedata
+        x = xASL_imp_DetermineStructureFromSourcedata(x);
+        
+    elseif x.opts.ImportModules(2) && ...
+            isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
+        % Determine structure from temp data
+        x = xASL_imp_DetermineStructureFromTempdata(x);
+        
+    elseif (x.opts.ImportModules(3) || x.opts.ImportModules(4)) && ...
+            isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
+        % Determine structure from temp data
+        x = xASL_imp_DetermineStructureFromRawdata(x);
+        
     end
 
 
 
 end
+
+
 
 

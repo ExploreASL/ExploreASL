@@ -19,6 +19,10 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
 % Copyright 2015-2021 ExploreASL
 
 
+    %% Read sourcedata
+    x = xASL_imp_ReadSourceData(x);
+
+
     %% VISITS
     if x.modules.import.imPar.tokenOrdering(2)==0
         % a zero means: no visits applicable
@@ -101,6 +105,13 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
     
     %% SUBJECTS
     x.SUBJECTS = x.modules.import.listsIDs.subjectIDs;
+    
+    
+    % Sanity check for missing elements
+    xASL_imp_DCM2NII_SanityChecks(x);
+    
+    % Preallocate space for (global) counts
+    x = xASL_imp_PreallocateGlobalCounts(x);
 
 
 end
