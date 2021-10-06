@@ -107,10 +107,11 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
     x.SUBJECTS = x.modules.import.listsIDs.subjectIDs;
     
     
-    % Sanity check for missing elements
+    %% Sanity check for missing elements
     xASL_imp_DCM2NII_SanityChecks(x);
     
-    % Preallocate space for (global) counts
+    
+    %% Preallocate space for (global) counts
     x = xASL_imp_PreallocateGlobalCounts(x);
 
 

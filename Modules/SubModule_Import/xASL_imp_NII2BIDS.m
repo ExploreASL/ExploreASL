@@ -30,7 +30,7 @@ function x = xASL_imp_NII2BIDS(x, imPar)
     diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
     
     % Print feedback
-    fprintf('================================== NIFTI to BIDS CONVERSION ==================================\n');
+    fprintf('\n================================== NIFTI to BIDS CONVERSION ==================================\n');
     
     % Check if the temp folder exists
     existTempRoot = xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','temp'),'dir');

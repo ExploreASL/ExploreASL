@@ -41,13 +41,11 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
 
 
     %% 1. Run DCM2NII for one individual subject
-    
     separatorline = '==============================================================================================';
     summary_lines = x.modules.import.summary_lines;
     pathDcmDict = x.modules.import.pathDcmDict;
     scanNames = x.modules.import.scanNames;
     globalCounts = x.modules.import.globalCounts;
-    numOf = x.modules.import.numOf;
     settings = x.modules.import.settings;
     listsIDs = x.modules.import.listsIDs;
     subjectID = listsIDs.subjectIDs{iSubject};
