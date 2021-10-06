@@ -1,7 +1,7 @@
 function xASL_imp_DCM2NII(x, imPar)
 %xASL_imp_DCM2NII Run the dcm2nii part of the import.
 %
-% FORMAT: xASL_imp_DCM2NII(imPar, x)
+% FORMAT: xASL_imp_DCM2NII(x, imPar)
 % 
 % INPUT:
 %   x                  - ExploreASL x structure (REQUIRED, STRUCT)
@@ -22,7 +22,7 @@ function xASL_imp_DCM2NII(x, imPar)
 % - Import subject by subject, visit by visit, session by session, scan by scan
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_DCM2NII(imPar, x);
+% EXAMPLE:     xASL_imp_DCM2NII(x, imPar);
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
@@ -31,18 +31,10 @@ function xASL_imp_DCM2NII(x, imPar)
     %% Initialize defaults of dcm2nii
     
     % We may need to restart the logging
-    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
+    diary(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','xASL_module_Import.log'));
     
     % Print feedback
     fprintf('================================== DICOM to NIFTI CONVERSION =================================\n');
-    
-    % Print matching files
-    if isfield(imPar,'bVerbose') && imPar.bVerbose
-        fprintf('\nMatching files (#=%g):\n',length(x.modules.import.matches));
-        for iMatch=1:size(x.modules.import.matches,1)
-            fprintf('%s\n', x.modules.import.matches{iMatch,1});
-        end
-    end
     
     % Create the temp directory for DCM2NII
     xASL_adm_CreateDir(imPar.TempRoot);
@@ -55,14 +47,15 @@ function xASL_imp_DCM2NII(x, imPar)
 
     % Initialization of an empty catched errors struct
     dcm2niiCatchedErrors = struct;
+    [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, x.modules.import.matches, dcm2niiCatchedErrors);
     
-    % Iterate over subjects
-    for iSubject=1:x.modules.import.numOf.nSubjects
-        [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, iSubject, x.modules.import.matches, dcm2niiCatchedErrors);
-    end
+    % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
+    iSubject = strcmp(x.SUBJECT,x.SUBJECTS);
+    overviewSubjects = fieldnames(x.overview);
+    thisSubject = x.overview.(overviewSubjects{iSubject});
     
     % Create summary file
-    xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary);
+    xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid_summary);
     
     % Clean-Up
     xASL_imp_DCM2NII_CleanUp(x, imPar, dcm2niiCatchedErrors);

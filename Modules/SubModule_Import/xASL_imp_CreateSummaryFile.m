@@ -1,11 +1,13 @@
-function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary)
+function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid_summary)
 %xASL_imp_CreateSummaryFile Create summary file.
 %
 % FORMAT: xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary)
 % 
 % INPUT:
+%   thisSubject       - Current subject struct (REQUIRED, STRUCT)
 %   imPar             - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %   PrintDICOMFields  - Print DICOM fields (REQUIRED, CELL ARRAY)
+%   x                 - ExploreASL x structure (REQUIRED, STRUCT)
 %   fid_summary       - File ID summary (REQUIRED, INTEGER)
 %
 % OUTPUT:
@@ -24,14 +26,7 @@ function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary)
 
     
     %% 1. Create summary file
-    
-    summary_lines = x.modules.import.summary_lines;
-    scanNames = x.modules.import.scanNames;
-    numOf = x.modules.import.numOf;
-    listsIDs = x.modules.import.listsIDs;
-    globalCounts = x.modules.import.globalCounts;
-    
-	summary_filepath = fullfile(imPar.TempRoot, 'import_summary.csv');
+	summary_filepath = fullfile(imPar.TempRoot, ['import_summary_' thisSubject.name '.csv']);
 	fid_summary = fopen(summary_filepath,'wt');
 	
     % Print headers for parameters obtained from NIfTI file
@@ -44,22 +39,33 @@ function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary)
 		end
 	end
 	fprintf(fid_summary,'\n');
-	
-	for iScan=1:numOf.nScans
-		for iSubject=1:numOf.nSubjects
-			for iVisit=1:numOf.nVisits
-				for iSession=1:numOf.nSessions
-					if globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) || globalCounts.skipped_scans(iSubject, iVisit, iSession, iScan) || globalCounts.missing_scans(iSubject, iVisit, iSession, iScan)
-						fprintf(fid_summary,'"%s","%s","%s","%s"%s,\n', listsIDs.subjectIDs{iSubject}, listsIDs.visitIDs{iVisit}, imPar.sessionNames{iSession}, scanNames{iScan}, summary_lines{iSubject, iVisit, iSession, iScan});
-					end
-				end
-			end
-		end
-	end
+    
+    for iSubject=1:x.modules.import.nSubjects
+        for iVisit=1:thisSubject.nVisits
+            % Get fieldname
+            vFieldName = ['visit_' num2str(iVisit,'%03.f')];
+            % Get visit
+            thisVisit = thisSubject.(vFieldName);
+            for iScan=1:thisVisit.nScans
+                for iSession=1:thisVisit.nSessions
+                    if thisSubject.globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) || ...
+                            thisSubject.globalCounts.skipped_scans(iSubject, iVisit, iSession, iScan) || ...
+                            thisSubject.globalCounts.missing_scans(iSubject, iVisit, iSession, iScan)
+                        fprintf(fid_summary,'"%s","%s","%s","%s"%s,\n', ...
+                            x.modules.import.listsIDs.subjectIDs{iSubject}, ...
+                            thisSubject.visitIDs{iVisit}, ...
+                            imPar.sessionNames{iSession}, ....
+                            thisVisit.scanNames{iScan}, ...
+                            thisSubject.summary_lines{iSubject, iVisit, iSession, iScan});
+                    end
+                end
+            end
+        end
+    end
 	fprintf(fid_summary,'\n');
 	
-	nMissing = sum(globalCounts.missing_scans(:));
-	nSkipped = sum(globalCounts.skipped_scans(:));
+	nMissing = sum(thisSubject.globalCounts.missing_scans(:));
+	nSkipped = sum(thisSubject.globalCounts.skipped_scans(:));
 	
 	%% 2. Report totals
     
@@ -70,20 +76,25 @@ function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary)
 	fprintf(fid_summary,[',SkippedScans (n=' num2str(nSkipped) ')\n']);
     
 	% then subjects row-by-row
-	for iSubject=1:numOf.nSubjects
-		for iVisit=1:numOf.nVisits
-			fprintf(fid_summary,'"%s"', [listsIDs.subjectIDs{iSubject} listsIDs.visitIDs{iVisit}]);
-			fprintf(fid_summary,',%d',sum(globalCounts.converted_scans(iSubject,:,:,:)));
+	for iSubject=1:x.modules.import.nSubjects
+		for iVisit=1:thisSubject.nVisits
+            % Get fieldname
+            vFieldName = ['visit_' num2str(iVisit,'%03.f')];
+            % Get visit
+            thisVisit = thisSubject.(vFieldName);
+            
+			fprintf(fid_summary,'"%s"', [x.modules.import.listsIDs.subjectIDs{iSubject} thisSubject.visitIDs{iVisit}]);
+			fprintf(fid_summary,',%d',sum(thisSubject.globalCounts.converted_scans(iSubject,:,:,:)));
 			
-			for iSession=1:numOf.nSessions
+			for iSession=1:thisVisit.nSessions
 				fprintf(fid_summary,',"');
-				fprintf(fid_summary,'%s ',scanNames{logical(globalCounts.missing_scans(iSubject, iVisit, iSession,:))});
+				fprintf(fid_summary,'%s ',thisVisit.scanNames{logical(thisSubject.globalCounts.missing_scans(iSubject, iVisit, iSession,:))});
 				fprintf(fid_summary,'"');
 			end
 			
-			for iSession=1:numOf.nSessions
+			for iSession=1:thisVisit.nSessions
 				fprintf(fid_summary,',"');
-				fprintf(fid_summary,'%s ',scanNames{logical(globalCounts.skipped_scans(iSubject, iVisit, iSession,:))});
+				fprintf(fid_summary,'%s ',thisVisit.scanNames{logical(thisSubject.globalCounts.skipped_scans(iSubject, iVisit, iSession,:))});
 				fprintf(fid_summary,'"');
 			end
 			
@@ -103,7 +114,3 @@ function xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary)
     
 end
 
-
-
-    
-    

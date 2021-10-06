@@ -56,63 +56,153 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
     
     % Convert the vectors to unique & sort sets by the output aliases
     x.modules.import.listsIDs.subjectIDs  = sort(unique(x.modules.import.listsIDs.vSubjectIDs));
-    x.modules.import.numOf.nSubjects = length(x.modules.import.listsIDs.subjectIDs);
-    x.modules.import.listsIDs.visitIDs  = unique(x.modules.import.listsIDs.vVisitIDs);
+    x.modules.import.nSubjects = length(x.modules.import.listsIDs.subjectIDs);
     
-    % Sort by output
-    if length(x.modules.import.listsIDs.visitIDs)>1
-        for iV=1:length(x.modules.import.listsIDs.visitIDs)
-            IDrow(iV) = find(cellfun(@(y) strcmp(y,x.modules.import.listsIDs.visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1)));
+    % Determine x.SUBJECTS (required for xASL_Iteration)
+    x.SUBJECTS = x.modules.import.listsIDs.subjectIDs;
+    
+    % Overview: get visits and sessions of each subject
+    x.overview = struct;
+    x = xASL_imp_AddSubjectOverview(x);
+    
+    % Print matching sourcedata
+    fprintf('\n========================================= SOURCEDATA =========================================\n');
+    
+    % Print matching files
+    if isfield(x.modules.import.imPar,'bVerbose') && x.modules.import.imPar.bVerbose
+        fprintf('\nMatching files (#=%g):\n',length(x.modules.import.matches));
+        for iMatch=1:size(x.modules.import.matches,1)
+            fprintf('%s\n', x.modules.import.matches{iMatch,1});
         end
-        x.modules.import.listsIDs.visitIDs = x.modules.import.listsIDs.visitIDs(IDrow);
+    end
+    fprintf('\n');
+
+
+end
+
+
+%% Add subjects to overview
+function x = xASL_imp_AddSubjectOverview(x)
+    
+    for iSubject=1:numel(x.modules.import.listsIDs.subjectIDs)
+        thisSubject = x.modules.import.listsIDs.subjectIDs{iSubject};
+        x = xASL_imp_AddSubject(x,thisSubject,iSubject);
+    end
+
+end
+
+
+%% Add single subject to overview
+function x = xASL_imp_AddSubject(x,thisSubject,iSubject)
+
+    % Add subject name
+    subjectFieldName = ['subject_' num2str(iSubject,'%03.f')];
+    x.overview.(subjectFieldName).name = thisSubject;
+
+    % Get vSubjectIDs
+    vSubjectIDs = strcmp(x.modules.import.listsIDs.vSubjectIDs,thisSubject);
+    
+    % Get visits of current subject
+    currentVisitList = unique(x.modules.import.listsIDs.vVisitIDs(vSubjectIDs));
+    
+    % Determine visitIDs
+    x.overview.(subjectFieldName).visitIDs = unique(x.modules.import.listsIDs.vVisitIDs(vSubjectIDs));
+    
+    for iVisit=1:numel(currentVisitList)
+        thisVisit = currentVisitList{iVisit};
+        x = xASL_imp_AddVisit(x,subjectFieldName,vSubjectIDs,thisVisit,iVisit);
     end
     
-    % Get number of visits, session IDs, number of sessions, scan IDs, number of scans
-    x.modules.import.numOf.nVisits = length(x.modules.import.listsIDs.visitIDs);
-    x.modules.import.listsIDs.sessionIDs  = sort(unique(x.modules.import.listsIDs.vSessionIDs));
-    x.modules.import.numOf.nSessions = length(x.modules.import.listsIDs.sessionIDs);
-    x.modules.import.listsIDs.scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs)));
-    x.modules.import.numOf.nScans = length(x.modules.import.listsIDs.scanIDs);
+
+end
+
+
+
+%% Add single visit to overview
+function x = xASL_imp_AddVisit(x,sFieldName,vSubjectIDs,thisVisit,iVisit)
+
+
+    %% Add basic visit fields
+
+    % Determine visit field name
+    vFieldName = ['visit_' num2str(iVisit,'%03.f')];
+    
+    % Get vVisitIDs
+    vVisitIDs = strcmp(x.modules.import.listsIDs.vVisitIDs,thisVisit);
+    vVisitIDs = vSubjectIDs & vVisitIDs;
+    
+    % Assign visit name and sessions
+    x.overview.(sFieldName).(vFieldName).name = thisVisit;
+    x.overview.(sFieldName).(vFieldName).sessions = unique(x.modules.import.listsIDs.vSessionIDs(vVisitIDs));
+    
+    % Get number of visits
+    x.overview.(sFieldName).nVisits = length(x.overview.(sFieldName).visitIDs);
+    
+    % Sort by output
+    if length(x.overview.(sFieldName).visitIDs)>1
+        for iV=1:numel(x.overview.(sFieldName).visitIDs)
+            IDrow(iV) = find(cellfun(@(y) strcmp(y,x.overview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1)));
+        end
+        x.overview.(sFieldName).listsIDs.visitIDs = x.overview.(sFieldName).visitIDs(IDrow);
+    end
+    
+    % Add additional fields
+    x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName);
+    
+    
+    %% Sanity check for missing elements
+    xASL_imp_DCM2NII_SanityChecks(x,x.overview.(sFieldName),x.overview.(sFieldName).(vFieldName));
+    
+    
+    %% Preallocate space for (global) counts
+    [x.overview.(sFieldName),x.overview.(sFieldName).(vFieldName)] = ...
+        xASL_imp_PreallocateGlobalCounts(x.modules.import.nSubjects,x.overview.(sFieldName),x.overview.(sFieldName).(vFieldName));
+    
+
+end
+
+
+%% Add fields of this subject/visit
+function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
+
+
+    %% SCAN NAMES
+    
+    % Get number of session IDs, number of sessions, scan IDs, number of scans
+    x.overview.(sFieldName).(vFieldName).sessionIDs  = sort(unique(x.modules.import.listsIDs.vSessionIDs(vVisitIDs)));
+    x.overview.(sFieldName).(vFieldName).nSessions = length(x.overview.(sFieldName).(vFieldName).sessionIDs);
+    x.overview.(sFieldName).(vFieldName).scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs(vVisitIDs))));
+    x.overview.(sFieldName).(vFieldName).nScans = length(x.overview.(sFieldName).(vFieldName).scanIDs);
+    
     
     %% VISIT NAMES (== session in BIDS)
     if isempty(x.modules.import.imPar.visitNames)
-        if isempty(x.modules.import.listsIDs.visitIDs)
-            x.modules.import.imPar.visitNames = cell(x.modules.import.numOf.nVisits,1);
-            for kk=1:x.modules.import.numOf.nVisits
+        if isempty(x.overview.(sFieldName).visitIDs)
+            x.modules.import.imPar.visitNames = cell(x.overview.(sFieldName).nVisits,1);
+            for kk=1:x.overview.(sFieldName).nVisits
                 x.modules.import.imPar.visitNames{kk} = sprintf('ASL_%g', kk);
             end
         else
-            x.modules.import.imPar.visitNames = x.modules.import.listsIDs.visitIDs;
+            x.modules.import.imPar.visitNames = x.overview.(sFieldName).visitIDs;
         end
     end
     
     %% SESSION NAMES (== run in BIDS)
     % optionally we can have human readble session names; by default they are the same as the original tokens in the path
     if isempty(x.modules.import.imPar.sessionNames)
-        if isempty(x.modules.import.listsIDs.sessionIDs)
-            x.modules.import.imPar.sessionNames = cell(x.modules.import.numOf.nSessions,1);
-            for kk=1:x.modules.import.numOf.nSessions
+        if isempty(x.overview.(sFieldName).(vFieldName).sessionIDs)
+            x.modules.import.imPar.sessionNames = cell(x.overview.(sFieldName).(vFieldName).nSessions,1);
+            for kk=1:x.overview.(sFieldName).(vFieldName).nSessions
                 x.modules.import.imPar.sessionNames{kk}=sprintf('ASL_%g',kk);
             end
         else
-            x.modules.import.imPar.sessionNames = x.modules.import.listsIDs.sessionIDs;
+            x.modules.import.imPar.sessionNames = x.overview.(sFieldName).(vFieldName).sessionIDs;
         end
     end
     
+    
     %% SCAN NAMES
-    x.modules.import.scanNames = x.modules.import.listsIDs.scanIDs;
-    
-    
-    %% SUBJECTS
-    x.SUBJECTS = x.modules.import.listsIDs.subjectIDs;
-    
-    
-    %% Sanity check for missing elements
-    xASL_imp_DCM2NII_SanityChecks(x);
-    
-    
-    %% Preallocate space for (global) counts
-    x = xASL_imp_PreallocateGlobalCounts(x);
+    x.overview.(sFieldName).(vFieldName).scanNames = x.overview.(sFieldName).(vFieldName).scanIDs;
 
 
 end

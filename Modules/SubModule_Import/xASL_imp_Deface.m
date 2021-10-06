@@ -22,33 +22,81 @@ function xASL_imp_Deface(x,imPar)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+
     %% We may need to restart the logging
-    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
+    diary(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','xASL_module_Import.log'));
+    
+    % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
+    iSubject = strcmp(x.SUBJECT,x.SUBJECTS);
+    subjectName = x.SUBJECTS{iSubject};
 
     %% 1. Iterate over list of subjects
     listSubjects = xASL_adm_GetFileList(imPar.BidsRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)
+        
+        % Only run it for the current subject (maybe we can do this more elegantly in the future)
+        if ~isempty(regexpi(listSubjects{iSubject},subjectName))
 
-        %% 2. Get subject labels
-        subjectLabel = listSubjects{iSubject};
+            %% 2. Get subject labels
+            subjectLabel = listSubjects{iSubject};
 
-        % Check if the anatomical directory exists
-        if exist(fullfile(imPar.BidsRoot,subjectLabel,'anat'),'dir')
-            %% 3. Process all anatomical files
-            fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,subjectLabel,'anat'),'^.+\.nii',false,[]);
-            for iAnat = 1:length(fAnat)
-                %Unzip the file for SPM
-                pathUnzipped = xASL_adm_UnzipNifti(fullfile(imPar.BidsRoot,subjectLabel,'anat',fAnat{iAnat}));
+            % Check if the anatomical directory exists
+            fAnat = '';
+            if exist(fullfile(imPar.BidsRoot,subjectLabel,'anat'),'dir') % Single-session
+                %% 3. Process all anatomical files
+                fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,subjectLabel,'anat'),'^.+\.nii',false,[]);
+                xASL_imp_RunDeface(imPar,fAnat,subjectLabel);
+            else % Multi-session
+                sessionDirs = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,subjectLabel),[],false,[],true);
+                for iSession = 1:numel(sessionDirs)
+                    if exist(fullfile(imPar.BidsRoot,subjectLabel,sessionDirs{iSession},'anat'),'dir')
+                        %% 3. Process all anatomical files
+                        sessionName = sessionDirs{iSession};
+                        fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,subjectLabel,sessionName,'anat'),'^.+\.nii',false,[]);
+                        xASL_imp_RunDeface(imPar,fAnat,subjectLabel,sessionName);
+                    end
+                end
+            end
+            
+        end
+    end
+
+end
+
+
+
+% Actual defacing
+function xASL_imp_RunDeface(imPar,fAnat,subjectLabel,sessionName)
+
+    if ~isempty(fAnat)
+        for iAnat = 1:length(fAnat)
+            % Get filename
+            if nargin<4
+                fileName = fullfile(imPar.BidsRoot,subjectLabel,'anat',fAnat{iAnat});
+            else
+                fileName = fullfile(imPar.BidsRoot,subjectLabel,sessionName,'anat',fAnat{iAnat});
+            end
+            
+            % Print feedback
+            fprintf('\nDeface %s...\n',fAnat{iAnat});
+            
+            % Check if file exists
+            if ~xASL_exist(fileName)
+                % Print warning
+                warning('Defacing was not run, file %s not found...', fAnat{iAnat});
+            else
+                % Unzip the file for SPM
+                pathUnzipped = xASL_adm_UnzipNifti(fileName);
                 % Remove the face
                 xASL_spm_deface(pathUnzipped,true);
                 % Zip again
                 gzip(pathUnzipped);
                 delete(pathUnzipped);
             end
+            
         end
     end
 
 end
-
 
 

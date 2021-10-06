@@ -27,10 +27,14 @@ function x = xASL_imp_NII2BIDS(x, imPar)
     %% Run the NII2BIDS conversion
     
     % We may need to restart the logging
-    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
+    diary(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','xASL_module_Import.log'));
     
     % Print feedback
     fprintf('\n================================== NIFTI to BIDS CONVERSION ==================================\n');
+    
+    % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
+    iSubject = strcmp(x.SUBJECT,x.SUBJECTS);
+    subjectName = x.SUBJECTS{iSubject};
     
     % Check if the temp folder exists
     existTempRoot = xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','temp'),'dir');
@@ -72,7 +76,10 @@ function x = xASL_imp_NII2BIDS(x, imPar)
 	% Go through all subjects
 	listSubjectsSessions = xASL_adm_GetFileList(imPar.TempRoot,[],false,[],true);
     for iSubjectSession = 1:length(listSubjectsSessions)
-        x = xASL_imp_NII2BIDS_Subject(x,imPar,bidsPar,studyPar,listSubjectsSessions{iSubjectSession});
+        % Only run it for the current subject (maybe we can do this more elegantly in the future)
+        if ~isempty(regexpi(listSubjectsSessions{iSubjectSession},subjectName))
+            x = xASL_imp_NII2BIDS_Subject(x,imPar,bidsPar,studyPar,listSubjectsSessions{iSubjectSession});
+        end
     end
     
     % Copy log files
@@ -83,7 +90,7 @@ function x = xASL_imp_NII2BIDS(x, imPar)
     end
     
     % Delete temp folder
-    xASL_delete(imPar.TempRoot, true);
+    % xASL_delete(imPar.TempRoot, true);
     
     % Update x.opts.DatasetRoot
     x = xASL_imp_UpdateDatasetRoot(x);

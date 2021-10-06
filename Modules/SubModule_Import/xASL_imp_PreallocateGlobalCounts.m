@@ -1,13 +1,15 @@
-function x = xASL_imp_PreallocateGlobalCounts(x)
+function [subject,visit] = xASL_imp_PreallocateGlobalCounts(nSubjects,subject,visit)
 %xASL_imp_PreallocateGlobalCounts Preallocate space for (global) counts
 %
 % FORMAT: x = xASL_imp_PreallocateGlobalCounts(x)
 %
 % INPUT:
-%   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%   nSubjects - Number of subjects (INTEGER)
+%   subject   - Current subject x.overview.(sFieldName)
+%   visit     - Current visit x.overview.(sFieldName).(vFieldName)
 %
 % OUTPUT:
-%   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%   visit - Current visit x.overview.(sFieldName).(vFieldName)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Preallocate space for (global) counts.
@@ -20,18 +22,16 @@ function x = xASL_imp_PreallocateGlobalCounts(x)
 
 
     % keep a count of all individual scans
-    x.modules.import.globalCounts.converted_scans = ...
-        zeros(x.modules.import.numOf.nSubjects, x.modules.import.numOf.nVisits, x.modules.import.numOf.nSessions, x.modules.import.numOf.nScans,'uint8');
+    subject.globalCounts.converted_scans = zeros(nSubjects, subject.nVisits, visit.nSessions, visit.nScans,'uint8');
+    
     % keep a count of all individual scans
-    x.modules.import.globalCounts.skipped_scans = ...
-        zeros(x.modules.import.numOf.nSubjects, x.modules.import.numOf.nVisits, x.modules.import.numOf.nSessions, x.modules.import.numOf.nScans,'uint8');
+    subject.globalCounts.skipped_scans = zeros(nSubjects, subject.nVisits, visit.nSessions, visit.nScans,'uint8');
+    
     % keep a count of all individual scans
-    x.modules.import.globalCounts.missing_scans = ...
-        zeros(x.modules.import.numOf.nSubjects, x.modules.import.numOf.nVisits, x.modules.import.numOf.nSessions, x.modules.import.numOf.nScans,'uint8');
+    subject.globalCounts.missing_scans = zeros(nSubjects, subject.nVisits, visit.nSessions, visit.nScans,'uint8');
     
     % define a cell array for storing info for parameter summary file
-    x.modules.import.summary_lines = ...
-        cell(x.modules.import.numOf.nSubjects, x.modules.import.numOf.nVisits, x.modules.import.numOf.nSessions, x.modules.import.numOf.nScans);
+    subject.summary_lines = cell(nSubjects, subject.nVisits, visit.nSessions, visit.nScans);
 
 
 end
