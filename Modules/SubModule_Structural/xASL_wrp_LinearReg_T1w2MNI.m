@@ -57,16 +57,16 @@ for iS=1:length(Lesion_ROI_list)
     OtherList{end+1,1} = Lesion_ROI_list{iS};
 end
 % Add ASL images to the registration list
-for iSess = 1:x.dataset.nSessions
-    OtherList{end+1,1} = x.P.Path_ASL4D;
-    OtherList{end+1,1} = x.P.Path_M0;
-    OtherList{end+1,1} = x.P.Path_ASL4D_RevPE;
-    OtherList{end+1,1} = x.P.Path_M0_RevPE;
+% for iSess = 1:x.dataset.nSessions
+%     OtherList{end+1,1} = x.P.Path_ASL4D;
+%     OtherList{end+1,1} = x.P.Path_M0;
+%     OtherList{end+1,1} = x.P.Path_ASL4D_RevPE;
+%     OtherList{end+1,1} = x.P.Path_M0_RevPE;
     
     % Check for other ScanTypes
-    OtherScanTypes = {'dwi' 'func'};
-    for iOther=1:length(OtherScanTypes)
-        DirOther = fullfile(x.dir.SUBJECTDIR, OtherScanTypes{iOther});
+    SubjectsFolders = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '^.*', 'FPList', [0 Inf],true); % true for folders
+    for iOther=1:length(SubjectsFolders)
+        DirOther = SubjectsFolders{iOther};
         if exist(DirOther,'dir')
             Path_Other = xASL_adm_GetFileList(DirOther, '^(?!y_).*\.nii$', 'FPList', [0 Inf]); % any DWI or func NIfTI (quick & dirty)
             for iScan=1:length(Path_Other)
@@ -74,7 +74,7 @@ for iSess = 1:x.dataset.nSessions
             end
         end
     end
-end
+% end
 
 
 
