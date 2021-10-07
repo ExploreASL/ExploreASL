@@ -113,7 +113,7 @@ if strcmpi(fileType,'ASL')
         end
     end
     if ~isempty(strReport)
-        fprintf(2,'Missing required ASL fields:          %s\n',strReport);
+        fprintf(2,'Missing required ASL fields: %s\n',strReport);
     end
     
     strReport = '';
@@ -127,7 +127,7 @@ if strcmpi(fileType,'ASL')
         end
     end
     if ~isempty(strReport)
-        fprintf('Missing recommended ASL fields:       %s\n',strReport);
+        fprintf('Missing recommended ASL fields: %s\n',strReport);
     end
 end
 
@@ -144,7 +144,7 @@ if strcmpi(fileType,'M0')
         end
     end
     if ~isempty(strReport)
-        fprintf(2,'Missing required M0 fields:           %s\n',strReport);
+        fprintf(2,'Missing required M0 fields: %s\n',strReport);
     end
 end
 
@@ -231,13 +231,13 @@ if strcmpi(fileType,'ASL')
                     
                     % Report the incorrect dependencies
                     if ~isempty(strReportFilled)
-                        fprintf(2,'The required fields are missing:      %s\n',strReportFilled);
+                        fprintf(2,'The required fields are missing: %s\n',strReportFilled);
                     end
                     if ~isempty(strReportEmpty)
                         fprintf('The following fields should be empty: %s\n',strReportEmpty);
                     end
                     if ~isempty(strReportRecommended)
-                        fprintf('The recommended fields are missing:   %s\n',strReportRecommended);
+                        fprintf('The recommended fields are missing: %s\n',strReportRecommended);
                     end
                 end
             end

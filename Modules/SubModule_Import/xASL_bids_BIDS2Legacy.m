@@ -157,7 +157,8 @@ for iSubjSess=1:numel(BIDS.subjects) % iterate over BIDS.subjects (indices that 
         
 end
 
-fprintf('\n');
+% Print new line after track progress bar
+fprintf('   \n');
 
 %% 5. Parse M0
 ListASL4D = xASL_adm_GetFileList(pathLegacy, '^ASL4D\.nii$', 'FPListRec');
@@ -277,6 +278,9 @@ function xASL_imp_BIDS2Legacy_CleanUp(pathStudy)
             end
         end
     end
+    
+    % Print new line after track progress bar
+    fprintf('   \n');
 
 end
 

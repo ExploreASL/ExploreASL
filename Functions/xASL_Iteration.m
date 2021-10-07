@@ -478,7 +478,7 @@ function [bAborted, x] = runIteration(db)
             xASL_TrackProgress(I,N);
         end
     end % next DB iteration
-    fprintf('   \n%s completed 100%s\n',x.settings.MUTEXID,'%');
+    fprintf('%s completed 100%s\n',x.settings.MUTEXID,'%');
    
 end    
 
