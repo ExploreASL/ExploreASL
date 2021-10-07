@@ -23,7 +23,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
             % Basic import checks before execution
             x = xASL_imp_CheckImportSettings(x);
-            % Check directories and permissions
+            % Check directories and permissions of sourcedata
             x = xASL_imp_CheckDirectoriesAndPermissions(x);
         else
             error('The imPar struct does not exist...');
@@ -51,7 +51,10 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         x = xASL_imp_DetermineStructureFromRawdata(x);
         
     end
-
+    
+    % SESSIONS DUMMY
+    fprintf(2,'Currently x.SESSIONS is not supported for the import...\n');
+    x.SESSIONS = {''};
 
 
 end

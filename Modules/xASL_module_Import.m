@@ -116,11 +116,9 @@ function [result, x] = xASL_module_Import(x)
 
     %% Import Module
     
-    % Default for xASL_Iterate
-    result = false;
-    
     % Start Mutex
     x = xASL_init_InitializeMutex(x, 'Import');
+    fprintf('\n');
     
     % Define lock states
     StateName{1} = '010_Initialization';
@@ -133,10 +131,10 @@ function [result, x] = xASL_module_Import(x)
 
     % 1. Initialize by starting the logging and initializing the substructs
     iState = 1;
-    diary(fullfile(x.dir.DatasetRoot,'xASL_module_Import.log'));
+    diary(x.modules.import.logFile);
     
     % First do the basic parameter admin and initialize the default values
-    if nargin < 1 || isempty(x)
+    if nargin<1 || isempty(x)
         error('The x struct needs to be defined...');
     end
     
@@ -147,46 +145,55 @@ function [result, x] = xASL_module_Import(x)
     imPar = x.modules.import.imPar;
     x.modules.import = rmfield(x.modules.import,'imPar');
     
-    % Update mutex
+    % Update mutex (always do initialization, no need to check here)
     x.mutex.AddState(StateName{iState});
 
     % 2. Run the DCM2NIIX
     iState = 2;
-    if x.opts.ImportModules(1)
+    if x.opts.ImportModules(1) && ~x.mutex.HasState(StateName{2})
         xASL_imp_DCM2NII(x, imPar);
         x.mutex.AddState(StateName{iState});
+    elseif x.opts.ImportModules(1) && x.mutex.HasState(StateName{2})
+        fprintf('DCM2NIIX was run before...   \n');
     end
 
     % 3. Run the NIIX to ASL-BIDS
     iState = 3;
-    if x.opts.ImportModules(2)
+    if x.opts.ImportModules(2) && ~x.mutex.HasState(StateName{3})
         x = xASL_imp_NII2BIDS(x, imPar);
         x.mutex.AddState(StateName{iState});
+    elseif x.opts.ImportModules(2) && x.mutex.HasState(StateName{3})
+        fprintf('NIIX to ASL-BIDS was run before...   \n');
     end
 
     % 4. Run defacing
     iState = 4;
-    if x.opts.ImportModules(3)
+    if x.opts.ImportModules(3) && ~x.mutex.HasState(StateName{4})
         xASL_imp_Deface(x,imPar);
         x.mutex.AddState(StateName{iState});
+    elseif x.opts.ImportModules(3) && x.mutex.HasState(StateName{4})
+        fprintf('Defacing was run before...   \n');
     end
     
     % 5. Run BIDS to Legacy
     iState = 5;
-    if x.opts.ImportModules(4)
+    if x.opts.ImportModules(4) && ~x.mutex.HasState(StateName{5})
         x = xASL_imp_BIDS2Legacy(x);
         x.mutex.AddState(StateName{iState});
+    elseif x.opts.ImportModules(4) && x.mutex.HasState(StateName{5})
+        fprintf('BIDS to Legacy was run before...   \n');
     end
 
     % 6. Clean-up (stop logging)
-    [x,result] = xASL_imp_CleanUpImport(x);
+    [x] = xASL_imp_CleanUpImport(x);
+    result = x.result;
 
     
 end
 
 
 %% Clean-Up before processing pipeline
-function [x,result] = xASL_imp_CleanUpImport(x)
+function [x] = xASL_imp_CleanUpImport(x)
 
     % We want to reload the derivatives data correctly, which is why we delete the following 
     % fields before we run the processing pipeline, we need them for xASL_Iterate though.
@@ -205,7 +212,6 @@ function [x,result] = xASL_imp_CleanUpImport(x)
     x.mutex.AddState('999_ready');
     x.mutex.Unlock();
     x.result = true;
-    result = true;
     close all;
     
 

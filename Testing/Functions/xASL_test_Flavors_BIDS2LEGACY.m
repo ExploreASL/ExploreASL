@@ -39,13 +39,17 @@ function xASL_test_Flavors_BIDS2LEGACY(testConfig)
                 if exist(fullfile(currentFlavor, 'derivatives'), 'dir')
                     diary('off');
                     fclose('all'); % ensure that no file is locked
-                    system(['rm -rf ' fullfile(currentFlavor, 'derivatives')]);
+                    
+                    % We should not delete derivatives if we keep the lock files there
+                    % system(['rm -rf ' fullfile(currentFlavor, 'derivatives')]);
                 end
             else
                 % Use xASL_delete on windows
                 diary('off');
                 fclose('all'); % ensure that no file is locked
-                xASL_delete(fullfile(currentFlavor, 'derivatives'),true);
+                
+                % We should not delete derivatives if we keep the lock files there
+                % xASL_delete(fullfile(currentFlavor, 'derivatives'),true);
             end
 
             % Run the legacy conversion

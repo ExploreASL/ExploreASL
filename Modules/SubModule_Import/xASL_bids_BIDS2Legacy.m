@@ -236,16 +236,25 @@ catch ME
 end
 
 %% 9. Clean up
-try
+xASL_imp_BIDS2Legacy_CleanUp(pathStudy);
+
+end
+
+
+
+%% Clean-Up subfunction
+function xASL_imp_BIDS2Legacy_CleanUp(pathStudy)
+
     % Start with empty file list
     filesCleanUp = {};
+    
     % Search for dcm2niix summary file & import log
     summaryFile = xASL_adm_GetFileList(pathStudy,'^import_summary.+$');
     dcm2niixImportLogFile = xASL_adm_GetFileList(pathStudy,'^import_log.+$');
-    % Search for xASL_module_Import log file
-    importLogFile = xASL_adm_GetFileList(pathStudy,'^xASL_module_Import.+$');
+    
     % Search for bidsReport JSON file
     reportFiles = xASL_adm_GetFileList(pathStudy,'^bidsReport.+$');
+    
     % Merge log file lists
     if ~isempty(summaryFile)
         filesCleanUp = vertcat(filesCleanUp,summaryFile);
@@ -256,17 +265,7 @@ try
     if ~isempty(reportFiles)
         filesCleanUp = vertcat(filesCleanUp,reportFiles);
     end
-    if ~isempty(importLogFile)
-        diary off
-        filesCleanUp = vertcat(filesCleanUp,importLogFile);
-        % If dcm2niix import log exists, we merge this and our xASL_module_Import log
-        pathImportLog = importLogFile{1};
-        if ~isempty(dcm2niixImportLogFile) && xASL_exist(dcm2niixImportLogFile{1},'file') && xASL_exist(pathImportLog,'file')
-            xASL_io_MergeTextFiles(dcm2niixImportLogFile{1},pathImportLog,pathImportLog,...
-                '================================== DICOM to NIFTI CONVERSION =================================');
-            xASL_delete(dcm2niixImportLogFile{1});
-        end
-    end
+    
     % Move files to derivatives
     if ~isempty(filesCleanUp)
         for iFile = 1:size(filesCleanUp,1)
@@ -278,12 +277,10 @@ try
             end
         end
     end
-catch ME
-    warning('Clean up failed...');
-    fprintf('%s\n', ME.message);
-end
 
 end
+
+
 
 
 

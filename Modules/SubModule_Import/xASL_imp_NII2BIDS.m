@@ -27,7 +27,7 @@ function x = xASL_imp_NII2BIDS(x, imPar)
     %% Run the NII2BIDS conversion
     
     % We may need to restart the logging
-    diary(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','xASL_module_Import.log'));
+    diary(x.modules.import.logFile);
     
     % Print feedback
     fprintf('\n================================== NIFTI to BIDS CONVERSION ==================================\n');
@@ -89,8 +89,20 @@ function x = xASL_imp_NII2BIDS(x, imPar)
         xASL_Copy(importMetaFiles{importFile,1},fullfile(x.dir.DatasetRoot,[thisFileMeta thisExtensionMeta]));
     end
     
-    % Delete temp folder
-    % xASL_delete(imPar.TempRoot, true);
+    % Delete temp folder of current subject
+    tempDirs = xASL_adm_GetFileList(imPar.TempRoot,[],[],[],true);
+    for iTempDir=1:numel(tempDirs)
+        if ~isempty(regexpi(tempDirs{iTempDir},subjectName))
+            xASL_delete(fullfile(imPar.TempRoot,tempDirs{iTempDir}), true);
+        end
+    end
+    
+    % Delete temp directory if it is empty
+    dirsInTemp = xASL_adm_GetFileList(imPar.TempRoot,[],[],[],true);
+    filesInTemp = xASL_adm_GetFileList(imPar.TempRoot,[],[],[],false);
+    if isempty(dirsInTemp) && isempty(filesInTemp)
+        xASL_delete(imPar.TempRoot, true);
+    end
     
     % Update x.opts.DatasetRoot
     x = xASL_imp_UpdateDatasetRoot(x);

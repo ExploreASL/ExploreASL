@@ -99,6 +99,10 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
         dbSettings.sets.SESSION = x.SESSIONS;
         dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID '_<SESSION>'];
         dbSettings.x.dir.SESSIONDIR = '<ROOT>/<SUBJECT>/<SESSION>';
+    elseif ~isempty(regexp(ModName,'(Import)', 'once'))
+        dbSettings.sets.SESSION = x.SESSIONS;
+        dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID]; % Currently we can not support session-wise import
+        dbSettings.x.dir.SESSIONDIR = '<ROOT>/<SUBJECT>/<SESSION>';
     end
     
     % Diary file
@@ -107,11 +111,12 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     elseif ~isempty(regexp(ModName,'(ASL|func|dwi)', 'once'))
         dbSettings.diaryFile = ['<SESSIONDIR>/' moduleName '.log'];
     elseif ~isempty(regexp(ModName,'(Import)', 'once'))
-        dbSettings.diaryFile = ['<ROOT>/' moduleName '.log'];
+        dbSettings.diaryFile = ['<ROOT>/derivatives/ExploreASL/' moduleName '.log'];
     else
         dbSettings.diaryFile = ['<SUBJECTDIR>/' moduleName '.log'];
     end
     
+    % Actually run the iteration
     [bAborted, xOut] = runIteration(dbSettings);
 end
 
