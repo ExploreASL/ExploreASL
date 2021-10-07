@@ -19,7 +19,7 @@ function flavors = xALS_test_IgnoreFiles(flavors)
 
 
     %% Define the ignore list
-    ignoreList = {'bidsReportASL.json', 'import_summary.csv', 'xASL_module_Import.log'};
+    ignoreList = {'bidsReportASL.json', 'import_summary', 'xASL_module_Import.log'};
     
     %% Check flavors struct
     if ~isfield(flavors,'comparisonTable')

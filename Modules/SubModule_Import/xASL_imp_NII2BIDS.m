@@ -82,18 +82,25 @@ function x = xASL_imp_NII2BIDS(x, imPar)
         end
     end
     
-    % Copy log files
-    importMetaFiles = xASL_adm_GetFileList(imPar.TempRoot,'^import.+$');
-    for importFile=1:size(importMetaFiles,1)
-        [~,thisFileMeta,thisExtensionMeta] = xASL_fileparts(importMetaFiles{importFile,1});
-        xASL_Copy(importMetaFiles{importFile,1},fullfile(x.dir.DatasetRoot,[thisFileMeta thisExtensionMeta]));
+    % Move log files of current subject from datasetroot & temp to derivatives/ExploreASL if they aren't there already
+    logFilesDatasetRoot = xASL_adm_GetFileList(x.dir.DatasetRoot,'^import.+$');
+    logFilesTempRoot = xASL_adm_GetFileList(imPar.TempRoot,'^import.+$');
+    allLogFiles = vertcat(logFilesDatasetRoot,logFilesTempRoot);
+    if ~isempty(allLogFiles)
+        for importFile=1:size(allLogFiles,1)
+            % Check for subject name
+            if ~isempty(regexpi(allLogFiles{importFile},subjectName))
+                [~,thisFileMeta,thisExtensionMeta] = xASL_fileparts(allLogFiles{importFile,1});
+                xASL_Move(allLogFiles{importFile,1},fullfile(imPar.DerivativesRoot,'ExploreASL',[thisFileMeta thisExtensionMeta]),1);
+            end
+        end
     end
     
     % Delete temp folder of current subject
     tempDirs = xASL_adm_GetFileList(imPar.TempRoot,[],[],[],true);
     for iTempDir=1:numel(tempDirs)
         if ~isempty(regexpi(tempDirs{iTempDir},subjectName))
-            xASL_delete(fullfile(imPar.TempRoot,tempDirs{iTempDir}), true);
+            xASL_delete(fullfile(tempDirs{iTempDir}), true);
         end
     end
     
