@@ -34,6 +34,12 @@ function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
 % Copyright 2015-2021 ExploreASL
 
     % Default
+    if nargin < 1 || isempty(jsonIn)
+        warning('Missing jsonIn...');
+    end
+    if nargin < 2 || isempty(studyPar)
+        warning('Missing studyPar...');
+    end
     if nargin < 3
         bidsModality = 'asl';
     end

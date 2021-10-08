@@ -2,7 +2,7 @@ function xASL_bids_parseM0(pathASLNifti)
 %xASL_bids_parseM0 Check the ASL file in Legacy format, but with BIDS sidecars for its M0 possibilities and 
 % finish the conversion of the ASL NIFTI to the ExploreASL legacy format
 %
-% FORMAT:      xASL_bids_parseM0(pathASLNifti[, SubjectID])
+% FORMAT:      xASL_bids_parseM0(pathASLNifti)
 %
 % INPUT:       pathASLNifti - Path to a ASL NIFTI file in legacy filename and BIDS sidecars (CHAR ARRAY, REQUIRED)
 % 
