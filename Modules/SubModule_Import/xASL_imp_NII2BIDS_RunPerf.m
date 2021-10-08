@@ -140,10 +140,13 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     [jsonLocal,bidsReport] = xASL_bids_JsonCheck(jsonLocal,'ASL');
     spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
 
+    % Determine the subject name
+    subjectName = ''; % x.SUBJECT
+
     % Export report file for ASL dependencies
     if exist('bidsReport','var')
         if ~isempty(fieldnames(bidsReport))
-            spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot),'bidsReportASL.json'),bidsReport);
+            spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot), ['bids_report_' subjectName '.json']), bidsReport);
         end
     end
 
