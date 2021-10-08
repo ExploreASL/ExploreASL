@@ -62,9 +62,7 @@ function x = xASL_imp_NII2BIDS(x, imPar)
 	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyPar, x.Version);
 	
 	% Make the output directory and save the description
-    if xASL_exist(imPar.BidsRoot,'dir')
-        fprintf('The rawdata BIDS directory exists already...\n');
-    else
+    if ~xASL_exist(imPar.BidsRoot,'dir')
         xASL_adm_CreateDir(imPar.BidsRoot);
     end
 	

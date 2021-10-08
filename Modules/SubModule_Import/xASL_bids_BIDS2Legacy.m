@@ -119,60 +119,81 @@ fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
 
 
 %% 2. Define Subject
-for iSubjSess=1:numel(BIDS.subjects) % iterate over BIDS.subjects (indices that include both subjects & sessions)
+for iSubjSess=1:numel(BIDS.subjects) 
+    % Iterate over BIDS.subjects (indices that include both subjects & sessions)
     % so  1 subject  6 session/visits, will give numel(BIDS.subjects)=6
     % and 6 subjects 1 session/visits, will give numel(BIDS.subjects)=6
     xASL_TrackProgress(iSubjSess, nSubjects);
+    
+    % Subject ID
     SubjectID = BIDS.subjects(iSubjSess).name;
-    SessionID = BIDS.subjects(iSubjSess).session;
-    % Currently, ExploreASL concatenates subject_visit/timepoint in the
-    % same folder layer, so we only use SubjectSession
     
+    % Subject-wise processing (because xASL_Iteration runs over subjects)
+    if ~isempty(regexpi(SubjectID,x.SUBJECT))
     
-    %% 3. Define SubjectVisit
-    iVisit = find(strcmp(BIDS.sessionName, SessionID));
-    % remove iteration for iVisit=1 % iterate visit/session in this "BIDS.subjects" (always 1 session per BIDS.subjects)
-    % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
-    if nVisits==1
-        pathLegacy_SubjectVisit = fullfile(pathLegacy, SubjectID);
-        VisitString = '';
-    else
-        if isempty(iVisit)
-            fprintf('\nEmpty session number, setting session number to 1...\n');
-            iVisit = 1;
-        end
-        
-        pathLegacy_SubjectVisit = fullfile(pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
-        VisitString = [' visit ' SessionID];
-    end
-    SubjectVisit = [SubjectID VisitString];
-    xASL_adm_CreateDir(pathLegacy_SubjectVisit);
-    
-    
-    %% 4. Parse modality
-    % Modalities - the BIDS domains of scantypes
-    ModalitiesUnique = unique(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
-    nModalities = length(ModalitiesUnique);
-    xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
-        
-end
+        % Session ID (Currently, ExploreASL concatenates subject_visit/timepoint in the same folder layer, so we only use SubjectSession)
+        SessionID = BIDS.subjects(iSubjSess).session;
 
+
+        %% 3. Define SubjectVisit
+        iVisit = find(strcmp(BIDS.sessionName, SessionID));
+        % remove iteration for iVisit=1 % iterate visit/session in this "BIDS.subjects" (always 1 session per BIDS.subjects)
+        % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
+        if nVisits==1
+            pathLegacy_SubjectVisit = fullfile(pathLegacy, SubjectID);
+            VisitString = '';
+        else
+            if isempty(iVisit)
+                fprintf('\nEmpty session number, setting session number to 1...\n');
+                iVisit = 1;
+            end
+
+            pathLegacy_SubjectVisit = fullfile(pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
+            VisitString = [' visit ' SessionID];
+        end
+        SubjectVisit = [SubjectID VisitString];
+        xASL_adm_CreateDir(pathLegacy_SubjectVisit);
+
+
+        %% 4. Parse modality
+        % Modalities - the BIDS domains of scantypes
+        ModalitiesUnique = unique(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
+        nModalities = length(ModalitiesUnique);
+        xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
+
+    end
+
+end
 % Print new line after track progress bar
 fprintf('   \n');
 
-%% 5. Parse M0
-ListASL4D = xASL_adm_GetFileList(pathLegacy, '^ASL4D\.nii$', 'FPListRec');
+
+% Get directories of current subject
+SubjectDirs = xASL_adm_GetFileList(fullfile(pathLegacy), ['^.+' x.SUBJECT '.+$'], [],[],true);
+
+
+%% 5. Parse M0 of current subject
+ListASL4D = [];
+if ~isempty(SubjectDirs)
+    for iDir=1:numel(SubjectDirs)
+        currentASL = xASL_adm_GetFileList(SubjectDirs{iDir}, '^ASL4D\.nii$', 'FPListRec');
+        ListASL4D = vertcat(ListASL4D,currentASL);
+    end
+end
+% Parse M0s
 if ~isempty(ListASL4D)
     for iList=1:numel(ListASL4D)
         xASL_bids_parseM0(ListASL4D{iList});
         [~, currentNifti] = fileparts(ListASL4D{iList});
-        fprintf('M0 parsed for %s %s ...\n', studyName, currentNifti);
+        fprintf('M0 parsed for subject %s image %s ...\n', SubjectID, currentNifti);
     end
 else
-    warning(['No ASL4D file found in ' pathLegacy]);
+    warning('No ASL4D file found in %s...', pathLegacy);
 end
 
+
 %% 6. Create dataPar.json
+fprintf(2,'6. Create dataPar.json needs to be adapted to subject-wise processing...\n');
 
 % Write DataParFile if it does not exist already
 fListDataPar = xASL_adm_GetFileList(pathLegacy,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
@@ -191,7 +212,9 @@ end
 % Overwrite dataPar.json in x structure
 fprintf('Overwriting x.dir.dataPar...\n');
 
+
 %% 7. Copy participants.tsv
+fprintf(2,'7. Copy participants.tsv needs to be adapted to subject-wise processing...\n');
 
 % Define file names
 pathParticipantsTSV = fullfile(pathStudy, 'participants.tsv');
@@ -211,7 +234,9 @@ if xASL_exist(pathParticipantsTSV,'file')
     xASL_Copy(pathParticipantsTSV,pathParticipantsTSVxASL);
 end
 
+
 %% 8. Add "GeneratedBy" fields
+fprintf(2,'8. Add GeneratedBy fields needs to be adapted to subject-wise processing...\n');
 try
     % Copy dataset_description JSON file
     xASL_Copy(fullfile(pathStudy, 'rawdata', 'dataset_description.json'), fullfile(pathLegacy, 'dataset_description.json'));
@@ -236,25 +261,27 @@ catch ME
     fprintf('%s\n', ME.message);
 end
 
+
 %% 9. Clean up
-xASL_imp_BIDS2Legacy_CleanUp(pathStudy);
+xASL_imp_BIDS2Legacy_CleanUp(pathStudy,x.SUBJECT);
+
 
 end
 
 
 
 %% Clean-Up subfunction
-function xASL_imp_BIDS2Legacy_CleanUp(pathStudy)
+function xASL_imp_BIDS2Legacy_CleanUp(pathStudy,SubjectName)
 
     % Start with empty file list
     filesCleanUp = {};
     
-    % Search for dcm2niix summary file & import log
-    summaryFile = xASL_adm_GetFileList(pathStudy,'^import_summary.+$');
+    % Search for dcm2niix summary file & import log (if they are in main level, could be in derivatives already)
+    summaryFile = xASL_adm_GetFileList(pathStudy,['^import_summary_' SubjectName '.+$']);
     dcm2niixImportLogFile = xASL_adm_GetFileList(pathStudy,'^import_log.+$');
     
     % Search for bidsReport JSON file
-    reportFiles = xASL_adm_GetFileList(pathStudy,'^bids_report.+$');
+    reportFiles = xASL_adm_GetFileList(pathStudy,['^bids_report_' SubjectName '.+$']);
     
     % Merge log file lists
     if ~isempty(summaryFile)

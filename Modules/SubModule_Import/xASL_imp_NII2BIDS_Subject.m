@@ -32,9 +32,7 @@ function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
     
     % Make a subject directory
     subjectDirectory = fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]);
-    if xASL_exist(subjectDirectory,'dir')
-        fprintf('Subject %s exists in the rawdata BIDS directory already...\n', ['sub-' bidsLabel.subject]);
-    else
+    if ~xASL_exist(subjectDirectory,'dir')
         xASL_adm_CreateDir(subjectDirectory);
     end
     
