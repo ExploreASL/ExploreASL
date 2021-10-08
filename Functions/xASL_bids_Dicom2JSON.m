@@ -32,7 +32,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 %
 % REFERENCES:
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
     %% ----------------------------------------------------------------------------------
 	% 1. Admin
@@ -105,10 +105,23 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	% ----------------------------------------------------------------------------------
 	for iJSON = 1:length(pathJSON)
 		if ~isempty(pathJSON{iJSON})
-			if imPar.bVerbose; fprintf('Recreating parameter file: %s\n',pathJSON{iJSON}); end
+            
+            % Print file name
+            if isfield(imPar,'TempRoot') && ~isempty(strfind(pathJSON{iJSON},imPar.TempRoot))
+                % Relative path
+                printFileName = pathJSON{iJSON}(length(imPar.TempRoot)+1:end);
+            else
+                % Full path
+                printFileName = pathJSON{iJSON};
+            end
+            
+            % Print name
+			if imPar.bVerbose; fprintf('Recreating parameter file: %s   \n',printFileName); end
 			
 			% Make a list of the instanceNumbers
 			tmpJSON = spm_jsonread(pathJSON{iJSON});
+            
+            % Check instance & series number
 			if isfield(tmpJSON,'InstanceNumber')
 				instanceNumberList(iJSON) = xASL_str2num(tmpJSON.InstanceNumber);
 			else
@@ -138,7 +151,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	end
 	
 	if exist(pathIn, 'dir')
-		FileList            = xASL_adm_GetFileList(pathIn, dcmExtFilter, 'List', [0 Inf]); % we assume all the dicoms are in the same folder
+		FileList = xASL_adm_GetFileList(pathIn, dcmExtFilter, 'List', [0 Inf]); % we assume all the dicoms are in the same folder
 	else
 		[pathIn, fname, ext] = fileparts(pathIn);
 		FileList = {[fname ext]};
@@ -463,7 +476,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				if isfield(c_all_parms{parmsIndex},DcmComplexFieldAll{iField})
 					listEmptyFields = find(cellfun(@isempty,c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})));
 					if ~isempty(listEmptyFields)
-						fprintf('Field %s contains empty fields, skipping\n',DcmComplexFieldAll{iField});
+						fprintf('\nField %s contains empty fields, skipping... \n',DcmComplexFieldAll{iField});
 					else
 						c_all_unique = unique(c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}));
 						if length(c_all_unique) == 1
@@ -622,6 +635,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			spm_jsonwrite(pathJSON{indexInstance}, parms{parmsIndex});
 		end
     end
+    % Newline after track progress
+    fprintf('   \n');
 
 
 end

@@ -254,7 +254,7 @@ function xASL_imp_BIDS2Legacy_CleanUp(pathStudy)
     dcm2niixImportLogFile = xASL_adm_GetFileList(pathStudy,'^import_log.+$');
     
     % Search for bidsReport JSON file
-    reportFiles = xASL_adm_GetFileList(pathStudy,'^bidsReport.+$');
+    reportFiles = xASL_adm_GetFileList(pathStudy,'^bids_report.+$');
     
     % Merge log file lists
     if ~isempty(summaryFile)
