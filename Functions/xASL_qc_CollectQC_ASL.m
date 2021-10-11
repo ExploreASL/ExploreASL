@@ -98,13 +98,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
     % Read CBF NIfTI
     pGM = xASL_io_Nifti2Im(Path_pGM);
     pWM = xASL_io_Nifti2Im(Path_pWM);
-    if isfield(x.Q,'bUseBasilQuantification') && x.Q.bUseBasilQuantification==1
-        % use BASIL CBF image paths
-        imCBF = xASL_io_Nifti2Im(x.P.Path_CBF_Basil);
-    else
-        % use xASL CBF image paths
-        imCBF = xASL_io_Nifti2Im(x.P.Path_CBF);
-    end
+    imCBF = xASL_io_Nifti2Im(x.P.Path_CBF);
         
     if xASL_stat_SumNan(pGM(:))==0
         warning(['Empty image, invalid ' Path_pGM]);

@@ -99,7 +99,7 @@ end
 % First phase calculation for a graph visual output
 if ~isempty(PathGraph)
     % Preallocate (sum is required if multiPLD and therefore multiple ReadoutTime is present)
-	SignalPercentageVector = zeros(round(sum(ReadoutTime + max(SliceTime))), 1);
+	SignalPercentageVector = zeros(round(ReadoutTime + max(SliceTime)), 1);
 	
 	if PresaturationTime
 		SignalPercentageVector(1:PresaturationTime,1) = 1;

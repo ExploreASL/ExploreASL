@@ -250,17 +250,19 @@ for iSpace=1:2
         % Average PWI
         if isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD 
             % multiPLD PWI
-            RepeatsInPLD = size(ASL_im,4)/length(x.Q.Initial_PLD); % we still need to create a single Repeats in X struct
-            for PLDnmbr = 1:length(x.Q.Initial_PLD)
-                RepeatsLocStartPerPLD = 1 + (PLDnmbr-1) * RepeatsInPLD;
-                RepeatsLocEndPerPLD = PLDnmbr * RepeatsInPLD;
-                PWI(:,:,:,PLDnmbr) = xASL_stat_MeanNan(ASL_im(:,:,:,RepeatsLocStartPerPLD:RepeatsLocEndPerPLD), 4);
+            nRepeatsPLD = size(ASL_im,4)/length(x.Q.Initial_PLD); % we still need to create a single Repeats in X struct
+            for nPLD = 1:length(x.Q.Initial_PLD)
+                iStartRepeatsPLD = 1 + (nPLD-1) * nRepeatsPLD; % Location of the first repeat for a given single PLD
+                iEndRepeatsPLD = nPLD * nRepeatsPLD; % Location of the last repeat for a given single PLD
+                PWI(:,:,:,nPLD) = xASL_stat_MeanNan(ASL_im(:,:,:,iStartRepeatsPLD:iEndRepeatsPLD), 4); % Averaged PWI4D 
             end
+            
             % Save PWI
             fprintf('%s\n', PathPWI4D{iSpace});
             xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI, 32, false);
             
             PWIsingle = xASL_stat_MeanNan(ASL_im, 4); % create single PWI for further steps in ASL module
+            
             % Save single PWI
             fprintf('%s\n', PathPWI{iSpace});
             xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);

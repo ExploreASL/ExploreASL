@@ -1,7 +1,7 @@
-function x = xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath, bUseBasilQuantification)
+function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 %xASL_wrp_Quantify Submodule of ExploreASL ASL Module, that performs quantfication
 %
-% FORMAT: x = xASL_wrp_Quantify(x [, PWI_Path, OutputPath, M0Path, SliceGradientPath, bUseBasilQuantification])
+% FORMAT: xASL_wrp_Quantify(x [, PWI_Path, OutputPath, M0Path, SliceGradientPath, bUseBasilQuantification])
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
@@ -13,8 +13,7 @@ function x = xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPat
 %                             quantification, false for using ExploreASL's
 %                             own quantification (OPTIONAL, DEFAULT = false)
 %
-% OUTPUT: x             - structure containing fields with all information required to advance the ASL module
-%
+% OUTPUT: n/a
 % OUTPUT FILES: NIfTI containing quantified CBF map in native or standard space (depending on input NIfTI),
 % or other derivatives that need a quantification, e.g. FEAST
 %
@@ -84,10 +83,8 @@ end
 if nargin<5 || isempty(SliceGradientPath)
     SliceGradientPath = x.P.Pop_Path_SliceGradient_extrapolated;
 end
-if nargin<6 || isempty(bUseBasilQuantification)
-    x.Q.bUseBasilQuantification = false;
-else
-    x.Q.bUseBasilQuantification = bUseBasilQuantification;
+if ~isfield(x.Q,'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
+   x.Q.bUseBasilQuantification = false;
 end
 if ~isfield(x,'Q')
     x.Q = struct;
@@ -405,7 +402,7 @@ elseif size(PWI,4) > 1 && x.Q.bUseBasilQuantification
     [~, CBF] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
 elseif size(PWI,4) > 1 && ~x.Q.bUseBasilQuantification 
     % perform BASIL multi-PLD quantification
-    fprintf('%s\n',['Multi PLD quantification without BASIL not implemented yet']);
+    warning('Multi PLD quantification without BASIL not implemented yet');
 end
 
 if x.Q.ApplyQuantification(5)==0
@@ -422,15 +419,8 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 9.	Save files
-
+% both ExploreASL and BASIL quantified will similarly
 fprintf('%s\n','Saving PWI & CBF niftis');
-
-% Unmasked CBF
-if x.Q.bUseBasilQuantification
-    [Fpath, Ffile, Fext] = xASL_fileparts(OutputPath);
-    OutputPath = fullfile(Fpath, [Ffile '_Basil' Fext]);
-    x.P.Path_CBF_Basil = OutputPath;
-end
 
 xASL_io_SaveNifti(PWI_Path, OutputPath, CBF, 32, 0);
 
@@ -460,5 +450,14 @@ if strcmp(OutputPath, x.P.Pop_Path_qCBF)
     end
 end
 
-
+% Transform BASIL CBF to standard space as BASIL only quantifies in native space
+if x.Q.bUseBasilQuantification
+    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
+        AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
+    else
+        AffineTransfPath = [];
+    end
+    
+    xASL_spm_deformations(x, {x.P.Path_CBF}, {x.P.Pop_Path_CBF}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+end
 end

@@ -230,7 +230,7 @@ x = xASL_adm_DefineASLSequence(x);
 
 %% MultiPLD parsing
 
-if isfield(x.Q,'Initial_PLD') && numel(unique(x.Q.Initial_PLD))>1  % 2 because the PLD is being repeated for control and label -> check this: 1 or 2?
+if isfield(x.Q,'Initial_PLD') && numel(unique(x.Q.Initial_PLD))>1  % check for number of unique PLD's, more than 1 means multiPLD
     fprintf('Multiple PLDs detected...\nPDLs: ');
     for iPLD = 1:numel(x.Q.Initial_PLD)
         if iPLD<numel(x.Q.Initial_PLD)
@@ -498,24 +498,20 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
         % Quantification in native space only:
         nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
         
-        if nVolumes>1
-            x = xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient, 1); 
+        if nVolumes == 1
+            xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
         else
-            x = xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient, 1);
-        end   
+            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient); 
+        end 
     else
-        
-    % Quantification in standard space:
-    xASL_wrp_Quantify(x);
-    % Quantification in native space:
-    xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);   
+        % Quantification in standard space:
+        xASL_wrp_Quantify(x);
+        % Quantification in native space:
+        xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
     end
     
-
-
-
 	% allow 4D quantification as well
-	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D==1
+	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D==1 && ~x.Q.bUseBasilQuantification
         nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
         if nVolumes==1
             warning('x.Q.SaveCBF4D was requested but only one volume exists, skipping');

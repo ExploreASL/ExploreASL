@@ -60,21 +60,18 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     PWI(isnan(PWI)) = 0;
     
     if size(PWI,4) == 1 
-        % singlePLD
+        % SinglePLD
         xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0); % use PWI path
+        bMultiPLD = false; % set MultiPLD analysis to false
     else
-        % multiPLD
+        % MultiPLD
         xASL_io_SaveNifti(x.P.Path_PWI4D, pathBasilInput, PWI, [], 0); % use PWI4D path
+        bMultiPLD = true; % set MultiPLD analysis to true
     end
 
 
     %% 4. Create option_file that contains options which are passed to Fabber
     % basil_options is a character array containing CLI args for the Basil command
-    if size(PWI,4) < 2
-        bMultiPLD = false; 
-    else
-        bMultiPLD = true;
-    end
     
     BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMultiPLD);
     
@@ -236,7 +233,7 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMu
 
     %% Noise specification
     % For small numbers of time points we need an informative noise prior. 
-    % The user can specify an assumed SNR for this, or give noise standard deviation directly.
+    % The user can specify an assumed SNR for this, or give prior estimated noise standard deviation below.
     if ~isfield(x.Q,'BasilSNR') || ~x.Q.BasilSNR
         x.Q.BasilSNR = 10;
     end
