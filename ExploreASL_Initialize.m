@@ -278,8 +278,11 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
     
     % Check length of arrays (single digit input)
     if length(parameters.ImportModules)==1
-        % If a single value is given, then copy it to all submodules
-        parameters.ImportModules(1:4) = parameters.ImportModules(1);
+        % If a single value is given ...
+        % ... then turn on/off all the import modules ...
+        parameters.ImportModules(1:4) = logical(parameters.ImportModules(1));
+        % ... besides defacing, which can only be run using a 1x4 vector ...
+        parameters.ImportModules(3) = false;
     elseif length(parameters.ImportModules)<4
         % Convert to a row vector
         parameters.ImportModules = parameters.ImportModules(:)';
