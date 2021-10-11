@@ -30,8 +30,8 @@ function xASL_imp_DCM2NII(x, imPar)
     
     %% Initialize defaults of dcm2nii
     
-    % We may need to restart the logging
-    diary(x.modules.import.logFile);
+    % Make sure that logging is still active
+    diary(x.dir.diaryFile);
     
     % Print feedback
     fprintf('================================== DICOM to NIFTI CONVERSION =================================\n');

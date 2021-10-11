@@ -111,7 +111,7 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     elseif ~isempty(regexp(ModName,'(ASL|func|dwi)', 'once'))
         dbSettings.diaryFile = ['<SESSIONDIR>/' moduleName '.log'];
     elseif ~isempty(regexp(ModName,'(Import)', 'once'))
-        dbSettings.diaryFile = ['<ROOT>/derivatives/ExploreASL/' moduleName '.log'];
+        dbSettings.diaryFile = ['<ROOT>/derivatives/ExploreASL/log/' moduleName '_<SUBJECT>.log'];
     else
         dbSettings.diaryFile = ['<SUBJECTDIR>/' moduleName '.log'];
     end

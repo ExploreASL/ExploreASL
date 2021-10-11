@@ -116,6 +116,10 @@ function [result, x] = xASL_module_Import(x)
 
     %% Import Module
     
+    % DCM2NIIX and other tools seem to stop the diary logging automatically, here we extract the current 
+    % diary file path to make sure that at the beginning of each module the logging is still enabled.
+    x.dir.diaryFile = get(0,'DiaryFile');
+    
     % Start Mutex
     x = xASL_init_InitializeMutex(x, 'Import');
     fprintf('\n');
@@ -126,9 +130,9 @@ function [result, x] = xASL_module_Import(x)
     StateName{3} = '030_DEFACE';
     StateName{4} = '040_BIDS2LEGACY';
     StateName{5} = '050_CleanUp';
-
-    % 0. Initialize by starting the logging and initializing the substructs
-    diary(x.modules.import.logFile);
+    
+    
+    %% 0. Initialization
     
     % First do the basic parameter admin and initialize the default values
     if nargin<1 || isempty(x)
@@ -142,7 +146,8 @@ function [result, x] = xASL_module_Import(x)
     imPar = x.modules.import.imPar;
     x.modules.import = rmfield(x.modules.import,'imPar');
 
-    % 1. Run the DCM2NIIX
+    
+    %% 1. Run the DCM2NIIX
     iState = 1;
     if x.opts.ImportModules(1) && ~x.mutex.HasState(StateName{1})
         xASL_imp_DCM2NII(x, imPar);
@@ -151,7 +156,8 @@ function [result, x] = xASL_module_Import(x)
         fprintf('DCM2NIIX was run before...   \n');
     end
 
-    % 2. Run the NIIX to ASL-BIDS
+    
+    %% 2. Run the NIIX to ASL-BIDS
     iState = 2;
     if x.opts.ImportModules(2) && ~x.mutex.HasState(StateName{2})
         x = xASL_imp_NII2BIDS(x, imPar);
@@ -160,7 +166,8 @@ function [result, x] = xASL_module_Import(x)
         fprintf('NIIX to ASL-BIDS was run before...   \n');
     end
 
-    % 3. Run defacing
+    
+    %% 3. Run defacing
     iState = 3;
     if x.opts.ImportModules(3) && ~x.mutex.HasState(StateName{3})
         xASL_imp_Deface(x,imPar);
@@ -169,7 +176,8 @@ function [result, x] = xASL_module_Import(x)
         fprintf('Defacing was run before...   \n');
     end
     
-    % 4. Run BIDS to Legacy
+    
+    %% 4. Run BIDS to Legacy
     iState = 4;
     if x.opts.ImportModules(4) && ~x.mutex.HasState(StateName{4})
         x = xASL_imp_BIDS2Legacy(x);
@@ -178,7 +186,8 @@ function [result, x] = xASL_module_Import(x)
         fprintf('BIDS to Legacy was run before...   \n');
     end
 
-    % 6. Clean-up (stop logging)
+    
+    %% 5. Clean-up
     [x] = xASL_imp_CleanUpImport(x);
     result = x.result;
 

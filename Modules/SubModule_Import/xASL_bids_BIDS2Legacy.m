@@ -1,17 +1,14 @@
-function [dataPar,x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
+function [x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite)
 %xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
-% FORMAT: [dataPar] = xASL_bids_BIDS2Legacy(pathStudy, x[, bOverwrite, dataPar])
+% FORMAT: [x] = xASL_bids_BIDS2Legacy(pathStudy, x[, bOverwrite])
 % 
 % INPUT:
 %   pathStudy  - path to the study folder containing the BIDS data in rawdata subfolder (REQUIRED)
 %   x          - ExploreASL x structure (REQUIRED, STRUCT)
 %   bOverwrite - boolean, true for overwriting files (OPTIONAL, DEFAULT = true)
-%   dataPar    - dataPar values to be filled in a basic dataPar created with the conversion to legacy 
-%                (OPTIONAL, DEFAULT = basic dataPar settings)
 %   
 % OUTPUT: 
-%   dataPar    - dataPar struct (STRUCT)
 %   x          - ExploreASL x structure (STRUCT)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -33,13 +30,10 @@ function [dataPar,x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar)
 % - Manage sidecars to copy
 % - Copy files
 % 5. Parse M0
-% 6. Create DataPar.json
-% 7. Copy participants.tsv
-% 8. Add dataset_description.json
-% 9. Clean up
+% 6. Clean up
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [dataPar,x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite, dataPar);
+% EXAMPLE: [x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -69,40 +63,6 @@ elseif exist(pathLegacy, 'dir')
     fprintf('%s\n', [pathLegacy ' exists, merging']);
 else
     xASL_adm_CreateDir(pathLegacy);
-end
-
-% Creates a default dataPar 
-if nargin < 4 || isempty(dataPar)
-	dataPar = struct();
-end
-
-% Fills in important information in the dataPar if missing
-if ~isfield(dataPar,'x')
-    % Add x field
-    dataPar.x = struct;
-end
-% Dataset fields
-if ~isfield(dataPar.x,'dataset')
-    dataPar.x.dataset = struct;
-end
-% Add default subject regular expression
-if ~isfield(dataPar.x.dataset,'subjectRegexp')
-    dataPar.x.dataset.subjectRegexp = '^sub-.*$';
-end
-
-% Check for settings fields
-if ~isfield(dataPar.x,'settings')
-    dataPar.x.settings = struct;
-end
-
-% Check for quality field
-if ~isfield(dataPar.x.settings,'Quality')
-    dataPar.x.settings.Quality = 1;
-end
-
-% Check for DELETETEMP field
-if ~isfield(dataPar.x.settings,'DELETETEMP')
-	dataPar.x.settings.DELETETEMP = 1;
 end
 
 % Loads the configuration for file renaming from the BIDS configuration file
@@ -192,77 +152,7 @@ else
 end
 
 
-%% 6. Create dataPar.json
-fprintf(2,'6. Create dataPar.json needs to be adapted to subject-wise processing...\n');
-
-% Write DataParFile if it does not exist already
-fListDataPar = xASL_adm_GetFileList(pathLegacy,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-if isempty(fListDataPar)
-    fprintf('Creating dataPar.json since file was not found in derivatives directory...\n');
-    spm_jsonwrite(fullfile(pathLegacy, 'dataPar.json'), dataPar);
-end
-
-% Update dataPar path
-fListDataParLegacy = xASL_adm_GetFileList(pathLegacy,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-x.dir.dataPar = fListDataParLegacy{1};
-if length(fListDataParLegacy)>1
-    fprintf('Multiple dataPar.json files within the derivatives directory...\n');
-end
-
-% Overwrite dataPar.json in x structure
-fprintf('Overwriting x.dir.dataPar...\n');
-
-
-%% 7. Copy participants.tsv
-fprintf(2,'7. Copy participants.tsv needs to be adapted to subject-wise processing...\n');
-
-% Define file names
-pathParticipantsTSV = fullfile(pathStudy, 'participants.tsv');
-pathParticipantsTSVxASL = fullfile(pathLegacy, 'participants.tsv');
-
-% Backwards compatibility: rename to lowercase
-fileListParticipantsTSVold = xASL_adm_GetFileList(pathStudy,'^Participants.tsv$',false);
-if ~isempty(fileListParticipantsTSVold) % We added the _temp copy step so that the code works on case insensitive systems like windows as well. Please don't remove that step for backwards compatibility (at least not until release 2.0.0).
-    pathParticipantsTSVold = fullfile(pathStudy, 'Participants.tsv');
-    pathParticipantsTSVoldTemp = fullfile(pathStudy, 'Participants_temp.tsv');
-    xASL_Move(pathParticipantsTSVold,pathParticipantsTSVoldTemp);
-    xASL_Move(pathParticipantsTSVoldTemp,pathParticipantsTSV);
-end
-
-% Check if participants.tsv exists & copy it to the derivatives
-if xASL_exist(pathParticipantsTSV,'file')
-    xASL_Copy(pathParticipantsTSV,pathParticipantsTSVxASL);
-end
-
-
-%% 8. Add "GeneratedBy" fields
-fprintf(2,'8. Add GeneratedBy fields needs to be adapted to subject-wise processing...\n');
-try
-    % Copy dataset_description JSON file
-    xASL_Copy(fullfile(pathStudy, 'rawdata', 'dataset_description.json'), fullfile(pathLegacy, 'dataset_description.json'));
-
-    % Get all JSON files in derivatives and add the "GeneratedBy" field
-    jsonFiles = xASL_adm_GetFileList(pathLegacy, '.json$', 'FPListRec');
-
-    % Check file list
-    if size(jsonFiles,1)>0
-        % Iterate over files
-        for iFile = 1:size(jsonFiles,1)
-            % Check if file should be excluded first (exclude participants.json)
-            [~,fileName] = xASL_fileparts(jsonFiles{iFile});
-            if ~strcmpi(fileName,'participants')
-                thisPath = jsonFiles{iFile};
-                xASL_bids_AddGeneratedByField(x, thisPath);
-            end
-        end
-    end
-catch ME
-    warning('Adding the GeneratedBy fields failed...');
-    fprintf('%s\n', ME.message);
-end
-
-
-%% 9. Clean up
+%% 6. Clean up
 xASL_imp_BIDS2Legacy_CleanUp(pathStudy,x.SUBJECT);
 
 

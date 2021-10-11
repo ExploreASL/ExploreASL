@@ -17,7 +17,6 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 % - 1. The input is dataset_description.json in the rawdata folder
 % - 2. The input is dataPar.json or sourceStructure.json - have to look for a rawdata folder
 % 3. Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
-% 4. Overwrite DatasetRoot
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
@@ -28,8 +27,8 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 
     %% 1. Input check
     
-    % We may need to restart the logging
-    diary(x.modules.import.logFile);
+    % Make sure that logging is still active
+    diary(x.dir.diaryFile);
     
     % Print feedback
     fprintf('\n============================ BIDS to ExploreASL LEGACY CONVERSION ============================\n');
@@ -75,23 +74,14 @@ function [x] = xASL_imp_BIDS2Legacy(x)
 	if length(fListDataPar) < 1
 		fprintf('There is no dataPar.json file in the study root directory. Default settings will be used...\n');
 		% Fill the dataPars with default parameters
-		[dataPar,x] = xASL_bids_BIDS2Legacy(localDatasetRoot, x, 1, []);
+		x = xASL_bids_BIDS2Legacy(localDatasetRoot, x, 1);
 	else
 		if length(fListDataPar) > 1
 			warning('Multiple dataPar*.jsons exist. Using the first: %s\n',fListDataPar{1});
 		end
 		% Fill the dataPars with the provided parameters
-		dataPar = spm_jsonread(fListDataPar{1});
-		[dataPar,x] = xASL_bids_BIDS2Legacy(localDatasetRoot, x, 1, dataPar);
-	end
-
-	%% 4. Overwrite DatasetRoot
-    fieldsDataPar = fieldnames(dataPar.x);
-    % Add fields that are in dataPar.x but missing in x
-    for iField = 1:numel(fieldsDataPar)
-        if ~isfield(x,fieldsDataPar{iField,1}) && ~strcmp('dir',fieldsDataPar{iField,1})
-            x.(fieldsDataPar{iField,1}) = dataPar.x.(fieldsDataPar{iField,1});
-        end
+		x.dataPar = spm_jsonread(fListDataPar{1});
+		x = xASL_bids_BIDS2Legacy(localDatasetRoot, x, 1);
     end
     
 end

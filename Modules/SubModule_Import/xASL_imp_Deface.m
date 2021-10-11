@@ -1,7 +1,7 @@
 function xASL_imp_Deface(x,imPar)
 %xASL_imp_Deface Run defacing.
 %
-% FORMAT: xASL_imp_Deface(imPar)
+% FORMAT: xASL_imp_Deface(x,imPar)
 % 
 % INPUT:
 %   x          - ExploreASL x structure (REQUIRED, STRUCT)
@@ -18,18 +18,31 @@ function xASL_imp_Deface(x,imPar)
 % 3. Process all anatomical files (`xASL_spm_deface`)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_Deface(imPar);
+% EXAMPLE:     xASL_imp_Deface(x,imPar);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
 
-    %% We may need to restart the logging
-    diary(x.modules.import.logFile);
+    %% Initialize
+    if nargin<1
+        error('Please provide an x and an imPar struct...');
+    end
+    if nargin<2
+        error('Please provide an imPar struct...');
+    end
+    
+    % Make sure that logging is still active
+    diary(x.dir.diaryFile);
+
+    % Print feedback
+    fprintf('========================================== DEFACING ==========================================\n');
+    
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
     iSubject = strcmp(x.SUBJECT,x.SUBJECTS);
     subjectName = x.SUBJECTS{iSubject};
-
+    
+    
     %% 1. Iterate over list of subjects
     listSubjects = xASL_adm_GetFileList(imPar.BidsRoot,[],false,[],true);
     for iSubject = 1:length(listSubjects)

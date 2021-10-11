@@ -19,10 +19,11 @@ function [x] = ExploreASL_ImportMaster(x)
 % Copyright 2015-2021 ExploreASL
 
 
-    %% Import Workflow
-
-    % Run the initialization
+    %% Import Initialization
     try
+        % Before we run the subject-wise xASL_module_Import we need to initialize some x structure fields. For DCM2NII & NII2BIDS 
+        % we try to read the sourceStructure.json and studyPar.json as well as the general file structure. We determine the general
+        % subject/visit/session structure and store everything required for import/processing in x.
         x = xASL_imp_ImportInitialization(x);
     catch loggingEntry
         % Print user feedback if import crashed
@@ -37,9 +38,13 @@ function [x] = ExploreASL_ImportMaster(x)
         x.opts.bProcessData = false;
     end
     
-    % Run the import submodules
+    
+    %% Import workflow
     try
+        % Here we run the subject-wise ExploreASL xASL_module_Import. In future releases xASL_Iteration should 
+        % help us to run a parallelized import and also to enable reruns if parts of the import crashed.
         [~, x] = xASL_Iteration(x,'xASL_module_Import');
+        x = xASL_imp_FinishImport(x);
     catch loggingEntry
         % Print user feedback if import crashed
         fprintf(2,'ExploreASL Import module failed...\n');

@@ -26,8 +26,8 @@ function x = xASL_imp_NII2BIDS(x, imPar)
 
     %% Run the NII2BIDS conversion
     
-    % We may need to restart the logging
-    diary(x.modules.import.logFile);
+    % Make sure that logging is still active
+    diary(x.dir.diaryFile);
     
     % Print feedback
     fprintf('\n================================== NIFTI to BIDS CONVERSION ==================================\n');

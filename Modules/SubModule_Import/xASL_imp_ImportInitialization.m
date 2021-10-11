@@ -54,11 +54,12 @@ function x = xASL_imp_ImportInitialization(x)
         x.modules.import.imPar = NaN;
     end
 
-    % Determine subject/session/run structure from sourcedata or temp data
+    
+    %% Determine subject/session/run structure from sourcedata or temp data
     x = xASL_imp_DetermineSubjectStructure(x);
     
-    % Determine logging file
-    x.modules.import.logFile = fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','xASL_module_Import.log');
+    % Create logging directory
+    xASL_adm_CreateDir(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log'));
 
 
 end
