@@ -53,7 +53,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
     end
     
     % SESSIONS DUMMY
-    fprintf(2,'Currently x.SESSIONS is not supported for the import...\n');
+    % fprintf(2,'Currently x.SESSIONS is not supported for the import...\n');
     x.SESSIONS = {''};
 
 
