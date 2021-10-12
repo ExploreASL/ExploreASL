@@ -49,11 +49,8 @@ function loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable)
             loggingTable = xASL_test_AddLoggingEntryToTable(testConfig.flavorList{iFlavor},loggingTable,xFlavor.logging);
         end
         
-        % Determine temporary ASL_1 directory
-        DirASL = fullfile(testConfig.pathFlavorDatabase, testConfig.flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
-        
         % 3. Manual curation for certain flavors
-        xASL_test_Flavors_ManualFlavors(testConfig.flavorList, testConfig.pathFlavorDatabase, DirASL, iFlavor);
+        xASL_test_Flavors_ManualFlavors(testConfig.flavorList, testConfig.pathFlavorDatabase, iFlavor);
         
         % 4. Convert NII+JSON -> BIDS
         xFlavor = ExploreASL(fullfile(testConfig.pathFlavorDatabase, testConfig.flavorList{iFlavor}), [0 1 0 0], 0, 0);
@@ -67,8 +64,9 @@ end
 
 
 %% Manual curation for certain flavors
-function xASL_test_Flavors_ManualFlavors(flavorList, baseDirImport, DirASL, iFlavor)
+function xASL_test_Flavors_ManualFlavors(flavorList, baseDirImport, iFlavor)
 
+DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'derivatives', 'ExploreASL', 'temp', 'Sub1', 'ASL_1');
 
     switch flavorList{iFlavor}
 
@@ -82,7 +80,6 @@ function xASL_test_Flavors_ManualFlavors(flavorList, baseDirImport, DirASL, iFla
 
             % 3b. 'Philips_PCASL_3DGRASE_5.4.1.0_TopUp_1'
         case 'Philips_PCASL_3DGRASE_5.4.1.0_TopUp_1'
-            DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'temp', 'Sub1', 'ASL_1');
 
             % xASL_Move(fullfile(DirASL, 'M0_601_00601.nii'), fullfile(DirASL, 'M0.nii'), 1);
             % xASL_Move(fullfile(DirASL, 'M0_601_00601.json'), fullfile(DirASL, 'M0.json'), 1);
