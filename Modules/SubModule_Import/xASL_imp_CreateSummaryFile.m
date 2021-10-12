@@ -1,7 +1,7 @@
 function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid_summary)
 %xASL_imp_CreateSummaryFile Create summary file.
 %
-% FORMAT: xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary)
+% FORMAT: xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid_summary)
 % 
 % INPUT:
 %   thisSubject       - Current subject struct (REQUIRED, STRUCT)
@@ -20,7 +20,7 @@ function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid
 % 2. Report totals
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary);
+% EXAMPLE:     xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid_summary);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
