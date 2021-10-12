@@ -1,10 +1,9 @@
-function xASL_imp_NII2BIDS_RunPerf(subjectName, imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
+function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
 %xASL_imp_NII2BIDS_RunPerf NII2BIDS conversion for a single sessions, single run.
 %
-% FORMAT: xASL_imp_NII2BIDS_RunPerf(bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
+% FORMAT: xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun)
 % 
 % INPUT:
-% subjectName         - Subject name (x.SUBJECT) (STRING, REQUIRED)
 % imPar               - JSON file with structure with import parameter (STRUCT, REQUIRED)
 % bidsPar             - Output of xASL_imp_Config (STRUCT, REQUIRED)
 % studyPar            - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
@@ -15,7 +14,7 @@ function xASL_imp_NII2BIDS_RunPerf(subjectName, imPar, bidsPar, studyPar, subjec
 % iRun                - run number (INTEGER, REQUIRED)
 %
 % OUTPUT:
-% n/a
+% Files               - Saves bids_report and conditionally ASL & M0.json files
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: NII2BIDS conversion for a single sessions, single run.
@@ -28,7 +27,8 @@ function xASL_imp_NII2BIDS_RunPerf(subjectName, imPar, bidsPar, studyPar, subjec
 % 6. Save all ASL files (JSON, NIFTI, CONTEXT) to the BIDS directory
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     n/a
+% EXAMPLE:     xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
+%
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

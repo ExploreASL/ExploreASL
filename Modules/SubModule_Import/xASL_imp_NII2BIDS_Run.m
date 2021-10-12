@@ -41,7 +41,7 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, subjectSessionLa
     
     %% Perfusion files
     try
-        xASL_imp_NII2BIDS_RunPerf(x.SUBJECT, imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
+        xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
     catch loggingEntry
         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
         xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'perfusion', subjectSessionLabel, iRun);
