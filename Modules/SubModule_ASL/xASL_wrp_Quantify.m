@@ -1,7 +1,7 @@
 function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 %xASL_wrp_Quantify Submodule of ExploreASL ASL Module, that performs quantfication
 %
-% FORMAT: xASL_wrp_Quantify(x [, PWI_Path, OutputPath, M0Path, SliceGradientPath, bUseBasilQuantification])
+% FORMAT: xASL_wrp_Quantify(x [, PWI_Path, OutputPath, M0Path, SliceGradientPath])
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
@@ -9,9 +9,6 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
 %   OutputPath          - path to NifTI to create, with the quantified CBF map (OPTIONAL, DEFAULT = x.P.Pop_Path_qCBF)
 %   M0Path              - path to NifTI containing M0 image (OPTIONAL, default = x.Pop_Path_M0)
 %   SliceGradientPath   - path to Slice gradient NIfTI (OPTIONAL, default = x.P.Pop_Path_SliceGradient_extrapolated)
-%   bUseBasilQuantification - boolean, true for using FSL BASIL for
-%                             quantification, false for using ExploreASL's
-%                             own quantification (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT: n/a
 % OUTPUT FILES: NIfTI containing quantified CBF map in native or standard space (depending on input NIfTI),
@@ -396,13 +393,13 @@ end
 if size(PWI,4) == 1 % single PLD quantification
     fprintf('%s\n',['Performing single PLD quantification']);
     [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
-elseif size(PWI,4) > 1 && x.Q.bUseBasilQuantification
+elseif x.Q.bUseBasilQuantification
     % perform BASIL multi-PLD quantification
     fprintf('%s\n',['Performing multi PLD quantification using BASIL']);
     [~, CBF] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
-elseif size(PWI,4) > 1 && ~x.Q.bUseBasilQuantification 
-    % perform BASIL multi-PLD quantification
-    warning('Multi PLD quantification without BASIL not implemented yet');
+else
+    % multi-PLD quantification without BASIL
+    error('Multi PLD quantification without BASIL not implemented yet');
 end
 
 if x.Q.ApplyQuantification(5)==0

@@ -244,13 +244,12 @@ for iSpace=1:2
         % Paired subtraction
         [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
         ASL_im = ControlIm - LabelIm;
-        % preallocate PWI
-        PWI = zeros(size(ASL_im,1),size(ASL_im,2),size(ASL_im,3));
-        
+                
         % Average PWI
         if isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD 
             % multiPLD PWI
             nRepeatsPLD = size(ASL_im,4)/length(x.Q.Initial_PLD); % we still need to create a single Repeats in X struct
+			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), length(x.Q.Initial_PLD)); % preallocate PWI
             for nPLD = 1:length(x.Q.Initial_PLD)
                 iStartRepeatsPLD = 1 + (nPLD-1) * nRepeatsPLD; % Location of the first repeat for a given single PLD
                 iEndRepeatsPLD = nPLD * nRepeatsPLD; % Location of the last repeat for a given single PLD
