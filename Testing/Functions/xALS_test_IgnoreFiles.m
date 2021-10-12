@@ -19,7 +19,13 @@ function flavors = xALS_test_IgnoreFiles(flavors)
 
 
     %% Define the ignore list (ASL-BIDS reports, import summary files, import logs, lock files)
-    ignoreList = {'bids_report', 'import_summary', 'xASL_module_Import_', '.status'};
+    ignoreList = {  'bids_report', ...
+                    'import_summary', ...
+                    'xASL_module_Import_', ...
+                    '.status', ...
+                    fullfile('ExploreASL','lock'), ...
+                    fullfile('ExploreASL','log') ...
+                 };
     
     %% Check flavors struct
     if ~isfield(flavors,'comparisonTable')
@@ -31,6 +37,7 @@ function flavors = xALS_test_IgnoreFiles(flavors)
     for iIgnore=1:numel(ignoreList)
         % Get current item
         currentItem = ignoreList{iIgnore};
+        currentItem = strrep(currentItem,filesep,[filesep filesep]);
         
         % Get column from comparisonTable
         allMessages = table2array(flavors.comparisonTable(:,{'message'}));
