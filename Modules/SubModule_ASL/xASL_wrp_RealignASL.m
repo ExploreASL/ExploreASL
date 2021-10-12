@@ -61,14 +61,21 @@ exclusion = NaN;
 PercExcl = NaN;
 MinimumtValue = NaN;
 
-if (isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD) || ...
-   (isfield(x.modules.asl,'bMultiTE') && x.modules.asl.bMultiTE)
+if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE
     % ENABLE is disabled if multiPLD/TE
     bENABLE = 0;
     bZigZag = 0;
 else
     bENABLE = 1;
     bZigZag = 1;
+end
+
+if bSubtraction
+    bENABLE = 1;
+    bZigZag = 1;
+else
+    bENABLE = 0;
+    bZigZag = 0;
 end
 
 %% ----------------------------------------------------------------------------------------

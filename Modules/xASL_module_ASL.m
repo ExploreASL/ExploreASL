@@ -239,9 +239,9 @@ if isfield(x.Q,'Initial_PLD') && numel(unique(x.Q.Initial_PLD))>1  % check for n
             fprintf('%d\n',x.Q.Initial_PLD(iPLD));
         end
     end
-    x.modules.asl.bMultiPLD = 1;
+    x.modules.asl.bMultiPLD = true;
 else
-    x.modules.asl.bMultiPLD = 0;
+    x.modules.asl.bMultiPLD = false;
 end
 
 %% TimeEncoded parsing
@@ -272,7 +272,7 @@ end
 %% MultiTE parsing
 
 if isfield(x,'EchoTime') && numel(unique(x.EchoTime))>1
-    x.modules.asl.bMultiTE = 1;
+    x.modules.asl.bMultiTE = true;
     fprintf('Multiple echo times detected...\nTEs: ');
     for iTE = 1:numel(x.EchoTime)
         if iTE<numel(x.EchoTime)
@@ -282,7 +282,7 @@ if isfield(x,'EchoTime') && numel(unique(x.EchoTime))>1
         end
     end
 else
-    x.modules.asl.bMultiTE = 0;
+    x.modules.asl.bMultiTE = false;
 end
 
 
