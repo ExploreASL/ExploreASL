@@ -18,8 +18,8 @@ function flavors = xALS_test_IgnoreFiles(flavors)
 % Copyright (c) 2015-2021 ExploreASL
 
 
-    %% Define the ignore list
-    ignoreList = {'bids_report', 'import_summary', 'xASL_module_Import.log'};
+    %% Define the ignore list (ASL-BIDS reports, import summary files, import logs, lock files)
+    ignoreList = {'bids_report', 'import_summary', 'xASL_module_Import_', '.status'};
     
     %% Check flavors struct
     if ~isfield(flavors,'comparisonTable')
