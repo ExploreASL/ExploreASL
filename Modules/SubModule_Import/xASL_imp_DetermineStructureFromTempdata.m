@@ -37,6 +37,9 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
                 x.SUBJECTS{iSubSes} = curSubSes;
             else
                 warning('It was not possible to determine the subject name from the temp data...');
+                if numel(regexp(curSubSes,'_','all'))>1
+                    warning('Multiple underscores in subject/session name...');
+                end
             end
         end
     end

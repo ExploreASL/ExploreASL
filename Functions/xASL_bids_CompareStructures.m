@@ -46,11 +46,12 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
     end
 
     % Check if both root folders exists
-    if ~xASL_exist(pathDatasetA, 'dir')
-        error('The root folder of structure A does not exist: %s',pathDatasetA);
-    end
-    if ~xASL_exist(pathDatasetB, 'dir')
-        error('The root folder of structure B does not exist: %s',pathDatasetB);
+    if ~xASL_exist(pathDatasetA, 'dir') || ~xASL_exist(pathDatasetB, 'dir')
+        warning('The root folder of structure A or B does not exist: %s',pathDatasetA);
+        identical = false;
+        results = struct;
+        reportTable = array2table(zeros(0,3), 'VariableNames',{'dataset','name','message'});
+        return
     end
 	
     % Default value for bPrintReport

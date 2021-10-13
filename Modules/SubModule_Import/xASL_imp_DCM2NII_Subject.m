@@ -71,14 +71,20 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
             end
         end
 
-        if x.modules.import.settings.bUseVisits % only pad VisitID _1 _2 _3 etc if there are visits specified
+        if x.modules.import.settings.bUseVisits 
+            
+            % Only pad VisitID _1 _2 _3 etc if there are visits specified
             % Multiple visits is defined by the tokenVisitAliases.
-            % If this is non-existing, it is set to 1, and if it does exist,
-            % it will put the _1 _2 _3 etc in the folder
-            % this fix allows to import a single visit from a range of
-            % specified visits
-            SubjDir = fullfile(imPar.TempRoot, [subjectID '_' imPar.visitNames{iVisit}]);
-            % if strcmp(imPar.visitNames{iVisit},'_1') % only pad the visitID _1 _2 _3 etc if there are multiple visits
+            % If this is non-existing, it is set to 1, and if it does exist, it will put the _1 _2 _3 etc in the folder
+            % this fix allows to import a single visit from a range of specified visits.
+            
+            if ~isempty(imPar.visitNames{iVisit}) && strcmp(imPar.visitNames{iVisit}(1),'_')
+                % Only add '_' if there isn't one already
+                SubjDir = fullfile(imPar.TempRoot, [subjectID imPar.visitNames{iVisit}]);
+            else
+                % Subject/session directory with '_'
+                SubjDir = fullfile(imPar.TempRoot, [subjectID '_' imPar.visitNames{iVisit}]);
+            end
         else
             SubjDir = fullfile(imPar.TempRoot, subjectID);
         end

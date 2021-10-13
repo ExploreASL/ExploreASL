@@ -37,7 +37,7 @@ function flavors = xALS_test_IgnoreFiles(flavors)
     for iIgnore=1:numel(ignoreList)
         % Get current item
         currentItem = ignoreList{iIgnore};
-        currentItem = strrep(currentItem,filesep,[filesep filesep]);
+        currentItem = strrep(currentItem,filesep,['\' '\\']);
         
         % Get column from comparisonTable
         allMessages = table2array(flavors.comparisonTable(:,{'message'}));
