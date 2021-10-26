@@ -97,6 +97,8 @@ function xASL_imp_PrintOverview(x)
             end
         end
     end
+    
+    fprintf('\n');
 
 end
 function xASL_imp_PrintSubject(x,thisSubject)
@@ -129,12 +131,24 @@ function xASL_imp_PrintVisit(x,thisSubject,thisVisit)
     fprintf('Visit:   %s\n', visit);
     
     % Print sessions
-    if isfield(x.overview.(thisSubject).(thisVisit),'sessions')
-        for iSession=1:numel(x.overview.(thisSubject).(thisVisit).sessions)
-            thisSession = x.overview.(thisSubject).(thisVisit).sessions{iSession};
-            fprintf('Session: %s\n', thisSession);
+    visitLevelFields = fieldnames(x.overview.(thisSubject).(thisVisit));
+    for iVisitField=1:numel(visitLevelFields)
+        thisRun = visitLevelFields{iVisitField};
+        if ~isempty(regexpi(thisRun,'run_'))
+            xASL_imp_PrintRun(x,thisSubject,thisVisit,thisRun);
         end
     end
+
+end
+function xASL_imp_PrintRun(x,thisSubject,thisVisit,thisRun)
+
+    % Print each individual subject
+    if isfield(x.overview.(thisSubject).(thisVisit).(thisRun),'name')
+        session = x.overview.(thisSubject).(thisVisit).(thisRun).name;
+    else
+        session = '';
+    end
+    fprintf('Session: %s\n', session);
 
 end
 
@@ -262,7 +276,31 @@ function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
     
     %% SCAN NAMES
     x.overview.(sFieldName).(vFieldName).scanNames = x.overview.(sFieldName).(vFieldName).scanIDs;
+    
+    %% Add session (==run in BIDS)
+    
+    % Determine runs
+    if ~isfield(x.modules.import.imPar,'tokenSessionAliases')
+        for iSession=1:numel(x.modules.import.listsIDs.vSessionIDs)
+            thisSession = x.modules.import.listsIDs.vSessionIDs{iSession};
+            x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession);
+        end
+    else
+        % Iterate over tokenSessionAliases (x.modules.import.imPar.tokenSessionAliases)
+        % Are they visit independet though?!? We definitely need to put in more work here...
+        fprintf(2,'Implement this part...');
+    end
 
+
+end
+
+
+%% Add runs to overview
+function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession)
+
+    % Add field to overview
+    vSessionName = ['run_' num2str(iSession,'%03.f')];
+    x.overview.(sFieldName).(vFieldName).(vSessionName).name = thisSession;
 
 end
 
