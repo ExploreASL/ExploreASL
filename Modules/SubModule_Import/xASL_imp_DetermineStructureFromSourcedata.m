@@ -76,9 +76,68 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
         end
     end
     fprintf('\n');
+    
+    % Print overview
+    xASL_imp_PrintOverview(x);
 
 
 end
+
+
+%% Print overview
+function xASL_imp_PrintOverview(x)
+
+    if isfield(x,'overview')
+        % Get all main fields
+        overviewFields = fieldnames(x.overview);
+        for iField=1:numel(overviewFields)
+            thisSubject = overviewFields{iField};
+            if ~isempty(regexpi(thisSubject,'subject_'))
+                xASL_imp_PrintSubject(x,thisSubject);
+            end
+        end
+    end
+
+end
+function xASL_imp_PrintSubject(x,thisSubject)
+
+    % Print each individual subject
+    if isfield(x.overview.(thisSubject),'name')
+        subject = x.overview.(thisSubject).name;
+    else
+        subject = '';
+    end
+    fprintf('Subject: %s\n', subject);
+    % Show subject content
+    subjectLevelFields = fieldnames(x.overview.(thisSubject));
+    for iSubjectField=1:numel(subjectLevelFields)
+        thisVisit = subjectLevelFields{iSubjectField};
+        if ~isempty(regexpi(thisVisit,'visit_'))
+            xASL_imp_PrintVisit(x,thisSubject,thisVisit);
+        end
+    end
+
+end
+function xASL_imp_PrintVisit(x,thisSubject,thisVisit)
+
+    % Print each individual subject
+    if isfield(x.overview.(thisSubject).(thisVisit),'name')
+        visit = x.overview.(thisSubject).(thisVisit).name;
+    else
+        visit = '';
+    end
+    fprintf('Visit:   %s\n', visit);
+    
+    % Print sessions
+    if isfield(x.overview.(thisSubject).(thisVisit),'sessions')
+        for iSession=1:numel(x.overview.(thisSubject).(thisVisit).sessions)
+            thisSession = x.overview.(thisSubject).(thisVisit).sessions{iSession};
+            fprintf('Session: %s\n', thisSession);
+        end
+    end
+
+end
+
 
 
 %% Add subjects to overview
