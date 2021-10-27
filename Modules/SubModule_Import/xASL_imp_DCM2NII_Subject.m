@@ -86,6 +86,14 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
             % Get current run name
             imPar.sessionNames{iSession} = thisRun.name;
             
+            % Quick & dirty fix for now...
+            if ~(numel(thisRun.scanIDs)==numel(thisRun.ids))
+                fprintf(2,'Dirty fix for now...\n');
+                firstElement = {thisRun.ids{1}};
+                thisRun.ids = cell(1,numel(thisRun.scanIDs));
+                thisRun.ids(:) = firstElement;
+            end
+            
             %% 4. Iterate over scans
             for iScan=1:numel(thisRun.scanIDs)
                 % Get scan ID

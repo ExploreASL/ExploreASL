@@ -66,7 +66,7 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
     x = xASL_imp_AddSubjectOverview(x);
     
     % Print matching sourcedata
-    fprintf('\n========================================= SOURCEDATA =========================================\n');
+    fprintf('\n[\b========================================= SOURCEDATA =========================================]\b\n');
     
     % Print matching files
     if isfield(x.modules.import.imPar,'bVerbose') && x.modules.import.imPar.bVerbose
