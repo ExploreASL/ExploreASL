@@ -30,7 +30,7 @@ function x = xASL_imp_NII2BIDS(x, imPar)
     diary(x.dir.diaryFile);
     
     % Print feedback
-    fprintf('\n================================== NIFTI to BIDS CONVERSION ==================================\n');
+    fprintf('\n[\b================================== NIFTI to BIDS CONVERSION ==================================]\b\n');
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
     iSubject = strcmp(x.SUBJECT,x.SUBJECTS);

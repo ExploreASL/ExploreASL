@@ -34,7 +34,7 @@ function xASL_imp_DCM2NII(x, imPar)
     diary(x.dir.diaryFile);
     
     % Print feedback
-    fprintf('================================== DICOM to NIFTI CONVERSION =================================\n');
+    fprintf('\n[\b================================== DICOM to NIFTI CONVERSION =================================]\b\n');
     
     % Create the temp directory for DCM2NII
     xASL_adm_CreateDir(imPar.TempRoot);

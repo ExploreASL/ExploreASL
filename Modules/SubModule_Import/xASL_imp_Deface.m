@@ -35,7 +35,7 @@ function xASL_imp_Deface(x,imPar)
     diary(x.dir.diaryFile);
 
     % Print feedback
-    fprintf('========================================== DEFACING ==========================================\n');
+    fprintf('\n[\b========================================== DEFACING ==========================================]\b\n');
     
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
