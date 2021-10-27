@@ -1,12 +1,13 @@
-function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults)
+function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults,runProcessing)
 %xASL_test_FullPipelineTest BIDS testing script
 %
-% FORMAT: [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig)
+% FORMAT: [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults,runProcessing)
 % 
 % INPUT:
 %   testConfig        - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
 %   onlyRemoveResults - Set to true if you do not want to run test testing, 
 %                       but you want to delete existing test data (BOOLEAN, OPTIONAL) 
+%   runProcessing     - Run processing (BOOLEAN, DEFAULT=true)
 %
 % OUTPUT:
 %   flavors        - Struct containing the loggingTable and other fields
@@ -50,6 +51,9 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
     %% Initialization
     if nargin<2 || isempty(onlyRemoveResults)
         onlyRemoveResults = false;
+    end
+    if nargin<3 || isempty(runProcessing)
+        runProcessing = true;
     end
 
     %% Check for testConfig
@@ -121,11 +125,16 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
     % Already save conversion results and ignore some files before processing
     flavors = xASL_test_FlavorsSaveResults(flavors, testConfig);
     
-    % Run the pipeline
-    flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 1 0], x, flavors);
+    % Processing
+    if runProcessing
+    
+        % Run the pipeline
+        flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 1 0], x, flavors);
 
-    % Check the pipeline results
-    flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 0 1], x, flavors);
+        % Check the pipeline results
+        flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 0 1], x, flavors);
+        
+    end
 
     % Get warnings & errors from log files
     [logContent] = xASL_test_GetLogContent(testConfig.pathFlavorDatabase,0,1,2);
