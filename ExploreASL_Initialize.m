@@ -191,7 +191,7 @@ function xASL_init_PrintLogo
     '                    ## |                                                                      \n'...
     '                    ##/  \n\n'];
 
-    fprintf([BreakString LogoString]);
+    fprintf([BreakString '[\b' LogoString ']\b']);
 
 end
 
