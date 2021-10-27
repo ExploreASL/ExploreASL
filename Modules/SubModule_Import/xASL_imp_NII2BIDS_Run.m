@@ -1,4 +1,4 @@
-function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
+function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
 %xASL_imp_NII2BIDS_Run NII2BIDS conversion for a single run.
 %
 % FORMAT: x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
@@ -17,7 +17,7 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listRuns, na
 %   x                     - ExploreASL x structure (STRUCT)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: NII2BIDS conversion for a single sessions.
+% DESCRIPTION: NII2BIDS conversion for a single run.
 % 
 % 1. Make a subject directory
 % 2. Iterate over runs
@@ -27,8 +27,8 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listRuns, na
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-    %% Print the session that is being converted
-    fprintf('\n====================================== CONVERT SESSION =======================================\n');
+    %% Print the run that is being converted
+    fprintf('\n====================================== CONVERT RUN =======================================\n');
     fprintf('Converting subject %s, run %s, ', bidsLabel.subject, bidsLabel.visit);
 
     %% 1. Make a subject directory
@@ -40,11 +40,6 @@ function x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listRuns, na
         %end
         
         % Create directory if it does not exist already
-        sessionDirectory = fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject], sessionLabel);
-        if xASL_exist(sessionDirectory,'dir')
-            fprintf('The session directory %s of subject %s exists already...\n',sessionLabel,['sub-' bidsLabel.subject]);
-        end
-        
         sessionPerfusionDirectory = fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject], sessionLabel,'perf');
         xASL_adm_CreateDir(sessionPerfusionDirectory);
         

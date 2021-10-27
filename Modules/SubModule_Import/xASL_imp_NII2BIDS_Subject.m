@@ -48,7 +48,7 @@ function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
     
     % Go through all (ASL) sessions
     for iRun = 1:length(listRuns)
-        x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
+        x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
     end
     
 end
