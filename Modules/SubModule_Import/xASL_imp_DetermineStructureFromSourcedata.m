@@ -241,9 +241,17 @@ function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
 
     %% SCAN NAMES
     
+    % Add runs fields
+    if ~isfield(x.overview.(sFieldName).(vFieldName),'runs')
+        x.overview.(sFieldName).(vFieldName).runs = {};
+    end
+    
     % Get number of session IDs, number of sessions, scan IDs, number of scans
     x.overview.(sFieldName).(vFieldName).sessionIDs  = sort(unique(x.modules.import.listsIDs.vSessionIDs(vVisitIDs)));
-    x.overview.(sFieldName).(vFieldName).nSessions = length(x.overview.(sFieldName).(vFieldName).sessionIDs);
+    
+    % Get number of sessions (=runs) based on sessionIDs and tokenSessionAliases, add inidividual runs
+    x = xASL_imp_AddSessions(x,sFieldName,vFieldName);
+    
     x.overview.(sFieldName).(vFieldName).scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs(vVisitIDs))));
     x.overview.(sFieldName).(vFieldName).nScans = length(x.overview.(sFieldName).(vFieldName).scanIDs);
     
@@ -276,44 +284,126 @@ function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
     
     %% SCAN NAMES
     x.overview.(sFieldName).(vFieldName).scanNames = x.overview.(sFieldName).(vFieldName).scanIDs;
-    
-    %% Add session (==run in BIDS)
-    
-    % Determine runs
-    if ~isfield(x.modules.import.imPar,'tokenSessionAliases')
-        for iSession=1:numel(x.modules.import.listsIDs.vSessionIDs)
-            thisSession = x.modules.import.listsIDs.vSessionIDs{iSession};
-            x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession);
-        end
-    else
-        % Iterate over tokenSessionAliases (x.modules.import.imPar.tokenSessionAliases)
-        % Are they visit independet though?!? We definitely need to put in more work here...
-        for iSession=1:size(x.modules.import.imPar.tokenSessionAliases,1)
-            if isempty(x.modules.import.imPar.tokenSessionAliases{iSession,2})
-                fprintf(2,'Empty session token...\n');
-                thisSession = strrep(x.modules.import.imPar.tokenSessionAliases{iSession,1},'^','');
-                thisSession = strrep(thisSession,'$','');
-                thisSession = matlab.lang.makeValidName(thisSession);
-            else
-                thisSession = x.modules.import.imPar.tokenSessionAliases{iSession,2};
-                thisSession = matlab.lang.makeValidName(thisSession);
-            end
-            x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession);
-        end
-    end
 
 
 end
 
 
+%% Get number of sessions of this visit
+function x = xASL_imp_AddSessions(x,sFieldName,vFieldName)
+
+
+    % If there are no tokenSessionAliases, we just say that each existing
+    % and matched sessionID is a separate run...
+    if ~isfield(x.modules.import.imPar,'tokenSessionAliases')
+        numOfSessions = 0;
+        
+        % Iterate over all session names
+        for iSession=1:numel(x.overview.(sFieldName).(vFieldName).sessions)
+            thisSession = x.overview.(sFieldName).(vFieldName).sessions{iSession};
+            x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession);
+            numOfSessions = numOfSessions+1;
+        end
+        
+        % Assign x field
+        x.overview.(sFieldName).(vFieldName).nSessions = numOfSessions;
+    end
+    
+    % ... but if there is a tokenSessionAliases field, we can group the
+    % sessions based on those tokens. We have to iterate over the tokens
+    % and see if they were matched. If they were matched, we assign a name
+    % and then we can assign all sessionIDs to their corresponding token.
+    if isfield(x.modules.import.imPar,'tokenSessionAliases')
+        numOfSessions = 0;
+        tokenTable = x.modules.import.imPar.tokenSessionAliases;
+        % Add empty last row for session (=run) names
+        for iToken=1:size(tokenTable,1)
+            tokenTable{iToken,3} = '';
+        end
+        
+        % Iterate over session (=run) tokens
+        for iToken=1:size(tokenTable,1)
+            currentToken = tokenTable{iToken,1};
+            % Iterate over session names
+            for iSession=1:numel(x.overview.(sFieldName).(vFieldName).sessions)
+                currentID = x.overview.(sFieldName).(vFieldName).sessions{iSession};
+                if ~isempty(regexpi(currentID,currentToken))
+                    % Check if session (=run) already exists
+                    if isempty(tokenTable{iToken,3})
+                        numOfSessions = numOfSessions+1;
+                        tokenTable{iToken,3} = ['run_' num2str(numOfSessions,'%03.f')];
+                    end
+                end
+            end
+        end
+        
+        % Create runs
+        iSession = 0;
+        for iToken=1:size(tokenTable,1)
+            if ~isempty(tokenTable{iToken,3})
+                iSession=iSession+1;
+                thisSession = tokenTable{iToken,2};
+                x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,tokenTable{iToken,1});
+            end
+        end
+        
+        
+        % Assign x field
+        x.overview.(sFieldName).(vFieldName).nSessions = numOfSessions;
+    end   
+
+end
+
+
+
 %% Add runs to overview
-function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession)
+function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRegExp)
+
+    % Check if there was a regexp and token
+    if nargin<6
+        thisRegExp = '';
+    end
+
+    % Warn for empty session tokens
+    if isempty(thisSession)
+        fprintf(2,'Setting empty session token to undefined...\n');
+        thisSession = 'undefined';
+    end
 
     % Add field to overview
     vSessionName = ['run_' num2str(iSession,'%03.f')];
     x.overview.(sFieldName).(vFieldName).(vSessionName).name = thisSession;
+    x.overview.(sFieldName).(vFieldName).runs = vertcat(x.overview.(sFieldName).(vFieldName).runs,thisSession);
+    x.overview.(sFieldName).(vFieldName).(vSessionName).regexp = thisRegExp;
+    
+    % Add list of IDs
+    if ~isempty(thisRegExp)
+        x = xASL_imp_AddSessionIDList(x,sFieldName,vFieldName,vSessionName,thisRegExp);
+    else
+        x.overview.(sFieldName).(vFieldName).(vSessionName).ids = {thisSession};
+    end
 
 end
+
+
+function x = xASL_imp_AddSessionIDList(x,sFieldName,vFieldName,vSessionName,thisRegExp)
+
+    % Iterate over session names
+    for iSession=1:numel(x.overview.(sFieldName).(vFieldName).sessions)
+        currentID = x.overview.(sFieldName).(vFieldName).sessions{iSession};
+        if ~isempty(regexpi(currentID,thisRegExp))
+            if ~isfield(x.overview.(sFieldName).(vFieldName).(vSessionName),'ids')
+                x.overview.(sFieldName).(vFieldName).(vSessionName).ids = {currentID};
+            else
+                x.overview.(sFieldName).(vFieldName).(vSessionName).ids = ...
+                    vertcat(x.overview.(sFieldName).(vFieldName).(vSessionName).ids,currentID);
+            end
+        end
+    end
+    
+end
+
+
 
 
 

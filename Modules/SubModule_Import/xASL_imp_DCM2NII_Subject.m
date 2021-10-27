@@ -107,21 +107,20 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
 
         %% 3. Loop through all sessions
         for iSession=1:thisVisit.nSessions
-            sessionID = thisVisit.sessionIDs{iSession};
+            
+            % Get current run
+            vSessionName = ['run_' num2str(iSession,'%03.f')];
+            thisRun = thisVisit.(vSessionName);
+            sessionID = thisRun.ids;
 
             % convert session ID to a suitable name
-            if size(imPar.tokenSessionAliases,2)==2
-                iAlias = find(~cellfun(@isempty,regexp(sessionID,imPar.tokenSessionAliases(:,1),'once')));
-                if ~isempty(iAlias)
-                    imPar.sessionNames{iSession} = imPar.tokenSessionAliases{iAlias,2};
-                end
-            end
+            imPar.sessionNames{iSession} = thisRun.name;
             
             %% 4. Iterate over scans
             for iScan=1:thisVisit.nScans
                 
                 %% 4.1 Initialize variables (scanID, summary_line, first_match)
-                scanID = thisVisit.scanIDs{iScan};
+                scanID = thisVisit.scanIDs{iScan};                         % I think here we actually need the scan IDs of the current run, not the current visit?!?
                 summary_line = [];
                 first_match = [];
                 thisSubject.summary_lines{iSubject,iVisit,iSession,iScan} = 'n/a';
