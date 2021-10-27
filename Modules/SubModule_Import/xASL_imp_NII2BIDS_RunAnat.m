@@ -26,7 +26,7 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
     
 
     %% 1. Define the pathnames
-    if ~isempty(listRuns)
+    if length(listRuns)>1
         anatLabel = num2str(iRun);
         anatOutDirLabel = fullfile(outSessionPath, 'anat');
         anatOutLabel = fullfile(outSessionPath, 'anat', ['sub-' subjectSessionLabel '_run-' num2str(iRun)]);
