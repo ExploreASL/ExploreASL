@@ -171,7 +171,7 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     % In case of GE or PARREC/a single NII ASL file loaded from PAR/REC, we need to 
     % shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order.
     [x,nii_files, summary_line, thisSubject.globalCounts] = ...
-        xASL_imp_DCM2NII_Subject_SortASLVolumes(x, thisSubject.globalCounts, scanpath, scan_name, nii_files, scanFields.iSubject, scanFields.iSession, scanFields.iScan);
+        xASL_imp_DCM2NII_Subject_SortASLVolumes(x, thisSubject.globalCounts, scanpath, scan_name, nii_files, scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan);
 
     % Correct nifti rescale slope if parms.RescaleSlopeOriginal =~1 but nii.dat.scl_slope==1 (this can happen in case
     % of hidden scale slopes in private Philips header, that is dealt with by xASL_bids_Dicom2JSON but not by dcm2niiX.

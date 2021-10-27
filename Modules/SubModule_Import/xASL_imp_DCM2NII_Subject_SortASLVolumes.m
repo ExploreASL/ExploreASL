@@ -1,7 +1,7 @@
-function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_SortASLVolumes(x,globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
+function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_SortASLVolumes(x,globalCounts, scanpath, scan_name, nii_files, iSubject, iVisit, iSession, iScan)
 %xASL_imp_DCM2NII_Subject_SortASLVolumes Sort ASL Volumes
 %
-% FORMAT: [x, nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_SortASLVolumes(x, globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan)
+% FORMAT: [x, nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_SortASLVolumes(x, globalCounts, scanpath, scan_name, nii_files, iSubject, iVisit, iSession, iScan)
 % 
 % INPUT:
 %   x               - ExploreASL x struct (STRUCT, REQUIRED)
@@ -10,6 +10,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 %   scan_name       - Scan name (CHAR ARRAY, REQUIRED)
 %   nii_files       - List of NIfTI files (CELL ARRAY, REQUIRED)
 %   iSubject        - Subject ID (INTEGER, REQUIRED)
+%   iVisit          - Visit ID (INTEGER, REQUIRED)
 %   iSession        - Session ID (INTEGER, REQUIRED)
 %   iScan           - Scan ID (INTEGER, REQUIRED)
 %
@@ -153,7 +154,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     
     %% 6. Extract relevant parameters from nifti header and append to summary file
     summary_line = xASL_imp_AppendNiftiParameters(nii_files);
-    globalCounts.converted_scans(iSubject, iSession, iScan) = 1;
+    globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) = 1;
     
 
 end
