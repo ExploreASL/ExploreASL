@@ -69,7 +69,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 
     %% 4. Prepare the link to M0 in ASL.json	
     % Define the M0 type	
-    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, fullfile(inSessionPath,'M0.nii'), fullfile(bidsPar.strPerfusion,['sub-' subjectSessionRunLabel]));	
+    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, fullfile(inSessionPath,'M0.nii'), fullfile(bidsPar.strPerfusion,subjectSessionRunLabel));	
 
     %% 5. BIDSify M0	
     % Check the M0 files 
@@ -103,11 +103,11 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 			end
 			% Define the path to the respective ASL
 			jsonM0.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
-			pathM0Out = fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectSessionRunLabel strPEDirection '_' bidsPar.strM0scan]);
+			pathM0Out = fullfile(outSessionPath,bidsPar.strPerfusion,[subjectSessionRunLabel strPEDirection '_' bidsPar.strM0scan]);
 		else
 			jsonM0.PhaseEncodingDirection = 'j';
-			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,['sub-' subjectSessionRunLabel '_dir-ap' '_' bidsPar.strM0scan '.nii.gz']);
-			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,['sub-' subjectSessionRunLabel '_dir-pa' '_' bidsPar.strM0scan]);
+			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,[subjectSessionRunLabel '_dir-ap' '_' bidsPar.strM0scan '.nii.gz']);
+			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,[subjectSessionRunLabel '_dir-pa' '_' bidsPar.strM0scan]);
 		end
 		
 		% Create the directory for the reversed PE if needed
