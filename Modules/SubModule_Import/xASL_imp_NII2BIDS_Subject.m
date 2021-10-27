@@ -46,7 +46,7 @@ function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
     listRuns = unique(listRuns);
     listRuns = cellfun(@(y) ['ASL_' y], listRuns, 'UniformOutput', false);
     
-    % Go through all (ASL) sessions
+    % Go through all (ASL) runs
     for iRun = 1:length(listRuns)
         x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
     end

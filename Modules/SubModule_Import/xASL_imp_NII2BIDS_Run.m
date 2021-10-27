@@ -19,8 +19,8 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: NII2BIDS conversion for a single run.
 % 
-% 1. Make a subject directory
-% 2. Iterate over runs
+% 1. Make a subject directory with a correct session name
+% 2. Convert structural and ASL runs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
@@ -31,7 +31,7 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
     fprintf('\n====================================== CONVERT RUN =======================================\n');
     fprintf('Converting subject %s, run %s, ', bidsLabel.subject, bidsLabel.visit);
 
-    %% 1. Make a subject directory
+    %% 1. Make a subject directory with a correct session name
     if ~isempty(bidsLabel.visit)
         %if ~isempty(bidsLabel.visit)
         sessionLabel = ['ses-' bidsLabel.visit];
@@ -60,27 +60,23 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
         outSessionPath = fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject]);
     end
 
-    % Check if there are multiple runs per session
-    listRuns = xASL_adm_GetFileList(inSessionPath, '^ASL4D_\d.nii+$', false, [], false);
 
-    %% 2. Iterate over runs
-    for iRun = 1:(max(length(listRuns),1))
-		subjectSessionLabel = [bidsLabel.subject sessionLabel];
-		try
-			xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
-		catch loggingEntry
-			[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-			xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'anatomical', subjectSessionLabel, iRun);
-		end
+    %% 2. Convert structural and ASL runs
+	subjectSessionLabel = [bidsLabel.subject sessionLabel];
+	try
+		xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
+	catch loggingEntry
+		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'anatomical', subjectSessionLabel, iRun);
+	end
 		
-		%% Perfusion files
-		try
-			xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
-		catch loggingEntry
-			[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-			xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'perfusion', subjectSessionLabel, iRun);
-		end
-    end
+	%% Perfusion files
+	try
+		xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
+	catch loggingEntry
+		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
+		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'perfusion', subjectSessionLabel, iRun);
+	end
 
 end
 

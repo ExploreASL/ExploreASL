@@ -33,15 +33,15 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 % Copyright 2015-2021 ExploreASL
 
     %% 1. Define the pathnames
-    if length(listRuns)
-        aslLabel = ['ASL4D_' num2str(iRun)];
-        aslOutLabel = fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectSessionLabel '_run-' num2str(iRun)]);
-        aslOutLabelRelative = fullfile(bidsPar.strPerfusion,['sub-' subjectSessionLabel '_run-' num2str(iRun)]);
-    else
-        aslLabel = 'ASL4D';
-        aslOutLabel = fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectSessionLabel]);
-        aslOutLabelRelative = fullfile(bidsPar.strPerfusion,['sub-' subjectSessionLabel]);
-    end
+	if length(listRuns)>1
+		aslLabel = 'ASL4D';
+		subjectSessionRunLabel = ['sub-' subjectSessionLabel '_run-' num2str(iRun)];
+	else
+		aslLabel = 'ASL4D';
+		subjectSessionRunLabel = ['sub-' subjectSessionLabel];
+	end
+	aslOutLabel = fullfile(outSessionPath,bidsPar.strPerfusion, subjectSessionRunLabel);
+	aslOutLabelRelative = fullfile(bidsPar.strPerfusion, subjectSessionRunLabel);
     
     % Current scan name
     [~, scanName] = xASL_fileparts([aslOutLabel '_asl.json']);
@@ -69,69 +69,62 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 
     %% 4. Prepare the link to M0 in ASL.json	
     % Define the M0 type	
-    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, fullfile(inSessionPath,'M0.nii'), fullfile(bidsPar.strPerfusion,['sub-' subjectSessionLabel]));	
+    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, fullfile(inSessionPath,'M0.nii'), fullfile(bidsPar.strPerfusion,['sub-' subjectSessionRunLabel]));	
 
     %% 5. BIDSify M0	
-    % Check the M0 files only for the first ASL-image run within a session
-    if iRun == 1 % For first run process also M0, for the second run, only reference it
-        for iReversedPE = 1:2 % Check if AP/PA coding is given for M0
-            % Load the M0 JSON if existing
-            if iReversedPE == 1
-                pathM0In = fullfile(inSessionPath,'M0');
-            else
-                pathM0In = fullfile(inSessionPath,'M0PERev');
-            end
-
-            % Load the M0 JSON
-            if xASL_exist([pathM0In '.json'])
-                jsonM0 = spm_jsonread([pathM0In '.json']);
-            else
-                jsonM0 = struct;
-            end
-
-            if iReversedPE == 1
-                if xASL_exist(fullfile(inSessionPath,'M0PERev.nii'))
-                    strPEDirection = '_dir-ap';
-
-                    jsonM0.PhaseEncodingDirection = 'j-';
-                    jsonLocal.PhaseEncodingDirection = 'j-';
-                else
-                    strPEDirection = '';
-                end
-                if bJsonLocalM0isFile
-                    jsonLocal.M0 = [jsonLocal.M0 strPEDirection '_' bidsPar.strM0scan '.nii.gz'];
-                end
-                % Define the path to the respective ASL
-                jsonM0.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
-                pathM0Out = fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectSessionLabel strPEDirection '_' bidsPar.strM0scan]);
-            else
-                jsonM0.PhaseEncodingDirection = 'j';
-                jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,['sub-' subjectSessionLabel '_dir-ap' '_' bidsPar.strM0scan '.nii.gz']);
-                pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,['sub-' subjectSessionLabel '_dir-pa' '_' bidsPar.strM0scan]);
-            end
-
-            % Create the directory for the reversed PE if needed
-            if iReversedPE == 2 && xASL_exist([pathM0In '.nii']) && ~exist(fullfile(outSessionPath,bidsPar.strFmap),'dir')
-                mkdir(fullfile(outSessionPath,bidsPar.strFmap));
-            end
-
-            % If M0, then copy M0 and add ASL path to the IntendedFor
-            if xASL_exist([pathM0In '.nii'])
-                jsonM0 = xASL_bids_BIDSifyM0(jsonM0, jsonLocal, studyPar, pathM0In, pathM0Out, headerASL);
-
-                % Save JSON to new dir
-                jsonM0 = xASL_bids_VendorFieldCheck(jsonM0);
-                jsonM0 = xASL_bids_JsonCheck(jsonM0,'M0');
-                spm_jsonwrite([pathM0Out '.json'],jsonM0);
-            end
-        end
-    else
-        if bJsonLocalM0isFile
-            jsonLocal.M0 = [jsonLocal.M0 '.nii.gz'];
-        end
-    end
-
-
+    % Check the M0 files 
+    
+	for iReversedPE = 1:2 % Check if AP/PA coding is given for M0
+		% Load the M0 JSON if existing
+		if iReversedPE == 1
+			pathM0In = fullfile(inSessionPath,'M0');
+		else
+			pathM0In = fullfile(inSessionPath,'M0PERev');
+		end
+		
+		% Load the M0 JSON
+		if xASL_exist([pathM0In '.json'])
+			jsonM0 = spm_jsonread([pathM0In '.json']);
+		else
+			jsonM0 = struct;
+		end
+		
+		if iReversedPE == 1
+			if xASL_exist(fullfile(inSessionPath,'M0PERev.nii'))
+				strPEDirection = '_dir-ap';
+				
+				jsonM0.PhaseEncodingDirection = 'j-';
+				jsonLocal.PhaseEncodingDirection = 'j-';
+			else
+				strPEDirection = '';
+			end
+			if bJsonLocalM0isFile
+				jsonLocal.M0 = [jsonLocal.M0 strPEDirection '_' bidsPar.strM0scan '.nii.gz'];
+			end
+			% Define the path to the respective ASL
+			jsonM0.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
+			pathM0Out = fullfile(outSessionPath,bidsPar.strPerfusion,['sub-' subjectSessionRunLabel strPEDirection '_' bidsPar.strM0scan]);
+		else
+			jsonM0.PhaseEncodingDirection = 'j';
+			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,['sub-' subjectSessionRunLabel '_dir-ap' '_' bidsPar.strM0scan '.nii.gz']);
+			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,['sub-' subjectSessionRunLabel '_dir-pa' '_' bidsPar.strM0scan]);
+		end
+		
+		% Create the directory for the reversed PE if needed
+		if iReversedPE == 2 && xASL_exist([pathM0In '.nii']) && ~exist(fullfile(outSessionPath,bidsPar.strFmap),'dir')
+			mkdir(fullfile(outSessionPath,bidsPar.strFmap));
+		end
+		
+		% If M0, then copy M0 and add ASL path to the IntendedFor
+		if xASL_exist([pathM0In '.nii'])
+			jsonM0 = xASL_bids_BIDSifyM0(jsonM0, jsonLocal, studyPar, pathM0In, pathM0Out, headerASL);
+			
+			% Save JSON to new dir
+			jsonM0 = xASL_bids_VendorFieldCheck(jsonM0);
+			jsonM0 = xASL_bids_JsonCheck(jsonM0,'M0');
+			spm_jsonwrite([pathM0Out '.json'],jsonM0);
+		end
+	end
 
 
 
@@ -144,7 +137,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     % Export report file for ASL dependencies
     if exist('bidsReport','var')
         if ~isempty(fieldnames(bidsReport))
-            spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot),'derivatives','ExploreASL', ['bids_report_' subjectSessionLabel '.json']), bidsReport);
+            spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot),'derivatives','ExploreASL', ['bids_report_' subjectSessionRunLabel '.json']), bidsReport);
         end
     end
 
