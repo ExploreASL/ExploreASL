@@ -39,16 +39,16 @@ function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
     
     %% 2. Process the anat & perfusion files
     % Subsequent code is based on having data per ASL scan, so we "fool" it
-    % by renaming all sessions into ASL_1 ASL_2 ASL_n and keeping the
-    % unique sessions only. Missing scans will issue a warning, not an error.
-    listSessions = xASL_adm_GetFileList(fullfile(imPar.TempRoot,nameSubjectSession),'^(ASL|T1w|FLAIR).+$',false,[],true);
-    listSessions = cellfun(@(y) y(end), listSessions, 'UniformOutput', false);
-    listSessions = unique(listSessions);
-    listSessions = cellfun(@(y) ['ASL_' y], listSessions, 'UniformOutput', false);
+    % by renaming all runss into ASL_1 ASL_2 ASL_n and keeping the
+    % unique runss only. Missing scans will issue a warning, not an error.
+    listRuns = xASL_adm_GetFileList(fullfile(imPar.TempRoot,nameSubjectSession),'^(ASL|T1w|FLAIR).+$',false,[],true);
+    listRuns = cellfun(@(y) y(end), listRuns, 'UniformOutput', false);
+    listRuns = unique(listRuns);
+    listRuns = cellfun(@(y) ['ASL_' y], listRuns, 'UniformOutput', false);
     
     % Go through all (ASL) sessions
-    for iSession = 1:length(listSessions)
-        x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listSessions, nameSubjectSession, bidsLabel, iSession);
+    for iRun = 1:length(listRuns)
+        x = xASL_imp_NII2BIDS_Session(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
     end
     
 end
