@@ -27,6 +27,7 @@ function [imPar, globalCounts, x, summary_line, destdir, scanpath, scan_name, dc
 % Copyright 2015-2021 ExploreASL
 
     %% Start the conversion if this scan should not be skipped
+    first_match = [];
     if bSkipThisOne
         summary_line = sprintf(',"skipped",,,,,,,,');
         globalCounts.skipped_scans(iSubject, iVisit, iSession, iScan) = 1;

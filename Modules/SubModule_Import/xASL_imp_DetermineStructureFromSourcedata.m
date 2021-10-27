@@ -239,24 +239,28 @@ end
 function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
 
 
-    %% SCAN NAMES
+    % Visits (= sessions in BIDS)
+    x = xASL_imp_AddVisitNames(x,sFieldName);
     
-    % Add runs fields
-    if ~isfield(x.overview.(sFieldName).(vFieldName),'runs')
-        x.overview.(sFieldName).(vFieldName).runs = {};
-    end
     
-    % Get number of session IDs, number of sessions, scan IDs, number of scans
-    x.overview.(sFieldName).(vFieldName).sessionIDs  = sort(unique(x.modules.import.listsIDs.vSessionIDs(vVisitIDs)));
+    % Sessions (= run in BIDS)
+    x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs);
     
-    % Get number of sessions (=runs) based on sessionIDs and tokenSessionAliases, add inidividual runs
+    
+    % Scans (= actual DICOM data)
+    x = xASL_imp_AddScanNames(x,sFieldName,vFieldName,vVisitIDs);
+    
+
+    % Sessions (= runs in BIDS)
     x = xASL_imp_AddSessions(x,sFieldName,vFieldName);
-    
-    x.overview.(sFieldName).(vFieldName).scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs(vVisitIDs))));
-    x.overview.(sFieldName).(vFieldName).nScans = length(x.overview.(sFieldName).(vFieldName).scanIDs);
-    
-    
-    %% VISIT NAMES (== session in BIDS)
+
+
+end
+
+
+%% Add visit names
+function x = xASL_imp_AddVisitNames(x,sFieldName)
+
     if isempty(x.modules.import.imPar.visitNames)
         if isempty(x.overview.(sFieldName).visitIDs)
             x.modules.import.imPar.visitNames = cell(x.overview.(sFieldName).nVisits,1);
@@ -267,10 +271,18 @@ function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
             x.modules.import.imPar.visitNames = x.overview.(sFieldName).visitIDs;
         end
     end
-    
-    %% SESSION NAMES (== run in BIDS)
-    % optionally we can have human readble session names; by default they are the same as the original tokens in the path
+
+end
+
+
+%% Add session names
+function x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs)
+
+    % Get number of session IDs, number of sessions, scan IDs, number of scans
+    x.overview.(sFieldName).(vFieldName).sessionIDs  = sort(unique(x.modules.import.listsIDs.vSessionIDs(vVisitIDs)));
+
     if isempty(x.modules.import.imPar.sessionNames)
+        % We can have human readble session names, but by default they are the same as the original tokens in the path
         if isempty(x.overview.(sFieldName).(vFieldName).sessionIDs)
             x.modules.import.imPar.sessionNames = cell(x.overview.(sFieldName).(vFieldName).nSessions,1);
             for kk=1:x.overview.(sFieldName).(vFieldName).nSessions
@@ -280,19 +292,30 @@ function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
             x.modules.import.imPar.sessionNames = x.overview.(sFieldName).(vFieldName).sessionIDs;
         end
     end
-    
-    
-    %% SCAN NAMES
-    x.overview.(sFieldName).(vFieldName).scanNames = x.overview.(sFieldName).(vFieldName).scanIDs;
-
 
 end
 
 
-%% Get number of sessions of this visit
+%% Add scan names
+function x = xASL_imp_AddScanNames(x,sFieldName,vFieldName,vVisitIDs)
+
+    % Add scan IDs and number of scans
+    x.overview.(sFieldName).(vFieldName).scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs(vVisitIDs))));
+    x.overview.(sFieldName).(vFieldName).nScans = length(x.overview.(sFieldName).(vFieldName).scanIDs);
+    x.overview.(sFieldName).(vFieldName).scanNames = x.overview.(sFieldName).(vFieldName).scanIDs;
+    x.overview.(sFieldName).(vFieldName).scanSessionTable = horzcat(x.modules.import.listsIDs.vSessionIDs,lower(x.modules.import.listsIDs.vScanIDs));
+
+end
+
+
+%% Add sessions
 function x = xASL_imp_AddSessions(x,sFieldName,vFieldName)
 
-
+    % Add runs fields
+    if ~isfield(x.overview.(sFieldName).(vFieldName),'runs')
+        x.overview.(sFieldName).(vFieldName).runs = {};
+    end
+    
     % If there are no tokenSessionAliases, we just say that each existing
     % and matched sessionID is a separate run...
     if ~isfield(x.modules.import.imPar,'tokenSessionAliases')
@@ -350,7 +373,8 @@ function x = xASL_imp_AddSessions(x,sFieldName,vFieldName)
         
         % Assign x field
         x.overview.(sFieldName).(vFieldName).nSessions = numOfSessions;
-    end   
+    end
+    
 
 end
 
@@ -382,6 +406,33 @@ function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRe
     else
         x.overview.(sFieldName).(vFieldName).(vSessionName).ids = {thisSession};
     end
+    
+    % Get the scans of this run
+    x = xASL_imp_GetScansOfRun(x,sFieldName,vFieldName,vSessionName);
+
+end
+
+
+% Determine the scans of this run
+function x = xASL_imp_GetScansOfRun(x,sFieldName,vFieldName,vSessionName)
+
+    % Iterate over scan IDs
+    x.overview.(sFieldName).(vFieldName).(vSessionName).scanIDs = {};
+    scanSessionTable = x.overview.(sFieldName).(vFieldName).scanSessionTable;
+    for iID=1:size(scanSessionTable,1)
+        thisToken = scanSessionTable{iID,1};
+        thisScanID = scanSessionTable{iID,2};
+        % Iterate over the sessions of this run
+        sessions = x.overview.(sFieldName).(vFieldName).(vSessionName).ids;
+        for iSession=1:numel(sessions)
+            if strcmp(sessions{iSession},thisToken)
+                x.overview.(sFieldName).(vFieldName).(vSessionName).scanIDs = ...
+                    vertcat(x.overview.(sFieldName).(vFieldName).(vSessionName).scanIDs,thisScanID);
+                continue
+            end
+        end
+    end
+    
 
 end
 
