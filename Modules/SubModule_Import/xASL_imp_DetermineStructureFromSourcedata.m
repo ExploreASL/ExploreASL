@@ -288,7 +288,18 @@ function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
     else
         % Iterate over tokenSessionAliases (x.modules.import.imPar.tokenSessionAliases)
         % Are they visit independet though?!? We definitely need to put in more work here...
-        fprintf(2,'Implement this part...');
+        for iSession=1:size(x.modules.import.imPar.tokenSessionAliases,1)
+            if isempty(x.modules.import.imPar.tokenSessionAliases{iSession,2})
+                fprintf(2,'Empty session token...\n');
+                thisSession = strrep(x.modules.import.imPar.tokenSessionAliases{iSession,1},'^','');
+                thisSession = strrep(thisSession,'$','');
+                thisSession = matlab.lang.makeValidName(thisSession);
+            else
+                thisSession = x.modules.import.imPar.tokenSessionAliases{iSession,2};
+                thisSession = matlab.lang.makeValidName(thisSession);
+            end
+            x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession);
+        end
     end
 
 
