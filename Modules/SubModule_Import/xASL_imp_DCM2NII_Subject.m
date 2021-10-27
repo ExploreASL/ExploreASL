@@ -58,7 +58,7 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
         end
         
         % Determine the subject directory
-        x.modules.import.SubjDir = xASL_imp_GetSubjDir(x,imPar,subjectID);
+        x.modules.import.SubjDir = xASL_imp_GetSubjDir(x,imPar,subjectID, iVisit);
 
         if imPar.SkipSubjectIfExists && exist(x.modules.import.SubjDir, 'dir')
             % we found the subject dir (i.e. SubjectVisit), so we skip it
@@ -137,7 +137,7 @@ end
 
 
 %% Get subject directory
-function SubjDir = xASL_imp_GetSubjDir(x,imPar,subjectID)
+function SubjDir = xASL_imp_GetSubjDir(x, imPar, subjectID, iVisit)
 
     % Only pad VisitID _1 _2 _3 etc if there are visits specified. Multiple visits is defined by the tokenVisitAliases.
     % If this is non-existing, it is set to 1, and if it does exist, it will put the _1 _2 _3 etc in the folder.
