@@ -34,22 +34,14 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
 
     %% 4.1 Initialize variables
     
-    % Extract scan fields
-    subjectID = scanFields.subjectID;
-    visitID = scanFields.visitID;
-    sessionID = scanFields.runID;
-    iSubject = scanFields.iSubject;
-    iVisit = scanFields.iVisit;
-    iSession = scanFields.iSession;
-    iScan = scanFields.iScan;
-    
     % Get other basic fields
-    scanID = thisRun.scanIDs{iScan};
+    scanID = thisRun.scanIDs{scanFields.iScan};
     summary_line = [];
-    thisSubject.summary_lines{iSubject,iVisit,iSession,iScan} = 'n/a';
-
-    if ~imPar.bVerbose % if not verbose, track % progress
-        CounterN = (iSession-1)*thisVisit.nScans+iScan;
+    thisSubject.summary_lines{scanFields.iSubject,scanFields.iVisit,scanFields.iSession,scanFields.iScan} = 'n/a';
+    
+    % If not verbose, track percentage progress
+    if ~imPar.bVerbose
+        CounterN = (scanFields.iSession-1)*thisVisit.nScans+scanFields.iScan;
         CounterT = thisVisit.nSessions*thisVisit.nScans;
         xASL_TrackProgress(CounterN, CounterT);
     end
@@ -58,25 +50,37 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     if size(imPar.tokenScanAliases,2)==2
         iAlias = find(~cellfun(@isempty,regexpi(scanID,imPar.tokenScanAliases(:,1),'once')));
         if ~isempty(iAlias)
-            thisVisit.scanNames{iScan} = imPar.tokenScanAliases{iAlias,2};
+            thisVisit.scanNames{scanFields.iScan} = imPar.tokenScanAliases{iAlias,2};
         else
             % keep the original name
             fprintf('No matching scan aliases found, keeping the original name...\n');
             WarningMessage = ['ExploreASL_Import: Unknown scan ID ' scanID ' found, don"t know what this is'];
-            scan_name = thisVisit.scanNames{iScan};
-            branch = matches{1}; % Fallback (possibly not correct)
+            scan_name = thisVisit.scanNames{scanFields.iScan};
+            % Fallback to first match (could be incorrect)
+            branch = matches{1};
             scanpath = fullfile(imPar.RawRoot,branch);
-            destdir = fullfile(x.modules.import.SubjDir, [thisVisit.scanNames{iScan} '_' num2str(iSession)]); % Fallback (possibly not correct)
-            dcm2niiCatchedErrors = xASL_imp_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
+            % Determine destination directory
+            destdir = fullfile(x.modules.import.SubjDir, [thisVisit.scanNames{scanFields.iScan} '_' num2str(scanFields.iSession)]);
+            % Add fields to catched errors
+            dcm2niiCatchedErrors = xASL_imp_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, ...
+                mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
         end
     end
-    scan_name = thisVisit.scanNames{iScan};
+    scan_name = thisVisit.scanNames{scanFields.iScan};
 
     %% 4.3 Minimalistic feedback of where we are
-    if imPar.bVerbose; fprintf('>>> Subject=%s, visit=%s, session=%s, scan=%s\n',subjectID, visitID, num2str(iSession), scan_name); end
+    if imPar.bVerbose
+        if isempty(scanFields.name)
+            printSession = 'empty';
+        else
+            printSession = scanFields.name;
+        end
+        fprintf('Subject = %s, visit = %s, session = %s, scan = %s\n',scanFields.subjectID, scanFields.visitID, printSession, scan_name);
+    end
 
-    bOneScanIsEnough = false; % default
-    bPutInSessionFolder = true; % by default put in session folder
+    % Defaults
+    bOneScanIsEnough = false;
+    bPutInSessionFolder = true; 
     switch scan_name
         case {'ASL4D', 'M0', 'ASL4D_RevPE', 'func_bold'}
             bPutInSessionFolder = true;
@@ -89,19 +93,28 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     end
 
     %% 4.4 Now pick the matching one from the folder list
-    iMatch = find(strcmp( x.modules.import.listsIDs.vSubjectIDs,subjectID) & ...
-        strcmp( x.modules.import.listsIDs.vVisitIDs, xASL_adm_CorrectName(visitID,2,'_')) & ...
-        strcmp( x.modules.import.listsIDs.vSessionIDs,sessionID) & ...
-        strcmpi( x.modules.import.listsIDs.vScanIDs,scanID) ); % only get the matching session
+    
+    % Only get the matching session
+    iMatch = find(strcmp(x.modules.import.listsIDs.vSubjectIDs,scanFields.subjectID) & ...
+        strcmp(x.modules.import.listsIDs.vVisitIDs, xASL_adm_CorrectName(scanFields.visitID,2,'_')) & ...
+        strcmp(x.modules.import.listsIDs.vSessionIDs,scanFields.runID) & ...
+        strcmpi(x.modules.import.listsIDs.vScanIDs,scanID));
+    
+    % Only report as missing if we need a scan for each session (i.e. ASL)
     if isempty(iMatch)
-        % only report as missing if we need a scan for each session (i.e. ASL)
-        if sum(thisSubject.globalCounts.converted_scans(iSubject,iVisit,:,iScan))==0
-            WarningMessage = ['Missing scan: ' [subjectID imPar.visitNames{iVisit}] ', ' num2str(iSession) ', ' scan_name];
-            if imPar.bVerbose; warning(WarningMessage); end
-            thisSubject.globalCounts.missing_scans(iSubject, iVisit, iSession, iScan) = 1;
+        if sum(thisSubject.globalCounts.converted_scans(scanFields.iSubject,scanFields.iVisit,:,scanFields.iScan))==0
+            % Define warning message
+            WarningMessage = ['Missing scan: ' [scanFields.subjectID imPar.visitNames{scanFields.iVisit}] ', ' ...
+                num2str(scanFields.iSession) ', ' scan_name];
+            % Print warning
+            if imPar.bVerbose
+                warning(WarningMessage);
+            end
+            % Add missing scans to global counts struct
+            thisSubject.globalCounts.missing_scans(scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan) = 1;
         end
-
-        thisSubject.summary_lines{iSubject, iVisit, iSession, iScan} = summary_line;
+        % Add information to summary lines and stop import of this scan here
+        thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan} = summary_line;
         PrintDICOMFields = [];
         return
     end
@@ -111,12 +124,13 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     branch = matches{iMatch};
     scanpath = fullfile(imPar.RawRoot,branch);
 
-    if ~isempty(strfind(thisVisit.scanNames{iScan}, 'ASL4D')) || ~isempty(strfind(thisVisit.scanNames{iScan}, 'M0'))
-        session_name = ['ASL_' num2str(iSession)];
-    elseif ~isempty(strfind(thisVisit.scanNames{iScan}, 'DSC4D'))
-        session_name = ['DSC_' num2str(iSession)];
+    if ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'ASL4D')) || ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'M0'))
+        session_name = scanFields.name;
+    elseif ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'DSC4D'))
+        session_name = ['DSC_' num2str(scanFields.iSession)];
     else
-        session_name = [thisVisit.scanNames{iScan} '_' num2str(iSession)]; % Allow multiple ScanTypes for sessions
+        % Allow multiple ScanTypes for sessions
+        session_name = [thisVisit.scanNames{scanFields.iScan} '_' num2str(scanFields.iSession)]; 
     end
 
     if bPutInSessionFolder
@@ -124,12 +138,14 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     else % put in subject folder instead of session folder
         destdir = x.modules.import.SubjDir;
     end
-
-    if bOneScanIsEnough && sum(thisSubject.globalCounts.converted_scans(iSubject,iVisit,:,iScan))~=0
-        % one scan is enough, so skip this one if there was already a scan converted of this type (i.e. T1)
-        if imPar.bVerbose; fprintf('Skipping scan: %s, %s, %s\n',[subjectID imPar.visitNames{iVisit}],session_name,scan_name); end
+    
+    % One scan is enough, so skip this one if there was already a scan converted of this type (i.e. T1)
+    if bOneScanIsEnough && sum(thisSubject.globalCounts.converted_scans(scanFields.iSubject,scanFields.iVisit,:,scanFields.iScan))~=0
+        if imPar.bVerbose
+            fprintf('Skipping scan: %s, %s, %s\n',[scanFields.subjectID imPar.visitNames{scanFields.iVisit}],session_name,scan_name);
+        end
         bSkipThisOne = true;
-        destdir = []; % just in case
+        destdir = [];
     end
 
     %% 4.6 Start the conversion if this scan should not be skipped
@@ -146,7 +162,8 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
             newFile = xASL_adm_GetFileList(Fpath,['^' Ffile '.json$'],'FPList');
             jsonFiles{iFile} = newFile{1};
         end
-        [parms, x.modules.import.pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, jsonFiles, first_match, x.modules.import.settings.bUseDCMTK, x.modules.import.pathDcmDict);
+        [parms, x.modules.import.pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(...
+            imPar, jsonFiles, first_match, x.modules.import.settings.bUseDCMTK, x.modules.import.pathDcmDict);
     end
 
     %% 4.8 Sort ASL Volumes
@@ -154,7 +171,7 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     % In case of GE or PARREC/a single NII ASL file loaded from PAR/REC, we need to 
     % shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order.
     [x,nii_files, summary_line, thisSubject.globalCounts] = ...
-        xASL_imp_DCM2NII_Subject_SortASLVolumes(x, thisSubject.globalCounts, scanpath, scan_name, nii_files, iSubject, iSession, iScan);
+        xASL_imp_DCM2NII_Subject_SortASLVolumes(x, thisSubject.globalCounts, scanpath, scan_name, nii_files, scanFields.iSubject, scanFields.iSession, scanFields.iScan);
 
     % Correct nifti rescale slope if parms.RescaleSlopeOriginal =~1 but nii.dat.scl_slope==1 (this can happen in case
     % of hidden scale slopes in private Philips header, that is dealt with by xASL_bids_Dicom2JSON but not by dcm2niiX.
@@ -171,7 +188,7 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     end
 
     %% 4.10 Store the summary info so it can be sorted and printed below
-    thisSubject.summary_lines{iSubject, iVisit, iSession, iScan} = summary_line;
+    thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan} = summary_line;
 
     %% 4.11 Check DCM2NIIX output
     xASL_imp_Check_DCM2NII_Output(nii_files,scanID);

@@ -77,6 +77,14 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
         fprintf('Importing subject = %s:   \n', [subjectID imPar.visitNames{iVisit}]);
 
         %% 3. Loop over all sessions
+        
+        % Catch empty sessions (initial T1w e.g.)
+        emptySessions = sum(cellfun(@isempty,thisVisit.runs))>0;
+        indexEmptySession = -1; % Fallback
+        if emptySessions
+            indexEmptySession = find(cellfun(@isempty,thisVisit.runs));
+        end
+        
         for iSession=1:thisVisit.nSessions
             
             % Get current run
@@ -86,9 +94,14 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
             % Get current run name
             imPar.sessionNames{iSession} = thisRun.name;
             
+            % Find empty sessions
+            scanFields.emptySession = false;
+            if iSession==indexEmptySession
+                scanFields.emptySession = true;
+            end
+            
             % Quick & dirty fix for now...
             if ~(numel(thisRun.scanIDs)==numel(thisRun.ids))
-                fprintf(2,'Dirty fix for now...\n');
                 firstElement = {thisRun.ids{1}};
                 thisRun.ids = cell(1,numel(thisRun.scanIDs));
                 thisRun.ids(:) = firstElement;
@@ -105,6 +118,7 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
                 scanFields.iVisit = iVisit;
                 scanFields.iSession = iSession;
                 scanFields.iScan = iScan;
+                scanFields.name = thisRun.name;
                 % Convert scan
                 [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = ...
                     xASL_imp_DCM2NII_ConvertScan(x,imPar,matches,thisSubject,dcm2niiCatchedErrors,thisVisit,thisRun,scanFields);

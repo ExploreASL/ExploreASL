@@ -370,7 +370,6 @@ function x = xASL_imp_AddSessions(x,sFieldName,vFieldName)
             end
         end
         
-        
         % Assign x field
         x.overview.(sFieldName).(vFieldName).nSessions = numOfSessions;
     end
@@ -388,16 +387,10 @@ function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRe
         thisRegExp = '';
     end
 
-    % Warn for empty session tokens
-    if isempty(thisSession)
-        fprintf(2,'Setting empty session token to undefined...\n');
-        thisSession = 'undefined';
-    end
-
     % Add field to overview
     vSessionName = ['run_' num2str(iSession,'%03.f')];
     x.overview.(sFieldName).(vFieldName).(vSessionName).name = thisSession;
-    x.overview.(sFieldName).(vFieldName).runs = vertcat(x.overview.(sFieldName).(vFieldName).runs,thisSession);
+    x.overview.(sFieldName).(vFieldName).runs = vertcat(x.overview.(sFieldName).(vFieldName).runs,{thisSession});
     x.overview.(sFieldName).(vFieldName).(vSessionName).regexp = thisRegExp;
     
     % Add list of IDs
