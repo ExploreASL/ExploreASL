@@ -165,6 +165,16 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
     else
         save(savePath,'flavors','testConfig','logContent');
     end
+    
+    % Clear console window
+    clc
+    
+    % Print tables
+    fprintf('[\bCOMPARISON TABLE:]\b\n');
+    disp(flavors.comparisonTable);
+    fprintf('[\bLOGGING TABLE:]\b\n');
+    disp(flavors.loggingTable);
+    fprintf('\n');
 
 end
 
