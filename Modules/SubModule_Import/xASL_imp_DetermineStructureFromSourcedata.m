@@ -269,7 +269,7 @@ function x = xASL_imp_AddVisitNames(x,sFieldName)
             end
         else
             for iVisit=1:numel(x.overview.(sFieldName).visitIDs)
-                x.modules.import.imPar.visitNames = sprintf('ASL_%g', iVisit);
+                x.modules.import.imPar.visitNames{iVisit} = sprintf('ASL_%g', iVisit);
             end
         end
     end
