@@ -264,11 +264,13 @@ function x = xASL_imp_AddVisitNames(x,sFieldName)
     if isempty(x.modules.import.imPar.visitNames)
         if isempty(x.overview.(sFieldName).visitIDs)
             x.modules.import.imPar.visitNames = cell(x.overview.(sFieldName).nVisits,1);
-            for kk=1:x.overview.(sFieldName).nVisits
-                x.modules.import.imPar.visitNames{kk} = sprintf('ASL_%g', kk);
+            for iVisit=1:x.overview.(sFieldName).nVisits
+                x.modules.import.imPar.visitNames{iVisit} = sprintf('ASL_%g', iVisit);
             end
         else
-            x.modules.import.imPar.visitNames = x.overview.(sFieldName).visitIDs;
+            for iVisit=1:numel(x.overview.(sFieldName).visitIDs)
+                x.modules.import.imPar.visitNames = sprintf('ASL_%g', iVisit);
+            end
         end
     end
 
