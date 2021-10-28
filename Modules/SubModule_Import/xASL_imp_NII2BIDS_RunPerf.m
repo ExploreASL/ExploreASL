@@ -120,7 +120,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
             aslLabel = 'ASL4D';
             bidsm0scanLabelPA = [subjectSessionLabel strPEDirectionPA runLabel '_' bidsPar.strM0scan];
             bidsm0scanLabelAP = [subjectSessionLabel strPEDirectionAP runLabel '_' bidsPar.strM0scan];
-            jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,bidsm0scanLabelAP);
+            jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,[bidsm0scanLabelAP '.nii.gz']);
             pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,bidsm0scanLabelPA);
 		end
 		
