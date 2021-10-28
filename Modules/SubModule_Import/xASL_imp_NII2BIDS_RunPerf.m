@@ -35,13 +35,15 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     %% 1. Define the pathnames
 	if length(listRuns)>1
 		aslLabel = 'ASL4D';
-		subjectSessionRunLabel = ['sub-' subjectSessionLabel '_run-' num2str(iRun)];
+		subjectSessionLabel = ['sub-' subjectSessionLabel];
+        runLabel = ['_run-' num2str(iRun)];
 	else
 		aslLabel = 'ASL4D';
-		subjectSessionRunLabel = ['sub-' subjectSessionLabel];
+		subjectSessionLabel = ['sub-' subjectSessionLabel];
+        runLabel = '';
 	end
-	aslOutLabel = fullfile(outSessionPath,bidsPar.strPerfusion, subjectSessionRunLabel);
-	aslOutLabelRelative = fullfile(bidsPar.strPerfusion, subjectSessionRunLabel);
+	aslOutLabel = fullfile(outSessionPath,bidsPar.strPerfusion, [subjectSessionLabel runLabel]);
+	aslOutLabelRelative = fullfile(bidsPar.strPerfusion, [subjectSessionLabel runLabel]);
     
     % Current scan name
     [~, scanName] = xASL_fileparts([aslOutLabel '_asl.json']);
@@ -69,7 +71,8 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 
     %% 4. Prepare the link to M0 in ASL.json	
     % Define the M0 type	
-    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(studyPar, bidsPar, jsonLocal, fullfile(inSessionPath,'M0.nii'), fullfile(bidsPar.strPerfusion,subjectSessionRunLabel));	
+    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(...
+        studyPar, bidsPar, jsonLocal, fullfile(inSessionPath,'M0.nii'), fullfile(bidsPar.strPerfusion,[subjectSessionLabel runLabel]));	
 
     %% 5. BIDSify M0	
     % Check the M0 files 
@@ -106,30 +109,19 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 			jsonM0.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
             
             % Determine output name
-            if length(listRuns)>1
-                aslLabel = 'ASL4D';
-                bidsm0scanLabel = ['sub-' subjectSessionLabel strPEDirection '_run-' num2str(iRun) '_' bidsPar.strM0scan];
-            else
-                aslLabel = 'ASL4D';
-                bidsm0scanLabel = ['sub-' subjectSessionLabel strPEDirection '_' bidsPar.strM0scan];
-            end
+            aslLabel = 'ASL4D';
+            bidsm0scanLabel = [subjectSessionLabel strPEDirection runLabel '_' bidsPar.strM0scan];
 			pathM0Out = fullfile(outSessionPath,bidsPar.strPerfusion,bidsm0scanLabel);
 		else
 			jsonM0.PhaseEncodingDirection = 'j';
             strPEDirectionPA = '_dir-pa';
             strPEDirectionAP = '_dir-ap';
             % Determine output name
-            if length(listRuns)>1
-                aslLabel = 'ASL4D';
-                bidsm0scanLabelPA = ['sub-' subjectSessionLabel strPEDirectionPA '_run-' num2str(iRun) '_' bidsPar.strM0scan];
-                bidsm0scanLabelAP = ['sub-' subjectSessionLabel strPEDirectionAP '_run-' num2str(iRun) '_' bidsPar.strM0scan];
-            else
-                aslLabel = 'ASL4D';
-                bidsm0scanLabelPA = ['sub-' subjectSessionLabel strPEDirectionPA '_' bidsPar.strM0scan];
-                bidsm0scanLabelAP = ['sub-' subjectSessionLabel strPEDirectionAP '_' bidsPar.strM0scan];
-            end
-			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,bidsm0scanLabelAP);
-			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,bidsm0scanLabelPA);
+            aslLabel = 'ASL4D';
+            bidsm0scanLabelPA = [subjectSessionLabel strPEDirectionPA runLabel '_' bidsPar.strM0scan];
+            bidsm0scanLabelAP = [subjectSessionLabel strPEDirectionAP runLabel '_' bidsPar.strM0scan];
+            jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,bidsm0scanLabelAP);
+            pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,bidsm0scanLabelPA);
 		end
 		
 		% Create the directory for the reversed PE if needed
@@ -159,7 +151,8 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     % Export report file for ASL dependencies
     if exist('bidsReport','var')
         if ~isempty(fieldnames(bidsReport))
-            spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot),'derivatives','ExploreASL', ['bids_report_' subjectSessionRunLabel '.json']), bidsReport);
+            spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot),'derivatives','ExploreASL', ...
+                ['bids_report_' subjectSessionLabel runLabel '.json']), bidsReport);
         end
     end
 
