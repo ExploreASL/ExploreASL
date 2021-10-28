@@ -91,7 +91,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		
 		if iReversedPE == 1
 			if xASL_exist(fullfile(inSessionPath,'M0PERev.nii'))
-				strPEDirection = '_dir-ap';
+				strPEDirection = 'dirap';
 				
 				jsonM0.PhaseEncodingDirection = 'j-';
 				jsonLocal.PhaseEncodingDirection = 'j-';
@@ -106,8 +106,8 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 			pathM0Out = fullfile(outSessionPath,bidsPar.strPerfusion,[subjectSessionRunLabel strPEDirection '_' bidsPar.strM0scan]);
 		else
 			jsonM0.PhaseEncodingDirection = 'j';
-			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,[subjectSessionRunLabel '_dir-ap' '_' bidsPar.strM0scan '.nii.gz']);
-			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,[subjectSessionRunLabel '_dir-pa' '_' bidsPar.strM0scan]);
+			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,[subjectSessionRunLabel 'dirap' '_' bidsPar.strM0scan '.nii.gz']);
+			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,[subjectSessionRunLabel 'dirpa' '_' bidsPar.strM0scan]);
 		end
 		
 		% Create the directory for the reversed PE if needed
