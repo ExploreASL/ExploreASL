@@ -28,43 +28,44 @@ filenameTSV = [pathOutPrefix '_' bidsPar.strAslContext '.tsv'];
 if ~exist(pathTSV,'dir')
 	mkdir(pathTSV);
 end
+
+% Write volume types (asl context) to file
 fContext = fopen(filenameTSV,'w+');
 fwrite(fContext,sprintf('volume_type\n'));
 fwrite(fContext,jsonIn.ASLContext);
 fclose(fContext);
 
+% Remove context field
 jsonOut = rmfield(jsonIn,'ASLContext');
+
+% Validate ASL NIFTI output path
+[~,outputFileASL,outputExtensionASL] = xASL_fileparts([pathOutPrefix '_asl.nii.gz']);
+outputFilenameASL = [outputFileASL outputExtensionASL];
+xASL_bids_ValidateNiftiName(outputFilenameASL,'asl');
 	
 % Save the JSON and NII to final location for ASL
 headerASL = xASL_io_ReadNifti(pathIn);
 if jsonOut.scaleFactor || length(headerASL.dat.dim) < 4 || headerASL.dat.dim(4) == 1
-	imNii = xASL_io_Nifti2Im(pathIn);
-		
-	if jsonOut.scaleFactor
-		imNii = imNii .* jsonOut.scaleFactor;
-		jsonOut = rmfield(jsonOut,'scaleFactor');
+    imNii = xASL_io_Nifti2Im(pathIn);
+    
+    if jsonOut.scaleFactor
+        imNii = imNii .* jsonOut.scaleFactor;
+        jsonOut = rmfield(jsonOut,'scaleFactor');
     end
     
-    % Validate ASL NIFTI output path
-    [~,outputFileASL,outputExtensionASL] = xASL_fileparts([pathOutPrefix '_asl.nii.gz']);
-    outputFilenameASL = [outputFileASL outputExtensionASL];
-    xASL_bids_ValidateNiftiName(outputFilenameASL,'asl');
-		
-	% Scaling changed, so we have to save again OR
-	% The fourth dimension is 1, so we have to write the file again, to make sure the
-	xASL_io_SaveNifti(pathIn,[pathOutPrefix '_asl.nii.gz'],imNii,[],1,[]);
-	% Delete original Nifti if the in and out file have different paths
-	if ~strcmp(pathIn,[pathOutPrefix '_asl.nii.gz']) && ~strcmp(pathIn,[pathOutPrefix '_asl.nii'])
-		xASL_delete(pathIn);
-	end
-else
-    % Validate ASL NIFTI output path
-    [~,outputFileASL,outputExtensionASL] = xASL_fileparts([pathOutPrefix '_asl.nii.gz']);
-    outputFilenameASL = [outputFileASL outputExtensionASL];
-    xASL_bids_ValidateNiftiName(outputFilenameASL,'asl');
+    % Scaling changed, so we have to save again OR
+    % The fourth dimension is 1, so we have to write the file again, to make sure the
+    xASL_io_SaveNifti(pathIn,[pathOutPrefix '_asl.nii.gz'],imNii,[],1,[]);
     
+    % Delete original Nifti if the in and out file have different paths
+    if ~strcmp(pathIn,[pathOutPrefix '_asl.nii.gz']) && ~strcmp(pathIn,[pathOutPrefix '_asl.nii'])
+        xASL_delete(pathIn);
+    end
+else
 	% Move the ASL
 	xASL_Move(pathIn,[pathOutPrefix '_asl.nii.gz'],1);
 end
 
 end
+
+

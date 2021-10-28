@@ -81,6 +81,12 @@ end
 jsonOut.RepetitionTimePreparation = jsonOut.RepetitionTime;
 
 %% 3. Save or move the NII to the correct location
+
+% Validate the M0 output filename
+[~,outputFileM0,outputExtensionM0] = xASL_fileparts([pathM0Out '.nii.gz']);
+outputFilenameM0 = [outputFileM0 outputExtensionM0];
+xASL_bids_ValidateNiftiName(outputFilenameM0,'m0scan');
+
 % The NIfTI needs to be read and saved again
 if jsonOut.scaleFactor || length(headerM0.dat.dim) < 4 || headerM0.dat.dim(4) == 1
     % Read NIfTI image
@@ -91,11 +97,6 @@ if jsonOut.scaleFactor || length(headerM0.dat.dim) < 4 || headerM0.dat.dim(4) ==
         imM0 = imM0 .* jsonOut.scaleFactor;
     end
     
-    % Validate the M0 output filename
-    [~,outputFileM0,outputExtensionM0] = xASL_fileparts([pathM0Out '.nii.gz']);
-    outputFilenameM0 = [outputFileM0 outputExtensionM0];
-    xASL_bids_ValidateNiftiName(outputFilenameM0,'m0scan');
-    
     % Save the NIfTI to a new location
     xASL_io_SaveNifti([pathM0In '.nii'],[pathM0Out '.nii.gz'],imM0,[],1,[]);
     
@@ -104,11 +105,6 @@ if jsonOut.scaleFactor || length(headerM0.dat.dim) < 4 || headerM0.dat.dim(4) ==
         xASL_delete([pathM0In '.nii']);
     end
 else
-    % Validate the M0 output filename
-    [~,outputFileM0,outputExtensionM0] = xASL_fileparts([pathM0Out '.nii.gz']);
-    outputFilenameM0 = [outputFileM0 outputExtensionM0];
-    xASL_bids_ValidateNiftiName(outputFilenameM0,'m0scan');
-    
     % Move the M0
     xASL_Move([pathM0In '.nii'], [pathM0Out '.nii.gz'],1);
 end
