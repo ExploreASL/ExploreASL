@@ -91,7 +91,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		
 		if iReversedPE == 1
 			if xASL_exist(fullfile(inSessionPath,'M0PERev.nii'))
-				strPEDirection = 'dirap';
+				strPEDirection = '_dir-ap';
 				
 				jsonM0.PhaseEncodingDirection = 'j-';
 				jsonLocal.PhaseEncodingDirection = 'j-';
@@ -100,14 +100,36 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 			end
 			if bJsonLocalM0isFile
 				jsonLocal.M0 = [jsonLocal.M0 strPEDirection '_' bidsPar.strM0scan '.nii.gz'];
-			end
+            end
+            
 			% Define the path to the respective ASL
 			jsonM0.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
-			pathM0Out = fullfile(outSessionPath,bidsPar.strPerfusion,[subjectSessionRunLabel strPEDirection '_' bidsPar.strM0scan]);
+            
+            % Determine output name
+            if length(listRuns)>1
+                aslLabel = 'ASL4D';
+                bidsm0scanLabel = ['sub-' subjectSessionLabel strPEDirection '_run-' num2str(iRun) '_' bidsPar.strM0scan];
+            else
+                aslLabel = 'ASL4D';
+                bidsm0scanLabel = ['sub-' subjectSessionLabel strPEDirection '_' bidsPar.strM0scan];
+            end
+			pathM0Out = fullfile(outSessionPath,bidsPar.strPerfusion,bidsm0scanLabel);
 		else
 			jsonM0.PhaseEncodingDirection = 'j';
-			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,[subjectSessionRunLabel 'dirap' '_' bidsPar.strM0scan '.nii.gz']);
-			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,[subjectSessionRunLabel 'dirpa' '_' bidsPar.strM0scan]);
+            strPEDirectionPA = '_dir-pa';
+            strPEDirectionAP = '_dir-ap';
+            % Determine output name
+            if length(listRuns)>1
+                aslLabel = 'ASL4D';
+                bidsm0scanLabelPA = ['sub-' subjectSessionLabel strPEDirectionPA '_run-' num2str(iRun) '_' bidsPar.strM0scan];
+                bidsm0scanLabelAP = ['sub-' subjectSessionLabel strPEDirectionAP '_run-' num2str(iRun) '_' bidsPar.strM0scan];
+            else
+                aslLabel = 'ASL4D';
+                bidsm0scanLabelPA = ['sub-' subjectSessionLabel strPEDirectionPA '_' bidsPar.strM0scan];
+                bidsm0scanLabelAP = ['sub-' subjectSessionLabel strPEDirectionAP '_' bidsPar.strM0scan];
+            end
+			jsonM0.IntendedFor = fullfile(bidsPar.strPerfusion,bidsm0scanLabelAP);
+			pathM0Out = fullfile(outSessionPath,bidsPar.strFmap,bidsm0scanLabelPA);
 		end
 		
 		% Create the directory for the reversed PE if needed
