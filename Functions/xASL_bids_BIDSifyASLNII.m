@@ -13,10 +13,9 @@ function jsonOut = xASL_bids_BIDSifyASLNII(jsonIn, bidsPar, pathIn, pathOutPrefi
 %   jsonOut       - Output JSON, the scalings and ASLContext is removed
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: It modifies the NIfTI file to take into account several BIDS specifics. Specifically, it applies the previously calculated scalings, and 
-% it saves the ASLcontext.tsv file, 
-%
-% 
+% DESCRIPTION:     It modifies the NIfTI file to take into account several BIDS
+%                  specifics. Specifically, it applies the previously calculated
+%                  scalings, and  it saves the ASLcontext.tsv file, 
 %
 % EXAMPLE: n/a
 %
@@ -44,7 +43,12 @@ if jsonOut.scaleFactor || length(headerASL.dat.dim) < 4 || headerASL.dat.dim(4) 
 	if jsonOut.scaleFactor
 		imNii = imNii .* jsonOut.scaleFactor;
 		jsonOut = rmfield(jsonOut,'scaleFactor');
-	end
+    end
+    
+    % Validate ASL NIFTI output path
+    [~,outputFileASL,outputExtensionASL] = xASL_fileparts([pathOutPrefix '_asl.nii.gz']);
+    outputFilenameASL = [outputFileASL outputExtensionASL];
+    xASL_bids_ValidateNiftiName(outputFilenameASL,'asl');
 		
 	% Scaling changed, so we have to save again OR
 	% The fourth dimension is 1, so we have to write the file again, to make sure the
@@ -54,6 +58,11 @@ if jsonOut.scaleFactor || length(headerASL.dat.dim) < 4 || headerASL.dat.dim(4) 
 		xASL_delete(pathIn);
 	end
 else
+    % Validate ASL NIFTI output path
+    [~,outputFileASL,outputExtensionASL] = xASL_fileparts([pathOutPrefix '_asl.nii.gz']);
+    outputFilenameASL = [outputFileASL outputExtensionASL];
+    xASL_bids_ValidateNiftiName(outputFilenameASL,'asl');
+    
 	% Move the ASL
 	xASL_Move(pathIn,[pathOutPrefix '_asl.nii.gz'],1);
 end
