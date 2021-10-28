@@ -46,7 +46,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 	aslOutLabelRelative = fullfile(bidsPar.strPerfusion, [subjectSessionLabel runLabel]);
     
     % Current scan name
-    [~, scanName] = xASL_fileparts([aslOutLabel '_asl.json']);
+    [~, scanName] = xASL_fileparts([aslOutLabel '_' bidsPar.strASL '.json']);
     
     % Print perfusion name
     fprintf('Scan %s ...\n', scanName);
@@ -106,7 +106,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
             end
             
 			% Define the path to the respective ASL
-			jsonM0.IntendedFor = [aslOutLabelRelative '_asl.nii.gz'];
+			jsonM0.IntendedFor = [aslOutLabelRelative '_' bidsPar.strASL '.nii.gz'];
             
             % Determine output name
             aslLabel = 'ASL4D';
@@ -146,7 +146,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     jsonLocal = xASL_bids_BIDSifyASLNII(jsonLocal, bidsPar, fullfile(inSessionPath,[aslLabel '.nii']), aslOutLabel);
     jsonLocal = xASL_bids_VendorFieldCheck(jsonLocal);
     [jsonLocal,bidsReport] = xASL_bids_JsonCheck(jsonLocal,'ASL');
-    spm_jsonwrite([aslOutLabel '_asl.json'],jsonLocal);
+    spm_jsonwrite([aslOutLabel '_' bidsPar.strASL '.json'],jsonLocal);
 
     % Export report file for ASL dependencies
     if exist('bidsReport','var')

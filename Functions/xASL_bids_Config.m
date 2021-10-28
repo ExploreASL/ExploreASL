@@ -80,6 +80,7 @@ bidsPar.ASLfields.Optional = {'LookLocker','LabelingEfficiency','Units','PulseSe
 bidsPar.M0fields.Required = {'RepetitionTimePreparation','EchoTime','MagneticFieldStrength','MRAcquisitionType'};
 
 % Defined strings for certain ASL-BIDS keywords
+bidsPar.strASL = 'asl';
 bidsPar.strAslContext = 'aslcontext';
 bidsPar.strLabel = 'label';
 bidsPar.strControl = 'control';
