@@ -75,7 +75,6 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
             fprintf('%s\n', x.modules.import.matches{iMatch,1});
         end
     end
-    fprintf('\n');
     
     % Print overview
     xASL_imp_PrintOverview(x);
@@ -109,46 +108,46 @@ function xASL_imp_PrintSubject(x,thisSubject)
     else
         subject = '';
     end
-    fprintf('Subject: %s\n', subject);
+    fprintf('\nSubject: %s\n', subject);
     % Show subject content
     subjectLevelFields = fieldnames(x.overview.(thisSubject));
     for iSubjectField=1:numel(subjectLevelFields)
-        thisVisit = subjectLevelFields{iSubjectField};
-        if ~isempty(regexpi(thisVisit,'visit_'))
-            xASL_imp_PrintVisit(x,thisSubject,thisVisit);
+        thisSession = subjectLevelFields{iSubjectField};
+        if ~isempty(regexpi(thisSession,'visit_'))
+            xASL_imp_PrintSession(x,thisSubject,thisSession);
         end
     end
 
 end
-function xASL_imp_PrintVisit(x,thisSubject,thisVisit)
+function xASL_imp_PrintSession(x,thisSubject,thisSession)
 
-    % Print each individual subject
-    if isfield(x.overview.(thisSubject).(thisVisit),'name')
-        visit = x.overview.(thisSubject).(thisVisit).name;
+    % Print each individual session (=visits in legacy terminology)
+    if isfield(x.overview.(thisSubject).(thisSession),'name')
+        session = x.overview.(thisSubject).(thisSession).name;
     else
-        visit = '';
+        session = '';
     end
-    fprintf('Visit:   %s\n', visit);
+    fprintf('Session: %s\n', session);
     
-    % Print sessions
-    visitLevelFields = fieldnames(x.overview.(thisSubject).(thisVisit));
-    for iVisitField=1:numel(visitLevelFields)
-        thisRun = visitLevelFields{iVisitField};
+    % Print runs (= session in legacy terminology)
+    visitLevelFields = fieldnames(x.overview.(thisSubject).(thisSession));
+    for iSessionField=1:numel(visitLevelFields)
+        thisRun = visitLevelFields{iSessionField};
         if ~isempty(regexpi(thisRun,'run_'))
-            xASL_imp_PrintRun(x,thisSubject,thisVisit,thisRun);
+            xASL_imp_PrintRun(x,thisSubject,thisSession,thisRun);
         end
     end
 
 end
 function xASL_imp_PrintRun(x,thisSubject,thisVisit,thisRun)
 
-    % Print each individual subject
+    % Print each individual run (= session in legacy terminology)
     if isfield(x.overview.(thisSubject).(thisVisit).(thisRun),'name')
-        session = x.overview.(thisSubject).(thisVisit).(thisRun).name;
+        run = x.overview.(thisSubject).(thisVisit).(thisRun).name;
     else
-        session = '';
+        run = '';
     end
-    fprintf('Session: %s\n', session);
+    fprintf('Run:     %s\n', run);
 
 end
 
