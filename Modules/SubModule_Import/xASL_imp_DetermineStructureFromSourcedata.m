@@ -130,9 +130,9 @@ function xASL_imp_PrintSession(x,thisSubject,thisSession)
     fprintf('Session: %s\n', session);
     
     % Print runs (= session in legacy terminology)
-    visitLevelFields = fieldnames(x.overview.(thisSubject).(thisSession));
-    for iSessionField=1:numel(visitLevelFields)
-        thisRun = visitLevelFields{iSessionField};
+    sessionLevelFields = fieldnames(x.overview.(thisSubject).(thisSession));
+    for iSessionField=1:numel(sessionLevelFields)
+        thisRun = sessionLevelFields{iSessionField};
         if ~isempty(regexpi(thisRun,'run_'))
             xASL_imp_PrintRun(x,thisSubject,thisSession,thisRun);
         end
@@ -286,11 +286,13 @@ function x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs)
         % We can have human readble session names, but by default they are the same as the original tokens in the path
         if isempty(x.overview.(sFieldName).(vFieldName).sessionIDs)
             x.modules.import.imPar.sessionNames = cell(x.overview.(sFieldName).(vFieldName).nSessions,1);
-            for kk=1:x.overview.(sFieldName).(vFieldName).nSessions
-                x.modules.import.imPar.sessionNames{kk}=sprintf('ASL_%g',kk);
+            for iSession = 1:x.overview.(sFieldName).(vFieldName).nSessions
+                x.modules.import.imPar.sessionNames{iSession} = sprintf('ASL_%g',iSession);
             end
         else
-            x.modules.import.imPar.sessionNames = x.overview.(sFieldName).(vFieldName).sessionIDs;
+            for iSession = 1:numel(x.overview.(sFieldName).(vFieldName).sessionIDs)
+                x.modules.import.imPar.sessionNames{iSession} = sprintf('ASL_%g',iSession);
+            end
         end
     end
 
@@ -390,7 +392,12 @@ function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRe
 
     % Add field to overview
     vSessionName = ['run_' num2str(iSession,'%03.f')];
-    x.overview.(sFieldName).(vFieldName).(vSessionName).name = thisSession;
+    % Make sure that the name starts with ASL_
+    if ~isempty(regexp(thisSession,'ASL_', 'once'))
+        x.overview.(sFieldName).(vFieldName).(vSessionName).name = thisSession;
+    else
+        x.overview.(sFieldName).(vFieldName).(vSessionName).name = ['ASL_' num2str(iSession)];
+    end
     x.overview.(sFieldName).(vFieldName).runs = vertcat(x.overview.(sFieldName).(vFieldName).runs,{thisSession});
     x.overview.(sFieldName).(vFieldName).(vSessionName).regexp = thisRegExp;
     

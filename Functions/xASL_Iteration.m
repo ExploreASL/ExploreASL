@@ -313,7 +313,7 @@ function [bAborted, x] = runIteration(db)
                         db.x.(setName) = S;
                         I(iSet) = 1; % restart dynamic set
                         N(iSet) = length(db.x.(setName)); % set count
-                        fprintf('\n==============================================================================================\n');
+                        fprintf('\n[\b==============================================================================================]\b\n');
                         fprintf('new dynamic set %s with %d values: \n',setName,N(iSet)); disp(S);
                         if N(iSet)==0, N(iSet)=1; end % must allow one iteration when set is empty
                     end
@@ -357,7 +357,7 @@ function [bAborted, x] = runIteration(db)
         % Some feedback about this iteration (after opening diary log)
         if ~AlreadyProcessed
             % Print the ExploreASL separator line
-            fprintf('\n==============================================================================================\n');
+            fprintf('\n[\b==============================================================================================]\b\n');
             [StartIndex, EndIndex] = regexp(diaryFileEx, '(?i)\/ASL_\d*\/'); %to find the name of the session inside diaryFileEx: ASL_with any digit after
              if ~isempty(StartIndex) %writes the session only for ASL module
                 session = diaryFileEx(StartIndex(end)+1:EndIndex(end)-1); %isolate "ASL_1 or ASL_2 etc
@@ -466,7 +466,7 @@ function [bAborted, x] = runIteration(db)
         % Print CPU time
         if ~AlreadyProcessed
             fprintf('\nJob-iteration %i stopped at %s and took %u seconds\n',iIter,datestr(now),ceil(toc(tocID)));
-            fprintf('==============================================================================================\n');
+            fprintf('[\b==============================================================================================]\b\n');
         end
         
         % Close logfile

@@ -144,7 +144,7 @@ function [x] = ExploreASL_Initialize(varargin)
     x = xASL_init_DefineIndependentSettings(x);
 
     %% 6. Print logo & settings, check permissions
-    xASL_init_PrintLogo;
+    xASL_init_PrintLogo(x);
 
     % Print chosen settings
     xASL_init_printSettings(x);
@@ -173,9 +173,7 @@ end
 
 
 %% ==================================================================================
-function xASL_init_PrintLogo
-
-    BreakString = '==============================================================================================\n';
+function xASL_init_PrintLogo(x)
 
     LogoString = [...
     ' ________                      __                                 ______    ______   __        \n'...
@@ -191,7 +189,7 @@ function xASL_init_PrintLogo
     '                    ## |                                                                      \n'...
     '                    ##/  \n\n'];
 
-    fprintf([BreakString '[\b' LogoString ']\b']);
+    fprintf([x.design.breakString '[\b' LogoString ']\b']);
 
 end
 
@@ -406,6 +404,9 @@ function [x] = ExploreASL_Initialize_SubStructs(x)
     if ~isfield(x,'settings'),              x.settings = struct;            end
     if ~isfield(x,'external'),              x.external = struct;            end
     if ~isfield(x,'dir'),                   x.dir = struct;                 end     
+    
+    % Add breakstring for output
+    x.design.breakString = '[\b==============================================================================================]\b\n';
 
 end
 

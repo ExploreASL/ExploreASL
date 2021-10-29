@@ -67,7 +67,7 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
 		xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
 	catch loggingEntry
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'anatomical', subjectSessionLabel, iRun);
+		xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, 'anatomical', subjectSessionLabel, iRun);
 	end
 		
 	%% Perfusion files
@@ -75,15 +75,15 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
 		xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
 	catch loggingEntry
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'perfusion', subjectSessionLabel, iRun);
+		xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, 'perfusion', subjectSessionLabel, iRun);
 	end
 
 end
 
 %% Issue failed run as a warning
-function xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, Scantype, subjectSessionLabel, iRun)
+function xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, Scantype, subjectSessionLabel, iRun)
 
-    fprintf('\n==============================================================================================\n');
+    fprintf(x.design.breakString);
     fprintf(2,'NII2BIDS failed for %s image of %s_run-%s\n',Scantype,subjectSessionLabel,xASL_num2str(iRun));
     if size(loggingEntry.stack,1)>0
         fprintf(2,'Message: %s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
