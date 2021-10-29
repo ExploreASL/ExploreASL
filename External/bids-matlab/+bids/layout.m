@@ -380,6 +380,9 @@ function subject = parse_perf(subject)
                             m0_filebase = bids.internal.file_utils(bids.internal.file_utils(subject.perf(j).filename, 'basename'), 'basename'); % remove the extension
                             m0_filebase = m0_filebase(1:end-4); % to remove the _asl suffix
                             m0_filename = bids.internal.file_utils('List', pth, sprintf('^%s.*_m0scan\\.nii(\\.gz)?$', m0_filebase)); % find the file
+							if isempty(m0_filename)
+								m0_filename = bids.internal.file_utils('List', pth, sprintf('^%s.*_m0scan\\.nii(\\.gz)?$', strrep(m0_filebase,'_','.*'))); % find the file
+							end
                             m0_basename = bids.internal.file_utils(bids.internal.file_utils(m0_filename, 'basename'), 'basename'); % remove the extension
                             
                             if isempty(m0_filename)
@@ -544,9 +547,9 @@ function subject = parse_perf(subject)
                             end
                         end
                     end
-                end
+				end
+				j = j + 1;
             end % for i = 1:numel(idx)
-            j = j + 1;
         end  % if any(~cellfun(@isempty, labels))      
        
     end % if exist(pth, 'dir')
@@ -691,7 +694,7 @@ function subject = parse_fmap(subject)
       for i = 1:numel(idx)
 
         subject.fmap(j).filename = file_list{idx(i)};          
-        if ~isempty(regexp(subject.fmap.filename, 'm0scan'))
+        if ~isempty(regexp(subject.fmap(j).filename, 'm0scan'))
             subject.fmap(j).type = 'm0scan';
         else
             subject.fmap(j).type = 'epi';
