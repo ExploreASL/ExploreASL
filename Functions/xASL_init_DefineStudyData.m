@@ -204,7 +204,7 @@ for iSubject=1:x.dataset.nTotalSubjects
     end
 end
 
-% Fallback definition of ListNoPipelineDir
+% Default definition of ListNoPipelineDir
 if ~exist('ListNoPipelineDir','var')
     ListNoPipelineDir = [];
 end
