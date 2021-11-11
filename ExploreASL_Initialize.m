@@ -224,8 +224,8 @@ function addExploreASLDirectory(MyPath)
     for iPath=1:numel(pathList)
         if ~isempty(regexpi(pathList{iPath}, '(spm|cat12|lst|fsl)'))
             condition_xasl = regexp(pathList{iPath}, fullfile('ExploreASL', 'External'), 'once');
-            condition_matlab = regexp(pathList{iPath}, fullfile('matlab', 'toolbox'), 'once');
-            if isempty(condition_xasl) || isempty(condition_matlab)
+            condition_matlab = regexp(pathList{iPath}, fullfile(version('-release'), 'toolbox'), 'once');
+            if isempty(condition_xasl) && isempty(condition_matlab)
                 % If this path is not an ExploreASL-contained toolbox
                 rmpath(pathList{iPath});
                 if verboseMode
