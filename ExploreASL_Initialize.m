@@ -200,6 +200,39 @@ end
 %% Add ExploreASL Directory
 function addExploreASLDirectory(MyPath)
 
+    fprintf('Managing Matlab paths:   ');
+
+    % First remove existing toolbox initializations
+    % This could contain other toolbox versions and create conflicts
+    currentPathList = path;
+    if ischar(currentPathList)
+        % convert to cell
+        indicesAre = [0 strfind(currentPathList, pathsep)];
+        
+        for iIndex=1:numel(indicesAre)-1
+            pathList{iIndex, 1} = currentPathList(indicesAre(iIndex)+1:indicesAre(iIndex+1)-1);
+        end
+    else
+        pathList = currentPathList;
+    end
+        
+    for iPath=1:numel(pathList)
+        if ~isempty(regexpi(pathList{iPath}, '(spm|cat12|lst|fsl)'))
+            % this part is useful for debugging
+%                 pathList{iPath,2} = 1;
+%             else
+%                 pathList{iPath,2} = 0;
+            if isempty(regexp(pathList{iPath}, fullfile('ExploreASL', 'External')))
+                % if this path is not an ExploreASL-contained toolbox
+                rmpath(pathList{iPath});
+                warning(['Removed Matlab path to avoid conflicts: ' pathList{iPath}]);
+            end
+        end
+    end
+    
+    fprintf('\n');
+
+
     % Define paths (should be equal when loading data or only initializing)
     addpath(MyPath); % ExploreASL
     subfoldersToAdd = {...
