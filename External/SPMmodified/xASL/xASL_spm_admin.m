@@ -27,9 +27,12 @@ function [pathOut] = xASL_spm_admin(pathIn, bPadComma1)
 
     if nargin<1 || isempty(pathIn)
         error('Too few input arguments');
-    elseif ~ischar(pathIn)
+    elseif iscell(pathIn) && numel(pathIn)==1
+        pathIn = pathIn{1};
+    end
+    if ~ischar(pathIn)
         error('pathIn should be a char array');
-    end    
+    end
 
     if nargin<2 || isempty(bPadComma1)
         bPadComma1 = true; % default
