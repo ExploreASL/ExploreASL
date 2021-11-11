@@ -15,12 +15,10 @@ function jsonOut = xASL_bids_BIDSifyM0(jsonIn, jsonInASL, studyPar, pathM0In, pa
 %   jsonOut       - Output JSON for M0
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    It makes all the conversions to a proper BIDS structure,
-%                 checks the existence of all BIDS fields, removes superfluous fields,
-%                 checks all the conditions and orderes
-%                 the structure on the output. It works according to the
-%                 normal BIDS, or ASL-BIDS definitionIt modifies the NIfTI
-%                 file to take into account several BIDS specifics.
+% DESCRIPTION:    It makes all the conversions to a proper BIDS structure, checks the existence of all BIDS 
+%                 fields, removes superfluous fields, checks all the conditions and orders the structure on 
+%                 the output. It works according to the normal BIDS, or ASL-BIDS definition. It modifies 
+%                 the NIfTI file to take into account several BIDS specifics.
 %                 Specifically, it applies the previously calculated scalings.
 %
 % 1. Check the scaling in DICOMs

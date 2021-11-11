@@ -80,19 +80,19 @@ bidsPar.ASLfields.Optional = {'LookLocker','LabelingEfficiency','Units','PulseSe
 bidsPar.M0fields.Required = {'RepetitionTimePreparation','EchoTime','MagneticFieldStrength','MRAcquisitionType'};
 
 % Defined strings for certain ASL-BIDS keywords
-bidsPar.strASL = 'asl';
-bidsPar.strAslContext = 'aslcontext';
-bidsPar.strLabel = 'label';
-bidsPar.strControl = 'control';
-bidsPar.strM0scan = 'm0scan';
-bidsPar.strCbf = 'cbf';
-bidsPar.strDeltaM = 'deltam';
-bidsPar.strM0Separate = 'Separate';
-bidsPar.strM0Included = 'Included';
-bidsPar.strM0Estimate = 'Estimate';
-bidsPar.strM0Absent   = 'Absent';
-bidsPar.strPerfusion = 'perf';
-bidsPar.strFmap = 'fmap';
+bidsPar.stringASL = 'asl';
+bidsPar.stringAslContext = 'aslcontext';
+bidsPar.stringControl = 'control';
+bidsPar.stringLabel = 'label';
+bidsPar.stringM0scan = 'm0scan';
+bidsPar.stringCbf = 'cbf';
+bidsPar.stringDeltaM = 'deltam';
+bidsPar.stringM0Separate = 'Separate';
+bidsPar.stringM0Included = 'Included';
+bidsPar.stringM0Estimate = 'Estimate';
+bidsPar.stringM0Absent   = 'Absent';
+bidsPar.stringPerfusion = 'perf';
+bidsPar.stringFmap = 'fmap';
 
 bidsPar.sidecarName = {'.json' '_aslcontext.tsv' '_labeling.jpg'};
 bidsPar.sidecarRequired =[1 0 0];
@@ -167,7 +167,7 @@ bidsPar.ASLCondition{10}.RequiredEmpty = {};
 bidsPar.ASLCondition{10}.RecommendedFilled = {};
 
 bidsPar.ASLCondition{11}.field = 'M0Type';
-bidsPar.ASLCondition{11}.value = bidsPar.strM0Estimate;
+bidsPar.ASLCondition{11}.value = bidsPar.stringM0Estimate;
 bidsPar.ASLCondition{11}.RequiredFilled = {'M0Estimate'};
 bidsPar.ASLCondition{11}.RequiredEmpty = {};
 bidsPar.ASLCondition{11}.RecommendedFilled = {};

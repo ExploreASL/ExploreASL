@@ -22,8 +22,8 @@ function [x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite)
 % This function performs the following steps:
 %
 % 1. Parse a folder using bids-matlab
-% 2. Define Subject
-% 3. Define SubjectVisit
+% 2. Define SubjectSession
+% 3. Define Session
 % 4. Parse modality
 % - Parse scantype
 % - Compile paths for copying
@@ -78,7 +78,7 @@ nVisits = numel(BIDS.sessionName); % this is called sessions in BIDS
 fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
 
 
-%% 2. Define Subject
+%% 2. Define SubjectSession
 for iSubjSess=1:numel(BIDS.subjects) 
     % Iterate over BIDS.subjects (indices that include both subjects & sessions)
     % so  1 subject  6 session/visits, will give numel(BIDS.subjects)=6
@@ -95,7 +95,7 @@ for iSubjSess=1:numel(BIDS.subjects)
         SessionID = BIDS.subjects(iSubjSess).session;
 
 
-        %% 3. Define SubjectVisit
+        %% 3. Define Session
         iVisit = find(strcmp(BIDS.sessionName, SessionID));
         % remove iteration for iVisit=1 % iterate visit/session in this "BIDS.subjects" (always 1 session per BIDS.subjects)
         % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
@@ -116,7 +116,7 @@ for iSubjSess=1:numel(BIDS.subjects)
 
 
         %% 4. Parse modality
-        % Modalities - the BIDS domains of scantypes
+        % Modalities - the BIDS scantypes
         ModalitiesUnique = unique(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
         nModalities = length(ModalitiesUnique);
         xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);

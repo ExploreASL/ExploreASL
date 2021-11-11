@@ -277,15 +277,15 @@ function [bAborted, x] = runIteration(db)
 		x = db.x;
         
         % Backward compatibility
-        Flds = {'ROOT' 'DARTELDIR'};
+        Fields = {'ROOT' 'DARTELDIR'};
 
         if ~isfield(x,'D')
             x.D = struct;
         end
         
-        for iL=1:length(Flds)
-            if ~isfield(x.D,Flds{iL}) && isfield(x,Flds{iL})
-                x.D.(Flds{iL})    = x.(Flds{iL});
+        for iL=1:length(Fields)
+            if ~isfield(x.D,Fields{iL}) && isfield(x,Fields{iL})
+                x.D.(Fields{iL})    = x.(Fields{iL});
             end
         end
         

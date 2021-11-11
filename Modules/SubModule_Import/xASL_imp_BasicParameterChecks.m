@@ -37,7 +37,7 @@ function x = xASL_imp_BasicParameterChecks(x)
         % For BIDS to Legacy we do not need the imPar struct
         x.dir.sourceStructure = [];
     else
-        [fpath, ~, ~] = fileparts(x.dir.sourceStructure);
+        fpath = fileparts(x.dir.sourceStructure);
         if isempty(fpath)
             x.dir.sourceStructure = fullfile(x.dir.DatasetRoot,x.dir.sourceStructure);
         end
@@ -53,7 +53,7 @@ function x = xASL_imp_BasicParameterChecks(x)
             x.dir.studyPar = fullfile(x.dir.DatasetRoot,fListStudyPar{1});
         end
     else
-        [fpath, ~, ~] = fileparts(x.dir.studyPar);
+        fpath = fileparts(x.dir.studyPar);
         if isempty(fpath)
             x.dir.studyPar = fullfile(x.dir.DatasetRoot,x.dir.studyPar);
         end

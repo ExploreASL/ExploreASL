@@ -54,7 +54,7 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
 
         % Only one session - no session labeling
         if ~exist(fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]),'dir')
-            xASL_adm_CreateDir(fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject], bidsPar.strPerfusion));
+            xASL_adm_CreateDir(fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject], bidsPar.stringPerfusion));
         end
         inSessionPath = fullfile(imPar.TempRoot, nameSubjectSession, listRuns{iRun});
         outSessionPath = fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject]);

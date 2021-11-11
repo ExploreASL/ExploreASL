@@ -208,7 +208,7 @@ if isfield(jsonIn,'PhoenixAnalyzed') && ~isempty(jsonIn.PhoenixAnalyzed)
 	end
 	% Report if certain fields were different as a warning
 	if ~isempty(strDifferentFields)
-		fprintf('The following user-defined/DICOM fields and DICOM-Phoenix fields differ: %s\n',strDifferentFields);
+		fprintf('Warning: The following user-defined/DICOM fields and DICOM-Phoenix fields differ: %s\n',strDifferentFields);
 	end
 end
 

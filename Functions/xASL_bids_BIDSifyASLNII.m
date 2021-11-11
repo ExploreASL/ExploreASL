@@ -23,11 +23,10 @@ function jsonOut = xASL_bids_BIDSifyASLNII(jsonIn, bidsPar, pathIn, pathOutPrefi
 % Copyright 2015-2021 ExploreASL
 
 % Remove the AslContext field and save it as a separate file
-filenameTSV = [pathOutPrefix '_' bidsPar.strAslContext '.tsv'];
+filenameTSV = [pathOutPrefix '_' bidsPar.stringAslContext '.tsv'];
 [pathTSV,~,~] = fileparts(filenameTSV);
-if ~exist(pathTSV,'dir')
-	mkdir(pathTSV);
-end
+
+xASL_adm_CreateDir(pathTSV);
 
 % Write volume types (asl context) to file
 fContext = fopen(filenameTSV,'w+');
