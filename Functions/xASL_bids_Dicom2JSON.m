@@ -111,7 +111,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                 % Relative path
                 printFileName = pathJSON{iJSON}(length(imPar.TempRoot)+1:end);
             else
-                % Full path
+                % Absolute path
                 printFileName = pathJSON{iJSON};
             end
             
