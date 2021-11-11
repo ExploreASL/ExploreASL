@@ -18,6 +18,9 @@ function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x)
 % 1. Create summary file
 % 2. Report totals
 %
+% For the detailed description of the overview sub-structure (thisSubject & thisVisit)
+% please check out the description within xASL_imp_DetermineSubjectStructure.
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x);
 % __________________________________

@@ -11,6 +11,15 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Determine subject/session/run structure from sourcedata or temp data.
+%         
+%          The main goal is to create a sub-structure of x called x.overview.
+%          x.overview does include a separate field for each subject.
+%          Each subject has visit fields and visits have run fields.
+%          All of this is used to track the number of subjects, number of visits, number of runs,
+%          number of scans, etc. reliably. Within later parts of the pipeline it is also possible
+%          to extract the current subject, current visit or current run to determine the part of
+%          a population/subject/visit/run we're working on right now. We mostly used the variables
+%          thisSubject, thisVisit, etc. for that.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
