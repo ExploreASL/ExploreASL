@@ -39,6 +39,16 @@ function [result, x] = xASL_module_ASL(x)
 x = xASL_init_InitializeMutex(x, 'ASL'); % starts mutex locking process to ensure that everything will run only once
 result = false;
 
+% Initialize file names
+x.P.Path_ASL4D = fullfile(x.dir.SESSIONDIR, 'ASL4D.nii');
+x.P.Path_ASL4D_json = fullfile(x.dir.SESSIONDIR, 'ASL4D.json');
+x.P.Path_ASL4D_parms_mat = fullfile(x.dir.SESSIONDIR, 'ASL4D_parms.mat');
+
+% Load the processing options (modules and settings) from ASL4D.json 
+[~, xProc] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, false);
+x.modules = xProc.modules;
+x.settings = xProc.settings;
+
 if ~isfield(x.Q,'ApplyQuantification') || isempty(x.Q.ApplyQuantification)
     x.Q.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
 elseif length(x.Q.ApplyQuantification)>5
@@ -54,10 +64,6 @@ if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNative
 end
 
 % Only continue if ASL exists
-x.P.Path_ASL4D = fullfile(x.dir.SESSIONDIR, 'ASL4D.nii');
-x.P.Path_ASL4D_json = fullfile(x.dir.SESSIONDIR, 'ASL4D.json');
-x.P.Path_ASL4D_parms_mat = fullfile(x.dir.SESSIONDIR, 'ASL4D_parms.mat');
-
 if ~xASL_exist(x.P.Path_ASL4D, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
     FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)ASL4D.*\.nii$');
