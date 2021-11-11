@@ -200,37 +200,43 @@ end
 %% Add ExploreASL Directory
 function addExploreASLDirectory(MyPath)
 
-    fprintf('Managing Matlab paths:   ');
+    % Vebose mode for debugging
+    verboseMode = false;
+    if verboseMode
+        fprintf('Managing Matlab paths:\n');
+    end
 
     % First remove existing toolbox initializations
     % This could contain other toolbox versions and create conflicts
     currentPathList = path;
     if ischar(currentPathList)
-        % convert to cell
+        % Convert to cell
         indicesAre = [0 strfind(currentPathList, pathsep)];
-        
+        % Add to pathList
         for iIndex=1:numel(indicesAre)-1
             pathList{iIndex, 1} = currentPathList(indicesAre(iIndex)+1:indicesAre(iIndex+1)-1);
         end
     else
         pathList = currentPathList;
     end
-        
+    
+    % Iterate over paths
     for iPath=1:numel(pathList)
         if ~isempty(regexpi(pathList{iPath}, '(spm|cat12|lst|fsl)'))
-            % this part is useful for debugging
-%                 pathList{iPath,2} = 1;
-%             else
-%                 pathList{iPath,2} = 0;
-            if isempty(regexp(pathList{iPath}, fullfile('ExploreASL', 'External')))
-                % if this path is not an ExploreASL-contained toolbox
+            condition_xasl = regexp(pathList{iPath}, fullfile('ExploreASL', 'External'), 'once');
+            condition_matlab = regexp(pathList{iPath}, fullfile('matlab', 'toolbox'), 'once');
+            if isempty(condition_xasl) || isempty(condition_matlab)
+                % If this path is not an ExploreASL-contained toolbox
                 rmpath(pathList{iPath});
-                warning(['Removed Matlab path to avoid conflicts: ' pathList{iPath}]);
+                if verboseMode
+                    warning(['Removed Matlab path to avoid conflicts: ' pathList{iPath}]);
+                end
             end
         end
     end
-    
-    fprintf('\n');
+    if verboseMode
+        fprintf('\n');
+    end
 
 
     % Define paths (should be equal when loading data or only initializing)
