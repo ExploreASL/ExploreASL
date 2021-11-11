@@ -12,6 +12,15 @@ function x = xASL_imp_BasicParameterChecks(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Basic parameter checks for the import pipeline.
 %
+%    - check that x.dir.DatasetRoot is correct
+%    - determine x.dir.sourceStructure
+%    - determine x.dir.studyPar
+%    - check x.opts.ImportModules
+%    - set the defaults for ...
+%       - x.modules.import.settings.bCopySingleDicoms
+%       - x.modules.import.settings.bUseDCMTK
+%       - x.modules.import.settings.bCheckPermissions
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
