@@ -4,8 +4,8 @@ function xASL_imp_DCM2NII(x, imPar)
 % FORMAT: xASL_imp_DCM2NII(x, imPar)
 % 
 % INPUT:
-%   x                  - ExploreASL x structure (REQUIRED, STRUCT)
-%   imPar              - JSON file with structure with import parameters (REQUIRED, STRUCT)
+%   x      - ExploreASL x structure (REQUIRED, STRUCT)
+%   imPar  - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   n/a
@@ -13,13 +13,11 @@ function xASL_imp_DCM2NII(x, imPar)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run the dcm2nii part of the import.
 %
-% - Initialize defaults of dcm2nii
-% - Create the basic folder structure for sourcedata & derivative data
-% - Here we try to fix backwards compatibility, but this may break
-% - Redirect output to a log file
-% - Start with defining the subjects, visits, sessions (i.e. BIDS runs) and scans (i.e. ScanTypes) by listing or typing
-% - Sanity check for missing elements
-% - Import subject by subject, visit by visit, session by session, scan by scan
+% 1. Initialize defaults of dcm2nii
+% 2. Create the temp directory for DCM2NII
+% 3. Import visit by visit, session by session, scan by scan for current subject
+% 4. Create summary file
+% 5. Clean-up
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_imp_DCM2NII(x, imPar);
@@ -28,7 +26,7 @@ function xASL_imp_DCM2NII(x, imPar)
 % Copyright 2015-2021 ExploreASL
 
     
-    %% Initialize defaults of dcm2nii
+    %% 1. Initialize defaults of dcm2nii
     
     % Make sure that logging is still active
     diary(x.dir.diaryFile);
@@ -36,14 +34,14 @@ function xASL_imp_DCM2NII(x, imPar)
     % Print feedback
     fprintf('\n[\b================================== DICOM to NIFTI CONVERSION =================================]\b\n');
     
-    % Create the temp directory for DCM2NII
+    %% 2. Create the temp directory for DCM2NII
     xASL_adm_CreateDir(imPar.TempRoot);
-       
-    %% Import subject by subject, visit by visit, session by session, scan by scan
-    fprintf('\nRunning DCM2NIIX...\n');
-
+    
     % Initialization of an empty catched errors struct
     dcm2niiCatchedErrors = struct;
+
+    %% 3. Import visit by visit, session by session, scan by scan for current subject
+    fprintf('\nRunning DCM2NIIX...\n');
     [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, x.modules.import.matches, dcm2niiCatchedErrors);
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
@@ -51,10 +49,10 @@ function xASL_imp_DCM2NII(x, imPar)
     overviewSubjects = fieldnames(x.overview);
     thisSubject = x.overview.(overviewSubjects{iSubject});
     
-    % Create summary file
+    %% 4. Create summary file
     xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x);
     
-    % Clean-Up
+    %% 5. Clean-Up
     xASL_imp_DCM2NII_CleanUp(x, imPar, dcm2niiCatchedErrors);
     
     
