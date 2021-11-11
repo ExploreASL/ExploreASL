@@ -12,6 +12,12 @@ function [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Check directories and permissions.
 %
+% - Check if the RawRoot exists
+%     - Search for temp, derivatives, source and sourcedata
+%     - Raise error if not a single directory exists
+% - Check the access rights for temp and rawdata
+% - DCMTK & DicomInfo realted settings
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
@@ -23,7 +29,7 @@ function [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
         if ~exist(x.modules.import.imPar.RawRoot, 'dir')
             warning(['Could not find ' x.modules.import.imPar.RawRoot ', trying to find a different folder instead...']);
 
-            % find any folder except for temp, sourcedata, rawdata, derivatives
+            % Find any folder except for temp, sourcedata, rawdata, derivatives
             % xASL_adm_GetFileList uses regular expressions, to create a nice list of foldernames,
             % with/without FullPath (FPList), with/without recursive (FPListRec)
             % very powerful once you know how these work
