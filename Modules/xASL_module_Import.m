@@ -1,7 +1,7 @@
 function [result, x] = xASL_module_Import(x)
 %xASL_module_Import Imports the DICOM or PAR/REC source data to NIFTIs in ASL-BIDS format
 %
-% FORMAT: x = xASL_module_Import(x)
+% FORMAT: [result, x] = xASL_module_Import(x)
 %
 % INPUT:
 %   x                     - ExploreASL x structure
