@@ -306,7 +306,7 @@ function x = xASL_imp_AddScanNames(x,sFieldName,vFieldName,vVisitIDs)
     x.overview.(sFieldName).(vFieldName).scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs(vVisitIDs))));
     x.overview.(sFieldName).(vFieldName).nScans = length(x.overview.(sFieldName).(vFieldName).scanIDs);
     x.overview.(sFieldName).(vFieldName).scanNames = x.overview.(sFieldName).(vFieldName).scanIDs;
-    x.overview.(sFieldName).(vFieldName).scanSessionTable = horzcat(x.modules.import.listsIDs.vSessionIDs,lower(x.modules.import.listsIDs.vScanIDs));
+    x.overview.(sFieldName).(vFieldName).scanSessionTable = horzcat(x.modules.import.listsIDs.vSessionIDs(vVisitIDs),lower(x.modules.import.listsIDs.vScanIDs(vVisitIDs)));
 
 end
 
