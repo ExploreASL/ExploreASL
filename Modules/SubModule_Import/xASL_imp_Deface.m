@@ -1,7 +1,7 @@
-function xASL_imp_Deface(x,imPar)
+function xASL_imp_Deface(x, imPar)
 %xASL_imp_Deface Run defacing.
 %
-% FORMAT: xASL_imp_Deface(x,imPar)
+% FORMAT: xASL_imp_Deface(x, imPar)
 % 
 % INPUT:
 %   x          - ExploreASL x structure (REQUIRED, STRUCT)
@@ -18,7 +18,7 @@ function xASL_imp_Deface(x,imPar)
 % 3. Process all anatomical files (`xASL_spm_deface`)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_Deface(x,imPar);
+% EXAMPLE:     xASL_imp_Deface(x, imPar);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -44,28 +44,28 @@ function xASL_imp_Deface(x,imPar)
     
     
     %% 1. Iterate over list of subjects
-    listSubjects = xASL_adm_GetFileList(imPar.BidsRoot,[],false,[],true);
+    listSubjects = xASL_adm_GetFileList(imPar.BidsRoot, [], false, [], true);
     for iSubject = 1:length(listSubjects)
         
         % Only run it for the current subject (maybe we can do this more elegantly in the future)
-        if ~isempty(regexpi(listSubjects{iSubject},subjectName))
+        if ~isempty(regexpi(listSubjects{iSubject}, subjectName))
 
             %% 2. Get subject labels
             subjectLabel = listSubjects{iSubject};
 
             %% 3. Process all anatomical files
-            if exist(fullfile(imPar.BidsRoot,subjectLabel,'anat'),'dir') 
+            if exist(fullfile(imPar.BidsRoot, subjectLabel, 'anat'), 'dir') 
                 % Single-session
-                fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,subjectLabel,'anat'),'^.+\.nii',false,[]);
-                xASL_imp_RunDeface(imPar,fAnat,subjectLabel,[]);
+                fileAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot, subjectLabel, 'anat'), '^.+\.nii', false, []);
+                xASL_imp_RunDeface(imPar, fileAnat, subjectLabel, []);
             else
                 % Multi-session
-                sessionDirs = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,subjectLabel),[],false,[],true);
+                sessionDirs = xASL_adm_GetFileList(fullfile(imPar.BidsRoot, subjectLabel), [], false, [], true);
                 for iSession = 1:numel(sessionDirs)
-                    if exist(fullfile(imPar.BidsRoot,subjectLabel,sessionDirs{iSession},'anat'),'dir')
+                    if exist(fullfile(imPar.BidsRoot, subjectLabel, sessionDirs{iSession}, 'anat'), 'dir')
                         sessionName = sessionDirs{iSession};
-                        fAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot,subjectLabel,sessionName,'anat'),'^.+\.nii',false,[]);
-                        xASL_imp_RunDeface(imPar,fAnat,subjectLabel,sessionName);
+                        fileAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot, subjectLabel, sessionName, 'anat'), '^.+\.nii', false, []);
+                        xASL_imp_RunDeface(imPar, fileAnat, subjectLabel, sessionName);
                     end
                 end
             end
@@ -78,30 +78,30 @@ end
 
 
 % Actual defacing
-function xASL_imp_RunDeface(imPar,fAnat,subjectLabel,sessionName)
+function xASL_imp_RunDeface(imPar, fileAnat, subjectLabel, sessionName)
 
     % Check that list is not empty
-    if ~isempty(fAnat)
-        for iAnat = 1:length(fAnat)
+    if ~isempty(fileAnat)
+        for iAnat = 1:length(fileAnat)
             % Get filename
             if nargin<4 || isempty(sessionName)
-                fileName = fullfile(imPar.BidsRoot,subjectLabel,'anat',fAnat{iAnat});
+                fileName = fullfile(imPar.BidsRoot, subjectLabel, 'anat', fileAnat{iAnat});
             else
-                fileName = fullfile(imPar.BidsRoot,subjectLabel,sessionName,'anat',fAnat{iAnat});
+                fileName = fullfile(imPar.BidsRoot, subjectLabel, sessionName, 'anat', fileAnat{iAnat});
             end
             
             % Print feedback
-            fprintf('\nDeface %s...\n',fAnat{iAnat});
+            fprintf('\nDeface %s...\n', fileAnat{iAnat});
             
             % Check if file exists
             if ~xASL_exist(fileName)
                 % Print warning
-                warning('Defacing was not run, file %s not found...', fAnat{iAnat});
+                warning('Defacing was not run, file %s not found...', fileAnat{iAnat});
             else
                 % Unzip the file for SPM
                 pathUnzipped = xASL_adm_UnzipNifti(fileName);
                 % Remove the face
-                xASL_spm_deface(pathUnzipped,true);
+                xASL_spm_deface(pathUnzipped, true);
                 % Zip again
                 gzip(pathUnzipped);
                 delete(pathUnzipped);
