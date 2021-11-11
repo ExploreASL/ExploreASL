@@ -106,6 +106,7 @@ else
         end
     else
         % Fallback values if condition above is note met
+        warning('Longitudinal registration: something went wrong while trying to read the subject structure...');
         SubjectNlist = [];
         TimePoint = [];
     end
