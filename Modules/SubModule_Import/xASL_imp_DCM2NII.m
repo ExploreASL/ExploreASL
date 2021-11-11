@@ -38,10 +38,7 @@ function xASL_imp_DCM2NII(x, imPar)
     
     % Create the temp directory for DCM2NII
     xASL_adm_CreateDir(imPar.TempRoot);
-    
-    % Initialize to be able to catch errors and close if valid
-    fid_summary = -1;
-    
+       
     %% Import subject by subject, visit by visit, session by session, scan by scan
     fprintf('\nRunning DCM2NIIX...\n');
 
@@ -55,7 +52,7 @@ function xASL_imp_DCM2NII(x, imPar)
     thisSubject = x.overview.(overviewSubjects{iSubject});
     
     % Create summary file
-    xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid_summary);
+    xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x);
     
     % Clean-Up
     xASL_imp_DCM2NII_CleanUp(x, imPar, dcm2niiCatchedErrors);

@@ -1,14 +1,13 @@
-function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid_summary)
+function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x)
 %xASL_imp_CreateSummaryFile Create summary file.
 %
-% FORMAT: xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid_summary)
+% FORMAT: xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x)
 % 
 % INPUT:
 %   thisSubject       - Current subject struct (REQUIRED, STRUCT)
 %   imPar             - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %   PrintDICOMFields  - Print DICOM fields (REQUIRED, CELL ARRAY)
 %   x                 - ExploreASL x structure (REQUIRED, STRUCT)
-%   fid_summary       - File ID summary (REQUIRED, INTEGER)
 %
 % OUTPUT:
 %   n/a
@@ -20,7 +19,7 @@ function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid
 % 2. Report totals
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid_summary);
+% EXAMPLE:     xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -43,9 +42,9 @@ function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid
     for iSubject=1:x.modules.import.nSubjects
         for iVisit=1:thisSubject.nVisits
             % Get fieldname
-            vFieldName = ['visit_' num2str(iVisit,'%03.f')];
+            visitFieldName = ['visit_' num2str(iVisit,'%03.f')];
             % Get visit
-            thisVisit = thisSubject.(vFieldName);
+            thisVisit = thisSubject.(visitFieldName);
             for iScan=1:thisVisit.nScans
                 for iSession=1:thisVisit.nSessions
                     if thisSubject.globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) || ...
@@ -79,9 +78,9 @@ function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x, fid
 	for iSubject=1:x.modules.import.nSubjects
 		for iVisit=1:thisSubject.nVisits
             % Get fieldname
-            vFieldName = ['visit_' num2str(iVisit,'%03.f')];
+            visitFieldName = ['visit_' num2str(iVisit,'%03.f')];
             % Get visit
-            thisVisit = thisSubject.(vFieldName);
+            thisVisit = thisSubject.(visitFieldName);
             
 			fprintf(fid_summary,'"%s"', [x.modules.import.listsIDs.subjectIDs{iSubject} thisSubject.visitIDs{iVisit}]);
 			fprintf(fid_summary,',%d',sum(thisSubject.globalCounts.converted_scans(iSubject,:,:,:)));

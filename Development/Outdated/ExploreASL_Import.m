@@ -256,8 +256,6 @@ if ~bUseDCMTK
     dicomdict('set', x.modules.import.pathDcmDict);
 end
 
-fid_summary = -1; % initialize to be able to catch errors and close if valid
-
 % change dcmnii_version for PARREC if needed
 if ~isempty(strfind(char(imPar.folderHierarchy(end)),'PAR'))
     imPar.dcm2nii_version = '20101105';
@@ -426,7 +424,7 @@ end
 %% -----------------------------------------------------------------------------
 % create summary file
 % -----------------------------------------------------------------------------
-xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x, fid_summary);
+xASL_imp_CreateSummaryFile(imPar, PrintDICOMFields, x);
 
 % cleanup
 if ~x.modules.import.settings.bUseDCMTK || isempty(x.modules.import.pathDcmDict)
