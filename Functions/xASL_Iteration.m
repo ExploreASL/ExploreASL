@@ -61,10 +61,11 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
     
     % Check if it was possible to load the subjects
     if nargin<5 || isempty(SelectedSubjects)
-        if isfield(x,'SUBJECTS')
+        try
             SelectedSubjects = x.SUBJECTS;
-        else
-            warning('Loading subjects didnt work, verify that ExploreASL was correctly initialized with the correct DataParameter file...');
+        catch ME
+            warning('Loading subjects didnt work, verify that ExploreASL was correctly initialized with the correct DataParameter file...\n%s',ME.message);
+            SelectedSubjects = {''};
         end
     end
     
