@@ -12,6 +12,11 @@ function [x] = xASL_imp_CheckImportSettings(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Basic import checks before execution.
 %
+% - Check permissions for DCM2NII
+% - Get correct DCMNII version
+% - Define DCM Extension Filter
+% - Set default for skip subjects option
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
