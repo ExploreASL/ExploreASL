@@ -37,7 +37,7 @@ function [resultText] = xASL_adm_PaddedString(textToPrint,SymbolToFill,Color,new
     if nargin<5
         printImmediately = true;
     end
-    width = 100;
+    width = 94;
     
     %% Create default string
     resultText = repmat(SymbolToFill,1,width);
