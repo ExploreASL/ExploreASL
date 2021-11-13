@@ -29,6 +29,25 @@ function [result, x] = xASL_module_ASL(x)
 % - `090_VisualQC_ASL`       - Generate QC parameters & images
 % - `100_WADQC`              - QC for WAD-QC DICOM server (OPTIONAL)
 %
+% This module performs the following initialization/admin steps:
+% A. Check if ASL exists, otherwise skip this module
+% B. Manage mutex state — processing step
+% C. Cleanup before rerunning
+%
+% D - ASL processing parameters
+% D1. Load ASL parameters (inheritance principle)
+% D2. Default ASL processing settings in the x.modules.asl field
+% D3. Multi-PLD parsing
+% D4. TimeEncoded parsing
+% D5. Multi-TE parsing
+%
+% E - ASL quantification parameters
+% E1. Default quantification parameters in the Q field
+% E2. Define sequence (educated guess based on the Q field)
+% F. Backward and forward compatibility of filenames
+% G. Split ASL and M0 within the ASL time series
+% H. Skip processing if invalid image
+
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
@@ -39,21 +58,9 @@ function [result, x] = xASL_module_ASL(x)
 x = xASL_init_InitializeMutex(x, 'ASL'); % starts mutex locking process to ensure that everything will run only once
 result = false;
 
-if ~isfield(x.Q,'ApplyQuantification') || isempty(x.Q.ApplyQuantification)
-    x.Q.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
-elseif length(x.Q.ApplyQuantification)>5
-    warning('x.Q.ApplyQuantification had too many parameters');
-    x.Q.ApplyQuantification = x.Q.ApplyQuantification(1:5);
-elseif length(x.Q.ApplyQuantification)<5
-    warning('x.Q.ApplyQuantification had too few parameters, using default 1');
-    x.Q.ApplyQuantification(length(x.Q.ApplyQuantification)+1:5) = 1;
-end
 
-if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNativeSpace)
-	x.modules.asl.bPVCNativeSpace = 0;
-end
 
-% Only continue if ASL exists
+%% A. Check if ASL exists, otherwise skip this module
 x.P.Path_ASL4D = fullfile(x.dir.SESSIONDIR, 'ASL4D.nii');
 x.P.Path_ASL4D_json = fullfile(x.dir.SESSIONDIR, 'ASL4D.json');
 x.P.Path_ASL4D_parms_mat = fullfile(x.dir.SESSIONDIR, 'ASL4D_parms.mat');
@@ -82,34 +89,12 @@ if ~xASL_exist(x.P.Path_ASL4D, 'file')
     end
 end
 
-
-% Initialize the DummyScan and M0 position fields - by default empty
-if ~isfield(x.modules.asl,'DummyScanPositionInASL4D') 
-	x.modules.asl.DummyScanPositionInASL4D = [];
-end
-
-if ~isfield(x.modules.asl,'M0PositionInASL4D') 
-	x.modules.asl.M0PositionInASL4D = [];
-end
-
-if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
-	x.Q.bUseBasilQuantification = false;
-end
-
 x = xASL_init_FileSystem(x); % do this only here, to save time when skipping this module
+% Change working directory to make sure that unspecified output will go there...
+oldFolder = cd(x.dir.SESSIONDIR);
 
-if ~isfield(x,'Q')
-    x.Q = struct;
-end
-if ~isfield(x,'DoWADQCDC')
-    x.DoWADQCDC = false; % default skip WAD-QC stuff
-end
-if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
-    % Temporary backwards compatibility that needs to go
-    x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
-end
 
-%% Define the state names and numbers
+%% B. Manage mutex state — processing step
 StateName{ 1} = '010_TopUp';
 StateName{ 2} = '020_RealignASL';
 StateName{ 3} = '030_RegisterASL';
@@ -121,47 +106,14 @@ StateName{ 8} = '080_Quantification';
 StateName{ 9} = '090_VisualQC_ASL';
 StateName{10} = '100_WADQC';
 
-%% Change working directory to make sure that unspecified output will go there...
-oldFolder = cd(x.dir.SESSIONDIR);
-
-%% Split ASL and M0 within the ASL time series
-% Run this when the data hasn't been touched yet
-% The first three states are here, because the first two are run only conditionally
-if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
-	% Split the M0 and dummy scans from the ASL time-series
-	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.modules.asl.DummyScanPositionInASL4D);
-	
-	% Do the same for the ancillary files
-	FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat$','FPList',[0 Inf]);
-	if ~isempty(FileList)
-		xASL_Move(FileList{1}, x.P.Path_ASL4D_parms_mat);
-	end
-	FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)\.json$','FPList',[0 Inf]);
-	if ~isempty(FileList)
-		xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'ASL4D.json'));
-	end
+if ~x.mutex.HasState('999_ready')
+    bO = true; % generate output, some processing has and some has not been yet done
+else
+    bO = false; % skip output, as all processing has been performed
 end
 
-%% Import fixes for M0
 
-if ~xASL_exist(x.P.Path_M0, 'file')
-    % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.nii$','FPList',[0 Inf]);
-    if ~isempty(FileList)
-        xASL_Move(FileList{1}, x.P.Path_M0);
-    end
-end
-% Do the same for the ancillary files
-FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)_parms\.mat$','FPList',[0 Inf]);
-if ~isempty(FileList)
-    xASL_Move(FileList{1}, x.P.Path_M0_parms_mat);
-end
-FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.json$','FPList',[0 Inf]);
-if ~isempty(FileList)
-    xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'M0.json'));
-end
-
-%% Delete old files
+%% C. Cleanup before rerunning
 if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
     % If we rerun the ASL module, then clean it fully for proper rerunning
     % This function cleans all ASL sessions, so only run this (once) for the first session
@@ -183,22 +135,9 @@ if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
 	xASL_adm_SaveX(x);
 end
 
-if ~isfield(x.modules.asl,'motionCorrection')
-    x.modules.asl.motionCorrection = 1;
-end
 
-% Backward compatibility
-if xASL_exist(x.P.Pop_Path_qCBF_untreated,'file')
-    xASL_Move(x.P.Pop_Path_qCBF_untreated, x.P.Pop_Path_qCBF, true);
-end
 
-%% If ASL_4D_parms.mat (ASL parameters) file exist, load and overwrite existing parameters in the xASL file (inheritance principle)
-if ~x.mutex.HasState('999_ready')
-    bO = true; % generate output, some processing has and some has not been yet done
-else
-    bO = false; % skip output, as all processing has been performed
-end
-
+%% D1. Load ASL parameters (inheritance principle)
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
 
 if ~isfield(x,'Q')
@@ -206,11 +145,32 @@ if ~isfield(x,'Q')
     warning('x.Q didnt exist, are quantification parameters lacking?');
 end
 
-%% Multi-PLD parsing
 
 
-%% TimeEncoded parsing
+%% D2. Default ASL processing settings in the x.modules.asl field
+if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNativeSpace)
+	x.modules.asl.bPVCNativeSpace = 0;
+end
 
+% Initialize the DummyScan and M0 position fields - by default empty
+if ~isfield(x.modules.asl,'DummyScanPositionInASL4D') 
+	x.modules.asl.DummyScanPositionInASL4D = [];
+end
+if ~isfield(x.modules.asl,'M0PositionInASL4D') 
+	x.modules.asl.M0PositionInASL4D = [];
+end
+if ~isfield(x.modules.asl,'motionCorrection')
+    x.modules.asl.motionCorrection = 1;
+end
+
+if ~isfield(x,'DoWADQCDC')
+    x.DoWADQCDC = false; % default skip WAD-QC stuff
+end
+
+%% D3. Multi-PLD parsing
+
+
+%% D4. TimeEncoded parsing
 % Check if TimeEncoded is defined
 if isfield(x,'TimeEncodedMatrixType') && ~isempty(x.TimeEncodedMatrixType)
     x.modules.asl.TimeEncodedMatrixType = x.TimeEncodedMatrixType;
@@ -224,19 +184,88 @@ end
 if isfield(x.modules.asl,'TimeEncodedMatrixType') || isfield(x.modules.asl,'TimeEncodedMatrixSize')
     x.modules.asl.bTimeEncoded = 1;
 end
-
 % Check if there is Decoding Matrix as input
 %(some datasets will have a decoding matrix that we can use directly in the decoding part)
 
 
-%% Multi-TE parsing
+%% D5. Multi-TE parsing
 
 
-%% Define sequence (educated guess)
+
+%% E1. Default quantification parameters in the Q field
+if ~isfield(x,'Q')
+    x.Q = struct;
+end
+
+if ~isfield(x.Q,'ApplyQuantification') || isempty(x.Q.ApplyQuantification)
+    x.Q.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
+elseif length(x.Q.ApplyQuantification)>5
+    warning('x.Q.ApplyQuantification had too many parameters');
+    x.Q.ApplyQuantification = x.Q.ApplyQuantification(1:5);
+elseif length(x.Q.ApplyQuantification)<5
+    warning('x.Q.ApplyQuantification had too few parameters, using default 1');
+    x.Q.ApplyQuantification(length(x.Q.ApplyQuantification)+1:5) = 1;
+end
+
+if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
+    % Temporary backwards compatibility that needs to go
+    x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
+end
+
+if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
+	x.Q.bUseBasilQuantification = false;
+end
+
+
+%% E2. Define sequence (educated guess based on the Q field)
 x = xASL_adm_DefineASLSequence(x);
 
 
-%% Skip processing if invalid image
+%% F. Backward and forward compatibility of filenames
+if ~xASL_exist(x.P.Path_M0, 'file')
+    % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
+    FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.nii$','FPList',[0 Inf]);
+    if ~isempty(FileList)
+        xASL_Move(FileList{1}, x.P.Path_M0);
+    end
+end
+% Do the same for the ancillary files
+FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)_parms\.mat$','FPList',[0 Inf]);
+if ~isempty(FileList)
+    xASL_Move(FileList{1}, x.P.Path_M0_parms_mat);
+end
+FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.json$','FPList',[0 Inf]);
+if ~isempty(FileList)
+    xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'M0.json'));
+end
+
+% Backward compatibility
+if xASL_exist(x.P.Pop_Path_qCBF_untreated,'file')
+    xASL_Move(x.P.Pop_Path_qCBF_untreated, x.P.Pop_Path_qCBF, true);
+end
+
+
+
+%% G. Split ASL and M0 within the ASL time series
+% Run this when the data hasn't been touched yet
+% The first three states are here, because the first two are run only conditionally
+if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
+	% Split the M0 and dummy scans from the ASL time-series
+	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.modules.asl.DummyScanPositionInASL4D);
+	
+	% Do the same for the ancillary files
+	FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat$','FPList',[0 Inf]);
+	if ~isempty(FileList)
+		xASL_Move(FileList{1}, x.P.Path_ASL4D_parms_mat);
+	end
+	FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)\.json$','FPList',[0 Inf]);
+	if ~isempty(FileList)
+		xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'ASL4D.json'));
+	end
+end
+
+
+%% H. Skip processing if invalid image
 tempASL = xASL_io_Nifti2Im(x.P.Path_ASL4D);
 if isempty(tempASL) || max(tempASL(:))==0 || numel(unique(tempASL(:)))==1
     error('Invalid ASL image');
