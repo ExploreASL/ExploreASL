@@ -222,15 +222,14 @@ function addExploreASLDirectory(MyPath)
     
     % Iterate over paths
     for iPath=1:numel(pathList)
-        if ~isempty(regexpi(pathList{iPath}, '(spm|cat12|lst|fsl)'))
-            condition_xasl = regexp(pathList{iPath}, fullfile('ExploreASL', 'External'), 'once');
-            condition_matlab = regexp(pathList{iPath}, fullfile(version('-release'), 'toolbox'), 'once');
-            if isempty(condition_xasl) && isempty(condition_matlab)
+        if ~isempty(regexpi(pathList{iPath}, [filesep '(spm|bids-matlab)'])) % toolboxes can be added here
+            % Here we want search for toolboxes that ExploreASL uses, but
+            % that are in another path (e.g., within the Matlab toolboxes)
+            
+            if isempty(regexp(pathList{iPath}, fullfile('ExploreASL', 'External')))
                 % If this path is not an ExploreASL-contained toolbox
                 rmpath(pathList{iPath});
-                if verboseMode
-                    warning(['Removed Matlab path to avoid conflicts: ' pathList{iPath}]);
-                end
+                fprintf(['Warning: removed Matlab path to avoid conflicts: ' pathList{iPath} '\n\n']);
             end
         end
     end
