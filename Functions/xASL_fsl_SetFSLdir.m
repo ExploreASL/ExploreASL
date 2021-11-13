@@ -53,10 +53,10 @@ if isfield(x,'FSLdir') && isfield(x,'RootFSLdir') && ~isempty(x.FSLdir) && ~isem
 end
 
 %% Detect OS
-if isunix % check for linux (also used for macOS)
-    fprintf('Running FSL from Matlab on Linux\n');
-elseif ismac
+if ismac
     fprintf('Running FSL from Matlab on macOS\n');
+elseif isunix % check for linux (also used for macOS)
+    fprintf('Running FSL from Matlab on Linux\n');
 elseif ispc
     [status, ~] = system('wsl ls;'); % leave status2 here, otherwise system will produce output
     if status~=0
@@ -100,11 +100,30 @@ if bAutomaticallyDetectFSL
                 RootWSLdir = xASL_adm_GetFileList(DistroDir{1}, '^rootfs$', 'FPListRec', [0 Inf], true);
             end
         end
-        if isempty(RootWSLdir)
+        
+        % Try a few folders for WSL2, which should override the WSL
+        % location
+        % Note that WSL1 used the physical Windows system, whereas WSL2
+        % mounts a single file in ext4 format as virtual disk
+        [FoundWSL2(1), ~] = system('dir \\wsl$\Ubuntu-18.04');
+        if FoundWSL2(1)==0
+            RootWSLdir = '\\wsl$\Ubuntu-18.04';
+        end
+        [FoundWSL2(2), ~] = system('dir \\wsl$\Ubuntu-20.04');
+        if FoundWSL2(2)==0 % we bias later Ubuntu versions
+            RootWSLdir = '\\wsl$\Ubuntu-20.04';
+        end
+ 
+        if isempty(RootWSLdir) % if still no WSL found
             warning('Couldnt find rootfs (filesystem) of WSL, skipping');
             return;
+        elseif sum(FoundWSL2==0)>0
+            % We will search the WSL2 folder only for FSL
+            PathApps = {fullfile(RootWSLdir,'usr','local')};
+        else
+            % We will search all folders for FSL
+            PathApps{end+1} = fullfile(RootWSLdir,'usr','local');
         end
-        PathApps{end+1} = fullfile(RootWSLdir,'usr','local');
     end
 
     %% Search for first & second-layer subfolder
@@ -165,16 +184,17 @@ if length(FSLdir)<1
 elseif length(FSLdir)>1
     fprintf('%s\n','Found more than 1 FSL version, choosing latest');
 else
-    % dont say anything
+    % dont print anything
 end
 
 FSLdir = FSLdir{end}; % default to most recent version (and convert from cell to char array
 
 if ispc
-    if ~isnan(RootWSLDir)
-        RootWSLDir = RootWSLdir{end}; % default to most recent version
+    if iscell(RootWSLdir)
+        RootWSLdir = RootWSLdir{end}; % default to most recent version
     end
-    FSLdir = FSLdir(length(RootWSLDir)+1:end);
+    %% PM: not sure about this code here!!
+    FSLdir = FSLdir(length(RootWSLdir)+1:end);
 end
 FSLdir = strrep(FSLdir,'\','/');
 
@@ -203,7 +223,7 @@ FSLdir = strrep(FSLdir,'\','/');
 
 
 %% Manage RootFSLdir
-if ~exist('RootWSLdir','var') || isnan(RootWSLdir)
+if ~exist('RootWSLdir','var') || (isnumeric(RootWSLdir) && isnan(RootWSLdir))
     RootWSLdir = FSLdir; % default
 else
     RootWSLdir = fullfile(RootWSLdir, FSLdir); % for e.g. WSL
