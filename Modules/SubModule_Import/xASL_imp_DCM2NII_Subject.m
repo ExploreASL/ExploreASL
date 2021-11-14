@@ -73,7 +73,7 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
         end
         
         % Display subject-visit ID and add lock dir
-		fprintf(x.design.breakString);
+		xASL_adm_BreakString('');
         fprintf('Importing subject = %s:   \n', [subjectID imPar.visitNames{iVisit}]);
 
         %% 3. Loop over all sessions

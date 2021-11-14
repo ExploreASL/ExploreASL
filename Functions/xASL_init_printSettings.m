@@ -20,7 +20,7 @@ function xASL_init_printSettings(x)
 % Copyright 2015-2021 ExploreASL
 
     %% Printing
-    fprintf('[\b==================================== ExploreASL Settings =====================================]\b\n');
+    xASL_adm_BreakString('ExploreASL Settings');
     % Dataset root
     if length(x.opts.DatasetRoot)>70
         fprintf('Dataset Root        ...%s\n', x.opts.DatasetRoot(end-70:end));
@@ -67,7 +67,7 @@ function xASL_init_printSettings(x)
     % Worker numbers
     fprintf('iWorker             %d\n', x.opts.iWorker);
     fprintf('nWorkers            %d\n', x.opts.nWorkers);
-    fprintf(x.design.breakString);
+    xASL_adm_BreakString('');
 
 end
 

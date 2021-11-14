@@ -82,7 +82,7 @@ end
 %% Issue failed run as a warning
 function xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, Scantype, subjectSessionLabel, iRun)
 
-    fprintf(x.design.breakString);
+    xASL_adm_BreakString('');
     fprintf(2,'NII2BIDS failed for %s image of %s_run-%s\n',Scantype,subjectSessionLabel,xASL_num2str(iRun));
     if size(loggingEntry.stack,1)>0
         fprintf(2,'Message: %s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
