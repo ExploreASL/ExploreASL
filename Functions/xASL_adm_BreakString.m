@@ -7,7 +7,7 @@ function [resultText] = xASL_adm_BreakString(textToPrint,SymbolToFill,Color,newL
 %   textToPrint   - String containing a text (CHAR ARRAY, OPTIONAL)
 %   SymbolToFill  - Symbol to fill the text (CHAR ARRAY, OPTIONAL)
 %   Color         - Default or colored (BOOLEAN, OPTIONAL)
-%   newLines      - Add new lines (BOOLEAN, OPTIONAL)
+%   newLines      - Add new lines, where 1 only means after and 2 means before and after (INTEGER, OPTIONAL)
 %   printImmediately - Print string (BOOLEAN, OPTIONAL)
 %
 % OUTPUT:
@@ -25,14 +25,14 @@ function [resultText] = xASL_adm_BreakString(textToPrint,SymbolToFill,Color,newL
     if nargin<1
         textToPrint = '';
     end
-    if nargin<2
+    if nargin<2 || isempty(SymbolToFill)
         SymbolToFill = '=';
     end
-    if nargin<3
+    if nargin<3 || isempty(Color)
         Color = true;
     end
-    if nargin<4
-        newLines = true;
+    if nargin<4 || isempty(newLines)
+        newLines = 2;
     end
     if nargin<5
         printImmediately = true;
@@ -42,7 +42,7 @@ function [resultText] = xASL_adm_BreakString(textToPrint,SymbolToFill,Color,newL
     textWidth = 94;
     
     % Create the padded string
-    resultText = xASL_adm_PaddedString(textToPrint,SymbolToFill,Color,newLines)
+    resultText = xASL_adm_PaddedString(textToPrint,SymbolToFill,Color,newLines,textWidth);
     
     % Print
     if printImmediately
@@ -60,7 +60,9 @@ function resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, Color, ne
     resultText = repmat(SymbolToFill,1,textWidth);
     
     % Pad spaces
-    textToPrint = [' ' textToPrint ' '];
+    if ~isempty(textToPrint)
+        textToPrint = [' ' textToPrint ' '];
+    end
 
     % Check length
     if length(textToPrint)<100
@@ -79,8 +81,10 @@ function resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, Color, ne
     end
     
     % Add new lines
-    if newLines
+    if newLines==2
         resultText = sprintf(['\n' resultText '\n']);
+    else
+        resultText = sprintf([resultText '\n']);
     end
 
 

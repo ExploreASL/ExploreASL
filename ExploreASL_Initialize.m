@@ -144,7 +144,7 @@ function [x] = ExploreASL_Initialize(varargin)
     x = xASL_init_DefineIndependentSettings(x);
 
     %% 6. Print logo & settings, check permissions
-    xASL_init_PrintLogo(x);
+    xASL_init_PrintLogo();
 
     % Print chosen settings
     xASL_init_printSettings(x);
@@ -173,11 +173,10 @@ end
 
 
 %% ==================================================================================
-function xASL_init_PrintLogo(x)
+function xASL_init_PrintLogo()
 
     % Add design fields
-    logoString = sprintf([...
-    '[\b' ...
+    logoString = [...
     ' ________                      __                                 ______    ______   __          \n'...
     '/        |                    /  |                               /      \\  /      \\ /  |       \n'...
     '########/  __    __   ______  ## |  ______    ______    ______  /######  |/######  |## |         \n'...
@@ -189,7 +188,7 @@ function xASL_init_PrintLogo(x)
     '########/ ##/   ##/ #######/  ##/  ######/  ##/        #######/ ##/   ##/  ######/  ########/    \n'...
     '                    ## |                                                                         \n'...
     '                    ## |                                                                         \n'...
-    '                    ##/  ]\b\n\n']);
+    '                    ##/                                                                          \n'];
 
     xASL_adm_BreakString('');
     fprintf(logoString);

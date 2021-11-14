@@ -67,7 +67,7 @@ function xASL_init_printSettings(x)
     % Worker numbers
     fprintf('iWorker             %d\n', x.opts.iWorker);
     fprintf('nWorkers            %d\n', x.opts.nWorkers);
-    xASL_adm_BreakString('');
+    xASL_adm_BreakString('',[],[],1);
 
 end
 
