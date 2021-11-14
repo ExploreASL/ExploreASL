@@ -35,7 +35,7 @@ function xASL_imp_Deface(x, imPar)
     diary(x.dir.diaryFile);
 
     % Print feedback
-    xASL_adm_PaddedString('DEFACING');
+    xASL_adm_BreakString('DEFACING');
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
     iSubject = strcmp(x.SUBJECT,x.SUBJECTS);

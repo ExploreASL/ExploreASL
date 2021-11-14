@@ -1,7 +1,7 @@
-function [resultText] = xASL_adm_PaddedString(textToPrint,SymbolToFill,Color,newLines,printImmediately)
-%xASL_adm_PaddedString Pads symbols left and right of string
+function [resultText] = xASL_adm_BreakString(textToPrint,SymbolToFill,Color,newLines,printImmediately)
+%xASL_adm_BreakString Pads symbols left and right of string and prints it
 %
-% FORMAT: [resultText] = xASL_adm_PaddedString(textToPrint,SymbolToFill)
+% FORMAT: [resultText] = xASL_adm_BreakString(textToPrint,SymbolToFill)
 % 
 % INPUT:
 %   textToPrint   - String containing a text (CHAR ARRAY, OPTIONAL)
@@ -17,7 +17,7 @@ function [resultText] = xASL_adm_PaddedString(textToPrint,SymbolToFill,Color,new
 % DESCRIPTION:    Pads symbols left and right of string.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:        [resultText] = xASL_adm_PaddedString('DCM2NII','=');
+% EXAMPLE:        [resultText] = xASL_adm_BreakString('DCM2NII','=');
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -37,14 +37,31 @@ function [resultText] = xASL_adm_PaddedString(textToPrint,SymbolToFill,Color,new
     if nargin<5
         printImmediately = true;
     end
-    width = 94;
+
+    % Define string width
+    textWidth = 94;
     
+    % Create the padded string
+    resultText = xASL_adm_PaddedString(textToPrint,SymbolToFill,Color,newLines)
+    
+    % Print
+    if printImmediately
+        fprintf(resultText);
+    end
+
+
+end
+
+
+% Create the padded string
+function resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, Color, newLines, textWidth)
+
     %% Create default string
-    resultText = repmat(SymbolToFill,1,width);
+    resultText = repmat(SymbolToFill,1,textWidth);
     
     % Pad spaces
     textToPrint = [' ' textToPrint ' '];
-    
+
     % Check length
     if length(textToPrint)<100
         % Determine half of the length
@@ -65,13 +82,6 @@ function [resultText] = xASL_adm_PaddedString(textToPrint,SymbolToFill,Color,new
     if newLines
         resultText = sprintf(['\n' resultText '\n']);
     end
-    
-    % Print
-    if printImmediately
-        fprintf(resultText);
-    end
 
 
 end
-
-

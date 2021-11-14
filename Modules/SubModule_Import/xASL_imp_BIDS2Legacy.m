@@ -31,7 +31,7 @@ function [x] = xASL_imp_BIDS2Legacy(x)
     diary(x.dir.diaryFile);
     
     % Print feedback
-    xASL_adm_PaddedString('BIDS to ExploreASL LEGACY CONVERSION');
+    xASL_adm_BreakString('BIDS to ExploreASL LEGACY CONVERSION');
     
     if ~isfield(x,'dir')
         error('Missing directories field...');
