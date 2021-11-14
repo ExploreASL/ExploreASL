@@ -148,11 +148,11 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 
     %% 6. Check if we are reading a DICOM folder
     if exist(inpath,'dir')
-        %% check if there are any DICOM files
+        % Check if there are any DICOM files
         dicom_files = xASL_adm_GetFileList(inpath, parms.DicomFilter,'List');
         if isempty(dicom_files)
-            error(['No dicom files match ' parms.DicomFilter ' in ' inpath ', skipping']);
-            % this error will be catched in wrapper function, verbose & error catching will be dealt with there
+            % This error will be catched in wrapper function, verbose & error catching will be dealt with there
+            error(['No dicom files match ' parms.DicomFilter ' in ' inpath ', skipping...']);
         end
 
         %% sort the dicom filenames because it's nice to use the first (but not required!)
@@ -196,54 +196,54 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 
     %% 8. Create temporary subfolder for converting
     temp_dir = fullfile(destdir, ['dcm2nii_temp_' series_name]);
-    %     if exist(temp_dir,'dir') && length(dir(temp_dir))>2
-    %         error('Temporary conversion folder exists and is not empty: %s', temp_dir);
-    %     end
-    %   IGNORE PREVIOUSLY STORED TEMPORARY FILES, THAT ARE STILL HERE BECAUSE OF EG CODE CRASHING
+    
+    % Ignore previously stored temp files that are still here because of a code crash e.g.
     if exist(temp_dir,'dir')
         xASL_adm_DeleteFileList(temp_dir,'.*', true, [0 Inf]);
     end
     xASL_adm_CreateDir(temp_dir);
 
     %% 9. Run dcm2nii and move files to final destination using specified series name
-    %% Use catch to remove temporary folder on error
+    
+    % Use catch to remove temporary folder on error
     try
-        %% execute
+        % OS check
         if ispc()
             quote = '"';
         else
             quote = '''';
         end
 
+        % Command line string
         if ismac()
             cmdline = [parms.ExePath ' -o ' temp_dir ' ' inpath];
         else
             cmdline = [quote parms.ExePath quote ' ' dcm2nii_args ' -o ' quote temp_dir quote ' ' quote inpath quote];
         end
 
+        % User feedback if verbose
         if parms.Verbose
             fprintf('executing: [%s]\n',cmdline);
             [status, msg] = system(cmdline, '-echo');
-            separatorline = '==============================================================================================';
+            separatorline = xASL_adm_BreakString('',[],[],1,0);
             fprintf('%s\n%s%s\nstatus: %d\n',separatorline,msg,separatorline,status);
         else
-            [status, msg] = system(cmdline);
+            [~, msg] = system(cmdline);
         end
 
         %% Move/Rename NIfTIs to final destination
         niiEntries = xASL_adm_GetFileList(temp_dir, '.*\.nii$', 'FPListRec', [0 Inf]);
 		
-		% Matlab sometimes has a problem to read special characters
-        % This hasnt been fixed yet for windows
-		if isempty(niiEntries) 
+		% Check if NIfTIs do not exist
+		if isempty(niiEntries)
+            
 			% Try to read files with LS command
 			pathEntriesAlt = ls(temp_dir);
 			
+            % Not yet properly tested on Windows, as the error hasn't occured there with the same data as on Linux
             if ~isempty(pathEntriesAlt)
-            
-				% Not yet properly tested on Windows, as the error hasn't occured there with the same data as on Linux
-				if ispc()
-					warning('Illegal characters detected in filename. Will attempt to fix it, but this was not tested on Windows yet.');
+				if ispc
+					warning('No NIfTIs found! Either illegal characters in filenames or other code defect...');
 				end
                 % Then break to separate files according to character 32
                 indNewLine = find(pathEntriesAlt == 10);
@@ -297,10 +297,11 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         if isempty(niiEntries)
             error('Empty output dcm2nii');
         else
-            [niiPaths, niiNames, niiExt] = cellfun(@(y) xASL_fileparts(y), niiEntries, 'UniformOutput',false);
+            [niiPaths, niiNames, ~] = cellfun(@(y) xASL_fileparts(y), niiEntries, 'UniformOutput',false);
         end
 
-        nNifties = length(niiNames); % Number of NIfTIs
+        % Number of NIfTIs
+        nNifties = length(niiNames);
         if nNifties==0
             error('Conversion failed: No nifti output files available');
         else
@@ -346,7 +347,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                 % Make BIDS compatible dest_file here
                 DestFileName = series_name;
 
-                [Ind1 Ind2] = regexp(niiNames{iVolume},'_run-\d*_','start','end');
+                [Ind1, Ind2] = regexp(niiNames{iVolume},'_run-\d*_','start','end');
                 if ~isempty(Ind1) && ~isempty(Ind2) % add run_index suffix (if it is there)
                     RunName = niiNames{iVolume}(Ind1+1:Ind2-1);
                     DestFileName = [DestFileName '_' RunName];
@@ -357,20 +358,20 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 
                 if iVolume==min(parms.Keep)
                     ScanNameOut = DestFileName;
-				end
-				
-				if length(parms.Keep)>1 % add iVolume suffix for SeriesNumber (if there are multiple)
-					% Obtain the SeriesNumber from JSON
-					[Gpath, Gfile] = xASL_fileparts(fTempNii);
-					tempJSON = fullfile(Gpath,[Gfile '.json']);
-					if exist(tempJSON,'file')
-						tempJSON = spm_jsonread(tempJSON);
-						if isfield(tempJSON,'SeriesNumber')
-							DestFileName = [DestFileName '_' num2str(tempJSON.SeriesNumber)];
-						end
-					else
-						warning('JSON sidecar missing after dcm2nii conversion');
-					end
+                end
+                
+                if length(parms.Keep)>1 % add iVolume suffix for SeriesNumber (if there are multiple)
+                    % Obtain the SeriesNumber from JSON
+                    [Gpath, Gfile] = xASL_fileparts(fTempNii);
+                    tempJSON = fullfile(Gpath,[Gfile '.json']);
+                    if exist(tempJSON,'file')
+                        tempJSON = spm_jsonread(tempJSON);
+                        if isfield(tempJSON,'SeriesNumber')
+                            DestFileName = [DestFileName '_' num2str(tempJSON.SeriesNumber)];
+                        end
+                    else
+                        warning('JSON sidecar missing after dcm2nii conversion');
+                    end
                 end
                 
                 % Fallback
