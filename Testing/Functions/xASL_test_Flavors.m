@@ -88,7 +88,7 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 
     %% 3. Run the comparison of converted BIDS with the reference data
     if bTest(3)
-        fprintf('\n================================== CHECK THE BIDS CONVERSION =================================\n');
+        xASL_adm_BreakString('CHECK THE BIDS CONVERSION');
         [flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'rawdata','rawdataReference');
     end
     
@@ -101,7 +101,7 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 
     %% 5. Run the comparison of data converted to the legacy format with the reference data
     if bTest(5)
-        fprintf('\n================================= CHECK THE LEGACY CONVERSION ================================\n');
+        xASL_adm_BreakString('CHECK THE LEGACY CONVERSION');
         [flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'derivatives','derivativesReference');
     end
     
