@@ -15,7 +15,7 @@ function x = xASL_imp_FinishImport(x)
 % 1. Create dataPar.json
 % 2. Copy participants.tsv
 % 3. Copy dataset_description JSON and add 'GeneratedBy' fields
-% 4. Overwrite DatasetRoot
+% 4. Add missing fields
 % 5. Move bids_report files to subject directories
 % 6. Move import summary files to log directory
 %
@@ -26,13 +26,56 @@ function x = xASL_imp_FinishImport(x)
 % Copyright 2015-2021 ExploreASL
 
 
+    %% 1. Create dataPar.json
+    if x.opts.ImportModules(4)
+       x = xASL_imp_FinishImport_CreateDataPar(x);
+    end
 
-    %% 1. Create dataPar.json    
+
+    %% 2. Copy participants.tsv
+    if x.opts.ImportModules(4)
+        x = xASL_imp_FinishImport_CreateParticipants(x);
+    end
+    
+    
+    %% 3. Copy dataset_description JSON and add 'GeneratedBy' fields
+    if x.opts.ImportModules(4)
+        x = xASL_imp_FinishImport_CreateDatasetDescription(x);
+    end
+    
+    
+    %% 4. Add missing fields
+    if x.opts.ImportModules(4)
+        x = xASL_imp_FinishImport_AddMissingFields(x);        
+    end
+    
+    
+    %% 5. Move bids_report files to subject directories
+    if x.opts.ImportModules(4)
+        x = xASL_imp_FinishImport_MoveBidsReports(x);        
+    end
+    
+    
+    %% 6. Move import summary files to log directory
+    if x.opts.ImportModules(4)
+        x = xASL_imp_FinishImport_MoveImportLogFiles(x);        
+    end
+    
+    
+end
+
+
+
+%% Create the dataPar.json 
+function x = xASL_imp_FinishImport_CreateDataPar(x)
+
     if ~isfield(x,'dataPar')
         % Create default if no dataPar was provided
+        fprintf('No dataPar.json provided, will create default version...\n');
         dataPar = struct();
     else
         % dataPar was provided
+        fprintf('Export provided dataPar.json...\n');
         dataPar = x.dataPar;
         x = rmfield(x,'dataPar');
     end
@@ -80,127 +123,114 @@ function x = xASL_imp_FinishImport(x)
     % Overwrite dataPar.json in x structure
     fprintf('Overwriting x.dir.dataPar...\n');
 
+end
 
-    %% 2. Copy participants.tsv
-    
-    % We only perform this step if BIDS2LEGACY was run
-    if x.opts.ImportModules(4)
 
-        % Define file names
-        pathParticipantsTSV = fullfile(x.dir.DatasetRoot, 'participants.tsv');
-        pathParticipantsTSVxASL = fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'participants.tsv');
+%% Create participants.tsv
+function x = xASL_imp_FinishImport_CreateParticipants(x)
 
-        % Backwards compatibility: rename to lowercase
-        fileListParticipantsTSVold = xASL_adm_GetFileList(x.dir.DatasetRoot,'^Participants.tsv$',false);
-        if ~isempty(fileListParticipantsTSVold) % We added the _temp copy step so that the code works on case insensitive systems like windows as well. Please don't remove that step for backwards compatibility (at least not until release 2.0.0).
-            pathParticipantsTSVold = fullfile(x.dir.DatasetRoot, 'Participants.tsv');
-            pathParticipantsTSVoldTemp = fullfile(x.dir.DatasetRoot, 'Participants_temp.tsv');
-            xASL_Move(pathParticipantsTSVold,pathParticipantsTSVoldTemp);
-            xASL_Move(pathParticipantsTSVoldTemp,pathParticipantsTSV);
-        end
+    % Define file names
+    pathParticipantsTSV = fullfile(x.dir.DatasetRoot, 'participants.tsv');
+    pathParticipantsTSVxASL = fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'participants.tsv');
 
-        % Check if participants.tsv exists & copy it to the derivatives
-        if xASL_exist(pathParticipantsTSV,'file')
-            xASL_Copy(pathParticipantsTSV,pathParticipantsTSVxASL);
-        end
-        
+    % Backwards compatibility: rename to lowercase
+    fileListParticipantsTSVold = xASL_adm_GetFileList(x.dir.DatasetRoot,'^Participants.tsv$',false);
+    if ~isempty(fileListParticipantsTSVold) % We added the _temp copy step so that the code works on case insensitive systems like windows as well. Please don't remove that step for backwards compatibility (at least not until release 2.0.0).
+        pathParticipantsTSVold = fullfile(x.dir.DatasetRoot, 'Participants.tsv');
+        pathParticipantsTSVoldTemp = fullfile(x.dir.DatasetRoot, 'Participants_temp.tsv');
+        xASL_Move(pathParticipantsTSVold,pathParticipantsTSVoldTemp);
+        xASL_Move(pathParticipantsTSVoldTemp,pathParticipantsTSV);
     end
-    
-    
-    %% 3. Copy dataset_description JSON and add 'GeneratedBy' fields
-    
-    % We only perform this step if BIDS2LEGACY was run
-    if x.opts.ImportModules(4)
-    
-        try
-            % Copy dataset_description JSON file
-            xASL_Copy(fullfile(x.dir.DatasetRoot, 'rawdata', 'dataset_description.json'), ...
-                fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'dataset_description.json'));
 
-            % Get all JSON files in derivatives and add the "GeneratedBy" field
-            jsonFiles = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '.json$', 'FPListRec');
+    % Check if participants.tsv exists & copy it to the derivatives
+    if xASL_exist(pathParticipantsTSV,'file')
+        xASL_Copy(pathParticipantsTSV,pathParticipantsTSVxASL);
+    end
 
-            % Check file list
-            if size(jsonFiles,1)>0
-                % Iterate over files
-                for iFile = 1:size(jsonFiles,1)
-                    % Check if file should be excluded first (exclude participants.json and dataPar.json)
-                    [~,fileName] = xASL_fileparts(jsonFiles{iFile});
-                    if isempty(regexpi(fileName,'participants')) && isempty(regexpi(fileName,'dataPar'))
-                        thisPath = jsonFiles{iFile};
-                        xASL_bids_AddGeneratedByField(x, thisPath);
-                    end
+end
+
+
+%% Create dataset_description.json
+function x = xASL_imp_FinishImport_CreateDatasetDescription(x)
+
+    try
+        % Copy dataset_description JSON file
+        xASL_Copy(fullfile(x.dir.DatasetRoot, 'rawdata', 'dataset_description.json'), ...
+            fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'dataset_description.json'));
+
+        % Get all JSON files in derivatives and add the "GeneratedBy" field
+        jsonFiles = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '.json$', 'FPListRec');
+
+        % Check file list
+        if size(jsonFiles,1)>0
+            % Iterate over files
+            for iFile = 1:size(jsonFiles,1)
+                % Check if file should be excluded first (exclude participants.json and dataPar.json)
+                [~,fileName] = xASL_fileparts(jsonFiles{iFile});
+                if isempty(regexpi(fileName,'participants')) && isempty(regexpi(fileName,'dataPar'))
+                    thisPath = jsonFiles{iFile};
+                    xASL_bids_AddGeneratedByField(x, thisPath);
                 end
             end
-        catch ME
-            warning('Adding the GeneratedBy fields failed...');
-            fprintf('%s\n', ME.message);
         end
-        
+    catch ME
+        warning('Adding the GeneratedBy fields failed...');
+        fprintf('%s\n', ME.message);
     end
+
+end
+
+
+%% Add missing fields
+function x = xASL_imp_FinishImport_AddMissingFields(x)
     
-    
-    %% 4. Overwrite DatasetRoot
-    
-    % We only perform this step if BIDS2LEGACY was run
-    if x.opts.ImportModules(4)
-    
-        fieldsDataPar = fieldnames(dataPar.x);
-        % Add fields that are in dataPar.x but missing in x
-        for iField = 1:numel(fieldsDataPar)
-            if ~isfield(x,fieldsDataPar{iField,1}) && ~strcmp('dir',fieldsDataPar{iField,1})
-                x.(fieldsDataPar{iField,1}) = dataPar.x.(fieldsDataPar{iField,1});
-            end
+    % Add fields that are in dataPar.x but missing in x
+    fieldsDataPar = fieldnames(dataPar.x);
+    for iField = 1:numel(fieldsDataPar)
+        if ~isfield(x,fieldsDataPar{iField,1}) && ~strcmp('dir',fieldsDataPar{iField,1})
+            x.(fieldsDataPar{iField,1}) = dataPar.x.(fieldsDataPar{iField,1});
         end
-        
     end
-    
-    
-    %% 5. Move bids_report files to subject directories
-    
-    % We only perform this step if BIDS2LEGACY was run
-    if x.opts.ImportModules(4)
-        
-        % Move bids_report JSON files
-        bidsReportFiles = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '^bids_report.+.json$', 'FPListRec');
-        
-        % Subject/Session directories
-        subjectSessionDirs = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '^sub.+$',[],[],true);
-        
-        % Find corresponding directories
-        if numel(bidsReportFiles)==numel(subjectSessionDirs)
-            % We assume identical ordering
-            for iFile=1:numel(bidsReportFiles)
-                sourceFile = bidsReportFiles{iFile};
-                [~, fileName] = fileparts(bidsReportFiles{iFile});
-                destFile = fullfile(subjectSessionDirs{iFile},[fileName '.json']);
-                xASL_Move(sourceFile,destFile,1);
-            end
-        end
-        
-    end
-    
-    
-    %% 6. Move import summary files to log directory
-    
-    % We only perform this step if BIDS2LEGACY was run
-    if x.opts.ImportModules(4)
-        
-        % Move import summary CSV files
-        importSummaryFiles = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '^import_summary.+$', 'FPListRec');
-        for iFile=1:numel(importSummaryFiles)
-            sourceFile = importSummaryFiles{iFile};
-            [~, fileName] = fileparts(importSummaryFiles{iFile});
-            destFile = fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log',[fileName '.csv']);
-            xASL_Move(sourceFile,destFile,1);
-        end
-        
-    end
-    
     
 end
 
 
+%% Move bids report files
+function x = xASL_imp_FinishImport_MoveBidsReports(x)
+    
+    % Move bids_report JSON files
+    bidsReportFiles = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '^bids_report.+.json$', 'FPListRec');
+
+    % Subject/Session directories
+    subjectSessionDirs = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '^sub.+$',[],[],true);
+
+    % Find corresponding directories
+    if numel(bidsReportFiles)==numel(subjectSessionDirs)
+        % We assume identical ordering
+        for iFile=1:numel(bidsReportFiles)
+            sourceFile = bidsReportFiles{iFile};
+            [~, fileName] = fileparts(bidsReportFiles{iFile});
+            destFile = fullfile(subjectSessionDirs{iFile},[fileName '.json']);
+            xASL_Move(sourceFile,destFile,1);
+        end
+    end
+    
+end
+
+
+%% Move import log files
+function x = xASL_imp_FinishImport_MoveImportLogFiles(x)
+
+    % Move import summary CSV files
+    importSummaryFiles = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '^import_summary.+$', 'FPListRec');
+    for iFile=1:numel(importSummaryFiles)
+        sourceFile = importSummaryFiles{iFile};
+        [~, fileName] = fileparts(importSummaryFiles{iFile});
+        destFile = fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log',[fileName '.csv']);
+        xASL_Move(sourceFile,destFile,1);
+    end
+
+end
 
 
 
