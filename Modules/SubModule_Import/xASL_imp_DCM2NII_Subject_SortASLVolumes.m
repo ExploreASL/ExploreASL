@@ -1,4 +1,4 @@
-function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_SortASLVolumes(x,globalCounts, scanpath, scan_name, nii_files, iSubject, iVisit, iSession, iScan)
+function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_SortASLVolumes(x, globalCounts, scanpath, scan_name, nii_files, iSubject, iVisit, iSession, iScan)
 %xASL_imp_DCM2NII_Subject_SortASLVolumes Sort ASL Volumes
 %
 % FORMAT: [x, nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NII_Subject_SortASLVolumes(x, globalCounts, scanpath, scan_name, nii_files, iSubject, iVisit, iSession, iScan)
@@ -93,21 +93,25 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     
     %% 3. Get ASL context if possible
     
-    % Check if we can sort by validating that we have InstanceNumbers
-    if sum(cellfun(@isnumeric, niiTable(:,3)))==0 
-    	% Sort table based on InstanceNumbers
-        niiTable = sortrows(niiTable,2);
-        ASLContext = '';
-        % Build the ASL context string
-        for iImageType = 1:length(niiTable(:,3)')
-            ASLContext = [ASLContext ',' niiTable{iImageType,3}];
+    if isempty(niiTable)
+        warning('Empty table, sorting based on instance numbers will be skipped...');
+    else
+        % Check if we can sort by validating that we have InstanceNumbers
+        if sum(cellfun(@isnumeric, niiTable(:,3)))==0 
+            % Sort table based on InstanceNumbers
+            niiTable = sortrows(niiTable,2);
+            ASLContext = '';
+            % Build the ASL context string
+            for iImageType = 1:length(niiTable(:,3)')
+                ASLContext = [ASLContext ',' niiTable{iImageType,3}];
+            end
+            % Remove one comma
+            ASLContext = ASLContext(2:end);
+            fprintf('ASL context: %s\n', ASLContext);
+            % Sort nii_files based on ASLContext/InstanceNumbers
+            nii_files = niiTable(:,4)';
+            fprintf('Sorted NIfTIs based on InstanceNumbers...\n');
         end
-        % Remove one comma
-        ASLContext = ASLContext(2:end);
-        fprintf('ASL context: %s\n', ASLContext);
-        % Sort nii_files based on ASLContext/InstanceNumbers
-        nii_files = niiTable(:,4)';
-        fprintf('Sorted NIfTIs based on InstanceNumbers...\n');
     end
     
     %% 4. Only try shuffling if you dont know the ASL context already

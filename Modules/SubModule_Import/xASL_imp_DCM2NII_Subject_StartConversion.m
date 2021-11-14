@@ -66,8 +66,13 @@ function [imPar, globalCounts, x, summary_line, destdir, scanpath, scan_name, dc
                 dcm2niiCatchedErrors = xASL_imp_CatchErrors(ME.identifier, ME.message, [], ...
                     [], [], scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, ME.stack);
 
-                if imPar.bVerbose; warning(['dcm2nii ' scanpath ' crashed, skipping']); end
-                if imPar.bVerbose; warning('Check whether the scan is complete'); end
+                % Print warnings in verbose mode
+                if imPar.bVerbose
+                    warning(['dcm2nii ' scanpath ' crashed, skipping...']);
+                end
+                if imPar.bVerbose
+                    warning('Check whether the scan is complete...');
+                end
                 first_match = xASL_adm_GetFileList(scanpath, ['.*' imPar.dcmExtFilter],'FPList',[0 Inf]);
                 if  ~isempty(first_match); first_match = first_match{1}; end
             end
