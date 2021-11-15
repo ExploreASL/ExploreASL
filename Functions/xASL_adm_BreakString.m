@@ -1,20 +1,24 @@
-function [resultText] = xASL_adm_BreakString(textToPrint,SymbolToFill,Color,newLines,printImmediately)
+function [resultText] = xASL_adm_BreakString(textToPrint, SymbolToFill, bColor, bNewLines, bPrintImmediately)
 %xASL_adm_BreakString Pads symbols left and right of string and prints it
 %
-% FORMAT: [resultText] = xASL_adm_BreakString(textToPrint,SymbolToFill)
+% FORMAT: [resultText] = xASL_adm_BreakString(textToPrint,SymbolToFill, bColor, bNewLines, bPrintImmediately)
 % 
 % INPUT:
-%   textToPrint   - String containing a text (CHAR ARRAY, OPTIONAL)
-%   SymbolToFill  - Symbol to fill the text (CHAR ARRAY, OPTIONAL)
-%   Color         - Default or colored (BOOLEAN, OPTIONAL)
-%   newLines      - Add new lines, where 1 only means after and 2 means before and after (INTEGER, OPTIONAL)
-%   printImmediately - Print string (BOOLEAN, OPTIONAL)
+%   textToPrint   - String containing a text (CHAR ARRAY, OPTIONAL, DEFAULT '')
+%   SymbolToFill  - Symbol to fill the text (CHAR ARRAY, OPTIONAL, DEFAULT '=')
+%   bColor        - Printf text in color if true (BOOLEAN, OPTIONAL, DEFAULT true)
+%   bNewLines     - Add new lines
+%                     - 0 - no new lines
+%                     - 1 - a new line after 
+%                     - 2 - new lines before and after (INTEGER, OPTIONAL, DEFAULT 2)
+%   bPrintImmediately - Print the string immediately(BOOLEAN, OPTIONAL, DEFAULT true)
 %
 % OUTPUT:
 %   resultText    - Padded string
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    Pads symbols left and right of string.
+% DESCRIPTION:    Pads symbols left and right of a string. By default it adds new lines, and colors, and prints the string, with
+%                 a possibility to turn each of these options off.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        [resultText] = xASL_adm_BreakString('DCM2NII','=');
@@ -22,30 +26,30 @@ function [resultText] = xASL_adm_BreakString(textToPrint,SymbolToFill,Color,newL
 % Copyright 2015-2021 ExploreASL
 
     %% Define defaults
-    if nargin<1
+    if nargin<1 || isempty(textToPrint)
         textToPrint = '';
     end
     if nargin<2 || isempty(SymbolToFill)
         SymbolToFill = '=';
     end
-    if nargin<3 || isempty(Color)
-        Color = true;
+    if nargin<3 || isempty(bColor)
+        bColor = true;
     end
-    if nargin<4 || isempty(newLines)
-        newLines = 2;
+    if nargin<4 || isempty(bNewLines)
+        bNewLines = 2;
     end
     if nargin<5
-        printImmediately = true;
+        bPrintImmediately = true;
     end
 
     % Define string width
     textWidth = 94;
     
     % Create the padded string
-    resultText = xASL_adm_PaddedString(textToPrint,SymbolToFill,Color,newLines,textWidth);
+    resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, bColor, bNewLines, textWidth);
     
     % Print
-    if printImmediately
+    if bPrintImmediately
         fprintf(resultText);
     end
 
@@ -54,10 +58,10 @@ end
 
 
 % Create the padded string
-function resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, Color, newLines, textWidth)
+function resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, bColor, bNewLines, textWidth)
 
     %% Create default string
-    resultText = repmat(SymbolToFill,1,textWidth);
+    resultText = repmat(SymbolToFill, 1, textWidth);
     
     % Pad spaces
     if ~isempty(textToPrint)
@@ -76,16 +80,15 @@ function resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, Color, ne
     %% Add specifics
     
     % Check if string should be colored
-    if Color
+    if bColor
         resultText = sprintf(['[\b' resultText ']\b']);
     end
     
     % Add new lines
-    if newLines==2
+    if bNewLines==2
         resultText = sprintf(['\n' resultText '\n']);
-    else
+	elseif bNewLines==1
         resultText = sprintf([resultText '\n']);
     end
-
 
 end
