@@ -40,7 +40,7 @@ function x = xASL_init_PrintCheckSettings(x)
 
     %% -----------------------------------------------------------------------
     %% 2) Print data/study specific settings
-    fprintf('==================================== Additional Settings =====================================\n');
+    xASL_adm_BreakString('Additional Settings',[],[],1);
     
     if x.opts.nWorkers>1
         fprintf(['I am worker ' num2str(x.opts.iWorker) '/' num2str(x.opts.nWorkers) '\n']);
@@ -106,7 +106,8 @@ function x = xASL_init_PrintCheckSettings(x)
 
     %% -----------------------------------------------------------------------
     %% 3) Print warnings
-    fprintf('\n%s\n\n','==============================================================================================');
+    xASL_adm_BreakString('');
+    fprintf('\n');
     field_symbol = {'subjectRegexp'};
 
     for iField=1:length(field_symbol)
@@ -129,7 +130,7 @@ function x = xASL_init_PrintCheckSettings(x)
     if ~isfield(x,'dataset')
         warning('x.dataset didn''nt exist');
     else
-        if ~isempty(regexp(x.dataset.subjectRegexp, '^(\^|)\.\*(\$|)$'))
+        if ~isempty(regexp(x.dataset.subjectRegexp, '^(\^|)\.\*(\$|)$', 'once'))
             warning('Subject regexp not specific! Check that no wrong folders are included as subjects');
         end
     end
