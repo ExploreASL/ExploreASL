@@ -30,24 +30,25 @@ function [result, x] = xASL_module_ASL(x)
 % - `100_WADQC`              - QC for WAD-QC DICOM server (OPTIONAL)
 %
 % This module performs the following initialization/admin steps:
-% A. Check if ASL exists, otherwise skip this module
-% B. Manage mutex state — processing step
-% C. Cleanup before rerunning
 %
-% D - ASL processing parameters
-% D1. Load ASL parameters (inheritance principle)
-% D2. Default ASL processing settings in the x.modules.asl field
-% D3. Multi-PLD parsing
-% D4. TimeEncoded parsing
-% D5. Multi-TE parsing
+% - A. Check if ASL exists, otherwise skip this module
+% - B. Manage mutex state — processing step
+% - C. Cleanup before rerunning
 %
-% E - ASL quantification parameters
-% E1. Default quantification parameters in the Q field
-% E2. Define sequence (educated guess based on the Q field)
-% F. Backward and forward compatibility of filenames
-% G. Split ASL and M0 within the ASL time series
-% H. Skip processing if invalid image
-
+% - D - ASL processing parameters
+% - D1. Load ASL parameters (inheritance principle)
+% - D2. Default ASL processing settings in the x.modules.asl field
+% - D3. Multi-PLD parsing
+% - D4. TimeEncoded parsing
+% - D5. Multi-TE parsing
+%
+% - E - ASL quantification parameters
+% - E1. Default quantification parameters in the Q field
+% - E2. Define sequence (educated guess based on the Q field)
+% - F. Backward and forward compatibility of filenames
+% - G. Split ASL and M0 within the ASL time series
+% - H. Skip processing if invalid image
+%
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
