@@ -60,42 +60,14 @@ x = xASL_init_InitializeMutex(x, 'ASL'); % starts mutex locking process to ensur
 result = false;
 
 
-
 %% A. Check if ASL exists, otherwise skip this module
-x.P.Path_ASL4D = fullfile(x.dir.SESSIONDIR, 'ASL4D.nii');
-x.P.Path_ASL4D_json = fullfile(x.dir.SESSIONDIR, 'ASL4D.json');
-x.P.Path_ASL4D_parms_mat = fullfile(x.dir.SESSIONDIR, 'ASL4D_parms.mat');
-
-if ~xASL_exist(x.P.Path_ASL4D, 'file')
-    % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
-    FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)ASL4D.*\.nii$');
-
-    if ~isempty(FileList) && isfield(x.modules.asl,'M0PositionInASL4D')
-        % skip, managed below
-    elseif ~isempty(FileList)
-        xASL_Move(FileList{1}, x.P.Path_ASL4D);
-        [Fpath, Ffile] = xASL_fileparts(x.P.Path_ASL4D);
-        jsonPath = fullfile(Fpath, [Ffile '.json']);
-        parmsPath = fullfile(Fpath, [Ffile '_parms.mat']);
-        if exist(jsonPath,'file')
-            xASL_Move(jsonPath, x.P.Path_ASL4D_json);
-        end
-        if exist(parmsPath,'file')
-            xASL_Move(parmsPath, x.P.Path_ASL4D_parms_mat);
-        end
-    else
-        fprintf('%s\n',['No ASL found, skipping: ' x.dir.SESSIONDIR]);
-        result = true;
-        return;
-    end
-end
-
-x = xASL_init_FileSystem(x); % do this only here, to save time when skipping this module
-% Change working directory to make sure that unspecified output will go there...
-oldFolder = cd(x.dir.SESSIONDIR);
+[x,result,skip] = xASL_module_ASL_CheckASL(x,result);
+if skip, return; end
+x = xASL_init_FileSystem(x); % Do this only here, to save time when skipping this module
+oldFolder = cd(x.dir.SESSIONDIR); % Change working directory to make sure that unspecified output will go there...
 
 
-%% B. Manage mutex state — processing step
+%% B. Manage mutex state processing step
 StateName{ 1} = '010_TopUp';
 StateName{ 2} = '020_RealignASL';
 StateName{ 3} = '030_RegisterASL';
@@ -554,3 +526,40 @@ result = true;
 close all;
 
 end
+
+
+%% Check if ASL exists, otherwise skip this module
+function [x,result,skip] = xASL_module_ASL_CheckASL(x,result)
+
+    skip = false;
+    x.P.Path_ASL4D = fullfile(x.dir.SESSIONDIR, 'ASL4D.nii');
+    x.P.Path_ASL4D_json = fullfile(x.dir.SESSIONDIR, 'ASL4D.json');
+    x.P.Path_ASL4D_parms_mat = fullfile(x.dir.SESSIONDIR, 'ASL4D_parms.mat');
+
+    if ~xASL_exist(x.P.Path_ASL4D, 'file')
+        % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
+        FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)ASL4D.*\.nii$');
+
+        if ~isempty(FileList) && isfield(x.modules.asl,'M0PositionInASL4D')
+            % skip, managed below
+        elseif ~isempty(FileList)
+            xASL_Move(FileList{1}, x.P.Path_ASL4D);
+            [Fpath, Ffile] = xASL_fileparts(x.P.Path_ASL4D);
+            jsonPath = fullfile(Fpath, [Ffile '.json']);
+            parmsPath = fullfile(Fpath, [Ffile '_parms.mat']);
+            if exist(jsonPath,'file')
+                xASL_Move(jsonPath, x.P.Path_ASL4D_json);
+            end
+            if exist(parmsPath,'file')
+                xASL_Move(parmsPath, x.P.Path_ASL4D_parms_mat);
+            end
+        else
+            fprintf('%s\n',['No ASL found, skipping: ' x.dir.SESSIONDIR]);
+            result = true;
+            skip = true;
+        end
+    end
+
+end
+
+
