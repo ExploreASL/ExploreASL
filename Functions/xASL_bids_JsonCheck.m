@@ -97,7 +97,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Check field requirements and dependencies
 if strcmpi(fileType,'ASL')
-    fprintf('[\b================================== BIDS JSON Check Results ===================================]\b\n');
+    xASL_adm_BreakString('BIDS JSON Check Results');
 end
 
 % Check required ASL fields

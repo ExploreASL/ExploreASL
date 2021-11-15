@@ -78,7 +78,7 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
             [~, scanName] = xASL_fileparts([anatOutLabel '_' iAnatType{1}]);
             
             % Print anat name
-            fprintf('Scan %s ...\n', scanName);
+            fprintf('scan %s ...\n', scanName);
             
             % Move the NiFTI file
             anatNiiPath = [anatOutLabel '_' iAnatType{1} '.nii.gz'];

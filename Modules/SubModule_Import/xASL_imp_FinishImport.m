@@ -28,7 +28,7 @@ function x = xASL_imp_FinishImport(x)
 
     %% 1. Create dataPar.json
     if x.opts.ImportModules(4)
-       x = xASL_imp_FinishImport_CreateDataPar(x);
+       [x,dataPar] = xASL_imp_FinishImport_CreateDataPar(x);
     end
 
 
@@ -46,7 +46,7 @@ function x = xASL_imp_FinishImport(x)
     
     %% 4. Add missing fields
     if x.opts.ImportModules(4)
-        x = xASL_imp_FinishImport_AddMissingFields(x);        
+        x = xASL_imp_FinishImport_AddMissingFields(x,dataPar);        
     end
     
     
@@ -67,7 +67,7 @@ end
 
 
 %% Create the dataPar.json 
-function x = xASL_imp_FinishImport_CreateDataPar(x)
+function [x,dataPar] = xASL_imp_FinishImport_CreateDataPar(x)
 
     if ~isfield(x,'dataPar')
         % Create default if no dataPar was provided
@@ -182,13 +182,15 @@ end
 
 
 %% Add missing fields
-function x = xASL_imp_FinishImport_AddMissingFields(x)
+function x = xASL_imp_FinishImport_AddMissingFields(x,dataPar)
     
     % Add fields that are in dataPar.x but missing in x
-    fieldsDataPar = fieldnames(dataPar.x);
-    for iField = 1:numel(fieldsDataPar)
-        if ~isfield(x,fieldsDataPar{iField,1}) && ~strcmp('dir',fieldsDataPar{iField,1})
-            x.(fieldsDataPar{iField,1}) = dataPar.x.(fieldsDataPar{iField,1});
+    if isfield(dataPar,'x')
+        fieldsDataPar = fieldnames(dataPar.x);
+        for iField = 1:numel(fieldsDataPar)
+            if ~isfield(x,fieldsDataPar{iField,1}) && ~strcmp('dir',fieldsDataPar{iField,1})
+                x.(fieldsDataPar{iField,1}) = dataPar.x.(fieldsDataPar{iField,1});
+            end
         end
     end
     

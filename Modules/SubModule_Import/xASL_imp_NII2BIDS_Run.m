@@ -28,8 +28,8 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
 % Copyright 2015-2021 ExploreASL
 
     %% Print the run that is being converted
-    fprintf('\n[\b======================================== CONVERT RUN =========================================]\b\n');
-    fprintf('Converting subject %s, session %s, run %s ', bidsLabel.subject, bidsLabel.visit, listRuns{iRun});
+    xASL_adm_BreakString('CONVERT RUN');
+    fprintf('Converting subject %s, session %s, run %s, ', bidsLabel.subject, bidsLabel.visit, listRuns{iRun});
 
     %% 1. Make a subject directory with a correct session name
     if ~isempty(bidsLabel.visit)
