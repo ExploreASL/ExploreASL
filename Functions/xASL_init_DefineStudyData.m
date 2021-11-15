@@ -129,6 +129,7 @@ if ~isempty(x.dataset.TotalSubjects)
     x.SUBJECTS = x.dataset.TotalSubjects;
 end
 if ~isfield(x,'SUBJECTS')
+    warning('Missing x.SUBJECTS field...');
     x.SUBJECTS = '';
 end
 x.nSubjects = length(x.SUBJECTS);
