@@ -52,6 +52,10 @@ function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath, b
 %     Marques JP, Kober T, Krueger G, van der Zwaag W, Van de Moortele PF, Gruetter R. 
 %     MP2RAGE, a self bias-field corrected sequence for improved segmentation and T1-mapping at high field. 
 %     Neuroimage. 2010 Jan 15;49(2):1271-81. 
+%    
+%     Ivanov D, Gardumi A, Haast RAM, Pfeuffer J, Poser BA, Uludag K. 
+%     Comparison of 3 T and 7 T ASL techniques for concurrent functional perfusion and BOLD studies
+%     Neuroimage. 2017; 156:363-376.
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
 
@@ -320,9 +324,10 @@ else
 			case 4
 				x.Q.BloodT1 = 1914; % Rooney 2007
 			case 7
-				x.Q.BloodT1 = 2578; % Rooney 2007
+				%x.Q.BloodT1 = 2578; % Rooney 2007
+				x.Q.BloodT1 = 2100; % Ivanov 2017
 			otherwise
-				x.Q.BloodT1 = 1650; % Alsop 2015 MRM
+				x.Q.BloodT1 = 1650; % Alsop 2015 MRM - assuming default 3 T
 				fprintf('%s\n',['Warning: Unknown T1-blood for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 		end
 	end
@@ -358,14 +363,16 @@ else
 
     %% 7.   Labeling efficiency
     if ~isfield(x.Q,'LabelingEfficiency') || isempty(x.Q.LabelingEfficiency)
-        if ~isfield(x.Q,'LabelingEfficiency')
-            switch lower(x.Q.LabelingType)
-                case 'pasl'
-                    x.Q.LabelingEfficiency = 0.98; % (concensus paper, Wong, MRM 1998)
-                case 'casl'
-                    x.Q.LabelingEfficiency = 0.85; % (concensus paper, Dai, MRM 2008)
-            end
-        end
+		switch lower(x.Q.LabelingType)
+			case 'pasl'
+				if x.MagneticFieldStrength == 7
+					x.Q.LabelingEfficiency = 0.95; % FAIR at 7T, Ivanov, Neuroimage, 2017
+				else
+					x.Q.LabelingEfficiency = 0.98; % (concensus paper, Wong, MRM 1998)
+				end
+			case 'casl'
+				x.Q.LabelingEfficiency = 0.85; % (concensus paper, Dai, MRM 2008)
+		end
     end
     x.Q.LabEff_Bsup = 1; % default for no background suppression
     % Apply the effect of background suppression pulses on labeling efficiency
