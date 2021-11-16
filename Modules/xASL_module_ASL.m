@@ -113,12 +113,6 @@ end
 %% D1. Load ASL parameters (inheritance principle)
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
 
-if ~isfield(x,'Q')
-    x.Q = struct;
-    warning('x.Q didnt exist, are quantification parameters lacking?');
-end
-
-
 
 %% D2. Default ASL processing settings in the x.modules.asl field
 if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNativeSpace)
@@ -166,10 +160,6 @@ end
 
 
 %% E1. Default quantification parameters in the Q field
-if ~isfield(x,'Q')
-    x.Q = struct;
-end
-
 if ~isfield(x.Q,'ApplyQuantification') || isempty(x.Q.ApplyQuantification)
     x.Q.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
 elseif length(x.Q.ApplyQuantification)>5
@@ -540,9 +530,7 @@ function [x,result,skip] = xASL_module_ASL_CheckASL(x,result)
         % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
         FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)ASL4D.*\.nii$');
 
-        if ~isempty(FileList) && isfield(x.modules.asl,'M0PositionInASL4D')
-            % skip, managed below
-        elseif ~isempty(FileList)
+        if ~isempty(FileList)
             xASL_Move(FileList{1}, x.P.Path_ASL4D);
             [Fpath, Ffile] = xASL_fileparts(x.P.Path_ASL4D);
             jsonPath = fullfile(Fpath, [Ffile '.json']);
