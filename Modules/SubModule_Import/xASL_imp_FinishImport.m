@@ -16,8 +16,7 @@ function x = xASL_imp_FinishImport(x)
 % 2. Copy participants.tsv
 % 3. Copy dataset_description JSON and add 'GeneratedBy' fields
 % 4. Add missing fields
-% 5. Move bids_report files to subject directories
-% 6. Move import summary files to log directory
+% 5. Move import summary files to log directory
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        x = xASL_imp_FinishImport(x);
@@ -50,13 +49,7 @@ function x = xASL_imp_FinishImport(x)
     end
     
     
-    %% 5. Move bids_report files to subject directories
-    if x.opts.ImportModules(4)
-        x = xASL_imp_FinishImport_MoveBidsReports(x);        
-    end
-    
-    
-    %% 6. Move import summary files to log directory
+    %% 5. Move import summary files to log directory
     if x.opts.ImportModules(4)
         x = xASL_imp_FinishImport_MoveImportLogFiles(x);        
     end
@@ -191,29 +184,6 @@ function x = xASL_imp_FinishImport_AddMissingFields(x,dataPar)
             if ~isfield(x,fieldsDataPar{iField,1}) && ~strcmp('dir',fieldsDataPar{iField,1})
                 x.(fieldsDataPar{iField,1}) = dataPar.x.(fieldsDataPar{iField,1});
             end
-        end
-    end
-    
-end
-
-
-%% Move bids report files (this can probably be removed later on, since the files should go to logs directly now)
-function x = xASL_imp_FinishImport_MoveBidsReports(x)
-    
-    % Move bids_report JSON files
-    bidsReportFiles = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '^bids_report.+.json$', 'FPListRec');
-
-    % Subject/Session directories
-    subjectSessionDirs = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '^sub.+$',[],[],true);
-
-    % Find corresponding directories
-    if numel(bidsReportFiles)==numel(subjectSessionDirs)
-        % We assume identical ordering
-        for iFile=1:numel(bidsReportFiles)
-            sourceFile = bidsReportFiles{iFile};
-            [~, fileName] = fileparts(bidsReportFiles{iFile});
-            destFile = fullfile(subjectSessionDirs{iFile},[fileName '.json']);
-            xASL_Move(sourceFile,destFile,1);
         end
     end
     

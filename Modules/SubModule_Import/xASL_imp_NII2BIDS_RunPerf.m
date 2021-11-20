@@ -151,7 +151,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     % Export report file for ASL dependencies
     if exist('bidsReport','var')
         if ~isempty(fieldnames(bidsReport))
-            spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot),'derivatives','ExploreASL','logs', ...
+            spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot),'derivatives','ExploreASL','log', ...
                 ['bids_report_' subjectSessionLabel runLabel '.json']), bidsReport);
         end
     end
