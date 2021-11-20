@@ -197,7 +197,7 @@ function x = xASL_imp_FinishImport_AddMissingFields(x,dataPar)
 end
 
 
-%% Move bids report files
+%% Move bids report files (this can probably be removed later on, since the files should go to logs directly now)
 function x = xASL_imp_FinishImport_MoveBidsReports(x)
     
     % Move bids_report JSON files
