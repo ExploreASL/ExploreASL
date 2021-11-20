@@ -16,7 +16,6 @@ function x = xASL_imp_FinishImport(x)
 % 2. Copy participants.tsv
 % 3. Copy dataset_description JSON and add 'GeneratedBy' fields
 % 4. Add missing fields
-% 5. Move import summary files to log directory
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        x = xASL_imp_FinishImport(x);
@@ -46,12 +45,6 @@ function x = xASL_imp_FinishImport(x)
     %% 4. Add missing fields
     if x.opts.ImportModules(4)
         x = xASL_imp_FinishImport_AddMissingFields(x,dataPar);        
-    end
-    
-    
-    %% 5. Move import summary files to log directory
-    if x.opts.ImportModules(4)
-        x = xASL_imp_FinishImport_MoveImportLogFiles(x);        
     end
     
     
@@ -188,22 +181,5 @@ function x = xASL_imp_FinishImport_AddMissingFields(x,dataPar)
     end
     
 end
-
-
-%% Move import log files
-function x = xASL_imp_FinishImport_MoveImportLogFiles(x)
-
-    % Move import summary CSV files
-    importSummaryFiles = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '^import_summary.+$', 'FPListRec');
-    for iFile=1:numel(importSummaryFiles)
-        sourceFile = importSummaryFiles{iFile};
-        [~, fileName] = fileparts(importSummaryFiles{iFile});
-        destFile = fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log',[fileName '.csv']);
-        xASL_Move(sourceFile,destFile,1);
-    end
-
-end
-
-
 
 

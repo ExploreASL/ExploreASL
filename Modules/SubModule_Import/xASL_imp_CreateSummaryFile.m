@@ -28,7 +28,7 @@ function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x)
 
     
     %% 1. Create summary file
-	summary_filepath = fullfile(imPar.TempRoot, ['import_summary_' thisSubject.name '.csv']);
+	summary_filepath = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'log', ['import_summary_' thisSubject.name '.csv']);
 	fid_summary = fopen(summary_filepath,'wt');
 	
     % Print headers for parameters obtained from NIfTI file

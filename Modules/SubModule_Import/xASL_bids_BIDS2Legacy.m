@@ -153,7 +153,7 @@ end
 
 
 %% 6. Clean up
-xASL_imp_BIDS2Legacy_CleanUp(pathStudy,x.SUBJECT);
+xASL_imp_BIDS2Legacy_CleanUp(pathStudy);
 
 
 end
@@ -161,19 +161,15 @@ end
 
 
 %% Clean-Up subfunction
-function xASL_imp_BIDS2Legacy_CleanUp(pathStudy,SubjectName)
+function xASL_imp_BIDS2Legacy_CleanUp(pathStudy)
 
     % Start with empty file list
     filesCleanUp = {};
     
-    % Search for dcm2niix summary file & import log (if they are in main level, could be in derivatives already)
-    summaryFile = xASL_adm_GetFileList(pathStudy,['^import_summary_' SubjectName '.+$']);
+    % Search for dcm2niix summary file
     dcm2niixImportLogFile = xASL_adm_GetFileList(pathStudy,'^import_log.+$');
     
     % Merge log file lists
-    if ~isempty(summaryFile)
-        filesCleanUp = vertcat(filesCleanUp,summaryFile);
-    end
     if ~isempty(dcm2niixImportLogFile)
         filesCleanUp = vertcat(filesCleanUp,dcm2niixImportLogFile);
     end
