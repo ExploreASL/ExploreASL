@@ -50,7 +50,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     addOptional(p, 'DicomFilter', '^.+\.dcm$', @ischar);
     addOptional(p, 'ExePath', [], @ischar);
     addOptional(p, 'IniPath', [], @ischar);
-    addOptional(p, 'Version', '20101105', @ischar);
+    addOptional(p, 'Version', '20190902', @ischar);
     addOptional(p, 'x', struct, @isstruct);
 
     %% 2. Parse parameters
