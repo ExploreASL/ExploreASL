@@ -88,10 +88,6 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
             bPutInSessionFolder = false;
     end
 
-    if ~isempty(strfind(char(imPar.folderHierarchy(end)),'PAR'))
-        imPar.dcm2nii_version = '20101105';
-    end
-
     %% 4.4 Now pick the matching one from the folder list
     
     % Only get the matching session

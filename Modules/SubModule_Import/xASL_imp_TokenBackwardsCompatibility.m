@@ -34,12 +34,5 @@ function imPar = xASL_imp_TokenBackwardsCompatibility(imPar)
     end
 
 
-    % Change dcmnii_version for PARREC if needed
-    if ~isempty(strfind(char(imPar.folderHierarchy(end)),'PAR'))
-        imPar.dcm2nii_version = '20101105';
-    end
-
 
 end
-
-
