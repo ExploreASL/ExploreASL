@@ -28,10 +28,16 @@ function [x] = xASL_imp_CheckImportSettings(x)
         dcm2niiDir = fullfile(x.opts.MyPath, 'External', 'MRIcron');
         xASL_adm_CheckPermissions(dcm2niiDir, true); % dcm2nii needs to be executable
     end
-    if ~isfield(x.modules.import.imPar,'dcm2nii_version') || isempty(x.modules.import.imPar.dcm2nii_version)
-        % OR for PARREC x.modules.import.imPar.dcm2nii_version = '20101105'; THIS IS AUTOMATED BELOW
-        x.modules.import.imPar.dcm2nii_version = '20190902';
+    
+    if ~isfield(x.modules.import.imPar, 'dcm2nii_version') || isempty(x.modules.import.imPar.dcm2nii_version)
+        if ~isempty(regexpi(x.modules.import.imPar.folderHierarchy{end}, 'PAR'))
+            % specific older dcm2nii version that handled Philips PAR/REC data better
+            x.modules.import.imPar.dcm2nii_version = '20101105';
+        else
+            x.modules.import.imPar.dcm2nii_version = '20190902';
+        end
     end
+    
     if ~isfield(x.modules.import.imPar,'dcmExtFilter') || isempty(x.modules.import.imPar.dcmExtFilter)
         % dcmExtFilter: the last one is because some convertors save files without extension, 
         % but there would be a dot/period before a bunch of numbers
