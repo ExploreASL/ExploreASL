@@ -4,29 +4,30 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
 % FORMAT: [bAborted, xOut] = xASL_Iteration(x, moduleName[, dryRun, stopAfterErrors])
 %
 % INPUT:
-%   x               - ExploreASL x-struct
-%   moduleName      - Should be a string xASL_module_xxxxx
-%   dryRun          - Dry run - does not execute the module (DEFAULT 0). 
-%                     This argument can also be defined as a field of x. This settings overrides what is in the x-struct.
-%   stopAfterErrors - Number of allowed errors before job iteration is stopped (DEFAULT INF). 
-%                     This argument can also be defined as a field of x. This settings overrides what is in the x-struct.
+%   x                - ExploreASL x-struct
+%   moduleName       - Should be a string xASL_module_xxxxx
+%   dryRun           - Dry run - does not execute the module (DEFAULT 0). 
+%                      This argument can also be defined as a field of x. This settings overrides what is in the x-struct.
+%   stopAfterErrors  - Number of allowed errors before job iteration is stopped (DEFAULT INF). 
+%                      This argument can also be defined as a field of x. This settings overrides what is in the x-struct.
 %   SelectedSubjects - if this field exist, it will replace x.SUBJECTS in
 %                      this script, to allow running certain subjects only
 %                      when debugging (OPTIONAL, DEFAULT=x.SUBJECTS)
 % OUTPUT:
-%   bAborted        - Report if the run was aborted
-%   xOut            - x-struct on the output
+%   bAborted         - Report if the run was aborted
+%   xOut             - x-struct on the output
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Parses the settings and runs the DatabaseLoop sub-function.
+% DESCRIPTION:       Parses the settings and runs the DatabaseLoop sub-function.
 %
-% EXAMPLE:  [~,x] = xASL_Iteration(x,'xASL_module_ASL');
+% EXAMPLE:           [~,x] = xASL_Iteration(x,'xASL_module_ASL');
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
-    % General settings
+
+    %% General settings
     dbSettings.x                     = x;
     dbSettings.x.settings.RERUN      = false;
     dbSettings.x.settings.MUTEXID    = moduleName;
@@ -69,9 +70,11 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
         end
     end
     
-    % Print module name
+    %% Print module name
     dbSettings.jobfn = str2func(moduleName);
     fprintf('\nRunning %s...\n', moduleName);
+    
+    %% Specific settings
     
     % Get module name string
     if  strcmp(moduleName(1:12),'xASL_module_')
@@ -83,7 +86,7 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
         ModName = moduleName;
     end
     
-    % Specific settings
+    % DARTEL & LongReg settings
     if  strcmp(ModName,'DARTEL') || strcmp(ModName,'LongReg')
         dbSettings.x.dir.LockDir = [dbSettings.x.dir.LockDir '_' x.P.STRUCT ];
     end
@@ -106,16 +109,16 @@ function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterError
         dbSettings.x.dir.SESSIONDIR = '<ROOT>/<SUBJECT>/<SESSION>';
     end
     
-    % Diary file
+    %% Diary file
     if ~isempty(regexp(ModName, '(DARTEL|Population|Analyze)', 'once'))
         dbSettings.diaryFile = ['<ROOT>/log/' moduleName '.log'];
     elseif ~isempty(regexp(ModName,'(Import)', 'once'))
-        dbSettings.diaryFile = ['<ROOT>/derivatives/ExploreASL/log/' moduleName '_<SUBJECT>.log'];
+        dbSettings.diaryFile = ['<ROOT>/derivatives/ExploreASL/log/' moduleName '_sub-<SUBJECT>.log'];
     else
         dbSettings.diaryFile = ['<ROOT>/log/' moduleName '_<SUBJECT>_<SESSION>.log'];
     end
     
-    % Actually run the iteration
+    %% Actually run the iteration
     [bAborted, xOut] = runIteration(dbSettings);
 end
 
