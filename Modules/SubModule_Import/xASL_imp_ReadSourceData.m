@@ -45,7 +45,8 @@ function x = xASL_imp_ReadSourceData(x)
     % Print feedback if there are no matching files
     if isempty(x.modules.import.matches)
         % This error means that there is probably something wrong with your sourceStructure.json
-        error('No matching files, skipping...');
+        error(['No matching files, skipping...\n'...
+               'Please check your sourceStructure.json file and read the import documentation...']);
     end
     
     % Copy the columns into named vectors. This construction allows for arbitrary directory hierarchies.
