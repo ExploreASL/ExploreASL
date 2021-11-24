@@ -351,8 +351,8 @@ xASL_adm_CreateDir(pathDatasetA);
 xASL_adm_CreateDir(pathDatasetB);
 
 % Copy test NIfTIs
-pathNIFTIperf = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0_pre_release','sub-001','perf','sub-001_acq-001_asl.nii.gz');
-pathNIFTIanat = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0_pre_release','sub-001','anat','sub-001_acq-003_T1w.nii.gz');
+pathNIFTIperf = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','perf','sub-001_acq-001_asl.nii.gz');
+pathNIFTIanat = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','anat','sub-001_acq-003_T1w.nii.gz');
 xASL_Copy(pathNIFTIperf,fullfile(workingDir,'datasetA','testNifti.nii.gz'));
 xASL_Copy(pathNIFTIperf,fullfile(workingDir,'datasetA','testNiftiIdentical.nii.gz'));
 xASL_Copy(pathNIFTIanat,fullfile(workingDir,'datasetB','testNifti.nii.gz'));

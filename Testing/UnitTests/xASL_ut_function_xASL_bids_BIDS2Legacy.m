@@ -26,7 +26,7 @@ UnitTest.tests(1).testname = 'Read in DRO test patient (default)';
 testTime = tic;
 
 % Define test patient paths
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0'); % fix this script
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
 droSubject = 'sub-Sub1'; % DRO subject
 sessionNum = '_1';

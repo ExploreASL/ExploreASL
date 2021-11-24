@@ -26,7 +26,7 @@ UnitTest.tests(1).testname = 'Read gzipped NIfTI using SPM admin';
 testTime = tic;
 
 % Set-up test NIfTI
-testDirsAndFiles.testSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0_pre_release','sub-001','anat');
+testDirsAndFiles.testSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','anat');
 testDirsAndFiles.testDestination = fullfile(TestRepository,'UnitTesting','working_directory','testSubject');
 testDirsAndFiles.testFile = fullfile(testDirsAndFiles.testDestination,'test.nii.gz');
 

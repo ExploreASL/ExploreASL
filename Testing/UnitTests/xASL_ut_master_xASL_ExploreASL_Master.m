@@ -264,7 +264,7 @@ UnitTest.tests(4).testname = 'DRO 2.2.0 (DCM2NIFTI)';
 testTime = tic;
 
 % Copy test patient
-testPatientSource = fullfile(TestRepository,'UnitTesting','synthetic_dcm','test_patient_2_2_0'); 
+testPatientSource = fullfile(TestRepository,'UnitTesting','synthetic_dcm','test_patient_2_2_0'); % fix this script
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
 xASL_Copy(testPatientSource, testPatientDestination, 1);
 

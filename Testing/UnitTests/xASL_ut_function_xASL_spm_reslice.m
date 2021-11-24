@@ -26,7 +26,7 @@ UnitTest.tests(1).testname = 'Reslice a T1w image to an identical copy';
 testTime = tic;
 
 % Set-up test NIfTI
-testDirsAndFiles.testSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0_pre_release','sub-001','anat');
+testDirsAndFiles.testSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','anat');
 testDirsAndFiles.testDestination = fullfile(TestRepository,'UnitTesting','working_directory','testSubject');
 testDirsAndFiles.testFileSource = fullfile(testDirsAndFiles.testDestination,'testSource.nii.gz');
 testDirsAndFiles.testFileReference = fullfile(testDirsAndFiles.testDestination,'testReference.nii.gz');
@@ -98,7 +98,7 @@ UnitTest.tests(2).testname = 'Reslice a T1w image to a rotated copy';
 testTime = tic;
 
 % Set-up test NIfTI
-testDirsAndFiles.testSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0_pre_release','sub-001','anat');
+testDirsAndFiles.testSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','anat');
 testDirsAndFiles.testDestination = fullfile(TestRepository,'UnitTesting','working_directory','testSubject');
 testDirsAndFiles.testFileSource = fullfile(testDirsAndFiles.testDestination,'testSource.nii.gz');
 testDirsAndFiles.testFileReference = fullfile(testDirsAndFiles.testDestination,'testReference.nii.gz');

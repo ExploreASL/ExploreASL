@@ -26,7 +26,7 @@ UnitTest.tests(1).testname = 'Artificial noise examples';
 testTime = tic;
 
 % Prepare test
-xASL_Copy(fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0','asl\001_asl.nii.gz'),...
+xASL_Copy(fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','perf','sub-001_acq-001_asl.nii.gz'),...
           fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'))
 im = xASL_io_Nifti2Im(fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'));
 xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'));
@@ -73,7 +73,7 @@ UnitTest.tests(2).testname = 'Dummy examples';
 testTime = tic;
 
 % Prepare test
-xASL_Copy(fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0','asl\001_asl.nii.gz'),...
+xASL_Copy(fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','perf','sub-001_acq-001_asl.nii.gz'),...
           fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'))
 im = xASL_io_Nifti2Im(fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'));
 xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'));
