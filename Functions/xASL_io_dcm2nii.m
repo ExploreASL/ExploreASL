@@ -58,9 +58,9 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     parms = p.Results;
 
     %% 3. Locate dcm2nii executable
-	if regexpi(inpath,'PAR$')
-		parms.Version = '20101105';
-	end
+	%if regexpi(inpath,'PAR$') % Automatic detection of PAR-REC, now disabled
+	%	parms.Version = '20101105';
+	%end
 	
     if ismac && str2num(parms.Version(1:4))<2014
         parms.Version = '20190902'; % mac is incompatible with older versions
