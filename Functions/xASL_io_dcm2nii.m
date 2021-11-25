@@ -25,8 +25,8 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 % 2. Parse parameters
 % 3. Locate dcm2nii executable
 % 4. Set default arguments dcm2nii
-% 5. Set dcm2niiX initialization loading
-% 6. Check if we are reading a DICOM folder
+% 5. Check if we are reading a DICOM folder
+% 6. Set dcm2niiX initialization loading
 % 7. Check for existing targets
 % 8. Create temporary subfolder for converting
 % 9. Run dcm2nii and move files to final destination using specified series name
@@ -58,6 +58,10 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     parms = p.Results;
 
     %% 3. Locate dcm2nii executable
+	if regexpi(inpath,'PAR$')
+		parms.Version = '20101105';
+	end
+	
     if ismac && str2num(parms.Version(1:4))<2014
         parms.Version = '20190902'; % mac is incompatible with older versions
     end
@@ -99,7 +103,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         end
     end
 
-    %% 4. Set default arguments dcm2nii
+    %% 4. Set default arguments dcm2nii 20101105
     % '-a y -d n -e n -f y -g n -n y -p n -r n -v y -x n'; % -o will be appended below
     % -a Anonymize [remove identifying information]: Y,N = Y
     % -b load settings from specified inifile, e.g. '-b C:\set\t1.ini'
@@ -139,14 +143,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     %   -x : crop (y/n, default n)
     %   -z : gz compress images (y/i/n/3, default n) [y=pigz, i=internal:miniz, n=no, 3=no,3D]
 
-    %% 5. Set dcm2niiX initialization loading
-    if str2num(parms.Version(1:4))<2014
-        dcm2nii_args = sprintf('-b "%s"', parms.IniPath);
-    else
-        dcm2nii_args = '-f "%f_%p_%t_%s_%r"';
-    end
-
-    %% 6. Check if we are reading a DICOM folder
+    %% 5. Check if we are reading a DICOM folder
     if exist(inpath,'dir')
         % Check if there are any DICOM files
         dicom_files = xASL_adm_GetFileList(inpath, parms.DicomFilter,'List');
@@ -169,6 +166,14 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         else
             parms.IniPath = fullfile(mricron_path,'dcm2nii-parrec.ini');
         end
+	end
+	
+	%% 6. Set dcm2niiX initialization loading
+    if str2num(parms.Version(1:4))<2014
+        dcm2nii_args = sprintf('-b "%s"', parms.IniPath);
+		
+    else
+        dcm2nii_args = '-f "%f_%p_%t_%s_%r"';
     end
 
     %% 7. Check for existing targets
