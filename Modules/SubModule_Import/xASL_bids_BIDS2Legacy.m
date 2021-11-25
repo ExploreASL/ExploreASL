@@ -1,10 +1,9 @@
-function [x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite)
+function [x] = xASL_bids_BIDS2Legacy(x, bOverwrite)
 %xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
-% FORMAT: [x] = xASL_bids_BIDS2Legacy(pathStudy, x[, bOverwrite])
+% FORMAT: [x] = xASL_bids_BIDS2Legacy(x[, bOverwrite])
 % 
 % INPUT:
-%   pathStudy  - path to the study folder containing the BIDS data in rawdata subfolder (REQUIRED)
 %   x          - ExploreASL x structure (REQUIRED, STRUCT)
 %   bOverwrite - boolean, true for overwriting files (OPTIONAL, DEFAULT = true)
 %   
@@ -33,7 +32,7 @@ function [x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite)
 % 6. Clean up
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite);
+% EXAMPLE: [x] = xASL_bids_BIDS2Legacy(x, bOverwrite);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -41,28 +40,28 @@ function [x] = xASL_bids_BIDS2Legacy(pathStudy, x, bOverwrite)
 %% 0. Admin
 
 % Verify the input parameters
-if nargin<1 || isempty(pathStudy)
-	error('pathStudy is a required parameter.');
+if isempty(x.dir.DatasetRoot)
+	error('x.dir.DatasetRoot is a required parameter.');
 end
 
-if nargin<3 || isempty(bOverwrite)
+if nargin<2 || isempty(bOverwrite)
     bOverwrite = 1;
 end
 
 % Verify that the rawdata subfolder exists
-if ~exist(fullfile(pathStudy,'rawdata'),'dir')
+if ~exist(fullfile(x.dir.DatasetRoot,'rawdata'),'dir')
     warning('Invalid folder selected, not containing rawdata folder');
     return;
 end
 
 % Creates the derivatives directory
-pathLegacy = fullfile(pathStudy, 'derivatives', 'ExploreASL');
-if exist(pathLegacy, 'dir') && bOverwrite
+x.dir.pathLegacy = fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL');
+if exist(x.dir.pathLegacy, 'dir') && bOverwrite
     fprintf('The derivatives directory already exists, overwriting...\n');
-elseif exist(pathLegacy, 'dir')
-    fprintf('%s\n', [pathLegacy ' exists, merging']);
+elseif exist(x.dir.pathLegacy, 'dir')
+    fprintf('%s\n', [x.dir.pathLegacy ' exists, merging']);
 else
-    xASL_adm_CreateDir(pathLegacy);
+    xASL_adm_CreateDir(x.dir.pathLegacy);
 end
 
 % Loads the configuration for file renaming from the BIDS configuration file
@@ -70,11 +69,11 @@ bidsPar = xASL_bids_Config();
 
 
 %% 1. Parse a folder using bids-matlab
-BIDS = bids.layout(fullfile(pathStudy,'rawdata'));
+BIDS = bids.layout(fullfile(x.dir.DatasetRoot,'rawdata'));
 nSubjects = numel(BIDS.subjectName);
 nVisits = numel(BIDS.sessionName); % this is called sessions in BIDS
 % we use this below to see if the legacy subjectname gets _1 as visit suffix or not
-[~, studyName] = fileparts(pathStudy);
+[~, studyName] = fileparts(x.dir.DatasetRoot);
 fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
 
 
@@ -97,10 +96,10 @@ for iSubjSess=1:numel(BIDS.subjects)
 
         %% 3. Define Session
         iVisit = find(strcmp(BIDS.sessionName, SessionID));
-        % remove iteration for iVisit=1 % iterate visit/session in this "BIDS.subjects" (always 1 session per BIDS.subjects)
+        % Remove iteration for iVisit = 1 -> iterate visit/session in this "BIDS.subjects" (always 1 session per BIDS.subjects)
         % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
         if nVisits==1
-            pathLegacy_SubjectVisit = fullfile(pathLegacy, SubjectID);
+            pathLegacy_SubjectVisit = fullfile(x.dir.pathLegacy, SubjectID);
             VisitString = '';
         else
             if isempty(iVisit)
@@ -108,10 +107,12 @@ for iSubjSess=1:numel(BIDS.subjects)
                 iVisit = 1;
             end
 
-            pathLegacy_SubjectVisit = fullfile(pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
+            pathLegacy_SubjectVisit = fullfile(x.dir.pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
             VisitString = [' visit ' SessionID];
         end
         SubjectVisit = [SubjectID VisitString];
+        
+        % Create subject/session directory (to enable reruns for pre-imported or crashed datasets, we need a subject level here/above!)
         xASL_adm_CreateDir(pathLegacy_SubjectVisit);
 
 
@@ -129,7 +130,7 @@ fprintf('   \n');
 
 
 % Get directories of current subject
-SubjectDirs = xASL_adm_GetFileList(fullfile(pathLegacy), ['^.+' x.SUBJECT '.+$'], [],[],true);
+SubjectDirs = xASL_adm_GetFileList(fullfile(x.dir.pathLegacy), ['^.+' x.SUBJECT '.+$'], [],[],true);
 
 
 %% 5. Parse M0 of current subject
@@ -148,7 +149,7 @@ if ~isempty(ListASL4D)
         fprintf('M0 parsed for subject %s image %s ...\n', SubjectID, currentNifti);
     end
 else
-    warning('No ASL4D file found in %s...', pathLegacy);
+    warning('No ASL4D file found in %s...', x.dir.pathLegacy);
 end
 
 
