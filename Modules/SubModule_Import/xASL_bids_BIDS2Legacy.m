@@ -54,14 +54,18 @@ if ~exist(fullfile(x.dir.DatasetRoot,'rawdata'),'dir')
     return;
 end
 
+% Check derivatives of ExploreASL
+if ~isfield(x.dir,'xASLDerivatives')
+    error('Missing xASL derivatives field...');
+end
+
 % Creates the derivatives directory
-x.dir.pathLegacy = fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL');
-if exist(x.dir.pathLegacy, 'dir') && bOverwrite
+if exist(x.dir.xASLDerivatives, 'dir') && bOverwrite
     fprintf('The derivatives directory already exists, overwriting...\n');
-elseif exist(x.dir.pathLegacy, 'dir')
-    fprintf('%s\n', [x.dir.pathLegacy ' exists, merging']);
+elseif exist(x.dir.xASLDerivatives, 'dir')
+    fprintf('%s\n', [x.dir.xASLDerivatives ' exists, merging']);
 else
-    xASL_adm_CreateDir(x.dir.pathLegacy);
+    xASL_adm_CreateDir(x.dir.xASLDerivatives);
 end
 
 % Loads the configuration for file renaming from the BIDS configuration file
@@ -99,7 +103,7 @@ for iSubjSess=1:numel(BIDS.subjects)
         % Remove iteration for iVisit = 1 -> iterate visit/session in this "BIDS.subjects" (always 1 session per BIDS.subjects)
         % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
         if nVisits==1
-            pathLegacy_SubjectVisit = fullfile(x.dir.pathLegacy, SubjectID);
+            pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, SubjectID);
             VisitString = '';
         else
             if isempty(iVisit)
@@ -107,7 +111,7 @@ for iSubjSess=1:numel(BIDS.subjects)
                 iVisit = 1;
             end
 
-            pathLegacy_SubjectVisit = fullfile(x.dir.pathLegacy, [SubjectID '_' xASL_num2str(iVisit)]);
+            pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_' xASL_num2str(iVisit)]);
             VisitString = [' visit ' SessionID];
         end
         SubjectVisit = [SubjectID VisitString];
@@ -130,7 +134,7 @@ fprintf('   \n');
 
 
 % Get directories of current subject
-SubjectDirs = xASL_adm_GetFileList(fullfile(x.dir.pathLegacy), ['^.+' x.SUBJECT '.+$'], [],[],true);
+SubjectDirs = xASL_adm_GetFileList(fullfile(x.dir.xASLDerivatives), ['^.+' x.SUBJECT '.+$'], [],[],true);
 
 
 %% 5. Parse M0 of current subject
@@ -149,7 +153,7 @@ if ~isempty(ListASL4D)
         fprintf('M0 parsed for subject %s image %s ...\n', SubjectID, currentNifti);
     end
 else
-    warning('No ASL4D file found in %s...', x.dir.pathLegacy);
+    warning('No ASL4D file found in %s...', x.dir.xASLDerivatives);
 end
 
 

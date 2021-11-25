@@ -34,12 +34,21 @@ function [x] = xASL_init_DetermineRequiredPaths(x)
     % BIDS DatasetRoot directory
     x.dir.DatasetRoot = x.opts.DatasetRoot;
     x.opts.dataParType = 'directory';
+    
+    % Set other basic BIDS directories
+    x.dir.SourceData = fullfile(x.opts.DatasetRoot,'sourcedata');
+    x.dir.RawData = fullfile(x.opts.DatasetRoot,'rawdata');
+    x.dir.Derivatives = fullfile(x.opts.DatasetRoot,'derivatives');
+    x.dir.xASLDerivatives = fullfile(x.dir.Derivatives,'ExploreASL');
+    
     % Search for descriptive JSON files
     fileListSourceStructure = xASL_adm_GetFileList(x.dir.DatasetRoot, '(?i)^sourcestructure.*\.json$');
     fileListStudyPar = xASL_adm_GetFileList(x.dir.DatasetRoot, '(?i)^studypar.*\.json$');
     fileListDataDescription = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'rawdata'), '(?i)^dataset_description\.json$');
+    
     % First try the derivatives folder
     fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL'), '(?i)^datapar.*\.json$');
+    
     % Check for x.D.ROOT
     if exist(fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL'),'dir')
         x.D.ROOT = fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL');
@@ -48,6 +57,7 @@ function [x] = xASL_init_DetermineRequiredPaths(x)
         % Derivatives maybe does not exist already, we'll try study root
         fileListDataPar = xASL_adm_GetFileList(x.dir.DatasetRoot, '(?i)^datapar.*\.json$');
     end
+    
     % Assign fields
     if ~isempty(fileListSourceStructure)
 		if length(fileListSourceStructure) > 1
