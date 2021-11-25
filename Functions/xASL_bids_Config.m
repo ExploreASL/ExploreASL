@@ -12,7 +12,7 @@ function bidsPar = xASL_bids_Config()
 %             listFieldOrder          - Gives the correct order of fields to be saved in JSON so that it corresponds to the BIDS definition
 %             listRemoveIfEmpty       - List of fields to be removed if they are empty
 %             listAnatTypes           - A list of anatomical scan-types to include
-%             string*                 - Defined strings for certain ASL-BIDS keywords (strAslContext, strLabel, strControl, strM0scan, strCbf, strDeltaM)
+%             string*                 - Defined strings for certain ASL-BIDS keywords (stringAslContext, stringLabel, stringControl, stringM0scan, stringCbf, stringDeltaM)
 %             datasetDescription      - A list of req, rec, and opt fields to be put to dataset_description.json - they all need to be predefined by the user
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Creates several structures necessary for configuring the DICOM to BIDS conversion and saving of BIDS JSON files and NII structure.
