@@ -26,17 +26,13 @@ UnitTest.tests(1).testname = 'Read in DRO test patient (default)';
 testTime = tic;
 
 % Define test patient paths
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0'); % fix this script
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 droSubject = 'sub-Sub1'; % DRO subject
 sessionNum = '_1';
 
 % Copy test data to working directory
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-
-% Prepare DRO
-testVersion = '1.2.3';
-xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion);
+xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Initialize
 x = ExploreASL;
@@ -107,18 +103,11 @@ UnitTest.tests(2).testname = 'Load DRO test patient in xASL (default)';
 testTime = tic;
 
 % Define test patient paths
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-
-% DRO subject
-droSubject = 'sub-Sub1';
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 
 % Copy test data to working directory
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject));
-
-% Prepare DRO
-testVersion = '1.2.3';
-xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion);
+xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Initialize
 x = ExploreASL;

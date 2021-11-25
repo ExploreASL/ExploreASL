@@ -16,12 +16,12 @@ function UnitTest = xASL_ut_master_xASL_ExploreASL_Master(TestRepository)
 % 2.  Initialize  (With arguments)
 % 3.  Initialize  (With arrays)
 % 4.  DRO 2.2.0   (DCM2NIFTI)
-% 5.  DRO 2.2.0   (NII2BIDS)
-% 6.  DRO 2.2.0   (Deface, BIDS2Legacy)
-% 7.  DRO 2.2.0   (Deface, BIDS2Legacy with dataPar.json)
-% 8.  DRO 2.2.0   (Run processing starting from derivatives with directory input)
-% 9.  DRO 2.2.0   (Run processing starting from derivatives with dataPar.json input (outdated))
-% 10. DRO 2.2.0   (Full pipeline, rawdata->results)
+% 5.  DRO 2.3.0   (NII2BIDS)
+% 6.  DRO 2.3.0   (Deface, BIDS2Legacy)
+% 7.  DRO 2.3.0   (Deface, BIDS2Legacy with dataPar.json)
+% 8.  DRO 2.3.0   (Run processing starting from derivatives with directory input)
+% 9.  DRO 2.3.0   (Run processing starting from derivatives with dataPar.json input (outdated))
+% 10. DRO 2.3.0   (Full pipeline, rawdata->results)
 % 11. DRO 2.3.0   (Pre-release version, multi-session BIDS to legacy)
 %
 % EXAMPLE:      UnitTests(1) = xASL_ut_master_xASL_ExploreASL_Master(TestRepository);
@@ -264,7 +264,7 @@ UnitTest.tests(4).testname = 'DRO 2.2.0 (DCM2NIFTI)';
 testTime = tic;
 
 % Copy test patient
-testPatientSource = fullfile(TestRepository,'UnitTesting','synthetic_dcm','test_patient_2_2_0'); % fix this script
+testPatientSource = fullfile(TestRepository,'UnitTesting','synthetic_dcm','test_patient_2_2_0');
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
 xASL_Copy(testPatientSource, testPatientDestination, 1);
 
@@ -315,18 +315,17 @@ UnitTest.tests(4).passed = testCondition;
 %% Test run 5
 
 % Give your individual subtest a name
-UnitTest.tests(5).testname = 'DRO 2.2.0 (NII2BIDS)';
+UnitTest.tests(5).testname = 'DRO 2.3.0 (NII2BIDS)';
 
 % Start the test
 testTime = tic;
 
 % Set-up DRO
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 droSubject = 'sub-Sub1'; % DRO subject
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion); % Prepare DRO
+xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Convert BIDS back to temp for the testing
 xASL_Move(fullfile(droTestPatient,'rawdata'),fullfile(droTestPatient,'temp'))
@@ -334,11 +333,11 @@ xASL_Move(fullfile(droTestPatient,'temp',droSubject),fullfile(droTestPatient,'te
 xASL_Move(fullfile(droTestPatient,'temp','Sub1','anat'),fullfile(droTestPatient,'temp','Sub1','T1w_1'))
 xASL_Move(fullfile(droTestPatient,'temp','Sub1','perf'),fullfile(droTestPatient,'temp','Sub1','ASL_1'))
 xASL_delete(fullfile(droTestPatient,'temp','dataset_description.json'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','T1w_1','sub-Sub1_T1w.json'),fullfile(droTestPatient,'temp','Sub1','T1w_1','T1w.json'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','T1w_1','sub-Sub1_T1w.nii.gz'),fullfile(droTestPatient,'temp','Sub1','T1w_1','T1w.nii.gz'))
-xASL_delete(fullfile(droTestPatient,'temp','Sub1','ASL_1','sub-Sub1_aslcontext.tsv'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','ASL_1','sub-Sub1_asl.json'),fullfile(droTestPatient,'temp','Sub1','ASL_1','ASL4D.json'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','ASL_1','sub-Sub1_asl.nii.gz'),fullfile(droTestPatient,'temp','Sub1','ASL_1','ASL4D.nii.gz'))
+xASL_Move(fullfile(droTestPatient,'temp','Sub1','T1w_1','sub-001_acq-003_T1w.json'),fullfile(droTestPatient,'temp','Sub1','T1w_1','T1w.json'))
+xASL_Move(fullfile(droTestPatient,'temp','Sub1','T1w_1','sub-001_acq-003_T1w.nii.gz'),fullfile(droTestPatient,'temp','Sub1','T1w_1','T1w.nii.gz'))
+xASL_delete(fullfile(droTestPatient,'temp','Sub1','ASL_1','sub-001_acq-001_aslcontext.tsv'))
+xASL_Move(fullfile(droTestPatient,'temp','Sub1','ASL_1','sub-001_acq-001_asl.json'),fullfile(droTestPatient,'temp','Sub1','ASL_1','ASL4D.json'))
+xASL_Move(fullfile(droTestPatient,'temp','Sub1','ASL_1','sub-001_acq-001_asl.nii.gz'),fullfile(droTestPatient,'temp','Sub1','ASL_1','ASL4D.nii.gz'))
 
 % Fallback
 testCondition = true;
@@ -396,18 +395,17 @@ UnitTest.tests(5).passed = testCondition;
 %% Test run 6
 
 % Give your individual subtest a name
-UnitTest.tests(6).testname = 'DRO 2.2.0 (Deface, BIDS2Legacy)';
+UnitTest.tests(6).testname = 'DRO 2.3.0 (Deface, BIDS2Legacy)';
 
 % Start the test
 testTime = tic;
 
 % Set-up DRO
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 droSubject = 'sub-Sub1'; % DRO subject
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion); % Prepare DRO
+xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Fallback
 testCondition = true;
@@ -468,18 +466,17 @@ UnitTest.tests(6).passed = testCondition;
 %% Test run 7
 
 % Give your individual subtest a name
-UnitTest.tests(7).testname = 'DRO 2.2.0 (Deface, BIDS2Legacy with dataPar.json)';
+UnitTest.tests(7).testname = 'DRO 2.3.0 (Deface, BIDS2Legacy with dataPar.json)';
 
 % Start the test
 testTime = tic;
 
 % Set-up DRO
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 droSubject = 'sub-Sub1'; % DRO subject
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion); % Prepare DRO
+xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
@@ -566,18 +563,16 @@ UnitTest.tests(7).passed = testCondition;
 %% Test run 8
 
 % Give your individual subtest a name
-UnitTest.tests(8).testname = 'DRO 2.2.0 (Run processing starting from derivatives with directory input)';
+UnitTest.tests(8).testname = 'DRO 2.3.0 (Run processing starting from derivatives with directory input)';
 
 % Start the test
 testTime = tic;
 
 % Set-up DRO
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-droSubject = 'sub-Sub1'; % DRO subject
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion); % Prepare DRO
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
@@ -614,7 +609,7 @@ else
 end
 
 % Check directories
-testDirsAndFiles.derivativesDir = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0','derivatives');
+testDirsAndFiles.derivativesDir = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0','derivatives');
 testDirsAndFiles.exploreASLDir = fullfile(testDirsAndFiles.derivativesDir,'ExploreASL');
 testDirsAndFiles.populationDir = fullfile(testDirsAndFiles.exploreASLDir,'Population');
 testDirsAndFiles.subDir = fullfile(testDirsAndFiles.exploreASLDir,['sub-Sub1' '_1']);
@@ -648,18 +643,17 @@ UnitTest.tests(8).passed = testCondition;
 %% Test run 9
 
 % Give your individual subtest a name
-UnitTest.tests(9).testname = 'DRO 2.2.0 (Run processing starting from derivatives with dataPar.json input (outdated))';
+UnitTest.tests(9).testname = 'DRO 2.3.0 (Run processing starting from derivatives with dataPar.json input (outdated))';
 
 % Start the test
 testTime = tic;
 
 % Set-up DRO
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-droSubject = 'sub-Sub1'; % DRO subject
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient,[],[],testVersion); % Prepare DRO
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+xASL_Copy(droTestPatientSource,droTestPatient);
+
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Mindboggle_OASIS_DKT31_CMA'};
@@ -711,18 +705,17 @@ UnitTest.tests(9).passed = testCondition;
 %% Test run 10
 
 % Give your individual subtest a name
-UnitTest.tests(10).testname = 'DRO 2.2.0 (Full pipeline, rawdata->results)';
+UnitTest.tests(10).testname = 'DRO 2.3.0 (Full pipeline, rawdata->results)';
 
 % Start the test
 testTime = tic;
 
 % Set-up DRO
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_2_0');
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
-testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_2_0');
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 droSubject = 'sub-Sub1'; % DRO subject
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata',droSubject),1);
-xASL_bids_DRO2BIDS(droTestPatient,droSubject,false,testVersion); % Prepare DRO, keep ground truth data for comparison
+xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Fallback
 testCondition = true;
@@ -758,8 +751,8 @@ if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'fi
 end
 
 % Compare image data
-pathsTest.groundTruthM0File = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','003_ground_truth_m0.nii');
-pathsTest.groundTruthPerfusionFile = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','003_ground_truth_perfusion_rate.nii');
+pathsTest.groundTruthM0File = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','sub-001_acq-002_M0map.nii');
+pathsTest.groundTruthPerfusionFile = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth','sub-001_acq-002_Perfmap.nii');
 pathsTest.derivedM0File = fullfile(pathsTest.subjectSessionDir,'ASL_1','M0.nii');
 pathsTest.derivedCBFFile = fullfile(pathsTest.xASLdir,'Population','qCBF_sub-Sub1_1_ASL_1.nii');
 
@@ -825,9 +818,9 @@ testTime = tic;
 
 % Set-up DRO
 subjectName = 'sub-001';
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0_pre_release');
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0_pre_release');
-xASL_Copy(droTestPatientSource,fullfile(droTestPatient,'rawdata'),1);
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Set-up sessions
 xASL_adm_CreateDir(fullfile(droTestPatient,'rawdata',subjectName,'ses-1'));
