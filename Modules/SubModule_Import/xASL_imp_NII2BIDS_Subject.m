@@ -34,6 +34,11 @@ function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
     subjectDirectory = fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]);
     if ~xASL_exist(subjectDirectory,'dir')
         xASL_adm_CreateDir(subjectDirectory);
+    else
+        % Subject already exists and this is probably either a rerun or the pipeline crashed before
+        fprintf(2,'Remove existing rawdata...\n');
+        xASL_delete(subjectDirectory,true);
+        xASL_adm_CreateDir(subjectDirectory);
     end
     
     
