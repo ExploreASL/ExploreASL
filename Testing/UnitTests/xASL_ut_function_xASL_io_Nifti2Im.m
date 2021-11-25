@@ -44,7 +44,7 @@ end
 if ~isa(imTest,'single')
     testCondition = false; % Test failed
 end
-if numel(imTest)~=(64*64*12*3) % Matrix size: [64, 64, 12, 3]
+if numel(imTest)~=(64*64*40*61) % Matrix size: [64, 64, 40, 61]
     testCondition = false; % Test failed
 end
 

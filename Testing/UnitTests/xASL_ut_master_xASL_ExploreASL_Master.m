@@ -288,16 +288,17 @@ else
         testCondition = false;
     end
 end
-if ~exist(fullfile(testPatientDestination,'temp'),'dir'),                   testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,'temp','Sub1'),'dir'),            testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,'temp','Sub1','ASL_1'),'dir'),    testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,'temp','Sub1','T1w_1'),'dir'),    testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,'temp','Sub1','ASL_1','ASL4D.json'),'file'),      testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,'temp','Sub1','ASL_1','ASL4D.nii'),'file'),       testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,'temp','Sub1','ASL_1','M0.json'),'file'),         testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,'temp','Sub1','ASL_1','M0.nii'),'file'),          testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,'temp','Sub1','T1w_1','T1w.json'),'file'),        testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,'temp','Sub1','T1w_1','T1w.nii'),'file'),         testCondition = false;          end
+tempDir = fullfile('derivatives','ExploreASL','temp');
+if ~exist(fullfile(testPatientDestination,tempDir),'dir'),                                   testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,tempDir,'Sub1'),'dir'),                            testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1'),'dir'),                    testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1'),'dir'),                    testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','ASL4D.json'),'file'),      testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','ASL4D.nii'),'file'),       testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','M0.json'),'file'),         testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','M0.nii'),'file'),          testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1','T1w.json'),'file'),        testCondition = false;          end
+if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1','T1w.nii'),'file'),         testCondition = false;          end
 
 % Delete test data
 xASL_delete(testPatientDestination,true)
@@ -324,27 +325,28 @@ testTime = tic;
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
-droSubject = 'sub-Sub1'; % DRO subject
+droSubject = 'sub-001'; % DRO subject
 xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Convert BIDS back to temp for the testing
-xASL_Move(fullfile(droTestPatient,'rawdata'),fullfile(droTestPatient,'temp'))
-xASL_Move(fullfile(droTestPatient,'temp',droSubject),fullfile(droTestPatient,'temp','Sub1'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','anat'),fullfile(droTestPatient,'temp','Sub1','T1w_1'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','perf'),fullfile(droTestPatient,'temp','Sub1','ASL_1'))
-xASL_delete(fullfile(droTestPatient,'temp','dataset_description.json'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','T1w_1','sub-001_acq-003_T1w.json'),fullfile(droTestPatient,'temp','Sub1','T1w_1','T1w.json'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','T1w_1','sub-001_acq-003_T1w.nii.gz'),fullfile(droTestPatient,'temp','Sub1','T1w_1','T1w.nii.gz'))
-xASL_delete(fullfile(droTestPatient,'temp','Sub1','ASL_1','sub-001_acq-001_aslcontext.tsv'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','ASL_1','sub-001_acq-001_asl.json'),fullfile(droTestPatient,'temp','Sub1','ASL_1','ASL4D.json'))
-xASL_Move(fullfile(droTestPatient,'temp','Sub1','ASL_1','sub-001_acq-001_asl.nii.gz'),fullfile(droTestPatient,'temp','Sub1','ASL_1','ASL4D.nii.gz'))
+tempDir = fullfile(droTestPatient,'derivatives','ExploreASL','temp');
+xASL_Move(fullfile(droTestPatient,'rawdata'),fullfile(tempDir))
+xASL_Move(fullfile(tempDir,droSubject),fullfile(tempDir,'Sub1'))
+xASL_Move(fullfile(tempDir,'Sub1','anat'),fullfile(tempDir,'Sub1','T1w_1'))
+xASL_Move(fullfile(tempDir,'Sub1','perf'),fullfile(tempDir,'Sub1','ASL_1'))
+xASL_delete(fullfile(tempDir,'dataset_description.json'))
+xASL_Move(fullfile(tempDir,'Sub1','T1w_1','sub-001_acq-003_T1w.json'),fullfile(tempDir,'Sub1','T1w_1','T1w.json'))
+xASL_Move(fullfile(tempDir,'Sub1','T1w_1','sub-001_acq-003_T1w.nii.gz'),fullfile(tempDir,'Sub1','T1w_1','T1w.nii.gz'))
+xASL_delete(fullfile(tempDir,'Sub1','ASL_1','sub-001_acq-001_aslcontext.tsv'))
+xASL_Move(fullfile(tempDir,'Sub1','ASL_1','sub-001_acq-001_asl.json'),fullfile(tempDir,'Sub1','ASL_1','ASL4D.json'))
+xASL_Move(fullfile(tempDir,'Sub1','ASL_1','sub-001_acq-001_asl.nii.gz'),fullfile(tempDir,'Sub1','ASL_1','ASL4D.nii.gz'))
 
 % Fallback
 testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL_Master(testPatientDestination,[0 1 0 0],0,0,1,1);
+    [x] = ExploreASL_Master(testPatientDestination,[0 1 0 0],0,0,1,1); % This doesn't work without a sourceStructure.json ATM
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;

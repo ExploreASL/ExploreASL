@@ -28,7 +28,7 @@ testTime = tic;
 % Define test patient paths
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
-droSubject = 'sub-Sub1'; % DRO subject
+droSubject = 'sub-001'; % DRO subject
 sessionNum = '_1';
 
 % Copy test data to working directory
@@ -36,6 +36,7 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Initialize
 x = ExploreASL;
+x.SUBJECT = '001';
 
 % Run BIDS2Legacy
 xASL_bids_BIDS2Legacy(droTestPatient, x);
@@ -43,9 +44,6 @@ xASL_bids_BIDS2Legacy(droTestPatient, x);
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
 if ~exist(fullfile(droTestPatient,'derivatives'),'dir')
-    testCondition = false; % Test failed
-end
-if ~exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'file')
     testCondition = false; % Test failed
 end
 
@@ -111,9 +109,16 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Initialize
 x = ExploreASL;
+x.SUBJECT = '001';
 
 % Run BIDS2Legacy
 xASL_bids_BIDS2Legacy(droTestPatient, x);
+
+% The dataPar.json is not created for each subject anymore, which is why it
+% was moved out of BIDS2Legacy. We need to create it manually here.
+dataParJSON.x.dataset.subjectRegexp = '^sub-.*$';
+dataParJSON.x.settings.Quality = 1;
+spm_jsonwrite(fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0','derivatives','ExploreASL','dataPar.json'),dataParJSON);
 
 % Initialize dataset
 try
