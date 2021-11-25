@@ -148,6 +148,15 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     end
 
     %% 4.6 Start the conversion if this scan should not be skipped
+    
+    % In case a previous run crashed we should remove the existing temp data here
+    % (this does not really work ATM, since T1 files can be in the top directory of ASL e.g.)
+    % if xASL_exist(destdir,'dir')
+    %    fprintf(2,'Remove existing temp data...\n');
+    %    xASL_delete(destdir,true);
+    % end
+
+    % Conversion
     [imPar, thisSubject.globalCounts, x, ~, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = ...
         xASL_imp_DCM2NII_Subject_StartConversion(...
         imPar, thisSubject.globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors);
