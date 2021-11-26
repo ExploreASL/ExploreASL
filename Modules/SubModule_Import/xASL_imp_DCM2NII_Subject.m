@@ -172,7 +172,7 @@ function subjectExport = xASL_imp_SubjectName(subjectID)
     subjectExport = xASL_adm_CorrectName(subjectID, 2);
     
     if ~strcmp(subjectID,subjectExport)
-        fprintf(2,'Special characters in subject ID...\n');
+        fprintf(2,'Special characters in subject ID, changing %s to %s\n',subjectID,subjectExport);
     end
 
 end
