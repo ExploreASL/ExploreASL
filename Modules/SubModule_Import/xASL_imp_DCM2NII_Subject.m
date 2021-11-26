@@ -41,6 +41,9 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
     thisSubject = x.overview.(overviewSubjects{iSubject});
     subjectID = x.modules.import.listsIDs.subjectIDs{iSubject};
     
+    % Check subjectID
+    thisSubject.subjectExport = xASL_imp_SubjectName(subjectID);
+    
     %% 2. Iterate over visits
     for iVisit=1:thisSubject.nVisits
         
@@ -58,7 +61,7 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
         end
         
         % Determine the subject directory
-        x.modules.import.SubjDir = xASL_imp_GetSubjDir(x,imPar,subjectID, iVisit);
+        x.modules.import.SubjDir = xASL_imp_GetSubjDir(x,imPar,thisSubject.subjectExport,iVisit);
 
         if imPar.SkipSubjectIfExists && exist(x.modules.import.SubjDir, 'dir')
             % we found the subject dir (i.e. SubjectVisit), so we skip it
@@ -74,7 +77,7 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
         
         % Display subject-visit ID and add lock dir
 		xASL_adm_BreakString('');
-        fprintf('Importing subject = %s:   \n', [subjectID imPar.visitNames{iVisit}]);
+        fprintf('Importing subject = %s:   \n', [thisSubject.subjectExport imPar.visitNames{iVisit}]);
 
         %% 3. Loop over all sessions
         
@@ -137,7 +140,7 @@ end
 
 
 %% Get subject directory
-function SubjDir = xASL_imp_GetSubjDir(x, imPar, subjectID, iVisit)
+function SubjDir = xASL_imp_GetSubjDir(x, imPar, subjectExport, iVisit)
 
     % Only pad VisitID _1 _2 _3 etc if there are visits specified. Multiple visits is defined by the tokenVisitAliases.
     % If this is non-existing, it is set to 1, and if it does exist, it will put the _1 _2 _3 etc in the folder.
@@ -146,17 +149,33 @@ function SubjDir = xASL_imp_GetSubjDir(x, imPar, subjectID, iVisit)
     if x.modules.import.settings.bUseVisits
         if ~isempty(imPar.visitNames{iVisit}) && strcmp(imPar.visitNames{iVisit}(1),'_')
             % Only add '_' if there isn't one already
-            SubjDir = fullfile(imPar.TempRoot, [subjectID imPar.visitNames{iVisit}]);
+            SubjDir = fullfile(imPar.TempRoot, [subjectExport imPar.visitNames{iVisit}]);
         else
             % Subject/session directory with '_'
-            SubjDir = fullfile(imPar.TempRoot, [subjectID '_' imPar.visitNames{iVisit}]);
+            SubjDir = fullfile(imPar.TempRoot, [subjectExport '_' imPar.visitNames{iVisit}]);
         end
     else
-        SubjDir = fullfile(imPar.TempRoot, subjectID);
+        SubjDir = fullfile(imPar.TempRoot, subjectExport);
     end
 
 end
 
+
+%% If a subject ID has a `_` or a `-` or something else, we need to get rid of it
+function subjectExport = xASL_imp_SubjectName(subjectID)
+
+    % If a subject ID has a `_` or a `-` or something else, we need to get
+    % rid of it in the directory name for BIDS, for the import of the
+    % sourcedata we should still know about that though, which is why we
+    % use a new variable for the subject ID directory export.
+    
+    subjectExport = xASL_adm_CorrectName(subjectID, 2);
+    
+    if ~strcmp(subjectID,subjectExport)
+        fprintf(2,'Special characters in subject ID...\n');
+    end
+
+end
 
 
 

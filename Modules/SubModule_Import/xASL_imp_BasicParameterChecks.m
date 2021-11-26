@@ -35,15 +35,15 @@ function x = xASL_imp_BasicParameterChecks(x)
     end
 
     % Check the imagePar input file
-    if isempty(x.dir.sourceStructure) && ~x.opts.ImportModules(4)
+    if isempty(x.dir.sourceStructure) && x.opts.ImportModules(1)
         % If the path is empty, then try to find sourceStructure.json or sourcestruct.json
         fListImPar = xASL_adm_GetFileList(x.dir.DatasetRoot,'(?i)^source(struct(ure|)\.json$', 'List', [], 0);
         if length(fListImPar) < 1
-            error('Could not find the sourceStructure.json file');
+            error('Could not find the sourceStructure.json file...');
         end
         x.dir.sourceStructure = fullfile(x.dir.DatasetRoot,fListImPar{1});
-    elseif isempty(x.dir.sourceStructure) && x.opts.ImportModules(4)
-        % For BIDS to Legacy we do not need the imPar struct
+    elseif isempty(x.dir.sourceStructure) && (x.opts.ImportModules(2) || x.opts.ImportModules(3) || x.opts.ImportModules(4))
+        % For BIDS2Legacy we do not need the imPar struct (and we should not need it for NII2BIDS or DEFACE)
         x.dir.sourceStructure = [];
     else
         fpath = fileparts(x.dir.sourceStructure);
@@ -57,7 +57,7 @@ function x = xASL_imp_BasicParameterChecks(x)
         % If the path is empty, then try to find studyPar.json
         fListStudyPar = xASL_adm_GetFileList(x.dir.DatasetRoot,'(?i)^studypar\.json$', 'List', [], 0);
         if length(fListStudyPar) < 1
-            warning('Could not find the StudyPar.json file');
+            warning('Could not find the studyPar.json file...');
         else
             x.dir.studyPar = fullfile(x.dir.DatasetRoot,fListStudyPar{1});
         end

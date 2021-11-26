@@ -30,7 +30,13 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     [fpath, fname, fext] = fileparts(studyPath);
 
     % Load the imPar from the file
-    imPar = spm_jsonread(imParPath);
+    if ~isempty(imParPath) && xASL_exist(imParPath,'file')
+        % DCM2NII
+        imPar = spm_jsonread(imParPath);
+    else
+        % NII2BIDS, DEFACE & BIDS2LEGACY
+        imPar = struct;
+    end
 
     %% 2. Specify paths
     if ~isfield(imPar, 'studyID') || isempty(imPar.studyID)

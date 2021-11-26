@@ -133,9 +133,12 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
         session_name = [thisVisit.scanNames{scanFields.iScan} '_' num2str(scanFields.iSession)]; 
     end
 
+    % Determine the subject directory name in the temp folder
     if bPutInSessionFolder
+        % Put in a subject_session folder
         destdir = fullfile(x.modules.import.SubjDir, session_name);
-    else % put in subject folder instead of session folder
+    else
+        % Put in subject folder instead of session folder
         destdir = x.modules.import.SubjDir;
     end
     
