@@ -103,8 +103,8 @@ function [x] = xASL_init_VisualizationSettings(x)
     x.S.hot(193:256,:) = [ones(64,1) ones(64,1)        [1/64:(1/64):1]'];
 
     % Adapt to make sure that ends of spectrum are not completely white or black, since this is difficult to show on a grayscale (e.g. mean T1) background
-    x.S.hot = squeeze(xASL_im_ResampleLinearFair(x.S.hot(49:224,:), [256 3 1]));
-    x.S.cool = squeeze(xASL_im_ResampleLinearFair(x.S.cool(49:256,:), [256 3 1]));
+    x.S.hot = squeeze(xASL_im_ResampleLinear(x.S.hot(49:224,:), [256 3]));
+    x.S.cool = squeeze(xASL_im_ResampleLinear(x.S.cool(49:256,:), [256 3]));
 
     x.S.VoxelSize = 1.5; % mm voxel-size of reslicing & DARTEL. DEFAULT = 1.5 mm
 
