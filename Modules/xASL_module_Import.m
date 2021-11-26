@@ -150,7 +150,7 @@ function [result, x] = xASL_module_Import(x)
     %% 1. Run the DCM2NIIX
     iState = 1;
     if x.opts.ImportModules(1) && ~x.mutex.HasState(StateName{1})
-        xASL_imp_DCM2NII(x, imPar);
+        x = xASL_imp_DCM2NII(x, imPar);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.ImportModules(1) && x.mutex.HasState(StateName{1})
         fprintf('DCM2NIIX was run before...   \n');

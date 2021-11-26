@@ -56,7 +56,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         
     elseif (x.opts.ImportModules(3) || x.opts.ImportModules(4)) && ...
             isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
-        % Determine structure from temp data
+        % Determine structure from rawdata
         x = xASL_imp_DetermineStructureFromRawdata(x);
         
     end

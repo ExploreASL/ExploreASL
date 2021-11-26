@@ -55,7 +55,7 @@ function x = xASL_imp_ImportInitialization(x)
     end
 
     
-    %% Determine subject/session/run structure from sourcedata or temp data
+    %% Determine subject/session/run structure from sourcedata, temp data or rawdata
     x = xASL_imp_DetermineSubjectStructure(x);
     
     % Create logging directory

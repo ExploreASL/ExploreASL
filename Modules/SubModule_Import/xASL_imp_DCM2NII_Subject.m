@@ -132,6 +132,10 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
         
     end
     
+    % Make sure to update the subject id if there were illegal characters (according to BIDS)
+    thisSubject.name = thisSubject.subjectExport;
+    thisSubject = rmfield(thisSubject,'subjectExport');
+    
     % Put data back into x structure
     x.overview.(overviewSubjects{iSubject}) = thisSubject;
     
@@ -174,6 +178,10 @@ function subjectExport = xASL_imp_SubjectName(subjectID)
     if ~strcmp(subjectID,subjectExport)
         fprintf(2,'Special characters in subject ID, changing %s to %s\n',subjectID,subjectExport);
     end
+    
+    % Since following import sub-modules depend on the x.overview field and
+    % this is also based on the original read-only sourcedata, we have to
+    % fix the subject ids in there afterwards, too!
 
 end
 

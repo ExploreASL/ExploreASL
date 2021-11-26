@@ -1,4 +1,4 @@
-function xASL_imp_DCM2NII(x, imPar)
+function x = xASL_imp_DCM2NII(x, imPar)
 %xASL_imp_DCM2NII Run the dcm2nii part of the import.
 %
 % FORMAT: xASL_imp_DCM2NII(x, imPar)
@@ -8,7 +8,7 @@ function xASL_imp_DCM2NII(x, imPar)
 %   imPar  - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
-%   n/a
+%   x      - ExploreASL x structure
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run the dcm2nii part of the import.
@@ -46,10 +46,14 @@ function xASL_imp_DCM2NII(x, imPar)
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
     iSubject = strcmp(x.SUBJECT,x.SUBJECTS);
-    overviewSubjects = fieldnames(x.overview);
-    thisSubject = x.overview.(overviewSubjects{iSubject});
+    
+    % In case there were illegal characters in the subject ID, we get rid of them within x.SUBJECT & x.SUBJECTS here
+    x.SUBJECT = xASL_adm_CorrectName(x.SUBJECTS{iSubject},2);
+    x.SUBJECTS{iSubject} = xASL_adm_CorrectName(x.SUBJECTS{iSubject},2);
     
     %% 4. Create summary file
+    overviewSubjects = fieldnames(x.overview);
+    thisSubject = x.overview.(overviewSubjects{iSubject});
     xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x);
     
     %% 5. Clean-Up
