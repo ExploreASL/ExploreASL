@@ -150,7 +150,7 @@ if isfield(x, 'P')
         SubjectID_FirstVolume = x.SUBJECTS{iSubj};
     else
         % Default values to make sure output does not crash
-        warning('Longitudinal registration: x.P does not contain subject IDs...');
+        fprintf('Longitudinal registration: x.P does not contain subject IDs...\n');
         VolumeList = [];
         VolumeN = NaN;
         IsSubject = NaN;
