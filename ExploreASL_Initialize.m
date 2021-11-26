@@ -190,7 +190,7 @@ function xASL_init_PrintLogo()
     '                    ## |                                                                         \n'...
     '                    ##/                                                                          \n'];
 
-    xASL_adm_BreakString('');
+    xASL_adm_BreakString('',[],[],1);
     fprintf(logoString);
 
 end
@@ -199,12 +199,6 @@ end
 %% -----------------------------------------------------------------------
 %% Add ExploreASL Directory
 function addExploreASLDirectory(MyPath)
-
-    % Vebose mode for debugging
-    verboseMode = false;
-    if verboseMode
-        fprintf('Managing Matlab paths:\n');
-    end
 
     % First remove existing toolbox initializations
     % This could contain other toolbox versions and create conflicts
@@ -226,17 +220,16 @@ function addExploreASLDirectory(MyPath)
             % Here we want search for toolboxes that ExploreASL uses, but
             % that are in another path (e.g., within the Matlab toolboxes)
             
-            if isempty(regexp(pathList{iPath}, fullfile('ExploreASL', 'External')))
+            if isempty(regexp(pathList{iPath}, fullfile('ExploreASL', 'External'), 'once'))
                 % If this path is not an ExploreASL-contained toolbox
                 rmpath(pathList{iPath});
-                fprintf(['Warning: removed Matlab path to avoid conflicts: ' pathList{iPath} '\n\n']);
+                fprintf(2,'Warning: Removed Matlab path to avoid conflicts: %s\n',pathList{iPath});
             end
         end
     end
-    if verboseMode
+    if numel(pathList)>1
         fprintf('\n');
     end
-
 
     % Define paths (should be equal when loading data or only initializing)
     addpath(MyPath); % ExploreASL
