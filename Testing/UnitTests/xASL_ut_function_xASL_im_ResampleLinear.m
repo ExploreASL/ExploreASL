@@ -1,5 +1,5 @@
 function UnitTest = xASL_ut_function_xASL_im_ResampleLinear(TestRepository)
-%xASL_ut_function_xASL_im_ResampleLinear Individual unit test for xASL_im_ResampleLinearFair
+%xASL_ut_function_xASL_im_ResampleLinear Individual unit test for xASL_im_ResampleLinear
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -18,7 +18,7 @@ function UnitTest = xASL_ut_function_xASL_im_ResampleLinear(TestRepository)
 
 %% Paths
 
-paths.sourcePath = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0_pre_release','sub-001','anat','sub-001_acq-003_T1w.nii.gz');
+paths.sourcePath = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','anat','sub-001_acq-003_T1w.nii.gz');
 paths.testPath = fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz');
 paths.testPathUnzipped = fullfile(TestRepository,'UnitTesting','working_directory','test.nii');
 
@@ -33,7 +33,7 @@ testTime = tic;
 % Run your test here
 xASL_Copy(paths.sourcePath,paths.testPath);
 image = xASL_io_Nifti2Im(paths.testPath);
-output = xASL_im_ResampleLinearFair(image,[100,200,300]);
+output = xASL_im_ResampleLinear(image,[100,200,300]);
 xASL_delete(paths.testPathUnzipped);
 
 % Define one or multiple test conditions here
@@ -69,7 +69,7 @@ testTime = tic;
 xASL_Copy(paths.sourcePath,paths.testPath);
 image = xASL_io_Nifti2Im(paths.testPath);
 image = image(:,:,1);
-output = xASL_im_ResampleLinearFair(image,[100,200]);
+output = xASL_im_ResampleLinear(image,[100,200]);
 xASL_delete(paths.testPathUnzipped);
 
 % Define one or multiple test conditions here
@@ -104,7 +104,7 @@ testTime = tic;
 xASL_Copy(paths.sourcePath,paths.testPath);
 image = xASL_io_Nifti2Im(paths.testPath);
 image = image(:,1,1);
-output = xASL_im_ResampleLinearFair(image,[100]);
+output = xASL_im_ResampleLinear(image,[100]);
 xASL_delete(paths.testPathUnzipped);
 
 % Define one or multiple test conditions here
@@ -141,7 +141,7 @@ image = xASL_io_Nifti2Im(paths.testPath);
 image = image(:,:,1);
 message = '';
 try
-    output = xASL_im_ResampleLinearFair(image,[100,200,300]);
+    output = xASL_im_ResampleLinear(image,[100,200,300]);
 catch ME
     message = ME.message;
 end
@@ -182,14 +182,14 @@ imageB = ones(100,25,100).*1;
 imageC = ones(100,25,100).*2;
 imageD = ones(100,25,100).*3;
 image = [imageA imageB imageC imageD];
-outputUp = xASL_im_ResampleLinearFair(image,[200,200,200]);
-outputDown = xASL_im_ResampleLinearFair(image,[50,50,50]);
+outputUp = xASL_im_ResampleLinear(image,[200,200,200]);
+outputDown = xASL_im_ResampleLinear(image,[50,50,50]);
 
 % Edge cases
-output1x1x1 = xASL_im_ResampleLinearFair(image,[1,1,1]);
-output2x2x2 = xASL_im_ResampleLinearFair(image,[2,2,2]);
-output100x100x1 = xASL_im_ResampleLinearFair(image,[100,100,1]);
-output1x100x1 = xASL_im_ResampleLinearFair(image,[1,100,1]);
+output1x1x1 = xASL_im_ResampleLinear(image,[1,1,1]);
+output2x2x2 = xASL_im_ResampleLinear(image,[2,2,2]);
+output100x100x1 = xASL_im_ResampleLinear(image,[100,100,1]);
+output1x100x1 = xASL_im_ResampleLinear(image,[1,100,1]);
 
 % Mean
 meanSource = mean(image,'all');
