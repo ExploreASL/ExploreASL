@@ -1,12 +1,12 @@
 function output_res = xASL_im_ResampleLinearFair(im_input, newsize)
 %xASL_im_ResampleLinearFair Downsample or upsample a 1D/2D/3D image
 %
-% FORMAT:       imOutput = xASL_im_ResampleLinearFair(imInput, newSize)
+% FORMAT:       output_res = xASL_im_ResampleLinearFair(im_input, newsize)
 %
-% INPUT:        imInput     - Image matrix (REQUIRED, DOUBLE, SINGLE or INT)
-%               newSize     - Size of ouput image (REQUIRED, INTEGER ARRAY)
+% INPUT:        im_input    - Image matrix (REQUIRED, DOUBLE, SINGLE or INT)
+%               newsize     - Size of ouput image (REQUIRED, INTEGER ARRAY)
 %
-% OUTPUT:       imOutput    - Resampled image matrix (SINGLE)
+% OUTPUT:       output_res  - Resampled image matrix (SINGLE)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Downsample or upsample an image from its old to a new resolution.
