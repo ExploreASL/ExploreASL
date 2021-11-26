@@ -158,7 +158,7 @@ end
 
 
 %% 6. Clean up
-xASL_imp_BIDS2Legacy_CleanUp(pathStudy);
+xASL_imp_BIDS2Legacy_CleanUp(x.dir.DatasetRoot);
 
 
 end
