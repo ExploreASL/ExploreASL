@@ -75,7 +75,7 @@ function [identical,RMSE,minDiff,maxDiff,dimCheck] = xASL_im_CompareNiftis(pathA
         identical = false;
         return
     end
-    if ~(sizeA>1) || ~(sizeB>1)
+    if (sizeA<=1) || (sizeB<=1)
         warning('The niftis seem damanged. The file size is too small...');
         identical = false;
         return
