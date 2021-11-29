@@ -55,8 +55,12 @@ if ~isfield(x.modules.asl,'PVCNativeSpaceKernel') || isempty(x.modules.asl.PVCNa
 	end
 end
 
-% If the size of the kernel was under 3, then add the remaining dimensions from the default
+% Make sure that the kernel is provided as a row vector
 dimKernel = length(x.modules.asl.PVCNativeSpaceKernel);
+x.modules.asl.PVCNativeSpaceKernel = reshape(x.modules.asl.PVCNativeSpaceKernel, [1 dimKernel]);
+
+% If the size of the kernel was under 3, then add the remaining dimensions from the default
+
 if dimKernel < 3
 	if x.modules.asl.bPVCGaussianMM
 		defaultKernel = [10 10 4];
