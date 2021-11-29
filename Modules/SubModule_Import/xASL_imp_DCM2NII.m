@@ -1,7 +1,7 @@
 function x = xASL_imp_DCM2NII(x, imPar)
 %xASL_imp_DCM2NII Run the dcm2nii part of the import.
 %
-% FORMAT: xASL_imp_DCM2NII(x, imPar)
+% FORMAT: x = xASL_imp_DCM2NII(x, imPar)
 % 
 % INPUT:
 %   x      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -20,10 +20,10 @@ function x = xASL_imp_DCM2NII(x, imPar)
 % 5. Clean-up
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_DCM2NII(x, imPar);
+% EXAMPLE:     x = xASL_imp_DCM2NII(x, imPar);
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
     
     %% 1. Initialize defaults of dcm2nii
