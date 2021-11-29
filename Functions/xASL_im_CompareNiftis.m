@@ -67,10 +67,17 @@ function [identical,RMSE,minDiff,maxDiff,dimCheck] = xASL_im_CompareNiftis(pathA
     % Make sure the file size is not zero (corrupted files etc.)
     structA = dir(pathA);
     structB = dir(pathB);
-    sizeA = structA.bytes;
-    sizeB = structB.bytes;
+    if ~isempty(structA) && ~isempty(structB)
+        sizeA = structA.bytes;
+        sizeB = structB.bytes;
+    else
+        warning('Problem loading the images...');
+        identical = false;
+        return
+    end
     if ~(sizeA>1) || ~(sizeB>1)
         warning('The niftis seem damanged. The file size is too small...');
+        identical = false;
         return
     end
     
