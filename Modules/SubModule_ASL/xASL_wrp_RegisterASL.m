@@ -212,61 +212,10 @@ if StructuralRawExist && ~StructuralDerivativesExist
     error('Please run structural module first');
 elseif ~StructuralRawExist && ~StructuralDerivativesExist
     if x.modules.asl.bUseMNIasDummyStructural
+        
+        Template = 'QASPER'; % change later
+        xASL_wrp_UseTemplateAsDummyStructural(x, Template);
 
-        fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
-        IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
-
-        % Copy dummy transformation field
-        xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
-
-		% Use the GM, WM and T1 from the template to create dummy structural files
-        % Create dummy structural derivatives in standard space
-        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
-        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
-        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc3T1.nii'), x.P.Pop_Path_rc3T1);
-		xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
-
-		% Create dummy structural derivatives in native space
-        xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rc3T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_c3T1, x.P.Path_T1});
-
-        % Dummy files
-        catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
-        MatFile   = fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
-        dummyVar = [];
-        save(catVolFile,'dummyVar');
-        save(MatFile,'dummyVar');
-
-        SaveFile = fullfile(x.D.TissueVolumeDir,['TissueVolume_' x.P.SubjectID '.csv']);
-        FileID = fopen(SaveFile,'wt');
-        fprintf(FileID,'%s', '0, 0, 0');
-        fclose(FileID);
-        xASL_bids_csv2tsvReadWrite(SaveFile, true);
-
-        % To lock in the structural part
-        % Save the ASL lock and unlock
-        jj = strfind(x.dir.LockDir,'xASL_module_ASL');
-        jj = jj(1);
-        oldRoot = x.mutex.Root;
-        oldID = x.mutex.ID;
-        newRoot = fullfile(x.dir.LockDir(1:(jj-1)),'xASL_module_Structural',x.dir.LockDir((jj+16):end));
-        x.mutex.Unlock();
-
-        % Look the structural part
-        x.mutex.Root = newRoot;
-        x.mutex.Lock('xASL_module_Structural');
-
-        % Add the correct lock-files
-        x.mutex.AddState('010_LinearReg_T1w2MNI');
-        x.mutex.AddState('060_Segment_T1w');
-        x.mutex.AddState('080_Resample2StandardSpace');
-        x.mutex.AddState('090_GetVolumetrics');
-        x.mutex.AddState('100_VisualQC_Structural');
-        x.mutex.AddState('110_DoWADQCDC');
-
-        % Unlock the structural and lock again the ASL part
-        x.mutex.Unlock();
-        x.mutex.Root = oldRoot;
-        x.mutex.Lock(oldID);
     else
         error('Structural data missing, skipping ASL module; if this is undesired, set x.modules.asl.bUseMNIasDummyStructural=1');
     end
