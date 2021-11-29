@@ -30,6 +30,10 @@ function x = xASL_imp_ReadSourceData(x)
     else
         strLookFor = 'Files';
     end
+
+
+    %% Check folder hierarchy
+    xASL_imp_ReadSourceData_CheckFolderHierarchy(x);
     
     
     %% Start with defining the subjects, visits, sessions (i.e. BIDS runs) and scans (i.e. ScanTypes) by listing or typing
@@ -55,6 +59,36 @@ function x = xASL_imp_ReadSourceData(x)
     
     % Define Subjects (vSubjectIDs: cell vector with extracted subject IDs (for all visits, sessions and scans)
     x.modules.import.listsIDs.vSubjectIDs = x.modules.import.tokens(:,x.modules.import.imPar.tokenOrdering(1));
+
+
+end
+
+
+
+%% Check folder hierarchy
+function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
+
+    % Get last element
+    lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
+
+    % Check folderHierarchy based on bMatchDirectories
+    if x.modules.import.imPar.bMatchDirectories
+        % Check that there is no extension in the last folder hierachy element
+        if ~isempty(regexpi(lastElement,'.dcm')) || ...
+           ~isempty(regexpi(lastElement,'.ima')) || ...
+           ~isempty(regexpi(lastElement,'.par')) || ...
+           ~isempty(regexpi(lastElement,'.rec'))
+           warning('The sourceStructure folderHierarchy includes a file extension...');
+        end
+    else
+        % Check for extension in last folder hierachy element
+        if isempty(regexpi(lastElement,'.dcm')) && ...
+           isempty(regexpi(lastElement,'.ima')) && ...
+           isempty(regexpi(lastElement,'.par')) && ...
+           isempty(regexpi(lastElement,'.rec'))
+           warning('The sourceStructure folderHierarchy does not include a file extension...');
+        end
+    end
 
 
 end
