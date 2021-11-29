@@ -24,13 +24,13 @@ function [identical,RMSE,minDiff,maxDiff,dimCheck] = xASL_im_CompareNiftis(pathA
 % EXAMPLE:          [identical,RMSE] = xASL_im_CompareNiftis(pathA,pathB);
 %
 % __________________________________
-% Copyright @ 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
     %% Input check
     
     % Defaults
-    identical = false;
+    identical = true;
     RMSE = inf;
     minDiff = inf;
     maxDiff = inf;
@@ -96,9 +96,17 @@ function [identical,RMSE,minDiff,maxDiff,dimCheck] = xASL_im_CompareNiftis(pathA
     
     %% Compare the niftis
     
+    % Check datatype
+    if ~strcmp(class(imageA),class(imageB))
+        identical = false;
+        % Make datatypes the same for the comparison
+        imageA = single(imageA);
+        imageB = single(imageB);
+    end
+    
     % Identical check
-    if isequal(imageA,imageB)
-        identical = true;
+    if ~isequal(imageA,imageB)
+        identical = false;
     end
     
     % Get RMSE
