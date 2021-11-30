@@ -86,8 +86,7 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
             % At this stage, jsonOut.PostLabelingDelay has the repeated PLDs already.
             numberPLDs = TimeEncodedInversionTimes + 1;
             % Determine the TotalAcquiredPairs
-            NumberRepetitions = jsonOut.AcquisitionMatrix / (NumberEchoTimes * numberPLDs);
-            jsonOut.TotalAcquiredPairs = jsonOut.TimeEncodedMatrixSize * NumberRepetitions;
+            jsonOut.TotalAcquiredPairs = jsonOut.AcquisitionMatrix / (NumberEchoTimes * numberPLDs);
         end
     end
 
