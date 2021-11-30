@@ -1,11 +1,12 @@
-function [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xDecodingFields, NumberEchoTimes)
-%xASL_quant_HadamardDecodingHadamard-4 & Hadamard-8 Decoding
+function [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xDecodingFields)
+%xASL_quant_HadamardDecoding Hadamard-4 & Hadamard-8 Decoding
 %
-% FORMAT:       [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xDecodingFields, NumberEchoTimes)
+% FORMAT:       [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xDecodingFields)
 %
 % INPUT:        imASLEncoded      - ASL4D image we want to decode (REQUIRED)
 %
-%               xDecodingFields  1) TimeEncodedMatrixType (REQUIRED)
+%               xDecodingFields  - provided as x.Q
+%                                1) TimeEncodedMatrixType (REQUIRED)
 %                                   - Hadamard
 %                                   - Walsh
 %                                2) TimeEncodedMatrixSize (REQUIRED)
@@ -13,8 +14,7 @@ function [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xDecodingF
 %                                   - '8' for Hadamard-8
 %                                3) DecodingMatrix (OPTIONAL)
 %                                   - Matrix given by the user
-%               
-%               NumberEchoTimes  - Number of different echos (REQUIRED)
+%                                4) NumberEchoTimes  - Number of different echos (REQUIRED)
 % OUTPUT:       imASLReordered    - Decoded ASL volumes
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
@@ -38,14 +38,7 @@ if nargin<2 || isempty(xDecodingFields)
     warning('xDecodingFields input is empty');
 end
 
-if nargin<3 || isempty(NumberEchoTimes)
-    warning('NumberEchoTimes input is empty');
-end
-
 % Decoding Fields
-
-TimeEncodedMatrixType = xDecodingFields.TimeEncodedMatrixType;
-TimeEncodedMatrixSize = xDecodingFields.TimeEncodedMatrixSize;
 
 if isfield(xDecodingFields,'DecodingMatrix') && ~isempty(xDecodingFields.DecodingMatrix)
     DecodingMatrix_input = xDecodingFields.DecodingMatrix;
@@ -54,9 +47,9 @@ else
 end
 
 % #### For Walsh Decoding Matrix ####
-if strcmp(TimeEncodedMatrixType,'Walsh')
+if strcmp(xDecodingFields.TimeEncodedMatrixType,'Walsh')
     
-    if TimeEncodedMatrixSize == 4
+    if xDecodingFields.TimeEncodedMatrixSize == 4
         
         ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
         
@@ -68,7 +61,7 @@ if strcmp(TimeEncodedMatrixType,'Walsh')
                               1  1 -1 -1];
         end
         
-    elseif TimeEncodedMatrixSize == 8
+    elseif xDecodingFields.TimeEncodedMatrixSize == 8
         
         ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
         
@@ -86,11 +79,11 @@ if strcmp(TimeEncodedMatrixType,'Walsh')
     end
     
     % #### For Hadamard Decoding Matrix ####
-elseif strcmp(TimeEncodedMatrixType,'Hadamard')
+elseif strcmp(xDecodingFields.TimeEncodedMatrixType,'Hadamard')
     
     
     
-    if TimeEncodedMatrixSize == 4
+    if xDecodingFields.TimeEncodedMatrixSize == 4
         
         ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
         
@@ -102,7 +95,7 @@ elseif strcmp(TimeEncodedMatrixType,'Hadamard')
                               1 -1 -1  1];
         end
         
-    elseif TimeEncodedMatrixSize == 8
+    elseif xDecodingFields.TimeEncodedMatrixSize == 8
         
         ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
         
@@ -128,20 +121,20 @@ end
 % And for decoding we want
 % TE1/PLD1,TE1/PLD2,TE1/PLD3,TE1.PL4...TE2/PLD1,TE2/PLD2,TE2/PLD3,TE2/PLD4 (TEs first, PLDs after)
 
-nDecodedTI = TimeEncodedMatrixSize-1;                   % Number of TIs is always MatrixSize -1
-nDecodedVolume = NumberEchoTimes * nDecodedTI;
+nDecodedTI = xDecodingFields.TimeEncodedMatrixSize-1;                   % Number of TIs is always MatrixSize -1
+nDecodedVolume = xDecodingFields.NumberEchoTimes * nDecodedTI;
 nEncodedVolume = size(ASL_im, 4);
-EncodedDataSize = TimeEncodedMatrixSize * NumberEchoTimes;     % Expected data size
+EncodedDataSize = xDecodingFields.TimeEncodedMatrixSize * xDecodingFields.NumberEchoTimes;     % Expected data size
 nRepetitions = nEncodedVolume / EncodedDataSize;           % Calculating no. of acquisition repeats
 
 DecodedDataSize = nDecodedVolume * nRepetitions;
 Decoded_ASL = zeros(size(ASL_im,1),size(ASL_im,2),size(ASL_im,3),DecodedDataSize);
-numberPLDs = int32(size(ASL_im,4)/NumberEchoTimes);
+numberPLDs = int32(size(ASL_im,4)/xDecodingFields.NumberEchoTimes);
 
 % Reorder data - first cycle TEs afterwards PLDs
 vectorOldOrder = zeros(size(ASL_im,4),1);
-for iTE = 1:(double(NumberEchoTimes))
-    vectorOldOrder((1:numberPLDs)+(iTE-1)*numberPLDs) = (iTE-1)+1:NumberEchoTimes:size(ASL_im,4);
+for iTE = 1:(double(xDecodingFields.NumberEchoTimes))
+    vectorOldOrder((1:numberPLDs)+(iTE-1)*numberPLDs) = (iTE-1)+1:xDecodingFields.NumberEchoTimes:size(ASL_im,4);
 end
 ASL_im(:,:,:,1:end) = ASL_im(:,:,:,vectorOldOrder);
 
@@ -149,7 +142,7 @@ ASL_im(:,:,:,1:end) = ASL_im(:,:,:,vectorOldOrder);
     
 idx=0;
 for Repetition = 1:nRepetitions
-    for TE = 1:NumberEchoTimes
+    for TE = 1:xDecodingFields.NumberEchoTimes
         for TI = 1:nDecodedTI
             
             indexPositive = find(DecodingMatrix(TI,:)==1);
@@ -157,7 +150,7 @@ for Repetition = 1:nRepetitions
             Decoded_ASL(:,:,:,((TE-1)*nDecodedTI+TI)+(Repetition-1)*nDecodedVolume) = mean(ASL_im(:,:,:,(indexPositive+idx)),4) - mean(ASL_im(:,:,:,(indexNegative+idx)),4);
             
         end
-        idx = idx+TimeEncodedMatrixSize;
+        idx = idx+xDecodingFields.TimeEncodedMatrixSize;
     end
 end
 
@@ -167,14 +160,14 @@ end
 % For model fitting, we want the PLDs-first-TEs-second order (just like the
 % beginning) so we need to reorder it again
 
-imASLReordered=xASL_im_HadamardReorder(Decoded_ASL,NumberEchoTimes);
+imASLReordered=xASL_im_HadamardReorder(Decoded_ASL,xDecodingFields.NumberEchoTimes);
 
 
 %% ste-4: signal normalization
 % NormalizationFactor = 1/(m_INumSets/2);
 % where m_INumSets is the number of images (e.g. 8 for Hadamard 8x8)
 
-imASLReordered=xASL_im_HadamardDecodingNormalize(TimeEncodedMatrixSize, imASLReordered);
+imASLReordered=xASL_im_HadamardDecodingNormalize(xDecodingFields.TimeEncodedMatrixSize, imASLReordered);
 
     
 end

@@ -55,7 +55,7 @@ convertTimeFieldsRange = [0.5        5                10            10          
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
-	           'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses'};
+	           'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses' 'TimeEncodedMatrixSize' 'NumberEchoTimes' 'TimeEncodedMatrixType'};
 
 % Some JSON fields need to be updated to fit the BIDS definition
 % This is a one way process of changing the names from old to new

@@ -137,13 +137,9 @@ xASL_delete(rpfile);
 %         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); 
 %         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
 %     end
-% Define conditions for motion correction in multi-PLD, multi-TE and Hadamard subjects
-conditionMultiPLD = isfield(x.Q,'Initial_PLD') && (numel(unique(x.Q.Initial_PLD))>1);
-conditionMultiTE = isfield(x,'EchoTime') && (numel(unique(x.EchoTime))>1);
-conditionHadamard = isfield(x.modules.asl,'TimeEncodedMatrixType') && (x.modules.asl.TimeEncodedMatrixType~=0);
 
 % Run motion correction for corresponding case
-if nFrames>2 && bSubtraction && (conditionMultiPLD  ||  conditionMultiTE  || conditionHadamard)
+if nFrames>2 && bSubtraction && (x.modules.asl.bMultiPLD  ||  x.modules.asl.bMultiTE  || x.modules.asl.bTimeEncoded)
     % Multi-PLD, Multi-TE or Hadamard
     spm_realign(spm_vol(InputPath),flags,false);
     

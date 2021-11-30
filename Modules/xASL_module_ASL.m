@@ -133,29 +133,57 @@ if ~isfield(x,'DoWADQCDC')
 end
 
 %% D3. Multi-PLD parsing
-
+if isfield(x.Q,'Initial_PLD') && numel(unique(x.Q.Initial_PLD))>1  % check for number of unique PLD's, more than 1 means multiPLD
+    fprintf('Multiple PLDs detected...\nPDLs: ');
+    for iPLD = 1:numel(x.Q.Initial_PLD)
+        if iPLD<numel(x.Q.Initial_PLD)
+            fprintf('%d, ',x.Q.Initial_PLD(iPLD));
+        else
+            fprintf('%d\n',x.Q.Initial_PLD(iPLD));
+        end
+    end
+    x.modules.asl.bMultiPLD = true;
+else
+    x.modules.asl.bMultiPLD = false;
+end
 
 %% D4. TimeEncoded parsing
 % Check if TimeEncoded is defined
-if isfield(x,'TimeEncodedMatrixType') && ~isempty(x.TimeEncodedMatrixType)
-    x.modules.asl.TimeEncodedMatrixType = x.TimeEncodedMatrixType;
-end
-
-% Check if TimeEncodedMatrixSize
-if isfield(x,'TimeEncodedMatrixSize') && ~isempty(x.TimeEncodedMatrixSize)
-    x.modules.asl.TimeEncodedMatrixSize = x.TimeEncodedMatrixSize;
-end
-
-if isfield(x.modules.asl,'TimeEncodedMatrixType') || isfield(x.modules.asl,'TimeEncodedMatrixSize')
+if isfield(x.Q,'TimeEncodedMatrixType') || isfield(x.Q,'TimeEncodedMatrixSize') 
     x.modules.asl.bTimeEncoded = 1;
+	
+	if isempty(x.Q.TimeEncodedMatrixType)
+		fprintf('TimeEncodedMatrixType field missing. It should be a Hadamard or Walsh')
+	elseif ~isfield(x.Q,'TimeEncodedMatrixSize') || isempty(x.Q.TimeEncodedMatrixSize) || (x.Q.TimeEncodedMatrixSize < 2)
+		fprintf('TimeEncodedMatrixSize field missing. It should be a multiple of 4')
+	end
+else
+	x.modules.asl.bTimeEncoded = 0;
 end
+
 % Check if there is Decoding Matrix as input
 %(some datasets will have a decoding matrix that we can use directly in the decoding part)
 
 
 %% D5. Multi-TE parsing
-if isfield(x,'EchoTime') && ~isfield(x.NumberEchoTimes)
-	x.NumberEchoTimes = length(uniquetol(x.EchoTime,0.001)); % Obtain the number of echo times
+if isfield(x,'EchoTime') && numel(unique(x.EchoTime))>1
+    x.modules.asl.bMultiTE = true;
+    fprintf('Multiple echo times detected...\nTEs: ');
+	
+	if ~isfield(x.Q,'NumberEchoTimes')
+		x.Q.NumberEchoTimes = length(uniquetol(x.EchoTime,0.001)); % Obtain the number of echo times
+	end
+	
+	uniqueEchoTimes = uniquetol(x.EchoTime,0.001);
+    for iTE = 1:length(uniqueEchoTimes)
+        if iTE<length(uniqueEchoTimes)
+            fprintf('%d, ',uniqueEchoTimes(iTE));
+        else
+            fprintf('%d\n',uniqueEchoTimes(iTE));
+        end
+    end
+else
+    x.modules.asl.bMultiTE = false;
 end
 
 %% E1. Default quantification parameters in the Q field
@@ -228,64 +256,6 @@ end
 
 %% Define sequence (educated guess)
 x = xASL_adm_DefineASLSequence(x);
-
-%% MultiPLD parsing
-
-if isfield(x.Q,'Initial_PLD') && numel(unique(x.Q.Initial_PLD))>1  % check for number of unique PLD's, more than 1 means multiPLD
-    fprintf('Multiple PLDs detected...\nPDLs: ');
-    for iPLD = 1:numel(x.Q.Initial_PLD)
-        if iPLD<numel(x.Q.Initial_PLD)
-            fprintf('%d, ',x.Q.Initial_PLD(iPLD));
-        else
-            fprintf('%d\n',x.Q.Initial_PLD(iPLD));
-        end
-    end
-    x.modules.asl.bMultiPLD = true;
-else
-    x.modules.asl.bMultiPLD = false;
-end
-
-%% TimeEncoded parsing
-% Check if TimeEncoded is defined
-if isfield(x,'TimeEncodedMatrixType') && ~isempty(x.TimeEncodedMatrixType)
-    x.modules.asl.TimeEncodedMatrixType = x.TimeEncodedMatrixType;
-end
-
-% Check if TimeEncodedMatrixSize
-if isfield(x,'TimeEncodedMatrixSize') && ~isempty(x.TimeEncodedMatrixSize)
-    x.modules.asl.TimeEncodedMatrixSize = x.TimeEncodedMatrixSize;
-end
-
-if isfield(x.modules.asl,'TimeEncodedMatrixType') || isfield(x.modules.asl,'TimeEncodedMatrixSize')
-    x.modules.asl.bTimeEncoded = 1;
-
-    if ~isfield(x.modules.asl,'TimeEncodedMatrixType') || isempty(x.TimeEncodedMatrixType)
-        fprintf('TimeEncodedMatrixType field missing. It should be a Hadamard or Walsh')
-        
-    elseif ~isfield(x.modules.asl,'TimeEncodedMatrixSize') || isempty(x.TimeEncodedMatrixSize)
-        fprintf('TimeEncodedMatrixSize field missing. It should be a multiple of 4')
-    end
-    
-else
-    x.modules.asl.bTimeEncoded = 0;
-end
-
-%% MultiTE parsing
-
-if isfield(x,'EchoTime') && numel(unique(x.EchoTime))>1
-    x.modules.asl.bMultiTE = true;
-    fprintf('Multiple echo times detected...\nTEs: ');
-    for iTE = 1:numel(x.EchoTime)
-        if iTE<numel(x.EchoTime)
-            fprintf('%d, ',x.EchoTime(iTE));
-        else
-            fprintf('%d\n',x.EchoTime(iTE));
-        end
-    end
-else
-    x.modules.asl.bMultiTE = false;
-end
-
 
 %% H. Skip processing if invalid image
 tempASL = xASL_io_Nifti2Im(x.P.Path_ASL4D);
