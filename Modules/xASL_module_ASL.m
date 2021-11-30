@@ -154,8 +154,9 @@ end
 
 
 %% D5. Multi-TE parsing
-
-
+if isfield(x,'EchoTime') && ~isfield(x.NumberEchoTimes)
+	x.NumberEchoTimes = length(uniquetol(x.EchoTime,0.001)); % Obtain the number of echo times
+end
 
 %% E1. Default quantification parameters in the Q field
 if ~isfield(x.Q,'ApplyQuantification') || isempty(x.Q.ApplyQuantification)

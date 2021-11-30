@@ -1,9 +1,9 @@
-function [imASL_reorder] = xASL_im_HadamardDecoding(Encoded_ASL, xDecodingFields, NumberEchoTimes)
+function [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xDecodingFields, NumberEchoTimes)
 %xASL_quant_HadamardDecodingHadamard-4 & Hadamard-8 Decoding
 %
-% FORMAT:       [imASL_reorder] = xASL_quant_HadamardDecoding(Encoded_ASL, xDecodingFields, NumberEchoTimes)
+% FORMAT:       [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xDecodingFields, NumberEchoTimes)
 %
-% INPUT:        Encoded_ASL      - ASL4D image we want to decode (REQUIRED)
+% INPUT:        imASLEncoded      - ASL4D image we want to decode (REQUIRED)
 %
 %               xDecodingFields  1) TimeEncodedMatrixType (REQUIRED)
 %                                   - Hadamard
@@ -14,24 +14,24 @@ function [imASL_reorder] = xASL_im_HadamardDecoding(Encoded_ASL, xDecodingFields
 %                                3) DecodingMatrix (OPTIONAL)
 %                                   - Matrix given by the user
 %               
-%               NumberEchoTimes  - Field from x.TimeEncodedEchoTimes (REQUIRED)
-%
+%               NumberEchoTimes  - Number of different echos (REQUIRED)
+% OUTPUT:       imASLReordered    - Decoded ASL volumes
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
 %
 % 1. Step-1: Reorder data
-% 2. Step-2: decode data
-% 3. Step-3: reorder again for model fitting
+% 2. Step-2: Decode data
+% 3. Step-3: Reorder again for model fitting
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
-% Checking if all inputs are present
+% Check if all inputs are present
 
-if nargin<1 || isempty(Encoded_ASL)
-    warning('Encoded_ASL input is empty');
+if nargin<1 || isempty(imASLEncoded)
+    warning('imASLEncoded input is empty');
 end
 
 if nargin<2 || isempty(xDecodingFields)
@@ -58,7 +58,7 @@ if strcmp(TimeEncodedMatrixType,'Walsh')
     
     if TimeEncodedMatrixSize == 4
         
-        ASL_im = xASL_io_Nifti2Im(Encoded_ASL); % Load time-series nifti
+        ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
         
         if ~isempty(DecodingMatrix_input) %if there's a Decoding Matrix from the data
             DecodingMatrix = DecodingMatrix_input;
@@ -70,7 +70,7 @@ if strcmp(TimeEncodedMatrixType,'Walsh')
         
     elseif TimeEncodedMatrixSize == 8
         
-        ASL_im = xASL_io_Nifti2Im(Encoded_ASL); % Load time-series nifti
+        ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
         
         if ~isempty(DecodingMatrix_input) %if there's a Decoding Matrix from the data
             DecodingMatrix = DecodingMatrix_input;
@@ -92,7 +92,7 @@ elseif strcmp(TimeEncodedMatrixType,'Hadamard')
     
     if TimeEncodedMatrixSize == 4
         
-        ASL_im = xASL_io_Nifti2Im(Encoded_ASL); % Load time-series nifti
+        ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
         
         if ~isempty(DecodingMatrix_input) %if there's a Decoding Matrix from the data
             DecodingMatrix = DecodingMatrix_input;
@@ -104,7 +104,7 @@ elseif strcmp(TimeEncodedMatrixType,'Hadamard')
         
     elseif TimeEncodedMatrixSize == 8
         
-        ASL_im = xASL_io_Nifti2Im(Encoded_ASL); % Load time-series nifti
+        ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
         
         if ~isempty(DecodingMatrix_input) %if there's a Decoding Matrix from the data
             DecodingMatrix = DecodingMatrix_input;
@@ -167,20 +167,20 @@ end
 % For model fitting, we want the PLDs-first-TEs-second order (just like the
 % beginning) so we need to reorder it again
 
-imASL_reorder=xASL_im_HadamardReorder(Decoded_ASL,NumberEchoTimes);
+imASLReordered=xASL_im_HadamardReorder(Decoded_ASL,NumberEchoTimes);
 
 
 %% ste-4: signal normalization
 % NormalizationFactor = 1/(m_INumSets/2);
 % where m_INumSets is the number of images (e.g. 8 for Hadamard 8x8)
 
-imASL_reorder=xASL_im_HadamardDecodingNormalize(TimeEncodedMatrixSize,imASL_reorder);
+imASLReordered=xASL_im_HadamardDecodingNormalize(TimeEncodedMatrixSize, imASLReordered);
 
     
 end
 
 
-function imASL_reorder=xASL_im_HadamardReorder(Decoded_ASL,NumberEchoTimes)
+function imASLReordered=xASL_im_HadamardReorder(Decoded_ASL, NumberEchoTimes)
 ASL_im = Decoded_ASL;
 numberPLDs = int32(size(ASL_im,4)/NumberEchoTimes); % this now takes size of decoded PLDs
 
@@ -189,14 +189,14 @@ for iPLD = 1:numberPLDs
     vectorNewOrder((1:NumberEchoTimes)+(iPLD-1)*NumberEchoTimes) = (iPLD-1)+1:numberPLDs:size(ASL_im,4);
 end
 
-imASL_reorder = zeros(size(ASL_im,1),size(ASL_im,2),size(ASL_im,3),size(ASL_im,4));
-imASL_reorder(:,:,:,1:end) = ASL_im(:,:,:,vectorNewOrder);
+imASLReordered = zeros(size(ASL_im,1),size(ASL_im, 2),size(ASL_im, 3),size(ASL_im, 4));
+imASLReordered(:,:,:,1:end) = ASL_im(:,:,:,vectorNewOrder);
 
 end
 
-function imASL_reorder=xASL_im_HadamardDecodingNormalize(TimeEncodedMatrixSize,imASL_reorder)
+function imASLReordered=xASL_im_HadamardDecodingNormalize(TimeEncodedMatrixSize, imASLReordered)
 
 NormalizationFactor = 1/(TimeEncodedMatrixSize/2);
-imASL_reorder = imASL_reorder * NormalizationFactor;
+imASLReordered = imASLReordered * NormalizationFactor;
 
 end
