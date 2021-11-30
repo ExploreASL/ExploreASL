@@ -168,7 +168,7 @@ end
 %% D5. Multi-TE parsing
 if isfield(x,'EchoTime') && numel(unique(x.EchoTime))>1
     x.modules.asl.bMultiTE = true;
-    fprintf('Multiple echo times detected...\nTEs: ');
+    fprintf('Multiple echo times detected...\nTEs (ms): ');
 	
 	if ~isfield(x.Q,'NumberEchoTimes')
 		x.Q.NumberEchoTimes = length(uniquetol(x.EchoTime,0.001)); % Obtain the number of echo times
@@ -177,9 +177,9 @@ if isfield(x,'EchoTime') && numel(unique(x.EchoTime))>1
 	uniqueEchoTimes = uniquetol(x.EchoTime,0.001);
     for iTE = 1:length(uniqueEchoTimes)
         if iTE<length(uniqueEchoTimes)
-            fprintf('%d, ',uniqueEchoTimes(iTE));
+            fprintf('%d, ', round(uniqueEchoTimes(iTE)));
         else
-            fprintf('%d\n',uniqueEchoTimes(iTE));
+            fprintf('%d\n', round(uniqueEchoTimes(iTE)));
         end
     end
 else
