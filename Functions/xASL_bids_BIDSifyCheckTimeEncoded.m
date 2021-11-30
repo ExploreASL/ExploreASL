@@ -1,11 +1,12 @@
-function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
+function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn, jsonOut, nVolumes)
 %xASL_bids_BIDSifyCheckTimeEncoded Check for time encoded sequence
 %
-% FORMAT: [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn,jsonOut)
+% FORMAT: [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn, jsonOut, nVolumes)
 %
 % INPUT:
 %   jsonIn    - JSON with the input fields - from DICOMs (REQUIRED)
 %   jsonOut   - Output JSON in progress from the parent function xASL_bids_BIDSifyASLJSON (REQUIRED)
+%   nVolumes  - number of acquired volumes (REQUIRED)
 %
 % OUTPUT: 
 %   jsonOut   - Output JSON in progress from the parent function xASL_bids_BIDSifyASLJSON
@@ -20,6 +21,10 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+    if nargin < 3
+		error('Three input parameters required');
+	end
+	
     % Check for time encoded sequences
     if isfield(jsonOut,'TimeEncodedMatrixSize') && ~isempty(jsonOut.TimeEncodedMatrixSize) || ... % Should be 4, 8 or 12
         isfield(jsonOut,'TimeEncodedMatrixType') % Natural or walsh
@@ -46,21 +51,30 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
     
 	if isfield(jsonOut, 'EchoTime')
 		NumberEchoTimes = length(uniquetol(jsonOut.EchoTime,0.001)); % Obtain the number of echo times
+
+		% Either 1 TE or matching the number of the volumes
+		if length(jsonOut.EchoTime) > 1 && nVolumes>length(jsonOut.EchoTime)
+			if mod(nVolumes,length(jsonOut.EchoTime)) == 0
+				jsonOut.EchoTime = repmat(jsonOut.EchoTime(:), 1, nVolumes/length(jsonOut.EchoTime))';
+				jsonOut.EchoTime = jsonOut.EchoTime(:);
+			else
+				warning('Number of EchoTimes %d does not match the number of volumes %d\n',length(jsonOut.EchoTime),nVolumes);
+			end
+		end
 	end
 		
     if bTimeEncoded
-        if isfield(jsonOut, 'EchoTime') && isfield(jsonOut, 'PostLabelingDelay')
+        if isfield(jsonOut, 'PostLabelingDelay')
             % From the import, the length of EchoTime should correspond to the number of volumes
-            if length(jsonOut.EchoTime)~=length(jsonOut.PostLabelingDelay)
+            if length(jsonOut.PostLabelingDelay) > 1 && length(jsonOut.PostLabelingDelay) < nVolumes
                 % So here, we first make sure that each PLD is repeated for the whole block of echo-times
-                repeatedPLDs = repmat(jsonOut.PostLabelingDelay(:), 1, NumberEchoTimes)';
-                repeatedPLDs = repeatedPLDs(:);
-
-                if length(repeatedPLDs) > length(jsonOut.EchoTime) || mod(length(jsonOut.EchoTime),length(repeatedPLDs)) ~= 0
-                    warning('Did not succeed in repeating PLDs for each TE for Hadamard sequence import...');
-                end
-                % Make sure that number of volumes can be divided by the repeated PLDs
-                jsonOut.PostLabelingDelay = repeatedPLDs;
+				if mod(nVolumes,length(jsonOut.PostLabelingDelay)) == 0
+					jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:), 1, nVolumes/length(jsonOut.PostLabelingDelay))';
+					jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
+				else
+					warning('Number of PLDs %d does not match the number of volumes %d\n',length(jsonOut.EchoTime),nVolumes);
+				end
+                
             end
         end
     end
@@ -82,12 +96,10 @@ function [jsonOut,bTimeEncoded,bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnco
     
     % Check total acquired pairs for time encoded sequences
     if bTimeEncoded
-        if (NumberEchoTimes>1) || (TimeEncodedInversionTimes>1)
-            % At this stage, jsonOut.PostLabelingDelay has the repeated PLDs already.
-            numberPLDs = TimeEncodedInversionTimes + 1;
-            % Determine the TotalAcquiredPairs
-            jsonOut.TotalAcquiredPairs = jsonOut.AcquisitionMatrix / (NumberEchoTimes * numberPLDs);
-        end
+		% At this stage, jsonOut.PostLabelingDelay has the repeated PLDs already.
+		numberPLDs = TimeEncodedInversionTimes + 1;
+		% Determine the TotalAcquiredPairs
+		jsonOut.TotalAcquiredPairs = nVolumes / (NumberEchoTimes * numberPLDs);
     end
 
 end
