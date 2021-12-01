@@ -20,9 +20,10 @@ function [imASLReordered] = xASL_quant_HadamardDecoding(imPath, xQ)
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
 %
 % 0. Admin: Check inputs, load data, specify the decoding matrix
-% 1. Step-1: Reorder data
-% 2. Step-2: Decode data
-% 3. Step-3: Reorder again for model fitting
+% 1. Reorder multi-TE data
+% 2. Decode the Hadamard data
+% 3. Reorder multi-TE back to the initial order of PLD/TE
+% 4. Normalization of the decoded data
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      n/a
@@ -42,15 +43,15 @@ end
 
 % Specify the TimeEncodedMatrix
 if isfield(xQ,'TimeEncodedMatrix') && ~isempty(xQ.TimeEncodedMatrix)
-	if size(xQ.TimeEncodedMatrix,1) ~= size(xQ.TimeEncodedMatrix,2)
-		error('TimeEncodedMatrix must be square');
+	if (size(xQ.TimeEncodedMatrix,1)+1) ~= size(xQ.TimeEncodedMatrix,2)
+		error('TimeEncodedMatrix must be square (N-1)xN ');
 	end
 	
     % TimeEncodedMatrix exists, we verify the size
 	if ~isfield(xQ,'TimeEncodedMatrixSize') || isempty(xQ.TimeEncodedMatrixSize)
-		xQ.TimeEncodedMatrixSize = size(xQ.TimeEncodedMatrix,1);
+		xQ.TimeEncodedMatrixSize = size(xQ.TimeEncodedMatrix,2);
 	else
-		if size(xQ.TimeEncodedMatrix,1) ~= xQ.TimeEncodedMatrixSize
+		if size(xQ.TimeEncodedMatrix,2) ~= xQ.TimeEncodedMatrixSize
 			error('Mismatch between TimeEncodedMatrix and TimeEncodedMatrixSize');
 		end
 	end
@@ -101,34 +102,36 @@ else
 end
 
 % Load time-series nifti
-ASL_im = xASL_io_Nifti2Im(imPath); 
+imEncoded = xASL_io_Nifti2Im(imPath); 
 
-%% step-1: Reorder data
+% Calculate specific data sizes
+nDecodedTI = xQ.TimeEncodedMatrixSize-1;                   % Number of TIs is always MatrixSize -1
+nDecodedVolumes = xQ.NumberEchoTimes * nDecodedTI;
+
+nEncodedVolumes = size(imEncoded, 4);
+
+nPLDs = nEncodedVolumes / xQ.NumberEchoTimes;
+nRepetitions = nEncodedVolumes / (xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes); % Calculating no. of acquisition repeats
+
+%% 1. Reorder multi-TE data
 % At this point the data is organized like this (in terms of ASL4D.nii volumes):
 % PLD1/TE1,PLD1/TE2,PLD1/TE3,PLD1/TE4...PLD2/TE1,PLD2/TE2,PLD2/TE3... (PLDs first, TEs after)
 %
 % And for decoding we want
-% TE1/PLD1,TE1/PLD2,TE1/PLD3,TE1.PL4...TE2/PLD1,TE2/PLD2,TE2/PLD3,TE2/PLD4 (TEs first, PLDs after)
+% TE1/PLD1,TE1/PLD2,TE1/PLD3,TE1/PLD4...TE2/PLD1,TE2/PLD2,TE2/PLD3,TE2/PLD4 (TEs first, PLDs after)
+if isfield(xQ,'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
+	% Reorder data - first cycle TEs afterwards PLDs
+	vectorOldOrder = zeros(nEncodedVolumes, 1);
+	for iTE = 1:xQ.NumberEchoTimes
+		vectorOldOrder((1:nPLDs)+(iTE-1)*nPLDs) = (iTE-1)+1:xQ.NumberEchoTimes:nEncodedVolumes;
+	end
 
-nDecodedTI = xQ.TimeEncodedMatrixSize-1;                   % Number of TIs is always MatrixSize -1
-nDecodedVolume = xQ.NumberEchoTimes * nDecodedTI;
-nEncodedVolume = size(ASL_im, 4);
-EncodedDataSize = xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes;     % Expected data size
-nRepetitions = nEncodedVolume / EncodedDataSize;           % Calculating no. of acquisition repeats
-
-DecodedDataSize = nDecodedVolume * nRepetitions;
-Decoded_ASL = zeros(size(ASL_im,1),size(ASL_im,2),size(ASL_im,3),DecodedDataSize);
-numberPLDs = int32(size(ASL_im,4)/xQ.NumberEchoTimes);
-
-% Reorder data - first cycle TEs afterwards PLDs
-vectorOldOrder = zeros(size(ASL_im,4),1);
-for iTE = 1:(double(xQ.NumberEchoTimes))
-    vectorOldOrder((1:numberPLDs)+(iTE-1)*numberPLDs) = (iTE-1)+1:xQ.NumberEchoTimes:size(ASL_im,4);
+	% Reorder the data
+	imEncoded = imEncoded(:,:,:,vectorOldOrder);
 end
-ASL_im(:,:,:,1:end) = ASL_im(:,:,:,vectorOldOrder);
 
-%% step-2: decode data
-    
+%% 2. Decode the Hadamard data
+Decoded_ASL = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), nDecodedVolumes * nRepetitions);    
 idx=0;
 for Repetition = 1:nRepetitions
     for TE = 1:xQ.NumberEchoTimes
@@ -136,7 +139,7 @@ for Repetition = 1:nRepetitions
             
             indexPositive = find(xQ.TimeEncodedMatrix(TI,:)==1);
             indexNegative = find(xQ.TimeEncodedMatrix(TI,:)==-1);
-            Decoded_ASL(:,:,:,((TE-1)*nDecodedTI+TI)+(Repetition-1)*nDecodedVolume) = mean(ASL_im(:,:,:,(indexPositive+idx)),4) - mean(ASL_im(:,:,:,(indexNegative+idx)),4);
+            Decoded_ASL(:,:,:,((TE-1)*nDecodedTI+TI)+(Repetition-1)*nDecodedVolumes) = mean(imEncoded(:,:,:,(indexPositive+idx)),4) - mean(imEncoded(:,:,:,(indexNegative+idx)),4);
             
         end
         idx = idx+xQ.TimeEncodedMatrixSize;
@@ -144,7 +147,7 @@ for Repetition = 1:nRepetitions
 end
 
 
-%% step-3: reorder again for model fitting
+%% 3. Reorder multi-TE back to the initial order of PLD/TE
 %
 % For model fitting, we want the PLDs-first-TEs-second order (just like the
 % beginning) so we need to reorder it again
@@ -152,7 +155,7 @@ end
 imASLReordered=xASL_im_HadamardReorder(Decoded_ASL,xQ.NumberEchoTimes);
 
 
-%% ste-4: signal normalization
+%% 4. Normalization of the decoded data
 % NormalizationFactor = 1/(m_INumSets/2);
 % where m_INumSets is the number of images (e.g. 8 for Hadamard 8x8)
 
@@ -163,16 +166,16 @@ end
 
 
 function imASLReordered=xASL_im_HadamardReorder(Decoded_ASL, NumberEchoTimes)
-ASL_im = Decoded_ASL;
-numberPLDs = int32(size(ASL_im,4)/NumberEchoTimes); % this now takes size of decoded PLDs
+imEncoded = Decoded_ASL;
+nPLDs = int32(size(imEncoded,4)/NumberEchoTimes); % this now takes size of decoded PLDs
 
-vectorNewOrder = zeros(size(ASL_im,4),1);
-for iPLD = 1:numberPLDs
-    vectorNewOrder((1:NumberEchoTimes)+(iPLD-1)*NumberEchoTimes) = (iPLD-1)+1:numberPLDs:size(ASL_im,4);
+vectorNewOrder = zeros(size(imEncoded,4),1);
+for iPLD = 1:nPLDs
+    vectorNewOrder((1:NumberEchoTimes)+(iPLD-1)*NumberEchoTimes) = (iPLD-1)+1:nPLDs:size(imEncoded,4);
 end
 
-imASLReordered = zeros(size(ASL_im,1),size(ASL_im, 2),size(ASL_im, 3),size(ASL_im, 4));
-imASLReordered(:,:,:,1:end) = ASL_im(:,:,:,vectorNewOrder);
+imASLReordered = zeros(size(imEncoded,1),size(imEncoded, 2),size(imEncoded, 3),size(imEncoded, 4));
+imASLReordered(:,:,:,1:end) = imEncoded(:,:,:,vectorNewOrder);
 
 end
 
