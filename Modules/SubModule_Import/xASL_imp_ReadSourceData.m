@@ -74,6 +74,9 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
     % Condition for file extension
     conditionFile = '.(dcm|ima|xml|par|rec)';
 
+    % Other extension
+    conditionExtension = '.';
+
     % Check folderHierarchy based on bMatchDirectories
     if x.modules.import.imPar.bMatchDirectories
         % Check that there is no extension in the last folder hierachy element
@@ -84,6 +87,9 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
         % Check for extension in last folder hierachy element
         if isempty(regexpi(lastElement,conditionFile))
            warning('The sourceStructure folderHierarchy does not include a file extension...');
+           if ~isempty(regexpi(lastElement,conditionExtension))
+              warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
+           end
         end
     end
 
