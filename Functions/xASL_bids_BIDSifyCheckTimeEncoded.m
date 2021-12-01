@@ -97,7 +97,7 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
     % Check total acquired pairs for time encoded sequences
     if bTimeEncoded
 		% At this stage, jsonOut.PostLabelingDelay has the repeated PLDs already.
-		numberPLDs = TimeEncodedInversionTimes + 1;
+		numberPLDs = jsonOut.TimeEncodedMatrixSize;
 		% Determine the TotalAcquiredPairs
 		jsonOut.TotalAcquiredPairs = nVolumes / (NumberEchoTimes * numberPLDs);
     end
