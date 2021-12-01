@@ -1,7 +1,7 @@
-function x = xASL_imp_FinishImport(x)
-%xASL_imp_FinishImport Finish the remaining import steps, which are not done for each subject individually
+function x = xASL_imp_CompleteBIDS2Legacy(x)
+%xASL_imp_CompleteBIDS2Legacy Finish the remaining import steps, which are not done for each subject individually
 %
-% FORMAT: x = xASL_imp_FinishImport(x)
+% FORMAT: x = xASL_imp_CompleteBIDS2Legacy(x)
 %
 % INPUT:
 %   x      - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -18,7 +18,7 @@ function x = xASL_imp_FinishImport(x)
 % 4. Add missing fields
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:        x = xASL_imp_FinishImport(x);
+% EXAMPLE:        x = xASL_imp_CompleteBIDS2Legacy(x);
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL

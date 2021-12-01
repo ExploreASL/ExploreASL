@@ -46,7 +46,7 @@ function [x] = ExploreASL_ImportMaster(x)
         [~, x] = xASL_Iteration(x,'xASL_module_Import');
         % Housekeeping after BIDS to Legacy
         if x.opts.ImportModules(4)
-            x = xASL_imp_FinishImport(x);
+            x = xASL_imp_CompleteBIDS2Legacy(x);
         end
     catch loggingEntry
         % Print user feedback if import crashed
