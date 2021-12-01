@@ -19,11 +19,12 @@ function [imDecoded] = xASL_quant_HadamardDecoding(imPath, xQ)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
 %
-% 0. Admin: Check inputs, load data, specify the decoding matrix
-% 1. Reorder multi-TE data
-% 2. Decode the Hadamard data
-% 3. Reorder multi-TE back to the initial order of PLD/TE
-% 4. Normalization of the decoded data
+% 0. Admin: Check inputs, load data
+% 1. Specify the decoding matrix
+% 2. Reorder multi-TE data
+% 3. Decode the Hadamard data
+% 4. Reorder multi-TE back to the initial order of PLD/TE
+% 5. Normalization of the decoded data
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      n/a
@@ -40,6 +41,8 @@ end
 if nargin<2 || isempty(xQ)
     error('xQ input is empty');
 end
+
+%% 1. Specify the Encoding matrix
 
 % Specify the TimeEncodedMatrix
 if isfield(xQ,'TimeEncodedMatrix') && ~isempty(xQ.TimeEncodedMatrix)
@@ -110,36 +113,38 @@ nDecodedVolumes = xQ.NumberEchoTimes * nDecodedTI;
 
 nEncodedVolumes = size(imEncoded, 4);
 
-nPLDs = nEncodedVolumes / xQ.NumberEchoTimes;
 nRepetitions = nEncodedVolumes / (xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes); % Calculating no. of acquisition repeats
 
-%% 1. Reorder multi-TE data
+%% 2. Reorder multi-TE data
 % At this point the data is organized like this (in terms of ASL4D.nii volumes):
-% PLD1/TE1,PLD1/TE2,PLD1/TE3,PLD1/TE4...PLD2/TE1,PLD2/TE2,PLD2/TE3... (PLDs first, TEs after)
+% PLD1/TE1,PLD1/TE2,PLD1/TE3,PLD1/TE4...PLD2/TE1,PLD2/TE2,PLD2/TE3... (TEs in first dimension, PLDs after)
 %
 % And for decoding we want
-% TE1/PLD1,TE1/PLD2,TE1/PLD3,TE1/PLD4...TE2/PLD1,TE2/PLD2,TE2/PLD3,TE2/PLD4 (TEs first, PLDs after)
+% TE1/PLD1,TE1/PLD2,TE1/PLD3,TE1/PLD4...TE2/PLD1,TE2/PLD2,TE2/PLD3,TE2/PLD4 (PLDs in the first dimension, TEs after)
 if isfield(xQ,'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
-	% Reorder data - first cycle TEs afterwards PLDs
-	vectorOldOrder = zeros(nEncodedVolumes, 1);
-	for iTE = 1:xQ.NumberEchoTimes
-		vectorOldOrder((1:nPLDs)+(iTE-1)*nPLDs) = (iTE-1)+1:xQ.NumberEchoTimes:nEncodedVolumes;
-	end
+	% This is the original order
+	vectorOldOrder = 1:nEncodedVolumes;
+	
+	% Shape to a matrix with TEs first and all the rest later
+	vectorOldOrder = reshape(vectorOldOrder, xQ.NumberEchoTimes, nEncodedVolumes/xQ.NumberEchoTimes);
+	
+	% Flip the two dimensions and make a row vector again
+	vectorOldOrder = reshape(vectorOldOrder', 1, nEncodedVolumes);
 
 	% Reorder the data
 	imEncoded = imEncoded(:,:,:,vectorOldOrder);
 end
 
-%% 2. Decode the Hadamard data
+%% 3. Decode the Hadamard data
 imDecoded = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), nDecodedVolumes * nRepetitions);    
 idx=0;
-for Repetition = 1:nRepetitions
-    for TE = 1:xQ.NumberEchoTimes
-        for TI = 1:nDecodedTI
+for iRepetition = 1:nRepetitions
+    for iTE = 1:xQ.NumberEchoTimes
+        for iTI = 1:nDecodedTI
             
-            indexPositive = find(xQ.TimeEncodedMatrix(TI,:)==1);
-            indexNegative = find(xQ.TimeEncodedMatrix(TI,:)==-1);
-            imDecoded(:,:,:,((TE-1)*nDecodedTI+TI)+(Repetition-1)*nDecodedVolumes) = mean(imEncoded(:,:,:,(indexPositive+idx)),4) - mean(imEncoded(:,:,:,(indexNegative+idx)),4);
+            indexPositive = find(xQ.TimeEncodedMatrix(iTI,:)==1);
+            indexNegative = find(xQ.TimeEncodedMatrix(iTI,:)==-1);
+            imDecoded(:,:,:,((iTE-1)*nDecodedTI+iTI)+(iRepetition-1)*nDecodedVolumes) = mean(imEncoded(:,:,:,(indexPositive+idx)),4) - mean(imEncoded(:,:,:,(indexNegative+idx)),4);
             
         end
         idx = idx+xQ.TimeEncodedMatrixSize;
@@ -147,25 +152,28 @@ for Repetition = 1:nRepetitions
 end
 
 
-%% 3. Reorder multi-TE back to the initial order of PLD/TE
+%% 4. Reorder multi-TE back to the initial order of PLD/TE
 %
 % For model fitting, we want the PLDs-first-TEs-second order (just like the
 % beginning) so we need to reorder it again
+if isfield(xQ,'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
+	% This is the original order
+	vectorOldOrder = 1:size(imDecoded, 4);
+	
+	% Shape to a matrix with TEs second and all the rest first
+	vectorOldOrder = reshape(vectorOldOrder, size(imDecoded, 4)/xQ.NumberEchoTimes, xQ.NumberEchoTimes);
+	
+	% Flip the two dimensions and make a row vector again
+	vectorOldOrder = reshape(vectorOldOrder', 1, size(imDecoded, 4));
 
-nPLDs = size(imDecoded, 4) / xQ.NumberEchoTimes; % this now takes size of decoded PLDs
-
-vectorNewOrder = zeros(size(imDecoded, 4), 1);
-for iPLD = 1:nPLDs
-    vectorNewOrder((1:xQ.NumberEchoTimes)+(iPLD-1)*xQ.NumberEchoTimes) = (iPLD-1)+1:nPLDs:size(imDecoded,4);
+	% Reorder the data
+	imDecoded = imDecoded(:,:,:,vectorOldOrder);
 end
 
-imDecoded = imDecoded(:,:,:,vectorNewOrder);
-
-%% 4. Normalization of the decoded data
+%% 5. Normalization of the decoded data
 % NormalizationFactor = 1/(m_INumSets/2);
 % where m_INumSets is the number of images (e.g. 8 for Hadamard 8x8)
 
-NormalizationFactor = 1/(xQ.TimeEncodedMatrixSize/2);
-imDecoded = imDecoded * NormalizationFactor;
+imDecoded = imDecoded / (xQ.TimeEncodedMatrixSize/2);
     
 end
