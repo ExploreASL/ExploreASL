@@ -86,11 +86,10 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
     else
         % Check for extension in last folder hierachy element
         if isempty(regexpi(lastElement,conditionFile))
-           warning('The sourceStructure folderHierarchy does not include a file extension...');
            if ~isempty(regexpi(lastElement,conditionExtension))
               warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
            else
-              warning('No extension used in the last element of the folder hierarchy (%s)...',lastElement)
+              warning('No extension used in the last element of the folder hierarchy (%s)...',lastElement);
            end
         end
     end
