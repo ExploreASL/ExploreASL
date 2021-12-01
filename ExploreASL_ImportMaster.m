@@ -44,7 +44,10 @@ function [x] = ExploreASL_ImportMaster(x)
         % Here we run the subject-wise ExploreASL xASL_module_Import. In future releases xASL_Iteration should 
         % help us to run a parallelized import and also to enable reruns if parts of the import crashed.
         [~, x] = xASL_Iteration(x,'xASL_module_Import');
-        x = xASL_imp_FinishImport(x);
+        % Housekeeping after BIDS to Legacy
+        if x.opts.ImportModules(4)
+            x = xASL_imp_FinishImport(x);
+        end
     catch loggingEntry
         % Print user feedback if import crashed
         fprintf(2,'ExploreASL Import module failed...\n');

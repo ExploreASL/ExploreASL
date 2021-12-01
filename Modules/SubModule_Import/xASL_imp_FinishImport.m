@@ -25,27 +25,19 @@ function x = xASL_imp_FinishImport(x)
 
 
     %% 1. Create dataPar.json
-    if x.opts.ImportModules(4)
-       [x,dataPar] = xASL_imp_FinishImport_CreateDataPar(x);
-    end
+    [x,dataPar] = xASL_imp_FinishImport_CreateDataPar(x);
 
 
     %% 2. Copy participants.tsv
-    if x.opts.ImportModules(4)
-        x = xASL_imp_FinishImport_CreateParticipants(x);
-    end
-    
-    
+    x = xASL_imp_FinishImport_CreateParticipants(x);
+
+
     %% 3. Copy dataset_description JSON and add 'GeneratedBy' fields
-    if x.opts.ImportModules(4)
-        x = xASL_imp_FinishImport_CreateDatasetDescription(x);
-    end
-    
-    
+    x = xASL_imp_FinishImport_CreateDatasetDescription(x);
+
+
     %% 4. Add missing fields
-    if x.opts.ImportModules(4)
-        x = xASL_imp_FinishImport_AddMissingFields(x,dataPar);        
-    end
+    x = xASL_imp_FinishImport_AddMissingFields(x,dataPar);
     
     
 end
