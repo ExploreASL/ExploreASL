@@ -1,24 +1,25 @@
-function [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xQ)
+function [imASLReordered] = xASL_quant_HadamardDecoding(imPath, xQ)
 %xASL_quant_HadamardDecoding Hadamard-4 & Hadamard-8 Decoding
 %
-% FORMAT:       [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xQ)
+% FORMAT:       [imASLReordered] = xASL_quant_HadamardDecoding(imPath, xQ)
 %
-% INPUT:        imASLEncoded - ASL4D image we want to decode (REQUIRED)
+% INPUT:        imPath - Path to the encoded ASL4D image we want to decode (STRING, REQUIRED)
 %
-%               xQ           - x.Q field with Hadamard input parameters containing the following subfields
-%                              - TimeEncodedMatrixType (REQUIRED)
-%                                   - Hadamard
-%                                   - Walsh
-%                              - TimeEncodedMatrixSize (REQUIRED)
-%                                   - '4' for Hadamard-4
-%                                   - '8' for Hadamard-8
-%                              - TimeEncodedMatrix (OPTIONAL)
-%                                   - Matrix given by the user
-%                              - NumberEchoTimes  - Number of different echos (REQUIRED)
+%               xQ     - x.Q field with Hadamard input parameters containing the following subfields
+%                          - TimeEncodedMatrixType (REQUIRED)
+%                             - Hadamard
+%                             - Walsh
+%                          - TimeEncodedMatrixSize (REQUIRED)
+%                             - '4' for Hadamard-4
+%                             - '8' for Hadamard-8
+%                          - TimeEncodedMatrix (OPTIONAL)
+%                             - Matrix given by the user
+%                          - NumberEchoTimes  - Number of different echos (REQUIRED)
 % OUTPUT:       imASLReordered - Decoded ASL volumes
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
 %
+% 0. Admin: Check inputs, load data, specify the decoding matrix
 % 1. Step-1: Reorder data
 % 2. Step-2: Decode data
 % 3. Step-3: Reorder again for model fitting
@@ -28,91 +29,79 @@ function [imASLReordered] = xASL_quant_HadamardDecoding(imASLEncoded, xQ)
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
 
+%% 0. Admin
 % Check if all inputs are present
 
-if nargin<1 || isempty(imASLEncoded)
-    warning('imASLEncoded input is empty');
+if nargin<1 || isempty(imPath)
+    error('imPath input is empty');
 end
 
 if nargin<2 || isempty(xQ)
-    warning('xQ input is empty');
+    error('xQ input is empty');
 end
 
-% Decoding Fields
-
+% Specify the TimeEncodedMatrix
 if isfield(xQ,'TimeEncodedMatrix') && ~isempty(xQ.TimeEncodedMatrix)
-    TimeEncodedMatrix_input = xQ.TimeEncodedMatrix;
+	if size(xQ.TimeEncodedMatrix,1) ~= size(xQ.TimeEncodedMatrix,2)
+		error('TimeEncodedMatrix must be square');
+	end
+	
+    % TimeEncodedMatrix exists, we verify the size
+	if ~isfield(xQ,'TimeEncodedMatrixSize') || isempty(xQ.TimeEncodedMatrixSize)
+		xQ.TimeEncodedMatrixSize = size(xQ.TimeEncodedMatrix,1);
+	else
+		if size(xQ.TimeEncodedMatrix,1) ~= xQ.TimeEncodedMatrixSize
+			error('Mismatch between TimeEncodedMatrix and TimeEncodedMatrixSize');
+		end
+	end
 else
-    TimeEncodedMatrix_input = [];
+    % TimeEncodedMatrix not provided, we must create it
+	if ~isfield(xQ,'TimeEncodedMatrixType') || isempty(xQ.TimeEncodedMatrixType)
+		error('Neither TimeEncodedMatrix and TimeEncodedMatrixType provided');
+	end
+	
+	if ~isfield(xQ,'TimeEncodedMatrixSize') || isempty(xQ.TimeEncodedMatrixSize)
+		error('Neither TimeEncodedMatrix and TimeEncodedMatrixSize provided');
+	end
+	
+	% #### For Walsh Decoding Matrix ####
+	if strcmp(xQ.TimeEncodedMatrixType,'Walsh')
+		
+		if xQ.TimeEncodedMatrixSize == 4
+			xQ.TimeEncodedMatrix =...
+				[1 -1  1 -1;
+				 1 -1 -1  1;
+				 1  1 -1 -1];
+		elseif xQ.TimeEncodedMatrixSize == 8
+            xQ.TimeEncodedMatrix = [1 -1  1 -1  1 -1  1 -1;
+                                 1 -1  1 -1 -1  1 -1  1;
+                                 1 -1 -1  1 -1  1  1 -1;
+                                 1 -1 -1  1  1 -1 -1  1;
+                                 1  1 -1 -1  1  1 -1 -1;
+                                 1  1 -1 -1 -1 -1  1  1;
+                                 1  1  1  1 -1 -1 -1 -1];
+		end
+		
+		% #### For Hadamard Decoding Matrix ####
+	elseif strcmp(xQ.TimeEncodedMatrixType,'Hadamard')
+		if xQ.TimeEncodedMatrixSize == 4
+            xQ.TimeEncodedMatrix = [1 -1  1 -1;
+                                 1  1 -1 -1;
+                                 1 -1 -1  1];
+		elseif xQ.TimeEncodedMatrixSize == 8
+            xQ.TimeEncodedMatrix = [1 -1 -1  1 -1  1  1 -1;
+                                 1  1 -1 -1 -1 -1  1  1;
+                                 1 -1  1 -1 -1  1 -1  1;
+                                 1  1  1  1 -1 -1 -1 -1;
+                                 1 -1 -1  1  1 -1 -1  1;
+                                 1  1 -1 -1  1  1 -1 -1;
+                                 1 -1  1 -1  1 -1  1 -1];
+		end    
+	end
 end
 
-% #### For Walsh Decoding Matrix ####
-if strcmp(xQ.TimeEncodedMatrixType,'Walsh')
-    
-    if xQ.TimeEncodedMatrixSize == 4
-        
-        ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
-        
-        if ~isempty(TimeEncodedMatrix_input) %if there's a Decoding Matrix from the data
-            TimeEncodedMatrix = TimeEncodedMatrix_input;
-        else
-            TimeEncodedMatrix = [1 -1  1 -1;
-                              1 -1 -1  1;
-                              1  1 -1 -1];
-        end
-        
-    elseif xQ.TimeEncodedMatrixSize == 8
-        
-        ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
-        
-        if ~isempty(TimeEncodedMatrix_input) %if there's a Decoding Matrix from the data
-            TimeEncodedMatrix = TimeEncodedMatrix_input;
-        else
-            TimeEncodedMatrix = [1 -1  1 -1  1 -1  1 -1;
-                              1 -1  1 -1 -1  1 -1  1;
-                              1 -1 -1  1 -1  1  1 -1;
-                              1 -1 -1  1  1 -1 -1  1;
-                              1  1 -1 -1  1  1 -1 -1;
-                              1  1 -1 -1 -1 -1  1  1;
-                              1  1  1  1 -1 -1 -1 -1];
-        end
-    end
-    
-    % #### For Hadamard Decoding Matrix ####
-elseif strcmp(xQ.TimeEncodedMatrixType,'Hadamard')
-    
-    
-    
-    if xQ.TimeEncodedMatrixSize == 4
-        
-        ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
-        
-        if ~isempty(TimeEncodedMatrix_input) %if there's a Decoding Matrix from the data
-            TimeEncodedMatrix = TimeEncodedMatrix_input;
-        else
-            TimeEncodedMatrix = [1 -1  1 -1;
-                              1  1 -1 -1;
-                              1 -1 -1  1];
-        end
-        
-    elseif xQ.TimeEncodedMatrixSize == 8
-        
-        ASL_im = xASL_io_Nifti2Im(imASLEncoded); % Load time-series nifti
-        
-        if ~isempty(TimeEncodedMatrix_input) %if there's a Decoding Matrix from the data
-            TimeEncodedMatrix = TimeEncodedMatrix_input;
-        else
-            TimeEncodedMatrix = [1 -1 -1  1 -1  1  1 -1;
-                              1  1 -1 -1 -1 -1  1  1;
-                              1 -1  1 -1 -1  1 -1  1;
-                              1  1  1  1 -1 -1 -1 -1;
-                              1 -1 -1  1  1 -1 -1  1;
-                              1  1 -1 -1  1  1 -1 -1;
-                              1 -1  1 -1  1 -1  1 -1];
-        end
-    end
-    
-end
+% Load time-series nifti
+ASL_im = xASL_io_Nifti2Im(imPath); 
 
 %% step-1: Reorder data
 % At this point the data is organized like this (in terms of ASL4D.nii volumes):
@@ -145,8 +134,8 @@ for Repetition = 1:nRepetitions
     for TE = 1:xQ.NumberEchoTimes
         for TI = 1:nDecodedTI
             
-            indexPositive = find(TimeEncodedMatrix(TI,:)==1);
-            indexNegative = find(TimeEncodedMatrix(TI,:)==-1);
+            indexPositive = find(xQ.TimeEncodedMatrix(TI,:)==1);
+            indexNegative = find(xQ.TimeEncodedMatrix(TI,:)==-1);
             Decoded_ASL(:,:,:,((TE-1)*nDecodedTI+TI)+(Repetition-1)*nDecodedVolume) = mean(ASL_im(:,:,:,(indexPositive+idx)),4) - mean(ASL_im(:,:,:,(indexNegative+idx)),4);
             
         end
