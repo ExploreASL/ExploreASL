@@ -122,28 +122,8 @@ function [bAborted, x] = runIteration(db)
     % Admin
     bAborted = false;
 
-    % Check if parallel computing toolbox is available
+    % We removed the parallel processing support
     poolsize = 0;
-    if license('test','Distrib_Computing_Toolbox')
-		if verLessThan('matlab','8.2')
-			% < R2013b
-			if exist('matlabpool','file')
-				if license('checkout','Distrib_Computing_Toolbox')
-					poolsize = matlabpool('size');
-				end
-			end
-		else
-			% >= R2013b
-			if  exist('gcp','file') % bugfix, some even have the Distrib_Computing_Toolbox, but don't have the Parallel_Computing_Toolbox
-				poolobj = gcp('nocreate'); % If no pool, do not create new one.
-				if ~isempty(poolobj)
-					if license('checkout','Distrib_Computing_Toolbox')
-						poolsize = poolobj.NumWorkers;
-					end
-				end
-			end
-		end
-	end
     
     % Run multi-level batch
     if numel(db)>1
