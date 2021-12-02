@@ -148,25 +148,6 @@ function [bAborted, x] = runIteration(db)
     % Admin
     bAborted = false;
 
-    % Check if parallel computing toolbox is available
-    poolsize = 0;
-    if license('test','Distrib_Computing_Toolbox') && license('checkout','Distrib_Computing_Toolbox')
-        if verLessThan('matlab','8.2') 
-            % < R2013b
-            if exist('matlabpool','file')
-                poolsize = matlabpool('size');
-            end
-        else
-            % >= R2013b
-            if  exist('gcp','file') % bugfix, some even have the Distrib_Computing_Toolbox, but don't have the Parallel_Computing_Toolbox
-                poolobj = gcp('nocreate'); % If no pool, do not create new one.
-                if ~isempty(poolobj)
-                    poolsize = poolobj.NumWorkers;
-                end
-            end
-        end
-    end
-    
     % Run multi-level batch
     if numel(db)>1
         for iCell=1:numel(db)
@@ -234,31 +215,6 @@ function [bAborted, x] = runIteration(db)
     for iSet=1:setCount
         setName = setNames{iSet};
         N(iSet) = length(db.sets.(setName));
-    end
-
-    % Check if a job has to be converted for parallel execution...
-    if poolsize>0 && setCount>0
-        % find largest set and use it to submit parallel
-        [maxSetSize, maxIndex] = max(N);
-        if maxSetSize>1
-            setName = setNames{maxIndex};
-            setValues = db.sets.(setName);
-            parfor iPar=1:maxSetSize
-                % copy set value as symbol and remove the set before launching a separate job
-                dbi = db;
-                dbi.sets = rmfield(dbi.sets,setName);
-                if isfield(dbi.x,setName)
-                    error('xASL_Iteration:symbolExists', 'Dynamic parameter %s already exists as symbol!',setName);
-                end
-                dbi.parindex = iPar; % add a variable to indicate parallel execution
-                dbi.parcount = maxSetSize; % add a variable to indicate parallel execution
-                fprintf('submitting job #%d: %s\n', iPar, setValues{iPar});
-                dbi.x.(setName) = setValues{iPar}; % copy the indexed value from the set as regular (new) symbol
-                % and finally submit...
-                runIteration(dbi); % ignore result
-            end
-            return
-        end
     end
     
     % Then loop through all permutations
