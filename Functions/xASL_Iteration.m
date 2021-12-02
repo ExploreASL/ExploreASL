@@ -122,9 +122,6 @@ function [bAborted, x] = runIteration(db)
     % Admin
     bAborted = false;
 
-    % We removed the parallel processing support
-    poolsize = 0;
-    
     % Run multi-level batch
     if numel(db)>1
         for iCell=1:numel(db)
@@ -194,31 +191,6 @@ function [bAborted, x] = runIteration(db)
         N(iSet) = length(db.sets.(setName));
     end
 
-    % Check if a job has to be converted for parallel execution...
-    if poolsize>0 && setCount>0
-        % find largest set and use it to submit parallel
-        [maxSetSize, maxIndex] = max(N);
-        if maxSetSize>1
-            setName = setNames{maxIndex};
-            setValues = db.sets.(setName);
-            for iPar=1:maxSetSize % Previously parfor was used here
-                % copy set value as symbol and remove the set before launching a separate job
-                dbi = db;
-                dbi.sets = rmfield(dbi.sets,setName);
-                if isfield(dbi.x,setName)
-                    error('xASL_Iteration:symbolExists', 'Dynamic parameter %s already exists as symbol!',setName);
-                end
-                dbi.parindex = iPar; % add a variable to indicate parallel execution
-                dbi.parcount = maxSetSize; % add a variable to indicate parallel execution
-                fprintf('submitting job #%d: %s\n', iPar, setValues{iPar});
-                dbi.x.(setName) = setValues{iPar}; % copy the indexed value from the set as regular (new) symbol
-                % and finally submit...
-                runIteration(dbi); % ignore result
-            end
-            return
-        end
-    end
-    
     % Then loop through all permutations
     bAborted = false;
     iIter = 0; % just count the number of iterations
