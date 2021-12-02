@@ -151,7 +151,7 @@ StepSize        = (pMax - pMin) ./ ROCRes;
 
 StatCalc(:,1)   = [pMin:StepSize:pMax]';
 
-parfor iStat=1:size(StatCalc,1)
+for iStat=1:size(StatCalc,1)
     P           = zeros( size(Group1,1), size(Group1,2));
     H           = zeros( size(Group1,1), size(Group1,2));
 
