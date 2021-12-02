@@ -221,7 +221,7 @@ function [bAborted, x] = runIteration(db)
         if maxSetSize>1
             setName = setNames{maxIndex};
             setValues = db.sets.(setName);
-            parfor iPar=1:maxSetSize
+            for iPar=1:maxSetSize % Previously parfor was used here
                 % copy set value as symbol and remove the set before launching a separate job
                 dbi = db;
                 dbi.sets = rmfield(dbi.sets,setName);
