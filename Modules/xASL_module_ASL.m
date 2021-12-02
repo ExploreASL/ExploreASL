@@ -184,6 +184,7 @@ if isfield(x,'EchoTime') && numel(unique(x.EchoTime))>1
     end
 else
     x.modules.asl.bMultiTE = false;
+	x.Q.NumberEchoTimes = 1;
 end
 
 %% E1. Default quantification parameters in the Q field
