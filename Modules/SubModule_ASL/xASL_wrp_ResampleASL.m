@@ -291,7 +291,14 @@ if size(ASL_im, 4)>3
     Part1                           = xASL_stat_MeanNan(ASL_im(:,:,:,1:HalfVol),4);
     Part2                           = xASL_stat_MeanNan(ASL_im(:,:,:,HalfVol+1:end),4);
 
-    MaskIM                          = MaskIM & isfinite(Part1) & isfinite(Part2);
+    % Determine mask
+    if isequal(size(MaskIM),size(Part1),size(Part2))
+        MaskIM = MaskIM & isfinite(Part1) & isfinite(Part2);
+    else
+        error('Dimension mismatch between mask and part 1 & part 2...');
+    end
+    
+    % Calculate mean, standard deviation and covariance
     mean1                           = mean(Part1(MaskIM));
     std1                            = std(Part1(MaskIM));
     CoV1                            = std1/mean1;
