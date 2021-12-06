@@ -72,7 +72,7 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
     lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
 
     % Condition for file extension
-    conditionFile = '\.(dcm|ima|xml|par|rec|zip)';
+    conditionFile = '(dcm|ima|xml|par|rec|zip)';
 
     % Other extension
     conditionExtension = '\.';
@@ -80,17 +80,19 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
     % Check folderHierarchy based on bMatchDirectories
     if x.modules.import.imPar.bMatchDirectories
         % Check that there is no extension in the last folder hierachy element
-        if ~isempty(regexpi(lastElement,conditionFile))
+        if ~isempty(regexpi(lastElement,conditionExtension)) && ~isempty(regexpi(lastElement,conditionFile))
            warning('The sourceStructure folderHierarchy includes a file extension...');
         end
     else
         % Check for extension in last folder hierachy element
-        if isempty(regexpi(lastElement,conditionFile))
-           if ~isempty(regexpi(lastElement,conditionExtension))
-              warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
-           else
-              warning('No extension used in the last element of the folder hierarchy (%s)...',lastElement);
-           end
+        if isempty(regexpi(lastElement,conditionExtension))
+            warning('No extension used in the last element of the folder hierarchy (%s)...',lastElement);
+        elseif isempty(regexpi(lastElement,conditionFile))
+            warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
+        end
+        % Detect zipped files
+        if ~isempty(regexpi(lastElement,'zip'))
+            fprintf('Zipped sourcedata detected...\n');
         end
     end
 
