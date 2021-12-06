@@ -231,9 +231,12 @@ for iSpace=1:2
         % Average PWI - Hadamard
         nRepeatsPLD = x.Q.NumberOfAverages;
         
+        if bMultiTE
+            NumberPLDs = size(ASL_im,4)/ (x.Q.TimeEncodedMatrixSize -1); % We take -1 because after decoding we have 7 TIs (Had8) or 3 TIs (Had4) for each "PLD"
+        else
+            NumberPLDs = size(ASL_im,4)/ nRepeatsPLD;
+        end
         
-        NumberPLDs = size(ASL_im,4)/ (x.Q.TimeEncodedMatrixSize -1); % We take -1 because after decoding we have 7 TIs (Had8) or 3 TIs (Had4) for each "PLD"
-       
         PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), NumberPLDs); % preallocate PWI
         
         for nPLD = 1:NumberPLDs
