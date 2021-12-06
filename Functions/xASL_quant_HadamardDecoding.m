@@ -101,7 +101,12 @@ else
                                  1  1 -1 -1  1  1 -1 -1;
                                  1 -1  1 -1  1 -1  1 -1];
 		end    
-	end
+    end
+    
+    if strcmp(xQ.Vendor,'Philips')
+        xQ.TimeEncodedMatrix = xQ.TimeEncodedMatrix * -1;
+    end
+    
 end
 
 % Load time-series nifti
