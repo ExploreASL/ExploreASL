@@ -130,17 +130,10 @@ end
 %% ------------------------------------------------------------------------------------------
 % 6. Create mean control image, if available, in native & standard space
 if  nVolumes>1    
-    if isfield(x.modules.asl,'bTimeEncoded') && x.modules.asl.bTimeEncoded 
-        % Here we should just configure the mean control (first volume)
-        Im=xASL_io_Nifti2Im(x.P.Path_rdespiked_ASL4D);   
-        ControlIm = Im(:,:,:,1);    
-        xASL_io_SaveNifti(x.P.Path_rdespiked_ASL4D, x.P.Path_mean_control, ControlIm, [], 0);
-    else
-        % Create mean control in native space
-        ControlIm = xASL_quant_GetControlLabelOrder(xASL_io_Nifti2Im(x.P.Path_rdespiked_ASL4D));
-        IM_mean = xASL_stat_MeanNan(ControlIm, 4);
-        xASL_io_SaveNifti(x.P.Path_rdespiked_ASL4D, x.P.Path_mean_control, IM_mean, [], 0);
-    end
+	% Obtain the mean control image
+	imMeanControl = xASL_quant_GetMeanControl(x, xASL_io_Nifti2Im(x.P.Path_rdespiked_ASL4D));
+	xASL_io_SaveNifti(x.P.Path_rdespiked_ASL4D, x.P.Path_mean_control, imMeanControl, [], 0);
+	
     % Transform mean control to standard space
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') 
         % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
