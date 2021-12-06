@@ -33,7 +33,14 @@ function x = xASL_imp_ReadSourceData(x)
 
 
     %% Check folder hierarchy
-    xASL_imp_ReadSourceData_CheckFolderHierarchy(x);
+    x = xASL_imp_ReadSourceData_CheckFolderHierarchy(x);
+    
+    % If the data was unzipped, we need to search for the unzipped sourcedata in temp
+    if ~x.modules.import.dataZipped
+        dataDir = x.modules.import.imPar.RawRoot;
+    else
+        dataDir = fullfile(x.dir.xASLDerivatives,'temp','sourcedata');
+    end
     
     
     %% Start with defining the subjects, visits, sessions (i.e. BIDS runs) and scans (i.e. ScanTypes) by listing or typing
@@ -43,8 +50,7 @@ function x = xASL_imp_ReadSourceData(x)
     % to more convenient strings before using them in destination paths.
     
     % Run the regexp search function
-    [x.modules.import.matches, x.modules.import.tokens] = xASL_adm_FindByRegExp(...
-        x.modules.import.imPar.RawRoot, x.modules.import.imPar.folderHierarchy, 'StripRoot', true, 'Match', strLookFor,'IgnoreCase',true);
+    [x.modules.import.matches, x.modules.import.tokens] = xASL_adm_FindByRegExp(dataDir, x.modules.import.imPar.folderHierarchy, 'StripRoot', true, 'Match', strLookFor,'IgnoreCase',true);
     
     % Print feedback if there are no matching files
     if isempty(x.modules.import.matches)
@@ -66,7 +72,7 @@ end
 
 
 %% Check folder hierarchy
-function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
+function x = xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
 
     % Get last element
     lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
@@ -76,6 +82,9 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
 
     % Other extension
     conditionExtension = '\.';
+    
+    % Default (not zipped data)
+    x.modules.import.dataZipped = false;
 
     % Check folderHierarchy based on bMatchDirectories
     if x.modules.import.imPar.bMatchDirectories
@@ -90,14 +99,38 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
         elseif isempty(regexpi(lastElement,conditionFile))
             warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
         end
-        % Detect zipped files
+        % Detect zipped files ("\\.(zip|dcm)" in the last element e.g.)
         if ~isempty(regexpi(lastElement,'zip'))
-            fprintf('Zipped sourcedata detected...\n');
+            % Copy and unzip the sourcedata
+            fprintf(2,'Copy and unzip sourcedata...\n');
+            x.modules.import.dataZipped = true;
+            newTempSource = fullfile(x.dir.xASLDerivatives,'temp','sourcedata');
+            xASL_Copy(x.dir.SourceData,newTempSource);
+            xASL_imp_UnzipAll(newTempSource);
+            % Update the x.dir field
+            x.dir.SourceData = newTempSource;
+            x.modules.import.imPar.RawRoot = newTempSource;
         end
     end
 
 
 end
+
+
+
+%% Unzip all '.zip' files in subdirectories and delete original files
+function xASL_imp_UnzipAll(dirToUnzip)
+
+    % Iterate over zip file
+    zipFiles = xASL_adm_GetFileList(dirToUnzip,'^.+\.zip$','FPListRec');
+    for iFile = 1:numel(zipFiles)
+        currentDirectory = xASL_fileparts(zipFiles{iFile});
+        unzip(zipFiles{iFile},currentDirectory);
+        xASL_delete(zipFiles{iFile});
+    end
+
+end
+
 
 
 
