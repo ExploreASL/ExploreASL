@@ -1,11 +1,10 @@
 function [ControlIm, LabelIm, OrderContLabl] = xASL_quant_GetControlLabelOrder(ASLTimeSeries)
 %xASL_quant_GetControlLabelOrder Get control-label order of ASL time-series
 %
-% FORMAT: [ControlIM, LabelIM, OrderContLabl] = xASL_quant_GetControlLabelOrder(FramesIn, x)
+% FORMAT: [ControlIm, LabelIm, OrderContLabl] = xASL_quant_GetControlLabelOrder(ASLTimeSeries)
 %
 % INPUT:
 %   ASLTimeSeries - 4D matrix with multiple 3D ASL image volumes over time (REQUIRED)
-%   x             - structure containing fields with all information required to run this submodule (REQUIRED)
 %
 % OUTPUT:
 %   ControlIm     - 4D matrix with 3D ASL control image volumes
@@ -16,11 +15,12 @@ function [ControlIm, LabelIm, OrderContLabl] = xASL_quant_GetControlLabelOrder(A
 % DESCRIPTION: This function automatically checks (and corrects if required)
 %              the control and label order of ASL timeseries
 %              based on the larger signal in control volumes.
-%              It supposes that data is acquired in pairs.
+%              It supposes that data is acquired in pairs. Works also for multiPLD but only for sequences
+%              with alternative control/label or label/control order
 %
 % EXAMPLE:
-% [~, ~, OrderContLabl] = xASL_quant_GetControlLabelOrder(ASLTimeSeries, x);
-% [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASLTimeSeries, x);
+% [~, ~, OrderContLabl] = xASL_quant_GetControlLabelOrder(ASLTimeSeries);
+% [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASLTimeSeries);
 % 
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
