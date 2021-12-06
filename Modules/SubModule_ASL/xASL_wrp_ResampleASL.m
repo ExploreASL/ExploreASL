@@ -228,9 +228,30 @@ for iSpace=1:2
         % Decoding of TimeEncoded data (Nifti is saved inside the function)
         ASL_im = xASL_quant_HadamardDecoding(PathASL{iSpace}, x.Q);
         
+        % Average PWI - Hadamard
+        nRepeatsPLD = x.Q.NumberOfAverages;
+        
+        
+        NumberPLDs = size(ASL_im,4)/ (x.Q.TimeEncodedMatrixSize -1); % We take -1 because after decoding we have 7 TIs (Had8) or 3 TIs (Had4) for each "PLD"
+       
+        PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), NumberPLDs); % preallocate PWI
+        
+        for nPLD = 1:NumberPLDs
+            iStartRepeatsPLD = 1 + (nPLD-1) * nRepeatsPLD; % Location of the first repeat for a given single PLD
+            iEndRepeatsPLD = nPLD * nRepeatsPLD; % Location of the last repeat for a given single PLD
+            PWI(:,:,:,nPLD) = xASL_stat_MeanNan(ASL_im(:,:,:,iStartRepeatsPLD:iEndRepeatsPLD), 4); % Averaged PWI4D across repetitions
+        end
+        
         % Save PWI4D
-        fprintf('%s\n', [PathPWI4D{iSpace} ', ']);
-        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
+        fprintf('%s\n', PathPWI4D{iSpace});
+        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI, 32, false);
+        
+        % Create single PWI for further steps in ASL module
+        PWIsingle = xASL_stat_MeanNan(PWI(:,:,:,[1:x.Q.NumberEchoTimes:end]),4); % Average across PLDs from each first TE
+        
+        % Save single PWI
+        fprintf('%s\n', PathPWI{iSpace});
+        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);
         
     else
 
@@ -238,7 +259,7 @@ for iSpace=1:2
         [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
         ASL_im = ControlIm - LabelIm;
                 
-        % Average PWI
+        % Average PWI - multiPLD
         if isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD 
             % multiPLD PWI
             nRepeatsPLD = size(ASL_im,4)/length(x.Q.Initial_PLD); % we still need to create a single Repeats in X struct
