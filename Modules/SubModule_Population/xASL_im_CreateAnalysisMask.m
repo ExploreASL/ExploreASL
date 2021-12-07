@@ -35,9 +35,9 @@ function [x] = xASL_im_CreateAnalysisMask(x, Threshold)
 %                 4. Analysis mask
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_im_CreateAnalysisMask(x);
+% EXAMPLE:        xASL_im_CreateAnalysisMask(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
 %% Admin
@@ -59,23 +59,35 @@ elseif isempty(PathSusceptibilityMask)
     bSkipStandard = 1;
 end
 
+% We skip creating a group mask if we have fewer images than specified above.
+% Not sure if this is the same for the NativeSpaceAnalysis, this still has to be fixed by Jan.
 if bSkipStandard && ~x.modules.population.bNativeSpaceAnalysis
     return;
-    % we skip creating a group mask if we have fewer images than specified
-    % above.
-    % Not sure if this is the same for the NativeSpaceAnalysis, this still
-    % has to be fixed by Jan
 end
 
-% Define paths to create
-VBA_maskPath = fullfile(x.D.PopDir,'VBA_mask_final.nii'); % later move to statsdir
-MaskVascularPath = fullfile(x.S.StatsDir,'MaskVascular.nii');
-MaskSusceptibilityPath = fullfile(x.S.StatsDir,'MaskSusceptibility.nii');
+% Define atlas paths
+listMasks = {   fullfile(x.S.StatsDir,'MaskSusceptibility.nii') ...
+				fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
+				fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') ...
+				fullfile(x.D.AtlasDir,'MNI_Structural.nii')...
+				fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') ...
+				fullfile(x.D.AtlasDir,'Hammers.nii')...
+				fullfile(x.D.AtlasDir,'HOcort_CONN.nii') ...
+				fullfile(x.D.AtlasDir,'HOsub_CONN.nii')};
+listOutputs = { x.P.Path_MaskSusceptibilityPop ...
+				x.P.Path_TotalGMPop ...
+				x.P.Path_DeepWMPop ...
+				x.P.Path_MNIStructuralPop ...
+				x.P.Path_LeftRightPop ...
+				x.P.Path_HammersPop ...
+				x.P.Path_HOcort_CONNPop ...
+				x.P.Path_HOsub_CONNPop};
 
 % Define pre-existing paths, including warning when less or more than 1 are found
 % First for SubjectsSessions (e.g. ASL)
 PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
 PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList', [1 1]);
+
 % Then for Subjects (e.g. structural)
 PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pGM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
 PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM_n' xASL_num2str(x.nSubjects) '_bs-mean\.nii$'], 'FPList', [1 1]);
@@ -126,8 +138,8 @@ if ~bSkipStandard
     xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x, DoSusceptibility, MaskSusceptibility);
                     
 	% Save them
-	xASL_io_SaveNifti(PathFoV, MaskVascularPath, MaskVascular, 8, true);
-	xASL_io_SaveNifti(PathFoV, MaskSusceptibilityPath, MaskSusceptibility, 8, true);
+	xASL_io_SaveNifti(PathFoV, fullfile(x.S.StatsDir,'MaskVascular.nii'), MaskVascular, 8, true);
+	xASL_io_SaveNifti(PathFoV, fullfile(x.S.StatsDir,'MaskSusceptibility.nii'), MaskSusceptibility, 8, true);
 	
 	% this is used in stats:
 	x.S.MaskSusceptibility = xASL_im_IM2Column(MaskSusceptibility,x.S.masks.WBmask);
@@ -148,11 +160,6 @@ if x.modules.population.bNativeSpaceAnalysis
 			xASL_TrackProgress(SubjSess,x.nSubjects*x.dataset.nSessions);
 			if xASL_exist(x.P.Path_PWI)
 				x = xASL_adm_DefineASLResolution(x);
-				listMasks = {MaskSusceptibilityPath fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
-					fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') fullfile(x.D.MapsSPMmodifiedDir,'MNI_Structural.nii')...
-					fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') fullfile(x.D.AtlasDir,'Hammers.nii')...
-                    fullfile(x.D.AtlasDir,'HOcort_CONN.nii') fullfile(x.D.AtlasDir,'HOsub_CONN.nii')};
-				listOutputs = {x.P.Path_MaskSusceptibilityPop x.P.Path_TotalGMPop x.P.Path_DeepWMPop x.P.Path_MNIStructuralPop x.P.Path_LeftRightPop x.P.Path_HammersPop x.P.Path_HOcort_CONNPop x.P.Path_HOsub_CONNPop};
 				MaskType  = [1 1 1 2 2 2 2 2];
 				% 1 - binary masks - presmooth, spline-interpolation, cut at 50%
 				% 2 - multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding
@@ -200,7 +207,7 @@ end
 %% C) Create & save VBA mask
 MaskAnalysis = MaskSusceptibility;
 x.S.VBAmask = MaskAnalysis & GMmask; % this should be an image matrix, not a column
-xASL_io_SaveNifti(PathFoV, VBA_maskPath, x.S.VBAmask, 8, true);
+xASL_io_SaveNifti(PathFoV, fullfile(x.D.PopDir,'VBA_mask_final.nii'), x.S.VBAmask, 8, true);
 
 %% D) Visualization
 % 0) Admin
