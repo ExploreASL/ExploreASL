@@ -12,7 +12,6 @@ function [x] = xASL_im_CreateAnalysisMask(x, Threshold)
 % OUTPUT:
 %   x                       - same as input
 %   x.S.VBAmask             - final analysis mask, to be used later in the pipeline
-%   x.S.MaskVascular        - vascular mask, to be used later in the pipeline
 %   x.S.MaskSusceptibility  - susceptibility mask, to be used later in the pipeline
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
