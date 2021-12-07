@@ -1,3 +1,21 @@
+%xASL_adm_OutputDifferentAtlasResults Obtain results for Norman
+%
+% FORMAT:      n.a.
+% 
+% INPUT:       n.a.
+%
+% OUTPUT:      n.a.
+%                         
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Obtain results for Norman.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     n.a.
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
+
+
 %% Obtain results for Norman
 
 % Set defaults
@@ -6,7 +24,7 @@ x.S.bMasking = false;
 
 AtlasPath{1} = fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii');
 AtlasPath{2} = fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii');
-AtlasPath{3} = fullfile(x.D.MapsSPMmodifiedDir,'MNI_Structural.nii');
+AtlasPath{3} = fullfile(x.D.AtlasDir,'MNI_Structural.nii');
 AtlasPath{4} = fullfile(x.D.AtlasDir,'Hammers.nii');
 AtlasPath{5} = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
 AtlasPath{6} = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
@@ -30,3 +48,4 @@ for iAtlas=1:length(AtlasPath)
     x.S.InputAtlasPath = AtlasPath{iAtlas};
     xASL_wrp_GetROIstatistics(x);
 end
+
