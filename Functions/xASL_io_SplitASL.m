@@ -109,24 +109,6 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 		end
         ASLindices          = ASLindices(logical(IndexASL));
 		
-        % Check for that all controls and labels come in pairs
-		aslContext = xASL_tsvRead(paths.ASLTSV);
-		
-		% Remove the first field
-		if numel(aslContext) > 1
-			aslContext = aslContext(2:end);
-			% Keep only the ASL fields
-			if numel(IndexASL) == numel(aslContext)
-				aslContext = aslContext(ASLindices);
-				bidsPar = xASL_bids_Config;
-				nControls = numel(regexpi(strjoin(aslContext),bidsPar.stringControl));
-				nLabels = numel(regexpi(strjoin(aslContext),bidsPar.stringLabel));
-				if nControls ~= nLabels
-					warning('After removing M0 volume and Dummy scans, non-matching number of volumes (control-label)');
-				end
-			end
-		end
-
         %% 6. Save ASL4D NIfTI
         xASL_io_SaveNifti(paths.ASL_Source,paths.ASL,tIM(:,:,:,ASLindices),[],false);
         
@@ -134,9 +116,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(paths.ASL_Source_JSON, iM0, ASLindices, iDummy);
 
         %% 8. Split ASL4D_aslContext.tsv
-        if xASL_exist(paths.ASLTSV,'file') && (~isempty(iM0) || ~isempty(iDummy))
-            xASL_Move(paths.ASLTSV, paths.ASL_Source_TSV);
-        end
+		xASL_io_SplitASL_SplitASLContext(paths.ASL_Source_TSV, paths.ASLTSV, iM0, ASLindices, iDummy);
         
         %% 9. Modify JSON fields
         [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(paths.ASL, jsonM0, jsonASL, iM0);
@@ -366,6 +346,47 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM
 
 end
 
+%% xASL_io_SplitASL_SplitJSON
+function xASL_io_SplitASL_SplitASLContext(BackupTSVPath, newTSVPath, indicesM0, indicesASL, indicesDummy)
 
+% Make sure that we have column arrays
+if size(indicesM0,2)>size(indicesM0,1)
+	indicesM0 = indicesM0';
+end
+if size(indicesASL,2)>size(indicesASL,1)
+	indicesASL = indicesASL';
+end
+if size(indicesDummy,2)>size(indicesDummy,1)
+	indicesDummy = indicesDummy';
+end
 
+% Backup the TSV file
+if xASL_exist(newTSVPath,'file') && (~isempty(indicesM0) || ~isempty(indicesDummy))
+	xASL_Move(newTSVPath, BackupTSVPath);
+end
+
+% Load backup JSON
+if exist(BackupTSVPath,'file')
+	% Read the original context file
+	aslContext = xASL_tsvRead(BackupTSVPath);
+        
+	% Remove non-ASL fields, but keep the header
+	aslContext = aslContext([1;indicesASL+1]);
+	
+	% Save the new ASL context
+	xASL_tsvWrite(aslContext, newTSVPath, true);
+	
+	% Check that all controls and labels come in pairs
+	aslContext = aslContext(2:end);
+
+	bidsPar = xASL_bids_Config;
+	nControls = numel(regexpi(strjoin(aslContext),bidsPar.stringControl));
+	nLabels = numel(regexpi(strjoin(aslContext),bidsPar.stringLabel));
+	if nControls ~= nLabels
+		warning('After removing M0 volume and Dummy scans, non-matching number of volumes (control-label)');
+	end
+	
+end
+
+end
 
