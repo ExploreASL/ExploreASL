@@ -234,7 +234,7 @@ for iSpace=1:2
         PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), blockSize); % preallocate PWI
         
         for iBlock = 1:blockSize
-            PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,1:blockSize:end), 4); % Averaged PWI4D across repetitions
+            PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
         end
         
         % Save PWI4D
