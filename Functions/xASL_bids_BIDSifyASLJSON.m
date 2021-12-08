@@ -34,7 +34,7 @@ function jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 %% 1. Obtain the dimensions of the ASL data
 dimASL = headerASL.dat.dim;
@@ -138,8 +138,8 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 			warning('Labeling duration mismatch with GE private field.');
 			jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
 		else
-			% otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD) 
-			% and we thus use the provided information. We thus keep the LabelingDuration field untouched
+			% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD) 
+			% and we thus use the provided information. We thus keep the LabelingDuration field untouched.
 		end
 	else
 		% All is good and we use the DICOM field
@@ -155,8 +155,8 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 				warning('PostLabelingDelay mismatch with the GE-DICOM value in Inversion time.');
 				jsonOut.PostLabelingDelay = jsonOut.InversionTime;
 			else
-				% otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD) 
-			% and we thus use the provided information. We thus keep the PostLabelingDelay field untouched
+				% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD) 
+				% and we thus use the provided information. We thus keep the PostLabelingDelay field untouched.
 			end
 		else
 			jsonOut.PostLabelingDelay = jsonOut.InversionTime;
