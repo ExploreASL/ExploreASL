@@ -31,19 +31,12 @@ end
 %% Select the control images based on the acquisition type
 if isfield(x.modules.asl,'bTimeEncoded') && x.modules.asl.bTimeEncoded 
 	% Here we select the 1st TE and the control images
-	Repetitions = x.Q.NumberOfAverages;
-    NumberOfVolumes = size(imASLTimeSeries,4);
-    
-    ControlImages = NumberOfVolumes/Repetitions;
-    
-    % If 64 volumes and 2 repetitions, it takes volume 1 and 33, which also
-    % corresponds to the first TE:
-    ContrImageAveragedAcrossRep = xASL_stat_MeanNan(imASLTimeSeries(:,:,:,1:ControlImages+1:end), 4);
-    
-    imMeanControl = ContrImageAveragedAcrossRep;
-    
+	% We thus calculate the size of each Hadamard block as the number of Hadamard phases and TEs
+	blockSize = x.Q.TimeEncodedMatrixSize * x.Q.NumberEchoTimes;
+        
+    % For example for 64 volumes and 2 repetitions with 8 PLDs and 4 TEs, it takes volume 1 and 33
+    imMeanControl = imASLTimeSeries(:,:,:,1:blockSize:end);
 else
-    
 	% Create mean control in native space (works also for multi-PLD)
 	imMeanControl = xASL_quant_GetControlLabelOrder(imASLTimeSeries);
 	
@@ -56,7 +49,7 @@ else
 		idealPLD = sort(unique(Initial_PLD),'ascending');
 		
 		if x.Q.LookLocker
-			% For Look-Locker, get the middleone
+			% For Look-Locker, get the middle one
 			idealPLD = idealPLD(round(numel(idealPLD)/2));
 		else
 			% For normal mutli-PLD, get the latest PLD
@@ -66,7 +59,6 @@ else
 		% Find all dynamics with that PLD
 		imMeanControl = imMeanControl(:,:,:,Initial_PLD==idealPLD);
 	end
-	
 end
 
 %% Calculate mean over the repetitions
