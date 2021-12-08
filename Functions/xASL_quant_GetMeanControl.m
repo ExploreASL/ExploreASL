@@ -36,7 +36,10 @@ if isfield(x.modules.asl,'bTimeEncoded') && x.modules.asl.bTimeEncoded
     
     ControlImages = NumberOfVolumes/Repetitions;
     
-    ContrImageAveragedAcrossRep = xASL_stat_MeanNan(imASLTimeSeries(:,:,:,1:ControlImages+1:end), 4); % If 64 volumes and 2 repetitions, it takes volume 1 and 33
+    % If 64 volumes and 2 repetitions, it takes volume 1 and 33, which also
+    % corresponds to the first TE:
+    ContrImageAveragedAcrossRep = xASL_stat_MeanNan(imASLTimeSeries(:,:,:,1:ControlImages+1:end), 4);
+    
     imMeanControl = ContrImageAveragedAcrossRep;
     
 else
