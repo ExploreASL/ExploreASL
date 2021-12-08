@@ -31,8 +31,16 @@ end
 %% Select the control images based on the acquisition type
 if isfield(x.modules.asl,'bTimeEncoded') && x.modules.asl.bTimeEncoded 
 	% Here we select the 1st TE and the control images
-	imMeanControl = imASLTimeSeries(:,:,:,1);
+	Repetitions = x.Q.NumberOfAverages;
+    NumberOfVolumes = size(imASLTimeSeries,4);
+    
+    ControlImages = NumberOfVolumes/Repetitions;
+    
+    ContrImageAveragedAcrossRep = xASL_stat_MeanNan(imASLTimeSeries(:,:,:,1:ControlImages+1:end), 4); % If 64 volumes and 2 repetitions, it takes volume 1 and 33
+    imMeanControl = ContrImageAveragedAcrossRep;
+    
 else
+    
 	% Create mean control in native space (works also for multi-PLD)
 	imMeanControl = xASL_quant_GetControlLabelOrder(imASLTimeSeries);
 	
