@@ -36,29 +36,36 @@ if isfield(x.modules.asl,'bTimeEncoded') && x.modules.asl.bTimeEncoded
         
     % For example for 64 volumes and 2 repetitions with 8 PLDs and 4 TEs, it takes volume 1 and 33
     imMeanControl = imASLTimeSeries(:,:,:,1:blockSize:end);
-else
-	% Create mean control in native space (works also for multi-PLD)
-	imMeanControl = xASL_quant_GetControlLabelOrder(imASLTimeSeries);
 	
-	% For multi-PLD, we need to select one PLD
-	if isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD
+elseif isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD
+	% Create mean control in native space
+	if x.modules.asl.bDeltaM
+		imMeanControl = imASLTimeSeries;
+		Initial_PLD = x.Q.Initial_PLD;
+	else
+		imMeanControl = xASL_quant_GetControlLabelOrder(imASLTimeSeries);
 		% Get the PLD for the given sequence
 		Initial_PLD = x.Q.Initial_PLD(1:2:end);
-		
-		% Sort the unique PLDs and pick the ideal PLD
-		idealPLD = sort(unique(Initial_PLD),'ascending');
-		
-		if x.Q.LookLocker
-			% For Look-Locker, get the middle one
-			idealPLD = idealPLD(round(numel(idealPLD)/2));
-		else
-			% For normal mutli-PLD, get the latest PLD
-			idealPLD = idealPLD(end);
-		end
-		
-		% Find all dynamics with that PLD
-		imMeanControl = imMeanControl(:,:,:,Initial_PLD==idealPLD);
 	end
+	
+	% Sort the unique PLDs and pick the ideal PLD
+	idealPLD = sort(unique(Initial_PLD),'ascend');
+	
+	if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bDeltaM
+		% For Look-Locker, get the middle one
+		idealPLD = idealPLD(round(numel(idealPLD)/2));
+	else
+		% For normal mutli-PLD, get the latest PLD
+		idealPLD = idealPLD(end);
+	end
+	
+	% Find all dynamics with that PLD
+	imMeanControl = imMeanControl(:,:,:,Initial_PLD==idealPLD);
+	
+else
+	% Create mean control in native space
+	imMeanControl = xASL_quant_GetControlLabelOrder(imASLTimeSeries);
+	
 end
 
 %% Calculate mean over the repetitions

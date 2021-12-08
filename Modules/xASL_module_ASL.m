@@ -339,7 +339,7 @@ elseif ~x.mutex.HasState(StateName{iState})
             xASL_im_CenterOfMass(x.P.Path_ASL4D, OtherList, 10); % set CenterOfMass to lower accepted distance for when rerunning wrong registration
         end
 
-        if  nVolumes>1
+        if  nVolumes>1 && (x.modules.asl.bDeltaM == 0)
             % Run motion Correction
             xASL_wrp_RealignASL(x);
         else

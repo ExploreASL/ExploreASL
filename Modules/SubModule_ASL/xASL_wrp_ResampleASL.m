@@ -220,6 +220,23 @@ for iSpace=1:2
         % Apparently, subtraction was already done on the scanner/reconstruction
         fprintf('%s\n', PathPWI{iSpace});
         xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, ASL_im, 32, false);
+	elseif x.modules.asl.bDeltaM
+		% We have subtraction images 
+		
+		% For multi-PLD, save both PWI4D and PWI
+		if x.modules.asl.bMultiPLD
+			% Save PWI4D
+			fprintf('%s\n', PathPWI4D{iSpace});
+			xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
+		end
+		
+		% For both single- and multi-PLD, create single PWI for further steps in ASL module
+		PWIsingle = xASL_stat_MeanNan(ASL_im,4); % Average across PLDs
+        
+		% Save single PWI
+		fprintf('%s\n', PathPWI{iSpace});
+		xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);
+					
     elseif round(dim4/2)~=dim4/2
         warning('Odd number of control-label pairs, skipping');
         return;
