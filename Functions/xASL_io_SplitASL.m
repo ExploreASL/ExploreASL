@@ -312,6 +312,14 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM
     if exist(BackupJSONPath,'file')
         jsonStruct = spm_jsonread(BackupJSONPath);
         
+		% Remove DummyScanPositionInASL4D and M0PositionInASL4D fields if present
+		if isfield(jsonStruct,'M0PositionInASL4D')
+			jsonStruct = rmfield(jsonStruct,'M0PositionInASL4D');
+		end
+		if isfield(jsonStruct,'DummyScanPositionInASL4D')
+			jsonStruct = rmfield(jsonStruct,'DummyScanPositionInASL4D');
+		end
+		
         % Define M0 & ASL fallback JSONs
         jsonM0 = jsonStruct;
         jsonASL = jsonStruct;

@@ -46,13 +46,9 @@ if isfield(JSON, 'M0Type')
 				   % If specified to remove the Dummy ASL scans, then remove them while splitting ASL to ASL and M0
 				   if isfield(JSON,'DummyScanPositionInASL4D') && ~isempty(JSON.DummyScanPositionInASL4D)
 					   xASL_io_SplitASL(pathASLNifti, M0Index,JSON.DummyScanPositionInASL4D);
-					   JSON = rmfield(JSON,'DummyScanPositionInASL4D');
 				   else
 					   xASL_io_SplitASL(pathASLNifti, M0Index);
 				   end
-                   JSON.M0 = 'separate_scan';
-				   JSON = rmfield(JSON,'M0Type');
-                   spm_jsonwrite(PathJSON, JSON);
                else
                    warning(['M0Index missing in ' PathContext]);
                end
