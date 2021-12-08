@@ -108,13 +108,24 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 			IndexASL(iDummy) = 0;
 		end
         ASLindices          = ASLindices(logical(IndexASL));
-        % Check for even number of volumes
-        nASL                = numel(ASLindices);
-        IsEven              = nASL/2==round(nASL/2); % even can be divided by 2
-        ContainsTimeSeries  = nASL>5;
-        if ContainsTimeSeries && ~IsEven
-            warning('After removing M0 volume and Dummy scans, no even number of volumes (control-label)');
-        end
+		
+        % Check for that all controls and labels come in pairs
+		aslContext = xASL_tsvRead(paths.ASLTSV);
+		
+		% Remove the first field
+		if numel(aslContext) > 1
+			aslContext = aslContext(2:end);
+			% Keep only the ASL fields
+			if numel(IndexASL) == numel(aslContext)
+				aslContext = aslContext(ASLindices);
+				bidsPar = xASL_bids_Config;
+				nControls = numel(regexpi(strjoin(aslContext),bidsPar.stringControl));
+				nLabels = numel(regexpi(strjoin(aslContext),bidsPar.stringLabel));
+				if nControls ~= nLabels
+					warning('After removing M0 volume and Dummy scans, non-matching number of volumes (control-label)');
+				end
+			end
+		end
 
         %% 6. Save ASL4D NIfTI
         xASL_io_SaveNifti(paths.ASL_Source,paths.ASL,tIM(:,:,:,ASLindices),[],false);
