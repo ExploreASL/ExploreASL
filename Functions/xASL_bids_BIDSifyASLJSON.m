@@ -131,18 +131,36 @@ end
 
 % The Labeling defined in a private GE field has a priority
 if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
+	% Verify if this doesn't differ from the predefined file, but the DICOM field has priority
 	if isfield(jsonOut,'LabelingDuration') && ~isequal(jsonOut.GELabelingDuration,jsonOut.LabelingDuration)
-		warning('Labeling duration mismatch with GE private field.');
+		% if the DICOM information is reasonable - less LDs than volumes, then we report a warning
+		if dimASL(4)>=numel(jsonOut.GELabelingDuration)
+			warning('Labeling duration mismatch with GE private field.');
+			jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
+		else
+			% otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD) 
+			% and we thus use the provided information. We thus keep the LabelingDuration field untouched
+		end
+	else
+		% All is good and we use the DICOM field
+		jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
 	end
-	jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
 	
 	% GELabelingDuration comes together with the PostLabelingDelay defined in the standard DICOM field called InversionTime
 	if isfield(jsonOut,'InversionTime') && ~isempty(jsonOut.InversionTime)
 		% Verify if this doesn't differ from the predefined file, but the DICOM field has priority
 		if isfield(jsonOut,'PostLabelingDelay') && ~isequal(jsonOut.PostLabelingDelay,jsonOut.InversionTime)
-			warning('PostLabelingDelay mismatch with the GE-DICOM value in Inversion time.');
+			% if the DICOM information is reasonable - less PLDs than volumes, then we report a warning
+			if dimASL(4)>=numel(jsonOut.InversionTime)
+				warning('PostLabelingDelay mismatch with the GE-DICOM value in Inversion time.');
+				jsonOut.PostLabelingDelay = jsonOut.InversionTime;
+			else
+				% otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD) 
+			% and we thus use the provided information. We thus keep the PostLabelingDelay field untouched
+			end
+		else
+			jsonOut.PostLabelingDelay = jsonOut.InversionTime;
 		end
-		jsonOut.PostLabelingDelay = jsonOut.InversionTime;
 	end
 end
 
@@ -344,7 +362,7 @@ for iRepeat = 1:length(listFieldsZero)
 		% Make sure the vector is a row vector
 		jsonOut.(listFieldsZero{iRepeat}) = jsonOut.(listFieldsZero{iRepeat})(:)';
 		% Check the all m0scans have zeros
-		if ~isequal(ASLContextM0Index,jsonOut.(listFieldsZero{iRepeat})==0)
+		if sum(ASLContextM0Index .* (jsonOut.(listFieldsZero{iRepeat})~=0))
 			% If not, then set to zeros and report a warning
 			jsonOut.(listFieldsZero{iRepeat})(ASLContextM0Index) = 0;
 			warning(['Had to set non-zero values for m0scan to zero in ' listFieldsZero{iRepeat}]);
