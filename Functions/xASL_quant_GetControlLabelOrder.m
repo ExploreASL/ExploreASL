@@ -23,8 +23,7 @@ function [ControlIm, LabelIm, OrderContLabl] = xASL_quant_GetControlLabelOrder(A
 % [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASLTimeSeries);
 % 
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
-
+% Copyright (C) 2015-2021 ExploreASL
 
 %% Get control-label order
 ControlIm = ASLTimeSeries(:,:,:,1:2:end-1); % usual order
