@@ -61,21 +61,18 @@ exclusion = NaN;
 PercExcl = NaN;
 MinimumtValue = NaN;
 
-if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE
+if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE || x.modules.asl.bDeltaM
     % ENABLE is disabled if multiPLD/TE
     bENABLE = 0;
     bZigZag = 0;
 else
-    bENABLE = 1;
-    bZigZag = 1;
-end
-
-if bSubtraction
-    bENABLE = 1;
-    bZigZag = 1;
-else
-    bENABLE = 0;
-    bZigZag = 0;
+	if bSubtraction
+		bENABLE = 1;
+		bZigZag = 1;
+	else
+		bENABLE = 0;
+		bZigZag = 0;
+	end
 end
 
 %% ----------------------------------------------------------------------------------------

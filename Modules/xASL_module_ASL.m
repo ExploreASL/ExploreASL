@@ -187,6 +187,22 @@ else
 	x.Q.NumberEchoTimes = 1;
 end
 
+%% D6. DeltaM parsing - check if all/some volumes are deltams
+% If TSV file exist
+[pathDir, pathASL4D] = fileparts(x.P.Path_ASL4D);
+pathASL4Dcontext = fullfile(pathDir, [pathASL4D '_aslcontext.tsv']);
+% We don't have a subtraction image by default
+x.modules.asl.bDeltaM = 0;
+if xASL_exist(pathASL4Dcontext,'file')
+	% Load TSV file
+	aslContext = xASL_tsvRead(pathASL4Dcontext);
+	bidsPar = xASL_bids_Config;
+	% Check for presence of deltaM subtraction volumes
+	if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM)) > 0
+		x.modules.asl.bDeltaM = 1;
+	end
+end
+
 %% E1. Default quantification parameters in the Q field
 if ~isfield(x.Q,'ApplyQuantification') || isempty(x.Q.ApplyQuantification)
     x.Q.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
@@ -307,7 +323,7 @@ elseif ~x.mutex.HasState(StateName{iState})
 
         % Then, check matrix size: throw error if 2D data with 3 dimensions only
 
-        if nVolumes>1 && nVolumes/2~=round(nVolumes/2)
+        if nVolumes>1 && (x.modules.asl.bDeltaM == 0) && (nVolumes/2~=round(nVolumes/2))
             error('Uneven number of control-label frames, either incomplete pairs or M0 image in time-series!');
         end
 
