@@ -17,7 +17,7 @@ function reportFile = xASL_report_Main(x)
 % Copyright 2015-2021 ExploreASL
 
     % Get template and output path
-    reportTemplate = fullfile(x.opts.MyPath, 'External', 'xASL_ExportPDF', 'xASL_report_Template.m');
+    reportTemplate = fullfile(x.opts.MyPath, 'Functions', 'xASL_report_Template.m');
     populationDir = fullfile(x.dir.xASLDerivatives, 'Population');
     htmlDir = fullfile(populationDir, 'html');
     reportPDFhtml = fullfile(htmlDir, 'xASL_report.pdf');
@@ -163,13 +163,21 @@ function figurePath = xASL_report_CreateHorizontalFigure(filepathsImages,htmlDir
             limitsImage = [0 150];
         elseif ~isempty(regexpi(filePrefix,'snr'))
             limitsImage = [0 20];
+        elseif ~isempty(regexpi(filePrefix,'pv_'))
+            limitsImage = [0 1];
         end
         % Create the subplot
         ax(iFile) = subplot(1,numImages,iFile);
-        imagesc(imageSlice,limitsImage);
+        imagesc(rot90(imageSlice),limitsImage);
         set(gca,'XColor', 'none','YColor','none')
         if iFile<=numel(filepathsImages)
-            colormap(ax(iFile),'gray');
+            if ~isempty(regexpi(filePrefix,'cbf'))
+                colormap(ax(iFile),'hot');
+            elseif ~isempty(regexpi(filePrefix,'slicegradient'))
+                colormap(ax(iFile),'jet');
+            else
+                colormap(ax(iFile),'gray');
+            end
         else
             colormap(ax(iFile),'white');
         end
@@ -187,6 +195,8 @@ function figurePath = xASL_report_CreateHorizontalFigure(filepathsImages,htmlDir
             cb.Limits = [0 150];
         elseif ~isempty(regexpi(filePrefix,'snr'))
             cb.Limits = [0 20];
+        elseif ~isempty(regexpi(filePrefix,'pv_'))
+            cb.Limits = [0 1];
         end
         
     end
@@ -223,7 +233,7 @@ function textArray = xASL_report_AddImageRow(populationDir,htmlDir,reportOutput,
     filepathsImages = xASL_adm_GetFileList(populationDir,['^' filePrefix '.+'],true);
     if ~isempty(filepathsImages)
         figurePath = xASL_report_CreateHorizontalFigure(filepathsImages,htmlDir,filePrefix,filePrefix);
-        newText = {['%% ' imageTitle], '% ',['% <<' figurePath '>>'], '% '}';
+        newText = {['%% ' imageTitle], '% ', ['% <<' figurePath '>>'], '% '}';
         textArray = xASL_report_AddTextSection(textArray,newText,reportOutput);
     end
 
