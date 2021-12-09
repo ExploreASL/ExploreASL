@@ -296,6 +296,9 @@ if ~x.mutex.HasState(StateName{10})
     if ~x.settings.bReproTesting && x.settings.DELETETEMP
         xASL_adm_DeleteManyTempFiles(x);
     end
+    % Create report file
+    reportFile = xASL_report_Main(x);
+    % Add mutex state
     x.mutex.AddState(StateName{10});
     fprintf('%s\n',[StateName{10} ' was performed']);
 else
