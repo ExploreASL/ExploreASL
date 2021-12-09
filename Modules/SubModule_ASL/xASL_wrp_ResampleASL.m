@@ -266,20 +266,22 @@ for iSpace=1:2
         xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);
         
     else
-
         % Paired subtraction
         [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
         ASL_im = ControlIm - LabelIm;
-                
+
         % Average PWI - multiPLD
         if isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD 
-            % multiPLD PWI
-            nRepeatsPLD = size(ASL_im,4)/length(x.Q.Initial_PLD); % we still need to create a single Repeats in X struct
-			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), length(x.Q.Initial_PLD)); % preallocate PWI
-            for nPLD = 1:length(x.Q.Initial_PLD)
-                iStartRepeatsPLD = 1 + (nPLD-1) * nRepeatsPLD; % Location of the first repeat for a given single PLD
-                iEndRepeatsPLD = nPLD * nRepeatsPLD; % Location of the last repeat for a given single PLD
-                PWI(:,:,:,nPLD) = xASL_stat_MeanNan(ASL_im(:,:,:,iStartRepeatsPLD:iEndRepeatsPLD), 4); % Averaged PWI4D 
+			% Skip every second PLD due to the subtraction
+			subtractedPLD = x.Q.Initial_PLD(1:2:end);
+        
+			% After averaging across PLDs, we'll obtain these unique PLDs
+			averagedPLD = unique(subtractedPLD);
+			
+            % MultiPLD PWI after averaging
+			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), length(averagedPLD)); % preallocate PWI
+            for nPLD = 1:length(averagedPLD)
+                PWI(:,:,:,nPLD) = xASL_stat_MeanNan(ASL_im(:,:,:,subtractedPLD == averagedPLD(nPLD)), 4); % Averaged PWI4D 
             end
             
             % Save PWI

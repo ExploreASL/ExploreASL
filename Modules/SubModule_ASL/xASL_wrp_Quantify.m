@@ -390,7 +390,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-if size(PWI,4) == 1 % single PLD quantification
+if (x.modules.asl.bTimeEncoded == 0) && (x.modules.asl.bMultiPLD == 0)% single PLD quantification
     fprintf('%s\n',['Performing single PLD quantification']);
     [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
 elseif x.Q.bUseBasilQuantification
