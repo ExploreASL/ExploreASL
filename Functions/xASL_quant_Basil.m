@@ -132,6 +132,7 @@ fprintf(FIDoptionFile, '--iaf=diff\n'); % as input is PWI
 
 %% Basic tissue parameters
 fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
+fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
 
 %% Basic acquisition parameters
 
@@ -205,132 +206,101 @@ if isfield(x.Q,'LookLocker') && x.Q.LookLocker && isfield(x.Q,'FlipAngle')
 	fprintf('Basil: Flip angle for Look-Locker readout: %f\n', x.Q.FlipAngle);
 end
 	 
+%% Model fiting parameters
+
+% This helps avoid failure on the structural-space image
+fprintf(FIDoptionFile, '--allow-bad-voxels\n');
+
+fprintf(FIDoptionFile, '--save-model-fit\n');
+
+switch lower(x.Q.LabelingType)
+	case 'pasl'
+		% Default initial ATT for PASL is 0.7
+		fprintf(FIDoptionFile, '--bat=0.7\n');
+	case {'pcasl','casl'}
+		% Default initial ATT for PCASL is 1.3
+		fprintf(FIDoptionFile, '--bat=1.3\n');
+end
+
+if x.modules.asl.bTimeEncoded || x.modules.asl.bMultiPLD
+	% Multi-PLD or Time Encoded data allows to fit arrival times
+	
+	% Set the variance of ATT estimation
+	if ~isfield(x.Q, 'BasilATTSD')
+		x.Q.BasilATTSD = 1.0;
+	end
+	fprintf(FIDoptionFile, '--batsd=%f\n', x.Q.BasilATTSD);
+end
+  
+
+% 	%% FIXME Aquisition options we might be able to use in the future
+%     %fprintf(option_file, '--sliceband=%i\n', sliceband);
+%     %fprintf('Basil: Multi-band setup with number of slices per band: %i\n', slicedband);
+% 	
+% 	%fprintf(option_file, '--t1im=%s\n', t1im)
+%     %fprintf('Basil: Using supplied T1 (tissue) image in BASIL: %s\n', $t1im)
+
+%     %% Noise specification
+%     % For small numbers of time points we need an informative noise prior. 
+%     % The user can specify an assumed SNR for this, or give prior estimated noise standard deviation below.
+%     if ~isfield(x.Q,'BasilSNR') || ~x.Q.BasilSNR
+%         x.Q.BasilSNR = 10;
+%     end
+% 
+%     if size(PWI, 4) < 5
+%         x.Q.BasilNoisePrior = 1;
+%         fprintf('Basil: Small number of volumes (%i < 5): informative noise prior will be used\n', size(PWI, 4));
+%     end
+%     if isfield(x.Q,'BasilNoisePrior') && x.Q.BasilNoisePrior
+%         % Use an informative noise prior
+%         if ~isfield(x.Q,'BasilNoiseSD') || ~x.Q.BasilNoiseSD
+%             fprintf('Basil: Using SNR of %f to set noise std dev\n', x.Q.BasilSNR);
+%             % Estimate signal magntiude FIXME brain mask assume half of voxels
+%             mag_max = max(PWI, [], 4);
+%             brain_mag = 2*xASL_stat_MeanNan(mag_max(:));
+%             fprintf('Basil: Mean maximum signal across brain: %f\n', brain_mag);
+%             % This will correspond to whole brain CBF (roughly) - about 0.5 of GM
+%             x.Q.BasilNoiseSD = sqrt(brain_mag * 2 / x.Q.BasilSNR);
+%         end
+%         fprintf('Basil: Using a prior noise std.dev. of: %f\n', x.Q.BasilNoiseSD);
+%         fprintf(FIDoptionFile, '--prior-noise-stddev=%f\n', x.Q.BasilNoiseSD);
+%     end
 
 
+%% Extra features on demand
+if isfield(x,'BasilSpatial') && x.Q.BasilSpatial
+	fprintf('Basil: Instructing BASIL to use automated spatial smoothing\n');
+	BasilOptions = [BasilOptions ' --spatial'];
+end
+
+if isfield(x.Q,'BasilInferT1') && x.Q.BasilInferT1
+	fprintf(FIDoptionFile, '--infert1\n');
+	fprintf('Basil: Instructing BASIL to infer variable T1 values\n');
+end
+
+if isfield(x.Q,'BasilInferATT') && x.Q.BasilInferATT
+	fprintf(FIDoptionFile, '--inferart\n');
+	fprintf('Basil: Infer arterial component');
+	fprintf('Basil: Variable arterial component arrival time');
+end
+
+if isfield(x.Q,'BasilExch')
+	fprintf('Basil: Using exchange model: %s\n', x.Q.BasilExch);
+	fprintf(FIDoptionFile, '--exch=%s\n', x.Q.BasilExch);
+end
+
+if isfield(x.Q,'BasilDisp')
+	fprintf('Basil: Using dispersion model: %s\n', x.Q.BasilDisp);
+	fprintf(FIDoptionFile, '--disp=%s\n', x.Q.BasilDisp);
+end
+
+if isfield(x.Q,'BasilDebug') && x.Q.BasilDebug
+	BasilOptions = [BasilOptions ' --devel'];
+end
 
 
-
-
-
-
-	 
-    %% FIXME Aquisition options we might be able to use in the future
-    %fprintf(option_file, '--sliceband=%i\n', sliceband);
-    %fprintf('Basil: Multi-band setup with number of slices per band: %i\n', slicedband);
-
-    % This helps avoid failure on the structural-space image
-    fprintf(FIDoptionFile, '--allow-bad-voxels\n');
-
-    %% FIXME is a user-specified T1 map possible in ExploreASL?
-    %fprintf(option_file, '--t1im=%s\n', t1im)
-    %fprintf('Basil: Using supplied T1 (tissue) image in BASIL: %s\n', $t1im)
-
-    fprintf(FIDoptionFile, '--save-model-fit\n');
-
-
-    %% Model option - 1 or 2 compartment
-    % The 1-compartment model is what we call 'White paper mode' in oxford-asl.
-    % This means zero ATT (all bolus delivered by imaging time) and blood T1 only
-    % The 2-compartment model is the 'standard' buxton model which takes into account
-    % the ATT and tissue T1 value.
-
-    switch x.Q.nCompartments
-        case 1
-            fprintf(FIDoptionFile, '--bat=0\n');
-            fprintf(FIDoptionFile, '--t1=%f\n', x.Q.BloodT1/1000);
-            fprintf('Basil: Single-compartment (white paper mode)\n');
-        case 2
-            fprintf(FIDoptionFile, '--bat=%f\n', x.Q.ATT/1000);
-            fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
-            fprintf('Basil: 2-compartment - ATT=%fs\n', x.Q.ATT/1000);
-    end
-    
-    %% ATT and arterial component inference only possible with multi-PLD
-    if (x.modules.asl.bTimeEncoded == 0) && (x.modules.asl.bMultiPLD == 0)
-        fprintf('Basil: Single-delay data - do not infer ATT or arterial component\n');
-        x.Q.BasilInferATT = 0;
-        x.Q.BasilInferArt = 0;
-    end
-
-
-    %% Infer arterial transit time
-    if isfield(x.Q,'BasilInferATT') && x.Q.BasilInferATT
-        if ~isfield(x.Q, 'BasilATTSD')
-            x.Q.BasilATTSD = 1.0;
-        end
-        fprintf(FIDoptionFile, '--inferbat\n');
-        fprintf(FIDoptionFile, '--batsd=%f\n', x.Q.BasilATTSD);
-	    fprintf('Basil: Setting std dev of the (tissue) BAT prior std.dev. to %f\n', x.Q.BasilATTSD);
-    else
-        BasilOptions = [BasilOptions ' --fixbat'];
-        fprintf('Basil: Fixed arterial arrival time\n');
-    end
-
-    
-    %% Infer arterial component
-    if isfield(x.Q,'BasilInferATT') && x.Q.BasilInferATT
-        fprintf(FIDoptionFile, '--inferart\n');
-        fprintf('Basil: Infer arterial component');
-        fprintf('Basil: Variable arterial component arrival time');
-    end
-
-
-    %% Noise specification
-    % For small numbers of time points we need an informative noise prior. 
-    % The user can specify an assumed SNR for this, or give prior estimated noise standard deviation below.
-    if ~isfield(x.Q,'BasilSNR') || ~x.Q.BasilSNR
-        x.Q.BasilSNR = 10;
-    end
-
-    if size(PWI, 4) < 5
-        x.Q.BasilNoisePrior = 1;
-        fprintf('Basil: Small number of volumes (%i < 5): informative noise prior will be used\n', size(PWI, 4));
-    end
-
-    if isfield(x.Q,'BasilNoisePrior') && x.Q.BasilNoisePrior
-        % Use an informative noise prior
-        if ~isfield(x.Q,'BasilNoiseSD') || ~x.Q.BasilNoiseSD
-            fprintf('Basil: Using SNR of %f to set noise std dev\n', x.Q.BasilSNR);
-            % Estimate signal magntiude FIXME brain mask assume half of voxels
-            mag_max = max(PWI, [], 4);
-            brain_mag = 2*xASL_stat_MeanNan(mag_max(:));
-            fprintf('Basil: Mean maximum signal across brain: %f\n', brain_mag);
-            % This will correspond to whole brain CBF (roughly) - about 0.5 of GM
-            x.Q.BasilNoiseSD = sqrt(brain_mag * 2 / x.Q.BasilSNR);
-        end
-        fprintf('Basil: Using a prior noise std.dev. of: %f\n', x.Q.BasilNoiseSD);
-        fprintf(FIDoptionFile, '--prior-noise-stddev=%f\n', x.Q.BasilNoiseSD);
-    end
-
-    
-    %% Miscellaneous features
-    if isfield(x,'BasilSpatial') && x.Q.BasilSpatial
-        fprintf('Basil: Instructing BASIL to use automated spatial smoothing\n');
-        BasilOptions = [BasilOptions ' --spatial'];
-    end
-
-    if isfield(x.Q,'BasilInferT1') && x.Q.BasilInferT1
-        fprintf(FIDoptionFile, '--infert1\n');
-        fprintf('Basil: Instructing BASIL to infer variable T1 values\n');
-    end
-
-    if isfield(x.Q,'BasilExch')
-        fprintf('Basil: Using exchange model: %s\n', x.Q.BasilExch);
-        fprintf(FIDoptionFile, '--exch=%s\n', x.Q.BasilExch);
-    end
-
-    if isfield(x.Q,'BasilDisp')
-        fprintf('Basil: Using dispersion model: %s\n', x.Q.BasilDisp);
-        fprintf(FIDoptionFile, '--disp=%s\n', x.Q.BasilDisp);
-    end
-
-    if isfield(x.Q,'BasilDebug') && x.Q.BasilDebug
-        BasilOptions = [BasilOptions ' --devel'];
-    end
-    
-    
-    %% Save Basil options file
-    fclose(FIDoptionFile);
+%% Save Basil options file
+fclose(FIDoptionFile);
     
 end
 
