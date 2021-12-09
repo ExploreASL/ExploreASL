@@ -1,6 +1,6 @@
-function [ScaleImage, CBF] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+function [ScaleImage, CBF, ATT] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
 %xASL_quant_MultiPLD % Perform a multi-step quantification using BASIL
-% FORMAT: [ScaleImage[, CBF]] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
+% FORMAT: [ScaleImage[, CBF, ATT]] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
 % INPUT:
 %   PWI             - 4D (4th dimension per PLD) image matrix of perfusion-weighted image (REQUIRED)
@@ -14,6 +14,7 @@ function [ScaleImage, CBF] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, b
 % OUTPUT:
 % ScaleImage        - image matrix containing net/effective quantification scale factor
 % CBF               - Quantified CBF image
+% ATT               - Estimated ATT map
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs a multi-step quantification, by
 %              initializing a ScaleImage that travels through this script & gets changed by the following quantification
@@ -39,7 +40,7 @@ function [ScaleImage, CBF] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, b
 %              imSliceNumber)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification);
+% EXAMPLE: [ScaleImage, CBF, ATT] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification);
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
 
@@ -119,7 +120,7 @@ else
         error('Wrong PLD definition!');
 	end
 
-	PWI = xASL_quant_Basil(PWI, x);
+	[PWI, ATT] = xASL_quant_Basil(PWI, x);
 end
 
 
@@ -228,11 +229,11 @@ fprintf('%s\n',' model with parameters:');
 if x.Q.ApplyQuantification(3)
     switch lower(x.Q.LabelingType)
         case 'pasl'
-            fprintf('%s',['TI1 = ' num2str(x.Q.LabelingDuration) ' ms, ']);
-            fprintf('%s',['TI (ms) = ' num2str(x.Q.Initial_PLD')]);  % transpose for multiPLD
+            fprintf('%s\n',['TI1 = ' num2str(unique(x.Q.LabelingDuration(:)')) ' ms,']);
+            fprintf('%s\n',['TI (ms) = ' num2str(unique(x.Q.Initial_PLD(:)'))]);
         case 'casl'
-            fprintf('%s',['LabelingDuration = ' num2str(x.Q.LabelingDuration) ' ms, ']);
-            fprintf('%s',['PLD (ms) = ' num2str(x.Q.Initial_PLD')]);
+            fprintf('%s\n',['LabelingDuration = ' num2str(unique(x.Q.LabelingDuration(:)')) ' ms, ']);
+            fprintf('%s\n',['PLD (ms) = ' num2str(unique(x.Q.Initial_PLD(:)'))]);
     end
 
 	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')

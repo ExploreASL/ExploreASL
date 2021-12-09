@@ -1,7 +1,7 @@
-function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
+function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
 %xASL_quant_Basil Perform quantification using FSL BASIL
 
-% FORMAT: [CBF_nocalib] = xASL_quant_Basil(PWI, x)
+% FORMAT: [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
 % 
 % INPUT:
 %   PWI             - image matrix of perfusion-weighted image (REQUIRED)
@@ -10,6 +10,7 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
 % OUTPUT:
 % CBF_nocalib       - Quantified CBF image
 %                     (if there is no FSL/BASIL installed, we return the original PWI)
+% ATT_Map           - ATT map (if possible to calculate with multi-PLD)
 % resultFSL         - describes if the execution was successful
 %                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
 %
@@ -85,11 +86,19 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
     fprintf('%s\n', '/.../fsl/bin/basil: line 124: imcp: command not found');
     
-    pathBasilMean = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
-    pathBasilMean = pathBasilMean{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+    pathBasilCBF = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
+    pathBasilCBF = pathBasilCBF{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
        
-    CBF_nocalib = xASL_io_Nifti2Im(pathBasilMean);
+    CBF_nocalib = xASL_io_Nifti2Im(pathBasilCBF);
         
+	pathBasilATT = xASL_adm_GetFileList(dirBasilOutput, '^mean_delttiss\.nii$', 'FPListRec');
+	if ~isempty(pathBasilATT)
+		pathBasilATT = pathBasilATT{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+		ATT_map = xASL_io_Nifti2Im(pathBasilATT);
+	else
+		ATT_map = [];
+	end
+	
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_SinglePLD since Fabber has T1 in seconds
     % and does not take into account labeling efficiency

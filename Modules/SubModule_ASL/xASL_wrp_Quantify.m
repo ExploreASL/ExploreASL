@@ -393,10 +393,11 @@ end
 if (x.modules.asl.bTimeEncoded == 0) && (x.modules.asl.bMultiPLD == 0)% single PLD quantification
     fprintf('%s\n',['Performing single PLD quantification']);
     [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
+	ATT = [];
 elseif x.Q.bUseBasilQuantification
     % perform BASIL multi-PLD quantification
     fprintf('%s\n',['Performing multi PLD quantification using BASIL']);
-    [~, CBF] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
+    [~, CBF, ATT] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
     error('Multi PLD quantification without BASIL not implemented yet');
@@ -421,6 +422,15 @@ fprintf('%s\n','Saving PWI & CBF niftis');
 
 xASL_io_SaveNifti(PWI_Path, OutputPath, CBF, 32, 0);
 
+if ~isempty(ATT)
+	% Replace CBF with ATT in the output path
+	iStringCBF = regexpi(OutputPath,'CBF');
+	iStringCBF = iStringCBF(end);
+	OutputPathTT = [OutputPath(1:(iStringCBF-1)) 'TT' OutputPath((iStringCBF+3):end)];
+	
+	% Save the ATT file
+	xASL_io_SaveNifti(PWI_Path, OutputPathTT, ATT, 32, 0);
+end
 
 %% ------------------------------------------------------------------------------------------------
 %% 10.   FEAST quantification
@@ -456,5 +466,8 @@ if x.Q.bUseBasilQuantification
     end
     
     xASL_spm_deformations(x, {x.P.Path_CBF}, {x.P.Pop_Path_CBF}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+	if xASL_exist(x.P.Path_TT,'file')
+		xASL_spm_deformations(x, {x.P.Path_TT}, {x.P.Pop_Path_TT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+	end
 end
 end
