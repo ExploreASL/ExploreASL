@@ -40,8 +40,7 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     pathBasilInput = fullfile(x.dir.SESSIONDIR, 'PWI4D_BasilInput.nii');
     pathBasilOptions = fullfile(x.dir.SESSIONDIR, 'Basil_ModelOptions.txt');
     dirBasilOutput = fullfile(x.dir.SESSIONDIR, 'BasilOutput');
-    
-    
+        
     %% 2. Delete previous BASIL output
     xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^basilOutput.*$', 1, [0 Inf]);
     FolderList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)^basilOutput.*$', 'FPList', [0 Inf], 1);
@@ -59,21 +58,18 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
     PWI(isnan(PWI)) = 0;
     
-    if size(PWI,4) == 1 
+    if (x.modules.asl.bTimeEncoded == 0) && (x.modules.asl.bMultiPLD == 0)
         % SinglePLD
         xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0); % use PWI path
-        bMultiPLD = false; % set MultiPLD analysis to false
     else
         % MultiPLD
         xASL_io_SaveNifti(x.P.Path_PWI4D, pathBasilInput, PWI, [], 0); % use PWI4D path
-        bMultiPLD = true; % set MultiPLD analysis to true
     end
-
 
     %% 4. Create option_file that contains options which are passed to Fabber
     % basil_options is a character array containing CLI args for the Basil command
     
-    BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMultiPLD);
+    BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI);
     
     %% 5. Run Basil and retrieve CBF output
     % args.bAutomaticallyDetectFSL=1;
@@ -101,7 +97,6 @@ function [CBF_nocalib, resultFSL] = xASL_quant_Basil(PWI, x)
     CBF_nocalib = CBF_nocalib .* 6000 .* x.Q.Lambda ./ x.Q.LabelingEfficiency;
     % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
     % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
-
     
     %% 7. Householding
     xASL_delete(pathBasilInput);
@@ -123,7 +118,7 @@ end
 
 
 
-function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMultiPLD)
+function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI)
 % Save a Basil options file and store CLI options for Basil
 
     %% Create option_file that contains options which are passed to Fabber
@@ -202,8 +197,8 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI, bMu
 
     
     %% ATT and arterial component inference only possible with multi-PLD
-    if ~bMultiPLD
-        fprintf('Basil: Single-delay data - cannot infer ATT or arterial component\n');
+    if (x.modules.asl.bTimeEncoded == 0) && (x.modules.asl.bMultiPLD == 0)
+        fprintf('Basil: Single-delay data - do not infer ATT or arterial component\n');
         x.Q.BasilInferATT = 0;
         x.Q.BasilInferArt = 0;
     end
