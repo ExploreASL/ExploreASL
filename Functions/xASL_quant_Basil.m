@@ -121,34 +121,100 @@ end
 function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI)
 % Save a Basil options file and store CLI options for Basil
 
-    %% Create option_file that contains options which are passed to Fabber
-    % basil_options is a character array containing CLI args for the Basil command
-    
-    FIDoptionFile = fopen(pathBasilOptions, 'w+');
-    BasilOptions = '';
+%% Create option_file that contains options which are passed to Fabber
+% basil_options is a character array containing CLI args for the Basil command
 
-    %% Basic acquisition and tissue parameters
-     % create CSV style text for TIs input
+FIDoptionFile = fopen(pathBasilOptions, 'w+');
+BasilOptions = '';
 
-     % print parameters
-     fprintf(FIDoptionFile, '# Basil options written by ExploreASL\n');
-     fprintf(FIDoptionFile, '--iaf=diff\n'); % as input is PWI
-     
-     TIs = (x.Q.LabelingDuration + x.Q.Initial_PLD)'/1000;
-     PLDAmount = length(TIs);
-     for TIsingle = 1:PLDAmount
-         fprintf(FIDoptionFile, ['--ti%d=%.2f\n'], TIsingle, TIs(TIsingle));
-     end
-     fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
-     fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
-     fprintf(FIDoptionFile, '--tau=%f\n', x.Q.LabelingDuration/1000); % FIXME tau could be list
-     fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.BasilSliceReadoutTime/1000);
-     fprintf(FIDoptionFile, '--save-model-fit\n');
+fprintf(FIDoptionFile, '# Basil options written by ExploreASL\n');
+fprintf(FIDoptionFile, '--iaf=diff\n'); % as input is PWI
+
+%% Basic tissue parameters
+fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
+
+%% Basic acquisition parameters
+
+% Labelling type - PASL or pCASL
+switch lower(x.Q.LabelingType)
+	case 'pasl'
+		fprintf('Basil: PASL model\n');
+		TIs = (unique(x.Q.Initial_PLD))'/1000;
+
+		% Print all the TIs
+		if x.modules.asl.bTimeEncoded || x.modules.asl.bMultiPLD
+			% For Time-encoded, we skip the first volume
+			if x.modules.asl.bTimeEncoded
+				TIs = TIs(2:end);
+			end
+			for iTI = 1:length(TIs)
+				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iTI, TIs(iTI));
+			end
+			
+		else
+			fprintf(FIDoptionFile, '--ti=%.2f\n', TIs);
+		end
+		
+		% Either print bolus duration or unspecify it
+		if isfield(x.Q,'LabelingDuration') && x.Q.LabelingDuration
+			fprintf(FIDoptionFile, '--tau=%.2f\n', x.Q.LabelingDuration/1000);
+		else
+			% Bolus duration not know. If multi-TI, then try to infer it
+			if length(TIs) > 1
+				fprintf(FIDoptionFile, '--infertau\n');
+				fprintf('Basil: Infer bolus duration component\n')
+			end
+		end
+		
+	case {'casl','pcasl'}
+		fprintf(FIDoptionFile, '--casl\n');
+		fprintf('Basil: CASL/PCASL model\n');
+		% Print all the PLDs and LabDurs
+		
+		[PLDs, ind] = unique(x.Q.Initial_PLD);
+		PLDs = PLDs'/1000;
+		LDs  = (x.Q.LabelingDuration(ind))'/1000;
+		% For Time-encoded, we skip the first volume
+		if x.modules.asl.bTimeEncoded
+			PLDs = PLDs(2:end);
+			LDs = LDs(2:end);
+		end
+		
+		if x.modules.asl.bTimeEncoded || x.modules.asl.bMultiPLD
+			% For Time-encoded, we skip the first volume
+			for iPLD = 1:length(PLDs)
+				fprintf(FIDoptionFile, '--pld%d=%.2f\n', iPLD, PLDs(iPLD));
+			end
+			for iLD = 1:length(LDs)
+				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLD, LDs(iLD));
+			end
+		else
+			fprintf(FIDoptionFile, '--tau=%.2f\n', LDs);
+		end
+end
+
+% Right now, we assume that we have averaged over PLDs
+%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
+fprintf(FIDoptionFile, '--repeats=1\n');
+	
+% Slice-timing
+fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.BasilSliceReadoutTime/1000);
+
+if isfield(x.Q,'LookLocker') && x.Q.LookLocker && isfield(x.Q,'FlipAngle')
+	fprintf(option_file, '--FA=%f\n', x.Q.FlipAngle);
+	fprintf('Basil: Flip angle for Look-Locker readout: %f\n', x.Q.FlipAngle);
+end
+	 
 
 
+
+
+
+
+
+
+	 
     %% FIXME Aquisition options we might be able to use in the future
-    %fprintf(option_file, '--FA=%f\n', fa);
-    %fprintf('Basil: Flip angle for look-locker readout: %f\n', fa);
     %fprintf(option_file, '--sliceband=%i\n', sliceband);
     %fprintf('Basil: Multi-band setup with number of slices per band: %i\n', slicedband);
 
@@ -159,14 +225,7 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI)
     %fprintf(option_file, '--t1im=%s\n', t1im)
     %fprintf('Basil: Using supplied T1 (tissue) image in BASIL: %s\n', $t1im)
 
-    % Labelling type - PASL or pCASL
-    switch lower(x.Q.LabelingType)
-        case 'pasl'
-            fprintf('Basil: PASL model\n');
-        case 'casl'
-            fprintf(FIDoptionFile, '--casl\n');
-            fprintf('Basil: CASL/PcASL model\n');
-    end
+    fprintf(FIDoptionFile, '--save-model-fit\n');
 
 
     %% Model option - 1 or 2 compartment
@@ -185,16 +244,6 @@ function [BasilOptions] = xASL_quant_Basil_Options(pathBasilOptions, x, PWI)
             fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
             fprintf('Basil: 2-compartment - ATT=%fs\n', x.Q.ATT/1000);
     end
-
-    
-    %%  Bolus duration\labeling duration typically fixed but can be inferred
-    if isfield(x.Q,'BasilInferTau') && x.Q.BasilInferTau
-         fprintf(FIDoptionFile, '--infertau\n');
-         fprintf('Basil: Infer bolus duration component\n')
-    else
-        fprintf('Basil: Fixed bolus duration component\n')
-    end
-
     
     %% ATT and arterial component inference only possible with multi-PLD
     if (x.modules.asl.bTimeEncoded == 0) && (x.modules.asl.bMultiPLD == 0)
