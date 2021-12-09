@@ -1,5 +1,20 @@
-
 function reportFile = xASL_report_Main(x)
+%xASL_report_Main Create the population based multi-page xASL report PDF
+%
+% FORMAT:       reportFile = xASL_report_Main(x)
+% 
+% INPUT:        x          - ExploreASL x struct (STRUCT, REQUIRED)
+%
+% OUTPUT:       reportFile - Path to exported PDF
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  Create the population based multi-page xASL report PDF.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:      reportFile = xASL_report_Main(x);
+%
+% __________________________________
+% Copyright 2015-2021 ExploreASL
 
     % Get template and output path
     reportTemplate = fullfile(x.opts.MyPath, 'External', 'xASL_ExportPDF', 'xASL_report_Template.m');
