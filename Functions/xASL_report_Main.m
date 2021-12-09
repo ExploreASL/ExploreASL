@@ -31,7 +31,10 @@ function reportFile = xASL_report_Main(x)
     textArray = xASL_report_ReplacePlaceholders(reportTemplate, reportOutput, populationDir);
     
     % Copy the logo
-    xASL_Copy(fullfile(x.opts.MyPath,'Design','ExploreASL_logoHeader.png'),fullfile(htmlDir,'logo.png'));
+    xASL_Copy(fullfile(x.opts.MyPath,'Design','ExploreASL_logoHeaderWide.png'),fullfile(htmlDir,'logo.png'));
+    
+    % Add dataset specific fields
+    textArray = xASL_report_AddDataset(x,textArray);
     
     % Add CBFs
     textArray = xASL_report_AddImageRow(populationDir,htmlDir,reportOutput,'qCBF_sub-',textArray,'CBF Images');
@@ -238,5 +241,73 @@ function textArray = xASL_report_AddImageRow(populationDir,htmlDir,reportOutput,
     end
 
 end
+
+
+%% Add dataset specific information
+function textArray = xASL_report_AddDataset(x,textArray)
+
+    % Add title
+    textArray = vertcat(textArray,'%% Dataset');
+    textArray = vertcat(textArray,'% ');
+    
+    % Print subjects
+    if isfield(x,'dataset') 
+        if isfield(x.dataset,'name')
+            textArray = vertcat(textArray,['% Name: ' x.dataset.name]);
+            textArray = vertcat(textArray,'% ');
+        end
+    end
+    if isfield(x,'SUBJECTS') && ~isempty(x.SUBJECTS)
+        for iSubject=1:numel(x.SUBJECTS)
+            textArray = vertcat(textArray,['% Subject: ' x.SUBJECTS{iSubject}]);
+            textArray = vertcat(textArray,'% ');
+        end
+    end
+    
+    % Add settings
+    textArray = vertcat(textArray,'%% Settings');
+    textArray = vertcat(textArray,'% ');
+    
+    % Print settings
+    if isfield(x,'Version')
+        textArray = vertcat(textArray,['% Version: ' x.Version]);
+        textArray = vertcat(textArray,'% ');
+    end
+    if isfield(x,'settings')
+        if isfield(x.settings,'Quality')
+            textArray = vertcat(textArray,['% Quality: ' xASL_num2str(x.settings.Quality)]);
+            textArray = vertcat(textArray,'% ');
+        end
+        if isfield(x.settings,'RERUN')
+            if x.settings.RERUN
+                textArray = vertcat(textArray,['% Rerun: ' 'yes']);
+                textArray = vertcat(textArray,'% ');
+            else
+                textArray = vertcat(textArray,['% Rerun: ' 'no']);
+                textArray = vertcat(textArray,'% ');
+            end
+        end
+        if isfield(x.settings,'bOverwrite')
+            if x.settings.bOverwrite
+                textArray = vertcat(textArray,['% Overwrite: ' 'yes']);
+                textArray = vertcat(textArray,'% ');
+            else
+                textArray = vertcat(textArray,['% Overwrite: ' 'no']);
+                textArray = vertcat(textArray,'% ');
+            end
+        end
+        if isfield(x.settings,'DELETETEMP')
+            if x.settings.DELETETEMP
+                textArray = vertcat(textArray,['% Delete temporary files: ' 'yes']);
+                textArray = vertcat(textArray,'% ');
+            else
+                textArray = vertcat(textArray,['% Delete temporary files: ' 'no']);
+                textArray = vertcat(textArray,'% ');
+            end
+        end
+    end
+
+end
+
 
 
