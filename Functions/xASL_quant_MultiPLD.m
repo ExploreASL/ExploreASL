@@ -1,5 +1,5 @@
 function [ScaleImage, CBF] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
-%xASL_quant_MultiPLD % Perform a multi-step quantification
+%xASL_quant_MultiPLD % Perform a multi-step quantification using BASIL
 % FORMAT: [ScaleImage[, CBF]] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
 % INPUT:
@@ -9,7 +9,7 @@ function [ScaleImage, CBF] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, b
 %   x               - struct containing pipeline environment parameters (REQUIRED)
 %   bUseBasilQuantification - boolean, true for using FSL BASIL for
 %                             quantification, false for using ExploreASL's
-%                             own quantification (OPTIONAL, DEFAULT = false)
+%                             own quantification (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:
 % ScaleImage        - image matrix containing net/effective quantification scale factor
@@ -56,7 +56,11 @@ if  xASL_stat_SumNan(M0_im(:))==0
 end
 
 if nargin<5 || isempty(bUseBasilQuantification)
-    bUseBasilQuantification = false;
+    bUseBasilQuantification = true;
+end
+
+if bUseBasilQuantification == false
+	error('Multi-PLD quantification currently works only with BASIL');
 end
 
 ScaleImage = 1; % initializing (double data format by default in Matlab)
@@ -81,11 +85,7 @@ else
         case '3d'
             fprintf('%s\n','3D sequence, not accounting for SliceReadoutTime (homogeneous PLD for complete volume)');
             x.Q.SliceReadoutTime = 0;
-            if bUseBasilQuantification
-                x.Q.BasilSliceReadoutTime = 0;
-            else
-                ScaleImage = ScaleImage.*x.Q.Initial_PLD;
-            end
+			x.Q.BasilSliceReadoutTime = 0;
 
         case '2d' % Load slice gradient
             fprintf('%s\n','2D sequence, accounting for SliceReadoutTime');
@@ -105,14 +105,10 @@ else
 			imSliceNumber(imSliceNumber>length(SliceReadoutTime)) = length(SliceReadoutTime);
             
             % BASIL doesn't use a vector but a difference between slices
-			if bUseBasilQuantification
-				if max(SliceReadoutTime)>0 && length(SliceReadoutTime) > 1
-					x.Q.BasilSliceReadoutTime = SliceReadoutTime(2)-SliceReadoutTime(1);
-				else
-					x.Q.BasilSliceReadoutTime = 0;
-				end
+			if max(SliceReadoutTime)>0 && length(SliceReadoutTime) > 1
+				x.Q.BasilSliceReadoutTime = SliceReadoutTime(2)-SliceReadoutTime(1);
 			else
-				ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD            
+				x.Q.BasilSliceReadoutTime = 0;
 			end
             
         otherwise
@@ -121,48 +117,9 @@ else
 
     if xASL_stat_SumNan(ScaleImage(:))==0
         error('Wrong PLD definition!');
-    end
+	end
 
-
-    if bUseBasilQuantification
-        PWI = xASL_quant_Basil(PWI, x);
-    else
-        %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
-        switch x.Q.nCompartments
-            case 1 % single-compartment model
-                switch lower(x.Q.LabelingType)
-                    case 'pasl'
-                        DivisionFactor = x.Q.LabelingDuration;
-                        fprintf('%s\n','Using single-compartment PASL');
-                    case 'casl'
-                        DivisionFactor = x.Q.BloodT1 .* (1 - exp(-x.Q.LabelingDuration./x.Q.BloodT1));
-                        fprintf('%s\n','Using single-compartment CASL');
-                end
-
-                ScaleImage = exp((ScaleImage./x.Q.BloodT1)) ./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
-
-            case 2 % dual-compartment model
-                switch lower(x.Q.LabelingType)
-                    case 'pasl'
-                        DivisionFactor = x.Q.LabelingDuration;
-                        ScaleImage = exp((x.Q.ATT./x.Q.BloodT1)).*exp(((ScaleImage-x.Q.ATT)./x.Q.TissueT1))./ (2.*x.Q.LabelingEfficiency.*DivisionFactor);
-                        fprintf('%s\n','Using dual compartment PASL');
-                    case 'casl'
-                        DivisionFactor = x.Q.TissueT1 .* (exp((min(x.Q.ATT-ScaleImage,0))./x.Q.TissueT1) - exp((min(x.Q.ATT-x.Q.LabelingDuration-ScaleImage,0))./x.Q.TissueT1));
-                        ScaleImage = exp((x.Q.ATT./x.Q.BloodT1))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
-                        fprintf('%s\n','Using dual compartment CASL');
-                end
-
-            otherwise
-                error('Unknown x.Q.nCompartments');
-        end
-
-
-        %% 3    Scaling to physiological units
-        ScaleImage = ScaleImage.*60000.*100.*x.Q.Lambda;
-        % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
-        % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
-    end
+	PWI = xASL_quant_Basil(PWI, x);
 end
 
 
@@ -263,9 +220,7 @@ end
 %% 6    Apply quantification
 CBF = PWI.*ScaleImage;
 
-if bUseBasilQuantification
-    CBF = xASL_stat_MeanNan(CBF, 4);
-end
+CBF = xASL_stat_MeanNan(CBF, 4);
 
 %% 6    Print parameters used
 fprintf('%s\n',' model with parameters:');
