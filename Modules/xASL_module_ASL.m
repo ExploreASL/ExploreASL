@@ -41,6 +41,7 @@ function [result, x] = xASL_module_ASL(x)
 % - D3. Multi-PLD parsing
 % - D4. TimeEncoded parsing
 % - D5. Multi-TE parsing
+% - D6. DeltaM parsing - check if all/some volumes are deltams
 %
 % - E - ASL quantification parameters
 % - E1. Default quantification parameters in the Q field
