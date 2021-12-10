@@ -87,6 +87,9 @@ function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
     fprintf('%s\n', '/.../fsl/bin/basil: line 124: imcp: command not found');
     
     pathBasilCBF = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
+	if isempty(pathBasilCBF)
+		error('FSL BASIL failed');
+	end
     pathBasilCBF = pathBasilCBF{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
        
     CBF_nocalib = xASL_io_Nifti2Im(pathBasilCBF);
@@ -183,7 +186,11 @@ switch lower(x.Q.LabelingType)
 		
 		[PLDs, ind] = unique(x.Q.Initial_PLD);
 		PLDs = PLDs'/1000;
-		LDs  = (x.Q.LabelingDuration(ind))'/1000;
+		if length(x.Q.LabelingDuration)>1
+			LDs = (x.Q.LabelingDuration(ind))'/1000;
+		else
+			LDs = ones(size(PLDs))*x.Q.LabelingDuration/1000;
+		end
 		% For Time-encoded, we skip the first volume
 		if x.modules.asl.bTimeEncoded
 			PLDs = PLDs(2:end);
