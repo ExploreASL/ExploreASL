@@ -60,7 +60,7 @@ if nargin<5 || isempty(bUseBasilQuantification)
     bUseBasilQuantification = true;
 end
 
-if bUseBasilQuantification == false
+if ~bUseBasilQuantification
 	error('Multi-PLD quantification currently works only with BASIL');
 end
 

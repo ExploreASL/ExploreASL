@@ -217,11 +217,11 @@ for iSpace=1:2
     dim4 = size(ASL_im, 4);
 
     if dim4==1
-        % Apparently, subtraction was already done on the scanner/reconstruction
+        % Apparently, the subtraction was already done on the scanner/reconstruction
         fprintf('%s\n', PathPWI{iSpace});
         xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, ASL_im, 32, false);
 	elseif x.modules.asl.bDeltaM
-		% We have subtraction images 
+		% The original ASL4D volume contains subtraction images and not control/label images
 		
 		% For multi-PLD, save both PWI4D and PWI
 		if x.modules.asl.bMultiPLD
@@ -272,16 +272,17 @@ for iSpace=1:2
 
         % Average PWI - multiPLD
         if isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD 
-			% Skip every second PLD due to the subtraction
-			subtractedPLD = x.Q.Initial_PLD(1:2:end);
+			% Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
+			% and we need the PLD vector now for the pairwise subtractions only
+			Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
         
 			% After averaging across PLDs, we'll obtain these unique PLDs
-			averagedPLD = unique(subtractedPLD);
+			Initial_PLD_PWI_averaged = unique(Initial_PLD_PWI);
 			
             % MultiPLD PWI after averaging
-			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), length(averagedPLD)); % preallocate PWI
-            for nPLD = 1:length(averagedPLD)
-                PWI(:,:,:,nPLD) = xASL_stat_MeanNan(ASL_im(:,:,:,subtractedPLD == averagedPLD(nPLD)), 4); % Averaged PWI4D 
+			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), length(Initial_PLD_PWI_averaged)); % preallocate PWI
+            for nPLD = 1:length(Initial_PLD_PWI_averaged)
+                PWI(:,:,:,nPLD) = xASL_stat_MeanNan(ASL_im(:,:,:,Initial_PLD_PWI == Initial_PLD_PWI_averaged(nPLD)), 4); % Averaged PWI4D 
             end
             
             % Save PWI

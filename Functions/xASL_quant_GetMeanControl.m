@@ -48,8 +48,14 @@ elseif isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD
 		Initial_PLD = x.Q.Initial_PLD(1:2:end);
 	end
 	
-	% Sort the unique PLDs and pick the ideal PLD
-	idealPLD = sort(unique(Initial_PLD),'ascend');
+	% Get unique PLDs
+	idealPLD = unique(Initial_PLD);
+	
+	% Find the index of the one closest to 2000 ms
+	[~, ind] = min(abs(idealPLD-2000));
+	
+	% Pick up the ideal PLD as the one closest to 2000 ms
+	idealPLD = idealPLD(ind(1));
 	
 	if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bDeltaM
 		% For Look-Locker, get the middle one

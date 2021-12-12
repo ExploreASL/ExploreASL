@@ -1,12 +1,12 @@
-function xASL_wrp_Quantify(x, PWI_Path, OutputPath, M0Path, SliceGradientPath)
+function xASL_wrp_Quantify(x, PWI_Path, pathOutputCBF, M0Path, SliceGradientPath)
 %xASL_wrp_Quantify Submodule of ExploreASL ASL Module, that performs quantfication
 %
-% FORMAT: xASL_wrp_Quantify(x [, PWI_Path, OutputPath, M0Path, SliceGradientPath])
+% FORMAT: xASL_wrp_Quantify(x [, PWI_Path, pathOutputCBF, M0Path, SliceGradientPath])
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
 %   PWI_Path            - path to NIfTI with perfusion-weighted image (PWI) (OPTIONAL, default = x.P.Pop_Path_PWI)
-%   OutputPath          - path to NifTI to create, with the quantified CBF map (OPTIONAL, DEFAULT = x.P.Pop_Path_qCBF)
+%   pathOutputCBF          - path to NifTI to create, with the quantified CBF map (OPTIONAL, DEFAULT = x.P.Pop_Path_qCBF)
 %   M0Path              - path to NifTI containing M0 image (OPTIONAL, default = x.Pop_Path_M0)
 %   SliceGradientPath   - path to Slice gradient NIfTI (OPTIONAL, default = x.P.Pop_Path_SliceGradient_extrapolated)
 %
@@ -71,9 +71,16 @@ end
 if nargin<2 || isempty(PWI_Path)
     PWI_Path = x.P.Pop_Path_PWI;
 end
-if nargin<3 || isempty(OutputPath)
-    OutputPath = x.P.Pop_Path_qCBF;
+
+if nargin<3 || isempty(pathOutputCBF)
+    pathOutputCBF = x.P.Pop_Path_qCBF;
 end
+% Define output path for ATT map based on the CBF output path
+% Replace CBF with ATT in the output path
+iStringCBF = regexpi(pathOutputCBF, 'CBF');
+iStringCBF = iStringCBF(end);
+pathOutputTT = [pathOutputCBF(1:(iStringCBF-1)) 'TT' pathOutputCBF((iStringCBF+3):end)];
+
 if nargin<4 || isempty(M0Path)
     M0Path = x.P.Pop_Path_M0;
 end
@@ -420,16 +427,11 @@ end
 % both ExploreASL and BASIL quantified will similarly
 fprintf('%s\n','Saving PWI & CBF niftis');
 
-xASL_io_SaveNifti(PWI_Path, OutputPath, CBF, 32, 0);
+xASL_io_SaveNifti(PWI_Path, pathOutputCBF, CBF, 32, 0);
 
 if ~isempty(ATT)
-	% Replace CBF with ATT in the output path
-	iStringCBF = regexpi(OutputPath,'CBF');
-	iStringCBF = iStringCBF(end);
-	OutputPathTT = [OutputPath(1:(iStringCBF-1)) 'TT' OutputPath((iStringCBF+3):end)];
-	
 	% Save the ATT file
-	xASL_io_SaveNifti(PWI_Path, OutputPathTT, ATT, 32, 0);
+	xASL_io_SaveNifti(PWI_Path, pathOutputTT, ATT, 32, 0);
 end
 
 %% ------------------------------------------------------------------------------------------------
@@ -440,7 +442,7 @@ xASL_quant_FEAST(x);
 
 %% ------------------------------------------------------------------------------------------------
 %% 11.  Create standard space masked image to visualize masking effect
-if strcmp(OutputPath, x.P.Pop_Path_qCBF)
+if strcmp(pathOutputCBF, x.P.Pop_Path_qCBF)
     % Load CBF image
     MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
     % Mask vascular voxels (i.e. set them to NaN)
