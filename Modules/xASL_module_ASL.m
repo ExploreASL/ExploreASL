@@ -151,7 +151,8 @@ end
 %% D4. TimeEncoded parsing
 % Check if TimeEncoded is defined
 if isfield(x.Q,'TimeEncodedMatrixType') || isfield(x.Q,'TimeEncodedMatrixSize') 
-    x.modules.asl.bTimeEncoded = 1;
+    x.modules.asl.bTimeEncoded = true;
+	x.modules.asl.bMultiPLD = true;
 	
 	if isempty(x.Q.TimeEncodedMatrixType)
 		fprintf('TimeEncodedMatrixType field missing. It should be a Hadamard or Walsh')
@@ -159,7 +160,7 @@ if isfield(x.Q,'TimeEncodedMatrixType') || isfield(x.Q,'TimeEncodedMatrixSize')
 		fprintf('TimeEncodedMatrixSize field missing. It should be a multiple of 4')
 	end
 else
-	x.modules.asl.bTimeEncoded = 0;
+	x.modules.asl.bTimeEncoded = false;
 end
 
 % Check if there is Decoding Matrix as input
@@ -536,7 +537,7 @@ end
 iState = 9;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
 
-    if isfield(x.modules.asl,'bMultiPLD') && ~x.modules.asl.bMultiPLD
+    if ~x.modules.asl.bMultiPLD
         xASL_wrp_VisualQC_ASL(x);
         x.mutex.AddState(StateName{iState});
     else

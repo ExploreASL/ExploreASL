@@ -241,7 +241,7 @@ for iSpace=1:2
         warning('Odd number of control-label pairs, skipping');
         return;
         
-    elseif isfield(x.modules.asl,'bTimeEncoded') && x.modules.asl.bTimeEncoded
+    elseif x.modules.asl.bTimeEncoded
         % Decoding of TimeEncoded data (Nifti is saved inside the function)
         ASL_im = xASL_quant_HadamardDecoding(PathASL{iSpace}, x.Q);
         
@@ -271,7 +271,7 @@ for iSpace=1:2
         ASL_im = ControlIm - LabelIm;
 
         % Average PWI - multiPLD
-        if isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD 
+        if x.modules.asl.bMultiPLD 
 			% Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
 			% and we need the PLD vector now for the pairwise subtractions only
 			Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);

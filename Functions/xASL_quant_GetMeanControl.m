@@ -29,7 +29,7 @@ if nargin < 2 || isempty(imASLTimeSeries)
 end
 
 %% Select the control images based on the acquisition type
-if isfield(x.modules.asl,'bTimeEncoded') && x.modules.asl.bTimeEncoded 
+if x.modules.asl.bTimeEncoded 
 	% Here we select the 1st TE and the control images
 	% We thus calculate the size of each Hadamard block as the number of Hadamard phases and TEs
 	blockSize = x.Q.TimeEncodedMatrixSize * x.Q.NumberEchoTimes;
@@ -37,7 +37,7 @@ if isfield(x.modules.asl,'bTimeEncoded') && x.modules.asl.bTimeEncoded
     % For example for 64 volumes and 2 repetitions with 8 PLDs and 4 TEs, it takes volume 1 and 33
     imMeanControl = imASLTimeSeries(:,:,:,1:blockSize:end);
 	
-elseif isfield(x.modules.asl,'bMultiPLD') && x.modules.asl.bMultiPLD
+elseif x.modules.asl.bMultiPLD
 	% Create mean control in native space
 	if x.modules.asl.bDeltaM
 		imMeanControl = imASLTimeSeries;

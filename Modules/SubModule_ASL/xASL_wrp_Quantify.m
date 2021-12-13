@@ -397,13 +397,13 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-if (x.modules.asl.bTimeEncoded == 0) && (x.modules.asl.bMultiPLD == 0)% single PLD quantification
-    fprintf('%s\n',['Performing single PLD quantification']);
+if ~x.modules.asl.bMultiPLD % single PLD quantification
+    fprintf('%s\n', 'Performing single PLD quantification');
     [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
 	ATT = [];
 elseif x.Q.bUseBasilQuantification
     % perform BASIL multi-PLD quantification
-    fprintf('%s\n',['Performing multi PLD quantification using BASIL']);
+    fprintf('%s\n', 'Performing multi PLD quantification using BASIL');
     [~, CBF, ATT] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL

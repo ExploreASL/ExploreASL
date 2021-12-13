@@ -136,7 +136,7 @@ xASL_delete(rpfile);
 %     end
 
 % Run motion correction for corresponding case
-if nFrames>2 && bSubtraction && (x.modules.asl.bMultiPLD  ||  x.modules.asl.bMultiTE  || x.modules.asl.bTimeEncoded)
+if nFrames>2 && bSubtraction && (x.modules.asl.bMultiPLD  ||  x.modules.asl.bMultiTE)
     % Multi-PLD, Multi-TE or Hadamard
     spm_realign(spm_vol(InputPath),flags,false);
     

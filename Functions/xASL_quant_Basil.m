@@ -59,7 +59,7 @@ function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
     % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
     PWI(isnan(PWI)) = 0;
     
-    if (x.modules.asl.bTimeEncoded == 0) && (x.modules.asl.bMultiPLD == 0)
+    if ~x.modules.asl.bMultiPLD
         % SinglePLD
         xASL_io_SaveNifti(x.P.Path_PWI, pathBasilInput, PWI, [], 0); % use PWI path
     else
@@ -161,7 +161,7 @@ switch lower(x.Q.LabelingType)
 		TIs = (unique(x.Q.Initial_PLD))'/1000;
 
 		% Print all the TIs
-		if x.modules.asl.bTimeEncoded || x.modules.asl.bMultiPLD
+		if x.modules.asl.bMultiPLD
 			% For Time-encoded, we skip the first volume
 			if x.modules.asl.bTimeEncoded
 				TIs = TIs(2:end);
@@ -203,7 +203,7 @@ switch lower(x.Q.LabelingType)
 			LDs = LDs(2:end);
 		end
 		
-		if x.modules.asl.bTimeEncoded || x.modules.asl.bMultiPLD
+		if x.modules.asl.bMultiPLD
 			% For Time-encoded, we skip the first volume
 			for iPLD = 1:length(PLDs)
 				fprintf(FIDoptionFile, '--pld%d=%.2f\n', iPLD, PLDs(iPLD));
@@ -248,7 +248,7 @@ switch lower(x.Q.LabelingType)
 		fprintf(FIDoptionFile, '--bat=1.3\n');
 end
 
-if x.modules.asl.bTimeEncoded || x.modules.asl.bMultiPLD
+if x.modules.asl.bMultiPLD
 	% Multi-PLD or Time Encoded data allows to fit arrival times
 	
 	% Set the variance of ATT estimation
