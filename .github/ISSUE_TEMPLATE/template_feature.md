@@ -11,9 +11,9 @@ assignees: ''
 
 Required: insert feature description here
 
-### Requirements
+### Tasks
 
-Optional: add feature requirements here
+- [ ] Implement _xyz_ in function `xASL_[abc]_...`
 
 ### How to test
 

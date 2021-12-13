@@ -11,9 +11,9 @@ assignees: ''
 
 Required: insert bug description here
 
-### Requirements
+### Tasks
 
-Optional: add bug requirements here
+- [ ] Fix _xyz_ in function `xASL_[abc]_...`
 
 ### How to test
 
