@@ -48,6 +48,13 @@ function [x] = ExploreASL_ImportMaster(x)
         if x.opts.ImportModules(4)
             x = xASL_imp_CompleteBIDS2Legacy(x);
         end
+        % Clean up x-struct
+        if isfield(x,'SESSION')
+            x = rmfield(x,'SESSION');
+        end
+        if isfield(x,'SESSIONS')
+            x = rmfield(x,'SESSIONS');
+        end
     catch loggingEntry
         % Print user feedback if import crashed
         fprintf(2,'ExploreASL Import module failed...\n');
