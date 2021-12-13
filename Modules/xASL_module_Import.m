@@ -210,6 +210,13 @@ function [x] = xASL_imp_CleanUpImport(x)
     if isfield(x,'SUBJECTS')
         x = rmfield(x,'SUBJECTS');
     end
+    % Clean up x-struct
+    if isfield(x,'SESSION')
+        x = rmfield(x,'SESSION');
+    end
+    if isfield(x,'SESSIONS')
+        x = rmfield(x,'SESSIONS');
+    end
     
     % We also need to terminate the module correctly
     x.mutex.AddState('999_ready');
