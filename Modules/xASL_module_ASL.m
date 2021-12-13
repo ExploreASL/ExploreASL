@@ -194,14 +194,14 @@ end
 [pathDir, pathASL4D] = fileparts(x.P.Path_ASL4D);
 pathASL4Dcontext = fullfile(pathDir, [pathASL4D '_aslcontext.tsv']);
 % We don't have a subtraction image by default
-x.modules.asl.bDeltaM = 0;
+x.modules.asl.bContainsDeltaM = false;
 if xASL_exist(pathASL4Dcontext,'file')
 	% Load TSV file
 	aslContext = xASL_tsvRead(pathASL4Dcontext);
 	bidsPar = xASL_bids_Config;
 	% Check for presence of deltaM subtraction volumes
 	if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM)) > 0
-		x.modules.asl.bDeltaM = 1;
+		x.modules.asl.bContainsDeltaM = true;
 	end
 end
 
@@ -325,7 +325,7 @@ elseif ~x.mutex.HasState(StateName{iState})
 
         % Then, check matrix size: throw error if 2D data with 3 dimensions only
 
-        if nVolumes>1 && (x.modules.asl.bDeltaM == 0) && (nVolumes/2~=round(nVolumes/2))
+        if nVolumes>1 && ~x.modules.asl.bContainsDeltaM && (nVolumes/2~=round(nVolumes/2))
             error('Uneven number of control-label frames, either incomplete pairs or M0 image in time-series!');
         end
 
@@ -341,7 +341,7 @@ elseif ~x.mutex.HasState(StateName{iState})
             xASL_im_CenterOfMass(x.P.Path_ASL4D, OtherList, 10); % set CenterOfMass to lower accepted distance for when rerunning wrong registration
         end
 
-        if  nVolumes>1 && (x.modules.asl.bDeltaM == 0) && (~isfield(x.Q,'LookLocker') || (x.Q.LookLocker == 0))
+        if  nVolumes>1 && ~x.modules.asl.bContainsDeltaM && (~isfield(x.Q,'LookLocker') || (x.Q.LookLocker == 0))
             % Run motion Correction
             xASL_wrp_RealignASL(x);
         else

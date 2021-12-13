@@ -39,7 +39,7 @@ if x.modules.asl.bTimeEncoded
 	
 elseif x.modules.asl.bMultiPLD
 	% Create mean control in native space
-	if x.modules.asl.bDeltaM
+	if x.modules.asl.bContainsDeltaM
 		imMeanControl = imASLTimeSeries;
 		Initial_PLD = x.Q.Initial_PLD;
 	else
@@ -57,7 +57,7 @@ elseif x.modules.asl.bMultiPLD
 	% Pick up the ideal PLD as the one closest to 2000 ms
 	idealPLD = idealPLD(ind(1));
 	
-	if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bDeltaM
+	if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bContainsDeltaM
 		% For Look-Locker, get the middle one
 		idealPLD = idealPLD(round(numel(idealPLD)/2));
 	else

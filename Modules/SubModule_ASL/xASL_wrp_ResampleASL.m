@@ -220,7 +220,7 @@ for iSpace=1:2
         % Apparently, the subtraction was already done on the scanner/reconstruction
         fprintf('%s\n', PathPWI{iSpace});
         xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, ASL_im, 32, false);
-	elseif x.modules.asl.bDeltaM
+	elseif x.modules.asl.bContainsDeltaM
 		% The original ASL4D volume contains subtraction images and not control/label images
 		
 		% For multi-PLD, save both PWI4D and PWI
