@@ -150,14 +150,15 @@ end
 
 %% D4. TimeEncoded parsing
 % Check if TimeEncoded is defined
-if isfield(x.Q,'TimeEncodedMatrixType') || isfield(x.Q,'TimeEncodedMatrixSize') 
+if isfield(x.Q,'TimeEncodedMatrixType') || isfield(x.Q,'TimeEncodedMatrixSize')
+    fprintf(2,'Time encoded data detected (processing still under development)...\n');
     x.modules.asl.bTimeEncoded = true;
 	x.modules.asl.bMultiPLD = true;
 	
 	if isempty(x.Q.TimeEncodedMatrixType)
-		fprintf('TimeEncodedMatrixType field missing. It should be a Hadamard or Walsh')
+		fprintf(2,'TimeEncodedMatrixType field missing (should be a Hadamard or Walsh)...\n')
 	elseif ~isfield(x.Q,'TimeEncodedMatrixSize') || isempty(x.Q.TimeEncodedMatrixSize) || (x.Q.TimeEncodedMatrixSize < 2)
-		fprintf('TimeEncodedMatrixSize field missing. It should be a multiple of 4')
+		fprintf(2,'TimeEncodedMatrixSize field missing (should be a multiple of 4)...\n')
 	end
 else
 	x.modules.asl.bTimeEncoded = false;
