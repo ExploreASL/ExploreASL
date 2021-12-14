@@ -40,6 +40,10 @@ if ~exist('bSubtraction','var')
     bSubtraction = 1; % this tells script that timeseries contain subtractive/pair-wise data
 end
 
+if x.modules.asl.bContainsDeltaM
+    warning('Motion correction should not run on deltaM scans...');
+end
+
 if  bSubtraction
     InputPath = x.P.Path_ASL4D;
 else
