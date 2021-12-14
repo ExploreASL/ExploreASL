@@ -277,6 +277,7 @@ if xASL_exist(pathASL4Dcontext, 'file')
 		if xASL_exist(x.P.Path_ASL4D, 'file')
 			niftiASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
 			if size(niftiASL.dat,4) == 1
+				warning('ASLContext.tsv is missing, but a single deltaM volume is expected');
 				x.modules.asl.bContainsDeltaM = true;
 			end
 		end
