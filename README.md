@@ -98,6 +98,6 @@ The release numbers of ExploreASL (e.g. `1.9.0`) follow [semantic versioning](ht
 1. The [ExploreASL paper](https://www.sciencedirect.com/science/article/pii/S1053811920305176), describing the full pipeline and decisions for processing steps.
 2. The Zenodo DOI for the actual ExploreASL release used to analyse the data (e.g. the [up-to-date release](https://doi.org/10.5281/zenodo.3905262)).
 3. The SPM12 references [Ashburner, 2012](https://doi.org/10.1016/j.neuroimage.2011.10.025) & [Flandin and Friston, 2008](https://doi.org/10.4249/scholarpedia.6232). Note that the SPM version (e.g. `7219`) is adapted and extended for use with ExploreASL.
-4. The CAT12 reference [Gaser, 2009](https://doi.org/10.1016/S1053-8119(09%2971151-6). Note that the CAT12 version (e.g. `1364`) is adapted for use with ExploreASL.
-5. The LST references [Schmidt, 2017](www.statistical-modelling.de/lst.html) & [de Sitter, 2017](https://doi.org/10.1016/j.neuroimage.2017.09.011). Note that the LST version (e.g. `2.0.15`) is adapted for use with ExploreASL.
+4. The CAT12 reference [Gaser, 2009](https://doi.org/10.1016/S1053-8119(09)71151-6). Note that the CAT12 version (e.g. `1364`) is adapted for use with ExploreASL.
+5. The LST references [Schmidt, 2017](https://www.statistical-modelling.de/LST_documentation.pdf) & [de Sitter, 2017](https://doi.org/10.1016/j.neuroimage.2017.09.011). Note that the LST version (e.g. `2.0.15`) is adapted for use with ExploreASL.
 6. Matlab publishes a [release](https://www.mathworks.com/help/matlab/release-notes.html) twice yearly. You can provide the release number (e.g. `9.4`) or year number (e.g. `2018a`), or both.
