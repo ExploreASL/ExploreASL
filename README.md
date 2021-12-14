@@ -83,6 +83,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/mcraig-ibme"><img src="https://avatars0.githubusercontent.com/u/26383586?v=4" width="100px;" alt=""/><br /><sub><b>Martin Craig</b></sub></a><br /><a href="#content-mcraig-ibme" title="Content">🖋</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=mcraig-ibme" title="Code">💻</a> <a href="#data-mcraig-ibme" title="Data Acquisition & Management">🧠</a></td>
     <td align="center"><a href="https://github.com/jozsait"><img src="https://avatars0.githubusercontent.com/u/19532128?v=4" width="100px;" alt=""/><br /><sub><b>jozsait</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=jozsait" title="Code">💻</a> <a href="#maintenance-jozsait" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/DaveThoma5"><img src="https://avatars0.githubusercontent.com/u/3704113?v=4" width="100px;" alt=""/><br /><sub><b>DaveThoma5</b></sub></a><br /><a href="#ideas-DaveThoma5" title="Ideas, Planning, & Feedback">🤔</a> <a href="#data-DaveThoma5" title="Data Acquisition & Management">🧠</a></td>
+    <td align="center"><a href="https://github.com/amahroo"><img src="https://avatars0.githubusercontent.com/u/48561261?v=4" width="100px;" alt=""/><br /><sub><b>Amnah Mahroo</b></sub></a><br /><a href="#ideas-amahroo" title="Ideas, Planning, & Feedback">🤔</a> <a href="#data-amahroo" title="Data Acquisition & Management">🧠</a></td>
   </tr>
 </table>
 
