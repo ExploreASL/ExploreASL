@@ -41,13 +41,13 @@ function [result, x] = xASL_module_ASL(x)
 % - D3. Multi-PLD parsing
 % - D4. TimeEncoded parsing
 % - D5. Multi-TE parsing
-% - D6. DeltaM parsing - check if all/some volumes are deltams
 %
 % - E - ASL quantification parameters
 % - E1. Default quantification parameters in the Q field
 % - E2. Define sequence (educated guess based on the Q field)
 % - F. Backward and forward compatibility of filenames
-% - G. Split ASL and M0 within the ASL time series
+% - G1. Split ASL and M0 within the ASL time series
+% - G2. DeltaM parsing - check if all/some volumes are deltams
 % - H. Skip processing if invalid image
 %
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
@@ -189,22 +189,6 @@ else
 	x.Q.NumberEchoTimes = 1;
 end
 
-%% D6. DeltaM parsing - check if all/some volumes are deltams
-% If TSV file exist
-[pathDir, pathASL4D] = fileparts(x.P.Path_ASL4D);
-pathASL4Dcontext = fullfile(pathDir, [pathASL4D '_aslcontext.tsv']);
-% We don't have a subtraction image by default
-x.modules.asl.bContainsDeltaM = false;
-if xASL_exist(pathASL4Dcontext,'file')
-	% Load TSV file
-	aslContext = xASL_tsvRead(pathASL4Dcontext);
-	bidsPar = xASL_bids_Config;
-	% Check for presence of deltaM subtraction volumes
-	if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM)) > 0
-		x.modules.asl.bContainsDeltaM = true;
-	end
-end
-
 %% E1. Default quantification parameters in the Q field
 if ~isfield(x.Q,'ApplyQuantification') || isempty(x.Q.ApplyQuantification)
     x.Q.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
@@ -255,7 +239,7 @@ end
 
 
 
-%% G. Split ASL and M0 within the ASL time series
+%% G1. Split ASL and M0 within the ASL time series
 % Run this when the data hasn't been touched yet
 % The first three states are here, because the first two are run only conditionally
 if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
@@ -270,6 +254,32 @@ if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mute
 	FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)\.json$','FPList',[0 Inf]);
 	if ~isempty(FileList)
 		xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'ASL4D.json'));
+	end
+end
+
+%% G2. DeltaM parsing - check if all/some volumes are deltams
+% If TSV file exist
+[pathDir, pathASL4D] = fileparts(x.P.Path_ASL4D);
+pathASL4Dcontext = fullfile(pathDir, [pathASL4D '_aslcontext.tsv']);
+% We don't have a subtraction image by default
+x.modules.asl.bContainsDeltaM = false;
+if xASL_exist(pathASL4Dcontext, 'file')
+	% Load TSV file
+	if xASL_exist(pathASL4Dcontext, 'file')
+		aslContext = xASL_tsvRead(pathASL4Dcontext);
+		bidsPar = xASL_bids_Config;
+		% Check for presence of deltaM subtraction volumes
+		if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM)) > 0
+			x.modules.asl.bContainsDeltaM = true;
+		end
+	else
+		% In case the ASL-context file is missing we label as containsDeltaM all volumes with a single volume only
+		if xASL_exist(x.P.Path_ASL4D, 'file')
+			niftiASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
+			if size(niftiASL.dat,4) == 1
+				x.modules.asl.bContainsDeltaM = true;
+			end
+		end
 	end
 end
 
@@ -485,14 +495,14 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
     if isfield(x.Q, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification
-        % Quantification in native space only:
-        nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
-        
-        if nVolumes == 1
+        % Quantification in native space only for BASIL
+		if xASL_exist(x.P.Path_PWI4D,'file')
+			% Quantify CBF using PWI4D by default
+			xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
+		else
+			% Use PWI if PWI4D does not exist
             xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
-        else
-            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient); 
-        end 
+		end
     else
         % Quantification in standard space:
         xASL_wrp_Quantify(x);
