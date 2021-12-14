@@ -135,7 +135,8 @@ end
 
 %% D3. Multi-PLD parsing
 if isfield(x.Q,'Initial_PLD') && numel(unique(x.Q.Initial_PLD))>1  % check for number of unique PLD's, more than 1 means multiPLD
-    fprintf('Multiple PLDs detected...\nPDLs: ');
+    fprintf(2,'Multi-PLD data detected (processing still under development)...\n');
+    fprintf('PDLs: ');
     for iPLD = 1:numel(x.Q.Initial_PLD)
         if iPLD<numel(x.Q.Initial_PLD)
             fprintf('%d, ',x.Q.Initial_PLD(iPLD));
