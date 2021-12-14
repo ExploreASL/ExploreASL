@@ -22,7 +22,7 @@ ExploreASL
 
 ## Workflow
 
-![ExploreASL Workflow](Design/Workflow.png "Workflow of ExploreASL")
+![ExploreASL Workflow](Design/WorkflowUpdate.png "Workflow of ExploreASL")
 
 ## Documentation
 
