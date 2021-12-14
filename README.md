@@ -93,9 +93,9 @@ The following provides an example as how to correctly cite ExploreASL and its th
 
 ### References
 
-1. The ExploreASL paper, describing the full pipeline and decisions for processing steps: https://www.sciencedirect.com/science/article/pii/S1053811920305176
-2. The Zenodo DOI for the actual ExploreASL release used to analyse the data. The release numbers (e.g. 1.9.0) follow [semantic versioning](https://semver.org/).
-3. SPM12 references: https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib14 & https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib53. Note that the SPM version (e.g. 7219) is adapted and extended for use with ExploreASL.
-4. CAT12 reference: https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib55. Note that the CAT12 version (e.g. 1364) is adapted for use with ExploreASL.
-5. LST reference: https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib118. Note that the LST version (e.g. 2.0.15) is adapted for use with ExploreASL.
-6. Matlab publishes a release twice yearly, which can be reviewed here: https://www.mathworks.com/products/compiler/matlab-runtime.html. You can provide the release number (e.g. 9.4) or year number (e.g. 2018a), or both.
+1. The [ExploreASL paper](https://www.sciencedirect.com/science/article/pii/S1053811920305176), describing the full pipeline and decisions for processing steps.
+2. The Zenodo DOI for the actual ExploreASL release used to analyse the data. The release numbers (e.g. `1.9.0`) follow [semantic versioning](https://semver.org/).
+3. [SPM12 reference a](https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib14) & [SPM12 reference b](https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib53). Note that the SPM version (e.g. 7219) is adapted and extended for use with ExploreASL.
+4. [CAT12 reference](https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib55). Note that the CAT12 version (e.g. 1364) is adapted for use with ExploreASL.
+5. [LST reference](https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib118). Note that the LST version (e.g. 2.0.15) is adapted for use with ExploreASL.
+6. Matlab publishes a release twice yearly, which can be reviewed [here](https://www.mathworks.com/products/compiler/matlab-runtime.html). You can provide the release number (e.g. 9.4) or year number (e.g. 2018a), or both.
