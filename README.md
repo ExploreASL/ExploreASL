@@ -4,15 +4,6 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3905262.svg)](https://doi.org/10.5281/zenodo.3905262) [![View ExploreASL on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://nl.mathworks.com/matlabcentral/fileexchange/83203-exploreasl) ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/ExploreASL/ExploreASL) [![GitHub last commit](https://img.shields.io/github/last-commit/ExploreASL/Documentation?label=mkdocs)](https://exploreasl.github.io/Documentation/)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-* [ExploreASL](#exploreasl)
-	* [Description](#description)
-	* [Installation](#installation)
-	* [Workflow](#workflow)
-	* [Documentation](#documentation)
-	* [ExploreASL team](#exploreasl-team)
-	* [Acknowledgments](#acknowledgments)
-	* [How to cite](#how-to-cite)
-
 ## Description
 
 **ExploreASL** is a pipeline and toolbox for image processing and statistics of arterial spin labeling perfusion **MR** images. It is designed as a **multi-OS**, open source, collaborative framework that facilitates cross-pollination between image processing method developers and clinical investigators.
@@ -68,22 +59,22 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="http://www.ExploreASL.org"><img src="https://avatars0.githubusercontent.com/u/27774254?v=4" width="100px;" alt=""/><br /><sub><b>Henk Mutsaerts</b></sub></a><br /><a href="#creator-HenkMutsaerts" title="Mentor and Creator">👨‍🔬</a> <a href="#content-HenkMutsaerts" title="Content">🖋</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=HenkMutsaerts" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/jan-petr"><img src="https://avatars0.githubusercontent.com/u/29886537?v=4" width="100px;" alt=""/><br /><sub><b>Jan Petr</b></sub></a><br /><a href="#creator-jan-petr" title="Mentor and Creator">👨‍🔬</a> <a href="#content-jan-petr" title="Content">🖋</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=jan-petr" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/MichaelStritt"><img src="https://avatars0.githubusercontent.com/u/46593074?v=4" width="100px;" alt=""/><br /><sub><b>Michael Stritt</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=MichaelStritt" title="Code">💻</a> <a href="#content-MichaelStritt" title="Content">🖋</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=MichaelStritt" title="Documentation">📖</a></td>
-    <td align="center"><a href="http://www.amsterdamumc.nl"><img src="https://avatars0.githubusercontent.com/u/18597189?v=4" width="100px;" alt=""/><br /><sub><b>Paul Groot</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=pfcgroot" title="Code">💻</a> <a href="#content-pfcgroot" title="Content">🖋</a></td>
-    <td align="center"><a href="https://github.com/pvdemael"><img src="https://avatars1.githubusercontent.com/u/37624277?v=4" width="100px;" alt=""/><br /><sub><b>Pieter Vandemaele</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=pvdemael" title="Code">💻</a> <a href="#ideas-pvdemael" title="Ideas, Planning, & Feedback">🤔</a> <a href="#data-pvdemael" title="Data Acquisition & Management">🧠</a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/luislorenzini"><img src="https://avatars2.githubusercontent.com/u/57985241?v=4" width="100px;" alt=""/><br /><sub><b>luislorenzini</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=luislorenzini" title="Code">💻</a> <a href="#tool-luislorenzini" title="Tools">🔧</a></td>
-    <td align="center"><a href="https://github.com/MauricePasternak"><img src="https://avatars3.githubusercontent.com/u/57411571?v=4" width="100px;" alt=""/><br /><sub><b>MauricePasternak</b></sub></a><br /><a href="#gui-MauricePasternak" title="Graphical User Interface">📊</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=MauricePasternak" title="Code">💻</a> <a href="#design-MauricePasternak" title="Design">🎨</a></td>
-    <td align="center"><a href="https://github.com/patsycle"><img src="https://avatars0.githubusercontent.com/u/41481345?v=4" width="100px;" alt=""/><br /><sub><b>Patricia Clement</b></sub></a><br /> <a href="#data-patsycle" title="Data Acquisition & Management">🧠</a> <a href="#ideas-patsycle" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=patsycle" title="Documentation">📖</a> </td>
-  	<td align="center"><a href="https://github.com/MDijsselhof"><img src="https://avatars0.githubusercontent.com/u/75380250?v=4" width="100px;" alt=""/><br /><sub><b>Mathijs Dijsselhof</b></sub></a><br /><a href="#content-MDijsselhof" title="Content">🖋</a> <a href="#data-MDijsselhof" title="Data Acquisition & Management">🧠</a></td>
+    <td align="center"><a href="https://github.com/MDijsselhof"><img src="https://avatars0.githubusercontent.com/u/75380250?v=4" width="100px;" alt=""/><br /><sub><b>Mathijs Dijsselhof</b></sub></a><br /><a href="#content-MDijsselhof" title="Content">🖋</a> <a href="#data-MDijsselhof" title="Data Acquisition & Management">🧠</a></td>
     <td align="center"><a href="https://github.com/BeatrizPadrela"><img src="https://avatars0.githubusercontent.com/u/73699072?v=4" width="100px;" alt=""/><br /><sub><b>Beatriz Padrela</b></sub></a><br /><a href="#content-BeatrizPadrela" title="Content">🖋</a> <a href="#data-BeatrizPadrela" title="Data Acquisition & Management">🧠</a></td>
   </tr>
   <tr>
+    <td align="center"><a href="http://www.amsterdamumc.nl"><img src="https://avatars0.githubusercontent.com/u/18597189?v=4" width="100px;" alt=""/><br /><sub><b>Paul Groot</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=pfcgroot" title="Code">💻</a> <a href="#content-pfcgroot" title="Content">🖋</a></td>
+    <td align="center"><a href="https://github.com/pvdemael"><img src="https://avatars1.githubusercontent.com/u/37624277?v=4" width="100px;" alt=""/><br /><sub><b>Pieter Vandemaele</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=pvdemael" title="Code">💻</a> <a href="#ideas-pvdemael" title="Ideas, Planning, & Feedback">🤔</a> <a href="#data-pvdemael" title="Data Acquisition & Management">🧠</a></td>
+    <td align="center"><a href="https://github.com/MauricePasternak"><img src="https://avatars3.githubusercontent.com/u/57411571?v=4" width="100px;" alt=""/><br /><sub><b>MauricePasternak</b></sub></a><br /><a href="#gui-MauricePasternak" title="Graphical User Interface">📊</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=MauricePasternak" title="Code">💻</a> <a href="#design-MauricePasternak" title="Design">🎨</a></td>
+    <td align="center"><a href="https://github.com/patsycle"><img src="https://avatars0.githubusercontent.com/u/41481345?v=4" width="100px;" alt=""/><br /><sub><b>Patricia Clement</b></sub></a><br /> <a href="#data-patsycle" title="Data Acquisition & Management">🧠</a> <a href="#ideas-patsycle" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=patsycle" title="Documentation">📖</a> </td>
     <td align="center"><a href="https://github.com/sandeepganji"><img src="https://avatars0.githubusercontent.com/u/12124746?v=4" width="100px;" alt=""/><br /><sub><b>Sandeep Ganji</b></sub></a><br /><a href="#content-sandeepganji" title="Content">🖋</a> <a href="#ideas-sandeepganji" title="Ideas, Planning, & Feedback">🤔</a> <a href="#data-sandeepganji" title="Data Acquisition & Management">🧠</a></td>
+  </tr>
+  <tr>
     <td align="center"><a href="https://github.com/mcraig-ibme"><img src="https://avatars0.githubusercontent.com/u/26383586?v=4" width="100px;" alt=""/><br /><sub><b>Martin Craig</b></sub></a><br /><a href="#content-mcraig-ibme" title="Content">🖋</a> <a href="https://github.com/ExploreASL/ExploreASL/commits?author=mcraig-ibme" title="Code">💻</a> <a href="#data-mcraig-ibme" title="Data Acquisition & Management">🧠</a></td>
-    <td align="center"><a href="https://github.com/jozsait"><img src="https://avatars0.githubusercontent.com/u/19532128?v=4" width="100px;" alt=""/><br /><sub><b>jozsait</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=jozsait" title="Code">💻</a> <a href="#maintenance-jozsait" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/DaveThoma5"><img src="https://avatars0.githubusercontent.com/u/3704113?v=4" width="100px;" alt=""/><br /><sub><b>DaveThoma5</b></sub></a><br /><a href="#ideas-DaveThoma5" title="Ideas, Planning, & Feedback">🤔</a> <a href="#data-DaveThoma5" title="Data Acquisition & Management">🧠</a></td>
     <td align="center"><a href="https://github.com/amahroo"><img src="https://avatars0.githubusercontent.com/u/48561261?v=4" width="100px;" alt=""/><br /><sub><b>Amnah Mahroo</b></sub></a><br /><a href="#ideas-amahroo" title="Ideas, Planning, & Feedback">🤔</a> <a href="#data-amahroo" title="Data Acquisition & Management">🧠</a></td>
+    <td align="center"><a href="https://github.com/luislorenzini"><img src="https://avatars2.githubusercontent.com/u/57985241?v=4" width="100px;" alt=""/><br /><sub><b>luislorenzini</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=luislorenzini" title="Code">💻</a> <a href="#tool-luislorenzini" title="Tools">🔧</a></td>
+    <td align="center"><a href="https://github.com/jozsait"><img src="https://avatars0.githubusercontent.com/u/19532128?v=4" width="100px;" alt=""/><br /><sub><b>jozsait</b></sub></a><br /><a href="https://github.com/ExploreASL/ExploreASL/commits?author=jozsait" title="Code">💻</a> <a href="#maintenance-jozsait" title="Maintenance">🚧</a></td>
   </tr>
 </table>
 
@@ -94,14 +85,14 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ## How to cite
-The bare minimum of references is the [ExploreASL manuscript](https://www.sciencedirect.com/science/article/pii/S1053811920305176) and the used ExploreASL release, which you can find on Zenodo (e.g. [version 1.3.0](https://zenodo.org/record/4095518#.X4rTL5P7Rts)).
+The bare minimum of references is the [ExploreASL manuscript](https://www.sciencedirect.com/science/article/pii/S1053811920305176) and the used ExploreASL release, which you can find on Zenodo (e.g. [version 1.8.0](https://zenodo.org/record/5504194)).
 
 The following provides an example as how to correctly cite ExploreASL and its third-party tools. The versions of the included third-party tools are described in [CHANGES.md](https://github.com/ExploreASL/ExploreASL/blob/master/CHANGES.md) for each ExploreASL release.
 
 >The data were analysed using ExploreASL `ref1` version x.x.x `ref2`, including SPM12 version xxxx `ref3`, CAT12 version xxxx`ref4`, and LST version x.x.x`ref5`. This Matlab-based software was used with Matlab (MathWorks, MA, USA) version x.x (yearx)`ref6`.
 
 * Ref1: the ExploreASL paper, describing the full pipeline and decisions for processing steps: https://www.sciencedirect.com/science/article/pii/S1053811920305176
-* Ref2: the Zenodo DOI for the actual ExploreASL release used to analyse the data. The release numbers (e.g. 1.3.0) follow [semantic versioning](https://semver.org/).
+* Ref2: the Zenodo DOI for the actual ExploreASL release used to analyse the data. The release numbers (e.g. 1.9.0) follow [semantic versioning](https://semver.org/).
 * Ref3: SPM12 references: https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib14 & https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib53. Note that the SPM version (e.g. 7219) is adapted and extended for use with ExploreASL.
 * Ref4: CAT12 reference: https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib55. Note that the CAT12 version (e.g. 1364) is adapted for use with ExploreASL.
 * Ref5: LST reference: https://www.sciencedirect.com/science/article/pii/S1053811920305176#bib118. Note that the LST version (e.g. 2.0.15) is adapted for use with ExploreASL.
