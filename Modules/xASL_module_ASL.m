@@ -259,27 +259,23 @@ end
 
 %% G2. DeltaM parsing - check if all/some volumes are deltams
 % If TSV file exist
-[pathDir, pathASL4D] = fileparts(x.P.Path_ASL4D);
-pathASL4Dcontext = fullfile(pathDir, [pathASL4D '_aslcontext.tsv']);
 % We don't have a subtraction image by default
 x.modules.asl.bContainsDeltaM = false;
-if xASL_exist(pathASL4Dcontext, 'file')
-	% Load TSV file
-	if xASL_exist(pathASL4Dcontext, 'file')
-		aslContext = xASL_tsvRead(pathASL4Dcontext);
-		bidsPar = xASL_bids_Config;
-		% Check for presence of deltaM subtraction volumes
-		if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM)) > 0
+% Load TSV file
+if xASL_exist(x.P.Path_ASL4D_aslcontext, 'file')
+	aslContext = xASL_tsvRead(x.P.Path_ASL4D_aslcontext);
+	bidsPar = xASL_bids_Config;
+	% Check for presence of deltaM subtraction volumes
+	if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM)) > 0
+		x.modules.asl.bContainsDeltaM = true;
+	end
+else
+	% In case the ASL-context file is missing we label as containsDeltaM all volumes with a single volume only
+	if xASL_exist(x.P.Path_ASL4D, 'file')
+		niftiASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
+		if size(niftiASL.dat,4) == 1
+			warning('ASLContext.tsv is missing, but a single deltaM volume is expected');
 			x.modules.asl.bContainsDeltaM = true;
-		end
-	else
-		% In case the ASL-context file is missing we label as containsDeltaM all volumes with a single volume only
-		if xASL_exist(x.P.Path_ASL4D, 'file')
-			niftiASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
-			if size(niftiASL.dat,4) == 1
-				warning('ASLContext.tsv is missing, but a single deltaM volume is expected');
-				x.modules.asl.bContainsDeltaM = true;
-			end
 		end
 	end
 end
