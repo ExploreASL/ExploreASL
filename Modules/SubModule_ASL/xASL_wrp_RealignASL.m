@@ -62,7 +62,7 @@ PercExcl = NaN;
 MinimumtValue = NaN;
 
 if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE || x.modules.asl.bContainsDeltaM
-    % ENABLE is disabled if multiPLD/TE
+    % ENABLE is temporary disabled if multiPLD/TE
     bENABLE = 0;
     bZigZag = 0;
 else
