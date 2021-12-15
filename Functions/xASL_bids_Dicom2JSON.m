@@ -16,10 +16,10 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 %        pathDcmDictOut      - if dicom dict for dicominfo is initialized then clear this path, otherwise return unchanged pathDcmDictIn
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:      The function goes through the pathIn files, reads the DICOM or PAR/REC files 
-%                   and parses their headers. It extracts the DICOM parameters important for ASL, 
-%                   makes sure they are in the correct format, if missing then replaces with default 
-%                   value, it also checks if the parameters are consistent across DICOM files for a 
+% DESCRIPTION:      The function goes through the pathIn files, reads the DICOM or PAR/REC files
+%                   and parses their headers. It extracts the DICOM parameters important for ASL,
+%                   makes sure they are in the correct format, if missing then replaces with default
+%                   value, it also checks if the parameters are consistent across DICOM files for a
 %                   single sequence.
 %
 % 1. Admin
@@ -34,472 +34,472 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
 
-    %% ----------------------------------------------------------------------------------
-	% 1. Admin
-	% ----------------------------------------------------------------------------------
-	
-	if nargin<2 || isempty(pathJSON)
-		pathJSON = cell(1,1);
-	end
-	if nargin<3 || isempty(dcmExtFilter)
-		dcmExtFilter='^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
-	end
-	if nargin<4 || isempty(bUseDCMTK)
-		bUseDCMTK = true; % use this by default
-    elseif ~bUseDCMTK && isempty(which('dicomdict'))
-        error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
-	end
-	if nargin<5
-		pathDcmDictIn = [];
-    end
-    if ~exist('dcmfields','var')
-        dcmfields = [];
-    end
-	
-	pathDcmDictOut = pathDcmDictIn;
-    
-	%% ----------------------------------------------------------------------------------
-	% 2. Set up the default values
-	% ----------------------------------------------------------------------------------
-	
-	DcmParDefaults.RepetitionTime               = NaN;
-	DcmParDefaults.EchoTime                     = NaN;
-	DcmParDefaults.NumberOfAverages             = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
-	DcmParDefaults.NumberOfTemporalPositions    = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
-	DcmParDefaults.RescaleSlope                 = 1;   % RescaleSlope; added by Paul to get rid of misleading RescaleSlopeOriginal
-	DcmParDefaults.RescaleSlopeOriginal         = NaN; % RescaleSlopeOriginal; will be set to RescaleSlope if missing
-	DcmParDefaults.MRScaleSlope                 = 1;   % MRScaleSlope
-	DcmParDefaults.RescaleIntercept             = 0;   % RescaleIntercept (although this one is standard dicom)
-	DcmParDefaults.AcquisitionTime              = 0;   % AcquisitionTime
-    
-	% TopUp parameters
-	DcmParDefaults.AcquisitionMatrix            = NaN;
-	DcmParDefaults.EffectiveEchoSpacing         = NaN;
-	DcmParDefaults.AssetRFactor                 = NaN;
-	DcmParDefaults.MRSeriesWaterFatShift        = NaN;
-	DcmParDefaults.MRSeriesEPIFactor            = NaN;
-	DcmParDefaults.BandwidthPerPixelPhaseEncode = NaN;
-	DcmParDefaults.RWVIntercept                 = NaN;
-	DcmParDefaults.RWVSlope                     = NaN;
-	
-    % Image parameters
-	DcmParDefaults.Rows                         = NaN;
-	DcmParDefaults.Columns                      = NaN;
-	DcmParDefaults.TemporalPositionIdentifier   = NaN;
-	DcmParDefaults.PhilipsNumberTemporalScans   = NaN;
-	DcmParDefaults.GELabelingDuration           = NaN;
-	DcmParDefaults.InversionTime                = NaN;
-	
-	DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
-		          'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
-	
-	DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
-	DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
-	
-	DcmFieldList = {'RepetitionTime', 'NumberOfAverages', 'RescaleSlope', ...
-					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
-					'AcquisitionMatrix', 'Rows', 'Columns', 'NumberOfAverages', 'NumberOfTemporalPositions', ...
-                    'RWVIntercept', 'RWVSlope'};
-	
-	bManufacturer = 'Unknown';
-	
-	%% ----------------------------------------------------------------------------------
-	% 3. Recreate the parameter file from raw data
-	% ----------------------------------------------------------------------------------
-	for iJSON = 1:length(pathJSON)
-		if ~isempty(pathJSON{iJSON})
-            
-            % Print file name
-            if isfield(imPar,'TempRoot') && ~isempty(strfind(pathJSON{iJSON},imPar.TempRoot))
-                % Relative path
-                printFileName = pathJSON{iJSON}(length(imPar.TempRoot)+1:end);
-            else
-                % Absolute path
-                printFileName = pathJSON{iJSON};
-            end
-            
-            % Print name
-			if imPar.bVerbose; fprintf('Recreating parameter file: %s   \n',printFileName); end
-			
-			% Make a list of the instanceNumbers
-			tmpJSON = spm_jsonread(pathJSON{iJSON});
-            
-            % Check instance & series number
-			if isfield(tmpJSON,'InstanceNumber')
-				instanceNumberList(iJSON) = xASL_str2num(tmpJSON.InstanceNumber);
-			else
-				instanceNumberList(iJSON) = 0;
-			end
-			if isfield(tmpJSON,'SeriesNumber')
-				seriesNumberList(iJSON) = xASL_str2num(tmpJSON.SeriesNumber);
-			else
-				seriesNumberList(iJSON) = 0;
-			end
-		end
-		% Create a cell of parms
-		parms{iJSON} = struct();
-	end
-	
-	% Reoder JSONs by increasing seriesNumber and instanceNumber to allow easy categorizing to the correct range.
-	% First sort by seriesNumber
-	[seriesNumberList,sortInstance] = sort(seriesNumberList,'ascend');
-	instanceNumberList = instanceNumberList(sortInstance);
-	pathJSON = pathJSON(sortInstance);
-	
-	% Than sort by instance number but within the same series number
-	for iInstance = 1:length(instanceNumberList)
-		sameSeriesList = find(seriesNumberList == seriesNumberList(iInstance)); % Find the same instances
-		[instanceNumberList(sameSeriesList),sortInstance] = sort(instanceNumberList(sameSeriesList),'ascend');
-		pathJSON(sameSeriesList) = pathJSON(sameSeriesList(sortInstance));
-	end
-	
-	if exist(pathIn, 'dir')
-		FileList = xASL_adm_GetFileList(pathIn, dcmExtFilter, 'List', [0 Inf]); % we assume all the dicoms are in the same folder
-	else
-		[pathIn, fname, ext] = fileparts(pathIn);
-		FileList = {[fname ext]};
-	end
-	
-    TryDicominfo = true; % this is only set to false below upon succesful DcmtkRead
-    
-    if ~isempty(FileList)
-        iMrFileAll = zeros(length(parms),1);
-        
-        % Check all dicom files throughout the sequence to validate that they are the same - because we are fast now!
-        nFiles  = length(FileList);
-        
-        for iFile = 1:nFiles
-            if TryDicominfo && iFile>1
-                continue;
-                % with dicominfo, reading is very slow, so we only read 1 dicom
-			else
-				if nFiles > 300
-					if mod(iFile,50) == 0
-						xASL_TrackProgress(iFile, nFiles);
-					end
-				else
-					xASL_TrackProgress(iFile, nFiles);
-				end
-            end
-            
-			ifname = FileList{iFile};
-			filepath = fullfile(pathIn, ifname); % this is a file by definition, according to the xASL_adm_GetFileList command above
-			
-			%% ----------------------------------------------------------------------------------
-			% Use DCMTK library to read the DICOM header to temp
-			% ----------------------------------------------------------------------------------
-            
-            if bUseDCMTK
-                try
-                    temp = xASL_io_DcmtkRead(filepath, 0);
-                    TryDicominfo = false;
-                catch ME
-                    warning(['xASL_adm_Dicom2JSON: xASL_io_DcmtkRead failed for ' filepath ', trying dicominfo']);
-                    fprintf('%s\n', ['Message: ' ME.message]);
-                end
-            end
-            
-			if TryDicominfo
-				% The dicom-dict has not yet been initialized and set
-				if ~isempty(pathDcmDictIn)
-					dicomdict('set', pathDcmDictIn);
-					pathDcmDictOut = '';
-				end
-				
-				DictionaryDCM = dicomdict('get_current'); % save current dictionary
-				
-				try % 1) use current dictionary
-					temp = dicominfo(filepath);
-                catch ME
-					try % 2) use default dictionary
-                        fprintf('%s\n', ['Warning: ' ME.message]);
-						dicomdict('factory'); % temporarily set to default dictionary
-						temp = dicominfo(filepath); % retry reading dicom
-                    catch ME
-						try % 3) change UseDictionaryVR setting with current dictionary
-							fprintf('%s\n', ['Warning: ' ME.message]);
-                            dicomdict('set',DictionaryDCM);
-							temp = dicominfo(filepath,'UseDictionaryVR', true);
-                        catch ME
-							try % 4) change UseDictionaryVR setting with default dictionary
-                                fprintf('%s\n', ['Warning: ' ME.message]);
-								dicomdict('factory');
-								temp = dicominfo(filepath,'UseDictionaryVR', true);
-                            catch ME
-								warning('dicominfo also did not work, check this!');
-                                fprintf('%s\n', ['Message: ' ME.message]);
-								dicomdict('set',DictionaryDCM); % reset dictionary
-								continue;
-							end
-						end
-					end
-				end
-				
-				dicomdict('set',DictionaryDCM); % reset dictionary
-            end
-			
-            
-			%% Obtain the instance number and JSON index
-            [parmsIndex] = xASL_bids_Dicom2JSON_InstanceNumberJsonIndex(temp,instanceNumberList,seriesNumberList);
-            
-			
-            %% Take information from the enhanced DICOM, if it exists
-            [temp,iMrFileAll,iMrFile] = xASL_bids_Dicom2JSON_EnhancedDicom(temp,iMrFileAll,parmsIndex,TryDicominfo);
-			
-			
-			%% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
-            [bManufacturer,dcmfields] = xASL_bids_Dicom2JSON_IdentifyManufacturer(temp,dcmfields,DcmFieldList,bManufacturer);
-            
-            
-            %% Obtain the selected DICOM parameters from the header
-            [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParameters(temp,dcmfields,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst,parmsIndex,iMrFile);
-			
-			
-		end
-		for indexInstance = 1:length(parms)
-			if instanceNumberList(indexInstance) > 0
-				parmsIndex = indexInstance;
-			end
-			%% If no files were found previously (just directories etc.) then the manufacturer won't be identified and
-			% dcmfields won't be assigned
-			if exist('dcmfields','var')
-				% -----------------------------------------------------------------------------
-				% Dealing with empty or inconsistent field values
-				% -----------------------------------------------------------------------------
-				
-				% Limit AcquisitionTime to one value
-                if parmsIndex>numel(t_parms)
-                    % This statement catches the cases where we iterate out of valid ranges of the t_parms struct. Right now I
-                    % mostly saw that bug during the import using bMatchDirectory = false! We probabaly determine the index wrong there!
-                    warning('Dicom to JSON: Invalid index for t_parms...');
-                    return
-                else
-                    if  isfield(t_parms{parmsIndex},'AcquisitionTime')
-                        for iL=1:length(t_parms{parmsIndex})
-                            t_parms{parmsIndex}(iL).AcquisitionTime = xASL_str2num(t_parms{parmsIndex}(iL).AcquisitionTime);
-                        end
+%% ----------------------------------------------------------------------------------
+% 1. Admin
+% ----------------------------------------------------------------------------------
 
-                        if length(t_parms{parmsIndex})>1
-                            if imPar.bVerbose
-                                fprintf('Parameter AcquisitionTime has multiple values: \n');
-                                disp(t_parms{parmsIndex}.AcquisitionTime);
-                            end
-                            if imPar.bVerbose
-                                fprintf('Using minumum value: \n');
-                                % t_parms{parmsIndex}.AcquisitionTime = min(t_parms{parmsIndex}.AcquisitionTime)
-                            end
-                            tempAcquisitionTime = t_parms{parmsIndex}(1).AcquisitionTime;
-                            t_parms{parmsIndex} = rmfield(t_parms{parmsIndex},'AcquisitionTime');
-                            t_parms{parmsIndex}(1).AcquisitionTime = tempAcquisitionTime;
+if nargin<2 || isempty(pathJSON)
+    pathJSON = cell(1,1);
+end
+if nargin<3 || isempty(dcmExtFilter)
+    dcmExtFilter='^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
+end
+if nargin<4 || isempty(bUseDCMTK)
+    bUseDCMTK = true; % use this by default
+elseif ~bUseDCMTK && isempty(which('dicomdict'))
+    error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
+end
+if nargin<5
+    pathDcmDictIn = [];
+end
+if ~exist('dcmfields','var')
+    dcmfields = [];
+end
+
+pathDcmDictOut = pathDcmDictIn;
+
+%% ----------------------------------------------------------------------------------
+% 2. Set up the default values
+% ----------------------------------------------------------------------------------
+
+DcmParDefaults.RepetitionTime               = NaN;
+DcmParDefaults.EchoTime                     = NaN;
+DcmParDefaults.NumberOfAverages             = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
+DcmParDefaults.NumberOfTemporalPositions    = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
+DcmParDefaults.RescaleSlope                 = 1;   % RescaleSlope; added by Paul to get rid of misleading RescaleSlopeOriginal
+DcmParDefaults.RescaleSlopeOriginal         = NaN; % RescaleSlopeOriginal; will be set to RescaleSlope if missing
+DcmParDefaults.MRScaleSlope                 = 1;   % MRScaleSlope
+DcmParDefaults.RescaleIntercept             = 0;   % RescaleIntercept (although this one is standard dicom)
+DcmParDefaults.AcquisitionTime              = 0;   % AcquisitionTime
+
+% TopUp parameters
+DcmParDefaults.AcquisitionMatrix            = NaN;
+DcmParDefaults.EffectiveEchoSpacing         = NaN;
+DcmParDefaults.AssetRFactor                 = NaN;
+DcmParDefaults.MRSeriesWaterFatShift        = NaN;
+DcmParDefaults.MRSeriesEPIFactor            = NaN;
+DcmParDefaults.BandwidthPerPixelPhaseEncode = NaN;
+DcmParDefaults.RWVIntercept                 = NaN;
+DcmParDefaults.RWVSlope                     = NaN;
+
+% Image parameters
+DcmParDefaults.Rows                         = NaN;
+DcmParDefaults.Columns                      = NaN;
+DcmParDefaults.TemporalPositionIdentifier   = NaN;
+DcmParDefaults.PhilipsNumberTemporalScans   = NaN;
+DcmParDefaults.GELabelingDuration           = NaN;
+DcmParDefaults.InversionTime                = NaN;
+
+DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
+    'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
+
+DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
+DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
+
+DcmFieldList = {'RepetitionTime', 'NumberOfAverages', 'RescaleSlope', ...
+    'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
+    'AcquisitionMatrix', 'Rows', 'Columns', 'NumberOfAverages', 'NumberOfTemporalPositions', ...
+    'RWVIntercept', 'RWVSlope'};
+
+bManufacturer = 'Unknown';
+
+%% ----------------------------------------------------------------------------------
+% 3. Recreate the parameter file from raw data
+% ----------------------------------------------------------------------------------
+for iJSON = 1:length(pathJSON)
+    if ~isempty(pathJSON{iJSON})
+        
+        % Print file name
+        if isfield(imPar,'TempRoot') && ~isempty(strfind(pathJSON{iJSON},imPar.TempRoot))
+            % Relative path
+            printFileName = pathJSON{iJSON}(length(imPar.TempRoot)+1:end);
+        else
+            % Absolute path
+            printFileName = pathJSON{iJSON};
+        end
+        
+        % Print name
+        if imPar.bVerbose; fprintf('Recreating parameter file: %s   \n',printFileName); end
+        
+        % Make a list of the instanceNumbers
+        tmpJSON = spm_jsonread(pathJSON{iJSON});
+        
+        % Check instance & series number
+        if isfield(tmpJSON,'InstanceNumber')
+            instanceNumberList(iJSON) = xASL_str2num(tmpJSON.InstanceNumber);
+        else
+            instanceNumberList(iJSON) = 0;
+        end
+        if isfield(tmpJSON,'SeriesNumber')
+            seriesNumberList(iJSON) = xASL_str2num(tmpJSON.SeriesNumber);
+        else
+            seriesNumberList(iJSON) = 0;
+        end
+    end
+    % Create a cell of parms
+    parms{iJSON} = struct();
+end
+
+% Reoder JSONs by increasing seriesNumber and instanceNumber to allow easy categorizing to the correct range.
+% First sort by seriesNumber
+[seriesNumberList,sortInstance] = sort(seriesNumberList,'ascend');
+instanceNumberList = instanceNumberList(sortInstance);
+pathJSON = pathJSON(sortInstance);
+
+% Than sort by instance number but within the same series number
+for iInstance = 1:length(instanceNumberList)
+    sameSeriesList = find(seriesNumberList == seriesNumberList(iInstance)); % Find the same instances
+    [instanceNumberList(sameSeriesList),sortInstance] = sort(instanceNumberList(sameSeriesList),'ascend');
+    pathJSON(sameSeriesList) = pathJSON(sameSeriesList(sortInstance));
+end
+
+if exist(pathIn, 'dir')
+    FileList = xASL_adm_GetFileList(pathIn, dcmExtFilter, 'List', [0 Inf]); % we assume all the dicoms are in the same folder
+else
+    [pathIn, fname, ext] = fileparts(pathIn);
+    FileList = {[fname ext]};
+end
+
+TryDicominfo = true; % this is only set to false below upon succesful DcmtkRead
+
+if ~isempty(FileList)
+    iMrFileAll = zeros(length(parms),1);
+    
+    % Check all dicom files throughout the sequence to validate that they are the same - because we are fast now!
+    nFiles  = length(FileList);
+    
+    for iFile = 1:nFiles
+        if TryDicominfo && iFile>1
+            continue;
+            % with dicominfo, reading is very slow, so we only read 1 dicom
+        else
+            if nFiles > 300
+                if mod(iFile,50) == 0
+                    xASL_TrackProgress(iFile, nFiles);
+                end
+            else
+                xASL_TrackProgress(iFile, nFiles);
+            end
+        end
+        
+        ifname = FileList{iFile};
+        filepath = fullfile(pathIn, ifname); % this is a file by definition, according to the xASL_adm_GetFileList command above
+        
+        %% ----------------------------------------------------------------------------------
+        % Use DCMTK library to read the DICOM header to temp
+        % ----------------------------------------------------------------------------------
+        
+        if bUseDCMTK
+            try
+                temp = xASL_io_DcmtkRead(filepath, 0);
+                TryDicominfo = false;
+            catch ME
+                warning(['xASL_adm_Dicom2JSON: xASL_io_DcmtkRead failed for ' filepath ', trying dicominfo']);
+                fprintf('%s\n', ['Message: ' ME.message]);
+            end
+        end
+        
+        if TryDicominfo
+            % The dicom-dict has not yet been initialized and set
+            if ~isempty(pathDcmDictIn)
+                dicomdict('set', pathDcmDictIn);
+                pathDcmDictOut = '';
+            end
+            
+            DictionaryDCM = dicomdict('get_current'); % save current dictionary
+            
+            try % 1) use current dictionary
+                temp = dicominfo(filepath);
+            catch ME
+                try % 2) use default dictionary
+                    fprintf('%s\n', ['Warning: ' ME.message]);
+                    dicomdict('factory'); % temporarily set to default dictionary
+                    temp = dicominfo(filepath); % retry reading dicom
+                catch ME
+                    try % 3) change UseDictionaryVR setting with current dictionary
+                        fprintf('%s\n', ['Warning: ' ME.message]);
+                        dicomdict('set',DictionaryDCM);
+                        temp = dicominfo(filepath,'UseDictionaryVR', true);
+                    catch ME
+                        try % 4) change UseDictionaryVR setting with default dictionary
+                            fprintf('%s\n', ['Warning: ' ME.message]);
+                            dicomdict('factory');
+                            temp = dicominfo(filepath,'UseDictionaryVR', true);
+                        catch ME
+                            warning('dicominfo also did not work, check this!');
+                            fprintf('%s\n', ['Message: ' ME.message]);
+                            dicomdict('set',DictionaryDCM); % reset dictionary
+                            continue;
                         end
                     end
                 end
-				
-                % Convert number to time format (check that current struct exists / is not empty)
-                if ~isempty(t_parms{parmsIndex})
-                    t_parms{parmsIndex}(1).AcquisitionTime = xASL_adm_ConvertNr2Time(t_parms{parmsIndex}(1).AcquisitionTime);
-                else
-                    fprintf('\nWarning: t_parms{parmsIndex} is empty...\n');
-                end
-				
-				% Checks if the field values were the same for all dicoms and keep only one from the same value
-				for iField=1:length(dcmfields)
-					fieldname = dcmfields{iField};
-					if  isfield(t_parms{parmsIndex},fieldname)
-						parms{parmsIndex}.(fieldname) = t_parms{parmsIndex}.(fieldname);
-						% Remove (set to NaN) also those that differ only minimally
-						if length(parms{parmsIndex}.(fieldname))>1 && isnumeric(parms{parmsIndex}.(fieldname))
-							iDiff = abs(parms{parmsIndex}.(fieldname) - parms{parmsIndex}.(fieldname)(1))./parms{parmsIndex}.(fieldname)(1);
-							iDiff(1) = 1;
-							parms{parmsIndex}.(fieldname)(iDiff<0.001) = NaN;
-						end
-						% There's one or more NaNs
-						nNaN = sum(isnan(parms{parmsIndex}.(fieldname)));
-						if nNaN > 0
-							% Only NaNs
-							if nNaN == length(parms{parmsIndex}.(fieldname))
-								parms{parmsIndex}.(fieldname) = NaN;
-							else
-								parms{parmsIndex}.(fieldname) = parms{parmsIndex}.(fieldname)(~isnan(parms{parmsIndex}.(fieldname)));
-							end
-						end
-					end
-				end
-			end
-			
-			% Remove fields that are NaN
-			for iField=1:length(DcmSkipNan)
-				if isfield(parms{parmsIndex},DcmSkipNan{iField}) && sum(isnan(parms{parmsIndex}.(DcmSkipNan{iField})))
-					parms{parmsIndex} = rmfield(parms{parmsIndex},DcmSkipNan{iField});
-				end
-			end
-			
-			% The more complex fields - strings and arrays are saved in cell
-			for iField=1:length(DcmComplexFieldAll)
-				if isfield(c_all_parms{parmsIndex},DcmComplexFieldAll{iField})
-					listEmptyFields = find(cellfun(@isempty,c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})));
-					if ~isempty(listEmptyFields)
-						fprintf('\nField %s contains empty fields, skipping... \n',DcmComplexFieldAll{iField});
-					else
-						c_all_unique = unique(c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}));
-						if length(c_all_unique) == 1
-							parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_unique;
-						else
-							parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField});
-						end
-					end
-				end
-			end
-			
-			for iField=1:length(DcmComplexFieldFirst)
-				if isfield(c_first_parms{parmsIndex},DcmComplexFieldFirst{iField}) && ~isempty(c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField}))
-					parms{parmsIndex}.(DcmComplexFieldFirst{iField}) = c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField});
-				end
-			end
-			
-			% Check for valid RescaleSlope value
-			if isfield(parms{parmsIndex},'RescaleSlopeOriginal') && max(isnan(parms{parmsIndex}.RescaleSlopeOriginal))
-				parms{parmsIndex}.RescaleSlopeOriginal = parms{parmsIndex}.RescaleSlope;
-			end
-			
-			
-			%% -----------------------------------------------------------------------------
-			% Check and purge the parameters
-			% -----------------------------------------------------------------------------
-			% Check whether multiple scale slopes exist, this happens in 1
-			% Philips software version, and should give an error (later we can
-			% make this a warning, or try to deal with this)
-			
-			
-			
-			%% Calculate the TopUp parameters
-			if isfield(parms{parmsIndex},'AcquisitionMatrix')
-				parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix(1));
-			end
-			
-			switch bManufacturer
-				case 'GE'
-					if isfield(parms{parmsIndex},'AssetRFactor') && isfield(parms{parmsIndex},'EffectiveEchoSpacing') && isfield(parms{parmsIndex},'AcquisitionMatrix')
-						parms{parmsIndex}.EffectiveEchoSpacing = double(parms{parmsIndex}.EffectiveEchoSpacing);
-						parms{parmsIndex}.AssetRFactor = double(parms{parmsIndex}.AssetRFactor);
-						parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix);
-						
-						parms{parmsIndex}.EffectiveEchoSpacing = (parms{parmsIndex}.EffectiveEchoSpacing .* parms{parmsIndex}.AssetRFactor) / 10^6;
-						parms{parmsIndex}.TotalReadoutTime = (parms{parmsIndex}.AcquisitionMatrix-1) .* parms{parmsIndex}.EffectiveEchoSpacing;
-						parms{parmsIndex} = rmfield(parms{parmsIndex}, 'AssetRFactor');
-					end
-				case 'Philips'
-					if isfield(parms{parmsIndex},'MRSeriesWaterFatShift') && isfield(parms{parmsIndex},'MRSeriesEPIFactor') && isfield(parms{parmsIndex},'AcquisitionMatrix')
-						parms{parmsIndex}.MRSeriesWaterFatShift = double(parms{parmsIndex}.MRSeriesWaterFatShift);
-						parms{parmsIndex}.MRSeriesEPIFactor = double(parms{parmsIndex}.MRSeriesEPIFactor);
-						parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix);
-						if parms{parmsIndex}.AcquisitionMatrix == 0
-							warning('Acquisition matrix is zero, cannot calculate EffectiveEchoSpacing');
-						end
-						
-						EffectiveEchoSpacingPhilips = parms{parmsIndex}.MRSeriesWaterFatShift/(434.215 * (parms{parmsIndex}.MRSeriesEPIFactor+1));
-						parms{parmsIndex}.TotalReadoutTime = EffectiveEchoSpacingPhilips*(parms{parmsIndex}.MRSeriesEPIFactor-1);
-						parms{parmsIndex}.EffectiveEchoSpacing = parms{parmsIndex}.TotalReadoutTime/(parms{parmsIndex}.AcquisitionMatrix(1)-1);
-						parms{parmsIndex} = rmfield(parms{parmsIndex}, {'MRSeriesWaterFatShift' 'MRSeriesEPIFactor'});
-					end
-				case 'Siemens'
-					if isfield(parms{parmsIndex},'BandwidthPerPixelPhaseEncode') && (~isnan(parms{parmsIndex}.BandwidthPerPixelPhaseEncode)) && isfield(parms{parmsIndex},'InPlanePhaseEncodingDirection')
-						parms{parmsIndex}.BandwidthPerPixelPhaseEncode = double(parms{parmsIndex}.BandwidthPerPixelPhaseEncode);
-						
-						if isfield(parms{parmsIndex},'AcquisitionMatrix') && ~isempty(parms{parmsIndex}.AcquisitionMatrix) && ~sum(isnan(parms{parmsIndex}.AcquisitionMatrix))
-							if length(parms{parmsIndex}.AcquisitionMatrix) == 1
-								parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix;
-							elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
-								parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(2);
-							else
-								parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(1);
-							end
-						elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
-							parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Rows);
-						elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'ROW')
-							parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Columns);
-						else
-							error('Unknown InPlanePhaseEncodingDirection');
-						end
-						
-						parms{parmsIndex}.EffectiveEchoSpacing = 1/(parms{parmsIndex}.BandwidthPerPixelPhaseEncode*parms{parmsIndex}.ReconMatrixPE);
-						parms{parmsIndex}.TotalReadoutTime = (parms{parmsIndex}.ReconMatrixPE-1) * parms{parmsIndex}.EffectiveEchoSpacing;
-					end
-				otherwise
-					% skip
-			end
-			
-			%% First remove non-finite values
-            if  isfield(parms{parmsIndex},'EchoTime')
-                parms{parmsIndex}.EchoTime              = parms{parmsIndex}.EchoTime(isfinite(parms{parmsIndex}.EchoTime));
             end
-            if  isfield(parms{parmsIndex},'RepetitionTime')
-                parms{parmsIndex}.RepetitionTime        = parms{parmsIndex}.RepetitionTime(isfinite(parms{parmsIndex}.RepetitionTime));
-            end
-			if  isfield(parms{parmsIndex},'MRScaleSlope')
-				parms{parmsIndex}.MRScaleSlope          = parms{parmsIndex}.MRScaleSlope(isfinite(parms{parmsIndex}.MRScaleSlope));
-            end
-			if  isfield(parms{parmsIndex},'RescaleSlopeOriginal')
-				parms{parmsIndex}.RescaleSlopeOriginal  = parms{parmsIndex}.RescaleSlopeOriginal(isfinite(parms{parmsIndex}.RescaleSlopeOriginal));
-            end
-			if  isfield(parms{parmsIndex},'RescaleIntercept')
-				parms{parmsIndex}.RescaleIntercept      = parms{parmsIndex}.RescaleIntercept(isfinite(parms{parmsIndex}.RescaleIntercept));
-			end
-			
-			% In case more than one value is given, then keep only the value that is not equal to 1. Or set to 1 if all are 1
-			parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope','RWVSlope'};
-			for parmNameInd = 1:length(parmNameToCheck)
-				parmName = parmNameToCheck{parmNameInd};
-				if  isfield(parms{parmsIndex},parmName) && (length(parms{parmsIndex}.(parmName))>1)
-					
-					indNonOne = find(parms{parmsIndex}.(parmName)~=1);
-					if isempty(indNonOne)
-						parms{parmsIndex}.(parmName) = 1;
-					else
-						parms{parmsIndex}.(parmName) = parms{parmsIndex}.(parmName)(indNonOne);
-					end
-					
-				end
-            end
-			
-            % Debug multiple identical parameters
-            listParameters = {'MRScaleSlope', 'RescaleSlopeOriginal', 'RescaleIntercept', 'RescaleSlope', 'RWVSlope'};
             
-            for iPar=1:numel(listParameters)
-                if isfield(parms{parmsIndex}, listParameters{iPar}) && numel(parms{parmsIndex}.(listParameters{iPar}))>1
-                    % First fix redundant identical repetitions
-                    if numel(unique(parms{parmsIndex}.(listParameters{iPar})))==1
-                        parms{parmsIndex}.(listParameters{iPar}) = parms{parmsIndex}.(listParameters{iPar})(1);
-                    else
-                        % If we cannot fix this, issue a warning
-                        warning(['Multiple ' listParameters{iPar} ' exist for a single scan!']);
+            dicomdict('set',DictionaryDCM); % reset dictionary
+        end
+        
+        
+        %% Obtain the instance number and JSON index
+        [parmsIndex] = xASL_bids_Dicom2JSON_InstanceNumberJsonIndex(temp,instanceNumberList,seriesNumberList);
+        
+        
+        %% Take information from the enhanced DICOM, if it exists
+        [temp,iMrFileAll,iMrFile] = xASL_bids_Dicom2JSON_EnhancedDicom(temp,iMrFileAll,parmsIndex,TryDicominfo);
+        
+        
+        %% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
+        [bManufacturer,dcmfields] = xASL_bids_Dicom2JSON_IdentifyManufacturer(temp,dcmfields,DcmFieldList,bManufacturer);
+        
+        
+        %% Obtain the selected DICOM parameters from the header
+        [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParameters(temp,dcmfields,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst,parmsIndex,iMrFile);
+        
+        
+    end
+    for indexInstance = 1:length(parms)
+        if instanceNumberList(indexInstance) > 0
+            parmsIndex = indexInstance;
+        end
+        %% If no files were found previously (just directories etc.) then the manufacturer won't be identified and
+        % dcmfields won't be assigned
+        if exist('dcmfields','var')
+            % -----------------------------------------------------------------------------
+            % Dealing with empty or inconsistent field values
+            % -----------------------------------------------------------------------------
+            
+            % Limit AcquisitionTime to one value
+            if parmsIndex>numel(t_parms)
+                % This statement catches the cases where we iterate out of valid ranges of the t_parms struct. Right now I
+                % mostly saw that bug during the import using bMatchDirectory = false! We probabaly determine the index wrong there!
+                warning('Dicom to JSON: Invalid index for t_parms...');
+                return
+            else
+                if  isfield(t_parms{parmsIndex},'AcquisitionTime')
+                    for iL=1:length(t_parms{parmsIndex})
+                        t_parms{parmsIndex}(iL).AcquisitionTime = xASL_str2num(t_parms{parmsIndex}(iL).AcquisitionTime);
+                    end
+                    
+                    if length(t_parms{parmsIndex})>1
+                        if imPar.bVerbose
+                            fprintf('Parameter AcquisitionTime has multiple values: \n');
+                            disp(t_parms{parmsIndex}.AcquisitionTime);
+                        end
+                        if imPar.bVerbose
+                            fprintf('Using minumum value: \n');
+                            % t_parms{parmsIndex}.AcquisitionTime = min(t_parms{parmsIndex}.AcquisitionTime)
+                        end
+                        tempAcquisitionTime = t_parms{parmsIndex}(1).AcquisitionTime;
+                        t_parms{parmsIndex} = rmfield(t_parms{parmsIndex},'AcquisitionTime');
+                        t_parms{parmsIndex}(1).AcquisitionTime = tempAcquisitionTime;
                     end
                 end
             end
             
-			% In case scale slopes are missing, report a warning
-            if ~isfield(parms{parmsIndex},'MRScaleSlope') || ~isfield(parms{parmsIndex},'RescaleSlopeOriginal') || ~isfield(parms{parmsIndex},'RescaleSlope')
-                fprintf('Warning: MRScaleSlope, RescaleSlopeOriginal, or RescaleSlope not found...\n');
+            % Convert number to time format (check that current struct exists / is not empty)
+            if ~isempty(t_parms{parmsIndex})
+                t_parms{parmsIndex}(1).AcquisitionTime = xASL_adm_ConvertNr2Time(t_parms{parmsIndex}(1).AcquisitionTime);
+            else
+                fprintf('\nWarning: t_parms{parmsIndex} is empty...\n');
             end
-			
-			%% Save the info in JSON file
-			
-			% Loads the JSON parms
-			if exist(pathJSON{indexInstance},'file')
-				JSONParms = spm_jsonread(pathJSON{indexInstance});
-			else
-				JSONParms = [];
-			end
-									
-			% Merges them with parms
-			parms{parmsIndex} = xASL_bids_parms2BIDS(parms{parmsIndex}, JSONParms, 1, 0);
-			
-			% Saves the JSON file
-			spm_jsonwrite(pathJSON{indexInstance}, parms{parmsIndex});
-		end
+            
+            % Checks if the field values were the same for all dicoms and keep only one from the same value
+            for iField=1:length(dcmfields)
+                fieldname = dcmfields{iField};
+                if  isfield(t_parms{parmsIndex},fieldname)
+                    parms{parmsIndex}.(fieldname) = t_parms{parmsIndex}.(fieldname);
+                    % Remove (set to NaN) also those that differ only minimally
+                    if length(parms{parmsIndex}.(fieldname))>1 && isnumeric(parms{parmsIndex}.(fieldname))
+                        iDiff = abs(parms{parmsIndex}.(fieldname) - parms{parmsIndex}.(fieldname)(1))./parms{parmsIndex}.(fieldname)(1);
+                        iDiff(1) = 1;
+                        parms{parmsIndex}.(fieldname)(iDiff<0.001) = NaN;
+                    end
+                    % There's one or more NaNs
+                    nNaN = sum(isnan(parms{parmsIndex}.(fieldname)));
+                    if nNaN > 0
+                        % Only NaNs
+                        if nNaN == length(parms{parmsIndex}.(fieldname))
+                            parms{parmsIndex}.(fieldname) = NaN;
+                        else
+                            parms{parmsIndex}.(fieldname) = parms{parmsIndex}.(fieldname)(~isnan(parms{parmsIndex}.(fieldname)));
+                        end
+                    end
+                end
+            end
+        end
+        
+        % Remove fields that are NaN
+        for iField=1:length(DcmSkipNan)
+            if isfield(parms{parmsIndex},DcmSkipNan{iField}) && sum(isnan(parms{parmsIndex}.(DcmSkipNan{iField})))
+                parms{parmsIndex} = rmfield(parms{parmsIndex},DcmSkipNan{iField});
+            end
+        end
+        
+        % The more complex fields - strings and arrays are saved in cell
+        for iField=1:length(DcmComplexFieldAll)
+            if isfield(c_all_parms{parmsIndex},DcmComplexFieldAll{iField})
+                listEmptyFields = find(cellfun(@isempty,c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})));
+                if ~isempty(listEmptyFields)
+                    fprintf('\nField %s contains empty fields, skipping... \n',DcmComplexFieldAll{iField});
+                else
+                    c_all_unique = unique(c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}));
+                    if length(c_all_unique) == 1
+                        parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_unique;
+                    else
+                        parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField});
+                    end
+                end
+            end
+        end
+        
+        for iField=1:length(DcmComplexFieldFirst)
+            if isfield(c_first_parms{parmsIndex},DcmComplexFieldFirst{iField}) && ~isempty(c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField}))
+                parms{parmsIndex}.(DcmComplexFieldFirst{iField}) = c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField});
+            end
+        end
+        
+        % Check for valid RescaleSlope value
+        if isfield(parms{parmsIndex},'RescaleSlopeOriginal') && max(isnan(parms{parmsIndex}.RescaleSlopeOriginal))
+            parms{parmsIndex}.RescaleSlopeOriginal = parms{parmsIndex}.RescaleSlope;
+        end
+        
+        
+        %% -----------------------------------------------------------------------------
+        % Check and purge the parameters
+        % -----------------------------------------------------------------------------
+        % Check whether multiple scale slopes exist, this happens in 1
+        % Philips software version, and should give an error (later we can
+        % make this a warning, or try to deal with this)
+        
+        
+        
+        %% Calculate the TopUp parameters
+        if isfield(parms{parmsIndex},'AcquisitionMatrix')
+            parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix(1));
+        end
+        
+        switch bManufacturer
+            case 'GE'
+                if isfield(parms{parmsIndex},'AssetRFactor') && isfield(parms{parmsIndex},'EffectiveEchoSpacing') && isfield(parms{parmsIndex},'AcquisitionMatrix')
+                    parms{parmsIndex}.EffectiveEchoSpacing = double(parms{parmsIndex}.EffectiveEchoSpacing);
+                    parms{parmsIndex}.AssetRFactor = double(parms{parmsIndex}.AssetRFactor);
+                    parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix);
+                    
+                    parms{parmsIndex}.EffectiveEchoSpacing = (parms{parmsIndex}.EffectiveEchoSpacing .* parms{parmsIndex}.AssetRFactor) / 10^6;
+                    parms{parmsIndex}.TotalReadoutTime = (parms{parmsIndex}.AcquisitionMatrix-1) .* parms{parmsIndex}.EffectiveEchoSpacing;
+                    parms{parmsIndex} = rmfield(parms{parmsIndex}, 'AssetRFactor');
+                end
+            case 'Philips'
+                if isfield(parms{parmsIndex},'MRSeriesWaterFatShift') && isfield(parms{parmsIndex},'MRSeriesEPIFactor') && isfield(parms{parmsIndex},'AcquisitionMatrix')
+                    parms{parmsIndex}.MRSeriesWaterFatShift = double(parms{parmsIndex}.MRSeriesWaterFatShift);
+                    parms{parmsIndex}.MRSeriesEPIFactor = double(parms{parmsIndex}.MRSeriesEPIFactor);
+                    parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix);
+                    if parms{parmsIndex}.AcquisitionMatrix == 0
+                        warning('Acquisition matrix is zero, cannot calculate EffectiveEchoSpacing');
+                    end
+                    
+                    EffectiveEchoSpacingPhilips = parms{parmsIndex}.MRSeriesWaterFatShift/(434.215 * (parms{parmsIndex}.MRSeriesEPIFactor+1));
+                    parms{parmsIndex}.TotalReadoutTime = EffectiveEchoSpacingPhilips*(parms{parmsIndex}.MRSeriesEPIFactor-1);
+                    parms{parmsIndex}.EffectiveEchoSpacing = parms{parmsIndex}.TotalReadoutTime/(parms{parmsIndex}.AcquisitionMatrix(1)-1);
+                    parms{parmsIndex} = rmfield(parms{parmsIndex}, {'MRSeriesWaterFatShift' 'MRSeriesEPIFactor'});
+                end
+            case 'Siemens'
+                if isfield(parms{parmsIndex},'BandwidthPerPixelPhaseEncode') && (~isnan(parms{parmsIndex}.BandwidthPerPixelPhaseEncode)) && isfield(parms{parmsIndex},'InPlanePhaseEncodingDirection')
+                    parms{parmsIndex}.BandwidthPerPixelPhaseEncode = double(parms{parmsIndex}.BandwidthPerPixelPhaseEncode);
+                    
+                    if isfield(parms{parmsIndex},'AcquisitionMatrix') && ~isempty(parms{parmsIndex}.AcquisitionMatrix) && ~sum(isnan(parms{parmsIndex}.AcquisitionMatrix))
+                        if length(parms{parmsIndex}.AcquisitionMatrix) == 1
+                            parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix;
+                        elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
+                            parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(2);
+                        else
+                            parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(1);
+                        end
+                    elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
+                        parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Rows);
+                    elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'ROW')
+                        parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Columns);
+                    else
+                        error('Unknown InPlanePhaseEncodingDirection');
+                    end
+                    
+                    parms{parmsIndex}.EffectiveEchoSpacing = 1/(parms{parmsIndex}.BandwidthPerPixelPhaseEncode*parms{parmsIndex}.ReconMatrixPE);
+                    parms{parmsIndex}.TotalReadoutTime = (parms{parmsIndex}.ReconMatrixPE-1) * parms{parmsIndex}.EffectiveEchoSpacing;
+                end
+            otherwise
+                % skip
+        end
+        
+        %% First remove non-finite values
+        if  isfield(parms{parmsIndex},'EchoTime')
+            parms{parmsIndex}.EchoTime              = parms{parmsIndex}.EchoTime(isfinite(parms{parmsIndex}.EchoTime));
+        end
+        if  isfield(parms{parmsIndex},'RepetitionTime')
+            parms{parmsIndex}.RepetitionTime        = parms{parmsIndex}.RepetitionTime(isfinite(parms{parmsIndex}.RepetitionTime));
+        end
+        if  isfield(parms{parmsIndex},'MRScaleSlope')
+            parms{parmsIndex}.MRScaleSlope          = parms{parmsIndex}.MRScaleSlope(isfinite(parms{parmsIndex}.MRScaleSlope));
+        end
+        if  isfield(parms{parmsIndex},'RescaleSlopeOriginal')
+            parms{parmsIndex}.RescaleSlopeOriginal  = parms{parmsIndex}.RescaleSlopeOriginal(isfinite(parms{parmsIndex}.RescaleSlopeOriginal));
+        end
+        if  isfield(parms{parmsIndex},'RescaleIntercept')
+            parms{parmsIndex}.RescaleIntercept      = parms{parmsIndex}.RescaleIntercept(isfinite(parms{parmsIndex}.RescaleIntercept));
+        end
+        
+        % In case more than one value is given, then keep only the value that is not equal to 1. Or set to 1 if all are 1
+        parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope','RWVSlope'};
+        for parmNameInd = 1:length(parmNameToCheck)
+            parmName = parmNameToCheck{parmNameInd};
+            if  isfield(parms{parmsIndex},parmName) && (length(parms{parmsIndex}.(parmName))>1)
+                
+                indNonOne = find(parms{parmsIndex}.(parmName)~=1);
+                if isempty(indNonOne)
+                    parms{parmsIndex}.(parmName) = 1;
+                else
+                    parms{parmsIndex}.(parmName) = parms{parmsIndex}.(parmName)(indNonOne);
+                end
+                
+            end
+        end
+        
+        % Debug multiple identical parameters
+        listParameters = {'MRScaleSlope', 'RescaleSlopeOriginal', 'RescaleIntercept', 'RescaleSlope', 'RWVSlope'};
+        
+        for iPar=1:numel(listParameters)
+            if isfield(parms{parmsIndex}, listParameters{iPar}) && numel(parms{parmsIndex}.(listParameters{iPar}))>1
+                % First fix redundant identical repetitions
+                if numel(unique(parms{parmsIndex}.(listParameters{iPar})))==1
+                    parms{parmsIndex}.(listParameters{iPar}) = parms{parmsIndex}.(listParameters{iPar})(1);
+                else
+                    % If we cannot fix this, issue a warning
+                    warning(['Multiple ' listParameters{iPar} ' exist for a single scan!']);
+                end
+            end
+        end
+        
+        % In case scale slopes are missing, report a warning
+        if ~isfield(parms{parmsIndex},'MRScaleSlope') || ~isfield(parms{parmsIndex},'RescaleSlopeOriginal') || ~isfield(parms{parmsIndex},'RescaleSlope')
+            fprintf('Warning: MRScaleSlope, RescaleSlopeOriginal, or RescaleSlope not found...\n');
+        end
+        
+        %% Save the info in JSON file
+        
+        % Loads the JSON parms
+        if exist(pathJSON{indexInstance},'file')
+            JSONParms = spm_jsonread(pathJSON{indexInstance});
+        else
+            JSONParms = [];
+        end
+        
+        % Merges them with parms
+        parms{parmsIndex} = xASL_bids_parms2BIDS(parms{parmsIndex}, JSONParms, 1, 0);
+        
+        % Saves the JSON file
+        spm_jsonwrite(pathJSON{indexInstance}, parms{parmsIndex});
     end
-    % Newline after track progress
-    fprintf('   \n');
+end
+% Newline after track progress
+fprintf('   \n');
 
 
 end
