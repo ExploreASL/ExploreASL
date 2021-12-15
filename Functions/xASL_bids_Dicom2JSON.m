@@ -103,6 +103,14 @@ DcmFieldList = {'RepetitionTime', 'NumberOfAverages', 'RescaleSlope', ...
 
 bManufacturer = 'Unknown';
 
+% Debug multiple identical parameters
+listParameters = {'MRScaleSlope', 'RescaleSlopeOriginal', 'RescaleIntercept', 'RescaleSlope', 'RWVSlope'};
+
+% Defaults
+t_parms = cell(1,1);
+c_all_parms = cell(1,1);
+c_first_parms = cell(1,1);
+
 %% ----------------------------------------------------------------------------------
 % 3. Recreate the parameter file from raw data
 % ----------------------------------------------------------------------------------
@@ -185,9 +193,7 @@ if ~isempty(FileList)
         ifname = FileList{iFile};
         filepath = fullfile(pathIn, ifname); % this is a file by definition, according to the xASL_adm_GetFileList command above
         
-        %% ----------------------------------------------------------------------------------
-        % Use DCMTK library to read the DICOM header to temp
-        % ----------------------------------------------------------------------------------
+        %% Use DCMTK library to read the DICOM header to temp
         
         if bUseDCMTK
             try
@@ -239,29 +245,23 @@ if ~isempty(FileList)
         end
         
         
-        %% Obtain the instance number and JSON index
-        [parmsIndex] = xASL_bids_Dicom2JSON_InstanceNumberJsonIndex(temp,instanceNumberList,seriesNumberList);
-        
-        
-        %% Take information from the enhanced DICOM, if it exists
-        [temp,iMrFileAll,iMrFile] = xASL_bids_Dicom2JSON_EnhancedDicom(temp,iMrFileAll,parmsIndex,TryDicominfo);
-        
-        
-        %% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
-        [bManufacturer,dcmfields] = xASL_bids_Dicom2JSON_IdentifyManufacturer(temp,dcmfields,DcmFieldList,bManufacturer);
-        
-        
-        %% Obtain the selected DICOM parameters from the header
-        [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParameters(temp,dcmfields,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst,parmsIndex,iMrFile);
+        %% Process individual file
+        [t_parms,c_all_parms,c_first_parms,bManufacturer,dcmfields,parmsIndex,iMrFileAll] = ...
+            xASL_bids_Dicom2JSON_ProcessFile(t_parms,c_all_parms,c_first_parms,temp,...
+            dcmfields,bManufacturer,iMrFileAll,instanceNumberList,seriesNumberList,...
+            DcmFieldList,TryDicominfo,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst);
         
         
     end
+    
+    
+    
+    %% Iterate over parms
     for indexInstance = 1:length(parms)
         if instanceNumberList(indexInstance) > 0
             parmsIndex = indexInstance;
         end
-        %% If no files were found previously (just directories etc.) then the manufacturer won't be identified and
-        % dcmfields won't be assigned
+        % If no files were found previously (just directories etc.) then the manufacturer won't be identified and dcmfields won't be assigned
         if ~isempty(dcmfields)
             
             if parmsIndex>numel(t_parms)
@@ -341,9 +341,6 @@ if ~isempty(FileList)
                 
             end
         end
-        
-        % Debug multiple identical parameters
-        listParameters = {'MRScaleSlope', 'RescaleSlopeOriginal', 'RescaleIntercept', 'RescaleSlope', 'RWVSlope'};
         
         for iPar=1:numel(listParameters)
             if isfield(parms{parmsIndex}, listParameters{iPar}) && numel(parms{parmsIndex}.(listParameters{iPar}))>1
@@ -440,7 +437,7 @@ end
 
 
 %% Obtain parameters
-function [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParameters(temp,dcmfields,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst,parmsIndex,iMrFile)
+function [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParameters(t_parms,c_all_parms,c_first_parms,temp,dcmfields,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst,parmsIndex,iMrFile)
 
     % Obtain the selected DICOM parameters from the header
     % Write the new parameter to the list (or put the default value)
@@ -723,4 +720,26 @@ function [t_parms,parms] = xASL_bids_Dicom2JSON_DealWithFields(t_parms,parms,par
 
 end
 
+
+%% Process file
+function [t_parms,c_all_parms,c_first_parms,bManufacturer,dcmfields,parmsIndex,iMrFileAll] = xASL_bids_Dicom2JSON_ProcessFile(t_parms,c_all_parms,c_first_parms,temp,dcmfields,bManufacturer,iMrFileAll,instanceNumberList,seriesNumberList,DcmFieldList,TryDicominfo,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst)
+
+
+    %% Obtain the instance number and JSON index
+    [parmsIndex] = xASL_bids_Dicom2JSON_InstanceNumberJsonIndex(temp,instanceNumberList,seriesNumberList);
+
+
+    %% Take information from the enhanced DICOM, if it exists
+    [temp,iMrFileAll,iMrFile] = xASL_bids_Dicom2JSON_EnhancedDicom(temp,iMrFileAll,parmsIndex,TryDicominfo);
+
+
+    %% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
+    [bManufacturer,dcmfields] = xASL_bids_Dicom2JSON_IdentifyManufacturer(temp,dcmfields,DcmFieldList,bManufacturer);
+
+
+    %% Obtain the selected DICOM parameters from the header
+    [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParameters(t_parms,c_all_parms,c_first_parms,temp,dcmfields,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst,parmsIndex,iMrFile);
+
+
+end
 
