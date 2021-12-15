@@ -34,18 +34,19 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
 
-%% ----------------------------------------------------------------------------------
-% 1. Admin
-% ----------------------------------------------------------------------------------
 
+%% 1. Admin
 if nargin<2 || isempty(pathJSON)
     pathJSON = cell(1,1);
 end
 if nargin<3 || isempty(dcmExtFilter)
-    dcmExtFilter='^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
+    % The last one is because some convertors save files without extension,
+    % but there would be a dot/period before a bunch of numbers.
+    dcmExtFilter='^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
 end
 if nargin<4 || isempty(bUseDCMTK)
-    bUseDCMTK = true; % use this by default
+    % DCMTK default
+    bUseDCMTK = true; 
 elseif ~bUseDCMTK && isempty(which('dicomdict'))
     error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
 end
@@ -58,10 +59,8 @@ end
 
 pathDcmDictOut = pathDcmDictIn;
 
-%% ----------------------------------------------------------------------------------
-% 2. Set up the default values
-% ----------------------------------------------------------------------------------
 
+%% 2. Set up the default values
 DcmParDefaults.RepetitionTime               = NaN;
 DcmParDefaults.EchoTime                     = NaN;
 DcmParDefaults.NumberOfAverages             = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
@@ -116,9 +115,8 @@ parms = cell(1,1);
 instanceNumberList = [];
 seriesNumberList = [];
 
-%% ----------------------------------------------------------------------------------
-% 3. Recreate the parameter file from raw data
-% ----------------------------------------------------------------------------------
+
+%% 3. Recreate the parameter file from raw data
 for iJSON = 1:length(pathJSON)
     [parms,instanceNumberList,seriesNumberList] = xASL_bids_Dicom2JSON_ProcessJSON(parms,instanceNumberList,seriesNumberList,pathJSON,iJSON,imPar);
 end
@@ -145,6 +143,8 @@ end
 
 TryDicominfo = true; % this is only set to false below upon succesful DcmtkRead
 
+
+%% Check if there are files
 if ~isempty(FileList)
     iMrFileAll = zeros(length(parms),1);
     
@@ -234,6 +234,7 @@ if ~isempty(FileList)
     
     %% Iterate over parms
     for indexInstance = 1:length(parms)
+        
         if instanceNumberList(indexInstance) > 0
             parmsIndex = indexInstance;
         end
@@ -270,6 +271,7 @@ if ~isempty(FileList)
         
         
         %% Check and purge the parameters
+        
         % Check whether multiple scale slopes exist, this happens in 1 Philips software version, 
         % and should give an error (later we can make this a warning, or try to deal with this).
         
@@ -285,19 +287,12 @@ if ~isempty(FileList)
         %% Check scale slopes
         [parms] = xASL_bids_Dicom2JSON_CheckScaleSlopes(parms,parmsIndex);
         
-        for iPar=1:numel(listParameters)
-            if isfield(parms{parmsIndex}, listParameters{iPar}) && numel(parms{parmsIndex}.(listParameters{iPar}))>1
-                % First fix redundant identical repetitions
-                if numel(unique(parms{parmsIndex}.(listParameters{iPar})))==1
-                    parms{parmsIndex}.(listParameters{iPar}) = parms{parmsIndex}.(listParameters{iPar})(1);
-                else
-                    % If we cannot fix this, issue a warning
-                    warning(['Multiple ' listParameters{iPar} ' exist for a single scan!']);
-                end
-            end
-        end
         
-        % In case scale slopes are missing, report a warning
+        %% Check for multiple values
+        [parms] = xASL_bids_Dicom2JSON_CheckMultipleValues(listParameters,parms,parmsIndex);
+        
+        
+        %% In case scale slopes are missing, report a warning
         if ~isfield(parms{parmsIndex},'MRScaleSlope') || ~isfield(parms{parmsIndex},'RescaleSlopeOriginal') || ~isfield(parms{parmsIndex},'RescaleSlope')
             fprintf('Warning: MRScaleSlope, RescaleSlopeOriginal, or RescaleSlope not found...\n');
         end
@@ -776,4 +771,23 @@ function [parms] = xASL_bids_Dicom2JSON_CheckScaleSlopes(parms,parmsIndex)
     end
 
 end
+
+
+%% Check multiple values
+function [parms] = xASL_bids_Dicom2JSON_CheckMultipleValues(listParameters,parms,parmsIndex)
+
+    for iPar=1:numel(listParameters)
+        if isfield(parms{parmsIndex}, listParameters{iPar}) && numel(parms{parmsIndex}.(listParameters{iPar}))>1
+            % First fix redundant identical repetitions
+            if numel(unique(parms{parmsIndex}.(listParameters{iPar})))==1
+                parms{parmsIndex}.(listParameters{iPar}) = parms{parmsIndex}.(listParameters{iPar})(1);
+            else
+                % If we cannot fix this, issue a warning
+                warning(['Multiple ' listParameters{iPar} ' exist for a single scan!']);
+            end
+        end
+    end
+
+end
+
 
