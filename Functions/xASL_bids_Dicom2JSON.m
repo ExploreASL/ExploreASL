@@ -324,55 +324,14 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
             end
 			
 			
-			% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
+			%% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
             [bManufacturer,dcmfields] = xASL_bids_Dicom2JSON_IdentifyManufacturer(temp,dcmfields,DcmFieldList,bManufacturer);
+            
+            
+            %% Obtain the selected DICOM parameters from the header
+            [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParameters(temp,dcmfields,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst,parmsIndex,iMrFile);
 			
-            %% -----------------------------------------------------------------------------
-            % Obtain the selected DICOM parameters from the header
-            % Write the new parameter to the list (or put the default value)
-            % -----------------------------------------------------------------------------
-            for iField=1:length(dcmfields)
-                fieldname = dcmfields{iField};
-                
-                % Extract value of current field
-                if  isfield(temp, fieldname)
-                    thevalue = temp.(fieldname);
-                    thevalue = thevalue(~isnan(thevalue));
-                else
-                    thevalue = [];
-                end
-                
-                % Convert string-numbers to numbers if necessary
-                if ~isempty(thevalue)
-                    if length(xASL_str2num(thevalue))>1
-                        tmpTheValue = nonzeros(thevalue);
-                        tmpTheValue = tmpTheValue(1);
-                    else
-                        tmpTheValue = thevalue;
-                    end
-                    t_parms{parmsIndex}.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
-                else
-                    % if imPar.bVerbose
-                        % if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
-                    % end
-                    t_parms{parmsIndex}.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
-                end
-            end
 			
-			c_all_parms{parmsIndex} = struct;
-			% The more complex fields - strings and arrays are saved in cell
-			for iField=1:length(DcmComplexFieldAll)
-				if isfield(temp,DcmComplexFieldAll{iField}) && ~isempty(temp.(DcmComplexFieldAll{iField}))
-					c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}){iMrFile} = temp.(DcmComplexFieldAll{iField});
-				end
-			end
-			
-			c_first_parms{parmsIndex} = struct;
-			for iField=1:length(DcmComplexFieldFirst)
-				if isfield(temp,DcmComplexFieldFirst{iField}) && ~isempty(temp.(DcmComplexFieldFirst{iField}))
-					c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField}) = temp.(DcmComplexFieldFirst{iField});
-				end
-			end
 		end
 		for indexInstance = 1:length(parms)
 			if instanceNumberList(indexInstance) > 0
@@ -675,3 +634,57 @@ function [bManufacturer,dcmfields] = xASL_bids_Dicom2JSON_IdentifyManufacturer(t
     end
 
 end
+
+
+%% Obtain parameters
+function [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParameters(temp,dcmfields,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst,parmsIndex,iMrFile)
+
+    % Obtain the selected DICOM parameters from the header
+    % Write the new parameter to the list (or put the default value)
+
+    for iField=1:length(dcmfields)
+        fieldname = dcmfields{iField};
+
+        % Extract value of current field
+        if  isfield(temp, fieldname)
+            thevalue = temp.(fieldname);
+            thevalue = thevalue(~isnan(thevalue));
+        else
+            thevalue = [];
+        end
+
+        % Convert string-numbers to numbers if necessary
+        if ~isempty(thevalue)
+            if length(xASL_str2num(thevalue))>1
+                tmpTheValue = nonzeros(thevalue);
+                tmpTheValue = tmpTheValue(1);
+            else
+                tmpTheValue = thevalue;
+            end
+            t_parms{parmsIndex}.(fieldname)(iMrFile) = xASL_str2num(tmpTheValue);
+        else
+            % if imPar.bVerbose
+            % if iMrFile==1, fprintf('%s\n',['Parameter ' fieldname ' not found, default used']); end
+            % end
+            t_parms{parmsIndex}.(fieldname)(iMrFile) = DcmParDefaults.(fieldname);
+        end
+    end
+    
+    
+    c_all_parms{parmsIndex} = struct;
+    % The more complex fields - strings and arrays are saved in cell
+    for iField=1:length(DcmComplexFieldAll)
+        if isfield(temp,DcmComplexFieldAll{iField}) && ~isempty(temp.(DcmComplexFieldAll{iField}))
+            c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}){iMrFile} = temp.(DcmComplexFieldAll{iField});
+        end
+    end
+    
+    c_first_parms{parmsIndex} = struct;
+    for iField=1:length(DcmComplexFieldFirst)
+        if isfield(temp,DcmComplexFieldFirst{iField}) && ~isempty(temp.(DcmComplexFieldFirst{iField}))
+            c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField}) = temp.(DcmComplexFieldFirst{iField});
+        end
+    end
+
+end
+
