@@ -416,20 +416,31 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				% -----------------------------------------------------------------------------
 				
 				% Limit AcquisitionTime to one value
-				if  isfield(t_parms{parmsIndex},'AcquisitionTime')
-					for iL=1:length(t_parms{parmsIndex})
-						t_parms{parmsIndex}(iL).AcquisitionTime = xASL_str2num(t_parms{parmsIndex}(iL).AcquisitionTime);
-					end
-					
-					if length(t_parms{parmsIndex})>1
-						if imPar.bVerbose; fprintf('%s\n','Parameter AcquisitionTime has multiple values:'); end
-						%                     t_parms{parmsIndex}.AcquisitionTime
-						if imPar.bVerbose; fprintf('%s\n','using minumum value:'); end
-						%                     t_parms{parmsIndex}.AcquisitionTime = min(t_parms{parmsIndex}.AcquisitionTime)
-						tempAcquisitionTime = t_parms{parmsIndex}(1).AcquisitionTime;
-						t_parms{parmsIndex} = rmfield(t_parms{parmsIndex},'AcquisitionTime');
-						t_parms{parmsIndex}(1).AcquisitionTime = tempAcquisitionTime;
-					end
+                if parmsIndex>numel(t_parms)
+                    % This statement catches the cases where we iterate out of valid ranges of the t_parms struct. Right now I
+                    % mostly saw that bug during the import using bMatchDirectory = false! We probabaly determine the index wrong there!
+                    warning('Dicom to JSON: Invalid index for t_parms...');
+                    return
+                else
+                    if  isfield(t_parms{parmsIndex},'AcquisitionTime')
+                        for iL=1:length(t_parms{parmsIndex})
+                            t_parms{parmsIndex}(iL).AcquisitionTime = xASL_str2num(t_parms{parmsIndex}(iL).AcquisitionTime);
+                        end
+
+                        if length(t_parms{parmsIndex})>1
+                            if imPar.bVerbose
+                                fprintf('Parameter AcquisitionTime has multiple values: \n');
+                                disp(t_parms{parmsIndex}.AcquisitionTime);
+                            end
+                            if imPar.bVerbose
+                                fprintf('Using minumum value: \n');
+                                % t_parms{parmsIndex}.AcquisitionTime = min(t_parms{parmsIndex}.AcquisitionTime)
+                            end
+                            tempAcquisitionTime = t_parms{parmsIndex}(1).AcquisitionTime;
+                            t_parms{parmsIndex} = rmfield(t_parms{parmsIndex},'AcquisitionTime');
+                            t_parms{parmsIndex}(1).AcquisitionTime = tempAcquisitionTime;
+                        end
+                    end
                 end
 				
                 % Convert number to time format (check that current struct exists / is not empty)
