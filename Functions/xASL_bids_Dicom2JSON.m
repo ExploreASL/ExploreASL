@@ -269,9 +269,7 @@ if ~isempty(FileList)
         end
         
         
-        %% -----------------------------------------------------------------------------
-        % Check and purge the parameters
-        % -----------------------------------------------------------------------------
+        %% Check and purge the parameters
         % Check whether multiple scale slopes exist, this happens in 1 Philips software version, 
         % and should give an error (later we can make this a warning, or try to deal with this).
         
@@ -283,21 +281,9 @@ if ~isempty(FileList)
         %% First remove non-finite values
         [parms] = xASL_bids_Dicom2JSON_RemoveNonFiniteValues(parms,parmsIndex);
         
-        % In case more than one value is given, then keep only the value that is not equal to 1. Or set to 1 if all are 1
-        parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope','RWVSlope'};
-        for parmNameInd = 1:length(parmNameToCheck)
-            parmName = parmNameToCheck{parmNameInd};
-            if  isfield(parms{parmsIndex},parmName) && (length(parms{parmsIndex}.(parmName))>1)
-                
-                indNonOne = find(parms{parmsIndex}.(parmName)~=1);
-                if isempty(indNonOne)
-                    parms{parmsIndex}.(parmName) = 1;
-                else
-                    parms{parmsIndex}.(parmName) = parms{parmsIndex}.(parmName)(indNonOne);
-                end
-                
-            end
-        end
+        
+        %% Check scale slopes
+        [parms] = xASL_bids_Dicom2JSON_CheckScaleSlopes(parms,parmsIndex);
         
         for iPar=1:numel(listParameters)
             if isfield(parms{parmsIndex}, listParameters{iPar}) && numel(parms{parmsIndex}.(listParameters{iPar}))>1
@@ -332,6 +318,7 @@ if ~isempty(FileList)
         spm_jsonwrite(pathJSON{indexInstance}, parms{parmsIndex});
     end
 end
+
 % Newline after track progress
 fprintf('   \n');
 
@@ -744,27 +731,49 @@ end
 %% Fix complex fields
 function [parms] = xASL_bids_Dicom2JSON_FixComplexFields(DcmComplexFieldAll,DcmComplexFieldFirst,c_all_parms,c_first_parms,parmsIndex,parms)
         
-        for iField=1:length(DcmComplexFieldAll)
-            if isfield(c_all_parms{parmsIndex},DcmComplexFieldAll{iField})
-                listEmptyFields = find(cellfun(@isempty,c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})));
-                if ~isempty(listEmptyFields)
-                    fprintf('\nField %s contains empty fields, skipping... \n',DcmComplexFieldAll{iField});
+    for iField=1:length(DcmComplexFieldAll)
+        if isfield(c_all_parms{parmsIndex},DcmComplexFieldAll{iField})
+            listEmptyFields = find(cellfun(@isempty,c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})));
+            if ~isempty(listEmptyFields)
+                fprintf('\nField %s contains empty fields, skipping... \n',DcmComplexFieldAll{iField});
+            else
+                c_all_unique = unique(c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}));
+                if length(c_all_unique) == 1
+                    parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_unique;
                 else
-                    c_all_unique = unique(c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}));
-                    if length(c_all_unique) == 1
-                        parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_unique;
-                    else
-                        parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField});
-                    end
+                    parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField});
                 end
             end
         end
-        
-        for iField=1:length(DcmComplexFieldFirst)
-            if isfield(c_first_parms{parmsIndex},DcmComplexFieldFirst{iField}) && ~isempty(c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField}))
-                parms{parmsIndex}.(DcmComplexFieldFirst{iField}) = c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField});
-            end
+    end
+
+    for iField=1:length(DcmComplexFieldFirst)
+        if isfield(c_first_parms{parmsIndex},DcmComplexFieldFirst{iField}) && ~isempty(c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField}))
+            parms{parmsIndex}.(DcmComplexFieldFirst{iField}) = c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField});
         end
+    end
         
+end
+
+
+%% Check scale slopes
+function [parms] = xASL_bids_Dicom2JSON_CheckScaleSlopes(parms,parmsIndex)
+
+    % In case more than one value is given, then keep only the value that is not equal to 1. Or set to 1 if all are 1
+    parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope','RWVSlope'};
+    for parmNameInd = 1:length(parmNameToCheck)
+        parmName = parmNameToCheck{parmNameInd};
+        if  isfield(parms{parmsIndex},parmName) && (length(parms{parmsIndex}.(parmName))>1)
+
+            indNonOne = find(parms{parmsIndex}.(parmName)~=1);
+            if isempty(indNonOne)
+                parms{parmsIndex}.(parmName) = 1;
+            else
+                parms{parmsIndex}.(parmName) = parms{parmsIndex}.(parmName)(indNonOne);
+            end
+
+        end
+    end
+
 end
 
