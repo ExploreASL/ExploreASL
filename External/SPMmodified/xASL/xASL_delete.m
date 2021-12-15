@@ -1,7 +1,7 @@
 function xASL_delete(InputPath, bFolderContent)
 % Deletes the file given in the InputPath. For NIFTII file, delete also the GZ version
 %
-% FORMAT: xASL_delete(InputPath)
+% FORMAT: xASL_delete(InputPath, bFolderContent)
 %
 % INPUT:
 %   InputPath           - path to the file to be deleted (REQUIRED)
@@ -9,16 +9,18 @@ function xASL_delete(InputPath, bFolderContent)
 %                         InputPath to folder) (OPTIONAL, DEFAULT = false)
 %   
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Delete the file in the given path. If a NIFTI file with extension '.nii' or '.nii.gz' is given,
-%              Then delete both the .nii and .nii.gz files.
+% DESCRIPTION: Delete the file in the given path. If a NIFTI file with
+%              extension '.nii' or '.nii.gz' is given, then delete both the
+%              .nii and .nii.gz files. Allows deleting folder including its contents.
+%
 % EXAMPLE: xASL_delete('/path/file.nii');
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright 2015-2019 ExploreASL
-%
-% 2019-09-29 HJ allow deleting folder including its contents
+% Copyright 2015-2021 (c) ExploreASL
 
+% Check arguments
 if nargin<2 || isempty(bFolderContent)
     bFolderContent = false;
 elseif ischar(bFolderContent) || ~(bFolderContent==0 || bFolderContent==1)
