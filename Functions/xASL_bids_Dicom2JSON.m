@@ -262,69 +262,18 @@ if ~isempty(FileList)
         end
         %% If no files were found previously (just directories etc.) then the manufacturer won't be identified and
         % dcmfields won't be assigned
-        if exist('dcmfields','var')
-            % -----------------------------------------------------------------------------
-            % Dealing with empty or inconsistent field values
-            % -----------------------------------------------------------------------------
+        if ~isempty(dcmfields)
             
-            % Limit AcquisitionTime to one value
             if parmsIndex>numel(t_parms)
                 % This statement catches the cases where we iterate out of valid ranges of the t_parms struct. Right now I
                 % mostly saw that bug during the import using bMatchDirectory = false! We probabaly determine the index wrong there!
                 warning('Dicom to JSON: Invalid index for t_parms...');
                 return
-            else
-                if  isfield(t_parms{parmsIndex},'AcquisitionTime')
-                    for iL=1:length(t_parms{parmsIndex})
-                        t_parms{parmsIndex}(iL).AcquisitionTime = xASL_str2num(t_parms{parmsIndex}(iL).AcquisitionTime);
-                    end
-                    
-                    if length(t_parms{parmsIndex})>1
-                        if imPar.bVerbose
-                            fprintf('Parameter AcquisitionTime has multiple values: \n');
-                            disp(t_parms{parmsIndex}.AcquisitionTime);
-                        end
-                        if imPar.bVerbose
-                            fprintf('Using minumum value: \n');
-                            % t_parms{parmsIndex}.AcquisitionTime = min(t_parms{parmsIndex}.AcquisitionTime)
-                        end
-                        tempAcquisitionTime = t_parms{parmsIndex}(1).AcquisitionTime;
-                        t_parms{parmsIndex} = rmfield(t_parms{parmsIndex},'AcquisitionTime');
-                        t_parms{parmsIndex}(1).AcquisitionTime = tempAcquisitionTime;
-                    end
-                end
             end
             
-            % Convert number to time format (check that current struct exists / is not empty)
-            if ~isempty(t_parms{parmsIndex})
-                t_parms{parmsIndex}(1).AcquisitionTime = xASL_adm_ConvertNr2Time(t_parms{parmsIndex}(1).AcquisitionTime);
-            else
-                fprintf('\nWarning: t_parms{parmsIndex} is empty...\n');
-            end
+            % Dealing with empty or inconsistent field values
+            [t_parms,parms] = xASL_bids_Dicom2JSON_DealWithFields(t_parms,parms,parmsIndex,dcmfields);
             
-            % Checks if the field values were the same for all dicoms and keep only one from the same value
-            for iField=1:length(dcmfields)
-                fieldname = dcmfields{iField};
-                if  isfield(t_parms{parmsIndex},fieldname)
-                    parms{parmsIndex}.(fieldname) = t_parms{parmsIndex}.(fieldname);
-                    % Remove (set to NaN) also those that differ only minimally
-                    if length(parms{parmsIndex}.(fieldname))>1 && isnumeric(parms{parmsIndex}.(fieldname))
-                        iDiff = abs(parms{parmsIndex}.(fieldname) - parms{parmsIndex}.(fieldname)(1))./parms{parmsIndex}.(fieldname)(1);
-                        iDiff(1) = 1;
-                        parms{parmsIndex}.(fieldname)(iDiff<0.001) = NaN;
-                    end
-                    % There's one or more NaNs
-                    nNaN = sum(isnan(parms{parmsIndex}.(fieldname)));
-                    if nNaN > 0
-                        % Only NaNs
-                        if nNaN == length(parms{parmsIndex}.(fieldname))
-                            parms{parmsIndex}.(fieldname) = NaN;
-                        else
-                            parms{parmsIndex}.(fieldname) = parms{parmsIndex}.(fieldname)(~isnan(parms{parmsIndex}.(fieldname)));
-                        end
-                    end
-                end
-            end
         end
         
         % Remove fields that are NaN
@@ -712,6 +661,64 @@ function [parms] = xASL_bids_Dicom2JSON_RemoveNonFiniteValues(parms,parmsIndex)
     end
     if  isfield(parms{parmsIndex},'RescaleIntercept')
         parms{parmsIndex}.RescaleIntercept      = parms{parmsIndex}.RescaleIntercept(isfinite(parms{parmsIndex}.RescaleIntercept));
+    end
+
+end
+
+
+%% Dealing with empty or inconsistent field values
+function [t_parms,parms] = xASL_bids_Dicom2JSON_DealWithFields(t_parms,parms,parmsIndex,dcmfields)
+
+    % Limit AcquisitionTime to one value
+    if  isfield(t_parms{parmsIndex},'AcquisitionTime')
+        for iL=1:length(t_parms{parmsIndex})
+            t_parms{parmsIndex}(iL).AcquisitionTime = xASL_str2num(t_parms{parmsIndex}(iL).AcquisitionTime);
+        end
+        
+        if length(t_parms{parmsIndex})>1
+            if imPar.bVerbose
+                fprintf('Parameter AcquisitionTime has multiple values: \n');
+                disp(t_parms{parmsIndex}.AcquisitionTime);
+            end
+            if imPar.bVerbose
+                fprintf('Using minumum value: \n');
+                % t_parms{parmsIndex}.AcquisitionTime = min(t_parms{parmsIndex}.AcquisitionTime)
+            end
+            tempAcquisitionTime = t_parms{parmsIndex}(1).AcquisitionTime;
+            t_parms{parmsIndex} = rmfield(t_parms{parmsIndex},'AcquisitionTime');
+            t_parms{parmsIndex}(1).AcquisitionTime = tempAcquisitionTime;
+        end
+    end
+
+    % Convert number to time format (check that current struct exists / is not empty)
+    if ~isempty(t_parms{parmsIndex})
+        t_parms{parmsIndex}(1).AcquisitionTime = xASL_adm_ConvertNr2Time(t_parms{parmsIndex}(1).AcquisitionTime);
+    else
+        fprintf('\nWarning: t_parms{parmsIndex} is empty...\n');
+    end
+
+    % Checks if the field values were the same for all dicoms and keep only one from the same value
+    for iField=1:length(dcmfields)
+        fieldname = dcmfields{iField};
+        if  isfield(t_parms{parmsIndex},fieldname)
+            parms{parmsIndex}.(fieldname) = t_parms{parmsIndex}.(fieldname);
+            % Remove (set to NaN) also those that differ only minimally
+            if length(parms{parmsIndex}.(fieldname))>1 && isnumeric(parms{parmsIndex}.(fieldname))
+                iDiff = abs(parms{parmsIndex}.(fieldname) - parms{parmsIndex}.(fieldname)(1))./parms{parmsIndex}.(fieldname)(1);
+                iDiff(1) = 1;
+                parms{parmsIndex}.(fieldname)(iDiff<0.001) = NaN;
+            end
+            % There's one or more NaNs
+            nNaN = sum(isnan(parms{parmsIndex}.(fieldname)));
+            if nNaN > 0
+                % Only NaNs
+                if nNaN == length(parms{parmsIndex}.(fieldname))
+                    parms{parmsIndex}.(fieldname) = NaN;
+                else
+                    parms{parmsIndex}.(fieldname) = parms{parmsIndex}.(fieldname)(~isnan(parms{parmsIndex}.(fieldname)));
+                end
+            end
+        end
     end
 
 end
