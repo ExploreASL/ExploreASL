@@ -375,21 +375,7 @@ if ~isempty(FileList)
         
         
         %% First remove non-finite values
-        if  isfield(parms{parmsIndex},'EchoTime')
-            parms{parmsIndex}.EchoTime              = parms{parmsIndex}.EchoTime(isfinite(parms{parmsIndex}.EchoTime));
-        end
-        if  isfield(parms{parmsIndex},'RepetitionTime')
-            parms{parmsIndex}.RepetitionTime        = parms{parmsIndex}.RepetitionTime(isfinite(parms{parmsIndex}.RepetitionTime));
-        end
-        if  isfield(parms{parmsIndex},'MRScaleSlope')
-            parms{parmsIndex}.MRScaleSlope          = parms{parmsIndex}.MRScaleSlope(isfinite(parms{parmsIndex}.MRScaleSlope));
-        end
-        if  isfield(parms{parmsIndex},'RescaleSlopeOriginal')
-            parms{parmsIndex}.RescaleSlopeOriginal  = parms{parmsIndex}.RescaleSlopeOriginal(isfinite(parms{parmsIndex}.RescaleSlopeOriginal));
-        end
-        if  isfield(parms{parmsIndex},'RescaleIntercept')
-            parms{parmsIndex}.RescaleIntercept      = parms{parmsIndex}.RescaleIntercept(isfinite(parms{parmsIndex}.RescaleIntercept));
-        end
+        [parms] = xASL_bids_Dicom2JSON_RemoveNonFiniteValues(parms,parmsIndex);
         
         % In case more than one value is given, then keep only the value that is not equal to 1. Or set to 1 if all are 1
         parmNameToCheck = {'MRScaleSlope','RescaleSlopeOriginal','RescaleSlope','RWVSlope'};
@@ -704,6 +690,28 @@ function [parms] = xASL_bids_Dicom2JSON_TopUpParameters(parms,parmsIndex,bManufa
             end
         otherwise
             % skip
+    end
+
+end
+
+
+%% First remove non-finite values
+function [parms] = xASL_bids_Dicom2JSON_RemoveNonFiniteValues(parms,parmsIndex)
+
+    if  isfield(parms{parmsIndex},'EchoTime')
+        parms{parmsIndex}.EchoTime              = parms{parmsIndex}.EchoTime(isfinite(parms{parmsIndex}.EchoTime));
+    end
+    if  isfield(parms{parmsIndex},'RepetitionTime')
+        parms{parmsIndex}.RepetitionTime        = parms{parmsIndex}.RepetitionTime(isfinite(parms{parmsIndex}.RepetitionTime));
+    end
+    if  isfield(parms{parmsIndex},'MRScaleSlope')
+        parms{parmsIndex}.MRScaleSlope          = parms{parmsIndex}.MRScaleSlope(isfinite(parms{parmsIndex}.MRScaleSlope));
+    end
+    if  isfield(parms{parmsIndex},'RescaleSlopeOriginal')
+        parms{parmsIndex}.RescaleSlopeOriginal  = parms{parmsIndex}.RescaleSlopeOriginal(isfinite(parms{parmsIndex}.RescaleSlopeOriginal));
+    end
+    if  isfield(parms{parmsIndex},'RescaleIntercept')
+        parms{parmsIndex}.RescaleIntercept      = parms{parmsIndex}.RescaleIntercept(isfinite(parms{parmsIndex}.RescaleIntercept));
     end
 
 end
