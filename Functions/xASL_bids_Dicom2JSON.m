@@ -267,61 +267,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				end
 			end
 			
-			%% -----------------------------------------------------------------------------
-            % Take information from enhanced DICOM, if exists
-            %% -----------------------------------------------------------------------------
-			if isfield(temp, 'MediaStorageSOPClassUID')
-				if strcmp(temp.MediaStorageSOPClassUID,'1.2.840.10008.5.1.4.1.1.4.1')==1 % Enhanced MR Image Storage
-					bEnhancedMR = true;
-					iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
-					iMrFile = iMrFileAll(parmsIndex);
-				elseif strcmp(temp.MediaStorageSOPClassUID,'1.2.840.10008.5.1.4.1.1.4')==1 % MR Image Storage
-					bEnhancedMR = false; % default
-					iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
-					iMrFile = iMrFileAll(parmsIndex);
-				else
-					% continue; % THIS SEEMS STRANGE >>>>>>>>>> RESULTS IN EMPTY PARMS, BY TRYING TO READ IMRFILE =0
-					iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
-					iMrFile = iMrFileAll(parmsIndex);
-					bEnhancedMR = false; % default
-				end
-			else
-				bEnhancedMR = false; % default
-				iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
-				iMrFile = iMrFileAll(parmsIndex);
-			end
-			
-			% Deal with enhanced DICOM format imported through DICOMINFO and not DCMTK
-            if bEnhancedMR && ~TryDicominfo
-                % fprintf('Enhanced DICOM detected, but no dicominfo selected, skipping obtaining parameters\n');
-            elseif bEnhancedMR && TryDicominfo
-                % for simplicity, take the first value from the enhanced
-                % sequences and store them in the temp-struct as if it is a
-                % classic structure.
-
-                if ~isfield(temp, 'PerFrameFunctionalGroupsSequence')
-                    warning('xASL_adm_Dicom2JSON: Enhanced DICOM but PerFrameFunctionalGroupsSequence not found');
-                else
-                    itemNames = fieldnames(temp.PerFrameFunctionalGroupsSequence);
-                    SequenceFields = temp.PerFrameFunctionalGroupsSequence.(itemNames{1}); % here we assume the same ScaleSlope for all images in the sequence
-
-                    % Fill temp dicominfo with these fields
-                    Fields1Are = fields(SequenceFields);
-                    for iField1=1:length(Fields1Are)
-                        if ischar(SequenceFields.(Fields1Are{iField1}))
-                            temp.(Fields1Are{iField1}) = SequenceFields.(Fields1Are{iField1});
-                        elseif isstruct(SequenceFields.(Fields1Are{iField1}))
-                            Fields2Are = fields(SequenceFields.(Fields1Are{iField1}));
-                            SequenceFields2 = SequenceFields.(Fields1Are{iField1}).(Fields2Are{1});
-
-                            Fields3Are = fields(SequenceFields2);
-                            for iField3=1:length(Fields3Are)
-                                temp.(Fields3Are{iField3}) = SequenceFields2.(Fields3Are{iField3});
-                            end
-                        end
-                    end
-                end
-            end
+            %% Take information from the enhanced DICOM, if it exists
+            [temp,iMrFileAll,iMrFile] = xASL_bids_Dicom2JSON_EnhancedDicom(temp,iMrFileAll,parmsIndex,TryDicominfo);
 			
 			
 			%% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
@@ -687,4 +634,63 @@ function [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParame
     end
 
 end
+
+%% Take information from enhanced DICOM
+function [temp,iMrFileAll,iMrFile] = xASL_bids_Dicom2JSON_EnhancedDicom(temp,iMrFileAll,parmsIndex,TryDicominfo)
+
+    if isfield(temp, 'MediaStorageSOPClassUID')
+        if strcmp(temp.MediaStorageSOPClassUID,'1.2.840.10008.5.1.4.1.1.4.1')==1 % Enhanced MR Image Storage
+            bEnhancedMR = true;
+            iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
+            iMrFile = iMrFileAll(parmsIndex);
+        elseif strcmp(temp.MediaStorageSOPClassUID,'1.2.840.10008.5.1.4.1.1.4')==1 % MR Image Storage
+            bEnhancedMR = false; % default
+            iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
+            iMrFile = iMrFileAll(parmsIndex);
+        else
+            % continue; % THIS SEEMS STRANGE >>>>>>>>>> RESULTS IN EMPTY PARMS, BY TRYING TO READ IMRFILE =0
+            iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
+            iMrFile = iMrFileAll(parmsIndex);
+            bEnhancedMR = false; % default
+        end
+    else
+        bEnhancedMR = false; % default
+        iMrFileAll(parmsIndex) = iMrFileAll(parmsIndex)+1;
+        iMrFile = iMrFileAll(parmsIndex);
+    end
+
+    % Deal with enhanced DICOM format imported through DICOMINFO and not DCMTK
+    if bEnhancedMR && ~TryDicominfo
+        % fprintf('Enhanced DICOM detected, but no dicominfo selected, skipping obtaining parameters\n');
+    elseif bEnhancedMR && TryDicominfo
+        % for simplicity, take the first value from the enhanced
+        % sequences and store them in the temp-struct as if it is a
+        % classic structure.
+
+        if ~isfield(temp, 'PerFrameFunctionalGroupsSequence')
+            warning('xASL_adm_Dicom2JSON: Enhanced DICOM but PerFrameFunctionalGroupsSequence not found');
+        else
+            itemNames = fieldnames(temp.PerFrameFunctionalGroupsSequence);
+            SequenceFields = temp.PerFrameFunctionalGroupsSequence.(itemNames{1}); % here we assume the same ScaleSlope for all images in the sequence
+
+            % Fill temp dicominfo with these fields
+            Fields1Are = fields(SequenceFields);
+            for iField1=1:length(Fields1Are)
+                if ischar(SequenceFields.(Fields1Are{iField1}))
+                    temp.(Fields1Are{iField1}) = SequenceFields.(Fields1Are{iField1});
+                elseif isstruct(SequenceFields.(Fields1Are{iField1}))
+                    Fields2Are = fields(SequenceFields.(Fields1Are{iField1}));
+                    SequenceFields2 = SequenceFields.(Fields1Are{iField1}).(Fields2Are{1});
+
+                    Fields3Are = fields(SequenceFields2);
+                    for iField3=1:length(Fields3Are)
+                        temp.(Fields3Are{iField3}) = SequenceFields2.(Fields3Are{iField3});
+                    end
+                end
+            end
+        end
+    end
+
+end
+
 
