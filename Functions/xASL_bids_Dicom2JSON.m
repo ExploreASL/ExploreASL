@@ -111,41 +111,16 @@ t_parms = cell(1,1);
 c_all_parms = cell(1,1);
 c_first_parms = cell(1,1);
 
+% More defaults
+parms = cell(1,1);
+instanceNumberList = [];
+seriesNumberList = [];
+
 %% ----------------------------------------------------------------------------------
 % 3. Recreate the parameter file from raw data
 % ----------------------------------------------------------------------------------
 for iJSON = 1:length(pathJSON)
-    if ~isempty(pathJSON{iJSON})
-        
-        % Print file name
-        if isfield(imPar,'TempRoot') && ~isempty(strfind(pathJSON{iJSON},imPar.TempRoot))
-            % Relative path
-            printFileName = pathJSON{iJSON}(length(imPar.TempRoot)+1:end);
-        else
-            % Absolute path
-            printFileName = pathJSON{iJSON};
-        end
-        
-        % Print name
-        if imPar.bVerbose; fprintf('Recreating parameter file: %s   \n',printFileName); end
-        
-        % Make a list of the instanceNumbers
-        tmpJSON = spm_jsonread(pathJSON{iJSON});
-        
-        % Check instance & series number
-        if isfield(tmpJSON,'InstanceNumber')
-            instanceNumberList(iJSON) = xASL_str2num(tmpJSON.InstanceNumber);
-        else
-            instanceNumberList(iJSON) = 0;
-        end
-        if isfield(tmpJSON,'SeriesNumber')
-            seriesNumberList(iJSON) = xASL_str2num(tmpJSON.SeriesNumber);
-        else
-            seriesNumberList(iJSON) = 0;
-        end
-    end
-    % Create a cell of parms
-    parms{iJSON} = struct();
+    [parms,instanceNumberList,seriesNumberList] = xASL_bids_Dicom2JSON_ProcessJSON(parms,instanceNumberList,seriesNumberList,pathJSON,iJSON,imPar);
 end
 
 % Reoder JSONs by increasing seriesNumber and instanceNumber to allow easy categorizing to the correct range.
@@ -253,6 +228,7 @@ if ~isempty(FileList)
         
         
     end
+    fprintf('\n');
     
     
     
@@ -741,5 +717,45 @@ function [t_parms,c_all_parms,c_first_parms,bManufacturer,dcmfields,parmsIndex,i
     [t_parms,c_all_parms,c_first_parms] = xASL_bids_Dicom2JSON_ObtainParameters(t_parms,c_all_parms,c_first_parms,temp,dcmfields,DcmParDefaults,DcmComplexFieldAll,DcmComplexFieldFirst,parmsIndex,iMrFile);
 
 
+end
+
+
+%% Process JSON
+function [parms,instanceNumberList,seriesNumberList] = xASL_bids_Dicom2JSON_ProcessJSON(parms,instanceNumberList,seriesNumberList,pathJSON,iJSON,imPar)
+    
+    if ~isempty(pathJSON{iJSON})
+        
+        % Print file name
+        if isfield(imPar,'TempRoot') && ~isempty(strfind(pathJSON{iJSON},imPar.TempRoot))
+            % Relative path
+            printFileName = pathJSON{iJSON}(length(imPar.TempRoot)+1:end);
+        else
+            % Absolute path
+            printFileName = pathJSON{iJSON};
+        end
+        
+        % Print name
+        if imPar.bVerbose
+            fprintf('Recreating parameter file: %s   \n',printFileName);
+        end
+        
+        % Make a list of the instanceNumbers
+        tmpJSON = spm_jsonread(pathJSON{iJSON});
+        
+        % Check instance & series number
+        if isfield(tmpJSON,'InstanceNumber')
+            instanceNumberList(iJSON) = xASL_str2num(tmpJSON.InstanceNumber);
+        else
+            instanceNumberList(iJSON) = 0;
+        end
+        if isfield(tmpJSON,'SeriesNumber')
+            seriesNumberList(iJSON) = xASL_str2num(tmpJSON.SeriesNumber);
+        else
+            seriesNumberList(iJSON) = 0;
+        end
+    end
+    % Create a cell of parms
+    parms{iJSON} = struct();
+    
 end
 
