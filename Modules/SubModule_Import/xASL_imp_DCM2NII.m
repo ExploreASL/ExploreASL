@@ -57,7 +57,7 @@ function x = xASL_imp_DCM2NII(x, imPar)
     xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x);
     
     %% 5. Clean-Up
-    xASL_imp_DCM2NII_CleanUp(x, imPar, dcm2niiCatchedErrors);
+    xASL_imp_DCM2NII_CleanUp(x, thisSubject, imPar, dcm2niiCatchedErrors);
     
     
 end
@@ -65,14 +65,18 @@ end
 
 
 %% Clean-Up
-function xASL_imp_DCM2NII_CleanUp(x,imPar,dcm2niiCatchedErrors)
+function xASL_imp_DCM2NII_CleanUp(x, thisSubject, imPar, dcm2niiCatchedErrors)
 
 
+    % Clean up DCMTK and DCMDICT
     if ~x.modules.import.settings.bUseDCMTK || isempty(x.modules.import.pathDcmDict)
         dicomdict('factory');
     end
+    
+    % Make sure diary is off
     diary('off');
     
+    % Check catched errors
     if ~isempty(fields(dcm2niiCatchedErrors))
         fclose all;
         SavePath = fullfile(imPar.TempRoot, 'dcm2niiCatchedErrors.mat');
@@ -83,8 +87,20 @@ function xASL_imp_DCM2NII_CleanUp(x,imPar,dcm2niiCatchedErrors)
         spm_jsonwrite(SaveJSON, dcm2niiCatchedErrors);
     end
     
+    % If zipped sourcedata was imported, we can remove tempSourcedata/sourcedata/[subject]
+    tempSourceSubject = fullfile(x.dir.xASLDerivatives,'tempSourcedata','sourcedata',thisSubject.name);
+    if xASL_exist(tempSourceSubject,'dir')
+        xASL_delete(tempSourceSubject,1);
+    end
+    
+    % If the tempSourcedata directory exists and is empty, we delete it completely
+    tempSourcedataFiles = xASL_adm_GetFileList(fullfile(x.dir.xASLDerivatives,'tempSourcedata'),'.','FPListRec');
+    if numel(tempSourcedataFiles)<1 && xASL_exist(fullfile(x.dir.xASLDerivatives,'tempSourcedata'),'dir')
+        xASL_delete(fullfile(x.dir.xASLDerivatives,'tempSourcedata'),1);
+    end
+    
+    % Finish printing
     fprintf('\n');
-
 
 end
 
