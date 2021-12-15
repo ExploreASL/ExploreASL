@@ -260,27 +260,8 @@ if ~isempty(FileList)
         end
         
         % The more complex fields - strings and arrays are saved in cell
-        for iField=1:length(DcmComplexFieldAll)
-            if isfield(c_all_parms{parmsIndex},DcmComplexFieldAll{iField})
-                listEmptyFields = find(cellfun(@isempty,c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})));
-                if ~isempty(listEmptyFields)
-                    fprintf('\nField %s contains empty fields, skipping... \n',DcmComplexFieldAll{iField});
-                else
-                    c_all_unique = unique(c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}));
-                    if length(c_all_unique) == 1
-                        parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_unique;
-                    else
-                        parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField});
-                    end
-                end
-            end
-        end
+        [parms] = xASL_bids_Dicom2JSON_FixComplexFields(DcmComplexFieldAll,DcmComplexFieldFirst,c_all_parms,c_first_parms,parmsIndex,parms);
         
-        for iField=1:length(DcmComplexFieldFirst)
-            if isfield(c_first_parms{parmsIndex},DcmComplexFieldFirst{iField}) && ~isempty(c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField}))
-                parms{parmsIndex}.(DcmComplexFieldFirst{iField}) = c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField});
-            end
-        end
         
         % Check for valid RescaleSlope value
         if isfield(parms{parmsIndex},'RescaleSlopeOriginal') && max(isnan(parms{parmsIndex}.RescaleSlopeOriginal))
@@ -757,5 +738,33 @@ function [parms,instanceNumberList,seriesNumberList] = xASL_bids_Dicom2JSON_Proc
     % Create a cell of parms
     parms{iJSON} = struct();
     
+end
+
+
+%% Fix complex fields
+function [parms] = xASL_bids_Dicom2JSON_FixComplexFields(DcmComplexFieldAll,DcmComplexFieldFirst,c_all_parms,c_first_parms,parmsIndex,parms)
+        
+        for iField=1:length(DcmComplexFieldAll)
+            if isfield(c_all_parms{parmsIndex},DcmComplexFieldAll{iField})
+                listEmptyFields = find(cellfun(@isempty,c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})));
+                if ~isempty(listEmptyFields)
+                    fprintf('\nField %s contains empty fields, skipping... \n',DcmComplexFieldAll{iField});
+                else
+                    c_all_unique = unique(c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}));
+                    if length(c_all_unique) == 1
+                        parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_unique;
+                    else
+                        parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField});
+                    end
+                end
+            end
+        end
+        
+        for iField=1:length(DcmComplexFieldFirst)
+            if isfield(c_first_parms{parmsIndex},DcmComplexFieldFirst{iField}) && ~isempty(c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField}))
+                parms{parmsIndex}.(DcmComplexFieldFirst{iField}) = c_first_parms{parmsIndex}.(DcmComplexFieldFirst{iField});
+            end
+        end
+        
 end
 
