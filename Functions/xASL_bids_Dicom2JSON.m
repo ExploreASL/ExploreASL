@@ -366,68 +366,13 @@ if ~isempty(FileList)
         %% -----------------------------------------------------------------------------
         % Check and purge the parameters
         % -----------------------------------------------------------------------------
-        % Check whether multiple scale slopes exist, this happens in 1
-        % Philips software version, and should give an error (later we can
-        % make this a warning, or try to deal with this)
-        
+        % Check whether multiple scale slopes exist, this happens in 1 Philips software version, 
+        % and should give an error (later we can make this a warning, or try to deal with this).
         
         
         %% Calculate the TopUp parameters
-        if isfield(parms{parmsIndex},'AcquisitionMatrix')
-            parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix(1));
-        end
+        [parms] = xASL_bids_Dicom2JSON_TopUpParameters(parms,parmsIndex,bManufacturer);
         
-        switch bManufacturer
-            case 'GE'
-                if isfield(parms{parmsIndex},'AssetRFactor') && isfield(parms{parmsIndex},'EffectiveEchoSpacing') && isfield(parms{parmsIndex},'AcquisitionMatrix')
-                    parms{parmsIndex}.EffectiveEchoSpacing = double(parms{parmsIndex}.EffectiveEchoSpacing);
-                    parms{parmsIndex}.AssetRFactor = double(parms{parmsIndex}.AssetRFactor);
-                    parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix);
-                    
-                    parms{parmsIndex}.EffectiveEchoSpacing = (parms{parmsIndex}.EffectiveEchoSpacing .* parms{parmsIndex}.AssetRFactor) / 10^6;
-                    parms{parmsIndex}.TotalReadoutTime = (parms{parmsIndex}.AcquisitionMatrix-1) .* parms{parmsIndex}.EffectiveEchoSpacing;
-                    parms{parmsIndex} = rmfield(parms{parmsIndex}, 'AssetRFactor');
-                end
-            case 'Philips'
-                if isfield(parms{parmsIndex},'MRSeriesWaterFatShift') && isfield(parms{parmsIndex},'MRSeriesEPIFactor') && isfield(parms{parmsIndex},'AcquisitionMatrix')
-                    parms{parmsIndex}.MRSeriesWaterFatShift = double(parms{parmsIndex}.MRSeriesWaterFatShift);
-                    parms{parmsIndex}.MRSeriesEPIFactor = double(parms{parmsIndex}.MRSeriesEPIFactor);
-                    parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix);
-                    if parms{parmsIndex}.AcquisitionMatrix == 0
-                        warning('Acquisition matrix is zero, cannot calculate EffectiveEchoSpacing');
-                    end
-                    
-                    EffectiveEchoSpacingPhilips = parms{parmsIndex}.MRSeriesWaterFatShift/(434.215 * (parms{parmsIndex}.MRSeriesEPIFactor+1));
-                    parms{parmsIndex}.TotalReadoutTime = EffectiveEchoSpacingPhilips*(parms{parmsIndex}.MRSeriesEPIFactor-1);
-                    parms{parmsIndex}.EffectiveEchoSpacing = parms{parmsIndex}.TotalReadoutTime/(parms{parmsIndex}.AcquisitionMatrix(1)-1);
-                    parms{parmsIndex} = rmfield(parms{parmsIndex}, {'MRSeriesWaterFatShift' 'MRSeriesEPIFactor'});
-                end
-            case 'Siemens'
-                if isfield(parms{parmsIndex},'BandwidthPerPixelPhaseEncode') && (~isnan(parms{parmsIndex}.BandwidthPerPixelPhaseEncode)) && isfield(parms{parmsIndex},'InPlanePhaseEncodingDirection')
-                    parms{parmsIndex}.BandwidthPerPixelPhaseEncode = double(parms{parmsIndex}.BandwidthPerPixelPhaseEncode);
-                    
-                    if isfield(parms{parmsIndex},'AcquisitionMatrix') && ~isempty(parms{parmsIndex}.AcquisitionMatrix) && ~sum(isnan(parms{parmsIndex}.AcquisitionMatrix))
-                        if length(parms{parmsIndex}.AcquisitionMatrix) == 1
-                            parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix;
-                        elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
-                            parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(2);
-                        else
-                            parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(1);
-                        end
-                    elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
-                        parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Rows);
-                    elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'ROW')
-                        parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Columns);
-                    else
-                        error('Unknown InPlanePhaseEncodingDirection');
-                    end
-                    
-                    parms{parmsIndex}.EffectiveEchoSpacing = 1/(parms{parmsIndex}.BandwidthPerPixelPhaseEncode*parms{parmsIndex}.ReconMatrixPE);
-                    parms{parmsIndex}.TotalReadoutTime = (parms{parmsIndex}.ReconMatrixPE-1) * parms{parmsIndex}.EffectiveEchoSpacing;
-                end
-            otherwise
-                % skip
-        end
         
         %% First remove non-finite values
         if  isfield(parms{parmsIndex},'EchoTime')
@@ -697,6 +642,68 @@ function [parmsIndex] = xASL_bids_Dicom2JSON_InstanceNumberJsonIndex(temp,instan
         if (currentInstanceNumber >= instanceNumberList(iInst)) && currentInstanceNumber>0 && currentSeriesNumber==seriesNumberList(iInst)
             parmsIndex = iInst;
         end
+    end
+
+end
+
+
+%% Determine top up parameters
+function [parms] = xASL_bids_Dicom2JSON_TopUpParameters(parms,parmsIndex,bManufacturer)
+
+    if isfield(parms{parmsIndex},'AcquisitionMatrix')
+        parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix(1));
+    end
+
+    switch bManufacturer
+        case 'GE'
+            if isfield(parms{parmsIndex},'AssetRFactor') && isfield(parms{parmsIndex},'EffectiveEchoSpacing') && isfield(parms{parmsIndex},'AcquisitionMatrix')
+                parms{parmsIndex}.EffectiveEchoSpacing = double(parms{parmsIndex}.EffectiveEchoSpacing);
+                parms{parmsIndex}.AssetRFactor = double(parms{parmsIndex}.AssetRFactor);
+                parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix);
+
+                parms{parmsIndex}.EffectiveEchoSpacing = (parms{parmsIndex}.EffectiveEchoSpacing .* parms{parmsIndex}.AssetRFactor) / 10^6;
+                parms{parmsIndex}.TotalReadoutTime = (parms{parmsIndex}.AcquisitionMatrix-1) .* parms{parmsIndex}.EffectiveEchoSpacing;
+                parms{parmsIndex} = rmfield(parms{parmsIndex}, 'AssetRFactor');
+            end
+        case 'Philips'
+            if isfield(parms{parmsIndex},'MRSeriesWaterFatShift') && isfield(parms{parmsIndex},'MRSeriesEPIFactor') && isfield(parms{parmsIndex},'AcquisitionMatrix')
+                parms{parmsIndex}.MRSeriesWaterFatShift = double(parms{parmsIndex}.MRSeriesWaterFatShift);
+                parms{parmsIndex}.MRSeriesEPIFactor = double(parms{parmsIndex}.MRSeriesEPIFactor);
+                parms{parmsIndex}.AcquisitionMatrix = double(parms{parmsIndex}.AcquisitionMatrix);
+                if parms{parmsIndex}.AcquisitionMatrix == 0
+                    warning('Acquisition matrix is zero, cannot calculate EffectiveEchoSpacing');
+                end
+
+                EffectiveEchoSpacingPhilips = parms{parmsIndex}.MRSeriesWaterFatShift/(434.215 * (parms{parmsIndex}.MRSeriesEPIFactor+1));
+                parms{parmsIndex}.TotalReadoutTime = EffectiveEchoSpacingPhilips*(parms{parmsIndex}.MRSeriesEPIFactor-1);
+                parms{parmsIndex}.EffectiveEchoSpacing = parms{parmsIndex}.TotalReadoutTime/(parms{parmsIndex}.AcquisitionMatrix(1)-1);
+                parms{parmsIndex} = rmfield(parms{parmsIndex}, {'MRSeriesWaterFatShift' 'MRSeriesEPIFactor'});
+            end
+        case 'Siemens'
+            if isfield(parms{parmsIndex},'BandwidthPerPixelPhaseEncode') && (~isnan(parms{parmsIndex}.BandwidthPerPixelPhaseEncode)) && isfield(parms{parmsIndex},'InPlanePhaseEncodingDirection')
+                parms{parmsIndex}.BandwidthPerPixelPhaseEncode = double(parms{parmsIndex}.BandwidthPerPixelPhaseEncode);
+
+                if isfield(parms{parmsIndex},'AcquisitionMatrix') && ~isempty(parms{parmsIndex}.AcquisitionMatrix) && ~sum(isnan(parms{parmsIndex}.AcquisitionMatrix))
+                    if length(parms{parmsIndex}.AcquisitionMatrix) == 1
+                        parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix;
+                    elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
+                        parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(2);
+                    else
+                        parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(1);
+                    end
+                elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
+                    parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Rows);
+                elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'ROW')
+                    parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Columns);
+                else
+                    error('Unknown InPlanePhaseEncodingDirection');
+                end
+
+                parms{parmsIndex}.EffectiveEchoSpacing = 1/(parms{parmsIndex}.BandwidthPerPixelPhaseEncode*parms{parmsIndex}.ReconMatrixPE);
+                parms{parmsIndex}.TotalReadoutTime = (parms{parmsIndex}.ReconMatrixPE-1) * parms{parmsIndex}.EffectiveEchoSpacing;
+            end
+        otherwise
+            % skip
     end
 
 end
