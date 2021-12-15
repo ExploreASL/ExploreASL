@@ -236,36 +236,12 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				end
 				
 				dicomdict('set',DictionaryDCM); % reset dictionary
-			end
+            end
 			
-			%% -----------------------------------------------------------------------------
-			% Obtain the instance number and JSON index
-			%% -----------------------------------------------------------------------------
-			if isfield(temp,'InstanceNumber') && ~isempty(temp.InstanceNumber)
-				currentInstanceNumber = temp.InstanceNumber;
-			else
-				currentInstanceNumber = 0;
-			end
-			if isfield(temp,'SeriesNumber') && ~isempty(temp.SeriesNumber)
-				currentSeriesNumber = temp.SeriesNumber;
-			else
-				currentSeriesNumber = 0;
-			end
-			
-			% First find the first matching seriesNumber
-			parmsIndex = length(instanceNumberList);
-			for iInst = length(instanceNumberList):-1:1
-				if (currentSeriesNumber == seriesNumberList(iInst))
-					parmsIndex = iInst;
-				end
-			end
-			
-			% And then the last matching instanceNumber with the correct seriesNumber
-			for iInst = 1:length(instanceNumberList)
-				if (currentInstanceNumber >= instanceNumberList(iInst)) && currentInstanceNumber>0 && currentSeriesNumber==seriesNumberList(iInst)
-					parmsIndex = iInst;
-				end
-			end
+            
+			%% Obtain the instance number and JSON index
+            [parmsIndex] = xASL_bids_Dicom2JSON_InstanceNumberJsonIndex(temp,instanceNumberList,seriesNumberList);
+            
 			
             %% Take information from the enhanced DICOM, if it exists
             [temp,iMrFileAll,iMrFile] = xASL_bids_Dicom2JSON_EnhancedDicom(temp,iMrFileAll,parmsIndex,TryDicominfo);
@@ -688,6 +664,38 @@ function [temp,iMrFileAll,iMrFile] = xASL_bids_Dicom2JSON_EnhancedDicom(temp,iMr
                     end
                 end
             end
+        end
+    end
+
+end
+
+
+%% Obtain the instance number and JSON index
+function [parmsIndex] = xASL_bids_Dicom2JSON_InstanceNumberJsonIndex(temp,instanceNumberList,seriesNumberList)
+
+    if isfield(temp,'InstanceNumber') && ~isempty(temp.InstanceNumber)
+        currentInstanceNumber = temp.InstanceNumber;
+    else
+        currentInstanceNumber = 0;
+    end
+    if isfield(temp,'SeriesNumber') && ~isempty(temp.SeriesNumber)
+        currentSeriesNumber = temp.SeriesNumber;
+    else
+        currentSeriesNumber = 0;
+    end
+
+    % First find the first matching seriesNumber
+    parmsIndex = length(instanceNumberList);
+    for iInst = length(instanceNumberList):-1:1
+        if (currentSeriesNumber == seriesNumberList(iInst))
+            parmsIndex = iInst;
+        end
+    end
+
+    % And then the last matching instanceNumber with the correct seriesNumber
+    for iInst = 1:length(instanceNumberList)
+        if (currentInstanceNumber >= instanceNumberList(iInst)) && currentInstanceNumber>0 && currentSeriesNumber==seriesNumberList(iInst)
+            parmsIndex = iInst;
         end
     end
 
