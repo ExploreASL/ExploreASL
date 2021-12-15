@@ -39,7 +39,7 @@ function x = xASL_imp_ReadSourceData(x)
     if ~x.modules.import.dataZipped
         dataDir = x.modules.import.imPar.RawRoot;
     else
-        dataDir = fullfile(x.dir.xASLDerivatives,'temp','sourcedata');
+        dataDir = fullfile(x.dir.xASLDerivatives,'tempSourcedata','sourcedata');
     end
     
     
@@ -104,7 +104,7 @@ function x = xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
             % Copy and unzip the sourcedata
             fprintf(2,'Copy and unzip sourcedata...\n');
             x.modules.import.dataZipped = true;
-            newTempSource = fullfile(x.dir.xASLDerivatives,'temp','sourcedata');
+            newTempSource = fullfile(x.dir.xASLDerivatives,'tempSourcedata','sourcedata');
             xASL_Copy(x.dir.SourceData,newTempSource);
             xASL_imp_UnzipAll(newTempSource);
             % Update the x.dir field
