@@ -51,7 +51,10 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	end
 	if nargin<5
 		pathDcmDictIn = [];
-	end
+    end
+    if ~exist('dcmfields','var')
+        dcmfields = [];
+    end
 	
 	pathDcmDictOut = pathDcmDictIn;
     
@@ -322,40 +325,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			
 			
 			% Do this only once, and do not reset the manufacturer for other files (assume the same is for all files within the directory)
-			if ~exist('dcmfields','var')
-				%% -----------------------------------------------------------------------------
-				% Identify Manufacturer and select the important header parameters to read
-				% -----------------------------------------------------------------------------
-				if  isfield(temp, 'Manufacturer')
-					manufacturer    = lower(temp.Manufacturer);
-					if ~isempty(strfind(manufacturer,'ge'))
-						bManufacturer = 'GE';
-					elseif ~isempty(strfind(manufacturer,'philips'))
-						bManufacturer = 'Philips';
-					elseif ~isempty(strfind(manufacturer,'siemens'))
-						bManufacturer = 'Siemens';
-					else
-						warning('xASL_adm_Dicom2JSON: Manufacturer unknown for %s', filepath);
-					end
-				else
-					warning('xASL_adm_Dicom2JSON: Manufacturer unknown for %s', filepath);
-				end
-				
-				dcmfields = DcmFieldList;
-				
-				switch bManufacturer
-					case 'GE'
-						dcmfields(end+1:end+4) = {'AssetRFactor', 'EffectiveEchoSpacing'...
-							'GELabelingDuration' 'InversionTime' }; % (0043,1083) (0043,102c)
-					case 'Philips'
-						dcmfields(end+1:end+4) = {'MRSeriesWaterFatShift', 'MRSeriesEPIFactor'...
-							'TemporalPositionIdentifier'  'PhilipsNumberTemporalScans'}; % (2001,1022) (2001,1013)
-					case 'Siemens'
-						dcmfields(end+1) = {'BandwidthPerPixelPhaseEncode'}; % (0019,1028)
-					otherwise
-						% do nothing
-				end
-			end
+            [bManufacturer,dcmfields] = xASL_bids_Dicom2JSON_IdentifyManufacturer(temp,dcmfields,DcmFieldList,bManufacturer);
 			
             %% -----------------------------------------------------------------------------
             % Obtain the selected DICOM parameters from the header
@@ -654,13 +624,54 @@ end
 
 %% Obtain a value from a structure 
 function val = GetDicomValue(I, fieldname, default)
-if nargin>2
-	val = default;
-else
-	val = [];
+
+    if nargin>2
+        val = default;
+    else
+        val = [];
+    end
+
+    if isfield(I, fieldname)
+        val = I.(fieldname);
+    end
+    
 end
 
-if isfield(I, fieldname)
-	val = I.(fieldname);
-end
+%% Identify Manufacturer
+function [bManufacturer,dcmfields] = xASL_bids_Dicom2JSON_IdentifyManufacturer(temp,dcmfields,DcmFieldList,bManufacturer)
+
+    % Identify Manufacturer and select the important header parameters to read
+    if isempty(dcmfields)
+        
+        if  isfield(temp, 'Manufacturer')
+            manufacturer    = lower(temp.Manufacturer);
+            if ~isempty(strfind(manufacturer,'ge'))
+                bManufacturer = 'GE';
+            elseif ~isempty(strfind(manufacturer,'philips'))
+                bManufacturer = 'Philips';
+            elseif ~isempty(strfind(manufacturer,'siemens'))
+                bManufacturer = 'Siemens';
+            else
+                warning('xASL_adm_Dicom2JSON: Manufacturer unknown for %s', filepath);
+            end
+        else
+            warning('xASL_adm_Dicom2JSON: Manufacturer unknown for %s', filepath);
+        end
+
+        dcmfields = DcmFieldList;
+
+        switch bManufacturer
+            case 'GE'
+                dcmfields(end+1:end+4) = {'AssetRFactor', 'EffectiveEchoSpacing'...
+                    'GELabelingDuration' 'InversionTime' }; % (0043,1083) (0043,102c)
+            case 'Philips'
+                dcmfields(end+1:end+4) = {'MRSeriesWaterFatShift', 'MRSeriesEPIFactor'...
+                    'TemporalPositionIdentifier'  'PhilipsNumberTemporalScans'}; % (2001,1022) (2001,1013)
+            case 'Siemens'
+                dcmfields(end+1) = {'BandwidthPerPixelPhaseEncode'}; % (0019,1028)
+            otherwise
+                % do nothing
+        end
+    end
+
 end
