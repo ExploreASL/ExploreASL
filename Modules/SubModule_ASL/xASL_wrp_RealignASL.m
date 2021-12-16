@@ -36,14 +36,14 @@ function xASL_wrp_RealignASL(x, bASL)
 %% ----------------------------------------------------------------------------------------
 %% Administration
 
-if ~exist('bASL','var')
+if nargin<2 || isempty(bASL) || ~isnumeric(bASL) || bASL<0 || bASL>1
     bASL = 1; % this tells script that timeseries contain subtractive/pair-wise data
 end
 
 if  bASL
     InputPath = x.P.Path_ASL4D;
 else
-    InputPath = x.P.Path_func_bold; % or DTI?
+    InputPath = x.P.Path_func_bold;
 end
 
 [Fpath, Ffile, Fext] = fileparts(InputPath);
@@ -56,7 +56,7 @@ if ~isfield(x.modules.asl,'SpikeRemovalThreshold')
     % since we want to remove Spikes, perhaps except very small spikes
 end
 
-%% Set defaults
+%% Set defaults for ENABLE
 exclusion = NaN;
 PercExcl = NaN;
 MinimumtValue = NaN;
@@ -73,18 +73,22 @@ minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 %% Define motion correction options
 
 if x.modules.asl.bContainsDeltaM
-	% Both ENABLE and ZigZag are turned off for deltaMs as they both count with control/labels
+	% Both ENABLE and ZigZag are turned off for deltaMs as ENABLE and
+	% ZigZag count on having control-label pairs as input
     bENABLE = false;
     bZigZag = false;
 elseif x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE 
     % ENABLE and ZigZag are temporarily disabled for multiPLD/TE
+    % as we are still developing this feature
     bENABLE = false;
     bZigZag = false;
 elseif bASL
 	bENABLE = true;
 	bZigZag = true;
 else
-	bENABLE = false;
+    % for non-ASL data we skip the outlier detection based on motion and
+    % skip the ZigZag
+    bENABLE = false;
 	bZigZag = false;
 end
 
@@ -93,29 +97,30 @@ if nFrames < 10 % Execute ENABLE if having at least 5 pairs/10 frames
 end
 
 if nFrames <= 2
-    bZigZag = false; % Minimum number of frames for ZigZag is > 2
+    bZigZag = false; % Minimum number of frames for ZigZag is > 2 (1 control-label pair)
 end
 
 if nFrames > 1
 	bMotionCorrection = true;
 else
 	bMotionCorrection = false;
-	bZigZag = false;
-	bENABLE = false;
 	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it had only ' num2str(nFrames) ' 3D frames.']);
 end
 
 if isfield(x.Q,'LookLocker') && x.Q.LookLocker
 	bMotionCorrection = false;
+	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
+end
+
+if ~bMotionCorrection
 	bZigZag = false;
 	bENABLE = false;
-	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
+    return; % no sense to run this function without motion correction
 end
 
 
 %% ----------------------------------------------------------------------------------------
 %% 1 Estimate motion
-if bMotionCorrection
 	fprintf('SPM motion estimation');
 	
 	% Issue warning if empty image
@@ -168,11 +173,10 @@ if bMotionCorrection
 	
 	% Run motion correction for corresponding case
 	spm_realign(spm_vol(InputPath), flags, bZigZag);
-end
+
 
 %% ----------------------------------------------------------------------------------------
 %% 2 Calculate and plot position and motion parameters
-if bMotionCorrection
 	fprintf('%s\n','Calculate & plot position & motion parameters');
 	
 	% Summarize real-world realign parameters into net displacement vector (NDV)
@@ -250,7 +254,6 @@ if bMotionCorrection
 			axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
 		end
 	end
-end
 
 %% ----------------------------------------------------------------------------------------
 %% 3) Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
@@ -359,7 +362,6 @@ else
     fprintf('ENABLE was skipped...\n');
 end
 
-if bMotionCorrection
 	if usejava('jvm') % only if JVM loaded
 		jpgfile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID '_' x.P.SessionID '_motion.jpg']);
 		fprintf('Saving motion plot to %s\n', jpgfile);
@@ -367,7 +369,6 @@ if bMotionCorrection
 		close all;
 		clear fig;
 	end
-end
 
 % Only run if ENABLE is on
 if bENABLE
@@ -461,9 +462,8 @@ end
 
 xASL_delete(rInputPath); % delete temporary image
 
-if bMotionCorrection % if we performed MoCo
     % Save results for later summarization in analysis module
     save(fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']),'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
-end
 
+    
 end
