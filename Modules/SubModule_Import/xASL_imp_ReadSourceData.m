@@ -78,7 +78,7 @@ function x = xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
     lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
 
     % Condition for file extension
-    conditionFile = '(dcm|ima|xml|par|rec|zip)';
+    conditionFile = '(dcm|ima|xml|par|rec|zip|tar|gz)';
 
     % Other extension
     conditionExtension = '\.';
@@ -100,7 +100,9 @@ function x = xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
             warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
         end
         % Detect zipped files ("\\.(zip|dcm)" in the last element e.g.)
-        if ~isempty(regexpi(lastElement,'zip'))
+        isZip = ~isempty(regexpi(lastElement,'zip'));
+        isTarGz = ~isempty(regexpi(lastElement,'tar.gz'));
+        if isZip || isTarGz
             % Copy and unzip the sourcedata
             fprintf(2,'Copy and unzip sourcedata...\n');
             x.modules.import.dataZipped = true;
@@ -118,14 +120,22 @@ end
 
 
 
-%% Unzip all '.zip' files in subdirectories and delete original files
+%% Unzip all '.zip' or '.tar.gz' files in subdirectories and delete original files
 function xASL_imp_UnzipAll(dirToUnzip)
 
-    % Iterate over zip file
+    % Iterate over zip files
     zipFiles = xASL_adm_GetFileList(dirToUnzip,'^.+\.zip$','FPListRec');
     for iFile = 1:numel(zipFiles)
         currentDirectory = xASL_fileparts(zipFiles{iFile});
         unzip(zipFiles{iFile},currentDirectory);
+        xASL_delete(zipFiles{iFile});
+    end
+
+    % Iterate over tar.gz files
+    zipFiles = xASL_adm_GetFileList(dirToUnzip,'^.+\.tar.gz$','FPListRec');
+    for iFile = 1:numel(zipFiles)
+        currentDirectory = xASL_fileparts(zipFiles{iFile});
+        gunzip(zipFiles{iFile},currentDirectory);
         xASL_delete(zipFiles{iFile});
     end
 
