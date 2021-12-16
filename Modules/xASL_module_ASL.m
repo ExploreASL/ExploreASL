@@ -264,8 +264,8 @@ end
 % We don't have a subtraction image by default
 x.modules.asl.bContainsDeltaM = false;
 % Load TSV file
-if xASL_exist(x.P.Path_ASL4D_aslcontext, 'file')
-	aslContext = xASL_tsvRead(x.P.Path_ASL4D_aslcontext);
+if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
+	aslContext = xASL_tsvRead(x.P.Path_ASL4Dcontext);
 	bidsPar = xASL_bids_Config;
 	% Check for presence of deltaM subtraction volumes
 	if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM)) > 0
@@ -276,7 +276,7 @@ else
 	if xASL_exist(x.P.Path_ASL4D, 'file')
 		niftiASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
 		if size(niftiASL.dat,4) == 1
-			warning('ASLContext.tsv is missing, but a single deltaM volume is expected');
+			warning('ASL4Dcontext.tsv is missing, but a single deltaM volume is expected');
 			x.modules.asl.bContainsDeltaM = true;
 		end
 	end

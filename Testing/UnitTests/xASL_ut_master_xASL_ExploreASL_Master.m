@@ -435,7 +435,7 @@ subjectSessionDir = fullfile(droTestPatient,'derivatives','ExploreASL',[droSubje
 
 % Check ASL files
 if ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4D.json'),'file') ...
-    || ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4D_Source_aslcontext.tsv'),'file')
+    || ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4Dcontext_Source.tsv'),'file')
     testCondition = false; % Test failed
 end
 if ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4D.nii'),'file') ...
@@ -510,7 +510,7 @@ subjectSessionDir = fullfile(droTestPatient,'derivatives','ExploreASL',[droSubje
 
 % Check ASL files
 if ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4D.json'),'file') ...
-    || ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4D_Source_aslcontext.tsv'),'file')
+    || ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4Dcontext_Source.tsv'),'file')
     testCondition = false; % Test failed
 end
 if ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4D.nii'),'file') ...

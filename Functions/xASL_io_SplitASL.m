@@ -29,7 +29,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 % 5. Determine ASL indices
 % 6. Save ASL4D NIfTI
 % 7. Split relevant JSON parameters/arrays
-% 8. Split ASL4D_aslContext.tsv
+% 8. Split ASL4Dcontext.tsv
 % 9. Modify JSON fields
 % 10. Copy sidecars
 % 
@@ -115,7 +115,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         %% 7. Split relevant JSON parameters/arrays
         [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(paths.ASL_Source_JSON, iM0, ASLindices, iDummy);
 
-        %% 8. Split ASL4D_aslContext.tsv
+        %% 8. Split ASL4Dcontext.tsv
 		xASL_io_SplitASL_SplitASLContext(paths.ASL_Source_TSV, paths.ASLTSV, iM0, ASLindices, iDummy);
         
         %% 9. Modify JSON fields
@@ -245,7 +245,7 @@ function [paths] = xASL_io_SplitASL_GetPaths(Fpath, Ffile)
     % ASL MAT, JSON & TSV
     paths.ASLMAT = fullfile(Fpath, 'ASL4D_parms.mat');
     paths.ASLJSON = fullfile(Fpath, 'ASL4D.json');
-    paths.ASLTSV = fullfile(Fpath, 'ASL4D_aslcontext.tsv');
+    paths.ASLTSV = fullfile(Fpath, 'ASL4Dcontext.tsv');
     
     % M0 MAT & JSON
     paths.M0MAT = fullfile(Fpath, 'M0_parms.mat');
@@ -255,7 +255,7 @@ function [paths] = xASL_io_SplitASL_GetPaths(Fpath, Ffile)
     paths.ASL_Source = fullfile(Fpath,'ASL4D_Source.nii.gz');
     paths.ASL_Source_MAT = fullfile(Fpath, 'ASL4D_Source_parms.mat');
     paths.ASL_Source_JSON = fullfile(Fpath, 'ASL4D_Source.json');
-    paths.ASL_Source_TSV = strrep(paths.ASLTSV, 'ASL4D', 'ASL4D_Source');
+    paths.ASL_Source_TSV = fullfile(Fpath, 'ASL4Dcontext_Source.tsv');
 
 end
 
