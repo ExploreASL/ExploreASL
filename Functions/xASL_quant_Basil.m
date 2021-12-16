@@ -157,6 +157,7 @@ fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
 % Labelling type - PASL or pCASL
 switch lower(x.Q.LabelingType)
 	case 'pasl'
+		% PASL model is assumed by default and does not need to be specified in the config file
 		fprintf('BASIL: PASL model\n');
 		TIs = (unique(x.Q.Initial_PLD))'/1000;
 
@@ -176,7 +177,10 @@ switch lower(x.Q.LabelingType)
 		
 		% Either print bolus duration or unspecify it
 		if isfield(x.Q,'LabelingDuration') && x.Q.LabelingDuration
-			fprintf(FIDoptionFile, '--tau=%.2f\n', x.Q.LabelingDuration/1000);
+			if length(unique(x.Q.LabelingDuration))>1
+				warning('PASL multi-PLD currently supports only a single Labeling Duration');
+			end
+			fprintf(FIDoptionFile, '--tau=%.2f\n', x.Q.LabelingDuration(1)/1000);
 		else
 			% Bolus duration not know. If multi-TI, then try to infer it
 			if length(TIs) > 1
@@ -186,6 +190,7 @@ switch lower(x.Q.LabelingType)
 		end
 		
 	case {'casl','pcasl'}
+		% Specify that we run the PCASL/CASL model
 		fprintf(FIDoptionFile, '--casl\n');
 		fprintf('BASIL: (P)CASL model\n');
 		% Print all the PLDs and LabDurs
@@ -225,8 +230,11 @@ fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.BasilSliceReadoutTime/1000);
 
 if isfield(x.Q,'LookLocker') && x.Q.LookLocker 
 	if isfield(x.Q,'FlipAngle')
-		fprintf(option_file, '--FA=%f\n', x.Q.FlipAngle);
-		fprintf('BASIL: Flip angle for Look-Locker readout: %f\n', x.Q.FlipAngle);
+		if length(unique(x.Q.FlipAngle))>1
+			warning('Look-Locker quantification with multiple flip angles, e.g. QUASAR, is not implemented yet');
+		end
+		fprintf(option_file, '--FA=%f\n', x.Q.FlipAngle(1));
+		fprintf('BASIL: Flip angle for Look-Locker readout: %f\n', x.Q.FlipAngle(1));
 	else
 		warning('BASIL: Unknown flip angle for Look-Locker\n');
 	end
