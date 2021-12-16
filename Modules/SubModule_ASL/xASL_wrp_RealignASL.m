@@ -1,12 +1,12 @@
-function xASL_wrp_RealignASL(x,bSubtraction)
+function xASL_wrp_RealignASL(x, bASL)
 %xASL_wrp_RealignASL Submodule of ExploreASL ASL Module, that realigns
 %volumes
 %
-% FORMAT: xASL_wrp_RealignASL(x[,bSubtraction])
+% FORMAT: xASL_wrp_RealignASL(x[, bASL])
 %
 % INPUT:
 %   x               - structure containing fields with all information required to run this submodule (REQUIRED)
-%   bSubtraction    - boolean for subtraction-based imaging (true, ASL) or not (false, e.g. fMRI, DTI etc). (OPTIONAL, DEFAULT = true) 
+%   bASL    - boolean that the input is a ASL-based imaging (true) or not (false, e.g. fMRI, DTI etc). (OPTIONAL, DEFAULT = true) 
 %
 % OUTPUT: n/a (registration changes the NIfTI orientation header only,
 %              with the exception of the affine transformation, which is
@@ -36,15 +36,11 @@ function xASL_wrp_RealignASL(x,bSubtraction)
 %% ----------------------------------------------------------------------------------------
 %% Administration
 
-if ~exist('bSubtraction','var')
-    bSubtraction = 1; % this tells script that timeseries contain subtractive/pair-wise data
+if ~exist('bASL','var')
+    bASL = 1; % this tells script that timeseries contain subtractive/pair-wise data
 end
 
-if x.modules.asl.bContainsDeltaM
-    warning('Motion correction should not run on deltaM scans...');
-end
-
-if  bSubtraction
+if  bASL
     InputPath = x.P.Path_ASL4D;
 else
     InputPath = x.P.Path_func_bold; % or DTI?
@@ -65,18 +61,20 @@ exclusion = NaN;
 PercExcl = NaN;
 MinimumtValue = NaN;
 
-if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE || x.modules.asl.bContainsDeltaM
-    % ENABLE is temporary disabled if multiPLD/TE
+if x.modules.asl.bContainsDeltaM
+	% Both ENABLE and ZigZag are turned off for deltaMs as they both count with control/labels
     bENABLE = 0;
     bZigZag = 0;
+elseif x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE 
+    % ENABLE and ZigZag are temporarily disabled for multiPLD/TE
+    bENABLE = 0;
+    bZigZag = 0;
+elseif bASL
+	bENABLE = 1;
+	bZigZag = 1;
 else
-	if bSubtraction
-		bENABLE = 1;
-		bZigZag = 1;
-	else
-		bENABLE = 0;
-		bZigZag = 0;
-	end
+	bENABLE = 0;
+	bZigZag = 0;
 end
 
 %% ----------------------------------------------------------------------------------------
@@ -118,7 +116,7 @@ xASL_delete(rpfile);
 % Calculating the motion for every first TE of each PLD and
 % considering it the same for the other TEs from that PLD.
 %
-% if nFrames>2 && bSubtraction && length(x.EchoTime)>1  %Multi TE 
+% if nFrames>2 && bASL && length(x.EchoTime)>1  %Multi TE 
 %     uniqueTE=uniquetol(x.EchoTime); %gives the number of unique TEs
 %     NumTEs=numel(uniqueTE);
 %     minTE=min(uniqueTE); 
@@ -127,28 +125,23 @@ xASL_delete(rpfile);
 %     ImInfoFirstTEs=ImInfo(positionMinTE);
 %     
 %     if numel(unique(x.Q.Initial_PLD))==1 %multiTE + single PLD
-%         spm_realign(ImInfoFirstTEs,flags,true);
+%         spm_realign(ImInfoFirstTEs,flags,bZigZag);
 %         MotionFirstTEs=load(rpfile);
 %         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); %repeats each row NumTEs times
 %         save('rp_ASL4D.txt','MotionAllTEs','-ascii') %saves the rpfile again into .txt
 %         
 %     elseif numel(unique(x.Q.Initial_PLD))>1 % multiTE + multiPLD=Hadamard
-%         spm_realign(ImInfoFirstTEs,flags,false);
+%         spm_realign(ImInfoFirstTEs,flags,bZigZag);
 %         MotionFirstTEs=load(rpfile);
 %         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); 
 %         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
 %     end
 
 % Run motion correction for corresponding case
-if nFrames>2 && bSubtraction && (x.modules.asl.bMultiPLD  ||  x.modules.asl.bMultiTE)
-    % Multi-PLD, Multi-TE or Hadamard
-    spm_realign(spm_vol(InputPath),flags,false);
-    
-elseif nFrames>2 && bSubtraction
-    spm_realign(spm_vol(InputPath),flags,true);
-    
+if nFrames>2
+    spm_realign(spm_vol(InputPath), flags, bZigZag);
 elseif nFrames>1
-    spm_realign(spm_vol(InputPath),flags,false);
+    spm_realign(spm_vol(InputPath), flags, false);
 end
 
 %% ----------------------------------------------------------------------------------------
@@ -236,12 +229,12 @@ end
 %% 3) Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
 
 
-if bSubtraction && nFrames<=10
+if bASL && nFrames<=10
     fprintf('Too few control-label pairs for ENABLE, skipping\n');
     bENABLE = 0;
 end
 
-if bENABLE && bSubtraction && nFrames>10 % == more than 5 pairs
+if bENABLE && bASL && nFrames>10 % == more than 5 pairs
     
     % Sort motion of control-label pairs
     MotionTime = NDV{2}; % motion
@@ -269,7 +262,7 @@ if bENABLE && bSubtraction && nFrames>10 % == more than 5 pairs
     % Load ASL-image
     IM = xASL_io_Nifti2Im(rInputPath);
     
-    if  bSubtraction % if subtractive/pairwise data
+    if  bASL % if subtractive/pairwise data
         [~, ~, OrderContLabl] = xASL_quant_GetControlLabelOrder(IM);
         
         if OrderContLabl~=1
@@ -313,7 +306,7 @@ if bENABLE && bSubtraction && nFrames>10 % == more than 5 pairs
     mintValuePlot(mintValue+1:end)=min(tValue);
     
     % Detect frames for exclusion
-    if bSubtraction % if ASL
+    if bASL % if ASL
         exclusion = zeros(1, length(MotionTimeSort)*2);
     else  % if no ASL (e.g. fMRI)
         exclusion = zeros(1, length(MotionTimeSort));
@@ -323,7 +316,7 @@ if bENABLE && bSubtraction && nFrames>10 % == more than 5 pairs
         for iFrame=mintValue+1:length(MotionTimeSort)
             % Exclude pair
             ExcludePair = MotionTimeSort(iFrame, 2);
-            if  bSubtraction % if ASL
+            if  bASL % if ASL
                 ExcludeFrames = [ExcludePair*2-1 ExcludePair*2];
             else % if no ASL (e.g. fMRI)
                 ExcludeFrames = ExcludePair;
@@ -355,7 +348,7 @@ if usejava('jvm') % only if JVM loaded
 end
 
 %only run if ENABLE is on
-if bENABLE && bSubtraction && nFrames>10 % if we performed outlier exclusion
+if bENABLE && bASL && nFrames>10 % if we performed outlier exclusion
     tValue(1:3) = tValue(4); % for nicer plotting
     
     if usejava('jvm') % only if JVM loaded
