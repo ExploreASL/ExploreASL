@@ -350,12 +350,7 @@ elseif ~x.mutex.HasState(StateName{iState})
             xASL_im_CenterOfMass(x.P.Path_ASL4D, OtherList, 10); % set CenterOfMass to lower accepted distance for when rerunning wrong registration
         end
 
-        if  nVolumes>1 && (~isfield(x.Q,'LookLocker') || (x.Q.LookLocker == 0))
-            % Run motion Correction
-            xASL_wrp_RealignASL(x);
-        else
-            fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it had only ' num2str(nVolumes) ' 3D frames.']);
-        end
+		xASL_wrp_RealignASL(x);
 
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing

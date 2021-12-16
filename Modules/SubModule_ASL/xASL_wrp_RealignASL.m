@@ -61,27 +61,7 @@ exclusion = NaN;
 PercExcl = NaN;
 MinimumtValue = NaN;
 
-if x.modules.asl.bContainsDeltaM
-	% Both ENABLE and ZigZag are turned off for deltaMs as they both count with control/labels
-    bENABLE = 0;
-    bZigZag = 0;
-elseif x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE 
-    % ENABLE and ZigZag are temporarily disabled for multiPLD/TE
-    bENABLE = 0;
-    bZigZag = 0;
-elseif bASL
-	bENABLE = 1;
-	bZigZag = 1;
-else
-	bENABLE = 0;
-	bZigZag = 0;
-end
-
-%% ----------------------------------------------------------------------------------------
-%% 1 Estimate motion
-fprintf('SPM motion estimation');
-
-% Define realignment settings
+%% Read basic image information
 tempnii = xASL_io_ReadNifti(InputPath);
 nFrames = double(tempnii.hdr.dim(5));
 if length(x.EchoTime)>1
@@ -89,157 +69,197 @@ if length(x.EchoTime)>1
 end
 minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 
-% Issue warning if empty image
-if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
-    warning('Invalid input image, skipping');
-    return;
+
+%% Define motion correction options
+
+if x.modules.asl.bContainsDeltaM
+	% Both ENABLE and ZigZag are turned off for deltaMs as they both count with control/labels
+    bENABLE = false;
+    bZigZag = false;
+elseif x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE 
+    % ENABLE and ZigZag are temporarily disabled for multiPLD/TE
+    bENABLE = false;
+    bZigZag = false;
+elseif bASL
+	bENABLE = true;
+	bZigZag = true;
+else
+	bENABLE = false;
+	bZigZag = false;
 end
 
-switch x.settings.Quality
-	case 1 % normal quality
-    flags.quality = 1;
-    flags.sep = minVoxelSize;
-    case 0 % low quality for fast try-out
-    flags.quality = 0.01;
-    flags.sep = minVoxelSize*2;
+if nFrames < 10 % Execute ENABLE if having at least 5 pairs/10 frames
+	bENABLE = false;
 end
 
-flags.rtm = 1; % realign to mean
-flags.interp = 1;
-flags.graphics = 0;
+if nFrames <= 2
+    bZigZag = false; % Minimum number of frames for ZigZag is > 2
+end
 
-% If previous realign parameters exist, delete them
-xASL_delete(rpfile);
+if nFrames > 1
+	bMotionCorrection = true;
+else
+	bMotionCorrection = false;
+	bZigZag = false;
+	bENABLE = false;
+	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it had only ' num2str(nFrames) ' 3D frames.']);
+end
 
-% Run SPM
+if isfield(x.Q,'LookLocker') && x.Q.LookLocker
+	bMotionCorrection = false;
+	bZigZag = false;
+	bENABLE = false;
+	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
+end
 
-% Calculating the motion for every first TE of each PLD and
-% considering it the same for the other TEs from that PLD.
-%
-% if nFrames>2 && bASL && length(x.EchoTime)>1  %Multi TE 
-%     uniqueTE=uniquetol(x.EchoTime); %gives the number of unique TEs
-%     NumTEs=numel(uniqueTE);
-%     minTE=min(uniqueTE); 
-%     positionMinTE=find(x.EchoTime == minTE); %positions that have the min TE
-%     ImInfo=spm_vol(InputPath);
-%     ImInfoFirstTEs=ImInfo(positionMinTE);
-%     
-%     if numel(unique(x.Q.Initial_PLD))==1 %multiTE + single PLD
-%         spm_realign(ImInfoFirstTEs,flags,bZigZag);
-%         MotionFirstTEs=load(rpfile);
-%         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); %repeats each row NumTEs times
-%         save('rp_ASL4D.txt','MotionAllTEs','-ascii') %saves the rpfile again into .txt
-%         
-%     elseif numel(unique(x.Q.Initial_PLD))>1 % multiTE + multiPLD=Hadamard
-%         spm_realign(ImInfoFirstTEs,flags,bZigZag);
-%         MotionFirstTEs=load(rpfile);
-%         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); 
-%         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
-%     end
 
-% Run motion correction for corresponding case
-if nFrames>2
-    spm_realign(spm_vol(InputPath), flags, bZigZag);
-elseif nFrames>1
-    spm_realign(spm_vol(InputPath), flags, false);
+%% ----------------------------------------------------------------------------------------
+%% 1 Estimate motion
+if bMotionCorrection
+	fprintf('SPM motion estimation');
+	
+	% Issue warning if empty image
+	if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
+		warning('Invalid input image, skipping');
+		return;
+	end
+	
+	switch x.settings.Quality
+		case 1 % normal quality
+			flags.quality = 1;
+			flags.sep = minVoxelSize;
+		case 0 % low quality for fast try-out
+			flags.quality = 0.01;
+			flags.sep = minVoxelSize*2;
+	end
+	
+	flags.rtm = 1; % realign to mean
+	flags.interp = 1;
+	flags.graphics = 0;
+	
+	% If previous realign parameters exist, delete them
+	xASL_delete(rpfile);
+	
+	% Run SPM
+	
+	% Calculating the motion for every first TE of each PLD and
+	% considering it the same for the other TEs from that PLD.
+	%
+	% if nFrames>2 && bASL && length(x.EchoTime)>1  %Multi TE
+	%     uniqueTE=uniquetol(x.EchoTime); %gives the number of unique TEs
+	%     NumTEs=numel(uniqueTE);
+	%     minTE=min(uniqueTE);
+	%     positionMinTE=find(x.EchoTime == minTE); %positions that have the min TE
+	%     ImInfo=spm_vol(InputPath);
+	%     ImInfoFirstTEs=ImInfo(positionMinTE);
+	%
+	%     if numel(unique(x.Q.Initial_PLD))==1 %multiTE + single PLD
+	%         spm_realign(ImInfoFirstTEs,flags,bZigZag);
+	%         MotionFirstTEs=load(rpfile);
+	%         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); %repeats each row NumTEs times
+	%         save('rp_ASL4D.txt','MotionAllTEs','-ascii') %saves the rpfile again into .txt
+	%
+	%     elseif numel(unique(x.Q.Initial_PLD))>1 % multiTE + multiPLD=Hadamard
+	%         spm_realign(ImInfoFirstTEs,flags,bZigZag);
+	%         MotionFirstTEs=load(rpfile);
+	%         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1);
+	%         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
+	%     end
+	
+	% Run motion correction for corresponding case
+	spm_realign(spm_vol(InputPath), flags, bZigZag);
 end
 
 %% ----------------------------------------------------------------------------------------
 %% 2 Calculate and plot position and motion parameters
-fprintf('%s\n','Calculate & plot position & motion parameters');
-
-% Summarize real-world realign parameters into net displacement vector (NDV)
-rp = load(rpfile, '-ascii'); % load the 3 translation and 3 rotation values
-MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al., NeuroImage 2012)
-% PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
-
-% % FD = frame displacement
-% if length(x.EchoTime)>2
-%     FD{1} = rp(1:NumTEs:end,:); %multiTE -> gives back the normal rp for the plots
-%     FD{2} = diff(rp(1:NumTEs:end,:));
-% else
-FD{1}=rp; % position (absolute displacement)
-FD{2} = diff(rp); % motion (relative displacement)
-% end
-
-
-if max(rp(:))==0
-    warning('Something wrong with motion parameters, skipping');
-    return;
-end
-
-close all;
-if usejava('jvm') % only if JVM loaded
-    fig = figure('Visible','off');
-else
-    fprintf('Warning, skipping motion plot, JVM missing\n');
-end
-
-for ii=1:2
-    tx{ii} = FD{ii}(:,1); ty{ii} = FD{ii}(:,2); tz{ii}  = FD{ii}(:,3); % translations
-    rx{ii} = FD{ii}(:,4); ry{ii} = FD{ii}(:,5); rz{ii}  = FD{ii}(:,6); % rotations (pitch, roll, yaw)
-
-    PartTranslation{ii} = tx{ii}.^2 + ty{ii}.^2 + tz{ii}.^2;
-    PartRotation{ii} = 0.2*MeanRadius^2* ((cos(rx{ii})-1).^2 + (sin(rx{ii})).^2 + (cos(ry{ii})-1).^2 + (sin(ry{ii})).^2 + (cos(rz{ii})-1).^2 + (sin(rz{ii})).^2);
-    try
-        NDV{ii} = sqrt(PartTranslation{ii} + PartRotation{ii});
-    catch
-        
-    end
-
-    if ii==2
-        NDV{2} = [0; NDV{2}]; % add leading zero difference
-    end
-
-    % Descriptives
-    median_NDV{ii} = median(NDV{ii});
-    mean_NDV{ii} = mean(NDV{ii});
-    max_NDV{ii} = max(NDV{ii});
-    SD_NDV{ii} = std(NDV{ii});
-    MAD_NDV{ii} = xASL_stat_MadNan(NDV{ii},0); % median absolute deviation from median
-
-    if usejava('jvm') % only if JVM loaded
-        subplot(3,1,ii); % plot position (subplot 1) & motion (subplot 2)
-        plot(NDV{ii},'Color',[0.4,0.4,0.4]); % lines between frames
-        hold on
-        plot(NDV{ii},'o','MarkerSize',5); % cirkels for frames
-        hold on
-
-        plot(repmat(mean_NDV{ii},151,1),'Color',[0,0,1]); % mean NDV in blue
-        hold on
-
-        if ii==1
-            axis([0 nFrames 0 max(NDV{ii})]);
-            title(['Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame']);
-            ylabel('NDV (mm)');
-
-        elseif ii==2
-
-            axis([0 nFrames 0 minVoxelSize]);
-            title(['Motion plot of ' x.P.SubjectID '-' x.P.SessionID]);
-            ylabel('NDV/frame (mm//frame)');
-        end
-
-        xlabel('frame#');
-        axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
-    end
+if bMotionCorrection
+	fprintf('%s\n','Calculate & plot position & motion parameters');
+	
+	% Summarize real-world realign parameters into net displacement vector (NDV)
+	rp = load(rpfile, '-ascii'); % load the 3 translation and 3 rotation values
+	MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al., NeuroImage 2012)
+	% PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
+	
+	% % FD = frame displacement
+	% if length(x.EchoTime)>2
+	%     FD{1} = rp(1:NumTEs:end,:); %multiTE -> gives back the normal rp for the plots
+	%     FD{2} = diff(rp(1:NumTEs:end,:));
+	% else
+	FD{1}=rp; % position (absolute displacement)
+	FD{2} = diff(rp); % motion (relative displacement)
+	% end
+	
+	if max(rp(:))==0
+		warning('Something wrong with motion parameters, skipping');
+		return;
+	end
+	
+	close all;
+	if usejava('jvm') % only if JVM loaded
+		fig = figure('Visible','off');
+	else
+		fprintf('Warning, skipping motion plot, JVM missing\n');
+	end
+	
+	for ii=1:2
+		tx{ii} = FD{ii}(:,1); ty{ii} = FD{ii}(:,2); tz{ii}  = FD{ii}(:,3); % translations
+		rx{ii} = FD{ii}(:,4); ry{ii} = FD{ii}(:,5); rz{ii}  = FD{ii}(:,6); % rotations (pitch, roll, yaw)
+		
+		PartTranslation{ii} = tx{ii}.^2 + ty{ii}.^2 + tz{ii}.^2;
+		PartRotation{ii} = 0.2*MeanRadius^2* ((cos(rx{ii})-1).^2 + (sin(rx{ii})).^2 + (cos(ry{ii})-1).^2 + (sin(ry{ii})).^2 + (cos(rz{ii})-1).^2 + (sin(rz{ii})).^2);
+		try
+			NDV{ii} = sqrt(PartTranslation{ii} + PartRotation{ii});
+		catch
+			
+		end
+		
+		if ii==2
+			NDV{2} = [0; NDV{2}]; % add leading zero difference
+		end
+		
+		% Descriptives
+		median_NDV{ii} = median(NDV{ii});
+		mean_NDV{ii} = mean(NDV{ii});
+		max_NDV{ii} = max(NDV{ii});
+		SD_NDV{ii} = std(NDV{ii});
+		MAD_NDV{ii} = xASL_stat_MadNan(NDV{ii},0); % median absolute deviation from median
+		
+		if usejava('jvm') % only if JVM loaded
+			subplot(3,1,ii); % plot position (subplot 1) & motion (subplot 2)
+			plot(NDV{ii},'Color',[0.4,0.4,0.4]); % lines between frames
+			hold on
+			plot(NDV{ii},'o','MarkerSize',5); % cirkels for frames
+			hold on
+			
+			plot(repmat(mean_NDV{ii},151,1),'Color',[0,0,1]); % mean NDV in blue
+			hold on
+			
+			if ii==1
+				axis([0 nFrames 0 max(NDV{ii})]);
+				title(['Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame']);
+				ylabel('NDV (mm)');
+				
+			elseif ii==2
+				
+				axis([0 nFrames 0 minVoxelSize]);
+				title(['Motion plot of ' x.P.SubjectID '-' x.P.SessionID]);
+				ylabel('NDV/frame (mm//frame)');
+			end
+			
+			xlabel('frame#');
+			axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
+		end
+	end
 end
 
 %% ----------------------------------------------------------------------------------------
 %% 3) Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
 
-
-if bASL && nFrames<=10
-    fprintf('Too few control-label pairs for ENABLE, skipping\n');
-    bENABLE = 0;
-end
-
-if bENABLE && bASL && nFrames>10 % == more than 5 pairs
-    
+if bENABLE
     % Sort motion of control-label pairs
     MotionTime = NDV{2}; % motion
     MotionTime = MotionTime(1:2:end-1)+MotionTime(2:2:end); % additive motion for each control-label pair
-    MotionTime(:,2) = [1:1:length(MotionTime)];
+    MotionTime(:,2) = 1:length(MotionTime);
     MotionTimeSort = sortrows(MotionTime,1);
     
     % Resample ASL image (apply motion estimation)
@@ -255,7 +275,7 @@ if bENABLE && bASL && nFrames>10 % == more than 5 pairs
     
     % Create a mask from the mean PWI
     xASL_io_PairwiseSubtraction(rInputPath, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
-    MaskIm = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped,0.95,0.7);
+    MaskIm = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped, 0.95, 0.7);
     MaskIm = MaskIm>min(MaskIm(:));
     xASL_delete(x.P.Path_mean_PWI_Clipped);
     
@@ -282,9 +302,9 @@ if bENABLE && bASL && nFrames>10 % == more than 5 pairs
     end
     
     for iVolume=2:size(SortIM,4)
-        xASL_TrackProgress(iVolume,size(SortMask,2));
-        TempTimeSeries = SortMask(:,1:iVolume);
-        [~, ~, ~, stats] = xASL_stat_ttest(TempTimeSeries,0,0.05,'both',2);
+        xASL_TrackProgress(iVolume,size(SortMask, 2));
+        TempTimeSeries = SortMask(:, 1:iVolume);
+        [~, ~, ~, stats] = xASL_stat_ttest(TempTimeSeries, 0, 0.05, 'both', 2);
         tValue(iVolume,1) = xASL_stat_MedianNan(stats.tstat(:));
     end
     fprintf('\n');
@@ -339,16 +359,18 @@ else
     fprintf('ENABLE was skipped...\n');
 end
 
-if usejava('jvm') % only if JVM loaded
-    jpgfile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID '_' x.P.SessionID '_motion.jpg']);
-    fprintf('Saving motion plot to %s\n', jpgfile);
-    saveas(fig, jpgfile, 'jpg');
-    close all;
-    clear fig;
+if bMotionCorrection
+	if usejava('jvm') % only if JVM loaded
+		jpgfile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID '_' x.P.SessionID '_motion.jpg']);
+		fprintf('Saving motion plot to %s\n', jpgfile);
+		saveas(fig, jpgfile, 'jpg');
+		close all;
+		clear fig;
+	end
 end
 
-%only run if ENABLE is on
-if bENABLE && bASL && nFrames>10 % if we performed outlier exclusion
+% Only run if ENABLE is on
+if bENABLE
     tValue(1:3) = tValue(4); % for nicer plotting
     
     if usejava('jvm') % only if JVM loaded
@@ -439,12 +461,9 @@ end
 
 xASL_delete(rInputPath); % delete temporary image
 
-if nFrames>1 % if we performed MoCo
+if bMotionCorrection % if we performed MoCo
     % Save results for later summarization in analysis module
     save(fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']),'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
 end
 
-
 end
-
-
