@@ -4,16 +4,16 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 % FORMAT: [parms pathDcmDictOut] = xASL_bids_Dicom2Parms(imPar, pathIn[, pathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn])
 %
 % INPUT:
-%        imPar               - struct with import parameters (REQUIRED)
-%        pathIn (PATH)       - path to the RAW files (REQUIRED)
-%        pathJSON (PATH)     - cell with paths to the JSON file for saving parameters (OPTIONAL, DEFAULT = don't save)
-%        dcmExtFilter (STR)  - wildcards specifying the allowed extensions for the RAW files
-%        bUseDCMTK (BOOL)    - if yes, then use DCMTK instead of dicominfo
-%        pathDcmDictIn (STR) - path to the dicom dictionary in case DCMTK fails and DICOMINFO is used
+%        imPar            - struct with import parameters (STRUCT, REQUIRED)
+%        pathIn           - path to the RAW files (PATH, REQUIRED)
+%        pathJSON         - cell with paths to the JSON file for saving parameters (PATH, OPTIONAL, DEFAULT = don't save)
+%        dcmExtFilter     - wildcards specifying the allowed extensions for the RAW files (STRING)
+%        bUseDCMTK        - if yes, then use DCMTK instead of dicominfo (BOOLEAN)
+%        pathDcmDictIn    - path to the dicom dictionary in case DCMTK fails and DICOMINFO is used (STRING)
 %
 % OUTPUT:
-%        parms               - structure containing the parsed parameters
-%        pathDcmDictOut      - if dicom dict for dicominfo is initialized then clear this path, otherwise return unchanged pathDcmDictIn
+%        parms            - structure containing the parsed parameters
+%        pathDcmDictOut   - if dicom dict for dicominfo is initialized then clear this path, otherwise return unchanged pathDcmDictIn
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:      The function goes through the pathIn files, reads the DICOM or PAR/REC files
@@ -22,15 +22,15 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 %                   value, it also checks if the parameters are consistent across DICOM files for a
 %                   single sequence.
 %
-% 1. Admin
-% 2. Set up the default values
-% 3. Recreate the parameter file from raw data
+%                   1. Admin
+%                   2. Set up the default values
+%                   3. Recreate the parameter file from raw data
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
-% EXAMPLE:          ...
+% EXAMPLE:          [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON, dcmExtFilter, bUseDCMTK, pathDcmDictIn);
 %
-% REFERENCES:
+% REFERENCES:       n.a.
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
 
@@ -57,53 +57,16 @@ if ~exist('dcmfields','var')
     dcmfields = [];
 end
 
+%% 2. Set up the default values
+
+% Default DICOM output dictionary
 pathDcmDictOut = pathDcmDictIn;
 
-
-%% 2. Set up the default values
-DcmParDefaults.RepetitionTime               = NaN;
-DcmParDefaults.EchoTime                     = NaN;
-DcmParDefaults.NumberOfAverages             = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
-DcmParDefaults.NumberOfTemporalPositions    = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
-DcmParDefaults.RescaleSlope                 = 1;   % RescaleSlope; added by Paul to get rid of misleading RescaleSlopeOriginal
-DcmParDefaults.RescaleSlopeOriginal         = NaN; % RescaleSlopeOriginal; will be set to RescaleSlope if missing
-DcmParDefaults.MRScaleSlope                 = 1;   % MRScaleSlope
-DcmParDefaults.RescaleIntercept             = 0;   % RescaleIntercept (although this one is standard dicom)
-DcmParDefaults.AcquisitionTime              = 0;   % AcquisitionTime
-
-% TopUp parameters
-DcmParDefaults.AcquisitionMatrix            = NaN;
-DcmParDefaults.EffectiveEchoSpacing         = NaN;
-DcmParDefaults.AssetRFactor                 = NaN;
-DcmParDefaults.MRSeriesWaterFatShift        = NaN;
-DcmParDefaults.MRSeriesEPIFactor            = NaN;
-DcmParDefaults.BandwidthPerPixelPhaseEncode = NaN;
-DcmParDefaults.RWVIntercept                 = NaN;
-DcmParDefaults.RWVSlope                     = NaN;
-
-% Image parameters
-DcmParDefaults.Rows                         = NaN;
-DcmParDefaults.Columns                      = NaN;
-DcmParDefaults.TemporalPositionIdentifier   = NaN;
-DcmParDefaults.PhilipsNumberTemporalScans   = NaN;
-DcmParDefaults.GELabelingDuration           = NaN;
-DcmParDefaults.InversionTime                = NaN;
-
-DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
-    'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
-
-DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
-DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
-
-DcmFieldList = {'RepetitionTime', 'NumberOfAverages', 'RescaleSlope', ...
-    'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
-    'AcquisitionMatrix', 'Rows', 'Columns', 'NumberOfAverages', 'NumberOfTemporalPositions', ...
-    'RWVIntercept', 'RWVSlope'};
-
+% Default manufacturer
 bManufacturer = 'Unknown';
 
-% Debug multiple identical parameters
-listParameters = {'MRScaleSlope', 'RescaleSlopeOriginal', 'RescaleIntercept', 'RescaleSlope', 'RWVSlope'};
+% Default lists
+[DcmParDefaults,DcmSkipNan,DcmComplexFieldFirst,DcmComplexFieldAll,DcmFieldList,listParameters] = xASL_bids_Dicom2JSON_GetDefaults();
 
 % Defaults
 t_parms = cell(1,1);
@@ -787,6 +750,52 @@ function [parms] = xASL_bids_Dicom2JSON_CheckMultipleValues(listParameters,parms
             end
         end
     end
+
+end
+
+
+function [DcmParDefaults,DcmSkipNan,DcmComplexFieldFirst,DcmComplexFieldAll,DcmFieldList,listParameters] = xASL_bids_Dicom2JSON_GetDefaults()
+
+    DcmParDefaults.RepetitionTime               = NaN;
+    DcmParDefaults.EchoTime                     = NaN;
+    DcmParDefaults.NumberOfAverages             = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
+    DcmParDefaults.NumberOfTemporalPositions    = 1;   % no temporal positions in 3D, as default for non-Philips scan. CAVE!!!!
+    DcmParDefaults.RescaleSlope                 = 1;   % RescaleSlope; added by Paul to get rid of misleading RescaleSlopeOriginal
+    DcmParDefaults.RescaleSlopeOriginal         = NaN; % RescaleSlopeOriginal; will be set to RescaleSlope if missing
+    DcmParDefaults.MRScaleSlope                 = 1;   % MRScaleSlope
+    DcmParDefaults.RescaleIntercept             = 0;   % RescaleIntercept (although this one is standard dicom)
+    DcmParDefaults.AcquisitionTime              = 0;   % AcquisitionTime
+
+    % TopUp parameters
+    DcmParDefaults.AcquisitionMatrix            = NaN;
+    DcmParDefaults.EffectiveEchoSpacing         = NaN;
+    DcmParDefaults.AssetRFactor                 = NaN;
+    DcmParDefaults.MRSeriesWaterFatShift        = NaN;
+    DcmParDefaults.MRSeriesEPIFactor            = NaN;
+    DcmParDefaults.BandwidthPerPixelPhaseEncode = NaN;
+    DcmParDefaults.RWVIntercept                 = NaN;
+    DcmParDefaults.RWVSlope                     = NaN;
+
+    % Image parameters
+    DcmParDefaults.Rows                         = NaN;
+    DcmParDefaults.Columns                      = NaN;
+    DcmParDefaults.TemporalPositionIdentifier   = NaN;
+    DcmParDefaults.PhilipsNumberTemporalScans   = NaN;
+    DcmParDefaults.GELabelingDuration           = NaN;
+    DcmParDefaults.InversionTime                = NaN;
+
+    DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
+        'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
+
+    DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
+    DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
+
+    DcmFieldList = {'RepetitionTime', 'NumberOfAverages', 'RescaleSlope', ...
+        'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
+        'AcquisitionMatrix', 'Rows', 'Columns', 'NumberOfAverages', 'NumberOfTemporalPositions', ...
+        'RWVIntercept', 'RWVSlope'};
+
+    listParameters = {'MRScaleSlope', 'RescaleSlopeOriginal', 'RescaleIntercept', 'RescaleSlope', 'RWVSlope'};
 
 end
 
