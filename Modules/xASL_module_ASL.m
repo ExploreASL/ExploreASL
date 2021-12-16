@@ -135,7 +135,7 @@ end
 
 %% D3. Multi-PLD parsing
 if isfield(x.Q,'Initial_PLD') && numel(unique(x.Q.Initial_PLD))>1  % check for number of unique PLD's, more than 1 means multiPLD
-    fprintf(2,'Multi-PLD data detected (processing still under development)...\n');
+    fprintf(2,'Multi-PLD data detected, we will process this but this is a new feature that is still under development\n');
     fprintf('PDLs: ');
     for iPLD = 1:numel(x.Q.Initial_PLD)
         if iPLD<numel(x.Q.Initial_PLD)
@@ -152,15 +152,15 @@ end
 %% D4. TimeEncoded parsing
 % Check if TimeEncoded is defined
 if isfield(x.Q,'TimeEncodedMatrixType') || isfield(x.Q,'TimeEncodedMatrixSize')
-    fprintf(2,'Time encoded data detected (processing still under development)...\n');
+    fprintf(2,'Time encoded data detected, we will process this but this is a new feature that is still under development\n');
     x.modules.asl.bTimeEncoded = true;
 	x.modules.asl.bMultiPLD = true;
 	
 	if isempty(x.Q.TimeEncodedMatrixType)
-		fprintf(2,'TimeEncodedMatrixType field missing (should be a Hadamard or Walsh)...\n')
+		fprintf(2,'TimeEncodedMatrixType field missing (should be a Hadamard or Walsh)...\n');
 	elseif ~isfield(x.Q,'TimeEncodedMatrixSize') || isempty(x.Q.TimeEncodedMatrixSize) || (x.Q.TimeEncodedMatrixSize < 2)
-		fprintf(2,'TimeEncodedMatrixSize field missing (should be a multiple of 4)...\n')
-	end
+		fprintf(2,'TimeEncodedMatrixSize field missing (should be a multiple of 4)...\n');
+    end
 else
 	x.modules.asl.bTimeEncoded = false;
 end
