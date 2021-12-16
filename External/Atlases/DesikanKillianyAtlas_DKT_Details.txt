@@ -1,0 +1,24 @@
+================================================ ATLASES ================================================
+
+
+Article:                 http://doi.org/10.1016/j.neuroimage.2006.01.021
+
+Collection:              https://neurovault.org/collections/1446/
+
+Downloaded from:         https://neurovault.org/images/23262/
+
+
+================================================ LICENSE ================================================
+
+
+If you use these data please include the following persistent identifier in the text of your manuscript:
+
+https://identifiers.org/neurovault.image:23262
+
+This will help to track the use of this data in the literature. In addition, consider also citing the paper related to this collection.
+
+
+================================================ LABELS ================================================
+
+
+
