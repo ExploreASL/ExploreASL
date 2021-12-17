@@ -156,6 +156,9 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
     % Ignore some files
     flavors = xALS_test_IgnoreFiles(flavors);
     
+    % Ignore version in dataset_description.json
+    flavors = xALS_test_IgnoreVersion(flavors);
+    
     % Save path
     savePath = fullfile(testConfig.pathExploreASL,'Testing','results.mat');
     
@@ -177,6 +180,55 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
     fprintf('\n');
 
 end
+
+
+%% Ignore version in dataset_description.json
+function flavors = xALS_test_IgnoreVersion(flavors)
+
+    % Default
+    ignoreRows = [];
+    
+    % Iterate over table
+    for iElement = 1:size(flavors.comparisonTable,1)
+        currentElement = flavors.comparisonTable(iElement,:);
+        currentFlavor = char(table2cell(currentElement(1,'flavor')));
+        currentName = char(table2cell(currentElement(1,'name')));
+        currentMessage = char(table2cell(currentElement(1,'message')));
+        flavorPath = fullfile(testConfig.pathFlavorDatabase,currentFlavor);
+        % Check for different file content in dataset_description files
+        if ~isempty(regexpi(currentName,'different file content'))
+            % Search for dataset_description.json in derivatives
+            if ~isempty(regexpi(currentMessage,'ExploreASL')) && ~isempty(regexpi(currentMessage,'dataset_description.json'))
+                pathA = fullfile(flavorPath,'derivatives','ExploreASL','dataset_description.json');
+                pathB = fullfile(flavorPath,'derivativesReference','ExploreASL','dataset_description.json');
+                if xASL_exist(pathA,'file') && xASL_exist(pathB,'file')
+                    % Actual comparison
+                    jsonA = spm_jsonread(pathA);
+                    jsonB = spm_jsonread(pathB);
+                    % Get fieldnames
+                    fieldNamesA = fieldnames(jsonA);
+                    fieldNamesB = fieldnames(jsonB);
+                    % Check which fields are shared and which different
+                    sharedFieldsAB = intersect(fieldNamesB,fieldNamesA);
+                    % Fields that are in B, but missing in A
+                    missingFields = setdiff(fieldNamesB,fieldNamesA);
+                    % Check that there are no fields missing and the only difference is the version
+                    if isempty(missingFields)
+                        if ~strcmp(jsonA.GeneratedBy.Version,jsonB.GeneratedBy.Version)
+                            ignoreRows = [ignoreRows iElement];
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    % Actually remove the corresponding rows
+    flavors.comparisonTable(ignoreRows,:) = [];
+
+
+end
+
 
 
 
