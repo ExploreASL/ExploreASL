@@ -214,8 +214,9 @@ function flavors = xALS_test_IgnoreVersion(flavors,testConfig)
             end
             % Search for dataset_description.json or other JSON files in derivatives
             if ~isempty(regexpi(currentMessage,'ExploreASL')) && ~isempty(filename)
-                pathA = fullfile(flavorPath,'derivatives','ExploreASL',filename);
-                pathB = fullfile(flavorPath,'derivativesReference','ExploreASL',filename);
+                startExploreASL = regexpi(currentMessage,'ExploreASL');
+                pathA = fullfile(flavorPath,'derivatives',currentMessage(startExploreASL:end));
+                pathB = fullfile(flavorPath,'derivativesReference',currentMessage(startExploreASL:end));
                 if xASL_exist(pathA,'file') && xASL_exist(pathB,'file')
                     % Actual comparison
                     jsonA = spm_jsonread(pathA);
