@@ -207,8 +207,12 @@ function flavors = xALS_test_IgnoreVersion(flavors,testConfig)
                 filename = 'ASL4D_Source.json';
             elseif ~isempty(regexpi(currentMessage,'M0.json'))
                 filename = 'M0.json';
+			elseif ~isempty(regexpi(currentMessage,'M0_revPE.json'))
+                filename = 'M0_revPE.json';
             elseif ~isempty(regexpi(currentMessage,'T1.json'))
                 filename = 'T1.json';
+			elseif ~isempty(regexpi(currentMessage,'T2.json'))
+				filename = 'T2.json';
             elseif ~isempty(regexpi(currentMessage,'FLAIR.json'))
                 filename = 'FLAIR.json';
             end
