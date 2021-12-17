@@ -156,7 +156,7 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
     % Ignore some files
     flavors = xALS_test_IgnoreFiles(flavors);
     
-    % Ignore version in dataset_description.json
+    % Ignore version in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
    flavors = xALS_test_IgnoreVersion(flavors, testConfig);
     
     % Save path
@@ -182,7 +182,7 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
 end
 
 
-%% Ignore version in dataset_description.json
+%% Ignore version in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
 function flavors = xALS_test_IgnoreVersion(flavors,testConfig)
 
     % Default
@@ -197,10 +197,25 @@ function flavors = xALS_test_IgnoreVersion(flavors,testConfig)
         flavorPath = fullfile(testConfig.pathFlavorDatabase,currentFlavor);
         % Check for different file content in dataset_description files
         if ~isempty(regexpi(currentName,'different file content'))
-            % Search for dataset_description.json in derivatives
-            if ~isempty(regexpi(currentMessage,'ExploreASL')) && ~isempty(regexpi(currentMessage,'dataset_description.json'))
-                pathA = fullfile(flavorPath,'derivatives','ExploreASL','dataset_description.json');
-                pathB = fullfile(flavorPath,'derivativesReference','ExploreASL','dataset_description.json');
+            % Search for JSON file
+            filename = [];
+            if ~isempty(regexpi(currentMessage,'dataset_description.json'))
+                filename = 'dataset_description.json';
+            elseif ~isempty(regexpi(currentMessage,'ASL4D.json'))
+                filename = 'ASL4D.json';
+            elseif ~isempty(regexpi(currentMessage,'ASL4D_Source.json'))
+                filename = 'ASL4D_Source.json';
+            elseif ~isempty(regexpi(currentMessage,'M0.json'))
+                filename = 'M0.json';
+            elseif ~isempty(regexpi(currentMessage,'T1.json'))
+                filename = 'T1.json';
+            elseif ~isempty(regexpi(currentMessage,'FLAIR.json'))
+                filename = 'FLAIR.json';
+            end
+            % Search for dataset_description.json or other JSON files in derivatives
+            if ~isempty(regexpi(currentMessage,'ExploreASL')) && ~isempty(filename)
+                pathA = fullfile(flavorPath,'derivatives','ExploreASL',filename);
+                pathB = fullfile(flavorPath,'derivativesReference','ExploreASL',filename);
                 if xASL_exist(pathA,'file') && xASL_exist(pathB,'file')
                     % Actual comparison
                     jsonA = spm_jsonread(pathA);
