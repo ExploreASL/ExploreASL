@@ -100,21 +100,21 @@ if nFrames <= 2
     bZigZag = false; % Minimum number of frames for ZigZag is > 2 (1 control-label pair)
 end
 
+% bMoCoPossible boolean states if it is possible to perform motion correction with the given data 
+% x.asl.module.motionCorrection states if the motion correction is wanted by the user
 if nFrames > 1
-	bMotionCorrection = true;
+	bMoCoPossible = true;
 else
-	bMotionCorrection = false;
+	bMoCoPossible = false;
 	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it had only ' num2str(nFrames) ' 3D frames.']);
 end
 
 if isfield(x.Q,'LookLocker') && x.Q.LookLocker
-	bMotionCorrection = false;
+	bMoCoPossible = false;
 	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
 end
 
-if ~bMotionCorrection
-	bZigZag = false;
-	bENABLE = false;
+if ~bMoCoPossible
     return; % no sense to run this function without motion correction
 end
 
@@ -462,8 +462,8 @@ end
 
 xASL_delete(rInputPath); % delete temporary image
 
-    % Save results for later summarization in analysis module
-    save(fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']),'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
+% Save results for later summarization in analysis module
+save(fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']),'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
 
     
 end
