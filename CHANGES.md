@@ -1,6 +1,87 @@
 
 # ExploreASL Change Log
 
+
+---
+## ExploreASL v1.9.0
+
+### Versions included software
+
+Versions included & used third-party tools (see `/External/README_SPM.txt`):
+
+* SPM12 7219 
+* CAT12 r1615 
+* LST 2.0.15 
+
+### Feature improvements
+
+* Release issue #1015: New release.
+* Feature #567: Decoding and subtraction adapted to Hadamard encoded data.
+* Feature #640: Calculates PWI image with Hadamard decoding function.
+* Feature #759: Adapting ExploreASL pipeline to multi-PLD data.
+* Features #799, #930 & #945: Make import a full module.
+* Feature #827: `xASL_module_Population` now does not start when ExploreASL is called in parallelization mode.
+* Feature #845: New `xASL_system` function for all command line calls.
+* Feature #907: WSL2 compatibility added for FSL.
+* Feature #911: Revamp initialization structure of `xASL_module_ASL` to restore a correct order of all steps.
+* Feature #925: LabEff and T1blood defaults set for PASL at 7T according to Ivanov, Neuroimage, 2017.
+* Feature #941: Added a PAR-REC flavor. Nothing to mention in release notes.
+* Feature #963: Clean the Hadamard decoding code. Add decoding matrix for Philips.
+* Feature #975: Implement import of GE eASL sequence.
+
+
+### Bug fixes
+
+* Bug #712: NIfTI comparison with regard to data types.
+* Bug #848: Improve repetition time field checks and add a user warning.
+* Bug #853: Update longitudinal registration.
+* Bug #868: Add fallback values for `xASL_im_CreateAnalysisMask`.
+* Bug #873: Avoid spurious double registration of ASL to T1w.
+* Bug #891: FSL TopUp configuration file was missing.
+* Bug #892: Detect and remove pre-existing toolbox paths that might conflict with toolboxes included in `ExploreASL`.
+* Bug #893: `xASL_spm_admin` crashed with cell input.
+* Bug #909: Potentially too strict M0 masking.
+* Bug #923: Improve import modularity and BIDS format of subject IDs.
+* Bug #929: Import module crashes if no files were found.
+* Bug #936: Fix rerun issues within import module.
+* Bug #938: dcm2niix handling done in one place and corrected for `PAR/REC`.
+* Bug #948: Update `x.SUBJECT/S` and `x.overview` for subjects with illegal characters.
+* Bug #952: Backward compatible reading of PVC processing parameters.
+* Bug #956: Fix input format of PVCNativeSpaceKernel.
+* Bug #959: Removed EchoNumber and TimeEncodedEchoTimes fields from BIDS and optimized Hadamard import and initialization.
+* Bug #978: BASIL for multi-PLD, Look-Locker, and Hadamard. Correct BASIL configuration. Output ATT maps.
+* Bug #979: Fix `x` structure clean-up between import and processing.
+* Bug #980 & #982: Split ASLContext.tsv when splitting ASL and M0.
+
+
+### Optimization
+
+* Issue #801: Remove warnings about default values in import.
+* Issue #834: Flavor testing script for the up-to-date flavor database with new reference datasets.
+* Issue #850: Improve resample and realign methods by adding parameter & field checks.
+* Issue #855: Add unit tests for basic `ExploreASL`/`SPM` routines.
+* Issue #860: Handle multiple anatomical files exported by DCM2NIIX.
+* Issue #864: Improve user feedback for unit testing and initialization.
+* Issue #874: Default import does not do defacing.
+* Issue #888 & #902: Stop using Distributed computing and Parallel Toolboxes and parfor.
+* Issue #913: Refactored `xASL_im_ResampleLinearFair` code.
+* Issue #932: Remove legacy import.
+* Issue #940: Improve the folder folder hierarchy check.
+* Issue #947: Minor improvements of import master structure.
+* Issue #971: Mean control image creation in a separate function.
+
+
+### Other improvements
+
+* Issue #836: Move cluster testing to CustomScripts.
+* Issue #880: Improve ExploreASL unit testing with regard to directory changes.
+* Issue #881: Philips Hadamard flavor added to Flavors and tested with import.
+* Issue #942: Update unit tests for ASL-DRO.
+* Issue #969: Improve atlas documentation.
+* Issue #993: GitHub template change.
+* Issues #1003 & #1007: Redesign of the `ExploreASL` README file.
+* Issue #1009: Shorten filenames in flavor database.
+
 ---
 ## ExploreASL v1.8.0
 
