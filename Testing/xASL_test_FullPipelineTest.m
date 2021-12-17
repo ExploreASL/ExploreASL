@@ -157,7 +157,7 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
     flavors = xALS_test_IgnoreFiles(flavors);
     
     % Ignore version in dataset_description.json
-    flavors = xALS_test_IgnoreVersion(flavors);
+   flavors = xALS_test_IgnoreVersion(flavors, testConfig);
     
     % Save path
     savePath = fullfile(testConfig.pathExploreASL,'Testing','results.mat');
@@ -183,7 +183,7 @@ end
 
 
 %% Ignore version in dataset_description.json
-function flavors = xALS_test_IgnoreVersion(flavors)
+function flavors = xALS_test_IgnoreVersion(flavors,testConfig)
 
     % Default
     ignoreRows = [];
