@@ -17,20 +17,20 @@ Document who is responsible for which tests here:
 
 #### Run TestDataSets & UnitTesting
 
-- linux: n/a
-- windows: n/a
-- macOS: n/a
+- [ ] linux: n/a
+- [ ] windows: n/a
+- [ ] macOS: n/a
 
 #### Run full BIDS pipeline tests
 
-- linux: n/a
-- windows: n/a
-- macOS: n/a
+- [ ] linux: n/a
+- [ ] windows: n/a
+- [ ] macOS: n/a
 
 ### Documentation
 
 Document who will update the `VERSION_[x.x.x]` and the `CHANGES.md` file using the **release notes** of each individual issue.
 
-- `CHANGES.md`: n/a
-- `VERSION.md`: n/a
+- [ ] `CHANGES.md`: n/a
+- [ ] `VERSION`: n/a
 
