@@ -37,7 +37,7 @@ if isfield(JSON, 'M0Type')
         %% Option 1. Included
 		% The M0 file is included in the ASL timeseries as specified in the aslContext
         case 'Included'
-            PathContext = fullfile(Fpath, [Ffile '_aslcontext.tsv']);
+            PathContext = fullfile(Fpath, [Ffile 'context.tsv']);
             if exist(PathContext, 'file')
                TSV = xASL_tsvRead(PathContext);
 			   % Checks for the m0scan in ASLContext

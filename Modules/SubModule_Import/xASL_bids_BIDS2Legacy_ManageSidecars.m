@@ -39,7 +39,16 @@ function [bidsPar, pathOrig, pathDest, TypeIs] = xASL_bids_BIDS2Legacy_ManageSid
             pathOrig{iCount+1} = TempSidecar;
 
             [Fpath, Ffile] = xASL_fileparts(pathDest{1});
-            pathDest{iCount+1} = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
+			switch (bidsPar.sidecarName{iCar})
+				case '.json' % Copy side-car name unchanged
+					pathDest{iCount+1} = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
+				case '_aslcontext.tsv'
+					pathDest{iCount+1} = fullfile(Fpath, [Ffile 'context.tsv']);
+				case '_labeling.jpg'
+					pathDest{iCount+1} = fullfile(Fpath, [Ffile 'labeling.jpg']);
+				otherwise % Copy side-car name unchanged
+					pathDest{iCount+1} = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
+			end
             iCount = iCount+1;
         end
     end

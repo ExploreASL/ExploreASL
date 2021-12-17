@@ -19,7 +19,7 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 * Feature #567: Decoding and subtraction adapted to Hadamard encoded data.
 * Feature #640: Calculates PWI image with Hadamard decoding function.
 * Feature #759: Adapting ExploreASL pipeline to multi-PLD data.
-* Features #799, #930 & #945: Make import a full module.
+* Features #799, #930, #945, #1017: Make import a full module.
 * Feature #827: `xASL_module_Population` now does not start when ExploreASL is called in parallelization mode.
 * Feature #845: New `xASL_system` function for all command line calls.
 * Feature #907: WSL2 compatibility added for FSL.
