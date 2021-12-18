@@ -66,7 +66,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     % Workflow
     swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(Design/WorkflowUpdate.png "Workflow of ExploreASL")',...
-                  '(./img/ExploreASL_Workflow.jpg "Workflow ExploreASL")');
+                  '(./img/ExploreASL_Workflow.png "Workflow ExploreASL")');
               
     % Copy the REQUIREMENTS file
     xASL_Copy(fullfile(templatesDir,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'),1);
