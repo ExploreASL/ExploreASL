@@ -282,7 +282,10 @@ end
 
 
 %% G. Manage registration contrasts that we will use
-if x.modules.asl.bRegistrationContrast==0
+if x.modules.asl.bContainsDeltaM
+	bRegistrationControl = false;
+    bRegistrationCBF = true;
+elseif x.modules.asl.bRegistrationContrast==0
     bRegistrationControl = true;
     bRegistrationCBF = false;
 elseif x.modules.asl.bRegistrationContrast==1
@@ -295,7 +298,36 @@ end
 
 %% H. Here we create a temporary dummy ASL image of which the image contrast is curated,
 % for registration only
-xASL_io_PairwiseSubtraction(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
+
+% Load the image
+ASL_im = xASL_io_Nifti2Im(x.P.Path_despiked_ASL4D);
+if (size(ASL_im, 4) == 1) || x.modules.asl.bContainsDeltaM
+	% Apparently, the subtraction was already done on the scanner/reconstruction
+	
+	% Save the mean of deltaM without subtracting with using the right coordinates
+	xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, xASL_stat_MeanNan(ASL_im,4), 16, false);
+elseif x.modules.asl.bTimeEncoded
+	% Decoding of TimeEncoded data (Nifti is saved inside the function)
+	ASL_im = xASL_quant_HadamardDecoding(x.P.Path_despiked_ASL4D, x.Q);
+	
+	% Hadamard Block size is calculated as number of TEs and the HadamardMatrixSize-1
+	blockSize = x.Q.NumberEchoTimes * (x.Q.TimeEncodedMatrixSize-1);
+	
+	PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), blockSize); % preallocate PWI
+	
+	for iBlock = 1:blockSize
+		PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
+	end
+	
+	% Create single PWI for further steps in ASL module
+	PWI = xASL_stat_MeanNan(PWI(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
+	
+	% Save single PWI
+	xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, PWI, 16, false);
+else
+	xASL_io_PairwiseSubtraction(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
+end
+
 % MultiPLD: we can keep the PairwiseSubtraction function->because we have controls and labels for each PLD and take average of all PLDs
 % (later on maybe we only need to use the later PLDs)
 
@@ -396,7 +428,7 @@ end
 if bRegistrationCBF
 
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
-    if x.modules.asl.bRegistrationContrast==3
+    if x.modules.asl.bRegistrationContrast==3 || x.modules.asl.bContainsDeltaM
         nIT = 2; % force CBF-pGM
         fprintf('\n%s\n\n','x.modules.asl.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
     elseif spatCoVit>0.667
