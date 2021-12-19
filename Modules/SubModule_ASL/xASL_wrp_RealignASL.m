@@ -71,13 +71,30 @@ minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 
 
 %% Define motion correction options
-
+% bMoCoPossible boolean states if it is possible to perform motion correction with the given data 
+% x.asl.module.motionCorrection states if the motion correction is wanted by the user
 if x.modules.asl.bContainsDeltaM
-	% Both ENABLE and ZigZag are turned off for deltaMs as ENABLE and
-	% ZigZag count on having control-label pairs as input
-    bENABLE = false;
-    bZigZag = false;
-elseif x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE 
+	% Motion correction is disabled, potentially insufficient contrast
+	bMoCoPossible = false;
+	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it only has DeltaM volumes, which may contain insufficient contrast']);
+elseif nFrames > 1
+	bMoCoPossible = true;
+else
+	bMoCoPossible = false;
+	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it had only ' num2str(nFrames) ' 3D frames.']);
+end
+
+if isfield(x.Q,'LookLocker') && x.Q.LookLocker
+	bMoCoPossible = false;
+	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
+end
+
+if ~bMoCoPossible
+    return; % no sense to run this function without motion correction
+end
+
+    
+if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE 
     % ENABLE and ZigZag are temporarily disabled for multiPLD/TE
     % as we are still developing this feature
     bENABLE = false;
@@ -100,23 +117,7 @@ if nFrames <= 2
     bZigZag = false; % Minimum number of frames for ZigZag is > 2 (1 control-label pair)
 end
 
-% bMoCoPossible boolean states if it is possible to perform motion correction with the given data 
-% x.asl.module.motionCorrection states if the motion correction is wanted by the user
-if nFrames > 1
-	bMoCoPossible = true;
-else
-	bMoCoPossible = false;
-	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it had only ' num2str(nFrames) ' 3D frames.']);
-end
 
-if isfield(x.Q,'LookLocker') && x.Q.LookLocker
-	bMoCoPossible = false;
-	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
-end
-
-if ~bMoCoPossible
-    return; % no sense to run this function without motion correction
-end
 
 
 %% ----------------------------------------------------------------------------------------
