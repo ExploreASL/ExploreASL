@@ -6,8 +6,8 @@ function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemo
 % INPUT:
 %   testConfig        - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
 %   onlyRemoveResults - Set to true if you do not want to run test testing, 
-%                       but you want to delete existing test data (BOOLEAN, OPTIONAL) 
-%   runProcessing     - Run processing (BOOLEAN, OPTIONAL, DEFAULT = false) 
+%                       but you want to delete existing test data (BOOLEAN, OPTIONAL, DEFAULT = false) 
+%   runProcessing     - Run processing (BOOLEAN, OPTIONAL, DEFAULT = true) 
 %
 % OUTPUT:
 %   flavors        - Struct containing the loggingTable and other fields
