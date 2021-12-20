@@ -1,7 +1,7 @@
 function jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 %xASL_bids_BIDSifyASLJSON Goes through the JSON structure of an ASL file and makes sure that all the necessary conversions and checks to BIDS format are applied
 %
-% FORMAT: jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn)
+% FORMAT: jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 %
 % INPUT:
 %   jsonIn    - JSON with the input fields - from DICOMs (REQUIRED)
@@ -16,6 +16,7 @@ function jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 % It makes all the conversions to a proper BIDS structure, checks the existence of all BIDS fields, removes superfluous fields, checks all the conditions and orderes
 % the structure on the output. It works according to the normal BIDS, or ASL-BIDS definition
 %
+% 0. Admin
 % 1. Obtain the dimensions of the ASL data
 % 2. Take all the manually predefined fields from studyPar
 % 3. Extract the scaling factors from the JSON header
@@ -35,6 +36,19 @@ function jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 %
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
+
+%% 0. Admin
+if nargin < 1 || isempty(jsonIn)
+	error('Missing input parameter jsonIn');
+end
+
+if nargin < 2 || isempty(studyPar)
+	error('Missing input parameter studyPar');
+end
+
+if nargin < 3 || isempty(headerASL)
+	error('Missing input parameter headerASL');
+end
 
 %% 1. Obtain the dimensions of the ASL data
 dimASL = headerASL.dat.dim;
@@ -391,13 +405,25 @@ ASLContextDeltaMIndex = ASLContextDeltaMIndex(1:dimASL(4)); % Remove the last em
 % If TotalAcquiredPairs is 1, but more control/label pairs od deltaMs are present, then set this to the correct
 % number
 if ~isfield(jsonOut,'TotalAcquiredPairs') || jsonOut.TotalAcquiredPairs == 1
-	if sum(ASLContextDeltaMIndex) > 0
-		if sum(ASLContextControlIndex) == 0 && sum(ASLContextControlIndex) == 0
-			jsonOut.TotalAcquiredPairs = sum(ASLContextDeltaMIndex);
+	if sum(ASLContextDeltaMIndex) > 0 % In case deltaMs are present
+		
+		% If only deltaM and no C/L pairs are present
+		if sum(ASLContextControlIndex) == 0 && sum(ASLContextLabelIndex) == 0
+			nPLD = length(unique(jsonOut.PostLabelingDelay(jsonOut.PostLabelingDelay>0)));
+			
+			if mod(sum(ASLContextDeltaMIndex), nPLD + 1) == 0 && regexpi(jsonOut.Manufacturer,'GE')
+				% Multi-PLD GE, with Hadamard encoding
+				% We need to divide the TotalAcquiredPairs by the number of PLDs+1 (the number of Hadamard phases)
+				jsonOut.TotalAcquiredPairs = sum(ASLContextDeltaMIndex) / (nPLD+1);
+			elseif mod(sum(ASLContextDeltaMIndex), nPLD) == 0
+				jsonOut.TotalAcquiredPairs = sum(ASLContextDeltaMIndex) / nPLD;
+			else
+				jsonOut.TotalAcquiredPairs = sum(ASLContextDeltaMIndex);
+			end
 		else
 			warning('Cannot calculate TotalAcquiredPairs when both controls and deltaMs are present...');
 		end
-	elseif sum(ASLContextControlIndex) > 0
+	elseif sum(ASLContextControlIndex) > 0 % In case C/L are present, than based this on the number of C/L pairs
 		if sum(ASLContextControlIndex) == sum(ASLContextLabelIndex)
 			jsonOut.TotalAcquiredPairs = sum(ASLContextControlIndex);
 		else

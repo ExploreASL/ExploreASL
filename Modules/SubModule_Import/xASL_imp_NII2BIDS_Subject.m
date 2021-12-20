@@ -1,7 +1,7 @@
 function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectSession)
 %xASL_imp_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
 %
-% FORMAT: x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubject)
+% FORMAT: x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectSession)
 % 
 % INPUT:
 %   x                   - ExploreASL x structure (REQUIRED, STRUCT)
