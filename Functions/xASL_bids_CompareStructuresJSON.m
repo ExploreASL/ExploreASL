@@ -80,9 +80,22 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
                 fprintf('File:      %s\n',allFiles{iFile});
                 fprintf('%s',jsonErrorReport);
             end
+            
+            % Check if there is only a difference in Acknowledgements
+            textToScan = erase(jsonErrorReport,newline);
+            % Only one difference allowed
+            if length(strfind(textToScan,'Different value: Acknowledgements'))==1
+                onlyAcknowledgements = true;
+            else
+                onlyAcknowledgements = false;
+            end
 
             % Save difference
-            differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
+            if ~onlyAcknowledgements
+                differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
+            else
+                differences{dn,1} = ['Different Acknowledgements: ', allFiles{iFile}, ' '];
+            end
             dn = dn+1;
         end
 
