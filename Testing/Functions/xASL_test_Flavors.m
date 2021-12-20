@@ -82,6 +82,7 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 
     %% 2. Run the conversion of source data to BIDS
     if bTest(2)
+        xASL_adm_BreakString('RUN DICOM TO BIDS');
         flavors.loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, flavors.loggingTable);
     end
     
@@ -95,6 +96,7 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 
     %% 4. Run the BIDS to Legacy conversion
     if bTest(4)
+        xASL_adm_BreakString('RUN BIDS TO LEGACY');
         xASL_test_Flavors_BIDS2LEGACY(testConfig);
     end
     
@@ -108,14 +110,15 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 
     %% 6. Run ExploreASL on all Legacy-converted data
     if bTest(6)
+        xASL_adm_BreakString('RUN PROCESSING PIPELINE');
         flavors.loggingTable = xASL_test_Flavors_ExploreASL(testConfig,flavors.loggingTable);
     end
     
 
     %% 7. Run the comparison of processed legacy-format data with the reference data
     if bTest(7)
-        fprintf(2,'Comparison of processing results not yet implemented...\n');
-        % flavors.loggingTable = xASL_test_CheckProcessedFlavors(testConfig,flavors.loggingTable);
+        xASL_adm_BreakString('CHECK OF PROCESSING RESULTS');
+        flavors.loggingTable = xASL_test_CheckProcessedFlavors(testConfig,flavors.loggingTable);
     end
     
 

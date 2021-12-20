@@ -135,12 +135,9 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
         flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 0 1], x, flavors);
         
     end
-
-    % Get warnings & errors from log files
-    [logContent] = xASL_test_GetLogContent(testConfig.pathFlavorDatabase,0,1,2);
     
     % Save all testing results
-    flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent);
+    flavors = xASL_test_FlavorsSaveResults(flavors, testConfig);
     
     % Clean-up (file handles etc.)
     fclose('all');
@@ -157,7 +154,7 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
     flavors = xALS_test_IgnoreFiles(flavors);
     
     % Ignore version in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
-   flavors = xALS_test_IgnoreVersion(flavors, testConfig);
+    flavors = xALS_test_IgnoreVersion(flavors, testConfig);
     
     % Save path
     savePath = fullfile(testConfig.pathExploreASL,'Testing','results.mat');
