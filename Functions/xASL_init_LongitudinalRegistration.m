@@ -116,7 +116,7 @@ end
 % The pipeline should only perform longitudinal registration if this is the first time point
 % Therefore, first find all volumes with the same subject name
 
-if isfield(x, 'P')
+if isfield(x, 'P') && ~isempty(x.P) && length(fields(x.P))~=0
     if isfield(x.P, 'SubjectID')
         iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID));
         % Subject session id number for the first session,, to accommodate that x.S.SetsID can contain sessions
