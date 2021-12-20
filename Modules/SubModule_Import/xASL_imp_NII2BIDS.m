@@ -47,7 +47,7 @@ function x = xASL_imp_NII2BIDS(x, imPar)
 	
 	%% 1. Load the study parameters + dataset description
 	if ~exist(x.dir.studyPar,'file')
-		warning('Study-par file is not provided.');
+		warning('Could not find the studyPar.json file...');
 		studyPar = struct;
 	else
 		studyPar = xASL_io_ReadDataPar(x.dir.studyPar, true);
