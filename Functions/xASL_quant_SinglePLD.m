@@ -185,25 +185,23 @@ else
 			x.Q.NumberOfAverages = max(x.Q.NumberOfAverages); % fix for combination of M0 & PWI in same nifti, for GE quantification
 		end
 
-		switch lower(x.Q.Vendor)
-			% For some reason the older GE Alsop Work in Progress (WIP) version
-			% has a different scale factor than the current GE product sequence
-
-			case {'ge_product','ge'} % GE new version
-				%                 qnt_R1gain = 1/32;
-				%                 qnt_C1 = 6000; % GE constant multiplier
-
-				%                 qnt_GEscaleFactor = (qnt_C1*qnt_R1gain)/(x.Q.NumberOfAverages); % OLD incorrect
-				qnt_R1gain = 32; %  PWI is scaled up by 32 (default GE scalefactor)
-				qnt_GEscaleFactor = qnt_R1gain*x.Q.NumberOfAverages;
-				% division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
-
-			case 'ge_wip' % GE old version
-				qnt_RGcorr = 45.24; % Correction for receiver gain in PDref (but not used apparently?)
-				% or should this be 6000/45.24?
-				qnt_GEscaleFactor = qnt_RGcorr*x.Q.NumberOfAverages;
-			otherwise
-				error('Please set x.Q.Vendor to GE_product or GE_WIP');
+		% For some reason the older GE Alsop Work in Progress (WIP) version
+		% has a different scale factor than the current GE product sequence
+		if isfield(x.Q,'SoftwareVersions')
+			softwareVersions = xASL_str2num(x.Q.SoftwareVersions(1:2));
+		else
+			softwareVersions = 0;
+		end
+		
+		if ~softwareVersions || softwareVersions > 15
+			% GE new version
+			% division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
+			qnt_R1gain = 32; %  PWI is scaled up by 32 (default GE scalefactor)
+			qnt_GEscaleFactor = qnt_R1gain*x.Q.NumberOfAverages;
+		else
+			% GE older WIP version
+			qnt_RGcorr = 45.24; % Correction for receiver gain in PDref (but not used apparently?)
+			qnt_GEscaleFactor = qnt_RGcorr*x.Q.NumberOfAverages;
 		end
 
 		ScaleImage = ScaleImage./qnt_GEscaleFactor;

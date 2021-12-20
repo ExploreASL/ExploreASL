@@ -50,6 +50,7 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 * Bug #978: BASIL for multi-PLD, Look-Locker, and Hadamard. Correct BASIL configuration. Output ATT maps.
 * Bug #979: Fix `x` structure clean-up between import and processing.
 * Bugs #980 & #982: Split ASLContext.tsv when splitting ASL and M0.
+* Bug #1025: Correct NEX in GE eASL to account for the number of Hadamard phases. Correct GE scalings.
 
 ### Optimization
 
