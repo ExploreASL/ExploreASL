@@ -35,11 +35,11 @@ sessionNum = '_1';
 xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Initialize
-x = ExploreASL;
+x = ExploreASL(droTestPatient,0,0);
 x.SUBJECT = '001';
 
 % Run BIDS2Legacy
-xASL_bids_BIDS2Legacy(droTestPatient, x);
+xASL_bids_BIDS2Legacy(x);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -108,11 +108,11 @@ droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test
 xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Initialize
-x = ExploreASL;
+x = ExploreASL(droTestPatient,0,0);
 x.SUBJECT = '001';
 
 % Run BIDS2Legacy
-xASL_bids_BIDS2Legacy(droTestPatient, x);
+xASL_bids_BIDS2Legacy(x);
 
 % The dataPar.json is not created for each subject anymore, which is why it
 % was moved out of BIDS2Legacy. We need to create it manually here.
