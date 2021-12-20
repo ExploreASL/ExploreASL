@@ -1,11 +1,11 @@
 function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
 % xASL_io_CheckDeprecatedFieldsX Check deprecated fields of x and fix them based on a conversion table
 %
-% FORMAT:   x = xASL_io_CheckDeprecatedFieldsX(x)
+% FORMAT:   x = xASL_io_CheckDeprecatedFieldsX(x[, bVerbose])
 %
 % INPUT:
-%   x               - x structure
-%   bVerbose        - Print extra information
+%   x               - x structure (REQUIRED)
+%   bVerbose        - Print extra information (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 %   x               - x structure
@@ -65,14 +65,17 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
                 if ~isfield(x.(conversionTable{iField,2}),conversionTable{iField,3})
                     % Sub-Structure (x.FIELD -> x.STRUCT.FIELD)
                     x.(conversionTable{iField,2}).(conversionTable{iField,3}) = x.(conversionTable{iField,1});
+					renamedFields{nOutdatedParameter,1} = [conversionTable{iField,2} '.' conversionTable{iField,3}];
                 elseif ~isfield(x.(conversionTable{iField,2}).(conversionTable{iField,3}),conversionTable{iField,4}) ...
                         && isstruct(x.(conversionTable{iField,2}).(conversionTable{iField,3}))
                     % Sub-Sub-Structure (x.FIELD -> x.STRUCT.STRUCT.FIELD)
                     x.(conversionTable{iField,2}).(conversionTable{iField,3}).(conversionTable{iField,4}) = x.(conversionTable{iField,1});
-                else
-                    if bVerbose
+					renamedFields{nOutdatedParameter,1} = [conversionTable{iField,2} '.' conversionTable{iField,3} '.' conversionTable{iField,4}];
+				else
+					if bVerbose
                         fprintf('%s.%s.%s already exists...\n',conversionTable{iField,2},conversionTable{iField,3},conversionTable{iField,4});
-                    end
+					end
+					renamedFields{nOutdatedParameter,1} = 'duplicit field';
                 end
             end
             % Remove old field
@@ -82,12 +85,10 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
     
     if bOldFieldsDetected && bVerbose
         % Print warning and individual fields
-        fprintf('Detected deprecated fields in dataPar.json ...\n');
+        fprintf('Detected and corrected deprecated fields in dataPar.json. Please modify the file accordingly:\n');
         for iField = 1:size(detectedFields,1)
-            fprintf('Deprecated field: %s\n', detectedFields{iField,1});
+            fprintf('%s --> %s\n', detectedFields{iField,1}, renamedFields{iField,1});
         end
     end
 
 end
-
-
