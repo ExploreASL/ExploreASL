@@ -6,8 +6,8 @@ function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemo
 % INPUT:
 %   testConfig        - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
 %   onlyRemoveResults - Set to true if you do not want to run test testing, 
-%                       but you want to delete existing test data (BOOLEAN, OPTIONAL, DEFAULT = false) 
-%   runProcessing     - Run processing (BOOLEAN, DEFAULT=true)
+%                       but you want to delete existing test data (BOOLEAN, OPTIONAL) 
+%   runProcessing     - Run processing (BOOLEAN, OPTIONAL, DEFAULT = false) 
 %
 % OUTPUT:
 %   flavors        - Struct containing the loggingTable and other fields
@@ -228,7 +228,7 @@ end
 %% Compare JSON files but ignore the version field
 function ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flavorPath,ignoreRows,iElement)
 
-
+    % We only want to match derivatives JSON files
     if ~isempty(regexpi(currentMessage,'ExploreASL')) && ~isempty(filename)
         startExploreASL = regexpi(currentMessage,'ExploreASL');
         pathA = fullfile(flavorPath,'derivatives',currentMessage(startExploreASL:end));
@@ -242,27 +242,6 @@ function ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flav
             fieldNamesB = fieldnames(jsonB);
             % Check which fields are shared and which different
             sharedFieldsAB = intersect(fieldNamesB,fieldNamesA);
-            % Check shared fields besides Acknowledgements & GeneratedBy
-            if isfield(jsonA,'Acknowledgements')
-                jsonA = rmfield(jsonA,'Acknowledgements');
-            end
-            if isfield(jsonB,'Acknowledgements')
-                jsonB = rmfield(jsonB,'Acknowledgements');
-            end
-            if isfield(jsonA,'GeneratedBy')
-                jsonA = rmfield(jsonA,'GeneratedBy');
-            end
-            if isfield(jsonB,'GeneratedBy')
-                jsonB = rmfield(jsonB,'GeneratedBy');
-            end
-            indexAck = find(ismember(sharedFieldsAB, 'Acknowledgements'), 1);
-            if ~isempty(indexAck)
-                sharedFieldsAB(indexAck) = [];
-            end
-            indexGen = find(ismember(sharedFieldsAB, 'GeneratedBy'), 1);
-            if ~isempty(indexGen)
-                sharedFieldsAB(indexGen) = [];
-            end
             % Escape fields
             [jsonA,jsonB] = xASL_test_EscapeToUnix(jsonA,jsonB,sharedFieldsAB);
             % Get differences
@@ -278,7 +257,6 @@ function ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flav
         end
     end
 
-
 end
 
 
@@ -293,7 +271,7 @@ function diffSharedFields = xALS_test_CheckSharedJSONFields(jsonA,jsonB,sharedFi
             diffSharedFields = true;
         else
             % Now check the content
-            strError = xASL_bids_CompareFieldLists(jsonA,jsonB,sharedFields);
+            strError = xASL_bids_CompareFieldLists(jsonA,jsonB,sharedFields,{'Acknowledgements','GeneratedBy'});
             if ~isempty(strError)
                 diffSharedFields = true;
             end
