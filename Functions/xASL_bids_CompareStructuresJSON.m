@@ -73,7 +73,7 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
         end
 
         % Now we can compare these fields like in the part above
-        jsonErrorReport = [jsonErrorReport, xASL_bids_CompareFieldLists(jsonA,jsonB,sharedFieldsAB)];
+        jsonErrorReport = [jsonErrorReport, xASL_bids_CompareFieldLists(jsonA,jsonB,sharedFieldsAB, {'Acknowledgements','GeneratedBy'})];
 
         if ~isempty(jsonErrorReport)
             if bPrintReport
