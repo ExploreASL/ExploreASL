@@ -106,21 +106,21 @@ function [x] = xASL_init_LoadMetadata(x)
     bCreateParticipantsTsv = 0;
     
     if ~isempty(MatFileList)
-        warning('Legacy .mat-files detected in analysis rootfolder');
+        fprintf(2, 'Legacy .mat-files detected in analysis rootfolder\n');
         if ~isfield(x, 'S') || ~isfield(x.S, 'SetsName')
-            fprintf('But not added as sets\n');
-            fprintf('Were these .mat files without participant information?\n');
-            fprintf('Any participant information inside a .mat-file should be in a variable with identical name as the .mat filename\n');
+            fprintf(2, 'But not added as sets\n');
+            fprintf(2, 'Were these .mat files without participant information?\n');
+            fprintf(2, 'Any participant information inside a .mat-file should be in a variable with identical name as the .mat filename\n');
         elseif isempty(SetsInParticipantTSV)
-            fprintf('Creating participants.tsv file from them\n');
-            fprintf('Consider deleting the mat-files and keep the participants.tsv file only\n');
+            fprintf(2, 'Creating participants.tsv file from them\n');
+            fprintf(2, 'Consider deleting the mat-files and keep the participants.tsv file only\n');
             bCreateParticipantsTsv = 1;
         elseif isequal(SetsInParticipantTSV, x.S.SetsName)
-            warning('Both participants.tsv & legacy .mat-files existed, with the same parameters');
-            fprintf('Please merge these manually, and/or delete any old .mat-files\n');
+            fprintf(2, 'Both participants.tsv & legacy .mat-files existed, with the same parameters\n');
+            fprintf(2, 'Please merge these manually, and/or delete any old .mat-files\n');
         else
-            warning('Both participants.tsv & legacy .mat-files existed, trying to merge them');
-            fprintf('Consider deleting the mat-files and keep the participants.tsv file only\n');
+            fprintf(2, 'Both participants.tsv & legacy .mat-files existed, trying to merge them\n');
+            fprintf(2, 'Consider deleting the mat-files and keep the participants.tsv file only\n');
             bCreateParticipantsTsv = 1;
         end
     end
@@ -201,7 +201,7 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
             end
         end
         if HasEmptyCells
-            warning('participants.tsv contains empty cells, missing data should be filled by n/a (per BIDS)');
+            fprintf(2, 'participants.tsv contains empty cells, missing data should be filled by n/a (per BIDS)\n');
         end           
             
         
@@ -211,7 +211,7 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
         SiteIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(site).*(id)*$')), lower(CellArray(1,:))));
         
         if isempty(SubjectIndex)
-            warning('Couldnt find subject index, skipping this participant.tsv');
+            fprintf(2, 'Could not find subject index, skipping participant.tsv\n');
             return;
         end
         
@@ -706,7 +706,7 @@ if (ManyAbsent && CheckLength) || CheckLength2 % don't include this variable bec
     % (assuming continuous data has at least 25% of sample size
     % as unique values
     if exist('AbsentSubjects', 'var')
-        warning('%s\n',['Variable ' VarName ': following subjects were missing & set to NaN:']);
+        fprintf(2, ['Variable ' VarName ': following subjects were missing & set to NaN:\n']);
         for iAb=1:size(AbsentSubjects,1)
             fprintf('%s',[AbsentSubjects{iAb,1} ', ']);
             if  (iAb/12)==ceil(iAb/12) % 12 subjects per line
@@ -714,7 +714,7 @@ if (ManyAbsent && CheckLength) || CheckLength2 % don't include this variable bec
             end
         end
     else
-        warning('%s\n',['Variable ' VarName ': something wrong with this variable, data missing']);
+        fprintf(2, ['Variable ' VarName ': something wrong with this variable, data missing\n']);
     end
     fprintf('\n');
 end
