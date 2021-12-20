@@ -360,8 +360,19 @@ else
     end
 
     if ~isfield(x.Q,'BackgroundSuppressionNumberPulses')
-        warning('No background suppression pulses known, assuming no background suppression');
-        x.Q.BackgroundSuppressionNumberPulses = 0;
+        if strcmpi(x.Q.readoutDim, '3d') && strcmpi(x.Q.Vendor, 'ge')
+            warning('No background suppression pulses known, assuming 5 pulses for this GE 3D sequence (including the pre-pulse)');
+            x.Q.BackgroundSuppressionNumberPulses = 5;
+        elseif strcmpi(x.Q.readoutDim, '3d') && strcmpi(x.Q.Vendor, 'philips')
+            warning('No background suppression pulses known, assuming 4 pulses for this Philips 3D sequence (including the pre-pulse)');
+            x.Q.BackgroundSuppressionNumberPulses = 4;
+        elseif strcmpi(x.Q.readoutDim, '3d') && strcmpi(x.Q.Vendor, 'siemens')
+            warning('No background suppression pulses known, assuming 4 pulses for this Siemens 3D sequence (including the pre-pulse)');
+            x.Q.BackgroundSuppressionNumberPulses = 4;
+        else
+            warning('No background suppression pulses known, assuming no background suppression for this 2D sequence');
+            x.Q.BackgroundSuppressionNumberPulses = 0;
+        end
     end
 
 
