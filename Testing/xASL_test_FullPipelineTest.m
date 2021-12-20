@@ -169,6 +169,7 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
     clc
     
     % Print tables
+    fprintf('\n');
     fprintf('[\bCOMPARISON TABLE:]\b\n');
     disp(flavors.comparisonTable);
     fprintf('[\bLOGGING TABLE:]\b\n');
@@ -262,6 +263,8 @@ function ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flav
             if ~isempty(indexGen)
                 sharedFieldsAB(indexGen) = [];
             end
+            % Escape fields
+            [jsonA,jsonB] = xASL_test_EscapeToUnix(jsonA,jsonB,sharedFieldsAB);
             % Get differences
             diffSharedFields = xALS_test_CheckSharedJSONFields(jsonA,jsonB,sharedFieldsAB,false);
             % Fields that are in B, but missing in A
@@ -294,6 +297,25 @@ function diffSharedFields = xALS_test_CheckSharedJSONFields(jsonA,jsonB,sharedFi
             if ~isempty(strError)
                 diffSharedFields = true;
             end
+        end
+    end
+
+end
+
+
+%% Escape to unix
+function [jsonA,jsonB] = xASL_test_EscapeToUnix(jsonA,jsonB,sharedFields)
+
+    % Make it windows/unix compatible
+    for iField=1:numel(sharedFields)
+        curField = sharedFields{iField};
+        if ischar(jsonA.(curField))
+            jsonA.(curField) = strrep(jsonA.(curField),'\\','/');
+            jsonA.(curField) = strrep(jsonA.(curField),'\','/');
+        end
+        if ischar(jsonB.(curField))
+            jsonB.(curField) = strrep(jsonB.(curField),'\\','/');
+            jsonA.(curField) = strrep(jsonA.(curField),'\','/');
         end
     end
 
