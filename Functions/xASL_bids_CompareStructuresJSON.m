@@ -28,7 +28,7 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
 %
 % REFERENCES:       ...
 % __________________________________
-% Copyright @ 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
     % Ignore Acknowledgements (setting to ignore version differences (ExploreASL v1.x.x) there)
@@ -84,10 +84,11 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
             % Check if there is only a difference in Acknowledgements
             textToScan = erase(jsonErrorReport,newline);
             % Only one difference allowed
-            if length(strfind(textToScan,'Different value: Acknowledgements'))==1
-                onlyAcknowledgements = true;
-            else
-                onlyAcknowledgements = false;
+            onlyAcknowledgements = false;
+            if length(strfind(textToScan,'Different value:'))==1
+                if length(strfind(textToScan,'Different value: Acknowledgements'))==1
+                    onlyAcknowledgements = true;
+                end
             end
 
             % Save difference
