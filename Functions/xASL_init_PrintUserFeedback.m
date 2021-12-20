@@ -28,12 +28,11 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
             fprintf('%s\n','Or press CTRL/command-C to cancel...  ');
             pause;
         end
-        % Tell user to add output argument
-        if ~x.opts.bProcessData || x.opts.bLoadData
-            if x.opts.bLoadData && outputArguments==0
-                fprintf('Data loading requested but no output structure defined...\n');
-                fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
-            end
+        % Tell user to add output argument, if data loading was requested
+        % without processing
+        if ~x.opts.bProcessData && x.opts.bLoadData && outputArguments==0
+            fprintf('Data loading requested but no output structure defined...\n');
+            fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
         end
     else
         % Only print final feedback if data import or processing was performed
