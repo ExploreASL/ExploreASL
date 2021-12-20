@@ -29,6 +29,15 @@ function UnitTest = xASL_ut_master_xASL_ExploreASL_Master(TestRepository)
 % Copyright 2015-2021 ExploreASL
 
 
+%% ASL DRO 2.3.0 studyPar.json
+studyParJSON.LabelingDuration = 1.8;
+studyParJSON.LabelingType = 'PCASL';
+studyParJSON.ASLContext = ['m0scan ' ...
+                           'control label control label control label control label control label control label control label control label control label control label ' ...
+                           'control label control label control label control label control label control label control label control label control label control label ' ... 
+                           'control label control label control label control label control label control label control label control label control label control label'];
+
+
 %% Test run 1
 
 % Give your individual subtest a name
@@ -96,7 +105,7 @@ else
 end
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
@@ -171,7 +180,7 @@ else
 end
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);
@@ -246,7 +255,7 @@ else
 end
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(3).duration = toc(testTime);
@@ -304,7 +313,7 @@ if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1','T1w.nii'),'fil
 xASL_delete(testPatientDestination,true)
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(4).duration = toc(testTime);
@@ -329,6 +338,7 @@ droSubject = 'sub-001'; % DRO subject
 xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Convert BIDS back to temp for the testing
+studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyPar.json');
 tempDir = fullfile(droTestPatient,'derivatives','ExploreASL','temp');
 xASL_Move(fullfile(droTestPatient,'rawdata'),fullfile(tempDir))
 xASL_Move(fullfile(tempDir,droSubject),fullfile(tempDir,'Sub1'))
@@ -340,6 +350,10 @@ xASL_Move(fullfile(tempDir,'Sub1','T1w_1','sub-001_acq-003_T1w.nii.gz'),fullfile
 xASL_delete(fullfile(tempDir,'Sub1','ASL_1','sub-001_acq-001_aslcontext.tsv'))
 xASL_Move(fullfile(tempDir,'Sub1','ASL_1','sub-001_acq-001_asl.json'),fullfile(tempDir,'Sub1','ASL_1','ASL4D.json'))
 xASL_Move(fullfile(tempDir,'Sub1','ASL_1','sub-001_acq-001_asl.nii.gz'),fullfile(tempDir,'Sub1','ASL_1','ASL4D.nii.gz'))
+
+% Add studyPar JSON
+spm_jsonwrite(studyParPath,studyParJSON);
+xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
 testCondition = true;
@@ -385,7 +399,7 @@ end
 xASL_delete(testPatientDestination,true)
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(5).duration = toc(testTime);
@@ -403,11 +417,16 @@ UnitTest.tests(6).testname = 'DRO 2.3.0 (Deface, BIDS2Legacy)';
 testTime = tic;
 
 % Set-up DRO
+studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyPar.json');
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,droTestPatient);
+
+% Add studyPar JSON
+spm_jsonwrite(studyParPath,studyParJSON);
+xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
 testCondition = true;
@@ -456,7 +475,7 @@ end
 xASL_delete(testPatientDestination,true)
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(6).duration = toc(testTime);
@@ -474,6 +493,7 @@ UnitTest.tests(7).testname = 'DRO 2.3.0 (Deface, BIDS2Legacy with dataPar.json)'
 testTime = tic;
 
 % Set-up DRO
+studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyPar.json');
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
@@ -483,6 +503,10 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
 spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
+
+% Add studyPar JSON
+spm_jsonwrite(studyParPath,studyParJSON);
+xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
 testCondition = true;
@@ -553,7 +577,7 @@ end
 xASL_delete(testPatientDestination,true)
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(7).duration = toc(testTime);
@@ -571,6 +595,7 @@ UnitTest.tests(8).testname = 'DRO 2.3.0 (Run processing starting from derivative
 testTime = tic;
 
 % Set-up DRO
+studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyPar.json');
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
@@ -579,6 +604,10 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
 spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
+
+% Add studyPar JSON
+spm_jsonwrite(studyParPath,studyParJSON);
+xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
 testCondition = true;
@@ -633,7 +662,7 @@ end
 xASL_delete(testPatientDestination,true)
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(8).duration = toc(testTime);
@@ -651,6 +680,7 @@ UnitTest.tests(9).testname = 'DRO 2.3.0 (Run processing starting from derivative
 testTime = tic;
 
 % Set-up DRO
+studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyPar.json');
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
@@ -660,6 +690,10 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Mindboggle_OASIS_DKT31_CMA'};
 spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
+
+% Add studyPar JSON
+spm_jsonwrite(studyParPath,studyParJSON);
+xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
 testCondition = true;
@@ -695,7 +729,7 @@ end
 xASL_delete(testPatientDestination,true)
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(9).duration = toc(testTime);
@@ -713,11 +747,16 @@ UnitTest.tests(10).testname = 'DRO 2.3.0 (Full pipeline, rawdata->results)';
 testTime = tic;
 
 % Set-up DRO
+studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyPar.json');
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,droTestPatient);
+
+% Add studyPar JSON
+spm_jsonwrite(studyParPath,studyParJSON);
+xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
 testCondition = true;
@@ -800,7 +839,7 @@ end
 xASL_delete(testPatientDestination,true)
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(10).duration = toc(testTime);
@@ -820,6 +859,7 @@ testTime = tic;
 
 % Set-up DRO
 subjectName = 'sub-001';
+studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyPar.json');
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 xASL_Copy(droTestPatientSource,droTestPatient);
@@ -857,6 +897,10 @@ xASL_Copy(fullfile(droTestPatient,'rawdata',subjectName,'ground_truth','sub-001_
 xASL_delete(fullfile(droTestPatient,'rawdata',subjectName,'anat'),true);
 xASL_delete(fullfile(droTestPatient,'rawdata',subjectName,'perf'),true);
 xASL_delete(fullfile(droTestPatient,'rawdata',subjectName,'ground_truth'),true);
+
+% Add studyPar JSON
+spm_jsonwrite(studyParPath,studyParJSON);
+xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
 testCondition = true;
@@ -917,7 +961,7 @@ end
 xASL_delete(droTestPatient,true)
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
 UnitTest.tests(11).duration = toc(testTime);
