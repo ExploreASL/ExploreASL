@@ -1,12 +1,12 @@
-function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults,runProcessing)
+function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemoveResults, runProcessing)
 %xASL_test_FullPipelineTest BIDS testing script
 %
-% FORMAT: [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults,runProcessing)
+% FORMAT: [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemoveResults, runProcessing)
 % 
 % INPUT:
 %   testConfig        - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
 %   onlyRemoveResults - Set to true if you do not want to run test testing, 
-%                       but you want to delete existing test data (BOOLEAN, OPTIONAL) 
+%                       but you want to delete existing test data (BOOLEAN, OPTIONAL, DEFAULT = false) 
 %   runProcessing     - Run processing (BOOLEAN, DEFAULT=true)
 %
 % OUTPUT:

@@ -1,7 +1,7 @@
-function strError = xASL_bids_CompareFieldLists(jsonStructA,jsonStructB,fieldList)
+function strError = xASL_bids_CompareFieldLists(jsonStructA, jsonStructB, fieldList)
 %xASL_bids_CompareFieldLists Compare JSON file field lists
 %
-% FORMAT: strError = xASL_bids_CompareFieldLists(jsonStructA,jsonStructB,fieldList)
+% FORMAT: strError = xASL_bids_CompareFieldLists(jsonStructA, jsonStructB, fieldList)
 %
 % INPUT:
 %         jsonStructA - struct of JSON A (STRUCT, REQUIRED)
