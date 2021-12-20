@@ -1,7 +1,7 @@
-function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults,runProcessing)
+function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults,runProcessing)
 %xASL_test_FullPipelineTest BIDS testing script
 %
-% FORMAT: [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults,runProcessing)
+% FORMAT: [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig,onlyRemoveResults,runProcessing)
 % 
 % INPUT:
 %   testConfig        - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
@@ -12,7 +12,6 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
 % OUTPUT:
 %   flavors        - Struct containing the loggingTable and other fields
 %   testConfig     - Struct containing all relevant testing fields from the corresponding JSON file
-%   logContent     - Struct containing the logged warnings and errors
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:      Fully test the Flavors by DICOM->BIDS->Legacy import with dedicated
@@ -39,10 +38,10 @@ function [flavors, testConfig, logContent] = xASL_test_FullPipelineTest(testConf
 %
 % To remove test data from the flavor database you can run:
 %
-% [flavors, testConfig, logContent] = xASL_test_FullPipelineTest([],true);
+% [flavors, testConfig] = xASL_test_FullPipelineTest([],true);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [flavors, testConfig, logContent] = xASL_test_FullPipelineTest;
+% EXAMPLE: [flavors, testConfig] = xASL_test_FullPipelineTest;
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
@@ -153,8 +152,8 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
     % Ignore some files
     flavors = xALS_test_IgnoreFiles(flavors);
     
-    % Ignore version in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
-    flavors = xALS_test_IgnoreVersion(flavors, testConfig);
+    % Ignore Acknowledgements & GeneratedBy in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
+    flavors = xALS_test_IgnoreSomeFields(flavors, testConfig);
     
     % Save path
     savePath = fullfile(testConfig.pathExploreASL,'Testing','results.mat');
@@ -180,7 +179,7 @@ end
 
 
 %% Ignore version in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
-function flavors = xALS_test_IgnoreVersion(flavors,testConfig)
+function flavors = xALS_test_IgnoreSomeFields(flavors,testConfig)
 
     % Default
     ignoreRows = [];
@@ -214,35 +213,89 @@ function flavors = xALS_test_IgnoreVersion(flavors,testConfig)
                 filename = 'FLAIR.json';
             end
             % Search for dataset_description.json or other JSON files in derivatives
-            if ~isempty(regexpi(currentMessage,'ExploreASL')) && ~isempty(filename)
-                startExploreASL = regexpi(currentMessage,'ExploreASL');
-                pathA = fullfile(flavorPath,'derivatives',currentMessage(startExploreASL:end));
-                pathB = fullfile(flavorPath,'derivativesReference',currentMessage(startExploreASL:end));
-                if xASL_exist(pathA,'file') && xASL_exist(pathB,'file')
-                    % Actual comparison
-                    jsonA = spm_jsonread(pathA);
-                    jsonB = spm_jsonread(pathB);
-                    % Get fieldnames
-                    fieldNamesA = fieldnames(jsonA);
-                    fieldNamesB = fieldnames(jsonB);
-                    % Check which fields are shared and which different
-                    sharedFieldsAB = intersect(fieldNamesB,fieldNamesA);
-                    % Fields that are in B, but missing in A
-                    missingFields = setdiff(fieldNamesB,fieldNamesA);
-                    % Check that there are no fields missing and the only difference is the version
-                    if isempty(missingFields)
-                        if ~strcmp(jsonA.GeneratedBy.Version,jsonB.GeneratedBy.Version)
-                            ignoreRows = [ignoreRows iElement];
-                        end
-                    end
-                end
-            end
+            ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flavorPath,ignoreRows,iElement);
         end
     end
 
     % Actually remove the corresponding rows
     flavors.comparisonTable(ignoreRows,:) = [];
 
+
+end
+
+
+%% Compare JSON files but ignore the version field
+function ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flavorPath,ignoreRows,iElement)
+
+
+    if ~isempty(regexpi(currentMessage,'ExploreASL')) && ~isempty(filename)
+        startExploreASL = regexpi(currentMessage,'ExploreASL');
+        pathA = fullfile(flavorPath,'derivatives',currentMessage(startExploreASL:end));
+        pathB = fullfile(flavorPath,'derivativesReference',currentMessage(startExploreASL:end));
+        if xASL_exist(pathA,'file') && xASL_exist(pathB,'file')
+            % Actual comparison
+            jsonA = spm_jsonread(pathA);
+            jsonB = spm_jsonread(pathB);
+            % Get fieldnames
+            fieldNamesA = fieldnames(jsonA);
+            fieldNamesB = fieldnames(jsonB);
+            % Check which fields are shared and which different
+            sharedFieldsAB = intersect(fieldNamesB,fieldNamesA);
+            % Check shared fields besides Acknowledgements & GeneratedBy
+            if isfield(jsonA,'Acknowledgements')
+                jsonA = rmfield(jsonA,'Acknowledgements');
+            end
+            if isfield(jsonB,'Acknowledgements')
+                jsonB = rmfield(jsonB,'Acknowledgements');
+            end
+            if isfield(jsonA,'GeneratedBy')
+                jsonA = rmfield(jsonA,'GeneratedBy');
+            end
+            if isfield(jsonB,'GeneratedBy')
+                jsonB = rmfield(jsonB,'GeneratedBy');
+            end
+            indexAck = find(ismember(sharedFieldsAB, 'Acknowledgements'), 1);
+            if ~isempty(indexAck)
+                sharedFieldsAB(indexAck) = [];
+            end
+            indexGen = find(ismember(sharedFieldsAB, 'GeneratedBy'), 1);
+            if ~isempty(indexGen)
+                sharedFieldsAB(indexGen) = [];
+            end
+            % Get differences
+            diffSharedFields = xALS_test_CheckSharedJSONFields(jsonA,jsonB,sharedFieldsAB,false);
+            % Fields that are in B, but missing in A
+            missingFields = setdiff(fieldNamesB,fieldNamesA);
+            % We only want to remove a row from the comparison table if there are only difference
+            % in the Acknowledgements or GeneratedBy fields of the current JSON. It is important 
+            % that there are otherwise no missing files or differences in other fields.
+            if isempty(missingFields) && ~diffSharedFields
+                ignoreRows = [ignoreRows iElement];
+            end
+        end
+    end
+
+
+end
+
+
+%% We need to be sure that there are no differences in the shared fields for our JSON version comparison
+function diffSharedFields = xALS_test_CheckSharedJSONFields(jsonA,jsonB,sharedFields,diffSharedFields)
+
+    % Iterate over shared fields
+    for iField=1:numel(sharedFields)
+        curField = sharedFields{iField};
+        % Check type first
+        if ~strcmp(class(jsonA.(curField)),class(jsonB.(curField)))
+            diffSharedFields = true;
+        else
+            % Now check the content
+            strError = xASL_bids_CompareFieldLists(jsonA,jsonB,sharedFields);
+            if ~isempty(strError)
+                diffSharedFields = true;
+            end
+        end
+    end
 
 end
 
