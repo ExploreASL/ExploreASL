@@ -65,8 +65,8 @@ end
 try
     xASL_delete(x.S.SaveFile);
 catch ME
-    warning(['Couldnt delete ' x.S.SaveFile ', if it was opened, please close this file first']);
-    fprintf('%s\n',['Message: ' ME.message]);
+    fprintf(2, ['Couldnt delete ' x.S.SaveFile ', if it was opened, please close this file first\n']);
+    fprintf(2, ['Message: ' ME.message '\n']);
     return;
 end
 
@@ -78,8 +78,8 @@ end
 try
     xASL_adm_CreateDir(fileparts(x.S.SaveFile));
 catch ME
-    warning(['Couldnt delete ' x.S.SaveFile ', if it was opened, please close this file first']);
-    fprintf('%s\n',['Message: ' ME.message]);
+    fprintf(2, ['Couldnt delete ' x.S.SaveFile ', if it was opened, please close this file first\n']);
+    fprintf(2, ['Message: ' ME.message '\n']);
     return;    
 end
 
@@ -114,7 +114,7 @@ if bFollowSubjectSessions
             % check first if this SubjectSession has data, otherwise skip &
             % issue a warning
             if length(x.S.SubjectSessionID)<iSubjectSession || size(x.S.DAT, 1)<iSubjectSession || size(x.S.SetsID,1)<iSubjectSession
-                warning(['Missing data, skipping printing data for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}]);
+                fprintf(2, ['Missing data, skipping printing data for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession} '\n']);
             else
                 % print subject name
                 x.modules.population.(thisFile){iSubjectSession+2,1} = x.S.SubjectSessionID{iSubjectSession, 1}; % I'm not 100% sure this is correct, how do I test this?
@@ -153,7 +153,7 @@ else
         [startSubjectIndex, endSubjectIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, SubjectExpression);
         
         if isempty(startSubjectIndex) || isempty(endSubjectIndex)
-            warning(['Could not find subject for ' x.S.SubjectSessionID{iSubjSess}]);
+            fprintf(2, ['Could not find subject for ' x.S.SubjectSessionID{iSubjSess} '\n']);
 		else
 			% Look also for the session ID including the ASL_\d substring
 			[startSessionIndex, endSessionIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, 'ASL_\d+');
@@ -161,7 +161,7 @@ else
             if isempty(startSessionIndex) || isempty(endSessionIndex)
 				% If the sessionID was not found, then report a warning and use the entire expression for subjectID
 				SubjectID = x.S.SubjectSessionID{iSubjSess}(startSubjectIndex:endSubjectIndex);
-                warning(['Could not find session for ' x.S.SubjectSessionID{iSubjSess}]);
+                fprintf(2, ['Could not find session for ' x.S.SubjectSessionID{iSubjSess} '\n']);
 			else
 				% If session ID was identified, we have to double-check that session ID is not part of subject ID and exclude if necessary
 				SubjectID = x.S.SubjectSessionID{iSubjSess}(startSubjectIndex:min(endSubjectIndex, startSessionIndex-2));
@@ -193,18 +193,18 @@ else
                     SessionIndex = find(strcmp(x.SESSIONS, SessionID));
 
                     if isempty(SubjectIndex)
-                        warning(['Could not find subject ' SubjectID ', skipping']);
+                        fprintf(2, ['Could not find subject ' SubjectID ', skipping\n']);
                     else
                         SessionColumn = find(strcmpi(x.S.SetsName, 'session'));
                         if isempty(SessionColumn) || length(SessionColumn)>1
-                            warning('Could not find session data');
+                            fprintf(2, 'Could not find session data\n');
                         else
                             SessionN = iSubjSess;
                             if isempty(SessionN) || ~isnumeric(SessionN)
-                                warning(['Something wrong with session ' SessionID]);
+                                fprintf(2, ['Something wrong with session ' SessionID '\n']);
                             elseif SessionIndex>x.dataset.nSessions
                                 if ~max(printedSessionN==SessionN)
-                                    warning('Could not find values for other covariates');
+                                    fprintf(2, 'Could not find values for other covariates\n');
                                 end
                                 printedSessionN = [printedSessionN SessionN];
                             else
@@ -295,7 +295,7 @@ function [Legend] = xASL_stat_CreateLegend(x)
             end
         end
     else
-        warning('Could not find ROI names or filename to save, tsv header may be invalid');
+        fprintf(2, 'Could not find ROI names or filename to save, tsv header may be invalid\n');
     end
 
 end
