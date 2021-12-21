@@ -357,24 +357,38 @@ else
            error('x.Q.LabelingType was invalid, should be PASL|CASL|PCASL');
     elseif strcmpi(x.Q.LabelingType,'PCASL')
            x.Q.LabelingType = 'CASL';
-    end
+	end
 
-    if ~isfield(x.Q,'BackgroundSuppressionNumberPulses')
+	if isfield(x.Q,'BackgroundSuppression') && ~x.Q.BackgroundSuppression 
+		% In case BSup is defined and turned off, then we set the number of pulses to 0
+		x.Q.BackgroundSuppressionNumberPulses = 0;
+		% otherwise, Bsup is either not defined or BSup == true
+	elseif ~isfield(x.Q,'BackgroundSuppressionNumberPulses') || isempty(x.Q.BackgroundSuppressionNumberPulses)
+		% number of pulses or presence of BSup is not specified, then assign defaults
         if strcmpi(x.Q.readoutDim, '3d') && strcmpi(x.Q.Vendor, 'ge')
             warning('Unknown number of background suppression pulses, assuming 5 pulses for this GE 3D sequence (including the pre-pulse)');
+			x.Q.BackgroundSuppression = true; % We can set to TRUE since we know that this is either empty or TRUE already
             x.Q.BackgroundSuppressionNumberPulses = 5;
         elseif strcmpi(x.Q.readoutDim, '3d') && strcmpi(x.Q.Vendor, 'philips')
             warning('Unknown number of background suppression pulses, assuming 4 pulses for this Philips 3D sequence');
+			x.Q.BackgroundSuppression = true; % We can set to TRUE since we know that this is either empty or TRUE already
             x.Q.BackgroundSuppressionNumberPulses = 4;
         elseif strcmpi(x.Q.readoutDim, '3d') && strcmpi(x.Q.Vendor, 'siemens')
             warning('Unknown number of background suppression pulses, assuming 4 pulses for this Siemens 3D sequence');
+			x.Q.BackgroundSuppression = true; % We can set to TRUE since we know that this is either empty or TRUE already
             x.Q.BackgroundSuppressionNumberPulses = 4;
-		elseif strcmpi(x.Q.readoutDim, '2d') && strcmpi(x.Q.Vendor, 'philips')
-			warning('Unknown number of background suppression pulses, assuming 2 pulses for this Philips 2D sequence');
-			x.Q.BackgroundSuppressionNumberPulses = 4;
-        else
-            warning('Unknown number of background suppression pulses, assuming 2 pulses');
-            x.Q.BackgroundSuppressionNumberPulses = 2;
+			% For 3D cases, the defaults are rather consistent for product sequences, for 2D below, we are not so sure
+		else
+			if isfield(x.Q,'BackgroundSuppression')
+				% So if BSup was defined, we set the default to 2
+				warning('Unknown number of background suppression pulses for a 2D, assuming 2 pulses');
+				x.Q.BackgroundSuppressionNumberPulses = 2;
+			else
+				% otherwise we assume noBsup
+				warning('For 2D sequences, the Bsup is turned off by default, assuming 0 pulses');
+				x.Q.BackgroundSuppression = false;
+				x.Q.BackgroundSuppressionNumberPulses = 0;
+			end
         end
     end
 
