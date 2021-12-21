@@ -411,7 +411,7 @@ if ~isfield(jsonOut,'TotalAcquiredPairs') || jsonOut.TotalAcquiredPairs == 1
 		if sum(ASLContextControlIndex) == 0 && sum(ASLContextLabelIndex) == 0
 			nPLD = length(unique(jsonOut.PostLabelingDelay(jsonOut.PostLabelingDelay>0)));
 			
-			if mod(sum(ASLContextDeltaMIndex), nPLD + 1) == 0 && regexpi(jsonOut.Manufacturer,'GE')
+			if (nPLD == 3 || nPLD == 7) && mod(sum(ASLContextDeltaMIndex), nPLD + 1) == 0 && regexpi(jsonOut.Manufacturer,'GE')
 				% Multi-PLD GE, with Hadamard encoding
 				% We need to divide the TotalAcquiredPairs by the number of PLDs+1 (the number of Hadamard phases)
 				jsonOut.TotalAcquiredPairs = sum(ASLContextDeltaMIndex) / (nPLD+1);
