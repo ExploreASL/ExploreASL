@@ -84,7 +84,7 @@ SortInt = SortInt(~isnan(SortInt));
 if ~isempty(SortInt)
 	% These thresholds are relatively conservative, otherwise this won't
 	% work in cases of biasfields
-    ThresholdN = SortInt(round(0.6*length(SortInt)));
+    ThresholdN = SortInt(round(0.7*length(SortInt)));
 
 	% Remove peak signal as well
 	ThresholdN2 = SortInt(round(0.999*length(SortInt)));
