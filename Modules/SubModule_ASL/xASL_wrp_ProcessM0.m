@@ -229,7 +229,7 @@ else
 
     fprintf('%s\n','Running new M0 processing method');
     % run the new M0 image processing
-    IM = xASL_im_M0ErodeSmoothExtrapolate(xASL_io_Nifti2Im(x.P.Pop_Path_M0), x);
+    IM = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.settings.Quality);
     xASL_io_SaveNifti(x.P.Pop_Path_M0, x.P.Pop_Path_M0, IM);
     % Copy M0 biasfield to native space for native space quantification
 
