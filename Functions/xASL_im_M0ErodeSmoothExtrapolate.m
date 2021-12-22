@@ -1,15 +1,20 @@
-function [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
+function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, Quality)
 
 %xASL_im_M0ErodeSmoothExtrapolate M0 image processing
 %
 % FORMAT: [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
 %
 % INPUT:
-%   ImIn - unprocessed M0 image (REQUIRED, 3D image or path)
-%   x    - structure containing fields with all information required to run this submodule (REQUIRED)
+%   ImIn - unprocessed M0 image (3D image or path, REQUIRED)
+%   DirOutput - sring path to output folder, used to be x.D.M0regASLdir (REQUIRED)
+%   NameOutput - string for filename in ['M0_im_proc_' NameOutput '.jpg'], used to be x.P.SubjectID (REQUIRED)
+%   pvGM  - unprocessed pvGM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc1T1)
+%   pvWM  - unprocessed pvWM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc2T1)
+%   Quality - boolean for high (1) or low (0) processing quality (used to be x.settings.Quality, OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:
-%   ImOut - processed M0 image
+%   ImOut    - processed M0 image
+%   VisualQC - visualization of the M0 processing steps for quality control
 % OUTPUT FILES: Visual QC image of M0 processing
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This function erodes, smooths & extrapolates M0 in standard space.
@@ -29,7 +34,7 @@ function [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
 %               8. Print visual QC figure
 %
 %               A visual QC figure is created, showing the M0 image processing steps for a single transversal slice (slice 53 in `1.5 mm` MNI standard space)
-%               `OutputFile = fullfile(x.D.M0regASLdir,['M0_im_proc_' x.P.SubjectID '.jpg']);`
+%               `OutputFile = fullfile(DirOutput,['M0_im_proc_' NameOutput '.jpg']);`
 %               The original M0 image (a) is masked with a (pGM+pWM)>50% mask (b)
 %               eroded with a two-voxel sphere to limit the influence of the ventricular and extracranial signal (c)
 %               and thresholded to exclude significantly high (i.e. median + 3*mean absolute deviation (MAD)) border region values (d)
@@ -44,33 +49,46 @@ function [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
 
 %% ------------------------------------------------------------------------------------------
 %% Admin)
-% Also allow path input
-ImIn = xASL_io_Nifti2Im(ImIn);
+if nargin<6 || isempty(Quality)
+    fprintf('%s\n', 'Quality parameter missing, defaulting to normal quality');
+    Quality = 1;
+end
+
+if nargin<3 || isempty(NameOutput)
+    error('Please specify the output name');
+elseif nargin<2 || isempty(DirOutput)
+    error('Please specify output folder');
+elseif nargin<1 || isempty(ImIn)
+    error('Please specify M0 image to be processed');
+end
 
 % Initialize the defaults
+ImIn = xASL_io_Nifti2Im(ImIn);
+
 GMmask = zeros(size(ImIn));
-Mask1  = zeros(size(ImIn));
-Mask2  = zeros(size(ImIn));
+Mask1 = zeros(size(ImIn));
+Mask2 = zeros(size(ImIn));
+ExistpGMpWM = 0;
+
 
 %% ------------------------------------------------------------------------------------------
 %% Mask 1) Load segmentations, create structural mask
-ExistpGMpWM = xASL_exist(x.P.Pop_Path_rc1T1) && xASL_exist(x.P.Pop_Path_rc2T1);
-if ExistpGMpWM
-    fprintf('%s\n','Masking M0 with structural (pGM+pWM)>0.5 & 70% non-zero sorted intensities');
-    GMim = xASL_io_Nifti2Im(x.P.Pop_Path_rc1T1);
-    WMim = xASL_io_Nifti2Im(x.P.Pop_Path_rc2T1);
 
-    if xASL_stat_SumNan(GMim(:))==0
-        warning(['Empty image:' x.P.Pop_Path_rc1T1]);
-    end
-    if xASL_stat_SumNan(WMim(:))==0
-        warning(['Empty image:' x.P.Pop_Path_rc2T1]);
-    end    
-    
-    GMmask = GMim>0.7;
-    Mask1 = (GMim+WMim)>0.5;
-else
+if nargin<5 || isempty(pvWM) || isempty(pvGM)
     fprintf('%s\n','Masking M0 with intensity-based mask only, structural (pGM+pWM) files missing');
+else
+    GMim = xASL_io_Nifti2Im(pvGM);
+    WMim = xASL_io_Nifti2Im(pvWM);
+    
+    if xASL_stat_SumNan(GMim(:))==0
+        warning('Empty GM image');
+    elseif xASL_stat_SumNan(WMim(:))==0
+        warning('Empty WM image');
+    else
+        GMmask = GMim>0.7;
+        Mask1 = (GMim+WMim)>0.5;
+        ExistpGMpWM = 1;
+    end
 end
 
 
@@ -158,7 +176,7 @@ ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
 xASL_TrackProgress(1,MaxIt);
 Im5 = ImOut;
 
-if x.settings.Quality    
+if Quality
     ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
 else % in case of low quality, we leave this to the xASL_im_FillNaNs below,
      % where a smaller kernel will go much faster for low quality 
@@ -169,7 +187,7 @@ xASL_TrackProgress(2, MaxIt);
 %% 6) Extrapolating only
 % Here we fill the residual NaNs (outside the mask) of the FoV
 % to prevent ASL/M0 division artifacts
-ImOut = xASL_im_FillNaNs(ImOut, 1, x.settings.Quality, VoxelSize, x);
+ImOut = xASL_im_FillNaNs(ImOut, 1, Quality, VoxelSize, x);
 
 
 %% ------------------------------------------------------------------------------------------
@@ -188,11 +206,11 @@ ImOut = ImOut.*RatioN;
 %% 8) Print visual QC figure
 
 S2S = 53; % slice to show
-IM = [xASL_im_rotate(ImIn(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask2(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask3(:,:,S2S),90) ; xASL_im_rotate(ImIn(:,:,S2S).*Mask4(:,:,S2S),90) xASL_im_rotate(Im5(:,:,S2S),90) xASL_im_rotate(ImOut(:,:,S2S),90)];
+VisualQC = [xASL_im_rotate(ImIn(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask2(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask3(:,:,S2S),90) ; xASL_im_rotate(ImIn(:,:,S2S).*Mask4(:,:,S2S),90) xASL_im_rotate(Im5(:,:,S2S),90) xASL_im_rotate(ImOut(:,:,S2S),90)];
 
-xASL_adm_CreateDir(x.D.M0regASLdir);
-OutputFile = fullfile(x.D.M0regASLdir,['M0_im_proc_' x.P.SubjectID '.jpg']);
+xASL_adm_CreateDir(DirOutput);
+OutputFile = fullfile(DirOutput,['M0_im_proc_' NameOutput '.jpg']);
 fprintf('%s\n',['Writing ' OutputFile]);
-xASL_vis_Imwrite(IM, OutputFile);
+xASL_vis_Imwrite(VisualQC, OutputFile);
 
 end
