@@ -187,7 +187,7 @@ xASL_TrackProgress(2, MaxIt);
 %% 6) Extrapolating only
 % Here we fill the residual NaNs (outside the mask) of the FoV
 % to prevent ASL/M0 division artifacts
-ImOut = xASL_im_FillNaNs(ImOut, 1, Quality, VoxelSize, x);
+ImOut = xASL_im_FillNaNs(ImOut, 1, Quality, VoxelSize);
 
 
 %% ------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, x)
+function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize)
 %xASL_im_FillNaNs Fill NaNs in image
 % FORMAT: xASL_im_FillNaNs(InputPath[, UseMethod, bQuality])
 %
@@ -19,7 +19,6 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, x)
 %                 (OPTIONAL, DEFAULT = 1)
 %   VoxelSize   - [X Y Z] vector for voxel size 
 %                 (OPTIONAL, DEFAULT = [1.5 1.5 1.5])
-%   x           - ExploreASL parameter struct (REQUIRED for option 3)
 %
 % OUTPUT:
 %   IM          - image matrix in which NaNs were filled
