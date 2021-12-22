@@ -90,6 +90,15 @@ function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemo
         testConfig.flavorList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
     end
     
+    % Load database JSON
+    if xASL_exist(fullfile(testConfig.pathFlavorDatabase,'flavors.json'),'file')
+        databaseInfo = spm_jsonread(fullfile(testConfig.pathFlavorDatabase,'flavors.json'));
+        flavors.data = databaseInfo.flavors;
+        clear databaseInfo
+    else
+        error('The flavors.json file is missing...');
+    end
+    
     
     %% Logging table
     flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});

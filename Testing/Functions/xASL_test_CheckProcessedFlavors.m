@@ -1,9 +1,10 @@
-function loggingTable = xASL_test_CheckProcessedFlavors(testConfig,loggingTable)
+function loggingTable = xASL_test_CheckProcessedFlavors(testConfig,flavorData,loggingTable)
 %xASL_test_CheckProcessedFlavors Check processed flavors
 %
 % FORMAT: loggingTable = xASL_test_CheckProcessedFlavors(testConfig,loggingTable)
 %
 % INPUT:        testConfig   - Struct containing test infos (STRUCT, REQUIRED)
+%               flavorData   - Reference data of the flavors (STRUCT ARRAY, REQUIRED)
 %               loggingTable - Logging table (REQUIRED)
 %
 % OUTPUT:       loggingTable - Logging table
@@ -19,14 +20,23 @@ function loggingTable = xASL_test_CheckProcessedFlavors(testConfig,loggingTable)
     % Iterate over flavors
     for iList=1:numel(testConfig.flavorList)
         currentFlavor = fullfile(testConfig.pathFlavorDatabase,testConfig.flavorList{iList});
+        currentData = xASL_test_GetCurrentFlavorData(flavorData,currentFlavor);
         pathDerivatives = fullfile(currentFlavor,'derivatives');
         % Process data that were converted to derivatives
         if exist(pathDerivatives,'dir')
             pathExploreASLflavor = fullfile(pathDerivatives,'ExploreASL');
             if exist(pathExploreASLflavor,'dir')
-                % Check current flavor
-                loggingTable = xASL_test_CheckProcessedFlavor(pathExploreASLflavor,currentFlavor,loggingTable);
+                if ~isempty(currentData)
+                    % Check current flavor
+                    loggingTable = xASL_test_CheckProcessedFlavor(pathExploreASLflavor,currentFlavor,loggingTable,currentData);
+                else
+                    warning('No reference data for this flavor...');
+                end
+            else
+                warning('No ExploreASL data...');
             end
+        else
+            warning('No derivatives data...');
         end
     end
 
@@ -34,21 +44,24 @@ end
 
 
 %% Check the current processed flavor, if there is something missing then we return a logging entry
-function loggingTable = xASL_test_CheckProcessedFlavor(pathFlavor,currentFlavor,loggingTable)
+function loggingTable = xASL_test_CheckProcessedFlavor(pathFlavor,currentFlavor,loggingTable,currentData)
     
     % Get all files in this flavor directory
     allFiles = xASL_adm_GetFileList(pathFlavor,'.','FPListRec');
     
     % Check list
-    checkList{1,1} = 'dataPar.json';
-    checkList{2,1} = 'dataset_description.json';
-    checkList{3,1} = ['xASL_Report_' '.*' '.pdf'];
-    checkList{4,1} = ['catreport_' '.*' '.pdf'];
-    checkList{5,1} = ['QC_collection_' '.*' '.json'];
-    checkList{6,1} = ['xASL_module_Import_' '.*' '.log'];
-    checkList{7,1} = ['xASL_module_Structural_' '.*' '.log'];
-    checkList{8,1} = ['xASL_module_ASL_' '.*' '.log'];
-    checkList{9,1} = 'CBF.nii.gz';
+    it = 1;
+    checkList{it,1} = 'dataPar.json'; it=it+1;
+    checkList{it,1} = 'dataset_description.json'; it=it+1;
+    checkList{it,1} = ['xASL_Report_' '.*' '.pdf']; it=it+1;
+    if ~currentData.dummyStructural
+        checkList{it,1} = ['catreport_' '.*' '.pdf']; it=it+1;
+    end
+    checkList{it,1} = ['QC_collection_' '.*' '.json']; it=it+1;
+    checkList{it,1} = ['xASL_module_Import_' '.*' '.log']; it=it+1;
+    checkList{it,1} = ['xASL_module_Structural_' '.*' '.log']; it=it+1;
+    checkList{it,1} = ['xASL_module_ASL_' '.*' '.log']; it=it+1;
+    checkList{it,1} = 'CBF.nii.gz'; it=it+1;
     
     % Iterate over check list
     for iCheck=1:numel(checkList)
@@ -70,6 +83,21 @@ function loggingTable = xASL_test_CheckProcessedFlavor(pathFlavor,currentFlavor,
             [~, logEntry.name] = xASL_fileparts(currentFlavor);
             loggingTable = xASL_test_AddLoggingEntryToTable(logEntry.name,loggingTable,logEntry);
             clear logEntry
+        end
+    end
+
+end
+
+
+%% Get the data of this flavor
+function currentData = xASL_test_GetCurrentFlavorData(flavorData,currentFlavor)
+
+    currentData = [];
+    for iFlavor = 1:numel(flavorData)
+        [~, currentName] = xASL_fileparts(currentFlavor);
+        if strcmp(flavorData(iFlavor).name,currentName)
+            currentData = flavorData(iFlavor);
+            return 
         end
     end
 
