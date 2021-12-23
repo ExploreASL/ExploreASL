@@ -289,7 +289,7 @@ for iS=1:x.nSubjects
     if xASL_exist(y_file, 'file')
 
 		xASL_adm_UnzipNifti(y_file, 1);
-        xASL_im_FillNaNs(y_file, 3, x.settings.Quality, [], x);
+        xASL_im_FillNaNs(y_file, 3, x.settings.Quality);
 
         clear matlabbatch
         matlabbatch{1}.spm.util.defs.comp{1}.def = {y_file};

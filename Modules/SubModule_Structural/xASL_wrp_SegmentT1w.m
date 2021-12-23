@@ -317,7 +317,7 @@ if ~x.settings.Quality % With low quality, registration was performed on lower r
 end
 
 % Fill NaNs with identity for smooth edges of flow fields
-xASL_im_FillNaNs(x.P.Path_y_T1, 3, x.settings.Quality, [], x);
+xASL_im_FillNaNs(x.P.Path_y_T1, 3, x.settings.Quality);
 
 
 
