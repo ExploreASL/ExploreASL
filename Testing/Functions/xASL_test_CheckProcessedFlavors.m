@@ -1,7 +1,7 @@
-function loggingTable = xASL_test_CheckProcessedFlavors(testConfig,flavorData,loggingTable)
+function loggingTable = xASL_test_CheckProcessedFlavors(testConfig, flavorData, loggingTable)
 %xASL_test_CheckProcessedFlavors Check processed flavors
 %
-% FORMAT: loggingTable = xASL_test_CheckProcessedFlavors(testConfig,loggingTable)
+% FORMAT: loggingTable = xASL_test_CheckProcessedFlavors(testConfig, flavorData, loggingTable)
 %
 % INPUT:        testConfig   - Struct containing test infos (STRUCT, REQUIRED)
 %               flavorData   - Reference data of the flavors (STRUCT ARRAY, REQUIRED)
@@ -12,7 +12,7 @@ function loggingTable = xASL_test_CheckProcessedFlavors(testConfig,flavorData,lo
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Check processed flavors.
 %
-% EXAMPLE:      loggingTable = xASL_test_CheckProcessedFlavors(testConfig,loggingTable);
+% EXAMPLE:      loggingTable = xASL_test_CheckProcessedFlavors(testConfig, flavorData, loggingTable);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright (c) 2015-2021 ExploreASL
