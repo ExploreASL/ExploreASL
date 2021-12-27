@@ -1,4 +1,4 @@
-function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, Quality)
+function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, Quality, LowThreshold, brainMap)
 
 %xASL_im_M0ErodeSmoothExtrapolate M0 image processing
 %
@@ -11,13 +11,16 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %   pvGM  - unprocessed pvGM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc1T1)
 %   pvWM  - unprocessed pvWM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc2T1)
 %   Quality - boolean for high (1) or low (0) processing quality (used to be x.settings.Quality, OPTIONAL, DEFAULT = true)
+%   LowThreshold - numerical value between 0 and 1 for percentile sorted images values that will define the inclusion mask (mask>LowThreshold)
+%                   (OPTIONAL, DEFAULT=0.7)
+%   brainMap - brain mask probability map multiplied by centrality map (3D image or path, REQUIRED)
 %
 % OUTPUT:
 %   ImOut    - processed M0 image
 %   VisualQC - visualization of the M0 processing steps for quality control
 % OUTPUT FILES: Visual QC image of M0 processing
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  This function erodes, smooths & extrapolates M0 in standard space.
+% DESCRIPTION:  This function erodes, smooths & extrapolates M0 in MNI standard space (tested at 1.5x1.5x1.5mm as used in ExploreASL).
 %               It assumes that the M0 image is in standard space & that the GM & WM probability maps
 %               are aligned. Here, we mask the M0, to remove high CSF signal and low extracranial signal,
 %               enabling us to smooth the image without inserting wrong signal. See also
@@ -26,6 +29,9 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %
 %               1. Mask: Load segmentations, create structural mask
 %               2. Mask: Create intensity-based mask to remove extracranial signal
+%                   This uses the LowThreshold input parameter, which
+%                   should be sufficiently high to exclude brain edges or susceptibility artifacts
+%                   but also sufficiently low not to exclude too much in case of biasfields 
 %               3. Mask: Erode the combined masks
 %               4. Mask: Determine any odd borders
 %               5. Smoothing
@@ -49,6 +55,14 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 
 %% ------------------------------------------------------------------------------------------
 %% Admin)
+if nargin<7 || isempty(LowThreshold)
+    LowThreshold = 0.7;
+elseif ~isnumeric(LowThreshold)
+    error('Invalid LowThreshold input parameter, should be numerical');
+elseif LowThreshold<0 || LowThreshold>1
+    error('Invalid LowThreshold value, should be between 0 and 1');
+end
+
 if nargin<6 || isempty(Quality)
     fprintf('%s\n', 'Quality parameter missing, defaulting to normal quality');
     Quality = 1;
@@ -70,7 +84,6 @@ Mask1 = zeros(size(ImIn));
 Mask2 = zeros(size(ImIn));
 ExistpGMpWM = 0;
 
-
 %% ------------------------------------------------------------------------------------------
 %% Mask 1) Load segmentations, create structural mask
 
@@ -91,31 +104,38 @@ else
     end
 end
 
-
 %% ------------------------------------------------------------------------------------------
 %% Mask 2) Create intensity-based mask to remove extracranial signal
+% Multiply the image with the brain mask centrality map
+dummyImage = ImIn.*xASL_io_Nifti2Im(brainMap);
+
 % Get NaNs
-SortInt = sort(ImIn(:));
+SortInt = sort(dummyImage(:));
 SortInt = SortInt(~isnan(SortInt));
 
 % Create masks
 if ~isempty(SortInt)
-	% These thresholds are relatively conservative, otherwise this won't
-	% work in cases of biasfields
-    ThresholdN = SortInt(round(0.7*length(SortInt)));
-
+    % Lower threshold
+    ThresholdN = SortInt(round(LowThreshold*length(SortInt)));
+    
 	% Remove peak signal as well
 	ThresholdN2 = SortInt(round(0.999*length(SortInt)));
 
 	% Combine these masks
+    Mask2 = (dummyImage>ThresholdN) & (dummyImage<ThresholdN2);
 	if ExistpGMpWM
-		Mask2 = Mask1 & (ImIn>ThresholdN) & (ImIn<ThresholdN2);
-	else
-		Mask2 = (ImIn>ThresholdN) & (ImIn<ThresholdN2);
-		GMmask = ImIn>SortInt(round(0.85*length(SortInt))) & ImIn<SortInt(round(0.95*length(SortInt)));
+		Mask2 = Mask1 & Mask2;
+    else
+		GMmask = dummyImage>SortInt(round(0.85*length(SortInt))) & dummyImage<SortInt(round(0.95*length(SortInt)));
 	end
 else
 	warning('M0 image only contains NaN values...');
+end
+
+% -> Enforce to include the eroded GM/WM
+if ExistpGMpWM
+    Mask1Eroded = xASL_im_DilateErodeFull(Mask1, 'erode', xASL_im_DilateErodeSphere(4));
+	Mask2(Mask1Eroded) = 1;
 end
 
 %% ------------------------------------------------------------------------------------------
