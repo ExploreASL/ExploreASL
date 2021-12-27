@@ -1,8 +1,7 @@
-function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, Quality, LowThreshold, brainMap)
-
+function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainMap, Quality, LowThreshold)
 %xASL_im_M0ErodeSmoothExtrapolate M0 image processing
 %
-% FORMAT: [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM[, Quality, LowThreshold, brainMap])
+% FORMAT: [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainMap[, Quality, LowThreshold])
 %
 % INPUT:
 %   ImIn - unprocessed M0 image (3D image or path, REQUIRED)
@@ -10,10 +9,10 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %   NameOutput - string for filename in ['M0_im_proc_' NameOutput '.jpg'], used to be x.P.SubjectID (REQUIRED)
 %   pvGM  - unprocessed pvGM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc1T1)
 %   pvWM  - unprocessed pvWM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc2T1)
+%   brainMap - brain mask probability map multiplied by centrality map (3D image or path, REQUIRED)
 %   Quality - boolean for high (1) or low (0) processing quality (used to be x.settings.Quality, OPTIONAL, DEFAULT = true)
 %   LowThreshold - numerical value between 0 and 1 for percentile sorted images values that will define the inclusion mask (mask>LowThreshold)
 %                   (OPTIONAL, DEFAULT=0.7)
-%   brainMap - brain mask probability map multiplied by centrality map (3D image or path, REQUIRED)
 %
 % OUTPUT:
 %   ImOut    - processed M0 image
@@ -48,32 +47,48 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %               after which the signal at the border is smoothly extrapolated until the full image is filled (f).
 %               Whereas the masking avoids mixing with cerebrospinal fluid or extracranial signal, the extrapolation avoids M0 division artifacts
 %
-% EXAMPLE: [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, [] , [], path_BrainCentralityMap)
+% EXAMPLE: [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, path_BrainCentralityMap)
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------
 %% Admin)
-if nargin<7 || isempty(LowThreshold)
+if nargin < 1 || isempty(ImIn)
+    error('Please specify M0 image to be processed');
+end
+
+if nargin < 2 || isempty(DirOutput)
+	error('Please specify output folder');
+end
+
+if nargin < 3 || isempty(NameOutput)
+	error('Please specify the output name');
+end
+
+if nargin < 4 || isempty(pvGM)
+	error('Please specify the pvGM');
+end
+
+if nargin < 5 || isempty(pvWM)
+	error('Please specify the pvWM');
+end
+
+if nargin < 6 || isempty(brainMap)
+	error('Please specify brainMap');
+end
+
+if nargin < 7 || isempty(Quality)
+    fprintf('%s\n', 'Quality parameter missing, defaulting to normal quality');
+    Quality = 1;
+end
+
+if nargin < 8 || isempty(LowThreshold)
     LowThreshold = 0.7;
 elseif ~isnumeric(LowThreshold)
     error('Invalid LowThreshold input parameter, should be numerical');
 elseif LowThreshold<0 || LowThreshold>1
     error('Invalid LowThreshold value, should be between 0 and 1');
-end
-
-if nargin<6 || isempty(Quality)
-    fprintf('%s\n', 'Quality parameter missing, defaulting to normal quality');
-    Quality = 1;
-end
-
-if nargin<3 || isempty(NameOutput)
-    error('Please specify the output name');
-elseif nargin<2 || isempty(DirOutput)
-    error('Please specify output folder');
-elseif nargin<1 || isempty(ImIn)
-    error('Please specify M0 image to be processed');
 end
 
 % Initialize the defaults

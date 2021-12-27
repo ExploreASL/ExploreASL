@@ -229,7 +229,7 @@ else
     fprintf('%s\n','Running new M0 processing method');
     % run the new M0 image processing
     path_BrainCentralityMap = fullfile(x.D.MapsSPMmodifiedDir, 'brainCentralityMap.nii');
-    IM = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.settings.Quality, [], path_BrainCentralityMap);
+    IM = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, path_BrainCentralityMap, x.settings.Quality);
     xASL_io_SaveNifti(x.P.Pop_Path_M0, x.P.Pop_Path_M0, IM);
     % Copy M0 biasfield to native space for native space quantification
 
