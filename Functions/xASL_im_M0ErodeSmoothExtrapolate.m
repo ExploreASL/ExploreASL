@@ -2,7 +2,7 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 
 %xASL_im_M0ErodeSmoothExtrapolate M0 image processing
 %
-% FORMAT: [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
+% FORMAT: [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM[, Quality, LowThreshold, brainMap])
 %
 % INPUT:
 %   ImIn - unprocessed M0 image (3D image or path, REQUIRED)
@@ -48,7 +48,7 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %               after which the signal at the border is smoothly extrapolated until the full image is filled (f).
 %               Whereas the masking avoids mixing with cerebrospinal fluid or extracranial signal, the extrapolation avoids M0 division artifacts
 %
-% EXAMPLE: [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, x)
+% EXAMPLE: [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, [] , [], path_BrainCentralityMap)
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
 

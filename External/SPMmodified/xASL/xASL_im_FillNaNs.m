@@ -1,6 +1,6 @@
 function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize)
 %xASL_im_FillNaNs Fill NaNs in image
-% FORMAT: xASL_im_FillNaNs(InputPath[, UseMethod, bQuality])
+% FORMAT: xASL_im_FillNaNs(InputPath[, UseMethod, bQuality, VoxelSize])
 %
 % INPUT:
 %   InputPath   - path to image, or image matrix (REQUIRED)
@@ -82,10 +82,6 @@ if UseMethod==1 % only method that needs VoxelSize
         end
         
     end
-end
-
-if nargin<5 || isempty(x)
-    x = struct;
 end
 
 %% ------------------------------------------------------------------------------
