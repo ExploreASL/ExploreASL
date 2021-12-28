@@ -135,6 +135,8 @@ Mask2 = Mask1 & Mask2;
 % regions. Here, we force that a strong eroded tissue brainmask is still
 % restored (we don't expect susceptibility artifacts in the brainmask)
 Mask1Eroded = xASL_im_DilateErodeFull(Mask1, 'erode', xASL_im_DilateErodeSphere(4));
+% But it still has to fall within the FoV, so we mask it with NaNs
+Mask1Eroded(isnan(ImIn)) = 0;
 Mask2(Mask1Eroded) = 1;
 
 
