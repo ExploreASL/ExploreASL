@@ -4,12 +4,12 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 % FORMAT: [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainCentralityMap[, LowThreshold])
 %
 % INPUT:
-%   ImIn - unprocessed M0 image (3D image or path, REQUIRED)
+%   ImIn - unprocessed M0 image, as 3D image or path (REQUIRED)
 %   DirOutput - sring path to output folder, used to be x.D.M0regASLdir (REQUIRED)
-%   NameOutput - string for filename in ['M0_im_proc_' NameOutput '.jpg'], used to be x.P.SubjectID (REQUIRED)
-%   pvGM  - unprocessed pvGM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc1T1)
-%   pvWM  - unprocessed pvWM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc2T1)
-%   brainCentralityMap - brain mask probability map multiplied by centrality map (3D image or path, REQUIRED)
+%   NameOutput - string for filename in ['M0_im_proc_' NameOutput '.jpg'] (REQUIRED)
+%   pvGM  - unprocessed pvGM image (3D image or path, same space as M0 image (REQUIRED)
+%   pvWM  - unprocessed pvWM image (3D image or path, same space as M0 image (REQUIRED)
+%   brainCentralityMap - brain mask probability map multiplied by centrality map, as 3D image or path (REQUIRED)
 %   LowThreshold - numerical value between 0 and 1 for percentile sorted images values that will define the inclusion mask (mask>LowThreshold)
 %                   (OPTIONAL, DEFAULT=0.7)
 %
@@ -46,38 +46,26 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %               after which the signal at the border is smoothly extrapolated until the full image is filled (f).
 %               Whereas the masking avoids mixing with cerebrospinal fluid or extracranial signal, the extrapolation avoids M0 division artifacts
 %
-% EXAMPLE: [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, path_BrainCentralityMap)
+% EXAMPLE as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, path_BrainCentralityMap)
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------
-%% Admin)
+%% 0. Admin
 if nargin < 1 || isempty(ImIn)
     error('Please specify M0 image to be processed');
-end
-
-if nargin < 2 || isempty(DirOutput)
+elseif nargin < 2 || isempty(DirOutput)
 	error('Please specify output folder');
-end
-
-if nargin < 3 || isempty(NameOutput)
+elseif nargin < 3 || isempty(NameOutput)
 	error('Please specify the output name');
-end
-
-if nargin < 4 || isempty(pvGM)
+elseif nargin < 4 || isempty(pvGM)
 	error('Please specify the pvGM');
-end
-
-if nargin < 5 || isempty(pvWM)
+elseif nargin < 5 || isempty(pvWM)
 	error('Please specify the pvWM');
-end
-
-if nargin < 6 || isempty(brainCentralityMap)
+elseif nargin < 6 || isempty(brainCentralityMap)
 	error('Please specify the brainCentralityMap');
-end
-
-if nargin < 7 || isempty(LowThreshold)
+elseif nargin < 7 || isempty(LowThreshold)
     LowThreshold = 0.7;
 elseif ~isnumeric(LowThreshold)
     error('Invalid LowThreshold input parameter, should be numerical');
@@ -88,8 +76,9 @@ end
 % Load the M0 image
 ImIn = xASL_io_Nifti2Im(ImIn);
 
+
 %% ------------------------------------------------------------------------------------------
-%% Mask 1) Load segmentations, create structural mask
+%% 1. Mask 1: structural mask
 GMim = xASL_io_Nifti2Im(pvGM);
 WMim = xASL_io_Nifti2Im(pvWM);
 
@@ -100,10 +89,12 @@ elseif xASL_stat_SumNan(WMim(:))==0
 else
     GMmask = GMim>0.7;
     Mask1 = (GMim+WMim)>0.5;
+    fprintf('\n%s', 'Processing M0 image: ');
 end
 
+
 %% ------------------------------------------------------------------------------------------
-%% Mask 2) Create intensity-based mask to remove extracranial signal
+%% 2. Mask 2: intensity-based mask to remove extracranial signal
 % Multiply the image with the brain mask centrality map
 dummyImage = ImIn.*xASL_io_Nifti2Im(brainCentralityMap);
 
@@ -115,7 +106,7 @@ SortInt = SortInt(~isnan(SortInt));
 if isempty(SortInt)
     error('M0 image only contains NaN values, cannot process M0');
 else
-    
+    fprintf('%s', 'intensity masking, ');
     % Lower threshold
     ThresholdN = SortInt(round(LowThreshold*length(SortInt)));
     
@@ -131,15 +122,15 @@ else
 	Mask2(Mask1Eroded) = 1;
 end
 
+
 %% ------------------------------------------------------------------------------------------
-%% Mask 3) Erode the combined masks
-fprintf('%s\n','Erode M0 mask with 2-voxel sphere');
+%% 3. Mask 3: Erode the combined masks
+fprintf('%s', 'eroding, ');
 Mask3 = xASL_im_DilateErodeFull(Mask2, 'erode', xASL_im_DilateErodeSphere(2));
 
-%% ------------------------------------------------------------------------------------------
-%% Mask 4) Determine any odd borders
-fprintf('%s\n','Identify & remove non-smooth values at the border of the M0 mask');
 
+%% ------------------------------------------------------------------------------------------
+%% 4. Mask 4: Determine any odd borders
 % First get median inside the mask
 ValuesM0mask = ImIn(Mask3 & isfinite(ImIn));
 MedianN = median(ValuesM0mask);
@@ -160,8 +151,9 @@ HiThresh = MedianN+4.5*MadN;
 % here we remove too many parts, but this is not bad, as it will be smoothed & extrapolated, anyway.
 Mask4 = Mask3 & ~(DiffIM>HiThresh);
 
+
 %% ------------------------------------------------------------------------------------------
-%% 5) Smoothing
+%% 5. Smoothing
 % Smooth M0 map before division
 % Currently, same smoothing kernel for 2D & 3D, to remove e.g. Gibbs
 % ringing artifact in 3D data. And smoothing sums quadratically
@@ -172,10 +164,7 @@ Mask4 = Mask3 & ~(DiffIM>HiThresh);
 
 % Initial large smoothing for smooth brain image
 
-MaxIt = 24; % usually around this value (used for counting, not for limitation
-                                % the number of iterations)
-
-fprintf('Mask M0 with this mask & smooth...  ');
+fprintf('%s', 'smoothing, ');
 ImOut = ImIn.*Mask4;
 ImOut(ImOut==0) = NaN;
 
@@ -184,25 +173,20 @@ ImOut(ImOut==0) = NaN;
 % more artifacts will be filtered into the data
 
 VoxelSize = [1.5 1.5 1.5];
-
 ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
-xASL_TrackProgress(1,MaxIt);
 Im5 = ImOut;
-
 ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
 
-xASL_TrackProgress(2, MaxIt);
 
 %% ------------------------------------------------------------------------------------------
-%% 6) Extrapolating only
+%% 6. Extrapolating only
 % Here we fill the residual NaNs (outside the mask) of the FoV
 % to prevent ASL/M0 division artifacts
 ImOut = xASL_im_FillNaNs(ImOut, 1, 1, VoxelSize);
 
 
 %% ------------------------------------------------------------------------------------------
-%% 7) Scale back to the GM M0
-fprintf('\n%s\n','Rescale the smooth biasfield GM M0 values back to non-smooth GM M0 values');
+%% 7. Scale back to the GM M0
 OldGMM0 = ImIn(GMmask & isfinite(ImIn));
 OldGMM0 = median(OldGMM0);
 
@@ -212,15 +196,16 @@ NewGMM0 = median(NewGMM0);
 RatioN = OldGMM0/NewGMM0;
 ImOut = ImOut.*RatioN;
 
-%% ------------------------------------------------------------------------------------------
-%% 8) Print visual QC figure
 
+%% ------------------------------------------------------------------------------------------
+%% 8. Print visual QC figure
 S2S = 53; % slice to show
 VisualQC = [xASL_im_rotate(ImIn(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask2(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask3(:,:,S2S),90) ; xASL_im_rotate(ImIn(:,:,S2S).*Mask4(:,:,S2S),90) xASL_im_rotate(Im5(:,:,S2S),90) xASL_im_rotate(ImOut(:,:,S2S),90)];
 
 xASL_adm_CreateDir(DirOutput);
 OutputFile = fullfile(DirOutput,['M0_im_proc_' NameOutput '.jpg']);
-fprintf('%s\n',['Writing ' OutputFile]);
+fprintf('%s\n',['Please check visual QC: ' OutputFile]);
 xASL_vis_Imwrite(VisualQC, OutputFile);
+
 
 end
