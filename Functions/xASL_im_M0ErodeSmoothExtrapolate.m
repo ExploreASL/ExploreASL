@@ -85,32 +85,21 @@ elseif LowThreshold<0 || LowThreshold>1
     error('Invalid LowThreshold value, should be between 0 and 1');
 end
 
-% Initialize the defaults
+% Load the M0 image
 ImIn = xASL_io_Nifti2Im(ImIn);
-
-GMmask = zeros(size(ImIn));
-Mask1 = zeros(size(ImIn));
-Mask2 = zeros(size(ImIn));
-ExistpGMpWM = 0;
 
 %% ------------------------------------------------------------------------------------------
 %% Mask 1) Load segmentations, create structural mask
+GMim = xASL_io_Nifti2Im(pvGM);
+WMim = xASL_io_Nifti2Im(pvWM);
 
-if nargin<5 || isempty(pvWM) || isempty(pvGM)
-    fprintf('%s\n','Masking M0 with intensity-based mask only, structural (pGM+pWM) files missing');
+if xASL_stat_SumNan(GMim(:))==0
+    error('Empty GM partial volume map, cannot process the M0');
+elseif xASL_stat_SumNan(WMim(:))==0
+    error('Empty WM partial volume map, cannot process the M0');
 else
-    GMim = xASL_io_Nifti2Im(pvGM);
-    WMim = xASL_io_Nifti2Im(pvWM);
-    
-    if xASL_stat_SumNan(GMim(:))==0
-        warning('Empty GM image');
-    elseif xASL_stat_SumNan(WMim(:))==0
-        warning('Empty WM image');
-    else
-        GMmask = GMim>0.7;
-        Mask1 = (GMim+WMim)>0.5;
-        ExistpGMpWM = 1;
-    end
+    GMmask = GMim>0.7;
+    Mask1 = (GMim+WMim)>0.5;
 end
 
 %% ------------------------------------------------------------------------------------------
@@ -123,7 +112,10 @@ SortInt = sort(dummyImage(:));
 SortInt = SortInt(~isnan(SortInt));
 
 % Create masks
-if ~isempty(SortInt)
+if isempty(SortInt)
+    error('M0 image only contains NaN values, cannot process M0');
+else
+    
     % Lower threshold
     ThresholdN = SortInt(round(LowThreshold*length(SortInt)));
     
@@ -132,17 +124,9 @@ if ~isempty(SortInt)
 
 	% Combine these masks
     Mask2 = (dummyImage>ThresholdN) & (dummyImage<ThresholdN2);
-	if ExistpGMpWM
-		Mask2 = Mask1 & Mask2;
-    else
-		GMmask = dummyImage>SortInt(round(0.85*length(SortInt))) & dummyImage<SortInt(round(0.95*length(SortInt)));
-	end
-else
-	warning('M0 image only contains NaN values...');
-end
-
-% -> Enforce to include the eroded GM/WM
-if ExistpGMpWM
+    Mask2 = Mask1 & Mask2;
+    
+    % Enforce to include the eroded brain in the mask
     Mask1Eroded = xASL_im_DilateErodeFull(Mask1, 'erode', xASL_im_DilateErodeSphere(4));
 	Mask2(Mask1Eroded) = 1;
 end
