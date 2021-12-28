@@ -1,7 +1,7 @@
-function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainMap, Quality, LowThreshold)
+function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainCentralityMap, LowThreshold)
 %xASL_im_M0ErodeSmoothExtrapolate M0 image processing
 %
-% FORMAT: [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainMap[, Quality, LowThreshold])
+% FORMAT: [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainCentralityMap[, LowThreshold])
 %
 % INPUT:
 %   ImIn - unprocessed M0 image (3D image or path, REQUIRED)
@@ -9,8 +9,7 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %   NameOutput - string for filename in ['M0_im_proc_' NameOutput '.jpg'], used to be x.P.SubjectID (REQUIRED)
 %   pvGM  - unprocessed pvGM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc1T1)
 %   pvWM  - unprocessed pvWM image (3D image or path, same space as M0 image, REQUIRED, used to be x.P.Pop_Path_rc2T1)
-%   brainMap - brain mask probability map multiplied by centrality map (3D image or path, REQUIRED)
-%   Quality - boolean for high (1) or low (0) processing quality (used to be x.settings.Quality, OPTIONAL, DEFAULT = true)
+%   brainCentralityMap - brain mask probability map multiplied by centrality map (3D image or path, REQUIRED)
 %   LowThreshold - numerical value between 0 and 1 for percentile sorted images values that will define the inclusion mask (mask>LowThreshold)
 %                   (OPTIONAL, DEFAULT=0.7)
 %
@@ -74,16 +73,11 @@ if nargin < 5 || isempty(pvWM)
 	error('Please specify the pvWM');
 end
 
-if nargin < 6 || isempty(brainMap)
-	error('Please specify brainMap');
+if nargin < 6 || isempty(brainCentralityMap)
+	error('Please specify the brainCentralityMap');
 end
 
-if nargin < 7 || isempty(Quality)
-    fprintf('%s\n', 'Quality parameter missing, defaulting to normal quality');
-    Quality = 1;
-end
-
-if nargin < 8 || isempty(LowThreshold)
+if nargin < 7 || isempty(LowThreshold)
     LowThreshold = 0.7;
 elseif ~isnumeric(LowThreshold)
     error('Invalid LowThreshold input parameter, should be numerical');
@@ -122,7 +116,7 @@ end
 %% ------------------------------------------------------------------------------------------
 %% Mask 2) Create intensity-based mask to remove extracranial signal
 % Multiply the image with the brain mask centrality map
-dummyImage = ImIn.*xASL_io_Nifti2Im(brainMap);
+dummyImage = ImIn.*xASL_io_Nifti2Im(brainCentralityMap);
 
 % Get NaNs
 SortInt = sort(dummyImage(:));
@@ -211,18 +205,15 @@ ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
 xASL_TrackProgress(1,MaxIt);
 Im5 = ImOut;
 
-if Quality
-    ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
-else % in case of low quality, we leave this to the xASL_im_FillNaNs below,
-     % where a smaller kernel will go much faster for low quality 
-end
+ImOut = xASL_im_ndnanfilter(ImOut,'gauss',double([16 16 16]./VoxelSize),0);
+
 xASL_TrackProgress(2, MaxIt);
 
 %% ------------------------------------------------------------------------------------------
 %% 6) Extrapolating only
 % Here we fill the residual NaNs (outside the mask) of the FoV
 % to prevent ASL/M0 division artifacts
-ImOut = xASL_im_FillNaNs(ImOut, 1, Quality, VoxelSize);
+ImOut = xASL_im_FillNaNs(ImOut, 1, 1, VoxelSize);
 
 
 %% ------------------------------------------------------------------------------------------
