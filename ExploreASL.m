@@ -39,7 +39,7 @@ function [x] = ExploreASL(varargin)
 %                            This wrapper loads the dataset
 % IV. Print user feedback:   xASL_init_PrintUserFeedback
 %                            This wrapper prints some basic feedback before the processing pipeline
-% V. Processing Master:      ExploreASL_ProcessMaster
+% V. Processing Master:      ExploreASL_Process
 %                            Multi-step processing workflow for the STRUCTURAL, ASL and POPULATION module.
 % VI. Print user feedback:   xASL_init_PrintUserFeedback
 %                            This wrapper prints a final feedback after the processing pipeline
@@ -82,7 +82,7 @@ function [x] = ExploreASL(varargin)
     % -----------------------------------------------------------------------------
     % V. Processing Master
     if x.opts.bProcessData
-        x = ExploreASL_ProcessMaster(x);
+        x = ExploreASL_Process(x);
     end
 
     % -----------------------------------------------------------------------------    
