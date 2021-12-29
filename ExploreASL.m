@@ -33,7 +33,7 @@ function [x] = ExploreASL(varargin)
 % 
 % I. Initialization:         ExploreASL_Initialize
 %                            This wrapper initializes ExploreASL: managing paths, deployment, etc.
-% II. Import Master:         ExploreASL_ImportMaster
+% II. Import Master:         ExploreASL_Import
 %                            Multi-step import workflow for DCM2NII, NII2BIDS & BIDS2LEGACY.
 % III. Data loading:         xASL_init_DataLoading
 %                            This wrapper loads the dataset
@@ -68,7 +68,7 @@ function [x] = ExploreASL(varargin)
     % -----------------------------------------------------------------------------
     % II. Import Master
     if x.opts.bImportData
-        x = ExploreASL_ImportMaster(x);
+        x = ExploreASL_Import(x);
     end
     
     % -----------------------------------------------------------------------------
