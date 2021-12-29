@@ -15,7 +15,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_adm_DocInitialize(fullfile(x.opts.MyPath,'Development','Documentation_GitHub'),true);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
     %% Workflow
@@ -24,21 +24,22 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     x = ExploreASL_Initialize;
     
     % Reminder
-    fprintf('============================================= REMINDER =======================================\n');
+    xASL_adm_BreakString('REMINDER','=',[],1);
     fprintf('A correct ExploreASL header should include the following tags in the correct order:\n');
     fprintf('"FORMAT:", "INPUT:", "OUTPUT:", "DESCRIPTION:" and "EXAMPLE:"\n');
-    fprintf('==============================================================================================\n');
+    xASL_adm_BreakString('','=',[],1);
     
     % Try to find the ExploreASL/Documentation repository on the same folder level
-    [scriptPath,~,~] = fileparts(mfilename('fullpath'));
-    potentialDocumentationDirectory = strrep(scriptPath,fullfile('ExploreASL','Functions'),'Documentation');
+    [adminPath,~,~] = fileparts(mfilename('fullpath'));
+    [functionsPath,~,~] = fileparts(adminPath);
+    potentialDocumentationDirectory = strrep(functionsPath,fullfile('ExploreASL','Functions'),'Documentation');
     if ~isempty(xASL_adm_GetFileList(potentialDocumentationDirectory))
         fprintf('Documentation repository found...\n');
         baseOutputFolder = potentialDocumentationDirectory;
     end
     
     % Ask user for Documentation repository
-    if nargin < 1 && isempty(baseOutputFolder)
+    if nargin<1 && isempty(baseOutputFolder)
         if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
             baseOutputFolder = input('Insert Documentation directory: ');
         else
@@ -82,7 +83,6 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     xASL_Copy(fullfile(templatesDir,'TUTORIALS-ADVANCED.md'),fullfile(outputFolder,'Tutorials-Advanced.md'),1);
     
     % Create the functions markdown file
-    error('Fix function reader...');
     xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
     
     % Create the functions markdown file
@@ -106,8 +106,6 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
     xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
     
-    % Add DATAPAR.md text to ImportModule
-    % addDATAPARtoImport(fullfile(templatesDir,'DATAPAR.md'),fullfile(outputFolder,'Import_Module.md'))
 
 end
 
@@ -194,51 +192,6 @@ function convertLicenseToMarkdown(filePath,newPath)
     file_id=fopen(newPath,'w');
     for i=1:length(text_cell)    
         fprintf(file_id,'%s\n', text_cell{i});
-    end
-    fclose(file_id);
-
-end
-
-%% Add DATAPAR.md text to Import Module
-function addDATAPARtoImport(dataParMdPath,ImportModulePath)
-
-    %% Open DATAPAR
-    file_id=fopen(dataParMdPath,'r');
-    text_cell=cell(1);
-    while 1
-        text_line_read=fgetl(file_id);
-        if text_line_read == -1
-            break
-        else
-            text_cell(end,1)=cellstr(text_line_read);
-            text_cell(end+1,1)=cell(1);
-        end
-    end
-    fclose(file_id);
-    
-    %% Open Import Module
-    file_id=fopen(ImportModulePath,'r');
-    text_cell2=cell(1);
-    while 1
-        text_line_read=fgetl(file_id);
-        if text_line_read == -1
-            break
-        else
-            text_cell2(end,1)=cellstr(text_line_read);
-            text_cell2(end+1,1)=cell(1);
-        end
-    end
-    fclose(file_id);
-    
-    %% Updated file
-    
-    % Concatenate cell arrays
-    text_cell_total = vertcat(text_cell2,text_cell);
-    
-    % Write cell arrays back to file
-    file_id=fopen(ImportModulePath,'w');
-    for i=1:length(text_cell_total)    
-        fprintf(file_id,'%s\n', text_cell_total{i});
     end
     fclose(file_id);
 

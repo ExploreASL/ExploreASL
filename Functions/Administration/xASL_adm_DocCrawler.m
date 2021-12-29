@@ -29,8 +29,8 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
     isFileList = false;
     
     % Sections for "Functions" folder
-    SECTION = {'adm', 'bids', 'fsl', 'im', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
-    SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Imaging', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
+    SECTION = {'adm', 'bids', 'fsl', 'Iteration', 'im', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
+    SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'General', 'Imaging', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
 
     %% Input Check
     if nargin < 1
@@ -73,6 +73,25 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
     
     % Predefine cell array
     TEXT = cell(1,1);
+    
+    % Workaround for "Functions"
+    if strcmp(content,'Functions')
+        fprintf('Walk through Functions sub-directories...\n');
+        functionPaths = {   'Administration', 'BIDS', 'FSL', 'General', ...
+                            'Imaging', 'Initialization', 'InputOutput', ...
+                            'QualityControl', 'Quantification', 'SPM', ...
+                            'Statistics', 'Visualization'};
+        listing = [];
+        for iDir=1:numel(functionPaths)
+            % Get current files
+            curDir = fullfile(inputPath,functionPaths{iDir});
+            thisListing = dir(curDir);
+            folderList = [thisListing.isdir]';
+            thisListing(folderList) = [];
+            % Append file list without sub-directories
+            listing = vertcat(listing,thisListing);
+        end
+    end
 
     % Get header information from each file
     for i = 1:numel(listing)
@@ -98,9 +117,6 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
             if cS==0
                 if strcmp(content,'Functions')
                     TEXT{it,1} = '# Functions';  it = it+1;
-                    TEXT{it,1} = ' ';  it = it+1;
-                    TEXT{it,1} = '----';  it = it+1;
-                    TEXT{it,1} = '## General Functions';  it = it+1;
                     TEXT{it,1} = ' ';  it = it+1;
                 elseif strcmp(content,'Modules')
                     TEXT{it,1} = '# Modules';  it = it+1;
@@ -221,14 +237,18 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
     end
 
     % Remove spaces and separator lines
-    for i=1:numel(TEXT)
-        % Trim char arrays
-        TEXT{i,:} = strtrim(TEXT{i,:});
+    if size(TEXT,1)>1
+        for i=1:numel(TEXT)
+            % Trim char arrays
+            TEXT{i,:} = strtrim(TEXT{i,:});
 
-        % Remove line separators
-        if strcmp(TEXT(i,:),SeparatorLine)
-            TEXT{i,:} = strrep(TEXT{i,:},SeparatorLine,'');
+            % Remove line separators
+            if strcmp(TEXT(i,:),SeparatorLine)
+                TEXT{i,:} = strrep(TEXT{i,:},SeparatorLine,'');
+            end
         end
+    else
+        warning('No text information found, seems like something went wrong...');
     end
 
     % Print information to markdown file

@@ -47,7 +47,7 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %               7.  Scale back to the GM M0
 %               8.  Print visual QC figure
 %
-% EXAMPLE as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, path_BrainCentralityMap)
+% EXAMPLE: as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, path_BrainCentralityMap)
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
 
