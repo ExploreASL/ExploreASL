@@ -1,7 +1,7 @@
-function [x] = ExploreASL_ProcessMaster(x)
-%ExploreASL_ProcessMaster Multi-step processing workflow for the STRUCTURAL, ASL and POPULATION module.
+function [x] = ExploreASL_Process(x)
+%ExploreASL_Process Multi-step processing workflow for the STRUCTURAL, ASL and POPULATION module.
 %
-% FORMAT: [x] = ExploreASL_ProcessMaster(x)
+% FORMAT: [x] = ExploreASL_Process(x)
 %
 % INPUT:
 %   x             - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
