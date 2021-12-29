@@ -5,7 +5,7 @@ function [x] = ExploreASL_Initialize(varargin)
 %   [x] = ExploreASL_Initialize([DatasetRoot, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
 %
 % INPUT:
-%   varargin    - This script accepts the same arguments as ExploreASL_Master. Check out the definitions there.
+%   varargin    - This script accepts the same arguments as ExploreASL. Check out the definitions there.
 %
 % OUTPUT:
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -80,7 +80,7 @@ function [x] = ExploreASL_Initialize(varargin)
 
     % Check if the current directory is the ExploreASL directory
     CurrCD = pwd;
-    if exist(fullfile(CurrCD, 'ExploreASL_Master.m'), 'file')
+    if exist(fullfile(CurrCD, 'ExploreASL.m'), 'file')
         x.opts.MyPath = CurrCD;
     end
 
@@ -96,18 +96,18 @@ function [x] = ExploreASL_Initialize(varargin)
     end
 
     % Get the master script path
-    MasterScriptPath = fullfile(x.opts.MyPath, 'ExploreASL_Master.m');
+    MasterScriptPath = fullfile(x.opts.MyPath, 'ExploreASL.m');
 
     % Select the ExploreASL folder manually, if the script is not run in deployed mode
     if ~isdeployed
         if ~exist(MasterScriptPath,'file')
             pathstr = input('Provide foldername where ExploreASL is installed (format: \''PathExploreASL\''): ');
-            if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL_Master.m'),'file'), return; end
+            if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL.m'),'file'), return; end
             x.opts.MyPath = pathstr;
         end
     else
         % In deployed mode set the ExploreASL directory in the ctf archive
-        [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL_Master*'); % Find the path of the master files within the ctf archive
+        [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL*'); % Find the path of the master files within the ctf archive
         curPathCTF = fileparts(files(1,:)); % Get the path
         x.opts.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
 

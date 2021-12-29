@@ -101,7 +101,7 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
         %% Extract warnings and errors from current log file
         
         % Warnings
-        warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL_Master','In <a','Operation terminated by user during');
+        warningsInFile = extractWarnings(curFile,'Warning:','ExploreASL','In <a','Operation terminated by user during');
         warningsInFile = getLastFileWarning(warningsInFile,'in <');
         
         % Errors

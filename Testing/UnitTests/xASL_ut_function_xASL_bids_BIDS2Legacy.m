@@ -122,7 +122,7 @@ spm_jsonwrite(fullfile(TestRepository,'UnitTesting','working_directory','test_pa
 
 % Initialize dataset
 try
-    x = ExploreASL_Master(droTestPatient, 0, 0);
+    x = ExploreASL(droTestPatient, 0, 0);
 catch
     x = false;
 end

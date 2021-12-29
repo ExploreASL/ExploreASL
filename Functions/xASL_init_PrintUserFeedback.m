@@ -5,7 +5,7 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
 % 
 % INPUT:
 %   x               - ExploreASL x structure (STRUCT, REQUIRED)
-%   outputArguments - nargout of ExploreASL_Master (INTEGER, REQUIRED)
+%   outputArguments - nargout of ExploreASL (INTEGER, REQUIRED)
 %   currentState    - State before/after processing (before = 0, after = 1, INTEGER, REQUIRED)
 %
 % OUTPUT:        n/a
