@@ -67,6 +67,7 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 * Issue #940: Improve the folder folder hierarchy check.
 * Issue #947: Minor improvements of import master structure.
 * Issue #971: Mean control image creation in a separate function.
+* Issue #1033: Improve M0 processing to avoid masking-out intracranial signal, e.g., in M0 with strong biasfield
 
 
 ### Other improvements
