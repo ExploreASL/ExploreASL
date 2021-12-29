@@ -57,7 +57,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     xASL_Copy(fullfile(x.opts.MyPath,'README.md'),fullfile(outputFolder,'index.md'),1);
 
     % Copy the DataParTemplate
-    xASL_Copy(fullfile(x.opts.MyPath,'DataParTemplate.md'),fullfile(outputFolder,'DataParTemplate.md'),1);
+    xASL_Copy(fullfile(x.opts.MyPath,'Templates','DataParTemplate.md'),fullfile(outputFolder,'DataParTemplate.md'),1);
     
     % Logo
     swapTextInFile(fullfile(outputFolder,'index.md'),...
@@ -82,6 +82,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     xASL_Copy(fullfile(templatesDir,'TUTORIALS-ADVANCED.md'),fullfile(outputFolder,'Tutorials-Advanced.md'),1);
     
     % Create the functions markdown file
+    error('Fix function reader...');
     xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
     
     % Create the functions markdown file
