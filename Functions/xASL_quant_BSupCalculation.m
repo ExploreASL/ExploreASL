@@ -57,7 +57,7 @@ if PresaturationTime>20
     warning(['PresaturationTime=' num2str(PresaturationTime) ', seems invalid']);
 end
 if max(BackgroundSuppressionPulseTime)>min(ReadoutTime)
-    warning(['BackgroundSuppressionTime of ' num2str(BackgroundSuppressionPulseTime) ', seems invalid']);
+    warning(['BackgroundSuppressionTime of ' xASL_num2str(BackgroundSuppressionPulseTime) ', seems invalid']);
 end
  
 if nargin < 4 || isempty(T1Time)
