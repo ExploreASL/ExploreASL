@@ -122,11 +122,11 @@ else
     %% ------------------------------------------------------------------------------------------------------
     % 5. Check for correct TR values
     if TR<1000
-        error(['Unusually small TR for ASL M0: ' num2str(TR)]);
+        error(['Unusually small TR for ASL M0: ' xASL_num2str(TR)]);
     end
 
     if length(TR)>1
-        warning(['Multiple M0 TRs found: ' num2str(TR(:)') ', ' num2str(min(TR)) ' used']);
+        warning(['Multiple M0 TRs found: ' xASL_num2str(TR(:)') ', ' xASL_num2str(min(TR)) ' used']);
         TR  = min(TR);
     end
 
@@ -174,7 +174,7 @@ else
     minCorr_T1 = min(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
     maxCorr_T1 = max(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
 
-    fprintf('%s\n', ['M0 correction of incomplete T1 relaxation: TR range ' num2str(min_TR) '-' num2str(max_TR) ' ms, T1 WM tissue ' num2str(x.Q.TissueT1) ' ms, gives factor ' num2str(minCorr_T1) '-' num2str(maxCorr_T1)]);
+    fprintf('%s\n', ['M0 correction of incomplete T1 relaxation: TR range ' xASL_num2str(min_TR) '-' xASL_num2str(max_TR) ' ms, T1 WM tissue ' xASL_num2str(x.Q.TissueT1) ' ms, gives factor ' xASL_num2str(minCorr_T1) '-' xASL_num2str(maxCorr_T1)]);
 end
 
 %% ------------------------------------------------------------------------------------------------------

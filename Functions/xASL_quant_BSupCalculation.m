@@ -54,7 +54,7 @@ end
  
 % Check order of magnitude
 if PresaturationTime>20
-    warning(['PresaturationTime=' num2str(PresaturationTime) ', seems invalid']);
+    warning(['PresaturationTime=' xASL_num2str(PresaturationTime) ', seems invalid']);
 end
 if max(BackgroundSuppressionPulseTime)>min(ReadoutTime)
     warning(['BackgroundSuppressionTime of ' xASL_num2str(BackgroundSuppressionPulseTime) ', seems invalid']);

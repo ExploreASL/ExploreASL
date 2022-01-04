@@ -321,7 +321,7 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
         % Fill in the missing fields with zeros
         parameters.ImportModules(length(parameters.ImportModules)+1:4) = 0;
         % Issue a warning
-        warning('Incorrect length of the ImportModules parameter, missing submodules set to zero: %s\n',num2str(parameters.ImportModules));
+        warning('Incorrect length of the ImportModules parameter, missing submodules set to zero: %s\n',xASL_num2str(parameters.ImportModules));
     end
     if length(parameters.ProcessModules)==1
         % If a single value is given, then copy it to all submodules
@@ -332,7 +332,7 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
         % Fill in the missing fields with zeros
         parameters.ProcessModules(length(parameters.ProcessModules)+1:3) = 0;
         % Issue a warning
-        warning('Incorrect length of the ProcessModules parameter, missing submodules set to zero: %s\n',num2str(parameters.ProcessModules));
+        warning('Incorrect length of the ProcessModules parameter, missing submodules set to zero: %s\n',xASL_num2str(parameters.ProcessModules));
     end
     
     % Make it impossible to set bPause to true in deployed mode

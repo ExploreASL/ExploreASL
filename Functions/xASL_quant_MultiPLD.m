@@ -173,7 +173,7 @@ else
 		end
 
 		ScaleImage = ScaleImage./qnt_GEscaleFactor;
-		fprintf('%s\n',['Quantification corrected for GE scale factor ' num2str(qnt_GEscaleFactor) ' for NSA=' num2str(x.Q.NumberOfAverages)]);
+		fprintf('%s\n',['Quantification corrected for GE scale factor ' xASL_num2str(qnt_GEscaleFactor) ' for NSA=' xASL_num2str(x.Q.NumberOfAverages)]);
 
 		% Set Philips specific scaling
 	elseif ~isempty(regexpi(x.Q.Vendor,'Philips'))
@@ -227,25 +227,25 @@ fprintf('%s\n',' model with parameters:');
 if x.Q.ApplyQuantification(3)
     switch lower(x.Q.LabelingType)
         case 'pasl'
-            fprintf('%s\n',['TI1 = ' num2str(unique(x.Q.LabelingDuration(:)')) ' ms,']);
-            fprintf('%s\n',['TI (ms) = ' num2str(unique(x.Q.Initial_PLD(:)'))]);
+            fprintf('%s\n',['TI1 = ' xASL_num2str(unique(x.Q.LabelingDuration(:)')) ' ms,']);
+            fprintf('%s\n',['TI (ms) = ' xASL_num2str(unique(x.Q.Initial_PLD(:)'))]);
         case 'casl'
-            fprintf('%s\n',['LabelingDuration = ' num2str(unique(x.Q.LabelingDuration(:)')) ' ms, ']);
-            fprintf('%s\n',['PLD (ms) = ' num2str(unique(x.Q.Initial_PLD(:)'))]);
+            fprintf('%s\n',['LabelingDuration = ' xASL_num2str(unique(x.Q.LabelingDuration(:)')) ' ms, ']);
+            fprintf('%s\n',['PLD (ms) = ' xASL_num2str(unique(x.Q.Initial_PLD(:)'))]);
     end
 
 	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')
-		fprintf('%s',[' + ' num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1)']);
+		fprintf('%s',[' + ' xASL_num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1)']);
 	end
 
-    fprintf('\n%s',['labeling efficiency (neck*Bsup) = ' num2str(x.Q.LabEff_Orig) ' * ' num2str(x.Q.LabEff_Bsup) ', ']);
+    fprintf('\n%s',['labeling efficiency (neck*Bsup) = ' xASL_num2str(x.Q.LabEff_Orig) ' * ' xASL_num2str(x.Q.LabEff_Bsup) ', ']);
     fprintf('\n%s','assuming ');
-    fprintf('%s',['labda = ' num2str(x.Q.Lambda) ', ']);
-    fprintf('%s\n',['T1 arterial blood = ' num2str(x.Q.BloodT1) ' ms']);
+    fprintf('%s',['labda = ' xASL_num2str(x.Q.Lambda) ', ']);
+    fprintf('%s\n',['T1 arterial blood = ' xASL_num2str(x.Q.BloodT1) ' ms']);
 
     if x.Q.nCompartments==2
-        fprintf('%s',['ATT = ' num2str(x.Q.ATT) ' ms, ']);
-        fprintf('%s\n',['T1tissue = ' num2str(x.Q.TissueT1) ' ms']);
+        fprintf('%s',['ATT = ' xASL_num2str(x.Q.ATT) ' ms, ']);
+        fprintf('%s\n',['T1tissue = ' xASL_num2str(x.Q.TissueT1) ' ms']);
     end
 end
 
