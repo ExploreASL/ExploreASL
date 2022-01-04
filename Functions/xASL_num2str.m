@@ -6,7 +6,7 @@ function [DataOut] = xASL_num2str(DataIn, f, bConcatenate, strDelimiter)
 % INPUT:
 %   DataIn 	     - input data (can be any format) (REQUIRED)
 %   f            - second argument of "num2str". Can be a format, but mostly used as number of characters to print (effectively rounding) (OPTIONAL)
-%   bConcatenate - concatenate multiple-lines to a single line with ',' as a delimiter (OPTIONAL, DEFAULT = 0)
+%   bConcatenate - concatenate multiple-lines to a single line with ',' as a delimiter (OPTIONAL, DEFAULT = 1)
 %   strDelimiter - string to be used as a delimiter for concatenating when bConcatenate is TRUE, empty delimiters are allowed (OPTIONAL, DEFAULT = ',')
 %
 % OUTPUT:
@@ -52,7 +52,7 @@ end
 
 % Default: set concatenate to 0
 if nargin < 3 || isempty(bConcatenate)
-	bConcatenate = 0;
+	bConcatenate = 1;
 end
 
 % Default: set delimiter

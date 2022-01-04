@@ -26,8 +26,8 @@ UnitTest.tests(1).testname = 'Row vector, column vector, scalar number';
 testTime = tic;
 
 % Run your test here
-outA = xASL_num2str([1, 2, 3]',[],1);
-outB = xASL_num2str([1, 2, 3],[],1);
+outA = xASL_num2str([1, 2, 3]');
+outB = xASL_num2str([1, 2, 3]);
 outC = xASL_num2str(1);
 
 % Define one or multiple test conditions here
