@@ -25,7 +25,7 @@ pathCurrent = matlab.desktop.editor.getActiveFilename;
 [pathCurrent,~,~] = fileparts(pathCurrent);
 
 % Go to the basic ExploreASL folder
-pathXASL = pathCurrent(1:end-4);
+pathXASL = pathCurrent(1:end-14);
 
 % Setup for C++ compiling	
 if ispc
@@ -40,7 +40,7 @@ mex xASL_mex_chamfers3D.c
 mex xASL_mex_conv3Dsep.c
 
 % Compile the xASL files in the mex folder
-cd(fullfile(pathXASL,'mex'));
+cd(fullfile(pathXASL,'Functions','mex'));
 mex xASL_mex_conv3DsepGauss.c
 mex xASL_mex_dilate_erode_3D.c
 mex xASL_mex_dilate_erode_single.c
