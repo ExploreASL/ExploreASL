@@ -1,6 +1,5 @@
 function [DataOut] = xASL_num2str(DataIn, f, bConcatenate, strDelimiter)
-%xASL_num2str Wrapper around Matlab builtin 'num2str', bypassing strings/characters
-% & BIDS-compatible
+%xASL_num2str Wrapper around Matlab builtin 'num2str', bypassing strings/characters & BIDS-compatible
 %
 % FORMAT: [DataOut] = xASL_num2str(DataIn[, f, bConcatenate, strDelimiter])
 %
@@ -17,9 +16,10 @@ function [DataOut] = xASL_num2str(DataIn, f, bConcatenate, strDelimiter)
 % rewriting NaN into 'n/a' (BIDS convention) but otherwise preserving the Matlab builtin functionality, also for the second argument "f".
 % If non-numeric data is provided, it is bypassed (avoiding any issues "num2str" will have with non-numeric data).
 % It can concatenate an array/matrix of strings, taking first the columns in the first row, and then going across the rows.
-% See builtin num2str for more details
+% See builtin num2str for more details. Column vectors are converted to row vectors.
 %   
-% EXAMPLE: 
+% EXAMPLE:
+%
 % xASL_num2str(10.5798)
 % ans = '10.5798'
 % xASL_num2str(10.5798, 2)
@@ -35,10 +35,15 @@ function [DataOut] = xASL_num2str(DataIn, f, bConcatenate, strDelimiter)
 % xASL_num2str(1.23456789000, 'auto'); % Will remove trailing zeros
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright (C) 2015-2020 ExploreASL
-%
-% 2019-05-02 HJM
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% Copyright (c) 2015-2021 ExploreASL
+
+% Check input
+if isnumeric(DataIn)
+    % Convert row to column vector on default (for later concatenation and delimiter)
+    if size(DataIn,2)>size(DataIn,1)
+        DataIn = DataIn';
+    end
+end
 
 % Default: no format
 if nargin < 2 || isempty(f)
@@ -61,6 +66,7 @@ if size(strDelimiter,1) > 1
 	error('The delimiter can only have a single row');
 end
 
+% Do the conversion if DataIn is numeric
 if isnumeric(DataIn)
 	if isnan(DataIn)
 		DataOut = 'n/a';
@@ -93,24 +99,28 @@ if isnumeric(DataIn)
 		DataOut = num2str(DataIn, f);
 	end
 	
-	% If the bConcatenate option is ON, then check if concatenation is needed
-	if bConcatenate
-		if size(DataOut,1) > 1
-			DataOut(1:end-1,(end+1):(end+length(strDelimiter))) = repmat(strDelimiter,[(size(DataOut,1)-1) 1]);
-			DataOut = DataOut';
-			DataOut = DataOut(:)';
-		end
-		% Replace the extra spaces with the delimiter
-		[indStart,indEnd] = regexp(DataOut,'\d{1}\ +');
-		for iSpace = 1:length(indStart)
-			DataOut = [DataOut(1:indStart(iSpace)) strDelimiter DataOut(indEnd(iSpace)+1:end)];
-			indShift = length(strDelimiter) - (indEnd(iSpace)-indStart(iSpace));
-			indStart = indStart + indShift;
-			indEnd   = indEnd + indShift;
-		end
-	end
+    % If the bConcatenate option is ON, then check if concatenation is needed
+    if bConcatenate
+        if size(DataOut,1) > 1
+            DataOut(1:end-1,(end+1):(end+length(strDelimiter))) = repmat(strDelimiter,[(size(DataOut,1)-1) 1]);
+            DataOut = DataOut';
+            DataOut = DataOut(:)';
+        end
+        % Replace the extra spaces with the delimiter
+        [indStart,indEnd] = regexp(DataOut,'\d{1}\ +');
+        for iSpace = 1:length(indStart)
+            DataOut = [DataOut(1:indStart(iSpace)) strDelimiter DataOut(indEnd(iSpace)+1:end)];
+            indShift = length(strDelimiter) - (indEnd(iSpace)-indStart(iSpace));
+            indStart = indStart + indShift;
+            indEnd   = indEnd + indShift;
+        end
+    end
+    
+    % Always convert back to row afterwards
+    DataOut = DataOut(:)';
+    
 else % bypass if not a number
-    DataOut     = DataIn;
+    DataOut = DataIn;
 end
 
 
