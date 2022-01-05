@@ -50,7 +50,7 @@ if nargin < 2 || isempty(f)
 	f = '';
 end
 
-% Default: set concatenate to 0
+% Default: set concatenate to 1
 if nargin < 3 || isempty(bConcatenate)
 	bConcatenate = 1;
 end
