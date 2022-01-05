@@ -28,16 +28,18 @@ function [DataOut] = xASL_num2str(DataIn, stringFormat, bConcatenate, stringDeli
 % xASL_num2str(10.5798)
 % ans = '10.5798'
 % xASL_num2str(10.5798, 2)
-% ans = 11
+% ans = '11'
 % xASL_num2str([1;15], 2,1)
-% ans = '1,15 '
+% ans = '1,15'
 % xASL_num2str([1,15;2,13], 2,1,',,')
-% ans = '1,,15,,2,,13  '
-% [DataOut] = xASL_num2str(123.456789, '%.5f'); % Get exactly 5 digits after the comma
+% ans = '1,,15,,2,,13'
+% Get exactly 5 digits after the comma
+% DataOut = xASL_num2str(123.456789, '%.5f');
 % DataOut = '123.45679'
 %
-% We also added an automatic mode for the num2str export in JSON files:
-% xASL_num2str(1.23456789000, 'auto'); % Will remove trailing zeros
+% Automatic mode (remove trailing zeros)
+% DataOut = xASL_num2str(1.23456789000, 'auto')
+% DataOut = '1.23456789'
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright (c) 2015-2021 ExploreASL
@@ -81,20 +83,10 @@ if isnumeric(DataIn)
         if floor(DataIn)==DataIn % Integers
             DataOut = num2str(DataIn, '%d');
         else
+            % Convert to specific format
             DataOut = num2str(DataIn, '%.12f');
-            % Remove trailing zeros in Matlab versions > 2016b
-            [~, dateString] = version();
-            if str2num(dateString(end-3:end))>2016
-                DataOut = strip(DataOut,'right','0');
-            else
-                % Find out trailing zeros
-                indZeros = regexp(DataOut,'0*$');
-                % If the string ends with zeros only
-                if ~isempty(indZeros)
-                    % Remove the trailing zeros
-                    DataOut = DataOut(1:(indZeros(1)-1));
-                end
-            end
+            % Remove trailing zeros
+            DataOut = xASL_adm_RemoveTrailingSymbol(DataOut,'0');
             % Fix perfect integers (previously 2.0000 was converted to 2. instead of 2.0)
             if strcmp(DataOut(end),'.')
                 DataOut = [DataOut '0'];
@@ -124,10 +116,43 @@ if isnumeric(DataIn)
     % Always convert back to row afterwards
     DataOut = DataOut(:)';
     
+    % Remove trailing spaces
+    DataOut = xASL_adm_RemoveTrailingSymbol(DataOut);
+    
 else % bypass if not a number
     DataOut = DataIn;
 end
 
 
 end
+
+
+%% Strip trailing symbol from string
+function stringToStrip = xASL_adm_RemoveTrailingSymbol(stringToStrip,removeMe)
+
+    % Default: remove spaces
+    if nargin<2
+        removeMe = 'wspace';
+    end
+
+    % Remove trailing symbols in Matlab versions > 2016b
+    [~, dateString] = version();
+    if str2num(dateString(end-3:end))>2016 && ~strcmp(removeMe,'wspace')
+        stringToStrip = strip(stringToStrip,'right',removeMe);
+    elseif strcmp(removeMe,'wspace')
+        indToStrip = isstrprop(stringToStrip,'wspace');
+        stringToStrip(indToStrip) = [];
+    else
+        % Find out trailing zeros
+        indSymbol = regexp(stringToStrip,[removeMe '*$']);
+        % If the string ends with those symbols only
+        if ~isempty(indSymbol)
+            % Remove the trailing symbols
+            stringToStrip = stringToStrip(1:(indSymbol(1)-1));
+        end
+    end
+
+end
+
+
 
