@@ -1,4 +1,4 @@
-function [bAborted, xOut] = xASL_Iteration(x, moduleName, dryRun, stopAfterErrors, SelectedSubjects)
+function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfterErrors, SelectedSubjects)
 % Iterates through all combinations of the parameter sets defined in x and calls the xASL module for each.
 %
 % FORMAT: [bAborted, xOut] = xASL_Iteration(x, moduleName[, dryRun, stopAfterErrors])

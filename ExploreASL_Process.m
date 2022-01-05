@@ -74,13 +74,13 @@ function [x] = ExploreASL_Process(x)
     % -----------------------------------------------------------------------------
     %% 1  xASL_module_Structural
     if x.opts.ProcessModules(1)==1
-        [~, x] = xASL_Iteration(x,'xASL_module_Structural');
+        [~, x] = xASL_init_Iteration(x,'xASL_module_Structural');
         % The following DARTEL module is an optional extension of the structural module
         % to create population-specific templates
         if isfield(x.modules.structural,'bSegmentSPM12') && x.modules.structural.bSegmentSPM12 && x.nSubjects>1
             % in case we used SPM12 instead of CAT12 for segmentation,
             % we have to run DARTEL separately
-            [~, x] = xASL_Iteration(x,'xASL_module_DARTEL');
+            [~, x] = xASL_init_Iteration(x,'xASL_module_DARTEL');
         end
         % Now only check the availability of files when not running parallel
         if x.opts.nWorkers==1; xASL_adm_CreateFileReport(x); end        
@@ -90,17 +90,17 @@ function [x] = ExploreASL_Process(x)
     % The following are optional extensions of the structural module and not required to run, normally they can be ignored:
     if isfield(x.modules, 'bRunLongReg') && x.modules.bRunLongReg
         % Use this module for longitudinal registration
-        [~, x] = xASL_Iteration(x,'xASL_module_LongReg');
+        [~, x] = xASL_init_Iteration(x,'xASL_module_LongReg');
     end
     if isfield(x.modules, 'bRunDARTEL') && x.modules.bRunDARTEL
         % Use this module for additional additional -subject registration/creating templates
-        [~, x] = xASL_Iteration(x,'xASL_module_DARTEL');
+        [~, x] = xASL_init_Iteration(x,'xASL_module_DARTEL');
     end
     
     % -----------------------------------------------------------------------------
     %% 2    xASL_module_ASL  
     if x.opts.ProcessModules(2)==1
-        [~, x] = xASL_Iteration(x,'xASL_module_ASL');
+        [~, x] = xASL_init_Iteration(x,'xASL_module_ASL');
         % Now only check the availability of files when not running parallel
         if x.opts.nWorkers==1; xASL_adm_CreateFileReport(x); end    
     end
@@ -110,7 +110,7 @@ function [x] = ExploreASL_Process(x)
     %% 3    xASL_module_Population
     % Performs all group-level processing & QC
     if x.opts.ProcessModules(3)==1
-        [~, x] = xASL_Iteration(x,'xASL_module_Population');
+        [~, x] = xASL_init_Iteration(x,'xASL_module_Population');
     end
     
     % -----------------------------------------------------------------------------
