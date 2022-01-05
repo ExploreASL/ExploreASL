@@ -29,8 +29,8 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
     isFileList = false;
     
     % Sections for "Functions" folder
-    SECTION = {'adm', 'bids', 'fsl', 'Iteration', 'im', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
-    SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'General', 'Imaging', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
+    SECTION = {'adm', 'bids', 'fsl', 'im', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
+    SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Imaging Processing', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
 
     %% Input Check
     if nargin < 1

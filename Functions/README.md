@@ -20,12 +20,7 @@
 - [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL) related functions.
 - Scripts start with the prefix `xASL_fsl_...`.
 
-### General
-
-- Functions and wrappers for general tasks.
-- Scripts should start with the prefix `xASL_...`.
-
-### Imaging
+### Image Processing
 
 - Image input/ouput and processing functions.
 - Scripts start with the prefix `xASL_im_...`.
