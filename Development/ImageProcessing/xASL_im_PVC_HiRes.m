@@ -1,5 +1,5 @@
-function [ x ] = xASL_wrp_PVC_HiRes( x )
-% xASL_wrp_PVC_HiRes This function does a standard partial volume error correction,
+function [ x ] = xASL_im_PVC_HiRes( x )
+% xASL_im_PVC_HiRes This function does a standard partial volume error correction,
 % but on high resolution using 3D B-splines, which is faster
 
 

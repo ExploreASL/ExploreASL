@@ -1,4 +1,4 @@
-function [UnequalList] = UnitTest_xASL_io_DcmtkRead(DcmPath)
+function [UnequalList] = xASL_ut_function_xASL_io_DcmtkRead(DcmPath)
 %UnitTest_xASL_io_DcmtkRead Unit test xASL_io_DcmtkRead
 
 % Used for testing
