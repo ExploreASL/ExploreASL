@@ -1,13 +1,13 @@
-function [DataOut] = xASL_num2str(DataIn, f, bConcatenate, strDelimiter)
+function [DataOut] = xASL_num2str(DataIn, stringFormat, bConcatenate, stringDelimiter)
 %xASL_num2str Wrapper around Matlab builtin 'num2str', bypassing strings/characters & BIDS-compatible
 %
-% FORMAT: [DataOut] = xASL_num2str(DataIn[, f, bConcatenate, strDelimiter])
+% FORMAT: [DataOut] = xASL_num2str(DataIn[, stringFormat, bConcatenate, stringDelimiter])
 %
 % INPUT:
-%   DataIn 	     - input data (can be any format) (REQUIRED)
-%   f            - second argument of "num2str". Can be a format, but mostly used as number of characters to print (effectively rounding) (OPTIONAL)
-%   bConcatenate - concatenate multiple-lines to a single line with ',' as a delimiter (OPTIONAL, DEFAULT = 1)
-%   strDelimiter - string to be used as a delimiter for concatenating when bConcatenate is TRUE, empty delimiters are allowed (OPTIONAL, DEFAULT = ',')
+%   DataIn 	        - input data (can be any format) (REQUIRED)
+%   stringFormat    - second argument of "num2str". Can be a format, but mostly used as number of characters to print (effectively rounding) (OPTIONAL)
+%   bConcatenate    - concatenate multiple-lines to a single line with ',' as a delimiter (OPTIONAL, DEFAULT = 1)
+%   stringDelimiter - string to be used as a delimiter for concatenating when bConcatenate is TRUE, empty delimiters are allowed (OPTIONAL, DEFAULT = ',')
 %
 % OUTPUT:
 %   DataOut - numbers converted to string, or bypassed data
@@ -46,8 +46,8 @@ if isnumeric(DataIn)
 end
 
 % Default: no format
-if nargin < 2 || isempty(f)
-	f = '';
+if nargin < 2 || isempty(stringFormat)
+	stringFormat = '';
 end
 
 % Default: set concatenate to 1
@@ -57,12 +57,12 @@ end
 
 % Default: set delimiter
 if nargin < 4
-	strDelimiter = ',';
-elseif isempty(strDelimiter)
-	strDelimiter = '';
+	stringDelimiter = ',';
+elseif isempty(stringDelimiter)
+	stringDelimiter = '';
 end
 
-if size(strDelimiter,1) > 1
+if size(stringDelimiter,1) > 1
 	error('The delimiter can only have a single row');
 end
 
@@ -70,9 +70,9 @@ end
 if isnumeric(DataIn)
 	if isnan(DataIn)
 		DataOut = 'n/a';
-	elseif isempty(f)
+	elseif isempty(stringFormat)
 		DataOut = num2str(DataIn);
-    elseif strcmp(f,'auto') % Automatic mode
+    elseif strcmp(stringFormat,'auto') % Automatic mode
         if floor(DataIn)==DataIn % Integers
             DataOut = num2str(DataIn, '%d');
         else
@@ -96,21 +96,21 @@ if isnumeric(DataIn)
             end
         end
 	else
-		DataOut = num2str(DataIn, f);
+		DataOut = num2str(DataIn, stringFormat);
 	end
 	
     % If the bConcatenate option is ON, then check if concatenation is needed
     if bConcatenate
         if size(DataOut,1) > 1
-            DataOut(1:end-1,(end+1):(end+length(strDelimiter))) = repmat(strDelimiter,[(size(DataOut,1)-1) 1]);
+            DataOut(1:end-1,(end+1):(end+length(stringDelimiter))) = repmat(stringDelimiter,[(size(DataOut,1)-1) 1]);
             DataOut = DataOut';
             DataOut = DataOut(:)';
         end
         % Replace the extra spaces with the delimiter
         [indStart,indEnd] = regexp(DataOut,'\d{1}\ +');
         for iSpace = 1:length(indStart)
-            DataOut = [DataOut(1:indStart(iSpace)) strDelimiter DataOut(indEnd(iSpace)+1:end)];
-            indShift = length(strDelimiter) - (indEnd(iSpace)-indStart(iSpace));
+            DataOut = [DataOut(1:indStart(iSpace)) stringDelimiter DataOut(indEnd(iSpace)+1:end)];
+            indShift = length(stringDelimiter) - (indEnd(iSpace)-indStart(iSpace));
             indStart = indStart + indShift;
             indEnd   = indEnd + indShift;
         end
