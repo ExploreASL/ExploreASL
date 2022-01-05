@@ -10,11 +10,6 @@
 - [BIDS](https://bids-specification.readthedocs.io/en/stable/99-appendices/12-arterial-spin-labeling.html) related functions.
 - Scripts start with the prefix `xASL_bids_...`.
 
-### Development
-
-- Functions that are still in active development.
-- Scripts should start with the prefix `xASL_...`.
-
 ### FSL
 
 - [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL) related functions.
