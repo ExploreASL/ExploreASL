@@ -4,19 +4,24 @@ function [DataOut] = xASL_num2str(DataIn, stringFormat, bConcatenate, stringDeli
 % FORMAT: [DataOut] = xASL_num2str(DataIn[, stringFormat, bConcatenate, stringDelimiter])
 %
 % INPUT:
-%   DataIn 	        - input data (can be any format) (REQUIRED)
-%   stringFormat    - second argument of "num2str". Can be a format, but mostly used as number of characters to print (effectively rounding) (OPTIONAL)
-%   bConcatenate    - concatenate multiple-lines to a single line with ',' as a delimiter (OPTIONAL, DEFAULT = 1)
-%   stringDelimiter - string to be used as a delimiter for concatenating when bConcatenate is TRUE, empty delimiters are allowed (OPTIONAL, DEFAULT = ',')
+%   DataIn 	        - Input data (can be any format) (REQUIRED, INTEGER or DOUBLE, SCALAR or ARRAY)
+%   stringFormat    - Second argument of "num2str". Can be a format, but mostly used as number
+%                     of characters to print (effectively rounding) (OPTIONAL, DEFAULT = '')
+%   bConcatenate    - Concatenate multiple-lines to a single line with ',' as a delimiter (OPTIONAL, DEFAULT = 1)
+%   stringDelimiter - String to be used as a delimiter for concatenating when bConcatenate 
+%                     is TRUE, empty delimiters are allowed (OPTIONAL, DEFAULT = ',')
 %
 % OUTPUT:
-%   DataOut - numbers converted to string, or bypassed data
+%   DataOut         - Numbers converted to string, or bypassed data (CHAR ARRAY)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: When the provided data is numeric, this function will convert the number to string/characters,
-% rewriting NaN into 'n/a' (BIDS convention) but otherwise preserving the Matlab builtin functionality, also for the second argument "f".
-% If non-numeric data is provided, it is bypassed (avoiding any issues "num2str" will have with non-numeric data).
-% It can concatenate an array/matrix of strings, taking first the columns in the first row, and then going across the rows.
-% See builtin num2str for more details. Column vectors are converted to row vectors.
+% DESCRIPTION: When the provided data is numeric, this function will convert the number to 
+%              string/characters, rewriting NaN into 'n/a' (BIDS convention) but otherwise 
+%              preserving the Matlab builtin functionality, also for the second argument "f".
+%              If non-numeric data is provided, it is bypassed (avoiding any issues "num2str"
+%              will have with non-numeric data).
+%              It can concatenate an array/matrix of strings, taking first the columns in the 
+%              first row, and then going across the rows. See builtin num2str for more details. 
+%              Column vectors are converted to row vectors.
 %   
 % EXAMPLE:
 %
