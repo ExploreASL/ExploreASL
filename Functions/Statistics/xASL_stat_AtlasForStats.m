@@ -168,7 +168,7 @@ if ~AtlasIsColumns
         if round(DimRatioAtlas(1),2)==round(DimRatioAtlas(2),2) && round(DimRatioAtlas(2),2)==round(DimRatioAtlas(3),2)
             fprintf('%s\n','Detected that atlas has different MNI dimensions, resampling to 1.5 mm');
             [Fpath, Ffile, Fext] = xASL_fileparts(x.S.InputAtlasPath);
-            Atlas15Path = fullfile(Fpath,[Ffile '1.5mm' Fext]);
+            Atlas15Path = fullfile(Fpath,[Ffile '_1_5mm' Fext]);
             xASL_spm_reslice( x.D.ResliceRef, x.S.InputAtlasPath, [], [], x.settings.Quality, Atlas15Path, 0 );
         end
         InputAtlasIM = xASL_io_Nifti2Im(Atlas15Path);
