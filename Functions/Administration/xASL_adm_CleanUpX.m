@@ -18,6 +18,19 @@ function [x] = xASL_adm_CleanUpX(x)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
+
+    %% Zipping
+    
+    % Zip all NIfTIs if we do not immediately run the pipeline afterwards
+    if ~(x.opts.ProcessModules(2) || x.opts.ProcessModules(3) || x.opts.ProcessModules(4))
+        if isfield(x.D,'ROOT')
+            xASL_adm_GzipAllFiles(x.D.ROOT,[],[],fullfile(x.opts.MyPath,'External'));
+        end
+    end
+    
+
+    %% Clean-up of the x structure
+
     % We want to reload the derivatives data correctly, which is why we delete the following 
     % fields before we run the processing pipeline, we need them for xASL_init_Iteration though.
     if isfield(x,'D')
@@ -36,6 +49,8 @@ function [x] = xASL_adm_CleanUpX(x)
     if isfield(x,'SESSIONS')
         x = rmfield(x,'SESSIONS');
     end
+    
+
 
 end
 
