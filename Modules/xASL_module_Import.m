@@ -175,47 +175,18 @@ function [result, x] = xASL_module_Import(x)
     end
     
     %% 4. Clean-up
-    [x] = xASL_imp_CleanUpImport(x);
-    result = x.result;
-
+    x = xASL_adm_CleanUpX(x);
     
-end
-
-
-%% Clean-Up before processing pipeline
-function [x] = xASL_imp_CleanUpImport(x)
-
-    % We want to reload the derivatives data correctly, which is why we delete the following 
-    % fields before we run the processing pipeline, we need them for xASL_Iterate though.
-    if isfield(x,'D')
-        x = rmfield(x,'D');
-        x.D = struct;
-    end
-    if isfield(x,'SUBJECT')
-        x = rmfield(x,'SUBJECT');
-    end
-    if isfield(x,'SUBJECTS')
-        x = rmfield(x,'SUBJECTS');
-    end
-    % Clean up x-struct
-    if isfield(x,'SESSION')
-        x = rmfield(x,'SESSION');
-    end
-    if isfield(x,'SESSIONS')
-        x = rmfield(x,'SESSIONS');
-    end
-    
-    % We also need to terminate the module correctly
+    % We need to terminate the module correctly
     x.mutex.AddState('999_ready');
     x.mutex.Unlock();
     x.result = true;
     close all;
     
+    % Return the results
+    result = x.result;
 
+    
 end
-
-
-
-
 
 
