@@ -16,9 +16,9 @@ function [x] = ExploreASL_Initialize(varargin)
 % This initialization workflow initializes ExploreASL. The overall workflow is shown below:
 % 
 % 1. Admin
-% - Input parsing (inputParsing, ExploreASL_Initialize_convertParsedInput, ExploreASL_Initialize_storeParsedInput)
-% - Initialize substructs of the ExploreASL x structure (ExploreASL_Initialize_SubStructs)
-% - Check input parameters and determine pipeline related booleans (ExploreASL_Initialize_GetBooleansImportProcess)
+% - Input parsing (inputParsing, xASL_init_convertParsedInput, xASL_init_storeParsedInput)
+% - Initialize substructs of the ExploreASL x structure (xASL_init_SubStructures)
+% - Check input parameters and determine pipeline related booleans (xASL_init_GetBooleansImportProcess)
 %
 % 2. Get ExploreASL path
 % - Check if the current directory is the ExploreASL directory
@@ -55,16 +55,16 @@ function [x] = ExploreASL_Initialize(varargin)
     p = inputParsing(varargin{:});
 
     % Convert parsed input
-    parameters = ExploreASL_Initialize_convertParsedInput(p.Results);
+    parameters = xASL_init_convertParsedInput(p.Results);
 
     % Store parsed input
-    x = ExploreASL_Initialize_storeParsedInput(parameters);
+    x = xASL_init_storeParsedInput(parameters);
     
     % Initialize substructs
-    x = ExploreASL_Initialize_SubStructs(x);
+    x = xASL_init_SubStructures(x);
     
     % Check if the ExploreASL pipeline should be run or not
-    x = ExploreASL_Initialize_GetBooleansImportProcess(x);
+    x = xASL_init_GetBooleansImportProcess(x);
 
     % Check if the DatasetRoot is a file or a directory
     x.settings.SelectParFile = false; % Fallback
@@ -125,7 +125,7 @@ function [x] = ExploreASL_Initialize(varargin)
 
     %% 3. Add ExploreASL paths
     if ~isdeployed
-        addExploreASLDirectory(x.opts.MyPath);
+        xASL_init_AddDirsOfxASL(x.opts.MyPath);
     end
     
     
@@ -133,7 +133,7 @@ function [x] = ExploreASL_Initialize(varargin)
     x = xASL_init_checkDatasetRoot(x);
     
     % Give some feedback
-    ExploreASL_Initialize_basicFeedback(x);
+    xASL_init_BasicFeedback(x);
     
     %% 5. General settings
 
@@ -198,7 +198,7 @@ end
 
 %% -----------------------------------------------------------------------
 %% Add ExploreASL Directory
-function addExploreASLDirectory(MyPath)
+function xASL_init_AddDirsOfxASL(MyPath)
 
     % First remove existing toolbox initializations
     % This could contain other toolbox versions and create conflicts
@@ -311,7 +311,7 @@ end
 
 %% -----------------------------------------------------------------------
 %% Convert parsed input
-function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
+function parameters = xASL_init_convertParsedInput(parameters)
 
     % Check if inputs are empty or chars
     if isempty(parameters.DatasetRoot),     parameters.DatasetRoot = '';                                    end
@@ -366,7 +366,7 @@ end
 
 %% -----------------------------------------------------------------------
 %% Store parsed input
-function x = ExploreASL_Initialize_storeParsedInput(parameters)
+function x = xASL_init_storeParsedInput(parameters)
 
     % Store input options
     x.opts.DatasetRoot = parameters.DatasetRoot;
@@ -381,7 +381,7 @@ end
 
 %% -----------------------------------------------------------------------
 % Check if the ExploreASL pipeline should be run or not
-function x = ExploreASL_Initialize_GetBooleansImportProcess(x)
+function x = xASL_init_GetBooleansImportProcess(x)
 
     % Check if data is being imported
     if sum(x.opts.ImportModules)>0
@@ -409,7 +409,7 @@ end
 
 %% -----------------------------------------------------------------------
 % Give some feedback
-function ExploreASL_Initialize_basicFeedback(x)
+function xASL_init_BasicFeedback(x)
 
     % Report string
     reportProcess = '';
@@ -433,7 +433,7 @@ end
 
 
 %% -----------------------------------------------------------------------
-function x = ExploreASL_Initialize_SubStructs(x)
+function x = xASL_init_SubStructures(x)
     
     % Statistics, directories, paths, and sequence related fields
     if ~isfield(x,'S'),                     x.S = struct;                   end
