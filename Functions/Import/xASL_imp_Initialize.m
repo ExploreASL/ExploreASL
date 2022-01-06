@@ -1,5 +1,5 @@
 function imPar = xASL_imp_Initialize(studyPath, imParPath)
-%xASL_imp_Initialize Initialize DCM2NII.
+%xASL_imp_Initialize Initialize the import.
 %
 % FORMAT: imPar = xASL_imp_Initialize(studyPath, imParPath)
 % 

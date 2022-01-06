@@ -1,4 +1,4 @@
-function [x] = xASL_module_BIDS2Legacy(x)
+function [result, x] = xASL_module_BIDS2Legacy(x)
 %xASL_module_BIDS2Legacy BIDS2LEGACY conversion script which calls xASL_bids_BIDS2Legacy.
 %
 % FORMAT: [x] = xASL_module_BIDS2Legacy(x);
@@ -29,6 +29,7 @@ function [x] = xASL_module_BIDS2Legacy(x)
     
     % Make sure that logging is still active
     diary(x.dir.diaryFile);
+    result = true;
     
     % Print feedback
     xASL_adm_BreakString('BIDS to ExploreASL LEGACY CONVERSION');

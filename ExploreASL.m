@@ -35,13 +35,9 @@ function [x] = ExploreASL(varargin)
 %                            This wrapper initializes ExploreASL: managing paths, deployment, etc.
 % II. Import Master:         ExploreASL_Import
 %                            Multi-step import workflow for DCM2NII, NII2BIDS & BIDS2LEGACY.
-% III. Data loading:         xASL_init_DataLoading
-%                            This wrapper loads the dataset
-% IV. Print user feedback:   xASL_init_PrintUserFeedback
-%                            This wrapper prints some basic feedback before the processing pipeline
-% V. Processing Master:      ExploreASL_Process
+% III. Processing Master:      ExploreASL_Process
 %                            Multi-step processing workflow for the STRUCTURAL, ASL and POPULATION module.
-% VI. Print user feedback:   xASL_init_PrintUserFeedback
+% IV. Print user feedback:   xASL_init_PrintUserFeedback
 %                            This wrapper prints a final feedback after the processing pipeline
 %
 % This pipeline can be run from CLI or using the python GUI.
@@ -71,23 +67,15 @@ function [x] = ExploreASL(varargin)
     if x.opts.bImportData
         x = ExploreASL_Import(x);
     end
-    
-    % -----------------------------------------------------------------------------
-    % III. Data loading
-    x = xASL_init_DataLoading(x);
-    
-    % -----------------------------------------------------------------------------
-    % IV. Print user feedback (before pipeline)
-    xASL_init_PrintUserFeedback(x, nargout, 0);
 
     % -----------------------------------------------------------------------------
-    % V. Processing Master
+    % III. Processing Master
     if x.opts.bProcessData
         x = ExploreASL_Process(x);
     end
 
     % -----------------------------------------------------------------------------    
-    % VI. Print user feedback (after pipeline)
+    % IV. Print user feedback (after pipeline)
     xASL_init_PrintUserFeedback(x, nargout, 1);
     
 

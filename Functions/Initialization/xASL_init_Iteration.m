@@ -92,7 +92,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     end
     
     % SUBJECT, SUBJECTDIR & LockDir
-    if ~isempty(regexp(ModName,'(Import|Struct|ASL|func|LongReg|dwi)', 'once'))
+    if ~isempty(regexp(ModName,'(Import|BIDS2Legacy|Struct|ASL|func|LongReg|dwi)', 'once'))
         dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
         dbSettings.x.dir.SUBJECTDIR = '<ROOT>/<SUBJECT>';
         dbSettings.x.dir.LockDir = [dbSettings.x.dir.LockDir '/<SUBJECT>'];
@@ -114,6 +114,8 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.diaryFile = ['<ROOT>/log/' moduleName '.log'];
     elseif ~isempty(regexp(ModName,'(Import)', 'once'))
         dbSettings.diaryFile = ['<ROOT>/derivatives/ExploreASL/log/' moduleName '_sub-<SUBJECT>.log'];
+    elseif ~isempty(regexp(ModName,'(BIDS2Legacy)', 'once'))
+        dbSettings.diaryFile = ['<ROOT>/log/' moduleName '_sub-<SUBJECT>.log'];
     elseif ~isempty(regexp(ModName,'(Structural)', 'once'))
         dbSettings.diaryFile = ['<ROOT>/log/' moduleName '_<SUBJECT>.log'];
     else

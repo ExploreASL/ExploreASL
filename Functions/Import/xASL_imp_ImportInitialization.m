@@ -47,8 +47,7 @@ function x = xASL_imp_ImportInitialization(x)
     x = xASL_imp_BasicParameterChecks(x);
 
     % Initialize the import setup
-    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.ImportModules(3)
-        % Load the sourceStructure.json and initialize the corresponding struct
+    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.ImportModules(3) || x.opts.ProcessModules(1)
         x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
     else
         x.modules.import.imPar = NaN;
