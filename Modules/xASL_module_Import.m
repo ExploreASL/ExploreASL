@@ -150,7 +150,7 @@ function [result, x] = xASL_module_Import(x)
     %% 1. Run the DCM2NIIX
     iState = 1;
     if x.opts.ImportModules(1) && ~x.mutex.HasState(StateName{1})
-        x = xASL_imp_DCM2NII(x, imPar);
+        x = xASL_wrp_DCM2NII(x, imPar);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.ImportModules(1) && x.mutex.HasState(StateName{1})
         fprintf('DCM2NIIX was run before...   \n');
@@ -160,7 +160,7 @@ function [result, x] = xASL_module_Import(x)
     %% 2. Run the NIfTI to ASL-BIDS
     iState = 2;
     if x.opts.ImportModules(2) && ~x.mutex.HasState(StateName{2})
-        x = xASL_imp_NII2BIDS(x, imPar);
+        x = xASL_wrp_NII2BIDS(x, imPar);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.ImportModules(2) && x.mutex.HasState(StateName{2})
         fprintf('NIIX to ASL-BIDS was run before...   \n');
@@ -170,7 +170,7 @@ function [result, x] = xASL_module_Import(x)
     %% 3. Run defacing
     iState = 3;
     if x.opts.ImportModules(3) && ~x.mutex.HasState(StateName{3})
-        xASL_imp_Deface(x,imPar);
+        xASL_wrp_Deface(x,imPar);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.ImportModules(3) && x.mutex.HasState(StateName{3})
         fprintf('Defacing was run before...   \n');
@@ -180,7 +180,7 @@ function [result, x] = xASL_module_Import(x)
     %% 4. Run BIDS to Legacy
     iState = 4;
     if x.opts.ImportModules(4) && ~x.mutex.HasState(StateName{4})
-        x = xASL_imp_BIDS2Legacy(x);
+        x = xASL_wrp_BIDS2Legacy(x);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.ImportModules(4) && x.mutex.HasState(StateName{4})
         fprintf('BIDS to Legacy was run before...   \n');

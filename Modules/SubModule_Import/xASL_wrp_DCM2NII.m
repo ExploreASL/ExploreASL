@@ -1,7 +1,7 @@
-function x = xASL_imp_DCM2NII(x, imPar)
-%xASL_imp_DCM2NII Run the dcm2nii part of the import.
+function x = xASL_wrp_DCM2NII(x, imPar)
+%xASL_wrp_DCM2NII Run the dcm2nii part of the import.
 %
-% FORMAT: x = xASL_imp_DCM2NII(x, imPar)
+% FORMAT: x = xASL_wrp_DCM2NII(x, imPar)
 % 
 % INPUT:
 %   x      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -20,7 +20,7 @@ function x = xASL_imp_DCM2NII(x, imPar)
 % 5. Clean-up
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_imp_DCM2NII(x, imPar);
+% EXAMPLE:     x = xASL_wrp_DCM2NII(x, imPar);
 %
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
@@ -42,7 +42,7 @@ function x = xASL_imp_DCM2NII(x, imPar)
 
     %% 3. Import visit by visit, session by session, scan by scan for current subject
     fprintf('\nRunning DCM2NIIX...\n');
-    [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, x.modules.import.matches, dcm2niiCatchedErrors);
+    [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, imPar, x.modules.import.matches, dcm2niiCatchedErrors);
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
     iSubject = strcmp(x.SUBJECT,x.SUBJECTS);

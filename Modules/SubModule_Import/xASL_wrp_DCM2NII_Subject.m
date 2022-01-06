@@ -1,7 +1,7 @@
-function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, matches, dcm2niiCatchedErrors)
-%xASL_imp_DCM2NII_Subject Run DCM2NII for one individual subject.
+function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, imPar, matches, dcm2niiCatchedErrors)
+%xASL_wrp_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
-% FORMAT: [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, matches, dcm2niiCatchedErrors)
+% FORMAT: [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, imPar, matches, dcm2niiCatchedErrors)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -24,7 +24,7 @@ function [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_S
 % 4. Iterate over scans
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_imp_DCM2NII_Subject(x, imPar, matches, dcm2niiCatchedErrors);
+% EXAMPLE:     [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, imPar, matches, dcm2niiCatchedErrors);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

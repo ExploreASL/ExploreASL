@@ -1,7 +1,7 @@
-function [x] = xASL_imp_BIDS2Legacy(x)
-%xASL_imp_BIDS2Legacy BIDS2LEGACY conversion script which calls xASL_bids_BIDS2Legacy.
+function [x] = xASL_wrp_BIDS2Legacy(x)
+%xASL_wrp_BIDS2Legacy BIDS2LEGACY conversion script which calls xASL_bids_BIDS2Legacy.
 %
-% FORMAT: [x] = xASL_imp_BIDS2Legacy(x);
+% FORMAT: [x] = xASL_wrp_BIDS2Legacy(x);
 %
 % INPUT:
 %   x             - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging

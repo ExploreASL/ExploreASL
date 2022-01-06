@@ -1,7 +1,7 @@
-function xASL_imp_Deface(x, imPar)
-%xASL_imp_Deface Run defacing.
+function xASL_wrp_Deface(x, imPar)
+%xASL_wrp_Deface Run defacing.
 %
-% FORMAT: xASL_imp_Deface(x, imPar)
+% FORMAT: xASL_wrp_Deface(x, imPar)
 % 
 % INPUT:
 %   x          - ExploreASL x structure (REQUIRED, STRUCT)
@@ -18,7 +18,7 @@ function xASL_imp_Deface(x, imPar)
 % 3. Process all anatomical files (`xASL_spm_deface`)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_Deface(x, imPar);
+% EXAMPLE:     xASL_wrp_Deface(x, imPar);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

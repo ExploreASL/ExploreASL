@@ -1,7 +1,7 @@
-function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectSession)
-%xASL_imp_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
+function x = xASL_wrp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectSession)
+%xASL_wrp_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
 %
-% FORMAT: x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectSession)
+% FORMAT: x = xASL_wrp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectSession)
 % 
 % INPUT:
 %   x                   - ExploreASL x structure (REQUIRED, STRUCT)
@@ -23,7 +23,7 @@ function x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
 % - 3. Iterate over runs
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_imp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubject);
+% EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubject);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 

@@ -1,7 +1,7 @@
-function x = xASL_imp_NII2BIDS(x, imPar)
-%xASL_imp_NII2BIDS Run the NII2BIDS conversion.
+function x = xASL_wrp_NII2BIDS(x, imPar)
+%xASL_wrp_NII2BIDS Run the NII2BIDS conversion.
 %
-% FORMAT: x = xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath)
+% FORMAT: x = xASL_wrp_NII2BIDS(x, imPar, studyPath, studyParPath)
 % 
 % INPUT:
 %   x               - ExploreASL x structure (REQUIRED, STRUCT)
@@ -18,7 +18,7 @@ function x = xASL_imp_NII2BIDS(x, imPar)
 % 3. Go through all subjects and check all the M0 and ASLs and modify the JSONs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_NII2BIDS(x, imPar, studyPath, studyParPath);
+% EXAMPLE:     xASL_wrp_NII2BIDS(x, imPar, studyPath, studyParPath);
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
@@ -76,7 +76,7 @@ function x = xASL_imp_NII2BIDS(x, imPar)
     for iSubjectSession = 1:length(listSubjectsSessions)
         % Only run it for the current subject (maybe we can do this more elegantly in the future)
         if ~isempty(regexpi(listSubjectsSessions{iSubjectSession},subjectName))
-            x = xASL_imp_NII2BIDS_Subject(x,imPar,bidsPar,studyPar,listSubjectsSessions{iSubjectSession});
+            x = xASL_wrp_NII2BIDS_Subject(x,imPar,bidsPar,studyPar,listSubjectsSessions{iSubjectSession});
         end
     end
     
