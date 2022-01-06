@@ -28,7 +28,9 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
     %% 1. Input check
     
     % Make sure that logging is still active
-    diary(x.dir.diaryFile);
+    if isfield(x.dir,'diaryFile')
+        diary(x.dir.diaryFile);
+    end
     
     % Start Mutex
     x = xASL_init_InitializeMutex(x, 'BIDS2Legacy');
