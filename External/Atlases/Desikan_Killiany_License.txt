@@ -12,6 +12,6 @@ The authors of the toolbox are not responsible for violation of the copy right t
 
 These Desikan-Killiany atlas regions were bilaterally averaged, to accommodate the Left-Right separation system
 in ExploreASL. The Desikan-Killiany atlas contains 12 regions that were already bilateral, accumulating to
-(172/2)+12=98 regions in the bilateral Desikan-Killiany atlas provided here.
+(172/2)+12=98 regions in the bilateral Desikan-Killiany atlas provided here.Lastly, the Desikan-Killiany atlas is resampled to 1.5mm isotropic MNI space .
 
 =========================================================================================================
