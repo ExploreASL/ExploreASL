@@ -1,7 +1,7 @@
-function [x] = xASL_bids_BIDS2Legacy(x, bOverwrite)
-%xASL_bids_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
+function [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite)
+%xASL_wrp_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
-% FORMAT: [x] = xASL_bids_BIDS2Legacy(x[, bOverwrite])
+% FORMAT: [x] = xASL_wrp_BIDS2Legacy(x[, bOverwrite])
 % 
 % INPUT:
 %   x          - ExploreASL x structure (REQUIRED, STRUCT)
@@ -32,9 +32,9 @@ function [x] = xASL_bids_BIDS2Legacy(x, bOverwrite)
 % 6. Clean up
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [x] = xASL_bids_BIDS2Legacy(x, bOverwrite);
+% EXAMPLE: [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
 %% 0. Admin

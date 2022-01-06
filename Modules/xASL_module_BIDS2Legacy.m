@@ -79,7 +79,7 @@ function [x] = xASL_module_BIDS2Legacy(x)
         x.dataPar = spm_jsonread(fListDataPar{1});
     end
     % Run legacy conversion
-    x = xASL_bids_BIDS2Legacy(x, 1);
+    x = xASL_wrp_BIDS2Legacy(x, 1);
     
     % Clean-Up
     x = xASL_imp_CompleteBIDS2Legacy(x);
