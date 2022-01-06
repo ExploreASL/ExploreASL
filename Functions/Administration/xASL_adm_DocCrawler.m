@@ -30,7 +30,7 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
     
     % Sections for "Functions" folder
     SECTION = {'adm', 'bids', 'fsl', 'im', 'imp', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
-    SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Imaging Processing', 'Import', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
+    SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Image Processing', 'Import', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
 
     %% Input Check
     if nargin < 1
@@ -165,6 +165,7 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
             if strcmp(content,"Functions")
                 if cS <= length(SECTION)
                     if contains(fileName,['xASL_', char(SECTION{cS,1})])
+                        fprintf('%s\n',SECTION_NAMES{cS,1});
                         TEXT{it,1} = ['## ', char(SECTION_NAMES{cS,1})];  it = it+1;
                         TEXT{it,1} = '';  it = it+1;
                         cS = cS+1;
