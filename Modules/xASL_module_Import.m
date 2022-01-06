@@ -127,7 +127,7 @@ function [result, x] = xASL_module_Import(x)
     StateName{1} = '010_DCM2NII';
     StateName{2} = '020_NII2BIDS';
     StateName{3} = '030_DEFACE';
-    StateName{4} = '050_CleanUp';
+    StateName{4} = '040_CleanUp';
     
     
     %% 0. Initialization

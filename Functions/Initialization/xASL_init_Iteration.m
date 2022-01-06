@@ -34,7 +34,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     dbSettings.x.dir.LockDir         = ['<ROOT>/lock/' moduleName];
     
     % Lock dir specifics for Import
-    if strcmp(moduleName,'xASL_module_Import')
+    if strcmp(moduleName,'xASL_module_Import') || strcmp(moduleName,'xASL_module_BIDS2Legacy')
         dbSettings.x.dir.LockDir = ['<ROOT>/derivatives/ExploreASL/lock/' moduleName];
     end
     

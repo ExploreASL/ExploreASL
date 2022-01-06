@@ -66,19 +66,17 @@ function [x] = ExploreASL_Process(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
     %% Processing Workflow
     
     % -----------------------------------------------------------------------------
     %% 0 Run BIDS to Legacy
-    % iState = 4;
-    if x.opts.ProcessModules(1)==1 % && ~x.mutex.HasState(StateName{4})
+    if x.opts.ProcessModules(1)==1
         x = xASL_imp_ImportInitialization(x);
         [~, x] = xASL_init_Iteration(x,'xASL_module_BIDS2Legacy');
         x = xASL_adm_CleanUpX(x);
-        % x.mutex.AddState(StateName{iState});
     elseif x.opts.ProcessModules(1) % && x.mutex.HasState(StateName{4})
         fprintf('BIDS to Legacy was run before...   \n');
     end
@@ -96,8 +94,7 @@ function [x] = ExploreASL_Process(x)
         % The following DARTEL module is an optional extension of the structural module
         % to create population-specific templates
         if isfield(x.modules.structural,'bSegmentSPM12') && x.modules.structural.bSegmentSPM12 && x.nSubjects>1
-            % in case we used SPM12 instead of CAT12 for segmentation,
-            % we have to run DARTEL separately
+            % in case we used SPM12 instead of CAT12 for segmentation, we have to run DARTEL separately
             [~, x] = xASL_init_Iteration(x,'xASL_module_DARTEL');
         end
         % Now only check the availability of files when not running parallel

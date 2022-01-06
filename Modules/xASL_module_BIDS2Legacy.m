@@ -29,6 +29,15 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
     
     % Make sure that logging is still active
     diary(x.dir.diaryFile);
+    
+    % Start Mutex
+    x = xASL_init_InitializeMutex(x, 'BIDS2Legacy');
+    
+    % Define lock states
+    StateName{1} = '010_BIDS2LEGACY';
+    StateName{2} = '020_CleanUp';
+    
+    % Default for result
     result = true;
     
     % Print feedback
@@ -68,6 +77,8 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
     end
 
 	%% 3. Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
+    
+    % Get dataPar
 	fListDataPar = xASL_adm_GetFileList(x.dir.DatasetRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
     if length(fListDataPar) < 1
         % Fill the dataPars with default parameters
@@ -80,10 +91,18 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
         x.dataPar = spm_jsonread(fListDataPar{1});
     end
     % Run legacy conversion
-    x = xASL_wrp_BIDS2Legacy(x, 1);
+    iState = 1;
+    if ~x.mutex.HasState(StateName{1})
+        x = xASL_wrp_BIDS2Legacy(x, 1);
+        x.mutex.AddState(StateName{iState});
+    elseif x.mutex.HasState(StateName{1})
+        fprintf('BIDS2Legacy was run before...   \n');
+    end
     
-    % Clean-Up
+    %% Clean-Up
     x = xASL_imp_CompleteBIDS2Legacy(x);
+    x.mutex.AddState('999_ready');
+    x.mutex.Unlock();
     
     
 end
