@@ -70,10 +70,20 @@ function [x] = ExploreASL_Process(x)
 
 
     %% Processing Workflow
+    
+    % -----------------------------------------------------------------------------
+    %% 0 Run BIDS to Legacy
+    % iState = 4;
+    if x.opts.ProcessModules(1)==1 % && ~x.mutex.HasState(StateName{4})
+        x = xASL_wrp_BIDS2Legacy(x);
+        % x.mutex.AddState(StateName{iState});
+    elseif x.opts.ProcessModules(1) % && x.mutex.HasState(StateName{4})
+        fprintf('BIDS to Legacy was run before...   \n');
+    end
 
     % -----------------------------------------------------------------------------
     %% 1  xASL_module_Structural
-    if x.opts.ProcessModules(1)==1
+    if x.opts.ProcessModules(2)==1
         [~, x] = xASL_init_Iteration(x,'xASL_module_Structural');
         % The following DARTEL module is an optional extension of the structural module
         % to create population-specific templates
@@ -99,7 +109,7 @@ function [x] = ExploreASL_Process(x)
     
     % -----------------------------------------------------------------------------
     %% 2    xASL_module_ASL  
-    if x.opts.ProcessModules(2)==1
+    if x.opts.ProcessModules(3)==1
         [~, x] = xASL_init_Iteration(x,'xASL_module_ASL');
         % Now only check the availability of files when not running parallel
         if x.opts.nWorkers==1; xASL_adm_CreateFileReport(x); end    
@@ -109,7 +119,7 @@ function [x] = ExploreASL_Process(x)
     % -----------------------------------------------------------------------------
     %% 3    xASL_module_Population
     % Performs all group-level processing & QC
-    if x.opts.ProcessModules(3)==1
+    if x.opts.ProcessModules(4)==1
         [~, x] = xASL_init_Iteration(x,'xASL_module_Population');
     end
     

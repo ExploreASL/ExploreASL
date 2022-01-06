@@ -81,6 +81,9 @@ function [x] = xASL_wrp_BIDS2Legacy(x)
     % Run legacy conversion
     x = xASL_bids_BIDS2Legacy(x, 1);
     
+    % Clean-Up
+    x = xASL_imp_CompleteBIDS2Legacy(x);
+    
     
 end
 

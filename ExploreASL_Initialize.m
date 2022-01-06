@@ -2,7 +2,7 @@ function [x] = ExploreASL_Initialize(varargin)
 %ExploreASL_Initialize Initializes ExploreASL
 %
 % FORMAT: 
-%   [x] = ExploreASL_Initialize([DatasetRoot, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
+%   x = ExploreASL_Initialize([DatasetRoot, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
 %
 % INPUT:
 %   varargin    - This script accepts the same arguments as ExploreASL. Check out the definitions there.
@@ -42,8 +42,8 @@ function [x] = ExploreASL_Initialize(varargin)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
 %
-% Calling externally:             [x] = ExploreASL_Initialize('/MyDisk/MyStudy');
-% Debugging/initialization only:  [x] = ExploreASL_Initialize;
+% Calling externally:             x = ExploreASL_Initialize('/MyDisk/MyStudy');
+% Debugging/initialization only:  x = ExploreASL_Initialize;
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
@@ -130,7 +130,7 @@ function [x] = ExploreASL_Initialize(varargin)
     
     
     %% 4. Check DatasetRoot
-    [x] = xASL_init_checkDatasetRoot(x);
+    x = xASL_init_checkDatasetRoot(x);
     
     % Give some feedback
     ExploreASL_Initialize_basicFeedback(x);
@@ -290,8 +290,8 @@ function p = inputParsing(varargin)
     
     % Define defaults
     defaultDatasetRoot = [];
-    defaultImportModules = [0 0 0 0];
-    defaultProcessModules = [0 0 0];
+    defaultImportModules = [0 0 0];
+    defaultProcessModules = [0 0 0 0];
     defaultbPause = 0;
     defaultiWorker = 1;
     defaultnWorkers = 1;
@@ -325,27 +325,29 @@ function parameters = ExploreASL_Initialize_convertParsedInput(parameters)
     if length(parameters.ImportModules)==1
         % If a single value is given ...
         % ... then turn on/off all the import modules ...
-        parameters.ImportModules(1:4) = logical(parameters.ImportModules(1));
-        % ... besides defacing, which can only be run using a 1x4 vector ...
+        parameters.ImportModules(1:3) = logical(parameters.ImportModules(1));
+        % ... besides defacing, which can only be run using a 1x3 vector ...
         parameters.ImportModules(3) = false;
-    elseif length(parameters.ImportModules)<4
+    elseif length(parameters.ImportModules)<3
         % Convert to a row vector
         parameters.ImportModules = parameters.ImportModules(:)';
         % Fill in the missing fields with zeros
-        parameters.ImportModules(length(parameters.ImportModules)+1:4) = 0;
+        parameters.ImportModules(length(parameters.ImportModules)+1:3) = 0;
         % Issue a warning
-        warning('Incorrect length of the ImportModules parameter, missing submodules set to zero: %s\n',xASL_num2str(parameters.ImportModules));
+        warning('Incorrect length of the ImportModules parameter, missing submodules set to zero: %s\n',...
+            xASL_num2str(parameters.ImportModules));
     end
     if length(parameters.ProcessModules)==1
         % If a single value is given, then copy it to all submodules
         parameters.ProcessModules(1:3) = parameters.ProcessModules(1);
-    elseif length(parameters.ProcessModules)<3
+    elseif length(parameters.ProcessModules)<4
         % Convert to a row vector
         parameters.ProcessModules = parameters.ProcessModules(:)';
         % Fill in the missing fields with zeros
-        parameters.ProcessModules(length(parameters.ProcessModules)+1:3) = 0;
+        parameters.ProcessModules(length(parameters.ProcessModules)+1:4) = 0;
         % Issue a warning
-        warning('Incorrect length of the ProcessModules parameter, missing submodules set to zero: %s\n',xASL_num2str(parameters.ProcessModules));
+        warning('Incorrect length of the ProcessModules parameter, missing submodules set to zero: %s\n',...
+            xASL_num2str(parameters.ProcessModules));
     end
     
     % Make it impossible to set bPause to true in deployed mode
@@ -379,7 +381,7 @@ end
 
 %% -----------------------------------------------------------------------
 % Check if the ExploreASL pipeline should be run or not
-function [x] = ExploreASL_Initialize_GetBooleansImportProcess(x)
+function x = ExploreASL_Initialize_GetBooleansImportProcess(x)
 
     % Check if data is being imported
     if sum(x.opts.ImportModules)>0
@@ -431,7 +433,7 @@ end
 
 
 %% -----------------------------------------------------------------------
-function [x] = ExploreASL_Initialize_SubStructs(x)
+function x = ExploreASL_Initialize_SubStructs(x)
     
     % Statistics, directories, paths, and sequence related fields
     if ~isfield(x,'S'),                     x.S = struct;                   end

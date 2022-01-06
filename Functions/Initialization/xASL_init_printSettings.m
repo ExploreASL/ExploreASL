@@ -39,20 +39,20 @@ function xASL_init_printSettings(x)
     if x.opts.ImportModules(3)==1
         textPrint = [textPrint 'DEFACE '];
     end
-    if x.opts.ImportModules(4)==1
-        textPrint = [textPrint 'BIDS2LEGACY'];
-    end
     fprintf([textPrint '\n']);
 
     % Process modules
     textPrint = 'Process Modules     ';
     if x.opts.ProcessModules(1)==1
-        textPrint = [textPrint 'STRUCTURAL '];
+        textPrint = [textPrint 'BIDS2LEGACY'];
     end
     if x.opts.ProcessModules(2)==1
-        textPrint = [textPrint 'ASL '];
+        textPrint = [textPrint 'STRUCTURAL '];
     end
     if x.opts.ProcessModules(3)==1
+        textPrint = [textPrint 'ASL '];
+    end
+    if x.opts.ProcessModules(4)==1
         textPrint = [textPrint 'POPULATION '];
     end
     fprintf([textPrint '\n']);

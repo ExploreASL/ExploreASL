@@ -13,11 +13,10 @@ function [result, x] = xASL_module_Import(x)
 %   x.dir.studyPar        - Path to the JSON file with the BIDS parameters relevant for the whole study. These parameters are used
 %                           if they cannot be extracted from the DICOMs automatically. (OPTIONAL)
 %                           Looking automatically for file studyPar.json
-%   x.opts.ImportModules  - Specify which of the parts should be run (OPTIONAL, DEFAULT [1 1 0 0])
-%                           [1 0 0 0] - Run the DICOM to NIFTI conversion
-%                           [0 1 0 0] - Run the NIFTI transformation to the proper ASL-BIDS
-%                           [0 0 1 0] - Run the defacing
-%                           [0 0 0 1] - Run BIDS2Legacy
+%   x.opts.ImportModules  - Specify which of the parts should be run (OPTIONAL, DEFAULT [1 1 0])
+%                           [1 0 0] - Run the DICOM to NIFTI conversion
+%                           [0 1 0] - Run the NIFTI transformation to the proper ASL-BIDS
+%                           [0 0 1] - Run the defacing
 %
 %   x.modules.import.settings.bCopySingleDicoms 
 %                         - If true, copies a single DICOM with each NIfTI
@@ -128,8 +127,7 @@ function [result, x] = xASL_module_Import(x)
     StateName{1} = '010_DCM2NII';
     StateName{2} = '020_NII2BIDS';
     StateName{3} = '030_DEFACE';
-    StateName{4} = '040_BIDS2LEGACY';
-    StateName{5} = '050_CleanUp';
+    StateName{4} = '050_CleanUp';
     
     
     %% 0. Initialization
@@ -176,18 +174,7 @@ function [result, x] = xASL_module_Import(x)
         fprintf('Defacing was run before...   \n');
     end
     
-    
-    %% 4. Run BIDS to Legacy
-    iState = 4;
-    if x.opts.ImportModules(4) && ~x.mutex.HasState(StateName{4})
-        x = xASL_wrp_BIDS2Legacy(x);
-        x.mutex.AddState(StateName{iState});
-    elseif x.opts.ImportModules(4) && x.mutex.HasState(StateName{4})
-        fprintf('BIDS to Legacy was run before...   \n');
-    end
-
-    
-    %% 5. Clean-up
+    %% 4. Clean-up
     [x] = xASL_imp_CleanUpImport(x);
     result = x.result;
 

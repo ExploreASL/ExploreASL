@@ -51,12 +51,13 @@ function [x] = ExploreASL(varargin)
 % EXAMPLES:
 %
 % [x] = ExploreASL('/MyDisk/MyStudy', 1, 1, 1, 1, 1);
-% [x] = ExploreASL('/MyDisk/MyStudy', [1 1 1 1], [1 1 1], 1, 1, 1);
-% [x] = ExploreASL('/MyDisk/MyStudy', '[1 1 1 1]', '[1 1 1]', '1', '1', '1');
+% [x] = ExploreASL('/MyDisk/MyStudy', [1 1 1], [1 1 1 1], 1, 1, 1);
+% [x] = ExploreASL('/MyDisk/MyStudy', '[1 1 1]', '[1 1 1 1]', '1', '1', '1');
 %
-% For additional examples we recommend to check out the tutorial section: https://exploreasl.github.io/Documentation/site/Tutorials/
+% For additional examples we recommend to check out the tutorial section: 
+% https://exploreasl.github.io/Documentation/latest/Tutorials-ASL-BIDS/
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
 
     %% ExploreASL Workflow
