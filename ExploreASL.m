@@ -53,7 +53,7 @@ function [x] = ExploreASL(varargin)
 % For additional examples we recommend to check out the tutorial section: 
 % https://exploreasl.github.io/Documentation/latest/Tutorials-ASL-BIDS/
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% ExploreASL Workflow

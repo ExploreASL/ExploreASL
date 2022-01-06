@@ -46,7 +46,7 @@ function [x] = ExploreASL_Initialize(varargin)
 % Debugging/initialization only:  x = ExploreASL_Initialize;
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% 1. Admin

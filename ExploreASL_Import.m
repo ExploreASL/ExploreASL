@@ -16,7 +16,7 @@ function [x] = ExploreASL_Import(x)
 % EXAMPLE:        n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% Import Initialization
