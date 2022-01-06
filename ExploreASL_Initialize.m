@@ -339,7 +339,7 @@ function parameters = xASL_init_convertParsedInput(parameters)
     end
     if length(parameters.ProcessModules)==1
         % If a single value is given, then copy it to all submodules
-        parameters.ProcessModules(1:3) = parameters.ProcessModules(1);
+        parameters.ProcessModules(1:4) = parameters.ProcessModules(1);
     elseif length(parameters.ProcessModules)<4
         % Convert to a row vector
         parameters.ProcessModules = parameters.ProcessModules(:)';

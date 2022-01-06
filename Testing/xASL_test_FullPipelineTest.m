@@ -33,7 +33,7 @@ function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemo
 %    "pathExploreASL":     "...//ExploreASL",
 %    "pathFlavorDatabase": "...//FlavorDatabase",
 %    "cmdCloneFlavors":    "git clone git@github.com:ExploreASL/FlavorDatabase.git",
-%    "flavorList":         ["GE_PCASL_3Dspiral_14.0LX_1", "Philips_PCASL_2DEPI_3.2.1.1_1", "Siemens_PASL_3DGRASE_E11_1"]
+%    "flavorList":         ["GE_PCASL_3Dspiral_14.0LX_WIP_1", "Philips_PCASL_2DEPI_3.2.1.1_1", "Siemens_PASL_3DGRASE_E11_1"]
 % }
 %
 % To remove test data from the flavor database you can run:
