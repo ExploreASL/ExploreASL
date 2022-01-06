@@ -75,7 +75,7 @@ function [x] = ExploreASL_Process(x)
     %% 0 Run BIDS to Legacy
     % iState = 4;
     if x.opts.ProcessModules(1)==1 % && ~x.mutex.HasState(StateName{4})
-        x = xASL_wrp_BIDS2Legacy(x);
+        x = xASL_module_BIDS2Legacy(x);
         % x.mutex.AddState(StateName{iState});
     elseif x.opts.ProcessModules(1) % && x.mutex.HasState(StateName{4})
         fprintf('BIDS to Legacy was run before...   \n');

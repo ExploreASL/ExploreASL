@@ -1,7 +1,7 @@
-function [x] = xASL_wrp_BIDS2Legacy(x)
-%xASL_wrp_BIDS2Legacy BIDS2LEGACY conversion script which calls xASL_bids_BIDS2Legacy.
+function [x] = xASL_module_BIDS2Legacy(x)
+%xASL_module_BIDS2Legacy BIDS2LEGACY conversion script which calls xASL_bids_BIDS2Legacy.
 %
-% FORMAT: [x] = xASL_wrp_BIDS2Legacy(x);
+% FORMAT: [x] = xASL_module_BIDS2Legacy(x);
 %
 % INPUT:
 %   x             - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -10,7 +10,7 @@ function [x] = xASL_wrp_BIDS2Legacy(x)
 %   x             - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    BIDS to Legacy conversion script which calls xASL_bids_BIDS2Legacy.
+% DESCRIPTION:    BIDS to Legacy conversion script which calls xASL_module_BIDS2Legacy.
 %
 % 1. Input check
 % 2. Start with checking dataset_description.json & rawdata
