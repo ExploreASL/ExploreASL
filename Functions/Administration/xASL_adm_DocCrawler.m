@@ -22,15 +22,15 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_adm_DocCrawler('M:\...\Functions', 'M:\...\Output.md','Functions');
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2021 ExploreASL
 
     %% Defaults
     SeparatorLine = repmat('-',1,149);
     isFileList = false;
     
     % Sections for "Functions" folder
-    SECTION = {'adm', 'bids', 'fsl', 'im', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
-    SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Imaging Processing', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
+    SECTION = {'adm', 'bids', 'fsl', 'im', 'imp', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
+    SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Imaging Processing', 'Import', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
 
     %% Input Check
     if nargin < 1
@@ -78,7 +78,7 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
     if strcmp(content,'Functions')
         fprintf('Walk through Functions sub-directories...\n');
         functionPaths = {   'Administration', 'BIDS', 'FSL', ...
-                            'ImageProcessing', 'Initialization', 'InputOutput', ...
+                            'ImageProcessing', 'Import', 'Initialization', 'InputOutput', ...
                             'QualityControl', 'Quantification', 'SPM', ...
                             'Statistics', 'Visualization'};
         listing = [];
