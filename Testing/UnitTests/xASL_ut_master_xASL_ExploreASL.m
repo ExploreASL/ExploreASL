@@ -1058,6 +1058,116 @@ UnitTest.tests(12).duration = toc(testTime);
 UnitTest.tests(12).passed = testCondition;
 
 
+%% Test run 13
+
+% Give your individual subtest a name
+UnitTest.tests(13).testname = 'Run BIDS2Legacy twice (second time should be skipped)';
+
+% Start the test
+testTime = tic;
+
+% Set-up DRO
+studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyPar.json');
+droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
+droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
+xASL_Copy(droTestPatientSource,droTestPatient);
+% Create dataPar.json
+dataParStruct.x.settings.Quality = 0;
+dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
+spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
+
+% Add studyPar JSON
+spm_jsonwrite(studyParPath,studyParJSON);
+xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
+
+% Fallback
+testCondition = true;
+
+% Run BIDS2Legacy 1
+try
+    [x] = ExploreASL(testPatientDestination,0,[1 0 0 0],0,1,1);
+catch ME
+    warning(ME.identifier, '%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Run BIDS2Legacy 2 (this is supposed to be skipped automatically)
+try
+    [x] = ExploreASL(testPatientDestination,0,[1 0 0 0],0,1,1);
+catch ME
+    warning(ME.identifier, '%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Define one or multiple test conditions here
+if ~exist('x','var')
+    testCondition = false;
+else
+    if ~isstruct(x)
+        testCondition = false;
+    end
+end
+
+% SubjectSession directory
+subjectSessionDir = fullfile(droTestPatient,'derivatives','ExploreASL',['sub-001' '_1']);
+
+% Check ASL files
+if ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4D.json'),'file') ...
+    || ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4Dcontext_Source.tsv'),'file')
+    testCondition = false; % Test failed
+end
+if ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4D.nii'),'file') ...
+    && ~exist(fullfile(subjectSessionDir,'ASL_1','ASL4D.nii.gz'),'file')
+    testCondition = false; % Test failed
+end
+
+% Check T1w files
+if ~exist(fullfile(subjectSessionDir,'T1.json'),'file')
+    testCondition = false; % Test failed
+end
+if  ~exist(fullfile(subjectSessionDir,'T1.nii'),'file') ...
+    &&  ~exist(fullfile(subjectSessionDir,'T1.nii.gz'),'file')
+    testCondition = false; % Test failed
+end
+
+% Check dataPar.json
+if exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'file')
+    testContent = spm_jsonread(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'));
+    if isfield(testContent,'x')
+        if isfield(testContent.x,'S')
+            if isfield(testContent.x.S,'Atlases')
+                if ~(numel(testContent.x.S.Atlases)==6)
+                    testCondition = false; % Test failed
+                end
+            else
+                testCondition = false; % Test failed
+            end
+        else
+            testCondition = false; % Test failed
+        end
+    else
+        testCondition = false; % Test failed
+    end
+else
+    testCondition = false; % Test failed
+end
+
+% Delete test data
+xASL_delete(testPatientDestination,true)
+
+% Clean-up
+clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
+
+% Get test duration
+UnitTest.tests(13).duration = toc(testTime);
+
+% Evaluate your test
+UnitTest.tests(13).passed = testCondition;
+
+
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
 
