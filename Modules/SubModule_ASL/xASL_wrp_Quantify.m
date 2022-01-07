@@ -166,7 +166,7 @@ if isnumeric(x.Q.M0)
         if x.Q.ApplyQuantification(4)
             % in case of separate M0, or M0 because of no background suppression,
             % T2* effect is similar in both images and hence removed by division
-            T2_star_factor = exp(ASL_parms.EchoTime/x.Q.T2star);
+            T2_star_factor = exp(min(ASL_parms.EchoTime)/x.Q.T2star);
             M0_im = M0_im./T2_star_factor;
             fprintf('%s\n',['M0 image corrected for T2* decay during TE in PWI, TE was ' xASL_num2str(ASL_parms.EchoTime) ' ms, using T2* ' xASL_num2str(x.Q.T2star) ' ms, this resulting in factor ' xASL_num2str(T2_star_factor)]);
             % If obtained by e.g. CSF inversion recovery, make sure that this is corrected for blood-water partition coefficient (0.76) and density of brain tissue (1.05 g/mL)
@@ -250,8 +250,8 @@ if strcmpi(x.Q.M0,'separate_scan')
 
         % Correct M0 for any EchoTime differences between ASL & M0
         if x.Q.ApplyQuantification(4)
-            ScalingASL = exp(ASL_parms.EchoTime/CorrFactor);
-            ScalingM0 = exp(M0_parms.EchoTime/CorrFactor);
+            ScalingASL = exp(min(ASL_parms.EchoTime)/CorrFactor);
+            ScalingM0 = exp(min(M0_parms.EchoTime)/CorrFactor);
             % Check if TE numbers match
             if (numel(ASL_parms.EchoTime)==1) && (numel(M0_parms.EchoTime)==1)
                 M0_im = M0_im.*ScalingM0./ScalingASL;
