@@ -1,30 +1,31 @@
 function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfterErrors, SelectedSubjects)
-% Iterates through all combinations of the parameter sets defined in x and calls the xASL module for each.
+%xASL_init_Iteration Iterates through all combinations of the parameter sets defined in x and calls the xASL module for each.
 %
-% FORMAT: [bAborted, xOut] = xASL_Iteration(x, moduleName[, dryRun, stopAfterErrors])
+% FORMAT: [bAborted, xOut] = xASL_init_Iteration(x, moduleName[, dryRun, stopAfterErrors])
 %
 % INPUT:
-%   x                - ExploreASL x-struct
-%   moduleName       - Should be a string xASL_module_xxxxx
-%   dryRun           - Dry run - does not execute the module (DEFAULT 0). 
-%                      This argument can also be defined as a field of x. This settings overrides what is in the x-struct.
-%   stopAfterErrors  - Number of allowed errors before job iteration is stopped (DEFAULT INF). 
-%                      This argument can also be defined as a field of x. This settings overrides what is in the x-struct.
-%   SelectedSubjects - if this field exist, it will replace x.SUBJECTS in
-%                      this script, to allow running certain subjects only
-%                      when debugging (OPTIONAL, DEFAULT=x.SUBJECTS)
+%   x                - ExploreASL x-struct (STRUCT, REQUIRED)
+%   moduleName       - Should be a string xASL_module_xxxxx (STRING, REQUIRED)
+%   dryRun           - Dry run - does not execute the module (BOOLEAN, OPTIONAL, DEFAULT = 0)
+%                      This argument can also be defined as a field of x.
+%                      This settings overrides what is in the x-struct.
+%   stopAfterErrors  - Number of allowed errors before job iteration is stopped. (OPTIONAL, DEFAULT = INF)
+%                      This argument can also be defined as a field of x.
+%                      This settings overrides what is in the x-struct.
+%   SelectedSubjects - If this field exist, it will replace x.SUBJECTS in this script, to allow 
+%                      running certain subjects only when debugging. (OPTIONAL, DEFAULT = x.SUBJECTS)
 % OUTPUT:
-%   bAborted         - Report if the run was aborted
-%   xOut             - x-struct on the output
+%   bAborted         - Report if the run was aborted (BOOLEAN)
+%   xOut             - x-struct on the output (STRUCT)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:       Parses the settings and runs the DatabaseLoop sub-function.
 %
-% EXAMPLE:           [~,x] = xASL_Iteration(x,'xASL_module_ASL');
+% EXAMPLE:           [~,x] = xASL_init_Iteration(x,'xASL_module_ASL');
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% General settings
