@@ -48,7 +48,6 @@ testTime = tic;
 
 % Read test files
 [x] = ExploreASL();
-testVersion = x.Version;
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -76,12 +75,12 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<4 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+        if length(x.opts.ImportModules)<3 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
             testCondition = false;
         end
     end
     if isfield(x.opts,'ProcessModules')
-        if length(x.opts.ProcessModules)<3 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
+        if length(x.opts.ProcessModules)<4 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
             testCondition = false;
         end
     end
@@ -151,12 +150,12 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<4 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+        if length(x.opts.ImportModules)<3 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
             testCondition = false;
         end
     end
     if isfield(x.opts,'ProcessModules')
-        if length(x.opts.ProcessModules)<3 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
+        if length(x.opts.ProcessModules)<4 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
             testCondition = false;
         end
     end
@@ -226,12 +225,12 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<4 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+        if length(x.opts.ImportModules)<3 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
             testCondition = false;
         end
     end
     if isfield(x.opts,'ProcessModules')
-        if length(x.opts.ProcessModules)<3 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
+        if length(x.opts.ProcessModules)<4 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
             testCondition = false;
         end
     end
@@ -282,7 +281,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[1 0 0 0],0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[1 0 0],0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -298,16 +297,16 @@ else
     end
 end
 tempDir = fullfile('derivatives','ExploreASL','temp');
-if ~exist(fullfile(testPatientDestination,tempDir),'dir'),                                   testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,tempDir,'Sub1'),'dir'),                            testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1'),'dir'),                    testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1'),'dir'),                    testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','ASL4D.json'),'file'),      testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','ASL4D.nii'),'file'),       testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','M0.json'),'file'),         testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','M0.nii'),'file'),          testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1','T1w.json'),'file'),        testCondition = false;          end
-if ~exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1','T1w.nii'),'file'),         testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir),'dir'),                                   testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir,'Sub1'),'dir'),                            testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1'),'dir'),                    testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1'),'dir'),                    testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','ASL4D.json'),'file'),      testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','ASL4D.nii'),'file'),       testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','M0.json'),'file'),         testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir,'Sub1','ASL_1','M0.nii'),'file'),          testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1','T1w.json'),'file'),        testCondition = false;          end
+if ~xASL_exist(fullfile(testPatientDestination,tempDir,'Sub1','T1w_1','T1w.nii'),'file'),         testCondition = false;          end
 
 % Delete test data
 xASL_delete(testPatientDestination,true)
@@ -360,7 +359,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 1 0 0],0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 1 0],0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -424,7 +423,6 @@ studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyP
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
-droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Add studyPar JSON
@@ -436,7 +434,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1 1],0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0 1],[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -500,7 +498,6 @@ studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyP
 droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
 droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
 testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
-droSubject = 'sub-Sub1'; % DRO subject
 xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
@@ -516,7 +513,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1 1],0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0 1],[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -617,7 +614,7 @@ testCondition = true;
 
 % Prepare the derivatives data
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1 1],0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0 1],[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -626,7 +623,7 @@ end
 
 % Actual test: run processing starting from derivatives with directory input
 try
-    [x] = ExploreASL(testPatientDestination,0,1,0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,[0 1 1 1],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -703,7 +700,7 @@ testCondition = true;
 
 % Prepare the derivatives data
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1 1],0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0 1],[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -766,7 +763,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1 1],1,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0 1],1,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -910,7 +907,7 @@ testCondition = true;
 
 % Test: BIDS2LEGACY
 try
-    [x] = ExploreASL(droTestPatient,[0 0 0 1],0);
+    [x] = ExploreASL(droTestPatient,0,[1 0 0 0]);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -1023,12 +1020,12 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<4 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+        if length(x.opts.ImportModules)<3 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
             testCondition = false;
         end
     end
     if isfield(x.opts,'ProcessModules')
-        if length(x.opts.ProcessModules)<3 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
+        if length(x.opts.ProcessModules)<4 || sum(x.opts.ProcessModules)>0 || ~isnumeric(x.opts.ProcessModules)
             testCondition = false;
         end
     end
