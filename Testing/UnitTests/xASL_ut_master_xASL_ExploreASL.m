@@ -1049,7 +1049,7 @@ else
 end
 
 % Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime
+clearvars -except UnitTest TestRepository testCondition testTime studyParJSON
 
 % Get test duration
 UnitTest.tests(12).duration = toc(testTime);
