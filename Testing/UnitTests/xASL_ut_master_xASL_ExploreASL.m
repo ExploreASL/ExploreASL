@@ -75,7 +75,7 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<3 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+        if length(x.opts.ImportModules)<2 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
             testCondition = false;
         end
     end
@@ -150,7 +150,7 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<3 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+        if length(x.opts.ImportModules)<2 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
             testCondition = false;
         end
     end
@@ -225,7 +225,7 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<3 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+        if length(x.opts.ImportModules)<2 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
             testCondition = false;
         end
     end

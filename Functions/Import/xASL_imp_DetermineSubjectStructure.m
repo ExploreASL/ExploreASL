@@ -28,7 +28,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 
 
     %% Shared imPar related initialization
-    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.ImportModules(3) || x.opts.ProcessModules(1)
+    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.Deface || x.opts.ProcessModules(1)
         if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
             % Basic import checks before execution
             x = xASL_imp_CheckImportSettings(x);
@@ -54,7 +54,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         % Determine structure from temp data
         x = xASL_imp_DetermineStructureFromTempdata(x);
         
-    elseif (x.opts.ImportModules(3) || x.opts.ProcessModules(1)) && ...
+    elseif (x.opts.Deface || x.opts.ProcessModules(1)) && ...
             isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
         % Determine structure from rawdata
         x = xASL_imp_DetermineStructureFromRawdata(x);

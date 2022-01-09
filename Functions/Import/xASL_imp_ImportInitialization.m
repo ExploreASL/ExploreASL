@@ -15,7 +15,7 @@ function x = xASL_imp_ImportInitialization(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% Initialization
@@ -47,7 +47,7 @@ function x = xASL_imp_ImportInitialization(x)
     x = xASL_imp_BasicParameterChecks(x);
 
     % Initialize the import setup
-    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.ImportModules(3) || x.opts.ProcessModules(1)
+    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.Deface || x.opts.ProcessModules(1)
         x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
     else
         x.modules.import.imPar = NaN;
