@@ -1,7 +1,7 @@
-function [x] = ExploreASL_Import(x)
-%ExploreASL_Import Multi-step import workflow for DCM2NII & NII2BIDS.
+function [x] = ExploreASL_Deface(x)
+%ExploreASL_Deface Run the defacing.
 %
-% FORMAT: [x] = ExploreASL_Import(x)
+% FORMAT: [x] = ExploreASL_Deface(x)
 %
 % INPUT:
 %   x      - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -10,7 +10,7 @@ function [x] = ExploreASL_Import(x)
 %   x      - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    Multi-step import workflow for DCM2NII & NII2BIDS.
+% DESCRIPTION:    Deface master script.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
@@ -19,15 +19,14 @@ function [x] = ExploreASL_Import(x)
 % Copyright (c) 2015-2022 ExploreASL
 
 
-    %% Import Initialization
+    %% Deface Initialization
     try
-        % Before we run the subject-wise xASL_module_Import we need to initialize some x structure fields. For DCM2NII & NII2BIDS 
-        % we try to read the sourceStructure.json and studyPar.json as well as the general file structure. We determine the general
-        % subject/visit/session structure and store everything required for import/processing in x.
+        % Before we run the subject-wise xASL_module_Deface we need to initialize some x structure fields.
+        % We determine the general subject/visit/session structure and store everything required for import/defacing/processing in x.
         x = xASL_imp_ImportInitialization(x);
     catch loggingEntry
-        % Print user feedback if import crashed
-        fprintf(2,'ExploreASL Import initialization failed...\n');
+        % Print user feedback if deface crashed
+        fprintf(2,'ExploreASL Deface initialization failed...\n');
         % Check loggingEntry
         if size(loggingEntry.stack,1)>0
             fprintf(2,'%s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
@@ -39,14 +38,13 @@ function [x] = ExploreASL_Import(x)
     end
     
     
-    %% Import workflow
+    %% Deface workflow
     try
-        % Here we run the subject-wise ExploreASL xASL_module_Import. In future releases xASL_init_Iteration should 
-        % help us to run a parallelized import and also to enable reruns if parts of the import crashed.
-        [~, x] = xASL_init_Iteration(x,'xASL_module_Import');
+        % Here we run the subject-wise ExploreASL xASL_module_Deface.
+        [~, x] = xASL_init_Iteration(x,'xASL_module_Deface');
     catch loggingEntry
-        % Print user feedback if import crashed
-        fprintf(2,'ExploreASL Import module failed...\n');
+        % Print user feedback if deface crashed
+        fprintf(2,'ExploreASL Deface module failed...\n');
         % Check loggingEntry
         if size(loggingEntry.stack,1)>0
             fprintf(2,'%s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
@@ -57,9 +55,8 @@ function [x] = ExploreASL_Import(x)
         x.opts.bProcessData = false;
     end
     
-    % Reset the import parameters
-    x.opts.bImportData = 0;
-    x.opts.ImportModules = [0 0];
+    % Reset the deface parameters
+    x.opts.bDefaceData = 0;
 
     
 end

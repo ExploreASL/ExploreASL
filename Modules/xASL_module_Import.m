@@ -4,35 +4,36 @@ function [result, x] = xASL_module_Import(x)
 % FORMAT: [result, x] = xASL_module_Import(x)
 %
 % INPUT:
-%   x                     - ExploreASL x structure
-%   x.dir.DatasetRoot     - Path to the study directory containing the 'sourcedata' directory with the DICOM files (REQUIRED)
-%   x.dir.sourceStructure - Path to the JSON file with structure with import parameters, output of ExploreASL_ImportConfig.m (originally)
-%                           All other input parameters are configured within this function. (OPTIONAL)
-%                           The path is optional, but the file has to be there. Either provided as a full path or a filename in the path,
-%                           or default names (case-insensitive) sourceStructure.json, ImagePar.json are seeked
-%   x.dir.studyPar        - Path to the JSON file with the BIDS parameters relevant for the whole study. These parameters are used
-%                           if they cannot be extracted from the DICOMs automatically. (OPTIONAL)
-%                           Looking automatically for file studyPar.json
-%   x.opts.ImportModules  - Specify which of the parts should be run (OPTIONAL, DEFAULT [1 1 0])
-%                           [1 0 0] - Run the DICOM to NIFTI conversion
-%                           [0 1 0] - Run the NIFTI transformation to the proper ASL-BIDS
-%                           [0 0 1] - Run the defacing
-%
-%   x.modules.import.settings.bCopySingleDicoms 
-%                         - If true, copies a single DICOM with each NIfTI
-%                           dataset/ScanType, that can be used to retrieve missing parameters from
-%                           the DICOM header, or as dummy DICOM to dump embed data into (e.g. WAD-QC) (DEFAULT=false)
-%   x.modules.import.settings.bUseDCMTK          
-%                         - If true, then use DCMTK, otherwise use DICOMINFO from Matlab (DEFAULT=false)
-%   x.modules.import.settings.bCheckPermissions     
-%                         - If true, check whether data permissions are set correctly, before trying to read/copy the files (DEFAULT=false)
-%
-%
-% OUTPUT: 
-%   x       - ExploreASL x structure
-%   result  - true for successful run of this module, false for insuccessful run
-%   
-%
+%   x                     - ExploreASL x structure. (STRUCT, REQUIRED)
+%   x.dir.DatasetRoot     - Path to the study directory containing the 'sourcedata'
+%                           directory with the DICOM files. (REQUIRED)
+%   x.dir.sourceStructure - Path to the JSON file with structure with import parameters.
+%                           All other input parameters are configured in this function. (OPTIONAL)
+%                           The path is optional, but the file has to be there. 
+%                           Either provided as a full path or a filename in the path,
+%                           or default names (case-insensitive) sourceStructure.json, imPar.json are seeked.
+%   x.dir.studyPar        - Path to the JSON file with the BIDS parameters relevant for the whole study.
+%                           These parameters are used if they cannot be extracted from the DICOMs automatically.
+%                           Looking automatically for file studyPar.json. (OPTIONAL)
+%   x.opts.ImportModules  - Specify which of the parts should be run (OPTIONAL, DEFAULT [0 0])
+%                           [1 0] - Run the DICOM to NIFTI conversion
+%                           [0 1] - Run the NIFTI transformation to the proper ASL-BIDS
+%   x.modules.import.settings.bCopySingleDicoms
+%                         - If true, copies a single DICOM with each NIfTI dataset/ScanType,
+%                           that can be used to retrieve missing parameters from the DICOM header,
+%                           or as dummy DICOM to dump embed data into (e.g. WAD-QC). (DEFAULT = false)
+%   x.modules.import.settings.bUseDCMTK
+%                         - If true, then use DCMTK, otherwise use DICOMINFO from Matlab. (DEFAULT = false)
+%   x.modules.import.settings.bCheckPermissions   
+%                         - If true, check whether data permissions are set correctly, 
+%                           before trying to read/copy the files. (DEFAULT=false)
+% 
+% 
+% OUTPUT:
+%   x        - ExploreASL x structure
+%   result   - True for successful run of this module, false for insuccessful run
+% 
+% 
 % OUTPUT FILES:
 %   //temp/dcm2niiCatchedErrors.(mat|json) - overview of catched dcm2nii errors, or other errors in this function
 %   //temp/import_log_StudyID_yyyymmdd_hhmmss.txt - diary log of this function
@@ -107,10 +108,9 @@ function [result, x] = xASL_module_Import(x)
 %                                  `imPar.tokenSessionAliases = {}; % as we don't have sessions`
 %    - imPar.bMatchDirectories   - true if the last layer is a folder, false if the last layer is a filename (as e.g. with PAR/REC, enhanced DICOMs)
 %
-% EXAMPLE: xASL_module_Import('//MyDisk/MyStudy');
-%          xASL_module_Import('//MyDisk/MyStudy','sourceStructure.json','studyHiQ.json');
+% EXAMPLE: [~, x] = xASL_init_Iteration(x,'xASL_module_Import');
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
     %% Import Module
@@ -126,8 +126,7 @@ function [result, x] = xASL_module_Import(x)
     % Define lock states
     StateName{1} = '010_DCM2NII';
     StateName{2} = '020_NII2BIDS';
-    StateName{3} = '030_DEFACE';
-    StateName{4} = '040_CleanUp';
+    StateName{3} = '030_CleanUp';
     
     
     %% 0. Initialization
@@ -163,18 +162,9 @@ function [result, x] = xASL_module_Import(x)
     elseif x.opts.ImportModules(2) && x.mutex.HasState(StateName{2})
         fprintf('NIIX to ASL-BIDS was run before...   \n');
     end
-
     
-    %% 3. Run defacing
-    iState = 3;
-    if x.opts.ImportModules(3) && ~x.mutex.HasState(StateName{3})
-        xASL_wrp_Deface(x,imPar);
-        x.mutex.AddState(StateName{iState});
-    elseif x.opts.ImportModules(3) && x.mutex.HasState(StateName{3})
-        fprintf('Defacing was run before...   \n');
-    end
     
-    %% 4. Clean-up
+    %% 3. Clean-up
     x = xASL_adm_CleanUpX(x);
     
     % We need to terminate the module correctly

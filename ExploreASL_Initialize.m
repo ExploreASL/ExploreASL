@@ -16,7 +16,7 @@ function [x] = ExploreASL_Initialize(varargin)
 % This initialization workflow initializes ExploreASL. The overall workflow is shown below:
 % 
 % 1. Admin
-% - Input parsing (inputParsing, xASL_init_convertParsedInput, xASL_init_storeParsedInput)
+% - Input parsing (xASL_init_InputParsing, xASL_init_convertParsedInput, xASL_init_storeParsedInput)
 % - Initialize substructs of the ExploreASL x structure (xASL_init_SubStructures)
 % - Check input parameters and determine pipeline related booleans (xASL_init_GetBooleansImportProcess)
 %
@@ -52,7 +52,7 @@ function [x] = ExploreASL_Initialize(varargin)
     %% 1. Admin
 
     % Define input parser
-    p = inputParsing(varargin{:});
+    p = xASL_init_InputParsing(varargin{:});
 
     % Convert parsed input
     parameters = xASL_init_convertParsedInput(p.Results);
@@ -275,31 +275,34 @@ end
 
 %% -----------------------------------------------------------------------
 %% Define input parser
-function p = inputParsing(varargin)
+function p = xASL_init_InputParsing(varargin)
 
     % Initialize input parser
     p = inputParser;
     
     % Define valid input variables
     validDatasetRoot = @(variable) ischar(variable) || isempty(variable);
-    validImportModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
-    validProcessModules = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
+    validImport = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
+    validDeface = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
+    validProcess = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
     validbPause = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
     validiWorker = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     validnWorkers = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
     
     % Define defaults
     defaultDatasetRoot = [];
-    defaultImportModules = [0 0 0];
-    defaultProcessModules = [0 0 0 0];
+    defaultImport = [0 0];
+    defaultDeface = 0;
+    defaultProcess = [0 0 0 0];
     defaultbPause = 0;
     defaultiWorker = 1;
     defaultnWorkers = 1;
     
     % Add definitions to the input parser
     addOptional(p, 'DatasetRoot', defaultDatasetRoot, validDatasetRoot);
-    addOptional(p, 'ImportModules', defaultImportModules, validImportModules);
-    addOptional(p, 'ProcessModules', defaultProcessModules, validProcessModules);
+    addOptional(p, 'ImportModules', defaultImport, validImport);
+    addOptional(p, 'Deface', defaultDeface, validImport);
+    addOptional(p, 'ProcessModules', defaultProcess, validProcess);
     addOptional(p, 'bPause', defaultbPause, validbPause);
     addOptional(p, 'iWorker', defaultiWorker, validiWorker);
     addOptional(p, 'nWorkers', defaultnWorkers, validnWorkers);
@@ -315,24 +318,22 @@ function parameters = xASL_init_convertParsedInput(parameters)
 
     % Check if inputs are empty or chars
     if isempty(parameters.DatasetRoot),     parameters.DatasetRoot = '';                                    end
-    if ischar(parameters.ImportModules),    parameters.ImportModules = str2num(parameters.ImportModules);   end
-    if ischar(parameters.ProcessModules),   parameters.ProcessModules = str2num(parameters.ProcessModules); end
+    if ischar(parameters.ImportModules),    parameters.Import = str2num(parameters.Import);                 end
+    if ischar(parameters.Deface),           parameters.Import = str2num(parameters.Deface);                 end
+    if ischar(parameters.ProcessModules),   parameters.Process = str2num(parameters.Process);               end
     if ischar(parameters.bPause),           parameters.bPause = str2num(parameters.bPause);                 end
     if ischar(parameters.iWorker),          parameters.iWorker = str2num(parameters.iWorker);               end
     if ischar(parameters.nWorkers),         parameters.nWorkers = str2num(parameters.nWorkers);             end
     
     % Check length of arrays (single digit input)
     if length(parameters.ImportModules)==1
-        % If a single value is given ...
-        % ... then turn on/off all the import modules ...
-        parameters.ImportModules(1:3) = logical(parameters.ImportModules(1));
-        % ... besides defacing, which can only be run using a 1x3 vector ...
-        parameters.ImportModules(3) = false;
-    elseif length(parameters.ImportModules)<3
+        % If a single value is given then turn on/off all the import modules ...
+        parameters.ImportModules(1:2) = logical(parameters.ImportModules(1));
+    elseif length(parameters.ImportModules)<2
         % Convert to a row vector
         parameters.ImportModules = parameters.ImportModules(:)';
         % Fill in the missing fields with zeros
-        parameters.ImportModules(length(parameters.ImportModules)+1:3) = 0;
+        parameters.ImportModules(length(parameters.ImportModules)+1:2) = 0;
         % Issue a warning
         warning('Incorrect length of the ImportModules parameter, missing submodules set to zero: %s\n',...
             xASL_num2str(parameters.ImportModules));
@@ -371,6 +372,7 @@ function x = xASL_init_storeParsedInput(parameters)
     % Store input options
     x.opts.DatasetRoot = parameters.DatasetRoot;
     x.opts.ImportModules = parameters.ImportModules;
+    x.opts.Deface = parameters.Deface;
     x.opts.ProcessModules = parameters.ProcessModules;
     x.opts.bPause = parameters.bPause;
     x.opts.iWorker = parameters.iWorker;
@@ -388,6 +390,13 @@ function x = xASL_init_GetBooleansImportProcess(x)
         x.opts.bImportData = 1;
     else
         x.opts.bImportData = 0;
+    end
+
+    % Check if data is being defaced
+    if sum(x.opts.Deface)>0
+        x.opts.bDefaceData = 1;
+    else
+        x.opts.bDefaceData = 0;
     end
     
     % Check if data is being processed

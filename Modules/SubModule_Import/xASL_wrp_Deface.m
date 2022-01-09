@@ -1,11 +1,10 @@
-function xASL_wrp_Deface(x, imPar)
+function xASL_wrp_Deface(x)
 %xASL_wrp_Deface Run defacing.
 %
-% FORMAT: xASL_wrp_Deface(x, imPar)
+% FORMAT: xASL_wrp_Deface(x)
 % 
 % INPUT:
 %   x          - ExploreASL x structure (REQUIRED, STRUCT)
-%   imPar      - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   n/a
@@ -18,21 +17,19 @@ function xASL_wrp_Deface(x, imPar)
 % 3. Process all anatomical files (`xASL_spm_deface`)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_wrp_Deface(x, imPar);
+% EXAMPLE:     xASL_wrp_Deface(x);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
     %% Initialize
     if nargin<1
-        error('Please provide an x and an imPar struct...');
+        error('Please provide an x struct...');
     end
-    if nargin<2
-        error('Please provide an imPar struct...');
+
+    if ~isfield(x.modules.import,'BidsRoot')
+        error('It seems as if the initialization of the deface module failed...');
     end
-    
-    % Make sure that logging is still active
-    diary(x.dir.diaryFile);
 
     % Print feedback
     xASL_adm_BreakString('DEFACING');
@@ -43,7 +40,7 @@ function xASL_wrp_Deface(x, imPar)
     
     
     %% 1. Iterate over list of subjects
-    listSubjects = xASL_adm_GetFileList(imPar.BidsRoot, [], false, [], true);
+    listSubjects = xASL_adm_GetFileList(x.modules.import.BidsRoot, [], false, [], true);
     for iSubject = 1:length(listSubjects)
         
         % Only run it for the current subject (maybe we can do this more elegantly in the future)
@@ -53,18 +50,18 @@ function xASL_wrp_Deface(x, imPar)
             subjectLabel = listSubjects{iSubject};
 
             %% 3. Process all anatomical files
-            if exist(fullfile(imPar.BidsRoot, subjectLabel, 'anat'), 'dir') 
+            if exist(fullfile(x.modules.import.BidsRoot, subjectLabel, 'anat'), 'dir') 
                 % Single-session
-                fileAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot, subjectLabel, 'anat'), '^.+\.nii', false, []);
-                xASL_imp_RunDeface(imPar, fileAnat, subjectLabel, []);
+                fileAnat = xASL_adm_GetFileList(fullfile(x.modules.import.BidsRoot, subjectLabel, 'anat'), '^.+\.nii', false, []);
+                xASL_imp_RunDeface(x, fileAnat, subjectLabel, []);
             else
                 % Multi-session
-                sessionDirs = xASL_adm_GetFileList(fullfile(imPar.BidsRoot, subjectLabel), [], false, [], true);
+                sessionDirs = xASL_adm_GetFileList(fullfile(x.modules.import.BidsRoot, subjectLabel), [], false, [], true);
                 for iSession = 1:numel(sessionDirs)
-                    if exist(fullfile(imPar.BidsRoot, subjectLabel, sessionDirs{iSession}, 'anat'), 'dir')
+                    if exist(fullfile(x.modules.import.BidsRoot, subjectLabel, sessionDirs{iSession}, 'anat'), 'dir')
                         sessionName = sessionDirs{iSession};
-                        fileAnat = xASL_adm_GetFileList(fullfile(imPar.BidsRoot, subjectLabel, sessionName, 'anat'), '^.+\.nii', false, []);
-                        xASL_imp_RunDeface(imPar, fileAnat, subjectLabel, sessionName);
+                        fileAnat = xASL_adm_GetFileList(fullfile(x.modules.import.BidsRoot, subjectLabel, sessionName, 'anat'), '^.+\.nii', false, []);
+                        xASL_imp_RunDeface(x, fileAnat, subjectLabel, sessionName);
                     end
                 end
             end
@@ -77,16 +74,16 @@ end
 
 
 % Actual defacing
-function xASL_imp_RunDeface(imPar, fileAnat, subjectLabel, sessionName)
+function xASL_imp_RunDeface(x, fileAnat, subjectLabel, sessionName)
 
     % Check that list is not empty
     if ~isempty(fileAnat)
         for iAnat = 1:length(fileAnat)
             % Get filename
             if nargin<4 || isempty(sessionName)
-                fileName = fullfile(imPar.BidsRoot, subjectLabel, 'anat', fileAnat{iAnat});
+                fileName = fullfile(x.modules.import.BidsRoot, subjectLabel, 'anat', fileAnat{iAnat});
             else
-                fileName = fullfile(imPar.BidsRoot, subjectLabel, sessionName, 'anat', fileAnat{iAnat});
+                fileName = fullfile(x.modules.import.BidsRoot, subjectLabel, sessionName, 'anat', fileAnat{iAnat});
             end
             
             % Print feedback
