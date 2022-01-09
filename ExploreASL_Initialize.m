@@ -66,67 +66,31 @@ function [x] = ExploreASL_Initialize(varargin)
     % Check if the ExploreASL pipeline should be run or not
     x = xASL_init_GetBooleansImportProcess(x);
 
-    % Check if the DatasetRoot is a file or a directory
+    % Check if the DatasetRoot is a file or a directory (FILE SUPPORT IS SUPPOSED TO END WITH v2.0.0)
     x.settings.SelectParFile = false; % Fallback
     if x.opts.bProcessData
         % Checkout the "Proceed with Initialization" section
         if (isempty(x.opts.DatasetRoot) || (~exist(x.opts.DatasetRoot,'file') && ~exist(x.opts.DatasetRoot,'dir')))
-            x.settings.SelectParFile = true; % If the DatasetRoot is either empty OR the file does not exist, we have to select it later on (if processing is turned on)
+            % If the DatasetRoot is either empty OR the file does not exist, we have to select it later on (if processing is turned on)
+            x.settings.SelectParFile = true;
         end
     end
     
     
     %% 2. Get ExploreASL path
 
-    % Check if the current directory is the ExploreASL directory
-    CurrCD = pwd;
-    if exist(fullfile(CurrCD, 'ExploreASL.m'), 'file')
-        x.opts.MyPath = CurrCD;
-    end
-
-    % Check whether MyPath is correct, otherwise obtain correct folder
-    if ~isfield(x.opts, 'MyPath')
-        % Check if we can get the path from the ExploreASL_Initialize path
-        initializePath = fileparts(mfilename('fullpath'));
-        if ~isempty(regexp(initializePath,'ExploreASL$', 'once'))
-            x.opts.MyPath = initializePath;
-        else
-            x.opts.MyPath = '/DummyPath';
-        end
-    end
+    % Determine the MyPath of ExploreASL
+    x = xASL_init_GetMyPath(x);
 
     % Get the master script path
-    MasterScriptPath = fullfile(x.opts.MyPath, 'ExploreASL.m');
+    x = xASL_init_GetMasterScript(x);
 
-    % Select the ExploreASL folder manually, if the script is not run in deployed mode
-    if ~isdeployed
-        if ~exist(MasterScriptPath,'file')
-            pathstr = input('Provide foldername where ExploreASL is installed (format: \''PathExploreASL\''): ');
-            if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL.m'),'file'), return; end
-            x.opts.MyPath = pathstr;
-        end
-    else
-        % In deployed mode set the ExploreASL directory in the ctf archive
-        [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL*'); % Find the path of the master files within the ctf archive
-        curPathCTF = fileparts(files(1,:)); % Get the path
-        x.opts.MyPath = fullfile(curPathCTF); % curPathCTF = ExploreASL path
-
-        BreakString = '==============================================================================================\n';
-        fprintf(BreakString);
-        fprintf('ctfroot:  %s\n', ctfroot);
-        fprintf('x.opts.MyPath: %s\n', x.opts.MyPath);
-        fprintf(BreakString);
-
-    end
-
-    % Go to ExploreASL folder
+    % Go to ExploreASL directory
     cd(x.opts.MyPath);
 
 
     %% 3. Add ExploreASL paths
-    if ~isdeployed
-        xASL_init_AddDirsOfxASL(x.opts.MyPath);
-    end
+    xASL_init_AddDirsOfxASL(x.opts.MyPath);
     
     
     %% 4. Check DatasetRoot
@@ -200,75 +164,79 @@ end
 %% Add ExploreASL Directory
 function xASL_init_AddDirsOfxASL(MyPath)
 
-    % First remove existing toolbox initializations
-    % This could contain other toolbox versions and create conflicts
-    currentPathList = path;
-    if ischar(currentPathList)
-        % Convert to cell
-        indicesAre = [0 strfind(currentPathList, pathsep)];
-        % Add to pathList
-        for iIndex=1:numel(indicesAre)-1
-            pathList{iIndex, 1} = currentPathList(indicesAre(iIndex)+1:indicesAre(iIndex+1)-1);
+    if ~isdeployed
+        
+        % First remove existing toolbox initializations
+        % This could contain other toolbox versions and create conflicts
+        currentPathList = path;
+        if ischar(currentPathList)
+            % Convert to cell
+            indicesAre = [0 strfind(currentPathList, pathsep)];
+            % Add to pathList
+            for iIndex=1:numel(indicesAre)-1
+                pathList{iIndex, 1} = currentPathList(indicesAre(iIndex)+1:indicesAre(iIndex+1)-1);
+            end
+        else
+            pathList = currentPathList;
         end
-    else
-        pathList = currentPathList;
-    end
-    
-    % Iterate over paths
-    for iPath=1:numel(pathList)
-        if ~isempty(regexpi(pathList{iPath}, [filesep '(spm|bids-matlab)'])) % toolboxes can be added here
-            % Here we want search for toolboxes that ExploreASL uses, but
-            % that are in another path (e.g., within the Matlab toolboxes)
-            
-            if isempty(regexp(pathList{iPath}, fullfile('ExploreASL', 'External'), 'once'))
-                % If this path is not an ExploreASL-contained toolbox
-                rmpath(pathList{iPath});
-                fprintf(2,'Warning: Removed Matlab path to avoid conflicts: %s\n',pathList{iPath});
+
+        % Iterate over paths
+        for iPath=1:numel(pathList)
+            if ~isempty(regexpi(pathList{iPath}, [filesep '(spm|bids-matlab)'])) % toolboxes can be added here
+                % Here we want search for toolboxes that ExploreASL uses, but
+                % that are in another path (e.g., within the Matlab toolboxes)
+
+                if isempty(regexp(pathList{iPath}, fullfile('ExploreASL', 'External'), 'once'))
+                    % If this path is not an ExploreASL-contained toolbox
+                    rmpath(pathList{iPath});
+                    fprintf(2,'Warning: Removed Matlab path to avoid conflicts: %s\n',pathList{iPath});
+                end
             end
         end
-    end
-    if numel(pathList)>1
-        fprintf('\n');
-    end
+        if numel(pathList)>1
+            fprintf('\n');
+        end
 
-    % Define paths (should be equal when loading data or only initializing)
-    addpath(MyPath); % ExploreASL
-    subfoldersToAdd = {...
-        'External', 'Modules', 'Testing', 'Functions',...
-        fullfile('Functions', 'Administration'), ...
-        fullfile('Functions', 'BIDS'), ...
-        fullfile('Functions', 'FSL'), ...
-        fullfile('Functions', 'ImageProcessing'), ...
-        fullfile('Functions', 'Import'), ...
-        fullfile('Functions', 'Initialization'), ...
-        fullfile('Functions', 'InputOutput'), ...
-        fullfile('Functions', 'mex'), ...
-        fullfile('Functions', 'QualityControl'), ...
-        fullfile('Functions', 'Quantification'), ...
-        fullfile('Functions', 'SPM'), ...
-        fullfile('Functions', 'Statistics'), ...
-        fullfile('Functions', 'Visualization'), ...
-        fullfile('Modules', 'SubModule_Import'), ...
-        fullfile('Modules', 'SubModule_Structural'), ...
-        fullfile('Modules', 'SubModule_ASL'), ...
-        fullfile('Modules', 'SubModule_Population'), ...
-        fullfile('External','isnear'), ...
-        fullfile('External','DCMTK'), ...
-        fullfile('Testing', 'UnitTests'), ...
-        fullfile('Testing', 'Functions'), ...
-        fullfile('External','ExploreQC'), ...
-        fullfile('External','bids-matlab'), ...
-        fullfile('External','SPMmodified'), ...
-        fullfile('External','SPMmodified','matlabbatch'),...
-        fullfile('External','SPMmodified','xASL'),...
-        fullfile('External','SPMmodified','toolbox','cat12'), ...
-        fullfile('External','SPMmodified','toolbox','LST'), ...
-        fullfile('External','SPMmodified','toolbox','OldNorm')};
-        % ...
-        % genpath(fullfile('External','bids-matlab'))};
-    % Iterate over subfolders which should be added
-    for ii=1:length(subfoldersToAdd)
-        addpath(fullfile(MyPath,subfoldersToAdd{ii}));
+        % Define paths (should be equal when loading data or only initializing)
+        addpath(MyPath); % ExploreASL
+        subfoldersToAdd = {...
+            'External', 'Modules', 'Testing', 'Functions',...
+            fullfile('Functions', 'Administration'), ...
+            fullfile('Functions', 'BIDS'), ...
+            fullfile('Functions', 'FSL'), ...
+            fullfile('Functions', 'ImageProcessing'), ...
+            fullfile('Functions', 'Import'), ...
+            fullfile('Functions', 'Initialization'), ...
+            fullfile('Functions', 'InputOutput'), ...
+            fullfile('Functions', 'mex'), ...
+            fullfile('Functions', 'QualityControl'), ...
+            fullfile('Functions', 'Quantification'), ...
+            fullfile('Functions', 'SPM'), ...
+            fullfile('Functions', 'Statistics'), ...
+            fullfile('Functions', 'Visualization'), ...
+            fullfile('Modules', 'SubModule_Import'), ...
+            fullfile('Modules', 'SubModule_Structural'), ...
+            fullfile('Modules', 'SubModule_ASL'), ...
+            fullfile('Modules', 'SubModule_Population'), ...
+            fullfile('External','isnear'), ...
+            fullfile('External','DCMTK'), ...
+            fullfile('Testing', 'UnitTests'), ...
+            fullfile('Testing', 'Functions'), ...
+            fullfile('External','ExploreQC'), ...
+            fullfile('External','bids-matlab'), ...
+            fullfile('External','SPMmodified'), ...
+            fullfile('External','SPMmodified','matlabbatch'),...
+            fullfile('External','SPMmodified','xASL'),...
+            fullfile('External','SPMmodified','toolbox','cat12'), ...
+            fullfile('External','SPMmodified','toolbox','LST'), ...
+            fullfile('External','SPMmodified','toolbox','OldNorm')};
+            % ...
+            % genpath(fullfile('External','bids-matlab'))};
+        % Iterate over subfolders which should be added
+        for ii=1:length(subfoldersToAdd)
+            addpath(fullfile(MyPath,subfoldersToAdd{ii}));
+        end
+        
     end
     
 end
@@ -437,6 +405,71 @@ function xASL_init_BasicFeedback(x)
     end
     % Print feedback
     fprintf('ExploreASL %swill %s...\n',reportImport,reportProcess);
+
+end
+
+
+%% -----------------------------------------------------------------------
+function x = xASL_init_DeployedModeHandling(x)
+
+    % Find the path of the master files within the ctf archive
+    [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL*');
+    
+    % Get the path
+    curPathCTF = fileparts(files(1,:));
+    
+    % curPathCTF = ExploreASL path
+    x.opts.MyPath = fullfile(curPathCTF);
+
+    % User feedback
+    BreakString = '==============================================================================================\n';
+    fprintf(BreakString);
+    fprintf('ctfroot:       %s\n', ctfroot);
+    fprintf('x.opts.MyPath: %s\n', x.opts.MyPath);
+    fprintf(BreakString);
+    
+end
+
+
+%% -----------------------------------------------------------------------
+function x = xASL_init_GetMyPath(x)
+
+    % Check if the current directory is the ExploreASL directory
+    CurrCD = pwd;
+    if exist(fullfile(CurrCD, 'ExploreASL.m'), 'file')
+        x.opts.MyPath = CurrCD;
+    end
+
+    % Check whether MyPath is correct, otherwise obtain correct folder
+    if ~isfield(x.opts, 'MyPath')
+        % Check if we can get the path from the ExploreASL_Initialize path
+        initializePath = fileparts(mfilename('fullpath'));
+        if ~isempty(regexp(initializePath,'ExploreASL$', 'once'))
+            x.opts.MyPath = initializePath;
+        else
+            x.opts.MyPath = '/DummyPath';
+        end
+    end
+
+end
+
+
+%% -----------------------------------------------------------------------
+function x = xASL_init_GetMasterScript(x)
+
+    MasterScriptPath = fullfile(x.opts.MyPath, 'ExploreASL.m');
+
+    % Select the ExploreASL folder manually, if the script is not run in deployed mode
+    if ~isdeployed
+        if ~exist(MasterScriptPath,'file')
+            pathstr = input('Provide foldername where ExploreASL is installed (format: \''PathExploreASL\''): ');
+            if sum(pathstr==0) || ~exist(fullfile(pathstr,'ExploreASL.m'),'file'), return; end
+            x.opts.MyPath = pathstr;
+        end
+    else
+        % In deployed mode set the ExploreASL directory in the ctf archive
+        x = xASL_init_DeployedModeHandling(x);
+    end
 
 end
 
