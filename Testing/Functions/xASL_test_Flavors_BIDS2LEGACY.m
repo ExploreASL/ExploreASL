@@ -24,7 +24,7 @@ function xASL_test_Flavors_BIDS2LEGACY(testConfig)
             diary('off');
             fclose('all');
             % Run the legacy conversion
-            ExploreASL(currentFlavor, 0, [1 0 0 0], 0);
+            ExploreASL(currentFlavor, 0, 0, [1 0 0 0], 0);
         end
     end
 

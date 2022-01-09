@@ -122,7 +122,7 @@ UnitTest.tests(2).testname = 'Initialize (With arguments)';
 testTime = tic;
 
 % Read test files
-[x] = ExploreASL('',0,0,0,1,1);
+[x] = ExploreASL('',0,0,0,0,1,1);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -197,7 +197,7 @@ UnitTest.tests(3).testname = 'Initialize (With arrays)';
 testTime = tic;
 
 % Read test files
-[x] = ExploreASL('',[0 0 0 0],[0 0 0 0],0,1,1);
+[x] = ExploreASL('',[0 0],0,[0 0 0 0],0,1,1);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -281,7 +281,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[1 0 0],0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[1 0],0,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -359,7 +359,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 1 0],0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 1],0,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -434,7 +434,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1],[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0],1,[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -513,7 +513,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1],[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0],1,[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -614,7 +614,7 @@ testCondition = true;
 
 % Prepare the derivatives data
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1],[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0],1,[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -623,7 +623,7 @@ end
 
 % Actual test: run processing starting from derivatives with directory input
 try
-    [x] = ExploreASL(testPatientDestination,0,[0 1 1 1],0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,[0 1 1 1],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -700,7 +700,7 @@ testCondition = true;
 
 % Prepare the derivatives data
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1],[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0],1,[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -709,7 +709,7 @@ end
 
 % Actual test: run processing starting from derivatives with dataPar.json input (outdated)
 try
-    [x] = ExploreASL(fullfile(testPatientDestination,'derivatives','ExploreASL','dataPar.json'),0,[0 1 1 1],0,1,1);
+    [x] = ExploreASL(fullfile(testPatientDestination,'derivatives','ExploreASL','dataPar.json'),0,0,[0 1 1 1],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -763,7 +763,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 0 1],1,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0],1,1,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -907,7 +907,7 @@ testCondition = true;
 
 % Test: BIDS2LEGACY
 try
-    [x] = ExploreASL(droTestPatient,0,[1 0 0 0]);
+    [x] = ExploreASL(droTestPatient,0,0,[1 0 0 0]);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -916,7 +916,7 @@ end
 
 % Test: Load data
 try
-    [x] = ExploreASL(droTestPatient,0,0);
+    [x] = ExploreASL(droTestPatient,0,0,0);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -1086,7 +1086,7 @@ testCondition = true;
 
 % Run BIDS2Legacy 1
 try
-    [x] = ExploreASL(testPatientDestination,0,[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -1095,7 +1095,7 @@ end
 
 % Run BIDS2Legacy 2 (this is supposed to be skipped automatically)
 try
-    [x] = ExploreASL(testPatientDestination,0,[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,[1 0 0 0],0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
