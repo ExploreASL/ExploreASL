@@ -65,16 +65,6 @@ function [x] = ExploreASL_Initialize(varargin)
     
     % Check if the ExploreASL pipeline should be run or not
     x = xASL_init_GetBooleansImportProcess(x);
-
-    % Check if the DatasetRoot is a file or a directory (FILE SUPPORT IS SUPPOSED TO END WITH v2.0.0)
-    x.settings.SelectParFile = false; % Fallback
-    if x.opts.bProcessData
-        % Checkout the "Proceed with Initialization" section
-        if (isempty(x.opts.DatasetRoot) || (~exist(x.opts.DatasetRoot,'file') && ~exist(x.opts.DatasetRoot,'dir')))
-            % If the DatasetRoot is either empty OR the file does not exist, we have to select it later on (if processing is turned on)
-            x.settings.SelectParFile = true;
-        end
-    end
     
     
     %% 2. Get ExploreASL path

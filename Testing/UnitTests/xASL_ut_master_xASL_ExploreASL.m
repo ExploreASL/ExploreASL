@@ -708,21 +708,23 @@ catch ME
 end
 
 % Actual test: run processing starting from derivatives with dataPar.json input (outdated)
+resultingMessage = '';
 try
     [x] = ExploreASL(fullfile(testPatientDestination,'derivatives','ExploreASL','dataPar.json'),0,0,[0 1 1 1],0,1,1);
 catch ME
-    warning(ME.identifier, '%s', ME.message);
-    testCondition = false;
+    resultingMessage = ME.message;
     diary off;
 end
 
 % Add test conditions here ...
-if ~exist('x','var')
+if exist('x','var')
     testCondition = false;
-else
-    if ~isstruct(x)
-        testCondition = false;
-    end
+end
+if isempty(resultingMessage)
+    testCondition = false;
+end
+if isempty(regexpi(resultingMessage,'You provided a descriptive JSON or another file'))
+    testCondition = false;
 end
 
 % Delete test data

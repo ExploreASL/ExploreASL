@@ -1,5 +1,5 @@
 function [x] = xASL_init_checkDatasetRoot(x)
-%xASL_init_checkDatasetRoot Check the ExploreASL parameter "DatasetRoot"
+%xASL_init_checkDatasetRoot Check the ExploreASL parameter DatasetRoot
 %
 % FORMAT: 
 %   [x] = xASL_init_checkDatasetRoot(x)
@@ -17,7 +17,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
     %% Check the ExploreASL parameter "DatasetRoot"
 
@@ -26,8 +26,11 @@ function [x] = xASL_init_checkDatasetRoot(x)
         x.opts.bLoadData = false;
     end
 
-    % Check if the DatasetRoot is a directory (NEW - ASL BIDS)
-    x.opts.dataParType = 'unknown'; % default
+    % Check if the DatasetRoot is a directory
+    
+    % Default
+    x.opts.dataParType = 'unknown';
+    
     % Create directory field if it doesn't exist already
     if ~isfield(x, 'dir')
         x.dir = struct;
@@ -37,20 +40,22 @@ function [x] = xASL_init_checkDatasetRoot(x)
     if exist(x.opts.DatasetRoot,'dir')
         [x] = xASL_init_DetermineRequiredPaths(x);
     elseif exist(x.opts.DatasetRoot,'file')
-        % Temporary functionality, this will lead to an error starting v2.0.0
-        [x] = xASL_init_checkDatasetRoot_invalid_starting_2_0(x);
+        % Files are no longer supported for the dataset root directory
+        error('You provided a descriptive JSON or another file. We recommend to use the dataset root directory instead...');
     else
-        if ~isempty(x.opts.DatasetRoot) % The user inserted a directory or file which does not exist
+        % Check if the user inserted a directory or file which does not exist
+        if ~isempty(x.opts.DatasetRoot)
             warning('Dataset root directory does not exist...');
         end
         if x.opts.bProcessData || x.opts.bImportData
             % Give back a warning that the user tried to import or process but neither a correct dataset root nor a dataPar.json that exists was used
             warning('You are trying to import or process a dataset, but the input parameters are not correct. ExploreASL will only be initialized...');
             x.opts.bProcessData = 0;
+            x.opts.bDefaceData = 0;
             x.opts.bImportData = 0;
             x.opts.bLoadData = false;
             x.opts.ProcessModules = [0 0 0 0];
-            x.opts.ImportModules = [0 0 0];
+            x.opts.ImportModules = [0 0];
         end
     end
     
@@ -143,6 +148,5 @@ function [x] = xASL_init_checkDatasetRoot(x)
     end
 
 end
-
 
 

@@ -43,7 +43,7 @@ function [x] = xASL_init_DataLoading(x)
     % Check if DataParFile needs to be loaded
     if x.opts.bProcessData || x.opts.bLoadData
         if ~isempty(x.dir.dataPar)
-            x = xASL_init_LoadDataParameterFile(x, x.dir.dataPar, x.settings.SelectParFile);
+            x = xASL_init_LoadDataParameterFile(x);
         else
             fprintf('No dataPar.json provided...\n');
             if x.opts.bLoadData
@@ -57,8 +57,7 @@ function [x] = xASL_init_DataLoading(x)
     x = xASL_init_DefineDataDependentSettings(x);
     
     % Check if a "loadable" dataset exists (xASL_exist(x.dir.dataPar) is only there for backwards compatibility)
-    loadableDataset = (isfield(x.dir,'DatasetRoot') && xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'),'dir')) ...
-                   || (~isempty(x.dir.dataPar) && xASL_exist(x.dir.dataPar,'file'));
+    loadableDataset = isfield(x.dir,'DatasetRoot') && xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'),'dir');
     
     % Check if data loading should be executed first
     if x.opts.bLoadData && loadableDataset
