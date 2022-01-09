@@ -29,20 +29,20 @@ function xASL_init_printSettings(x)
     end
 
     % Import modules
-    textPrint = 'Import Modules      ';
+    textPrint = 'Import & Defacing   ';
     if x.opts.ImportModules(1)==1
         textPrint = [textPrint 'DCM2NII '];
     end
     if x.opts.ImportModules(2)==1
         textPrint = [textPrint 'NII2BIDS '];
     end
-    if x.opts.ImportModules(3)==1
+    if x.opts.Deface==1
         textPrint = [textPrint 'DEFACE '];
     end
     fprintf([textPrint '\n']);
 
     % Process modules
-    textPrint = 'Process Modules     ';
+    textPrint = 'Processing          ';
     if x.opts.ProcessModules(1)==1
         textPrint = [textPrint 'BIDS2LEGACY'];
     end
