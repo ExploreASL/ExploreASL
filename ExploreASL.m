@@ -1,5 +1,5 @@
 function [x] = ExploreASL(varargin)
-%ExploreASL ExploreASL pipeline master wrapper calling the individual import & pipeline modules
+%ExploreASL ExploreASL master script which calls the individual import, defacing & processing modules.
 %
 % FORMAT: [x] = ExploreASL([DatasetRoot, Import, Deface, Process, bPause, iWorker, nWorkers])
 % 
