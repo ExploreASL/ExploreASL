@@ -20,6 +20,11 @@
 - Image input/ouput and processing functions.
 - Scripts start with the prefix `xASL_im_...`.
 
+### Import
+
+- Import workflow related scripts.
+- Scripts start with the prefix `xASL_imp_...`.
+
 ### Initialization
 
 - Functions to initialize different parts of the framework.
