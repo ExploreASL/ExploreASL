@@ -17,7 +17,7 @@ function [x] = ExploreASL_Process(x)
 % xASL_Module_ASL          - Processes ASL data, i.e. ASL scans and M0, type help xASL_module_ASL for more information. 
 % xASL_Module_Population   - Processes data on population basis, mostly QC, but also template/parametric maps creation, 
 %                            etc. Type help xASL_module_Population for more information.
-% xASL_adm_GzipAllFiles    - Zip files to reduce disc space usage of temporary and non-temporay NIfTI files
+% xASL_wrp_GzipAllFiles    - Zip files to reduce disc space usage of temporary and non-temporay NIfTI files
 %
 %
 % DETAILS:
@@ -114,10 +114,10 @@ function [x] = ExploreASL_Process(x)
     end
     
     % -----------------------------------------------------------------------------
-    %% 4    xASL_adm_GzipAllFiles
+    %% 4    xASL_wrp_GzipAllFiles
     % Zip files to reduce disc space usage of temporary and non-temporay NIfTI files
     if x.opts.bProcessData
-        xASL_adm_GzipAllFiles(x.D.ROOT,[],[],fullfile(x.opts.MyPath,'External'));
+        xASL_wrp_GzipAllFiles(x.D.ROOT,[],[],fullfile(x.opts.MyPath,'External'));
     end
 
     

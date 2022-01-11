@@ -110,7 +110,7 @@ x = xASL_adm_CreateFileReport(x);
 %% ------------------------------------------------------------------------------------------------------------
 %% 2    Create population-based analysis mask for ROI-based analysis & VBA
 if ~x.mutex.HasState(StateName{2}) && bHasASL
-    x = xASL_im_CreateAnalysisMask(x);
+    x = xASL_wrp_CreateAnalysisMask(x);
     x.mutex.AddState(StateName{2});
     fprintf('%s\n',[StateName{2} ' was performed']);
 elseif bHasASL
@@ -139,10 +139,10 @@ if ~x.mutex.HasState(StateName{4})
     HasSessions = {1 1};
 
     for iType=1:length(ScanType)
-        xASL_stat_GetDICOMStatistics(x, ScanType{iType}, HasSessions{iType});
+        xASL_wrp_GetDICOMStatistics(x, ScanType{iType}, HasSessions{iType});
     end
 
-    xASL_stat_GetAcquisitionTime(x); % This provides an overview of Acquisition times
+    xASL_wrp_GetAcquisitionTime(x); % This provides an overview of Acquisition times
 
     x.mutex.AddState(StateName{4});
     fprintf('%s\n',[StateName{4} ' was performed']);
@@ -155,7 +155,7 @@ end
 %% 5    Summarize volume statistics (uses native space)
 if ~x.mutex.HasState(StateName{5})
 
-    xASL_stat_GetVolumeStatistics(x);
+    xASL_wrp_GetVolumeStatistics(x);
 
     x.mutex.AddState(StateName{5});
     fprintf('%s\n',[StateName{5} ' was performed']);
@@ -169,7 +169,7 @@ end
 %% 6    Summarize motion statistics (using generated net displacement vector (NDV) motion results from ASL-realign module)
 if ~x.mutex.HasState(StateName{6}) && bHasASL
     try
-        xASL_stat_GetMotionStatistics(x);
+        xASL_wrp_GetMotionStatistics(x);
         x.mutex.AddState(StateName{6});
         fprintf('%s\n',[StateName{6} ' was performed']);
     catch ME
@@ -184,7 +184,7 @@ end
 %% 6.5  Summarize registration statistics (using the Tanimoto coefficients calculated in the ASL and Structural submodules)
 if ~x.mutex.HasState(StateName{7})
     try
-        xASL_stat_GetRegistrationStatistics(x);
+        xASL_wrp_GetRegistrationStatistics(x);
         x.mutex.AddState(StateName{7});
         fprintf('%s\n',[StateName{7} ' was performed']);
     catch ME
@@ -210,7 +210,7 @@ if ~x.mutex.HasState(StateName{8})
     %     xASL_vis_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
     % end
 
-    xASL_stat_ComputeWsCV(x); % This computes wsCV & bsCV to compute power   
+    xASL_wrp_ComputeWsCV(x); % This computes wsCV & bsCV to compute power   
     
     % Iterate over atlases in cell structure
     
@@ -279,7 +279,7 @@ end
 %% -----------------------------------------------------------------------------
 %% 8    QC categorization based on spatial CoV:
 if ~x.mutex.HasState(StateName{9}) && bHasASL
-    xASL_qc_SortBySpatialCoV(x);
+    xASL_wrp_SortBySpatialCoV(x);
 
     % When this has been visually corrected, following function will obtain the QC categories
     % xASL_qc_ObtainQCCategoriesFromJPG(x);
@@ -294,7 +294,7 @@ end
 %% 9    Reduce data size
 if ~x.mutex.HasState(StateName{10})
     if ~x.settings.bReproTesting && x.settings.DELETETEMP
-        xASL_adm_DeleteManyTempFiles(x);
+        xASL_wrp_DeleteManyTempFiles(x);
     end
     x.mutex.AddState(StateName{10});
     fprintf('%s\n',[StateName{10} ' was performed']);
