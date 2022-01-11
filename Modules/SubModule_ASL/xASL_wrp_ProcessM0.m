@@ -244,7 +244,7 @@ else
 end
 
 %%
-xASL_adm_CheckFileCount(x.D.PopDir, [x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID '.nii'], 1);
+xASL_adm_CheckFileCount(x.D.perf, [x.P.M0 '_' x.P.SubjectID '_' x.P.SessionID '.nii'], 1);
 
 
 end
