@@ -1,7 +1,7 @@
-function xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
-%xASL_stat_GetDICOMStatistics Collect DICOM metadata in CSV file to check
+function xASL_wrp_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
+%xASL_wrp_GetDICOMStatistics Collect DICOM metadata in CSV file to check
 %
-% FORMAT: xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions)
+% FORMAT: xASL_wrp_GetDICOMStatistics(x, ScanType, HasSessions)
 % 
 % INPUT:
 %   x           - struct containing pipeline environment parameters (REQUIRED)
@@ -22,9 +22,9 @@ function xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
 %              2. Print summary
 %              3. Write TSV file
 % ------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_stat_GetDICOMStatistics(x, 'ASL', true);
+% EXAMPLE: xASL_wrp_GetDICOMStatistics(x, 'ASL', true);
 % __________________________________
-% Copyright 2016-2020 ExploreASL
+% Copyright (c) 2016-2022 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------------------

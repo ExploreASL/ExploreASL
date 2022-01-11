@@ -1,7 +1,7 @@
-function xASL_stat_GetRegistrationStatistics(x)
-%xASL_stat_GetRegistrationStatistics Collect the Tanimoto Coefficients from registration in TSV file to check
+function xASL_wrp_GetRegistrationStatistics(x)
+%xASL_wrp_GetRegistrationStatistics Collect the Tanimoto Coefficients from registration in TSV file to check
 %
-% FORMAT: xASL_stat_GetRegistrationStatistics(x)
+% FORMAT: xASL_wrp_GetRegistrationStatistics(x)
 % 
 % INPUT:
 %   x - struct containing pipeline environment parameters (REQUIRED)
@@ -24,9 +24,9 @@ function xASL_stat_GetRegistrationStatistics(x)
 % 2. Write TSV file
 %
 % ------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_stat_GetRegistrationStatistics(x);
+% EXAMPLE: xASL_wrp_GetRegistrationStatistics(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------------------

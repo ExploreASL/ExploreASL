@@ -26,7 +26,7 @@ function xASL_wrp_CreateBiasfield(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_CreateBiasfield(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
     x.D.TemplatesStudyDir = fullfile(x.D.PopDir,'Templates');
     CBF_prefix = ['q' x.P.CBF];

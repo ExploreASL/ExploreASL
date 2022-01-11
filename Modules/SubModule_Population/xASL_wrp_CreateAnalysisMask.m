@@ -1,7 +1,7 @@
-function [x] = xASL_im_CreateAnalysisMask(x, Threshold)
-%xASL_im_CreateAnalysisMask Creates population analysis mask
+function [x] = xASL_wrp_CreateAnalysisMask(x, Threshold)
+%xASL_wrp_CreateAnalysisMask Creates population analysis mask
 %
-% FORMAT: [x] = xASL_im_CreateAnalysisMask(x, Threshold)
+% FORMAT: [x] = xASL_wrp_CreateAnalysisMask(x, Threshold)
 %
 % INPUT:
 %   x           - struct containing pipeline environment parameters, useful
@@ -34,9 +34,9 @@ function [x] = xASL_im_CreateAnalysisMask(x, Threshold)
 %                 4. Analysis mask
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:        xASL_im_CreateAnalysisMask(x);
+% EXAMPLE:        xASL_wrp_CreateAnalysisMask(x);
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
 %% Admin

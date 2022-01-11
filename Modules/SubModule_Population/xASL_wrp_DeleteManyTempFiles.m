@@ -1,5 +1,5 @@
-function xASL_adm_DeleteManyTempFiles(x)
-%xASL_adm_DeleteManyTempFiles This function removes as many files as possible
+function xASL_wrp_DeleteManyTempFiles(x)
+%xASL_wrp_DeleteManyTempFiles This function removes as many files as possible
 %
 % FORMAT:       xASL_adm_DeleteManyTempFiles(x)
 % 
@@ -11,11 +11,11 @@ function xASL_adm_DeleteManyTempFiles(x)
 % DESCRIPTION:  This function removes as many files as possible.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_adm_DeleteManyTempFiles(x);
+% EXAMPLE:      xASL_wrp_DeleteManyTempFiles(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
-Files2Del   = {'ATT_BiasField.nii' 'Mask_Template.nii' 'Mean_CBF_Template.nii' 'PseudoCBF.nii' 'RawTemplate.nii' 'VascularArtifact_Template.nii' 'mean_PWI_Clipped.nii' 'SliceGradient_extrapolated.nii' 'FoV.nii'};
+Files2Del = {'ATT_BiasField.nii' 'Mask_Template.nii' 'Mean_CBF_Template.nii' 'PseudoCBF.nii' 'RawTemplate.nii' 'VascularArtifact_Template.nii' 'mean_PWI_Clipped.nii' 'SliceGradient_extrapolated.nii' 'FoV.nii'};
 
 
 if isfield(x,'D') && isfield(x.D,'ROOT')

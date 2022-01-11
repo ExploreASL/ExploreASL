@@ -1,7 +1,7 @@
-function xASL_stat_GetMotionStatistics(x)
-%xASL_stat_GetMotionStatistics Summarize motion values
+function xASL_wrp_GetMotionStatistics(x)
+%xASL_wrp_GetMotionStatistics Summarize motion values
 %
-% FORMAT: xASL_stat_GetMotionStatistics(x)
+% FORMAT: xASL_wrp_GetMotionStatistics(x)
 % 
 % INPUT:
 %   x - struct containing pipeline environment parameters (REQUIRED)
@@ -29,9 +29,9 @@ function xASL_stat_GetMotionStatistics(x)
 % 4. Add motion data to participants.tsv
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_stat_GetMotionStatistics(x);
+% EXAMPLE: xASL_wrp_GetMotionStatistics(x);
 % __________________________________
-% Copyright 2016-2021 ExploreASL
+% Copyright (c) 2016-2022 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------------------

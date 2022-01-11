@@ -1,7 +1,7 @@
-function xASL_qc_SortBySpatialCoV(x, Threshold1, Threshold2)
-%xASL_wrp_GetROIstatistics Compute statistics for each ROI
+function xASL_wrp_SortBySpatialCoV(x, Threshold1, Threshold2)
+%xASL_wrp_SortBySpatialCoV Compute statistics for each ROI
 %
-% FORMAT: xASL_qc_SortBySpatialCoV(x, Threshold1, Threshold2)
+% FORMAT: xASL_wrp_SortBySpatialCoV(x, Threshold1, Threshold2)
 % 
 % INPUT:
 %   x                            - struct containing statistical pipeline environment parameters (REQUIRED)
@@ -33,9 +33,9 @@ function xASL_qc_SortBySpatialCoV(x, Threshold1, Threshold2)
 % 			   NB: this code uses the //analysis/Population/Stats/CoV_qCBF*TotalGM*.csv file,
 % 				   make sure that this file isn't edited! 
 % -------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_qc_SortBySpatialCoV(x);
+% EXAMPLE: xASL_wrp_SortBySpatialCoV(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
 %% Admin

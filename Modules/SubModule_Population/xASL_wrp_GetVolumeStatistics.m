@@ -1,7 +1,7 @@
-function xASL_stat_GetVolumeStatistics(x)
-%xASL_stat_GetVolumeStatistics Summarize volume values
+function xASL_wrp_GetVolumeStatistics(x)
+%xASL_wrp_GetVolumeStatistics Summarize volume values
 %
-% FORMAT: xASL_stat_GetVolumeStatistics(x)
+% FORMAT: xASL_wrp_GetVolumeStatistics(x)
 % 
 % INPUT:
 %   x - struct containing pipeline environment parameters (REQUIRED)
@@ -16,9 +16,9 @@ function xASL_stat_GetVolumeStatistics(x)
 % 3. Add stats in participants.tsv
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_stat_GetVolumeStatistics(x);
+% EXAMPLE: xASL_wrp_GetVolumeStatistics(x);
 % __________________________________
-% Copyright 2016-2021 ExploreASL
+% Copyright (c) 2016-2022 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------------------

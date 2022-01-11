@@ -1,7 +1,7 @@
-function x = xASL_stat_GetAcquisitionTime(x)
-%xASL_stat_GetAcquisitionTime Summarize the acquisition time of scans
+function x = xASL_wrp_GetAcquisitionTime(x)
+%xASL_wrp_GetAcquisitionTime Summarize the acquisition time of scans
 %
-% FORMAT: [x] = xASL_stat_GetAcquisitionTime(x)
+% FORMAT: [x] = xASL_wrp_GetAcquisitionTime(x)
 % 
 % INPUT:
 %   x   - struct containing pipeline environment parameters (REQUIRED)
@@ -24,9 +24,9 @@ function x = xASL_stat_GetAcquisitionTime(x)
 % 3. Create time histogram
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: x = xASL_stat_GetAcquisitionTime(x);
+% EXAMPLE: x = xASL_wrp_GetAcquisitionTime(x);
 % __________________________________
-% Copyright 2016-2021 ExploreASL
+% Copyright (c) 2016-2022 ExploreASL
 
 
 

@@ -1,7 +1,7 @@
-function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
-%xASL_adm_GzipAllFiles Zip files or folders
+function xASL_wrp_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
+%xASL_wrp_GzipAllFiles Zip files or folders
 %
-% FORMAT: xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
+% FORMAT: xASL_wrp_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 %
 % INPUT:
 %   ROOT         - Root path of the folder structure you want to gzip recursively (REQUIRED)
@@ -19,9 +19,9 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 % DESCRIPTION: This function zips NIfTI files or folders recursively and deletes
 % the original file/folder after zipping.
 %
-% EXAMPLE: xASL_adm_GzipAllFiles(x);
+% EXAMPLE: xASL_wrp_GzipAllFiles(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% ----------------------------------------------------

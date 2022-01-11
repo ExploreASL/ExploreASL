@@ -1,49 +1,42 @@
-function xASL_stat_ComputeWsCV(x)
-%xASL_stat_ComputeWsCV Calculates the within and between-subject
-% coefficient of variance (wsCV and bsCV respectively), to estimate the
-% power to detect effects.
+function xASL_wrp_ComputeWsCV(x)
+%xASL_wrp_ComputeWsCV Calculates the within and between-subject coefficient of variance (wsCV and bsCV respectively).
 %
-% FORMAT:       xASL_stat_ComputeWsCV(x)
+% FORMAT:       xASL_wrp_ComputeWsCV(x)
 % 
 % INPUT:        x     - x structure
 %
 % OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  Calculates the within and between-subject
-%               coefficient of variance (wsCV and bsCV respectively), to estimate the
-%               power to detect effects.
+% DESCRIPTION:  Calculates the within and between-subject coefficient of variance (wsCV and bsCV respectively), 
+%               to estimate the power to detect effects.
 %
 %               This requires 4D images that have been split.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_stat_ComputeWsCV(x);
+% EXAMPLE:      xASL_wrp_ComputeWsCV(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
 if ~usejava('jvm')
-    fprintf('Skipping xASL_stat_ComputeWsCV, missing JVM\n');
+    fprintf('Skipping xASL_wrp_ComputeWsCV, missing JVM...\n');
     return;
 end
 
-CheckList1                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part1_.*\.nii$','FPListRec',[0 Inf]);
-CheckList2                   = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part2_.*\.nii$','FPListRec',[0 Inf]);
+CheckList1 = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part1_.*\.nii$','FPListRec',[0 Inf]);
+CheckList2 = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part2_.*\.nii$','FPListRec',[0 Inf]);
 
 if   isempty(CheckList1) || isempty(CheckList2)
-     fprintf('%s\n','Skipping intra-scan reproducibility calculation, since there are no splitted ASL images available');
+     fprintf('Skipping intra-scan reproducibility calculation, since there are no splitted ASL images available...\n');
 
 else
-     fprintf('%s\n','Loading files to computing intra-scan reproducibility...  ');
-
-
-
-
+     fprintf('Loading files to computing intra-scan reproducibility...  \n');
 
     %% ------------------------------------------------------------------------------------------------------------
     %% Obtain within-subject coefficient of variance (wsCV)
-    pGM                         = xASL_io_Nifti2Im(x.D.ResliceRef);
-    pGM                         = pGM>0.7*(max(pGM(:)));
+    pGM = xASL_io_Nifti2Im(x.D.ResliceRef);
+    pGM = pGM>0.7*(max(pGM(:)));
 
     AbsenceList     = '';
 
