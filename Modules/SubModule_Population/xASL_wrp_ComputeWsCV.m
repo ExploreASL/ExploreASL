@@ -25,8 +25,8 @@ if ~usejava('jvm')
 end
 
 % Get the PWI NIFTIs
-CheckList1 = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part1_.*\.nii$','FPListRec',[0 Inf]);
-CheckList2 = xASL_adm_GetFileList(x.D.PopDir,'^PWI_part2_.*\.nii$','FPListRec',[0 Inf]);
+CheckList1 = xASL_adm_GetFileList(x.D.perf,'^PWI_part1_.*\.nii$','FPListRec',[0 Inf]);
+CheckList2 = xASL_adm_GetFileList(x.D.perf,'^PWI_part2_.*\.nii$','FPListRec',[0 Inf]);
 
 % Obtain within-subject coefficient of variance (wsCV)
 if isempty(CheckList1) || isempty(CheckList2)

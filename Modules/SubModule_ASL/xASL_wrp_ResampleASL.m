@@ -347,8 +347,8 @@ if size(ASL_im, 4)>3
 
     fprintf('%s\n',['pGM>0.7: wsCV mean CBF = ' num2str(wsCV_mean,3) '%, wsCV spatial CoV = ' num2str(wsCV_CoV,3) '%'])
 
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.PopDir,['PWI_part1_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part1, 32);
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.PopDir,['PWI_part2_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part2, 32);
+    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.perf,['PWI_part1_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part1, 32);
+    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.perf,['PWI_part2_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part2, 32);
     fprintf('%s\n','Also saved part1 & part2 for reproducibility');
     
 else

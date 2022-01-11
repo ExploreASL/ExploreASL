@@ -410,7 +410,7 @@ for iSubject=1:x.nSubjects
 					end
 
 					%% b) Correct for WMH SEGM -> IS THIS STILL REQUIRED???
-					WMHfile = fullfile(x.D.PopDir, ['PV_WMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
+					WMHfile = fullfile(x.D.anat, ['PV_WMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(WMHfile,'file')
 						% The newer version with PV_WMH already pre-calculated
 						pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(WMHfile), x.S.masks.WBmask);

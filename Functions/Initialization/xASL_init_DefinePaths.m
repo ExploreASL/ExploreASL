@@ -17,7 +17,7 @@ function [x] = xASL_init_DefinePaths(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:  n/a
 %
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% General
@@ -42,50 +42,50 @@ function [x] = xASL_init_DefinePaths(x)
     %% Study-specific
     if and(isfield(x.D, 'ROOT'), isfield(x.opts, 'bProcessData'))
         if x.opts.bProcessData || x.opts.bLoadData
-            x.D.PopDir = fullfile(x.D.ROOT,'Population');
+            
+            % Base directories
+            x.D.PopDir              = fullfile(x.D.ROOT,   'Population');
+            x.D.perf                = fullfile(x.D.PopDir, 'perf');
+            x.D.anat                = fullfile(x.D.PopDir, 'anat');
+            x.D.stats               = fullfile(x.D.PopDir, 'stats');
 
             % Structural module
-            x.D.T1CheckDir          = fullfile(x.D.PopDir, 'T1Check');
-            x.D.TissueVolumeDir     = fullfile(x.D.PopDir, 'TissueVolume');
-            x.D.CoregDir            = fullfile(x.D.PopDir, 'T1wCoregCheck');
-            x.D.FLAIR_CheckDir      = fullfile(x.D.PopDir, 'FLAIRCheck' );
-    		x.D.T1c_CheckDir        = fullfile(x.D.PopDir, 'T1cCheck' );
-    		x.D.T2_CheckDir         = fullfile(x.D.PopDir, 'T2Check' );
-            x.D.FLAIR_REGDIR        = fullfile(x.D.PopDir, 'FLAIRReg'   );
-            x.D.FlowFieldCheck      = fullfile(x.D.PopDir, 'FlowFieldCheck' );
-            x.D.LongRegCheckDir     = fullfile(x.D.PopDir, 'LongRegCheck');
-            x.D.LesionCheckDir      = fullfile(x.D.PopDir, 'LesionCheck');
-            x.D.ROICheckDir         = fullfile(x.D.PopDir, 'ROICheck');
+            x.D.T1w                 = fullfile(x.D.anat,   'T1w');
+            x.D.FLAIR               = fullfile(x.D.anat,   'FLAIR');
+            x.D.T1CheckDir          = fullfile(x.D.anat,   'T1Check');
+            x.D.TissueVolumeDir     = fullfile(x.D.anat,   'TissueVolume');
+            x.D.CoregDir            = fullfile(x.D.anat,   'T1wCoregCheck');
+            x.D.FLAIR_CheckDir      = fullfile(x.D.anat,   'FLAIRCheck' );
+    		x.D.T1c_CheckDir        = fullfile(x.D.anat,   'T1cCheck' );
+    		x.D.T2_CheckDir         = fullfile(x.D.anat,   'T2Check' );
+            x.D.FLAIR_REGDIR        = fullfile(x.D.anat,   'FLAIRReg'   );
+            x.D.FlowFieldCheck      = fullfile(x.D.anat,   'FlowFieldCheck' );
+            x.D.LongRegCheckDir     = fullfile(x.D.anat,   'LongRegCheck');
+            x.D.LesionCheckDir      = fullfile(x.D.anat,   'LesionCheck');
+            x.D.ROICheckDir         = fullfile(x.D.anat,   'ROICheck');
 
             % ASL module
-            x.D.ASLCheckDir         = fullfile(x.D.PopDir, 'ASLCheck');
-            x.D.MotionDir           = fullfile(x.D.PopDir, 'MotionASL');
-            x.D.ExclusionDir        = fullfile(x.D.PopDir, 'Exclusion');
-            x.D.DICOMparameterDir   = fullfile(x.D.PopDir, 'DICOMparameters');
-            x.D.SNRdir              = fullfile(x.D.PopDir, 'SD_SNR');
-            x.D.M0CheckDir          = fullfile(x.D.PopDir, 'M0Check');
-            x.D.M0regASLdir         = fullfile(x.D.PopDir, 'M0Reg_ASL');
-            x.D.SliceCheckDir       = fullfile(x.D.PopDir, 'SliceGradientCheck');
-            x.D.RawDir              = fullfile(x.D.PopDir, 'RawSourceIMCheck');
-            x.D.RawEPIdir           = fullfile(x.D.PopDir, 'Raw_EPI_Check');
-            x.D.T1_ASLREGDIR        = fullfile(x.D.PopDir, 'T1_ASLReg');
-            x.D.TTCheckDir          = fullfile(x.D.PopDir, 'ATT_Check');
-            x.D.TemplatesStudyDir   = fullfile(x.D.PopDir, 'Templates');
+            x.D.ASL                 = fullfile(x.D.perf,   'ASL');
+            x.D.ASLCheckDir         = fullfile(x.D.perf,   'ASLCheck');
+            x.D.MotionDir           = fullfile(x.D.perf,   'MotionASL');
+            x.D.ExclusionDir        = fullfile(x.D.perf,   'Exclusion');
+            x.D.DICOMparameterDir   = fullfile(x.D.perf,   'DICOMparameters');
+            x.D.SNRdir              = fullfile(x.D.perf,   'SD_SNR');
+            x.D.M0CheckDir          = fullfile(x.D.perf,   'M0Check');
+            x.D.M0regASLdir         = fullfile(x.D.perf,   'M0Reg_ASL');
+            x.D.SliceCheckDir       = fullfile(x.D.perf,   'SliceGradientCheck');
+            x.D.RawDir              = fullfile(x.D.perf,   'RawSourceIMCheck');
+            x.D.RawEPIdir           = fullfile(x.D.perf,   'Raw_EPI_Check');
+            x.D.T1_ASLREGDIR        = fullfile(x.D.perf,   'T1_ASLReg');
+            x.D.TTCheckDir          = fullfile(x.D.perf,   'ATT_Check');
+            x.D.TemplatesStudyDir   = fullfile(x.D.perf,   'Templates');
 
             % POPULATION module
-            x.D.SpaghettiDir        = fullfile(x.D.PopDir, 'SpaghettiPlots');
-            x.S.StatsDir            = fullfile(x.D.PopDir, 'Statistics');
-            x.D.HistogramDir        = fullfile(x.D.PopDir, 'Histograms');
-            x.D.StatsMaps           = fullfile(x.D.PopDir, 'StatsMaps');
-            x.D.SliceGradient       = fullfile(x.D.PopDir, 'SliceGradient');
-            x.D.perf                = fullfile(x.D.PopDir, 'perf');
-            x.D.CBF                 = fullfile(x.D.PopDir, 'perf', 'CBF');
-            x.D.anat                = fullfile(x.D.PopDir, 'anat');
-            x.D.T1w                 = fullfile(x.D.PopDir, 'anat', 'T1w');
-            x.D.Segmentations       = fullfile(x.D.PopDir, 'anat', 'T1w', 'Segmentations');
-            x.D.FLAIR               = fullfile(x.D.PopDir, 'anat', 'FLAIR');
-            x.D.LesionMasks         = fullfile(x.D.PopDir, 'anat', 'FLAIR', 'LesionMasks');
-            
+            x.D.SpaghettiDir        = fullfile(x.D.stats,  'SpaghettiPlots');
+            x.S.StatsDir            = fullfile(x.D.stats,  'Statistics');
+            x.D.HistogramDir        = fullfile(x.D.stats,  'Histograms');
+            x.D.StatsMaps           = fullfile(x.D.stats,  'StatsMaps');
+            x.D.SliceGradient       = fullfile(x.D.stats,  'SliceGradient');
             
         end
     end
