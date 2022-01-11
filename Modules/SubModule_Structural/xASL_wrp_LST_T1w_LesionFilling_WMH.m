@@ -52,7 +52,7 @@ end
 [Fpath, Ffile] = fileparts(rWMHPath);
 T1_filledName = fullfile(Fpath, ['T1_filled_' Ffile(6:end) '.nii']);
 
-fprintf('\n%s\n','----------------------------------------');
+xASL_adm_BreakString('','=');
 fprintf('%s\n','Removing segmented WMH from T1w, and fill lesions with values interpolated from neighborhood');
 
 

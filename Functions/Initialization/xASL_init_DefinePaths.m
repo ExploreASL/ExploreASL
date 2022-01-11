@@ -74,9 +74,18 @@ function [x] = xASL_init_DefinePaths(x)
 
             % POPULATION module
             x.D.SpaghettiDir        = fullfile(x.D.PopDir, 'SpaghettiPlots');
-            x.S.StatsDir            = fullfile(x.D.PopDir, 'Stats');
+            x.S.StatsDir            = fullfile(x.D.PopDir, 'Statistics');
             x.D.HistogramDir        = fullfile(x.D.PopDir, 'Histograms');
             x.D.StatsMaps           = fullfile(x.D.PopDir, 'StatsMaps');
+            x.D.SliceGradient       = fullfile(x.D.PopDir, 'SliceGradient');
+            x.D.perf                = fullfile(x.D.PopDir, 'perf');
+            x.D.CBF                 = fullfile(x.D.PopDir, 'perf', 'CBF');
+            x.D.anat                = fullfile(x.D.PopDir, 'anat');
+            x.D.T1w                 = fullfile(x.D.PopDir, 'anat', 'T1w');
+            x.D.Segmentations       = fullfile(x.D.PopDir, 'anat', 'T1w', 'Segmentations');
+            x.D.FLAIR               = fullfile(x.D.PopDir, 'anat', 'FLAIR');
+            x.D.LesionMasks         = fullfile(x.D.PopDir, 'anat', 'FLAIR', 'LesionMasks');
+            
             
         end
     end

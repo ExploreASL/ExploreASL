@@ -54,7 +54,7 @@ imWMH = xASL_io_Nifti2Im(InputPath);
 % Calculate voxel size and volume
 voxelVolumeWMH = prod(sqrt(sum(volWMH.mat(1:3,1:3).^2)));
 
-fprintf('%s','Cleaning up WMH_SEGM:   ');
+fprintf('Cleaning up WMH_SEGM:    ');
 
 
 

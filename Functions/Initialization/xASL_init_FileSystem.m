@@ -24,27 +24,18 @@ function [x] = xASL_init_FileSystem(x)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
-
 %% ------------------------------------------------------------------------------------
 %% Admin
 x.P = struct; % (re-)initiate P (otherwise the looping below gets too much)
 
 
 %% 1) Create folders
-% Put this dir creation in separate scripts
-% Create derivative dir as subfolder in each subject folder, where to put output,
-% keeping original files
-% /dartel -> /Population folder, standardize naming creation
+[fixedPopDir,~] = xASL_adm_GetPopulationDirs(x);
 
-xASL_adm_CreateDir(x.D.PopDir);
-xASL_adm_CreateDir(x.D.T1CheckDir); 
-xASL_adm_CreateDir(x.D.TissueVolumeDir);
-xASL_adm_CreateDir(x.D.FLAIR_CheckDir);
-xASL_adm_CreateDir(x.D.ASLCheckDir);
-xASL_adm_CreateDir(x.D.MotionDir);
-xASL_adm_CreateDir(x.D.M0CheckDir);  
-xASL_adm_CreateDir(x.D.M0regASLdir);
-
+% Create fixed directories
+for iDir = 1:numel(fixedPopDir)
+    xASL_adm_CreateDir(fixedPopDir{iDir});
+end
 
 %% ------------------------------------------------------------------------------------
 %% 2) Subject/session definitions
@@ -74,11 +65,41 @@ FileDef{2} = {'y_ASL' 'ASL4D' 'ASL4D_RevPE' 'M0_RevPE'...
 			   'PseudoCBF' 'PWI' 'PWI4D' 'mean_PWI_Clipped' 'mean_PWI_Clipped_DCT' 'M0' 'mean_control' 'SD' 'SNR' 'SD_control'...
 			   'SNR_control' 'SliceGradient' 'SliceGradient_extrapolated' 'FoV' 'TT' 'PVgm' 'PVwm' 'PVcsf' 'PVwmh' 'CBFgm' 'CBFwm' 'MaskSusceptibilityPop' 'TotalGMPop' 'TotalWMPop' 'DeepWMPop' 'HammersPop' 'MNIStructuralPop' 'LeftRightPop' 'HOcort_CONNPop' 'HOsub_CONNPop'}; 
 
-Prefix = {'r' 'm' 's' 'mr' 'rmr' 'rr' 'temp_' 'rtemp_' 'mask_' 'BiasField_' 'noSmooth_'}; % r=resample m=modulate s=smooth w=warp q=quantified p=probability % USE t for TEMP? replace w by r
+% Use "b" for backup & "o" for original, to reduce the number of suffixes (need to define various ASL4D_session files still)
+% r=resample m=modulate s=smooth w=warp q=quantified p=probability % USE t for TEMP? replace w by r
+Prefix = {'r' 'm' 's' 'mr' 'rmr' 'rr' 'temp_' 'rtemp_' 'mask_' 'BiasField_' 'noSmooth_'};
 Suffix = {'_backup' '_ORI'};
-% use "b" for backup & "o" for original, to reduce the number of suffixes
-% need to define various ASL4D_session files still
 
+% Define population directories and corresponding subfolder names
+PopTable = {'qCBF', 'CBF';...
+            'PWI', 'CBF';...
+            'PWI_part1', 'CBF';...
+            'PWI_part2', 'CBF';...
+            'M0', 'perf';...
+            'noSmooth_M0', 'perf';...
+            'mean_control', 'perf';...
+            'SD', 'perf';...
+            'SNR', 'perf';...
+            'rT1_ORI', 'anat';...
+            'rT1', 'T1w';...
+            'mrc1T1', 'Segmentations';...
+            'mrc2T1', 'Segmentations';...
+            'mrc3T1', 'Segmentations';...
+            'rc1T1', 'Segmentations';...
+            'rc2T1', 'Segmentations';...
+            'rc3T1', 'Segmentations';...
+            'PV_pGM', 'Segmentations';...
+            'PV_pWM', 'Segmentations';...
+            'rFLAIR', 'FLAIR';...
+            'WMH_SEGM', 'FLAIR';...
+            'rWMH_SEGM', 'FLAIR';...
+            'mrWMH_SEGM', 'FLAIR';...
+            'rT2', 'FLAIR';...
+            'SliceGradient', 'SliceGradient';...
+            'SliceGradient_extrapolated', 'SliceGradient'...
+            };
+
+% Iterate over file definitions
 for iFD=1:length(FileDef)
     for iD=1:length(FileDef{iFD})
         x.P.(FileDef{iFD}{iD}) = FileDef{iFD}{iD};
@@ -115,42 +136,7 @@ if isfield(x.P,'SubjectID')
     %% File definitions
     Path{1} = x.dir.SUBJECTDIR;
     Path{2} = fullfile(x.D.ROOT,x.P.SubjectID,x.P.SessionID);
-
-    for iFD=1:length(FileDef)
-        if iFD==1
-               Pop_suffix = [x.P.SubjectID]; % pop == population analysis, which is in common/standard space
-        elseif iFD==2
-               Pop_suffix = [x.P.SubjectID '_' x.P.SessionID]; % cave multiple sessions
-        end     
-
-        for iD=1:length(FileDef{iFD})
-            % Create file & path
-            x.P.(['File_' FileDef{iFD}{iD}]) = [FileDef{iFD}{iD} '.nii'];
-            x.P.(['Path_' FileDef{iFD}{iD}]) = fullfile(Path{iFD},[FileDef{iFD}{iD} '.nii']);
-            x.P.(['Pop_Path_' FileDef{iFD}{iD}]) = fullfile(x.D.PopDir,[FileDef{iFD}{iD} '_' Pop_suffix '.nii']);
-
-            % Add suffixes
-            for iSuffix=1:length(Suffix)
-                x.P.(['File_' FileDef{iFD}{iD} Suffix{iSuffix}]) = [FileDef{iFD}{iD} Suffix{iSuffix} '.nii'];
-                x.P.(['Path_' FileDef{iFD}{iD} Suffix{iSuffix}]) = fullfile(Path{iFD},[FileDef{iFD}{iD} Suffix{iSuffix} '.nii']);
-                x.P.(['Pop_Path_' FileDef{iFD}{iD} Suffix{iSuffix}]) = fullfile(x.D.PopDir,[FileDef{iFD}{iD} Suffix{iSuffix} '_' Pop_suffix '.nii']);
-            end     
-
-            % Add prefixes
-            for iPref=1:length(Prefix)
-                x.P.(['File_' Prefix{iPref} FileDef{iFD}{iD}]) = [Prefix{iPref} FileDef{iFD}{iD} '.nii'];
-                x.P.(['Path_' Prefix{iPref} FileDef{iFD}{iD}]) = fullfile(Path{iFD},[Prefix{iPref} FileDef{iFD}{iD} '.nii']);
-                x.P.(['Pop_Path_' Prefix{iPref} FileDef{iFD}{iD}]) = fullfile(x.D.PopDir,[Prefix{iPref} FileDef{iFD}{iD} '_' Pop_suffix '.nii']);
-
-                % Add prefixes & suffixes
-                for iSuffix=1:length(Suffix)
-                    x.P.(['File_' Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix}]) = [Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix} '.nii'];
-                    x.P.(['Path_' Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix}]) = fullfile(Path{iFD},[Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix} '.nii']);
-                    x.P.(['Pop_Path_' Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix}]) = fullfile(x.D.PopDir,[Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix} '_' Pop_suffix '.nii']);
-                end            
-            end
-        end
-    end
+    x = xASL_init_FileSystemDefinitions(x,FileDef,Path,Prefix,Suffix,PopTable);
     
     %% ------------------------------------------------------------------------------------------
     %% Add custom cases
@@ -209,3 +195,123 @@ for iFile=1:numel(filesInAtlasDir)
 end
 
 end
+
+
+%% xASL_init_GetSpecificPopDir
+function specificPopDir = xASL_init_GetSpecificPopDir(x,currentName,PopulationTokens,PopulationDirs)
+
+    specificPopDir = fullfile(x.D.PopDir);
+    popDirIndex = find(ismember(PopulationTokens, currentName), 1);
+    if ~isempty(popDirIndex) && isfield(x.D,PopulationDirs{popDirIndex})
+        specificPopDir = x.D.(PopulationDirs{popDirIndex});
+    end
+
+end
+
+
+%% xASL_adm_CreatePopulationDirs
+function [fixedPopDir,conditionalPopDir] = xASL_adm_GetPopulationDirs(x)
+
+    % Always create these population directories
+    fixedPopDir =         { x.D.PopDir,...
+                            x.S.StatsDir,...
+                            x.D.StatsMaps,...
+                            x.D.HistogramDir,...
+                            x.D.ASLCheckDir,...
+                            x.D.M0CheckDir,...
+                            x.D.TTCheckDir,...
+                            x.D.FLAIR_CheckDir, ...
+                            x.D.MotionDir,...
+                            x.D.M0regASLdir, ...
+                            x.D.TissueVolumeDir, ...
+                            x.D.SliceGradient, ...
+                            x.D.perf, ...
+                            x.D.CBF, ...
+                            x.D.anat, ...
+                            x.D.T1w, ...
+                            x.D.Segmentations, ...
+                            x.D.FLAIR, ...
+                            x.D.LesionMasks ...
+                            };
+    
+    % Conditionally create these population directories
+    conditionalPopDir =   { x.D.T1CheckDir, ...
+                            x.D.CoregDir, ...
+                            x.D.T1c_CheckDir, ...
+                            x.D.T2_CheckDir, ...
+                            x.D.FLAIR_REGDIR, ...
+                            x.D.FlowFieldCheck, ...
+                            x.D.LongRegCheckDir, ...
+                            x.D.LesionCheckDir, ...
+                            x.D.ROICheckDir, ...
+                            x.D.ExclusionDir, ...
+                            x.D.DICOMparameterDir, ...
+                            x.D.SNRdir, ...
+                            x.D.SliceCheckDir, ...
+                            x.D.RawDir, ...
+                            x.D.RawEPIdir, ...
+                            x.D.T1_ASLREGDIR, ...
+                            x.D.TemplatesStudyDir, ...
+                            x.D.SpaghettiDir};
+
+end
+
+
+%% xASL_init_FileSystemDefinitions
+function x = xASL_init_FileSystemDefinitions(x,FileDef,Path,Prefix,Suffix,PopTable)
+
+    PopulationTokens = PopTable(:,1)';
+    PopulationDirs = PopTable(:,2)';
+
+    for iFD=1:length(FileDef)
+        if iFD==1
+            % pop == population analysis, which is in common/standard space
+            Pop_suffix = [x.P.SubjectID];
+        elseif iFD==2
+            % cave multiple sessions
+            Pop_suffix = [x.P.SubjectID '_' x.P.SessionID];
+        end
+
+        for iD=1:length(FileDef{iFD})
+            % Create file & path
+            x.P.(['File_' FileDef{iFD}{iD}]) = [FileDef{iFD}{iD} '.nii'];
+            x.P.(['Path_' FileDef{iFD}{iD}]) = fullfile(Path{iFD},[FileDef{iFD}{iD} '.nii']);
+
+            % Put files in specific population directory sub-directories (default to main directory)
+            specificPopDir = xASL_init_GetSpecificPopDir(x,FileDef{iFD}{iD},PopulationTokens,PopulationDirs);
+            x.P.(['Pop_Path_' FileDef{iFD}{iD}]) = fullfile(specificPopDir,[FileDef{iFD}{iD} '_' Pop_suffix '.nii']);
+
+            % Add suffixes
+            for iSuffix=1:length(Suffix)
+                x.P.(['File_' FileDef{iFD}{iD} Suffix{iSuffix}]) = [FileDef{iFD}{iD} Suffix{iSuffix} '.nii'];
+                x.P.(['Path_' FileDef{iFD}{iD} Suffix{iSuffix}]) = fullfile(Path{iFD},[FileDef{iFD}{iD} Suffix{iSuffix} '.nii']);
+
+                % Put files in specific population directory sub-directories (default to main directory)
+                specificPopDir = xASL_init_GetSpecificPopDir(x,[FileDef{iFD}{iD} Suffix{iSuffix}],PopulationTokens,PopulationDirs);
+                x.P.(['Pop_Path_' FileDef{iFD}{iD} Suffix{iSuffix}]) = fullfile(specificPopDir,[FileDef{iFD}{iD} Suffix{iSuffix} '_' Pop_suffix '.nii']);
+            end
+
+            % Add prefixes
+            for iPref=1:length(Prefix)
+                x.P.(['File_' Prefix{iPref} FileDef{iFD}{iD}]) = [Prefix{iPref} FileDef{iFD}{iD} '.nii'];
+                x.P.(['Path_' Prefix{iPref} FileDef{iFD}{iD}]) = fullfile(Path{iFD},[Prefix{iPref} FileDef{iFD}{iD} '.nii']);
+
+                % Put files in specific population directory sub-directories (default to main directory)
+                specificPopDir = xASL_init_GetSpecificPopDir(x,[Prefix{iPref} FileDef{iFD}{iD}],PopulationTokens,PopulationDirs);
+                x.P.(['Pop_Path_' Prefix{iPref} FileDef{iFD}{iD}]) = fullfile(specificPopDir,[Prefix{iPref} FileDef{iFD}{iD} '_' Pop_suffix '.nii']);
+
+                % Add prefixes & suffixes
+                for iSuffix=1:length(Suffix)
+                    x.P.(['File_' Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix}]) = [Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix} '.nii'];
+                    x.P.(['Path_' Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix}]) = fullfile(Path{iFD},[Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix} '.nii']);
+
+                    % Put files in specific population directory sub-directories (default to main directory)
+                    specificPopDir = xASL_init_GetSpecificPopDir(x,[Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix}],PopulationTokens,PopulationDirs);
+                    x.P.(['Pop_Path_' Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix}]) = fullfile(specificPopDir,[Prefix{iPref} FileDef{iFD}{iD} Suffix{iSuffix} '_' Pop_suffix '.nii']);
+                end
+            end
+        end
+    end
+
+end
+

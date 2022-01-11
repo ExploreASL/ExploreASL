@@ -49,7 +49,7 @@ else
         ParaM{1} = ParaM{1}.*60./xASL_stat_MeanNan(ParaM{1}(:));
         
         % Get Bland-Altman parameters & plot them
-        [~,SdDiff,MeanAll,SdPar] = xASL_stat_GetBlandAltmanParameters(ParaM);
+        [~,SdDiff,MeanAll,SdPar] = xASL_stat_GetBlandAltmanParameters(x,ParaM);
         
         % Calculation effect size
         xASL_stat_CalculateEffectSize(x,SdDiff,MeanAll,SdPar);
@@ -103,7 +103,7 @@ end
 
 
 %% xASL_stat_GetBlandAltmanParameters
-function [Fig,SdDiff,MeanAll,SdPar] = xASL_stat_GetBlandAltmanParameters(ParaM)
+function [Fig,SdDiff,MeanAll,SdPar] = xASL_stat_GetBlandAltmanParameters(x,ParaM)
 
     for iP=1:2
         % Create figure

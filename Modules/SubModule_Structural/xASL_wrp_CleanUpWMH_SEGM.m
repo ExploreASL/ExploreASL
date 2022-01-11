@@ -77,7 +77,7 @@ else
     pCSFim = max(0, 1-pGMim-pWMim);
 end
 
-fprintf('%s', 'Cleaning up WMH_SEGM: 0%');
+fprintf('Cleaning up WMH_SEGM:    ');
 
 
 
@@ -180,16 +180,28 @@ xASL_delete(PreMaskFile);
 
 
 %% 5 File management & visual QC
+xASL_adm_CreateDir(x.D.FLAIR);
+
+% Get filenames
 CleanUpFile = [x.P.Path_WMH_SEGM(1:end-4) '_CleanUp.nii'];
-CleanUpFile_Pop = [x.P.Pop_Path_WMH_SEGM(1:end-4) '_CleanUp.nii'];
 INname  = {x.P.Path_FLAIR x.P.Path_WMH_SEGM CleanUpFile};
+
+% Output filenames
+[~,CleanUpFile_Pop,~] = xASL_fileparts(x.P.Pop_Path_WMH_SEGM);
+CleanUpFile_Pop = fullfile(x.D.FLAIR,[CleanUpFile_Pop '_CleanUp.nii']);
 OUTname = {x.P.Pop_Path_rFLAIR x.P.Pop_Path_rWMH_SEGM CleanUpFile_Pop};
+
+% Run the SPM command
 xASL_spm_deformations(x, INname, OUTname);
 
+% Create figures
 OutIM1 = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rFLAIR x.P.Pop_Path_rWMH_SEGM}, [], [1 1.5], [], {x.S.gray x.S.red}, false);
 OutIM2 = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rFLAIR CleanUpFile_Pop}, [], [1 1.5], [], {x.S.gray x.S.red}, false);
+
+% Save image
 xASL_vis_Imwrite([OutIM1,OutIM2], fullfile(x.D.FLAIR_CheckDir, ['CleanUp_WMH_SEGM_' x.P.SubjectID '.jpg']));
 
+% Save and delete files
 xASL_delete(x.P.Pop_Path_rWMH_SEGM);
 xASL_delete(CleanUpFile_Pop);
 xASL_Move(CleanUpFile, x.P.Path_WMH_SEGM, true);

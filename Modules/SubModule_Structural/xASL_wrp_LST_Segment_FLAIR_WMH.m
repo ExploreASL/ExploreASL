@@ -71,11 +71,9 @@ end
 
 %% ----------------------------------------------------------
 %% 2. Define parameters for segmentation
-fprintf('\n%s\n','----------------------------------------');
-
 switch lower(WMHsegmAlg)
     case 'lpa'
-        fprintf('%s\n','WMH segmentation performed using LST LPA');
+        xASL_adm_BreakString('WMH segmentation performed using LST LPA','=');
 
         % Lesion Prediction Algorithm (LPA)
         matlabbatch{1}.spm.tools.LST.lpa.data_F2        = {x.P.Path_rFLAIR}; % FLAIR resampled to T1 native space
@@ -89,7 +87,7 @@ switch lower(WMHsegmAlg)
         end
 
     case 'lga'
-        fprintf('%s\n','WMH segmentation performed using LST LGA');
+        xASL_adm_BreakString('WMH segmentation performed using LST LGA','=');
 
         % Lesion Growth Algorithm (LGA)
         matlabbatch{1}.spm.tools.LST.lga.data_T1            = {x.P.Path_T1};
