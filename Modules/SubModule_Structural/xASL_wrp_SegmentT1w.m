@@ -275,17 +275,17 @@ xASL_adm_DeleteFileList(x.D.PopDir, ['^rLesion.*' x.P.SubjectID '\.nii'], 0, [0 
 %% 7) Resample all lesion masks to standard space (avoid differences between input spaces)
 xASL_adm_CreateDir(x.D.LesionMasks);
 for iL=1:length(Lesion_FLAIR_list)
-    rLesion_FLAIR_list{iL} = fullfile(x.D.PopDir, 'LesionMasks', ['rLesion_' x.P.FLAIR '_' num2str(iL) '_' x.P.SubjectID '.nii']);
+    rLesion_FLAIR_list{iL} = fullfile(x.D.LesionMasks, ['rLesion_' x.P.FLAIR '_' num2str(iL) '_' x.P.SubjectID '.nii']);
     xASL_spm_deformations(x,Lesion_FLAIR_list{iL}, rLesion_FLAIR_list{iL}, 2);
 end
 for iL=1:length(Lesion_T1_list)
-    rLesion_T1_list{iL} = fullfile(x.D.PopDir, 'LesionMasks', ['rLesion_' x.P.STRUCT '_' num2str(iL) '_' x.P.SubjectID '.nii']);
+    rLesion_T1_list{iL} = fullfile(x.D.LesionMasks, ['rLesion_' x.P.STRUCT '_' num2str(iL) '_' x.P.SubjectID '.nii']);
     xASL_spm_deformations(x, Lesion_T1_list{iL}, rLesion_T1_list{iL}, 2);
 end
 xASL_Move(x.P.Path_y_T1, Path_Transf_SPM, true); % move the flow field back
 
 % Combine all lesions
-rLesionList = xASL_adm_GetFileList(fullfile(x.D.PopDir, 'LesionMasks'), ['(?i)^rLesion.*' x.P.SubjectID '\.nii'], 'FPList', [0 Inf]);
+rLesionList = xASL_adm_GetFileList(x.D.LesionMasks, ['(?i)^rLesion.*' x.P.SubjectID '\.nii'], 'FPList', [0 Inf]);
 LesionIM = zeros([121 145 121]); % assuming 1.5 mm MNI
 for iL=1:length(rLesionList)
     LesionIM(xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(rLesionList{iL}))) = 1;
