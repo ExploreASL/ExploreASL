@@ -67,6 +67,11 @@ if skip, return; end
 x = xASL_init_FileSystem(x); % Do this only here, to save time when skipping this module
 oldFolder = cd(x.dir.SESSIONDIR); % Change working directory to make sure that unspecified output will go there...
 
+% Why is this section only in the population module if it is required for xASL_wrp_CreateAnalysisMask ?
+if ~isfield(x.modules.population,'bNativeSpaceAnalysis') || isempty(x.modules.population.bNativeSpaceAnalysis)
+    x.modules.population.bNativeSpaceAnalysis = 0;
+end
+
 
 %% B. Manage mutex state processing step
 StateName{ 1} = '010_TopUp';

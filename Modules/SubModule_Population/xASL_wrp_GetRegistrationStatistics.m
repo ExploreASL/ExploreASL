@@ -72,14 +72,17 @@ for iSubject=1:x.nSubjects
 		if exist(PathJSON, 'file')
 			% Load the file
             Parms = spm_jsonread(PathJSON);
-            Parms = Parms.ASL;
-
-			% print all fields for subject_session into the TSV array
-			for iField=1:nFields
-				if isfield(Parms,jsonFields{iField}) && ~isempty(Parms.(jsonFields{iField}))
-					TSV{1+iSubjSess, 2+iField} = xASL_num2str(Parms.(jsonFields{iField}));
-				end
-			end
+            % Print all fields for subject_session into the TSV array
+            if isfield(Parms,'ASL')
+                Parms = Parms.ASL;
+                for iField=1:nFields
+                    if isfield(Parms,jsonFields{iField}) && ~isempty(Parms.(jsonFields{iField}))
+                        TSV{1+iSubjSess, 2+iField} = xASL_num2str(Parms.(jsonFields{iField}));
+                    end
+                end
+            else
+                error('Cannot access ASL module summary...');
+            end
 		end
     end
 end

@@ -44,7 +44,9 @@ if nargin<2 || isempty(Threshold)
     Threshold = 0.95; % default threshold
 end
 
-PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean\.nii$'], 'FPList');
+% Search for ssusceptibility mask paths
+susceptibilityPaths = ['^MaskSusceptibility_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean\.nii$'];
+PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, susceptibilityPaths, 'FPList');
 
 bSkipStandard = 0;
 

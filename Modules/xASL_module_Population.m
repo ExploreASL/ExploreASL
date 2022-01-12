@@ -48,7 +48,7 @@ if ~isfield(x.modules.population,'bNativeSpaceAnalysis') || isempty(x.modules.po
 end
 
 % Check if we have ASL or not, to know if we need to run ASL-specific stuff/warnings
-bHasASL = ~isempty(xASL_adm_GetFileList(x.D.PopDir, '^.*ASL_\d\.nii$'));
+bHasASL = ~isempty(xASL_adm_GetFileList(x.D.perf, '^.*ASL_\d\.nii$'));
 if ~bHasASL
     warning('Detected no ASL scans, skipping ASL-specific parts of the Population module');
 end
