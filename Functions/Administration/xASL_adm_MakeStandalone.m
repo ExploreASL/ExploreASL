@@ -2,7 +2,7 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 %xASL_adm_MakeStandalone This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
 %
-% FORMAT: xASL_adm_MakeStandalone(outputPath, bCompileSPM, importDCM, markAsLatest);
+% FORMAT: xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest);
 %
 % INPUT:
 %   outputPath      - Folder where the compiled version should be saved (REQUIRED)
@@ -10,14 +10,12 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 %   markAsLatest    - Option to mark the generated compiled versions as "latest" instead, to simplify 
 %                     the docker integration for example (OPTIONAL, DEFAULT = true)
 %
-% OUTPUT:       Generates a standalone/executable version of ExploreASL.
+% OUTPUT:             Generates a standalone/executable version of ExploreASL.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function creates an output folder including a
-%              standalone version of ExploreASL, which can be used with the Matlab
-%              Runtime outside of Matlab itself.
+% DESCRIPTION: This function creates an output folder including a standalone version of ExploreASL, 
+%              which can be used with the Matlab Runtime outside of Matlab itself.
 %              
-%              A quick fix to solve path dependencies etc. is to first
-%              compile SPM (but this can be turned off for speed).
+%              A quick fix to solve path dependencies etc. is to first compile SPM (but this can be turned off for speed).
 %
 % This function performs the following steps:
 %
@@ -36,7 +34,7 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 % 2. Compilation marked with version number including compiled SPM: xASL_adm_MakeStandalone('Drive/User/Folder/',true,false);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
 %% 1) Manage ExploreASL and compiler code folders
