@@ -2,7 +2,7 @@ function [x] = ExploreASL_Initialize(varargin)
 %ExploreASL_Initialize Initializes ExploreASL
 %
 % FORMAT: 
-%   x = ExploreASL_Initialize([DatasetRoot, ImportModules, ProcessModules, bPause, iWorker, nWorkers])
+%   x = ExploreASL_Initialize([DatasetRoot, Import, Deface, Process, bPause, iWorker, nWorkers])
 %
 % INPUT:
 %   varargin    - This script accepts the same arguments as ExploreASL. Check out the definitions there.
