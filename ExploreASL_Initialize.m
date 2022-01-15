@@ -276,9 +276,9 @@ function parameters = xASL_init_convertParsedInput(parameters)
 
     % Check if inputs are empty or chars
     if isempty(parameters.DatasetRoot),     parameters.DatasetRoot = '';                                    end
-    if ischar(parameters.ImportModules),    parameters.Import = str2num(parameters.Import);                 end
-    if ischar(parameters.Deface),           parameters.Import = str2num(parameters.Deface);                 end
-    if ischar(parameters.ProcessModules),   parameters.Process = str2num(parameters.Process);               end
+    if ischar(parameters.ImportModules),    parameters.ImportModules = str2num(parameters.ImportModules);   end
+    if ischar(parameters.Deface),           parameters.Deface = str2num(parameters.Deface);                 end
+    if ischar(parameters.ProcessModules),   parameters.ProcessModules = str2num(parameters.ProcessModules); end
     if ischar(parameters.bPause),           parameters.bPause = str2num(parameters.bPause);                 end
     if ischar(parameters.iWorker),          parameters.iWorker = str2num(parameters.iWorker);               end
     if ischar(parameters.nWorkers),         parameters.nWorkers = str2num(parameters.nWorkers);             end
