@@ -25,6 +25,7 @@ function [result, x] = xASL_module_Population(x)
 % - `070_GetROIstatistics`          - Create TSV file with overview of regional values (e.g. qCBF, mean control, pGM etc)
 % - `080_SortBySpatialCoV`          - Sort ASL_Check QC images by their spatial CoV in quality bins
 % - `090_DeleteTempFiles`           - Delete temporary files
+% - `100_GZipAllFiles`              - Zip files to reduce disc space usage of temporary and non-temporay NIfTI files
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -73,6 +74,7 @@ StateName{7}  = '065_GetRegistrationStatistics';
 StateName{8}  = '070_GetROIstatistics';
 StateName{9}  = '080_SortBySpatialCoV';
 StateName{10} = '090_DeleteTempFiles';
+StateName{11} = '100_GZipAllFiles';
 
 
 
@@ -302,6 +304,13 @@ else
     fprintf('%s\n',[StateName{10} ' has already been performed, skipping...']);
 end
 
+%% 10    xASL_adm_GzipAllFiles
+if ~x.mutex.HasState(StateName{11})
+    xASL_adm_GzipAllFiles(x.D.ROOT,[],[],fullfile(x.opts.MyPath,'External'));
+else
+        fprintf('%s\n',[StateName{11} ' has already been performed, skipping...']);
+end
+    
 
 %% -----------------------------------------------------------------------------
 %% 999 Ready
