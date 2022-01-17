@@ -44,7 +44,7 @@ function xASL_init_printSettings(x)
     % Process modules
     textPrint = 'Processing          ';
     if x.opts.ProcessModules(1)==1
-        textPrint = [textPrint 'BIDS2LEGACY'];
+        textPrint = [textPrint 'BIDS2LEGACY '];
     end
     if x.opts.ProcessModules(2)==1
         textPrint = [textPrint 'STRUCTURAL '];
