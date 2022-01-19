@@ -16,7 +16,7 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
 % DESCRIPTION:  Prepare DRO test patient for BIDS2RAW conversion.
 %               This script uses the output of the asldro python script and
 %               converts it into a bids structure that can be read by our
-%               xASL_bids_BIDS2Legacy script.
+%               xASL_wrp_BIDS2Legacy script.
 %               An exemplary usage is shown in the unit test called
 %               xASL_ut_UnitTest_function_BIDS2Legacy.
 %

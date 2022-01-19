@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_function_xASL_bids_BIDS2Legacy(TestRepository)
-%xASL_ut_function_xASL_bids_BIDS2Legacy Individual unit test for BIDS2Legacy
+function UnitTest = xASL_ut_function_xASL_wrp_BIDS2Legacy(TestRepository)
+%xASL_ut_function_xASL_wrp_BIDS2Legacy Individual unit test for BIDS2Legacy
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,7 +12,7 @@ function UnitTest = xASL_ut_function_xASL_bids_BIDS2Legacy(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_bids_BIDS2Legacy(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_wrp_BIDS2Legacy(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
 
@@ -39,7 +39,7 @@ x = ExploreASL(droTestPatient,0,0);
 x.SUBJECT = '001';
 
 % Run BIDS2Legacy
-xASL_bids_BIDS2Legacy(x);
+xASL_wrp_BIDS2Legacy(x);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -112,7 +112,7 @@ x = ExploreASL(droTestPatient,0,0);
 x.SUBJECT = '001';
 
 % Run BIDS2Legacy
-xASL_bids_BIDS2Legacy(x);
+xASL_wrp_BIDS2Legacy(x);
 
 % The dataPar.json is not created for each subject anymore, which is why it
 % was moved out of BIDS2Legacy. We need to create it manually here.

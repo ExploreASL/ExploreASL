@@ -1,5 +1,5 @@
 function [result, x] = xASL_module_BIDS2Legacy(x)
-%xASL_module_BIDS2Legacy BIDS2LEGACY conversion script which calls xASL_bids_BIDS2Legacy.
+%xASL_module_BIDS2Legacy BIDS2LEGACY conversion script which calls xASL_wrp_BIDS2Legacy.
 %
 % FORMAT: [x] = xASL_module_BIDS2Legacy(x);
 %
