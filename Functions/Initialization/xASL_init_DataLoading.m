@@ -18,6 +18,9 @@ function [x] = xASL_init_DataLoading(x)
 % Copyright 2015-2021 ExploreASL
 
 
+    %% Clean up the x struct before we load the data
+    x = xASL_adm_CleanUpX(x);
+
     %% Data loading
     if ~isfield(x,'dataset')
         x.dataset = struct;
@@ -56,14 +59,14 @@ function [x] = xASL_init_DataLoading(x)
     % These settings depend on the data (e.g. which template to use)
     x = xASL_init_DefineDataDependentSettings(x);
     
-    % Check if a "loadable" dataset exists (xASL_exist(x.dir.dataPar) is only there for backwards compatibility)
+    % Check if a "loadable" dataset exists (not sure if this is sufficient right now, since we have to make sure that BIDS2Legacy was run before)
     loadableDataset = isfield(x.dir,'DatasetRoot') && xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'),'dir');
     
     % Check if data loading should be executed first
     if x.opts.bLoadData && loadableDataset
         % Check if a root directory was defined
         if ~isfield(x.D,'ROOT') || isempty(x.D.ROOT)
-            error('No root folder defined');
+            error('No root folder defined...');
         end
 
         % Fix a relative path

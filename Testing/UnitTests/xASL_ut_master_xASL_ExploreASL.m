@@ -197,7 +197,7 @@ UnitTest.tests(3).testname = 'Initialize (With arrays)';
 testTime = tic;
 
 % Read test files
-[x] = ExploreASL('',[0 0],0,[0 0 0 0],0,1,1);
+[x] = ExploreASL('',[0 0],0,[0 0 0],0,1,1);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -434,7 +434,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 0],1,[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,1,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -513,7 +513,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 0],1,[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,1,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -612,18 +612,9 @@ xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 % Fallback
 testCondition = true;
 
-% Prepare the derivatives data
+% Run processing starting from derivatives
 try
-    [x] = ExploreASL(testPatientDestination,[0 0],1,[1 0 0 0],0,1,1);
-catch ME
-    warning(ME.identifier, '%s', ME.message);
-    testCondition = false;
-    diary off;
-end
-
-% Actual test: run processing starting from derivatives with directory input
-try
-    [x] = ExploreASL(testPatientDestination,0,0,[0 1 1 1],0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,1,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -698,19 +689,10 @@ xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 % Fallback
 testCondition = true;
 
-% Prepare the derivatives data
-try
-    [x] = ExploreASL(testPatientDestination,[0 0],1,[1 0 0 0],0,1,1);
-catch ME
-    warning(ME.identifier, '%s', ME.message);
-    testCondition = false;
-    diary off;
-end
-
-% Actual test: run processing starting from derivatives with dataPar.json input (outdated)
+% Run processing starting from derivatives with dataPar.json input (outdated)
 resultingMessage = '';
 try
-    [x] = ExploreASL(fullfile(testPatientDestination,'derivatives','ExploreASL','dataPar.json'),0,0,[0 1 1 1],0,1,1);
+    [x] = ExploreASL(fullfile(testPatientDestination,'derivatives','ExploreASL','dataPar.json'),0,0,1,0,1,1);
 catch ME
     resultingMessage = ME.message;
     diary off;
@@ -740,7 +722,7 @@ UnitTest.tests(9).passed = testCondition;
 %% Test run 10
 
 % Give your individual subtest a name
-UnitTest.tests(10).testname = 'DRO 2.3.0 (Full pipeline, rawdata->results)';
+UnitTest.tests(10).testname = 'DRO 2.3.0 (Full pipeline, rawdata->defacing->results)';
 
 % Start the test
 testTime = tic;
@@ -762,7 +744,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 0],1,1,0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,1,1,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -904,16 +886,7 @@ xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 % Fallback
 testCondition = true;
 
-% Test: BIDS2LEGACY
-try
-    [x] = ExploreASL(droTestPatient,0,0,[1 0 0 0]);
-catch ME
-    warning(ME.identifier, '%s', ME.message);
-    testCondition = false;
-    diary off;
-end
-
-% Test: Load data
+% Test: Bids2Legacy / Load data
 try
     [x] = ExploreASL(droTestPatient,0,0,0);
 catch ME
@@ -1085,7 +1058,7 @@ testCondition = true;
 
 % Run BIDS2Legacy 1
 try
-    [x] = ExploreASL(testPatientDestination,0,0,[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -1094,7 +1067,7 @@ end
 
 % Run BIDS2Legacy 2 (this is supposed to be skipped automatically)
 try
-    [x] = ExploreASL(testPatientDestination,0,0,[1 0 0 0],0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;

@@ -34,7 +34,7 @@ function x = xASL_imp_ImportInitialization(x)
     
     % We are running the import here, but if BIDS to Legacy will not run,
     % we can not load the data afterwards!
-    if ~x.opts.ProcessModules(1)
+    if ~x.opts.bProcessData
         x.opts.bLoadData = false;
     end
     
@@ -47,7 +47,7 @@ function x = xASL_imp_ImportInitialization(x)
     x = xASL_imp_BasicParameterChecks(x);
 
     % Initialize the import setup
-    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.Deface || x.opts.ProcessModules(1)
+    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.Deface || x.opts.bLoadData
         x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
     else
         x.modules.import.imPar = NaN;
@@ -55,9 +55,11 @@ function x = xASL_imp_ImportInitialization(x)
 
     
     %% Determine subject/session/run structure from sourcedata, temp data or rawdata
-    x = xASL_imp_DetermineSubjectStructure(x);
+    if x.opts.bLoadData
+        x = xASL_imp_DetermineSubjectStructure(x);
+    end
     
-    % Create logging directory
+    % Create logging directory if it does not exist already
     xASL_adm_CreateDir(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log'));
 
 

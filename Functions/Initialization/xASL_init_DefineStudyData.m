@@ -52,7 +52,7 @@ function [x] = xASL_init_DefineStudyData(x)
 %
 % EXAMPLE: x = xASL_init_DefineStudyData(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
 % ------------------------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ end
 
 if ~isfield(x.dataset,'subjectRegexp')
     warning('No subject regular expression detected');
-    fprintf('Check if the correct DataPar file was loaded\n');
+    fprintf('Check if the correct dataPar JSON file was loaded...\n');
 end
 
 if isfield(x.dataset,'ForceInclusionList')
@@ -129,17 +129,16 @@ if ~isempty(x.dataset.TotalSubjects)
     x.SUBJECTS = x.dataset.TotalSubjects;
 end
 if ~isfield(x,'SUBJECTS')
-    warning('Missing x.SUBJECTS field...');
     x.SUBJECTS = '';
 end
 x.nSubjects = length(x.SUBJECTS);
 
 if isempty(x.SUBJECTS)
-    fprintf('No subjects found...\n');
-    fprintf('Please check the sub_regexp in your Data Parameter File.\n');
-    fprintf('This should match with the subject folders inside the ROOT folder.\n');
-    fprintf('This was %s ...\n\n',x.D.ROOT);
-    error('No subjects defined, x.SUBJECTS was empty');
+    fprintf(2,'No subjects found...\n');
+    fprintf(2,'Please check the sub_regexp in your Data Parameter File.\n');
+    fprintf(2,'This should match with the subject folders inside the ROOT folder.\n');
+    fprintf(2,'This was %s ...\n\n',x.D.ROOT);
+    error('No subjects defined, x.SUBJECTS was empty...');
 end
 
 [~, TimePoint] = xASL_init_LongitudinalRegistration(x);

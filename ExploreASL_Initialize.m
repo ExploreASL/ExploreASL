@@ -251,7 +251,7 @@ function p = xASL_init_InputParsing(varargin)
     defaultDatasetRoot = [];
     defaultImport = [0 0];
     defaultDeface = 0;
-    defaultProcess = [0 0 0 0];
+    defaultProcess = [0 0 0];
     defaultbPause = 0;
     defaultiWorker = 1;
     defaultnWorkers = 1;
@@ -298,12 +298,12 @@ function parameters = xASL_init_convertParsedInput(parameters)
     end
     if length(parameters.ProcessModules)==1
         % If a single value is given, then copy it to all submodules
-        parameters.ProcessModules(1:4) = parameters.ProcessModules(1);
-    elseif length(parameters.ProcessModules)<4
+        parameters.ProcessModules(1:3) = parameters.ProcessModules(1);
+    elseif length(parameters.ProcessModules)<3
         % Convert to a row vector
         parameters.ProcessModules = parameters.ProcessModules(:)';
         % Fill in the missing fields with zeros
-        parameters.ProcessModules(length(parameters.ProcessModules)+1:4) = 0;
+        parameters.ProcessModules(length(parameters.ProcessModules)+1:3) = 0;
         % Issue a warning
         warning('Incorrect length of the ProcessModules parameter, missing submodules set to zero: %s\n',...
             xASL_num2str(parameters.ProcessModules));

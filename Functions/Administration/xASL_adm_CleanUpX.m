@@ -22,7 +22,7 @@ function [x] = xASL_adm_CleanUpX(x)
     %% Zipping
     
     % Zip all NIfTIs if we do not immediately run the pipeline afterwards
-    if ~(x.opts.ProcessModules(2) || x.opts.ProcessModules(3) || x.opts.ProcessModules(4))
+    if x.opts.bLoadData || ~x.opts.bProcessData
         if isfield(x.D,'ROOT')
             xASL_adm_GzipAllFiles(x.D.ROOT,[],[],fullfile(x.opts.MyPath,'External'));
         end

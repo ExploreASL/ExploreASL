@@ -7,13 +7,13 @@ function [x] = ExploreASL(varargin)
 %
 %   Definitions:
 %
-%   DatasetRoot - [DatasetRoot]                              (OPTIONAL, STRING, DEFAULT = [])
-%   Import      - [DCM2NII, NII2BIDS]                        (OPTIONAL, BOOLEAN, DEFAULT = 0)
-%   Deface      - [DEFACE]                                   (OPTIONAL, BOOLEAN, DEFAULT = 0)
-%   Process     - [BIDS2LEGACY, STRUCTURAL, ASL, POPULATION] (OPTIONAL, BOOLEAN, DEFAULT = 0)
-%   bPause      - [bPause]                                   (OPTIONAL, BOOLEAN, DEFAULT = 0)
-%   iWorker     - [iWorker]                                  (OPTIONAL, INTEGER, DEFAULT = 1)
-%   nWorkers    - [nWorkers]                                 (OPTIONAL, INTEGER, DEFAULT = 1)
+%   DatasetRoot - [DatasetRoot]                 (OPTIONAL, STRING, DEFAULT = [])
+%   Import      - [DCM2NII, NII2BIDS]           (OPTIONAL, BOOLEAN, DEFAULT = 0)
+%   Deface      - [DEFACE]                      (OPTIONAL, BOOLEAN, DEFAULT = 0)
+%   Process     - [STRUCTURAL, ASL, POPULATION] (OPTIONAL, BOOLEAN, DEFAULT = 0)
+%   bPause      - [bPause]                      (OPTIONAL, BOOLEAN, DEFAULT = 0)
+%   iWorker     - [iWorker]                     (OPTIONAL, INTEGER, DEFAULT = 1)
+%   nWorkers    - [nWorkers]                    (OPTIONAL, INTEGER, DEFAULT = 1)
 %
 %   Explanations:
 %
@@ -57,7 +57,7 @@ function [x] = ExploreASL(varargin)
 %      DatasetRoot = '/MyDisk/MyStudy';
 %      Import = [1 1];
 %      Deface = 1;
-%      Process = [1 1 1 1];
+%      Process = [1 1 1];
 %      bPause = 1;
 %      iWorker = 1;
 %      nWorkers = 1;
@@ -67,7 +67,7 @@ function [x] = ExploreASL(varargin)
 %      DatasetRoot = '/MyDisk/MyStudy';
 %      Import = '[1 1]';
 %      Deface = '1';
-%      Process = '[1 1 1 1]';
+%      Process = '[1 1 1]';
 %      bPause = '1';
 %      iWorker = '1';
 %      nWorkers = '1';
@@ -105,7 +105,7 @@ function [x] = ExploreASL(varargin)
 
     % -----------------------------------------------------------------------------
     % IV. Processing Master
-    if x.opts.bProcessData
+    if x.opts.bLoadData || x.opts.bProcessData
         x = ExploreASL_Process(x);
     end
 
