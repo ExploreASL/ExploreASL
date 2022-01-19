@@ -2,7 +2,7 @@ function [x] = ExploreASL_Initialize(varargin)
 %ExploreASL_Initialize Initializes ExploreASL
 %
 % FORMAT: 
-%   x = ExploreASL_Initialize([DatasetRoot, Import, Deface, Process, bPause, iWorker, nWorkers])
+%   x = ExploreASL_Initialize([DatasetRoot, bImport, bDeface, bProcess, bPause, iWorker, nWorkers])
 %
 % INPUT:
 %   varargin    - This script accepts the same arguments as ExploreASL. Check out the definitions there.
@@ -235,6 +235,16 @@ end
 %% Define input parser
 function p = xASL_init_InputParsing(varargin)
 
+    % This subfunction receives the input arguments and parses them.
+    % The allowed input arguments are: DatasetRoot, bImport, bDeface,
+    % bProcess, bPause, iWorker, nWorkers. Right now we allow the user
+    % to insert a path to a directory or an empty variable for the
+    % DatasetRoot argument. All other arguments are either character
+    % arrays, empty variables, numerical values or logical values. bImport,
+    % bDeface and bProcess can also be logical arrays. This sub-function is
+    % closely related to xASL_init_convertParsedInput, so please check out
+    % the corresponding description.
+
     % Initialize input parser
     p = inputParser;
     
@@ -259,7 +269,7 @@ function p = xASL_init_InputParsing(varargin)
     % Add definitions to the input parser
     addOptional(p, 'DatasetRoot', defaultDatasetRoot, validDatasetRoot);
     addOptional(p, 'ImportModules', defaultImport, validImport);
-    addOptional(p, 'Deface', defaultDeface, validImport);
+    addOptional(p, 'Deface', defaultDeface, validDeface);
     addOptional(p, 'ProcessModules', defaultProcess, validProcess);
     addOptional(p, 'bPause', defaultbPause, validbPause);
     addOptional(p, 'iWorker', defaultiWorker, validiWorker);
@@ -274,7 +284,21 @@ end
 %% Convert parsed input
 function parameters = xASL_init_convertParsedInput(parameters)
 
-    % Check if inputs are empty or chars
+    % This sub-function takes the parsed arguments and convertes them for
+    % our internal usage. Additionally we do some pipeline related checks.
+    % ExploreASL has the following input arguments: DatasetRoot, bImport, 
+    % bDeface, bProcess, bPause, iWorker, nWorkers. Besides DatasetRoot,
+    % which is a path, and also iWorker & nWorkers, which are integers, all
+    % the other input options are meant to be used as booleans. This
+    % simplifies the usage for newcomers. They only have to decide whether
+    % they want to run the import, the defacing or the processing.
+    % To be able to run each import or processing sub-module individually,
+    % we allow the use of arrays, too. If the default case happens and a
+    % user inserts bImport or bProcess as booleans though, then we simply
+    % convert them to the arrays which are called ImportModules and
+    % ProcessModules.
+
+    % Check if inputs are empty or chars (the option to use character array input is important for the compiled mode)
     if isempty(parameters.DatasetRoot),     parameters.DatasetRoot = '';                                    end
     if ischar(parameters.ImportModules),    parameters.ImportModules = str2num(parameters.ImportModules);   end
     if ischar(parameters.Deface),           parameters.Deface = str2num(parameters.Deface);                 end
@@ -314,7 +338,7 @@ function parameters = xASL_init_convertParsedInput(parameters)
         parameters.bPause = 0;
     end
     
-    % Check nWorkers
+    % Check nWorkers for the parallelization of ExploreASL
     if numel(parameters.nWorkers)>1
         warning('nWorkers is supposed to be an integer number, resetting to 1...');
         parameters.nWorkers = 1;
