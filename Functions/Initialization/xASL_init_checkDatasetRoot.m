@@ -41,7 +41,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
         [x] = xASL_init_DetermineRequiredPaths(x);
     elseif exist(x.opts.DatasetRoot,'file')
         % Files are no longer supported for the dataset root directory
-        error('You provided a descriptive JSON or another file. We recommend to use the dataset root directory instead...');
+        error('You provided a descriptive JSON or another file. We only allow paths to the dataset root directory...');
     else
         % Check if the user inserted a directory or file which does not exist
         if ~isempty(x.opts.DatasetRoot)
