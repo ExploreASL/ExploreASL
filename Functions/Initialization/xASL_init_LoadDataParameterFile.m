@@ -1,10 +1,10 @@
 function [x] = xASL_init_LoadDataParameterFile(x)
 %xASL_init_LoadDataParameterFile Load data parameter file
 %
-% FORMAT: [x] = xASL_init_LoadDataParameterFile(x, DataParPath)
+% FORMAT: [x] = xASL_init_LoadDataParameterFile(x)
 %
 % INPUT:
-%   x                 - ExploreASL x structure (STRUCT, REQUIRED)
+%   x       - ExploreASL x structure (STRUCT, REQUIRED)
 %
 % OUTPUT:
 %   x       - ExploreASL x structure (STRUCT)
