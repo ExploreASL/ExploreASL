@@ -22,7 +22,7 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
 % EXAMPLE:        n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% 1. Input check
@@ -47,12 +47,15 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
     
     if ~isfield(x,'dir')
         error('Missing directories field...');
+        x.opts.bLoadableData = false;
     end
     if ~isfield(x.dir,'dataset_description')
         error('Missing dataset_description field...');
+        x.opts.bLoadableData = false;
     end
     if isempty(x.dir.dataset_description)
         error('Empty dataset_description path...');
+        x.opts.bLoadableData = false;
     end
 
 
@@ -69,12 +72,10 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
         end
     else
         % 2.2 The input is dataPar.json or sourceStructure.json - have to look for a rawdata folder
-        pathRawData = fullfile(x.dir.DatasetRoot,'rawdata');
-        % Check the if the correct BIDS structure is in place
-        if ~exist(pathRawData,'dir')
-            error('Path rawdata does not exist');
-        elseif ~exist(fullfile(pathRawData,'dataset_description.json'),'file')
-            error('File dataset_description.json is not found');
+        if ~exist(x.dir.RawData,'dir')
+            error('Path rawdata does not exist...');
+        elseif ~exist(fullfile(x.dir.RawData,'dataset_description.json'),'file')
+            error('File dataset_description.json is not found...');
         end
     end
 
