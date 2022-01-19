@@ -14,17 +14,19 @@ function loggingTable = xASL_test_Flavors_ExploreASL(testConfig,loggingTable)
 % EXAMPLE:      loggingTable = xASL_test_Flavors_ExploreASL(testConfig,loggingTable);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
     
     % Iterate over flavors
     for iList=1:numel(testConfig.flavorList)
+        % Get the current flavor
         currentFlavor = fullfile(testConfig.pathFlavorDatabase,testConfig.flavorList{iList});
         pathDerivatives = fullfile(currentFlavor,'derivatives');
         % Process data that were converted to derivatives
         if exist(pathDerivatives,'dir')
+            % Determine the ExploreASL directory
             pathExploreASLflavor = fullfile(pathDerivatives,'ExploreASL');
             if exist(pathExploreASLflavor,'dir')
-                % Don't run population module
+                % Run ExploreASL structural and ASL module (don't run the population module)
                 xFlavor = ExploreASL(currentFlavor, 0, 0, [1 1 0], 0);
                 if isfield(xFlavor,'logging')
                     loggingTable = xASL_test_AddLoggingEntryToTable(testConfig.flavorList{iList},loggingTable,xFlavor.logging);
