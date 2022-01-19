@@ -24,11 +24,11 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% Shared imPar related initialization
-    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.Deface || x.opts.ProcessModules(1)
+    if x.opts.bImportData || x.opts.bDefaceData || x.opts.bLoadData
         if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
             % Basic import checks before execution
             x = xASL_imp_CheckImportSettings(x);
@@ -43,19 +43,19 @@ function x = xASL_imp_DetermineSubjectStructure(x)
     end
 
 
+    %% Check if imPar exists
+    imParCondition = isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar);
+
     %% Specific initialization for sourcedata, temp data, and rawdata
-    if x.opts.ImportModules(1) && ...
-            isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
+    if x.opts.ImportModules(1) && imParCondition
         % Determine structure from sourcedata
         x = xASL_imp_DetermineStructureFromSourcedata(x);
         
-    elseif x.opts.ImportModules(2) && ...
-            isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
+    elseif x.opts.ImportModules(2) && imParCondition
         % Determine structure from temp data
         x = xASL_imp_DetermineStructureFromTempdata(x);
         
-    elseif (x.opts.Deface || x.opts.ProcessModules(1)) && ...
-            isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
+    elseif (x.opts.Deface || x.opts.bLoadData) && imParCondition
         % Determine structure from rawdata
         x = xASL_imp_DetermineStructureFromRawdata(x);
         
@@ -97,8 +97,11 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
         end 
     end
     
+    %% Check if data can be loaded
     if isempty(x.SUBJECTS)
         warning('Unable to find subjects in BIDS rawdata directory...');
+        x.opts.bLoadData = false;
+        x.opts.bLoadableData = false;
     end
 
 

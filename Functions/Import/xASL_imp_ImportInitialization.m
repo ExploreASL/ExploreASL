@@ -32,12 +32,6 @@ function x = xASL_imp_ImportInitialization(x)
     % For the xASL_Iterate support we need x.D.ROOT as well
     x.D.ROOT = x.dir.DatasetRoot;
     
-    % We are running the import here, but if BIDS to Legacy will not run,
-    % we can not load the data afterwards!
-    if ~x.opts.bProcessData
-        x.opts.bLoadData = false;
-    end
-    
     % Currently fixed import settings
     x.modules.import.settings.bCopySingleDicoms = false;
     x.modules.import.settings.bUseDCMTK = true;
@@ -47,7 +41,7 @@ function x = xASL_imp_ImportInitialization(x)
     x = xASL_imp_BasicParameterChecks(x);
 
     % Initialize the import setup
-    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.Deface || x.opts.bLoadData
+    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.Deface || (x.opts.bLoadData && x.opts.bLoadableData)
         x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
     else
         x.modules.import.imPar = NaN;
@@ -55,7 +49,7 @@ function x = xASL_imp_ImportInitialization(x)
 
     
     %% Determine subject/session/run structure from sourcedata, temp data or rawdata
-    if x.opts.bLoadData
+    if x.opts.bLoadData && x.opts.bLoadableData
         x = xASL_imp_DetermineSubjectStructure(x);
     end
     

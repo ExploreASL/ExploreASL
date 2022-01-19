@@ -343,6 +343,9 @@ end
 % Check if the ExploreASL pipeline should be run or not
 function x = xASL_init_GetBooleansImportProcess(x)
 
+    % On default we assume that we can load the data
+    x.opts.bLoadableData = true;
+
     % Check if data is being imported
     if sum(x.opts.ImportModules)>0
         x.opts.bImportData = 1;

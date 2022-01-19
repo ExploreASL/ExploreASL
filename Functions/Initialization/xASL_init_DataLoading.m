@@ -27,7 +27,7 @@ function [x] = xASL_init_DataLoading(x)
     end
     
     % Make sure that the dataPar.json definitely exists if we load the dataset
-    if x.opts.bLoadData
+    if x.opts.bLoadData && x.opts.bLoadableData
         if isfield(x,'dir') && isfield(x.dir,'dataPar')
             if isempty(x.dir.dataPar)
                 if ~x.opts.bImportData
@@ -44,7 +44,7 @@ function [x] = xASL_init_DataLoading(x)
     cd(x.opts.MyPath);
 
     % Check if DataParFile needs to be loaded
-    if x.opts.bProcessData || x.opts.bLoadData
+    if x.opts.bProcessData || (x.opts.bLoadData && x.opts.bLoadableData)
         if ~isempty(x.dir.dataPar)
             x = xASL_init_LoadDataParameterFile(x);
         else
@@ -59,11 +59,8 @@ function [x] = xASL_init_DataLoading(x)
     % These settings depend on the data (e.g. which template to use)
     x = xASL_init_DefineDataDependentSettings(x);
     
-    % Check if a "loadable" dataset exists (not sure if this is sufficient right now, since we have to make sure that BIDS2Legacy was run before)
-    loadableDataset = isfield(x.dir,'DatasetRoot') && xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'),'dir');
-    
     % Check if data loading should be executed first
-    if x.opts.bLoadData && loadableDataset
+    if x.opts.bLoadData && x.opts.bLoadableData
         % Check if a root directory was defined
         if ~isfield(x.D,'ROOT') || isempty(x.D.ROOT)
             error('No root folder defined...');
@@ -85,10 +82,10 @@ function [x] = xASL_init_DataLoading(x)
 
         % Define & print settings
         x = xASL_init_PrintCheckSettings(x);
-    elseif x.opts.bLoadData && ~loadableDataset
+    elseif x.opts.bLoadData && ~x.opts.bLoadableData
         % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
         % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
-        warning('Dataset can not be loaded, there is no derivatives directory, try to run the import first...');
+        warning('Dataset can not be loaded, try to run the import first...');
     end
 
 
