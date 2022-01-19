@@ -314,11 +314,14 @@ function parameters = xASL_init_convertParsedInput(parameters)
     elseif length(parameters.ImportModules)<2
         % Convert to a row vector
         parameters.ImportModules = parameters.ImportModules(:)';
+        % Issue a warning
+        warning('Incorrect number of import modules (%s), missing sub-modules set to zero...', xASL_num2str(length(parameters.ImportModules)));
         % Fill in the missing fields with zeros
         parameters.ImportModules(length(parameters.ImportModules)+1:2) = 0;
-        % Issue a warning
-        warning('Incorrect length of the ImportModules parameter, missing submodules set to zero: %s\n',...
-            xASL_num2str(parameters.ImportModules));
+    elseif length(parameters.ImportModules)>2
+        % Skip additional elements
+        warning('Incorrect number of import modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.ImportModules)));
+        parameters.ImportModules = parameters.ImportModules(1:2);
     end
     if length(parameters.ProcessModules)==1
         % If a single value is given, then copy it to all submodules
@@ -326,11 +329,14 @@ function parameters = xASL_init_convertParsedInput(parameters)
     elseif length(parameters.ProcessModules)<3
         % Convert to a row vector
         parameters.ProcessModules = parameters.ProcessModules(:)';
+        % Issue a warning
+        warning('Incorrect number of processing modules (%s), missing sub-modules set to zero...', xASL_num2str(length(parameters.ProcessModules)));
         % Fill in the missing fields with zeros
         parameters.ProcessModules(length(parameters.ProcessModules)+1:3) = 0;
-        % Issue a warning
-        warning('Incorrect length of the ProcessModules parameter, missing submodules set to zero: %s\n',...
-            xASL_num2str(parameters.ProcessModules));
+    elseif length(parameters.ProcessModules)>3
+        % Skip additional elements
+        warning('Incorrect number of processing modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.ProcessModules)));
+        parameters.ProcessModules = parameters.ProcessModules(1:3);
     end
     
     % Make it impossible to set bPause to true in deployed mode
