@@ -102,6 +102,9 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
         warning('Unable to find subjects in BIDS rawdata directory...');
         x.opts.bLoadData = false;
         x.opts.bLoadableData = false;
+    else
+        % We can probably load the data
+        x.opts.bLoadableData = true;
     end
 
 

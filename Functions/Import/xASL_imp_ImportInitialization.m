@@ -41,7 +41,7 @@ function x = xASL_imp_ImportInitialization(x)
     x = xASL_imp_BasicParameterChecks(x);
 
     % Initialize the import setup
-    if x.opts.ImportModules(1) || x.opts.ImportModules(2) || x.opts.Deface || (x.opts.bLoadData && x.opts.bLoadableData)
+    if x.opts.bImportData || x.opts.Deface || x.opts.bLoadData
         x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
     else
         x.modules.import.imPar = NaN;
@@ -49,9 +49,7 @@ function x = xASL_imp_ImportInitialization(x)
 
     
     %% Determine subject/session/run structure from sourcedata, temp data or rawdata
-    if x.opts.bLoadData && x.opts.bLoadableData
-        x = xASL_imp_DetermineSubjectStructure(x);
-    end
+    x = xASL_imp_DetermineSubjectStructure(x);
     
     % Create logging directory if it does not exist already
     xASL_adm_CreateDir(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log'));

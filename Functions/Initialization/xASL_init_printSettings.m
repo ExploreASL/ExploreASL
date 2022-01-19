@@ -44,15 +44,12 @@ function xASL_init_printSettings(x)
     % Process modules
     textPrint = 'Processing          ';
     if x.opts.ProcessModules(1)==1
-        textPrint = [textPrint 'BIDS2LEGACY '];
-    end
-    if x.opts.ProcessModules(2)==1
         textPrint = [textPrint 'STRUCTURAL '];
     end
-    if x.opts.ProcessModules(3)==1
+    if x.opts.ProcessModules(2)==1
         textPrint = [textPrint 'ASL '];
     end
-    if x.opts.ProcessModules(4)==1
+    if x.opts.ProcessModules(3)==1
         textPrint = [textPrint 'POPULATION '];
     end
     fprintf([textPrint '\n']);

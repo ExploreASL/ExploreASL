@@ -47,15 +47,12 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
     
     if ~isfield(x,'dir')
         error('Missing directories field...');
-        x.opts.bLoadableData = false;
     end
     if ~isfield(x.dir,'dataset_description')
         error('Missing dataset_description field...');
-        x.opts.bLoadableData = false;
     end
     if isempty(x.dir.dataset_description)
         error('Empty dataset_description path...');
-        x.opts.bLoadableData = false;
     end
 
 

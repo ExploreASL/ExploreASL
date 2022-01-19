@@ -17,7 +17,7 @@ function x = xASL_imp_UpdateDatasetRoot(x)
 % Copyright 2015-2021 ExploreASL
 
     % Search for dataset_description.json within the rawdata subfolder
-    foundFiles = xASL_adm_GetFileList(fullfile(x.dir.RawData,'dataset_description.json');
+    foundFiles = xASL_adm_GetFileList(fullfile(x.dir.RawData),'dataset_description.json');
     
     % Check if valid dataset_description.json exists within the rawdata folder
     if isempty(foundFiles)
