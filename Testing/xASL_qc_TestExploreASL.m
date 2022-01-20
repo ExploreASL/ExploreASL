@@ -353,12 +353,12 @@ Dlist = xASL_adm_GetFileList(opts.TestDirDest,'^.*$','List',[0 Inf], true);
 
 if opts.testDataUsed
     % TestDataSet detected
-    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
-    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
+    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'derivatives','ExploreASL','T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
+    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'derivatives','ExploreASL','ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
 else
     % Default
-    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'001DM_1','T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
-    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'001DM_1','ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
+    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'derivatives','ExploreASL','001DM_1','T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
+    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'derivatives','ExploreASL','001DM_1','ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
 end
 
 % Read Nifti files
