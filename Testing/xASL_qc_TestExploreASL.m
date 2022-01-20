@@ -114,118 +114,14 @@ xASL_test_CopyTestData(opts);
 % ============================================================
 %% 4) Test standalone SPM on low quality
 if opts.bTestSPM
-
-    x.settings.Quality = false;
-    % Find the first directory and copy out the first T1 and ASL just for SPM testing
-
-    Dlist = xASL_adm_GetFileList(opts.TestDirDest,'^.*$','List',[0 Inf], true);
-    
-    if opts.testDataUsed
-        % TestDataSet detected
-        xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
-        xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
-    else
-        % Default
-        xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'001DM_1','T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
-        xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'001DM_1','ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
-    end
-    
-    % Read Nifti files
-    try
-        xASL_io_ReadNifti(fullfile(opts.TestDirDest,'ASL4D.nii'));
-        xASL_io_ReadNifti(fullfile(opts.TestDirDest,'T1.nii'));
-    catch
-        error('ASL and T1 data set import failed...')
-    end
-    
-    
-
-    % Test spm_realign on low quality
-    matlabbatch = [];
-    matlabbatch{1}.spm.spatial.realign.write.data               = {fullfile(opts.TestDirDest,'ASL4D.nii')};
-    matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
-    matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 0; % low quality
-    matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
-    matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
-    matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
-    spm_jobman('run',matlabbatch);
-
-
-    % Test spm_reslice on low quality
-    xASL_spm_reslice(fullfile(opts.TestDirDest,'ASL4D.nii'), fullfile(opts.TestDirDest,'T1.nii'), [], [], 0);
-
-    % Test spm_smooth on low quality (small kernel)
-    xASL_spm_smooth(fullfile(opts.TestDirDest,'rT1.nii'), [2 2 2], fullfile(opts.TestDirDest,'rsT1.nii'));
-
-    % Test coreg on low quality
-    matlabbatch = [];
-    matlabbatch{1}.spm.spatial.coreg.estimate.ref = {fullfile(opts.TestDirDest,'ASL4D.nii,1')};
-    matlabbatch{1}.spm.spatial.coreg.estimate.source = {fullfile(opts.TestDirDest,'rT1.nii,1')};
-    matlabbatch{1}.spm.spatial.coreg.estimate.other = {''};
-    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'mi';
-    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = 9;
-    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
-    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
-    spm_jobman('run',matlabbatch);
-
-    % Test CAT12
-    matlabbatch = [];
-    SPMTemplateNII    = fullfile(x.opts.MyPath,'External','SPMmodified', 'tpm', 'TPM.nii');
-	[~,catVer] = cat_version();
-	if str2double(catVer) > 1500
-		catTempDir = 'templates_volumes';
-	else
-		catTempDir = 'templates_1.50mm';
-	end
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm              = {SPMTemplateNII};
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 0; % low quality
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0; % low quality
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % low quality
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 6; % low quality
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = eps; % low quality
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 9;   % low quality
-    matlabbatch{1}.spm.tools.cat.estwrite.data                  = {fullfile(opts.TestDirDest,'T1.nii')}; % T1.nii
-    matlabbatch{1}.spm.tools.cat.estwrite.nproc                 = 0; 
-    matlabbatch{1}.spm.tools.cat.estwrite.opts.affreg           = 'mni'; % regularize affine registration for MNI European brains
-    matlabbatch{1}.spm.tools.cat.estwrite.output.surface        = 0;   % don't do surface modeling
-    matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
-    matlabbatch{1}.spm.tools.cat.estwrite.output.GM.native      = 0;   % save c1T1 in native space
-    matlabbatch{1}.spm.tools.cat.estwrite.output.GM.mod         = 0;   % don't save modulation
-    matlabbatch{1}.spm.tools.cat.estwrite.output.GM.dartel      = 0;   % don't save DARTEL space c1T1, this happens below in the reslice part
-    matlabbatch{1}.spm.tools.cat.estwrite.output.WM.native      = 0;   % save c2T1 in native space
-    matlabbatch{1}.spm.tools.cat.estwrite.output.WM.mod         = 0;   % don't save modulation
-    matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel      = 0;   % don't save DARTEL space c2T1, this happens below in the reslice part
-    matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
-    matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
-    matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
-    matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
-    spm_jobman('run',matlabbatch);
-
-    % Test deformations after CAT12
-    xASL_Copy(fullfile(opts.TestDirDest,'mri','y_T1.nii'), fullfile(opts.TestDirDest,'y_T1.nii'));
-    matlabbatch = [];
-    matlabbatch{1}.spm.util.defs.comp{1}.def = {fullfile(opts.TestDirDest,'y_T1.nii')};
-    matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(opts.TestDirDest,'rT1.nii')};
-    matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.savesrc = 1;
-    matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
-    matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
-    matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
-    matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
-    spm_jobman('run',matlabbatch);
-
-    % Remove temporary derivatives
-    xASL_adm_DeleteFileList(opts.TestDirDest, '.*', false, [0 Inf]);
-    DirsAre = {'err' 'ASL_1' 'mri' 'report'};
-    for iDir=1:length(DirsAre)
-        DirIs = fullfile(opts.TestDirDest,DirsAre{iDir});
-        xASL_adm_DeleteFileList(DirIs, '.*', true, [0 Inf]);
-        xASL_delete(DirIs);
-    end
+    xASL_test_TestSPM(opts,x);
 end
 
 % ============================================================
 %% 5) Test ExploreASL itself
-x = ExploreASL; % here we return the ExploreASL paths, which we removed above for testing SPM
+
+% Here we return the ExploreASL paths, which we removed above for testing SPM
+x = ExploreASL;
 
 % Remove lock folders, useful for rerun when debugging
 LockFolders = xASL_adm_GetFileList(opts.TestDirDest, '(?i)^locked$', 'FPListRec', [0 Inf], true);
@@ -661,6 +557,119 @@ end
 % Copy data sets into testing directory
 xASL_Copy(opts.TestDirOrig, opts.TestDirDest);    
 
+
+end
+
+
+%% Test SPM
+function xASL_test_TestSPM(opts,x)
+
+x.settings.Quality = false;
+% Find the first directory and copy out the first T1 and ASL just for SPM testing
+
+Dlist = xASL_adm_GetFileList(opts.TestDirDest,'^.*$','List',[0 Inf], true);
+
+if opts.testDataUsed
+    % TestDataSet detected
+    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
+    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
+else
+    % Default
+    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'001DM_1','T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
+    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'001DM_1','ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
+end
+
+% Read Nifti files
+try
+    xASL_io_ReadNifti(fullfile(opts.TestDirDest,'ASL4D.nii'));
+    xASL_io_ReadNifti(fullfile(opts.TestDirDest,'T1.nii'));
+catch
+    error('ASL and T1 data set import failed...')
+end
+
+
+
+% Test spm_realign on low quality
+matlabbatch = [];
+matlabbatch{1}.spm.spatial.realign.write.data               = {fullfile(opts.TestDirDest,'ASL4D.nii')};
+matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
+matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 0; % low quality
+matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
+matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
+matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
+spm_jobman('run',matlabbatch);
+
+
+% Test spm_reslice on low quality
+xASL_spm_reslice(fullfile(opts.TestDirDest,'ASL4D.nii'), fullfile(opts.TestDirDest,'T1.nii'), [], [], 0);
+
+% Test spm_smooth on low quality (small kernel)
+xASL_spm_smooth(fullfile(opts.TestDirDest,'rT1.nii'), [2 2 2], fullfile(opts.TestDirDest,'rsT1.nii'));
+
+% Test coreg on low quality
+matlabbatch = [];
+matlabbatch{1}.spm.spatial.coreg.estimate.ref = {fullfile(opts.TestDirDest,'ASL4D.nii,1')};
+matlabbatch{1}.spm.spatial.coreg.estimate.source = {fullfile(opts.TestDirDest,'rT1.nii,1')};
+matlabbatch{1}.spm.spatial.coreg.estimate.other = {''};
+matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'mi';
+matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = 9;
+matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
+matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
+spm_jobman('run',matlabbatch);
+
+% Test CAT12
+matlabbatch = [];
+SPMTemplateNII    = fullfile(x.opts.MyPath,'External','SPMmodified', 'tpm', 'TPM.nii');
+[~,catVer] = cat_version();
+if str2double(catVer) > 1500
+    catTempDir = 'templates_volumes';
+else
+    catTempDir = 'templates_1.50mm';
+end
+matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm              = {SPMTemplateNII};
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 0; % low quality
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0; % low quality
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % low quality
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 6; % low quality
+matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = eps; % low quality
+matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 9;   % low quality
+matlabbatch{1}.spm.tools.cat.estwrite.data                  = {fullfile(opts.TestDirDest,'T1.nii')}; % T1.nii
+matlabbatch{1}.spm.tools.cat.estwrite.nproc                 = 0;
+matlabbatch{1}.spm.tools.cat.estwrite.opts.affreg           = 'mni'; % regularize affine registration for MNI European brains
+matlabbatch{1}.spm.tools.cat.estwrite.output.surface        = 0;   % don't do surface modeling
+matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
+matlabbatch{1}.spm.tools.cat.estwrite.output.GM.native      = 0;   % save c1T1 in native space
+matlabbatch{1}.spm.tools.cat.estwrite.output.GM.mod         = 0;   % don't save modulation
+matlabbatch{1}.spm.tools.cat.estwrite.output.GM.dartel      = 0;   % don't save DARTEL space c1T1, this happens below in the reslice part
+matlabbatch{1}.spm.tools.cat.estwrite.output.WM.native      = 0;   % save c2T1 in native space
+matlabbatch{1}.spm.tools.cat.estwrite.output.WM.mod         = 0;   % don't save modulation
+matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel      = 0;   % don't save DARTEL space c2T1, this happens below in the reslice part
+matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
+matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
+matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
+spm_jobman('run',matlabbatch);
+
+% Test deformations after CAT12
+xASL_Copy(fullfile(opts.TestDirDest,'mri','y_T1.nii'), fullfile(opts.TestDirDest,'y_T1.nii'));
+matlabbatch = [];
+matlabbatch{1}.spm.util.defs.comp{1}.def = {fullfile(opts.TestDirDest,'y_T1.nii')};
+matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(opts.TestDirDest,'rT1.nii')};
+matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.savesrc = 1;
+matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
+matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
+spm_jobman('run',matlabbatch);
+
+% Remove temporary derivatives
+xASL_adm_DeleteFileList(opts.TestDirDest, '.*', false, [0 Inf]);
+DirsAre = {'err' 'ASL_1' 'mri' 'report'};
+for iDir=1:length(DirsAre)
+    DirIs = fullfile(opts.TestDirDest,DirsAre{iDir});
+    xASL_adm_DeleteFileList(DirIs, '.*', true, [0 Inf]);
+    xASL_delete(DirIs);
+end
 
 end
 
