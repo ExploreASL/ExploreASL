@@ -34,7 +34,7 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
     % Add default substructs
     [x] = xASL_init_SubStructs(x);
@@ -85,9 +85,9 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
     
     if bOldFieldsDetected && bVerbose
         % Print warning and individual fields
-        fprintf('Detected and corrected deprecated fields in dataPar.json. Please modify the file accordingly:\n');
+        fprintf(2,'Detected and corrected deprecated fields in dataPar.json. Please modify the file accordingly:\n');
         for iField = 1:size(detectedFields,1)
-            fprintf('%s --> %s\n', detectedFields{iField,1}, renamedFields{iField,1});
+            fprintf(2,'%s -> %s\n', detectedFields{iField,1}, renamedFields{iField,1});
         end
     end
 

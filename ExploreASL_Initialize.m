@@ -403,6 +403,21 @@ function x = xASL_init_GetBooleansImportProcess(x)
     else
         x.opts.bLoadData = false;
     end
+    
+    % It is possible that users set bProcess to true, but don't want to run
+    % BIDS2Legacy because they already have derivatives data. If they
+    % converted their rawdata to derivatives using ExploreASL, we have the
+    % lock files and can correctly skip BIDS2Legacy. If they used another
+    % tool though, we need to skip BIDS2Legacy manually here, otherwise it
+    % crashes. We do this using the x.opts.bSkipBIDS2Legacy variable, which
+    % is false on default and will be set to true in the function
+    % xASL_imp_DetermineStructureFromRawdata if there is no rawdata. If
+    % there is correct rawdata, then xASL_imp_DetermineStructureFromRawdata
+    % should be able to determine the subject structure and BIDS2Legacy
+    % should not overwrite existing data afterwards. This is a use case for
+    % our old test data, which we want to keep for backwards compatibility
+    % and more complex use-cases.
+    x.opts.bSkipBIDS2Legacy = false;
 
 end
 

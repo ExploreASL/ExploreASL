@@ -74,7 +74,9 @@ function [x] = ExploreASL_Process(x)
     % -----------------------------------------------------------------------------
     %% 0 Run BIDS to Legacy
     x = xASL_imp_ImportInitialization(x);
-    [~, x] = xASL_init_Iteration(x,'xASL_module_BIDS2Legacy');
+    if ~x.opts.bSkipBIDS2Legacy
+        [~, x] = xASL_init_Iteration(x,'xASL_module_BIDS2Legacy');
+    end
     
     %% 0.1
     x = xASL_init_DataLoading(x);

@@ -87,23 +87,38 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
 % Copyright 2015-2021 ExploreASL
 
 
-    %% SUBJECTS
-    x.SUBJECTS = xASL_adm_GetFileList(x.modules.import.imPar.BidsRoot,[],false,[],true);
-    
-    % Remove 'sub-' from subject name if it exists
-    for iSubject=1:numel(x.SUBJECTS)
-        if regexpi(x.SUBJECTS{iSubject},'sub-')==1
-            x.SUBJECTS{iSubject} = x.SUBJECTS{iSubject}(length('sub-')+1:end);
-        end 
-    end
-    
-    %% Check if data can be loaded
-    if isempty(x.SUBJECTS)
-        warning('Unable to find subjects in BIDS rawdata directory...');
-        x.opts.bLoadData = false;
-        x.opts.bLoadableData = false;
+    %% Check if rawdata exists
+    if xASL_exist(x.dir.RawData,'dir')
+        
+        % SUBJECTS
+        x.SUBJECTS = xASL_adm_GetFileList(x.modules.import.imPar.BidsRoot,[],false,[],true);
+
+        % Remove 'sub-' from subject name if it exists
+        for iSubject=1:numel(x.SUBJECTS)
+            if regexpi(x.SUBJECTS{iSubject},'sub-')==1
+                x.SUBJECTS{iSubject} = x.SUBJECTS{iSubject}(length('sub-')+1:end);
+            end 
+        end
+
+        % Check if data can be loaded
+        if isempty(x.SUBJECTS)
+            warning('Unable to find subjects in BIDS rawdata directory...');
+            x.opts.bLoadData = false;
+            x.opts.bLoadableData = false;
+        else
+            % We can probably load the data
+            x.opts.bLoadableData = true;
+        end
+        
     else
-        % We can probably load the data
+        % Maybe a user does not have a BIDS sourcedata or rawdata directory
+        % and only runs the ExploreASL workflow on derivatives data.
+        % Maybe BIDS2Legacy is turned on, but it actually shouldn't be.
+        fprintf(2,'There is no rawdata directory...\n');
+        x.opts.bSkipBIDS2Legacy = true;
+        % We need to try to load the data anyway right now, otherwise the
+        % workflow will skip the processing for datasets without rawdata
+        % completely.
         x.opts.bLoadableData = true;
     end
 

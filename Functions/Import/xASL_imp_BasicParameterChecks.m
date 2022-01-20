@@ -57,7 +57,7 @@ function x = xASL_imp_BasicParameterChecks(x)
         % If the path is empty, then try to find studyPar.json
         fListStudyPar = xASL_adm_GetFileList(x.dir.DatasetRoot,'(?i)^studypar\.json$', 'List', [], 0);
         if length(fListStudyPar) < 1
-            warning('Could not find the studyPar.json file...');
+            fprintf(2,'Could not find the studyPar.json file...\n');
         else
             x.dir.studyPar = fullfile(x.dir.DatasetRoot,fListStudyPar{1});
         end

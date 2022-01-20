@@ -93,12 +93,15 @@ function x = xASL_init_PrintCheckSettings(x)
     else
         fprintf('\n%s\n',['M0 option selected is "' num2str(x.Q.M0) '"']);
     end
+    
+    % Get the ExploreASL text width
+    textBreakExploreASL = xASL_adm_BreakString([], [], false, 0, 0);
 
-    if length(x.D.ROOT)>71
-        fprintf('x.D.ROOT            %s ...\n', x.D.ROOT(1:70));
-        fprintf('                    ... %s\n', x.D.ROOT(71:end));
+    if length(x.D.ROOT)>length(textBreakExploreASL)
+        fprintf('x.D.ROOT  %s\n', x.D.ROOT(1:length(textBreakExploreASL)-10));
+        fprintf('          ... %s\n', x.D.ROOT(length(textBreakExploreASL)-9:end));
     else
-        fprintf('x.D.ROOT            %s\n', x.D.ROOT);
+        fprintf('x.D.ROOT  %s\n', x.D.ROOT);
     end
     fprintf('x.settings.DELETETEMP %s\n',[num2str(x.settings.DELETETEMP) ' (delete temporary files)']);
     fprintf('x.settings.Quality    %s\n',[num2str(x.settings.Quality) ' (0 = fast try-out; 1 = normal high quality)']);

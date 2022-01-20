@@ -602,9 +602,11 @@ for iList=1:length(Dlist) % iterate over example datasets
     end
 	% check if there are missing lock files
 	if exist(fullfile(AnalysisDir,'Missing_Lock_files.csv'),'file')
-		ResultsTable{1+iList,4+length(ResultFile)} = 0; % pipeline not completed
-	else
-		ResultsTable{1+iList,4+length(ResultFile)} = 1; % pipeline completed
+        % pipeline not completed
+		ResultsTable{1+iList,4+length(ResultFile)} = 0;
+    else
+        % pipeline completed
+		ResultsTable{1+iList,4+length(ResultFile)} = 1;
 	end
 	
     % Get registration performance
@@ -658,8 +660,7 @@ LogFiles = cellfun(@(y) fullfile(opts.TestDirDest,y,'log','xASL_module_Populatio
 for iList=1:length(Dlist)
     
     % Get files and directories
-    AnalysisDir = fullfile(opts.TestDirDest,Dlist{iList});
-    DataParFile{iList} = xASL_adm_GetFileList(AnalysisDir,'(?i)dat.*\.(m|json)');
+    dirBIDS = fullfile(opts.TestDirDest,Dlist{iList});
     
     % Useful for rerun when debugging
     xASL_delete(LogFiles{iList});
@@ -668,12 +669,11 @@ for iList=1:length(Dlist)
     ScreenName = ['TestxASL_' num2str(iList)];
     
     % Check if dataset exists
-    if ~isempty(DataParFile{iList})
+    if ~isempty(dirBIDS)
         try
-            error('We need to convert the test datasets to a BIDS and run the following line with the dataset root path instead!');
-            xASL_test_IndividualTestdataset(opts,x,DataParFile,iList,ScreenName);
+            xASL_test_IndividualTestdataset(opts,x,dirBIDS,ScreenName);
         catch ME
-            warning('Something went wrong: %s', ME.message);
+            warning(ME.identifier, 'Something went wrong: %s', ME.message);
         end
     end
 end
@@ -683,7 +683,7 @@ end
 
 
 %% Test one individual test dataset
-function xASL_test_IndividualTestdataset(opts,x,DataParFile,iList,ScreenName)
+function xASL_test_IndividualTestdataset(opts,x,dirBIDS,ScreenName)
 
 % Run ExploreASL
 cd(x.opts.MyPath);
@@ -692,24 +692,24 @@ cd(x.opts.MyPath);
 if opts.RunMethod>2
     [Fpath, Ffile, Fext] = fileparts(opts.MatlabPath);
     if isunix
-        CompilationString = ['cd ' Fpath ';bash ' Ffile Fext ' ' opts.RunTimePath ' ' DataParFile{iList}{1}];
+        CompilationString = ['cd ' Fpath ';bash ' Ffile Fext ' ' opts.RunTimePath ' ' dirBIDS];
     else
-        CompilationString = ['cd ' Fpath '; ' Ffile Fext ' ' opts.RunTimePath ' ' DataParFile{iList}{1}];
+        CompilationString = ['cd ' Fpath '; ' Ffile Fext ' ' opts.RunTimePath ' ' dirBIDS];
     end
 end
 
 switch opts.RunMethod
     case 1
         % Run ExploreASL serially (can we run screen from here? or run matlab in background, linux easy)
-        ExploreASL(DataParFile{iList}{1}, 0, 0, 1, false);
+        ExploreASL(dirBIDS, 0, 0, 1, false);
     case 2
         % Run ExploreASl parallel (start new MATLAB instances)
         if isunix
             ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' opts.MatlabPath ' -nodesktop -nosplash -r '];
-            RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' DataParFile{iList}{1} ''',0,0,1,0);system([''screen -SX ' ScreenName ' kill'']);"'];
+            RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' dirBIDS ''',0,0,1,0);system([''screen -SX ' ScreenName ' kill'']);"'];
         else
             ScreenString = [opts.MatlabPath ' -nodesktop -nosplash -r '];
-            RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' DataParFile{iList}{1} ''',0,0,1,0);system([''exit'']);"'];
+            RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' dirBIDS ''',0,0,1,0);system([''exit'']);"'];
         end
         system([ScreenString RunExploreASLString ' &']);
     case 3
