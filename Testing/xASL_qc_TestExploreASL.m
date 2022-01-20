@@ -47,13 +47,12 @@ function [ResultsTable] = xASL_qc_TestExploreASL(varargin)
 %              This function performs the following steps:
 %
 %              1. Pull latest GitHub version
-%              2. Initialize SPM
-%              3. Copy all data for testing
-%              4. Test standalone SPM on low quality
-%              5. Test ExploreASL itself
-%              6. Pause until all results exist (if running parallel in background)
-%              7. Compile results table
-%              8. Compare table with reference table
+%              2. Copy all data for testing
+%              3. Initialize & test standalone SPM on low quality
+%              4. Test ExploreASL itself
+%              5. Pause until all results exist (if running parallel in background)
+%              6. Compile results table
+%              7. Compare table with reference table
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
@@ -79,7 +78,9 @@ opts = xASL_test_ValidateInput(varargin{:});
 
 % ============================================================
 %% 1) Pull latest GitHub version
-% assuming we are in ExploreASL folder
+xASL_adm_BreakString('1. Update ExploreASL','=');
+
+% Assuming we are in ExploreASL folder
 if opts.bPull
     xASL_system('git fetch');
     xASL_system('git pull');
@@ -87,48 +88,33 @@ end
 
 % Initialize ExploreASL
 x = ExploreASL;
-clc;
 
 % ============================================================
-%% 2) Initialize SPM
-
-% Reset path
-path(pathdef);
-
-% Remove ExploreASL paths
-warning('off','MATLAB:rmpath:DirNotFound');
-rmpath(genpath(x.opts.MyPath));
-warning('on','MATLAB:rmpath:DirNotFound');
-
-% Add SPM path
-addpath(fullfile(x.opts.MyPath,'External','SPMmodified'));
-
-% Initialize SPM, but only SPM
-spm('defaults','FMRI');
-spm('asciiwelcome');
-spm_jobman('initcfg');
-spm_get_defaults('cmdline',true);
-
-% ============================================================
-%% 3) Copy all data for testing
+%% 2) Copy all data for testing
+xASL_adm_BreakString('2. Copy the test data','=');
 
 % Ask for directories if they were not defined
 xASL_test_CopyTestData(opts);
 
 % ============================================================
-%% 4) Test standalone SPM on low quality
+%% 3) Initialize & test standalone SPM on low quality
+xASL_adm_BreakString('3. Initialize & test standalone SPM','=');
 if opts.bTestSPM
     xASL_test_TestSPM(opts,x);
 end
 
 % ============================================================
-%% 5) Test ExploreASL itself
-[Dlist,LogFiles] = xASL_test_TestAllTestdatasets(opts);
+%% 4) Test ExploreASL itself
+
+% Here we return the ExploreASL paths, which we removed above for testing SPM
+x = ExploreASL;
+xASL_adm_BreakString('4. Test ExploreASL','=');
+[Dlist,LogFiles] = xASL_test_TestAllTestdatasets(opts,x);
 
 % ============================================================
-%% 6) Pause until all results exist (if running parallel in background)
+%% 5) Pause until all results exist (if running parallel in background)
+xASL_adm_BreakString('5. Pause','=');
 if opts.RunMethod==2 || opts.RunMethod==4
-
     CountTime = 0;
     TimeStepSeconds = 30;
     fprintf(xASL_adm_ConvertSeconds2TimeString(CountTime));
@@ -143,12 +129,14 @@ if opts.RunMethod==2 || opts.RunMethod==4
 end
 
 % ============================================================
-%% 7) Compile results table
-[ResultsTable,SaveFile] = xASL_test_DetermineResultsTable(opts,Dlist);
+%% 6) Compile results table
+xASL_adm_BreakString('6. Compile results table','=');
+[ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(opts,Dlist);
 
 
 % ============================================================
-%% 8) Compare table with reference table
+%% 7) Compare table with reference table
+xASL_adm_BreakString('7. Compare with reference table','=');
 
 % Comparison with tsv file
 [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(fullfile(x.opts.MyPath,'Testing','Reference','ReferenceValues.tsv'));
@@ -341,6 +329,23 @@ end
 %% Test SPM
 function xASL_test_TestSPM(opts,x)
 
+% Reset path
+path(pathdef);
+
+% Remove ExploreASL paths
+warning('off','MATLAB:rmpath:DirNotFound');
+rmpath(genpath(x.opts.MyPath));
+warning('on','MATLAB:rmpath:DirNotFound');
+
+% Add SPM path
+addpath(fullfile(x.opts.MyPath,'External','SPMmodified'));
+
+% Initialize SPM, but only SPM
+spm('defaults','FMRI');
+spm('asciiwelcome');
+spm_jobman('initcfg');
+spm_get_defaults('cmdline',true);
+
 x.settings.Quality = false;
 % Find the first directory and copy out the first T1 and ASL just for SPM testing
 
@@ -527,7 +532,7 @@ end
 
 
 %% Determine the results table
-function [ResultsTable,SaveFile] = xASL_test_DetermineResultsTable(opts,Dlist)
+function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(opts,Dlist)
 
 % Define results table name & fields
 ResultTableName = datestr(now,'yyyy-mm-dd_HH_MM');
@@ -627,10 +632,7 @@ end
 
 
 %% Test all individual test datasets
-function [Dlist,LogFiles] = xASL_test_TestAllTestdatasets(opts)
-
-% Here we return the ExploreASL paths, which we removed above for testing SPM
-x = ExploreASL;
+function [Dlist,LogFiles] = xASL_test_TestAllTestdatasets(opts,x)
 
 % Remove lock folders, useful for rerun when debugging
 LockFolders = xASL_adm_GetFileList(opts.TestDirDest, '(?i)^locked$', 'FPListRec', [0 Inf], true);
@@ -668,6 +670,7 @@ for iList=1:length(Dlist)
     % Check if dataset exists
     if ~isempty(DataParFile{iList})
         try
+            error('We need to convert the test datasets to a BIDS and run the following line with the dataset root path instead!');
             xASL_test_IndividualTestdataset(opts,x,DataParFile,iList,ScreenName);
         catch ME
             warning('Something went wrong: %s', ME.message);
