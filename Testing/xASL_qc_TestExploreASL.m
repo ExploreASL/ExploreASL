@@ -72,13 +72,13 @@ else
 end
 
 % Validate the input options
-[opts, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, testDataUsed, RunTimePath, bPull] = xASL_test_ValidateInput(varargin{:});
+opts = xASL_test_ValidateInput(varargin{:});
 
 
 % ============================================================
 %% 1) Pull latest GitHub version
 % assuming we are in ExploreASL folder
-if bPull
+if opts.bPull
     xASL_system('git fetch');
     xASL_system('git pull');
 end
@@ -113,14 +113,14 @@ xASL_test_CopyTestData(opts);
 
 % ============================================================
 %% 4) Test standalone SPM on low quality
-if bTestSPM
+if opts.bTestSPM
 
     x.settings.Quality = false;
     % Find the first directory and copy out the first T1 and ASL just for SPM testing
 
     Dlist = xASL_adm_GetFileList(opts.TestDirDest,'^.*$','List',[0 Inf], true);
     
-    if testDataUsed
+    if opts.testDataUsed
         % TestDataSet detected
         xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
         xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
@@ -234,7 +234,7 @@ if ~isempty(LockFolders)
 end
 
 % Evaluate parallelization in linux
-if isunix && (RunMethod==2 || RunMethod==4)
+if isunix && (opts.RunMethod==2 || opts.RunMethod==4)
     [Result1, Result2] = system('screen -dmS TryOut exit');
     if Result1~=0
         warning('Please install screen for testing ExploreASL parallel in a mac/linux');
@@ -258,24 +258,24 @@ for iList=1:length(Dlist)
             % Run ExploreASL
             cd(x.opts.MyPath);
             
-            if RunMethod>2 % prepare compilation testing
-                [Fpath, Ffile, Fext] = fileparts(MatlabPath);
+            if opts.RunMethod>2 % prepare compilation testing
+                [Fpath, Ffile, Fext] = fileparts(opts.MatlabPath);
                 if isunix
-                    CompilationString = ['cd ' Fpath ';bash ' Ffile Fext ' ' RunTimePath ' ' DataParFile{iList}{1}];
+                    CompilationString = ['cd ' Fpath ';bash ' Ffile Fext ' ' opts.RunTimePath ' ' DataParFile{iList}{1}];
                 else
-                    CompilationString = ['cd ' Fpath '; ' Ffile Fext ' ' RunTimePath ' ' DataParFile{iList}{1}];
+                    CompilationString = ['cd ' Fpath '; ' Ffile Fext ' ' opts.RunTimePath ' ' DataParFile{iList}{1}];
                 end
             end
             
-            switch RunMethod
+            switch opts.RunMethod
                 case 1 % run ExploreASL serially
                     ExploreASL(DataParFile{iList}{1}, 0, 0, 1, false); % can we run screen from here? or run matlab in background, linux easy
                 case 2 % run ExploreASl parallel (start new MATLAB instances)
                     if isunix
-                        ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
+                        ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' opts.MatlabPath ' -nodesktop -nosplash -r '];
                         RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' DataParFile{iList}{1} ''',0,0,1,0);system([''screen -SX ' ScreenName ' kill'']);"'];
                     else
-                        ScreenString = [MatlabPath ' -nodesktop -nosplash -r '];
+                        ScreenString = [opts.MatlabPath ' -nodesktop -nosplash -r '];
                         RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' DataParFile{iList}{1} ''',0,0,1,0);system([''exit'']);"'];
                     end
                     system([ScreenString RunExploreASLString ' &']);
@@ -303,7 +303,7 @@ end
 
 % ============================================================
 %% 6) Pause until all results exist (if running parallel in background)
-if RunMethod==2 || RunMethod==4
+if opts.RunMethod==2 || opts.RunMethod==4
 
     CountTime = 0;
     TimeStepSeconds = 30;
@@ -456,7 +456,7 @@ try
     
     % ============================================================
     %% 9) E-mail results
-    if ~isempty(EmailAddress)
+    if ~isempty(opts.EmailAddress)
         % First convert table to string to send by e-mail
         NewTable{1,1} = 'mean_qCBF_TotalGM     median_qCBF_TotalGM     median_qCBF_DeepWM     CoV_qCBF_TotalGM             GMvol                 WMvol                 CSFvol             PipelineCompleted     TC_ASL_Registration    TC_M0_Registration';
         SingleEmptyString1 = repmat(' ',[1 44]);  
@@ -480,9 +480,9 @@ try
         % See here: https://nl.mathworks.com/help/matlab/import_export/sending-email.html
         fprintf('Sending e-mail with results\n');
         setpref('Internet', 'SMTP_Server', 'smtp.gmail.com');
-        setpref('Internet', 'E_mail', EmailAddress);
-        setpref('Internet', 'SMTP_Username', EmailAddress);
-        setpref('Internet', 'SMTP_Password', Password);
+        setpref('Internet', 'E_mail', opts.EmailAddress);
+        setpref('Internet', 'SMTP_Username', opts.EmailAddress);
+        setpref('Internet', 'SMTP_Password', opts.Password);
         props = java.lang.System.getProperties;
         props.setProperty('mail.smtp.auth','true');
         props.setProperty('mail.smtp.starttls.enable', 'true');
@@ -523,7 +523,7 @@ end
 
 
 %% Validate test input options
-function [opts, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, testDataUsed, RunTimePath, bPull] = xASL_test_ValidateInput(varargin)
+function opts = xASL_test_ValidateInput(varargin)
 
 % Set-up the input parser
 p = inputParser;
@@ -545,22 +545,12 @@ addOptional(p, 'bPull', 1, @(variable) isempty(variable) || isnumeric(variable))
 parse(p,varargin{:});
 opts = p.Results;
 
-% Store parsed input
-RunMethod = opts.RunMethod;
-bTestSPM = opts.bTestSPM;
-MatlabPath = opts.MatlabPath;
-EmailAddress = opts.EmailAddress;
-Password = opts.Password;
-testDataUsed = opts.testDataUsed;
-RunTimePath = opts.RunTimePath;
-bPull = opts.bPull;
-
 % Check Matlab path and Runtime path for corresponding run method
-if RunMethod>2
-    if isempty(MatlabPath) || ~exist(MatlabPath, 'file') || ~strcmp(MatlabPath(end-2:end),'.sh')
+if opts.RunMethod>2
+    if isempty(opts.MatlabPath) || ~exist(opts.MatlabPath, 'file') || ~strcmp(opts.MatlabPath(end-2:end),'.sh')
         warning('Please provide the path to the bash script calling the compiled ExploreASL, skipping');
         return;
-    elseif nargin<10 || isempty(RunTimePath) || ~exist(RunTimePath, 'dir')
+    elseif nargin<10 || isempty(opts.RunTimePath) || ~exist(opts.RunTimePath, 'dir')
         warning('Please provide the path to the Matlab Runtime installation, skipping');
         return;        
     end
