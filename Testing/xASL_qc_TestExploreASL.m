@@ -1,4 +1,4 @@
-function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath, bPull)
+function [ResultsTable] = xASL_qc_TestExploreASL(varargin)
 %xASL_qc_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
 %
 % FORMAT: [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, RunMethod)
@@ -63,52 +63,17 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 
 % ============================================================
 %% Admin
+
 % Run ExploreASL to get directories
 if isempty(which('ExploreASL'))
     cd ..;
 else
     cd(fileparts(which('ExploreASL')));
 end
-if nargin<3
-    RunMethod = 1; % Set 'serial' to be default
-end
-if nargin<4 || isempty(bTestSPM)
-    bTestSPM = true;
-end
-if nargin<5 || isempty(MatlabPath)
-    MatlabPath = 'matlab';
-end
-if nargin<6 || isempty(EmailAddress)
-    EmailAddress = [];
-    Password = [];
-end
 
-if ~isempty(EmailAddress) && (nargin<7 || isempty(Password))
-    warning('Please provide password for g-mail account!');
-end
+% Validate the input options
+[TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath, bPull] = xASL_test_ValidateInput(varargin{:});
 
-if nargin<8 || isempty(bOverwrite)
-    bOverwrite = true;
-end
-
-if nargin<9 || isempty(testDataUsed)
-    testDataUsed = 0;
-end
-
-if RunMethod>2
-    % We will test the compiled version, but do some checks first
-    if isempty(MatlabPath) || ~exist(MatlabPath, 'file') || ~strcmp(MatlabPath(end-2:end),'.sh')
-        warning('Please provide the path to the bash script calling the compiled ExploreASL, skipping');
-        return;
-    elseif nargin<10 || isempty(RunTimePath) || ~exist(RunTimePath, 'dir')
-        warning('Please provide the path to the Matlab Runtime installation, skipping');
-        return;        
-    end
-end
-
-if nargin<11 || isempty(bPull)
-	bPull = 1;
-end
 
 % ============================================================
 %% 1) Pull latest GitHub version
@@ -120,7 +85,6 @@ end
 
 % Initialize ExploreASL
 x = ExploreASL;
-
 clc;
 
 % ============================================================
@@ -145,32 +109,7 @@ spm_get_defaults('cmdline',true);
 %% 3) Copy all data for testing
 
 % Ask for directories if they were not defined
-if ~exist('TestDirDest','var'), TestDirDest = uigetdir(pwd, 'Select testing directory...'); end
-if ~exist('TestDirOrig','var'), TestDirOrig = uigetdir(pwd, 'Select datasets for testing...'); end
-
-% Clone testdataset repository if not detected
-if ~exist(TestDirOrig, 'dir')
-    TestDirRoot = fileparts(TestDirOrig);
-    TestDataSetRepository = 'https://github.com/ExploreASL/TestDataSets.git';
-    fprintf('%s\n', ['TestDataSet repository not found in: ' TestDirRoot]);
-    fprintf('%s\n', ['Attempting to clone: ' TestDataSetRepository]);
-    xASL_system(['cd ' TestDirRoot]);
-    xASL_system(['git clone ' TestDataSetRepository]);
-end
-
-% Remove previous results
-if bOverwrite && exist(TestDirDest,'dir')
-    fprintf('Deleting previous results...\n');
-    if ispc
-        system(['rmdir /s /q ' TestDirDest]);
-    else
-        system(['rm -rf ' xASL_adm_UnixPath(TestDirDest)]);
-    end
-end
-% Copy data sets into testing directory
-xASL_Copy(TestDirOrig, TestDirDest);    
-
-
+xASL_test_CopyTestData(TestDirDest,TestDirOrig,bOverwrite);
 
 % ============================================================
 %% 4) Test standalone SPM on low quality
@@ -582,7 +521,59 @@ function [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(pathRefTable)
 
 end
 
-% Compare Results and Reference Tables
+
+%% Validate test input options
+function [TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath, bPull] = xASL_test_ValidateInput(varargin)
+
+% Set-up the input parser
+p = inputParser;
+
+% Add definitions to the input parser
+addOptional(p, 'TestDirOrig', [], @(variable) ischar(variable) || isempty(variable));
+addOptional(p, 'TestDirDest', [], @(variable) ischar(variable) || isempty(variable));
+addOptional(p, 'RunMethod', 1, @(variable) isempty(variable) || isnumeric(variable));
+addOptional(p, 'bTestSPM', true, @(variable) isempty(variable) || isnumeric(variable));
+addOptional(p, 'MatlabPath', 'matlab', @(variable) ischar(variable) || isempty(variable));
+addOptional(p, 'EmailAddress', [], @(variable) ischar(variable) || isempty(variable));
+addOptional(p, 'Password', [], @(variable) ischar(variable) || isempty(variable));
+addOptional(p, 'bOverwrite', true, @(variable) isempty(variable) || isnumeric(variable));
+addOptional(p, 'testDataUsed', 0, @(variable) isempty(variable) || isnumeric(variable));
+addOptional(p, 'RunTimePath', [], @(variable) ischar(variable) || isempty(variable));
+addOptional(p, 'bPull', 1, @(variable) isempty(variable) || isnumeric(variable));
+
+% Parse input
+parse(p,varargin{:});
+opts = p.Results;
+
+% Store parsed input
+TestDirOrig = opts.TestDirOrig;
+TestDirDest = opts.TestDirDest;
+RunMethod = opts.RunMethod;
+bTestSPM = opts.bTestSPM;
+MatlabPath = opts.MatlabPath;
+EmailAddress = opts.EmailAddress;
+Password = opts.Password;
+bOverwrite = opts.bOverwrite;
+testDataUsed = opts.testDataUsed;
+RunTimePath = opts.RunTimePath;
+bPull = opts.bPull;
+
+% Check Matlab path and Runtime path for corresponding run method
+if RunMethod>2
+    if isempty(MatlabPath) || ~exist(MatlabPath, 'file') || ~strcmp(MatlabPath(end-2:end),'.sh')
+        warning('Please provide the path to the bash script calling the compiled ExploreASL, skipping');
+        return;
+    elseif nargin<10 || isempty(RunTimePath) || ~exist(RunTimePath, 'dir')
+        warning('Please provide the path to the Matlab Runtime installation, skipping');
+        return;        
+    end
+end
+
+
+end
+
+
+%% Compare Results and Reference Tables
 function ResultsComparison = xASL_qc_CompareTables(ReferenceTable,ResultsTable)
 
     % Compare tables (skip first row)
@@ -646,6 +637,42 @@ function ResultsComparison = xASL_qc_CompareTables(ReferenceTable,ResultsTable)
         end
     end
 
+
+
+end
+
+
+%% Copy the test data
+function xASL_test_CopyTestData(TestDirDest,TestDirOrig,bOverwrite)
+
+if isempty(TestDirDest)
+    TestDirDest = uigetdir(pwd, 'Select testing directory...');
+end
+if isempty(TestDirOrig)
+    TestDirOrig = uigetdir(pwd, 'Select datasets for testing...');
+end
+
+% Clone testdataset repository if not detected
+if ~xASL_exist(TestDirOrig, 'dir')
+    TestDirRoot = fileparts(TestDirOrig);
+    TestDataSetRepository = 'https://github.com/ExploreASL/TestDataSets.git';
+    fprintf('%s\n', ['TestDataSet repository not found in: ' TestDirRoot]);
+    fprintf('%s\n', ['Attempting to clone: ' TestDataSetRepository]);
+    xASL_system(['cd ' TestDirRoot]);
+    xASL_system(['git clone ' TestDataSetRepository]);
+end
+
+% Remove previous results
+if bOverwrite && exist(TestDirDest,'dir')
+    fprintf('Deleting previous results...\n');
+    if ispc
+        system(['rmdir /s /q ' TestDirDest]);
+    else
+        system(['rm -rf ' xASL_adm_UnixPath(TestDirDest)]);
+    end
+end
+% Copy data sets into testing directory
+xASL_Copy(TestDirOrig, TestDirDest);    
 
 
 end
