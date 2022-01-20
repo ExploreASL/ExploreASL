@@ -12,8 +12,7 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %                 FUTURE Option 3 = run ExploreASL compilation serially
 %                 FUTURE Option 4 = run ExploreASL compilation parallel
 %   bTestSPM    - boolean for testing if SPM standalone with xASL modifications works (DEFAULT=true)
-%   MatlabPath  - path to matlab executable or compilation bash script (OPTIONAL, required in some 
-%                 cases)
+%   MatlabPath  - path to matlab executable or compilation bash script (OPTIONAL, required in some cases)
 %   EmailAddress- string with e-mail address for gmail account to use (OPTIONAL, DEFAULT = skip e-mailing results)
 %   Password    - string with password for this gmail account (REQUIRED when EmailAddress provided)
 %   bOverwrite  - Overwrite existing test results (OPTIONAL, DEFAULT=true);
@@ -60,9 +59,7 @@ function [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 % EXAMPLE for Henk on MacOS: [ResultsTable] = xASL_qc_TestExploreASL('/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases', '/Users/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed', 1, 0,[],'henkjanmutsaerts@gmail.com');
 % EXAMPLE for VUmc server: [ResultsTable] = xASL_qc_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
-% ToDo: split this function in subfunctions, each function/subfunction
-% should be short, making it easier to read what this function does
+% Copyright (c)2015-2022 ExploreASL
 
 % ============================================================
 %% Admin
@@ -333,14 +330,14 @@ for iList=1:length(Dlist)
             
             switch RunMethod
                 case 1 % run ExploreASL serially
-                    ExploreASL(DataParFile{iList}{1}, 0, 1, false); % can we run screen from here? or run matlab in background, linux easy
+                    ExploreASL(DataParFile{iList}{1}, 0, 0, 1, false); % can we run screen from here? or run matlab in background, linux easy
                 case 2 % run ExploreASl parallel (start new MATLAB instances)
                     if isunix
                         ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
-                        RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' DataParFile{iList}{1} ''',0,1,0);system([''screen -SX ' ScreenName ' kill'']);"'];
+                        RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' DataParFile{iList}{1} ''',0,0,1,0);system([''screen -SX ' ScreenName ' kill'']);"'];
                     else
                         ScreenString = [MatlabPath ' -nodesktop -nosplash -r '];
-                        RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' DataParFile{iList}{1} ''',0,1,0);system([''exit'']);"'];
+                        RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' DataParFile{iList}{1} ''',0,0,1,0);system([''exit'']);"'];
                     end
                     system([ScreenString RunExploreASLString ' &']);
                 case 3 % run ExploreASL compilation serially

@@ -14,7 +14,7 @@ function UnitTest = xASL_ut_function_xASL_wrp_BIDS2Legacy(TestRepository)
 %
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_wrp_BIDS2Legacy(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
 %% Test run 1
@@ -34,12 +34,8 @@ sessionNum = '_1';
 % Copy test data to working directory
 xASL_Copy(droTestPatientSource,droTestPatient);
 
-% Initialize
-x = ExploreASL(droTestPatient,0,0);
-x.SUBJECT = '001';
-
-% Run BIDS2Legacy
-xASL_wrp_BIDS2Legacy(x);
+% Initialize & run BIDS2Legacy
+x = ExploreASL(droTestPatient, 0, 0, 0);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -107,28 +103,24 @@ droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test
 % Copy test data to working directory
 xASL_Copy(droTestPatientSource,droTestPatient);
 
-% Initialize
-x = ExploreASL(droTestPatient,0,0);
-x.SUBJECT = '001';
-
-% Run BIDS2Legacy
-xASL_wrp_BIDS2Legacy(x);
-
 % The dataPar.json is not created for each subject anymore, which is why it
 % was moved out of BIDS2Legacy. We need to create it manually here.
 dataParJSON.x.dataset.subjectRegexp = '^sub-.*$';
 dataParJSON.x.settings.Quality = 1;
+xASL_adm_CreateDir(fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0','derivatives','ExploreASL'));
+fclose('all');
 spm_jsonwrite(fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0','derivatives','ExploreASL','dataPar.json'),dataParJSON);
 
-% Initialize dataset
+% Initialize & run BIDS2Legacy
 try
-    x = ExploreASL(droTestPatient, 0, 0);
+    x = ExploreASL(droTestPatient, 0, 0, 0);
 catch
     x = false;
 end
 
 % Define one or multiple test conditions here
-testCondition = true; % Fallback
+testCondition = true;
+
 if ~exist(fullfile(droTestPatient,'derivatives'),'dir')
     testCondition = false; % Test failed
 end

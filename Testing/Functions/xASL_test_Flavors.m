@@ -33,7 +33,7 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
 % EXAMPLE:     flavors = xASL_test_Flavors(testConfig, [1 0 0 0 0 0 0], x, flavors);
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% 0. Admin and initialization
@@ -64,7 +64,7 @@ function flavors = xASL_test_Flavors(testConfig, bTest, x, flavors)
             cd(testConfig.pathExploreASL);
         end
         % Initialize ExploreASL
-        ExploreASL_Initialize;
+        ExploreASL;
         cd(thisDirectory);
     end
     

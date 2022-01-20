@@ -30,7 +30,7 @@ pathTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','Pat
 xASL_Copy(fullfile(TestRepository,'UnitTesting','dro_files','2_00_ASL_Module','Patient'), pathTestPatient);
 
 % Run your test here
-x = ExploreASL(pathTestPatient,0,[0 0 1]);
+x = ExploreASL(pathTestPatient,0,0,[0 0 1]);
 
 % Define one or multiple test conditions here
 testCondition = true;
