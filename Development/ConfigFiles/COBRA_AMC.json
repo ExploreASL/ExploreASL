@@ -1,9 +1,0 @@
-{"studyID":"COBRA_AMC",
-"AnalysisRoot":"",
-"RawRoot":"/scratch/mwcaan/AgeIV/asl",
-"folderHierarchy":["CNS_(\\d{3}_..._\\d)$","^scans$","^\\d+_(T1|ASL)$","^DICOM$"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^ASL$","ASL4D","^T1$","T1"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["",""],
-"bMatchDirectories":true}

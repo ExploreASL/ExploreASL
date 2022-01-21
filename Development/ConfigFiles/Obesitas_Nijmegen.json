@@ -1,9 +1,0 @@
-{"studyID":"Obesitas_Nijmegen",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["(.*)",".*",".*(t1|t2_FLAIR|asl_2d)"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^asl_2d$","ASL4D","^t1$","T1","^t2_FLAIR$","FLAIR"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":[],
-"bMatchDirectories":true}

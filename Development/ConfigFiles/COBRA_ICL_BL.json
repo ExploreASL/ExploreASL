@@ -1,9 +1,0 @@
-{"studyID":"COBRA_ICL_BL",
-"AnalysisRoot":"",
-"RawRoot":"\\home\\pfcgroot\\lood_storage\\divi\\Projects\\ageiv\\MRI\\raw\\COBRA\\ICL_baseline\\DICOM",
-"folderHierarchy":["^COB_I(\\d{3})_v1$","^scans$","^.*(MPRAGE|pasl).*$","^resources$","^DICOM$","^files$"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^pasl$","ASL4D","^MPRAGE$","T1"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["",""],
-"bMatchDirectories":true}

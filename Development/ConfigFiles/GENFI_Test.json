@@ -1,9 +1,0 @@
-{"studyID":"GENFI_Test",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(.*_C9ORF.*)$","^.*(ASL|M0).*$"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^ASL$","ASL4D","^T1$","T1","^T2$","FLAIR","^M0$","M0"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":[],
-"bMatchDirectories":true}

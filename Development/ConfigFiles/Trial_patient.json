@@ -1,9 +1,0 @@
-{"studyID":"Trial_patient",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(Subj\\d{3}).*","^Session([12])$","^(ASL|M|T1|FLAIR).*$"],
-"tokenOrdering":[1,2,3],
-"tokenScanAliases":["^ASL$","ASL4D","^M*$","M0","^T1_*$","T1","^FLAIR$","FLAIR"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["^1$","ASL_1","^2$","ASL_2"],
-"bMatchDirectories":true}

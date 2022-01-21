@@ -1,9 +1,0 @@
-{"studyID":"RACE5_Siemens",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(Subject)",".*(T1w|ASL|FLAIR|M0)(_\\d|).*"],
-"tokenOrdering":[1,0,3,2],
-"tokenScanAliases":["^T1w$","T1","^FLAIR$","FLAIR","^M0$","M0","ASL","ASL4D"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["^(_1|)$","_1","^2$","_2"],
-"bMatchDirectories":true}

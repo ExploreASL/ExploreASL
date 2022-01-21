@@ -1,9 +1,0 @@
-{"studyID":"WRAP",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^.*$","^(wrap_00\\d{2})_WIP_.*(pcasl|T1|M0).*\\.PAR$"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^pcasl$","ASL4D","^T1$","T1","^M0$","M0"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["",""],
-"bMatchDirectories":false}

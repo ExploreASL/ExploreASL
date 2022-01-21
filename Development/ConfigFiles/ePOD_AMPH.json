@@ -1,9 +1,0 @@
-{"studyID":"ePOD_AMPH",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(session1)$","^(ASL)$","^AMPHMRI_(\\d{3})_WIP.*PCASL.*\\.PAR$"],
-"tokenOrdering":[3,1,2],
-"tokenScanAliases":["^ASL$","ASL4D"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["^session1$","ASL_1"],
-"bMatchDirectories":false}

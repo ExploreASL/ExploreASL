@@ -1,9 +1,0 @@
-{"studyID":"Parelsnoer_ASL_HJ",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^\\d{3}$","^(\\d{3}.*)$","^.*(ASL|T1)$"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^ASL$","ASL4D","^T1$","T1"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["",""],
-"bMatchDirectories":true}

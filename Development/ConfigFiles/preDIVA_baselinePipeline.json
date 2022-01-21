@@ -1,9 +1,0 @@
-{"studyID":"preDIVA_baselinePipeline",
-"AnalysisRoot":"",
-"RawRoot":"L:\\basic\\divi\\Projects\\prediva\\DICOM",
-"folderHierarchy":["^\\d{8}_(\\d{6})$","(flair|ADNI)"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^flair$","FLAIR","^ADNI$","T1"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["",""],
-"bMatchDirectories":true}

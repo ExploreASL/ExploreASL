@@ -1,9 +1,0 @@
-{"studyID":"INOX2",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^INOX(\\d{5})$","^(0007|0008|0015)$"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^0007$","T1","^0007$","T1","^0015$","T1"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":[""],
-"bMatchDirectories":true}

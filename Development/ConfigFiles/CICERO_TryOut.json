@@ -1,8 +1,0 @@
-{"studyID":"CICERO_TryOut",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["(C3T-S025)", "^.*(M0)\\.PAR$"],
-"tokenOrdering":[1,0,2],
-"tokenSessionAliases":"",
-"tokenScanAliases":["^M0$", "M0"],
-"bMatchDirectories":false}

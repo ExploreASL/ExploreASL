@@ -1,9 +1,0 @@
-{"studyID":"preDIVA_followUp4",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^\\d{8}_(\\d{6})$","^(Crush)(M0)$"],
-"tokenOrdering":[1,2,3],
-"tokenScanAliases":["^M0$","M0"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["^Crush$","ASL_2"],
-"bMatchDirectories":true}

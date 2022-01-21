@@ -1,9 +1,0 @@
-{"studyID":"RACE5_Philips",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(Subject)",".*(T1w|ASL|FLAIR|M0).*"],
-"tokenOrdering":[1,0,0,2],
-"tokenScanAliases":["^T1w$","T1","^FLAIR$","FLAIR","^M0$","M0","ASL","ASL4D"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":[],
-"bMatchDirectories":true}

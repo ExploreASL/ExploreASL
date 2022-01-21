@@ -1,9 +1,0 @@
-{"studyID":"BrnoEpilepsy",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(\\d{4}A)$",".*(?:PCASL|Anat).*",".*(FLAIR|mprage|f.nii).*"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^FLAIR$","FLAIR","^mprage$","T1","^f.nii$","ASL4D"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":[],
-"bMatchDirectories":false}

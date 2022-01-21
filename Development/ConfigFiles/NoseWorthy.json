@@ -1,9 +1,0 @@
-{"studyID":"NoseWorthy",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(Sub-\\d{3})$","^(3DT1|asl)$"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^3DT1$","ASL4D","^asl$","T1"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":[],
-"bMatchDirectories":true}

@@ -1,9 +1,0 @@
-{"studyID":"SABRE",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(\\d.*)$",".*",".*","DICOM","(3D_FLAIR|T1_3D|pCASL_main|calibration)"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^pCASL_main$","ASL4D","^3D_FLAIR$","FLAIR","^T1_3D$","T1","^calibration$","M0"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":[],
-"bMatchDirectories":true}

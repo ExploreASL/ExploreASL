@@ -1,9 +1,0 @@
-{"studyID":"Hardy2",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(HD\\d{3}_\\d)$","^.*(FLAIR|SAG_MPRAGE|ASL)_(1|2|3)$"],
-"tokenOrdering":[1,3,2],
-"tokenScanAliases":["^FLAIR$","FLAIR","^SAG_MPRAGE$","T1","^ASL$","ASL4D"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["^1$","ASL_1","^2$","ASL_2","^3$","ASL_3"],
-"bMatchDirectories":true}

@@ -1,9 +1,0 @@
-{"studyID":"HongerWinter2",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^.*(Sub-\\d{3}).*$",".*(MPRAGE|SOURCE|M0).*"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^MPRAGE$","T1","^SOURCE$","ASL4D","^M0$","M0"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":[],
-"bMatchDirectories":true}

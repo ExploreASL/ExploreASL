@@ -1,9 +1,0 @@
-{"studyID":"Score",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^(\\d{3}_\\d)$","^.*(MPRAGE|PSEUDO|FLAIR).*$"],
-"tokenOrdering":[1,0,2],
-"tokenScanAliases":["^PSEUDO$","ASL4D","^MPRAGE$","T1","^FLAIR$","FLAIR"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":[""],
-"bMatchDirectories":true}

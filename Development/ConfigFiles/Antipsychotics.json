@@ -1,9 +1,0 @@
-{"studyID":"Antipsychotics",
-"AnalysisRoot":"",
-"RawRoot":"",
-"folderHierarchy":["^Antipsychotics_Sorted_for_Analysis$","^(\\d{3})_([0|S])","^(ASL|M0|T1)$"],
-"tokenOrdering":[1,2,3],
-"tokenScanAliases":["^ASL$","ASL4D","^M0$","M0","^T1$","T1"],
-"tokenVisitAliases":[],
-"tokenSessionAliases":["^0$","ASL_1","^S$","ASL_2"],
-"bMatchDirectories":true}
