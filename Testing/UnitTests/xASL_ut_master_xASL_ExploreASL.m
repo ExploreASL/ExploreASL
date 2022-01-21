@@ -26,7 +26,7 @@ function UnitTest = xASL_ut_master_xASL_ExploreASL(TestRepository)
 %
 % EXAMPLE:      UnitTests(1) = xASL_ut_master_xASL_ExploreASL(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
 %% ASL DRO 2.3.0 studyPar.json
