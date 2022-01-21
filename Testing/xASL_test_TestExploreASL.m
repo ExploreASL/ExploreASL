@@ -1,7 +1,7 @@
-function [ResultsTable] = xASL_qc_TestExploreASL(varargin)
-%xASL_qc_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
+function [ResultsTable] = xASL_test_TestExploreASL(varargin)
+%xASL_test_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
 %
-% FORMAT: [ResultsTable] = xASL_qc_TestExploreASL(TestDirOrig, RunMethod)
+% FORMAT: [ResultsTable] = xASL_test_TestExploreASL(TestDirOrig, RunMethod)
 % 
 % INPUT:
 %   TestDirOrig - path to root folder containing all datasets to test processing on (REQUIRED)
@@ -57,9 +57,9 @@ function [ResultsTable] = xASL_qc_TestExploreASL(varargin)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
 %
-% Jan:           [ResultsTable] = xASL_qc_TestExploreASL('/pet/projekte/asl/data/ExploreASL_TestCases', '/pet/projekte/asl/data/ExploreASL_TempRes', 1);
-% Henk on MacOS: [ResultsTable] = xASL_qc_TestExploreASL('/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases', '/Users/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed', 1, 0,[],'henkjanmutsaerts@gmail.com');
-% VUmc server:   [ResultsTable] = xASL_qc_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
+% Jan:           [ResultsTable] = xASL_test_TestExploreASL('/pet/projekte/asl/data/ExploreASL_TestCases', '/pet/projekte/asl/data/ExploreASL_TempRes', 1);
+% Henk on MacOS: [ResultsTable] = xASL_test_TestExploreASL('/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases', '/Users/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed', 1, 0,[],'henkjanmutsaerts@gmail.com');
+% VUmc server:   [ResultsTable] = xASL_test_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
 
