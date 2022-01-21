@@ -546,8 +546,8 @@ fprintf('Reading & parsing results:   ');
 for iList=1:length(Dlist) % iterate over example datasets
     xASL_TrackProgress(iList, length(Dlist));
     ResultsTable{1+iList,1} = Dlist{iList};
-    AnalysisDir = fullfile(opts.TestDirDest, Dlist{iList});
-    PopulationDir = fullfile(AnalysisDir, 'Population');
+    bidsDir = fullfile(opts.TestDirDest, Dlist{iList});
+    PopulationDir = fullfile(bidsDir, 'derivatives', 'ExploreASL', 'Population');
     StatsDir = fullfile(PopulationDir, 'Stats');
 	VolumeDir = fullfile(PopulationDir, 'TissueVolume');
     
@@ -601,7 +601,7 @@ for iList=1:length(Dlist) % iterate over example datasets
         end
     end
 	% check if there are missing lock files
-	if exist(fullfile(AnalysisDir,'Missing_Lock_files.csv'),'file')
+	if exist(fullfile(bidsDir,'Missing_Lock_files.csv'),'file')
         % pipeline not completed
 		ResultsTable{1+iList,4+length(ResultFile)} = 0;
     else
