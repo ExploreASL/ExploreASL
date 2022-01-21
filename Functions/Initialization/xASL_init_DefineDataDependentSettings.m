@@ -21,8 +21,7 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
 
 
 x = xASL_init_DefinePaths(x);
-x = xASL_init_Toolboxes(x); % Initialize toolboxes
-x = xASL_init_VisualizationSettings(x); % visual settings
+x = xASL_init_Toolboxes(x);
 
 
 %% --------------------------------------------------------------------------

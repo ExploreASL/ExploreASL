@@ -58,6 +58,23 @@ if ~isfield(x,'Q')
     x.Q = struct;
 end
 
+%% Paths
+
+% Atlases and templates
+if isfield(x.opts, 'MyPath')
+    x.D.MapsDir             = fullfile(x.opts.MyPath, 'Maps');
+    x.D.MapsSPMmodifiedDir  = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded');
+    x.D.ResliceRef          = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'rgrey.nii');
+    x.D.IdentityTransfRef   = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
+    x.D.TemplateDir         = fullfile(x.opts.MyPath, 'Maps', 'Templates');
+    x.D.AtlasDir            = fullfile(x.opts.MyPath, 'External', 'Atlases');
+else
+    warning('MyPath field not defined...');
+end
+
+%% Visualization
+x = xASL_init_VisualizationSettings(x);
+
 
 end
 

@@ -108,8 +108,9 @@ end
 
 % Here we return the ExploreASL paths, which we removed above for testing SPM
 x = ExploreASL;
+Dlist = xASL_adm_GetFileList(opts.TestDirDest,'^.*$','List',[0 Inf], true);
 xASL_adm_BreakString('4. Test ExploreASL','=');
-[Dlist,LogFiles] = xASL_test_TestAllTestdatasets(opts,x);
+LogFiles = xASL_test_TestAllTestdatasets(opts,x,Dlist);
 
 % ============================================================
 %% 5) Pause until all results exist (if running parallel in background)
@@ -615,10 +616,10 @@ for iList=1:length(Dlist) % iterate over example datasets
         PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
         PathCBF = xASL_adm_GetFileList(PopulationDir,'(?i)^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
 		PathM0 = xASL_adm_GetFileList(PopulationDir,'(?i)^(noSmooth_M0|mean_control).*\.nii$', 'FPList');
-        if ~isempty(PathCBF)
+        if ~isempty(PathCBF) && isfield(x.S,'masks')
             ResultsTable{1+iList,5+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
         end
-        if ~isempty(PathM0)
+        if ~isempty(PathM0) && isfield(x.S,'masks')
             ResultsTable{1+iList,6+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathM0{1}, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
         end
     end
@@ -634,7 +635,7 @@ end
 
 
 %% Test all individual test datasets
-function [Dlist,LogFiles] = xASL_test_TestAllTestdatasets(opts,x)
+function LogFiles = xASL_test_TestAllTestdatasets(opts,x,Dlist)
 
 % Remove lock folders, useful for rerun when debugging
 LockFolders = xASL_adm_GetFileList(opts.TestDirDest, '(?i)^locked$', 'FPListRec', [0 Inf], true);
@@ -653,7 +654,6 @@ if isunix && (opts.RunMethod==2 || opts.RunMethod==4)
 end
 
 % Get list of data to test
-Dlist = xASL_adm_GetFileList(opts.TestDirDest,'^.*$','List',[0 Inf], true);
 LogFiles = cellfun(@(y) fullfile(opts.TestDirDest,y,'log','xASL_module_Population.log'), Dlist, 'UniformOutput',false);
 
 % Iterate over test datasets
