@@ -168,7 +168,7 @@ if isnumeric(x.Q.M0)
             % T2* effect is similar in both images and hence removed by division
             T2_star_factor = exp(ASL_parms.EchoTime/x.Q.T2star);
             M0_im = M0_im./T2_star_factor;
-            fprintf('%s\n',['M0 image corrected for T2* decay during TE in PWI, TE was ' num2str(ASL_parms.EchoTime) ' ms, using T2* ' num2str(x.Q.T2star) ' ms, this resulting in factor ' num2str(T2_star_factor)]);
+            fprintf('%s\n',['M0 image corrected for T2* decay during TE in PWI, TE was ' xASL_num2str(ASL_parms.EchoTime) ' ms, using T2* ' xASL_num2str(x.Q.T2star) ' ms, this resulting in factor ' xASL_num2str(T2_star_factor)]);
             % If obtained by e.g. CSF inversion recovery, make sure that this is corrected for blood-water partition coefficient (0.76) and density of brain tissue (1.05 g/mL)
         end
 
@@ -227,7 +227,7 @@ if strcmpi(x.Q.M0,'separate_scan')
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
         
 		% Print warning if TE numbers do not match
-		if numel(ASL_parms.EchoTime) ~= numel(M0_parms.EchoTime)
+		if numel(unique(ASL_parms.EchoTime)) ~= numel(M0_parms.EchoTime)
 			warning('Number of TEs of ASL and M0 are unequal...');
 		end
 		
