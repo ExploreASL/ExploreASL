@@ -226,19 +226,17 @@ if strcmpi(x.Q.M0,'separate_scan')
     % Check echo times
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
         
-		% Print warning if TE numbers do not match
-		if numel(unique(ASL_parms.EchoTime)) ~= numel(M0_parms.EchoTime)
+		ASLTE = unique(ASL_parms.EchoTime);
+		M0TE = unique(M0_parms.EchoTime);
+		% Print warning if TE vector lengths do not match
+		if numel(ASLTE) ~= numel(M0TE)
 			warning('Number of TEs of ASL and M0 are unequal...');
-		end
-		
-        % Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
-        if (numel(ASL_parms.EchoTime)==1) && (numel(M0_parms.EchoTime)==1)
-            if ASL_parms.EchoTime<(M0_parms.EchoTime*0.95) || ASL_parms.EchoTime>(M0_parms.EchoTime*1.05)
-                % Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
-                warning('TE of ASL and M0 are unequal. Check geometric distortion...');
-            end
 		else
-            fprintf('Warning: multi-TE processing still work in progress...\n');
+			% Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
+			if max(~isnear(ASLTE,M0TE,0.05*abs(ASLTE)))
+				% Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
+				warning('TE of ASL and M0 are unequal. Check geometric distortion...');
+			end
         end
 
         % Correction factor and name for 3D spiral sequences
