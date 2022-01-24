@@ -95,7 +95,8 @@ for iSubject=1:x.nSubjects
                 if isnumeric(Parms.(matFields{iField}))
                     TempData = Parms.(matFields{iField});
                     if length(TempData)>1
-                        warning(['Parms.' matFields{iField} ' had multiple values']);
+                        % warning(['Parms.' matFields{iField} ' had multiple values']);
+                        % This warning was only useful in the pre-BIDS time
                     end
                     x.S.par(iSubjSess,iField) = min(TempData);
                 else

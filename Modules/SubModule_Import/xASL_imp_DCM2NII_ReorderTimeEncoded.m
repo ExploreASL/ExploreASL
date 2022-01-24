@@ -39,7 +39,9 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON
                 imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
                 xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
                 % Repeat Echo Times
-                resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
+                if numel(unique(resultJSON.EchoTime))~=1 % Repeat EchoTime only if multiple TEs
+                    resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
+                end
                 % Save the JSON with the updated echo times
                 spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
             else
