@@ -270,7 +270,7 @@ function p = xASL_init_InputParsing(varargin)
     addOptional(p, 'DatasetRoot', defaultDatasetRoot, validDatasetRoot);
     addOptional(p, 'bImport', defaultImport, validImport);
     addOptional(p, 'Deface', defaultDeface, validDeface);
-    addOptional(p, 'ProcessModules', defaultProcess, validProcess);
+    addOptional(p, 'bProcess', defaultProcess, validProcess);
     addOptional(p, 'bPause', defaultbPause, validbPause);
     addOptional(p, 'iWorker', defaultiWorker, validiWorker);
     addOptional(p, 'nWorkers', defaultnWorkers, validnWorkers);
@@ -296,13 +296,13 @@ function parameters = xASL_init_convertParsedInput(parameters)
     % we allow the use of arrays, too. If the default case happens and a
     % user inserts bImport or bProcess as booleans though, then we simply
     % convert them to the arrays which are called bImport and
-    % ProcessModules.
+    % bProcess.
 
     % Check if inputs are empty or chars (the option to use character array input is important for the compiled mode)
     if isempty(parameters.DatasetRoot),     parameters.DatasetRoot = '';                                    end
     if ischar(parameters.bImport),          parameters.bImport = str2num(parameters.bImport);               end
     if ischar(parameters.Deface),           parameters.Deface = str2num(parameters.Deface);                 end
-    if ischar(parameters.ProcessModules),   parameters.ProcessModules = str2num(parameters.ProcessModules); end
+    if ischar(parameters.bProcess),         parameters.bProcess = str2num(parameters.bProcess);             end
     if ischar(parameters.bPause),           parameters.bPause = str2num(parameters.bPause);                 end
     if ischar(parameters.iWorker),          parameters.iWorker = str2num(parameters.iWorker);               end
     if ischar(parameters.nWorkers),         parameters.nWorkers = str2num(parameters.nWorkers);             end
@@ -327,20 +327,20 @@ function parameters = xASL_init_convertParsedInput(parameters)
         warning('Incorrect number of import modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.bImport)));
         parameters.bImport = parameters.bImport(1:2);
     end
-    if length(parameters.ProcessModules)==1
+    if length(parameters.bProcess)==1
         % If a single value is given, then copy it to all submodules
-        parameters.ProcessModules(1:3) = parameters.ProcessModules(1);
-    elseif length(parameters.ProcessModules)<3
+        parameters.bProcess(1:3) = parameters.bProcess(1);
+    elseif length(parameters.bProcess)<3
         % Convert to a row vector
-        parameters.ProcessModules = parameters.ProcessModules(:)';
+        parameters.bProcess = parameters.bProcess(:)';
         % Issue a warning
-        warning('Incorrect number of processing modules (%s), missing sub-modules set to zero...', xASL_num2str(length(parameters.ProcessModules)));
+        warning('Incorrect number of processing modules (%s), missing sub-modules set to zero...', xASL_num2str(length(parameters.bProcess)));
         % Fill in the missing fields with zeros
-        parameters.ProcessModules(length(parameters.ProcessModules)+1:3) = 0;
-    elseif length(parameters.ProcessModules)>3
+        parameters.bProcess(length(parameters.bProcess)+1:3) = 0;
+    elseif length(parameters.bProcess)>3
         % Skip additional elements
-        warning('Incorrect number of processing modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.ProcessModules)));
-        parameters.ProcessModules = parameters.ProcessModules(1:3);
+        warning('Incorrect number of processing modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.bProcess)));
+        parameters.bProcess = parameters.bProcess(1:3);
     end
     
     % Make it impossible to set bPause to true in deployed mode
@@ -365,7 +365,7 @@ function x = xASL_init_storeParsedInput(parameters)
     x.opts.DatasetRoot = parameters.DatasetRoot;
     x.opts.bImport = parameters.bImport;
     x.opts.Deface = parameters.Deface;
-    x.opts.ProcessModules = parameters.ProcessModules;
+    x.opts.bProcess = parameters.bProcess;
     x.opts.bPause = parameters.bPause;
     x.opts.iWorker = parameters.iWorker;
     x.opts.nWorkers = parameters.nWorkers;
@@ -395,7 +395,7 @@ function x = xASL_init_GetBooleansImportProcess(x)
     end
     
     % Check if data is being processed
-    if sum(x.opts.ProcessModules)>0
+    if sum(x.opts.bProcess)>0
         x.opts.bProcessData = 1;
     else
         x.opts.bProcessData = 0;

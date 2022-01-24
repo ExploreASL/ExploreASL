@@ -54,7 +54,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
             x.opts.bDefaceData = 0;
             x.opts.bImportData = 0;
             x.opts.bLoadData = false;
-            x.opts.ProcessModules = [0 0 0 0];
+            x.opts.bProcess = [0 0 0];
             x.opts.bImport = [0 0];
         end
     end
@@ -103,7 +103,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
             end
         end
         x.opts.bProcessData = 0;
-        x.opts.ProcessModules = [0 0 0 0];
+        x.opts.bProcess = [0 0 0];
     else
         % At least one of the JSON files exists
         
