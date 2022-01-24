@@ -15,7 +15,7 @@ function [result, x] = xASL_module_Import(x)
 %   x.dir.studyPar        - Path to the JSON file with the BIDS parameters relevant for the whole study.
 %                           These parameters are used if they cannot be extracted from the DICOMs automatically.
 %                           Looking automatically for file studyPar.json. (OPTIONAL)
-%   x.opts.ImportModules  - Specify which of the parts should be run (OPTIONAL, DEFAULT [0 0])
+%   x.opts.bImport        - Specify which of the parts should be run (OPTIONAL, DEFAULT [0 0])
 %                           [1 0] - Run the DICOM to NIFTI conversion
 %                           [0 1] - Run the NIFTI transformation to the proper ASL-BIDS
 %   x.modules.import.settings.bCopySingleDicoms
@@ -146,20 +146,20 @@ function [result, x] = xASL_module_Import(x)
     
     %% 1. Run the DCM2NIIX
     iState = 1;
-    if x.opts.ImportModules(1) && ~x.mutex.HasState(StateName{1})
+    if x.opts.bImport(1) && ~x.mutex.HasState(StateName{1})
         x = xASL_wrp_DCM2NII(x, imPar);
         x.mutex.AddState(StateName{iState});
-    elseif x.opts.ImportModules(1) && x.mutex.HasState(StateName{1})
+    elseif x.opts.bImport(1) && x.mutex.HasState(StateName{1})
         fprintf('DCM2NIIX was run before...   \n');
     end
 
     
     %% 2. Run the NIfTI to ASL-BIDS
     iState = 2;
-    if x.opts.ImportModules(2) && ~x.mutex.HasState(StateName{2})
+    if x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
         x = xASL_wrp_NII2BIDS(x, imPar);
         x.mutex.AddState(StateName{iState});
-    elseif x.opts.ImportModules(2) && x.mutex.HasState(StateName{2})
+    elseif x.opts.bImport(2) && x.mutex.HasState(StateName{2})
         fprintf('NIIX to ASL-BIDS was run before...   \n');
     end
     

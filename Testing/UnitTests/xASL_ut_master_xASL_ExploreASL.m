@@ -58,7 +58,7 @@ if ~isstruct(x)
 end
 if isfield(x, 'opts')
     if ~isfield(x.opts,'DatasetRoot'),     testCondition = false;      end
-    if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
+    if ~isfield(x.opts,'bImport'),         testCondition = false;      end
     if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
     if ~isfield(x.opts,'bPause'),          testCondition = false;      end
     if ~isfield(x.opts,'iWorker'),         testCondition = false;      end
@@ -74,8 +74,8 @@ if isfield(x, 'opts')
             testCondition = false;
         end
     end
-    if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<2 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+    if isfield(x.opts,'bImport')
+        if length(x.opts.bImport)<2 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
             testCondition = false;
         end
     end
@@ -133,7 +133,7 @@ if ~isstruct(x)
 end
 if isfield(x, 'opts')
     if ~isfield(x.opts,'DatasetRoot'),     testCondition = false;      end
-    if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
+    if ~isfield(x.opts,'bImport'),         testCondition = false;      end
     if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
     if ~isfield(x.opts,'bPause'),          testCondition = false;      end
     if ~isfield(x.opts,'iWorker'),         testCondition = false;      end
@@ -149,8 +149,8 @@ if isfield(x, 'opts')
             testCondition = false;
         end
     end
-    if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<2 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+    if isfield(x.opts,'bImport')
+        if length(x.opts.bImport)<2 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
             testCondition = false;
         end
     end
@@ -208,7 +208,7 @@ if ~isstruct(x)
 end
 if isfield(x, 'opts')
     if ~isfield(x.opts,'DatasetRoot'),     testCondition = false;      end
-    if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
+    if ~isfield(x.opts,'bImport'),         testCondition = false;      end
     if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
     if ~isfield(x.opts,'bPause'),          testCondition = false;      end
     if ~isfield(x.opts,'iWorker'),         testCondition = false;      end
@@ -224,8 +224,8 @@ if isfield(x, 'opts')
             testCondition = false;
         end
     end
-    if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<2 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+    if isfield(x.opts,'bImport')
+        if length(x.opts.bImport)<2 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
             testCondition = false;
         end
     end
@@ -975,7 +975,7 @@ if ~isstruct(x)
 end
 if isfield(x, 'opts')
     if ~isfield(x.opts,'DatasetRoot'),     testCondition = false;      end
-    if ~isfield(x.opts,'ImportModules'),   testCondition = false;      end
+    if ~isfield(x.opts,'bImport'),         testCondition = false;      end
     if ~isfield(x.opts,'ProcessModules'),  testCondition = false;      end
     if ~isfield(x.opts,'bPause'),          testCondition = false;      end
     if ~isfield(x.opts,'iWorker'),         testCondition = false;      end
@@ -991,8 +991,8 @@ if isfield(x, 'opts')
             testCondition = false;
         end
     end
-    if isfield(x.opts,'ImportModules')
-        if length(x.opts.ImportModules)<2 || sum(x.opts.ImportModules)>0 || ~isnumeric(x.opts.ImportModules)
+    if isfield(x.opts,'bImport')
+        if length(x.opts.bImport)<2 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
             testCondition = false;
         end
     end

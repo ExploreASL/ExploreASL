@@ -55,7 +55,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
             x.opts.bImportData = 0;
             x.opts.bLoadData = false;
             x.opts.ProcessModules = [0 0 0 0];
-            x.opts.ImportModules = [0 0];
+            x.opts.bImport = [0 0];
         end
     end
     

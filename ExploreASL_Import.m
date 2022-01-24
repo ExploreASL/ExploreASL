@@ -59,7 +59,7 @@ function [x] = ExploreASL_Import(x)
     
     % Reset the import parameters
     x.opts.bImportData = 0;
-    x.opts.ImportModules = [0 0];
+    x.opts.bImport = [0 0];
 
     
 end

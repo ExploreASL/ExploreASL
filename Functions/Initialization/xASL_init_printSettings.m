@@ -30,10 +30,10 @@ function xASL_init_printSettings(x)
 
     % Import modules
     textPrint = 'Import & Defacing   ';
-    if x.opts.ImportModules(1)==1
+    if x.opts.bImport(1)==1
         textPrint = [textPrint 'DCM2NII '];
     end
-    if x.opts.ImportModules(2)==1
+    if x.opts.bImport(2)==1
         textPrint = [textPrint 'NII2BIDS '];
     end
     if x.opts.Deface==1

@@ -15,7 +15,7 @@ function x = xASL_imp_BasicParameterChecks(x)
 %    - check that x.dir.DatasetRoot is correct
 %    - determine x.dir.sourceStructure
 %    - determine x.dir.studyPar
-%    - check x.opts.ImportModules
+%    - check x.opts.bImport
 %    - set the defaults for ...
 %       - x.modules.import.settings.bCopySingleDicoms
 %       - x.modules.import.settings.bUseDCMTK
@@ -24,7 +24,7 @@ function x = xASL_imp_BasicParameterChecks(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     %% Basic checks
@@ -35,14 +35,14 @@ function x = xASL_imp_BasicParameterChecks(x)
     end
 
     % Check the imagePar input file
-    if isempty(x.dir.sourceStructure) && x.opts.ImportModules(1)
+    if isempty(x.dir.sourceStructure) && x.opts.bImport(1)
         % If the path is empty, then try to find sourceStructure.json or sourcestruct.json
         fListImPar = xASL_adm_GetFileList(x.dir.DatasetRoot,'(?i)^source(struct(ure|)\.json$', 'List', [], 0);
         if length(fListImPar) < 1
             error('Could not find the sourceStructure.json file...');
         end
         x.dir.sourceStructure = fullfile(x.dir.DatasetRoot,fListImPar{1});
-    elseif isempty(x.dir.sourceStructure) && (x.opts.ImportModules(2) || x.opts.Deface)
+    elseif isempty(x.dir.sourceStructure) && (x.opts.bImport(2) || x.opts.Deface)
         % For BIDS2Legacy we do not need the imPar struct (and we should not need it for NII2BIDS or DEFACE)
         x.dir.sourceStructure = [];
     else
@@ -68,11 +68,11 @@ function x = xASL_imp_BasicParameterChecks(x)
         end
     end
 
-    if isempty(x.opts.ImportModules)
-        x.opts.ImportModules = [1 1];
+    if isempty(x.opts.bImport)
+        x.opts.bImport = [1 1];
     else
-        if length(x.opts.ImportModules) ~= 2
-            error('x.opts.ImportModules must have length 2...');
+        if length(x.opts.bImport) ~= 2
+            error('x.opts.bImport must have length 2...');
         end
     end
 

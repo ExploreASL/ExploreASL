@@ -21,11 +21,11 @@ function [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
     % Create the basic folder structure for sourcedata & derivative data
-    if x.opts.ImportModules(1)
+    if x.opts.bImport(1)
         if ~exist(x.modules.import.imPar.RawRoot, 'dir')
             warning(['Could not find ' x.modules.import.imPar.RawRoot ', trying to find a different folder instead...']);
 
@@ -47,11 +47,11 @@ function [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
     
     % Check access rights of temp and rawdata directories
     if x.modules.import.settings.bCheckPermissions
-        if x.opts.ImportModules(1)
+        if x.opts.bImport(1)
             % don't need execution permisions
             xASL_adm_CheckPermissions(x.modules.import.imPar.RawRoot, false);
         end
-        if x.opts.ImportModules(2)
+        if x.opts.bImport(2)
             % don't need execution permisions
             xASL_adm_CheckPermissions(x.modules.import.imPar.TempRoot, false);
         end
@@ -59,7 +59,7 @@ function [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
 
     % Path to the dictionary to initialize - we need to keep track if the dictionary has been set, 
     % because Dicominfo can be used despite bUSEDCMTK==1 when DCMTK fails
-    if x.opts.ImportModules(1) || x.opts.ImportModules(2)
+    if x.opts.bImport(1) || x.opts.bImport(2)
         x.modules.import.pathDcmDict = fullfile(x.opts.MyPath,'External','xASL_DICOMLibrary.txt');
         if ~x.modules.import.settings.bUseDCMTK
             % Initialize dicom dictionary by appending private philips stuff to a temporary copy

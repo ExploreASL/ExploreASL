@@ -268,7 +268,7 @@ function p = xASL_init_InputParsing(varargin)
     
     % Add definitions to the input parser
     addOptional(p, 'DatasetRoot', defaultDatasetRoot, validDatasetRoot);
-    addOptional(p, 'ImportModules', defaultImport, validImport);
+    addOptional(p, 'bImport', defaultImport, validImport);
     addOptional(p, 'Deface', defaultDeface, validDeface);
     addOptional(p, 'ProcessModules', defaultProcess, validProcess);
     addOptional(p, 'bPause', defaultbPause, validbPause);
@@ -295,12 +295,12 @@ function parameters = xASL_init_convertParsedInput(parameters)
     % To be able to run each import or processing sub-module individually,
     % we allow the use of arrays, too. If the default case happens and a
     % user inserts bImport or bProcess as booleans though, then we simply
-    % convert them to the arrays which are called ImportModules and
+    % convert them to the arrays which are called bImport and
     % ProcessModules.
 
     % Check if inputs are empty or chars (the option to use character array input is important for the compiled mode)
     if isempty(parameters.DatasetRoot),     parameters.DatasetRoot = '';                                    end
-    if ischar(parameters.ImportModules),    parameters.ImportModules = str2num(parameters.ImportModules);   end
+    if ischar(parameters.bImport),          parameters.bImport = str2num(parameters.bImport);               end
     if ischar(parameters.Deface),           parameters.Deface = str2num(parameters.Deface);                 end
     if ischar(parameters.ProcessModules),   parameters.ProcessModules = str2num(parameters.ProcessModules); end
     if ischar(parameters.bPause),           parameters.bPause = str2num(parameters.bPause);                 end
@@ -308,24 +308,24 @@ function parameters = xASL_init_convertParsedInput(parameters)
     if ischar(parameters.nWorkers),         parameters.nWorkers = str2num(parameters.nWorkers);             end
     
     % Check length of arrays (single digit input)
-    if length(parameters.ImportModules)==1
+    if length(parameters.bImport)==1
         % If a single value is given then turn on/off all the import modules ...
-        parameters.ImportModules(1:2) = logical(parameters.ImportModules(1));
-    elseif length(parameters.ImportModules)==4
+        parameters.bImport(1:2) = logical(parameters.bImport(1));
+    elseif length(parameters.bImport)==4
         % Old version
         warning('You are using the outdated format with 4 import modules, additional elements are skipped...');
-        parameters.ImportModules = parameters.ImportModules(1:2);
-    elseif length(parameters.ImportModules)<2
+        parameters.bImport = parameters.bImport(1:2);
+    elseif length(parameters.bImport)<2
         % Convert to a row vector
-        parameters.ImportModules = parameters.ImportModules(:)';
+        parameters.bImport = parameters.bImport(:)';
         % Issue a warning
-        warning('Incorrect number of import modules (%s), missing sub-modules set to zero...', xASL_num2str(length(parameters.ImportModules)));
+        warning('Incorrect number of import modules (%s), missing sub-modules set to zero...', xASL_num2str(length(parameters.bImport)));
         % Fill in the missing fields with zeros
-        parameters.ImportModules(length(parameters.ImportModules)+1:2) = 0;
-    elseif length(parameters.ImportModules)>2
+        parameters.bImport(length(parameters.bImport)+1:2) = 0;
+    elseif length(parameters.bImport)>2
         % Skip additional elements
-        warning('Incorrect number of import modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.ImportModules)));
-        parameters.ImportModules = parameters.ImportModules(1:2);
+        warning('Incorrect number of import modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.bImport)));
+        parameters.bImport = parameters.bImport(1:2);
     end
     if length(parameters.ProcessModules)==1
         % If a single value is given, then copy it to all submodules
@@ -363,7 +363,7 @@ function x = xASL_init_storeParsedInput(parameters)
 
     % Store input options
     x.opts.DatasetRoot = parameters.DatasetRoot;
-    x.opts.ImportModules = parameters.ImportModules;
+    x.opts.bImport = parameters.bImport;
     x.opts.Deface = parameters.Deface;
     x.opts.ProcessModules = parameters.ProcessModules;
     x.opts.bPause = parameters.bPause;
@@ -381,7 +381,7 @@ function x = xASL_init_GetBooleansImportProcess(x)
     x.opts.bLoadableData = false;
 
     % Check if data is being imported
-    if sum(x.opts.ImportModules)>0
+    if sum(x.opts.bImport)>0
         x.opts.bImportData = 1;
     else
         x.opts.bImportData = 0;
