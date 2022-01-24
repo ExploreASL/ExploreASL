@@ -311,6 +311,10 @@ function parameters = xASL_init_convertParsedInput(parameters)
     if length(parameters.ImportModules)==1
         % If a single value is given then turn on/off all the import modules ...
         parameters.ImportModules(1:2) = logical(parameters.ImportModules(1));
+    elseif length(parameters.ImportModules)==4
+        % Old version
+        warning('You are using the outdated format with 4 import modules, additional elements are skipped...');
+        parameters.ImportModules = parameters.ImportModules(1:2);
     elseif length(parameters.ImportModules)<2
         % Convert to a row vector
         parameters.ImportModules = parameters.ImportModules(:)';
