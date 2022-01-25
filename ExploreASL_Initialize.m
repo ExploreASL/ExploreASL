@@ -397,8 +397,8 @@ function x = xASL_init_GetBooleansImportProcess(x)
         x.opts.bLoadData = false;
     end
     
-    % We need to check if import and processing were run separately
-    if x.opts.bImportData && ~x.opts.bProcessData
+    % We need to check if import/defacing and processing were run separately
+    if (x.opts.bImportData || x.opts.bDefaceData) && ~x.opts.bProcessData
         x.opts.bSkipBIDS2Legacy = true;
         x.opts.bLoadData = false;
     else
