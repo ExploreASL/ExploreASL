@@ -362,6 +362,9 @@ function x = xASL_init_GetBooleansImportProcess(x)
 
     % On default we assume that we cannot load the data
     x.opts.bLoadableData = false;
+    
+    % Field to check if the data was loaded or not
+    x.opts.bDataLoaded = false;
 
     % Check if data is being imported
     if sum(x.opts.bImport)>0

@@ -375,6 +375,11 @@ else
     end
 end
 
+% Check that data was not loaded
+if x.opts.bDataLoaded
+    testCondition = false;
+end
+
 % Subject directory
 subDir = fullfile(droTestPatient,'rawdata','sub-Sub1');
 
@@ -432,7 +437,7 @@ xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 % Fallback
 testCondition = true;
 
-% Read test files
+% Defacing
 try
     [x] = ExploreASL(testPatientDestination,0,1,0,0,1,1);
 catch ME
@@ -448,6 +453,25 @@ else
     if ~isstruct(x)
         testCondition = false;
     end
+end
+
+% Check that data was not loaded
+if x.opts.bDataLoaded
+    testCondition = false;
+end
+
+% BIDS2Legacy & data loading
+try
+    [x] = ExploreASL(testPatientDestination,0,0,0,0,1,1);
+catch ME
+    warning(ME.identifier, '%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Check that data was not loaded
+if ~x.opts.bDataLoaded
+    testCondition = false;
 end
 
 % SubjectSession directory
@@ -511,7 +535,7 @@ xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 % Fallback
 testCondition = true;
 
-% Read test files
+% Defacing
 try
     [x] = ExploreASL(testPatientDestination,0,1,0,0,1,1);
 catch ME
@@ -527,6 +551,25 @@ else
     if ~isstruct(x)
         testCondition = false;
     end
+end
+
+% Check that data was not loaded
+if x.opts.bDataLoaded
+    testCondition = false;
+end
+
+% BIDS2Legacy & data loading
+try
+    [x] = ExploreASL(testPatientDestination,0,0,0,0,1,1);
+catch ME
+    warning(ME.identifier, '%s', ME.message);
+    testCondition = false;
+    diary off;
+end
+
+% Check that data was not loaded
+if ~x.opts.bDataLoaded
+    testCondition = false;
 end
 
 % SubjectSession directory

@@ -87,6 +87,9 @@ function [x] = xASL_init_DataLoading(x)
         % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
         warning('Dataset can not be loaded, try to run the import first...');
     end
+    
+    % Set the field which shows that the data was loaded to true
+    x.opts.bDataLoaded = true;
 
 
 end
