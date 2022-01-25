@@ -129,12 +129,10 @@ if ~bSkipStandard
 	%% B) Create, combine & save vascular, susceptibity & FoV masks
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
     MaskFoV = xASL_io_Nifti2Im(PathFoV)>=Threshold;
-	DoSusceptibility = false;
-    MaskSusceptibility = MaskFoV; % if we don't have susceptibility artifacts
-    
+        
     % Legacy Susceptibility Masking
     [x,DoSusceptibility, TemplateMask, ThresholdSuscept, MaskSusceptibility] = ...
-    xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x, DoSusceptibility, MaskSusceptibility);
+    xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x, PathSusceptibilityMask, Threshold, MaskFoV);
                     
 	% Save them
 	xASL_io_SaveNifti(PathFoV, fullfile(x.S.StatsDir,'MaskVascular.nii'), MaskVascular, 8, true);
@@ -281,21 +279,19 @@ end
 
 
 %% Legacy Susceptibility Masking
-function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] = xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x,DoSusceptibility,MaskSusceptibility)
+function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] = xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x, PathSusceptibilityMask, Threshold, MaskFoV)
 
-    if isfield(x, 'Q') && isfield(x.Q, 'Sequence') && strcmpi(x.Q.Sequence, '(2d_epi|3d_grase')
+    if isfield(x, 'Q') && isfield(x.Q, 'Sequence') && regexpi(x.Q.Sequence, '2d_epi|3d_grase')
         fprintf('Using legacy susceptibility masking...\n');
         DoSusceptibility = true;
 
-        if strcmpi(x.Q.Sequence,'2D_EPI')
+		if strcmpi(x.Q.Sequence,'2D_EPI')
             Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
         elseif strcmpi(x.Q.Sequence,'3D_GRASE')
             Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
-        end
-    end
-
-    if DoSusceptibility
-        MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);        
+		end
+		
+		MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);
 
         TemplateMask = xASL_io_Nifti2Im(Path_Template)~=1; % MaskSusceptibility<0.85 &
         TemplateMask(:,:,1:10) = 0;
@@ -314,11 +310,11 @@ function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] =
     else
     	% Print warning
     	fprintf('Susceptibility masking is turned off...\n');
-
+		DoSusceptibility = false;
     	% Defaults
     	TemplateMask = [];
-    	MaskSusceptibility = [];
-    	ThresholdSuscept = NaN;
+		MaskSusceptibility = MaskFoV;
+		ThresholdSuscept = NaN;
     end
 
 end
