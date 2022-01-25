@@ -53,15 +53,12 @@ function [x] = ExploreASL_Initialize(varargin)
 
     % Define input parser
     p = xASL_init_InputParsing(varargin{:});
-
-    % Convert parsed input
-    parameters = xASL_init_convertParsedInput(p.Results);
-
-    % Store parsed input
-    x = xASL_init_storeParsedInput(parameters);
     
     % Initialize substructs
-    x = xASL_init_SubStructures(x);
+    x = xASL_init_SubStructures;
+    
+    % Convert parsed input
+    x = xASL_init_convertParsedInput(x, p.Results);
     
     % Check if the ExploreASL pipeline should be run or not
     x = xASL_init_GetBooleansImportProcess(x);
@@ -282,7 +279,7 @@ end
 
 %% -----------------------------------------------------------------------
 %% Convert parsed input
-function parameters = xASL_init_convertParsedInput(parameters)
+function x = xASL_init_convertParsedInput(x,parameters)
 
     % This sub-function takes the parsed arguments and convertes them for
     % our internal usage. Additionally we do some pipeline related checks.
@@ -295,8 +292,7 @@ function parameters = xASL_init_convertParsedInput(parameters)
     % To be able to run each import or processing sub-module individually,
     % we allow the use of arrays, too. If the default case happens and a
     % user inserts bImport or bProcess as booleans though, then we simply
-    % convert them to the arrays which are called bImport and
-    % bProcess.
+    % convert them to the arrays which are called bImport and bProcess.
 
     % Check if inputs are empty or chars (the option to use character array input is important for the compiled mode)
     if isempty(parameters.DatasetRoot),     parameters.DatasetRoot = '';                                    end
@@ -354,21 +350,8 @@ function parameters = xASL_init_convertParsedInput(parameters)
         parameters.nWorkers = 1;
     end
     
-end
-
-
-%% -----------------------------------------------------------------------
-%% Store parsed input
-function x = xASL_init_storeParsedInput(parameters)
-
-    % Store input options
-    x.opts.DatasetRoot = parameters.DatasetRoot;
-    x.opts.bImport = parameters.bImport;
-    x.opts.Deface = parameters.Deface;
-    x.opts.bProcess = parameters.bProcess;
-    x.opts.bPause = parameters.bPause;
-    x.opts.iWorker = parameters.iWorker;
-    x.opts.nWorkers = parameters.nWorkers;
+    % Store parsed input
+    x.opts = parameters;
     
 end
 
@@ -403,25 +386,21 @@ function x = xASL_init_GetBooleansImportProcess(x)
     
     % We only load data when a DatasetRoot is provided
     if ~isempty(x.opts.DatasetRoot)
-        x.opts.bLoadData = true;
+        % We only load the data if bImportData and bProcessData are false or only bProcessData is true
+        if (~x.opts.bImportData && ~x.opts.bProcessData) || x.opts.bProcessData
+            x.opts.bLoadData = true;
+        end
     else
         x.opts.bLoadData = false;
     end
     
-    % It is possible that users set bProcess to true, but don't want to run
-    % BIDS2Legacy because they already have derivatives data. If they
-    % converted their rawdata to derivatives using ExploreASL, we have the
-    % lock files and can correctly skip BIDS2Legacy. If they used another
-    % tool though, we need to skip BIDS2Legacy manually here, otherwise it
-    % crashes. We do this using the x.opts.bSkipBIDS2Legacy variable, which
-    % is false on default and will be set to true in the function
-    % xASL_imp_DetermineStructureFromRawdata if there is no rawdata. If
-    % there is correct rawdata, then xASL_imp_DetermineStructureFromRawdata
-    % should be able to determine the subject structure and BIDS2Legacy
-    % should not overwrite existing data afterwards. This is a use case for
-    % our old test data, which we want to keep for backwards compatibility
-    % and more complex use-cases.
-    x.opts.bSkipBIDS2Legacy = false;
+    % We need to check if import and processing were run separately
+    if x.opts.bImportData && ~x.opts.bProcessData
+        x.opts.bSkipBIDS2Legacy = true;
+        x.opts.bLoadData = false;
+    else
+        x.opts.bSkipBIDS2Legacy = false;
+    end
 
 end
 
@@ -517,7 +496,10 @@ end
 
 
 %% -----------------------------------------------------------------------
-function x = xASL_init_SubStructures(x)
+function x = xASL_init_SubStructures()
+
+    % Create the x struct
+    x = struct;
     
     % Statistics, directories, paths, and sequence related fields
     if ~isfield(x,'S'),                     x.S = struct;                   end

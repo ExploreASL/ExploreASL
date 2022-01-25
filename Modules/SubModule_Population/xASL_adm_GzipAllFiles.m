@@ -51,19 +51,21 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         %% 2) Otherwise use the multithreaded SuperGzip for Windows
         if ~isempty(pathExternal)
             PathList = xASL_adm_GetFileList(ROOT, '^.*\.(nii)$', 'FPListRec', [0 Inf], false);
-            fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
-            numCores = feature('numcores');
-            % Get SuperGzip path
-            PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'SuperGZip_Windows.exe');
-            % Define SuperGzip command
-            command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' ROOT ' *.nii'];
-            % Run script
-            [exit_code,system_result] = system(command);
-            % Check if SuperGzip was successful
-            if exit_code == 0
-                fprintf('Gzipping of NIfTIs successful...\n')
-            else
-                warning('An error occurred while using SuperGzip: %s', system_result)
+            if ~isempty(PathList)
+                fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+                numCores = feature('numcores');
+                % Get SuperGzip path
+                PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'SuperGZip_Windows.exe');
+                % Define SuperGzip command
+                command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' ROOT ' *.nii'];
+                % Run script
+                [exit_code,system_result] = system(command);
+                % Check if SuperGzip was successful
+                if exit_code == 0
+                    fprintf('Gzipping of NIfTIs successful...\n')
+                else
+                    warning('An error occurred while using SuperGzip: %s', system_result)
+                end
             end
         end
     end
@@ -87,32 +89,35 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         fprintf('Progress:   ');
     end
 
-    for iList=1:length(PathList)
-        xASL_TrackProgress(iList,length(PathList));
-        
-        try
-            if bFolder
-               zip([PathList{iList} '.zip'], PathList{iList});
-               xASL_adm_DeleteFileList(PathList{iList}, '^.*$', true, [0 Inf]);
-               xASL_delete(PathList{iList});
-            else           
+    % Iterate over the individual files
+    if ~isempty(PathList)
+        for iList=1:length(PathList)
+            xASL_TrackProgress(iList,length(PathList));
 
-                Fname = PathList{iList};
-                [~, ~, Fext] = xASL_fileparts(Fname);
-                if strcmp(Fext,'.nii') || strcmp(Fext,'.wav') || strcmp(Fext,'.bmp')
-                    if exist([Fname '.gz'],'file')
-                        delete([Fname '.gz']); 
+            try
+                if bFolder
+                   zip([PathList{iList} '.zip'], PathList{iList});
+                   xASL_adm_DeleteFileList(PathList{iList}, '^.*$', true, [0 Inf]);
+                   xASL_delete(PathList{iList});
+                else           
+
+                    Fname = PathList{iList};
+                    [~, ~, Fext] = xASL_fileparts(Fname);
+                    if strcmp(Fext,'.nii') || strcmp(Fext,'.wav') || strcmp(Fext,'.bmp')
+                        if exist([Fname '.gz'],'file')
+                            delete([Fname '.gz']); 
+                        end
+                        gzip(Fname);
+                        delete(Fname);
                     end
-                    gzip(Fname);
-                    delete(Fname);
                 end
+            catch ME
+                warning('Something went wrong, continuing with next one...');
+                fprintf('%s\n',ME.message);
             end
-        catch ME
-            warning('Something went wrong, continuing with next one...');
-            fprintf('%s\n',ME.message);
         end
+        fprintf('\n');
     end
-    fprintf('\n');
 
     
 end

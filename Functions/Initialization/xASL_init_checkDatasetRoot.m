@@ -20,13 +20,6 @@ function [x] = xASL_init_checkDatasetRoot(x)
 % Copyright (c) 2015-2022 ExploreASL
 
     %% Check the ExploreASL parameter "DatasetRoot"
-
-    % Default
-    if ~isfield(x.opts,'bLoadData')
-        x.opts.bLoadData = false;
-    end
-
-    % Check if the DatasetRoot is a directory
     
     % Default
     x.opts.dataParType = 'unknown';
@@ -106,14 +99,6 @@ function [x] = xASL_init_checkDatasetRoot(x)
         x.opts.bProcess = [0 0 0];
     else
         % At least one of the JSON files exists
-        
-        % Dataset directory
-        if strcmp(x.opts.dataParType,'directory')
-            % Check if processing is turned off & there is a derivatives directory to be loaded
-            if x.opts.bProcessData==0 && xASL_exist(fullfile(x.dir.DatasetRoot,'derivatives'))
-                x.opts.bLoadData = true;
-            end
-        end
         
         % dataPar.json
         if strcmp(x.opts.dataParType,'dataParFile')

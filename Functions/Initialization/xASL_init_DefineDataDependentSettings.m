@@ -107,7 +107,13 @@ if ~isfield(x.modules.asl, 'M0_conventionalProcessing')
 	x.modules.asl.M0_conventionalProcessing = false;
 end
 
-% Check deprecated fields
+%% Atlases and templates (those may have been removed by the clean x function)
+x = xASL_init_MapsAndAtlases(x);
+
+%% Visualization (those may have been removed by the clean x function)
+x = xASL_init_VisualizationSettings(x);
+
+%% Check deprecated fields
 x = xASL_io_CheckDeprecatedFieldsX(x, 0);
 
 

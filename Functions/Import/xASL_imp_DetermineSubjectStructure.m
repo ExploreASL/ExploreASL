@@ -47,11 +47,11 @@ function x = xASL_imp_DetermineSubjectStructure(x)
     imParCondition = isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar);
 
     %% Specific initialization for sourcedata, temp data, and rawdata
-    if x.opts.bImport(1) && imParCondition
+    if x.opts.bImport(1) && x.opts.bImportData && imParCondition
         % Determine structure from sourcedata
         x = xASL_imp_DetermineStructureFromSourcedata(x);
         
-    elseif x.opts.bImport(2) && imParCondition
+    elseif x.opts.bImport(2) && x.opts.bImportData && imParCondition
         % Determine structure from temp data
         x = xASL_imp_DetermineStructureFromTempdata(x);
         
@@ -172,12 +172,18 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
     end
     
     % Unique the list
-    x.SUBJECTS = unique(x.SUBJECTS);
-    
-    % Check if list is  empty
-    if isempty(x.SUBJECTS)
-        warning('Unable to find subjects in temp directory...');
+    if isfield(x,'SUBJECTS')
+        % Get the unique subjects
+        x.SUBJECTS = unique(x.SUBJECTS);
+        % Check if list is  empty
+        if isempty(x.SUBJECTS)
+            warning('Unable to find subjects in temp directory...');
+        end
+    else
+        warning('x.SUBJECTS is undefined, data loading is going to fail...');
     end
+    
+
     
 
 

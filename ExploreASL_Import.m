@@ -41,9 +41,10 @@ function [x] = ExploreASL_Import(x)
     
     %% Import workflow
     try
-        % Here we run the subject-wise ExploreASL xASL_module_Import. In future releases xASL_init_Iteration should 
-        % help us to run a parallelized import and also to enable reruns if parts of the import crashed.
+        % Here we run the subject-wise ExploreASL xASL_module_Import
         [~, x] = xASL_init_Iteration(x,'xASL_module_Import');
+        % Turn off the import
+        x.opts.bImportData = false;
     catch loggingEntry
         % Print user feedback if import crashed
         fprintf(2,'ExploreASL Import module failed...\n');
@@ -56,10 +57,6 @@ function [x] = ExploreASL_Import(x)
         x.opts.bLoadData = false;
         x.opts.bProcessData = false;
     end
-    
-    % Reset the import parameters
-    x.opts.bImportData = 0;
-    x.opts.bImport = [0 0];
 
     
 end
