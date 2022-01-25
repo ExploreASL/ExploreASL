@@ -350,12 +350,21 @@ if dimASL(4) ~= lengthASLContext
 	% Check if we can simply repeat it
 	if mod(dimASL(4),lengthASLContext)
 		error('Cannot find a match between the ASLContext and the 4th dimension of the NIFTI');
-	else
-		numRepeat = dimASL(4)/lengthASLContext;
-		tmpStr = jsonOut.ASLContext;
-		for iRepeat = 2:numRepeat
-			jsonOut.ASLContext = sprintf('%s\n%s',jsonOut.ASLContext,tmpStr);
-		end
+    else
+        % Check number of Echo times
+        if length(unique(jsonOut.EchoTime)) > 1
+            nVolumes = dimASL(4);
+            Control_str = xASL_num2str(jsonOut.ASLContext(1:8));
+            Label_str = xASL_num2str(jsonOut.ASLContext(8:13));
+            jsonOut.ASLContext = [repmat(Control_str,1,length(unique(jsonOut.EchoTime))), repmat(Label_str,1,nVolumes-length(unique(jsonOut.EchoTime)))];
+            %Help here
+        else
+            numRepeat = dimASL(4)/lengthASLContext;
+            tmpStr = jsonOut.ASLContext;
+            for iRepeat = 2:numRepeat
+                jsonOut.ASLContext = sprintf('%s\n%s',jsonOut.ASLContext,tmpStr);
+            end
+        end
 	end
 end
 jsonOut.ASLContext = sprintf('%s\n',jsonOut.ASLContext);
