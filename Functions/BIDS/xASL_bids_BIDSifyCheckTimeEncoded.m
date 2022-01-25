@@ -69,8 +69,13 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
             if length(jsonOut.PostLabelingDelay) > 1 && length(jsonOut.PostLabelingDelay) < nVolumes
                 % So here, we first make sure that each PLD is repeated for the whole block of echo-times
 				if mod(nVolumes,length(jsonOut.PostLabelingDelay)) == 0
-					jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:), 1, nVolumes/length(jsonOut.PostLabelingDelay))';
-					jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
+                    if length(unique(jsonOut.EchoTime)) >1 % If multiTE, repeat the PLD for each TE: [1 1 1 2 2 2 3 3 3 4 4 4] -> 4PLDs, 3 TEs, 12 Volumes e.g.
+                        jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:), 1, nVolumes/length(jsonOut.PostLabelingDelay))'; % transposed
+                        jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
+                    elseif length(unique(jsonOut.EchoTime)) == 1 % If single TE, repeat the PLD until reaching the nVolumes: [1 2 3 4 1 2 3 4] -> 4PLDs, 1 TE, 8 volumes e.g.
+                        jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:), 1, nVolumes/length(jsonOut.PostLabelingDelay)); % not tranposed
+                        jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
+                    end
 				else
 					warning('Number of PLDs %d does not match the number of volumes %d\n',length(jsonOut.EchoTime),nVolumes);
 				end
