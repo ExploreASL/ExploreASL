@@ -361,9 +361,10 @@ if dimASL(4) ~= lengthASLContext
 			
 			% Find indices of all the line-ends
 			indexLineEnd = strfind(ASLContextTemp, sprintf('\n'));
+			tmpStr = sprintf('\n');
 			
 			% Find indices of the starting and ending of each vector
-			indexStart = [1, indexLineEnd+1];
+			indexStart = [1, indexLineEnd+length(tmpStr)];
 			indexEnd   = [indexLineEnd-1, length(ASLContextTemp)];
 			
 			% Repeat each string
