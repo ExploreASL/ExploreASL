@@ -350,14 +350,36 @@ if dimASL(4) ~= lengthASLContext
 	% Check if we can simply repeat it
 	if mod(dimASL(4),lengthASLContext)
 		error('Cannot find a match between the ASLContext and the 4th dimension of the NIFTI');
-    else
-        % Check number of Echo times
-        if length(unique(jsonOut.EchoTime)) > 1
-            nVolumes = dimASL(4);
-            Control_str = xASL_num2str(jsonOut.ASLContext(1:8));
-            Label_str = xASL_num2str(jsonOut.ASLContext(8:13));
-            jsonOut.ASLContext = [repmat(Control_str,1,length(unique(jsonOut.EchoTime))), repmat(Label_str,1,nVolumes-length(unique(jsonOut.EchoTime)))];
-            %Help here
+	else
+		NumberEchoTimes = numel(unique(jsonOut.EchoTime));
+		
+        if NumberEchoTimes > 1 && mod(dimASL(4), lengthASLContext * NumberEchoTimes) == 0
+			% For multi-TE acquisition, we check if we can additionally first repeat the echo times
+			% Save the original ASLContext and clean the output
+			ASLContextTemp = jsonOut.ASLContext;
+			jsonOut.ASLContext = [];
+			
+			% Find indices of all the line-ends
+			indexLineEnd = strfind(ASLContextTemp, sprintf('\n'));
+			
+			% Find indices of the starting and ending of each vector
+			indexStart = [1, indexLineEnd+1];
+			indexEnd   = [indexLineEnd-1, length(ASLContextTemp)];
+			
+			% Repeat each string
+			for iContext = 1:length(indexStart)
+				% Repeat it for each TE
+				for iTE = 1:length(NumberEchoTimes)
+					jsonOut.ASLContext = sprintf('%s\n%s', jsonOut.ASLContext, ASLContextTemp(indexStart(iContext), indexEnd(iContext)));
+				end
+			end
+			
+			% The repeat the whole block to fill the repetitions
+			numRepeat = dimASL(4)/lengthASLContext/NumberEchoTimes;
+            tmpStr = jsonOut.ASLContext;
+            for iRepeat = 2:numRepeat
+                jsonOut.ASLContext = sprintf('%s\n%s',jsonOut.ASLContext,tmpStr);
+            end
         else
             numRepeat = dimASL(4)/lengthASLContext;
             tmpStr = jsonOut.ASLContext;
