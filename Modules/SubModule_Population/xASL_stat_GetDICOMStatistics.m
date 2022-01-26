@@ -94,10 +94,6 @@ for iSubject=1:x.nSubjects
                 TSV{1+iSubjSess, 2+iField} = xASL_num2str(Parms.(matFields{iField}));
                 if isnumeric(Parms.(matFields{iField}))
                     TempData = Parms.(matFields{iField});
-                    if length(TempData)>1
-                        % warning(['Parms.' matFields{iField} ' had multiple values']);
-                        % This warning was only useful in the pre-BIDS time
-                    end
                     x.S.par(iSubjSess,iField) = min(TempData);
                 else
                     x.S.par(iSubjSess,iField) = NaN; % fill empties with NaNs, not zeros!
@@ -110,10 +106,6 @@ for iSubject=1:x.nSubjects
                     TSV{1+iSubjSess, 2+iField} = xASL_num2str(Parms.Q.(matFields{iField}));
                     if isnumeric(Parms.Q.(matFields{iField}))
                         TempData = Parms.Q.(matFields{iField});
-                        if length(TempData)>1
-                            % warning(['Parms.Q.' matFields{iField} ' had multiple values']);
-                            % This warning was useful in the pre-BIDS time
-                        end
                         x.S.par(iSubjSess,iField) = min(TempData);
                     else
                         x.S.par(iSubjSess,iField) = NaN; % fill empties with NaNs, not zeros!

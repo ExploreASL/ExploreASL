@@ -18,7 +18,7 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
     if numel(nii_files)>=1
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
@@ -39,7 +39,7 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON
                 imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
                 xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
                 % Repeat Echo Times
-                if numel(unique(resultJSON.EchoTime))~=1 % Repeat EchoTime only if multiple TEs
+                if numel(unique(resultJSON.EchoTime))>1 % Repeat EchoTime only if multiple TEs
                     resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
                 end
                 % Save the JSON with the updated echo times

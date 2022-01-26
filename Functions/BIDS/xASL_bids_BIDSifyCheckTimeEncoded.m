@@ -44,10 +44,6 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
     if bTimeEncodedFME
         bTimeEncoded = true;    
     end
-
-    % Default
-    NumberEchoTimes = 1;
-    TimeEncodedInversionTimes = 1;
     
 	if isfield(jsonOut, 'EchoTime')
 		NumberEchoTimes = length(uniquetol(jsonOut.EchoTime,0.001)); % Obtain the number of echo times
@@ -61,6 +57,8 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
 				warning('Number of EchoTimes %d does not match the number of volumes %d\n',length(jsonOut.EchoTime),nVolumes);
 			end
 		end
+	else
+		NumberEchoTimes = 1;
 	end
 		
     if bTimeEncoded
@@ -68,16 +66,14 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
             % From the import, the length of EchoTime should correspond to the number of volumes
             if length(jsonOut.PostLabelingDelay) > 1 && length(jsonOut.PostLabelingDelay) < nVolumes
                 % So here, we first make sure that each PLD is repeated for the whole block of echo-times
-				if mod(nVolumes,length(jsonOut.PostLabelingDelay)) == 0
-                    if length(unique(jsonOut.EchoTime)) >1 % If multiTE, repeat the PLD for each TE: [1 1 1 2 2 2 3 3 3 4 4 4] -> 4PLDs, 3 TEs, 12 Volumes e.g.
-                        jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:), 1, nVolumes/length(jsonOut.PostLabelingDelay))'; % transposed
-                        jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
-                    elseif length(unique(jsonOut.EchoTime)) == 1 % If single TE, repeat the PLD until reaching the nVolumes: [1 2 3 4 1 2 3 4] -> 4PLDs, 1 TE, 8 volumes e.g.
-                        jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:), 1, nVolumes/length(jsonOut.PostLabelingDelay)); % not tranposed
-                        jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
-                    end
+				if mod(nVolumes,length(jsonOut.PostLabelingDelay)*NumberEchoTimes) == 0
+					% Repeat the PLD for each TE first, then for repetitions: 
+					% Example 1: 4PLDs, 3 TEs, 2 repetitions -> 24 volumes [1 1 1 2 2 2 3 3 3 4 4 4 1 1 1 2 2 2 3 3 3 4 4 4]
+					% Example 2: 4PLDs,  1 TE, 2 repetitions ->  8 volumes [1 2 3 4 1 2 3 4]
+					jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:)', NumberEchoTimes, nVolumes/length(jsonOut.PostLabelingDelay)/NumberEchoTimes);
+					jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
 				else
-					warning('Number of PLDs %d does not match the number of volumes %d\n',length(jsonOut.EchoTime),nVolumes);
+					warning('Number of PLDs %d and TEs %d does not match the number of volumes %d\n', length(jsonOut.PostLabelingDelay), NumberEchoTimes, nVolumes);
 				end
                 
             end
