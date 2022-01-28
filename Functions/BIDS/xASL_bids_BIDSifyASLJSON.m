@@ -370,8 +370,8 @@ if dimASL(4) ~= lengthASLContext
 			% Repeat each string
 			for iContext = 1:length(indexStart)
 				% Repeat it for each TE
-				for iTE = 1:length(NumberEchoTimes)
-					jsonOut.ASLContext = sprintf('%s\n%s', jsonOut.ASLContext, ASLContextTemp(indexStart(iContext), indexEnd(iContext)));
+				for iTE = 1:NumberEchoTimes
+					jsonOut.ASLContext = sprintf('%s\n%s', jsonOut.ASLContext, ASLContextTemp(indexStart(iContext): indexEnd(iContext)));
 				end
 			end
 			
