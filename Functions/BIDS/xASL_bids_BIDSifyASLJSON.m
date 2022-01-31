@@ -458,7 +458,7 @@ if ~isfield(jsonOut,'TotalAcquiredPairs') || jsonOut.TotalAcquiredPairs == 1
 	elseif sum(ASLContextControlIndex) > 0 % In case C/L are present, than based this on the number of C/L pairs
 		if sum(ASLContextControlIndex) == sum(ASLContextLabelIndex)
 			jsonOut.TotalAcquiredPairs = sum(ASLContextControlIndex);
-		else
+        elseif bTimeEncoded == 0
 			warning('Cannot calculte TotalAcquiredPairs when control and label numbers differ...');
 		end
 	end
