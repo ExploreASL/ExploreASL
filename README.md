@@ -12,9 +12,13 @@ The software provides a complete head-to-tail approach that runs fully automatic
 
 Additionally, this (semi-)automatic pipeline allows us to minimize manual intervention, which increases the reproducibility of studies. 
 
+## Documentation
+
+Reference manual and tutorials for each ExploreASL version are found on the [GitHub website](https://exploreasl.github.io/Documentation). A general description of ExploreASL is in the [Neuroimage paper]([https://pubmed.ncbi.nlm.nih.gov/32526385/). Additional resources are on the [ExploreASL website](https://www.ExploreASL.org) including the walkthrough document and how-to videos, but these are not regularly updated with new versions. For any help please contact the lead authors/developers at h.j.mutsaerts@amsterdamumc.nl or j.petr@hzdr.de.
+
 ## Installation
 
-To use **ExploreASL** within Matlab, you can download a stable release version from the GitHub releases section. Navigate within Matlab to the **ExporeASL** directory, to make **ExploreASL** the current working directory. To start ExploreASL from Matlab, type:
+To use **ExploreASL** within Matlab, you can download a stable release version from the [GitHub releases section](https://github.com/ExploreASL/ExploreASL/releases) or from [Zenodo](https://zenodo.org/record/3905263). Navigate within Matlab to the **ExporeASL** directory, to make **ExploreASL** the current working directory. To start ExploreASL from Matlab, type:
 
 ```
 ExploreASL
@@ -23,10 +27,6 @@ ExploreASL
 ## Workflow
 
 ![ExploreASL Workflow](Design/WorkflowUpdate.png "Workflow of ExploreASL")
-
-## Documentation
-
-Additional information about ExploreASL can be found in the [Neuroimage paper]([https://pubmed.ncbi.nlm.nih.gov/32526385/) and on the [ExploreASL website](https://www.ExploreASL.org), including the walkthrough document and how-to videos. Further documentation is work in progress. For any help please contact the lead authors/developers at h.j.mutsaerts@amsterdamumc.nl or j.petr@hzdr.de.
 
 ## ExploreASL team
 
