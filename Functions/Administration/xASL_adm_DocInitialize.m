@@ -49,7 +49,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     
     % Set up output folder
     outputFolder = fullfile(baseOutputFolder,'docs');
-    templatesDir = fullfile(baseOutputFolder,'templates');
+    templatesDir = fullfile(baseOutputFolder,'source');
     
     % Copy CHANGES.md
     xASL_Copy(fullfile(x.opts.MyPath,'CHANGES.md'),fullfile(outputFolder,'Changes.md'),1);
@@ -58,7 +58,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
     xASL_Copy(fullfile(x.opts.MyPath,'README.md'),fullfile(outputFolder,'index.md'),1);
 
     % Copy the DataParTemplate
-    xASL_Copy(fullfile(x.opts.MyPath,'Templates','DataParTemplate.md'),fullfile(outputFolder,'DataParTemplate.md'),1);
+    xASL_Copy(fullfile(templatesDir,'DataParTemplate.md'),fullfile(outputFolder,'DataParTemplate.md'),1);
     
     % Logo
     swapTextInFile(fullfile(outputFolder,'index.md'),...
@@ -70,19 +70,19 @@ function xASL_adm_DocInitialize(baseOutputFolder)
                   '(./img/ExploreASL_Workflow.png "Workflow ExploreASL")');
               
     % Copy the REQUIREMENTS file
-    xASL_Copy(fullfile(templatesDir,'REQUIREMENTS.md'),fullfile(outputFolder,'Requirements.md'),1);
+    xASL_Copy(fullfile(templatesDir,'Requirements.md'),fullfile(outputFolder,'Requirements.md'),1);
     
     % Copy the ABOUT file
-    xASL_Copy(fullfile(templatesDir,'ABOUT.md'),fullfile(outputFolder,'About.md'),1);
+    xASL_Copy(fullfile(templatesDir,'About.md'),fullfile(outputFolder,'About.md'),1);
     
     % Copy the TUTORIALS files
     xASL_Copy(fullfile(templatesDir,'FAQ.md'),fullfile(outputFolder,'FAQ.md'),1);
-    xASL_Copy(fullfile(templatesDir,'TUTORIALS-INSTALL.md'),fullfile(outputFolder,'Tutorials-Install.md'),1);
-	xASL_Copy(fullfile(templatesDir,'TUTORIALS-EXECUTION.md'),fullfile(outputFolder,'Tutorials-Execution.md'),1);
-	xASL_Copy(fullfile(templatesDir,'TUTORIALS-IMPORT.md'),fullfile(outputFolder,'Tutorials-Import.md'),1);
-	xASL_Copy(fullfile(templatesDir,'TUTORIALS-PROCESSING.md'),fullfile(outputFolder,'Tutorials-Processing.md'),1);
-	xASL_Copy(fullfile(templatesDir,'TUTORIALS-QC.md'),fullfile(outputFolder,'Tutorials-QC.md'),1);
-	xASL_Copy(fullfile(templatesDir,'TUTORIALS-DEVELOPER.md'),fullfile(outputFolder,'Tutorials-Developer.md'),1);	
+    xASL_Copy(fullfile(templatesDir,'Tutorials-Install.md'),fullfile(outputFolder,'Tutorials-Install.md'),1);
+	xASL_Copy(fullfile(templatesDir,'Tutorials-Execution.md'),fullfile(outputFolder,'Tutorials-Execution.md'),1);
+	xASL_Copy(fullfile(templatesDir,'Tutorials-Import.md'),fullfile(outputFolder,'Tutorials-Import.md'),1);
+	xASL_Copy(fullfile(templatesDir,'Tutorials-Processing.md'),fullfile(outputFolder,'Tutorials-Processing.md'),1);
+	xASL_Copy(fullfile(templatesDir,'Tutorials-QC.md'),fullfile(outputFolder,'Tutorials-QC.md'),1);
+	xASL_Copy(fullfile(templatesDir,'Tutorials-Developer.md'),fullfile(outputFolder,'Tutorials-Developer.md'),1);	
 	
     % Create the functions markdown file
     xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
