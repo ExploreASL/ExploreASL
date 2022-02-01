@@ -10,13 +10,13 @@
     "external":{
         "bAutomaticallyDetectFSL": 1},
     "Q":{
-		"BackgroundSuppressionNumberPulses": 2,
-		"LabelingType": "CASL",
-		"Initial_PLD": 1800,
-		"LabelingDuration": 1800,
-		"SliceReadoutTime": 30,
-		"T2art": 50,
-        "BloodT1": 1650,
+	"BackgroundSuppressionNumberPulses": 2,
+	"LabelingType": "CASL",
+	"Initial_PLD": 1800,
+	"LabelingDuration": 1800,
+	"SliceReadoutTime": 30,
+	"T2art": 50,
+        "BloodT1": 1650},
     "settings":{
         "Quality": 1,
 	"DELETETEMP": 1,
