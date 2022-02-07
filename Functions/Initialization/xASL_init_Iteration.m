@@ -305,7 +305,7 @@ function [bAborted, x] = runIteration(db)
             diaryFileEx = fullfile(diaryFileEx);
                 
             % Make sure folder exists, but limit to 2 missing levels
-            status = xASL_adm_CreateDir(fileparts(diaryFileEx),2);
+            status = xASL_adm_CreateDir(fileparts(diaryFileEx), 1);
             
             % Write diary file
             if status>=0
