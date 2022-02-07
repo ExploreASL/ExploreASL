@@ -19,3 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+***
+
+Maurice Pasternak's SuperGzip uses the following Python packages: gzip, argparse, pathlib-Path, concurrent.futures-ThreadPoolExecutor, shutil-copyfileobj, sys-exit. Python is distributed under the Python Software Foundation (PSF) license, which is fully open, and the Zero-Clause BSD license, which is also fully permissive.
+
+
+
+
+
