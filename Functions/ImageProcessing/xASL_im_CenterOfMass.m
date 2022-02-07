@@ -1,4 +1,4 @@
-function xASL_im_CenterOfMass(PathNIfTI, OtherList, AllowedDistance)
+function xASL_im_CenterOfMass(PathNIfTI, OtherList, AllowedDistance, Offset)
 %xASL_im_CenterOfMass Determine and apply center of mass
 %
 % FORMAT: xASL_im_CenterOfMass(PathNIfTI, OtherList, AllowedDistance)
@@ -9,6 +9,10 @@ function xASL_im_CenterOfMass(PathNIfTI, OtherList, AllowedDistance)
 %                     should remain in alignment (OPTIONAL)
 %   AllowedDistance - scalar of distance (mm) above which realignment is
 %                     applied (OPTIONAL, DEFAULT=50mm)
+%   Offset          - vector of distance (mm) for offsetting when desired image center is not identical to center of mass(e.g.,
+%                     anterior commissure is not identical to center of
+%                     mass) (OPTIONAL, DEFAULT=[0.8462;-17.5297;15.3505]
+%                     for anterior commissure in ASL images (empirical)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function estimates the center of mass of the image
@@ -55,6 +59,10 @@ if nargin<3 || isempty(AllowedDistance)
     AllowedDistance = 50;
 end
 
+if nargin<4 || isempty(Offset)
+    OffSet = [0.8462;-17.5297;15.3505];
+end
+
 nii = xASL_io_ReadNifti(PathNIfTI);
 IM = single(nii.dat(:,:,:,1)).^0.5; % restore contrast
 % & use first image!
@@ -99,7 +107,7 @@ end
 CoM2 = - (nii.mat(1:3,1:3) * CoM');
 
 %% Add the difference of AnteriorCommissure and CenterOfMass of a skullstripped brain
-CoM2 = CoM2 + [0.8462;-17.5297;15.3505];
+CoM2 = CoM2 + Offset;
 
 %% Calculate shift (in world coordinate)
 CoMshift = CoM2 - nii.mat(1:3,4);
