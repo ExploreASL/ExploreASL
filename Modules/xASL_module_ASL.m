@@ -62,8 +62,8 @@ result = false;
 
 
 %% A. Check if ASL exists, otherwise skip this module
-[x,result,skip] = xASL_module_ASL_CheckASL(x,result);
-if skip, return; end
+[x, bSkip] = xASL_module_ASL_CheckASL(x);
+if bSkip, return; end
 x = xASL_init_FileSystem(x); % Do this only here, to save time when skipping this module
 oldFolder = cd(x.dir.SESSIONDIR); % Change working directory to make sure that unspecified output will go there...
 
@@ -602,9 +602,9 @@ end
 
 
 %% Check if ASL exists, otherwise skip this module
-function [x,result,skip] = xASL_module_ASL_CheckASL(x,result)
+function [x, bSkip] = xASL_module_ASL_CheckASL(x)
 
-    skip = false;
+    bSkip = false;
     x.P.Path_ASL4D = fullfile(x.dir.SESSIONDIR, 'ASL4D.nii');
     x.P.Path_ASL4D_json = fullfile(x.dir.SESSIONDIR, 'ASL4D.json');
     x.P.Path_ASL4D_parms_mat = fullfile(x.dir.SESSIONDIR, 'ASL4D_parms.mat');
@@ -626,8 +626,7 @@ function [x,result,skip] = xASL_module_ASL_CheckASL(x,result)
             end
         else
             fprintf('%s\n',['No ASL found, skipping: ' x.dir.SESSIONDIR]);
-            result = true;
-            skip = true;
+            bSkip = true;
         end
     end
 
