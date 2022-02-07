@@ -258,7 +258,6 @@ if xASL_exist(x.P.Pop_Path_qCBF_untreated,'file')
 end
 
 
-
 %% G1. Split ASL and M0 within the ASL time series
 % Run this when the data hasn't been touched yet
 % The first three states are here, because the first two are run only conditionally
@@ -276,6 +275,7 @@ if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mute
 		xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'ASL4D.json'));
 	end
 end
+
 
 %% G2. DeltaM parsing - check if all/some volumes are deltams
 % If TSV file exist
@@ -300,8 +300,6 @@ else
 	end
 end
 
-%% Define sequence (educated guess)
-x = xASL_adm_DefineASLSequence(x);
 
 %% H. Skip processing if invalid image
 tempASL = xASL_io_Nifti2Im(x.P.Path_ASL4D);
