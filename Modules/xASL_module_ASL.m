@@ -282,6 +282,34 @@ else
 	end
 end
 
+
+%% Initialize QASPER phantom processing options
+if isfield(x, 'bQASPERPhantom') && x.bQASPERPhantom
+    fprintf('%s\n', 'QASPER phantom detected, forcing the following processing settings...');
+    
+    % Skip motion correction
+    x.modules.asl.motionCorrection = 0; % no motion correction for the phantom
+    fprintf('%s\n', '-> Skipping motion correction');
+    
+    % Simplify ASL registration
+    x.modules.asl.bUseMNIasDummyStructural = 1; % use dummy MNI templates
+    fprintf('%s\n', '-> Registering to MNI templates instead of native space images');
+    x.modules.asl.bRegistrationContrast = 0; % only mean-control->T1w if exists
+    fprintf('%s\n', '-> Registering mean control image if available instead of perfusion-weighted image');
+    x.modules.asl.bAffineRegistration = 0; % no affine registration
+    x.modules.asl.bDCTRegistration = 0; % no DCT registration
+    fprintf('%s\n', '-> Registering rigid-body only');
+    x.modules.asl.RegistrationTemplate = 'QASPER';
+    
+    % Skip M0 registration & masking & smoothing
+    x.modules.asl.bRegisterM02ASL = 0; % skip registration M0 to ASL
+    fprintf('%s\n', '-> Skip registering M0 to ASL');
+    x.modules.asl.bMaskSmoothM0 = 0; % skip M0 masking & smoothing
+    fprintf('%s\n', '-> Skip M0 masking and smoothing');
+    
+end
+
+
 %% Define sequence (educated guess)
 x = xASL_adm_DefineASLSequence(x);
 
