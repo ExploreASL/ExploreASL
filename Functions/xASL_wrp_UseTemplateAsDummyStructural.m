@@ -12,63 +12,51 @@ function xASL_wrp_UseTemplateAsDummyStructural(x, Template)
 %% 1. admin
 % paths -> may contain all Template paths currently supported by ExploreASL
 TemplateList = {'TotalGM', 'TotalWM', 'DeepWM', 'WholeBrain', 'MNI_Structural', 'CortVascTerritoriesTatu', 'TatuICA_PCA', 'LabelingTerritories', 'ATTbasedFlowTerritories'};
-if ~exist('Template','var') % use default MNI template
+if nargin<2 || isempty('Template') % use default MNI template
     Template = 'MNI_Structural';
-    TemplatePath = fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii');
+end
+
+if strcmp(Template, 'MNI_Structural')
+    TemplateFolder = x.D.MapsSPMmodifiedDir;
+    rc1T1 = 'rc1T1.nii';
+    rc2T1 = 'rc2T1.nii';
+    rc3T1 = 'rc3T1.nii';
+    rT1 = 'rT1.nii';    
+    
+    TemplatePath = fullfile(TemplateFolder, 'rT1.nii');
 elseif strcmp(Template, 'QASPER') % check if template is QASPER
     % implement proper location later
-    Templates.QASPERTemplatePath = '/home/mdijsselhof/lood_storage/divi/Projects/ExploreASL/ASPIRE/GSP_perfusion_phantom/Atlases/New/BinaryTemplate/BinNewContrastTemplateSmth.nii';
-    TemplateFolder = '/home/mdijsselhof/lood_storage/divi/Projects/ExploreASL/ASPIRE/GSP_perfusion_phantom/Atlases/New/BinaryTemplate/';
-    rc1T1 = 'InletBin2PCASLRescSmth.nii';
-    rc2T1 = 'OutletBin2PCASLRescSmth.nii';
-    rc3T1 = 'PorousBin2PCASLRescSmth.nii';
-    rT1 = 'BinNewContrastTemplateSmth.nii';
-    TemplatePath = [TemplateFolder rT1];
+    TemplateFolder = fullfile(x.D.TemplateDir, 'QASPER');
+    rc1T1 = 'QASPER_pInlet.nii';
+    rc2T1 = 'QASPER_pOutlet.nii';
+    rc3T1 = 'QASPER_pPorousMedium.nii';
+    rT1 = 'QASPER_Template.nii';
+    
+    TemplatePath = fullfile(TemplateFolder, rT1);
 
-elseif ismember(TemplateList, Template); % check if supplied template is supported by ExploreASL
-    fprintf('Currently templates other than MNI_Structural (default) or QASPER are not implemented yet')
+elseif ismember(TemplateList, Template) % check if supplied template is supported by ExploreASL
+    fprintf('Currently, templates other than MNI_Structural (default) or QASPER are not implemented yet')
 end
-% check if template exists
-% should be included: x.P.Atlas.QASPER = fullfile(x.D.MapsSPMmodifiedDir, 'Atlas2MNI.nii');
 
 
 %% 2.1 copy and register structural template files to subject directory and subject space  
-
-
 fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
 
-if exist(TemplatePath,'file') && ~strcmp(Template,'QASPER') % Available templates in ExploreASL
-        IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
+IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
 
-        % Copy dummy transformation field
-        xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
+if exist(TemplatePath,'file')
+    % Copy dummy transformation field
+    xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
 
-		% Use the GM, WM and T1 from the template to create dummy structural files
-        % Create dummy structural derivatives in standard space
-        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii'), x.P.Pop_Path_rc1T1);
-        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii'), x.P.Pop_Path_rc2T1);
-        xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rc3T1.nii'), x.P.Pop_Path_rc3T1);
-		xASL_Copy(fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii'), x.P.Pop_Path_rT1);
+    % Use the GM, WM and T1 from the template to create dummy structural files
+    % Create dummy structural derivatives in standard space
+    xASL_Copy(fullfile(TemplateFolder, rc1T1), x.P.Pop_Path_rc1T1);
+    xASL_Copy(fullfile(TemplateFolder, rc2T1), x.P.Pop_Path_rc2T1);
+    xASL_Copy(fullfile(TemplateFolder, rc3T1), x.P.Pop_Path_rc3T1);
+    xASL_Copy(fullfile(TemplateFolder, rT1), x.P.Pop_Path_rT1);
 
-		% Create dummy structural derivatives in native space
-        xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rc3T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_c3T1, x.P.Path_T1});
-
-elseif exist(TemplatePath,'file') && strcmp(Template,'QASPER') % QASPER specific 
-        IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
-
-        % Copy dummy transformation field
-        xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
-
-		% Use the GM, WM and T1 from the template to create dummy structural files
-        % Create dummy structural derivatives in standard space
-        xASL_Copy(fullfile(TemplateFolder, rc1T1), x.P.Pop_Path_rc1T1);
-        xASL_Copy(fullfile(TemplateFolder, rc2T1), x.P.Pop_Path_rc2T1);
-        xASL_Copy(fullfile(TemplateFolder, rc3T1), x.P.Pop_Path_rc3T1);
-		xASL_Copy(fullfile(TemplateFolder, rT1), x.P.Pop_Path_rT1);
-
-		% Create dummy structural derivatives in native space
-        xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rc3T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_c3T1, x.P.Path_T1});
-
+    % Create dummy structural derivatives in native space
+    xASL_spm_deformations(x, {x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, x.P.Pop_Path_rc3T1, x.P.Pop_Path_rT1}, {x.P.Path_c1T1, x.P.Path_c2T1, x.P.Path_c3T1, x.P.Path_T1});
 
 else 
     fprintf('Template cannot be found, check if this template is available within ExploreASL');
