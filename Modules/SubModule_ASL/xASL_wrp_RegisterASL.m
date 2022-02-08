@@ -121,6 +121,10 @@ end
 if ~isfield(x.modules.asl,'bUseMNIasDummyStructural') || isempty(x.modules.asl.bUseMNIasDummyStructural)
 	x.modules.asl.bUseMNIasDummyStructural = false;
 end
+if ~isfield(x.modules.asl, 'RegistrationTemplate') || isempty(x.modules.asl.RegistrationTemplate)
+     x.modules.asl.RegistrationTemplate = 'MNI_Structural'; % default
+end
+
 
 %% B. Manage OtherList
 % Define OtherList for registration
@@ -150,7 +154,12 @@ x.D.PathMask = fullfile(x.dir.SESSIONDIR, 'MaskASL.nii');
 x.D.Path_PseudoTissue = fullfile(x.dir.SESSIONDIR, 'PseudoTissue.nii');
 
 % Differs between sequences
-if      strcmpi(x.Q.Sequence,'2D_EPI') && ~isempty(regexpi(x.Q.Vendor,'Philips'))
+if x.bQASPERPhantom
+    x.D.Mask_MNI = fullfile(x.D.TemplateDir,'QASPER', 'QASPER_QC_mask.nii');
+    x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_CBF.nii'); % needs fixing
+    x.D.raw_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii'); % needs fixing
+    
+elseif strcmpi(x.Q.Sequence,'2D_EPI') && ~isempty(regexpi(x.Q.Vendor,'Philips'))
         x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_CBF.nii');
         x.D.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
         x.D.raw_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii');
@@ -212,10 +221,7 @@ if StructuralRawExist && ~StructuralDerivativesExist
     error('Please run structural module first');
 elseif ~StructuralRawExist && ~StructuralDerivativesExist
     if x.modules.asl.bUseMNIasDummyStructural
-        
-        Template = 'QASPER'; % change later
-        xASL_wrp_UseTemplateAsDummyStructural(x, Template);
-
+        xASL_wrp_UseTemplateAsDummyStructural(x, x.modules.asl.RegistrationTemplate);
     else
         error('Structural data missing, skipping ASL module; if this is undesired, set x.modules.asl.bUseMNIasDummyStructural=1');
     end
@@ -307,7 +313,13 @@ if x.settings.bAutoACPC
     OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_despiked_ASL4D}); % x.P.Path_despiked_ASL4D is padded to the end of the list
 
     xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
-    xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 0); % Then register
+    
+    if x.bQASPERPhantom
+        xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 0, [0;0;13.5]); 
+        % QASPER needs different offset, it has a different center of mass than a human brain
+    else
+        xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 0); % default offset        
+    end
     TanimotoPerc(end+1) = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
     if TanimotoPerc(end)>=TanimotoPerc(end-1) % if alignment improved or remained same
         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
