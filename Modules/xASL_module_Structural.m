@@ -61,6 +61,12 @@ if ~xASL_exist(x.P.Path_T1,'file') && ~xASL_exist(x.P.Path_T1_ORI,'file')
     Flist = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '(?i)(.*T1.*run.*|.*run.*T1.*)\.nii$', 'FPList', [0 Inf]);
     if ~isempty(Flist)
         xASL_Move(Flist{1}, x.P.Path_T1);
+    elseif isfield(x, 'bQASPERPhantom') && x.bQASPERPhantom
+        fprintf('%s\n', 'Skipping Structural module for processing QASPER the phantom');
+        result = true;
+		% Unlocks the patient as this wouldn't be done in the iteration for the last subject
+		x.mutex.Unlock();
+        return;       
     else
         warning([x.dir.SUBJECTDIR ' didnt contain a T1w structural image, skipping...']);
         result = true;
