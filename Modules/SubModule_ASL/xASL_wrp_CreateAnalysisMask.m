@@ -72,6 +72,14 @@ switch lower(x.Q.Sequence)
         error('Unknown ASL sequence!');
 end
 
+if x.bQASPERPhantom
+    DoSusceptibility = false;
+    % mimic a sequence without signal dropout in susceptibility regions
+    % the phantom does not suffer from these air-bone-tissue transit
+    % regions (although it does suffer from the geometric distortion)
+end
+
+
 %% 1. Negative vascular signal
 NegativeMaskNative = xASL_im_MaskNegativeVascularSignal(x, 1); % native space
 NegativeMaskMNI = xASL_im_MaskNegativeVascularSignal(x, 2); % standard space
