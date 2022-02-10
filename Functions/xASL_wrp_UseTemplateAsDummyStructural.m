@@ -44,7 +44,7 @@ fprintf('Missing structural scans, using ASL registration only instead, copying 
 
 IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
 
-if exist(TemplatePath,'file')
+if xASL_exist(TemplatePath,'file')
     % Copy dummy transformation field
     xASL_Copy(IDmatrixPath, x.P.Path_y_T1, true);
 
