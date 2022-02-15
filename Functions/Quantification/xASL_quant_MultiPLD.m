@@ -120,9 +120,13 @@ else
 
     if xASL_stat_SumNan(ScaleImage(:))==0
         error('Wrong PLD definition!');
-	end
-
-	[PWI, ATT] = xASL_quant_Basil(PWI, x);
+    end
+    
+    if x.modules.asl.bMultiTE
+        [PWI, ATT] = xASL_quant_Fabber(PWI, x);
+    else
+        [PWI, ATT] = xASL_quant_Basil(PWI, x);
+    end
 end
 
 
