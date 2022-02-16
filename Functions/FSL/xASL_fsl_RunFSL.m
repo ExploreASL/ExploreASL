@@ -140,12 +140,11 @@ end
  
 %### FABBER
 if x.modules.asl.bTimeEncoded
-FSLinit = '/scratch/bestevespadrela/fsl-dev/bin;. /opt/amc/fsl-6.0.4-build/etc/fslconf/fsl.sh;PATH=${FSLDIR}/bin:${PATH};export FSLDIR PATH';
-FSLCommand = xASL_adm_UnixPath(FSLCommand);
+    FSLinit = '/scratch/bestevespadrela/fsl-dev/bin;. /opt/amc/fsl-6.0.4-build/etc/fslconf/fsl.sh;PATH=${FSLDIR}/bin:${PATH};export FSLDIR PATH';
 end
 
 if bVerbose
-    Result1 = system([wslString FSLinit FSLoutput NiceString 'fabber_asl -@ ' FSLCommand], '-echo');
+    Result1 = system([wslString FSLinit FSLoutput NiceString FSLCommand], '-echo');
 else
     Result1 = system([wslString FSLinit FSLoutput NiceString FSLCommand]);
 end

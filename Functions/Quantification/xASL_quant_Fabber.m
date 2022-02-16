@@ -74,7 +74,7 @@ function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Fabber(PWI, x)
     
     %% 5. Run Fabber and retrieve CBF output
     % args.bAutomaticallyDetectFSL=1;
-    [~, resultFSL] = xASL_fsl_RunFSL(xASL_adm_UnixPath(pathFabberOptions), x);
+    [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl -@ ' xASL_adm_UnixPath(pathFabberOptions)], x);
     %FSLCommand = 'fabber_asl --output=Fabber_outputs --method=vb --data=PWI4D_BasilInput.nii.gz --model=asl_multite --infertexch --save-var --save-residuals --save-model-fit --noise=white --tau1=1.0 --tau2=1.0 --tau3=1.0 --ti1=1.6 --ti2=2.6 --ti3=3.6 --nte1=8 --nte2=8 --nte3=8  --te1=0.01312 --te2=0.03936 --te3=0.0656 --te4=0.09184 --te5=0.11808 --te6=0.14432 --te7=0.17056 --te8=0.1968 --te9=0.01312 --te10=0.03936 --te11=0.0656 --te12=0.09184 --te13=0.11808 --te14=0.14432 --te15=0.17056 --te16=0.1968 --te17=0.01312 --te18=0.03936 --te19=0.0656 --te20=0.09184 --te21=0.11808 --te22=0.14432 --te23=0.17056 --te24=0.1968 --inferitt';
 
     
