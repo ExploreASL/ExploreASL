@@ -139,7 +139,7 @@ else
 end
  
 %### FABBER
-if x.modules.asl.bTimeEncoded
+if x.modules.asl.bMultiTE
     FSLinit = '/scratch/bestevespadrela/fsl-dev/bin;. /opt/amc/fsl-6.0.4-build/etc/fslconf/fsl.sh;PATH=${FSLDIR}/bin:${PATH};export FSLDIR PATH';
 end
 
