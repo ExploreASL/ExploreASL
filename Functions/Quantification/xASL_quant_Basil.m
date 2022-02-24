@@ -1,4 +1,4 @@
-function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
+function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 %xASL_quant_Basil Perform quantification using FSL BASIL
 %
 % FORMAT: [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
@@ -15,14 +15,16 @@ function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
 %                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This script performs quantification of the PWI using the FSL Basil pipeline. Final calibration to
+% DESCRIPTION: This script performs quantification of the PWI using the FSL Basil/Fabber pipeline. Final calibration to
 %              physiological units is performed by dividing the quantified PWI by the M0 image/value.
+%              Fabber is used instead of Basil for multiTE data.
+%
 %              This function performs the following steps:
 %
 % 1. Define paths
 % 2. Delete previous BASIL output
-% 3. Write the PWI as Nifti file for Basil to read as input
-% 4. Create option_file that contains options which are passed to Fabber
+% 3. Write the PWI as Nifti file for Basil/Fabber to read as input
+% 4. Create option_file that contains options which are passed to the FSL command
 % 5. Run Basil and retrieve CBF output
 % 6. Scaling to physiological units
 % 7. Householding
@@ -38,11 +40,12 @@ function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
     fprintf('%s\n','Quantification CBF using FSL BASIL:');    
     
     %% 1. Define paths
+    % For Basil and Fabber
     pathBasilInput = fullfile(x.dir.SESSIONDIR, 'PWI4D_BasilInput.nii');
     pathBasilOptions = fullfile(x.dir.SESSIONDIR, 'Basil_ModelOptions.txt');
-    dirBasilOutput = fullfile(x.dir.SESSIONDIR, 'BasilOutput');
+    dirBasilOutput = fullfile(x.dir.SESSIONDIR, 'Basil_Output');
         
-    %% 2. Delete previous BASIL output
+    %% 2. Delete previous BASIL/Fabber output
     xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^basilOutput.*$', 1, [0 Inf]);
     FolderList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)^basilOutput.*$', 'FPList', [0 Inf], 1);
     for iFolder=1:numel(FolderList)
@@ -55,7 +58,7 @@ function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
     xASL_delete(pathBasilInput);
     xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
     
-    %% 3. Write the PWI as Nifti file for Basil to read as input
+    %% 3. Write the PWI as Nifti file for Basil/Fabber to read as input
     % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
     PWI(isnan(PWI)) = 0;
     
@@ -67,29 +70,44 @@ function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
         xASL_io_SaveNifti(x.P.Path_PWI4D, pathBasilInput, PWI, [], 0); % use PWI4D path
     end
 
-    %% 4. Create option_file that contains options which are passed to Fabber
-    % basil_options is a character array containing CLI args for the Basil command
+    %% 4. Create option_file that contains options which are passed to the FSL command
+    % basil_options is a character array containing CLI args for the Basil/Fabber command
     
     BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI);
     
+    if x.modules.asl.bMultiTE
+        BasilOptions = xASL_quant_Fabber_Options(pathBasilOptions, x, PWI, pathBasilInput);
+    end
+    
     %% 5. Run Basil and retrieve CBF output
     % args.bAutomaticallyDetectFSL=1;
-    [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' BasilOptions], x);
+    
+    if x.modules.asl.bMultiTE
+        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl -@ ' xASL_adm_UnixPath(pathBasilOptions)], x);
+    else
+        [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' BasilOptions], x);
+    end
     
     % Check if FSL failed
-    if isnan(resultFSL)
+    if isnan(resultFSL) && x.modules.asl.bMultiTE
+        error('FSL FABBER was not found, exiting...');
+    elseif isnan(resultFSL)
         error('FSL BASIL was not found, exiting...');
+    elseif resultFSL~=0 && x.modules.asl.bMultiTE
+        error('Something went wrong running FSL FABBER...'); 
     elseif resultFSL~=0
-        error('Something went wrong running FSL BASIL...');       
+        error('Something went wrong running FSL BASIL...'); 
     end
     
     fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
     fprintf('%s\n', '/.../fsl/bin/basil: line 124: imcp: command not found');
     
     pathBasilCBF = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
-	if isempty(pathBasilCBF)
+    
+	if isempty(pathBasilCBF) && x.modules.asl.bMultiTE
 		error('FSL BASIL failed');
-	end
+    end
+   
     pathBasilCBF = pathBasilCBF{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
        
     CBF_nocalib = xASL_io_Nifti2Im(pathBasilCBF);
@@ -100,7 +118,15 @@ function [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
 		ATT_map = xASL_io_Nifti2Im(pathBasilATT);
 	else
 		ATT_map = [];
-	end
+    end
+    
+    pathFabberTexch = xASL_adm_GetFileList(dirBasilOutput, '^mean_T_exch\.nii$', 'FPListRec');
+	if ~isempty(pathFabberTexch)
+		pathFabberTexch = pathFabberTexch{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+		Texch_map = xASL_io_Nifti2Im(pathFabberTexch);
+	else
+		Texch_map = [];
+    end
 	
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_SinglePLD since Fabber has T1 in seconds
@@ -201,12 +227,7 @@ switch lower(x.Q.LabelingType)
 			LDs = (x.Q.LabelingDuration(ind))'/1000;
 		else
 			LDs = ones(size(PLDs))*x.Q.LabelingDuration/1000;
-		end
-		% For Time-encoded, we skip the first volume
-		if x.modules.asl.bTimeEncoded
-			PLDs = PLDs(2:end);
-			LDs = LDs(2:end);
-		end
+        end
 		
 		if x.modules.asl.bMultiPLD
 			% For Time-encoded, we skip the first volume
@@ -338,4 +359,84 @@ fclose(FIDoptionFile);
     
 end
 
+function [FIDoptionFile] = xASL_quant_Fabber_Options(pathFabberOptions, x, PWI, pathFabberInput) %have two functions, basil options and fabber options
+% Save a Fabber options file for FSL command
+% 1. Create an option file
+% 2. Basic tissue parameters
+% 3. Basic acquisition parameters
+% 4. Model fiting parameters
+% 5. Save Fabber options file
 
+%% 1. Create option_file that contains options which are passed to Fabber
+% basil_options is a character array containing CLI args for the Basil command
+
+FIDoptionFile = fopen(pathFabberOptions, 'w+');
+
+[~,PWIfileName, ext] = fileparts(pathFabberInput);
+PWIfile = [PWIfileName ext];
+
+fprintf(FIDoptionFile, '# Fabber options written by ExploreASL\n');
+%fprintf(FIDoptionFile, 'fabber_asl\n');
+fprintf(FIDoptionFile, '--output=Basil_Output\n');
+fprintf(FIDoptionFile, '--method=vb\n');
+fprintf(FIDoptionFile, '--data=%s\n', PWIfile);
+fprintf(FIDoptionFile, '--model=asl_multite\n');
+fprintf(FIDoptionFile, '--infertexch\n');
+fprintf(FIDoptionFile, '--save-var\n');
+fprintf(FIDoptionFile, '--save-residuals\n');
+fprintf(FIDoptionFile, '--save-model-fit\n');
+fprintf(FIDoptionFile, '--noise=white\n');
+
+%% 2. Basic tissue parameters
+fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
+fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
+
+%% 3. Basic acquisition parameters
+
+% Print all the PLDs and LabDurs
+[PLDs, ind] = unique(x.Q.Initial_PLD);
+PLDs = PLDs'/1000;
+
+% For Time-encoded, we skip the first volume
+if x.modules.asl.bTimeEncoded
+    PLDs = PLDs(2:end);
+end
+
+if length(x.Q.LabelingDuration)>1
+    LDs = (x.Q.LabelingDuration(ind))'/1000;
+else
+    LDs = ones(size(PLDs))*x.Q.LabelingDuration/1000;
+end
+
+%Echo Times
+nTE = length(unique(x.EchoTime));
+NVolumes = size(PWI,4);
+TEs = round(x.EchoTime(1:NVolumes)'/1000,4); % To keep 4 decimal digits
+
+% Plotting the values into the doc (PLD=ti, LD=tau)
+for iPLD = 1:length(PLDs)
+    
+    fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD));
+    fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD, nTE); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
+end
+for iLD = 1:length(LDs)
+    fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLD, LDs(iLD));
+end
+
+for iTE = 1:length(TEs) %We need a TE for each volume
+    fprintf(FIDoptionFile, '--te%d=%.2f\n', iTE, TEs(iTE));
+end
+
+% Right now, we assume that we have averaged over PLDs
+%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
+%fprintf(FIDoptionFile, '--repeats=1\n');
+	
+% 4. Model fiting parameters (ATT map)
+fprintf(FIDoptionFile, '--inferitt');
+	 
+
+
+%% 5. Save Fabber options file
+fclose(FIDoptionFile);
+    
+end
