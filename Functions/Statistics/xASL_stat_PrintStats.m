@@ -394,7 +394,12 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, i
     % 2. Print data in x.S.DAT
     % This part is different for volume or TT, since there will be only 1 value per subject (this will be done by the above in which nSessions is set to 1
     for iPrint=1:size(x.S.DAT,2) % print actual data
+        try
         statCell{rowNum,iCell} = xASL_num2str(x.S.DAT(iSubjectSession_DAT, iPrint));
+        catch
+        statCell{rowNum,iCell} = 'n/a'; % catch if subject has no available data to print
+        warning('Subject has no available results to print, please check imaging data');
+        end
         iCell = iCell+1;
     end
 
