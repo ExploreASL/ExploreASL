@@ -64,6 +64,9 @@ xASL_adm_CreateDir(x.S.StatsDir);
 % Obtain ASL sequence
 x = xASL_adm_DefineASLSequence(x);
 
+% check JSON parameters for differences between subjects/sessions
+xASL_adm_BIDSJsonChecker(x,'ASL4D',0) % automatically set to check ASL4D JSONs
+
 StateName{1}  = '010_CreatePopulationTemplates';
 StateName{2}  = '020_CreateAnalysisMask';
 StateName{3}  = '030_CreateBiasfield';
@@ -77,12 +80,11 @@ StateName{10} = '090_DeleteTempFiles';
 StateName{11} = '100_GZipAllFiles';
 
 
-
 %% ------------------------------------------------------------------------------------------------------------
 %% 1    Create template images
 if ~x.mutex.HasState(StateName{1})
     xASL_wrp_CreatePopulationTemplates(x);  % this doesn't work nicely yet with sessions, should be changed after new BIDS is implemented
-
+    
     % Save FoV mask as susceptibility mask for 3D spiral
     % as 3D spiral doesnt have a susceptibility artifact (or negligible)
 
