@@ -1,17 +1,17 @@
-function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
+function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
 %xASL_imp_NII2BIDS_Run NII2BIDS conversion for a single run.
 %
-% FORMAT: x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
+% FORMAT: x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
 % 
 % INPUT:
-%   x                     - ExploreASL x structure (REQUIRED, STRUCT)
-%   imPar                 - JSON file with structure with import parameter (STRUCT, REQUIRED)
-%   bidsPar               - Output of xASL_imp_Config (STRUCT, REQUIRED)
-%   studyPar              - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
-%   listRuns              - list of runs (CELL ARRAY, REQUIRED, e.g.: {'ASL_1'})
-%   nameSubjectSession    - name of the subject (CELL ARRAY, REQUIRED)
-%   bidsLabel             - BIDS label (CHAR ARRAY, REQUIRED)
-%   iRun                  - Run number (INTEGER, REQUIRED)
+%   x                      - ExploreASL x structure (REQUIRED, STRUCT)
+%   x.modules.import.imPar - JSON file with structure with import parameter (STRUCT, REQUIRED)
+%   bidsPar                - Output of xASL_imp_Config (STRUCT, REQUIRED)
+%   studyPar               - JSON file with the BIDS parameters relevant for the whole study (STRUCT, REQUIRED)
+%   listRuns               - list of runs (CELL ARRAY, REQUIRED, e.g.: {'ASL_1'})
+%   nameSubjectSession     - name of the subject (CELL ARRAY, REQUIRED)
+%   bidsLabel              - BIDS label (CHAR ARRAY, REQUIRED)
+%   iRun                   - Run number (INTEGER, REQUIRED)
 %
 % OUTPUT:
 %   x                     - ExploreASL x structure (STRUCT)
@@ -23,7 +23,7 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
 % 2. Convert structural and ASL runs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
+% EXAMPLE:     x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
@@ -40,11 +40,11 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
         %end
         
         % Create directory if it does not exist already
-        sessionPerfusionDirectory = fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject], sessionLabel,'perf');
+        sessionPerfusionDirectory = fullfile(x.modules.import.imPar.BidsRoot,['sub-' bidsLabel.subject], sessionLabel,'perf');
         xASL_adm_CreateDir(sessionPerfusionDirectory);
         
-        inSessionPath = fullfile(imPar.TempRoot, nameSubjectSession, listRuns{iRun});
-        outSessionPath = fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject], sessionLabel);
+        inSessionPath = fullfile(x.modules.import.imPar.TempRoot, nameSubjectSession, listRuns{iRun});
+        outSessionPath = fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject], sessionLabel);
 
         % Need to add the underscore so that it doesn't need to be added automatically and can be skipped for empty session
         sessionLabel = ['_' sessionLabel];
@@ -53,17 +53,17 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
         sessionLabel = '';
 
         % Only one session - no session labeling
-		xASL_adm_CreateDir(fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject], bidsPar.stringPerfusion));
+		xASL_adm_CreateDir(fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject], bidsPar.stringPerfusion));
 
-		inSessionPath = fullfile(imPar.TempRoot, nameSubjectSession, listRuns{iRun});
-        outSessionPath = fullfile(imPar.BidsRoot, ['sub-' bidsLabel.subject]);
+		inSessionPath = fullfile(x.modules.import.imPar.TempRoot, nameSubjectSession, listRuns{iRun});
+        outSessionPath = fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject]);
     end
 
 
     %% 2. Convert structural and ASL runs
 	subjectSessionLabel = [bidsLabel.subject sessionLabel];
 	try
-		xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
+		xASL_imp_NII2BIDS_RunAnat(x.modules.import.imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
 	catch loggingEntry
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
 		xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, 'anatomical', subjectSessionLabel, iRun);
@@ -71,7 +71,7 @@ function x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSu
 		
 	%% Perfusion files
 	try
-		xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
+		xASL_imp_NII2BIDS_RunPerf(x.modules.import.imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
 	catch loggingEntry
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
 		xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, 'perfusion', subjectSessionLabel, iRun);

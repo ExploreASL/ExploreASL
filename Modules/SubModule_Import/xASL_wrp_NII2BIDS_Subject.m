@@ -1,14 +1,14 @@
-function x = xASL_wrp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectSession)
+function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyPar, nameSubjectSession)
 %xASL_wrp_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
 %
-% FORMAT: x = xASL_wrp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectSession)
+% FORMAT: x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyPar, nameSubjectSession)
 % 
 % INPUT:
-%   x                   - ExploreASL x structure (REQUIRED, STRUCT)
-%   imPar               - JSON file with structure with import parameter (REQUIRED, STRUCT)
-%   bidsPar             - Output of xASL_imp_Config (REQUIRED, STRUCT)
-%   studyPar            - JSON file with the BIDS parameters relevant for the whole study (REQUIRED, STRUCT)
-%   nameSubjectSession  - name of the subject (REQUIRED, CELL STRUCT)
+%   x                      - ExploreASL x structure (REQUIRED, STRUCT)
+%   x.modules.import.imPar - JSON file with structure with import parameter (REQUIRED, STRUCT)
+%   bidsPar                - Output of xASL_imp_Config (REQUIRED, STRUCT)
+%   studyPar               - JSON file with the BIDS parameters relevant for the whole study (REQUIRED, STRUCT)
+%   nameSubjectSession     - name of the subject (REQUIRED, CELL STRUCT)
 %
 % OUTPUT:
 %   x               - ExploreASL x structure (STRUCT)
@@ -23,15 +23,15 @@ function x = xASL_wrp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
 % - 3. Iterate over runs
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubject);
+% EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyPar, nameSubject);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 
     %% 1. Initialize
-    bidsLabel = xASL_imp_CheckForAliasInVisit(imPar,nameSubjectSession);
+    bidsLabel = xASL_imp_CheckForAliasInVisit(x.modules.import.imPar,nameSubjectSession);
     
     % Make a subject directory
-    subjectDirectory = fullfile(imPar.BidsRoot,['sub-' bidsLabel.subject]);
+    subjectDirectory = fullfile(x.modules.import.imPar.BidsRoot,['sub-' bidsLabel.subject]);
     xASL_adm_CreateDir(subjectDirectory);
     
     
@@ -39,14 +39,14 @@ function x = xASL_wrp_NII2BIDS_Subject(x, imPar, bidsPar, studyPar, nameSubjectS
     % Subsequent code is based on having data per ASL scan, so we "fool" it
     % by renaming all runs into ASL_1 ASL_2 ASL_n and keeping the
     % unique runs only. Missing scans will issue a warning, not an error.
-    listRuns = xASL_adm_GetFileList(fullfile(imPar.TempRoot,nameSubjectSession),'^(ASL|T1w|FLAIR).+$',false,[],true);
+    listRuns = xASL_adm_GetFileList(fullfile(x.modules.import.imPar.TempRoot,nameSubjectSession),'^(ASL|T1w|FLAIR).+$',false,[],true);
     listRuns = cellfun(@(y) y(end), listRuns, 'UniformOutput', false);
     listRuns = unique(listRuns);
     listRuns = cellfun(@(y) ['ASL_' y], listRuns, 'UniformOutput', false);
     
     % Go through all (ASL) runs
     for iRun = 1:length(listRuns)
-        x = xASL_imp_NII2BIDS_Run(x, imPar, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
+        x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
     end
     
 end

@@ -1,13 +1,13 @@
-function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x)
+function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
 %xASL_imp_CreateSummaryFile Create summary file.
 %
-% FORMAT: xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x)
+% FORMAT: xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
 % 
 % INPUT:
-%   thisSubject       - Current subject struct (REQUIRED, STRUCT)
-%   imPar             - JSON file with structure with import parameters (REQUIRED, STRUCT)
-%   PrintDICOMFields  - Print DICOM fields (REQUIRED, CELL ARRAY)
-%   x                 - ExploreASL x structure (REQUIRED, STRUCT)
+%   thisSubject            - Current subject struct (REQUIRED, STRUCT)
+%   PrintDICOMFields       - Print DICOM fields (REQUIRED, CELL ARRAY)
+%   x                      - ExploreASL x structure (REQUIRED, STRUCT)
+%   x.modules.import.imPar - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   n/a
@@ -22,13 +22,13 @@ function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x)
 % please check out the description within xASL_imp_DetermineSubjectStructure.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x);
+% EXAMPLE:     xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
     
     %% 1. Create summary file
-	summary_filepath = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'log', ['import_summary_sub-' thisSubject.name '.csv']);
+	summary_filepath = fullfile(x.modules.import.imPar.DerivativesRoot, 'ExploreASL', 'log', ['import_summary_sub-' thisSubject.name '.csv']);
 	fid_summary = fopen(summary_filepath,'wt');
 	
     % Print headers for parameters obtained from NIfTI file
@@ -56,7 +56,7 @@ function xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x)
                         fprintf(fid_summary,'"%s","%s","%s","%s"%s,\n', ...
                             x.modules.import.listsIDs.subjectIDs{iSubject}, ...
                             thisSubject.visitIDs{iVisit}, ...
-                            imPar.sessionNames{iSession}, ....
+                            x.modules.import.imPar.sessionNames{iSession}, ....
                             thisVisit.scanNames{iScan}, ...
                             thisSubject.summary_lines{iSubject, iVisit, iSession, iScan});
                     end

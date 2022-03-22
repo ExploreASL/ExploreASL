@@ -1,11 +1,11 @@
-function x = xASL_wrp_DCM2NII(x, imPar)
+function x = xASL_wrp_DCM2NII(x)
 %xASL_wrp_DCM2NII Run the dcm2nii part of the import.
 %
-% FORMAT: x = xASL_wrp_DCM2NII(x, imPar)
+% FORMAT: x = xASL_wrp_DCM2NII(x)
 % 
 % INPUT:
-%   x      - ExploreASL x structure (REQUIRED, STRUCT)
-%   imPar  - JSON file with structure with import parameters (REQUIRED, STRUCT)
+%   x                      - ExploreASL x structure (REQUIRED, STRUCT)
+%   x.modules.import.imPar - A substructure with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   x      - ExploreASL x structure
@@ -20,10 +20,10 @@ function x = xASL_wrp_DCM2NII(x, imPar)
 % 5. Clean-up
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_wrp_DCM2NII(x, imPar);
+% EXAMPLE:     x = xASL_wrp_DCM2NII(x);
 %
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
     
     %% 1. Initialize defaults of dcm2nii
@@ -35,14 +35,14 @@ function x = xASL_wrp_DCM2NII(x, imPar)
     xASL_adm_BreakString('DICOM to NIFTI CONVERSION');
     
     %% 2. Create the temp directory for DCM2NII
-    xASL_adm_CreateDir(imPar.TempRoot);
+    xASL_adm_CreateDir(x.modules.import.imPar.TempRoot);
     
     % Initialization of an empty catched errors struct
     dcm2niiCatchedErrors = struct;
 
     %% 3. Import visit by visit, session by session, scan by scan for current subject
     fprintf('\nRunning DCM2NIIX...\n');
-    [x, imPar, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, imPar, x.modules.import.matches, dcm2niiCatchedErrors);
+    [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, x.modules.import.matches, dcm2niiCatchedErrors);
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
     iSubject = strcmp(x.SUBJECT,x.SUBJECTS);
@@ -54,10 +54,10 @@ function x = xASL_wrp_DCM2NII(x, imPar)
     %% 4. Create summary file
     overviewSubjects = fieldnames(x.overview);
     thisSubject = x.overview.(overviewSubjects{iSubject});
-    xASL_imp_CreateSummaryFile(thisSubject, imPar, PrintDICOMFields, x);
+    xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x);
     
     %% 5. Clean-Up
-    xASL_imp_DCM2NII_CleanUp(x, imPar, dcm2niiCatchedErrors);
+    xASL_imp_DCM2NII_CleanUp(x, dcm2niiCatchedErrors);
     
     
 end
@@ -65,7 +65,7 @@ end
 
 
 %% Clean-Up
-function xASL_imp_DCM2NII_CleanUp(x,imPar,dcm2niiCatchedErrors)
+function xASL_imp_DCM2NII_CleanUp(x, dcm2niiCatchedErrors)
 
 
     if ~x.modules.import.settings.bUseDCMTK || isempty(x.modules.import.pathDcmDict)
@@ -75,8 +75,8 @@ function xASL_imp_DCM2NII_CleanUp(x,imPar,dcm2niiCatchedErrors)
     
     if ~isempty(fields(dcm2niiCatchedErrors))
         fclose all;
-        SavePath = fullfile(imPar.TempRoot, 'dcm2niiCatchedErrors.mat');
-        SaveJSON = fullfile(imPar.TempRoot, 'dcm2niiCatchedErrors.json');
+        SavePath = fullfile(x.modules.import.imPar.TempRoot, 'dcm2niiCatchedErrors.mat');
+        SaveJSON = fullfile(x.modules.import.imPar.TempRoot, 'dcm2niiCatchedErrors.json');
         xASL_delete(SavePath);
         xASL_delete(SaveJSON);
         save(SavePath,'dcm2niiCatchedErrors');

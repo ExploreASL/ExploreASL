@@ -1,15 +1,14 @@
-function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_DCM2NII_ConvertScan(x,imPar,matches,thisSubject,dcm2niiCatchedErrors,thisVisit,thisRun,scanFields)
+function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM2NII_ConvertScan(x, matches, thisSubject, dcm2niiCatchedErrors, thisVisit, thisRun, scanFields)
 %xASL_imp_DCM2NII_ConvertScan Run DCM2NII for one individual scan.
 %
-% FORMAT: [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_DCM2NII_ConvertScan(x,imPar,matches,thisSubject,dcm2niiCatchedErrors,thisVisit,thisRun,scanFields)
+% FORMAT: [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM2NII_ConvertScan(x, matches, thisSubject, dcm2niiCatchedErrors, thisVisit, thisRun, scanFields)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
-%   imPar                  - Structure with import parameters (REQUIRED, STRUCT)
+%   x.modules.import.imPar - Structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
-%   imPar                  - Structure with import parameters
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual scan.
@@ -40,17 +39,17 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     thisSubject.summary_lines{scanFields.iSubject,scanFields.iVisit,scanFields.iSession,scanFields.iScan} = 'n/a';
     
     % If not verbose, track percentage progress
-    if ~imPar.bVerbose
+    if ~x.modules.import.imPar.bVerbose
         CounterN = (scanFields.iSession-1)*thisVisit.nScans+scanFields.iScan;
         CounterT = thisVisit.nSessions*thisVisit.nScans;
         xASL_TrackProgress(CounterN, CounterT);
     end
 
     %% 4.2 Convert scan ID to a suitable name and set scan-specific parameters
-    if size(imPar.tokenScanAliases,2)==2
-        iAlias = find(~cellfun(@isempty,regexpi(scanID,imPar.tokenScanAliases(:,1),'once')));
+    if size(x.modules.import.imPar.tokenScanAliases,2)==2
+        iAlias = find(~cellfun(@isempty,regexpi(scanID,x.modules.import.imPar.tokenScanAliases(:,1),'once')));
         if ~isempty(iAlias)
-            thisVisit.scanNames{scanFields.iScan} = imPar.tokenScanAliases{iAlias,2};
+            thisVisit.scanNames{scanFields.iScan} = x.modules.import.imPar.tokenScanAliases{iAlias,2};
         else
             % keep the original name
             fprintf('No matching scan aliases found, keeping the original name...\n');
@@ -58,18 +57,18 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
             scan_name = thisVisit.scanNames{scanFields.iScan};
             % Fallback to first match (could be incorrect)
             branch = matches{1};
-            scanpath = fullfile(imPar.RawRoot,branch);
+            scanpath = fullfile(x.modules.import.imPar.RawRoot,branch);
             % Determine destination directory
             destdir = fullfile(x.modules.import.SubjDir, [thisVisit.scanNames{scanFields.iScan} '_' num2str(scanFields.iSession)]);
             % Add fields to catched errors
             dcm2niiCatchedErrors = xASL_imp_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, ...
-                mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar);
+                mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, x.modules.import.imPar);
         end
     end
     scan_name = thisVisit.scanNames{scanFields.iScan};
 
     %% 4.3 Minimalistic feedback of where we are
-    if imPar.bVerbose
+    if x.modules.import.imPar.bVerbose
         if isempty(scanFields.name)
             printSession = 'empty';
         else
@@ -100,10 +99,10 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     if isempty(iMatch)
         if sum(thisSubject.globalCounts.converted_scans(scanFields.iSubject,scanFields.iVisit,:,scanFields.iScan))==0
             % Define warning message
-            WarningMessage = ['Missing scan: ' [scanFields.subjectID imPar.visitNames{scanFields.iVisit}] ', ' ...
+            WarningMessage = ['Missing scan: ' [scanFields.subjectID x.modules.import.imPar.visitNames{scanFields.iVisit}] ', ' ...
                 num2str(scanFields.iSession) ', ' scan_name];
             % Print warning
-            if imPar.bVerbose
+            if x.modules.import.imPar.bVerbose
                 warning(WarningMessage);
             end
             % Add missing scans to global counts struct
@@ -118,7 +117,7 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     %% 4.5 Determine input and output paths
     bSkipThisOne = false;
     branch = matches{iMatch};
-    scanpath = fullfile(imPar.RawRoot,branch);
+    scanpath = fullfile(x.modules.import.imPar.RawRoot,branch);
 
     if ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'ASL4D')) || ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'M0'))
         session_name = scanFields.name;
@@ -140,8 +139,8 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     
     % One scan is enough, so skip this one if there was already a scan converted of this type (i.e. T1)
     if bOneScanIsEnough && sum(thisSubject.globalCounts.converted_scans(scanFields.iSubject,scanFields.iVisit,:,scanFields.iScan))~=0
-        if imPar.bVerbose
-            fprintf('Skipping scan: %s, %s, %s\n',[scanFields.subjectID imPar.visitNames{scanFields.iVisit}],session_name,scan_name);
+        if x.modules.import.imPar.bVerbose
+            fprintf('Skipping scan: %s, %s, %s\n',[scanFields.subjectID, x.modules.import.imPar.visitNames{scanFields.iVisit}], session_name, scan_name);
         end
         bSkipThisOne = true;
         destdir = [];
@@ -157,9 +156,9 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
     % end
 
     % Conversion
-    [imPar, thisSubject.globalCounts, x, ~, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = ...
+    [thisSubject.globalCounts, x, ~, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = ...
         xASL_imp_DCM2NII_Subject_StartConversion(...
-        imPar, thisSubject.globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors);
+        thisSubject.globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors);
 
 
     %% 4.7 Store JSON files
@@ -171,7 +170,7 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
             jsonFiles{iFile} = newFile{1};
         end
         [parms, x.modules.import.pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(...
-            imPar, jsonFiles, first_match, x.modules.import.settings.bUseDCMTK, x.modules.import.pathDcmDict);
+            x.modules.import.imPar, jsonFiles, first_match, x.modules.import.settings.bUseDCMTK, x.modules.import.pathDcmDict);
     end
 
     %% 4.8 Sort ASL Volumes
@@ -192,7 +191,7 @@ function [x,imPar,thisSubject,dcm2niiCatchedErrors,PrintDICOMFields] = xASL_imp_
 
     %% 4.9 Copy single dicom as QC placeholder
     if x.modules.import.settings.bCopySingleDicoms && ~isempty(first_match)
-        xASL_Copy(first_match, fullfile(destdir, ['DummyDicom_' scan_name '.dcm']), imPar.bOverwrite, imPar.bVerbose);
+        xASL_Copy(first_match, fullfile(destdir, ['DummyDicom_' scan_name '.dcm']), x.modules.import.imPar.bOverwrite, x.modules.import.imPar.bVerbose);
     end
 
     %% 4.10 Store the summary info so it can be sorted and printed below

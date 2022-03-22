@@ -9,9 +9,9 @@ function [result, x] = xASL_module_Import(x)
 %                           directory with the DICOM files. (REQUIRED)
 %   x.dir.sourceStructure - Path to the JSON file with structure with import parameters.
 %                           All other input parameters are configured in this function. (OPTIONAL)
-%                           The path is optional, but the file has to be there. 
-%                           Either provided as a full path or a filename in the path,
-%                           or default names (case-insensitive) sourceStructure.json, imPar.json are seeked.
+%                           The path is optional, but the file has to be there. Either provided as a full 
+%                           path or a filename in the path, or default names (case-insensitive) sourceStructure.json 
+%                           are seeked and then loaded inside x.modules.import.imPar.
 %   x.dir.studyPar        - Path to the JSON file with the BIDS parameters relevant for the whole study.
 %                           These parameters are used if they cannot be extracted from the DICOMs automatically.
 %                           Looking automatically for file studyPar.json. (OPTIONAL)
@@ -45,12 +45,12 @@ function [result, x] = xASL_module_Import(x)
 % Uses dcm2niiX for the conversion, and additionally collects important DICOM header data
 % and puts them in `.json` sidecars to be used with the ExploreASL pipeline.
 % This function takes any folder input, but the folder input should be
-% specified in the imPar definition. Follow the steps below, for study `"MyStudy"` located on `"//MyDisk"`:
+% specified in the x.modules.import.imPar definition. Follow the steps below, for study `"MyStudy"` located on `"//MyDisk"`:
 %
 % 1. Make sure you have your DICOM data. Export them from XNAT, download them, or whatsoever
 %    Create a root folder with study ID name, and put the DICOMs in any structure in the sourcedata folder within the study ID root folder
 %    Examples:
-%    imPar.StudyID: MyStudy
+%    x.modules.import.imPar.StudyID: MyStudy
 %    Dataset Root folder: `//MyDisk/MyStudy`
 %    sourcedata folder containing DICOMs: `//MyDisk/MyStudy/sourcedata`
 % 2. Make sure that your DICOM data has any structure that can be retrieved
@@ -73,6 +73,7 @@ function [result, x] = xASL_module_Import(x)
 %    Let's suppose we don't have sessions (only a single structural and functional scan per subject)
 %    The names of our scans comes out of XNAT as `'3D_FLAIR_eyesClosed'`, `'T1w_MPRAGE'` and `'PCASL_10_min'`
 %    and the subject names are `'MyStudy001'` .. `'MyStudy002'` .. etc.
+%    imPar is now contained inside x.modules.import.imPar
 %
 %    - imPar.folderHierarchy     - contains a a cell array of regular expressions, with each cell specifying a directory layer/level
 %                                  the parts within brackets `()` tell the script that this is a token (i.e. subject, session, ScanType)
@@ -138,16 +139,11 @@ function [result, x] = xASL_module_Import(x)
     
     % Initialize x struct
     x = xASL_init_SubStructs(x);
-
-    % Extract the imPar struct
-    imPar = x.modules.import.imPar;
-    x.modules.import = rmfield(x.modules.import,'imPar');
-
     
     %% 1. Run the DCM2NIIX
     iState = 1;
     if x.opts.bImport(1) && ~x.mutex.HasState(StateName{1})
-        x = xASL_wrp_DCM2NII(x, imPar);
+        x = xASL_wrp_DCM2NII(x);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.bImport(1) && x.mutex.HasState(StateName{1})
         fprintf('DCM2NIIX was run before...   \n');
@@ -157,7 +153,7 @@ function [result, x] = xASL_module_Import(x)
     %% 2. Run the NIfTI to ASL-BIDS
     iState = 2;
     if x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
-        x = xASL_wrp_NII2BIDS(x, imPar);
+        x = xASL_wrp_NII2BIDS(x);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.bImport(2) && x.mutex.HasState(StateName{2})
         fprintf('NIIX to ASL-BIDS was run before...   \n');
