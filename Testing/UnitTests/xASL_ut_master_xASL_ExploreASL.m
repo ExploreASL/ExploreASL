@@ -75,7 +75,7 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'bImport')
-        if length(x.opts.bImport)<2 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
+        if length(x.opts.bImport)<3 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
             testCondition = false;
         end
     end
@@ -122,7 +122,7 @@ UnitTest.tests(2).testname = 'Initialize (With arguments)';
 testTime = tic;
 
 % Read test files
-[x] = ExploreASL('',0,0,0,0,1,1);
+[x] = ExploreASL('',0,0,0,1,1);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -150,7 +150,7 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'bImport')
-        if length(x.opts.bImport)<2 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
+        if length(x.opts.bImport)<3 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
             testCondition = false;
         end
     end
@@ -197,7 +197,7 @@ UnitTest.tests(3).testname = 'Initialize (With arrays)';
 testTime = tic;
 
 % Read test files
-[x] = ExploreASL('',[0 0],0,[0 0 0],0,1,1);
+[x] = ExploreASL('',[0 0 0],[0 0 0],0,1,1);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
@@ -225,7 +225,7 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'bImport')
-        if length(x.opts.bImport)<2 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
+        if length(x.opts.bImport)<3 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
             testCondition = false;
         end
     end
@@ -281,7 +281,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[1 0],0,0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[1 0 0],0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -359,7 +359,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,[0 1],0,0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 1 0],0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -439,7 +439,7 @@ testCondition = true;
 
 % Defacing
 try
-    [x] = ExploreASL(testPatientDestination,0,1,0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0 1],0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -462,7 +462,7 @@ end
 
 % BIDS2Legacy & data loading
 try
-    [x] = ExploreASL(testPatientDestination,0,0,0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -537,7 +537,7 @@ testCondition = true;
 
 % Defacing
 try
-    [x] = ExploreASL(testPatientDestination,0,1,0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0 1],0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -560,7 +560,7 @@ end
 
 % BIDS2Legacy & data loading
 try
-    [x] = ExploreASL(testPatientDestination,0,0,0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -657,7 +657,7 @@ testCondition = true;
 
 % Run processing starting from derivatives
 try
-    [x] = ExploreASL(testPatientDestination,0,0,1,0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,1,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -735,7 +735,7 @@ testCondition = true;
 % Run processing starting from derivatives with dataPar.json input (outdated)
 resultingMessage = '';
 try
-    [x] = ExploreASL(fullfile(testPatientDestination,'derivatives','ExploreASL','dataPar.json'),0,0,1,0,1,1);
+    [x] = ExploreASL(fullfile(testPatientDestination,'derivatives','ExploreASL','dataPar.json'),0,1,0,1,1);
 catch ME
     resultingMessage = ME.message;
     diary off;
@@ -787,7 +787,7 @@ testCondition = true;
 
 % Read test files
 try
-    [x] = ExploreASL(testPatientDestination,0,1,1,0,1,1);
+    [x] = ExploreASL(testPatientDestination,[0 0 1],1,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -931,7 +931,7 @@ testCondition = true;
 
 % Test: Bids2Legacy / Load data
 try
-    [x] = ExploreASL(droTestPatient,0,0,0);
+    [x] = ExploreASL(droTestPatient,0,0);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -1035,7 +1035,7 @@ if isfield(x, 'opts')
         end
     end
     if isfield(x.opts,'bImport')
-        if length(x.opts.bImport)<2 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
+        if length(x.opts.bImport)<3 || sum(x.opts.bImport)>0 || ~isnumeric(x.opts.bImport)
             testCondition = false;
         end
     end
@@ -1101,7 +1101,7 @@ testCondition = true;
 
 % Run BIDS2Legacy 1
 try
-    [x] = ExploreASL(testPatientDestination,0,0,0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
@@ -1110,7 +1110,7 @@ end
 
 % Run BIDS2Legacy 2 (this is supposed to be skipped automatically)
 try
-    [x] = ExploreASL(testPatientDestination,0,0,0,0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,0,0,1,1);
 catch ME
     warning(ME.identifier, '%s', ME.message);
     testCondition = false;
