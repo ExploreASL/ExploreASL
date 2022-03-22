@@ -15,9 +15,10 @@ function [result, x] = xASL_module_Import(x)
 %   x.dir.studyPar        - Path to the JSON file with the BIDS parameters relevant for the whole study.
 %                           These parameters are used if they cannot be extracted from the DICOMs automatically.
 %                           Looking automatically for file studyPar.json. (OPTIONAL)
-%   x.opts.bImport        - Specify which of the parts should be run (OPTIONAL, DEFAULT [0 0])
-%                           [1 0] - Run the DICOM to NIFTI conversion
-%                           [0 1] - Run the NIFTI transformation to the proper ASL-BIDS
+%   x.opts.bImport        - Specify which of the parts should be run (OPTIONAL, DEFAULT [0 0 0])
+%                           [1 0 0] - Run the DICOM to NIFTI conversion
+%                           [0 1 0] - Run the NIFTI transformation to the proper ASL-BIDS
+%                           [0 0 0] - Run the Defacing module
 %   x.modules.import.settings.bCopySingleDicoms
 %                         - If true, copies a single DICOM with each NIfTI dataset/ScanType,
 %                           that can be used to retrieve missing parameters from the DICOM header,
@@ -127,6 +128,7 @@ function [result, x] = xASL_module_Import(x)
     % Define lock states
     StateName{1} = '010_DCM2NII';
     StateName{2} = '020_NII2BIDS';
+	StateName{3} = '030_DEFACE';
    
     
     %% 0. Initialization
@@ -156,10 +158,18 @@ function [result, x] = xASL_module_Import(x)
         x.mutex.AddState(StateName{iState});
     elseif x.opts.bImport(2) && x.mutex.HasState(StateName{2})
         fprintf('NIIX to ASL-BIDS was run before...   \n');
+	end
+    
+	%% 3. Run the DCM2NIIX
+    iState = 3;
+    if x.opts.bImport(3) && ~x.mutex.HasState(StateName{3})
+        x = xASL_wrp_Deface(x);
+        x.mutex.AddState(StateName{iState});
+    elseif x.opts.bImport(3) && x.mutex.HasState(StateName{3})
+        fprintf('DEFACE was run before...   \n');
     end
     
-    
-    %% 3. Clean-up
+    %% 4. Clean-up
     x = xASL_adm_CleanUpX(x);
     
     % We need to terminate the module correctly

@@ -17,7 +17,7 @@ function xASL_init_printSettings(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:  n/a
 %
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
     %% Printing
     xASL_adm_BreakString('ExploreASL Settings');
@@ -36,7 +36,7 @@ function xASL_init_printSettings(x)
     if x.opts.bImport(2)==1
         textPrint = [textPrint 'NII2BIDS '];
     end
-    if x.opts.Deface==1
+    if x.opts.bImport(3)==1
         textPrint = [textPrint 'DEFACE '];
     end
     fprintf([textPrint '\n']);

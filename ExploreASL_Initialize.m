@@ -2,7 +2,7 @@ function [x] = ExploreASL_Initialize(varargin)
 %ExploreASL_Initialize Initializes ExploreASL
 %
 % FORMAT: 
-%   x = ExploreASL_Initialize([DatasetRoot, bImport, bDeface, bProcess, bPause, iWorker, nWorkers])
+%   x = ExploreASL_Initialize([DatasetRoot, bImport, bProcess, bPause, iWorker, nWorkers])
 %
 % INPUT:
 %   varargin    - This script accepts the same arguments as ExploreASL. Check out the definitions there.
@@ -233,12 +233,12 @@ end
 function p = xASL_init_InputParsing(varargin)
 
     % This subfunction receives the input arguments and parses them.
-    % The allowed input arguments are: DatasetRoot, bImport, bDeface,
+    % The allowed input arguments are: DatasetRoot, bImport, 
     % bProcess, bPause, iWorker, nWorkers. Right now we allow the user
     % to insert a path to a directory or an empty variable for the
     % DatasetRoot argument. All other arguments are either character
     % arrays, empty variables, numerical values or logical values. bImport,
-    % bDeface and bProcess can also be logical arrays. This sub-function is
+    % and bProcess can also be logical arrays. This sub-function is
     % closely related to xASL_init_convertParsedInput, so please check out
     % the corresponding description.
 
@@ -248,7 +248,6 @@ function p = xASL_init_InputParsing(varargin)
     % Define valid input variables
     validDatasetRoot = @(variable) ischar(variable) || isempty(variable);
     validImport = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
-    validDeface = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
     validProcess = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
     validbPause = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable) || islogical(variable);
     validiWorker = @(variable) ischar(variable) || isempty(variable) || isnumeric(variable);
@@ -256,8 +255,7 @@ function p = xASL_init_InputParsing(varargin)
     
     % Define defaults
     defaultDatasetRoot = [];
-    defaultImport = [0 0];
-    defaultDeface = 0;
+    defaultImport = [0 0 0];
     defaultProcess = [0 0 0];
     defaultbPause = 0;
     defaultiWorker = 1;
@@ -266,7 +264,6 @@ function p = xASL_init_InputParsing(varargin)
     % Add definitions to the input parser
     addOptional(p, 'DatasetRoot', defaultDatasetRoot, validDatasetRoot);
     addOptional(p, 'bImport', defaultImport, validImport);
-    addOptional(p, 'Deface', defaultDeface, validDeface);
     addOptional(p, 'bProcess', defaultProcess, validProcess);
     addOptional(p, 'bPause', defaultbPause, validbPause);
     addOptional(p, 'iWorker', defaultiWorker, validiWorker);
@@ -284,7 +281,7 @@ function x = xASL_init_convertParsedInput(x,parameters)
     % This sub-function takes the parsed arguments and convertes them for
     % our internal usage. Additionally we do some pipeline related checks.
     % ExploreASL has the following input arguments: DatasetRoot, bImport, 
-    % bDeface, bProcess, bPause, iWorker, nWorkers. Besides DatasetRoot,
+    % bProcess, bPause, iWorker, nWorkers. Besides DatasetRoot,
     % which is a path, and also iWorker & nWorkers, which are integers, all
     % the other input options are meant to be used as booleans. This
     % simplifies the usage for newcomers. They only have to decide whether
@@ -297,7 +294,6 @@ function x = xASL_init_convertParsedInput(x,parameters)
     % Check if inputs are empty or chars (the option to use character array input is important for the compiled mode)
     if isempty(parameters.DatasetRoot),     parameters.DatasetRoot = '';                                    end
     if ischar(parameters.bImport),          parameters.bImport = str2num(parameters.bImport);               end
-    if ischar(parameters.Deface),           parameters.Deface = str2num(parameters.Deface);                 end
     if ischar(parameters.bProcess),         parameters.bProcess = str2num(parameters.bProcess);             end
     if ischar(parameters.bPause),           parameters.bPause = str2num(parameters.bPause);                 end
     if ischar(parameters.iWorker),          parameters.iWorker = str2num(parameters.iWorker);               end
@@ -307,21 +303,22 @@ function x = xASL_init_convertParsedInput(x,parameters)
     if length(parameters.bImport)==1
         % If a single value is given then turn on/off all the import modules ...
         parameters.bImport(1:2) = logical(parameters.bImport(1));
+		parameters.bImport(3) = false;
     elseif length(parameters.bImport)==4
         % Old version
         warning('You are using the outdated format with 4 import modules, additional elements are skipped...');
-        parameters.bImport = parameters.bImport(1:2);
+        parameters.bImport = parameters.bImport(1:3);
     elseif length(parameters.bImport)<2
         % Convert to a row vector
         parameters.bImport = parameters.bImport(:)';
         % Issue a warning
         warning('Incorrect number of import modules (%s), missing sub-modules set to zero...', xASL_num2str(length(parameters.bImport)));
         % Fill in the missing fields with zeros
-        parameters.bImport(length(parameters.bImport)+1:2) = 0;
-    elseif length(parameters.bImport)>2
+        parameters.bImport(length(parameters.bImport)+1:3) = 0;
+    elseif length(parameters.bImport)>3
         % Skip additional elements
         warning('Incorrect number of import modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.bImport)));
-        parameters.bImport = parameters.bImport(1:2);
+        parameters.bImport = parameters.bImport(1:3);
     end
     if length(parameters.bProcess)==1
         % If a single value is given, then copy it to all submodules
@@ -373,13 +370,6 @@ function x = xASL_init_GetBooleansImportProcess(x)
         x.opts.bImportData = 0;
     end
 
-    % Check if data is being defaced
-    if sum(x.opts.Deface)>0
-        x.opts.bDefaceData = 1;
-    else
-        x.opts.bDefaceData = 0;
-    end
-    
     % Check if data is being processed
     if sum(x.opts.bProcess)>0
         x.opts.bProcessData = 1;
@@ -398,7 +388,7 @@ function x = xASL_init_GetBooleansImportProcess(x)
     end
     
     % We need to check if import/defacing and processing were run separately
-    if (x.opts.bImportData || x.opts.bDefaceData) && ~x.opts.bProcessData
+    if x.opts.bImportData && ~x.opts.bProcessData
         x.opts.bSkipBIDS2Legacy = true;
         x.opts.bLoadData = false;
     else

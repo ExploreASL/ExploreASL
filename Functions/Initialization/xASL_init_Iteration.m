@@ -35,7 +35,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     dbSettings.x.dir.LockDir         = ['<ROOT>/lock/' moduleName];
     
     % Lock dir specifics for Import
-    if strcmp(moduleName,'xASL_module_Import') || strcmp(moduleName,'xASL_module_BIDS2Legacy') || strcmp(moduleName,'xASL_module_Deface')
+    if strcmp(moduleName,'xASL_module_Import') || strcmp(moduleName,'xASL_module_BIDS2Legacy')
         dbSettings.x.dir.LockDir = ['<ROOT>/derivatives/ExploreASL/lock/' moduleName];
     end
     
@@ -93,7 +93,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     end
     
     % SUBJECT, SUBJECTDIR & LockDir
-    if ~isempty(regexp(ModName,'(Import|Deface|BIDS2Legacy|Struct|ASL|func|LongReg|dwi)', 'once'))
+    if ~isempty(regexp(ModName,'(Import|BIDS2Legacy|Struct|ASL|func|LongReg|dwi)', 'once'))
         dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
         dbSettings.x.dir.SUBJECTDIR = '<ROOT>/<SUBJECT>';
         dbSettings.x.dir.LockDir = [dbSettings.x.dir.LockDir '/<SUBJECT>'];
@@ -104,7 +104,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.sets.SESSION = x.SESSIONS;
         dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID '_<SESSION>'];
         dbSettings.x.dir.SESSIONDIR = '<ROOT>/<SUBJECT>/<SESSION>';
-    elseif ~isempty(regexp(ModName,'(Import|Deface)', 'once'))
+    elseif ~isempty(regexp(ModName,'(Import)', 'once'))
         dbSettings.sets.SESSION = x.SESSIONS;
         dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID]; % Currently we can not support session-wise import
         dbSettings.x.dir.SESSIONDIR = '<ROOT>/<SUBJECT>/<SESSION>';
@@ -113,7 +113,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     %% Diary file
     if ~isempty(regexp(ModName, '(DARTEL|Population|Analyze)', 'once'))
         dbSettings.diaryFile = ['<ROOT>/log/' moduleName '.log'];
-    elseif ~isempty(regexp(ModName,'(Import|Deface|BIDS2Legacy)', 'once'))
+    elseif ~isempty(regexp(ModName,'(Import|BIDS2Legacy)', 'once'))
         dbSettings.diaryFile = ['<ROOT>/derivatives/ExploreASL/log/' moduleName '_sub-<SUBJECT>.log'];
     elseif ~isempty(regexp(ModName,'(Structural)', 'once'))
         dbSettings.diaryFile = ['<ROOT>/log/' moduleName '_<SUBJECT>.log'];

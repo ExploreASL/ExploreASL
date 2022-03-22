@@ -42,7 +42,7 @@ function x = xASL_imp_BasicParameterChecks(x)
             error('Could not find the sourceStructure.json file...');
         end
         x.dir.sourceStructure = fullfile(x.dir.DatasetRoot,fListImPar{1});
-    elseif isempty(x.dir.sourceStructure) && (x.opts.bImport(2) || x.opts.Deface)
+    elseif isempty(x.dir.sourceStructure) && (x.opts.bImport(2) || x.opts.bImport(3))
         % For BIDS2Legacy we do not need the imPar struct (and we should not need it for NII2BIDS or DEFACE)
         x.dir.sourceStructure = [];
     else
@@ -69,10 +69,10 @@ function x = xASL_imp_BasicParameterChecks(x)
     end
 
     if isempty(x.opts.bImport)
-        x.opts.bImport = [1 1];
+        x.opts.bImport = [1 1 0];
     else
-        if length(x.opts.bImport) ~= 2
-            error('x.opts.bImport must have length 2...');
+        if length(x.opts.bImport) ~= 3
+            error('x.opts.bImport must have length 3...');
         end
     end
 

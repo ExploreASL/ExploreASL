@@ -39,7 +39,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         % Determine structure from temp data
         x = xASL_imp_DetermineStructureFromTempdata(x);
         
-    elseif (x.opts.Deface || x.opts.bLoadData)
+    elseif (x.opts.bImport(3) || x.opts.bLoadData)
         % Determine structure from rawdata
         x = xASL_imp_DetermineStructureFromRawdata(x);
 

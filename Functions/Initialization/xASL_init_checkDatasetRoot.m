@@ -44,11 +44,10 @@ function [x] = xASL_init_checkDatasetRoot(x)
             % Give back a warning that the user tried to import or process but neither a correct dataset root nor a dataPar.json that exists was used
             warning('You are trying to import or process a dataset, but the input parameters are not correct. ExploreASL will only be initialized...');
             x.opts.bProcessData = 0;
-            x.opts.bDefaceData = 0;
             x.opts.bImportData = 0;
             x.opts.bLoadData = false;
             x.opts.bProcess = [0 0 0];
-            x.opts.bImport = [0 0];
+            x.opts.bImport = [0 0 0];
         end
     end
     
