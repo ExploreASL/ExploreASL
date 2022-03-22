@@ -43,6 +43,16 @@ function x = xASL_init_Import(x)
     % Initialize the import setup
 	x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
         
+	% Check imPar structure
+	if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
+		% Basic import checks before execution
+		x = xASL_imp_CheckImportSettings(x);
+		% Check directories and permissions of sourcedata
+		x = xASL_imp_CheckDirectoriesAndPermissions(x);
+	else
+		error('The imPar struct does not exist...');
+	end
+	
     %% Determine subject/session/run structure from sourcedata, temp data or rawdata
     x = xASL_imp_DetermineSubjectStructure(x);
     

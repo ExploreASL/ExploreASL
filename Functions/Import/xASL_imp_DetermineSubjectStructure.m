@@ -27,22 +27,6 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 % Copyright (c) 2015-2022 ExploreASL
 
 
-    %% Shared imPar related initialization
-    if x.opts.bImportData || x.opts.bDefaceData || x.opts.bLoadData
-        if isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar)
-            % Basic import checks before execution
-            x = xASL_imp_CheckImportSettings(x);
-            % Check directories and permissions of sourcedata
-            x = xASL_imp_CheckDirectoriesAndPermissions(x);
-        else
-            error('The imPar struct does not exist...');
-        end
-    else
-        % Not a valid option
-        error('Invalid option of import settings...');
-    end
-
-
     %% Check if imPar exists
     imParCondition = isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar);
 
@@ -55,10 +39,10 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         % Determine structure from temp data
         x = xASL_imp_DetermineStructureFromTempdata(x);
         
-    elseif (x.opts.Deface || x.opts.bLoadData) && imParCondition
+    elseif (x.opts.Deface || x.opts.bLoadData)
         % Determine structure from rawdata
         x = xASL_imp_DetermineStructureFromRawdata(x);
-        
+
     end
     
     % SESSIONS DUMMY
@@ -84,14 +68,14 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
     %% Check if rawdata exists
     if xASL_exist(x.dir.RawData,'dir')
         
         % SUBJECTS
-        x.SUBJECTS = xASL_adm_GetFileList(x.modules.import.imPar.BidsRoot,[],false,[],true);
+        x.SUBJECTS = xASL_adm_GetFileList(x.dir.RawData,[],false,[],true);
 
         % Remove 'sub-' from subject name if it exists
         for iSubject=1:numel(x.SUBJECTS)
