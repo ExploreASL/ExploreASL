@@ -40,27 +40,8 @@ function [x] = ExploreASL_Import(x)
     
     
     %% Import workflow
-    try
-        % Here we run the subject-wise ExploreASL xASL_module_Import
-        [~, x] = xASL_init_Iteration(x,'xASL_module_Import');
-        % Turn off the import
-        x.opts.bImportData = false;
-    catch loggingEntry
-        % Print user feedback if import crashed
-        fprintf(2,'ExploreASL Import module failed...\n');
-        % Check loggingEntry
-        if size(loggingEntry.stack,1)>0
-            fprintf(2,'%s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
-        end
-        [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-        % Turn off data loading and processing if import crashed
-        x.opts.bLoadData = false;
-        x.opts.bProcessData = false;
-    end
-
-    
+	% Here we run the subject-wise ExploreASL xASL_module_Import
+	[~, x] = xASL_init_Iteration(x,'xASL_module_Import');
+	% Turn off the import
+        
 end
-
-
-
-

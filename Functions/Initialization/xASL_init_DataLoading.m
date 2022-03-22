@@ -30,10 +30,8 @@ function [x] = xASL_init_DataLoading(x)
     if x.opts.bLoadData && x.opts.bLoadableData
         if isfield(x,'dir') && isfield(x.dir,'dataPar')
             if isempty(x.dir.dataPar)
-                if ~x.opts.bImportData
-                    warning('You are trying to load a dataset but there is no dataPar JSON file...');
-                end
-                x.opts.bLoadData = false;
+				warning('You are trying to load a dataset but there is no dataPar JSON file...');
+				x.opts.bLoadData = false;
             end
         else
             x.opts.bLoadData = false;

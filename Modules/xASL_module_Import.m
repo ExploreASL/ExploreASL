@@ -127,8 +127,7 @@ function [result, x] = xASL_module_Import(x)
     % Define lock states
     StateName{1} = '010_DCM2NII';
     StateName{2} = '020_NII2BIDS';
-    StateName{3} = '030_CleanUp';
-    
+   
     
     %% 0. Initialization
     

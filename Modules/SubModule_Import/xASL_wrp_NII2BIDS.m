@@ -53,7 +53,7 @@ function x = xASL_wrp_NII2BIDS(x)
 		studyPar = xASL_io_ReadDataPar(x.dir.studyPar, true);
 	end
 	
-	% The name always has to be assigned
+	% The name always has to be assigned as it is used in the DatasetDescription
 	if ~isfield(studyPar,'Name')
 		studyPar.Name = x.modules.import.imPar.studyID;
 	end
@@ -71,7 +71,7 @@ function x = xASL_wrp_NII2BIDS(x)
 	%% 3. Go through all subjects and check all the M0 and ASLs and modify the JSONs
 	% This step should be completely automatic, just taking the info filled above and using it to convert to full BIDS.
     
-	% Go through all subjects
+	% Go through all subjects in this directory (but proceed only with the current subject)
 	listSubjectsSessions = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],false,[],true);
     for iSubjectSession = 1:length(listSubjectsSessions)
         % Only run it for the current subject (maybe we can do this more elegantly in the future)
@@ -80,13 +80,13 @@ function x = xASL_wrp_NII2BIDS(x)
         end
     end
     
-    % Move log files of current subject from datasetroot & temp to derivatives/ExploreASL if they aren't there already
+    % Move log files of current subject from datasetroot & temp to derivatives/ExploreASL 
     logFilesDatasetRoot = xASL_adm_GetFileList(x.dir.DatasetRoot,'^import.+$');
     logFilesTempRoot = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,'^import.+$');
     allLogFiles = vertcat(logFilesDatasetRoot,logFilesTempRoot);
     if ~isempty(allLogFiles)
         for importFile=1:size(allLogFiles,1)
-            % Check for subject name
+            % Check for subject name - only move them when they have not been moved already
             if ~isempty(regexpi(allLogFiles{importFile},subjectName))
                 [~,thisFileMeta,thisExtensionMeta] = xASL_fileparts(allLogFiles{importFile,1});
                 xASL_Move(allLogFiles{importFile,1},fullfile(x.modules.import.imPar.DerivativesRoot,'ExploreASL',[thisFileMeta thisExtensionMeta]),1);
@@ -94,7 +94,7 @@ function x = xASL_wrp_NII2BIDS(x)
         end
     end
     
-    % Delete temp folder of current subject
+    % Delete temp folder of all the subjects that might be there
     tempDirs = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],[],[],true);
     for iTempDir=1:numel(tempDirs)
         if ~isempty(regexpi(tempDirs{iTempDir},subjectName))
