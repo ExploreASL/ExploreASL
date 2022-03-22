@@ -23,7 +23,7 @@ function [x] = ExploreASL_Deface(x)
     try
         % Before we run the subject-wise xASL_module_Deface we need to initialize some x structure fields.
         % We determine the general subject/visit/session structure and store everything required for import/defacing/processing in x.
-        x = xASL_imp_ImportInitialization(x);
+        x = xASL_init_Import(x);
     catch loggingEntry
         % Print user feedback if deface crashed
         fprintf(2,'ExploreASL Deface initialization failed...\n');

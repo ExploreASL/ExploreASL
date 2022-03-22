@@ -1,7 +1,7 @@
-function x = xASL_imp_ImportInitialization(x)
-%xASL_imp_ImportInitialization Initialization before xASL_module_Import
+function x = xASL_init_Import(x)
+%xASL_init_Import Initialization before xASL_module_Import
 %
-% FORMAT: x = xASL_imp_ImportInitialization(x)
+% FORMAT: x = xASL_init_Import(x)
 %
 % INPUT:
 %   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -41,21 +41,12 @@ function x = xASL_imp_ImportInitialization(x)
     x = xASL_imp_BasicParameterChecks(x);
 
     % Initialize the import setup
-    if x.opts.bImportData || x.opts.Deface || x.opts.bLoadData
-        x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
-    else
-        x.modules.import.imPar = NaN;
-    end
-
-    
+	x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
+        
     %% Determine subject/session/run structure from sourcedata, temp data or rawdata
     x = xASL_imp_DetermineSubjectStructure(x);
     
     % Create logging directory if it does not exist already
     xASL_adm_CreateDir(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log'));
 
-
 end
-
-
-

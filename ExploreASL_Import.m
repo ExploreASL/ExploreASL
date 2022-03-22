@@ -24,7 +24,7 @@ function [x] = ExploreASL_Import(x)
         % Before we run the subject-wise xASL_module_Import we need to initialize some x structure fields. For DCM2NII & NII2BIDS 
         % we try to read the sourceStructure.json and studyPar.json as well as the general file structure. We determine the general
         % subject/visit/session structure and store everything required for import/processing in x.
-        x = xASL_imp_ImportInitialization(x);
+        x = xASL_init_Import(x);
     catch loggingEntry
         % Print user feedback if import crashed
         fprintf(2,'ExploreASL Import initialization failed...\n');
