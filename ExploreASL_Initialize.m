@@ -55,7 +55,7 @@ function [x] = ExploreASL_Initialize(varargin)
     p = xASL_init_InputParsing(varargin{:});
     
     % Initialize substructs
-    x = xASL_init_SubStructures;
+	x = xASL_init_SubStructs([]);
     
     % Convert parsed input
     x = xASL_init_convertParsedInput(x, p.Results);
@@ -486,33 +486,3 @@ function x = xASL_init_GetMasterScript(x)
     end
 
 end
-
-
-%% -----------------------------------------------------------------------
-function x = xASL_init_SubStructures()
-
-    % Create the x struct
-    x = struct;
-    
-    % Statistics, directories, paths, and sequence related fields
-    if ~isfield(x,'S'),                     x.S = struct;                   end
-    if ~isfield(x,'D'),                     x.D = struct;                   end
-    if ~isfield(x,'P'),                     x.P = struct;                   end
-    if ~isfield(x,'Q'),                     x.Q = struct;                   end
-    
-    % Module subfields (import, structural, asl, & population)
-    if ~isfield(x,'modules'),               x.modules = struct;             end
-    if ~isfield(x.modules,'import'),        x.modules.import = struct;      end
-    if ~isfield(x.modules,'structural'),    x.modules.structural = struct;  end
-    if ~isfield(x.modules,'asl'),           x.modules.asl = struct;         end
-    if ~isfield(x.modules,'population'),    x.modules.population = struct;  end
-    
-    % Dataset related fields, workflow settings, toolbox/external (SPM, CAT, FSL, etc.) fields, general directories
-    if ~isfield(x,'dataset'),               x.dataset = struct;             end
-    if ~isfield(x,'settings'),              x.settings = struct;            end
-    if ~isfield(x,'external'),              x.external = struct;            end
-    if ~isfield(x,'dir'),                   x.dir = struct;                 end
-
-end
-
-
