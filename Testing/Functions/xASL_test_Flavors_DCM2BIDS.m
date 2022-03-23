@@ -53,7 +53,7 @@ function loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable)
         xASL_test_Flavors_ManualFlavors(testConfig.flavorList, testConfig.pathFlavorDatabase, iFlavor);
         
         % 4. Convert NII+JSON -> BIDS
-        xFlavor = ExploreASL(fullfile(testConfig.pathFlavorDatabase, testConfig.flavorList{iFlavor}), [0 1], 0, 0);
+        xFlavor = ExploreASL(fullfile(testConfig.pathFlavorDatabase, testConfig.flavorList{iFlavor}), [0 1 0], 0, 0);
         if isfield(xFlavor,'logging')
             loggingTable = xASL_test_AddLoggingEntryToTable(testConfig.flavorList{iFlavor},loggingTable,xFlavor.logging);
         end
