@@ -54,9 +54,10 @@ function [x] = ExploreASL_Initialize(varargin)
     % Define input parser
     p = xASL_init_InputParsing(varargin{:});
     
-    % Initialize substructs
-	x = xASL_init_SubStructs([]);
-    
+	if ~exist('x','var') || isempty(x)
+		x = struct;
+	end
+        
     % Convert parsed input
     x = xASL_init_convertParsedInput(x, p.Results);
     
@@ -79,6 +80,8 @@ function [x] = ExploreASL_Initialize(varargin)
     %% 3. Add ExploreASL paths
     xASL_init_AddDirsOfxASL(x.opts.MyPath);
     
+	% Initialize substructs
+	x = xASL_init_SubStructs(x);
     
     %% 4. Check DatasetRoot
     x = xASL_init_checkDatasetRoot(x);
