@@ -735,7 +735,7 @@ testCondition = true;
 % Run processing starting from derivatives with dataPar.json input (outdated)
 resultingMessage = '';
 try
-    [x] = ExploreASL(fullfile(testPatientDestination,'derivatives','ExploreASL','dataPar.json'),0,1,0,1,1);
+    [x] = ExploreASL(testPatientDestination,0,1,0,1,1);
 catch ME
     resultingMessage = ME.message;
     diary off;
