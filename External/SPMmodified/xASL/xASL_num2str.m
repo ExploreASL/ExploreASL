@@ -142,6 +142,9 @@ function stringToStrip = xASL_adm_RemoveTrailingSymbol(stringToStrip,removeMe)
     elseif strcmp(removeMe,'wspace')
         indToStrip = isstrprop(stringToStrip,'wspace');
         stringToStrip(indToStrip) = [];
+		% And also remove zero string
+		indToStrip = stringToStrip == 0;
+		stringToStrip(indToStrip) = [];
     else
         % Find out trailing zeros
         indSymbol = regexp(stringToStrip,[removeMe '*$']);
