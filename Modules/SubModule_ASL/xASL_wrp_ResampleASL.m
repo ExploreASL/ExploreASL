@@ -245,14 +245,17 @@ for iSpace=1:2
         % Decoding of TimeEncoded data (Nifti is saved inside the function)
         ASL_im = xASL_quant_HadamardDecoding(PathASL{iSpace}, x.Q);
         
+        if length(unique(x.Q.Initial_PLD)) == size(ASL_im,4)+1 % unique PLDs > decoded image size + 1 = repetitions have different PLDs = we don't want to average
         % Hadamard Block size is calculated as number of TEs and the HadamardMatrixSize-1
-		blockSize = x.Q.NumberEchoTimes * (x.Q.TimeEncodedMatrixSize-1);
-		        
-        PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), blockSize); % preallocate PWI
-        
-        for iBlock = 1:blockSize
-            PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
+        blockSize = x.Q.NumberEchoTimes * (x.Q.TimeEncodedMatrixSize-1);
+            PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), blockSize); % preallocate PWI
+            for iBlock = 1:blockSize
+                PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
+            end
+        else
+            PWI = ASL_im;
         end
+
         
         % Save PWI4D
         fprintf('%s\n', PathPWI4D{iSpace});
