@@ -124,6 +124,8 @@ if ~isempty(strfind(x.S.InputDataStr,'CBF'))
     x.S.unit = 'mL/100g/min';
 elseif ~isempty(strfind(x.S.InputDataStr,'T1'))
     x.S.unit = 'mL';
+elseif ~isempty(strfind(x.S.InputDataStr,'TE'))
+    x.S.unit = 's';
 else
     x.S.unit = 'au';
 end

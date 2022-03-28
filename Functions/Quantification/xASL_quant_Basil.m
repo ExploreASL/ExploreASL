@@ -73,10 +73,11 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
     %% 4. Create option_file that contains options which are passed to the FSL command
     % basil_options is a character array containing CLI args for the Basil/Fabber command
     
-    BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI);
     
-    if x.modules.asl.bMultiTE
+    if isfield(x.modules.asl, 'bMultiTE') && x.modules.asl.bMultiTE ==1
         BasilOptions = xASL_quant_Fabber_Options(pathBasilOptions, x, PWI, pathBasilInput);
+    else
+        BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI);
     end
     
     %% 5. Run Basil and retrieve CBF output
@@ -222,7 +223,13 @@ switch lower(x.Q.LabelingType)
 		% Print all the PLDs and LabDurs
 		
 		[PLDs, ind] = unique(x.Q.Initial_PLD);
-		PLDs = PLDs'/1000;
+        PLDs = PLDs'/1000;
+        % For Time-encoded, we skip the first volume
+        if x.modules.asl.bTimeEncoded
+            N = length(PLDs)/x.Q.TimeEncodedMatrixSize;
+            PLDs = PLDs(1+N:end); % ex: if HAD8 with 2 different repetitions (16 PLDs), we will want 7+7 PLDs for the quantification. So PLDs(1+1:end) = 14 PLDs
+        end
+        
 		if length(x.Q.LabelingDuration)>1
 			LDs = (x.Q.LabelingDuration(ind))'/1000;
 		else

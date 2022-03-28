@@ -227,8 +227,8 @@ if ~x.mutex.HasState(StateName{8})
     % x.S.InputAtlasPath            = fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii');
     % xASL_wrp_GetROIstatistics( x);
 
-    x.S.InputDataStr = 'qCBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
-	x.S.InputDataStrNative = 'CBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+    x.S.InputDataStr = 'qCBF'; % 'TExch' 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+	x.S.InputDataStrNative = 'qCBF'; % 'TExch' 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
     
     % Iterate over atlases
     for iAtlas=1:length(x.S.Atlases)        
