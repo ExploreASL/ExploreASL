@@ -128,7 +128,9 @@ end
 if ~isfield(x.modules.asl,'motionCorrection')
     x.modules.asl.motionCorrection = 1;
 end
-
+if ~isfield(x.modules.asl,'ApplyQuantification')
+    x.modules.asl.ApplyQuantification = [1 1 1 1 1];
+end
 if ~isfield(x,'DoWADQCDC')
     x.DoWADQCDC = false; % default skip WAD-QC stuff
 end
@@ -349,8 +351,10 @@ elseif ~x.mutex.HasState(StateName{iState})
         if x.settings.bAutoACPC
             xASL_im_CenterOfMass(x.P.Path_ASL4D, OtherList, 10); % set CenterOfMass to lower accepted distance for when rerunning wrong registration
         end
-
-		xASL_wrp_RealignASL(x);
+        
+        if nVolumes>1 % skip realignment if there are too few volumes
+            xASL_wrp_RealignASL(x);
+        end
 
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
