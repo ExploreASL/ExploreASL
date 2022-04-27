@@ -128,9 +128,6 @@ end
 if ~isfield(x.modules.asl,'motionCorrection')
     x.modules.asl.motionCorrection = 1;
 end
-if ~isfield(x.modules.asl,'ApplyQuantification')
-    x.modules.asl.ApplyQuantification = [1 1 1 1 1];
-end
 if ~isfield(x,'DoWADQCDC')
     x.DoWADQCDC = false; % default skip WAD-QC stuff
 end
@@ -194,7 +191,7 @@ else
 end
 
 %% E1. Default quantification parameters in the Q field
-if ~isfield(x.Q,'ApplyQuantification') || isempty(x.module.asl.ApplyQuantification)
+if ~isfield(x.module.asl,'ApplyQuantification') || isempty(x.module.asl.ApplyQuantification)
     x.module.asl.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
 elseif length(x.module.asl.ApplyQuantification)>5
     warning('x.module.asl.ApplyQuantification had too many parameters');
