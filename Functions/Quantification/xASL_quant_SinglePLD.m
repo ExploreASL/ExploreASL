@@ -55,25 +55,26 @@ if nargin<5 || isempty(bUseBasilQuantification)
     bUseBasilQuantification = false;
 end
 
-%% Single PLD part, remove for multi-PLD
-x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
-if numel(x.Q.Initial_PLD)>1
-    warning('Multiple PLDs detected, selecting maximal value');
-    fprintf('%s\n', 'A multi-PLD quantification may provide more accurate results');
-    x.Q.Initial_PLD = max(x.Q.Initial_PLD);
-end
-
 ScaleImage = 1; % initializing (double data format by default in Matlab)
-
-% Convert to double precision to increase quantification precision
-% This is especially useful with the large factors that we can multiply and
-% divide with in ASL quantification
-PWI = double(PWI);
-M0_im = double(M0_im);
 
 if ~x.modules.asl.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 else
+    
+    %% Single PLD part, remove for multi-PLD
+    x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
+    if numel(x.Q.Initial_PLD)>1
+        warning('Multiple PLDs detected, selecting maximal value');
+        fprintf('%s\n', 'A multi-PLD quantification may provide more accurate results');
+        x.Q.Initial_PLD = max(x.Q.Initial_PLD);
+    end
+
+    % Convert to double precision to increase quantification precision
+    % This is especially useful with the large factors that we can multiply and
+    % divide with in ASL quantification
+    PWI = double(PWI);
+    M0_im = double(M0_im);    
+    
     % Calculate the vector of SliceReadoutTime
     SliceReadoutTime = xASL_quant_SliceTiming(x,x.P.Path_ASL4D);
     
