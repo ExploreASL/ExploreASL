@@ -163,7 +163,7 @@ if isnumeric(x.Q.M0)
         M0_im = x.Q.M0;
         fprintf('%s\n',['Single M0 value ' num2str(M0_im) ' used']);
 
-        if x.Q.ApplyQuantification(4)
+        if x.modules.asl.ApplyQuantification(4)
             % in case of separate M0, or M0 because of no background suppression,
             % T2* effect is similar in both images and hence removed by division
             T2_star_factor = exp(min(ASL_parms.EchoTime)/x.Q.T2star);
@@ -249,7 +249,7 @@ if strcmpi(x.Q.M0,'separate_scan')
         end
 
         % Correct M0 for any EchoTime differences between ASL & M0
-        if x.Q.ApplyQuantification(4)
+        if x.modules.asl.ApplyQuantification(4)
             ScalingASL = exp(min(ASL_parms.EchoTime)/CorrFactor);
             ScalingM0 = exp(min(M0_parms.EchoTime)/CorrFactor);
             % Check if TE numbers match
@@ -270,7 +270,7 @@ end
 
 
 
-if ~x.Q.ApplyQuantification(3) % if conversion PWI for label units is not requested
+if ~x.modules.asl.ApplyQuantification(3) % if conversion PWI for label units is not requested
     SliceGradient = [];
 else
 
@@ -436,7 +436,7 @@ else
     error('Multi PLD quantification without BASIL not implemented yet');
 end
 
-if x.Q.ApplyQuantification(5)==0
+if x.modules.asl.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
     if MeanCBF>666 % this is the average including air
         CBF = CBF .* (10./MeanCBF);

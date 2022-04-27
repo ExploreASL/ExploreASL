@@ -20,15 +20,15 @@ function [ScaleImage, CBF, ATT] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber,
 %              initializing a ScaleImage that travels through this script & gets changed by the following quantification
 %              factors:
 %
-%              1.    {{PLD scalefactor}} (gradient if 2D multi-slice) (if x.Q.ApplyQuantification(3))
+%              1.    {{PLD scalefactor}} (gradient if 2D multi-slice) (if x.module.asl.ApplyQuantification(3))
 %              2.    {{Label decay scale factor}} for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
 %                    Single-compartment model: Alsop MRM 2014
-%                    Dual-compartment model: Wang MRM 2002: Gevers JMRI 2012 (if x.Q.ApplyQuantification(3))
+%                    Dual-compartment model: Wang MRM 2002: Gevers JMRI 2012 (if x.module.asl.ApplyQuantification(3))
 %              3.    {{Scaling to physiological units}} [ml/gr/ms =>ml/100gr/min =>(60,000 ms=>min)(1 gr=>100gr)]
-%                    (if x.Q.ApplyQuantification(3))
-%              4.    {{Manufacturer-specific scalefactor}} (if x.Q.ApplyQuantification(1) -> future move to dcm2niiX stage)
+%                    (if x.module.asl.ApplyQuantification(3))
+%              4.    {{Manufacturer-specific scalefactor}} (if x.module.asl.ApplyQuantification(1) -> future move to dcm2niiX stage)
 %              Finally, we:
-%              5.    Divide PWI/M0 (if x.Q.ApplyQuantification(5))
+%              5.    Divide PWI/M0 (if x.module.asl.ApplyQuantification(5))
 %              6.    Print parameters used
 %
 %              Note that the output always goes to the CBF image (in the
@@ -72,7 +72,7 @@ ScaleImage = 1; % initializing (double data format by default in Matlab)
 PWI = double(PWI);
 M0_im = double(M0_im);
 
-if ~x.Q.ApplyQuantification(3)
+if ~x.module.asl.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 else
     % Calculate the vector of SliceReadoutTime
@@ -125,7 +125,7 @@ end
 
 
 %% 4    Manufacturer-specific scalefactor
-if ~x.Q.ApplyQuantification(1)
+if ~x.module.asl.ApplyQuantification(1)
     fprintf('%s\n','We skip the Manufacturer-specific scalefactors');
 else
     % Load the stored parameters
@@ -210,7 +210,7 @@ end
 M0_im = repmat(M0_im,MatchSizeM0);
 ScaleImage = repmat(ScaleImage,MatchSizeSI);
 
-if ~x.Q.ApplyQuantification(5)
+if ~x.module.asl.ApplyQuantification(5)
     fprintf('%s\n','We skip the PWI/M0 division');
 else
     ScaleImage = ScaleImage./M0_im;
@@ -224,7 +224,7 @@ CBF = xASL_stat_MeanNan(CBF, 4);
 %% 6    Print parameters used
 fprintf('%s\n',' model with parameters:');
 
-if x.Q.ApplyQuantification(3)
+if x.module.asl.ApplyQuantification(3)
     switch lower(x.Q.LabelingType)
         case 'pasl'
             fprintf('%s\n',['TI1 = ' xASL_num2str(unique(x.Q.LabelingDuration(:)')) ' ms,']);
