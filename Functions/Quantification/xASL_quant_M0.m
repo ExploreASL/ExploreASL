@@ -78,7 +78,7 @@ end
 %% ------------------------------------------------------------------------------------------------------
 % 2. Convert control image with background suppression to pseudo-M0
 % for the GM
-if strcmp(x.Q.M0, 'UseControlAsM0') && x.Q.BackgroundSuppressionNumberPulses>0
+if strcmp(x.Q.M0, 'UseControlAsM0') && x.Q.BackgroundSuppressionNumberPulses>0 && x.module.asl.ApplyQuantification(4)
     % we only run this part if there is background suppression, but no M0 image
     [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x);
 end
