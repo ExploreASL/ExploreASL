@@ -19,15 +19,15 @@ function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x, 
 %              initializing a ScaleImage that travels through this script & gets changed by the following quantification
 %              factors:
 %
-%              1.    {{PLD scalefactor}} (gradient if 2D multi-slice) (if x.module.asl.ApplyQuantification(3))
+%              1.    {{PLD scalefactor}} (gradient if 2D multi-slice) (if x.modules.asl.ApplyQuantification(3))
 %              2.    {{Label decay scale factor}} for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
 %                    Single-compartment model: Alsop MRM 2014
-%                    Dual-compartment model: Wang MRM 2002: Gevers JMRI 2012 (if x.module.asl.ApplyQuantification(3))
+%                    Dual-compartment model: Wang MRM 2002: Gevers JMRI 2012 (if x.modules.asl.ApplyQuantification(3))
 %              3.    {{Scaling to physiological units}} [ml/gr/ms =>ml/100gr/min =>(60,000 ms=>min)(1 gr=>100gr)]
-%                    (if x.module.asl.ApplyQuantification(3))
-%              4.    {{Manufacturer-specific scalefactor}} (if x.module.asl.ApplyQuantification(1) -> future move to dcm2niiX stage)
+%                    (if x.modules.asl.ApplyQuantification(3))
+%              4.    {{Manufacturer-specific scalefactor}} (if x.modules.asl.ApplyQuantification(1) -> future move to dcm2niiX stage)
 %              Finally, we:
-%              5.    Divide PWI/M0 (if x.module.asl.ApplyQuantification(5))
+%              5.    Divide PWI/M0 (if x.modules.asl.ApplyQuantification(5))
 %              6.    Print parameters used
 %
 %              Note that the output always goes to the CBF image (in the
@@ -158,7 +158,7 @@ end
 
 
 %% 4    Manufacturer-specific scalefactor
-if ~x.module.asl.ApplyQuantification(1)
+if ~x.modules.asl.ApplyQuantification(1)
     fprintf('%s\n','We skip the Manufacturer-specific scalefactors');
 else
     % Load the stored parameters
@@ -243,7 +243,7 @@ end
 M0_im = repmat(M0_im,MatchSizeM0);
 ScaleImage = repmat(ScaleImage,MatchSizeSI);
 
-if ~x.module.asl.ApplyQuantification(5)
+if ~x.modules.asl.ApplyQuantification(5)
     fprintf('%s\n','We skip the PWI/M0 division');
 else
     ScaleImage = ScaleImage./M0_im;
@@ -259,7 +259,7 @@ end
 %% 6    Print parameters used
 fprintf('%s\n',' model with parameters:');
 
-if x.module.asl.ApplyQuantification(3)
+if x.modules.asl.ApplyQuantification(3)
     if isfield(x.Q,'LabelingDuration') && isfield(x.Q,'Initial_PLD')
         switch lower(x.Q.LabelingType)
             case 'pasl'

@@ -191,14 +191,14 @@ else
 end
 
 %% E1. Default quantification parameters in the Q field
-if ~isfield(x.module.asl,'ApplyQuantification') || isempty(x.module.asl.ApplyQuantification)
-    x.module.asl.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
-elseif length(x.module.asl.ApplyQuantification)>5
-    warning('x.module.asl.ApplyQuantification had too many parameters');
-    x.module.asl.ApplyQuantification = x.module.asl.ApplyQuantification(1:5);
-elseif length(x.module.asl.ApplyQuantification)<5
-    warning('x.module.asl.ApplyQuantification had too few parameters, using default 1');
-    x.module.asl.ApplyQuantification(length(x.module.asl.ApplyQuantification)+1:5) = 1;
+if ~isfield(x.modules.asl,'ApplyQuantification') || isempty(x.modules.asl.ApplyQuantification)
+    x.modules.asl.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
+elseif length(x.modules.asl.ApplyQuantification)>5
+    warning('x.modules.asl.ApplyQuantification had too many parameters');
+    x.modules.asl.ApplyQuantification = x.modules.asl.ApplyQuantification(1:5);
+elseif length(x.modules.asl.ApplyQuantification)<5
+    warning('x.modules.asl.ApplyQuantification had too few parameters, using default 1');
+    x.modules.asl.ApplyQuantification(length(x.modules.asl.ApplyQuantification)+1:5) = 1;
 end
 
 if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
