@@ -240,6 +240,12 @@ if sum(MatchSizeM0==0) || sum(MatchSizeSI==0)
     error('PWI dimensions too small compared to M0 and/or ScaleImage dimensions');
 end
 
+if ~x.modules.asl.ApplyQuantification(3)
+	% Convert to double precision if not done previously
+	M0_im = double(M0_im);
+	PWI = double(PWI);
+end
+
 M0_im = repmat(M0_im,MatchSizeM0);
 ScaleImage = repmat(ScaleImage,MatchSizeSI);
 
