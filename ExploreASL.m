@@ -88,7 +88,7 @@ function [x] = ExploreASL(varargin)
     % -----------------------------------------------------------------------------
     % II. Import Master
     if x.opts.bImportData
-        x = ExploreASL_Import(x);
+        ExploreASL_Import(x);
     end
 
     % -----------------------------------------------------------------------------
