@@ -315,12 +315,12 @@ function x = xASL_init_convertParsedInput(x,parameters)
         % Convert to a row vector
         parameters.bImport = parameters.bImport(:)';
         % Issue a warning
-        warning('Incorrect number of import modules (%s), missing sub-modules set to zero...', xASL_num2str(length(parameters.bImport)));
+        warning('Incorrect number of import modules (%s), missing sub-modules set to zero...', num2str(length(parameters.bImport)));
         % Fill in the missing fields with zeros
         parameters.bImport(length(parameters.bImport)+1:3) = 0;
     elseif length(parameters.bImport)>3
         % Skip additional elements
-        warning('Incorrect number of import modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.bImport)));
+        warning('Incorrect number of import modules (%s), additional elements are skipped...', num2str(length(parameters.bImport)));
         parameters.bImport = parameters.bImport(1:3);
     end
     if length(parameters.bProcess)==1
@@ -330,12 +330,12 @@ function x = xASL_init_convertParsedInput(x,parameters)
         % Convert to a row vector
         parameters.bProcess = parameters.bProcess(:)';
         % Issue a warning
-        warning('Incorrect number of processing modules (%s), missing sub-modules set to zero...', xASL_num2str(length(parameters.bProcess)));
+        warning('Incorrect number of processing modules (%s), missing sub-modules set to zero...', num2str(length(parameters.bProcess)));
         % Fill in the missing fields with zeros
         parameters.bProcess(length(parameters.bProcess)+1:3) = 0;
     elseif length(parameters.bProcess)>3
         % Skip additional elements
-        warning('Incorrect number of processing modules (%s), additional elements are skipped...', xASL_num2str(length(parameters.bProcess)));
+        warning('Incorrect number of processing modules (%s), additional elements are skipped...', num2str(length(parameters.bProcess)));
         parameters.bProcess = parameters.bProcess(1:3);
     end
     
