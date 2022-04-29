@@ -37,13 +37,6 @@ x.P = struct; % (re-)initiate P (otherwise the looping below gets too much)
 % /dartel -> /Population folder, standardize naming creation
 
 xASL_adm_CreateDir(x.D.PopDir);
-xASL_adm_CreateDir(x.D.T1CheckDir); 
-xASL_adm_CreateDir(x.D.TissueVolumeDir);
-xASL_adm_CreateDir(x.D.FLAIR_CheckDir);
-xASL_adm_CreateDir(x.D.ASLCheckDir);
-xASL_adm_CreateDir(x.D.MotionDir);
-xASL_adm_CreateDir(x.D.M0CheckDir);  
-xASL_adm_CreateDir(x.D.M0regASLdir);
 
 
 %% ------------------------------------------------------------------------------------
