@@ -213,7 +213,6 @@ for iIm=1:length(OutIm)
 end
 
 PathJPG = fullfile(ImageSaveDir, ['Regions_' Ffile '.jpg']);
-xASL_adm_CreateDir(ImageSaveDir);
 xASL_vis_Imwrite(OutImFinal, PathJPG);
 
     

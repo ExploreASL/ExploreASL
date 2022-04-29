@@ -46,7 +46,6 @@ if ~xASL_exist(PathCBF{1},'file') || ~xASL_exist(PathCBF{2},'file')
 end
 
 fprintf('%s\n','Saving TT nifti');
-xASL_adm_CreateDir(x.D.TTCheckDir);
 
 %% -------------------------------------------------------------
 %% 3. Load data & correct for timing differences (PLD etc)

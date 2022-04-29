@@ -228,7 +228,6 @@ ImOut = ImOut.*RatioN;
 S2S = 53; % slice to show
 VisualQC = [xASL_im_rotate(ImIn(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask2(:,:,S2S),90) xASL_im_rotate(ImIn(:,:,S2S).*Mask3(:,:,S2S),90) ; xASL_im_rotate(ImIn(:,:,S2S).*Mask4(:,:,S2S),90) xASL_im_rotate(Im5(:,:,S2S),90) xASL_im_rotate(ImOut(:,:,S2S),90)];
 
-xASL_adm_CreateDir(DirOutput);
 OutputFile = fullfile(DirOutput,['M0_im_proc_' NameOutput '.jpg']);
 fprintf('%s\n',['Please check visual QC: ' OutputFile]);
 xASL_vis_Imwrite(VisualQC, OutputFile);

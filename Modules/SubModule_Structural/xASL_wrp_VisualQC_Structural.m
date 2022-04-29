@@ -167,7 +167,6 @@ end
 
 if  xASL_exist(x.P.Path_T2,'file')
 	% It is created only if the T2 file exists
-	xASL_adm_CreateDir(x.D.T2_CheckDir);
 	
     % Same as above but then for T2
     T.ImIn        = {{x.P.Pop_Path_rT2} {x.P.Pop_Path_rT2 x.P.Pop_Path_rc2T1}};
@@ -179,7 +178,6 @@ end
 
 if  xASL_exist(x.P.Path_T1c,'file')
 	% It is created only if the T1c file exists
-	xASL_adm_CreateDir(x.D.T1c_CheckDir);
 	
     % Same as above but then for T1c
     T.ImIn        = {{x.P.Pop_Path_rT1c} {x.P.Pop_Path_rT1c x.P.Pop_Path_rc2T1}};
@@ -318,7 +316,6 @@ function xASL_adm_VisualCheckLesionRemoval(x, Lesion_list)
 		ImOut3 = xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rc1T1 x.P.Pop_Path_rc2T1},[], [1 0.8], [], []);
 
         IM = [ImOut1,ImOut2,ImOut3];
-        xASL_adm_CreateDir(x.D.LesionCheckDir);
         xASL_vis_Imwrite((IM+eps)./max(IM(:)), fullfile(x.D.LesionCheckDir , ['Lesion_corr_' x.P.SubjectID '.jpg']));
 
     end

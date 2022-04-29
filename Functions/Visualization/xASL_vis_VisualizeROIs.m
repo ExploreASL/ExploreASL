@@ -30,7 +30,6 @@ function xASL_vis_VisualizeROIs(x, ROI_list)
 			OutIm1 = xASL_vis_CreateVisualFig(x, {T1File ROIIM}, [], [0.75 0.35], [], {x.S.gray x.S.green});
 
             fprintf('%s\n', ['Printing check ROI image ' num2str(iROI)]);
-			xASL_adm_CreateDir(x.D.ROICheckDir);
             xASL_vis_Imwrite((OutIm1+eps)./max(OutIm1(:)), fullfile(x.D.ROICheckDir ,['ROI_' x.P.SubjectID '_' num2str(iROI) '.jpg']));
         end
     end

@@ -20,7 +20,6 @@ function xASL_vis_OverlapT1_ASL( x, ASL)
 
 
     SaveDir                     = fullfile(x.D.PopDir, 'check_overlap_T1_ASL');
-    xASL_adm_CreateDir(SaveDir);
     SaveFile                   = fullfile(SaveDir,'check_overlap_T1_ASL.jpg');
 
     if ~exist(SaveFile,'file')

@@ -59,7 +59,6 @@ end
 
 x = xASL_init_InitializeMutex(x, 'QC'); % starts mutex locking process to ensure that everything will run only once
 x = xASL_init_FileSystem(x);
-xASL_adm_CreateDir(x.S.StatsDir);
 
 % Obtain ASL sequence
 x = xASL_adm_DefineASLSequence(x);
