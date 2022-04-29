@@ -89,6 +89,7 @@ function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
         ImOut = ImOut./max(ImOut(:));
     end
     
+    xASL_adm_CreateDir(Fpath); % create the folder if it doesn't exists
     xASL_delete(PathOut); % delete if the output file already exists
     if nargin<3 || isempty(ColorMap)
         imwrite(ImOut, PathOut); % overwrite is implied, JPEG is implied

@@ -366,7 +366,9 @@ end
 	if usejava('jvm') % only if JVM loaded
 		jpgfile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID '_' x.P.SessionID '_motion.jpg']);
 		fprintf('Saving motion plot to %s\n', jpgfile);
-		saveas(fig, jpgfile, 'jpg');
+        
+		xASL_adm_CreateDir(fileparts(jpgfile));
+        saveas(fig, jpgfile, 'jpg');
 		close all;
 		clear fig;
 	end
@@ -384,7 +386,9 @@ if bENABLE
         title(['Threshold free motion spike exclusion (red, ' num2str(PercExcl) '%) for ' x.P.SubjectID '_' x.P.SessionID]);
         jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_threshold_free_spike_detection.jpg']);
         fprintf('Saving motion plot to %s\n',jpgfile);
-        saveas(fig,jpgfile,'jpg');
+        
+        xASL_adm_CreateDir(fileparts(jpgfile));
+        saveas(fig, jpgfile, 'jpg');
         close all;
         clear fig;
     end
@@ -464,6 +468,7 @@ end
 xASL_delete(rInputPath); % delete temporary image
 
 % Save results for later summarization in analysis module
+xASL_adm_CreateDir(x.D.MotionDir);
 save(fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']),'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
 
     
