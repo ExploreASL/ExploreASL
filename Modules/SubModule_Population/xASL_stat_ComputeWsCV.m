@@ -129,7 +129,8 @@ else
                 SavePath    = fullfile(x.S.StatsDir,'wsCV_spatialCoV.png');
             end
 
-            print(SavePath, '-dpng');
+            xASL_adm_CreateDir(x.S.StatsDir);
+            print(SavePath, '-dpng'); % could replace this by xASL_vis_Imwrite?
         end
 
 

@@ -36,8 +36,6 @@ if nargin<3 || isempty(HasSessions)
     HasSessions = false;
 end
 
-xASL_adm_CreateDir(x.D.DICOMparameterDir);
-
 % Mat fields that will be printed (some are in x.(field) and some in x.Q.(field))
 matFields = {'RepetitionTime' 'EchoTime' 'NumberOfTemporalPositions' 'MRScaleSlope' 'RescaleSlopeOriginal' 'RescaleIntercept' 'Scanner' 'SliceReadoutTime'};
 nFields = length(matFields);

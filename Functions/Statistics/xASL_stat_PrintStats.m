@@ -75,13 +75,6 @@ end
 
 %% -----------------------------------------------------------------------------------------------
 %% 2) Print overview of sets to TSV
-try
-    xASL_adm_CreateDir(fileparts(x.S.SaveFile));
-catch ME
-    fprintf(2, ['Couldnt delete ' x.S.SaveFile ', if it was opened, please close this file first\n']);
-    fprintf(2, ['Message: ' ME.message '\n']);
-    return;    
-end
 
 % Build cell array 'SUBJECT' & x.S.SetsName{iSet} & x.S.NamesROI{ii}
 [~, thisFileName] = fileparts(x.S.SaveFile);

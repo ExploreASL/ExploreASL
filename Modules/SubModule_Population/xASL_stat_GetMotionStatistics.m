@@ -105,9 +105,10 @@ if usejava('jvm')
     ylabel('Percentage excluded pairs (%)');
     title('Threshold-free motion spike exclusion to optimize statistical power');
 
-    PathJPG = fullfile( x.D.MotionDir,'Overview_motion_pair-exclusion.jpg');
-    fprintf('Saving motion plot to %s\n',PathJPG);
-    saveas(fig,PathJPG,'jpg');
+    PathJPG = fullfile(x.D.MotionDir, 'Overview_motion_pair-exclusion.jpg');
+    fprintf('Saving motion plot to %s\n', PathJPG);
+    xASL_adm_CreateDir(x.D.MotionDir);
+    saveas(fig,PathJPG,'jpg'); % could replace this by xASL_vis_Imwrite?
     close all;
 else
     fprintf('Skipping motion vs exclusion overview, missing JVM\n');
