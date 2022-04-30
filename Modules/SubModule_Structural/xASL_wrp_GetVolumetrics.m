@@ -26,6 +26,7 @@ function xASL_wrp_GetVolumetrics(x)
 catVolFile = fullfile(x.D.TissueVolumeDir, ['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']); % CAT12 results
 MatFile = fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']); % SPM12 results
 SaveFile = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.csv']); % ExploreASL results
+xASL_adm_CreateDir(x.D.TissueVolumeDir);
 
 if xASL_exist(catVolFile, 'file') % for CAT12 segmentation
     catVol = load(catVolFile);
