@@ -1,18 +1,20 @@
-function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, varargin)
+function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath, varargin)
 %xASL_io_dcm2nii Convert DICOM NIfTI/BIDS format using the dcm2nii command line utility.
 % (http://www.nitrc.org/projects/mricron)
 %
-% FORMAT:       [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, varargin)
+% FORMAT:       [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath, varargin)
 % 
-% INPUT:        - inpath           path to dicom folder, dicom file, PAR-file or REC-file. In case of a dicom folder, 'DcmExt' will be used to
-%                                  filter the folder contents. In case of a dicom file, all dicom files in the same folder will be used.
-%               - 'Verbose'        optional: set to true or false to switch terminal feedback; default false
-%               - 'Overwrite'      optional: set to true or false to overwrite existing files; default false
-%               - 'DicomFilter'    optional: regular expression used to find dicom files; default '^.+\.dcm$'
-%               - 'Keep'           optional: vector with indices of output files to keep; default [1:Inf] (all files)
-%               - 'IniPath'        optional: string with path of dcm2nii configuration file; default is to use ./mricron/dcm2nii-custom.ini
-%               - 'ExePath'        optional: string with path of dcm2nii application; default is to use internal copy in ./mricron folder
-%               - 'Version'        optional: string with version stamp of dcm2nii application (yyyymmdd: 20101105, 20130606); default is 20101105
+% INPUT:   
+%      inpath          path to dicom folder, dicom file, PAR-file or REC-file. In case of a dicom folder, 'DcmExt' will be used to
+%                      filter the folder contents. In case of a dicom file, all dicom files in the same folder will be used. (REQUIRED)
+%      destdir         target destination directory (REQUIRED)
+%	   series_name     target name of the NIfTI file (REQUIRED)
+%      imPar           imPar from x.modules.import.imPar (OPTIONAL, DEFAULT = [])
+%                      'imPar.dcm2nii_version' (DEFAULT 20190902)
+%                      'imPar.bVerbose'        set to true or false to switch terminal feedback (DEFAULT false)
+%                      'imPar.bOverwrite'      set to true or false to overwrite existing files (DEFAULT false)
+%                      'imPar.dcmExtFilter' regular expression used to find dicom files (DEFAULT '^.+\.dcm$')
+%      myPath          myPath to the xASL folder from x.opts.MyPath (OPTIONAL, DEFAULT = pwd)
 %
 %               The first DICOM file will be used if inpath is a directory.
 %
@@ -36,67 +38,72 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      ...
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
     %% 1. Initial settings
 
+	if nargin < 3
+		error('Require at least three input parameters inpath, destdir, series_name');
+	end
+	
+	if nargin < 4 || isempty(imPar)
+		imPar = struct;
+	end
+	
+	if ~isfield(imPar,'dcm2nii_version') || isempty(imPar.dcm2nii_version)
+		imPar.dcm2nii_version = '20190902';
+	end
+	
+	if ~isfield(imPar, 'dcmExtFilter') || isempty(imPar.dcmExtFilter)
+		imPar.dcmExtFilter = '^.+\.dcm$';
+	end
+	
+	if ~isfield(imPar, 'bVerbose') || isempty(imPar.bVerbose)
+		imPar.bVerbose = false;
+	end
+	
+	if ~isfield(imPar, 'bOverwrite') || isempty(imPar.bOverwrite)
+		imPar.bOverwrite = false;
+	end
+	
+	if nargin < 5 || isempty(myPath)
+		myPath = pwd;
+	end
+	
     niifiles = {};
     msg = [];
 
-    p = inputParser;
-    addOptional(p, 'Verbose', false, @islogical);
-    addOptional(p, 'Keep', [], @isvector);
-    addOptional(p, 'Overwrite', false, @islogical);
-    addOptional(p, 'DicomFilter', '^.+\.dcm$', @ischar);
-    addOptional(p, 'ExePath', [], @ischar);
-    addOptional(p, 'IniPath', [], @ischar);
-    addOptional(p, 'Version', '20190902', @ischar);
-    addOptional(p, 'x', struct, @isstruct);
-
-    %% 2. Parse parameters
-    parse(p,varargin{:});
-    parms = p.Results;
-
     %% 3. Locate dcm2nii executable
 	%if regexpi(inpath,'PAR$') % Automatic detection of PAR-REC, now disabled
-	%	parms.Version = '20101105';
+	%	imPar.dcm2nii_version = '20101105';
 	%end
 	
-    if ismac && str2num(parms.Version(1:4))<2014
-        parms.Version = '20190902'; % mac is incompatible with older versions
-    end
+	if ismac && str2num(imPar.dcm2nii_version(1:4))<2014
+        imPar.dcm2nii_version = '20190902'; % mac is incompatible with older versions
+	end
 
-    if ~isfield(parms,'x')
-        warning('Cannot retrieve ExploreASL folder from x-structure, using current path instead');
-        MyPath = pwd;
-    else
-        MyPath = parms.x.opts.MyPath;
-    end
-
-    mricron_path = fullfile(MyPath,'External','MRIcron');
-    if isempty(parms.ExePath)
-        mricron_version_path = fullfile(mricron_path, parms.Version);
-        switch computer()
-            case {'PCWIN', 'PCWIN64'}
-                parms.ExePath = fullfile(mricron_version_path,'dcm2nii.exe');
-            case 'GLNX86'
-                parms.ExePath = fullfile(mricron_version_path,'dcm2nii-lx32');
-            case 'GLNXA64'
-                parms.ExePath = fullfile(mricron_version_path,'dcm2nii-lx64');
-            case {'MACI','MACI64'}
-                parms.ExePath = fullfile(mricron_version_path,'dcm2nii-osx');
-            otherwise
-                error('Unknown computer architecture: %s',computer());
-        end
-    end
-    [stat, attr] = fileattrib(parms.ExePath);
+    mricron_path = fullfile(myPath,'External','MRIcron');
+	mricron_version_path = fullfile(mricron_path, imPar.dcm2nii_version);
+	switch computer()
+		case {'PCWIN', 'PCWIN64'}
+			ExePath = fullfile(mricron_version_path,'dcm2nii.exe');
+		case 'GLNX86'
+			ExePath = fullfile(mricron_version_path,'dcm2nii-lx32');
+		case 'GLNXA64'
+			ExePath = fullfile(mricron_version_path,'dcm2nii-lx64');
+		case {'MACI','MACI64'}
+			ExePath = fullfile(mricron_version_path,'dcm2nii-osx');
+		otherwise
+			error('Unknown computer architecture: %s',computer());
+	end
+    [stat, attr] = fileattrib(ExePath);
     if ~stat
-        error('dcm2nii application not found: %s',parms.ExePath);
+        error('dcm2nii application not found: %s',ExePath);
     end
     if ~attr.UserExecute
         % try fixing
         try
-            system(['chmod 777 ' parms.ExePath]);
+            system(['chmod 777 ' ExePath]);
         catch
             disp(attr)
             error('dcm2nii application is not executable!');
@@ -146,10 +153,10 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     %% 5. Check if we are reading a DICOM folder
     if exist(inpath,'dir')
         % Check if there are any DICOM files
-        dicom_files = xASL_adm_GetFileList(inpath, parms.DicomFilter,'List');
+        dicom_files = xASL_adm_GetFileList(inpath, imPar.dcmExtFilter,'List');
         if isempty(dicom_files)
             % This error will be catched in wrapper function, verbose & error catching will be dealt with there
-            error(['No dicom files match ' parms.DicomFilter ' in ' inpath ', skipping...']);
+            error(['No dicom files match ' imPar.dcmExtFilter ' in ' inpath ', skipping...']);
         end
 
         %% sort the dicom filenames because it's nice to use the first (but not required!)
@@ -160,18 +167,15 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         bScanDicomFolder = false;
     end
 
-    if isempty(parms.IniPath)
-        if bScanDicomFolder
-            parms.IniPath = fullfile(mricron_path,'dcm2nii-dicom.ini');
-        else
-            parms.IniPath = fullfile(mricron_path,'dcm2nii-parrec.ini');
-        end
+	if bScanDicomFolder
+		IniPath = fullfile(mricron_path,'dcm2nii-dicom.ini');
+	else
+		IniPath = fullfile(mricron_path,'dcm2nii-parrec.ini');
 	end
 	
 	%% 6. Set dcm2niiX initialization loading
-    if str2num(parms.Version(1:4))<2014
-        dcm2nii_args = sprintf('-b "%s"', parms.IniPath);
-		
+    if str2num(imPar.dcm2nii_version(1:4))<2014
+        dcm2nii_args = sprintf('-b "%s"', IniPath);
     else
         dcm2nii_args = '-f "%f_%p_%t_%s_%r"';
     end
@@ -179,7 +183,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     %% 7. Check for existing targets
     bSingleExists = xASL_exist(fullfile(destdir, [series_name '.nii']),'file');
     bMultiExists = xASL_exist(fullfile(destdir, [series_name '_1.nii']),'file');
-    if ~parms.Overwrite && (bSingleExists || bMultiExists)
+    if ~imPar.bOverwrite && (bSingleExists || bMultiExists)
         if bSingleExists
             niifiles{1} = fullfile(destdir, [series_name '.nii']);
         else
@@ -194,7 +198,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         end
         ScanNameOut = series_name;
 
-        if parms.Verbose; fprintf('%s\n', [ScanNameOut ' already existed, skipping...']); end
+        if imPar.bVerbose; fprintf('%s\n', [ScanNameOut ' already existed, skipping...']); end
         return;
     end
 
@@ -221,13 +225,13 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 
         % Command line string
         if ismac()
-            cmdline = [parms.ExePath ' -o ' temp_dir ' ' inpath];
+            cmdline = [ExePath ' -o ' temp_dir ' ' inpath];
         else
-            cmdline = [quote parms.ExePath quote ' ' dcm2nii_args ' -o ' quote temp_dir quote ' ' quote inpath quote];
+            cmdline = [quote ExePath quote ' ' dcm2nii_args ' -o ' quote temp_dir quote ' ' quote inpath quote];
         end
 
         % User feedback if verbose
-        if parms.Verbose
+        if imPar.bVerbose
             fprintf('executing: [%s]\n',cmdline);
             [status, msg] = system(cmdline, '-echo');
             separatorline = xASL_adm_BreakString('',[],[],1,0);
@@ -309,35 +313,28 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         nNifties = length(niiNames);
         if nNifties==0
             error('Conversion failed: No nifti output files available');
-        else
-            if isempty(parms.Keep)
-                parms.Keep = 1:nNifties;
-            else
-                parms.Keep = unique(parms.Keep);
-                if max(parms.Keep)>nNifties
-                    error('Invalid index: the requested volume (%d) exceeds the actual number of files (%d)',max(parms.Keep),nNifties);
-                end
-            end
+		else
+			vecKeep = 1:nNifties;
             
             % Fix NIFTI file names
             [niiEntries, niiNames] = xASL_io_dcm2nii_FixFormat(niiEntries, niiPaths, niiNames);
 
             % Check if dcm2nii added some contrast information at the end of the FileName
-            if length(parms.Keep)==1
+            if length(vecKeep)==1
                 ContrastAdd{1} = [];
             else
                 % first compare the filenames (for their equivalent length)
                 EquiL = min(cellfun(@(y) length(y), niiNames));
 
                 NN=1;
-                for iN1=parms.Keep
-                    for iN2=parms.Keep
+                for iN1=vecKeep
+                    for iN2=vecKeep
                         CmpString(NN,:) = double(niiNames{iN1}(1:EquiL)~=niiNames{iN2}(1:EquiL));
                         NN=NN+1;
                     end
                 end
                 IndCommon = find(sum(CmpString,1)==size(CmpString,1)); % common filename differences (i.e. within equivalent filename length)
-                for iN=parms.Keep
+                for iN=vecKeep
                     ContrastAdd{iN} = niiNames{iN}(IndCommon);
                     if length(niiNames{iN})>EquiL
                         ContrastAdd{iN} = [ContrastAdd{iN} niiNames{iN}(EquiL+1:end)];
@@ -346,7 +343,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
             end
 
             %% Iterate over volumes
-            for iVolume=sort(parms.Keep)
+            for iVolume=sort(vecKeep)
                 fTempNii = niiEntries{iVolume};
 				
                 % Make BIDS compatible dest_file here
@@ -361,11 +358,11 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     DestFileName = [DestFileName '_' ContrastAdd{iVolume}];
                 end
 
-                if iVolume==min(parms.Keep)
+                if iVolume==min(vecKeep)
                     ScanNameOut = DestFileName;
                 end
                 
-                if length(parms.Keep)>1 % add iVolume suffix for SeriesNumber (if there are multiple)
+                if length(vecKeep)>1 % add iVolume suffix for SeriesNumber (if there are multiple)
                     % Obtain the SeriesNumber from JSON
                     [Gpath, Gfile] = xASL_fileparts(fTempNii);
                     tempJSON = fullfile(Gpath,[Gfile '.json']);
@@ -401,7 +398,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     niiInstanceNumber = fileName(startIndex+1:end);
                 end
 
-                if length(parms.Keep)>1 % add iVolume suffix (if there are multiple)
+                if length(vecKeep)>1 % add iVolume suffix (if there are multiple)
                     try
                         DestFileName = [DestFileName '_' niiInstanceNumber];
                     catch
@@ -449,7 +446,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     end
                 end
 				
-                xASL_Move(fTempNii, dest_file, parms.Overwrite, parms.Verbose);
+                xASL_Move(fTempNii, dest_file, imPar.bOverwrite, imPar.bVerbose);
                 niifiles{end+1} = dest_file; %#ok<AGROW>
 
                 % Do the same for the BIDS files
@@ -461,7 +458,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     dest_BIDS = fullfile(Gpath, [Gfile BIDSext{iB}]);
                     % Move JSON file
                     if xASL_exist(temp_BIDS, 'file')
-                        xASL_Move(temp_BIDS, dest_BIDS, parms.Overwrite, parms.Verbose);
+                        xASL_Move(temp_BIDS, dest_BIDS, imPar.bOverwrite, imPar.bVerbose);
                         % Add InstanceNumber if possible
                         if ~isempty(niiInstanceNumber)
                             tmpJSON = spm_jsonread(dest_BIDS);
@@ -537,5 +534,3 @@ function [niiEntriesDest, niiNamesDest] = xASL_io_dcm2nii_FixFormat(niiEntries, 
     end
 
 end
-
-

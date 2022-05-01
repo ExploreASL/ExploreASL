@@ -52,9 +52,7 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
         else % we found dicom files
             %% Start the conversion. Note that the dicom filter is only in effect when a directory is specified as input.
             try
-                [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, ...
-                    'DicomFilter', x.modules.import.imPar.dcmExtFilter, 'Verbose', x.modules.import.imPar.bVerbose, 'Overwrite', x.modules.import.imPar.bOverwrite, ...
-                    'Version', x.modules.import.imPar.dcm2nii_version, 'x', x);
+                [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, x.modules.import.imPar, x.opts.MyPath);
 
                 % If dcm2nii produced a warning or error, catch this & store it
                 if ~isempty(MsgDcm2nii) && ~isempty(regexpi(MsgDcm2nii,'.*(error).*')) % if it contains a warning/error
