@@ -1,7 +1,8 @@
-function [ResultsTable] = xASL_test_TestExploreASL(varargin)
+function [ResultsTable] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath, bPull)
 %xASL_test_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
 %
-% FORMAT: [ResultsTable] = xASL_test_TestExploreASL(TestDirOrig, RunMethod)
+% FORMAT: [ResultsTable] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, 
+%                          MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath, bPull)
 % 
 % INPUT:
 %   TestDirOrig - path to root folder containing all datasets to test processing on (REQUIRED)
@@ -74,14 +75,59 @@ else
 end
 
 % Validate the input options
-opts = xASL_test_ValidateInput(varargin{:});
+if nargin < 3 || isempty(TestDirOrig) || isempty(TestDirDest) || isempty(RunMethod)
+	error('Require three input parameters -TestDirOrig, TestDirDest, RunMethod');
+end
+
+if nargin < 4 || isempty(bTestSPM)
+	bTestSPM = true;
+end
+
+if nargin < 5 || isempty(MatlabPath)
+	MatlabPath = 'matlab';
+end
+
+if nargin < 6 || isempty(EmailAddress)
+	EmailAddress = '';
+end
+
+if nargin < 7 || isempty(Password)
+	Password = '';
+end
+
+if nargin < 8 || isempty(bOverwrite)
+	bOverwrite = true;
+end
+
+if nargin < 9 || isempty(testDataUse)
+	testDataUsed = 0;
+end
+
+if nargin < 10 || isempty(RunTimePath)
+	RunTimePath = '';
+end
+
+if nargin < 11 || isempty(bPull)
+	bPull = true;
+end
+
+% Check Matlab path and Runtime path for corresponding run method
+if RunMethod>2
+    if isempty(MatlabPath) || ~exist(MatlabPath, 'file') || ~strcmp(MatlabPath(end-2:end),'.sh')
+        warning('Please provide the path to the bash script calling the compiled ExploreASL, skipping');
+        return;
+    elseif isempty(RunTimePath) || ~exist(RunTimePath, 'dir')
+        warning('Please provide the path to the Matlab Runtime installation, skipping');
+        return;        
+    end
+end
 
 % ============================================================
 %% 1) Pull latest GitHub version
 xASL_adm_BreakString('1. Update ExploreASL','=');
 
 % Assuming we are in ExploreASL folder
-if opts.bPull
+if bPull
     xASL_system('git fetch');
     xASL_system('git pull');
 end
@@ -94,13 +140,13 @@ x = ExploreASL;
 xASL_adm_BreakString('2. Copy the test data','=');
 
 % Ask for directories if they were not defined
-xASL_test_CopyTestData(opts);
+xASL_test_CopyTestData(TestDirDest, TestDirOrig, bOverwrite);
 
 % ============================================================
 %% 3) Initialize & test standalone SPM on low quality
 xASL_adm_BreakString('3. Initialize & test standalone SPM','=');
-if opts.bTestSPM
-    xASL_test_TestSPM(opts,x);
+if bTestSPM
+    xASL_test_TestSPM(x, TestDirDest, testDataUsed);
 end
 
 % ============================================================
@@ -108,14 +154,14 @@ end
 
 % Here we return the ExploreASL paths, which we removed above for testing SPM
 x = ExploreASL;
-Dlist = xASL_adm_GetFileList(opts.TestDirDest,'^.*$','List',[0 Inf], true);
+Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
 xASL_adm_BreakString('4. Test ExploreASL','=');
-LogFiles = xASL_test_TestAllTestdatasets(opts,x,Dlist);
+LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, x, Dlist);
 
 % ============================================================
 %% 5) Pause until all results exist (if running parallel in background)
 xASL_adm_BreakString('5. Pause','=');
-if opts.RunMethod==2 || opts.RunMethod==4
+if RunMethod==2 || RunMethod==4
     CountTime = 0;
     TimeStepSeconds = 30;
     fprintf(xASL_adm_ConvertSeconds2TimeString(CountTime));
@@ -132,7 +178,7 @@ end
 % ============================================================
 %% 6) Compile results table
 xASL_adm_BreakString('6. Compile results table','=');
-[ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(opts,Dlist);
+[ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(TestDirDest, TestDirOrig, Dlist);
 
 
 % ============================================================
@@ -140,18 +186,18 @@ xASL_adm_BreakString('6. Compile results table','=');
 xASL_adm_BreakString('7. Compare with reference table','=');
 
 % Comparison with tsv file
-[ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(fullfile(x.opts.MyPath,'Testing','Reference','ReferenceValues.tsv'));
+[ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(fullfile(x.MyPath,'Testing','Reference','ReferenceValues.tsv'));
 ResultsComparison = xASL_qc_CompareTables(ReferenceTable,ResultsTable);
 save(SaveFile, 'ResultsTable', 'ReferenceTables', 'ReferenceTable', 'ResultsComparison');
 
 % Comparison with mat file
 try
     % Determine the difference table
-    DifferenceTable = xASL_test_DetermineDifferenceTable(opts,ResultsTable,ResultTableFile);
+    DifferenceTable = xASL_test_DetermineDifferenceTable(TestDirOrig, ResultsTable, ResultTableFile);
     
     % E-Mail the results
-    if ~isempty(opts.EmailAddress)
-        xASL_test_EmailResults(opts,DifferenceTable);
+    if ~isempty(EmailAddress)
+        xASL_test_EmailResults(EmailAddress, Password, DifferenceTable);
     end
 catch ME
     warning('Something went wrong in trying to create difference table & mailing it to receivers');
@@ -183,47 +229,8 @@ function [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(pathRefTable)
 
 end
 
-
-%% Validate test input options
-function opts = xASL_test_ValidateInput(varargin)
-
-% Set-up the input parser
-p = inputParser;
-
-% Add definitions to the input parser
-addOptional(p, 'TestDirOrig', [], @(variable) ischar(variable) || isempty(variable));
-addOptional(p, 'TestDirDest', [], @(variable) ischar(variable) || isempty(variable));
-addOptional(p, 'RunMethod', 1, @(variable) isempty(variable) || isnumeric(variable));
-addOptional(p, 'bTestSPM', true, @(variable) isempty(variable) || isnumeric(variable));
-addOptional(p, 'MatlabPath', 'matlab', @(variable) ischar(variable) || isempty(variable));
-addOptional(p, 'EmailAddress', [], @(variable) ischar(variable) || isempty(variable));
-addOptional(p, 'Password', [], @(variable) ischar(variable) || isempty(variable));
-addOptional(p, 'bOverwrite', true, @(variable) isempty(variable) || isnumeric(variable));
-addOptional(p, 'testDataUsed', 0, @(variable) isempty(variable) || isnumeric(variable));
-addOptional(p, 'RunTimePath', [], @(variable) ischar(variable) || isempty(variable));
-addOptional(p, 'bPull', 1, @(variable) isempty(variable) || isnumeric(variable));
-
-% Parse input
-parse(p,varargin{:});
-opts = p.Results;
-
-% Check Matlab path and Runtime path for corresponding run method
-if opts.RunMethod>2
-    if isempty(opts.MatlabPath) || ~exist(opts.MatlabPath, 'file') || ~strcmp(opts.MatlabPath(end-2:end),'.sh')
-        warning('Please provide the path to the bash script calling the compiled ExploreASL, skipping');
-        return;
-    elseif nargin<10 || isempty(opts.RunTimePath) || ~exist(opts.RunTimePath, 'dir')
-        warning('Please provide the path to the Matlab Runtime installation, skipping');
-        return;        
-    end
-end
-
-
-end
-
-
 %% Compare Results and Reference Tables
-function ResultsComparison = xASL_qc_CompareTables(ReferenceTable,ResultsTable)
+function ResultsComparison = xASL_qc_CompareTables(ReferenceTable, ResultsTable)
 
     % Compare tables (skip first row)
     ResultsComparison = ReferenceTable;
@@ -292,18 +299,18 @@ end
 
 
 %% Copy the test data
-function xASL_test_CopyTestData(opts)
+function xASL_test_CopyTestData(TestDirDest, TestDirOrig, bOverwrite)
 
-if isempty(opts.TestDirDest)
-    opts.TestDirDest = uigetdir(pwd, 'Select testing directory...');
+if isempty(TestDirDest)
+    TestDirDest = uigetdir(pwd, 'Select testing directory...');
 end
-if isempty(opts.TestDirOrig)
-    opts.TestDirOrig = uigetdir(pwd, 'Select datasets for testing...');
+if isempty(TestDirOrig)
+    TestDirOrig = uigetdir(pwd, 'Select datasets for testing...');
 end
 
 % Clone testdataset repository if not detected
-if ~xASL_exist(opts.TestDirOrig, 'dir')
-    TestDirRoot = fileparts(opts.TestDirOrig);
+if ~xASL_exist(TestDirOrig, 'dir')
+    TestDirRoot = fileparts(TestDirOrig);
     TestDataSetRepository = 'https://github.com/ExploreASL/TestDataSets.git';
     fprintf('%s\n', ['TestDataSet repository not found in: ' TestDirRoot]);
     fprintf('%s\n', ['Attempting to clone: ' TestDataSetRepository]);
@@ -312,24 +319,22 @@ if ~xASL_exist(opts.TestDirOrig, 'dir')
 end
 
 % Remove previous results
-if opts.bOverwrite && exist(opts.TestDirDest,'dir')
+if bOverwrite && exist(TestDirDest,'dir')
     fprintf('Deleting previous results...\n');
     if ispc
-        system(['rmdir /s /q ' opts.TestDirDest]);
+        system(['rmdir /s /q ' TestDirDest]);
     else
-        system(['rm -rf ' xASL_adm_UnixPath(opts.TestDirDest)]);
+        system(['rm -rf ' xASL_adm_UnixPath(TestDirDest)]);
     end
 end
 % Copy data sets into testing directory
-xASL_Copy(opts.TestDirOrig, opts.TestDirDest);    
-
+xASL_Copy(TestDirOrig, TestDirDest);    
 
 end
 
 
 %% Test SPM
-function xASL_test_TestSPM(opts,x)
-
+function xASL_test_TestSPM(x, TestDirDest, testDataUsed)
 % Reset path
 path(pathdef);
 
@@ -350,22 +355,22 @@ spm_get_defaults('cmdline',true);
 x.settings.Quality = false;
 % Find the first directory and copy out the first T1 and ASL just for SPM testing
 
-Dlist = xASL_adm_GetFileList(opts.TestDirDest,'^.*$','List',[0 Inf], true);
+Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
 
-if opts.testDataUsed
+if testDataUsed
     % TestDataSet detected
-    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'derivatives','ExploreASL','T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
-    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'derivatives','ExploreASL','ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
+    xASL_Copy(fullfile(TestDirDest,Dlist{1},'derivatives','ExploreASL','T1.nii'),fullfile(TestDirDest,'T1.nii'));
+    xASL_Copy(fullfile(TestDirDest,Dlist{1},'derivatives','ExploreASL','ASL_1','ASL4D.nii'),fullfile(TestDirDest,'ASL4D.nii'));
 else
     % Default
-    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'derivatives','ExploreASL','001DM_1','T1.nii'),fullfile(opts.TestDirDest,'T1.nii'));
-    xASL_Copy(fullfile(opts.TestDirDest,Dlist{1},'derivatives','ExploreASL','001DM_1','ASL_1','ASL4D.nii'),fullfile(opts.TestDirDest,'ASL4D.nii'));
+    xASL_Copy(fullfile(TestDirDest,Dlist{1},'derivatives','ExploreASL','001DM_1','T1.nii'),fullfile(TestDirDest,'T1.nii'));
+    xASL_Copy(fullfile(TestDirDest,Dlist{1},'derivatives','ExploreASL','001DM_1','ASL_1','ASL4D.nii'),fullfile(TestDirDest,'ASL4D.nii'));
 end
 
 % Read Nifti files
 try
-    xASL_io_ReadNifti(fullfile(opts.TestDirDest,'ASL4D.nii'));
-    xASL_io_ReadNifti(fullfile(opts.TestDirDest,'T1.nii'));
+    xASL_io_ReadNifti(fullfile(TestDirDest,'ASL4D.nii'));
+    xASL_io_ReadNifti(fullfile(TestDirDest,'T1.nii'));
 catch
     error('ASL and T1 data set import failed...')
 end
@@ -374,7 +379,7 @@ end
 
 % Test spm_realign on low quality
 matlabbatch = [];
-matlabbatch{1}.spm.spatial.realign.write.data               = {fullfile(opts.TestDirDest,'ASL4D.nii')};
+matlabbatch{1}.spm.spatial.realign.write.data               = {fullfile(TestDirDest,'ASL4D.nii')};
 matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
 matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 0; % low quality
 matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
@@ -384,15 +389,15 @@ spm_jobman('run',matlabbatch);
 
 
 % Test spm_reslice on low quality
-xASL_spm_reslice(fullfile(opts.TestDirDest,'ASL4D.nii'), fullfile(opts.TestDirDest,'T1.nii'), [], [], 0);
+xASL_spm_reslice(fullfile(TestDirDest,'ASL4D.nii'), fullfile(TestDirDest,'T1.nii'), [], [], 0);
 
 % Test spm_smooth on low quality (small kernel)
-xASL_spm_smooth(fullfile(opts.TestDirDest,'rT1.nii'), [2 2 2], fullfile(opts.TestDirDest,'rsT1.nii'));
+xASL_spm_smooth(fullfile(TestDirDest,'rT1.nii'), [2 2 2], fullfile(TestDirDest,'rsT1.nii'));
 
 % Test coreg on low quality
 matlabbatch = [];
-matlabbatch{1}.spm.spatial.coreg.estimate.ref = {fullfile(opts.TestDirDest,'ASL4D.nii,1')};
-matlabbatch{1}.spm.spatial.coreg.estimate.source = {fullfile(opts.TestDirDest,'rT1.nii,1')};
+matlabbatch{1}.spm.spatial.coreg.estimate.ref = {fullfile(TestDirDest,'ASL4D.nii,1')};
+matlabbatch{1}.spm.spatial.coreg.estimate.source = {fullfile(TestDirDest,'rT1.nii,1')};
 matlabbatch{1}.spm.spatial.coreg.estimate.other = {''};
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'mi';
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = 9;
@@ -416,7 +421,7 @@ matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 0; % low quality
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 6; % low quality
 matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = eps; % low quality
 matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 9;   % low quality
-matlabbatch{1}.spm.tools.cat.estwrite.data                  = {fullfile(opts.TestDirDest,'T1.nii')}; % T1.nii
+matlabbatch{1}.spm.tools.cat.estwrite.data                  = {fullfile(TestDirDest,'T1.nii')}; % T1.nii
 matlabbatch{1}.spm.tools.cat.estwrite.nproc                 = 0;
 matlabbatch{1}.spm.tools.cat.estwrite.opts.affreg           = 'mni'; % regularize affine registration for MNI European brains
 matlabbatch{1}.spm.tools.cat.estwrite.output.surface        = 0;   % don't do surface modeling
@@ -434,10 +439,10 @@ matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process
 spm_jobman('run',matlabbatch);
 
 % Test deformations after CAT12
-xASL_Copy(fullfile(opts.TestDirDest,'mri','y_T1.nii'), fullfile(opts.TestDirDest,'y_T1.nii'));
+xASL_Copy(fullfile(TestDirDest,'mri','y_T1.nii'), fullfile(TestDirDest,'y_T1.nii'));
 matlabbatch = [];
-matlabbatch{1}.spm.util.defs.comp{1}.def = {fullfile(opts.TestDirDest,'y_T1.nii')};
-matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(opts.TestDirDest,'rT1.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.def = {fullfile(TestDirDest,'y_T1.nii')};
+matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(TestDirDest,'rT1.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.savesrc = 1;
 matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
 matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
@@ -446,10 +451,10 @@ matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = '';
 spm_jobman('run',matlabbatch);
 
 % Remove temporary derivatives
-xASL_adm_DeleteFileList(opts.TestDirDest, '.*', false, [0 Inf]);
+xASL_adm_DeleteFileList(TestDirDest, '.*', false, [0 Inf]);
 DirsAre = {'err' 'ASL_1' 'mri' 'report'};
 for iDir=1:length(DirsAre)
-    DirIs = fullfile(opts.TestDirDest,DirsAre{iDir});
+    DirIs = fullfile(TestDirDest,DirsAre{iDir});
     xASL_adm_DeleteFileList(DirIs, '.*', true, [0 Inf]);
     xASL_delete(DirIs);
 end
@@ -458,10 +463,10 @@ end
 
 
 %% Determine the difference table
-function DifferenceTable = xASL_test_DetermineDifferenceTable(opts,ResultsTable,ResultTableFile)
+function DifferenceTable = xASL_test_DetermineDifferenceTable(TestDirOrig, ResultsTable, ResultTableFile)
 
 % Find all result tables in directory
-AllResultTables = xASL_adm_GetFsList(fullfile(opts.TestDirOrig),'^.+\_ResultsTable.mat$',false)';
+AllResultTables = xASL_adm_GetFsList(fullfile(TestDirOrig),'^.+\_ResultsTable.mat$',false)';
 IndexCurrentTable = find(~isempty(strfind(AllResultTables, ResultTableFile)));
 if ~isempty(IndexCurrentTable)
     AllResultTables(IndexCurrentTable) = [];
@@ -469,7 +474,7 @@ end
 % Previous Table name
 if ~isempty(AllResultTables)
     PreviousTableName = AllResultTables{numel(AllResultTables)};
-    PreviousSaveFile = fullfile(opts.TestDirOrig, PreviousTableName);
+    PreviousSaveFile = fullfile(TestDirOrig, PreviousTableName);
     PreviousTable = load(PreviousSaveFile, '-mat');
     
     clear DifferenceTable
@@ -493,7 +498,7 @@ end
 
 
 %% E-Mail the results
-function xASL_test_EmailResults(opts,DifferenceTable)
+function xASL_test_EmailResults(EmailAddress, Password, DifferenceTable)
 
 % First convert table to string to send by e-mail
 NewTable{1,1} = 'mean_qCBF_TotalGM     median_qCBF_TotalGM     median_qCBF_DeepWM     CoV_qCBF_TotalGM             GMvol                 WMvol                 CSFvol             PipelineCompleted     TC_ASL_Registration    TC_M0_Registration';
@@ -518,9 +523,9 @@ end
 % See here: https://nl.mathworks.com/help/matlab/import_export/sending-email.html
 fprintf('Sending e-mail with results\n');
 setpref('Internet', 'SMTP_Server', 'smtp.gmail.com');
-setpref('Internet', 'E_mail', opts.EmailAddress);
-setpref('Internet', 'SMTP_Username', opts.EmailAddress);
-setpref('Internet', 'SMTP_Password', opts.Password);
+setpref('Internet', 'E_mail', EmailAddress);
+setpref('Internet', 'SMTP_Username', EmailAddress);
+setpref('Internet', 'SMTP_Password', Password);
 props = java.lang.System.getProperties;
 props.setProperty('mail.smtp.auth','true');
 props.setProperty('mail.smtp.starttls.enable', 'true');
@@ -533,7 +538,7 @@ end
 
 
 %% Determine the results table
-function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(opts,Dlist)
+function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(TestDirDest, TestDirOrig, Dlist)
 
 % Define results table name & fields
 ResultTableName = datestr(now,'yyyy-mm-dd_HH_MM');
@@ -547,7 +552,7 @@ fprintf('Reading & parsing results:   ');
 for iList=1:length(Dlist) % iterate over example datasets
     xASL_TrackProgress(iList, length(Dlist));
     ResultsTable{1+iList,1} = Dlist{iList};
-    bidsDir = fullfile(opts.TestDirDest, Dlist{iList});
+    bidsDir = fullfile(TestDirDest, Dlist{iList});
     PopulationDir = fullfile(bidsDir, 'derivatives', 'ExploreASL', 'Population');
     StatsDir = fullfile(PopulationDir, 'Stats');
 	VolumeDir = fullfile(PopulationDir, 'TissueVolume');
@@ -628,23 +633,23 @@ fprintf('\n');
 
 % Save results
 ResultTableFile = [ResultTableName,'_ResultsTable.mat'];
-SaveFile = fullfile(opts.TestDirOrig, ResultTableFile);
+SaveFile = fullfile(TestDirOrig, ResultTableFile);
 save(SaveFile, 'ResultsTable');
 
 end
 
 
 %% Test all individual test datasets
-function LogFiles = xASL_test_TestAllTestdatasets(opts,x,Dlist)
+function LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, x, Dlist)
 
 % Remove lock folders, useful for rerun when debugging
-LockFolders = xASL_adm_GetFileList(opts.TestDirDest, '(?i)^locked$', 'FPListRec', [0 Inf], true);
+LockFolders = xASL_adm_GetFileList(TestDirDest, '(?i)^locked$', 'FPListRec', [0 Inf], true);
 if ~isempty(LockFolders)
     cellfun(@(y) xASL_delete(y), LockFolders, 'UniformOutput', false);
 end
 
 % Evaluate parallelization in linux
-if isunix && (opts.RunMethod==2 || opts.RunMethod==4)
+if isunix && (RunMethod==2 || RunMethod==4)
     [Result1, Result2] = system('screen -dmS TryOut exit');
     if Result1~=0
         warning('Please install screen for testing ExploreASL parallel in a mac/linux');
@@ -654,13 +659,13 @@ if isunix && (opts.RunMethod==2 || opts.RunMethod==4)
 end
 
 % Get list of data to test
-LogFiles = cellfun(@(y) fullfile(opts.TestDirDest,y,'log','xASL_module_Population.log'), Dlist, 'UniformOutput',false);
+LogFiles = cellfun(@(y) fullfile(TestDirDest,y,'log','xASL_module_Population.log'), Dlist, 'UniformOutput',false);
 
 % Iterate over test datasets
 for iList=1:length(Dlist)
     
     % Get files and directories
-    dirBIDS = fullfile(opts.TestDirDest,Dlist{iList});
+    dirBIDS = fullfile(TestDirDest,Dlist{iList});
     
     % Useful for rerun when debugging
     xASL_delete(LogFiles{iList});
@@ -671,7 +676,7 @@ for iList=1:length(Dlist)
     % Check if dataset exists
     if ~isempty(dirBIDS)
         try
-            xASL_test_IndividualTestdataset(opts,x,dirBIDS,ScreenName);
+            xASL_test_IndividualTestdataset(RunMethod, MatlabPath, RunTimePath, x, dirBIDS, ScreenName);
         catch ME
             warning(ME.identifier, 'Something went wrong: %s', ME.message);
         end
@@ -683,32 +688,32 @@ end
 
 
 %% Test one individual test dataset
-function xASL_test_IndividualTestdataset(opts,x,dirBIDS,ScreenName)
+function xASL_test_IndividualTestdataset(RunMethod, MatlabPath, RunTimePath, x, dirBIDS, ScreenName)
 
 % Run ExploreASL
 cd(x.opts.MyPath);
 
 % Prepare compilation testing
-if opts.RunMethod>2
-    [Fpath, Ffile, Fext] = fileparts(opts.MatlabPath);
+if RunMethod>2
+    [Fpath, Ffile, Fext] = fileparts(MatlabPath);
     if isunix
-        CompilationString = ['cd ' Fpath ';bash ' Ffile Fext ' ' opts.RunTimePath ' ' dirBIDS];
+        CompilationString = ['cd ' Fpath ';bash ' Ffile Fext ' ' RunTimePath ' ' dirBIDS];
     else
-        CompilationString = ['cd ' Fpath '; ' Ffile Fext ' ' opts.RunTimePath ' ' dirBIDS];
+        CompilationString = ['cd ' Fpath '; ' Ffile Fext ' ' RunTimePath ' ' dirBIDS];
     end
 end
 
-switch opts.RunMethod
+switch RunMethod
     case 1
         % Run ExploreASL serially (can we run screen from here? or run matlab in background, linux easy)
         ExploreASL(dirBIDS, 0, 0, 1, false);
     case 2
         % Run ExploreASl parallel (start new MATLAB instances)
         if isunix
-            ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' opts.MatlabPath ' -nodesktop -nosplash -r '];
+            ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
             RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' dirBIDS ''',0,0,1,0);system([''screen -SX ' ScreenName ' kill'']);"'];
         else
-            ScreenString = [opts.MatlabPath ' -nodesktop -nosplash -r '];
+            ScreenString = [MatlabPath ' -nodesktop -nosplash -r '];
             RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' dirBIDS ''',0,0,1,0);system([''exit'']);"'];
         end
         system([ScreenString RunExploreASLString ' &']);
@@ -729,7 +734,3 @@ switch opts.RunMethod
 end
 
 end
-
-
-
-
