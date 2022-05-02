@@ -314,27 +314,27 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         if nNifties==0
             error('Conversion failed: No nifti output files available');
 		else
-			vecKeep = 1:nNifties;
+			vectorKeep = 1:nNifties;
             
             % Fix NIFTI file names
             [niiEntries, niiNames] = xASL_io_dcm2nii_FixFormat(niiEntries, niiPaths, niiNames);
 
             % Check if dcm2nii added some contrast information at the end of the FileName
-            if length(vecKeep)==1
+            if length(vectorKeep)==1
                 ContrastAdd{1} = [];
             else
                 % first compare the filenames (for their equivalent length)
                 EquiL = min(cellfun(@(y) length(y), niiNames));
 
                 NN=1;
-                for iN1=vecKeep
-                    for iN2=vecKeep
+                for iN1=vectorKeep
+                    for iN2=vectorKeep
                         CmpString(NN,:) = double(niiNames{iN1}(1:EquiL)~=niiNames{iN2}(1:EquiL));
                         NN=NN+1;
                     end
                 end
                 IndCommon = find(sum(CmpString,1)==size(CmpString,1)); % common filename differences (i.e. within equivalent filename length)
-                for iN=vecKeep
+                for iN=vectorKeep
                     ContrastAdd{iN} = niiNames{iN}(IndCommon);
                     if length(niiNames{iN})>EquiL
                         ContrastAdd{iN} = [ContrastAdd{iN} niiNames{iN}(EquiL+1:end)];
@@ -343,7 +343,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
             end
 
             %% Iterate over volumes
-            for iVolume=sort(vecKeep)
+            for iVolume=sort(vectorKeep)
                 fTempNii = niiEntries{iVolume};
 				
                 % Make BIDS compatible dest_file here
@@ -358,11 +358,11 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     DestFileName = [DestFileName '_' ContrastAdd{iVolume}];
                 end
 
-                if iVolume==min(vecKeep)
+                if iVolume==min(vectorKeep)
                     ScanNameOut = DestFileName;
                 end
                 
-                if length(vecKeep)>1 % add iVolume suffix for SeriesNumber (if there are multiple)
+                if length(vectorKeep)>1 % add iVolume suffix for SeriesNumber (if there are multiple)
                     % Obtain the SeriesNumber from JSON
                     [Gpath, Gfile] = xASL_fileparts(fTempNii);
                     tempJSON = fullfile(Gpath,[Gfile '.json']);
@@ -398,7 +398,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     niiInstanceNumber = fileName(startIndex+1:end);
                 end
 
-                if length(vecKeep)>1 % add iVolume suffix (if there are multiple)
+                if length(vectorKeep)>1 % add iVolume suffix (if there are multiple)
                     try
                         DestFileName = [DestFileName '_' niiInstanceNumber];
                     catch
