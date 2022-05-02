@@ -1,0 +1,76 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: ExploreASL
+message: Please cite ExploreASL accordingly
+type: software
+authors:
+  - given-names: Henk
+    family-names: Mutsaerts
+    name-suffix: MD PhD
+    email: h.j.mutsaerts@amsterdamumc.nl
+    affiliation: >-
+      1) Amsterdam UMC location Vrije Universiteit
+      Amsterdam, Department of Radiology and Nuclear
+      Medicine, Amsterdam, The Netherlands 2)
+      Amsterdam Neuroscience, Brain Imaging,
+      Amsterdam, The Netherlands
+    orcid: 'https://orcid.org/0000-0003-0894-0307'
+  - given-names: Jan
+    family-names: Petr
+    name-suffix: PhD
+    email: j.petr@hzdr.de
+    affiliation: 'HZDR, Dresden, Germany
+    orcid: 'https://orcid.org/0000-0002-3201-6002'
+identifiers:
+  - type: doi
+    value: 10.1016/j.neuroimage.2020.117031
+    description: >-
+      NeuroImage paper describing the methods used in
+      ExploreASL
+  - type: doi
+    value: 10.5281/zenodo.3905262
+    description: Zenodo DOI of latest version
+repository-code: 'https://www.github.com/ExploreASL/ExploreASL.git'
+url: 'https://www.ExploreASL.org'
+abstract: >-
+  ExploreASL is a pipeline and toolbox for image
+  processing and statistics of arterial spin labeling
+  perfusion MR images. It is designed as a multi-OS,
+  open-source, collaborative framework that
+  facilitates cross-pollination between image
+  processing method developers and clinical
+  investigators.
+
+
+  The software provides a complete head-to-tail
+  approach that runs fully automatically,
+  encompassing all necessary tasks from data import
+  and structural segmentation, registration, and
+  normalization, up to CBF quantification. In
+  addition, the software package includes quality
+  control (QC) procedures and region-of-interest
+  (ROI) as well as a voxel-wise analysis of the
+  extracted data. To date, ExploreASL has been used
+  for processing ~10000 ASL datasets from all major
+  MRI vendors and ASL sequences, and a variety of
+  patient populations, representing ~30 studies. The
+  ultimate goal of ExploreASL is to combine data from
+  multiple studies to identify disease-related
+  perfusion patterns that may prove crucial in using
+  ASL as a diagnostic tool and enhance our
+  understanding of the interplay of perfusion and
+  structural changes in neurodegenerative
+  pathophysiology. 
+
+
+  Additionally, this (semi-)automatic pipeline allows
+  us to minimize manual intervention, which increases
+  the reproducibility of studies.
+keywords:
+  - Arterial spin labeling
+  - Image processing
+  - Multi-center
+  - Cerebral perfusion
+  - Quality control
