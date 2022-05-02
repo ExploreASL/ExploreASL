@@ -324,12 +324,12 @@ function x = xASL_init_InputParsing(x, varargin)
         % Convert to a row vector
         x.opts.bImport = logical(x.opts.bImport(:)');
         % Issue a warning
-        warning('Incorrect number of import modules (%s), missing sub-modules set to false...', xASL_num2str(length(x.opts.bImport)));
+        warning('Incorrect number of import modules (%s), missing sub-modules set to false...', num2str(length(x.opts.bImport)));
         % Fill in the missing fields with zeros
         x.opts.bImport(length(x.opts.bImport)+1:3) = false;
     elseif length(x.opts.bImport)>3
         % Skip additional elements
-        warning('Incorrect number of import modules (%s), additional elements are skipped...', xASL_num2str(length(x.opts.bImport)));
+        warning('Incorrect number of import modules (%s), additional elements are skipped...', num2str(length(x.opts.bImport)));
         x.opts.bImport = logical(x.opts.bImport(1:3));
 	end
 	
@@ -340,12 +340,12 @@ function x = xASL_init_InputParsing(x, varargin)
         % Convert to a row vector
         x.opts.bProcess = logical(x.opts.bProcess(:)');
         % Issue a warning
-        warning('Incorrect number of processing modules (%s), missing sub-modules set to zero...', xASL_num2str(length(x.opts.bProcess)));
+        warning('Incorrect number of processing modules (%s), missing sub-modules set to zero...', num2str(length(x.opts.bProcess)));
         % Fill in the missing fields with false
         x.opts.bProcess(length(x.opts.bProcess)+1:3) = false;
     elseif length(x.opts.bProcess)>3
         % Skip additional elements
-        warning('Incorrect number of processing modules (%s), additional elements are skipped...', xASL_num2str(length(x.opts.bProcess)));
+        warning('Incorrect number of processing modules (%s), additional elements are skipped...', num2str(length(x.opts.bProcess)));
         x.opts.bProcess = logical(x.opts.bProcess(1:3));
     end
     
