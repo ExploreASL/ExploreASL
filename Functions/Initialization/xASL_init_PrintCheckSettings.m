@@ -106,6 +106,9 @@ function x = xASL_init_PrintCheckSettings(x)
     fprintf('x.settings.DELETETEMP %s\n',[num2str(x.settings.DELETETEMP) ' (delete temporary files)']);
     fprintf('x.settings.Quality    %s\n',[num2str(x.settings.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
 
+	fprintf('\n');
+	fprintf('Examples of processing-parameter settings are at: https://exploreasl.github.io/Documentation/latest/Tutorials-Processing/');
+	fprintf('Full explanation of processing parameters is  at: https://exploreasl.github.io/Documentation/latest/ProcessingParameters/');
 
     %% -----------------------------------------------------------------------
     %% 3) Print warnings

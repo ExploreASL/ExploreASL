@@ -73,7 +73,6 @@ function [x] = ExploreASL_Initialize(varargin)
     % Go to ExploreASL directory
     cd(x.opts.MyPath);
 
-
     %% 3. Add ExploreASL paths
     xASL_init_AddDirsOfxASL(x.opts.MyPath);
     
@@ -106,6 +105,7 @@ function [x] = ExploreASL_Initialize(varargin)
     %% 7. Data-specific initialization
     xASL_init_PrintVersion(x.Version);
 
+	fprintf('ExploreASL manual is available at https://exploreasl.github.io/Documentation\n');
 end
 
 

@@ -79,8 +79,8 @@ function xASL_dev_DocInitialize(baseOutputFolder)
 	% from the Documentation/source directory where they can be edited to the Documentation/docs directory, 
 	% where they are ready for the deployment.
 	
-    % Copy the DataParTemplate
-    xASL_Copy(fullfile(templatesDir,'DataParTemplate.md'),fullfile(outputFolder,'DataParTemplate.md'),1);
+    % Copy the ProcessingParameters
+    xASL_Copy(fullfile(templatesDir,'ProcessingParameters.md'),fullfile(outputFolder,'ProcessingParameters.md'),1);
                   
     % Copy the REQUIREMENTS file
     xASL_Copy(fullfile(templatesDir,'Requirements.md'),fullfile(outputFolder,'Requirements.md'),1);
