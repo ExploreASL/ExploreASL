@@ -1,12 +1,12 @@
 function BloodT1 = xASL_quant_Hct2BloodT1(Hematocrit, Y, B0, bVerbose)
-% xASL_quant_Hct2BloodT1 Predict blood T1 from venous (antecubital) hematocrit
+% xASL_quant_Hct2BloodT1 Estimate blood T1 from venous (antecubital) hematocrit
 %
 % FORMAT: BloodT1 = xASL_quant_Hct2BloodT1(Hematocrit, Y, B0, bVerbose)
 %
 % INPUT:
 %   Hematocrit  - (antecubital) venous hematocrit, as fraction or percentage (REQUIRED)
 %   Y           - O2 saturation (fraction or percentage) (OPTIONAL, DEFAULT=0.97)
-%   B0          - magnetic field strength used in Tesla (OPTIONAL, DEFAULT=3)
+%   B0          - magnetic field strength used in tesla (OPTIONAL, DEFAULT=3)
 %   bVerbose    - boolean specifying if we want output to the screen (OPTIONAL, DEFAULT=true)
 %
 % OUTPUT: BloodT1 - longitudinal relaxation time of blood (ms)
@@ -24,10 +24,10 @@ function BloodT1 = xASL_quant_Hct2BloodT1(Hematocrit, Y, B0, bVerbose)
 %              5. Print what we did
 %
 % --------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_wrp_Quantify(x);
-% REFERENCE: Hales, 2014 JCBFM
+% EXAMPLE: BloodT1 = xASL_quant_Hct2BloodT1(0.43, [], 3, true)
+% REFERENCE: Hales, 2016 JCBFM, DOI: 10.1177/0271678X15605856
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2022 ExploreASL
 
 %% ---------------------------------------------------------
 %% Admin
@@ -78,7 +78,7 @@ end
 %% ---------------------------------------------------------
 %% 2) Specify defaults (Hb, Fe)
 Hb = 5.15;  % mean corpuscular haemoglobin concentration (mmol Hb tetramer / L plasma)
-Fe = (0.70*Hematocrit)/((0.70*Hematocrit)+(0.95*(1-Hematocrit))); % (is this iron content?)
+Fe = (0.70*Hematocrit)/((0.70*Hematocrit)+(0.95*(1-Hematocrit))); % Water fraction in erythrocytes
 
 
 %% ---------------------------------------------------------
@@ -87,7 +87,7 @@ part1 = 1.099 - (0.057*B0) + ((0.033*Hb)*(1-Y));
 part2 = (1-Fe)*(0.496-(0.023*B0));
 
 BloodT1 = (1/((Fe*part1)+part2)) + 0.108;  % (seconds)
-% is this offset for venous to arterial?
+% 0.108 is on offset for in-vivo measurement (without it for in-vitro)
 
 
 %% ---------------------------------------------------------
