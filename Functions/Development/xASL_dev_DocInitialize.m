@@ -1,5 +1,5 @@
 function xASL_dev_DocInitialize(baseOutputFolder)
-%xASL_dev_DocInitialize Script to call the separate documentation crawler
+%xASL_dev_DocInitialize This function prepares the documentation for deployment
 % functions.
 %
 % FORMAT:       xASL_dev_DocInitialize
@@ -9,21 +9,26 @@ function xASL_dev_DocInitialize(baseOutputFolder)
 % OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  This function generates all markdown files, which are
-%               necessary for the mkdocs documentation.
+% DESCRIPTION:  This function generates all markdown files, which are necessary for the mkdocs documentation - i.e. it initializes the MD files needed
+%               for deploying the documentation. It copies the manually edited MD files and crawls through function headers to ready everything for the
+%               deployment
 %
+%               1. Administration
+%               2. Copy MD-files from ExploreASL source-code
+%               3. Copy the manually edited MD-files 
+%               4. Crawl through function headers to generate reference manual
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_dev_DocInitialize(fullfile(x.opts.MyPath,'Development','Documentation_GitHub'),true);
+% EXAMPLE:      xASL_dev_DocInitialize(fullfile(x.opts.MyPath,'Development','Documentation_GitHub'));
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 
-    %% Workflow
+    %% 1. Administration
 
     % Initialize ExploreASL
     x = ExploreASL_Initialize;
     
-    % Reminder
+    % Reminder on the structures of ASL source code headers
     xASL_adm_BreakString('REMINDER','=',[],1);
     fprintf('A correct ExploreASL header should include the following tags in the correct order:\n');
     fprintf('"FORMAT:", "INPUT:", "OUTPUT:", "DESCRIPTION:" and "EXAMPLE:"\n');
@@ -51,16 +56,17 @@ function xASL_dev_DocInitialize(baseOutputFolder)
     outputFolder = fullfile(baseOutputFolder,'docs');
     templatesDir = fullfile(baseOutputFolder,'source');
     
+	%% 2. Copy MD-files from ExploreASL source-code
+	
     % Copy CHANGES.md
     xASL_Copy(fullfile(x.opts.MyPath,'CHANGES.md'),fullfile(outputFolder,'Changes.md'),1);
     
     % Copy and modify the index README
     xASL_Copy(fullfile(x.opts.MyPath,'README.md'),fullfile(outputFolder,'index.md'),1);
 
-    % Copy the DataParTemplate
-    xASL_Copy(fullfile(templatesDir,'DataParTemplate.md'),fullfile(outputFolder,'DataParTemplate.md'),1);
-    
-    % Logo
+	% Update figure links in these files
+	
+	% Logo
     swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(Design/ExploreASL_logoHeader.png)',...
                   '(./img/ExploreASL_logoHeader.png)');
@@ -68,7 +74,14 @@ function xASL_dev_DocInitialize(baseOutputFolder)
     swapTextInFile(fullfile(outputFolder,'index.md'),...
                   '(Design/WorkflowUpdate.png "Workflow of ExploreASL")',...
                   '(./img/ExploreASL_Workflow.png "Workflow ExploreASL")');
-              
+	
+	%% 3. Copy the manually edited MD-files
+	% from the Documentation/source directory where they can be edited to the Documentation/docs directory, 
+	% where they are ready for the deployment.
+	
+    % Copy the DataParTemplate
+    xASL_Copy(fullfile(templatesDir,'DataParTemplate.md'),fullfile(outputFolder,'DataParTemplate.md'),1);
+                  
     % Copy the REQUIREMENTS file
     xASL_Copy(fullfile(templatesDir,'Requirements.md'),fullfile(outputFolder,'Requirements.md'),1);
     
@@ -84,6 +97,7 @@ function xASL_dev_DocInitialize(baseOutputFolder)
 	xASL_Copy(fullfile(templatesDir,'Tutorials-QC.md'),fullfile(outputFolder,'Tutorials-QC.md'),1);
 	xASL_Copy(fullfile(templatesDir,'Tutorials-Developer.md'),fullfile(outputFolder,'Tutorials-Developer.md'),1);	
 	
+	%% 4. Crawl through function headers to generate reference manual
     % Create the functions markdown file
     xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
     
@@ -198,5 +212,3 @@ function convertLicenseToMarkdown(filePath,newPath)
     fclose(file_id);
 
 end
-
-
