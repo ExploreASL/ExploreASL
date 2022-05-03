@@ -1,30 +1,33 @@
-function xASL_dev_DocCrawler(inputPath,mdoutput,content)
-%xASL_doc_Crawler Script to get information from the file headers and
+function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
+%xASL_dev_DocCrawler Script to get information from the file headers and
 % convert the information into a markdown file.
 %
 % FORMAT:       xASL_dev_DocCrawler(inputPath)
 % 
-% INPUT:        inputPath     - input folder (or file)
-%               mdoutput      - result file
-%               content       - "Functions", "StructuralModule", ...
+% INPUT:        inputPath     - input folder (or file) (REQUIRED)
+%               outputFile    - result .md file (REQUIRED)
+%               contentType   - name of the content of this documentation page "Functions", "StructuralModule", (REQUIRED)
 %
 % OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  This function checks each individual file header and
-%               extracts the information. The results is saved as a
-%               markdown file.
+% DESCRIPTION:  This function checks each individual file header from the ExploreASL source coude and
+%               extracts the information. The results is saved as a markdown file to be used for 
+%               Deploying the documentation web.
 %
-%               If you want to use star symbols (*testFile.m e.g.) we
-%               recommend not to use them in the same line with bold text
-%               (which is written like this: {{bold text}}).
-%
+%               If you want to use star symbols (*testFile.m e.g.) we recommend not to use them in the same 
+%               line with bold text (which is written like this: {{bold text}}).
+%               
+%               1. Define defaults and admin
+%               2. Iterate over files
+%               3. Extract header information from each file
+%               4. Final formatting
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_dev_DocCrawler('M:\...\Functions', 'M:\...\Output.md','Functions');
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
-    %% Defaults
+    %% 1. Defaults and admin
     SeparatorLine = repmat('-',1,149);
     isFileList = false;
     
@@ -32,27 +35,27 @@ function xASL_dev_DocCrawler(inputPath,mdoutput,content)
     SECTION = {'adm', 'bids', 'dev', 'fsl', 'im', 'imp', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
     SECTION_NAMES = {'Administration', 'BIDS', 'Development', 'FSL', 'Image Processing', 'Import', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
 
-    %% Input Check
-    if nargin < 1
+    % Input Check
+    if nargin < 1 || isempty(inputPath)
         error('Input path not defined...')
     end
     
-    if nargin < 2
+    if nargin < 2 || isempty(outputFile)
         error('Output file not defined...')
     end
     
-    if nargin < 3
+    if nargin < 3 || isempty(contentType)
         error('Content not defined...')
     end
 
-    %% Check directory
+    % Check directory
     if ~iscell(inputPath)
         listing = dir(inputPath);
     else
         listing = [];
     end
 
-    %% Iterate over files
+    %% 2. Iterate over files
 
     % Check if input is folder or file
     if ~isempty(listing)
@@ -75,7 +78,7 @@ function xASL_dev_DocCrawler(inputPath,mdoutput,content)
     TEXT = cell(1,1);
     
     % Workaround for "Functions"
-    if strcmp(content,'Functions')
+    if strcmp(contentType,'Functions')
         fprintf('Walk through Functions sub-directories...\n');
         functionPaths = {   'Administration', 'BIDS', 'Development', 'FSL', ...
                             'ImageProcessing', 'Import', 'Initialization', 'InputOutput', ...
@@ -93,7 +96,7 @@ function xASL_dev_DocCrawler(inputPath,mdoutput,content)
         end
     end
 
-    % Get header information from each file
+    %% 3. Extract header information from each file
     for i = 1:numel(listing)
         % Get filename
         fileName = listing(i).name;
@@ -115,31 +118,29 @@ function xASL_dev_DocCrawler(inputPath,mdoutput,content)
             lD = lD(1);
             % Start of function description
             if cS==0
-                if strcmp(content,'Functions')
-                    TEXT{it,1} = '# Functions';  it = it+1;
-                    TEXT{it,1} = ' ';  it = it+1;
-                elseif strcmp(content,'Modules')
-                    TEXT{it,1} = '# Modules';  it = it+1;
-                    TEXT{it,1} = ' ';  it = it+1;
-                elseif strcmp(content,'oldImport')
-                    TEXT{it,1} = '# Submodules of the previous Import Module';  it = it+1;
-                    TEXT{it,1} = ' ';  it = it+1;
-                elseif strcmp(content,'ImportModule')
-                    TEXT{it,1} = '# Submodules of the Import Module';  it = it+1;
-                    TEXT{it,1} = ' ';  it = it+1;
-                elseif strcmp(content,'StructuralModule')
-                    TEXT{it,1} = '# Submodules of the Structural Module';  it = it+1;
-                    TEXT{it,1} = ' ';  it = it+1;
-                elseif strcmp(content,'ASLModule')
-                    TEXT{it,1} = '# Submodules of the ASL Module';  it = it+1;
-                    TEXT{it,1} = ' ';  it = it+1;
-                elseif strcmp(content,'PopulationModule')
-                    TEXT{it,1} = '# Submodules of the Population Module';  it = it+1;
-                    TEXT{it,1} = ' ';  it = it+1;
-                elseif strcmp(content,'SPMxASL')
-                    TEXT{it,1} = '# SPM xASL Functions';  it = it+1;
-                    TEXT{it,1} = ' ';  it = it+1;
-                end
+				switch (contentType)
+					case 'Functions'
+						TEXT{it,1} = '# Functions';
+					case 'Modules'
+						TEXT{it,1} = '# Modules';  
+					case 'oldImport'
+						TEXT{it,1} = '# Submodules of the previous Import Module'; 
+					case 'ImportModule'
+						TEXT{it,1} = '# Submodules of the Import Module';
+					case 'StructuralModule'
+						TEXT{it,1} = '# Submodules of the Structural Module';
+					case 'ASLModule'
+						TEXT{it,1} = '# Submodules of the ASL Module';  
+					case 'PopulationModule'
+						TEXT{it,1} = '# Submodules of the Population Module'; 
+					case 'SPMxASL'
+						TEXT{it,1} = '# SPM xASL Functions';  
+					otherwise 
+						error('Unknown contentType');
+				end
+				it = it+1;
+				TEXT{it,1} = ' ';  it = it+1;
+				
                 cS = cS+1; 
             end
             
@@ -162,7 +163,7 @@ function xASL_dev_DocCrawler(inputPath,mdoutput,content)
             end
             
             % Get the current section
-            if strcmp(content,"Functions")
+            if strcmp(contentType,"Functions")
                 if cS <= length(SECTION)
                     if contains(fileName,['xASL_', char(SECTION{cS,1})])
                         fprintf('%s\n',SECTION_NAMES{cS,1});
@@ -235,8 +236,9 @@ function xASL_dev_DocCrawler(inputPath,mdoutput,content)
             end
         end
 
-    end
+	end
 
+	%% 4. Final formatting
     % Remove spaces and separator lines
     if size(TEXT,1)>1
         for i=1:numel(TEXT)
@@ -253,7 +255,7 @@ function xASL_dev_DocCrawler(inputPath,mdoutput,content)
     end
 
     % Print information to markdown file
-    fileID = fopen(mdoutput,'w');
+    fileID = fopen(outputFile,'w');
     for i=1:numel(TEXT)
         fprintf(fileID,'%s\n',char(TEXT{i,:}));
     end
@@ -327,6 +329,3 @@ function [extractHeaderInfo,formatText,descriptionText] = analyzeHeader(fileName
     end
 
 end
-
-
-
