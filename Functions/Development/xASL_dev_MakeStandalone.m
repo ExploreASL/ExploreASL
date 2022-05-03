@@ -1,5 +1,5 @@
-function xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
-%xASL_adm_MakeStandalone This function was written to create a compiled "standalone" version of
+function xASL_dev_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
+%xASL_dev_MakeStandalone This function was written to create a compiled "standalone" version of
 % ExploreASL using the mcc compiler from Matlab.
 %
 % FORMAT: xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest);
@@ -30,8 +30,8 @@ function xASL_adm_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 %
 % EXAMPLE: 
 %
-% 1. Compilation marked as latest including compiled SPM: xASL_adm_MakeStandalone('Drive/User/Folder/',true,true);
-% 2. Compilation marked with version number including compiled SPM: xASL_adm_MakeStandalone('Drive/User/Folder/',true,false);
+% 1. Compilation marked as latest including compiled SPM: xASL_dev_MakeStandalone('Drive/User/Folder/',true,true);
+% 2. Compilation marked with version number including compiled SPM: xASL_dev_MakeStandalone('Drive/User/Folder/',true,false);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright (c) 2015-2022 ExploreASL

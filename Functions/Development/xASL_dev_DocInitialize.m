@@ -1,8 +1,8 @@
-function xASL_adm_DocInitialize(baseOutputFolder)
-%xASL_adm_DocInitialize Script to call the separate documentation crawler
+function xASL_dev_DocInitialize(baseOutputFolder)
+%xASL_dev_DocInitialize Script to call the separate documentation crawler
 % functions.
 %
-% FORMAT:       xASL_adm_DocInitialize
+% FORMAT:       xASL_dev_DocInitialize
 % 
 % INPUT:        baseOutputFolder     - Folder where the generated markdown files are stored (OPTIONAL, DEFAULT = ExploreASL/Documentation repository)
 %
@@ -13,7 +13,7 @@ function xASL_adm_DocInitialize(baseOutputFolder)
 %               necessary for the mkdocs documentation.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_adm_DocInitialize(fullfile(x.opts.MyPath,'Development','Documentation_GitHub'),true);
+% EXAMPLE:      xASL_dev_DocInitialize(fullfile(x.opts.MyPath,'Development','Documentation_GitHub'),true);
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
 
@@ -85,16 +85,16 @@ function xASL_adm_DocInitialize(baseOutputFolder)
 	xASL_Copy(fullfile(templatesDir,'Tutorials-Developer.md'),fullfile(outputFolder,'Tutorials-Developer.md'),1);	
 	
     % Create the functions markdown file
-    xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Functions'), fullfile(outputFolder,'Functions.md'),'Functions');
     
     % Create the functions markdown file
-    xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'External','SPMmodified','xASL'), fullfile(outputFolder,'SPMxASL.md'),'SPMxASL');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'External','SPMmodified','xASL'), fullfile(outputFolder,'SPMxASL.md'),'SPMxASL');
 
     % Convert and copy lincense file
     convertLicenseToMarkdown(fullfile(x.opts.MyPath,'LICENSE-EXPLOREASL'),fullfile(outputFolder,'License.md'));
     
     % Use documentation crawler for modules
-    xASL_adm_DocCrawler({...
+    xASL_dev_DocCrawler({...
                         fullfile(x.opts.MyPath,'Modules','xASL_module_Import.m'),...
                         fullfile(x.opts.MyPath,'Modules','xASL_module_Structural.m'),...
                         fullfile(x.opts.MyPath,'Modules','xASL_module_ASL.m'),...
@@ -103,10 +103,10 @@ function xASL_adm_DocInitialize(baseOutputFolder)
                         fullfile(outputFolder,'Modules.md'),'Modules');
     
     % Use documentation crawler for submodules
-    xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Import'), fullfile(outputFolder,'Import_Module.md'),'ImportModule');
-    xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Structural'), fullfile(outputFolder,'Structural_Module.md'),'StructuralModule');
-    xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
-    xASL_adm_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Import'), fullfile(outputFolder,'Import_Module.md'),'ImportModule');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Structural'), fullfile(outputFolder,'Structural_Module.md'),'StructuralModule');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
     
 
 end

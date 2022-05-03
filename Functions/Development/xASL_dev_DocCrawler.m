@@ -1,8 +1,8 @@
-function xASL_adm_DocCrawler(inputPath,mdoutput,content)
+function xASL_dev_DocCrawler(inputPath,mdoutput,content)
 %xASL_doc_Crawler Script to get information from the file headers and
 % convert the information into a markdown file.
 %
-% FORMAT:       xASL_adm_DocCrawler(inputPath)
+% FORMAT:       xASL_dev_DocCrawler(inputPath)
 % 
 % INPUT:        inputPath     - input folder (or file)
 %               mdoutput      - result file
@@ -20,7 +20,7 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
 %               (which is written like this: {{bold text}}).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      xASL_adm_DocCrawler('M:\...\Functions', 'M:\...\Output.md','Functions');
+% EXAMPLE:      xASL_dev_DocCrawler('M:\...\Functions', 'M:\...\Output.md','Functions');
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
 
@@ -29,8 +29,8 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
     isFileList = false;
     
     % Sections for "Functions" folder
-    SECTION = {'adm', 'bids', 'fsl', 'im', 'imp', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
-    SECTION_NAMES = {'Administration', 'BIDS', 'FSL', 'Image Processing', 'Import', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
+    SECTION = {'adm', 'bids', 'dev', 'fsl', 'im', 'imp', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
+    SECTION_NAMES = {'Administration', 'BIDS', 'Development', 'FSL', 'Image Processing', 'Import', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
 
     %% Input Check
     if nargin < 1
@@ -77,7 +77,7 @@ function xASL_adm_DocCrawler(inputPath,mdoutput,content)
     % Workaround for "Functions"
     if strcmp(content,'Functions')
         fprintf('Walk through Functions sub-directories...\n');
-        functionPaths = {   'Administration', 'BIDS', 'FSL', ...
+        functionPaths = {   'Administration', 'BIDS', 'Development', 'FSL', ...
                             'ImageProcessing', 'Import', 'Initialization', 'InputOutput', ...
                             'QualityControl', 'Quantification', 'SPM', ...
                             'Statistics', 'Visualization'};
