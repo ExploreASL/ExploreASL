@@ -42,9 +42,6 @@ function [x] = ExploreASL_Import(x)
             fprintf(2,'%s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
         end
         [x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-        % Turn off data loading and processing if import crashed
-        x.opts.bLoadData = false;
-        x.opts.bProcessData = false;
     end
     
     
