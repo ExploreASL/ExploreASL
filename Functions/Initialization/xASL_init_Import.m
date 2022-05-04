@@ -20,9 +20,6 @@ function x = xASL_init_Import(x)
 
     %% Initialization
 
-	xASL_adm_BreakString('ExploreASL Import');
-	fprintf('Tutorial for ExploreASL Import is available at: https://exploreasl.github.io/Documentation/latest/Tutorials-Import/');
-	
     % Initialize x struct
     x = xASL_init_SubStructs(x);
     
