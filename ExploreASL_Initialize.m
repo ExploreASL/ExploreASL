@@ -409,6 +409,13 @@ function x = xASL_init_GetBooleansImportProcess(x)
         x.opts.bSkipBIDS2Legacy = false;
     end
 
+    % Warn the user if processing data but not loading a dataset
+    if x.opts.bProcessData && ~x.opts.bLoadData
+        warning('Data loading was disabled or incorrect dataset provided!');
+        fprintf('Forcing data loading for processing now, this may go wrong\n');
+        x.opts.bLoadData = true;
+    end
+
 end
 
 
