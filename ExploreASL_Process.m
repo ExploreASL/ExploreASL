@@ -79,7 +79,9 @@ function [x] = ExploreASL_Process(x)
     end
     
     %% 0.1
-    x = xASL_init_DataLoading(x);
+	if x.opts.bLoadData
+		x = xASL_init_DataLoading(x);
+	end
     
     %% 0.2
     xASL_init_PrintUserFeedback(x, 1, 0);
