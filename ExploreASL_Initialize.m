@@ -105,7 +105,11 @@ function [x] = ExploreASL_Initialize(varargin)
     %% 7. Data-specific initialization
     xASL_init_PrintVersion(x.Version);
 
-	fprintf('ExploreASL manual is available at https://exploreasl.github.io/Documentation\n');
+	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
+        disp('<a href="https://exploreasl.github.io/Documentation; ">Click here for the ExploreASL manual</a>');
+    else % text only
+        fprintf('ExploreASL manual is available at https://exploreasl.github.io/Documentation\n');
+    end
 end
 
 
