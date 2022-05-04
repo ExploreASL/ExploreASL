@@ -15,12 +15,20 @@ function [x] = xASL_init_DataLoading(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        [x] = xASL_init_DataLoading(x);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
-
+% Copyright (c) 2015-2022 ExploreASL
 
     %% Clean up the x struct before we load the data
     x = xASL_adm_CleanUpX(x);
 
+    %% Print the hyperlink
+	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
+        disp('<a href="https://exploreasl.github.io/Documentation/latest/Tutorials-Processing; ">Click here for the ExploreASL processing tutorial</a>');
+        disp('<a href="https://exploreasl.github.io/Documentation/latest/ProcessingParameters; ">Click here for the ExploreASL processing settings overview</a>');
+	else % text only
+        fprintf('Examples of processing-parameter settings are at: https://exploreasl.github.io/Documentation/latest/Tutorials-Processing\n');
+        fprintf('A full explanation of processing parameters is @: https://exploreasl.github.io/Documentation/latest/ProcessingParameters\n');
+	end
+    
     %% Data loading
     if ~isfield(x,'dataset')
         x.dataset = struct;
