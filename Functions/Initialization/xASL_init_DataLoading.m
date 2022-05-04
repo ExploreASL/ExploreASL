@@ -30,43 +30,30 @@ function [x] = xASL_init_DataLoading(x)
 	end
     
     %% Data loading
-    if ~isfield(x,'dataset')
+	if ~isfield(x,'dataset')
         x.dataset = struct;
-    end
+	end
     
     % Make sure that the dataPar.json definitely exists if we load the dataset
-    if x.opts.bLoadData && x.opts.bLoadableData
-        if isfield(x,'dir') && isfield(x.dir,'dataPar')
-            if isempty(x.dir.dataPar)
-				warning('You are trying to load a dataset but there is no dataPar JSON file...');
-				x.opts.bLoadData = false;
-            end
-        else
-            x.opts.bLoadData = false;
-        end
-    end
-    
-    % Go to ExploreASL folder
+	if x.opts.bLoadableData
+		if ~isfield(x,'dir') || ~isfield(x.dir,'dataPar') || isempty(x.dir.dataPar)
+			warning('You are trying to load a dataset but no dataPar.json file was specified.');
+			x.opts.bLoadData = false;
+			x = xASL_init_DefineDataDependentSettings(x);
+			return
+		end
+	end
+        
+	% Go to ExploreASL folder
     cd(x.opts.MyPath);
-
-    % Check if DataParFile needs to be loaded
-    if x.opts.bProcessData || (x.opts.bLoadData && x.opts.bLoadableData)
-        if ~isempty(x.dir.dataPar)
-            x = xASL_init_LoadDataParameterFile(x);
-        else
-            fprintf('No dataPar.json provided...\n');
-            if x.opts.bLoadData
-                fprintf('Dataset can not be loaded...\n');
-                x.opts.bLoadData = false;
-            end
-        end
-    end
-    
+	
+	x = xASL_init_LoadDataParameterFile(x);
+	
     % These settings depend on the data (e.g. which template to use)
     x = xASL_init_DefineDataDependentSettings(x);
     
     % Check if data loading should be executed first
-    if x.opts.bLoadData && x.opts.bLoadableData
+    if x.opts.bLoadableData
         % Check if a root directory was defined
         if ~isfield(x.D,'ROOT') || isempty(x.D.ROOT)
             error('No root folder defined...');
@@ -88,10 +75,10 @@ function [x] = xASL_init_DataLoading(x)
 
         % Define & print settings
         x = xASL_init_PrintCheckSettings(x);
-    elseif x.opts.bLoadData && ~x.opts.bLoadableData
+	else
         % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
         % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
-        warning('Dataset can not be loaded, try to run the import first...');
+        warning('Dataset can not be loaded, there is no derivatives directory, try to run the DICOM 2 BIDS (import) first...');
     end
     
     % Set the field which shows that the data was loaded to true
