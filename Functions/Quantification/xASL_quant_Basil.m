@@ -398,6 +398,9 @@ fprintf(FIDoptionFile, '--noise=white\n');
 fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
 fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
 
+fprintf(FIDoptionFile, '--t2b=%f\n', x.Q.T2art/1000);
+fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2/1000);
+
 %% 3. Basic acquisition parameters
 
 % Print all the PLDs and LabDurs

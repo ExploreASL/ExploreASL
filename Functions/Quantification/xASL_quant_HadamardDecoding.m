@@ -140,6 +140,19 @@ if isfield(xQ,'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 	imEncoded = imEncoded(:,:,:,vectorOldOrder);
 end
 
+% Sometimes HAD8 is PLD1(rep1), PLD1(rep2), PLD2(rep1), PLD2(rep2). We
+% want: PLD1(rep1), PLD2(rep1)... PLD1(rep2),PLD2(rep2)
+% UniquePLDs = unique(xQ.Initial_PLD);
+% 
+% if (length(UniquePLDs) == nEncodedVolumes) && (UniquePLDs(2)-UniquePLDs(1))< 250
+%     This is the original order
+% 	vectorOldOrder = 1:nEncodedVolumes;
+%     Shape
+%     vectorOrder = [ vectorOldOrder(1:2:end) vectorOldOrder(2:2:end)];
+%     Reorder the data
+% 	imEncoded = imEncoded(:,:,:,vectorOrder);
+% end
+
 %% 3. Decode the Hadamard data
 imDecoded = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), nDecodedVolumes * nRepetitions);    
 idx=0;
@@ -149,7 +162,7 @@ for iRepetition = 1:nRepetitions
             
             indexPositive = find(xQ.TimeEncodedMatrix(iTI,:)==1);
             indexNegative = find(xQ.TimeEncodedMatrix(iTI,:)==-1);
-            imDecoded(:,:,:,((iTE-1)*nDecodedTI+iTI)+(iRepetition-1)*nDecodedVolumes) = mean(imEncoded(:,:,:,(indexPositive+idx)),4) - mean(imEncoded(:,:,:,(indexNegative+idx)),4);
+            imDecoded(:,:,:,((iTE-1)*nDecodedTI+iTI)+(iRepetition-1)*nDecodedVolumes) = sum(imEncoded(:,:,:,(indexPositive+idx)),4) - sum(imEncoded(:,:,:,(indexNegative+idx)),4);
             
         end
         idx = idx+xQ.TimeEncodedMatrixSize;
