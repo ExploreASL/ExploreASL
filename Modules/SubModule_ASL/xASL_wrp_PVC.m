@@ -129,4 +129,16 @@ imPVC(:,:,:,2) = imPVC(:,:,:,2).*((imGM+imWM)>0.3);
 xASL_io_SaveNifti(x.P.Path_CBF,x.P.Path_CBFgm,imPVC(:,:,:,1));
 xASL_io_SaveNifti(x.P.Path_CBF,x.P.Path_CBFwm,imPVC(:,:,:,2));
 
+% Also transform both maps to standard space
+InList  = {x.P.Path_CBFgm;x.P.Path_CBFwm};
+OutList = {x.P.Pop_Path_CBFgm;x.P.Pop_Path_CBFwm};
+    
+if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
+	AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
+else
+	AffineTransfPath = [];
+end
+
+xASL_spm_deformations(x, InList, OutList, 1, [], AffineTransfPath, x.P.Path_y_ASL);
+
 end
