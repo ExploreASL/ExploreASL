@@ -467,7 +467,12 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 10.   FEAST quantification
 % run FEAST quantification if crushed & non-crushed ASL sessions exist
-xASL_quant_FEAST(x);
+if (x.dataset.nSessions>1 && isfield(x,'session') && isfield(x.session,'options') && strcmp(x.session.options{1},'crushed') && strcmp(x.session.options{2},'non-crushed'))
+    % run FEASTS quantification if current session =session 2
+    if strcmp(x.dir.SESSIONDIR(length(x.dir.SUBJECTDIR)+2:end),'ASL_2')
+        xASL_quant_FEAST(x);
+    end
+end
 
 
 %% ------------------------------------------------------------------------------------------------

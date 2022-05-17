@@ -29,12 +29,9 @@ function xASL_quant_FEAST(x)
 
 
 %% -------------------------------------------------------------
-%% 1. Skip this function if no FEAST data available
-if ~(x.dataset.nSessions>1 && isfield(x,'session') && isfield(x.session,'options') && strcmp(x.session.options{1},'crushed') && strcmp(x.session.options{2},'non-crushed'))
-    return;
-elseif ~(strcmp(x.dir.SESSIONDIR(length(x.dir.SUBJECTDIR)+2:end),'ASL_2')) % Computation is performed if CurrentSession=session 2
-    return;
-end
+%% 1. Provide feedback
+
+
 
 %% -------------------------------------------------------------
 %% 2. Admin
@@ -92,5 +89,6 @@ TT = -x.Q.BloodT1 .* reallog( FEAST_ratio .* (qnt_PLDdecay  - qnt_combidecay ) +
 xASL_io_SaveNifti(PathCBF{1}, fullfile(x.D.PopDir, ['TT_'  x.P.SubjectID '.nii']), TT, 32);
 
 
-end
 
+
+end
