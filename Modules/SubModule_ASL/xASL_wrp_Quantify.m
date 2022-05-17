@@ -285,8 +285,12 @@ else
 
     %% ------------------------------------------------------------------------------------------------
     %% 6.   Initialize quantification parameters
-    if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments) || x.Q.nCompartments>2
+    if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments)
         x.Q.nCompartments = 1; % by default, we use a single-compartment model, as proposed by the Alsop et al. MRM 2014 concensus paper
+    elseif x.Q.nCompartments>2 || x.Q.nCompartments<1
+        warning(['Unknown x.Q.nCompartments: ' xASL_numstr2(x.Q.nCompartments)]);
+        fprintf('%s\n', 'Now x.Q.nCompartments set to 1 (single compartment model)');
+        x.Q.nCompartments = 1;
 	end
 
 	if ~isfield(x.Q,'ATT')
