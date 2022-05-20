@@ -29,7 +29,7 @@ function [imDecoded] = xASL_quant_HadamardDecoding(imPath, xQ)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      n/a
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 %% 0. Admin
 % Check if all inputs are present
@@ -68,6 +68,13 @@ else
 		error('Neither TimeEncodedMatrix and TimeEncodedMatrixSize provided');
 	end
 	
+	% See an example of decoding/encoding matrices in 
+	% Samson-Himmelstjerna, MRM 2015 https://doi.org/10.1002/mrm.26078
+	% Note that the encoding/decoding matrices are symmetric
+	% Encoding matrices have an extra first row with all 1 (1 control, -1 label)
+	% Decoding can be done using the same matrix (1 addition, -1 subtraction) - below, the first row 
+	% (that would generate a mean control) is skipped and then we use the decoding along columns, goind across
+	% rows generates different decoded volumes.
 	% #### For Walsh Decoding Matrix ####
 	if strcmp(xQ.TimeEncodedMatrixType,'Walsh')
 		
