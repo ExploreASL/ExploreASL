@@ -379,7 +379,7 @@ if bENABLE
     
     if usejava('jvm') % only if JVM loaded
         fig = figure('Visible','off');
-        plot([1:length(tValue)],tValue,'b',[1:length(tValue)],mintValuePlot,'r');
+        plot([1:length(tValue)],tValue,'b',[1:length(tValue)],mintValuePlot * max(tValue),'r');
         xlabel('control-label pairs sorted by motion');
         ylabel('mean voxel-wise 1-sample t-test p-value');
         PercExcl    = round((sum(exclusion)/length(exclusion)*100)*10)/10;
