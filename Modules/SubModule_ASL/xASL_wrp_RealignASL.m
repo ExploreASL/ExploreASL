@@ -469,7 +469,26 @@ xASL_delete(rInputPath); % delete temporary image
 
 % Save results for later summarization in analysis module
 xASL_adm_CreateDir(x.D.MotionDir);
-save(fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']),'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
+pathSave = fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']);
+save(pathSave, 'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
+
+    %% ----------------------------------------------------------------------------------------
+    %% 5 Print motion statistics after excluding motion spikes
+    
+    if bENABLE && sum(exclusion)>0
+        for ii=1:2
+            NDV_SpikesRemoved{ii} = NDV{ii}(~exclusion);
+            
+            median_NDV_SpikesRemoved{ii} = median(NDV_SpikesRemoved{ii});
+            mean_NDV_SpikesRemoved{ii} = mean(NDV_SpikesRemoved{ii});
+            max_NDV_SpikesRemoved{ii} = max(NDV_SpikesRemoved{ii});
+            SD_NDV_SpikesRemoved{ii} = std(NDV_SpikesRemoved{ii});
+            MAD_NDV_SpikesRemoved{ii} = xASL_stat_MadNan(NDV_SpikesRemoved{ii},0); % median absolute deviation from median
+        end
+        
+        save(pathSave, 'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue', ...
+        'NDV_SpikesRemoved','median_NDV_SpikesRemoved','mean_NDV_SpikesRemoved','max_NDV_SpikesRemoved','SD_NDV_SpikesRemoved','MAD_NDV_SpikesRemoved');
+    end
 
     
 end
