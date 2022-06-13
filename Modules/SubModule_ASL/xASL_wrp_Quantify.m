@@ -470,7 +470,7 @@ if ~isempty(ATT)
 end
 
 if ~isempty(Texch)
-	% Save the ATT file
+	% Save the TExch file
 	xASL_io_SaveNifti(PWI_Path, pathOutputTexch, Texch, 32, 0);
 end
 
@@ -517,8 +517,8 @@ if x.Q.bUseBasilQuantification
 		xASL_spm_deformations(x, {x.P.Path_TT}, {x.P.Pop_Path_TT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
     end
     
-    if xASL_exist(x.P.Path_TE,'file') %Jan, we need to define x.P.Path_TE somewhere, and x.P.Pop_Path_TE too
-		xASL_spm_deformations(x, {x.P.Path_TE}, {x.P.Pop_Path_TE}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+    if xASL_exist(x.P.Path_TExch,'file')
+		xASL_spm_deformations(x, {x.P.Path_TExch}, {x.P.Pop_Path_TExch}, [], [], AffineTransfPath, x.P.Path_y_ASL);
 	end
 end
 end
