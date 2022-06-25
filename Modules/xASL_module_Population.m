@@ -57,7 +57,7 @@ if ~bHasASL
     warning('Detected no ASL scans, skipping ASL-specific parts of the Population module');
 end
 
-x = xASL_init_InitializeMutex(x, 'QC'); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex(x, 'Population'); % starts mutex locking process to ensure that everything will run only once
 x = xASL_init_FileSystem(x);
 
 % Obtain ASL sequence
