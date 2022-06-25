@@ -189,7 +189,7 @@ for iSubject=1:x.dataset.nTotalSubjects
         end
     end
     
-    if ~isempty(regexp(x.dataset.TotalSubjects{iSubject},'^(dartel|lock|Population)$'))
+    if ~isempty(regexp(x.dataset.TotalSubjects{iSubject},'^(log|dartel|lock|Population)$'))
          % This is not a subject but a pipeline folder
          ListNoPipelineDir(iSubject) = 0;
     elseif ~excl
