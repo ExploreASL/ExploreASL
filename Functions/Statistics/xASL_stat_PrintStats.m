@@ -303,7 +303,7 @@ function [x, statCell] = xASL_stat_PrintStats_GetStatCellArray(x)
     iCell2 = 1;
     
     % First row
-    statCell{iCell,1} = 'SUBJECT';
+    statCell{iCell,1} = 'participant_id';
     iCell = iCell+1;
     
     % Sets
