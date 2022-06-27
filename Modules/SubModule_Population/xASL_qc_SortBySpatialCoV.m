@@ -58,7 +58,22 @@ end
 PathTSV = fullfile(x.S.StatsDir, FileList{end});
 
 [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathTSV);
-SubjectList = CellTSV(3:end,1);
+subjectList = CellTSV(3:end,1);
+
+% If the subjectlist doesn't have sessions mentioned, we include them
+if isempty(regexpi(subjectList{1}, 'ASL_\d*'))
+    indexSession = find(strcmpi(CellTSV(1,:),'session'));
+    if ~isempty(indexSession)
+        sessionList = CellTSV(3:end,indexSession);
+        subjectSessionList = strcat(subjectList,'_',sessionList);
+    else
+        subjectSessionList = subjectList;
+        warning('Could not concatenate subjectlist and session list, this might go wrong');
+    end
+else
+    subjectSessionList = subjectList;
+end
+
 sCoVList = CellTSV(3:end,end-2);
 
 DirCBF = fullfile(x.D.ASLCheckDir, '1_CBFContrast');
@@ -82,7 +97,7 @@ for iSubject=1:x.nSubjects
         % find current JPG
         JPGList = xASL_adm_GetFileList(x.D.ASLCheckDir, ['(?i)^Tra_qCBF_' NameSubjSess '.*'],'List', [0 Inf]);
         % find current sCoV
-        Index = find(cellfun(@(x) strcmp(x,NameSubjSess), SubjectList));
+        Index = find(cellfun(@(x) strcmp(x,NameSubjSess), subjectSessionList));
         
         if ~isempty(JPGList)
             if isempty(Index) % if we cannot determine the sCoV
