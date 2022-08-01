@@ -349,7 +349,9 @@ jsonOut.ASLContext = strrep(jsonOut.ASLContext, ',',sprintf('\n'));
 if dimASL(4) ~= lengthASLContext
 	% Check if we can simply repeat it
 	if mod(dimASL(4),lengthASLContext)
-		error('Cannot find a match between the ASLContext and the 4th dimension of the NIFTI');
+		fprintf('%s\n',['ASLContext has a length of ' xASL_num2str(lengthASLContext)]);
+        fprintf('%s\n',['NIfTI image has ' xASL_num2str(dimASL(4)) ' volumes']);
+        error('These ASLContext and the 4th dimension of the NIfTI do not match');
 	else
 		NumberEchoTimes = numel(unique(jsonOut.EchoTime));
 		
