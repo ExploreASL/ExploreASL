@@ -35,24 +35,20 @@ else
 end
 
 % Get version
-if ~isdeployed
-    VersionPath = xASL_adm_GetFileList(x.opts.MyPath, '^VERSION.*$', 'FPList', [0 Inf]);
-    if isempty(VersionPath)
-        warning('Could not obtain ExploreASL version, version file missing');
-    else
-        [~, Fname, Fext] = fileparts(VersionPath{1});
-        x.Version = [Fname(9:end) Fext];
+try
+    versionFile = dir(fullfile(x.opts.MyPath, 'VERSION*'));
+    versionFile = versionFile.name;
+    x.Version = versionFile(9:end);
+
+    if isempty(x.Version)
+        warning('Unknown ExploreASL version number');
+        x.Version = 'VERSION_unknown';
     end
-else
-    % Output of compiled ExploreASL version
-    try
-        versionFile = dir(fullfile(x.opts.MyPath, 'VERSION*'));
-        versionFile = versionFile.name;
-        x.Version = versionFile(9:end);
-    catch
-        x.Version = '1.0.0 (TMP)';
-    end
+catch
+    warning('Could not obtain ExploreASL version, version file missing');
+    x.Version = 'VERSION_File_Missing';
 end
+
 
 if ~isfield(x,'Q')
     x.Q = struct;
