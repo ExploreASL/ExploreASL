@@ -102,6 +102,8 @@ elseif isnumeric(x)
 end
 
 
+end % EXPLORE HACK
+
 %==========================================================================
 % function x = dsvread(f,delim)
 %==========================================================================
@@ -162,11 +164,43 @@ if strcmpi(spm_check_version,'octave') % bug #51093
 end
 d = textscan(S,'%s','Delimiter',delim);
 
-if rem(numel(d{1}),N)
+% EXPLOREASL HACK: detect potentially erroneous empty cells
+illegalEmptyCells = DetectIllegalEmptyCells(d, N);
+
+if ~isempty(illegalEmptyCells)
+    warning(['Found illegal empty cells in ' f ', trying to repair']);
+    d = FixIllegalEmptyCells(d, N);
+
+    % Check if it was repaired
+    if rem(numel(d{1}),N) % can we divide cells/columns?
+        fprintf('%s\n', ['Could not repair ' f]);
+    else 
+        % try to save it repaired file
+        fprintf('%s\n', ['Could repair ' f ', but check carefully if this went OK']);
+        [fPath, fFile, fExt] = xASL_fileparts(f);
+        pathSave = fullfile(fPath, [fFile '_repaired' fExt]);
+        newCell = var;
+        d = reshape(d{1},N,[])'; % reshape
+        newCell(2:size(d,1)+1,:) = d;
+
+        if strcmp(fExt, '.tsv')
+            fprintf('%s\n', ['Saved repaired file: ' pathSave]);
+            xASL_tsvWrite(newCell, pathSave);
+        elseif strcmp(fExt, '.csv')
+            fprintf('%s\n', ['Saving repaired file: ' pathSave]);
+            xASL_csvWrite(newCell, pathSave);
+        else
+            fprintf('%s\n', ['Unknown delimiter (extension: ' fExt ', could not save repaired file']);
+        end
+    end
+elseif rem(numel(d{1}),N) % can we divide cells/columns?
     error('Varying number of delimiters per line.');
+else
+    d = reshape(d{1},N,[])'; % reshape
 end
 
-d = reshape(d{1},N,[])';
+
+
 allnum = true;
 for i=1:numel(var)
     sts = true;
@@ -190,4 +224,51 @@ end
 if ~hdr && allnum
     x = struct2cell(x);
     x = [x{:}];
+end
+
+
+end
+
+%% ========================================================================
+
+function [d] = FixIllegalEmptyCells(d, N)
+%FixIllegalEmptyCells % EXPLOREASL HACK: Fix potentially erroneous empty cells
+%   d = all cells from input delimiter-separate value file (without header)
+%   N = number of columns
+    
+    illegalEmptyCells = DetectIllegalEmptyCells(d, N);
+
+    while ~isempty(illegalEmptyCells)
+        illegalRow = illegalEmptyCells(1);
+        fprintf('%s\n', ['Found empty cells at row ' xASL_num2str(illegalRow)]);
+
+        % Remove all adjacent empty cells
+        while isempty(d{1}{illegalRow})
+            d{1}(illegalRow:end-1) = d{1}(illegalRow+1:end);
+            d{1} = d{1}(1:end-1);
+        end
+
+        illegalEmptyCells = DetectIllegalEmptyCells(d, N);
+    end
+
+end
+
+%% ========================================================================
+
+
+function [illegalEmptyCells] = DetectIllegalEmptyCells(d, N)
+%DetectIllegalEmptyCells % EXPLOREASL HACK: detect & fix potentially erroneous empty cells
+%   d = all cells from input delimiter-separate value file (without header)
+%   N = number of columns
+    
+    emptyCells = find(cellfun(@(y) isempty(y), d{1}));
+    % N = number of columns
+    % so if any index-1 of the empty cells equals to the number of columns,
+    % this means that the empty cell is at the end of a line and potentially
+    % crashing this function trying to open a delimiter-separated value file
+    % (dsv)
+    
+    illegalEmptyCells = (emptyCells-1)/N == round((emptyCells-1)/N);
+    illegalEmptyCells = emptyCells(illegalEmptyCells);
+
 end
