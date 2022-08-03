@@ -5,7 +5,7 @@ SPM12, r7219 (/External/SPMmodified/Contents.txt)
 CAT12, r1615 (/External/SPMmodified/toolbox/cat12/CHANGES.txt)
 LST, r2.0.15 (/External/SPMmodified/toolbox/LST/lst-version.txt)
 
-Aside from the below list of code modifications, 
+Aside from the below list of code modifications,
 we have added new maps (//External/SPMmodified/MapsAdded/README_Maps.txt)
 as well as new code (//External/SPMmodified/xASL/README_Functions.txt)
 
@@ -143,29 +143,29 @@ IMAGE PROCESSING IMPROVEMENT
 
 DATE+NAME:2020_07_01, HM
 DESCRIPTION: Remove feedback missing log-file (we don't use catlog_txt in xASL)
-FILE: 
+FILE:
 cat_run.m @ 459
 cat_run_job.m @ 79
 
 DATE+NAME:2020_07_01, HM
 DESCRIPTION: Add progress tracking
-FILE: 
+FILE:
 cat_vol_imcalc.m @ 207
 
 DATE+NAME:2020_07_01, HM
 DESCRIPTION: Add progress tracking
-FILE: 
+FILE:
 cat_vol_imcalc.m @ 207
 cat_main_reportfig.m @ 35, 91, 159, 231, 300, 400, 485, 594, 615, 617
 
 DATE+NAME:2020_07_01, HM
 DESCRIPTION: Improved feedback on ROI creation
-FILE: 
+FILE:
 cat_main_roi.m @ 50
 
 DATE+NAME:2020_07_01, HM
 DESCRIPTION: Improved feedback on PDF creation
-FILE: 
+FILE:
 cat_main_reportfig.m @ 34, 622
 
 DATE+NAME:2020_07_01, HM
@@ -365,7 +365,7 @@ jsmn.c at line 269
 
 DATE+NAME:2021_01_12, JP
 DESCRIPTION:
-Edited the spm_jsonread.c so that spm_jsonread MEX correctly reads files that contain 0-character inside the text. A character with value 0 appears in some - otherwise empty - strings. 
+Edited the spm_jsonread.c so that spm_jsonread MEX correctly reads files that contain 0-character inside the text. A character with value 0 appears in some - otherwise empty - strings.
 Which causes that the JSON is not read entirely. We now read the entire JSON and replace 0 by a space.
 FILE:
 spm_jsonread.c at line 496
@@ -385,6 +385,10 @@ cat_update at line 22
 spm_update at line 36
 cat_io_send_to_server at line 19
 ps_LST_update at line 5
+
+DATE+NAME:2022-08-03 HM (#1140)
+DESCRIPTION: Attempt repairing broken CSV/TSV files by removing empty cells at the end of rows
+FILE: spm_load.m, 102, 162, 191
 
 DATE+NAME:2021-01-20 HM (issue #276)
 DESCRIPTION: Manage trailing \t on header only
