@@ -233,6 +233,7 @@ elseif ~StructuralRawExist && ~StructuralDerivativesExist
         catVolFile = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
         MatFile   = fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']);
         dummyVar = [];
+        xASL_adm_CreateDir(x.D.TissueVolumeDir);
         save(catVolFile,'dummyVar');
         save(MatFile,'dummyVar');
 
