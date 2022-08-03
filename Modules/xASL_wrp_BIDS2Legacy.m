@@ -133,8 +133,9 @@ end
 fprintf('   \n');
 
 
-% Get directories of current subject
-SubjectDirs = xASL_adm_GetFileList(fullfile(x.dir.xASLDerivatives), ['^.+' x.SUBJECT '.+$'], [],[],true);
+% Get directories of current subject. The BIDS subject name can be prefixed
+% with sub- and suffixed with _1 _2 _3 etc for visits, in the legacy format
+SubjectDirs = xASL_adm_GetFileList(fullfile(x.dir.xASLDerivatives), ['^(|sub-)' x.SUBJECT '(|_\d*)$'], [],[],true);
 
 
 %% 5. Parse M0 of current subject
