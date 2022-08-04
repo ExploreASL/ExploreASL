@@ -168,8 +168,11 @@ end
 indexEol = find(S == eol);
 
 if length(indexEol)<=1
-	% If there's a single line-end only in the data, then consider everything a single line a divide (if possible) by the number of columns
-	% Read all 
+	% In case the file does not have line ends (i.e. only a single line-end at the end of the file that is inserted automatically)
+	% Then we consider that all data are provided on a single line. 
+	% We then have to determine if the total number of cells can be divided by the number of columns
+	
+	% Read all cells
 	d = textscan(S,'%s','Delimiter',delim);
 	if rem(numel(d{1}),N) % can we divide cells/columns?
 		error('Varying number of delimiters per line.');
@@ -203,7 +206,11 @@ else
 		% Record lines of incorrect length
 		if cellCountPerLine ~= N
 			lineNumberIncorrectLength = [lineNumberIncorrectLength, iLine];
+			
+			% Read the cells from a single line to a table
 			d(iLine, 1:min(cellCountPerLine,N)) = lineD{1}(1:min(cellCountPerLine,N));
+			
+			% Redefine type of empty cells from the initialized double to char
 			for iFill = (min(cellCountPerLine,N)+1):N
 				d{iLine, iFill} = '';
 			end
@@ -215,11 +222,11 @@ else
 end
 
 if ~isempty(lineNumberEmpty)
-    warning(['Found empty cells in ' f ' on lines ' num2str(lineNumberEmpty)]);
+    warning(['Found empty cells in ' f ' on lines ' num2str(lineNumberEmpty+1)]);
 end
 
 if ~isempty(lineNumberIncorrectLength)
-	warning(['Found lines with an incorrect length in ' f ' on lines ' num2str(lineNumberIncorrectLength)]);
+	% warning(['Found lines with an incorrect length in ' f ' on lines ' num2str(lineNumberIncorrectLength)]);
 	
 	fprintf('%s\n', 'Repaired, but check carefully if this went OK');
 	[fPath, fFile, fExt] = xASL_fileparts(f);
