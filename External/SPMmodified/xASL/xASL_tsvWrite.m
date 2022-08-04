@@ -76,7 +76,9 @@ for iX=1:size(InputCell,1)
             fprintf(FileID,DelimiterIs, xASL_num2str(InputCell{iX,iY}));
         end
     end
-    fprintf(FileID,'\n');
+    if iX<size(InputCell,1)
+        fprintf(FileID,'\n');
+    end
 end
 
 
@@ -85,5 +87,3 @@ fclose(FileID);
 
 
 end
-
-
