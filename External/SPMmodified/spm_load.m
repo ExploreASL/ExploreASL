@@ -162,56 +162,81 @@ if strcmpi(spm_check_version,'octave') % bug #51093
     S = strrep(S,delim,'#');
     delim = '#';
 end
-d = textscan(S,'%s','Delimiter',delim);
-
-% Count number of all cells and empty cells per line
-restS = S;
-cellCountPerLine = []; % a vector of cell counts per line
-cellEmptyCountPerLine = []; % a vector with number of empty cells per line
-while ~isempty(restS)
-	indexEol = find(restS == eol,1);
-	lineD = textscan(restS(1:indexEol),'%s','Delimiter',delim);
-	cellCountPerLine(end+1) = length(lineD{1});
-	cellEmptyCountPerLine(end+1) = sum(cellfun(@(y) isempty(y), lineD{1}));
-	restS = restS(indexEol+1:end);
-end
 
 % EXPLOREASL HACK: detect potentially erroneous empty cells
-illegalEmptyCells = DetectIllegalEmptyCells(d, N);
+% Find all line ends
+indexEol = find(S == eol);
 
-if ~isempty(illegalEmptyCells)
-    warning(['Found illegal empty cells in ' f ', trying to repair']);
-    d = FixIllegalEmptyCells(d, N);
-
-    % Check if it was repaired
-    if rem(numel(d{1}),N) % can we divide cells/columns?
-        fprintf('%s\n', ['Could not repair ' f]);
-    else 
-        % try to save it repaired file
-        fprintf('%s\n', ['Could repair ' f ', but check carefully if this went OK']);
-        [fPath, fFile, fExt] = xASL_fileparts(f);
-        pathSave = fullfile(fPath, [fFile '_repaired' fExt]);
-        newCell = var;
-        d = reshape(d{1},N,[])'; % reshape
-        newCell(2:size(d,1)+1,:) = d;
-
-        if strcmp(fExt, '.tsv')
-            fprintf('%s\n', ['Saved repaired file: ' pathSave]);
-            xASL_tsvWrite(newCell, pathSave);
-        elseif strcmp(fExt, '.csv')
-            fprintf('%s\n', ['Saving repaired file: ' pathSave]);
-            xASL_csvWrite(newCell, pathSave);
-        else
-            fprintf('%s\n', ['Unknown delimiter (extension: ' fExt ', could not save repaired file']);
-        end
-    end
-elseif rem(numel(d{1}),N) % can we divide cells/columns?
-    error('Varying number of delimiters per line.');
+if length(indexEol)<=1
+	% If there's a single line-end only in the data, then consider everything a single line a divide (if possible) by the number of columns
+	% Read all 
+	d = textscan(S,'%s','Delimiter',delim);
+	if rem(numel(d{1}),N) % can we divide cells/columns?
+		error('Varying number of delimiters per line.');
+	else
+		d = reshape(d{1},N,[])'; % reshape
+	end
 else
-    d = reshape(d{1},N,[])'; % reshape
+	lineNumberEmpty = [];
+	lineNumberIncorrectLength = [];
+	
+	% There are multiple line ends - we can parse per line
+	% Create an empty cell array that will be filled line by line
+	d = cell(length(indexEol), N);
+	for iLine = 1:length(indexEol)
+		% Read a single line from start to the next line end
+		if iLine == 1
+			lineD = textscan(S(1:indexEol(iLine)),'%s','Delimiter',delim);
+		else
+			lineD = textscan(S((indexEol(iLine-1)+1):indexEol(iLine)),'%s','Delimiter',delim);
+		end
+		
+		% Count all cells and empty cells
+		emptyCellCount = sum(cellfun(@(y) isempty(y), lineD{1}));
+		cellCountPerLine = length(lineD{1});
+		
+		% Record empty lines
+		if emptyCellCount > 0
+			lineNumberEmpty = [lineNumberEmpty, iLine];
+		end
+		
+		% Record lines of incorrect length
+		if cellCountPerLine ~= N
+			lineNumberIncorrectLength = [lineNumberIncorrectLength, iLine];
+			d(iLine, 1:min(cellCountPerLine,N)) = lineD{1}(1:min(cellCountPerLine,N));
+			for iFill = (min(cellCountPerLine,N)+1):N
+				d{iLine, iFill} = '';
+			end
+		else
+			d(iLine, :) = lineD{1};
+		end
+		
+	end
 end
 
+if ~isempty(lineNumberEmpty)
+    warning(['Found empty cells in ' f ' on lines ' num2str(lineNumberEmpty)]);
+end
 
+if ~isempty(lineNumberIncorrectLength)
+	warning(['Found lines with an incorrect length in ' f ' on lines ' num2str(lineNumberIncorrectLength)]);
+	
+	fprintf('%s\n', 'Repaired, but check carefully if this went OK');
+	[fPath, fFile, fExt] = xASL_fileparts(f);
+	pathSave = fullfile(fPath, [fFile '_repaired' fExt]);
+	newCell = var;
+	newCell(2:size(d,1)+1,:) = d;
+
+	if strcmp(fExt, '.tsv')
+		fprintf('%s\n', ['Saved repaired file: ' pathSave]);
+		xASL_tsvWrite(newCell, pathSave);
+	elseif strcmp(fExt, '.csv')
+		fprintf('%s\n', ['Saving repaired file: ' pathSave]);
+		xASL_csvWrite(newCell, pathSave);
+	else
+		fprintf('%s\n', ['Unknown delimiter (extension: ' fExt ', could not save repaired file']);
+	end
+end        
 
 allnum = true;
 for i=1:numel(var)
