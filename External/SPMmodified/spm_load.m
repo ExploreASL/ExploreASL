@@ -221,12 +221,12 @@ else
 	end
 end
 
-if ~isempty(lineNumberEmpty)
-    warning(['Found empty cells in ' f ' on lines ' num2str(lineNumberEmpty+1)]);
-end
+%if ~isempty(lineNumberEmpty)
+%    warning(['Found empty cells in ' f ' on lines ' num2str(lineNumberEmpty+1)]);
+%end
 
 if ~isempty(lineNumberIncorrectLength)
-	% warning(['Found lines with an incorrect length in ' f ' on lines ' num2str(lineNumberIncorrectLength)]);
+	warning(['Found lines with an incorrect length in ' f ' on lines ' num2str(lineNumberIncorrectLength)]);
 	
 	fprintf('%s\n', 'Repaired, but check carefully if this went OK');
 	[fPath, fFile, fExt] = xASL_fileparts(f);
