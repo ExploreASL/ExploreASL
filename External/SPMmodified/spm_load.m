@@ -164,6 +164,18 @@ if strcmpi(spm_check_version,'octave') % bug #51093
 end
 d = textscan(S,'%s','Delimiter',delim);
 
+% Count number of all cells and empty cells per line
+restS = S;
+cellCountPerLine = []; % a vector of cell counts per line
+cellEmptyCountPerLine = []; % a vector with number of empty cells per line
+while ~isempty(restS)
+	indexEol = find(restS == eol,1);
+	lineD = textscan(restS(1:indexEol),'%s','Delimiter',delim);
+	cellCountPerLine(end+1) = length(lineD{1});
+	cellEmptyCountPerLine(end+1) = sum(cellfun(@(y) isempty(y), lineD{1}));
+	restS = restS(indexEol+1:end);
+end
+
 % EXPLOREASL HACK: detect potentially erroneous empty cells
 illegalEmptyCells = DetectIllegalEmptyCells(d, N);
 
@@ -258,17 +270,14 @@ end
 
 function [illegalEmptyCells] = DetectIllegalEmptyCells(d, N)
 %DetectIllegalEmptyCells % EXPLOREASL HACK: detect & fix potentially erroneous empty cells
+% Illegal empty cells are those at the end of a line
+% Potentially crashing this function trying to open a delimiter-separated value file (dsv)
 %   d = all cells from input delimiter-separate value file (without header)
 %   N = number of columns
     
-    emptyCells = find(cellfun(@(y) isempty(y), d{1}));
-    % N = number of columns
-    % so if any index-1 of the empty cells equals to the number of columns,
-    % this means that the empty cell is at the end of a line and potentially
-    % crashing this function trying to open a delimiter-separated value file
-    % (dsv)
+    emptyCellIndex = find(cellfun(@(y) isempty(y), d{1}));
     
-    illegalEmptyCells = (emptyCells-1)/N == round((emptyCells-1)/N);
-    illegalEmptyCells = emptyCells(illegalEmptyCells);
+    illegalEmptyCells = mod(emptyCellIndex,N) == 1;
+    illegalEmptyCells = emptyCellIndex(illegalEmptyCells);
 
 end
