@@ -210,6 +210,16 @@ if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantificati
 	x.Q.bUseBasilQuantification = false;
 end
 
+% Manage absent M0
+if ~x.modules.asl.ApplyQuantification(5) && ~xASL_exist(x.P.Path_M0) && ~strcmp(x.Q.M0, 'Absent')
+    warning('M0 division was disabled & M0 missing, setting M0 to "absent"');
+    x.Q.M0 = 'Absent';
+end
+
+if strcmp(x.Q.M0, 'Absent')
+    x.modules.asl.ApplyQuantification([2, 4, 5]) = 0;
+end
+
 
 %% E2. Define sequence (educated guess based on the Q field)
 x = xASL_adm_DefineASLSequence(x);
