@@ -444,7 +444,7 @@ end
 %% 6    Process M0
 iState = 6;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
-        if xASL_exist(x.P.Path_M0,'file')
+        if xASL_exist(x.P.Path_M0,'file') || strcmp(x.Q.M0, 'Absent')
 
             xASL_wrp_ProcessM0(x);
 
