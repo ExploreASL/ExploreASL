@@ -29,29 +29,66 @@ function [x] = xASL_init_checkDatasetRoot(x)
         x.dir = struct;
     end
 
+    % Track if a valid path was provided
+    validPath = true;
+
     % Check if user correctly inserted a dataset root directory
-    if exist(x.opts.DatasetRoot,'dir')
-        [x] = xASL_init_DetermineRequiredPaths(x);
-    elseif exist(x.opts.DatasetRoot,'file')
-        % Files are no longer supported for the dataset root directory
-        error('You provided a descriptive JSON or another file. We only allow paths to the dataset root directory...');
+    % Trying to fix incorrectly specified files
+    [fPath, fFile, fExt] = fileparts(x.opts.DatasetRoot);
+    if strcmp(fExt, '.json')
+        warning([fFile fExt ' file specified, should be dataset root instead, trying to fix']);
+        x.opts.DatasetRoot = fPath;
+    elseif ~isempty(fExt)
+        % Files are not supported for the dataset root directory
+        warning('You provided a file. ExploreASL requires a path to the dataset root directory...');
+        validPath = false;
+    end
+
+    % Trying to fix incorrectly specified subdirectories
+    % (note that this can depend on the above file check, e.g., in the case of /derivatives/ExploreASL/dataPar.json
+    % so this should not be an elseif statement)
+    [fPath, fSubFolder] = fileparts(x.opts.DatasetRoot);
+    switch fSubFolder
+        case 'sourcedata'
+            warning('sourcedata directory specified, should be dataset root instead, trying to fix');
+            x.opts.DatasetRoot = fPath;
+        case 'rawdata'
+            warning('rawdata directory specified, should be dataset root instead, trying to fix');
+            x.opts.DatasetRoot = fPath;
+        case 'derivaties'
+            warning('derivatives directory specified, should be dataset root instead, trying to fix');
+            x.opts.DatasetRoot = fPath;
+        case 'ExploreASL'
+            [fPath, fFolder] = fileparts(fPath);
+            if strcmp(fFolder, 'derivatives')
+                warning('derivatives/ExploreASL directory specified, should be dataset root instead, trying to fix');
+                x.opts.DatasetRoot = fileparts(fPath);
+            end
+    end
+
+    % Check if the user inserted a directory or file which does not exist
+    if isempty(x.opts.DatasetRoot)
+        warning('Dataset root directory was not specified...');
+        validPath = false;
+    elseif ~exist(x.opts.DatasetRoot, 'dir')
+        warning('Dataset root directory did not exist...');
+        validPath = false;
     else
-        % Check if the user inserted a directory or file which does not exist
-        if ~isempty(x.opts.DatasetRoot)
-            warning('Dataset root directory does not exist...');
-        end
-        if x.opts.bProcessData || x.opts.bImportData
-            % Give back a warning that the user tried to import or process but neither a correct dataset root nor a dataPar.json that exists was used
-            warning('You are trying to import or process a dataset, but the input parameters are not correct. ExploreASL will only be initialized...');
-            x.opts.bProcessData = 0;
-            x.opts.bImportData = 0;
-            x.opts.bLoadData = false;
-            x.opts.bProcess = [0 0 0];
-            x.opts.bImport = [0 0 0];
-        end
+        % Define the other paths
+        x = xASL_init_DetermineRequiredPaths(x);
+    end    
+
+    if ~validPath && (x.opts.bProcessData || x.opts.bImportData)
+        % Give back a warning that the user tried to import or process but neither a correct dataset root nor a dataPar.json that exists was used
+        warning('You are trying to import or process a dataset, but the input parameters are not correct. ExploreASL will only be initialized...');
+        x.opts.bProcessData = 0;
+        x.opts.bImportData = 0;
+        x.opts.bLoadData = false;
+        x.opts.bProcess = [0 0 0];
+        x.opts.bImport = [0 0 0];
     end
     
-    % Try to find "dir" fields that were not found above
+    % Set defaults for "dir" fields
     if ~isfield(x.dir,'sourceStructure')
         x.dir.sourceStructure = '';
     end
