@@ -31,6 +31,8 @@ PathJSON = fullfile(Fpath, [Ffile '.json']);
 
 %% Parse & process M0 options
 
+PathM0 = fullfile(Fpath, 'M0.nii');
+
 JSON = spm_jsonread(PathJSON);
 if isfield(JSON, 'M0Type')
     switch JSON.M0Type
@@ -44,7 +46,8 @@ if isfield(JSON, 'M0Type')
                M0Index = find(strcmp(TSV, 'm0scan'))-1;
                if ~isempty(M0Index)
 				   % If specified to remove the Dummy ASL scans, then remove them while splitting ASL to ASL and M0
-				   if isfield(JSON,'DummyScanPositionInASL4D') && ~isempty(JSON.DummyScanPositionInASL4D)
+				   fprintf('%s\n', '"M0Type":"Included", splitting ASL and M0 NIfTIs');
+                   if isfield(JSON,'DummyScanPositionInASL4D') && ~isempty(JSON.DummyScanPositionInASL4D)
 					   xASL_io_SplitASL(pathASLNifti, M0Index,JSON.DummyScanPositionInASL4D);
 				   else
 					   xASL_io_SplitASL(pathASLNifti, M0Index);
@@ -58,7 +61,6 @@ if isfield(JSON, 'M0Type')
         %% Option 2. Separate
 		% M0 image is already provided as a separate image - checks for its existence
         case 'Separate'
-            PathM0 = fullfile(Fpath, 'M0.nii');
 			if ~xASL_exist(fullfile(PathM0))
                 warning(['Missing: ' PathM0]);
 			else
@@ -79,17 +81,35 @@ if isfield(JSON, 'M0Type')
         %% Option 4. Absent
         % (in this case we use the control image as pseudo-M0, 
         % which happens in xASL_wrp_Resample
-        case {'use_control_as_m0', 'Absent'}
-            if isfield(JSON, 'BackgroundSuppression')
+        case {'use_control_as_m0', 'UseControlAsM0'}
                 JSON.M0 = 'UseControlAsM0';
 				JSON = rmfield(JSON,'M0Type');
                 spm_jsonwrite(PathJSON, JSON);
-            else
+            if isfield(JSON, 'BackgroundSuppression')
                 warning(['Missing field backgroundSuppression in ' PathJSON]);
+            end
+        case 'Absent'
+            NIfTI_ASL = xASL_io_ReadNifti(pathASLNifti);
+            if ~xASL_exist(fullfile(PathM0)) && size(NIfTI_ASL.dat,4)>1 && isfield(JSON, 'BackgroundSuppression') && ~JSON.BackgroundSuppression
+                % background suppression was off, so we check if we have
+                % multiple ASL volumes for using mean control as pseudo-M0
+                warning('Multiple ASL volumes detected, setting M0 to "UseControlAsM0" instead of "Absent"');
+                JSON.M0 = 'UseControlAsM0';
+                JSON = rmfield(JSON,'M0Type');
+                spm_jsonwrite(PathJSON, JSON);
+            else
+                JSON.M0 = 'Absent';
+				JSON = rmfield(JSON,'M0Type');
+                spm_jsonwrite(PathJSON, JSON);
+                
+                if xASL_exist(fullfile(PathM0))
+                    warning('"M0Type":"Absent" but separate M0 NIfTI detected, consider setting "M0Type":"Separate"');
+                end
+
             end
         otherwise
             error(['Invalid M0Type in ' PathJSON]);
-    end
+        end
 else
     warning(['Field M0Type missing in ' PathJSON]);
 end
