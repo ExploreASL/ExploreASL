@@ -95,7 +95,14 @@ if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
 end
 
 if ~isfield(x.modules.asl,'bRegistrationContrast') || isempty(x.modules.asl.bRegistrationContrast)
-    x.modules.asl.bRegistrationContrast = 2; % register M0-T1w first, then CBF-pGM if sCoV<0.667
+    NIfTI_ASL = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
+    if size(NIfTI_ASL.dat, 4)==1
+        x.modules.asl.bRegistrationContrast = 1; 
+        % With only a single volume, we assume this is a CBF image/PWI
+        % contrast
+    else
+        x.modules.asl.bRegistrationContrast = 2; % register M0-T1w first, then CBF-pGM if sCoV<0.667
+    end
 end
 
 if ~isfield(x.modules.asl,'bAffineRegistration') || isempty(x.modules.asl.bAffineRegistration)
@@ -208,10 +215,12 @@ end
 StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
 StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
 
-if StructuralRawExist && ~StructuralDerivativesExist
+if ~x.modules.asl.bUseMNIasDummyStructural && StructuralRawExist && ~StructuralDerivativesExist
     error('Please run structural module first');
-elseif ~StructuralRawExist && ~StructuralDerivativesExist
-    if x.modules.asl.bUseMNIasDummyStructural
+elseif ~x.modules.asl.bUseMNIasDummyStructural
+    error('Structural scans missing, consider enabling "x.modules.asl.bUseMNIasDummyStructural"');
+    
+elseif x.modules.asl.bUseMNIasDummyStructural
 
         fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
         IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
@@ -268,9 +277,6 @@ elseif ~StructuralRawExist && ~StructuralDerivativesExist
         x.mutex.Unlock();
         x.mutex.Root = oldRoot;
         x.mutex.Lock(oldID);
-    else
-        error('Structural data missing, skipping ASL module; if this is undesired, set x.modules.asl.bUseMNIasDummyStructural=1');
-    end
 end
 
 %% F. Smooth T1 deformation field into ASL resolution
