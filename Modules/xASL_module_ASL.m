@@ -192,13 +192,13 @@ end
 
 %% E1. Default quantification parameters in the Q field
 if ~isfield(x.modules.asl,'ApplyQuantification') || isempty(x.modules.asl.ApplyQuantification)
-    x.modules.asl.ApplyQuantification = [1 1 1 1 1]; % by default we perform scaling/quantification in all steps
-elseif length(x.modules.asl.ApplyQuantification)>5
+    x.modules.asl.ApplyQuantification = [1 1 1 1 1 1]; % by default we perform scaling/quantification in all steps
+elseif length(x.modules.asl.ApplyQuantification)>6
     warning('x.modules.asl.ApplyQuantification had too many parameters');
-    x.modules.asl.ApplyQuantification = x.modules.asl.ApplyQuantification(1:5);
-elseif length(x.modules.asl.ApplyQuantification)<5
+    x.modules.asl.ApplyQuantification = x.modules.asl.ApplyQuantification(1:6);
+elseif length(x.modules.asl.ApplyQuantification)<6
     warning('x.modules.asl.ApplyQuantification had too few parameters, using default 1');
-    x.modules.asl.ApplyQuantification(length(x.modules.asl.ApplyQuantification)+1:5) = 1;
+    x.modules.asl.ApplyQuantification(length(x.modules.asl.ApplyQuantification)+1:6) = 1;
 end
 
 if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
@@ -217,7 +217,12 @@ if ~x.modules.asl.ApplyQuantification(5) && ~xASL_exist(x.P.Path_M0) && ~strcmp(
 end
 
 if strcmp(x.Q.M0, 'Absent')
+    fprintf('%s\n', 'x.Q.M0="Absent" so disabling M0 processing');
     x.modules.asl.ApplyQuantification([2, 4, 5]) = 0;
+    
+    if xASL_exist(x.P.Path_M0)
+        warning('Ignoring existing M0 file because of x.Q.M0="Absent"');
+    end
 end
 
 
@@ -454,7 +459,11 @@ end
 %% 6    Process M0
 iState = 6;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
-        if xASL_exist(x.P.Path_M0,'file') || strcmp(x.Q.M0, 'Absent')
+        if xASL_exist(x.P.Path_M0,'file') && strcmp(x.Q.M0, 'Absent')
+            warning('M0 NIfTI detected, but skipping M0 processing because x.Q.M0="Absent"');
+        elseif strcmp(x.Q.M0, 'Absent')
+            fprintf('%s\n', 'x.Q.M0="Absent", skipping M0 processing');
+        elseif xASL_exist(x.P.Path_M0,'file')
 
             xASL_wrp_ProcessM0(x);
 
@@ -468,6 +477,7 @@ elseif  xASL_exist(x.P.Path_M0,'file')
 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
 elseif  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);
 end
+
 
 %% -----------------------------------------------------------------------------
 %% 7    Create analysis mask
@@ -489,6 +499,7 @@ else
     xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
     if  bO;fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);end
 end
+
 
 %% -----------------------------------------------------------------------------
 %% 8    Quantification
