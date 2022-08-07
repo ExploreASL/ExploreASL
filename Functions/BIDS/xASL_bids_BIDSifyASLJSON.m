@@ -247,8 +247,21 @@ end
 %% 9. Background suppression check
 % BSup sanity check
 if ~isfield(jsonOut,'BackgroundSuppression')
-	warning('BackgroundSuppression field should be define in BIDS, setting the default to false');
-	jsonOut.BackgroundSuppression = false;
+	warning('BackgroundSuppression field should be defined in BIDS, trying to fix this');
+	if isfield(jsonOut,'BackgroundSuppressionNumberPulses')
+		fprintf('%s\n', 'BackgroundSuppressionNumberPulses field detected, setting BackgroundSuppression to true');
+		jsonOut.BackgroundSuppression = true;
+    elseif strcmp(jsonOut.MRAcquisitionType, '3D') || ~isempty(strfind(jsonOut.PulseSequenceType, '3D'))
+		fprintf('%s\n', '3D acquisition detected, setting BackgroundSuppression to true');
+		jsonOut.BackgroundSuppression = true;        
+    else
+		fprintf('%s\n', 'Setting BackgroundSuppression to false');
+		jsonOut.BackgroundSuppression = false;
+    end
+elseif strcmp(jsonOut.MRAcquisitionType, '3D') || ~isempty(strfind(jsonOut.PulseSequenceType, '3D'))
+    if ~jsonOut.BackgroundSuppression
+        warning('BackgroundSuppression set to off, which is unlikely for a 3D acquisition');
+    end
 end
 
 if jsonOut.BackgroundSuppression == false
