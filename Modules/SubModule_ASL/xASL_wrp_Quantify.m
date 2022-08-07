@@ -155,7 +155,11 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Prepare M0
-if isnumeric(x.Q.M0)
+if x.modules.asl.ApplyQuantification(5)==0
+    % M0 division disabled, so we use a dummy M0 value only
+    M0_im = NaN;
+
+elseif isnumeric(x.Q.M0)
         % Single value per scanner
         % In this case we assume that this nifti value has been properly acquired,
         % does not need any corrections, and whole ASL PWI will be divided by this single value.
@@ -443,7 +447,7 @@ end
 if x.modules.asl.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
     if MeanCBF>666 % this is the average including air
-        CBF = CBF .* (10./MeanCBF);
+        CBF = CBF .* (10./MeanCBF); % protection against extremely high values
         warning('M0 division was disabled & CBF image had too high values');
         fprintf('%s\n',['mean whole image CBF normalized from ' xASL_num2str(MeanCBF) ' to 10 mL/100g/min']);
     end
