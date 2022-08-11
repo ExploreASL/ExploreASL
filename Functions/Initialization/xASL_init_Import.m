@@ -40,6 +40,12 @@ function x = xASL_init_Import(x)
     % Basic parameter checks
     x = xASL_imp_BasicParameterChecks(x);
 
+    % Create a date and time stamp when import started, for logging etc
+    % throughout the import iterations
+    dateTime = char(datetime);
+    dateTime = strrep(dateTime, ' ', '_');
+    x.modules.import.dateTime = strrep(dateTime, ':', '-');
+
     % Initialize the import setup
 	x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
         
