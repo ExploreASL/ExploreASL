@@ -99,7 +99,7 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
         x = xASL_wrp_BIDS2Legacy(x, 1);
         x.mutex.AddState(StateName{iState});
     elseif x.mutex.HasState(StateName{1})
-        fprintf('BIDS2Legacy was run before...   \n');
+        fprintf('%s\n', ['BIDS2Legacy already done, skipping ' x.SUBJECT '...']);
     end
     
     %% Clean-Up
