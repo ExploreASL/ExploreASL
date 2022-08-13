@@ -221,9 +221,6 @@ else
 	end
 end
 
-%if ~isempty(lineNumberEmpty)
-%    warning(['Found empty cells in ' f ' on lines ' num2str(lineNumberEmpty+1)]);
-%end
 
 if ~isempty(lineNumberIncorrectLength)
 	warning(['Found lines with an incorrect length in ' f ' on lines ' num2str(lineNumberIncorrectLength)]);
