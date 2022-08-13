@@ -154,7 +154,7 @@ if ~isempty(ListASL4D)
         fprintf('M0 parsed for subject %s image %s ...\n', SubjectID, currentNifti);
     end
 else
-    warning('No ASL4D file found in %s...', x.dir.xASLDerivatives);
+    warning(['When parsing M0: no ASL4D.nii found for ' SubjectID 'in ' x.dir.xASLDerivatives '...']);
 end
 
 
