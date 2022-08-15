@@ -28,7 +28,7 @@ function [ScaleImage, CBF, ATT] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber,
 %                    (if x.modules.asl.ApplyQuantification(3))
 %              4.    {{Manufacturer-specific scalefactor}} (if x.modules.asl.ApplyQuantification(1) -> future move to dcm2niiX stage)
 %              Finally, we:
-%              5.    Divide PWI/M0 (if x.modules.asl.ApplyQuantification(5))
+%              5.    Divide PWI/M0 (if x.modules.asl.ApplyQuantification(5)) & apply all scaling (if x.modules.asl.ApplyQuantification(6))
 %              6.    Print parameters used
 %
 %              Note that the output always goes to the CBF image (in the
@@ -52,7 +52,7 @@ if nargin < 4
 	error('Four input parameters required.');
 end
 
-if  xASL_stat_SumNan(M0_im(:))==0
+if  xASL_stat_SumNan(M0_im(:))==0 && x.modules.asl.ApplyQuantification(5)
     error('Empty M0 image, something went wrong in M0 processing');
 end
 
@@ -223,7 +223,11 @@ else
 end
 
 %% 6    Apply quantification
-CBF = PWI.*ScaleImage;
+if x.modules.asl.ApplyQuantification(6)
+    CBF = PWI.*ScaleImage;
+else
+    CBF = PWI;
+end
 
 CBF = xASL_stat_MeanNan(CBF, 4);
 
