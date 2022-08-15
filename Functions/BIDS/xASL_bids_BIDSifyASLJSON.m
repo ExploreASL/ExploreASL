@@ -249,15 +249,20 @@ end
 if ~isfield(jsonOut,'BackgroundSuppression')
 	warning('BackgroundSuppression field should be defined in BIDS, trying to fix this');
 	if isfield(jsonOut,'BackgroundSuppressionNumberPulses')
-		fprintf('%s\n', 'BackgroundSuppressionNumberPulses field detected, setting BackgroundSuppression to true');
-		jsonOut.BackgroundSuppression = true;
+		if jsonOut.BackgroundSuppressionNumberPulses > 0
+			fprintf('%s\n', 'BackgroundSuppressionNumberPulses > 0 field detected, setting BackgroundSuppression to true');
+			jsonOut.BackgroundSuppression = true;
+		else
+			fprintf('%s\n', 'BackgroundSuppressionNumberPulses == 0 field detected, setting BackgroundSuppression to false');
+			jsonOut.BackgroundSuppression = false;
+		end
     elseif strcmp(jsonOut.MRAcquisitionType, '3D') || ~isempty(strfind(jsonOut.PulseSequenceType, '3D'))
 		fprintf('%s\n', '3D acquisition detected, setting BackgroundSuppression to true');
 		jsonOut.BackgroundSuppression = true;        
     else
 		fprintf('%s\n', 'Setting BackgroundSuppression to false');
 		jsonOut.BackgroundSuppression = false;
-    end
+	end
 elseif strcmp(jsonOut.MRAcquisitionType, '3D') || ~isempty(strfind(jsonOut.PulseSequenceType, '3D'))
     if ~jsonOut.BackgroundSuppression
         warning('BackgroundSuppression set to off, which is unlikely for a 3D acquisition');

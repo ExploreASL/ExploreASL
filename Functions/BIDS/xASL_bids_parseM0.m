@@ -82,31 +82,29 @@ if isfield(JSON, 'M0Type')
         % (in this case we use the control image as pseudo-M0, 
         % which happens in xASL_wrp_Resample
         case {'use_control_as_m0', 'UseControlAsM0'}
-                JSON.M0 = 'UseControlAsM0';
-				JSON = rmfield(JSON,'M0Type');
-                spm_jsonwrite(PathJSON, JSON);
-            if isfield(JSON, 'BackgroundSuppression')
-                warning(['Missing field backgroundSuppression in ' PathJSON]);
-            end
-        case 'Absent'
-            NIfTI_ASL = xASL_io_ReadNifti(pathASLNifti);
-            if ~xASL_exist(fullfile(PathM0)) && size(NIfTI_ASL.dat,4)>1 && isfield(JSON, 'BackgroundSuppression') && ~JSON.BackgroundSuppression
-                % background suppression was off, so we check if we have
-                % multiple ASL volumes for using mean control as pseudo-M0
-                warning('Multiple ASL volumes detected, setting M0 to "UseControlAsM0" instead of "Absent"');
-                JSON.M0 = 'UseControlAsM0';
-                JSON = rmfield(JSON,'M0Type');
-                spm_jsonwrite(PathJSON, JSON);
-            else
-                JSON.M0 = 'Absent';
-				JSON = rmfield(JSON,'M0Type');
-                spm_jsonwrite(PathJSON, JSON);
-                
-                if xASL_exist(fullfile(PathM0))
+			JSON.M0 = 'UseControlAsM0';
+			JSON = rmfield(JSON,'M0Type');
+			spm_jsonwrite(PathJSON, JSON);
+			if isfield(JSON, 'BackgroundSuppression')
+				warning(['Missing field backgroundSuppression in ' PathJSON]);
+			end
+		case 'Absent'
+			JSON.M0 = 'Absent';
+			JSON = rmfield(JSON,'M0Type');
+				
+			if xASL_exist(fullfile(PathM0))
                     warning('"M0Type":"Absent" but separate M0 NIfTI detected, consider setting "M0Type":"Separate"');
-                end
-
-            end
+			elseif isfield(JSON, 'BackgroundSuppression') && ~JSON.BackgroundSuppression
+				NIfTI_ASL = xASL_io_ReadNifti(pathASLNifti);
+				if size(NIfTI_ASL.dat,4)>1 &&
+					% background suppression was off, so we check if we have
+					% multiple ASL volumes for using mean control as pseudo-M0
+					warning('Multiple ASL volumes detected, setting M0 to "UseControlAsM0" instead of "Absent"');
+					JSON.M0 = 'UseControlAsM0';
+				end
+			end
+			
+			spm_jsonwrite(PathJSON, JSON);
         otherwise
             error(['Invalid M0Type in ' PathJSON]);
         end

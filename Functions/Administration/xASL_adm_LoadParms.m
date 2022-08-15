@@ -193,8 +193,8 @@ if ~isfield(x.Q,'M0')
     elseif isfield(Parms,'BackgroundSuppressionNumberPulses') && Parms.BackgroundSuppressionNumberPulses==0
         x.Q.M0 = 'UseControlAsM0';
         if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.Q.M0]); end
-    elseif strcmp(x.Q.M0, 'Absent')
-    else
+	else
+		x.Q.M0 = 'Absent';
         if bVerbose; fprintf('%s\n','M0 parameter was missing, OR didnt find M0 scan, AND BackgroundSuppressionNumberPulses wasnt set to 0...'); end
     end
 end
