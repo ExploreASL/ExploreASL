@@ -215,13 +215,17 @@ end
 StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
 StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
 
-if ~x.modules.asl.bUseMNIasDummyStructural && StructuralRawExist && ~StructuralDerivativesExist
-    error('Please run structural module first');
-elseif ~x.modules.asl.bUseMNIasDummyStructural
-    error('Structural scans missing, consider enabling "x.modules.asl.bUseMNIasDummyStructural"');
-    
-elseif x.modules.asl.bUseMNIasDummyStructural
-
+% In case that we don't have the structural derived data, we need to check the reason
+if ~StructuralDerivativesExist
+	
+	if StructuralRawExist
+		% Either the Structural data are there, but the population module wasn't run
+		error('Please run structural module first');
+	elseif ~x.modules.asl.bUseMNIasDummyStructural
+		% We don't have the structural data and the DummyMNI mode wasn't activated
+		error('Structural scans missing, consider enabling "x.modules.asl.bUseMNIasDummyStructural"');
+	else
+		% No structural data, but the DummyMNI mode was activated
         fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
         IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
 
@@ -277,6 +281,7 @@ elseif x.modules.asl.bUseMNIasDummyStructural
         x.mutex.Unlock();
         x.mutex.Root = oldRoot;
         x.mutex.Lock(oldID);
+	end
 end
 
 %% F. Smooth T1 deformation field into ASL resolution
