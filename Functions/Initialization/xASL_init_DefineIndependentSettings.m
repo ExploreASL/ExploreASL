@@ -42,11 +42,11 @@ try
 
     if isempty(x.Version)
         warning('Unknown ExploreASL version number');
-        x.Version = 'VERSION_unknown';
+        x.Version = '0.0.0 VERSION_unknown';
     end
 catch
     warning('Could not obtain ExploreASL version, version file missing');
-    x.Version = 'VERSION_File_Missing';
+    x.Version = '0.0.0 VERSION_File_Missing';
 end
 
 
