@@ -39,7 +39,8 @@ function [x] = xASL_init_checkDatasetRoot(x)
         warning([fFile fExt ' incorrectly provided as the dataset-root input. ExploreASL requires the path of the dataset root directory... Using ' fPath ' instead.']);
         x.opts.DatasetRoot = fPath;
     elseif ~isempty(fExt) && ~exist(x.opts.DatasetRoot, 'dir')
-        % Files are not supported as dataset root directory. There's a directory check to verify that we're not falsely splitting directory name as a filename+extension.
+        % Files are not supported as dataset root directory. If the provided path does not exist as a directory (so it's potentially a file) and it has an extension, then we report that a file is incorrectly provided.
+		% Note that a directory with '.' in the name can be incorrectly identified as having an 'extension' and confused with a file - therefore an extra check is presented here.
         warning([fFile fExt ' incorrectly provided as the dataset-root input. ExploreASL requires the path of the dataset root directory...']);
         bValidPath = false;
     end
