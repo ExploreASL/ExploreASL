@@ -36,11 +36,11 @@ function [x] = xASL_init_checkDatasetRoot(x)
     % Trying to fix incorrectly specified files
     [fPath, fFile, fExt] = fileparts(x.opts.DatasetRoot);
     if strcmp(fExt, '.json')
-        warning(['Path to a file ' fFile fExt ' provided as the dataset-root input. Using ' fPath ' instead.']);
+        warning([fFile fExt ' incorrectly provided as the dataset-root input. ExploreASL requires the path of the dataset root directory... Using ' fPath ' instead.']);
         x.opts.DatasetRoot = fPath;
     elseif ~isempty(fExt)
-        % Files are not supported for the dataset root directory
-        warning(['Path to a file ' fFile fExt ' provided as the dataset-root input. ExploreASL requires a path to the dataset root directory...']);
+        % Files are not supported as dataset root directory
+        warning([fFile fExt ' incorrectly provided as the dataset-root input. ExploreASL requires the path of the dataset root directory...']);
         bValidPath = false;
     end
 
@@ -68,7 +68,7 @@ function [x] = xASL_init_checkDatasetRoot(x)
 		end
 	end
 
-    % Check if the user provided root directory path is not empty and the directory exists
+    % Check if the user provided any path, and if this path exists
     if isempty(x.opts.DatasetRoot)
         warning('Dataset root directory is not specified...');
         bValidPath = false;
