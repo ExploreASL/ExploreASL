@@ -44,6 +44,9 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
     
     % Print feedback
     xASL_adm_BreakString('BIDS to ExploreASL LEGACY CONVERSION');
+	
+	% Update paths
+	x = xASL_imp_UpdateDatasetRoot(x);
     
     if ~isfield(x,'dir')
         error('Missing directories field...');
