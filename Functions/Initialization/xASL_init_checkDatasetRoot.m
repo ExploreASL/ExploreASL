@@ -38,8 +38,8 @@ function [x] = xASL_init_checkDatasetRoot(x)
     if strcmp(fExt, '.json')
         warning([fFile fExt ' incorrectly provided as the dataset-root input. ExploreASL requires the path of the dataset root directory... Using ' fPath ' instead.']);
         x.opts.DatasetRoot = fPath;
-    elseif ~isempty(fExt)
-        % Files are not supported as dataset root directory
+    elseif ~isempty(fExt) && ~exist(x.opts.DatasetRoot, 'dir')
+        % Files are not supported as dataset root directory. There's a directory check to verify that we're not falsely splitting directory name as a filename+extension.
         warning([fFile fExt ' incorrectly provided as the dataset-root input. ExploreASL requires the path of the dataset root directory...']);
         bValidPath = false;
     end
@@ -48,8 +48,8 @@ function [x] = xASL_init_checkDatasetRoot(x)
     % (note that this can depend on the above file check, e.g., in the case of /derivatives/ExploreASL/dataPar.json
     % so this should not be an elseif statement)
 	if bValidPath
-		[fPath, fSubFolder] = fileparts(x.opts.DatasetRoot);
-		switch fSubFolder
+		[fPath, fSubFolder, fExt] = fileparts(x.opts.DatasetRoot);
+		switch [fSubFolder fExt]
 			case 'sourcedata'
 				warning(['sourcedata directory provided as the dataset-root input. Using ' fPath ' instead.']);
 				x.opts.DatasetRoot = fPath;
