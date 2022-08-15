@@ -30,55 +30,57 @@ function [x] = xASL_init_checkDatasetRoot(x)
     end
 
     % Track if a valid path was provided
-    validPath = true;
+    bValidPath = true;
 
     % Check if user correctly inserted a dataset root directory
     % Trying to fix incorrectly specified files
     [fPath, fFile, fExt] = fileparts(x.opts.DatasetRoot);
     if strcmp(fExt, '.json')
-        warning([fFile fExt ' file specified, should be dataset root instead, trying to fix']);
+        warning(['Path to a file ' fFile fExt ' provided as the dataset-root input. Using ' fPath ' instead.']);
         x.opts.DatasetRoot = fPath;
     elseif ~isempty(fExt)
         % Files are not supported for the dataset root directory
-        warning('You provided a file. ExploreASL requires a path to the dataset root directory...');
-        validPath = false;
+        warning(['Path to a file ' fFile fExt ' provided as the dataset-root input. ExploreASL requires a path to the dataset root directory...']);
+        bValidPath = false;
     end
 
     % Trying to fix incorrectly specified subdirectories
     % (note that this can depend on the above file check, e.g., in the case of /derivatives/ExploreASL/dataPar.json
     % so this should not be an elseif statement)
-    [fPath, fSubFolder] = fileparts(x.opts.DatasetRoot);
-    switch fSubFolder
-        case 'sourcedata'
-            warning('sourcedata directory specified, should be dataset root instead, trying to fix');
-            x.opts.DatasetRoot = fPath;
-        case 'rawdata'
-            warning('rawdata directory specified, should be dataset root instead, trying to fix');
-            x.opts.DatasetRoot = fPath;
-        case 'derivaties'
-            warning('derivatives directory specified, should be dataset root instead, trying to fix');
-            x.opts.DatasetRoot = fPath;
-        case 'ExploreASL'
-            [fPath, fFolder] = fileparts(fPath);
-            if strcmp(fFolder, 'derivatives')
-                warning('derivatives/ExploreASL directory specified, should be dataset root instead, trying to fix');
-                x.opts.DatasetRoot = fileparts(fPath);
-            end
-    end
+	if bValidPath
+		[fPath, fSubFolder] = fileparts(x.opts.DatasetRoot);
+		switch fSubFolder
+			case 'sourcedata'
+				warning(['sourcedata directory provided as the dataset-root input. Using ' fPath ' instead.']);
+				x.opts.DatasetRoot = fPath;
+			case 'rawdata'
+				warning(['rawdata directory provided as the dataset-root input. Using ' fPath ' instead.']);
+				x.opts.DatasetRoot = fPath;
+			case 'derivatives'
+				warning(['derivatives directory provided as the dataset-root input. Using ' fPath ' instead.']);
+				x.opts.DatasetRoot = fPath;
+			case 'ExploreASL'
+				[fPath, fFolder] = fileparts(fPath);
+				if strcmp(fFolder, 'derivatives')
+					warning(['derivatives/ExploreASL directory provided as the dataset-root input. Using ' fPath ' instead.']);
+					x.opts.DatasetRoot = fileparts(fPath);
+				end
+		end
+	end
 
-    % Check if the user inserted a directory or file which does not exist
+    % Check if the user provided root directory path is not empty and the directory exists
     if isempty(x.opts.DatasetRoot)
-        warning('Dataset root directory was not specified...');
-        validPath = false;
+        warning('Dataset root directory is not specified...');
+        bValidPath = false;
     elseif ~exist(x.opts.DatasetRoot, 'dir')
-        warning('Dataset root directory did not exist...');
-        validPath = false;
+        warning('Dataset root directory does not exist...');
+        bValidPath = false;
     else
         % Define the other paths
         x = xASL_init_DetermineRequiredPaths(x);
     end    
 
-    if ~validPath && (x.opts.bProcessData || x.opts.bImportData)
+    if ~bValidPath && (x.opts.bProcessData || x.opts.bImportData)
         % Give back a warning that the user tried to import or process but neither a correct dataset root nor a dataPar.json that exists was used
         warning('You are trying to import or process a dataset, but the input parameters are not correct. ExploreASL will only be initialized...');
         x.opts.bProcessData = 0;
