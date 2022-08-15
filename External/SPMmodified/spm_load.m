@@ -194,6 +194,12 @@ else
 			lineD = textscan(S((indexEol(iLine-1)+1):indexEol(iLine)),'%s','Delimiter',delim);
 		end
 		
+		% Textscan ignores a last empty cell. If there's an end-of-line just after the last delimiter, then it skips the last cell and it doesn't return it as an empty cell
+		% So it has to be added manually in such cases
+		if S(indexEol(iLine)-1) == delim
+			lineD{1}{end+1,1} = '';
+		end
+		
 		% Count all cells and empty cells
 		emptyCellCount = sum(cellfun(@(y) isempty(y), lineD{1}));
 		cellCountPerLine = length(lineD{1});
