@@ -459,10 +459,12 @@ end
 %% 6    Process M0
 iState = 6;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
-        if xASL_exist(x.P.Path_M0,'file') && strcmp(x.Q.M0, 'Absent')
-            warning('M0 NIfTI detected, but skipping M0 processing because x.Q.M0="Absent"');
-        elseif strcmp(x.Q.M0, 'Absent')
-            fprintf('%s\n', 'x.Q.M0="Absent", skipping M0 processing');
+        if strcmp(x.Q.M0, 'Absent')
+			if xASL_exist(x.P.Path_M0,'file')
+				warning('M0 NIfTI detected, but skipping M0 processing because x.Q.M0="Absent"');
+			else
+				fprintf('%s\n', 'x.Q.M0="Absent", skipping M0 processing');
+			end
         elseif xASL_exist(x.P.Path_M0,'file')
 
             xASL_wrp_ProcessM0(x);
