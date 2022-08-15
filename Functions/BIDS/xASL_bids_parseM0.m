@@ -96,7 +96,7 @@ if isfield(JSON, 'M0Type')
                     warning('"M0Type":"Absent" but separate M0 NIfTI detected, consider setting "M0Type":"Separate"');
 			elseif isfield(JSON, 'BackgroundSuppression') && ~JSON.BackgroundSuppression
 				NIfTI_ASL = xASL_io_ReadNifti(pathASLNifti);
-				if size(NIfTI_ASL.dat,4)>1 &&
+				if size(NIfTI_ASL.dat,4)>1
 					% background suppression was off, so we check if we have
 					% multiple ASL volumes for using mean control as pseudo-M0
 					warning('Multiple ASL volumes detected, setting M0 to "UseControlAsM0" instead of "Absent"');
