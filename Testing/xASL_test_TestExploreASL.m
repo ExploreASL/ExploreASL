@@ -706,15 +706,15 @@ end
 switch RunMethod
     case 1
         % Run ExploreASL serially (can we run screen from here? or run matlab in background, linux easy)
-        ExploreASL(dirBIDS, 0, 0, 1, false);
+        ExploreASL(dirBIDS, 0,  1, false);
     case 2
         % Run ExploreASl parallel (start new MATLAB instances)
         if isunix
             ScreenString = ['screen -dmS ' ScreenName ' nice -n 10 ' MatlabPath ' -nodesktop -nosplash -r '];
-            RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' dirBIDS ''',0,0,1,0);system([''screen -SX ' ScreenName ' kill'']);"'];
+            RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' dirBIDS ''',0,1,0);system([''screen -SX ' ScreenName ' kill'']);"'];
         else
             ScreenString = [MatlabPath ' -nodesktop -nosplash -r '];
-            RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' dirBIDS ''',0,0,1,0);system([''exit'']);"'];
+            RunExploreASLString = ['"cd(''' x.opts.MyPath ''');ExploreASL(''' dirBIDS ''',0,1,0);system([''exit'']);"'];
         end
         system([ScreenString RunExploreASLString ' &']);
     case 3
