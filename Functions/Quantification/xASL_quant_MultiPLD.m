@@ -54,6 +54,8 @@ end
 
 if  xASL_stat_SumNan(M0_im(:))==0 && x.modules.asl.ApplyQuantification(5)
     error('Empty M0 image, something went wrong in M0 processing');
+elseif xASL_stat_SumNan(M0_im(:))==0
+    warning('Weird M0 image detected');    
 end
 
 if nargin<5 || isempty(bUseBasilQuantification)
