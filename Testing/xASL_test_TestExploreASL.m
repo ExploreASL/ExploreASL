@@ -99,7 +99,7 @@ if nargin < 8 || isempty(bOverwrite)
 	bOverwrite = true;
 end
 
-if nargin < 9 || isempty(testDataUse)
+if nargin < 9 || isempty(testDataUsed)
 	testDataUsed = 0;
 end
 
@@ -359,8 +359,8 @@ Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
 
 if testDataUsed
     % TestDataSet detected
-    xASL_Copy(fullfile(TestDirDest,Dlist{1},'derivatives','ExploreASL','T1.nii'),fullfile(TestDirDest,'T1.nii'));
-    xASL_Copy(fullfile(TestDirDest,Dlist{1},'derivatives','ExploreASL','ASL_1','ASL4D.nii'),fullfile(TestDirDest,'ASL4D.nii'));
+    xASL_Copy(fullfile(TestDirDest,Dlist{1},'rawdata','sub-Sub1','anat','sub-Sub1_T1w.nii'),fullfile(TestDirDest,'T1.nii'));
+    xASL_Copy(fullfile(TestDirDest,Dlist{1},'rawdata','sub-Sub1','perf','sub-Sub1_asl.nii'),fullfile(TestDirDest,'ASL4D.nii'));
 else
     % Default
     xASL_Copy(fullfile(TestDirDest,Dlist{1},'derivatives','ExploreASL','001DM_1','T1.nii'),fullfile(TestDirDest,'T1.nii'));
