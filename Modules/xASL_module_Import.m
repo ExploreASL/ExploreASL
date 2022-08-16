@@ -163,7 +163,7 @@ function [result, x] = xASL_module_Import(x)
 	%% 3. Run the DCM2NIIX
     iState = 3;
     if x.opts.bImport(3) && ~x.mutex.HasState(StateName{3})
-        x = xASL_wrp_Deface(x);
+        xASL_wrp_Deface(x);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.bImport(3) && x.mutex.HasState(StateName{3})
         fprintf('DEFACE was run before...   \n');
