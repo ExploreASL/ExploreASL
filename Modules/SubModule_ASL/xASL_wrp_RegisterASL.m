@@ -218,13 +218,18 @@ StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_O
 % In case that we don't have the structural derived data, we need to check the reason
 if ~StructuralDerivativesExist
 	
-	if StructuralRawExist
+	if StructuralRawExist && ~x.modules.asl.bUseMNIasDummyStructural
 		% Either the Structural data are there, but the population module wasn't run
-		error('Please run structural module first');
+		error('Please run the structural module first');
 	elseif ~x.modules.asl.bUseMNIasDummyStructural
 		% We don't have the structural data and the DummyMNI mode wasn't activated
 		error('Structural scans missing, consider enabling "x.modules.asl.bUseMNIasDummyStructural"');
-	else
+    else
+        % DummyMNI mode was activated
+        if StructuralRawExist
+            warning('Requested to use MNI images as dummy structural images, even though structural rawdata exist');
+        end
+        
 		% No structural data, but the DummyMNI mode was activated
         fprintf('Missing structural scans, using ASL registration only instead, copying structural template as dummy files\n');
         IDmatrixPath = fullfile(x.D.MapsSPMmodifiedDir, 'Identity_Deformation_y_T1.nii');
