@@ -156,7 +156,7 @@ end
 x = ExploreASL;
 Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
 xASL_adm_BreakString('4. Test ExploreASL','=');
-LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, MatlabPath, x, Dlist);
+LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, MatlabPath, RunTimePath, x, Dlist);
 
 % ============================================================
 %% 5) Pause until all results exist (if running parallel in background)
@@ -640,7 +640,7 @@ end
 
 
 %% Test all individual test datasets
-function LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, MatlabPath, x, Dlist)
+function LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, MatlabPath, RunTimePath, x, Dlist)
 
 % Remove lock folders, useful for rerun when debugging
 LockFolders = xASL_adm_GetFileList(TestDirDest, '(?i)^locked$', 'FPListRec', [0 Inf], true);
