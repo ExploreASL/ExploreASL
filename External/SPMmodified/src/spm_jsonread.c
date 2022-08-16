@@ -175,7 +175,7 @@ static char * get_string(char *js, int start, int end) {
                     js[i] = 'X'; j+=5;
                     break;
                 default:
-                    mexPrintf("Unexpected backslash escape.");
+                    mexPrintf("spm_jsonread: Unexpected backslash escape.");/* ExploreASL hack - improved messages */
             }
         }
         else {
@@ -267,7 +267,7 @@ static char * valid_fieldname_hex(char *field) {
                 ma = mxCreateString((const char *)wr);
                 sts = mexCallMATLAB(1, &mx, 1, &ma, "dec2hex");
                 if (sts != 0) {
-                    mexErrMsgTxt("Cannot convert to hexadecimal representation.");
+                    mexErrMsgTxt("spm_jsonread: Cannot convert to hexadecimal representation.");/* ExploreASL hack - improved messages */
                 }
                 mxDestroyArray(ma);
                 str = mxArrayToString(mx);
@@ -300,7 +300,7 @@ static char * valid_fieldname(char *field, int *need_free) {
             *need_free = 1;
             break;
         default:
-            mexErrMsgTxt("Unknown ReplacementStyle.");
+            mexErrMsgTxt("spm_jsonread: Unknown ReplacementStyle.");/* ExploreASL hack - improved messages */
             break;
     }
     return field;
@@ -323,7 +323,7 @@ static int primitive(char *js, jsmntok_t *tok, mxArray **mx) {
             ma =  mxCreateString(get_string(js, tok->start, tok->end));
             sts = mexCallMATLAB(1, mx, 1, &ma, "str2double");
             if (sts != 0) {
-                mexErrMsgTxt("Conversion from string to double failed.");
+                mexErrMsgTxt("spm_jsonread: Conversion from string to double failed.");/* ExploreASL hack - improved messages */
             }
             mxDestroyArray(ma);
             break;
@@ -368,12 +368,12 @@ static int array(char *js, jsmntok_t *tok, mxArray **mx) {
                 sts = mexCallMATLAB(1, mx, 2, parray, "permute");
                 mxDestroyArray(parray[1]);
                 if (sts != 0) {
-                    mexErrMsgTxt("Call to permute() failed.");
+                    mexErrMsgTxt("spm_jsonread: Call to permute() failed.");/* ExploreASL hack - improved messages */
                 }
             }
         }
         else {
-            mexPrintf("Call to cell2mat() failed.\n");
+            mexPrintf("spm_jsonread: Call to cell2mat() failed.\n");/* ExploreASL hack - improved messages */
         }
     }
     return j+1;
@@ -397,14 +397,14 @@ static int object(char *js, jsmntok_t *tok, mxArray **mx) {
         else {
             k = mxGetFieldNumber(*mx, field);
             if (k != -1) {
-                mexWarnMsgTxt("Duplicate key.");
+                mexWarnMsgTxt("spm_jsonread: Duplicate key.");/* ExploreASL hack - improved messages */
                 ma = mxGetFieldByNumber(*mx, 0, k);
                 mxRemoveField(*mx, k);
                 mxDestroyArray(ma);
             }
             k = mxAddField(*mx, field);
             if (k == -1)
-                mexErrMsgTxt("mxAddField()");
+                mexErrMsgTxt("spm_jsonread: mxAddField()");/* ExploreASL hack - improved messages */
         }
         if (need_free) { free(field); }
         j += create_struct(js, tok+1+j, &ma);
@@ -435,7 +435,7 @@ static jsmntok_t * parse(const char *js, size_t jslen) {
     jsmn_init(&p);
     tok = mxMalloc(sizeof(*tok) * tokcount);
     if (tok == NULL) {
-        mexErrMsgTxt("mxMalloc()");
+        mexErrMsgTxt("spm_jsonread: mxMalloc()");/* ExploreASL hack - improved messages */
     }
     
     for (;;) {
@@ -446,14 +446,14 @@ static jsmntok_t * parse(const char *js, size_t jslen) {
                 tokcount = tokcount * 2;
                 tok = mxRealloc(tok, sizeof(*tok) * tokcount);
                 if (tok == NULL) {
-                    mexErrMsgTxt("mxRealloc()");
+                    mexErrMsgTxt("spm_jsonread: mxRealloc()");/* ExploreASL hack - improved messages */
                 }
             }
             else if ((r == JSMN_ERROR_INVAL) || (r == JSMN_ERROR_PART)) {
-                mexErrMsgTxt("Invalid or incomplete JSON.");
+                mexErrMsgTxt("spm_jsonread: Invalid or incomplete JSON.");/* ExploreASL hack - improved messages */
             }
             else {
-                mexErrMsgTxt("Unknown JSON parsing error.");
+                mexErrMsgTxt("spm_jsonread: Unknown JSON parsing error.");/* ExploreASL hack - improved messages */
             }
         }
         else {
@@ -474,11 +474,11 @@ static char * get_data(const mxArray * mx, size_t * jslen) {
 
     js = mxArrayToString(mx);
     if (js == NULL) {
-        mexErrMsgTxt("mxArrayToString()");
+        mexErrMsgTxt("spm_jsonread: mxArrayToString()");/* ExploreASL hack - improved messages */
     }
     *jslen = strlen(js);
     if (*jslen == 0)
-        mexErrMsgTxt("Empty JSON.");
+        mexErrMsgTxt("spm_jsonread: Empty JSON.");/* ExploreASL hack - improved messages */
     
     /* detect whether input string is a filename */
     for (i = 0, filename = 1; i < *jslen; i++) {
@@ -491,12 +491,12 @@ static char * get_data(const mxArray * mx, size_t * jslen) {
         mxFree(js);
         sts = mexCallMATLAB(1, &ma, 1, (mxArray **)&mx, "fileread");
         if (sts != 0) {
-            mexErrMsgTxt("Cannot read JSON file.");
+            mexErrMsgTxt("spm_jsonread: Cannot read JSON file.");/* ExploreASL hack - improved messages */
         }
 		
         js = mxArrayToString(ma);
         if (js == NULL) {
-            mexErrMsgTxt("mxArrayToString()");
+            mexErrMsgTxt("spm_jsonread: mxArrayToString()");/* ExploreASL hack - improved messages */
         }
 		/* ExploreASL hack - obtain the length of the string from the mxArray and not from the converted string.
 		 * The difference is that the strlen will search for 0-character ending a string */
@@ -538,18 +538,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     /* Validate input arguments */
     if (nrhs == 0) {
-        mexErrMsgTxt("Not enough input arguments.");
+        mexErrMsgTxt("spm_jsonread: Not enough input arguments.");/* ExploreASL hack - improved messages */
     }
     else if (nrhs > 2) {
-        mexErrMsgTxt("Too many input arguments.");
+        mexErrMsgTxt("spm_jsonread: Too many input arguments.");/* ExploreASL hack - improved messages */
     }
     if (!mxIsChar(prhs[0])) {
-        mexErrMsgTxt("Input must be a string.");
+        mexErrMsgTxt("spm_jsonread: Input must be a string.");/* ExploreASL hack - improved messages */
     }
     ReplacementStyle = JSON_REPLACEMENT_STYLE_UNDERSCORE;
     if (nrhs > 1) {
         if (!mxIsStruct(prhs[1])){
-            mexErrMsgTxt("Input must be a struct.");
+            mexErrMsgTxt("spm_jsonread: Input must be a struct.");/* ExploreASL hack - improved messages */
         }
         nfields = mxGetNumberOfFields(prhs[1]);
         for (i = 0; i < nfields; i++) {
@@ -571,13 +571,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                         ReplacementStyle = JSON_REPLACEMENT_STYLE_DELETE;
                     }
                     else {
-                        mexErrMsgTxt("Unknown replacementStyle.");
+                        mexErrMsgTxt("spm_jsonread: Unknown replacementStyle.");/* ExploreASL hack - improved messages */
                     }
                     mxFree(repsty);
                 }
             }
             else {
-                mexErrMsgTxt("Unknown optional parameter.");
+                mexErrMsgTxt("spm_jsonread: Unknown optional parameter.");/* ExploreASL hack - improved messages */
             }
         }
     }
@@ -585,9 +585,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     /* Get JSON data as char array */
     js = get_data(prhs[0], &jslen);
 
+	mexPrintf("Reading %s\n",mxArrayToString(prhs[0]));
+		
     /* Parse JSON data */
     tok = parse(js, jslen);
-   
+   	
     /* Create output structure */
     create_struct(js, tok, &plhs[0]);
 
