@@ -167,6 +167,9 @@ end
 % Find all line ends
 indexEol = find(S == eol);
 
+lineNumberEmpty = [];
+lineNumberIncorrectLength = [];
+	
 if length(indexEol)<=1
 	% In case the file does not have line ends (i.e. only a single line-end at the end of the file that is inserted automatically)
 	% Then we consider that all data are provided on a single line. 
@@ -180,8 +183,6 @@ if length(indexEol)<=1
 		d = reshape(d{1},N,[])'; % reshape
 	end
 else
-	lineNumberEmpty = [];
-	lineNumberIncorrectLength = [];
 	
 	% There are multiple line ends - we can parse per line
 	% Create an empty cell array that will be filled line by line
