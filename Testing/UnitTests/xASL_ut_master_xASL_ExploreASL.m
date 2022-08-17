@@ -708,64 +708,7 @@ UnitTest.tests(8).passed = testCondition;
 %% Test run 9
 
 % Give your individual subtest a name
-UnitTest.tests(9).testname = 'DRO 2.3.0 (Run processing starting from derivatives with dataPar.json input (outdated))';
-
-% Start the test
-testTime = tic;
-
-% Set-up DRO
-studyParPath = fullfile(TestRepository,'UnitTesting','working_directory','studyPar.json');
-droTestPatientSource = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0');
-droTestPatient = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
-testPatientDestination = fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0');
-xASL_Copy(droTestPatientSource,droTestPatient);
-
-% Create dataPar.json
-dataParStruct.x.settings.Quality = 0;
-dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Mindboggle_OASIS_DKT31_CMA'};
-spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
-
-% Add studyPar JSON
-spm_jsonwrite(studyParPath,studyParJSON);
-xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
-
-% Fallback
-testCondition = true;
-
-% Run processing starting from derivatives with dataPar.json input (outdated)
-resultingMessage = '';
-try
-    [x] = ExploreASL(testPatientDestination,0,1,0,1,1);
-catch ME
-    resultingMessage = ME.message;
-    diary off;
-end
-
-% Add test conditions here ...
-if isempty(resultingMessage)
-    testCondition = false;
-end
-if isempty(regexpi(resultingMessage,'You provided a descriptive JSON or another file'))
-    testCondition = false;
-end
-
-% Delete test data
-xASL_delete(testPatientDestination,true)
-
-% Clean-up
-clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
-
-% Get test duration
-UnitTest.tests(9).duration = toc(testTime);
-
-% Evaluate your test
-UnitTest.tests(9).passed = testCondition;
-
-
-%% Test run 10
-
-% Give your individual subtest a name
-UnitTest.tests(10).testname = 'DRO 2.3.0 (Full pipeline, rawdata->defacing->results)';
+UnitTest.tests(9).testname = 'DRO 2.3.0 (Full pipeline, rawdata->defacing->results)';
 
 % Start the test
 testTime = tic;
@@ -866,17 +809,17 @@ xASL_delete(testPatientDestination,true)
 clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
-UnitTest.tests(10).duration = toc(testTime);
+UnitTest.tests(9).duration = toc(testTime);
 
 % Evaluate your test
-UnitTest.tests(10).passed = testCondition;
+UnitTest.tests(9).passed = testCondition;
 
 
 
-%% Test run 11
+%% Test run 10
 
 % Give your individual subtest a name
-UnitTest.tests(11).testname = 'DRO 2.3.0 (Pre-release version, multi-session BIDS to legacy)';
+UnitTest.tests(10).testname = 'DRO 2.3.0 (Pre-release version, multi-session BIDS to legacy)';
 
 % Start the test
 testTime = tic;
@@ -979,16 +922,16 @@ xASL_delete(droTestPatient,true)
 clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
-UnitTest.tests(11).duration = toc(testTime);
+UnitTest.tests(10).duration = toc(testTime);
 
 % Evaluate your test
-UnitTest.tests(11).passed = testCondition;
+UnitTest.tests(10).passed = testCondition;
 
 
-%% Test run 12
+%% Test run 11
 
 % Give your individual subtest a name
-UnitTest.tests(12).testname = 'Initialize (from other directory)';
+UnitTest.tests(11).testname = 'Initialize (from other directory)';
 
 % Start the test
 testTime = tic;
@@ -1067,16 +1010,16 @@ end
 clearvars -except UnitTest TestRepository testCondition testTime studyParJSON
 
 % Get test duration
-UnitTest.tests(12).duration = toc(testTime);
+UnitTest.tests(11).duration = toc(testTime);
 
 % Evaluate your test
-UnitTest.tests(12).passed = testCondition;
+UnitTest.tests(11).passed = testCondition;
 
 
-%% Test run 13
+%% Test run 12
 
 % Give your individual subtest a name
-UnitTest.tests(13).testname = 'Run BIDS2Legacy twice (second time should be skipped)';
+UnitTest.tests(12).testname = 'Run BIDS2Legacy twice (second time should be skipped)';
 
 % Start the test
 testTime = tic;
@@ -1177,10 +1120,10 @@ xASL_delete(testPatientDestination,true)
 clearvars -except UnitTest TestRepository testCondition testTime testVersion studyParJSON
 
 % Get test duration
-UnitTest.tests(13).duration = toc(testTime);
+UnitTest.tests(12).duration = toc(testTime);
 
 % Evaluate your test
-UnitTest.tests(13).passed = testCondition;
+UnitTest.tests(12).passed = testCondition;
 
 
 %% End of testing
