@@ -155,6 +155,8 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Prepare M0
+M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
+
 if x.modules.asl.ApplyQuantification(5)==0
     % M0 division disabled, so we use a dummy M0 value only
     M0_im = NaN;
@@ -188,8 +190,6 @@ else
     if xASL_stat_SumNan(M0_im(:))==0
         warning(['Empty M0:' M0Path]);
     end
-
-    M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
 
 % %     % Philips dcm2niiX scaling fix:
 % %     % in the new dcm2niiX with the default Philips scaling,
