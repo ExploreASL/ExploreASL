@@ -80,7 +80,9 @@ function [x] = ExploreASL_Initialize(varargin)
 	x = xASL_init_SubStructs(x);
     
     %% 4. Check DatasetRoot
-    x = xASL_init_checkDatasetRoot(x);
+    if x.opts.bImportData || x.opts.bLoadData || x.opts.bProcessData
+        x = xASL_init_checkDatasetRoot(x);
+    end
     
     % Give some feedback
     xASL_init_BasicFeedback(x);
