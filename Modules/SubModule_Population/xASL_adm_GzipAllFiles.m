@@ -78,6 +78,11 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 
     %% ----------------------------------------------------
     %% 2) Slower Matlab version
+    if ~usejava('desktop')
+        warning('No JavaVirtualMachine loaded, skipping zipping');
+        return;
+    end
+    
     if bFolder
         PathList = xASL_adm_GetFileList(ROOT, '^.*$', 'FPList', [0 Inf], true);
         if ~isempty(PathList)
