@@ -41,6 +41,8 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         pathExternal = [];
     end
 
+    exit_code = NaN;
+    
     %% ----------------------------------------------------
     %% 1) Faster unix version, using OS file system
     if bUseLinux
@@ -68,7 +70,9 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         end
     end
     
-    if exit_code == 0
+    if isnan(exit_code)
+        return; % nothing happened, nothing to zip
+    elseif exit_code == 0
         fprintf('Gzipping of NIfTIs successful...\n');
         return;
     else
