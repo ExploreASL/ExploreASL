@@ -370,6 +370,12 @@ Which causes that the JSON is not read entirely. We now read the entire JSON and
 FILE:
 spm_jsonread.c at line 496
 
+DATE+NAME:2022_08_25, JP
+DESCRIPTION:
+Edited the spm_jsonread.c so that spm_jsonread MEX reports that an error happened within jsonread and also print out the file name being read to be able to identify the source of error.
+FILE:
+spm_jsonread.c at line 588 and all lines with mexErrMsgTxt, mexWarnMsgTxt, and mexPrintf.
+
 *********************************************************************************************************
 OTHER CODE HACKS
 
