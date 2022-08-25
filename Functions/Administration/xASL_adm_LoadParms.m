@@ -190,12 +190,15 @@ if ~isfield(x.Q,'M0')
     if xASL_exist(fullfile(Fpath, 'M0.nii'),'file') && (exist(fullfile(Fpath, 'M0.json'),'file') || exist(fullfile(Fpath, 'M0_parms.mat'),'file') )
         x.Q.M0 = 'separate_scan';
         if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.Q.M0]); end
-    elseif isfield(Parms,'BackgroundSuppressionNumberPulses') && Parms.BackgroundSuppressionNumberPulses==0
+    elseif ~isfield(Parms,'BackgroundSuppression') || Parms.BackgroundSuppression == false
         x.Q.M0 = 'UseControlAsM0';
         if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.Q.M0]); end
+	elseif isfield(Parms,'BackgroundSuppressionPulseTime') && ~isempty(Parms.BackgroundSuppressionPulseTime)
+		x.Q.M0 = 'UseControlAsM0';
+        if bVerbose; fprintf('%s\n',['M0 parameter was missing, Bsup ON and pulse times defined, M0 set to ' x.Q.M0 ]); end
 	else
 		x.Q.M0 = 'Absent';
-        if bVerbose; fprintf('%s\n','M0 parameter was missing, OR didnt find M0 scan, AND BackgroundSuppressionNumberPulses wasnt set to 0...'); end
+        if bVerbose; fprintf('%s\n','M0 parameter was missing, OR didnt find M0 scan, OR BackgroundSuppressionNumberPulses was ON but with undefined timings...'); end
     end
 end
 

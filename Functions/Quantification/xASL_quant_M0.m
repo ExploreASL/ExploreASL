@@ -332,7 +332,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
         end
     else
         M0IM = M0IM./SignalPercentage;
-    end
+		endbsup
 
     %% Obtain slice-wise median pseudo-M0 signal (after correction)
     % Obtain slice-wise median value

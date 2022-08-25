@@ -85,8 +85,10 @@ if isfield(JSON, 'M0Type')
 			JSON.M0 = 'UseControlAsM0';
 			JSON = rmfield(JSON,'M0Type');
 			spm_jsonwrite(PathJSON, JSON);
-			if isfield(JSON, 'BackgroundSuppression')
-				warning(['Missing field backgroundSuppression in ' PathJSON]);
+			if ~isfield(JSON, 'BackgroundSuppression')
+				warning(['M0 is defined as UserControlAsM0, but missing field BackgroundSuppression in ' PathJSON]);
+			elseif JSON.BackgroundSuppression == true && ~isfield(JSON,'BackgroundSuppressionPulseTime')
+				warning(['M0 is defined as UserControlAsM0, BackgroundSuppression is ON, but BSup timings are undefined in ' PathJSON]);
 			end
 		case 'Absent'
 			JSON.M0 = 'Absent';
@@ -94,7 +96,7 @@ if isfield(JSON, 'M0Type')
 				
 			if xASL_exist(fullfile(PathM0))
                     warning('"M0Type":"Absent" but separate M0 NIfTI detected, consider setting "M0Type":"Separate"');
-			elseif isfield(JSON, 'BackgroundSuppression') && ~JSON.BackgroundSuppression
+			elseif isfield(JSON, 'BackgroundSuppression') && (~JSON.BackgroundSuppression || isfield(JSON,'BackgroundSuppressionPulseTime'))
 				NIfTI_ASL = xASL_io_ReadNifti(pathASLNifti);
 				if size(NIfTI_ASL.dat,4)>1
 					% background suppression was off, so we check if we have
