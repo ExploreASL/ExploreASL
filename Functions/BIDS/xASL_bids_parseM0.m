@@ -74,6 +74,7 @@ if isfield(JSON, 'M0Type')
             if isfield(JSON, 'M0Estimate')
                 JSON.M0 = JSON.M0Estimate;
 				JSON = rmfield(JSON,'M0Type');
+				JSON = rmfield(JSON,'M0Estimate');
                 spm_jsonwrite(PathJSON, JSON);
             else
                 warning(['Field M0_value missing in ' PathJSON]);
