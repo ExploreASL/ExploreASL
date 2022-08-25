@@ -30,7 +30,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
     end
     
     if ~isfield(x.modules.import.imPar, 'dcm2nii_version') || isempty(x.modules.import.imPar.dcm2nii_version)
-		x.modules.import.imPar.dcm2nii_version = '20190902';
+		x.modules.import.imPar.dcm2nii_version = '20220720';
     end
     
     if ~isfield(x.modules.import.imPar,'dcmExtFilter') || isempty(x.modules.import.imPar.dcmExtFilter)

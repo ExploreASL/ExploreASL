@@ -10,7 +10,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 %      destdir         target destination directory (REQUIRED)
 %	   series_name     target name of the NIfTI file (REQUIRED)
 %      imPar           imPar from x.modules.import.imPar (OPTIONAL, DEFAULT = [])
-%                      'imPar.dcm2nii_version' (DEFAULT 20190902)
+%                      'imPar.dcm2nii_version' (DEFAULT 20220720)
 %                      'imPar.bVerbose'        set to true or false to switch terminal feedback (DEFAULT false)
 %                      'imPar.bOverwrite'      set to true or false to overwrite existing files (DEFAULT false)
 %                      'imPar.dcmExtFilter' regular expression used to find dicom files (DEFAULT '^.+\.dcm$')
@@ -51,7 +51,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 	end
 	
 	if ~isfield(imPar,'dcm2nii_version') || isempty(imPar.dcm2nii_version)
-		imPar.dcm2nii_version = '20190902';
+		imPar.dcm2nii_version = '20220720';
 	end
 	
 	if ~isfield(imPar, 'dcmExtFilter') || isempty(imPar.dcmExtFilter)
@@ -79,26 +79,26 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 	%end
 	
 	if ismac && str2num(imPar.dcm2nii_version(1:4))<2014
-        imPar.dcm2nii_version = '20190902'; % mac is incompatible with older versions
+        imPar.dcm2nii_version = '20220720'; % mac is incompatible with older versions
 	end
 
     mricron_path = fullfile(myPath,'External','MRIcron');
 	mricron_version_path = fullfile(mricron_path, imPar.dcm2nii_version);
 	switch computer()
 		case {'PCWIN', 'PCWIN64'}
-			ExePath = fullfile(mricron_version_path,'dcm2nii.exe');
+			ExePath = fullfile(mricron_version_path,'dcm2niix.exe');
 		case 'GLNX86'
-			ExePath = fullfile(mricron_version_path,'dcm2nii-lx32');
+			ExePath = fullfile(mricron_version_path,'dcm2niix-lx32');
 		case 'GLNXA64'
-			ExePath = fullfile(mricron_version_path,'dcm2nii-lx64');
+			ExePath = fullfile(mricron_version_path,'dcm2niix-lx64');
 		case {'MACI','MACI64'}
-			ExePath = fullfile(mricron_version_path,'dcm2nii-osx');
+			ExePath = fullfile(mricron_version_path,'dcm2niix-osx');
 		otherwise
 			error('Unknown computer architecture: %s',computer());
 	end
     [stat, attr] = fileattrib(ExePath);
     if ~stat
-        error('dcm2nii application not found: %s',ExePath);
+        error('dcm2niix application not found: %s',ExePath);
     end
     if ~attr.UserExecute
         % try fixing
@@ -106,7 +106,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
             system(['chmod 777 ' ExePath]);
         catch
             disp(attr)
-            error('dcm2nii application is not executable!');
+            error('dcm2niix application is not executable!');
         end
     end
 
@@ -150,6 +150,36 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     %   -x : crop (y/n, default n)
     %   -z : gz compress images (y/i/n/3, default n) [y=pigz, i=internal:miniz, n=no, 3=no,3D]
 
+	% -1..-9 : gz compression level (1=fastest..9=smallest, default 6)
+	% -a : adjacent DICOMs (images from same series always in same folder) for faster conversion (n/y, default n)
+	% -b : BIDS sidecar (y/n/o [o=only: no NIfTI], default y)
+	% -ba : anonymize BIDS (y/n, default y)
+	% -c : comment stored in NIfTI aux_file (provide up to 24 characters e.g. '-c first_visit')
+	% -d : directory search depth. Convert DICOMs in sub-folders of in_folder? (0..9, default 5)
+	% -e : export as NRRD (y) or MGH (o) instead of NIfTI (y/n/o/j/b, default n)
+	% -f : filename (%a=antenna (coil) name, %b=basename, %c=comments, %d=description, %e=echo number, %f=folder name, %g=accession number, %i=ID of patient, %j=seriesInstanceUID, %k=studyInstanceUID, %m=manufacturer, %n=name of patient, %o=mediaObjectInstanceUID, %p=protocol, %r=instance number, %s=series number, %t=time, %u=acquisition number, %v=vendor, %x=study ID; %z=sequence name; default '%f_%p_%t_%s')
+	% -g : generate defaults file (y/n/o/i [o=only: reset and write defaults; i=ignore: reset defaults], default n)
+	% -h : show help
+	% -i : ignore derived, localizer and 2D images (y/n, default n)
+	% -l : losslessly scale 16-bit integers to use dynamic range (y/n/o [yes=scale, no=no, but uint16->int16, o=original], default o)
+	% -m : merge 2D slices from same series regardless of echo, exposure, etc. (n/y or 0/1/2, default 2) [no, yes, auto]
+	% -n : only convert this series CRC number - can be used up to 16 times (default convert all)
+	% -o : output directory (omit to save to input folder)
+	% -p : Philips precise float (not display) scaling (y/n, default y)
+	% -r : rename instead of convert DICOMs (y/n, default n)
+	% -s : single file mode, do not convert other images in folder (y/n, default n)
+	% -u : up-to-date check
+	% -v : verbose (n/y or 0/1/2, default 0) [no, yes, logorrheic]
+	% -w : write behavior for name conflicts (0,1,2, default 2: 0=skip duplicates, 1=overwrite, 2=add suffix)
+	% -x : crop 3D acquisitions (y/n/i, default n, use 'i'gnore to neither crop nor rotate 3D acquistions)
+	% -z : gz compress images (y/o/i/n/3, default n) [y=pigz, o=optimal pigz, i=internal:zlib, n=no, 3=no,3D]
+	% --big-endian : byte order (y/n/o, default o) [y=big-end, n=little-end, o=optimal/native]
+	% --progress : Slicer format progress information (y/n, default n)
+	% --ignore_trigger_times : disregard values in 0018,1060 and 0020,9153
+	% --terse : omit filename post-fixes (can cause overwrites)
+	% --version : report version
+	% --xml : Slicer format features
+	
     %% 5. Check if we are reading a DICOM folder
     if exist(inpath,'dir')
         % Check if there are any DICOM files
@@ -304,7 +334,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 		end
 		
         if isempty(niiEntries)
-            error('Empty output dcm2nii');
+            error('Empty output dcm2niix');
         else
             [niiPaths, niiNames, ~] = cellfun(@(y) xASL_fileparts(y), niiEntries, 'UniformOutput',false);
         end
@@ -319,7 +349,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
             % Fix NIFTI file names
             [niiEntries, niiNames] = xASL_io_dcm2nii_FixFormat(niiEntries, niiPaths, niiNames);
 
-            % Check if dcm2nii added some contrast information at the end of the FileName
+            % Check if dcm2niix added some contrast information at the end of the FileName
             if length(vectorKeep)==1
                 ContrastAdd{1} = [];
             else
@@ -372,7 +402,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                             DestFileName = [DestFileName '_' num2str(tempJSON.SeriesNumber)];
                         end
                     else
-                        warning('JSON sidecar missing after dcm2nii conversion');
+                        warning('JSON sidecar missing after dcm2niix conversion');
                     end
                 end
                 
