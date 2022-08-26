@@ -157,6 +157,15 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 		FileList = {[fname ext]};
 	end
 	
+	% The special case is when we have two JSON files and one or more of the instanceNumberList are 0
+	% In that case, we split to two by the instanceNumber we acquire a set the parms so that the file with a shorter filename is
+	% first
+	if length(instanceNumberList) == 2 && min(instanceNumberList) == 0
+		instanceNumberList(1) = 1;
+		instanceNumberList(2) = length(FileList)/2;
+	end
+	
+	
     TryDicominfo = true; % this is only set to false below upon succesful DcmtkRead
     
     if ~isempty(FileList)

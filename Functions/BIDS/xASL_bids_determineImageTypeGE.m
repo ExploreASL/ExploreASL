@@ -40,14 +40,26 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
     if length(jsonPar.ImageType) == 5 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
             strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION') && strcmpi(jsonPar.ImageType{5},'ASL')
         imageType = 'deltam';
+	end
+	
+	% ["ImageType": ["DERIVED", "PRIMARY", "ASL", "PERFUSION", "ASL", "REAL"] - deltaM
+    if length(jsonPar.ImageType) == 6 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
+            strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION') && strcmpi(jsonPar.ImageType{5},'ASL') && strcmpi(jsonPar.ImageType{6},'REAL')
+        imageType = 'deltam';
     end
 
     % ["DERIVED", "PRIMARY", "ASL", "PERFUSION_ASL"] - deltaM
     if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
             strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION_ASL')
         imageType = 'deltam';
-    end
+	end
 
+	% ["ORIGINAL", "PRIMARY", "ASL", "REAL"] - M0
+    if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'ORIGINAL') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
+            strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'REAL')
+        imageType = 'm0scan';
+	end
+	
     % ["ORIGINAL", "PRIMARY", "ASL"] - M0
     if length(jsonPar.ImageType) == 3 && strcmpi(jsonPar.ImageType{1},'ORIGINAL') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
             strcmpi(jsonPar.ImageType{3},'ASL')
