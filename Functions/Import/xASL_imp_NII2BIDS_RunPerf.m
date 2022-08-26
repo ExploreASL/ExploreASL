@@ -67,6 +67,18 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     end
     if xASL_exist(fullfile(inSessionPath, [aslLabel '.nii']),'file')
         headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
+		
+		% For GE scanner and 3D ASL file, we try to reformat to 4D correctly
+		if length(headerASL.dat.dim) == 3 && isfield(jsonDicom,'Manufacturer') && strcmp(jsonDicom.Manufacturer,'GE') &&...
+			isfield(jsonDicom,'NumberOfTemporalPositions') && jsonDicom.NumberOfTemporalPositions > 1 && ...
+			mod(headerASL.dat.dim(3),jsonDicom.NumberOfTemporalPositions) == 0
+		
+			fprintf('GE ASL data incorrectly read as 3D. Reshaping...\n');
+		    imASL = xASL_io_Nifti2Im(fullfile(inSessionPath, [aslLabel '.nii']));
+			imASL = reshape(imASL, size(imASL,1), size(imASL,2), size(imASL,3)/jsonDicom.NumberOfTemporalPositions, jsonDicom.NumberOfTemporalPositions);
+			xASL_io_SaveNifti(fullfile(inSessionPath, [aslLabel '.nii']), fullfile(inSessionPath, [aslLabel '.nii']), imASL);
+			headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
+		end
     else
         warning('Missing NIfTI file: %s\n\',fullfile(inSessionPath, [aslLabel '.nii']));
 		
@@ -77,8 +89,8 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		end
 		
         return;
-    end
-
+	end
+	
     %% 3. BIDSify ASL
     % Merge the information from DICOM, manually entered parameters and BIDSify
     jsonLocal = xASL_bids_BIDSifyASLJSON(jsonDicom, studyPar, headerASL);
