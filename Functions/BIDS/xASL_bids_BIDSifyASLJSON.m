@@ -128,6 +128,14 @@ elseif isfield(jsonIn,'RepetitionTime')
 	end
 end
 
+% In Philips and dcm2niix20220720, often RepetitionTimePreparation is assigned the time right after the last readout and 
+% RepetitionTimeExcitation the length of the whole cycle - that needs to be fixed.
+if strcmpi(jsonOut.Manufacturer,'Philips')
+	if isfield(jsonOut,'RepetitionTimeExcitation') && jsonOut.RepetitionTimeExcitation >= jsonOut.RepetitionTimePreparation
+		jsonOut.RepetitionTimePreparation = jsonOut.RepetitionTimeExcitation;
+		jsonOut = rmfield(jsonOut,'RepetitionTimeExcitation');
+	end
+end
 % Check echo time, for vectors
 if isfield(jsonOut,'EchoTime') && length(jsonOut.EchoTime)>1
 	% Remove zero entries
