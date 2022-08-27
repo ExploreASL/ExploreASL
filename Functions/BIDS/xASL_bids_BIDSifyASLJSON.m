@@ -118,6 +118,8 @@ if isfield(studyPar,'RepetitionTimePreparation')
 elseif isfield(studyPar,'RepetitionTime')
 	% RT from studyPar comes next
 	jsonOut.RepetitionTimePreparation = studyPar.RepetitionTime;
+elseif isfield(jsonIn,'RepetitionTimePreparation')
+	jsonOut.RepetitionTimePreparation = jsonIn.RepetitionTimePreparation;
 elseif isfield(jsonIn,'RepetitionTime')
 	% RT from the DICOM has the lowest priority
 	jsonOut.RepetitionTimePreparation = jsonIn.RepetitionTime;
