@@ -73,7 +73,8 @@ DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'derivatives', 'ExploreASL
              % 3a. 'Siemens_PCASL_3DGRASE_VD13D_2'
         case 'Siemens_PCASL_3DGRASE_VD13D_2'
 
-            xASL_adm_DeleteFileList(DirASL, '^ASL4D_(32|33|34|35)_00001.*$', 1);
+            xASL_adm_DeleteFileList(DirASL, '^ASL4D__(34|35)_00001.*$', 1);
+			xASL_adm_DeleteFileList(DirASL, '^ASL4D__e00000_(32|33)_00001.*$', 1);
 
             nii_files = xASL_adm_GetFileList(DirASL, '^.*\.nii$', 'FPList', [], false);
             xASL_bids_MergeNifti(nii_files, 'ASL');
