@@ -161,8 +161,16 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 		if dimASL(4)>=numel(jsonOut.GELabelingDuration)
 			warning('Labeling duration mismatch with GE private field.');
 			jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
+		elseif dimASL(4)>=numel(unique(jsonOut.GELabelingDuration))
+			warning('Labeling duration mismatch with GE private field.');
+			labDurTemp = unique(jsonOut.GELabelingDuration);
+			if labDurTemp(1) == 0
+				labDurTemp(1:end-1) = labDurTemp(2:end);
+				labDurTemp(end) = 0;
+			end
+			jsonOut.LabelingDuration = labDurTemp;
 		else
-			% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD) 
+			% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
 			% and we thus use the provided information. We thus keep the LabelingDuration field untouched.
 		end
 	else
@@ -179,7 +187,7 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 				warning('PostLabelingDelay mismatch with the GE-DICOM value in Inversion time.');
 				jsonOut.PostLabelingDelay = jsonOut.InversionTime;
 			else
-				% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD) 
+				% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
 				% and we thus use the provided information. We thus keep the PostLabelingDelay field untouched.
 			end
 		else
@@ -188,6 +196,13 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 	end
 end
 
+% For GE and multi-PLD or single-PLD not defined in the GELabelingDurationField, we prefer LabelingDuration from study par due to issues with eASL
+if strcmp(jsonIn.Manufacturer, 'GE') && isfield(studyPar,'LabelingDuration') && ~isequal(studyPar.LabelingDuration,jsonOut.LabelingDuration) &&...
+	( length(jsonOut.LabelingDuration)>1 || ~isfield(jsonIn,'GELabelingDuration'))
+	warning('Labeling duration differs in DICOM and studyPar.');
+	jsonOut.LabelingDuration = studyPar.LabelingDuration;
+end
+	
 % Free info about the sequence, now just the scanner type+software
 if isfield(jsonIn,'ManufacturersModelName')
 	jsonOut.PulseSequenceDetails = jsonIn.ManufacturersModelName;
