@@ -70,13 +70,20 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		
 		% For GE scanner and 3D ASL file, we try to reformat to 4D correctly
 		if length(headerASL.dat.dim) == 3 && isfield(jsonDicom,'Manufacturer') && strcmp(jsonDicom.Manufacturer,'GE') &&...
-			isfield(jsonDicom,'NumberOfTemporalPositions') && jsonDicom.NumberOfTemporalPositions > 1 && ...
+			isfield(jsonDicom,'NumberOfTemporalPositions') && jsonDicom.NumberOfTemporalPositions > 2 && ...
 			mod(headerASL.dat.dim(3),jsonDicom.NumberOfTemporalPositions) == 0
 		
 			fprintf('GE ASL data incorrectly read as 3D. Reshaping...\n');
+			% Load the image data and reshape accordingly
 		    imASL = xASL_io_Nifti2Im(fullfile(inSessionPath, [aslLabel '.nii']));
 			imASL = reshape(imASL, size(imASL,1), size(imASL,2), size(imASL,3)/jsonDicom.NumberOfTemporalPositions, jsonDicom.NumberOfTemporalPositions);
-			xASL_io_SaveNifti(fullfile(inSessionPath, [aslLabel '.nii']), fullfile(inSessionPath, [aslLabel '.nii']), imASL);
+			
+			% Center the new image correctly
+			newMat = headerASL.mat0;
+			newMat(1:3,4) = [0;-22;0] - headerASL.mat0(1:3,1:3)*([size(imASL,1); size(imASL,2); size(imASL,3)]/2);
+			
+			% However, the matrix is given with a wrong shift
+			xASL_io_SaveNifti(fullfile(inSessionPath, [aslLabel '.nii']), fullfile(inSessionPath, [aslLabel '.nii']), imASL, [], [], newMat);
 			headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
 		end
     else
