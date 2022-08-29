@@ -39,7 +39,8 @@ if isfield(parms,'RWVSlope')
 		dcm2niixVersion = 0;
 	end
 	
-	if dcm2niixVersion >= 20210317
+	% It has to use the correct dcm2niix version that is able to handle this parameter and it also needs to report that it did do that
+	if dcm2niixVersion >= 20210317 && isfield(parms,'UsePhilipsFloatNotDisplayScaling') && (parms.UsePhilipsFloatNotDisplayScaling == 1)
 		scaleFactor = 0;
 	else
 		% If the RealWorldValue is present, then dcm2nii scales to them and ignores everything else
