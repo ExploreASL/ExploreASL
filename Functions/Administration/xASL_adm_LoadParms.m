@@ -195,10 +195,10 @@ if ~isfield(x.Q,'M0')
         if bVerbose; fprintf('%s\n',['M0 parameter was missing, set to ' x.Q.M0]); end
 	elseif isfield(Parms,'BackgroundSuppressionPulseTime') && ~isempty(Parms.BackgroundSuppressionPulseTime)
 		x.Q.M0 = 'UseControlAsM0';
-        if bVerbose; fprintf('%s\n',['M0 parameter was missing, Bsup ON and pulse times defined, M0 set to ' x.Q.M0 ]); end
+        if bVerbose; fprintf('%s\n',['M0 parameter was missing, background suppression was enabled and its timings were defined. M0 set to ' x.Q.M0 ]); end
 	else
 		x.Q.M0 = 'Absent';
-        if bVerbose; fprintf('%s\n','M0 parameter was missing, OR didnt find M0 scan, OR BackgroundSuppressionNumberPulses was ON but with undefined timings...'); end
+        if bVerbose; fprintf('%s\n','M0 parameter was missing, OR did not find M0 scan, OR background suppression was enabled but its timings were not defined...'); end
     end
 end
 

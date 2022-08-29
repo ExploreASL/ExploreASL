@@ -155,8 +155,6 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Prepare M0
-M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
-
 if x.modules.asl.ApplyQuantification(5)==0
     % M0 division disabled, so we use a dummy M0 value only
     M0_im = NaN;
@@ -226,7 +224,8 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
 if strcmpi(x.Q.M0,'separate_scan')
-    
+    M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
+	
     % Check echo times
     if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
         

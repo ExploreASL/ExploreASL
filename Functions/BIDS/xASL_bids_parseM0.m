@@ -13,10 +13,17 @@ function xASL_bids_parseM0(pathASLNifti)
 %              splitting of ASL and M0 NIFTIes if needed. Note that the sidecars are in BIDS, but the file-structure
 %              is already expected to be in Legacy format
 %
+% The following options are processed:
+% 1. Included - The M0 file is included in the ASL timeseries as specified in the aslContext
+% 2. Separate - M0 image is already provided as a separate image - checks for its existence
+% 3. Estimate - If a single M0 values is provided then keep it, just rename the field
+% 4. Absent   - In this case we use the control image as pseudo-M0, but we have to verify if there is no background suppression 
+%               or if yes, then the background suppression timings also need to be specified		
+%		
 % EXAMPLE:     xASL_bids_parseM0('/test/ASL4D.nii')
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
 %% Check input
@@ -80,23 +87,31 @@ if isfield(JSON, 'M0Type')
                 warning(['Field M0_value missing in ' PathJSON]);
             end
         %% Option 4. Absent
-        % (in this case we use the control image as pseudo-M0, 
-        % which happens in xASL_wrp_Resample
+        %  In this case we use the control image as pseudo-M0, but we have to verify if there is no background suppression 
+		%  or if yes, then the background suppression timings also need to be specified
+		
+		% Either it is directly specified that we should use Control as an M0
         case {'use_control_as_m0', 'UseControlAsM0'}
 			JSON.M0 = 'UseControlAsM0';
 			JSON = rmfield(JSON,'M0Type');
 			spm_jsonwrite(PathJSON, JSON);
+			% Then we need to verify that either background suppression is disabled or enabled with timings provided
 			if ~isfield(JSON, 'BackgroundSuppression')
 				warning(['M0 is defined as UserControlAsM0, but missing field BackgroundSuppression in ' PathJSON]);
+				fprintf('We will assume that background suppression is disabled, but this should be verified and added to the JSON sidecar.\n');
 			elseif JSON.BackgroundSuppression == true && ~isfield(JSON,'BackgroundSuppressionPulseTime')
-				warning(['M0 is defined as UserControlAsM0, BackgroundSuppression is ON, but BSup timings are undefined in ' PathJSON]);
+				warning(['M0 is defined as UserControlAsM0, background suppression is enabled but its timings are not provided in ' PathJSON]);
+				fprintf('So we cannot estimate the effect of background suppression on the mean control image.\n');				
 			end
 		case 'Absent'
 			JSON.M0 = 'Absent';
 			JSON = rmfield(JSON,'M0Type');
 				
+			% If M0 is defined as absent, but we find it, then we report a warning, but don't force to use it
 			if xASL_exist(fullfile(PathM0))
-                    warning('"M0Type":"Absent" but separate M0 NIfTI detected, consider setting "M0Type":"Separate"');
+				warning('"M0Type":"Absent" but separate M0 NIfTI detected, consider setting "M0Type":"Separate"');
+			% If there's no M0, and background suppression is either disabled, or enabled but with timings provided.
+			% Then we can use Control as M0 on the condition that it is not a CBF image
 			elseif isfield(JSON, 'BackgroundSuppression') && (~JSON.BackgroundSuppression || isfield(JSON,'BackgroundSuppressionPulseTime'))
 				NIfTI_ASL = xASL_io_ReadNifti(pathASLNifti);
 				if size(NIfTI_ASL.dat,4)>1
