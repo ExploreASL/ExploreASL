@@ -1,8 +1,8 @@
-function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath, varargin)
+function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath)
 %xASL_io_dcm2nii Convert DICOM NIfTI/BIDS format using the dcm2nii command line utility.
 % (http://www.nitrc.org/projects/mricron)
 %
-% FORMAT:       [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath, varargin)
+% FORMAT:       [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath)
 % 
 % INPUT:   
 %      inpath          path to dicom folder, dicom file, PAR-file or REC-file. In case of a dicom folder, 'DcmExt' will be used to
@@ -349,14 +349,14 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                 % Make BIDS compatible dest_file here
                 DestFileName = series_name;
 
-                [Ind1, Ind2] = regexp(niiNames{iVolume},'_run-\d*_','start','end');
-                if ~isempty(Ind1) && ~isempty(Ind2) % add run_index suffix (if it is there)
-                    RunName = niiNames{iVolume}(Ind1+1:Ind2-1);
-                    DestFileName = [DestFileName '_' RunName];
-                end
-                if ~isempty(ContrastAdd{iVolume}) % add contrast suffix (if there is something that indicates it)
-                    DestFileName = [DestFileName '_' ContrastAdd{iVolume}];
-                end
+                %[Ind1, Ind2] = regexp(niiNames{iVolume},'_run-\d*_','start','end');
+                %if ~isempty(Ind1) && ~isempty(Ind2) % add run_index suffix (if it is there)
+                %    RunName = niiNames{iVolume}(Ind1+1:Ind2-1);
+                %    DestFileName = [DestFileName '_' RunName];
+                %end
+                %if ~isempty(ContrastAdd{iVolume}) % add contrast suffix (if there is something that indicates it)
+                %    DestFileName = [DestFileName '_' ContrastAdd{iVolume}];
+                %end
 
                 if iVolume==min(vectorKeep)
                     ScanNameOut = DestFileName;
