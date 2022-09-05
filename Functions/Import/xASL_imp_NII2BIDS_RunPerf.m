@@ -30,10 +30,10 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 % EXAMPLE:     xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
     %% 1. Define the pathnames
-	if length(listRuns)>1
+	if (length(listRuns)>1) || (str2num(listRuns{1}(5))>1)
 		aslLabel = 'ASL4D';
 		subjectSessionLabel = ['sub-' subjectSessionLabel];
         runLabel = ['_run-' num2str(iRun)];
