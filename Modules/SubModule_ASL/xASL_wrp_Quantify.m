@@ -435,6 +435,7 @@ if ~x.modules.asl.bMultiPLD % single PLD quantification
     fprintf('%s\n', 'Performing single PLD quantification');
     [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
 	ATT = [];
+	Texch = [];
 elseif x.Q.bUseBasilQuantification
     % perform BASIL multi-PLD quantification
     fprintf('%s\n', 'Performing multi PLD quantification using BASIL');

@@ -1,7 +1,7 @@
 function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 %xASL_quant_Basil Perform quantification using FSL BASIL
 %
-% FORMAT: [CBF_nocalib, ATT_map, resultFSL] = xASL_quant_Basil(PWI, x)
+% FORMAT: [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 % 
 % INPUT:
 %   PWI             - image matrix of perfusion-weighted image (REQUIRED)
@@ -11,6 +11,7 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 % CBF_nocalib       - Quantified CBF image
 %                     (if there is no FSL/BASIL installed, we return the original PWI)
 % ATT_Map           - ATT map (if possible to calculate with multi-PLD)
+% Texch_map         - Time of exchange map of transport across BBB (if possible to calculate with multi-TE)
 % resultFSL         - describes if the execution was successful
 %                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
 %
@@ -22,7 +23,7 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 %              This function performs the following steps:
 %
 % 1. Define paths
-% 2. Delete previous BASIL output
+% 2. Delete previous BASIL/Fabber output
 % 3. Write the PWI as Nifti file for Basil/Fabber to read as input
 % 4. Create option_file that contains options which are passed to the FSL command
 % 5. Run Basil and retrieve CBF output
@@ -33,7 +34,7 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 % EXAMPLE: CBF_nocalib = xASL_quant_Basil(PWI, x);
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL 
+% Copyright 2015-2022 ExploreASL 
     
 
     %% Admin
@@ -44,10 +45,17 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
     pathBasilInput = fullfile(x.dir.SESSIONDIR, 'PWI4D_BasilInput.nii');
     pathBasilOptions = fullfile(x.dir.SESSIONDIR, 'Basil_ModelOptions.txt');
     dirBasilOutput = fullfile(x.dir.SESSIONDIR, 'Basil_Output');
+	
+	% Define if BASIL or Fabber is used - so that this is 
+	if isfield(x.modules.asl, 'bMultiTE') && x.modules.asl.bMultiTE == 1
+		bUseFabber = 1;
+	else
+		bUseFabber = 0;
+	end
         
     %% 2. Delete previous BASIL/Fabber output
-    xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^basilOutput.*$', 1, [0 Inf]);
-    FolderList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)^basilOutput.*$', 'FPList', [0 Inf], 1);
+    xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^basil_Output.*$', 1, [0 Inf]);
+    FolderList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)^basil_Output.*$', 'FPList', [0 Inf], 1);
     for iFolder=1:numel(FolderList)
         xASL_delete(FolderList{iFolder}, 1);
     end
@@ -74,7 +82,7 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
     % basil_options is a character array containing CLI args for the Basil/Fabber command
     
     
-    if isfield(x.modules.asl, 'bMultiTE') && x.modules.asl.bMultiTE ==1
+    if bUseFabber
         BasilOptions = xASL_quant_Fabber_Options(pathBasilOptions, x, PWI, pathBasilInput);
     else
         BasilOptions = xASL_quant_Basil_Options(pathBasilOptions, x, PWI);
@@ -83,21 +91,25 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
     %% 5. Run Basil and retrieve CBF output
     % args.bAutomaticallyDetectFSL=1;
     
-    if x.modules.asl.bMultiTE
+    if bUseFabber
         [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl -@ ' xASL_adm_UnixPath(pathBasilOptions)], x);
     else
         [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' BasilOptions], x);
     end
     
     % Check if FSL failed
-    if isnan(resultFSL) && x.modules.asl.bMultiTE
-        error('FSL FABBER was not found, exiting...');
-    elseif isnan(resultFSL)
-        error('FSL BASIL was not found, exiting...');
-    elseif resultFSL~=0 && x.modules.asl.bMultiTE
-        error('Something went wrong running FSL FABBER...'); 
+    if isnan(resultFSL) 
+		if bUseFabber
+			error('FSL FABBER was not found, exiting...');
+		else
+			error('FSL BASIL was not found, exiting...');
+		end
     elseif resultFSL~=0
-        error('Something went wrong running FSL BASIL...'); 
+		if bUserFabber
+			error('Something went wrong running FSL FABBER...');
+		else
+			error('Something went wrong running FSL BASIL...');
+		end
     end
     
     fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
@@ -105,7 +117,7 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
     
     pathBasilCBF = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
     
-	if isempty(pathBasilCBF) && x.modules.asl.bMultiTE
+	if isempty(pathBasilCBF) && bUseFabber
 		error('FSL BASIL failed');
     end
    
@@ -141,7 +153,7 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
     xASL_delete(pathBasilInput);
 
     %% Output of BASIL
-    % Basils Output is in the subfolder '/BasilOutput' which contains
+    % Basils Output is in the subfolder '/Basil_Output' which contains
     % multiple steps if there are multiple iterations, and always contains
     % a symbolic link (symlink) to the foldername of the latest
     % iteration/step ('stepX_latest').
