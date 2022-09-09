@@ -55,13 +55,27 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     if exist(fullfile(inSessionPath, [aslLabel '.json']),'file')
         jsonDicom = spm_jsonread(fullfile(inSessionPath, [aslLabel '.json']));
     else
-        warning('Missing file: %s\n',fullfile(inSessionPath, [aslLabel '.json']));
+        warning('Missing JSON file: %s\n',fullfile(inSessionPath, [aslLabel '.json']));
+		
+		% Try to check if a file with a similar name is there
+		jsonDicom = xASL_adm_GetFileList(inSessionPath, ['^' aslLabel '.*\.json$']);
+		if ~isempty(jsonDicom)
+			fprintf('File with an incorrect but similar name was found: %s \n',jsonDicom{1});
+		end
+		
         return;
     end
     if xASL_exist(fullfile(inSessionPath, [aslLabel '.nii']),'file')
         headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
     else
-        warning('Missing file: %s\n\',fullfile(inSessionPath, [aslLabel '.nii']));
+        warning('Missing NIfTI file: %s\n\',fullfile(inSessionPath, [aslLabel '.nii']));
+		
+		% Try to check if a file with a similar name is there
+		headerASL = xASL_adm_GetFileList(inSessionPath, ['^' aslLabel '.*\.nii$']);
+		if ~isempty(headerASL)
+			fprintf('File with an incorrect but similar name was found: %s \n',headerASL{1});
+		end
+		
         return;
     end
 
