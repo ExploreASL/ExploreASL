@@ -1,12 +1,12 @@
-function [x] = xASL_io_ReadDataPar(pathDataPar,bStudyPar)
+function [x] = xASL_io_ReadDataPar(pathDataPar, bStudyPar)
 % xASL_io_ReadDataPar This function reads data-parameter .json or .m file, which contains data and processing settings, and creates the x structure.
 %
-% FORMAT:   [x] = xASL_io_ReadDataPar(pathDataPar[,bStudyPar])
+% FORMAT:   [x] = xASL_io_ReadDataPar(pathDataPar[, bStudyPar])
 %
 % INPUT:
 %   pathDataPar     - Filename of the input parameter file with either .m or .json extension
-%   bStudyPar       - Read JSON as studyPar.json (BOOLEAN, OPTIONAL, DEFAULT = false)
-%                     (set this to false for the studyPar.json reading)
+%   bStudyPar       - Read JSON as studyPar.json (BOOLEAN, OPTIONAL, DEFAULT = true)
+%                     (set this to true for the studyPar.json reading)
 %
 % OUTPUT:
 %   x               - x structure
@@ -78,17 +78,17 @@ function [x] = xASL_io_ReadDataPar(pathDataPar,bStudyPar)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 %% Input Check
 if nargin < 2 || isempty(bStudyPar)
-    bStudyPar = false;
+    bStudyPar = true;
 end
 if nargin < 1 || isempty(pathDataPar) || ~exist(pathDataPar, 'file')
-    if ~bStudyPar
-        error('Data parameter file does not exist...');
-    else
+    if bStudyPar
         error('Study parameter file does not exist...');
+	else
+		error('Data parameter file does not exist...');
     end
 end
 
@@ -147,37 +147,56 @@ elseif strcmpi(Fext, '.json')
 	else
 		x = jsonData;
 	end
-    
-	sFields = fieldnames(x);
-	for n=1:size(sFields,1)
-		% Check if the current field is valid (char, numeric value, structure or cell array)
-		if ~(ischar(x.(sFields{n})) || isstruct(x.(sFields{n})) || isnumeric(x.(sFields{n})) || islogical(x.(sFields{n})) || iscell(x.(sFields{n})))
-			fprintf('\n%s\n',char(sFields{n}));
-			warning('JSON field type could be invalid...');
+	if isfield(x,'ImportContexts')
+		bImportContexts = 1;
+		nContext = length(x.ImportContexts);
+	else
+		bImportContexts = 0;
+		nContext = 1;
+	end
+	
+	for iSubfield = 1:nContext
+		if bImportContexts
+			subx = x.ImportContexts{iSubfield};
+		else
+			subx = x;
 		end
-		if strcmpi(sFields{n},'group') % Convert group fields to correct Matlab cell arrays
-			% Generate new Matlab cell array
-			x.group{str2num(strrep(sFields{n},'group',''))} = x.(sFields{n});
-			% Remove old field
-			x = rmfield(x,sFields{n});
-		elseif strcmpi(sFields{n},'LOAD') % Handle load commands
-			loadPaths = fieldnames(x.(sFields{n}));
-			for m=1:size(loadPaths,1)
-				% Don't forget to use \\ instead of \ in your paths
-				if exist(x.(sFields{n}).(loadPaths{m}),'file')
-					load(fullfile(x.(sFields{n}).(loadPaths{m})));
+		sFields = fieldnames(subx);
+		for n=1:size(sFields,1)
+			% Check if the current field is valid (char, numeric value, structure or cell array)
+			if ~(ischar(subx.(sFields{n})) || isstruct(subx.(sFields{n})) || isnumeric(subx.(sFields{n})) || islogical(subx.(sFields{n})) || iscell(subx.(sFields{n})))
+				fprintf('\n%s\n',char(sFields{n}));
+				warning('JSON field type could be invalid...');
+			end
+			if strcmpi(sFields{n},'group') % Convert group fields to correct Matlab cell arrays
+				% Generate new Matlab cell array
+				subx.group{str2num(strrep(sFields{n},'group',''))} = subx.(sFields{n});
+				% Remove old field
+				subx = rmfield(subx,sFields{n});
+			elseif strcmpi(sFields{n},'LOAD') % Handle load commands
+				loadPaths = fieldnames(subx.(sFields{n}));
+				for m=1:size(loadPaths,1)
+					% Don't forget to use \\ instead of \ in your paths
+					if exist(subx.(sFields{n}).(loadPaths{m}),'file')
+						load(fullfile(subx.(sFields{n}).(loadPaths{m})));
+					end
 				end
 			end
 		end
+		
+		% Convert strings containing numbers to number
+		subx = xASL_io_ReadDataPar_FixFields(subx);
+		
+		%% Check deprecated fields
+		if ~bStudyPar
+			subx = xASL_io_CheckDeprecatedFieldsX(subx,true);
+		end
+		if bImportContexts
+			x.ImportContexts{iSubfield} = subx;
+		else
+			x = subx;
+		end
 	end
-
-	% Convert strings containing numbers to number
-	x = xASL_io_ReadDataPar_FixFields(x);
-	
-	%% Check deprecated fields
-    if ~bStudyPar
-        x = xASL_io_CheckDeprecatedFieldsX(x,true);
-    end
 	
 	
 else
