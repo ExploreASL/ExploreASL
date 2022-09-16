@@ -47,7 +47,14 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParFull, nameSubjectSess
     % Go through all (ASL) runs
     for iRun = 1:length(listRuns)
 		% Get the correct studyPar for a specific subject/visit/run
-		studyParSpecific = xASL_imp_StudyParPriority(studyParFull, bidsLabel.subject, bidsLabel.visit, num2str(listRuns(iRun)));
+		runName = listRuns{iRun};
+		iName = find(runName=='_');
+		if isempty(iName)
+			runName = '';
+		else
+			runName = runName((iName(1)+1):end);
+		end
+		studyParSpecific = xASL_imp_StudyParPriority(studyParFull, bidsLabel.subject, bidsLabel.visit, runName);
 		
         x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyParSpecific, listRuns, nameSubjectSession, bidsLabel, iRun);
     end
