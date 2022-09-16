@@ -48,18 +48,28 @@ function x = xASL_wrp_NII2BIDS(x)
 	%% 1. Load the study parameters + dataset description
 	if ~exist(x.dir.studyPar,'file')
 		warning('Could not find the studyPar.json file...');
-		studyPar = struct;
+		studyParFull = struct;
 	else
-		studyPar = xASL_io_ReadDataPar(x.dir.studyPar, true);
+		studyParFull = xASL_io_ReadDataPar(x.dir.studyPar, true);
 	end
 	
 	% The name always has to be assigned as it is used in the DatasetDescription
-	if ~isfield(studyPar,'Name')
-		studyPar.Name = x.modules.import.imPar.studyID;
+	
+	if isfield(studyParFull,'ImportContexts')
+		% For multi-context studyPar - add this to the first context
+		if ~isfield(studyParFull.ImportContexts{1},'Name')
+			studyParFull.ImportContexts{1}.Name = x.modules.import.imPar.studyID;
+		end
+		studyParFirstContext = studyParFull.ImportContexts{1};
+	else
+		if ~isfield(studyParFull,'Name')
+			studyParFull.Name = x.modules.import.imPar.studyID;
+		end
+		studyParFirstContext = studyParFull;
 	end
 	
 	%% 2. Create the study description output and verify that all is there
-	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyPar, x.Version);
+	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyParFirstContext, x.Version);
 	
 	% Make the output directory and save the description
     if ~xASL_exist(x.modules.import.imPar.BidsRoot,'dir')
@@ -76,7 +86,7 @@ function x = xASL_wrp_NII2BIDS(x)
     for iSubjectSession = 1:length(listSubjectsSessions)
         % Only run it for the current subject (maybe we can do this more elegantly in the future)
         if ~isempty(regexpi(listSubjectsSessions{iSubjectSession},subjectName))
-            x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyPar, listSubjectsSessions{iSubjectSession});
+            x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParFull, listSubjectsSessions{iSubjectSession});
         end
     end
     
