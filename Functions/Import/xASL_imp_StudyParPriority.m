@@ -55,14 +55,14 @@ for iContext = 1:length(studyParFull.ImportContexts)
 		end
 		
 		% Check sessions
-		if ~isempty(subjectName) && length(aliasHierarchy)>1 && ~isempty(aliasHierarchy{2})
+		if ~isempty(sessionName) && length(aliasHierarchy)>1 && ~isempty(aliasHierarchy{2})
 			if isempty(regexpi(sessionName,aliasHierarchy{2}))
 				bOverwrite = 0;
 			end
 		end
 		
 		% Check runs
-		if ~isempty(subjectName) && length(aliasHierarchy)>2 && ~isempty(aliasHierarchy{3})
+		if ~isempty(runName) && length(aliasHierarchy)>2 && ~isempty(aliasHierarchy{3})
 			if isempty(regexpi(runName,aliasHierarchy{3}))
 				bOverwrite = 0;
 			end
