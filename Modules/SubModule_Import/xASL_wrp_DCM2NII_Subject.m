@@ -34,10 +34,10 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
     iSubject = find(strcmp(x.SUBJECT,x.SUBJECTS));
     
     % Overview subjects
-    overviewSubjects = fieldnames(x.overview);
+    overviewSubjects = fieldnames(x.importOverview);
     
     % Get current subject
-    thisSubject = x.overview.(overviewSubjects{iSubject});
+    thisSubject = x.importOverview.(overviewSubjects{iSubject});
     subjectID = x.modules.import.listsIDs.subjectIDs{iSubject};
     
     % Check subjectID
@@ -136,7 +136,7 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
     thisSubject = rmfield(thisSubject,'subjectExport');
     
     % Put data back into x structure
-    x.overview.(overviewSubjects{iSubject}) = thisSubject;
+    x.importOverview.(overviewSubjects{iSubject}) = thisSubject;
     
         
 end
@@ -178,7 +178,7 @@ function subjectExport = xASL_imp_SubjectName(subjectID)
         fprintf(2,'Special characters in subject ID, changing %s to %s\n',subjectID,subjectExport);
     end
     
-    % Since following import sub-modules depend on the x.overview field and
+    % Since following import sub-modules depend on the x.importOverview field and
     % this is also based on the original read-only sourcedata, we have to
     % fix the subject ids in there afterwards, too!
 

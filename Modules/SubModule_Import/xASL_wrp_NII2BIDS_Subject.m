@@ -1,13 +1,13 @@
-function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParFull, nameSubjectSession)
+function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession)
 %xASL_wrp_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
 %
-% FORMAT: x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParFull, nameSubjectSession)
+% FORMAT: x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
 %   x.modules.import.imPar - JSON file with structure with import parameter (REQUIRED, STRUCT)
 %   bidsPar                - Output of xASL_imp_Config (REQUIRED, STRUCT)
-%   studyParFull           - JSON file with the BIDS parameters relevant for the whole study, potentially multi-context (REQUIRED, STRUCT)
+%   studyParAll            - JSON file with the BIDS parameters relevant for the whole study, potentially containing a list of studyPars (REQUIRED, STRUCT)
 %   nameSubjectSession     - name of the subject (REQUIRED, CELL STRUCT)
 %
 % OUTPUT:
@@ -23,7 +23,7 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParFull, nameSubjectSess
 % - 3. Iterate over runs
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParFull, nameSubject);
+% EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubject);
 % __________________________________
 % Copyright 2015-2022 ExploreASL
 
@@ -54,7 +54,7 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParFull, nameSubjectSess
 		else
 			runName = runName((iName(1)+1):end);
 		end
-		studyParSpecific = xASL_imp_StudyParPriority(studyParFull, bidsLabel.subject, bidsLabel.visit, runName);
+		studyParSpecific = xASL_imp_StudyParPriority(studyParAll, bidsLabel.subject, bidsLabel.visit, runName);
 		
         x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyParSpecific, listRuns, nameSubjectSession, bidsLabel, iRun);
     end

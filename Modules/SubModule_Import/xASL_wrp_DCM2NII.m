@@ -52,8 +52,8 @@ function x = xASL_wrp_DCM2NII(x)
     x.SUBJECTS{iSubject} = xASL_adm_CorrectName(x.SUBJECTS{iSubject},2);
     
     %% 4. Create summary file
-    overviewSubjects = fieldnames(x.overview);
-    thisSubject = x.overview.(overviewSubjects{iSubject});
+    overviewSubjects = fieldnames(x.importOverview);
+    thisSubject = x.importOverview.(overviewSubjects{iSubject});
     xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x);
     
     %% 5. Clean-Up

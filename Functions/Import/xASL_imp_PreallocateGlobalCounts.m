@@ -1,15 +1,15 @@
-function [subject,visit] = xASL_imp_PreallocateGlobalCounts(nSubjects,subject,visit)
+function [subject,visit] = xASL_imp_PreallocateGlobalCounts(nSubjects, subject, visit)
 %xASL_imp_PreallocateGlobalCounts Preallocate space for (global) counts
 %
-% FORMAT: x = xASL_imp_PreallocateGlobalCounts(x)
+% FORMAT: x = xASL_imp_PreallocateGlobalCounts(nSubjects, subject, visit)
 %
 % INPUT:
 %   nSubjects - Number of subjects (INTEGER)
-%   subject   - Current subject x.overview.(sFieldName)
-%   visit     - Current visit x.overview.(sFieldName).(vFieldName)
+%   subject   - Current subject x.importOverview.(sFieldName)
+%   visit     - Current visit x.importOverview.(sFieldName).(vFieldName)
 %
 % OUTPUT:
-%   visit - Current visit x.overview.(sFieldName).(vFieldName)
+%   visit - Current visit x.importOverview.(sFieldName).(vFieldName)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Preallocate space for (global) counts.
@@ -18,7 +18,7 @@ function [subject,visit] = xASL_imp_PreallocateGlobalCounts(nSubjects,subject,vi
 % EXAMPLE:        n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
     % keep a count of all individual scans

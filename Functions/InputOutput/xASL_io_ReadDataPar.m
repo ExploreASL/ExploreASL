@@ -149,36 +149,36 @@ elseif strcmpi(Fext, '.json')
 	end
 	if isfield(x,'StudyPars')
 		bStudyPars = 1;
-		nContext = length(x.StudyPars);
+		nStudyPars = length(x.StudyPars);
 	else
 		bStudyPars = 0;
-		nContext = 1;
+		nStudyPars = 1;
 	end
 	
-	for iSubfield = 1:nContext
+	for iSubfield = 1:nStudyPars
 		if bStudyPars
 			subx = x.StudyPars{iSubfield};
 		else
 			subx = x;
 		end
 		sFields = fieldnames(subx);
-		for n=1:size(sFields,1)
+		for iField=1:size(sFields,1)
 			% Check if the current field is valid (char, numeric value, structure or cell array)
-			if ~(ischar(subx.(sFields{n})) || isstruct(subx.(sFields{n})) || isnumeric(subx.(sFields{n})) || islogical(subx.(sFields{n})) || iscell(subx.(sFields{n})))
-				fprintf('\n%s\n',char(sFields{n}));
+			if ~(ischar(subx.(sFields{iField})) || isstruct(subx.(sFields{iField})) || isnumeric(subx.(sFields{iField})) || islogical(subx.(sFields{iField})) || iscell(subx.(sFields{iField})))
+				fprintf('\n%s\n',char(sFields{iField}));
 				warning('JSON field type could be invalid...');
 			end
-			if strcmpi(sFields{n},'group') % Convert group fields to correct Matlab cell arrays
+			if strcmpi(sFields{iField},'group') % Convert group fields to correct Matlab cell arrays
 				% Generate new Matlab cell array
-				subx.group{str2num(strrep(sFields{n},'group',''))} = subx.(sFields{n});
+				subx.group{str2num(strrep(sFields{iField},'group',''))} = subx.(sFields{iField});
 				% Remove old field
-				subx = rmfield(subx,sFields{n});
-			elseif strcmpi(sFields{n},'LOAD') % Handle load commands
-				loadPaths = fieldnames(subx.(sFields{n}));
-				for m=1:size(loadPaths,1)
+				subx = rmfield(subx,sFields{iField});
+			elseif strcmpi(sFields{iField},'LOAD') % Handle load commands
+				loadPaths = fieldnames(subx.(sFields{iField}));
+				for iPath=1:size(loadPaths,1)
 					% Don't forget to use \\ instead of \ in your paths
-					if exist(subx.(sFields{n}).(loadPaths{m}),'file')
-						load(fullfile(subx.(sFields{n}).(loadPaths{m})));
+					if exist(subx.(sFields{iField}).(loadPaths{iPath}),'file')
+						load(fullfile(subx.(sFields{iField}).(loadPaths{iPath})));
 					end
 				end
 			end

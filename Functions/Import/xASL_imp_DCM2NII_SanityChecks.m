@@ -1,12 +1,12 @@
-function xASL_imp_DCM2NII_SanityChecks(x,thisSubject,thisVisit)
+function xASL_imp_DCM2NII_SanityChecks(x, thisSubject, thisVisit)
 %xASL_imp_DCM2NII_SanityChecks Sanity check for missing elements
 %
-% FORMAT: xASL_imp_DCM2NII_SanityChecks(x)
+% FORMAT: xASL_imp_DCM2NII_SanityChecks(x, thisSubject, thisVisit)
 %
 % INPUT:
 %   x           - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
-%   thisSubject - Current subject x.overview.(sFieldName)
-%   thisVisit   - Current visit x.overview.(sFieldName).(vFieldName)
+%   thisSubject - Current subject x.importOverview.(sFieldName)
+%   thisVisit   - Current visit x.importOverview.(sFieldName).(vFieldName)
 %
 % OUTPUT:
 %   n/a
@@ -18,7 +18,7 @@ function xASL_imp_DCM2NII_SanityChecks(x,thisSubject,thisVisit)
 % EXAMPLE:        n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
     if x.modules.import.nSubjects==0
