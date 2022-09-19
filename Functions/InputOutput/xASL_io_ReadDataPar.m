@@ -147,17 +147,17 @@ elseif strcmpi(Fext, '.json')
 	else
 		x = jsonData;
 	end
-	if isfield(x,'ImportContexts')
-		bImportContexts = 1;
-		nContext = length(x.ImportContexts);
+	if isfield(x,'StudyPars')
+		bStudyPars = 1;
+		nContext = length(x.StudyPars);
 	else
-		bImportContexts = 0;
+		bStudyPars = 0;
 		nContext = 1;
 	end
 	
 	for iSubfield = 1:nContext
-		if bImportContexts
-			subx = x.ImportContexts{iSubfield};
+		if bStudyPars
+			subx = x.StudyPars{iSubfield};
 		else
 			subx = x;
 		end
@@ -191,8 +191,8 @@ elseif strcmpi(Fext, '.json')
 		if ~bStudyPar
 			subx = xASL_io_CheckDeprecatedFieldsX(subx,true);
 		end
-		if bImportContexts
-			x.ImportContexts{iSubfield} = subx;
+		if bStudyPars
+			x.StudyPars{iSubfield} = subx;
 		else
 			x = subx;
 		end

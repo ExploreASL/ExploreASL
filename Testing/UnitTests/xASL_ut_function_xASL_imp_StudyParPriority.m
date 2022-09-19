@@ -31,10 +31,10 @@ testJson = xASL_io_ReadDataPar(testFile);
 
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
-if ~isfield(testJson,'ImportContexts')
+if ~isfield(testJson,'StudyPars')
 	testCondition = false; % Test failed
 end
-if length(testJson.ImportContexts) ~= 4
+if length(testJson.StudyPars) ~= 4
     testCondition = false; % Test failed
 end
 

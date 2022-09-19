@@ -55,12 +55,12 @@ function x = xASL_wrp_NII2BIDS(x)
 	
 	% The name always has to be assigned as it is used in the DatasetDescription
 	
-	if isfield(studyParFull,'ImportContexts')
+	if isfield(studyParFull,'StudyPars')
 		% For multi-context studyPar - add this to the first context
-		if ~isfield(studyParFull.ImportContexts{1},'Name')
-			studyParFull.ImportContexts{1}.Name = x.modules.import.imPar.studyID;
+		if ~isfield(studyParFull.StudyPars{1},'Name')
+			studyParFull.StudyPars{1}.Name = x.modules.import.imPar.studyID;
 		end
-		studyParFirstContext = studyParFull.ImportContexts{1};
+		studyParFirstContext = studyParFull.StudyPars{1};
 	else
 		if ~isfield(studyParFull,'Name')
 			studyParFull.Name = x.modules.import.imPar.studyID;

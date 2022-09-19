@@ -30,7 +30,7 @@ if nargin < 1 || isempty(studyParFull)
 end
 
 % Do nothing for a single-context studyPar
-if ~isfield(studyParFull,'ImportContexts')
+if ~isfield(studyParFull,'StudyPars')
 	studyParSpecific = studyParFull;
 	return;
 end
@@ -39,45 +39,51 @@ end
 studyParSpecific = struct();
 
 % At each step, check for all conditions and set a flag for overwrite (first step having the lowest priority
-for iContext = 1:length(studyParFull.ImportContexts)
+for iContext = 1:length(studyParFull.StudyPars)
 	bOverwrite = 1;
 	
-	% If AliasHierarchy field is not there, then always take it
-	if isfield(studyParFull.ImportContexts{iContext},'AliasHierarchy')
-		aliasHierarchy = studyParFull.ImportContexts{iContext}.AliasHierarchy;
-		
-		% Check subject name - missing rule or missing regexp means that it is OK
-		if ~isempty(subjectName) && ~isempty(aliasHierarchy) && ~isempty(aliasHierarchy{1})
+	% Checks for fields SubjectRegexp, VisitRegexp, SessionRegexp - if missing or empty, then take this context into account
+	% Otherwise check if the respective field and Subject/Visit/Session name matches the regular expression
+	
+	% Check subject name - missing rule or missing regexp means that it is OK
+	if isfield(studyParFull.StudyPars{iContext},'SubjectRegexp')
+		if ~isempty(subjectName) && ~isempty(studyParFull.StudyPars{iContext}.SubjectRegexp)
 			% If the regexp is not found, then we don't take this subejct
-			if isempty(regexpi(subjectName,aliasHierarchy{1}))
+			if isempty(regexpi(subjectName, xASL_num2str(studyParFull.StudyPars{iContext}.SubjectRegexp)))
 				bOverwrite = 0;
 			end
 		end
-		
-		% Check sessions
-		if ~isempty(sessionName) && length(aliasHierarchy)>1 && ~isempty(aliasHierarchy{2})
-			if isempty(regexpi(sessionName,aliasHierarchy{2}))
+		studyParFull.StudyPars{iContext} = rmfield(studyParFull.StudyPars{iContext},'SubjectRegexp');	
+	end
+	
+	% Check sessions
+	if isfield(studyParFull.StudyPars{iContext},'VisitRegexp')
+		if ~isempty(sessionName) && ~isempty(studyParFull.StudyPars{iContext}.VisitRegexp)
+			% If the regexp is not found, then we don't take this subejct
+			if isempty(regexpi(sessionName, xASL_num2str(studyParFull.StudyPars{iContext}.VisitRegexp)))
 				bOverwrite = 0;
 			end
 		end
+		studyParFull.StudyPars{iContext} = rmfield(studyParFull.StudyPars{iContext},'VisitRegexp');	
+	end
 		
-		% Check runs
-		if ~isempty(runName) && length(aliasHierarchy)>2 && ~isempty(aliasHierarchy{3})
-			if isempty(regexpi(runName,aliasHierarchy{3}))
+	% Check runs
+	if isfield(studyParFull.StudyPars{iContext},'SessionRegexp')
+		if ~isempty(runName) && ~isempty(studyParFull.StudyPars{iContext}.SessionRegexp)
+			% If the regexp is not found, then we don't take this subejct
+			if isempty(regexpi(runName, xASL_num2str(studyParFull.StudyPars{iContext}.SessionRegexp)))
 				bOverwrite = 0;
 			end
 		end
-		
-		% Remove the aliasHierarchy from this context
-		studyParFull.ImportContexts{iContext} = rmfield(studyParFull.ImportContexts{iContext},'AliasHierarchy');	
+		studyParFull.StudyPars{iContext} = rmfield(studyParFull.StudyPars{iContext},'SessionRegexp');	
 	end
 	
 	if bOverwrite
 		% Overwrite all fields
-		listFields = fieldnames(studyParFull.ImportContexts{iContext});
+		listFields = fieldnames(studyParFull.StudyPars{iContext});
 		
 		for iField = 1:length(listFields)
-			studyParSpecific.(listFields{iField}) = studyParFull.ImportContexts{iContext}.(listFields{iField});
+			studyParSpecific.(listFields{iField}) = studyParFull.StudyPars{iContext}.(listFields{iField});
 		end
 	end
 end
