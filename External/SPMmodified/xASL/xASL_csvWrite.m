@@ -25,7 +25,7 @@ function xASL_csvWrite(InputCell, PathCSV, bOverwrite)
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = false;
 end
-if nargin<2 || isempty(InputCell) || isempty(PathTSV)
+if nargin<2 || isempty(InputCell) || isempty(PathCSV)
     error('Specify both InputCell and PathTSV');
 end
 
