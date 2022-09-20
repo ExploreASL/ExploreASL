@@ -15,13 +15,13 @@ function [CellContents] = xASL_csvRead(PathCSV)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: ParticipantsMetadata = xASL_csvRead('/MyStudy/participants.csv');
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
 %% -------------------------------------------------------
 %% Admin
 if nargin<1 || isempty(PathCSV)
-    warning('Invalid Pathcsv input argument, skipping');
+    warning('Invalid PathCSV input argument, skipping');
     return;
 end    
 
@@ -59,8 +59,5 @@ for iT=1:size(TempText,1)
 
     end
 end
-    
-    
 
 end
-
