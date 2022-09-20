@@ -156,45 +156,48 @@ elseif strcmpi(Fext, '.json')
 	end
 	
 	for iSubfield = 1:nStudyPars
+		% In case a single studyPar is given, it is outputed in x-structure
+		% In case there are multiple studyPars in x.studyPars, we need to take it one by one (renamed to subfieldX), then it is cleaned like the x-struct would be
+		% and then it is put back to x.StudyPars
 		if bStudyPars
-			subx = x.StudyPars{iSubfield};
+			subfieldX = x.StudyPars{iSubfield};
 		else
-			subx = x;
+			subfieldX = x;
 		end
-		sFields = fieldnames(subx);
+		sFields = fieldnames(subfieldX);
 		for iField=1:size(sFields,1)
 			% Check if the current field is valid (char, numeric value, structure or cell array)
-			if ~(ischar(subx.(sFields{iField})) || isstruct(subx.(sFields{iField})) || isnumeric(subx.(sFields{iField})) || islogical(subx.(sFields{iField})) || iscell(subx.(sFields{iField})))
+			if ~(ischar(subfieldX.(sFields{iField})) || isstruct(subfieldX.(sFields{iField})) || isnumeric(subfieldX.(sFields{iField})) || islogical(subfieldX.(sFields{iField})) || iscell(subfieldX.(sFields{iField})))
 				fprintf('\n%s\n',char(sFields{iField}));
 				warning('JSON field type could be invalid...');
 			end
 			if strcmpi(sFields{iField},'group') % Convert group fields to correct Matlab cell arrays
 				% Generate new Matlab cell array
-				subx.group{str2num(strrep(sFields{iField},'group',''))} = subx.(sFields{iField});
+				subfieldX.group{str2num(strrep(sFields{iField},'group',''))} = subfieldX.(sFields{iField});
 				% Remove old field
-				subx = rmfield(subx,sFields{iField});
+				subfieldX = rmfield(subfieldX,sFields{iField});
 			elseif strcmpi(sFields{iField},'LOAD') % Handle load commands
-				loadPaths = fieldnames(subx.(sFields{iField}));
+				loadPaths = fieldnames(subfieldX.(sFields{iField}));
 				for iPath=1:size(loadPaths,1)
 					% Don't forget to use \\ instead of \ in your paths
-					if exist(subx.(sFields{iField}).(loadPaths{iPath}),'file')
-						load(fullfile(subx.(sFields{iField}).(loadPaths{iPath})));
+					if exist(subfieldX.(sFields{iField}).(loadPaths{iPath}),'file')
+						load(fullfile(subfieldX.(sFields{iField}).(loadPaths{iPath})));
 					end
 				end
 			end
 		end
 		
 		% Convert strings containing numbers to number
-		subx = xASL_io_ReadDataPar_FixFields(subx);
+		subfieldX = xASL_io_ReadDataPar_FixFields(subfieldX);
 		
 		%% Check deprecated fields
 		if ~bStudyPar
-			subx = xASL_io_CheckDeprecatedFieldsX(subx,true);
+			subfieldX = xASL_io_CheckDeprecatedFieldsX(subfieldX,true);
 		end
 		if bStudyPars
-			x.StudyPars{iSubfield} = subx;
+			x.StudyPars{iSubfield} = subfieldX;
 		else
-			x = subx;
+			x = subfieldX;
 		end
 	end
 	

@@ -28,9 +28,9 @@ function [x] = xASL_init_LoadDataParameterFile(x)
     if strcmp(Dext,'.json')
         x = xASL_io_ReadDataPar(x.dir.dataPar, false);
     elseif strcmp(Dext,'.m')
-        error('No .m file backwards compatibility starting v2.0.0...');
+        error('No .m file backwards compatibility starting v1.10.0...');
     elseif strcmp(Dext,'.mat')
-        error('No .mat file backwards compatibility starting v2.0.0...');
+        error('No .mat file backwards compatibility starting v1.10.0...');
     end
     
     % Put x fields back from backup
