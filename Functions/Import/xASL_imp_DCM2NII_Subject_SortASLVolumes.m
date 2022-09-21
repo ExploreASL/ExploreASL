@@ -178,7 +178,7 @@ function [bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, i
 			structSubject = x.importOverview.(['subject_' num2str(iSubject,'%.3d')]);
 			structVisit   = structSubject.(['visit_' num2str(iVisit,'%.3d')]);
 			structRun     = structVisit.(['run_' num2str(iSession,'%.3d')]);
-			studyParSpecific = xASL_imp_StudyParPriority(studyParAll, structSubject.name, structVisit.name, structRun.regexp(2:end));
+			studyParSpecific = xASL_imp_StudyParPriority(studyParAll, structSubject.name, structVisit.name, structRun.name(5:end));
 			
 			if isfield(studyParSpecific,'TimeEncodedMatrixSize') && ~isempty(studyParSpecific.TimeEncodedMatrixSize) || ... % Should be 4, 8 or 12
 					isfield(studyParSpecific,'TimeEncodedMatrixType') % Natural or walsh

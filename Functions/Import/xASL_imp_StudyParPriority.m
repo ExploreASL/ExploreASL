@@ -42,40 +42,40 @@ studyParSpecific = struct();
 for iStudyPar = 1:length(studyParAll.StudyPars)
 	bOverwrite = 1;
 	
-	% Checks for fields subjectRegExp, visitRegExp, sessionRegExp - if missing or empty, then take this specific studyPar into account
+	% Checks for fields SubjectRegExp, VisitRegExp, SessionRegExp - if missing or empty, then take this specific studyPar into account
 	% Otherwise check if the respective field and Subject/Visit/Session name matches the regular expression
 	
 	% Check subject name - missing rule or missing regexp means that the condition is fulfilled
-	if isfield(studyParAll.StudyPars{iStudyPar},'subjectRegExp')
-		if ~isempty(subjectName) && ~isempty(studyParAll.StudyPars{iStudyPar}.subjectRegExp)
+	if isfield(studyParAll.StudyPars{iStudyPar},'SubjectRegExp')
+		if ~isempty(subjectName) && ~isempty(studyParAll.StudyPars{iStudyPar}.SubjectRegExp)
 			% If the regexp is not found, then we don't take this specific subject/visit/session
-			if isempty(regexpi(subjectName, xASL_num2str(studyParAll.StudyPars{iStudyPar}.subjectRegExp)))
+			if isempty(regexpi(subjectName, xASL_num2str(studyParAll.StudyPars{iStudyPar}.SubjectRegExp)))
 				bOverwrite = 0;
 			end
 		end
-		studyParAll.StudyPars{iStudyPar} = rmfield(studyParAll.StudyPars{iStudyPar},'subjectRegExp');	
+		studyParAll.StudyPars{iStudyPar} = rmfield(studyParAll.StudyPars{iStudyPar},'SubjectRegExp');	
 	end
 	
 	% Check sessions
-	if isfield(studyParAll.StudyPars{iStudyPar},'visitRegExp')
-		if ~isempty(sessionName) && ~isempty(studyParAll.StudyPars{iStudyPar}.visitRegExp)
+	if isfield(studyParAll.StudyPars{iStudyPar},'VisitRegExp')
+		if ~isempty(sessionName) && ~isempty(studyParAll.StudyPars{iStudyPar}.VisitRegExp)
 			% If the regexp is not found, then we don't take this specific subject/visit/session
-			if isempty(regexpi(sessionName, xASL_num2str(studyParAll.StudyPars{iStudyPar}.visitRegExp)))
+			if isempty(regexpi(sessionName, xASL_num2str(studyParAll.StudyPars{iStudyPar}.VisitRegExp)))
 				bOverwrite = 0;
 			end
 		end
-		studyParAll.StudyPars{iStudyPar} = rmfield(studyParAll.StudyPars{iStudyPar},'visitRegExp');	
+		studyParAll.StudyPars{iStudyPar} = rmfield(studyParAll.StudyPars{iStudyPar},'VisitRegExp');	
 	end
 		
 	% Check runs
-	if isfield(studyParAll.StudyPars{iStudyPar},'sessionRegExp')
-		if ~isempty(runName) && ~isempty(studyParAll.StudyPars{iStudyPar}.sessionRegExp)
+	if isfield(studyParAll.StudyPars{iStudyPar},'SessionRegExp')
+		if ~isempty(runName) && ~isempty(studyParAll.StudyPars{iStudyPar}.SessionRegExp)
 			% If the regexp is not found, then we don't take this specific subject/visit/session 
-			if isempty(regexpi(runName, xASL_num2str(studyParAll.StudyPars{iStudyPar}.sessionRegExp)))
+			if isempty(regexpi(runName, xASL_num2str(studyParAll.StudyPars{iStudyPar}.SessionRegExp)))
 				bOverwrite = 0;
 			end
 		end
-		studyParAll.StudyPars{iStudyPar} = rmfield(studyParAll.StudyPars{iStudyPar},'sessionRegExp');	
+		studyParAll.StudyPars{iStudyPar} = rmfield(studyParAll.StudyPars{iStudyPar},'SessionRegExp');	
 	end
 	
 	if bOverwrite
