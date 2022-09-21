@@ -1,7 +1,7 @@
-function studyParSpecific = xASL_imp_StudyParPriority(studyParAll, subjectName, sessionName, runName)
+function studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll, subjectName, sessionName, runName)
 %xASL_imp_StudyParPriority Takes the studyParAll a prioritizes based on the current subject/session/run
 %
-% FORMAT: studyParSpecific = xASL_imp_StudyParPriority(studyParAll[, subjectName, sessionName, runName])
+% FORMAT: studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll[, subjectName, sessionName, runName])
 %
 % INPUT:
 %   studyParAll  - StudyPar possibly containing several studyPar instances (REQUIRED, STRUCT)
@@ -10,7 +10,7 @@ function studyParSpecific = xASL_imp_StudyParPriority(studyParAll, subjectName, 
 %   runName      - Name of the current run (OPTIONAL, DEFAULT = '')
 %
 % OUTPUT:
-%   studyParSpecific - Resolved studyPar for a specific subject/session/run
+%   studyParSpecificSubjVisitSess - Resolved studyPar for a specific subject/session/run
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Takes studyPar with possibly several studyPar instances and resolves the priority and saves the individual studyPar.
@@ -25,18 +25,18 @@ function studyParSpecific = xASL_imp_StudyParPriority(studyParAll, subjectName, 
 
 % Check existence of studyParAll and return if single studyPar
 if nargin < 1 || isempty(studyParAll)
-	studyParSpecific = struct();
+	studyParSpecificSubjVisitSess = struct();
 	return;
 end
 
 % Do nothing for a single-instance studyPar
 if ~isfield(studyParAll,'StudyPars')
-	studyParSpecific = studyParAll;
+	studyParSpecificSubjVisitSess = studyParAll;
 	return;
 end
 
 % Initialize empty studyPar and then go through different studyPars
-studyParSpecific = struct();
+studyParSpecificSubjVisitSess = struct();
 
 % At each step, check for all conditions and set a flag for overwrite (first step having the lowest priority
 for iStudyPar = 1:length(studyParAll.StudyPars)
@@ -83,7 +83,7 @@ for iStudyPar = 1:length(studyParAll.StudyPars)
 		listFields = fieldnames(studyParAll.StudyPars{iStudyPar});
 		
 		for iField = 1:length(listFields)
-			studyParSpecific.(listFields{iField}) = studyParAll.StudyPars{iStudyPar}.(listFields{iField});
+			studyParSpecificSubjVisitSess.(listFields{iField}) = studyParAll.StudyPars{iStudyPar}.(listFields{iField});
 		end
 	end
 end
