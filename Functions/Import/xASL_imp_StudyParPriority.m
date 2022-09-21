@@ -86,7 +86,13 @@ for iStudyPar = 1:length(studyParAll.StudyPars)
 end
 
 % Delete the keywords for merging
-studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SubjectRegExp');
-studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'VisitRegExp');
-studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SessionRegExp');
+    if isfield(studyParSpecificSubjVisitSess,'SubjectRegExp')
+        studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SubjectRegExp');
+    end
+    if isfield(studyParSpecificSubjVisitSess,'VisitRegExp')
+        studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'VisitRegExp');
+    end
+    if isfield(studyParSpecificSubjVisitSess,'SessionRegExp')
+        studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SessionRegExp');
+    end
 end
