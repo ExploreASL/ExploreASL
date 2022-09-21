@@ -258,6 +258,7 @@ switch lower(x.Q.LabelingType)
 			end
 		else
 			fprintf(FIDoptionFile, '--tau=%.2f\n', LDs);
+			fprintf(FIDoptionFile, '--pld=%.2f\n', PLDs);
 		end
 end
 
@@ -455,8 +456,6 @@ end
 	
 % 4. Model fiting parameters (ATT map)
 fprintf(FIDoptionFile, '--inferitt');
-	 
-
 
 %% 5. Save Fabber options file
 fclose(FIDoptionFile);
