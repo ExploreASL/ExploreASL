@@ -92,9 +92,9 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
     % args.bAutomaticallyDetectFSL=1;
     
     if bUseFabber
-        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl -@ ' xASL_adm_UnixPath(pathBasilOptions)], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl -@ ' xASL_adm_UnixPath(pathBasilOptions, ispc)], x);
     else
-        [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput) ' -@ ' xASL_adm_UnixPath(pathBasilOptions) ' -o ' xASL_adm_UnixPath(dirBasilOutput) ' ' BasilOptions], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput, ispc) ' -@ ' xASL_adm_UnixPath(pathBasilOptions, ispc) ' -o ' xASL_adm_UnixPath(dirBasilOutput, ispc) ' ' BasilOptions], x);
     end
     
     % Check if FSL failed
