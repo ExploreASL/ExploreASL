@@ -53,7 +53,6 @@ for iStudyPar = 1:length(studyParAll.StudyPars)
 				bOverwrite = 0;
 			end
 		end
-		studyParAll.StudyPars{iStudyPar} = rmfield(studyParAll.StudyPars{iStudyPar},'SubjectRegExp');	
 	end
 	
 	% Check sessions
@@ -64,7 +63,6 @@ for iStudyPar = 1:length(studyParAll.StudyPars)
 				bOverwrite = 0;
 			end
 		end
-		studyParAll.StudyPars{iStudyPar} = rmfield(studyParAll.StudyPars{iStudyPar},'VisitRegExp');	
 	end
 		
 	% Check runs
@@ -75,7 +73,6 @@ for iStudyPar = 1:length(studyParAll.StudyPars)
 				bOverwrite = 0;
 			end
 		end
-		studyParAll.StudyPars{iStudyPar} = rmfield(studyParAll.StudyPars{iStudyPar},'SessionRegExp');	
 	end
 	
 	if bOverwrite
@@ -87,4 +84,9 @@ for iStudyPar = 1:length(studyParAll.StudyPars)
 		end
 	end
 end
+
+% Delete the keywords for merging
+studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SubjectRegExp');
+studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'VisitRegExp');
+studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SessionRegExp');
 end
