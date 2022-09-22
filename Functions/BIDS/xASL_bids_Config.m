@@ -38,15 +38,15 @@ bidsPar.listFieldsRemoveGeneral = {'ProcedureStepDescription' 'SeriesDescription
 	'RefLinesPE','BandwidthPerPixelPhaseEncode','ImageComments','ConsistencyInfo','WipMemBlock','Interpolation2D','TotalAcquiredVolumes', 'NumberOfExcitations', 'PrescanReuseString', ...
 	'SaturationStopTime','BaseResolution','DerivedVendorReportedEchoSpacing','RawImage', 'T1', 'PercentSampling', 'ImageOrientationText', 'PhaseOversampling','BolusDuration','scaleFactor','EchoNumber'}; % Fields to exclude as not defined in BIDS
 
-% A list of fields to remove the ASL-BIDS JSON files only
+% A list of fields to remove the ASL.json files as the field is not defined in ASL-BIDS 
 bidsPar.listFieldsRemoveASL = {'SliceReadoutTime','RepetitionTime','InversionTime','LabelOffset','PostLabelDelay','NumRFBlocks',...
-	'GELabelingDuration','RFGap','MeanGzx10','PhiAdjust','M0','LabelingType','ScanType','SequenceType'}; % Fields to exclude from ASL only
+	'GELabelingDuration','RFGap','MeanGzx10','PhiAdjust','M0','LabelingType','ScanType','SequenceType'}; 
 
-% A list of fields to remove the ASL-M0 JSON files only
-bidsPar.listFieldsRemoveM0 = {'TotalAcquiredPairs', 'ArterialSpinLabelingType'}; % Fields to exclude from M0 only
+% A list of fields to remove the M0.json files as the field is not defined in ASL-BIDS
+bidsPar.listFieldsRemoveM0 = {'TotalAcquiredPairs', 'ArterialSpinLabelingType'};
 
-% A list of fields to remove the non-ASL JSON files only
-bidsPar.listFieldsRemoveNonASL = {'TotalAcquiredPairs'}; % Fields to exclude from non-ASL only
+% A list of fields to remove the all non-ASL, non-M0 JSON files as the field is not defined in BIDS
+bidsPar.listFieldsRemoveNonASL = {'TotalAcquiredPairs'}; 
 
 % Gives the correct order of fields to be saved in JSON so that it corresponds to the BIDS definition
 % This is not mandatory, just makes things more accessible

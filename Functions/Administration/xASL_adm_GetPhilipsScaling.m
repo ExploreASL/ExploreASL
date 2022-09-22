@@ -15,6 +15,12 @@ function scaleFactor = xASL_adm_GetPhilipsScaling(parms,header)
 %              that normally has the same scaling as RescaleSlope in DICOM, it checks if dcm2nii (by the info in JSON)
 %              has already converted the scale slopes to floating point. And if not, the derive the correct
 %              scaling factor to be applied.
+%              The function works with Philips-specific scale-slopes:
+%              RWVSlope = Real world value slope (0040,9225) 
+%              MRScaleSlope (2005,100e), (2005,110e), (2005,120e)
+%              RescaleSlopeOriginal (2005,0x140a), (2005,110a)
+%              These are different from the standard slopes in DICOM that are used as display slopes in Philips:
+%              RescaleSlope (0028,1053)
 %              With new version of dcm2niix-20220720 and ExploreASL-1.10.0, dcm2niix does RWVSlope scalings correctly and we do not have to fix that.
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: scaleFactor = xASL_adm_GetPhilipsScaling('ASL4D_parms.mat','ASL.json');
@@ -32,43 +38,43 @@ rescaleSlopeNifti = header.dat.scl_slope;
 if isfield(parms,'RWVSlope')
 	% Obtains dcm2niix version used for conversion and ExploreASL version
 	% If ExploreASL version >= 1.10.0 or dcm2niix version >= 20210317
-	if isfield(parms,'ConversionSoftware') && (strcmp(parms.ConversionSoftware,'dcm2nii') || strcmp(parms.ConversionSoftware,'dcm2niix')) && isfield(parms,'ConversionSoftwareVersion')
+	if isfield(parms, 'ConversionSoftware') && (strcmp(parms.ConversionSoftware, 'dcm2nii') || strcmp(parms.ConversionSoftware, 'dcm2niix')) && isfield(parms, 'ConversionSoftwareVersion')
 		dcm2niixVersion = parms.ConversionSoftwareVersion;
 		dcm2niixVersion = str2num(dcm2niixVersion(end-7:end));
 	else
 		dcm2niixVersion = 0;
 	end
 	
-	% It has to use the correct dcm2niix version that is able to handle this parameter and it also needs to report that it did do that
-	if dcm2niixVersion >= 20210317 && isfield(parms,'UsePhilipsFloatNotDisplayScaling') && (parms.UsePhilipsFloatNotDisplayScaling == 1)
+	% The correct dcm2niix version has to be used that is able to handle this parameter, and dcm2niix also needs to report the scalings were fixed
+	if dcm2niixVersion >= 20210317 && isfield(parms, 'UsePhilipsFloatNotDisplayScaling') && (parms.UsePhilipsFloatNotDisplayScaling == 1)
 		scaleFactor = 0;
 	else
 		% If the RealWorldValue is present, then dcm2nii scales to them and ignores everything else
 		fprintf('=========================================== Scaling ==========================================\n');
-		if length(parms.RWVSlope)>1
+		if numel(parms.RWVSlope)>1
 			[~,idx] = min(abs(parms.RWVSlope - rescaleSlopeNifti));
 			parms.RWVSlope = parms.RWVSlope(idx);
-			if isfield(parms,'RescaleSlopeOriginal') && length(parms.RescaleSlopeOriginal)>1
+			if isfield(parms, 'RescaleSlopeOriginal') && numel(parms.RescaleSlopeOriginal)>1
 				parms.RescaleSlopeOriginal = parms.RescaleSlopeOriginal(idx);
 			end
 			
-			if isfield(parms,'RescaleSlope') && length(parms.RescaleSlope)>1
+			if isfield(parms, 'RescaleSlope') && numel(parms.RescaleSlope)>1
 				parms.RescaleSlope = parms.RescaleSlope(idx);
 			end
 			
-			if isfield(parms,'MRScaleSlope') && length(parms.MRScaleSlope)>1
+			if isfield(parms, 'MRScaleSlope') && numel(parms.MRScaleSlope)>1
 				parms.MRScaleSlope = parms.MRScaleSlope(idx);
 			end
 		end
 		
 		if ~isempty(parms.RWVSlope)
-			if ~isnear(parms.RWVSlope,rescaleSlopeNifti,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
+			if ~isnear(parms.RWVSlope,rescaleSlopeNifti, parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
 				fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and NIfTI slope (' xASL_num2str(rescaleSlopeNifti) ') differ, using RWVSlope']);
 			end
-			if isfield(parms,'RescaleSlopeOriginal') && ~isnear(parms.RWVSlope,parms.RescaleSlopeOriginal,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
+			if isfield(parms,'RescaleSlopeOriginal') && ~isnear(parms.RWVSlope, parms.RescaleSlopeOriginal, parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
 				fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ') differ, using RWVSlope']);
 			end
-			if isfield(parms,'RescaleSlope') && ~isnear(parms.RWVSlope,parms.RescaleSlope,parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
+			if isfield(parms,'RescaleSlope') && ~isnear(parms.RWVSlope, parms.RescaleSlope, parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
 				fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') differ, using RWVSlope']);
 			end
 		else
@@ -83,10 +89,10 @@ if isfield(parms,'RWVSlope')
 		scaleFactor = parms.RWVSlope;
 	end
 			
-elseif isfield(parms,'UsePhilipsFloatNotDisplayScaling') && (parms.UsePhilipsFloatNotDisplayScaling == 1)
+elseif isfield(parms, 'UsePhilipsFloatNotDisplayScaling') && (parms.UsePhilipsFloatNotDisplayScaling == 1)
 	% Without the RWVSlope set and with the UsePhilipsFloatNotDisplayScaling set to 1, we know that dcm2nii did the scaling correctly and we don't have to further scale anything
 	scaleFactor = 0;
-elseif (~isfield(parms,'RescaleSlope')) && (~isfield(parms,'MRScaleSlope')) && (~isfield(parms,'RescaleSlopeOriginal')) && (~isfield(parms,'UsePhilipsFloatNotDisplayScaling'))
+elseif (~isfield(parms, 'RescaleSlope')) && (~isfield(parms, 'MRScaleSlope')) && (~isfield(parms, 'RescaleSlopeOriginal')) && (~isfield(parms, 'UsePhilipsFloatNotDisplayScaling'))
 	% All fields are missing - we can ignore the quantification as all the fields have been removed and scaling done properly (we assume)
 	% Note that RWVSlope was ruled out previously, and if UsePhilipsFloatNotDisplayScaling exists, it must be 0
 	scaleFactor = 0;
@@ -99,8 +105,8 @@ else
 		scaleFactor = rescaleSlopeNifti;
 	end
 	
-	if isfield(parms,'RescaleSlopeOriginal') && (parms.RescaleSlopeOriginal ~= 1)
-		if (scaleFactor ~= 1) && ~isnear(scaleFactor,parms.RescaleSlopeOriginal,scaleFactor/100)
+	if isfield(parms, 'RescaleSlopeOriginal') && (parms.RescaleSlopeOriginal ~= 1)
+		if (scaleFactor ~= 1) && ~isnear(scaleFactor, parms.RescaleSlopeOriginal,scaleFactor/100)
 			warning('%s\n%s\n',...
 				['Discrepancy in RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ') and NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')'],...
 				'Using RescaleSlopeOriginal');
@@ -108,9 +114,9 @@ else
 		scaleFactor = parms.RescaleSlopeOriginal;
 	end
 	
-	if isfield(parms,'RescaleSlope') && (parms.RescaleSlope ~= 1)
-		if (scaleFactor ~= 1) && ~isnear(scaleFactor,parms.RescaleSlope,scaleFactor/100)
-			if (rescaleSlopeNifti ~= 1) && ~isnear(rescaleSlopeNifti,parms.RescaleSlope,scaleFactor/100)
+	if isfield(parms, 'RescaleSlope') && (parms.RescaleSlope ~= 1)
+		if (scaleFactor ~= 1) && ~isnear(scaleFactor, parms.RescaleSlope,scaleFactor/100)
+			if (rescaleSlopeNifti ~= 1) && ~isnear(rescaleSlopeNifti, parms.RescaleSlope,scaleFactor/100)
 				warning('%s\n%s\n',...
 				['Discrepancy in RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') and NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')'],...
 				'Using RescaleSlope');
@@ -137,12 +143,12 @@ if scaleFactor
 	% Make a local copy to potentially modify
     MRScaleSlope = parms.MRScaleSlope;
 	
-	if length(MRScaleSlope) > 1
+	if numel(MRScaleSlope) > 1
 		ssInd = find(MRScaleSlope ~= 1);
 		if isempty(ssInd)
 			MRScaleSlope = 1;
 		else
-			if length(ssInd) > 1
+			if numel(ssInd) > 1
 				warning('Philips MR ScaleSlope has more than a single value, could be a scale slope issue');
 			end
 			MRScaleSlope = MRScaleSlope(ssInd);

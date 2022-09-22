@@ -159,16 +159,16 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 	if isfield(jsonOut,'LabelingDuration') && ~isequal(jsonOut.GELabelingDuration,jsonOut.LabelingDuration)
 		% if the DICOM information is reasonable - less LDs than volumes, then we report a warning
 		if dimASL(4)>=numel(jsonOut.GELabelingDuration)
-			warning('Labeling duration mismatch with GE private field.');
+			warning('Labeling duration from studyPar mismatch with GE private field in DICOM.');
 			jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
 		elseif dimASL(4)>=numel(unique(jsonOut.GELabelingDuration))
-			warning('Labeling duration mismatch with GE private field.');
-			labDurTemp = unique(jsonOut.GELabelingDuration);
-			if labDurTemp(1) == 0
-				labDurTemp(1:end-1) = labDurTemp(2:end);
-				labDurTemp(end) = 0;
+			warning('Labeling duration from studyPar mismatch with GE private field in DICOM.');
+			labelingDurationTemp = unique(jsonOut.GELabelingDuration);
+			if labelingDurationTemp(1) == 0
+				labelingDurationTemp(1:end-1) = labelingDurationTemp(2:end);
+				labelingDurationTemp(end) = 0;
 			end
-			jsonOut.LabelingDuration = labDurTemp;
+			jsonOut.LabelingDuration = labelingDurationTemp;
 		else
 			% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
 			% and we thus use the provided information. We thus keep the LabelingDuration field untouched.
@@ -184,7 +184,7 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 		if isfield(jsonOut,'PostLabelingDelay') && ~isequal(jsonOut.PostLabelingDelay,jsonOut.InversionTime)
 			% if the DICOM information is reasonable - less PLDs than volumes, then we report a warning
 			if dimASL(4)>=numel(jsonOut.InversionTime)
-				warning('PostLabelingDelay mismatch with the GE-DICOM value in Inversion time.');
+				warning('PostLabelingDelay from studyPar mismatch with the GE DICOM Inversion time value.');
 				jsonOut.PostLabelingDelay = jsonOut.InversionTime;
 			else
 				% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
@@ -199,7 +199,7 @@ end
 % For GE and multi-PLD or single-PLD not defined in the GELabelingDurationField, we prefer LabelingDuration from study par due to issues with eASL
 if strcmp(jsonIn.Manufacturer, 'GE') && isfield(studyPar,'LabelingDuration') && ~isequal(studyPar.LabelingDuration,jsonOut.LabelingDuration) &&...
 	( length(jsonOut.LabelingDuration)>1 || ~isfield(jsonIn,'GELabelingDuration'))
-	warning('Labeling duration differs in DICOM and studyPar.');
+	warning('Labeling duration differs between DICOM and studyPar.');
 	jsonOut.LabelingDuration = studyPar.LabelingDuration;
 end
 	

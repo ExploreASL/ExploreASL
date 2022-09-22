@@ -26,14 +26,13 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 % 1. Initial settings
 % 2. Parse parameters
 % 3. Locate dcm2nii executable
-% 4. Set default arguments dcm2nii
-% 5. Check if we are reading a DICOM folder
-% 6. Set dcm2niiX initialization loading
-% 7. Check for existing targets
-% 8. Create temporary subfolder for converting
-% 9. Run dcm2nii and move files to final destination using specified series name
-% 10. Cleanup temp
-% 11. Optionally return the used input file
+% 4. Check if we are reading a DICOM folder
+% 5. Set dcm2niiX initialization loading
+% 6. Check for existing targets
+% 7. Create temporary subfolder for converting
+% 8. Run dcm2nii and move files to final destination using specified series name
+% 9. Cleanup temp
+% 10. Optionally return the used input file
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      ...
@@ -110,77 +109,10 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         end
     end
 
-    %% 4. Set default arguments dcm2nii 20101105
+    % Default arguments dcm2nii 20101105
     % '-a y -d n -e n -f y -g n -n y -p n -r n -v y -x n'; % -o will be appended below
-    % -a Anonymize [remove identifying information]: Y,N = Y
-    % -b load settings from specified inifile, e.g. '-b C:\set\t1.ini'
-    % -c Collapse input folders: Y,N = N
-    % -d Date in filename [filename.dcm -> 20061230122032.nii]: Y,N = Y
-    % -e events (series/acq) in filename [filename.dcm -> s002a003.nii]: Y,N = Y
-    % -f Source filename [e.g. filename.par -> filename.nii]: Y,N = Y
-    % -g gzip output, filename.nii.gz [ignored if '-n n']: Y,N = Y
-    % -i ID  in filename [filename.dcm -> johndoe.nii]: Y,N = Y
-    % -n output .nii file [if no, create .hdr/.img pair]: Y,N = Y
-    % -o Output Directory, e.g. 'C:\TEMP' (if unspecified, source directory is used)
-    % -p Protocol in filename [filename.dcm -> TFE_T1.nii]: Y,N = Y
-    % -r Reorient image to nearest orthogonal: Y,N
-    % -s SPM2/Analyze not SPM5/NIfTI [ignored if '-n y']: Y,N = N
-    % -v Convert every image in the directory: Y,N = Y
-    % -x Reorient and crop 3D NIfTI images: Y,N = N
-
-    % set default arguments dcm2niiX
-    %   -1..-9 : gz compression level (1=fastest..9=smallest, default 6)
-    %   -b : BIDS sidecar (y/n/o [o=only: no NIfTI], default y)
-    %    -ba : anonymize BIDS (y/n, default y)
-    %   -c : comment stored in NIfTI aux_file (up to 24 characters)
-    %   -d : directory search depth. Convert DICOMs in sub-folders of in_folder? (0..9, default 5)
-    %   -f : filename (%a=antenna (coil) name, %b=basename, %c=comments, %d=description, %e=echo number, %f=folder name, %i=ID of patient, %j=seriesInstanceUID, %k=studyInstanceUID, %m=manufacturer, %n=name of patient, %p=protocol, %r=instance number, %s=series number, %t=time, %u=acquisition number, %v=vendor, %x=study ID; %z=sequence name; default '%f_%p_%t_%s')
-    %   -g : generate defaults file (y/n/o/i [o=only: reset and write defaults; i=ignore: reset defaults], default n)
-    %   -h : show help
-    %   -i : ignore derived, localizer and 2D images (y/n, default n)
-    %   -l : losslessly scale 16-bit integers to use dynamic range (y/n, default n)
-    %   -m : merge 2D slices from same series regardless of study time, echo, coil, orientation, etc. (y/n, default n)
-    %   -n : only convert this series number - can be used up to 16 times (default convert all)
-    %   -o : output directory (omit to save to input folder)
-    %   -p : Philips precise float (not display) scaling (y/n, default y)
-    %   -r : rename instead of convert DICOMs (y/n, default n)
-    %   -s : single file mode, do not convert other images in folder (y/n, default n)
-    %   -t : text notes includes private patient details (y/n, default n)
-    %   -v : verbose (n/y or 0/1/2 [no, yes, logorrheic], default 0)
-    %   -x : crop (y/n, default n)
-    %   -z : gz compress images (y/i/n/3, default n) [y=pigz, i=internal:miniz, n=no, 3=no,3D]
-
-	% -1..-9 : gz compression level (1=fastest..9=smallest, default 6)
-	% -a : adjacent DICOMs (images from same series always in same folder) for faster conversion (n/y, default n)
-	% -b : BIDS sidecar (y/n/o [o=only: no NIfTI], default y)
-	% -ba : anonymize BIDS (y/n, default y)
-	% -c : comment stored in NIfTI aux_file (provide up to 24 characters e.g. '-c first_visit')
-	% -d : directory search depth. Convert DICOMs in sub-folders of in_folder? (0..9, default 5)
-	% -e : export as NRRD (y) or MGH (o) instead of NIfTI (y/n/o/j/b, default n)
-	% -f : filename (%a=antenna (coil) name, %b=basename, %c=comments, %d=description, %e=echo number, %f=folder name, %g=accession number, %i=ID of patient, %j=seriesInstanceUID, %k=studyInstanceUID, %m=manufacturer, %n=name of patient, %o=mediaObjectInstanceUID, %p=protocol, %r=instance number, %s=series number, %t=time, %u=acquisition number, %v=vendor, %x=study ID; %z=sequence name; default '%f_%p_%t_%s')
-	% -g : generate defaults file (y/n/o/i [o=only: reset and write defaults; i=ignore: reset defaults], default n)
-	% -h : show help
-	% -i : ignore derived, localizer and 2D images (y/n, default n)
-	% -l : losslessly scale 16-bit integers to use dynamic range (y/n/o [yes=scale, no=no, but uint16->int16, o=original], default o)
-	% -m : merge 2D slices from same series regardless of echo, exposure, etc. (n/y or 0/1/2, default 2) [no, yes, auto]
-	% -n : only convert this series CRC number - can be used up to 16 times (default convert all)
-	% -o : output directory (omit to save to input folder)
-	% -p : Philips precise float (not display) scaling (y/n, default y)
-	% -r : rename instead of convert DICOMs (y/n, default n)
-	% -s : single file mode, do not convert other images in folder (y/n, default n)
-	% -u : up-to-date check
-	% -v : verbose (n/y or 0/1/2, default 0) [no, yes, logorrheic]
-	% -w : write behavior for name conflicts (0,1,2, default 2: 0=skip duplicates, 1=overwrite, 2=add suffix)
-	% -x : crop 3D acquisitions (y/n/i, default n, use 'i'gnore to neither crop nor rotate 3D acquistions)
-	% -z : gz compress images (y/o/i/n/3, default n) [y=pigz, o=optimal pigz, i=internal:zlib, n=no, 3=no,3D]
-	% --big-endian : byte order (y/n/o, default o) [y=big-end, n=little-end, o=optimal/native]
-	% --progress : Slicer format progress information (y/n, default n)
-	% --ignore_trigger_times : disregard values in 0018,1060 and 0020,9153
-	% --terse : omit filename post-fixes (can cause overwrites)
-	% --version : report version
-	% --xml : Slicer format features
 	
-    %% 5. Check if we are reading a DICOM folder
+    %% 4. Check if we are reading a DICOM folder
     if exist(inpath,'dir')
         % Check if there are any DICOM files
         dicom_files = xASL_adm_GetFileList(inpath, imPar.dcmExtFilter,'List');
@@ -203,14 +135,14 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 		IniPath = fullfile(mricron_path,'dcm2nii-parrec.ini');
 	end
 	
-	%% 6. Set dcm2niiX initialization loading
+	%% 5. Set dcm2niiX initialization loading
     if str2num(imPar.dcm2nii_version(1:4))<2014
         dcm2nii_args = sprintf('-b "%s"', IniPath);
     else
         dcm2nii_args = '-f "%f_%p_%t_%s_%r"';
     end
 
-    %% 7. Check for existing targets
+    %% 6. Check for existing targets
     bSingleExists = xASL_exist(fullfile(destdir, [series_name '.nii']),'file');
     bMultiExists = xASL_exist(fullfile(destdir, [series_name '_1.nii']),'file');
     if ~imPar.bOverwrite && (bSingleExists || bMultiExists)
@@ -233,7 +165,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     end
 
 
-    %% 8. Create temporary subfolder for converting
+    %% 7. Create temporary subfolder for converting
     temp_dir = fullfile(destdir, ['dcm2nii_temp_' series_name]);
     
     % Ignore previously stored temp files that are still here because of a code crash e.g.
@@ -242,7 +174,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     end
     xASL_adm_CreateDir(temp_dir);
 
-    %% 9. Run dcm2nii and move files to final destination using specified series name
+    %% 8. Run dcm2nii and move files to final destination using specified series name
     
     % Use catch to remove temporary folder on error
     try
@@ -504,10 +436,10 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         rethrow(err)
     end
 
-    %% 10. Cleanup temp
+    %% 9. Cleanup temp
     rmdir(temp_dir,'s');
 
-    %% 11. Optionally return the used input file
+    %% 10. Optionally return the used input file
     if nargout>1
         usedinput = inpath; % could be the original input or the dicom file used
     end
