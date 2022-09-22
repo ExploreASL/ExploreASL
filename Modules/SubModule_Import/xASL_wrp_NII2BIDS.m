@@ -56,20 +56,20 @@ function x = xASL_wrp_NII2BIDS(x)
 	% The name always has to be assigned as it is used in the DatasetDescription
 	
 	if isfield(studyParAll,'StudyPars')
-		% For multi-context studyPar - add this to the first context
+		% For multi-studyParameter studyPar - add this to the first studyPar
 		if ~isfield(studyParAll.StudyPars{1},'Name')
 			studyParAll.StudyPars{1}.Name = x.modules.import.imPar.studyID;
 		end
-		studyParFirstContext = studyParAll.StudyPars{1};
+		studyParFirstParameters = studyParAll.StudyPars{1};
 	else
 		if ~isfield(studyParAll,'Name')
 			studyParAll.Name = x.modules.import.imPar.studyID;
 		end
-		studyParFirstContext = studyParAll;
+		studyParFirstParameters = studyParAll;
 	end
 	
 	%% 2. Create the study description output and verify that all is there
-	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyParFirstContext, x.Version);
+	datasetDescription = xASL_bids_CreateDatasetDescriptionTemplate(studyParFirstParameters, x.Version);
 	
 	% Make the output directory and save the description
     if ~xASL_exist(x.modules.import.imPar.BidsRoot,'dir')

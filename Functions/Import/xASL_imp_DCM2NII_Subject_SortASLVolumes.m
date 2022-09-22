@@ -173,7 +173,7 @@ function [bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, i
     
     if isfield(x.dir, 'studyPar') && ~isempty(x.dir.studyPar)
         if xASL_exist(x.dir.studyPar, 'file')
-            % Get the specific studyPar context
+            % Get the specific studyPar parameters
 			studyParAll = xASL_io_ReadDataPar(x.dir.studyPar, true);
 			structSubject = x.importOverview.(['subject_' num2str(iSubject,'%.3d')]);
 			structVisit   = structSubject.(['visit_' num2str(iVisit,'%.3d')]);

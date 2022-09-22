@@ -26,7 +26,7 @@ UnitTest.tests(1).testname = 'Read test file (default options)';
 testTime = tic;
 
 % Run your test here
-testFile = fullfile(TestRepository,'UnitTesting','io_files','studyParMultiContext.json');
+testFile = fullfile(TestRepository,'UnitTesting','io_files','studyParMultiParameter.json');
 testJson = xASL_io_ReadDataPar(testFile);
 
 % Define one or multiple test conditions here
@@ -47,7 +47,7 @@ UnitTest.tests(1).passed = testCondition;
 %% Test run 2 - run 3
 
 % Give your individual subtest a name
-UnitTest.tests(2).testname = 'Test a context of run 3';
+UnitTest.tests(2).testname = 'Test studyParameters of run 3';
 
 % Start the test
 testTime = tic;
@@ -71,10 +71,10 @@ UnitTest.tests(2).duration = toc(testTime);
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
 
-%% Test run 3 a non-special context
+%% Test run 3 a non-special studyParameters
 
 % Give your individual subtest a name
-UnitTest.tests(3).testname = 'Test a general non-special context';
+UnitTest.tests(3).testname = 'Test a general non-special study parameters';
 
 % Start the test
 testTime = tic;
@@ -98,10 +98,10 @@ UnitTest.tests(3).duration = toc(testTime);
 % Evaluate your test
 UnitTest.tests(3).passed = testCondition;
 
-%% Test run 4 - a non-defined context
+%% Test run 4 - a non-defined study parameters
 
 % Give your individual subtest a name
-UnitTest.tests(4).testname = 'Test a non-restricted context';
+UnitTest.tests(4).testname = 'Test non-restricted study parameters';
 
 % Start the test
 testTime = tic;
@@ -128,7 +128,7 @@ UnitTest.tests(4).passed = testCondition;
 %% Test run 5
 
 % Give your individual subtest a name
-UnitTest.tests(5).testname = 'Test a general context';
+UnitTest.tests(5).testname = 'Test general study parameters';
 
 % Start the test
 testTime = tic;
@@ -155,7 +155,7 @@ UnitTest.tests(5).passed = testCondition;
 %% Test run 6
 
 % Give your individual subtest a name
-UnitTest.tests(6).testname = 'Test a session/run context';
+UnitTest.tests(6).testname = 'Test session/run study parameters';
 
 % Start the test
 testTime = tic;
