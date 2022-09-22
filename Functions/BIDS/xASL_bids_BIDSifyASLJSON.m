@@ -163,12 +163,12 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 			jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
 		elseif dimASL(4)>=numel(unique(jsonOut.GELabelingDuration))
 			warning('Labeling duration from studyPar mismatch with GE private field in DICOM.');
-			labelingDurationTemp = unique(jsonOut.GELabelingDuration);
-			if labelingDurationTemp(1) == 0
-				labelingDurationTemp(1:end-1) = labelingDurationTemp(2:end);
-				labelingDurationTemp(end) = 0;
+			tempLabelingDuration = unique(jsonOut.GELabelingDuration);
+			if tempLabelingDuration(1) == 0
+				tempLabelingDuration(1:end-1) = tempLabelingDuration(2:end);
+				tempLabelingDuration(end) = 0;
 			end
-			jsonOut.LabelingDuration = labelingDurationTemp;
+			jsonOut.LabelingDuration = tempLabelingDuration;
 		else
 			% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
 			% and we thus use the provided information. We thus keep the LabelingDuration field untouched.
