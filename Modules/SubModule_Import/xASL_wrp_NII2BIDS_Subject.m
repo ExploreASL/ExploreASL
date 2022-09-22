@@ -54,7 +54,7 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 		else
 			runName = runName((iName(1)+1):end);
 		end
-		studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll, bidsLabel.subject, bidsLabel.visit, runName);
+		studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll, bidsLabel.subject, bidsLabel.visit, runName, true);
 		
         x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyParSpecificSubjVisitSess, listRuns, nameSubjectSession, bidsLabel, iRun);
     end

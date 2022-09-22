@@ -1,13 +1,14 @@
-function studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll, subjectName, sessionName, runName)
+function studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll, subjectName, sessionName, runName, bVerbose)
 %xASL_imp_StudyParPriority Takes the studyParAll a prioritizes based on the current subject/session/run
 %
-% FORMAT: studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll[, subjectName, sessionName, runName])
+% FORMAT: studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll[, subjectName, sessionName, runName, bVerbose])
 %
 % INPUT:
 %   studyParAll  - StudyPar possibly containing several studyPar instances (REQUIRED, STRUCT)
 %   subjectName  - Name of the current subject (OPTIONAL, DEFAULT = '')
 %   sessionName  - Name of the current session (OPTIONAL, DEFAULT = '')
 %   runName      - Name of the current run (OPTIONAL, DEFAULT = '')
+%   bVerbose     - Write warnings when overwriting parameters (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:
 %   studyParSpecificSubjVisitSess - Resolved studyPar for a specific subject/session/run
@@ -29,6 +30,23 @@ if nargin < 1 || isempty(studyParAll)
 	return;
 end
 
+% Default subject/visit/session strings to empty
+if nargin < 2
+	subjectName = '';
+end
+
+if nargin < 3
+	sessionName = '';
+end
+
+if nargin < 4
+	runName = '';
+end
+
+if nargin < 5 || isempty(bVerbose)
+	bVerbose = true;
+end
+
 % Do nothing for a single-instance studyPar
 if ~isfield(studyParAll,'StudyPars')
 	studyParSpecificSubjVisitSess = studyParAll;
@@ -37,6 +55,8 @@ end
 
 % Initialize empty studyPar and then go through different studyPars
 studyParSpecificSubjVisitSess = struct();
+
+textOverwriteWarning = '';
 
 % At each step, check for all conditions and set a flag for overwrite (first step having the lowest priority
 for iStudyPar = 1:length(studyParAll.StudyPars)
@@ -79,20 +99,50 @@ for iStudyPar = 1:length(studyParAll.StudyPars)
 		% Overwrite all fields
 		listFields = fieldnames(studyParAll.StudyPars{iStudyPar});
 		
+		textOverwritingFields = '';
 		for iField = 1:length(listFields)
+			% list all fields that were overwritten
+			if isfield(studyParSpecificSubjVisitSess, listFields{iField})
+				textOverwritingFields = [textOverwritingFields ' ' listFields{iField} ','];
+			end
 			studyParSpecificSubjVisitSess.(listFields{iField}) = studyParAll.StudyPars{iStudyPar}.(listFields{iField});
+		end
+		
+		% If there were overwritten fields, then we add the list of the fields and the RegExp list to the warning
+		if ~isempty(textOverwritingFields)
+			textOverwriteWarning = sprintf('%s For RegExp subject/visit/session ', textOverwriteWarning);
+			if isfield(studyParAll.StudyPars{iStudyPar},'SubjectRegExp')
+				textOverwriteWarning = [textOverwriteWarning xASL_num2str(studyParAll.StudyPars{iStudyPar}.SubjectRegExp) '/'];
+			else
+				textOverwriteWarning = [textOverwriteWarning  '/'];
+			end
+			if isfield(studyParAll.StudyPars{iStudyPar},'VisitRegExp')
+				textOverwriteWarning = [textOverwriteWarning xASL_num2str(studyParAll.StudyPars{iStudyPar}.VisitRegExp) '/'];
+			else
+				textOverwriteWarning = [textOverwriteWarning  '/'];
+			end
+			if isfield(studyParAll.StudyPars{iStudyPar},'SessionRegExp')
+				textOverwriteWarning = [textOverwriteWarning xASL_num2str(studyParAll.StudyPars{iStudyPar}.SessionRegExp)];
+			end
+			textOverwriteWarning = sprintf('%s, overwriting fields: %s\n', textOverwriteWarning, textOverwritingFields);
 		end
 	end
 end
 
+% If there are overwritten fields, then add a general info about the subject and print the warning
+if ~isempty(textOverwriteWarning)
+	textOverwriteWarning = sprintf('Evaluating multi-parameter studyPar for subject/visit/session: %s/%s/%s\n%s', subjectName, sessionName, runName, textOverwriteWarning);
+	fprintf(textOverwriteWarning);
+end
+
 % Delete the keywords for merging
-    if isfield(studyParSpecificSubjVisitSess,'SubjectRegExp')
-        studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SubjectRegExp');
-    end
-    if isfield(studyParSpecificSubjVisitSess,'VisitRegExp')
-        studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'VisitRegExp');
-    end
-    if isfield(studyParSpecificSubjVisitSess,'SessionRegExp')
-        studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SessionRegExp');
-    end
+if isfield(studyParSpecificSubjVisitSess,'SubjectRegExp')
+	studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SubjectRegExp');
+end
+if isfield(studyParSpecificSubjVisitSess,'VisitRegExp')
+	studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'VisitRegExp');
+end
+if isfield(studyParSpecificSubjVisitSess,'SessionRegExp')
+	studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SessionRegExp');
+end
 end
