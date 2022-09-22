@@ -34,11 +34,11 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 
     %% 1. Define the pathnames
 	if (length(listRuns)>1) || (str2num(listRuns{1}(5))>1)
-		aslLabel = 'ASL4D';
+		aslLegacyLabel = 'ASL4D';
 		subjectSessionLabel = ['sub-' subjectSessionLabel];
         runLabel = ['_run-' num2str(iRun)];
 	else
-		aslLabel = 'ASL4D';
+		aslLegacyLabel = 'ASL4D';
 		subjectSessionLabel = ['sub-' subjectSessionLabel];
         runLabel = '';
 	end
@@ -52,21 +52,21 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     fprintf('scan %s ...\n', scanName);
 
     %% 2. Load the JSONs and NIfTI information
-    if exist(fullfile(inSessionPath, [aslLabel '.json']),'file')
-        jsonDicom = spm_jsonread(fullfile(inSessionPath, [aslLabel '.json']));
+    if exist(fullfile(inSessionPath, [aslLegacyLabel '.json']),'file')
+        jsonDicom = spm_jsonread(fullfile(inSessionPath, [aslLegacyLabel '.json']));
     else
-        warning('Missing JSON file: %s\n',fullfile(inSessionPath, [aslLabel '.json']));
+        warning('Missing JSON file: %s\n',fullfile(inSessionPath, [aslLegacyLabel '.json']));
 		
 		% Try to check if a file with a similar name is there
-		jsonDicom = xASL_adm_GetFileList(inSessionPath, ['^' aslLabel '.*\.json$']);
+		jsonDicom = xASL_adm_GetFileList(inSessionPath, ['^' aslLegacyLabel '.*\.json$']);
 		if ~isempty(jsonDicom)
 			fprintf('File with an incorrect but similar name was found: %s \n',jsonDicom{1});
 		end
 		
         return;
     end
-    if xASL_exist(fullfile(inSessionPath, [aslLabel '.nii']),'file')
-        headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
+    if xASL_exist(fullfile(inSessionPath, [aslLegacyLabel '.nii']),'file')
+        headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLegacyLabel '.nii']));
 		
 		% For GE scanner and 3D ASL file, we try to reformat to 4D correctly
 		if length(headerASL.dat.dim) == 3 && isfield(jsonDicom,'Manufacturer') && strcmp(jsonDicom.Manufacturer,'GE') &&...
@@ -75,7 +75,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		
 			fprintf('GE ASL data incorrectly read as 3D. Reshaping...\n');
 			% Load the image data and reshape accordingly
-		    imASL = xASL_io_Nifti2Im(fullfile(inSessionPath, [aslLabel '.nii']));
+		    imASL = xASL_io_Nifti2Im(fullfile(inSessionPath, [aslLegacyLabel '.nii']));
 			imASL = reshape(imASL, size(imASL,1), size(imASL,2), size(imASL,3)/jsonDicom.NumberOfTemporalPositions, jsonDicom.NumberOfTemporalPositions);
 			
 			% Center the new image correctly
@@ -83,16 +83,16 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 			newMat(1:3,4) = [0;-22;0] - headerASL.mat0(1:3,1:3)*([size(imASL,1); size(imASL,2); size(imASL,3)]/2);
 			
 			% However, the matrix is given with a wrong shift
-			xASL_io_SaveNifti(fullfile(inSessionPath, [aslLabel '.nii']), fullfile(inSessionPath, [aslLabel '.nii']), imASL, [], [], newMat);
-			headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLabel '.nii']));
+			xASL_io_SaveNifti(fullfile(inSessionPath, [aslLegacyLabel '.nii']), fullfile(inSessionPath, [aslLegacyLabel '.nii']), imASL, [], [], newMat);
+			headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLegacyLabel '.nii']));
 		end
     else
-        warning('Missing NIfTI file: %s\n\',fullfile(inSessionPath, [aslLabel '.nii']));
+        warning('Missing NIfTI file: %s\n\', fullfile(inSessionPath, [aslLegacyLabel '.nii']));
 		
 		% Try to check if a file with a similar name is there
-		headerASL = xASL_adm_GetFileList(inSessionPath, ['^' aslLabel '.*\.nii$']);
+		headerASL = xASL_adm_GetFileList(inSessionPath, ['^' aslLegacyLabel '.*\.nii$']);
 		if ~isempty(headerASL)
-			fprintf('File with an incorrect but similar name was found: %s \n',headerASL{1});
+			fprintf('File with an incorrect but similar name was found: %s \n', headerASL{1});
 		end
 		
         return;
@@ -142,7 +142,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 			jsonM0.IntendedFor = [aslOutLabelRelative '_' bidsPar.stringASL '.nii.gz'];
             
             % Determine output name
-            aslLabel = 'ASL4D';
+            aslLegacyLabel = 'ASL4D';
             bidsm0scanLabel = [subjectSessionLabel strPEDirection runLabel '_' bidsPar.stringM0scan];
 			pathM0Out = fullfile(outSessionPath,bidsPar.stringPerfusion,bidsm0scanLabel);
 		else
@@ -150,7 +150,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
             strPEDirectionPA = '_dir-pa';
             strPEDirectionAP = '_dir-ap';
             % Determine output name
-            aslLabel = 'ASL4D';
+            aslLegacyLabel = 'ASL4D';
             bidsm0scanLabelPA = [subjectSessionLabel strPEDirectionPA runLabel '_' bidsPar.stringM0scan];
             bidsm0scanLabelAP = [subjectSessionLabel strPEDirectionAP runLabel '_' bidsPar.stringM0scan];
             jsonM0.IntendedFor = fullfile(bidsPar.stringPerfusion,[bidsm0scanLabelAP '.nii.gz']);
@@ -176,7 +176,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 
 
     %% 6. Save all ASL files (JSON, NIFTI, CONTEXT) to the BIDS directory
-    jsonLocal = xASL_bids_BIDSifyASLNII(jsonLocal, bidsPar, fullfile(inSessionPath,[aslLabel '.nii']), aslOutLabel);
+    jsonLocal = xASL_bids_BIDSifyASLNII(jsonLocal, bidsPar, fullfile(inSessionPath,[aslLegacyLabel '.nii']), aslOutLabel);
     jsonLocal = xASL_bids_VendorFieldCheck(jsonLocal);
     [jsonLocal,bidsReport] = xASL_bids_JsonCheck(jsonLocal,'ASL');
     spm_jsonwrite([aslOutLabel '_' bidsPar.stringASL '.json'],jsonLocal);
