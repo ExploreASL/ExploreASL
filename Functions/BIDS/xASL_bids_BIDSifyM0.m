@@ -42,7 +42,7 @@ headerM0 = xASL_io_ReadNifti([pathM0In '.nii']);
 if ~isempty(regexpi(jsonInASL.Manufacturer, 'Philips'))
     jsonOut.scaleFactor = xASL_adm_GetPhilipsScaling(jsonOut, headerM0);
 else
-    jsonOut.scaleFactor = 0;
+    jsonOut.scaleFactor = 1;
 end
 
 %% 2. Check the JSON parameters
@@ -86,12 +86,12 @@ outputFilenameM0 = [outputFileM0 outputExtensionM0];
 xASL_bids_ValidateNiftiName(outputFilenameM0,'m0scan');
 
 % The NIfTI needs to be read and saved again
-if jsonOut.scaleFactor || length(headerM0.dat.dim) < 4 || headerM0.dat.dim(4) == 1
+if (jsonOut.scaleFactor && jsonOut.scaleFactor~=1) || length(headerM0.dat.dim) < 4 || headerM0.dat.dim(4) == 1
     % Read NIfTI image
     imM0   = xASL_io_Nifti2Im([pathM0In '.nii']);
     
     % Apply the scaling
-    if jsonOut.scaleFactor
+    if (jsonOut.scaleFactor && jsonOut.scaleFactor~=1)
         imM0 = imM0 .* jsonOut.scaleFactor;
     end
     
@@ -106,6 +106,8 @@ else
     % Move the M0
     xASL_Move([pathM0In '.nii'], [pathM0Out '.nii.gz'],1);
 end
+
+jsonOut = rmfield(jsonOut,'scaleFactor');
 
 end
 

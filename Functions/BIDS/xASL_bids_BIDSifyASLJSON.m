@@ -66,7 +66,7 @@ jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'asl');
 if ~isempty(regexpi(jsonIn.Manufacturer,'Philips'))
 	jsonOut.scaleFactor = xASL_adm_GetPhilipsScaling(jsonIn, headerASL);
 else
-	jsonOut.scaleFactor = 0;
+	jsonOut.scaleFactor = 1;
 end
 
 %% 4. Convert certain DICOM fields

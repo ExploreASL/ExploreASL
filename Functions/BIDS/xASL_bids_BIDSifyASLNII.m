@@ -44,12 +44,11 @@ xASL_bids_ValidateNiftiName(outputFilenameASL,'asl');
 	
 % Save the JSON and NII to final location for ASL
 headerASL = xASL_io_ReadNifti(pathIn);
-if jsonOut.scaleFactor || length(headerASL.dat.dim) < 4 || headerASL.dat.dim(4) == 1
+if (jsonOut.scaleFactor && jsonOut.scaleFactor~=1) || length(headerASL.dat.dim) < 4 || headerASL.dat.dim(4) == 1
     imNii = xASL_io_Nifti2Im(pathIn);
     
-    if jsonOut.scaleFactor
+    if (jsonOut.scaleFactor && jsonOut.scaleFactor~=1)
         imNii = imNii .* jsonOut.scaleFactor;
-        jsonOut = rmfield(jsonOut,'scaleFactor');
     end
     
     % Scaling changed, so we have to save again OR
@@ -64,6 +63,8 @@ else
 	% Move the ASL
 	xASL_Move(pathIn,[pathOutPrefix '_asl.nii.gz'],1);
 end
+
+jsonOut = rmfield(jsonOut,'scaleFactor');
 
 end
 
