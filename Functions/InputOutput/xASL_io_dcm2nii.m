@@ -73,10 +73,6 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     msg = [];
 
     %% 3. Locate dcm2nii executable
-	
-	if ismac && str2num(imPar.dcm2nii_version(1:4))<2014
-        imPar.dcm2nii_version = '20220720'; % mac is incompatible with older versions
-	end
 
     mricron_path = fullfile(myPath,'External','MRIcron');
 	mricron_version_path = fullfile(mricron_path, imPar.dcm2nii_version);
