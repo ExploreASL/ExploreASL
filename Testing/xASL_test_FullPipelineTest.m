@@ -1,13 +1,13 @@
-function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemoveResults, runProcessing)
+function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, bOnlyRemoveResults, bRunProcessing)
 %xASL_test_FullPipelineTest BIDS testing script
 %
-% FORMAT: [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemoveResults, runProcessing)
+% FORMAT: [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, bOnlyRemoveResults, bRunProcessing)
 % 
 % INPUT:
-%   testConfig        - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
-%   onlyRemoveResults - Set to true if you do not want to run test testing, 
-%                       but you want to delete existing test data (BOOLEAN, OPTIONAL, DEFAULT = false) 
-%   runProcessing     - Run processing (BOOLEAN, OPTIONAL, DEFAULT = true) 
+%   testConfig         - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
+%   bOnlyRemoveResults - Set to true if you do not want to run test testing, 
+%                        but you want to delete existing test data (BOOLEAN, OPTIONAL, DEFAULT = false) 
+%   bRunProcessing     - Run processing (BOOLEAN, OPTIONAL, DEFAULT = true) 
 %
 % OUTPUT:
 %   flavors        - Struct containing the loggingTable and other fields
@@ -48,11 +48,11 @@ function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemo
 
 
     %% Initialization
-    if nargin<2 || isempty(onlyRemoveResults)
-        onlyRemoveResults = false;
+    if nargin<2 || isempty(bOnlyRemoveResults)
+        bOnlyRemoveResults = false;
     end
-    if nargin<3 || isempty(runProcessing)
-        runProcessing = true;
+    if nargin<3 || isempty(bRunProcessing)
+        bRunProcessing = true;
     end
 
     %% Check for testConfig
@@ -107,12 +107,11 @@ function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemo
 
     %% Test execution
 
-    % Remove exiting test data
+    % Remove output testdata (derivatives and rawdata), keeps the input and reference (sourcedata, configuration JSONs, rawdataReference, derivativesReference)
     flavors = xASL_test_Flavors(testConfig, [1 0 0 0 0 0 0], x, flavors);
     
     % Stop testing pipeline if we only want to remove test data
-    if onlyRemoveResults
-        logContent = struct;
+    if bOnlyRemoveResults
         fclose('all');
         diary off;
         return
@@ -134,7 +133,7 @@ function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, onlyRemo
     flavors = xASL_test_FlavorsSaveResults(flavors, testConfig);
     
     % Processing
-    if runProcessing
+    if bRunProcessing
     
         % Run the pipeline
         flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 1 0], x, flavors);
@@ -156,7 +155,7 @@ end
 
 
 %% Save the test results in a .mat file and ignore log files
-function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
+function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
 
     % Ignore some files
     flavors = xALS_test_IgnoreFiles(flavors);
@@ -167,12 +166,7 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig, logContent)
     % Save path
     savePath = fullfile(testConfig.pathExploreASL,'Testing','results.mat');
     
-    % Check if there is a logContent
-    if nargin < 3
-        save(savePath,'flavors','testConfig');
-    else
-        save(savePath,'flavors','testConfig','logContent');
-    end
+	save(savePath,'flavors','testConfig');
     
     % Clear console window
     clc
