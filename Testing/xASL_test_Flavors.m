@@ -18,13 +18,13 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 %                   results validation and then processing all through the ExploreASL
 %                   pipeline. Please first run your local path initialization and clone the
 %                   Flavors Database, the proceed with step by step testing.
-%                   1. Make a copy of the flavors data
+%                   1. Clean previous test output
 %                   2. Run the DCM->BIDS import
 %                   3. Check the DCM->BIDS import results
 %                   4. Run BIDS->Legacy import
 %                   5. Check the the BIDS->Legacy import results
-%                   6. Run the ExploreASL on all datasets
-%                   7. Checks the ExploreASL processing results
+%                   6. Run ExploreASL on all Legacy-converted data
+%                   7. Run the comparison of processed legacy-format data with the reference data
 %
 % Your testConfig.json could look like this e.g.:
 %
@@ -116,113 +116,53 @@ flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dat
 % Change directory to ExploreASL root folder
 cd(testConfig.pathExploreASL);
 
-%                   1. Make a copy of the flavors data
-%                   2. Run the DCM->BIDS import
-%                   3. Check the DCM->BIDS import results
-%                   4. Run BIDS->Legacy import
-%                   5. Check the the BIDS->Legacy import results
-%                   6. Run the ExploreASL on all datasets
-%                   7. Checks the ExploreASL processing results
+%% 1. Clean previous test output
+% Remove output testdata (derivatives and rawdata), keeps the input and reference (sourcedata, configuration JSONs, rawdataReference, derivativesReference)
+xASL_test_Flavors_RemoveExistingTestData(testConfig);
 
-    %% Test execution
+% Stop testing pipeline if we only want to remove test data
+if bOnlyRemoveResults
+	fclose('all');
+	diary off;
+	return
+end
 
-    % Remove output testdata (derivatives and rawdata), keeps the input and reference (sourcedata, configuration JSONs, rawdataReference, derivativesReference)
-    flavors = xASL_test_Flavors(testConfig, [1 0 0 0 0 0 0], x, flavors);
-    
-    % Stop testing pipeline if we only want to remove test data
-    if bOnlyRemoveResults
-        fclose('all');
-        diary off;
-        return
-    end
+%% 2. Run the DCM->BIDS import
+xASL_adm_BreakString('RUN DICOM TO BIDS');
+flavors.loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, flavors.loggingTable);
 
-    % Convert to BIDS
-    flavors = xASL_test_Flavors(testConfig, [0 1 0 0 0 0 0], x, flavors);
+%% 3. Check the DCM->BIDS import results
+xASL_adm_BreakString('CHECK THE BIDS CONVERSION');
+[flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'rawdata','rawdataReference');
 
-    % Check the BIDS conversion
-    flavors = xASL_test_Flavors(testConfig, [0 0 1 0 0 0 0], x, flavors);
+%% 4. Run BIDS->Legacy import
+xASL_adm_BreakString('RUN BIDS TO LEGACY');
+xASL_test_Flavors_BIDS2LEGACY(testConfig);
 
-    % Convert BIDS to Legacy
-    flavors = xASL_test_Flavors(testConfig, [0 0 0 1 0 0 0], x, flavors);
+%% 5. Check the the BIDS->Legacy import results
+xASL_adm_BreakString('CHECK THE LEGACY CONVERSION');
+[flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'derivatives','derivativesReference');
 
-    % Check the Legacy conversion
-    flavors = xASL_test_Flavors(testConfig, [0 0 0 0 1 0 0], x, flavors);
-    
-    % Already save conversion results and ignore some files before processing
+% Already save conversion results and ignore some files before processing
+flavors = xASL_test_FlavorsSaveResults(flavors, testConfig);
+
+% Processing
+if bRunProcessing
+	%% 6. Run ExploreASL on all Legacy-converted data
+	xASL_adm_BreakString('RUN PROCESSING PIPELINE');
+	flavors.loggingTable = xASL_test_Flavors_ExploreASL(testConfig,flavors.loggingTable);
+	
+	%% 7. Run the comparison of processed legacy-format data with the reference data
+	xASL_adm_BreakString('CHECK OF PROCESSING RESULTS');
+	flavors.loggingTable = xASL_test_CheckProcessedFlavors(testConfig,flavors.data,flavors.loggingTable);
+	
+	% Save all testing results
     flavors = xASL_test_FlavorsSaveResults(flavors, testConfig);
-    
-    % Processing
-    if bRunProcessing
-    
-        % Run the pipeline
-        flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 1 0], x, flavors);
-
-        % Check the pipeline results
-        flavors = xASL_test_Flavors(testConfig, [0 0 0 0 0 0 1], x, flavors);
-        
-    end
-    
-    % Save all testing results
-    flavors = xASL_test_FlavorsSaveResults(flavors, testConfig);
-    
-    % Clean-up (file handles etc.)
-    fclose('all');
-    diary off;
-
-
-% FORMAT: flavors = xASL_test_Flavors(pathExploreASL, pathFlavorDatabase[, bTest, x],flavors)
-
-
-    
-
-    %% 1. Remove existing test data
-    if bTest(1)
-        xASL_test_Flavors_RemoveExistingTestData(testConfig);
-    end
-    
-
-    %% 2. Run the conversion of source data to BIDS
-    if bTest(2)
-        xASL_adm_BreakString('RUN DICOM TO BIDS');
-        flavors.loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, flavors.loggingTable);
-    end
-    
-
-    %% 3. Run the comparison of converted BIDS with the reference data
-    if bTest(3)
-        xASL_adm_BreakString('CHECK THE BIDS CONVERSION');
-        [flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'rawdata','rawdataReference');
-    end
-    
-
-    %% 4. Run the BIDS to Legacy conversion
-    if bTest(4)
-        xASL_adm_BreakString('RUN BIDS TO LEGACY');
-        xASL_test_Flavors_BIDS2LEGACY(testConfig);
-    end
-    
-
-    %% 5. Run the comparison of data converted to the legacy format with the reference data
-    if bTest(5)
-        xASL_adm_BreakString('CHECK THE LEGACY CONVERSION');
-        [flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'derivatives','derivativesReference');
-    end
-    
-
-    %% 6. Run ExploreASL on all Legacy-converted data
-    if bTest(6)
-        xASL_adm_BreakString('RUN PROCESSING PIPELINE');
-        flavors.loggingTable = xASL_test_Flavors_ExploreASL(testConfig,flavors.loggingTable);
-    end
-    
-
-    %% 7. Run the comparison of processed legacy-format data with the reference data
-    if bTest(7)
-        xASL_adm_BreakString('CHECK OF PROCESSING RESULTS');
-        flavors.loggingTable = xASL_test_CheckProcessedFlavors(testConfig,flavors.data,flavors.loggingTable);
-    end
-    
-
+end
+ 
+% Clean-up (file handles etc.)
+fclose('all');
+diary off;
 end
 
 %% Save the test results in a .mat file and ignore log files
