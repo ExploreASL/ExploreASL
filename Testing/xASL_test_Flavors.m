@@ -1,7 +1,7 @@
-function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, bOnlyRemoveResults, bRunProcessing)
-%xASL_test_FullPipelineTest BIDS testing script
+function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResults, bRunProcessing)
+%xASL_test_Flavors Runs the complete testing of Flavors including import from DICOM to BIDS, processing and comparison
 %
-% FORMAT: [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, bOnlyRemoveResults, bRunProcessing)
+% FORMAT: [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResults, bRunProcessing)
 % 
 % INPUT:
 %   testConfig         - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
@@ -38,72 +38,74 @@ function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, bOnlyRem
 %
 % To remove test data from the flavor database you can run:
 %
-% [flavors, testConfig] = xASL_test_FullPipelineTest([],true);
+% [flavors, testConfig] = xASL_test_Flavors([],true);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [flavors, testConfig] = xASL_test_FullPipelineTest;
+% EXAMPLE: [flavors, testConfig] = xASL_test_Flavors;
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
-    %% Initialization
-    if nargin<2 || isempty(bOnlyRemoveResults)
-        bOnlyRemoveResults = false;
-    end
-    if nargin<3 || isempty(bRunProcessing)
-        bRunProcessing = true;
-    end
+%% Initialization
+if nargin<2 || isempty(bOnlyRemoveResults)
+	bOnlyRemoveResults = false;
+end
+if nargin<3 || isempty(bRunProcessing)
+	bRunProcessing = true;
+end
 
-    %% Check for testConfig
+%% Check for testConfig
+
+% Get testing path
+pathTesting = fileparts(mfilename('fullpath'));
+
+% Check if testConfig.json needs to be read
+if nargin<1 || isempty(testConfig)
+	if exist(fullfile(pathTesting,'testConfig.json'),'file')
+		testConfig = spm_jsonread(fullfile(pathTesting,'testConfig.json'));
+		if ~(isfield(testConfig,'pathExploreASL') && isfield(testConfig,'pathFlavorDatabase') && isfield(testConfig,'cmdCloneFlavors'))
+			fprintf('Please add the correct fields to your testConfig.json...\n');
+			return
+		end
+	else
+		fprintf('Please add a testConfig.json to the Testing directory of ExploreASL...\n');
+		return
+	end
+end
+
+
+%% Clone the flavors database if necessary
+cd(testConfig.pathExploreASL);
+x = ExploreASL;
+if exist(testConfig.pathFlavorDatabase, 'dir')
+	cd(testConfig.pathFlavorDatabase);
+else
+	cd(fileparts(testConfig.pathFlavorDatabase));
+	system(testConfig.cmdCloneFlavors);
+end
+
+% Check for flavor list
+if ~isfield(testConfig,'flavorList')
+	testConfig.flavorList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
+end
+
+% Load database JSON
+if xASL_exist(fullfile(testConfig.pathFlavorDatabase,'flavors.json'),'file')
+	databaseInfo = spm_jsonread(fullfile(testConfig.pathFlavorDatabase,'flavors.json'));
+	flavors.data = databaseInfo.flavors;
+	clear databaseInfo
+else
+	error('The flavors.json file is missing...');
+end
     
-    % Get testing path
-    pathTesting = fileparts(mfilename('fullpath'));
     
-    % Check if testConfig.json needs to be read
-    if nargin<1 || isempty(testConfig)
-        if exist(fullfile(pathTesting,'testConfig.json'),'file')
-            testConfig = spm_jsonread(fullfile(pathTesting,'testConfig.json'));
-            if ~(isfield(testConfig,'pathExploreASL') && isfield(testConfig,'pathFlavorDatabase') && isfield(testConfig,'cmdCloneFlavors'))
-                fprintf('Please add the correct fields to your testConfig.json...\n');
-                return
-            end
-        else
-            fprintf('Please add a testConfig.json to the Testing directory of ExploreASL...\n');
-            return
-        end
-    end
+%% Logging table
+flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
+flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dataset','name','message'});
     
-    
-    %% Clone the flavors database if necessary
-    cd(testConfig.pathExploreASL);
-    x = ExploreASL;
-    if exist(testConfig.pathFlavorDatabase, 'dir')
-        cd(testConfig.pathFlavorDatabase);
-    else
-        cd(fileparts(testConfig.pathFlavorDatabase));
-        system(testConfig.cmdCloneFlavors);
-    end
-    
-    % Check for flavor list
-    if ~isfield(testConfig,'flavorList')
-        testConfig.flavorList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
-    end
-    
-    % Load database JSON
-    if xASL_exist(fullfile(testConfig.pathFlavorDatabase,'flavors.json'),'file')
-        databaseInfo = spm_jsonread(fullfile(testConfig.pathFlavorDatabase,'flavors.json'));
-        flavors.data = databaseInfo.flavors;
-        clear databaseInfo
-    else
-        error('The flavors.json file is missing...');
-    end
-    
-    
-    %% Logging table
-    flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
-    flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dataset','name','message'});
-    
+
+
 
     %% Test execution
 
@@ -151,8 +153,128 @@ function [flavors, testConfig] = xASL_test_FullPipelineTest(testConfig, bOnlyRem
     diary off;
 
 
-end
+% FORMAT: flavors = xASL_test_Flavors(pathExploreASL, pathFlavorDatabase[, bTest, x],flavors)
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% 
+% INPUT:
+%   testConfig         - struct which contains the paths to the ExploreASL
+%                        installation and the testing/flavor repository (REQUIRED) 
+%   bTest              - an array of booleans specifying which subparts of the test are supposed to be run
+%                        1. Make a copy of the flavors data
+%                        2. Run the DCM->BIDS import
+%                        3. Check the DCM->BIDS import results
+%                        4. Run BIDS->Legacy import
+%                        5. Check the the BIDS->Legacy import results
+%                        6. Run the ExploreASL on all datasets
+%                        7. Checks the ExploreASL processing results
+%                        (OPTIONAL, DEFAULT = [1 1 1 1 1 1 1])
+%   x                  - x structure (OPTIONAL, DEFAULT = run Initialization)
+%   flavors            - struct containing flavor related fields (RECOMMENDED, STRUCT)
+%
+% OUTPUT: 
+%   flavors            - struct containing flavor related fields
+% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Runs the full testing on import and processing of the FlavorsDatabase. The testing directory
+%              path has to be provided with the FlavorsDatabase subdirectory containig the Flavors - this 
+%              subdirectory is read, but not modified. New directories are created for that inside the test
+%              directory.
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:     flavors = xASL_test_Flavors(testConfig, [1 0 0 0 0 0 0], x, flavors);
+%
+% __________________________________
+% Copyright (c) 2015-2022 ExploreASL
 
+
+    %% 0. Admin and initialization
+    if isempty(testConfig.pathExploreASL) || isempty(testConfig.pathFlavorDatabase)
+        error('The paths to the code and working directory needs to be specified...');
+    end
+    if nargin < 3 || isempty(bTest)
+        bTest = ones(1,7);
+    end
+    if length(bTest) < 7
+        bTest(end+1:7) = 1;
+    end
+    if nargin < 4
+        % The flavors struct is normally being defined in xASL_test_Flavors
+        warning('We recommend to provide the flavors struct based on xASL_test_Flavors...');
+        flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
+        flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dataset','name','message'});
+    end
+
+    % Change directory to ExploreASL root folder
+    cd(testConfig.pathExploreASL);
+
+    if nargin < 4 || isempty(x)
+        % Remove existing paths
+        thisDirectory = pwd;
+        if ~isempty(testConfig.pathExploreASL)
+            xASL_adm_RemoveDirectories(testConfig.pathExploreASL);
+            cd(testConfig.pathExploreASL);
+        end
+        % Initialize ExploreASL
+        ExploreASL;
+        cd(thisDirectory);
+    end
+    
+    % Check for flavor list
+    if ~isfield(testConfig,'flavorList')
+        testConfig.flavorList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
+    end
+    
+
+    %% 1. Remove existing test data
+    if bTest(1)
+        xASL_test_Flavors_RemoveExistingTestData(testConfig);
+    end
+    
+
+    %% 2. Run the conversion of source data to BIDS
+    if bTest(2)
+        xASL_adm_BreakString('RUN DICOM TO BIDS');
+        flavors.loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, flavors.loggingTable);
+    end
+    
+
+    %% 3. Run the comparison of converted BIDS with the reference data
+    if bTest(3)
+        xASL_adm_BreakString('CHECK THE BIDS CONVERSION');
+        [flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'rawdata','rawdataReference');
+    end
+    
+
+    %% 4. Run the BIDS to Legacy conversion
+    if bTest(4)
+        xASL_adm_BreakString('RUN BIDS TO LEGACY');
+        xASL_test_Flavors_BIDS2LEGACY(testConfig);
+    end
+    
+
+    %% 5. Run the comparison of data converted to the legacy format with the reference data
+    if bTest(5)
+        xASL_adm_BreakString('CHECK THE LEGACY CONVERSION');
+        [flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'derivatives','derivativesReference');
+    end
+    
+
+    %% 6. Run ExploreASL on all Legacy-converted data
+    if bTest(6)
+        xASL_adm_BreakString('RUN PROCESSING PIPELINE');
+        flavors.loggingTable = xASL_test_Flavors_ExploreASL(testConfig,flavors.loggingTable);
+    end
+    
+
+    %% 7. Run the comparison of processed legacy-format data with the reference data
+    if bTest(7)
+        xASL_adm_BreakString('CHECK OF PROCESSING RESULTS');
+        flavors.loggingTable = xASL_test_CheckProcessedFlavors(testConfig,flavors.data,flavors.loggingTable);
+    end
+    
+
+end
 
 %% Save the test results in a .mat file and ignore log files
 function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
@@ -180,7 +302,6 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
     fprintf('\n');
 
 end
-
 
 %% Ignore version in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
 function flavors = xALS_test_IgnoreSomeFields(flavors,testConfig)
@@ -262,7 +383,6 @@ function ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flav
 
 end
 
-
 %% We need to be sure that there are no differences in the shared fields for our JSON version comparison
 function diffSharedFields = xALS_test_CheckSharedJSONFields(jsonA,jsonB,sharedFields,diffSharedFields)
 
@@ -283,7 +403,6 @@ function diffSharedFields = xALS_test_CheckSharedJSONFields(jsonA,jsonB,sharedFi
 
 end
 
-
 %% Escape to unix
 function [jsonA,jsonB] = xASL_test_EscapeToUnix(jsonA,jsonB,sharedFields)
 
@@ -301,7 +420,3 @@ function [jsonA,jsonB] = xASL_test_EscapeToUnix(jsonA,jsonB,sharedFields)
     end
 
 end
-
-
-
-
