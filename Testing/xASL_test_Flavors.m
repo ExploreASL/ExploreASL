@@ -4,7 +4,7 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 % FORMAT: [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResults, bRunProcessing)
 % 
 % INPUT:
-%   testConfig         - Struct describing the test configuration (OPTIONAL, DEFAULT = check for file)
+%   testConfig         - Struct describing the test configuration, or path to a JSON (OPTIONAL, DEFAULT = check this file ExploreASL/Testing/testConfig.json)
 %   bOnlyRemoveResults - Set to true if you do not want to run test testing, 
 %                        but you want to delete existing test data (BOOLEAN, OPTIONAL, DEFAULT = false) 
 %   bRunProcessing     - Run processing (BOOLEAN, OPTIONAL, DEFAULT = true) 
@@ -18,6 +18,13 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 %                   results validation and then processing all through the ExploreASL
 %                   pipeline. Please first run your local path initialization and clone the
 %                   Flavors Database, the proceed with step by step testing.
+%                   1. Make a copy of the flavors data
+%                   2. Run the DCM->BIDS import
+%                   3. Check the DCM->BIDS import results
+%                   4. Run BIDS->Legacy import
+%                   5. Check the the BIDS->Legacy import results
+%                   6. Run the ExploreASL on all datasets
+%                   7. Checks the ExploreASL processing results
 %
 % Your testConfig.json could look like this e.g.:
 %
@@ -47,7 +54,7 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 % Copyright 2015-2022 ExploreASL
 
 
-%% Initialization
+%% 0. Admin and initialization
 if nargin<2 || isempty(bOnlyRemoveResults)
 	bOnlyRemoveResults = false;
 end
@@ -55,7 +62,7 @@ if nargin<3 || isempty(bRunProcessing)
 	bRunProcessing = true;
 end
 
-%% Check for testConfig
+% Check for testConfig
 
 % Get testing path
 pathTesting = fileparts(mfilename('fullpath'));
@@ -74,8 +81,11 @@ if nargin<1 || isempty(testConfig)
 	end
 end
 
+if isempty(testConfig.pathExploreASL) || isempty(testConfig.pathFlavorDatabase)
+	error('The paths to the code and working directory needs to be specified...');
+end
 
-%% Clone the flavors database if necessary
+% Clone the flavors database if necessary
 cd(testConfig.pathExploreASL);
 x = ExploreASL;
 if exist(testConfig.pathFlavorDatabase, 'dir')
@@ -99,13 +109,20 @@ else
 	error('The flavors.json file is missing...');
 end
     
-    
-%% Logging table
+% Logging table
 flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
 flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dataset','name','message'});
     
+% Change directory to ExploreASL root folder
+cd(testConfig.pathExploreASL);
 
-
+%                   1. Make a copy of the flavors data
+%                   2. Run the DCM->BIDS import
+%                   3. Check the DCM->BIDS import results
+%                   4. Run BIDS->Legacy import
+%                   5. Check the the BIDS->Legacy import results
+%                   6. Run the ExploreASL on all datasets
+%                   7. Checks the ExploreASL processing results
 
     %% Test execution
 
@@ -154,76 +171,8 @@ flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dat
 
 
 % FORMAT: flavors = xASL_test_Flavors(pathExploreASL, pathFlavorDatabase[, bTest, x],flavors)
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% 
-% INPUT:
-%   testConfig         - struct which contains the paths to the ExploreASL
-%                        installation and the testing/flavor repository (REQUIRED) 
-%   bTest              - an array of booleans specifying which subparts of the test are supposed to be run
-%                        1. Make a copy of the flavors data
-%                        2. Run the DCM->BIDS import
-%                        3. Check the DCM->BIDS import results
-%                        4. Run BIDS->Legacy import
-%                        5. Check the the BIDS->Legacy import results
-%                        6. Run the ExploreASL on all datasets
-%                        7. Checks the ExploreASL processing results
-%                        (OPTIONAL, DEFAULT = [1 1 1 1 1 1 1])
-%   x                  - x structure (OPTIONAL, DEFAULT = run Initialization)
-%   flavors            - struct containing flavor related fields (RECOMMENDED, STRUCT)
-%
-% OUTPUT: 
-%   flavors            - struct containing flavor related fields
-% 
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Runs the full testing on import and processing of the FlavorsDatabase. The testing directory
-%              path has to be provided with the FlavorsDatabase subdirectory containig the Flavors - this 
-%              subdirectory is read, but not modified. New directories are created for that inside the test
-%              directory.
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     flavors = xASL_test_Flavors(testConfig, [1 0 0 0 0 0 0], x, flavors);
-%
-% __________________________________
-% Copyright (c) 2015-2022 ExploreASL
 
 
-    %% 0. Admin and initialization
-    if isempty(testConfig.pathExploreASL) || isempty(testConfig.pathFlavorDatabase)
-        error('The paths to the code and working directory needs to be specified...');
-    end
-    if nargin < 3 || isempty(bTest)
-        bTest = ones(1,7);
-    end
-    if length(bTest) < 7
-        bTest(end+1:7) = 1;
-    end
-    if nargin < 4
-        % The flavors struct is normally being defined in xASL_test_Flavors
-        warning('We recommend to provide the flavors struct based on xASL_test_Flavors...');
-        flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
-        flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dataset','name','message'});
-    end
-
-    % Change directory to ExploreASL root folder
-    cd(testConfig.pathExploreASL);
-
-    if nargin < 4 || isempty(x)
-        % Remove existing paths
-        thisDirectory = pwd;
-        if ~isempty(testConfig.pathExploreASL)
-            xASL_adm_RemoveDirectories(testConfig.pathExploreASL);
-            cd(testConfig.pathExploreASL);
-        end
-        % Initialize ExploreASL
-        ExploreASL;
-        cd(thisDirectory);
-    end
-    
-    % Check for flavor list
-    if ~isfield(testConfig,'flavorList')
-        testConfig.flavorList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
-    end
     
 
     %% 1. Remove existing test data
