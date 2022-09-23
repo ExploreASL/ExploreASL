@@ -73,9 +73,6 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     msg = [];
 
     %% 3. Locate dcm2nii executable
-	%if regexpi(inpath,'PAR$') % Automatic detection of PAR-REC, now disabled
-	%	imPar.dcm2nii_version = '20101105';
-	%end
 	
 	if ismac && str2num(imPar.dcm2nii_version(1:4))<2014
         imPar.dcm2nii_version = '20220720'; % mac is incompatible with older versions
@@ -108,9 +105,6 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
             error('dcm2niix application is not executable!');
         end
     end
-
-    % Default arguments dcm2nii 20101105
-    % '-a y -d n -e n -f y -g n -n y -p n -r n -v y -x n'; % -o will be appended below
 	
     %% 4. Check if we are reading a DICOM folder
     if exist(inpath,'dir')
