@@ -35,7 +35,7 @@ function jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2022 ExploreASL
 
 %% 0. Admin
 if nargin < 1 || isempty(jsonIn)
@@ -60,26 +60,26 @@ end
 jsonOut = studyPar;
 
 % Check if required fields exist in studyPar but not in jsonIn
-jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'asl');
+jsonInMerged = xASL_bids_MergeStudyPar(jsonIn, studyPar, 'asl');
 	
 %% 3. Extract the scaling factors from the JSON header
-if ~isempty(regexpi(jsonIn.Manufacturer,'Philips'))
-	jsonOut.scaleFactor = xASL_adm_GetPhilipsScaling(jsonIn, headerASL);
+if ~isempty(regexpi(jsonInMerged.Manufacturer, 'Philips'))
+	jsonOut.scaleFactor = xASL_adm_GetPhilipsScaling(jsonInMerged, headerASL);
 else
 	jsonOut.scaleFactor = 1;
 end
 
 %% 4. Convert certain DICOM fields
 % TotalAcquiredPairs - use only the maximum values from DICOM
-if isfield(jsonIn,'TotalAcquiredPairs') && ~isempty(jsonIn.TotalAcquiredPairs) && length(jsonIn.TotalAcquiredPairs)>1
-	jsonIn.TotalAcquiredPairs = max(jsonIn.TotalAcquiredPairs);
+if isfield(jsonInMerged,'TotalAcquiredPairs') && ~isempty(jsonInMerged.TotalAcquiredPairs) && length(jsonInMerged.TotalAcquiredPairs)>1
+	jsonInMerged.TotalAcquiredPairs = max(jsonInMerged.TotalAcquiredPairs);
 end
 
 % In case of LookLocker and manually defined multiple flip angle, use this as a priority
 if isfield(studyPar,'LookLocker') && ~isempty(studyPar.LookLocker) && studyPar.LookLocker
 	if isfield(studyPar,'FlipAngle') && ~isempty(studyPar.FlipAngle) && length(studyPar.FlipAngle)>1
-		if isfield(jsonIn,'FlipAngle') && ~isequal(jsonIn.FlipAngle,jsonOut.FlipAngle)
-			jsonIn.FlipAngle = jsonOut.FlipAngle;
+		if isfield(jsonInMerged,'FlipAngle') && ~isequal(jsonInMerged.FlipAngle, jsonOut.FlipAngle)
+			jsonInMerged.FlipAngle = jsonOut.FlipAngle;
 		end
 	end
 end
@@ -87,23 +87,23 @@ end
 %% 5. Prioritize DICOM fields over the manually provided studyPar fields
 % Overwrite differing fields with those from Dicom, but report all differences
 strDifferentFields = '';
-for fn = fieldnames(jsonIn)'
+for fn = fieldnames(jsonInMerged)'
 	if isfield(jsonOut,fn{1})
 		% If the field is there, then report different fields
-		if ~isequal(jsonOut.(fn{1}),jsonIn.(fn{1}))
+		if ~isequal(jsonOut.(fn{1}),jsonInMerged.(fn{1}))
 			% Just if this is not only a different vector orientation
 			if ~isnumeric(jsonOut.(fn{1})) ||...
 					(size(jsonOut.(fn{1}),1)>1 && size(jsonOut.(fn{1}),1) >1) ||...
-					~isequal((jsonOut.(fn{1}))',jsonIn.(fn{1}))
+					~isequal((jsonOut.(fn{1}))',jsonInMerged.(fn{1}))
 				strDifferentFields = [strDifferentFields ' ' fn{1}];
 			end
 			if strcmp(fn{1},'TotalAcquiredPairs')
-				jsonIn.(fn{1}) = jsonOut.(fn{1});
+				jsonInMerged.(fn{1}) = jsonOut.(fn{1});
 			end
 		end
 	end
 	% Prioritize the DICOM values in general case
-	jsonOut.(fn{1}) = jsonIn.(fn{1});
+	jsonOut.(fn{1}) = jsonInMerged.(fn{1});
 end
 % Report if certain fields were different as a warning
 if ~isempty(strDifferentFields)
@@ -118,11 +118,11 @@ if isfield(studyPar,'RepetitionTimePreparation')
 elseif isfield(studyPar,'RepetitionTime')
 	% RT from studyPar comes next
 	jsonOut.RepetitionTimePreparation = studyPar.RepetitionTime;
-elseif isfield(jsonIn,'RepetitionTimePreparation')
-	jsonOut.RepetitionTimePreparation = jsonIn.RepetitionTimePreparation;
-elseif isfield(jsonIn,'RepetitionTime')
+elseif isfield(jsonInMerged,'RepetitionTimePreparation')
+	jsonOut.RepetitionTimePreparation = jsonInMerged.RepetitionTimePreparation;
+elseif isfield(jsonInMerged,'RepetitionTime')
 	% RT from the DICOM has the lowest priority
-	jsonOut.RepetitionTimePreparation = jsonIn.RepetitionTime;
+	jsonOut.RepetitionTimePreparation = jsonInMerged.RepetitionTime;
 	% Check if TR is a vector - replace by the maximum then
 	if length(jsonOut.RepetitionTimePreparation) > 1
 		jsonOut.RepetitionTimePreparation = max(jsonOut.RepetitionTimePreparation);
@@ -198,24 +198,24 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 end
 
 % For GE and multi-PLD or single-PLD not defined in the GELabelingDurationField, we prefer LabelingDuration from study par due to issues with eASL
-if strcmp(jsonIn.Manufacturer, 'GE') && isfield(studyPar,'LabelingDuration') && ~isequal(studyPar.LabelingDuration, jsonOut.LabelingDuration) &&...
-	( length(jsonOut.LabelingDuration)>1 || ~isfield(jsonIn,'GELabelingDuration'))
+if strcmp(jsonInMerged.Manufacturer, 'GE') && isfield(studyPar,'LabelingDuration') && ~isequal(studyPar.LabelingDuration, jsonOut.LabelingDuration) &&...
+	( length(jsonOut.LabelingDuration)>1 || ~isfield(jsonInMerged,'GELabelingDuration'))
 	warning(['StudyPar Labeling duration (' xASL_num2str(studyPar.LabelingDuration) ') and DICOM LabelingDuration field (' xASL_num2str(jsonOut.LabelingDuration) ') differ. Using ' xASL_num2str(studyPar.LabelingDuration)]);
 	jsonOut.LabelingDuration = studyPar.LabelingDuration;
 end
 	
 % Free info about the sequence, now just the scanner type+software
-if isfield(jsonIn,'ManufacturersModelName')
-	jsonOut.PulseSequenceDetails = jsonIn.ManufacturersModelName;
+if isfield(jsonInMerged,'ManufacturersModelName')
+	jsonOut.PulseSequenceDetails = jsonInMerged.ManufacturersModelName;
 end
-if isfield(jsonIn,'SoftwareVersions')
+if isfield(jsonInMerged,'SoftwareVersions')
 	if ~isfield(jsonOut,'PulseSequenceDetails')
 		jsonOut.PulseSequenceDetails = '';
 	end
 	if ~isempty(jsonOut.PulseSequenceDetails)
 		jsonOut.PulseSequenceDetails = [jsonOut.PulseSequenceDetails '-'];
 	end
-	jsonOut.PulseSequenceDetails = [jsonOut.PulseSequenceDetails jsonIn.SoftwareVersions];
+	jsonOut.PulseSequenceDetails = [jsonOut.PulseSequenceDetails jsonInMerged.SoftwareVersions];
 end
 
 % Process all the data and automatically fill in the missing parameters
@@ -234,34 +234,34 @@ else
 end
     
 %% 7. Check for time encoded sequence
-[jsonOut, bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonIn, jsonOut, dimASL(4));
+[jsonOut, bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonInMerged, jsonOut, dimASL(4));
 
 	
 %% 8. Merge data from the Phoenix protocol
 % Check if the Phoenix protocol is present and parse it
-if isfield(jsonIn,'PhoenixProtocol') && ~isempty(regexpi(jsonIn.Manufacturer,'Siemens'))
-	PhoenixParsed = xASL_bids_PhoenixProtocolReader(jsonIn.PhoenixProtocol);
-	jsonIn.PhoenixAnalyzed = xASL_bids_PhoenixProtocolAnalyzer(PhoenixParsed);
+if isfield(jsonInMerged,'PhoenixProtocol') && ~isempty(regexpi(jsonInMerged.Manufacturer,'Siemens'))
+	PhoenixParsed = xASL_bids_PhoenixProtocolReader(jsonInMerged.PhoenixProtocol);
+	jsonInMerged.PhoenixAnalyzed = xASL_bids_PhoenixProtocolAnalyzer(PhoenixParsed);
 end
     
 % Overwrite differing fields with those from the Phoenix protocol, but report all differences
-if isfield(jsonIn,'PhoenixAnalyzed') && ~isempty(jsonIn.PhoenixAnalyzed)
+if isfield(jsonInMerged,'PhoenixAnalyzed') && ~isempty(jsonInMerged.PhoenixAnalyzed)
 	strDifferentFields = '';
-	for fn = fieldnames(jsonIn.PhoenixAnalyzed)'
+	for fn = fieldnames(jsonInMerged.PhoenixAnalyzed)'
 		if isfield(jsonOut,fn{1})
 			% If the field is there, then report different fields
-			if ~isequal(jsonOut.(fn{1}),jsonIn.PhoenixAnalyzed.(fn{1}))
+			if ~isequal(jsonOut.(fn{1}),jsonInMerged.PhoenixAnalyzed.(fn{1}))
 				% Just if this is not only a different vector orientation
 				if ~isnumeric(jsonOut.(fn{1})) ||...
 						(size(jsonOut.(fn{1}),1)>1 && size(jsonOut.(fn{1}),1) >1) ||...
-						~isequal((jsonOut.(fn{1}))',jsonIn.PhoenixAnalyzed.(fn{1}))
+						~isequal((jsonOut.(fn{1}))',jsonInMerged.PhoenixAnalyzed.(fn{1}))
 					strDifferentFields = [strDifferentFields ' ' fn{1}];
 				end
 			end
 		end
 		% Prioritize the Phoenix field values in the general case
 		if ~(strcmp(fn{1},'EchoTime') && bTimeEncodedFME)
-			jsonOut.(fn{1}) = jsonIn.PhoenixAnalyzed.(fn{1});
+			jsonOut.(fn{1}) = jsonInMerged.PhoenixAnalyzed.(fn{1});
 		end
 	end
 	% Report if certain fields were different as a warning
@@ -317,23 +317,23 @@ else
 end
 
 %% 10. SliceTiming check
-% SliceReadoutTime from the manual entry is prioritized
-if isfield (studyPar,'SliceReadoutTime')
-	if isfield(studyPar,'SliceTiming') && ~isequal(studyPar.SliceTiming,studyPar.SliceReadoutTime)
-		sprintf('Warning, difference in SliceTiming and SliceReadoutTime');
-	end
-	studyPar.SliceTiming = studyPar.SliceReadoutTime;
-end
 
 % Fill in extra parameters based on the JSON from the data
 if jsonOut.MRAcquisitionType(1) == '2'
     % Parse slicetiming for 2D acquisitions
     
-	% Take the studyPar as a prior source of SliceTiming since this is mostly wrong in DICOM otherwise
+	% Take the studyPar as a prior source of  or SliceReadoutTime since this is mostly wrong in DICOM otherwise
 	if isfield(studyPar,'SliceTiming')
 		jsonOut.SliceTiming = studyPar.SliceTiming;
 	end
 	
+	if isfield (studyPar, 'SliceReadoutTime')
+		if isfield(studyPar, 'SliceTiming') && ~isequal(studyPar.SliceTiming,studyPar.SliceReadoutTime)
+			sprintf('Warning, difference in SliceTiming and SliceReadoutTime in studyPar, taking SliceReadoutTime');
+		end
+		jsonOut.SliceTiming = studyPar.SliceReadoutTime;
+	end
+		
 	% The Siemens field is rather reliable though
 	if isfield(jsonOut,'SiemensSliceTime') && ~isempty(jsonOut.SiemensSliceTime)
 		jsonOut.SliceTiming = jsonOut.SiemensSliceTime;
