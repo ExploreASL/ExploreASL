@@ -147,7 +147,7 @@ end
 % Convert the field name of the old LabelingType
 if isfield(jsonOut,'LabelingType')
 	if isfield(jsonOut,'ArterialSpinLabelingType') && ~isequal(jsonOut.LabelingType,jsonOut.ArterialSpinLabelingType)
-		warning('Both LabelingType and ArterialSpinLabelingType are defined with a different value');
+		warning(['Both LabelingType (' jsonOut.LabelingType ') and ArterialSpinLabelingType (' jsonOut.ArterialSpinLabelingType ') are defined. Using ' jsonOut.LabelingType]);
 	else
 		jsonOut.ArterialSpinLabelingType = jsonOut.LabelingType;
 	end
@@ -159,19 +159,20 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 	if isfield(jsonOut,'LabelingDuration') && ~isequal(jsonOut.GELabelingDuration,jsonOut.LabelingDuration)
 		% if the DICOM information is reasonable - less LDs than volumes, then we report a warning
 		if dimASL(4)>=numel(jsonOut.GELabelingDuration)
-			warning('Labeling duration from studyPar mismatch with GE private field in DICOM.');
+			warning(['StudyPar Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') and GE DICOM private field (' xASL_num2str(jsonOut.GELabelingDuration) ') differ. Using ' xASL_num2str(jsonOut.GELabelingDuration)]);
 			jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
 		elseif dimASL(4)>=numel(unique(jsonOut.GELabelingDuration))
-			warning('Labeling duration from studyPar mismatch with GE private field in DICOM.');
 			tempLabelingDuration = unique(jsonOut.GELabelingDuration);
 			if tempLabelingDuration(1) == 0
 				tempLabelingDuration(1:end-1) = tempLabelingDuration(2:end);
 				tempLabelingDuration(end) = 0;
 			end
 			jsonOut.LabelingDuration = tempLabelingDuration;
+			warning(['StudyPar Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') and GE DICOM private field (' xASL_num2str(jsonOut.GELabelingDuration) ') differ. Using ' xASL_num2str(jsonOut.LabelingDuration)]);
 		else
 			% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
 			% and we thus use the provided information. We thus keep the LabelingDuration field untouched.
+			warning(['StudyPar Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') and GE DICOM private field (' xASL_num2str(jsonOut.GELabelingDuration) ') differ. Using ' xASL_num2str(jsonOut.LabelingDuration)]);
 		end
 	else
 		% All is good and we use the DICOM field
@@ -184,7 +185,7 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 		if isfield(jsonOut,'PostLabelingDelay') && ~isequal(jsonOut.PostLabelingDelay,jsonOut.InversionTime)
 			% if the DICOM information is reasonable - less PLDs than volumes, then we report a warning
 			if dimASL(4)>=numel(jsonOut.InversionTime)
-				warning('PostLabelingDelay from studyPar mismatch with the GE DICOM Inversion time value.');
+				warning(['StudyPar PostLabelingDelay (' xASL_num2str(jsonOut.PostLabelingDelay) ') and GE DICOM Inversion time (' xASL_num2str(jsonOut.InversionTime) ') differ. Using ' xASL_num2str(jsonOut.InversionTime)]);
 				jsonOut.PostLabelingDelay = jsonOut.InversionTime;
 			else
 				% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
@@ -197,9 +198,9 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 end
 
 % For GE and multi-PLD or single-PLD not defined in the GELabelingDurationField, we prefer LabelingDuration from study par due to issues with eASL
-if strcmp(jsonIn.Manufacturer, 'GE') && isfield(studyPar,'LabelingDuration') && ~isequal(studyPar.LabelingDuration,jsonOut.LabelingDuration) &&...
+if strcmp(jsonIn.Manufacturer, 'GE') && isfield(studyPar,'LabelingDuration') && ~isequal(studyPar.LabelingDuration, jsonOut.LabelingDuration) &&...
 	( length(jsonOut.LabelingDuration)>1 || ~isfield(jsonIn,'GELabelingDuration'))
-	warning('Labeling duration differs between DICOM and studyPar.');
+	warning(['StudyPar Labeling duration (' xASL_num2str(studyPar.LabelingDuration) ') and DICOM LabelingDuration field (' xASL_num2str(jsonOut.LabelingDuration) ') differ. Using ' xASL_num2str(studyPar.LabelingDuration)]);
 	jsonOut.LabelingDuration = studyPar.LabelingDuration;
 end
 	

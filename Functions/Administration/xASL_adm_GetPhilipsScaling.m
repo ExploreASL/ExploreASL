@@ -89,7 +89,7 @@ if isfield(parms,'RWVSlope')
 			warning('RWVSlope was 1, could be a scale slope issue');
 		end
 		
-		% Set the scaling to remove
+		% Set the correction scaling factor
 		scaleFactor = parms.RWVSlope;
 	end
 			
