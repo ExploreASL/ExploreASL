@@ -379,7 +379,7 @@ fclose(FIDoptionFile);
     
 end
 
-function [FIDoptionFile] = xASL_quant_Fabber_Options(pathFabberOptions, x, PWI, pathFabberInput) %have two functions, basil options and fabber options
+function [FIDoptionFile] = xASL_quant_Fabber_Options(pathFabberOptions, x, PWI, pathFabberInput)
 % Save a Fabber options file for FSL command
 % 1. Create an option file
 % 2. Basic tissue parameters

@@ -213,7 +213,7 @@ end
 	
 T.ImIn          = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF PathpWM} x.P.Pop_Path_SNR};
 T.ImIn(5:8)     = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Path_noSmooth_M0 PathpGM} x.P.Pop_Path_M0};
-T.ImIn(9:10)    = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT PathpWM}};
+T.ImIn(9:10)    = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT PathpWM x.P.Pop_Path_Texch}};
 
 T.bContour(1:11) = 0;
 % If the contour option is activated then draw contour for the GM and WM maps
