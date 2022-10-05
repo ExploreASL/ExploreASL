@@ -1,6 +1,6 @@
-function [ScaleImage, CBF, ATT, Texch] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+function [ScaleImage, CBF, ATT, TExch] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
 %xASL_quant_MultiPLD % Perform a multi-step quantification using BASIL
-% FORMAT: [ScaleImage[, CBF, ATT, Texch]] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
+% FORMAT: [ScaleImage[, CBF, ATT, TExch]] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
 % INPUT:
 %   PWI             - 4D (4th dimension per PLD) image matrix of perfusion-weighted image (REQUIRED)
@@ -15,7 +15,7 @@ function [ScaleImage, CBF, ATT, Texch] = xASL_quant_MultiPLD(PWI, M0_im, imSlice
 % ScaleImage        - image matrix containing net/effective quantification scale factor
 % CBF               - Quantified CBF image
 % ATT               - Estimated ATT map
-% Texch             - Estimated map of time of exchange across BBB (if multi-TE is available)
+% TExch             - Estimated map of time of exchange across BBB (if multi-TE is available)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs a multi-step quantification, by
 %              initializing a ScaleImage that travels through this script & gets changed by the following quantification
@@ -124,7 +124,7 @@ else
     end
     
     % BASIL/FABBER quantification
-    [PWI, ATT, Texch] = xASL_quant_Basil(PWI, x);
+    [PWI, ATT, TExch] = xASL_quant_Basil(PWI, x);
 
 end
 

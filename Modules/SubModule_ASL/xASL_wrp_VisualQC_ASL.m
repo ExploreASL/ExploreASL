@@ -28,7 +28,7 @@ function xASL_wrp_VisualQC_ASL(x)
 %
 % EXAMPLE: xASL_wrp_VisualQC_ASL(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2022 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------
@@ -211,19 +211,21 @@ else
 	TextpGM = 'Reg';
 end
 	
-T.ImIn          = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF PathpWM} x.P.Pop_Path_SNR};
-T.ImIn(5:8)     = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Path_noSmooth_M0 PathpGM} x.P.Pop_Path_M0};
-T.ImIn(9:10)    = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT PathpWM x.P.Pop_Path_Texch}};
+T.ImIn         = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF PathpWM} x.P.Pop_Path_SNR};
+T.ImIn( 5: 8)  = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Path_noSmooth_M0 PathpGM} x.P.Pop_Path_M0};
+T.ImIn( 9:10)  = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT PathpWM}};
+T.ImIn(11:12)  = {x.P.Pop_Path_TExch  {x.P.Pop_Path_TExch PathpWM}};
 
-T.bContour(1:11) = 0;
+T.bContour(1:12) = 0;
 % If the contour option is activated then draw contour for the GM and WM maps
 if x.vis.bVisualQCCBFvsGMWMContour
 	T.bContour([3,7,10]) = 1;
 end
 	
 T.DirOut        = {x.D.ASLCheckDir x.D.SNRdir      x.D.ASLCheckDir       x.D.SNRdir};
-T.DirOut(5:8)   = {x.D.RawDir      x.D.M0CheckDir  x.D.M0regASLdir       x.D.M0CheckDir};
-T.DirOut(9:11)  = {x.D.TTCheckDir  x.D.TTCheckDir  x.D.ASLCheckDir};
+T.DirOut( 5: 8) = {x.D.RawDir      x.D.M0CheckDir  x.D.M0regASLdir       x.D.M0CheckDir};
+T.DirOut( 9:10) = {x.D.TTCheckDir  x.D.TTCheckDir  };
+T.DirOut(11:12) = {x.D.TExchCheckDir  x.D.TExchCheckDir};
 
 T.IntScale(2)   = {[1 1]};
 T.IntScale{8}   = [0.75 0.65];
@@ -231,9 +233,10 @@ T.IntScale{8}   = [0.75 0.65];
 T.ColorMapIs{10}= x.S.jet256;
 T.ColorMapIs{11}= {x.S.jet256};
 
-T.NameExt       = {[] [] TextpWM []};
-T.NameExt( 5:8) = {[] [] TextpGM []};
-T.NameExt(9:11) = {[] TextpWM 'AnalysisMask'};
+T.NameExt        = {[] [] TextpWM []};
+T.NameExt( 5: 8) = {[] [] TextpGM []};
+T.NameExt( 9:10) = {[] TextpWM };
+T.NameExt(11:12) = {[] TextpWM };
 
 % Fill missing cells
 Pars = {'ImIn' 'DirOut' 'ClipZero' 'IntScale' 'NameExt' 'ColorMapIs' 'bContour'}; % default pars

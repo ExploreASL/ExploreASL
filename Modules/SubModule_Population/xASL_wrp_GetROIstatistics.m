@@ -126,6 +126,8 @@ elseif ~isempty(strfind(x.S.InputDataStr,'T1'))
     x.S.unit = 'mL';
 elseif ~isempty(strfind(x.S.InputDataStr,'TExch'))
     x.S.unit = 's';
+elseif ~isempty(strfind(x.S.InputDataStr,'TT'))
+    x.S.unit = 's';	
 else
     x.S.unit = 'au';
 end
