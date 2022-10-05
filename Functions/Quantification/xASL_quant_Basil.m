@@ -117,8 +117,12 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
     
     pathBasilCBF = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
     
-	if isempty(pathBasilCBF) && bUseFabber
-		error('FSL BASIL failed');
+	if isempty(pathBasilCBF) 
+		if bUseFabber
+			error('FSL FABBER failed');
+		else
+			error('FSL BASIL failed');
+		end
     end
    
     pathBasilCBF = pathBasilCBF{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
@@ -232,21 +236,22 @@ switch lower(x.Q.LabelingType)
 		% Specify that we run the PCASL/CASL model
 		fprintf(FIDoptionFile, '--casl\n');
 		fprintf('BASIL: (P)CASL model\n');
+
 		% Print all the PLDs and LabDurs
-		
 		[PLDs, ind] = unique(x.Q.Initial_PLD);
         PLDs = PLDs'/1000;
-        % For Time-encoded, we skip the first volume
-        if x.modules.asl.bTimeEncoded
-            N = length(PLDs)/x.Q.TimeEncodedMatrixSize;
-            PLDs = PLDs(1+N:end); % ex: if HAD8 with 2 different repetitions (16 PLDs), we will want 7+7 PLDs for the quantification. So PLDs(1+1:end) = 14 PLDs
-        end
-        
+
 		if length(x.Q.LabelingDuration)>1
 			LDs = (x.Q.LabelingDuration(ind))'/1000;
 		else
 			LDs = ones(size(PLDs))*x.Q.LabelingDuration/1000;
-        end
+		end
+
+		% For Time-encoded, we skip the first volume
+		if x.modules.asl.bTimeEncoded
+			PLDs = PLDs(2:end);
+			LDs = LDs(2:end);
+		end
 		
 		if x.modules.asl.bMultiPLD
 			% For Time-encoded, we skip the first volume
@@ -420,15 +425,16 @@ fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2/1000);
 [PLDs, ind] = unique(x.Q.Initial_PLD);
 PLDs = PLDs'/1000;
 
-% For Time-encoded, we skip the first volume
-if x.modules.asl.bTimeEncoded
-    PLDs = PLDs(2:end);
-end
-
 if length(x.Q.LabelingDuration)>1
     LDs = (x.Q.LabelingDuration(ind))'/1000;
 else
     LDs = ones(size(PLDs))*x.Q.LabelingDuration/1000;
+end
+
+% For Time-encoded, we skip the first volume
+if x.modules.asl.bTimeEncoded
+    PLDs = PLDs(2:end);
+	LDs = LDs(2:end);
 end
 
 %Echo Times
