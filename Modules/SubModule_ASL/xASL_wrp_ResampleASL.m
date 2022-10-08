@@ -251,10 +251,9 @@ for iSpace=1:2
 				% Number of total volumes cannot be divided by blockSize
 				error(['Total number of volumes ' xASL_num2str(size(ASL_im,4)) ' cannot be composed of blocks of size ' xASL_num2str(blockSize)]);
 			else
-				numberBlocks = size(ASL_im,4)/blockSize;
-				PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), numberBlocks); % preallocate PWI
-				for iBlock = 1:numberBlocks
-					PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,(1:blockSize) + (iBlock-1)*blockSize), 4); % Averaged PWI4D across repetitions
+				PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), blockSize); % preallocate PWI
+				for iBlock = 1:blockSize
+					PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
 				end
 			end
         else % if unique PLDs == decoded image size + HadBlock -> repetitions have different PLDs = we don't want to average
