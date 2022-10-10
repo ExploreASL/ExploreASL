@@ -185,8 +185,9 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 		if isfield(jsonOut,'PostLabelingDelay') && ~isequal(jsonOut.PostLabelingDelay,jsonOut.InversionTime)
 			% if the DICOM information is reasonable - less PLDs than volumes, then we report a warning
 			if dimASL(4)>=numel(jsonOut.InversionTime)
-				warning(['StudyPar PostLabelingDelay (' xASL_num2str(jsonOut.PostLabelingDelay) ') and GE DICOM Inversion time (' xASL_num2str(jsonOut.InversionTime) ') differ. Using ' xASL_num2str(jsonOut.InversionTime)]);
-				jsonOut.PostLabelingDelay = jsonOut.InversionTime;
+				%warning(['StudyPar PostLabelingDelay (' xASL_num2str(jsonOut.PostLabelingDelay) ') and GE DICOM Inversion time (' xASL_num2str(jsonOut.InversionTime) ') differ. Using ' xASL_num2str(jsonOut.InversionTime)]);
+				%jsonOut.PostLabelingDelay = jsonOut.InversionTime;
+				warning(['StudyPar PostLabelingDelay (' xASL_num2str(jsonOut.PostLabelingDelay) ') and GE DICOM Inversion time (' xASL_num2str(jsonOut.InversionTime) ') differ. Using ' xASL_num2str(jsonOut.PostLabelingDelay)]);
 			else
 				% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
 				% and we thus use the provided information. We thus keep the PostLabelingDelay field untouched.
