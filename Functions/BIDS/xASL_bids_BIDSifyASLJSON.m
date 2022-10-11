@@ -87,16 +87,23 @@ end
 %% 5. Prioritize DICOM fields over the manually provided studyPar fields
 % Overwrite differing fields with those from Dicom, but report all differences
 strDifferentFields = '';
+contentDICOM = '';
+contentJSON = '';
+nextN = 1;
+
 for fn = fieldnames(jsonInMerged)'
 	if isfield(jsonOut,fn{1})
 		% If the field is there, then report different fields
 		if ~isequal(jsonOut.(fn{1}),jsonInMerged.(fn{1}))
 			% Just if this is not only a different vector orientation
 			if ~isnumeric(jsonOut.(fn{1})) ||...
-					(size(jsonOut.(fn{1}),1)>1 && size(jsonOut.(fn{1}),1) >1) ||...
+					size(jsonOut.(fn{1}),1)>1 && size(jsonOut.(fn{1}),1) >1 ||...
 					~isequal((jsonOut.(fn{1}))',jsonInMerged.(fn{1}))
-				strDifferentFields = [strDifferentFields ' ' fn{1}];
-			end
+				strDifferentFields{nextN} = fn{1};
+                contentDICOM{nextN} = jsonInMerged.(fn{1});
+                contentJSON{nextN} = jsonOut.(fn{1});
+            end
+            nextN = nextN+1;
 			if strcmp(fn{1},'TotalAcquiredPairs')
 				jsonInMerged.(fn{1}) = jsonOut.(fn{1});
 			end
@@ -107,7 +114,18 @@ for fn = fieldnames(jsonInMerged)'
 end
 % Report if certain fields were different as a warning
 if ~isempty(strDifferentFields)
-	warning('The following user defined and DICOM fields differ:\n %s \n',strDifferentFields);
+    for iField=1:numel(strDifferentFields)
+        warning([strDifferentFields{iField} ' differed between DICOM (' xASL_num2str(contentDICOM{iField})...
+            ') & studyPar (' xASL_num2str(contentJSON{iField}) ')']);
+        
+        if strcmp(strDifferentFields{iField}, 'TotalAcquiredPairs')
+            fprintf('%s\n', 'Using the studyPar value');
+        else
+            fprintf('%s\n', 'Using the DICOM value');
+        end
+        % in the future mention here what we chose, which should be the
+        % user-specified value
+    end
 end
 
 %% 6. Field check and name conversion
