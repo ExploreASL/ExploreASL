@@ -86,9 +86,9 @@ end
 
 %% 5. Prioritize DICOM fields over the manually provided studyPar fields
 % Overwrite differing fields with those from Dicom, but report all differences
-strDifferentFields = '';
-contentDICOM = '';
-contentJSON = '';
+strDifferentFields = {};
+contentDICOM = {};
+contentJSON = {};
 nextN = 1;
 
 for fn = fieldnames(jsonInMerged)'
@@ -96,13 +96,11 @@ for fn = fieldnames(jsonInMerged)'
 		% If the field is there, then report different fields
 		if ~isequal(jsonOut.(fn{1}),jsonInMerged.(fn{1}))
 			% Just if this is not only a different vector orientation
-			if ~isnumeric(jsonOut.(fn{1})) ||...
-					size(jsonOut.(fn{1}),1)>1 && size(jsonOut.(fn{1}),1) >1 ||...
-					~isequal((jsonOut.(fn{1}))',jsonInMerged.(fn{1}))
+			if ~isnumeric(jsonOut.(fn{1})) || numel(jsonOut.(fn{1}),1) == 1 || ~isequal((jsonOut.(fn{1}))',jsonInMerged.(fn{1}))
 				strDifferentFields{nextN} = fn{1};
                 contentDICOM{nextN} = jsonInMerged.(fn{1});
                 contentJSON{nextN} = jsonOut.(fn{1});
-            end
+			end
             nextN = nextN+1;
 			if strcmp(fn{1},'TotalAcquiredPairs')
 				jsonInMerged.(fn{1}) = jsonOut.(fn{1});
@@ -271,9 +269,7 @@ if isfield(jsonInMerged,'PhoenixAnalyzed') && ~isempty(jsonInMerged.PhoenixAnaly
 			% If the field is there, then report different fields
 			if ~isequal(jsonOut.(fn{1}),jsonInMerged.PhoenixAnalyzed.(fn{1}))
 				% Just if this is not only a different vector orientation
-				if ~isnumeric(jsonOut.(fn{1})) ||...
-						(size(jsonOut.(fn{1}),1)>1 && size(jsonOut.(fn{1}),1) >1) ||...
-						~isequal((jsonOut.(fn{1}))',jsonInMerged.PhoenixAnalyzed.(fn{1}))
+				if ~isnumeric(jsonOut.(fn{1})) || numel(jsonOut.(fn{1}),1) == 1 || ~isequal((jsonOut.(fn{1}))',jsonInMerged.PhoenixAnalyzed.(fn{1}))
 					strDifferentFields = [strDifferentFields ' ' fn{1}];
 				end
 			end
