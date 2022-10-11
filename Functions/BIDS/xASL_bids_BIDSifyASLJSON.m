@@ -113,14 +113,16 @@ end
 % Report if certain fields were different as a warning
 if ~isempty(strDifferentFields)
     for iField=1:numel(strDifferentFields)
-        warning([strDifferentFields{iField} ' differed between DICOM (' xASL_num2str(contentDICOM{iField})...
-            ') & studyPar (' xASL_num2str(contentJSON{iField}) ')']);
+		warningMessage = [strDifferentFields{iField} ' differed between DICOM (' xASL_num2str(contentDICOM{iField})...
+            ') & studyPar (' xASL_num2str(contentJSON{iField}) '). '];
         
-        if strcmp(strDifferentFields{iField}, 'TotalAcquiredPairs')
-            fprintf('%s\n', 'Using the studyPar value');
-        else
-            fprintf('%s\n', 'Using the DICOM value');
-        end
+		if strcmp(strDifferentFields{iField}, 'TotalAcquiredPairs')
+			warningMessage = [warningMessage 'Using the studyPar value.'];
+		else
+			warningMessage = [warningMessage 'Using the DICOM value.'];
+		end
+		
+		warning(warningMessage);
         % in the future mention here what we chose, which should be the
         % user-specified value
     end
