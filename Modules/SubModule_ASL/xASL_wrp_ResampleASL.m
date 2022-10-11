@@ -242,11 +242,13 @@ for iSpace=1:2
         return;
         
     elseif x.modules.asl.bTimeEncoded
-        % Decoding of TimeEncoded data (Nifti is saved inside the function)
+        % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
         ASL_im = xASL_quant_HadamardDecoding(PathASL{iSpace}, x.Q);
-        PLD_vector_size = length(unique(x.Q.Initial_PLD));
-        blockSize = x.Q.NumberEchoTimes * (PLD_vector_size - (PLD_vector_size/x.Q.TimeEncodedMatrixSize)); % Number of volumes per Hadamard block = EchoTimes*DecodedMatrixSize
-        
+		
+		% Calculate Hadamard block size (number of unique PLDs * multiTEs) = number of volumes per block
+        vectorSizePLD = length(unique(x.Q.Initial_PLD));
+        blockSize = x.Q.NumberEchoTimes * (vectorSizePLD - (vectorSizePLD/x.Q.TimeEncodedMatrixSize)); 
+		
         if blockSize ~= size(ASL_im,4) % In case there is more than 1 block, we will average across repetitions
 			if mod(size(ASL_im,4), blockSize)
 				% Number of total volumes cannot be divided by blockSize
@@ -257,7 +259,7 @@ for iSpace=1:2
 					PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
 				end
 			end
-        else % if unique PLDs == decoded image size + HadBlock -> repetitions have different PLDs = we don't want to average
+        else % if Hadamard Block size == unique PLDs * number of multi-TEs -> a single repetitions -> we don't want to average
             PWI = ASL_im;
         end
 
