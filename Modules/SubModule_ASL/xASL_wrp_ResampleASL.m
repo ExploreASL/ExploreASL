@@ -244,7 +244,8 @@ for iSpace=1:2
     elseif x.modules.asl.bTimeEncoded
         % Decoding of TimeEncoded data (Nifti is saved inside the function)
         ASL_im = xASL_quant_HadamardDecoding(PathASL{iSpace}, x.Q);
-        blockSize = x.Q.NumberEchoTimes * (x.Q.TimeEncodedMatrixSize-1); % Number of volumes per Hadamard block = EchoTimes*DecodedMatrixSize
+        PLD_vector_size = length(unique(x.Q.Initial_PLD));
+        blockSize = x.Q.NumberEchoTimes * (PLD_vector_size - (PLD_vector_size/x.Q.TimeEncodedMatrixSize)); % Number of volumes per Hadamard block = EchoTimes*DecodedMatrixSize
         
         if blockSize ~= size(ASL_im,4) % In case there is more than 1 block, we will average across repetitions
 			if mod(size(ASL_im,4), blockSize)

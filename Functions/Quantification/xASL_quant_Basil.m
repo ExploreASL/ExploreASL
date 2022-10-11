@@ -249,8 +249,9 @@ switch lower(x.Q.LabelingType)
 
 		% For Time-encoded, we skip the first volume
 		if x.modules.asl.bTimeEncoded
-			PLDs = PLDs(2:end);
-			LDs = LDs(2:end);
+            PLD_vector_size = length(unique(x.Q.Initial_PLD));
+			PLDs = PLDs(1:end-(PLD_vector_size/x.Q.TimeEncodedMatrixSize)); % Removing the two longer PLDs - 3.4 and 3.6
+			LDs = LDs(1:length(PLDs));
 		end
 		
 		if x.modules.asl.bMultiPLD
