@@ -422,20 +422,23 @@ fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2/1000);
 
 %% 3. Basic acquisition parameters
 
-% Print all the PLDs and LabDurs
-[PLDs, ind] = unique(x.Q.Initial_PLD);
+% Print all the PLDs and LabDurs - count that it was averaged over PLDs, but keep the initial order
+[PLDs, ind] = unique(x.Q.Initial_PLD, 'stable');
 PLDs = PLDs'/1000;
 
+% We assume that there's either only a single labeling duration, or a vector with the same length and order as PLDs (that is a BIDS requirement)
 if length(x.Q.LabelingDuration)>1
     LDs = (x.Q.LabelingDuration(ind))'/1000;
 else
     LDs = ones(size(PLDs))*x.Q.LabelingDuration/1000;
 end
 
-% For Time-encoded, we skip the first volume
+% For Time-encoded, we skip the first volume for each Hadamard block
 if x.modules.asl.bTimeEncoded
-    PLDs = PLDs(2:end);
-	LDs = LDs(2:end);
+	numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
+	ind = (1:numberBlocks)'*(2:x.Q.TimeEncodedMatrixSize);
+    PLDs = PLDs(ind(:)');
+	LDs = LDs(ind(:)');
 end
 
 %Echo Times
