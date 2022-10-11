@@ -434,8 +434,8 @@ end
 if ~x.modules.asl.bMultiPLD % single PLD quantification
     fprintf('%s\n', 'Performing single PLD quantification');
     [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
-	ATT = [];
-	TExch = [];
+	ATT = NaN;
+	TExch = NaN;
 elseif x.Q.bUseBasilQuantification
     % perform BASIL multi-PLD quantification
     fprintf('%s\n', 'Performing multi PLD quantification using BASIL');
@@ -464,12 +464,12 @@ fprintf('%s\n','Saving PWI & CBF niftis');
 
 xASL_io_SaveNifti(PWI_Path, pathOutputCBF, CBF, 32, 0);
 
-if ~isempty(ATT)
+if numel(ATT) > 1 || ~isnan(ATT)
 	% Save the ATT file
 	xASL_io_SaveNifti(PWI_Path, pathOutputTT, ATT, 32, 0);
 end
 
-if ~isempty(TExch)
+if numel(TExch) > 1 || ~isnan(TExch)
 	% Save the TExch file
 	xASL_io_SaveNifti(PWI_Path, pathOutputTExch, TExch, 32, 0);
 end

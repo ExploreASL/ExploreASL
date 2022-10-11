@@ -134,7 +134,7 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 		pathBasilATT = pathBasilATT{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 		ATT_map = xASL_io_Nifti2Im(pathBasilATT);
 	else
-		ATT_map = [];
+		ATT_map = NaN;
     end
     
     pathFabberTexch = xASL_adm_GetFileList(dirBasilOutput, '^mean_T_exch\.nii$', 'FPListRec');
@@ -142,7 +142,7 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 		pathFabberTexch = pathFabberTexch{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 		Texch_map = xASL_io_Nifti2Im(pathFabberTexch);
 	else
-		Texch_map = [];
+		Texch_map = NaN;
     end
 	
     %% 6. Scaling to physiological units
