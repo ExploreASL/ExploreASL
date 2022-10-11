@@ -237,8 +237,8 @@ switch lower(x.Q.LabelingType)
 		fprintf(FIDoptionFile, '--casl\n');
 		fprintf('BASIL: (P)CASL model\n');
 
-		% Print all the PLDs and LabDurs
-		[PLDs, ind] = unique(x.Q.Initial_PLD);
+		% Keep only unique PLDs and apply the same to LabDurs
+		[PLDs, ind] = unique(x.Q.Initial_PLD, 'stable');
         PLDs = PLDs'/1000;
 
 		if length(x.Q.LabelingDuration)>1
@@ -247,15 +247,15 @@ switch lower(x.Q.LabelingType)
 			LDs = ones(size(PLDs))*x.Q.LabelingDuration/1000;
 		end
 
-		% For Time-encoded, we skip the first volume
+		% For Time-encoded, we skip the first volume per block
 		if x.modules.asl.bTimeEncoded
-            PLD_vector_size = length(unique(x.Q.Initial_PLD));
-			PLDs = PLDs(1:end-(PLD_vector_size/x.Q.TimeEncodedMatrixSize)); % Removing the two longer PLDs - 3.4 and 3.6
-			LDs = LDs(1:length(PLDs));
-		end
+			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
+			ind = (1:numberBlocks)'*(2:x.Q.TimeEncodedMatrixSize);
+			PLDs = PLDs(ind(:)');
+			LDs = LDs(ind(:)');
+		end		
 		
 		if x.modules.asl.bMultiPLD
-			% For Time-encoded, we skip the first volume
 			for iPLD = 1:length(PLDs)
 				fprintf(FIDoptionFile, '--pld%d=%.2f\n', iPLD, PLDs(iPLD));
 			end
@@ -448,7 +448,6 @@ TEs = round(x.EchoTime(1:NVolumes)'/1000,4); % To keep 4 decimal digits
 
 % Plotting the values into the doc (PLD=ti, LD=tau)
 for iPLD = 1:length(PLDs)
-    
     fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD));
     fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD, nTE); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
 end

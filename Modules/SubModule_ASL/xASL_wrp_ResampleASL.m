@@ -261,7 +261,6 @@ for iSpace=1:2
             PWI = ASL_im;
         end
 
-        
         % Save PWI4D
         fprintf('%s\n', PathPWI4D{iSpace});
         xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI, 32, false);
@@ -285,7 +284,7 @@ for iSpace=1:2
 			Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
         
 			% After averaging across PLDs, we'll obtain these unique PLDs
-			Initial_PLD_PWI_averaged = unique(Initial_PLD_PWI);
+			Initial_PLD_PWI_averaged = unique(Initial_PLD_PWI, 'stable');
 			
             % MultiPLD PWI after averaging
 			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), length(Initial_PLD_PWI_averaged)); % preallocate PWI

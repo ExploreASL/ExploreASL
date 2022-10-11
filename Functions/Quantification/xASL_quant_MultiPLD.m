@@ -240,13 +240,28 @@ CBF = xASL_stat_MeanNan(CBF, 4);
 fprintf('%s\n',' model with parameters:');
 
 if x.modules.asl.ApplyQuantification(3)
+	% Obtain the unique PLDs and LDs
+	[PLDs, ind] = unique(x.Q.Initial_PLD, 'stable');
+	if length(x.Q.LabelingDuration)>1
+		LDs = (x.Q.LabelingDuration(ind))';
+	else
+		LDs = ones(size(PLDs))*x.Q.LabelingDuration;
+	end
+	% Skip the first PLD of the block for Time-Encoded
+	if x.modules.asl.bTimeEncoded
+		numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
+		ind = (1:numberBlocks)'*(2:x.Q.TimeEncodedMatrixSize);
+		PLDs = PLDs(ind(:)');
+		LDs = LDs(ind(:)');
+	end
+	
     switch lower(x.Q.LabelingType)
         case 'pasl'
-            fprintf('%s\n',['TI1 = ' xASL_num2str(unique(x.Q.LabelingDuration(:)')) ' ms,']);
-            fprintf('%s\n',['TI (ms) = ' xASL_num2str(unique(x.Q.Initial_PLD(:)'))]);
+            fprintf('%s\n',['TI1 = ' xASL_num2str(LDs) ' ms,']);
+            fprintf('%s\n',['TI  = ' xASL_num2str(PLDs) ' ms.']);
         case 'casl'
-            fprintf('%s\n',['LabelingDuration = ' xASL_num2str(unique(x.Q.LabelingDuration(:)')) ' ms, ']);
-            fprintf('%s\n',['PLD (ms) = ' xASL_num2str(unique(x.Q.Initial_PLD(:)'))]);
+            fprintf('%s\n',['LabelingDuration = ' xASL_num2str(LDs) ' ms,']);
+            fprintf('%s\n',['PLD              = ' xASL_num2str(PLDs) ' ms.']);
     end
 
 	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')
