@@ -574,14 +574,8 @@ end
 %% 9    Visual QC
 iState = 9;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
-
-    if ~x.modules.asl.bMultiPLD
-        xASL_wrp_VisualQC_ASL(x);
-        x.mutex.AddState(StateName{iState});
-    else
-        fprintf('%s\n',[StateName{iState} ' is skipped, multiPLD sequence detected.']); 
-    end
-
+	xASL_wrp_VisualQC_ASL(x);
+	x.mutex.AddState(StateName{iState});
 else
 	if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
 end
