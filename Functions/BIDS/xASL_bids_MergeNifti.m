@@ -41,7 +41,7 @@ function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType, ni
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
 %% Admin
@@ -180,6 +180,9 @@ pathOut = '';
 % And ASLContext is empty
 ASLContext = '';
 
+% We prepare priority scores for merging JSONs
+priorityList = zeros(1,length(NiftiPaths));
+
 % Goes through all files
 for iFile=1:length(NiftiPaths)
 	% For each file, finds the JSONs
@@ -190,19 +193,19 @@ for iFile=1:length(NiftiPaths)
 	if exist(jsonPath,'file')
 		jsonPar = spm_jsonread(jsonPath);
 	else
-		fprintf('Warning: Non-existent JSON sidecar: %s\n',jsonPath) ;
+		fprintf('Warning: Non-existent JSON sidecar: %s\n', jsonPath) ;
 		jsonPar = [];
 	end
 		
 	% Finds the manufacturer of the file
-	if ~isempty(jsonPar) && isfield(jsonPar,'Manufacturer')
+	if ~isempty(jsonPar) && isfield(jsonPar, 'Manufacturer')
 		varManufacturer = jsonPar.Manufacturer;
 	else
 		varManufacturer = '';
 	end
 		
 	% If GE is not identified or ImageType field doesn't exist, then exits
-	if isempty(regexpi(varManufacturer,'GE')) || ~isfield(jsonPar,'ImageType')
+	if isempty(regexpi(varManufacturer, 'GE')) || ~isfield(jsonPar, 'ImageType')
 		return;
 	end
 	
@@ -214,6 +217,20 @@ for iFile=1:length(NiftiPaths)
 		return;
 	end
 	
+	% Set priorities for merging JSONs, higher number = higher priority
+	switch lower(imageType)
+		case 'cbf'
+			priorityList(iFile) = 1;
+		case 'm0scan'
+			priorityList(iFile) = 2;
+		case {'control', 'label'}
+			priorityList(iFile) = 3;
+		case 'deltam'
+			priorityList(iFile) = 4;
+		otherwise
+			priorityList(iFile) = 0;
+	end
+	
 	% Save this to the ASL context
 	if isempty(ASLContext)
 		ASLContext = imageType;
@@ -223,7 +240,7 @@ for iFile=1:length(NiftiPaths)
 end
 
 % Merges all the files together
-pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,1:length(NiftiPaths),'ASL4D',0);
+pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, 1:length(NiftiPaths), 'ASL4D', 0, priorityList);
 
 % If this worked
 if ~isempty(pathOut)
@@ -263,7 +280,7 @@ for iFile=1:length(NiftiPaths)
 	listEndNumber(iFile) = str2double(Ffile(iStart:iEnd));
 end
 [~, indexSortedFile] = sort(listEndNumber);
-pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,'ASL4D',0);
+pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, 'ASL4D', 0);
 
 if ~isempty(pathOut)
 	xASL_bids_MergeNifti_RenameParms(Fpath,'ASL4D');

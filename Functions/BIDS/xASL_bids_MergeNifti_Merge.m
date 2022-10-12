@@ -1,13 +1,14 @@
-function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,nameMerged,bAlternatingControlLabel)
+function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameMerged, bAlternatingControlLabel, priorityList)
 %xASL_bids_MergeNifti_Merge Merge NiftiPaths & save to pathOut
 %
-% FORMAT: pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,nameMerged,bAlternatingControlLabel)
+% FORMAT: pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameMerged, bAlternatingControlLabel[, priorityList])
 % 
 % INPUT:
 %   NiftiPaths - Nifti paths
 %   indexSortedFile - Index sorted file
 %   nameMerged - Name merged
 %   bAlternatingControlLabel - Alternating control label (BOOLEAN, REQUIRED)
+%   priorityList - a vector of priorities indicating (higher value = higher priority) how to merge the JSON files (OPTIONAL, DEFAULT = equal priorities)
 %
 % OUTPUT:
 %   pathOut    - output paths
@@ -19,14 +20,21 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,nameMer
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
     %% Track if all went well
     bStatus = 1; 
     pathOut = '';
-    firstJSON = '';
-
+	
+	if nargin < 4
+		error('Require 4 input parameters.');
+	end
+	
+	if nargin < 5 || isempty(priorityList)
+		priorityList = ones(1, numel(NiftiPaths));
+	end
+	
     %% Start loading all the files
     for iFile=1:length(NiftiPaths)
         tempIM = xASL_io_Nifti2Im(NiftiPaths{indexSortedFile(iFile)});
@@ -75,17 +83,30 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,nameMer
                 end
             end
         end
+        
+	end
 
-        % Check for the path to JSON if existing and keep only the first existing JSON
-        if isempty(firstJSON)
-            [Fpath, Ffile] = xASL_fileparts(NiftiPaths{indexSortedFile(iFile)});
-            pathJSON = fullfile(Fpath,[Ffile '.json']);
-            if exist(pathJSON, 'file')
-                firstJSON = pathJSON;
-            end
-        end
-    end
-
+	%% Merge all the JSONs according to their priority
+	
+	% Create an order in which the JSONs are going to be read
+	[~, priorityListIndex] = sort(priorityList);
+	outputJSON = struct();
+	for iJSON = 1:length(NiftiPaths)
+		% Go through the JSONs in increasing priority
+		[Fpath, Ffile] = xASL_fileparts(NiftiPaths{priorityListIndex(iJSON)});
+		if xASL_exist(fullfile(Fpath,[Ffile '.json']), 'file')
+			currentJSON = spm_jsonread(fullfile(Fpath,[Ffile '.json']));
+			
+			% Go through all fields
+			listFieldNames = fieldnames(currentJSON);
+			for iFieldName = 1:length(listFieldNames)
+				% Overwrite fields as we are reading JSONs with increasing priority
+				outputJSON.(listFieldNames{iFieldName}) = currentJSON.(listFieldNames{iFieldName});
+			end
+		end
+	end
+	
+	
     %% If at the end and all went well
     if bStatus
         fprintf('Warning: concatenating multiple NIfTIs & jsons as output from dcm2niiX\n');
@@ -130,19 +151,14 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,nameMer
                 catch
                     fprintf('Sorting failed...\n');
                 end
-            end
+			end
+			
             % Write changes to JSON
-            structFirstJSON = spm_jsonread(firstJSON);
-            structFirstJSON.EchoTime = EchoTimes;
-            spm_jsonwrite(firstJSON, structFirstJSON);
-        end
-        % Copy the first JSON to this name
-        if ~isempty(firstJSON)
-            xASL_Copy(firstJSON,fullfile(Fpath,[nameMerged '.json']),1);
-        end
+			outputJSON.EchoTime = EchoTimes;
+		end
+		spm_jsonwrite(fullfile(Fpath,[nameMerged '.json']), outputJSON);
     else
         fprintf('Warning: Cannot concatenate multiple NIfTIs & jsons as output from dcm2niiX\n');
     end
-
 
 end
