@@ -202,13 +202,15 @@ switch lower(x.Q.LabelingType)
 	case 'pasl'
 		% PASL model is assumed by default and does not need to be specified in the config file
 		fprintf('BASIL: PASL model\n');
-		TIs = (unique(x.Q.Initial_PLD))'/1000;
+		TIs = (unique(x.Q.Initial_PLD, 'stable'))'/1000;
 
 		% Print all the TIs
 		if x.modules.asl.bMultiPLD
 			% For Time-encoded, we skip the first volume
 			if x.modules.asl.bTimeEncoded
-				TIs = TIs(2:end);
+				numberBlocks = numel(TIs)/x.Q.TimeEncodedMatrixSize;
+				ind = ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1);
+				TIs = TIs(ind(:)');
 			end
 			for iTI = 1:length(TIs)
 				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iTI, TIs(iTI));
@@ -250,7 +252,7 @@ switch lower(x.Q.LabelingType)
 		% For Time-encoded, we skip the first volume per block
 		if x.modules.asl.bTimeEncoded
 			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-			ind = (1:numberBlocks)'*(2:x.Q.TimeEncodedMatrixSize);
+			ind = ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1);
 			PLDs = PLDs(ind(:)');
 			LDs = LDs(ind(:)');
 		end		
@@ -436,7 +438,7 @@ end
 % For Time-encoded, we skip the first volume for each Hadamard block
 if x.modules.asl.bTimeEncoded
 	numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-	ind = (1:numberBlocks)'*(2:x.Q.TimeEncodedMatrixSize);
+	ind = ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1);
     PLDs = PLDs(ind(:)');
 	LDs = LDs(ind(:)');
 end

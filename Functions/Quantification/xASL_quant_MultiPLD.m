@@ -250,7 +250,7 @@ if x.modules.asl.ApplyQuantification(3)
 	% Skip the first PLD of the block for Time-Encoded
 	if x.modules.asl.bTimeEncoded
 		numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-		ind = (1:numberBlocks)'*(2:x.Q.TimeEncodedMatrixSize);
+		ind = ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1);
 		PLDs = PLDs(ind(:)');
 		LDs = LDs(ind(:)');
 	end
