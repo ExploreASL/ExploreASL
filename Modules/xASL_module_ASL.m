@@ -528,8 +528,8 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
         % Transform the output volumes of BASIL to standard space (running
         % it in standard space takes too much time and the
         % noise-distributions may differ due to the B-spline interpolation
-        InputPaths = {x.P.Path_CBF, x.P.Path_TT};
-        OutputPaths = {x.P.Pop_Path_qCBF, x.P.Pop_Path_TT}; 
+        InputPaths = {x.P.Path_CBF, x.P.Path_ATT};
+        OutputPaths = {x.P.Pop_Path_qCBF, x.P.Pop_Path_ATT}; 
         xASL_spm_deformations(x, InputPaths, OutputPaths, 4, [], [], x.P.Path_y_ASL);
     else
         % Quantification in standard space:

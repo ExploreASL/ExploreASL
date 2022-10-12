@@ -128,6 +128,8 @@ elseif ~isempty(strfind(x.S.InputDataStr,'TExch'))
     x.S.unit = 's';
 elseif ~isempty(strfind(x.S.InputDataStr,'TT'))
     x.S.unit = 's';	
+elseif ~isempty(strfind(x.S.InputDataStr,'ATT'))
+    x.S.unit = 's';	
 else
     x.S.unit = 'au';
 end

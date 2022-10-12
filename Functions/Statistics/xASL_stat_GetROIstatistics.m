@@ -443,7 +443,7 @@ for iSubject=1:x.nSubjects
 		% Here starts the real repetition for all session for the standard space mode
 		% for iSess=1:nSessions % NB this is not x.nSession
 		% but the one above that can be forced to a single nSessions
-		% in case of volume or TT
+		% in case of volume or TT or ATT
 
 		%% c) Load data
 		if x.S.InputNativeSpace %% PM: we repeat same code here twice

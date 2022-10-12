@@ -79,7 +79,7 @@ end
 % Replace CBF with ATT in the output path
 iStringCBF = regexpi(pathOutputCBF, 'CBF');
 iStringCBF = iStringCBF(end);
-pathOutputTT = [pathOutputCBF(1:(iStringCBF-1)) 'TT' pathOutputCBF((iStringCBF+3):end)];
+pathOutputATT = [pathOutputCBF(1:(iStringCBF-1)) 'ATT' pathOutputCBF((iStringCBF+3):end)];
 pathOutputTExch = [pathOutputCBF(1:(iStringCBF-1)) 'TExch' pathOutputCBF((iStringCBF+3):end)];
 
 if nargin<4 || isempty(M0Path)
@@ -466,7 +466,7 @@ xASL_io_SaveNifti(PWI_Path, pathOutputCBF, CBF, 32, 0);
 
 if numel(ATT) > 1 || ~isnan(ATT)
 	% Save the ATT file
-	xASL_io_SaveNifti(PWI_Path, pathOutputTT, ATT, 32, 0);
+	xASL_io_SaveNifti(PWI_Path, pathOutputATT, ATT, 32, 0);
 end
 
 if numel(TExch) > 1 || ~isnan(TExch)
@@ -513,8 +513,8 @@ if x.Q.bUseBasilQuantification
     end
     
     xASL_spm_deformations(x, {x.P.Path_CBF}, {x.P.Pop_Path_CBF}, [], [], AffineTransfPath, x.P.Path_y_ASL);
-	if xASL_exist(x.P.Path_TT,'file')
-		xASL_spm_deformations(x, {x.P.Path_TT}, {x.P.Pop_Path_TT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+	if xASL_exist(x.P.Path_ATT,'file')
+		xASL_spm_deformations(x, {x.P.Path_ATT}, {x.P.Pop_Path_ATT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
     end
     
     if xASL_exist(x.P.Path_TExch,'file')

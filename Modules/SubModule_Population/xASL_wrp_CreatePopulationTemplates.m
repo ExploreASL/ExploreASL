@@ -275,6 +275,7 @@ if UsePredefined
     PreFixList{end+1}   = 'SD';                                 TemplateNameList{end+1}  = 'SD';               SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'SNR';                                TemplateNameList{end+1}  = 'SNR';              SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'TT';                                 TemplateNameList{end+1}  = 'TT';               SessionsExist(end+1)    = 0;
+	PreFixList{end+1}   = 'ATT';                                TemplateNameList{end+1}  = 'ATT';              SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'FoV';                                TemplateNameList{end+1}  = 'FoV';              SessionsExist(end+1)    = 1;
     
     PreFixList{end+1}   = '4V_MAP';                             TemplateNameList{end+1}  = '4V_MAP';           SessionsExist(end+1)    = 0;
