@@ -217,7 +217,9 @@ for iFile=1:length(NiftiPaths)
 		return;
 	end
 	
-	% Set priorities for merging JSONs, higher number = higher priority
+	% Set priorities for merging JSONs. JSONs with low priority (low number) are merged first and then their tags are 
+	% overwritten with JSONs with higher priority (higher number) 
+	% Unknown file has 0 priority, then the order of increasing priority is cbf < m0scan < control/label < deltam
 	switch lower(imageType)
 		case 'cbf'
 			priorityList(iFile) = 1;
