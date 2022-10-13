@@ -209,7 +209,7 @@ switch lower(x.Q.LabelingType)
 			% For Time-encoded, we skip the first volume
 			if x.modules.asl.bTimeEncoded
 				numberBlocks = numel(TIs)/x.Q.TimeEncodedMatrixSize;
-				ind = ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1);
+				ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
 				TIs = TIs(ind(:)');
 			end
 			for iTI = 1:length(TIs)
@@ -252,7 +252,7 @@ switch lower(x.Q.LabelingType)
 		% For Time-encoded, we skip the first volume per block
 		if x.modules.asl.bTimeEncoded
 			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-			ind = ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1);
+			ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
 			PLDs = PLDs(ind(:)');
 			LDs = LDs(ind(:)');
 		end		
@@ -438,7 +438,7 @@ end
 % For Time-encoded, we skip the first volume for each Hadamard block
 if x.modules.asl.bTimeEncoded
 	numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-	ind = ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1);
+	ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
     PLDs = PLDs(ind(:)');
 	LDs = LDs(ind(:)');
 end
