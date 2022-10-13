@@ -201,75 +201,84 @@ end
 %% 7    ROI statistics
 if ~x.mutex.HasState(StateName{8})
     
-    % Default & Fallback for Atlases
+    % Default atlases/ROIs
     if ~isfield(x.S,'Atlases')
         x.S.Atlases = {'TotalGM','DeepWM'}; % Default
     end
-
+    
+    % Default datatypes
+    if ~isfield(x.S,'DataTypes')
+        x.S.DataTypes = {'qCBF'}; % Default
+    end
+    
+    
     x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
     % if exist('ASL','var')
     %     xASL_vis_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
     % end
 
     xASL_stat_ComputeWsCV(x); % This computes wsCV & bsCV to compute power   
-    
-    % Iterate over atlases in cell structure
-    
+
+
     % ROI statistics
     % x.S.SubjectWiseVisualization =1; % set this on to visualize the subject-wise masks
     % over CBF maps (takes lot of extra time though)
     
-    % x.S.InputDataStr              = 'SD'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
-    % x.S.InputAtlasPath            = fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii');
-    % % x.S.InputAtlasPath            = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
-    % xASL_wrp_GetROIstatistics( x);
-    % x.S.InputDataStr              = 'SNR'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
-    % x.S.InputAtlasPath            = fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii');
-    % xASL_wrp_GetROIstatistics( x);
-
-    x.S.InputDataStr = 'qCBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
-	x.S.InputDataStrNative = 'CBF'; % 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+    x.S.InputDataStr = 'qCBF'; % 'Texch' 'ATT' 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+	x.S.InputDataStrNative = 'CBF'; % 'Texch' 'ATT' 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
     
-    % Iterate over atlases
-    for iAtlas=1:length(x.S.Atlases)        
-        
-        % Check if atlas name is in path list
-        if isfield(x.P.Atlas,x.S.Atlases{iAtlas})
-            x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
+    % Iterate over DataTypes
+    for iDataType=1:length(x.S.DataTypes)
+        x.S.InputDataStr = x.S.DataTypes{iDataType};
+        if isempty(regexp(x.S.InputDataStr(1),'(q|r)'))
+            % Some DataTypes have a prefix in standard space but not in
+            % native space: e.g.,
+            % qCBF in standard space is CBF in native space
+            % rc1T1 in standard space is c1T1 in native space
+            x.S.InputDataStrNative = x.S.InputDataStr;
+        else
+            x.S.InputDataStrNative = x.S.InputDataStr(2:end);
         end
-        
-        % ROI statistics (default: standard space)
+    
+        % Iterate over atlases
+        for iAtlas=1:length(x.S.Atlases)        
+
+            % Check if atlas name is in path list
+            if isfield(x.P.Atlas,x.S.Atlases{iAtlas})
+                x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
+            end
+
+            % ROI statistics (default: standard space)
+            x.S.InputNativeSpace = 0;
+            xASL_wrp_GetROIstatistics(x);
+            % ROI statistics (optional: native space)
+            if x.modules.population.bNativeSpaceAnalysis
+                x.S.InputNativeSpace = 1;
+                x.S.InputAtlasNativeName = x.S.Atlases{iAtlas};
+                xASL_wrp_GetROIstatistics(x);
+            end
+        end
+    
+        % Check if we should do the same for Lesion or ROI masks (i.e.
+        % individual "atlases") -> NB not yet developed/tested in native space
+        LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI).*\.nii$', 'FPList', [0 Inf]);
         x.S.InputNativeSpace = 0;
-        xASL_wrp_GetROIstatistics(x);
-        % ROI statistics (optional: native space)
-        if x.modules.population.bNativeSpaceAnalysis
-            x.S.InputNativeSpace = 1;
-            x.S.InputAtlasNativeName = x.S.Atlases{iAtlas};
+        for iAtlas = 1:length(LesionROIList)
+            x.S.InputAtlasPath = LesionROIList{iAtlas};
             xASL_wrp_GetROIstatistics(x);
         end
-        
-        
+
+        % % Do the same for volumetrics
+        % x.S.IsASL = false;
+        % x.S.IsVolume = true;
+        % x.S.InputDataStr = 'mrc1T1'; % GM volume
+        % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
+        % xASL_wrp_GetROIstatistics(x);
+        % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
+        % xASL_wrp_GetROIstatistics(x);
+        % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'Hammers.nii');
+        % xASL_wrp_GetROIstatistics(x);
     end
-    
-    % Check if we should do the same for Lesion or ROI masks (i.e.
-    % individual "atlases") -> NB not yet developed/tested in native space
-    LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI).*\.nii$', 'FPList', [0 Inf]);
-    x.S.InputNativeSpace = 0;
-    for iAtlas = 1:length(LesionROIList)
-        x.S.InputAtlasPath = LesionROIList{iAtlas};
-        xASL_wrp_GetROIstatistics(x);
-    end
-    
-    % % Do the same for volumetrics
-    % x.S.IsASL = false;
-    % x.S.IsVolume = true;
-    % x.S.InputDataStr = 'mrc1T1'; % GM volume
-    % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
-    % xASL_wrp_GetROIstatistics(x);
-    % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
-    % xASL_wrp_GetROIstatistics(x);
-    % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'Hammers.nii');
-    % xASL_wrp_GetROIstatistics(x);
 
     x.mutex.AddState(StateName{8});
     fprintf('%s\n',[StateName{8} ' was performed']);
