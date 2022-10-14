@@ -70,24 +70,24 @@ ASLContext = '';
 if length(NiftiPaths)>1
 	switch (seqType)
     case 'M0'
-        % Merges the M0 files
+        % 1. Merges the M0 files
         pathOut = xASL_bids_MergeNifti_M0Files(NiftiPaths);
 
     case 'ASL'
-		% Run the GE merging procedure first, that returns an empty path if not all conditions are met
+		% 2. Run the GE merging procedure first, that returns an empty path if not all conditions are met
 		[pathOut,ASLContext] = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths);
 		
-		% Merge ASL files by SeriesNumber if different
+		% 3. Merge ASL files by SeriesNumber if different
 		if isempty(pathOut) && ~isempty(niiTable)
 			pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable);
 		end
 		
-        % Merges Siemens ASL file if they have the known pattern of filenames
+        % 4. Merges Siemens ASL file if they have the known pattern of filenames
 		if isempty(pathOut)
 			pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths);
 		end
 
-        % Generic merging of ASL4D files for non-Siemens, or Siemens files with an unknown pattern
+        % 5. Generic merging of ASL4D files for non-Siemens, or Siemens files with an unknown pattern
         if isempty(pathOut)
             % If the previous Siemens merging didn't merge them already
             pathOut = xASL_bids_MergeNifti_AllASLFiles(NiftiPaths);
@@ -103,10 +103,14 @@ end
 end
 
 
-%% ==========================================================================
-%% ==========================================================================
+
+
+
+
+%% ===========================================================================================================
+%% ===========================================================================================================
 function pathOut = xASL_bids_MergeNifti_M0Files(NiftiPaths)
-%xASL_bids_MergeNifti_M0Files Generic merging of M0 files
+% 1. xASL_bids_MergeNifti_M0Files Generic merging of M0 files
 
 bCheckConsistency = 1; % So far, no error was found and files can be concatenated
 pathOut = ''; % Newly assigned path of a concatenated file
@@ -169,10 +173,16 @@ end
 
 end
 
-%% ==========================================================================
-%% ==========================================================================
+
+
+
+
+
+%% ===========================================================================================================
+%% ===========================================================================================================
+
 function [pathOut,ASLContext] = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths)
-%xASL_bids_MergeNifti_GEASLFiles merge any ASL files in alphabetical order, but also load and use the GE ASL 
+% 2. xASL_bids_MergeNifti_GEASLFiles merge any ASL files in alphabetical order, but also load and use the GE ASL 
 % tags and save them to a correct ASL context
 %
 % Description: Uses the GE ImageType tag to sort out the files correctly and saves this order
@@ -269,10 +279,223 @@ end
 end
 
 
-%% ==========================================================================
-%% ==========================================================================
+
+
+
+
+%% ===========================================================================================================
+%% ===========================================================================================================
+function pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable)
+% 3. xASL_bids_MergeNifti_SeriesNumber Take a list of NIfTI files and
+%concatenates 3D/4D files into a 4D sequence if possible according to SeriesNumber for niiTable
+%
+% FORMAT: pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable)
+% 
+% INPUT:
+%   NiftiPaths - cell containing list of strings with full paths of the files (REQUIRED)
+%   niiTable   - cell containing a table Filename, InstanceNumber, SeriesNumber, FileType, FilePath (REQUIRED)
+% OUTPUT:
+%   pathOut    - output paths
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible according to SeriesNumber for niiTable
+%
+% EXAMPLE:     pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths, niiTable);
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% __________________________________
+% Copyright 2015-2021 ExploreASL
+
+% 0. Admin
+% Nothing merged
+pathOut = '';
+
+% Checks if the niiTable exists
+if nargin < 2 || isempty(niiTable)
+	return;
+end
+
+% The SeriesNumber column exist and is numeric
+if size(niiTable,2) < 5 || ~isnumeric(niiTable{1,5})
+	return;
+end
+
+% All cells are filled 
+if sum(cellfun('isempty',niiTable(:,5))) > 0
+	return;
+end
+
+% Initialize the vector
+vectorSeriesNumber = zeros(size(niiTable,1),1);
+for iField = 1:size(niiTable,1)
+	vectorSeriesNumber(iField,1) = niiTable{iField,5}(1);
+end
+
+if sum(isnan(vectorSeriesNumber)) > 0
+	return;
+end
+
+% Sort and extract unique numbers
+[~,indexSort,~] = unique(vectorSeriesNumber);
+
+% In case all numbers are unique, then sort the files accordingly
+if length(indexSort) == length(vectorSeriesNumber)
+	pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSort,'ASL4D',0);
+end
+
+end
+
+
+
+
+
+
+%% ===========================================================================================================
+%% ===========================================================================================================
+function pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths)
+% 4. xASL_bids_MergeNifti_SiemensASLFiles Take a list of NIfTI files and
+%concatenates 3D/4D files into a 4D sequence if possible (Siemens)
+%
+% FORMAT: pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths)
+% 
+% INPUT:
+%   NiftiPaths - cell containing list of strings with full paths of the files (REQUIRED)
+%
+% OUTPUT:
+%   pathOut    - output paths
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible (Siemens).
+%
+% EXAMPLE:     pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths);
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% __________________________________
+% Copyright 2015-2021 ExploreASL
+
+
+    %% xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
+
+    bCheckConsistency = 1; % So far, no error was found and files can be concatenated
+    bAlternatingControlLabel = 0; % == 1 when two files are given, one file is filled with controls and the other with labels
+    pathOut = ''; % Newly assigned path of a concatenated file
+    listEndNumber = zeros(length(NiftiPaths),1);
+
+    for iFile=1:length(NiftiPaths)
+        [Fpath, Ffile] = xASL_fileparts(NiftiPaths{iFile});
+        jsonParms = spm_jsonread(fullfile(Fpath,[Ffile,'.json']));
+
+        % Make sure that we deal with Siemens files
+        if isempty(jsonParms) || ~isfield(jsonParms,'Manufacturer') || isempty(strfind(jsonParms.Manufacturer,'Siemens'))
+            bCheckConsistency = 0;
+        end
+
+        % Get the size of the 4th dimension
+        dimTime = size(xASL_io_Nifti2Im(NiftiPaths{iFile}),4);
+
+        % Compare the PEAxis and check that it is the same for all of the M0-files
+        if iFile == 1
+            checkTimeDim = dimTime;
+        else
+            if checkTimeDim ~= dimTime
+                bCheckConsistency = 0;
+            end
+        end
+    end
+
+    % Conditions passed for merging Siemens files
+    if bCheckConsistency
+        if checkTimeDim == 2
+            % Alternating scenario C/L - merge them in the order of the last number in the filename
+            for iFile=1:length(NiftiPaths)
+                [Fpath, Ffile] = xASL_fileparts(NiftiPaths{iFile});
+
+                % List the end number from the file name
+                [iStart, iEnd] = regexp(Ffile,'\d*$');
+                listEndNumber(iFile) = str2double(Ffile(iStart:iEnd));
+            end
+            [~,indexSortedFile] = sort(listEndNumber);
+
+        elseif checkTimeDim == 1
+            % Each volume contains only a label and control
+            if length(NiftiPaths) == 2
+                % If there are only two of them then sort by the trailing number in the filename
+                for iFile=1:length(NiftiPaths)
+                    [Fpath, Ffile, ~] = xASL_fileparts(NiftiPaths{iFile});
+
+                    % List the end number from the file name
+                    [iStart, iEnd] = regexp(Ffile,'\d*$');
+                    listEndNumber(iFile) = str2double(Ffile(iStart:iEnd));
+                end
+                [~, indexSortedFile] = sort(listEndNumber);
+            else
+                % If there are multiple, then break to tags ASL4D_x_x_Y.nii and controls ASL4D_Y.nii
+                % Sort each by Y and alternate them
+                % If there are only two of them then sort by the trailing number in the filename
+                listTag = zeros(length(NiftiPaths),1);
+                for iFile=1:length(NiftiPaths)
+                    [Fpath, Ffile, ~] = xASL_fileparts(NiftiPaths{iFile});
+
+                    % List the end number from the file name
+                    [iStart, iEnd] = regexp(Ffile,'\d*$');
+                    listEndNumber(iFile) = str2double(Ffile(iStart:iEnd));
+
+                    % Check for the x_x_Y pattern in the filename identifying the tags
+                    [iStart, iEnd] = regexp(Ffile,'\d*_\d*_\d*$');
+                    if ~isempty(iStart) && ~isempty(iEnd)
+                        listTag(iFile) = 1;
+                    else
+                        listTag(iFile) = 0;
+                    end
+
+                end
+                [~, indexSortedFileTag] = sort(listEndNumber);
+                indexSortedFileTag = indexSortedFileTag(listTag(indexSortedFileTag) == 1);
+                [~, indexSortedFileControl] = sort(listEndNumber);
+                indexSortedFileControl = indexSortedFileControl(listTag(indexSortedFileControl) == 0);
+                if length(indexSortedFileTag) == length(indexSortedFileControl)
+                    indexSortedFile(1:2:length(NiftiPaths)) = indexSortedFileTag;
+                    indexSortedFile(2:2:length(NiftiPaths)) = indexSortedFileControl;
+                else
+                    bCheckConsistency = 0;
+                end
+            end
+        elseif checkTimeDim > 2 && length(NiftiPaths) == 2
+            % Exactly two files with longer time dimension is given - we count that one is control and the other label and we merge them
+            % by alternating the volumes from both
+            indexSortedFile = [1 2];
+            bAlternatingControlLabel = 1;
+        else
+            % The Siemens specific scenarios work only with single or two volumes per file
+            % And also with the case that exactly two files are given with more than a single time-dim
+            % All others are skipped and can be merged according to the generic criteria.
+            bCheckConsistency = 0;
+        end
+    end
+
+    % Correctly identified one of the Siemens scenarios so can merge the files in the indexSortedFile order
+    if bCheckConsistency
+        pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,'ASL4D',bAlternatingControlLabel);
+
+        if ~isempty(pathOut)
+            xASL_bids_MergeNifti_RenameParms(Fpath,'ASL4D');
+            xASL_bids_MergeNifti_Delete(NiftiPaths);
+            fprintf('Corrected dcm2niiX output for Siemens files:\n');
+            fprintf('%s\n', pathOut);
+        end
+    end
+
+
+end
+
+
+
+
+
+%% ===========================================================================================================
+%% ===========================================================================================================
 function pathOut = xASL_bids_MergeNifti_AllASLFiles(NiftiPaths)
-%xASL_bids_MergeNifti_AllASLFiles Merge any ASL files
+% 5. xASL_bids_MergeNifti_AllASLFiles Merge any ASL files
 %
 % Description: First rename the NIfTI and JSON files to 4 digit format & sort them
 
@@ -296,8 +519,15 @@ end
 
 end
 
+
+
+
+
+
+%% ===========================================================================================================
+%% ===========================================================================================================
 function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameMerged, bAlternatingControlLabel, priorityList)
-%xASL_bids_MergeNifti_Merge Merge NiftiPaths & save to pathOut
+% 6. xASL_bids_MergeNifti_Merge Merge NiftiPaths & save to pathOut
 %
 % FORMAT: pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameMerged, bAlternatingControlLabel[, priorityList])
 % 
@@ -472,236 +702,15 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 
 end
 
-function pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths)
-%xASL_bids_MergeNifti_SiemensASLFiles Take a list of NIfTI files and
-%concatenates 3D/4D files into a 4D sequence if possible (Siemens)
-%
-% FORMAT: pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths)
-% 
-% INPUT:
-%   NiftiPaths - cell containing list of strings with full paths of the files (REQUIRED)
-%
-% OUTPUT:
-%   pathOut    - output paths
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible (Siemens).
-%
-% EXAMPLE:     pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths);
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% __________________________________
-% Copyright 2015-2021 ExploreASL
 
 
-    %% xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
-
-    bCheckConsistency = 1; % So far, no error was found and files can be concatenated
-    bAlternatingControlLabel = 0; % == 1 when two files are given, one file is filled with controls and the other with labels
-    pathOut = ''; % Newly assigned path of a concatenated file
-    listEndNumber = zeros(length(NiftiPaths),1);
-
-    for iFile=1:length(NiftiPaths)
-        [Fpath, Ffile] = xASL_fileparts(NiftiPaths{iFile});
-        jsonParms = spm_jsonread(fullfile(Fpath,[Ffile,'.json']));
-
-        % Make sure that we deal with Siemens files
-        if isempty(jsonParms) || ~isfield(jsonParms,'Manufacturer') || isempty(strfind(jsonParms.Manufacturer,'Siemens'))
-            bCheckConsistency = 0;
-        end
-
-        % Get the size of the 4th dimension
-        dimTime = size(xASL_io_Nifti2Im(NiftiPaths{iFile}),4);
-
-        % Compare the PEAxis and check that it is the same for all of the M0-files
-        if iFile == 1
-            checkTimeDim = dimTime;
-        else
-            if checkTimeDim ~= dimTime
-                bCheckConsistency = 0;
-            end
-        end
-    end
-
-    % Conditions passed for merging Siemens files
-    if bCheckConsistency
-        if checkTimeDim == 2
-            % Alternating scenario C/L - merge them in the order of the last number in the filename
-            for iFile=1:length(NiftiPaths)
-                [Fpath, Ffile] = xASL_fileparts(NiftiPaths{iFile});
-
-                % List the end number from the file name
-                [iStart, iEnd] = regexp(Ffile,'\d*$');
-                listEndNumber(iFile) = str2double(Ffile(iStart:iEnd));
-            end
-            [~,indexSortedFile] = sort(listEndNumber);
-
-        elseif checkTimeDim == 1
-            % Each volume contains only a label and control
-            if length(NiftiPaths) == 2
-                % If there are only two of them then sort by the trailing number in the filename
-                for iFile=1:length(NiftiPaths)
-                    [Fpath, Ffile, ~] = xASL_fileparts(NiftiPaths{iFile});
-
-                    % List the end number from the file name
-                    [iStart, iEnd] = regexp(Ffile,'\d*$');
-                    listEndNumber(iFile) = str2double(Ffile(iStart:iEnd));
-                end
-                [~, indexSortedFile] = sort(listEndNumber);
-            else
-                % If there are multiple, then break to tags ASL4D_x_x_Y.nii and controls ASL4D_Y.nii
-                % Sort each by Y and alternate them
-                % If there are only two of them then sort by the trailing number in the filename
-                listTag = zeros(length(NiftiPaths),1);
-                for iFile=1:length(NiftiPaths)
-                    [Fpath, Ffile, ~] = xASL_fileparts(NiftiPaths{iFile});
-
-                    % List the end number from the file name
-                    [iStart, iEnd] = regexp(Ffile,'\d*$');
-                    listEndNumber(iFile) = str2double(Ffile(iStart:iEnd));
-
-                    % Check for the x_x_Y pattern in the filename identifying the tags
-                    [iStart, iEnd] = regexp(Ffile,'\d*_\d*_\d*$');
-                    if ~isempty(iStart) && ~isempty(iEnd)
-                        listTag(iFile) = 1;
-                    else
-                        listTag(iFile) = 0;
-                    end
-
-                end
-                [~, indexSortedFileTag] = sort(listEndNumber);
-                indexSortedFileTag = indexSortedFileTag(listTag(indexSortedFileTag) == 1);
-                [~, indexSortedFileControl] = sort(listEndNumber);
-                indexSortedFileControl = indexSortedFileControl(listTag(indexSortedFileControl) == 0);
-                if length(indexSortedFileTag) == length(indexSortedFileControl)
-                    indexSortedFile(1:2:length(NiftiPaths)) = indexSortedFileTag;
-                    indexSortedFile(2:2:length(NiftiPaths)) = indexSortedFileControl;
-                else
-                    bCheckConsistency = 0;
-                end
-            end
-        elseif checkTimeDim > 2 && length(NiftiPaths) == 2
-            % Exactly two files with longer time dimension is given - we count that one is control and the other label and we merge them
-            % by alternating the volumes from both
-            indexSortedFile = [1 2];
-            bAlternatingControlLabel = 1;
-        else
-            % The Siemens specific scenarios work only with single or two volumes per file
-            % And also with the case that exactly two files are given with more than a single time-dim
-            % All others are skipped and can be merged according to the generic criteria.
-            bCheckConsistency = 0;
-        end
-    end
-
-    % Correctly identified one of the Siemens scenarios so can merge the files in the indexSortedFile order
-    if bCheckConsistency
-        pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSortedFile,'ASL4D',bAlternatingControlLabel);
-
-        if ~isempty(pathOut)
-            xASL_bids_MergeNifti_RenameParms(Fpath,'ASL4D');
-            xASL_bids_MergeNifti_Delete(NiftiPaths);
-            fprintf('Corrected dcm2niiX output for Siemens files:\n');
-            fprintf('%s\n', pathOut);
-        end
-    end
 
 
-end
 
-function xASL_bids_MergeNifti_RenameParms(Fpath,Fname)
-%xASL_bids_MergeNifti_RenameParms Find *_parms.m files in directory and shorten to provided name
-%
-% FORMAT: xASL_bids_MergeNifti_RenameParms(Fpath,Fname);
-% 
-% INPUT:
-%   Fpath - File path
-%   Fname - File name
-%
-% OUTPUT:
-%   n/a
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Find *_parms.m files in directory and shorten to provided name.
-%
-% EXAMPLE:     ...
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% __________________________________
-% Copyright 2015-2021 ExploreASL
-
-
-    %% Find *_parms.m files in directory and shorten to provided name
-    FileList = xASL_adm_GetFileList(Fpath, '^.*_parms\.mat$', 'List', [], false);
-
-    if ~isempty(FileList)
-        xASL_Move(fullfile(Fpath, FileList{1}), fullfile(Fpath,[Fname '_parms.mat']));
-    end
-
-
-end
-
-function pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable)
-%xASL_bids_MergeNifti_SeriesNumber Take a list of NIfTI files and
-%concatenates 3D/4D files into a 4D sequence if possible according to SeriesNumber for niiTable
-%
-% FORMAT: pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable)
-% 
-% INPUT:
-%   NiftiPaths - cell containing list of strings with full paths of the files (REQUIRED)
-%   niiTable   - cell containing a table Filename, InstanceNumber, SeriesNumber, FileType, FilePath (REQUIRED)
-% OUTPUT:
-%   pathOut    - output paths
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible according to SeriesNumber for niiTable
-%
-% EXAMPLE:     pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths, niiTable);
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% __________________________________
-% Copyright 2015-2021 ExploreASL
-
-% 0. Admin
-% Nothing merged
-pathOut = '';
-
-% Checks if the niiTable exists
-if nargin < 2 || isempty(niiTable)
-	return;
-end
-
-% The SeriesNumber column exist and is numeric
-if size(niiTable,2) < 5 || ~isnumeric(niiTable{1,5})
-	return;
-end
-
-% All cells are filled 
-if sum(cellfun('isempty',niiTable(:,5))) > 0
-	return;
-end
-
-% Initialize the vector
-vectorSeriesNumber = zeros(size(niiTable,1),1);
-for iField = 1:size(niiTable,1)
-	vectorSeriesNumber(iField,1) = niiTable{iField,5}(1);
-end
-
-if sum(isnan(vectorSeriesNumber)) > 0
-	return;
-end
-
-% Sort and extract unique numbers
-[~,indexSort,~] = unique(vectorSeriesNumber);
-
-% In case all numbers are unique, then sort the files accordingly
-if length(indexSort) == length(vectorSeriesNumber)
-	pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths,indexSort,'ASL4D',0);
-end
-
-end
-
+%% ===========================================================================================================
+%% ===========================================================================================================
 function xASL_bids_MergeNifti_Delete(NiftiPaths)
-%xASL_bids_MergeNifti_Delete Delete NiftiPaths and associated JSONs
+% 7. xASL_bids_MergeNifti_Delete Delete NiftiPaths and associated JSONs
 %
 % FORMAT: xASL_bids_MergeNifti_Delete(NiftiPaths);
 % 
@@ -734,3 +743,40 @@ function xASL_bids_MergeNifti_Delete(NiftiPaths)
 
 end
 
+
+
+
+
+%% ===========================================================================================================
+%% ===========================================================================================================
+function xASL_bids_MergeNifti_RenameParms(Fpath,Fname)
+% 8. xASL_bids_MergeNifti_RenameParms Find *_parms.m files in directory and shorten to provided name
+%
+% FORMAT: xASL_bids_MergeNifti_RenameParms(Fpath,Fname);
+% 
+% INPUT:
+%   Fpath - File path
+%   Fname - File name
+%
+% OUTPUT:
+%   n/a
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Find *_parms.m files in directory and shorten to provided name.
+%
+% EXAMPLE:     ...
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% __________________________________
+% Copyright 2015-2021 ExploreASL
+
+
+    %% Find *_parms.m files in directory and shorten to provided name
+    FileList = xASL_adm_GetFileList(Fpath, '^.*_parms\.mat$', 'List', [], false);
+
+    if ~isempty(FileList)
+        xASL_Move(fullfile(Fpath, FileList{1}), fullfile(Fpath,[Fname '_parms.mat']));
+    end
+
+
+end
