@@ -352,7 +352,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 
                 if length(vectorKeep)>1 % add iVolume suffix (if there are multiple)
                     if isempty(niiInstanceNumber)
-						DestFileName = [DestFileName '_' int2str(iVolume)];
+						DestFileName = [DestFileName '_' xASL_num2str(iVolume)];
 					else
                         DestFileName = [DestFileName '_' niiInstanceNumber];
                     end
