@@ -1,7 +1,7 @@
-function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
+function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 %xASL_quant_Basil Perform quantification using FSL BASIL
 %
-% FORMAT: [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
+% FORMAT: [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 % 
 % INPUT:
 %   PWI             - image matrix of perfusion-weighted image (REQUIRED)
@@ -11,7 +11,7 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 % CBF_nocalib       - Quantified CBF image
 %                     (if there is no FSL/BASIL installed, we return the original PWI)
 % ATT_Map           - ATT map (if possible to calculate with multi-PLD)
-% Texch_map         - Time of exchange map of transport across BBB (if possible to calculate with multi-TE)
+% Tex_map         - Time of exchange map of transport across BBB (if possible to calculate with multi-TE)
 % resultFSL         - describes if the execution was successful
 %                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
 %
@@ -137,12 +137,12 @@ function [CBF_nocalib, ATT_map, Texch_map, resultFSL] = xASL_quant_Basil(PWI, x)
 		ATT_map = NaN;
     end
     
-    pathFabberTexch = xASL_adm_GetFileList(dirBasilOutput, '^mean_T_exch\.nii$', 'FPListRec');
-	if ~isempty(pathFabberTexch)
-		pathFabberTexch = pathFabberTexch{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
-		Texch_map = xASL_io_Nifti2Im(pathFabberTexch);
+    pathFabberTex = xASL_adm_GetFileList(dirBasilOutput, '^mean_T_exch\.nii$', 'FPListRec');
+	if ~isempty(pathFabberTex)
+		pathFabberTex = pathFabberTex{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+		Tex_map = xASL_io_Nifti2Im(pathFabberTex);
 	else
-		Texch_map = NaN;
+		Tex_map = NaN;
     end
 	
     %% 6. Scaling to physiological units
