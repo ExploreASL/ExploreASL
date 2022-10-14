@@ -207,7 +207,7 @@ if ~x.mutex.HasState(StateName{8})
     end
     
     % Default datatypes
-    if ~isfield(x.S,'DataTypes')
+    if ~isfield(x.S,'DataTypes') || isempty(x.S.DataTypes)
         x.S.DataTypes = {'qCBF'}; % Default
         % Alternatives: 'Texch' 'ATT' 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
         % These can be added in the dataPar manually
