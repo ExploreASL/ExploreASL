@@ -209,6 +209,8 @@ if ~x.mutex.HasState(StateName{8})
     % Default datatypes
     if ~isfield(x.S,'DataTypes')
         x.S.DataTypes = {'qCBF'}; % Default
+        % Alternatives: 'Texch' 'ATT' 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+        % These can be added in the dataPar manually
     end
     
     
@@ -223,14 +225,13 @@ if ~x.mutex.HasState(StateName{8})
     % ROI statistics
     % x.S.SubjectWiseVisualization =1; % set this on to visualize the subject-wise masks
     % over CBF maps (takes lot of extra time though)
-    
-    x.S.InputDataStr = 'qCBF'; % 'Texch' 'ATT' 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
-	x.S.InputDataStrNative = 'CBF'; % 'Texch' 'ATT' 'SD' 'TT' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+
     
     % Iterate over DataTypes
     for iDataType=1:length(x.S.DataTypes)
         x.S.InputDataStr = x.S.DataTypes{iDataType};
-        if isempty(regexp(x.S.InputDataStr(1),'(q|r)'))
+        
+        if isempty(regexp(x.S.InputDataStr(1), '(q|r)', 'once'))
             % Some DataTypes have a prefix in standard space but not in
             % native space: e.g.,
             % qCBF in standard space is CBF in native space
