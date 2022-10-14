@@ -80,7 +80,7 @@ end
 iStringCBF = regexpi(pathOutputCBF, 'CBF');
 iStringCBF = iStringCBF(end);
 pathOutputATT = [pathOutputCBF(1:(iStringCBF-1)) 'ATT' pathOutputCBF((iStringCBF+3):end)];
-pathOutputTExch = [pathOutputCBF(1:(iStringCBF-1)) 'TExch' pathOutputCBF((iStringCBF+3):end)];
+pathOutputTex = [pathOutputCBF(1:(iStringCBF-1)) 'Tex' pathOutputCBF((iStringCBF+3):end)];
 
 if nargin<4 || isempty(M0Path)
     M0Path = x.P.Pop_Path_M0;
@@ -435,11 +435,11 @@ if ~x.modules.asl.bMultiPLD % single PLD quantification
     fprintf('%s\n', 'Performing single PLD quantification');
     [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
 	ATT = NaN;
-	TExch = NaN;
+	Tex = NaN;
 elseif x.Q.bUseBasilQuantification
     % perform BASIL multi-PLD quantification
     fprintf('%s\n', 'Performing multi PLD quantification using BASIL');
-    [~, CBF, ATT, TExch] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
+    [~, CBF, ATT, Tex] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
     error('Multi PLD quantification without BASIL not implemented yet');
@@ -469,9 +469,9 @@ if numel(ATT) > 1 || ~isnan(ATT)
 	xASL_io_SaveNifti(PWI_Path, pathOutputATT, ATT, 32, 0);
 end
 
-if numel(TExch) > 1 || ~isnan(TExch)
-	% Save the TExch file
-	xASL_io_SaveNifti(PWI_Path, pathOutputTExch, TExch, 32, 0);
+if numel(Tex) > 1 || ~isnan(Tex)
+	% Save the Tex file
+	xASL_io_SaveNifti(PWI_Path, pathOutputTex, Tex, 32, 0);
 end
 
 %% ------------------------------------------------------------------------------------------------
@@ -517,8 +517,8 @@ if x.Q.bUseBasilQuantification
 		xASL_spm_deformations(x, {x.P.Path_ATT}, {x.P.Pop_Path_ATT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
     end
     
-    if xASL_exist(x.P.Path_TExch,'file')
-		xASL_spm_deformations(x, {x.P.Path_TExch}, {x.P.Pop_Path_TExch}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+    if xASL_exist(x.P.Path_Tex,'file')
+		xASL_spm_deformations(x, {x.P.Path_Tex}, {x.P.Pop_Path_Tex}, [], [], AffineTransfPath, x.P.Path_y_ASL);
 	end
 end
 end

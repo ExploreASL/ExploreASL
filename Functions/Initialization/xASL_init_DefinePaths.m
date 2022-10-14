@@ -59,7 +59,7 @@ function [x] = xASL_init_DefinePaths(x)
             x.D.T1_ASLREGDIR        = fullfile(x.D.PopDir, 'T1_ASLReg');
             x.D.TTCheckDir          = fullfile(x.D.PopDir, 'ATT_Check');
 			x.D.ATTCheckDir         = fullfile(x.D.PopDir, 'ATT_Check'); % Putting TT and ATT maps to the same folder
-			x.D.TExchCheckDir       = fullfile(x.D.PopDir, 'TExch_Check');
+			x.D.TexCheckDir         = fullfile(x.D.PopDir, 'Tex_Check');
             x.D.TemplatesStudyDir   = fullfile(x.D.PopDir, 'Templates');
 
             % POPULATION module

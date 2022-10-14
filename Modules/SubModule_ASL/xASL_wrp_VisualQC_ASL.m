@@ -214,7 +214,7 @@ end
 T.ImIn         = {x.P.Pop_Path_qCBF  x.P.Pop_Path_SD {x.P.Pop_Path_qCBF PathpWM} x.P.Pop_Path_SNR};
 T.ImIn( 5: 8)  = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Path_noSmooth_M0 PathpGM} x.P.Pop_Path_M0};
 T.ImIn( 9:10)  = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT PathpWM}};
-T.ImIn(11:12)  = {x.P.Pop_Path_TExch  {x.P.Pop_Path_TExch PathpWM}};
+T.ImIn(11:12)  = {x.P.Pop_Path_Tex  {x.P.Pop_Path_Tex PathpWM}};
 T.ImIn(13:14)  = {x.P.Pop_Path_ATT  {x.P.Pop_Path_ATT PathpWM}};
 
 T.bContour(1:14) = 0;
@@ -226,7 +226,7 @@ end
 T.DirOut        = {x.D.ASLCheckDir x.D.SNRdir      x.D.ASLCheckDir       x.D.SNRdir};
 T.DirOut( 5: 8) = {x.D.RawDir      x.D.M0CheckDir  x.D.M0regASLdir       x.D.M0CheckDir};
 T.DirOut( 9:10) = {x.D.TTCheckDir  x.D.TTCheckDir  };
-T.DirOut(11:12) = {x.D.TExchCheckDir  x.D.TExchCheckDir};
+T.DirOut(11:12) = {x.D.TexCheckDir  x.D.TexCheckDir};
 T.DirOut(13:14) = {x.D.ATTCheckDir  x.D.ATTCheckDir  };
 
 T.IntScale(2)   = {[1 1]};
