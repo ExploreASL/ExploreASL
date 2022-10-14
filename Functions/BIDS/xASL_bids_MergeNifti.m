@@ -632,7 +632,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 				fieldsDuplicityCheck = {'GELabelingDuration','InversionTime','LabelingDuration'};
 				for iField = 1:length(fieldsDuplicityCheck)
 					if isfield(outputJSON, fieldsDuplicityCheck{iField}) && isfield(currentJSON, fieldsDuplicityCheck{iField})
-						if ~isequal(outputJSON.(fieldsDuplicityCheck(iField)), currentJSON.(fieldsDuplicityCheck{iField}))
+						if ~isequal(outputJSON.(fieldsDuplicityCheck{iField}), currentJSON.(fieldsDuplicityCheck{iField}))
 							warning('Difference in field %s between merged JSONs', fieldsDuplicityCheck{iField});
 						end
 					end
