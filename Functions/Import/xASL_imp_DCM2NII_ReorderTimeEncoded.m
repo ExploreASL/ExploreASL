@@ -28,22 +28,25 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON
             if xASL_exist(nii_files{1},'file')
                 % Determine the number of time points within each NIfTI
                 imASL = xASL_io_Nifti2Im(nii_files{1});
-                numberTEs = length(resultJSON.EchoTime);
+                numberTEs = length(unique(resultJSON.EchoTime));
                 numberPLDs = int32(size(imASL,4)/numberTEs);
                 
-                % Reorder TEs and PLDs - first cycle TE afterwards PLD
-                vectorOldOrder = zeros(size(imASL,4),1);
-                for iPLD = 1:(double(numberPLDs))
-                    vectorOldOrder((1:numberTEs)+(iPLD-1)*numberTEs) = (iPLD-1)+1:numberPLDs:size(imASL,4);
-                end
-                imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
-                xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
-                % Repeat Echo Times
-                if numel(unique(resultJSON.EchoTime))>1 % Repeat EchoTime only if multiple TEs
-                    resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
-                end
-                % Save the JSON with the updated echo times
-                spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
+				if numberTEs > 1
+					% Reorder TEs and PLDs - first cycle TE afterwards PLD
+					vectorOldOrder = zeros(size(imASL,4),1);
+					for iPLD = 1:(double(numberPLDs))
+						vectorOldOrder((1:numberTEs)+(iPLD-1)*numberTEs) = (iPLD-1)+1:numberPLDs:size(imASL,4);
+					end
+					imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
+					xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
+					
+					% Repeat Echo Times
+					resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
+					
+					% Save the JSON with the updated echo times
+					spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
+				end
+                
             else
                 % Feedback about sequence
                 warning('Time encoded sequence with one PLD only...');
