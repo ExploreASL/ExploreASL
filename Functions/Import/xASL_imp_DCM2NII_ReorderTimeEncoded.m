@@ -58,6 +58,14 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncod
 					
 					% Save the JSON with the updated echo times
 					spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
+				elseif numberRepetitions > 1
+					% Reorder Repetitions and PLDs - first cycle PLDs afterwards Repetitions
+					vectorOldOrder = zeros(size(imASL,4),1);
+					for iRepetition = 1:(double(numberRepetitions))
+						vectorOldOrder((1:numberPLDs)+(iRepetition-1)*numberPLDs) = (iRepetition-1)+1:numberRepetitions:size(imASL,4);
+					end
+					imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
+					xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
 				end
                 
             else
