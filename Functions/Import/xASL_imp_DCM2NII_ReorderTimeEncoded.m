@@ -50,21 +50,21 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncod
 					numberRepetitions = 1;
 				end
                 
-				if numberTEs > 1
+				if numberTEs > 1 && numberRepetitions > 0
 					if numberRepetitions > 1 && interleavedPLDs
 						error('Import of FME TimeEncoded for multiple TEs and Repetitions is not yet implemented for interleaved PLDs');
 					end
 					
 					% Reorder TEs and PLDs - first cycle TE afterwards PLD
 					vectorOldOrder = zeros(size(imASL,4),1);
-					for iPLD = 1:(double(numberPLDs))
-						vectorOldOrder((1:numberTEs)+(iPLD-1)*numberTEs) = (iPLD-1)+1:numberPLDs:size(imASL,4);
+					for iPLD = 1:(double(numberPLDs*numberRepetitions))
+						vectorOldOrder((1:numberTEs)+(iPLD-1)*numberTEs) = (iPLD-1)+1:(numberPLDs*numberRepetitions):size(imASL,4);
 					end
 					imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
-					xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
+					xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASL);
 					
 					% Repeat Echo Times
-					resultJSON.EchoTime = repmat(resultJSON.EchoTime,numberPLDs,1);
+					resultJSON.EchoTime = repmat(resultJSON.EchoTime, (numberPLDs*numberRepetitions), 1);
 					
 					% Save the JSON with the updated echo times
 					spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
