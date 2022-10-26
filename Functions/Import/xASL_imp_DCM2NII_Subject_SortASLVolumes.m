@@ -147,13 +147,13 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     bTimeEncodedFME = false;
     
     % Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
-    [bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession);
+    [bTimeEncoded, timeEncodedMatrixSize] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession);
     
     % Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
     [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
     
     % Reorder TEs and PLDs accordingly for time encoded sequences
-    xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON);
+    xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncodedFME, timeEncodedMatrixSize, resultJSON);
      
     
     %% 6. Extract relevant parameters from nifti header and append to summary file
@@ -165,7 +165,7 @@ end
 
 
 %% Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
-function [bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession)
+function [bTimeEncoded, timeEncodedMatrixSize] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession)
 
     if nargin<2 || isempty(bTimeEncoded)
         bTimeEncoded = false; % default
@@ -180,9 +180,14 @@ function [bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, i
 			structRun     = structVisit.(['run_' num2str(iSession,'%.3d')]);
 			studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll, structSubject.name, structVisit.name, structRun.name(5:end), false);
 			
-			if isfield(studyParSpecificSubjVisitSess,'TimeEncodedMatrixSize') && ~isempty(studyParSpecificSubjVisitSess.TimeEncodedMatrixSize) || ... % Should be 4, 8 or 12
-					isfield(studyParSpecificSubjVisitSess,'TimeEncodedMatrixType') % Natural or walsh
+			if isfield(studyParSpecificSubjVisitSess, 'TimeEncodedMatrixSize') && ~isempty(studyParSpecificSubjVisitSess.TimeEncodedMatrixSize) || ... % Should be 4, 8 or 12
+					isfield(studyParSpecificSubjVisitSess, 'TimeEncodedMatrixType') % Natural or walsh
 				bTimeEncoded = true;
+			end
+			if isfield(studyParSpecificSubjVisitSess, 'TimeEncodedMatrixSize')
+				timeEncodedMatrixSize = studyParSpecificSubjVisitSess.TimeEncodedMatrixSize;
+			else
+				timeEncodedMatrixSize = [];
 			end
         end
     end

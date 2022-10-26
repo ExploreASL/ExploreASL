@@ -1,4 +1,4 @@
-function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON)
+function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncodedFME, timeEncodedMatrixSize, resultJSON)
 %xASL_imp_DCM2NII_ReorderTimeEncoded Reorder TEs and PLDs accordingly for time encoded sequences
 %
 % FORMAT: xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON)
@@ -6,6 +6,8 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON
 % INPUT:
 %  nii_files     - List of nifti files (REQUIRED)
 %  bTimeEncoded  - Time encoded sequence or not (BOOLEAN, REQUIRED)
+%  bTimeEncoded  - Time encoded sequence from FME or not (BOOLEAN, REQUIRED)
+%  timeEncodedMatrixSize - Time encoded matrix size (INTEGER or EMPTY, REQUIRED)
 %  resultJSON    - JSON structure (STURCT, REQUIRED)
 %
 % OUTPUT:
@@ -22,16 +24,27 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON
 
     if numel(nii_files)>=1
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
-        % Check if we the current sequence is a Hadamard or not
-        if bTimeEncoded
+        % Check if the current sequence is a Hadamard from FME or not
+        if bTimeEncoded && bTimeEncodedFME
             % Check image
             if xASL_exist(nii_files{1},'file')
                 % Determine the number of time points within each NIfTI
                 imASL = xASL_io_Nifti2Im(nii_files{1});
                 numberTEs = length(unique(resultJSON.EchoTime));
-                numberPLDs = int32(size(imASL,4)/numberTEs);
+				
+				if ~isempty(timeEncodedMatrixSize)
+					numberPLDs = timeEncodedMatrixSize;
+					numberRepetitions = int32(size(imASL,4)/numberTEs/numberPLDs);
+				else
+					numberPLDs = int32(size(imASL,4)/numberTEs);
+					numberRepetitions = 1;
+				end
                 
 				if numberTEs > 1
+					if numberRepetitions > 1
+						error('Import of FME TimeEncoded for multiple TEs and Repetitions is not yet implemented');
+					end
+					
 					% Reorder TEs and PLDs - first cycle TE afterwards PLD
 					vectorOldOrder = zeros(size(imASL,4),1);
 					for iPLD = 1:(double(numberPLDs))
