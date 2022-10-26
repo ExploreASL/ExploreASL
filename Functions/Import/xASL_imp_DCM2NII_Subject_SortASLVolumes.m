@@ -147,13 +147,13 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     bTimeEncodedFME = false;
     
     % Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
-    [bTimeEncoded, timeEncodedMatrixSize] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession);
+    [bTimeEncoded, timeEncodedMatrixSize, vectorPLD] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession);
     
     % Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
     [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
     
     % Reorder TEs and PLDs accordingly for time encoded sequences
-    xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncodedFME, timeEncodedMatrixSize, resultJSON);
+    xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncodedFME, timeEncodedMatrixSize, vectorPLD, resultJSON);
      
     
     %% 6. Extract relevant parameters from nifti header and append to summary file
@@ -165,7 +165,7 @@ end
 
 
 %% Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
-function [bTimeEncoded, timeEncodedMatrixSize] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession)
+function [bTimeEncoded, timeEncodedMatrixSize, vectorPLD] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession)
 
     if nargin<2 || isempty(bTimeEncoded)
         bTimeEncoded = false; % default
@@ -188,6 +188,11 @@ function [bTimeEncoded, timeEncodedMatrixSize] = xASL_imp_DCM2NII_CheckIfTimeEnc
 				timeEncodedMatrixSize = studyParSpecificSubjVisitSess.TimeEncodedMatrixSize;
 			else
 				timeEncodedMatrixSize = [];
+			end
+			if isfield(studyParSpecificSubjVisitSess, 'PostLabelingDelay')
+				vectorPLD = studyParSpecificSubjVisitSess.PostLabelingDelay;
+			else
+				vectorPLD = [];
 			end
         end
     end
