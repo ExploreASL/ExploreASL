@@ -33,14 +33,9 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
         bTimeEncoded = false; 
     end
 
-
     % Check for specific time encoded sequence of FME (Fraunhofer Mevis)
-    if isfield(jsonIn,'SeriesDescription')
-        bTimeEncodedFME = ~isempty(regexp(jsonIn.SeriesDescription,'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
-    else
-        bTimeEncodedFME = false;
-    end
-
+	bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn);
+	
     if bTimeEncodedFME
         bTimeEncoded = true;    
     end

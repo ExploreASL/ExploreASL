@@ -150,7 +150,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     [bTimeEncoded] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession);
     
     % Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
-    [resultJSON, bTimeEncoded, ~] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
+    [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
     
     % Reorder TEs and PLDs accordingly for time encoded sequences
     xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, resultJSON);
