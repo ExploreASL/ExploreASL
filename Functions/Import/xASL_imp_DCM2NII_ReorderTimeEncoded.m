@@ -39,8 +39,8 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncod
 					numberRepetitions = int32(size(imASL,4)/numberTEs/numberPLDs);
 					% Check if the PLDs are interleaved or just repeated
 					if numel(vectorPLD) > numberPLDs
-						for iRepetition = 2:ceil(numel(vectorPLD)/numberPLDs)
-							if ~isequal(vectorPLD(1:numberPLDs),vectorPLD((1:numberPLDs)*(iRepetition-1)))
+						for iRepetition = 2:floor(numel(vectorPLD)/numberPLDs)
+							if ~isequal(vectorPLD(1:numberPLDs),vectorPLD((1:numberPLDs)+numberPLDs*(iRepetition-1)))
 								interleavedPLDs = true;
 							end
 						end
