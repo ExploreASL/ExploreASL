@@ -11,9 +11,12 @@ function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite)
 % OUTPUT:
 %   x           - as input
 %   IsLoaded  - if x.mat was succesfully loaded & succesfully added/replaced x.Output/x.Output_im
+%                %-> NOTE THAT THIS OUTPUT IS CURRENTLY NOT USED. PM:
+%                REPLACE THIS FUNCTION FOR A SUBMODULE-SPECIFIC LOAD/SAVE
+%                FUNCTION BY MAARTEN
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function loads x.Output & x.Output_im struct fields
+% DESCRIPTION: This function loads all struct fields
 %              from the x.mat on the hard drive & adds them to the current x struct
 %              located in memory. If it didnt exist in the x.mat, it will
 %              set IsLoaded to false, which can be catched externally & a warning issued if managed so
@@ -82,8 +85,3 @@ end
 
 
 end
-
-
-
-
-
