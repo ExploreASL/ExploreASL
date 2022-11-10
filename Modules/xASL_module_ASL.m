@@ -56,9 +56,9 @@ function [result, x] = xASL_module_ASL(x)
 
 
 %% Admin
+result = false;
 [x] = xASL_init_SubStructs(x);
 x = xASL_init_InitializeMutex(x, 'ASL'); % starts mutex locking process to ensure that everything will run only once
-result = false;
 
 
 %% A. Check if ASL exists, otherwise skip this module

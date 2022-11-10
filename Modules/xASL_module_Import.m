@@ -117,6 +117,8 @@ function [result, x] = xASL_module_Import(x)
 
     %% Import Module
     
+    result = false;
+    
     % DCM2NIIX and other tools seem to stop the diary logging automatically, here we extract the current 
     % diary file path to make sure that at the beginning of each module the logging is still enabled.
     x.dir.diaryFile = get(0,'DiaryFile');

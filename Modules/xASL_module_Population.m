@@ -35,6 +35,7 @@ function [result, x] = xASL_module_Population(x)
 
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin
+result = false;
 [x] = xASL_init_SubStructs(x);
 
 % Input check
