@@ -182,8 +182,5 @@ function [result, x] = xASL_module_Import(x)
     
     % Return the results
     result = x.result;
-
-    
 end
-
 
