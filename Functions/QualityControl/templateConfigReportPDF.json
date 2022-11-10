@@ -1,0 +1,110 @@
+{
+	"Structural": {
+		"T1w_SNR_GM_Ratio": {
+			"Visible": true,
+			"Alias": "GM SNR"
+		},
+		"T1w_CNR_GM_WM_Ratio": {
+			"Visible": true
+		},
+		"T1w_GM_vol_mL": {
+			"Range": "500-800",
+			"Visible": true,
+			"Unit": "mL"
+		},
+		"T1w_WM_vol_mL": {
+			"Range": "300-600",
+			"Visible": true,
+			"Unit": "mL"
+		},
+		"T1w_CSF_vol_mL": {
+			"Range": "150-300",
+			"Visible": true,
+			"Unit": "mL"
+		},
+		"T1w_GM_ICV_Ratio": {
+			"Visible": true,
+			"Range": "0-1"
+		},
+		"T1w_WM_ICV_Ratio": {
+			"Visible": true,
+			"Range": "0-1"
+		},
+		"T1w_CSF_ICV_Ratio": {
+			"Visible": true,
+			"Range": "0-1"
+		},
+		"Version_CAT12": {
+			"Visible": true
+		},
+		"Version_ExploreASL": {
+			"Visible": true
+		},
+		"Version_LST": {
+			"Visible": true
+		},
+		"Version_Matlab": {
+			"Visible": true
+		},
+		"Version_SPM12": {
+			"Visible": true
+		}
+	},
+	"ASL": {
+		"CBF_GM_Median_mL100gmin": {
+			"Range": "50-120",
+			"Visible": true,
+			"Alias": "Median CBF",
+			"Unit": "mL/100g/min"
+		},
+		"LabelingType": {
+			"Visible": true
+		},
+		"NumberOfAverages": {
+			"Visible": true,
+			"Range": ""
+		},
+		"Initial_PLD_ms": {
+			"Unit": "mS",
+			"Visible": true
+		},
+		"MotionMean_mm": {
+			"Visible": true,
+			"Alias": "Mean Motion",
+			"Unit": "mm"
+		},
+		"MotionSD_mm": {
+			"Visible": true,
+			"Alias": "SD Motion",
+			"Unit": "mm"
+		},
+		"MotionMax_mm": {
+			"Visible": true,
+			"Alias": "Max Motion",
+			"Unit": "mm"
+		},
+		"M0": {
+			"Visible": true
+		},
+		"VoxelSize_mm": {
+			"Visible": true,
+			"Unit": "mm"
+		},
+		"LabelingDuration_ms": {
+			"Visible": true,
+			"Unit": "ms"
+		},
+		"SpatialCoV_GM_Perc": {
+			"Visible": true
+		},
+		"Sequence": {
+			"Visible": true
+		},
+		"Vendor": {
+			"Visible": true
+		},
+		"PeakSNR_Ratio": {
+            "Visible": true
+        }
+	}
+}
