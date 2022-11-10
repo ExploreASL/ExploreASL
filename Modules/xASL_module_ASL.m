@@ -63,7 +63,7 @@ result = false;
 
 %% A. Check if ASL exists, otherwise skip this module
 [x, bSkip] = xASL_module_ASL_CheckASL(x);
-if bSkip, return; end
+if bSkip; result = true; return; end
 x = xASL_init_FileSystem(x); % Do this only here, to save time when skipping this module
 oldFolder = cd(x.dir.SESSIONDIR); % Change working directory to make sure that unspecified output will go there...
 
