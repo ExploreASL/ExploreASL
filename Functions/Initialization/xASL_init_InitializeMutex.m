@@ -35,7 +35,6 @@ end
 %% --------------------------------------------------------
 %% 1) Lock folder management
 x.ModuleName  = ModuleName;
-x.result = false;
 if isfield(x.settings,'RERUN')
     if x.settings.RERUN
         [status, message] = rmdir(x.dir.LockDir,'s');
