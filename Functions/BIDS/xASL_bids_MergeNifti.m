@@ -646,7 +646,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 	end
 	
 	
-    %% If at the end and all went well
+    %% Finalize merging and save
     if bStatus
         fprintf('Warning: concatenating multiple NIfTIs & jsons as output from dcm2niiX\n');
         % Save the concatenated file to a given name
@@ -662,7 +662,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
                 % Check if FME Hadamard
 				isHadamardFME = xASL_imp_CheckIfFME(tmpCheckJSON);
 				
-				% Check EchoTimes
+				% For FME Hadamard case, we merge echo times
 				if isHadamardFME
 					if isfield(tmpCheckJSON,'EchoTime')
 						EchoTimes{iFileCheck,1} = tmpCheckJSON.EchoTime;
