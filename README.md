@@ -14,7 +14,7 @@ Additionally, this (semi-)automatic pipeline allows us to minimize manual interv
 
 ## Documentation
 
-Reference manual and tutorials for each ExploreASL version are found on the [GitHub website](https://exploreasl.github.io/Documentation). A general description of ExploreASL is in the [Neuroimage paper](https://pubmed.ncbi.nlm.nih.gov/32526385/). Additional resources are on the [ExploreASL website](https://www.ExploreASL.org) including the walkthrough document and how-to videos, but these are not regularly updated with new versions. For any help please contact the lead authors/developers at h.j.mutsaerts@amsterdamumc.nl or j.petr@hzdr.de.
+Reference manual and tutorials for each ExploreASL version are found on the [GitHub website](https://exploreasl.github.io/Documentation). A general description of ExploreASL is in the [Neuroimage paper](https://pubmed.ncbi.nlm.nih.gov/32526385/). Additional resources are on the [ExploreASL website](https://www.ExploreASL.org) including the walkthrough document and how-to videos, but these are not regularly updated with new versions. For any help please use the [GitHub Discussion](https://github.com/ExploreASL/ExploreASL/discussions) or contact the ExploreASL team at [exploreasl.lab@gmail.com](mailto:exploreasl.lab@gmail.com) or the lead authors/developers at h.j.mutsaerts@amsterdamumc.nl or j.petr@hzdr.de.
 
 ## Installation
 
