@@ -17,7 +17,7 @@ function x = xASL_imp_ReadSourceData(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
     %% Here we try to fix backwards compatibility
@@ -51,8 +51,12 @@ function x = xASL_imp_ReadSourceData(x)
         % This error means that there is probably something wrong with your sourceStructure.json
         fprintf(2,'Please check your sourceStructure.json file and read the import <a href="https://exploreasl.github.io/Documentation/" rel="nofollow">documentation</a>...\n');
         error('Import of sourcedata failed (no matching files)...');
-    end
-    
+	end
+    % Report missing tokenOrdering field
+	if ~isfield(x.modules.import.imPar,'tokenOrdering') || isempty(x.modules.import.imPar.tokenOrdering)
+		error('tokenOrdering parameter not specified or empty');
+	end
+	
     % Copy the columns into named vectors. This construction allows for arbitrary directory hierarchies.
     
     % Make sure to select the columns that correspond to the folder ordering defined using the regular expressions above.

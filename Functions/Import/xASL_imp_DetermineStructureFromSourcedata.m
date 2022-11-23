@@ -16,13 +16,17 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
     %% Read sourcedata
     x = xASL_imp_ReadSourceData(x);
 
-
+	% Report missing tokenOrdering field
+	if ~isfield(x.modules.import.imPar,'tokenOrdering') || isempty(x.modules.import.imPar.tokenOrdering)
+		error('tokenOrdering parameter not specified or empty');
+	end
+	
     %% VISITS
     if x.modules.import.imPar.tokenOrdering(2)==0
         % a zero means: no visits applicable
