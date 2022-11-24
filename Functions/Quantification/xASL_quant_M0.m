@@ -378,6 +378,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 
     % Save and close the figure
     SavePath = fullfile(x.D.M0CheckDir, 'RevertBsupFxControl.jpg');
+	xASL_adm_CreateDir(x.D.M0CheckDir);
     saveas(FigureHandle, SavePath, 'jpg');
     close(FigureHandle);
     
