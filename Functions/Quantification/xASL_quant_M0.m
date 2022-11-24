@@ -292,14 +292,14 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
         end
 	end
 	   
-	% First obtain initial_PLD parameter
+	% First obtain initial_PLD parameter taking into account backwards compatibility of the naming
 	if isfield(x.Q,'Initial_PLD')
 		Initial_PLD = x.Q.Initial_PLD;
 	else
 		Initial_PLD = x.Initial_PLD;
 	end
 	
-	% And adjust initial_PLD for multi-PLD (a value closest to 2000 ms is currently selected)
+	% And adjust initial_PLD for multi-PLD - a value closest to 2000 ms is currently selected
 	if x.modules.asl.bMultiPLD
 		% Get unique PLDs
 		idealPLD = unique(Initial_PLD);
@@ -311,6 +311,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 		Initial_PLD = idealPLD(ind(1));
 	end
 		
+	% Calculate the effective readout times after the start of labeling
 	switch lower(x.Q.LabelingType)
 		case 'pasl'
 			ReadoutTime = Initial_PLD;
