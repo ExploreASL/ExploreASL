@@ -292,18 +292,33 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
         end
 	end
 	   
+	% First obtain initial_PLD parameter
+	if isfield(x.Q,'Initial_PLD')
+		Initial_PLD = x.Q.Initial_PLD;
+	else
+		Initial_PLD = x.Initial_PLD;
+	end
+	
+	% And adjust initial_PLD for multi-PLD (a value closest to 2000 ms is currently selected)
+	if x.modules.asl.bMultiPLD
+		% Get unique PLDs
+		idealPLD = unique(Initial_PLD);
+	
+		% Find the index of the one closest to 2000 ms
+		[~, ind] = min(abs(idealPLD-2000));
+	
+		% Pick up the ideal PLD as the one closest to 2000 ms
+		Initial_PLD = idealPLD(ind(1));
+	end
+		
 	switch lower(x.Q.LabelingType)
 		case 'pasl'
-			if isfield(x.Q,'Initial_PLD')
-				ReadoutTime = x.Q.Initial_PLD;
-			else
-				ReadoutTime = x.Initial_PLD;
-			end
+			ReadoutTime = Initial_PLD;
 		case {'casl' 'pcasl'}
-			if isfield(x.Q,'Initial_PLD')
-				ReadoutTime = x.Q.Initial_PLD + x.Q.LabelingDuration;
+			if isfield(x.Q,'LabelingDuration')
+				ReadoutTime = Initial_PLD + x.Q.LabelingDuration;
 			else
-				ReadoutTime = x.Initial_PLD + x.LabelingDuration;
+				ReadoutTime = Initial_PLD + x.LabelingDuration;
 			end
 	end
 	
