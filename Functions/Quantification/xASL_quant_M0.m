@@ -299,8 +299,11 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 		Initial_PLD = x.Initial_PLD;
 	end
 	
-	% And adjust initial_PLD for multi-PLD - a value closest to 2000 ms is currently selected
+	% The Background suppression calculation works with a single PLD only, so we have to make sure that only a scalar value is provided
+	% for both cases of multi-PLD and single-PLD with a vector of same PLDs
+	
 	if x.modules.asl.bMultiPLD
+		% Adjust initial_PLD for multi-PLD - a value closest to 2000 ms is currently selected
 		% Get unique PLDs
 		idealPLD = unique(Initial_PLD);
 	
@@ -309,6 +312,9 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 	
 		% Pick up the ideal PLD as the one closest to 2000 ms
 		Initial_PLD = idealPLD(ind(1));
+	else
+		% For single-PLD sequences, we take the first PLD in case that a vector would be provided.
+		Initial_PLD = Initial_PLD(1);
 	end
 		
 	% Calculate the effective readout times after the start of labeling
