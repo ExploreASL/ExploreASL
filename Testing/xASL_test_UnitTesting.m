@@ -125,8 +125,17 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
         UnitTestsCells{iTest,2} = UnitTests(iTest).unit;
         UnitTestsCells{iTest,3} = num2str(UnitTests(iTest).passed);
     end
-    xASL_tsvWrite(UnitTestsCells,fullfile(TestRepository,'results.tsv'),1);
-    
+
+    % Save path
+    TimeString = datestr(now,'yyyy-mm-dd_HH_MM');
+    TimeString(end-2) = 'h';
+    savePathMat = fullfile(TestRepository, [TimeString, '_unit_results.mat']);
+    savePathTSV = fullfile(TestRepository, [TimeString, '_unit_comparison.tsv']);
+
+    % Save files
+    xASL_tsvWrite(UnitTestsCells,savePathTSV,1);
+    save(savePathMat,'UnitTests');
+
     %% Export table as well
     UnitTestsTable = struct2table(UnitTests);
     
