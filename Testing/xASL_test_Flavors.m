@@ -229,6 +229,7 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
     if ~isempty(flavors.loggingTable)
         xASL_tsvWrite(table2cell(flavors.loggingTable), savePathLogging);
     end 
+
     % Clear console window
     clc
     
