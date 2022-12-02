@@ -660,7 +660,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
             if exist(fullfile(jsonPathX, [jsonNameX '.json']),'file')
                 tmpCheckJSON = spm_jsonread(fullfile(jsonPathX, [jsonNameX '.json']));
                 % Check if FME Hadamard
-				isHadamardFME = xASL_imp_CheckIfFME(tmpCheckJSON);
+				isHadamardFME = xASL_imp_CheckIfFME(tmpCheckJSON, []);
 				
 				% For FME Hadamard case, we merge echo times
 				if isHadamardFME

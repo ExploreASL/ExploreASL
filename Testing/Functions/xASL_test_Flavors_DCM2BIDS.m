@@ -75,7 +75,11 @@ DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'derivatives', 'ExploreASL
 
             xASL_adm_DeleteFileList(DirASL, '^ASL4D_(34|35)_00001.*$', 1);
 			xASL_adm_DeleteFileList(DirASL, '^ASL4D_(32|33)_00001.*$', 1);
+			xASL_adm_DeleteFileList(DirASL, '^ASL4D_(27|29|31)_000.*$', 1);
+			xASL_adm_DeleteFileList(DirASL, '^ASL4D_(30)_000.*$', 1);
 
+			%xASL_Move(fullfile(DirASL,'ASL4D_26_00001.nii'),fullfile(DirASL,'ASL4D.nii'));
+			%xASL_Move(fullfile(DirASL,'ASL4D_26_00001.json'),fullfile(DirASL,'ASL4D.json'));
             nii_files = xASL_adm_GetFileList(DirASL, '^.*\.nii$', 'FPList', [], false);
             xASL_bids_MergeNifti(nii_files, 'ASL');
 

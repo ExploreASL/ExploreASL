@@ -1,10 +1,11 @@
-function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn)
+function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut)
 %xASL_imp_CheckIfFME Check if a sequence, based on its JSON, is a FME (Fraunhofer Mevis) time encoded sequence
 %
 % FORMAT: bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn)
 % 
 % INPUT:
 %  jsonIn          - json structure of the sequence (REQUIRED)
+%  jsonOut         - json structure of the sequence, already pre-parsed (REQUIRED)
 %
 % OUTPUT:
 %   bTimeEncodedFME    - Time encoded FME sequence or not (BOOLEAN)
@@ -30,7 +31,11 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn)
 			~isempty(regexp(char(jsonIn.SeriesDescription),'(ss_TE)\d\d(_TI)\d\d\d\d', 'once')))                            % M0 format
 		bTimeEncodedFME = true;
 	% Or by the sequence name
-	elseif isfield(jsonIn, 'SequenceName') && ~isempty(regexp(char(jsonIn.SequenceName), 'fme_asl', 'once'))
+	elseif isfield(jsonIn, 'SequenceName') && ~isempty(regexp(char(jsonIn.SequenceName), 'fme_asl', 'once')) && ...
+			( (isfield(jsonOut, 'PostLabelingDelay') && length(unique(jsonOut.PostLabelingDelay))>1) ||...
+			  (isfield(jsonOut, 'LabelingDuration') && length(unique(jsonOut.LabelingDuration))>1) ||...
+			  (isfield(jsonOut, 'EchoTime') && length(unique(jsonOut.EchoTime))>1) ||...
+			  (isfield(jsonOut, 'TimeEncodedMatrixSize') && ~isempty(jsonOut.TimeEncodedMatrixSize)) )
 		bTimeEncodedFME = true;
 	else
 		bTimeEncodedFME = false;
