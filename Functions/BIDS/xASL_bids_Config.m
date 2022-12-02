@@ -43,7 +43,9 @@ bidsPar.listFieldsRemoveASL = {'SliceReadoutTime','RepetitionTime','InversionTim
 	'GELabelingDuration','RFGap','MeanGzx10','PhiAdjust','M0','LabelingType','ScanType','SequenceType'}; 
 
 % A list of fields to remove the M0.json files as the field is not defined in ASL-BIDS
-bidsPar.listFieldsRemoveM0 = {'TotalAcquiredPairs', 'ArterialSpinLabelingType','LabelingDuration','PostLabelingDelay'};
+bidsPar.listFieldsRemoveM0 = {'TotalAcquiredPairs', 'ArterialSpinLabelingType','LabelingDuration','PostLabelingDelay','LabelingLocationDescription','LabelingOrientation','LabelingDistance','BackgroundSuppression','BackgroundSuppressionNumberPulses','BackgroundSuppressionPulseTime',...
+	                          'LabelingEfficiency','LabelingDuration','PCASLType','CASLType','LabelingPulseAverageGradient','LabelingPulseMaximumGradient','LabelingPulseAverageB1','LabelingPulseDuration','LabelingPulseFlipAngle','LabelingPulseInterval','BolusCutOffFlag','PASLType',...
+							  'LabelingSlabThickness','BolusCutOffDelayTime','BolusCutOffTechnique',};
 
 % A list of fields to remove the all non-ASL, non-M0 JSON files as the field is not defined in BIDS
 bidsPar.listFieldsRemoveNonASL = {'TotalAcquiredPairs'}; 
