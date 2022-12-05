@@ -34,7 +34,7 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
     end
 
     % Check for specific time encoded sequence of FME (Fraunhofer Mevis)
-	bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut);
+	bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded);
 	
     if bTimeEncodedFME
         bTimeEncoded = true;    

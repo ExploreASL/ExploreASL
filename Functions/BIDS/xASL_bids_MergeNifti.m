@@ -660,10 +660,20 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
             if exist(fullfile(jsonPathX, [jsonNameX '.json']),'file')
                 tmpCheckJSON = spm_jsonread(fullfile(jsonPathX, [jsonNameX '.json']));
                 % Check if FME Hadamard
-				isHadamardFME = xASL_imp_CheckIfFME(tmpCheckJSON, []);
+				bHadamardFME = xASL_imp_CheckIfFME(tmpCheckJSON, []);
+				
+				% Check if vendor is Siemens and contains a multi-TE setup
+				bMultiTE = 0;
+				if isfield(tmpCheckJSON,'Manufacturer') && strcmpi(tmpCheckJSON.Manufacturer,'Siemens')
+					parameterList = xASL_bids_PhoenixProtocolReader(tmpCheckJSON.PhoenixProtocol);
+					bidsPar = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
+					if isfield(bidsPar,'EchoTime') && length(unique(bidsPar.EchoTime)) > 1
+						bMultiTE = 1;
+					end
+				end
 				
 				% For FME Hadamard case, we merge echo times
-				if isHadamardFME
+				if bHadamardFME || bMultiTE
 					if isfield(tmpCheckJSON,'EchoTime')
 						EchoTimes{iFileCheck,1} = tmpCheckJSON.EchoTime;
 					end

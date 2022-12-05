@@ -148,6 +148,19 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	
 	if isfield(sourcePar,'alTE0') && ~isempty(sourcePar.alTE0)
 		bidsPar.EchoTime = sourcePar.alTE0 / 1000 / 1000;
+		lastEchoTime = bidsPar.EchoTime;
+		lastEchoTimeCount = 1;
+		while lastEchoTime > 0
+			lastEchoTimeCount = lastEchoTimeCount + 1;
+			echoTimePar = getPhoenixParameters({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
+			if isempty(echoTimePar{2})
+				lastEchoTime = 0;
+			else
+				lastEchoTime = str2num(echoTimePar{2})/1000/1000;
+				bidsPar.EchoTime(lastEchoTimeCount) = lastEchoTime;
+			end
+		end		
+		
 	end
 	
 	% If the labeling type is recognized, then proceed to labeling timing information extraction

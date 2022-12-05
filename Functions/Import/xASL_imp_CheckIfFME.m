@@ -1,11 +1,12 @@
-function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut)
+function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 %xASL_imp_CheckIfFME Check if a sequence, based on its JSON, is a FME (Fraunhofer Mevis) time encoded sequence
 %
-% FORMAT: bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn)
+% FORMAT: bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn[, jsonOut, bTimeEncoded])
 % 
 % INPUT:
 %  jsonIn          - json structure of the sequence (REQUIRED)
-%  jsonOut         - json structure of the sequence, already pre-parsed (REQUIRED)
+%  jsonOut         - json structure of the sequence, already pre-parsed (OPTIONAL, DEFAULT=[])
+%  bTimeEncoded    - true if known that the sequence is Time-Encoded (OPTIONAL, DEFAULT=0)
 %
 % OUTPUT:
 %   bTimeEncodedFME    - Time encoded FME sequence or not (BOOLEAN)
@@ -23,6 +24,14 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut)
 		error('Require JSON structure on the input');
 	end
 	
+	if nargin < 2 || isempty(jsonOut)
+		jsonOut = [];
+	end
+	
+	if nargin < 3 || isempty(bTimeEncoded)
+		bTimeEncoded = 0;
+	end
+	
 	% Determine if we have the specific FME Hadamard sequence from Bremen
 	
 	% This can be recognized either by the specific Series description
@@ -35,7 +44,8 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut)
 			( (isfield(jsonOut, 'PostLabelingDelay') && length(unique(jsonOut.PostLabelingDelay))>1) ||...
 			  (isfield(jsonOut, 'LabelingDuration') && length(unique(jsonOut.LabelingDuration))>1) ||...
 			  (isfield(jsonOut, 'EchoTime') && length(unique(jsonOut.EchoTime))>1) ||...
-			  (isfield(jsonOut, 'TimeEncodedMatrixSize') && ~isempty(jsonOut.TimeEncodedMatrixSize)) )
+			  (isfield(jsonOut, 'TimeEncodedMatrixSize') && ~isempty(jsonOut.TimeEncodedMatrixSize)) ||...
+			  bTimeEncoded)
 		bTimeEncodedFME = true;
 	else
 		bTimeEncodedFME = false;
