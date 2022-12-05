@@ -169,10 +169,10 @@ end
 function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
 
     % Ignore some files
-    flavors = xALS_test_IgnoreFiles(flavors);
+    flavors = xASL_test_IgnoreFiles(flavors);
     
     % Ignore Acknowledgements & GeneratedBy in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
-    flavors = xALS_test_IgnoreSomeFields(flavors, testConfig);
+    flavors = xASL_test_IgnoreSomeFields(flavors, testConfig);
     
     % Save path
     savePath = fullfile(testConfig.pathExploreASL,'Testing','results.mat');
@@ -193,7 +193,7 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
 end
 
 %% Ignore version in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
-function flavors = xALS_test_IgnoreSomeFields(flavors,testConfig)
+function flavors = xASL_test_IgnoreSomeFields(flavors,testConfig)
 
     % Default
     ignoreRows = [];
@@ -227,7 +227,7 @@ function flavors = xALS_test_IgnoreSomeFields(flavors,testConfig)
                 filename = 'FLAIR.json';
             end
             % Search for dataset_description.json or other JSON files in derivatives
-            ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flavorPath,ignoreRows,iElement);
+            ignoreRows = xASL_test_CompareFieldsOfJSON(currentMessage,filename,flavorPath,ignoreRows,iElement);
         end
     end
 
@@ -239,7 +239,7 @@ end
 
 
 %% Compare JSON files but ignore the version field
-function ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flavorPath,ignoreRows,iElement)
+function ignoreRows = xASL_test_CompareFieldsOfJSON(currentMessage,filename,flavorPath,ignoreRows,iElement)
 
     % We only want to match derivatives JSON files
     if ~isempty(regexpi(currentMessage,'ExploreASL')) && ~isempty(filename)
@@ -258,7 +258,7 @@ function ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flav
             % Escape fields
             [jsonA,jsonB] = xASL_test_EscapeToUnix(jsonA,jsonB,sharedFieldsAB);
             % Get differences
-            diffSharedFields = xALS_test_CheckSharedJSONFields(jsonA,jsonB,sharedFieldsAB,false);
+            diffSharedFields = xASL_test_CheckSharedJSONFields(jsonA,jsonB,sharedFieldsAB,false);
             % Fields that are in B, but missing in A
             missingFields = setdiff(fieldNamesB,fieldNamesA);
             % We only want to remove a row from the comparison table if there are only difference
@@ -273,7 +273,7 @@ function ignoreRows = xALS_test_CompareFieldsOfJSON(currentMessage,filename,flav
 end
 
 %% We need to be sure that there are no differences in the shared fields for our JSON version comparison
-function diffSharedFields = xALS_test_CheckSharedJSONFields(jsonA,jsonB,sharedFields,diffSharedFields)
+function diffSharedFields = xASL_test_CheckSharedJSONFields(jsonA,jsonB,sharedFields,diffSharedFields)
 
     % Iterate over shared fields
     for iField=1:numel(sharedFields)

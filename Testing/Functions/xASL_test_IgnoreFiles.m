@@ -1,7 +1,7 @@
-function flavors = xALS_test_IgnoreFiles(flavors)
-%xALS_test_IgnoreFiles Remove/ignore rows from flavors.comparisonTable
+function flavors = xASL_test_IgnoreFiles(flavors)
+%xASL_test_IgnoreFiles Remove/ignore rows from flavors.comparisonTable
 %
-% FORMAT: flavors = xALS_test_IgnoreFiles(flavors)
+% FORMAT: flavors = xASL_test_IgnoreFiles(flavors)
 %
 % INPUT:
 %   flavors - struct containing flavor related fields (RECOMMENDED, STRUCT)
@@ -12,7 +12,7 @@ function flavors = xALS_test_IgnoreFiles(flavors)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Remove/ignore rows from flavors.comparisonTable.
 %
-% EXAMPLE:      flavors = xALS_test_IgnoreFiles(flavors);
+% EXAMPLE:      flavors = xASL_test_IgnoreFiles(flavors);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright (c) 2015-2021 ExploreASL
@@ -23,6 +23,8 @@ function flavors = xALS_test_IgnoreFiles(flavors)
                     'import_summary', ...
                     'xASL_module_Import_', ...
                     '.status', ...
+					fullfile('ExploreASL','temp','dcm2niiCatchedErrors.mat'), ...
+					fullfile('ExploreASL','temp','dcm2niiCatchedErrors.json'), ...
                     fullfile('ExploreASL','lock'), ...
                     fullfile('ExploreASL','log') ...
                  };
