@@ -29,25 +29,47 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 	end
 	
 	if nargin < 3 || isempty(bTimeEncoded)
-		bTimeEncoded = 0;
+		bTimeEncoded = false;
 	end
 	
 	% Determine if we have the specific FME Hadamard sequence from Bremen
 	
 	% This can be recognized either by the specific Series description
-	if isfield(jsonIn, 'SeriesDescription') &&...
-			(~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once')) || ... % ASL format
-			~isempty(regexp(char(jsonIn.SeriesDescription),'(ss_TE)\d\d(_TI)\d\d\d\d', 'once')))                            % M0 format
-		bTimeEncodedFME = true;
+	bTimeEncodedFME = false;
+	if isfield(jsonIn, 'SeriesDescription')
+		if (~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once')) || ... % ASL format
+				~isempty(regexp(char(jsonIn.SeriesDescription),'(ss_TE)\d\d(_TI)\d\d\d\d', 'once')))                            % M0 format
+			bTimeEncodedFME = true;
+			return;
+		end
+	end
+		
 	% Or by the sequence name
-	elseif isfield(jsonIn, 'SequenceName') && ~isempty(regexp(char(jsonIn.SequenceName), 'fme_asl', 'once')) && ...
-			( (isfield(jsonOut, 'PostLabelingDelay') && length(unique(jsonOut.PostLabelingDelay))>1) ||...
-			  (isfield(jsonOut, 'LabelingDuration') && length(unique(jsonOut.LabelingDuration))>1) ||...
-			  (isfield(jsonOut, 'EchoTime') && length(unique(jsonOut.EchoTime))>1) ||...
-			  (isfield(jsonOut, 'TimeEncodedMatrixSize') && ~isempty(jsonOut.TimeEncodedMatrixSize)) ||...
-			  bTimeEncoded)
-		bTimeEncodedFME = true;
-	else
-		bTimeEncodedFME = false;
+	if isfield(jsonIn, 'SequenceName') && ~isempty(regexp(char(jsonIn.SequenceName), 'fme_asl', 'once'))
+		if (isfield(jsonOut, 'PostLabelingDelay') && length(unique(jsonOut.PostLabelingDelay))>1)
+			bTimeEncodedFME = true;
+			return
+		end
+	
+		if isfield(jsonOut, 'LabelingDuration') && length(unique(jsonOut.LabelingDuration))>1
+			bTimeEncodedFME = true;
+			return
+		end
+		
+		if isfield(jsonOut, 'EchoTime') && length(unique(jsonOut.EchoTime))>1
+			bTimeEncodedFME = true;
+			return
+		end
+		
+		if isfield(jsonOut, 'TimeEncodedMatrixSize') && ~isempty(jsonOut.TimeEncodedMatrixSize)
+			bTimeEncodedFME = true;
+			return
+		end
+		
+		if bTimeEncoded
+			bTimeEncodedFME = true;
+			return
+		end
+				
 	end
 end
