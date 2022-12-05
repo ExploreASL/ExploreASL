@@ -143,7 +143,7 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
             dataset = cellstr(datasetA);
             name = cellstr('Missing folder');
             message = cellstr(results.(datasetA).missingFolders{iElement});
-            reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
+            %reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
     if numel(results.(datasetB).missingFolders)>0 && ...
@@ -152,7 +152,7 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
             dataset = cellstr(datasetB);
             name = cellstr('Missing folder');
             message = cellstr(results.(datasetB).missingFolders{iElement});
-            reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
+            %reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
 
