@@ -42,8 +42,9 @@ if isfield(parms,'RWVSlope')
 	% Obtains dcm2niix version used for conversion and ExploreASL version
 	% If ExploreASL version >= 1.10.0 or dcm2niix version >= 20210317
 	if isfield(parms, 'ConversionSoftware') && (strcmp(parms.ConversionSoftware, 'dcm2nii') || strcmp(parms.ConversionSoftware, 'dcm2niix')) && isfield(parms, 'ConversionSoftwareVersion')
-		dcm2niixVersion = parms.ConversionSoftwareVersion;
-		dcm2niixVersion = str2num(dcm2niixVersion(end-7:end));
+		dcm2niixVersion = regexp(parms.ConversionSoftwareVersion,'v\d*.\d*.(\d{8}) .*','tokens');
+		dcm2niixVersion = str2num(dcm2niixVersion{1}{1});
+		%dcm2niixVersion = str2num(dcm2niixVersion(end-7:end));
 	else
 		dcm2niixVersion = 0;
 	end
