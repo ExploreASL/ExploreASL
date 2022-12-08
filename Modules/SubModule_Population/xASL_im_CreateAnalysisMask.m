@@ -127,14 +127,17 @@ if ~bSkipStandard
 end
 
 % Define atlas paths
-listMasks = {   fullfile(x.S.StatsDir,'MaskSusceptibility.nii') ...
-				fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
-				fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') ...
-				fullfile(x.D.AtlasDir,'MNI_Structural.nii')...
-				fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') ...
-				fullfile(x.D.AtlasDir,'Hammers.nii')...
-				fullfile(x.D.AtlasDir,'HOcort_CONN.nii') ...
-				fullfile(x.D.AtlasDir,'HOsub_CONN.nii')};
+pathMaskInputList = ...
+	{fullfile(x.S.StatsDir,'MaskSusceptibility.nii')...
+	 fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii')};
+ 
+for iAtlas = 1:length(x.S.Atlases)	
+	if strcmp(x.P.Atlas.(x.S.Atlases{iAtlas})((end-2):end),'.gz')
+		pathMaskInputList{iAtlas+2} = x.P.Atlas.(x.S.Atlases{iAtlas})(1:(end-3));
+	else
+		pathMaskInputList{iAtlas+2} = x.P.Atlas.(x.S.Atlases{iAtlas});
+	end
+end
 
 %% B2) Save FOV mask for each subject
 if x.modules.population.bNativeSpaceAnalysis
@@ -153,24 +156,26 @@ if x.modules.population.bNativeSpaceAnalysis
 			if xASL_exist(x.P.Path_PWI)
 				x = xASL_adm_DefineASLResolution(x);
 				
-				for kk = 1:length(listMasks)
-					if xASL_exist(listMasks{kk},'file')
+				for iAtlas = 1:length(pathMaskInputList)
+					% Path to the atlas
+					pathMaskInput = pathMaskInputList{iAtlas};
+					if xASL_exist(pathMaskInput)
 						% Derive the name of the mask
-						[~, filenameMask, extensionMask] = xASL_fileparts(listMasks{kk});
-						pathMaskOutput = fullfile(x.dir.SESSIONDIR, [filenameMask '_Atlas' extensionMask]);
+						[~, filenameAtlas, extensionAtlas] = xASL_fileparts(pathMaskInputList{iAtlas});
+						pathMaskOutput = fullfile(x.dir.SESSIONDIR, [filenameAtlas '_Atlas' extensionAtlas]);
 						
 						% Automatically detect mask type
 						% PM:   in the future we can also do option 1 for multi-label
 						%       masks, by splitting them in multiple individual masks and
 						%       treating those separately
-						imMaskTmp = xASL_io_Nifti2Im(listMasks{kk});
+						imMaskTmp = xASL_io_Nifti2Im(pathMaskInput);
 						% Binary file
 						if max(imMaskTmp(:)) == 1
 							% binary masks - presmooth, spline-interpolation, cut at 50%
 							% Pre-smooth the mask before downsampling to native space
 							[tmpPath,tmpFile,tmpExt] = xASL_fileparts(pathMaskOutput);
 							pathTmpPreSmooth = fullfile(tmpPath,['pres_' tmpFile tmpExt]);
-							pathTmpPreSmooth = xASL_im_PreSmooth(x.P.Path_PWI, listMasks{kk}, pathTmpPreSmooth, x.S.optimFWHM_mm,[], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+							pathTmpPreSmooth = xASL_im_PreSmooth(x.P.Path_PWI, pathMaskInput, pathTmpPreSmooth, x.S.optimFWHM_mm,[], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 							
 							% Transform the Mask to native space
 							xASL_spm_deformations(x, pathTmpPreSmooth, pathMaskOutput, 2, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
@@ -182,7 +187,7 @@ if x.modules.population.bNativeSpaceAnalysis
 							xASL_io_SaveNifti(pathMaskOutput, pathMaskOutput, imMaskTmp);
 						else % multilabel file
 							% multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding
-							xASL_spm_deformations(x, listMasks{kk}, pathMaskOutput, 0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+							xASL_spm_deformations(x, pathMaskInput, pathMaskOutput, 0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
 							xASL_adm_GzipNifti(pathMaskOutput);
 						end
 					end
@@ -190,9 +195,10 @@ if x.modules.population.bNativeSpaceAnalysis
 			end
 		end
 	end
-	for kk = 1:length(listMasks)
-		if xASL_exist(listMasks{kk},'file')
-			xASL_adm_GzipNifti(listMasks{kk});
+	% Zip all atlases at the end
+	for iAtlas = 1:length(pathMaskInputList)
+		if xASL_exist(pathMaskInputList{iAtlas})
+			xASL_adm_GzipNifti(pathMaskInputList{iAtlas});
 		end
 	end
 end
