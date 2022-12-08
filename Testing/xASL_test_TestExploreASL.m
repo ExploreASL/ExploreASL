@@ -188,7 +188,7 @@ xASL_adm_BreakString('7. Compare with reference table','=');
 % Comparison with tsv file
 [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(fullfile(x.opts.MyPath,'Testing','Reference','ReferenceValues.tsv'));
 ResultsComparison = xASL_qc_CompareTables(ReferenceTable,ResultsTable);
-save(SaveFile, 'ResultsTable', 'ReferenceTables', 'ReferenceTable', 'ResultsComparison');
+
 
 % Comparison with mat file
 try
@@ -204,6 +204,7 @@ catch ME
     fprintf('%s\n', ME.message);
 end
     
+save(SaveFile, 'ResultsTable', 'ReferenceTables', 'ReferenceTable', 'ResultsComparison','DifferenceTable');
 
 end
 
