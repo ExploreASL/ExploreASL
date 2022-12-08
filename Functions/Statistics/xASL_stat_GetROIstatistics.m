@@ -84,8 +84,7 @@ if x.S.InputNativeSpace
 	% Native space
 	x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},[x.S.InputAtlasNativeName '.nii']));
 	x.S.masks.WBmask = sum(x.S.masks.WBmask,4) > 0;
-	[~,tmpNameLeftRight] = xASL_fileparts(x.P.Path_LeftRightPop);
-	x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},[tmpNameLeftRight '.nii']));
+	x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},'LeftRight_Atlas.nii'));
 	x.LeftMask = (x.S.masks.WBmask .* (x.LeftMask == 1)) > 0;
 else
 	% Standard space
@@ -259,8 +258,7 @@ for iSubject=1:x.nSubjects
 
 				x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[x.S.InputAtlasNativeName '.nii']));
 				x.S.masks.WBmask = sum(x.S.masks.WBmask,4) > 0;
-				[~,tmpNameLeftRight] = xASL_fileparts(x.P.Path_LeftRightPop);
-				x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[tmpNameLeftRight '.nii']));
+				x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},'LeftRight_Atlas.nii'));
 				x.LeftMask = (x.S.masks.WBmask .* (x.LeftMask == 1)) > 0;
 
 				x.LeftMask = xASL_im_IM2Column(x.LeftMask, x.S.masks.WBmask);
@@ -510,8 +508,9 @@ for iSubject=1:x.nSubjects
 		SusceptibilityMask = xASL_im_IM2Column(x.S.masks.WBmask, x.S.masks.WBmask); % default = no susceptibility mask
         if x.S.bMasking(1)==1
             if x.S.InputNativeSpace
-                if xASL_exist(x.P.Path_MaskSusceptibilityPop)
-                    SusceptibilityMask = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_MaskSusceptibilityPop),x.S.masks.WBmask);
+				fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},'MaskSusceptibility_Atlas.nii');
+                if xASL_exist(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},'MaskSusceptibility_Atlas.nii'))
+                    SusceptibilityMask = xASL_im_IM2Column(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},'MaskSusceptibility_Atlas.nii'),x.S.masks.WBmask);
                 end
             else
                 if HasGroupSusceptMask % use population-based susceptibility mask

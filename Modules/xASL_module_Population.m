@@ -256,7 +256,7 @@ if ~x.mutex.HasState(StateName{8})
             % ROI statistics (optional: native space)
             if x.modules.population.bNativeSpaceAnalysis
                 x.S.InputNativeSpace = 1;
-                x.S.InputAtlasNativeName = x.S.Atlases{iAtlas};
+                x.S.InputAtlasNativeName = [x.S.Atlases{iAtlas} '_Atlas'];
                 xASL_wrp_GetROIstatistics(x);
             end
         end

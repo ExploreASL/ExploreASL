@@ -64,23 +64,7 @@ if bSkipStandard && ~x.modules.population.bNativeSpaceAnalysis
     return;
 end
 
-% Define atlas paths
-listMasks = {   fullfile(x.S.StatsDir,'MaskSusceptibility.nii') ...
-				fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
-				fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') ...
-				fullfile(x.D.AtlasDir,'MNI_Structural.nii')...
-				fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') ...
-				fullfile(x.D.AtlasDir,'Hammers.nii')...
-				fullfile(x.D.AtlasDir,'HOcort_CONN.nii') ...
-				fullfile(x.D.AtlasDir,'HOsub_CONN.nii')};
-listOutputs = { x.P.Path_MaskSusceptibilityPop ...
-				x.P.Path_TotalGMPop ...
-				x.P.Path_DeepWMPop ...
-				x.P.Path_MNIStructuralPop ...
-				x.P.Path_LeftRightPop ...
-				x.P.Path_HammersPop ...
-				x.P.Path_HOcort_CONNPop ...
-				x.P.Path_HOsub_CONNPop};
+
 
 % Define pre-existing paths, including warning when less or more than 1 are found
 % First for SubjectsSessions (e.g. ASL)
@@ -141,6 +125,17 @@ if ~bSkipStandard
 	% this is used in stats:
 	x.S.MaskSusceptibility = xASL_im_IM2Column(MaskSusceptibility,x.S.masks.WBmask);
 end
+
+% Define atlas paths
+listMasks = {   fullfile(x.S.StatsDir,'MaskSusceptibility.nii') ...
+				fullfile(x.D.MapsSPMmodifiedDir,'TotalGM.nii')...
+				fullfile(x.D.MapsSPMmodifiedDir,'DeepWM.nii') ...
+				fullfile(x.D.AtlasDir,'MNI_Structural.nii')...
+				fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii') ...
+				fullfile(x.D.AtlasDir,'Hammers.nii')...
+				fullfile(x.D.AtlasDir,'HOcort_CONN.nii') ...
+				fullfile(x.D.AtlasDir,'HOsub_CONN.nii')};
+
 %% B2) Save FOV mask for each subject
 if x.modules.population.bNativeSpaceAnalysis
 	for iSession=1:x.dataset.nSessions
@@ -166,24 +161,27 @@ if x.modules.population.bNativeSpaceAnalysis
 
 				for kk = 1:length(listMasks)
 					if xASL_exist(listMasks{kk},'file')
+						% Derive the name of the mask
+						[~, filenameMask, extensionMask] = xASL_fileparts(listMasks{kk});
+						pathMaskOutput = fullfile(x.dir.SESSIONDIR, [filenameMask '_Atlas' extensionMask]);
 						switch (MaskType(kk))
 							case 1
 								% Pre-smooth the mask before downsampling to native space
-								[tmpPath,tmpFile,tmpExt] = xASL_fileparts(listOutputs{kk});
+								[tmpPath,tmpFile,tmpExt] = xASL_fileparts(pathMaskOutput);
 								pathTmpPreSmooth = fullfile(tmpPath,['pres_' tmpFile tmpExt]);
-								pathTmpPreSmooth = xASL_im_PreSmooth(x.P.Path_PWI,listMasks{kk},pathTmpPreSmooth,x.S.optimFWHM_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+								pathTmpPreSmooth = xASL_im_PreSmooth(x.P.Path_PWI, listMasks{kk}, pathTmpPreSmooth, x.S.optimFWHM_mm,[], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 
 								% Transform the Mask to native space
-								xASL_spm_deformations(x, pathTmpPreSmooth, listOutputs{kk}, 2, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+								xASL_spm_deformations(x, pathTmpPreSmooth, pathMaskOutput, 2, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
 								xASL_delete(pathTmpPreSmooth);
 
 								% Threshold at 50%
-								imMaskTmp = xASL_io_Nifti2Im(listOutputs{kk});
+								imMaskTmp = xASL_io_Nifti2Im(pathMaskOutput);
 								imMaskTmp = imMaskTmp > 0.5;
-								xASL_io_SaveNifti(listOutputs{kk},listOutputs{kk},imMaskTmp);
+								xASL_io_SaveNifti(pathMaskOutput, pathMaskOutput, imMaskTmp);
 							case 2
-								xASL_spm_deformations(x, listMasks{kk}, listOutputs{kk}, 0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
-								xASL_adm_GzipNifti(listOutputs{kk});
+								xASL_spm_deformations(x, listMasks{kk}, pathMaskOutput, 0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+								xASL_adm_GzipNifti(pathMaskOutput);
 						end
 					end
 				end
