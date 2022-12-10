@@ -1,6 +1,73 @@
 
 # ExploreASL Change Log
 
+---
+## ExploreASL v1.10.0
+
+### Versions included software
+
+Versions included & used third-party tools (see `/External/README_SPM.txt`):
+
+* SPM12 7219 
+* CAT12 r1615 
+* LST 2.0.15 
+* dcm2niix 20220720
+
+### Feature improvements
+
+* Release issue #1235: New release.
+* Feature #435: Update dcm2nii to version 20220720.
+* Feature #844: PVC maps calculated in native space are transformed to MNI space.
+* Features #927, #1046, #1055, #1059, #1167, #1218: DEBBIE sequence -- Hadamard multi-TE ASL - basic import and processing.
+* Feature #1011: Add Desikan-Killiany atlas.
+* Features #1115, #1044: Revamped `Import`. `BIDS2Legacy` conversion is now done as first step of the processing module.
+* Feature #1129: StudyPar supports multi-parameter definitions for import of multi-sequence datasets.
+* Feature #1197: Allow configuring the image contrast for statistics in dataPar.json.
+* Feature #1242: Correctly report errors in sourceStructure.json during import.
+
+### Bug fixes
+
+* Bugs #685, #1182: Fix issue with atlas names.
+* Bug #1068: Fix errors in susceptibility mask in xASL_im_CreateAnalysisMask.
+* Bugs #1079, #1161, #1162, #1253: General bugfixing ExploreASL.
+* Bug #1111: Disable M0 processing when M0 not present.
+* Bug #1117: Fix Spatial CoV sorting of ASL images.
+* Bug #1123: Avoid loading ExploreASL-related folder `log` as subject.
+* Bug #1138: Fix subject directory name parsing for M0.
+* Bug #1140: Handles an incorrect number of delimiters per line in TSV/CSV/DSV files loaded by spm_load.
+* Bug #1164: Fix a bug in `xASL_adm_GzipAllFiles`.
+* Bug #1187: Minor fix in `xASL_csvWrite`.
+* Bug #1254: Minor fix of Philips scaling.
+* Bug #1256: Fix import, especially of FME.
+* Bug #1259: Fix native space analysis.
+
+### Optimization
+
+* Issue #390: Create directories for QC only when writing the files in them.
+* Issue #823: Cleaned unused functions in the `Development` folder.
+* Issue #995: `xASL_num2str` always outputs a row vector.
+* Issue #1040: Reorganize file structure of the code.
+* Issue #1050: Move final zipping inside population module to avoid parallel execution.
+* Issue #1105: Fixes input parameter checking at multiple locations and optimized internal variables.
+* Issue #1159: Improve spm_jsonread warnings and print file path.
+
+### Documentation
+* Issue #1075: Improve and restructure documentation.
+* Issue #1149: Move dataParTemplates to online Documentation.
+* Issue #1222: Added a new email to readme exploreasl.lab@gmail.com.
+
+### Other improvements
+
+* Issue #1098: Skip requirement of BIDS quantification parameters when quantification not user accoridng to `x.modules.asl.ApplyQuantification`.
+* Issue #1108: Simplify README.md and add CFF citation of ExploreASL.
+* Issue #1112: Improve code comments in hematocrit correction.
+* Issue #1118: Improve FEAST quantification warnings.
+* Issue #1121: TestDataSet now contains BIDS rawdata only and no derivatives.
+* Issue #1124: Allow basic background-suppression correction for M0 in multi-PLD.
+* Issue #1134: Simplify script for version file reading.
+* Issue #1136: Improved error output for `ASLContext` not matching with NIfTI dimensions.
+* Issue #1142, #1153: Ignores JSON files or subdirectories in the root-directory input path.
+* Issue #1201: Added GE RX28 flavor.
 
 ---
 ## ExploreASL v1.9.0
@@ -12,6 +79,7 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 * SPM12 7219 
 * CAT12 r1615 
 * LST 2.0.15 
+* dcm2niix 20190902 
 
 ### Feature improvements
 
