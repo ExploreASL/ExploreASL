@@ -131,7 +131,15 @@ if bOnlyRemoveResults
 end
 
 % Remove empty directories
-
+fprintf('\nChecking for empty folders:   ');
+for iList=1:length(testConfig.flavorList)
+    xASL_TrackProgress(iList, length(testConfig.flavorList));
+    currentFolder = fullfile(testConfig.pathFlavorDatabase, testConfig.flavorList{iList});
+    if exist(currentFolder, 'dir') && isempty(xASL_adm_GetFileList(currentFolder, '.*', 'FPListRec'))
+        warning(['Deleting empty folder: ' testConfig.flavorList{iList}]);
+        xASL_delete(currentFolder);
+    end
+end
 
 
 %% 2. Run the DCM->BIDS import
