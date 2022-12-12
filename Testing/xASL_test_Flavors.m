@@ -31,7 +31,7 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 % {
 %    "pathExploreASL":     "...//ExploreASL",
 %    "pathFlavorDatabase": "...//FlavorDatabase",
-%    "cmdCloneFlavors":    "git clone git@github.com:ExploreASL/FlavorDatabase.git"
+%    "cmdCloneFlavors":    "git clone https://github.com/ExploreASL/FlavorDatabase.git"
 % }
 %
 % Optionally you can add a list of flavors of intereset to your testConfig.json:
@@ -39,7 +39,7 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 % {
 %    "pathExploreASL":     "...//ExploreASL",
 %    "pathFlavorDatabase": "...//FlavorDatabase",
-%    "cmdCloneFlavors":    "git clone git@github.com:ExploreASL/FlavorDatabase.git",
+%    "cmdCloneFlavors":    "git clone https://github.com/ExploreASL/FlavorDatabase.git",
 %    "flavorList":         ["GE_PCASL_3Dspiral_14.0LX_WIP_1", "Philips_PCASL_2DEPI_3.2.1.1_1", "Siemens_PASL_3DGRASE_E11_1"]
 % }
 %
@@ -55,6 +55,10 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 
 
 %% 0. Admin and initialization
+% Dummy output in case this code crashes
+flavors = struct;
+
+
 if nargin<2 || isempty(bOnlyRemoveResults)
 	bOnlyRemoveResults = false;
 end
@@ -104,7 +108,6 @@ end
 if xASL_exist(fullfile(testConfig.pathFlavorDatabase,'flavors.json'),'file')
 	databaseInfo = spm_jsonread(fullfile(testConfig.pathFlavorDatabase,'flavors.json'));
 	flavors.data = databaseInfo.flavors;
-	clear databaseInfo
 else
 	error('The flavors.json file is missing...');
 end
