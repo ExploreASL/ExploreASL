@@ -7,7 +7,7 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 %   testConfig         - Struct describing the test configuration, or path to a JSON (OPTIONAL, DEFAULT = check this file ExploreASL/Testing/testConfig.json)
 %   bOnlyRemoveResults - Set to true if you do not want to run test testing, 
 %                        but you want to delete existing test data (BOOLEAN, OPTIONAL, DEFAULT = false) 
-%   bRunProcessing     - Run processing (BOOLEAN, OPTIONAL, DEFAULT = true) 
+%   bRunProcessing     - Run processing (BOOLEAN, OPTIONAL, DEFAULT = false) 
 %
 % OUTPUT:
 %   flavors        - Struct containing the loggingTable and other fields
@@ -63,7 +63,7 @@ if nargin<2 || isempty(bOnlyRemoveResults)
 	bOnlyRemoveResults = false;
 end
 if nargin<3 || isempty(bRunProcessing)
-	bRunProcessing = true;
+	bRunProcessing = false;
 end
 
 % Check for testConfig
@@ -129,6 +129,10 @@ if bOnlyRemoveResults
 	diary off;
 	return
 end
+
+% Remove empty directories
+
+
 
 %% 2. Run the DCM->BIDS import
 xASL_adm_BreakString('RUN DICOM TO BIDS');
