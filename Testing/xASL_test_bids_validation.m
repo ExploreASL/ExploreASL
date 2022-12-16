@@ -20,7 +20,14 @@ function [summaryStruct] = xASL_test_bids_validation(resultDir)
         return;
     end
 
-    % Generate all jsons (DEPENDENCY ON BIDS VALIDATOR, possibly only works on unix/mac)
+    % Dependency check, bids validator needs to be installed
+    [sts, ~] = xASL_system('bids-validator --version');
+    if sts
+      warning('Requires bids-validator from https://github.com/bids-standard/bids-validator');
+      return
+    end
+
+    % Generate all jsons 
     FolderList = xASL_adm_GetFileList(resultDir,'^\D.+$', 'List', [0 Inf],true);
     for iList=1:length(FolderList)
         iFolder = fullfile(resultDir, FolderList{iList},'rawdataReference');
@@ -44,7 +51,6 @@ function [summaryStruct] = xASL_test_bids_validation(resultDir)
             warning('Json file does not contain issues, skipping json')
             continue
         end
-        
 
         % Add an error count for each of the specific errors. 
         summaryStruct = xASL_adm_bids_read(summaryStruct, bidsOutput.issues, flavorName);
