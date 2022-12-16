@@ -1,16 +1,16 @@
 function [summaryStruct] = xASL_test_bids_validation(resultDir)
-    % xASL_test_bids_validation script to run over bids-validator results to consolidate errors and warnings
+    % xASL_test_bids_validation script to run over  the FlavorDatabase and check bids validation
     %
     % FORMAT: [summaryStruct] = xASL_test_UnitTesting([bPull])
     %
-    % INPUT:        resultDir       - Location of output of the bids validator (REQUIRED)
+    % INPUT:        resultDir       - Location of the database you want to validate
     %
     % OUTPUT:       summaryStruct   - structure containing the bids validator results
     %
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
     % DESCRIPTION:  Function to summarize the output of xASL_bids_validation.sh
     %
-    % EXAMPLE:      [summaryStruct] = xASL_test_bids_validation('.../FlavorDatabase/2022-12-12T16:40+01:00/');
+    % EXAMPLE:      [summaryStruct] = xASL_test_bids_validation('.../FlavorDatabase');
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
     % Copyright 2015-2022 ExploreASL
     
@@ -26,8 +26,8 @@ function [summaryStruct] = xASL_test_bids_validation(resultDir)
     ResultDirToday=fullfile(resultDir,TimeString);
     xASL_adm_CreateDir(ResultDirToday);
 
-    % Generate all jsons (DEPENDENCY ON BIDS VALIDATOR) UNTESTED
-    FolderList = xASL_adm_GetFileList(resultDir,'^.+$', 'List', [0 Inf],true);
+    % Generate all jsons (DEPENDENCY ON BIDS VALIDATOR, possibly only works on unix/mac)
+    FolderList = xASL_adm_GetFileList(resultDir,'^\D.+$', 'List', [0 Inf],true);
     for iList=1:length(FolderList)
         iFolder = fullfile(resultDir, FolderList{iList},'rawdataReference');
         iFile   = [fullfile(ResultDirToday, FolderList{iList}), '.json'];
@@ -51,6 +51,8 @@ function [summaryStruct] = xASL_test_bids_validation(resultDir)
             continue
         end
         
+
+        % Add an error count for each of the specific errors. 
         summaryStruct = xASL_adm_bids_read(summaryStruct, bidsOutput.issues, flavorName);
 
         % Clean up any non alphanumeric characters from flavorName as to make it a struct-acceptable name
@@ -81,7 +83,7 @@ function [resultsStruct] = xASL_adm_bids_readissue(resultsStruct, output, flavor
         % if the structure does have the key value for the current error, append it to the list. 
         else               
             iKey = find(contains(resultsStruct.key,(output(iOut).key)));
-            resultsStruct.flavor(iKey) = {flavor};
+            resultsStruct.flavor(iKey) = {strcat(flavor, " , ",string(resultsStruct.flavor(iKey)))};
             resultsStruct.num(iKey) = {(1 + cell2mat(resultsStruct.num(iKey)))};
         end
     end
