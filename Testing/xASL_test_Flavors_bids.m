@@ -1,7 +1,7 @@
-function [summaryStruct] = xASL_test_bids_validation(resultDir)
-    % xASL_test_bids_validation script to run over  the FlavorDatabase and check bids validation
+function [summaryStruct] = xASL_test_Flavors_bids(resultDir)
+    % xASL_test_Flavors_bids script to run over the FlavorDatabase and check bids validation
     %
-    % FORMAT: [summaryStruct] = xASL_test_UnitTesting([bPull])
+    % FORMAT: [summaryStruct] = xASL_test_Flavors_bids(['Path/To/Root/Dir')
     %
     % INPUT:        resultDir       - Location of the database you want to validate
     %
@@ -10,38 +10,25 @@ function [summaryStruct] = xASL_test_bids_validation(resultDir)
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
     % DESCRIPTION:  Function to summarize the output of xASL_bids_validation.sh
     %
-    % EXAMPLE:      [summaryStruct] = xASL_test_bids_validation('.../FlavorDatabase');
+    % EXAMPLE:      [summaryStruct] = xASL_test_Flavors_bids('../FlavorDatabase');
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
     % Copyright 2015-2022 ExploreASL
     
     %% Admin
     if nargin < 1 || isempty(resultDir)
-        warning('Input must contain a folder containing output of bids-validator');
+        warning('Input must contain the FlavorDatabase root directory');
         return;
     end
-
-    % Dependency check, bids validator needs to be installed
-    [sts, ~] = xASL_system('bids-validator --version');
-    if sts
-      warning('Requires bids-validator from https://github.com/bids-standard/bids-validator');
-      return
-    end
-
-    % Generate all jsons 
-    FolderList = xASL_adm_GetFileList(resultDir,'^\D.+$', 'List', [0 Inf],true);
-    for iList=1:length(FolderList)
-        iFolder = fullfile(resultDir, FolderList{iList},'rawdataReference');
-        xASL_adm_CreateDir(fullfile(resultDir, FolderList{iList}, 'derivatives'));
-        iFile   = fullfile(resultDir, FolderList{iList}, 'derivatives', 'bids-validation.json');
-        input   = ['bids-validator ', iFolder , ' --no-color --json > ', iFile];
-        xASL_system(input, true);
-    end
-
+    xASL_TrackProgress(0);
     summaryStruct = struct('errors', struct, 'warnings', struct, 'ignored', struct ,'alldata', struct());
+    FolderList = xASL_adm_GetFileList(resultDir,'^\D.+$', 'List', [0 Inf],true);
 
     for iList=1:length(FolderList)
+        iFolder = fullfile(resultDir, FolderList{iList});
+        xASL_qc_bids_validator(iFolder, true);
+
         % Get the full file path
-        iFile = fullfile(resultDir, FolderList{iList}, 'derivatives', 'bids-validation.json');
+        iFile = fullfile(iFolder, 'derivatives', 'bids-validation.json');
         % Filter out the name of the file without timestamp and extension.
         flavorName = string(extractBetween(FolderList{iList}, 1, length(FolderList{iList})-5));
         % Add the matfile to the summary if it's not another summary file.
@@ -57,7 +44,7 @@ function [summaryStruct] = xASL_test_bids_validation(resultDir)
 
         % Clean up any non alphanumeric characters from flavorName as to make it a struct-acceptable name
         summaryStruct.alldata.(regexprep(flavorName,'[^a-zA-Z0-9_]', "_")) = bidsOutput;
-
+        xASL_TrackProgress(iList, length(FolderList));
     end
 end 
     
