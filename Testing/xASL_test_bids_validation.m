@@ -20,29 +20,23 @@ function [summaryStruct] = xASL_test_bids_validation(resultDir)
         return;
     end
 
-    % Administration
-    TimeString = datestr(now,'yyyy-mm-dd_HH_MM');
-    TimeString(end-2) = 'h';
-    ResultDirToday=fullfile(resultDir,TimeString);
-    xASL_adm_CreateDir(ResultDirToday);
-
     % Generate all jsons (DEPENDENCY ON BIDS VALIDATOR, possibly only works on unix/mac)
     FolderList = xASL_adm_GetFileList(resultDir,'^\D.+$', 'List', [0 Inf],true);
     for iList=1:length(FolderList)
         iFolder = fullfile(resultDir, FolderList{iList},'rawdataReference');
-        iFile   = [fullfile(ResultDirToday, FolderList{iList}), '.json'];
-        input   = ['bids-validator ', iFolder , ' --no-color --json >> ', iFile];
+        xASL_adm_CreateDir(fullfile(resultDir, FolderList{iList}, 'derivatives'));
+        iFile   = fullfile(resultDir, FolderList{iList}, 'derivatives', 'bids-validation.json');
+        input   = ['bids-validator ', iFolder , ' --no-color --json > ', iFile];
         xASL_system(input, true);
     end
 
     summaryStruct = struct('errors', struct, 'warnings', struct, 'ignored', struct ,'alldata', struct());
-    JsonFileList = xASL_adm_GetFileList(ResultDirToday,'^*.json$','List',[0 Inf], false);
 
-    for iList=1:length(JsonFileList)
+    for iList=1:length(FolderList)
         % Get the full file path
-        iFile = fullfile(ResultDirToday, JsonFileList{iList});
+        iFile = fullfile(resultDir, FolderList{iList}, 'derivatives', 'bids-validation.json');
         % Filter out the name of the file without timestamp and extension.
-        flavorName = string(extractBetween(JsonFileList{iList}, 1, length(JsonFileList{iList})-5));
+        flavorName = string(extractBetween(FolderList{iList}, 1, length(FolderList{iList})-5));
         % Add the matfile to the summary if it's not another summary file.
         bidsOutput = spm_jsonread(iFile);
 
