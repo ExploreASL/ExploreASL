@@ -40,6 +40,7 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 * Bug #1254: Minor fix of Philips scaling.
 * Bug #1256: Fix import, especially of FME.
 * Bug #1259: Fix native space analysis.
+* Bug #1262: Minor fix in Flavor-test script.
 
 ### Optimization
 
