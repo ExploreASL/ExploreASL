@@ -42,7 +42,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 		pathJSON = cell(1,1);
 	end
 	if nargin<3 || isempty(dcmExtFilter)
-		dcmExtFilter='^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
+		dcmExtFilter='^(.*\.dcm|.*\.DCM|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$'; % the last one is because some convertors save files without extension, but there would be a dot/period before a bunch of numbers
 	end
 	if nargin<4 || isempty(bUseDCMTK)
 		bUseDCMTK = true; % use this by default
