@@ -176,11 +176,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         end
 
         % Command line string
-        if ismac()
-            cmdline = [ExePath ' -o ' temp_dir ' ' inpath];
-        else
-            cmdline = [quote ExePath quote ' ' dcm2nii_args ' -o ' quote temp_dir quote ' ' quote inpath quote];
-        end
+        cmdline = [quote ExePath quote ' ' dcm2nii_args ' -o ' quote temp_dir quote ' ' quote inpath quote];
 
         % User feedback if verbose
         if imPar.bVerbose
