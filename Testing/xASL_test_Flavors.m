@@ -34,7 +34,7 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 %    "cmdCloneFlavors":    "git clone https://github.com/ExploreASL/FlavorDatabase.git"
 % }
 %
-% Optionally you can add a list of flavors of intereset to your testConfig.json:
+% Optionally you can add a list of flavors of interest to your testConfig.json:
 %
 % {
 %    "pathExploreASL":     "...//ExploreASL",
@@ -58,6 +58,8 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 % Dummy output in case this code crashes
 flavors = struct;
 
+% clear screen for easier warning/error tracking
+clc;
 
 if nargin<2 || isempty(bOnlyRemoveResults)
 	bOnlyRemoveResults = false;
@@ -137,7 +139,7 @@ for iList=1:length(testConfig.flavorList)
     currentFolder = fullfile(testConfig.pathFlavorDatabase, testConfig.flavorList{iList});
     if exist(currentFolder, 'dir') && isempty(xASL_adm_GetFileList(currentFolder, '.*', 'FPListRec'))
         warning(['Deleting empty folder: ' testConfig.flavorList{iList}]);
-        xASL_delete(currentFolder);
+        xASL_delete(currentFolder, 1);
     end
 end
 
