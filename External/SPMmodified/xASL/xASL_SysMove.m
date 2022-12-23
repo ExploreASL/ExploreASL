@@ -39,6 +39,12 @@ function xASL_SysMove(SrcPath, DstPath, bForce,bSourceCheck)
     end
 
     %% Start moving
+    if ispc()
+        quote = '"';
+    else
+        quote = '''';
+    end
+    
     if isunix
         SrcPath = xASL_adm_UnixPath(SrcPath);
         DstPath = xASL_adm_UnixPath(DstPath);
@@ -48,7 +54,8 @@ function xASL_SysMove(SrcPath, DstPath, bForce,bSourceCheck)
         else
             strforce = [];
         end
-        [status,result] = system(['mv ' strforce ' ' SrcPath ' ' DstPath]);
+        [status,result] = system(['mv ' strforce ' ' quote SrcPath quote ' ' quote DstPath quote]);
+        
         if bSourceCheck && status~=0
             error('Error moving %s to %s: %s', SrcPath, DstPath, result);
         end
