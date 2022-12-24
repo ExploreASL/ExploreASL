@@ -46,8 +46,8 @@ function xASL_SysMove(SrcPath, DstPath, bForce,bSourceCheck)
     end
     
     if isunix
-        SrcPath = xASL_adm_UnixPath(SrcPath);
-        DstPath = xASL_adm_UnixPath(DstPath);
+%         SrcPath = xASL_adm_UnixPath(SrcPath);
+%         DstPath = xASL_adm_UnixPath(DstPath);
         
         if bForce
             strforce = '-f ';
