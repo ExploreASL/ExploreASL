@@ -50,6 +50,22 @@ if nargin < 3 || isempty(headerASL)
 	error('Missing input parameter headerASL');
 end
 
+% Check jsonIn for empty fields
+FieldsJson = fields(jsonIn);
+for iField=1:length(FieldsJson)
+    if isempty(jsonIn.(FieldsJson{iField}))
+        warning(['json field ' FieldsJson{iField} ' is empty']);
+    end
+end
+
+% Check studyPar for empty fields
+FieldsPar = fields(studyPar);
+for iField=1:length(FieldsPar)
+    if isempty(studyPar.(FieldsPar{iField}))
+        warning(['studyPar field ' FieldsPar{iField} ' is empty']);
+    end
+end
+
 %% 1. Obtain the dimensions of the ASL data
 dimASL = headerASL.dat.dim;
 if length(dimASL) < 4
