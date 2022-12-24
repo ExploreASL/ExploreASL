@@ -55,6 +55,7 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 ### Documentation
 * Issue #1075: Improve and restructure documentation.
 * Issue #1149: Move dataParTemplates to online Documentation.
+* Issue #1212: Improve explanation of `studyPar.json` and `dataPar.json`.
 * Issue #1222: Added a new email to readme exploreasl.lab@gmail.com.
 
 ### Other improvements
