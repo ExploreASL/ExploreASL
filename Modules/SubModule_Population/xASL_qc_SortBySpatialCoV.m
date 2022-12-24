@@ -47,7 +47,7 @@ if nargin<3 || isempty(Threshold2)
 end
 
 %% Find spatial CoV stats
-FileList = xASL_adm_GetFileList(x.S.StatsDir, ['(?i).*CoV_qCBF.*TotalGM_n=' num2str(x.nSubjects) '_.*PVC0\.tsv$'], 'List',[0 Inf]);
+FileList = xASL_adm_GetFileList(x.S.StatsDir, ['(?i).*CoV_qCBF.*TotalGM_n=' num2str(x.dataset.nSubjects) '_.*PVC0\.tsv$'], 'List',[0 Inf]);
 
 if isempty(FileList)
     warning('Couldnt find spatial CoV information! File missing, skipping...');
@@ -88,7 +88,7 @@ xASL_delete(DirUnknown_sCoV, true);
 
 %% Move the images
 fprintf('Sorting ASLCheck QC images for spatial CoV:   ');
-for iSubject=1:x.nSubjects
+for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
         iSubjSess = (iSubject-1)*x.dataset.nSessions+iSession;
         NameSubjSess = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession}];

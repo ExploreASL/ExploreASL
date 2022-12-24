@@ -37,7 +37,7 @@ end
 
 if nargin<3 || isempty(iSubjectSession)
     fprintf('Creating QC parameters:   ');
-    iSubject = 1:x.nSubjects;
+    iSubject = 1:x.dataset.nSubjects;
     iSession = 1:x.dataset.nSessions;
     iSubjectSession = ((iSubject-1)*x.dataset.nSessions)+iSession;
 else % when running for all scans

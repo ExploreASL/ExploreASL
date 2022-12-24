@@ -30,8 +30,8 @@ x.S.unit = 'L';
 fprintf('%s\n',['Printing csv-files with ' x.S.output_ID ' statistics...  ']);
 
 
-for iSubject=1:x.nSubjects
-    xASL_TrackProgress(iSubject,x.nSubjects);
+for iSubject=1:x.dataset.nSubjects
+    xASL_TrackProgress(iSubject,x.dataset.nSubjects);
 
     PathCSV = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.csv']);
     if ~exist(PathCSV,'file')

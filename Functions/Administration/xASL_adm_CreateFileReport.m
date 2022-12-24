@@ -55,7 +55,7 @@ fprintf('Detected');
 if nargin<2 || isempty(bHasFLAIR)
     bHasFLAIR = false;
     iSubject = 1;
-    while iSubject<=x.nSubjects && ~bHasFLAIR
+    while iSubject<=x.dataset.nSubjects && ~bHasFLAIR
         if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'FLAIR.nii'))
             bHasFLAIR = true;
         else
@@ -71,7 +71,7 @@ end
 if nargin<3 || isempty(bHasMoCo)
     bHasMoCo = false;
     iSubject = 1;
-    while iSubject<=x.nSubjects && ~bHasMoCo % speeds up instead of for-loop
+    while iSubject<=x.dataset.nSubjects && ~bHasMoCo % speeds up instead of for-loop
         CurrentSubject = iSubject;
         for iSession=1:x.dataset.nSessions
             if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'ASL4D.mat'))
@@ -90,7 +90,7 @@ end
 if nargin<4 || isempty(bHasM0)
     bHasM0 = false;
     iSubject = 1;
-    while iSubject<=x.nSubjects && ~bHasM0 % speeds up instead of for-loop
+    while iSubject<=x.dataset.nSubjects && ~bHasM0 % speeds up instead of for-loop
         CurrentSubject = iSubject;        
         for iSession=1:x.dataset.nSessions
             if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'M0.nii'))
@@ -120,7 +120,7 @@ if ~isfield(x.S, 'SetsName')
 else
     for iSet=1:length(x.S.SetsName)
         if strcmp(x.S.SetsName{iSet},'LongitudinalTimePoint')  % This is the longitudinal registration set
-            for iS=1:x.nSubjects-1
+            for iS=1:x.dataset.nSubjects-1
                 if x.S.SetsID(iS,iSet)==1 && x.S.SetsID(iS+1,iSet)==2
                     % This volume/TimePoint is the first out of multiple volumes/TimePoints
                     LongRegSubj{end+1} = x.SUBJECTS{iS};
@@ -267,7 +267,7 @@ fprintf('Checking native space: ');
 fprintf('anat files:   ');
 for iExp=1:length(NativeRegExp_SubjectLevel)
     xASL_TrackProgress(iExp,length(NativeRegExp_SubjectLevel));
-    for iSubject=1:x.nSubjects
+    for iSubject=1:x.dataset.nSubjects
         FilePathNii    = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, NativeRegExp_SubjectLevel{iExp});
         if ~xASL_exist(FilePathNii,'file')
             [Fpath, Ffile] = xASL_fileparts(FilePathNii);
@@ -295,7 +295,7 @@ fprintf(', ');
 fprintf('ASL files:   ');
 for iExp=1:length(NativeRegExp_SessionLevel)
     xASL_TrackProgress(iExp,length(NativeRegExp_SessionLevel));
-    for iSubject=1:x.nSubjects
+    for iSubject=1:x.dataset.nSubjects
         for iSession=1:x.dataset.nSessions
             iSubjectSession = (iSubject-1)*x.dataset.nSessions+iSession;
             FilePathNii    = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, NativeRegExp_SessionLevel{iExp});
@@ -327,7 +327,7 @@ fprintf('\nChecking common space: ');
 fprintf('anat files:   ');
 for iPrefix=1:length(MNI_subject_prefix)
     xASL_TrackProgress(iPrefix,length(MNI_subject_prefix));
-    for iSubject=1:x.nSubjects
+    for iSubject=1:x.dataset.nSubjects
         if NativeSubjectExists(iSubject,1)
             FilePathNii    = fullfile(x.D.PopDir, [MNI_subject_prefix{iPrefix} '_' x.SUBJECTS{iSubject} '.nii']);
 
@@ -346,7 +346,7 @@ fprintf(', ');
 fprintf('ASL files:   ');
 for iPrefix=1:length(MNI_session_prefix)
     xASL_TrackProgress(iPrefix,length(MNI_session_prefix));
-    for iSubject=1:x.nSubjects
+    for iSubject=1:x.dataset.nSubjects
         for iSession=1:x.dataset.nSessions
             iSubjectSession = (iSubject-1)*x.dataset.nSessions+iSession;
             if NativeSessionExist(iSubjectSession,1)
@@ -386,7 +386,7 @@ for iDIR=1:length(lockDIRS)
                     end                    
                 end
         else % status file for each Subject/Session
-            for iSubject=1:x.nSubjects
+            for iSubject=1:x.dataset.nSubjects
                 if  strcmp(lockDIRS{iDIR},'xASL_module_ASL')
                     for iSession=1:x.dataset.nSessions % check sessions
                         FilePath = fullfile(LockDir, lockDIRS{iDIR}, x.SUBJECTS{iSubject}, [lockDIRS{iDIR} '_' x.SESSIONS{iSession}],[lockPrefix{iDIR}{iP} '.status']);
@@ -421,8 +421,8 @@ fprintf('\n');
 % 
 %             if  strcmp(FigureDIR{3},x.D.LongRegCheckDir) % LongReg check data
 %                 for iSubj=1:length(LongRegSubj)
-%                     for iS=1:x.nSubjects
-%                         if  strcmp(LongRegSubj{iSubj},x.SUBJECTS{iS}) && iS<x.nSubjects
+%                     for iS=1:x.dataset.nSubjects
+%                         if  strcmp(LongRegSubj{iSubj},x.SUBJECTS{iS}) && iS<x.dataset.nSubjects
 %                             LRCompareName   = [LongRegSubj{iSubj} '_vs_' x.SUBJECTS{iS+1}];
 %                         end
 %                     end                    
@@ -435,7 +435,7 @@ fprintf('\n');
 %                 end
 %             else
 % 
-%                 for iSubject=1:x.nSubjects
+%                 for iSubject=1:x.dataset.nSubjects
 %                     for iSession=1:x.dataset.nSessions
 % 
 %                         if  iT==2 % if it concerns sessions

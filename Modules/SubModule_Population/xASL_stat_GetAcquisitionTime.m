@@ -33,7 +33,7 @@ function x = xASL_stat_GetAcquisitionTime(x)
     %% -----------------------------------------------------------------------------------------------
     %% 1) Collect times
     fprintf('%s\n','Loading AcquisitionTimes:  ');
-    for iSubject=1:x.nSubjects
+    for iSubject=1:x.dataset.nSubjects
         for iSession=1:x.dataset.nSessions
             
             % Track progress

@@ -28,8 +28,8 @@ function xASL_vis_OverlapT1_ASL( x, ASL)
 
         % Load GM probability maps
 		fprintf('%s\n','Loading GM probability maps...  ')
-        for ii=1:x.nSubjects
-            xASL_TrackProgress(ii,x.nSubjects);
+        for ii=1:x.dataset.nSubjects
+            xASL_TrackProgress(ii,x.dataset.nSubjects);
 
             x.P.SubjectID              = xASL_adm_GetFileList(x.D.PopDir,['^' x.c_PreFix{1} '_' x.SUBJECTS{ii} '.(nii|nii\.gz)$']);
 

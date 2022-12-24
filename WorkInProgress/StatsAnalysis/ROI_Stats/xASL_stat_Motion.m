@@ -7,7 +7,7 @@ function [x] = xASL_stat_Motion(x)
 
 % Restructure DATA per ROI/measurement
 fprintf('%s\n','Restructure DATA per ROI/measurement');
-for iSubject=1:x.nSubjects
+for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
 
         % Track progress

@@ -47,7 +47,7 @@ TSV(1,3:2+nFields) = matFields(1:nFields);
 
 % Initialize empty table
 numElements = size(TSV,2);
-numSubjectsSessions = x.nSubjects*x.dataset.nSessions;
+numSubjectsSessions = x.dataset.nSubjects*x.dataset.nSessions;
 for iSubjSess=1:numSubjectsSessions
     TSV(1+iSubjSess,:) = repmat({' '},1, numElements);
 end
@@ -55,7 +55,7 @@ end
 %% 1) Load & save individual parameter files
 fprintf('%s\n','Loading & saving individual parameter files...  ');
 
-for iSubject=1:x.nSubjects
+for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
 
         % Track progress

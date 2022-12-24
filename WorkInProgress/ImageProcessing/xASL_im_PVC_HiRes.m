@@ -9,7 +9,7 @@ if  length(xASL_adm_GetFileList( x.D.PopDir, ['^q' x.P.CBF '_(GM|WM)_PVEC_.*_.*.
 else
     fprintf('%s\n','Creating PV-corrected CBF images using B-splines...')
 
-    for iS=1:x.nSubjects % iterate over subjects
+    for iS=1:x.dataset.nSubjects % iterate over subjects
         for iSess=1:x.dataset.nSessions % iterate over sessions
             clear CBFname pGMname CBFim pGMim CBFim pGMim CBFgmName CBFwmName
 

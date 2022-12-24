@@ -9,7 +9,7 @@ if  isfield(x.S,'SetsID')
     if  numel(x.S.SetsID)>0
         TempID  = x.S.SetsID;
         x.S = rmfield(x.S,'SetsID');
-        for iSubject=1:x.nSubjects
+        for iSubject=1:x.dataset.nSubjects
              x.S.SetsID(iSubject,:) = TempID( ((iSubject-1)*x.dataset.nSessions)+1,:);
         end
     end

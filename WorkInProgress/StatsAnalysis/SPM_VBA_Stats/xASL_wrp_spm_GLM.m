@@ -270,13 +270,13 @@ AssumedSizeColumns  = sum(x.S.masks.WBmask(:));
 
 %% Load ASL, create 4D memory mapping file
 % Create single 4D-file for memory mapping, if doesn't exist yet
-LoadFile  = fullfile( x.D.PopDir, [ModalitiesList{iM} '_' num2str(x.nSubjects) '.dat']);
+LoadFile  = fullfile( x.D.PopDir, [ModalitiesList{iM} '_' num2str(x.dataset.nSubjects) '.dat']);
 
 %% check if size of file matches; otherwise recreate it
 if  exist( LoadFile ,'file' )
     x.S = dir(LoadFile);
     if  NoSession(iM)
-        RequiredN   = x.nSubjects;
+        RequiredN   = x.dataset.nSubjects;
     else
         RequiredN   = x.dataset.nSubjectsSessions;
     end
@@ -295,7 +295,7 @@ if  exist( LoadFile ,'file' )
 
 else
     if      NoSession(iM)
-            nNeeded         = x.nSubjects;
+            nNeeded         = x.dataset.nSubjects;
             nSessions       = 1;
     elseif  NoSession(iM)==0
             nNeeded         = x.dataset.nSubjectsSessions;
@@ -311,8 +311,8 @@ else
         fprintf('%s\n','Pre-allocating memory: NB this can fail with large datasets and limited memory');
         tempData    = zeros( nNeeded, AssumedSizeColumns,'single'); % Pre-allocate memory
         fprintf(['Memory mapping ' WhichModality ' images...  ']);
-        for iSubject=1:x.nSubjects
-            xASL_TrackProgress(iSubject,x.nSubjects);
+        for iSubject=1:x.dataset.nSubjects
+            xASL_TrackProgress(iSubject,x.dataset.nSubjects);
 
             for iSession=1:nSessions
 

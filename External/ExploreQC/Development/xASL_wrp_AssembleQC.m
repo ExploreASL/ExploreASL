@@ -51,7 +51,7 @@ FID = fopen(PathCSV,'wt');
 
 % write first row
 fprintf(FID, 'Parameters,');
-for iSubject=1:x.nSubjects
+for iSubject=1:x.dataset.nSubjects
     fprintf(FID, [x.SUBJECTS{iSubject} ',']);
 end
 fprintf(FID, '\n');
@@ -63,7 +63,7 @@ for iScantype=1:length(Scantypes) % loop over scantypes
     for iParameter=1:length(Parameters)
         fprintf(FID, [Scantypes{iScantype} '_' Parameters{iParameter} ',']);
         
-        for iSubject=1:x.nSubjects % loop over subjects
+        for iSubject=1:x.dataset.nSubjects % loop over subjects
             if isfield(TotalQC.(Scantypes{iScantype}).(Parameters{iParameter}),['QC' x.SUBJECTS{iSubject}])
                 fprintf(FID, [xASL_num2str( TotalQC.(Scantypes{iScantype}).(Parameters{iParameter}).(['QC' x.SUBJECTS{iSubject}]) ) ',']);
             else

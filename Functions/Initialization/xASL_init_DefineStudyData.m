@@ -131,7 +131,7 @@ end
 if ~isfield(x,'SUBJECTS')
     x.SUBJECTS = '';
 end
-x.nSubjects = length(x.SUBJECTS);
+x.dataset.nSubjects = length(x.SUBJECTS);
 
 if isempty(x.SUBJECTS)
     fprintf(2,'No subjects found...\n');
@@ -219,11 +219,11 @@ if ~isfield(x,'SUBJECTS')
     x.SUBJECTS = [];
 end
 
-x.nSubjects = length(x.SUBJECTS);
+x.dataset.nSubjects = length(x.SUBJECTS);
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
-x.dataset.nExcluded = x.dataset.nTotalSubjects - x.nSubjects;
+x.dataset.nExcluded = x.dataset.nTotalSubjects - x.dataset.nSubjects;
 x.dataset.nSessions = length( x.SESSIONS );
-x.dataset.nSubjectsSessions = x.nSubjects .* x.dataset.nSessions;
+x.dataset.nSubjectsSessions = x.dataset.nSubjects .* x.dataset.nSessions;
 
 x.dataset.nTimePointsTotal = length(x.dataset.TimePointTotalSubjects);
 for iT=1:x.dataset.nTimePointsTotal
@@ -254,7 +254,7 @@ else
 end        
 
 % Create ID/data for session numbers
-for iSubj=1:x.nSubjects
+for iSubj=1:x.dataset.nSubjects
     for iSess=1:x.dataset.nSessions
         iSubjSess = (iSubj-1)*x.dataset.nSessions+iSess;
 
@@ -265,22 +265,22 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 7) Parallelization: If running parallel, select cases for this worker
 if x.opts.nWorkers>1
-    nSubjPerWorker = ceil(x.nSubjects/x.opts.nWorkers); % ceil to make sure all subjects are processed
+    nSubjPerWorker = ceil(x.dataset.nSubjects/x.opts.nWorkers); % ceil to make sure all subjects are processed
     nSubjSessPerWorker = nSubjPerWorker*x.dataset.nSessions;
     iStartSubject = (x.opts.iWorker-1)*nSubjPerWorker+1;
-    iEndSubject = min(x.opts.iWorker*nSubjPerWorker, x.nSubjects);
+    iEndSubject = min(x.opts.iWorker*nSubjPerWorker, x.dataset.nSubjects);
     iStartSubjectSession = (x.opts.iWorker-1)*nSubjSessPerWorker+1;
     iEndSubjectSession = min(x.opts.iWorker*nSubjSessPerWorker, x.dataset.nSubjectsSessions);
     
-    if iStartSubject>x.nSubjects
+    if iStartSubject>x.dataset.nSubjects
         fprintf('Closing down this worker, had too many workers');
         exit;
     end
     
     % Adapt SUBJECTS
     x.SUBJECTS = x.SUBJECTS(iStartSubject:iEndSubject);
-    x.nSubjects = length(x.SUBJECTS);
-    x.dataset.nSubjectsSessions = x.nSubjects*x.dataset.nSessions;
+    x.dataset.nSubjects = length(x.SUBJECTS);
+    x.dataset.nSubjectsSessions = x.dataset.nSubjects*x.dataset.nSessions;
 
     % Adapt SETSID (covariants)
     if isfield(x.S,'SetsID') && ~isempty(x.S.SetsID)
@@ -383,7 +383,7 @@ for iCell=1:length(x.dataset.TimePointTotalSubjects)
     x.dataset.TimePointSubjects{iCell} = '';
 end
     
-for iS=1:x.nSubjects
+for iS=1:x.dataset.nSubjects
     iSession = 1; % append to accommodate sessions in SetsID
     iSubjSess = ((iS-1)*x.dataset.nSessions)+iSession;
     CurrentTimePoint = x.S.SetsID(iSubjSess,x.S.iSetLong_TP);

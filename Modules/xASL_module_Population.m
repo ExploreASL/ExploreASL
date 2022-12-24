@@ -77,7 +77,7 @@ StateName{10} = '090_DeleteTempFiles';
 StateName{11} = '100_GZipAllFiles';
 
 
-x.S.TemplateNumberName = ['_n' xASL_num2str(x.nSubjects)];
+x.S.TemplateNumberName = ['_n' xASL_num2str(x.dataset.nSubjects)];
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 1    Create template images

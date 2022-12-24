@@ -50,7 +50,7 @@ TSV(1,3:2+nFields) = jsonFields(1:nFields);
 %% 1. Load & extract parameters from individual parameter files
 fprintf('%s\n','Loading & saving individual parameter files...  ');
 
-for iSubject=1:x.nSubjects
+for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
 
         % Joint index for subject and session

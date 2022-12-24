@@ -59,7 +59,7 @@ end
 % After this part, the columns should be 1) subject, 2) session/run, 3)
 % data value
 HadSessions = false;
-if size(DataIn, 1)==x.dataset.nSubjectsSessions && size(DataIn, 1)~=x.nSubjects
+if size(DataIn, 1)==x.dataset.nSubjectsSessions && size(DataIn, 1)~=x.dataset.nSubjects
     % A session column should exist
     if size(DataIn,2)<3
         warning('Session column missing, too few columns, skipping');
@@ -71,11 +71,11 @@ if size(DataIn, 1)==x.dataset.nSubjectsSessions && size(DataIn, 1)~=x.nSubjects
         end
         HadSessions = true;
     end
-elseif size(DataIn, 1)==x.nSubjects
+elseif size(DataIn, 1)==x.dataset.nSubjects
     % Add session column
     if size(DataIn, 2)==2
         DataIn(:,3) = DataIn(:,2);
-        DataIn(:,2) = repmat({'ASL_1'}, [x.nSubjects 1]);
+        DataIn(:,2) = repmat({'ASL_1'}, [x.dataset.nSubjects 1]);
     elseif size(DataIn, 2)~=3
         warning('Too many or few columns, something went wrong, skipping');
         return;
@@ -132,7 +132,7 @@ else
     for iSession=1:x.dataset.nSessions
         CellArray(1+iSession:x.dataset.nSessions:x.dataset.nSubjectsSessions+1, 1) = x.SUBJECTS;
     end
-    CellArray(2:x.dataset.nSubjectsSessions+1, 2) = repmat(x.SESSIONS(:),[x.nSubjects, 1]);
+    CellArray(2:x.dataset.nSubjectsSessions+1, 2) = repmat(x.SESSIONS(:),[x.dataset.nSubjects, 1]);
 end
 
 % 3D) Force these names

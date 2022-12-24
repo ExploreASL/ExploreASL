@@ -224,7 +224,7 @@ bDoOnceROIPVEC  = 1;
 bDoOnceROILR    = 1;
 bDoOnceROIStart = 1;
 
-for iSubject=1:x.nSubjects
+for iSubject=1:x.dataset.nSubjects
     
 	for iSess=1:nSessions
         
@@ -234,7 +234,7 @@ for iSubject=1:x.nSubjects
 		SubjSess = (iSubject-1)* nSessions +iSess;
 		if bSessionsMissing
 			x.S.SubjectSessionID{SubjSess,1} = x.SUBJECTS{iSubject};
-            TotalRows = x.nSubjects;
+            TotalRows = x.dataset.nSubjects;
 		else
 			x.S.SubjectSessionID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSess}];
             TotalRows = x.dataset.nSubjectsSessions;
@@ -351,7 +351,7 @@ for iSubject=1:x.nSubjects
 		SubjectSpecificMasks = x.S.InputMasks(:,:,1); % changed below if size(x.S.InputMasks,3)>1
 
 		if iSess == 1
-			xASL_TrackProgress(iSubject, x.nSubjects);
+			xASL_TrackProgress(iSubject, x.dataset.nSubjects);
 		end
 
 		% Here we assume there are no subject-specific masks
@@ -659,7 +659,7 @@ for iSubject=1:x.nSubjects
         end
         
 	end % for iSess=1:nSessions
-end % for iSub=1:x.nSubjects
+end % for iSub=1:x.dataset.nSubjects
 
 x.S.NamesROI = namesROIuse;
 fprintf('\n');

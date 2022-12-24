@@ -66,7 +66,7 @@ else % If files found, continue with defining sessions from SessionList
     end
     
     % 5. Check and provide warning of number of sessions differs per subject
-    CompareSessions = ones(1,size(CountSessionNumbers,2)) .* x.nSubjects; % create an array to check differences in sessions per subject with maximum amount of sessions
+    CompareSessions = ones(1,size(CountSessionNumbers,2)) .* x.dataset.nSubjects; % create an array to check differences in sessions per subject with maximum amount of sessions
     if ~isequal(CountSessionNumbers,CompareSessions) % Check if amount of sessions is similar for each subject and provide warning if not
         warning('Amount of Sessions differs between Subjects');
     end

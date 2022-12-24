@@ -80,7 +80,7 @@ function [x] = xASL_init_LoadMetadata(x)
 
     %% ------------------------------------------------------------------------------------------------------------
     %% Admin
-    if x.nSubjects==0
+    if x.dataset.nSubjects==0
         fprintf('%s\n','No variables loaded because no subjects found');
         return;
     end
@@ -129,7 +129,7 @@ function [x] = xASL_init_LoadMetadata(x)
         for iSession=1:x.dataset.nSessions
             VarDataOri([iSession:x.dataset.nSessions:x.dataset.nSubjectsSessions-x.dataset.nSessions+iSession], 1) = x.SUBJECTS(:);
         end
-        VarDataOri(:,2) = repmat(x.SESSIONS(:), [x.nSubjects 1]);
+        VarDataOri(:,2) = repmat(x.SESSIONS(:), [x.dataset.nSubjects 1]);
 
         for iSet=1:length(x.S.SetsName)
             % skip creating metadata columns for some parameters
@@ -390,8 +390,8 @@ end
 % Either for subjects only, or when including sessions
 nextN=1;
 fprintf('%s\n',['Loading ' VarName ':  ']);
-for iS=1:x.nSubjects
-    xASL_TrackProgress(iS,x.nSubjects);
+for iS=1:x.dataset.nSubjects
+    xASL_TrackProgress(iS,x.dataset.nSubjects);
 
     HasEmpty = 0;
     IsFound = 0;
@@ -628,7 +628,7 @@ end
 %% 5) Check if data is complete for all subjects
 CountAbsent = 0;
 
-for iSubject=1:x.nSubjects
+for iSubject=1:x.dataset.nSubjects
     for iSess=1:x.dataset.nSessions
 
         % ID (which name, group etc), all for identification
@@ -687,7 +687,7 @@ for iSubject=1:x.nSubjects
             end % if ~ContainsSessions
         end % if  max(isempty(index1) | index1==0
     end % for iSess=1:x.dataset.nSessions
-end % for iSubj=1:x.nSubjects
+end % for iSubj=1:x.dataset.nSubjects
 
 
 
@@ -697,8 +697,8 @@ end % for iSubj=1:x.nSubjects
 %% 6) Include complete data in x.S.SETS
 %  Incomplete data is fine, when it is continuous data, to be filled by NaNs
 NewVariableUnique = unique(NewVariable(~isnan(NewVariable))); % get unique values, excluding NaNs
-ManyAbsent = CountAbsent>0.05*x.nSubjects || HasEmpty;
-CheckLength = length(NewVariableUnique)<0.25*x.nSubjects;
+ManyAbsent = CountAbsent>0.05*x.dataset.nSubjects || HasEmpty;
+CheckLength = length(NewVariableUnique)<0.25*x.dataset.nSubjects;
 CheckLength2 = size(NewVariable, 1)~=size(x.S.SetsID, 1);
 
 if (ManyAbsent && CheckLength) || CheckLength2 % don't include this variable because of missing data 

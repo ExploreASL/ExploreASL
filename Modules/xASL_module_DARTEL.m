@@ -122,7 +122,7 @@ FList_FlowField = xASL_adm_GetFileList(x.D.PopDir, ['(?i)^u_rc1T1_.*_Template\.n
 % Create list
 ToWarpList = '';
 
-for iS=1:x.nSubjects
+for iS=1:x.dataset.nSubjects
 
     % Here, check longitudinal registration.
     % If we run longitudinal registration, only use first volumes
@@ -229,7 +229,7 @@ if  ~isempty(FList_FlowField) && ~bFirstRun
 
         % If there are old and new files for the pre-existing ones, keep
         % new ones
-        for iS=1:x.nSubjects
+        for iS=1:x.dataset.nSubjects
             tempTemplate1 = fullfile(x.D.PopDir,['u_rc1' x.P.STRUCT '_' x.SUBJECTS{iS} '.nii']);
             tempTemplate2 = fullfile(x.D.PopDir,['u_rc1' x.P.STRUCT '_' x.SUBJECTS{iS} '_T1_template.nii']);
             if xASL_exist(tempTemplate1,'file')
@@ -283,8 +283,8 @@ spm_jobman('run',matlabbatch);
 %% Combine flow fields of DARTEL & CAT12, & rerun resampling & visual QC
 %  PM: create status files as well to keep track here what was already done
 fprintf('%s\n', 'Concatenating SPM & DARTEL flowfields:  0%');
-for iS=1:x.nSubjects
-    xASL_TrackProgress(iS, x.nSubjects);
+for iS=1:x.dataset.nSubjects
+    xASL_TrackProgress(iS, x.dataset.nSubjects);
     y_file  = fullfile(x.D.ROOT, x.SUBJECTS{iS}, ['y_' x.P.STRUCT '.nii']);
     u_file  = fullfile(x.D.PopDir, ['u_rc1' x.P.STRUCT '_' x.SUBJECTS{iS} '_' x.DARTEL_TEMPLATE '.nii']);
     y_y_file= fullfile(x.D.ROOT, x.SUBJECTS{iS},['y_y_' x.P.STRUCT '.nii']);

@@ -47,8 +47,8 @@ else
 
     AbsenceList     = '';
 
-    for iS=1:x.nSubjects
-        xASL_TrackProgress(iS,x.nSubjects);
+    for iS=1:x.dataset.nSubjects
+        xASL_TrackProgress(iS,x.dataset.nSubjects);
         for iSess=1:x.dataset.nSessions
             iSubjSess   = (iS-1)*x.dataset.nSessions+iSess;
 
@@ -76,7 +76,7 @@ else
     end
     fprintf('\n');
 
-    if  length(AbsenceList)<x.nSubjects
+    if  length(AbsenceList)<x.dataset.nSubjects
 
         % Normalize CBF to 60
         ParaM{1}    = ParaM{1}.*60./xASL_stat_MeanNan(ParaM{1}(:));
@@ -138,7 +138,7 @@ else
 
         %% ------------------------------------------------------------------------------------------------------------
         % Calculation effect size
-        SampleSize  = x.nSubjects;
+        SampleSize  = x.dataset.nSubjects;
 
         Z_beta              = 0.841621;              % Z(1-beta)  = Z(0.8)    = 0.84;
         Z_alpha             = 1.959964;              % Z(1-alpha) = Z(1-(0.05/2)) = Z(0.975) = 1.96;

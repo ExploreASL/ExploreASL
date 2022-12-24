@@ -332,9 +332,9 @@ for iScanType=1:length(PreFixList)
             
             % ----------------------------------------------------------------------------------------------------
             %% 3. Check availability images          
-            for iSubject = 1:x.nSubjects
+            for iSubject = 1:x.dataset.nSubjects
                 SubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
-                xASL_TrackProgress(SubjSess,x.nSubjects*x.dataset.nSessions);
+                xASL_TrackProgress(SubjSess,x.dataset.nSubjects*x.dataset.nSessions);
                 PathNII = fullfile(x.D.PopDir,[PreFixList{iScanType} '_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Left = fullfile(x.D.PopDir,[PreFixList{iScanType} '-L_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Right = fullfile(x.D.PopDir,[PreFixList{iScanType} '-R_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
@@ -388,7 +388,7 @@ for iScanType=1:length(PreFixList)
                 if SessionsExist(iScanType)
                     nSize = x.dataset.nSubjectsSessions;
                 else
-                    nSize = x.nSubjects;
+                    nSize = x.dataset.nSubjects;
                 end
 
                 if bSkipWhenMissingScans && UnAvailable>0.10*nSize % we can allow for 10% unavailable scans

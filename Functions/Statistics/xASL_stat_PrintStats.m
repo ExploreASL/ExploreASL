@@ -100,7 +100,7 @@ end
 
 if bFollowSubjectSessions
     
-    for iSubject=1:x.nSubjects
+    for iSubject=1:x.dataset.nSubjects
         for iSession=1:nSessions
             iSubjectSession = (iSubject-1)* nSessions +iSession;
 

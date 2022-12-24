@@ -60,8 +60,8 @@ if isfield(x,'iSetLong_TP')
     SubjectNameList = x.SubjectNameList;
     SubjectNlist = x.S.SetsID(:,x.iSetLong_TP+1);
 else
-    if x.nSubjects>0
-        for iS=1:x.nSubjects
+    if x.dataset.nSubjects>0
+        for iS=1:x.dataset.nSubjects
             % First check whether if there is a TimePoint indication
             % With a maximum of 99 TimePoints, the underscore should be 
             % a maximum of 2 indices below the end of the SubjectName

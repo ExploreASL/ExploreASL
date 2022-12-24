@@ -4,11 +4,11 @@ function Summarize_estimated_resolution( x )
 
 
 % Skip if these data are not available
-if  length(xASL_adm_GetFileList(fullfile(x.D.PopDir,'ResolutionEstimation'), '^.*\.mat$','FPList',[0 Inf]))>=x.nSubjects
+if  length(xASL_adm_GetFileList(fullfile(x.D.PopDir,'ResolutionEstimation'), '^.*\.mat$','FPList',[0 Inf]))>=x.dataset.nSubjects
 
     fprintf('%s\n','Loading files...  '); 
-    for iS=1:x.nSubjects
-        xASL_TrackProgress(iS,x.nSubjects);
+    for iS=1:x.dataset.nSubjects
+        xASL_TrackProgress(iS,x.dataset.nSubjects);
         Fname   = fullfile(x.D.PopDir,'ResolutionEstimation',[x.SUBJECTS{iS} '.mat']);
         load(Fname);
         FWHM_all(iS,:)      = optimFWHM_Res_mm;

@@ -214,8 +214,8 @@ function xASL_wrp_CreateBiasfield(x)
     end
     xASL_adm_CreateDir(BackupDir);
     fprintf('%s','Backing up CBF maps:   ');
-    for iSub=1:x.nSubjects
-        xASL_TrackProgress(iSub,x.nSubjects);
+    for iSub=1:x.dataset.nSubjects
+        xASL_TrackProgress(iSub,x.dataset.nSubjects);
         for iSess=1:x.dataset.nSessions
 
             FilePath = fullfile(x.D.PopDir,[CBF_prefix '_' x.SUBJECTS{iSub} '_' x.SESSIONS{iSess} '.nii']);

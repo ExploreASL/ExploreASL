@@ -42,7 +42,7 @@ x.S.unit = 'mm';
 
 fprintf('%s\n',['Collecting motion metadata with ' x.S.output_ID ' statistics:  ']);
 
-for iSubject=1:x.nSubjects
+for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
         % Keeping track
         iSubjSess = ((iSubject-1)*x.dataset.nSessions)+iSession;

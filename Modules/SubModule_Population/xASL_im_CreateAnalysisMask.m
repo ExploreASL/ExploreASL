@@ -145,14 +145,14 @@ if x.modules.population.bNativeSpaceAnalysis
 		%x.SESSIONS{iSession}
 
 		% Searching for available images
-		for iSubject = 1:x.nSubjects
+		for iSubject = 1:x.dataset.nSubjects
 			SubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
 
 			x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
 			x.dir.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
 
-			xASL_TrackProgress(SubjSess,x.nSubjects*x.dataset.nSessions);
+			xASL_TrackProgress(SubjSess,x.dataset.nSubjects*x.dataset.nSessions);
 			if xASL_exist(x.P.Path_PWI)
 				x = xASL_adm_DefineASLResolution(x);
 				

@@ -6,8 +6,8 @@ x = ExploreASL_Initialize('/Users/henk/ExploreASL/ASL/ExploreASL_Manuscript/anal
 SumASL4D = double(zeros(121,145,121,60));
 Counter = 0;
 
-for iSubject=1:x.nSubjects
-    xASL_TrackProgress(iSubject, x.nSubjects);
+for iSubject=1:x.dataset.nSubjects
+    xASL_TrackProgress(iSubject, x.dataset.nSubjects);
     Path_ASL4Dnii = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D.nii');
     Path_ASL4DniiTemp2Delete = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete.nii');
     Path_ASL4DniiTemp2Delete_StandardSpace = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete_StandardSpace.nii');
@@ -75,7 +75,7 @@ xASL_io_SaveNifti(InverseSpaceM0, InverseSpaceM0, M0./ 600, [], 0);
 
 
 % Delete temporary files
-for iSubject=1:x.nSubjects
+for iSubject=1:x.dataset.nSubjects
     Path_ASL4DniiTemp2Delete = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete.nii');
     Path_ASL4DniiTemp2Delete_StandardSpace = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete_StandardSpace.nii');
     xASL_delete(Path_ASL4DniiTemp2Delete);
