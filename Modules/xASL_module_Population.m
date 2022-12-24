@@ -77,6 +77,7 @@ StateName{10} = '090_DeleteTempFiles';
 StateName{11} = '100_GZipAllFiles';
 
 
+x.S.TemplateNumberName = ['_n' xASL_num2str(x.nSubjects)];
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 1    Create template images
@@ -86,8 +87,8 @@ if ~x.mutex.HasState(StateName{1})
     % Save FoV mask as susceptibility mask for 3D spiral
     % as 3D spiral doesnt have a susceptibility artifact (or negligible)
 
-    FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean_Unmasked\.nii$'], 'FPList');
-    SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility_n' xASL_num2str(x.dataset.nSubjectsSessions) '_bs-mean.nii']);
+    FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV' x.S.TemplateNumberName '_bs-mean_Unmasked\.nii$'], 'FPList');
+    SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility' x.S.TemplateNumberName '_bs-mean.nii']);
 
     if ~xASL_exist(SusceptPath, 'file')
         warning('Susceptibility mask template was missing...');

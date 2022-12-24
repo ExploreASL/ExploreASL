@@ -448,7 +448,7 @@ for iScanType=1:length(PreFixList)
                         TempOutliers = 1:size(IM{1}, 2);
                         NotOutliers = TempOutliers(NotOutliers);
 
-                        NameIM = [TemplateNameList{iScanType} '_n' num2str(length(NotOutliers))];
+                        NameIM = [TemplateNameList{iScanType} x.S.TemplateNumberName];
                         
                         % ----------------------------------------------------------------------------------------------------
                         %% 6. Compute templates for all subjects together (only for bilateral images)
