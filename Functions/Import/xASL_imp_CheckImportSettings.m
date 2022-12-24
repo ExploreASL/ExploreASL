@@ -36,7 +36,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
     if ~isfield(x.modules.import.imPar,'dcmExtFilter') || isempty(x.modules.import.imPar.dcmExtFilter)
         % dcmExtFilter: the last one is because some convertors save files without extension, 
         % but there would be a dot/period before a bunch of numbers
-        x.modules.import.imPar.dcmExtFilter = '^(.*\.dcm|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
+        x.modules.import.imPar.dcmExtFilter = '^(.*\.dcm|.*\.DCM|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
     end
     
     % Check SkipSubjectIfExists
