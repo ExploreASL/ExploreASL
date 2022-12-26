@@ -38,7 +38,7 @@ Versions included & used third-party tools (see `/External/README_SPM.txt`):
 * Bug #1164: Fix a bug in `xASL_adm_GzipAllFiles`.
 * Bug #1187: Minor fix in `xASL_csvWrite`.
 * Bug #1254: Minor fix of Philips scaling.
-* Bug #1256: Fix import, especially of FME.
+* Bugs #1256, #1271: Fix import, especially of FME and MacOS file-related issues.
 * Bug #1259: Fix native space analysis.
 * Bug #1262: Minor fix in Flavor-test script.
 
