@@ -2,6 +2,22 @@
 # ExploreASL Change Log
 
 ---
+## ExploreASL v1.10.1
+
+### Versions included software
+
+Versions included & used third-party tools (see `/External/README_SPM.txt`):
+
+* SPM12 7219 
+* CAT12 r1615 
+* LST 2.0.15 
+* dcm2niix 20220720
+
+### Hot fixes
+
+* Bug #1276: Fix too time-demanding BIDS2Legacy conversion
+
+---
 ## ExploreASL v1.10.0
 
 ### Versions included software
