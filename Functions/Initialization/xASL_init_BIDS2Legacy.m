@@ -23,7 +23,7 @@ function [x] = xASL_init_BIDS2Legacy(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        [x] = xASL_init_BIDS2Legacy(x);
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 % Admin
 if nargin < 1 || isempty(x)

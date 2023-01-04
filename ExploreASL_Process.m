@@ -66,7 +66,7 @@ function [x] = ExploreASL_Process(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
     %% Processing Workflow
@@ -86,9 +86,9 @@ function [x] = ExploreASL_Process(x)
 		% Iterating across all subjects
         [~, x] = xASL_init_Iteration(x,'xASL_module_BIDS2Legacy');
 
-		% Run cleanup
+		% Finalize BIDS 2 Legacy conversion
 		try 
-			x = xASL_imp_CompleteBIDS2Legacy(x);
+			x = xASL_bids_CompleteBIDS2Legacy(x);
 		catch ME
 			fprintf('\nERROR:\n%s\n',ME.getReport());
 			x = xASL_qc_AddLoggingInfo(x, ME);

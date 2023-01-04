@@ -19,7 +19,7 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
 % EXAMPLE:        n/a
 %
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
     %% 1. Input check

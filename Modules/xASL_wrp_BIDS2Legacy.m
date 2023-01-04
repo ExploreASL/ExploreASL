@@ -34,7 +34,7 @@ function [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite);
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
 %% 0. Admin
@@ -142,7 +142,7 @@ end
 
 
 %% 6. Clean up
-xASL_imp_BIDS2Legacy_CleanUp(x.dir.DatasetRoot);
+xASL_bids_BIDS2Legacy_CleanUp(x.dir.DatasetRoot);
 
 
 end
@@ -150,7 +150,7 @@ end
 
 
 %% Clean-Up subfunction
-function xASL_imp_BIDS2Legacy_CleanUp(pathStudy)
+function xASL_bids_BIDS2Legacy_CleanUp(pathStudy)
 
     % Start with empty file list
     filesCleanUp = {};

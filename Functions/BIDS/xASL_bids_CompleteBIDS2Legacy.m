@@ -1,7 +1,7 @@
-function x = xASL_imp_CompleteBIDS2Legacy(x)
-%xASL_imp_CompleteBIDS2Legacy Finish the remaining import steps, which are not done for each subject individually
+function x = xASL_bids_CompleteBIDS2Legacy(x)
+%xASL_bids_CompleteBIDS2Legacy Finish the remaining conversion steps, which are not done for each subject individually
 %
-% FORMAT: x = xASL_imp_CompleteBIDS2Legacy(x)
+% FORMAT: x = xASL_bids_CompleteBIDS2Legacy(x)
 %
 % INPUT:
 %   x      - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -10,34 +10,34 @@ function x = xASL_imp_CompleteBIDS2Legacy(x)
 %   x      - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    Finish the remaining import steps, which are not done for each subject individually.
+% DESCRIPTION:    Finish the remaining conversion steps, which are not done for each subject individually.
 %
 % 1. Create dataPar.json
 % 2. Copy participants.tsv
-% 3. Copy dataset_description JSON and add 'GeneratedBy' fields
+% 3. Copy dataset_description JSON
 % 4. Add missing fields
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:        x = xASL_imp_CompleteBIDS2Legacy(x);
+% EXAMPLE:        x = xASL_bids_CompleteBIDS2Legacy(x);
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
     %% 1. Create dataPar.json
-    [x,dataPar] = xASL_imp_FinishImport_CreateDataPar(x);
+    [x,dataPar] = xASL_bids_FinishImport_CreateDataPar(x);
 
 
     %% 2. Copy participants.tsv
-    x = xASL_imp_FinishImport_CreateParticipants(x);
+    x = xASL_bids_FinishImport_CreateParticipants(x);
 
 
     %% 3. Copy dataset_description JSON and add 'GeneratedBy' fields
-    x = xASL_imp_FinishImport_CreateDatasetDescription(x);
+    x = xASL_bids_FinishImport_CreateDatasetDescription(x);
 
 
     %% 4. Add missing fields
-    x = xASL_imp_FinishImport_AddMissingFields(x,dataPar);
+    x = xASL_bids_FinishImport_AddMissingFields(x,dataPar);
     
     
 end
@@ -45,7 +45,7 @@ end
 
 
 %% Create the dataPar.json 
-function [x,dataPar] = xASL_imp_FinishImport_CreateDataPar(x)
+function [x,dataPar] = xASL_bids_FinishImport_CreateDataPar(x)
 
     if ~isfield(x,'dataPar')
         % Create default if no dataPar was provided
@@ -107,7 +107,7 @@ end
 
 
 %% Create participants.tsv
-function x = xASL_imp_FinishImport_CreateParticipants(x)
+function x = xASL_bids_FinishImport_CreateParticipants(x)
 
     % Define file names
     pathParticipantsTSV = fullfile(x.dir.DatasetRoot, 'participants.tsv');
@@ -131,7 +131,7 @@ end
 
 
 %% Create dataset_description.json
-function x = xASL_imp_FinishImport_CreateDatasetDescription(x)
+function x = xASL_bids_FinishImport_CreateDatasetDescription(x)
 
 % Copy dataset_description JSON file
 xASL_Copy(fullfile(x.dir.DatasetRoot, 'rawdata', 'dataset_description.json'), ...
@@ -141,7 +141,7 @@ end
 
 
 %% Add missing fields
-function x = xASL_imp_FinishImport_AddMissingFields(x,dataPar)
+function x = xASL_bids_FinishImport_AddMissingFields(x,dataPar)
     
     % Add fields that are in dataPar.x but missing in x
     if isfield(dataPar,'x')
