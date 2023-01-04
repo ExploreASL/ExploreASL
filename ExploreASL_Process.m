@@ -75,6 +75,15 @@ function [x] = ExploreASL_Process(x)
     %% 0 Run BIDS to Legacy
     x = xASL_init_Process(x);
     if ~x.opts.bSkipBIDS2Legacy
+		% Datastructure loading that is supposed to be run only once for all subjects
+		try 
+			x = xASL_init_BIDS2Legacy(x);
+		catch ME
+			fprintf('\nERROR:\n%s\n',ME.getReport());
+			x = xASL_qc_AddLoggingInfo(x, ME);
+		end
+
+		% Iterating across all subjects
         [~, x] = xASL_init_Iteration(x,'xASL_module_BIDS2Legacy');
     end
     

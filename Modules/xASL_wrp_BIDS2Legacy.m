@@ -40,23 +40,9 @@ function [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite)
 %% 0. Admin
 
 % Verify the input parameters
-if isempty(x.dir.DatasetRoot)
-	error('x.dir.DatasetRoot is a required parameter.');
-end
 
 if nargin<2 || isempty(bOverwrite)
     bOverwrite = 1;
-end
-
-% Verify that the rawdata subfolder exists
-if ~exist(fullfile(x.dir.DatasetRoot,'rawdata'),'dir')
-    warning('Invalid folder selected, not containing rawdata folder');
-    return;
-end
-
-% Check derivatives of ExploreASL
-if ~isfield(x.dir,'xASLDerivatives')
-    error('Missing xASL derivatives field...');
 end
 
 % Creates the derivatives directory
@@ -71,7 +57,6 @@ end
 % Loads the configuration for file renaming from the BIDS configuration file
 bidsPar = xASL_bids_Config();
 
-
 %% 1. Parse a folder using bids-matlab
 BIDS = bids.layout(fullfile(x.dir.DatasetRoot,'rawdata'));
 nSubjects = numel(BIDS.subjectName);
@@ -79,7 +64,6 @@ nVisits = numel(BIDS.sessionName); % this is called sessions in BIDS
 % we use this below to see if the legacy subjectname gets _1 as visit suffix or not
 [~, studyName] = fileparts(x.dir.DatasetRoot);
 fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
-
 
 %% 2. Define SubjectSession
 for iSubjSess=1:numel(BIDS.subjects) 
@@ -92,11 +76,10 @@ for iSubjSess=1:numel(BIDS.subjects)
     SubjectID = BIDS.subjects(iSubjSess).name;
     
     % Subject-wise processing (because xASL_Iteration runs over subjects)
-    if ~isempty(regexpi(SubjectID,x.SUBJECT))
+    if ~isempty(regexpi(SubjectID, x.SUBJECT, 'once'))
     
         % Session ID (Currently, ExploreASL concatenates subject_visit/timepoint in the same folder layer, so we only use SubjectSession)
         SessionID = BIDS.subjects(iSubjSess).session;
-
 
         %% 3. Define Session
         iVisit = find(strcmp(BIDS.sessionName, SessionID));
@@ -143,7 +126,7 @@ ListASL4D = [];
 if ~isempty(SubjectDirs)
     for iDir=1:numel(SubjectDirs)
         currentASL = xASL_adm_GetFileList(SubjectDirs{iDir}, '^ASL4D\.nii$', 'FPListRec');
-        ListASL4D = vertcat(ListASL4D,currentASL);
+        ListASL4D = vertcat(ListASL4D, currentASL);
     end
 end
 % Parse M0s
