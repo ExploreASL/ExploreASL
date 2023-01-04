@@ -14,7 +14,6 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
 %
 % 1. Input check
 % 2. Run legacy conversion
-% 3. Cleanup
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
@@ -35,7 +34,6 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
     
     % Define lock states
     StateName{1} = '010_BIDS2LEGACY';
-    StateName{2} = '020_CleanUp';
     
     % Default for result
     result = true;
@@ -53,7 +51,6 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
     end
     
     %% 3. Clean-Up
-    x = xASL_imp_CompleteBIDS2Legacy(x);
     x.mutex.AddState('999_ready');
     x.mutex.Unlock();
         

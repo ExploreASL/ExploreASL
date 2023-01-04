@@ -85,6 +85,14 @@ function [x] = ExploreASL_Process(x)
 
 		% Iterating across all subjects
         [~, x] = xASL_init_Iteration(x,'xASL_module_BIDS2Legacy');
+
+		% Run cleanup
+		try 
+			x = xASL_imp_CompleteBIDS2Legacy(x);
+		catch ME
+			fprintf('\nERROR:\n%s\n',ME.getReport());
+			x = xASL_qc_AddLoggingInfo(x, ME);
+		end
     end
     
     %% 0.1

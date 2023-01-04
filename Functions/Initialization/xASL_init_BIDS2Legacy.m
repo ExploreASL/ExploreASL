@@ -18,7 +18,8 @@ function [x] = xASL_init_BIDS2Legacy(x)
 % - 1. The input is dataset_description.json in the rawdata folder
 % - 2. The input is dataPar.json or sourceStructure.json - have to look for a rawdata folder
 % 3. Check if a dataPar is provided, otherwise use the defaults
-
+% 4. Load the BIDS structure of all subjects
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        [x] = xASL_init_BIDS2Legacy(x);
 % __________________________________
@@ -79,7 +80,7 @@ else
 	end
 end
 
-%% 3. Run the legacy conversion: Check if a dataPar is provided, otherwise use the defaults
+%% 3.Check if a dataPar is provided, otherwise use the defaults
 
 % Get dataPar
 fListDataPar = xASL_adm_GetFileList(x.dir.DatasetRoot,'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
@@ -93,5 +94,8 @@ else
 	% Fill the dataPars with the provided parameters
 	x.dataPar = spm_jsonread(fListDataPar{1});
 end
+
+%% 4. Load the BIDS structure of all subjects
+x.modules.bids2legacy.BIDS = bids.layout(fullfile(x.dir.DatasetRoot,'rawdata'));
 
 end

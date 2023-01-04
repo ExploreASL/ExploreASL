@@ -58,32 +58,32 @@ end
 bidsPar = xASL_bids_Config();
 
 %% 1. Parse a folder using bids-matlab
-BIDS = bids.layout(fullfile(x.dir.DatasetRoot,'rawdata'));
-nSubjects = numel(BIDS.subjectName);
-nVisits = numel(BIDS.sessionName); % this is called sessions in BIDS
+
+nSubjects = numel(x.modules.bids2legacy.BIDS.subjectName);
+nVisits = numel(x.modules.bids2legacy.BIDS.sessionName); % this is called sessions in BIDS
 % we use this below to see if the legacy subjectname gets _1 as visit suffix or not
 [~, studyName] = fileparts(x.dir.DatasetRoot);
 fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
 
 %% 2. Define SubjectSession
-for iSubjSess=1:numel(BIDS.subjects) 
-    % Iterate over BIDS.subjects (indices that include both subjects & sessions)
-    % so  1 subject  6 session/visits, will give numel(BIDS.subjects)=6
-    % and 6 subjects 1 session/visits, will give numel(BIDS.subjects)=6
+for iSubjSess=1:numel(x.modules.bids2legacy.BIDS.subjects) 
+    % Iterate over x.modules.bids2legacy.BIDS.subjects (indices that include both subjects & sessions)
+    % so  1 subject  6 session/visits, will give numel(x.modules.bids2legacy.BIDS.subjects)=6
+    % and 6 subjects 1 session/visits, will give numel(x.modules.bids2legacy.BIDS.subjects)=6
     xASL_TrackProgress(iSubjSess, nSubjects);
     
     % Subject ID
-    SubjectID = BIDS.subjects(iSubjSess).name;
+    SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;
     
     % Subject-wise processing (because xASL_Iteration runs over subjects)
     if ~isempty(regexpi(SubjectID, x.SUBJECT, 'once'))
     
         % Session ID (Currently, ExploreASL concatenates subject_visit/timepoint in the same folder layer, so we only use SubjectSession)
-        SessionID = BIDS.subjects(iSubjSess).session;
+        SessionID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).session;
 
         %% 3. Define Session
-        iVisit = find(strcmp(BIDS.sessionName, SessionID));
-        % Remove iteration for iVisit = 1 -> iterate visit/session in this "BIDS.subjects" (always 1 session per BIDS.subjects)
+        iVisit = find(strcmp(x.modules.bids2legacy.BIDS.sessionName, SessionID));
+        % Remove iteration for iVisit = 1 -> iterate visit/session in this "x.modules.bids2legacy.BIDS.subjects" (always 1 session per x.modules.bids2legacy.BIDS.subjects)
         % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
         if nVisits==1
             pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, SubjectID);
@@ -107,7 +107,7 @@ for iSubjSess=1:numel(BIDS.subjects)
         % Modalities - the BIDS scantypes
         ModalitiesUnique = unique(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
         nModalities = length(ModalitiesUnique);
-        xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
+        xASL_bids_BIDS2Legacy_ParseModality(x.modules.bids2legacy.BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
 
     end
 

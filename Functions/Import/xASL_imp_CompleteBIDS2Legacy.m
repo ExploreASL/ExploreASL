@@ -21,7 +21,7 @@ function x = xASL_imp_CompleteBIDS2Legacy(x)
 % EXAMPLE:        x = xASL_imp_CompleteBIDS2Legacy(x);
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2022 ExploreASL
 
 
     %% 1. Create dataPar.json
@@ -133,30 +133,9 @@ end
 %% Create dataset_description.json
 function x = xASL_imp_FinishImport_CreateDatasetDescription(x)
 
-    try
-        % Copy dataset_description JSON file
-        xASL_Copy(fullfile(x.dir.DatasetRoot, 'rawdata', 'dataset_description.json'), ...
-            fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'dataset_description.json'));
-
-        % Get all JSON files in derivatives and add the "GeneratedBy" field
-        jsonFiles = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), '.json$', 'FPListRec');
-
-        % Check file list
-        if size(jsonFiles,1)>0
-            % Iterate over files
-            for iFile = 1:size(jsonFiles,1)
-                % Check if file should be excluded first (exclude participants.json and dataPar.json)
-                [~,fileName] = xASL_fileparts(jsonFiles{iFile});
-                if isempty(regexpi(fileName,'participants')) && isempty(regexpi(fileName,'dataPar'))
-                    thisPath = jsonFiles{iFile};
-                    xASL_bids_AddGeneratedByField(x, thisPath);
-                end
-            end
-        end
-    catch ME
-        warning('Adding the GeneratedBy fields failed...');
-        fprintf('%s\n', ME.message);
-    end
+% Copy dataset_description JSON file
+xASL_Copy(fullfile(x.dir.DatasetRoot, 'rawdata', 'dataset_description.json'), ...
+	fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'dataset_description.json'));
 
 end
 
