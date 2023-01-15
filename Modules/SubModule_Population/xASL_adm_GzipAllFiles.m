@@ -58,14 +58,14 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
             if ~isempty(PathList)
                 fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
                 numCores = feature('numcores');
+                glob_pat = join(['"' ROOT '/**/*.nii"']);
                 % Get SuperGzip path
-                PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'SuperGZip_Windows.exe');
+                PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'super-gunzip.exe');
                 % Define SuperGzip command
-                command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' ROOT ' *.nii'];
+                command = [PathToSuperGzip ' gzip ' glob_pat ' -n ' num2str(numCores) ' --verbose' ];
                 % Run script
                 [exit_code, system_result] = system(command);
                 % Check if SuperGzip was successful
-
             end
         end
     end
