@@ -22,6 +22,7 @@ function x = xASL_imp_UpdateDatasetRoot(x)
     % Check if valid dataset_description.json exists within the rawdata folder
     if isempty(foundFiles)
         warning('No valid dataset_description.json found within the rawdata directory...');
+        fprintf('%s\n', 'Ensure that your data is BIDS compatible by running the BIDS validator');
     else
         x.dir.dataset_description = foundFiles{1};
     end

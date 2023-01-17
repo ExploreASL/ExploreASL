@@ -117,7 +117,7 @@ if isfield(JSON, 'M0Type')
 				if size(NIfTI_ASL.dat,4)>1
 					% background suppression was off, so we check if we have
 					% multiple ASL volumes for using mean control as pseudo-M0
-					warning('Multiple ASL volumes detected, setting M0 to "UseControlAsM0" instead of "Absent"');
+					warning('Multiple ASL volumes detected without background suppression, setting M0 to "UseControlAsM0" instead of "Absent"');
 					JSON.M0 = 'UseControlAsM0';
 				end
 			end
