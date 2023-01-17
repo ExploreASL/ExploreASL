@@ -20,7 +20,7 @@ function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
     %% Iterate over modalities
@@ -40,9 +40,9 @@ function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjS
                     Reference{iScan+1, 3} = 1; % default to 1st run
                 end
             end
-%            Reference(2:end,:) = sortrows(Reference(2:end,:), [2, 3]); % first sort for ScanType then run
-%            PM: if we really want this sorting, other tables such as
-%            ModalityFields need to be sorted accordingly!
+
+			[Reference(2:end,:), iSort] = sortrows(Reference(2:end,:), [2, 3]); % first sort for ScanType then run
+			ModalityFields = ModalityFields(iSort);
 
             RunsAre = cellfun(@(y) y, Reference(2:end, 3));
             RunsUnique = unique(RunsAre);
