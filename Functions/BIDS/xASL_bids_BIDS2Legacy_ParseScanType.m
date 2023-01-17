@@ -46,6 +46,7 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
                 if length(TypeRunIndex)==1 % if this scantype-run combination exists
                     [bidsPar, TypeIs, pathOrig, pathDest] = xASL_bids_BIDS2Legacy_CompilePathsForCopying(bidsPar, TypeIs, ModalityIs, RunIs, iSubjSess, BIDS, TypeRunIndex, ModalityFields, pathLegacy_SubjectVisit);
 
+
                     %% Manage sidecars to copy
                     % Sidecars definitions are loaded by xASL_bids_Config at function start
 
@@ -56,6 +57,35 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
 
                     %% Copy files
                     for iFile=1:length(pathOrig)
+                        %% Final checks before copying
+                        % These checks seem redundant but they can save us
+                        % and users a lot of time; if things go wrong here, users
+                        % start running ExploreASL with slightly wrong
+                        % data. It may not give an error but they come back
+                        % to us saying that the population module produces
+                        % errors... (better to find these at the earliest
+                        % convenience!)
+                        
+                        [~, fileOrig] = xASL_fileparts(pathOrig{iFile});
+                        searchOrig = regexp(fileOrig, '_');
+                        if isempty(searchOrig)
+                            warning('Something going wrong, your rawdata may not be BIDS compatible');
+                        end
+                        modalityOrig = fileOrig(searchOrig(end)+1:end);
+                        
+                        searchOrig = regexp(fileOrig, 'run-');
+                        if isempty(searchOrig)
+                            warning('Something going wrong, your rawdata may not be BIDS compatible');
+                        end                        
+                        runOrig = xASL_str2num(fileOrig(searchOrig(end)+4));
+                        
+                        if RunIs~=runOrig
+                            error(['Something went wrong copying legacy files, we selected the wrong run (' xASL_num2str(RunIs) ') for ' fileOrig]);
+                        elseif isempty(regexp(modalityOrig, TypeIs))
+                            error(['Something went wrong copying legacy files, we selected the wrong modality (' TypeIs ') for ' fileOrig]);
+                        end
+                        
+                        %% Copy files
                         xASL_bids_BIDS2xASL_CopyFile(pathOrig{iFile}, pathDest{iFile}, bOverwrite);
                     end
 
