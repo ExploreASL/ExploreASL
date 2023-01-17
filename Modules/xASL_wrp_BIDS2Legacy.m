@@ -57,7 +57,7 @@ end
 % Loads the configuration for file renaming from the BIDS configuration file
 bidsPar = xASL_bids_Config();
 
-%% 1. Parse a folder using bids-matlab
+%% 1. Parse a folder using the output of bids-matlab (was run before this point)
 
 nSubjects = numel(x.modules.bids2legacy.BIDS.subjectName);
 nVisits = numel(x.modules.bids2legacy.BIDS.sessionName); % this is called sessions in BIDS
@@ -83,6 +83,11 @@ for iSubjSess=1:numel(x.modules.bids2legacy.BIDS.subjects)
 
         %% 3. Define Session
         iVisit = find(strcmp(x.modules.bids2legacy.BIDS.sessionName, SessionID));
+        
+        if isempty(SessionID)
+            SessionID = 'unknown'; % default to have at least some output
+        end
+        
         % Remove iteration for iVisit = 1 -> iterate visit/session in this "x.modules.bids2legacy.BIDS.subjects" (always 1 session per x.modules.bids2legacy.BIDS.subjects)
         % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
         if nVisits==1
@@ -97,11 +102,11 @@ for iSubjSess=1:numel(x.modules.bids2legacy.BIDS.subjects)
             pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_' xASL_num2str(iVisit)]);
             VisitString = [' visit ' SessionID];
         end
+        
         SubjectVisit = [SubjectID VisitString];
         
         % Create subject/session directory (to enable reruns for pre-imported or crashed datasets, we need a subject level here/above!)
         xASL_adm_CreateDir(pathLegacy_SubjectVisit);
-
 
         %% 4. Parse modality
         % Modalities - the BIDS scantypes
