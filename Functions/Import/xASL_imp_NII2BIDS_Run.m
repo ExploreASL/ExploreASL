@@ -63,7 +63,9 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
     %% 2. Convert structural and ASL runs
 	subjectSessionLabel = [bidsLabel.subject sessionLabel];
 	try
-		xASL_imp_NII2BIDS_RunAnat(x.modules.import.imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
+		if iRun == 1 || ~isempty(sessionLabel)
+			xASL_imp_NII2BIDS_RunAnat(x.modules.import.imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
+		end
 	catch loggingEntry
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
 		xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, 'anatomical', subjectSessionLabel, iRun);

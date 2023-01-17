@@ -397,11 +397,11 @@ function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRe
     % Add field to overview
     vSessionName = ['run_' num2str(iSession,'%03.f')];
     % Make sure that the name starts with ASL_
-    if ~isempty(regexp(thisSession,'ASL_', 'once'))
+    %if ~isempty(regexp(thisSession,'ASL_', 'once'))
         x.importOverview.(sFieldName).(vFieldName).(vSessionName).name = thisSession;
-    else
-        x.importOverview.(sFieldName).(vFieldName).(vSessionName).name = ['ASL_' num2str(iSession)];
-    end
+    %else
+    %    x.importOverview.(sFieldName).(vFieldName).(vSessionName).name = ['ASL_' num2str(iSession)];
+    %end
     x.importOverview.(sFieldName).(vFieldName).runs = vertcat(x.importOverview.(sFieldName).(vFieldName).runs,{thisSession});
     x.importOverview.(sFieldName).(vFieldName).(vSessionName).regexp = thisRegExp;
     

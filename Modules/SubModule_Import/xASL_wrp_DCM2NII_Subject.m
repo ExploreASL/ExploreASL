@@ -98,7 +98,7 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
             
             % Find empty sessions
             scanFields.emptySession = false;
-            if iSession==indexEmptySession
+            if sum(iSession==indexEmptySession)
                 scanFields.emptySession = true;
             end
             
