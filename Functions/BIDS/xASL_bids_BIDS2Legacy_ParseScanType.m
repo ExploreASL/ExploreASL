@@ -24,7 +24,7 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
     
     %% Iterate over Types
@@ -70,18 +70,22 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
                         searchOrig = regexp(fileOrig, '_');
                         if isempty(searchOrig)
                             warning('Something going wrong, your rawdata may not be BIDS compatible');
-                        end
-                        modalityOrig = fileOrig(searchOrig(end)+1:end);
+							modalityOrig = '';
+						else
+							modalityOrig = fileOrig(searchOrig(end)+1:end);
+						end
                         
-                        searchOrig = regexp(fileOrig, 'run-');
-                        if isempty(searchOrig)
-                            warning('Something going wrong, your rawdata may not be BIDS compatible');
-                        end                        
-                        runOrig = xASL_str2num(fileOrig(searchOrig(end)+4));
+						% We need to know the start and end so that we can properly convert the number of runs (which can be double digit)
+                        [searchRunStart, searchRunEnd] = regexp(fileOrig, 'run-\d*');
+						if isempty(searchRunStart)
+							runOrig = 1;
+						else
+							runOrig = xASL_str2num(fileOrig(searchRunStart(end)+4:searchRunEnd(end)));
+						end
                         
                         if RunIs~=runOrig
                             error(['Something went wrong copying legacy files, we selected the wrong run (' xASL_num2str(RunIs) ') for ' fileOrig]);
-                        elseif isempty(regexp(modalityOrig, TypeIs))
+                        elseif isempty(regexpi(modalityOrig, TypeIs, 'once'))
                             error(['Something went wrong copying legacy files, we selected the wrong modality (' TypeIs ') for ' fileOrig]);
                         end
                         
@@ -94,7 +98,4 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
         end
     end
 
-
 end
-
-
