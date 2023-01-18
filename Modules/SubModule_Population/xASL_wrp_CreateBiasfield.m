@@ -26,7 +26,7 @@ function xASL_wrp_CreateBiasfield(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_CreateBiasfield(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
     x.D.TemplatesStudyDir = fullfile(x.D.PopDir,'Templates');
     CBF_prefix = ['q' x.P.CBF];
@@ -264,7 +264,7 @@ function xASL_wrp_CreateBiasfield(x)
 %% Import site-CBF images
 IM = cell.empty(0);
 
-iNext = [1 1 1];
+iNext = ones(1,nSites);
 for iSite=1:nSites
     SiteScans = find(x.S.SetsID(:,iSiteSet)==AllSites(iSite));
     nScans = length(SiteScans);
