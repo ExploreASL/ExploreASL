@@ -1,8 +1,8 @@
-function [Config] = xASL_adm_LoadPDFConfig(ConfigPath)
+function [Config] = xASL_adm_LoadPDFConfig(x)
 % xASL_adm_LoadPDFConfig Loads parameters from a .json config file
 % Essentialy an alias of spm_jsonread.
 %
-% FORMAT: [config] = xASL_adm_LoadPDFConfig(ConfigPath)
+% FORMAT: [config] = xASL_adm_LoadPDFConfig(x)
 %
 % INPUT:
 %   ConfigPath  - path to json REQUIRES
@@ -18,7 +18,7 @@ function [Config] = xASL_adm_LoadPDFConfig(ConfigPath)
 % 3. return a struct containing the config parameters
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [config] = xASL_adm_LoadPDFConfig('/ExploreASL/Functions/QualityControl/DefaultPDFConfig.json');
+% EXAMPLE: [config] = xASL_adm_LoadPDFConfig(x);
 % __________________________________
 % Copyright 2015-2022 ExploreASL
 
@@ -28,20 +28,21 @@ function [Config] = xASL_adm_LoadPDFConfig(ConfigPath)
 % 0. Argument check
 Config = struct; % default
 
-if nargin<1 || isempty(ConfigPath)
-    warning('ConfigPath was not specified, aborting');
+if nargin<1 || isempty(x)
+    warning('x was not specified, aborting');
     return
 end
 
-if ~isfile(ConfigPath)
-    warning(['Could not find ' ConfigPath])
-    return 
-end
+ConfigPath = strcat(x.dir.xASLDerivatives, '/ConfigReportPDF.json');
 
 %% ------------------------------------------------------------------------
 %% 2. Load JSON file 
-if exist(ConfigPath,'file') 
+if isfile(ConfigPath)
     Config = spm_jsonread(ConfigPath);
+else
+    fprintf('configReportPDF.json does not exists, using default config \n');
+    standardPath = strcat(x.opts.MyPath, '/Functions/QualityControl/templateConfigReportPDF.json');
+    Config = spm_jsonread(standardPath);
 end
 
 %% ------------------------------------------------------------------------

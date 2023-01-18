@@ -69,22 +69,13 @@ set(spm_fig,'windowstyle','normal');
 spm_figure('Clear','Graphics');
 
 %% Print the Title
-PrintImage('Design/ExploreASL_logoHeader.png',spm_fig,[0 0.96 1 0.04]);
+PrintImage('Design/ExploreASL_logoHeader.png', spm_fig, [0 0.96 1 0.04]);
 NewLine = PrintBold(['ExploreASL QC summary report ', SuSeID], spm_fig, [0 0.96 1 0], fontsize+2);
 
 %% Print the Footer
 PrintBold('This report was automatically generated with ExploreASL', spm_fig,  [0 0.02 1 0], fontsize+2);
 
-%% Check if config file exists, else make one
-%% Load Standard Configuration
-cPath = strcat(x.dir.xASLDerivatives, '/ConfigReportPDF.json');
-if isfile(cPath)
-    config = xASL_adm_LoadPDFConfig(cPath);
-else
-    fprintf('configReportPDF.json does not exists, using default config \n');
-    sPath = strcat(x.opts.MyPath, '/Functions/QualityControl/templateConfigReportPDF.json');
-    config = xASL_adm_LoadPDFConfig(sPath);
-end
+config = xASL_adm_LoadPDFConfig(x);
 
 %% -----------------------------------------------------------------------------------------------
 %% Collect field name & field values to print
@@ -243,7 +234,12 @@ function line = PrintParagraph(x, config, figure, Contents, ModName, fontsize, l
     end
 end
 
-
+function line = NewLine(line);
+    line(2) = line(2) - 0.016;
+    if line(2) < 0 
+        warning('No space left on page!');
+    end
+end
 
 function line = PrintBold(String, figure, line, fontsize)
     line = NewLine(line);
@@ -257,13 +253,6 @@ function line = PrintText(String, figure, line, fontsize)
     text(0,1, String, 'FontSize', fontsize, 'Interpreter', 'none', 'Parent', ax, 'VerticalAlignment','top');
 end
 
-function line = NewLine(line);
-    line(2) = line(2) - 0.016;
-    if line(2) < 0 
-        warning('No space left on page!');
-    end
-end
-
 function PrintImage(ImagePath, figure, Canvas)
     ax=axes('Position', Canvas, 'Visible', 'off', 'Parent', figure);
     [img, ~, alphachannel] = imread(ImagePath);
@@ -271,3 +260,4 @@ function PrintImage(ImagePath, figure, Canvas)
     fg.AlphaData=alphachannel;
     clear fg
 end
+
