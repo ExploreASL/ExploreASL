@@ -45,13 +45,19 @@ if ~isempty(ExistingPrintFiles)
     xASL_delete(ExistingPrintFiles{1});
 end
 
-
-
 % Determine font size
 if ispc
     fontsize = 10;
 elseif isunix || ismac
     fontsize = 8;
+end
+
+% Load participants data
+PatientInfo = xASL_adm_readParticipantsTSV(x);
+
+% Debugg print participants
+if ~isempty(PatientInfo)
+    PatientInfo
 end
 
 %% Print the title
@@ -63,15 +69,12 @@ set(spm_fig,'windowstyle','normal');
 spm_figure('Clear','Graphics');
 
 %% Print the Title
-ax=axes('Position',[0 0.96 1 0.04], 'Visible', 'off', 'Parent', spm_fig);
-[img, ~, alphachannel] = imread('Design/ExploreASL_logoHeader.png');
-fg= imshow(img);
-fg.AlphaData=alphachannel;
-clear fg
-ax=axes('Position',[0.01 0.91 1 0.05],'Visible','off','Parent',spm_fig);
-text(0,1, ['ExploreASL QC summary report ', SuSeID], 'FontSize',fontsize+2,'FontWeight','bold','Interpreter','none','Parent',ax, 'VerticalAlignment','top');
-ax=axes('Position',[0 0 1 0],'Visible','off','Parent',spm_fig);
-text(0,1, 'This report was automatically generated with ExploreASL', 'FontSize',fontsize+2,'FontWeight','bold','Interpreter','none','Parent',ax, 'VerticalAlignment','top');
+PrintImage('Design/ExploreASL_logoHeader.png',spm_fig,[0 0.96 1 0.04]);
+NewLine = PrintBold(['ExploreASL QC summary report ', SuSeID], spm_fig, [0 0.96 1 0], fontsize+2);
+
+%% Print the Footer
+PrintBold('This report was automatically generated with ExploreASL', spm_fig,  [0 0.02 1 0], fontsize+2);
+
 %% Check if config file exists, else make one
 %% Load Standard Configuration
 cPath = strcat(x.dir.xASLDerivatives, '/ConfigReportPDF.json');
@@ -100,96 +103,13 @@ for iField=1:nOutputFields
     end
     StrucFields{iField} = sort(fieldnames(x.Output.(OutputFields{iField})(Ind)));
     for iV=1:length(StrucFields{iField})     
-            Str{iField}(iV).name = StrucFields{iField}{iV};
-        Str{iField}(iV).value = x.Output.(OutputFields{iField})(Ind).(StrucFields{iField}{iV});
+            Paragraphs{iField}(iV).name = StrucFields{iField}{iV};
+            Paragraphs{iField}(iV).value = x.Output.(OutputFields{iField})(Ind).(StrucFields{iField}{iV});
     end
 end 
 
-ImFieldNames = fieldnames(x.Output_im);
-nNext = 1;
-for iField=1:nOutputFields
-    for iImage=1:length(ImFieldNames)
-        if  strcmp(OutputFields{iField},ImFieldNames{iImage})
-            ImFieldsOrder(nNext) = iImage;
-            nNext = nNext+1;
-        end
-    end
-end
-
-for iField=1:length(Str) % iterating over categories
-    % Printing header/title
-    ax=axes('Position',[(1-iField/length(Str)) 0.89 (1/length(Str)) 0.05],'Visible','off','Parent',spm_fig);
-    text(0,1,[OutputFields{iField}], 'FontSize',fontsize+1,'FontWeight','bold','Interpreter','none','Parent' , ax ,'VerticalAlignment','top'); 
-
-    sPrintArray = [];
-    for ii=1:size(Str{iField},2) % iterating over text lines
-
-        TempName = Str{iField}(ii).name;
-    
-        % Prepare text to print
-        if ~isstruct(Str{iField}(ii).value) % no extra layer
-            TempValue  = Str{iField}(ii).value;
-            if isnumeric(TempValue) || islogical(TempValue)
-                TempValue = num2str(TempValue, 4); 
-            end
-
-        else % add extra layer
-            TempFields = fieldnames(x.Output.(OutputFields{iField}).(Str{iField}(ii).name));
-            TempValue = '';
-            for iK=1:length(TempFields)
-                TempName = [TempName  '/' TempFields{iK}];
-                TV2 = x.Output.(OutputFields{iField}).(Str{iField}(ii).name).(TempFields{iK});
-                if  isnumeric(TV2)
-                    TV2 = num2str(TV2); 
-                end
-                TempValue = [TempValue ' ' TV2];
-            end
-        end
-
-        f = '';
-        if sum(strcmp(fieldnames(config.(OutputFields{iField})),TempName))
-            % Print only if visibility exists and is true. 
-            if isfield(config.(OutputFields{iField}).(TempName), "Visible")  && config.(OutputFields{iField}).(TempName).Visible 
-
-                % Define the variables from Output
-                TempRange = xASL_qc_CheckConfigStruct(config, OutputFields{iField}, TempName, "Range");
-                TempUnit  = xASL_qc_CheckConfigStruct(config, OutputFields{iField}, TempName, "Unit");
-                TempAlias = xASL_qc_CheckConfigStruct(config, OutputFields{iField}, TempName, "Alias", TempName);
-
-                if size(TempValue, 1) == 1
-                    f = sprintf([sprintf('%-20s',[TempAlias,':']), sprintf('%8s',TempValue),sprintf('%-12s', [TempUnit, ' ' , TempRange]), ' \n']);
-                end
-            end
-        end
-    sPrintArray = [sPrintArray, f];
-    end
-    text(0, 0.70, sPrintArray , 'FontName', 'FixedWidth','FontSize',fontsize,'Interpreter','none','Parent',ax, 'VerticalAlignment','top');
-end
-
-%% -----------------------------------------------------------------------------------------------
-%% 2) Print bottom half with image fields
-
-% Print images
-% ====== WIP to be replaced from manual image generation =========================================
-for iField=1:length(ImFieldsOrder)
-    imsCurrField   = x.Output_im.(ImFieldNames{ImFieldsOrder(iField)});
-    for iImage=1:min(length(imsCurrField),32) % iterate over images in this field, max 16 images allowed
-        CurrentIm  = double(imsCurrField{iImage});
-        % First treat the image
-        if  size(CurrentIm,3)==1 % convert to color
-            CurrentIm = repmat(CurrentIm,[1 1 3]);     
-        end
-
-        CurrentIm = CurrentIm./max(CurrentIm(:)); % rescale
-
-        % Then print the image at respective position
-        iRows = ceil(sqrt(length(imsCurrField)));
-        Spacing = 1/length(Str)/iRows;
-        % set the ax handle, scales of PDF size and structure amount
-        ax=axes('Position',[((1-iField/length(Str))+(mod(iImage-1,iRows)*Spacing)) (0.03 + Spacing*floor((iImage-1)/iRows)) Spacing Spacing],'HandleVisibility','off','Parent',spm_fig); % x(1) position, y(1) position, x-size, y-size
-        image([0.01 0.50],[0.01 0.50],CurrentIm,'HandleVisibility','off','Parent',ax); % print the image
-        set(ax,'handlevisibility','off','visible','off');
-    end
+for iField=1:length(Paragraphs) 
+    NewLine = PrintParagraph(x, config, spm_fig, Paragraphs{iField}, OutputFields{iField}, fontsize, NewLine);
 end
 
 PrintFile = 'xASL_Report';
@@ -217,4 +137,137 @@ function sResult = xASL_qc_CheckConfigStruct(ConfigStruct, subModule, QCParm, QC
     else
         sResult = AlternativeString;
     end
+end
+
+function PatientInfo = xASL_adm_readParticipantsTSV(x)
+    %Check if participant data exists.
+    ExistsParticipants = xASL_adm_GetFileList(x.D.ROOT, 'participants.tsv');
+    if ~isempty(ExistsParticipants)
+        sParticipants = xASL_tsvRead(ExistsParticipants{1});
+        nParticipants = size(sParticipants, 1);
+        for iPar=2:nParticipants
+            if sParticipants{iPar, 1} == x.SUBJECT
+                %Extract Participants table, and participants info
+                PatientInfo = [sParticipants(1,:); sParticipants(iPar, :)];
+            end
+        end
+    else
+        PatientInfo = {};
+    end
+end
+
+function graph = xASL_Average_Intensity(x)
+    if ~xASL_exist(x.D.ROOT); return; end
+    
+    graph = [];
+end
+
+function SlabPlaced = xASL_vis_PlotSlab(x)
+    if ~xASL_exist(x.D.ROOT); return; end
+    Dlist = xASL_adm_GetFileList(x.D.ROOT,'^.*$','List',[0 Inf], true);
+    Flist = xASL_adm_GetFileList(x.D.ROOT,'^.nii*$','List',[0 Inf], false);
+    bAnat = false;
+    NiftiList = {};
+
+    %Load T1W image
+    if contains(fieldnames(Flist), 'T1*')
+        bAnat = true;
+        NiftiList{1,1} = fullfile(x.D.ROOT, 'T1.nii.gz');
+    end
+
+    if contains(fieldnames(Flist), 'T2*')
+        bAnat = true;
+        NiftiList{end,1} = fullfile(x.D.ROOT, 'T2.nii.gz');
+    end
+
+    if contains(fieldnames(Flist), 'FLAIR*')
+        bAnat = true;
+        NiftiList{end,1} = fullfile(x.D.ROOT, 'Flair.nii.gz');
+    end
+
+    if ~(bAnat)
+        warning('No anatomical scans found, cannot plot orientation.');
+    end
+
+    %Load ASL image
+    if contains(fieldnames(Dlist), 'ASL')
+        
+    end
+
+    xASL_qc_PrintOrientation(NiftiList, x.D.ROOT, '');
+    SlabPlaced = [];
+end
+
+function line = PrintParagraph(x, config, figure, Contents, ModName, fontsize, line)
+    % Printing header/title
+    line = PrintBold(ModName, figure, line, fontsize);    
+    for ii=1:size(Contents,2) % iterating over text lines
+
+        TempName = Contents(ii).name;
+    
+        % Prepare text to print
+        if ~isstruct(Contents(ii).value) % no extra layer
+            TempValue  = Contents(ii).value;
+            if isnumeric(TempValue) || islogical(TempValue)
+                TempValue = num2str(TempValue, 4); 
+            end
+
+        else % add extra layer
+            TempFields = fieldnames(x.Output.(ModName).(Contents(ii).name));
+            TempValue = '';
+            for iK=1:length(TempFields)
+                TempName = [TempName  '/' TempFields{iK}];
+                TV2 = x.Output.(ModName).(Contents(ii).name).(TempFields{iK});
+                if  isnumeric(TV2)
+                    TV2 = num2str(TV2); 
+                end
+                TempValue = [TempValue ' ' TV2];
+            end
+        end
+
+        if sum(strcmp(fieldnames(config.(ModName)),TempName))
+            % Print only if visibility exists and is true. 
+            if isfield(config.(ModName).(TempName), "Visible")  && config.(ModName).(TempName).Visible 
+
+                % Define the variables from Output
+                TempRange = xASL_qc_CheckConfigStruct(config, ModName, TempName, "Range");
+                TempUnit  = xASL_qc_CheckConfigStruct(config, ModName, TempName, "Unit");
+                TempAlias = xASL_qc_CheckConfigStruct(config, ModName, TempName, "Alias", TempName);
+
+                if size(TempValue, 1) == 1
+                    TextString = sprintf([sprintf('%-20s',[TempAlias,':']), sprintf('%8s',TempValue),sprintf('%-12s', [TempUnit, ' ' , TempRange]), ' \n']);
+                end
+                line = PrintText(TextString, figure, line, fontsize);
+            end
+        end
+    end
+end
+
+
+
+function line = PrintBold(String, figure, line, fontsize)
+    line = NewLine(line);
+    ax=axes('Position', line ,'Visible','off','Parent',figure);
+    text(0,1, String, 'FontSize', fontsize, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', ax, 'VerticalAlignment','top');
+end
+
+function line = PrintText(String, figure, line, fontsize)
+    line = NewLine(line);
+    ax=axes('Position', line ,'Visible','off','Parent',figure);
+    text(0,1, String, 'FontSize', fontsize, 'Interpreter', 'none', 'Parent', ax, 'VerticalAlignment','top');
+end
+
+function line = NewLine(line);
+    line(2) = line(2) - 0.016;
+    if line(2) < 0 
+        warning('No space left on page!');
+    end
+end
+
+function PrintImage(ImagePath, figure, Canvas)
+    ax=axes('Position', Canvas, 'Visible', 'off', 'Parent', figure);
+    [img, ~, alphachannel] = imread(ImagePath);
+    fg= imshow(img);
+    fg.AlphaData=alphachannel;
+    clear fg
 end
