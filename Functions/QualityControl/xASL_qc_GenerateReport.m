@@ -75,29 +75,13 @@ NewLine = PrintBold(['ExploreASL QC summary report ', SuSeID], spm_fig, [0 0.96 
 %% Print the Footer
 PrintBold('This report was automatically generated with ExploreASL', spm_fig,  [0 0.02 1 0], fontsize+2);
 
+%% Load Pdf configuration
 config = xASL_adm_LoadPDFConfig(x);
 
 %% -----------------------------------------------------------------------------------------------
 %% Collect field name & field values to print
 OutputFields = fieldnames(x.Output);
-nOutputFields = length(OutputFields);
-
-if nOutputFields>5
-    fprintf('%s\n',['Printing QC for ' num2str(nOutputFields) ' modalities, not sure if this fits']);
-end 
-
-for iField=1:nOutputFields
-    if length(x.Output.(OutputFields{iField}))<iSubjSess
-        Ind = 1; 
-    else
-        Ind = iSubjSess;
-    end
-    StrucFields{iField} = sort(fieldnames(x.Output.(OutputFields{iField})(Ind)));
-    for iV=1:length(StrucFields{iField})     
-            Paragraphs{iField}(iV).name = StrucFields{iField}{iV};
-            Paragraphs{iField}(iV).value = x.Output.(OutputFields{iField})(Ind).(StrucFields{iField}{iV});
-    end
-end 
+Paragraphs = GetValues(x, OutputFields, iSubjSess);
 
 for iField=1:length(Paragraphs) 
     NewLine = PrintParagraph(x, config, spm_fig, Paragraphs{iField}, OutputFields{iField}, fontsize, NewLine);
@@ -115,8 +99,8 @@ clear ax spm_fig
 end
 
 
-%% ========================================================================
-%% ========================================================================
+%% ================================================================================================================================================
+%% ================================================================================================================================================
 function sResult = xASL_qc_CheckConfigStruct(ConfigStruct, subModule, QCParm, QCOption, AlternativeString)
     % Checks if value exists in config struct, then compares it 
     if nargin<5 || isempty(AlternativeString)
@@ -187,6 +171,23 @@ function SlabPlaced = xASL_vis_PlotSlab(x)
 
     xASL_qc_PrintOrientation(NiftiList, x.D.ROOT, '');
     SlabPlaced = [];
+end
+
+function Values = GetValues(x, OutputFields, iSubjSess)
+    nOutputFields = length(OutputFields);
+
+    for iField=1:nOutputFields
+        if length(x.Output.(OutputFields{iField}))<iSubjSess
+            Ind = 1; 
+        else
+            Ind = iSubjSess;
+        end
+        StrucFields{iField} = sort(fieldnames(x.Output.(OutputFields{iField})(Ind)));
+        for iV=1:length(StrucFields{iField})     
+                Values{iField}(iV).name = StrucFields{iField}{iV};
+                Values{iField}(iV).value = x.Output.(OutputFields{iField})(Ind).(StrucFields{iField}{iV});
+        end
+    end 
 end
 
 function line = PrintParagraph(x, config, figure, Contents, ModName, fontsize, line)
@@ -260,4 +261,3 @@ function PrintImage(ImagePath, figure, Canvas)
     fg.AlphaData=alphachannel;
     clear fg
 end
-
