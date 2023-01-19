@@ -156,7 +156,7 @@ for iSubj=1:x.dataset.nTotalSubjects
 end
     
 x = rmfield(x,'SUBJECTS');
-x = rmfield(x.dataset,'nSubjects');
+x.dataset = rmfield(x.dataset,'nSubjects');
 
 % ------------------------------------------------------------------------------------------------
 %% 5) Manage exclusions
