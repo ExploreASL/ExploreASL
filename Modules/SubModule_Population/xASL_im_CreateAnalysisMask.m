@@ -287,7 +287,7 @@ end
 %% Legacy Susceptibility Masking
 function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] = xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x, PathSusceptibilityMask, Threshold, MaskFoV)
 
-    if isfield(x, 'Q') && isfield(x.Q, 'Sequence') && regexpi(x.Q.Sequence, '2d_epi|3d_grase')
+    if isfield(x, 'Q') && isfield(x.Q, 'Sequence') && ~isempty(regexpi(x.Q.Sequence, '2d_epi|3d_grase'))
         fprintf('Using legacy susceptibility masking...\n');
         DoSusceptibility = true;
 
